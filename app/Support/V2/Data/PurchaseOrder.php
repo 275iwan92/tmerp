@@ -84,7 +84,7 @@ final class PurchaseOrder
         $quoted = PqLine::whereIn('pr_line_id', $allocs->pluck('pr_line_id'))->whereHas('quotation', fn ($q) => $q->where('status', 'CONFIRMED'))
             ->pluck('pr_line_id')->flip();
 
-        return $allocs->mapWithKeys(fn ($a) => [$a->getKey() => ($a->line->requisition->doc_no ?? 'PR').' · '.$a->line->i_description.' · '.rtrim(rtrim(number_format((float) ($a->i_qty ?? $a->line->i_qty), 2, '.', ''), '0'), '.').' '.$a->line->i_uom
+        return $allocs->mapWithKeys(fn ($a) => [$a->getKey() => ($a->line->requisition->doc_no ?? 'PR').' · '.$a->line->i_description.' · '.\Devlib\Locale::decimal(($a->i_qty ?? $a->line->i_qty), 2).' '.$a->line->i_uom
             .(isset($quoted[$a->pr_line_id]) ? ' · sedang di-PQ' : '')])->all();
     }
 

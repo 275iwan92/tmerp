@@ -151,7 +151,7 @@
     <x-dl::card id="rakitan" title="Rakitan (part gabungan)" description="Gabungkan 2 part atau lebih menjadi rakitan, mis. Body = Part A + Part B dengan lem 2 sisi (Double Join). Rakitan boleh bertingkat. Bahan tetap milik part; rakitan membawa jenis sambungan.">
         <x-dl::table :columns="['name' => 'Struktur', 'kind' => 'Jenis', 'join' => 'Sambungan', 'qty' => 'Qty dalam induk']"
             :rows="array_map(fn ($n) => ['name' => str_repeat('— ', $n['depth']).$n['name'], 'kind' => $n['kind'] === 'ASSEMBLY' ? 'Rakitan' : 'Komponen',
-                'join' => $n['join'] ?? '—', 'qty' => $n['depth'] ? rtrim(rtrim(number_format($n['qty'], 4, ',', ''), '0'), ',') : '—'], $flat)"
+                'join' => $n['join'] ?? '—', 'qty' => $n['depth'] ? \Devlib\Locale::decimal($n['qty'], 4) : '—'], $flat)"
             empty="Belum ada part tersimpan." source="{{ \App\Support\V2\Src::of('tm2sdi.iqp_part.part_kind', 'parent_part_id', 'qty_in_parent', 'join_type_id') }}" />
         @if ($errors->hasAny(['children', 'assembly_name', 'join_type_id', 'qty_in_parent']))<x-dl::alert tone="danger" :message="$errors->first()" />@endif
         @if (! $readonly)

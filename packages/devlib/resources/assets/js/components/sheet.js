@@ -1,8 +1,7 @@
 /* DevLib · Sheet */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase, parseDate} = Devlib.h;
-  const MON = {jan: 1, feb: 2, mar: 3, apr: 4, may: 5, mei: 5, jun: 6, jul: 7, aug: 8, agu: 8, agt: 8, sep: 9, oct: 10, okt: 10, nov: 11, dec: 12, des: 12};
+  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase, numStr, NUM, DlDate, DlTime} = Devlib.h;
   /* ============================ SHEET (spreadsheet) ============================ */
   class Sheet extends Devlib.Component {
     static selector = "[data-dl-sheet]";
@@ -52,7 +51,7 @@
         else if (k.length === 1 && !e.altKey) { e.preventDefault(); this.anchor = null; this.startEdit(k); }
       });
       // Salin rentang sebagai TSV (bisa ditempel ke Excel); tempel TSV dari Excel mulai sel aktif (baris baru dibuat bila perlu).
-      this.wrap.addEventListener('copy', e => { if (this.edit) return; const R = this.rng(), lines = []; for (let r = R.r0; r <= R.r1; r++) { const row = []; for (let c = R.c0; c <= R.c1; c++) { const col = this.cols[c], v = this.data[r][col.key]; row.push(this.num(col) && typeof v === 'number' ? String(v).replace('.', ',') : col.type === 'select' ? (col.options?.[v] ?? v ?? '') : v ?? ''); } lines.push(row.join('\t')); } e.clipboardData.setData('text/plain', lines.join('\r\n')); e.preventDefault(); toast(`${(R.r1 - R.r0 + 1) * (R.c1 - R.c0 + 1)} sel disalin.`); });
+      this.wrap.addEventListener('copy', e => { if (this.edit) return; const R = this.rng(), lines = []; for (let r = R.r0; r <= R.r1; r++) { const row = []; for (let c = R.c0; c <= R.c1; c++) { const col = this.cols[c], v = this.data[r][col.key]; row.push(this.num(col) && typeof v === 'number' ? fmt.raw(v) : col.type === 'select' ? (col.options?.[v] ?? v ?? '') : v ?? ''); } lines.push(row.join('\t')); } e.clipboardData.setData('text/plain', lines.join('\r\n')); e.preventDefault(); toast(`${(R.r1 - R.r0 + 1) * (R.c1 - R.c0 + 1)} sel disalin.`); });
       this.wrap.addEventListener('paste', e => {
         if (this.edit) return; e.preventDefault();
         const grid = (e.clipboardData.getData('text/plain') || '').replace(/\r/g, '').replace(/\n$/, '').split('\n').map(l => l.split('\t'));
@@ -123,9 +122,9 @@
       const pick = v => { this.closePick(); if (String(v) !== String(cur ?? '')) this.apply([{r, k: col.key, v}]); this.wrap.focus(); };
       if (this.num(col)) {
         // Kalkulator mini: + - x / saja, hitung kiri-ke-kanan dgn prioritas x / ; '=' / Enter = hasil masuk ke sel.
-        let ex = typeof cur === 'number' ? String(cur).replace('.', ',') : '';
+        let ex = typeof cur === 'number' ? fmt.raw(cur) : '';  // desimal ikut bahasa (NUM.dec)
         const calc = () => {
-          const t = ex.replace(/,/g, '.').match(/(\d+\.?\d*|\.\d+|[-+*/])/g) || []; if (!t.length) return null;
+          const t = ex.split(NUM.dec).join('.').match(/(\d+\.?\d*|\.\d+|[-+*/])/g) || []; if (!t.length) return null;
           const nums = [], ops = []; let neg = false;
           for (const x of t) { if ('+-*/'.includes(x) && nums.length === ops.length) { if (x === '-') { neg = !neg; continue; } return null; } if ('+-*/'.includes(x)) ops.push(x); else { nums.push(neg ? -x : +x); neg = false; } }
           if (nums.length === ops.length) ops.pop();  // operator menggantung di akhir diabaikan
@@ -134,21 +133,21 @@
           const v = o.reduce((s, op, i) => op === '+' ? s + a[i + 1] : s - a[i + 1], a[0]);
           return isFinite(v) ? Math.round(v * 1e10) / 1e10 : null;
         };
-        const show = () => { $(p, '[data-e]').textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') || '0'; const v = calc(); $(p, '[data-r]').textContent = v == null ? (ex ? '–' : '') : '= ' + v.toLocaleString('id-ID', {maximumFractionDigits: col.decimals ?? 10}); };
+        const show = () => { $(p, '[data-e]').textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') || '0'; const v = calc(); $(p, '[data-r]').textContent = v == null ? (ex ? '–' : '') : '= ' + fmt.num(v, col.decimals ?? 10); };
         const key = k => {
           if (k === 'C') ex = ''; else if (k === '⌫') ex = ex.slice(0, -1);
           else if (k === '=') { const v = calc(); if (v == null) return toast('Rumus belum lengkap / bagi nol.', 'danger'); return pick(col.decimals != null ? Math.round(v * 10 ** col.decimals) / 10 ** col.decimals : v); }
           else if ('+-*/'.includes(k)) ex = /[-+*/]$/.test(ex) && k !== '-' ? ex.slice(0, -1) + k : ex + k;
-          else if (k === ',') { const seg = ex.split(/[-+*/]/).pop(); if (!seg.includes(',')) ex += (seg ? '' : '0') + ','; }
+          else if (k === NUM.dec) { const seg = ex.split(/[-+*/]/).pop(); if (!seg.includes(NUM.dec)) ex += (seg ? '' : '0') + NUM.dec; }
           else ex += k;
           show();
         };
         p.className = 'dl-pick__panel is-open dl-sheet__calpanel dl-calc'; p.tabIndex = -1;
         p.innerHTML = '<div class="dl-calc__screen"><div class="dl-calc__expr" data-e></div><div class="dl-calc__res" data-r></div></div><div class="dl-calc__keys">'
-          + ['C', '⌫', '/', '*', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', ','].map(k => `<button type="button" data-k="${k}" class="${'+-*/'.includes(k) ? 'is-op' : k === '=' ? 'is-eq' : k === '0' ? 'is-zero' : ''}" ${k === '=' ? 'title="Masukkan hasil ke sel (Enter)"' : ''}>${{'/': '÷', '*': '×', '-': '−'}[k] ?? k}</button>`).join('') + '</div>';
+          + ['C', '⌫', '/', '*', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', NUM.dec].map(k => `<button type="button" data-k="${k}" class="${'+-*/'.includes(k) ? 'is-op' : k === '=' ? 'is-eq' : k === '0' ? 'is-zero' : ''}" ${k === '=' ? 'title="Masukkan hasil ke sel (Enter)"' : ''}>${{'/': '÷', '*': '×', '-': '−'}[k] ?? k}</button>`).join('') + '</div>';
         p.addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (b) key(b.dataset.k); });
         p.addEventListener('keydown', e => {
-          const k = e.key === 'Enter' ? '=' : e.key === 'Backspace' ? '⌫' : e.key === 'Delete' || e.key === 'c' ? 'C' : e.key === '.' ? ',' : e.key === 'x' ? '*' : e.key;
+          const k = e.key === 'Enter' ? '=' : e.key === 'Backspace' ? '⌫' : e.key === 'Delete' || e.key === 'c' ? 'C' : e.key === '.' || e.key === ',' ? NUM.dec : e.key === 'x' ? '*' : e.key;
           if (/^[0-9,+\-*/=C⌫]$/.test(k)) { e.preventDefault(); e.stopPropagation(); key(k); }
         });
         show();
@@ -159,7 +158,7 @@
         p.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if ('x' in b.dataset) pick(''); else if ('a' in b.dataset) pick(`${$(p, '[data-h]').value}:${$(p, '[data-m]').value}`); });
         p.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $(p, '[data-a]').click(); } });
       } else {
-        const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const MON = NUM.months;
         const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
         const view = /^\d{4}-\d{2}-\d{2}$/.test(cur || '') ? new Date(cur + 'T00:00') : new Date(); view.setDate(1);
         p.className = 'dl-pick__panel is-open dl-sheet__calpanel';
@@ -201,21 +200,17 @@
 
     // decimals = jumlah digit di belakang koma yang selalu tampil (18.450,00); tanpa decimals = apa adanya.
     numText(c, v) {
-      return c.decimals != null ? v.toLocaleString('id-ID', {minimumFractionDigits: c.decimals, maximumFractionDigits: c.decimals}) : v.toLocaleString('id-ID', {maximumFractionDigits: 10});
+      return c.decimals != null ? fmt.number(v, c.decimals) : fmt.num(v, 10);
     }
 
-    // Tanggal diketik ala sel Excel: 10-10-2026, 10/10/26, 10-Oct-2026, 10 okt 2026, 2026-10-10; tanpa tahun = tahun ini.
+    // Tanggal diketik ala sel Excel -> ISO; satu objek tanggal DevLib (DlDate) untuk ketik & tampil.
     pDate(s) {
-      const iso = parseDate(s); if (iso) return iso;
-      const m = s.toLowerCase().match(/^(\d{1,2})[\s/.-]+(\d{1,2}|[a-z]{3,})[\s/.-]*(\d{2}|\d{4})?$/); if (!m) return null;
-      const mo = /^\d+$/.test(m[2]) ? +m[2] : MON[m[2].slice(0, 3)], y = m[3] ? (m[3].length === 2 ? 2000 + +m[3] : +m[3]) : new Date().getFullYear();
-      return mo ? parseDate(`${y}-${mo}-${+m[1]}`) : null;
+      return DlDate.of(s)?.iso() ?? null;
     }
 
-    // Jam 24 jam ala Excel: 8 / 8:30 / 08.30 / 0830 -> 08:30.
+    // Jam ala Excel (8 / 830 / 08.30) -> 08:30 lewat objek jam DevLib (DlTime).
     pTime(s) {
-      const m = s.match(/^(\d{1,2})(?:[:.]?(\d{2}))?$/); if (!m || +m[1] > 23 || +(m[2] ?? 0) > 59) return null;
-      return `${m[1].padStart(2, '0')}:${m[2] ?? '00'}`;
+      return DlTime.of(s)?.display() ?? null;
     }
 
     parse(c, raw) {
@@ -223,7 +218,7 @@
       if (c.type === 'check') return /^(1|true|ya|y|x|✓)$/i.test(s);
       if (c.type === 'date') return s === '' ? '' : this.pDate(s) ?? s;
       if (c.type === 'time') return s === '' ? '' : this.pTime(s) ?? s;
-      if (this.num(c)) { if (s === '') return ''; const t = s.replace(/\s|Rp/gi, ''); const n = t.includes(',') ? +t.replace(/\./g, '').replace(',', '.') : (/^-?\d{1,3}(\.\d{3})+$/.test(t) ? +t.replace(/\./g, '') : +t); return isNaN(n) ? s : c.decimals != null ? Math.round(n * 10 ** c.decimals) / 10 ** c.decimals : n; }
+      if (this.num(c)) { if (s === '') return ''; const c0 = numStr(s), n = c0 === '' ? NaN : +c0; return isNaN(n) ? s : c.decimals != null ? Math.round(n * 10 ** c.decimals) / 10 ** c.decimals : n; }
       if (c.type === 'select' && c.options) { const hit = Object.entries(c.options).find(([k, l]) => k.toLowerCase() === s.toLowerCase() || String(l).toLowerCase() === s.toLowerCase()); return hit ? hit[0] : s; }
       return s;
     }
@@ -300,7 +295,7 @@
       const v = this.data[this.cur.r][c.key];
       if (c.type === 'select') td.innerHTML = `<select class="dl-sheet__in">${['', ...Object.keys(c.options || {})].map(k => `<option value="${esc(k)}" ${String(k) === String(v ?? '') ? 'selected' : ''}>${esc(k ? c.options[k] : '—')}</option>`).join('')}</select>`;
       else {
-        const ci = this.cur.c, mode = this.caseMode[ci], start = initial ?? (this.num(c) && typeof v === 'number' ? String(v).replace('.', ',') : c.type === 'date' ? fmt.gridDate(v) : v ?? '');
+        const ci = this.cur.c, mode = this.caseMode[ci], start = initial ?? (this.num(c) && typeof v === 'number' ? fmt.raw(v) : c.type === 'date' ? fmt.gridDate(v) : v ?? '');
         td.innerHTML = `<input class="dl-sheet__in ${this.isText(c) ? 'has-case' : ''}" type="text" ${this.num(c) ? 'inputmode="decimal"' : ''} ${c.type === 'date' ? 'placeholder="dd-mm-yyyy"' : c.type === 'time' ? 'placeholder="hh:mm" inputmode="numeric"' : ''} value="${esc(this.isText(c) ? applyCase(String(start), mode) : start)}">`
           + (this.isText(c) ? `<button type="button" class="dl-case dl-sheet__case" data-s-case title="Ganti huruf: kecil / Kapital Tiap Kata / BESAR">${CASE_LABEL[mode]}</button>` : '');
         const inp = $(td, '.dl-sheet__in');

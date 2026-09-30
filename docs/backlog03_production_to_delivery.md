@@ -30,9 +30,13 @@ sebelum eksekusi):
   engine, Time-Phased Procurement, Lead Time Historical Tracking, Customer
   Interruption Profile reporting) — semua secara eksplisit ditunda user,
   belum digarap sama sekali.
-- **Maintenance submodule** (`PROD_MTN_SCH`/`PROD_MTN_PREV`) — di luar
-  cakupan modul Production Scheduling menurut Tier1 §6 sendiri, belum ada
-  spec sama sekali.
+- **Maintenance submodule** (`PROD_MTN_SCH`/`PROD_MTN_PREV`) — riset + desain
+  + mockup SELESAI 2026-10-01 (`docs/maintenance_tier1.md`,
+  `docs/mockups/maintenance_v2.jpg`): modul v2 baru **Maintenance** (Request ->
+  Work Order, Preventive Plan waktu/meter, integrasi downtime/Scheduling
+  Board/gudang/PR, KPI MTBF/MTTR/PM compliance). **Menunggu OK user** atas
+  keputusan K1-K10 (§9) sebelum build fase M1-M3. Kompresor & forklift
+  (`is_process_machine=0`) termasuk aset maintenance.
 ---
 
 ---

@@ -34,6 +34,10 @@ class AppServiceProvider extends ServiceProvider
         Src::$resolver = \App\Support\V2\Src::of(...);
         Lookups::register();
 
+        // Aturan tampil per bahasa (angka, bulan) + terjemahan label DevLib dari kamus DB (LOCKED user 2026-10-01).
+        \Devlib\Locale::languagesUsing(fn () => \App\Support\Localization\Dictionary::languages());
+        \Devlib\Lang::translateUsing(fn (string $en, string $lang) => \App\Support\Localization\Dictionary::t($en, 'ui', $lang));
+
         // Setting admin sembunyikan data DUMMY/LEGACY hanya berlaku di request
         // web -- migration, job, dan tinker selalu melihat semua data.
         if (! $this->app->runningInConsole()) {

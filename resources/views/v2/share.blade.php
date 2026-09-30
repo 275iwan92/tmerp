@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 {{-- Dokumen online hasil Print/Email (route doc.share, publik). Isi = snapshot saat dicetak; devlib.js SENGAJA tidak dimuat
      (snapshot statis, perilaku komponen tidak dijalankan ulang). Hanya skrip ber-nonce di bawah yang boleh jalan (CSP di route). --}}
-<html lang="id" data-dl-theme="{{ \Devlib\Theme::DEFAULT }}">
+<html lang="{{ \Devlib\Locale::lang() }}" data-dl-theme="{{ \Devlib\Theme::DEFAULT }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

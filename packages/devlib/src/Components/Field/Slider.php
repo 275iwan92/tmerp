@@ -79,10 +79,10 @@ class Slider extends Field
     {
         foreach ([[1e12, ' T'], [1e9, ' M'], [1e6, ' jt'], [1e3, ' rb']] as [$d, $s]) {
             if (abs($v) >= $d) {
-                return rtrim(rtrim(number_format($v / $d, 1, ',', '.'), '0'), ',').$s;
+                return \Devlib\Locale::decimal($v / $d, 1).$s;
             }
         }
 
-        return number_format($v, $v == (int) $v ? 0 : 1, ',', '.');
+        return \Devlib\Locale::number($v, $v == (int) $v ? 0 : 1);
     }
 }

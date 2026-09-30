@@ -42,13 +42,13 @@
     {{-- Form Master-Detail DevLib (disetujui user 2026-09-30). --}}
     @php
         $draft = $do->status === 'DRAFT';
-        $money = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
+        $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
         $area = $do->ship_area_id ? $do->ship_area_level.':'.$do->ship_area_id : null;
         $value = (float) $do->lines->sum('subtotal');
         $lines = $do->lines->map(fn ($l) => [
             'id_line' => $l->id_line, 'item_description' => $l->item_description, 'qty_do' => (float) $l->qty_do, 'qty_unit' => $l->qty_unit,
             'unit_price' => (float) $l->unit_price, 'co' => '#'.$l->co_order_id.' · item '.$l->co_order_item_id,
-            'price_note' => $l->price_overridden ? 'Diubah dari '.$money($l->original_unit_price) : 'Harga CO', 'invoiced' => rtrim(rtrim(number_format((float) $l->qty_invoiced, 2, '.', ''), '0'), '.') ?: '0',
+            'price_note' => $l->price_overridden ? 'Diubah dari '.$money($l->original_unit_price) : 'Harga CO', 'invoiced' => \Devlib\Locale::decimal($l->qty_invoiced, 2),
         ])->values()->all();
     @endphp
     <x-dl::form id="do-form" :title="'Delivery Order · '.($do->do_no ?: 'Draft #'.$do->id_delivery)" :subtitle="($do->customer?->customer_name ?? '—').' · '.$do->status"
@@ -79,7 +79,7 @@
         <x-slot:delivery>
             <x-dl::form.row :cols="4">
                 <x-dl::field.date name="scheduled_ship_date" label="Rencana Kirim" :value="$do->scheduled_ship_date?->toDateString()" :source="Src::of('tm2sdi.do_delivery.scheduled_ship_date')" />
-                <x-dl::field.display label="Tanggal Kirim Aktual" :value="$do->actual_ship_date?->format('d-M-Y') ?? '—'" :source="Src::of('tm2sdi.do_delivery.actual_ship_date')" />
+                <x-dl::field.display label="Tanggal Kirim Aktual" :value="\Devlib\Locale::d($do->actual_ship_date) ?? '—'" :source="Src::of('tm2sdi.do_delivery.actual_ship_date')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="3">
                 <x-dl::field.lookup name="ship_area" lookup="geo_area" label="Wilayah Tujuan" placeholder="Cari kelurahan / kecamatan / kota / kode pos..." :value="$area" :source="Src::of('tm2sdi.do_delivery.ship_area_id', 'ship_area_level', 'ship_address_label')" />

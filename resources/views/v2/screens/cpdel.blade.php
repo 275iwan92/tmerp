@@ -10,7 +10,7 @@
     $home = route('v2.screen', 'cpdel');
     $d = request('id') ? Cpdel::query()->find((int) request('id')) : null;
     abort_if(request('id') && ! $d, 404);
-    $num = fn ($v) => number_format((float) $v, 0, ',', '.');
+    $num = fn ($v) => \Devlib\Locale::number((float) $v, 0);
 @endphp
 
 <x-mp::sales.flow-steps current="shipping" note="Shipping schedule per confirmed order. Split or join lines when the field situation changes; Delivery Order marks them SHIPPED." />
@@ -56,9 +56,9 @@
         </x-dl::action-bar>
         <h2 class="mp-bigname">{{ $d->item?->description }}</h2>
         <x-dl::form.row cols="4">
-            <x-dl::field.display label="Tanggal kirim" :value="$d->ship_date?->format('d-M-Y') ?? '—'" :source="Src::of('tm2sdi.co_order_delivery.ship_date')" />
+            <x-dl::field.display label="Tanggal kirim" :value="\Devlib\Locale::d($d->ship_date) ?? '—'" :source="Src::of('tm2sdi.co_order_delivery.ship_date')" />
             <x-dl::field.display label="Qty kirim" :value="$num($d->ship_qty).' '.($d->item?->qty_unit ?? '')" :source="Src::of('tm2sdi.co_order_delivery.ship_qty')" />
-            <x-dl::field.display label="Due date (janji ke customer)" :value="$d->item?->due_date?->format('d-M-Y') ?? '—'" :source="Src::of('tm2sdi.co_order_item.due_date')" />
+            <x-dl::field.display label="Due date (janji ke customer)" :value="\Devlib\Locale::d($d->item?->due_date) ?? '—'" :source="Src::of('tm2sdi.co_order_item.due_date')" />
             <x-dl::field.display label="Qty order" :value="$num($d->item?->qty).' '.($d->item?->qty_unit ?? '')" :source="Src::of('tm2sdi.co_order_item.qty')" />
         </x-dl::form.row>
         @if ($late)<x-dl::alert tone="danger" message="Tanggal kirim melewati due date atau due date sudah lewat." />@endif
@@ -83,7 +83,7 @@
                 @if ($siblings->isEmpty())
                     <x-dl::empty-state title="Tidak ada baris lain untuk digabung" />
                 @else
-                    <x-dl::field.checkboxes name="ids" label="Gabungkan dengan" :options="$siblings->mapWithKeys(fn ($s) => [$s->id_delivery => ($s->ship_date?->format('d-M-Y') ?? '—').' · '.$num($s->ship_qty).' '.($d->item?->qty_unit ?? '')])->all()" :source="Src::of('tm2sdi.co_order_delivery')" />
+                    <x-dl::field.checkboxes name="ids" label="Gabungkan dengan" :options="$siblings->mapWithKeys(fn ($s) => [$s->id_delivery => (\Devlib\Locale::d($s->ship_date) ?? '—').' · '.$num($s->ship_qty).' '.($d->item?->qty_unit ?? '')])->all()" :source="Src::of('tm2sdi.co_order_delivery')" />
                     <x-dl::action-bar><x-dl::button preset="apply" label="Gabung" type="submit" /></x-dl::action-bar>
                 @endif
             </x-dl::card>
@@ -92,7 +92,7 @@
 
     <x-dl::card title="Semua jadwal kirim product ini">
         <x-dl::table :columns="['date' => 'Tanggal kirim', 'qty' => 'Qty', 'type' => 'Jenis', 'status' => 'Status', 'from' => 'Pecahan dari']"
-            :rows="CoOrderDelivery::where('order_id', $d->order_id)->where('item_id', $d->item_id)->orderBy('ship_date')->get()->map(fn ($s) => ['date' => $s->ship_date?->format('d-M-Y') ?? '—',
+            :rows="CoOrderDelivery::where('order_id', $d->order_id)->where('item_id', $d->item_id)->orderBy('ship_date')->get()->map(fn ($s) => ['date' => \Devlib\Locale::d($s->ship_date) ?? '—',
                 'qty' => $num($s->ship_qty), 'type' => $s->shipment_type, 'status' => $s->status.($s->id_delivery === $d->id_delivery ? ' (baris ini)' : ''), 'from' => $s->split_from_id ? '#'.$s->split_from_id : '—'])->all()"
             source="{{ Src::of('tm2sdi.co_order_delivery') }}" />
     </x-dl::card>

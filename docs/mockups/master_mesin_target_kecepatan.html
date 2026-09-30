@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Master Mesin v2 - Target Kecepatan - Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; }
+  .inp { width: 100%; border: 1px solid #c9d8f3; border-radius: 6px; padding: 5px 8px; font-size: 12px; background: #f5f9ff; position: relative; }
+  .inp[readonly] { background: #f8fafc; border-color: #e2e8f0; }
+  .badge-aa { position:absolute; right:6px; top:50%; transform:translateY(-50%); font-size:9px; background:#e3edfc; color:#2c7be5; border-radius:4px; padding:0 4px; font-weight:700; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .step { display:inline-flex; width:18px; height:18px; border-radius:9999px; background:#dc2626; color:#fff; font-size:10px; font-weight:700; align-items:center; justify-content:center; }
+  th { font-size: 10px; color:#64748b; text-transform: uppercase; font-weight:600; text-align:left; padding:6px 8px; background:#f8fafc; }
+  td { padding:6px 8px; border-top:1px solid #f1f5f9; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+
+<!-- ============ A. GRID MASTER MESIN (sudah ada) + tambahan ============ -->
+<div class="px-4 pt-3 text-[11px] font-bold text-slate-500">A. Production &gt; Master &gt; Master Mesin (grid yang sudah ada — tambahan ditandai <span class="step">1</span>)</div>
+<main class="p-4 pt-2 max-w-7xl mx-auto space-y-3">
+  <div class="grid grid-cols-6 gap-2">
+    <div class="card p-2.5 bg-slate-50"><div class="lbl">Semua</div><div class="text-lg font-bold">45</div></div>
+    <div class="card p-2.5 bg-emerald-50"><div class="lbl">Aktif</div><div class="text-lg font-bold text-emerald-700">45</div></div>
+    <div class="card p-2.5 bg-amber-50"><div class="lbl">Spek belum ada</div><div class="text-lg font-bold text-amber-700">19</div></div>
+    <div class="card p-2.5 bg-sky-50 ring-2 ring-sky-500 relative"><span class="step absolute -top-2 -left-2">1</span><div class="lbl">Usulan target menunggu <i class="fa-solid fa-circle-check text-sky-600"></i></div><div class="text-lg font-bold text-sky-700">26</div></div>
+    <div class="card p-2.5 bg-rose-50"><div class="lbl">Target belum ada</div><div class="text-lg font-bold text-rose-700">21</div></div>
+    <div class="card p-2.5 bg-slate-50"><div class="lbl">Penunjang</div><div class="text-lg font-bold">2</div></div>
+  </div>
+  <div class="card overflow-hidden">
+    <div class="flex items-center gap-2 p-2 border-b">
+      <div class="relative w-64"><input class="inp" placeholder="Cari kode, nama, merek/model..."></div>
+      <span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[10px] font-semibold">Usulan target menunggu <i class="fa-solid fa-xmark ml-1"></i> Lepas filter</span>
+      <button class="ml-auto px-3 py-1 rounded border border-accent text-accent font-semibold relative"><span class="step absolute -top-2 -left-2">2</span><i class="fa-solid fa-rotate mr-1"></i>Recalculate</button>
+      <button class="px-3 py-1 rounded bg-accent text-white font-semibold relative"><span class="step absolute -top-2 -left-2">3</span><i class="fa-solid fa-check-double mr-1"></i>Accept all HIGH (12)</button>
+    </div>
+    <table class="w-full">
+      <thead><tr><th>Mesin</th><th>Nama Panggilan</th><th>Jenis</th><th>Model (katalog)</th><th class="num">Target/jam berlaku</th><th class="num">Usulan engine <span class="step">1</span></th><th>Keyakinan</th><th>Sumber usulan</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><b>Shanghai Die Cutter</b><div class="text-muted">DIE-02</div></td><td>Plong 2</td><td>Die Cutting</td><td>ML-1100</td><td class="num">679</td><td class="num font-bold text-sky-700">732 <span class="text-emerald-600 text-[10px]">+7,8%</span></td><td><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold">Tinggi</span></td><td>Riwayat mesin (sistem lama)</td><td><span class="inline-flex w-6 h-6 border rounded items-center justify-center text-accent"><i class="fa-solid fa-pen"></i></span></td></tr>
+        <tr><td><b>Echo Guillotine</b><div class="text-muted">CUT-02</div></td><td></td><td>Paper Cutting</td><td>QZYK-1150 <span class="text-amber-600 text-[10px]">SEMENTARA</span></td><td class="num text-rose-600">—</td><td class="num font-bold text-sky-700">8.000</td><td><span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold">Sedang</span></td><td>Riwayat proses (sistem lama)</td><td><span class="inline-flex w-6 h-6 border rounded items-center justify-center text-accent"><i class="fa-solid fa-pen"></i></span></td></tr>
+        <tr><td><b>Daxiang Press</b><div class="text-muted">PRS-01</div></td><td></td><td>Pressing</td><td>TYMB-750 <span class="text-amber-600 text-[10px]">SEMENTARA</span></td><td class="num text-rose-600">—</td><td class="num font-bold text-sky-700">690</td><td><span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-semibold">Rendah</span></td><td>Spek model x efisiensi</td><td><span class="inline-flex w-6 h-6 border rounded items-center justify-center text-accent"><i class="fa-solid fa-pen"></i></span></td></tr>
+        <tr><td><b>Komori GL440</b><div class="text-muted">OFF-02</div></td><td></td><td>Offset Printing</td><td>KOMORI-GL440</td><td class="num">5.058</td><td class="num text-slate-500">proses CETAK: 8.000 → 5.193</td><td><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold">Tinggi</span></td><td>Riwayat mesin (sistem lama)</td><td><span class="inline-flex w-6 h-6 border rounded items-center justify-center text-accent"><i class="fa-solid fa-pen"></i></span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- ============ B. FORM MASTER MESIN v2 ============ -->
+<div class="px-4 pt-2 text-[11px] font-bold text-slate-500">B. Klik 2x baris / ikon pena → Form Master Mesin v2 (DevLib x-dl::form, tombol di atas) — BARU</div>
+<header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 mt-1">
+  <div>
+    <div class="text-sm font-bold">DIE-02 · Shanghai Die Cutter <span class="font-normal opacity-80">“Plong 2”</span></div>
+    <div class="text-[10px] opacity-70">Production · Master Mesin · data real aset pabrik</div>
+  </div>
+  <div class="ml-auto flex items-center gap-2">
+    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">● Aktif · Produksi</span>
+    <button class="px-3 py-1 rounded border border-white/40 font-medium">Undo</button>
+    <button class="px-3 py-1 rounded bg-accent text-white font-semibold">Save</button>
+    <a class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full">
+      <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+      <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
+    </a>
+  </div>
+</header>
+<div class="bg-white border-b px-5 flex gap-5 text-[12px]">
+  <span class="py-2 text-muted">Identitas</span>
+  <span class="py-2 text-muted">Spesifikasi</span>
+  <span class="py-2 border-b-2 border-accent text-accent font-semibold relative">Kapasitas &amp; Target <span class="step absolute -top-1 -right-5">4</span></span>
+  <span class="py-2 text-muted">Proses (2)</span>
+  <span class="py-2 text-muted">Riwayat</span>
+</div>
+
+<main class="p-4 max-w-7xl mx-auto grid grid-cols-3 gap-3">
+  <!-- Target mesin -->
+  <section class="card p-3 col-span-2 space-y-3">
+    <div class="flex items-center"><h2 class="font-semibold text-slate-700">Target kecepatan mesin</h2>
+      <button class="ml-auto px-2.5 py-1 rounded border border-accent text-accent font-semibold text-[11px]"><i class="fa-solid fa-rotate mr-1"></i>Recalculate</button></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="rounded-lg border p-3">
+        <div class="lbl">Nilai berlaku (dipakai PPIC, OEE, jadwal)</div>
+        <div class="text-2xl font-bold">679 <span class="text-xs font-normal text-muted">lembar/jam</span></div>
+        <div class="text-[11px] text-muted mt-1">Diisi 2026-10-01 oleh system — P75 riwayat mesin lama “PLONG 2” (metode lama ikut menghitung baris SETTING)</div>
+      </div>
+      <div class="rounded-lg border-2 border-sky-400 bg-sky-50 p-3 relative">
+        <span class="step absolute -top-2 -left-2">5</span>
+        <div class="lbl">Usulan engine · menunggu keputusan</div>
+        <div class="text-2xl font-bold text-sky-700">732 <span class="text-xs font-normal text-muted">lembar/jam</span> <span class="text-[11px] text-emerald-700 font-semibold">+7,8%</span></div>
+        <div class="mt-1 flex items-center gap-1.5 flex-wrap">
+          <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold">Keyakinan Tinggi</span>
+          <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold">Riwayat mesin (sistem lama)</span>
+        </div>
+        <div class="text-[11px] text-slate-600 mt-1">P75 of 2,669 runs 2022-01..2024-03, old system as 'PLONG 2'; unit LEMBAR</div>
+        <div class="flex gap-2 mt-2">
+          <button class="px-3 py-1 rounded bg-emerald-600 text-white font-semibold"><i class="fa-solid fa-check mr-1"></i>Accept</button>
+          <button class="px-3 py-1 rounded border border-accent text-accent font-semibold"><i class="fa-solid fa-pen mr-1"></i>Change…</button>
+          <button class="px-3 py-1 rounded border border-rose-300 text-rose-600 font-semibold"><i class="fa-solid fa-xmark mr-1"></i>Reject</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex items-center gap-2 mb-1"><h3 class="font-semibold text-slate-700">Per proses (kapabilitas Proses x Mesin)</h3><span class="step">6</span></div>
+      <table class="w-full border rounded">
+        <thead><tr><th>Proses</th><th>Satuan</th><th class="num">Kecepatan berlaku</th><th>Asal nilai</th><th class="num">Usulan</th><th>Keyakinan</th><th class="num">Setup (mnt)</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><b>PLONG</b></td><td>LEMBAR</td><td class="num">679</td><td><span class="text-muted">mewarisi target mesin</span></td><td class="num text-muted">—</td><td></td><td class="num">60</td><td><span class="inline-flex w-6 h-6 border rounded items-center justify-center text-accent"><i class="fa-solid fa-pen"></i></span></td></tr>
+          <tr><td><b>KETREK</b></td><td>LEMBAR</td><td class="num">679</td><td><span class="text-muted">mewarisi target mesin</span></td><td class="num text-muted">—</td><td></td><td class="num">60</td><td><span class="inline-flex w-6 h-6 border rounded items-center justify-center text-accent"><i class="fa-solid fa-pen"></i></span></td></tr>
+        </tbody>
+      </table>
+      <div class="text-[10px] text-muted mt-1">Contoh pasangan yang punya usulan sendiri: OFF-02 × CETAK berlaku 8.000 → usulan 5.193 (4.820 catatan KOMORI_GL440*).</div>
+    </div>
+
+    <div>
+      <div class="flex items-center gap-2 mb-1"><h3 class="font-semibold text-slate-700">Riwayat usulan</h3><span class="step">7</span></div>
+      <table class="w-full border rounded">
+        <thead><tr><th>Tanggal</th><th class="num">Usulan</th><th>Sumber</th><th>Status</th><th class="num">Nilai dipakai</th><th>Oleh</th><th>Catatan</th></tr></thead>
+        <tbody>
+          <tr><td>01-Okt-2026</td><td class="num">732</td><td>Riwayat mesin (sistem lama)</td><td><span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[10px] font-semibold">Menunggu</span></td><td class="num">—</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Kanan: kapasitas & sumber -->
+  <section class="space-y-3">
+    <div class="card p-3 space-y-2">
+      <h2 class="font-semibold text-slate-700">Kapasitas</h2>
+      <div class="grid grid-cols-2 gap-2">
+        <div><div class="lbl">Shift / hari</div><input class="inp num" value="2"></div>
+        <div><div class="lbl">Jam / shift</div><input class="inp num" value="7,8"></div>
+        <div><div class="lbl">Operator</div><input class="inp num" value="1"></div>
+        <div><div class="lbl">Helper</div><input class="inp num" value="1"></div>
+      </div>
+      <div class="rounded bg-slate-50 p-2 text-[11px]">Kapasitas / hari = 2 × 7,8 × 679 = <b>10.592 lembar</b></div>
+    </div>
+    <div class="card p-3 space-y-2 relative">
+      <span class="step absolute -top-2 -left-2">8</span>
+      <h2 class="font-semibold text-slate-700">Sumber data engine</h2>
+      <div><div class="lbl">Model katalog</div><div class="inp flex items-center">ML-1100 · Manual · 1100×800 · 1.200/jam <i class="fa-solid fa-chevron-down ml-auto text-muted"></i></div>
+        <div class="text-[10px] text-amber-600 mt-0.5">SEMENTARA — dipilihkan sistem 2026-10-01, ganti bila berbeda</div></div>
+      <div><div class="lbl">Kecepatan maks / jam</div><input class="inp num" value="1.200"></div>
+      <div><div class="lbl">Nama mesin di sistem lama</div><div class="inp">PLONG 2<span class="badge-aa">AA</span></div>
+        <div class="text-[10px] text-muted mt-0.5">Pisahkan koma; akhiri * untuk awalan (mis. KOMORI_GL440*)</div></div>
+    </div>
+    <div class="card p-3 text-[11px] text-slate-600 space-y-1">
+      <div class="font-semibold text-slate-700">Urutan sumber usulan</div>
+      <div>1. Realisasi WO v2 · 2. Riwayat mesin lama · 3. Riwayat proses lama · 4. Mesin model sama / rasio mesin sejenis · 5. Spek maks × efisiensi (Settings &gt; Constants) · 6. Default proses</div>
+    </div>
+  </section>
+</main>
+
+<div class="px-4 pb-4 max-w-7xl mx-auto">
+  <div class="card p-3 text-[11px] space-y-1">
+    <div class="font-semibold text-slate-700">Keterangan</div>
+    <div><span class="step">1</span> Grid: kotak filter “Usulan target menunggu” + “Target belum ada”, kolom Target berlaku / Usulan / Keyakinan / Sumber.</div>
+    <div><span class="step">2</span> Recalculate = jalankan engine sekarang (juga otomatis tiap hari 03:00). <span class="step">3</span> Accept all HIGH = terima sekaligus usulan berkeyakinan Tinggi (tetap bisa diubah per mesin).</div>
+    <div><span class="step">4</span> Form Master Mesin v2 menggantikan form v1 untuk grid v2; tab Identitas/Spesifikasi berisi field v1 yang sama. <span class="step">5</span> Accept = pakai 732; Change… = isi angka sendiri; Reject = tidak dipakai & tidak diusulkan lagi.</div>
+    <div><span class="step">6</span> Kecepatan per proses bisa diisi manual (pensil) atau menerima usulan per pasangan. <span class="step">7</span> Siapa/kapan/nilai tercatat. <span class="step">8</span> Semua angka sumber bisa dikoreksi user sesuai kenyataan.</div>
+  </div>
+</div>
+</body>
+</html>

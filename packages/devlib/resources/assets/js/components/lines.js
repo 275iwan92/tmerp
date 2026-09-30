@@ -1,7 +1,7 @@
 /* DevLib · Lines */
 (function (Devlib) {
   'use strict';
-  const {srcAttr, $, $$, esc, CASES, CASE_LABEL, applyCase, confirmBox, words, fmt} = Devlib.h;
+  const {srcAttr, $, $$, esc, CASES, CASE_LABEL, applyCase, confirmBox, words, fmt, numStr} = Devlib.h;
   /* ============================ LINES (detail dokumen) ============================ */
   class Lines extends Devlib.Component {
     static selector = "[data-dl-lines]";
@@ -31,8 +31,8 @@
       this.el.addEventListener('input', e => {
         const t = e.target;
         // Diskon/pajak: yang diketik (% atau Amount) jadi sumber, pasangannya dihitung ulang di refresh().
-        if (t.matches('[data-l-pct]')) { t.value = t.value.replace(/[^\d,]/g, ''); t.closest('tr').dataset.src = 'pct'; return this.refresh(); }
-        if (t.matches('[data-l-amt], [data-l-cost]')) { if (t.matches('[data-l-amt]')) t.closest('tr').dataset.src = 'amt'; t.value = t.value.replace(/[^\d]/g, '') ? (+t.value.replace(/[^\d]/g, '')).toLocaleString('id-ID') : ''; return this.refresh(); }
+        if (t.matches('[data-l-pct]')) { t.value = t.value.replace(/[^\d.,]/g, ''); t.closest('tr').dataset.src = 'pct'; return this.refresh(); }
+        if (t.matches('[data-l-amt], [data-l-cost]')) { if (t.matches('[data-l-amt]')) t.closest('tr').dataset.src = 'amt'; t.value = t.value.replace(/[^\d]/g, '') ? fmt.number(+t.value.replace(/[^\d]/g, '')) : ''; return this.refresh(); }
         if (!t.matches('.dl-lines__in') || t.dataset.lk !== undefined) return;
         const c = this.colOf(t.dataset.k), r = this.rowOf(t);
         if (c.type === 'text' && t.dataset.case) { const p = t.selectionStart; t.value = applyCase(t.value, t.dataset.case); try { t.setSelectionRange(p, p); } catch (x) {} }
@@ -45,7 +45,7 @@
       const cf = (this.cfg.totals && this.cfg.totals.currencyField) || 'currency';
       (this.el.closest('form') || document).addEventListener('change', e => { if (e.target.name === cf) this.refresh(); });
       this.el.addEventListener('change', e => { if (e.target.matches('select.dl-lines__in, input[type=date].dl-lines__in')) { this.rowOf(e.target)[e.target.dataset.k] = e.target.value; e.target.closest('td').classList.remove('is-invalid'); this.refresh(); } });
-      this.el.addEventListener('focusin', e => { const t = e.target; if (t.classList.contains('dl-lines__num')) { t.value = String(this.rowOf(t)[t.dataset.k] ?? '').replace('.', ','); t.select(); } });
+      this.el.addEventListener('focusin', e => { const t = e.target; if (t.classList.contains('dl-lines__num')) { t.value = fmt.raw(this.rowOf(t)[t.dataset.k] ?? ''); t.select(); } });
       this.el.addEventListener('focusout', e => { const t = e.target; if (t.classList.contains('dl-lines__num')) t.value = this.show(this.colOf(t.dataset.k), this.rowOf(t)[t.dataset.k] ?? ''); });
       this.el.addEventListener('keydown', e => {
         const t = e.target; if (e.key !== 'Enter' || !t.matches('.dl-lines__in') || t.dataset.lk !== undefined) return;
@@ -89,7 +89,7 @@
     }
 
     money(v) {
-      return (+v || 0).toLocaleString('id-ID');
+      return fmt.num(+v || 0, 3);
     }
 
     // Mata uang dokumen dari field form (Finance > Currency); IDR bila tidak ada.
@@ -116,14 +116,12 @@
     }
 
     pct(v) {
-      return (Math.round(v * 100) / 100).toLocaleString('id-ID', {maximumFractionDigits: 2});
+      return fmt.num(Math.round(v * 100) / 100, 2);
     }
 
-    // Ketikan gaya Indonesia -> nilai mentah. Titik tunggal tanpa pola ribuan (12.5) = desimal, bukan dibuang (dulu jadi 125).
+    // Ketikan dalam bahasa tampilan -> nilai kanonik (1234.5) yang disimpan di baris & dikirim ke server (core numStr).
     raw(v) {
-      const s = String(v ?? '').trim();
-      if (s.includes(',')) return s.replace(/\./g, '').replace(',', '.');
-      return /^-?\d{1,3}(\.\d{3})+$/.test(s) ? s.replace(/\./g, '') : s;
+      return numStr(v);
     }
 
     // Kolom 'primary' (tepat satu baris bernilai true, mis. tier/bahan Utama): baris pertama otomatis Utama.
@@ -150,7 +148,7 @@
 
     show(c, v) {
       if (c.type === 'date') return v ? fmt.gridDate(v) : '';  // tampilan read-only: dd-Mmm-yyyy (baku grid)
-      return (v === '' || v == null) && !c.fn ? '' : c.type === 'money' || (c.fn && c.type !== 'number') ? this.money(v) : c.type === 'number' ? (v === '' ? '' : (+v).toLocaleString('id-ID')) : v;
+      return (v === '' || v == null) && !c.fn ? '' : c.type === 'money' || (c.fn && c.type !== 'number') ? this.money(v) : c.type === 'number' ? (v === '' ? '' : fmt.num(+v, 3)) : v;
     }
 
     cell(c, r, i) {
@@ -217,7 +215,7 @@
       const filled = this.rows.filter(this.filled), scope = this.el.closest('form') || document;
       $$(scope, `[data-l-val^="${this.name}:"]`).forEach(x => {
         const k = x.dataset.lVal.slice(this.name.length + 1);
-        x.textContent = k === 'count' ? filled.length : k.startsWith('sum.') ? filled.reduce((a, r) => a + (+r[k.slice(4)] || 0), 0).toLocaleString('id-ID') : cu.sym + ' ' + this.money(t[k] ?? 0);
+        x.textContent = k === 'count' ? filled.length : k.startsWith('sum.') ? fmt.num(filled.reduce((a, r) => a + (+r[k.slice(4)] || 0), 0), 3) : cu.sym + ' ' + this.money(t[k] ?? 0);
       });
       const kf = this.cfg.keyField, rf = this.cfg.removeField;
       $(this.el, '[data-l-inputs]').innerHTML = this.rows.filter(this.filled).map((r, i) => Object.entries(r).map(([k, v]) => `<input type="hidden" name="${esc(this.name)}[${esc(kf && r[kf] ? r[kf] : (kf ? 'new' + i : i))}][${esc(k)}]" value="${esc(v)}">`).join('')).join('')

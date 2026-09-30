@@ -30,7 +30,7 @@ final class ApprovalSetting
         return $configs->map(fn ($c) => ['id' => $c->flow_config_id, 'module' => $c->module_code, 'name' => self::MODULE_NAMES[$c->module_code] ?? $c->module_code,
             'levels' => $c->steps->where('step_type', 'APPROVAL')->count(),
             'approvers' => $c->steps->where('step_type', 'APPROVAL')->map(fn ($s) => 'L'.$s->step_no.' '.($pos[$s->position_id]['name'] ?? '—')
-                .((float) $s->min_amount > 0 ? ' (≥ '.number_format((float) $s->min_amount, 0, ',', '.').')' : ''))->implode(' → ') ?: 'Tanpa approval',
+                .((float) $s->min_amount > 0 ? ' (≥ '.\Devlib\Locale::number((float) $s->min_amount, 0).')' : ''))->implode(' → ') ?: 'Tanpa approval',
             'final' => $c->final_status ?? '—', 'active' => $c->activate ? 'Aktif' : 'Nonaktif'])->all();
     }
 
@@ -100,7 +100,7 @@ final class ApprovalSetting
                 }
             }
             $no = 0;
-            $num = fn ($v) => ($v = trim(str_replace(['.', ','], ['', '.'], (string) $v))) === '' ? null : (float) $v;
+            $num = fn ($v) => ($c = \Devlib\Locale::input($v)) === null ? null : (float) $c;
             foreach ($in['levels'] ?? [] as $key => $row) {
                 if (empty($row['position_id']) || isset($in['remove'][$key])) {
                     continue;

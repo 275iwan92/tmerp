@@ -1,7 +1,7 @@
 /* DevLib · DocShare — Print (PDF/JPEG/HTML online/Printer) + Email untuk dokumen/form mana pun (x-dl::doc-share). */
 (function (Devlib) {
   'use strict';
-  const {$, $$, toast, loadLib, openLayer, esc} = Devlib.h;
+  const {$, $$, toast, loadLib, openLayer, esc, T, fmt, NUM, dirtyForms} = Devlib.h;
   const LIB_IMG = 'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js';
   const LIB_PDF = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
   const LIB_QR = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
@@ -28,6 +28,44 @@
         $(this.online, '[data-ds-open]').addEventListener('click', () => window.open(this.share.url, '_blank', 'noopener'));
       }
       if (this.mail) $(this.mail, '[data-ds-send]').addEventListener('click', this.send);
+
+      // Bahasa cetak: diingat per jenis dokumen; bawaan = bahasa layar. Dipakai juga oleh twin (iframe) untuk ditemukan.
+      this.el.dlDocShare = this;
+      const langs = $$(this.el, '[data-ds-lang]').map(b => b.dataset.dsLang);
+      let saved = null; try { saved = localStorage.getItem('dl-print-lang:' + this.cfg.type); } catch (_) {}
+      this.lang = langs.includes(saved) ? saved : NUM.lang;
+      const paint = () => [this.el, this.mail].forEach(r => r && $$(r, '[data-ds-lang]').forEach(b => b.classList.toggle('is-on', b.dataset.dsLang === this.lang)));
+      [this.el, this.mail].forEach(r => r && r.addEventListener('click', e => {
+        const b = e.target.closest('[data-ds-lang]'); if (!b) return;
+        e.stopPropagation(); this.lang = b.dataset.dsLang; paint();
+        try { localStorage.setItem('dl-print-lang:' + this.cfg.type, this.lang); } catch (_) {}
+      }));
+      paint();
+    }
+
+    // DocShare yang mencetak: diri sendiri bila bahasa cetak = bahasa layar; selain itu salinan halaman yang sama dirender server
+    // dalam bahasa cetak (?print_lang) di iframe tersembunyi -- label, angka & tanggal ikut bahasa itu. Data = versi tersimpan.
+    async printer() {
+      if (this.lang === NUM.lang) return this;
+      const src = this.source();
+      if ([...dirtyForms].some(f => f.contains(src) || src.contains(f))) toast(T('print_unsaved'), 'warn');
+      if ((this.twins ||= {})[this.lang]) return this.twins[this.lang];
+      const u = new URL(location.href); u.searchParams.set('print_lang', this.lang);
+      const f = document.createElement('iframe'); f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+      f.style.cssText = `position:fixed;left:-30000px;top:0;width:${Math.max(innerWidth, 1024)}px;height:${innerHeight}px;border:0`;
+      f.src = u.toString(); document.body.appendChild(f);
+      const twin = await new Promise((ok, bad) => {
+        const t0 = Date.now(), sel = `[data-dl-docshare][data-type="${CSS.escape(this.cfg.type)}"]`;
+        const tick = () => {
+          try { const el = f.contentDocument && f.contentDocument.querySelector(sel); if (el && el.dlDocShare) return ok(el.dlDocShare); } catch (e) { return bad(e); }
+          if (Date.now() - t0 > 20000) { f.remove(); return bad(new Error('Halaman cetak (' + this.lang + ') tidak termuat')); }
+          setTimeout(tick, 150);
+        };
+        tick();
+      });
+      try { await f.contentDocument.fonts.ready; } catch (_) {}
+      twin.lang = this.lang;  // di dalam iframe bahasa layarnya sudah = bahasa cetak
+      return (this.twins[this.lang] = twin);
     }
 
     source() {
@@ -83,7 +121,7 @@
       const stage = document.createElement('div'); stage.className = 'dl-docshare__stage';
       stage.style.width = Math.max(src.offsetWidth, 760) + 'px';
       const head = document.createElement('div'); head.className = 'dl-docshare__head';
-      head.innerHTML = `<div><b>${esc(this.cfg.title)}${this.cfg.no ? ' · ' + esc(this.cfg.no) : ''}</b><small>Dicetak ${esc(new Date().toLocaleString('id-ID'))}</small></div>`;
+      head.innerHTML = `<div><b>${esc(this.cfg.title)}${this.cfg.no ? ' · ' + esc(this.cfg.no) : ''}</b><small>${esc(T('printed'))} ${esc(fmt.date() + ' ' + fmt.time())}</small></div>`;
       if (this.share) head.innerHTML += `<figure><img src="${await this.qrData(this.share.url)}" alt="QR"><figcaption>${esc(this.share.url)}</figcaption></figure>`;
       stage.append(head, this.freeze(src));
       src.parentNode.insertBefore(stage, src.nextSibling);
@@ -117,16 +155,17 @@
       if (what === 'email') { openLayer(this.el.dataset.mail); return; }
       this.busy(true);
       try {
-        await this.snapshot();
+        const ds = await this.printer();
+        await ds.snapshot(); this.share = ds.share;
         if (what === 'online') {
           $(this.online, '[data-ds-url] input, input[name=ds_url]').value = this.share.url;
           $(this.online, '[data-ds-qr]').innerHTML = `<img src="${await this.qrData(this.share.url, 180)}" alt="QR">`;
           openLayer(this.el.dataset.online);
           return;
         }
-        const img = await this.jpeg();
+        const img = await ds.jpeg();
         if (what === 'jpeg') this.save(img, 'jpg');
-        else if (what === 'pdf') (await this.pdf(img)).save(this.fileName() + '.pdf');
+        else if (what === 'pdf') (await ds.pdf(img)).save(this.fileName() + '.pdf');
         else if (what === 'printer') this.printImage(img);
       } catch (e) { toast(e.message || String(e), 'danger', 'Print gagal'); }
       finally { this.busy(false); }
@@ -145,14 +184,15 @@
       if (!v('to').trim()) { toast('Isi minimal satu alamat To.', 'warn'); return; }
       const btn = $(this.mail, '[data-ds-send]'); btn.disabled = true;
       try {
-        await this.snapshot();
+        const ds = await this.printer();
+        await ds.snapshot(); this.share = ds.share;
         const f = new FormData();
         ['to', 'cc', 'bcc', 'subject', 'message'].forEach(n => f.append(n, v(n)));
         f.append('with_link', on('with_link') ? 1 : 0);
         if (on('with_image') || on('with_pdf')) {
-          const img = await this.jpeg();
+          const img = await ds.jpeg();
           if (on('with_image')) f.append('image', await (await fetch(img)).blob(), 'dokumen.jpg');
-          if (on('with_pdf')) f.append('pdf', (await this.pdf(img)).output('blob'), this.fileName() + '.pdf');
+          if (on('with_pdf')) f.append('pdf', (await ds.pdf(img)).output('blob'), this.fileName() + '.pdf');
         }
         const r = await this.post(this.cfg.endpoint.replace(/\/$/, '') + '/' + this.share.token + '/email', f);
         this.mail.classList.remove('is-on');

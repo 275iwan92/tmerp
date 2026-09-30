@@ -3,6 +3,28 @@
 
 ---
 
+## 2026-10-01 -- Multi-language dasar: DB English + kamus, angka/tanggal per bahasa, Bahasa cetak
+
+- Keputusan LOCKED user dicatat (CLAUDE.md §3, memori, docs/multilanguage_design.md).
+- Kamus `sys_dictionary` + `sys_dictionary_lang`, `sys_languages` +native_name/intl_locale/activate/sort_order (ddtsys).
+- Objek nilai DevLib PHP+JS: NumberValue/DlNumber, DateValue/DlDate, TimeValue/DlTime, DateTimeValue/DlDateTime, TextValue/DlText.
+- Semua komponen DevLib + layar v2 memformat lewat objek itu; form mengirim angka kanonik (hook formdata).
+- DocShare: pilihan Bahasa cetak (ID/EN/...) -> halaman dirender ulang `?print_lang`; PrintOut/DocShare teks lewat kamus Lang.
+- Test `LocaleNumberTest` (10 test) + uji keseragaman JS; contoh `docs/mockups/print_lang_quotation.jpg`.
+
+## 2026-10-01 -- Engine target kecepatan mesin + spek mesin dari riset online (ddt*)
+
+- `App\Services\Production\SpeedTarget\SpeedTargetEngine` (engine suggests, PPIC confirms): 6 lapis sumber berurutan + tingkat
+  keyakinan TINGGI/SEDANG/RENDAH; P75 qty/jam dengan baris SETTING/QC/HITUNG/dst tidak ikut, satuan dipisah (LBR/PCS/SET).
+- Usulan di `tm2mst.prod_speed_suggestion`; `SpeedSuggestionStore::accept()` (Terima/Ubah) menulis ke `prod_machine.speed_target_per_hour`
+  atau `prod_process_machine.speed_per_hour` + jejak `[SPEED ...]` di catatan; usulan yang ditolak tidak disodorkan ulang.
+- Faktor efisiensi spek dikalibrasi dari riwayat legacy nyata per penggerak (MANUAL 0,54 dari DIE-01/02/03+UVC-01, AUTO 0,52 dari OFF-01/02),
+  konstanta SPEED_EFF_* jadi cadangan (user: "dikoreksi dengan data legacy agar mendekati realita").
+- Parameter di Settings > Constants (grup SPEED_ENGINE, 12 konstanta); perintah `production:suggest-speed-targets` harian 03:00.
+- Kolom baru `prod_machine.legacy_machine_names` (nama mesin di tm2old) diisi 21 mesin.
+- Katalog model +14 dari riset online (Agfa Avalon C8-30/C4-30, QZYK-1150, YDS-1100BT, FHSGJ-1050, SGUV-650, FM-1100, YB-1450E, TYMB-750,
+  LQ-QF-1080C, TD-202, SG-ASC-530A01, WM-700A, Xenons X3S); 14 mesin dipilihkan model SEMENTARA, hanya kolom kosong yang diisi.
+
 ## 2026-10-01 -- Master Card Collection v2 (menu Sales > Inquiry & Quotation > Pro-Dev)
 
 - Upload master card lama: Excel (.xlsx sheet "MC", dibaca lewat label + gambar proof/rencana potong dari zip) atau foto

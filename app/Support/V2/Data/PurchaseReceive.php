@@ -50,7 +50,7 @@ final class PurchaseReceive
     public static function openLineOptions(int $supplierId): array
     {
         return PvBuilderService::openLinesForSupplier($supplierId)->mapWithKeys(fn ($l) => [$l->po_line_id => ($l->order->doc_no ?? 'PO').' #'.$l->line_no.' · '.$l->i_description
-            .' · sisa '.rtrim(rtrim(number_format((float) $l->i_qty - (float) $l->c_qty_received, 2, '.', ''), '0'), '.').' '.$l->i_uom])->all();
+            .' · sisa '.\Devlib\Locale::decimal($l->i_qty - (float) $l->c_qty_received, 2).' '.$l->i_uom])->all();
     }
 
     public static function warehouses(): array

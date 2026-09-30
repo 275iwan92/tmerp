@@ -50,8 +50,8 @@
         $appr = PurchaseOrder::approvalState('PO', $po->po_id, (float) $po->c_grand_total);
         $draft = $po->status === 'DRAFT';
         $sup = \Illuminate\Support\Facades\DB::connection('tm2mst')->table('sup_supplier')->where('id_supplier', $po->i_supplier_id)->first();
-        $money = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
-        $trim = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.') ?: '0';
+        $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+        $trim = fn ($v) => \Devlib\Locale::decimal($v, 2);
         $pqNo = \App\Models\Pur\PqLine::whereIn('pq_line_id', $po->lines->pluck('pq_line_id')->filter())->join('pq_quotation', 'pq_quotation.pq_id', '=', 'pq_line.pq_id')->pluck('pq_quotation.doc_no', 'pq_line.pq_line_id');
         $lines = $po->lines->map(fn ($l) => [
             'po_line_id' => $l->po_line_id, 'i_description' => $l->i_description, 'i_qty' => (float) $l->i_qty, 'i_uom' => $l->i_uom,
@@ -81,7 +81,7 @@
                 <x-dl::field.select name="i_po_type" label="Tipe PO" :options="['LOCAL' => 'Local', 'IMPORT' => 'Import']" :value="$po->i_po_type" :source="Src::of('tm2pur.po_order.i_po_type')" />
                 <x-dl::field.select name="i_procure_type" label="Tipe Pengadaan" :options="['REPEAT' => 'Repeat (rutin)', 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" :value="$po->i_procure_type" :source="Src::of('tm2pur.po_order.i_procure_type')" />
                 <x-dl::field.display label="Revisi ke" :value="(string) ($po->revision_no ?? 0)" :source="Src::of('tm2pur.po_order.revision_no')" />
-                <x-dl::field.display label="Dikirim ke supplier" :value="$po->sent_at?->format('d-M-Y H:i') ?? '—'" :source="Src::of('tm2pur.po_order.sent_at')" />
+                <x-dl::field.display label="Dikirim ke supplier" :value="\Devlib\Locale::dt($po->sent_at) ?? '—'" :source="Src::of('tm2pur.po_order.sent_at')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:supplier>

@@ -9,7 +9,7 @@
             <div class="dl-grid__stats">
                 <x-dl::stat-box label="Database" :value="$stats['db']" />
                 <x-dl::stat-box label="Tabel / view" :value="$stats['tables']" />
-                <x-dl::stat-box label="Kolom" :value="number_format($stats['columns'], 0, ',', '.')" />
+                <x-dl::stat-box label="Kolom" :value="\Devlib\Locale::number($stats['columns'], 0)" />
                 <x-dl::stat-box label="Indikasi kolom ganda" :value="$stats['dup']" tone="warn" />
                 <x-dl::stat-box label="Salinan data master" :value="$stats['copies']" tone="danger" />
             </div>

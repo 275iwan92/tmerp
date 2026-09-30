@@ -13,7 +13,7 @@
     $home = route('v2.screen', 'customer-order');
     $o = request('id') ? CoOrder::with(['customer', 'quotation', 'items.inquiry', 'items.product', 'items.deliveries', 'externalCosts'])->find((int) request('id')) : null;
     abort_if(request('id') && ! $o, 404);
-    $rp = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
+    $rp = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
     $trim = fn ($v) => $v === null ? '' : rtrim(rtrim(number_format((float) $v, 4, '.', ''), '0'), '.');
 @endphp
 
@@ -82,11 +82,11 @@
         $totals = $o->totals();
         $missingDue = $o->items->where('line_kind', 'PRODUCT')->whereNull('due_date');
         $missingProduct = $o->itemsMissingProduct();
-        $num = fn ($v) => number_format((float) $v, 0, ',', '.');
+        $num = fn ($v) => \Devlib\Locale::number((float) $v, 0);
         $area = $o->ship_area_id ? $o->ship_area_level.':'.$o->ship_area_id : null;
         $cur = $o->currency_code ?? 'IDR';
         $sym = \Devlib\Terbilang::CURRENCIES[$cur][0] ?? 'Rp';
-        $money = fn ($v) => $sym.' '.number_format((float) $v, 0, ',', '.');
+        $money = fn ($v) => $sym.' '.\Devlib\Locale::number((float) $v, 0);
         $lines = $o->items->map(fn ($it) => [
             'id_item' => $it->id_item, 'description' => $it->description, 'qty' => (float) $it->qty, 'qty_unit' => $it->qty_unit,
             'unit_price' => (float) $it->unit_price, 'discount_pct' => (float) $it->discount_pct, 'due_date' => $it->due_date?->toDateString() ?? '',
@@ -155,7 +155,7 @@
             </x-dl::form.row>
             {{-- Jadwal kirim per baris Product (kosong = saat Confirm dibuat otomatis 1 baris qty penuh @ Due Date). --}}
             @foreach ($o->items->where('line_kind', 'PRODUCT') as $it)
-                <x-dl::divider :label="$it->description.' · '.$num($it->qty).' '.$it->qty_unit.' · due '.($it->due_date?->format('d-M-Y') ?? '—')" />
+                <x-dl::divider :label="$it->description.' · '.$num($it->qty).' '.$it->qty_unit.' · due '.(\Devlib\Locale::d($it->due_date) ?? '—')" />
                 @forelse ($it->deliveries as $d)
                     <x-dl::form.row :cols="4">
                         <x-dl::field.select :name="'deliveries['.$d->id_delivery.'][shipment_type]'" label="Type" :options="['FULL' => 'FULL', 'PARTIAL' => 'PARTIAL']" :value="$d->shipment_type" :source="Src::of('tm2sdi.co_order_delivery.shipment_type')" />
@@ -205,21 +205,21 @@
                     ['Discount', ($totals['discount_amount'] > 0 ? '− ' : '').$money($totals['discount_amount'])],
                     ['Other Costs', $money($totals['external_cost'])],
                     ['DPP', $money($totals['dpp']), 'dpp'],
-                    ['PPN '.number_format($totals['ppn_pct'], 0).'%', $money($totals['ppn'])],
+                    ['PPN '.\Devlib\Locale::number($totals['ppn_pct']).'%', $money($totals['ppn'])],
                     ['Total Billing', $money($totals['total_billing'])],
-                    $totals['wht23'] > 0 ? ['PPh 23 '.number_format($totals['wht23_pct'], 0).'% (jasa, dipotong)', '− '.$money($totals['wht23'])] : null,
+                    $totals['wht23'] > 0 ? ['PPh 23 '.\Devlib\Locale::number($totals['wht23_pct']).'% (jasa, dipotong)', '− '.$money($totals['wht23'])] : null,
                     ['Net Receivable', $money($totals['net_receivable']), 'grand'],
                 ]))">
                 <x-slot:disc>
                     <x-dl::form.row :cols="2">
-                        <x-dl::field.display label="Disc. Doc (fix dari Inquiry)" :value="$o->discount_doc_pct !== null ? number_format((float) $o->discount_doc_pct, 2).'%' : '—'" :source="Src::of('tm2sdi.co_order.discount_doc_pct')" />
+                        <x-dl::field.display label="Disc. Doc (fix dari Inquiry)" :value="$o->discount_doc_pct !== null ? \Devlib\Locale::decimal($o->discount_doc_pct, 2).'%' : '—'" :source="Src::of('tm2sdi.co_order.discount_doc_pct')" />
                         <x-dl::field.decimal name="discount_qty_pct" label="Disc. Qty" unit="%" :value="$o->discount_qty_pct !== null ? rtrim(rtrim((string) $o->discount_qty_pct, '0'), '.') : ''" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.discount_qty_pct')" />
                     </x-dl::form.row>
                 </x-slot:disc>
                 <x-slot:tax>
                     <x-dl::form.row :cols="2">
                         <x-dl::field.select name="is_ppn" label="Pajak" :options="['1' => 'PPN', '0' => 'Non PPN']" :value="$o->is_ppn ? '1' : '0'" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.is_ppn')" />
-                        <x-dl::field.display label="PPh 23 (baris jasa)" :value="number_format($totals['wht23_pct'], 0).'% · dipotong customer'" :source="Src::of('CoOrder::totals()')" />
+                        <x-dl::field.display label="PPh 23 (baris jasa)" :value="\Devlib\Locale::number($totals['wht23_pct']).'% · dipotong customer'" :source="Src::of('CoOrder::totals()')" />
                     </x-dl::form.row>
                 </x-slot:tax>
                 <x-slot:cost>

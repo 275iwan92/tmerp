@@ -2491,6 +2491,10 @@ html.dl-locked body{overflow:hidden}
 .dl-docshare__online .dl-field{width:100%}
 .dl-docshare__qr img{width:180px;height:180px;display:block}
 .dl-docshare__mailform{display:grid;gap:10px}
+.dl-docshare__lang{display:flex;align-items:center;gap:4px;padding:4px 6px 8px;margin-bottom:4px;border-bottom:1px solid var(--dl-border);font-size:.82em;color:var(--dl-muted)}
+.dl-docshare__lang>span{flex:1}
+.dl-docshare__list .dl-docshare__lang button,.dl-docshare__lang button{display:inline-block;width:auto;padding:3px 9px;border:1px solid var(--dl-border);border-radius:6px;background:var(--dl-surface);color:var(--dl-ink);font:inherit;font-weight:600;cursor:pointer}
+.dl-docshare__lang button.is-on{background:var(--dl-accent);border-color:var(--dl-accent);color:#fff}
 .dl-docshare__stage{position:absolute;left:-20000px;top:0;background:#fff;padding:18px;box-sizing:border-box}
 .dl-docshare__head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-bottom:12px;margin-bottom:12px;border-bottom:2px solid #1f2937;color:#111827}
 .dl-docshare__head b{display:block;font-size:18px}.dl-docshare__head small{color:#6b7280}

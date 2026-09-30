@@ -57,8 +57,8 @@ final class DeliveryOrder
     {
         return DB::connection('tm2sdi')->table('v_co_delivery_outstanding')->where('customer_id', $do->customer_id)->where('qty_available', '>', 0)
             ->where('co_status', 'CONFIRMED')->orderBy('co_no')->orderBy('item_description')->get()
-            ->mapWithKeys(fn ($r) => [$r->co_delivery_id => $r->co_no.' · '.$r->item_description.' · sisa '.rtrim(rtrim(number_format((float) $r->qty_available, 2, '.', ''), '0'), '.').' '.$r->qty_unit
-                .($r->ship_date ? ' · kirim '.\Illuminate\Support\Carbon::parse($r->ship_date)->format('d-M-Y') : '')])->all();
+            ->mapWithKeys(fn ($r) => [$r->co_delivery_id => $r->co_no.' · '.$r->item_description.' · sisa '.\Devlib\Locale::decimal($r->qty_available, 2).' '.$r->qty_unit
+                .($r->ship_date ? ' · kirim '.\Devlib\Locale::d(\Illuminate\Support\Carbon::parse($r->ship_date)) : '')])->all();
     }
 
     // Header + alamat (lookup wilayah) + qty/harga baris + hapus baris. Balasan = pesan error DispatchService (kosong = OK).

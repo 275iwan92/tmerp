@@ -87,9 +87,9 @@ final class ApprovalCenter
     // tidak dianggap antrian.
     private static function doc(string $module, int $id, float $amount): ?array
     {
-        $num = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, ',', '.'), '0'), ',');
-        $rp = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
-        $date = fn ($d) => $d?->format('d-M-Y') ?? '—';
+        $num = fn ($v) => \Devlib\Locale::decimal((float) $v, 2);
+        $rp = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+        $date = fn ($d) => \Devlib\Locale::d($d) ?? '—';
         $base = match ($module) {
             'PR' => (function () use ($id, $num, $rp, $date) {
                 $pr = PrRequisition::with(['lines' => fn ($q) => $q->orderBy('line_no'), 'department'])->where('status', 'SUBMITTED')->find($id);
@@ -160,7 +160,7 @@ final class ApprovalCenter
         }
         $state = self::approvalState($module, $id, $amount);
         $history = FlowLog::where('module_code', $module)->where('doc_id', $id)->orderBy('flow_log_id')->get()
-            ->map(fn ($l) => ['action' => $l->action, 'by' => $l->created_by, 'at' => $l->acted_at?->format('d-M-Y H:i'), 'note' => $l->notes, 'plt' => (bool) $l->is_acting])->all();
+            ->map(fn ($l) => ['action' => $l->action, 'by' => $l->created_by, 'at' => \Devlib\Locale::dt($l->acted_at), 'note' => $l->notes, 'plt' => (bool) $l->is_acting])->all();
         $steps = array_merge([['role' => 'Pembuat', 'by' => $state['submitted_by'], 'at' => $state['submitted_at'], 'status' => 'done', 'submitter' => true]], $state['steps']);
 
         $screen = self::MODULES[$module]['screen'];
@@ -241,7 +241,7 @@ final class ApprovalCenter
                 default => collect(self::STOCK_MODELS)->map(fn ($model) => $model::where('doc_cat', $m)->whereKey($l->doc_id)->value('doc_no'))->filter()->first(),
             };
 
-            return ['id' => $m.':'.$l->doc_id, 'no' => $no ?: $m.' #'.$l->doc_id, 'status' => $l->action, 'by' => $l->created_by ?? $login, 'at' => $l->acted_at?->format('d-M-Y H:i'),
+            return ['id' => $m.':'.$l->doc_id, 'no' => $no ?: $m.' #'.$l->doc_id, 'status' => $l->action, 'by' => $l->created_by ?? $login, 'at' => \Devlib\Locale::dt($l->acted_at),
                 'level' => $level === false ? 0 : $level + 1, 'levels' => $state['levels'], 'note' => $l->notes];
         })->all();
     }

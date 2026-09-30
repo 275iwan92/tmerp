@@ -1,7 +1,7 @@
 /* DevLib · Calendar */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, T, TZ, emit} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, T, TZ, emit, NUM} = Devlib.h;
   /* ============================ CALENDAR ============================ */
   class Calendar extends Devlib.Component {
     static selector = "[data-dl-calendar]";
@@ -9,9 +9,10 @@
       this.events = JSON.parse(this.el.dataset.events || '[]');
       this.ws = +this.el.dataset.weekStart;
       this.main = $(this.el, '[data-c-main]');
-      this.MON = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-      this.DAY = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-      this.DAYL = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      // Nama bulan/hari ikut bahasa tampilan (Intl, locale dari sys_languages); 2 Jan 2000 = Minggu.
+      this.MON = Array.from({length: 12}, (_, i) => new Date(2000, i, 1).toLocaleString(NUM.intl, {month: 'long'}));
+      this.DAY = Array.from({length: 7}, (_, i) => new Date(2000, 0, 2 + i).toLocaleString(NUM.intl, {weekday: 'short'}).replace('.', ''));
+      this.DAYL = Array.from({length: 7}, (_, i) => new Date(2000, 0, 2 + i).toLocaleString(NUM.intl, {weekday: 'long'}));
       this.TONES = ['accent', 'success', 'warn', 'danger', 'violet', 'neutral'];
       this.seq = Date.now();
       this.view = this.el.dataset.view || 'week';

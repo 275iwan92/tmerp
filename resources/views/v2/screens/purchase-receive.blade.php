@@ -60,8 +60,8 @@
         $draft = in_array($pv->status, ['DRAFT', 'QC_PENDING'], true);
         $blockers = $draft ? PvPostingService::blockers($pv) : [];
         $sup = \Illuminate\Support\Facades\DB::connection('tm2mst')->table('sup_supplier')->where('id_supplier', $pv->i_supplier_id)->first();
-        $money = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
-        $trim = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.') ?: '0';
+        $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+        $trim = fn ($v) => \Devlib\Locale::decimal($v, 2);
         $value = (float) $pv->lines->sum('c_line_value');
         $lines = $pv->lines->sortBy('line_no')->map(fn ($l) => [
             'pv_line_id' => $l->pv_line_id, 'i_description' => $l->i_description, 'po' => ($l->c_po_doc_no ?? '—').' #'.$l->c_po_line_no,
@@ -91,7 +91,7 @@
                 <x-dl::field.text name="i_supplier_do_no" label="No. Surat Jalan Supplier" :case-toggle="false" :value="$pv->i_supplier_do_no" :source="Src::of('tm2pur.pv_receipt.i_supplier_do_no')" />
                 <x-dl::field.text name="i_vehicle_no" label="No. Kendaraan" :case-toggle="false" :value="$pv->i_vehicle_no" :source="Src::of('tm2pur.pv_receipt.i_vehicle_no')" />
                 <x-dl::field.display label="PO" :value="$pv->c_po_doc_list ?: '—'" :source="Src::of('tm2pur.pv_receipt.c_po_doc_list')" />
-                <x-dl::field.display label="Diposting" :value="$pv->posted_at ? $pv->posted_at->format('d-M-Y H:i').' · '.$pv->posted_by : '—'" :source="Src::of('tm2pur.pv_receipt.posted_at')" />
+                <x-dl::field.display label="Diposting" :value="$pv->posted_at ? \Devlib\Locale::dt($pv->posted_at).' · '.$pv->posted_by : '—'" :source="Src::of('tm2pur.pv_receipt.posted_at')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:supplier>

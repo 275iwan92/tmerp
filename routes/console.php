@@ -14,3 +14,6 @@ Schedule::command('recruitment:sync-portal')->everyTwoMinutes()->withoutOverlapp
 // BACKLOG 19.2 -- usulan takaran pemakaian & waste dari data produksi nyata,
 // disegarkan tiap awal bulan (officer tetap bisa isi manual di Setting Aturan BOP).
 Schedule::command('prodev:usage-rates')->monthlyOn(1, '02:00')->withoutOverlapping();
+
+// Engine target kecepatan mesin -- belajar dari realisasi WO (usulan PENDING, PPIC yang memutuskan di Master Mesin).
+Schedule::command('production:suggest-speed-targets')->dailyAt('03:00')->withoutOverlapping();

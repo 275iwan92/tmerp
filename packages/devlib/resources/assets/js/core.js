@@ -86,7 +86,125 @@ window.Devlib = window.Devlib || {};
   /* ============================ FIELD ============================ */
   const CASES = ['none', 'capitalize', 'uppercase'], CASE_LABEL = {none: 'aa', capitalize: 'Aa', uppercase: 'AA'};
   const applyCase = (t, m) => m === 'uppercase' ? t.toUpperCase() : m === 'capitalize' ? t.replace(/\b\w/g, c => c.toUpperCase()) : t;
-  const idNum = n => Number(n).toLocaleString('id-ID');
+  // Angka ikut bahasa tampilan (LOCKED user 2026-10-01): id 1.234,56 · en 1,234.56; aturannya dari server (window.DL_NUM =
+  // Devlib\Locale::jsSpec(), sumber sys_languages + kamus). Dibekukan saat halaman dimuat: ganti bendera bahasa tanpa muat ulang
+  // TIDAK mengubah cara membaca isian yang sudah tampil. Server selalu menerima angka kanonik 1234.5 (lihat 'formdata' di bawah).
+  const NUM = Object.assign({lang: 'id', intl: 'id-ID', dec: ',', grp: '.', months: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']}, window.DL_NUM || {});
+  const MON_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  // min..max digit desimal; pemisah dari NUM (bukan Intl) supaya sama persis dengan Locale::number di PHP.
+  const numFmt = (n, min = 0, max = min) => { n = +n; if (!isFinite(n)) return ''; return n.toLocaleString('en-US', {minimumFractionDigits: min, maximumFractionDigits: Math.max(min, max)}).replace(/[,.]/g, c => c === ',' ? NUM.grp : NUM.dec); };
+  // Ketikan/tampilan -> string kanonik "1234.5" ('' = kosong/bukan angka). SAMA PERSIS dengan Devlib\Locale::parse (PHP).
+  // Titik DAN koma -> yang terakhir desimal (bebas bahasa, mis. tempelan Excel). Satu jenis -> aturan bahasa: pemisah desimal
+  // bahasa = desimal; pemisah ribuan berpola 1.234.567 = ribuan; satu pemisah lain = desimal. "12," (sedang diketik) -> "12".
+  const numStr = v => {
+    if (typeof v === 'number') return isFinite(v) ? String(v) : '';
+    let s = String(v ?? '').replace(/\s|Rp|IDR|USD|EUR|[$€¥%]/gi, '');
+    const dots = (s.match(/\./g) || []).length, commas = (s.match(/,/g) || []).length;
+    if (dots && commas) { const dec = s.lastIndexOf('.') > s.lastIndexOf(',') ? '.' : ','; s = s.split(dec === '.' ? ',' : '.').join('').replace(dec, '.'); }
+    else if (dots || commas) {
+      const ch = dots ? '.' : ',', n = dots || commas;
+      if (ch === NUM.dec) { if (n > 1) return ''; s = s.replace(ch, '.'); }
+      else if (new RegExp('^-?\\d{1,3}(\\' + ch + '\\d{3})+$').test(s)) s = s.split(ch).join('');
+      else if (n === 1) s = s.replace(ch, '.');
+      else return '';
+    }
+    if (!/^-?\d*\.?\d*$/.test(s) || !/\d/.test(s)) return '';
+    const neg = s.startsWith('-'); let [i, f = ''] = s.replace('-', '').split('.'); i = i.replace(/^0+(?=\d)/, '') || '0';
+    const out = i + (f ? '.' + f : ''); return (neg && +out ? '-' : '') + out;
+  };
+  // Nilai dari DB/server (kanonik "1234.5") dipakai apa adanya; selain itu dibaca sebagai ketikan (numStr). Sama dgn Locale::input.
+  const numIn = v => typeof v === 'number' ? numStr(v) : /^-?\d+(\.\d+)?$/.test(String(v ?? '').trim()) ? numStr(String(v).trim().replace('.', NUM.dec)) : numStr(v);
+  const idNum = n => numFmt(n, 0, 3);  // nama lama; format ikut bahasa tampilan
+
+  // TANGGAL = satu objek untuk input & tampilan (user 2026-10-01: "Object oriented adalah KEY"). Sama dengan Devlib\DateValue (PHP).
+  // Simpan/kirim: ISO yyyy-mm-dd. Tampil: SATU format dd-Mmm-yyyy, bulan 3 huruf ikut bahasa tampilan (10-Okt-2026 / 10-Oct-2026).
+  // Ketik (ala sel Excel): 10-10-2026, 10/10/26, 10.10, 10-Oct-2026, 10 okt 2026, 2026-10-10; tanpa tahun = tahun ini.
+  // Tanggal mustahil (31-02) ditolak. 'yyyy-mm-dd hh:mm' dibaca bagian tanggalnya apa adanya (tanpa geser zona waktu).
+  class DlDate {
+    constructor(y, m, d) { this.y = y; this.m = m; this.d = d; Object.freeze(this); }
+    static make(y, m, d) { const t = new Date(y, m - 1, d); return m && t.getFullYear() === y && t.getMonth() === m - 1 && t.getDate() === d ? new DlDate(y, m, d) : null; }
+    static today() { return DlDate.of(new Date()); }
+    // Nama/singkatan bulan dalam bahasa tampilan, English, atau ejaan umum Indonesia -> 1..12 (0 = tidak dikenal).
+    static month(t) {
+      const k = String(t).toLowerCase().slice(0, 3), alias = {mei: 5, agt: 8, agu: 8, okt: 10, des: 12, peb: 2};
+      const i = NUM.months.findIndex(x => x.toLowerCase().slice(0, 3) === k), j = MON_EN.findIndex(x => x.toLowerCase() === k);
+      return i >= 0 ? i + 1 : j >= 0 ? j + 1 : alias[k] || 0;
+    }
+    static of(v) {
+      if (v instanceof DlDate) return v;
+      if (v == null || v === '') return null;
+      if (v instanceof Date) { if (isNaN(v)) return null; const [y, m, d] = v.toLocaleDateString('en-CA', {timeZone: TZ()}).split('-').map(Number); return new DlDate(y, m, d); }
+      const s = String(v).trim(); let x;
+      if ((x = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ].*)?$/))) return DlDate.make(+x[1], +x[2], +x[3]);
+      if ((x = s.match(/^(\d{1,2})[\s/.-]+(\d{1,2}|[^\s\d/.,-]{3,})\.?(?:[\s/.,-]+(\d{2}|\d{4}))?$/u))) {
+        const m = /^\d+$/.test(x[2]) ? +x[2] : DlDate.month(x[2]), y = x[3] ? (x[3].length === 2 ? 2000 + +x[3] : +x[3]) : new Date().getFullYear();
+        return DlDate.make(y, m, +x[1]);
+      }
+      return null;
+    }
+    iso() { return `${this.y}-${String(this.m).padStart(2, '0')}-${String(this.d).padStart(2, '0')}`; }
+    display() { return `${String(this.d).padStart(2, '0')}-${NUM.months[this.m - 1]}-${this.y}`; }
+    toDate() { return new Date(this.y, this.m - 1, this.d); }
+    toString() { return this.display(); }
+  }
+
+  // ANGKA (desimal & integer) = satu objek untuk input & tampilan. Kembaran PHP: Devlib\NumberValue. Kanonik "1234.5" disimpan/dikirim.
+  class DlNumber {
+    constructor(c) { this.c = c; Object.freeze(this); }
+    static of(v) { if (v instanceof DlNumber) return v; const c = numIn(v); return c === '' ? null : new DlNumber(c); }     // nilai DB/server
+    static parse(v) { if (v instanceof DlNumber) return v; const c = numStr(v); return c === '' ? null : new DlNumber(c); } // ketikan manusia
+    get canonical() { return this.c; }
+    value() { return +this.c; }
+    display(d = 0) { return numFmt(+this.c, d); }                   // tepat d digit: 1.234,50
+    trimmed(max = 2) { return numFmt(+this.c, 0, max); }            // secukupnya: 12,5
+    raw() { return (this.c.includes('.') ? this.c.replace(/\.?0+$/, '') : this.c).replace('.', NUM.dec); }  // diedit: 1234,5
+    toString() { return this.c; }
+  }
+
+  // JAM = satu objek. Kembaran PHP: Devlib\TimeValue. Ketik ala Excel: 8 / 830 / 0830 / 8:30 / 08.30 -> 08:30 (24 jam).
+  class DlTime {
+    constructor(h, m, s = 0) { this.h = h; this.m = m; this.s = s; Object.freeze(this); }
+    static make(h, m, s = 0) { return h >= 0 && h <= 23 && m >= 0 && m <= 59 && s >= 0 && s <= 59 ? new DlTime(h, m, s) : null; }
+    static of(v) {
+      if (v instanceof DlTime) return v;
+      if (v == null || v === '') return null;
+      if (v instanceof Date) { if (isNaN(v)) return null; const [h, m, s] = v.toLocaleTimeString('en-GB', {timeZone: TZ(), hour12: false}).split(':').map(Number); return new DlTime(h % 24, m, s); }
+      const t = String(v).trim(); let x;
+      if ((x = t.match(/^(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?$/))) return DlTime.make(+x[1], +x[2], +(x[3] || 0));
+      if (/^\d{1,4}$/.test(t)) return t.length <= 2 ? DlTime.make(+t, 0) : DlTime.make(+t.slice(0, -2), +t.slice(-2));
+      return null;
+    }
+    iso() { const p = n => String(n).padStart(2, '0'); return `${p(this.h)}:${p(this.m)}:${p(this.s)}`; }
+    display() { return this.iso().slice(0, 5); }
+    toString() { return this.display(); }
+  }
+
+  // TANGGAL + JAM = DlDate + DlTime. Kembaran PHP: Devlib\DateTimeValue. Simpan 'yyyy-mm-dd HH:mm:ss', tampil 'dd-Mmm-yyyy HH:mm'.
+  class DlDateTime {
+    constructor(date, time) { this.date = date; this.time = time; Object.freeze(this); }
+    static now() { return DlDateTime.of(new Date()); }
+    static of(v) {
+      if (v instanceof DlDateTime) return v;
+      if (v == null || v === '') return null;
+      const s = v instanceof Date ? null : String(v).trim(); let x;
+      if (v instanceof Date || /\d{2}:\d{2}(:\d{2})?(\.\d+)?([+-]\d{2}:?\d{2}|Z)$/.test(s)) { const d = v instanceof Date ? v : new Date(s); return isNaN(d) ? null : new DlDateTime(DlDate.of(d), DlTime.of(d)); }
+      if ((x = s.match(/^(\d{4}-\d{1,2}-\d{1,2})[T ](\d{1,2}:\d{2}(?::\d{2})?)/))) { const d = DlDate.of(x[1]), t = DlTime.of(x[2]); return d && t ? new DlDateTime(d, t) : null; }
+      const d0 = DlDate.of(s); if (d0) return new DlDateTime(d0, DlTime.make(0, 0));  // tanggal saja dulu: "10 okt 2026" bukan jam 20:26
+      if ((x = s.match(/^(.*?\S)[\sT]+(\d{1,2}(?:[:.]\d{2}){0,2}|\d{3,4})$/))) { const d = DlDate.of(x[1]), t = DlTime.of(x[2]); if (d && t) return new DlDateTime(d, t); }
+      return null;
+    }
+    iso() { return this.date.iso() + ' ' + this.time.iso(); }
+    display() { return this.date.display() + ' ' + this.time.display(); }
+    toString() { return this.display(); }
+  }
+
+  // TEKS = satu objek. Kembaran PHP: Devlib\TextValue. Mode huruf aa / Aa / AA (badge di isian teks); input dirapikan.
+  class DlText {
+    constructor(v) { this.value = v; Object.freeze(this); }
+    static of(v, mode = 'none') { return new DlText(applyCase(String(v ?? '').trim().replace(/\s+/g, ' '), mode)); }
+    display(empty = '—') { return this.value === '' ? empty : this.value; }
+    toString() { return this.value; }
+  }
 
   // Panel dropdown/popover milik field: buka/tutup; klik di luar menutup semua.
   function bindPanel(root, onOpen) {
@@ -308,6 +426,17 @@ window.Devlib = window.Devlib || {};
     $$(document, '[data-dl-t]').forEach(el => { el.textContent = T(el.dataset.dlT); });
   });
 
+  // Isian angka [data-dl-num] tampil sesuai bahasa (1.234,5 / 1,234.5) tetapi DIKIRIM ke server sebagai kanonik 1234.5
+  // (submit biasa maupun new FormData(form)) -- server tidak pernah menebak bahasa. Kosong/bukan angka dikirim apa adanya.
+  document.addEventListener('formdata', e => {
+    const f = e.target, fd = e.formData; if (!f || !f.elements) return;
+    const names = new Set(Array.from(f.elements).filter(x => x.name && !x.disabled && x.matches('[data-dl-num]')).map(x => x.name));
+    names.forEach(n => {
+      const vals = fd.getAll(n); fd.delete(n);
+      vals.forEach(v => { const c = typeof v === 'string' ? numStr(v) : ''; fd.append(n, c === '' ? v : c); });
+    });
+  });
+
   // Dirty-guard: form (atau wadah isian non-form, mis. form JS) ber-atribut data-dl-guard yang sudah diubah -> tanya sebelum ditinggal.
   // Hanya isian bernama yang dihitung (kotak cari dropdown/grid tidak membuat form "berubah").
   const dirtyForms = new Set();
@@ -384,19 +513,21 @@ window.Devlib = window.Devlib || {};
   // Format lokal baku di browser (sama dengan Devlib\Locale di PHP): zona waktu sistem, Rupiah, angka.
   const TZ = () => document.documentElement.dataset.dlTz || 'Asia/Jakarta';
   const fmt = {
-    number: (n, d = 0) => Number(n).toLocaleString('id-ID', {minimumFractionDigits: d, maximumFractionDigits: d}),
+    number: (n, d = 0) => numFmt(n, d),
+    // desimal secukupnya (maks max): 12,5 / 1.250
+    num: (n, max = 2) => numFmt(n, 0, max),
+    // isian yang sedang diedit (ala sel Excel): tanpa ribuan, desimal ikut bahasa -- 1234,5
+    raw: v => DlNumber.of(v)?.raw() ?? '',
     money: (n, cur = 'IDR', d = 0) => ({IDR: 'Rp', USD: '$', EUR: '€', JPY: '¥'}[cur] || cur) + ' ' + fmt.number(n, d),
     // Tanggal di grid (user 2026-09-30): selalu dd-Mmm-yyyy, mis. 10-Oct-2026. 'YYYY-MM-DD...' dibaca apa adanya (tanpa geser zona waktu).
     gridDate: v => {
       if (!v) return '';
-      const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], iso = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);
-      if (iso) return `${iso[3]}-${M[+iso[2] - 1]}-${iso[1]}`;
-      const d = new Date(v); if (isNaN(d)) return String(v);
-      return `${String(d.getDate()).padStart(2, '0')}-${M[d.getMonth()]}-${d.getFullYear()}`;
+      const d = DlDate.of(v) || (isNaN(new Date(v)) ? null : DlDate.of(new Date(v)));
+      return d ? d.display() : String(v);
     },
     // short = dd-Mmm-yyyy (baku seluruh aplikasi, sama dgn gridDate) menurut zona waktu aplikasi.
-    date: (v = new Date(), style = 'short') => style === 'short' ? fmt.gridDate(new Date(v).toLocaleDateString('en-CA', {timeZone: TZ()})) : new Date(v).toLocaleDateString('id-ID', style === 'long' ? {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ()} : {day: '2-digit', month: '2-digit', year: 'numeric', timeZone: TZ()}),
-    time: (v = new Date()) => new Date(v).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ()}) + ' WIB',
+    date: (v = new Date(), style = 'short') => style === 'short' ? fmt.gridDate(v instanceof Date || /[T ]\d{2}:\d{2}.*[+-]\d{2}:?\d{2}$|Z$/.test(String(v)) ? new Date(v) : v) : new Date(v).toLocaleDateString(NUM.intl, style === 'long' ? {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ()} : {day: '2-digit', month: '2-digit', year: 'numeric', timeZone: TZ()}),
+    time: (v = new Date()) => (DlTime.of(v instanceof Date ? v : new Date(v))?.display() ?? '') + ' WIB',
   };
 
 
@@ -465,7 +596,7 @@ window.Devlib = window.Devlib || {};
     const lk = el.closest('[data-dl-lookup]');
     if (lk) { const r = JSON.parse(lk.dataset.rows || '[]').find(x => String(x[lk.dataset.key]) === s); $(lk, '[data-dl-dd-text]').textContent = r ? r[lk.dataset.label] : 'Pilih...'; return; }
     const dt = el.closest('[data-dl-date]');
-    if (dt) { $(dt, '[data-dl-date-text]').value = s ? fmt.date(s.slice(0, 10) + 'T12:00:00+07:00') : ''; return; }
+    if (dt) { $(dt, '[data-dl-date-text]').value = DlDate.of(s)?.display() ?? ''; return; }
     const pb = el.closest('[data-dl-phonebox]');
     if (pb) { const i = $(pb, '[data-dl-phone]'); i.value = s; i.dispatchEvent(new Event('input', {bubbles: true})); return; }
     el.dispatchEvent(new Event('input', {bubbles: true}));
@@ -553,14 +684,10 @@ window.Devlib = window.Devlib || {};
   }
   const csvCell = v => /[",;\n\t]/.test(String(v ?? '')) ? `"${String(v).replace(/"/g, '""')}"` : String(v ?? '');
   const downloadCsv = (name, lines) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.map(r => r.map(csvCell).join(';')).join('\r\n')], {type: 'text/csv'})); a.download = name; a.click(); };
-  // Angka gaya Indonesia (1.234,5) maupun biasa (1234.5).
-  const parseNum = v => { let s = String(v).trim().replace(/\s|Rp/gi, ''); if (s === '') return NaN; if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, ''); return /^-?\d+(\.\d+)?$/.test(s) ? +s : NaN; };
-  const parseDate = v => {
-    const s = String(v).trim(); let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/), y, mo, d;
-    if (m) [, y, mo, d] = m.map(Number); else if ((m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/))) [, d, mo, y] = m.map(Number); else return null;
-    const t = new Date(y, mo - 1, d);  // tanggal mustahil (31-13, 30 Feb) ditolak
-    return t.getFullYear() === y && t.getMonth() === mo - 1 && t.getDate() === d ? `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}` : null;
-  };
+  // Angka ketikan dalam bahasa tampilan -> Number (NaN bila bukan angka).
+  const parseNum = v => { const c = numStr(v); return c === '' ? NaN : +c; };
+  // Ketikan tanggal -> ISO yyyy-mm-dd (null = tidak sah). Lewat objek DlDate.
+  const parseDate = v => DlDate.of(v)?.iso() ?? null;
 
 
 
@@ -575,8 +702,9 @@ window.Devlib = window.Devlib || {};
   const CH_TONES = ['accent', 'success', 'warn', 'danger', 'violet', 'info', 'neutral', 'teal'];
   const chNum = (v, f) => {
     if (v == null || isNaN(v)) return '–';
-    const a = Math.abs(v), s = a >= 1e12 ? [1e12, ' T'] : a >= 1e9 ? [1e9, ' M'] : a >= 1e6 ? [1e6, ' jt'] : a >= 1e4 ? [1e3, ' rb'] : [1, ''];
-    const n = (v / s[0]).toLocaleString('id-ID', {maximumFractionDigits: s[0] > 1 ? 1 : 2}) + s[1];
+    const U = NUM.lang === 'id' ? [' T', ' M', ' jt', ' rb'] : ['T', 'B', 'M', 'K'];
+    const a = Math.abs(v), s = a >= 1e12 ? [1e12, U[0]] : a >= 1e9 ? [1e9, U[1]] : a >= 1e6 ? [1e6, U[2]] : a >= 1e4 ? [1e3, U[3]] : [1, ''];
+    const n = numFmt(v / s[0], 0, s[0] > 1 ? 1 : 2) + s[1];
     return f === 'money' ? 'Rp ' + n : f === 'percent' ? n + '%' : n;
   };
   const niceMax = m => { if (m <= 0) return 1; const p = 10 ** Math.floor(Math.log10(m)), f = m / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; };
@@ -635,6 +763,6 @@ window.Devlib = window.Devlib || {};
 
   // Asal data kolom (grid/lines): {src: 'tm2sdi.iqp_inquiry.qty'} -> tooltip Mode Developer di header kolom.
   const srcAttr = (c, kind = 'kolom') => c && c.src ? ` data-dl="${kind} ${esc(c.label || c.key)}" data-dl-class="kolom" data-dl-src="${esc(c.src)}"` : '';
-  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
+  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, numStr, numIn, numFmt, NUM, MON_EN, DlDate, DlNumber, DlTime, DlDateTime, DlText, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
   Object.assign(Devlib, {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words}, {initDevMode});
 })();

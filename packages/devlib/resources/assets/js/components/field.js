@@ -1,7 +1,7 @@
 /* DevLib · Field */
 (function (Devlib) {
   'use strict';
-  const {$, $$, CASES, CASE_LABEL, applyCase, bindPanel, T, words, fmt} = Devlib.h;
+  const {$, $$, CASES, CASE_LABEL, applyCase, bindPanel, T, words, fmt, NUM, parseNum, DlDate, DlTime, DlDateTime} = Devlib.h;
 
   class Field extends Devlib.Component {
     static selector = ".dl-field";
@@ -85,7 +85,7 @@
           // Nilai mentah dari DB (1250000.00) dibulatkan dulu -- bukan dibuang titiknya (dulu jadi 125000000).
           if (/^-?\d+\.\d{1,2}$/.test(mi.value.trim())) mi.value = String(Math.round(+mi.value.trim()));
           const raw = mi.value.replace(/\D/g, '');
-          mi.value = raw ? BigInt(raw).toLocaleString('id-ID') : '';
+          mi.value = raw ? BigInt(raw).toLocaleString('en-US').replace(/,/g, NUM.grp) : '';
           // Terbilang mengikuti mata uang yang dipilih (Rp -> rupiah, USD -> dolar, ...).
           if (wt) { const C = JSON.parse(wt.dataset.currencies), code = $(this.pre, '[data-dl-prefix-value]').value; wt.textContent = raw ? words(raw, C[code] || null) : ''; }
         };
@@ -100,8 +100,13 @@
       this.dec = $(this.el, '[data-dl-decimal]');
       if (this.dec) {
         const n = +this.dec.dataset.dlDecimal;
-        this.dec.addEventListener('input', () => { this.dec.value = this.dec.value.replace(/[^0-9.,]/g, '').replace(',', '.'); });
-        this.dec.addEventListener('blur', () => { if (this.dec.value !== '' && !isNaN(parseFloat(this.dec.value))) this.dec.value = parseFloat(this.dec.value).toFixed(n); });
+        // Ala sel Excel (user 2026-09-30): fokus = nilai mentah (1234,5), ketik bebas, keluar = diformat bahasa tampilan (1.234,50).
+        // Dikirim ke server sebagai kanonik oleh core ('formdata', data-dl-num).
+        const out = () => { const v = parseNum(this.dec.value); if (this.dec.value.trim() !== '' && !isNaN(v)) this.dec.value = fmt.number(v, n); };
+        this.dec.addEventListener('focus', () => { if (!this.dec.readOnly) { this.dec.value = fmt.raw(this.dec.value); this.dec.select(); } });
+        this.dec.addEventListener('input', () => { this.dec.value = this.dec.value.replace(/[^0-9.,-]/g, ''); });
+        this.dec.addEventListener('blur', out);
+        out();
       }
 
       this.num = $(this.el, '[data-dl-number]');
@@ -116,10 +121,15 @@
       this.dt = $(this.el, '[data-dl-date]');
       if (this.dt) {
         const hidden = $(this.dt, '[data-dl-value]'), text = $(this.dt, '[data-dl-date-text]'), days = $(this.dt, '[data-dl-cal-days]'), title = $(this.dt, '[data-dl-cal-title]');
-        const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const MON = NUM.months;
         let view = hidden.value ? new Date(hidden.value) : new Date();
         const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const setVal = (d, quiet) => { hidden.value = d ? iso(d) : ''; text.value = d ? fmt.gridDate(iso(d)) : ''; if (!quiet) hidden.dispatchEvent(new Event('change', {bubbles: true})); };
+        const setVal = (d, quiet) => { const v = DlDate.of(d); hidden.value = v ? v.iso() : ''; text.value = v ? v.display() : ''; this.el.classList.remove('is-invalid'); if (!quiet) hidden.dispatchEvent(new Event('change', {bubbles: true})); };
+        // Boleh diketik (objek DlDate): 10-10-26 / 10 okt / 2026-10-10 -> tampil 10-Okt-2026, kirim ISO. Tidak sah -> ditandai, nilai lama tetap.
+        const typed = () => { const s = text.value.trim(), v = DlDate.of(s); if (!s) setVal(null); else if (v) { if (v.iso() !== hidden.value) setVal(v); else text.value = v.display(); } else this.el.classList.add('is-invalid'); };
+        text.addEventListener('change', typed);
+        text.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); typed(); } });
+        const dn = $(this.dt, '.dl-cal--names'); if (dn) dn.innerHTML = Array.from({length: 7}, (_, i) => `<div>${new Date(2000, 0, 2 + i).toLocaleString(NUM.intl, {weekday: 'short'}).replace('.', '').slice(0, 2)}</div>`).join('');
         const draw = () => {
           title.textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
           const first = new Date(view.getFullYear(), view.getMonth(), 1).getDay(), total = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
@@ -128,27 +138,26 @@
           days.innerHTML = h;
         };
         const p = bindPanel(this.dt, draw);
-        days.addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (b) { setVal(new Date(b.dataset.d)); p.close(); } });
+        days.addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (b) { setVal(b.dataset.d); p.close(); } });
         $(this.dt, '[data-dl-cal-prev]').addEventListener('click', () => { view.setMonth(view.getMonth() - 1); draw(); });
         $(this.dt, '[data-dl-cal-next]').addEventListener('click', () => { view.setMonth(view.getMonth() + 1); draw(); });
         $(this.dt, '[data-dl-cal-clear]').addEventListener('click', () => { setVal(null); p.close(); });
         $(this.dt, '[data-dl-cal-today]').addEventListener('click', () => { setVal(new Date()); p.close(); });
-        text.addEventListener('click', () => $(this.dt, '[data-dl-dd-toggle]').click());
-        if (hidden.value) setVal(new Date(hidden.value), true);
+        if (hidden.value) setVal(hidden.value, true);
       }
 
       this.dtt = $(this.el, '[data-dl-datetime]');
       if (this.dtt) {
         const hidden = $(this.dtt, '[data-dl-value]'), text = $(this.dtt, '[data-dl-date-text]'), days = $(this.dtt, '[data-dl-cal-days]'), title = $(this.dtt, '[data-dl-cal-title]');
         const hh = $(this.dtt, '[data-dl-time-h]'), mm = $(this.dtt, '[data-dl-time-m]'), prev = $(this.dtt, '[data-dl-dt-preview]'), tz = this.dtt.dataset.tzLabel || 'WIB';
-        const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const MON = NUM.months;
         const pad = n => String(n).padStart(2, '0');
         let [d0, t0] = (hidden.value || '').split(/[ T]/);
         let sel = d0 ? d0 : null;
         let view = sel ? new Date(sel) : new Date();
         if (t0) { hh.value = t0.slice(0, 2); const m = Math.round(+t0.slice(3, 5) / +mm.options[1].value) * +mm.options[1].value; mm.value = pad(m % 60); }
         const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-        const label = (ds, h, m) => `${fmt.gridDate(ds)} ${h}:${m} ${tz}`;
+        const label = (ds, h, m) => `${DlDateTime.of(`${ds} ${h}:${m}`)?.display() ?? ''} ${tz}`;  // objek tanggal+jam DevLib
         const preview = () => { prev.textContent = 'Selected: ' + (sel ? label(sel, hh.value, mm.value) : '-'); };
         const draw = () => {
           title.textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
@@ -179,6 +188,8 @@
         $(this.tm, '[data-dl-time-apply]').addEventListener('click', () => { text.value = `${h.value}:${m.value}`; p.close(); });
         $(this.tm, '[data-dl-time-clear]').addEventListener('click', () => { text.value = ''; p.close(); });
         text.addEventListener('input', () => { const r = text.value.replace(/\D/g, '').slice(0, 4); text.value = r.length > 2 ? r.slice(0, 2) + ':' + r.slice(2) : r; });
+        // Keluar isian: dirapikan objek jam DevLib (8 -> 08:00, 830 -> 08:30); tidak sah -> ditandai.
+        text.addEventListener('change', () => { const t = DlTime.of(text.value.replace(':', '')) || DlTime.of(text.value); if (t) text.value = t.display(); this.el.classList.toggle('is-invalid', !!text.value && !t); });
       }
     }
   }

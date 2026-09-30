@@ -62,12 +62,12 @@ trait FlowDocument
             $p = $positions[$s->position_id] ?? ['name' => $s->label, 'holder' => '', 'plt' => ''];
 
             return ['role' => $p['name'].($p['plt'] ? ' — PLT '.$p['plt'] : ($p['holder'] ? ' — '.$p['holder'] : '')),
-                'by' => $done?->created_by, 'at' => $done?->acted_at?->format('d-M-Y H:i'), 'plt' => (bool) $done?->is_acting,
+                'by' => $done?->created_by, 'at' => \Devlib\Locale::dt($done?->acted_at), 'plt' => (bool) $done?->is_acting,
                 'status' => $done ? ($done->action === 'APPROVED' ? 'done' : 'rejected') : ($pending ? 'current' : 'pending')];
         })->all();
 
         return ['levels' => count($steps), 'at' => $at, 'held' => $last?->action === 'HOLD', 'steps' => $steps,
-            'submitted_by' => $submit?->created_by, 'submitted_at' => $submit?->acted_at?->format('d-M-Y H:i')];
+            'submitted_by' => $submit?->created_by, 'submitted_at' => \Devlib\Locale::dt($submit?->acted_at)];
     }
 
     private static function str(mixed $v): string
@@ -75,12 +75,10 @@ trait FlowDocument
         return $v instanceof \DateTimeInterface ? $v->format('Y-m-d') : trim((string) $v);
     }
 
+    // Kiriman form DevLib = angka kanonik (1234.5); ketikan manusia dibaca sesuai bahasa tampilan (Devlib\Locale::input).
     private static function num(mixed $v): string
     {
-        $v = trim((string) $v);
-        $v = str_contains($v, ',') ? str_replace(['.', ','], ['', '.'], $v) : (substr_count($v, '.') > 1 ? str_replace('.', '', $v) : $v);
-
-        return $v === '' ? '0' : $v;
+        return \Devlib\Locale::input($v) ?? '0';
     }
 
     private static function changed(string $v, mixed $cur): bool
