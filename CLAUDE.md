@@ -245,6 +245,10 @@ Filament `/admin`** (label native Filament seperti Save/Create/Edit/Delete
 di-override ikut standar ini, bukan dibiarkan default bawaan framework).
 **Satu-satunya pengecualian yang SAH**: user secara eksplisit minta layout/
 label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
+- **UPDATE user 2026-09-30 (form dokumen v2 / DevLib `x-dl::form panel="top"`): istilah SELALU English**,
+  tidak ikut bahasa — tombol **New, Save, Undo, Delete, Confirm, Cancel, Duplicate, Back to Draft, Back**;
+  status **Draft, Confirmed, Cancelled, Closed**. Undo = buang perubahan belum di-Save; Cancel = batalkan
+  dokumen Confirmed. Aturan ID/EN di bawah ini hanya untuk layar lama yang belum pindah.
 - Kata baku per aksi, ikut `lang_code` user ([[project_i18n_shell_framework]]):
   ID → Simpan/Batal/Tutup, EN → Save/Cancel/Close.
 - **Back** terkecuali dari toggle bahasa — **selalu "Back"** (Inggris) di
