@@ -57,7 +57,7 @@ Pola: `app/Support/V2/Grid/DbGrid.php` + satu class per layar + daftar di `Grids
 dibuang di server lewat `restrictedKeys()` + `SecUser::canViewSalesPrice()`.
 - **Grid Lookup** (edit di sel, `x-dl::lookup-grid`, butuh sambungan simpan DB): UoM, Currency, Kurs, Hari Libur, Kategori Supplier.
 - **BOP Rule** (belum punya model Eloquent).
-- **Recruitment**: Permohonan Tenaga Kerja, Lowongan, Talent Pool, Review Formulir, Jadwal Interview, Hasil Psikotes, Offering, Provisioning, Rekap Sync Log.
+- **Recruitment**: Talent Pool (daftar kandidat + undang ke lowongan, tetap v1). Sisanya SELESAI 2026-10-02 (LOG).
 - **Inventory**: Report Stock Balance/Stock Card/Slow Moving/Label History (menu sudah di submenu Report, layar belum). Stock In/Out/Return/Adjustment SELESAI 2026-10-02 (LOG).
 - **Procurement**: Purchase Return (grid v1). Outstanding PR/PO/PV SELESAI 2026-10-02 (Purchase Quotation sudah layar v2).
 - **Finance**: Cash & Bank, Down Payment, Journal, GL, Trial Balance, dst.

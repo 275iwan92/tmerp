@@ -11,6 +11,7 @@ use App\Services\Migration\EmployeeLoginProvisionService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // L9 -- docs/recruitment_tier4.md SECTION 14 & Tier2 SECTION 7 (hire trigger).
@@ -22,6 +23,13 @@ use Livewire\Component;
 // CLAUDE.md §4), bukan ditebak sistem.
 new #[Title('Provisioning ke ERP — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->openProvision($id);
+    }
+
     public ?int $provisioningId = null;
 
     public ?int $position_id = null;

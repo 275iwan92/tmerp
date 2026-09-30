@@ -3,6 +3,14 @@
 
 ---
 
+## 2026-10-02 -- Run malam: grid v2 Recruitment (UI-20)
+
+- `App\Support\V2\Grid\Rcr\*`: Manpower Requisition (buka = entry v1), Job Vacancy (New = form v1), Candidate Form Review
+  (buka = detail v1), Interview Schedule (?open memilih jadwal di v1), Assessment Result, Offering (baris = lamaran, buka =
+  offer entry v1; nilai gaji tidak ditampilkan di grid), Hire Provisioning (?open membuka panel provisioning v1), Portal Sync Log (report).
+- Pipeline Board & Portal Candidate tetap layar v1 (kanban / portal publik).
+- Menu ddtsys: migration `2026_10_02_000003` (ddt saja). Probe: semua layar + 130 form = 200.
+
 ## 2026-10-02 -- Run malam: grid v2 Work Order, Rule Library, Outstanding PR/PO/PV (UI-20)
 
 - `Prod\WorkOrderGrid` (buka = WO Detail v1, New = Generate dari Plan Delivery v1), `Prod\RuleLibraryGrid` (form modal v1 lewat ?open/?new).

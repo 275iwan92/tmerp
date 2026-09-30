@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // L5 -- docs/recruitment_tier4.md SECTION 10, REVISI 2026-08-29 (instruksi
@@ -18,6 +19,13 @@ use Livewire\Component;
 // production/monitoring-dashboard.blade.php.
 new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->selectSchedule($id);
+    }
+
     public string $viewMode = 'month'; // day|month|3month|year
 
     public string $focusDate;

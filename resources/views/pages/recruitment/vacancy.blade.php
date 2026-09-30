@@ -5,6 +5,7 @@ use App\Models\Hrr\RcrRequisition;
 use App\Models\Hrr\VacVacancy;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -14,6 +15,7 @@ use Livewire\WithPagination;
 // Tutup Lowongan = aksi terpisah sesudahnya.
 new #[Title('Posting Lowongan — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
     use WithPagination;
     use HasGridPagination;
 
