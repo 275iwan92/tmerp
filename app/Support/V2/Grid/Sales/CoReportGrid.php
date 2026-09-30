@@ -3,21 +3,26 @@
 namespace App\Support\V2\Grid\Sales;
 
 use App\Models\Master\CustCustomer;
+use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\SalesPerson;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sdi\CoOrderItem;
 use App\Models\Sdi\DoLine;
+use App\Models\Sdi\IqpInquiry;
+use App\Models\Sdi\IqpPart;
 use App\Support\V2\Grid\DbGrid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection as BaseCollection;
 
 // Laporan Customer Order (pengganti menu v1 "Cust.Order Reports", ScriptCase: sdi_co + sdi_co_detail).
 // Satu baris = satu item CO. Turunan cukup memilih cakupan (scope), kolom, dan grup.
-// Kolom v1 yang BELUM ada padanannya di tabel v2 (shipment_method, cfg_color, order_type, qty_minim) sengaja tidak
-// ditampilkan — menunggu keputusan skema, tidak dikarang.
+// Order Type & Cfg Color v1 diturunkan dari data v2 (bukan kolom baru): jenis inquiry item CO (atau inquiry asal
+// Master Product untuk CO INSTANT) & cfg_color part-nya. Kolom v1 yang BELUM ada padanannya (shipment_method, qty_minim)
+// sengaja tidak ditampilkan — menunggu keputusan skema, tidak dikarang.
 abstract class CoReportGrid extends DbGrid
 {
     public const STATUS_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'info', 'CONFIRMED' => 'success', 'CLOSED' => 'accent', 'CANCELLED' => 'danger'];
@@ -25,6 +30,13 @@ abstract class CoReportGrid extends DbGrid
     protected array $planned = [];
 
     protected array $shipped = [];
+
+    // Kode v1 (user 2026-09-30): RTP = Repeat Tanpa Perubahan (= REKALKULASI), RDP = Repeat Dengan Perubahan (= REVISI).
+    public const ORDER_TYPES = ['NEW' => 'NEW', 'RECALC' => 'RTP', 'REVISE' => 'RDP'];
+
+    protected array $orderType = [];
+
+    protected array $cfgColor = [];
 
     public function module(): string
     {
@@ -71,7 +83,8 @@ abstract class CoReportGrid extends DbGrid
 
     protected function models(): array
     {
-        return [CoOrder::class, CoOrderItem::class, CustCustomer::class, SalesPerson::class, ProdProduct::class, CoOrderDelivery::class, DoLine::class];
+        return [CoOrder::class, CoOrderItem::class, CustCustomer::class, SalesPerson::class, ProdProduct::class, CoOrderDelivery::class, DoLine::class,
+            IqpInquiry::class, IqpPart::class, ProdPart::class];
     }
 
     // Cakupan baris per laporan (dipanggil pada query item CO).
@@ -95,6 +108,23 @@ abstract class CoReportGrid extends DbGrid
         $this->shipped = DoLine::query()->whereIn('co_order_item_id', $ids)
             ->whereHas('delivery', fn ($q) => $q->where('status', 'SHIPPED'))->groupBy('co_order_item_id')
             ->selectRaw('co_order_item_id, SUM(qty_do) q')->pluck('q', 'co_order_item_id')->all();
+        $this->loadSpec($items->map(fn ($m) => $m instanceof CoOrderItem ? $m : $m->item)->filter());
+    }
+
+    // Order Type & Cfg Color per item CO: 3 query ringkas (inquiry, part inquiry, part master), dicocokkan di PHP.
+    protected function loadSpec(BaseCollection $items): void
+    {
+        $inq = $items->mapWithKeys(fn (CoOrderItem $i) => [$i->getKey() => $i->inquiry_id ?: $i->product?->source_inquiry_id]);
+        $types = IqpInquiry::query()->whereIn('id_inquiry', $inq->filter()->unique())->pluck('inquiry_type', 'id_inquiry');
+        $colorsByInq = IqpPart::query()->whereIn('inquiry_id', $inq->filter()->unique())->whereNotNull('cfg_color')->where('cfg_color', '<>', '')
+            ->orderBy('part_seq')->get(['inquiry_id', 'cfg_color'])->groupBy('inquiry_id')->map(fn ($p) => $p->pluck('cfg_color')->unique()->implode(', '));
+        $colorsByProduct = ProdPart::query()->whereIn('product_id', $items->pluck('product_id')->filter()->unique())->whereNotNull('cfg_color')
+            ->where('cfg_color', '<>', '')->get(['product_id', 'cfg_color'])->groupBy('product_id')->map(fn ($p) => $p->pluck('cfg_color')->unique()->implode(', '));
+        foreach ($items as $i) {
+            $q = $inq[$i->getKey()];
+            $this->orderType[$i->getKey()] = self::ORDER_TYPES[$types[$q] ?? ''] ?? null;
+            $this->cfgColor[$i->getKey()] = ($q ? ($colorsByInq[$q] ?? null) : null) ?? ($colorsByProduct[$i->product_id] ?? null);
+        }
     }
 
     protected function status(CoOrder $o): string
@@ -115,6 +145,7 @@ abstract class CoReportGrid extends DbGrid
             'confirm' => $o && $o->doc_status === 'CONFIRMED' ? 'Yes' : 'No', 'status' => $o ? $this->status($o) : null,
             'mode' => $o?->entry_mode, 'note' => $o?->notes, 'sales' => $o?->salesPerson?->sales_name,
             'product' => $i->product ? trim($i->product->product_name.($i->product->design_no ? ' ('.$i->product->design_no.')' : '')) : $i->description,
+            'order_type' => $this->orderType[$i->getKey()] ?? null, 'cfg_color' => $this->cfgColor[$i->getKey()] ?? null,
             'qty' => (float) $i->qty, 'unit' => $i->qty_unit, 'qty_min' => $i->qty_min !== null ? (float) $i->qty_min : null,
             'qty_max' => $i->qty_max !== null ? (float) $i->qty_max : null, 'due' => $i->due_date ? substr((string) $i->due_date, 0, 10) : null,
             'currency' => $o?->currency_code, 'price' => (float) $i->unit_price, 'disc' => (float) $i->discount_pct, 'subtotal' => (float) $i->subtotal,
@@ -144,6 +175,8 @@ abstract class CoReportGrid extends DbGrid
             ['key' => 'product', 'label' => 'Product'],
             ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'sum' => true],
             ['key' => 'unit', 'label' => 'Satuan'],
+            ['key' => 'order_type', 'label' => 'Order Type', 'type' => 'badge', 'tones' => ['NEW' => 'info', 'RTP' => 'success', 'RDP' => 'warn']],
+            ['key' => 'cfg_color', 'label' => 'Cfg Color'],
             ['key' => 'qty_min', 'label' => 'Qty Limit Min', 'type' => 'number'],
             ['key' => 'qty_max', 'label' => 'Qty Limit Max', 'type' => 'number'],
             ['key' => 'due', 'label' => 'Due Date', 'type' => 'date'],
@@ -157,11 +190,11 @@ abstract class CoReportGrid extends DbGrid
 
     public function filters(): array
     {
-        return ['customer' => 'Customer', 'sales' => 'Sales By', 'confirm' => 'Confirm', 'status' => 'Status', 'month' => 'Bulan'];
+        return ['customer' => 'Customer', 'sales' => 'Sales By', 'order_type' => 'Order Type', 'confirm' => 'Confirm', 'status' => 'Status', 'month' => 'Bulan'];
     }
 
     public function groups(): array
     {
-        return ['customer' => 'Customer', 'status' => 'Status', 'sales' => 'Sales By', 'month' => 'Bulan', 'co' => 'No CO'];
+        return ['customer' => 'Customer', 'status' => 'Status', 'order_type' => 'Order Type', 'sales' => 'Sales By', 'month' => 'Bulan', 'co' => 'No CO'];
     }
 }

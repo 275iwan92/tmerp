@@ -31,7 +31,7 @@ class CoSummaryReport extends CoReportGrid
 
     protected function query(): Builder
     {
-        return CoOrder::query()->with(['customer', 'salesPerson', 'items'])->orderByDesc('co_date')->orderByDesc('id_order');
+        return CoOrder::query()->with(['customer', 'salesPerson', 'items.product'])->orderByDesc('co_date')->orderByDesc('id_order');
     }
 
     protected function prefetch(Collection $items): void
@@ -41,6 +41,7 @@ class CoSummaryReport extends CoReportGrid
             ->selectRaw('co_order_id, SUM(qty_do) q')->pluck('q', 'co_order_id')->all();
         $this->planned = CoOrderDelivery::query()->whereIn('order_id', $items->modelKeys())->groupBy('order_id')
             ->selectRaw('order_id, SUM(ship_qty) q')->pluck('q', 'order_id')->all();
+        $this->loadSpec($items->flatMap->items);
     }
 
     protected function row(Model $m): array
@@ -54,6 +55,7 @@ class CoSummaryReport extends CoReportGrid
             'month' => $m->co_date ? substr((string) $m->co_date, 0, 7) : null, 'customer' => $m->customer?->customer_name,
             'po' => $m->customer_po_no, 'confirm' => $m->doc_status === 'CONFIRMED' ? 'Yes' : 'No', 'status' => $status,
             'sales' => $m->salesPerson?->sales_name, 'mode' => $m->entry_mode, 'currency' => $m->currency_code, 'note' => $m->notes,
+            'order_type' => $m->items->map(fn ($i) => $this->orderType[$i->getKey()] ?? null)->filter()->unique()->implode(', ') ?: null,
             'items' => $m->items->count(), 'qty' => $qty, 'value' => (float) $m->items->sum('subtotal'),
             'planned' => (float) ($this->planned[$m->getKey()] ?? 0), 'shipped' => $shipped, 'remain' => max(0, $qty - $shipped),
             'progress' => $qty > 0 ? (int) round(min($shipped, $qty) / $qty * 100) : 0,
@@ -74,6 +76,7 @@ class CoSummaryReport extends CoReportGrid
             ['key' => 'po', 'label' => 'No PO Customer'],
             ['key' => 'sales', 'label' => 'Sales By'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::STATUS_TONES],
+            ['key' => 'order_type', 'label' => 'Order Type'] + $hidden,
             ['key' => 'items', 'label' => 'Item', 'type' => 'number'],
             ['key' => 'qty', 'label' => 'Total Qty', 'type' => 'number', 'sum' => true],
             ['key' => 'value', 'label' => 'Nilai Order', 'type' => 'money', 'sum' => true],

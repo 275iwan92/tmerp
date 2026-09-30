@@ -44,6 +44,8 @@ class CoShipDetailReport extends CoReportGrid
             ['key' => 'customer', 'label' => 'Customer'],
             ['key' => 'po', 'label' => 'No PO Customer'],
             ['key' => 'product', 'label' => 'Product'],
+            ['key' => 'order_type', 'label' => 'Order Type', 'type' => 'badge', 'tones' => ['NEW' => 'info', 'RTP' => 'success', 'RDP' => 'warn'], 'visible' => false],
+            ['key' => 'cfg_color', 'label' => 'Cfg Color', 'visible' => false],
             ['key' => 'qty', 'label' => 'Qty Order', 'type' => 'number'],
             ['key' => 'unit', 'label' => 'Satuan'],
             ['key' => 'ship_date', 'label' => 'Tgl Kirim', 'type' => 'date'],
