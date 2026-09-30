@@ -187,19 +187,14 @@ Master Data (grid saja). **Mekanisme i18n solid & production-ready** untuk
 cakupan yang sudah diterjemahkan -- yang belum "ready" murni soal cakupan
 konten, bukan mekanisme bocor.
 
-### Sisa yang BELUM (urut prioritas dari rekomendasi asli)
-- `date-picker`/`select`/`spreadsheet-table` (komponen shared, Malam 1) --
-  belum ditarik penuh, sisa dari 7-malam.
-- **Form lengkap Master Data** (Customer/Supplier/Produk/Employee) -- baru
-  grid yang tertarik, field detail per-master masih hardcode.
-- **Production Scheduling** (Scheduling Board, MPS, MTS Forecast) -- modul
-  paling kompleks, sama sekali belum tersentuh.
-- **Recruitment (9 layar)** -- 100% hardcode.
-- **Semua cetak/print selain Master Card** -- Nota Inquiry/CO, cetak
-  PO/PR/PQ/PRT.
-- **Panel Filament `/admin`** -- butuh keputusan arsitektur dulu (jembatani
-  `Translator`/`sec_user.lang_code` ke Filament yang pakai `APP_LOCALE`).
-- **Payroll (tm2pyr)** -- 11 layar, sengaja diantrikan paling akhir.
+### Arah (keputusan user 2026-09-30)
+- Bahasa **ID dan EN tetap ada** (toggle `lang_code`) — berlaku untuk layar v2.
+- **Istilah tombol & status TIDAK diterjemahkan**: selalu English satu kata
+  (New/Save/Undo/Delete/Confirm/Cancel/Duplicate/Back to Draft/Back;
+  Draft/Confirmed/Cancelled/Closed). Kalau kelak mau istilah Indonesia, dicari
+  padanan **satu kata** yang mudah dipahami — bukan terjemahan harfiah.
+- Layar v1 tidak lagi ditarik ke i18n (v1 cukup diganti v2); panel Filament
+  `/admin` bukan arah ke depan — sisa i18n per-layar v1/Filament dihapus.
 
 ### Dua gap desain -- BUTUH KEPUTUSAN USER (belum diperbaiki, sengaja)
 - **Format angka tidak ikut bahasa**: `number_format()` di ratusan titik

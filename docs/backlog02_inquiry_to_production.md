@@ -60,7 +60,7 @@ Ghostscript. **Sisa satu:**
 
 | # | Pekerjaan | Status |
 |---|---|---|
-| 19.1 | Layar Surat Jalan Subkon sendiri (entry + cetak): penerima supplier, rujukan PR & CO, barang setengah jadi keluar/masuk. Saat ini surat jalan SUBKON dibuat otomatis dari ProDev dan tampil di daftar DO, tapi layar entry & cetaknya masih memakai bentuk surat jalan customer. | **BELUM** |
+| 19.1 | Layar Surat Jalan Subkon sendiri (entry + cetak): penerima supplier, rujukan PR & CO, barang setengah jadi keluar/masuk. Saat ini surat jalan SUBKON dibuat otomatis dari ProDev dan tampil di daftar DO, tapi layar entry & cetaknya masih memakai bentuk surat jalan customer. **Keputusan user 2026-09-30: tetap perlu** — dibangun sebagai DO jenis SUBCON di v2 (`do_delivery.do_type='SUBCON'`, kolom `subcon_*` sudah ada). User journey menunggu persetujuan. | **BELUM** |
 
 ---
 

@@ -3,6 +3,14 @@
 
 ---
 
+## 2026-09-30 -- Backlog: keputusan user v1/Filament/i18n
+
+- backlog01 UI-01/02/04/05/12/14/15 dihapus: v1 tidak dirapikan lagi (diganti v2), Filament `/admin` bukan arah ke depan.
+- backlog09 §13 i18n: sisa per-layar v1 & Filament dihapus; arah dicatat (ID/EN tetap, istilah tombol English 1 kata).
+- backlog02 19.1 Surat Jalan Subkon: tetap perlu, sebagai DO jenis SUBCON di v2.
+
+---
+
 ## 2026-09-30 -- Pembersihan backlog: item basi dihapus (dicek ke kode)
 
 - backlog02 §3 "Manual input CO & Costing" -> sudah ada: CO INSTANT (commit 59fab26, v1+v2) + ProCost `data_source=MANUAL`.
