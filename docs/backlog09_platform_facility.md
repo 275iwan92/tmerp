@@ -196,8 +196,18 @@ konten, bukan mekanisme bocor.
 - Layar v1 tidak lagi ditarik ke i18n (v1 cukup diganti v2); panel Filament
   `/admin` bukan arah ke depan — sisa i18n per-layar v1/Filament dihapus.
 
-### Dua gap desain -- BUTUH KEPUTUSAN USER (belum diperbaiki, sengaja)
-- **Format angka tidak ikut bahasa**: `number_format()` di ratusan titik
+### Keputusan user 2026-10-01 -- angka ikut bahasa + bahasa cetak + N bahasa
+- Format angka MENGIKUTI BAHASA (id 1.234,56 · en 1,234.56); setiap cetakan (Print/PDF/JPEG/Email) punya
+  pilihan **Bahasa cetak** bebas dari bahasa layar. Bahasa akan bertambah (Jepang, Mandarin, dst) -> desain
+  N bahasa (pola SAP/Oracle/D365/Odoo): `docs/multilanguage_design.md` -- **menunggu 4 keputusan user** di §3 dok itu
+  sebelum implementasi (inti angka PHP/JS, bahasa cetak di x-dl::doc-share, kamus Lang per kode bahasa).
+- Bug angka yang ditemukan saat survei (diperbaiki bersama implementasi): Lines -- edit sel desimal di ID
+  membuang titik (nilai kanonik 12.5 jadi 1250 saat diketik ulang); footer % Lines dirender `1.5` lalu dibaca 15;
+  field Money menerima nilai DB `1250000.00` lalu membuang non-digit (jadi 125000000); kalkulator Sheet
+  memakai `c.decimals` (indeks kolom) bukan `col.decimals`.
+
+### Gap desain lama (format angka sudah diputuskan di atas)
+- ~~**Format angka tidak ikut bahasa**~~ (diputuskan 2026-10-01, lihat atas): `number_format()` di ratusan titik
   panggil HARDCODE format Indonesia terlepas `lang_code`. Pertanyaan yang
   perlu dijawab dulu: apakah Rupiah/angka bisnis ERP ini **memang harus
   selalu format Indonesia** (umum di ERP lokal, konsisten dgn faktur pajak)
