@@ -102,6 +102,8 @@
 15. **Menu v2** (layer-shell dari `sys_app_menu`) = menu utama; laporan ada di grup Laporan per modul.
     Status `LOCKED` di menu hanya boleh diset oleh user.
 16. **Nama file/folder tanpa emoji atau karakter non-ASCII.**
+17. **F1 = Bantuan & dukungan** di setiap layar (v1 dan v2). Di v2, F1 / menu akun membuka halaman profil **Bantuan & dukungan**
+    (Pedoman Aturan ERP, pedoman alur) dan **Tiket Bantuan** (kirim + lihat tiket ke tim support). Back selalu kembali ke Profile.
 
 ## D. Cara kerja developer / agen
 
@@ -136,3 +138,4 @@
 | 2026-10-01 | A.3: tombol Post to Production pada CPDEL Confirmed; sistem tidak tahu lama pengerjaan sampai produksi di-input; batas 30 menit berubah sesuai data. |
 | 2026-10-01 | A.3: hasil produksi tetap wajib di-input walau sudah dikirim; data hasil produksi = acuan KPI semua departemen. |
 | 2026-10-01 | Pedoman ini dibuka dari menu akun v2 → **Bantuan & dukungan**. |
+| 2026-10-01 | C.17: F1 = Bantuan & dukungan di v2; Tiket Bantuan di profil dengan ikon jelas; Back kembali ke Profile. |
