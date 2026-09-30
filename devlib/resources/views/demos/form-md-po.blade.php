@@ -100,7 +100,7 @@
     </x-slot:files>
     <x-slot:detail>
         <x-dl::lines name="po_lines" title="Details" add-label="+ Add Line" :rows="$blank ? [] : $po['lines']" :min-rows="$blank ? 1 : 0" :readonly="in_array($status, ['confirmed', 'cancelled', 'closed'], true)"
-            :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11, 'costs' => ['trucking' => 'Trucking / Freight', 'insurance' => 'Insurance / Asuransi', 'handling' => 'Handling / Bongkar Muat', 'brokerage' => 'Customs Clearance (PPJK)', 'port' => 'Port & Storage Charges', 'admin' => 'Administrasi / Materai', 'other' => 'Biaya Lain']]"
+            :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11, 'costs' => ['trucking' => 'Trucking / Freight', 'insurance' => 'Insurance / Asuransi', 'handling' => 'Handling / Bongkar Muat', 'brokerage' => 'Customs Clearance (PPJK)', 'port' => 'Port & Storage Charges', 'admin' => 'Administrasi / Materai', 'other' => 'Biaya Lain'], 'landed' => true]"
             :columns="[
                 ['key' => 'item', 'label' => 'Item', 'type' => 'lookup', 'lookup' => 'item', 'required' => true, 'width' => '240px'],
                 ['key' => 'spec', 'label' => 'Spesifikasi', 'width' => '170px'],
@@ -112,6 +112,8 @@
                 ['key' => 'wh', 'label' => 'Gudang', 'type' => 'select', 'options' => $warehouses, 'more' => true],
                 ['key' => 'disc', 'label' => 'Diskon Baris (Rp)', 'type' => 'money', 'more' => true],
                 ['key' => 'rem', 'label' => 'Catatan Baris', 'more' => true],
+                ['key' => 'landed_amt', 'label' => 'Landed Cost (bagian biaya)', 'type' => 'money', 'landed' => 'amount', 'more' => true],
+                ['key' => 'landed_unit', 'label' => 'HPP / Unit (landed)', 'type' => 'money', 'landed' => 'unit', 'more' => true],
             ]">
         </x-dl::lines>
     </x-slot:detail>
