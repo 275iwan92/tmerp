@@ -7,8 +7,8 @@
         ['id' => 6, 'code' => 'KHC', 'name' => 'Khonghucu', 'sort' => 6, 'active' => true],
     ]"
     :columns="[
-        ['key' => 'code', 'label' => 'Kode', 'required' => true, 'unique' => true, 'width' => '110px'],
-        ['key' => 'name', 'label' => 'Nama', 'required' => true, 'unique' => true],
+        ['key' => 'code', 'label' => 'Kode', 'required' => true, 'unique' => true, 'case' => 'uppercase', 'width' => '110px'],
+        ['key' => 'name', 'label' => 'Nama', 'required' => true, 'unique' => true, 'case' => 'capitalize'],
         ['key' => 'sort', 'label' => 'Urutan', 'type' => 'number', 'width' => '90px'],
         ['key' => 'active', 'label' => 'Aktif', 'type' => 'check', 'width' => '70px'],
     ]" />

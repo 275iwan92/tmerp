@@ -103,6 +103,7 @@ final class Catalog
                     // Grid Lookup (user 2026-09-30, dulu Grid Special): daftar bantu kecil yang jarang berubah, diisi langsung di sel.
                     'p5-grid-lookup' => $page('Grid Lookup', 'fa-solid fa-list-check', [
                         'grid-lookup' => ['Grid Lookup (edit in cell: Religion)', $c('LookupGrid')],
+                        'grid-lookup-decimal' => ['Grid Lookup (decimal columns: 1.250.000,50)', $c('LookupGrid')],
                     ]) + ['folder' => 'Grid Pre-Entry'],
                     // Grid Report = submenu, 1 halaman per varian (user 2026-09-30).
                     'p5-grid-report' => $page('Grid Report List', 'fa-solid fa-table-list', [

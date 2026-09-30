@@ -1,7 +1,7 @@
 /* DevLib · Sheet */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, fmt} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase} = Devlib.h;
   /* ============================ SHEET (spreadsheet) ============================ */
   class Sheet extends Devlib.Component {
     static selector = "[data-dl-sheet]";
@@ -23,6 +23,8 @@
       this.seq = 0;
       this.lookup = !!this.cfg.lookup;
       this.term = '';
+      // Huruf aa/Aa/AA per kolom teks (sama dgn x-dl::field.text); kolom boleh set awal lewat 'case'.
+      this.caseMode = this.cols.map(c => CASES.includes(c.case) ? c.case : 'none');
       const srch = $(this.el, '[data-s-search]');
       if (srch) srch.addEventListener('input', () => { this.term = srch.value.trim().toLowerCase(); this.render(); });
       this.wrap.addEventListener('keydown', e => {
@@ -112,16 +114,23 @@
       return c.type === 'number' || c.type === 'money';
     }
 
+    isText(c) { return c.type === 'text'; }
+
+    // decimals = jumlah digit di belakang koma yang selalu tampil (18.450,00); tanpa decimals = apa adanya.
+    numText(c, v) {
+      return c.decimals != null ? v.toLocaleString('id-ID', {minimumFractionDigits: c.decimals, maximumFractionDigits: c.decimals}) : v.toLocaleString('id-ID', {maximumFractionDigits: 10});
+    }
+
     parse(c, raw) {
       const s = String(raw ?? '').trim();
       if (c.type === 'check') return /^(1|true|ya|y|x|✓)$/i.test(s);
-      if (this.num(c)) { if (s === '') return ''; const t = s.replace(/\s|Rp/gi, ''); const n = t.includes(',') ? +t.replace(/\./g, '').replace(',', '.') : (/^-?\d{1,3}(\.\d{3})+$/.test(t) ? +t.replace(/\./g, '') : +t); return isNaN(n) ? s : n; }
+      if (this.num(c)) { if (s === '') return ''; const t = s.replace(/\s|Rp/gi, ''); const n = t.includes(',') ? +t.replace(/\./g, '').replace(',', '.') : (/^-?\d{1,3}(\.\d{3})+$/.test(t) ? +t.replace(/\./g, '') : +t); return isNaN(n) ? s : c.decimals != null ? Math.round(n * 10 ** c.decimals) / 10 ** c.decimals : n; }
       if (c.type === 'select' && c.options) { const hit = Object.entries(c.options).find(([k, l]) => k.toLowerCase() === s.toLowerCase() || String(l).toLowerCase() === s.toLowerCase()); return hit ? hit[0] : s; }
       return s;
     }
 
     show(c, v) {
-      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'Rp ' : '') + v.toLocaleString('id-ID') : String(v)) : c.type === 'select' ? (c.options?.[v] ?? v ?? '') : c.type === 'date' && v ? fmt.date(v + 'T12:00:00+07:00') : (v ?? '');
+      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'Rp ' : '') + this.numText(c, v) : String(v)) : c.type === 'select' ? (c.options?.[v] ?? v ?? '') : c.type === 'date' && v ? fmt.date(v + 'T12:00:00+07:00') : (v ?? '');
     }
 
     // unique: nilai tidak boleh kembar di baris lain (tanpa beda huruf besar/kecil) -- validasi final tetap di server.
@@ -175,8 +184,19 @@
       this.edit = {r: this.cur.r, c: this.cur.c};
       const v = this.data[this.cur.r][c.key];
       if (c.type === 'select') td.innerHTML = `<select class="dl-sheet__in">${['', ...Object.keys(c.options || {})].map(k => `<option value="${esc(k)}" ${String(k) === String(v ?? '') ? 'selected' : ''}>${esc(k ? c.options[k] : '—')}</option>`).join('')}</select>`;
-      else td.innerHTML = `<input class="dl-sheet__in" type="${c.type === 'date' ? 'date' : 'text'}" value="${esc(initial ?? (this.num(c) && typeof v === 'number' ? String(v).replace('.', ',') : v ?? ''))}">`;
-      const inp = $(td, '.dl-sheet__in'); inp.focus(); if (initial == null && inp.select) inp.select();
+      else {
+        const ci = this.cur.c, mode = this.caseMode[ci], start = initial ?? (this.num(c) && typeof v === 'number' ? String(v).replace('.', ',') : v ?? '');
+        td.innerHTML = `<input class="dl-sheet__in ${this.isText(c) ? 'has-case' : ''}" type="${c.type === 'date' ? 'date' : 'text'}" ${this.num(c) ? 'inputmode="decimal"' : ''} value="${esc(this.isText(c) ? applyCase(String(start), mode) : start)}">`
+          + (this.isText(c) ? `<button type="button" class="dl-case dl-sheet__case" data-s-case title="Ganti huruf: kecil / Kapital Tiap Kata / BESAR">${CASE_LABEL[mode]}</button>` : '');
+        const inp = $(td, '.dl-sheet__in');
+        if (this.isText(c)) {
+          inp.addEventListener('input', () => { const p = inp.selectionStart; inp.value = applyCase(inp.value, this.caseMode[ci]); try { inp.setSelectionRange(p, p); } catch (e) {} });
+          const btn = $(td, '[data-s-case]');
+          btn.addEventListener('mousedown', e => e.preventDefault());  // input tetap fokus -> tidak commit
+          btn.addEventListener('click', () => { const m = CASES[(CASES.indexOf(this.caseMode[ci]) + 1) % 3]; this.caseMode[ci] = m; btn.textContent = CASE_LABEL[m]; inp.value = applyCase(inp.value, m); inp.focus(); });
+        }
+      }
+      const inp = $(td, '.dl-sheet__in'); inp.focus(); if (inp.type === 'text') inp.setSelectionRange(inp.value.length, inp.value.length);  // seperti Excel: kursor di akhir isi
       if (c.type === 'select') inp.addEventListener('change', () => this.commit());
     }
 

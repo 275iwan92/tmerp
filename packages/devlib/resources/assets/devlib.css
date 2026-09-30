@@ -1861,6 +1861,8 @@ td.dl-print__no{text-align:center}
 .dl-sheet__table tr.is-new td:not(.dl-sheet__no){background-image:linear-gradient(90deg,color-mix(in srgb,var(--dl-green) 7%,transparent),transparent)}
 .dl-sheet__fill{position:absolute;right:-4px;bottom:-4px;width:8px;height:8px;background:var(--dl-accent);border:1.5px solid var(--dl-surface);cursor:crosshair;z-index:3}
 .dl-sheet__in{position:absolute;inset:0;width:100%;height:100%;border:2px solid var(--dl-accent);padding:4px 7px;font-family:inherit;font-size:inherit;background:var(--dl-surface);color:var(--dl-f-ink);outline:none;box-sizing:border-box}
+.dl-sheet__in.has-case{padding-right:34px}
+.dl-sheet__case{position:absolute;right:5px;top:50%;transform:translateY(-50%);z-index:4;cursor:pointer;padding:0 5px;line-height:16px;background:var(--dl-f-badge);border:1px solid var(--dl-f-line);border-radius:4px;color:var(--dl-f-badge-ink);font-family:inherit}
 /* Grid Lookup (user 2026-09-30): rapat, saklar Aktif, info perubahan kuning. */
 .dl-sheet--lookup .dl-sheet__table td{height:26px;padding:3px 8px}
 .dl-sheet--lookup .dl-sheet__table th{padding:4px 8px}

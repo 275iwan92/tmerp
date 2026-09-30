@@ -6,6 +6,8 @@ namespace Devlib\Components;
 // Klik sel, panah/Tab pindah, ketik = edit, Enter/F2 edit, Esc batal, Shift/drag = rentang, Ctrl+C/Ctrl+V
 // dengan Excel, pegangan isi di pojok seleksi (salin / lanjutkan deret angka), Ctrl+Z / Ctrl+Y, Delete kosongkan.
 // columns: [['key','label','type' => text|number|money|select|date|check,'options','required','readonly','width']]
+// Kolom teks: badge aa/Aa/AA di sel yang diedit (seperti x-dl::field.text), diingat per kolom; 'case' => uppercase|capitalize = awal.
+// Kolom angka: 'decimals' => n = selalu tampil n digit (18.450,00). Edit seperti sel Excel: angka mentah (1250000,5), format saat keluar sel.
 // Simpan Semua -> validasi -> event dl:sheet-save {rows, changed}. Sel berubah ditandai; salah dimerahkan.
 // lookup=true (turunan LookupGrid = Grid Lookup): daftar bantu kecil -- Cari + Baris + Batal + Simpan saja, rapat,
 // tanpa Hapus (baris yang sudah dipakai cukup dinonaktifkan), kolom 'unique' => true tidak boleh kembar.
