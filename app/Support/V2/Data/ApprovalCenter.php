@@ -2,13 +2,19 @@
 
 namespace App\Support\V2\Data;
 
+use App\Models\Inventory\FgStock;
+use App\Models\Inventory\RmStock;
+use App\Models\Inventory\SfgStock;
 use App\Models\Master\FlowLog;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrRequisition;
+use App\Models\Pur\PrtReturn;
 use App\Models\Sdi\CoOrder;
 use App\Services\Flow\FlowEngineService;
+use App\Services\Inventory\StockPostingService;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 // Approval Center v2 (DevLib Form Approval, disetujui user 2026-09-30): antrian dokumen yang menunggu keputusan user login
 // (flow engine: jabatan tetap + PLT), detail hanya-baca, keputusan Approve / Reject / Hold lewat aturan layar dokumennya
@@ -17,15 +23,28 @@ final class ApprovalCenter
 {
     use FlowDocument;
 
+    // screen = layar dokumen v2 (tautan Buka); null = belum ada layar v2 -> tautan ke layar v1.
     public const MODULES = [
         'PR' => ['title' => 'Purchase Requisition', 'screen' => 'purchase-requisition', 'menu' => 'PROC'],
         'PO' => ['title' => 'Purchase Order', 'screen' => 'purchase-order', 'menu' => 'PROC'],
         'CO' => ['title' => 'Customer Order', 'screen' => 'customer-order', 'menu' => 'SALES'],
+        'AD' => ['title' => 'Stock Adjustment', 'screen' => null, 'menu' => 'INV'],
+        'OP' => ['title' => 'Stock Opname', 'screen' => null, 'menu' => 'INV'],
+        'PRT' => ['title' => 'Purchase Return', 'screen' => null, 'menu' => 'PROC'],
     ];
 
-    public static function lineColumns(string $module): array
+    // Layar Approval Center v2 (slug approval-<key>) => modul yang tampil bersama + hak modul menu.
+    public const SCREENS = [
+        'pr' => ['PR'], 'po' => ['PO'], 'co' => ['CO'], 'stock' => ['AD', 'OP'], 'prt' => ['PRT'],
+    ];
+
+    private const STOCK_MODELS = ['RM' => RmStock::class, 'FG' => FgStock::class, 'SFG' => SfgStock::class];
+
+    public static function lineColumns(string $screen): array
     {
-        return match ($module) {
+        return match (self::SCREENS[$screen][0]) {
+            'AD' => ['description' => 'Item', 'unit' => 'Satuan', 'system' => 'Qty Sistem', 'physical' => 'Qty Fisik', 'diff' => 'Selisih', 'price:money' => 'Harga/Unit', 'subtotal:money' => 'Nilai Selisih'],
+            'PRT' => ['description' => 'Item', 'qty' => 'Qty Retur', 'unit' => 'Satuan', 'price:money' => 'Harga/Unit', 'subtotal:money' => 'Nilai'],
             'CO' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Satuan', 'price:money' => 'Harga/Unit', 'disc' => 'Disc %', 'subtotal:money' => 'Subtotal', 'source' => 'Sumber Harga'],
             'PO' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Satuan', 'price:money' => 'Harga/Unit', 'disc' => 'Disc %', 'subtotal:money' => 'Subtotal'],
             default => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Satuan', 'price:money' => 'Harga Est.', 'subtotal:money' => 'Subtotal', 'need' => 'Tgl Butuh'],
@@ -33,11 +52,35 @@ final class ApprovalCenter
     }
 
     // Dokumen yang menunggu keputusan user login, format x-dl::approval.
-    public static function docs(string $module): array
+    // id dokumen di layar = "MODUL:id" (AD & OP tampil bersama, id-nya bisa sama).
+    public static function docs(string $screen): array
     {
-        $pending = app(FlowEngineService::class)->pendingForUser($module, Auth::id());
+        $flow = app(FlowEngineService::class);
 
-        return $pending->map(fn ($p) => self::doc($module, (int) $p->doc_id, (float) $p->amount_snapshot))->filter()->values()->all();
+        return collect(self::SCREENS[$screen])->flatMap(fn ($m) => $flow->pendingForUser($m, Auth::id())
+            ->map(fn ($p) => self::doc($m, (int) $p->doc_id, (float) $p->amount_snapshot)))->filter()->values()->all();
+    }
+
+    // Dokumen stok AD/OP tersebar di 3 tabel kategori (rm/fg/sfg_stock); flow_log hanya menyimpan doc_id.
+    private static function stockDoc(string $module, int $id): ?array
+    {
+        foreach (self::STOCK_MODELS as $cat => $model) {
+            $doc = $model::where('doc_cat', $module)->where('flow_status', 'SUBMITTED')->find($id);
+            if ($doc) {
+                return [$cat, $doc];
+            }
+        }
+
+        return null;
+    }
+
+    private static function stockComponent(string $cat, int $id): Component
+    {
+        $c = app('livewire')->new('pages::inventory.stock-adjustment');
+        $c->category = $cat;
+        $c->openEdit($id);
+
+        return $c;
     }
 
     // Hanya dokumen yang statusnya masih SUBMITTED: log flow yang tertinggal pada dokumen yang sudah lanjut (data lama)
@@ -64,6 +107,34 @@ final class ApprovalCenter
                     'summary' => ['Supplier' => $sup, 'Grand Total' => $rp($po->c_grand_total), 'Termin' => $po->i_payment_term ?: '—', 'Tgl Kirim' => $date($po->i_delivery_date), 'Jumlah Item' => $po->lines->count()],
                     'lines' => $po->lines->map(fn ($l) => ['description' => $l->i_description, 'qty' => $num($l->i_qty), 'unit' => $l->i_uom, 'price' => (float) $l->i_price,
                         'disc' => $num($l->i_disc_pct), 'subtotal' => (float) $l->c_line_net])->all(), 'note' => $po->i_notes] : null;
+            })(),
+            'AD', 'OP' => (function () use ($module, $id, $num, $rp, $date) {
+                [$cat, $doc] = self::stockDoc($module, $id) ?? [null, null];
+                if (! $doc) {
+                    return null;
+                }
+                $lines = collect(self::stockComponent($cat, $id)->lines)->map(function ($l) use ($num) {
+                    $diff = (float) ($l['qty_physical'] ?: 0) - (float) $l['qty_system'];
+
+                    return ['description' => $l['name'], 'unit' => $l['uom_code'], 'system' => $num($l['qty_system']), 'physical' => $num($l['qty_physical'] ?: 0),
+                        'diff' => ($diff > 0 ? '+' : '').$num($diff), 'price' => (float) $l['unit_price'], 'subtotal' => $diff * (float) $l['unit_price']];
+                });
+                $value = $lines->sum(fn ($l) => abs($l['subtotal']));
+
+                return ['no' => $doc->doc_no ?: $module.' #'.$id, 'party' => $cat.' · '.($module === 'OP' ? 'Opname' : 'Adjustment'), 'date' => $doc->doc_date?->toDateString(),
+                    'amount' => $value,
+                    'summary' => ['Kategori' => $cat, 'Alasan' => $doc->reason_code ?: '—', 'Nilai Selisih (absolut)' => $rp($value), 'Tanggal' => $date($doc->doc_date),
+                        'Jumlah Item' => $lines->count()] + ($module === 'OP' ? ['Petugas' => $doc->opn_officer ?: '—', 'Saksi' => $doc->opn_witness ?: '—'] : []),
+                    'lines' => $lines->all(), 'note' => $doc->notes, 'v1' => route('inv.stock-adj.index', ['category' => $cat, 'doc' => $id])];
+            })(),
+            'PRT' => (function () use ($id, $num, $rp) {
+                $r = PrtReturn::with('lines')->where('status', 'SUBMITTED')->find($id);
+                $sup = $r ? (PurchaseOrder::suppliers([$r->i_supplier_id])[$r->i_supplier_id] ?? '—') : null;
+
+                return $r ? ['no' => $r->doc_no ?: 'PRT #'.$id, 'party' => $sup, 'date' => $r->i_doc_date?->toDateString(), 'amount' => (float) $r->c_credit_value,
+                    'summary' => ['Supplier' => $sup, 'Nilai Retur' => $rp($r->c_credit_value), 'Disposisi' => $r->i_disposition ?: '—', 'Alasan' => $r->i_reason ?: '—', 'Jumlah Item' => $r->lines->count()],
+                    'lines' => $r->lines->map(fn ($l) => ['description' => $l->i_description, 'qty' => $num($l->i_qty), 'unit' => $l->i_uom, 'price' => (float) $l->c_unit_price,
+                        'subtotal' => (float) $l->c_line_value])->all(), 'note' => $r->i_reason, 'v1' => route('pur.prt.entry', $id)] : null;
             })(),
             'CO' => (function () use ($id, $num, $rp) {
                 $o = CoOrder::with(['items', 'customer'])->where('doc_status', 'SUBMITTED')->find($id);
@@ -92,9 +163,11 @@ final class ApprovalCenter
             ->map(fn ($l) => ['action' => $l->action, 'by' => $l->created_by, 'at' => $l->acted_at?->format('d-M-Y H:i'), 'note' => $l->notes, 'plt' => (bool) $l->is_acting])->all();
         $steps = array_merge([['role' => 'Pembuat', 'by' => $state['submitted_by'], 'at' => $state['submitted_at'], 'status' => 'done', 'submitter' => true]], $state['steps']);
 
-        return $base + ['id' => $id, 'title' => self::MODULES[$module]['title'], 'submitted_by' => $state['submitted_by'] ?? '—', 'steps' => $steps,
+        $screen = self::MODULES[$module]['screen'];
+
+        return $base + ['id' => $module.':'.$id, 'title' => self::MODULES[$module]['title'], 'submitted_by' => $state['submitted_by'] ?? '—', 'steps' => $steps,
             'history' => $history, 'held' => $state['held'] ? ['by' => collect($history)->last()['by'] ?? '', 'at' => collect($history)->last()['at'] ?? '', 'note' => collect($history)->last()['note'] ?? ''] : false,
-            'url' => route('v2.screen', self::MODULES[$module]['screen']).'?id='.$id];
+            'url' => $screen ? route('v2.screen', $screen).'?id='.$id : ($base['v1'] ?? null)];
     }
 
     // Keputusan lewat aturan layar dokumennya. Balasan = pesan error (kosong = sukses).
@@ -109,26 +182,66 @@ final class ApprovalCenter
             'PR' => PurchaseRequisition::decide(PrRequisition::findOrFail($id), $action, $note),
             'PO' => PurchaseOrder::decide(PoOrder::findOrFail($id), $action, $note),
             'CO' => CustomerOrder::decide(CoOrder::findOrFail($id), $action, $note),
+            'AD', 'OP' => self::decideStock($module, $id, $action, $note),
+            'PRT' => self::decideReturn($id, $action, $note),
         };
     }
 
-    // Log Keputusan user login di modul ini (flow_log): siapa, kapan, aksi, level, alasan.
-    public static function myLog(string $module, int $limit = 20): array
+    // Aturan v1 pages::inventory.stock-adjustment: approve terakhir = posting ke kartu stok. Hold belum ada di v1 -> engine langsung.
+    private static function decideStock(string $module, int $id, string $action, string $note): string
+    {
+        [$cat] = self::stockDoc($module, $id) ?? [null];
+        $pending = self::pendingFor($module, $id);
+        if (! $cat || ! $pending) {
+            return 'Dokumen ini tidak sedang menunggu approval Anda.';
+        }
+        if ($action === 'hold') {
+            app(FlowEngineService::class)->hold($module, $id, $pending->flow_step_id, $note, (float) $pending->amount_snapshot);
+
+            return '';
+        }
+        $c = self::stockComponent($cat, $id);
+        $c->approvalNote = $note;
+        session()->forget('error');
+        $action === 'approve' ? $c->approveDoc(app(FlowEngineService::class), app(StockPostingService::class)) : $c->rejectDoc(app(FlowEngineService::class));
+
+        return $c->approvalError ?: (string) session('error', '');
+    }
+
+    private static function decideReturn(int $id, string $action, string $note): string
+    {
+        $c = app('livewire')->new('pages::pur.prt.entry');
+        $c->prtId = $id;
+        $c->approvalNote = $note;
+        match ($action) {
+            'approve' => $c->approveDoc(app(FlowEngineService::class)),
+            'reject' => $c->rejectDoc(app(FlowEngineService::class)),
+            'hold' => $c->holdDoc(app(FlowEngineService::class)),
+        };
+
+        return (string) ($c->approvalError ?? '');
+    }
+
+    // Log Keputusan user login di layar ini (flow_log): siapa, kapan, aksi, level, alasan.
+    public static function myLog(string $screen, int $limit = 20): array
     {
         $login = Auth::user()->login;
-        $logs = FlowLog::where('module_code', $module)->where('actual_user_id', Auth::id())->whereIn('action', ['APPROVED', 'REJECTED', 'HOLD'])
+        $logs = FlowLog::whereIn('module_code', self::SCREENS[$screen])->where('actual_user_id', Auth::id())->whereIn('action', ['APPROVED', 'REJECTED', 'HOLD'])
             ->orderByDesc('flow_log_id')->limit($limit)->get();
 
-        return $logs->map(function ($l) use ($module, $login) {
-            $state = self::approvalState($module, (int) $l->doc_id, (float) $l->amount_snapshot);
-            $level = collect(self::approvalPath($module, (float) $l->amount_snapshot))->search(fn ($s) => $s->flow_step_id === $l->flow_step_id);
-            $no = match ($module) {
+        return $logs->map(function ($l) use ($login) {
+            $m = $l->module_code;
+            $state = self::approvalState($m, (int) $l->doc_id, (float) $l->amount_snapshot);
+            $level = collect(self::approvalPath($m, (float) $l->amount_snapshot))->search(fn ($s) => $s->flow_step_id === $l->flow_step_id);
+            $no = match ($m) {
                 'PR' => PrRequisition::whereKey($l->doc_id)->value('doc_no'),
                 'PO' => PoOrder::whereKey($l->doc_id)->value('doc_no'),
                 'CO' => CoOrder::whereKey($l->doc_id)->value('co_no'),
+                'PRT' => PrtReturn::whereKey($l->doc_id)->value('doc_no'),
+                default => collect(self::STOCK_MODELS)->map(fn ($model) => $model::where('doc_cat', $m)->whereKey($l->doc_id)->value('doc_no'))->filter()->first(),
             };
 
-            return ['id' => $l->doc_id, 'no' => $no ?: '#'.$l->doc_id, 'status' => $l->action, 'by' => $l->created_by ?? $login, 'at' => $l->acted_at?->format('d-M-Y H:i'),
+            return ['id' => $m.':'.$l->doc_id, 'no' => $no ?: $m.' #'.$l->doc_id, 'status' => $l->action, 'by' => $l->created_by ?? $login, 'at' => $l->acted_at?->format('d-M-Y H:i'),
                 'level' => $level === false ? 0 : $level + 1, 'levels' => $state['levels'], 'note' => $l->notes];
         })->all();
     }

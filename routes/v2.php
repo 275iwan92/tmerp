@@ -2,6 +2,7 @@
 
 use App\Console\Commands\DdtBaseline;
 use App\Mail\EmailVerifyMail;
+use App\Models\Master\FlowConfig;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
 use App\Models\Pur\PoOrder;
@@ -23,6 +24,7 @@ use App\Services\Sales\InquiryWriter;
 use App\Support\Mail\MailSettings;
 use App\Support\V2\AppMenu;
 use App\Support\V2\Data\ApprovalCenter;
+use App\Support\V2\Data\ApprovalSetting;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DeliveryOrder;
@@ -538,15 +540,45 @@ Route::prefix('v2')->name('v2.')->group(function () {
     });
 
     // Approval Center v2 (PR / PO / CO): keputusan approver tahap berjalan -> aturan layar dokumennya; log di flow_log.
-    Route::post('/approval/{module}', function (Request $r, string $module) {
-        $meta = ApprovalCenter::MODULES[$module] ?? abort(404);
-        abort_unless(Auth::user()->canAccessModule($meta['menu']), 403);
-        $d = $r->validate(['id' => ['required', 'integer'], 'action' => ['required', 'in:approve,reject,hold'], '_reason' => ['nullable', 'string', 'max:200']]);
-        $err = ApprovalCenter::decide($module, (int) $d['id'], $d['action'], (string) ($d['_reason'] ?? ''));
-        $back = redirect(route('v2.screen', 'approval-'.strtolower($module)));
+    Route::post('/approval/{screen}', function (Request $r, string $screen) {
+        $d = $r->validate(['id' => ['required', 'regex:/^[A-Z]+:\d+$/'], 'action' => ['required', 'in:approve,reject,hold'], '_reason' => ['nullable', 'string', 'max:200']]);
+        [$module, $id] = explode(':', $d['id']);
+        abort_unless(in_array($module, ApprovalCenter::SCREENS[$screen], true), 404);
+        abort_unless(Auth::user()->canAccessModule(ApprovalCenter::MODULES[$module]['menu']), 403);
+        $err = ApprovalCenter::decide($module, (int) $id, $d['action'], (string) ($d['_reason'] ?? ''));
+        $back = redirect(route('v2.screen', 'approval-'.$screen));
 
         return $err ? $back->withErrors(['approval' => $err]) : $back->with('v2_flash', ['approve' => 'Disetujui', 'reject' => 'Ditolak', 'hold' => 'Ditahan'][$d['action']].' — tercatat di log.');
-    })->whereIn('module', array_keys(ApprovalCenter::MODULES))->name('approval.decide');
+    })->whereIn('screen', array_keys(ApprovalCenter::SCREENS))->name('approval.decide');
+
+    // Setting Approval + Officer Pengganti (PLT) -- App\Support\V2\Data\ApprovalSetting (tm2mst.flow_config*, flow_position_acting).
+    Route::middleware('module:SETUP')->group(function () {
+        $open = fn (int $id) => redirect(route('v2.screen', 'approval-setting').'?id='.$id);
+        Route::post('/approval-setting/create', function (Request $r) use ($open) {
+            $d = $r->validate(['module_code' => ['required', 'string', 'max:50'], 'notes' => ['nullable', 'string', 'max:200'], 'final_status' => ['nullable', 'string', 'max:30']],
+                [], ['module_code' => 'Kode Dokumen']);
+            $c = ApprovalSetting::create($d['module_code'], (string) ($d['notes'] ?? ''), (string) ($d['final_status'] ?? ''));
+
+            return $open($c->flow_config_id)->with('v2_flash', "Setting approval {$c->module_code} dibuat — tambahkan Level lalu Save.");
+        })->name('approval-setting.create');
+        Route::post('/approval-setting/{id}', function (Request $r, int $id) use ($open) {
+            $c = FlowConfig::findOrFail($id);
+            $action = (string) $r->input('action', 'save');
+            if (in_array($action, ['activate', 'deactivate'], true)) {
+                ApprovalSetting::setActive($c, $action === 'activate');
+
+                return $open($id)->with('v2_flash', 'Setting approval '.$c->module_code.' '.($action === 'activate' ? 'diaktifkan.' : 'dinonaktifkan (dokumen baru tidak masuk approval).'));
+            }
+            ApprovalSetting::save($c, $r->all());
+
+            return $open($id)->with('v2_flash', 'Setting approval '.$c->module_code.' tersimpan.');
+        })->whereNumber('id')->name('approval-setting.save');
+        Route::post('/approval-acting', function (Request $r) {
+            ApprovalSetting::saveActing($r->all());
+
+            return redirect(route('v2.screen', 'approval-acting'))->with('v2_flash', 'Daftar officer pengganti (PLT) tersimpan.');
+        })->name('approval-acting.save');
+    });
 
     // Customer Plan Delivery v2 (App\Support\V2\Data\Cpdel = confirmSplit/confirmMerge v1 pages::co.delivery-plan).
     Route::prefix('cpdel')->name('cpdel.')->middleware('module:SALES')->group(function () {

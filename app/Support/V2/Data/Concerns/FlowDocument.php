@@ -2,13 +2,11 @@
 
 namespace App\Support\V2\Data\Concerns;
 
-use App\Models\Master\EmpEmployee;
 use App\Models\Master\FlowLog;
 use App\Services\Flow\FlowEngineService;
+use App\Support\V2\Data\ApprovalSetting;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 // Bersama untuk dokumen ber-approval flow engine (PR, PO, ...): antrian approver, log History, konversi nilai form.
 trait FlowDocument
@@ -53,19 +51,17 @@ trait FlowDocument
         $submit = $logs->where('action', 'SUBMITTED')->first();
         $path = self::approvalPath($module, $submit ? (float) $submit->amount_snapshot : $amount);
         $last = $logs->last();
-        $positions = DB::connection('tm2mst')->table('org_position')->whereIn('position_id', $path->pluck('position_id'))->pluck('position_name', 'position_id');
-        $holders = EmpEmployee::whereIn('position_id', $path->pluck('position_id'))->where('data_origin', '<>', 'DUMMY')->get(['position_id', 'full_name'])
-            ->groupBy('position_id')->map(fn ($g) => $g->pluck('full_name')->map(fn ($n) => Str::title(strtolower($n)))->implode(', '));
+        $positions = ApprovalSetting::positions($path->pluck('position_id')->all());
         $at = 0;
-        $steps = $path->values()->map(function ($s, $i) use ($logs, $last, $positions, $holders, &$at) {
+        $steps = $path->values()->map(function ($s, $i) use ($logs, $last, $positions, &$at) {
             $done = $logs->where('flow_step_id', $s->flow_step_id)->whereIn('action', ['APPROVED', 'REJECTED'])->last();
             $pending = $last && $last->flow_step_id === $s->flow_step_id && in_array($last->action, ['SUBMITTED', 'HOLD'], true);
             if ($pending) {
                 $at = $i + 1;
             }
-            $who = $holders[$s->position_id] ?? '';
+            $p = $positions[$s->position_id] ?? ['name' => $s->label, 'holder' => '', 'plt' => ''];
 
-            return ['role' => ($positions[$s->position_id] ?? $s->label).($who ? ' — '.$who : ''),
+            return ['role' => $p['name'].($p['plt'] ? ' — PLT '.$p['plt'] : ($p['holder'] ? ' — '.$p['holder'] : '')),
                 'by' => $done?->created_by, 'at' => $done?->acted_at?->format('d-M-Y H:i'), 'plt' => (bool) $done?->is_acting,
                 'status' => $done ? ($done->action === 'APPROVED' ? 'done' : 'rejected') : ($pending ? 'current' : 'pending')];
         })->all();

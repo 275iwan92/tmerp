@@ -7,8 +7,8 @@ use App\Models\Master\FlowConfigStep;
 use App\Models\Master\FlowLog;
 use App\Models\Master\FlowPositionActing;
 use App\Models\Sys\SecUser;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 // Engine approval + state-transition generik lintas modul (TIER_1/2/3_FLOW_ENGINE.md).
 // Implementasi tahap ini: submit() dokumen ke step APPROVAL pertama yang cocok
@@ -201,6 +201,7 @@ class FlowEngineService
         ]);
 
         $nextStep = FlowConfigStep::where('flow_config_id', $step->flow_config_id)
+            ->where('activate', true)
             ->where('step_no', '>', $step->step_no)
             ->where('status_from', $step->status_to)
             ->where(function ($q) use ($amount) {
@@ -212,8 +213,11 @@ class FlowEngineService
             ->orderBy('step_no')
             ->first();
 
+        // Setting Approval (2026-09-30): level antara SUBMITTED -> SUBMITTED, status akhir dari header (final_status).
         if (! $nextStep) {
-            return ['status' => $step->status_to, 'final' => true, 'pending_step_id' => null, 'pending_position_id' => null];
+            $final = FlowConfig::whereKey($step->flow_config_id)->value('final_status');
+
+            return ['status' => $final ?: $step->status_to, 'final' => true, 'pending_step_id' => null, 'pending_position_id' => null];
         }
 
         if ($nextStep->step_type !== 'APPROVAL') {
@@ -277,7 +281,7 @@ class FlowEngineService
             'created_by' => $login,
         ]);
 
-        return ['status' => $step->status_to_reject];
+        return ['status' => FlowConfig::whereKey($step->flow_config_id)->value('reject_status') ?: $step->status_to_reject];
     }
 
     // Hold: approver belum mau memutuskan (mis. cash flow belum siap) --

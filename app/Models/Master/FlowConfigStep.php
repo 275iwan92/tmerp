@@ -15,7 +15,7 @@ class FlowConfigStep extends Model
 
     protected $fillable = [
         'flow_config_id', 'step_no', 'step_type', 'status_from', 'status_to', 'status_to_reject',
-        'position_id', 'min_amount', 'max_amount', 'label', 'created_by', 'updated_by',
+        'position_id', 'min_amount', 'max_amount', 'label', 'print_label', 'activate', 'created_by', 'updated_by',
     ];
 
     public function position(): BelongsTo

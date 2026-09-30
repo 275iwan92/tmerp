@@ -1,1 +1,1 @@
-@include('v2.partials.approval-center', ['module' => 'PO'])
+@include('v2.partials.approval-center', ['screen' => 'po'])

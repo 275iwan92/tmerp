@@ -71,6 +71,9 @@ final class Screens
                 ['label' => 'Receive', 'items' => [
                     $it('purchase-receive', ['Penerimaan Barang (SPB)', 'fa-solid fa-truck-ramp-box', 'pur/pv/index + entry.blade.php', null]),
                 ]],
+                ['label' => 'Return', 'items' => [
+                    $it('approval-prt', ['Purchase Return Approval Center', 'fa-solid fa-stamp', 'pur/prt/approval.blade.php', null]),
+                ]],
                 ['label' => 'Master', 'items' => [$it('master-raw')]],
             ]],
             ['code' => 'COSTING', 'short' => 'PCO', 'label' => 'Product Costing', 'icon' => 'fa-solid fa-scale-balanced', 'groups' => [
@@ -80,6 +83,17 @@ final class Screens
                 ]],
                 ['label' => 'Master', 'items' => [$it('master-product'), $it('master-raw'), $it('prodev')]],
                 ['label' => 'Alur', 'items' => [self::flowItem('COSTING', 'Alur Costing: ProDev → ProCost → Publish')]],
+            ]],
+            ['code' => 'INV', 'short' => 'INV', 'label' => 'Inventory', 'icon' => 'fa-solid fa-warehouse', 'groups' => [
+                ['label' => 'Stock Adjustment', 'items' => [
+                    $it('approval-stock', ['Adjustment & Opname Approval Center', 'fa-solid fa-stamp', 'inventory/stock-adjustment-approval.blade.php', null]),
+                ]],
+            ]],
+            ['code' => 'SETUP', 'short' => 'SET', 'label' => 'Setup', 'icon' => 'fa-solid fa-gear', 'groups' => [
+                ['label' => 'Settings', 'items' => [
+                    $it('approval-setting', ['Setting Approval', 'fa-solid fa-list-ol', 'v2 baru: tm2mst.flow_config + flow_config_step (pengganti m_authorize)', null]),
+                    $it('approval-acting', ['Officer Pengganti (PLT)', 'fa-solid fa-user-clock', 'v2 baru: tm2mst.flow_position_acting', null]),
+                ]],
             ]],
             // Khusus developer: tidak tampil untuk akun biasa.
             ...(auth()->user()?->is_admin ? [['code' => 'DEV', 'short' => 'DEV', 'label' => 'Developer', 'icon' => 'fa-solid fa-code', 'groups' => [
