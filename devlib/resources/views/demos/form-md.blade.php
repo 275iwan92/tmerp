@@ -25,7 +25,8 @@
     $co = [
         'co_no' => '2602402', 'co_date' => '2026-09-30', 'customer' => 'CV Samudra Kiat Jaya', 'sales' => 'Carrij Soehendra', 'consignee' => 'CV Samudra Kiat Jaya',
         'po_no' => 'PO/SKJ/IX/0187', 'po_date' => '2026-09-28', 'po_recv' => '2026-09-29', 'ship' => 'DELIVER', 'pay' => 'NET30', 'bank' => 'BCA', 'tax' => 'NO',
-        'ship_addr' => 'Jl. Raya Waru No. 18, Sidoarjo', 'courier' => 'Armada sendiri',
+        'ship_addr' => 'Jl. Raya Waru No. 18, Sidoarjo', 'courier' => 'Armada sendiri', 'ship_date' => '2026-10-16',
+        'bill_addr' => 'Jl. Raya Waru No. 18, Sidoarjo', 'contact' => 'Bpk. Hendra', 'contact_phone' => '+6281231234567', 'contact_email' => 'purchasing@samudrakiat.co.id', 'npwp' => '01.234.567.8-609.000', 'currency' => 'IDR', 'rate' => 1,
         'note' => 'IB Coco Tokyo HEXA DC250/M125/K125 EF CS, lam doff, plong, lem samping; OB Coco Tokyo Flat 25 K200/M125/K200 BF cetak, sliter-sloter, stitching.',
         'lines' => [
             ['product' => 'DS001479', 'product_label' => 'IB Coco Tokyo HEXA 1kg', 'qty' => 4000, 'uom' => 'PCS', 'price' => 2250, 'due' => '2026-10-16', 'color' => '4/0', 'min_order' => false, 'order_type' => 'REPEAT', 'ppic' => ''],
@@ -44,7 +45,7 @@
 <x-dl::form :title="$isNew ? 'Customer Order · New'.($dup ? ' (copy of '.$co['co_no'].')' : '') : 'Customer Order · '.$co['co_no']" :subtitle="$blank ? null : $co['customer']"
     panel="top" kind="document" :status="$status" :pipeline="true" :can-reopen="true" :log="$log"
     :action="$here.'#form-md'" method="GET" :new-url="$here.'?'.$me.'_new=1#form-md'" :hidden="['doc' => $me]"
-    :tabs="['basic' => 'Basic', 'kirim' => 'Pengiriman', 'pajak' => 'Pajak & Bayar', 'lampiran' => 'Lampiran & Catatan']"
+    :tabs="['general' => 'General', 'party' => 'Customer', 'finance' => 'Finance', 'delivery' => 'Delivery', 'files' => 'Attachments & Notes']"
     :created-by="$isNew ? null : 'carrij'" :created-at="$isNew ? null : '2026-09-30 08:12:00'"
     :updated-by="$isNew ? null : ($act ? 'johiwan' : 'carrij')" :updated-at="$isNew ? null : ($act ? now()->format('Y-m-d H:i:s') : '2026-09-30 09:40:00')">
     <x-slot:strip>
@@ -54,37 +55,53 @@
         <x-dl::field.select name="customer" label="Customer" :options="$customers" :value="$v('customer')" required />
         <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b data-l-val="lines:grand">Rp 0</b></div>
     </x-slot:strip>
-    <x-slot:basic>
+    <x-slot:general>
         <x-dl::form.row :cols="4">
             <x-dl::field.select name="sales" label="Sales By" :options="['Carrij Soehendra' => 'Carrij Soehendra', 'Firman' => 'Firman']" :value="$v('sales')" required />
-            <x-dl::field.select name="consignee" label="Penerima Barang (Consignee)" :options="$customers" :value="$v('consignee')" required />
             <x-dl::field.text name="po_no" label="No. PO Customer" :value="$v('po_no')" :case-toggle="false" />
             <x-dl::field.date name="po_date" label="Tgl PO Customer" :value="$v('po_date')" placeholder="—" />
-        </x-dl::form.row>
-        <x-dl::form.row :cols="4">
             <x-dl::field.date name="po_recv" label="Tgl PO Diterima" :value="$v('po_recv')" placeholder="—" />
-            <x-dl::field.select name="ship" label="Metode Pengiriman" :options="['DELIVER' => 'Deliver / Kirim', 'PICKUP' => 'Diambil customer']" :value="$v('ship')" />
-            <x-dl::field.select name="pay" label="Status Pembayaran" :options="['CASH' => 'Tunai', 'NET14' => 'Bayar 14 hari', 'NET30' => 'Bayar 30 hari']" :value="$v('pay')" />
         </x-dl::form.row>
-    </x-slot:basic>
-    <x-slot:kirim>
-        <x-dl::form.row :cols="3">
-            <x-dl::field.text name="ship_addr" label="Alamat Kirim" :value="$v('ship_addr')" />
-            <x-dl::field.select name="courier" label="Ekspedisi" :options="['Armada sendiri' => 'Armada sendiri', 'JNE Trucking' => 'JNE Trucking', 'Diambil' => 'Diambil customer']" :value="$v('courier')" />
-        </x-dl::form.row>
-    </x-slot:kirim>
-    <x-slot:pajak>
+    </x-slot:general>
+    <x-slot:party>
         <x-dl::form.row :cols="4">
-            <x-dl::field.select name="tax" label="Tax Enable" :options="['NO' => 'No', 'YES' => 'Yes']" :value="$v('tax')" />
-            <x-dl::field.select name="bank" label="Pembayaran pada" :options="['BCA' => 'BCA 0881-xxx', 'MANDIRI' => 'Mandiri 1400-xxx']" :value="$v('bank')" />
+            <x-dl::field.text name="bill_addr" label="Alamat Tagihan" :value="$v('bill_addr')" />
+            <x-dl::field.text name="contact" label="Contact Person" :value="$v('contact')" />
+            <x-dl::field.phone name="contact_phone" label="No. HP Kontak" :value="$v('contact_phone')" />
+            <x-dl::field.text name="contact_email" label="Email" type="email" :value="$v('contact_email')" />
         </x-dl::form.row>
-    </x-slot:pajak>
-    <x-slot:lampiran>
+        <x-dl::form.row :cols="4">
+            <x-dl::field.masked name="npwp" label="NPWP Customer" mask="99.999.999.9-999.999" :value="$v('npwp')" />
+        </x-dl::form.row>
+    </x-slot:party>
+    <x-slot:finance>
+        <x-dl::form.row :cols="4">
+            <x-dl::field.select name="currency" label="Currency" :options="['IDR' => 'IDR · Rupiah', 'USD' => 'USD · US Dollar', 'SGD' => 'SGD · Singapore Dollar']" :value="$v('currency') ?? 'IDR'" required />
+            <x-dl::field.decimal name="rate" label="Rate (Kurs ke IDR)" :decimals="2" :value="$v('rate') ?? 1" hint="IDR = 1. Diisi bila mata uang asing." />
+            <x-dl::field.select name="pay" label="Payment Terms" :options="['CASH' => 'Tunai (COD)', 'NET14' => 'Net 14 hari', 'NET30' => 'Net 30 hari', 'NET45' => 'Net 45 hari']" :value="$v('pay')" required />
+            <x-dl::field.select name="bank" label="Pembayaran ke Rekening" :options="['BCA' => 'BCA 0881-xxx', 'MANDIRI' => 'Mandiri 1400-xxx']" :value="$v('bank')" />
+        </x-dl::form.row>
+    </x-slot:finance>
+    <x-slot:delivery>
+        <x-dl::form.row :cols="4">
+            <x-dl::field.select name="consignee" label="Penerima Barang (Consignee)" :options="$customers" :value="$v('consignee')" required />
+            <x-dl::field.select name="ship" label="Metode Pengiriman" :options="['DELIVER' => 'Deliver / Kirim', 'PICKUP' => 'Diambil customer']" :value="$v('ship')" />
+            <x-dl::field.select name="courier" label="Ekspedisi" :options="['Armada sendiri' => 'Armada sendiri', 'JNE Trucking' => 'JNE Trucking', 'Diambil' => 'Diambil customer']" :value="$v('courier')" />
+            <x-dl::field.date name="ship_date" label="Rencana Kirim" :value="$v('ship_date')" placeholder="—" />
+        </x-dl::form.row>
+        <x-dl::form.row :cols="2">
+            <x-dl::field.text name="ship_addr" label="Alamat Kirim" :value="$v('ship_addr')" />
+        </x-dl::form.row>
+    </x-slot:delivery>
+    <x-slot:files>
         <x-dl::form.row>
-            <x-dl::field.upload name="po_file" label="Lampiran PO (PDF)" accept="application/pdf" />
-            <x-dl::field.text name="note" label="Note" multiline :value="$v('note')" />
+            <x-dl::field.upload name="po_file" label="Lampiran PO Customer (PDF)" accept="application/pdf" />
+            <x-dl::field.text name="note" label="Note Internal" multiline :value="$v('note')" />
         </x-dl::form.row>
-    </x-slot:lampiran>
+        <x-dl::form.row>
+            <x-dl::field.text name="customer_note" label="Catatan untuk Customer (tercetak di nota)" multiline :value="$blank ? null : 'Harga belum termasuk ongkos kirim luar kota.'" />
+        </x-dl::form.row>
+    </x-slot:files>
     <x-slot:detail>
         <x-dl::lines name="lines" title="Details" add-label="+ Add Line" :rows="$blank ? [] : $co['lines']" :min-rows="$blank ? 1 : 0" :readonly="in_array($status, ['confirmed', 'cancelled', 'closed'], true)"
             :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11, 'costs' => ['freight' => 'Ongkos Kirim', 'plate' => 'Biaya Plate / Pisau', 'other' => 'Biaya Lain']]"
@@ -102,9 +119,6 @@
                 ['key' => 'min_order', 'label' => 'Qty Minim', 'type' => 'bool', 'more' => true],
                 ['key' => 'ppic', 'label' => 'Catatan u/ PPIC', 'more' => true],
             ]">
-            <x-slot:note>
-                <x-dl::field.text name="customer_note" label="Catatan untuk Customer (tercetak di nota)" multiline :value="$blank ? null : 'Harga belum termasuk ongkos kirim luar kota.'" />
-            </x-slot:note>
         </x-dl::lines>
     </x-slot:detail>
 </x-dl::form>

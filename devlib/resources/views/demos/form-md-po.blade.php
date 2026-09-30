@@ -23,6 +23,7 @@
         'po_no' => 'PO-2609-0001', 'po_date' => '2026-09-02', 'supplier' => 'UD Lem Sejahtera', 'buyer' => 'Siti Rahma', 'pr_ref' => 'PR-2609-0012',
         'eta' => '2026-09-09', 'warehouse' => 'GD-BB', 'term' => 'NET30', 'currency' => 'IDR', 'ship_to' => 'Gudang Bahan Baku, Jl. Contoh Industri 42',
         'note' => 'Barang dikirim pagi (07.00–11.00). Sertakan COA untuk tinta.',
+        'quote_ref' => 'Q-LS/IX/112', 'sup_addr' => 'Jl. Kenjeran 210, Surabaya', 'contact' => 'Ibu Lina', 'contact_phone' => '+6281399887766', 'contact_email' => 'sales@lemsejahtera.id', 'npwp' => '02.345.678.9-614.000', 'rate' => 1, 'sup_bank' => 'BCA 1234567890 a/n UD Lem Sejahtera', 'incoterm' => 'SUPPLIER',
         'lines' => [
             ['item' => 'RM-IVR-0310', 'item_label' => 'Ivory 310 gsm', 'spec' => 'Plano 65x100', 'qty' => 70, 'uom' => 'LBR', 'price' => 4200, 'eta' => '2026-09-09', 'disc' => '', 'wh' => 'GD-BB', 'rem' => ''],
             ['item' => 'RM-PLT-0072', 'item_label' => 'Plat CTP 72x103', 'spec' => 'Thermal, 0,30 mm', 'qty' => 105, 'uom' => 'PCS', 'price' => 96000, 'eta' => '2026-09-09', 'disc' => '', 'wh' => 'GD-BB', 'rem' => ''],
@@ -43,7 +44,7 @@
 <x-dl::form :title="$isNew ? 'Purchase Order · New'.($dup ? ' (copy of '.$po['po_no'].')' : '') : 'Purchase Order · '.$po['po_no']" :subtitle="$blank ? null : $po['supplier']"
     panel="top" kind="document" :status="$status" :pipeline="true" :can-reopen="true" :log="$log"
     :action="$here.'#form-md-po'" method="GET" :new-url="$here.'?'.$me.'_new=1#form-md-po'" :hidden="['doc' => $me]"
-    :tabs="['basic' => 'Basic', 'kirim' => 'Pengiriman', 'bayar' => 'Pembayaran', 'lampiran' => 'Lampiran & Catatan']"
+    :tabs="['general' => 'General', 'party' => 'Supplier', 'finance' => 'Finance', 'delivery' => 'Delivery', 'files' => 'Attachments & Notes']"
     :created-by="$isNew ? null : 'siti'" :created-at="$isNew ? null : '2026-09-02 08:12:00'"
     :updated-by="$isNew ? null : ($act ? 'johiwan' : 'siti')" :updated-at="$isNew ? null : ($act ? now()->format('Y-m-d H:i:s') : '2026-09-02 09:40:00')">
     <x-slot:strip>
@@ -52,31 +53,51 @@
         <x-dl::field.select name="supplier" label="Supplier" :options="$suppliers" :value="$v('supplier')" required />
         <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b data-l-val="po_lines:grand">Rp 0</b></div>
     </x-slot:strip>
-    <x-slot:basic>
+    <x-slot:general>
         <x-dl::form.row :cols="4">
             <x-dl::field.select name="buyer" label="Buyer / Pemohon" :options="['Siti Rahma' => 'Siti Rahma', 'Andi Pratama' => 'Andi Pratama', 'Joko Santoso' => 'Joko Santoso']" :value="$v('buyer')" required />
             <x-dl::field.select name="pr_ref" label="Referensi PR" :options="['PR-2609-0012' => 'PR-2609-0012', 'PR-2609-0015' => 'PR-2609-0015']" :value="$v('pr_ref')" />
-            <x-dl::field.date name="eta" label="Tgl Kirim Diharapkan" :value="$v('eta')" placeholder="—" required />
-            <x-dl::field.select name="currency" label="Mata Uang" :options="['IDR' => 'IDR · Rupiah', 'USD' => 'USD · Dollar']" :value="$v('currency')" />
+            <x-dl::field.text name="quote_ref" label="No. Penawaran Supplier" :value="$v('quote_ref')" :case-toggle="false" />
         </x-dl::form.row>
-    </x-slot:basic>
-    <x-slot:kirim>
-        <x-dl::form.row :cols="3">
+    </x-slot:general>
+    <x-slot:party>
+        <x-dl::form.row :cols="4">
+            <x-dl::field.text name="sup_addr" label="Alamat Supplier" :value="$v('sup_addr')" />
+            <x-dl::field.text name="contact" label="Contact Person" :value="$v('contact')" />
+            <x-dl::field.phone name="contact_phone" label="No. HP Kontak" :value="$v('contact_phone')" />
+            <x-dl::field.text name="contact_email" label="Email" type="email" :value="$v('contact_email')" />
+        </x-dl::form.row>
+        <x-dl::form.row :cols="4">
+            <x-dl::field.masked name="npwp" label="NPWP Supplier" mask="99.999.999.9-999.999" :value="$v('npwp')" />
+        </x-dl::form.row>
+    </x-slot:party>
+    <x-slot:finance>
+        <x-dl::form.row :cols="4">
+            <x-dl::field.select name="currency" label="Currency" :options="['IDR' => 'IDR · Rupiah', 'USD' => 'USD · US Dollar', 'SGD' => 'SGD · Singapore Dollar']" :value="$v('currency') ?? 'IDR'" required />
+            <x-dl::field.decimal name="rate" label="Rate (Kurs ke IDR)" :decimals="2" :value="$v('rate') ?? 1" hint="IDR = 1. Diisi bila mata uang asing." />
+            <x-dl::field.select name="term" label="Payment Terms" :options="['CASH' => 'Tunai (COD)', 'NET14' => 'Net 14 hari', 'NET30' => 'Net 30 hari', 'NET45' => 'Net 45 hari']" :value="$v('term')" required />
+            <x-dl::field.text name="sup_bank" label="Rekening Supplier" :value="$v('sup_bank')" :case-toggle="false" />
+        </x-dl::form.row>
+    </x-slot:finance>
+    <x-slot:delivery>
+        <x-dl::form.row :cols="4">
             <x-dl::field.select name="warehouse" label="Gudang Tujuan" :options="$warehouses" :value="$v('warehouse')" required />
+            <x-dl::field.date name="eta" label="Tgl Kirim Diharapkan" :value="$v('eta')" placeholder="—" required />
+            <x-dl::field.select name="incoterm" label="Pengiriman oleh" :options="['SUPPLIER' => 'Dikirim supplier (franco)', 'PICKUP' => 'Diambil sendiri (loco)']" :value="$v('incoterm')" />
+        </x-dl::form.row>
+        <x-dl::form.row :cols="2">
             <x-dl::field.text name="ship_to" label="Alamat Kirim" :value="$v('ship_to')" />
         </x-dl::form.row>
-    </x-slot:kirim>
-    <x-slot:bayar>
-        <x-dl::form.row :cols="4">
-            <x-dl::field.select name="term" label="Syarat Bayar" :options="['CASH' => 'Tunai', 'NET14' => 'Bayar 14 hari', 'NET30' => 'Bayar 30 hari', 'NET45' => 'Bayar 45 hari']" :value="$v('term')" required />
-        </x-dl::form.row>
-    </x-slot:bayar>
-    <x-slot:lampiran>
+    </x-slot:delivery>
+    <x-slot:files>
         <x-dl::form.row>
             <x-dl::field.upload name="quote_file" label="Penawaran Supplier (PDF)" accept="application/pdf" />
-            <x-dl::field.text name="po_internal" label="Catatan Internal" multiline />
+            <x-dl::field.text name="po_internal" label="Note Internal" multiline />
         </x-dl::form.row>
-    </x-slot:lampiran>
+        <x-dl::form.row>
+            <x-dl::field.text name="note" label="Catatan untuk Supplier (tercetak di PO)" multiline :value="$v('note')" />
+        </x-dl::form.row>
+    </x-slot:files>
     <x-slot:detail>
         <x-dl::lines name="po_lines" title="Details" add-label="+ Add Line" :rows="$blank ? [] : $po['lines']" :min-rows="$blank ? 1 : 0" :readonly="in_array($status, ['confirmed', 'cancelled', 'closed'], true)"
             :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11, 'costs' => ['freight' => 'Ongkos Kirim', 'handling' => 'Bongkar Muat', 'other' => 'Biaya Lain']]"
@@ -92,9 +113,6 @@
                 ['key' => 'disc', 'label' => 'Diskon Baris (Rp)', 'type' => 'money', 'more' => true],
                 ['key' => 'rem', 'label' => 'Catatan Baris', 'more' => true],
             ]">
-            <x-slot:note>
-                <x-dl::field.text name="note" label="Catatan untuk Supplier (tercetak di PO)" multiline :value="$v('note')" />
-            </x-slot:note>
         </x-dl::lines>
     </x-slot:detail>
 </x-dl::form>
