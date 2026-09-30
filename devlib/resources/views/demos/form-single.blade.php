@@ -20,10 +20,10 @@
     // Isian yang baru dikirim menang atas data contoh (field terkunci tidak ikut terkirim -> pakai data contoh).
     $v = fn ($k) => ! $isNew && request()->has($k) ? request($k) : ($e[$k] ?? null);
     $name = $v('full_name') ?: 'Budi Santoso';
-    // Simulasi login: Back to Draft = hak khusus (super-admin, admin-app, atau group yang diberi hak itu), bukan Mode Developer.
-    $roles = ['super-admin' => 'super-admin', 'admin-app' => 'admin-app', 'entry-reopen' => 'data-entry + hak Back to Draft', 'entry' => 'data-entry biasa'];
+    // Simulasi login. Back to Draft (user 2026-09-30) = super-admin, admin-app, atau level >= manager (+ RW di modulnya).
+    $roles = ['super-admin' => 'super-admin', 'admin-app' => 'admin-app', 'manager' => 'level manager', 'supervisor' => 'level supervisor', 'entry' => 'level data-entry'];
     $as = array_key_exists(request('as'), $roles) ? request('as') : 'super-admin';
-    $canReopen = $as !== 'entry';
+    $canReopen = in_array($as, ['super-admin', 'admin-app', 'manager'], true);
 @endphp
 <div class="dl-row" style="margin-bottom:8px">
     <span class="dl-note" style="margin:0">Simulasi login sebagai:</span>
@@ -98,4 +98,4 @@
         </x-dl::form.row>
     </x-slot:darurat>
 </x-dl::form>
-<p class="dl-note">Siklus: status awal selalu <b>Draft</b> (Delete · + New Record · Confirm · Save). <b>Confirm</b> -> Confirmed: isi terkunci, tombol jadi Cancel · + New Record · Email · Print. <b>Back to Draft</b> muncul di sebelah Cancel hanya untuk login yang punya haknya — coba ganti "Simulasi login sebagai" di atas. Tab Riwayat (read-only) selalu ada.</p>
+<p class="dl-note">Siklus: status awal selalu <b>Draft</b> (Delete · + New Record · Confirm · Save). <b>Confirm</b> -> Confirmed: isi terkunci, tombol jadi Cancel · + New Record · Email · Print. <b>Back to Draft</b> muncul di sebelah Cancel hanya untuk super-admin, admin-app, dan level manager ke atas — coba ganti "Simulasi login sebagai" di atas. Tab Riwayat (read-only) selalu ada.</p>
