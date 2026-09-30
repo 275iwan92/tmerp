@@ -1224,6 +1224,7 @@ form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:v
 .dl-appr__held{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border-radius:var(--dl-radius);background:color-mix(in srgb,var(--dl-muted) 12%,var(--dl-surface));border:1px dashed var(--dl-border);font-size:calc(12.5px * var(--dl-font-scale));color:var(--dl-ink)}
 .dl-appr__held > i{margin-top:2px;color:var(--dl-muted)}
 .dl-appr__held small{display:block;color:var(--dl-muted);font-size:calc(11.5px * var(--dl-font-scale))}
+.dl-appr__open{font-size:.75em;color:var(--dl-accent);margin-left:4px}
 .dl-appr__title h3{margin:0;font-size:calc(16px * var(--dl-font-scale));color:var(--dl-ink-strong)}
 .dl-appr__title p{margin:3px 0 0;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-muted)}
 .dl-appr__summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;background:var(--dl-surface-alt);border:1px solid var(--dl-border-soft);border-radius:var(--dl-radius);padding:12px}

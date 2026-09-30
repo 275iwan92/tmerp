@@ -47,6 +47,8 @@
         $log = PurchaseRequisition::log($pr);
         $held = $pr->status === 'SUBMITTED' && strtoupper((string) ($log[0]['action'] ?? '')) === 'HOLD';
         $approved = collect($log)->where('action', 'Approved')->count();
+        // Jumlah level ikut jalur flow engine untuk nilai dokumen ini (mis. PO > 1 jt = 3 level) -- sama dgn Approval Center.
+        $appr = PurchaseRequisition::approvalState('PR', $pr->pr_id, (float) $pr->c_est_total);
         $formStatus = PurchaseRequisition::formStatus($pr, $held);
         $draft = $pr->status === 'DRAFT';
         $money = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
@@ -58,7 +60,7 @@
         ])->values()->all();
     @endphp
     <x-dl::form id="pr-form" :title="'Purchase Requisition · '.($pr->doc_no ?: 'Draft #'.$pr->pr_id)" :subtitle="PurchaseRequisition::departments()[$pr->i_department_id] ?? '—'"
-        panel="top" kind="document" :status="$formStatus" :pipeline="true" :approval-levels="max(1, $approved + ($pr->status === 'SUBMITTED' ? 1 : 0))" :approval-at="$approved + 1"
+        panel="top" kind="document" :status="$formStatus" :pipeline="true" :approval-levels="max(1, $appr['levels'])" :approval-at="$appr['at'] ?: $approved + 1"
         :can-approve="(bool) $pending" :log="$log"
         :action="route('v2.pr.save', $pr->pr_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['cancel', 'duplicate', 'email', 'print']"
         :tabs="['general' => 'General', 'notes' => 'Notes']"

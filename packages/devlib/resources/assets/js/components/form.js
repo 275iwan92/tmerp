@@ -68,7 +68,7 @@
     act(a) {
       // [pesan, nada, alasan wajib?] -- Cancel, Reject, Back to Draft wajib alasan (tercatat di History).
       const ask = {delete: ['Hapus data ini? Tidak bisa dikembalikan.', 'danger'], confirm: ['Confirm dokumen ini? Setelah confirm isi terkunci dan masuk approval (bila ada).', 'warn'], cancel: ['Batalkan dokumen ini?', 'danger', true], draft: ['Kembalikan dokumen ini ke Draft? Isinya bisa diubah lagi dan harus di-Confirm ulang.', 'warn', true],
-        approve: ['Setujui dokumen ini di tingkat approval Anda?', 'success'], reject: ['Tolak dokumen ini? Dokumen berhenti (Rejected); pembuat bisa membuat ulang lewat Duplicate.', 'danger', true], hold: ['Tahan (Hold) dokumen ini di tingkat approval Anda? Nanti tetap diputuskan Approve atau Reject.', 'warn', true], deactivate: ['Nonaktifkan data ini? Data tidak muncul lagi di pilihan.', 'warn'], activate: ['Aktifkan kembali data ini?', 'warn']}[a];
+        approve: ['Setujui dokumen ini di tingkat approval Anda? Keputusan ini final, tidak bisa dibatalkan.', 'success'], reject: ['Tolak dokumen ini? Keputusan ini final, tidak bisa dibatalkan (Rejected); pembuat bisa membuat ulang lewat Duplicate.', 'danger', true], hold: ['Tahan (Hold) dokumen ini? Status sementara: nanti tetap diputuskan Approve atau Reject.', 'warn', true], deactivate: ['Nonaktifkan data ini? Data tidak muncul lagi di pilihan.', 'warn'], activate: ['Aktifkan kembali data ini?', 'warn']}[a];
       const go = why => {
         this.el.dispatchEvent(new CustomEvent('dl:form-action', {bubbles: true, detail: {action: a}}));
         // Print/Email tidak mengubah dokumen -> tidak kirim form (layar menangkap dl:form-action, mis. buka x-dl::doc-share).

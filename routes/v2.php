@@ -22,6 +22,7 @@ use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
 use App\Support\Mail\MailSettings;
 use App\Support\V2\AppMenu;
+use App\Support\V2\Data\ApprovalCenter;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DeliveryOrder;
@@ -485,6 +486,16 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
                 return redirect(route('v2.screen', 'customer-order'))->with('v2_flash', "Draft {$o->co_no} dihapus.");
             }
+            if (in_array($r->input('action'), ['approve', 'reject', 'hold'], true)) {
+                $err = CustomerOrder::decide($o, (string) $r->input('action'), (string) $r->input('_reason', ''));
+
+                return $err ? $open($id)->withErrors(['approval' => $err]) : $open($id)->with('v2_flash', 'Keputusan approval tersimpan ('.ucfirst((string) $r->input('action')).').');
+            }
+            if ($r->input('action') === 'duplicate') {
+                $new = CustomerOrder::duplicate($o);
+
+                return $open($new->id_order)->with('v2_flash', "Salinan {$o->co_no} dibuat sebagai CO INSTANT {$new->co_no} (Draft) — perbaiki lalu Confirm lagi.");
+            }
             if ($r->input('action') === 'cancel') {
                 $err = CustomerOrder::cancel($o, (string) $r->input('_reason', ''));
 
@@ -510,10 +521,10 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 $msg = 'Jadwal kirim ditambahkan.';
             } elseif ($action === 'confirm') {
                 $o = CoOrder::with('items.deliveries')->findOrFail($id);
-                if (! CustomerOrder::confirm($o)) {
-                    return $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: tiap baris PRODUCT wajib punya Due Date'.($o->isInstant() ? ' dan Master Product' : '').'.']);
+                if ($err = CustomerOrder::confirm($o)) {
+                    return $open($id)->withErrors(['confirm' => $err]);
                 }
-                $msg = "Customer Order {$o->co_no} CONFIRMED — jadwal kirim default dibuat di Customer Plan Delivery.";
+                $msg = "Customer Order {$o->co_no} diajukan — menunggu approval F&A SPV lalu Operational Manager. Jadwal kirim (CPDEL) dibuat setelah approval terakhir.";
             }
 
             return $open($id)->with('v2_flash', $msg);
@@ -525,6 +536,17 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return redirect(route('v2.screen', 'customer-order'))->with('v2_flash', "Draft {$o->co_no} dihapus.");
         })->whereNumber('id')->name('delete');
     });
+
+    // Approval Center v2 (PR / PO / CO): keputusan approver tahap berjalan -> aturan layar dokumennya; log di flow_log.
+    Route::post('/approval/{module}', function (Request $r, string $module) {
+        $meta = ApprovalCenter::MODULES[$module] ?? abort(404);
+        abort_unless(Auth::user()->canAccessModule($meta['menu']), 403);
+        $d = $r->validate(['id' => ['required', 'integer'], 'action' => ['required', 'in:approve,reject,hold'], '_reason' => ['nullable', 'string', 'max:200']]);
+        $err = ApprovalCenter::decide($module, (int) $d['id'], $d['action'], (string) ($d['_reason'] ?? ''));
+        $back = redirect(route('v2.screen', 'approval-'.strtolower($module)));
+
+        return $err ? $back->withErrors(['approval' => $err]) : $back->with('v2_flash', ['approve' => 'Disetujui', 'reject' => 'Ditolak', 'hold' => 'Ditahan'][$d['action']].' — tercatat di log.');
+    })->whereIn('module', array_keys(ApprovalCenter::MODULES))->name('approval.decide');
 
     // Customer Plan Delivery v2 (App\Support\V2\Data\Cpdel = confirmSplit/confirmMerge v1 pages::co.delivery-plan).
     Route::prefix('cpdel')->name('cpdel.')->middleware('module:SALES')->group(function () {

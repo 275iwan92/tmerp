@@ -13,6 +13,7 @@ use App\Models\Sdi\DoLine;
 use App\Models\Sdi\IqpCostingPriceTier;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
+use App\Services\Flow\FlowEngineService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -183,11 +184,32 @@ class CoOrderBuilder
     // baris qty penuh @ due_date. Dipindah dari co/entry.blade.php ke sini
     // 2026-09-21 supaya jalur Confirm dari grid, dari layar entry, dan dari
     // seeder memakai logika yang SAMA (dulu cuma hidup di dalam komponen).
+    // Approval CO (user 2026-09-30): Confirm v2 = ajukan (SUBMITTED) ke flow engine 'CO' (F&A SPV cek harga -> Operational
+    // Manager). CPDEL baru dibuat saat approval terakhir lolos (confirm() dipanggil dari SUBMITTED). null = sukses, selain itu pesan.
+    public static function submit(CoOrder $order): ?string
+    {
+        $order->loadMissing(['items.deliveries']);
+        if ($order->doc_status !== 'DRAFT' || ! $order->isConfirmable()) {
+            return 'Belum bisa Confirm: tiap baris PRODUCT wajib punya Due Date'.($order->isInstant() ? ' dan Master Product' : '').'.';
+        }
+        $flow = app(FlowEngineService::class);
+        if (! $flow->activeConfig('CO')) {
+            return 'Alur approval Customer Order belum dikonfigurasi (flow_config CO).';
+        }
+        DB::connection('tm2sdi')->transaction(function () use ($order, $flow) {
+            $order->update(['doc_status' => 'SUBMITTED', 'updated_by' => Auth::user()->login]);
+            $flow->submit('CO', $order->id_order, 'SUBMITTED', (float) $order->totals()['net_receivable']);
+        });
+
+        return null;
+    }
+
     public static function confirm(CoOrder $order): bool
     {
         $order->loadMissing(['items.deliveries']);
 
-        if ($order->doc_status !== 'DRAFT' || ! $order->isConfirmable()) {
+        // DRAFT = jalur v1 (tanpa approval); SUBMITTED = approval terakhir CO v2 lolos.
+        if (! in_array($order->doc_status, ['DRAFT', 'SUBMITTED'], true) || ! $order->isConfirmable()) {
             return false;
         }
 

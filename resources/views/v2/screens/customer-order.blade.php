@@ -40,8 +40,9 @@
         :stats="[
             ['label' => 'Semua'],
             ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],
-            ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
-            ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger'],
+            ['label' => 'Menunggu approval', 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'],
+            ['label' => 'Approved', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
+            ['label' => 'Rejected / Cancelled', 'where' => ['status' => ['REJECTED', 'CANCELLED']], 'tone' => 'danger'],
         ]"
         :filters="['mode' => 'Jalur', 'status' => 'Status']" />
 @elseif (! $o)
@@ -95,15 +96,22 @@
             'product_label' => $it->product_id ? ($it->product?->product_name ?? '#'.$it->product_id) : ($it->line_kind === 'PRODUCT' ? 'belum terkait' : '—'),
         ])->values()->all();
         $log = collect($c->historyTimeline())->map(fn ($r) => ['at' => $r['date'], 'by' => '', 'action' => $r['type'].(! empty($r['current']) ? ' (ini)' : ''), 'note' => $r['label']])->reverse()->values()->all();
+        // Approval CO (user 2026-09-30): F&A SPV (cek harga) -> Operational Manager; log keputusan flow_log di atas History.
+        $appr = CustomerOrder::approvalState('CO', $o->id_order, (float) $totals['net_receivable']);
+        $pending = CustomerOrder::pending($o);
+        $log = array_merge(CustomerOrder::log($o), $log);
     @endphp
     @if ($o->doc_status === 'CANCELLED')<x-dl::alert tone="danger" :message="'Cancelled oleh '.$o->updated_by.' — '.$o->cancel_reason" />@endif
+    @if ($o->doc_status === 'REJECTED')<x-dl::alert tone="danger" :message="'Rejected oleh '.$o->updated_by.' — '.$o->cancel_reason.'. Pakai Duplicate untuk membuat CO baru.'" />@endif
+    @if ($o->doc_status === 'SUBMITTED')<x-dl::alert tone="warn" :message="'Menunggu approval level '.$appr['at'].' dari '.$appr['levels'].': '.($appr['steps'][$appr['at'] - 1]['role'] ?? '—').'. Jadwal kirim (CPDEL) dibuat setelah approval terakhir.'" />@endif
     @if ($draft && $missingDue->isNotEmpty())<x-dl::alert tone="warn" :message="'⚠ '.$missingDue->count().' baris Product belum ada Due Date (wajib sebelum Confirm).'" />@endif
     @if ($draft && $missingProduct->isNotEmpty())<x-dl::alert tone="warn" :message="'⚠ '.$missingProduct->count().' baris belum terkait Master Product.'" />@endif
 
     <x-dl::form id="co-form" :title="'Customer Order · '.$o->co_no" :subtitle="($o->customer?->customer_name ?? '—').' · '.$o->entry_mode"
-        panel="top" kind="document" :status="$draft ? 'draft' : strtolower($o->doc_status)" :pipeline="true"
+        panel="top" kind="document" :status="CustomerOrder::formStatus($o, $appr['held'])" :pipeline="true"
+        :approval-levels="$appr['levels']" :approval-at="$appr['at'] ?: ($o->doc_status === 'SUBMITTED' ? 1 : $appr['levels'])" :can-approve="(bool) $pending"
         :action="route('v2.co.save', $o->id_order)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
-        :hide="array_merge(['print', 'email', 'duplicate'], $o->isInstant() ? [] : ['delete'])"
+        :hide="array_merge(['print', 'email'], $o->isInstant() ? [] : ['delete'])"
         :tabs="['general' => 'General', 'finance' => 'Finance', 'delivery' => 'Delivery', 'notes' => 'Notes']"
         :created-by="$o->created_by" :created-at="$o->created_at?->toDateTimeString()" :updated-by="$o->updated_by" :updated-at="$o->updated_at?->toDateTimeString()" :log="$log">
         <x-slot:special>

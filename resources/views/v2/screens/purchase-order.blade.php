@@ -46,6 +46,8 @@
         $log = PurchaseOrder::flowLog('PO', $po->po_id);
         $held = $po->status === 'SUBMITTED' && strtoupper((string) ($log[0]['action'] ?? '')) === 'HOLD';
         $approved = collect($log)->where('action', 'Approved')->count();
+        // Jumlah level ikut jalur flow engine untuk nilai dokumen ini (mis. PO > 1 jt = 3 level) -- sama dgn Approval Center.
+        $appr = PurchaseOrder::approvalState('PO', $po->po_id, (float) $po->c_grand_total);
         $draft = $po->status === 'DRAFT';
         $sup = \Illuminate\Support\Facades\DB::connection('tm2mst')->table('sup_supplier')->where('id_supplier', $po->i_supplier_id)->first();
         $money = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
@@ -58,7 +60,7 @@
         ])->values()->all();
     @endphp
     <x-dl::form id="po-form" :title="'Purchase Order · '.($po->doc_no ?: 'Draft #'.$po->po_id)" :subtitle="($sup->supplier_name ?? '—').' · '.$po->status"
-        panel="top" kind="document" :status="PurchaseOrder::formStatus($po, $held)" :pipeline="true" :approval-levels="max(1, $approved + ($po->status === 'SUBMITTED' ? 1 : 0))" :approval-at="$approved + 1"
+        panel="top" kind="document" :status="PurchaseOrder::formStatus($po, $held)" :pipeline="true" :approval-levels="max(1, $appr['levels'])" :approval-at="$appr['at'] ?: $approved + 1"
         :can-approve="(bool) $pending" :log="$log"
         :action="route('v2.po.save', $po->po_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['cancel', 'duplicate', 'email', 'print']"
         :tabs="['general' => 'General', 'supplier' => 'Supplier', 'finance' => 'Finance', 'delivery' => 'Delivery', 'notes' => 'Notes']"

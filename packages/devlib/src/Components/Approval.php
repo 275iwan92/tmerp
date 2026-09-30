@@ -10,6 +10,8 @@ namespace Devlib\Components;
 //         submitter = pembuat (bukan level approval); sisanya = Level 1..n, yang 'current' = level berjalan.
 //         'history' => [['action','by','at','note','plt']]]]
 // lineColumns: [kolom => label]; kolom berakhiran :money diformat Rupiah (mis. 'price:money').
+// :action = URL POST (id, action=approve|reject|hold, _reason) -> keputusan disimpan server lalu halaman dimuat ulang;
+// tanpa :action = simulasi di browser (demo DevLib). :log = Log Keputusan awal dari DB.
 // Setiap keputusan = LOG (user 2026-09-30): siapa, kapan, aksi (APPROVED/REJECTED/HOLD), level & alasan. Tampil di
 // Riwayat Dokumen + panel Log Keputusan, dan dipancarkan sebagai event dl:approval
 // (detail: {id, no, action, status, by, at, level, role, note}) -- aplikasi WAJIB menyimpannya (mis. flow_log / doc_state_log).
@@ -24,6 +26,8 @@ class Approval extends DevlibComponent
         public string $rejectLabel = 'Tolak',
         public string $me = 'Saya',
         public ?string $source = null,
+        public ?string $action = null,
+        public array $log = [],
     ) {}
 
     public function tag(): string
@@ -39,7 +43,8 @@ class Approval extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <div {{ $attributes->class('dl-appr') }} {!! $dl() !!} data-dl-approval data-docs="{{ json_encode($docs) }}" data-cols="{{ json_encode($lineColumns) }}" data-me="{{ $me }}">
+            <div {{ $attributes->class('dl-appr') }} {!! $dl() !!} data-dl-approval data-docs="{{ json_encode($docs) }}" data-cols="{{ json_encode($lineColumns) }}" data-me="{{ $me }}" data-log="{{ json_encode($log) }}">
+                @if ($action)<form method="post" action="{{ $action }}" data-a-form hidden>@csrf<input type="hidden" name="id"><input type="hidden" name="action"><input type="hidden" name="_reason"></form>@endif
                 <div class="dl-appr__head"><h2>{{ $title }}</h2><span class="dl-badge dl-badge--pill dl-badge--warn" data-a-count></span></div>
                 <div class="dl-appr__grid">
                     <div class="dl-appr__side">

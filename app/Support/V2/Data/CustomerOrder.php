@@ -5,17 +5,23 @@ namespace App\Support\V2\Data;
 use App\Models\Master\CustCustomer;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\QuoQuotation;
+use App\Services\Flow\FlowEngineService;
 use App\Services\Sales\CoOrderBuilder;
+use App\Support\V2\Data\Concerns\FlowDocument;
 use App\Support\V2\Lookups;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 // Layar Customer Order v2. Aturan & tulis = komponen v1 pages::co.entry yang SAMA (updateHeader/updateItem/addDelivery/
 // confirmCo/...), dipanggil per field. 2 jalur masuk (CLAUDE.md §4): INTEGRATED dari Quotation terbit, INSTANT = pilih customer,
-// baris PRODUCT wajib Master Product. Confirm -> engine CPDEL (CoOrderBuilder::confirm). Tambahan v2: Hapus draft INSTANT.
+// baris PRODUCT wajib Master Product. Confirm v2 = ajukan approval; approval terakhir -> engine CPDEL (CoOrderBuilder::confirm).
+// Tambahan v2: Hapus draft INSTANT.
 final class CustomerOrder
 {
-    public const STATUS_TONES = ['DRAFT' => 'neutral', 'CONFIRMED' => 'success', 'CANCELLED' => 'danger'];
+    use FlowDocument;
+
+    // SUBMITTED = menunggu approval (F&A SPV -> Operational Manager); CONFIRMED = approval terakhir lolos + CPDEL dibuat.
+    public const STATUS_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'CONFIRMED' => 'success', 'REJECTED' => 'danger', 'CANCELLED' => 'danger'];
 
     public const MODE_TONES = ['INTEGRATED' => 'info', 'INSTANT' => 'violet'];
 
@@ -153,9 +159,80 @@ final class CustomerOrder
         self::component($o->id_order)->addExternalCost();
     }
 
-    public static function confirm(CoOrder $o): bool
+    // Confirm v2 = ajukan approval (CPDEL menunggu approval terakhir). null = sukses, selain itu pesan.
+    public static function confirm(CoOrder $o): ?string
     {
-        return CoOrderBuilder::confirm(CoOrder::with('items.deliveries')->findOrFail($o->id_order));
+        return CoOrderBuilder::submit(CoOrder::with('items.deliveries')->findOrFail($o->id_order));
+    }
+
+    public static function pending(CoOrder $o): ?object
+    {
+        return self::pendingFor('CO', $o->id_order);
+    }
+
+    public static function log(CoOrder $o): array
+    {
+        return self::flowLog('CO', $o->id_order);
+    }
+
+    // approve | reject | hold oleh approver tahap berjalan. Reject = final (REJECTED); approve terakhir -> CONFIRMED + CPDEL.
+    // Balasan = pesan error (kosong = sukses).
+    public static function decide(CoOrder $o, string $action, string $note): string
+    {
+        $pending = self::pending($o);
+        if (! $pending || $o->doc_status !== 'SUBMITTED') {
+            return 'Customer Order ini tidak sedang menunggu approval Anda.';
+        }
+        $note = trim($note);
+        if ($action !== 'approve' && $note === '') {
+            return 'Alasan wajib diisi.';
+        }
+        $flow = app(FlowEngineService::class);
+        $amount = (float) $pending->amount_snapshot;
+        DB::connection('tm2sdi')->transaction(function () use ($o, $action, $note, $flow, $pending, $amount) {
+            if ($action === 'approve') {
+                $r = $flow->approve('CO', $o->id_order, $pending->flow_step_id, $amount);
+                if ($r['final']) {
+                    CoOrderBuilder::confirm(CoOrder::with('items.deliveries')->findOrFail($o->id_order));
+                }
+            } elseif ($action === 'reject') {
+                $flow->reject('CO', $o->id_order, $pending->flow_step_id, $note, $amount);
+                $o->update(['doc_status' => 'REJECTED', 'cancel_reason' => $note, 'updated_by' => auth()->user()->login]);
+            } else {
+                $flow->hold('CO', $o->id_order, $pending->flow_step_id, $note, $amount);
+            }
+        });
+
+        return '';
+    }
+
+    // Rejected = final (user 2026-09-30): order ulang = CO INSTANT baru berisi salinan baris (tanpa jadwal kirim) untuk
+    // diperbaiki lalu diajukan lagi. 1 Quotation = 1 CO, jadi salinan selalu INSTANT; baris quotation menjadi manual.
+    public static function duplicate(CoOrder $o): CoOrder
+    {
+        abort_unless(in_array($o->doc_status, ['REJECTED', 'CANCELLED'], true), 422, 'Hanya CO Rejected / Cancelled yang bisa di-Duplicate.');
+        $new = CoOrderBuilder::createInstant(CustCustomer::findOrFail($o->customer_id));
+        $login = auth()->user()->login;
+        DB::connection('tm2sdi')->transaction(function () use ($o, $new, $login) {
+            $new->update(collect(self::HEADER)->mapWithKeys(fn ($f) => [$f => $o->{$f}])->except('co_date')->all() + ['updated_by' => $login]);
+            foreach ($o->items()->get() as $it) {
+                $new->items()->create(collect($it->getAttributes())->only($it->getFillable())->except(['order_id', 'quotation_item_id'])->all()
+                    + ['quotation_item_id' => null, 'created_by' => $login, 'updated_by' => $login]);
+            }
+            foreach ($o->externalCosts()->get() as $cost) {
+                $new->externalCosts()->create(collect($cost->getAttributes())->only($cost->getFillable())->except('order_id')->all()
+                    + ['created_by' => $login, 'updated_by' => $login]);
+            }
+        });
+
+        return $new;
+    }
+
+    public static function formStatus(CoOrder $o, bool $held): string
+    {
+        return match ($o->doc_status) {
+            'DRAFT' => 'draft', 'SUBMITTED' => $held ? 'hold' : 'approval', 'CONFIRMED' => 'approved', 'REJECTED' => 'rejected', 'CANCELLED' => 'cancelled', default => 'draft',
+        };
     }
 
     public static function cancel(CoOrder $o, string $reason): ?string

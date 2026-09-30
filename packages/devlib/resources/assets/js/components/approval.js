@@ -10,13 +10,14 @@
       this.cols = JSON.parse(this.el.dataset.cols || '{}');
       this.me = this.el.dataset.me;
       this.cur = this.docs[0] ? this.docs[0].id : null;
-      this.log = [];
+      this.log = JSON.parse(this.el.dataset.log || '[]');
+      this.form = $(this.el, '[data-a-form]');
       this.icon = {SUBMITTED: 'fa-paper-plane', APPROVED: 'fa-check', REJECTED: 'fa-ban', HOLD: 'fa-pause'};
       this.el.addEventListener('click', e => {
         const it = e.target.closest('[data-a-id]'); if (it) { this.cur = isNaN(+it.dataset.aId) ? it.dataset.aId : +it.dataset.aId; this.list(); this.detail(); return; }
         const b = e.target.closest('[data-a-do]'); if (b) this.decide(b.dataset.aDo);
       });
-      this.list();this.detail();
+      this.list();this.detail();this.logs();
     }
 
     pending() {
@@ -58,7 +59,7 @@
       const steps = d.steps || [], at = steps.findIndex(s => s.status === 'current'), lv = this.level(d);
       const lines = d.lines || [], keys = Object.keys(this.cols);
       $(this.el, '[data-a-body]').innerHTML = `
-        <div class="dl-appr__title"><div><h3>${esc(d.no)} — ${esc(d.title || '')}</h3><p>Diajukan oleh: ${esc(d.submitted_by || '')}${d.party ? ' · ' + esc(d.party) : ''}</p></div>${lv.at ? `<div class="dl-appr__level"><span class="dl-badge dl-badge--pill dl-badge--warn">Approval Level ${lv.at} of ${lv.n} — ${esc(steps[at].role)}</span><span class="dl-appr__meter" title="${lv.n} level approval">${lv.steps.map((s, i) => `<i class="is-${esc(s.status)}" title="Level ${i + 1} · ${esc(s.role)}"></i>`).join('')}</span></div>` : ''}</div>
+        <div class="dl-appr__title"><div><h3>${esc(d.no)} — ${esc(d.title || '')}${d.url ? ` <a class="dl-appr__open" href="${esc(d.url)}" title="Buka dokumen"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}</h3><p>Diajukan oleh: ${esc(d.submitted_by || '')}${d.party ? ' · ' + esc(d.party) : ''}</p></div>${lv.at ? `<div class="dl-appr__level"><span class="dl-badge dl-badge--pill dl-badge--warn">Approval Level ${lv.at} of ${lv.n} — ${esc(steps[at].role)}</span><span class="dl-appr__meter" title="${lv.n} level approval">${lv.steps.map((s, i) => `<i class="is-${esc(s.status)}" title="Level ${i + 1} · ${esc(s.role)}"></i>`).join('')}</span></div>` : ''}</div>
         ${d.held ? `<div class="dl-appr__held"><i class="fa-solid fa-pause"></i><div><b>Ditahan sementara</b><small>Oleh ${esc(d.held.by)} · ${esc(d.held.at)}${d.held.note ? ` — “${esc(d.held.note)}”` : ''}</small><small>Masih bisa diputuskan: Setujui atau Tolak.</small></div></div>` : ''}
         <div class="dl-appr__summary">${Object.entries(d.summary || {}).map(([k, v]) => `<div><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join('')}</div>
         ${lines.length ? `<table class="dl-appr__lines"><thead><tr>${keys.map(k => `<th class="${k.endsWith(':money') ? 'num' : ''}">${esc(this.cols[k])}</th>`).join('')}</tr></thead><tbody>${lines.map(r => `<tr>${keys.map(k => `<td class="${k.endsWith(':money') ? 'num' : ''}">${this.cell(k, r[k.replace(':money', '')])}</td>`).join('')}</tr>`).join('')}</tbody></table>` : ''}
@@ -78,6 +79,11 @@
         tone: action === 'reject' ? 'danger' : action === 'hold' ? 'warn' : 'success', ok: word, reason: action !== 'approve'}).then(res => {
         if (!res) return;
         const n = typeof res === 'string' ? res : '';
+        if (this.form) {
+          this.form.elements.id.value = d.id; this.form.elements.action.value = action; this.form.elements._reason.value = n;
+          this.el.dispatchEvent(new CustomEvent('dl:approval', {bubbles: true, detail: {id: d.id, no: d.no, action, note: n}}));
+          return this.form.submit();
+        }
         const now = `${fmt.date()} ${fmt.time()}`, step = (d.steps || []).find(s => s.status === 'current'), lv = this.level(d);
         const status = {approve: 'APPROVED', reject: 'REJECTED', hold: 'HOLD'}[action];
         const log = {id: d.id, no: d.no, action, status, by: this.me, at: now, level: lv.at, levels: lv.n, role: step ? step.role : '', note: n};
