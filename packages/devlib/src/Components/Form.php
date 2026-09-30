@@ -7,7 +7,7 @@ namespace Devlib\Components;
 // mode="view": tampil sebagai teks (fieldset disabled), tombol Edit -> bisa diubah, Batal mengembalikan nilai semula. Event dl:form-submit.
 // panel="top" (Single Form, user 2026-09-30): panel aksi menempel di atas -- judul, badge status, lalu tombol, Back di ujung kanan; tombol baku menurut kind+status;
 // layar TIDAK menyusun tombol sendiri. kind=master: Nonaktifkan/Aktifkan + New + Save. kind=document: draft = Delete + New + Confirm + Save,
-// confirmed = Cancel + Back to Draft (Mode Developer) + New + Email + Print, cancelled = New + Print. status=new (+ New Record, form sama tapi kosong) = Save saja. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
+// confirmed = Cancel + Back to Draft (hanya :can-reopen) + New + Email + Print, cancelled = New + Print. status=new (+ New Record, form sama tapi kosong) = Save saja. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
 // Isi diusahakan muat 1 layar; lebih dari itu -> :tabs ['key' => 'Judul'] + slot per key (tanpa tabs = isi $slot di tab 'Data').
 // Tab read-only 'Riwayat' SELALU ditambahkan objek: dibuat oleh + tanggal-jam, terakhir diubah oleh + tanggal-jam (user 2026-09-30).
 class Form extends DevlibComponent
@@ -32,6 +32,8 @@ class Form extends DevlibComponent
         public ?string $createdAt = null,
         public ?string $updatedBy = null,
         public ?string $updatedAt = null,
+        public bool $canReopen = false,
+        public array $hidden = [],
     ) {}
 
     public function panelTabs(): array
@@ -59,8 +61,9 @@ class Form extends DevlibComponent
             'master.active' => [[null, 'Nonaktifkan', 'secondary', 'fa-toggle-off', 'deactivate'], $new, ['save', null, null, null, 'save']],
             'master.inactive' => [[null, 'Aktifkan', 'secondary', 'fa-toggle-on', 'activate'], $new, ['save', null, null, null, 'save']],
             'document.draft' => [['delete', null, null, null, 'delete'], $new, ['confirm', null, null, null, 'confirm'], ['save', null, null, null, 'save']],
-            // Back to Draft = hanya Mode Developer (kelas dl-dev-only; server tetap wajib cek hak Developer), tepat di sebelah Cancel.
-            'document.confirmed' => [['cancel', null, 'danger', null, 'cancel'], [null, 'Back to Draft', 'secondary', 'fa-rotate-left', 'draft', 'dl-dev-only'], $new, ['email', null, null, null, 'email'], $print],
+            // Back to Draft tepat di sebelah Cancel, HANYA bila layar memberi :can-reopen (hak khusus: super-admin, admin-app,
+            // atau group yang diberi hak Back to Draft) -- server tetap wajib cek hak yang sama saat aksi diterima.
+            'document.confirmed' => array_values(array_filter([['cancel', null, 'danger', null, 'cancel'], $this->canReopen ? [null, 'Back to Draft', 'secondary', 'fa-rotate-left', 'draft'] : null, $new, ['email', null, null, null, 'email'], $print])),
             default => [$new, $print],
         };
     }
@@ -108,6 +111,7 @@ class Form extends DevlibComponent
                 @elseif ($title !== '')
                     <div class="dl-form__head"><div class="dl-form__title">{{ $title }}</div>@if ($mode === 'view')<x-dl::button variant="secondary" size="sm" icon="edit" label="Edit" data-f-edit />@endif</div>
                 @endif
+                @foreach ($hidden as $hk => $hv)<input type="hidden" name="{{ $hk }}" value="{{ $hv }}">@endforeach
                 @if ($panel)
                     <fieldset class="dl-form__fs" data-f-fs @disabled($mode === 'view' || $locked())><div class="dl-form__body dl-tabs" data-dl-tabs>
                         <div class="dl-tabs__bar" role="tablist">

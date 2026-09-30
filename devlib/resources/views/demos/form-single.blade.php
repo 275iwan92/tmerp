@@ -20,9 +20,19 @@
     // Isian yang baru dikirim menang atas data contoh (field terkunci tidak ikut terkirim -> pakai data contoh).
     $v = fn ($k) => ! $isNew && request()->has($k) ? request($k) : ($e[$k] ?? null);
     $name = $v('full_name') ?: 'Budi Santoso';
+    // Simulasi login: Back to Draft = hak khusus (super-admin, admin-app, atau group yang diberi hak itu), bukan Mode Developer.
+    $roles = ['super-admin' => 'super-admin', 'admin-app' => 'admin-app', 'entry-reopen' => 'data-entry + hak Back to Draft', 'entry' => 'data-entry biasa'];
+    $as = array_key_exists(request('as'), $roles) ? request('as') : 'super-admin';
+    $canReopen = $as !== 'entry';
 @endphp
+<div class="dl-row" style="margin-bottom:8px">
+    <span class="dl-note" style="margin:0">Simulasi login sebagai:</span>
+    @foreach ($roles as $rk => $rl)
+        <x-dl::button size="sm" :variant="$rk === $as ? 'primary' : 'secondary'" :label="$rl" :href="url()->current().'?'.http_build_query(['as' => $rk, 'status' => $isNew ? 'draft' : $status])" />
+    @endforeach
+</div>
 <x-dl::form :title="$isNew ? 'Pegawai · Baru' : 'Pegawai · TM-00012 '.$name" panel="top" kind="document" :status="$status"
-    :action="url()->current()" method="GET" :new-url="url()->current().'?new=1'"
+    :action="url()->current()" method="GET" :new-url="url()->current().'?new=1&as='.$as" :can-reopen="$canReopen" :hidden="['as' => $as]"
     :tabs="['utama' => 'Utama', 'pribadi' => 'Data Pribadi', 'alamat' => 'Alamat & Kontak', 'darurat' => 'Kontak Darurat']"
     :created-by="$isNew ? null : 'johiwan'" :created-at="$isNew ? null : '2018-01-02 08:10:00'"
     :updated-by="$isNew ? null : ($act ? 'johiwan' : 'annisa')" :updated-at="$isNew ? null : ($act ? now()->format('Y-m-d H:i:s') : '2026-09-28 14:22:00')">
@@ -88,4 +98,4 @@
         </x-dl::form.row>
     </x-slot:darurat>
 </x-dl::form>
-<p class="dl-note">Siklus: status awal selalu <b>Draft</b> (Delete · + New Record · Confirm · Save). <b>Confirm</b> -> Confirmed: isi terkunci, tombol jadi Cancel · + New Record · Email · Print. Tekan <b>F10</b> (Mode Developer) untuk melihat <b>Back to Draft</b> di sebelah Cancel. Tab Riwayat (read-only) selalu ada.</p>
+<p class="dl-note">Siklus: status awal selalu <b>Draft</b> (Delete · + New Record · Confirm · Save). <b>Confirm</b> -> Confirmed: isi terkunci, tombol jadi Cancel · + New Record · Email · Print. <b>Back to Draft</b> muncul di sebelah Cancel hanya untuk login yang punya haknya — coba ganti "Simulasi login sebagai" di atas. Tab Riwayat (read-only) selalu ada.</p>
