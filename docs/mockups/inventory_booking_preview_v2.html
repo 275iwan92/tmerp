@@ -1,0 +1,951 @@
+<title>Tata Letak Gudang TMERP</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: tab bar lengket di atas, satu panel per layar; tiap panel = catatan desain + bingkai layar TMERP v2 */
+:root{
+  --bg:#f3f5f9; --surface:#ffffff; --surface2:#f7f9fc; --fg:#1d2638; --muted:#66728a; --line:#dde3ec;
+  --navy:#2c3e69; --navy-fg:#ffffff; --pill:#43508a; --accent:#2c7be5; --accent-soft:#e5eefc; --field:#f7faff; --field-line:#c9d6ea;
+  --ok:#0f8a5f; --ok-soft:#e3f5ee; --warn:#a15c00; --warn-soft:#fdf1dc; --bad:#b4233a; --bad-soft:#fbe7ea;
+  --info:#6b3fb8; --info-soft:#efe8fb; --teal:#0e7490; --teal-soft:#e0f4f8;
+  --f-body:'Instrument Sans','Segoe UI',system-ui,sans-serif; --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121826; --surface:#1a2233; --surface2:#1f2a3e; --fg:#e4e9f2; --muted:#9aa6bd; --line:#2c3850;
+  --navy:#243559; --navy-fg:#eef2fb; --pill:#3a4a80; --accent:#6aa5f5; --accent-soft:#1f3150; --field:#1d2940; --field-line:#34466a;
+  --ok:#5fd0a4; --ok-soft:#173a30; --warn:#f0b659; --warn-soft:#3b2d14; --bad:#f28b9b; --bad-soft:#3d1c24;
+  --info:#b89cf0; --info-soft:#2c2446; --teal:#5fc6dc; --teal-soft:#143640; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121826; --surface:#1a2233; --surface2:#1f2a3e; --fg:#e4e9f2; --muted:#9aa6bd; --line:#2c3850;
+  --navy:#243559; --navy-fg:#eef2fb; --pill:#3a4a80; --accent:#6aa5f5; --accent-soft:#1f3150; --field:#1d2940; --field-line:#34466a;
+  --ok:#5fd0a4; --ok-soft:#173a30; --warn:#f0b659; --warn-soft:#3b2d14; --bad:#f28b9b; --bad-soft:#3d1c24;
+  --info:#b89cf0; --info-soft:#2c2446; --teal:#5fc6dc; --teal-soft:#143640; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:84rem;margin:0 auto}
+header.top{padding-block:22px 12px;display:grid;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-size:clamp(24px,3.6vw,32px);line-height:1.15;margin:0;color:var(--fg);text-wrap:balance}
+h2{font-size:20px;margin:0;text-wrap:balance}
+h3{font-size:15px;margin:14px 0 6px}
+p{margin:0 0 8px;max-width:75ch}
+.status{display:inline-flex;font-size:12.5px;font-weight:600;background:var(--warn-soft);color:var(--warn);padding:3px 10px;border-radius:999px;width:fit-content}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px}
+nav.tabs button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:5px 11px;border-radius:999px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--navy);color:var(--navy-fg);border-color:var(--navy)}
+nav.tabs button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.tabs .sep{width:1px;background:var(--line);margin:2px 4px}
+.panel{display:grid;gap:14px;padding-top:18px;min-width:0}
+.design{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px;padding:12px 16px;display:grid;gap:4px;min-width:0}
+.design ul{margin:0;padding-left:18px;display:grid;gap:3px;max-width:80ch}
+.design .lab{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.flag{background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:8px 12px;font-size:13px}
+.scroll{overflow-x:auto;min-width:0}
+/* bingkai layar TMERP */
+.app{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;min-width:0}
+.cap{font-size:12px;color:var(--muted);font-weight:600;margin:0 0 -8px}
+.bar{background:var(--navy);color:var(--navy-fg);padding:10px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.bar .t{font-weight:700;font-size:14.5px}
+.bar .s{font-size:11.5px;opacity:.75}
+.bar .acts{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.b{font:inherit;font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;white-space:nowrap}
+.bar .b{background:transparent;color:var(--navy-fg);border-color:rgba(255,255,255,.35)}
+.b.pri,.bar .b.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.b.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.b.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.b.warn{background:var(--warn);border-color:var(--warn);color:#fff}
+.b[disabled]{opacity:.45;cursor:not-allowed}
+.back{display:inline-flex;align-items:center;gap:8px;background:var(--pill);color:#fff;border-radius:999px;padding:3px 3px 3px 12px;font-size:11px;font-weight:700;letter-spacing:.05em;border:0}
+.back i{display:inline-flex;width:22px;height:22px;border-radius:50%;background:#fff;color:#43508a;align-items:center;justify-content:center;font-style:normal;font-size:13px}
+.body{padding:12px 14px;display:grid;gap:12px;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:8px}
+.stat{border-radius:8px;padding:8px 10px;background:var(--surface2);border:2px solid transparent;text-align:left;font:inherit;color:inherit;cursor:pointer;position:relative}
+.stat .k{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.stat .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat.on{border-color:var(--navy)}
+.stat.on::after{content:"✓";position:absolute;top:6px;right:9px;font-weight:700;color:var(--navy)}
+:root[data-theme="dark"] .stat.on::after{color:var(--accent)}
+.stat.agg{cursor:default}
+.st-ok{background:var(--ok-soft)} .st-ok .v{color:var(--ok)}
+.st-warn{background:var(--warn-soft)} .st-warn .v{color:var(--warn)}
+.st-bad{background:var(--bad-soft)} .st-bad .v{color:var(--bad)}
+.st-info{background:var(--info-soft)} .st-info .v{color:var(--info)}
+.st-acc{background:var(--accent-soft)} .st-acc .v{color:var(--accent)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fld{display:grid;gap:2px;min-width:0}
+.fld > span{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+.inp{font:inherit;font-size:13px;border:1px solid var(--field-line);background:var(--field);color:var(--fg);border-radius:6px;padding:5px 8px;min-height:30px;display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
+.inp.ro{background:var(--surface2);color:var(--muted)}
+.inp .aa{font-size:9.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:1px 4px}
+.inp .dd{color:var(--muted);font-size:10px}
+input.inp{width:100%}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:10px}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--surface2);padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right;white-space:nowrap}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--surface2)}
+tr.sum td{font-weight:700;background:var(--surface2)}
+tr.grp td{background:var(--accent-soft);font-weight:700;color:var(--accent);font-size:12px}
+.neg{color:var(--bad)} .pos{color:var(--ok)}
+.sub{font-size:11.5px;color:var(--muted)}
+code,.mono{font-family:var(--f-mono);font-size:12px}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.bg-ok{background:var(--ok-soft);color:var(--ok)} .bg-warn{background:var(--warn-soft);color:var(--warn)} .bg-bad{background:var(--bad-soft);color:var(--bad)}
+.bg-info{background:var(--info-soft);color:var(--info)} .bg-acc{background:var(--accent-soft);color:var(--accent)} .bg-mut{background:var(--surface2);color:var(--muted)} .bg-teal{background:var(--teal-soft);color:var(--teal)}
+.cov{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--surface2);min-width:120px}
+.cov i{display:block;height:100%}
+.c-ok{background:var(--ok)} .c-po{background:var(--accent)} .c-late{background:var(--warn)} .c-short{background:var(--bad)} .c-spec{background:var(--info)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+.steps{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}
+.steps .st{padding:3px 10px;border-radius:999px;background:var(--surface2);color:var(--muted);font-weight:600}
+.steps .st.done{background:var(--ok-soft);color:var(--ok)} .steps .st.cur{background:var(--navy);color:var(--navy-fg)}
+.steps .arr{color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(22rem,1fr));gap:14px}
+.card{background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
+.tree{font-family:var(--f-mono);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:0;line-height:1.6}
+.log{font-size:12.5px;display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.log li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.log .dot{width:10px;height:10px;border-radius:50%;margin-top:5px;background:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:3px 10px;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.dec td:first-child{font-weight:700;white-space:nowrap}
+.rec{color:var(--ok);font-weight:600}
+figure{margin:0;display:grid;gap:6px}
+figure img{display:block;max-width:none;width:1100px}
+figure.phone img{width:980px}
+figcaption{font-size:12.5px;color:var(--muted)}
+.src{font-size:13px;display:grid;gap:3px;padding-left:18px;margin:0}
+.src a,.lnk{color:var(--accent)}
+.note{font-size:12.5px;color:var(--muted)}
+.hint{font-size:12px;color:var(--muted);font-style:italic}
+.timeline td.bal{font-weight:700}
+.sugg td{background:var(--accent-soft)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Inventory · Desain + Preview · 1 Okt 2026</div>
+  <h1>Tata Letak Gudang, Stok &amp; Material Booking</h1>
+  <span class="status">Preview untuk review · belum ada kode · angka = contoh</span>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Layar">
+  <button role="tab" data-tab="ringkasan">Ringkasan &amp; Keputusan</button>
+  <span class="sep"></span>
+  <button role="tab" data-tab="tataletak">Tata Letak</button>
+  <button role="tab" data-tab="multisite">Multi Lokasi</button>
+  <button role="tab" data-tab="cari">Cari Barang</button>
+  <button role="tab" data-tab="transfer">Transfer</button>
+  <span class="sep"></span>
+  <button role="tab" data-tab="kartu">Stock Card</button>
+  <button role="tab" data-tab="kartux">Stock Card Extended</button>
+  <button role="tab" data-tab="perlokasi">Item per Lokasi</button>
+  <button role="tab" data-tab="adjust">Adjustment + Approval</button>
+  <button role="tab" data-tab="master">Master Stock</button>
+  <button role="tab" data-tab="onhand">Stock On Hand</button>
+  <span class="sep"></span>
+  <button role="tab" data-tab="booking">Material Booking</button>
+</nav>
+
+<!-- ============ RINGKASAN ============ -->
+<section class="panel" id="p-ringkasan" role="tabpanel">
+  <div class="design">
+    <span class="lab">Isi preview ini</span>
+    <ul>
+      <li><b>Tata Letak</b>: desain gudang → zona → bin, peta, HP staf (disetujui/dikomentari lewat K1–K11).</li>
+      <li><b>Multi Lokasi</b>: lapis <b>Site</b> (lokasi fisik beralamat) di atas gudang; transfer antar site 2 langkah lewat <i>In Transit</i>.</li>
+      <li><b>Cari Barang</b>, <b>Transfer</b>, <b>Stock Card</b> (simple &amp; extended), <b>Item per Lokasi</b> + riwayat, <b>Adjustment dengan approval</b>, <b>Master Stock</b>, <b>Stock On Hand</b>.</li>
+      <li><b>Material Booking</b>: CO Confirmed → kebutuhan bahan dihitung dari layout ProDev → dicocokkan ke stok, PO, PR → kekurangan terlihat per CO dan per bahan → Create PR.</li>
+    </ul>
+  </div>
+  <div class="flag"><b>Temuan data (ddt*, dicek 1 Okt 2026):</b>
+    (1) BOM 6 produk master card baru (<code>prod_part_material</code>) hanya berisi spesifikasi (gramatur + ukuran), <b>material_id kosong</b>, jadi booking harus bisa menangani baris "spec saja".
+    (2) <code>mat_raw.lead_time_days</code> kosong di semua item, padahal tanggal pesan PR dihitung dari sini.
+    (3) Tabel <code>rm_booking</code>/<code>rm_booking_d</code> sudah ada tapi kosong dan belum dipakai kode. Desain memakainya ulang.
+    (4) Saldo berjalan <code>rm_stockcard.qty_eb</code> untuk ANIMAL GLUE tidak konsisten (mis. IN 1.000 lalu ADJ +100 tercatat saldo 100) dan ada saldo negatif di lokasi UNKNOWN-LEGACY. Karena itu angka di preview dibuat bersih sebagai contoh.
+  </div>
+
+  <h2>Keputusan untuk Anda</h2>
+  <p class="note">Rekomendasi saya ada di kolom kanan. Balas cukup dengan nomor, mis. "M1 ya, A1 batas 2 juta, B3 setuju".</p>
+  <div class="app scroll"><table class="dec">
+    <thead><tr><th>#</th><th>Topik</th><th>Pilihan</th><th>Rekomendasi</th></tr></thead>
+    <tbody>
+      <tr class="grp"><td colspan="4">Tata letak (dari review sebelumnya)</td></tr>
+      <tr><td>K1–K11</td><td>Struktur zona-bin, pallet, titipan, subkon, jurnal transfer, cycle count, tooling, denah, FEFO, scanner</td><td>Lihat tab Tata Letak</td><td class="rec">Sesuai rekomendasi di tab Tata Letak</td></tr>
+      <tr class="grp"><td colspan="4">Multi lokasi</td></tr>
+      <tr><td>M1</td><td>Lapis Site</td><td>Tambah <code>wh_site</code> / cukup gudang</td><td class="rec">Tambah bila ada ≥2 alamat fisik. Mohon info: ada berapa lokasi fisik?</td></tr>
+      <tr><td>M2</td><td>Transfer antar site</td><td>1 langkah / 2 langkah (kirim → terima)</td><td class="rec">2 langkah dengan In Transit; antar bin &amp; antar gudang satu site cukup 1 langkah</td></tr>
+      <tr><td>M3</td><td>Selisih saat terima transfer</td><td>Boleh edit qty / buat adjustment</td><td class="rec">Qty terima dicatat apa adanya, selisih otomatis jadi Adjustment Draft yang wajib approval</td></tr>
+      <tr class="grp"><td colspan="4">Stok &amp; laporan</td></tr>
+      <tr><td>A1</td><td>Jenjang approval adjustment</td><td>Level per nilai rupiah</td><td class="rec">L1 Kepala Gudang selalu; L2 Ops Manager bila |nilai| ≥ Rp 1 jt; L3 Dir F&amp;A bila ≥ Rp 10 jt (angka mohon ditetapkan)</td></tr>
+      <tr><td>A2</td><td>Kapan adjustment memengaruhi stok</td><td>Saat Confirm / saat approval terakhir</td><td class="rec">Setelah approval terakhir; selama menunggu, qty tampil "pending" di On Hand</td></tr>
+      <tr><td>S1</td><td>Kolom nilai (Rp) di Stock Card Extended &amp; Master Stock</td><td>Semua / terbatas</td><td class="rec">Hanya Finance, Costing, Ops Manager ke atas (disaring di server, seperti aturan harga jual)</td></tr>
+      <tr class="grp"><td colspan="4">Material Booking</td></tr>
+      <tr><td>B1</td><td>Pemicu</td><td>Otomatis saat CO Confirmed / manual</td><td class="rec">Otomatis dihitung saat CO Confirmed + ulang tiap malam &amp; saat ada kejadian (PV, adjustment, CO berubah)</td></tr>
+      <tr><td>B2</td><td>Soft vs hard booking</td><td>Langsung kunci stok / usulan dulu</td><td class="rec">Engine membuat usulan (soft); stok baru terkunci (hard) setelah PPIC Confirm</td></tr>
+      <tr><td>B3</td><td>Bahan yang dihitung</td><td>Kertas saja / + tinta, varnish, lem</td><td class="rec">Tahap 1 kertas/board dari layout ProDev; Tahap 2 tinta/varnish/lem setelah standar pemakaian bisa diinput</td></tr>
+      <tr><td>B4</td><td>Tanggal butuh bahan</td><td>Tetap / per produk</td><td class="rec">Tgl kirim CPDEL − lead produksi (default 7 hari kerja di Constants, bisa diubah per produk)</td></tr>
+      <tr><td>B5</td><td>Rebutan stok antar CO</td><td>Siapa duluan</td><td class="rec">Tgl butuh paling awal menang; hot job boleh ambil alih dengan persetujuan Ops Manager (tercatat)</td></tr>
+      <tr><td>B6</td><td>BOM spec saja (material kosong)</td><td>Wajib diisi dulu / pilih saat booking</td><td class="rec">PPIC memilih item dari daftar yang cocok (gramatur, ukuran, kategori); pilihan disimpan jadi default di Master Product setelah dikonfirmasi</td></tr>
+      <tr><td>B7</td><td>Stok FG untuk repeat order</td><td>Abaikan / cek dulu</td><td class="rec">Cek FG dulu dan tampilkan; booking FG di Tahap 2</td></tr>
+      <tr><td>B8</td><td>Pembuatan PR</td><td>Per baris / dikelompokkan</td><td class="rec">Satu PR per supplier usulan; qty dibulatkan ke kemasan beli (rim/roll); <code>i_co_line_id</code> &amp; tanggal butuh terisi. Lead time per kategori wajib diinput dulu</td></tr>
+      <tr><td>B9</td><td>Hubungan dengan MRP lama</td><td>—</td><td class="rec">Booking ini khusus berbasis CO (tanpa forecast), bukan menghidupkan MRP/MPS yang diarsipkan</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ TATA LETAK ============ -->
+<section class="panel" id="p-tataletak" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Ringkas</span>
+    <p><code>wh_loc</code> sudah berbentuk bin dan stok sudah tercatat per lokasi + lot, jadi strukturnya <b>Gudang → Zona (baru) → Bin</b>. Detail lengkap di <code>docs/warehouselayout_tier1.md</code>.</p>
+  </div>
+  <pre class="tree">wh_site        S1  Pabrik (contoh)                       ← baru bila M1 disetujui
+ └─ wh_warehouse WH-RAW-01  Gudang Utama Bahan Baku
+     ├─ wh_zone  RCV Receiving · QC Karantina · PPR Kertas Plano (lantai) · CHM Tinta &amp; Kimia (rak) · STG Staging
+     │   └─ wh_loc  WH-RAW-01-PPR-L03-05   (bin = tempat stok menempel)
+     └─ ...</pre>
+  <figure>
+    <div class="scroll app"><img src="warehouse_layout_v2.jpg" alt="Peta gudang dengan zona berwarna, panel isi bin, daftar zona, dan dialog generator bin" loading="lazy"></div>
+    <figcaption>① Warehouse Map untuk kepala gudang. ② Setup zona + generator bin. Denah contoh, bukan denah pabrik.</figcaption>
+  </figure>
+  <figure class="phone">
+    <div class="scroll app"><img src="warehouse_layout_mobile_v2.jpg" alt="Tiga layar HP: daftar tugas, putaway dengan saran bin, pick list WO" loading="lazy"></div>
+    <figcaption>③ Tugas gudang di HP. ④ Putaway: sistem menyarankan bin, staf scan untuk konfirmasi. ⑤ Pick list WO FIFO/FEFO.</figcaption>
+  </figure>
+  <div class="app scroll"><table class="dec">
+    <thead><tr><th>#</th><th>Keputusan</th><th>Rekomendasi</th></tr></thead>
+    <tbody>
+      <tr><td>K1</td><td>Lapis struktur</td><td class="rec">Gudang → Zona → Bin (<code>wh_loc</code> tetap = bin)</td></tr>
+      <tr><td>K2</td><td>Catat posisi / diarahkan</td><td class="rec">Tahap 1 catat, Tahap 2 terarah</td></tr>
+      <tr><td>K3</td><td>Pallet ber-QR</td><td class="rec">Ya, Tahap 2</td></tr>
+      <tr><td>K4</td><td>Titipan customer</td><td class="rec">Pemilik di baris stok + zona khusus, tidak dinilai</td></tr>
+      <tr><td>K5</td><td>Barang di subkon</td><td class="rec">Bin virtual per supplier</td></tr>
+      <tr><td>K6</td><td>Transfer berjurnal</td><td class="rec">Tidak</td></tr>
+      <tr><td>K7</td><td>Kunci bin saat cycle count</td><td class="rec">Tidak</td></tr>
+      <tr><td>K8</td><td>Rak pisau/plat</td><td class="rec">Ya, zona TOOLING</td></tr>
+      <tr><td>K9</td><td>Denah asli</td><td class="rec">Mohon sketsa/foto + daftar rak sebelum ke tm2</td></tr>
+      <tr><td>K10</td><td>Umur simpan</td><td class="rec">Per kategori, override per item</td></tr>
+      <tr><td>K11</td><td>Alat scan</td><td class="rec">Kamera HP lewat web dulu</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ MULTI LOKASI ============ -->
+<section class="panel" id="p-multisite" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Desain multi lokasi</span>
+    <ul>
+      <li><b>Dua arti "multi lokasi"</b>, dua-duanya ditangani: (a) satu barang tersebar di banyak bin/gudang, dan (b) perusahaan punya lebih dari satu lokasi fisik (pabrik, gudang luar).</li>
+      <li>(a) sudah didukung struktur bin; semua laporan dan pencarian bisa difilter <b>Site → Gudang → Zona → Bin</b> dan dijumlah di tiap tingkat.</li>
+      <li>(b) tabel baru <code>wh_site</code> (<code>id_site</code>, <code>site_code</code>, <code>site_name</code>, <code>address</code>, <code>geo_id</code>, <code>activate</code>) dan kolom <code>wh_warehouse.site_id</code>. Tiap site punya 1 gudang virtual <b>IN-TRANSIT</b> untuk barang dalam perjalanan ke site itu.</li>
+      <li>Transfer satu site = 1 langkah. Transfer antar site = 2 langkah: <b>Confirm</b> (barang keluar, pindah ke In Transit, cetak surat jalan internal) → <b>Receive</b> di site tujuan (boleh sebagian; selisih jadi Adjustment Draft).</li>
+      <li>Barang In Transit tetap milik sendiri dan tetap dinilai, tapi <b>tidak dihitung Available</b> di site mana pun sampai diterima.</li>
+    </ul>
+  </div>
+  <p class="cap">Setup › Warehouse &amp; Location › tingkat Site (contoh)</p>
+  <div class="app">
+    <div class="body">
+      <div class="scroll"><table>
+        <thead><tr><th>Site</th><th>Gudang</th><th>Tipe</th><th class="n">Zona</th><th class="n">Bin</th><th class="n">Item berstok</th><th class="n">Bin terpakai</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="7">S1 · Pabrik (contoh)</td></tr>
+          <tr><td></td><td><b>WH-RAW-01</b> Gudang Utama Bahan Baku</td><td>RM</td><td class="n">7</td><td class="n">86</td><td class="n">412</td><td class="n">64%</td></tr>
+          <tr><td></td><td><b>WH-FG-01</b> Gudang Utama Barang Jadi</td><td>FG</td><td class="n">4</td><td class="n">40</td><td class="n">96</td><td class="n">55%</td></tr>
+          <tr><td></td><td><b>WH-MIX-01</b> Gudang Transit &amp; Buffer</td><td>MIX</td><td class="n">2</td><td class="n">12</td><td class="n">18</td><td class="n">40%</td></tr>
+          <tr><td></td><td><b>WH-SCP-01</b> Area Penampungan Afval</td><td>WASTE</td><td class="n">1</td><td class="n">1</td><td class="n">6</td><td class="n">—</td></tr>
+          <tr><td></td><td><b>IT-S1</b> In Transit ke S1</td><td>VIRTUAL</td><td class="n">1</td><td class="n">1</td><td class="n">1</td><td class="n">—</td></tr>
+          <tr class="grp"><td colspan="7">S2 · Gudang Luar (contoh)</td></tr>
+          <tr><td></td><td><b>WH-RAW-02</b> Gudang Kertas Luar</td><td>RM</td><td class="n">2</td><td class="n">24</td><td class="n">37</td><td class="n">71%</td></tr>
+          <tr><td></td><td><b>IT-S2</b> In Transit ke S2</td><td>VIRTUAL</td><td class="n">1</td><td class="n">1</td><td class="n">0</td><td class="n">—</td></tr>
+          <tr class="grp"><td colspan="7">Virtual (tanpa site)</td></tr>
+          <tr><td></td><td><b>WH-SUBCON</b> Barang di Subkon</td><td>VIRTUAL</td><td class="n">1</td><td class="n">4</td><td class="n">5</td><td class="n">—</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+  <div class="two">
+    <div class="card"><b>Aturan Available per tingkat</b>
+      <p class="note" style="margin-top:6px">Available = On Hand di zona STORAGE/STAGING (pemilik kosong atau customer order yang sama) − Booked. Zona RECEIVING, QC, REJECT, SUBCON, CONSIGN pihak lain, dan In Transit tidak ikut.</p></div>
+    <div class="card"><b>Dampak ke dokumen lama</b>
+      <p class="note" style="margin-top:6px">Stock In/Out/Return tetap per gudang + bin. Layar hanya menambah pilihan Site sebagai filter awal. Tidak ada perubahan kolom di dokumen lama selain yang sudah disebut di tab Tata Letak.</p></div>
+  </div>
+</section>
+
+<!-- ============ CARI BARANG ============ -->
+<section class="panel" id="p-cari" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Desain pencarian multi lokasi</span>
+    <ul>
+      <li>Satu kotak cari untuk kode/nama item, lot, nomor pallet, atau kode bin. Hasil = daftar item dengan total per site; klik item → rincian per bin (lot, umur, booked, pemilik).</li>
+      <li>Tombol per baris: <b>Map</b> (sorot bin di peta), <b>Transfer</b> (buka form Transfer dengan asal terisi), <b>Stock Card</b>.</li>
+      <li>Harga/nilai tidak ditampilkan di sini (layar dipakai staf gudang &amp; produksi).</li>
+    </ul>
+  </div>
+  <p class="cap">Inventory › Cari Barang (preview interaktif: ketik "glue", "duplex", "310", atau klik baris)</p>
+  <div class="app">
+    <div class="body">
+      <div class="toolbar">
+        <label class="fld" style="flex:1 1 18rem"><span>Cari item / lot / pallet / bin</span><input id="q" class="inp" value="" placeholder="mis. ANIMAL GLUE, DP-0926-03, PPR-L02-04" autocomplete="off"></label>
+        <label class="fld" style="flex:0 1 12rem"><span>Site</span><select id="qsite" class="inp"><option value="">Semua site</option><option>S1</option><option>S2</option></select></label>
+        <label class="fld" style="flex:0 1 12rem"><span>Kelas stok</span><select class="inp"><option>RM</option><option>SFG</option><option>FG</option></select></label>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>Item</th><th>Satuan</th><th class="n">S1 Pabrik</th><th class="n">S2 Gudang Luar</th><th class="n">In Transit</th><th class="n">On Hand</th><th class="n">Booked</th><th class="n">Available</th><th class="n">Bin</th></tr></thead>
+        <tbody id="qres"></tbody>
+      </table></div>
+      <div id="qdet" class="card"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRANSFER ============ -->
+<section class="panel" id="p-transfer" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Desain perpindahan barang</span>
+    <ul>
+      <li>Satu dokumen <b>Transfer</b> (nomor <code>26TF00005</code>, doc_cat <code>TF</code>) untuk tiga jenis: <b>Antar Bin</b>, <b>Antar Gudang</b> (satu site), <b>Antar Site</b>.</li>
+      <li>Status memakai istilah baku: Draft → <b>Confirmed</b> → <b>Closed</b>. Antar bin/gudang: Confirm langsung memindah stok (Closed). Antar site: Confirm = barang dikirim ke In Transit; <b>Receive</b> di site tujuan = Closed.</li>
+      <li>Kolom "Dari bin" hanya menampilkan bin yang Available &gt; 0 untuk item itu, urut FIFO; "Ke bin" diisi saran penempatan (bisa diganti).</li>
+      <li>Transfer tidak membuat jurnal dan tidak mengubah nilai (K6). Tugas MOVE di HP menghasilkan dokumen yang sama.</li>
+    </ul>
+  </div>
+  <p class="cap">Inventory › Transfer › 26TF00005 (preview: pilih jenis transfer untuk melihat bedanya)</p>
+  <div class="app">
+    <div class="bar">
+      <div><div class="t">Transfer · 26TF00005</div><div class="s">Raw Material · dibuat Andi 30-Sep-2026 15:10</div></div>
+      <span class="badge bg-warn" id="tf-status">Draft</span>
+      <div class="acts">
+        <button class="b">New</button><button class="b">Undo</button><button class="b">Delete</button><button class="b">Save</button>
+        <button class="b pri" id="tf-confirm">Confirm</button><button class="b" id="tf-receive" disabled>Receive</button>
+        <button class="back" type="button">BACK <i>←</i></button>
+      </div>
+    </div>
+    <div class="body">
+      <div class="steps" id="tf-steps"></div>
+      <div class="form-grid">
+        <label class="fld"><span>Jenis transfer</span><select id="tf-type" class="inp"><option value="bin">Antar Bin</option><option value="wh">Antar Gudang (satu site)</option><option value="site" selected>Antar Site</option></select></label>
+        <div class="fld"><span>Tanggal</span><div class="inp">01-Oct-2026 <span class="dd">▦</span></div></div>
+        <div class="fld"><span>Dari gudang</span><div class="inp" id="tf-from">WH-RAW-02 · Gudang Kertas Luar (S2) <span class="dd">▾</span></div></div>
+        <div class="fld"><span>Ke gudang</span><div class="inp" id="tf-to">WH-RAW-01 · Gudang Utama Bahan Baku (S1) <span class="dd">▾</span></div></div>
+        <div class="fld"><span>Referensi</span><div class="inp">WO2600264 · Staging SM74 <span class="dd">▾</span></div></div>
+        <div class="fld"><span>Kendaraan / pengirim</span><div class="inp">Truk L 8123 AB · Slamet <span class="aa">Aa</span></div></div>
+        <div class="fld" style="grid-column:1/-1"><span>Catatan</span><div class="inp">Tarik kertas AC 310 untuk CO2600007 <span class="aa">Aa</span></div></div>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>#</th><th>Item</th><th>Dari bin</th><th>Lot / Pallet</th><th class="n">Available</th><th class="n">Qty kirim</th><th>Ke bin (saran)</th><th class="n">Qty terima</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><b>AC 310 GR GOLDEN COIN 79 X 109 CM</b><div class="sub">PCF08008 · LBR</div></td><td>WH-RAW-02-PPR-L01-03</td><td>AC-0920 · PL-2609-00402</td><td class="n">680</td><td class="n"><b>680</b></td><td>WH-RAW-01-PPR-L03-02 <span class="badge bg-acc">saran</span></td><td class="n" id="tf-r1">—</td></tr>
+          <tr><td>2</td><td><b>DUPLEX 350 GR 72,5 X 108</b><div class="sub">PZ03572 · LBR</div></td><td>WH-RAW-02-PPR-L01-01</td><td>DP-0915-02 · PL-2609-00355</td><td class="n">300</td><td class="n"><b>300</b></td><td>WH-RAW-01-PPR-L02-05 <span class="badge bg-acc">saran</span></td><td class="n" id="tf-r2">—</td></tr>
+          <tr><td colspan="8"><button class="b" type="button">+ Tambah Baris</button> <button class="b" type="button">Scan Pallet</button></td></tr>
+        </tbody>
+      </table></div>
+      <p class="hint" id="tf-hint"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STOCK CARD SIMPLE ============ -->
+<section class="panel" id="p-kartu" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Stock Card (simple)</span>
+    <ul>
+      <li>Untuk staf dan PPIC: satu item, satu gudang (atau semua), satu periode. Kolom: tanggal, dokumen, keterangan, masuk, keluar, saldo. Transfer antar bin dalam gudang yang sama <b>tidak tampil</b> (tidak mengubah saldo gudang).</li>
+      <li>Baris pertama = saldo awal periode dari <code>inv_period</code>; baris terakhir = total + saldo akhir, sama dengan Master Stock.</li>
+    </ul>
+  </div>
+  <p class="cap">Inventory › Raw Material › Report › Stock Card</p>
+  <div class="app">
+    <div class="body">
+      <div class="form-grid">
+        <div class="fld"><span>Item</span><div class="inp">GZ00726 · ANIMAL GLUE <span class="dd">▾</span></div></div>
+        <div class="fld"><span>Gudang</span><div class="inp">WH-RAW-01 · Gudang Utama Bahan Baku <span class="dd">▾</span></div></div>
+        <div class="fld"><span>Periode</span><div class="inp">Sep-2026 <span class="dd">▾</span></div></div>
+        <div class="fld"><span>&nbsp;</span><div class="toolbar"><button class="b pri">Show</button><button class="b">Print</button><button class="b">Excel</button></div></div>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>Tanggal</th><th>Dokumen</th><th>Keterangan</th><th class="n">Masuk</th><th class="n">Keluar</th><th class="n">Saldo (KG)</th></tr></thead>
+        <tbody>
+          <tr class="sum"><td>01-Sep-2026</td><td></td><td>Saldo awal</td><td class="n"></td><td class="n"></td><td class="n">960</td></tr>
+          <tr><td>03-Sep-2026</td><td class="lnk">26OU00015</td><td>Stock Out · WO2600241 (Lem)</td><td class="n"></td><td class="n">20</td><td class="n">940</td></tr>
+          <tr><td>10-Sep-2026</td><td class="lnk">26IN00003</td><td>Terima PO2600004 · PV</td><td class="n">100</td><td class="n"></td><td class="n">1.040</td></tr>
+          <tr><td>18-Sep-2026</td><td class="lnk">26OU00018</td><td>Stock Out · WO2600252</td><td class="n"></td><td class="n">20</td><td class="n">1.020</td></tr>
+          <tr><td>25-Sep-2026</td><td class="lnk">26AD00015</td><td>Adjustment · selisih cycle count CHM</td><td class="n"></td><td class="n">10</td><td class="n">1.010</td></tr>
+          <tr class="sum"><td>30-Sep-2026</td><td></td><td>Total &amp; saldo akhir</td><td class="n">100</td><td class="n">50</td><td class="n">1.010</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Adjustment minus ditampilkan di kolom Keluar (plus di Masuk) agar simple; versi extended memisahkan kolom Adj.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STOCK CARD EXTENDED ============ -->
+<section class="panel" id="p-kartux" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Stock Card Extended</span>
+    <ul>
+      <li>Untuk kepala gudang, Finance, audit: tambah <b>site, zona, bin, lot, pallet, pemilik, referensi sumber, pengguna</b>, kolom <b>Adj</b> terpisah, dan <b>nilai</b> (harga rata-rata, nilai masuk/keluar, saldo nilai).</li>
+      <li>Transfer antar bin tampil dua baris (keluar bin asal, masuk bin tujuan) dengan saldo per bin; saldo gudang tidak berubah.</li>
+      <li>Kolom nilai hanya untuk peran yang berhak (S1), disaring di server.</li>
+      <li>Grup per lokasi bisa dinyalakan: saldo berjalan per bin, subtotal per zona/gudang.</li>
+    </ul>
+  </div>
+  <p class="cap">Inventory › Raw Material › Report › Stock Card Extended</p>
+  <div class="app">
+    <div class="body">
+      <div class="form-grid">
+        <div class="fld"><span>Item</span><div class="inp">GZ00726 · ANIMAL GLUE <span class="dd">▾</span></div></div>
+        <div class="fld"><span>Site / Gudang</span><div class="inp">S1 · WH-RAW-01 <span class="dd">▾</span></div></div>
+        <div class="fld"><span>Zona / Bin</span><div class="inp">Semua <span class="dd">▾</span></div></div>
+        <div class="fld"><span>Periode</span><div class="inp">01-Sep-2026 s/d 30-Sep-2026 <span class="dd">▦</span></div></div>
+        <div class="fld"><span>Tampilan</span><div class="chips"><button class="chip on" type="button">Kronologis</button><button class="chip" type="button">Group per bin</button><button class="chip on" type="button">Tampilkan nilai</button></div></div>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>Tanggal</th><th>Dokumen</th><th>Tipe</th><th>Bin</th><th>Lot</th><th>Pemilik</th><th>Referensi</th><th class="n">Masuk</th><th class="n">Keluar</th><th class="n">Adj</th><th class="n">Saldo</th><th class="n">Harga rata²</th><th class="n">Nilai mutasi</th><th class="n">Saldo nilai</th><th>User</th></tr></thead>
+        <tbody>
+          <tr class="sum"><td>01-Sep</td><td></td><td>BB</td><td>—</td><td></td><td></td><td>Saldo awal</td><td class="n"></td><td class="n"></td><td class="n"></td><td class="n">960</td><td class="n">12.500,00</td><td class="n"></td><td class="n">12.000.000</td><td></td></tr>
+          <tr><td>03-Sep</td><td class="lnk">26OU00015</td><td><span class="badge bg-bad">OUT</span></td><td>CHM-A02-1</td><td>AG-0826</td><td>sendiri</td><td>WO2600241</td><td class="n"></td><td class="n">20</td><td class="n"></td><td class="n">940</td><td class="n">12.500,00</td><td class="n neg">−250.000</td><td class="n">11.750.000</td><td>andi</td></tr>
+          <tr><td>10-Sep</td><td class="lnk">26IN00003</td><td><span class="badge bg-ok">IN</span></td><td>CHM-A02-2</td><td>AG-0921</td><td>sendiri</td><td>PO2600004</td><td class="n">100</td><td class="n"></td><td class="n"></td><td class="n">1.040</td><td class="n">12.509,62</td><td class="n pos">+1.260.000</td><td class="n">13.010.000</td><td>rina</td></tr>
+          <tr><td>12-Sep</td><td class="lnk">26TF00002</td><td><span class="badge bg-teal">TF out</span></td><td>CHM-A02-1</td><td>AG-0826</td><td>sendiri</td><td>→ STG-LEM01</td><td class="n"></td><td class="n">40</td><td class="n"></td><td class="n">1.040</td><td class="n">12.509,62</td><td class="n">0</td><td class="n">13.010.000</td><td>andi</td></tr>
+          <tr><td>12-Sep</td><td class="lnk">26TF00002</td><td><span class="badge bg-teal">TF in</span></td><td>STG-LEM01</td><td>AG-0826</td><td>sendiri</td><td>← CHM-A02-1</td><td class="n">40</td><td class="n"></td><td class="n"></td><td class="n">1.040</td><td class="n">12.509,62</td><td class="n">0</td><td class="n">13.010.000</td><td>andi</td></tr>
+          <tr><td>18-Sep</td><td class="lnk">26OU00018</td><td><span class="badge bg-bad">OUT</span></td><td>STG-LEM01</td><td>AG-0826</td><td>sendiri</td><td>WO2600252</td><td class="n"></td><td class="n">20</td><td class="n"></td><td class="n">1.020</td><td class="n">12.509,62</td><td class="n neg">−250.192</td><td class="n">12.759.808</td><td>andi</td></tr>
+          <tr><td>25-Sep</td><td class="lnk">26AD00015</td><td><span class="badge bg-warn">ADJ</span></td><td>CHM-A02-2</td><td>AG-0921</td><td>sendiri</td><td>Cycle count CHM · 2/2 approved</td><td class="n"></td><td class="n"></td><td class="n neg">−10</td><td class="n">1.010</td><td class="n">12.509,62</td><td class="n neg">−125.096</td><td class="n">12.634.712</td><td>kepala.gudang</td></tr>
+          <tr class="sum"><td>30-Sep</td><td></td><td></td><td></td><td></td><td></td><td>Total</td><td class="n">100</td><td class="n">40</td><td class="n">−10</td><td class="n">1.010</td><td class="n">12.509,62</td><td class="n"></td><td class="n">12.634.712</td><td></td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Total masuk/keluar di atas tidak menghitung baris TF (netral di tingkat gudang). Saldo akhir per bin: CHM-A02-1 540 · CHM-A02-2 450 · STG-LEM01 20.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ITEM PER LOKASI ============ -->
+<section class="panel" id="p-perlokasi" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Laporan item per lokasi + riwayat</span>
+    <ul>
+      <li>Atas: posisi saat ini per Site → Gudang → Zona → Bin (qty, lot, umur, booked, pemilik).</li>
+      <li>Bawah: riwayat In / Out / Adjustment / Transfer untuk item itu, bisa difilter tipe dan bin. Klik dokumen membuka dokumennya.</li>
+      <li>Bisa juga dibalik: pilih <b>bin</b> → semua item di bin itu + riwayatnya (dipakai dari peta gudang).</li>
+    </ul>
+  </div>
+  <p class="cap">Inventory › Report › Item per Location (preview: klik chip filter riwayat)</p>
+  <div class="app">
+    <div class="body">
+      <div class="form-grid">
+        <div class="fld"><span>Item</span><div class="inp">PZ03572 · DUPLEX 350 GR 72,5 X 108 <span class="dd">▾</span></div></div>
+        <div class="fld"><span>Site</span><div class="inp">Semua site <span class="dd">▾</span></div></div>
+        <div class="fld"><span>Periode riwayat</span><div class="inp">01-Aug-2026 s/d 01-Oct-2026 <span class="dd">▦</span></div></div>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>Site</th><th>Gudang</th><th>Zona</th><th>Bin</th><th>Lot / Pallet</th><th>Terima</th><th class="n">Umur</th><th class="n">Qty (LBR)</th><th class="n">Booked</th><th>Untuk</th></tr></thead>
+        <tbody>
+          <tr><td>S1</td><td>WH-RAW-01</td><td>PPR</td><td>PPR-L02-04</td><td>DP-0926-03 · PL-2609-00380</td><td>26-Sep-2026</td><td class="n">5 hr</td><td class="n">876</td><td class="n">876</td><td>CO2600004</td></tr>
+          <tr><td>S1</td><td>WH-RAW-01</td><td>PPR</td><td>PPR-L02-05</td><td>DP-0929-01 · PL-2609-00396</td><td>29-Sep-2026</td><td class="n">2 hr</td><td class="n">574</td><td class="n">0</td><td></td></tr>
+          <tr><td>S2</td><td>WH-RAW-02</td><td>PPR</td><td>L01-01</td><td>DP-0915-02 · PL-2609-00355</td><td>15-Sep-2026</td><td class="n">16 hr</td><td class="n">300</td><td class="n">0</td><td><span class="badge bg-teal">akan ditransfer 26TF00005</span></td></tr>
+          <tr class="sum"><td colspan="7">Total</td><td class="n">1.750</td><td class="n">876</td><td>Available 874</td></tr>
+        </tbody>
+      </table></div>
+      <h3 style="margin:4px 0 0">Riwayat</h3>
+      <div class="chips" id="hist-chips">
+        <button class="chip on" type="button" data-f="ALL">Semua</button><button class="chip" type="button" data-f="IN">In</button><button class="chip" type="button" data-f="OUT">Out</button><button class="chip" type="button" data-f="ADJ">Adjustment</button><button class="chip" type="button" data-f="TF">Transfer</button>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>Tanggal</th><th>Dokumen</th><th>Tipe</th><th>Bin</th><th>Lot</th><th class="n">Qty</th><th>Referensi</th><th>User</th></tr></thead>
+        <tbody id="hist"></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ADJUSTMENT ============ -->
+<section class="panel" id="p-adjust" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Adjustment dengan approval</span>
+    <ul>
+      <li>Pembuat (staf/kepala gudang) mengisi per baris: bin, lot, qty sistem (otomatis), qty fisik, alasan. Selisih dan dampak nilai dihitung otomatis.</li>
+      <li><b>Confirm</b> = kirim ke approval. Jenjang dari <i>Approval Setting</i> yang sudah ada (v2), dipilih berdasarkan nilai total (A1).</li>
+      <li>Layar approver <b>read-only</b>, tampil "Level n of N", tombol <b>Approve</b> / <b>Reject</b> (final) / <b>Hold</b> (sementara), wajib catatan saat Reject/Hold, semua tercatat di log (siapa, kapan).</li>
+      <li>Stok berubah hanya setelah approval terakhir (A2). Sementara itu On Hand menampilkan kolom "Pending adj".</li>
+      <li>Sumber adjustment: input manual, hasil cycle count, atau selisih terima transfer antar site (M3).</li>
+    </ul>
+  </div>
+  <div class="two">
+  <div>
+  <p class="cap">① Pembuat · Inventory › Raw Material › Stock Adjustment</p>
+  <div class="app">
+    <div class="bar">
+      <div><div class="t">Adjustment · 26AD00016</div><div class="s">WH-RAW-01 · cycle count zona CHM</div></div>
+      <span class="badge bg-acc" id="adj-st1">Confirmed · menunggu approval</span>
+      <div class="acts"><button class="b">New</button><button class="b" disabled>Save</button><button class="b" disabled>Confirm</button><button class="back" type="button">BACK <i>←</i></button></div>
+    </div>
+    <div class="body">
+      <div class="form-grid">
+        <div class="fld"><span>Tanggal</span><div class="inp ro">30-Sep-2026</div></div>
+        <div class="fld"><span>Alasan</span><div class="inp ro">Selisih cycle count</div></div>
+        <div class="fld"><span>Sumber</span><div class="inp ro">26OP00024 · Cycle Count CHM</div></div>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>Item</th><th>Bin / Lot</th><th class="n">Sistem</th><th class="n">Fisik</th><th class="n">Selisih</th><th class="n">Nilai</th></tr></thead>
+        <tbody>
+          <tr><td>ANIMAL GLUE<div class="sub">KG</div></td><td>CHM-A02-2<div class="sub">AG-0921</div></td><td class="n">450</td><td class="n">440</td><td class="n neg">−10</td><td class="n neg">−125.096</td></tr>
+          <tr><td>UV VARNISH<div class="sub">KG</div></td><td>CHM-A03-1<div class="sub">UV-0909</div></td><td class="n">26</td><td class="n">24</td><td class="n neg">−2</td><td class="n neg">−170.000</td></tr>
+          <tr><td>SURPRIZE TK CYAN<div class="sub">KG</div></td><td>CHM-A01-2<div class="sub">TC-2609</div></td><td class="n">9</td><td class="n">10</td><td class="n pos">+1</td><td class="n pos">+310.000</td></tr>
+          <tr class="sum"><td colspan="5">Total nilai (|mutlak| 605.096 → jenjang 1 level + 1 level karena ada minus)</td><td class="n neg">+14.904</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+  </div>
+  <div>
+  <p class="cap">② Approver · Approval Center › Stock Adjustment (preview: klik tombol)</p>
+  <div class="app">
+    <div class="bar">
+      <div><div class="t">26AD00016 · Level <span id="adj-lv">1</span> of 2</div><div class="s">Diajukan Andi · 30-Sep-2026 16:02</div></div>
+      <span class="badge bg-acc" id="adj-st2">Waiting</span>
+      <div class="acts"><button class="b ok" id="ap-ok" type="button">Approve</button><button class="b bad" id="ap-no" type="button">Reject</button><button class="b warn" id="ap-hold" type="button">Hold</button></div>
+    </div>
+    <div class="body">
+      <div class="steps"><span class="st done">Draft</span><span class="arr">→</span><span class="st done">Confirmed</span><span class="arr">→</span><span class="st" id="lv1">L1 Kepala Gudang</span><span class="arr">→</span><span class="st" id="lv2">L2 Ops Manager</span><span class="arr">→</span><span class="st" id="lvp">Posted ke stok</span></div>
+      <label class="fld"><span>Catatan approver (wajib untuk Reject/Hold)</span><input id="ap-note" class="inp" value="" placeholder="mis. hitung ulang UV VARNISH besok pagi"></label>
+      <div class="card"><b>Log</b>
+        <ul class="log" id="ap-log" style="margin-top:8px">
+          <li><span class="dot"></span><span>30-Sep-2026 16:02 · <b>andi</b> Confirm, dikirim ke approval (3 baris, nilai +14.904)</span></li>
+        </ul>
+      </div>
+      <p class="note">Aturan jenjang contoh: L1 Kepala Gudang selalu; L2 Ops Manager bila ada baris minus atau |nilai| ≥ Rp 1 jt; L3 Dir F&amp;A bila ≥ Rp 10 jt. Angka final mengikuti keputusan A1.</p>
+    </div>
+  </div>
+  </div>
+  </div>
+</section>
+
+<!-- ============ MASTER STOCK ============ -->
+<section class="panel" id="p-master" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Laporan Master Stock</span>
+    <ul>
+      <li>Semua item per periode: <b>Saldo awal, Masuk, Keluar, Adjustment, Saldo akhir</b> (+ nilai bila berhak). Rumus: Awal + Masuk − Keluar ± Adj = Akhir.</li>
+      <li>Filter: kelas stok, kategori, site/gudang/zona, "hanya yang bergerak", "saldo ≠ 0". Klik baris → Stock Card item itu pada periode sama.</li>
+      <li>Periode tertutup (<code>inv_period.i_status = CLOSED</code>) membaca snapshot; periode berjalan dihitung dari kartu stok.</li>
+    </ul>
+  </div>
+  <p class="cap">Inventory › Raw Material › Report › Stock Balance (Master Stock)</p>
+  <div class="app">
+    <div class="body">
+      <div class="stats">
+        <div class="stat agg"><div class="k">Item</div><div class="v">11</div></div>
+        <div class="stat agg st-ok"><div class="k">Masuk (baris)</div><div class="v">5</div></div>
+        <div class="stat agg st-bad"><div class="k">Keluar (baris)</div><div class="v">8</div></div>
+        <div class="stat agg st-warn"><div class="k">Ada adjustment</div><div class="v">4</div></div>
+        <div class="stat agg"><div class="k">Tidak bergerak</div><div class="v">2</div></div>
+      </div>
+      <div class="toolbar">
+        <div class="fld" style="min-width:10rem"><span>Periode</span><div class="inp">Sep-2026 <span class="dd">▾</span></div></div>
+        <div class="fld" style="min-width:12rem"><span>Site / Gudang</span><div class="inp">Semua <span class="dd">▾</span></div></div>
+        <div class="fld" style="min-width:12rem"><span>Kategori</span><div class="inp">Semua <span class="dd">▾</span></div></div>
+        <div class="chips" style="margin-left:auto"><button class="chip" type="button">Hanya bergerak</button><button class="chip on" type="button">Saldo ≠ 0</button><button class="b" type="button">Excel</button><button class="b" type="button">Print</button></div>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>Kode</th><th>Item</th><th>Satuan</th><th class="n">Saldo awal</th><th class="n">Masuk</th><th class="n">Keluar</th><th class="n">Adjustment</th><th class="n">Saldo akhir</th></tr></thead>
+        <tbody id="master"></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ON HAND ============ -->
+<section class="panel" id="p-onhand" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Tabel Stock On Hand</span>
+    <ul>
+      <li>Posisi sekarang (bukan per periode): <b>On Hand, Booked, Available, Incoming (PO terbuka), Pending adj</b>, min stock, status.</li>
+      <li>Status dihitung: <b>Short</b> (booking tidak tertutup), <b>Below min</b> (Available &lt; min stock), <b>Late PO</b>, <b>Slow moving</b> (tidak keluar &gt; 90 hari), <b>OK</b>. Kotak statistik = filter.</li>
+      <li>Klik angka Booked → daftar CO/WO pemesannya; klik Incoming → PO-nya.</li>
+    </ul>
+  </div>
+  <p class="cap">Inventory › Stock On Hand (preview: klik kotak statistik)</p>
+  <div class="app">
+    <div class="body">
+      <div class="stats" id="oh-stats"></div>
+      <div class="toolbar"><div class="inp" style="min-width:16rem;flex:1">Cari item <span class="dd">⌕</span></div><div class="fld" style="min-width:12rem"><div class="inp">Site: Semua <span class="dd">▾</span></div></div></div>
+      <div class="scroll"><table>
+        <thead><tr><th>Item</th><th>Satuan</th><th class="n">On Hand</th><th class="n">Booked</th><th class="n">Available</th><th class="n">Incoming</th><th class="n">Pending adj</th><th class="n">Min</th><th>Status</th></tr></thead>
+        <tbody id="onhand"></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOOKING ============ -->
+<section class="panel" id="p-booking" role="tabpanel" hidden>
+  <div class="design">
+    <span class="lab">Desain Material Booking (dari Customer Order)</span>
+    <ul>
+      <li><b>Pemicu</b>: CO Confirmed (dan setiap perubahan CO/CPDEL, PV diterima, adjustment, tiap malam). Engine menghitung, PPIC mengonfirmasi (<i>engine suggests, officer confirms</i>).</li>
+      <li><b>Langkah 0 · FG</b>: repeat order? cek stok FG produk sama; tampilkan sebagai info (booking FG Tahap 2).</li>
+      <li><b>Langkah 1 · Hitung kebutuhan</b> per part dari layout ProDev yang CONFIRMED: lembar plano = ⌈qty ÷ UP⌉ × (1 + waste%). Material dari <code>prod_part_material</code>; bila material kosong → baris <b>Need Item</b>, engine mengusulkan item yang cocok (kategori + gramatur + ukuran ≥ plano).</li>
+      <li><b>Langkah 2 · Tanggal butuh</b> = tanggal kirim CPDEL − lead produksi (B4).</li>
+      <li><b>Langkah 3 · Netting</b> per bahan, urut tanggal butuh (hot job didahulukan): stok Available (FIFO lot, zona pakai, pemilik cocok) → PO terbuka yang tiba tepat waktu → PR terbuka → sisanya <b>Short</b>.</li>
+      <li><b>Langkah 4 · Tindakan</b>: Confirm (stok terkunci/hard), Create PR (dibulatkan ke kemasan beli, per supplier, tanggal pesan = tanggal butuh − lead time), Substitute (item pengganti + rasio, perlu persetujuan), atau Reschedule.</li>
+      <li><b>Pemakaian</b>: WO dari CPDEL mewarisi booking → Pick List → Stock Out mengisi <code>qty_issued</code>; sisa dilepas saat WO selesai. CO Cancel → booking dilepas otomatis.</li>
+    </ul>
+    <span class="lab" style="margin-top:6px">Skema (pakai ulang tabel yang sudah ada)</span>
+    <ul>
+      <li><code>rm_booking</code> (ada): 1 header per CO — tambah <code>co_id</code>, <code>run_at</code>, <code>doc_status</code>. Nomor <code>BK2600001</code>.</li>
+      <li><code>rm_booking_d</code> (ada: qty_need, qty_book, qty_purchase, qty_replacement, qty_issued, material_replace_id, replace_ratio, pr_detail_id…) — tambah <code>co_delivery_id</code>, <code>part_id</code>, <code>need_date</code>, <code>line_status</code> (BOOKED / PEGGED_PO / LATE_PO / PEGGED_PR / SHORT / NEED_ITEM / ISSUED / RELEASED), <code>source</code> (LAYOUT / BOM / MANUAL), <code>calc_up</code>, <code>calc_waste_pct</code>, spesifikasi (<code>spec_category_id</code>, <code>spec_gram</code>, <code>spec_w_mm</code>, <code>spec_h_mm</code>), <code>priority</code>.</li>
+      <li><code>rm_booking_alloc</code> <span class="badge bg-acc">baru</span>: satu kebutuhan bisa ditutup beberapa sumber — <code>booking_detail_id</code>, <code>source_type</code> (STOCK / PO / PR), <code>source_id</code> (layer / po line / pr line), <code>location_id</code>, <code>lot_no</code>, <code>pallet_id</code>, <code>qty</code>, <code>is_hard</code>.</li>
+      <li>PR memakai kolom yang sudah ada: <code>pr_line.i_co_line_id</code>, <code>i_need_date</code>.</li>
+    </ul>
+  </div>
+
+  <div class="chips" id="bk-views">
+    <button class="chip on" type="button" data-v="wb">① Booking Workbench</button>
+    <button class="chip" type="button" data-v="co">② Booking per CO</button>
+    <button class="chip" type="button" data-v="sp">③ Shortage Planner</button>
+    <button class="chip" type="button" data-v="tl">④ Material Timeline</button>
+  </div>
+
+  <!-- ① Workbench -->
+  <div id="bk-wb">
+    <p class="cap">Production Planning › Material Booking (preview: klik kotak = filter, klik baris = buka CO)</p>
+    <div class="app">
+      <div class="body">
+        <div class="stats" id="wb-stats"></div>
+        <div class="toolbar">
+          <div class="inp" style="flex:1;min-width:14rem">Cari CO / customer / produk <span class="dd">⌕</span></div>
+          <button class="b" type="button">Run All</button>
+          <span class="legend"><span style="--c:var(--ok)">Booked dari stok</span><span style="--c:var(--accent)">PO tepat waktu</span><span style="--c:var(--warn)">PO terlambat</span><span style="--c:var(--bad)">Short</span><span style="--c:var(--info)">Need Item</span></span>
+        </div>
+        <div class="scroll"><table>
+          <thead><tr><th>CO</th><th>Customer</th><th>Produk</th><th class="n">Qty</th><th>Kirim</th><th>Butuh bahan</th><th>Coverage</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="wb"></tbody>
+        </table></div>
+        <p class="note">Beberapa CO di atas masih DRAFT di ddtsdi; di preview diperlakukan seolah Confirmed. Tanggal kirim contoh.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② Per CO -->
+  <div id="bk-co" hidden>
+    <p class="cap">Material Booking › BK2600003 · CO2600004</p>
+    <div class="app">
+      <div class="bar">
+        <div><div class="t">BK2600003 · CO2600004 · PAK RUDI LAWANG</div><div class="s">Dihitung 01-Oct-2026 06:00 · kirim 15-Oct-2026 · butuh bahan 08-Oct-2026</div></div>
+        <span class="badge bg-warn">Draft</span>
+        <div class="acts"><button class="b">Run</button><button class="b">Undo</button><button class="b">Save</button><button class="b">Create PR</button><button class="b pri">Confirm</button><button class="back" type="button">BACK <i>←</i></button></div>
+      </div>
+      <div class="body">
+        <div class="stats">
+          <div class="stat agg st-ok"><div class="k">Booked dari stok</div><div class="v">5 baris</div></div>
+          <div class="stat agg st-acc"><div class="k">Ditutup PO</div><div class="v">1 baris</div></div>
+          <div class="stat agg st-info"><div class="k">Need Item</div><div class="v">1 baris</div></div>
+          <div class="stat agg"><div class="k">Stok FG produk sama</div><div class="v">0</div></div>
+        </div>
+        <div class="scroll"><table>
+          <thead><tr><th>Item CO / Part</th><th>Bahan</th><th>Perhitungan</th><th class="n">Butuh</th><th>Ditutup oleh</th><th class="n">Short</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody>
+            <tr class="grp"><td colspan="8">1 · Folding Box Duplex 350gr Kosmetik (FB-DUPLEX-001) · 5.000 PCS</td></tr>
+            <tr><td>Body<div class="sub">layout LG-0012 CONFIRMED</div></td><td><b>DUPLEX 350 GR 72,5 X 108</b><div class="sub">PZ03572 · LBR</div></td><td class="mono">⌈5.000 ÷ 6 UP⌉ × 1,05</td><td class="n">876</td><td>Stok PPR-L02-04 · DP-0926-03 · 876</td><td class="n">0</td><td><span class="badge bg-ok">Booked</span></td><td></td></tr>
+            <tr><td>Body · cetak</td><td>SURPRIZE TK CYAN<div class="sub">XZ05857 · KG</div></td><td class="mono">876 lbr × 1,4 kg/1000</td><td class="n">1,2</td><td>Stok CHM-A01-2 · TC-2609 · 1,2</td><td class="n">0</td><td><span class="badge bg-ok">Booked</span></td><td></td></tr>
+            <tr><td>Body · cetak</td><td>SURPRIZE TK MAGENTA<div class="sub">XZ05858 · KG</div></td><td class="mono">876 lbr × 1,4 kg/1000</td><td class="n">1,2</td><td>Stok CHM-A01-3 · TM-2608 · 1,2</td><td class="n">0</td><td><span class="badge bg-ok">Booked</span></td><td></td></tr>
+            <tr><td>Body · coating</td><td>UV VARNISH<div class="sub">XZ01268 · KG</div></td><td class="mono">0,79 m² × 876 × 6,3 g</td><td class="n">4,4</td><td>Stok CHM-A03-1 · 2,0<br>PO2600007 · tiba 06-Oct · 2,4</td><td class="n">0</td><td><span class="badge bg-acc">Stok + PO</span></td><td></td></tr>
+            <tr><td>Body · lem</td><td>ANIMAL GLUE<div class="sub">GZ00726 · KG</div></td><td class="mono">5.000 × 0,6 g</td><td class="n">3,0</td><td>Stok STG-LEM01 · AG-0826 · 3,0</td><td class="n">0</td><td><span class="badge bg-ok">Booked</span></td><td></td></tr>
+            <tr class="grp"><td colspan="8">2 · Sticker Label Bulat 5cm Vinyl (LBL-STK-003) · 10.000 ROLL</td></tr>
+            <tr><td>Label<div class="sub">BOM: spec saja</div></td><td><i>Vinyl sticker · 70 × 100 cm</i><div class="sub">material belum dipilih</div></td><td class="mono">⌈10.000 ÷ 24 UP⌉ × 1,05</td><td class="n">438</td><td>—</td><td class="n">438</td><td><span class="badge bg-info">Need Item</span></td><td><button class="b pri" type="button" id="pick-open">Pick Item</button></td></tr>
+            <tr><td>Label · cetak</td><td>SURPRIZE TK BLACK<div class="sub">XZ05856 · KG</div></td><td class="mono">438 lbr × 1,4 kg/1000</td><td class="n">0,6</td><td>Stok CHM-A01-1 · 0,6</td><td class="n">0</td><td><span class="badge bg-ok">Booked</span></td><td></td></tr>
+          </tbody>
+        </table></div>
+        <div class="card" id="pick" hidden>
+          <b>Pilih item untuk "Vinyl sticker 70 × 100 cm"</b>
+          <p class="note" style="margin:4px 0 8px">Usulan engine: kategori sama, ukuran ≥ plano. Pilihan akan disimpan sebagai default di Master Product setelah Anda konfirmasi (B6).</p>
+          <div class="scroll"><table>
+            <thead><tr><th></th><th>Item</th><th>Ukuran</th><th class="n">Available</th><th class="n">Hasil potong</th><th>Catatan</th></tr></thead>
+            <tbody>
+              <tr><td><input type="radio" name="pk" checked aria-label="pilih"></td><td>STIKER VINYL CHROMO 70 X 100 CM (contoh)</td><td>70 × 100</td><td class="n">520</td><td class="n">1 : 1</td><td><span class="badge bg-ok">cukup</span></td></tr>
+              <tr><td><input type="radio" name="pk" aria-label="pilih"></td><td>STIKER KS CC CAMEL 108 X 70 CM</td><td>108 × 70</td><td class="n">1</td><td class="n">1 : 1</td><td><span class="badge bg-bad">stok kurang</span></td></tr>
+            </tbody>
+          </table></div>
+          <div class="toolbar" style="margin-top:8px"><button class="b pri" type="button">Use Item</button><button class="b" type="button" id="pick-close">Cancel</button></div>
+        </div>
+        <p class="note">Angka pemakaian tinta/varnish/lem di baris ini contoh; di Tahap 1 hanya kertas/board yang dihitung (B3).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ Shortage Planner -->
+  <div id="bk-sp" hidden>
+    <p class="cap">Purchasing › Shortage Planner (preview: centang lalu Create PR)</p>
+    <div class="app">
+      <div class="body">
+        <div class="toolbar">
+          <div class="fld" style="min-width:12rem"><span>Horizon</span><div class="inp">30 hari (s/d 31-Oct-2026) <span class="dd">▾</span></div></div>
+          <div class="fld" style="min-width:12rem"><span>Tampilkan</span><div class="inp">Short + Late PO + Need Item <span class="dd">▾</span></div></div>
+          <button class="b pri" id="sp-pr" type="button" style="margin-left:auto">Create PR (0)</button>
+        </div>
+        <div class="scroll"><table>
+          <thead><tr><th></th><th>Bahan</th><th>Dipakai oleh</th><th class="n">Butuh</th><th class="n">Available</th><th class="n">Incoming</th><th class="n">Kurang</th><th>Butuh pertama</th><th>Pesan paling lambat</th><th class="n">Usulan PR</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><input type="checkbox" class="spc" aria-label="pilih AC 310"></td><td><b>AC 310 GR GOLDEN COIN 79 X 109 CM</b><div class="sub">PCF08008 · LBR · lead time belum diisi → default 5 hari</div></td><td>CO2600007 · CO2600014</td><td class="n">5.138</td><td class="n">1.680</td><td class="n">2.000<div class="sub">PO2600007 14-Oct</div></td><td class="n neg">2.258</td><td>12-Oct-2026</td><td class="neg"><b>07-Oct-2026</b></td><td class="n">2.500<div class="sub">5 rim × 500</div></td><td><span class="badge bg-bad">Short</span></td></tr>
+            <tr><td><input type="checkbox" class="spc" aria-label="pilih IVORY"></td><td><b>IVORY 310 GR SP 79 X 109 CM</b><div class="sub">PZ00661 · LBR</div></td><td>CO2600017</td><td class="n">5.600</td><td class="n">1.700</td><td class="n">3.900<div class="sub">PO2600005 22-Oct</div></td><td class="n">0</td><td>19-Oct-2026</td><td>—</td><td class="n">—</td><td><span class="badge bg-warn">Late PO · 3 hari</span><div class="sub">Expedite atau kirim sebagian</div></td></tr>
+            <tr><td><input type="checkbox" disabled aria-label="tidak bisa dipilih"></td><td><i>AC/IVORY 310 g · 100 × 70 cm (spec)</i><div class="sub">material belum dipilih</div></td><td>CO2600013</td><td class="n">2.625</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td>17-Oct-2026</td><td>—</td><td class="n">—</td><td><span class="badge bg-info">Need Item</span><div class="sub">Pick Item di Booking CO</div></td></tr>
+            <tr><td><input type="checkbox" disabled aria-label="tidak bisa dipilih"></td><td><i>Vinyl sticker · 70 × 100 cm (spec)</i></td><td>CO2600004</td><td class="n">438</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td>08-Oct-2026</td><td>—</td><td class="n">—</td><td><span class="badge bg-info">Need Item</span></td></tr>
+          </tbody>
+        </table></div>
+        <p class="hint" id="sp-msg">PR yang dibuat: satu per supplier usulan, baris berisi CO asal + tanggal butuh, status Draft untuk dicek Purchasing.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ Timeline -->
+  <div id="bk-tl" hidden>
+    <p class="cap">Material Timeline · proyeksi saldo per tanggal (preview: nyalakan/matikan usulan PR)</p>
+    <div class="app">
+      <div class="body">
+        <div class="toolbar">
+          <div class="fld" style="min-width:20rem"><span>Bahan</span><div class="inp">PCF08008 · AC 310 GR GOLDEN COIN 79 X 109 CM <span class="dd">▾</span></div></div>
+          <label class="chip" style="display:inline-flex;gap:6px;align-items:center;margin-left:auto"><input type="checkbox" id="tl-sugg"> Sertakan usulan PR 2.500</label>
+        </div>
+        <div class="scroll"><table class="timeline">
+          <thead><tr><th>Tanggal</th><th>Kejadian</th><th>Dokumen</th><th class="n">Qty</th><th class="n">Proyeksi saldo</th></tr></thead>
+          <tbody id="tl"></tbody>
+        </table></div>
+        <p class="note">Saldo negatif = tanggal bahan akan habis. Stok di S2 (680) ikut dihitung karena satu perusahaan; perlu Transfer antar site sebelum dipakai (tab Transfer).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="p-sumber" style="padding-top:28px">
+  <h2>Sumber riset tata letak</h2>
+  <ul class="src">
+    <li><a href="https://www.odoo.com/documentation/18.0/applications/inventory_and_mrp/inventory/shipping_receiving/daily_operations/putaway.html">Odoo 18: Putaway rules</a> · <a href="https://www.odoo.com/documentation/19.0/applications/inventory_and_mrp/inventory/shipping_receiving/daily_operations/owned_stock.html">Consignment</a> · <a href="https://www.odoo.com/documentation/18.0/applications/inventory_and_mrp/inventory/warehouses_storage/inventory_management/cycle_counts.html">Cycle counts</a></li>
+    <li><a href="https://help.sap.com/docs/SAP_SUPPLY_CHAIN_MANAGEMENT/7a6fc3d598d140b0988065937035fff6/4ab997fcf2b93d86e10000000a421937.html">SAP: Storage Section</a> · <a href="https://learning.sap.com/courses/basic-customizing-in-sap-s-4hana-ewm/applying-putaway-rules">Applying Putaway Rules</a></li>
+    <li><a href="https://docs.oracle.com/cd/E18727_01/doc.121/e13433/T211976T317866.htm">Oracle WMS: Rules Engine</a></li>
+    <li><a href="https://learn.microsoft.com/en-us/dynamics365/supply-chain/warehousing/control-warehouse-location-directives">Dynamics 365: Location directives</a> · <a href="https://learn.microsoft.com/en-us/dynamics365/supply-chain/warehousing/prevent-multiple-owners-locations">Prevent multiple owners</a></li>
+    <li><a href="https://docs.erpnext.com/docs/v12/user/manual/en/stock/putaway-rule">ERPNext: Putaway Rule</a> · <a href="https://help.accurate.id/product/accurate-online/fitur-aol/persediaan/pemindahan-barang/mencatat-pemindahan-barang-antar-gudang/">Accurate: pindah gudang</a> · <a href="https://help.zahironline.com/portal/id/kb/articles/transfer-barang-antar-gudang-tanpa-jurnal">Zahir: transfer tanpa jurnal</a></li>
+  </ul>
+  <p class="note">Dokumen di repo: <code>docs/warehouselayout_tier1.md</code>, <code>docs/materialbooking_tier1.md</code>, backlog <code>docs/backlog05_inventory_warehouse.md</code>.</p>
+</section>
+</div>
+
+<script>
+(function(){
+  const fmt = n => (Math.round(n*10)/10).toLocaleString('id-ID');
+  /* ---------- tabs ---------- */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];
+  function show(id){
+    tabs.forEach(b=>b.setAttribute('aria-selected', b.dataset.tab===id?'true':'false'));
+    document.querySelectorAll('.panel[role="tabpanel"]').forEach(p=>p.hidden = p.id!=='p-'+id);
+    try{history.replaceState(null,'','#'+id)}catch(e){}
+    window.scrollTo({top:0});
+  }
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  const h=(location.hash||'').slice(1);
+  show(tabs.some(b=>b.dataset.tab===h)?h:'ringkasan');
+
+  /* ---------- cari barang ---------- */
+  const items=[
+    {code:'GZ00726',name:'ANIMAL GLUE',uom:'KG',s1:1010,s2:0,it:50,bk:3,bins:[
+      ['S1','WH-RAW-01','CHM','CHM-A02-1','AG-0826','—',540,0,'sendiri','36 hr'],
+      ['S1','WH-RAW-01','CHM','CHM-A02-2','AG-0921','—',450,0,'sendiri','21 hr'],
+      ['S1','WH-RAW-01','STG','STG-LEM01','AG-0826','—',20,3,'sendiri','36 hr'],
+      ['→S1','IT-S1','—','In Transit','AG-0927','26TF00004',50,0,'sendiri','dikirim 30-Sep']]},
+    {code:'PZ03572',name:'DUPLEX 350 GR 72,5 X 108',uom:'LBR',s1:1450,s2:300,it:0,bk:876,bins:[
+      ['S1','WH-RAW-01','PPR','PPR-L02-04','DP-0926-03','PL-2609-00380',876,876,'sendiri','5 hr'],
+      ['S1','WH-RAW-01','PPR','PPR-L02-05','DP-0929-01','PL-2609-00396',574,0,'sendiri','2 hr'],
+      ['S2','WH-RAW-02','PPR','L01-01','DP-0915-02','PL-2609-00355',300,0,'sendiri','16 hr']]},
+    {code:'PCF08008',name:'AC 310 GR GOLDEN COIN 79 X 109 CM',uom:'LBR',s1:1000,s2:680,it:0,bk:1680,bins:[
+      ['S1','WH-RAW-01','PPR','PPR-L03-01','AC-0918','PL-2609-00371',1000,1000,'sendiri','13 hr'],
+      ['S2','WH-RAW-02','PPR','L01-03','AC-0920','PL-2609-00402',680,680,'sendiri','11 hr']]},
+    {code:'PZ00661',name:'IVORY 310 GR SP 79 X 109 CM',uom:'LBR',s1:1700,s2:0,it:0,bk:1700,bins:[
+      ['S1','WH-RAW-01','PPR','PPR-L04-02','IV-0911','PL-2609-00340',1700,1700,'sendiri','20 hr']]},
+    {code:'XZ03203',name:'KARTON YELLOW BOARD 40',uom:'LBR',s1:2801,s2:0,it:0,bk:1050,bins:[
+      ['S1','WH-RAW-01','PPR','PPR-L05-01','YB-0806','—',2801,1050,'sendiri','56 hr']]},
+    {code:'XZ01268',name:'UV VARNISH',uom:'KG',s1:26,s2:0,it:0,bk:26,bins:[
+      ['S1','WH-RAW-01','CHM','CHM-A03-1','UV-0909','—',26,26,'sendiri','exp 09-Mar-2027']]},
+  ];
+  const qres=document.getElementById('qres'), qdet=document.getElementById('qdet'), q=document.getElementById('q'), qsite=document.getElementById('qsite');
+  let sel=items[0];
+  function renderQ(){
+    const t=q.value.trim().toLowerCase(), s=qsite.value;
+    const list=items.filter(i=>{
+      const hay=(i.code+' '+i.name+' '+i.bins.map(b=>b.join(' ')).join(' ')).toLowerCase();
+      return (!t||hay.includes(t)) && (!s || (s==='S1'?i.s1:i.s2)>0);
+    });
+    qres.innerHTML=list.map(i=>`<tr class="click" data-c="${i.code}" tabindex="0"><td><b>${i.name}</b><div class="sub">${i.code}</div></td><td>${i.uom}</td><td class="n">${fmt(i.s1)}</td><td class="n">${fmt(i.s2)}</td><td class="n">${i.it?fmt(i.it):'—'}</td><td class="n"><b>${fmt(i.s1+i.s2)}</b></td><td class="n">${fmt(i.bk)}</td><td class="n ${i.s1+i.s2-i.bk<=0?'neg':''}">${fmt(i.s1+i.s2-i.bk)}</td><td class="n">${i.bins.length}</td></tr>`).join('')||'<tr><td colspan="9" class="note">Tidak ada item yang cocok.</td></tr>';
+    qres.querySelectorAll('tr.click').forEach(r=>{const go=()=>{sel=items.find(i=>i.code===r.dataset.c);renderDet()};r.addEventListener('click',go);r.addEventListener('keydown',e=>{if(e.key==='Enter')go()})});
+    if(list.length && !list.includes(sel)){sel=list[0]} renderDet();
+  }
+  function renderDet(){
+    qdet.innerHTML=`<b>${sel.name}</b> <span class="sub">${sel.code} · rincian per bin</span>
+    <div class="scroll" style="margin-top:8px"><table><thead><tr><th>Site</th><th>Gudang</th><th>Zona</th><th>Bin</th><th>Lot</th><th>Pallet</th><th class="n">Qty</th><th class="n">Booked</th><th>Pemilik</th><th>Umur</th><th></th></tr></thead><tbody>
+    ${sel.bins.map(b=>`<tr><td>${b[0]}</td><td>${b[1]}</td><td>${b[2]}</td><td><b>${b[3]}</b></td><td>${b[4]}</td><td>${b[5]}</td><td class="n">${fmt(b[6])}</td><td class="n">${fmt(b[7])}</td><td>${b[8]}</td><td>${b[9]}</td><td style="white-space:nowrap"><button class="b" type="button">Map</button> <button class="b" type="button">Transfer</button> <button class="b" type="button">Stock Card</button></td></tr>`).join('')}
+    </tbody></table></div>`;
+  }
+  q.addEventListener('input',renderQ); qsite.addEventListener('change',renderQ); renderQ();
+
+  /* ---------- transfer ---------- */
+  const tfType=document.getElementById('tf-type'), tfSteps=document.getElementById('tf-steps');
+  let tfState='draft';
+  function renderTf(){
+    const site=tfType.value==='site';
+    const from={bin:'WH-RAW-01 · Gudang Utama Bahan Baku (S1)',wh:'WH-MIX-01 · Gudang Transit &amp; Buffer (S1)',site:'WH-RAW-02 · Gudang Kertas Luar (S2)'}[tfType.value];
+    const to={bin:'WH-RAW-01 · bin lain dalam gudang sama',wh:'WH-RAW-01 · Gudang Utama Bahan Baku (S1)',site:'WH-RAW-01 · Gudang Utama Bahan Baku (S1)'}[tfType.value];
+    document.getElementById('tf-from').innerHTML=from+' <span class="dd">▾</span>';
+    document.getElementById('tf-to').innerHTML=to+' <span class="dd">▾</span>';
+    const st=site?['Draft','Confirmed · In Transit','Closed · Received']:['Draft','Closed · stok pindah'];
+    const idx=tfState==='draft'?0:tfState==='sent'?1:st.length-1;
+    tfSteps.innerHTML=st.map((s,i)=>`<span class="st ${i<idx?'done':i===idx?'cur':''}">${s}</span>`).join('<span class="arr">→</span>');
+    const badge=document.getElementById('tf-status');
+    badge.textContent=tfState==='draft'?'Draft':tfState==='sent'?'Confirmed':'Closed';
+    badge.className='badge '+(tfState==='draft'?'bg-warn':tfState==='sent'?'bg-acc':'bg-ok');
+    document.getElementById('tf-confirm').disabled=tfState!=='draft';
+    document.getElementById('tf-receive').disabled=!(site&&tfState==='sent');
+    document.getElementById('tf-r1').textContent=tfState==='done'?(site?'672':'680'):'—';
+    document.getElementById('tf-r2').textContent=tfState==='done'?'300':'—';
+    document.getElementById('tf-hint').textContent=
+      tfState==='draft'?(site?'Confirm: barang keluar dari S2 dan tercatat di IT-S1 (In Transit), surat jalan internal dicetak. Available S1 belum bertambah.':'Confirm: stok langsung pindah bin/gudang, dokumen Closed. Tidak ada jurnal.')
+      :tfState==='sent'?'Barang dalam perjalanan. Petugas S1 membuka dokumen ini dan klik Receive (boleh sebagian).'
+      :(site?'Diterima 672 dari 680 lbr pada baris 1 → selisih 8 lbr otomatis dibuat Adjustment Draft 26AD00017 (perlu approval).':'Selesai. Kartu stok mencatat 2 baris per item (keluar bin asal, masuk bin tujuan).');
+  }
+  tfType.addEventListener('change',()=>{tfState='draft';renderTf()});
+  document.getElementById('tf-confirm').addEventListener('click',()=>{tfState=tfType.value==='site'?'sent':'done';renderTf()});
+  document.getElementById('tf-receive').addEventListener('click',()=>{tfState='done';renderTf()});
+  renderTf();
+
+  /* ---------- riwayat item per lokasi ---------- */
+  const hist=[
+    ['15-Sep-2026','26IN00004','IN','L01-01 (S2)','DP-0915-02',+1000,'PO2600003','rina'],
+    ['18-Sep-2026','26OU00019','OUT','L01-01 (S2)','DP-0915-02',-700,'WO2600249','budi'],
+    ['20-Sep-2026','26OU00020','OUT','PPR-L02-04','DP-0826-01',-450,'WO2600251','andi'],
+    ['26-Sep-2026','26IN00006','IN','PPR-L02-04','DP-0926-03',+876,'PO2600005','rina'],
+    ['27-Sep-2026','26AD00014','ADJ','PPR-L02-05','DP-0826-01',-6,'Pallet basah · 2/2 approved','kepala.gudang'],
+    ['28-Sep-2026','26OU00022','OUT','PPR-L02-05','DP-0826-01',-300,'WO2600258','andi'],
+    ['29-Sep-2026','26IN00007','IN','PPR-L02-05','DP-0929-01',+574,'PO2600006','rina'],
+    ['30-Sep-2026','26TF00005','TF','L01-01 (S2) → PPR-L02-05','DP-0915-02',300,'Draft · belum dikirim','andi'],
+  ];
+  const histEl=document.getElementById('hist');
+  const tone={IN:'bg-ok',OUT:'bg-bad',ADJ:'bg-warn',TF:'bg-teal'};
+  function renderHist(f){
+    histEl.innerHTML=hist.filter(r=>f==='ALL'||r[2]===f).map(r=>`<tr><td>${r[0]}</td><td class="lnk">${r[1]}</td><td><span class="badge ${tone[r[2]]}">${r[2]}</span></td><td>${r[3]}</td><td>${r[4]}</td><td class="n ${r[2]==='TF'?'':r[5]<0?'neg':'pos'}">${r[2]==='TF'?'⇄ '+fmt(r[5]):(r[5]>0?'+':'−')+fmt(Math.abs(r[5]))}</td><td>${r[6]}</td><td>${r[7]}</td></tr>`).join('');
+  }
+  document.querySelectorAll('#hist-chips .chip').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('#hist-chips .chip').forEach(x=>x.classList.toggle('on',x===c));renderHist(c.dataset.f)}));
+  renderHist('ALL');
+
+  /* ---------- approval ---------- */
+  let lv=1, done=false;
+  const log=document.getElementById('ap-log'), note=document.getElementById('ap-note');
+  const who=['','kepala.gudang','annisa (Ops Manager)'];
+  function stamp(){return '01-Oct-2026 '+(8+lv)+':1'+lv}
+  function addLog(t,c){const li=document.createElement('li');li.innerHTML=`<span class="dot" style="background:var(${c})"></span><span>${t}</span>`;log.appendChild(li)}
+  function lvUI(){
+    ['lv1','lv2'].forEach((id,i)=>{const e=document.getElementById(id);e.className='st '+(i+1<lv||done&&i+1<=lv?'done':i+1===lv&&!done?'cur':'')});
+    document.getElementById('adj-lv').textContent=Math.min(lv,2);
+  }
+  function lock(){['ap-ok','ap-no','ap-hold'].forEach(id=>document.getElementById(id).disabled=true)}
+  document.getElementById('ap-ok').addEventListener('click',()=>{
+    addLog(`${stamp()} · <b>${who[lv]}</b> Approve level ${lv}${note.value?' · "'+note.value+'"':''}`,'--ok');
+    if(lv===2){done=true;lock();document.getElementById('lvp').className='st done';
+      document.getElementById('adj-st2').textContent='Approved';document.getElementById('adj-st2').className='badge bg-ok';
+      document.getElementById('adj-st1').textContent='Closed · posted';document.getElementById('adj-st1').className='badge bg-ok';
+      addLog('01-Oct-2026 10:12 · <b>sistem</b> Posting ke kartu stok (3 baris)','--accent');}
+    else{lv=2;document.getElementById('adj-st2').textContent='Waiting';document.getElementById('adj-st2').className='badge bg-acc'}
+    note.value='';lvUI();
+  });
+  document.getElementById('ap-no').addEventListener('click',()=>{
+    if(!note.value.trim()){note.focus();note.placeholder='Catatan wajib diisi untuk Reject';return}
+    addLog(`${stamp()} · <b>${who[lv]}</b> Reject level ${lv} · "${note.value}"`,'--bad');done=true;lock();
+    document.getElementById('adj-st2').textContent='Rejected';document.getElementById('adj-st2').className='badge bg-bad';
+    document.getElementById('adj-st1').textContent='Rejected · kembali ke pembuat';document.getElementById('adj-st1').className='badge bg-bad';
+  });
+  document.getElementById('ap-hold').addEventListener('click',()=>{
+    if(!note.value.trim()){note.focus();note.placeholder='Catatan wajib diisi untuk Hold';return}
+    addLog(`${stamp()} · <b>${who[lv]}</b> Hold level ${lv} · "${note.value}"`,'--warn');
+    document.getElementById('adj-st2').textContent='On Hold';document.getElementById('adj-st2').className='badge bg-warn';note.value='';
+  });
+  lvUI();
+
+  /* ---------- master stock ---------- */
+  const ms=[
+    ['GZ00726','ANIMAL GLUE','KG',960,100,40,-10],
+    ['PZ03572','DUPLEX 350 GR 72,5 X 108','LBR',1200,2450,1894,-6],
+    ['PRA06006','AP 85 GR NEVIA 65 X 100 CM','LBR',0,6000,2500,0],
+    ['XZ03203','KARTON YELLOW BOARD 40','LBR',2900,0,99,0],
+    ['GZ02501','LEM UV','KG',95,0,5,0],
+    ['XZ05857','SURPRIZE TK CYAN','KG',12,0,3,1],
+    ['XZ05858','SURPRIZE TK MAGENTA','KG',13,0,3,0],
+    ['XZ01268','UV VARNISH','KG',40,50,62,-2],
+    ['PZ01477','DC 250 GR IKA DP 68 X 93.5 CM','LBR',1290,0,0,0],
+    ['PCF08008','AC 310 GR GOLDEN COIN 79 X 109 CM','LBR',800,3000,2100,-20],
+    ['PZ00661','IVORY 310 GR SP 79 X 109 CM','LBR',1700,0,0,0],
+  ];
+  document.getElementById('master').innerHTML=ms.map(r=>{const e=r[3]+r[4]-r[5]+r[6];return `<tr class="click"><td class="mono">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="n">${fmt(r[3])}</td><td class="n">${r[4]?fmt(r[4]):'—'}</td><td class="n">${r[5]?fmt(r[5]):'—'}</td><td class="n ${r[6]<0?'neg':r[6]>0?'pos':''}">${r[6]?(r[6]>0?'+':'−')+fmt(Math.abs(r[6])):'—'}</td><td class="n"><b>${fmt(e)}</b></td></tr>`}).join('');
+
+  /* ---------- on hand ---------- */
+  const oh=[
+    ['ANIMAL GLUE','GZ00726','KG',1010,3,50,0,200,'OK'],
+    ['DUPLEX 350 GR 72,5 X 108','PZ03572','LBR',1750,876,0,0,1000,'Below min'],
+    ['AP 85 GR NEVIA 65 X 100 CM','PRA06006','LBR',3500,0,0,0,0,'OK'],
+    ['KARTON YELLOW BOARD 40','XZ03203','LBR',2801,1050,0,0,500,'OK'],
+    ['LEM UV','GZ02501','KG',90,0,0,0,50,'OK'],
+    ['SURPRIZE TK CYAN','XZ05857','KG',10,1.2,0,1,10,'Below min'],
+    ['UV VARNISH','XZ01268','KG',26,26,20,-2,15,'Below min'],
+    ['AC 310 GR GOLDEN COIN 79 X 109 CM','PCF08008','LBR',1680,1680,2000,0,1000,'Short'],
+    ['IVORY 310 GR SP 79 X 109 CM','PZ00661','LBR',1700,1700,3900,0,1000,'Late PO'],
+    ['DC 250 GR IKA DP 68 X 93.5 CM','PZ01477','LBR',1290,0,0,0,0,'Slow moving'],
+  ];
+  const ohTone={'OK':'bg-ok','Below min':'bg-warn','Short':'bg-bad','Late PO':'bg-warn','Slow moving':'bg-mut'};
+  const ohDefs=[['ALL','Semua item',''],['Short','Short','st-bad'],['Late PO','Late PO','st-warn'],['Below min','Below min','st-warn'],['Slow moving','Slow moving',''],['OK','OK','st-ok']];
+  let ohF='ALL';
+  function renderOh(){
+    document.getElementById('oh-stats').innerHTML=ohDefs.map(d=>`<button type="button" class="stat ${d[2]} ${ohF===d[0]?'on':''}" data-f="${d[0]}"><div class="k">${d[1]}</div><div class="v">${d[0]==='ALL'?oh.length:oh.filter(r=>r[8]===d[0]).length}</div></button>`).join('');
+    document.querySelectorAll('#oh-stats .stat').forEach(b=>b.addEventListener('click',()=>{ohF=b.dataset.f;renderOh()}));
+    document.getElementById('onhand').innerHTML=oh.filter(r=>ohF==='ALL'||r[8]===ohF).map(r=>{const av=r[3]-r[4];return `<tr><td><b>${r[0]}</b><div class="sub">${r[1]}</div></td><td>${r[2]}</td><td class="n">${fmt(r[3])}</td><td class="n lnk">${r[4]?fmt(r[4]):'—'}</td><td class="n ${av<=0?'neg':''}"><b>${fmt(av)}</b></td><td class="n lnk">${r[5]?fmt(r[5]):'—'}</td><td class="n ${r[6]<0?'neg':r[6]>0?'pos':''}">${r[6]?(r[6]>0?'+':'−')+fmt(Math.abs(r[6])):'—'}</td><td class="n">${r[7]?fmt(r[7]):'—'}</td><td><span class="badge ${ohTone[r[8]]}">${r[8]}</span></td></tr>`}).join('');
+  }
+  renderOh();
+
+  /* ---------- booking ---------- */
+  document.querySelectorAll('#bk-views .chip').forEach(c=>c.addEventListener('click',()=>bkView(c.dataset.v)));
+  function bkView(v){document.querySelectorAll('#bk-views .chip').forEach(x=>x.classList.toggle('on',x.dataset.v===v));['wb','co','sp','tl'].forEach(k=>document.getElementById('bk-'+k).hidden=k!==v)}
+  const wb=[
+    ['CO2600001','PAK RUDI LAWANG','RSC Box Corrugated 5-Ply Ekspor','1.000 PCS','10-Oct-2026','03-Oct-2026',[100,0,0,0,0],'Covered'],
+    ['CO2600004','PAK RUDI LAWANG','Folding Box Duplex 350gr + Sticker Label','5.000 + 10.000','15-Oct-2026','08-Oct-2026',[78,8,0,0,14],'Need Item'],
+    ['CO2600007','PT. SELATAN JADI JAYA','KS Power N120 MF','30.000 PCS','19-Oct-2026','12-Oct-2026',[43,0,0,57,0],'Short'],
+    ['CO2600013','PT. SELATAN JADI JAYA','Osima MS N100 CV','20.000 PCS','24-Oct-2026','17-Oct-2026',[0,0,0,0,100],'Need Item'],
+    ['CO2600017','PT. UPAYA GUNA SEJAHTERA','Yahya 250g (24pcs) C22','48.000 PCS','26-Oct-2026','19-Oct-2026',[30,0,70,0,0],'Late PO'],
+    ['CO2600014','PT. SELATAN JADI JAYA','YAMA Din170 MF','15.000 PCS','30-Oct-2026','23-Oct-2026',[0,100,0,0,0],'Waiting PO'],
+  ];
+  const wbTone={'Covered':'bg-ok','Waiting PO':'bg-acc','Late PO':'bg-warn','Short':'bg-bad','Need Item':'bg-info'};
+  const wbDefs=[['ALL','Semua CO',''],['Short','Short','st-bad'],['Late PO','Late PO','st-warn'],['Need Item','Need Item','st-info'],['Waiting PO','Waiting PO','st-acc'],['Covered','Covered','st-ok']];
+  let wbF='ALL';
+  function renderWb(){
+    document.getElementById('wb-stats').innerHTML=wbDefs.map(d=>`<button type="button" class="stat ${d[2]} ${wbF===d[0]?'on':''}" data-f="${d[0]}"><div class="k">${d[1]}</div><div class="v">${d[0]==='ALL'?wb.length:wb.filter(r=>r[7]===d[0]).length}</div></button>`).join('');
+    document.querySelectorAll('#wb-stats .stat').forEach(b=>b.addEventListener('click',()=>{wbF=b.dataset.f;renderWb()}));
+    const cls=['c-ok','c-po','c-late','c-short','c-spec'];
+    document.getElementById('wb').innerHTML=wb.filter(r=>wbF==='ALL'||r[7]===wbF).map(r=>`<tr class="click" tabindex="0"><td><b class="lnk">${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td class="n">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td><div class="cov" title="${r[6].join('/')}">${r[6].map((p,i)=>p?`<i class="${cls[i]}" style="width:${p}%"></i>`:'').join('')}</div><div class="sub">${r[6][0]}% stok${r[6][1]?' · '+r[6][1]+'% PO':''}${r[6][2]?' · '+r[6][2]+'% PO telat':''}${r[6][3]?' · '+r[6][3]+'% short':''}${r[6][4]?' · '+r[6][4]+'% pilih item':''}</div></td><td><span class="badge ${wbTone[r[7]]}">${r[7]}</span></td><td><button class="b" type="button">Open</button></td></tr>`).join('');
+    document.querySelectorAll('#wb tr.click').forEach(r=>{r.addEventListener('click',()=>bkView('co'));r.addEventListener('keydown',e=>{if(e.key==='Enter')bkView('co')})});
+  }
+  renderWb();
+  document.getElementById('pick-open').addEventListener('click',()=>document.getElementById('pick').hidden=false);
+  document.getElementById('pick-close').addEventListener('click',()=>document.getElementById('pick').hidden=true);
+  const spBtn=document.getElementById('sp-pr');
+  document.querySelectorAll('.spc').forEach(c=>c.addEventListener('change',()=>{const n=document.querySelectorAll('.spc:checked').length;spBtn.textContent=`Create PR (${n})`}));
+  spBtn.addEventListener('click',()=>{const n=document.querySelectorAll('.spc:checked').length;document.getElementById('sp-msg').textContent=n?`Contoh hasil: PR2600009 (Draft) dibuat untuk ${n} bahan, baris AC 310 = 2.500 lbr, butuh 12-Oct-2026, CO asal CO2600007. Booking CO berubah dari Short ke Pegged PR.`:'Centang bahan dulu.'});
+  const tlBase=[
+    ['01-Oct-2026','Saldo Available (S1 1.000 + S2 680)','',1680],
+    ['12-Oct-2026','Kebutuhan CO2600007 · KS Power N120','BK2600004',-3938],
+    ['14-Oct-2026','PO tiba','PO2600007',2000],
+    ['23-Oct-2026','Kebutuhan CO2600014 · YAMA Din170','BK2600006',-1200],
+  ];
+  const tlSug=['12-Oct-2026','Usulan PR (pesan paling lambat 07-Oct)','usulan',2500];
+  function renderTl(){
+    const rows=[...tlBase]; if(document.getElementById('tl-sugg').checked) rows.splice(1,0,tlSug);
+    let bal=0;
+    document.getElementById('tl').innerHTML=rows.map((r,i)=>{bal=i===0?r[3]:bal+r[3];return `<tr class="${r===tlSug?'sugg':''}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="n ${i===0?'':r[3]<0?'neg':'pos'}">${i===0?fmt(r[3]):(r[3]>0?'+':'−')+fmt(Math.abs(r[3]))}</td><td class="n bal ${bal<0?'neg':''}">${fmt(bal)}</td></tr>`}).join('');
+  }
+  document.getElementById('tl-sugg').addEventListener('change',renderTl); renderTl();
+})();
+</script>
