@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\DB;
 // Layar tiap item: target 'v2:<slug>' -> layar v2; selain itu layar v1 tmerp (MenuRoutes) supaya tetap bisa di-UAT.
 final class AppMenu
 {
-    // status_code (progres v2) -> lencana menu
-    private const BADGE = [
-        'READY_FOR_QC' => ['Review', 'partial'],
-        'LOCKED' => ['Approved', 'done'],
-    ];
+    // Lencana layar v2 (user 2026-10-01): A hijau = sudah di-approve user (status LOCKED, hanya user yang mengunci);
+    // R kuning = sudah dibangun tapi belum direview user (semua status selain LOCKED).
+    private const APPROVED = ['A', 'done'];
+
+    private const REVIEW = ['R', 'partial'];
 
     public static function modules(SecUser $user): array
     {
@@ -81,7 +81,7 @@ final class AppMenu
     private static function item(SysAppMenu $i, array $routes): array
     {
         $v2 = str_starts_with((string) $i->target, 'v2:');
-        [$badge, $tone] = $v2 ? (self::BADGE[$i->status_code] ?? ['Belum', 'todo'])
+        [$badge, $tone] = $v2 ? ($i->status_code === 'LOCKED' ? self::APPROVED : self::REVIEW)
             : (isset($routes[$i->code]) ? ['v1', null] : ['Belum', 'todo']);
 
         return ['code' => $i->code, 'label' => self::label($i), 'icon' => $i->icon ?: null, 'type' => $i->object_type ?: 'form',

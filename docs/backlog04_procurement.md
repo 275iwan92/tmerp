@@ -35,6 +35,18 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
 - **PQ v2 sisa:** (1) `ANTHROPIC_API_KEY` belum diisi -> PDF/foto penawaran belum terbaca otomatis (keputusan user:
   key & izin data penawaran dikirim ke Anthropic); (2) migration PQ di tm2* menunggu OK; (3) file .eml/.msg belum
   didukung (upload lampirannya); (4) CSV berformat angka Indonesia ("12.500") bisa terbaca 12,5 oleh pembaca Excel lokal.
+- **Sisa sesi 2026-10-01 (Purchase) — menunggu user:**
+  1. Review layar di mockup.test (menu v2 kini: **R kuning** = belum direview, **A hijau** = approved/LOCKED oleh user):
+     Purchase Quotation (upload -> cek -> Confirm -> Bandingkan -> Buat PO) dan Cancel SPB di Penerimaan Barang.
+  2. OK menjalankan 2 migration ke tm2*: `2026_10_01_000002_pq_upload_extract_and_po_line_link`,
+     `2026_10_01_000020_pv_receipt_cancel_columns` (sudah jalan di ddt*).
+  3. Data uji UAT: di ddt* semua baris PR APPROVED sudah FULLY_ORDERED -> buat PR baru + approve dulu untuk mencoba
+     PR -> PQ -> PO dari awal.
+  4. Belum dibangun: layar **Stock In v2** (lihat dokumen hasil SPB & batal SPB `OUT/..` ref PV_CANCEL); Penerimaan dari
+     Customer & dari Subkon; Purchase Return v2; PO Kontan + Kas Kecil (lihat butir di bawah); Purchase Invoice/AP
+     (backlog07 §12.3); konversi roll -> rim saat terima (rumus: berat 1 rim = lebar roll cm x panjang potong cm x GSM
+     / 20.000; rim = berat bersih roll / berat 1 rim; butuh keputusan: satuan beli kg/roll, kapan panjang potong
+     ditentukan, % waste).
 - **PO Kontan + Kas Kecil — BELUM ADA, dibahas di sesi lain** (dicatat user
   2026-10-01). Pembelian kontan berdampak ke petty cash DAN ke PO (ada input
   "PO Kontan"). Kondisi kode: `po_order.i_po_type` baru `LOCAL`/`IMPORT`/
