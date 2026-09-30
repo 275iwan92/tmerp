@@ -60,7 +60,14 @@ Ghostscript. **Sisa satu:**
 
 | # | Pekerjaan | Status |
 |---|---|---|
-| 19.1 | Layar Surat Jalan Subkon sendiri (entry + cetak): penerima supplier, rujukan PR & CO, barang setengah jadi keluar/masuk. Saat ini surat jalan SUBKON dibuat otomatis dari ProDev dan tampil di daftar DO, tapi layar entry & cetaknya masih memakai bentuk surat jalan customer. **Keputusan user 2026-09-30: tetap perlu** — dibangun sebagai DO jenis SUBCON di v2 (`do_delivery.do_type='SUBCON'`, kolom `subcon_*` sudah ada). User journey menunggu persetujuan. | **BELUM** |
+| 19.1 | Layar Surat Jalan Subkon sendiri (entry + cetak): penerima supplier, rujukan PR & CO, barang setengah jadi keluar/masuk. Saat ini surat jalan SUBKON dibuat otomatis dari ProDev dan tampil di daftar DO, tapi layar entry & cetaknya masih memakai bentuk surat jalan customer. **Keputusan user 2026-09-30: tetap perlu** — dibangun sebagai DO jenis SUBCON di v2 (`do_delivery.do_type='SUBCON'`, kolom `subcon_*` sudah ada). User journey **DISETUJUI user 2026-09-30** (lihat bawah). Dibangun SETELAH sesi refactor master-detail OO selesai, memakai objek master-detail barunya. | **BELUM — menunggu refactor master-detail** |
+
+**User journey 19.1 (disetujui 2026-09-30):**
+1. Menu Delivery → **Surat Jalan Subkon** (grid): semua DO `do_type='SUBCON'` — nomor, supplier subkon, proses, CO asal, PR, status.
+2. Klik 2x → form. Header: supplier penerima, proses subkon, rujukan PR & CO, tanggal. Baris: barang setengah jadi yang dikirim (part + qty).
+3. Draft: New / Save / Delete / Confirm. Confirmed: Cancel / Print / Email saja.
+4. Print: surat jalan dengan kop, penerima = alamat supplier, nomor CO asal, tanda tangan.
+5. Barang kembali dari subkon BUKAN di layar ini — itu "Penerimaan dari Subkon" di Procurement (backlog04).
 
 ---
 
