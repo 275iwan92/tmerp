@@ -61,7 +61,7 @@ class Form extends DevlibComponent
     // dd-Mmm-yyyy HH:mm, sama dgn tanggal grid.
     public function stamp(?string $at): string
     {
-        return $at ? \Illuminate\Support\Carbon::parse($at)->format('d-M-Y H:i') : '—';
+        return \Devlib\Locale::stamp($at);
     }
 
     // [preset|null, label|null, variant|null (null = warna preset), icon|null, act] urut kiri -> kanan (user 2026-09-30):

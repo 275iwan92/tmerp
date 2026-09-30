@@ -85,7 +85,7 @@ final class ProductMaster
             'join' => $parts->firstWhere('part_kind', 'ASSEMBLY')?->joinType?->label,
             'tree' => self::tree($parts, null),
             'components' => $parts->where('part_kind', 'COMPONENT')->map(fn ($x) => self::part($x))->values()->all(),
-            'accs' => $p->accs->map(fn (ProdProductAcc $a) => ['type' => $a->acc_type, 'at' => $a->acc_at->format('d-M-Y H:i'), 'by' => $a->approved_by,
+            'accs' => $p->accs->map(fn (ProdProductAcc $a) => ['type' => $a->acc_type, 'at' => \Devlib\Locale::dt($a->acc_at), 'by' => $a->approved_by,
                 'channel' => ProdProductAcc::CHANNELS[$a->channel] ?? $a->channel, 'note' => $a->note,
                 'evidence' => $a->evidence_path ? asset('storage/'.$a->evidence_path) : null, 'evidence_name' => $a->evidence_filename])->all(),
         ];
@@ -144,21 +144,21 @@ final class ProductMaster
             $main = $coItem ?? $lines->first();
 
             return [
-                'date' => ($co?->co_date ?? $q->issued_date)?->format('d-M-Y'), 'sort' => ($co?->co_date ?? $q->issued_date)?->timestamp,
+                'date' => \Devlib\Locale::d(($co?->co_date ?? $q->issued_date)), 'sort' => ($co?->co_date ?? $q->issued_date)?->timestamp,
                 'quotation' => $q->quotation_no, 'co' => $co?->co_no, 'po' => $co?->customer_po_no, 'inquiry' => $inq->inquiry_no, 'type' => $inq->inquiry_type,
                 'qty' => (float) $main->qty, 'price' => (float) $main->unit_price,
                 'result' => $co ? 'WIN' : ($inq->sub_state === 'LOST' ? 'LOST' : 'OPEN'), 'reason' => $inq->sub_state === 'LOST' ? $inq->cancel_reason : null,
                 'tiers' => $lines->map(fn ($l) => ['qty' => (float) $l->qty, 'price' => (float) $l->unit_price])->values()->all(),
-                'ships' => $coItem ? ($ships[$coItem->id_item] ?? collect())->map(fn ($d) => ['date' => $d->ship_date?->format('d-M-Y'), 'qty' => (float) $d->ship_qty, 'status' => $d->status])->values()->all() : [],
+                'ships' => $coItem ? ($ships[$coItem->id_item] ?? collect())->map(fn ($d) => ['date' => \Devlib\Locale::d($d->ship_date), 'qty' => (float) $d->ship_qty, 'status' => $d->status])->values()->all() : [],
             ];
         });
         // CO INSTANT (tanpa Quotation) langsung dari Master Product.
         foreach ($coItems->whereNotIn('order_id', $orders->pluck('id_order')) as $ci) {
             $co = CoOrder::find($ci->order_id);
-            $rows->push(['date' => $co?->co_date?->format('d-M-Y'), 'sort' => $co?->co_date?->timestamp, 'quotation' => null, 'co' => $co?->co_no, 'po' => $co?->customer_po_no,
+            $rows->push(['date' => \Devlib\Locale::d($co?->co_date), 'sort' => $co?->co_date?->timestamp, 'quotation' => null, 'co' => $co?->co_no, 'po' => $co?->customer_po_no,
                 'inquiry' => null, 'type' => 'INSTANT', 'qty' => (float) $ci->qty, 'price' => (float) $ci->unit_price, 'result' => 'WIN', 'reason' => null,
                 'tiers' => [['qty' => (float) $ci->qty, 'price' => (float) $ci->unit_price]],
-                'ships' => ($ships[$ci->id_item] ?? collect())->map(fn ($d) => ['date' => $d->ship_date?->format('d-M-Y'), 'qty' => (float) $d->ship_qty, 'status' => $d->status])->values()->all()]);
+                'ships' => ($ships[$ci->id_item] ?? collect())->map(fn ($d) => ['date' => \Devlib\Locale::d($d->ship_date), 'qty' => (float) $d->ship_qty, 'status' => $d->status])->values()->all()]);
         }
 
         return $rows->sortByDesc('sort')->values()->all();
@@ -169,7 +169,7 @@ final class ProductMaster
     {
         return IqpInquiry::where('product_id', $productId)->with(['costing.priceTiers' => fn ($q) => $q->orderBy('qty_pcs')])->get()
             ->filter(fn ($i) => $i->costing?->published_flag)
-            ->map(fn ($i) => ['inquiry' => $i->inquiry_no, 'type' => $i->inquiry_type, 'at' => ($i->costing->approved_at ?? $i->costing->updated_at)?->format('d-M-Y H:i'),
+            ->map(fn ($i) => ['inquiry' => $i->inquiry_no, 'type' => $i->inquiry_type, 'at' => \Devlib\Locale::dt(($i->costing->approved_at ?? $i->costing->updated_at)),
                 'sort' => ($i->costing->approved_at ?? $i->costing->updated_at)?->timestamp, 'by' => $i->costing->approved_by,
                 'tiers' => $i->costing->priceTiers->map(fn ($t) => ['qty' => (float) $t->qty_pcs, 'price' => (float) $t->price_per_pcs])->all()])
             ->sortByDesc('sort')->values()->all();

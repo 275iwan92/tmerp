@@ -1,7 +1,7 @@
 /* DevLib · Grid */
 (function (Devlib) {
   'use strict';
-  const {srcAttr, $, $$, esc, toast, fmt, at, val, emit} = Devlib.h;
+  const {srcAttr, $, $$, esc, toast, fmt, at, val, emit, parseNum, DlDateTime, DlTime} = Devlib.h;
   /* ============================ GRID ============================ */
   // Mesin grid sisi-browser (DevLib, tanpa DB). Di tmerp, versi server (Livewire) memakai
   // markup & kelas yang sama; hanya sumber data & query-nya yang berpindah ke server.
@@ -125,7 +125,7 @@
 
     fmtCell(c, v) {
       if (c.type === 'link') return this.fmtCell({...c, type: c.format || 'number'}, v);
-      return c.type === 'money' ? fmt.money(v) : c.type === 'number' ? fmt.number(v, String(v).includes('.') ? 2 : 0) : c.type === 'date' ? fmt.gridDate(v) : v;
+      return c.type === 'money' ? fmt.money(v) : c.type === 'number' ? fmt.number(v, String(v).includes('.') ? 2 : 0) : c.type === 'date' ? fmt.gridDate(v) : c.type === 'datetime' ? (DlDateTime.of(v)?.display() ?? v) : c.type === 'time' ? (DlTime.of(v)?.display() ?? v) : v;
     }
 
     filtered(opts = {}) {
@@ -143,7 +143,7 @@
       t = String(t || '').trim(); if (!t) return true;
       const c = this.cols.find(x => x.key === k) || {key: k}, v = this.val(r, k);
       const m = ['number', 'money'].includes(c.type) && t.match(/^(>=|<=|>|<|=)\s*(-?[\d.,]+)$/);
-      if (m) { const n = +m[2].replace(/\./g, '').replace(',', '.'), x = +v; return {'>': x > n, '<': x < n, '>=': x >= n, '<=': x <= n, '=': x === n}[m[1]]; }
+      if (m) { const n = parseNum(m[2]), x = +v; return {'>': x > n, '<': x < n, '>=': x >= n, '<=': x <= n, '=': x === n}[m[1]]; }
       return String(this.fmtCell(c, v)).toLowerCase().includes(t.toLowerCase()) || (c.code && String(this.val(r, c.code)).toLowerCase().includes(t.toLowerCase()));
     }
 
@@ -322,7 +322,7 @@
       const inputs = this.qq('[data-g-qa]'), first = inputs[0];
       if (!first || !first.value.trim()) { first && first.focus(); toast(`${this.cols.find(c => c.key === this.cfg.quickAdd[0])?.label || 'Isian pertama'} wajib diisi.`, 'warn'); return; }
       const r = {[this.cfg.rowKey]: 'n' + Date.now()}; if (this.cfg.activeKey) r[this.cfg.activeKey] = true;
-      inputs.forEach(i => { const c = this.cols.find(x => x.key === i.dataset.gQa) || {}; r[i.dataset.gQa] = ['number', 'money'].includes(c.type) ? +i.value.replace(/\./g, '').replace(',', '.') || 0 : i.value.trim(); });
+      inputs.forEach(i => { const c = this.cols.find(x => x.key === i.dataset.gQa) || {}; r[i.dataset.gQa] = ['number', 'money'].includes(c.type) ? parseNum(i.value) || 0 : i.value.trim(); });
       this.rows.unshift(r); this.redraw(); this._emit('dl:grid-add', {row: r}); toast('Baris ditambahkan.', 'success'); const f = this.q('[data-g-qa]'); if (f) f.focus();
     }
 

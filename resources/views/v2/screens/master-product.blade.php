@@ -9,8 +9,8 @@
 
     $doc = request('id') ? ProductMaster::doc((int) request('id')) : null;
     abort_if(request('id') && ! $doc, 404);
-    $rp = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
-    $num = fn ($v) => number_format((float) $v, 0, ',', '.');
+    $rp = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+    $num = fn ($v) => \Devlib\Locale::number((float) $v, 0);
     $orders = $doc ? ProductMaster::orders($doc['id']) : [];
     $types = $doc ? Sales::dielineTypes() : [];
     $flat = function ($nodes) use (&$flat) {
@@ -72,7 +72,7 @@
                 <x-dl::field.display label="Kode · No. Desain" :value="$doc['code'].' · '.($doc['design_no'] ?? '—')" :source="Src::of('tm2mst.prod_product.product_code', 'tm2mst.prod_product.design_no')" />
             </x-dl::form.row>
             <x-dl::form.row cols="3">
-                <x-dl::field.display label="Ukuran jadi (P × L × T)" :value="collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format($v, 2, ',', ''), '0'), ','))->implode(' × ').' cm'" :source="Src::of('tm2mst.prod_product.cm_length', 'cm_width', 'cm_height')" />
+                <x-dl::field.display label="Ukuran jadi (P × L × T)" :value="collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : \Devlib\Locale::decimal($v, 2))->implode(' × ').' cm'" :source="Src::of('tm2mst.prod_product.cm_length', 'cm_width', 'cm_height')" />
                 <x-dl::field.display label="Induk (bila turunan revisi)" :value="$doc['parent']['label'] ?? '—'" :source="Src::of('tm2mst.prod_product.parent_product_id')" />
                 <x-dl::field.display label="Order terakhir" :value="$orders ? ($orders[0]['co'] ?? $orders[0]['quotation']).' · '.$num($orders[0]['qty']).' pcs · '.$orders[0]['date'] : '—'" :source="Src::of('tm2sdi.co_order_item.product_id')" />
             </x-dl::form.row>

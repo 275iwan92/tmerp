@@ -285,11 +285,9 @@ final class CustomerOrder
         return $v instanceof \DateTimeInterface ? $v->format('Y-m-d') : trim((string) $v);
     }
 
+    // Kiriman form DevLib = angka kanonik (1234.5); ketikan manusia dibaca sesuai bahasa tampilan (Devlib\Locale::input).
     private static function num(mixed $v): string
     {
-        $v = trim((string) $v);
-        $v = str_contains($v, ',') ? str_replace(['.', ','], ['', '.'], $v) : (substr_count($v, '.') > 1 ? str_replace('.', '', $v) : $v);
-
-        return $v === '' ? '0' : $v;
+        return \Devlib\Locale::input($v) ?? '0';
     }
 }

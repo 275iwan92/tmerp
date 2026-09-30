@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-dl-tz="{{ config('devlib.timezone') }}">
+<html lang="{{ \Devlib\Locale::lang() }}" data-dl-tz="{{ config('devlib.timezone') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

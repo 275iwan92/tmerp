@@ -67,7 +67,7 @@ class Gauge extends DevlibComponent
                     <line x1="100" y1="100" x2="{{ explode(',', $point($value, 62))[0] }}" y2="{{ explode(',', $point($value, 62))[1] }}" class="dl-gauge__needle"/><circle cx="100" cy="100" r="6" class="dl-gauge__hub"/>
                     <text x="22" y="114" class="dl-gauge__mm" text-anchor="middle">{{ $min + 0 }}</text><text x="178" y="114" class="dl-gauge__mm" text-anchor="middle">{{ $max + 0 }}</text>
                 </svg>
-                <b class="dl-gauge__big is-{{ $tone() }}">{{ rtrim(rtrim(number_format($value, 1, ',', '.'), '0'), ',') }}{{ $unit }}</b>
+                <b class="dl-gauge__big is-{{ $tone() }}">{{ \Devlib\Locale::decimal($value, 1) }}{{ $unit }}</b>
                 @if ($label)<span class="dl-gauge__label">{{ $label }}@if ($target !== null)<small> · target {{ $target + 0 }}{{ $unit }}</small>@endif</span>@endif
             </div>
             BLADE;

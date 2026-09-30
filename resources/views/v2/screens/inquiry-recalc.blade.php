@@ -17,8 +17,8 @@
     $doc = $productId ? ProductMaster::doc($productId) : null;
     abort_if($productId && ! $doc, 404);
     $locked = (bool) $inq?->stat_confirm;
-    $rp = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
-    $num = fn ($v) => number_format((float) $v, 0, ',', '.');
+    $rp = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+    $num = fn ($v) => \Devlib\Locale::number((float) $v, 0);
     $orders = $doc ? ProductMaster::orders($doc['id']) : [];
     $won = array_values(array_filter($orders, fn ($o) => $o['result'] === 'WIN'));
     $lastQuote = $doc ? \App\Models\Sdi\QuoQuotation::whereIn('id_quotation', \App\Models\Sdi\QuoQuotationItem::whereIn('inquiry_id', IqpInquiry::where('product_id', $doc['id'])->pluck('id_inquiry'))->pluck('quotation_id'))->latest('issued_date')->first() : null;
@@ -74,7 +74,7 @@
                 <x-dl::doc-share target="#recalc-form" type="inquiry-recalc" :doc-id="$inq?->id_inquiry" :number="$inq?->inquiry_no" title="Inquiry Rekalkulasi" />
             </x-dl::action-bar>
             <h2 class="mp-bigname">{{ $doc['name'] }}</h2>
-            <p class="mp-hint">{{ $doc['code'] }} · No. Desain {{ $doc['design_no'] ?? '—' }} · {{ collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format($v, 2, ',', ''), '0'), ','))->implode(' × ') }} cm{{ $doc['join'] ? ' · '.$doc['join'] : '' }}</p>
+            <p class="mp-hint">{{ $doc['code'] }} · No. Desain {{ $doc['design_no'] ?? '—' }} · {{ collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : \Devlib\Locale::decimal($v, 2))->implode(' × ') }} cm{{ $doc['join'] ? ' · '.$doc['join'] : '' }}</p>
             <x-dl::alert tone="info" message="Rekalkulasi = product sama, harga baru. Spec, dieline, artwork, bahan, dan proses terkunci — untuk mengubahnya pakai Revisi." />
         </x-dl::card>
 

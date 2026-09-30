@@ -37,11 +37,11 @@
     }
 
     rp(v) {
-      return 'Rp ' + (+v || 0).toLocaleString('id-ID');
+      return fmt.money(+v || 0);
     }
 
     cell(k, v) {
-      return k.endsWith(':money') ? (+v || 0).toLocaleString('id-ID') : esc(v ?? '');
+      return k.endsWith(':money') ? fmt.number(+v || 0) : esc(v ?? '');
     }
 
     list() {

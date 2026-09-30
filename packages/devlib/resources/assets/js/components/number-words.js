@@ -1,7 +1,7 @@
 /* DevLib · NumberWords */
 (function (Devlib) {
   'use strict';
-  const {$, $$, words} = Devlib.h;
+  const {$, $$, words, fmt, NUM} = Devlib.h;
 
   class NumberWords extends Devlib.Component {
     static selector = "[data-dl-words]";
@@ -23,11 +23,13 @@
 
     upd() {
       const p = this.places(), neg = this.inp.value.trim().startsWith('-');
-      let [a, b] = this.inp.value.replace(/[^\d,]/g, '').split(',');
+      // Pemisah desimal ikut bahasa tampilan (id koma, en titik); nilai kanonik dikirim lewat input tersembunyi.
+      const D = NUM.dec;
+      let [a, b] = this.inp.value.replace(D === '.' ? /[^\d.]/g : /[^\d,]/g, '').split(D);
       a = (a || '').replace(/^0+(?=\d)/, '').slice(0, 15);
-      const hasComma = p > 0 && this.inp.value.includes(',');
+      const hasComma = p > 0 && this.inp.value.includes(D);
       b = p > 0 ? (b || '').slice(0, p) : '';
-      this.inp.value = (neg ? '-' : '') + (a ? (+a).toLocaleString('id-ID') : (hasComma ? '0' : '')) + (hasComma ? ',' + b : '');
+      this.inp.value = (neg ? '-' : '') + (a ? fmt.number(+a) : (hasComma ? '0' : '')) + (hasComma ? D + b : '');
       this.hid.value = a || b ? (neg ? '-' : '') + (a || '0') + (b ? '.' + b : '') : '';
       this.out.textContent = this.hid.value ? words(this.hid.value, this.cc ? this.C[this.cc.value] : null) : '';
       this.out.classList.toggle('is-empty', !this.hid.value);

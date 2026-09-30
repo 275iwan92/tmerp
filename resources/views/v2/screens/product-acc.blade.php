@@ -8,7 +8,7 @@
 
     $doc = request('id') ? ProductMaster::doc((int) request('id')) : null;
     abort_if(request('id') && ! $doc, 404);
-    $mm = fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format($v * 10, 1, ',', ''), '0'), ',').' mm';
+    $mm = fn ($v) => $v === null ? '—' : \Devlib\Locale::decimal($v * 10, 1).' mm';
     $inks = $doc ? collect($doc['components'])->flatMap(fn ($c) => array_column($c['inks'], 'ink'))->unique()->values()->all() : [];
     $swatch = ['CYAN' => '#00a0e3', 'MAGENTA' => '#e5007e', 'YELLOW' => '#ffed00', 'BLACK' => '#1d1d1b'];
     $digital = $doc ? collect($doc['accs'])->firstWhere('type', 'DIGITAL') : null;
@@ -39,7 +39,7 @@
 
     <div class="mp-proof" data-dl-src="{{ Src::of('tm2mst.prod_product', 'tm2mst.prod_part_artwork', 'tm2mst.prod_product_acc') }}">
         <div class="mp-proof__top">
-            <div class="mp-proof__title">{{ $doc['code'] }}<br>{{ collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format($v, 2, ',', ''), '0'), ','))->implode(' x ') }} cm</div>
+            <div class="mp-proof__title">{{ $doc['code'] }}<br>{{ collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : \Devlib\Locale::decimal($v, 2))->implode(' x ') }} cm</div>
             <table class="mp-proof__rev">
                 <tr><th>NO</th><th>REVISION NOTE</th><th>DESIGN NUMBER</th><th>DATE</th></tr>
                 @foreach (ProductMaster::lineage($doc['id']) as $i => $l)

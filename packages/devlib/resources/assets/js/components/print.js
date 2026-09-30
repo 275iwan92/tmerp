@@ -1,7 +1,7 @@
 /* DevLib · Print */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, T, words, val} = Devlib.h;
+  const {$, $$, esc, T, words, val, fmt} = Devlib.h;
   /* ============================ PRINT OUT ============================ */
   // Menyusun dokumen ke lembar A4/A5: isi baris sampai lembar penuh (diukur, bukan ditebak), header tabel diulang,
   // total + catatan + tanda tangan hanya di lembar terakhir.
@@ -30,7 +30,7 @@
     }
 
     num(v) {
-      return (+v || 0).toLocaleString('id-ID', {maximumFractionDigits: 2});
+      return fmt.num(+v || 0, 2);
     }
 
     vis() {

@@ -51,12 +51,12 @@
         $appr = PurchaseRequisition::approvalState('PR', $pr->pr_id, (float) $pr->c_est_total);
         $formStatus = PurchaseRequisition::formStatus($pr, $held);
         $draft = $pr->status === 'DRAFT';
-        $money = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
+        $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
         $lines = $pr->lines->map(fn ($l) => [
             'pr_line_id' => $l->pr_line_id, 'i_description' => $l->i_description, 'i_qty' => (float) $l->i_qty, 'i_uom' => $l->i_uom,
             'i_est_price' => (float) $l->i_est_price, 'i_need_date' => $l->i_need_date?->toDateString() ?? '', 'i_notes' => $l->i_notes,
             'code' => $l->c_item_code ?: '—', 'source' => $l->i_item_source === 'MASTER_ITEM' ? 'Master bahan' : 'Item bebas', 'stock' => $l->is_stock ? 'Stok' : 'Non-stok / jasa',
-            'ordered' => rtrim(rtrim(number_format((float) $l->c_qty_ordered, 2, '.', ''), '0'), '.') ?: '0',
+            'ordered' => \Devlib\Locale::decimal($l->c_qty_ordered, 2),
         ])->values()->all();
     @endphp
     <x-dl::form id="pr-form" :title="'Purchase Requisition · '.($pr->doc_no ?: 'Draft #'.$pr->pr_id)" :subtitle="PurchaseRequisition::departments()[$pr->i_department_id] ?? '—'"

@@ -47,7 +47,7 @@ class Bullet extends DevlibComponent
                     <span class="dl-bullet__bar {{ $value >= $target ? 'is-good' : 'is-bad' }}" style="width:{{ $pct($value) }}%"></span>
                     <span class="dl-bullet__target" style="left:{{ $pct($target) }}%"></span>
                 </div>
-                <div class="dl-bullet__nums"><b>{{ $show($value) }}</b><small>target {{ $show($target) }} · {{ $target ? number_format($value / $target * 100, 0) : 0 }}%</small></div>
+                <div class="dl-bullet__nums"><b>{{ $show($value) }}</b><small>target {{ $show($target) }} · {{ $target ? \Devlib\Locale::number($value / $target * 100) : 0 }}%</small></div>
             </div>
             BLADE;
     }

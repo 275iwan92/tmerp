@@ -47,13 +47,13 @@
             <div class="dl-strip__kv dl-strip__doc"><span>No. Surat Jalan</span><b>{{ $do->do_no }}</b></div>
             <x-dl::field.display label="Customer" :value="$do->customer?->customer_name ?? '—'" :source="Src::of('tm2mst.cust_customer')" />
             <x-dl::field.display label="Tujuan" :value="trim(($do->ship_address_detail ? $do->ship_address_detail.', ' : '').($do->ship_address_label ?? ''), ', ') ?: '—'" :source="Src::of('tm2sdi.do_delivery.ship_address_label')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>Total Qty</span><b>{{ number_format((float) $do->lines->sum('qty_do'), 0, ',', '.') }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>Total Qty</span><b>{{ \Devlib\Locale::number((float) $do->lines->sum('qty_do'), 0) }}</b></div>
         </x-slot:strip>
         <x-slot:delivery>
             <x-dl::form.row :cols="4">
-                <x-dl::field.display label="Tanggal DO" :value="$do->do_date?->format('d-M-Y') ?? '—'" />
-                <x-dl::field.display label="Rencana Kirim" :value="$do->scheduled_ship_date?->format('d-M-Y') ?? '—'" />
-                <x-dl::field.display label="Dikirim" :value="$do->actual_ship_date?->format('d-M-Y') ?? '—'" />
+                <x-dl::field.display label="Tanggal DO" :value="\Devlib\Locale::d($do->do_date) ?? '—'" />
+                <x-dl::field.display label="Rencana Kirim" :value="\Devlib\Locale::d($do->scheduled_ship_date) ?? '—'" />
+                <x-dl::field.display label="Dikirim" :value="\Devlib\Locale::d($do->actual_ship_date) ?? '—'" />
                 <x-dl::field.display label="Kode Pos" :value="$do->ship_postal_code ?? '—'" />
             </x-dl::form.row>
         </x-slot:delivery>

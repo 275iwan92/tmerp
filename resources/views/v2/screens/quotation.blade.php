@@ -14,7 +14,7 @@
     $home = route('v2.screen', 'quotation');
     $q = request('id') ? QuoQuotation::with(['customer', 'ccs', 'items.inquiry', 'activities'])->find((int) request('id')) : null;
     abort_if(request('id') && ! $q, 404);
-    $rp = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
+    $rp = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
     $trim = fn ($v) => $v === null ? '' : rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
 @endphp
 
@@ -96,7 +96,7 @@
         $more = $draft ? Quotation::available((int) $q->customer_id) : [];
         $cur = $q->currency_code ?: 'IDR';
         $sym = \Devlib\Terbilang::CURRENCIES[$cur][0] ?? 'Rp';
-        $money = fn ($v) => $sym.' '.number_format((float) $v, 0, ',', '.');
+        $money = fn ($v) => $sym.' '.\Devlib\Locale::number((float) $v, 0);
         // WON (CO lahir = pindah modul) & LOST = selesai -> Closed; PUBLISHED = Confirmed (terbit, terkunci).
         $formStatus = match ($status) { 'DRAFT' => 'draft', 'PUBLISHED' => 'confirmed', 'CANCELLED' => 'cancelled', default => 'closed' };
         $lines = $q->items->map(fn ($it) => [
@@ -191,9 +191,9 @@
 
     <x-dl::card title="Follow-up customer" description="Catatan telepon / kunjungan / WhatsApp / email sampai customer memutuskan.">
         <x-dl::table :columns="['date' => 'Tanggal', 'type' => 'Jenis', 'contact' => 'Kontak', 'result' => 'Hasil', 'notes' => 'Catatan', 'next' => 'Tindak lanjut', 'by' => 'Oleh']"
-            :rows="$q->activities->map(fn ($a) => ['date' => $a->activity_date?->format('d-M-Y'), 'type' => implode(' ', QuoActivity::TYPES[$a->activity_type] ?? [$a->activity_type]),
+            :rows="$q->activities->map(fn ($a) => ['date' => \Devlib\Locale::d($a->activity_date), 'type' => implode(' ', QuoActivity::TYPES[$a->activity_type] ?? [$a->activity_type]),
                 'contact' => $a->contact_person ?? '—', 'result' => QuoActivity::RESULTS[$a->result] ?? '—', 'notes' => $a->notes ?? '—',
-                'next' => trim(($a->next_action_date?->format('d-M-Y') ?? '').' '.($a->next_action ?? '')) ?: '—', 'by' => $a->created_by])->all()"
+                'next' => trim((\Devlib\Locale::d($a->next_action_date) ?? '').' '.($a->next_action ?? '')) ?: '—', 'by' => $a->created_by])->all()"
             empty="Belum ada follow-up." source="{{ Src::of('tm2sdi.quo_activity') }}" />
         @if (in_array($status, ['DRAFT', 'PUBLISHED'], true))
             <x-dl::action-bar><x-dl::button variant="secondary" icon="plus" label="+ Tambah Follow-up" data-dl-open="quotation-activity" /></x-dl::action-bar>
