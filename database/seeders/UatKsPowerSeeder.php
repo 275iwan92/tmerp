@@ -69,9 +69,11 @@ class UatKsPowerSeeder extends Seeder
         ]));
         $tierId = $this->sdi->table('iqp_tier')->insertGetId($row(['inquiry_id' => $inquiryId, 'tier_seq' => 1, 'qty' => 30000, 'is_primary' => 1]));
 
-        // Body = rakitan (tanpa dieline sendiri); Part A & B = komponen, bentangan = ukuran pisau 729 x 464 mm.
-        $dims = ['product_length' => 507, 'product_width' => 187, 'product_height' => 267];
-        $spec = ['type_code' => null, 'dims' => $dims];
+        // Body = rakitan (tanpa dieline sendiri); Part A & B = komponen, tiap part = setengah RSC (RSC_2PC),
+        // bentangan = ukuran pisau 729 x 464 mm (35 lem + 507 + 187; 267 + 2 x (187/2 + 5)), lubang pegangan 120 mm.
+        $dims = ['product_length' => 507, 'product_width' => 187, 'product_height' => 267, 'glue_flap' => 35, 'flap_extra' => 5,
+            'hand_hole_width' => 120, 'overflow_margin' => 0];
+        $spec = ['type_code' => 'RSC_2PC', 'dims' => $dims];
         $body = $this->sdi->table('iqp_part')->insertGetId($row([
             'inquiry_id' => $inquiryId, 'part_seq' => 1, 'part_code' => 'BODY', 'part_name' => 'Body', 'part_type' => 'DC+SHEET',
             'part_kind' => 'ASSEMBLY', 'join_type_id' => $join, 'qty_in_parent' => 1, 'qty_per_sku' => 1, 'pack_qty' => 10, 'dieline_spec' => json_encode($spec),
