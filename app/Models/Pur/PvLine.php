@@ -21,7 +21,7 @@ class PvLine extends Model
         'qc_qty_status', 'qc_quality_status', 'c_qty_accepted', 'c_qty_rejected', 'qc_note', 'qc_by', 'qc_at',
         'c_tol_pct', 'c_qty_variance_pct', 'is_tol_exceeded', 'tol_override_by', 'tol_override_at', 'tol_override_reason',
         'c_unit_price', 'c_line_value',
-        'i_lot_no', 'i_location_code', 'i_co_line_id', 'c_qty_invoiced', 'c_qty_returned',
+        'i_lot_no', 'i_location_code', 'i_next_process', 'c_qty_short', 'i_short_note', 'i_co_line_id', 'c_qty_invoiced', 'c_qty_returned',
         'created_by', 'updated_by',
     ];
 

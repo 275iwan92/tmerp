@@ -1,10 +1,15 @@
 {{-- Penerimaan Barang (SPB / PV) v2. Flow & aturan = tmerp pages/pur/pv (index + entry) lewat App\Support\V2\Data\PurchaseReceive.
      Alur: GRID penerimaan -> + New Record = pilih supplier (yang punya PO SENT / sebagian diterima) -> pilih gudang + baris PO ->
      DRAFT: qty diterima (satuan beli & stok), lot, lokasi, QC qty selesai, QC kualitas PASS / FAIL / PARTIAL, override toleransi ->
-     Confirm (= Post v1: stok masuk + jurnal pembelian, PO ikut ter-update) -> Closed saat sudah diserahkan / ditagih. --}}
+     Confirm (= Post v1: stok masuk + jurnal pembelian, PO ikut ter-update) -> Closed saat sudah diserahkan / ditagih.
+     Jenis lain (user 2026-10-01, App\Services\Pur\SpecialReceiptService): From Customer = bahan customer utk CO tertentu
+     (wajib No. CO, tanpa stok & jurnal); From Subcon = barang kembali dari subkon atas PO Subkon, langsung ke proses
+     berikutnya; kekurangan yang ketahuan belakangan dicatat lewat Report Shortage (PO & jurnal ikut koreksi). --}}
 @php
     use App\Models\Pur\PvReceipt;
     use App\Services\Pur\PvPostingService;
+    use App\Services\Pur\SpecialReceiptService;
+    use App\Support\V2\Data\PurchaseOrder;
     use App\Support\V2\Data\PurchaseReceive;
     use App\Support\V2\Src;
 
@@ -21,15 +26,63 @@
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.pv_receipt', 'tm2pur.pv_line') }}"
         :columns="[
             ['key' => 'supplier', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'no'],
+            ['key' => 'type', 'label' => 'Receipt Type', 'type' => 'badge', 'tones' => PurchaseReceive::TYPE_TONES],
             ['key' => 'date', 'label' => 'Tanggal', 'type' => 'date'],
             ['key' => 'warehouse', 'label' => 'Gudang'],
             ['key' => 'po', 'label' => 'No. PO'],
             ['key' => 'lines', 'label' => 'Baris', 'type' => 'number'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseReceive::STATUS_TONES],
         ]"
-        :stats="[['label' => 'Semua'], ['label' => 'Draft / QC', 'where' => ['status' => ['DRAFT', 'QC_PENDING']], 'tone' => 'warn'], ['label' => 'Posted', 'where' => ['status' => 'POSTED'], 'tone' => 'success']]"
+        :stats="[['label' => 'Semua'], ['label' => 'Draft / QC', 'where' => ['status' => ['DRAFT', 'QC_PENDING']], 'tone' => 'warn'], ['label' => 'Posted', 'where' => ['status' => 'POSTED'], 'tone' => 'success'], ['label' => 'From Customer', 'where' => ['type' => 'From Customer'], 'tone' => 'info'], ['label' => 'From Subcon', 'where' => ['type' => 'From Subcon'], 'tone' => 'warn']]"
         :filters="['supplier' => 'Supplier', 'warehouse' => 'Gudang', 'status' => 'Status']" />
 @elseif (! $pv)
+    @php $kind = request('type', 'PO'); @endphp
+    <x-dl::action-bar>
+        @foreach (PurchaseReceive::TYPES as $k => $label)
+            <x-dl::button size="sm" :variant="$kind === $k ? 'primary' : 'secondary'" :label="$label" :href="$home.'?new=1&type='.$k" />
+        @endforeach
+    </x-dl::action-bar>
+@endif
+@if (! $pv && request('new') && request('type') === 'CUSTOMER')
+    <form method="post" action="{{ route('v2.pv.create-customer') }}">
+        @csrf
+        <x-dl::card title="+ New Record — Material from Customer" description="Material brought by the customer for a specific Customer Order (inquiry marked 'material from customer'). The CO number is mandatory. Not company stock: no stock value, no journal.">
+            <x-dl::form.row :cols="2">
+                <x-dl::field.select name="co_id" label="Customer Order" required :options="PurchaseReceive::coOptions()" :source="Src::of('tm2sdi.co_order (CONFIRMED / SUBMITTED)')" />
+                <x-dl::field.select name="warehouse" label="Stored At (optional)" :options="PurchaseReceive::warehouses()" :source="Src::of('tm2mst.wh_warehouse')" />
+            </x-dl::form.row>
+            <x-dl::action-bar>
+                <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
+                <x-dl::button preset="save" label="Create Receipt" />
+            </x-dl::action-bar>
+        </x-dl::card>
+    </form>
+@elseif (! $pv && request('new') && request('type') === 'SUBCON')
+    @php $sub = (int) request('supplier'); @endphp
+    <x-dl::card title="+ New Record — Return from Subcon" description="Goods coming back from a subcontractor against a Subcon PO. They usually go straight to the next process; shortages found later are recorded with Report Shortage.">
+        <form method="get" action="{{ $home }}">
+            <input type="hidden" name="new" value="1"><input type="hidden" name="type" value="SUBCON">
+            <x-dl::form.row :cols="2">
+                <x-dl::field.select name="supplier" label="Subcontractor" required :options="PurchaseReceive::subconSupplierOptions()" :value="$sub ?: null" :source="Src::of('tm2pur.po_order (SUBCONTRACT, SENT)')" />
+            </x-dl::form.row>
+            <x-dl::action-bar>
+                <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
+                <x-dl::button type="submit" variant="secondary" label="Next: choose PO lines" />
+            </x-dl::action-bar>
+        </form>
+        @if ($sub)
+            <form method="post" action="{{ route('v2.pv.create-subcon') }}">
+                @csrf
+                <input type="hidden" name="supplier_id" value="{{ $sub }}">
+                <x-dl::form.row :cols="2">
+                    <x-dl::field.select name="do_id" label="Subcon Delivery Note (optional)" :options="PurchaseReceive::subconDoOptions($sub)" :source="Src::of('tm2sdi.do_delivery (SUBCON)')" />
+                </x-dl::form.row>
+                <x-dl::field.checkboxes name="po_line_ids" label="Subcon PO lines coming back" required :options="PurchaseReceive::subconLineOptions($sub)" :source="Src::of('tm2pur.po_line (SUBCONTRACT, open)')" />
+                <x-dl::action-bar><x-dl::button preset="save" label="Create Receipt" /></x-dl::action-bar>
+            </form>
+        @endif
+    </x-dl::card>
+@elseif (! $pv && request('new'))
     @php $sid = (int) request('supplier'); @endphp
     <x-dl::card title="+ New Record — Penerimaan Barang (SPB)" description="Langkah 1: pilih supplier yang punya PO terkirim. Langkah 2: pilih gudang penerima dan baris PO yang datang.">
         <form method="get" action="{{ $home }}">
@@ -54,7 +107,84 @@
             </form>
         @endif
     </x-dl::card>
-@else
+@elseif ($pv && $pv->i_receipt_type !== 'PO')
+    @php
+        $draft = $pv->status === 'DRAFT';
+        $isCust = $pv->i_receipt_type === 'CUSTOMER';
+        $party = $isCust ? \Illuminate\Support\Facades\DB::connection('tm2mst')->table('cust_customer')->where('id_customer', $pv->i_customer_id)->value('customer_name')
+            : (PurchaseOrder::suppliers([$pv->i_supplier_id])[$pv->i_supplier_id] ?? '—');
+        $co = $pv->i_co_id ? \Illuminate\Support\Facades\DB::connection('tm2sdi')->table('co_order')->where('id_order', $pv->i_co_id)->value('co_no') : null;
+        $sj = $pv->i_do_id ? \Illuminate\Support\Facades\DB::connection('tm2sdi')->table('do_delivery')->where('id_delivery', $pv->i_do_id)->value('do_no') : null;
+        $coItems = $isCust ? PurchaseReceive::coItemOptions($pv->i_co_id) : [];
+        $mat = \Illuminate\Support\Facades\DB::connection('tm2mst')->table('mat_raw')->whereIn('material_id', $pv->lines->pluck('item_id')->filter())->get(['material_id', 'material_code', 'material_name'])->keyBy('material_id');
+        $lines = $pv->lines->sortBy('line_no')->map(fn ($l) => [
+            'pv_line_id' => $l->pv_line_id, 'i_description' => $l->i_description, 'i_co_line_id' => $l->i_co_line_id, 'item_id' => $l->item_id,
+            'item_id_label' => isset($mat[$l->item_id]) ? $mat[$l->item_id]->material_code.' · '.$mat[$l->item_id]->material_name : '',
+            'po' => $l->c_po_doc_no ? $l->c_po_doc_no.' #'.$l->c_po_line_no : '—', 'i_qty_purchase' => (float) $l->i_qty_purchase, 'i_uom_purchase' => $l->i_uom_purchase,
+            'i_next_process' => $l->i_next_process, 'i_lot_no' => $l->i_lot_no, 'short' => (float) $l->c_qty_short > 0 ? \Devlib\Locale::decimal($l->c_qty_short, 2).' — '.$l->i_short_note : '—',
+        ])->values()->all();
+    @endphp
+    <x-dl::form id="pv-special" :title="($isCust ? 'Material from Customer · ' : 'Return from Subcon · ').$pv->doc_no" :subtitle="$party.' · '.$pv->status"
+        panel="top" kind="document" :status="PurchaseReceive::formStatus($pv)" :pipeline="true"
+        :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1&type='.$pv->i_receipt_type"
+        :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $draft ? [] : ['delete'])"
+        :tabs="['general' => 'General', 'notes' => 'Notes']"
+        :created-by="$pv->created_by" :created-at="$pv->created_at?->toDateTimeString()" :updated-by="$pv->updated_by" :updated-at="$pv->updated_at?->toDateTimeString()">
+        <x-slot:strip>
+            <div class="dl-strip__kv dl-strip__doc"><span>No.</span><b>{{ $pv->doc_no }}</b></div>
+            <x-dl::field.date name="i_doc_date" label="Received Date" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />
+            <x-dl::field.display :label="$isCust ? 'Customer' : 'Subcontractor'" :value="$party" :source="Src::of($isCust ? 'tm2mst.cust_customer' : 'tm2mst.sup_supplier')" />
+            <x-dl::field.display :label="$isCust ? 'Customer Order' : 'Subcon PO'" :value="$isCust ? $co : ($pv->c_po_doc_list ?: '—')" :source="Src::of($isCust ? 'tm2pur.pv_receipt.i_co_id' : 'tm2pur.pv_receipt.c_po_doc_list')" />
+        </x-slot:strip>
+        <x-slot:general>
+            <x-dl::form.row :cols="4">
+                <x-dl::field.text name="i_supplier_do_no" :label="$isCust ? 'Customer Delivery Note No.' : 'Subcon Delivery Note No.'" :case-toggle="false" :value="$pv->i_supplier_do_no" :source="Src::of('tm2pur.pv_receipt.i_supplier_do_no')" />
+                <x-dl::field.text name="i_vehicle_no" label="Vehicle No." :case-toggle="false" :value="$pv->i_vehicle_no" :source="Src::of('tm2pur.pv_receipt.i_vehicle_no')" />
+                @if ($isCust)
+                    <x-dl::field.select name="i_warehouse_code" label="Stored At" :options="PurchaseReceive::warehouses()" :value="$pv->i_warehouse_code" :source="Src::of('tm2pur.pv_receipt.i_warehouse_code')" />
+                @else
+                    <x-dl::field.display label="Our Delivery Note (to subcon)" :value="$sj ?: '—'" :source="Src::of('tm2pur.pv_receipt.i_do_id')" />
+                @endif
+                <x-dl::field.display label="Posted" :value="$pv->posted_at ? \Devlib\Locale::dt($pv->posted_at).' · '.$pv->posted_by : '—'" :source="Src::of('tm2pur.pv_receipt.posted_at')" />
+            </x-dl::form.row>
+            @unless ($isCust)
+                <x-dl::field.display label="Journal" :value="implode(', ', SpecialReceiptService::vouchers($pv)) ?: '—'" :source="Src::of('tm2acc.fin_voucher (PV, PV_SHORT)')" />
+            @endunless
+        </x-slot:general>
+        <x-slot:notes>
+            <x-dl::field.text name="i_notes" label="Receipt Notes" multiline :value="$pv->i_notes" :source="Src::of('tm2pur.pv_receipt.i_notes')" />
+            @if ($pv->status === 'CANCELLED')
+                <x-dl::field.display label="Cancelled" :value="$pv->cancelled_by.' · '.\Devlib\Locale::dt($pv->cancelled_at).' — '.$pv->cancel_reason" :source="Src::of('tm2pur.pv_receipt.cancel_reason')" />
+            @endif
+        </x-slot:notes>
+        <x-slot:detail>
+            <x-dl::lines name="lines" title="Details" key-field="pv_line_id" remove-field="remove" :addable="$draft && $isCust" :duplicable="false" :min-rows="0" :rows="$lines" :readonly="! $draft"
+                source="{{ Src::of('tm2pur.pv_line') }}"
+                :columns="array_values(array_filter([
+                    $isCust ? ['key' => 'i_co_line_id', 'label' => 'CO Item', 'type' => 'select', 'options' => $coItems, 'width' => '220px'] : ['key' => 'po', 'label' => 'Subcon PO', 'type' => 'display', 'width' => '130px'],
+                    ['key' => 'i_description', 'label' => $isCust ? 'Material (as delivered)' : 'Item', 'type' => $isCust ? 'text' : 'display', 'required' => true, 'width' => '280px'],
+                    $isCust ? ['key' => 'item_id', 'label' => 'Master Material (if any)', 'type' => 'lookup', 'lookup' => 'material', 'width' => '220px'] : null,
+                    ['key' => 'i_qty_purchase', 'label' => 'Qty Received', 'type' => 'number', 'required' => true, 'sum' => true, 'width' => '110px'],
+                    ['key' => 'i_uom_purchase', 'label' => 'UoM', 'type' => $isCust ? 'text' : 'display', 'width' => '80px'],
+                    $isCust ? ['key' => 'i_lot_no', 'label' => 'Lot / Roll No.', 'width' => '120px'] : ['key' => 'i_next_process', 'label' => 'Sent To (next process)', 'width' => '180px'],
+                    $isCust ? null : ['key' => 'short', 'label' => 'Shortage found later', 'type' => 'display', 'more' => true],
+                ]))" />
+        </x-slot:detail>
+    </x-dl::form>
+    @if (! $isCust && $pv->status === 'POSTED')
+        <form method="post" action="{{ route('v2.pv.short', $pv->pv_id) }}">
+            @csrf
+            <x-dl::card title="Report Shortage" description="A shortage found later in the next process lowers the received quantity; the Subcon PO and the subcon cost journal are corrected automatically.">
+                <x-dl::form.row :cols="3">
+                    <x-dl::field.select name="pv_line_id" label="Line" required :options="$pv->lines->mapWithKeys(fn ($l) => [$l->pv_line_id => '#'.$l->line_no.' '.$l->i_description.' ('.\Devlib\Locale::decimal($l->i_qty_purchase, 2).' '.$l->i_uom_purchase.')'])->all()" :source="Src::of('tm2pur.pv_line')" />
+                    <x-dl::field.decimal name="short_qty" label="Short Qty" required :source="Src::of('tm2pur.pv_line.c_qty_short')" />
+                    <x-dl::field.text name="short_note" label="Found At / Remark" required placeholder="e.g. counted at gluing: 50 pcs missing" :source="Src::of('tm2pur.pv_line.i_short_note')" />
+                </x-dl::form.row>
+                <x-dl::action-bar><x-dl::button variant="danger" icon="fa-triangle-exclamation" label="Record Shortage" type="submit" onclick="return confirm('Record this shortage? Received qty, PO and journal will be corrected.')" /></x-dl::action-bar>
+            </x-dl::card>
+        </form>
+    @endif
+@elseif ($pv)
     {{-- Form Master-Detail DevLib (disetujui user 2026-09-30). --}}
     @php
         $draft = in_array($pv->status, ['DRAFT', 'QC_PENDING'], true);

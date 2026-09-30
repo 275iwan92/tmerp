@@ -145,20 +145,22 @@ class PvPostingService
         DB::connection('tm2pur')->transaction(function () use ($pv, $login, $revDocId, $reason) {
             $pv->update(['status' => 'CANCELLED', 'cancel_reason' => mb_substr(trim($reason), 0, 255), 'cancelled_at' => now(),
                 'cancelled_by' => $login, 'rm_stock_rev_doc_id' => $revDocId, 'updated_by' => $login]);
-            $poIds = DB::connection('tm2pur')->table('pv_line')->where('pv_id', $pv->pv_id)->select('c_po_id')->distinct()->pluck('c_po_id');
+            // Bahan dari customer tidak punya PO (c_po_id kosong) -> dilewati.
+            $poIds = DB::connection('tm2pur')->table('pv_line')->where('pv_id', $pv->pv_id)->whereNotNull('c_po_id')->select('c_po_id')->distinct()->pluck('c_po_id');
             foreach ($poIds as $poId) {
                 static::recalcPo($poId);
             }
         });
 
         $warning = null;
-        $voucher = FinVoucher::withoutGlobalScopes()->where('source_type', 'PV')->where('source_id', $pv->pv_id)
-            ->where('status', 'POSTED')->whereNull('reversed_by_id')->first();
-        if ($voucher) {
+        // Jurnal penerimaan + koreksi kekurangan subkon (PV_SHORT) ikut dibalik semua.
+        $vouchers = FinVoucher::withoutGlobalScopes()->whereIn('source_type', ['PV', 'PV_SHORT'])->where('source_id', $pv->pv_id)
+            ->where('status', 'POSTED')->whereNull('reversed_by_id')->get();
+        foreach ($vouchers as $voucher) {
             try {
                 app(JournalPostingService::class)->reverse($voucher, now()->toDateString(), $login, "Cancel {$pv->doc_no}: ".trim($reason));
             } catch (\Throwable $e) {
-                $warning = "Jurnal {$voucher->voucher_number} belum dibalik: ".$e->getMessage();
+                $warning = trim($warning.' '."Jurnal {$voucher->voucher_number} belum dibalik: ".$e->getMessage());
             }
         }
 
@@ -332,7 +334,7 @@ class PvPostingService
             : null;
     }
 
-    protected static function recalcPo(int $poId): void
+    public static function recalcPo(int $poId): void
     {
         $po = PoOrder::with('lines')->find($poId);
 

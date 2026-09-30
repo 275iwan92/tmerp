@@ -14,7 +14,7 @@ class PvReceipt extends Model
     protected $primaryKey = 'pv_id';
 
     protected $fillable = [
-        'doc_no', 'i_doc_date', 'i_supplier_id', 'i_warehouse_code',
+        'doc_no', 'i_receipt_type', 'i_doc_date', 'i_supplier_id', 'i_customer_id', 'i_co_id', 'i_do_id', 'i_warehouse_code',
         'i_supplier_do_no', 'i_vehicle_no', 'i_notes',
         'c_po_count', 'c_po_doc_list',
         'status', 'posted_at', 'posted_by', 'rm_stock_doc_id', 'cancel_reason', 'cancelled_at', 'cancelled_by', 'rm_stock_rev_doc_id',

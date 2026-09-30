@@ -19,10 +19,12 @@ use App\Models\Sys\SysDocShare;
 use App\Models\Sys\SysMailSetting;
 use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
+use App\Services\Pur\SpecialReceiptService;
 use App\Services\Sales\InquiryAssembly;
 use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
+use App\Support\Localization\Dictionary;
 use App\Support\Mail\MailSettings;
 use App\Support\V2\AppMenu;
 use App\Support\V2\Data\ApprovalCenter;
@@ -563,6 +565,39 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $open($pv->pv_id)->with('v2_flash', "Penerimaan {$pv->doc_no} dibuat — isi qty diterima, QC qty & kualitas, lalu Confirm (Post).");
         })->name('create');
+        // Bahan dari customer (wajib No. CO) & barang kembali dari subkon (SpecialReceiptService).
+        Route::post('/create-customer', function (Request $r) use ($open) {
+            $d = $r->validate(['co_id' => ['required', 'integer'], 'warehouse' => ['nullable', 'string']], [], ['co_id' => 'No. CO']);
+            try {
+                $pv = SpecialReceiptService::createCustomer((int) $d['co_id'], $d['warehouse'] ?? null, Auth::user()->login);
+            } catch (InvalidArgumentException $e) {
+                return back()->withErrors(['co_id' => $e->getMessage()]);
+            }
+
+            return $open($pv->pv_id)->with('v2_flash', "Penerimaan bahan customer {$pv->doc_no} dibuat — cek uraian & qty per baris, lalu Confirm.");
+        })->name('create-customer');
+        Route::post('/create-subcon', function (Request $r) use ($open) {
+            $d = $r->validate(['supplier_id' => ['required', 'integer'], 'po_line_ids' => ['required', 'array', 'min:1'], 'do_id' => ['nullable', 'integer']],
+                [], ['supplier_id' => 'Subkon', 'po_line_ids' => 'Baris PO Subkon']);
+            try {
+                $pv = SpecialReceiptService::createSubcon((int) $d['supplier_id'], $d['po_line_ids'], $d['do_id'] ?? null, Auth::user()->login);
+            } catch (InvalidArgumentException $e) {
+                return back()->withErrors(['po_line_ids' => $e->getMessage()]);
+            }
+
+            return $open($pv->pv_id)->with('v2_flash', "Penerimaan dari subkon {$pv->doc_no} dibuat — isi qty kembali & proses berikutnya, lalu Confirm.");
+        })->name('create-subcon');
+        Route::post('/{id}/short', function (Request $r, int $id) use ($open) {
+            $d = $r->validate(['pv_line_id' => ['required', 'integer'], 'short_qty' => ['required'], 'short_note' => ['required', 'string', 'max:200']],
+                [], ['pv_line_id' => 'Baris', 'short_qty' => 'Qty kurang', 'short_note' => 'Keterangan']);
+            try {
+                SpecialReceiptService::reportShortage(PvReceipt::findOrFail($id), (int) $d['pv_line_id'], (float) Locale::input($d['short_qty']), $d['short_note'], Auth::user()->login);
+            } catch (InvalidArgumentException $e) {
+                return $open($id)->withErrors(['short' => $e->getMessage()]);
+            }
+
+            return $open($id)->with('v2_flash', 'Kekurangan tercatat — qty diterima, PO Subkon, dan jurnal dikoreksi.');
+        })->whereNumber('id')->name('short');
         Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
             $pv = PvReceipt::findOrFail($id);
             $action = (string) $r->input('action', 'save');
@@ -577,6 +612,17 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 return redirect(route('v2.screen', 'purchase-receive'))->with('v2_flash', "Draft {$pv->doc_no} dihapus.");
             }
             $r->validate(['i_doc_date' => ['nullable', 'date']]);
+            if ($pv->i_receipt_type !== 'PO') {
+                SpecialReceiptService::save($pv, $r->all(), Auth::user()->login);
+                if ($action === 'confirm') {
+                    $err = SpecialReceiptService::post($pv->refresh(), Auth::user()->login);
+
+                    return $err ? $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: '.implode(' ', $err)])
+                        : $open($id)->with('v2_flash', $pv->i_receipt_type === 'SUBCON' ? 'Penerimaan subkon di-Confirm — PO Subkon & jurnal jasa terupdate.' : 'Penerimaan bahan customer di-Confirm.');
+                }
+
+                return $open($id)->with('v2_flash', 'Penerimaan tersimpan.');
+            }
             PurchaseReceive::save($pv, $r->all());
             $msg = 'Penerimaan tersimpan.';
             if ($action === 'add_lines') {
@@ -836,7 +882,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
     Route::post('/dictionary/register', function (Request $r) {
         $texts = array_slice(array_values(array_filter((array) $r->input('texts', []), 'is_string')), 0, 200);
 
-        return response()->json(['added' => \App\Support\Localization\Dictionary::register($texts)]);
+        return response()->json(['added' => Dictionary::register($texts)]);
     })->name('dictionary.register');
 
     // Print & Email (objek DevLib x-dl::doc-share): simpan snapshot HTML -> token untuk QR / link online; kirim e-mail.

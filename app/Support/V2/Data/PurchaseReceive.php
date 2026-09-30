@@ -5,7 +5,9 @@ namespace App\Support\V2\Data;
 use App\Models\Pur\PvReceipt;
 use App\Services\Pur\PvBuilderService;
 use App\Services\Pur\PvPostingService;
+use App\Services\Pur\SpecialReceiptService;
 use App\Support\V2\Data\Concerns\FlowDocument;
+use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -21,6 +23,11 @@ final class PurchaseReceive
 
     public const STATUS_TONES = ['DRAFT' => 'neutral', 'QC_PENDING' => 'warn', 'POSTED' => 'success', 'CANCELLED' => 'danger'];
 
+    // Jenis penerimaan (user 2026-10-01): dari PO supplier, bahan dari customer (wajib No. CO), barang kembali dari subkon.
+    public const TYPES = ['PO' => 'From PO', 'CUSTOMER' => 'From Customer', 'SUBCON' => 'From Subcon'];
+
+    public const TYPE_TONES = ['From PO' => 'neutral', 'From Customer' => 'info', 'From Subcon' => 'warn'];
+
     public static function component(int $id): Component
     {
         $c = app('livewire')->new('pages::pur.pv.entry');
@@ -32,10 +39,48 @@ final class PurchaseReceive
     public static function rows(): array
     {
         $pvs = PvReceipt::withCount('lines')->orderByDesc('pv_id')->limit(500)->get();
-        $sup = PurchaseOrder::suppliers($pvs->pluck('i_supplier_id')->unique()->all());
+        $sup = PurchaseOrder::suppliers($pvs->pluck('i_supplier_id')->filter()->unique()->all());
+        $cust = DB::connection('tm2mst')->table('cust_customer')->whereIn('id_customer', $pvs->pluck('i_customer_id')->filter()->unique())->pluck('customer_name', 'id_customer');
 
-        return $pvs->map(fn ($p) => ['id' => $p->pv_id, 'no' => $p->doc_no, 'supplier' => $sup[$p->i_supplier_id] ?? '—', 'date' => $p->i_doc_date?->toDateString(),
-            'warehouse' => $p->i_warehouse_code, 'po' => $p->c_po_doc_list, 'lines' => $p->lines_count, 'status' => $p->status])->all();
+        return $pvs->map(fn ($p) => ['id' => $p->pv_id, 'no' => $p->doc_no, 'supplier' => $p->i_receipt_type === 'CUSTOMER' ? ($cust[$p->i_customer_id] ?? '—') : ($sup[$p->i_supplier_id] ?? '—'),
+            'type' => self::TYPES[$p->i_receipt_type] ?? $p->i_receipt_type, 'date' => $p->i_doc_date?->toDateString(),
+            'warehouse' => $p->i_warehouse_code ?: '—', 'po' => $p->c_po_doc_list, 'lines' => $p->lines_count, 'status' => $p->status])->all();
+    }
+
+    // CO yang boleh menerima bahan customer: Confirmed / Submitted, belum batal. Label = No. CO · customer.
+    public static function coOptions(): array
+    {
+        $cos = DB::connection('tm2sdi')->table('co_order')->whereIn('doc_status', ['CONFIRMED', 'SUBMITTED'])->where('stat_cancel', 0)->orderByDesc('id_order')->limit(300)
+            ->get(['id_order', 'co_no', 'customer_id']);
+        $cust = DB::connection('tm2mst')->table('cust_customer')->whereIn('id_customer', $cos->pluck('customer_id')->unique())->pluck('customer_name', 'id_customer');
+
+        return $cos->mapWithKeys(fn ($c) => [$c->id_order => $c->co_no.' · '.($cust[$c->customer_id] ?? '—')])->all();
+    }
+
+    public static function coItemOptions(?int $coId): array
+    {
+        return $coId ? DB::connection('tm2sdi')->table('co_order_item')->where('order_id', $coId)->orderBy('line_seq')
+            ->get(['id_item', 'line_seq', 'description'])->mapWithKeys(fn ($i) => [$i->id_item => '#'.$i->line_seq.' '.$i->description])->all() : [];
+    }
+
+    public static function subconSupplierOptions(): array
+    {
+        $ids = SpecialReceiptService::openSubconLines()->pluck('order.i_supplier_id')->unique()->all();
+
+        return PurchaseOrder::suppliers($ids);
+    }
+
+    public static function subconLineOptions(int $supplierId): array
+    {
+        return SpecialReceiptService::openSubconLines($supplierId)->mapWithKeys(fn ($l) => [$l->po_line_id => $l->order->doc_no.' #'.$l->line_no.' · '.$l->i_description
+            .' · open '.Locale::decimal((float) $l->i_qty - (float) $l->c_qty_received, 2).' '.$l->i_uom])->all();
+    }
+
+    // Surat Jalan Subkon (DO jenis SUBCON) ke subkon ini -- rujukan opsional.
+    public static function subconDoOptions(int $supplierId): array
+    {
+        return DB::connection('tm2sdi')->table('do_delivery')->where('do_type', 'SUBCON')->where('supplier_id', $supplierId)->orderByDesc('id_delivery')
+            ->limit(100)->pluck('do_no', 'id_delivery')->all();
     }
 
     // Supplier yang masih punya PO terbuka untuk diterima (Langkah 1 v1).
@@ -50,7 +95,7 @@ final class PurchaseReceive
     public static function openLineOptions(int $supplierId): array
     {
         return PvBuilderService::openLinesForSupplier($supplierId)->mapWithKeys(fn ($l) => [$l->po_line_id => ($l->order->doc_no ?? 'PO').' #'.$l->line_no.' · '.$l->i_description
-            .' · sisa '.\Devlib\Locale::decimal($l->i_qty - (float) $l->c_qty_received, 2).' '.$l->i_uom])->all();
+            .' · sisa '.Locale::decimal($l->i_qty - (float) $l->c_qty_received, 2).' '.$l->i_uom])->all();
     }
 
     public static function warehouses(): array
