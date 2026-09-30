@@ -12,6 +12,7 @@
       if (this.viewMode) this.setView(true);
       this.el.addEventListener('input', e => { const f = e.target.closest('.dl-field.is-invalid'); if (f && hasValue(f)) { f.classList.remove('is-invalid'); const x = $(f, '[data-dl-field-error]'); if (x) x.textContent = ''; } }, true);
       this.el.addEventListener('submit', e => {
+        if (e.submitter?.name === '_action') $(this.el, 'input[type=hidden][name=_action]')?.remove();  // Save menang atas sisa aksi panel
         const n = this.validate();
         if (n) { e.preventDefault(); dirtyForms.add(this.el); this.el.classList.add('is-dirty'); toast(`${n} isian wajib belum diisi.`, 'danger'); return; }
         if (this.el.getAttribute('action')) return;
@@ -45,10 +46,11 @@
     }
     // Tombol panel (selain Save = submit biasa). Ada action -> kirim ulang form dgn _action=<act>; tanpa action = pratinjau DevLib.
     act(a) {
-      const ask = {delete: ['Hapus data ini? Tidak bisa dikembalikan.', 'danger'], confirm: ['Confirm dokumen ini? Setelah confirm isi terkunci.', 'warn'], cancel: ['Batalkan dokumen ini?', 'danger'], deactivate: ['Nonaktifkan data ini? Data tidak muncul lagi di pilihan.', 'warn'], activate: ['Aktifkan kembali data ini?', 'warn']}[a];
+      const ask = {delete: ['Hapus data ini? Tidak bisa dikembalikan.', 'danger'], confirm: ['Confirm dokumen ini? Setelah confirm isi terkunci.', 'warn'], cancel: ['Batalkan dokumen ini?', 'danger'], draft: ['Kembalikan dokumen ini ke Draft? (Mode Developer)', 'warn'], deactivate: ['Nonaktifkan data ini? Data tidak muncul lagi di pilihan.', 'warn'], activate: ['Aktifkan kembali data ini?', 'warn']}[a];
       const go = () => {
         this.el.dispatchEvent(new CustomEvent('dl:form-action', {bubbles: true, detail: {action: a}}));
-        if (!this.el.getAttribute('action')) return toast(`Aksi: ${a} (pratinjau, tidak dikirim)`, 'success');
+        // Print/Email tidak mengubah dokumen -> tidak kirim form (layar menangkap dl:form-action, mis. buka x-dl::doc-share).
+        if (!this.el.getAttribute('action') || a === 'print' || a === 'email') return toast(`Aksi: ${a} (pratinjau)`, 'success');
         let h = $(this.el, 'input[name=_action]'); if (!h) { h = document.createElement('input'); h.type = 'hidden'; h.name = '_action'; this.el.appendChild(h); }
         h.value = a; if (a === 'confirm') this.el.requestSubmit(); else HTMLFormElement.prototype.submit.call(this.el);  // hanya Confirm yang divalidasi
       };

@@ -7,7 +7,7 @@ namespace Devlib\Components;
 // mode="view": tampil sebagai teks (fieldset disabled), tombol Edit -> bisa diubah, Batal mengembalikan nilai semula. Event dl:form-submit.
 // panel="top" (Single Form, user 2026-09-30): panel aksi menempel di atas -- judul, badge status, lalu tombol, Back di ujung kanan; tombol baku menurut kind+status;
 // layar TIDAK menyusun tombol sendiri. kind=master: Nonaktifkan/Aktifkan + New + Save. kind=document: draft = Delete + New + Confirm + Save,
-// confirmed = Cancel + New + Email + Print, cancelled = New + Print. status=new (+ New Record, form sama tapi kosong) = Save saja. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
+// confirmed = Cancel + Back to Draft (Mode Developer) + New + Email + Print, cancelled = New + Print. status=new (+ New Record, form sama tapi kosong) = Save saja. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
 // Isi diusahakan muat 1 layar; lebih dari itu -> :tabs ['key' => 'Judul'] + slot per key (tanpa tabs = isi $slot di tab 'Data').
 // Tab read-only 'Riwayat' SELALU ditambahkan objek: dibuat oleh + tanggal-jam, terakhir diubah oleh + tanggal-jam (user 2026-09-30).
 class Form extends DevlibComponent
@@ -49,6 +49,7 @@ class Form extends DevlibComponent
     // ... + New Record, Confirm, Save paling kanan; Back di ujung kanan terpisah (dirender di luar daftar ini).
     public function panelActions(): array
     {
+        // elemen ke-6 opsional = kelas tambahan tombol.
         $new = ['new', null, 'secondary', null, 'new'];
         $print = [null, \Devlib\Locale::lang() === 'en' ? 'Print' : 'Cetak', 'primary', 'print', 'print'];
 
@@ -58,14 +59,21 @@ class Form extends DevlibComponent
             'master.active' => [[null, 'Nonaktifkan', 'secondary', 'fa-toggle-off', 'deactivate'], $new, ['save', null, null, null, 'save']],
             'master.inactive' => [[null, 'Aktifkan', 'secondary', 'fa-toggle-on', 'activate'], $new, ['save', null, null, null, 'save']],
             'document.draft' => [['delete', null, null, null, 'delete'], $new, ['confirm', null, null, null, 'confirm'], ['save', null, null, null, 'save']],
-            'document.confirmed' => [['cancel', null, 'danger', null, 'cancel'], $new, ['email', null, null, null, 'email'], $print],
+            // Back to Draft = hanya Mode Developer (kelas dl-dev-only; server tetap wajib cek hak Developer), tepat di sebelah Cancel.
+            'document.confirmed' => [['cancel', null, 'danger', null, 'cancel'], [null, 'Back to Draft', 'secondary', 'fa-rotate-left', 'draft', 'dl-dev-only'], $new, ['email', null, null, null, 'email'], $print],
             default => [$new, $print],
         };
     }
 
+    // Sesudah Confirm / Cancel isi terkunci (tampil sebagai teks); ubah lagi hanya lewat Back to Draft.
+    public function locked(): bool
+    {
+        return $this->panel && in_array($this->status, ['confirmed', 'cancelled'], true);
+    }
+
     public function statusBadge(): array
     {
-        return ['new' => ['Baru', 'info'], 'active' => ['Aktif', 'success'], 'inactive' => ['Nonaktif', 'danger'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger']][$this->status] ?? [$this->status, 'neutral'];
+        return ['new' => [$this->kind === 'document' ? 'Draft' : 'Baru', $this->kind === 'document' ? 'neutral' : 'info'], 'active' => ['Aktif', 'success'], 'inactive' => ['Nonaktif', 'danger'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger']][$this->status] ?? [$this->status, 'neutral'];
     }
 
     public function tag(): string
@@ -76,7 +84,7 @@ class Form extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <form {{ $attributes->class(['dl-form', 'dl-form--panel' => $panel]) }} {!! $dl() !!} method="{{ $method === 'GET' ? 'GET' : 'POST' }}" @if ($action) action="{{ $action }}" @endif data-dl-form data-mode="{{ $mode }}" @if ($guard) data-dl-guard @endif novalidate>
+            <form {{ $attributes->class(['dl-form', 'dl-form--panel' => $panel, 'is-view' => $panel && $locked()]) }} {!! $dl() !!} method="{{ $method === 'GET' ? 'GET' : 'POST' }}" @if ($action) action="{{ $action }}" @endif data-dl-form data-mode="{{ $mode }}" @if ($guard) data-dl-guard @endif novalidate>
                 @if ($method !== 'GET')
                     @csrf
                 @endif
@@ -85,9 +93,14 @@ class Form extends DevlibComponent
                         <div class="dl-form__title">{{ $title }}</div>
                         <x-dl::badge :label="$statusBadge()[0]" :tone="$statusBadge()[1]" />
                         <span class="dl-print__spacer"></span>
-                        @foreach ($panelActions() as [$pre, $lbl, $var, $ico, $act])
+                        @foreach ($panelActions() as $a)
+                            @php [$pre, $lbl, $var, $ico, $act] = $a; $cls = $a[5] ?? ''; @endphp
                             @if ($loop->last && isset($special)){{ $special }}@endif
-                            <x-dl::button size="sm" :preset="$pre" :label="$lbl ?? ''" :variant="$var ?? 'primary'" :icon="$ico" :type="$act === 'save' ? 'submit' : 'button'" :href="$act === 'new' ? $newUrl : null" data-f-act="{{ $act }}" />
+                            @if ($act === 'save')
+                                <x-dl::button size="sm" :preset="$pre" :variant="$var ?? 'primary'" type="submit" name="_action" value="save" data-f-act="save" />
+                            @else
+                                <x-dl::button size="sm" :preset="$pre" :label="$lbl ?? ''" :variant="$var ?? 'primary'" :icon="$ico" :href="$act === 'new' ? $newUrl : null" :class="$cls" data-f-act="{{ $act }}" />
+                            @endif
                         @endforeach
                         <span class="dl-form__sep"></span>
                         <x-dl::button variant="secondary" size="sm" icon="back" label="Back" :href="$back" data-f-act="back" />
@@ -96,7 +109,7 @@ class Form extends DevlibComponent
                     <div class="dl-form__head"><div class="dl-form__title">{{ $title }}</div>@if ($mode === 'view')<x-dl::button variant="secondary" size="sm" icon="edit" label="Edit" data-f-edit />@endif</div>
                 @endif
                 @if ($panel)
-                    <fieldset class="dl-form__fs" data-f-fs @disabled($mode === 'view')><div class="dl-form__body dl-tabs" data-dl-tabs>
+                    <fieldset class="dl-form__fs" data-f-fs @disabled($mode === 'view' || $locked())><div class="dl-form__body dl-tabs" data-dl-tabs>
                         <div class="dl-tabs__bar" role="tablist">
                             @foreach ($panelTabs() as $key => $t)
                                 <button type="button" class="dl-tabs__tab {{ $loop->first ? 'is-active' : '' }}" data-tab="{{ $key }}">@if (is_array($t))<i class="fa-solid {{ $t[1] }}"></i> {{ $t[0] }}@else{{ $t }}@endif</button>

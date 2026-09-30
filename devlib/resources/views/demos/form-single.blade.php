@@ -1,7 +1,13 @@
 @php
-    // + New Record = form yang SAMA, kosong, status "new" (link ?new=1); tanpa ?new = edit data contoh.
-    $isNew = request()->boolean('new');
-    $e = $isNew ? ['company_id' => '1', 'work_status' => 'WORKING'] : [
+    // Siklus dokumen di DevLib: form dikirim (GET) ke halaman ini dgn _action; status baru ditentukan "server" (blok ini).
+    // Awal selalu Draft -> Confirm = Confirmed (isi terkunci) -> Cancel = Cancelled; Back to Draft (Mode Developer) = Draft lagi.
+    $act = request('_action');
+    $status = match ($act) {
+        'confirm' => 'confirmed', 'draft', 'save' => 'draft', 'cancel' => 'cancelled', 'delete' => 'new',
+        default => request()->boolean('new') ? 'new' : request('status', 'draft'),
+    };
+    $isNew = $status === 'new';
+    $sample = [
         'employee_code' => 'TM-00012', 'full_name' => 'Budi Santoso', 'nickname' => 'Budi', 'company_id' => '1', 'position_id' => '1',
         'join_date' => '2018-01-02', 'work_status' => 'WORKING', 'work_status_since' => '2018-01-02', 'payment_frequency' => 'WEEKLY',
         'default_shift_id' => '1', 'default_machine_id' => '1', 'device_pin' => '1012', 'personal_file_complete' => true, 'deposit_status' => 'ADA',
@@ -10,12 +16,16 @@
         'phone' => '+6281234567890', 'email_personal' => 'budi.santoso@gmail.com', 'village_id_ktp' => '1', 'address_detail_ktp' => 'Jl. Mawar 12 RT 03/04', 'domisili_same' => true,
         'emergency_contact_name' => 'Siti Aminah', 'emergency_contact_relation' => 'Istri', 'emergency_contact_phone' => '+6281322221111',
     ];
-    $v = fn ($k) => $e[$k] ?? null;
+    $e = $isNew ? ['company_id' => '1', 'work_status' => 'WORKING'] : $sample;
+    // Isian yang baru dikirim menang atas data contoh (field terkunci tidak ikut terkirim -> pakai data contoh).
+    $v = fn ($k) => ! $isNew && request()->has($k) ? request($k) : ($e[$k] ?? null);
+    $name = $v('full_name') ?: 'Budi Santoso';
 @endphp
-<x-dl::form :title="$isNew ? 'Pegawai · Baru' : 'Pegawai · TM-00012 Budi Santoso'" panel="top" kind="master" :status="$isNew ? 'new' : 'active'"
-    :new-url="url()->current().'?new=1'" :back="$isNew ? url()->current() : null"
+<x-dl::form :title="$isNew ? 'Pegawai · Baru' : 'Pegawai · TM-00012 '.$name" panel="top" kind="document" :status="$status"
+    :action="url()->current()" method="GET" :new-url="url()->current().'?new=1'"
     :tabs="['utama' => 'Utama', 'pribadi' => 'Data Pribadi', 'alamat' => 'Alamat & Kontak', 'darurat' => 'Kontak Darurat']"
-    :created-by="$isNew ? null : 'johiwan'" :created-at="$isNew ? null : '2018-01-02 08:10:00'" :updated-by="$isNew ? null : 'annisa'" :updated-at="$isNew ? null : '2026-09-28 14:22:00'">
+    :created-by="$isNew ? null : 'johiwan'" :created-at="$isNew ? null : '2018-01-02 08:10:00'"
+    :updated-by="$isNew ? null : ($act ? 'johiwan' : 'annisa')" :updated-at="$isNew ? null : ($act ? now()->format('Y-m-d H:i:s') : '2026-09-28 14:22:00')">
     <x-slot:utama>
         <x-dl::form.row :cols="3">
             <x-dl::field.text name="employee_code" label="Kode Pegawai" :value="$v('employee_code')" placeholder="(otomatis)" code readonly :case-toggle="false" hint="Otomatis saat disimpan pertama kali." />
@@ -78,4 +88,4 @@
         </x-dl::form.row>
     </x-slot:darurat>
 </x-dl::form>
-<p class="dl-note">{{ $isNew ? 'Mode + New Record: form yang sama tapi kosong, badge Baru, tombol hanya Save (Back kembali ke data sebelumnya), tab Riwayat kosong sampai disimpan.' : 'Single Form: tombol selalu di atas (Nonaktifkan · + New Record · Save, Back di ujung kanan), isi dibagi tab bila tidak muat satu layar, tab Riwayat (read-only) selalu ada. Field abu-abu = read-only (Kode Pegawai, Tanggal Resign). Klik + New Record untuk melihat form baru.' }}</p>
+<p class="dl-note">Siklus: status awal selalu <b>Draft</b> (Delete · + New Record · Confirm · Save). <b>Confirm</b> -> Confirmed: isi terkunci, tombol jadi Cancel · + New Record · Email · Print. Tekan <b>F10</b> (Mode Developer) untuk melihat <b>Back to Draft</b> di sebelah Cancel. Tab Riwayat (read-only) selalu ada.</p>

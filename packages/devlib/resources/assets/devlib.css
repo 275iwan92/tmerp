@@ -1892,6 +1892,7 @@ td.dl-print__no{text-align:center}
 /* ================= FORM varian (BC) ================= */
 .dl-form--panel{padding-top:0}
 .dl-form__panel{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0;background:var(--dl-surface);border-bottom:1px solid var(--dl-f-line-soft)}
+.dl-dev-only{display:none!important}body.dl-dev .dl-dev-only{display:inline-flex!important}
 .dl-form__sep{width:1px;align-self:stretch;margin:2px 2px;background:var(--dl-f-line-soft)}
 .dl-form__panel .dl-form__title{font-size:calc(15px * var(--dl-font-scale))}
 .dl-form--panel .dl-form__body.dl-tabs{display:block;margin-top:4px}
