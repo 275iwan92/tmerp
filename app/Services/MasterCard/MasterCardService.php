@@ -323,7 +323,7 @@ final class MasterCardService
         $inqId = $sdi->table('iqp_inquiry')->insertGetId($row([
             'inquiry_no' => IqpInquiry::nextInquiryNo(), 'inquiry_date' => $now->toDateString(), 'source' => 'MASTER CARD', 'pic_sales' => $o['pic'] ?? null,
             'customer_id' => $first->customer_id, 'is_prospect' => 0, 'deadline_quotation' => $o['deadline'] ?? null, 'product_draft_name' => $name,
-            'design_number' => $first->design_no, 'sales_note' => trim('Dari Master Card lama '.($first->card_code ?? '#'.$first->id_master_card).'. '.($first->notes ?? '')),
+            'design_number' => $first->design_no, 'sales_note' => trim('From legacy master card '.($first->card_code ?? '#'.$first->id_master_card).'. '.($first->notes ?? '')),
             'inquiry_type' => 'NEW', 'revision_no' => 0, 'material_source' => 'OWN', 'job_nature' => 'PRODUCT', 'tax_scheme' => 'PPN', 'pph_applicable' => 0,
             'ppn_percent' => 11, 'pph_percent' => 2, 'sub_state' => $o['state'], 'stat_confirm' => $o['confirm'] ? 1 : 0, 'stat_cancel' => 0, 'is_approved' => $o['confirm'] ? 1 : 0,
         ]));
@@ -394,7 +394,7 @@ final class MasterCardService
                 continue;
             }
             DB::connection('tm2mst')->table('prod_product_acc')->insert(['product_id' => $product->id_product, 'acc_type' => $type, 'acc_at' => date('Y-m-d 09:00:00', strtotime($at)),
-                'approved_by' => $c->acc_json['acc_by'] ?? null, 'channel' => $type === 'EMAIL' ? 'EMAIL' : 'LANGSUNG', 'note' => 'Dari master card '.($c->card_code ?? '#'.$c->id_master_card),
+                'approved_by' => $c->acc_json['acc_by'] ?? null, 'channel' => $type === 'EMAIL' ? 'EMAIL' : 'LANGSUNG', 'note' => 'From master card '.($c->card_code ?? '#'.$c->id_master_card),
                 'created_at' => $now, 'updated_at' => $now, 'created_by' => $this->login, 'updated_by' => $this->login, 'data_origin' => $c->data_origin]);
         }
     }

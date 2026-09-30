@@ -3,6 +3,20 @@
 
 ---
 
+## 2026-10-01 -- Master Card Collection v2 (menu Sales > Inquiry & Quotation > Pro-Dev)
+
+- Upload master card lama: Excel (.xlsx sheet "MC", dibaca lewat label + gambar proof/rencana potong dari zip) atau foto
+  kartu (isian manual). 1 kartu = 1 baris `tm2mst.prod_master_card` (+ `prod_master_card_file`); kartu per part (A/B)
+  dengan No. Desain sama digabung jadi 1 produk.
+- Saran Tipe Produk + parameter dieline dicocokkan otomatis ke ukuran pisau / jumlah UP (`MasterCardShape`), cek bentangan,
+  dan **SVG dieline disimpan tiap kartu** (`App\Support\Dieline\TmDieline` = port PHP renderer JS, identik 54 kasus).
+- Make Master Product (lewat Inquiry sumber MASTER CARD -> `ProductMasterSync`) / Make Inquiry (DRAFT, atau Rekalkulasi bila
+  produk sudah ada); dialog hanya menanyakan field kunci yang kosong. Kartu yang produknya sudah ada ditautkan, tidak dobel.
+- Tipe Produk baru: RSC 2-Piece, Crash Lock Bottom Carton 2-Piece, Tray Lid Double Wall (ddt + tm2).
+- Dummy: 5 master card Excel asli (IQ99MC0001-05, alur Inquiry->Quotation->CO->Master Product) + koleksi kartu
+  (5 Excel + foto KS Power A/B). Dummy lama IQUAT260901-903 + customer karangan dihapus (ddt + tm2).
+- Migration `2026_10_01_000002_create_prod_master_card_tables` dijalankan di ddt* saja; tm2* menunggu OK user.
+
 ## 2026-10-01 -- DevLib: 4 bug angka diperbaiki (format Indonesia yang berlaku sekarang)
 
 - Lines: edit ulang sel desimal (nilai 12.5) tidak lagi jadi 1250 -- saat fokus nilai tampil `12,5`, dan `raw()`
