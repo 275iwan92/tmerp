@@ -23,6 +23,7 @@ use App\Models\Sys\SysSupportTicket;
 use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
 use App\Services\Pur\SpecialReceiptService;
+use App\Services\Sales\CpdelPromiseService;
 use App\Services\Sales\DeliveryPromiseService;
 use App\Services\Sales\InquiryAssembly;
 use App\Services\Sales\InquiryDerivedWriter;
@@ -905,25 +906,47 @@ Route::prefix('v2')->name('v2.')->group(function () {
     // Customer Plan Delivery v2 (App\Support\V2\Data\Cpdel = confirmSplit/confirmMerge v1 pages::co.delivery-plan).
     Route::prefix('cpdel')->name('cpdel.')->middleware('module:SALES')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'cpdel').'?id='.$id);
-        Route::post('/{id}/split', function (Request $r, int $id) use ($open) {
-            $d = $r->validate(['ship_date' => ['required', 'date'], 'split_qty' => ['nullable', 'numeric']], [], ['ship_date' => 'Tanggal kirim', 'split_qty' => 'Qty dipecah']);
-            $error = Cpdel::split($id, $d['split_qty'] ?? null, $d['ship_date']);
+        // Dua janji (App\Services\Sales\CpdelPromiseService): PPIC janji siap, Sales jadwal ulang / split setelah nego customer,
+        // customer menolak -> eskalasi, Operational Manager memutuskan. Semua tercatat di co_delivery_negotiation.
+        $line = fn (int $id) => Cpdel::query()->findOrFail($id);
+        Route::post('/{id}/ready', function (Request $r, int $id) use ($open, $line) {
+            abort_unless(CpdelPromiseService::canPlan(Auth::user()), 403);
+            CpdelPromiseService::commitReady($line($id), $r->all(), Auth::user()->login);
 
-            return $error ? $open($id)->withErrors(['split' => $error]) : $open($id)->with('v2_flash', 'Jadwal kirim diperbarui.');
-        })->whereNumber('id')->name('split');
+            return $open($id)->with('v2_flash', Dictionary::t('Production promise saved.'));
+        })->whereNumber('id')->name('ready');
+        Route::post('/{id}/reschedule', function (Request $r, int $id) use ($open, $line) {
+            abort_unless(CpdelPromiseService::canSell(Auth::user()), 403);
+            $target = CpdelPromiseService::reschedule($line($id), $r->all(), Auth::user()->login);
+
+            return $open($target?->id_delivery ?? $id)->with('v2_flash', Dictionary::t('Customer slot changed and logged.'));
+        })->whereNumber('id')->name('reschedule');
+        Route::post('/{id}/reject', function (Request $r, int $id) use ($open, $line) {
+            abort_unless(CpdelPromiseService::canSell(Auth::user()), 403);
+            CpdelPromiseService::customerRejected($line($id), $r->all(), Auth::user()->login);
+
+            return $open($id)->with('v2_flash', Dictionary::t('Escalated to the Operational Manager.'));
+        })->whereNumber('id')->name('reject');
+        Route::post('/{id}/decide', function (Request $r, int $id) use ($open, $line) {
+            abort_unless(CpdelPromiseService::canDecide(Auth::user()), 403);
+            CpdelPromiseService::opsDecision($line($id), $r->all(), Auth::user()->login);
+
+            return $open($id)->with('v2_flash', Dictionary::t('Decision saved. Production must commit a new ready time.'));
+        })->whereNumber('id')->name('decide');
         Route::post('/merge', function (Request $r) use ($open) {
+            abort_unless(CpdelPromiseService::canSell(Auth::user()), 403);
             $ids = array_map('intval', (array) $r->input('ids', []));
-            $error = Cpdel::merge($ids);
+            $keep = (int) CoOrderDelivery::whereIn('id_delivery', $ids)->orderBy('ship_date')->value('id_delivery');
+            $error = CpdelPromiseService::merge($ids, Auth::user()->login);
 
-            return $error ? back()->withErrors(['merge' => $error])
-                : $open((int) CoOrderDelivery::whereIn('id_delivery', $ids)->value('id_delivery'))->with('v2_flash', 'Baris berhasil digabung ke tanggal paling awal.');
+            return $error ? back()->withErrors(['merge' => $error]) : $open($keep)->with('v2_flash', Dictionary::t('Lines joined into the earliest date.'));
         })->name('merge');
         // Post to Production (aturan A.3): WO dibuat, baris boleh ditarik ke DO / Surat Jalan.
         Route::post('/{id}/post', function (int $id) use ($open) {
             $error = Cpdel::post($id);
 
             return $error ? $open($id)->withErrors(['post' => $error])
-                : $open($id)->with('v2_flash', 'Posted to Production — Work Order dibuat. Baris ini sekarang bisa ditarik ke Delivery Order.');
+                : $open($id)->with('v2_flash', Dictionary::t('Posted to Production: Work Order created. This line can now be pulled into a Delivery Order.'));
         })->whereNumber('id')->name('post');
     });
 

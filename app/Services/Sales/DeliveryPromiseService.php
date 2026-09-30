@@ -3,8 +3,10 @@
 namespace App\Services\Sales;
 
 use App\Models\Master\CustReceivingHour;
+use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sdi\DoDelivery;
 use App\Models\Sdi\DoDeliveryPod;
+use App\Models\Sdi\DoLine;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
@@ -24,10 +26,16 @@ final class DeliveryPromiseService
         'QUALITY' => ['Quality problem', 'Production'], 'CUSTOMER' => ['Customer side (changed plan, no one to receive)', 'Customer'],
         'OTHER' => ['Other', 'Other']];
 
-    // Slot yang dijanjikan ke customer untuk satu Surat Jalan: rencana kirim DO. Jam slot menyusul dari CPDEL (belum ada kolomnya).
+    // Slot yang dijanjikan ke customer untuk satu Surat Jalan = slot CPDEL paling awal dari baris yang ditarik ke DO ini
+    // (tanggal + jam); tanpa tautan CPDEL = rencana kirim DO tanpa jam.
     public static function promise(DoDelivery $do): array
     {
-        return ['date' => ($do->scheduled_ship_date ?? $do->do_date)?->toDateString(), 'time' => null];
+        $slot = CoOrderDelivery::query()->whereIn('id_delivery', DoLine::where('delivery_id', $do->id_delivery)->whereNotNull('co_delivery_id')->pluck('co_delivery_id'))
+            ->orderBy('ship_date')->orderByRaw('ship_time IS NULL')->orderBy('ship_time')->first();
+
+        return $slot?->ship_date
+            ? ['date' => $slot->ship_date->toDateString(), 'time' => $slot->ship_time]
+            : ['date' => ($do->scheduled_ship_date ?? $do->do_date)?->toDateString(), 'time' => null];
     }
 
     public static function kept(string $result, ?CarbonImmutable $arrived, ?string $promiseDate, ?string $promiseTime): bool

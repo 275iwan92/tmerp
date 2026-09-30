@@ -25,6 +25,12 @@ class CoOrderDelivery extends Model
         'split_from_id',
         'posted_at',
         'posted_by',
+        'original_date',
+        'ship_time',
+        'ready_at',
+        'ready_source',
+        'ready_by',
+        'escalated_at',
         'created_by',
         'updated_by',
     ];
@@ -33,7 +39,15 @@ class CoOrderDelivery extends Model
         'ship_date' => 'date',
         'ship_qty' => 'decimal:2',
         'posted_at' => 'datetime',
+        'original_date' => 'date',
+        'ready_at' => 'datetime',
+        'escalated_at' => 'datetime',
     ];
+
+    public function negotiations(): HasMany
+    {
+        return $this->hasMany(CoDeliveryNegotiation::class, 'delivery_id', 'id_delivery')->orderByDesc('created_at')->orderByDesc('id_negotiation');
+    }
 
     public function order(): BelongsTo
     {
