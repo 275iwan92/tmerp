@@ -194,7 +194,7 @@
     body() {
       const exp = i => this.more.length ? `<button type="button" class="dl-lines__exp ${this.open.has(i) ? 'is-open' : ''} ${this.more.some(c => String(this.rows[i][c.key] ?? '').trim() !== '') ? 'has-val' : ''}" data-l-exp="${i}" title="Detail baris (${this.more.map(c => c.label).join(', ')})"><i class="fa-solid fa-chevron-right"></i></button>` : '';
       $(this.el, '[data-l-body]').innerHTML = this.rows.map((r, i) => `<tr data-i="${i}"><td class="dl-lines__no">${exp(i)}${i + 1}</td>${this.tcols.map(c => this.cell(c, r, i)).join('')}${this.ro ? '' : `<td class="dl-lines__act">${this.cfg.duplicable === false ? '' : '<button type="button" class="dl-iconbtn dl-iconbtn--plain" data-l-dup title="Duplikat baris"><i class="fa-solid fa-copy"></i></button>'}${this.cfg.rowLock && !r[this.cfg.rowLock] ? '' : `<button type="button" class="dl-iconbtn dl-iconbtn--plain dl-iconbtn--danger" data-l-del title="Hapus baris" ${this.rows.length <= this.cfg.minRows ? 'disabled' : ''}><i class="fa-solid fa-trash-can"></i></button>`}</td>`}</tr>${this.more.length && this.open.has(i) ? this.panel(r, i) : ''}`).join('')
-        || `<tr><td colspan="${this.tcols.length + 2}" class="dl-lines__empty">Belum ada baris. Klik <b>${esc($(this.el, '[data-l-add]')?.textContent.trim() || '+ Tambah Baris')}</b>.</td></tr>`;
+        || `<tr><td colspan="${this.tcols.length + 2}" class="dl-lines__empty">Belum ada baris.${$(this.el, '[data-l-add]') ? ` Klik <b>${esc($(this.el, '[data-l-add]').textContent.trim())}</b>.` : ''}</td></tr>`;
       this.refresh();
     }
 

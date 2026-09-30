@@ -30,7 +30,7 @@ class DocFooter extends DevlibComponent
                             @foreach ($tabs as $k => $t)<div class="dl-tabs__panel {{ $loop->first ? 'is-active' : '' }}" data-panel="{{ $k }}">{{ ${$k} ?? '' }}</div>@endforeach
                         </div>
                     @endif
-                    @if ($words !== null)<div class="dl-lines__words"><span>Terbilang</span><i>{{ $words }}</i></div>@endif
+                    @if ($words !== null && ! preg_match('/^(nol|zero)/i', trim($words)))<div class="dl-lines__words"><span>Terbilang</span><i>{{ $words }}</i></div>@endif
                 </div>
                 @if ($summary)
                     <div class="dl-lines__totals">

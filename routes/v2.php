@@ -23,6 +23,8 @@ use App\Support\V2\AppMenu;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\PurchaseRequisition;
+use App\Support\V2\Data\PurchaseOrder;
+use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrRequisition;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\Quotation;
@@ -327,6 +329,54 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 }
                 $blocked = PurchaseRequisition::submit($pr);
                 $msg = $blocked ?: 'PR di-Confirm (diajukan) — menunggu approval.';
+            }
+
+            return $open($id)->with('v2_flash', $msg);
+        })->whereNumber('id')->name('save');
+    });
+
+    // Purchase Order v2 (App\Support\V2\Data\PurchaseOrder = aturan komponen v1 pages::pur.po.entry). Satu rute simpan:
+    // action = save | confirm (Submit) | approve | reject | hold | send (Kirim ke Supplier) | delete | add_alloc.
+    Route::prefix('po')->name('po.')->middleware('module:PROC')->group(function () {
+        $open = fn (int $id) => redirect(route('v2.screen', 'purchase-order').'?id='.$id);
+        Route::post('/create', function (Request $r) use ($open) {
+            $d = $r->validate(['supplier_id' => ['required', 'integer']], [], ['supplier_id' => 'Supplier']);
+            $po = PurchaseOrder::create((int) $d['supplier_id']);
+
+            return $open($po->po_id)->with('v2_flash', 'Draft PO siap — tarik baris dari PR yang sudah approved.');
+        })->name('create');
+        Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
+            $po = PoOrder::findOrFail($id);
+            $action = (string) $r->input('action', 'save');
+            if (in_array($action, ['approve', 'reject', 'hold'], true)) {
+                $err = PurchaseOrder::decide($po, $action, (string) $r->input('_reason', ''));
+
+                return $err ? $open($id)->withErrors(['approval' => $err]) : $open($id)->with('v2_flash', 'Keputusan approval tersimpan ('.ucfirst($action).').');
+            }
+            if ($action === 'send') {
+                PurchaseOrder::send($po);
+
+                return $open($id)->with('v2_flash', 'PO ditandai sudah dikirim ke supplier (SENT) — siap diterima di Penerimaan Barang.');
+            }
+            if ($action === 'delete') {
+                PurchaseOrder::delete($po);
+
+                return redirect(route('v2.screen', 'purchase-order'))->with('v2_flash', 'Draft PO dihapus; alokasi PR dilepas lagi.');
+            }
+            $r->validate(['i_doc_date' => ['nullable', 'date'], 'i_delivery_date' => ['nullable', 'date']]);
+            PurchaseOrder::save($po, $r->all());
+            $msg = 'PO tersimpan.';
+            if ($action === 'add_alloc') {
+                abort_unless($r->filled('alloc_id'), 422, 'Pilih baris PR.');
+                PurchaseOrder::addAllocation($po->refresh(), (int) $r->input('alloc_id'));
+                $msg = 'Baris PR ditarik ke PO — isi harga & diskon.';
+            } elseif ($action === 'confirm') {
+                $po->refresh()->load('lines');
+                if ($po->lines->isEmpty()) {
+                    return $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: PO wajib punya minimal 1 baris.']);
+                }
+                $blocked = PurchaseOrder::submit($po);
+                $msg = $blocked ?: 'PO di-Confirm (diajukan) — menunggu approval.';
             }
 
             return $open($id)->with('v2_flash', $msg);

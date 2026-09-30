@@ -2,10 +2,10 @@
 
 namespace App\Support\V2\Data;
 
-use App\Models\Master\FlowLog;
 use App\Models\Master\OrgDepartment;
 use App\Models\Pur\PrRequisition;
 use App\Services\Flow\FlowEngineService;
+use App\Support\V2\Data\Concerns\FlowDocument;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -13,6 +13,8 @@ use Livewire\Component;
 // addFreeText / submit / approveDoc / rejectDoc / holdDoc), supaya v1 & v2 memakai satu sumber aturan.
 final class PurchaseRequisition
 {
+    use FlowDocument;
+
     public const HEADER = ['i_doc_date', 'i_department_id', 'i_need_date', 'i_notes'];
 
     public const LINE = ['i_description', 'i_qty', 'i_uom', 'i_est_price', 'i_need_date', 'i_notes'];
@@ -121,14 +123,12 @@ final class PurchaseRequisition
 
     public static function pending(PrRequisition $pr): ?object
     {
-        return app(FlowEngineService::class)->pendingForUser('PR', Auth::id())->firstWhere('doc_id', $pr->pr_id);
+        return self::pendingFor('PR', $pr->pr_id);
     }
 
-    // Log flow engine -> tab History (terbaru di atas) + tahap approval berjalan.
     public static function log(PrRequisition $pr): array
     {
-        return FlowLog::where('module_code', 'PR')->where('doc_id', $pr->pr_id)->orderByDesc('acted_at')->get()
-            ->map(fn ($l) => ['at' => $l->acted_at?->toDateTimeString(), 'by' => $l->created_by, 'action' => ucfirst(strtolower((string) $l->action)), 'note' => $l->notes])->all();
+        return self::flowLog('PR', $pr->pr_id);
     }
 
     public static function delete(PrRequisition $pr): void
@@ -144,18 +144,5 @@ final class PurchaseRequisition
             'DRAFT' => 'draft', 'SUBMITTED' => $held ? 'hold' : 'approval', 'APPROVED', 'PARTIALLY_ORDERED' => 'approved',
             'FULLY_ORDERED', 'CLOSED' => 'closed', 'REJECTED', 'REVISION_NEEDED' => 'rejected', 'CANCELLED' => 'cancelled', default => 'draft',
         };
-    }
-
-    private static function str(mixed $v): string
-    {
-        return $v instanceof \DateTimeInterface ? $v->format('Y-m-d') : trim((string) $v);
-    }
-
-    private static function num(mixed $v): string
-    {
-        $v = trim((string) $v);
-        $v = str_contains($v, ',') ? str_replace(['.', ','], ['', '.'], $v) : (substr_count($v, '.') > 1 ? str_replace('.', '', $v) : $v);
-
-        return $v === '' ? '0' : $v;
     }
 }
