@@ -104,7 +104,7 @@
     </x-slot:files>
     <x-slot:detail>
         <x-dl::lines name="lines" title="Details" add-label="+ Add Line" :rows="$blank ? [] : $co['lines']" :min-rows="$blank ? 1 : 0" :readonly="in_array($status, ['confirmed', 'cancelled', 'closed'], true)"
-            :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11, 'costs' => ['freight' => 'Ongkos Kirim', 'plate' => 'Biaya Plate / Pisau', 'other' => 'Biaya Lain']]"
+            :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11, 'costs' => ['trucking' => 'Trucking / Ongkos Angkut', 'packing' => 'Packing / Palet', 'plate' => 'Plate & Pisau (Tooling)', 'insurance' => 'Asuransi Pengiriman', 'admin' => 'Administrasi / Materai', 'other' => 'Biaya Lain']]"
             :columns="[
                 ['key' => 'product', 'label' => 'Product', 'type' => 'lookup', 'lookup' => 'product', 'required' => true, 'width' => '260px'],
                 ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'sum' => true, 'width' => '100px'],
