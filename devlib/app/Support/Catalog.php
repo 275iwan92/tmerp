@@ -15,7 +15,8 @@ final class Catalog
         'shell' => '2026-09-24',      // menu utama = Layer Shell (tanpa top bar)
         'p5-grid-tx' => '2026-09-30',     // Grid Pre-Entry > Transactional -- DISETUJUI & DIKUNCI user; jangan ubah tanpa perintah user
         'p5-grid-master' => '2026-09-30', // Grid Pre-Entry > Grid Master (dulu Non-Transactional) -- tata letak = Transactional + kotak per baris
-        'p5-form-single' => '2026-09-30', // Single Form -- panel atas, istilah English, siklus Draft/Confirmed/Cancelled/Closed, tab Riwayat
+        'p5-form-single' => '2026-09-30',
+        'p5-form-md' => '2026-09-30',     // Form Master-Detail (CO & PO) -- ringkasan, tab header, Details tengah, footer tab + Summary + terbilang // Single Form -- panel atas, istilah English, siklus Draft/Confirmed/Cancelled/Closed, tab Riwayat
         'p5-grid-lookup' => '2026-09-30', // Grid Pre-Entry > Grid Lookup -- sel teks aa/Aa/AA, decimal, date/time + pemilih, kalkulator mini
         'p5-grid-report' => '2026-09-26', // Grid for Reporting (tombol Filter -> pop-up)
         'p5-grid-group' => '2026-09-26',     // Grid Report dipecah per varian 2026-09-30, isi tidak berubah
