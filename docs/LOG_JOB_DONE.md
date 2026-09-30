@@ -3,6 +3,13 @@
 
 ---
 
+## 2026-10-02 -- Run malam: grid v2 Work Order, Rule Library, Outstanding PR/PO/PV (UI-20)
+
+- `Prod\WorkOrderGrid` (buka = WO Detail v1, New = Generate dari Plan Delivery v1), `Prod\RuleLibraryGrid` (form modal v1 lewat ?open/?new).
+- `Pur\OutstandingPrReport` / `OutstandingPoReport` / `OutstandingPvReport`: laporan per BARIS (bukan per dokumen seperti v1) dengan
+  Grup + subtotal, aturan sisa sama dengan v1; tambahan kolom Umur (0-7 / 8-30 / > 30 hari) dan tanda PO Terlambat.
+- Menu ddtsys: migration `2026_10_02_000002` (ddt saja). Probe: 89 layar + 117 form = 200.
+
 ## 2026-10-02 -- Run malam: Inventory v2 grid (Stock In/Out/Return/Adjustment RM/FG/SFG) -- UI-20 + backlog04 "Stock In v2"
 
 - `App\Support\V2\Grid\Inv\StockDocGrid` + 12 turunan (RM/FG/SFG x In/Out/Return/Adj), slug `inv-<cat>-stock-<kind>`.

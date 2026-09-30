@@ -59,9 +59,9 @@ dibuang di server lewat `restrictedKeys()` + `SecUser::canViewSalesPrice()`.
 - **BOP Rule** (belum punya model Eloquent).
 - **Recruitment**: Permohonan Tenaga Kerja, Lowongan, Talent Pool, Review Formulir, Jadwal Interview, Hasil Psikotes, Offering, Provisioning, Rekap Sync Log.
 - **Inventory**: Report Stock Balance/Stock Card/Slow Moving/Label History (menu sudah di submenu Report, layar belum). Stock In/Out/Return/Adjustment SELESAI 2026-10-02 (LOG).
-- **Procurement**: Purchase Quotation, Purchase Return (grid v1), Report Outstanding PR/PO/PV.
+- **Procurement**: Purchase Return (grid v1). Outstanding PR/PO/PV SELESAI 2026-10-02 (Purchase Quotation sudah layar v2).
 - **Finance**: Cash & Bank, Down Payment, Journal, GL, Trial Balance, dst.
-- **Production**: Work Order, Rule Library, Target Rate, Jadwal Shift, Output.
+- **Production**: Target Rate, Jadwal Shift, Output. Work Order + Rule Library SELESAI 2026-10-02.
 - **Setup**: Account/Group (Security), Language, Support Tickets.
 - Menu ddtsys belum disalin ke tm2sys; migration `2026_09_30_000011` (field pengiriman CO) baru jalan di ddt*.
 

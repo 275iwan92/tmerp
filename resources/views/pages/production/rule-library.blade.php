@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Concerns\HasGridStatFilter;
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Models\Master\OrgDivision;
 use App\Models\Master\ProdMachine;
 use App\Models\Master\ProdProcess;
@@ -17,7 +18,7 @@ use Livewire\Component;
 // yang can_input PROD boleh bikin DRAFT (Tier2 §9 matrix: PPIC = R/bisa draft).
 new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
 {
-    use HasGridStatFilter;
+    use HasGridStatFilter, OpensFromQuery;
 
     public bool $showModal = false;
 
