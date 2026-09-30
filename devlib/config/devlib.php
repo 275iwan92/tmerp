@@ -76,6 +76,20 @@ return [
                 ['code' => 'RM-LAM-0020', 'name' => 'Film Laminasi Doff', 'spec' => 'Lebar 65 cm, 3000 m', 'uom' => 'ROLL', 'price' => 1450000, 'price_txt' => '1.450.000'],
             ],
         ],
+        // Barang jadi untuk baris Customer Order (contoh Form Master-Detail).
+        'product' => [
+            'source' => 'tm2mst.prod_product (contoh)',
+            'key' => 'code', 'label' => 'name',
+            'columns' => ['code' => 'Kode', 'name' => 'Nama Produk', 'uom' => 'Satuan', 'price_txt' => 'Harga'],
+            'fill' => ['uom' => 'uom', 'price' => 'price', 'color' => 'color'],
+            'rows' => [
+                ['code' => 'DS001479', 'name' => 'IB Coco Tokyo HEXA 1kg', 'uom' => 'PCS', 'price' => 2250, 'price_txt' => '2.250', 'color' => '4/0'],
+                ['code' => 'DS001480', 'name' => 'OB Coco Tokyo HEXA 1kg', 'uom' => 'PCS', 'price' => 6200, 'price_txt' => '6.200', 'color' => '4/0'],
+                ['code' => 'DS001391', 'name' => 'IB Coco Tokyo C25', 'uom' => 'PCS', 'price' => 1950, 'price_txt' => '1.950', 'color' => '4/0'],
+                ['code' => 'DS001392', 'name' => 'OB Coco Tokyo C25', 'uom' => 'PCS', 'price' => 5400, 'price_txt' => '5.400', 'color' => '4/1'],
+                ['code' => 'DS001210', 'name' => 'IB Coco Tokyo Flat 25', 'uom' => 'PCS', 'price' => 1800, 'price_txt' => '1.800', 'color' => '4/0'],
+            ],
+        ],
         'uom' => [
             'source' => 'tm2mst.uom_unit (contoh)',
             'key' => 'code', 'label' => 'code',

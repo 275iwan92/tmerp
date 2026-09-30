@@ -136,7 +136,7 @@ final class Catalog
                         'form-single' => ['Single Form · Edit Employee (tabs, read-only, action panel on top)', $c('Form', 'Tabs')],
                     ], 'UIUX_components_part1.html'),
                     'p5-form-md' => $page('Form Master-Detail (2 variants)', 'fa-solid fa-file-invoice', [
-                        'form-md' => ['1 · Form Master-Detail (header + item lines)', $c('Form', 'Lines')],
+                        'form-md' => ['1 · Customer Order (key summary, header tabs, details in the middle, footer totals)', $c('Form', 'Lines')],
                         'form-approval' => ['2 · Form with Approval', $c('Form', 'ApprovalBar')],
                     ], 'UIUX_components_part1.html'),
                     'p5-form-special' => $page('Form Special (3 variants)', 'fa-solid fa-wand-magic-sparkles', [

@@ -9,6 +9,11 @@
       const self = this;
       this.cfg = JSON.parse(this.el.dataset.config);
       this.cols = this.cfg.columns;
+      // 'more' => true: kolom tidak tampil di tabel, diisi lewat panel › di bawah baris (pola "Line details" Dynamics 365)
+      // supaya tabel tetap berisi kolom inti saja walau kolom detail banyak.
+      this.more = this.cols.filter(c => c.more);
+      this.tcols = this.cols.filter(c => !c.more);
+      this.open = new Set();
       this.name = this.cfg.name;
       this.ro = this.cfg.readonly;
       this.rows = JSON.parse(this.el.dataset.rows || '[]');
@@ -36,20 +41,22 @@
       this.el.addEventListener('keydown', e => {
         const t = e.target; if (e.key !== 'Enter' || !t.matches('.dl-lines__in') || t.dataset.lk !== undefined) return;
         e.preventDefault();
-        const i = +t.closest('tr').dataset.i, next = $(this.el, `tr[data-i="${i + 1}"] [data-k="${t.dataset.k}"]`);
+        const i = +t.closest('tr[data-i]').dataset.i, next = $(this.el, `tr[data-i="${i + 1}"] [data-k="${t.dataset.k}"]`);
         if (next) next.focus(); else if (!this.ro) { this.add(false); $(this.el, `tr[data-i="${i + 1}"] [data-k="${t.dataset.k}"]`)?.focus(); }
       });
       this.el.addEventListener('click', e => {
         const x = e.target;
         if (x.closest('[data-l-add]')) return this.add();
+        const ex = x.closest('[data-l-exp]');
+        if (ex) { const i = +ex.dataset.lExp; this.open.has(i) ? this.open.delete(i) : this.open.add(i); return this.body(); }
         const pr = x.closest('[data-l-primary]');
-        if (pr) { const i = +pr.closest('tr').dataset.i; this.rows.forEach((r, j) => { r[pr.dataset.lPrimary] = j === i; }); this.body(); this.changed(); return; }
+        if (pr) { const i = +pr.closest('tr[data-i]').dataset.i; this.rows.forEach((r, j) => { r[pr.dataset.lPrimary] = j === i; }); this.body(); this.changed(); return; }
         const bo = x.closest('[data-l-bool]');
         if (bo) { const r = this.rowOf(bo); r[bo.dataset.lBool] = !r[bo.dataset.lBool]; this.body(); this.changed(); return; }
-        if (x.closest('[data-l-dup]')) { const i = +x.closest('tr').dataset.i; this.rows.splice(i + 1, 0, {...this.rows[i]}); this.body(); this.changed(); return; }
+        if (x.closest('[data-l-dup]')) { const i = +x.closest('tr[data-i]').dataset.i; this.rows.splice(i + 1, 0, {...this.rows[i]}); this.body(); this.changed(); return; }
         const del = x.closest('[data-l-del]');
         if (del) {
-          const i = +del.closest('tr').dataset.i, go = () => { const [gone] = this.rows.splice(i, 1); this.keepPrimary(gone); this.body(); this.changed(); };
+          const i = +del.closest('tr[data-i]').dataset.i, go = () => { const [gone] = this.rows.splice(i, 1); this.keepPrimary(gone); this.body(); this.changed(); };
           if (this.filled(this.rows[i])) confirmBox({message: `Hapus baris ${i + 1}?`, tone: 'danger'}).then(ok => ok && go()); else go();
           return;
         }
@@ -107,6 +114,13 @@
     }
 
     cell(c, r, i) {
+      const html = this.cellRaw(c, r, i), fz = this.fz(c).trim();
+      if (!fz) return html;
+      const end = html.indexOf('>'), tag = html.slice(0, end);
+      return (tag.includes('class="') ? tag.replace('class="', `class="${fz} `) : `${tag} class="${fz}"`) + html.slice(end);
+    }
+
+    cellRaw(c, r, i) {
       const v = r[c.key] ?? '', req = c.required ? ' data-req' : '', ph = c.placeholder ? ` placeholder="${esc(c.placeholder)}"` : '';
       // readonlyUnless: sel hanya bisa diisi bila kolom bool lain di baris yang sama bernilai true (mis. Biaya hanya bila Biaya Baru = Ya).
       const lock = c.readonlyUnless && !r[c.readonlyUnless] ? ' readonly tabindex="-1"' : '';
@@ -124,21 +138,38 @@
       }
     }
 
-    head() { $(this.el, '[data-l-head]').innerHTML = `<tr><th class="dl-lines__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}${this.ro ? '' : '<th class="dl-lines__act"></th>'}</tr>`; }
+    // Kolom kunci diam saat tabel digeser ke samping (freeze panes): # + kolom pertama di kiri, kolom rumus terakhir + aksi di kanan.
+    fz(c) {
+      return c === this.tcols[0] ? ' dl-lines__fzl' : c === this.lastFn() ? ' dl-lines__fzr' : '';
+    }
+
+    lastFn() {
+      return [...this.tcols].reverse().find(c => c.fn);
+    }
+
+    head() { $(this.el, '[data-l-head]').innerHTML = `<tr><th class="dl-lines__no">#</th>${this.tcols.map(c => `<th class="${this.num(c) ? 'num' : ''}${this.fz(c)}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)};min-width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}${this.ro ? '' : '<th class="dl-lines__act"></th>'}</tr>`; this.el.classList.toggle('has-fzr', !!this.lastFn()); }
+
+    // Panel › : kolom 'more' baris i sebagai isian kecil 4 kolom (label di atas nilai).
+    panel(r, i) {
+      return `<tr class="dl-lines__more" data-i="${i}"><td></td><td colspan="${this.tcols.length + (this.ro ? 0 : 1)}"><div class="dl-lines__moregrid">${this.more.map(c => `<label class="dl-lines__mf"><span>${esc(c.label)}${c.required ? ' <i class="dl-field__req">*</i>' : ''}</span><table class="dl-lines__mt"><tr>${this.cell(c, r, i)}</tr></table></label>`).join('')}</div></td></tr>`;
+    }
 
     body() {
-      $(this.el, '[data-l-body]').innerHTML = this.rows.map((r, i) => `<tr data-i="${i}"><td class="dl-lines__no">${i + 1}</td>${this.cols.map(c => this.cell(c, r, i)).join('')}${this.ro ? '' : `<td class="dl-lines__act"><button type="button" class="dl-iconbtn dl-iconbtn--plain" data-l-dup title="Duplikat baris"><i class="fa-solid fa-copy"></i></button><button type="button" class="dl-iconbtn dl-iconbtn--plain dl-iconbtn--danger" data-l-del title="Hapus baris" ${this.rows.length <= this.cfg.minRows ? 'disabled' : ''}><i class="fa-solid fa-trash-can"></i></button></td>`}</tr>`).join('')
-        || `<tr><td colspan="${this.cols.length + 2}" class="dl-lines__empty">Belum ada baris. Klik <b>${esc($(this.el, '[data-l-add]')?.textContent.trim() || '+ Tambah Baris')}</b>.</td></tr>`;
+      const exp = i => this.more.length ? `<button type="button" class="dl-lines__exp ${this.open.has(i) ? 'is-open' : ''} ${this.more.some(c => String(this.rows[i][c.key] ?? '').trim() !== '') ? 'has-val' : ''}" data-l-exp="${i}" title="Detail baris (${this.more.map(c => c.label).join(', ')})"><i class="fa-solid fa-chevron-right"></i></button>` : '';
+      $(this.el, '[data-l-body]').innerHTML = this.rows.map((r, i) => `<tr data-i="${i}"><td class="dl-lines__no">${exp(i)}${i + 1}</td>${this.tcols.map(c => this.cell(c, r, i)).join('')}${this.ro ? '' : `<td class="dl-lines__act"><button type="button" class="dl-iconbtn dl-iconbtn--plain" data-l-dup title="Duplikat baris"><i class="fa-solid fa-copy"></i></button><button type="button" class="dl-iconbtn dl-iconbtn--plain dl-iconbtn--danger" data-l-del title="Hapus baris" ${this.rows.length <= this.cfg.minRows ? 'disabled' : ''}><i class="fa-solid fa-trash-can"></i></button></td>`}</tr>${this.more.length && this.open.has(i) ? this.panel(r, i) : ''}`).join('')
+        || `<tr><td colspan="${this.tcols.length + 2}" class="dl-lines__empty">Belum ada baris. Klik <b>${esc($(this.el, '[data-l-add]')?.textContent.trim() || '+ Tambah Baris')}</b>.</td></tr>`;
       this.refresh();
     }
 
     refresh() {
       this.rows.forEach((r, i) => { this.calc(r); this.cols.filter(c => c.fn).forEach(c => { const td = $(this.el, `tr[data-i="${i}"] td[data-k="${c.key}"]`); if (td) td.textContent = this.show(c, r[c.key]); }); });
       const sums = this.cols.filter(c => c.sum);
-      $(this.el, '[data-l-foot]').innerHTML = sums.length && this.rows.length ? `<tr><td></td>${this.cols.map((c, i) => c.sum ? `<td class="num"><b>${esc(this.show(c, this.rows.reduce((t, r) => t + (+r[c.key] || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>Jumlah</b>' : ''}</td>`).join('')}${this.ro ? '' : '<td></td>'}</tr>` : '';
+      $(this.el, '[data-l-foot]').innerHTML = sums.length && this.rows.length ? `<tr><td></td>${this.tcols.map((c, i) => c.sum ? `<td class="num"><b>${esc(this.show(c, this.rows.reduce((t, r) => t + (+r[c.key] || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>Jumlah</b>' : ''}</td>`).join('')}${this.ro ? '' : '<td></td>'}</tr>` : '';
       $(this.el, '[data-l-count]').textContent = `${this.rows.filter(this.filled).length} baris`;
       const t = this.total();
       if (this.cfg.totals && this.cfg.totals.of) Object.entries(t).forEach(([k, v]) => { const b = $(this.el, `[data-l-t="${k}"]`); if (b) b.textContent = 'Rp ' + this.money(v); });
+      // Ringkasan di header form (mis. Grand Total besar) ikut hidup: elemen [data-l-grand="<name>"] di form yang sama.
+      $$(this.el.closest('form') || document, `[data-l-grand="${this.name}"]`).forEach(x => { x.textContent = 'Rp ' + this.money(t.grand); });
       $(this.el, '[data-l-inputs]').innerHTML = this.rows.filter(this.filled).map((r, i) => Object.entries(r).map(([k, v]) => `<input type="hidden" name="${esc(this.name)}[${i}][${esc(k)}]" value="${esc(v)}">`).join('')).join('');
     }
 
@@ -154,7 +185,7 @@
     }
 
     rowOf(t) {
-      return this.rows[+t.closest('tr').dataset.i];
+      return this.rows[+t.closest('tr[data-i]').dataset.i];
     }
 
     colOf(k) {
@@ -178,7 +209,7 @@
         const src = L.rows.find(r => String(r[L.key]) === tr.dataset.key), row = this.rowOf(inp);
         row[c.key] = src[L.key]; row[c.key + '_label'] = src[L.label];
         Object.entries(L.fill || {}).forEach(([to, from]) => { row[to] = src[from] ?? ''; });
-        const i = +inp.closest('tr').dataset.i; this.closePop(); this.body(); this.changed();
+        const i = +inp.closest('tr[data-i]').dataset.i; this.closePop(); this.body(); this.changed();
         const nextCol = this.cols[this.cols.indexOf(c) + 1]; $(this.el, `tr[data-i="${i}"] [data-k="${nextCol ? nextCol.key : c.key}"]`)?.focus();
       });
       document.body.appendChild(this.pop);
@@ -187,6 +218,9 @@
     validate() {
       let bad = 0;
       $$(this.el, 'td.is-invalid').forEach(td => td.classList.remove('is-invalid'));
+      // Isian wajib kosong di panel › -> buka panel baris itu dulu supaya selnya terlihat & bisa ditandai.
+      const hidden = this.rows.map((r, i) => this.filled(r) && this.more.some(c => c.required && String(r[c.key] ?? '').trim() === '') ? i : -1).filter(i => i >= 0 && !this.open.has(i));
+      if (hidden.length) { hidden.forEach(i => this.open.add(i)); this.body(); }
       this.rows.forEach((r, i) => { if (!this.filled(r)) return; this.cols.filter(c => c.required).forEach(c => { if (String(r[c.key] ?? '').trim() === '') { bad++; $(this.el, `tr[data-i="${i}"] [data-k="${c.key}"]`)?.closest('td').classList.add('is-invalid'); } }); });
       const n = this.rows.filter(this.filled).length, err = $(this.el, '[data-l-err]') || this.el.appendChild(Object.assign(document.createElement('div'), {className: 'dl-lines__err'}));
       err.dataset.lErr = ''; err.textContent = n < this.cfg.minRows ? `Minimal ${this.cfg.minRows} baris terisi.` : bad ? `${bad} sel wajib belum diisi.` : '';

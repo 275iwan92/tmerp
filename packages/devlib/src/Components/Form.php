@@ -9,6 +9,8 @@ namespace Devlib\Components;
 // layar TIDAK menyusun tombol sendiri. kind=master: Deactivate/Activate + New + Undo + Save. kind=document: draft = Delete + New + Undo + Confirm + Save,
 // confirmed = Cancel + Back to Draft (hanya :can-reopen) + New + Email + Print, cancelled = New + Duplicate + Print, closed = New + Print. status=new (form sama tapi kosong) = Undo + Save. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
 // Isi diusahakan muat 1 layar; lebih dari itu -> :tabs ['key' => 'Judul'] + slot per key (tanpa tabs = isi $slot di tab 'Data').
+// Master-Detail: slot strip = ringkasan kunci di atas tab (No., tanggal, pihak, Grand Total besar); tab = field header;
+// slot detail = baris item di tengah (x-dl::lines, footer total ikut di dalamnya).
 // :subtitle = baris kecil di bawah judul (mis. supplier); :pipeline = bar tahapan Draft > Confirmed > Closed (Master-Detail).
 // Tab read-only 'Riwayat' SELALU ditambahkan objek: dibuat oleh + tanggal-jam, terakhir diubah oleh + tanggal-jam (user 2026-09-30).
 class Form extends DevlibComponent
@@ -152,7 +154,9 @@ class Form extends DevlibComponent
                 @endif
                 @foreach ($hidden as $hk => $hv)<input type="hidden" name="{{ $hk }}" value="{{ $hv }}">@endforeach
                 @if ($panel)
-                    <fieldset class="dl-form__fs" data-f-fs @disabled($mode === 'view' || $locked())><div class="dl-form__body dl-tabs" data-dl-tabs>
+                    <fieldset class="dl-form__fs" data-f-fs @disabled($mode === 'view' || $locked())>
+                    @isset($strip)<div class="dl-form__strip">{{ $strip }}</div>@endisset
+                    <div class="dl-form__body dl-tabs" data-dl-tabs>
                         <div class="dl-tabs__bar" role="tablist">
                             @foreach ($panelTabs() as $key => $t)
                                 <button type="button" class="dl-tabs__tab {{ $loop->first ? 'is-active' : '' }}" data-tab="{{ $key }}">@if (is_array($t))<i class="fa-solid {{ $t[1] }}"></i> {{ $t[0] }}@else{{ $t }}@endif</button>
@@ -170,7 +174,10 @@ class Form extends DevlibComponent
                                 @elseif ($key === 'main' && ! $tabs){{ $slot }}@else{{ ${$key} ?? '' }}@endif
                             </div>
                         @endforeach
-                    </div></fieldset>
+                    </div>
+                    {{-- Master-Detail: detail selalu tampil di tengah (tidak ikut tab header), footer total di bawahnya. --}}
+                    @isset($detail)<div class="dl-form__detail">{{ $detail }}</div>@endisset
+                    </fieldset>
                 @else
                     <fieldset class="dl-form__fs" data-f-fs @disabled($mode === 'view')><div class="dl-form__body">{{ $slot }}</div></fieldset>
                 @endif
