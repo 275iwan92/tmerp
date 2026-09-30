@@ -1893,7 +1893,8 @@ td.dl-print__no{text-align:center}
 .dl-form__panel{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0;background:var(--dl-surface);border-bottom:1px solid var(--dl-f-line-soft)}
 .dl-form__sep{width:1px;align-self:stretch;margin:2px 2px;background:var(--dl-f-line-soft)}
 .dl-form__panel .dl-form__title{font-size:calc(15px * var(--dl-font-scale))}
-.dl-form--panel .dl-form__body.dl-tabs{margin-top:4px}
+.dl-form--panel .dl-form__body.dl-tabs{display:block;margin-top:4px}
+.dl-form--panel .dl-tabs__panel > * + *{margin-top:6px}
 .dl-form__audit{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 16px;max-width:880px}
 .dl-form__fs{border:0;margin:0;padding:0;min-width:0}
 .dl-form__head{display:flex;align-items:center;justify-content:space-between;gap:8px}
