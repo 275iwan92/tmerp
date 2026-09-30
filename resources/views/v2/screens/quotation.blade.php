@@ -164,14 +164,14 @@
                     ['key' => 'discount_pct', 'label' => 'Disc %', 'type' => 'number', 'width' => '80px'],
                     ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty * unit_price * (1 - discount_pct / 100)', 'width' => '140px'],
                     ['key' => 'source', 'label' => 'Asal Baris', 'type' => 'display', 'more' => true],
-                ]" />
-            @if ($draft)
-                <div class="dl-row" style="margin-top:6px">
-                    <x-dl::button size="sm" variant="secondary" label="+ Tambah Baris" type="submit" name="action" value="add_line" formnovalidate />
-                    @if ($more)<x-dl::button size="sm" variant="secondary" label="+ Tambah Inquiry" data-dl-open="quotation-add" />@endif
-                </div>
-                <p class="mp-hint">Jenjang qty dari inquiry (harga dari Pro-Cost) + biaya sekali (pisau, plat, film). Harga boleh disesuaikan sebelum Confirm. Klik › untuk asal baris.</p>
-            @endif
+                ]">
+                @if ($draft)
+                    <x-slot:tools>
+                        <x-dl::button size="sm" variant="secondary" label="+ Tambah Baris" type="submit" name="action" value="add_line" formnovalidate />
+                        @if ($more)<x-dl::button size="sm" variant="secondary" label="+ Tambah Inquiry" data-dl-open="quotation-add" />@endif
+                    </x-slot:tools>
+                @endif
+            </x-dl::lines>
             <x-dl::doc-footer :tabs="['tax' => 'Tax']"
                 :words="\Devlib\Terbilang::words(round((float) $totals['grand']), $cur, $cur === 'IDR' ? 'id' : 'en')"
                 :summary="[
@@ -184,7 +184,6 @@
                     <x-dl::form.row :cols="2">
                         <x-dl::field.select name="tax_scheme" label="Skema pajak" :options="['EXCL' => 'Exclusive PPN 11%', 'INCL' => 'Inclusive PPN 11%']" :value="old('tax_scheme', $q->tax_scheme)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation.tax_scheme')" />
                     </x-dl::form.row>
-                    <p class="dl-lines__hint">Nilai di Summary diperbarui setelah Save.</p>
                 </x-slot:tax>
             </x-dl::doc-footer>
         </x-slot:detail>

@@ -146,7 +146,7 @@
                         @if ($draft)<x-dl::field.checkbox :name="'remove_delivery['.$d->id_delivery.']'" text="Hapus jadwal ini saat Save" />@else<x-dl::field.display label="Status" :value="$d->status ?? '—'" />@endif
                     </x-dl::form.row>
                 @empty
-                    <p class="mp-hint">Belum ada jadwal kirim.{{ $draft ? ' Kosong = saat Confirm dibuat otomatis 1 baris qty penuh @ Due Date.' : '' }}</p>
+                    <x-dl::empty-state title="Belum ada jadwal kirim — saat Confirm dibuat otomatis 1 baris qty penuh @ Due Date." />
                 @endforelse
                 @if ($draft)<x-dl::button variant="secondary" size="sm" label="+ Jadwal Kirim" type="submit" name="action" :value="'add_delivery_'.$it->id_item" formnovalidate />@endif
             @endforeach
@@ -170,15 +170,15 @@
                     ['key' => 'inquiry', 'label' => 'Inquiry', 'type' => 'display', 'more' => true],
                     ['key' => 'product_label', 'label' => 'Master Product', 'type' => 'display', 'more' => true],
                     ['key' => 'spec_note', 'label' => 'Spesifikasi', 'type' => 'display', 'more' => true],
-                ]" />
-            @if ($draft)
-                <div class="dl-row" style="margin-top:6px">
-                    <x-dl::field.lookup name="product_id" lookup="product" :params="['customer_id' => $o->customer_id]" label="+ Produk dari Master Product" placeholder="Ketik min. 2 huruf nama / kode produk / design no..." :source="Src::of('tm2mst.prod_product')" />
-                    <x-dl::button size="sm" variant="secondary" label="+ Produk" type="submit" name="action" value="add_product" formnovalidate />
-                    <x-dl::button size="sm" variant="secondary" label="+ Jasa" type="submit" name="action" value="add_service" formnovalidate />
-                </div>
-                <p class="mp-hint">Baris dari Quotation = snapshot terkunci (hanya Due Date yang bisa diubah). Baris manual boleh diedit. Klik › untuk detail baris.</p>
-            @endif
+                ]">
+                @if ($draft)
+                    <x-slot:tools>
+                        <x-dl::field.lookup name="product_id" lookup="product" :params="['customer_id' => $o->customer_id]" label="+ Produk dari Master Product" placeholder="Ketik min. 2 huruf nama / kode produk / design no..." :source="Src::of('tm2mst.prod_product')" />
+                        <x-dl::button size="sm" variant="secondary" label="+ Produk" type="submit" name="action" value="add_product" formnovalidate />
+                        <x-dl::button size="sm" variant="secondary" label="+ Jasa" type="submit" name="action" value="add_service" formnovalidate />
+                    </x-slot:tools>
+                @endif
+            </x-dl::lines>
             <x-dl::doc-footer :tabs="['disc' => 'Discount', 'tax' => 'Tax', 'cost' => 'Other Costs']"
                 :words="\Devlib\Terbilang::words(round((float) $totals['net_receivable']), $cur, $cur === 'IDR' ? 'id' : 'en')"
                 :summary="array_values(array_filter([
@@ -196,7 +196,6 @@
                         <x-dl::field.display label="Disc. Doc (fix dari Inquiry)" :value="$o->discount_doc_pct !== null ? number_format((float) $o->discount_doc_pct, 2).'%' : '—'" :source="Src::of('tm2sdi.co_order.discount_doc_pct')" />
                         <x-dl::field.decimal name="discount_qty_pct" label="Disc. Qty" unit="%" :value="$o->discount_qty_pct !== null ? rtrim(rtrim((string) $o->discount_qty_pct, '0'), '.') : ''" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.discount_qty_pct')" />
                     </x-dl::form.row>
-                    <p class="dl-lines__hint">Persen dari jumlah Details; nilai di Summary diperbarui setelah Save.</p>
                 </x-slot:disc>
                 <x-slot:tax>
                     <x-dl::form.row :cols="2">
@@ -214,7 +213,7 @@
                             @if ($draft)<x-dl::field.checkbox :name="'remove_cost['.$x->id_cost.']'" text="Hapus saat Save" />@endif
                         </x-dl::form.row>
                     @empty
-                        <p class="dl-lines__hint">Belum ada biaya lain.</p>
+                        <x-dl::empty-state title="Belum ada biaya lain." />
                     @endforelse
                     @if ($draft)<x-dl::button variant="secondary" size="sm" label="+ Add Cost" type="submit" name="action" value="add_cost" formnovalidate />@endif
                 </x-slot:cost>

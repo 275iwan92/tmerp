@@ -24,6 +24,8 @@ use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\PurchaseOrder;
+use App\Support\V2\Data\PurchaseReceive;
+use App\Models\Pur\PvReceipt;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrRequisition;
 use App\Support\V2\Data\Prodev;
@@ -377,6 +379,48 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 }
                 $blocked = PurchaseOrder::submit($po);
                 $msg = $blocked ?: 'PO di-Confirm (diajukan) — menunggu approval.';
+            }
+
+            return $open($id)->with('v2_flash', $msg);
+        })->whereNumber('id')->name('save');
+    });
+
+    // Penerimaan Barang / SPB v2 (App\Support\V2\Data\PurchaseReceive = aturan komponen v1 pages::pur.pv.entry).
+    // action = save | confirm (Post: stok masuk + jurnal) | delete | add_lines.
+    Route::prefix('pv')->name('pv.')->middleware('module:PROC')->group(function () {
+        $open = fn (int $id) => redirect(route('v2.screen', 'purchase-receive').'?id='.$id);
+        Route::post('/create', function (Request $r) use ($open) {
+            $d = $r->validate(['supplier_id' => ['required', 'integer'], 'warehouse' => ['required', 'string'], 'po_line_ids' => ['required', 'array', 'min:1']],
+                [], ['supplier_id' => 'Supplier', 'warehouse' => 'Gudang', 'po_line_ids' => 'Baris PO']);
+            try {
+                $pv = PurchaseReceive::create((int) $d['supplier_id'], $d['warehouse'], $d['po_line_ids']);
+            } catch (\InvalidArgumentException $e) {
+                return back()->withErrors(['po_line_ids' => $e->getMessage()]);
+            }
+
+            return $open($pv->pv_id)->with('v2_flash', "Penerimaan {$pv->doc_no} dibuat — isi qty diterima, QC qty & kualitas, lalu Confirm (Post).");
+        })->name('create');
+        Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
+            $pv = PvReceipt::findOrFail($id);
+            $action = (string) $r->input('action', 'save');
+            if ($action === 'delete') {
+                PurchaseReceive::delete($pv);
+
+                return redirect(route('v2.screen', 'purchase-receive'))->with('v2_flash', "Draft {$pv->doc_no} dihapus.");
+            }
+            $r->validate(['i_doc_date' => ['nullable', 'date']]);
+            PurchaseReceive::save($pv, $r->all());
+            $msg = 'Penerimaan tersimpan.';
+            if ($action === 'add_lines') {
+                abort_unless($r->filled('po_line_ids'), 422, 'Pilih baris PO.');
+                PurchaseReceive::addLines($pv->refresh(), (array) $r->input('po_line_ids'));
+                $msg = 'Baris PO ditambahkan.';
+            } elseif ($action === 'confirm') {
+                [$ok, $m] = PurchaseReceive::post($pv);
+                if (! $ok) {
+                    return $open($id)->withErrors(['confirm' => 'Belum bisa Confirm (Post): '.$m]);
+                }
+                $msg = $m;
             }
 
             return $open($id)->with('v2_flash', $msg);

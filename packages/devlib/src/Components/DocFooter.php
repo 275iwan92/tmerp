@@ -5,7 +5,7 @@ namespace Devlib\Components;
 // Footer dokumen Master-Detail untuk layar yang totalnya dihitung SERVER (mis. CoOrder::totals()) -- tampilan sama dengan
 // footer x-dl::lines (Form Master-Detail yang disetujui user 2026-09-30): kiri = tab penyesuaian (slot per kunci :tabs,
 // mis. Discount / Tax / Other Costs) + kotak Terbilang di ruang kosong; kanan = Summary yang SELALU terlihat.
-// summary: [[label, nilai teks, 'grand'?], ...] -- baris dengan elemen ke-3 'grand' = Grand Total (disorot).
+// summary: [[label, nilai teks, 'grand'|'dpp'?], ...] -- 'grand' = Grand Total (disorot), 'dpp' = garis pemisah DPP.
 class DocFooter extends DevlibComponent
 {
     public function __construct(
@@ -19,6 +19,14 @@ class DocFooter extends DevlibComponent
         return 'x-dl::doc-footer';
     }
 
+    // Terbilang untuk nilai nol ("Nol rupiah" / "Zero ...") tidak ditampilkan.
+    public function showWords(): bool
+    {
+        $w = trim((string) $this->words);
+
+        return $w !== '' && ! preg_match('/^(nol|zero)\b/i', $w);
+    }
+
     public function render()
     {
         return <<<'BLADE'
@@ -30,7 +38,7 @@ class DocFooter extends DevlibComponent
                             @foreach ($tabs as $k => $t)<div class="dl-tabs__panel {{ $loop->first ? 'is-active' : '' }}" data-panel="{{ $k }}">{{ ${$k} ?? '' }}</div>@endforeach
                         </div>
                     @endif
-                    @if ($words !== null && ! preg_match('/^(nol|zero)/i', trim($words)))<div class="dl-lines__words"><span>Terbilang</span><i>{{ $words }}</i></div>@endif
+                    @if ($showWords())<div class="dl-lines__words"><span>Terbilang</span><i>{{ $words }}</i></div>@endif
                 </div>
                 @if ($summary)
                     <div class="dl-lines__totals">

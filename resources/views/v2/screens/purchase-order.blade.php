@@ -88,7 +88,6 @@
                 <x-dl::field.display label="Telepon" :value="$sup->phone ?? '—'" :source="Src::of('tm2mst.sup_supplier.phone')" />
                 <x-dl::field.display label="Email" :value="$sup->email ?? '—'" :source="Src::of('tm2mst.sup_supplier.email')" />
             </x-dl::form.row>
-            <p class="mp-hint">Data supplier diubah di Master Supplier.</p>
         </x-slot:supplier>
         <x-slot:finance>
             <x-dl::form.row :cols="4">
@@ -128,13 +127,11 @@
                         @if ($allocs)
                             <x-dl::field.select name="alloc_id" label="+ Tarik baris dari PR approved" :options="$allocs" :source="Src::of('tm2pur.pr_line_alloc (PR APPROVED, belum jadi PO)')" />
                             <x-dl::button size="sm" variant="secondary" label="+ Tarik Baris PR" type="submit" name="action" value="add_alloc" formnovalidate />
-                        @else
-                            <span class="mp-hint">Tidak ada baris PR approved yang tersedia untuk supplier ini.</span>
                         @endif
                     </x-slot:tools>
                 @endif
             </x-dl::lines>
-            <x-dl::doc-footer :tabs="['tax' => 'Tax']"
+            <x-dl::doc-footer
                 :words="\Devlib\Terbilang::words(round((float) $po->c_net_payable), 'IDR', 'id')"
                 :summary="array_values(array_filter([
                     ['DPP', $money($po->c_dpp), 'dpp'],
@@ -142,11 +139,7 @@
                     ['Grand Total', $money($po->c_grand_total)],
                     (float) $po->c_pph > 0 ? ['PPh 23 (jasa, dipotong)', '− '.$money($po->c_pph)] : null,
                     ['Net Payable', $money($po->c_net_payable), 'grand'],
-                ]))">
-                <x-slot:tax>
-                    <p class="dl-lines__hint">PPN dari DPP (jumlah baris setelah diskon); PPh 23 dipotong dari baris jasa. Tarif dari Settings → Constants (PPN, PPH23_JASA). Nilai diperbarui setelah Save.</p>
-                </x-slot:tax>
-            </x-dl::doc-footer>
+                ]))" />
         </x-slot:detail>
     </x-dl::form>
 @endif
