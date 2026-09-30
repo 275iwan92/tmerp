@@ -44,9 +44,6 @@
         <div class="dl-strip__kv dl-strip__doc"><span>No. Pesanan</span><b>{{ $blank || $dup ? '(otomatis)' : $co['co_no'] }}</b></div>
         <x-dl::field.date name="co_date" label="Tanggal Pesan" :value="$v('co_date') ?? now()->format('Y-m-d')" required />
         <x-dl::field.select name="customer" label="Customer" :options="$customers" :value="$v('customer')" required />
-        <div class="dl-strip__kv"><span>Item</span><b data-l-val="lines:count">0</b></div>
-        <div class="dl-strip__kv"><span>Total Qty</span><b data-l-val="lines:sum.qty">0</b></div>
-        <div class="dl-strip__kv"><span>PPN</span><b data-l-val="lines:ppn">Rp 0</b></div>
         <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b data-l-val="lines:grand">Rp 0</b></div>
     </x-slot:strip>
     <x-slot:basic>
@@ -103,4 +100,4 @@
         </x-dl::lines>
     </x-slot:detail>
 </x-dl::form>
-<p class="dl-note">Form Master-Detail: <b>1</b> panel aksi (tombol baku sesuai status) · <b>2</b> tahapan Draft › Confirmed › Closed · <b>3</b> ringkasan di atas: No. dokumen &amp; nominal penting disorot (Item, Total Qty, PPN, Grand Total — ikut hidup) · <b>4</b> tab header · <b>5</b> Details selalu di tengah: kolom inti di tabel, kolom lain lewat <b>›</b> per baris (titik biru = sudah terisi); kolom Product &amp; Subtotal diam saat tabel digeser · <b>6</b> footer: catatan kiri, Subtotal/Diskon/DPP/PPN/Total kanan.</p>
+<p class="dl-note">Form Master-Detail: <b>1</b> panel aksi (tombol baku sesuai status) · <b>2</b> tahapan Draft › Confirmed › Closed · <b>3</b> ringkasan di atas: No. dokumen &amp; Grand Total disorot (Grand Total ikut hidup) · <b>4</b> tab header · <b>5</b> Details selalu di tengah: kolom inti di tabel, kolom lain lewat <b>›</b> per baris (titik biru = sudah terisi); kolom Product &amp; Subtotal diam saat tabel digeser · <b>6</b> footer: catatan kiri, Subtotal/Diskon/DPP/PPN/Total kanan.</p>
