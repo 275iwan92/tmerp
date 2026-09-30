@@ -130,9 +130,9 @@
         :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $draft ? [] : ['delete'])"
         :tabs="['general' => 'General', 'notes' => 'Notes']"
         :created-by="$pv->created_by" :created-at="$pv->created_at?->toDateTimeString()" :updated-by="$pv->updated_by" :updated-at="$pv->updated_at?->toDateTimeString()">
-        @if ($isCust && $pv->status === 'POSTED')
+        @if ($pv->status === 'POSTED')
             <x-slot:special>
-                <x-dl::button size="sm" preset="print" label="Print Receipt" :href="route('v2.pv.print-customer', $pv->pv_id)" target="_blank" />
+                <x-dl::button size="sm" preset="print" label="Print Receipt" :href="route($isCust ? 'v2.pv.print-customer' : 'v2.pv.print', $pv->pv_id)" target="_blank" />
             </x-slot:special>
         @endif
         <x-slot:strip>
@@ -215,6 +215,11 @@
         :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $pv->status === 'DRAFT' ? [] : ['delete'])"
         :tabs="['general' => 'General', 'supplier' => 'Supplier', 'notes' => 'Notes']"
         :created-by="$pv->created_by" :created-at="$pv->created_at?->toDateTimeString()" :updated-by="$pv->updated_by" :updated-at="$pv->updated_at?->toDateTimeString()">
+        @if ($pv->status === 'POSTED')
+            <x-slot:special>
+                <x-dl::button size="sm" preset="print" label="Print SPB" :href="route('v2.pv.print', $pv->pv_id)" target="_blank" />
+            </x-slot:special>
+        @endif
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>No. SPB</span><b>{{ $pv->doc_no }}</b></div>
             <x-dl::field.date name="i_doc_date" label="Tanggal Terima" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />

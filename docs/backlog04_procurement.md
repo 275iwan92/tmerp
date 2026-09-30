@@ -34,19 +34,18 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
 
 ### Sisa sesi 2026-10-01 (Purchase) — menunggu user
 1. **Review di mockup.test** (menu v2: **R kuning** = belum direview, **A hijau** = approved/LOCKED oleh user):
-   - Purchase Quotation (upload file penawaran -> cek -> Confirm -> Bandingkan -> Buat PO).
-   - Penerimaan Barang: Cancel SPB; + New Record jenis **From Customer** (pilih CO) dan **From Subcon** (dummy
-     PO Subkon PO2600008 CENTRAL GRAFIK, 2 baris laminasi) + Report Shortage setelah Confirm.
-   - PO Kontan (+ New Record > Jenis PO = Cash PO) -> approval login `dewi` (Direktur F&A) -> Finance > Kas & Bank >
-     Kas Kecil: Give Advance / Settlement / Reimburse / Top Up / Setting.
-2. **OK menjalankan migration ke tm2*** (sudah jalan di ddt*): `2026_10_01_000002_pq_upload_extract_and_po_line_link`,
-   `2026_10_01_000020_pv_receipt_cancel_columns`, `2026_10_01_000030_po_cash_petty_cash` (COA 111400, jurnal PTY,
-   flow POC, konstanta PO_CASH_MAX, kas kecil KK-01 Mia), `2026_10_01_000040_pv_receipt_customer_subcon`.
+   - Alur penuh pakai **PR2600009** (dummy, APPROVED, 3 baris: Ivory 300 / HVS 58 / Duplex 260): PQ (upload file
+     penawaran -> Confirm -> Bandingkan -> Buat PO) -> PO -> SPB (Confirm -> Print SPB / Cancel).
+   - Penerimaan jenis From Customer (pilih CO; Print Receipt; tab Customer Material di CO) dan From Subcon (dummy PO
+     Subkon PO2600008 CENTRAL GRAFIK; Report Shortage; Print Receipt).
+   - PO Kontan -> approval login `dewi` (Direktur F&A) -> Kas Kecil: Give Advance / Settlement / Reimburse / Top Up /
+     Setting / Cancel Transaction.
+2. **tm2***: 5 migration Purchase sudah dijalankan 2026-10-01 (000002, 000020, 000030, 000040, 000050, satu per satu
+   dgn `--path`). **`2026_10_01_000035_flow_poc_cash_po` (flow approval PO Kontan) masih Pending di tm2*** — butuh
+   kolom dari `2026_09_30_000009_flow_config_approval_setting` (milik sesi Approval, juga belum jalan di tm2*). Jalankan
+   keduanya bersama saat migration sesi lain dijalankan ke tm2*; sebelum itu PO Kontan di tmerp.test belum punya approver.
 3. **Kas Kecil**: plafon (imprest) belum diisi — isi di Kas Kecil > Setting; saldo awal masuk lewat Top Up.
 4. **PQ**: `ANTHROPIC_API_KEY` belum diisi (PDF/foto penawaran belum terbaca otomatis; keputusan user: key & izin data
    penawaran dikirim ke Anthropic); .eml/.msg belum didukung; CSV angka Indonesia ("12.500") bisa terbaca 12,5.
-5. **Belum dibangun (kecil, menyusul bila perlu)**: cetak SPB (jenis PO & Subkon); data uji PR baru (semua baris PR
-   APPROVED di ddt* sudah FULLY_ORDERED -> buat PR baru + approve untuk mencoba PR -> PQ -> PO).
-6. Migration `2026_10_01_000050_petty_cash_tx_cancel` juga menunggu OK untuk tm2* (sudah jalan di ddt*).
 
 ---

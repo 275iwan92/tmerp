@@ -19,6 +19,7 @@ use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SysConstant;
 use App\Models\Sys\SysDocShare;
 use App\Models\Sys\SysMailSetting;
+use App\Models\Sys\SysSupportTicket;
 use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
 use App\Services\Pur\SpecialReceiptService;
@@ -58,6 +59,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -67,17 +69,17 @@ Route::prefix('v2')->name('v2.')->group(function () {
     // ?open=<kode menu> = tab yang dibuka saat mulai (mis. Direksi -> MGMT_EXEC), bila belum ada tab yang dipulihkan.
     Route::get('/', fn (Request $r) => view('v2.home', ['modules' => AppMenu::modules(Auth::user()), 'user' => AppMenu::user(Auth::user()),
         'open' => $r->query('open'), 'profilePage' => session('v2_profile_page'),
-        'tickets' => \App\Models\Sys\SysSupportTicket::with('replies')->where('created_by_user_id', Auth::id())->orderByDesc('id_ticket')->limit(20)->get()]))->name('home');
+        'tickets' => SysSupportTicket::with('replies')->where('created_by_user_id', Auth::id())->orderByDesc('id_ticket')->limit(20)->get()]))->name('home');
 
     // Tiket Bantuan dari halaman profil (menu akun / F1) -> tm2sys.sys_support_ticket, dijawab tim developer di Setup > Support Tickets.
     Route::post('/support/ticket', function (Request $r) {
-        $v = \Illuminate\Support\Facades\Validator::make($r->all(), ['description' => ['required', 'string', 'max:5000'], 'screen_context' => ['nullable', 'string', 'max:150']],
+        $v = Validator::make($r->all(), ['description' => ['required', 'string', 'max:5000'], 'screen_context' => ['nullable', 'string', 'max:150']],
             [], ['description' => 'Uraian masalah']);
         if ($v->fails()) {
             return redirect()->route('v2.home')->withErrors($v)->withInput()->with('v2_profile_page', 'ticket');
         }
         $d = $v->validated();
-        $t =\App\Models\Sys\SysSupportTicket::create($d + ['ticket_no' => \App\Models\Sys\SysSupportTicket::nextNo(), 'created_by_user_id' => Auth::id(), 'status' => 'OPEN']);
+        $t = SysSupportTicket::create($d + ['ticket_no' => SysSupportTicket::nextNo(), 'created_by_user_id' => Auth::id(), 'status' => 'OPEN']);
 
         return redirect()->route('v2.home')->with(['v2_profile_page' => 'ticket', 'v2_flash' => "Tiket {$t->ticket_no} terkirim ke tim support."]);
     })->name('support.ticket');
@@ -616,6 +618,45 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $open($pv->pv_id)->with('v2_flash', "Penerimaan dari subkon {$pv->doc_no} dibuat — isi qty kembali & proses berikutnya, lalu Confirm.");
         })->name('create-subcon');
+        // Cetak SPB jenis PO & Subkon (x-dl::print-out + doc-share); jenis Customer punya cetak sendiri (print-customer).
+        Route::get('/{id}/print', function (int $id) {
+            $pv = PvReceipt::with(['lines' => fn ($q) => $q->orderBy('line_no')])->whereIn('i_receipt_type', ['PO', 'SUBCON'])->findOrFail($id);
+            $mst = DB::connection('tm2mst');
+            $supplier = $mst->table('sup_supplier')->where('id_supplier', $pv->i_supplier_id)->first();
+            $sub = $pv->i_receipt_type === 'SUBCON';
+            $num = fn ($v) => (float) $v;
+            $parties = array_filter([
+                $sub ? 'Subcontractor' : 'Supplier' => [$supplier->supplier_name ?? '—', $supplier->default_address ?? ''],
+                $sub ? 'Subcon PO' : 'Purchase Order' => $pv->c_po_doc_list ?: '—',
+                'Received Date' => Locale::d($pv->i_doc_date),
+                'Delivery Note No.' => $pv->i_supplier_do_no ?: '—',
+                'Vehicle No.' => $pv->i_vehicle_no ?: '—',
+                $sub ? 'Our Delivery Note (to subcon)' : 'Receiving Warehouse' => $sub
+                    ? ($pv->i_do_id ? DB::connection('tm2sdi')->table('do_delivery')->where('id_delivery', $pv->i_do_id)->value('do_no') : '—')
+                    : ($pv->i_warehouse_code ? $pv->i_warehouse_code.' · '.$mst->table('wh_warehouse')->where('warehouse_code', $pv->i_warehouse_code)->value('warehouse_name') : '—'),
+            ]);
+            $columns = $sub ? [
+                ['key' => 'po', 'label' => 'Subcon PO'], ['key' => 'name', 'label' => 'Item', 'sub' => 'code'],
+                ['key' => 'qty', 'label' => 'Qty Received', 'type' => 'number'], ['key' => 'uom', 'label' => 'UoM'],
+                ['key' => 'next', 'label' => 'Sent To (next process)'], ['key' => 'short', 'label' => 'Shortage', 'type' => 'number'],
+            ] : [
+                ['key' => 'po', 'label' => 'PO'], ['key' => 'name', 'label' => 'Item Code & Name', 'sub' => 'code'],
+                ['key' => 'qty_buy', 'label' => 'Qty', 'type' => 'number', 'group' => 'Purchase UoM'], ['key' => 'uom_buy', 'label' => 'UoM', 'group' => 'Purchase UoM'],
+                ['key' => 'qty_stock', 'label' => 'Qty', 'type' => 'number', 'group' => 'Stock UoM'], ['key' => 'uom_stock', 'label' => 'UoM', 'group' => 'Stock UoM'],
+                ['key' => 'ok', 'label' => 'Accepted', 'type' => 'number', 'group' => 'QC Result'], ['key' => 'reject', 'label' => 'Rejected', 'type' => 'number', 'group' => 'QC Result'],
+                ['key' => 'lot', 'label' => 'Lot'],
+            ];
+            $rows = $pv->lines->map(fn ($l) => ['po' => $l->c_po_doc_no ? $l->c_po_doc_no.' #'.$l->c_po_line_no : '—', 'name' => $l->i_description, 'code' => $l->c_item_code ?: '',
+                'qty' => $num($l->i_qty_purchase), 'uom' => $l->i_uom_purchase, 'next' => $l->i_next_process ?: '—', 'short' => (float) $l->c_qty_short ?: '',
+                'qty_buy' => $num($l->i_qty_purchase), 'uom_buy' => $l->i_uom_purchase, 'qty_stock' => $num($l->i_qty_stock), 'uom_stock' => $l->i_uom_stock,
+                'ok' => $num($l->c_qty_accepted), 'reject' => (float) $l->c_qty_rejected ?: '', 'lot' => $l->i_lot_no ?: ''])->all();
+
+            return view('v2.print-receipt', ['pv' => $pv, 'supplier' => $supplier, 'parties' => $parties, 'columns' => $columns, 'rows' => $rows,
+                'title' => $sub ? 'Subcon Return Receipt' : 'Goods Receipt Note', 'subtitle' => $sub ? 'Penerimaan dari Subkon' : 'Surat Penerimaan Barang (SPB)',
+                'company' => ['name' => Brand::companyName(), 'tagline' => Brand::tagline(), 'initials' => mb_strtoupper(mb_substr(Brand::companyName(), 0, 2))],
+                'signatures' => $sub ? [['Handed Over By', 'Subcontractor / Driver'], ['Received By', 'Production / PPIC'], ['Checked By', 'Quality Control']]
+                    : [['Handed Over By', 'Supplier / Driver'], ['Received By', 'Warehouse'], ['Checked By', 'Quality Control']]]);
+        })->whereNumber('id')->name('print');
         // Tanda Terima Bahan Customer (x-dl::print-out + doc-share).
         Route::get('/{id}/print-customer', function (int $id) {
             $pv = PvReceipt::with(['lines' => fn ($q) => $q->orderBy('line_no')])->where('i_receipt_type', 'CUSTOMER')->findOrFail($id);

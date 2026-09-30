@@ -62,6 +62,18 @@
 - Field Money: nilai DB `1250000.00` dibulatkan lalu diformat `1.250.000` (Blade + JS), tidak lagi 125.000.000.
 - Sheet kalkulator mini: presisi hasil memakai `col.decimals` (dulu `c.decimals` = indeks kolom).
 
+## 2026-10-01 -- Cetak SPB (PO & Subkon), PR dummy UAT, migration Purchase ke tm2*
+
+- **Cetak SPB** `/v2/pv/{id}/print` (jenis PO: Goods Receipt Note dgn Satuan Beli/Stok + hasil QC; jenis Subkon: Subcon
+  Return Receipt dgn proses berikutnya & kekurangan) — x-dl::print-out + x-dl::doc-share, tanpa harga; tombol Print di
+  form SPB yang sudah Confirm.
+- **PR2600009** (ddt*, DUMMY, APPROVED + alokasi): Ivory 300 40 RIM, HVS 58 200 RIM, Duplex 260 25 RIM utk uji PR->PQ->PO->SPB.
+- **tm2***: migration 000002, 000020, 000030, 000040, 000050 dijalankan satu per satu (`--path`), diverifikasi (kolom,
+  COA 111400, jurnal PTY, kas kecil KK-01 Mia, PO_CASH_MAX, menu PROC_PQ & FIN_PETTY). Flow POC dipisah ke 000035
+  (Pending di tm2* sampai 2026_09_30_000009 sesi Approval dijalankan).
+
+---
+
 ## 2026-10-01 -- Batal transaksi kas kecil, cetak Tanda Terima Bahan Customer, tab Customer Material di CO
 
 - **Batal transaksi Kas Kecil** (`PettyCashService::cancel`, detail transaksi `petty-cash?tx=`): jurnal dibalik, status

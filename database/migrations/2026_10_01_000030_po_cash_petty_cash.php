@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 // PO Kontan + Kas Kecil (imprest), keputusan user 2026-10-01:
 // - 2 mode: KASBON (uang diambil dulu, lalu pertanggungjawaban nota) dan REIMBURSE (beli dulu, lalu diganti dari kas kecil).
 // - Batas nilai PO Kontan = sys_constant PO_CASH_MAX (Rp 2.000.000, diubah lewat Settings > Constants bila direksi menaikkan).
-// - Approval PO Kontan cukup Direktur F&A -> flow_config module POC (terpisah dari PO biasa).
+// - Approval PO Kontan cukup Direktur F&A -> flow_config module POC (migration 000035, terpisah dari PO biasa).
 // - Saat ini 1 kas kecil, dipegang Mia (F&A SPV); akun COA 111400 Kas Kecil + jurnal PTY dibuat di sini.
 return new class extends Migration
 {
@@ -78,15 +78,8 @@ return new class extends Migration
                 'created_by' => 'migration', 'updated_by' => 'migration']);
         }
 
-        $mst = DB::connection('tm2mst');
-        if (! $mst->table('flow_config')->where('module_code', 'POC')->exists()) {
-            $cfg = $mst->table('flow_config')->insertGetId(['module_code' => 'POC', 'total_step' => 1, 'final_status' => 'APPROVED', 'reject_status' => 'REJECTED',
-                'notes' => 'PO Kontan: approval cukup Direktur F&A (user 2026-10-01)', 'activate' => 1, 'created_at' => $now, 'updated_at' => $now,
-                'created_by' => 'migration', 'updated_by' => 'migration', 'data_origin' => 'LIVE', 'data_ready' => 1]);
-            $mst->table('flow_config_step')->insert(['flow_config_id' => $cfg, 'step_no' => 1, 'step_type' => 'APPROVAL', 'status_from' => 'SUBMITTED', 'status_to' => 'SUBMITTED',
-                'status_to_reject' => 'REJECTED', 'position_id' => 61, 'min_amount' => 0, 'print_label' => 'Menyetujui', 'activate' => 1, 'created_at' => $now,
-                'updated_at' => $now, 'created_by' => 'migration', 'updated_by' => 'migration', 'data_origin' => 'LIVE', 'data_ready' => 1]);
-        }
+        // Flow approval POC (Direktur F&A) ada di migration 2026_10_01_000035 -- butuh kolom flow_config_step dari
+        // 2026_09_30_000009 yang di tm2* belum tentu sudah jalan.
 
         $grp = $sys->table('sys_app_menu')->where('code', 'FIN')->value('id');
         if ($grp && ! $sys->table('sys_app_menu')->where('code', 'FIN_PETTY')->exists()) {
@@ -100,10 +93,6 @@ return new class extends Migration
     public function down(): void
     {
         DB::connection('tm2sys')->table('sys_app_menu')->where('code', 'FIN_PETTY')->delete();
-        $mst = DB::connection('tm2mst');
-        $cfg = $mst->table('flow_config')->where('module_code', 'POC')->value('flow_config_id');
-        $mst->table('flow_config_step')->where('flow_config_id', $cfg)->delete();
-        $mst->table('flow_config')->where('flow_config_id', $cfg)->delete();
         DB::connection('tm2sys')->table('sys_constant')->where('constant_key', 'PO_CASH_MAX')->delete();
         Schema::connection('tm2pur')->table('po_order', fn (Blueprint $t) => $t->dropColumn(['i_cash_mode', 'i_petty_cash_id', 'i_shop_name']));
         Schema::connection('tm2acc')->dropIfExists('fin_petty_cash_tx');
