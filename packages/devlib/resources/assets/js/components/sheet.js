@@ -40,7 +40,7 @@
         if (ctrl && e.key.toLowerCase() === 'y') { e.preventDefault(); const u = this.redo.pop(); if (u) this.undo.push(this.apply(u, true)); return this.render(); }
         if (ctrl) return;  // Ctrl+C / Ctrl+V lewat event copy/paste
         const k = e.key;
-        if (e.altKey && k === 'ArrowDown' && this.cols[this.cur.c].type === 'date' && !this.cols[this.cur.c].readonly) { e.preventDefault(); return this.openCal(); }
+        if (e.altKey && k === 'ArrowDown' && this.isPick(this.cols[this.cur.c]) && !this.cols[this.cur.c].readonly) { e.preventDefault(); return this.openPick(); }
         if (k === 'ArrowDown') { e.preventDefault(); this.move(1, 0, e.shiftKey); }
         else if (k === 'ArrowUp') { e.preventDefault(); this.move(-1, 0, e.shiftKey); }
         else if (k === 'ArrowRight') { e.preventDefault(); this.move(0, 1, e.shiftKey); }
@@ -63,7 +63,7 @@
       });
       // Mouse: klik = sel aktif, drag = rentang, pegangan isi = AutoFill ke bawah.
       this.table.addEventListener('mousedown', e => {
-        const cal = e.target.closest('[data-s-cal]'); if (cal) { e.preventDefault(); const td = cal.closest('td'); this.anchor = null; this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.render(); this.wrap.focus(); this.openCal(); return; }
+        const cal = e.target.closest('[data-s-cal]'); if (cal) { e.preventDefault(); const td = cal.closest('td'); this.anchor = null; this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.render(); this.wrap.focus(); this.openPick(); return; }
         const fh = e.target.closest('[data-s-fill]'); if (fh) { e.preventDefault(); this.fill = {...this.rng(), to: this.rng().r1}; return; }
         const rs = e.target.closest('[data-s-rowsel]'); if (rs) { this.anchor = {r: +rs.dataset.sRowsel, c: 0}; this.cur = {r: +rs.dataset.sRowsel, c: this.cols.length - 1}; this.render(); this.wrap.focus(); return; }
         const td = e.target.closest('td[data-r]'); if (!td || this.edit) return;
@@ -111,38 +111,52 @@
       this.el.dlSheet = {get data() { return self.data; }, render: this.render, apply: this.apply, get cur() { return self.cur; }, set cur(v) { self.cur = v; self.anchor = null; self.render(); }};
       this.render();
     }
-    // Kalender kecil (tampilan sama x-dl::field.date) utk sel date aktif; panel fixed supaya tidak terpotong scroll lembar.
-    openCal() {
-      this.closeCal();
+    isPick(c) { return c.type === 'date' || c.type === 'time'; }
+
+    // Pemilih kecil utk sel aktif (tampilan sama x-dl::field.date / field.time): date = kalender, time = Jam + Menit (5 menit).
+    // Panel fixed di body supaya tidak terpotong scroll lembar.
+    openPick() {
+      this.closePick();
       const {r, c} = this.cur, col = this.cols[c], td = this.cellEl(r, c); if (!td) return;
-      const cur = this.data[r][col.key], MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-      const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      const view = /^\d{4}-\d{2}-\d{2}$/.test(cur || '') ? new Date(cur + 'T00:00') : new Date(); view.setDate(1);
-      const p = document.createElement('div'); p.className = 'dl-pick__panel is-open dl-sheet__calpanel';
-      p.innerHTML = '<div class="dl-pick__nav"><button type="button" data-p>&lt;</button><span data-t></span><button type="button" data-n>&gt;</button></div><div class="dl-cal dl-cal--names"><div>Mg</div><div>Sn</div><div>Sl</div><div>Rb</div><div>Km</div><div>Jm</div><div>Sb</div></div><div class="dl-cal" data-d></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-h>Hari ini</button></div>';
-      const draw = () => {
-        $(p, '[data-t]').textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
-        let h = '<div></div>'.repeat(view.getDay()), n = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
-        for (let d = 1; d <= n; d++) { const v = iso(new Date(view.getFullYear(), view.getMonth(), d)); h += `<button type="button" data-v="${v}" class="${v === cur ? 'is-sel' : ''}">${d}</button>`; }
-        $(p, '[data-d]').innerHTML = h;
-      };
-      const pick = v => { this.closeCal(); if (String(v) !== String(cur ?? '')) this.apply([{r, k: col.key, v}]); this.wrap.focus(); };
-      p.addEventListener('mousedown', e => e.preventDefault());
-      p.addEventListener('click', e => {
-        const b = e.target.closest('button'); if (!b) return;
-        if (b.dataset.v) pick(b.dataset.v); else if ('p' in b.dataset) { view.setMonth(view.getMonth() - 1); draw(); } else if ('n' in b.dataset) { view.setMonth(view.getMonth() + 1); draw(); } else if ('x' in b.dataset) pick(''); else if ('h' in b.dataset) pick(iso(new Date()));
-      });
-      document.body.appendChild(p); draw();
+      const cur = this.data[r][col.key], pad = n => String(n).padStart(2, '0'), p = document.createElement('div');
+      const pick = v => { this.closePick(); if (String(v) !== String(cur ?? '')) this.apply([{r, k: col.key, v}]); this.wrap.focus(); };
+      if (col.type === 'time') {
+        const [h0, m0] = /^\d{2}:\d{2}$/.test(cur || '') ? cur.split(':').map(Number) : [8, 0];
+        p.className = 'dl-pick__panel dl-pick__panel--time is-open dl-sheet__calpanel';
+        p.innerHTML = `<div class="dl-pick__head">Pilih Jam</div><div class="dl-pick__time"><label>Jam <select data-h>${Array.from({length: 24}, (_, i) => `<option ${i === h0 ? 'selected' : ''}>${pad(i)}</option>`).join('')}</select></label><b>:</b><label>Menit <select data-m>${Array.from({length: 12}, (_, i) => `<option ${i * 5 === Math.round(m0 / 5) * 5 % 60 ? 'selected' : ''}>${pad(i * 5)}</option>`).join('')}</select></label></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-a>Apply</button></div>`;
+        p.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if ('x' in b.dataset) pick(''); else if ('a' in b.dataset) pick(`${$(p, '[data-h]').value}:${$(p, '[data-m]').value}`); });
+        p.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $(p, '[data-a]').click(); } });
+      } else {
+        const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        const view = /^\d{4}-\d{2}-\d{2}$/.test(cur || '') ? new Date(cur + 'T00:00') : new Date(); view.setDate(1);
+        p.className = 'dl-pick__panel is-open dl-sheet__calpanel';
+        p.innerHTML = '<div class="dl-pick__nav"><button type="button" data-p>&lt;</button><span data-t></span><button type="button" data-n>&gt;</button></div><div class="dl-cal dl-cal--names"><div>Mg</div><div>Sn</div><div>Sl</div><div>Rb</div><div>Km</div><div>Jm</div><div>Sb</div></div><div class="dl-cal" data-d></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-h>Hari ini</button></div>';
+        const draw = () => {
+          $(p, '[data-t]').textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
+          let h = '<div></div>'.repeat(view.getDay()), n = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+          for (let d = 1; d <= n; d++) { const v = iso(new Date(view.getFullYear(), view.getMonth(), d)); h += `<button type="button" data-v="${v}" class="${v === cur ? 'is-sel' : ''}">${d}</button>`; }
+          $(p, '[data-d]').innerHTML = h;
+        };
+        p.addEventListener('click', e => {
+          const b = e.target.closest('button'); if (!b) return;
+          if (b.dataset.v) pick(b.dataset.v); else if ('p' in b.dataset) { view.setMonth(view.getMonth() - 1); draw(); } else if ('n' in b.dataset) { view.setMonth(view.getMonth() + 1); draw(); } else if ('x' in b.dataset) pick(''); else if ('h' in b.dataset) pick(iso(new Date()));
+        });
+        draw();
+      }
+      p.addEventListener('mousedown', e => { if (!e.target.closest('select')) e.preventDefault(); });  // select tetap bisa dibuka
+      document.body.appendChild(p);
       const b = td.getBoundingClientRect(), below = b.bottom + 4 + p.offsetHeight <= innerHeight;
       Object.assign(p.style, {position: 'fixed', left: Math.min(b.left, innerWidth - p.offsetWidth - 8) + 'px', top: (below ? b.bottom + 4 : b.top - p.offsetHeight - 4) + 'px'});
-      this.cal = p;
-      this.calOff = e => { if (e.type === 'keydown' || !p.contains(e.target)) this.closeCal(); };
-      ['mousedown', 'keydown', 'scroll'].forEach(t => document.addEventListener(t, this.calOff, true));
+      this.pick = p;
+      if (col.type === 'time') $(p, '[data-h]').focus();
+      this.pickOff = e => { if (e.type === 'keydown' ? e.key === 'Escape' || !p.contains(e.target) : !p.contains(e.target)) { this.closePick(); if (e.type === 'keydown') this.wrap.focus(); } };
+      ['mousedown', 'keydown', 'scroll'].forEach(t => document.addEventListener(t, this.pickOff, true));
     }
 
-    closeCal() {
-      if (!this.cal) return; this.cal.remove(); this.cal = null;
-      ['mousedown', 'keydown', 'scroll'].forEach(t => document.removeEventListener(t, this.calOff, true));
+    closePick() {
+      if (!this.pick) return; this.pick.remove(); this.pick = null;
+      ['mousedown', 'keydown', 'scroll'].forEach(t => document.removeEventListener(t, this.pickOff, true));
     }
 
     firstEditable() { const i = this.cols.findIndex(c => !c.readonly); return i < 0 ? 0 : i; }
@@ -199,7 +213,7 @@
     render() {
       const R = this.rng();
       this.table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
-        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${c.type === 'date' ? 'is-date' : ''} ${c.readonly ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${c.type === 'date' && !c.readonly ? '<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="Pilih tanggal (Alt+Panah Bawah)"><i class="fa-regular fa-calendar"></i></button>' : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${c.readonly ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !c.readonly ? `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${c.type === 'date' ? 'Pilih tanggal' : 'Pilih jam'} (Alt+Panah Bawah)"><i class="fa-regular fa-${c.type === 'date' ? 'calendar' : 'clock'}"></i></button>` : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
       const changed = this.changes(), info = $(this.el, '[data-s-info]'), sv = $(this.el, '[data-s-save]');
       sv.disabled = !changed.length;
       if (this.lookup) {
