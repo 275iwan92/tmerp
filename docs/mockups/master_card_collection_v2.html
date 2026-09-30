@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Master Card Collection — Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .inp { width: 100%; border: 1px solid #c9d6ea; border-radius: 6px; padding: 5px 8px; font-size: 12px; background: #f7faff; display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+  .inp.ro { background: #f1f5f9; color: #475569; }
+  .inp.miss { border-color: #f59e0b; background: #fffbeb; }
+  .aa { font-size: 9px; font-weight: 700; color: #2c7be5; background: #e3edfb; border-radius: 4px; padding: 1px 4px; }
+  .sec { font-size: 11px; font-weight: 700; color: #2c3e69; text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 8px; }
+  .tag { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; font-weight:700; }
+  .ib { width: 26px; height: 26px; border: 1px solid #cbd5e1; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: #2c3e69; background: #fff; }
+  .btn { padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; }
+  th { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600; text-align: left; padding: 6px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .cap { font-size: 13px; font-weight: 700; color: #334155; margin: 18px 0 6px; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-4 max-w-[1400px] mx-auto">
+
+<!-- ======================= 1. GRID ======================= -->
+<div class="cap">① Grid — Sales › Product › Master Card Collection</div>
+<section class="card p-3 space-y-3">
+  <div class="grid grid-cols-5 gap-2">
+    <div class="rounded-lg p-2.5 bg-slate-100 ring-2 ring-navy relative"><div class="text-[10px] text-slate-500 font-semibold uppercase">All</div><div class="text-xl font-bold">5</div><i class="fa-solid fa-circle-check absolute top-2 right-2 text-navy"></i></div>
+    <div class="rounded-lg p-2.5 bg-amber-50"><div class="text-[10px] text-amber-700 font-semibold uppercase">Incomplete</div><div class="text-xl font-bold text-amber-700">2</div></div>
+    <div class="rounded-lg p-2.5 bg-sky-50"><div class="text-[10px] text-sky-700 font-semibold uppercase">Ready</div><div class="text-xl font-bold text-sky-700">1</div></div>
+    <div class="rounded-lg p-2.5 bg-emerald-50"><div class="text-[10px] text-emerald-700 font-semibold uppercase">Master Product</div><div class="text-xl font-bold text-emerald-700">1</div></div>
+    <div class="rounded-lg p-2.5 bg-violet-50"><div class="text-[10px] text-violet-700 font-semibold uppercase">Inquiry</div><div class="text-xl font-bold text-violet-700">1</div></div>
+  </div>
+
+  <div class="border-2 border-dashed border-sky-300 rounded-lg bg-sky-50/50 p-3 flex items-center gap-4">
+    <i class="fa-solid fa-cloud-arrow-up text-2xl text-sky-500"></i>
+    <div class="flex-1">
+      <div class="font-semibold text-slate-700">Upload Master Card — drag file ke sini / <span class="text-accent underline">Pilih File</span> (boleh banyak sekaligus)</div>
+      <div class="text-muted text-[11px]">Excel master card (.xlsx, sheet "MC") → data dibaca otomatis + gambar proof diambil · JPEG/PNG foto kartu → disimpan sebagai gambar, isian dilengkapi di dialog</div>
+    </div>
+    <div class="text-[11px] text-slate-600 bg-white border border-slate-200 rounded px-2 py-1"><i class="fa-solid fa-spinner text-sky-500"></i> 3 file dibaca… 2 selesai</div>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <div class="inp w-72"><span class="text-muted"><i class="fa-solid fa-magnifying-glass mr-1"></i>Cari nama / no. desain / kode item / customer</span></div>
+    <span class="ml-auto"></span>
+    <button class="btn bg-accent text-white">+ New Record</button>
+  </div>
+
+  <table class="w-full">
+    <thead><tr><th class="w-8"></th><th>Master Card</th><th>Customer</th><th>Part</th><th>Dimensi (P×L×T)</th><th>Tipe Produk</th><th>Pisau / UP</th><th>Sumber</th><th>Status</th><th class="w-20">Aksi</th></tr></thead>
+    <tbody>
+      <tr><td><div class="w-10 h-7 rounded bg-gradient-to-r from-slate-300 to-slate-100 border"></div></td>
+        <td><div class="font-semibold">Osima MS N100 CV</div><div class="text-muted">DS003146 · SJJ-OSM N100 CV DS3146</div></td><td>PT. SELATAN JADI JAYA</td><td>A + B</td><td>41,3 × 18 × 26 cm</td><td>RSC 2-Piece</td><td>62,3 × 45,2 · 1 UP <i class="fa-solid fa-check text-emerald-600"></i></td>
+        <td><i class="fa-solid fa-file-excel text-emerald-600"></i> xlsx</td><td><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Master Product</span></td>
+        <td><span class="ib"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><div class="w-10 h-7 rounded bg-gradient-to-r from-yellow-300 to-slate-800 border"></div></td>
+        <td><div class="font-semibold">Yahya 250g (24pcs) C22</div><div class="text-muted">DS002159 · UGS-IB YHY C22 250GR DS2159</div></td><td>PT. UPAYA GUNA SEJAHTERA</td><td>1</td><td>7,2 × 4,6 × 9,5 cm</td><td>Reverse Tuck End</td><td>64,5 × 50,2 · 8 UP <i class="fa-solid fa-check text-emerald-600"></i></td>
+        <td><i class="fa-solid fa-file-excel text-emerald-600"></i> xlsx</td><td><span class="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-semibold">Inquiry</span></td>
+        <td><span class="ib"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><div class="w-10 h-7 rounded bg-gradient-to-r from-slate-200 to-red-400 border"></div></td>
+        <td><div class="font-semibold">YAMA Din170 MF</div><div class="text-muted">DS003026 · SJJ-YMA DIN170 MF</div></td><td>PT. SELATAN JADI JAYA</td><td>B <span class="text-amber-600">(A belum ada)</span></td><td>51,5 × 22 × 25,7 cm</td><td>RSC 2-Piece</td><td>76,5 × 49,4 · ½ UP <i class="fa-solid fa-check text-emerald-600"></i></td>
+        <td><i class="fa-solid fa-file-excel text-emerald-600"></i> xlsx</td><td><span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 font-semibold">Ready</span></td>
+        <td><span class="ib"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><div class="w-10 h-7 rounded bg-gradient-to-r from-amber-100 to-amber-700 border"></div></td>
+        <td><div class="font-semibold">Outer Alsamsi Cream Lock</div><div class="text-muted">— · YLAS-ALSM OB CRM CTK</div></td><td>PAK MUKRI</td><td>A + B</td><td>37,5 × 19,7 × 25,5 cm</td><td>Crash Lock Bottom 2-Piece</td><td>96,9 × 60,2 · 1 SET <i class="fa-solid fa-check text-emerald-600"></i></td>
+        <td><i class="fa-solid fa-file-excel text-emerald-600"></i> xlsx</td><td><span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">Incomplete · 2</span></td>
+        <td><span class="ib"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><div class="w-10 h-7 rounded bg-gradient-to-r from-green-700 to-green-400 border"></div></td>
+        <td><div class="font-semibold">KS Power N120 MF</div><div class="text-muted">— (dari foto)</div></td><td class="text-amber-700">? belum dipilih</td><td>A</td><td class="text-amber-700">?</td><td class="text-amber-700">?</td><td class="text-amber-700">?</td>
+        <td><i class="fa-solid fa-image text-sky-600"></i> foto</td><td><span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">Incomplete · 6</span></td>
+        <td><span class="ib"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ======================= 2. FORM ======================= -->
+<div class="cap">② Form — klik 2x baris "Outer Alsamsi Cream Lock"</div>
+<section class="card overflow-hidden">
+  <div class="bg-navy text-white px-4 py-2.5 flex items-center gap-2">
+    <div><div class="text-sm font-bold">Outer Alsamsi Cream Lock</div><div class="text-[10px] opacity-70">Master Card · MC-OUTER ALSAMSI CREAM LOCK.xlsx · diupload 01-Oct-2026 oleh johiwan</div></div>
+    <span class="ml-3 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">● Incomplete</span>
+    <span class="ml-auto"></span>
+    <button class="btn border border-white/40">Undo</button>
+    <button class="btn border border-white/40">Delete</button>
+    <button class="btn bg-emerald-500 text-white relative"><i class="fa-solid fa-box mr-1"></i>Make Master Product <span class="tag absolute -top-2 -right-2">2</span></button>
+    <button class="btn bg-violet-500 text-white"><i class="fa-solid fa-file-circle-plus mr-1"></i>Make Inquiry</button>
+    <button class="btn bg-accent text-white">Save</button>
+    <a class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full ml-2"><span class="text-[11px] font-bold uppercase tracking-wide">Back</span><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a]"><i class="fa-solid fa-arrow-left"></i></span></a>
+  </div>
+
+  <div class="flex border-b border-slate-200 px-4 text-[12px]">
+    <div class="px-3 py-2 border-b-2 border-accent font-semibold text-accent">Data Kartu</div>
+    <div class="px-3 py-2 text-slate-500">Bahan &amp; Proses</div>
+    <div class="px-3 py-2 text-slate-500">Gambar (2)</div>
+    <div class="px-3 py-2 text-slate-500">Riwayat</div>
+  </div>
+
+  <div class="p-4 grid grid-cols-12 gap-4">
+    <div class="col-span-7 space-y-3">
+      <div class="bg-amber-50 border border-amber-300 rounded px-3 py-2 text-amber-800"><i class="fa-solid fa-triangle-exclamation mr-1"></i><b>2 perlu perhatian:</b> No. Desain kosong di kartu · Bahan #2 hasil tebakan perlu dikonfirmasi (kolom kuning). Kolom lain terisi dari Excel (bisa dikoreksi).</div>
+      <div class="sec">Identitas</div>
+      <div class="grid grid-cols-4 gap-3">
+        <div><div class="lbl">Kode Item</div><div class="inp">YLAS-ALSM OB CRM CTK <span class="aa">AA</span></div></div>
+        <div><div class="lbl">No. Desain *</div><div class="inp miss"><span class="text-amber-600">kosong di kartu</span> <span class="aa">AA</span></div></div>
+        <div class="col-span-2"><div class="lbl">Nama Barang</div><div class="inp">OUTER ALSAMSI CREAM LOCK <span class="aa">AA</span></div></div>
+        <div><div class="lbl">Tanggal Kartu</div><div class="inp">26-Nov-2025 <i class="fa-regular fa-calendar text-muted"></i></div></div>
+        <div class="col-span-2"><div class="lbl">Customer (lookup master)</div><div class="inp">PAK MUKRI <i class="fa-solid fa-chevron-down text-muted"></i></div><div class="text-[10px] text-emerald-600 mt-0.5"><i class="fa-solid fa-link"></i> cocok dengan teks kartu "PAK MUKRI"</div></div>
+        <div><div class="lbl">Part</div><div class="inp">A + B (1 set) <i class="fa-solid fa-chevron-down text-muted"></i></div></div>
+      </div>
+      <div class="sec">Ukuran &amp; Bentuk</div>
+      <div class="grid grid-cols-4 gap-3">
+        <div><div class="lbl">Panjang (P)</div><div class="inp ro">375 mm</div></div>
+        <div><div class="lbl">Lebar (L)</div><div class="inp ro">197 mm</div></div>
+        <div><div class="lbl">Tinggi (T)</div><div class="inp ro">255 mm</div></div>
+        <div><div class="lbl">Isi 1 Cetakan</div><div class="inp ro">1 SET</div></div>
+        <div class="col-span-2"><div class="lbl">Kode Pisau</div><div class="inp">Pisau OUTER ALSAMSI CREAM LOCK (375x197x255mm)_SEMARANG <span class="aa">AA</span></div></div>
+        <div><div class="lbl">Ukuran Pisau</div><div class="inp ro">969 × 602 mm</div></div>
+        <div><div class="lbl">Sambungan</div><div class="inp">Double Join <i class="fa-solid fa-chevron-down text-muted"></i></div></div>
+        <div class="col-span-2"><div class="lbl">Tipe Produk (dieline) — saran sistem</div><div class="inp">Crash Lock Bottom Carton 2-Piece <i class="fa-solid fa-chevron-down text-muted"></i></div></div>
+        <div class="col-span-2"><div class="lbl">Cek bentangan</div><div class="inp ro"><span class="text-emerald-700"><i class="fa-solid fa-check"></i> rumus 602 × 484,5 mm per part = pisau ÷ 2 part</span></div></div>
+      </div>
+    </div>
+
+    <div class="col-span-5 space-y-2">
+      <div class="flex gap-1 text-[11px]"><span class="px-2 py-1 rounded bg-accent text-white">Proof (dari Excel)</span><span class="px-2 py-1 rounded bg-slate-100">Dieline mockup</span><span class="px-2 py-1 rounded bg-slate-100">Rencana potong</span></div>
+      <div class="rounded border bg-[#f4efdf] h-[300px] relative overflow-hidden">
+        <div class="absolute inset-4 grid grid-cols-2 gap-3">
+          <div class="border-2 border-red-400 rounded relative bg-gradient-to-br from-amber-50 to-amber-200"><div class="absolute inset-x-0 top-1/3 h-1/3 border-y-2 border-green-500"></div><div class="absolute left-3 top-[42%] text-amber-900 font-bold">AL SAMSI</div><div class="absolute bottom-1 left-2 text-[9px] text-amber-900">Part A</div></div>
+          <div class="border-2 border-red-400 rounded relative bg-gradient-to-br from-amber-50 to-amber-200"><div class="absolute inset-x-0 top-1/3 h-1/3 border-y-2 border-green-500"></div><div class="absolute left-3 top-[42%] text-amber-900 font-bold">AL SAMSI</div><div class="absolute bottom-1 left-2 text-[9px] text-amber-900">Part B</div></div>
+        </div>
+      </div>
+      <div class="text-[11px] text-muted">Klik gambar = perbesar. Tab "Dieline mockup" = gambar dari Tipe Produk + ukuran, artwork ditumpuk.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 3. DIALOG ======================= -->
+<div class="cap">③ Dialog — klik "Make Master Product" (hanya menanyakan field kunci yang belum ada)</div>
+<section class="relative rounded-lg bg-slate-700/60 p-8 flex justify-center">
+  <div class="card w-[620px] shadow-2xl overflow-hidden">
+    <div class="bg-navy text-white px-4 py-2.5 font-semibold flex items-center"><i class="fa-solid fa-box mr-2"></i>Make Master Product — Outer Alsamsi Cream Lock<span class="ml-auto opacity-70"><i class="fa-solid fa-xmark"></i></span></div>
+    <div class="p-4 space-y-3">
+      <div class="text-slate-600">Lengkapi 2 isian ini dulu. Yang lain sudah terisi dari kartu.</div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><div class="lbl">No. Desain *</div><div class="inp miss"><span class="text-muted">mis. DS003xxx</span> <span class="aa">AA</span></div><div class="text-[10px] text-muted mt-0.5">Kosong di kartu. Boleh "—" bila memang tidak ada.</div></div>
+        <div><div class="lbl">Bahan #2 (lookup kategori) *</div><div class="inp miss">Sheet › SFEF › M125/K125 <i class="fa-solid fa-chevron-down text-muted"></i></div><div class="text-[10px] text-muted mt-0.5">Teks kartu: "SINGLE FACE E/FLUTE · M125/K125" — saran, mohon konfirmasi.</div></div>
+      </div>
+      <div class="rounded bg-slate-50 border p-2.5 text-[11px] text-slate-600 space-y-1">
+        <div><b>Akan dibuat:</b> Master Product "OUTER ALSAMSI CREAM LOCK" (kode YLAS-ALSM OB CRM CTK) · customer PAK MUKRI</div>
+        <div>Part: Body (rakitan Double Join) + Part A + Part B · Tipe Crash Lock Bottom 2-Piece · 375 × 197 × 255 mm</div>
+        <div>Bahan Duplex 250 gsm + SF E/Flute · Varnish WB · 7 langkah proses + 3 langkah rakitan · artwork A &amp; B dari proof</div>
+      </div>
+    </div>
+    <div class="px-4 py-2.5 border-t flex justify-end gap-2 bg-slate-50">
+      <button class="btn border border-slate-300">Cancel</button>
+      <button class="btn bg-emerald-600 text-white">Make Master Product</button>
+    </div>
+  </div>
+  <div class="card w-[330px] ml-6 self-start p-3 space-y-2 text-[11px]">
+    <div class="font-semibold text-slate-700"><i class="fa-solid fa-file-circle-plus text-violet-500 mr-1"></i>Beda bila "Make Inquiry"</div>
+    <div>Isian kunci tambahan: <b>Qty order (tier)</b>, <b>Deadline quotation</b>, <b>PIC Sales</b>.</div>
+    <div>Hasil: Inquiry REVISI/REKALKULASI bila produk sudah ada di Master Product, Inquiry BARU bila belum.</div>
+    <div class="text-muted">Setelah berhasil: status kartu → Master Product / Inquiry + tautan ke dokumennya.</div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>
