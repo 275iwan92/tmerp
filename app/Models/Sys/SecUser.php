@@ -273,8 +273,9 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
     }
 
     // Harga jual order (CO/laporan order dengan harga) — user 2026-09-30: "order tanpa harga untuk produksi, purchase dst;
-    // order dengan harga untuk sales, marketing, product costing serta op manager ke atas". Grup Marketing belum ada di sec_group.
-    public const SALES_PRICE_GROUPS = ['SALES_STAFF', 'SALES_SPV', 'MGR_SALES', 'COSTING_STAFF', 'OPS_MGR', 'DIREKSI'];
+    // order dengan harga untuk sales, marketing, product costing serta op manager ke atas". MARKETING = grup untuk ke depan
+    // (dibuat 2026-09-30, belum ada anggota; saat ini praktis hanya Sales).
+    public const SALES_PRICE_GROUPS = ['SALES_STAFF', 'SALES_SPV', 'MGR_SALES', 'MARKETING', 'COSTING_STAFF', 'OPS_MGR', 'DIREKSI'];
 
     public function canViewSalesPrice(): bool
     {
