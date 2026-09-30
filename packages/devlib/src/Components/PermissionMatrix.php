@@ -38,9 +38,9 @@ class PermissionMatrix extends DevlibComponent
                 <div class="dl-perm__bar">
                     <label class="dl-perm__lbl">Grup <select data-pm-group aria-label="Grup">@foreach ($groups as $g)<option>{{ $g }}</option>@endforeach</select></label>
                     <label class="dl-perm__lbl">Modul <select data-pm-module aria-label="Modul"><option value="">Semua modul</option>@foreach (collect($objects)->pluck('module')->unique() as $m)<option>{{ $m }}</option>@endforeach</select></label>
-                    <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Cari objek…" data-pm-q aria-label="Cari objek"></div>
+                    <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search objects…') }}" data-pm-q aria-label="{{ \Devlib\Lang::text('Search objects') }}"></div>
                     <span class="dl-print__spacer"></span>
-                    <label class="dl-perm__lbl">Set semua yang tampil <select data-pm-bulk aria-label="Set semua"><option value="">—</option>@foreach ($levels as $i => $l)<option value="{{ $i }}">{{ $l }}</option>@endforeach</select></label>
+                    <label class="dl-perm__lbl">Set semua yang tampil <select data-pm-bulk aria-label="{{ \Devlib\Lang::text('Set all') }}"><option value="">—</option>@foreach ($levels as $i => $l)<option value="{{ $i }}">{{ $l }}</option>@endforeach</select></label>
                 </div>
                 <div class="dl-perm__scroll"><table class="dl-perm__table"><thead><tr><th>Objek</th><th>Tipe</th><th>Modul</th><th>Hak akses</th></tr></thead><tbody data-pm-body></tbody></table></div>
                 <div class="dl-perm__foot"><span data-pm-dirty></span><span class="dl-print__spacer"></span><x-dl::button variant="ghost" size="sm" label="Reset" data-pm-reset /><x-dl::button preset="save" size="sm" data-pm-save /></div>

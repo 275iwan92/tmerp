@@ -112,7 +112,7 @@ class Ribbon extends DevlibComponent
                 <div class="dl-rb__title">
                     <div class="dl-rb__quick">@foreach ($quick as $q)<button type="button" data-rb-key="{{ $q['key'] ?? $q['label'] }}" title="{{ $q['label'] }}">{!! $icon($q['icon'] ?? null) !!}</button>@endforeach</div>
                     <span class="dl-rb__doc">{{ $title }}</span>
-                    <div class="dl-rb__tell"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Cari perintah…" data-rb-find aria-label="Cari perintah"><div class="dl-rb__found" data-rb-found hidden></div></div>
+                    <div class="dl-rb__tell"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search commands…') }}" data-rb-find aria-label="{{ \Devlib\Lang::text('Search commands') }}"><div class="dl-rb__found" data-rb-found hidden></div></div>
                 </div>
                 <div class="dl-rb__tabs" role="tablist">
                     @if ($file)<button type="button" class="dl-rb__tab is-file" data-rb-file data-rb-tip="F">File</button>@endif

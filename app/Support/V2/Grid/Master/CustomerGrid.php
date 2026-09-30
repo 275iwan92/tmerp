@@ -83,11 +83,11 @@ class CustomerGrid extends MasterDataGrid
     public function stats(): array
     {
         return [
-            ['label' => 'Semua'],
-            ['label' => 'Aktif', 'where' => ['active' => true], 'tone' => 'success'],
+            ['label' => 'All'],
+            ['label' => 'Active', 'where' => ['active' => true], 'tone' => 'success'],
             ['label' => 'Draft', 'where' => ['approval' => 'DRAFT'], 'tone' => 'warn'],
             ['label' => 'Diblokir', 'where' => ['approval' => 'BLOCKED'], 'tone' => 'danger'],
-            ['label' => 'Nonaktif', 'where' => ['active' => false], 'tone' => 'neutral'],
+            ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'neutral'],
         ];
     }
 

@@ -31,7 +31,7 @@
             <x-dl::modal :id="$uid.'-mail'" :title="\Devlib\Lang::t('ds_email')" icon="email" size="md">
                 <div class="dl-docshare__mailform" data-ds-mailform>
                     @if (count($langs()) > 1)<span class="dl-docshare__lang" role="group" data-ds-langs><span>{{ \Devlib\Lang::t('print_lang') }}</span>@foreach ($langs() as $code => $name)<button type="button" data-ds-lang="{{ $code }}" title="{{ $name }}">{{ strtoupper($code) }}</button>@endforeach</span>@endif
-                    <x-dl::field.text name="to" label="To" required :value="$emailTo" :case-toggle="false" placeholder="nama@perusahaan.com, ..." :hint="\Devlib\Lang::t('ds_to_hint')" />
+                    <x-dl::field.text name="to" label="To" required :value="$emailTo" :case-toggle="false" placeholder="name@company.com, ..." :hint="\Devlib\Lang::t('ds_to_hint')" />
                     <x-dl::form.row cols="2">
                         <x-dl::field.text name="cc" label="CC" :case-toggle="false" />
                         <x-dl::field.text name="bcc" label="BCC" :case-toggle="false" />

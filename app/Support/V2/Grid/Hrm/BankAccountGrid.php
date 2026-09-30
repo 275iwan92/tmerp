@@ -68,13 +68,13 @@ class BankAccountGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Karyawan', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'dept', 'label' => 'Departemen'],
             ['key' => 'position', 'label' => 'Posisi'],
-            ['key' => 'method', 'label' => 'Metode Gaji', 'type' => 'badge', 'tones' => ['Transfer' => 'info', 'Tunai' => 'warn']],
+            ['key' => 'method', 'label' => 'Salary Method', 'type' => 'badge', 'tones' => ['Transfer' => 'info', 'Tunai' => 'warn']],
             ['key' => 'bank', 'label' => 'Bank'],
             ['key' => 'account', 'label' => 'No. Rekening'],
-            ['key' => 'holder', 'label' => 'Atas Nama'],
+            ['key' => 'holder', 'label' => 'Account Holder'],
         ];
     }
 
@@ -92,7 +92,7 @@ class BankAccountGrid extends HrmGrid
     public function stats(): array
     {
         return [
-            ['label' => 'Pegawai Aktif'],
+            ['label' => 'Active Employees'],
             ['label' => 'Transfer', 'where' => ['method' => 'Transfer'], 'tone' => 'info'],
             ['label' => 'Tunai', 'where' => ['method' => 'Tunai'], 'tone' => 'warn'],
         ];

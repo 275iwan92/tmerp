@@ -50,10 +50,10 @@ class ContactGapGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Karyawan', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'dept', 'label' => 'Departemen'],
             ['key' => 'position', 'label' => 'Posisi'],
-            ['key' => 'birth', 'label' => 'Tgl Lahir', 'type' => 'date'],
+            ['key' => 'birth', 'label' => 'Birth Date', 'type' => 'date'],
         ];
     }
 

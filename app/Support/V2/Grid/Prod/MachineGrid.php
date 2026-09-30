@@ -43,15 +43,15 @@ class MachineGrid extends ProdGrid
     {
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
-            ['key' => 'name', 'label' => 'Mesin', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'nickname', 'label' => 'Nama Panggilan'],
+            ['key' => 'name', 'label' => 'Machine', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'nickname', 'label' => 'Nickname'],
             ['key' => 'model', 'label' => 'Model (katalog)'],
             ['key' => 'role', 'label' => 'Peran', 'type' => 'badge', 'tones' => ['Produksi' => 'info', 'Penunjang' => 'neutral']],
-            ['key' => 'type', 'label' => 'Jenis'],
+            ['key' => 'type', 'label' => 'Type'],
             ['key' => 'brand', 'label' => 'Merek / Model'],
             ['key' => 'sheet', 'label' => 'Lembar Maks (mm)'],
-            ['key' => 'speed', 'label' => 'Kecepatan Maks/Jam', 'type' => 'number'],
-            ['key' => 'year', 'label' => 'Tahun'],
+            ['key' => 'speed', 'label' => 'Max Speed/Hour', 'type' => 'number'],
+            ['key' => 'year', 'label' => 'Year'],
             ['key' => 'processes', 'label' => 'Processes', 'type' => 'link', 'format' => 'number'],
         ];
     }
@@ -69,11 +69,11 @@ class MachineGrid extends ProdGrid
     public function stats(): array
     {
         return [
-            ['label' => 'Semua'],
-            ['label' => 'Aktif', 'where' => ['active' => true], 'tone' => 'success'],
-            ['label' => 'Spek belum ada', 'where' => ['sheet' => null], 'tone' => 'warn'],
+            ['label' => 'All'],
+            ['label' => 'Active', 'where' => ['active' => true], 'tone' => 'success'],
+            ['label' => 'No spec yet', 'where' => ['sheet' => null], 'tone' => 'warn'],
             ['label' => 'Penunjang (non-produksi)', 'where' => ['role' => 'Penunjang'], 'tone' => 'neutral'],
-            ['label' => 'Nonaktif', 'where' => ['active' => false], 'tone' => 'danger'],
+            ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'danger'],
         ];
     }
 

@@ -46,10 +46,10 @@ abstract class DevlibComponent extends Component
     // Teks tampilan otomatis ikut bahasa (LOCKED user 2026-10-01): layar menulis ENGLISH, kamus menerjemahkan ke bahasa
     // tampilan/cetak -- layar tidak perlu memanggil apa pun. Turunan boleh mengubah daftar (Button/Badge: kosong, istilah
     // tombol & status selalu English). Teks bebas milik data (nilai isian, isi baris) TIDAK diterjemahkan.
-    protected const TEXT_PROPS = ['label', 'title', 'subtitle', 'description', 'hint', 'placeholder', 'tooltip', 'message', 'text', 'search', 'empty', 'caption', 'heading'];
+    protected const TEXT_PROPS = ['label', 'title', 'subtitle', 'description', 'hint', 'placeholder', 'tooltip', 'message', 'text', 'search', 'empty', 'caption', 'heading', 'addLabel'];
 
     // Array berisi label: [['label' => ..], ..] atau [kunci => label | [label, ikon]]; parties/criteria: kunci = label.
-    protected const TEXT_LISTS = ['columns', 'stats', 'tabs', 'filters', 'signatures'];
+    protected const TEXT_LISTS = ['columns', 'stats', 'tabs', 'filters', 'groups', 'signatures'];
 
     protected const TEXT_KEYS = ['parties', 'criteria'];
 

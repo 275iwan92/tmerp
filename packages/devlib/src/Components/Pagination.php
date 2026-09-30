@@ -29,9 +29,9 @@ class Pagination extends DevlibComponent
                     @foreach ($sizes as $n)<button type="button" class="dl-pager__size {{ $n === $perPage ? 'is-active' : '' }}">{{ $n }}</button>@endforeach
                 </div>
                 <div class="dl-pager__nav">
-                    <button type="button" @disabled($page <= 1) title="Halaman pertama">⏮</button><button type="button" @disabled($page <= 1) title="Sebelumnya">◀</button>
+                    <button type="button" @disabled($page <= 1) title="{{ \Devlib\Lang::text('First page') }}">⏮</button><button type="button" @disabled($page <= 1) title="Sebelumnya">◀</button>
                     @for ($p = $start; $p <= min($last, $start + 4); $p++)<button type="button" class="{{ $p === $page ? 'is-active' : '' }}">{{ $p }}</button>@endfor
-                    <button type="button" @disabled($page >= $last) title="Berikutnya">▶</button><button type="button" @disabled($page >= $last) title="Halaman terakhir">⏭</button>
+                    <button type="button" @disabled($page >= $last) title="Berikutnya">▶</button><button type="button" @disabled($page >= $last) title="{{ \Devlib\Lang::text('Last page') }}">⏭</button>
                 </div>
                 <div class="dl-pager__info">[{{ \Devlib\Locale::number($from) }} – {{ \Devlib\Locale::number($to) }} dari {{ \Devlib\Locale::number($total) }}]</div>
             </div>

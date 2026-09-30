@@ -15,14 +15,14 @@
                     <p class="dl-loginbox__sub" data-i18n="sub">Gunakan akun terdaftar untuk mengakses aplikasi.</p>
                     <x-dl::alert />
                     @break
-                @case('username') <x-dl::field.text name="login" label="Username atau email" i18n="l_login" icon="fa-user" size="lg" :value="$username" :case-toggle="false" autocomplete="username" /> @break
+                @case('username') <x-dl::field.text name="login" label="Username or e-mail" i18n="l_login" icon="fa-user" size="lg" :value="$username" :case-toggle="false" autocomplete="username" /> @break
                 @case('email') <x-dl::field.text name="email" type="email" label="Email" i18n="l_email" icon="fa-envelope" size="lg" :case-toggle="false" autocomplete="email" /> @break
                 @case('password') <x-dl::field.password name="password" label="Password" i18n="l_pass" icon="fa-lock" size="lg" /> @break
                 @case('remember') <x-dl::field.checkbox name="remember" text="Ingat saya" class="dl-loginbox__remember" /> @break
                 @case('forgot') <x-dl::button variant="link" :href="$forgotUrl" label="Lupa password?" i18n="forgot" class="dl-loginbox__forgot" /> @break
                 @case('button') <x-dl::button type="submit" size="lg" block :label="$button" i18n="btn" /> @break
                 @case('register')
-                    <x-dl::divider label="atau" i18n="or" />
+                    <x-dl::divider label="or" :i18n="\Devlib\Lang::text('or')" />
                     <p class="dl-loginbox__reg"><span data-i18n="no_acc">Belum punya akun?</span> <x-dl::button variant="link" :href="$registerUrl" label="Daftar" i18n="reg" /></p>
                     @break
             @endswitch

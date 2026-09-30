@@ -100,9 +100,9 @@ abstract class DbGrid
     public function stats(): array
     {
         return $this->family() === self::MASTER ? [
-            ['label' => 'Semua'],
-            ['label' => 'Aktif', 'where' => ['active' => true], 'tone' => 'success'],
-            ['label' => 'Nonaktif', 'where' => ['active' => false], 'tone' => 'danger'],
+            ['label' => 'All'],
+            ['label' => 'Active', 'where' => ['active' => true], 'tone' => 'success'],
+            ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'danger'],
         ] : [];
     }
 

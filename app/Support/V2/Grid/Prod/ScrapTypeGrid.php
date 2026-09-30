@@ -44,7 +44,7 @@ class ScrapTypeGrid extends ProdGrid
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Tipe Scrap', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'category', 'label' => 'Kategori'],
+            ['key' => 'category', 'label' => 'Category'],
         ];
     }
 

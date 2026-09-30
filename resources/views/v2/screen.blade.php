@@ -9,7 +9,7 @@
         @if ($built)
             @include($screen['view'] ?? 'v2.screens.'.$screen['slug'], ['screen' => $screen])
         @else
-            <x-dl::card :title="$screen['label']" :icon="$screen['icon']" description="Belum dibangun di mockup — acuannya sudah dipetakan.">
+            <x-dl::card :title="$screen['label']" :icon="$screen['icon']" description="Not built in the mockup yet — its reference is mapped.">
                 <x-dl::table :columns="['k' => 'Hal', 'v' => 'Keterangan']" :rows="[
                     ['k' => 'Modul › Grup', 'v' => $screen['module'].' › '.$screen['group']],
                     ['k' => 'Acuan alur & field (tmerp sekarang)', 'v' => 'resources/views/pages/'.$screen['ref']],

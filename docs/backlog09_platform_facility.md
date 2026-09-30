@@ -222,8 +222,17 @@ F. Migration kamus + menu dijalankan di **tm2sys dan ddtsys**.
 +  Layar **Setup > Settings > Translation Dictionary** (`TranslationDictionaryLookup`, Grid Lookup: isi di sel, tempel dari Excel, kosong = English).
 Test: `MultiLanguageAutoTest` (4), `LocaleNumberTest` (10), uji JS node.
 
-**SISA lain (utang lama, bertahap):**
-1. Turunkan baseline `id_label` 688 -> 0: label v2/DevLib yang masih Indonesia mentah diganti English (kamus mengisi Indonesia).
+**UTANG LABEL LAMA -- SELESAI SEBAGIAN BESAR 2026-10-01:** 643 label Indonesia mentah (layar v2, Grid DB, objek DevLib) diganti English
+sesuai konteks (tag x-dl::* = English polos; HTML mentah / komponen lain = `t()` / `Devlib\Lang::text()`); teks Indonesianya persis diisi
+ke kamus (`database/data/dictionary_ui_2026_10_01.json`, migration 000022-000024 di tm2sys + ddtsys; pasangan objek DevLib di `Devlib\Lang`).
+Bukti: snapshot teks 68 layar v2 mode ID sebelum vs sesudah = IDENTIK (kecuali 3 label yang dulu English kini ikut diterjemahkan);
+mode EN: baris Indonesia 1696 -> 824. Kolom `sys_dictionary.source_en` = utf8mb4_bin (kunci teks persis, "Unit price" != "Unit Price").
+Teks bawaan JS grid/lines/sheet/form -> `T()` / `Tf()` + pasangan Lang (dijaga test kunci JS).
+
+**SISA lain (bertahap, terukur di MultiLanguageRatchetTest):**
+1. `id_label` 48: `purchase-quotation` (sesi Purchase, sudah diberi tahu) + `cpdel` (sesi CPDEL menulis ulang layar dengan English).
+1b. `js_id_text` 180: teks Indonesia di JS DevLib lain (core, gantt, kanban, import, approval, calendar, chat, ...) -> `T('kunci')` + Lang.
+1c. Teks di luar pola ratchet: kolom `x-dl::table` bentuk ['kunci' => 'Label'], tab, teks isi Blade (`<p>`, `<th>`), komentar/penampil kode.
 2. Setelah contoh JPEG disetujui: label layar/nota v2 yang masih teks Indonesia mentah -> sumber English + kamus, per dokumen:
    Inquiry (zona beku -- label saja, izin sudah ada utk ID->EN), ProDev, Quotation, CO, PR, PO, SPB, DO/Surat Jalan.
    Nota lama v1 yang dipanggil tombol "Nota" (quotation.print, co.print, pur.pr/po.print, dispatch.do.print) belum ikut print_lang.

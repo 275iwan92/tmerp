@@ -20,7 +20,7 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
 @if (! $doc)
-    <x-dl::grid id="product-acc" :rows="ProductMaster::rows()" search="Cari product, no. desain, customer..." :new-record="null" actions="worklist" :active-key="null"
+    <x-dl::grid id="product-acc" :rows="ProductMaster::rows()" search="Search product, design no., customer..." :new-record="null" actions="worklist" :active-key="null"
         :open-url="route('v2.screen', 'product-acc').'?id={id}'" source="{{ Src::of('tm2mst.prod_product', 'tm2mst.prod_product_acc') }}"
         :columns="[
             ['key' => 'photo', 'label' => 'Artwork', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
@@ -29,7 +29,7 @@
             ['key' => 'acc_digital', 'label' => 'ACC Digital', 'type' => 'badge', 'tones' => ['ADA' => 'success', 'BELUM' => 'warn']],
             ['key' => 'status', 'label' => 'Status product', 'type' => 'badge', 'tones' => ['ACTIVE' => 'success', 'DRAFT' => 'neutral']],
         ]"
-        :stats="[['label' => 'Semua'], ['label' => 'Belum ACC Digital', 'where' => ['acc_digital' => 'BELUM'], 'tone' => 'warn'], ['label' => 'Sudah ACC Digital', 'where' => ['acc_digital' => 'ADA'], 'tone' => 'success']]" />
+        :stats="[['label' => t('All')], ['label' => t('No Digital ACC yet'), 'where' => ['acc_digital' => 'BELUM'], 'tone' => 'warn'], ['label' => t('Digital ACC done'), 'where' => ['acc_digital' => 'ADA'], 'tone' => 'success']]" />
 @else
     <x-dl::action-bar>
         <x-dl::button variant="secondary" icon="back" label="Back" href="javascript:history.back()" />
@@ -71,5 +71,5 @@
         <p class="mp-proof__red">ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD</p>
     </div>
 
-    <x-dl::alert tone="info" message="Dokumen cetak. ACC customer (tanggal, penyetuju, bukti) dicatat di layar ProDev." />
+    <x-dl::alert tone="info" message="Printed document. Customer ACC (date, approver, evidence) is recorded on the ProDev screen." />
 @endif

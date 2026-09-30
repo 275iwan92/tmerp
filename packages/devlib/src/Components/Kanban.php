@@ -38,7 +38,7 @@ class Kanban extends DevlibComponent
         return <<<'BLADE'
             <div {{ $attributes->class('dl-kanban') }} {!! $dl() !!} data-dl-kanban data-columns="{{ json_encode($columns) }}" data-cards="{{ json_encode($cards) }}" data-transitions="{{ json_encode((object) $transitions) }}" data-add-column="{{ $addColumn ? 1 : 0 }}" data-add-card="{{ $addCard ? 1 : 0 }}" data-me="{{ $me }}" data-members="{{ json_encode($members) }}">
                 <div class="dl-kanban__bar">
-                    <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Cari kartu..." data-k-search aria-label="Cari kartu"></div>
+                    <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search cards...') }}" data-k-search aria-label="{{ \Devlib\Lang::text('Search cards') }}"></div>
                     <div class="dl-segment" data-k-prio><button type="button" class="dl-segment__opt is-active" data-value="">Semua</button><button type="button" class="dl-segment__opt" data-value="High">High</button><button type="button" class="dl-segment__opt" data-value="Medium">Medium</button><button type="button" class="dl-segment__opt" data-value="Low">Low</button></div>
                 </div>
                 <div class="dl-kanban__board" data-k-board></div>

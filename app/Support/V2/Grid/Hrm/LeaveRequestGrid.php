@@ -54,11 +54,11 @@ class LeaveRequestGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Karyawan', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'type', 'label' => 'Jenis'],
-            ['key' => 'from', 'label' => 'Dari', 'type' => 'date'],
-            ['key' => 'to', 'label' => 'Sampai', 'type' => 'date'],
-            ['key' => 'days', 'label' => 'Hari', 'type' => 'number'],
+            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'type', 'label' => 'Type'],
+            ['key' => 'from', 'label' => 'From', 'type' => 'date'],
+            ['key' => 'to', 'label' => 'Until', 'type' => 'date'],
+            ['key' => 'days', 'label' => 'Day', 'type' => 'number'],
             ['key' => 'reason', 'label' => 'Alasan'],
             ['key' => 'requested', 'label' => 'Diajukan', 'type' => 'date'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::REQUEST_TONES],

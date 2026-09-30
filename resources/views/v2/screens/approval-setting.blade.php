@@ -15,25 +15,25 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
 @if (! $cfg && ! request('new'))
-    <x-dl::grid id="approval-setting-list" :rows="ApprovalSetting::rows()" search="Cari modul, jabatan..." actions="worklist" :active-key="null"
+    <x-dl::grid id="approval-setting-list" :rows="ApprovalSetting::rows()" search="Search module, position..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2mst.flow_config', 'tm2mst.flow_config_step') }}"
         :columns="[
-            ['key' => 'module', 'label' => 'Kode'],
+            ['key' => 'module', 'label' => t('Code')],
             ['key' => 'name', 'label' => 'Dokumen'],
-            ['key' => 'levels', 'label' => 'Jumlah Level', 'type' => 'number'],
-            ['key' => 'approvers', 'label' => 'Approver per Level (jabatan)'],
-            ['key' => 'final', 'label' => 'Status Akhir'],
+            ['key' => 'levels', 'label' => t('Number of Levels'), 'type' => 'number'],
+            ['key' => 'approvers', 'label' => t('Approver per Level (position)')],
+            ['key' => 'final', 'label' => t('Final Status')],
             ['key' => 'active', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Aktif' => 'success', 'Nonaktif' => 'neutral']],
         ]"
-        :stats="[['label' => 'Semua'], ['label' => 'Aktif', 'where' => ['active' => 'Aktif'], 'tone' => 'success'], ['label' => 'Nonaktif', 'where' => ['active' => 'Nonaktif'], 'tone' => 'neutral']]" />
+        :stats="[['label' => t('All')], ['label' => t('Active'), 'where' => ['active' => 'Aktif'], 'tone' => 'success'], ['label' => t('Inactive'), 'where' => ['active' => 'Nonaktif'], 'tone' => 'neutral']]" />
 @elseif (! $cfg)
     <form method="post" action="{{ route('v2.approval-setting.create') }}">
         @csrf
-        <x-dl::card title="+ New Record — Setting Approval" description="Kode dokumen (mis. PR, PO, CO) harus sama dengan kode yang dipakai layar dokumennya.">
+        <x-dl::card title="+ New Record — Setting Approval" description="The document code (e.g. PR, PO, CO) must match the code used by its document screen.">
             <x-dl::form.row :cols="3">
-                <x-dl::field.text name="module_code" label="Kode Dokumen" required :case-toggle="false" placeholder="PR" />
-                <x-dl::field.text name="notes" label="Keterangan" placeholder="Approval ..." />
-                <x-dl::field.text name="final_status" label="Status setelah level terakhir" :case-toggle="false" value="APPROVED" />
+                <x-dl::field.text name="module_code" label="Document Code" required :case-toggle="false" placeholder="PR" />
+                <x-dl::field.text name="notes" label="Description" placeholder="Approval ..." />
+                <x-dl::field.text name="final_status" label="Status after the last level" :case-toggle="false" value="APPROVED" />
             </x-dl::form.row>
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
@@ -58,24 +58,24 @@
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">
-                <x-dl::field.text name="notes" label="Keterangan" :value="$cfg->notes" :source="Src::of('tm2mst.flow_config.notes')" />
-                <x-dl::field.text name="final_status" label="Status dokumen setelah level terakhir" :case-toggle="false" :value="$cfg->final_status" :source="Src::of('tm2mst.flow_config.final_status')" />
-                <x-dl::field.display label="Status bila ditolak" :value="($cfg->reject_status ?? 'REJECTED').' (final)'" :source="Src::of('tm2mst.flow_config.reject_status')" />
+                <x-dl::field.text name="notes" label="Description" :value="$cfg->notes" :source="Src::of('tm2mst.flow_config.notes')" />
+                <x-dl::field.text name="final_status" label="Document status after the last level" :case-toggle="false" :value="$cfg->final_status" :source="Src::of('tm2mst.flow_config.final_status')" />
+                <x-dl::field.display label="Status when rejected" :value="($cfg->reject_status ?? 'REJECTED').' (final)'" :source="Src::of('tm2mst.flow_config.reject_status')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:detail>
-            <x-dl::lines name="levels" title="Level Approval (urut dari atas)" key-field="flow_step_id" remove-field="remove" :duplicable="false" :min-rows="0" :rows="$levels"
-                add-label="+ Tambah Level" source="{{ Src::of('tm2mst.flow_config_step', 'tm2mst.org_position', 'tm2mst.flow_position_acting') }}"
+            <x-dl::lines name="levels" title="Approval Levels (in order from the top)" key-field="flow_step_id" remove-field="remove" :duplicable="false" :min-rows="0" :rows="$levels"
+                add-label="+ Add Level" source="{{ Src::of('tm2mst.flow_config_step', 'tm2mst.org_position', 'tm2mst.flow_position_acting') }}"
                 :columns="[
                     ['key' => 'level', 'label' => 'Level', 'type' => 'display', 'width' => '80px'],
-                    ['key' => 'position_id', 'label' => 'Jabatan approver', 'type' => 'select', 'options' => ApprovalSetting::positionOptions(), 'required' => true, 'width' => '360px'],
+                    ['key' => 'position_id', 'label' => t('Approver position'), 'type' => 'select', 'options' => ApprovalSetting::positionOptions(), 'required' => true, 'width' => '360px'],
                     ['key' => 'min_amount', 'label' => 'Berlaku bila nilai ≥', 'type' => 'money', 'width' => '150px'],
                     ['key' => 'max_amount', 'label' => 's.d. nilai (kosong = tanpa batas)', 'type' => 'money', 'width' => '170px'],
-                    ['key' => 'print_label', 'label' => 'Label cetak', 'type' => 'select', 'options' => ApprovalSetting::PRINT_LABELS, 'width' => '140px'],
-                    ['key' => 'plt', 'label' => 'PLT hari ini', 'type' => 'display', 'width' => '160px'],
-                    ['key' => 'holder', 'label' => 'Pemegang jabatan', 'type' => 'display', 'more' => true],
-                    ['key' => 'used', 'label' => 'Sudah dipakai dokumen', 'type' => 'display', 'more' => true],
+                    ['key' => 'print_label', 'label' => t('Print label'), 'type' => 'select', 'options' => ApprovalSetting::PRINT_LABELS, 'width' => '140px'],
+                    ['key' => 'plt', 'label' => t('Acting today'), 'type' => 'display', 'width' => '160px'],
+                    ['key' => 'holder', 'label' => t('Position holder'), 'type' => 'display', 'more' => true],
+                    ['key' => 'used', 'label' => t('Used by documents'), 'type' => 'display', 'more' => true],
                 ]" />
-            <x-dl::alert tone="info" message="Level yang nilainya di luar batas dilewati otomatis (mis. PO: Level 3 hanya bila nilai > Rp 1 juta). Level yang sudah dipakai dokumen tidak dihapus, hanya dinonaktifkan supaya riwayat tetap utuh." />        </x-slot:detail>
+            <x-dl::alert tone="info" message="Levels whose value is outside the limit are skipped automatically (e.g. PO: Level 3 only when value > Rp 1 million). Levels already used by documents are not deleted, only deactivated, so history stays intact." />        </x-slot:detail>
     </x-dl::form>
 @endif

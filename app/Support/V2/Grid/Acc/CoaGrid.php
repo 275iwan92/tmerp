@@ -59,8 +59,8 @@ class CoaGrid extends DbGrid
     {
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
-            ['key' => 'name', 'label' => 'Nama Akun', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'type', 'label' => 'Jenis'],
+            ['key' => 'name', 'label' => 'Account Name', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'type', 'label' => 'Type'],
             ['key' => 'normal', 'label' => 'Saldo Normal'],
             ['key' => 'level', 'label' => 'Level', 'type' => 'number'],
             ['key' => 'parent', 'label' => 'Induk'],

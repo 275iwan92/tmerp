@@ -63,8 +63,8 @@ class PayrollRunGrid extends HrmGrid
     {
         return [
             ['key' => 'type', 'label' => 'Periode', 'type' => 'badge', 'tones' => ['WEEKLY' => 'warn', 'MONTHLY' => 'info']],
-            ['key' => 'start', 'label' => 'Dari', 'type' => 'date'],
-            ['key' => 'end', 'label' => 'Sampai', 'type' => 'date'],
+            ['key' => 'start', 'label' => 'From', 'type' => 'date'],
+            ['key' => 'end', 'label' => 'Until', 'type' => 'date'],
             ['key' => 'slips', 'label' => 'Slip', 'type' => 'number'],
             ['key' => 'anomaly', 'label' => 'Anomali', 'type' => 'number'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'steps', 'steps' => ['DRAFT', 'CALCULATED', 'VERIFIED', 'CONFIRMED', 'PAID', 'CLOSED']],
@@ -84,7 +84,7 @@ class PayrollRunGrid extends HrmGrid
     public function stats(): array
     {
         return [
-            ['label' => 'Semua periode'],
+            ['label' => 'All periods'],
             ['label' => 'Berjalan', 'where' => ['status' => ['DRAFT', 'CALCULATED', 'VERIFIED']], 'tone' => 'warn'],
             ['label' => 'Confirmed / Paid', 'where' => ['status' => ['CONFIRMED', 'PAID']], 'tone' => 'info'],
             ['label' => 'Closed', 'where' => ['status' => 'CLOSED'], 'tone' => 'success'],

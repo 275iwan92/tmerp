@@ -1,7 +1,7 @@
 /* DevLib · Lines */
 (function (Devlib) {
   'use strict';
-  const {srcAttr, $, $$, esc, CASES, CASE_LABEL, applyCase, confirmBox, words, fmt, numStr} = Devlib.h;
+  const {srcAttr, $, $$, esc, CASES, CASE_LABEL, applyCase, confirmBox, words, fmt, numStr, T, Tf} = Devlib.h;
   /* ============================ LINES (detail dokumen) ============================ */
   class Lines extends Devlib.Component {
     static selector = "[data-dl-lines]";
@@ -66,7 +66,7 @@
         const del = x.closest('[data-l-del]');
         if (del) {
           const i = +del.closest('tr[data-i]').dataset.i, go = () => { const [gone] = this.rows.splice(i, 1); if (this.cfg.keyField && gone && gone[this.cfg.keyField]) this.removed.push(gone[this.cfg.keyField]); this.keepPrimary(gone); this.body(); this.changed(); };
-          if (this.filled(this.rows[i])) confirmBox({message: `Hapus baris ${i + 1}?`, tone: 'danger'}).then(ok => ok && go()); else go();
+          if (this.filled(this.rows[i])) confirmBox({message: Tf('l_delete_row_n', {n: i + 1}), tone: 'danger'}).then(ok => ok && go()); else go();
           return;
         }
         const cb = x.closest('[data-l-case]');
@@ -163,7 +163,7 @@
       // readonlyUnless: sel hanya bisa diisi bila kolom bool lain di baris yang sama bernilai true (mis. Biaya hanya bila Biaya Baru = Ya).
       const lock = c.readonlyUnless && !r[c.readonlyUnless] ? ' readonly tabindex="-1"' : '';
       if (c.type === 'primary' || c.type === 'bool') {
-        const on = !!v, [yes, no] = c.labels || (c.type === 'primary' ? ['✓ Utama', 'Pilih'] : ['Ya', 'Tidak']);
+        const on = !!v, [yes, no] = c.labels || (c.type === 'primary' ? [T('l_primary'), T('l_pick')] : [T('l_yes'), T('l_no')]);
         return `<td class="dl-lines__pick"><button type="button" class="dl-btn dl-btn--sm ${on ? 'dl-btn--primary' : 'dl-btn--secondary'}" data-l-${c.type}="${esc(c.key)}" ${this.ro ? 'disabled' : ''}>${esc(on ? yes : no)}</button></td>`;
       }
       if (c.fn || c.landed || c.type === 'display' || this.ro) return `<td class="${this.num(c) ? 'num' : ''} dl-lines__ro" data-k="${esc(c.key)}">${esc(c.type === 'lookup' ? (r[c.key + '_label'] ?? v) : this.show(c, v))}</td>`;
@@ -171,7 +171,7 @@
         case 'select': return `<td${req}><select class="dl-lines__in" data-k="${esc(c.key)}"><option value=""></option>${Object.entries(c.options || {}).map(([k, l]) => `<option value="${esc(k)}" ${String(k) === String(v) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></td>`;
         case 'date': return `<td${req}><input type="date" class="dl-lines__in" data-k="${esc(c.key)}" value="${esc(v)}"></td>`;
         case 'number': case 'money': return `<td class="num"${req}><input type="text" inputmode="decimal" class="dl-lines__in dl-lines__num" data-k="${esc(c.key)}" value="${esc(this.show(c, v))}"${ph}${lock}></td>`;
-        case 'lookup': return `<td${req} class="dl-lines__lk"><input type="text" class="dl-lines__in" data-k="${esc(c.key)}" data-lk value="${esc(r[c.key + '_label'] ?? '')}" placeholder="Cari..." autocomplete="off"><i class="fa-solid fa-magnifying-glass"></i></td>`;
+        case 'lookup': return `<td${req} class="dl-lines__lk"><input type="text" class="dl-lines__in" data-k="${esc(c.key)}" data-lk value="${esc(r[c.key + '_label'] ?? '')}" placeholder="${esc(T('l_search'))}" autocomplete="off"><i class="fa-solid fa-magnifying-glass"></i></td>`;
         default: return `<td${req} class="dl-lines__txt"><input type="text" class="dl-lines__in" data-k="${esc(c.key)}" value="${esc(v)}"${ph}${lock}><button type="button" class="dl-lines__case" data-l-case tabindex="-1" title="Ganti huruf: kecil / Kapital Tiap Kata / BESAR">aa</button></td>`;
       }
     }
@@ -194,16 +194,16 @@
 
     body() {
       const exp = i => this.more.length ? `<button type="button" class="dl-lines__exp ${this.open.has(i) ? 'is-open' : ''} ${this.more.some(c => String(this.rows[i][c.key] ?? '').trim() !== '') ? 'has-val' : ''}" data-l-exp="${i}" title="Detail baris (${this.more.map(c => c.label).join(', ')})"><i class="fa-solid fa-chevron-right"></i></button>` : '';
-      $(this.el, '[data-l-body]').innerHTML = this.rows.map((r, i) => `<tr data-i="${i}"><td class="dl-lines__no">${exp(i)}${i + 1}</td>${this.tcols.map(c => this.cell(c, r, i)).join('')}${this.ro ? '' : `<td class="dl-lines__act">${this.cfg.duplicable === false ? '' : '<button type="button" class="dl-iconbtn dl-iconbtn--plain" data-l-dup title="Duplikat baris"><i class="fa-solid fa-copy"></i></button>'}${this.cfg.rowLock && !r[this.cfg.rowLock] ? '' : `<button type="button" class="dl-iconbtn dl-iconbtn--plain dl-iconbtn--danger" data-l-del title="Hapus baris" ${this.rows.length <= this.cfg.minRows ? 'disabled' : ''}><i class="fa-solid fa-trash-can"></i></button>`}</td>`}</tr>${this.more.length && this.open.has(i) ? this.panel(r, i) : ''}`).join('')
-        || `<tr><td colspan="${this.tcols.length + 2}" class="dl-lines__empty">Belum ada baris.${$(this.el, '[data-l-add]') ? ` Klik <b>${esc($(this.el, '[data-l-add]').textContent.trim())}</b>.` : ''}</td></tr>`;
+      $(this.el, '[data-l-body]').innerHTML = this.rows.map((r, i) => `<tr data-i="${i}"><td class="dl-lines__no">${exp(i)}${i + 1}</td>${this.tcols.map(c => this.cell(c, r, i)).join('')}${this.ro ? '' : `<td class="dl-lines__act">${this.cfg.duplicable === false ? '' : '<button type="button" class="dl-iconbtn dl-iconbtn--plain" data-l-dup title="Duplikat baris"><i class="fa-solid fa-copy"></i></button>'}${this.cfg.rowLock && !r[this.cfg.rowLock] ? '' : `<button type="button" class="dl-iconbtn dl-iconbtn--plain dl-iconbtn--danger" data-l-del title="${esc(T('l_delete_row'))}" ${this.rows.length <= this.cfg.minRows ? 'disabled' : ''}><i class="fa-solid fa-trash-can"></i></button>`}</td>`}</tr>${this.more.length && this.open.has(i) ? this.panel(r, i) : ''}`).join('')
+        || `<tr><td colspan="${this.tcols.length + 2}" class="dl-lines__empty">${esc(T('l_no_rows'))}${$(this.el, '[data-l-add]') ? ' ' + Tf('l_click_x', {x: `<b>${esc($(this.el, '[data-l-add]').textContent.trim())}</b>`}) : ''}</td></tr>`;
       this.refresh();
     }
 
     refresh() {
       this.rows.forEach((r, i) => { this.calc(r); this.cols.filter(c => c.fn).forEach(c => { const td = $(this.el, `tr[data-i="${i}"] td[data-k="${c.key}"]`); if (td) td.textContent = this.show(c, r[c.key]); }); });
       const sums = this.cols.filter(c => c.sum);
-      $(this.el, '[data-l-foot]').innerHTML = sums.length && this.rows.length ? `<tr><td></td>${this.tcols.map((c, i) => c.sum ? `<td class="num"><b>${esc(this.show(c, this.rows.reduce((t, r) => t + (+r[c.key] || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>Jumlah</b>' : ''}</td>`).join('')}${this.ro ? '' : '<td></td>'}</tr>` : '';
-      $(this.el, '[data-l-count]').textContent = `${this.rows.filter(this.filled).length} baris`;
+      $(this.el, '[data-l-foot]').innerHTML = sums.length && this.rows.length ? `<tr><td></td>${this.tcols.map((c, i) => c.sum ? `<td class="num"><b>${esc(this.show(c, this.rows.reduce((t, r) => t + (+r[c.key] || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>' + esc(T('l_sum')) + '</b>' : ''}</td>`).join('')}${this.ro ? '' : '<td></td>'}</tr>` : '';
+      $(this.el, '[data-l-count]').textContent = Tf('g_rows_n', {n: this.rows.filter(this.filled).length});
       const t = this.total();
       this.landed(t);
       const cu = this.cur();
@@ -299,7 +299,7 @@
       if (hidden.length) { hidden.forEach(i => this.open.add(i)); this.body(); }
       this.rows.forEach((r, i) => { if (!this.filled(r)) return; this.cols.filter(c => c.required).forEach(c => { if (String(r[c.key] ?? '').trim() === '') { bad++; $(this.el, `tr[data-i="${i}"] [data-k="${c.key}"]`)?.closest('td').classList.add('is-invalid'); } }); });
       const n = this.rows.filter(this.filled).length, err = $(this.el, '[data-l-err]') || this.el.appendChild(Object.assign(document.createElement('div'), {className: 'dl-lines__err'}));
-      err.dataset.lErr = ''; err.textContent = n < this.cfg.minRows ? `Minimal ${this.cfg.minRows} baris terisi.` : bad ? `${bad} sel wajib belum diisi.` : '';
+      err.dataset.lErr = ''; err.textContent = n < this.cfg.minRows ? Tf('l_min_rows', {n: this.cfg.minRows}) : bad ? Tf('l_required_cells', {n: bad}) : '';
       return bad + (n < this.cfg.minRows ? 1 : 0);
     }
   }

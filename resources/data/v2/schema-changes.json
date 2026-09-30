@@ -1,5 +1,309 @@
 [
     {
+        "at": "2026-10-01 05:26:48",
+        "items": [
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "sys_holiday",
+                "column": "holiday_type",
+                "detail": "enum('NATIONAL','COMPANY') -> varchar(20)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "sys_office_hour",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-01 05:21:25",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2acc",
+                "table": "fin_petty_cash",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2acc",
+                "table": "fin_petty_cash_tx",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "po_line",
+                "column": "pq_line_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "po_order",
+                "column": "i_cash_mode",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "po_order",
+                "column": "i_petty_cash_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "po_order",
+                "column": "i_shop_name",
+                "detail": "varchar(150)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pq_line",
+                "column": "i_source_text",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pq_line",
+                "column": "c_match_pct",
+                "detail": "tinyint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2pur",
+                "table": "pq_quotation",
+                "column": "i_supplier_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pq_quotation",
+                "column": "i_supplier_text",
+                "detail": "varchar(150)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pq_quotation",
+                "column": "source_path",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pq_quotation",
+                "column": "source_name",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pq_quotation",
+                "column": "extract_status",
+                "detail": "varchar(20)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pq_quotation",
+                "column": "extract_note",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "po_line_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "c_po_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "c_po_doc_no",
+                "detail": "varchar(30) -> varchar(30) null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "c_po_line_no",
+                "detail": "smallint unsigned -> smallint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "i_qty_stock",
+                "detail": "decimal(20,4) -> decimal(20,4) null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "i_uom_stock",
+                "detail": "varchar(50) -> varchar(50) null"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "i_next_process",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "c_qty_short",
+                "detail": "decimal(20,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_line",
+                "column": "i_short_note",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2pur",
+                "table": "pv_receipt",
+                "column": "i_supplier_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2pur",
+                "table": "pv_receipt",
+                "column": "i_warehouse_code",
+                "detail": "varchar(50) -> varchar(50) null"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_receipt",
+                "column": "i_receipt_type",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_receipt",
+                "column": "i_customer_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_receipt",
+                "column": "i_co_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_receipt",
+                "column": "i_do_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_receipt",
+                "column": "cancel_reason",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_receipt",
+                "column": "cancelled_at",
+                "detail": "timestamp"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_receipt",
+                "column": "cancelled_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2pur",
+                "table": "pv_receipt",
+                "column": "rm_stock_rev_doc_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order",
+                "column": "shipment_method",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order",
+                "column": "recipient_customer_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order",
+                "column": "shipper_customer_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order",
+                "column": "forwarder_customer_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order",
+                "column": "stat_cancel",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order",
+                "column": "cancel_reason",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_item",
+                "column": "qty_minim",
+                "detail": "tinyint(1)"
+            }
+        ]
+    },
+    {
         "at": "2026-10-01 04:34:20",
         "items": [
             {

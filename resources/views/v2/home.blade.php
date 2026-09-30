@@ -18,9 +18,9 @@
                 @if ($errors->has('description'))<x-dl::alert tone="danger" :message="$errors->first('description')" />@endif
                 <form method="POST" action="{{ route('v2.support.ticket') }}">
                     @csrf
-                    <x-dl::field.text name="screen_context" label="Layar / menu" :value="old('screen_context')" placeholder="Mis. Customer Order" />
-                    <x-dl::field.text name="description" label="Uraian masalah" :value="old('description')" multiline required placeholder="Apa yang terjadi, dan apa yang Anda harapkan?" />
-                    <x-dl::action-bar><x-dl::button type="submit" icon="fa-paper-plane" label="Kirim tiket" /></x-dl::action-bar>
+                    <x-dl::field.text name="screen_context" label="Screen / menu" :value="old('screen_context')" placeholder="E.g. Customer Order" />
+                    <x-dl::field.text name="description" label="Problem description" :value="old('description')" multiline required placeholder="What happened, and what did you expect?" />
+                    <x-dl::action-bar><x-dl::button type="submit" icon="fa-paper-plane" :label="t('Send ticket')" /></x-dl::action-bar>
                 </form>
                 <h4>Tiket saya</h4>
                 @forelse ($tickets as $t)
@@ -32,7 +32,7 @@
                         @if ($t->resolution_note)<p><i class="fa-solid fa-circle-check"></i> {{ $t->resolution_note }}</p>@endif
                     </x-dl::card>
                 @empty
-                    <x-dl::empty-state title="Belum ada tiket" message="Tiket yang Anda kirim tampil di sini beserta balasan tim support." icon="fa-ticket" />
+                    <x-dl::empty-state title="No tickets yet" message="Tickets you send appear here together with the support team replies." icon="fa-ticket" />
                 @endforelse
             </section>
         </x-slot:profilePages>

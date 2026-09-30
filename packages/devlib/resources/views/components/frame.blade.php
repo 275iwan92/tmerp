@@ -22,7 +22,7 @@
 
     <div class="dl-frame__box dl-frame__box--{{ $color }}" data-dl-frame-box>
         @if ($resizable && in_array($box, ['left', 'right'], true))
-            <div class="dl-frame__grip" title="Tarik untuk melebarkan" data-dl-frame-grip></div>
+            <div class="dl-frame__grip" title="{{ \Devlib\Lang::text('Drag to widen') }}" data-dl-frame-grip></div>
         @endif
         <div class="dl-frame__boxin">{{ $slot }}</div>
     </div>

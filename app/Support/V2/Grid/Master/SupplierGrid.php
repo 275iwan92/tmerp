@@ -60,7 +60,7 @@ class SupplierGrid extends MasterDataGrid
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'category', 'label' => 'Kategori'],
+            ['key' => 'category', 'label' => 'Category'],
             ['key' => 'contact', 'label' => 'Kontak PIC'],
             ['key' => 'term', 'label' => 'Termin'],
             ['key' => 'subcon', 'label' => 'Subkon', 'type' => 'badge', 'tones' => ['Ya' => 'info']],

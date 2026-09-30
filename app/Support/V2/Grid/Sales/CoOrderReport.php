@@ -36,25 +36,25 @@ class CoOrderReport extends CoReportGrid
             ...$this->qtyColumns(),
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::STATUS_TONES] + $hidden,
             ['key' => 'mode', 'label' => 'Mode CO', 'type' => 'badge', 'tones' => ['INTEGRATED' => 'info', 'INSTANT' => 'accent']] + $hidden,
-            ['key' => 'month', 'label' => 'Bulan'] + $hidden,
+            ['key' => 'month', 'label' => 'Month'] + $hidden,
             ['key' => 'currency', 'label' => 'Mata Uang'] + $hidden,
-            ['key' => 'price', 'label' => 'Harga Satuan', 'type' => 'money'] + $hidden,
-            ['key' => 'disc', 'label' => 'Diskon %', 'type' => 'number'] + $hidden,
+            ['key' => 'price', 'label' => 'Unit Price', 'type' => 'money'] + $hidden,
+            ['key' => 'disc', 'label' => 'Discount %', 'type' => 'number'] + $hidden,
             ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'sum' => true] + $hidden,
-            ['key' => 'planned', 'label' => 'Rencana Kirim', 'type' => 'number', 'sum' => true] + $hidden,
+            ['key' => 'planned', 'label' => 'Planned Shipment', 'type' => 'number', 'sum' => true] + $hidden,
             ['key' => 'shipped', 'label' => 'Terkirim', 'type' => 'number', 'sum' => true] + $hidden,
-            ['key' => 'remain', 'label' => 'Sisa', 'type' => 'number', 'sum' => true] + $hidden,
+            ['key' => 'remain', 'label' => 'Remaining', 'type' => 'number', 'sum' => true] + $hidden,
         ];
     }
 
     public function stats(): array
     {
         return [
-            ['label' => 'Semua Status'],
-            ['label' => 'Open & tidak batal', 'where' => ['open' => true], 'tone' => 'info'],
+            ['label' => 'All Statuses'],
+            ['label' => 'Open & not cancelled', 'where' => ['open' => true], 'tone' => 'info'],
             ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
             ['label' => 'Outstanding', 'where' => ['outstanding' => true], 'tone' => 'warn'],
-            ['label' => 'Batal', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger'],
+            ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger'],
         ];
     }
 }

@@ -22,7 +22,7 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
 @if (! $card && ! $isNew)
-    <x-dl::card title="Upload Master Card" description="Excel master card (.xlsx, sheet MC) dibaca otomatis + gambar proof diambil · foto kartu (.jpg/.png) disimpan sebagai gambar, isiannya dilengkapi di form">
+    <x-dl::card title="Upload Master Card" description="Master card Excel (.xlsx, sheet MC) is read automatically + proof image extracted · card photo (.jpg/.png) is stored as an image, its fields completed in the form">
         <form method="post" action="{{ route('v2.mcard.upload') }}" enctype="multipart/form-data">
             @csrf
             <x-dl::form.row cols="1">
@@ -32,7 +32,7 @@
         </form>
     </x-dl::card>
 
-    <x-dl::grid id="mcard-list" :rows="MasterCardCollection::rows()" search="Cari nama / no. desain / kode item / customer..." actions="worklist" :active-key="null"
+    <x-dl::grid id="mcard-list" :rows="MasterCardCollection::rows()" search="Search name / design no. / item code / customer..." actions="worklist" :active-key="null"
         :open-url="$home.'?id={id}'" :new-url="$home.'?new=1'" source="{{ Src::of('tm2mst.prod_master_card', 'tm2mst.prod_master_card_file') }}"
         :columns="[
             ['key' => 'photo', 'label' => 'Proof', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
@@ -45,7 +45,7 @@
             ['key' => 'svg', 'label' => 'SVG Dieline', 'type' => 'badge', 'tones' => ['Ada' => 'success', 'Belum' => 'danger']],
             ['key' => 'source', 'label' => 'Sumber'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => MasterCardCollection::TONES],
-            ['key' => 'updated', 'label' => 'Diubah', 'type' => 'date', 'visible' => false],
+            ['key' => 'updated', 'label' => t('Changed'), 'type' => 'date', 'visible' => false],
         ]"
         :stats="[
             ['label' => 'All'],
@@ -100,37 +100,37 @@
             @elseif ($missing)
                 <x-dl::alert tone="warn" :message="count($missing).' field kunci belum ada: '.$warn.'. Kolom lain terisi dari kartu (bisa dikoreksi).'" />
             @elseif ($card)
-                <x-dl::alert tone="info" message="Semua field kunci lengkap — siap dijadikan Master Product atau Inquiry." />
+                <x-dl::alert tone="info" message="All key fields complete — ready to become a Master Product or Inquiry." />
             @endif
             <x-dl::divider label="Identitas" />
             <x-dl::form.row cols="4">
-                <x-dl::field.text name="card_code" label="Kode Item" :value="old('card_code', $c->card_code)" :source="Src::of('tm2mst.prod_master_card.card_code')" />
+                <x-dl::field.text name="card_code" label="Item Code" :value="old('card_code', $c->card_code)" :source="Src::of('tm2mst.prod_master_card.card_code')" />
                 <x-dl::field.text name="design_no" label="No. Desain" :value="old('design_no', $c->design_no)" :error="isset($missing['design_no']) ? 'kosong di kartu' : null" :source="Src::of('tm2mst.prod_master_card.design_no')" />
-                <x-dl::field.text name="product_name" label="Nama Barang" required :value="old('product_name', $c->product_name)" :source="Src::of('tm2mst.prod_master_card.product_name')" />
-                <x-dl::field.date name="card_date" label="Tanggal Kartu" :value="old('card_date', $c->card_date?->toDateString())" :source="Src::of('tm2mst.prod_master_card.card_date')" />
+                <x-dl::field.text name="product_name" label="Item Name" required :value="old('product_name', $c->product_name)" :source="Src::of('tm2mst.prod_master_card.product_name')" />
+                <x-dl::field.date name="card_date" label="Card Date" :value="old('card_date', $c->card_date?->toDateString())" :source="Src::of('tm2mst.prod_master_card.card_date')" />
             </x-dl::form.row>
             <x-dl::form.row cols="4">
-                <x-dl::field.lookup name="customer_id" lookup="customer" label="Customer (master)" placeholder="Cari customer..." :value="old('customer_id', $c->customer_id)"
+                <x-dl::field.lookup name="customer_id" lookup="customer" label="Customer (master)" placeholder="Search customer..." :value="old('customer_id', $c->customer_id)"
                     :hint="$c->customer_text ? 'Teks kartu: '.$c->customer_text : null" :error="isset($missing['customer_id']) ? 'belum dipilih' : null" :source="Src::of('tm2mst.prod_master_card.customer_id', 'tm2mst.cust_customer')" />
                 <x-dl::field.select name="part_label" label="Part" :options="['' => 'Kartu utuh (Double Join = A + B)', 'A' => 'Part A saja', 'B' => 'Part B saja']" :value="old('part_label', $c->part_label ?? '')" :placeholder="null"
-                    hint="Kartu per part dengan No. Desain sama digabung jadi 1 produk" :source="Src::of('tm2mst.prod_master_card.part_label')" />
+                    hint="Cards per part with the same Design No. are merged into 1 product" :source="Src::of('tm2mst.prod_master_card.part_label')" />
                 <x-dl::field.select name="join_type_id" label="Sambungan" :options="MasterCardCollection::joinOptions()" :value="old('join_type_id', $c->join_type_id)" placeholder="— tanpa sambungan —"
                     :hint="$c->join_text ? 'Teks kartu: '.$c->join_text : null" :source="Src::of('tm2mst.prod_master_card.join_type_id', 'tm2mst.mat_join_type')" />
                 <x-dl::field.number name="pack_qty" label="Isi per Pack (pcs)" :min="1" :value="old('pack_qty', $c->pack_qty)" :source="Src::of('tm2mst.prod_master_card.pack_qty')" />
             </x-dl::form.row>
-            <x-dl::divider label="Ukuran & Bentuk" />
+            <x-dl::divider label="Size & Shape" />
             <x-dl::form.row cols="4">
-                <x-dl::field.decimal name="dim_l" label="Panjang P (mm)" :value="old('dim_l', $mm($c->dim_l))" :source="Src::of('tm2mst.prod_master_card.dim_l')" />
-                <x-dl::field.decimal name="dim_w" label="Lebar L (mm)" :value="old('dim_w', $mm($c->dim_w))" :source="Src::of('tm2mst.prod_master_card.dim_w')" />
-                <x-dl::field.decimal name="dim_h" label="Tinggi T (mm)" :value="old('dim_h', $mm($c->dim_h))" :source="Src::of('tm2mst.prod_master_card.dim_h')" />
+                <x-dl::field.decimal name="dim_l" label="Length L (mm)" :value="old('dim_l', $mm($c->dim_l))" :source="Src::of('tm2mst.prod_master_card.dim_l')" />
+                <x-dl::field.decimal name="dim_w" label="Width W (mm)" :value="old('dim_w', $mm($c->dim_w))" :source="Src::of('tm2mst.prod_master_card.dim_w')" />
+                <x-dl::field.decimal name="dim_h" label="Height H (mm)" :value="old('dim_h', $mm($c->dim_h))" :source="Src::of('tm2mst.prod_master_card.dim_h')" />
                 <x-dl::field.text name="up_text" label="Isi 1 Cetakan" placeholder="mis. 8 UP / 1/2 UP / 1 SET" :value="old('up_text', $c->up_text)" :source="Src::of('tm2mst.prod_master_card.up_text')" />
             </x-dl::form.row>
             <x-dl::form.row cols="4">
-                <x-dl::field.text name="knife_code" label="Kode Pisau" :value="old('knife_code', $c->knife_code)" :source="Src::of('tm2mst.prod_master_card.knife_code')" />
-                <x-dl::field.decimal name="knife_w" label="Pisau lebar (mm)" :value="old('knife_w', $mm($c->knife_w))" :source="Src::of('tm2mst.prod_master_card.knife_w')" />
-                <x-dl::field.decimal name="knife_h" label="Pisau tinggi (mm)" :value="old('knife_h', $mm($c->knife_h))" :source="Src::of('tm2mst.prod_master_card.knife_h')" />
-                <x-dl::field.select name="type_code" label="Tipe Produk (dieline)" :options="MasterCardCollection::typeOptions()" :value="old('type_code', $c->type_code)" placeholder="— pilih —"
-                    hint="Saran sistem; ganti lalu Save = ukuran dihitung ulang dari pisau" :error="isset($missing['type_code']) ? 'belum dipilih' : null" :source="Src::of('tm2mst.prod_master_card.type_code', 'tm2mst.prod_type')" />
+                <x-dl::field.text name="knife_code" label="Die Code" :value="old('knife_code', $c->knife_code)" :source="Src::of('tm2mst.prod_master_card.knife_code')" />
+                <x-dl::field.decimal name="knife_w" label="Die width (mm)" :value="old('knife_w', $mm($c->knife_w))" :source="Src::of('tm2mst.prod_master_card.knife_w')" />
+                <x-dl::field.decimal name="knife_h" label="Die height (mm)" :value="old('knife_h', $mm($c->knife_h))" :source="Src::of('tm2mst.prod_master_card.knife_h')" />
+                <x-dl::field.select name="type_code" label="Tipe Produk (dieline)" :options="MasterCardCollection::typeOptions()" :value="old('type_code', $c->type_code)" placeholder="— choose —"
+                    hint="System suggestion; change it and Save = size recalculated from the die" :error="isset($missing['type_code']) ? 'belum dipilih' : null" :source="Src::of('tm2mst.prod_master_card.type_code', 'tm2mst.prod_type')" />
             </x-dl::form.row>
             @if ($check)
                 <x-dl::alert :tone="$check['ok'] ? 'success' : 'warn'"
@@ -142,21 +142,21 @@
                 <p class="mp-hint">SVG dieline disimpan di kartu setiap Save ({{ $c->dieline_svg ? \Devlib\Locale::number(strlen($c->dieline_svg)).' karakter' : 'belum ada' }}) dan ikut ke Master Product / Inquiry.</p>
             @endif
             <x-dl::form.row cols="1">
-                <x-dl::field.text :multiline="true" name="notes" label="Keterangan (kartu)" :value="old('notes', $c->notes)" :source="Src::of('tm2mst.prod_master_card.notes')" />
+                <x-dl::field.text :multiline="true" name="notes" label="Description (card)" :value="old('notes', $c->notes)" :source="Src::of('tm2mst.prod_master_card.notes')" />
             </x-dl::form.row>
         </x-slot:main>
 
         <x-slot:bom>
-            <x-dl::divider label="Bahan — pastikan kategori master" />
+            <x-dl::divider label="Material — check the master category" />
             @forelse ($c->materials_json ?? [] as $i => $m)
                 <x-dl::form.row cols="3">
                     <x-dl::field.display :label="'Bahan #'.($i + 1).' di kartu'" :value="trim($m['name'].' · '.($m['quality'] ?? '').' · '.($m['size_text'] ?? ''), ' ·')" :source="Src::of('tm2mst.prod_master_card.materials_json')" />
-                    <x-dl::field.select :name="'materials['.$i.']'" :label="'Kategori master #'.($i + 1)" :options="$cats" :value="$m['category_id'] ?? null" placeholder="— pilih kategori —"
+                    <x-dl::field.select :name="'materials['.$i.']'" :label="'Kategori master #'.($i + 1)" :options="$cats" :value="$m['category_id'] ?? null" placeholder="— choose a category —"
                         :error="isset($missing['materials.'.$i]) ? 'belum cocok master' : null" :source="Src::of('tm2mst.mat_category')" />
-                    <x-dl::field.display label="Ukuran bahan" :value="! empty($m['size_p']) ? $mm($m['size_p']).' × '.$mm($m['size_l']).' mm' : '—'" />
+                    <x-dl::field.display label="Material size" :value="! empty($m['size_p']) ? $mm($m['size_p']).' × '.$mm($m['size_l']).' mm' : '—'" />
                 </x-dl::form.row>
             @empty
-                <x-dl::empty-state title="Belum ada bahan" message="Kartu dari foto: bahan diisi saat kartu Excel tersedia, atau lengkapi di Inquiry setelah Make Inquiry." />
+                <x-dl::empty-state title="No material yet" message="Card from a photo: material is filled when the Excel card is available, or complete it in the Inquiry after Make Inquiry." />
             @endforelse
             <x-dl::divider label="Finishing" />
             <x-dl::table :columns="['finishing_name' => 'Finishing', 'attribute' => 'Atribut', 'text' => 'Teks kartu', 'master' => 'Master']"
@@ -165,16 +165,16 @@
             <x-dl::table :columns="['no' => '#', 'text' => 'Teks kartu', 'process_name' => 'Proses master', 'scope' => 'Masuk ke']"
                 :rows="collect($c->process_json ?? [])->values()->map(fn ($p, $i) => ['no' => $i + 1, 'text' => $p['text'], 'process_name' => $p['process_name'] ?? '— tidak cocok —', 'scope' => $p['scope'] === 'BODY' ? 'Body (rakitan)' : 'Part'])->all()"
                 empty="Belum ada urutan pekerjaan." :source="Src::of('tm2mst.prod_master_card.process_json', 'tm2mst.prod_process')" />
-            <x-dl::divider label="Warna & ACC" />
+            <x-dl::divider label="Colour & ACC" />
             <x-dl::form.row cols="3">
-                <x-dl::field.display label="Warna pertama" :value="implode(', ', $c->colors_json['first'] ?? []) ?: '—'" />
-                <x-dl::field.display label="Warna kedua" :value="implode(', ', $c->colors_json['second'] ?? []) ?: '—'" />
+                <x-dl::field.display label="First colour" :value="implode(', ', $c->colors_json['first'] ?? []) ?: '—'" />
+                <x-dl::field.display label="Second colour" :value="implode(', ', $c->colors_json['second'] ?? []) ?: '—'" />
                 <x-dl::field.display label="ACC" :value="collect($c->acc_json ?? [])->map(fn ($v, $k) => str_replace('_', ' ', $k).': '.$v)->implode(' · ') ?: '—'" :source="Src::of('tm2mst.prod_master_card.acc_json')" />
             </x-dl::form.row>
         </x-slot:bom>
 
         <x-slot:files>
-            <x-dl::divider label="Artwork per part (dipasang ke dieline & ikut ke Inquiry / Master Product)" />
+            <x-dl::divider label="Artwork per part (placed on the dieline & carried to Inquiry / Master Product)" />
             <x-dl::form.row cols="3">
                 @foreach ($parts as $p)
                     @php($art = $file('ARTWORK', $p))
@@ -182,12 +182,12 @@
                         :value="$art ? ['url' => $art->url(), 'name' => $art->original_name] : null" :source="Src::of('tm2mst.prod_master_card_file (ARTWORK)')" />
                 @endforeach
             </x-dl::form.row>
-            <x-dl::divider label="Gambar dari kartu" />
+            <x-dl::divider label="Image from card" />
             <div class="mp-thumbs">
                 @forelse ($card?->files->whereIn('file_kind', ['PROOF', 'CUT_PLAN', 'PHOTO']) ?? [] as $f)
                     <x-mp::image-thumb :label="ProdMasterCardFile::KINDS[$f->file_kind]" :src="$f->url()" />
                 @empty
-                    <x-dl::empty-state title="Belum ada gambar" message="Upload Excel master card atau foto kartu." />
+                    <x-dl::empty-state title="No image yet" message="Upload a master card Excel or a card photo." />
                 @endforelse
             </div>
             @if ($src = $file('SOURCE'))
@@ -206,16 +206,16 @@
                     @if ($errors->has('dialog'))<x-dl::alert tone="danger" :message="$errors->first('dialog')" />@endif
                     <x-dl::alert tone="info" :message="$need ? 'Lengkapi '.count($need).' isian ini dulu. Yang lain sudah terisi dari kartu.' : 'Field kunci kartu sudah lengkap.'" />
                     <x-dl::form.row cols="2">
-                        @if (isset($need['design_no']))<x-dl::field.text name="design_no" label="No. Desain" required placeholder="mis. DS003xxx" :value="old('design_no')" hint="Kosong di kartu." />@endif
-                        @if (isset($need['customer_id']))<x-dl::field.lookup name="customer_id" lookup="customer" label="Customer (master)" required placeholder="Cari customer..." :hint="$c->customer_text ? 'Teks kartu: '.$c->customer_text : null" />@endif
-                        @if (isset($need['type_code']))<x-dl::field.select name="type_code" label="Tipe Produk (dieline)" required :options="MasterCardCollection::typeOptions()" placeholder="— pilih —" />@endif
+                        @if (isset($need['design_no']))<x-dl::field.text name="design_no" label="No. Desain" required placeholder="mis. DS003xxx" :value="old('design_no')" hint="Empty on the card." />@endif
+                        @if (isset($need['customer_id']))<x-dl::field.lookup name="customer_id" lookup="customer" label="Customer (master)" required placeholder="Search customer..." :hint="$c->customer_text ? 'Teks kartu: '.$c->customer_text : null" />@endif
+                        @if (isset($need['type_code']))<x-dl::field.select name="type_code" label="Tipe Produk (dieline)" required :options="MasterCardCollection::typeOptions()" placeholder="— choose —" />@endif
                         @foreach ($c->materials_json ?? [] as $i => $m)
-                            @if (isset($need['materials.'.$i]))<x-dl::field.select :name="'materials['.$i.']'" :label="'Bahan #'.($i + 1).' (kategori master)'" required :options="$cats" placeholder="— pilih —" :hint="'Teks kartu: '.$m['name'].' · '.($m['quality'] ?? '')" />@endif
+                            @if (isset($need['materials.'.$i]))<x-dl::field.select :name="'materials['.$i.']'" :label="'Bahan #'.($i + 1).' (kategori master)'" required :options="$cats" placeholder="— choose —" :hint="'Teks kartu: '.$m['name'].' · '.($m['quality'] ?? '')" />@endif
                         @endforeach
                         @if ($target === 'inquiry')
                             <x-dl::field.number name="qty" label="Qty order (tier 1)" required :min="1" :value="old('qty')" />
                             <x-dl::field.date name="deadline" label="Deadline quotation" required :value="old('deadline', now()->addDays(3)->toDateString())" />
-                            <x-dl::field.lookup name="pic_sales" lookup="sales_person" label="PIC Sales" required placeholder="Cari sales..." :value="old('pic_sales')" />
+                            <x-dl::field.lookup name="pic_sales" lookup="sales_person" label="PIC Sales" required placeholder="Search sales..." :value="old('pic_sales')" />
                         @endif
                     </x-dl::form.row>
                     @foreach (array_diff_key($need, array_flip(['design_no', 'customer_id', 'type_code'])) as $k => $label)

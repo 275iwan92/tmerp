@@ -55,17 +55,17 @@ class Sheet extends DevlibComponent
             <div {{ $attributes->class(['dl-sheet', 'dl-sheet--lookup' => $lookup]) }} {!! $dl() !!} data-dl-sheet data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
                 @if ($lookup)
                 <div class="dl-sheet__bar">
-                    <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Cari..." data-s-search aria-label="Cari"></div>
+                    <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search...') }}" data-s-search aria-label="{{ \Devlib\Lang::text('Search') }}"></div>
                     <span class="dl-sheet__info" data-s-info></span>
                     <span class="dl-print__spacer"></span>
-                    <x-dl::button variant="secondary" size="sm" icon="new" label="Baris" data-s-add />
+                    <x-dl::button variant="secondary" size="sm" icon="new" :label="\Devlib\Lang::text('Row')" data-s-add />
                     <x-dl::button variant="secondary" size="sm" icon="undo" label="Undo" data-s-revert />
                     <x-dl::button preset="save" size="sm" label="Save" data-s-save />
                 </div>
                 @else
                 <div class="dl-sheet__bar">
                     @if ($title)<b>{{ $title }}</b>@endif
-                    <x-dl::button variant="secondary" size="sm" icon="new" label="Baris" data-s-add />
+                    <x-dl::button variant="secondary" size="sm" icon="new" :label="\Devlib\Lang::text('Row')" data-s-add />
                     <x-dl::button variant="secondary" size="sm" icon="delete" label="Delete Row" data-s-del />
                     <x-dl::icon-button icon="undo" title="Undo (Ctrl+Z)" data-s-undo />
                     <x-dl::icon-button icon="fa-rotate-right" title="Redo (Ctrl+Y)" data-s-redo />

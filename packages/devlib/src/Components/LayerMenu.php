@@ -89,9 +89,9 @@ class LayerMenu extends DevlibComponent
                 <div class="dl-lm__head">
                     <span class="dl-lm__logo">{{ $logo }}</span>
                     <span class="dl-lm__brand"><b>{{ $title }}</b><span class="dl-lm__sub"><span class="dl-lm__dots" data-lm-dots aria-hidden="true"></span><small data-lm-mode hidden></small></span></span>
-                    <span class="dl-lm__views" data-lm-views role="group" aria-label="Pilih menu" hidden></span>
-                    <button type="button" class="dl-lm__ib" data-lm-swap title="Tukar menu / chat" aria-label="Tukar menu dan chat" hidden><i class="fa-solid fa-right-left"></i><em class="dl-lm__dot-badge" data-lm-unread="swap" hidden></em></button>
-                    <button type="button" class="dl-lm__ib" data-lm-dockbtn title="Chat di sisi kanan layar" aria-label="Pindahkan chat ke kanan" hidden><i class="fa-solid fa-table-columns"></i></button>
+                    <span class="dl-lm__views" data-lm-views role="group" aria-label="{{ \Devlib\Lang::text('Choose a menu') }}" hidden></span>
+                    <button type="button" class="dl-lm__ib" data-lm-swap title="Tukar menu / chat" aria-label="{{ \Devlib\Lang::text('Swap menu and chat') }}" hidden><i class="fa-solid fa-right-left"></i><em class="dl-lm__dot-badge" data-lm-unread="swap" hidden></em></button>
+                    <button type="button" class="dl-lm__ib" data-lm-dockbtn title="{{ \Devlib\Lang::text('Chat on the right side of the screen') }}" aria-label="{{ \Devlib\Lang::text('Move chat to the right') }}" hidden><i class="fa-solid fa-table-columns"></i></button>
                 </div>
                 <div class="dl-lm__modes">
                     <div class="dl-lm__vp"><div class="dl-lm__track" data-lm-track></div></div>
@@ -102,7 +102,7 @@ class LayerMenu extends DevlibComponent
                         <div class="dl-lm__ov" data-lm-ov="profile">
                             <div class="dl-lm__vp"><div class="dl-lm__track" data-lm-ptrack>
                                 <div class="dl-lm__pane">
-                                    <div class="dl-lm__ovbar"><button type="button" class="dl-lm__ib" data-lm-close aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button></div>
+                                    <div class="dl-lm__ovbar"><button type="button" class="dl-lm__ib" data-lm-close aria-label="{{ \Devlib\Lang::text('Close') }}"><i class="fa-solid fa-xmark"></i></button></div>
                                     <div class="dl-lm__me"><span class="dl-lm__avatar is-lg">{{ $initials() }}</span><b>{{ $user }}</b><small>{{ collect([$login, $role])->filter()->implode(' · ') }}</small></div>
                                     <div data-lm-plist></div>
                                 </div>

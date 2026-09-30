@@ -82,10 +82,10 @@ final class DemoData
             ['id' => 2, 'title' => 'Kunjungan customer PT Contoh Kertas', 'start' => $d(0, '10:00'), 'end' => $d(0, '11:30'), 'tone' => 'success'],
             ['id' => 3, 'title' => 'Proof fisik CO-2609-0031', 'start' => $d(0, '10:30'), 'end' => $d(0, '12:00'), 'tone' => 'warn', 'desc' => 'Approval warna oleh customer.'],
             ['id' => 4, 'title' => 'Maintenance KOMORI 1', 'start' => $d(1, '13:00'), 'end' => $d(1, '17:00'), 'tone' => 'danger'],
-            ['id' => 5, 'title' => 'Stock opname gudang bahan', 'start' => $d(2), 'end' => $d(3), 'allDay' => true, 'tone' => 'violet'],
+            ['id' => 5, 'title' => t('Material warehouse stock take'), 'start' => $d(2), 'end' => $d(3), 'allDay' => true, 'tone' => 'violet'],
             ['id' => 6, 'title' => 'Pelatihan K3', 'start' => $d(-1, '14:00'), 'end' => $d(-1, '16:00'), 'tone' => 'neutral'],
             ['id' => 7, 'title' => 'Libur nasional (contoh)', 'start' => $d(5), 'allDay' => true, 'tone' => 'danger'],
-            ['id' => 8, 'title' => 'Kirim DO tahap 2', 'start' => $d(9, '09:00'), 'end' => $d(9, '10:00'), 'tone' => 'success'],
+            ['id' => 8, 'title' => t('Ship DO stage 2'), 'start' => $d(9, '09:00'), 'end' => $d(9, '10:00'), 'tone' => 'success'],
         ];
     }
 

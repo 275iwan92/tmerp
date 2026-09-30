@@ -63,13 +63,13 @@ class AttendanceGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'date', 'label' => 'Tanggal', 'type' => 'date'],
-            ['key' => 'name', 'label' => 'Karyawan', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
+            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'shift', 'label' => 'Shift'],
-            ['key' => 'in', 'label' => 'Masuk'],
+            ['key' => 'in', 'label' => 'Sign in'],
             ['key' => 'out', 'label' => 'Pulang'],
             ['key' => 'late', 'label' => 'Telat (Mnt)', 'type' => 'number'],
-            ['key' => 'overtime', 'label' => 'Lembur (Mnt)', 'type' => 'number'],
+            ['key' => 'overtime', 'label' => 'Overtime (Min)', 'type' => 'number'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['H' => 'success', 'A' => 'danger'] + array_fill_keys(self::LATE, 'warn')],
             ['key' => 'source', 'label' => 'Sumber'],
         ];
@@ -88,10 +88,10 @@ class AttendanceGrid extends HrmGrid
     public function stats(): array
     {
         return [
-            ['label' => '60 hari terakhir'],
+            ['label' => 'Last 60 days'],
             ['label' => 'Hadir', 'where' => ['status' => 'H'], 'tone' => 'success'],
             ['label' => 'Terlambat', 'where' => ['status' => self::LATE], 'tone' => 'warn'],
-            ['label' => 'Tidak masuk', 'where' => ['status' => self::ABSENT], 'tone' => 'danger'],
+            ['label' => 'Absent', 'where' => ['status' => self::ABSENT], 'tone' => 'danger'],
         ];
     }
 

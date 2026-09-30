@@ -61,11 +61,11 @@ class RawMaterialGrid extends MasterDataGrid
     {
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
-            ['key' => 'name', 'label' => 'Bahan Baku', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'category', 'label' => 'Kategori'],
-            ['key' => 'type', 'label' => 'Jenis Item'],
+            ['key' => 'name', 'label' => 'Raw Material', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'category', 'label' => 'Category'],
+            ['key' => 'type', 'label' => 'Item Type'],
             ['key' => 'brand', 'label' => 'Merek'],
-            ['key' => 'uom', 'label' => 'Satuan Stok'],
+            ['key' => 'uom', 'label' => 'Stock Unit'],
             ['key' => 'reorder', 'label' => 'Reorder Point', 'type' => 'number'],
             ['key' => 'stock', 'label' => 'Stock on hand', 'type' => 'link', 'format' => 'number'],
             ['key' => 'gsm', 'label' => 'Gramatur', 'type' => 'number', 'visible' => false],

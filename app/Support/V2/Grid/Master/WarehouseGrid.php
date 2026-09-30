@@ -53,7 +53,7 @@ class WarehouseGrid extends MasterDataGrid
     {
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
-            ['key' => 'name', 'label' => 'Gudang', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Warehouse', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'type', 'label' => 'Tipe'],
             ['key' => 'locations', 'label' => 'Lokasi', 'type' => 'link', 'format' => 'number'],
         ];

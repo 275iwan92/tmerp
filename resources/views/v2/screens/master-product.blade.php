@@ -31,7 +31,7 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
 @if (! $doc)
-    <x-dl::grid id="master-product" :rows="ProductMaster::rows()" search="Cari nama product, no. desain, customer..." :new-record="null" actions="worklist"
+    <x-dl::grid id="master-product" :rows="ProductMaster::rows()" search="Search product name, design no., customer..." :new-record="null" actions="worklist"
         :open-url="route('v2.screen', 'master-product').'?id={id}'" :active-key="null"
         source="{{ Src::of('tm2mst.prod_product', 'tm2mst.prod_part', 'tm2mst.prod_part_artwork', 'tm2mst.prod_product_acc', 'tm2mst.cust_customer') }}"
         :columns="[
@@ -43,13 +43,13 @@
             ['key' => 'revision', 'label' => 'Cabang'],
             ['key' => 'acc_digital', 'label' => 'ACC Digital', 'type' => 'badge', 'tones' => ['ADA' => 'success', 'BELUM' => 'warn']],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['ACTIVE' => 'success', 'DRAFT' => 'neutral']],
-            ['key' => 'updated', 'label' => 'Diubah', 'type' => 'date', 'visible' => false],
+            ['key' => 'updated', 'label' => t('Changed'), 'type' => 'date', 'visible' => false],
         ]"
         :stats="[
-            ['label' => 'Semua Product'],
+            ['label' => t('All Products')],
             ['label' => 'Resmi (Quotation WIN)', 'where' => ['status' => 'ACTIVE'], 'tone' => 'success'],
             ['label' => 'Draft (ProDev)', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],
-            ['label' => 'Belum ACC Digital', 'where' => ['acc_digital' => 'BELUM', 'status' => 'ACTIVE'], 'tone' => 'warn'],
+            ['label' => t('No Digital ACC yet'), 'where' => ['acc_digital' => 'BELUM', 'status' => 'ACTIVE'], 'tone' => 'warn'],
         ]"
         :filters="['customer' => 'Customer', 'join' => 'Sambungan', 'status' => 'Status']" />
     <p class="mp-hint">Product lahir otomatis saat Quotation WIN (CO terbentuk) — tidak dibuat manual. Klik 2x baris untuk membuka.</p>
@@ -67,12 +67,12 @@
         <form method="post" action="{{ route('v2.product.name', $doc['id']) }}" data-dl-guard>
             @csrf
             <x-dl::form.row cols="3">
-                <x-dl::field.text name="product_name" label="Nama product" required :value="old('product_name', $doc['name'])" hint="Diubah Sales supaya sama dengan PO customer; tercetak di CO Detail & Surat Jalan." :source="Src::of('tm2mst.prod_product.product_name')" />
+                <x-dl::field.text name="product_name" label="Product name" required :value="old('product_name', $doc['name'])" hint="Changed by Sales to match the customer PO; printed on the CO Detail & Delivery Note." :source="Src::of('tm2mst.prod_product.product_name')" />
                 <x-dl::field.display label="Customer (pemilik product)" :value="$doc['customer']" :source="Src::of('tm2mst.prod_product.customer_id', 'tm2mst.cust_customer.customer_name')" />
-                <x-dl::field.display label="Kode · No. Desain" :value="$doc['code'].' · '.($doc['design_no'] ?? '—')" :source="Src::of('tm2mst.prod_product.product_code', 'tm2mst.prod_product.design_no')" />
+                <x-dl::field.display label="Code · Design No." :value="$doc['code'].' · '.($doc['design_no'] ?? '—')" :source="Src::of('tm2mst.prod_product.product_code', 'tm2mst.prod_product.design_no')" />
             </x-dl::form.row>
             <x-dl::form.row cols="3">
-                <x-dl::field.display label="Ukuran jadi (P × L × T)" :value="collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : \Devlib\Locale::decimal($v, 2))->implode(' × ').' cm'" :source="Src::of('tm2mst.prod_product.cm_length', 'cm_width', 'cm_height')" />
+                <x-dl::field.display label="Finished size (L × W × H)" :value="collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : \Devlib\Locale::decimal($v, 2))->implode(' × ').' cm'" :source="Src::of('tm2mst.prod_product.cm_length', 'cm_width', 'cm_height')" />
                 <x-dl::field.display label="Induk (bila turunan revisi)" :value="$doc['parent']['label'] ?? '—'" :source="Src::of('tm2mst.prod_product.parent_product_id')" />
                 <x-dl::field.display label="Order terakhir" :value="$orders ? ($orders[0]['co'] ?? $orders[0]['quotation']).' · '.$num($orders[0]['qty']).' pcs · '.$orders[0]['date'] : '—'" :source="Src::of('tm2sdi.co_order_item.product_id')" />
             </x-dl::form.row>
@@ -82,7 +82,7 @@
 
     <x-mp::sales.product-tree :tree="$doc['tree']" :product="$doc['name']">
         <div data-pm-panel="product">
-            <x-dl::card :title="$doc['name']" description="Product · semua part lahir dari Inquiry saat Quotation WIN">
+            <x-dl::card :title="$doc['name']" description="Product · all parts born from the Inquiry when the Quotation is WON">
                 <div class="mp-thumbs">
                     @foreach ($doc['components'] as $c)
                         <x-mp::image-thumb :label="$c['name']" :src="$c['artwork']" empty="belum ada artwork" />
@@ -116,7 +116,7 @@
                             </x-slot:bop>
                             <x-slot:spec>
                                 <x-dl::form.row cols="3">
-                                    <x-dl::field.display label="Notasi warna" :value="$n['color'] ?? '—'" :source="Src::of('tm2mst.prod_part.cfg_color')" />
+                                    <x-dl::field.display label="Colour notation" :value="$n['color'] ?? '—'" :source="Src::of('tm2mst.prod_part.cfg_color')" />
                                     <x-dl::field.display label="Tinta" :value="$n['ink'] ?? '—'" :source="Src::of('tm2mst.prod_part.cfg_ink')" />
                                     <x-dl::field.display label="Bentangan" :value="$n['flat'] ?? '—'" :source="Src::of('tm2mst.prod_part.flat_w', 'flat_h')" />
                                 </x-dl::form.row>

@@ -40,20 +40,20 @@ class MachineModelLookup extends DbLookup
     {
         return [
             ['key' => 'model_code', 'label' => 'Model', 'required' => true, 'unique' => true, 'case' => 'uppercase', 'width' => '110px'],
-            ['key' => 'alias_codes', 'label' => 'Nama Lain', 'width' => '150px'],
-            ['key' => 'machine_type', 'label' => 'Jenis Mesin', 'required' => true, 'width' => '120px'],
+            ['key' => 'alias_codes', 'label' => 'Alias', 'width' => '150px'],
+            ['key' => 'machine_type', 'label' => 'Machine Type', 'required' => true, 'width' => '120px'],
             ['key' => 'drive', 'label' => 'Penggerak', 'type' => 'select', 'options' => ProdMachineModel::DRIVES, 'required' => true, 'width' => '100px'],
-            ['key' => 'work_length_mm', 'label' => 'Ukuran Kerja P (mm)', 'type' => 'number', 'width' => '110px'],
-            ['key' => 'work_width_mm', 'label' => 'Ukuran Kerja L (mm)', 'type' => 'number', 'width' => '110px'],
+            ['key' => 'work_length_mm', 'label' => 'Working Size L (mm)', 'type' => 'number', 'width' => '110px'],
+            ['key' => 'work_width_mm', 'label' => 'Working Size W (mm)', 'type' => 'number', 'width' => '110px'],
             ['key' => 'max_cut_length_mm', 'label' => 'Potong Maks P', 'type' => 'number', 'width' => '100px'],
             ['key' => 'max_cut_width_mm', 'label' => 'Potong Maks L', 'type' => 'number', 'width' => '100px'],
-            ['key' => 'speed_per_hour', 'label' => 'Kecepatan / Jam', 'type' => 'number', 'width' => '110px'],
+            ['key' => 'speed_per_hour', 'label' => 'Speed / Hour', 'type' => 'number', 'width' => '110px'],
             ['key' => 'max_rule_length_m', 'label' => 'Pisau Maks (m)', 'type' => 'number', 'decimals' => 1, 'width' => '100px'],
             ['key' => 'motor_kw', 'label' => 'Motor (kW)', 'type' => 'number', 'decimals' => 1, 'width' => '90px'],
-            ['key' => 'weight_kg', 'label' => 'Berat (kg)', 'type' => 'number', 'width' => '90px'],
+            ['key' => 'weight_kg', 'label' => 'Weight (kg)', 'type' => 'number', 'width' => '90px'],
             ['key' => 'pressure_ton', 'label' => 'Tekanan (ton)', 'type' => 'number', 'width' => '100px'],
             ['key' => 'maker_hint', 'label' => 'Pabrikan', 'width' => '200px'],
-            ['key' => 'activate', 'label' => 'Aktif', 'type' => 'check', 'width' => '70px'],
+            ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '70px'],
         ];
     }
 

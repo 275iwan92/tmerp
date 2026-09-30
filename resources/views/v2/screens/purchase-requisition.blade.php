@@ -16,23 +16,23 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
 @if (! $pr && ! request('new'))
-    <x-dl::grid id="pr-list" :rows="PurchaseRequisition::rows()" search="Cari no. PR, departemen..." actions="worklist" :active-key="null"
+    <x-dl::grid id="pr-list" :rows="PurchaseRequisition::rows()" search="Search PR no., department..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.pr_requisition', 'tm2pur.pr_line') }}"
         :columns="[
             ['key' => 'no', 'label' => 'No. PR'],
-            ['key' => 'date', 'label' => 'Tanggal', 'type' => 'date'],
+            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
             ['key' => 'dept', 'label' => 'Departemen'],
-            ['key' => 'need', 'label' => 'Tgl Butuh', 'type' => 'date'],
+            ['key' => 'need', 'label' => t('Need Date'), 'type' => 'date'],
             ['key' => 'lines', 'label' => 'Item', 'type' => 'number'],
             ['key' => 'total', 'label' => 'Est. Total', 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseRequisition::STATUS_TONES],
         ]"
-        :stats="[['label' => 'Semua'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Menunggu approval', 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved', 'where' => ['status' => ['APPROVED', 'PARTIALLY_ORDERED']], 'tone' => 'success']]"
+        :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved', 'where' => ['status' => ['APPROVED', 'PARTIALLY_ORDERED']], 'tone' => 'success']]"
         :filters="['dept' => 'Departemen', 'status' => 'Status']" />
 @elseif (! $pr)
     <form method="post" action="{{ route('v2.pr.create') }}">
         @csrf
-        <x-dl::card title="+ New Record — Purchase Requisition" description="Pilih departemen peminta. Nomor PR dibuat saat Confirm (diajukan).">
+        <x-dl::card title="+ New Record — Purchase Requisition" description="Choose the requesting department. The PR number is created on Confirm (submitted).">
             <x-dl::field.select name="department_id" label="Departemen" required :options="PurchaseRequisition::departments()" :source="Src::of('tm2mst.org_department')" />
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
@@ -70,19 +70,19 @@
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>No. PR</span><b>{{ $pr->doc_no ?: '(saat Confirm)' }}</b></div>
-            <x-dl::field.date name="i_doc_date" label="Tanggal PR" :value="$pr->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pr_requisition.i_doc_date')" />
+            <x-dl::field.date name="i_doc_date" label="PR Date" :value="$pr->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pr_requisition.i_doc_date')" />
             <x-dl::field.select name="i_department_id" label="Departemen" required :options="PurchaseRequisition::departments()" :value="$pr->i_department_id" :source="Src::of('tm2mst.org_department')" />
             <div class="dl-strip__kv dl-strip__grand"><span>Est. Total</span><b data-l-val="lines:grand">{{ $money($pr->c_est_total) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
-                <x-dl::field.date name="i_need_date" label="Tanggal Dibutuhkan" :value="$pr->i_need_date?->toDateString()" :source="Src::of('tm2pur.pr_requisition.i_need_date')" />
+                <x-dl::field.date name="i_need_date" label="Required Date" :value="$pr->i_need_date?->toDateString()" :source="Src::of('tm2pur.pr_requisition.i_need_date')" />
                 <x-dl::field.display label="Sumber" :value="$pr->i_source ?? 'MANUAL'" :source="Src::of('tm2pur.pr_requisition.i_source')" />
-                <x-dl::field.display label="Revisi ke" :value="(string) ($pr->revision_no ?? 0)" :source="Src::of('tm2pur.pr_requisition.revision_no')" />
+                <x-dl::field.display label="Revision no." :value="(string) ($pr->revision_no ?? 0)" :source="Src::of('tm2pur.pr_requisition.revision_no')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:notes>
-            <x-dl::field.text name="i_notes" label="Catatan / justifikasi" multiline :value="$pr->i_notes" :source="Src::of('tm2pur.pr_requisition.i_notes')" />
+            <x-dl::field.text name="i_notes" label="Notes / justification" multiline :value="$pr->i_notes" :source="Src::of('tm2pur.pr_requisition.i_notes')" />
         </x-slot:notes>
         <x-slot:detail>
             <x-dl::lines name="lines" title="Details" key-field="pr_line_id" remove-field="remove" :addable="false" :duplicable="false" :min-rows="0" :rows="$lines" :readonly="! $draft"
@@ -90,22 +90,22 @@
                 :columns="[
                     ['key' => 'i_description', 'label' => 'Item', 'required' => true, 'width' => '320px'],
                     ['key' => 'i_qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'sum' => true, 'width' => '100px'],
-                    ['key' => 'i_uom', 'label' => 'Satuan', 'width' => '90px'],
-                    ['key' => 'i_est_price', 'label' => 'Est. Harga', 'type' => 'money', 'width' => '130px'],
-                    ['key' => 'i_need_date', 'label' => 'Tgl Butuh', 'type' => 'date', 'width' => '150px'],
+                    ['key' => 'i_uom', 'label' => t('Unit'), 'width' => '90px'],
+                    ['key' => 'i_est_price', 'label' => t('Est. Price'), 'type' => 'money', 'width' => '130px'],
+                    ['key' => 'i_need_date', 'label' => t('Need Date'), 'type' => 'date', 'width' => '150px'],
                     ['key' => 'subtotal', 'label' => 'Est. Subtotal', 'type' => 'money', 'formula' => 'i_qty * i_est_price', 'sum' => true, 'width' => '140px'],
-                    ['key' => 'code', 'label' => 'Kode Item', 'type' => 'display', 'more' => true],
+                    ['key' => 'code', 'label' => t('Item Code'), 'type' => 'display', 'more' => true],
                     ['key' => 'source', 'label' => 'Sumber Item', 'type' => 'display', 'more' => true],
-                    ['key' => 'stock', 'label' => 'Jenis', 'type' => 'display', 'more' => true],
-                    ['key' => 'ordered', 'label' => 'Qty sudah di-PO', 'type' => 'display', 'more' => true],
-                    ['key' => 'i_notes', 'label' => 'Catatan Baris', 'more' => true],
+                    ['key' => 'stock', 'label' => t('Type'), 'type' => 'display', 'more' => true],
+                    ['key' => 'ordered', 'label' => t('Qty already on PO'), 'type' => 'display', 'more' => true],
+                    ['key' => 'i_notes', 'label' => t('Line Notes'), 'more' => true],
                 ]">
                 @if ($draft)
                     <x-slot:tools>
-                        <x-dl::field.lookup name="material_id" lookup="material" label="+ Item dari Master Bahan" placeholder="Ketik min. 2 huruf kode / nama item..." :source="Src::of('tm2mst.mat_raw')" />
+                        <x-dl::field.lookup name="material_id" lookup="material" label="+ Item from Material Master" placeholder="Type at least 2 letters of the item code / name..." :source="Src::of('tm2mst.mat_raw')" />
                         <x-dl::button size="sm" variant="secondary" label="+ Item Master" type="submit" name="action" value="add_material" formnovalidate />
-                        <x-dl::field.text name="free_description" label="+ Item bebas (uraian)" placeholder="Jasa / barang non-master..." />
-                        <x-dl::field.text name="free_uom" label="Satuan" :case-toggle="false" placeholder="PCS" />
+                        <x-dl::field.text name="free_description" label="+ Item bebas (uraian)" placeholder="Service / non-master goods..." />
+                        <x-dl::field.text name="free_uom" label="Unit" :case-toggle="false" placeholder="PCS" />
                         <x-dl::button size="sm" variant="secondary" label="+ Item Bebas" type="submit" name="action" value="add_free" formnovalidate />
                     </x-slot:tools>
                 @endif

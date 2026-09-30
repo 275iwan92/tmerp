@@ -68,9 +68,9 @@ class SalaryGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Karyawan', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'basic', 'label' => 'Gaji Pokok/Bulan', 'type' => 'money'],
-            ['key' => 'skill', 'label' => 'TJ Keahlian/Bulan', 'type' => 'money'],
+            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'basic', 'label' => 'Base Salary/Month', 'type' => 'money'],
+            ['key' => 'skill', 'label' => 'Skill Allowance/Month', 'type' => 'money'],
             ['key' => 'ptkp', 'label' => 'PTKP'],
             ['key' => 'bpjs', 'label' => 'BPJS', 'type' => 'badge', 'tones' => ['Aktif' => 'success', 'Tidak' => 'neutral']],
             ['key' => 'pph21', 'label' => 'PPh21', 'type' => 'badge', 'tones' => ['Aktif' => 'success', 'Tidak' => 'neutral']],
@@ -93,10 +93,10 @@ class SalaryGrid extends HrmGrid
     public function stats(): array
     {
         return [
-            ['label' => 'Pegawai Aktif'],
-            ['label' => 'Belum diatur', 'where' => ['set' => 'Belum diatur'], 'tone' => 'warn'],
-            ['label' => 'BPJS aktif', 'where' => ['bpjs' => 'Aktif'], 'tone' => 'info'],
-            ['label' => 'PPh21 aktif', 'where' => ['pph21' => 'Aktif'], 'tone' => 'success'],
+            ['label' => 'Active Employees'],
+            ['label' => 'Not set', 'where' => ['set' => 'Belum diatur'], 'tone' => 'warn'],
+            ['label' => 'BPJS active', 'where' => ['bpjs' => 'Aktif'], 'tone' => 'info'],
+            ['label' => 'PPh21 active', 'where' => ['pph21' => 'Aktif'], 'tone' => 'success'],
         ];
     }
 
