@@ -1958,7 +1958,25 @@ td.dl-print__no{text-align:center}
 .dl-form__sep{width:1px;align-self:stretch;margin:2px 2px;background:var(--dl-f-line-soft)}
 .dl-form__heading{display:flex;flex-direction:column;line-height:1.25;min-width:0}
 .dl-form__heading small{font-family:var(--dl-font-mono);font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted)}
-.dl-form__pipe{padding:10px 0 0}
+/* Master-Detail compact pass (user 2026-09-30): jarak dirapatkan, ukuran huruf isian tetap. */
+.dl-form--panel .dl-form__panel{padding:6px 0;gap:6px}
+.dl-form--panel .dl-form__strip{margin:6px 0 0;gap:6px}
+.dl-form--panel .dl-strip__kv{padding:3px 10px}
+.dl-form--panel .dl-strip__doc > b{font-size:calc(18px * var(--dl-font-scale))}
+.dl-form--panel .dl-strip__grand > b{font-size:calc(19px * var(--dl-font-scale))}
+.dl-form--panel .dl-tabs__panel{padding:6px 0 2px}
+.dl-form--panel .dl-lines__head{padding:6px 10px}
+.dl-form--panel .dl-lines__footer{padding:2px 10px 8px;gap:10px}
+.dl-form--panel .dl-lines__adj .dl-tabs__panel{padding:4px 0 0}
+.dl-form--panel .dl-lines__adjt .dl-lines__adjin{padding:3px 6px}
+.dl-form--panel .dl-lines__footer .dl-lines__totals{padding:6px 12px;gap:2px}
+.dl-form--panel .dl-lines__hint{margin-top:3px}
+.dl-form__steps{display:inline-flex;align-items:stretch;flex:none;margin-left:4px}
+.dl-form__step{position:relative;display:inline-flex;align-items:center;height:22px;padding:0 12px 0 16px;margin-left:-4px;font-size:calc(11px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted);background:var(--dl-chip);clip-path:polygon(0 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,0 100%,7px 50%);white-space:nowrap}
+.dl-form__step:first-child{margin-left:0;padding-left:11px;border-radius:11px 0 0 11px;clip-path:polygon(0 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,0 100%)}
+.dl-form__step.is-done{background:var(--dl-accent-soft);color:var(--dl-accent)}
+.dl-form__step.is-active{background:var(--dl-accent);color:var(--dl-white)}
+.dl-form__step.is-rejected{background:var(--dl-danger);color:var(--dl-white)}
 .dl-form__panel .dl-form__title{font-size:calc(15px * var(--dl-font-scale))}
 .dl-form--panel .dl-form__body.dl-tabs{display:block;margin-top:4px}
 .dl-form--panel .dl-tabs__panel > * + *{margin-top:6px}

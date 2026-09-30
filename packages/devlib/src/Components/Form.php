@@ -134,7 +134,12 @@ class Form extends DevlibComponent
                 @if ($panel)
                     <div class="dl-form__panel">
                         <div class="dl-form__heading"><div class="dl-form__title">{{ $title }}</div>@if ($subtitle)<small>{{ $subtitle }}</small>@endif</div>
-                        <x-dl::badge :label="$statusBadge()[0]" :tone="$statusBadge()[1]" />
+                        {{-- :pipeline = tahapan ringkas di panel (menggantikan badge), bukan baris penuh (user 2026-09-30: compact). --}}
+                        @if ($pipeline)
+                            <div class="dl-form__steps" aria-label="Status">@foreach ($steps() as [$sl, $sc])<span class="dl-form__step {{ $sc }}">{{ $sl }}</span>@endforeach</div>
+                        @else
+                            <x-dl::badge :label="$statusBadge()[0]" :tone="$statusBadge()[1]" />
+                        @endif
                         <span class="dl-print__spacer"></span>
                         @foreach ($panelActions() as $a)
                             @php [$pre, $lbl, $var, $ico, $act] = $a; $cls = $a[5] ?? ''; @endphp
@@ -148,9 +153,6 @@ class Form extends DevlibComponent
                         <span class="dl-form__sep"></span>
                         <x-dl::button variant="secondary" size="sm" icon="back" label="Back" :href="$back" data-f-act="back" />
                     </div>
-                    @if ($pipeline)
-                        <div class="dl-master__pipe dl-form__pipe">@foreach ($steps() as [$sl, $sc])<span class="dl-master__step {{ $sc }}">{{ $sl }}</span>@endforeach</div>
-                    @endif
                 @elseif ($title !== '')
                     <div class="dl-form__head"><div class="dl-form__title">{{ $title }}</div>@if ($mode === 'view')<x-dl::button variant="secondary" size="sm" icon="edit" label="Edit" data-f-edit />@endif</div>
                 @endif
