@@ -46,11 +46,13 @@
     detail() {
       const d = this.docs.find(x => x.id === this.cur && !x.decided);
       $(this.el, '[data-a-detail]').classList.toggle('is-empty', !d);
+      const hold = $(this.el, '[data-a-do=hold]'); if (hold) hold.hidden = !!(d && d.held);
       if (!d) { $(this.el, '[data-a-body]').innerHTML = ''; return; }
       const steps = d.steps || [], at = steps.findIndex(s => s.status === 'current'), lv = this.level(d);
       const lines = d.lines || [], keys = Object.keys(this.cols);
       $(this.el, '[data-a-body]').innerHTML = `
         <div class="dl-appr__title"><div><h3>${esc(d.no)} — ${esc(d.title || '')}</h3><p>Diajukan oleh: ${esc(d.submitted_by || '')}${d.party ? ' · ' + esc(d.party) : ''}</p></div>${lv.at ? `<div class="dl-appr__level"><span class="dl-badge dl-badge--pill dl-badge--warn">Approval Level ${lv.at} of ${lv.n} — ${esc(steps[at].role)}</span><span class="dl-appr__meter" title="${lv.n} level approval">${lv.steps.map((s, i) => `<i class="is-${esc(s.status)}" title="Level ${i + 1} · ${esc(s.role)}"></i>`).join('')}</span></div>` : ''}</div>
+        ${d.held ? `<div class="dl-appr__held"><i class="fa-solid fa-pause"></i><div><b>Ditahan sementara</b><small>Oleh ${esc(d.held.by)} · ${esc(d.held.at)}${d.held.note ? ` — “${esc(d.held.note)}”` : ''}</small><small>Masih bisa diputuskan: Setujui atau Tolak.</small></div></div>` : ''}
         <div class="dl-appr__summary">${Object.entries(d.summary || {}).map(([k, v]) => `<div><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join('')}</div>
         ${lines.length ? `<table class="dl-appr__lines"><thead><tr>${keys.map(k => `<th class="${k.endsWith(':money') ? 'num' : ''}">${esc(this.cols[k])}</th>`).join('')}</tr></thead><tbody>${lines.map(r => `<tr>${keys.map(k => `<td class="${k.endsWith(':money') ? 'num' : ''}">${this.cell(k, r[k.replace(':money', '')])}</td>`).join('')}</tr>`).join('')}</tbody></table>` : ''}
         <div class="dl-appr__cols">
@@ -60,16 +62,18 @@
     }
 
     // Layar hanya-baca: tanpa kotak isian. Alasan Tolak/Tahan diminta di dialog konfirmasi (wajib).
+    // Approve/Reject = final (dokumen keluar dari daftar, tanpa jalan balik). Hold = sementara: tetap di daftar,
+    // tombol Tahan disembunyikan, dan nanti hanya bisa diputuskan Approve atau Reject (user 2026-09-30).
     decide(action) {
-      const d = this.docs.find(x => x.id === this.cur && !x.decided); if (!d) return;
+      const d = this.docs.find(x => x.id === this.cur && !x.decided); if (!d || (action === 'hold' && d.held)) return;
       const word = {approve: 'Setujui', reject: 'Tolak', hold: 'Tahan'}[action];
-      confirmBox({title: `${word} ${d.no}?`, message: action === 'approve' ? 'Dokumen diteruskan ke tahap berikutnya.' : action === 'reject' ? 'Dokumen dikembalikan ke pembuat.' : 'Dokumen ditahan sampai diputuskan lagi.',
+      confirmBox({title: `${word} ${d.no}?`, message: action === 'approve' ? 'Dokumen diteruskan ke tahap berikutnya. Keputusan ini final, tidak bisa dibatalkan.' : action === 'reject' ? 'Dokumen dikembalikan ke pembuat. Keputusan ini final, tidak bisa dibatalkan.' : 'Status sementara: dokumen tetap di daftar dan nanti masih bisa Disetujui atau Ditolak.',
         tone: action === 'reject' ? 'danger' : action === 'hold' ? 'warn' : 'success', ok: word, reason: action !== 'approve'}).then(res => {
         if (!res) return;
         const n = typeof res === 'string' ? res : '';
         const now = `${fmt.date()} ${fmt.time()}`, step = (d.steps || []).find(s => s.status === 'current');
         (d.history = d.history || []).push({action: {approve: 'APPROVED', reject: 'REJECTED', hold: 'HOLD'}[action], by: this.me, at: now, note: n});
-        if (action === 'hold') { d.held = true; toast(`${d.no} ditahan.`, 'warn'); this.detail(); this.list(); }
+        if (action === 'hold') { d.held = {by: this.me, at: now, note: n}; toast(`${d.no} ditahan.`, 'warn'); this.detail(); this.list(); }
         else {
           if (step) Object.assign(step, {status: action === 'approve' ? 'done' : 'rejected', by: this.me, at: now});
           d.decided = action;
