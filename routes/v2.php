@@ -216,6 +216,12 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::prefix('{id}')->whereNumber('id')->group(function () use ($open) {
             Route::post('/save', function (Request $r, int $id) use ($open) {
                 $q = QuoQuotation::findOrFail($id);
+                // Tombol Delete panel Form (x-dl::form) mengirim action=delete ke rute simpan yang sama.
+                if ($r->input('action') === 'delete') {
+                    Quotation::delete($q);
+
+                    return redirect(route('v2.screen', 'quotation'))->with('v2_flash', "Draft {$q->quotation_no} dihapus.");
+                }
                 $r->validate(['issued_date' => ['required', 'date'], 'valid_until' => ['nullable', 'date'], 'deadline_date' => ['nullable', 'date'],
                     'items' => ['array'], 'items.*.description' => ['nullable', 'string', 'max:500'], 'items.*.qty_unit' => ['nullable', 'string', 'max:20']],
                     [], ['issued_date' => 'Tanggal dokumen']);

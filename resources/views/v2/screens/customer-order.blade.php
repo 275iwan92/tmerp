@@ -105,6 +105,7 @@
         :tabs="['general' => 'General', 'finance' => 'Finance', 'delivery' => 'Delivery', 'notes' => 'Notes']"
         :created-by="$o->created_by" :created-at="$o->created_at?->toDateTimeString()" :updated-by="$o->updated_by" :updated-at="$o->updated_at?->toDateTimeString()" :log="$log">
         <x-slot:special>
+            <x-dl::button size="sm" preset="print" label="Nota" :href="route('co.print', $o->id_order)" target="_blank" />
             <x-dl::doc-share size="sm" target="#co-form" type="customer-order" :doc-id="$o->id_order" :number="$o->co_no" title="Customer Order" />
             @unless ($draft)<x-dl::button size="sm" variant="secondary" icon="fa-truck" label="Customer Plan Delivery" :href="route('v2.screen', 'cpdel')" />@endunless
         </x-slot:special>

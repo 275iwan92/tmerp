@@ -83,6 +83,9 @@
         </x-dl::card>
     </form>
 @else
+    {{-- Form Master-Detail DevLib (disetujui user 2026-09-30): panel aksi + tahapan -> ringkasan -> tab header -> Details di tengah
+         -> footer (Tax + Summary + terbilang). Data & simpan = v1 quotation/entry lewat Quotation::save() (items[id][..], remove[id],
+         action=save|confirm|add_line|delete); Cancel / LOST / WIN tetap lewat modal & rute masing-masing. Total = QuoQuotation::totals(). --}}
     @php
         $c = Quotation::component($q->id_quotation);
         $status = Quotation::status($q);
@@ -91,90 +94,101 @@
         $order = \App\Models\Sdi\CoOrder::where('quotation_id', $q->id_quotation)->first();
         $lostReason = $q->items->pluck('inquiry.cancel_reason')->filter()->first();
         $more = $draft ? Quotation::available((int) $q->customer_id) : [];
+        $cur = $q->currency_code ?: 'IDR';
+        $sym = \Devlib\Terbilang::CURRENCIES[$cur][0] ?? 'Rp';
+        $money = fn ($v) => $sym.' '.number_format((float) $v, 0, ',', '.');
+        // WON (CO lahir = pindah modul) & LOST = selesai -> Closed; PUBLISHED = Confirmed (terbit, terkunci).
+        $formStatus = match ($status) { 'DRAFT' => 'draft', 'PUBLISHED' => 'confirmed', 'CANCELLED' => 'cancelled', default => 'closed' };
+        $lines = $q->items->map(fn ($it) => [
+            'id_item' => $it->id_item, 'description' => $it->description, 'qty' => (float) $it->qty, 'qty_unit' => $it->qty_unit,
+            'unit_price' => (float) $it->unit_price, 'discount_pct' => (float) $it->discount_pct,
+            'source' => $it->inquiry ? $it->inquiry->inquiry_no.($it->source_type === 'INQUIRY_TOOLING' ? ' · tooling (biaya sekali)' : ' · jenjang qty') : 'Baris bebas',
+        ])->values()->all();
     @endphp
-    <form method="post" action="{{ route('v2.quotation.save', $q->id_quotation) }}" id="quotation-form" data-dl-guard>
-        @csrf
-        <x-dl::card>
-            <x-dl::action-bar>
-                <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
-                <span class="mp-chips">
-                    <x-dl::badge :label="$q->quotation_no" />
-                    <x-dl::badge :label="$status" :tone="Quotation::STATUS_TONES[$status] ?? 'neutral'" />
-                    @if ($order)<x-dl::badge tone="success" :label="'CO '.$order->co_no" />@endif
-                </span>
-                <x-dl::button preset="print" :href="route('quotation.print', $q->id_quotation)" target="_blank" />
-                <x-dl::doc-share target="#quotation-form" type="quotation" :doc-id="$q->id_quotation" :number="$q->quotation_no" title="Quotation" />
-            </x-dl::action-bar>
-            <h2 class="mp-bigname">{{ $q->customer?->customer_name ?? '—' }}</h2>
-            <p class="mp-hint">Customer mengikuti inquiry yang ditawarkan — untuk mengganti customer buat quotation baru.</p>
-            @if ($status === 'LOST')<x-dl::alert tone="danger" :message="'LOST — '.($lostReason ?: 'tanpa alasan')" />@endif
-            @if ($status === 'CANCELLED')<x-dl::alert tone="neutral" :message="'Cancelled — '.($q->cancel_reason ?: 'tanpa alasan')" />@endif
-            @if ($status === 'WON' && $order)<x-dl::alert tone="success" :message="'WIN — Customer Order '.$order->co_no.' sudah dibuat.'" />@endif
-        </x-dl::card>
+    @if ($status === 'LOST')<x-dl::alert tone="danger" :message="'LOST — '.($lostReason ?: 'tanpa alasan')" />@endif
+    @if ($status === 'CANCELLED')<x-dl::alert tone="info" :message="'Cancelled — '.($q->cancel_reason ?: 'tanpa alasan')" />@endif
+    @if ($status === 'WON' && $order)<x-dl::alert tone="success" :message="'WIN — Customer Order '.$order->co_no.' sudah dibuat.'" />@endif
 
-        <x-dl::card title="Header" description="Terisi otomatis dari customer & inquiry; boleh diubah selama DRAFT. Ganti tanggal dokumen = Berlaku s/d & Deadline ikut bergeser (kecuali sudah diubah manual).">
-            <x-dl::form.row cols="3">
-                <x-dl::field.select name="attn_contact" label="Attn (kontak)" :options="$c->contactOptions()" :value="old('attn_contact', $q->attn_contact)" :disabled="! $draft" :source="Src::of('tm2mst.cust_customer_contact', 'tm2sdi.quo_quotation.attn_contact')" />
-                <x-dl::field.multi-select name="cc" label="CC" :options="collect($c->ccOptions())->pluck('label', 'value')->all()" :value="$q->ccs->pluck('contact_name')->all()" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation_cc')" />
-                <x-dl::field.select name="sales_pic" label="Sales PIC" :options="$c->salesOptions()" :value="old('sales_pic', $q->sales_pic)" :disabled="! $draft" :source="Src::of('tm2mst.sales_person', 'tm2sdi.quo_quotation.sales_pic')" />
+    <x-dl::form id="quotation-form" :title="'Quotation · '.$q->quotation_no" :subtitle="($q->customer?->customer_name ?? '—').' · '.$status"
+        panel="top" kind="document" :status="$formStatus" :pipeline="true"
+        :action="route('v2.quotation.save', $q->id_quotation)" action-field="action" :back="$home" :new-url="$home.'?pick=1'"
+        :hide="['print', 'email', 'cancel']"
+        :tabs="['general' => 'General', 'finance' => 'Finance', 'notes' => 'Notes']"
+        :created-by="$q->created_by" :created-at="$q->created_at?->toDateTimeString()" :updated-by="$q->updated_by" :updated-at="$q->updated_at?->toDateTimeString()">
+        <x-slot:special>
+            <x-dl::button size="sm" preset="print" label="Nota" :href="route('quotation.print', $q->id_quotation)" target="_blank" />
+            <x-dl::doc-share size="sm" target="#quotation-form" type="quotation" :doc-id="$q->id_quotation" :number="$q->quotation_no" title="Quotation" />
+            @if ($status === 'PUBLISHED')
+                <x-dl::button size="sm" preset="cancel" variant="danger" data-dl-open="quotation-cancel" />
+                <x-dl::button size="sm" variant="danger" icon="reject" label="LOST" data-dl-open="quotation-lost" />
+                <x-dl::button size="sm" variant="success" icon="approve" label="WIN — Buat Customer Order" type="submit" :formaction="route('v2.quotation.win', $q->id_quotation)" formnovalidate onclick="return confirm('Customer setuju? Customer Order dibuat dari quotation ini.')" />
+            @elseif ($status === 'WON' && $order)
+                <x-dl::button size="sm" variant="secondary" icon="fa-file-invoice" label="Buka Customer Order" :href="route('v2.screen', 'customer-order').'?id='.$order->id_order" />
+            @endif
+        </x-slot:special>
+        <x-slot:strip>
+            <div class="dl-strip__kv dl-strip__doc"><span>No. Quotation</span><b>{{ $q->quotation_no }}</b></div>
+            <x-dl::field.date name="issued_date" label="Tanggal dokumen" required :value="old('issued_date', $q->issued_date?->toDateString())" :source="Src::of('tm2sdi.quo_quotation.issued_date')" />
+            <x-dl::field.display label="Customer" :value="$q->customer?->customer_name ?? '—'" hint="Mengikuti inquiry; ganti customer = quotation baru." :source="Src::of('tm2mst.cust_customer')" />
+            <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b>{{ $money($totals['grand']) }}</b></div>
+        </x-slot:strip>
+        <x-slot:general>
+            <x-dl::form.row :cols="3">
+                <x-dl::field.select name="attn_contact" label="Attn (kontak)" :options="$c->contactOptions()" :value="old('attn_contact', $q->attn_contact)" :source="Src::of('tm2mst.cust_customer_contact', 'tm2sdi.quo_quotation.attn_contact')" />
+                <x-dl::field.multi-select name="cc" label="CC" :options="collect($c->ccOptions())->pluck('label', 'value')->all()" :value="$q->ccs->pluck('contact_name')->all()" :source="Src::of('tm2sdi.quo_quotation_cc')" />
+                <x-dl::field.select name="sales_pic" label="Sales PIC" :options="$c->salesOptions()" :value="old('sales_pic', $q->sales_pic)" :source="Src::of('tm2mst.sales_person', 'tm2sdi.quo_quotation.sales_pic')" />
             </x-dl::form.row>
             <input type="hidden" name="cc_present" value="1">
-            <x-dl::form.row cols="3">
-                <x-dl::field.date name="issued_date" label="Tanggal dokumen" required :value="old('issued_date', $q->issued_date?->toDateString())" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation.issued_date')" />
-                <x-dl::field.date name="valid_until" label="Berlaku s/d" :value="old('valid_until', $q->valid_until?->toDateString())" :disabled="! $draft" hint="Otomatis +30 hari" :source="Src::of('tm2sdi.quo_quotation.valid_until')" />
-                <x-dl::field.date name="deadline_date" label="Deadline jawaban" :value="old('deadline_date', $q->deadline_date?->toDateString())" :disabled="! $draft" hint="Otomatis +14 hari" :source="Src::of('tm2sdi.quo_quotation.deadline_date')" />
+            <x-dl::form.row :cols="3">
+                <x-dl::field.date name="valid_until" label="Berlaku s/d" :value="old('valid_until', $q->valid_until?->toDateString())" hint="Otomatis +30 hari" :source="Src::of('tm2sdi.quo_quotation.valid_until')" />
+                <x-dl::field.date name="deadline_date" label="Deadline jawaban" :value="old('deadline_date', $q->deadline_date?->toDateString())" hint="Otomatis +14 hari" :source="Src::of('tm2sdi.quo_quotation.deadline_date')" />
             </x-dl::form.row>
-            <x-dl::form.row cols="3">
-                <x-dl::field.select name="payment_term" label="Termin pembayaran" :options="FinPaymentTerm::where('activate', true)->orderBy('sort_order')->pluck('term_label', 'payment_term_code')->all()" :value="old('payment_term', $q->payment_term)" :disabled="! $draft" :source="Src::of('tm2mst.fin_payment_term')" />
-                <x-dl::field.select name="currency_code" label="Mata uang" :options="FinCurrency::where('activate', true)->orderBy('currency_code')->pluck('currency_code', 'currency_code')->all()" :value="old('currency_code', $q->currency_code)" :disabled="! $draft" :source="Src::of('tm2mst.fin_currency')" />
-                <x-dl::field.select name="tax_scheme" label="Skema pajak" :options="['EXCL' => 'Exclusive PPN 11%', 'INCL' => 'Inclusive PPN 11%']" :value="old('tax_scheme', $q->tax_scheme)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation.tax_scheme')" />
+        </x-slot:general>
+        <x-slot:finance>
+            <x-dl::form.row :cols="3">
+                <x-dl::field.select name="currency_code" label="Currency" :options="FinCurrency::where('activate', true)->orderBy('currency_code')->pluck('currency_code', 'currency_code')->all()" :value="old('currency_code', $q->currency_code)" :source="Src::of('tm2mst.fin_currency')" />
+                <x-dl::field.select name="payment_term" label="Payment Terms" :options="FinPaymentTerm::where('activate', true)->orderBy('sort_order')->pluck('term_label', 'payment_term_code')->all()" :value="old('payment_term', $q->payment_term)" :source="Src::of('tm2mst.fin_payment_term')" />
             </x-dl::form.row>
-            <x-dl::field.text name="notes" label="Catatan untuk customer" multiline :value="old('notes', $q->notes)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation.notes')" />
-        </x-dl::card>
-
-        <x-dl::card title="Baris penawaran" description="Jenjang qty dari inquiry (harga dari Pro-Cost) + biaya sekali (pisau, plat, film). Harga boleh disesuaikan sebelum Confirm.">
-            @forelse ($q->items as $it)
-                <x-dl::form.row cols="6">
-                    <x-dl::field.text :name="'items['.$it->id_item.'][description]'" :label="$loop->iteration.'. Uraian'" :value="$it->description" :disabled="! $draft"
-                        :hint="$it->inquiry ? $it->inquiry->inquiry_no.($it->source_type === 'INQUIRY_TOOLING' ? ' · tooling' : '') : 'baris bebas'" :source="Src::of('tm2sdi.quo_quotation_item.description')" />
-                    <x-dl::field.decimal :name="'items['.$it->id_item.'][qty]'" label="Qty" :decimals="0" :value="$trim($it->qty)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation_item.qty')" />
-                    <x-dl::field.text :name="'items['.$it->id_item.'][qty_unit]'" label="Satuan" :value="$it->qty_unit" :case-toggle="false" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation_item.qty_unit')" />
-                    <x-dl::field.decimal :name="'items['.$it->id_item.'][unit_price]'" label="Harga satuan" :value="$trim($it->unit_price)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation_item.unit_price')" />
-                    <x-dl::field.decimal :name="'items['.$it->id_item.'][discount_pct]'" label="Diskon" unit="%" :value="$trim($it->discount_pct)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation_item.discount_pct')" />
-                    <x-dl::field.display label="Subtotal" :value="$rp($it->subtotal)" :source="Src::of('tm2sdi.quo_quotation_item.subtotal')" />
-                </x-dl::form.row>
-                @if ($draft)<x-dl::field.checkbox :name="'remove['.$it->id_item.']'" text="Hapus baris ini saat Simpan" />@endif
-            @empty
-                <x-dl::empty-state title="Belum ada baris" />
-            @endforelse
+        </x-slot:finance>
+        <x-slot:notes>
+            <x-dl::field.text name="notes" label="Catatan untuk customer (tercetak)" multiline :value="old('notes', $q->notes)" :source="Src::of('tm2sdi.quo_quotation.notes')" />
+        </x-slot:notes>
+        <x-slot:detail>
+            <x-dl::lines name="items" title="Details" key-field="id_item" remove-field="remove" :addable="false" :duplicable="false" :min-rows="0" :rows="$lines" :readonly="! $draft"
+                source="{{ Src::of('tm2sdi.quo_quotation_item') }}"
+                :columns="[
+                    ['key' => 'description', 'label' => 'Uraian', 'width' => '340px'],
+                    ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'width' => '110px'],
+                    ['key' => 'qty_unit', 'label' => 'Satuan', 'width' => '90px'],
+                    ['key' => 'unit_price', 'label' => 'Harga satuan', 'type' => 'money', 'width' => '130px'],
+                    ['key' => 'discount_pct', 'label' => 'Disc %', 'type' => 'number', 'width' => '80px'],
+                    ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty * unit_price * (1 - discount_pct / 100)', 'width' => '140px'],
+                    ['key' => 'source', 'label' => 'Asal Baris', 'type' => 'display', 'more' => true],
+                ]" />
             @if ($draft)
-                <x-dl::action-bar>
-                    <x-dl::button variant="secondary" icon="plus" label="+ Tambah Baris" type="submit" name="action" value="add_line" />
-                    @if ($more)<x-dl::button variant="secondary" icon="plus" label="+ Tambah Inquiry" data-dl-open="quotation-add" />@endif
-                </x-dl::action-bar>
+                <div class="dl-row" style="margin-top:6px">
+                    <x-dl::button size="sm" variant="secondary" label="+ Tambah Baris" type="submit" name="action" value="add_line" formnovalidate />
+                    @if ($more)<x-dl::button size="sm" variant="secondary" label="+ Tambah Inquiry" data-dl-open="quotation-add" />@endif
+                </div>
+                <p class="mp-hint">Jenjang qty dari inquiry (harga dari Pro-Cost) + biaya sekali (pisau, plat, film). Harga boleh disesuaikan sebelum Confirm. Klik › untuk asal baris.</p>
             @endif
-            <x-dl::form.row cols="4">
-                <x-dl::field.display label="Subtotal" :value="$rp($totals['subtotal'])" />
-                <x-dl::field.display label="DPP" :value="$rp($totals['dpp'])" />
-                <x-dl::field.display :label="'PPN '.$totals['ppn_pct'].'%'" :value="$rp($totals['ppn'])" />
-                <x-dl::field.display label="Grand total" :value="$rp($totals['grand'])" :source="Src::of('QuoQuotation::totals()')" />
-            </x-dl::form.row>
-        </x-dl::card>
-
-        <x-dl::action-bar>
-            @if ($draft)
-                <x-dl::button preset="delete" type="submit" :formaction="route('v2.quotation.delete', $q->id_quotation)" formnovalidate onclick="return confirm('Hapus draft {{ $q->quotation_no }}? Inquiry-nya kembali siap ditawarkan.')" />
-                <x-dl::button preset="save" name="action" value="save" />
-                <x-dl::button preset="confirm" type="submit" name="action" value="confirm" onclick="return confirm('Confirm quotation ini? Form terkunci dan siap dikirim ke customer.')" />
-            @elseif ($status === 'PUBLISHED')
-                <x-dl::button preset="cancel" data-dl-open="quotation-cancel" />
-                <x-dl::button variant="danger" icon="reject" label="LOST" data-dl-open="quotation-lost" />
-                <x-dl::button variant="success" icon="approve" label="WIN — Buat Customer Order" type="submit" :formaction="route('v2.quotation.win', $q->id_quotation)" formnovalidate onclick="return confirm('Customer setuju? Customer Order dibuat dari quotation ini.')" />
-            @elseif ($status === 'WON' && $order)
-                <x-dl::button icon="send" label="Buka Customer Order" :href="route('v2.screen', 'customer-order').'?id='.$order->id_order" />
-            @endif
-        </x-dl::action-bar>
-    </form>
+            <x-dl::doc-footer :tabs="['tax' => 'Tax']"
+                :words="\Devlib\Terbilang::words(round((float) $totals['grand']), $cur, $cur === 'IDR' ? 'id' : 'en')"
+                :summary="[
+                    ['Details', $money($totals['subtotal'])],
+                    ['DPP', $money($totals['dpp']), 'dpp'],
+                    ['PPN '.$totals['ppn_pct'].'%', $money($totals['ppn'])],
+                    ['Grand Total', $money($totals['grand']), 'grand'],
+                ]">
+                <x-slot:tax>
+                    <x-dl::form.row :cols="2">
+                        <x-dl::field.select name="tax_scheme" label="Skema pajak" :options="['EXCL' => 'Exclusive PPN 11%', 'INCL' => 'Inclusive PPN 11%']" :value="old('tax_scheme', $q->tax_scheme)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation.tax_scheme')" />
+                    </x-dl::form.row>
+                    <p class="dl-lines__hint">Nilai di Summary diperbarui setelah Save.</p>
+                </x-slot:tax>
+            </x-dl::doc-footer>
+        </x-slot:detail>
+    </x-dl::form>
 
     <x-dl::card title="Follow-up customer" description="Catatan telepon / kunjungan / WhatsApp / email sampai customer memutuskan.">
         <x-dl::table :columns="['date' => 'Tanggal', 'type' => 'Jenis', 'contact' => 'Kontak', 'result' => 'Hasil', 'notes' => 'Catatan', 'next' => 'Tindak lanjut', 'by' => 'Oleh']"
