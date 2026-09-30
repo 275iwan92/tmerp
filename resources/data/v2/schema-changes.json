@@ -1,5 +1,52 @@
 [
     {
+        "at": "2026-10-01 04:34:20",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_languages",
+                "column": "native_name",
+                "detail": "varchar(60)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_languages",
+                "column": "intl_locale",
+                "detail": "varchar(20)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_languages",
+                "column": "activate",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_languages",
+                "column": "sort_order",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_dictionary",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_dictionary_lang",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-09-30 06:29:48",
         "items": [
             {

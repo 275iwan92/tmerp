@@ -766,6 +766,13 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->whereNumber('id')->name('cancel');
     });
 
+    // Kamus penerjemah (LOCKED 2026-10-01): teks English dari JS (Devlib.h.t) yang belum ada di sys_dictionary dicatat.
+    Route::post('/dictionary/register', function (Request $r) {
+        $texts = array_slice(array_values(array_filter((array) $r->input('texts', []), 'is_string')), 0, 200);
+
+        return response()->json(['added' => \App\Support\Localization\Dictionary::register($texts)]);
+    })->name('dictionary.register');
+
     // Print & Email (objek DevLib x-dl::doc-share): simpan snapshot HTML -> token untuk QR / link online; kirim e-mail.
     Route::prefix('doc-share')->name('docshare.')->group(function () {
         Route::post('/', function (Request $r) {

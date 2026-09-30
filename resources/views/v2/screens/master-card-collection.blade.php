@@ -139,7 +139,7 @@
             @if ($c->type_code && isset($types[$c->type_code]))
                 <x-mp::dieline-v3 :data-artwork="$artwork?->url()" :types="$types" :type="$c->type_code" :dims="$c->dims_json ?? []" name="dieline" :picker="false" height="420px"
                     :source="Src::of('tm2mst.prod_master_card.dims_json', 'tm2mst.prod_master_card.dieline_svg', 'tm2mst.prod_type.dieline_spec')" />
-                <p class="mp-hint">SVG dieline disimpan di kartu setiap Save ({{ $c->dieline_svg ? number_format(strlen($c->dieline_svg), 0, ',', '.').' karakter' : 'belum ada' }}) dan ikut ke Master Product / Inquiry.</p>
+                <p class="mp-hint">SVG dieline disimpan di kartu setiap Save ({{ $c->dieline_svg ? \Devlib\Locale::number(strlen($c->dieline_svg)).' karakter' : 'belum ada' }}) dan ikut ke Master Product / Inquiry.</p>
             @endif
             <x-dl::form.row cols="1">
                 <x-dl::field.text :multiline="true" name="notes" label="Keterangan (kartu)" :value="old('notes', $c->notes)" :source="Src::of('tm2mst.prod_master_card.notes')" />

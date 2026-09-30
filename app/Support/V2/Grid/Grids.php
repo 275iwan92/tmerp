@@ -41,6 +41,7 @@ final class Grids
         Sales\GeneralCoOrderReport::class,
         Sales\GeneralCoShipDetailReport::class,
         Acc\CoaGrid::class,
+        Setup\TranslationDictionaryLookup::class,
     ];
 
     public static function find(string $slug): ?DbGrid

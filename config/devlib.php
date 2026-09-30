@@ -37,6 +37,10 @@ return [
     // Endpoint Print/Email x-dl::doc-share (routes/v2.php docshare.*). Kosong = PDF/JPEG saja tanpa QR/online/email.
     'doc_share_url' => '/v2/doc-share',
 
+    // Kamus penerjemah (LOCKED 2026-10-01): teks English yang dipakai JS tetapi belum ada di sys_dictionary dicatat lewat URL ini.
+    'dictionary_register_url' => '/v2/dictionary/register',
+    'dictionary_autoregister' => env('DICTIONARY_AUTOREGISTER', true),
+
     // Data contoh untuk halaman komponen (di tmerp nanti dari Lookup/tabel master).
     'demo' => [
         'locations' => [

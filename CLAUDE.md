@@ -238,6 +238,10 @@ transaksi = `iqp_costing`, ikut inquiry).
   tidak ada kolom bahasa di customer/supplier.
 - Pengecualian (bukan pelanggaran): teks bebas ketikan user (catatan, alamat) dan nama diri (nama customer,
   nama bahan dari supplier) disimpan apa adanya, tidak diterjemahkan.
+- **Cara membangun modul baru (otomatis ID + EN):** tulis semua label ENGLISH. Komponen `x-dl::*` (dan `DbGrid`/`DbLookup`)
+  menerjemahkan sendiri; teks lain `t('...')` / `@t('...')` (JS `Devlib.h.t`). Teks baru tercatat otomatis di `sys_dictionary`
+  -> terjemahan diisi di **Setup > Translation Dictionary**. Angka/tanggal/jam lewat objek DevLib (`Devlib\Locale`, `NumberValue`,
+  `DateValue`, `TimeValue`, `DateTimeValue`, `TextValue`). Dijaga `MultiLanguageRatchetTest` (label Indonesia mentah / format sendiri tidak boleh bertambah).
 - Data lama yang masih Indonesia di DB = utang yang dikonversi bertahap (audit & rencana:
   `docs/multilanguage_design.md`); data REAL (mesin/proses/pegawai) & zona beku §6B dikonversi hanya atas izin user.
 

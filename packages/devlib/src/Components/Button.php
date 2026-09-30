@@ -7,6 +7,11 @@ use Devlib\Locale;
 // Tombol baku. icon = arti baku (save, delete, print... lihat Devlib\Icon) atau emoji. href terisi = dirender <a>. variant link = tampil sebagai tautan.
 class Button extends DevlibComponent
 {
+    // Istilah tombol & status SELALU English satu kata (user 2026-09-30) -- tidak ikut kamus terjemahan.
+    protected const TEXT_PROPS = [];
+
+    protected const TEXT_LISTS = [];
+
     public function __construct(
         public string $label = '',
         public string $variant = 'primary',

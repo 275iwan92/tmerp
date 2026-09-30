@@ -2,7 +2,6 @@
 
 use App\Livewire\Concerns\HasCustomizableGrid;
 use {{MODEL_FQN}};
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -22,8 +21,8 @@ new #[Title('{{TITLE}} — TELASIH MAKMUR ERP')] class extends Component
     protected function gridColumnDefs(): array
     {
         return [
-            // 'kolom' => ['label' => Translator::t('{{T_PREFIX}}_col_kolom', 'Label')],
-            'created_by' => ['label' => Translator::t('shared_col_created_by', 'Dibuat Oleh')],
+            // 'kolom' => ['label' => t('Column Label')],
+            'created_by' => ['label' => t('Created By')],
         ];
     }
 
@@ -39,7 +38,7 @@ new #[Title('{{TITLE}} — TELASIH MAKMUR ERP')] class extends Component
 
     protected function gridIdentitySearchColumns(): array
     {
-        return ['{{CODE_COL}}' => Translator::t('shared_col_code', 'Kode'), '{{NAME_COL}}' => Translator::t('shared_col_name', 'Nama')];
+        return ['{{CODE_COL}}' => t('Code'), '{{NAME_COL}}' => t('Name')];
     }
 
     #[Computed]
@@ -78,15 +77,15 @@ new #[Title('{{TITLE}} — TELASIH MAKMUR ERP')] class extends Component
     <div class="max-w-[1500px] mx-auto my-5 px-4">
 
         <x-grid.stat-row :count="2">
-            <x-grid.stat-box tone="total" label="{{ Translator::t('{{T_PREFIX}}_stat_total', 'Total') }}" :value="number_format($this->stats['total'])" />
-            <x-grid.stat-box tone="{{STAT_TONE}}" label="{{ Translator::t('{{T_PREFIX}}_stat_{{STAT_KEY}}', '{{STAT_LABEL}}') }}" :value="number_format($this->stats['{{STAT_KEY}}'])" />
+            <x-grid.stat-box tone="total" label="{{ t('Total') }}" :value="\Devlib\Locale::number($this->stats['total'])" />
+            <x-grid.stat-box tone="{{STAT_TONE}}" label="{{ t('{{STAT_LABEL}}') }}" :value="\Devlib\Locale::number($this->stats['{{STAT_KEY}}'])" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('shared_search_placeholder', 'Cari kode, nama…') }}"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search code, name…') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:tools>
@@ -102,7 +101,7 @@ new #[Title('{{TITLE}} — TELASIH MAKMUR ERP')] class extends Component
                     <thead>
                         <tr>
                             <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]"></th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('shared_col_name', 'Nama') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Name') }}</th>
                             @foreach ($gridVisibleColumns as $key)
                                 <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] whitespace-nowrap">
                                     <button type="button" wire:click="toggleGridSort('{{ $key }}')" class="inline-flex items-center gap-1 cursor-pointer hover:text-navy {{ $gridSortColumn === $key ? 'text-accent' : '' }}">
@@ -115,7 +114,7 @@ new #[Title('{{TITLE}} — TELASIH MAKMUR ERP')] class extends Component
                     </thead>
                     <tbody>
                         @forelse ($this->items as $row)
-                            <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="row-{{ $row->{{PK}} }}" wire:dblclick="openItem({{ $row->{{PK}} }})" title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
+                            <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="row-{{ $row->{{PK}} }}" wire:dblclick="openItem({{ $row->{{PK}} }})" title="{{ t('Double-click to open details') }}">
                                 <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="flex items-center gap-1.5">
 {{ACTION_CELL}}

@@ -43,8 +43,50 @@ abstract class DevlibComponent extends Component
         return parent::withAttributes($attributes);
     }
 
+    // Teks tampilan otomatis ikut bahasa (LOCKED user 2026-10-01): layar menulis ENGLISH, kamus menerjemahkan ke bahasa
+    // tampilan/cetak -- layar tidak perlu memanggil apa pun. Turunan boleh mengubah daftar (Button/Badge: kosong, istilah
+    // tombol & status selalu English). Teks bebas milik data (nilai isian, isi baris) TIDAK diterjemahkan.
+    protected const TEXT_PROPS = ['label', 'title', 'subtitle', 'description', 'hint', 'placeholder', 'tooltip', 'message', 'text', 'search', 'empty', 'caption', 'heading'];
+
+    // Array berisi label: [['label' => ..], ..] atau [kunci => label | [label, ikon]]; parties/criteria: kunci = label.
+    protected const TEXT_LISTS = ['columns', 'stats', 'tabs', 'filters', 'signatures'];
+
+    protected const TEXT_KEYS = ['parties', 'criteria'];
+
+    private bool $translated = false;
+
+    protected function translateTexts(): void
+    {
+        if ($this->translated) {
+            return;
+        }
+        $this->translated = true;
+        $tr = fn ($v) => is_string($v) ? \Devlib\Lang::text($v) : $v;
+        foreach (static::TEXT_PROPS as $p) {
+            if (property_exists($this, $p) && is_string($this->{$p} ?? null)) {
+                $this->{$p} = $tr($this->{$p});
+            }
+        }
+        foreach (static::TEXT_LISTS as $p) {
+            if (property_exists($this, $p) && is_array($this->{$p})) {
+                $this->{$p} = array_map(fn ($c) => match (true) {
+                    is_string($c) => $tr($c),
+                    is_array($c) && isset($c['label']) => array_replace($c, ['label' => $tr($c['label'])]),
+                    is_array($c) && array_is_list($c) && $c => array_replace($c, [0 => $tr($c[0])] + (isset($c[1]) && $p === 'signatures' ? [1 => $tr($c[1])] : [])),
+                    default => $c,
+                }, $this->{$p});
+            }
+        }
+        foreach (static::TEXT_KEYS as $p) {
+            if (property_exists($this, $p) && is_array($this->{$p})) {
+                $this->{$p} = array_combine(array_map(fn ($k) => is_string($k) ? $tr($k) : $k, array_keys($this->{$p})), $this->{$p});
+            }
+        }
+    }
+
     public function resolveView()
     {
+        $this->translateTexts();
         $view = parent::resolveView();
 
         return function (array $data = []) use ($view) {

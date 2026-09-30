@@ -26,7 +26,19 @@ Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 
 - **Dilarang** FK lintas-DB, `->join()`/`whereHas()` lintas koneksi. Pakai relasi Eloquent terpisah / `whereIn`; validasi `exists:tm2xxx.tabel,kolom`.
 - Kolom: `activate` (bukan `is_active`), `stat_confirm/stat_cancel/stat_close`, `created_by/updated_by` berisi `login` (cek per tabel: sebagian legacy `update_by`).
 - Logika bisnis di `app/Services/*`; migration mencerminkan dump `docs/tm2*.sql`.
-- Label tombol: Simpan/Batal/Tutup, Back selalu Inggris; teks UI via `Translator::t(key, fallback)`.
+- Tombol & status selalu English satu kata (New/Save/Undo/Delete/Confirm/Cancel/Back; Draft/Confirmed/Cancelled/Closed).
+
+## Multi-bahasa (LOCKED user 2026-10-01) -- modul baru OTOMATIS siap ID + EN
+- **Database & semua formula ENGLISH** (kolom, kode, status, nilai lookup, konstanta, nama variabel rumus). Bahasa lain hanya tampilan & cetakan.
+- **Label ditulis ENGLISH.** Komponen `x-dl::*` menerjemahkan sendiri label/title/placeholder/hint/message + label kolom/stat/tab
+  (`DevlibComponent::translateTexts`) -- layar tidak memanggil apa pun. Teks lain: `t('English text')` (PHP/Blade) atau `@t('...')`;
+  JS: `Devlib.h.t('...')`; kata milik objek DevLib: kamus `Devlib\Lang` (kunci [ID, EN]). Nilai lookup dari DB: `t($value, '<db>.<tabel>.<kolom>')`.
+- Teks English baru **tercatat otomatis** di `tm2sys.sys_dictionary`; terjemahan diisi di Setup > Translation Dictionary. Jangan insert manual,
+  jangan tulis label Indonesia (dijaga `MultiLanguageRatchetTest`), jangan `Translator::t` (kamus kunci v1) di layar baru.
+- **Angka/tanggal/jam lewat objek DevLib**: `Devlib\Locale::number/decimal/money/d/dt`, `NumberValue`, `DateValue`, `TimeValue`, `DateTimeValue`,
+  `TextValue` (JS `fmt`, `DlNumber`, `DlDate`, `DlTime`, `DlDateTime`, `DlText`). Dilarang `number_format(.., ',', '.')`, `->format('d-M-Y')`,
+  `toLocaleString('id-ID')`. Form mengirim angka kanonik `1234.5` (isian angka DevLib bertanda `data-dl-num`); server baca `Locale::input()`.
+- Cetak: `x-dl::doc-share` sudah punya pilihan Bahasa cetak (`?print_lang`) -- label cetak juga English + kamus.
 
 ## Test
 - PHPUnit (bukan Pest). Test berjalan ke MySQL `tm2*` sungguhan, **tanpa `RefreshDatabase`** — bersihkan data sendiri di `tearDown()` dan cek ulang di DB. Jangan pernah pakai `employee_id=1` / `sec_user id=1` sebagai data uji yang diubah.

@@ -1,7 +1,6 @@
 <?php
 
 use {{MODEL_FQN}};
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -34,7 +33,7 @@ new #[Title('Form {{TITLE}} — TELASIH MAKMUR ERP')] class extends Component
 
         if ($this->recordId) {
             {{MODEL}}::whereKey($this->recordId)->update($data + ['updated_by' => $login]);
-            session()->flash('saved', Translator::t('shared_saved', 'Data tersimpan.'));
+            session()->flash('saved', t('Saved.'));
 
             return;
         }
@@ -46,10 +45,10 @@ new #[Title('Form {{TITLE}} — TELASIH MAKMUR ERP')] class extends Component
 ?>
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">{{ $recordId ? Translator::t('shared_edit', 'Edit').' {{TITLE}}' : '{{TITLE}} '.Translator::t('shared_new', 'Baru') }}</b>
+        <b class="text-[15px]">{{ ($recordId ? 'Edit' : 'New').' '.t('{{TITLE}}') }}</b>
         <div class="ml-auto flex items-center gap-2">
-            <button type="button" wire:click="save" class="px-4 py-1.5 rounded text-xs font-semibold bg-accent text-white cursor-pointer">{{ Translator::t('shared_btn_save', 'Simpan') }}</button>
-            <x-back-button :fallback="route('{{LIST_ROUTE}}')" title="{{ Translator::t('shared_back_to_list', 'Kembali ke Daftar') }}" />
+            <button type="button" wire:click="save" class="px-4 py-1.5 rounded text-xs font-semibold bg-accent text-white cursor-pointer">{{ 'Save' }}</button>
+            <x-back-button :fallback="route('{{LIST_ROUTE}}')" title="{{ 'Back' }}" />
         </div>
     </header>
 
@@ -58,7 +57,7 @@ new #[Title('Form {{TITLE}} — TELASIH MAKMUR ERP')] class extends Component
         <x-alert.banner type="danger" :message="$formError" />
 
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">1. {{ Translator::t('shared_section_identity', 'Identitas') }}</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">1. {{ t('Identity') }}</h3>
             <div class="grid two mb-3">
 {{FIELDS}}
             </div>

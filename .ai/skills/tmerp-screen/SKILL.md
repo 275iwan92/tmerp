@@ -26,5 +26,11 @@ Jangan baca `docs/BACKLOG.md`, `docs/LOG_JOB_DONE.md`, atau standar UI lengkap k
 4. Daftarkan route di `routes/web.php` pada grup `module:<KODE>` yang benar; menu di `sys_app_menu` lewat migration.
 5. Verifikasi: `php -l`, lalu `Livewire::test('pages::modul.nama')` via tinker; `npm run build` bila ada class Tailwind baru.
 
+## Multi-bahasa (wajib, LOCKED 2026-10-01)
+Label/teks ditulis ENGLISH: komponen `x-dl::*` & Grid/Lookup DB (`DbGrid`/`DbLookup`) menerjemahkan otomatis lewat kamus
+`sys_dictionary`; teks lain `t('...')` / `@t('...')` (generator sudah memakainya). Teks baru tercatat sendiri -- terjemahan diisi di
+Setup > Translation Dictionary. Angka/tanggal lewat `Devlib\Locale` / objek nilai DevLib (bukan `number_format` / `format('d-M-Y')`).
+`MultiLanguageRatchetTest` gagal bila label Indonesia mentah / format sendiri bertambah. Detail: skill `tmerp-stack-rules` bagian Multi-bahasa.
+
 ## Komponen baru
 Buat komponen baru HANYA bila pola dipakai ≥2 layar dan tidak ada di manifest. Setelah dibuat: tambahkan barisnya ke `_manifest.yaml` dan tampilkan di layar DevLib (`setup/component-library.blade.php`). Pola bersama (label/hint/error, tone warna) diikuti, bukan disalin dengan variasi baru.

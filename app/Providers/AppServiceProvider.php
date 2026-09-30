@@ -19,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        require_once app_path('Support/Localization/helpers.php');  // t() -- teks tampilan lewat kamus
         // Herd di Windows: kompilasi view paralel bisa gagal rename (Access is denied) -> lihat kelasnya.
         if (PHP_OS_FAMILY === 'Windows') {
             $this->app->singleton('files', fn () => new \App\Support\Filesystem\WindowsSafeFilesystem);
@@ -37,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
         // Aturan tampil per bahasa (angka, bulan) + terjemahan label DevLib dari kamus DB (LOCKED user 2026-10-01).
         \Devlib\Locale::languagesUsing(fn () => \App\Support\Localization\Dictionary::languages());
         \Devlib\Lang::translateUsing(fn (string $en, string $lang) => \App\Support\Localization\Dictionary::t($en, 'ui', $lang));
+        \Devlib\Lang::dictUsing(fn (string $lang) => \App\Support\Localization\Dictionary::uiMap($lang));
+        \Illuminate\Support\Facades\Blade::directive('t', fn ($e) => "<?php echo e(t($e)); ?>");
 
         // Setting admin sembunyikan data DUMMY/LEGACY hanya berlaku di request
         // web -- migration, job, dan tinker selalu melihat semua data.
