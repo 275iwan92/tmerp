@@ -1,7 +1,33 @@
 # Multi-Language (N bahasa) — Usulan Desain
 
-Status: **USULAN, menunggu keputusan user** (2026-10-01). Pemicu: user akan menambah bahasa
+Status: **DIPUTUSKAN user 2026-10-01** (lihat §0 — menggantikan usulan §2.3/§2.5/§3 di bawah yang berbeda). Pemicu: user akan menambah bahasa
 lain (mis. Jepang, Mandarin) selain ID/EN, jadi sistem tidak boleh terkunci pada pasangan ID/EN.
+
+## 0. KEPUTUSAN USER 2026-10-01 (LOCKED, juga di CLAUDE.md §3)
+> *"DATABASE DAN SEMUA FORMULA HARUS ENGLISH. CREATE DICTIONARY TABLE AS TRANSLATOR TO UI UX AND PRINT OUT.
+> ANOTHER LANGUAGE ONLY FOR INTERFACE AND PRINT OUT FOR USERS."*
+
+1. **Database + semua formula = English** (base language). Bahasa lain hanya tampilan layar & cetakan.
+2. **Kamus = penerjemah** (bukan `_tl`, bukan JSON): `tm2sys.sys_dictionary` (id_dictionary, `context`,
+   `source_en`) + `sys_dictionary_lang` (id_dictionary, `lang_code`, `text`). English tidak perlu baris
+   terjemahan (sumbernya sendiri). Terjemahan kosong -> tampil English.
+3. **Angka per bahasa tampilan** (layar & cetak), aturan di `sys_languages` (decimal/thousand separator).
+   DB = DECIMAL mentah; form mengirim angka kanonik `1234.5`.
+4. **Bulan 3 huruf per bahasa**: dd-Mmm-yyyy, Mmm dari kamus konteks `date.month_short`
+   (id: Jan Feb Mar Apr Mei Jun Jul Agu Sep Okt Nov Des). Jepang/Mandarin tidak punya singkatan 3 huruf
+   (pakai `10月`) -- diisi saat bahasanya ditambahkan.
+5. **Bahasa cetak = pilihan user** di menu Print/Email; tanpa kolom bahasa di customer/supplier.
+
+### 0.1 Audit data yang masih Indonesia di DB (2026-10-01, belum dikonversi)
+| Tabel | Contoh isi | Jenis | Rencana |
+|---|---|---|---|
+| `tm2mst.uom_unit.uom_name` | Sentimeter, Inci, Kuintal | lookup | ganti English + kamus id |
+| `tm2mst.fin_payment_term.term_label` | Bayar Dimuka, Bayar 30 Hari | lookup | ganti English (Cash in Advance, Net 30) + kamus id |
+| `tm2mst.prod_category.category_name` | Cetakan Komersial, Jasa & Ongkos | lookup | ganti English + kamus id |
+| `tm2sys.sys_app_menu.label` | Lembur, Master Bahan Baku, Ringkasan | label sistem | ganti English + kamus id |
+| `tm2mst.prod_process.process_name` | CETAK, PLONG, KETREK, POTONG | **DATA REAL** + istilah lantai produksi | butuh izin user (English: PRINTING, DIE CUT, ...) |
+| `tm2mst.mat_raw.material_name` | DC 350 GR PKR KW1 ... | nama barang dari supplier | tetap (nama diri) |
+| `sys_translations` (996 kunci x id/en) | label v1 | kamus lama v1 | tetap untuk v1; v2 memakai `sys_dictionary` |
 
 ## 1. Referensi — cara ERP besar bekerja
 
