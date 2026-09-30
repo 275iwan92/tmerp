@@ -10,7 +10,9 @@ namespace Devlib\Components;
 //         submitter = pembuat (bukan level approval); sisanya = Level 1..n, yang 'current' = level berjalan.
 //         'history' => [['action','by','at','note','plt']]]]
 // lineColumns: [kolom => label]; kolom berakhiran :money diformat Rupiah (mis. 'price:money').
-// Keputusan memancarkan event dl:approval (detail: {id, action, note}) untuk disimpan aplikasi.
+// Setiap keputusan = LOG (user 2026-09-30): siapa, kapan, aksi (APPROVED/REJECTED/HOLD), level & alasan. Tampil di
+// Riwayat Dokumen + panel Log Keputusan, dan dipancarkan sebagai event dl:approval
+// (detail: {id, no, action, status, by, at, level, role, note}) -- aplikasi WAJIB menyimpannya (mis. flow_log / doc_state_log).
 class Approval extends DevlibComponent
 {
     public function __construct(
@@ -40,7 +42,10 @@ class Approval extends DevlibComponent
             <div {{ $attributes->class('dl-appr') }} {!! $dl() !!} data-dl-approval data-docs="{{ json_encode($docs) }}" data-cols="{{ json_encode($lineColumns) }}" data-me="{{ $me }}">
                 <div class="dl-appr__head"><h2>{{ $title }}</h2><span class="dl-badge dl-badge--pill dl-badge--warn" data-a-count></span></div>
                 <div class="dl-appr__grid">
-                    <div class="dl-appr__list" data-a-list></div>
+                    <div class="dl-appr__side">
+                        <div class="dl-appr__list" data-a-list></div>
+                        <div class="dl-appr__log" data-a-log hidden><p class="dl-appr__cap">Log Keputusan</p><ul data-a-logrows></ul></div>
+                    </div>
                     <div class="dl-appr__detail" data-a-detail>
                         <div data-a-body></div>
                         {{ $slot }}

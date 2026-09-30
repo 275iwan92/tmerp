@@ -1196,6 +1196,12 @@ form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:v
 .dl-appr__head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .dl-appr__head h2{margin:0;font-size:calc(17px * var(--dl-font-scale));color:var(--dl-ink-strong)}
 .dl-appr__grid{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:12px;align-items:start}
+.dl-appr__side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.dl-appr__log{border-top:1px solid var(--dl-border);padding-top:10px}
+.dl-appr__log ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.dl-appr__log li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-ink)}
+.dl-appr__log small{display:block;color:var(--dl-muted);font-size:calc(11px * var(--dl-font-scale))}
+.dl-appr__log q{display:block;color:var(--dl-muted);font-style:italic;font-size:calc(11px * var(--dl-font-scale))}
 .dl-appr__list{display:flex;flex-direction:column;gap:6px}
 .dl-appr__item{display:flex;flex-direction:column;gap:3px;text-align:left;padding:10px 12px;border:1px solid var(--dl-border);border-left:4px solid var(--dl-amber-2);border-radius:var(--dl-radius);background:var(--dl-surface);cursor:pointer;font-family:inherit;color:var(--dl-ink)}
 .dl-appr__item:hover{background:var(--dl-hover)}

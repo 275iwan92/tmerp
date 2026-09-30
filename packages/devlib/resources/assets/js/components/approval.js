@@ -10,6 +10,7 @@
       this.cols = JSON.parse(this.el.dataset.cols || '{}');
       this.me = this.el.dataset.me;
       this.cur = this.docs[0] ? this.docs[0].id : null;
+      this.log = [];
       this.icon = {SUBMITTED: 'fa-paper-plane', APPROVED: 'fa-check', REJECTED: 'fa-ban', HOLD: 'fa-pause'};
       this.el.addEventListener('click', e => {
         const it = e.target.closest('[data-a-id]'); if (it) { this.cur = isNaN(+it.dataset.aId) ? it.dataset.aId : +it.dataset.aId; this.list(); this.detail(); return; }
@@ -26,6 +27,12 @@
     level(d) {
       const lv = (d.steps || []).filter(s => !s.submitter);
       return {n: lv.length, at: lv.findIndex(s => s.status === 'current') + 1, steps: lv};
+    }
+
+    logs() {
+      const box = $(this.el, '[data-a-log]'); box.hidden = !this.log.length;
+      const tone = {APPROVED: 'success', REJECTED: 'danger', HOLD: 'neutral'};
+      $(box, '[data-a-logrows]').innerHTML = this.log.map(l => `<li><span class="dl-badge dl-badge--pill dl-badge--${tone[l.status]}">${l.status}</span><div><b>${esc(l.no)}</b> · Level ${l.level} / ${l.levels}<small>${esc(l.by)} · ${esc(l.at)}</small>${l.note ? `<q>${esc(l.note)}</q>` : ''}</div></li>`).join('');
     }
 
     rp(v) {
@@ -71,8 +78,11 @@
         tone: action === 'reject' ? 'danger' : action === 'hold' ? 'warn' : 'success', ok: word, reason: action !== 'approve'}).then(res => {
         if (!res) return;
         const n = typeof res === 'string' ? res : '';
-        const now = `${fmt.date()} ${fmt.time()}`, step = (d.steps || []).find(s => s.status === 'current');
-        (d.history = d.history || []).push({action: {approve: 'APPROVED', reject: 'REJECTED', hold: 'HOLD'}[action], by: this.me, at: now, note: n});
+        const now = `${fmt.date()} ${fmt.time()}`, step = (d.steps || []).find(s => s.status === 'current'), lv = this.level(d);
+        const status = {approve: 'APPROVED', reject: 'REJECTED', hold: 'HOLD'}[action];
+        const log = {id: d.id, no: d.no, action, status, by: this.me, at: now, level: lv.at, levels: lv.n, role: step ? step.role : '', note: n};
+        (d.history = d.history || []).push({action: status, by: this.me, at: now, note: n});
+        this.log.unshift(log); this.logs();
         if (action === 'hold') { d.held = {by: this.me, at: now, note: n}; toast(`${d.no} ditahan.`, 'warn'); this.detail(); this.list(); }
         else {
           if (step) Object.assign(step, {status: action === 'approve' ? 'done' : 'rejected', by: this.me, at: now});
@@ -80,7 +90,7 @@
           toast(`${d.no} ${action === 'approve' ? 'disetujui' : 'ditolak'}.`, action === 'approve' ? 'success' : 'danger');
           const next = this.pending()[0]; this.cur = next ? next.id : null; this.list(); this.detail();
         }
-        this.el.dispatchEvent(new CustomEvent('dl:approval', {bubbles: true, detail: {id: d.id, action, note: n}}));
+        this.el.dispatchEvent(new CustomEvent('dl:approval', {bubbles: true, detail: log}));
       });
     }
   }

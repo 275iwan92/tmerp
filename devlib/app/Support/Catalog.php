@@ -16,6 +16,7 @@ final class Catalog
         'p5-grid-tx' => '2026-09-30',     // Grid Pre-Entry > Transactional -- DISETUJUI & DIKUNCI user; jangan ubah tanpa perintah user
         'p5-grid-master' => '2026-09-30', // Grid Pre-Entry > Grid Master (dulu Non-Transactional) -- tata letak = Transactional + kotak per baris
         'p5-form-single' => '2026-09-30',
+        'p5-form-approval' => '2026-09-30', // Form Approval -- read-only, Level n of N, Approve/Reject final, Hold sementara, LOG keputusan
         'p5-form-wizard' => '2026-09-30', // Form Wizard -- disetujui user 2026-09-30 (dulu Documents > Wizard)
         'p5-form-md' => '2026-09-30',     // Form Master-Detail (CO & PO) -- ringkasan, tab header, Details tengah, footer tab + Summary + terbilang // Single Form -- panel atas, istilah English, siklus Draft/Confirmed/Cancelled/Closed, tab Riwayat
         'p5-grid-lookup' => '2026-09-30', // Grid Pre-Entry > Grid Lookup -- sel teks aa/Aa/AA, decimal, date/time + pemilih, kalkulator mini
