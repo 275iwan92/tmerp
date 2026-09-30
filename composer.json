@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "anthropic-ai/sdk": "^0.53.0",
         "barryvdh/laravel-dompdf": "^3.1",
         "filament/filament": "^5.7",
         "kreait/firebase-php": "^8.4",

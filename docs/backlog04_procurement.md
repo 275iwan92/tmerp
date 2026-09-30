@@ -27,6 +27,14 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
   Jasa/Service, Peralatan Kebersihan — murni tinggal user isi manual per
   kategori (keputusan akun, bukan kode), akun GR/IR universal (813) sudah
   terisi semua.
+- **Alur Purchasing (user 2026-10-01): PR -> PQ (boleh dilewati) -> PO -> Purchase Receive (SPB) -> otomatis
+  STOCK INPUT.** Status: PR/PQ/PO/SPB v2 sudah tersambung. Post SPB SUDAH otomatis membuat & mem-posting dokumen
+  Stock In RM (`PvPostingService::postToInventory` -> `StockDocumentService` doc IN, `ref_doc_type='PV'`) + jurnal
+  Dr Persediaan / Cr GR/IR. **Yang belum:** layar **Stock In v2** (menu INV_IN / INV_RM_ITEM1 masih NOT_BUILT) untuk
+  melihat dokumen Stock In hasil SPB (read-only karena lahir dari SPB) maupun input manual.
+- **PQ v2 sisa:** (1) `ANTHROPIC_API_KEY` belum diisi -> PDF/foto penawaran belum terbaca otomatis (keputusan user:
+  key & izin data penawaran dikirim ke Anthropic); (2) migration PQ di tm2* menunggu OK; (3) file .eml/.msg belum
+  didukung (upload lampirannya); (4) CSV berformat angka Indonesia ("12.500") bisa terbaca 12,5 oleh pembaca Excel lokal.
 - **PO Kontan + Kas Kecil — BELUM ADA, dibahas di sesi lain** (dicatat user
   2026-10-01). Pembelian kontan berdampak ke petty cash DAN ke PO (ada input
   "PO Kontan"). Kondisi kode: `po_order.i_po_type` baru `LOCAL`/`IMPORT`/

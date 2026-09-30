@@ -2509,3 +2509,13 @@ html.dl-locked body{overflow:hidden}
 .dl-split{display:grid;grid-template-columns:minmax(0,1fr) var(--dl-aside,320px);gap:12px;align-items:start}
 .dl-split__main,.dl-split__aside{min-width:0;display:flex;flex-direction:column;gap:12px}
 @media (max-width:900px){.dl-split{grid-template-columns:1fr}}
+/* PickMatrix: pilih pemenang per baris (mis. bandingkan penawaran supplier) */
+.dl-pick__table th small,.dl-pick__table td small{display:block;font-size:calc(10.5px * var(--dl-font-scale));color:var(--dl-muted);font-weight:400;text-transform:none;letter-spacing:0}
+.dl-pick__cell{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-variant-numeric:tabular-nums}
+.dl-pick__table td.is-best{background:var(--dl-accent-soft)!important}
+.dl-pick__table tr.is-locked td{color:var(--dl-muted)}
+.dl-pick__lock{color:var(--dl-green)!important}
+.dl-pick__warn{color:var(--dl-amber)!important}
+.dl-pick__none{color:var(--dl-muted)}
+.dl-pick__sum{margin-top:10px;padding:8px 12px;border-radius:var(--dl-radius);background:var(--dl-accent-soft);color:var(--dl-ink-strong);font-size:calc(12.5px * var(--dl-font-scale))}
+.dl-pick__empty{padding:20px;text-align:center;color:var(--dl-muted);border:1px dashed var(--dl-border);border-radius:var(--dl-radius)}

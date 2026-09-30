@@ -15,9 +15,10 @@ class PqQuotation extends Model
     protected $primaryKey = 'pq_id';
 
     protected $fillable = [
-        'doc_no', 'i_doc_date', 'i_supplier_id', 'i_pr_id',
+        'doc_no', 'i_doc_date', 'i_supplier_id', 'i_supplier_text', 'i_pr_id',
         'i_quotation_valid_until', 'i_currency_id', 'i_fx_rate', 'i_payment_term',
-        'i_lead_time_day', 'i_notes', 'c_total_idr', 'status', 'cancel_reason',
+        'i_lead_time_day', 'i_notes', 'source_path', 'source_name', 'extract_status', 'extract_note',
+        'c_total_idr', 'status', 'cancel_reason',
         'created_by', 'updated_by',
     ];
 

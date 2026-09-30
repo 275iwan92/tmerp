@@ -52,11 +52,12 @@
         $sup = \Illuminate\Support\Facades\DB::connection('tm2mst')->table('sup_supplier')->where('id_supplier', $po->i_supplier_id)->first();
         $money = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
         $trim = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.') ?: '0';
+        $pqNo = \App\Models\Pur\PqLine::whereIn('pq_line_id', $po->lines->pluck('pq_line_id')->filter())->join('pq_quotation', 'pq_quotation.pq_id', '=', 'pq_line.pq_id')->pluck('pq_quotation.doc_no', 'pq_line.pq_line_id');
         $lines = $po->lines->map(fn ($l) => [
             'po_line_id' => $l->po_line_id, 'i_description' => $l->i_description, 'i_qty' => (float) $l->i_qty, 'i_uom' => $l->i_uom,
             'i_price' => (float) $l->i_price, 'i_disc_pct' => (float) $l->i_disc_pct,
             'code' => $l->c_item_code ?: '—', 'class' => $l->i_line_class === 'SERVICE' ? 'Jasa (kena PPh 23)' : 'Barang', 'stock' => $l->is_stock ? 'Stok' : 'Non-stok',
-            'received' => $trim($l->c_qty_received).' '.$l->i_uom, 'outstanding' => $trim($l->c_qty_outstanding).' '.$l->i_uom, 'tol' => $trim($l->c_tol_pct).'%',
+            'pq' => $pqNo[$l->pq_line_id] ?? '—', 'received' => $trim($l->c_qty_received).' '.$l->i_uom, 'outstanding' => $trim($l->c_qty_outstanding).' '.$l->i_uom, 'tol' => $trim($l->c_tol_pct).'%',
         ])->values()->all();
     @endphp
     <x-dl::form id="po-form" :title="'Purchase Order · '.($po->doc_no ?: 'Draft #'.$po->po_id)" :subtitle="($sup->supplier_name ?? '—').' · '.$po->status"
@@ -117,6 +118,7 @@
                     ['key' => 'i_disc_pct', 'label' => 'Disc %', 'type' => 'number', 'width' => '80px'],
                     ['key' => 'net', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'i_qty * i_price * (1 - i_disc_pct / 100)', 'sum' => true, 'width' => '140px'],
                     ['key' => 'code', 'label' => 'Kode Item', 'type' => 'display', 'more' => true],
+                    ['key' => 'pq', 'label' => 'Harga dari PQ', 'type' => 'display', 'more' => true],
                     ['key' => 'class', 'label' => 'Jenis', 'type' => 'display', 'more' => true],
                     ['key' => 'stock', 'label' => 'Stok', 'type' => 'display', 'more' => true],
                     ['key' => 'tol', 'label' => 'Toleransi', 'type' => 'display', 'more' => true],

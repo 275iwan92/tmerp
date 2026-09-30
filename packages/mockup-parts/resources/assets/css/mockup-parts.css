@@ -439,3 +439,5 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .mp-rv legend{font-weight:800;font-size:12.5px;color:var(--dl-ink-strong);padding:0 6px}
 .mp-rv:disabled{opacity:.55;background:var(--dl-surface-alt)}
 .mp-rv.is-on{border-color:color-mix(in srgb,var(--dl-accent) 45%,transparent);background:color-mix(in srgb,var(--dl-accent) 5%,var(--dl-surface))}
+/* Pratinjau file sumber dokumen (mis. file penawaran supplier di Purchase Quotation) */
+.mp-file-preview{display:block;width:100%;height:70vh;border:1px solid var(--dl-border);border-radius:var(--dl-radius);background:var(--dl-surface);object-fit:contain}

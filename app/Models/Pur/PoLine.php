@@ -15,7 +15,7 @@ class PoLine extends Model
     protected $primaryKey = 'po_line_id';
 
     protected $fillable = [
-        'po_id', 'line_no', 'alloc_id', 'item_id', 'c_item_code', 'i_description', 'i_line_class',
+        'po_id', 'line_no', 'alloc_id', 'pq_line_id', 'item_id', 'c_item_code', 'i_description', 'i_line_class',
         'i_qty', 'i_uom', 'c_uom_stock', 'c_conv_to_stock',
         'i_price', 'i_disc_pct', 'i_disc_amt', 'c_line_net',
         'i_department_id', 'i_coa_account_id', 'i_co_line_id', 'is_stock',

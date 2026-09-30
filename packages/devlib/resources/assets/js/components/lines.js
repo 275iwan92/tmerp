@@ -256,12 +256,26 @@
     add(focus = true) { this.rows.push(this.blank()); this.body(); this.changed(); if (focus) { const f = $(this.el, `tr[data-i="${this.rows.length - 1}"] .dl-lines__in`); if (f) f.focus(); } }
     closePop() { if (this.pop) { this.pop.remove(); this.pop = null; } }
 
+    // Lookup remote (data besar, mis. Master Bahan 11 rb baris): ketik min. 2 huruf -> cari ke server (route devlib.lookup).
     openPop(inp) {
       const c = this.colOf(inp.dataset.k), L = c.lookup, q = inp.value.trim().toLowerCase();
-      const list = L.rows.filter(r => !q || Object.keys(L.columns).some(k => String(r[k] ?? '').toLowerCase().includes(q))).slice(0, 50);
+      if (!L.remote) return this.showPop(inp, c, L.rows.filter(r => !q || Object.keys(L.columns).some(k => String(r[k] ?? '').toLowerCase().includes(q))).slice(0, 50));
+      clearTimeout(this.lkTimer);
+      if (q.length < 2) return this.showPop(inp, c, [], 'Ketik min. 2 huruf...');
+      const my = this.lkSeq = (this.lkSeq || 0) + 1;
+      this.lkTimer = setTimeout(async () => {
+        const u = new URL(L.url, location.origin); u.searchParams.set('q', q);
+        const res = await fetch(u, {headers: {Accept: 'application/json'}, credentials: 'same-origin'}).then(x => x.ok ? x.json() : []).catch(() => []);
+        if (my !== this.lkSeq || document.activeElement !== inp) return;
+        L.rows = res; this.showPop(inp, c, res);
+      }, 250);
+    }
+
+    showPop(inp, c, list, hint = 'Tidak ditemukan') {
+      const L = c.lookup;
       this.closePop();
       this.pop = document.createElement('div'); this.pop.className = 'dl-lines__pop';
-      this.pop.innerHTML = `<table class="dl-lookup__table"><thead><tr>${Object.values(L.columns).map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${list.map(r => `<tr class="dl-dd__item" data-key="${esc(r[L.key])}">${Object.keys(L.columns).map(k => `<td>${esc(r[k] ?? '')}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="9" class="dl-lines__empty">Tidak ditemukan</td></tr>`}</tbody></table>`;
+      this.pop.innerHTML = `<table class="dl-lookup__table"><thead><tr>${Object.values(L.columns).map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${list.map(r => `<tr class="dl-dd__item" data-key="${esc(r[L.key])}">${Object.keys(L.columns).map(k => `<td>${esc(r[k] ?? '')}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="9" class="dl-lines__empty">${esc(hint)}</td></tr>`}</tbody></table>`;
       const rc = inp.getBoundingClientRect();
       this.pop.style.cssText = `left:${rc.left + scrollX}px;top:${rc.bottom + scrollY + 2}px;min-width:${Math.max(rc.width, 320)}px`;
       this.pop.addEventListener('mousedown', e => {

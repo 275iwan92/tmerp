@@ -3,6 +3,7 @@
 namespace App\Support\V2\Data;
 
 use App\Models\Pur\PoOrder;
+use App\Models\Pur\PqLine;
 use App\Models\Pur\PrLineAlloc;
 use App\Services\Flow\FlowEngineService;
 use App\Services\Pur\PoBuilderService;
@@ -76,10 +77,15 @@ final class PurchaseOrder
     // Alokasi PR APPROVED yang belum jadi PO, supplier cocok / belum ditetapkan (availableAllocations v1).
     public static function allocationOptions(PoOrder $po): array
     {
-        return PrLineAlloc::with(['line.requisition'])->where('c_is_converted', false)
+        $allocs = PrLineAlloc::with(['line.requisition'])->where('c_is_converted', false)
             ->where(fn ($q) => $q->whereNull('i_supplier_id')->orWhere('i_supplier_id', $po->i_supplier_id))
-            ->whereHas('line.requisition', fn ($q) => $q->where('status', 'APPROVED'))->get()->filter(fn ($a) => $a->line !== null)
-            ->mapWithKeys(fn ($a) => [$a->getKey() => ($a->line->requisition->doc_no ?? 'PR').' · '.$a->line->i_description.' · '.rtrim(rtrim(number_format((float) ($a->i_qty ?? $a->line->i_qty), 2, '.', ''), '0'), '.').' '.$a->line->i_uom])->all();
+            ->whereHas('line.requisition', fn ($q) => $q->where('status', 'APPROVED'))->get()->filter(fn ($a) => $a->line !== null);
+        // Baris PR yang sedang ditawar di PQ Confirmed ditandai, supaya tidak di-PO lewat dua jalur tanpa sadar.
+        $quoted = PqLine::whereIn('pr_line_id', $allocs->pluck('pr_line_id'))->whereHas('quotation', fn ($q) => $q->where('status', 'CONFIRMED'))
+            ->pluck('pr_line_id')->flip();
+
+        return $allocs->mapWithKeys(fn ($a) => [$a->getKey() => ($a->line->requisition->doc_no ?? 'PR').' · '.$a->line->i_description.' · '.rtrim(rtrim(number_format((float) ($a->i_qty ?? $a->line->i_qty), 2, '.', ''), '0'), '.').' '.$a->line->i_uom
+            .(isset($quoted[$a->pr_line_id]) ? ' · sedang di-PQ' : '')])->all();
     }
 
     public static function addAllocation(PoOrder $po, int $allocId): void

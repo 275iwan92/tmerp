@@ -65,6 +65,7 @@ final class Screens
                     $it('approval-pr', ['PR Approval Center', 'fa-solid fa-stamp', 'pur/pr/approval.blade.php', 'mockup_pr_approval_center.html']),
                 ]],
                 ['label' => 'Order', 'items' => [
+                    $it('purchase-quotation', ['Purchase Quotation (PQ)', 'fa-solid fa-file-import', 'pur/pq/index + entry.blade.php (v2: upload file penawaran)', null]),
                     $it('purchase-order', ['Purchase Order (PO)', 'fa-solid fa-file-invoice-dollar', 'pur/po/index + entry.blade.php', null]),
                     $it('approval-po', ['PO Approval Center', 'fa-solid fa-stamp', 'pur/po/approval.blade.php', 'mockup_po_approval_center.html']),
                 ]],

@@ -35,6 +35,7 @@ use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\Quotation;
 use App\Support\V2\Flows;
 use App\Support\V2\Grid\DbGrid;
+use App\Support\V2\Grid\DbLookup;
 use App\Support\V2\Grid\Grids;
 use App\Support\V2\InquiryPayload;
 use App\Support\V2\Schema;
@@ -90,6 +91,17 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return response()->json(['active' => $grid->toggle($id)]);
     })->name('grid.toggle');
+
+    // Save Grid Lookup (App\Support\V2\Grid\DbLookup::save) -> isi terbaru dari database.
+    Route::post('/lookup/{slug}/save', function (Request $r, string $slug) {
+        $grid = Grids::find($slug) ?? abort(404);
+        abort_unless($grid instanceof DbLookup && Auth::user()->canAccessModule($grid->module()), 403);
+        try {
+            return response()->json(['rows' => $grid->save((array) $r->input('changed', []))]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => collect($e->errors())->flatten()->first()], 422);
+        }
+    })->name('lookup.save');
 
     // Duplicate inquiry (spec sama, customer lain) -> NEW DRAFT baru; logika = App\Services\Sales\InquiryDuplicator (sama dgn v1).
     Route::post('/inquiry/duplicate', function (Request $r) {

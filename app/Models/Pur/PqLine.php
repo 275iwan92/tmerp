@@ -15,7 +15,7 @@ class PqLine extends Model
     protected $primaryKey = 'pq_line_id';
 
     protected $fillable = [
-        'pq_id', 'line_no', 'pr_line_id', 'item_id', 'i_description',
+        'pq_id', 'line_no', 'pr_line_id', 'item_id', 'i_description', 'i_source_text', 'c_match_pct',
         'i_qty', 'i_uom', 'i_price_fx', 'c_price_idr', 'c_subtotal_idr',
         'i_lead_time_day', 'i_notes', 'created_by', 'updated_by',
     ];

@@ -3,6 +3,19 @@
 
 ---
 
+## 2026-10-01 -- Purchase Quotation v2: upload file penawaran -> dibaca -> bandingkan -> Buat PO
+
+- Layar v2 `purchase-quotation` (menu PROC_PQ, ddtsys): upload file dari email supplier (PDF/Excel/CSV/JPG/PNG, maks. 10),
+  1 file = 1 PQ Draft terbaca + dicocokkan (supplier, baris PR, Master Bahan, skor %). Officer cek baris kuning -> Confirm
+  -> Bandingkan per PR (objek DevLib baru `x-dl::pick-matrix`, default termurah) -> Buat PO (1 PO per supplier).
+- PO dari PQ lewat `pr_line_alloc` (PR ikut ter-update, tidak bisa di-PO dobel); `po_line.pq_line_id` = jejak harga.
+  PQ Closed saat semua barisnya jadi PO. Layar PO v2: kolom "Harga dari PQ", baris PR "sedang di-PQ" ditandai.
+- Pembaca: `App\Services\Pur\PqFileReader` (Claude API `claude-opus-5-5` bila `ANTHROPIC_API_KEY` diisi; tanpa key hanya
+  Excel/CSV) + `PqMatcher`. DevLib `x-dl::lines` kolom lookup kini bisa cari ke server (Lookup remote, mis. `material`).
+- Migration `2026_10_01_000002_pq_upload_extract_and_po_line_link` dijalankan di ddt* saja; tm2* menunggu OK user.
+
+---
+
 ## 2026-09-30 -- Backlog: keputusan user v1/Filament/i18n
 
 - backlog01 UI-01/02/04/05/12/14/15 dihapus: v1 tidak dirapikan lagi (diganti v2), Filament `/admin` bukan arah ke depan.

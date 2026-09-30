@@ -95,7 +95,8 @@ class Lines extends DevlibComponent
         $cols = array_map(function ($c) {
             $c += ['type' => 'text', 'required' => false, 'sum' => false];
             if ($c['type'] === 'lookup') {
-                $c['lookup'] = Lookup::get($c['lookup']);
+                $name = $c['lookup'];
+                $c['lookup'] = Lookup::get($name) + ['url' => route('devlib.lookup', ['name' => $name])];
             }
             if (isset($c['options']) && array_is_list($c['options'])) {
                 $c['options'] = array_combine($c['options'], $c['options']);
