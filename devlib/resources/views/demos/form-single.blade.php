@@ -3,7 +3,7 @@
     // Awal selalu Draft -> Confirm = Confirmed (isi terkunci) -> Cancel = Cancelled; Back to Draft (Mode Developer) = Draft lagi.
     $act = request('_action');
     $status = match ($act) {
-        'confirm' => 'confirmed', 'draft', 'save' => 'draft', 'cancel' => 'cancelled', 'delete' => 'new',
+        'confirm' => 'confirmed', 'draft', 'save' => 'draft', 'cancel' => 'cancelled', 'delete', 'duplicate' => 'new',
         default => request()->boolean('new') ? 'new' : request('status', 'draft'),
     };
     $isNew = $status === 'new';
@@ -16,7 +16,9 @@
         'phone' => '+6281234567890', 'email_personal' => 'budi.santoso@gmail.com', 'village_id_ktp' => '1', 'address_detail_ktp' => 'Jl. Mawar 12 RT 03/04', 'domisili_same' => true,
         'emergency_contact_name' => 'Siti Aminah', 'emergency_contact_relation' => 'Istri', 'emergency_contact_phone' => '+6281322221111',
     ];
-    $e = $isNew ? ['company_id' => '1', 'work_status' => 'WORKING'] : $sample;
+    // Duplicate: salinan isi dokumen yang dibatalkan, tanpa nomor (nomor baru dibuat saat Save).
+    $dup = $act === 'duplicate';
+    $e = $dup ? ['employee_code' => null] + $sample : ($isNew ? ['company_id' => '1', 'work_status' => 'WORKING'] : $sample);
     // Isian yang baru dikirim menang atas data contoh (field terkunci tidak ikut terkirim -> pakai data contoh).
     $v = fn ($k) => ! $isNew && request()->has($k) ? request($k) : ($e[$k] ?? null);
     $name = $v('full_name') ?: 'Budi Santoso';
@@ -33,7 +35,7 @@
         <x-dl::button size="sm" :variant="$rk === $as ? 'primary' : 'secondary'" :label="$rl" :href="url()->current().'?'.http_build_query(['as' => $rk, 'status' => $isNew ? 'draft' : $status])" />
     @endforeach
 </div>
-<x-dl::form :title="$isNew ? 'Pegawai · Baru' : 'Pegawai · TM-00012 '.$name" panel="top" kind="document" :status="$status"
+<x-dl::form :title="$dup ? 'Pegawai · Baru (salinan TM-00012)' : ($isNew ? 'Pegawai · Baru' : 'Pegawai · TM-00012 '.$name)" panel="top" kind="document" :status="$status"
     :action="url()->current()" method="GET" :new-url="url()->current().'?new=1&as='.$as" :can-reopen="$canReopen" :can-input="$canInput" :hidden="['as' => $as]"
     :tabs="['utama' => 'Utama', 'pribadi' => 'Data Pribadi', 'alamat' => 'Alamat & Kontak', 'darurat' => 'Kontak Darurat']"
     :created-by="$isNew ? null : 'johiwan'" :created-at="$isNew ? null : '2018-01-02 08:10:00'"
@@ -100,4 +102,4 @@
         </x-dl::form.row>
     </x-slot:darurat>
 </x-dl::form>
-<p class="dl-note">Siklus: status awal selalu <b>Draft</b> (Delete · + New Record · Confirm · Save). <b>Confirm</b> -> Confirmed: isi terkunci, tombol jadi Cancel · + New Record · Email · Print. <b>Back to Draft</b> muncul di sebelah Cancel hanya untuk super-admin, admin-app, dan level manager ke atas — dan mereka (kecuali super-admin) <b>tidak bisa input</b>: isi selalu terkunci, tanpa Save/Delete/Confirm/New — coba ganti "Simulasi login sebagai" di atas. Tab Riwayat (read-only) selalu ada.</p>
+<p class="dl-note">Siklus: status awal selalu <b>Draft</b> (Delete · + New Record · Confirm · Save). <b>Confirm</b> -> Confirmed: isi terkunci, tombol jadi Cancel · + New Record · Email · Print. <b>Cancel</b> -> Cancelled: + New Record · <b>Duplicate</b> (Draft baru berisi salinan isi) · Print. <b>Back to Draft</b> muncul di sebelah Cancel hanya untuk super-admin, admin-app, dan level manager ke atas — dan mereka (kecuali super-admin) <b>tidak bisa input</b>: isi selalu terkunci, tanpa Save/Delete/Confirm/New — coba ganti "Simulasi login sebagai" di atas. Tab Riwayat (read-only) selalu ada.</p>

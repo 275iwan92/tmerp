@@ -7,7 +7,7 @@ namespace Devlib\Components;
 // mode="view": tampil sebagai teks (fieldset disabled), tombol Edit -> bisa diubah, Batal mengembalikan nilai semula. Event dl:form-submit.
 // panel="top" (Single Form, user 2026-09-30): panel aksi menempel di atas -- judul, badge status, lalu tombol, Back di ujung kanan; tombol baku menurut kind+status;
 // layar TIDAK menyusun tombol sendiri. kind=master: Nonaktifkan/Aktifkan + New + Save. kind=document: draft = Delete + New + Confirm + Save,
-// confirmed = Cancel + Back to Draft (hanya :can-reopen) + New + Email + Print, cancelled = New + Print. status=new (+ New Record, form sama tapi kosong) = Save saja. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
+// confirmed = Cancel + Back to Draft (hanya :can-reopen) + New + Email + Print, cancelled = New + Duplicate + Print. status=new (+ New Record, form sama tapi kosong) = Save saja. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
 // Isi diusahakan muat 1 layar; lebih dari itu -> :tabs ['key' => 'Judul'] + slot per key (tanpa tabs = isi $slot di tab 'Data').
 // Tab read-only 'Riwayat' SELALU ditambahkan objek: dibuat oleh + tanggal-jam, terakhir diubah oleh + tanggal-jam (user 2026-09-30).
 class Form extends DevlibComponent
@@ -56,7 +56,7 @@ class Form extends DevlibComponent
     {
         $all = $this->baseActions();
 
-        return $this->canInput ? $all : array_values(array_filter($all, fn ($a) => ! in_array($a[4], ['save', 'delete', 'confirm', 'new'], true)));
+        return $this->canInput ? $all : array_values(array_filter($all, fn ($a) => ! in_array($a[4], ['save', 'delete', 'confirm', 'new', 'duplicate'], true)));
     }
 
     private function baseActions(): array
@@ -73,6 +73,8 @@ class Form extends DevlibComponent
             // Back to Draft tepat di sebelah Cancel, HANYA bila layar memberi :can-reopen (super-admin, admin-app, level manager
             // ke atas) -- server tetap wajib cek hak yang sama saat aksi diterima.
             'document.confirmed' => array_values(array_filter([['cancel', null, 'danger', null, 'cancel'], $this->canReopen ? [null, 'Back to Draft', 'secondary', 'fa-rotate-left', 'draft'] : null, $new, ['email', null, null, null, 'email'], $print])),
+            // Cancelled: Duplicate = Draft baru berisi salinan isi (tanpa nomor) supaya tidak mengetik ulang (user 2026-09-30).
+            'document.cancelled' => [$new, [null, 'Duplicate', 'secondary', 'fa-copy', 'duplicate'], $print],
             default => [$new, $print],
         };
     }
