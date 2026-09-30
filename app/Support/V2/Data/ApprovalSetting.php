@@ -8,6 +8,7 @@ use App\Models\Master\FlowConfigStep;
 use App\Models\Master\FlowLog;
 use App\Models\Master\FlowPositionActing;
 use App\Models\Sys\SecUser;
+use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -17,7 +18,7 @@ use Illuminate\Support\Str;
 // flow_position_acting) otomatis menerima antrian selama officer aslinya berhalangan.
 final class ApprovalSetting
 {
-    public const MODULE_NAMES = ['PR' => 'Purchase Requisition', 'PO' => 'Purchase Order', 'CO' => 'Customer Order', 'AD' => 'Stock Adjustment',
+    public const MODULE_NAMES = ['PR' => 'Purchase Requisition', 'PO' => 'Purchase Order', 'POC' => 'PO Kontan', 'CO' => 'Customer Order', 'AD' => 'Stock Adjustment',
         'OP' => 'Stock Opname', 'PRT' => 'Purchase Return', 'IN' => 'Stock In', 'OUT' => 'Stock Out', 'RTP' => 'Return from Production'];
 
     public const PRINT_LABELS = ['Diperiksa' => 'Diperiksa', 'Menyetujui' => 'Menyetujui', 'Mengetahui' => 'Mengetahui'];
@@ -30,7 +31,7 @@ final class ApprovalSetting
         return $configs->map(fn ($c) => ['id' => $c->flow_config_id, 'module' => $c->module_code, 'name' => self::MODULE_NAMES[$c->module_code] ?? $c->module_code,
             'levels' => $c->steps->where('step_type', 'APPROVAL')->count(),
             'approvers' => $c->steps->where('step_type', 'APPROVAL')->map(fn ($s) => 'L'.$s->step_no.' '.($pos[$s->position_id]['name'] ?? '—')
-                .((float) $s->min_amount > 0 ? ' (≥ '.\Devlib\Locale::number((float) $s->min_amount, 0).')' : ''))->implode(' → ') ?: 'Tanpa approval',
+                .((float) $s->min_amount > 0 ? ' (≥ '.Locale::number((float) $s->min_amount, 0).')' : ''))->implode(' → ') ?: 'Tanpa approval',
             'final' => $c->final_status ?? '—', 'active' => $c->activate ? 'Aktif' : 'Nonaktif'])->all();
     }
 
@@ -100,7 +101,7 @@ final class ApprovalSetting
                 }
             }
             $no = 0;
-            $num = fn ($v) => ($c = \Devlib\Locale::input($v)) === null ? null : (float) $c;
+            $num = fn ($v) => ($c = Locale::input($v)) === null ? null : (float) $c;
             foreach ($in['levels'] ?? [] as $key => $row) {
                 if (empty($row['position_id']) || isset($in['remove'][$key])) {
                     continue;

@@ -44,13 +44,13 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
     #[Computed]
     public function pendingApproval()
     {
-        return app(FlowEngineService::class)->pendingForUser('PO', Auth::id())->firstWhere('doc_id', $this->poId);
+        return app(FlowEngineService::class)->pendingForUser($this->po->flowModule(), Auth::id())->firstWhere('doc_id', $this->poId);
     }
 
     #[Computed]
     public function approvalHistory()
     {
-        return app(FlowEngineService::class)->history('PO', $this->poId);
+        return app(FlowEngineService::class)->history($this->po->flowModule(), $this->poId);
     }
 
     #[Computed]
@@ -154,7 +154,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
             'updated_by' => $login,
         ]);
 
-        $result = $flow->submit('PO', $this->poId, 'SUBMITTED', (float) $po->c_grand_total);
+        $result = $flow->submit($po->flowModule(), $this->poId, 'SUBMITTED', (float) $po->c_grand_total);
 
         if ($result === null) {
             $this->blockedMessage = Translator::t('proc_po_entry_no_flow_config', 'Tidak ada konfigurasi approval aktif untuk modul PO. Dokumen tersimpan sebagai SUBMITTED tapi belum masuk antrian approval siapapun — hubungi Admin.');
@@ -184,7 +184,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
             return;
         }
 
-        $result = $flow->approve('PO', $this->poId, $pending->flow_step_id, (float) $pending->amount_snapshot);
+        $result = $flow->approve($this->po->flowModule(), $this->poId, $pending->flow_step_id, (float) $pending->amount_snapshot);
 
         $this->po->update(['status' => $result['status'], 'updated_by' => Auth::user()->login]);
 
@@ -207,7 +207,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
             return;
         }
 
-        $result = $flow->reject('PO', $this->poId, $pending->flow_step_id, $this->approvalNote, (float) $pending->amount_snapshot);
+        $result = $flow->reject($this->po->flowModule(), $this->poId, $pending->flow_step_id, $this->approvalNote, (float) $pending->amount_snapshot);
 
         $this->po->update(['status' => $result['status'], 'updated_by' => Auth::user()->login]);
 
@@ -232,7 +232,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
             return;
         }
 
-        $flow->hold('PO', $this->poId, $pending->flow_step_id, $this->approvalNote, (float) $pending->amount_snapshot);
+        $flow->hold($this->po->flowModule(), $this->poId, $pending->flow_step_id, $this->approvalNote, (float) $pending->amount_snapshot);
 
         $this->approvalNote = '';
         $this->approvalError = '';

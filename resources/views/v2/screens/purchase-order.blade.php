@@ -31,8 +31,15 @@
 @elseif (! $po)
     <form method="post" action="{{ route('v2.po.create') }}">
         @csrf
-        <x-dl::card title="+ New Record — Purchase Order" description="Pilih supplier. Bila supplier ini masih punya draft PO, draft itu yang dibuka (1 draft per supplier).">
-            <x-dl::field.select name="supplier_id" label="Supplier" required :options="PurchaseOrder::suppliers()" :source="Src::of('tm2mst.sup_supplier')" />
+        <x-dl::card title="+ New Record — Purchase Order" description="PO biasa: pilih supplier (draft PO supplier yang sama dibuka lagi). PO Kontan: belanja tunai lewat Kas Kecil, maks. Rp {{ \Devlib\Locale::number(PurchaseOrder::maxCash(), 0) }}, approval Direktur F&A.">
+            <x-dl::form.row :cols="2">
+                <x-dl::field.select name="po_kind" label="Jenis PO" required :options="['NORMAL' => 'PO biasa (kredit / termin)', 'CASH' => 'PO Kontan (Kas Kecil)']" :value="request('kind', 'NORMAL')" :source="Src::of('tm2pur.po_order.i_procure_type')" />
+                <x-dl::field.select name="supplier_id" label="Supplier" required :options="PurchaseOrder::suppliers()" :value="request('kind') === 'CASH' ? PurchaseOrder::cashSupplierId() : null" hint="PO Kontan ke toko umum: pilih TOKO KONTAN, nama toko diisi di bawah." :source="Src::of('tm2mst.sup_supplier')" />
+            </x-dl::form.row>
+            <x-dl::form.row :cols="2">
+                <x-dl::field.select name="cash_mode" label="Mode PO Kontan" :options="PurchaseOrder::CASH_MODES" value="ADVANCE" :source="Src::of('tm2pur.po_order.i_cash_mode')" />
+                <x-dl::field.text name="shop_name" label="Nama toko (PO Kontan)" placeholder="mis. Toko Sumber Rejeki" :source="Src::of('tm2pur.po_order.i_shop_name')" />
+            </x-dl::form.row>
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                 <x-dl::button preset="save" label="Buat PO" />
@@ -42,25 +49,28 @@
 @else
     {{-- Form Master-Detail + Approval DevLib (disetujui user 2026-09-30). --}}
     @php
-        $pending = PurchaseOrder::pendingFor('PO', $po->po_id);
-        $log = PurchaseOrder::flowLog('PO', $po->po_id);
+        $pending = PurchaseOrder::pendingFor($po->flowModule(), $po->po_id);
+        $log = PurchaseOrder::flowLog($po->flowModule(), $po->po_id);
         $held = $po->status === 'SUBMITTED' && strtoupper((string) ($log[0]['action'] ?? '')) === 'HOLD';
         $approved = collect($log)->where('action', 'Approved')->count();
         // Jumlah level ikut jalur flow engine untuk nilai dokumen ini (mis. PO > 1 jt = 3 level) -- sama dgn Approval Center.
-        $appr = PurchaseOrder::approvalState('PO', $po->po_id, (float) $po->c_grand_total);
+        $appr = PurchaseOrder::approvalState($po->flowModule(), $po->po_id, (float) $po->c_grand_total);
         $draft = $po->status === 'DRAFT';
         $sup = \Illuminate\Support\Facades\DB::connection('tm2mst')->table('sup_supplier')->where('id_supplier', $po->i_supplier_id)->first();
         $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
         $trim = fn ($v) => \Devlib\Locale::decimal($v, 2);
         $pqNo = \App\Models\Pur\PqLine::whereIn('pq_line_id', $po->lines->pluck('pq_line_id')->filter())->join('pq_quotation', 'pq_quotation.pq_id', '=', 'pq_line.pq_id')->pluck('pq_quotation.doc_no', 'pq_line.pq_line_id');
+        $cash = $po->isCash();
+        $expense = $cash ? PurchaseOrder::expenseAccounts() : [];
+        $pettyStep = $cash ? \App\Services\Acc\PettyCashService::nextStep($po) : null;
         $lines = $po->lines->map(fn ($l) => [
             'po_line_id' => $l->po_line_id, 'i_description' => $l->i_description, 'i_qty' => (float) $l->i_qty, 'i_uom' => $l->i_uom,
             'i_price' => (float) $l->i_price, 'i_disc_pct' => (float) $l->i_disc_pct,
-            'code' => $l->c_item_code ?: '—', 'class' => $l->i_line_class === 'SERVICE' ? 'Jasa (kena PPh 23)' : 'Barang', 'stock' => $l->is_stock ? 'Stok' : 'Non-stok',
+            'code' => $l->c_item_code ?: '—', 'account' => $l->i_coa_account_id ? ($expense[$l->i_coa_account_id] ?? '#'.$l->i_coa_account_id) : '—', 'class' => $l->i_line_class === 'SERVICE' ? 'Jasa (kena PPh 23)' : 'Barang', 'stock' => $l->is_stock ? 'Stok' : 'Non-stok',
             'pq' => $pqNo[$l->pq_line_id] ?? '—', 'received' => $trim($l->c_qty_received).' '.$l->i_uom, 'outstanding' => $trim($l->c_qty_outstanding).' '.$l->i_uom, 'tol' => $trim($l->c_tol_pct).'%',
         ])->values()->all();
     @endphp
-    <x-dl::form id="po-form" :title="'Purchase Order · '.($po->doc_no ?: 'Draft #'.$po->po_id)" :subtitle="($sup->supplier_name ?? '—').' · '.$po->status"
+    <x-dl::form id="po-form" :title="($cash ? 'PO Kontan · ' : 'Purchase Order · ').($po->doc_no ?: 'Draft #'.$po->po_id)" :subtitle="($sup->supplier_name ?? '—').' · '.$po->status"
         panel="top" kind="document" :status="PurchaseOrder::formStatus($po, $held)" :pipeline="true" :approval-levels="max(1, $appr['levels'])" :approval-at="$appr['at'] ?: $approved + 1"
         :can-approve="(bool) $pending" :log="$log"
         :action="route('v2.po.save', $po->po_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['cancel', 'duplicate', 'email', 'print']"
@@ -68,7 +78,8 @@
         :created-by="$po->created_by" :created-at="$po->created_at?->toDateTimeString()" :updated-by="$po->updated_by" :updated-at="$po->updated_at?->toDateTimeString()">
         <x-slot:special>
             @unless (in_array($po->status, ['DRAFT', 'SUBMITTED'], true))<x-dl::button size="sm" preset="print" label="Print" :href="route('pur.po.print', ['po' => $po->po_id])" target="_blank" />@endunless
-            @if ($po->status === 'APPROVED')<x-dl::button size="sm" variant="success" icon="fa-paper-plane" label="Kirim ke Supplier" type="submit" name="action" value="send" formnovalidate onclick="return confirm('Tandai PO ini sudah dikirim ke supplier?')" />@endif
+            @if ($pettyStep)<x-dl::button size="sm" variant="success" icon="fa-wallet" :label="['ADVANCE' => 'Ambil Kasbon', 'SETTLE' => 'Pertanggungjawaban', 'REIMBURSE' => 'Reimburse'][$pettyStep]" :href="route('v2.screen', 'petty-cash').'?po='.$po->po_id" />@endif
+            @if ($po->status === 'APPROVED' && ! $cash)<x-dl::button size="sm" variant="success" icon="fa-paper-plane" label="Kirim ke Supplier" type="submit" name="action" value="send" formnovalidate onclick="return confirm('Tandai PO ini sudah dikirim ke supplier?')" />@endif
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>No. PO</span><b>{{ $po->doc_no ?: '(saat Confirm)' }}</b></div>
@@ -79,10 +90,22 @@
         <x-slot:general>
             <x-dl::form.row :cols="4">
                 <x-dl::field.select name="i_po_type" label="Tipe PO" :options="['LOCAL' => 'Local', 'IMPORT' => 'Import']" :value="$po->i_po_type" :source="Src::of('tm2pur.po_order.i_po_type')" />
-                <x-dl::field.select name="i_procure_type" label="Tipe Pengadaan" :options="['REPEAT' => 'Repeat (rutin)', 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" :value="$po->i_procure_type" :source="Src::of('tm2pur.po_order.i_procure_type')" />
+                @if ($cash)
+                    <x-dl::field.display label="Tipe Pengadaan" value="Kontan (Kas Kecil)" :source="Src::of('tm2pur.po_order.i_procure_type = CASH')" />
+                @else
+                    <x-dl::field.select name="i_procure_type" label="Tipe Pengadaan" :options="['REPEAT' => 'Repeat (rutin)', 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" :value="$po->i_procure_type" :source="Src::of('tm2pur.po_order.i_procure_type')" />
+                @endif
                 <x-dl::field.display label="Revisi ke" :value="(string) ($po->revision_no ?? 0)" :source="Src::of('tm2pur.po_order.revision_no')" />
                 <x-dl::field.display label="Dikirim ke supplier" :value="\Devlib\Locale::dt($po->sent_at) ?? '—'" :source="Src::of('tm2pur.po_order.sent_at')" />
             </x-dl::form.row>
+            @if ($cash)
+                <x-dl::form.row :cols="4">
+                    <x-dl::field.select name="i_cash_mode" label="Mode PO Kontan" required :options="PurchaseOrder::CASH_MODES" :value="$po->i_cash_mode" :source="Src::of('tm2pur.po_order.i_cash_mode')" />
+                    <x-dl::field.select name="i_petty_cash_id" label="Kas Kecil" required :options="PurchaseOrder::pettyCashOptions()" :value="$po->i_petty_cash_id" :source="Src::of('tm2acc.fin_petty_cash')" />
+                    <x-dl::field.text name="i_shop_name" label="Nama toko" :value="$po->i_shop_name" :source="Src::of('tm2pur.po_order.i_shop_name')" />
+                    <x-dl::field.display label="Batas PO Kontan" :value="'Rp '.\Devlib\Locale::number(PurchaseOrder::maxCash(), 0).' (Constants PO_CASH_MAX)'" :source="Src::of('tm2sys.sys_constant.PO_CASH_MAX')" />
+                </x-dl::form.row>
+            @endif
         </x-slot:general>
         <x-slot:supplier>
             <x-dl::form.row :cols="4">
@@ -112,12 +135,13 @@
                 source="{{ Src::of('tm2pur.po_line') }}"
                 :columns="[
                     ['key' => 'i_description', 'label' => 'Item', 'type' => 'display', 'width' => '320px'],
-                    ['key' => 'i_qty', 'label' => 'Qty', 'type' => 'display', 'width' => '100px'],
+                    ['key' => 'i_qty', 'label' => 'Qty', 'type' => $cash ? 'number' : 'display', 'width' => '100px'],
                     ['key' => 'i_uom', 'label' => 'Satuan', 'type' => 'display', 'width' => '80px'],
                     ['key' => 'i_price', 'label' => 'Harga', 'type' => 'money', 'width' => '130px'],
                     ['key' => 'i_disc_pct', 'label' => 'Disc %', 'type' => 'number', 'width' => '80px'],
                     ['key' => 'net', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'i_qty * i_price * (1 - i_disc_pct / 100)', 'sum' => true, 'width' => '140px'],
                     ['key' => 'code', 'label' => 'Kode Item', 'type' => 'display', 'more' => true],
+                    ['key' => 'account', 'label' => 'Akun biaya (non-stok)', 'type' => 'display', 'more' => true],
                     ['key' => 'pq', 'label' => 'Harga dari PQ', 'type' => 'display', 'more' => true],
                     ['key' => 'class', 'label' => 'Jenis', 'type' => 'display', 'more' => true],
                     ['key' => 'stock', 'label' => 'Stok', 'type' => 'display', 'more' => true],
@@ -128,6 +152,14 @@
                 @if ($draft)
                     <x-slot:tools>
                         @php $allocs = PurchaseOrder::allocationOptions($po); @endphp
+                        @if ($cash)
+                            <x-dl::field.lookup name="material_id" lookup="material" label="+ Item dari Master Bahan" placeholder="Ketik min. 2 huruf kode / nama item..." :source="Src::of('tm2mst.mat_raw')" />
+                            <x-dl::button size="sm" variant="secondary" label="+ Item Master" type="submit" name="action" value="add_material" formnovalidate />
+                            <x-dl::field.text name="free_description" label="+ Item bebas (non-stok)" placeholder="mis. Tinta printer kantor" />
+                            <x-dl::field.text name="free_uom" label="Satuan" :case-toggle="false" placeholder="PCS" />
+                            <x-dl::field.select name="free_account_id" label="Akun biaya" placeholder="— pilih akun —" :options="$expense" :source="Src::of('tm2acc.fin_account (EXPENSE)')" />
+                            <x-dl::button size="sm" variant="secondary" label="+ Item Bebas" type="submit" name="action" value="add_free" formnovalidate />
+                        @endif
                         @if ($allocs)
                             <x-dl::field.select name="alloc_id" label="+ Tarik baris dari PR approved" :options="$allocs" :source="Src::of('tm2pur.pr_line_alloc (PR APPROVED, belum jadi PO)')" />
                             <x-dl::button size="sm" variant="secondary" label="+ Tarik Baris PR" type="submit" name="action" value="add_alloc" formnovalidate />

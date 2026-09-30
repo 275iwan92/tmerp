@@ -13,6 +13,7 @@ use App\Models\Sdi\CoOrder;
 use App\Services\Flow\FlowEngineService;
 use App\Services\Inventory\StockPostingService;
 use App\Support\V2\Data\Concerns\FlowDocument;
+use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -27,6 +28,7 @@ final class ApprovalCenter
     public const MODULES = [
         'PR' => ['title' => 'Purchase Requisition', 'screen' => 'purchase-requisition', 'menu' => 'PROC'],
         'PO' => ['title' => 'Purchase Order', 'screen' => 'purchase-order', 'menu' => 'PROC'],
+        'POC' => ['title' => 'PO Kontan', 'screen' => 'purchase-order', 'menu' => 'PROC'],
         'CO' => ['title' => 'Customer Order', 'screen' => 'customer-order', 'menu' => 'SALES'],
         'AD' => ['title' => 'Stock Adjustment', 'screen' => null, 'menu' => 'INV'],
         'OP' => ['title' => 'Stock Opname', 'screen' => null, 'menu' => 'INV'],
@@ -35,7 +37,7 @@ final class ApprovalCenter
 
     // Layar Approval Center v2 (slug approval-<key>) => modul yang tampil bersama + hak modul menu.
     public const SCREENS = [
-        'pr' => ['PR'], 'po' => ['PO'], 'co' => ['CO'], 'stock' => ['AD', 'OP'], 'prt' => ['PRT'],
+        'pr' => ['PR'], 'po' => ['PO', 'POC'], 'co' => ['CO'], 'stock' => ['AD', 'OP'], 'prt' => ['PRT'],
     ];
 
     private const STOCK_MODELS = ['RM' => RmStock::class, 'FG' => FgStock::class, 'SFG' => SfgStock::class];
@@ -87,9 +89,9 @@ final class ApprovalCenter
     // tidak dianggap antrian.
     private static function doc(string $module, int $id, float $amount): ?array
     {
-        $num = fn ($v) => \Devlib\Locale::decimal((float) $v, 2);
-        $rp = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
-        $date = fn ($d) => \Devlib\Locale::d($d) ?? '—';
+        $num = fn ($v) => Locale::decimal((float) $v, 2);
+        $rp = fn ($v) => 'Rp '.Locale::number((float) $v, 0);
+        $date = fn ($d) => Locale::d($d) ?? '—';
         $base = match ($module) {
             'PR' => (function () use ($id, $num, $rp, $date) {
                 $pr = PrRequisition::with(['lines' => fn ($q) => $q->orderBy('line_no'), 'department'])->where('status', 'SUBMITTED')->find($id);
@@ -99,7 +101,7 @@ final class ApprovalCenter
                     'lines' => $pr->lines->map(fn ($l) => ['description' => $l->i_description, 'qty' => $num($l->i_qty), 'unit' => $l->i_uom, 'price' => (float) $l->i_est_price,
                         'subtotal' => (float) $l->i_qty * (float) $l->i_est_price, 'need' => $date($l->i_need_date)])->all(), 'note' => $pr->i_notes] : null;
             })(),
-            'PO' => (function () use ($id, $num, $rp, $date) {
+            'PO', 'POC' => (function () use ($id, $num, $rp, $date) {
                 $po = PoOrder::with(['lines' => fn ($q) => $q->orderBy('line_no')])->where('status', 'SUBMITTED')->find($id);
                 $sup = $po ? (PurchaseOrder::suppliers([$po->i_supplier_id])[$po->i_supplier_id] ?? '—') : null;
 
@@ -160,7 +162,7 @@ final class ApprovalCenter
         }
         $state = self::approvalState($module, $id, $amount);
         $history = FlowLog::where('module_code', $module)->where('doc_id', $id)->orderBy('flow_log_id')->get()
-            ->map(fn ($l) => ['action' => $l->action, 'by' => $l->created_by, 'at' => \Devlib\Locale::dt($l->acted_at), 'note' => $l->notes, 'plt' => (bool) $l->is_acting])->all();
+            ->map(fn ($l) => ['action' => $l->action, 'by' => $l->created_by, 'at' => Locale::dt($l->acted_at), 'note' => $l->notes, 'plt' => (bool) $l->is_acting])->all();
         $steps = array_merge([['role' => 'Pembuat', 'by' => $state['submitted_by'], 'at' => $state['submitted_at'], 'status' => 'done', 'submitter' => true]], $state['steps']);
 
         $screen = self::MODULES[$module]['screen'];
@@ -180,7 +182,7 @@ final class ApprovalCenter
 
         return match ($module) {
             'PR' => PurchaseRequisition::decide(PrRequisition::findOrFail($id), $action, $note),
-            'PO' => PurchaseOrder::decide(PoOrder::findOrFail($id), $action, $note),
+            'PO', 'POC' => PurchaseOrder::decide(PoOrder::findOrFail($id), $action, $note),
             'CO' => CustomerOrder::decide(CoOrder::findOrFail($id), $action, $note),
             'AD', 'OP' => self::decideStock($module, $id, $action, $note),
             'PRT' => self::decideReturn($id, $action, $note),
@@ -235,13 +237,13 @@ final class ApprovalCenter
             $level = collect(self::approvalPath($m, (float) $l->amount_snapshot))->search(fn ($s) => $s->flow_step_id === $l->flow_step_id);
             $no = match ($m) {
                 'PR' => PrRequisition::whereKey($l->doc_id)->value('doc_no'),
-                'PO' => PoOrder::whereKey($l->doc_id)->value('doc_no'),
+                'PO', 'POC' => PoOrder::whereKey($l->doc_id)->value('doc_no'),
                 'CO' => CoOrder::whereKey($l->doc_id)->value('co_no'),
                 'PRT' => PrtReturn::whereKey($l->doc_id)->value('doc_no'),
                 default => collect(self::STOCK_MODELS)->map(fn ($model) => $model::where('doc_cat', $m)->whereKey($l->doc_id)->value('doc_no'))->filter()->first(),
             };
 
-            return ['id' => $m.':'.$l->doc_id, 'no' => $no ?: $m.' #'.$l->doc_id, 'status' => $l->action, 'by' => $l->created_by ?? $login, 'at' => \Devlib\Locale::dt($l->acted_at),
+            return ['id' => $m.':'.$l->doc_id, 'no' => $no ?: $m.' #'.$l->doc_id, 'status' => $l->action, 'by' => $l->created_by ?? $login, 'at' => Locale::dt($l->acted_at),
                 'level' => $level === false ? 0 : $level + 1, 'levels' => $state['levels'], 'note' => $l->notes];
         })->all();
     }

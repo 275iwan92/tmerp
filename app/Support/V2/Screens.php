@@ -86,6 +86,11 @@ final class Screens
                 ['label' => 'Master', 'items' => [$it('master-product'), $it('master-raw'), $it('prodev')]],
                 ['label' => 'Alur', 'items' => [self::flowItem('COSTING', 'Alur Costing: ProDev → ProCost → Publish')]],
             ]],
+            ['code' => 'FINACC', 'short' => 'FIN', 'label' => 'Finance', 'icon' => 'fa-solid fa-coins', 'groups' => [
+                ['label' => 'Kas & Bank', 'items' => [
+                    $it('petty-cash', ['Kas Kecil (Petty Cash)', 'fa-solid fa-wallet', 'v2 baru: tm2acc.fin_petty_cash + fin_petty_cash_tx (PO Kontan)', null]),
+                ]],
+            ]],
             ['code' => 'INV', 'short' => 'INV', 'label' => 'Inventory', 'icon' => 'fa-solid fa-warehouse', 'groups' => [
                 ['label' => 'Stock Adjustment', 'items' => [
                     $it('approval-stock', ['Adjustment & Opname Approval Center', 'fa-solid fa-stamp', 'inventory/stock-adjustment-approval.blade.php', null]),

@@ -17,6 +17,7 @@ use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SysConstant;
 use App\Models\Sys\SysDocShare;
 use App\Models\Sys\SysMailSetting;
+use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
 use App\Services\Sales\InquiryAssembly;
 use App\Services\Sales\InquiryDerivedWriter;
@@ -29,6 +30,7 @@ use App\Support\V2\Data\ApprovalSetting;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DeliveryOrder;
+use App\Support\V2\Data\PettyCash;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\PurchaseOrder;
 use App\Support\V2\Data\PurchaseQuotation;
@@ -42,6 +44,7 @@ use App\Support\V2\Grid\Grids;
 use App\Support\V2\InquiryPayload;
 use App\Support\V2\Schema;
 use App\Support\V2\Screens;
+use Devlib\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -49,6 +52,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 // Layar v2 (objek DevLib, Menu v2 tanpa top bar). Dimuat di dalam grup auth + force.password routes/web.php.
 // mockup.test (APP_UI=v2) mendarat di sini; tmerp.test tetap v1 sampai go-live.
@@ -100,7 +104,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         abort_unless($grid instanceof DbLookup && Auth::user()->canAccessModule($grid->module()), 403);
         try {
             return response()->json(['rows' => $grid->save((array) $r->input('changed', []))]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json(['error' => collect($e->errors())->flatten()->first()], 422);
         }
     })->name('lookup.save');
@@ -434,12 +438,63 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->name('po');
     });
 
+    // Kas Kecil v2 (App\Services\Acc\PettyCashService): kasbon / pertanggungjawaban / reimburse PO Kontan, isi ulang, setting.
+    Route::prefix('petty')->name('petty.')->middleware('module:FINACC')->group(function () {
+        $home = fn () => route('v2.screen', 'petty-cash');
+        $fund = fn () => PettyCash::fund() ?? abort(404, 'Belum ada Kas Kecil aktif.');
+        $run = function (callable $fn, string $ok) use ($home) {
+            try {
+                $tx = $fn();
+            } catch (InvalidArgumentException $e) {
+                return back()->withInput()->withErrors(['petty' => $e->getMessage()]);
+            }
+
+            return redirect($home())->with('v2_flash', str_replace(':no', $tx->tx_no, $ok));
+        };
+        Route::post('/advance/{po}', function (Request $r, int $po) use ($run) {
+            $d = $r->validate(['amount' => ['required'], 'receiver_name' => ['required', 'string', 'max:100']], [], ['amount' => 'Nilai kasbon', 'receiver_name' => 'Penerima uang']);
+
+            return $run(fn () => PettyCashService::advance(PoOrder::findOrFail($po), (float) Locale::input($d['amount']), $d['receiver_name'], Auth::user()->login),
+                'Kasbon :no tercatat — uang diserahkan, jurnal Uang Muka / Kas Kecil terposting.');
+        })->whereNumber('po')->name('advance');
+        Route::post('/settle/{po}', function (Request $r, int $po) use ($run) {
+            $r->validate(['nota' => ['required', 'array'], 'nota_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'], 'receiver_name' => ['nullable', 'string', 'max:100']],
+                [], ['nota' => 'Nilai nota', 'nota_file' => 'Foto nota']);
+            $nota = collect((array) $r->input('nota'))->map(fn ($v) => (float) Locale::input($v))->all();
+            $path = $r->file('nota_file')?->store('petty/'.now()->format('Ym'), 'public');
+
+            return $run(fn () => PettyCashService::settle(PoOrder::findOrFail($po), $nota, $path, Auth::user()->login, (string) $r->input('receiver_name', '')),
+                ':no tercatat — harga PO diganti nilai nota, PO siap dicatat di Penerimaan Barang (SPB).');
+        })->whereNumber('po')->name('settle');
+        Route::post('/topup', function (Request $r) use ($run, $fund) {
+            $d = $r->validate(['amount' => ['required'], 'bank_account_id' => ['required', 'integer'], 'tx_date' => ['required', 'date'], 'notes' => ['nullable', 'string', 'max:255']],
+                [], ['amount' => 'Nilai isi ulang', 'bank_account_id' => 'Akun bank', 'tx_date' => 'Tanggal']);
+
+            return $run(fn () => PettyCashService::topup($fund(), (float) Locale::input($d['amount']), (int) $d['bank_account_id'], $d['tx_date'], Auth::user()->login, (string) ($d['notes'] ?? '')),
+                'Isi ulang :no tercatat — jurnal Kas Kecil / Bank terposting.');
+        })->name('topup');
+        Route::post('/setup', function (Request $r) use ($home, $fund) {
+            $d = $r->validate(['petty_name' => ['required', 'string', 'max:100'], 'custodian_user_id' => ['required', 'integer'], 'imprest_amount' => ['nullable']],
+                [], ['petty_name' => 'Nama kas kecil', 'custodian_user_id' => 'Pemegang kas']);
+            $fund()->update(['petty_name' => $d['petty_name'], 'custodian_user_id' => (int) $d['custodian_user_id'],
+                'imprest_amount' => filled($d['imprest_amount'] ?? null) ? (float) Locale::input($d['imprest_amount']) : null, 'updated_by' => Auth::user()->login]);
+
+            return redirect($home())->with('v2_flash', 'Setting kas kecil tersimpan.');
+        })->name('setup');
+    });
+
     // Purchase Order v2 (App\Support\V2\Data\PurchaseOrder = aturan komponen v1 pages::pur.po.entry). Satu rute simpan:
     // action = save | confirm (Submit) | approve | reject | hold | send (Kirim ke Supplier) | delete | add_alloc.
     Route::prefix('po')->name('po.')->middleware('module:PROC')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'purchase-order').'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
-            $d = $r->validate(['supplier_id' => ['required', 'integer']], [], ['supplier_id' => 'Supplier']);
+            $d = $r->validate(['supplier_id' => ['required', 'integer'], 'po_kind' => ['nullable', 'in:NORMAL,CASH'], 'cash_mode' => ['nullable', 'in:ADVANCE,REIMBURSE'],
+                'shop_name' => ['nullable', 'string', 'max:150']], [], ['supplier_id' => 'Supplier']);
+            if (($d['po_kind'] ?? 'NORMAL') === 'CASH') {
+                $po = PurchaseOrder::createCash((int) $d['supplier_id'], $d['cash_mode'] ?? 'ADVANCE', $d['shop_name'] ?? null);
+
+                return $open($po->po_id)->with('v2_flash', 'Draft PO Kontan siap — tambah item (Master Bahan / uraian bebas) atau tarik dari PR, isi qty & harga perkiraan.');
+            }
             $po = PurchaseOrder::create((int) $d['supplier_id']);
 
             return $open($po->po_id)->with('v2_flash', 'Draft PO siap — tarik baris dari PR yang sudah approved.');
@@ -465,7 +520,15 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $r->validate(['i_doc_date' => ['nullable', 'date'], 'i_delivery_date' => ['nullable', 'date']]);
             PurchaseOrder::save($po, $r->all());
             $msg = 'PO tersimpan.';
-            if ($action === 'add_alloc') {
+            if ($action === 'add_material') {
+                abort_unless($r->filled('material_id'), 422, 'Pilih item dari Master Bahan.');
+                PurchaseOrder::addMaterial($po->refresh(), (int) $r->input('material_id'));
+                $msg = 'Item ditambahkan — isi qty & harga perkiraan.';
+            } elseif ($action === 'add_free') {
+                abort_unless(trim((string) $r->input('free_description')) !== '', 422, 'Isi uraian item.');
+                PurchaseOrder::addFree($po->refresh(), (string) $r->input('free_description'), (string) $r->input('free_uom', ''), $r->filled('free_account_id') ? (int) $r->input('free_account_id') : null);
+                $msg = 'Item bebas ditambahkan.';
+            } elseif ($action === 'add_alloc') {
                 abort_unless($r->filled('alloc_id'), 422, 'Pilih baris PR.');
                 PurchaseOrder::addAllocation($po->refresh(), (int) $r->input('alloc_id'));
                 $msg = 'Baris PR ditarik ke PO — isi harga & diskon.';
@@ -475,7 +538,10 @@ Route::prefix('v2')->name('v2.')->group(function () {
                     return $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: PO wajib punya minimal 1 baris.']);
                 }
                 $blocked = PurchaseOrder::submit($po);
-                $msg = $blocked ?: 'PO di-Confirm (diajukan) — menunggu approval.';
+                if ($po->refresh()->status === 'DRAFT') {
+                    return $open($id)->withErrors(['confirm' => $blocked ?: 'Belum bisa Confirm.']);
+                }
+                $msg = $blocked ?: ($po->isCash() ? 'PO Kontan di-Confirm — menunggu approval Direktur F&A.' : 'PO di-Confirm (diajukan) — menunggu approval.');
             }
 
             return $open($id)->with('v2_flash', $msg);

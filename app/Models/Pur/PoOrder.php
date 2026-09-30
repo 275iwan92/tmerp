@@ -4,6 +4,7 @@ namespace App\Models\Pur;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class PoOrder extends Model
 {
@@ -15,7 +16,7 @@ class PoOrder extends Model
 
     protected $fillable = [
         'doc_no', 'i_doc_date', 'i_supplier_id', 'i_pq_id',
-        'i_po_type', 'i_procure_type',
+        'i_po_type', 'i_procure_type', 'i_cash_mode', 'i_petty_cash_id', 'i_shop_name',
         'i_currency_id', 'i_fx_rate', 'i_quotation_valid_until',
         'i_payment_term', 'i_delivery_date', 'i_ship_to', 'i_notes',
         'c_dpp', 'c_ppn', 'c_pph', 'c_grand_total', 'c_net_payable',
@@ -58,11 +59,13 @@ class PoOrder extends Model
         $lines = $this->lines;
 
         $dpp = $lines->sum('c_line_net');
-        $ppnRate = (float) (\Illuminate\Support\Facades\DB::connection('tm2sys')->table('sys_constant')->where('constant_key', 'PPN')->value('constant_number') ?? 11);
-        $pphRate = (float) (\Illuminate\Support\Facades\DB::connection('tm2sys')->table('sys_constant')->where('constant_key', 'PPH23_JASA')->value('constant_number') ?? 2);
+        $ppnRate = (float) (DB::connection('tm2sys')->table('sys_constant')->where('constant_key', 'PPN')->value('constant_number') ?? 11);
+        $pphRate = (float) (DB::connection('tm2sys')->table('sys_constant')->where('constant_key', 'PPH23_JASA')->value('constant_number') ?? 2);
 
-        $ppn = round($dpp * $ppnRate / 100, 4);
-        $pph = round($lines->where('i_line_class', 'SERVICE')->sum('c_line_net') * $pphRate / 100, 4);
+        // PO Kontan: harga = nilai nota toko (sudah termasuk pajak bila ada), tanpa PPN/PPh terpisah.
+        $cash = $this->isCash();
+        $ppn = $cash ? 0 : round($dpp * $ppnRate / 100, 4);
+        $pph = $cash ? 0 : round($lines->where('i_line_class', 'SERVICE')->sum('c_line_net') * $pphRate / 100, 4);
         $grandTotal = $dpp + $ppn;
         $netPayable = $grandTotal - $pph;
 
@@ -71,5 +74,16 @@ class PoOrder extends Model
         $this->c_pph = $pph;
         $this->c_grand_total = $grandTotal;
         $this->c_net_payable = $netPayable;
+    }
+
+    public function isCash(): bool
+    {
+        return $this->i_procure_type === 'CASH';
+    }
+
+    // Modul flow engine: PO Kontan punya jalur approval sendiri (POC = Direktur F&A saja, user 2026-10-01).
+    public function flowModule(): string
+    {
+        return $this->isCash() ? 'POC' : 'PO';
     }
 }
