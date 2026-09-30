@@ -138,7 +138,10 @@ final class Catalog
                     'p5-form-md' => $page('Form Master-Detail', 'fa-solid fa-file-invoice', [
                         'form-md' => ['1 · Customer Order (key summary, header tabs, details in the middle, footer totals)', $c('Form', 'Lines')],
                         'form-md-po' => ['2 · Purchase Order (same frame, supplier side)', $c('Form', 'Lines')],
-                        'form-approval' => ['3 · Form with Approval', $c('Form', 'ApprovalBar')],
+                    ], 'UIUX_components_part1.html'),
+                    // Form Approval dipisah jadi submenu sendiri (user 2026-09-30): alur beda (Submit -> Approve/Reject berjenjang per level).
+                    'p5-form-approval' => $page('Form Approval', 'fa-solid fa-stamp', [
+                        'form-approval' => ['Form with Approval (Submit, Approve / Reject by level)', $c('Form', 'ApprovalBar')],
                     ], 'UIUX_components_part1.html'),
                     'p5-form-special' => $page('Form Special (3 variants)', 'fa-solid fa-wand-magic-sparkles', [
                         'wizard-customer' => ['1 · Form Wizard (step by step)', $c('Wizard')],
