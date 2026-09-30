@@ -1,5 +1,24 @@
 [
     {
+        "at": "2026-10-01 05:26:48",
+        "items": [
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "sys_holiday",
+                "column": "holiday_type",
+                "detail": "enum('NATIONAL','COMPANY') -> varchar(20)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "sys_office_hour",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-10-01 05:21:25",
         "items": [
             {
