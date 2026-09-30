@@ -3,7 +3,8 @@
     <div class="dl-cat">
         <div class="dl-cat__nav">
             {{-- menu: Modul / folder di breadcrumb bisa diklik = buka Layer Menu di cabang itu (user 2026-09-30). --}}
-            <x-dl::breadcrumb menu :items="array_fill_keys([...($page['trail'] ?? [$page['part']]), $page['label']], null)" />
+            {{-- Nama halaman juga bisa diklik (kembali ke keadaan awal halaman, mis. keluar dari + New Record). --}}
+            <x-dl::breadcrumb menu :items="array_fill_keys($page['trail'] ?? [$page['part']], null) + [$page['label'] => url()->current()]" :current="request()->boolean('new') ? 'New Record' : null" />
             {{-- Tombol lompat hanya berguna bila halaman berisi >1 contoh. --}}
             @if (count($page['members']) > 1)
                 <div class="dl-cat__chips">

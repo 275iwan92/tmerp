@@ -7,7 +7,7 @@ namespace Devlib\Components;
 // mode="view": tampil sebagai teks (fieldset disabled), tombol Edit -> bisa diubah, Batal mengembalikan nilai semula. Event dl:form-submit.
 // panel="top" (Single Form, user 2026-09-30): panel aksi menempel di atas -- judul, badge status, lalu tombol, Back di ujung kanan; tombol baku menurut kind+status;
 // layar TIDAK menyusun tombol sendiri. kind=master: Nonaktifkan/Aktifkan + New + Save. kind=document: draft = Delete + New + Confirm + Save,
-// confirmed = Cancel + New + Email + Print, cancelled = New + Print. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
+// confirmed = Cancel + New + Email + Print, cancelled = New + Print. status=new (+ New Record, form sama tapi kosong) = Save saja. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
 // Isi diusahakan muat 1 layar; lebih dari itu -> :tabs ['key' => 'Judul'] + slot per key (tanpa tabs = isi $slot di tab 'Data').
 // Tab read-only 'Riwayat' SELALU ditambahkan objek: dibuat oleh + tanggal-jam, terakhir diubah oleh + tanggal-jam (user 2026-09-30).
 class Form extends DevlibComponent
@@ -53,6 +53,8 @@ class Form extends DevlibComponent
         $print = [null, \Devlib\Locale::lang() === 'en' ? 'Print' : 'Cetak', 'primary', 'print', 'print'];
 
         return match ($this->kind.'.'.$this->status) {
+            // Data baru (belum pernah disimpan): cuma Save -- Nonaktifkan/Delete/Confirm/Print belum ada artinya.
+            'master.new', 'document.new' => [['save', null, null, null, 'save']],
             'master.active' => [[null, 'Nonaktifkan', 'secondary', 'fa-toggle-off', 'deactivate'], $new, ['save', null, null, null, 'save']],
             'master.inactive' => [[null, 'Aktifkan', 'secondary', 'fa-toggle-on', 'activate'], $new, ['save', null, null, null, 'save']],
             'document.draft' => [['delete', null, null, null, 'delete'], $new, ['confirm', null, null, null, 'confirm'], ['save', null, null, null, 'save']],
@@ -63,7 +65,7 @@ class Form extends DevlibComponent
 
     public function statusBadge(): array
     {
-        return ['active' => ['Aktif', 'success'], 'inactive' => ['Nonaktif', 'danger'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger']][$this->status] ?? [$this->status, 'neutral'];
+        return ['new' => ['Baru', 'info'], 'active' => ['Aktif', 'success'], 'inactive' => ['Nonaktif', 'danger'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger']][$this->status] ?? [$this->status, 'neutral'];
     }
 
     public function tag(): string

@@ -675,6 +675,7 @@ body.dl-page-body{overflow:auto;height:auto;min-height:100vh}
 .dl-crumb i{font-size:calc(9px * var(--dl-font-scale))}
 .dl-crumb a{color:var(--dl-accent);text-decoration:none}.dl-crumb a:hover{text-decoration:underline}
 .dl-crumb span{color:var(--dl-ink-strong);font-weight:600}
+.dl-crumb a.is-current{font-weight:600}
 .dl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
 .dl-mockup-attach{position:fixed;left:14px;bottom:14px;z-index:190;box-shadow:var(--dl-shadow-pop)}
