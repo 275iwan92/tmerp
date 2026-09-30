@@ -14,6 +14,7 @@ use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // inventory_tier4.md §3 + mockup_stock_out.html. v1 DIKUNCI MANUAL (inventory_rules.yaml
@@ -33,7 +34,7 @@ use Livewire\Component;
 // Alur "DRAFT -> POSTED" TANPA approval (inventory_rules.yaml alasan_out_rtp_tanpa_approval).
 new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
 {
-    use HasGridStatFilter;
+    use HasGridStatFilter, OpensFromQuery;
 
     private const DOC_PREFIX = 'OUT';
 

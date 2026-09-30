@@ -48,6 +48,18 @@ final class Grids
         Maint\MaintenanceCodeLookup::class,
         Maint\MaintenanceWoReport::class,
         Setup\TranslationDictionaryLookup::class,
+        Inv\RmStockInGrid::class,
+        Inv\RmStockOutGrid::class,
+        Inv\RmStockReturnGrid::class,
+        Inv\RmStockAdjGrid::class,
+        Inv\FgStockInGrid::class,
+        Inv\FgStockOutGrid::class,
+        Inv\FgStockReturnGrid::class,
+        Inv\FgStockAdjGrid::class,
+        Inv\SfgStockInGrid::class,
+        Inv\SfgStockOutGrid::class,
+        Inv\SfgStockReturnGrid::class,
+        Inv\SfgStockAdjGrid::class,
     ];
 
     public static function find(string $slug): ?DbGrid

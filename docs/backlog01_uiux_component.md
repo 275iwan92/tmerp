@@ -58,7 +58,7 @@ dibuang di server lewat `restrictedKeys()` + `SecUser::canViewSalesPrice()`.
 - **Grid Lookup** (edit di sel, `x-dl::lookup-grid`, butuh sambungan simpan DB): UoM, Currency, Kurs, Hari Libur, Kategori Supplier.
 - **BOP Rule** (belum punya model Eloquent).
 - **Recruitment**: Permohonan Tenaga Kerja, Lowongan, Talent Pool, Review Formulir, Jadwal Interview, Hasil Psikotes, Offering, Provisioning, Rekap Sync Log.
-- **Inventory**: Stock In/Out/Return/Adjustment (transaksi) + Report Stock Balance/Stock Card/Slow Moving/Label History (menu sudah di submenu Report, layar belum).
+- **Inventory**: Report Stock Balance/Stock Card/Slow Moving/Label History (menu sudah di submenu Report, layar belum). Stock In/Out/Return/Adjustment SELESAI 2026-10-02 (LOG).
 - **Procurement**: Purchase Quotation, Purchase Return (grid v1), Report Outstanding PR/PO/PV.
 - **Finance**: Cash & Bank, Down Payment, Journal, GL, Trial Balance, dst.
 - **Production**: Work Order, Rule Library, Target Rate, Jadwal Shift, Output.

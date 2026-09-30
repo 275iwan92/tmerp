@@ -15,6 +15,7 @@ use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // inventory_tier4.md #1.1 (route inv.stock-in.index -> StockInPage) + mockup_stock_in.html.
@@ -27,7 +28,7 @@ use Livewire\Component;
 // lewat StockPostingService (bukan sekadar ubah status).
 new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
 {
-    use HasGridStatFilter;
+    use HasGridStatFilter, OpensFromQuery;
 
     public const CATEGORY_LABELS = [
         'RM' => 'Bahan Baku & Bahan Pembantu',

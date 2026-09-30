@@ -18,6 +18,7 @@ use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // inventory_tier4.md §4 + mockup_stock_adjustment.html. Beda dari Stock In/Out/Return
@@ -34,6 +35,8 @@ use Livewire\Component;
 // semua kelas secara generik (RM/FG/SFG), sesuai INV_RULES harga_perolehan.
 new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
     public const CATEGORY_LABELS = ['RM' => 'Bahan Baku & Bahan Pembantu', 'SFG' => 'Barang Setengah Jadi', 'FG' => 'Barang Jadi'];
 
     private const HEADER_MODEL = ['RM' => RmStock::class, 'FG' => FgStock::class, 'SFG' => SfgStock::class];

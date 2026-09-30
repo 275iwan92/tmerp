@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-10-02 -- Run malam: Inventory v2 grid (Stock In/Out/Return/Adjustment RM/FG/SFG) -- UI-20 + backlog04 "Stock In v2"
+
+- `App\Support\V2\Grid\Inv\StockDocGrid` + 12 turunan (RM/FG/SFG x In/Out/Return/Adj), slug `inv-<cat>-stock-<kind>`.
+  Stock In menampilkan semua dokumen masuk (MANUAL, BB, IN, dan dokumen otomatis dari SPB bila ada), bukan hanya MANUAL.
+- Buka/New ke form v1 lewat `?open={id}`/`?new=1` (trait `OpensFromQuery` ditambah di 4 layar v1 inventory).
+  FG Stock Out/Return = grid hanya-baca (v1 sengaja menolak FG; barang jadi keluar lewat DO).
+- Menu ddtsys: migration `2026_10_02_000001` (12 item -> `v2:inv-*`, READY_FOR_QC). Dijalankan di ddt* saja; tm2* menunggu OK user.
+- Probe kernel mockup.test: 83 layar menu + 112 form grid = 200.
+
 ## 2026-10-01 -- Utang label multi-bahasa: 643 label Indonesia -> English + kamus (tampilan ID tetap sama)
 
 - Konversi sesuai konteks (x-dl::* polos, HTML/komponen lain `t()`/`Lang::text()`, tombol non-baku dibungkus terjemahan).

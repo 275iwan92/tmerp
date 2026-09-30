@@ -23,8 +23,7 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
   terisi semua.
 - **Alur Purchasing (user 2026-10-01): PR -> PQ (boleh dilewati) -> PO -> Purchase Receive (SPB) -> otomatis
   STOCK INPUT.** PR/PQ/PO/SPB v2 sudah tersambung; Post SPB otomatis membuat & mem-posting Stock In RM + jurnal.
-  **Yang belum:** layar **Stock In v2** (menu INV_IN / INV_RM_ITEM1 masih NOT_BUILT) untuk melihat dokumen Stock In
-  hasil SPB / pembalik Cancel SPB (`OUT/..` ref PV_CANCEL) maupun input manual.
+  Grid **Stock In v2** SELESAI 2026-10-02 (LOG_JOB_DONE; pembalik Cancel SPB `PV_CANCEL` tampil di Stock Out RM).
 - **Purchase Return v2 — dibahas di sesi lain (user 2026-10-01, "agar lebih detail").** Preview desain sudah pernah
   ditunjukkan (Draft -> Confirm -> approval PRT -> Kirim Barang: Stock Out + Dr GR/IR / Cr Persediaan -> Closed saat CN
   diterima / barang pengganti masuk). Retur v1 sekarang belum mengeluarkan stok, belum menjurnal, belum update PO.

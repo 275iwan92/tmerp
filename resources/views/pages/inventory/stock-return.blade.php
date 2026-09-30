@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // inventory_tier4.md §5 + mockup_stock_return.html. RM + SFG (2026-08-22, diperluas
@@ -32,7 +33,7 @@ use Livewire\Component;
 // Stock Out -- sudah tervalidasi POSTED, menahan retur cuma menahan lantai produksi).
 new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Component
 {
-    use HasGridStatFilter;
+    use HasGridStatFilter, OpensFromQuery;
 
     private const DOC_PREFIX = 'RTN';
 
