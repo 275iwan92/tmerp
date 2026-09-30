@@ -12,8 +12,9 @@ class LookupGrid extends Sheet
         string $rowKey = 'id',
         string $title = '',
         ?string $source = null,
+        ?string $saveUrl = null,
     ) {
-        parent::__construct($columns, $rows, $rowKey, $title, $source, lookup: true);
+        parent::__construct($columns, $rows, $rowKey, $title, $source, lookup: true, saveUrl: $saveUrl);
     }
 
     public function tag(): string

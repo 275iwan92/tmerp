@@ -42,6 +42,8 @@ class ProdMachine extends Model
         'department_id',
         'machine_code',
         'machine_name',
+        'nickname',
+        'machine_model_id',
         'machine_type',
         'brand_model',
         'year_acquired',
@@ -151,6 +153,12 @@ class ProdMachine extends Model
     }
 
     // Proses yang bisa dijalankan di mesin ini.
+    // Model di pasar yang dipilih user (katalog prod_machine_model).
+    public function machineModel(): BelongsTo
+    {
+        return $this->belongsTo(ProdMachineModel::class, 'machine_model_id', 'id_machine_model');
+    }
+
     public function processes(): BelongsToMany
     {
         return $this->belongsToMany(

@@ -208,8 +208,13 @@ abstract class DbGrid
             'newUrl' => $this->newUrl(),
             'openUrl' => $this->openUrl(),
             'toggleUrl' => $this->family() === self::MASTER ? str_replace('__ID__', '{id}', route('v2.grid.toggle', [$this->slug(), '__ID__'])) : null,
-            'source' => Src::of(...array_map(fn ($c) => ($m = new $c)->getConnectionName().'.'.$m->getTable(), $this->models())),
+            'source' => $this->sourceText(),
         ];
+    }
+
+    protected function sourceText(): string
+    {
+        return Src::of(...array_map(fn ($c) => ($m = new $c)->getConnectionName().'.'.$m->getTable(), $this->models()));
     }
 
     // Bentuk yang sama dengan Screens::screen() supaya route v2.screen & breadcrumb memakainya apa adanya.

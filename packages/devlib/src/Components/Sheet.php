@@ -12,6 +12,8 @@ namespace Devlib\Components;
 // Save All -> validasi -> event dl:sheet-save {rows, changed}. Sel berubah ditandai; salah dimerahkan.
 // lookup=true (turunan LookupGrid = Grid Lookup): daftar bantu kecil -- Cari + Baris + Undo + Save saja, rapat,
 // tanpa Hapus (baris yang sudah dipakai cukup dinonaktifkan), kolom 'unique' => true tidak boleh kembar.
+// saveUrl: Save mengirim baris berubah (POST JSON {changed}) ke server; jawaban {rows} = isi terbaru dari database
+//   (baris baru dapat id asli), {error} = gagal (perubahan tetap di layar). Tanpa saveUrl = pratinjau (event dl:sheet-save saja).
 class Sheet extends DevlibComponent
 {
     public function __construct(
@@ -21,6 +23,7 @@ class Sheet extends DevlibComponent
         public string $title = '',
         public ?string $source = null,
         public bool $lookup = false,
+        public ?string $saveUrl = null,
     ) {}
 
     public function tag(): string
@@ -42,7 +45,8 @@ class Sheet extends DevlibComponent
             }
 
             return $c;
-        }, $this->columns), 'rowKey' => $this->rowKey, 'lookup' => $this->lookup];
+        }, $this->columns), 'rowKey' => $this->rowKey, 'lookup' => $this->lookup,
+            'saveUrl' => $this->saveUrl, 'csrf' => $this->saveUrl ? csrf_token() : null];
     }
 
     public function render()

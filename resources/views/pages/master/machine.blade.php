@@ -87,6 +87,11 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 
     public string $brand_model = '';
 
+    // Nama sehari-hari di pabrik ("Plong 2", "Daxiang") & model di pasar (katalog prod_machine_model) — user 2026-10-01.
+    public string $nickname = '';
+
+    public string $machine_model_id = '';
+
     public string $year_acquired = '';
 
     public string $acquired_date = '';
@@ -361,6 +366,8 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
             $this->division_id = $m->division_id;
             $this->department_id = $m->department_id;
             $this->brand_model = (string) $m->brand_model;
+            $this->nickname = (string) $m->nickname;
+            $this->machine_model_id = (string) ($m->machine_model_id ?? '');
             $this->year_acquired = (string) ($m->year_acquired ?? '');
             $this->acquired_date = $m->acquired_date?->format('Y-m-d') ?? '';
             $this->serial_no = (string) $m->serial_no;
@@ -398,7 +405,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
         } else {
             $this->reset([
                 'machine_code', 'machine_name', 'machine_type', 'division_id', 'department_id',
-                'brand_model', 'year_acquired', 'acquired_date', 'serial_no', 'criticality',
+                'brand_model', 'nickname', 'machine_model_id', 'year_acquired', 'acquired_date', 'serial_no', 'criticality',
                 'plant_code', 'location_note', 'notes', 'max_paper_size',
                 'max_sheet_length_mm', 'max_sheet_width_mm', 'min_sheet_length_mm', 'min_sheet_width_mm',
                 'max_print_length_mm', 'max_print_width_mm', 'gripper_margin_mm', 'plate_size',
@@ -430,6 +437,28 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
         $this->capEditingId = null;
     }
 
+    public function modelOptions(): array
+    {
+        return \App\Models\Master\ProdMachineModel::where('activate', true)->orderBy('machine_type')->orderBy('work_length_mm')->get()
+            ->mapWithKeys(fn ($m) => [$m->id_machine_model => $m->model_code.($m->alias_codes ? ' ('.$m->alias_codes.')' : '').' · '
+                .($m->work_length_mm ? $m->work_length_mm.'×'.$m->work_width_mm.' mm' : '').' · '.(\App\Models\Master\ProdMachineModel::DRIVES[$m->drive] ?? $m->drive)])->all();
+    }
+
+    // Pilih model = spek umum model diisikan ke form (engine suggests, officer confirms: tetap bisa diubah sebelum Save).
+    public function updatedMachineModelId($value): void
+    {
+        $m = $value ? \App\Models\Master\ProdMachineModel::find($value) : null;
+        if (! $m) {
+            return;
+        }
+        foreach (['max_sheet_length_mm' => $m->work_length_mm, 'max_sheet_width_mm' => $m->work_width_mm,
+            'max_speed_per_hour' => $m->speed_per_hour, 'power_kw' => $m->motor_kw] as $prop => $v) {
+            if ($v !== null) {
+                $this->{$prop} = (string) (float) $v === (string) (int) $v ? (string) (int) $v : (string) $v;
+            }
+        }
+    }
+
     public function save(): void
     {
         $unique = 'unique:tm2mst.prod_machine,machine_code';
@@ -440,6 +469,8 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
         $data = $this->validate([
             'machine_code' => ['required', 'string', 'max:20', $unique],
             'machine_name' => ['required', 'string', 'max:100'],
+            'nickname' => ['nullable', 'string', 'max:60'],
+            'machine_model_id' => ['nullable', 'integer', 'exists:tm2mst.prod_machine_model,id_machine_model'],
             'machine_type' => ['required', 'string', 'max:30', 'in:'.implode(',', $this->machineTypes)],
             'division_id' => ['nullable', 'integer'],
             'department_id' => ['nullable', 'integer'],
@@ -869,6 +900,11 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 
                         <div class="mt-3">
                             <x-form.input label="Nama & Model Mesin *" name="machine_name" wire:model="machine_name" placeholder="mis. Heidelberg Speedmaster CD 102" />
+                        </div>
+
+                        <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                            <x-form.input label="Nama Panggilan (sehari-hari)" name="nickname" wire:model="nickname" placeholder="mis. Plong 2, Daxiang" />
+                            <x-form.select label="Model di Pasar (katalog)" name="machine_model_id" wire:model.live="machine_model_id" :options="$this->modelOptions()" placeholder="— pilih model —" hint="Memilih model mengisi spek umumnya; ubah bila mesin berbeda." />
                         </div>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3 mt-3">

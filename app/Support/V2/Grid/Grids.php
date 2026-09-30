@@ -26,6 +26,7 @@ final class Grids
         Master\WarehouseGrid::class,
         Master\ShiftGrid::class,
         Prod\MachineGrid::class,
+        Prod\MachineModelLookup::class,
         Prod\ProcessGrid::class,
         Prod\RoutingTemplateGrid::class,
         Prod\CrewGrid::class,

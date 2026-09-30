@@ -103,6 +103,7 @@
           const nBad = this.data.reduce((t, r) => t + this.cols.filter(c => this.bad(c, r[c.key], r)).length, 0);
           if (nBad) { toast(`${nBad} sel belum benar (wajib / kembar / angka / tanggal / jam / pilihan).`, 'danger'); const b = $(this.table, 'td.is-bad'); if (b) { this.cur = {r: +b.dataset.r, c: +b.dataset.c}; this.anchor = null; this.render(); } return; }
           const changed = this.changes();
+          if (this.cfg.saveUrl) return this.saveServer(changed);
           this.el.dispatchEvent(new CustomEvent('dl:sheet-save', {bubbles: true, detail: {rows: this.data.map(r => ({...r})), changed}}));
           this.data.forEach(r => this.orig.set(String(r[this.cfg.rowKey]), {...r})); this.undo.length = 0; this.redo.length = 0;
           toast(`${changed.length} baris disimpan.`, 'success'); this.render();
@@ -256,6 +257,21 @@
         $(this.el, '[data-s-undo]').disabled = !this.undo.length; $(this.el, '[data-s-redo]').disabled = !this.redo.length;
       }
       const td = this.cellEl(this.cur.r, this.cur.c); if (td) td.scrollIntoView({block: 'nearest', inline: 'nearest'});
+    }
+
+    // Simpan ke database: server memvalidasi & menulis, lalu mengirim isi terbaru (baris baru mendapat id asli).
+    saveServer(changed) {
+      if (!changed.length) return toast('Tidak ada perubahan.');
+      fetch(this.cfg.saveUrl, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': this.cfg.csrf || ''},
+        body: JSON.stringify({changed})})
+        .then(res => res.json().then(j => ({ok: res.ok, j})))
+        .then(({ok, j}) => {
+          if (!ok || j.error) return toast(j.error || j.message || 'Gagal menyimpan.', 'danger');
+          this.data = j.rows; this.orig = new Map(this.data.map(r => [String(r[this.cfg.rowKey]), {...r}])); this.undo.length = 0; this.redo.length = 0;
+          this.el.dispatchEvent(new CustomEvent('dl:sheet-save', {bubbles: true, detail: {rows: this.data.map(r => ({...r})), changed}}));
+          toast(`${changed.length} baris disimpan.`, 'success'); this.render();
+        })
+        .catch(() => toast('Gagal menyimpan.', 'danger'));
     }
 
     changes() {
