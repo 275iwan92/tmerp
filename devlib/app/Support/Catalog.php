@@ -135,9 +135,10 @@ final class Catalog
                     'p5-form-single' => $page('Single Form', 'fa-solid fa-pen-to-square', [
                         'form-single' => ['Single Form · Edit Employee (tabs, read-only, action panel on top)', $c('Form', 'Tabs')],
                     ], 'UIUX_components_part1.html'),
-                    'p5-form-md' => $page('Form Master-Detail (2 variants)', 'fa-solid fa-file-invoice', [
+                    'p5-form-md' => $page('Form Master-Detail', 'fa-solid fa-file-invoice', [
                         'form-md' => ['1 · Customer Order (key summary, header tabs, details in the middle, footer totals)', $c('Form', 'Lines')],
-                        'form-approval' => ['2 · Form with Approval', $c('Form', 'ApprovalBar')],
+                        'form-md-po' => ['2 · Purchase Order (same frame, supplier side)', $c('Form', 'Lines')],
+                        'form-approval' => ['3 · Form with Approval', $c('Form', 'ApprovalBar')],
                     ], 'UIUX_components_part1.html'),
                     'p5-form-special' => $page('Form Special (3 variants)', 'fa-solid fa-wand-magic-sparkles', [
                         'wizard-customer' => ['1 · Form Wizard (step by step)', $c('Wizard')],

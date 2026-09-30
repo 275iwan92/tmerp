@@ -1146,13 +1146,18 @@ form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:v
 .dl-lines__note{padding:10px 12px;min-width:0}.dl-lines__note:empty{padding:0}
 .dl-lines__footer .dl-lines__totals{margin:0;width:auto;padding:10px 12px;gap:4px}
 @media(max-width:700px){.dl-lines__footer{grid-template-columns:1fr}}
-.dl-form__strip{display:flex;align-items:flex-end;gap:10px 18px;flex-wrap:wrap;padding:10px 12px;margin:8px 0 2px;background:var(--dl-surface-alt);border:1px solid var(--dl-border-soft);border-radius:var(--dl-radius-lg)}
+.dl-form__strip{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin:8px 0 2px}
 .dl-form__strip > *{min-width:0}
-.dl-form__strip .dl-strip__kv{display:flex;flex-direction:column;gap:1px}
-.dl-form__strip .dl-strip__kv > span{font-size:calc(10.5px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted);text-transform:uppercase;letter-spacing:.03em}
-.dl-form__strip .dl-strip__kv > b{font-size:calc(17px * var(--dl-font-scale));color:var(--dl-ink-strong);font-variant-numeric:tabular-nums;font-family:var(--dl-font-mono)}
-.dl-form__strip .dl-strip__grand{margin-left:auto;text-align:right}.dl-form__strip .dl-strip__grand > b{font-size:calc(22px * var(--dl-font-scale));color:var(--dl-accent);font-family:inherit}
-.dl-form__strip .dl-field{flex:1 1 220px;margin:0}
+.dl-form__strip .dl-field{flex:1 1 200px;margin:0;align-self:center}
+.dl-strip__kv{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:6px 12px;border:1px solid var(--dl-border-soft);border-radius:var(--dl-radius-lg);background:var(--dl-surface-alt);text-align:right}
+.dl-strip__kv > span{font-size:calc(10.5px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.dl-strip__kv > b{font-size:calc(15px * var(--dl-font-scale));color:var(--dl-ink-strong);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dl-strip__doc{text-align:left;background:var(--dl-accent-soft);border-color:transparent;box-shadow:inset 3px 0 0 var(--dl-accent)}
+.dl-strip__doc > b{font-size:calc(20px * var(--dl-font-scale));font-family:var(--dl-font-mono);color:var(--dl-accent);letter-spacing:.02em}
+.dl-strip__gap{flex:1 1 0;min-width:0}
+.dl-strip__grand{background:var(--dl-accent);border-color:var(--dl-accent);min-width:190px}
+.dl-strip__grand > span{color:color-mix(in srgb,var(--dl-white) 80%,transparent)}
+.dl-strip__grand > b{font-size:calc(21px * var(--dl-font-scale));color:var(--dl-white)}
 .dl-form__detail{margin-top:6px}.dl-form__detail > .dl-lines{margin-top:0}
 .dl-lines__err{color:var(--dl-danger);font-size:calc(12px * var(--dl-font-scale));font-weight:600;padding:0 12px 8px}
 .dl-lines__err:empty{display:none}

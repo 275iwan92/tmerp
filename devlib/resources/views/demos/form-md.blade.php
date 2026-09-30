@@ -3,11 +3,14 @@
     // ScriptCase lama + pola Odoo Sales Order (status bar, notebook, total kanan bawah), SAP Fiori Object Page (ringkasan kunci
     // + angka besar), Dynamics 365 Sales Order (Line details per baris). Kerangka: panel aksi -> tahapan -> ringkasan kunci ->
     // tab header -> DETAIL selalu di tengah -> footer (catatan kiri, total kanan). Status baru ditentukan "server" (blok ini).
-    $act = request('_action');
+    // Dua contoh di satu halaman (CO & PO): parameter diberi awalan dokumen supaya aksi satu form tidak mengubah form lain.
+    $me = 'co';
+    $act = request('doc') === $me ? request('_action') : null;
     $status = match ($act) {
         'confirm' => 'confirmed', 'draft', 'save' => 'draft', 'cancel' => 'cancelled', 'delete', 'duplicate' => 'new',
-        default => request()->boolean('new') ? 'new' : request('status', 'draft'),
+        default => request()->boolean($me.'_new') ? 'new' : request($me.'_status', 'draft'),
     };
+    $here = url()->current();
     $isNew = $status === 'new';
     $dup = $act === 'duplicate';
     $blank = $isNew && ! $dup;
@@ -27,20 +30,24 @@
 <div class="dl-row" style="margin-bottom:8px">
     <span class="dl-note" style="margin:0">Lihat status:</span>
     @foreach (['draft' => 'Draft', 'confirmed' => 'Confirmed', 'cancelled' => 'Cancelled', 'closed' => 'Closed'] as $sk => $sl)
-        <x-dl::button size="sm" :variant="$sk === $status ? 'primary' : 'secondary'" :label="$sl" :href="url()->current().'?status='.$sk" />
+        <x-dl::button size="sm" :variant="$sk === $status ? 'primary' : 'secondary'" :label="$sl" :href="$here.'?'.$me.'_status='.$sk.'#form-md'" />
     @endforeach
 </div>
 <x-dl::form :title="$isNew ? 'Customer Order · New'.($dup ? ' (copy of '.$co['co_no'].')' : '') : 'Customer Order · '.$co['co_no']" :subtitle="$blank ? null : $co['customer']"
     panel="top" kind="document" :status="$status" :pipeline="true" :can-reopen="true"
-    :action="url()->current()" method="GET" :new-url="url()->current().'?new=1'"
+    :action="$here.'#form-md'" method="GET" :new-url="$here.'?'.$me.'_new=1#form-md'" :hidden="['doc' => $me]"
     :tabs="['basic' => 'Basic', 'kirim' => 'Pengiriman', 'pajak' => 'Pajak & Bayar', 'lampiran' => 'Lampiran & Catatan']"
     :created-by="$isNew ? null : 'carrij'" :created-at="$isNew ? null : '2026-09-30 08:12:00'"
     :updated-by="$isNew ? null : ($act ? 'johiwan' : 'carrij')" :updated-at="$isNew ? null : ($act ? now()->format('Y-m-d H:i:s') : '2026-09-30 09:40:00')">
     <x-slot:strip>
-        <div class="dl-strip__kv"><span>No. Pesanan</span><b>{{ $blank || $dup ? '(otomatis)' : $co['co_no'] }}</b></div>
+        {{-- Ringkasan: No. dokumen & nominal penting di atas, disorot; nominal ikut hidup dari baris Details. --}}
+        <div class="dl-strip__kv dl-strip__doc"><span>No. Pesanan</span><b>{{ $blank || $dup ? '(otomatis)' : $co['co_no'] }}</b></div>
         <x-dl::field.date name="co_date" label="Tanggal Pesan" :value="$v('co_date') ?? now()->format('Y-m-d')" required />
         <x-dl::field.select name="customer" label="Customer" :options="$customers" :value="$v('customer')" required />
-        <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b data-l-grand="lines">Rp 0</b></div>
+        <div class="dl-strip__kv"><span>Item</span><b data-l-val="lines:count">0</b></div>
+        <div class="dl-strip__kv"><span>Total Qty</span><b data-l-val="lines:sum.qty">0</b></div>
+        <div class="dl-strip__kv"><span>PPN</span><b data-l-val="lines:ppn">Rp 0</b></div>
+        <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b data-l-val="lines:grand">Rp 0</b></div>
     </x-slot:strip>
     <x-slot:basic>
         <x-dl::form.row :cols="4">
@@ -96,4 +103,4 @@
         </x-dl::lines>
     </x-slot:detail>
 </x-dl::form>
-<p class="dl-note">Form Master-Detail: <b>1</b> panel aksi (tombol baku sesuai status) · <b>2</b> tahapan Draft › Confirmed › Closed · <b>3</b> ringkasan kunci (No., Tanggal, Customer, Grand Total ikut hidup) · <b>4</b> tab header · <b>5</b> Details selalu di tengah: kolom inti di tabel, kolom lain lewat <b>›</b> per baris (titik biru = sudah terisi); kolom Product &amp; Subtotal diam saat tabel digeser · <b>6</b> footer: catatan kiri, Subtotal/Diskon/DPP/PPN/Total kanan.</p>
+<p class="dl-note">Form Master-Detail: <b>1</b> panel aksi (tombol baku sesuai status) · <b>2</b> tahapan Draft › Confirmed › Closed · <b>3</b> ringkasan di atas: No. dokumen &amp; nominal penting disorot (Item, Total Qty, PPN, Grand Total — ikut hidup) · <b>4</b> tab header · <b>5</b> Details selalu di tengah: kolom inti di tabel, kolom lain lewat <b>›</b> per baris (titik biru = sudah terisi); kolom Product &amp; Subtotal diam saat tabel digeser · <b>6</b> footer: catatan kiri, Subtotal/Diskon/DPP/PPN/Total kanan.</p>

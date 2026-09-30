@@ -168,8 +168,13 @@
       $(this.el, '[data-l-count]').textContent = `${this.rows.filter(this.filled).length} baris`;
       const t = this.total();
       if (this.cfg.totals && this.cfg.totals.of) Object.entries(t).forEach(([k, v]) => { const b = $(this.el, `[data-l-t="${k}"]`); if (b) b.textContent = 'Rp ' + this.money(v); });
-      // Ringkasan di header form (mis. Grand Total besar) ikut hidup: elemen [data-l-grand="<name>"] di form yang sama.
-      $$(this.el.closest('form') || document, `[data-l-grand="${this.name}"]`).forEach(x => { x.textContent = 'Rp ' + this.money(t.grand); });
+      // Ringkasan di atas form (No. dokumen & nominal penting) ikut hidup:
+      // [data-l-val="<name>:<key>"] -- key: grand|sub|dpp|ppn (Rp), count (baris terisi), sum.<kolom> (jumlah kolom).
+      const filled = this.rows.filter(this.filled), scope = this.el.closest('form') || document;
+      $$(scope, `[data-l-val^="${this.name}:"]`).forEach(x => {
+        const k = x.dataset.lVal.slice(this.name.length + 1);
+        x.textContent = k === 'count' ? filled.length : k.startsWith('sum.') ? filled.reduce((a, r) => a + (+r[k.slice(4)] || 0), 0).toLocaleString('id-ID') : 'Rp ' + this.money(t[k] ?? 0);
+      });
       $(this.el, '[data-l-inputs]').innerHTML = this.rows.filter(this.filled).map((r, i) => Object.entries(r).map(([k, v]) => `<input type="hidden" name="${esc(this.name)}[${i}][${esc(k)}]" value="${esc(v)}">`).join('')).join('');
     }
 
