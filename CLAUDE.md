@@ -223,6 +223,24 @@ transaksi = `iqp_costing`, ikut inquiry).
   (kolom legacy terpisah, isinya selalu sama dgn is_active lama) **tidak**
   ikut berubah. Riwayat & catatan per-fase: `docs/fieldrename_state.yaml`.
 
+### Bahasa: DATABASE & FORMULA = ENGLISH — LOCKED (keputusan user 2026-10-01)
+> User: *"DATABASE DAN SEMUA FORMULA HARUS ENGLISH. CREATE DICTIONARY TABLE AS TRANSLATOR TO UI UX AND
+> PRINT OUT. ANOTHER LANGUAGE ONLY FOR INTERFACE AND PRINT OUT FOR USERS."*
+- **English = bahasa dasar (base language) di database**: nama tabel/kolom, kode, status, nilai lookup/master
+  (satuan, syarat bayar, kategori, label menu, dst), konstanta, dan **semua formula/rumus** (nama variabel,
+  kolom rumus, parameter engine) ditulis English. Angka disimpan mentah (DECIMAL), tanggal ISO — tanpa format.
+- **Bahasa lain (Indonesia, Jepang, Mandarin, ...) HANYA untuk tampilan layar dan cetakan**, diterjemahkan saat
+  tampil lewat **tabel kamus** `tm2sys.sys_dictionary` (teks English + konteks) + `sys_dictionary_lang`
+  (terjemahan per bahasa). Tidak ada terjemahan = tampil English. Tidak ada tabel `_tl` / kolom JSON per bahasa.
+- Format angka & nama bulan 3 huruf mengikuti bahasa tampilan (`sys_languages` + kamus konteks `date.month_short`):
+  id 1.234,56 · 10-Okt-2026, en 1,234.56 · 10-Oct-2026. Form mengirim angka kanonik `1234.5` ke server.
+- Bahasa layar & cetak = pilihan user (pilihan "Bahasa cetak" di menu Print/Email bebas dari bahasa layar);
+  tidak ada kolom bahasa di customer/supplier.
+- Pengecualian (bukan pelanggaran): teks bebas ketikan user (catatan, alamat) dan nama diri (nama customer,
+  nama bahan dari supplier) disimpan apa adanya, tidak diterjemahkan.
+- Data lama yang masih Indonesia di DB = utang yang dikonversi bertahap (audit & rencana:
+  `docs/multilanguage_design.md`); data REAL (mesin/proses/pegawai) & zona beku §6B dikonversi hanya atas izin user.
+
 ### Input teks & komponen form — LOCKED (keputusan user 2026-09-21)
 **Berlaku terus-menerus, termasuk saat mockup berubah — jangan menunggu
 diperintah ulang.** Detail + alasan: `docs/FORM_UI_STANDARD.md` §1b.
