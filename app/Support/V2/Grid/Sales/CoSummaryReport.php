@@ -24,8 +24,9 @@ class CoSummaryReport extends CoReportGrid
 
     public function guide(): ?string
     {
-        return 'Satu baris = satu CO. Grup per Customer / Bulan / Sales By = Total Sales (Total Qty & Nilai dijumlahkan). '
-            .'Klik tombol Kolom untuk menambah Mode, Mata Uang, Rencana Kirim, Note, Due Date terdekat.';
+        return 'Satu baris = satu CO. Grup per Customer / Bulan / Sales By menjumlahkan Total Qty'
+            .($this->seesPrice() ? ' & Nilai Order (= Total Sales)' : '').'. '
+            .'Klik tombol Kolom untuk menambah Mode, Rencana Kirim, Sisa, Note, Due Date terdekat.';
     }
 
     protected function query(): Builder

@@ -23,9 +23,9 @@ class CoOrderReport extends CoReportGrid
     public function guide(): ?string
     {
         return 'Satu laporan untuk semua kebutuhan: klik tombol Kolom untuk menyalakan kolom tambahan '
-            .'(Status, Harga Satuan, Diskon, Subtotal, Rencana Kirim, Terkirim, Sisa, Bulan, Mode). '
+            .($this->seesPrice() ? '(Status, Harga Satuan, Diskon, Subtotal, Rencana Kirim, Terkirim, Sisa, Bulan, Mode). ' : '(Status, Rencana Kirim, Terkirim, Sisa, Bulan, Mode). ')
             .'Kotak di atas menyaring Open / Confirmed / Outstanding / Batal, Filter menyaring per kolom, '
-            .'dan Grup (Customer, Bulan, Status, Sales By) menjumlahkan Qty & Subtotal = Total Sales.';
+            .($this->seesPrice() ? 'dan Grup (Customer, Bulan, Status, Sales By) menjumlahkan Qty & Subtotal = Total Sales.' : 'dan Grup (Customer, Bulan, Status, Sales By) menjumlahkan Qty.');
     }
 
     public function columns(): array

@@ -2,10 +2,13 @@
 
 namespace App\Models\Sys;
 
+use App\Models\Master\EmpEmployee;
+use App\Models\Master\OrgPosition;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -111,7 +114,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
             ->withPivot('id_user_group');
     }
 
-    public function securityQuestion(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function securityQuestion(): BelongsTo
     {
         return $this->belongsTo(SecRecoveryQuestion::class, 'security_question_id', 'id_question');
     }
@@ -269,6 +272,15 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
         return (bool) $this->is_admin || $this->hasGroup('DIREKSI', 'MGR_ACC');
     }
 
+    // Harga jual order (CO/laporan order dengan harga) — user 2026-09-30: "order tanpa harga untuk produksi, purchase dst;
+    // order dengan harga untuk sales, marketing, product costing serta op manager ke atas". Grup Marketing belum ada di sec_group.
+    public const SALES_PRICE_GROUPS = ['SALES_STAFF', 'SALES_SPV', 'MGR_SALES', 'COSTING_STAFF', 'OPS_MGR', 'DIREKSI'];
+
+    public function canViewSalesPrice(): bool
+    {
+        return (bool) $this->is_admin || $this->hasGroup(...self::SALES_PRICE_GROUPS) || $this->maxMgmtLevel() >= 4;
+    }
+
     // employee_id -> tm2mst.emp_employee (LOGICAL, lintas-DB) -- dipakai Flow
     // Engine utk resolusi "posisi user login ini" saat menyusun antrian approval
     // (PrApproval, dst). Query terpisah, bukan join, sesuai CLAUDE.md §2.
@@ -278,7 +290,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
     {
         $positionId = $this->currentPositionId();
 
-        return $positionId ? \App\Models\Master\OrgPosition::where('position_id', $positionId)->value('position_name') : null;
+        return $positionId ? OrgPosition::where('position_id', $positionId)->value('position_name') : null;
     }
 
     public function currentPositionId(): ?int
@@ -287,7 +299,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
             return null;
         }
 
-        return \App\Models\Master\EmpEmployee::where('employee_id', $this->employee_id)->value('position_id');
+        return EmpEmployee::where('employee_id', $this->employee_id)->value('position_id');
     }
 
     // module_code sys_app_menu (SALES/PROC/INV/PROD/MDATA/FINACC/SETUP) yang boleh
@@ -297,7 +309,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
     public function visibleAppMenuCodes(): Collection
     {
         if ($this->is_admin) {
-            return \App\Models\Sys\SysAppMenu::query()
+            return SysAppMenu::query()
                 ->where('menu_type', 'module')
                 ->where('activate', true)
                 ->pluck('code');
@@ -305,7 +317,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
 
         $accessible = $this->accessibleModules()->keys();
 
-        return \App\Models\Sys\SysAppMenu::query()
+        return SysAppMenu::query()
             ->where('menu_type', 'module')
             ->where('activate', true)
             ->whereNotNull('required_object')

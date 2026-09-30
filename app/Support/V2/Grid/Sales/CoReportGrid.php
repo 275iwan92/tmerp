@@ -46,6 +46,19 @@ abstract class CoReportGrid extends DbGrid
         return self::REPORT;
     }
 
+    // Harga hanya untuk Sales, Costing, Operational Manager ke atas (SecUser::canViewSalesPrice).
+    public const PRICE_KEYS = ['currency', 'price', 'disc', 'subtotal', 'value'];
+
+    protected function restrictedKeys(): array
+    {
+        return auth()->user()?->canViewSalesPrice() ? [] : self::PRICE_KEYS;
+    }
+
+    protected function seesPrice(): bool
+    {
+        return $this->restrictedKeys() === [];
+    }
+
     public function icon(): string
     {
         return 'fa-solid fa-chart-line';

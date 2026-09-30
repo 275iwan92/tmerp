@@ -73,6 +73,13 @@ abstract class DbGrid
         return [];
     }
 
+    // Kolom rahasia untuk user yang sedang login (mis. harga bagi produksi/purchasing): kolom DAN nilainya dibuang
+    // di server, bukan sekadar disembunyikan di layar.
+    protected function restrictedKeys(): array
+    {
+        return [];
+    }
+
     // Panduan singkat di atas grid (mis. cara memakai tombol Kolom di laporan). null = tanpa panduan.
     public function guide(): ?string
     {
@@ -183,8 +190,8 @@ abstract class DbGrid
 
         return [
             'id' => $this->slug(),
-            'rows' => $this->rows(),
-            'columns' => $this->columns(),
+            'rows' => array_map(fn ($r) => array_diff_key($r, array_flip($this->restrictedKeys())), $this->rows()),
+            'columns' => array_values(array_filter($this->columns(), fn ($c) => ! in_array($c['key'], $this->restrictedKeys(), true))),
             'stats' => $this->stats(),
             'filters' => $this->filters(),
             'groups' => $this->groups(),

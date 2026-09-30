@@ -33,7 +33,7 @@ class CoShipDetailReport extends CoReportGrid
 
     public function guide(): ?string
     {
-        return 'Satu baris = satu jadwal kirim. Klik tombol Kolom untuk menambah No PO, Sales By, Due Date, Harga, Subtotal, Terkirim, Sisa; Grup per Customer / Tgl Kirim / No CO menjumlahkan Qty Kirim.';
+        return 'Satu baris = satu jadwal kirim. Klik tombol Kolom untuk menambah Sales By, Due Date, Status CO'.($this->seesPrice() ? ', Harga' : '').', Terkirim, Sisa; Grup per Customer / Tgl Kirim / No CO menjumlahkan Qty Kirim.';
     }
 
     public function columns(): array
