@@ -14,6 +14,7 @@ namespace Devlib\Components;
 // Approval: :approval-levels (1-3), :approval-at (tingkat yang menunggu), :can-approve (user = pemeriksa tingkat itu).
 //   status approval (pemeriksa: Approve/Reject/Hold; pembuat hanya Cancel), hold, rejected (berhenti; Duplicate), approved;
 //   tanpa Back to Draft setelah masuk approval; Closed otomatis saat dokumen diteruskan ke modul berikutnya (mis. PR -> PO).
+// :action-field = nama field aksi yang dikirim (default _action; layar lama mis. 'action'); :hide = aksi panel yang disembunyikan.
 // :subtitle = baris kecil di bawah judul (mis. supplier); :pipeline = bar tahapan Draft > Confirmed > Closed (Master-Detail).
 // Tab read-only 'History' SELALU ditambahkan objek: created by/at, last updated by/at + :log = [['at','by','action','note'], ...]
 // (log riwayat: Created, Saved, Confirmed, Back to Draft, Cancelled, Closed -- terbaru di atas) (user 2026-09-30).
@@ -47,6 +48,8 @@ class Form extends DevlibComponent
         public int $approvalLevels = 0,
         public int $approvalAt = 0,
         public bool $canApprove = false,
+        public string $actionField = '_action',
+        public array $hide = [],
         public array $hidden = [],
     ) {}
 
@@ -67,7 +70,8 @@ class Form extends DevlibComponent
     // input: isi selalu terkunci, tanpa Save/Delete/Confirm/New; tetap boleh Cancel, Back to Draft, Email, Print. super-admin (UAT) bebas.
     public function panelActions(): array
     {
-        $all = $this->baseActions();
+        // :hide = aksi yang tidak didukung layar/backend-nya (mis. Cancel belum ada di modul itu) -- disembunyikan dari panel.
+        $all = array_values(array_filter($this->baseActions(), fn ($a) => ! in_array($a[4], $this->hide, true)));
 
         return $this->canInput ? $all : array_values(array_filter($all, fn ($a) => ! in_array($a[4], ['save', 'undo', 'delete', 'confirm', 'new', 'duplicate', 'cancel'], true)));
     }
@@ -163,7 +167,7 @@ class Form extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <form {{ $attributes->class(['dl-form', 'dl-form--panel' => $panel, 'is-view' => $panel && $locked()]) }} {!! $dl() !!} method="{{ $method === 'GET' ? 'GET' : 'POST' }}" @if ($action) action="{{ $action }}" @endif data-dl-form data-mode="{{ $mode }}" @if ($guard) data-dl-guard @endif novalidate>
+            <form {{ $attributes->class(['dl-form', 'dl-form--panel' => $panel, 'is-view' => $panel && $locked()]) }} {!! $dl() !!} method="{{ $method === 'GET' ? 'GET' : 'POST' }}" @if ($action) action="{{ $action }}" @endif data-dl-form data-mode="{{ $mode }}" data-action-field="{{ $actionField }}" @if ($guard) data-dl-guard @endif novalidate>
                 @if ($method !== 'GET')
                     @csrf
                 @endif
@@ -181,7 +185,7 @@ class Form extends DevlibComponent
                             @php [$pre, $lbl, $var, $ico, $act] = $a; $cls = $a[5] ?? ''; @endphp
                             @if ($loop->last && isset($special)){{ $special }}@endif
                             @if ($act === 'save')
-                                <x-dl::button size="sm" :preset="$pre" :label="$lbl" :variant="$var ?? 'primary'" type="submit" name="_action" value="save" data-f-act="save" />
+                                <x-dl::button size="sm" :preset="$pre" :label="$lbl" :variant="$var ?? 'primary'" type="submit" :name="$actionField" value="save" data-f-act="save" />
                             @else
                                 <x-dl::button size="sm" :preset="$pre" :label="$lbl ?? ''" :variant="$var ?? 'primary'" :icon="$ico" :href="$act === 'new' ? $newUrl : null" :class="$cls" data-f-act="{{ $act }}" />
                             @endif

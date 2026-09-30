@@ -1,7 +1,7 @@
 /* DevLib · Lines */
 (function (Devlib) {
   'use strict';
-  const {srcAttr, $, $$, esc, CASES, CASE_LABEL, applyCase, confirmBox, words} = Devlib.h;
+  const {srcAttr, $, $$, esc, CASES, CASE_LABEL, applyCase, confirmBox, words, fmt} = Devlib.h;
   /* ============================ LINES (detail dokumen) ============================ */
   class Lines extends Devlib.Component {
     static selector = "[data-dl-lines]";
@@ -19,6 +19,7 @@
       this.ro = this.cfg.readonly || !!this.el.closest('form.is-view');
       if (this.ro) $$(this.el, '.dl-lines__footer input, .dl-lines__footer select').forEach(x => { if (x.type === 'checkbox' || x.tagName === 'SELECT') x.disabled = true; else x.readOnly = true; });
       this.rows = JSON.parse(this.el.dataset.rows || '[]');
+      this.removed = [];
       // Rumus aman: hanya nama kolom, angka, dan + - * / ( ).
       this.cols.forEach(c => {
         if (!c.formula) return;
@@ -50,7 +51,7 @@
         const t = e.target; if (e.key !== 'Enter' || !t.matches('.dl-lines__in') || t.dataset.lk !== undefined) return;
         e.preventDefault();
         const i = +t.closest('tr[data-i]').dataset.i, next = $(this.el, `tr[data-i="${i + 1}"] [data-k="${t.dataset.k}"]`);
-        if (next) next.focus(); else if (!this.ro) { this.add(false); $(this.el, `tr[data-i="${i + 1}"] [data-k="${t.dataset.k}"]`)?.focus(); }
+        if (next) next.focus(); else if (!this.ro && this.cfg.addable !== false) { this.add(false); $(this.el, `tr[data-i="${i + 1}"] [data-k="${t.dataset.k}"]`)?.focus(); }
       });
       this.el.addEventListener('click', e => {
         const x = e.target;
@@ -64,7 +65,7 @@
         if (x.closest('[data-l-dup]')) { const i = +x.closest('tr[data-i]').dataset.i; this.rows.splice(i + 1, 0, {...this.rows[i]}); this.body(); this.changed(); return; }
         const del = x.closest('[data-l-del]');
         if (del) {
-          const i = +del.closest('tr[data-i]').dataset.i, go = () => { const [gone] = this.rows.splice(i, 1); this.keepPrimary(gone); this.body(); this.changed(); };
+          const i = +del.closest('tr[data-i]').dataset.i, go = () => { const [gone] = this.rows.splice(i, 1); if (this.cfg.keyField && gone && gone[this.cfg.keyField]) this.removed.push(gone[this.cfg.keyField]); this.keepPrimary(gone); this.body(); this.changed(); };
           if (this.filled(this.rows[i])) confirmBox({message: `Hapus baris ${i + 1}?`, tone: 'danger'}).then(ok => ok && go()); else go();
           return;
         }
@@ -145,6 +146,7 @@
     }
 
     show(c, v) {
+      if (c.type === 'date') return v ? fmt.gridDate(v) : '';  // tampilan read-only: dd-Mmm-yyyy (baku grid)
       return (v === '' || v == null) && !c.fn ? '' : c.type === 'money' || (c.fn && c.type !== 'number') ? this.money(v) : c.type === 'number' ? (v === '' ? '' : (+v).toLocaleString('id-ID')) : v;
     }
 
@@ -191,7 +193,7 @@
 
     body() {
       const exp = i => this.more.length ? `<button type="button" class="dl-lines__exp ${this.open.has(i) ? 'is-open' : ''} ${this.more.some(c => String(this.rows[i][c.key] ?? '').trim() !== '') ? 'has-val' : ''}" data-l-exp="${i}" title="Detail baris (${this.more.map(c => c.label).join(', ')})"><i class="fa-solid fa-chevron-right"></i></button>` : '';
-      $(this.el, '[data-l-body]').innerHTML = this.rows.map((r, i) => `<tr data-i="${i}"><td class="dl-lines__no">${exp(i)}${i + 1}</td>${this.tcols.map(c => this.cell(c, r, i)).join('')}${this.ro ? '' : `<td class="dl-lines__act"><button type="button" class="dl-iconbtn dl-iconbtn--plain" data-l-dup title="Duplikat baris"><i class="fa-solid fa-copy"></i></button><button type="button" class="dl-iconbtn dl-iconbtn--plain dl-iconbtn--danger" data-l-del title="Hapus baris" ${this.rows.length <= this.cfg.minRows ? 'disabled' : ''}><i class="fa-solid fa-trash-can"></i></button></td>`}</tr>${this.more.length && this.open.has(i) ? this.panel(r, i) : ''}`).join('')
+      $(this.el, '[data-l-body]').innerHTML = this.rows.map((r, i) => `<tr data-i="${i}"><td class="dl-lines__no">${exp(i)}${i + 1}</td>${this.tcols.map(c => this.cell(c, r, i)).join('')}${this.ro ? '' : `<td class="dl-lines__act">${this.cfg.duplicable === false ? '' : '<button type="button" class="dl-iconbtn dl-iconbtn--plain" data-l-dup title="Duplikat baris"><i class="fa-solid fa-copy"></i></button>'}${this.cfg.rowLock && !r[this.cfg.rowLock] ? '' : `<button type="button" class="dl-iconbtn dl-iconbtn--plain dl-iconbtn--danger" data-l-del title="Hapus baris" ${this.rows.length <= this.cfg.minRows ? 'disabled' : ''}><i class="fa-solid fa-trash-can"></i></button>`}</td>`}</tr>${this.more.length && this.open.has(i) ? this.panel(r, i) : ''}`).join('')
         || `<tr><td colspan="${this.tcols.length + 2}" class="dl-lines__empty">Belum ada baris. Klik <b>${esc($(this.el, '[data-l-add]')?.textContent.trim() || '+ Tambah Baris')}</b>.</td></tr>`;
       this.refresh();
     }
@@ -214,7 +216,9 @@
         const k = x.dataset.lVal.slice(this.name.length + 1);
         x.textContent = k === 'count' ? filled.length : k.startsWith('sum.') ? filled.reduce((a, r) => a + (+r[k.slice(4)] || 0), 0).toLocaleString('id-ID') : cu.sym + ' ' + this.money(t[k] ?? 0);
       });
-      $(this.el, '[data-l-inputs]').innerHTML = this.rows.filter(this.filled).map((r, i) => Object.entries(r).map(([k, v]) => `<input type="hidden" name="${esc(this.name)}[${i}][${esc(k)}]" value="${esc(v)}">`).join('')).join('');
+      const kf = this.cfg.keyField, rf = this.cfg.removeField;
+      $(this.el, '[data-l-inputs]').innerHTML = this.rows.filter(this.filled).map((r, i) => Object.entries(r).map(([k, v]) => `<input type="hidden" name="${esc(this.name)}[${esc(kf && r[kf] ? r[kf] : (kf ? 'new' + i : i))}][${esc(k)}]" value="${esc(v)}">`).join('')).join('')
+        + (rf ? this.removed.map(id => `<input type="hidden" name="${esc(rf)}[${esc(id)}]" value="1">`).join('') : '');
     }
 
     total() {

@@ -17,6 +17,9 @@ use Devlib\Lookup;
 //      / Other Costs (+ Notes bila slot note) di kiri; Summary selalu di kanan.
 // 'more' => true = kolom tidak di tabel, diisi lewat panel › per baris (detail berkolom banyak tetap ringkas).
 // Kolom pertama + kolom rumus terakhir diam saat tabel digeser ke samping. Slot note = kiri footer (total di kanan).
+// Layar server-driven: 'keyField' => 'id_item' -> terkirim name[<id>][kolom] (bukan indeks); 'removeField' => 'remove' -> baris
+// ber-id yang dihapus terkirim remove[<id>]=1; :addable=false -> tambah baris lewat tombol layar;
+// :duplicable=false = tanpa tombol salin baris; row-lock="editable" = baris dgn nilai false tidak bisa dihapus (mis. snapshot quotation) (mis. pilih Master Product).
 // Terkirim: name[i][kolom] per baris, name_discount, name_ppn. Di dalam x-dl::master: baris = data[name].
 class Lines extends DevlibComponent
 {
@@ -32,6 +35,11 @@ class Lines extends DevlibComponent
         public ?string $countKey = null,
         public bool $readonly = false,
         public ?string $source = null,
+        public ?string $keyField = null,
+        public ?string $removeField = null,
+        public bool $addable = true,
+        public bool $duplicable = true,
+        public ?string $rowLock = null,
     ) {}
 
     public function tag(): string
@@ -95,7 +103,7 @@ class Lines extends DevlibComponent
             return $c;
         }, $this->columns);
 
-        return ['name' => $this->name, 'columns' => array_values($cols), 'minRows' => $this->minRows, 'totals' => $this->totals, 'readonly' => $this->readonly];
+        return ['name' => $this->name, 'columns' => array_values($cols), 'minRows' => $this->minRows, 'totals' => $this->totals, 'readonly' => $this->readonly, 'keyField' => $this->keyField, 'removeField' => $this->removeField, 'addable' => $this->addable, 'duplicable' => $this->duplicable, 'rowLock' => $this->rowLock];
     }
 
     public function render()
@@ -103,7 +111,7 @@ class Lines extends DevlibComponent
         return <<<'BLADE'
             <div {{ $attributes->class(['dl-lines', 'is-readonly' => $readonly]) }} {!! $dl() !!} data-dl-lines data-name="{{ $name }}" data-total-key="{{ $totalKey }}" data-count-key="{{ $countKey }}" data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
                 <div class="dl-lines__head"><b>{{ $title }}</b><span class="dl-lines__count" data-l-count></span><span class="dl-lines__spacer"></span>
-                    @unless ($readonly)<x-dl::button variant="secondary" size="sm" :label="$addLabel" data-l-add title="Tambah baris (Enter di baris terakhir)" />@endunless
+                    @if (! $readonly && $addable)<x-dl::button variant="secondary" size="sm" :label="$addLabel" data-l-add title="Tambah baris (Enter di baris terakhir)" />@endif
                 </div>
                 <div class="dl-lines__wrap"><table class="dl-lines__table"><thead data-l-head></thead><tbody data-l-body></tbody><tfoot data-l-foot></tfoot></table></div>
                 <div data-l-inputs hidden></div>

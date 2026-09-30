@@ -291,6 +291,12 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->name('create');
         Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
             $o = CoOrder::findOrFail($id);
+            // Tombol Delete panel Form (x-dl::form) mengirim action=delete ke rute simpan yang sama.
+            if ($r->input('action') === 'delete') {
+                CustomerOrder::delete($o);
+
+                return redirect(route('v2.screen', 'customer-order'))->with('v2_flash', "Draft {$o->co_no} dihapus.");
+            }
             $r->validate(['co_date' => ['nullable', 'date'], 'items.*.due_date' => ['nullable', 'date'], 'deliveries.*.ship_date' => ['nullable', 'date'],
                 'product_id' => ['nullable', 'integer']], [], ['co_date' => 'CO Date']);
             CustomerOrder::save($o, $r->all());

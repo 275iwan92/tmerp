@@ -13,7 +13,8 @@
       if (this.viewMode) this.setView(true);
       this.el.addEventListener('input', e => { const f = e.target.closest('.dl-field.is-invalid'); if (f && hasValue(f)) { f.classList.remove('is-invalid'); const x = $(f, '[data-dl-field-error]'); if (x) x.textContent = ''; } }, true);
       this.el.addEventListener('submit', e => {
-        if (e.submitter?.name === '_action') $(this.el, 'input[type=hidden][name=_action]')?.remove();  // Save menang atas sisa aksi panel
+        const af = this.el.dataset.actionField || '_action';
+        if (e.submitter?.name === af) $(this.el, `input[type=hidden][name="${af}"]`)?.remove();  // Save menang atas sisa aksi panel
         const n = this.validate();
         if (n) { e.preventDefault(); dirtyForms.add(this.el); this.el.classList.add('is-dirty'); toast(`${n} isian wajib belum diisi.`, 'danger'); return; }
         if (this.el.getAttribute('action')) return;
@@ -72,7 +73,8 @@
         this.el.dispatchEvent(new CustomEvent('dl:form-action', {bubbles: true, detail: {action: a}}));
         // Print/Email tidak mengubah dokumen -> tidak kirim form (layar menangkap dl:form-action, mis. buka x-dl::doc-share).
         if (!this.el.getAttribute('action') || a === 'print' || a === 'email') return toast(`Aksi: ${a} (pratinjau)`, 'success');
-        let h = $(this.el, 'input[name=_action]'); if (!h) { h = document.createElement('input'); h.type = 'hidden'; h.name = '_action'; this.el.appendChild(h); }
+        const af = this.el.dataset.actionField || '_action';
+        let h = $(this.el, `input[type=hidden][name="${af}"]`); if (!h) { h = document.createElement('input'); h.type = 'hidden'; h.name = af; this.el.appendChild(h); }
         h.value = a;
         let r = $(this.el, 'input[name=_reason]'); if (!r) { r = document.createElement('input'); r.type = 'hidden'; r.name = '_reason'; this.el.appendChild(r); }
         r.value = typeof why === 'string' ? why : '';
