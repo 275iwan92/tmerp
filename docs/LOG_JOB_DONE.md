@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-10-01 -- Multi-language dasar: DB English + kamus, angka/tanggal per bahasa, Bahasa cetak
+
+- Keputusan LOCKED user dicatat (CLAUDE.md §3, memori, docs/multilanguage_design.md).
+- Kamus `sys_dictionary` + `sys_dictionary_lang`, `sys_languages` +native_name/intl_locale/activate/sort_order (ddtsys).
+- Objek nilai DevLib PHP+JS: NumberValue/DlNumber, DateValue/DlDate, TimeValue/DlTime, DateTimeValue/DlDateTime, TextValue/DlText.
+- Semua komponen DevLib + layar v2 memformat lewat objek itu; form mengirim angka kanonik (hook formdata).
+- DocShare: pilihan Bahasa cetak (ID/EN/...) -> halaman dirender ulang `?print_lang`; PrintOut/DocShare teks lewat kamus Lang.
+- Test `LocaleNumberTest` (10 test) + uji keseragaman JS; contoh `docs/mockups/print_lang_quotation.jpg`.
+
 ## 2026-10-01 -- Engine target kecepatan mesin + spek mesin dari riset online (ddt*)
 
 - `App\Services\Production\SpeedTarget\SpeedTargetEngine` (engine suggests, PPIC confirms): 6 lapis sumber berurutan + tingkat

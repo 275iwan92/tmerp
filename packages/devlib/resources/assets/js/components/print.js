@@ -67,9 +67,9 @@
       let n = 0;
       if (g) {
         const order = [...new Set(this.data.map(r => r[g]))];
-        order.forEach(k => { const list = this.data.filter(r => r[g] === k); out.push(`<tr class="dl-print__grp"><td colspan="${v.length + 1}">${esc(k)} · ${list.length} baris</td></tr>`); list.forEach(r => out.push(rowHtml(r, n++))); out.push(subRow('Subtotal ' + k, list, 'dl-print__sub')); });
+        order.forEach(k => { const list = this.data.filter(r => r[g] === k); out.push(`<tr class="dl-print__grp"><td colspan="${v.length + 1}">${esc(k)} · ${list.length} ${esc(T('pr_rows'))}</td></tr>`); list.forEach(r => out.push(rowHtml(r, n++))); out.push(subRow(T('pr_subtotal') + ' ' + k, list, 'dl-print__sub')); });
       } else this.data.forEach(r => out.push(rowHtml(r, n++)));
-      out.push(subRow('Total', this.data, 'dl-print__grand'));
+      out.push(subRow(T('pr_total'), this.data, 'dl-print__grand'));
       return out.filter(Boolean);
     }
 
@@ -80,7 +80,7 @@
 
     thead() {
       const v = this.vis(), grouped = v.some(c => c.group);
-      if (!grouped) return `<tr><th class="dl-print__no">No</th>${v.map(c => `<th class="${c.type === 'text' ? '' : 'num'}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}</th>`).join('')}</tr>`;
+      if (!grouped) return `<tr><th class="dl-print__no">${esc(T('pr_no'))}</th>${v.map(c => `<th class="${c.type === 'text' ? '' : 'num'}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}</th>`).join('')}</tr>`;
       let top = '<tr><th rowspan="2" class="dl-print__no">No</th>', bottom = '<tr>';
       v.forEach((c, i) => {
         if (!c.group) { top += `<th rowspan="2">${esc(c.label)}</th>`; return; }
@@ -97,8 +97,8 @@
       const extra = (this.T.extra || []).reduce((t, [, v]) => t + (+v || 0), 0);
       const line = (l, v, cls = '') => `<div class="${cls}"><span>${esc(l)}</span><b>${v < 0 ? `(${this.num(-v)})` : this.num(v)}</b></div>`;
       const final = this.T.net ? grand + extra : grand;
-      return `<div class="dl-print__totals">${line('Subtotal', sub)}${disc ? line('Diskon', -disc) + line('DPP', dpp, 'is-strong') : ''}${ppnOn ? line(`PPN ${this.T.ppn}%`, ppn, 'is-muted') : ''}${line(this.T.net ? 'Total Tagihan' : 'Total', grand, 'is-strong')}${this.T.net ? (this.T.extra || []).map(([l, v]) => line(l, v, 'is-violet')).join('') + line(this.T.net, final, 'is-net') : ''}</div>
-        <p class="dl-print__words"><span>Terbilang:</span> <i># ${esc(words(String(Math.round(final * 100) / 100), this.cfg.currency))} #</i></p>`;
+      return `<div class="dl-print__totals">${line(T('pr_subtotal'), sub)}${disc ? line(T('pr_discount'), -disc) + line(T('pr_dpp'), dpp, 'is-strong') : ''}${ppnOn ? line(`${T('pr_vat')} ${this.T.ppn}%`, ppn, 'is-muted') : ''}${line(this.T.net ? T('pr_total_due') : T('pr_total'), grand, 'is-strong')}${this.T.net ? (this.T.extra || []).map(([l, v]) => line(l, v, 'is-violet')).join('') + line(this.T.net, final, 'is-net') : ''}</div>
+        <p class="dl-print__words"><span>${esc(T('pr_words'))}:</span> <i># ${esc(words(String(Math.round(final * 100) / 100), this.cfg.currency))} #</i></p>`;
     }
 
     sheet() {

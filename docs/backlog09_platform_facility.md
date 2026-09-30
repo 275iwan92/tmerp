@@ -196,13 +196,32 @@ konten, bukan mekanisme bocor.
 - Layar v1 tidak lagi ditarik ke i18n (v1 cukup diganti v2); panel Filament
   `/admin` bukan arah ke depan — sisa i18n per-layar v1/Filament dihapus.
 
-### Keputusan user 2026-10-01 -- angka ikut bahasa + bahasa cetak + N bahasa
-- Format angka MENGIKUTI BAHASA (id 1.234,56 · en 1,234.56); setiap cetakan (Print/PDF/JPEG/Email) punya
-  pilihan **Bahasa cetak** bebas dari bahasa layar. Bahasa akan bertambah (Jepang, Mandarin, dst) -> desain
-  N bahasa (pola SAP/Oracle/D365/Odoo): `docs/multilanguage_design.md` -- **menunggu 4 keputusan user** di §3 dok itu
-  sebelum implementasi (inti angka PHP/JS, bahasa cetak di x-dl::doc-share, kamus Lang per kode bahasa).
-- 4 bug angka temuan survei **SUDAH DIPERBAIKI 2026-10-01** (Lines edit desimal, footer % Lines, field Money
-  nilai DB, kalkulator Sheet) -- lihat LOG_JOB_DONE.
+### Keputusan user 2026-10-01 -- DB English + kamus, angka/tanggal per bahasa, bahasa cetak
+LOCKED (CLAUDE.md §3 "Bahasa: DATABASE & FORMULA = ENGLISH"): database & semua formula English; bahasa lain hanya
+tampilan layar & cetakan lewat kamus `tm2sys.sys_dictionary` + `sys_dictionary_lang`. Angka & bulan 3 huruf ikut bahasa
+tampilan; setiap cetakan punya pilihan **Bahasa cetak** (bebas dari bahasa layar). Semua nilai lewat OBJEK DevLib
+(NumberValue/DlNumber, DateValue/DlDate, TimeValue/DlTime, DateTimeValue/DlDateTime, TextValue/DlText). Desain + audit:
+`docs/multilanguage_design.md`.
+
+**SUDAH (2026-10-01):** objek nilai PHP+JS + test (`LocaleNumberTest`, uji keseragaman JS); komponen DevLib (field
+money/decimal/date/time/datetime, Lines, Sheet, Grid, Pivot, Print, Approval, NumberWords, Calendar, chart, Slider/Gauge/Kpi/Bullet);
+form mengirim angka kanonik; server `num()` = `Locale::input`; layar v2 memakai Locale (number/decimal/d/dt); migration
+`2026_10_01_000020_create_sys_dictionary` di **ddtsys saja**; DocShare "Bahasa cetak" (render ulang `?print_lang` di iframe);
+teks objek PrintOut & DocShare lewat kamus Lang; demo devlib.test (Locale & Formats, Print ▾); contoh JPEG
+`docs/mockups/print_lang_quotation.jpg` (menunggu OK user).
+
+**SISA:**
+1. Layar input kamus (Setup > Translation Dictionary: grid sheet source_en × kolom per bahasa, sel kosong disorot,
+   Export/Import Excel) -- wajib §7.12, belum dibangun.
+2. Setelah contoh JPEG disetujui: label layar/nota v2 yang masih teks Indonesia mentah -> sumber English + kamus, per dokumen:
+   Inquiry (zona beku -- label saja, izin sudah ada utk ID->EN), ProDev, Quotation, CO, PR, PO, SPB, DO/Surat Jalan.
+   Nota lama v1 yang dipanggil tombol "Nota" (quotation.print, co.print, pur.pr/po.print, dispatch.do.print) belum ikut print_lang.
+3. Konversi data master Indonesia di DB ke English + kamus (tabel audit di dokumen desain §0.1) -- perlu rencana per tabel;
+   data REAL (prod_process) & zona beku hanya dengan izin user.
+4. Migration kamus ke tm2sys (tunggu izin); kamus `Devlib\Lang` (pasangan [ID, EN] di kode) untuk bahasa ke-3 diterjemahkan
+   lewat `sys_dictionary` context `ui` (sumber = teks English) -- JS `T()` baru mengenal id/en.
+5. Nama hari di pemilih tanggal & Calendar sudah Intl; komponen lain yang masih teks Indonesia (Grid toolbar, dsb) bertahap.
+6. `purchase-quotation` (sesi Purchase) masih `number_format(',', '.')` -- dirapikan setelah sesi itu selesai.
 
 ### Gap desain lama (format angka sudah diputuskan di atas)
 - ~~**Format angka tidak ikut bahasa**~~ (diputuskan 2026-10-01, lihat atas): `number_format()` di ratusan titik
