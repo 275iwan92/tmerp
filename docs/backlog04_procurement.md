@@ -45,8 +45,8 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
 3. **Kas Kecil**: plafon (imprest) belum diisi — isi di Kas Kecil > Setting; saldo awal masuk lewat Top Up.
 4. **PQ**: `ANTHROPIC_API_KEY` belum diisi (PDF/foto penawaran belum terbaca otomatis; keputusan user: key & izin data
    penawaran dikirim ke Anthropic); .eml/.msg belum didukung; CSV angka Indonesia ("12.500") bisa terbaca 12,5.
-5. **Belum dibangun (kecil, menyusul bila perlu)**: pembatalan transaksi kas kecil (kasbon/settlement salah input);
-   cetak Tanda Terima Bahan Customer & cetak SPB; daftar bahan customer yang sudah datang di layar CO; data uji PR baru
-   (semua baris PR APPROVED di ddt* sudah FULLY_ORDERED -> buat PR baru + approve untuk mencoba PR -> PQ -> PO).
+5. **Belum dibangun (kecil, menyusul bila perlu)**: cetak SPB (jenis PO & Subkon); data uji PR baru (semua baris PR
+   APPROVED di ddt* sudah FULLY_ORDERED -> buat PR baru + approve untuk mencoba PR -> PQ -> PO).
+6. Migration `2026_10_01_000050_petty_cash_tx_cancel` juga menunggu OK untuk tm2* (sudah jalan di ddt*).
 
 ---

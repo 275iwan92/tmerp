@@ -57,6 +57,19 @@ final class PurchaseReceive
         return $cos->mapWithKeys(fn ($c) => [$c->id_order => $c->co_no.' · '.($cust[$c->customer_id] ?? '—')])->all();
     }
 
+    // Bahan customer yang sudah datang utk satu CO (tab Customer Material di layar CO v2). Hanya penerimaan Posted.
+    public static function customerMaterialsForCo(int $coId): array
+    {
+        $pvs = PvReceipt::with(['lines' => fn ($q) => $q->orderBy('line_no')])->where('i_receipt_type', 'CUSTOMER')->where('i_co_id', $coId)
+            ->whereIn('status', ['DRAFT', 'POSTED'])->orderBy('pv_id')->get();
+        $items = DB::connection('tm2sdi')->table('co_order_item')->where('order_id', $coId)->pluck('line_seq', 'id_item');
+
+        return ['receipts' => $pvs->map(fn ($p) => ['id' => $p->pv_id, 'no' => $p->doc_no, 'status' => $p->status])->all(),
+            'rows' => $pvs->flatMap(fn ($p) => $p->lines->map(fn ($l) => ['doc' => $p->doc_no.($p->status === 'DRAFT' ? ' (Draft)' : ''), 'date' => Locale::d($p->i_doc_date),
+                'item' => isset($items[$l->i_co_line_id]) ? '#'.$items[$l->i_co_line_id] : '—', 'material' => $l->i_description, 'qty' => (float) $l->i_qty_purchase,
+                'uom' => $l->i_uom_purchase, 'lot' => $l->i_lot_no ?: '—']))->values()->all()];
+    }
+
     public static function coItemOptions(?int $coId): array
     {
         return $coId ? DB::connection('tm2sdi')->table('co_order_item')->where('order_id', $coId)->orderBy('line_seq')

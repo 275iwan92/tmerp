@@ -48,7 +48,7 @@
         @csrf
         <x-dl::card title="+ New Record — Material from Customer" description="Material brought by the customer for a specific Customer Order (inquiry marked 'material from customer'). The CO number is mandatory. Not company stock: no stock value, no journal.">
             <x-dl::form.row :cols="2">
-                <x-dl::field.select name="co_id" label="Customer Order" required :options="PurchaseReceive::coOptions()" :source="Src::of('tm2sdi.co_order (CONFIRMED / SUBMITTED)')" />
+                <x-dl::field.select name="co_id" label="Customer Order" required :options="PurchaseReceive::coOptions()" :value="request('co')" :source="Src::of('tm2sdi.co_order (CONFIRMED / SUBMITTED)')" />
                 <x-dl::field.select name="warehouse" label="Stored At (optional)" :options="PurchaseReceive::warehouses()" :source="Src::of('tm2mst.wh_warehouse')" />
             </x-dl::form.row>
             <x-dl::action-bar>
@@ -130,6 +130,11 @@
         :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $draft ? [] : ['delete'])"
         :tabs="['general' => 'General', 'notes' => 'Notes']"
         :created-by="$pv->created_by" :created-at="$pv->created_at?->toDateTimeString()" :updated-by="$pv->updated_by" :updated-at="$pv->updated_at?->toDateTimeString()">
+        @if ($isCust && $pv->status === 'POSTED')
+            <x-slot:special>
+                <x-dl::button size="sm" preset="print" label="Print Receipt" :href="route('v2.pv.print-customer', $pv->pv_id)" target="_blank" />
+            </x-slot:special>
+        @endif
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>No.</span><b>{{ $pv->doc_no }}</b></div>
             <x-dl::field.date name="i_doc_date" label="Received Date" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />

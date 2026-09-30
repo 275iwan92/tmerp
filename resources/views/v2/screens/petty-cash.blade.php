@@ -17,6 +17,7 @@
     $rp = fn ($v) => $v === null ? '—' : 'Rp '.\Devlib\Locale::number((float) $v, 0);
     $po = request('po') ? PoOrder::with(['lines' => fn ($q) => $q->orderBy('line_no')])->find((int) request('po')) : null;
     $step = $po ? PettyCashService::nextStep($po) : null;
+    $tx = request('tx') ? \App\Models\Acc\FinPettyCashTx::where('petty_cash_id', $fund->id_petty_cash)->find((int) request('tx')) : null;
     $back = $po ? route('v2.screen', 'purchase-order').'?id='.$po->po_id : $home;
 @endphp
 
@@ -30,7 +31,7 @@
         <x-dl::stat-box label="Open Cash Advances" :value="$rp($sum['open'])" tone="warn" />
         <x-dl::stat-box label="To Top Up" :value="$rp($sum['refill'])" tone="info" />
     </div>
-    @unless (request()->hasAny(['po', 'topup', 'setup']))
+    @unless (request()->hasAny(['po', 'topup', 'setup', 'tx']))
         <x-dl::action-bar>
             <x-dl::button variant="secondary" icon="fa-gear" label="Setting" :href="$home.'?setup=1'" />
             <x-dl::button variant="success" icon="fa-circle-plus" label="Top Up" :href="$home.'?topup=1'" />
@@ -38,7 +39,42 @@
     @endunless
 </x-dl::card>
 
-@if ($po)
+@if ($tx)
+    <x-dl::card :title="(\App\Models\Acc\FinPettyCashTx::TYPES[$tx->tx_type] ?? $tx->tx_type).' · '.$tx->tx_no" :description="'Status: '.($tx->status === 'POSTED' ? 'Posted' : 'Cancelled')">
+        <x-dl::form.row :cols="4">
+            <x-dl::field.display label="Date" :value="\Devlib\Locale::d($tx->tx_date)" :source="Src::of('tm2acc.fin_petty_cash_tx.tx_date')" />
+            <x-dl::field.display label="Cash PO" :value="$tx->po_no ?: '—'" :source="Src::of('tm2acc.fin_petty_cash_tx.po_no')" />
+            <x-dl::field.display label="Receiver" :value="$tx->receiver_name ?: '—'" :source="Src::of('tm2acc.fin_petty_cash_tx.receiver_name')" />
+            <x-dl::field.display label="Cash Effect" :value="($tx->cash_effect >= 0 ? '+ ' : '− ').$rp(abs((float) $tx->cash_effect))" :source="Src::of('tm2acc.fin_petty_cash_tx.cash_effect')" />
+        </x-dl::form.row>
+        <x-dl::form.row :cols="4">
+            <x-dl::field.display label="Advance" :value="$rp($tx->advance_amount)" :source="Src::of('tm2acc.fin_petty_cash_tx.advance_amount')" />
+            <x-dl::field.display label="Receipt Amount" :value="$rp($tx->actual_amount)" :source="Src::of('tm2acc.fin_petty_cash_tx.actual_amount')" />
+            <x-dl::field.display label="Journal" :value="PettyCash::voucherNo($tx->voucher_id).($tx->reversal_voucher_id ? ' · reversed by '.PettyCash::voucherNo($tx->reversal_voucher_id) : '')" :source="Src::of('tm2acc.fin_voucher')" />
+            <x-dl::field.display label="Notes" :value="$tx->notes ?: '—'" :source="Src::of('tm2acc.fin_petty_cash_tx.notes')" />
+        </x-dl::form.row>
+        @if ($tx->attachment_path)
+            <x-dl::action-bar><x-dl::button size="sm" variant="secondary" icon="fa-receipt" label="Receipt Photo" :href="\Illuminate\Support\Facades\Storage::disk('public')->url($tx->attachment_path)" target="_blank" /></x-dl::action-bar>
+        @endif
+        @if ($tx->status !== 'POSTED')
+            <x-dl::alert tone="warn" :message="'Cancelled by '.$tx->cancelled_by.' · '.\Devlib\Locale::dt($tx->cancelled_at).' — '.$tx->cancel_reason" />
+        @endif
+    </x-dl::card>
+    @if ($tx->status === 'POSTED')
+        <form method="post" action="{{ route('v2.petty.cancel', $tx->id_petty_tx) }}">
+            @csrf
+            <x-dl::card title="Cancel Transaction" description="For wrong input only. The journal is reversed and the transaction is kept as Cancelled. A settled advance, or a receipt whose goods are already in an SPB, must be cancelled from the later step first.">
+                <x-dl::field.text name="cancel_reason" label="Cancel Reason" required :value="old('cancel_reason')" placeholder="min. 10 characters" :source="Src::of('tm2acc.fin_petty_cash_tx.cancel_reason')" />
+                <x-dl::action-bar>
+                    <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
+                    <x-dl::button variant="danger" icon="fa-ban" label="Cancel Transaction" type="submit" onclick="return confirm('Cancel this petty cash transaction and reverse its journal?')" />
+                </x-dl::action-bar>
+            </x-dl::card>
+        </form>
+    @else
+        <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="$home" /></x-dl::action-bar>
+    @endif
+@elseif ($po)
     @php
         $shop = $po->i_shop_name ?: (PurchaseOrder::suppliers([$po->i_supplier_id])[$po->i_supplier_id] ?? '—');
         $advance = PettyCashService::advanceOf($po);
@@ -126,7 +162,7 @@
                 ['key' => 'by', 'label' => 'Created By'],
             ]" />
     @endif
-    <x-dl::grid id="petty-tx" :rows="PettyCash::rows($fund)" search="Search transaction, PO, receiver..." actions="none" :active-key="null" source="{{ Src::of('tm2acc.fin_petty_cash_tx', 'tm2acc.fin_voucher') }}"
+    <x-dl::grid id="petty-tx" :rows="PettyCash::rows($fund)" search="Search transaction, PO, receiver..." actions="worklist" :active-key="null" :open-url="$home.'?tx={id}'" source="{{ Src::of('tm2acc.fin_petty_cash_tx', 'tm2acc.fin_voucher') }}"
         :columns="[
             ['key' => 'type', 'label' => 'Transaction', 'type' => 'identity', 'code' => 'no'],
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
@@ -136,7 +172,8 @@
             ['key' => 'out', 'label' => 'Out', 'type' => 'money', 'sum' => true],
             ['key' => 'voucher', 'label' => 'Journal'],
             ['key' => 'note', 'label' => 'Notes'],
+            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Posted' => 'success', 'Cancelled' => 'danger']],
         ]"
-        :stats="[['label' => 'All'], ['label' => 'Cash Advance', 'where' => ['type' => 'Cash Advance'], 'tone' => 'warn'], ['label' => 'Settlement / Reimburse', 'where' => ['type' => ['Settlement', 'Reimburse']], 'tone' => 'info'], ['label' => 'Top Up', 'where' => ['type' => 'Top Up'], 'tone' => 'success']]"
+        :stats="[['label' => 'All'], ['label' => 'Cash Advance', 'where' => ['type' => 'Cash Advance'], 'tone' => 'warn'], ['label' => 'Settlement / Reimburse', 'where' => ['type' => ['Settlement', 'Reimburse']], 'tone' => 'info'], ['label' => 'Top Up', 'where' => ['type' => 'Top Up'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'Cancelled'], 'tone' => 'danger']]"
         :filters="['type' => 'Transaction']" />
 @endif

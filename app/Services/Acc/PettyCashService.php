@@ -4,6 +4,7 @@ namespace App\Services\Acc;
 
 use App\Models\Acc\FinPettyCash;
 use App\Models\Acc\FinPettyCashTx;
+use App\Models\Acc\FinVoucher;
 use App\Models\Master\MatCategory;
 use App\Models\Master\MatRaw;
 use App\Models\Pur\PoLine;
@@ -141,6 +142,46 @@ final class PettyCashService
                 ['account_id' => $petty->account_id, 'debit' => $amount, 'narration' => "Isi ulang {$petty->petty_name}"],
                 ['account_id' => $bankAccountId, 'credit' => $amount, 'narration' => "Isi ulang {$petty->petty_name}"],
             ]);
+    }
+
+    // Batalkan transaksi salah input (user 2026-10-01): jurnal dibalik, status CANCELLED, efek ke PO dikembalikan.
+    // Penjaga: kasbon yang sudah dipertanggungjawabkan, nota yang barangnya sudah dicatat di SPB, atau pembatalan
+    // yang membuat saldo kas negatif -> ditolak (batalkan langkah sesudahnya dulu).
+    public static function cancel(FinPettyCashTx $tx, string $reason, string $login): void
+    {
+        if ($tx->status !== 'POSTED') {
+            throw new InvalidArgumentException('Transaksi ini sudah dibatalkan.');
+        }
+        if (mb_strlen(trim($reason)) < 10) {
+            throw new InvalidArgumentException('Alasan pembatalan wajib diisi, minimal 10 karakter.');
+        }
+        $petty = $tx->pettyCash;
+        if ((float) $tx->cash_effect > 0 && $petty->balance() - (float) $tx->cash_effect < -0.001) {
+            throw new InvalidArgumentException('Saldo kas kecil tidak cukup untuk membatalkan transaksi ini (uangnya sudah terpakai).');
+        }
+        $po = $tx->po_id ? PoOrder::find($tx->po_id) : null;
+        if ($tx->tx_type === 'ADVANCE' && $po && self::settlementOf($po)) {
+            throw new InvalidArgumentException('Kasbon ini sudah dipertanggungjawabkan — batalkan pertanggungjawabannya dulu.');
+        }
+        if (in_array($tx->tx_type, ['SETTLE', 'REIMBURSE'], true) && $po) {
+            $received = DB::connection('tm2pur')->table('pv_line')->join('pv_receipt', 'pv_receipt.pv_id', '=', 'pv_line.pv_id')
+                ->where('pv_line.c_po_id', $po->po_id)->where('pv_receipt.status', 'POSTED')->value('pv_receipt.doc_no');
+            if ($received) {
+                throw new InvalidArgumentException("Barang PO ini sudah dicatat di {$received} — batalkan SPB itu dulu.");
+            }
+        }
+
+        DB::connection('tm2acc')->transaction(function () use ($tx, $reason, $login, $po) {
+            $voucher = $tx->voucher_id ? FinVoucher::withoutGlobalScopes()->find($tx->voucher_id) : null;
+            $reversal = $voucher && ! $voucher->reversed_by_id
+                ? app(JournalPostingService::class)->reverse($voucher, now()->toDateString(), $login, "Batal {$tx->tx_no}: ".trim($reason)) : null;
+            $tx->update(['status' => 'CANCELLED', 'cancel_reason' => mb_substr(trim($reason), 0, 255), 'cancelled_by' => $login, 'cancelled_at' => now(),
+                'reversal_voucher_id' => $reversal?->voucher_id, 'updated_by' => $login]);
+            // Nota dibatalkan -> PO Kontan kembali menunggu nota (APPROVED), belum boleh dicatat di SPB.
+            if ($po && in_array($tx->tx_type, ['SETTLE', 'REIMBURSE'], true) && $po->status === 'SENT') {
+                $po->update(['status' => 'APPROVED', 'sent_at' => null, 'updated_by' => $login]);
+            }
+        });
     }
 
     // Barang stok -> GR/IR (akun item, fallback kategori; sama dgn jurnal SPB). Non-stok -> akun biaya baris PO.

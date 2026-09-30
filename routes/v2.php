@@ -2,6 +2,7 @@
 
 use App\Console\Commands\DdtBaseline;
 use App\Mail\EmailVerifyMail;
+use App\Models\Acc\FinPettyCashTx;
 use App\Models\Master\FlowConfig;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
@@ -24,6 +25,7 @@ use App\Services\Sales\InquiryAssembly;
 use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
+use App\Support\Branding\Brand;
 use App\Support\Localization\Dictionary;
 use App\Support\Mail\MailSettings;
 use App\Support\V2\AppMenu;
@@ -50,6 +52,7 @@ use Devlib\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
@@ -475,6 +478,16 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return $run(fn () => PettyCashService::topup($fund(), (float) Locale::input($d['amount']), (int) $d['bank_account_id'], $d['tx_date'], Auth::user()->login, (string) ($d['notes'] ?? '')),
                 'Isi ulang :no tercatat — jurnal Kas Kecil / Bank terposting.');
         })->name('topup');
+        Route::post('/tx/{id}/cancel', function (Request $r, int $id) use ($home) {
+            try {
+                $tx = FinPettyCashTx::findOrFail($id);
+                PettyCashService::cancel($tx, (string) $r->input('cancel_reason', ''), Auth::user()->login);
+            } catch (InvalidArgumentException $e) {
+                return back()->withInput()->withErrors(['cancel' => $e->getMessage()]);
+            }
+
+            return redirect($home())->with('v2_flash', "Transaksi {$tx->tx_no} dibatalkan — jurnalnya dibalik.");
+        })->whereNumber('id')->name('cancel');
         Route::post('/setup', function (Request $r) use ($home, $fund) {
             $d = $r->validate(['petty_name' => ['required', 'string', 'max:100'], 'custodian_user_id' => ['required', 'integer'], 'imprest_amount' => ['nullable']],
                 [], ['petty_name' => 'Nama kas kecil', 'custodian_user_id' => 'Pemegang kas']);
@@ -587,6 +600,22 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $open($pv->pv_id)->with('v2_flash', "Penerimaan dari subkon {$pv->doc_no} dibuat — isi qty kembali & proses berikutnya, lalu Confirm.");
         })->name('create-subcon');
+        // Tanda Terima Bahan Customer (x-dl::print-out + doc-share).
+        Route::get('/{id}/print-customer', function (int $id) {
+            $pv = PvReceipt::with(['lines' => fn ($q) => $q->orderBy('line_no')])->where('i_receipt_type', 'CUSTOMER')->findOrFail($id);
+            $mst = DB::connection('tm2mst');
+            $items = DB::connection('tm2sdi')->table('co_order_item')->whereIn('id_item', $pv->lines->pluck('i_co_line_id')->filter())->get(['id_item', 'line_seq', 'description'])->keyBy('id_item');
+            $mat = $mst->table('mat_raw')->whereIn('material_id', $pv->lines->pluck('item_id')->filter())->pluck('material_code', 'material_id');
+
+            return view('v2.print-customer-material', [
+                'pv' => $pv, 'customer' => $mst->table('cust_customer')->where('id_customer', $pv->i_customer_id)->first(),
+                'coNo' => DB::connection('tm2sdi')->table('co_order')->where('id_order', $pv->i_co_id)->value('co_no'),
+                'warehouse' => $pv->i_warehouse_code ? $pv->i_warehouse_code.' · '.$mst->table('wh_warehouse')->where('warehouse_code', $pv->i_warehouse_code)->value('warehouse_name') : null,
+                'company' => ['name' => Brand::companyName(), 'tagline' => Brand::tagline(), 'initials' => mb_strtoupper(mb_substr(Brand::companyName(), 0, 2))],
+                'rows' => $pv->lines->map(fn ($l) => ['co_item' => isset($items[$l->i_co_line_id]) ? '#'.$items[$l->i_co_line_id]->line_seq.' '.$items[$l->i_co_line_id]->description : '—',
+                    'name' => $l->i_description, 'code' => $mat[$l->item_id] ?? '', 'qty' => (float) $l->i_qty_purchase, 'uom' => $l->i_uom_purchase, 'lot' => $l->i_lot_no ?: ''])->all(),
+            ]);
+        })->whereNumber('id')->name('print-customer');
         Route::post('/{id}/short', function (Request $r, int $id) use ($open) {
             $d = $r->validate(['pv_line_id' => ['required', 'integer'], 'short_qty' => ['required'], 'short_note' => ['required', 'string', 'max:200']],
                 [], ['pv_line_id' => 'Baris', 'short_qty' => 'Qty kurang', 'short_note' => 'Keterangan']);

@@ -16,9 +16,10 @@ class FinPettyCashTx extends Model
     public const TYPES = ['TOPUP' => 'Top Up', 'ADVANCE' => 'Cash Advance', 'SETTLE' => 'Settlement', 'REIMBURSE' => 'Reimburse'];
 
     protected $fillable = ['petty_cash_id', 'tx_no', 'tx_date', 'tx_type', 'po_id', 'po_no', 'advance_amount', 'actual_amount', 'cash_effect',
-        'counter_account_id', 'voucher_id', 'receiver_name', 'attachment_path', 'notes', 'status', 'created_by', 'updated_by'];
+        'counter_account_id', 'voucher_id', 'reversal_voucher_id', 'receiver_name', 'attachment_path', 'notes', 'status', 'cancel_reason', 'cancelled_by', 'cancelled_at',
+        'created_by', 'updated_by'];
 
-    protected $casts = ['tx_date' => 'date'];
+    protected $casts = ['tx_date' => 'date', 'cancelled_at' => 'datetime'];
 
     public function pettyCash(): BelongsTo
     {

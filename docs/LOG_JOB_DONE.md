@@ -62,6 +62,20 @@
 - Field Money: nilai DB `1250000.00` dibulatkan lalu diformat `1.250.000` (Blade + JS), tidak lagi 125.000.000.
 - Sheet kalkulator mini: presisi hasil memakai `col.decimals` (dulu `c.decimals` = indeks kolom).
 
+## 2026-10-01 -- Batal transaksi kas kecil, cetak Tanda Terima Bahan Customer, tab Customer Material di CO
+
+- **Batal transaksi Kas Kecil** (`PettyCashService::cancel`, detail transaksi `petty-cash?tx=`): jurnal dibalik, status
+  CANCELLED + alasan (min. 10 huruf); nota dibatalkan -> PO Kontan kembali APPROVED. Ditolak bila: kasbon sudah
+  dipertanggungjawabkan, barang PO sudah masuk SPB, saldo jadi negatif, atau sudah dibatalkan. Migration 000050 (ddt*).
+- **Tanda Terima Bahan Customer** (`/v2/pv/{id}/print-customer`): x-dl::print-out (kop dari Constants COMPANY_NAME,
+  pihak, tabel bahan, 3 tanda tangan, tanpa harga) + x-dl::doc-share (PDF / JPEG / online + QR / Email ke customer).
+  Tombol Print Receipt di penerimaan jenis From Customer yang sudah Confirm.
+- **Tab Customer Material di CO v2**: daftar bahan customer yang sudah diterima utk CO itu + tombol ke penerimaannya
+  dan "+ Receive Customer Material" (CO langsung terpilih).
+- Diuji di ddt* (urutan batal nota -> kasbon -> top up, saldo kembali tepat; halaman cetak & tab CO tampil), data uji dihapus.
+
+---
+
 ## 2026-10-01 -- PO Kontan + Kas Kecil; Penerimaan dari Customer & Subkon (mockup.test)
 
 - **PO Kontan** (Tipe Pengadaan CASH): mode Kasbon dulu / Beli dulu (reimburse), maks. Constants `PO_CASH_MAX`

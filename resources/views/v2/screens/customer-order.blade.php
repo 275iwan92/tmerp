@@ -113,7 +113,7 @@
         :approval-levels="$appr['levels']" :approval-at="$appr['at'] ?: ($o->doc_status === 'SUBMITTED' ? 1 : $appr['levels'])" :can-approve="(bool) $pending"
         :action="route('v2.co.save', $o->id_order)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
         :hide="array_merge(['print', 'email'], $o->isInstant() ? [] : ['delete'])"
-        :tabs="['general' => 'General', 'finance' => 'Finance', 'delivery' => 'Delivery', 'notes' => 'Notes']"
+        :tabs="['general' => 'General', 'finance' => 'Finance', 'delivery' => 'Delivery', 'material' => 'Customer Material', 'notes' => 'Notes']"
         :created-by="$o->created_by" :created-at="$o->created_at?->toDateTimeString()" :updated-by="$o->updated_by" :updated-at="$o->updated_at?->toDateTimeString()" :log="$log">
         <x-slot:special>
             <x-dl::button size="sm" preset="print" label="Nota" :href="route('co.print', $o->id_order)" target="_blank" />
@@ -169,6 +169,19 @@
                 @if ($draft)<x-dl::button variant="secondary" size="sm" label="+ Jadwal Kirim" type="submit" name="action" :value="'add_delivery_'.$it->id_item" formnovalidate />@endif
             @endforeach
         </x-slot:delivery>
+        <x-slot:material>
+            {{-- Bahan dari customer yang sudah diterima gudang utk CO ini (Penerimaan Barang jenis From Customer, user 2026-10-01). --}}
+            @php $cm = \App\Support\V2\Data\PurchaseReceive::customerMaterialsForCo($o->id_order); @endphp
+            <x-dl::table :source="Src::of('tm2pur.pv_receipt (CUSTOMER, i_co_id)', 'tm2pur.pv_line')" empty="No customer material received for this CO yet."
+                :columns="['doc' => 'Receipt No.', 'date' => 'Date', 'item' => 'CO Item', 'material' => 'Material', 'qty' => ['Qty', 'num' => true], 'uom' => 'UoM', 'lot' => 'Lot / Roll No.']"
+                :rows="$cm['rows']" />
+            <x-dl::action-bar>
+                @foreach ($cm['receipts'] as $rc)
+                    <x-dl::button size="sm" variant="secondary" icon="fa-truck-ramp-box" :label="$rc['no']" :href="route('v2.screen', 'purchase-receive').'?id='.$rc['id']" />
+                @endforeach
+                <x-dl::button size="sm" variant="secondary" icon="fa-plus" label="+ Receive Customer Material" :href="route('v2.screen', 'purchase-receive').'?new=1&type=CUSTOMER&co='.$o->id_order" />
+            </x-dl::action-bar>
+        </x-slot:material>
         <x-slot:notes>
             <x-dl::field.text name="notes" label="Catatan internal (Ops / PPIC)" multiline placeholder="Internal notes for Ops/PPIC..." :value="old('notes', $o->notes)" :source="Src::of('tm2sdi.co_order.notes')" />
         </x-slot:notes>

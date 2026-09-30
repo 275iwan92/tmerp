@@ -16,6 +16,11 @@ final class PettyCash
 
     public const STEP_TONES = ['Give Advance' => 'warn', 'Settlement' => 'info', 'Reimburse' => 'info'];
 
+    public static function voucherNo(?int $id): string
+    {
+        return $id ? (string) DB::connection('tm2acc')->table('fin_voucher')->where('voucher_id', $id)->value('voucher_number') : '—';
+    }
+
     public static function fund(): ?FinPettyCash
     {
         return FinPettyCash::where('activate', true)->orderBy('id_petty_cash')->first();
@@ -34,13 +39,13 @@ final class PettyCash
 
     public static function rows(FinPettyCash $p): array
     {
-        $vouchers = DB::connection('tm2acc')->table('fin_voucher')->whereIn('voucher_id', FinPettyCashTx::where('petty_cash_id', $p->id_petty_cash)->pluck('voucher_id')->filter())
+        $vouchers = DB::connection('tm2acc')->table('fin_voucher')->whereIn('voucher_id', FinPettyCashTx::where('petty_cash_id', $p->id_petty_cash)->pluck('voucher_id')->filter()->all())
             ->pluck('voucher_number', 'voucher_id');
 
         return FinPettyCashTx::where('petty_cash_id', $p->id_petty_cash)->orderByDesc('id_petty_tx')->limit(500)->get()->map(fn ($t) => ['id' => $t->id_petty_tx,
             'no' => $t->tx_no, 'type' => FinPettyCashTx::TYPES[$t->tx_type] ?? $t->tx_type, 'date' => $t->tx_date?->toDateString(), 'po' => $t->po_no ?: '—',
             'who' => $t->receiver_name ?: '—', 'in' => $t->cash_effect > 0 ? (float) $t->cash_effect : null, 'out' => $t->cash_effect < 0 ? -(float) $t->cash_effect : null,
-            'voucher' => $vouchers[$t->voucher_id] ?? '—', 'note' => $t->notes ?: '—'])->all();
+            'voucher' => $vouchers[$t->voucher_id] ?? '—', 'note' => $t->notes ?: '—', 'status' => $t->status === 'POSTED' ? 'Posted' : 'Cancelled'])->all();
     }
 
     // PO Kontan Approved yang masih menunggu uang keluar / nota.
