@@ -1207,6 +1207,14 @@ form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:v
 .dl-appr__detail{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);padding:16px;display:flex;flex-direction:column;gap:14px}
 .dl-appr__detail.is-empty{display:none}
 .dl-appr__title{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.dl-appr__lv{align-self:flex-start;font-size:calc(10.5px * var(--dl-font-scale));font-weight:600;color:var(--dl-amber-2);background:color-mix(in srgb,var(--dl-amber-2) 12%,var(--dl-surface));border-radius:999px;padding:1px 8px}
+.dl-appr__level{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.dl-appr__meter{display:flex;gap:4px}
+.dl-appr__meter i{width:28px;height:6px;border-radius:3px;background:var(--dl-border)}
+.dl-appr__meter i.is-done{background:var(--dl-green)}
+.dl-appr__meter i.is-current{background:var(--dl-amber-2)}
+.dl-appr__meter i.is-rejected{background:var(--dl-danger)}
+.dl-appr__lvtag{font-size:calc(10.5px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted);text-transform:uppercase;letter-spacing:.03em}
 .dl-appr__title h3{margin:0;font-size:calc(16px * var(--dl-font-scale));color:var(--dl-ink-strong)}
 .dl-appr__title p{margin:3px 0 0;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-muted)}
 .dl-appr__summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;background:var(--dl-surface-alt);border:1px solid var(--dl-border-soft);border-radius:var(--dl-radius);padding:12px}

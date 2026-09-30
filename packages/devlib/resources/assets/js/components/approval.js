@@ -22,6 +22,12 @@
       return this.docs.filter(d => !d.decided);
     }
 
+    // Level approval = langkah selain pembuat (step.submitter). {n: jumlah level, at: level berjalan (1..n) atau 0}.
+    level(d) {
+      const lv = (d.steps || []).filter(s => !s.submitter);
+      return {n: lv.length, at: lv.findIndex(s => s.status === 'current') + 1, steps: lv};
+    }
+
     rp(v) {
       return 'Rp ' + (+v || 0).toLocaleString('id-ID');
     }
@@ -33,7 +39,7 @@
     list() {
       const p = this.pending();
       $(this.el, '[data-a-count]').textContent = `${p.length} menunggu`;
-      $(this.el, '[data-a-list]').innerHTML = p.map(d => `<button type="button" class="dl-appr__item ${d.id === this.cur ? 'is-active' : ''} ${d.held ? 'is-held' : ''}" data-a-id="${esc(d.id)}"><span class="dl-appr__row"><b>${esc(d.no)}</b><b>${this.rp(d.amount)}</b></span><span class="dl-appr__sub">${esc(d.party || '')} · ${esc(d.date ? fmt.date(d.date + 'T12:00:00+07:00') : '')}</span>${d.held ? '<span class="dl-badge dl-badge--pill dl-badge--neutral">Ditahan</span>' : ''}</button>`).join('')
+      $(this.el, '[data-a-list]').innerHTML = p.map(d => `<button type="button" class="dl-appr__item ${d.id === this.cur ? 'is-active' : ''} ${d.held ? 'is-held' : ''}" data-a-id="${esc(d.id)}"><span class="dl-appr__row"><b>${esc(d.no)}</b><b>${this.rp(d.amount)}</b></span><span class="dl-appr__sub">${esc(d.party || '')} · ${esc(d.date ? fmt.date(d.date + 'T12:00:00+07:00') : '')}</span>${(l => l.at ? `<span class="dl-appr__lv">Level ${l.at} / ${l.n}</span>` : '')(this.level(d))}${d.held ? '<span class="dl-badge dl-badge--pill dl-badge--neutral">Ditahan</span>' : ''}</button>`).join('')
         || '<div class="dl-empty"><span class="dl-empty__icon"><i class="fa-solid fa-circle-check"></i></span><b class="dl-empty__title">Semua sudah diputuskan</b><p class="dl-empty__msg">Tidak ada dokumen yang menunggu approval Anda.</p></div>';
     }
 
@@ -41,14 +47,14 @@
       const d = this.docs.find(x => x.id === this.cur && !x.decided);
       $(this.el, '[data-a-detail]').classList.toggle('is-empty', !d);
       if (!d) { $(this.el, '[data-a-body]').innerHTML = ''; return; }
-      const steps = d.steps || [], at = steps.findIndex(s => s.status === 'current');
+      const steps = d.steps || [], at = steps.findIndex(s => s.status === 'current'), lv = this.level(d);
       const lines = d.lines || [], keys = Object.keys(this.cols);
       $(this.el, '[data-a-body]').innerHTML = `
-        <div class="dl-appr__title"><div><h3>${esc(d.no)} — ${esc(d.title || '')}</h3><p>Diajukan oleh: ${esc(d.submitted_by || '')}${d.party ? ' · ' + esc(d.party) : ''}</p></div>${at >= 0 ? `<span class="dl-badge dl-badge--pill dl-badge--warn">Step ${at + 1}/${steps.length} — ${esc(steps[at].role)}</span>` : ''}</div>
+        <div class="dl-appr__title"><div><h3>${esc(d.no)} — ${esc(d.title || '')}</h3><p>Diajukan oleh: ${esc(d.submitted_by || '')}${d.party ? ' · ' + esc(d.party) : ''}</p></div>${lv.at ? `<div class="dl-appr__level"><span class="dl-badge dl-badge--pill dl-badge--warn">Approval Level ${lv.at} of ${lv.n} — ${esc(steps[at].role)}</span><span class="dl-appr__meter" title="${lv.n} level approval">${lv.steps.map((s, i) => `<i class="is-${esc(s.status)}" title="Level ${i + 1} · ${esc(s.role)}"></i>`).join('')}</span></div>` : ''}</div>
         <div class="dl-appr__summary">${Object.entries(d.summary || {}).map(([k, v]) => `<div><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join('')}</div>
         ${lines.length ? `<table class="dl-appr__lines"><thead><tr>${keys.map(k => `<th class="${k.endsWith(':money') ? 'num' : ''}">${esc(this.cols[k])}</th>`).join('')}</tr></thead><tbody>${lines.map(r => `<tr>${keys.map(k => `<td class="${k.endsWith(':money') ? 'num' : ''}">${this.cell(k, r[k.replace(':money', '')])}</td>`).join('')}</tr>`).join('')}</tbody></table>` : ''}
         <div class="dl-appr__cols">
-          <div><p class="dl-appr__cap">Alur Approval</p><ol class="dl-appr__steps">${steps.map(s => `<li class="is-${esc(s.status)}"><span class="dl-appr__dot">${s.status === 'done' ? '<i class="fa-solid fa-check"></i>' : s.status === 'rejected' ? '<i class="fa-solid fa-xmark"></i>' : ''}</span><b>${esc(s.role)}</b>${s.plt ? ' <span class="dl-badge dl-badge--pill dl-badge--violet">PLT</span>' : ''}<small>${esc(s.by || (s.status === 'current' ? 'Menunggu Anda' : 'Menunggu'))}${s.at ? ' · ' + esc(s.at) : ''}</small></li>`).join('')}</ol></div>
+          <div><p class="dl-appr__cap">Alur Approval</p><ol class="dl-appr__steps">${steps.map(s => `<li class="is-${esc(s.status)}"><span class="dl-appr__dot">${s.status === 'done' ? '<i class="fa-solid fa-check"></i>' : s.status === 'rejected' ? '<i class="fa-solid fa-xmark"></i>' : ''}</span><b>${s.submitter ? '' : `<span class="dl-appr__lvtag">Level ${lv.steps.indexOf(s) + 1}</span> `}${esc(s.role)}</b>${s.plt ? ' <span class="dl-badge dl-badge--pill dl-badge--violet">PLT</span>' : ''}<small>${esc(s.by || (s.status === 'current' ? 'Menunggu Anda' : 'Menunggu'))}${s.at ? ' · ' + esc(s.at) : ''}</small></li>`).join('')}</ol></div>
           <div><p class="dl-appr__cap">Riwayat Dokumen</p><ul class="dl-appr__hist">${(d.history || []).map(h => `<li><i class="fa-solid ${this.icon[h.action] || 'fa-circle'}"></i><div><b>${esc(h.action)}</b>${h.plt ? ' <span class="dl-badge dl-badge--pill dl-badge--violet">PLT</span>' : ''}<small>Oleh: ${esc(h.by)} · ${esc(h.at)}</small>${h.note ? `<q>${esc(h.note)}</q>` : ''}</div></li>`).join('')}</ul></div>
         </div>`;
     }

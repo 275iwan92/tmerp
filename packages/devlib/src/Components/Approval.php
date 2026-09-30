@@ -6,7 +6,8 @@ namespace Devlib\Components;
 // ringkasan, baris item, alur approval berjenjang (PLT ditandai), riwayat, Tolak / Tahan / Setujui.
 // Hanya-baca (user 2026-09-30): tidak ada isian di layar; alasan Tolak/Tahan wajib, diminta di dialog konfirmasi.
 // docs: [['id','no','title','amount','party','date','submitted_by','summary' => [label => nilai],
-//         'lines' => [[...]], 'steps' => [['role','by','at','status' => done|current|pending','plt']],
+//         'lines' => [[...]], 'steps' => [['role','by','at','status' => done|current|pending','plt','submitter']],
+//         submitter = pembuat (bukan level approval); sisanya = Level 1..n, yang 'current' = level berjalan.
 //         'history' => [['action','by','at','note','plt']]]]
 // lineColumns: [kolom => label]; kolom berakhiran :money diformat Rupiah (mis. 'price:money').
 // Keputusan memancarkan event dl:approval (detail: {id, action, note}) untuk disimpan aplikasi.
