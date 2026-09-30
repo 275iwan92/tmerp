@@ -6,6 +6,8 @@ use App\Models\Master\CustCustomer;
 use App\Models\Sdi\DoDelivery;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use App\Support\V2\Lookups;
+use Devlib\Locale;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -52,13 +54,13 @@ final class DeliveryOrder
         return DoDelivery::create(['do_date' => now()->toDateString(), 'customer_id' => $customerId, 'status' => 'DRAFT', 'created_by' => $login, 'updated_by' => $login]);
     }
 
-    // Jadwal kirim CO CONFIRMED milik customer ini yang masih tersisa (picker v1).
+    // Jadwal kirim CO CONFIRMED milik customer ini yang masih tersisa (picker v1) DAN sudah di-Post to Production (aturan A.3).
     public static function outstandingOptions(DoDelivery $do): array
     {
         return DB::connection('tm2sdi')->table('v_co_delivery_outstanding')->where('customer_id', $do->customer_id)->where('qty_available', '>', 0)
-            ->where('co_status', 'CONFIRMED')->orderBy('co_no')->orderBy('item_description')->get()
-            ->mapWithKeys(fn ($r) => [$r->co_delivery_id => $r->co_no.' · '.$r->item_description.' · sisa '.\Devlib\Locale::decimal($r->qty_available, 2).' '.$r->qty_unit
-                .($r->ship_date ? ' · kirim '.\Devlib\Locale::d(\Illuminate\Support\Carbon::parse($r->ship_date)) : '')])->all();
+            ->where('co_status', 'CONFIRMED')->whereIn('co_delivery_id', self::postedIds())->orderBy('co_no')->orderBy('item_description')->get()
+            ->mapWithKeys(fn ($r) => [$r->co_delivery_id => $r->co_no.' · '.$r->item_description.' · sisa '.Locale::decimal($r->qty_available, 2).' '.$r->qty_unit
+                .($r->ship_date ? ' · kirim '.Locale::d(Carbon::parse($r->ship_date)) : '')])->all();
     }
 
     // Header + alamat (lookup wilayah) + qty/harga baris + hapus baris. Balasan = pesan error DispatchService (kosong = OK).
@@ -101,8 +103,18 @@ final class DeliveryOrder
         return $err;
     }
 
+    // Subquery id jadwal kirim yang sudah di-Post to Production.
+    private static function postedIds(): \Closure
+    {
+        return fn ($q) => $q->from('co_order_delivery')->select('id_delivery')->whereNotNull('posted_at');
+    }
+
     public static function pull(DoDelivery $do, array $coDeliveryIds): string
     {
+        $notPosted = DB::connection('tm2sdi')->table('co_order_delivery')->whereIn('id_delivery', array_map('intval', $coDeliveryIds))->whereNull('posted_at')->count();
+        if ($notPosted) {
+            return 'Jadwal kirim yang dipilih belum di-Post to Production di Customer Plan Delivery.';
+        }
         $c = self::component($do->id_delivery);
         $c->checkedDeliveryIds = array_map('intval', $coDeliveryIds);
         $c->pullSelected();
@@ -117,7 +129,10 @@ final class DeliveryOrder
         match ($action) {
             'confirm' => $c->confirmDo(),
             'ship' => $c->markShipped(),
-            'cancel' => (function () use ($c, $reason) { $c->cancelReason = $reason; $c->cancelDo(); })(),
+            'cancel' => (function () use ($c, $reason) {
+                $c->cancelReason = $reason;
+                $c->cancelDo();
+            })(),
         };
         $fresh = DoDelivery::find($do->id_delivery);
         $want = ['confirm' => 'CONFIRMED', 'ship' => 'SHIPPED', 'cancel' => 'CANCELLED'][$action];
@@ -128,6 +143,8 @@ final class DeliveryOrder
     // Draft > Confirmed > Closed (SHIPPED = barang sudah keluar).
     public static function formStatus(DoDelivery $do): string
     {
-        return match ($do->status) { 'CONFIRMED' => 'confirmed', 'SHIPPED' => 'closed', 'CANCELLED' => 'cancelled', default => 'draft' };
+        return match ($do->status) {
+            'CONFIRMED' => 'confirmed', 'SHIPPED' => 'closed', 'CANCELLED' => 'cancelled', default => 'draft'
+        };
     }
 }

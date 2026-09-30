@@ -23,6 +23,7 @@ use App\Models\Sys\SysSupportTicket;
 use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
 use App\Services\Pur\SpecialReceiptService;
+use App\Services\Sales\DeliveryPromiseService;
 use App\Services\Sales\InquiryAssembly;
 use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
@@ -890,6 +891,17 @@ Route::prefix('v2')->name('v2.')->group(function () {
             ->with('v2_flash', Dictionary::t('Holiday saved.'));
     })->name('holiday.save');
 
+    // Proof of Delivery v2: satu kedatangan di customer (jam tiba + hasil terima) = satu catatan KPI janji kirim.
+    Route::post('/pod/{id}', function (Request $r, int $id) {
+        abort_unless(Auth::user()->canAccessModule('SALES'), 403);
+        $do = DoDelivery::whereIn('status', ['CONFIRMED', 'SHIPPED'])->findOrFail($id);
+        $r->validate(['photo' => ['nullable', 'file', 'max:10240', 'mimes:jpg,jpeg,png,webp,pdf']]);
+        $pod = DeliveryPromiseService::record($do, $r->all(), $r->file('photo'), Auth::user()->login);
+
+        return redirect(route('v2.screen', 'proof-of-delivery').'?id='.$id)
+            ->with('v2_flash', Dictionary::t($pod->promise_kept ? 'Arrival recorded: promise kept.' : 'Arrival recorded: promise missed.'));
+    })->name('pod.save');
+
     // Customer Plan Delivery v2 (App\Support\V2\Data\Cpdel = confirmSplit/confirmMerge v1 pages::co.delivery-plan).
     Route::prefix('cpdel')->name('cpdel.')->middleware('module:SALES')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'cpdel').'?id='.$id);
@@ -906,6 +918,13 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return $error ? back()->withErrors(['merge' => $error])
                 : $open((int) CoOrderDelivery::whereIn('id_delivery', $ids)->value('id_delivery'))->with('v2_flash', 'Baris berhasil digabung ke tanggal paling awal.');
         })->name('merge');
+        // Post to Production (aturan A.3): WO dibuat, baris boleh ditarik ke DO / Surat Jalan.
+        Route::post('/{id}/post', function (int $id) use ($open) {
+            $error = Cpdel::post($id);
+
+            return $error ? $open($id)->withErrors(['post' => $error])
+                : $open($id)->with('v2_flash', 'Posted to Production — Work Order dibuat. Baris ini sekarang bisa ditarik ke Delivery Order.');
+        })->whereNumber('id')->name('post');
     });
 
     // ProDev workbench: panggilan server = method komponen v1 pages::production.prodev (App\Support\V2\Data\Prodev).

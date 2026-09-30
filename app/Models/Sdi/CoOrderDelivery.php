@@ -23,6 +23,8 @@ class CoOrderDelivery extends Model
         'ship_qty',
         'status',
         'split_from_id',
+        'posted_at',
+        'posted_by',
         'created_by',
         'updated_by',
     ];
@@ -30,6 +32,7 @@ class CoOrderDelivery extends Model
     protected $casts = [
         'ship_date' => 'date',
         'ship_qty' => 'decimal:2',
+        'posted_at' => 'datetime',
     ];
 
     public function order(): BelongsTo

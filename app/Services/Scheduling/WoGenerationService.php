@@ -8,6 +8,7 @@ use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoMaterial;
 use App\Models\Prd\PrdWoOperation;
 use App\Models\Sdi\CoOrderDelivery;
+use App\Models\Sdi\IqpInquiry;
 use App\Services\ProDev\SpecEngine;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +44,12 @@ class WoGenerationService
 
         $delivery->loadMissing(['item.inquiry.parts.processes', 'item.inquiry.parts.materials']);
         $inquiry = $delivery->item?->inquiry;
+        // CO INSTANT (direct, tanpa Quotation -- aturan A.2) menunjuk Master Product, bukan inquiry: pakai inquiry terakhir
+        // yang melahirkan / menghargai product itu sebagai sumber BOM/BOP.
+        if (! $inquiry && $delivery->item?->product_id) {
+            $inquiry = IqpInquiry::with(['parts.processes', 'parts.materials'])->where('product_id', $delivery->item->product_id)
+                ->where('stat_cancel', false)->orderByDesc('id_inquiry')->first();
+        }
 
         if (! $inquiry) {
             throw new \RuntimeException("Delivery #{$delivery->id_delivery}: item tidak terhubung ke Inquiry manapun, tidak ada BOM/BOP utk digenerate.");

@@ -1,7 +1,8 @@
 {{-- Customer Plan Delivery v2. Flow & aturan = tmerp pages/co/delivery-plan.blade.php (lewat App\Support\V2\Data\Cpdel).
      Alur layar: GRID jadwal kirim semua CO CONFIRMED (baris awal dibuat engine saat CO Confirm) -> klik 2x baris ->
      Pindah tanggal / Split (pecah qty ke tanggal lain) / Gabung dengan baris lain CO + product yang sama (ke tanggal paling awal).
-     Tidak ada Confirm di sini: baris menjadi SHIPPED saat Delivery Order terbit. --}}
+     Tidak ada Confirm di sini: baris menjadi SHIPPED saat Delivery Order terbit.
+     Post to Production (aturan A.3) = WO dibuat; baru sesudah itu baris bisa ditarik ke DO, dan tidak bisa di-Split/Gabung lagi. --}}
 @php
     use App\Models\Sdi\CoOrderDelivery;
     use App\Support\V2\Data\Cpdel;
@@ -36,6 +37,7 @@
             ['label' => 'Semua'],
             ['label' => 'Terjadwal', 'where' => ['status' => ['PLANNED', 'TERLAMBAT']], 'tone' => 'warn'],
             ['label' => 'Terlambat', 'where' => ['status' => 'TERLAMBAT'], 'tone' => 'danger'],
+            ['label' => 'Posted', 'where' => ['status' => 'POSTED'], 'tone' => 'info'],
             ['label' => 'Terkirim', 'where' => ['status' => 'SHIPPED'], 'tone' => 'success'],
         ]"
         :filters="['customer' => 'Customer', 'status' => 'Status']" />
@@ -50,7 +52,7 @@
             <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
             <span class="mp-chips">
                 <x-dl::badge :label="$d->order?->co_no" />
-                <x-dl::badge :label="$late ? 'TERLAMBAT' : $d->status" :tone="Cpdel::STATUS_TONES[$late ? 'TERLAMBAT' : $d->status] ?? 'neutral'" />
+                <x-dl::badge :label="Cpdel::status($d)" :tone="Cpdel::STATUS_TONES[Cpdel::status($d)] ?? 'neutral'" />
             </span>
             <x-dl::button variant="secondary" icon="send" label="Buka Customer Order" :href="route('v2.screen', 'customer-order').'?id='.$d->order_id" />
         </x-dl::action-bar>
@@ -64,7 +66,18 @@
         @if ($late)<x-dl::alert tone="danger" message="Tanggal kirim melewati due date atau due date sudah lewat." />@endif
     </x-dl::card>
 
-    @if ($planned)
+    @if ($planned && ! $d->posted_at)
+        <form method="post" action="{{ route('v2.cpdel.post', $d->id_delivery) }}">
+            @csrf
+            <x-dl::card title="Post to Production" icon="fa-industry" description="Creates the Work Order for this line. After posting, the line can be pulled into a Delivery Order / Delivery Note right away (quick jobs of about {{ \Devlib\Locale::number((float) \App\Models\Sys\SysConstant::number('QUICK_JOB_MINUTES', 30), 0) }} minutes). Production output must still be entered afterwards: it is the KPI basis for all departments.">
+                <x-dl::action-bar><x-dl::button type="submit" icon="fa-industry" label="Post to Production" /></x-dl::action-bar>
+            </x-dl::card>
+        </form>
+    @elseif ($d->posted_at)
+        <x-dl::alert tone="info" :message="'Posted to Production '.\Devlib\Locale::dt($d->posted_at).' by '.$d->posted_by.' — Work Order: '.(\App\Models\Prd\PrdWo::where('source_delivery_id', $d->id_delivery)->pluck('wo_no')->join(', ') ?: '—').'. Production output must still be entered.'" />
+    @endif
+
+    @if ($planned && ! $d->posted_at)
         <form method="post" action="{{ route('v2.cpdel.split', $d->id_delivery) }}" data-dl-guard>
             @csrf
             <x-dl::card title="Pindah tanggal / Split" description="Qty kosong = pindahkan seluruh baris ke tanggal baru. Qty diisi = qty itu dipecah jadi baris baru di tanggal baru, sisanya tetap.">

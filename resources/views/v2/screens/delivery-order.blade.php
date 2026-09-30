@@ -109,6 +109,8 @@
                         @if ($opts)
                             <x-dl::field.multi-select name="co_delivery_ids" label="+ Tarik dari jadwal kirim CO" :options="$opts" :source="Src::of('tm2sdi.v_co_delivery_outstanding')" />
                             <x-dl::button size="sm" variant="secondary" label="+ Tarik Baris" type="submit" name="action" value="pull" formnovalidate />
+                        @else
+                            <x-dl::badge tone="info" icon="fa-industry" label="Only schedule lines that are Posted to Production (Customer Plan Delivery) can be pulled" />
                         @endif
                     </x-slot:tools>
                 @endif

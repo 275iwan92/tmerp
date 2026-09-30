@@ -49,6 +49,7 @@ final class Screens
                 ['label' => 'Delivery', 'items' => [
                     $it('delivery-order', ['Delivery Order', 'fa-solid fa-truck', 'dispatch/do/entry.blade.php + list', null]),
                     $it('delivery-notes', ['Delivery Notes (Surat Jalan)', 'fa-solid fa-file-lines', 'dispatch/do/print-surat-jalan.blade.php', null]),
+                    $it('proof-of-delivery', ['Proof of Delivery', 'fa-solid fa-clipboard-check', 'v2 baru: tm2sdi.do_delivery_pod (KPI janji kirim)', null]),
                 ]],
                 ['label' => 'Master', 'items' => [$it('master-product'), $it('product-acc'), $it('master-raw'), $it('master-customer'), $it('master-card')]],
                 ['label' => 'Lookup', 'items' => [$it('master-matcat'), $it('master-uom'), $it('master-currency')]],
