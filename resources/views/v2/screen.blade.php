@@ -7,7 +7,7 @@
                 :current="request()->query() ? (request('id') ? 'Form' : '+ New Record') : null" />
         </div>
         @if ($built)
-            @include('v2.screens.'.$screen['slug'])
+            @include($screen['view'] ?? 'v2.screens.'.$screen['slug'], ['screen' => $screen])
         @else
             <x-dl::card :title="$screen['label']" :icon="$screen['icon']" description="Belum dibangun di mockup — acuannya sudah dipetakan.">
                 <x-dl::table :columns="['k' => 'Hal', 'v' => 'Keterangan']" :rows="[
@@ -22,6 +22,6 @@
         @endif
     </div>
     @if ($built)
-        <x-dl::code-button :code="$code" :file="'resources/views/screens/'.$screen['slug'].'.blade.php'" :mockup-url="$screen['mockup'] ? route('v2.mockup.file', $screen['mockup']) : null" />
+        <x-dl::code-button :code="$code" :file="isset($screen['grid']) ? str_replace(base_path().DIRECTORY_SEPARATOR, '', (new ReflectionClass($screen['grid']))->getFileName()) : 'resources/views/screens/'.$screen['slug'].'.blade.php'" :mockup-url="$screen['mockup'] ? route('v2.mockup.file', $screen['mockup']) : null" />
     @endif
 @endsection

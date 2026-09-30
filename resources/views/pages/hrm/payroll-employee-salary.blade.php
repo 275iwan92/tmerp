@@ -5,6 +5,7 @@ use App\Models\Pyr\PyrEmployeeSalary;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Master Gaji & Pajak Pegawai -- prasyarat pyr_employee_salary dipakai
@@ -25,6 +26,13 @@ use Livewire\Component;
 // UI hidden).
 new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->openForm($id);
+    }
+
     private const PTKP_OPTIONS = [
         'TK/0' => 'TK/0 (Lajang)', 'TK/1' => 'TK/1 (1 Tanggungan)', 'TK/2' => 'TK/2 (2 Tanggungan)', 'TK/3' => 'TK/3 (3 Tanggungan)',
         'K/0' => 'K/0 (Menikah, 0 Anak)', 'K/1' => 'K/1 (Menikah, 1 Anak)', 'K/2' => 'K/2 (Menikah, 2 Anak)', 'K/3' => 'K/3 (Menikah, 3 Anak)',

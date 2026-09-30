@@ -34,6 +34,8 @@ use App\Support\V2\Data\PurchaseReceive;
 use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\Quotation;
 use App\Support\V2\Flows;
+use App\Support\V2\Grid\DbGrid;
+use App\Support\V2\Grid\Grids;
 use App\Support\V2\InquiryPayload;
 use App\Support\V2\Schema;
 use App\Support\V2\Screens;
@@ -68,12 +70,26 @@ Route::prefix('v2')->name('v2.')->group(function () {
     })->name('item');
 
     Route::get('/s/{slug}', function (string $slug) {
-        $screen = Screens::screen($slug) ?? abort(404);
+        $screen = Screens::screen($slug) ?? Grids::screen($slug) ?? abort(404);
         abort_unless(Auth::user()->canAccessModule($screen['module_code'] ?? 'SALES'), 403);
         $file = resource_path("views/v2/screens/{$slug}.blade.php");
 
+        if (isset($screen['grid'])) {
+            $file = (new ReflectionClass($screen['grid']))->getFileName();
+
+            return view('v2.screen', ['screen' => $screen, 'built' => true, 'code' => file_get_contents($file)]);
+        }
+
         return view('v2.screen', ['screen' => $screen, 'built' => is_file($file), 'code' => is_file($file) ? file_get_contents($file) : '']);
     })->name('screen');
+
+    // Aktif/Nonaktif baris Grid Master (App\Support\V2\Grid\DbGrid::toggle) -> status terbaru dari database.
+    Route::post('/grid/{slug}/toggle/{id}', function (string $slug, int $id) {
+        $grid = Grids::find($slug) ?? abort(404);
+        abort_unless($grid->family() === DbGrid::MASTER && Auth::user()->canAccessModule($grid->module()), 403);
+
+        return response()->json(['active' => $grid->toggle($id)]);
+    })->name('grid.toggle');
 
     // Duplicate inquiry (spec sama, customer lain) -> NEW DRAFT baru; logika = App\Services\Sales\InquiryDuplicator (sama dgn v1).
     Route::post('/inquiry/duplicate', function (Request $r) {

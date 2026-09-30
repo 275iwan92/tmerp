@@ -6,6 +6,7 @@ use App\Services\Hrm\EmployeeBankService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Master Karyawan & Rekening Bank (Modul 07) -- interface diadopsi dari
@@ -18,6 +19,13 @@ use Livewire\Component;
 // EmployeeBankService (keputusan user 2026-09-23).
 new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->openForm($id);
+    }
+
     public string $search = '';
 
     public string $filterMethod = '';

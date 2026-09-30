@@ -7,6 +7,7 @@ use App\Models\Sys\SysNotification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Layar approval Cuti/Sakit/Izin/Cuti Khusus (masteremployee_state.yaml ->
@@ -20,6 +21,8 @@ use Livewire\Component;
 // (CUTI biasa; Sakit/Izin/Cuti Khusus tidak potong saldo, sesuai submitLeave()).
 new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
     private const EVENT_LABELS = [
         'MENIKAH' => 'Pernikahan Karyawan',
         'MENIKAHKAN_KHITAN_ANAK' => 'Menikahkan / Mengkhitankan Anak',
@@ -44,6 +47,7 @@ new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Co
     public function requests()
     {
         return EmpLeaveRequest::with('employee')
+            ->when($this->focusId, fn ($q) => $q->whereKey($this->focusId))
             ->orderByRaw("FIELD(status, 'PENDING', 'APPROVED', 'REJECTED')")
             ->orderByDesc('requested_at')
             ->get();

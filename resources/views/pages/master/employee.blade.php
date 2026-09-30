@@ -13,6 +13,7 @@ use App\Models\Master\ProdMachine;
 use App\Models\Sys\SecUser;
 use App\Services\Hrm\FamilyEmploymentCrossCheckService;
 use App\Livewire\Concerns\HasGridStatFilter;
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Services\Migration\EmployeeLoginProvisionService;
 use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,7 @@ use Livewire\WithFileUploads;
 new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridStatFilter;
+    use OpensFromQuery;
     use WithFileUploads;
 
     public string $panel = 'grid'; // grid | form

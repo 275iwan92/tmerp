@@ -1,0 +1,105 @@
+<?php
+
+namespace App\Support\V2\Grid\Hrm;
+
+use App\Models\Master\EmpBankAccount;
+use App\Models\Master\EmpEmployee;
+use App\Models\Master\SupSupplier;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+
+// Master Karyawan & Rekening Bank (v1: pages::hrm.payroll-employee-bank). Tanpa rekening utama = dibayar tunai.
+class BankAccountGrid extends HrmGrid
+{
+    private array $banks = [];
+
+    public function slug(): string
+    {
+        return 'hrm-bank';
+    }
+
+    public function title(): string
+    {
+        return 'Master Karyawan & Rekening Bank';
+    }
+
+    public function family(): string
+    {
+        return self::TRANSACTIONAL;
+    }
+
+    public function group(): string
+    {
+        return 'Payroll';
+    }
+
+    protected function v1Route(): ?string
+    {
+        return 'hrm.payroll.employee-bank';
+    }
+
+    protected function canCreate(): bool
+    {
+        return false;
+    }
+
+    protected function models(): array
+    {
+        return [EmpEmployee::class, EmpBankAccount::class, SupSupplier::class];
+    }
+
+    public function search(): string
+    {
+        return 'Cari nama, kode, no. rekening...';
+    }
+
+    protected function query(): Builder
+    {
+        return EmpEmployee::query()->with('position.department')->where('activate', true)->orderBy('full_name');
+    }
+
+    protected function prefetch(Collection $items): void
+    {
+        $this->banks = EmpBankAccount::query()->with('bank')->whereIn('employee_id', $items->modelKeys())
+            ->where('is_primary', true)->where('activate', true)->get()->keyBy('employee_id')->all();
+    }
+
+    public function columns(): array
+    {
+        return [
+            ['key' => 'name', 'label' => 'Karyawan', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'dept', 'label' => 'Departemen'],
+            ['key' => 'position', 'label' => 'Posisi'],
+            ['key' => 'method', 'label' => 'Metode Gaji', 'type' => 'badge', 'tones' => ['Transfer' => 'info', 'Tunai' => 'warn']],
+            ['key' => 'bank', 'label' => 'Bank'],
+            ['key' => 'account', 'label' => 'No. Rekening'],
+            ['key' => 'holder', 'label' => 'Atas Nama'],
+        ];
+    }
+
+    protected function row(Model $m): array
+    {
+        $b = $this->banks[$m->getKey()] ?? null;
+
+        return [
+            'name' => $m->full_name, 'code' => $m->employee_code, 'dept' => $m->position?->department?->department_name,
+            'position' => $m->position?->position_name, 'method' => $b ? 'Transfer' : 'Tunai',
+            'bank' => $b?->bank?->supplier_name ?? $b?->bank_name, 'account' => $b?->account_no, 'holder' => $b?->account_holder_name,
+        ];
+    }
+
+    public function stats(): array
+    {
+        return [
+            ['label' => 'Pegawai Aktif'],
+            ['label' => 'Transfer', 'where' => ['method' => 'Transfer'], 'tone' => 'info'],
+            ['label' => 'Tunai', 'where' => ['method' => 'Tunai'], 'tone' => 'warn'],
+        ];
+    }
+
+    public function filters(): array
+    {
+        return ['dept' => 'Departemen', 'method' => 'Metode Gaji', 'bank' => 'Bank'];
+    }
+}

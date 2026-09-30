@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Approval Lokasi GPS (pelengkap Modul 09) -- interface diadopsi dari
@@ -17,6 +18,8 @@ use Livewire\Component;
 // "PENDING_HR_LOCATION_APPROVAL").
 new #[Title('Approval Lokasi GPS — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
     public bool $showRejectModal = false;
 
     public ?int $rejectingId = null;
@@ -27,6 +30,7 @@ new #[Title('Approval Lokasi GPS — TELASIH MAKMUR ERP')] class extends Compone
     public function logs()
     {
         return AttMobileGpsLog::with('employee')
+            ->when($this->focusId, fn ($q) => $q->whereKey($this->focusId))
             ->orderByRaw("FIELD(hr_approval_status, 'PENDING', 'APPROVED', 'REJECTED', 'AUTO_APPROVED')")
             ->orderByDesc('created_at')
             ->limit(100)

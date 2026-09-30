@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Grid Presensi Harian -- docs/attendancepayroll_tier2.md/tier3.md. Kolom &
@@ -19,6 +20,17 @@ use Livewire\Component;
 // generik di paket referensi).
 new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $date = \App\Models\Master\AttDailyStatus::whereKey($id)->value('attendance_date');
+        if ($date) {
+            $this->dateFrom = $this->dateTo = substr((string) $date, 0, 10);
+            $this->openOverride($id);
+        }
+    }
+
     private const STATUS_LABEL_DEFAULTS = [
         'H' => 'Hadir', 'T-5' => 'Telat <5mnt', 'T+5' => 'Telat 6-15mnt', 'T+15' => 'Telat >15mnt',
         'PA' => 'Pulang Awal', 'PAT-5' => 'Pulang Awal + Telat<5', 'PAT+5' => 'Pulang Awal + Telat',

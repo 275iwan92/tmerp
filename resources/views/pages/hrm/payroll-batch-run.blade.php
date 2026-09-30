@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Payroll Batch Run -- interface diadopsi dari docs/payroll_timeattendance/
@@ -20,6 +21,16 @@ use Livewire\Component;
 // aktif+primary (mockup 05/06), bukan kolom payment_method terpisah.
 new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        if ($run = PyrPayrollRun::find($id)) {
+            $this->periodType = $run->period_type;
+            $this->selectedRunId = $run->id_run;
+        }
+    }
+
     public string $periodType = 'MONTHLY';
 
     public string $periodStart = '';

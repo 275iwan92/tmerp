@@ -55,7 +55,7 @@
         if (x.closest('[data-g-select-all]')) { this.filtered().forEach(r => this.sel.add(String(r[this.cfg.rowKey]))); this.drawBody(); return this.drawBulk(); }
         if (x.closest('[data-g-select-none]')) { this.sel.clear(); this.drawBody(); return this.drawBulk(); }
         const ba = x.closest('[data-g-bulk-action]'); if (ba) { toast(`${ba.textContent.trim()}: ${fmt.number(this.sel.size)} baris (pratinjau)`, 'success'); this.el.dispatchEvent(new CustomEvent('dl:grid-bulk', {bubbles: true, detail: {action: ba.dataset.gBulkAction, ids: [...this.sel]}})); return; }
-        const act = x.closest('[data-g-act]'); if (act) { const r = this.rows.find(v => String(v[this.cfg.rowKey]) === act.dataset.id); if (act.dataset.gAct === 'toggle' && this.cfg.activeKey) { r[this.cfg.activeKey] = !r[this.cfg.activeKey]; toast((r[this.cfg.activeKey] ? 'Diaktifkan: ' : 'Dinonaktifkan: ') + (r.name || act.dataset.id), 'success'); this.redraw(); } else if (this._emit('dl:grid-open', {id: act.dataset.id, action: act.dataset.gAct})) toast(`${act.title.split(' (')[0]}: ${r.name || r[this.cfg.rowKey]} (pratinjau)`); return; }
+        const act = x.closest('[data-g-act]'); if (act) { const r = this.rows.find(v => String(v[this.cfg.rowKey]) === act.dataset.id); if (act.dataset.gAct === 'toggle' && this.cfg.activeKey && this.cfg.toggleUrl) { this.saveToggle(r, act.dataset.id); } else if (act.dataset.gAct === 'toggle' && this.cfg.activeKey) { r[this.cfg.activeKey] = !r[this.cfg.activeKey]; toast((r[this.cfg.activeKey] ? 'Diaktifkan: ' : 'Dinonaktifkan: ') + (r.name || act.dataset.id), 'success'); this.redraw(); } else if (this._emit('dl:grid-open', {id: act.dataset.id, action: act.dataset.gAct})) toast(`${act.title.split(' (')[0]}: ${r.name || r[this.cfg.rowKey]} (pratinjau)`); return; }
         if (x.closest('[data-g-new]')) { if (this._emit('dl:grid-new', {})) toast('+ New Record (pratinjau)'); return; }
         if (x.closest('[data-g-export]')) return this.exportCsv();
         if (x.closest('[data-g-fopen]')) return this.openFilter();
@@ -98,6 +98,14 @@
 
     shown() {
       return this.cols.filter(c => !this.st.hidden.includes(c.key));
+    }
+
+    // Aktif/Nonaktif Grid Master tersimpan ke database: status akhir = jawaban server, bukan tebakan layar.
+    saveToggle(r, id) {
+      fetch(this.cfg.toggleUrl.replace('{id}', encodeURIComponent(id)), {method: 'POST', credentials: 'same-origin', headers: {'X-CSRF-TOKEN': this.cfg.csrf || '', 'Accept': 'application/json'}})
+        .then(res => res.ok ? res.json() : Promise.reject(res))
+        .then(j => { r[this.cfg.activeKey] = !!j.active; toast((j.active ? 'Diaktifkan: ' : 'Dinonaktifkan: ') + (r.name || id), 'success'); this.redraw(); })
+        .catch(() => toast('Gagal menyimpan status aktif.', 'danger'));
     }
 
     _emit(name, detail) {

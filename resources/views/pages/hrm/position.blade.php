@@ -8,6 +8,7 @@ use App\Models\Master\OrgPosition;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -18,6 +19,13 @@ use Livewire\WithPagination;
 // murni tampilan read-only dari data ini.
 new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->edit($id);
+    }
+
     use HasGridStatFilter;
 
     use WithPagination;

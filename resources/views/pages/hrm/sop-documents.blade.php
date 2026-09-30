@@ -5,6 +5,7 @@ use App\Models\Master\SopDocument;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Register dokumen SOP (keputusan user 2026-09-13: "Begitu pula dengan SOP"
@@ -17,6 +18,13 @@ use Livewire\Component;
 // docs/sop_module_blueprint_reference.md -- itu menunggu arahan lanjutan.
 new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->open($id);
+    }
+
     public string $search = '';
 
     public string $panel = 'grid'; // grid | form | view

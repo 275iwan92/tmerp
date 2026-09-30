@@ -7,6 +7,7 @@ use App\Models\Sys\SysNotification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Layar review EmpCorrectionRequest (keputusan user 2026-08-27, dipicu temuan
@@ -19,6 +20,8 @@ use Livewire\Component;
 // jadi Approve/Reject langsung di grid ini.
 new #[Title('Koreksi Data Karyawan — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
     // Field yang bisa diterapkan otomatis ke emp_employee saat Approve --
     // BPJS/dst (tabel relasi terpisah) TIDAK masuk di sini -- approve utk field
     // itu cuma tutup request (HR update manual), lihat autoApplyColumn().
@@ -43,6 +46,7 @@ new #[Title('Koreksi Data Karyawan — TELASIH MAKMUR ERP')] class extends Compo
     public function requests()
     {
         return EmpCorrectionRequest::with('employee')
+            ->when($this->focusId, fn ($q) => $q->whereKey($this->focusId))
             ->orderByRaw("FIELD(status, 'PENDING', 'APPROVED', 'REJECTED')")
             ->orderByDesc('requested_at')
             ->get();
