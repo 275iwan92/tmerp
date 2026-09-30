@@ -105,7 +105,7 @@
         <x-slot:notes>
             <x-dl::field.text name="i_notes" label="Catatan penerimaan" multiline :value="$pv->i_notes" :source="Src::of('tm2pur.pv_receipt.i_notes')" />
             @if ($pv->status === 'CANCELLED')
-                <x-dl::field.display label="Dibatalkan" :value="$pv->cancelled_by.' · '.$pv->cancelled_at?->format('d-M-Y H:i').' — '.$pv->cancel_reason" :source="Src::of('tm2pur.pv_receipt.cancel_reason', 'cancelled_by', 'cancelled_at', 'rm_stock_rev_doc_id')" />
+                <x-dl::field.display label="Dibatalkan" :value="$pv->cancelled_by.' · '.\Devlib\Locale::dt($pv->cancelled_at).' — '.$pv->cancel_reason" :source="Src::of('tm2pur.pv_receipt.cancel_reason', 'cancelled_by', 'cancelled_at', 'rm_stock_rev_doc_id')" />
             @endif
         </x-slot:notes>
         <x-slot:detail>

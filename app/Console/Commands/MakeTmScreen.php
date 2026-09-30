@@ -118,15 +118,15 @@ class MakeTmScreen extends Command
             $create = $this->option('create-route') ?: Str::beforeLast($route, '.').'.create';
 
             return [
-                'STAT_KEY' => 'active', 'STAT_COL' => 'activate', 'STAT_VAL' => 'true', 'STAT_TONE' => 'active', 'STAT_LABEL' => 'Aktif',
+                'STAT_KEY' => 'active', 'STAT_COL' => 'activate', 'STAT_VAL' => 'true', 'STAT_TONE' => 'active', 'STAT_LABEL' => 'Active',
                 'NEW_RECORD' => <<<BLADE
                 <x-slot:newRecord>
                     <a href="{{ route('{$create}') }}"
                         class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] no-underline cursor-pointer">+ New Record</a>
                 </x-slot:newRecord>
 BLADE,
-                'ACTION_CELL' => $indent."<x-grid.action-dropdown :actions=\"[['icon' => '✎', 'label' => Translator::t('fin_coa_action_edit', 'Edit'), 'action' => 'openItem('.{$pk}.')', 'tooltip' => Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail')]]\" />\n"
-                    .$indent."<x-grid.toggle-switch :on=\"(bool) \$row->activate\" action=\"toggleActive({{ {$pk} }})\" :confirm=\"\$row->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan').'?' : Translator::t('fin_coa_activate', 'Aktifkan').'?'\" />",
+                'ACTION_CELL' => $indent."<x-grid.action-dropdown :actions=\"[['icon' => '✎', 'label' => 'Edit', 'action' => 'openItem('.{$pk}.')', 'tooltip' => t('Double-click to open details')]]\" />\n"
+                    .$indent."<x-grid.toggle-switch :on=\"(bool) \$row->activate\" action=\"toggleActive({{ {$pk} }})\" :confirm=\"\$row->activate ? 'Deactivate?' : 'Activate?'\" />",
                 'EXTRA_METHODS' => <<<'PHP'
 
     public function toggleActive(int $id): void
@@ -145,9 +145,9 @@ PHP,
         return [
             'STAT_KEY' => 'draft', 'STAT_COL' => 'stat_confirm', 'STAT_VAL' => 'false', 'STAT_TONE' => 'warn', 'STAT_LABEL' => 'Draft',
             'NEW_RECORD' => '',
-            'ACTION_CELL' => $indent."<x-grid.action-icon icon=\"↗\" :title=\"Translator::t('shared_open', 'Buka')\" action=\"openItem({{ {$pk} }})\" />\n"
+            'ACTION_CELL' => $indent."<x-grid.action-icon icon=\"↗\" :title=\"'Open'\" action=\"openItem({{ {$pk} }})\" />\n"
                 .$indent."@if (! \$row->stat_confirm)\n"
-                .$indent."    <x-grid.action-icon icon=\"✓\" variant=\"success\" :title=\"Translator::t('shared_confirm', 'Confirm')\" action=\"confirmItem({{ {$pk} }})\" :confirm=\"Translator::t('shared_confirm_prompt', 'Confirm dokumen ini?')\" />\n"
+                .$indent."    <x-grid.action-icon icon=\"✓\" variant=\"success\" :title=\"'Confirm'\" action=\"confirmItem({{ {$pk} }})\" :confirm=\"t('Confirm this document?')\" />\n"
                 .$indent.'@endif',
             'EXTRA_METHODS' => <<<'PHP'
 

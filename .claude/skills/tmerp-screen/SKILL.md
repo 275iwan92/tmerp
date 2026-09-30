@@ -28,9 +28,13 @@ Jangan baca `docs/BACKLOG.md`, `docs/LOG_JOB_DONE.md`, atau standar UI lengkap k
 4. Daftarkan route di `routes/web.php` pada grup `module:<KODE>` yang benar; menu di `sys_app_menu` lewat migration.
 5. Verifikasi: `php -l`, lalu `Livewire::test('pages::modul.nama')` via tinker; `npm run build` bila ada class Tailwind baru.
 
+## Multi-bahasa (wajib, LOCKED 2026-10-01)
+
+Label/teks ditulis ENGLISH: komponen `x-dl::*` & Grid/Lookup DB (`DbGrid`/`DbLookup`) menerjemahkan otomatis lewat kamus
+`sys_dictionary`; teks lain `t('...')` / `@t('...')` (generator sudah memakainya). Teks baru tercatat sendiri -- terjemahan diisi di
+Setup > Translation Dictionary. Angka/tanggal lewat `Devlib\Locale` / objek nilai DevLib (bukan `number_format` / `format('d-M-Y')`).
+`MultiLanguageRatchetTest` gagal bila label Indonesia mentah / format sendiri bertambah. Detail: skill `tmerp-stack-rules` bagian Multi-bahasa.
+
 ## Komponen baru
 
-**Grid — LOCKED (user 2026-09-21):** kotak statistik grid ADALAH filter data — pakai trait `App\Livewire\Concerns\HasGridStatFilter` + `statFilterDefs()` + `<x-grid.stat-filter-row>` (jangan tulis `x-grid.stat-row`/`stat-box` satu per satu, jangan bikin toggle filter sendiri per layar); kotak agregat (Total/rupiah/rata-rata) dibiarkan tanpa kunci `filter`. Ikon kolom Aksi WAJIB Font Awesome berbingkai lewat `<x-grid.action-icon icon="fa-pen">` / `:active="$row->activate"`, bukan karakter Unicode. Detail: `docs/griduistandard.md` §2b & §5.
-
-**Input teks string — LOCKED (user 2026-09-21, jangan tunggu diperintah ulang):** field teks pakai `x-form.input` (type=text) / `x-form.textarea` yang sudah membawa badge huruf `aa`→`Aa`→`AA` otomatis (bantu pengetikan lewat HP/tablet). `:case-toggle="false"` hanya utk kotak CARI. Nilai yang sudah ada di master WAJIB lookup (`x-form.searchable-select`/`select`/picker), bukan teks bebas. Warna field lewat token `--color-field-*`/`bg-accent-soft`, bukan hex literal, supaya ikut corak `sys_theme`. Detail: `docs/FORM_UI_STANDARD.md` §1b.
 Buat komponen baru HANYA bila pola dipakai ≥2 layar dan tidak ada di manifest. Setelah dibuat: tambahkan barisnya ke `_manifest.yaml` dan tampilkan di layar DevLib (`setup/component-library.blade.php`). Pola bersama (label/hint/error, tone warna) diikuti, bukan disalin dengan variasi baru.

@@ -210,15 +210,26 @@ form mengirim angka kanonik; server `num()` = `Locale::input`; layar v2 memakai 
 teks objek PrintOut & DocShare lewat kamus Lang; demo devlib.test (Locale & Formats, Print ▾); contoh JPEG
 `docs/mockups/print_lang_quotation.jpg` (menunggu OK user).
 
-**SISA:**
-1. Layar input kamus (Setup > Translation Dictionary: grid sheet source_en × kolom per bahasa, sel kosong disorot,
-   Export/Import Excel) -- wajib §7.12, belum dibangun.
+**FONDASI AUTO MULTI-BAHASA -- SELESAI 2026-10-01** (modul baru otomatis ID + EN):
+A. Label komponen `x-dl::*` diterjemahkan otomatis di `DevlibComponent::translateTexts` (label/title/placeholder/hint/message +
+   label kolom/stat/tab/signature + kunci parties/criteria); Button/Badge dikecualikan (istilah English). Helper `t()` + `@t()`.
+B. Teks English baru tercatat otomatis ke `sys_dictionary` (akhir request web; label yang terdeteksi Indonesia tidak dicatat).
+C. JS: `window.DL_DICT` (kamus 'ui' bahasa halaman) + `Devlib.h.t()`; teks JS baru dicatat lewat `POST /v2/dictionary/register`;
+   `T(kunci)` bahasa ke-3 jatuh ke kamus.
+D. Generator `make:tm-screen` + stub memakai `t('English')`; skill `tmerp-stack-rules`/`tmerp-screen` + CLAUDE.md §3 memuat cara membangun.
+E. `MultiLanguageRatchetTest` (label Indonesia mentah 688, number_format gaya ID 2, format('d-M-Y') 1, toLocaleString id-ID 0 -- tidak boleh naik).
+F. Migration kamus + menu dijalankan di **tm2sys dan ddtsys**.
++  Layar **Setup > Settings > Translation Dictionary** (`TranslationDictionaryLookup`, Grid Lookup: isi di sel, tempel dari Excel, kosong = English).
+Test: `MultiLanguageAutoTest` (4), `LocaleNumberTest` (10), uji JS node.
+
+**SISA lain (utang lama, bertahap):**
+1. Turunkan baseline `id_label` 688 -> 0: label v2/DevLib yang masih Indonesia mentah diganti English (kamus mengisi Indonesia).
 2. Setelah contoh JPEG disetujui: label layar/nota v2 yang masih teks Indonesia mentah -> sumber English + kamus, per dokumen:
    Inquiry (zona beku -- label saja, izin sudah ada utk ID->EN), ProDev, Quotation, CO, PR, PO, SPB, DO/Surat Jalan.
    Nota lama v1 yang dipanggil tombol "Nota" (quotation.print, co.print, pur.pr/po.print, dispatch.do.print) belum ikut print_lang.
 3. Konversi data master Indonesia di DB ke English + kamus (tabel audit di dokumen desain §0.1) -- perlu rencana per tabel;
    data REAL (prod_process) & zona beku hanya dengan izin user.
-4. Migration kamus ke tm2sys (tunggu izin); kamus `Devlib\Lang` (pasangan [ID, EN] di kode) untuk bahasa ke-3 diterjemahkan
+4. Kamus `Devlib\Lang` (pasangan [ID, EN] di kode) untuk bahasa ke-3 diterjemahkan
    lewat `sys_dictionary` context `ui` (sumber = teks English) -- JS `T()` baru mengenal id/en.
 5. Nama hari di pemilih tanggal & Calendar sudah Intl; komponen lain yang masih teks Indonesia (Grid toolbar, dsb) bertahap.
 6. `purchase-quotation` (sesi Purchase) masih `number_format(',', '.')` -- dirapikan setelah sesi itu selesai.

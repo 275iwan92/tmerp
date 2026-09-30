@@ -5,6 +5,11 @@ namespace Devlib\Components;
 // Label status kecil. tone: neutral|accent|success|warn|danger|info|violet. Status dokumen -> Badge::forStatus("APPROVED").
 class Badge extends DevlibComponent
 {
+    // Istilah tombol & status SELALU English satu kata (user 2026-09-30) -- tidak ikut kamus terjemahan.
+    protected const TEXT_PROPS = [];
+
+    protected const TEXT_LISTS = [];
+
     public function __construct(
         public string $label = '',
         public string $tone = 'neutral',
