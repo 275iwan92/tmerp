@@ -1,6 +1,6 @@
 # Material Booking (dari Customer Order) — Desain Tier 1
 
-> **Status: DESAIN, keputusan B1–B6 dijawab user 2026-10-01 (lihat §6); B7–B9 + klarifikasi masih terbuka.** Belum ada kode.
+> **Status: DESAIN, keputusan B1–B9 dijawab user 2026-10-01 (lihat §6); B9 = bangun MRP/MPS baru, desainnya menunggu (§7).** Belum ada kode.
 > Preview interaktif: artifact "Tata Letak Gudang TMERP" tab *Material Booking*
 > (salinan repo: `docs/mockups/inventory_booking_preview_v2.html`).
 > Nama file mengikuti menu baru yang diusulkan **"Material Booking"**
@@ -93,4 +93,9 @@
 | B5 | Kekurangan bahan = inti booking; notif ke Direksi, Ops Manager, PPIC, Warehouse, Finance | Status SHORT memicu notifikasi ke 5 pihak. ? kanal (notifikasi di aplikasi / email), ? aturan prioritas bila 2 CO berebut |
 | B6 | "belum dirancang; saat CO di-approve semua ENGINE hitung bahan mulai kerja, terutama saat WO di-create" | Engine hitung bahan jalan penuh saat CO approve/Confirmed dan dihitung ulang presisi saat WO dibuat (POST to Production). Master Product TIDAK diubah oleh booking. ? hubungan dengan B1 (sejak CO masuk) |
 | Dummy | "data dummy salah di remove dan ganti baru" (aturan main tetap) | Stok dummy kacau (`rm_stockcard` saldo tak konsisten, minus di UNKNOWN-LEGACY) dihapus & diganti baru saat membangun; tambah CO dummy CONFIRMED lengkap layout |
-| B7–B9 | belum dijawab | — |
+| B1/B6 | "benar" (putaran 2) | CO Draft: kebutuhan & kekurangan tampil, tanpa memesan stok → CO Confirmed: usulan booking terbentuk → WO dibuat (POST to Production): dihitung ulang presisi |
+| B4 | "3 hari kerja normal" | Tanggal butuh = yang lebih awal dari (due date) dan (tanggal CO dibuat + 3 hari kerja, ikut Holiday Calendar / Office Hours) |
+| B5 | Notif = popup saat login / di opening screen dengan warna khusus mencolok; email TIDAK; WhatsApp nanti bila perlu | Popup + kartu highlight di home v2 untuk Direksi, Ops Manager, PPIC, Warehouse, Finance. ? prioritas rebutan stok belum dijawab |
+| B7 | "langsung ikut booking" | Stok FG produk yang sama dibooking dulu (Langkah 0) sebelum hitung bahan; bahan hanya untuk sisa qty |
+| B8 | setuju | PR per supplier, dibulatkan kemasan beli; lead time per kategori + override per item, layar input baru |
+| B9 | "buat MRP dan MPS baru yang lebih baik; berbasis CO saja kurang baik" | **Keputusan membalik rekomendasi**: booking menjadi bagian dari MRP/MPS BARU (engine lama tetap arsip, tidak dihidupkan). Desain MRP/MPS baru menyusul (§7) |
