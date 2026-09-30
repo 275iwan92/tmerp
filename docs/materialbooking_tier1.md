@@ -1,6 +1,6 @@
 # Material Booking (dari Customer Order) — Desain Tier 1
 
-> **Status: DESAIN, menunggu persetujuan user** (2026-10-01). Belum ada kode.
+> **Status: DESAIN, keputusan B1–B6 dijawab user 2026-10-01 (lihat §6); B7–B9 + klarifikasi masih terbuka.** Belum ada kode.
 > Preview interaktif: artifact "Tata Letak Gudang TMERP" tab *Material Booking*
 > (salinan repo: `docs/mockups/inventory_booking_preview_v2.html`).
 > Nama file mengikuti menu baru yang diusulkan **"Material Booking"**
@@ -81,3 +81,15 @@
 | B7 | Stok FG repeat order | Tampilkan dulu; booking FG Tahap 2 |
 | B8 | PR | Per supplier usulan, dibulatkan ke kemasan beli; lead time per kategori wajib diinput |
 | B9 | Hubungan MRP lama | Terpisah, berbasis CO saja |
+
+## 6. Keputusan user 2026-10-01 (menggantikan rekomendasi §5 bila berbeda)
+
+| # | Jawaban user | Tafsir kerja (menunggu konfirmasi bila ditandai ?) |
+|---|---|---|
+| B1 | "sejak CO masuk" | Booking dihitung sejak CO dibuat (termasuk DRAFT), bukan menunggu Confirmed. ? Apakah CO DRAFT sudah mengurangi Available (soft) atau hanya tampil sebagai kebutuhan |
+| B2 | "usulan dan harus kunci oleh user" | Engine = usulan (soft); user berwenang (PPIC) klik Confirm = kunci (hard). Sesuai rekomendasi |
+| B3 | "semua bahan" | Tahap 1 mencakup semua bahan (kertas/board, tinta, varnish/coating, lem, film, dst), bukan hanya kertas. Temuan: `prod_part_material` hanya berisi SUBSTRATE (18 baris, semua material_id NULL); `prod_part_ink` 40 baris punya `coverage_pct` tapi `ink_name` teks tanpa material_id; varnish/lem/film belum ada BOM — butuh standar pemakaian + layar input (CLAUDE.md §7.12) |
+| B4 | "sesuai tanggal duedate, atau H+3 maksimal dari tanggal CO dibuat" | Tanggal butuh = yang lebih awal dari (due date) dan (tanggal CO dibuat + 3). ? hari kerja atau kalender; ? due date item CO atau tanggal kirim CPDEL |
+| B5 | Kekurangan bahan = inti booking; notif ke Direksi, Ops Manager, PPIC, Warehouse, Finance | Status SHORT memicu notifikasi ke 5 pihak. ? kanal (notifikasi di aplikasi / email), ? aturan prioritas bila 2 CO berebut |
+| B6 | "belum dirancang; saat CO di-approve semua ENGINE hitung bahan mulai kerja, terutama saat WO di-create" | Engine hitung bahan jalan penuh saat CO approve/Confirmed dan dihitung ulang presisi saat WO dibuat (POST to Production). Master Product TIDAK diubah oleh booking. ? hubungan dengan B1 (sejak CO masuk) |
+| B7–B9 | belum dijawab | — |
