@@ -82,6 +82,8 @@
         const p = bindPanel(this.pre, () => { if (p.search) { p.search.value = ''; p.search.dispatchEvent(new Event('input')); } });
         const money = this.pre.hasAttribute('data-dl-money'), mi = $(this.pre, '[data-dl-money-input]'), wt = $(this.el, '[data-dl-money-words]');
         const updMoney = () => {
+          // Nilai mentah dari DB (1250000.00) dibulatkan dulu -- bukan dibuang titiknya (dulu jadi 125000000).
+          if (/^-?\d+\.\d{1,2}$/.test(mi.value.trim())) mi.value = String(Math.round(+mi.value.trim()));
           const raw = mi.value.replace(/\D/g, '');
           mi.value = raw ? BigInt(raw).toLocaleString('id-ID') : '';
           // Terbilang mengikuti mata uang yang dipilih (Rp -> rupiah, USD -> dolar, ...).

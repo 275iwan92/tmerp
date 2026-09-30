@@ -142,7 +142,7 @@ class Lines extends DevlibComponent
                                                         @php [$rl, $rp, $sign] = $row; @endphp
                                                         <tr data-l-adj="{{ $rk }}" data-sign="{{ $sign }}" data-src="pct">
                                                             <td>{{ $rl }}@if ($k === 'tax')<small class="dl-lines__sign">{{ $sign < 0 ? '− dipotong' : '+ ditambah' }}</small>@endif</td>
-                                                            <td class="num"><input type="text" inputmode="decimal" name="{{ $name }}_{{ $k }}_{{ $rk }}_pct" class="dl-lines__adjin" data-l-pct value="{{ $rp + 0 }}" @readonly($readonly)></td>
+                                                            <td class="num"><input type="text" inputmode="decimal" name="{{ $name }}_{{ $k }}_{{ $rk }}_pct" class="dl-lines__adjin" data-l-pct value="{{ str_replace('.', ',', (string) ($rp + 0)) }}" @readonly($readonly)></td>
                                                             <td class="num"><input type="text" inputmode="numeric" name="{{ $name }}_{{ $k }}_{{ $rk }}_amt" class="dl-lines__adjin" data-l-amt value="0" @readonly($readonly)></td>
                                                             @if ($k === 'cost')
                                                                 <td class="dl-lines__chk"><input type="checkbox" name="{{ $name }}_cost_{{ $rk }}_tax" value="1" data-l-tx @checked($row[3]) @disabled($readonly)></td>

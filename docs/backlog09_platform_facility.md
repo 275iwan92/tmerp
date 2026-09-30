@@ -201,10 +201,8 @@ konten, bukan mekanisme bocor.
   pilihan **Bahasa cetak** bebas dari bahasa layar. Bahasa akan bertambah (Jepang, Mandarin, dst) -> desain
   N bahasa (pola SAP/Oracle/D365/Odoo): `docs/multilanguage_design.md` -- **menunggu 4 keputusan user** di §3 dok itu
   sebelum implementasi (inti angka PHP/JS, bahasa cetak di x-dl::doc-share, kamus Lang per kode bahasa).
-- Bug angka yang ditemukan saat survei (diperbaiki bersama implementasi): Lines -- edit sel desimal di ID
-  membuang titik (nilai kanonik 12.5 jadi 1250 saat diketik ulang); footer % Lines dirender `1.5` lalu dibaca 15;
-  field Money menerima nilai DB `1250000.00` lalu membuang non-digit (jadi 125000000); kalkulator Sheet
-  memakai `c.decimals` (indeks kolom) bukan `col.decimals`.
+- 4 bug angka temuan survei **SUDAH DIPERBAIKI 2026-10-01** (Lines edit desimal, footer % Lines, field Money
+  nilai DB, kalkulator Sheet) -- lihat LOG_JOB_DONE.
 
 ### Gap desain lama (format angka sudah diputuskan di atas)
 - ~~**Format angka tidak ikut bahasa**~~ (diputuskan 2026-10-01, lihat atas): `number_format()` di ratusan titik

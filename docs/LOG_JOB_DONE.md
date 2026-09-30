@@ -3,6 +3,14 @@
 
 ---
 
+## 2026-10-01 -- DevLib: 4 bug angka diperbaiki (format Indonesia yang berlaku sekarang)
+
+- Lines: edit ulang sel desimal (nilai 12.5) tidak lagi jadi 1250 -- saat fokus nilai tampil `12,5`, dan `raw()`
+  memperlakukan titik tunggal tanpa pola ribuan sebagai desimal.
+- Lines footer Diskon/Pajak %: nilai tersimpan `1.5` dirender `1,5` (dulu dibaca 15).
+- Field Money: nilai DB `1250000.00` dibulatkan lalu diformat `1.250.000` (Blade + JS), tidak lagi 125.000.000.
+- Sheet kalkulator mini: presisi hasil memakai `col.decimals` (dulu `c.decimals` = indeks kolom).
+
 ## 2026-10-01 -- Purchase Quotation v2: upload file penawaran -> dibaca -> bandingkan -> Buat PO
 
 - Layar v2 `purchase-quotation` (menu PROC_PQ, ddtsys): upload file dari email supplier (PDF/Excel/CSV/JPG/PNG, maks. 10),

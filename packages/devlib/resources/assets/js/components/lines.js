@@ -45,7 +45,7 @@
       const cf = (this.cfg.totals && this.cfg.totals.currencyField) || 'currency';
       (this.el.closest('form') || document).addEventListener('change', e => { if (e.target.name === cf) this.refresh(); });
       this.el.addEventListener('change', e => { if (e.target.matches('select.dl-lines__in, input[type=date].dl-lines__in')) { this.rowOf(e.target)[e.target.dataset.k] = e.target.value; e.target.closest('td').classList.remove('is-invalid'); this.refresh(); } });
-      this.el.addEventListener('focusin', e => { const t = e.target; if (t.classList.contains('dl-lines__num')) { t.value = this.rowOf(t)[t.dataset.k] ?? ''; t.select(); } });
+      this.el.addEventListener('focusin', e => { const t = e.target; if (t.classList.contains('dl-lines__num')) { t.value = String(this.rowOf(t)[t.dataset.k] ?? '').replace('.', ','); t.select(); } });
       this.el.addEventListener('focusout', e => { const t = e.target; if (t.classList.contains('dl-lines__num')) t.value = this.show(this.colOf(t.dataset.k), this.rowOf(t)[t.dataset.k] ?? ''); });
       this.el.addEventListener('keydown', e => {
         const t = e.target; if (e.key !== 'Enter' || !t.matches('.dl-lines__in') || t.dataset.lk !== undefined) return;
@@ -119,8 +119,11 @@
       return (Math.round(v * 100) / 100).toLocaleString('id-ID', {maximumFractionDigits: 2});
     }
 
+    // Ketikan gaya Indonesia -> nilai mentah. Titik tunggal tanpa pola ribuan (12.5) = desimal, bukan dibuang (dulu jadi 125).
     raw(v) {
-      return String(v ?? '').replace(/\./g, '').replace(',', '.');
+      const s = String(v ?? '').trim();
+      if (s.includes(',')) return s.replace(/\./g, '').replace(',', '.');
+      return /^-?\d{1,3}(\.\d{3})+$/.test(s) ? s.replace(/\./g, '') : s;
     }
 
     // Kolom 'primary' (tepat satu baris bernilai true, mis. tier/bahan Utama): baris pertama otomatis Utama.

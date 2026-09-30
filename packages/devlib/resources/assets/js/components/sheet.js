@@ -134,7 +134,7 @@
           const v = o.reduce((s, op, i) => op === '+' ? s + a[i + 1] : s - a[i + 1], a[0]);
           return isFinite(v) ? Math.round(v * 1e10) / 1e10 : null;
         };
-        const show = () => { $(p, '[data-e]').textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') || '0'; const v = calc(); $(p, '[data-r]').textContent = v == null ? (ex ? '–' : '') : '= ' + v.toLocaleString('id-ID', {maximumFractionDigits: c.decimals ?? 10}); };
+        const show = () => { $(p, '[data-e]').textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') || '0'; const v = calc(); $(p, '[data-r]').textContent = v == null ? (ex ? '–' : '') : '= ' + v.toLocaleString('id-ID', {maximumFractionDigits: col.decimals ?? 10}); };
         const key = k => {
           if (k === 'C') ex = ''; else if (k === '⌫') ex = ex.slice(0, -1);
           else if (k === '=') { const v = calc(); if (v == null) return toast('Rumus belum lengkap / bagi nol.', 'danger'); return pick(col.decimals != null ? Math.round(v * 10 ** col.decimals) / 10 ** col.decimals : v); }
