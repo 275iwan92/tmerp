@@ -90,6 +90,7 @@
         $lines = $o->items->map(fn ($it) => [
             'id_item' => $it->id_item, 'description' => $it->description, 'qty' => (float) $it->qty, 'qty_unit' => $it->qty_unit,
             'unit_price' => (float) $it->unit_price, 'discount_pct' => (float) $it->discount_pct, 'due_date' => $it->due_date?->toDateString() ?? '',
+            'qty_minim' => (bool) $it->qty_minim,
             'editable' => $draft && $it->quotation_item_id === null,
             'kind' => $it->line_kind === 'PRODUCT' ? 'Product' : 'Jasa', 'inquiry' => $it->inquiry?->inquiry_no ?? '—',
             'source' => $it->quotation_item_id !== null ? 'Snapshot quotation (terkunci)' : 'Manual', 'spec_note' => $it->spec_note ?? '—',
@@ -140,6 +141,13 @@
             </x-dl::form.row>
         </x-slot:finance>
         <x-slot:delivery>
+            {{-- Metode & pihak pengiriman (v1 sdi_co: shipment_method, recipient/shipper/forwarder = customer). --}}
+            <x-dl::form.row :cols="4">
+                <x-dl::field.select name="shipment_method" label="Shipment Method" placeholder="— pilih —" :options="\App\Models\Sdi\CoOrder::SHIPMENT_METHODS" :value="old('shipment_method', $o->shipment_method)" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.shipment_method')" />
+                <x-dl::field.lookup name="recipient_customer_id" lookup="customer" label="Penerima (bila beda dari customer)" placeholder="Cari customer..." :value="$o->recipient_customer_id" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.recipient_customer_id', 'tm2mst.cust_customer.customer_name')" />
+                <x-dl::field.lookup name="shipper_customer_id" lookup="customer" label="Shipper" placeholder="Cari customer..." :value="$o->shipper_customer_id" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.shipper_customer_id', 'tm2mst.cust_customer.customer_name')" />
+                <x-dl::field.lookup name="forwarder_customer_id" lookup="customer" label="Forwarder" placeholder="Cari customer..." :value="$o->forwarder_customer_id" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.forwarder_customer_id', 'tm2mst.cust_customer.customer_name')" />
+            </x-dl::form.row>
             <x-dl::form.row :cols="3">
                 <x-dl::field.lookup name="ship_area" lookup="geo_area" label="Shipment Location" placeholder="Cari kelurahan / kecamatan / kota / kode pos..." :value="$area" :source="Src::of('tm2sdi.co_order.ship_area_id', 'ship_area_level', 'ship_address_label')" />
                 <x-dl::field.text name="ship_address_detail" label="Detail Alamat (jalan, no., RT/RW, patokan)" placeholder="Jl. ..., No. ..." :value="old('ship_address_detail', $o->ship_address_detail)" :source="Src::of('tm2sdi.co_order.ship_address_detail')" />
@@ -174,6 +182,7 @@
                     ['key' => 'unit_price', 'label' => 'Harga', 'type' => 'money', 'readonlyUnless' => 'editable', 'width' => '120px'],
                     ['key' => 'discount_pct', 'label' => 'Disc %', 'type' => 'display', 'width' => '70px'],
                     ['key' => 'due_date', 'label' => 'Due Date', 'type' => 'date', 'width' => '150px'],
+                    ['key' => 'qty_minim', 'label' => 'Qty Minim', 'type' => 'bool', 'width' => '90px'],
                     ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty * unit_price * (1 - discount_pct / 100)', 'sum' => true, 'width' => '140px'],
                     ['key' => 'kind', 'label' => 'Jenis', 'type' => 'display', 'more' => true],
                     ['key' => 'source', 'label' => 'Asal Baris', 'type' => 'display', 'more' => true],

@@ -28,6 +28,10 @@ class CoOrder extends Model
         'currency_code',
         'is_ppn',
         'customer_po_no',
+        'shipment_method',
+        'recipient_customer_id',
+        'shipper_customer_id',
+        'forwarder_customer_id',
         'ship_area_id',
         'ship_area_level',
         'ship_address_label',
@@ -45,6 +49,9 @@ class CoOrder extends Model
         'created_by',
         'updated_by',
     ];
+
+    // v1 sdi_co.shipment_method (user 2026-09-30).
+    public const SHIPMENT_METHODS = ['DELIVER' => 'Deliver', 'PICKUP' => 'Pickup'];
 
     protected $casts = [
         'co_date' => 'date',

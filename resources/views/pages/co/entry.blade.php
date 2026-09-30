@@ -116,7 +116,8 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             return;
         }
 
-        $allowed = ['co_date', 'customer_po_no', 'ship_address_detail', 'discount_qty_pct', 'notes', 'sales_person_id', 'payment_term', 'is_ppn'];
+        $allowed = ['co_date', 'customer_po_no', 'ship_address_detail', 'discount_qty_pct', 'notes', 'sales_person_id', 'payment_term', 'is_ppn',
+            'shipment_method', 'recipient_customer_id', 'shipper_customer_id', 'forwarder_customer_id'];
 
         if (! in_array($field, $allowed, true)) {
             return;
@@ -263,6 +264,15 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
         // field harga/qty/deskripsi cuma utk baris manual (bukan snapshot).
         if ($field === 'due_date') {
             $item->due_date = $value ?: null;
+            $item->save();
+            unset($this->order);
+
+            return;
+        }
+
+        // Flag Qty Minim (v1 sdi_co_detail.qty_minim) boleh di baris manapun, seperti due_date.
+        if ($field === 'qty_minim') {
+            $item->qty_minim = filter_var($value, FILTER_VALIDATE_BOOLEAN);
             $item->save();
             unset($this->order);
 

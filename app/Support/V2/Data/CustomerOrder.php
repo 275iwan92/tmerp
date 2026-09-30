@@ -25,7 +25,8 @@ final class CustomerOrder
 
     public const MODE_TONES = ['INTEGRATED' => 'info', 'INSTANT' => 'violet'];
 
-    public const HEADER = ['co_date', 'customer_po_no', 'ship_address_detail', 'discount_qty_pct', 'notes', 'sales_person_id', 'payment_term', 'is_ppn'];
+    public const HEADER = ['co_date', 'customer_po_no', 'ship_address_detail', 'discount_qty_pct', 'notes', 'sales_person_id', 'payment_term', 'is_ppn',
+        'shipment_method', 'recipient_customer_id', 'shipper_customer_id', 'forwarder_customer_id'];
 
     public static function component(int $id): Component
     {
@@ -129,6 +130,13 @@ final class CustomerOrder
             }
         }
         $o->load(['items.deliveries', 'externalCosts']);
+        // Qty Minim (tombol Ya/Tidak DevLib Lines -> "true"/"false") dibandingkan sebagai boolean.
+        foreach ((array) ($in['items'] ?? []) as $id => $row) {
+            $item = $o->items->firstWhere('id_item', (int) $id);
+            if ($item && array_key_exists('qty_minim', $row) && filter_var($row['qty_minim'], FILTER_VALIDATE_BOOLEAN) !== (bool) $item->qty_minim) {
+                $c->updateItem((int) $id, 'qty_minim', $row['qty_minim']);
+            }
+        }
         self::diff($o->items->keyBy('id_item'), (array) ($in['items'] ?? []), ['description', 'qty', 'qty_unit', 'unit_price', 'discount_pct', 'due_date'],
             ['qty', 'unit_price', 'discount_pct'], fn ($id, $f, $v) => $c->updateItem($id, $f, $v));
         self::diff($o->items->flatMap->deliveries->keyBy('id_delivery'), (array) ($in['deliveries'] ?? []), ['shipment_type', 'ship_date', 'ship_qty'],

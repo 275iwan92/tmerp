@@ -42,6 +42,7 @@ class CoSummaryReport extends CoReportGrid
         $this->planned = CoOrderDelivery::query()->whereIn('order_id', $items->modelKeys())->groupBy('order_id')
             ->selectRaw('order_id, SUM(ship_qty) q')->pluck('q', 'order_id')->all();
         $this->loadSpec($items->flatMap->items);
+        $this->loadParties($items);
     }
 
     protected function row(Model $m): array
@@ -62,7 +63,7 @@ class CoSummaryReport extends CoReportGrid
             'due' => optional($m->items->pluck('due_date')->filter()->sort()->first(), fn ($d) => substr((string) $d, 0, 10)),
             'open' => ! $m->stat_cancel && ! in_array($m->doc_status, ['CLOSED', 'CANCELLED'], true),
             'outstanding' => ! $m->stat_cancel && $m->doc_status === 'CONFIRMED' && $qty > $shipped,
-        ];
+        ] + $this->shipmentFields($m);
     }
 
     public function columns(): array
@@ -75,6 +76,7 @@ class CoSummaryReport extends CoReportGrid
             ['key' => 'customer', 'label' => 'Customer'],
             ['key' => 'po', 'label' => 'No PO Customer'],
             ['key' => 'sales', 'label' => 'Sales By'],
+            ['key' => 'ship_method', 'label' => 'Shipment Method'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::STATUS_TONES],
             ['key' => 'order_type', 'label' => 'Order Type'] + $hidden,
             ['key' => 'items', 'label' => 'Item', 'type' => 'number'],
@@ -90,6 +92,9 @@ class CoSummaryReport extends CoReportGrid
             ['key' => 'month', 'label' => 'Bulan'] + $hidden,
             ['key' => 'due', 'label' => 'Due Date terdekat', 'type' => 'date'] + $hidden,
             ['key' => 'note', 'label' => 'Note'] + $hidden,
+            ['key' => 'recipient', 'label' => 'Penerima'] + $hidden,
+            ['key' => 'shipper', 'label' => 'Shipper'] + $hidden,
+            ['key' => 'forwarder', 'label' => 'Forwarder'] + $hidden,
         ];
     }
 

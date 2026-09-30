@@ -21,8 +21,8 @@ use Illuminate\Support\Collection as BaseCollection;
 // Laporan Customer Order (pengganti menu v1 "Cust.Order Reports", ScriptCase: sdi_co + sdi_co_detail).
 // Satu baris = satu item CO. Turunan cukup memilih cakupan (scope), kolom, dan grup.
 // Order Type & Cfg Color v1 diturunkan dari data v2 (bukan kolom baru): jenis inquiry item CO (atau inquiry asal
-// Master Product untuk CO INSTANT) & cfg_color part-nya. Kolom v1 yang BELUM ada padanannya (shipment_method, qty_minim)
-// sengaja tidak ditampilkan — menunggu keputusan skema, tidak dikarang.
+// Master Product untuk CO INSTANT) & cfg_color part-nya. Shipment Method, Penerima/Shipper/Forwarder & Qty Minim
+// = kolom v2 baru (migration 2026_09_30_000011).
 abstract class CoReportGrid extends DbGrid
 {
     public const STATUS_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'info', 'CONFIRMED' => 'success', 'CLOSED' => 'accent', 'CANCELLED' => 'danger'];
@@ -37,6 +37,8 @@ abstract class CoReportGrid extends DbGrid
     protected array $orderType = [];
 
     protected array $cfgColor = [];
+
+    protected array $parties = [];
 
     public function module(): string
     {
@@ -109,6 +111,23 @@ abstract class CoReportGrid extends DbGrid
             ->whereHas('delivery', fn ($q) => $q->where('status', 'SHIPPED'))->groupBy('co_order_item_id')
             ->selectRaw('co_order_item_id, SUM(qty_do) q')->pluck('q', 'co_order_item_id')->all();
         $this->loadSpec($items->map(fn ($m) => $m instanceof CoOrderItem ? $m : $m->item)->filter());
+        $this->loadParties($items->map(fn ($m) => $m instanceof CoOrderItem ? $m->order : $m->item?->order)->filter());
+    }
+
+    // Nama Penerima / Shipper / Forwarder (customer, tm2mst) untuk CO di halaman ini — satu query lintas-DB.
+    protected function loadParties(BaseCollection $orders): void
+    {
+        $ids = $orders->flatMap(fn (CoOrder $o) => [$o->recipient_customer_id, $o->shipper_customer_id, $o->forwarder_customer_id])->filter()->unique();
+        $this->parties = $ids->isEmpty() ? [] : CustCustomer::query()->whereIn('id_customer', $ids)->pluck('customer_name', 'id_customer')->all();
+    }
+
+    // Kolom pengiriman level CO (dipakai laporan per item & per CO).
+    protected function shipmentFields(?CoOrder $o): array
+    {
+        return [
+            'ship_method' => $o?->shipment_method, 'recipient' => $this->parties[$o?->recipient_customer_id] ?? null,
+            'shipper' => $this->parties[$o?->shipper_customer_id] ?? null, 'forwarder' => $this->parties[$o?->forwarder_customer_id] ?? null,
+        ];
     }
 
     // Order Type & Cfg Color per item CO: 3 query ringkas (inquiry, part inquiry, part master), dicocokkan di PHP.
@@ -146,6 +165,7 @@ abstract class CoReportGrid extends DbGrid
             'mode' => $o?->entry_mode, 'note' => $o?->notes, 'sales' => $o?->salesPerson?->sales_name,
             'product' => $i->product ? trim($i->product->product_name.($i->product->design_no ? ' ('.$i->product->design_no.')' : '')) : $i->description,
             'order_type' => $this->orderType[$i->getKey()] ?? null, 'cfg_color' => $this->cfgColor[$i->getKey()] ?? null,
+            'qty_minim' => $i->qty_minim ? 'Yes' : 'No',
             'qty' => (float) $i->qty, 'unit' => $i->qty_unit, 'qty_min' => $i->qty_min !== null ? (float) $i->qty_min : null,
             'qty_max' => $i->qty_max !== null ? (float) $i->qty_max : null, 'due' => $i->due_date ? substr((string) $i->due_date, 0, 10) : null,
             'currency' => $o?->currency_code, 'price' => (float) $i->unit_price, 'disc' => (float) $i->discount_pct, 'subtotal' => (float) $i->subtotal,
@@ -153,7 +173,7 @@ abstract class CoReportGrid extends DbGrid
             // Penanda kotak statistik (pengganti laporan v1 terpisah "Status Open and Not Cancel" & "Outstanding Order").
             'open' => $o && ! $o->stat_cancel && ! in_array($o->doc_status, ['CLOSED', 'CANCELLED'], true),
             'outstanding' => $o && ! $o->stat_cancel && $o->doc_status === 'CONFIRMED' && (float) $i->qty > $shipped,
-        ];
+        ] + $this->shipmentFields($o);
     }
 
     protected function row(Model $m): array
@@ -169,6 +189,7 @@ abstract class CoReportGrid extends DbGrid
             ['key' => 'co_date', 'label' => 'Tgl CO', 'type' => 'date'],
             ['key' => 'customer', 'label' => 'Customer'],
             ['key' => 'po', 'label' => 'No PO Customer'],
+            ['key' => 'ship_method', 'label' => 'Shipment Method'],
             ['key' => 'confirm', 'label' => 'Confirm', 'type' => 'badge', 'tones' => ['Yes' => 'success', 'No' => 'neutral']],
             ['key' => 'note', 'label' => 'Note'],
             ['key' => 'sales', 'label' => 'Sales By'],
@@ -177,9 +198,13 @@ abstract class CoReportGrid extends DbGrid
             ['key' => 'unit', 'label' => 'Satuan'],
             ['key' => 'order_type', 'label' => 'Order Type', 'type' => 'badge', 'tones' => ['NEW' => 'info', 'RTP' => 'success', 'RDP' => 'warn']],
             ['key' => 'cfg_color', 'label' => 'Cfg Color'],
+            ['key' => 'qty_minim', 'label' => 'Qty Minim', 'type' => 'badge', 'tones' => ['Yes' => 'warn', 'No' => 'neutral']],
             ['key' => 'qty_min', 'label' => 'Qty Limit Min', 'type' => 'number'],
             ['key' => 'qty_max', 'label' => 'Qty Limit Max', 'type' => 'number'],
             ['key' => 'due', 'label' => 'Due Date', 'type' => 'date'],
+            ['key' => 'recipient', 'label' => 'Penerima', 'visible' => false],
+            ['key' => 'shipper', 'label' => 'Shipper', 'visible' => false],
+            ['key' => 'forwarder', 'label' => 'Forwarder', 'visible' => false],
         ];
     }
 
@@ -190,7 +215,7 @@ abstract class CoReportGrid extends DbGrid
 
     public function filters(): array
     {
-        return ['customer' => 'Customer', 'sales' => 'Sales By', 'order_type' => 'Order Type', 'confirm' => 'Confirm', 'status' => 'Status', 'month' => 'Bulan'];
+        return ['customer' => 'Customer', 'sales' => 'Sales By', 'order_type' => 'Order Type', 'ship_method' => 'Shipment Method', 'qty_minim' => 'Qty Minim', 'confirm' => 'Confirm', 'status' => 'Status', 'month' => 'Bulan'];
     }
 
     public function groups(): array
