@@ -111,7 +111,7 @@
       this.el.dlSheet = {get data() { return self.data; }, render: this.render, apply: this.apply, get cur() { return self.cur; }, set cur(v) { self.cur = v; self.anchor = null; self.render(); }};
       this.render();
     }
-    isPick(c) { return c.type === 'date' || c.type === 'time'; }
+    isPick(c) { return c.type === 'date' || c.type === 'time' || this.num(c); }
 
     // Pemilih kecil utk sel aktif (tampilan sama x-dl::field.date / field.time): date = kalender, time = Jam + Menit (5 menit).
     // Panel fixed di body supaya tidak terpotong scroll lembar.
@@ -120,7 +120,38 @@
       const {r, c} = this.cur, col = this.cols[c], td = this.cellEl(r, c); if (!td) return;
       const cur = this.data[r][col.key], pad = n => String(n).padStart(2, '0'), p = document.createElement('div');
       const pick = v => { this.closePick(); if (String(v) !== String(cur ?? '')) this.apply([{r, k: col.key, v}]); this.wrap.focus(); };
-      if (col.type === 'time') {
+      if (this.num(col)) {
+        // Kalkulator mini: + - x / saja, hitung kiri-ke-kanan dgn prioritas x / ; '=' / Enter = hasil masuk ke sel.
+        let ex = typeof cur === 'number' ? String(cur).replace('.', ',') : '';
+        const calc = () => {
+          const t = ex.replace(/,/g, '.').match(/(\d+\.?\d*|\.\d+|[-+*/])/g) || []; if (!t.length) return null;
+          const nums = [], ops = []; let neg = false;
+          for (const x of t) { if ('+-*/'.includes(x) && nums.length === ops.length) { if (x === '-') { neg = !neg; continue; } return null; } if ('+-*/'.includes(x)) ops.push(x); else { nums.push(neg ? -x : +x); neg = false; } }
+          if (nums.length === ops.length) ops.pop();  // operator menggantung di akhir diabaikan
+          const a = [nums[0]], o = [];
+          ops.forEach((op, i) => { const n = nums[i + 1]; if (n == null) return; if (op === '*') a.push(a.pop() * n); else if (op === '/') a.push(a.pop() / n); else { o.push(op); a.push(n); } });
+          const v = o.reduce((s, op, i) => op === '+' ? s + a[i + 1] : s - a[i + 1], a[0]);
+          return isFinite(v) ? Math.round(v * 1e10) / 1e10 : null;
+        };
+        const show = () => { $(p, '[data-e]').textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') || '0'; const v = calc(); $(p, '[data-r]').textContent = v == null ? (ex ? '–' : '') : '= ' + v.toLocaleString('id-ID', {maximumFractionDigits: c.decimals ?? 10}); };
+        const key = k => {
+          if (k === 'C') ex = ''; else if (k === '⌫') ex = ex.slice(0, -1);
+          else if (k === '=') { const v = calc(); if (v == null) return toast('Rumus belum lengkap / bagi nol.', 'danger'); return pick(col.decimals != null ? Math.round(v * 10 ** col.decimals) / 10 ** col.decimals : v); }
+          else if ('+-*/'.includes(k)) ex = /[-+*/]$/.test(ex) && k !== '-' ? ex.slice(0, -1) + k : ex + k;
+          else if (k === ',') { const seg = ex.split(/[-+*/]/).pop(); if (!seg.includes(',')) ex += (seg ? '' : '0') + ','; }
+          else ex += k;
+          show();
+        };
+        p.className = 'dl-pick__panel is-open dl-sheet__calpanel dl-calc'; p.tabIndex = -1;
+        p.innerHTML = '<div class="dl-calc__screen"><div class="dl-calc__expr" data-e></div><div class="dl-calc__res" data-r></div></div><div class="dl-calc__keys">'
+          + ['C', '⌫', '/', '*', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', ','].map(k => `<button type="button" data-k="${k}" class="${'+-*/'.includes(k) ? 'is-op' : k === '=' ? 'is-eq' : k === '0' ? 'is-zero' : ''}" ${k === '=' ? 'title="Masukkan hasil ke sel (Enter)"' : ''}>${{'/': '÷', '*': '×', '-': '−'}[k] ?? k}</button>`).join('') + '</div>';
+        p.addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (b) key(b.dataset.k); });
+        p.addEventListener('keydown', e => {
+          const k = e.key === 'Enter' ? '=' : e.key === 'Backspace' ? '⌫' : e.key === 'Delete' || e.key === 'c' ? 'C' : e.key === '.' ? ',' : e.key === 'x' ? '*' : e.key;
+          if (/^[0-9,+\-*/=C⌫]$/.test(k)) { e.preventDefault(); e.stopPropagation(); key(k); }
+        });
+        show();
+      } else if (col.type === 'time') {
         const [h0, m0] = /^\d{2}:\d{2}$/.test(cur || '') ? cur.split(':').map(Number) : [8, 0];
         p.className = 'dl-pick__panel dl-pick__panel--time is-open dl-sheet__calpanel';
         p.innerHTML = `<div class="dl-pick__head">Pilih Jam</div><div class="dl-pick__time"><label>Jam <select data-h>${Array.from({length: 24}, (_, i) => `<option ${i === h0 ? 'selected' : ''}>${pad(i)}</option>`).join('')}</select></label><b>:</b><label>Menit <select data-m>${Array.from({length: 12}, (_, i) => `<option ${i * 5 === Math.round(m0 / 5) * 5 % 60 ? 'selected' : ''}>${pad(i * 5)}</option>`).join('')}</select></label></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-a>Apply</button></div>`;
@@ -149,7 +180,7 @@
       const b = td.getBoundingClientRect(), below = b.bottom + 4 + p.offsetHeight <= innerHeight;
       Object.assign(p.style, {position: 'fixed', left: Math.min(b.left, innerWidth - p.offsetWidth - 8) + 'px', top: (below ? b.bottom + 4 : b.top - p.offsetHeight - 4) + 'px'});
       this.pick = p;
-      if (col.type === 'time') $(p, '[data-h]').focus();
+      if (col.type === 'time') $(p, '[data-h]').focus(); else if (this.num(col)) p.focus();
       this.pickOff = e => { if (e.type === 'keydown' ? e.key === 'Escape' || !p.contains(e.target) : !p.contains(e.target)) { this.closePick(); if (e.type === 'keydown') this.wrap.focus(); } };
       ['mousedown', 'keydown', 'scroll'].forEach(t => document.addEventListener(t, this.pickOff, true));
     }
@@ -213,7 +244,7 @@
     render() {
       const R = this.rng();
       this.table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
-        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${c.readonly ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !c.readonly ? `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${c.type === 'date' ? 'Pilih tanggal' : 'Pilih jam'} (Alt+Panah Bawah)"><i class="fa-regular fa-${c.type === 'date' ? 'calendar' : 'clock'}"></i></button>` : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${c.readonly ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !c.readonly ? `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${c.type === 'date' ? 'Pilih tanggal' : c.type === 'time' ? 'Pilih jam' : 'Kalkulator'} (Alt+Panah Bawah)"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : c.type === 'time' ? 'fa-regular fa-clock' : 'fa-solid fa-calculator'}"></i></button>` : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
       const changed = this.changes(), info = $(this.el, '[data-s-info]'), sv = $(this.el, '[data-s-save]');
       sv.disabled = !changed.length;
       if (this.lookup) {

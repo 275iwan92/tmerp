@@ -1866,6 +1866,17 @@ td.dl-print__no{text-align:center}
 .dl-sheet__cal{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:none;background:none;padding:0 3px;cursor:pointer;color:var(--dl-muted);font-size:calc(12px * var(--dl-font-scale));line-height:1}
 .dl-sheet__cal:hover{color:var(--dl-accent)}
 .dl-sheet__calpanel{z-index:1000}
+.dl-calc{width:196px;padding:6px;outline:none}
+.dl-calc__screen{background:var(--dl-surface-alt);border:1px solid var(--dl-border-soft);border-radius:4px;padding:4px 8px;margin-bottom:6px;text-align:right;font-variant-numeric:tabular-nums;min-height:40px}
+.dl-calc__expr{font-size:calc(13px * var(--dl-font-scale));color:var(--dl-ink);word-break:break-all}
+.dl-calc__res{font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-accent);font-weight:600;min-height:15px}
+.dl-calc__keys{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.dl-calc__keys button{border:1px solid var(--dl-border-soft);background:var(--dl-surface);border-radius:4px;padding:5px 0;cursor:pointer;font-family:inherit;font-size:calc(12.5px * var(--dl-font-scale));color:var(--dl-ink)}
+.dl-calc__keys button:hover{background:var(--dl-surface-alt)}
+.dl-calc__keys .is-op{color:var(--dl-accent);font-weight:700}
+.dl-calc__keys .is-eq{grid-row:span 2;background:var(--dl-accent);color:var(--dl-white);border-color:var(--dl-accent);font-weight:700}
+.dl-calc__keys .is-eq:hover{background:var(--dl-accent)}
+.dl-calc__keys .is-zero{grid-column:span 2}
 .dl-sheet__case{position:absolute;right:5px;top:50%;transform:translateY(-50%);z-index:4;cursor:pointer;padding:0 5px;line-height:16px;background:var(--dl-f-badge);border:1px solid var(--dl-f-line);border-radius:4px;color:var(--dl-f-badge-ink);font-family:inherit}
 /* Grid Lookup (user 2026-09-30): rapat, saklar Aktif, info perubahan kuning. */
 .dl-sheet--lookup .dl-sheet__table td{height:26px;padding:3px 8px}
