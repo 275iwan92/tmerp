@@ -132,6 +132,21 @@ class SpeedTargetEngineTest extends TestCase
         $this->assertSame(5400.0, $r[2]['machine']->speed);
     }
 
+    public function test_model_spec_efficiency_is_calibrated_from_real_history(): void
+    {
+        // Pond manual nyata: 750/1500 = 0,50 dan 720/1200 = 0,60 -> median 0,55 dipakai untuk press manual tanpa riwayat.
+        $a = $this->machine(1, ['max' => 1500, 'legacy' => $this->samples([750, 750, 750])]);
+        $b = $this->machine(2, ['max' => 1200, 'legacy' => $this->samples([720, 720, 720])]);
+        $press = $this->machine(3, ['type' => 'Pressing', 'max' => 1380]);
+
+        $s = $this->engine()->run([$a, $b, $press])[3]['machine'];
+        $this->assertSame(['MODEL_SPEC', 759.0], [$s->source, $s->speed]);
+        $this->assertStringContainsString('calibrated from real history of 2 MANUAL machines', $s->basis);
+
+        $off = $this->engine(['SPEED_EFF_CALIBRATE' => 0])->run([$a, $b, $press])[3]['machine'];
+        $this->assertSame(690.0, $off->speed);   // kalibrasi dimatikan -> konstanta 0,50
+    }
+
     public function test_process_default_is_last_resort_and_nothing_means_null(): void
     {
         $this->assertSame('PROCESS_DEFAULT', $this->engine()->run([$this->machine(1, ['processDefault' => 250])])[1]['machine']->source);

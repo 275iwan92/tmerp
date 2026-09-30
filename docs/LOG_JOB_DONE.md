@@ -9,7 +9,9 @@
   keyakinan TINGGI/SEDANG/RENDAH; P75 qty/jam dengan baris SETTING/QC/HITUNG/dst tidak ikut, satuan dipisah (LBR/PCS/SET).
 - Usulan di `tm2mst.prod_speed_suggestion`; `SpeedSuggestionStore::accept()` (Terima/Ubah) menulis ke `prod_machine.speed_target_per_hour`
   atau `prod_process_machine.speed_per_hour` + jejak `[SPEED ...]` di catatan; usulan yang ditolak tidak disodorkan ulang.
-- Parameter di Settings > Constants (grup SPEED_ENGINE, 10 konstanta); perintah `production:suggest-speed-targets` harian 03:00.
+- Faktor efisiensi spek dikalibrasi dari riwayat legacy nyata per penggerak (MANUAL 0,54 dari DIE-01/02/03+UVC-01, AUTO 0,52 dari OFF-01/02),
+  konstanta SPEED_EFF_* jadi cadangan (user: "dikoreksi dengan data legacy agar mendekati realita").
+- Parameter di Settings > Constants (grup SPEED_ENGINE, 12 konstanta); perintah `production:suggest-speed-targets` harian 03:00.
 - Kolom baru `prod_machine.legacy_machine_names` (nama mesin di tm2old) diisi 21 mesin.
 - Katalog model +14 dari riset online (Agfa Avalon C8-30/C4-30, QZYK-1150, YDS-1100BT, FHSGJ-1050, SGUV-650, FM-1100, YB-1450E, TYMB-750,
   LQ-QF-1080C, TD-202, SG-ASC-530A01, WM-700A, Xenons X3S); 14 mesin dipilihkan model SEMENTARA, hanya kolom kosong yang diisi.
