@@ -7,9 +7,9 @@ use App\Models\Master\SupSupplier;
 use App\Models\Prd\PrdBreakdownEvent;
 use App\Models\Prd\PrdMtsForecast;
 use App\Models\Prd\PrdSchedulingRule;
+use App\Models\Prd\PrdScrapType;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
-use App\Models\Prd\PrdScrapType;
 use App\Models\Prd\PrdWoOperationOutput;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrRequisition;
@@ -24,6 +24,31 @@ use Tests\TestCase;
 // test lain & demo manual di browser -- pola sama ProductionSchedulingBoardSmokeTest).
 class ProductionWorklistWoTest extends TestCase
 {
+    private ?array $wo231Snapshot = null;
+
+    // Test Breakdown yang gagal di tengah dulu meninggalkan task WO2600231 di BREAKDOWN +
+    // event yatim (28 baris, 2026-09-22..30) sehingga test lain ikut gagal. Snapshot di
+    // setUp, pulihkan di tearDown apa pun hasil test-nya.
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600231'))->first();
+        $this->wo231Snapshot = $op ? [
+            'id' => $op->operation_id, 'task_status' => $op->task_status, 'machine_id' => $op->machine_id,
+            'max_event' => (int) PrdBreakdownEvent::max('event_id'),
+        ] : null;
+    }
+
+    protected function tearDown(): void
+    {
+        if ($snap = $this->wo231Snapshot) {
+            PrdBreakdownEvent::where('operation_id', $snap['id'])->where('event_id', '>', $snap['max_event'])->delete();
+            PrdWoOperation::whereKey($snap['id'])->update(['task_status' => $snap['task_status'], 'machine_id' => $snap['machine_id']]);
+        }
+
+        parent::tearDown();
+    }
+
     private function admin(): SecUser
     {
         return SecUser::where('login', 'johiwan')->firstOrFail();

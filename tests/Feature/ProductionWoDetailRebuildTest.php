@@ -72,7 +72,7 @@ class ProductionWoDetailRebuildTest extends TestCase
             'prospect_name' => 'Prospek Test WO Generation',
             'product_draft_name' => 'Box Test WO Generation',
             'inquiry_type' => 'NEW',
-            'parent_product_id' => $productId,
+            'product_id' => $productId,
             'sub_state' => 'CONVERTED',
             'created_by' => 'test', 'created_at' => $now, 'updated_at' => $now,
         ]);

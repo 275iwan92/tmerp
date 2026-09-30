@@ -6,6 +6,7 @@ use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use App\Models\Sys\SecUser;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 // Rebuild 2026-09-09 mendekati docs/mockups/mockup_mastercard.jpg (layar
@@ -17,8 +18,21 @@ class ProdevPrintMastercardTest extends TestCase
 
     protected ?int $productId = null;
 
+    private ?string $origLang = null;
+
+    // Teks yang dicek berbahasa Indonesia; akun johiwan bisa ber-lang 'en' --
+    // paksa 'id' selama test (pola sama dgn InquiryHubStatBoxTest).
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->origLang = SecUser::where('login', 'johiwan')->value('lang_code');
+        SecUser::where('login', 'johiwan')->update(['lang_code' => 'id']);
+    }
+
     protected function tearDown(): void
     {
+        SecUser::where('login', 'johiwan')->update(['lang_code' => $this->origLang]);
+
         if ($this->partId) {
             ProdPart::whereKey($this->partId)->delete();
         }
@@ -46,7 +60,7 @@ class ProdevPrintMastercardTest extends TestCase
         ]);
         $this->partId = $part->id_part;
 
-        $html = Livewire::test('pages::production.prodev-print', ['part' => $part->id_part])
+        $html = Livewire::test('pages::production.old_prodev_print', ['part' => $part->id_part])
             ->assertOk()
             ->assertSee('MASTER CARD / KARTU INDUK')
             ->assertSee('Test Mastercard Part')
@@ -78,7 +92,7 @@ class ProdevPrintMastercardTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $html = Livewire::test('pages::production.prodev-print', ['part' => 65])
+        $html = Livewire::test('pages::production.old_prodev_print', ['part' => 65])
             ->assertOk()
             ->assertSee('Rigid Box Parfum #5')
             ->assertSee('BAPAK BAMBANG')
@@ -118,13 +132,13 @@ class ProdevPrintMastercardTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('demoMastercardPartProvider')]
+    #[DataProvider('demoMastercardPartProvider')]
     public function test_additional_demo_parts_render_fully_populated_with_artwork(int $partId, string $partName, string $customerName, string $materialName): void
     {
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $html = Livewire::test('pages::production.prodev-print', ['part' => $partId])
+        $html = Livewire::test('pages::production.old_prodev_print', ['part' => $partId])
             ->assertOk()
             ->assertSee($partName)
             ->assertSee($customerName)

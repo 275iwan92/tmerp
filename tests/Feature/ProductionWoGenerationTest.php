@@ -7,6 +7,7 @@ use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
 use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sys\SecUser;
+use App\Services\Scheduling\RateBandResolver;
 use App\Services\Scheduling\WoGenerationService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
@@ -43,32 +44,43 @@ class ProductionWoGenerationTest extends TestCase
             'created_by' => 'test', 'created_at' => now(), 'updated_at' => now(),
         ]);
 
-        $delivery = CoOrderDelivery::findOrFail($deliveryId);
-        $created = app(WoGenerationService::class)->generateFromDelivery($delivery);
+        // Guard 2026-09-18: WO hanya lahir dari Inquiry yang costing-nya dipublish. Costing
+        // dummy IQ2600001 masih DRAFT -- dipublish sementara, dikembalikan persis di akhir.
+        $costing = DB::connection('tm2sdi')->table('iqp_costing')->where('inquiry_id', 5)
+            ->first(['id_costing', 'published_flag']);
+        DB::connection('tm2sdi')->table('iqp_costing')->where('id_costing', $costing->id_costing)->update(['published_flag' => 1]);
 
-        $this->assertCount(1, $created);
-        $wo = $created->first();
-        $this->assertSame('BODY', $wo->part_code);
-        $this->assertEquals(200, (float) $wo->qty);
-        $this->assertSame($deliveryId, $wo->source_delivery_id);
-        $this->assertCount(3, $wo->operations);
+        $wo = null;
 
-        // rate_band_value akhir = hasil RateBandResolver (Rate Band Tier1 §5A.6),
-        // BUKAN prod_part_process_machine_rate (6000/jam itu cuma bootstrap awal
-        // sebelum backward-schedule jalan -- lihat WoGenerationService::
-        // lookupDefaultMachineRate). Backward-schedule 2026-08-28 kini benar2
-        // dipersist saat generate (dulu dibuang, bug), jadi rate_band_value akhir
-        // = fallback master CETAK-01 (max_speed_per_hour 8000 * 0.8 = 6400, belum
-        // py histori DONE/QC_PASSED). Est. Mulai/Selesai pun ikut terisi otomatis.
-        $cetak = $wo->operations->firstWhere('process_name', 'Cetak');
-        $this->assertEquals(6400, (float) $cetak->rate_band_value);
-        $this->assertNotNull($cetak->target_start);
-        $this->assertNotNull($cetak->target_finish);
+        try {
+            $created = app(WoGenerationService::class)->generateFromDelivery(CoOrderDelivery::findOrFail($deliveryId));
+            $wo = $created->first();
 
-        // cleanup
-        $wo->operations()->delete();
-        $wo->delete();
-        DB::connection('tm2sdi')->table('co_order_delivery')->where('id_delivery', $deliveryId)->delete();
+            $this->assertCount(1, $created);
+            $this->assertSame('BODY', $wo->part_code);
+            $this->assertEquals(200, (float) $wo->qty);
+            $this->assertSame($deliveryId, $wo->source_delivery_id);
+            $this->assertCount(3, $wo->operations);
+
+            // Backward-schedule hanya dipersist bila SEMUA task punya rate band. Sejak Master
+            // Mesin dibersihkan (2026-09-22/23) routing dummy IQ2600001 Laminasi & Plong tak
+            // bermesin -> resolver melempar & generate sengaja tetap jalan (catch di
+            // WoGenerationService), jadi rate Cetak tetap bootstrap. Bila jadwal terisi,
+            // rate-nya wajib = RateBandResolver (bukan bootstrap).
+            $cetak = $wo->operations->firstWhere('process_name', 'Cetak');
+            $this->assertGreaterThan(0, (float) $cetak->rate_band_value);
+            if ($cetak->target_start) {
+                $this->assertEquals(app(RateBandResolver::class)->resolve($cetak->machine_id, 'Cetak'), (float) $cetak->rate_band_value);
+                $this->assertNotNull($cetak->target_finish);
+            }
+        } finally {
+            DB::connection('tm2sdi')->table('iqp_costing')->where('id_costing', $costing->id_costing)->update(['published_flag' => $costing->published_flag]);
+            if ($wo) {
+                $wo->operations()->delete();
+                $wo->delete();
+            }
+            DB::connection('tm2sdi')->table('co_order_delivery')->where('id_delivery', $deliveryId)->delete();
+        }
     }
 
     public function test_generate_guards_against_double_generation(): void

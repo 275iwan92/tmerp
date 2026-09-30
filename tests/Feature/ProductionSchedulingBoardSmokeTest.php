@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Master\EmpEmployee;
+use App\Models\Master\ProdMachine;
 use App\Models\Prd\PrdCrewAssignment;
 use App\Models\Prd\PrdDecisionFeedbackLog;
 use App\Models\Prd\PrdWo;
@@ -47,9 +48,15 @@ class ProductionSchedulingBoardSmokeTest extends TestCase
             ->set('date', '2026-08-28')
             ->html();
 
+        // Nama mesin/crew dummy lama ("Plong 1", "Budi Santoso") hilang sejak Master Mesin
+        // & Pegawai diisi data nyata (2026-09-22/23) -- label baris mesin diturunkan dari DB.
+        $machineId = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600231'))
+            ->whereNotNull('machine_id')->value('machine_id');
+        $machineName = ProdMachine::whereKey($machineId)->value('machine_name');
+
         $this->assertStringContainsString('WO2600231', $html);
-        $this->assertStringContainsString('Plong 1', $html);
-        $this->assertStringContainsString('Budi Santoso', $html);
+        $this->assertNotNull($machineName);
+        $this->assertStringContainsString(e($machineName), $html);
         $this->assertStringContainsString('SITI FATIMAH', $html);
     }
 

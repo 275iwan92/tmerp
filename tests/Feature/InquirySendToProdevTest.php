@@ -80,8 +80,9 @@ class InquirySendToProdevTest extends TestCase
         $iqpPart->refresh();
         $this->assertSame($prodPart->id_part, $iqpPart->prod_part_id, 'Panggil 2x tidak boleh bikin ProdPart baru');
 
-        // Panel referensi di ProDev harus tampil (Inquiry sudah CONFIRMED).
-        $prodevTest = Livewire::test('pages::production.prodev', ['part' => $prodPart->id_part]);
+        // Panel referensi hanya ada di ProDev lama (old_prodev, diarsipkan 2026-09-14 tapi
+        // route-nya tetap hidup); ProDev baru (Imposition) tidak punya panel ini.
+        $prodevTest = Livewire::test('pages::production.old_prodev', ['part' => $prodPart->id_part]);
         $prodevHtml = $prodevTest->html();
         $this->assertStringContainsString('Referensi Inquiry Asal', $prodevHtml);
         $this->assertStringContainsString('Test Part SendToProDev', $prodevHtml);
@@ -108,7 +109,7 @@ class InquirySendToProdevTest extends TestCase
         $test->call('sendToProDev', 0);
 
         $iqpPart = IqpPart::findOrFail($partId);
-        $prodevTest = Livewire::test('pages::production.prodev', ['part' => $iqpPart->prod_part_id]);
+        $prodevTest = Livewire::test('pages::production.old_prodev', ['part' => $iqpPart->prod_part_id]);
         $this->assertStringContainsString('Referensi Inquiry Asal', $prodevTest->html(), 'Inquiry CONFIRMED biasa harus tampil di panel referensi');
 
         // Cancel Inquiry -- panel referensi HARUS hilang (stat_confirm tetap
@@ -118,7 +119,7 @@ class InquirySendToProdevTest extends TestCase
         $inquiry = IqpInquiry::findOrFail($this->inquiryId);
         $this->assertSame('CANCELLED', $inquiry->sub_state);
 
-        $prodevTest2 = Livewire::test('pages::production.prodev', ['part' => $iqpPart->prod_part_id]);
+        $prodevTest2 = Livewire::test('pages::production.old_prodev', ['part' => $iqpPart->prod_part_id]);
         $this->assertStringNotContainsString('Referensi Inquiry Asal', $prodevTest2->html(), 'Inquiry CANCELLED tidak boleh tampil di panel referensi ProDev');
     }
 }

@@ -8,10 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-// Permintaan user 2026-09-05: 8 stat box di grid Inquiry Hub (2 baris x 4) --
-// baris 1 backlog "belum confirm" per tipe + total tahun ini, baris 2 backlog
-// "sudah diberi harga (PRICE_APPROVED) tapi belum ke customer" per tipe +
-// total sudah di-approve Direksi (is_approved) tahun ini.
+// Stat box Inquiry Hub (versi 2026-09-28): Not Confirm, Ready to Quote,
+// Processed by Pro-Dev, Processed by Pro-Cost.
 class InquiryHubStatBoxTest extends TestCase
 {
     protected array $inquiryIds = [];
@@ -76,22 +74,20 @@ class InquiryHubStatBoxTest extends TestCase
         ]);
         $this->inquiryIds[] = $recalcQuoted->id_inquiry;
 
+        // Kotak statistik Hub dirombak 2026-09-28 (a676d0e/1f0f929): Not Confirm, Ready to Quote,
+        // Processed by Pro-Dev, Processed by Pro-Cost -- Win/Loss pindah ke Quotation.
         $test = Livewire::test('pages::inquiry.hub')->assertOk();
-        $test->assertSee('NEW belum confirm')
-            ->assertSee('REVISE belum confirm')
-            ->assertSee('RECALC belum confirm')
-            ->assertSee('Total inquiry tahun ini')
-            ->assertSee('NEW sudah harga, belum ke customer')
-            ->assertSee('REVISE sudah harga, belum ke customer')
-            ->assertSee('RECALC sudah harga, belum ke customer')
-            ->assertSee('Sudah di-approve tahun ini');
+        $test->assertSee('Not Confirm')
+            ->assertSee('Ready to Quote')
+            ->assertSee('Processed by Pro-Dev')
+            ->assertSee('Processed by Pro-Cost');
         $component = $test->instance();
 
-        $this->assertGreaterThanOrEqual(1, $component->statUnconfirmedByType('NEW'));
+        $expected = IqpInquiry::where('stat_confirm', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])->count();
+        $this->assertSame($expected, $component->statUnconfirmed);
+        $this->assertGreaterThanOrEqual(1, $component->statUnconfirmed);
         $this->assertSame(0, IqpInquiry::whereKey($newCancelled->id_inquiry)->where('stat_confirm', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])->count(), 'CANCELLED tidak boleh ikut query belum-confirm');
-        $this->assertGreaterThanOrEqual(1, $component->statPricedNotQuotedByType('REVISE'));
-        $this->assertSame(0, IqpInquiry::whereKey($recalcQuoted->id_inquiry)->where('sub_state', 'PRICE_APPROVED')->count(), 'QUOTED tidak boleh ikut query priced-not-quoted');
-        $this->assertGreaterThanOrEqual(2, $component->statApprovedThisYear);
-        $this->assertGreaterThanOrEqual(4, $component->statTotalThisYear);
+        $this->assertSame(IqpInquiry::whereHas('costing')->count(), $component->statProcost);
+        $this->assertSame(IqpInquiry::whereHas('parts', fn ($p) => $p->whereNotNull('prod_part_id'))->count(), $component->statProdev);
     }
 }

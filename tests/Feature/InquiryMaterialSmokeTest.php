@@ -2,17 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Models\Master\MatRaw;
+use App\Models\Master\MatCategory;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
+// Bahan Inquiry = slot #1 Paper / #2 Sheet-SF, pilih Jenis -> Gramatur dari
+// mat_category (user 2026-09-29, commit 20b4d14); Sales tidak memilih mat_raw/brand.
 class InquiryMaterialSmokeTest extends TestCase
 {
-    protected ?MatRaw $material = null;
-
     protected ?IqpInquiry $inquiry = null;
 
     protected function tearDown(): void
@@ -26,10 +26,6 @@ class InquiryMaterialSmokeTest extends TestCase
             DB::connection('tm2sdi')->table('iqp_inquiry')->where('id_inquiry', $this->inquiry->id_inquiry)->delete();
         }
 
-        if ($this->material) {
-            DB::connection('tm2mst')->table('mat_raw')->where('material_id', $this->material->material_id)->delete();
-        }
-
         parent::tearDown();
     }
 
@@ -41,17 +37,12 @@ class InquiryMaterialSmokeTest extends TestCase
         // GET smoke: full initial render must not throw.
         $this->get('/inquiry/new?mode=NEW')->assertOk();
 
-        $this->material = MatRaw::create([
-            'material_code' => 'TEST-DPX-310',
-            'material_name' => 'Duplex 310 gsm TEST',
-            'item_type' => 'MATERIAL',
-            'category1' => 'DUPLEX',
-            'brand' => 'IK',
-            'gram_weight' => 310,
-            'cm_length' => 79,
-            'cm_width' => 109,
-            'activate' => true,
-        ]);
+        $paperRoot = MatCategory::roots()->where('category_name', 'Paper')->value('id_category');
+        $jenis = MatCategory::where('parent_id', $paperRoot)->where('level', 2)->where('activate', true)
+            ->whereExists(fn ($q) => $q->from('mat_category as g')->whereColumn('g.parent_id', 'mat_category.id_category')->where('g.level', 3)->where('g.activate', true))
+            ->orderBy('category_name')->firstOrFail();
+        $gramatur = MatCategory::where('parent_id', $jenis->id_category)->where('level', 3)->where('activate', true)
+            ->orderBy('category_name')->firstOrFail();
 
         Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
             ->set('inquiry_date', now()->toDateString())
@@ -63,11 +54,10 @@ class InquiryMaterialSmokeTest extends TestCase
             ->set('parts.0.part_name', 'Body')
             ->set('parts.0.cfg_color', '4/1')
             ->set('parts.0.cfg_ink', 'Pantone 485 C')
-            ->set('parts.0.materials.0.query', 'Duplex')
-            ->call('selectMaterial', 0, 0, $this->material->material_id)
-            ->assertSet('parts.0.materials.0.rawmat_id', $this->material->material_id)
-            ->assertSet('parts.0.materials.0.brand', 'IK')
-            ->call('addMaterialRow', 0)
+            ->call('setMaterialJenis', 0, 0, (string) $jenis->id_category)
+            ->call('setMaterialGramatur', 0, 0, (string) $gramatur->id_category)
+            ->assertSet('parts.0.materials.0.category_id', $gramatur->id_category)
+            ->assertSet('parts.0.materials.0.rawmat_id', null)
             ->assertCount('parts.0.materials', 2)
             ->call('save')
             ->assertHasNoErrors();
@@ -79,9 +69,12 @@ class InquiryMaterialSmokeTest extends TestCase
         $this->assertSame('4/1', $part->cfg_color);
         $this->assertSame('Pantone 485 C', $part->cfg_ink);
 
-        // Baris bahan kosong (belum pilih material) sengaja tidak ikut tersimpan.
+        // Slot Sheet/SF yang belum dipilih sengaja tidak ikut tersimpan.
         $this->assertCount(1, $part->materials);
-        $this->assertSame($this->material->material_id, $part->materials->first()->rawmat_id);
-        $this->assertTrue((bool) $part->materials->first()->is_primary);
+        $saved = $part->materials->first();
+        $this->assertSame($gramatur->id_category, (int) $saved->category_id);
+        $this->assertNull($saved->rawmat_id);
+        $this->assertSame(1, (int) $saved->layer_seq);
+        $this->assertTrue((bool) $saved->is_primary);
     }
 }

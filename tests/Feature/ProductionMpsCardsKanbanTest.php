@@ -131,12 +131,15 @@ class ProductionMpsCardsKanbanTest extends TestCase
             ->set('date', '2026-08-28')
             ->instance();
 
-        $idleMachine = ProdMachine::where('machine_code', 'COAT-01')->first();
-        if ($idleMachine) {
-            $this->assertTrue($instance->machineIsIdle($idleMachine->machine_id));
-        }
+        // Kode mesin di-rename ke prefix jenis English (Master Mesin 2026-09-22/23) --
+        // CETAK-01/COAT-01 sudah tidak ada. Mesin sibuk/kosong diturunkan dari data dummy.
+        $busyIds = PrdWoOperation::whereDate('target_start', '2026-08-28')
+            ->whereIn('task_status', ['RUNNING', 'ASSIGNED'])->whereNotNull('machine_id')
+            ->pluck('machine_id')->unique();
+        $this->assertNotEmpty($busyIds, 'Dummy scheduling 2026-08-28 harus punya task RUNNING/ASSIGNED');
+        $this->assertFalse($instance->machineIsIdle($busyIds->first()));
 
-        $busyMachine = ProdMachine::where('machine_code', 'CETAK-01')->firstOrFail();
-        $this->assertFalse($instance->machineIsIdle($busyMachine->machine_id));
+        $idleMachine = ProdMachine::where('activate', true)->whereNotIn('machine_id', $busyIds)->firstOrFail();
+        $this->assertTrue($instance->machineIsIdle($idleMachine->machine_id));
     }
 }
