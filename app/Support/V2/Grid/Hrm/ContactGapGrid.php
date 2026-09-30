@@ -21,6 +21,11 @@ class ContactGapGrid extends HrmGrid
         return 'Karyawan Tanpa No. WhatsApp';
     }
 
+    public function group(): string
+    {
+        return 'Employee › Report';
+    }
+
     public function family(): string
     {
         return self::REPORT;

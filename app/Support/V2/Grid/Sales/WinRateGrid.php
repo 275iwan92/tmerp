@@ -30,6 +30,11 @@ class WinRateGrid extends DbGrid
         return 'Sales';
     }
 
+    public function group(): string
+    {
+        return 'Inquiry & Quotation › Report';
+    }
+
     public function family(): string
     {
         return self::REPORT;

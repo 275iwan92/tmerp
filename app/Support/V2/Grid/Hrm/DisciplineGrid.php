@@ -26,6 +26,11 @@ class DisciplineGrid extends HrmGrid
         return 'Kedisiplinan Harian';
     }
 
+    public function group(): string
+    {
+        return 'Time Attendance › Report';
+    }
+
     public function family(): string
     {
         return self::REPORT;

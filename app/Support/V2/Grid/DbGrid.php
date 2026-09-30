@@ -58,7 +58,7 @@ abstract class DbGrid
     {
         return match ($this->family()) {
             self::MASTER => 'Master',
-            self::REPORT => 'Laporan',
+            self::REPORT => 'Report',
             default => 'Transaksi',
         };
     }
@@ -71,6 +71,17 @@ abstract class DbGrid
     public function filters(): array
     {
         return [];
+    }
+
+    // Grid Report: pilihan Grup (kolom => label) + grup awal (varian Group By, subtotal kolom 'sum').
+    public function groups(): array
+    {
+        return [];
+    }
+
+    public function groupBy(): ?string
+    {
+        return null;
     }
 
     public function stats(): array
@@ -170,6 +181,8 @@ abstract class DbGrid
             'columns' => $this->columns(),
             'stats' => $this->stats(),
             'filters' => $this->filters(),
+            'groups' => $this->groups(),
+            'groupBy' => $this->groupBy(),
             'search' => $this->search(),
             'mode' => $this->family() === self::REPORT ? 'report' : 'entry',
             'actions' => match ($this->family()) {
