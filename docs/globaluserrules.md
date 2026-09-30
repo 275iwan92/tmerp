@@ -71,6 +71,8 @@
 11. **Setiap mesin wajib punya minimal satu proses**, tanpa pengecualian.
 12. **Dummy:** selalu sediakan data dummy untuk layar baru dan jangan dihapus. Tapi dummy lama yang sudah digantikan
     atau membingungkan harus DIHAPUS dan diganti yang baru. Setelah memperbaiki dummy, simpan ulang baseline `ddt`.
+    **Aturan main tetap (2026-10-01):** dummy yang SALAH (saldo tidak konsisten, minus, relasi rusak, isi tidak
+    masuk akal) selalu DIHAPUS dan diganti dummy baru yang benar — tidak perlu tanya dulu, cukup dilaporkan.
 13. **Payroll wajib terenkripsi** at-rest (desain diputuskan terpisah).
 
 ## C. Tampilan (UI/UX)
@@ -139,3 +141,4 @@
 | 2026-10-01 | A.3: hasil produksi tetap wajib di-input walau sudah dikirim; data hasil produksi = acuan KPI semua departemen. |
 | 2026-10-01 | Pedoman ini dibuka dari menu akun v2 → **Bantuan & dukungan**. |
 | 2026-10-01 | C.17: F1 = Bantuan & dukungan di v2; Tiket Bantuan di profil dengan ikon jelas; Back kembali ke Profile. |
+| 2026-10-01 | B.12: dummy yang salah selalu dihapus dan diganti baru (aturan main tetap, tanpa tanya). |

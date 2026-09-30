@@ -92,4 +92,5 @@
 | B4 | "sesuai tanggal duedate, atau H+3 maksimal dari tanggal CO dibuat" | Tanggal butuh = yang lebih awal dari (due date) dan (tanggal CO dibuat + 3). ? hari kerja atau kalender; ? due date item CO atau tanggal kirim CPDEL |
 | B5 | Kekurangan bahan = inti booking; notif ke Direksi, Ops Manager, PPIC, Warehouse, Finance | Status SHORT memicu notifikasi ke 5 pihak. ? kanal (notifikasi di aplikasi / email), ? aturan prioritas bila 2 CO berebut |
 | B6 | "belum dirancang; saat CO di-approve semua ENGINE hitung bahan mulai kerja, terutama saat WO di-create" | Engine hitung bahan jalan penuh saat CO approve/Confirmed dan dihitung ulang presisi saat WO dibuat (POST to Production). Master Product TIDAK diubah oleh booking. ? hubungan dengan B1 (sejak CO masuk) |
+| Dummy | "data dummy salah di remove dan ganti baru" (aturan main tetap) | Stok dummy kacau (`rm_stockcard` saldo tak konsisten, minus di UNKNOWN-LEGACY) dihapus & diganti baru saat membangun; tambah CO dummy CONFIRMED lengkap layout |
 | B7–B9 | belum dijawab | — |
