@@ -17,7 +17,13 @@
 <x-dl::card id="demo-doc" :title="$t('dsd_title').' · IQ-2609-0012'" :description="$t('dsd_desc')">
     <x-dl::action-bar align="between">
         <x-dl::badge label="Draft" />
-        <x-dl::doc-share target="#demo-doc" type="demo" doc-id="12" number="IQ-2609-0012" :title="$t('dsd_title')" email-to="purchasing@customer.test" />
+        {{-- :contacts = daftar statis untuk "Find contact" di dialog Email (di tmerp ditambah pencarian server lewat contacts-url). --}}
+        <x-dl::doc-share target="#demo-doc" type="demo" doc-id="12" number="IQ-2609-0012" :title="$t('dsd_title')" email-to="purchasing@customer.test"
+            :contacts="[
+                ['name' => 'Rina Wulandari', 'email' => 'rina@customer.test', 'group' => 'PT Contoh Baterai'],
+                ['name' => 'Budi Santoso', 'email' => 'budi@customer.test', 'group' => 'PT Contoh Baterai'],
+                ['name' => 'Sales Admin', 'email' => 'sales@telasihmakmur.test', 'group' => 'User'],
+            ]" />
     </x-dl::action-bar>
     <x-dl::form.row cols="4">
         <x-dl::field.text :label="$t('dsd_product')" name="product" value="KS Power N120 MF" />

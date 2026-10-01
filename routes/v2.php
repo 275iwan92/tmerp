@@ -41,6 +41,7 @@ use App\Support\V2\Data\ApprovalSetting;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DeliveryOrder;
+use App\Support\V2\Data\MailContacts;
 use App\Support\V2\Data\PettyCash;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\PurchaseOrder;
@@ -1095,6 +1096,10 @@ Route::prefix('v2')->name('v2.')->group(function () {
         return response()->json(['added' => Dictionary::register($texts)]);
     })->name('dictionary.register');
 
+    // Dialog Email x-dl::doc-share: cari alamat dari kontak customer, kontak supplier dan user (config devlib.mail_contacts_url).
+    Route::get('mail-contacts', fn (Request $r) => response()->json(['rows' => MailContacts::search((string) $r->query('q', ''))]))
+        ->name('mail-contacts');
+
     // Print & Email (objek DevLib x-dl::doc-share): simpan snapshot HTML -> token untuk QR / link online; kirim e-mail.
     Route::prefix('doc-share')->name('docshare.')->group(function () {
         Route::post('/', function (Request $r) {
@@ -1108,22 +1113,22 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::post('/{token}/email', function (Request $r, string $token) {
             $share = SysDocShare::where('token', $token)->firstOrFail();
             if (MailSettings::current()->require_verified && ! MailSettings::verified(Auth::user())) {
-                return response()->json(['message' => 'E-mail Anda belum terverifikasi. Buka Profil > E-mail untuk verifikasi dulu: '.route('v2.account.email')], 422);
+                return response()->json(['message' => t('Your e-mail is not verified yet. Open Profile > E-mail to verify it first:').' '.route('v2.account.email')], 422);
             }
             $list = fn ($k) => DocShareService::addresses($r->input($k));
             $r->merge(['to_list' => $list('to'), 'cc_list' => $list('cc'), 'bcc_list' => $list('bcc')]);
             $r->validate(['to_list' => ['required', 'array', 'min:1'], 'to_list.*' => ['email'], 'cc_list.*' => ['email'], 'bcc_list.*' => ['email'],
                 'subject' => ['required', 'string', 'max:255'], 'message' => ['nullable', 'string', 'max:5000'],
                 'image' => ['nullable', 'file', 'mimes:jpg,jpeg', 'max:15360'], 'pdf' => ['nullable', 'file', 'mimes:pdf', 'max:15360']],
-                ['to_list.required' => 'Isi minimal satu alamat To.', 'to_list.*.email' => 'Alamat To tidak valid: :input',
-                    'cc_list.*.email' => 'Alamat CC tidak valid: :input', 'bcc_list.*.email' => 'Alamat BCC tidak valid: :input'], ['subject' => 'Subjek']);
+                ['to_list.required' => t('Enter at least one To address.'), 'to_list.*.email' => t('Invalid To address: :input'),
+                    'cc_list.*.email' => t('Invalid CC address: :input'), 'bcc_list.*.email' => t('Invalid BCC address: :input')], ['subject' => t('Subject')]);
             $log = (new DocShareService(Auth::user()->login))->email($share, ['to' => $r->input('to_list'), 'cc' => $r->input('cc_list'), 'bcc' => $r->input('bcc_list'),
                 'subject' => $r->input('subject'), 'message' => $r->input('message'), 'with_link' => $r->boolean('with_link')], $r->file('image'), $r->file('pdf'),
                 ['name' => Auth::user()->name ?? Auth::user()->login, 'email' => Auth::user()->email, 'verified' => MailSettings::verified(Auth::user())]);
 
             return $log->status === 'SENT'
-                ? response()->json(['message' => 'E-mail terkirim ke '.$log->to_list.'.'])
-                : response()->json(['message' => 'E-mail gagal dikirim: '.$log->error], 422);
+                ? response()->json(['message' => t('E-mail sent to').' '.$log->to_list.'.'])
+                : response()->json(['message' => t('E-mail could not be sent:').' '.$log->error], 422);
         })->name('email');
     });
 

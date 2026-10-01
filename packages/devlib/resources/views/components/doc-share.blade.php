@@ -36,6 +36,13 @@
                         <x-dl::field.text name="cc" label="CC" :case-toggle="false" />
                         <x-dl::field.text name="bcc" label="BCC" :case-toggle="false" />
                     </x-dl::form.row>
+                    @if ($contacts || $contactsUrl)
+                        <div class="dl-docshare__contacts" data-ds-contacts data-list="{{ json_encode(array_values($contacts)) }}" data-url="{{ $contactsUrl }}">
+                            <x-dl::field.text name="ds_contact_q" :label="\Devlib\Lang::t('ds_contacts')" :case-toggle="false" :placeholder="\Devlib\Lang::t('ds_contacts_ph')" />
+                            <small class="dl-docshare__contacthint">{{ \Devlib\Lang::t('ds_contacts_hint') }} <b data-ds-contact-target>To</b></small>
+                            <div class="dl-docshare__contactlist" data-ds-contact-list></div>
+                        </div>
+                    @endif
                     <x-dl::field.text name="subject" :label="\Devlib\Lang::t('ds_subject')" required :value="$subject ?? trim($title.' '.$number)" />
                     <x-dl::field.text name="message" :label="\Devlib\Lang::t('ds_message')" multiline :value="$message" />
                     <x-dl::field.checkbox name="with_link" :text="\Devlib\Lang::t('ds_with_link')" :value="true" />

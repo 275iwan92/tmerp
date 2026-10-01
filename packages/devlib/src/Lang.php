@@ -350,6 +350,15 @@ final class Lang
         'sc_help' => ['Bantuan & dukungan (pedoman + tiket)', 'Help & support (guide + tickets)'],
         'sc_dev' => ['Mode Developer nyala / mati (admin)', 'Developer Mode on / off (admin)'],
         'sc_list' => ['Tampilkan daftar pintasan ini', 'Show this list of shortcuts'],
+        // Dialog Email x-dl::doc-share: pemilih kontak + pesan yang dulu Indonesia mentah (2026-10-02).
+        'ds_contacts' => ['Cari kontak', 'Find contact'],
+        'ds_contacts_ph' => ['Nama, perusahaan atau e-mail (min. 2 huruf)', 'Name, company or e-mail (2 letters or more)'],
+        'ds_contacts_hint' => ['Klik kontak untuk menambah ke kotak yang terakhir diklik:', 'Click a contact to add it to the box you clicked last:'],
+        'ds_link_copied' => ['Link disalin.', 'Link copied.'],
+        'ds_need_to' => ['Isi minimal satu alamat To.', 'Enter at least one To address.'],
+        'ds_print_failed' => ['Print gagal', 'Print failed'],
+        'ds_email_failed' => ['Email gagal', 'Email failed'],
+        'ds_failed' => ['Gagal', 'Failed'],
         'print_unsaved' => ['Perubahan belum disimpan tidak ikut tercetak. Save dulu bila perlu.', 'Unsaved changes are not printed. Save first if needed.'],
     ];
 

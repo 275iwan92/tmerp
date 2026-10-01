@@ -1,7 +1,7 @@
 /* DevLib · DocShare — Print (PDF/JPEG/HTML online/Printer) + Email untuk dokumen/form mana pun (x-dl::doc-share). */
 (function (Devlib) {
   'use strict';
-  const {$, $$, toast, loadLib, openLayer, esc, T, fmt, NUM, dirtyForms} = Devlib.h;
+  const {$, $$, toast, loadLib, openLayer, esc, T, Tf, fmt, NUM, dirtyForms} = Devlib.h;
   const LIB_IMG = 'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js';
   const LIB_PDF = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
   const LIB_QR = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
@@ -24,10 +24,11 @@
       document.addEventListener('click', e => { if (!this.el.contains(e.target)) this.el.classList.remove('is-open'); });
       this.on('click', '[data-ds-do]', (e, b) => { this.el.classList.remove('is-open'); this.run(b.dataset.dsDo); });
       if (this.online) {
-        $(this.online, '[data-ds-copy]').addEventListener('click', () => navigator.clipboard.writeText(this.share.url).then(() => toast('Link disalin.', 'success')));
+        $(this.online, '[data-ds-copy]').addEventListener('click', () => navigator.clipboard.writeText(this.share.url).then(() => toast(T('ds_link_copied'), 'success')));
         $(this.online, '[data-ds-open]').addEventListener('click', () => window.open(this.share.url, '_blank', 'noopener'));
       }
       if (this.mail) $(this.mail, '[data-ds-send]').addEventListener('click', this.send);
+      if (this.mail && $(this.mail, '[data-ds-contacts]')) this.initContacts();
 
       // Bahasa cetak: diingat per jenis dokumen; bawaan = bahasa layar. Dipakai juga oleh twin (iframe) untuk ditemukan.
       this.el.dlDocShare = this;
@@ -44,6 +45,46 @@
       // Dibuka dari layar lain dengan ?ds_do=email (mis. Email ▾ > ACC Digital di form ProDev): dialog e-mail langsung terbuka.
       const q = new URLSearchParams(location.search);
       if (this.mail && q.get('ds_do') === 'email' && !q.has('print_lang')) setTimeout(() => this.run('email'), 0);
+    }
+
+    // Pemilih kontak di dialog Email: daftar statis (data-list) + pencarian server (data-url?q=). Klik kontak = alamatnya masuk
+    // ke kotak To / CC / BCC yang terakhir diklik (bawaan To); klik kontak yang sudah terpakai = dicabut dari ketiganya.
+    initContacts() {
+      const box = $(this.mail, '[data-ds-contacts]'), list = $(box, '[data-ds-contact-list]'), q = $(box, 'input[name=ds_contact_q]');
+      const form = $(this.mail, '[data-ds-mailform]'), field = n => $(form, `[name="${n}"]`), BOX = ['to', 'cc', 'bcc'].filter(field);
+      const local = JSON.parse(box.dataset.list || '[]'), url = box.dataset.url, same = (a, b) => a.toLowerCase() === b.toLowerCase();
+      const addrs = n => String(field(n).value || '').split(/[,;]/).map(s => s.trim()).filter(Boolean);
+      const used = e => BOX.some(n => addrs(n).some(a => same(a, e)));
+      let target = 'to', shown = [], timer = null, seq = 0;
+      const draw = () => {
+        list.innerHTML = shown.map(c => `<button type="button" class="dl-docshare__contact${used(c.email) ? ' is-on' : ''}" data-ds-contact="${esc(c.email)}"><b>${esc(c.name || c.email)}</b><small>${esc(c.email)}${c.group ? ' · ' + esc(c.group) : ''}</small></button>`).join('')
+          || (q.value.trim().length >= 2 ? `<span class="dl-docshare__nocontact">${esc(T('l_not_found'))}</span>` : '');
+      };
+      const find = async () => {
+        const s = q.value.trim().toLowerCase(), mine = ++seq;
+        let rows = local.filter(c => c.email && (!s || `${c.name || ''} ${c.email} ${c.group || ''}`.toLowerCase().includes(s)));
+        if (url && s.length >= 2) {
+          try {
+            const r = await fetch(url + (url.includes('?') ? '&' : '?') + 'q=' + encodeURIComponent(s), {headers: {Accept: 'application/json'}, credentials: 'same-origin'});
+            if (r.ok) rows = rows.concat(((await r.json()).rows || []).filter(m => m.email && !rows.some(c => same(c.email, m.email))));
+          } catch (_) {}
+        }
+        if (mine === seq) { shown = rows.slice(0, 20); draw(); }
+      };
+      BOX.forEach(n => {
+        field(n).addEventListener('focus', () => { target = n; $(box, '[data-ds-contact-target]').textContent = n === 'to' ? 'To' : n.toUpperCase(); });
+        field(n).addEventListener('input', draw);
+      });
+      q.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(find, 250); });
+      q.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+      list.addEventListener('click', e => {
+        const b = e.target.closest('[data-ds-contact]'); if (!b) return;
+        const em = b.dataset.dsContact;
+        if (used(em)) BOX.forEach(n => { field(n).value = addrs(n).filter(a => !same(a, em)).join(', '); });
+        else field(target).value = [...addrs(target), em].join(', ');
+        draw();
+      });
+      find();
     }
 
     // DocShare yang mencetak: diri sendiri bila bahasa cetak = bahasa layar; selain itu salinan halaman yang sama dirender server
@@ -97,7 +138,7 @@
     async post(url, body) {
       const r = await fetch(url, {method: 'POST', body, headers: {'X-CSRF-TOKEN': this.cfg.csrf, Accept: 'application/json'}, credentials: 'same-origin'});
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(j.message || (j.errors ? Object.values(j.errors)[0][0] : 'Gagal (' + r.status + ')'));
+      if (!r.ok) throw new Error(j.message || (j.errors ? Object.values(j.errors)[0][0] : T('ds_failed') + ' (' + r.status + ')'));
       return j;
     }
 
@@ -215,7 +256,7 @@
         if (what === 'jpeg') this.save(img, 'jpg');
         else if (what === 'pdf') (await ds.pdf(img)).save(this.fileName() + '.pdf');
         else if (what === 'printer') this.printImage(img);
-      } catch (e) { toast(e.message || String(e), 'danger', 'Print gagal'); }
+      } catch (e) { toast(e.message || String(e), 'danger', T('ds_print_failed')); }
       finally { this.busy(false); }
     }
 
@@ -229,7 +270,7 @@
 
     async send() {
       const box = $(this.mail, '[data-ds-mailform]'), v = n => ($(box, `[name="${n}"]`) || {}).value || '', on = n => !!($(box, `[name="${n}"]`) || {}).checked;
-      if (!v('to').trim()) { toast('Isi minimal satu alamat To.', 'warn'); return; }
+      if (!v('to').trim()) { toast(T('ds_need_to'), 'warn'); return; }
       const btn = $(this.mail, '[data-ds-send]'); btn.disabled = true;
       try {
         const ds = await this.printer();
@@ -245,7 +286,7 @@
         const r = await this.post(this.cfg.endpoint.replace(/\/$/, '') + '/' + this.share.token + '/email', f);
         this.mail.classList.remove('is-on');
         toast(r.message, 'success', 'Email');
-      } catch (e) { toast(e.message || String(e), 'danger', 'Email gagal'); }
+      } catch (e) { toast(e.message || String(e), 'danger', T('ds_email_failed')); }
       finally { btn.disabled = false; }
     }
   }

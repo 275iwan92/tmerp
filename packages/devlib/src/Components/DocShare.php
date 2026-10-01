@@ -8,6 +8,9 @@ use Devlib\Theme;
 //   <x-dl::doc-share target="#recalc-doc" type="inquiry-recalc" :doc-id="$id" :number="$no" title="Inquiry Rekalkulasi" :email-to="$emailCustomer" />
 // Print ▾ : PDF (unduh), JPEG (unduh), HTML online (link + QR, dibuka tanpa login), Printer (dialog cetak browser).
 // Email   : To/CC/BCC/Subjek/Pesan + pilihan isi: link online, dokumen (gambar) di isi e-mail, lampiran PDF.
+//           Alamat bisa dipilih dari kontak: kotak "Find contact" mencari di daftar :contacts (statis, [['name','email','group']])
+//           dan/atau contacts-url (GET ?q= -> {rows: [...]}; tmerp: kontak customer, kontak supplier, user). Klik kontak =
+//           masuk ke kotak To / CC / BCC yang terakhir diklik; klik lagi = dicabut.
 // Setiap hasil membawa QR ke salinan online (snapshot saat dicetak, disimpan lewat endpoint -> sys_doc_share di tmerp).
 // Tanpa endpoint (situs DevLib) PDF/JPEG/Printer tetap jalan, tanpa QR/online/email.
 // Bahasa cetak (Indonesia | English | ...): beda dari bahasa layar -> halaman yang sama dirender ulang dengan ?print_lang=xx
@@ -31,8 +34,11 @@ class DocShare extends DevlibComponent
         public string $orientation = 'portrait',
         public bool $email = true,
         public string $size = 'md',
+        public array $contacts = [],
+        public ?string $contactsUrl = null,
     ) {
         $this->endpoint ??= config('devlib.doc_share_url');
+        $this->contactsUrl ??= config('devlib.mail_contacts_url');
         $this->uid = 'docshare-'.substr(md5($type.$docId.$target.spl_object_id($this)), 0, 8);
     }
 
