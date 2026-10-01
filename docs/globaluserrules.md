@@ -124,6 +124,10 @@
 20. **Setiap item menu wajib punya ikon sendiri** yang menggambarkan isinya dan berbeda dari item lain di daftar yang sama
     (menu mini hanya menampilkan ikon). Item menu baru tanpa ikon = belum selesai.
 21. **Tidak ada bar alur (langkah 1-8) di atas layar** — membuat layar jelek. Penjelasan alur ditulis di **Help**, bukan di layar.
+22. **Grid tanpa kotak statistik** (semua grid DevLib, 2026-10-02): status dan jenis jadi **satu baris filter teks + jumlah**;
+    kiri = status (dari `stats`), garis pemisah, kanan = jenis (dari `tabs`). Garis bawah **bergeser** ke pilihan aktif dan
+    **berganti warna** sesuai pilihan. "All" cukup satu (di kiri); klik lagi pilihan jenis yang aktif = lepas. Label singkat
+    (mis. Pro-Dev, Pro-Cost).
 
 ## D. Cara kerja developer / agen
 
@@ -166,3 +170,4 @@
 | 2026-10-02 | A.15: scope modul — Inquiry & Quotation jadi menu besar `PREORDER` (saklar sendiri), pintasan master, kontrak A/B (ddt; tm2 menunggu OK). |
 | 2026-10-02 | A.15: menu = data (cara ScriptCase) — pintasan = baris ber-target sama, hidup-mati layar dihitung dari pohon menu, grup Flow jadi baris menu. |
 | 2026-10-02 | C.21: bar alur order di atas layar ditiadakan (7 layar v2); alur ditulis di Help. |
+| 2026-10-02 | C.22: kotak statistik di atas grid diganti satu baris filter teks dengan garis bawah berjalan & berwarna (semua grid DevLib). |

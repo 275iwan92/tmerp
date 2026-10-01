@@ -1,7 +1,7 @@
 <div {{ $attributes->class(['dl-grid', 'dl-grid--report' => $isReport(), 'dl-grid--entry' => $isEntry()]) }} {!! $dl() !!} data-dl-grid data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
-    @if ($stats)<div class="dl-grid__stats" data-g-stats></div>@endif
     <div class="dl-grid__panel">
-        @if ($tabs)<div class="dl-tabs__bar dl-grid__tabs" data-g-tabs></div>@endif
+        {{-- Satu baris filter (user 2026-10-02): status (stats) | jenis (tabs) sebagai teks + jumlah; garis bawah bergeser & berganti warna. --}}
+        @if ($stats || $tabs)<div class="dl-grid__fbar" data-g-fbar><span class="dl-grid__fgroup" data-g-stats></span><span class="dl-grid__fsep" data-g-fsep hidden></span><span class="dl-grid__fgroup" data-g-tabs></span><i class="dl-grid__find" data-g-find="stats"></i><i class="dl-grid__find" data-g-find="tabs"></i></div>@endif
         <div class="dl-grid__toolbar">
             <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ $search }}" data-g-search aria-label="{{ \Devlib\Lang::text('Search') }}"></div>
             @if ($isReport())

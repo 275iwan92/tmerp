@@ -32,10 +32,12 @@
       this.search = this.q('[data-g-search]');
       this.t = undefined;
       this.search.addEventListener('input', () => { clearTimeout(this.t); this.t = setTimeout(() => { this.st.search = this.search.value; this.st.page = 1; this.redraw(); }, 250); });
+      window.addEventListener('resize', () => { this.slide('stats'); this.slide('tabs'); });
       this.el.addEventListener('click', e => {
         const x = e.target;
-        const s = x.closest('.dl-grid__stats [data-i]'); if (s) { this.st.stat = this.st.stat === +s.dataset.i ? null : +s.dataset.i; this.st.page = 1; return this.redraw(); }
-        const tb = x.closest('[data-g-tabs] [data-i]'); if (tb) { this.st.tab = +tb.dataset.i; this.st.page = 1; return this.redraw(); }
+        // Filter tanpa where = "All": memilihnya (atau mengklik lagi yang aktif) = lepas filter.
+        const s = x.closest('[data-g-stats] [data-i]'); if (s) { const i = +s.dataset.i; this.st.stat = (this.st.stat === i || !this.cfg.stats[i].where) ? null : i; this.st.page = 1; return this.redraw(); }
+        const tb = x.closest('[data-g-tabs] [data-i]'); if (tb) { const i = +tb.dataset.i, all = this.cfg.tabs.findIndex(t => !t.where); this.st.tab = (this.st.tab === i && all >= 0) ? all : i; this.st.page = 1; return this.redraw(); }
         const th = x.closest('th.is-sortable'); if (th) { const k = th.dataset.key; if (this.st.sort === k) { if (this.st.dir > 0) this.st.dir = -1; else { this.st.sort = null; this.st.dir = 1; } } else { this.st.sort = k; this.st.dir = 1; } return this.redraw(); }
         const pg = x.closest('[data-p]'); if (pg && !pg.disabled) { this.st.page = +pg.dataset.p; return this.drawBody(); }
         const pp = x.closest('[data-pp]'); if (pp) { this.st.perPage = +pp.dataset.pp; this.st.page = 1; return this.redraw(); }
@@ -186,14 +188,27 @@
 
     drawStats() {
       const box = this.q('[data-g-stats]'); if (!box) return;
-      const base = this.filtered({noStat: true});
-      box.innerHTML = this.cfg.stats.map((s, i) => `<button type="button" class="dl-stat dl-stat--${esc(s.tone || 'accent')} is-filter ${this.st.stat === i ? 'is-active' : ''}" data-i="${i}"><span class="dl-stat__label">${esc(s.label)}</span><span class="dl-stat__value">${fmt.number(base.filter(r => this.match(r, s.where)).length)}</span></button>`).join('');
+      const base = this.filtered({noStat: true}), none = this.st.stat === null;
+      box.innerHTML = this.cfg.stats.map((s, i) => `<button type="button" class="dl-fb dl-fb--${esc(s.tone || 'accent')} ${this.st.stat === i || (none && !s.where) ? 'is-active' : ''}" data-i="${i}">${esc(s.label)} <span class="dl-grid__tabcount">${fmt.number(base.filter(r => this.match(r, s.where)).length)}</span></button>`).join('');
+      this.slide('stats');
     }
 
+    // Tab tanpa where ("All") disembunyikan bila baris status sudah punya "All"; tab tanpa tone mendapat warna bergilir.
     drawTabs() {
       const bar = this.q('[data-g-tabs]'); if (!bar) return;
-      const base = this.filtered({noTab: true, noStat: true});
-      bar.innerHTML = this.cfg.tabs.map((t, i) => `<button type="button" class="dl-tabs__tab ${this.st.tab === i ? 'is-active' : ''}" data-i="${i}">${esc(t.label)} <span class="dl-grid__tabcount">${base.filter(r => this.match(r, t.where)).length}</span></button>`).join('');
+      const base = this.filtered({noTab: true, noStat: true}), hideAll = this.cfg.stats.some(s => !s.where), tones = ['orange', 'pink', 'lime', 'violet', 'success', 'warn'];
+      let n = 0;
+      bar.innerHTML = this.cfg.tabs.map((t, i) => !t.where && hideAll ? '' : `<button type="button" class="dl-fb dl-fb--${esc(t.tone || (t.where ? tones[n++ % tones.length] : 'accent'))} ${this.st.tab === i ? 'is-active' : ''}" data-i="${i}">${esc(t.label)} <span class="dl-grid__tabcount">${base.filter(r => this.match(r, t.where)).length}</span></button>`).join('');
+      this.q('[data-g-fsep]').hidden = !(this.cfg.stats.length && this.cfg.tabs.length);
+      this.slide('tabs');
+    }
+
+    // Garis bawah berjalan: pindah ke pilihan aktif dan memakai warnanya (--fb).
+    slide(kind) {
+      const ind = this.q(`[data-g-find="${kind}"]`), a = this.q(`[data-g-${kind}] .is-active`);
+      if (!ind) return;
+      if (!a || !a.offsetWidth) { ind.style.opacity = 0; return; }
+      Object.assign(ind.style, {opacity: 1, left: a.offsetLeft + 'px', width: a.offsetWidth + 'px', top: (a.offsetTop + a.offsetHeight - 3) + 'px', background: getComputedStyle(a).getPropertyValue('--fb')});
     }
 
     drawHead() {
@@ -302,7 +317,7 @@
       const ln = this.q('[data-g-lines-n]'); if (ln) { ln.value = this.st.linesN; ln.disabled = this.st.lines === 'auto'; }
       this.el.dataset.density = this.st.density; this.el.style.setProperty('--dl-grid-lines', this.st.lines === 'auto' ? 'unset' : this.st.linesN); this.el.classList.toggle('is-clamped', this.st.lines !== 'auto');
       const chips = [
-        ...(this.st.stat !== null ? [['stat', 'Kotak: ' + this.cfg.stats[this.st.stat].label]] : []),
+        ...(this.st.stat !== null ? [['stat', 'Filter: ' + this.cfg.stats[this.st.stat].label]] : []),
         ...Object.entries(this.st.filters).filter(([, v]) => v !== '').map(([k, v]) => ['f:' + k, `${this.cfg.filters[k]}: ${v}`]),
         ...Object.entries(this.st.colf).filter(([, v]) => String(v).trim()).map(([k, v]) => ['c:' + k, `${(this.cols.find(c => c.key === k) || {label: k}).label}: ${v}`]),
         ...(this.st.search ? [['search', Tf('g_search_chip', {q: this.st.search})]] : []),

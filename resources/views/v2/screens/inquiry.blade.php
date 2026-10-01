@@ -1,7 +1,7 @@
 {{-- Inquiry Product (worklist). Alur & field: tmerp pages/inquiry/hub.blade.php. Keputusan user 2026-09-28:
      wizard jenis -> sumber -> pilih inquiry. Win/Lost ada di Quotation.
      User 2026-10-01: tampilan = Grid Transactional (sama dengan Quotation / Customer Order): + New Record di toolbar
-     membuka wizard; Continue Draft / Ready to Quote = kotak statistik Draft / Ready to Quote (klik = saring);
+     membuka wizard; Continue Draft / Ready to Quote = filter teks Draft / Ready to Quote di baris filter (klik = saring);
      Duplicate = tombol di dalam form Inquiry (screens/_inquiry-duplicate), bukan ikon di baris grid. --}}
 @php
     use App\Support\V2\Data\Sales;
@@ -42,8 +42,8 @@
         ['label' => t('All')],
         ['label' => 'Draft', 'where' => ['stat_confirm' => false, 'sub_state' => array_values(array_diff(Sales::STATES, ['CANCELLED', 'LOST']))], 'tone' => 'neutral'],
         ['label' => 'Ready to Quote', 'where' => ['ready' => true], 'tone' => 'warn'],
-        ['label' => 'Processed by Pro-Dev', 'where' => ['prodev' => true], 'tone' => 'info'],
-        ['label' => 'Processed by Pro-Cost', 'where' => ['procost' => true], 'tone' => 'success'],
+        ['label' => 'Pro-Dev', 'where' => ['prodev' => true], 'tone' => 'violet'],
+        ['label' => 'Pro-Cost', 'where' => ['procost' => true], 'tone' => 'success'],
     ]"
     :tabs="[
         ['label' => t('All')],
