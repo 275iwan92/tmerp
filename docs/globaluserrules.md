@@ -82,6 +82,9 @@
     **Aturan main tetap (2026-10-01):** dummy yang SALAH (saldo tidak konsisten, minus, relasi rusak, isi tidak
     masuk akal) selalu DIHAPUS dan diganti dummy baru yang benar — tidak perlu tanya dulu, cukup dilaporkan.
 13. **Payroll wajib terenkripsi** at-rest (desain diputuskan terpisah).
+14. **Master hanya diubah user, bukan sistem (2026-10-01).** Data master tidak berubah sampai ada override dari user; yang
+    berubah oleh sistem hanya data transaksi. Nilai default boleh diperbarui oleh analisa terbaru sistem, dan tetap bisa
+    di-override user. Contoh: Pick Item di Material Booking disimpan di booking, bukan di Master Product.
 
 ## C. Tampilan (UI/UX)
 
@@ -172,3 +175,5 @@
 | 2026-10-02 | C.21: bar alur order di atas layar ditiadakan (7 layar v2); alur ditulis di Help. |
 | 2026-10-02 | C.22: kotak statistik di atas grid diganti satu baris filter teks dengan garis bawah berjalan & berwarna (semua grid DevLib). |
 | 2026-10-02 | C.3: grid Inquiry Product = `x-dl::grid` biasa (komponen turunan InquiryWorklist dibuang); alamat buka per baris (`open-url="{open_url}"`) dan `new-modal` jadi fitur Grid DevLib. |
+| 2026-10-01 | B.14: master hanya diubah user; sistem hanya mengubah transaksi; default boleh diperbarui analisa sistem dan tetap bisa di-override. |
+| 2026-10-01 | Material Planning (Booking + MRP + MPS) dibangun di ddt: keputusan B1-B9 di `docs/materialbooking_tier1.md` §6-§7. |
