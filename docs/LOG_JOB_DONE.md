@@ -3003,3 +3003,15 @@ baru. Full suite: 103 test, 94 passed, 9 skipped (Firebase, tidak terkait), 0 ga
   halaman), 0 gagal. **Pelajaran dicatat** di `admindashboardstandard.md`
   §10.2 utk Resource/Page Filament lain: jangan pernah panggil
   `Auth::user()`/logic per-user di dalam `PanelProvider::panel()`.
+
+## 2026-10-02 — Grid Transactional (persegi dokumen + tabel anak) dan alur tiga tanda Inquiry
+
+- **Grid Transactional (pedoman C.28):** kolom pertama = persegi dokumen (nomor + nama pihak, 8 gradasi), baris induk 5-8 kolom
+  tanpa jumlah item, Expand = tabel anak maks 7 kolom berisi nama item / product. Terpasang di contoh DevLib, Quotation, CO,
+  CPDEL, DO, Surat Jalan, POD, PR, PQ, PO, Penerimaan, Kas Kecil, Work Order, dokumen stok, Material Booking, Inquiry,
+  Pro-Dev, Pro-Cost. Belum: Maintenance, HR / Payroll / Recruitment.
+- **Alur Inquiry → Pro-Dev → Pro-Cost (pedoman A.20):** `stat_confirm` inquiry → `stat_confirm_sales`; tambah
+  `stat_confirm_prodev` / `stat_confirm_procost` + siapa / kapan (migration `2026_10_02_000020`, ddt + tm2). Menu dipisah per
+  jenis (migration `2026_10_02_000021`). Tombol "Kirim ke ProDev" dihapus; Recalc langsung ke Pro-Cost.
+- Belum diputuskan: back process CO direct karena percepatan Direksi; kode jenis order RTP / RCL; Sales PIC dari master (komisi).
+

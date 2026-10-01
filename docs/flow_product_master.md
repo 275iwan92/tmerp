@@ -79,6 +79,15 @@ KS Power N120 MF
       Bahan per part: Duplex 310 gsm + SH B/C Flute M125/M125X3/K125; pisau SJJ N120 MF 72,9 × 46,4 cm
 ```
 
+## 3b. Alur antar bagian = tiga tanda di satu tabel (user 2026-10-02, pedoman A.20)
+
+- `iqp_inquiry` menyimpan ketiga jenis dokumen (New, Revise, Recalc). Menu dipisah per jenis; tabelnya satu.
+- `stat_confirm_sales = 1` → New / Revise muncul di **Pro-Dev**, Recalc muncul di **Pro-Cost** (tanpa Pro-Dev).
+- `stat_confirm_prodev = 1` (semua part Confirmed oleh Pro-Dev) → muncul di **Pro-Cost**.
+- `stat_confirm_procost = 1` (costing published) → kembali ke Sales, siap dipilih di Quotation.
+- Tidak ada tombol "Kirim ke ProDev": Confirm Sales sudah cukup. Kode: `App\Services\Sales\InquiryStage`,
+  grid `App\Support\V2\Grid\Sales\InquiryDeskGrid`.
+
 ## 4. Revisi & Rekalkulasi berangkat dari Master Product ✅ (layar v2 inquiry-revise / inquiry-recalc)
 
 - Di layar Revisi/Rekalkulasi, user **memilih product (atau inquiry)** → **semua part tampil** lengkap dengan
@@ -149,7 +158,7 @@ KS Power N120 MF
   - `product-acc`: ACC Digital comes from the CTP sample print (usually after the customer PO) and is REQUIRED before printing.
   - `master-product`: Master Product is created when a Quotation is WON; Revision and Recalculation start again from Inquiry.
   - `inquiry-revise`: Revision = a new derived product. The changes below flow to Product Development and Product Costing so they know what must be redone.
-  - `inquiry-recalc`: Recalculation = same product, new price. After Confirm it goes to Product Development and Product Costing, then the new price returns here.
+  - `inquiry-recalc`: Recalculation = same product, new price. After Sales confirms it goes straight to Product Costing (no Product Development), then the new price returns here.
   - `customer-order`: Customer Order = the order is confirmed. Every product line needs a due date; Confirm creates the default shipping schedule.
   - `cpdel`: Every delivery line holds two promises that must match exactly: the slot agreed with the customer and the time production commits to be ready.
 - **ACC Digital / Proof Digital = dokumen CETAK.** Pencatatan ACC customer (tanggal & jam, penyetuju, saluran, bukti)

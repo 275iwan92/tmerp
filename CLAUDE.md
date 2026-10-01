@@ -219,6 +219,9 @@ transaksi = `iqp_costing`, ikut inquiry).
   `stat_` = status siklus dokumen, **bukan** `is_confirmed`/`is_cancelled` —
   keputusan user 2026-08-26) + `cancel_reason` (pelaku via `updated_by`).
 - State transisi dokumen → tabel `doc_state_log` (polymorphic), BUKAN kolom per-transisi.
+- **Inquiry (`iqp_inquiry`) punya tiga tanda tahap** (user 2026-10-02, `docs/globaluserrules.md` A.20): `stat_confirm_sales`
+  (dulu `stat_confirm`), `stat_confirm_prodev`, `stat_confirm_procost` + `confirm_*_by/at`. Grid Sales / Pro-Dev / Pro-Cost =
+  saringan jenis (NEW / REVISE / RECALC) AND tanda atas tabel yang sama (`App\Services\Sales\InquiryStage`).
 - **DEC-FIELDNAME-STATUS (2026-08-26/27):** rename `is_active`→`activate`
   & `is_confirmed`/`is_cancelled`→`stat_confirm`/`stat_cancel` — **SELESAI**
   di semua tabel (tm2mst, tm2acc, tm2sdi, tm2pur, tm2sys **termasuk**

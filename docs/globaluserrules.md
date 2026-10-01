@@ -92,6 +92,34 @@
     **Satu modul = lengkap sendiri:** semua layar yang dipakai modul (transaksi, master penyerta, laporan, alur) wajib bisa
     dibuka dari menu modul itu sendiri — bila layarnya milik modul lain, tambahkan baris pintasan (izin tetap modul pemilik).
 
+20. **[2026-10-02] Alur Inquiry → Pro-Dev → Pro-Cost lewat tiga tanda di SATU tabel (`iqp_inquiry`), menu dipisah per jenis.**
+    - Jenis dokumen tetap tiga (New, Revise, Recalc) di satu tabel fisik; **menunya dipisah** supaya officer tidak memilah sendiri:
+      Inquiry Product › All / New / Revise / Recalc, Pro-Dev › New / Revise / Manual, Pro-Cost › New / Revise / Recalc.
+      Tombol **+ New Record di tiap submenu langsung membuka jenisnya sendiri** (tanpa pop-up pilih jenis).
+    - Tiga tanda: `stat_confirm_sales` (dulu `stat_confirm`), `stat_confirm_prodev`, `stat_confirm_procost`, masing-masing
+      dengan siapa (`confirm_*_by`) dan kapan (`confirm_*_at`). **Setiap grid = saringan jenis AND tanda** atas tabel yang sama:
+      | Grid | Jenis | Tanda |
+      |---|---|---|
+      | Sales (draft) | sesuai menu | `sales = 0` |
+      | Pro-Dev New / Revise | New / Revise | `sales = 1` AND `prodev = 0` (To Do), `prodev = 1` (Done) |
+      | Pro-Cost New / Revise | New / Revise | `prodev = 1` AND `procost = 0` (To Do), `procost = 1` (Done) |
+      | Pro-Cost Recalc | Recalc | `sales = 1` AND `procost = 0` (To Do), `procost = 1` (Done) |
+      | Sales siap Quotation | semua | `procost = 1` |
+      Semua grid kerja juga AND `stat_cancel = 0` (dan bukan LOST).
+    - **New dan Revise:** Inquiry → Pro-Dev → Pro-Cost. **Recalc: Inquiry → Pro-Cost langsung** (spec sama). Recalc tetap dibuat
+      dan di-Confirm Sales lebih dulu supaya **tercatat Sales siapa (dasar komisi)**.
+    - **Confirm Sales = otomatis muncul di grid Pro-Dev.** Tombol "Kirim ke ProDev" di form Sales ditiadakan; part master
+      dibuat saat officer Pro-Dev membuka inquiry itu dari gridnya.
+    - **Pro-Dev boleh Confirm part demi part; `stat_confirm_prodev` baru menjadi 1 setelah SEMUA part Confirmed.**
+      `stat_confirm_procost` = 1 saat costing published (kembali 0 bila publish dibatalkan).
+    - Grid Pro-Dev dan Pro-Cost = objek grid yang sama (`InquiryDeskGrid`), hanya beda saringan. Part tanpa Inquiry
+      (Mode #2) ada di **Pro-Dev › Manual**.
+    - **Repeat order tanpa perubahan apa pun** tidak lewat Inquiry: langsung Customer Order direct (A.2).
+    - **Belum diputuskan (butuh solusi, user 2026-10-02):** CO direct karena **percepatan Direksi** (langsung CO → Post to
+      Production → kirim) menyisakan "back process" (Inquiry / Pro-Dev / Pro-Cost menyusul). Usulan: alasan CO direct wajib
+      dipilih (Repeat / Percepatan), inquiry susulan otomatis bertanda Back Process, CO tidak bisa Closed sebelum selesai.
+      Karena itu kode jenis order di laporan CO (RTP = Recalc) belum diubah.
+
 ## B. Database & data
 
 1. **[LOCKED] Database-per-modul** (`tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`,
@@ -242,8 +270,8 @@
     - Objek: `x-dl::grid` (`type doc` + `party`, prop `detail`), `DbGrid::detail()`. Pratinjau yang disetujui:
       `docs/mockups/grid_tx_kolom_pertama_persegi.jpg`, `docs/mockups/grid_tx_expand_item.jpg`.
     - Sudah dipasang: contoh DevLib, Quotation, Customer Order, CPDEL, DO, Surat Jalan, POD, PR, PQ, PO, Penerimaan, Kas Kecil,
-      Work Order, dokumen stok RM / FG / SFG, Material Booking. **Belum:** Inquiry, ProDev, ProCost (menunggu diskusi user),
-      Maintenance, grid HR / Payroll / Recruitment.
+      Work Order, dokumen stok RM / FG / SFG, Material Booking, Inquiry (All / New / Revise / Recalc), Pro-Dev (New / Revise /
+      Manual), Pro-Cost (New / Revise / Recalc). **Belum:** Maintenance, grid HR / Payroll / Recruitment.
 
 ## D. Cara kerja developer / agen
 
@@ -313,3 +341,5 @@
 | 2026-10-01 | C.27: panel atas ProDev v2 disamakan dengan panel form standar; Print ▾ dan Email ▾ masing-masing berisi Master Card + ACC Digital (objek baru `x-dl::menu-button`). |
 | 2026-10-01 | C.27: menu ACC Digital / Proof Digital dihapus (cukup dari Print / Email di form ProDev); layarnya tetap ada. ddt sudah, tm2 menunggu OK. |
 | 2026-10-02 | C.28: Grid Transactional — kolom pertama persegi dokumen (nomor + nama pihak, 8 gradasi Palet 1), baris induk 5-8 kolom tanpa jumlah item, Expand = tabel anak maks 7 kolom yang selalu memuat nama item / product. Inquiry / ProDev / ProCost menunggu diskusi. |
+| 2026-10-02 | **A.20: alur Inquiry → Pro-Dev → Pro-Cost lewat tiga tanda** (`stat_confirm_sales` / `_prodev` / `_procost`) di satu tabel; menu dipisah New / Revise / Recalc; Confirm Sales otomatis muncul di Pro-Dev (tombol Kirim ke ProDev dihapus); Recalc langsung ke Pro-Cost; `stat_confirm` inquiry diganti nama. ddt + tm2. |
+| 2026-10-02 | A.20: CO direct ada dua macam (repeat tanpa perubahan / percepatan Direksi); "back process" percepatan belum diputuskan. |
