@@ -203,3 +203,187 @@ PrintDoc.register(class PurchaseRequisition extends PrintDoc {
     static priced = true;
     static receivers = [['Diterima', 'Purchasing']];
 });
+
+// ===== Tahap 2 (user 2026-10-01: semua entry punya cetakan A5 landscape). Belum ada form kertas acuan: isi mengikuti
+// field layar v2 masing-masing. Menunggu review user; belum ditandai A. =====
+
+// Layar v2: quotation. Dokumen ke customer; kop PPN bila kena pajak.
+PrintDoc.register(class Quotation extends PrintDoc {
+    static title = 'QUOTATION';
+    static subtitle = 'Penawaran Harga';
+    static numberLabel = 'No Quotation';
+    static refs = [
+        {key: 'attn', label: 'Attn'},
+        {key: 'sales', label: 'Sales'},
+        {key: 'valid_until', label: 'Berlaku s/d', type: 'date'},
+        {key: 'payment_term', label: 'Syarat Bayar'},
+        {key: 'currency', label: 'Mata Uang'},
+    ];
+    static partyLabel = 'Kepada Yth.';
+    static side = {key: 'cc', label: 'CC'};
+    static nb = 'Dengan hormat, bersama ini kami sampaikan penawaran harga sebagai berikut:';
+    static nameLabel = 'PRODUK / SPESIFIKASI';
+    static extra = [{key: 'inquiry_no', label: 'NO INQUIRY', width: 21}, {key: 'disc', label: 'DISK. %', width: 17}];
+    static priced = true;
+    static receivers = [['Customer', 'Menyetujui penawaran']];
+});
+
+// Layar v2: delivery-order. Dasar Surat Jalan dan penagihan; baris ditarik dari CPDEL yang sudah Posted.
+PrintDoc.register(class DeliveryOrder extends PrintDoc {
+    static title = 'DELIVERY ORDER';
+    static subtitle = 'Perintah Kirim &middot; Internal';
+    static numberLabel = 'No DO';
+    static refs = [
+        {key: 'do_type', label: 'Jenis DO'},
+        {key: 'planned_date', label: 'Rencana Kirim', type: 'date'},
+        {key: 'actual_date', label: 'Tgl Kirim Aktual', type: 'date', hand: true},
+        {key: 'tax', label: 'Pajak'},
+        {key: 'region', label: 'Wilayah Tujuan'},
+    ];
+    static partyLabel = 'Dikirim ke';
+    static side = {key: 'contact', label: 'Telp / UP', hand: true};
+    static nb = '<b>NB:</b>&nbsp;Dasar pembuatan Surat Jalan dan penagihan. Baris berasal dari Customer Plan Delivery yang sudah Posted.';
+    static nameLabel = 'NAMA PRODUK';
+    static extra = [{key: 'co_no', label: 'NO CO', width: 17}, {key: 'price_source', label: 'ASAL HARGA', width: 21}];
+    static priced = true;
+    static receivers = [['Gudang', 'Menyiapkan barang']];
+});
+
+// Layar v2: proof-of-delivery. Bukti barang tiba dan diterima (KPI janji kirim).
+PrintDoc.register(class ProofOfDelivery extends PrintDoc {
+    static title = 'BUKTI TERIMA';
+    static subtitle = 'Proof of Delivery';
+    static numberLabel = 'No Surat Jalan';
+    static refs = [
+        {key: 'promise', label: 'Janji Kirim'},
+        {key: 'arrived_at', label: 'Tiba di Customer', hand: true},
+        {key: 'result', label: 'Hasil', hand: true},
+        {key: 'received_by', label: 'Diterima oleh', hand: true},
+        {key: 'miss_cause', label: 'Sebab Meleset', hand: true},
+    ];
+    static partyLabel = 'Customer';
+    static side = {key: 'contact', label: 'Telp / UP', hand: true};
+    static nb = '<b>NB:</b>&nbsp;Hasil: DITERIMA / DITOLAK / CUSTOMER TUTUP. Janji ditepati bila barang tiba dan diterima pada waktu yang dijanjikan.';
+    static extra = [{key: 'co_no', label: 'NO CO', width: 17}, {key: 'received_qty', label: 'DITERIMA', width: 21, type: 'money', hand: true}, {key: 'remark', label: 'KONDISI / CATATAN', width: 46, hand: true}];
+    static receivers = [['Penerima', 'Customer'], ['Pengemudi', '']];
+});
+
+// Layar v2: purchase-quotation. Catatan penawaran supplier untuk dibandingkan.
+PrintDoc.register(class PurchaseQuotation extends PrintDoc {
+    static title = 'PURCHASE QUOTATION';
+    static subtitle = 'Penawaran Supplier &middot; Internal';
+    static numberLabel = 'No PQ';
+    static refs = [
+        {key: 'pr_no', label: 'Ref. PR'},
+        {key: 'valid_until', label: 'Berlaku s/d', type: 'date'},
+        {key: 'payment_term', label: 'Termin Bayar'},
+        {key: 'currency', label: 'Mata Uang / Kurs'},
+        {key: 'lead_time', label: 'Lead Time'},
+    ];
+    static partyLabel = 'Supplier';
+    static side = {key: 'contact', label: 'Telp / UP'};
+    static nb = '<b>NB:</b>&nbsp;Catatan penawaran supplier untuk dibandingkan. Bukan pesanan; pesanan terbit sebagai Purchase Order.';
+    static extra = [{key: 'pr_line', label: 'BARIS PR', width: 17}, {key: 'lead_days', label: 'LEAD (HARI)', width: 21, type: 'int'}];
+    static priced = true;
+});
+
+// Layar v2: purchase-receive (SPB). Dokumen gudang, tanpa harga.
+PrintDoc.register(class GoodsReceipt extends PrintDoc {
+    static title = 'PENERIMAAN BARANG';
+    static subtitle = 'SPB &middot; Goods Receipt';
+    static numberLabel = 'No SPB';
+    static refs = [
+        {key: 'receipt_type', label: 'Jenis'},
+        {key: 'po_no', label: 'No PO'},
+        {key: 'supplier_dn', label: 'No SJ Pengirim'},
+        {key: 'vehicle', label: 'No Kendaraan'},
+        {key: 'warehouse', label: 'Gudang'},
+    ];
+    static partyLabel = 'Diterima dari';
+    static side = {key: 'contact', label: 'Telp / UP'};
+    static nb = '<b>NB:</b>&nbsp;JUMLAH = jumlah datang. Barang ditolak dikembalikan atau menunggu keputusan Purchasing.';
+    static extra = [{key: 'accepted', label: 'DITERIMA', width: 19, type: 'money'}, {key: 'rejected', label: 'DITOLAK', width: 19, type: 'money'}, {key: 'lot_no', label: 'LOT / ROLL', width: 21},
+        {key: 'remark', label: 'KETERANGAN', width: 25}];
+    static receivers = [['Pengirim', 'Supplier / Ekspedisi']];
+});
+
+// Layar v2: material-booking. Kebutuhan bahan satu Customer Order.
+PrintDoc.register(class MaterialBooking extends PrintDoc {
+    static title = 'MATERIAL BOOKING';
+    static subtitle = 'Pemesanan Bahan &middot; Internal';
+    static numberLabel = 'No Booking';
+    static refs = [
+        {key: 'co_no', label: 'No CO'},
+        {key: 'co_date', label: 'Tanggal CO', type: 'date'},
+        {key: 'calculated_at', label: 'Dihitung'},
+        {key: 'confirmed_by', label: 'Dikonfirmasi'},
+    ];
+    static partyLabel = 'Customer';
+    static nb = '<b>NB:</b>&nbsp;Kebutuhan bahan satu Customer Order. KURANG = belum tertutup stok, PO, atau PR.';
+    static nameLabel = 'BAHAN / PRODUK';
+    static extra = [{key: 'need_date', label: 'PERLU TGL', width: 21, type: 'date'}, {key: 'covered_by', label: 'DIPENUHI DARI', width: 28}, {key: 'short', label: 'KURANG', width: 21, type: 'money'},
+        {key: 'coverage', label: 'STATUS', width: 14}];
+    static receivers = [['Gudang', 'Menyiapkan bahan']];
+});
+
+// Layar v2: maintenance-request. Tanpa kolom jumlah: satu baris per gejala.
+PrintDoc.register(class MaintenanceRequest extends PrintDoc {
+    static title = 'MAINTENANCE REQUEST';
+    static subtitle = 'Laporan Kerusakan &middot; Internal';
+    static numberLabel = 'No Request';
+    static refs = [
+        {key: 'machine', label: 'Mesin'},
+        {key: 'kind', label: 'Jenis'},
+        {key: 'priority', label: 'Prioritas'},
+        {key: 'stopped', label: 'Mesin Berhenti'},
+        {key: 'reported_by', label: 'Dilaporkan oleh'},
+    ];
+    static partyLabel = 'Keputusan';
+    static side = {key: 'wo_no', label: 'Work Order'};
+    static nb = '<b>NB:</b>&nbsp;Satu baris per gejala. TINDAKAN AWAL dan CATATAN TEKNISI diisi teknisi saat memeriksa.';
+    static nameLabel = 'APA YANG TERJADI';
+    static qtyCols = false;
+    static extra = [{key: 'component', label: 'KOMPONEN', width: 34}, {key: 'first_action', label: 'TINDAKAN AWAL', width: 43, hand: true}, {key: 'tech_note', label: 'CATATAN TEKNISI', width: 43, hand: true}];
+    static receivers = [['Pelapor', 'Produksi']];
+});
+
+// Layar v2: maintenance-wo. Tanpa kolom jumlah: satu baris per tugas checklist; hasil diisi teknisi.
+PrintDoc.register(class MaintenanceWorkOrder extends PrintDoc {
+    static title = 'MAINTENANCE WORK ORDER';
+    static subtitle = 'Perintah Kerja Perawatan &middot; Internal';
+    static numberLabel = 'No WO';
+    static refs = [
+        {key: 'machine', label: 'Mesin'},
+        {key: 'wo_type', label: 'Jenis WO'},
+        {key: 'priority', label: 'Prioritas'},
+        {key: 'technician', label: 'Teknisi'},
+        {key: 'planned', label: 'Rencana'},
+    ];
+    static partyLabel = 'Sumber';
+    static side = {key: 'machine_stop', label: 'Mesin Berhenti'};
+    static nb = '<b>NB:</b>&nbsp;HASIL: OK / NG. TERUKUR diisi untuk tugas ukur. Spare part dan jam kerja dicatat di sistem setelah selesai.';
+    static nameLabel = 'TUGAS (CHECKLIST)';
+    static qtyCols = false;
+    static extra = [{key: 'kind', label: 'JENIS', width: 20}, {key: 'range', label: 'MIN - MAX', width: 26}, {key: 'result', label: 'HASIL', width: 20, hand: true}, {key: 'measured', label: 'TERUKUR', width: 22, hand: true},
+        {key: 'note', label: 'CATATAN', width: 32, hand: true}];
+    static receivers = [['Produksi', 'Menerima mesin kembali']];
+});
+
+// Layar v2: petty-cash. Bukti pengeluaran kas kecil (uang muka, penyelesaian / reimburse).
+PrintDoc.register(class PettyCash extends PrintDoc {
+    static title = 'BUKTI KAS KECIL';
+    static subtitle = 'Petty Cash Voucher';
+    static numberLabel = 'No Transaksi';
+    static refs = [
+        {key: 'tx_type', label: 'Jenis'},
+        {key: 'fund', label: 'Kas'},
+        {key: 'cash_po', label: 'Cash PO'},
+        {key: 'advance', label: 'Uang Muka', type: 'money'},
+        {key: 'journal', label: 'Jurnal'},
+    ];
+    static partyLabel = 'Dibayar kepada';
+    static nb = '<b>NB:</b>&nbsp;Lampirkan nota asli. Selisih uang muka dikembalikan ke kas atau dibayarkan ke penerima.';
+    static extra = [{key: 'code', label: 'KODE', width: 17}, {key: 'receipt_no', label: 'NO NOTA', width: 21}];
+    static priced = true;
+    static receivers = [['Penerima', 'Menerima uang']];
+});

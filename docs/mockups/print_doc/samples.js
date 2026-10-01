@@ -163,3 +163,76 @@ SAMPLES.CustomerPlanDelivery = {
         {item: 5, name: 'JD BOX DONAT UK 20 X 20 X 6 CM (DS000)', qty: 3000, unit: 'PCS', ship_date: '2026-10-22', ship_time: '14:00', due_date: '2026-10-22', state: 'Planned'}],
 };
 SAMPLES.CustomerOrderNoPrice = {data: SAMPLES.CustomerOrder.data, more: SAMPLES.CustomerOrder.more};
+
+// ===== Tahap 2: data contoh (angka dan nama adalah contoh) =====
+const SJJ = {name: 'PT. SELATAN JADI JAYA', lines: ['JL. RAYA PANJUNAN 8 SUKODONO', 'SIDOARJO']};
+Object.assign(SAMPLES, {
+    Quotation: {
+        data: {...PRINTED, number: 'QT26100012', date: '2026-10-01', status: 'ISSUED', attn: 'PAK RUDI', sales: 'Johannes Iwan', valid_until: '2026-10-15', payment_term: 'COD', currency: 'IDR', ppn: 11,
+            createdBy: 'Johannes Iwan', party: {name: 'PAK RUDI LAWANG', code: '1130000001', lines: ['Jl. Argopuro no. 24', 'Lawang']},
+            notes: [['Catatan', 'Harga franco Malang. Toleransi jumlah ± 10%. Kirim 14 hari kerja setelah ACC proof.']],
+            rows: [{name: 'Box Kue Kering 250 gr', sub: 'Ivory 300 gsm · 4/0 · Laminasi Doff · 250 × 180 × 80 mm', qty: 10000, unit: 'PCS', inquiry_no: 'IQ26090067', price: 2450, subtotal: 24500000},
+                {name: 'Box Kue Kering 500 gr', sub: 'Ivory 350 gsm · 4/0 · Laminasi Doff · 300 × 220 × 90 mm', qty: 5000, unit: 'PCS', inquiry_no: 'IQ26090068', price: 3100, subtotal: 15500000}]},
+        more: [],
+    },
+    DeliveryOrder: {
+        data: {...PRINTED, number: 'DO26100008', date: '2026-10-08', status: 'CONFIRMED', do_type: 'REGULER', planned_date: '2026-10-09', tax: 'Non PPN', region: 'SIDOARJO', ppn: 0, createdBy: 'Ehaningtias', party: SJJ,
+            rows: [{name: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 8000, unit: 'PCS', co_no: '2602410', price_source: 'CO', price: 1800, subtotal: 14400000},
+                {name: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', qty: 3000, unit: 'PCS', co_no: '2602410', price_source: 'CO', price: 1800, subtotal: 5400000}]},
+        more: [],
+    },
+    ProofOfDelivery: {
+        data: {...PRINTED, number: '10262901', date: '2026-10-09', status: 'KEPT', promise: '09-Okt-2026 10:00', arrived_at: '09-Okt-2026 09:50', result: 'DITERIMA', received_by: 'Bpk. Hadi (Gudang)', contact: '0812-3567-289',
+            createdBy: 'Windayanti', party: SJJ,
+            rows: [{name: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 8000, unit: 'PCS', co_no: '2602410', received_qty: 8000, remark: 'Baik'},
+                {name: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', qty: 3000, unit: 'PCS', co_no: '2602410', received_qty: 3000, remark: 'Baik'}]},
+        more: [],
+    },
+    PurchaseQuotation: {
+        data: {...PRINTED, number: 'PQ2600014', date: '2026-10-01', status: 'CONFIRMED', pr_no: 'PR2600009', valid_until: '2026-10-10', payment_term: '30 hari', currency: 'IDR', lead_time: '7 hari', ppn: 11, createdBy: 'Eka',
+            party: {name: 'PT MAKMUR JAYA USAHA', lines: []},
+            rows: [{name: 'IVORY 300 79 X 109', qty: 40, unit: 'RIM', pr_line: '1', lead_days: 7, price: 1170000, subtotal: 46800000},
+                {name: 'HVS 58 GR RAINBOW 79 X 109 CM', qty: 200, unit: 'RIM', pr_line: '2', lead_days: 7, price: 449000, subtotal: 89800000},
+                {name: 'DUPLEX NONE COATED 260 GR 76 X 108 CM', qty: 25, unit: 'RIM', pr_line: '3', lead_days: 14, price: 898000, subtotal: 22450000}]},
+        more: [],
+    },
+    GoodsReceipt: {
+        data: {...PRINTED, number: 'SPB2600031', date: '2026-10-08', status: 'POSTED', receipt_type: 'Dari Supplier', po_no: 'PO26000001976', supplier_dn: 'SJ-0925/MJU', vehicle: 'L 9123 UX', warehouse: 'Gudang Bahan Baku',
+            createdBy: 'Yuna', party: {name: 'PT MAKMUR JAYA USAHA', lines: []},
+            notes: [['Catatan', '1 rim sobek di sisi luar, ditolak dan dibawa kembali oleh pengirim.']],
+            rows: [{name: 'DC 310 IKA DA GR 79 x 109 CM', qty: 23, unit: 'RIM', accepted: 22, rejected: 1, lot_no: 'R8-2610', remark: '1 rim sobek'}]},
+        more: [],
+    },
+    MaterialBooking: {
+        data: {...PRINTED, number: 'MB2600021', date: '2026-10-01', status: 'CONFIRMED', co_no: '2602410', co_date: '2026-09-30', calculated_at: '01-Okt-2026 14:05', confirmed_by: 'Tia', createdBy: 'Tia', party: SJJ,
+            rows: [{name: 'IVORY 300 79 X 109', sub: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 40, unit: 'RIM', need_date: '2026-10-05', covered_by: 'Stok 25 + PO 1976', short: 0, coverage: 'Covered'},
+                {name: 'INK OFFSET CYAN', sub: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 12, unit: 'KG', need_date: '2026-10-05', covered_by: 'Stok', short: 0, coverage: 'Covered'},
+                {name: 'ANIMAL GLUE', sub: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', qty: 30, unit: 'KG', need_date: '2026-10-06', covered_by: 'PR2600009', short: 30, coverage: 'Waiting'}]},
+        more: [],
+    },
+    MaintenanceRequest: {
+        data: {...PRINTED, number: 'MR2600017', date: '2026-10-01', status: 'ACCEPTED', machine: 'OFS-01 · Offset 4 warna', kind: 'BREAKDOWN', priority: 'HIGH', stopped: 'Ya, sejak 01-Okt-2026 08:15', reported_by: 'Operator shift 1',
+            wo_no: 'MWO2600012', createdBy: 'Johannes Iwan', party: {name: 'ACCEPTED', lines: ['Teknisi: Agus', 'Rencana mulai: 01-Okt-2026 09:00']},
+            rows: [{name: 'Unit 2 berbunyi keras saat cetak, hasil cetak bergaris', component: 'Roll air unit 2'},
+                {name: 'Feeder sering menarik dua lembar', component: 'Feeder'}]},
+        more: [],
+    },
+    MaintenanceWorkOrder: {
+        data: {...PRINTED, number: 'MWO2600012', date: '2026-10-01', status: 'IN PROGRESS', machine: 'OFS-01 · Offset 4 warna', wo_type: 'CORRECTIVE', priority: 'HIGH', technician: 'Agus', planned: '01-Okt-2026 09:00 – 12:00',
+            machine_stop: 'Ya, downtime dicatat', createdBy: 'Johannes Iwan', party: {name: 'MR2600017', lines: ['Unit 2 berbunyi keras, hasil cetak bergaris']},
+            notes: [['Spare part', 'Bearing 6205 × 2 PCS · V-belt A-52 × 1 PCS'], ['Masalah / Sebab / Tindakan', '........................................................................................']],
+            rows: [{name: 'Periksa bearing roll air unit 2', kind: 'CHECK'},
+                {name: 'Ukur celah roll air terhadap plate', kind: 'MEASURE', range: '0,20 – 0,30 mm'},
+                {name: 'Ganti bearing bila aus', kind: 'REPLACE'},
+                {name: 'Uji cetak 50 lembar', kind: 'TEST'}]},
+        more: [],
+    },
+    PettyCash: {
+        data: {...PRINTED, number: 'PC2610-0042', date: '2026-10-01', status: 'POSTED', tx_type: 'Settlement', fund: 'Kas Kecil Kantor', cash_po: 'CPO2600031', advance: 500000, journal: 'JV2610-0113', ppn: 0, createdBy: 'Eka',
+            party: {name: 'Yuna', lines: ['Toko: UD Sumber Rejeki, Malang']},
+            notes: [['Selisih', 'Uang muka 500.000,00 dikurangi nota 318.000,00 = kembali ke kas 182.000,00']],
+            rows: [{name: 'Lakban coklat 2 inci', qty: 24, unit: 'PCS', code: 'ATK-014', receipt_no: '0921', price: 9500, subtotal: 228000},
+                {name: 'Tali rafia', qty: 5, unit: 'ROL', code: 'ATK-022', receipt_no: '0921', price: 18000, subtotal: 90000}]},
+        more: [],
+    },
+});

@@ -51,6 +51,7 @@ class PrintDoc {
     static nameLabel = 'NAMA BARANG';
     static extra = [];                  // kolom zona varian: {key, label, width(mm), type: text|date|money|int|html (html = sudah berupa HTML aman), hand?}
     static priced = false;              // true = kolom harga + kotak total rupiah + terbilang
+    static qtyCols = true;              // false = tanpa kolom JUMLAH / SATUAN (dokumen tanpa jumlah barang); zona varian + 36 mm
     static receivers = [];              // tanda tangan pihak luar / penerima, paling kiri: [peran, keterangan]
     static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat
     static internalLabels = ['Mengetahui', 'Menyetujui', 'Pembuat'];    // judul slot yang sama; diganti jabatan bila perlu (CPDEL)
@@ -65,7 +66,7 @@ class PrintDoc {
     constructor(data) {
         this.d = data;
         this.f = this.constructor;
-        const w = this.f.extra.reduce((t, c) => t + c.width, 0), must = PrintDoc.EXTRA_WIDTH[this.f.priced ? 'priced' : 'plain'];
+        const w = this.f.extra.reduce((t, c) => t + c.width, 0), must = PrintDoc.EXTRA_WIDTH[this.f.priced ? 'priced' : 'plain'] + (this.f.qtyCols ? 0 : 36);
         if (w !== must) throw new Error(`${this.f.name}: lebar kolom varian ${w} mm, harus ${must} mm`);
         this.cols = [...this.f.extra, ...(this.f.priced ? PrintDoc.PRICE_COLS : [])];
     }
@@ -109,8 +110,8 @@ class PrintDoc {
     }
 
     table() {
-        const x = this.cols, n = this.f.rows[this.paper], cls = c => c.type === 'money' || c.type === 'int' ? 'num' : c.hand ? 'hd' : c.wrap ? 'wr' : '';
-        const head = `<th></th><th>${this.f.nameLabel}</th><th class="num">JUMLAH</th><th>SATUAN</th>` + x.map(c => `<th class="${cls(c)}">${c.label}</th>`).join('');
+        const x = this.cols, n = this.f.rows[this.paper], q = this.f.qtyCols, cls = c => c.type === 'money' || c.type === 'int' ? 'num' : c.hand ? 'hd' : c.wrap ? 'wr' : '';
+        const head = `<th></th><th>${this.f.nameLabel}</th>${q ? '<th class="num">JUMLAH</th><th>SATUAN</th>' : ''}` + x.map(c => `<th class="${cls(c)}">${c.label}</th>`).join('');
         const cell = (c, r) => { const v = r[c.key] == null || r[c.key] === '' ? '' : this.val(c, r); return `<td class="${cls(c)}" data-c="${c.key}">${c.wrap ? `<div class="w2">${v}</div>` : v}</td>`; };
         const body = Array.from({length: n}, (_, i) => {
             const r = this.d.rows[i];
@@ -118,10 +119,10 @@ class PrintDoc {
             // `sub2` = baris ketiga (hanya untuk dokumen berbaris tinggi, mis. Jadwal Kirim).
             return `<tr${r?.cls ? ` class="${r.cls}"` : ''}><td class="no">${i + 1}.</td>` + (r
                 ? `<td class="nm ${r.sub ? 'two' : ''}"><div class="n1">${esc(r.name)}</div>${r.sub ? `<div class="n2">${esc(r.sub)}</div>` : ''}${r.sub2 ? `<div class="n3">${esc(r.sub2)}</div>` : ''}</td>
-                   <td class="num">${r.qty == null ? '' : Fmt.num(r.qty)}</td><td>${esc(r.unit)}</td>` + x.map(c => cell(c, r)).join('')
-                : '<td></td>'.repeat(3 + x.length)) + '</tr>';
+                   ${q ? `<td class="num">${r.qty == null ? '' : Fmt.num(r.qty)}</td><td>${esc(r.unit)}</td>` : ''}` + x.map(c => cell(c, r)).join('')
+                : '<td></td>'.repeat((q ? 3 : 1) + x.length)) + '</tr>';
         }).join('');
-        return `<table class="items"><colgroup><col style="width:7mm"><col><col style="width:21mm"><col style="width:15mm">${x.map(c => `<col style="width:${c.width}mm">`).join('')}</colgroup>
+        return `<table class="items"><colgroup><col style="width:7mm"><col>${q ? '<col style="width:21mm"><col style="width:15mm">' : ''}${x.map(c => `<col style="width:${c.width}mm">`).join('')}</colgroup>
             <thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
     }
 

@@ -19,7 +19,10 @@ $jobs = @(
     @('purchase_order_a5', 'PurchaseOrder', '', 1210), @('purchase_order_a5_deviasi', 'PurchaseOrder', '&dev=1', 1720),
     @('jadwal_kirim_a5', 'JadwalKirim', '', 1210), @('jadwal_kirim_a5_deviasi', 'JadwalKirim', '&dev=1', 1640), @('jadwal_kirim_a4', 'JadwalKirim', '&case=a4', 2336),
     @('inquiry_a5', 'Inquiry', '', 1210), @('purchase_requisition_a5', 'PurchaseRequisition', '', 1210),
-    @('purchase_requisition_nonprod_a5', 'PurchaseRequisition', '&case=nonprod', 1210))
+    @('purchase_requisition_nonprod_a5', 'PurchaseRequisition', '&case=nonprod', 1210),
+    @('quotation_a5', 'Quotation', '', 1210), @('delivery_order_a5', 'DeliveryOrder', '', 1210), @('proof_of_delivery_a5', 'ProofOfDelivery', '', 1210),
+    @('purchase_quotation_a5', 'PurchaseQuotation', '', 1210), @('goods_receipt_a5', 'GoodsReceipt', '', 1210), @('material_booking_a5', 'MaterialBooking', '', 1210),
+    @('maintenance_request_a5', 'MaintenanceRequest', '', 1210), @('maintenance_wo_a5', 'MaintenanceWorkOrder', '', 1210), @('petty_cash_a5', 'PettyCash', '', 1210))
 
 foreach ($j in $jobs) {
     if ($Only -and $j[1] -ne $Only) { continue }
