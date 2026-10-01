@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Concerns\FinanceScreen;
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Models\Acc\FinAccount;
 use App\Models\Acc\FinCostCenter;
 use App\Models\Acc\FinJournal;
@@ -18,6 +19,7 @@ use Livewire\Component;
 new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
 {
     use FinanceScreen;
+    use OpensFromQuery;
 
     private const KINDS = ['MANUAL' => 'Manual Journal', 'ACCRUAL' => 'Accrual Journal', 'RECURRING' => 'Recurring Journal', 'ADJUSTMENT' => 'Adjustment Journal', 'REVERSAL' => 'Reversing Journal', 'OPENING' => 'Opening Balance', 'CLOSING' => 'Year-end Closing'];
 
@@ -160,6 +162,12 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
         $this->jv_kind = 'RECURRING';
         $this->jv_desc = (string) $v->description;
         $this->lines = $v->lines->map(fn ($l) => ['account_id' => $l->account_id, 'debit' => (float) $l->debit ?: '', 'credit' => (float) $l->credit ?: '', 'cc_id' => $l->cc_id ?: '', 'narration' => (string) $l->narration])->all();
+    }
+
+    // Dibuka dari grid v2 (?open={id}): langsung ke tampilan jurnal itu; ?new=1 = jurnal baru (openNew).
+    protected function openFromQuery(int $id): void
+    {
+        $this->openView($id);
     }
 
     public function openView(int $id): void
