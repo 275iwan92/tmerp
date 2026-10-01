@@ -78,7 +78,7 @@ final class DemoData
         $d = fn (int $off, ?string $t = null) => date('Y-m-d', strtotime("$off days")).($t ? ' '.$t : '');
 
         return [
-            ['id' => 1, 'title' => 'Rapat produksi mingguan', 'start' => $d(0, '08:00'), 'end' => $d(0, '09:00'), 'tone' => 'accent', 'desc' => 'Review jadwal cetak & kendala mesin.'],
+            ['id' => 1, 'title' => 'Weekly production meeting', 'start' => $d(0, '08:00'), 'end' => $d(0, '09:00'), 'tone' => 'accent', 'desc' => 'Review jadwal cetak & kendala mesin.'],
             ['id' => 2, 'title' => 'Kunjungan customer PT Contoh Kertas', 'start' => $d(0, '10:00'), 'end' => $d(0, '11:30'), 'tone' => 'success'],
             ['id' => 3, 'title' => 'Proof fisik CO-2609-0031', 'start' => $d(0, '10:30'), 'end' => $d(0, '12:00'), 'tone' => 'warn', 'desc' => 'Approval warna oleh customer.'],
             ['id' => 4, 'title' => 'Maintenance KOMORI 1', 'start' => $d(1, '13:00'), 'end' => $d(1, '17:00'), 'tone' => 'danger'],

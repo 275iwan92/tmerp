@@ -46,7 +46,7 @@
             </x-dl::form.row>
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="cash_mode" label="Cash PO Mode" :options="PurchaseOrder::CASH_MODES" value="ADVANCE" :source="Src::of('tm2pur.po_order.i_cash_mode')" />
-                <x-dl::field.text name="shop_name" label="Shop Name (Cash PO)" placeholder="e.g. Toko Sumber Rejeki" :source="Src::of('tm2pur.po_order.i_shop_name')" />
+                <x-dl::field.text name="shop_name" label="Shop Name (Cash PO)" placeholder="e.g. Toko Maju Jaya" :source="Src::of('tm2pur.po_order.i_shop_name')" />
             </x-dl::form.row>
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
@@ -97,11 +97,11 @@
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
-                <x-dl::field.select name="i_po_type" label="Tipe PO" :options="['LOCAL' => 'Local', 'IMPORT' => 'Import']" :value="$po->i_po_type" :source="Src::of('tm2pur.po_order.i_po_type')" />
+                <x-dl::field.select name="i_po_type" label="PO Type" :options="['LOCAL' => 'Local', 'IMPORT' => 'Import']" :value="$po->i_po_type" :source="Src::of('tm2pur.po_order.i_po_type')" />
                 @if ($cash)
                     <x-dl::field.display label="Procurement Type" value="Cash (Petty Cash)" :source="Src::of('tm2pur.po_order.i_procure_type = CASH')" />
                 @else
-                    <x-dl::field.select name="i_procure_type" label="Tipe Pengadaan" :options="['REPEAT' => 'Repeat (rutin)', 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" :value="$po->i_procure_type" :source="Src::of('tm2pur.po_order.i_procure_type')" />
+                    <x-dl::field.select name="i_procure_type" label="Procurement Type" :options="['REPEAT' => 'Repeat (rutin)', 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" :value="$po->i_procure_type" :source="Src::of('tm2pur.po_order.i_procure_type')" />
                 @endif
                 <x-dl::field.display label="Revision no." :value="(string) ($po->revision_no ?? 0)" :source="Src::of('tm2pur.po_order.revision_no')" />
                 <x-dl::field.display label="Sent to supplier" :value="\Devlib\Locale::dt($po->sent_at) ?? '—'" :source="Src::of('tm2pur.po_order.sent_at')" />

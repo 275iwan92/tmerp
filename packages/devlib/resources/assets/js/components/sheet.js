@@ -265,12 +265,12 @@
         body: JSON.stringify({changed})})
         .then(res => res.json().then(j => ({ok: res.ok, j})))
         .then(({ok, j}) => {
-          if (!ok || j.error) return toast(j.error || j.message || 'Gagal menyimpan.', 'danger');
+          if (!ok || j.error) return toast(j.error || j.message || T('s_save_failed'), 'danger');
           this.data = j.rows; this.orig = new Map(this.data.map(r => [String(r[this.cfg.rowKey]), {...r}])); this.undo.length = 0; this.redo.length = 0;
           this.el.dispatchEvent(new CustomEvent('dl:sheet-save', {bubbles: true, detail: {rows: this.data.map(r => ({...r})), changed}}));
           toast(Tf('s_saved', {n: changed.length}), 'success'); this.render();
         })
-        .catch(() => toast('Gagal menyimpan.', 'danger'));
+        .catch(() => toast(T('s_save_failed'), 'danger'));
     }
 
     changes() {

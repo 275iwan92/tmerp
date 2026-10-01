@@ -271,9 +271,9 @@
                     ['key' => 'c_qty_accepted', 'label' => t('Qty Received (Partial)'), 'type' => 'number', 'more' => true],
                     ['key' => 'c_qty_rejected', 'label' => t('Qty Rejected (Partial)'), 'type' => 'number', 'more' => true],
                     ['key' => 'variance', 'label' => 'Selisih vs PO', 'type' => 'display', 'more' => true],
-                    ['key' => 'tol_override_reason', 'label' => 'Alasan Override Toleransi', 'more' => true],
+                    ['key' => 'tol_override_reason', 'label' => 'Tolerance Override Reason', 'more' => true],
                     ['key' => 'i_lot_no', 'label' => 'No. Lot', 'more' => true],
-                    ['key' => 'i_location_code', 'label' => 'Lokasi Rak', 'more' => true],
+                    ['key' => 'i_location_code', 'label' => 'Rack Location', 'more' => true],
                     ['key' => 'value', 'label' => t('Received Value'), 'type' => 'display', 'more' => true],
                     ['key' => 'code', 'label' => t('Item Code'), 'type' => 'display', 'more' => true],
                 ]">

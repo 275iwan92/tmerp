@@ -76,8 +76,8 @@ class Sheet extends DevlibComponent
                     <x-dl::button preset="save" size="sm" label="Save All" data-s-save />
                 </div>
                 @endif
-                <div class="dl-sheet__wrap" tabindex="0" data-s-wrap aria-label="Lembar kerja"><table class="dl-sheet__table" data-s-table></table></div>
-                @unless ($lookup)<p class="dl-sheet__help">Ketik langsung untuk mengisi · Enter/F2 edit · Tab/panah pindah · Shift/drag pilih rentang · Ctrl+C / Ctrl+V dengan Excel · tarik kotak kecil di pojok seleksi untuk mengisi ke bawah · Ctrl+Z undo</p>@endunless
+                <div class="dl-sheet__wrap" tabindex="0" data-s-wrap aria-label="{{ \Devlib\Lang::t('s_worksheet') }}"><table class="dl-sheet__table" data-s-table></table></div>
+                @unless ($lookup)<p class="dl-sheet__help">{{ \Devlib\Lang::t('s_help') }}</p>@endunless
             </div>
             BLADE;
     }

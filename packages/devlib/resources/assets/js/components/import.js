@@ -29,7 +29,7 @@
           if (miss.length) { toast(Tf('i_unmapped', {cols: miss.map(c => c.label).join(', ')}), 'danger'); return; }
           this.validate(); this.drawPreview(); this.step(3);
         }
-        if (x.closest('[data-i-failed]')) downloadCsv(this.cfg.template + '-gagal.csv', [[...this.file.head, 'Alasan'], ...this.result.filter(r => !r.ok).map(r => [...r.raw, Object.entries(r.err).map(([k, v]) => `${this.cols.find(c => c.key === k).label}: ${v}`).join('; ')])]);
+        if (x.closest('[data-i-failed]')) downloadCsv(this.cfg.template + '-failed.csv', [[...this.file.head, T('cf_reason')], ...this.result.filter(r => !r.ok).map(r => [...r.raw, Object.entries(r.err).map(([k, v]) => `${this.cols.find(c => c.key === k).label}: ${v}`).join('; ')])]);
         if (x.closest('[data-i-go]')) {
           const good = this.result.filter(r => r.ok).map(r => r.out), failed = this.result.length - good.length;
           confirmBox({message: failed ? Tf('i_ask_import_skip', {n: good.length, bad: failed}) : Tf('i_ask_import', {n: good.length}), tone: 'warn'}).then(ok => {

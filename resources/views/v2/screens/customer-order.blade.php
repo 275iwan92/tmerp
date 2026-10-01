@@ -30,7 +30,7 @@
             ['key' => 'mode', 'label' => 'Jalur', 'type' => 'badge', 'tones' => CustomerOrder::MODE_TONES],
             ['key' => 'quotation', 'label' => 'Quotation'],
             ['key' => 'po', 'label' => 'No. PO customer'],
-            ['key' => 'due', 'label' => 'Due date terdekat', 'type' => 'date'],
+            ['key' => 'due', 'label' => 'Nearest Due Date', 'type' => 'date'],
             ['key' => 'total', 'label' => t('Total due'), 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => CustomerOrder::STATUS_TONES],
         ]"
@@ -201,7 +201,7 @@
             <x-dl::lines name="items" title="Details" key-field="id_item" remove-field="remove" row-lock="editable" :addable="false" :duplicable="false" :min-rows="0" :rows="$lines" :readonly="! $draft"
                 source="{{ Src::of('tm2sdi.co_order_item') }}"
                 :columns="[
-                    ['key' => 'description', 'label' => 'Produk / Jasa', 'readonlyUnless' => 'editable', 'width' => '320px'],
+                    ['key' => 'description', 'label' => 'Product / Service', 'readonlyUnless' => 'editable', 'width' => '320px'],
                     ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'readonlyUnless' => 'editable', 'sum' => true, 'width' => '110px'],
                     ['key' => 'qty_unit', 'label' => t('Unit'), 'type' => 'display', 'width' => '80px'],
                     ['key' => 'unit_price', 'label' => t('Price'), 'type' => 'money', 'readonlyUnless' => 'editable', 'width' => '120px'],
@@ -218,7 +218,7 @@
                 @if ($draft)
                     <x-slot:tools>
                         <x-dl::field.lookup name="product_id" lookup="product" :params="['customer_id' => $o->customer_id]" label="+ Product from Master Product" placeholder="Type at least 2 letters of the product name / code / design no...." :source="Src::of('tm2mst.prod_product')" />
-                        <x-dl::button size="sm" variant="secondary" label="+ Produk" type="submit" name="action" value="add_product" formnovalidate />
+                        <x-dl::button size="sm" variant="secondary" label="+ Product" type="submit" name="action" value="add_product" formnovalidate />
                         <x-dl::button size="sm" variant="secondary" label="+ Jasa" type="submit" name="action" value="add_service" formnovalidate />
                     </x-slot:tools>
                 @endif

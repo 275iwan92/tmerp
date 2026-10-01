@@ -26,7 +26,7 @@
           const perms = Object.fromEntries(this.OBJ.map(o => [o.key, this.get(this.work, this.gSel.value, o.key)]));
           Object.keys(this.work).forEach(g => { this.saved[g] = {...(this.saved[g] || {}), ...this.work[g]}; });
           this.el.dispatchEvent(new CustomEvent('dl:permissions-save', {bubbles: true, detail: {group: this.gSel.value, perms, all: this.work}}));
-          toast('Hak akses grup disimpan.', 'success'); this.draw();
+          toast(T('pmx_saved'), 'success'); this.draw();
         }
       });
       this.draw();

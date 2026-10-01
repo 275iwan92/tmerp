@@ -24,7 +24,13 @@ final class Dictionary
         'jalan', 'bayar', 'biaya', 'baris', 'kolom', 'halaman', 'aktif', 'nonaktif', 'sisa', 'diskon', 'pajak', 'tagihan', 'dibuat', 'diubah',
         'disetujui', 'ditolak', 'menunggu', 'dikirim', 'diterima', 'kode', 'nomor', 'tgl', 'rencana', 'jenis', 'kategori', 'pemasok', 'karyawan',
         'jabatan', 'bagian', 'lembur', 'cuti', 'gaji', 'potongan', 'tunjangan', 'masuk', 'keluar', 'awal', 'akhir', 'sampai', 'hingga', 'ada',
-        'bisa', 'harus', 'wajib', 'perlu', 'sebelum', 'sesudah', 'setelah', 'saat', 'dalam', 'luar', 'atas', 'bawah', 'kiri', 'kanan'];
+        'bisa', 'harus', 'wajib', 'perlu', 'sebelum', 'sesudah', 'setelah', 'saat', 'dalam', 'luar', 'atas', 'bawah', 'kiri', 'kanan',
+        // Tambahan 2026-10-02: kata yang lolos di label grid v2 (Departemen, Mata Uang, Tipe Produk, Mingguan, ...).
+        'departemen', 'periode', 'penerima', 'terkirim', 'nilai', 'uang', 'tipe', 'produk', 'induk', 'grup', 'industri', 'alasan', 'hasil', 'sumber',
+        'tahap', 'lokasi', 'merek', 'pabrikan', 'peran', 'posisi', 'revisi', 'tekanan', 'telat', 'terlambat', 'termin', 'tunai', 'mingguan', 'bulanan',
+        'anomali', 'berjalan', 'berlaku', 'diajukan', 'diblokir', 'dikerjakan', 'dokumen', 'foto', 'gramatur', 'hadir', 'jarak', 'kelas', 'kontak',
+        'lembar', 'pisau', 'potong', 'pulang', 'saldo', 'setelan', 'subkon', 'penggerak', 'penunjang', 'terdekat', 'rekening', 'menang', 'kalah',
+        'lokal', 'prospek', 'produksi', 'bekerja', 'dirumahkan', 'sakit', 'izin', 'ya', 'judul', 'pegawai', 'kosong', 'gagal', 'berhasil'];
 
     private static array $cache = [];
 

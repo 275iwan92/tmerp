@@ -40,7 +40,7 @@
     <form method="post" action="{{ route('v2.pr.create') }}">
         @csrf
         <x-dl::card title="+ New Record — Purchase Requisition" description="Choose the requesting department. The PR number is created on Confirm (submitted).">
-            <x-dl::field.select name="department_id" label="Departemen" required :options="PurchaseRequisition::departments()" :source="Src::of('tm2mst.org_department')" />
+            <x-dl::field.select name="department_id" label="Department" required :options="PurchaseRequisition::departments()" :source="Src::of('tm2mst.org_department')" />
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                 <x-dl::button preset="save" label="Buat PR" />
@@ -78,13 +78,13 @@
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>No. PR</span><b>{{ $pr->doc_no ?: '(saat Confirm)' }}</b></div>
             <x-dl::field.date name="i_doc_date" label="PR Date" :value="$pr->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pr_requisition.i_doc_date')" />
-            <x-dl::field.select name="i_department_id" label="Departemen" required :options="PurchaseRequisition::departments()" :value="$pr->i_department_id" :source="Src::of('tm2mst.org_department')" />
+            <x-dl::field.select name="i_department_id" label="Department" required :options="PurchaseRequisition::departments()" :value="$pr->i_department_id" :source="Src::of('tm2mst.org_department')" />
             <div class="dl-strip__kv dl-strip__grand"><span>Est. Total</span><b data-l-val="lines:grand">{{ $money($pr->c_est_total) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
                 <x-dl::field.date name="i_need_date" label="Required Date" :value="$pr->i_need_date?->toDateString()" :source="Src::of('tm2pur.pr_requisition.i_need_date')" />
-                <x-dl::field.display label="Sumber" :value="$pr->i_source ?? 'MANUAL'" :source="Src::of('tm2pur.pr_requisition.i_source')" />
+                <x-dl::field.display label="Source" :value="$pr->i_source ?? 'MANUAL'" :source="Src::of('tm2pur.pr_requisition.i_source')" />
                 <x-dl::field.display label="Revision no." :value="(string) ($pr->revision_no ?? 0)" :source="Src::of('tm2pur.pr_requisition.revision_no')" />
             </x-dl::form.row>
         </x-slot:general>
@@ -102,7 +102,7 @@
                     ['key' => 'i_need_date', 'label' => t('Need Date'), 'type' => 'date', 'width' => '150px'],
                     ['key' => 'subtotal', 'label' => 'Est. Subtotal', 'type' => 'money', 'formula' => 'i_qty * i_est_price', 'sum' => true, 'width' => '140px'],
                     ['key' => 'code', 'label' => t('Item Code'), 'type' => 'display', 'more' => true],
-                    ['key' => 'source', 'label' => 'Sumber Item', 'type' => 'display', 'more' => true],
+                    ['key' => 'source', 'label' => 'Item Source', 'type' => 'display', 'more' => true],
                     ['key' => 'stock', 'label' => t('Type'), 'type' => 'display', 'more' => true],
                     ['key' => 'ordered', 'label' => t('Qty already on PO'), 'type' => 'display', 'more' => true],
                     ['key' => 'i_notes', 'label' => t('Line Notes'), 'more' => true],

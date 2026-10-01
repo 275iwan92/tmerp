@@ -84,8 +84,8 @@
         <x-dl::card title="Customer & new order">
             <x-dl::form.row cols="3">
                 <x-dl::field.display label="Customer" :value="$doc['customer']" :source="Src::of('tm2mst.prod_product.customer_id')" />
-                <x-dl::field.display label="Kontak (attn)" :value="$lastQuote?->attn_contact ?? '—'" :source="Src::of('tm2sdi.quo_quotation.attn_contact').' (quotation terakhir)'" />
-                <x-dl::field.display label="Sales PIC · Termin" :value="($lastQuote?->sales_pic ?? '—').' · '.($lastQuote?->payment_term ?? '—')" :source="Src::of('tm2sdi.quo_quotation.sales_pic', 'payment_term')" />
+                <x-dl::field.display label="Contact (attn)" :value="$lastQuote?->attn_contact ?? '—'" :source="Src::of('tm2sdi.quo_quotation.attn_contact').' (quotation terakhir)'" />
+                <x-dl::field.display label="Sales PIC · Payment Term" :value="($lastQuote?->sales_pic ?? '—').' · '.($lastQuote?->payment_term ?? '—')" :source="Src::of('tm2sdi.quo_quotation.sales_pic', 'payment_term')" />
             </x-dl::form.row>
             <x-dl::form.row cols="3">
                 <x-dl::field.decimal name="qty" label="New order qty (pcs)" required :value="old('qty', $inq ? rtrim(rtrim((string) $inq->tiers->firstWhere('is_primary', true)?->qty, '0'), '.') : ($orders[0]['qty'] ?? ''))" :disabled="$locked" :source="Src::of('tm2sdi.iqp_tier.qty').' (tier utama)'" />
@@ -135,7 +135,7 @@
             <form method="post" action="{{ route('v2.derived.cancel', $inq->id_inquiry) }}">
                 @csrf
                 <x-dl::field.text name="cancel_reason" label="Cancellation reason" required />
-                <x-dl::action-bar><x-dl::button preset="save" label="Cancel dokumen" variant="danger" /></x-dl::action-bar>
+                <x-dl::action-bar><x-dl::button preset="save" label="Cancel document" variant="danger" /></x-dl::action-bar>
             </form>
         </x-dl::modal>
     @endif

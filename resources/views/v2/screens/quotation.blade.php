@@ -28,7 +28,7 @@
         :columns="[
             ['key' => 'no', 'label' => 'Quotation No. / Customer', 'type' => 'doc', 'party' => 'customer'],
             ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'valid', 'label' => 'Berlaku s/d', 'type' => 'date', 'visible' => false],
+            ['key' => 'valid', 'label' => 'Valid Until', 'type' => 'date', 'visible' => false],
             ['key' => 'sales', 'label' => 'Sales PIC'],
             ['key' => 'total', 'label' => 'Grand total', 'type' => 'money', 'sum' => true],
             ['key' => 'followups', 'label' => 'Follow-up', 'type' => 'number', 'visible' => false],
@@ -140,13 +140,13 @@
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">
-                <x-dl::field.select name="attn_contact" label="Attn (kontak)" :options="$c->contactOptions()" :value="old('attn_contact', $q->attn_contact)" :source="Src::of('tm2mst.cust_customer_contact', 'tm2sdi.quo_quotation.attn_contact')" />
+                <x-dl::field.select name="attn_contact" label="Attn (contact)" :options="$c->contactOptions()" :value="old('attn_contact', $q->attn_contact)" :source="Src::of('tm2mst.cust_customer_contact', 'tm2sdi.quo_quotation.attn_contact')" />
                 <x-dl::field.multi-select name="cc" label="CC" :options="collect($c->ccOptions())->pluck('label', 'value')->all()" :value="$q->ccs->pluck('contact_name')->all()" :source="Src::of('tm2sdi.quo_quotation_cc')" />
                 <x-dl::field.select name="sales_pic" label="Sales PIC" :options="$c->salesOptions()" :value="old('sales_pic', $q->sales_pic)" :source="Src::of('tm2mst.sales_person', 'tm2sdi.quo_quotation.sales_pic')" />
             </x-dl::form.row>
             <input type="hidden" name="cc_present" value="1">
             <x-dl::form.row :cols="3">
-                <x-dl::field.date name="valid_until" label="Berlaku s/d" :value="old('valid_until', $q->valid_until?->toDateString())" hint="Automatic +30 days" :source="Src::of('tm2sdi.quo_quotation.valid_until')" />
+                <x-dl::field.date name="valid_until" label="Valid Until" :value="old('valid_until', $q->valid_until?->toDateString())" hint="Automatic +30 days" :source="Src::of('tm2sdi.quo_quotation.valid_until')" />
                 <x-dl::field.date name="deadline_date" label="Deadline jawaban" :value="old('deadline_date', $q->deadline_date?->toDateString())" hint="Automatic +14 days" :source="Src::of('tm2sdi.quo_quotation.deadline_date')" />
             </x-dl::form.row>
         </x-slot:general>
@@ -220,7 +220,7 @@
             <form method="post" action="{{ route('v2.quotation.cancel', $q->id_quotation) }}">
                 @csrf
                 <x-dl::field.text name="cancel_reason" label="Cancellation reason" required />
-                <x-dl::action-bar><x-dl::button preset="save" label="Cancel dokumen" variant="danger" /></x-dl::action-bar>
+                <x-dl::action-bar><x-dl::button preset="save" label="Cancel document" variant="danger" /></x-dl::action-bar>
             </form>
         </x-dl::modal>
         <x-dl::modal id="quotation-lost" title="Close as LOST" icon="reject">
@@ -239,8 +239,8 @@
                 <x-dl::field.date name="act[activity_date]" label="Date" required :value="now()->toDateString()" />
             </x-dl::form.row>
             <x-dl::form.row cols="2">
-                <x-dl::field.select name="act[contact_person]" label="Kontak" :options="$c->contactOptions()" :value="$q->attn_contact" />
-                <x-dl::field.select name="act[result]" label="Hasil" :options="QuoActivity::RESULTS" />
+                <x-dl::field.select name="act[contact_person]" label="Contact" :options="$c->contactOptions()" :value="$q->attn_contact" />
+                <x-dl::field.select name="act[result]" label="Result" :options="QuoActivity::RESULTS" />
             </x-dl::form.row>
             <x-dl::field.text name="act[notes]" label="Notes" multiline />
             <x-dl::form.row cols="2">

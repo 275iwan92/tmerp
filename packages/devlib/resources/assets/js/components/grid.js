@@ -326,7 +326,7 @@
       if (badge) { badge.hidden = !n; badge.textContent = n; }
       this.q('[data-g-col-list]').innerHTML = this.cols.map(c => `<label class="dl-choice"><input type="checkbox" data-g-col="${esc(c.key)}" ${this.st.hidden.includes(c.key) ? '' : 'checked'}> ${esc(c.label)}</label>`).join('');
       const gl = this.q('[data-g-group-list]');
-      if (gl) gl.innerHTML = [['', 'Tanpa grup'], ...Object.entries(this.cfg.groups)].map(([k, l]) => `<label class="dl-choice"><input type="radio" name="g-${esc(this.cfg.id)}" value="${esc(k)}" data-g-group ${this.st.group === k ? 'checked' : ''}> ${esc(l)}</label>`).join('');
+      if (gl) gl.innerHTML = [['', T('g_no_group')], ...Object.entries(this.cfg.groups)].map(([k, l]) => `<label class="dl-choice"><input type="radio" name="g-${esc(this.cfg.id)}" value="${esc(k)}" data-g-group ${this.st.group === k ? 'checked' : ''}> ${esc(l)}</label>`).join('');
       this.qq('[data-g-density] .dl-segment__opt').forEach(b => b.classList.toggle('is-active', b.dataset.value === this.st.density));
       this.qq('[data-g-lines] .dl-segment__opt').forEach(b => b.classList.toggle('is-active', b.dataset.value === this.st.lines));
       const ln = this.q('[data-g-lines-n]'); if (ln) { ln.value = this.st.linesN; ln.disabled = this.st.lines === 'auto'; }

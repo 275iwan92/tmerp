@@ -71,7 +71,7 @@
             </x-dl::form.row>
             <x-dl::form.row cols="3">
                 <x-dl::field.display label="Finished size (L × W × H)" :value="collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : \Devlib\Locale::decimal($v, 2))->implode(' × ').' cm'" :source="Src::of('tm2mst.prod_product.cm_length', 'cm_width', 'cm_height')" />
-                <x-dl::field.display label="Induk (bila turunan revisi)" :value="$doc['parent']['label'] ?? '—'" :source="Src::of('tm2mst.prod_product.parent_product_id')" />
+                <x-dl::field.display label="Parent (when derived from a revision)" :value="$doc['parent']['label'] ?? '—'" :source="Src::of('tm2mst.prod_product.parent_product_id')" />
                 <x-dl::field.display label="Order terakhir" :value="$orders ? ($orders[0]['co'] ?? $orders[0]['quotation']).' · '.$num($orders[0]['qty']).' pcs · '.$orders[0]['date'] : '—'" :source="Src::of('tm2sdi.co_order_item.product_id')" />
             </x-dl::form.row>
             <x-dl::action-bar><x-dl::button preset="save" /></x-dl::action-bar>

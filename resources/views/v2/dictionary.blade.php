@@ -1,7 +1,7 @@
 @extends('v2.layout', ['title' => 'Data Dictionary', 'bodyClass' => 'dl-page-body'])
 @section('body')
     @php
-        $colDefs = [['key' => 'col', 'label' => t('Columns')], ['key' => 'type', 'label' => 'Tipe'], ['key' => 'null', 'label' => 'Null'], ['key' => 'key', 'label' => 'Key'], ['key' => 'fk', 'label' => t('FK to')], ['key' => 'comment', 'label' => t('Description')]];
+        $colDefs = [['key' => 'col', 'label' => t('Columns')], ['key' => 'type', 'label' => 'Type'], ['key' => 'null', 'label' => 'Null'], ['key' => 'key', 'label' => 'Key'], ['key' => 'fk', 'label' => t('FK to')], ['key' => 'comment', 'label' => t('Description')]];
     @endphp
     <div class="dl-cat">
         <x-dl::card title="Data Dictionary — MySQL tmerp (khusus developer)" icon="fa-database"
@@ -19,7 +19,7 @@
             <x-slot:cols>
                 <x-dl::grid id="dd-cols" :rows="$columns" row-key="id" :active-key="null" actions="none" :new-record="false" :per-page="50" search="Search column, table, type, description..."
                     :filters="['db' => 'Database', 'table' => 'Tabel', 'key' => 'Key']"
-                    :columns="[['key' => 'db', 'label' => 'Database'], ['key' => 'table', 'label' => 'Tabel'], ['key' => 'col', 'label' => t('Columns')], ['key' => 'type', 'label' => 'Tipe'], ['key' => 'null', 'label' => 'Null'], ['key' => 'key', 'label' => 'Key'], ['key' => 'fk', 'label' => t('FK to')], ['key' => 'comment', 'label' => t('Description')]]"
+                    :columns="[['key' => 'db', 'label' => 'Database'], ['key' => 'table', 'label' => 'Tabel'], ['key' => 'col', 'label' => t('Columns')], ['key' => 'type', 'label' => 'Type'], ['key' => 'null', 'label' => 'Null'], ['key' => 'key', 'label' => 'Key'], ['key' => 'fk', 'label' => t('FK to')], ['key' => 'comment', 'label' => t('Description')]]"
                     source="information_schema.COLUMNS (tm2*)" />
             </x-slot:cols>
             <x-slot:dup>
@@ -27,7 +27,7 @@
                 <x-dl::grid id="dd-dup" :rows="$duplicates" row-key="id" :active-key="null" actions="none" :new-record="false" :per-page="50" search="Search column name..."
                     :filters="['flag' => 'Indikasi']"
                     :columns="[['key' => 'flag', 'label' => 'Indikasi', 'type' => 'badge', 'tones' => ['Nama tidak baku' => 'danger', 'Sinonim' => 'violet', 'Tipe beda' => 'warn', 'Nama sama' => 'neutral']], ['key' => 'name', 'label' => t('Column (normalised)')], ['key' => 'count', 'label' => t('Amount'), 'type' => 'number'], ['key' => 'names', 'label' => t('Names used')], ['key' => 'types', 'label' => t('Types used')]]"
-                    :detail="['key' => 'where', 'title' => 'Letak', 'columns' => [['key' => 'at', 'label' => 'Database.Tabel'], ['key' => 'col', 'label' => t('Columns')], ['key' => 'type', 'label' => 'Tipe']]]"
+                    :detail="['key' => 'where', 'title' => 'Letak', 'columns' => [['key' => 'at', 'label' => 'Database.Tabel'], ['key' => 'col', 'label' => t('Columns')], ['key' => 'type', 'label' => 'Type']]]"
                     source="analisis App\Support\V2\Schema::duplicates()" />
             </x-slot:dup>
             <x-slot:copy>

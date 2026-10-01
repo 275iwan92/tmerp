@@ -312,7 +312,7 @@ window.Devlib = window.Devlib || {};
       const el = e.target.closest && e.target.closest('[data-dl]');
       const body = box.querySelector('[data-dev-body]');
       if (el) {
-        body.innerHTML = `<b>${esc(el.dataset.dl)}</b><br><span class="k">turunan:</span> ${esc(el.dataset.dlClass || '—')}<br><span class="k">sumber data:</span> ${esc(el.dataset.dlSrc || '—')}`;
+        body.innerHTML = `<b>${esc(el.dataset.dl)}</b><br><span class="k">${esc(T('dev_class'))}:</span> ${esc(el.dataset.dlClass || '—')}<br><span class="k">${esc(T('dev_source'))}:</span> ${esc(el.dataset.dlSrc || '—')}`;
       } else if (e.target.classList && e.target.classList.contains('dl-nolib')) {
         body.innerHTML = '<b>' + esc(T('dev_not_lib')) + '</b><br><span class="k">' + esc(T('dev_element')) + ':</span> &lt;' + esc(e.target.tagName.toLowerCase()) + '&gt;';
       }
@@ -371,12 +371,12 @@ window.Devlib = window.Devlib || {};
 
   // Modal konfirmasi library (pengganti window.confirm): Devlib.confirm({...}).then(ok => ...)
   // reason: true = kotak alasan WAJIB diisi; hasil Promise = teks alasan (atau false bila batal).
-  function confirmBox({title = 'Konfirmasi', message = 'Lanjutkan?', tone = 'warn', ok = 'Ya, lanjutkan', cancel = null, reason = false} = {}) {
+  function confirmBox({title = T('cf_title'), message = T('cf_message'), tone = 'warn', ok = T('cf_ok'), cancel = null, reason = false} = {}) {
     return new Promise(resolve => {
       const cancelLabel = cancel || 'Cancel';
       const icon = {danger: 'fa-trash-can', warn: 'fa-triangle-exclamation', success: 'fa-circle-check', info: 'fa-circle-info'}[tone] || 'fa-circle-question';
       const ov = document.createElement('div'); ov.className = 'dl-mov is-on dl-confirm';
-      ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="alertdialog" aria-modal="true"><div class="dl-confirm__body"><span class="dl-confirm__icon dl-confirm__icon--${tone}"><i class="fa-solid ${icon}"></i></span><div><h3>${esc(title)}</h3><p>${esc(message)}</p>${reason ? '<label class="dl-confirm__why"><span>Alasan <b class="dl-field__req">*</b></span><textarea rows="2" data-why></textarea><em data-why-err></em></label>' : ''}</div></div>`
+      ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="alertdialog" aria-modal="true"><div class="dl-confirm__body"><span class="dl-confirm__icon dl-confirm__icon--${tone}"><i class="fa-solid ${icon}"></i></span><div><h3>${esc(title)}</h3><p>${esc(message)}</p>${reason ? '<label class="dl-confirm__why"><span>' + esc(T('cf_reason')) + ' <b class="dl-field__req">*</b></span><textarea rows="2" data-why></textarea><em data-why-err></em></label>' : ''}</div></div>`
         + `<div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--secondary dl-btn--md" data-no>${esc(cancelLabel)}</button><button type="button" class="dl-btn dl-btn--${tone === 'danger' ? 'danger' : 'primary'} dl-btn--md" data-yes>${esc(ok)}</button></div></div>`;
       const done = v => { ov.remove(); document.removeEventListener('keydown', key); resolve(v); };
       const yes = () => { if (!reason) return done(true); const w = $(ov, '[data-why]').value.trim(); if (!w) { $(ov, '[data-why-err]').textContent = T('reason_required'); return $(ov, '[data-why]').focus(); } done(w); };

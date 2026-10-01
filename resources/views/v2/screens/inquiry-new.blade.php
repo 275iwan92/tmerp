@@ -37,7 +37,7 @@
             <x-dl::field.date name="inquiry_date" label="Date" required :value="$doc['inquiry_date'] ?? date('Y-m-d')" :source="$i('inquiry_date')" />
             <x-dl::field.date name="deadline_quotation" label="Customer Need Date" :value="$doc['deadline_quotation'] ?? date('Y-m-d', strtotime('+14 days'))" :source="$i('deadline_quotation')" />
             <x-dl::field.lookup name="pic_sales" label="PIC Sales" lookup="sales_person" :value="$doc['pic_sales'] ?? auth()->user()->name" :source="$i('pic_sales').' ← tm2mst.sales_person'" />
-            <x-dl::field.select name="source" label="Sumber" required :options="['EMAIL', 'WA', 'PHONE', 'VISIT', 'MARKETPLACE']" :value="$doc['source'] ?? 'EMAIL'" :source="$i('source')" />
+            <x-dl::field.select name="source" label="Source" required :options="['EMAIL', 'WA', 'PHONE', 'VISIT', 'MARKETPLACE']" :value="$doc['source'] ?? 'EMAIL'" :source="$i('source')" />
         </x-dl::form.row>
         <x-dl::form.row cols="3">
             <x-dl::field.lookup name="customer_id" label="Customer" lookup="customer" create required placeholder="Type to search, or scroll to pick…" :value="$doc['customer_id'] ?? null"
@@ -57,7 +57,7 @@
                 :source="Src::of('tm2mst.prod_market (detail) → Tipe Produk, tidak disimpan')" />
             <x-dl::field.select name="market_size" label="Standard Size" required placeholder="— choose a detail first —" :options="[]" disabled
                 :source="Src::of('tm2mst.prod_type_size (milik detail) → dimensi semua Part')" />
-            <x-dl::field.select name="type_code" label="Tipe Produk (dieline internasional)" placeholder="— choose a product type —" :value="$typeCode"
+            <x-dl::field.select name="type_code" label="Product Type (international dieline)" placeholder="— choose a product type —" :value="$typeCode"
                 :options="collect($types)->map(fn ($t) => $t['label'])->all()" hint="Automatic from Category Detail — this is the name searched on Pacdora. Custom: choose the closest dieline."
                 :source="Src::of('tm2sdi.iqp_part.part_type', 'tm2mst.prod_type.type_code')" />
         </x-dl::form.row>
@@ -98,7 +98,7 @@
         </div>
     </x-dl::card>
 
-    <x-dl::card title="Part & Dieline" description="dimensi produk & preview dieline live">
+    <x-dl::card title="Part & Dieline" description="product dimensions & live dieline preview">
         <div data-inq-parts>
             @foreach ($parts as $n => $part)
                 <x-mp::sales.inquiry-part :index="(string) $n" :part="$part + ['saved' => (bool) $doc]" :types="$types" :type-code="$typeCode" :finishing-types="$finishing" :material-chains="$chains" />

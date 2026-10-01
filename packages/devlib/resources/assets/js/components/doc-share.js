@@ -280,7 +280,7 @@
         f.append('with_link', on('with_link') ? 1 : 0);
         if (on('with_image') || on('with_pdf')) {
           const pages = ds.sheets().length ? await ds.sheetImages() : null, img = pages ? pages[0].img : await ds.jpeg();
-          if (on('with_image')) f.append('image', await (await fetch(img)).blob(), 'dokumen.jpg');
+          if (on('with_image')) f.append('image', await (await fetch(img)).blob(), 'document.jpg');
           if (on('with_pdf')) f.append('pdf', (pages ? await ds.sheetPdf(pages) : await ds.pdf(img)).output('blob'), this.fileName() + '.pdf');
         }
         const r = await this.post(this.cfg.endpoint.replace(/\/$/, '') + '/' + this.share.token + '/email', f);

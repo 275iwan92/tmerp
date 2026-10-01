@@ -33,7 +33,7 @@
             ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
             ['key' => 'unit', 'label' => 'Unit'],
         ]]"
-        :stats="[['label' => t('All')], ['label' => t('Ready to ship'), 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Terkirim', 'where' => ['status' => 'SHIPPED'], 'tone' => 'info']]"
+        :stats="[['label' => t('All')], ['label' => t('Ready to ship'), 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Shipped', 'where' => ['status' => 'SHIPPED'], 'tone' => 'info']]"
         :filters="['customer' => 'Customer', 'status' => 'Status']" />
 @else
     @php

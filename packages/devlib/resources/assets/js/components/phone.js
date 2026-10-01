@@ -45,7 +45,7 @@
       this.inp.value = applyMask(alts.find(m => len(m) >= dd.length) || alts[alts.length - 1], dd);
       this.hid.value = dd ? this.C[c].dial + dd : '';
       this.inp.placeholder = this.C[c].example[this.kind === 'landline' ? 'landline' : 'mobile'];
-      if (this.read) this.read.textContent = dd ? `Terbaca: ${this.C[c].dial} ${this.inp.value}` + (this.C[c].trunk ? ` · lokal 0${this.inp.value}` : '') + ` · ${this.C[c].name}${r ? ', ' + this.kindName(c, r) : ''}` : '';
+      if (this.read) this.read.textContent = dd ? `${T('ph_read')}: ${this.C[c].dial} ${this.inp.value}` + (this.C[c].trunk ? ` · ${T('ph_local')} 0${this.inp.value}` : '') + ` · ${this.C[c].name}${r ? ', ' + this.kindName(c, r) : ''}` : '';
       this.last = { d: dd, r };
     }
 

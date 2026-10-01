@@ -350,6 +350,15 @@ final class Lang
         'sc_help' => ['Bantuan & dukungan (pedoman + tiket)', 'Help & support (guide + tickets)'],
         'sc_dev' => ['Mode Developer nyala / mati (admin)', 'Developer Mode on / off (admin)'],
         'sc_list' => ['Tampilkan daftar pintasan ini', 'Show this list of shortcuts'],
+        // Toolbar Grid / Permission Matrix / Sheet: teks Blade yang dulu Indonesia mentah (2026-10-02).
+        'g_group' => ['Grup', 'Group'], 'g_cols_shown' => ['Kolom tampil', 'Columns shown'], 'g_group_by' => ['Kelompokkan menurut', 'Group by'],
+        'g_density' => ['Kerapatan', 'Density'], 'g_compact' => ['Rapat', 'Compact'], 'g_comfortable' => ['Longgar', 'Comfortable'],
+        'g_lines_per_cell' => ['Baris per sel', 'Lines per cell'], 'g_auto' => ['Otomatis', 'Automatic'], 'g_fixed' => ['Tetap', 'Fixed'],
+        'g_view_table' => ['Tampilan tabel', 'Table view'], 'g_view_cards' => ['Tampilan kartu', 'Card view'], 'g_selected' => ['dipilih', 'selected'],
+        's_worksheet' => ['Lembar kerja', 'Worksheet'],
+        's_help' => ['Ketik langsung untuk mengisi · Enter/F2 edit · Tab/panah pindah · Shift/drag pilih rentang · Ctrl+C / Ctrl+V dengan Excel · tarik kotak kecil di pojok seleksi untuk mengisi ke bawah · Ctrl+Z undo', 'Type to fill · Enter/F2 edit · Tab/arrows move · Shift/drag select a range · Ctrl+C / Ctrl+V with Excel · drag the small box at the selection corner to fill down · Ctrl+Z undo'],
+        'pmx_module' => ['Modul', 'Module'], 'pmx_all_modules' => ['Semua modul', 'All modules'], 'pmx_set_shown' => ['Set semua yang tampil', 'Set all shown'],
+        'pmx_object' => ['Objek', 'Object'], 'pmx_type' => ['Tipe', 'Type'], 'pmx_access' => ['Hak akses', 'Access'],
         // Dialog Email x-dl::doc-share: pemilih kontak + pesan yang dulu Indonesia mentah (2026-10-02).
         'ds_contacts' => ['Cari kontak', 'Find contact'],
         'ds_contacts_ph' => ['Nama, perusahaan atau e-mail (min. 2 huruf)', 'Name, company or e-mail (2 letters or more)'],
@@ -359,6 +368,18 @@ final class Lang
         'ds_print_failed' => ['Print gagal', 'Print failed'],
         'ds_email_failed' => ['Email gagal', 'Email failed'],
         'ds_failed' => ['Gagal', 'Failed'],
+        // Teks JS yang tertangkap setelah daftar kata penjaga diperluas (2026-10-02).
+        'dev_class' => ['turunan', 'class'],
+        'dev_source' => ['sumber data', 'data source'],
+        'cf_title' => ['Konfirmasi', 'Confirm'],
+        'cf_message' => ['Lanjutkan?', 'Continue?'],
+        'cf_ok' => ['Ya, lanjutkan', 'Yes, continue'],
+        'cf_reason' => ['Alasan', 'Reason'],
+        'g_no_group' => ['Tanpa grup', 'No group'],
+        'pmx_saved' => ['Hak akses grup disimpan.', 'Group access saved.'],
+        'ph_read' => ['Terbaca', 'Read as'],
+        'ph_local' => ['lokal', 'local'],
+        's_save_failed' => ['Gagal menyimpan.', 'Could not save.'],
         'print_unsaved' => ['Perubahan belum disimpan tidak ikut tercetak. Save dulu bila perlu.', 'Unsaved changes are not printed. Save first if needed.'],
     ];
 

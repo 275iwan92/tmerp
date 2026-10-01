@@ -68,8 +68,8 @@
                 :columns="[
                     ['key' => 'level', 'label' => 'Level', 'type' => 'display', 'width' => '80px'],
                     ['key' => 'position_id', 'label' => t('Approver position'), 'type' => 'select', 'options' => ApprovalSetting::positionOptions(), 'required' => true, 'width' => '360px'],
-                    ['key' => 'min_amount', 'label' => 'Berlaku bila nilai ≥', 'type' => 'money', 'width' => '150px'],
-                    ['key' => 'max_amount', 'label' => 's.d. nilai (kosong = tanpa batas)', 'type' => 'money', 'width' => '170px'],
+                    ['key' => 'min_amount', 'label' => 'Applies when value ≥', 'type' => 'money', 'width' => '150px'],
+                    ['key' => 'max_amount', 'label' => 'Up to value (empty = no limit)', 'type' => 'money', 'width' => '170px'],
                     ['key' => 'print_label', 'label' => t('Print label'), 'type' => 'select', 'options' => ApprovalSetting::PRINT_LABELS, 'width' => '140px'],
                     ['key' => 'plt', 'label' => t('Acting today'), 'type' => 'display', 'width' => '160px'],
                     ['key' => 'holder', 'label' => t('Position holder'), 'type' => 'display', 'more' => true],

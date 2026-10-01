@@ -40,10 +40,10 @@
             ['key' => 'customer', 'label' => 'Customer'],
             ['key' => 'part', 'label' => 'Part'],
             ['key' => 'dims', 'label' => 'Dimensi (P×L×T)'],
-            ['key' => 'type', 'label' => 'Tipe Produk'],
-            ['key' => 'knife', 'label' => 'Pisau / UP'],
+            ['key' => 'type', 'label' => 'Product Type'],
+            ['key' => 'knife', 'label' => 'Knife / UP'],
             ['key' => 'svg', 'label' => 'SVG Dieline', 'type' => 'badge', 'tones' => ['Ada' => 'success', 'Belum' => 'danger']],
-            ['key' => 'source', 'label' => 'Sumber'],
+            ['key' => 'source', 'label' => 'Source'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => MasterCardCollection::TONES],
             ['key' => 'updated', 'label' => t('Changed'), 'type' => 'date', 'visible' => false],
         ]"
@@ -129,7 +129,7 @@
                 <x-dl::field.text name="knife_code" label="Die Code" :value="old('knife_code', $c->knife_code)" :source="Src::of('tm2mst.prod_master_card.knife_code')" />
                 <x-dl::field.decimal name="knife_w" label="Die width (mm)" :value="old('knife_w', $mm($c->knife_w))" :source="Src::of('tm2mst.prod_master_card.knife_w')" />
                 <x-dl::field.decimal name="knife_h" label="Die height (mm)" :value="old('knife_h', $mm($c->knife_h))" :source="Src::of('tm2mst.prod_master_card.knife_h')" />
-                <x-dl::field.select name="type_code" label="Tipe Produk (dieline)" :options="MasterCardCollection::typeOptions()" :value="old('type_code', $c->type_code)" placeholder="— choose —"
+                <x-dl::field.select name="type_code" label="Product Type (dieline)" :options="MasterCardCollection::typeOptions()" :value="old('type_code', $c->type_code)" placeholder="— choose —"
                     hint="System suggestion; change it and Save = size recalculated from the die" :error="isset($missing['type_code']) ? 'belum dipilih' : null" :source="Src::of('tm2mst.prod_master_card.type_code', 'tm2mst.prod_type')" />
             </x-dl::form.row>
             @if ($check)
@@ -208,7 +208,7 @@
                     <x-dl::form.row cols="2">
                         @if (isset($need['design_no']))<x-dl::field.text name="design_no" label="No. Desain" required placeholder="mis. DS003xxx" :value="old('design_no')" hint="Empty on the card." />@endif
                         @if (isset($need['customer_id']))<x-dl::field.lookup name="customer_id" lookup="customer" label="Customer (master)" required placeholder="Search customer..." :hint="$c->customer_text ? 'Teks kartu: '.$c->customer_text : null" />@endif
-                        @if (isset($need['type_code']))<x-dl::field.select name="type_code" label="Tipe Produk (dieline)" required :options="MasterCardCollection::typeOptions()" placeholder="— choose —" />@endif
+                        @if (isset($need['type_code']))<x-dl::field.select name="type_code" label="Product Type (dieline)" required :options="MasterCardCollection::typeOptions()" placeholder="— choose —" />@endif
                         @foreach ($c->materials_json ?? [] as $i => $m)
                             @if (isset($need['materials.'.$i]))<x-dl::field.select :name="'materials['.$i.']'" :label="'Bahan #'.($i + 1).' (kategori master)'" required :options="$cats" placeholder="— choose —" :hint="'Teks kartu: '.$m['name'].' · '.($m['quality'] ?? '')" />@endif
                         @endforeach

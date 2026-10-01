@@ -73,7 +73,7 @@
             <h2 class="mp-bigname">{{ $doc['name'] }} <small class="mp-hint">→ Rev.{{ $doc['revision_no'] + 1 }}</small></h2>
             <p class="mp-hint">Induk: {{ $doc['code'] }} · No. Desain {{ $doc['design_no'] ?? '—' }} · {{ $doc['customer'] }} · inquiry asal {{ $source?->inquiry_no }}. Product induk tetap utuh.</p>
             <x-dl::form.row cols="3">
-                <x-dl::field.text name="revise_reason" label="Alasan revisi" required :value="old('revise_reason', $inq?->revise_reason)" placeholder="e.g. change the long-side artwork — customer request" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_reason')" />
+                <x-dl::field.text name="revise_reason" label="Revision reason" required :value="old('revise_reason', $inq?->revise_reason)" placeholder="e.g. change the long-side artwork — customer request" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_reason')" />
                 <x-dl::field.text name="design_number" label="New Design No." :value="old('design_number', $inq?->design_number ?? $doc['design_no'])" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.design_number')" />
             </x-dl::form.row>
             <div data-rv-scope><x-dl::field.checkboxes name="revise_scope" label="Revision scope (more than one allowed) — only the selected blocks can be changed" :options="InquiryDerivedWriter::SCOPES" :value="$scope" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_scope')" /></div>
@@ -159,11 +159,11 @@
 
     @if ($locked && ! $inq->stat_cancel)
         <x-dl::alert tone="info" message="Confirmed by Sales: this revision is now in Pro-Dev › Revise. After Pro-Dev confirms every part it moves to Pro-Cost › Revise, then back here ready for Quotation." />
-        <x-dl::modal id="revise-cancel" title="Cancel revisi" icon="cancel">
+        <x-dl::modal id="revise-cancel" title="Cancel revision" icon="cancel">
             <form method="post" action="{{ route('v2.derived.cancel', $inq->id_inquiry) }}">
                 @csrf
                 <x-dl::field.text name="cancel_reason" label="Cancellation reason" required />
-                <x-dl::action-bar><x-dl::button preset="save" label="Cancel dokumen" variant="danger" /></x-dl::action-bar>
+                <x-dl::action-bar><x-dl::button preset="save" label="Cancel document" variant="danger" /></x-dl::action-bar>
             </form>
         </x-dl::modal>
     @endif
