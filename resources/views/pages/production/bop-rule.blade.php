@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Models\Master\ProdProcess;
 use App\Services\ProDev\UsageRateEngine;
 use App\Models\Master\RefFinishingType;
@@ -16,6 +17,20 @@ use Livewire\Component;
 // Hanya admin (sec_user.is_admin) yang boleh mengubah; lainnya baca saja.
 new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    // Dibuka dari grid v2 (?open={id}).
+    protected function openFromQuery(int $id): void
+    {
+        $this->openForm($id);
+    }
+
+    // Dibuka dari grid v2 (+ New Record -> ?new=1).
+    protected function newFromQuery(): void
+    {
+        $this->openForm();
+    }
+
     private const TABLE = 'prod_bop_rule';
 
     public string $panel = 'grid';

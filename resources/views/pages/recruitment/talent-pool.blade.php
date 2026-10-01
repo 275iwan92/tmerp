@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Concerns\HasGridPagination;
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Models\Hrr\AppApplication;
 use App\Models\Hrr\CndCandidate;
 use App\Models\Hrr\VacVacancy;
@@ -15,6 +16,14 @@ new #[Title('Talent Pool — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
     use HasGridPagination;
+    use OpensFromQuery;
+
+    // Dibuka dari grid v2 (?open={id}): daftar disaring ke kandidat itu dan riwayat lamarannya langsung terbuka.
+    protected function openFromQuery(int $id): void
+    {
+        $this->search = (string) CndCandidate::query()->whereKey($id)->value('name');
+        $this->expandedId = $id;
+    }
 
     public string $search = '';
 
