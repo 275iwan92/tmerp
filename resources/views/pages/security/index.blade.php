@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Models\Sys\SecGroup;
 use App\Models\Sys\SecGroupPermission;
 use App\Models\Sys\SecModule;
@@ -19,8 +20,21 @@ use Livewire\Component;
 
 new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
     #[Url(as: 'tab')]
     public string $activePanel = 'users';
+
+    // Dibuka dari grid v2 Account / Group (?tab=users|groups&open={id} atau &new=1): langsung ke form baris itu.
+    protected function openFromQuery(int $id): void
+    {
+        request()->query('tab') === 'groups' ? $this->openGroupForm('edit', $id) : $this->openUserForm('edit', $id);
+    }
+
+    protected function newFromQuery(): void
+    {
+        request()->query('tab') === 'groups' ? $this->openGroupForm('new') : $this->openUserForm('new');
+    }
 
     // ================= PENGGUNA =================
     // REVISI 2026-08-30 (instruksi user): "Daftar pengguna" tadinya <table>

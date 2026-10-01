@@ -11,11 +11,8 @@ class SysConstantCategory extends Model
 
     protected $table = 'sys_constant_category';
 
-    protected $primaryKey = 'code';
-
-    protected $keyType = 'string';
-
-    public $incrementing = false;
+    // PK = id_constant_category (BIGINT auto number, aturan PK 2026-09-30); code = kode unik yang dirujuk sys_constant.category_code.
+    protected $primaryKey = 'id_constant_category';
 
     protected $fillable = [
         'code',

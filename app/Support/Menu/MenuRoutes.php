@@ -248,6 +248,7 @@ final class MenuRoutes
             'SET_TICKETS' => route('setup.support-tickets'),
             // Menu Setup hanya punya layar v2 (Grid Lookup atas sys_app_menu).
             'SET_MENU' => route('v2.screen', 'menu-setup'),
+            'SET_CONSTANT_CAT' => route('v2.screen', 'setup-constant-categories'),
         ];
     }
 }

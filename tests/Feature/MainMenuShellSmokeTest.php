@@ -145,7 +145,7 @@ class MainMenuShellSmokeTest extends TestCase
         $this->assertSame('group', $securityGroup['menuType']);
 
         $this->assertSame(
-            ['Identifikasi', 'Language', 'Localization', 'Constants', 'Translation Dictionary', 'Dummy & Legacy Data', 'Menu Setup', 'DevLib UI UX'],
+            ['Identifikasi', 'Language', 'Localization', 'Constants', 'Constant Categories', 'Translation Dictionary', 'Dummy & Legacy Data', 'Menu Setup', 'DevLib UI UX'],
             collect($settingsGroup['children'])->pluck('label')->all()
         );
         $this->assertSame(
