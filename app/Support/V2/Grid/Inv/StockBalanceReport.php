@@ -31,7 +31,7 @@ abstract class StockBalanceReport extends StockReportGrid
     public function guide(): ?string
     {
         return 'On hand now, one row per item and location. Opening, In, Out and Adjustment are for the current month; '
-            .'other periods are read in Stock Card. Below minimum compares the total in usable locations with the minimum stock of the item.';
+            .'other periods are in Stock Card. Below minimum compares usable stock with the minimum stock of the item.';
     }
 
     protected function sourceTables(): array

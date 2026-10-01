@@ -28,8 +28,8 @@ class ExchangeRateLookup extends MasterDataLookup
 
     public function guide(): ?string
     {
-        return 'Rate = value of 1 unit of the currency in Rupiah. One Active row per currency is the rate in force: '
-            .'to change a rate, add a new row with its Effective date and tick Active; the older row of that currency is switched off and stays as history.';
+        return 'Rate = value of 1 unit of the currency in Rupiah. One Active row per currency is the rate in force. '
+            .'To change a rate, add a new row and tick Active: the older row is switched off and kept as history.';
     }
 
     protected function models(): array

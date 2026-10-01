@@ -31,9 +31,8 @@ class UomUnitLookup extends MasterDataLookup
 
     public function guide(): ?string
     {
-        return 'One base unit per dimension: ticking Base on a unit clears it on the other units of the same dimension. '
-            .'Dimension Specification (gsm, micron, ...) has no base unit and no conversion. A saved code cannot be changed, only deactivated. '
-            .'Conversions between units are in Unit Conversion.';
+        return 'One base unit per dimension: ticking Base on a unit clears it on the others. Dimension Specification (gsm, micron) has no base unit '
+            .'and no conversion. A saved code cannot be changed, only deactivated.';
     }
 
     protected function query(): Builder

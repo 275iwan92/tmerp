@@ -26,8 +26,8 @@ abstract class SlowMovingReport extends StockReportGrid
 
     public function guide(): ?string
     {
-        return 'Items that still have stock in usable locations but have not moved for 3 months or more. '
-            .'An item is counted once (all its locations together, latest movement of any location). Never moved = old balance without a movement date.';
+        return 'Items that still have usable stock but have not moved for 3 months or more. '
+            .'An item is counted once, by the latest movement in any location. Never moved = old balance without a movement date.';
     }
 
     protected function query(): Builder
