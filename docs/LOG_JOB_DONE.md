@@ -40,6 +40,25 @@
   (`pages/production/prodev.blade.php::jobs()` dan `flat_w_mm = flat_w * 10` di `saveLayout()`), sehingga part dari Inquiry tampil
   "250 × 161 cm" dan tidak muat di canvas mana pun.
 
+## 2026-10-02 -- Dummy Inquiry: 3 contoh pesanan buku, semua NEW + DRAFT, dummy generik dihapus
+
+- Perintah user: "iya buat dummy buat 3 hal itu [buku tulis, buku pelajaran sekolah, buku cerita anak], jalankan. yang data dummy
+  ga jelas dihapus saja, lalu buat semua dalam kondisi new dan draft". Dibaca sebagai: set dummy draft Inquiry = semuanya jenis NEW
+  berstatus DRAFT; rantai order (inquiry yang sudah dipakai Quotation / CO / Master Product / WO) tidak dijadikan draft karena
+  dokumen di belakangnya akan kehilangan sumber.
+- `UatDraftInquirySeeder` (ddt saja, bisa diulang): tetap 27 draft satu per tipe dieline (`IQ99DRF001-027`), ditambah 3 contoh buku
+  tipe BUKU dengan 2 part (Cover + Inner Pages), bahan / warna / jumlah halaman per part, dan Isi per Pack:
+  `IQ99DRF028` Buku Tulis 38 Lembar (16 x 21 cm, cover Art carton 210 gr 4/0, isi HVS 58 gr 1/1 76 hal, saddle stitch, 10 per pack);
+  `IQ99DRF029` Buku Pelajaran Sekolah B5 160 Hal (17,6 x 25 cm, cover Art carton 230 gr, isi HVS 85 gr 4/4, perfect binding, 20 per pack);
+  `IQ99DRF030` Buku Cerita Anak 21x21 24 Hal (cover Art carton 260 gr, isi Art paper 150 gr 4/4, saddle stitch, 50 per pack).
+- Dihapus: 12 contoh RECALC / REVISE `IQ99DRF028-039` lama (seeder tidak lagi membuatnya) dan 17 dummy generik `IQ2690001-017`
+  ("... #n", SUBMITTED tanpa kelanjutan; 2 costing-nya ikut terhapus, part ProDev yang pernah dibuat darinya tidak disentuh).
+- Hasil ddt: 70 inquiry = 37 dummy NEW DRAFT (30 `IQ99DRF*` + 7 sampel `IQ99FBX*`), 28 rantai order, 5 LIVE. Tanpa tier / part / costing
+  yatim; 13 quotation & 11 CO utuh; form 3 buku + grid Inquiry / Pro-Dev / Pro-Cost / Quotation = 200 lewat kernel. Baseline disimpan ulang.
+  Belum dicek mata di browser.
+- Temuan (zona beku, belum dibangun): jumlah halaman & tipe jilid tersimpan tapi tidak dipakai Pro-Dev / Pro-Cost; peran part Cover / Isi
+  belum ada; proses lipat / susun / potong tiga sisi belum ada di Master Proses; Isi per Pack satu angka per part dan tidak ikut ke Quotation / CO.
+
 ## 2026-10-02 -- Flow pindah sementara ke Help; Master Data modul Inquiry hanya master terkait
 
 - Perintah user: "flow ini bagus tapi taruh sementara di help, nanti saya pikirkan ulang" dan "master data di inquiry jangan ada
