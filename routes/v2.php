@@ -4,6 +4,7 @@ use App\Console\Commands\DdtBaseline;
 use App\Mail\EmailVerifyMail;
 use App\Models\Acc\FinPettyCashTx;
 use App\Models\Master\FlowConfig;
+use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
 use App\Models\Master\SysHoliday;
@@ -22,6 +23,7 @@ use App\Models\Sys\SysMailSetting;
 use App\Models\Sys\SysSupportTicket;
 use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
+use App\Services\ProDev\PartDieline;
 use App\Services\Pur\SpecialReceiptService;
 use App\Services\Sales\CpdelPromiseService;
 use App\Services\Sales\DeliveryPromiseService;
@@ -967,6 +969,17 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return response()->json(Prodev::uploadArtwork($part, $r->file('file')));
         })->name('artwork');
+        // Panel Part & Dieline: ProDev berhak mengubah dieline & mockup part (docs/globaluserrules.md A.17).
+        Route::post('/dieline', function (Request $r, int $part) {
+            abort_unless(Prodev::dieline($part), 404);
+            $img = ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:'.(int) (SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10) * 1024)];
+            $r->validate(['dieline.dims' => ['required', 'array'], 'artwork' => $img, 'artwork_inner' => $img], [], ['dieline.dims' => 'Dimensions']);
+            $error = (new PartDieline(Auth::user()->login))->save(ProdPart::findOrFail($part), InquiryPayload::dieline($r->input('dieline')), $r->file('artwork'), $r->file('artwork_inner'));
+            $back = redirect(route('v2.screen', 'prodev').'?part='.$part);
+
+            return $error ? $back->withErrors(['artwork' => $error])
+                : $back->with('v2_flash', Dictionary::t('Dieline saved. The imposition below now uses the new blank size.'));
+        })->name('dieline');
     });
 
     // Inquiry Rekalkulasi / Revisi dari Master Product: Simpan (DRAFT) -> Confirm; Hapus selama DRAFT; Cancel sesudah Confirm.

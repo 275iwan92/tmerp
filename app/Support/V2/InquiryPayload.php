@@ -75,10 +75,19 @@ final class InquiryPayload
         return collect($r->file('parts', []))->map(fn ($f) => array_filter(['artwork' => $f['artwork'] ?? null, 'artwork_inner' => $f['artwork_inner'] ?? null]))->filter()->all();
     }
 
+    // Isian objek x-mp::dieline-v3 (dims + bentangan) -> angka kanonik; dipakai Inquiry dan panel Part & Dieline ProDev.
+    public static function dieline(array $d): array
+    {
+        return [
+            'dims' => array_map(fn ($v) => is_numeric(self::num($v)) ? (float) self::num($v) : $v, $d['dims'] ?? []),
+            'flat_w' => self::num($d['flat_w'] ?? ''),
+            'flat_h' => self::num($d['flat_h'] ?? ''),
+            'flat_area' => self::num($d['flat_area'] ?? ''),
+        ];
+    }
+
     private static function part(string $key, array $p, string $type): array
     {
-        $d = $p['dieline'] ?? [];
-
         return [
             'key' => $key,
             'id' => self::id($p),
@@ -87,10 +96,7 @@ final class InquiryPayload
             'type_code' => $type,
             'qty_per_sku' => self::num($p['qty_per_sku'] ?? ''),
             'pack_qty' => self::num($p['pack_qty'] ?? ''),
-            'dims' => array_map(fn ($v) => is_numeric(self::num($v)) ? (float) self::num($v) : $v, $d['dims'] ?? []),
-            'flat_w' => self::num($d['flat_w'] ?? ''),
-            'flat_h' => self::num($d['flat_h'] ?? ''),
-            'flat_area' => self::num($d['flat_area'] ?? ''),
+            ...self::dieline($p['dieline'] ?? []),
             'cfg_color' => (string) ($p['cfg_color'] ?? ''),
             'cfg_ink' => (string) ($p['cfg_ink'] ?? ''),
             'materials' => self::materials($p['materials'] ?? []),

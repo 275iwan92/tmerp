@@ -8,6 +8,8 @@ komponen menjadi turunan objek DevLib (namespace `MockupParts\Components`, JS `D
 |---|---|---|---|
 | Dieline v1 / v2 / v3 (TMDieline, zona beku: esensi tidak diubah; **v3 dipakai aplikasi**) | Dieline, DielineV2, DielineV3 | dieline.js, dieline-x.js, tmdieline.js | dieline*.blade.php |
 | Imposition (penampil hasil ImpositionEngine) | Imposition | imposition.js | imposition.blade.php |
+| ProDev workbench (salinan v1; kulit terang `prodev-light.css`) | Prodev\Workbench | prodev/workbench.js | — (layar v2 `prodev`) |
+| ProDev Part & Dieline (ProDev mengubah dieline + artwork part; simpan `iqp_part` + `prod_part`) | Prodev\PartDieline | prodev/part-dieline.js | — (layar v2 `prodev`, tab Part & Dieline) |
 | Formasi Harian | Formation | formation.js | formation.blade.php |
 | Roster Board | RosterBoard | roster.js | roster-board.blade.php |
 | Flow Config | FlowConfig | flow-config.js | flow-config.blade.php |

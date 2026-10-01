@@ -3,6 +3,25 @@
 
 ---
 
+## 2026-10-01 -- Form ProDev v2: tab Part & Dieline + latar putih
+
+- Perintah user: "saya ingin layar itu (Part & Dieline Inquiry) ditambahkan lagi di prodev form, karena prodev berhak merubah
+  dieline mockup. ATURAN BARU, TULIS!" dan "ini warna bg nya buat putih juga" (workbench Imposition). Aturan: rulebook **A.17**, **C.25**.
+- Form ProDev (`resources/views/v2/screens/prodev.blade.php`) sekarang 2 tab: **Imposition** (workbench, tidak berubah isinya) dan
+  **Part & Dieline** (objek baru `x-mp::prodev.part-dieline` = `x-mp::dieline-v3` + artwork luar/dalam + identitas part tampil-saja).
+- Simpan: route `v2.prodev.dieline` -> `App\Services\ProDev\PartDieline` -> `iqp_part` (dieline_spec, flat_*) **dan** `prod_part`
+  (dieline_spec, flat_*, cm_*); product ACTIVE: ukuran kepala product (komponen pertama) + versi artwork baru (`prod_part_artwork`,
+  belum di-ACC). Artwork luar lewat jalur upload ProDev yang sudah ada (analisa warna tinta ikut). `dieline_spec` ditulis lengkap
+  (DSL tipe + dims), jadi part contoh Master Card yang tadinya "belum punya definisi dieline" di workbench mendapat bentuk aslinya
+  setelah sekali Save.
+- Latar putih: `packages/mockup-parts/resources/assets/css/prodev-light.css` menimpa warna `prodev.css` (salinan v1, tetap gelap)
+  lewat token DevLib; 3 warna inline di `workbench.js` jadi kelas `io-warntxt`. Layar v1 tidak disentuh.
+- Uji: render tanpa browser + potret Chrome headless (kedua tab), simpan diuji di dalam transaksi yang dibatalkan (ddt tidak berubah).
+  Belum dicek mata user di browser.
+- **Temuan (belum diperbaiki, zona beku, menunggu OK user):** workbench membaca `iqp_part.flat_w/flat_h` (mm) sebagai **cm**
+  (`pages/production/prodev.blade.php::jobs()` dan `flat_w_mm = flat_w * 10` di `saveLayout()`), sehingga part dari Inquiry tampil
+  "250 × 161 cm" dan tidak muat di canvas mana pun.
+
 ## 2026-10-02 -- Menu modul Inquiry & Quotation (PREORDER) dilengkapi
 
 - Perintah user: "Module inquiry until quotation is it done become one module? If ok, make sure all menu related with this

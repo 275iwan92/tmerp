@@ -12,6 +12,11 @@ Inquiry (Baru / Revisi / Rekalkulasi) → ProDev → ProCost → Quotation → W
 ```
 
 - Urutan Inquiry → ProDev → ProCost **tetap**, juga untuk Revisi dan Rekalkulasi. ✅
+- **ProDev berhak mengubah dieline & mockup part** (user 2026-10-01, rulebook A.17): form ProDev punya tab **Part & Dieline**
+  (dimensi, Flat Size, artwork luar/dalam). Simpan dua arah: inquiry (`iqp_part`) + master (`prod_part`); imposition langsung
+  memakai blank baru. Tidak diblokir oleh status, tetapi memberi peringatan bila layout sudah Confirmed, costing sudah
+  published, atau product sudah aktif (artwork baru = versi baru, ACC Digital diulang). ✅ v2 (kode sama untuk ddt & tm2,
+  tanpa migration).
 - **CPDEL → POST ke Produksi → DO / Surat Jalan** (user 2026-10-01). **Jalan pintas pekerjaan cepat:** setelah CPDEL
   di-POST ke Produksi, DO dan DN (Surat Jalan) boleh langsung dibuat tanpa menunggu produksi selesai, untuk pekerjaan
   yang pengerjaannya hanya sekitar 30 menit. 🟡 dibangun di v2 (mockup.test / ddt, 2026-10-01): tombol **Post to Production**

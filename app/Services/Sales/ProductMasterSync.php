@@ -95,10 +95,17 @@ final class ProductMasterSync
 
         $this->finishings($part, $p);
         $this->fillIfEmpty($part, $p);
-        $this->artwork($part, $p->artwork_path, $p->artwork_original_filename, 'OUTER');
-        $this->artwork($part, $p->artwork_inner_path, $p->artwork_inner_original_filename, 'INNER');
+        $this->syncArtwork($part, $p);
 
         return $part;
+    }
+
+    // Artwork luar/dalam part inquiry -> versi baru di master (dilewati bila file-nya sama). Dipakai juga saat ProDev
+    // mengganti artwork product yang sudah ACTIVE (App\Services\ProDev\PartDieline).
+    public function syncArtwork(ProdPart $part, IqpPart $p): void
+    {
+        $this->artwork($part, $p->artwork_path, $p->artwork_original_filename, 'OUTER');
+        $this->artwork($part, $p->artwork_inner_path, $p->artwork_inner_original_filename, 'INNER');
     }
 
     private function finishings(ProdPart $part, IqpPart $p): void

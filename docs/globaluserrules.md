@@ -55,6 +55,17 @@
     dibuang dari CO. CO tidak bisa di-Confirm selama satu product masih punya lebih dari satu baris qty.
 16. **[2026-10-01] Work Order hanya untuk product yang punya Inquiry dengan costing sudah di-publish**, juga untuk CO direct
     (INSTANT). Tidak ada jalan pintas di engine; dummy yang tidak memenuhi dihapus dan dibuat ulang dengan benar (B.12).
+17. **[2026-10-01] ProDev berhak mengubah dieline & mockup part.** Form ProDev (v2) punya tab **Part & Dieline** — panel
+    yang sama dengan Inquiry Product (gambar dieline, kotak 3D, Dimensions, Flat Size, artwork luar/dalam) — dan ProDev boleh
+    **mengubah dimensi, bentangan (Flat Size), dan artwork** lalu **Save**, walaupun inquiry-nya sudah Confirmed.
+    - **Simpan dua arah** (pola Save ProDev): snapshot inquiry (`iqp_part`: `dieline_spec`, `flat_w/h/area`, artwork) **dan**
+      master (`prod_part`: `dieline_spec`, `flat_*`, `cm_length/width/height`). Part manual (Mode #2, tanpa Inquiry) hanya arah master.
+    - Imposition di tab sebelahnya langsung memakai ukuran blank yang baru.
+    - **Tidak diblokir, tapi diberi peringatan sebelum Save** bila: layout part sudah Confirmed (susun ulang + Confirm lagi),
+      costing sudah published (harga jual tidak ikut berubah, minta ProCost hitung ulang), atau product sudah aktif di Master
+      Product (master ikut berubah; artwork baru = versi baru yang wajib **ACC Digital** lagi, A.14).
+    - Yang **tetap milik Inquiry** (tampil saja di ProDev): nama part, Tipe Part, Qty per Set, isi per pack, dan **Tipe Produk
+      (jenis dieline)**. Bahan, warna, finishing diatur ProDev lewat BOM / Ink / BOP seperti biasa.
 15. **Scope modul (2026-10-02):** satu modul = satu menu besar dengan saklar `activate` sendiri (mati = menu + route tertutup,
     data tetap). Antar modul hanya lewat kontrak (snapshot + status akhir): A = Quotation published/WIN -> Customer Order,
     B = CO Confirmed + Post to Production -> Production. CO direct (INSTANT) selalu tersedia walau modul pre-order mati.
@@ -98,6 +109,7 @@
 1. **[LOCKED] Zona beku: Inquiry Product, ProDev, ProCost.** Esensi dan alur (data maupun dokumen) tidak boleh
    diubah tanpa izin. Sebelum mengubah apa pun di sana, tanya dulu dengan jelas (file, elemen, sebelum→sesudah).
    Yang sudah diizinkan: mengganti teks UI Indonesia ke English, dan memindahkan kulit ke komponen tanpa mengubah esensi.
+   **Diminta user 2026-10-01 (form ProDev v2):** tab **Part & Dieline** (A.17) dan **latar putih** untuk workbench Imposition (C.25).
 2. **DevLib dulu, mockup mewarisi.** Semua komponen layar harus dari objek DevLib (devlib.test). Layar v2 hanya
    membuat objek, tidak membuat ulang komponen. Format tanggal dan angka juga lewat objek DevLib.
 3. **[LOCKED 2026-09-30] Grid mengikuti keluarga DevLib** (Grid Master / Pre-Entry Transactional / Report).
@@ -138,7 +150,7 @@
     kiri = status (dari `stats`), garis pemisah, kanan = jenis (dari `tabs`). Garis bawah **bergeser** ke pilihan aktif dan
     **berganti warna** sesuai pilihan. "All" cukup satu (di kiri); klik lagi pilihan jenis yang aktif = lepas. Label singkat
     (mis. Pro-Dev, Pro-Cost).
-23. **Panel dieline (Inquiry, Master Product, Master Card) — user 2026-10-01:** tidak ada deretan tombol **Standard Sizes**
+23. **Panel dieline (Inquiry, ProDev, Master Product, Master Card) — user 2026-10-01:** tidak ada deretan tombol **Standard Sizes**
     di panel dieline; ukuran standar dipilih lewat **dropdown** saja. Gambar dieline memakai lebar penuh, **jendela 3D di
     samping gambar dengan tinggi sama** (lebih sempit) dan kotaknya **bisa diputar** (drag = putar, Shift+drag = miring,
     tombol auto-spin / zoom / reset). **Dimensions di bawah gambar, 2 baris berkelompok** (Product Size | Flat Size, lalu
@@ -153,6 +165,9 @@
     variasi hanya pada **field yang dicetak**. Huruf **mudah dibaca, tidak kurus dan tidak tebal**. Format kertas lama di
     `docs/attachments` adalah acuan isi, **bukan untuk disalin**: tata letaknya diimprovisasi. Mockup dan generator contoh:
     `docs/mockups/print_doc/` (masih dikoreksi user; belum dipasang ke DevLib).
+25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
+    layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
+    supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.
 
 ## D. Cara kerja developer / agen
 
@@ -204,3 +219,5 @@
 | 2026-10-01 | C.24: cetakan dokumen A5 landscape (1-5 baris) / A4 portrait (lebih dari 5 baris), satu generator, posisi sama, huruf mudah dibaca; mockup di `docs/mockups/print_doc/`. |
 | 2026-10-01 | B.14: master hanya diubah user; sistem hanya mengubah transaksi; default boleh diperbarui analisa sistem dan tetap bisa di-override. |
 | 2026-10-01 | Material Planning (Booking + MRP + MPS) dibangun di ddt: keputusan B1-B9 di `docs/materialbooking_tier1.md` §6-§7. |
+| 2026-10-01 | **A.17: ProDev berhak mengubah dieline & mockup part** — tab Part & Dieline di form ProDev v2 (dimensi, Flat Size, artwork luar/dalam), simpan dua arah `iqp_part` + `prod_part`, peringatan dampak (layout Confirmed / costing published / product aktif). |
+| 2026-10-01 | C.25: workbench Imposition ProDev berlatar putih (token tema DevLib), tata letak tidak berubah. |

@@ -1,5 +1,5 @@
 {{-- Pro-Dev. Flow & data: tmerp pages/production/prodev-list.blade.php (daftar part) -> prodev.blade.php (workbench per part).
-     Tanpa ?part = daftar; ?part=<id> = Imposition Plano Optimizer part itu. Confirm -> Product Costing. --}}
+     Tanpa ?part = daftar; ?part=<id> = tab Imposition (Imposition Plano Optimizer part itu) + tab Part & Dieline. Confirm -> Product Costing. --}}
 @php
     use App\Support\V2\Data\Prodev;
     use App\Support\V2\Src;
@@ -28,7 +28,20 @@
     <x-dl::action-bar>
         <x-dl::doc-share target="[data-mp-prodev]" type="prodev" :doc-id="$partId" :number="\App\Models\Master\ProdPart::whereKey($partId)->value('mastercard_code')" title="Pro-Dev Layout" orientation="landscape" />
     </x-dl::action-bar>
-    <x-mp::prodev.workbench :data="Prodev::workbench($partId, route('v2.screen', 'prodev'), route('v2.screen', 'procost').'?part='.$partId)" />
+    {{-- Part & Dieline (rulebook A.17): ProDev berhak mengubah dieline & mockup. Tab ke-2 supaya workbench tampil seperti semula. --}}
+    @php $dieline = Prodev::dieline($partId); @endphp
+    <x-dl::tabs :tabs="['impo' => ['Imposition', 'fa-table-cells'], 'dieline' => ['Part & Dieline', 'fa-box-open']]">
+        <x-slot:impo>
+            <x-mp::prodev.workbench :data="Prodev::workbench($partId, route('v2.screen', 'prodev'), route('v2.screen', 'procost').'?part='.$partId)" />
+        </x-slot:impo>
+        <x-slot:dieline>
+            @if ($dieline)
+                <x-mp::prodev.part-dieline :part="$dieline" :action="route('v2.prodev.dieline', $partId)" />
+            @else
+                <x-dl::alert tone="info" :message="t('This part has no dieline type yet (assembly, or a manual part without a Product Type), so there is no dieline to change here.')" />
+            @endif
+        </x-slot:dieline>
+    </x-dl::tabs>
     @if ($accDoc)
         <x-dl::card :title="'ACC customer — '.$accDoc['name']" description="Record E-mail ACC / Digital ACC (from the CTP plate print sample) / Shape Sample. Its printed document: Digital ACC / Digital Proof.">
             <x-dl::action-bar><x-dl::button variant="secondary" icon="print" label="Print ACC / Proof Digital" :href="route('v2.screen', 'product-acc').'?id='.$accDoc['id']" /></x-dl::action-bar>
