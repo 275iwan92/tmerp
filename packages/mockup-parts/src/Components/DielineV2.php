@@ -57,7 +57,6 @@ class DielineV2 extends Dieline
                     @else
                         <input type="hidden" name="{{ $name }}[type]" value="{{ $type }}">
                     @endif
-                    <div class="dl-dieline__sizes"><span class="dl-dieline__cap">Standard Sizes</span><div data-d-sizes></div></div>
                     <div class="dl-dieline__cap">Dimensions</div>
                     <div class="dl-dieline__dims" data-d-dims></div>
                     <div class="dl-dieline__flat">
