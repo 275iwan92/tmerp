@@ -7,7 +7,7 @@ use App\Models\Sys\SysConstant;
 use Devlib\PrintDoc\Document;
 use Illuminate\Support\Facades\Auth;
 
-// Delivery Order (belum A): dasar Surat Jalan dan penagihan, memuat harga -- hanya untuk user yang berhak melihat harga jual
+// Delivery Order (format A, user 2026-10-02): dasar Surat Jalan dan penagihan, memuat harga -- hanya untuk user yang berhak melihat harga jual
 // (yang lain memakai Surat Jalan, tanpa harga). Sumber: tm2sdi.do_delivery + do_line.
 final class DeliveryOrderPrint extends Document
 {

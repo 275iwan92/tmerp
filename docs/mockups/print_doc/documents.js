@@ -209,6 +209,7 @@ PrintDoc.register(class PurchaseRequisition extends PrintDoc {
 
 // Layar v2: quotation. Dokumen ke customer; kop PPN bila kena pajak.
 PrintDoc.register(class Quotation extends PrintDoc {
+    static approved = '2026-10-02';
     static title = 'QUOTATION';
     static subtitle = 'Penawaran Harga';
     static numberLabel = 'No Quotation';
@@ -230,6 +231,7 @@ PrintDoc.register(class Quotation extends PrintDoc {
 
 // Layar v2: delivery-order. Dasar Surat Jalan dan penagihan; baris ditarik dari CPDEL yang sudah Posted.
 PrintDoc.register(class DeliveryOrder extends PrintDoc {
+    static approved = '2026-10-02';
     static title = 'DELIVERY ORDER';
     static subtitle = 'Perintah Kirim &middot; Internal';
     static numberLabel = 'No DO';
@@ -251,6 +253,7 @@ PrintDoc.register(class DeliveryOrder extends PrintDoc {
 
 // Layar v2: proof-of-delivery. Bukti barang tiba dan diterima (KPI janji kirim).
 PrintDoc.register(class ProofOfDelivery extends PrintDoc {
+    static approved = '2026-10-02';
     static title = 'BUKTI TERIMA';
     static subtitle = 'Proof of Delivery';
     static numberLabel = 'No Surat Jalan';
@@ -289,6 +292,7 @@ PrintDoc.register(class PurchaseQuotation extends PrintDoc {
 
 // Layar v2: purchase-receive (SPB). Dokumen gudang, tanpa harga.
 PrintDoc.register(class GoodsReceipt extends PrintDoc {
+    static approved = '2026-10-02';
     static title = 'PENERIMAAN BARANG';
     static subtitle = 'SPB &middot; Goods Receipt';
     static numberLabel = 'No SPB';
@@ -309,6 +313,7 @@ PrintDoc.register(class GoodsReceipt extends PrintDoc {
 
 // Layar v2: material-booking. Kebutuhan bahan satu Customer Order.
 PrintDoc.register(class MaterialBooking extends PrintDoc {
+    static approved = '2026-10-02';
     static title = 'MATERIAL BOOKING';
     static subtitle = 'Pemesanan Bahan &middot; Internal';
     static numberLabel = 'No Booking';
@@ -328,6 +333,7 @@ PrintDoc.register(class MaterialBooking extends PrintDoc {
 
 // Layar v2: maintenance-request. Tanpa kolom jumlah: satu baris per gejala.
 PrintDoc.register(class MaintenanceRequest extends PrintDoc {
+    static approved = '2026-10-02';
     static title = 'MAINTENANCE REQUEST';
     static subtitle = 'Laporan Kerusakan &middot; Internal';
     static numberLabel = 'No Request';
@@ -349,6 +355,7 @@ PrintDoc.register(class MaintenanceRequest extends PrintDoc {
 
 // Layar v2: maintenance-wo. Tanpa kolom jumlah: satu baris per tugas checklist; hasil diisi teknisi.
 PrintDoc.register(class MaintenanceWorkOrder extends PrintDoc {
+    static approved = '2026-10-02';
     static title = 'MAINTENANCE WORK ORDER';
     static subtitle = 'Perintah Kerja Perawatan &middot; Internal';
     static numberLabel = 'No WO';

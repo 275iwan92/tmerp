@@ -8,7 +8,7 @@ use App\Support\V2\Data\Maintenance;
 use Devlib\Locale;
 use Devlib\PrintDoc\Document;
 
-// Maintenance Request (belum A): laporan kerusakan, tanpa kolom jumlah. Baris = gejala yang dilaporkan; kolom tindakan dan
+// Maintenance Request (format A, user 2026-10-02): laporan kerusakan, tanpa kolom jumlah. Baris = gejala yang dilaporkan; kolom tindakan dan
 // catatan diisi tangan oleh teknisi saat memeriksa. Sumber: tm2prd.mnt_request (+ mnt_wo bila sudah diterima).
 final class MaintenanceRequestPrint extends Document
 {

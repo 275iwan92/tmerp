@@ -9,7 +9,7 @@ use App\Support\V2\Data\ProofOfDelivery;
 use Devlib\Locale;
 use Devlib\PrintDoc\Document;
 
-// Bukti Terima / Proof of Delivery (belum A): satu lembar per Surat Jalan, isi dari catatan kedatangan terakhir
+// Bukti Terima / Proof of Delivery (format A, user 2026-10-02): satu lembar per Surat Jalan, isi dari catatan kedatangan terakhir
 // (tm2sdi.do_delivery_pod). Belum ada catatan = kolom hasil kosong untuk diisi tangan di tempat customer.
 final class ProofOfDeliveryPrint extends Document
 {

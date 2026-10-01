@@ -7,7 +7,7 @@ use App\Support\V2\Data\Maintenance;
 use Devlib\Locale;
 use Devlib\PrintDoc\Document;
 
-// Maintenance Work Order (belum A): perintah kerja perawatan, tanpa kolom jumlah. Baris = tugas checklist; Hasil / Terukur /
+// Maintenance Work Order (format A, user 2026-10-02): perintah kerja perawatan, tanpa kolom jumlah. Baris = tugas checklist; Hasil / Terukur /
 // Catatan diisi teknisi (sudah terisi bila sudah di-input). Spare part dan Masalah / Sebab / Tindakan di bawah tabel.
 // Sumber: tm2prd.mnt_wo + mnt_wo_task + mnt_wo_part.
 final class MaintenanceWoPrint extends Document

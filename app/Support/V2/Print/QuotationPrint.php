@@ -7,7 +7,7 @@ use App\Models\Sdi\QuoQuotation;
 use Devlib\Locale;
 use Devlib\PrintDoc\Document;
 
-// Quotation (belum A): dokumen ke customer, selalu kop PPN (quotation selalu ber-PPN 11%, EXCL / INCL).
+// Quotation (format A, user 2026-10-02): dokumen ke customer, selalu kop PPN (quotation selalu ber-PPN 11%, EXCL / INCL).
 // Total = QuoQuotation::totals() (sama dengan form). Sumber: tm2sdi.quo_quotation + quo_quotation_item + quo_quotation_cc.
 final class QuotationPrint extends Document
 {

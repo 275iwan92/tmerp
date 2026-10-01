@@ -8,7 +8,7 @@ use App\Support\V2\Data\MaterialPlanning;
 use Devlib\Locale;
 use Devlib\PrintDoc\Document;
 
-// Material Booking (belum A): kebutuhan bahan satu Customer Order, tanpa harga. Baris = hasil MaterialPlanningEngine yang
+// Material Booking (format A, user 2026-10-02): kebutuhan bahan satu Customer Order, tanpa harga. Baris = hasil MaterialPlanningEngine yang
 // sama dengan layar (App\Support\V2\Data\MaterialPlanning::lineRows). $id = id Customer Order.
 final class MaterialBookingPrint extends Document
 {

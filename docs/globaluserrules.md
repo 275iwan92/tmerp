@@ -233,7 +233,9 @@
     Constants; kosong = garis untuk tanda tangan tangan. Belum dibangun (dibangun saat cetakan dipasang ke aplikasi).
     **Format cetak Surat Jalan, Customer Order (dengan harga + tanpa harga), Purchase Requisition (Produksi + Non
     Produksi), Purchase Order, dan Inquiry = A (Approved) oleh user 2026-10-01** — tidak diubah lagi kecuali user sendiri
-    yang meminta. **CPDEL = A juga (user 2026-10-01).** Belum A: Jadwal Kirim.
+    yang meminta. **CPDEL = A juga (user 2026-10-01).** **A juga (user 2026-10-02, setelah melihat hasil cetak dari
+    aplikasi): Quotation, Delivery Order, Bukti Terima (POD), Penerimaan Barang (SPB), Material Booking, Maintenance
+    Request, Maintenance Work Order.** Belum A: Jadwal Kirim, Purchase Quotation, Bukti Kas Kecil.
     **Dipasang ke aplikasi 2026-10-02 (perintah user: pola di DevLib, diturunkan secara object oriented):** kelas induk
     `Devlib\PrintDoc\Document` + komponen `x-dl::print-doc`; tiap dokumen = satu kelas turunan di `App\Support\V2\Print`
     yang hanya mendeklarasikan field dan membaca datanya dari database. **Tombol Print di setiap entry transaksional membuka
@@ -341,6 +343,7 @@
 | 2026-10-01 | C.24: urutan tanda tangan semua cetakan = pihak luar, Menyetujui, Mengetahui, Pembuat (kiri ke kanan, ketentuan tetap); Pembuat = user yang login; penanda tangan lain = konstanta per dokumen (skema menunggu OK). Kop Telasih Makmur = alamat Langgeng Jaya Makmur, tanpa NPWP. PR Produksi (No CO + nama product) / Non Produksi. |
 | 2026-10-01 | **C.24: format cetak Surat Jalan dan Customer Order (dengan harga + tanpa harga) = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. |
 | 2026-10-01 | **C.24: cetakan CPDEL (tanpa harga, split jelas, penanda tangan Customer / Operations Manager / PPIC / Sales) = A (Approved) oleh user.** Jadwal Kirim dirancang ulang (Ambil / Kirim, jam, kota, alamat, tiga baris berbeda huruf, IN / OUT besar), belum A. |
+| 2026-10-02 | **C.24: format cetak Quotation, Delivery Order, Bukti Terima, SPB, Material Booking, Maintenance Request, Maintenance Work Order = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. Belum A: Jadwal Kirim, Purchase Quotation, Bukti Kas Kecil. |
 | 2026-10-02 | C.24: cetakan A5 / A4 dipasang ke aplikasi sebagai objek DevLib (`Devlib\PrintDoc\Document`, `x-dl::print-doc`); 15 dokumen transaksional punya tombol Print ke format ini; penanda tangan dari konstanta `SIGN_*` (ddt; tm2 menunggu OK). |
 | 2026-10-01 | C.24: user minta **semua entry punya cetakan A5 landscape**. Mockup tahap 2 dibuat (belum A): Quotation, Delivery Order, Bukti Terima (POD), Purchase Quotation, Penerimaan Barang (SPB), Material Booking, Maintenance Request, Maintenance Work Order, Bukti Kas Kecil. Belum dipasang ke aplikasi. |
 | 2026-10-01 | **C.24: format cetak Purchase Order dan Inquiry = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. Belum A: Jadwal Kirim. |
