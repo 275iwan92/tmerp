@@ -53,6 +53,7 @@ class PrintDoc {
     static priced = false;              // true = kolom harga + kotak total rupiah + terbilang
     static receivers = [];              // tanda tangan pihak luar / penerima, paling kiri: [peran, keterangan]
     static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat
+    static internalLabels = ['Mengetahui', 'Menyetujui', 'Pembuat'];    // judul slot yang sama; diganti jabatan bila perlu (CPDEL)
     static qrHint = 'dokumen online';
     // Ukuran blok yang boleh ditukar per dokumen: ruang kosong di blok atas / zona penutup dipindah ke tinggi baris.
     static rows = {a5: 5, a4: 22};      // kapasitas baris per lembar
@@ -151,7 +152,8 @@ class PrintDoc {
     sign() {
         const [r1, r2] = this.f.receivers, [a, b, c] = this.f.internal;
         const slot = s => s ? `<div><span>${esc(s[0])}</span><small>${esc(s[1])}</small><i></i><b>(${s[2] ? `<u class="nm">${esc(s[2])}</u>` : '<u></u>'})</b></div>` : '<div></div>';
-        const know = ['Mengetahui', a, this.d.knownBy], agree = ['Menyetujui', b, this.d.approvedBy], maker = ['Pembuat', c, this.d.createdBy];
+        const [lk, la, lm] = this.f.internalLabels;
+        const know = [lk, a, this.d.knownBy], agree = [la, b, this.d.approvedBy], maker = [lm, c, this.d.createdBy];
         // KETENTUAN user 2026-10-01 (jangan dibalik): dari kiri = pihak luar, lalu Menyetujui, Mengetahui, Pembuat di paling
         // kanan. Hanya slot terisi yang dicetak, dibagi rata.
         const used = [r1, r2, agree, know, maker].filter(Boolean);

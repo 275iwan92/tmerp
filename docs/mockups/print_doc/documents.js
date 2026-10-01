@@ -70,7 +70,11 @@ PrintDoc.register(class CustomerPlanDelivery extends PrintDoc {
     static nameLabel = 'NAMA PRODUK';
     static extra = [{key: 'part', label: 'KIRIMAN', width: 17}, {key: 'ship_date', label: 'TGL KIRIM', width: 21, type: 'date'}, {key: 'ship_time', label: 'JAM', width: 11},
         {key: 'due_date', label: 'DUE CO', width: 21, type: 'date'}, {key: 'state', label: 'STATUS', width: 14}];
+    // Keputusan user 2026-10-01: Operations Manager, PPIC, dan Sales (pembuat) saling setuju; terakhir Customer.
+    // Urutan cetak tetap ketentuan umum: pihak luar paling kiri ... pembuat paling kanan.
     static receivers = [['Customer', 'Menyetujui jadwal']];
+    static internalLabels = ['PPIC', 'Operations Manager', 'Sales'];
+    static internal = ['Menyetujui', 'Menyetujui', 'Pembuat'];
 
     constructor(data) {
         const groups = {};
