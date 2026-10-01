@@ -5,8 +5,12 @@ namespace Devlib\Components;
 use Devlib\Icon;
 
 // Menu panel kiri berlapis (layer 1 modul -> layer 2 menu -> layer 3 sub -> layer 4 ...), SEMUA di panel yang sama:
-// klik cabang = panel bergeser ke layer berikutnya, Back = naik satu layer. Tiap layer punya judul + breadcrumb,
-// indikator layer di kepala panel, angka = jumlah layar di bawah cabang. Kedalaman bebas (indikator ikut tree).
+// klik cabang = panel bergeser ke layer berikutnya, Back = naik satu layer. Tiap layer punya judul (tanpa breadcrumb:
+// breadcrumb hanya di layar), angka = jumlah layar di bawah cabang. Kedalaman bebas.
+// Kepala panel: baris 1 logo + nama aplikasi (title), baris 2 ikon (tukar view | cari | kecilkan menu).
+//   search      = tampilkan ikon cari -> event dl:layer-menu-action {key:'palette'}
+//   collapsible = ikon kecilkan menu: panel jadi satu lajur ikon (diingat per browser). Saat mini, klik cabang /
+//                 Back / avatar = menu lengkap melayang di atas layar, menutup setelah layar dipilih atau klik di luar.
 // items: [['label','icon'?,'key'?,'url'?,'badge'?,'tone'?,'group'?,'items' => [ITEM..]]] — `group` = judul kelompok
 // di layer itu (item berurutan dengan group sama tampil di bawah satu judul). Tanpa `items` = layar akhir.
 // Klik layar akhir -> event dl:layer-menu {key,label,url,path} (cancelable). Posisi layer terakhir diingat per browser.
@@ -38,6 +42,8 @@ class LayerMenu extends DevlibComponent
         public array $actions = [],
         public array $views = [],
         public ?string $initialView = null,
+        public bool $search = false,
+        public bool $collapsible = true,
     ) {}
 
     public function tag(): string
@@ -88,10 +94,19 @@ class LayerMenu extends DevlibComponent
             <aside {{ $attributes->class('dl-lm') }} {!! $dl() !!} data-dl-layer-menu data-id="{{ $id }}" data-active="{{ $active }}" data-counts="{{ $counts ? 1 : 0 }}" data-root="{{ $rootCaption }}" data-dock="{{ $dock }}" data-tree="{{ $views ? '[]' : json_encode($tree()) }}" data-views="{{ json_encode($viewData()) }}" data-view="{{ $initialView }}">
                 <div class="dl-lm__head">
                     <span class="dl-lm__logo">{{ $logo }}</span>
-                    <span class="dl-lm__brand"><b>{{ $title }}</b><span class="dl-lm__sub"><span class="dl-lm__dots" data-lm-dots aria-hidden="true"></span><small data-lm-mode hidden></small></span></span>
+                    <span class="dl-lm__brand"><b>{{ $title }}</b><small data-lm-mode hidden></small></span>
+                </div>
+                <div class="dl-lm__bar">
                     <span class="dl-lm__views" data-lm-views role="group" aria-label="{{ \Devlib\Lang::text('Choose a menu') }}" hidden></span>
+                    <span class="dl-lm__gap"></span>
                     <button type="button" class="dl-lm__ib" data-lm-swap title="Tukar menu / chat" aria-label="{{ \Devlib\Lang::text('Swap menu and chat') }}" hidden><i class="fa-solid fa-right-left"></i><em class="dl-lm__dot-badge" data-lm-unread="swap" hidden></em></button>
                     <button type="button" class="dl-lm__ib" data-lm-dockbtn title="{{ \Devlib\Lang::text('Chat on the right side of the screen') }}" aria-label="{{ \Devlib\Lang::text('Move chat to the right') }}" hidden><i class="fa-solid fa-table-columns"></i></button>
+                    @if ($search)
+                        <button type="button" class="dl-lm__ib" data-lm-search title="{{ \Devlib\Lang::text('Search (Ctrl K)') }}" aria-label="{{ \Devlib\Lang::text('Search (Ctrl K)') }}"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    @endif
+                    @if ($collapsible)
+                        <button type="button" class="dl-lm__ib" data-lm-mini data-t-min="{{ \Devlib\Lang::text('Minimize menu') }}" data-t-max="{{ \Devlib\Lang::text('Expand menu') }}" title="{{ \Devlib\Lang::text('Minimize menu') }}" aria-label="{{ \Devlib\Lang::text('Minimize menu') }}" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M9.5 4v16"/></svg></button>
+                    @endif
                 </div>
                 <div class="dl-lm__modes">
                     <div class="dl-lm__vp"><div class="dl-lm__track" data-lm-track></div></div>
@@ -121,8 +136,8 @@ class LayerMenu extends DevlibComponent
                             <button type="button" class="dl-lm__a{{ ($a['tone'] ?? null) === 'danger' ? ' is-danger' : '' }}" data-lm-act="{{ $a['key'] }}" data-label="{{ $a['label'] }}" data-icon="{{ $fa($a['icon'] ?? 'fa-circle-dot') }}" @if (! empty($a['confirm'])) data-confirm="{{ $a['confirm'] }}" @endif><span class="dl-lm__ico"><i class="{{ $fa($a['icon'] ?? 'fa-circle-dot') }}"></i></span><span class="dl-lm__t">{{ $a['label'] }}</span></button>
                         @endforeach
                     </div>
-                    <div class="dl-lm__foot">
-                        <span class="dl-lm__avatar">{{ $initials() }}</span>
+                    <div class="dl-lm__foot" data-lm-foot>
+                        <span class="dl-lm__avatar" title="{{ $user }}">{{ $initials() }}</span>
                         <span class="dl-lm__user"><b>{{ $user }}</b>@if ($role)<small>{{ $role }}</small>@endif</span>
                         <button type="button" class="dl-lm__ib" data-lm-gear title="Pengaturan" aria-label="Pengaturan" aria-haspopup="menu"><i class="fa-solid fa-gear"></i><em class="dl-lm__dot-badge" data-lm-unread="gear" hidden></em></button>
                     </div>

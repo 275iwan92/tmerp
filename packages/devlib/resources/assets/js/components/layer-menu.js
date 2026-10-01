@@ -2,7 +2,7 @@
 (function (Devlib) {
   'use strict';
   const {esc, toast, confirmBox} = Devlib.h;
-  const BACK = '<button type="button" class="dl-lm__back" data-lm-back><i class="fa-solid fa-arrow-left"></i><span>Back</span></button>';
+  const BACK = '<button type="button" class="dl-lm__back" data-lm-back title="Back"><i class="fa-solid fa-arrow-left"></i><span>Back</span></button>';
   /* ============ LAYER MENU (panel kiri berlapis: modul -> menu -> sub -> ...) + Chat & Profile ============ */
   class LayerMenu extends Devlib.Component {
     static selector = "[data-dl-layer-menu]";
@@ -12,7 +12,6 @@
       this.view = 0;
       this.root = this.views.length ? this.views[0].items : JSON.parse(this.el.dataset.tree || '[]');
       this.track = this.$('[data-lm-track]');
-      this.dots = this.$('[data-lm-dots]');
       this.key = 'dl-lm-' + this.el.dataset.id;
       this.path = [];     // cabang yang sedang dibuka, path[d-1] = induk layer d
       this.sel = null;    // key layar akhir terpilih
@@ -21,10 +20,52 @@
       this.track.addEventListener('click', e => { const t = e.target.closest('button, a'); if (t) this.click(e, t); });
       this.el.addEventListener('keydown', e => {
         if (e.key === 'Escape' && this.pop?.classList.contains('is-on')) { this.togglePop(false); return; }
+        if (e.key === 'Escape' && this.peek && this.st.show === 'menu') { this.setPeek(false); return; }
         if ((e.key === 'Escape' || e.key === 'ArrowLeft') && this.st.show === 'menu' && this.path.length && e.target.closest('[data-lm-track]')) { e.preventDefault(); this.back(); }
       });
       this.initPanels();
+      this.initMini();
       this.restore();
+    }
+
+    /* ---------------- mini: panel = satu lajur ikon; menu lengkap melayang (peek) saat perlu ---------------- */
+    initMini() {
+      this.mini = this.peek = false;
+      this.miniBtn = this.$('[data-lm-mini]');
+      this.$('[data-lm-search]')?.addEventListener('click', () => this.emit('dl:layer-menu-action', {key: 'palette'}, true));
+      if (!this.miniBtn) return;
+      this.miniBtn.addEventListener('click', () => this.setMini(!this.mini));
+      // Klik di luar panel (layar di dalam iframe = jendela kehilangan fokus) menutup menu melayang.
+      // composedPath, bukan contains(): klik cabang menggambar ulang panel, target-nya sudah lepas dari DOM saat sampai di sini.
+      document.addEventListener('click', e => { const p = e.composedPath(); if (this.peek && !p.includes(this.el) && !(this.dockHost && p.includes(this.dockHost))) this.setPeek(false); });
+      window.addEventListener('blur', () => this.setPeek(false));
+      // Mini: avatar = roda gigi (roda giginya sendiri tersembunyi).
+      this.$('[data-lm-foot]')?.addEventListener('click', e => {
+        if (!this.mini || this.peek) return;
+        e.stopPropagation(); this.setPeek(true); this.togglePop(true);
+      });
+      let on = false; try { on = localStorage.getItem(this.key + '-mini') === '1'; } catch (e) {}
+      if (on) this.setMini(true, false);
+    }
+
+    setMini(on, save = true) {
+      this.mini = on; this.peek = false;
+      this.togglePop(false);
+      this.el.classList.toggle('is-mini', on);
+      this.miniBtn.title = on ? this.miniBtn.dataset.tMax : this.miniBtn.dataset.tMin;
+      this.miniBtn.setAttribute('aria-label', this.miniBtn.title);
+      this.miniBtn.setAttribute('aria-pressed', String(on));
+      if (save) try { localStorage.setItem(this.key + '-mini', on ? '1' : '0'); } catch (e) {}
+      this.apply();
+      this.emit('dl:layer-menu-mini', {mini: on});
+    }
+
+    // Chat / Profile butuh lebar penuh: selama salah satunya tampil, menu melayang tidak bisa ditutup.
+    setPeek(on) {
+      if (!this.mini) return;
+      this.peek = on || this.st.show !== 'menu';
+      if (!this.peek) this.togglePop(false);
+      this.el.classList.toggle('is-peek', this.peek);
     }
 
     depthOf(items) { return 1 + Math.max(0, ...items.map(n => n.items ? this.depthOf(n.items) : 0)); }
@@ -62,7 +103,6 @@
         box.hidden = false;
         box.addEventListener('click', e => { const b = e.target.closest('[data-lm-view]'); if (b) this.setView(+b.dataset.lmView); });
       }
-      this.dots.innerHTML = '<i></i>'.repeat(this.depthOf(this.root));
     }
 
     // Tukar akar menu: layer kembali ke 1, panel kembali ke menu (bila sedang Chat/Profile).
@@ -72,7 +112,6 @@
       this.view = i;
       this.root = this.views[i].items;
       this.$$('[data-lm-view]').forEach(b => { const on = +b.dataset.lmView === i; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', String(on)); });
-      this.dots.innerHTML = '<i></i>'.repeat(this.depthOf(this.root));
       if (!changed && !animate) return;
       this.path = [];
       if (this.st.show !== 'menu') this.show('menu');
@@ -87,7 +126,6 @@
       for (let i = this.track.children.length; i <= d; i++) this.track.insertAdjacentHTML('beforeend', '<div class="dl-lm__pane"></div>');
       [...this.track.children].forEach((p, i) => { p.innerHTML = this.pane(i); p.inert = i !== d; });
       this.slide(this.track, d, animate);
-      [...this.dots.children].forEach((x, i) => x.classList.toggle('is-on', i <= d));
       this.save();
     }
 
@@ -102,8 +140,7 @@
       let h = '';
       if (d) {
         const p = this.path[d - 1];
-        h += BACK + `<div class="dl-lm__title"><i class="${esc(p.icon)}"></i><b>${esc(p.label)}</b></div>`
-          + `<div class="dl-lm__crumb">${this.path.slice(0, d).map(n => esc(n.label)).join(' <i class="fa-solid fa-angle-right"></i> ')}</div>`;
+        h += BACK + `<div class="dl-lm__title" title="${esc(p.label)}"><i class="${esc(p.icon)}"></i><b>${esc(p.label)}</b></div>`;
       } else h += `<div class="dl-lm__cap">${esc(this.views.length ? this.views[this.view].label : this.el.dataset.root)}</div>`;
       let g = null;
       this.nodes(d).forEach((n, x) => {
@@ -120,6 +157,7 @@
     // Buka menu pada cabang berlabel (mis. ['Sales', 'Sales Order'] dari breadcrumb). Label tidak cocok -> cari lewat daun berlabel leaf.
     goTo(labels, leaf = null) {
       if (this.st.show !== 'menu') this.show('menu');
+      this.setPeek(true);
       const path = [];
       let items = this.root;
       for (const l of labels) { const n = items.find(x => x.items && x.label === l); if (!n) break; path.push(n); items = n.items; }
@@ -134,16 +172,17 @@
     back() { this.path.pop(); this.draw(); this.track.children[this.path.length]?.querySelector('.dl-lm__a')?.focus({preventScroll: true}); }
 
     click(e, t) {
-      if (t.hasAttribute('data-lm-back')) { this.back(); return; }
+      if (t.hasAttribute('data-lm-back')) { this.setPeek(true); this.back(); return; }
       if (!t.hasAttribute('data-lm-x')) return;
       const d = [...this.track.children].indexOf(t.closest('.dl-lm__pane'));
       const n = this.nodes(d)[+t.dataset.lmX];
-      if (n.items) { this.path = [...this.path.slice(0, d), n]; this.draw(); this.track.children[d + 1].querySelector('[data-lm-back]').focus({preventScroll: true}); return; }
+      if (n.items) { this.setPeek(true); this.path = [...this.path.slice(0, d), n]; this.draw(); this.track.children[d + 1].querySelector('[data-lm-back]').focus({preventScroll: true}); return; }
       if (!n.url || n.url === '#') e.preventDefault();
       this.sel = n.key;
       this.$$('.dl-lm__a.is-active').forEach(a => a.classList.remove('is-active'));
       t.classList.add('is-active');
       this.save();
+      this.setPeek(false);
       const detail = {key: n.key, label: n.label, url: n.url || null, path: [...this.path.map(p => p.label), n.label]};
       if (!this.emit('dl:layer-menu', detail, true)) { e.preventDefault(); return; }
       if (!n.url || n.url === '#') toast(`Buka: ${detail.path.join(' › ')} (pratinjau)`);
@@ -200,6 +239,7 @@
 
     togglePop(on = !this.pop.classList.contains('is-on')) {
       if (!this.pop) return;
+      if (on && this.mini && !this.peek) return;
       this.pop.classList.toggle('is-on', on);
       this.$('[data-lm-gear]').setAttribute('aria-expanded', String(on));
     }
@@ -216,7 +256,7 @@
       this.$('[data-lm-swap]').hidden = this.$('[data-lm-dockbtn]').hidden = !(chat && !dock);
       this.$('[data-lm-swap]').title = show === 'chat' ? 'Tampilkan menu' : 'Tampilkan chat';
       const mode = {chat: 'Chat', profile: 'Profile'}[show];
-      this.dots.hidden = !!mode;
+      if (this.mini && show !== 'menu') this.setPeek(true);
       const m = this.$('[data-lm-mode]'); m.hidden = !mode; m.textContent = mode || '';
       if (this.dockHost) this.dockHost.classList.toggle('is-on', chat && dock);
       this.badges();
@@ -274,7 +314,7 @@
     openPage(k) {
       const s = this.page(k); if (!s) return;
       this.closePage(false);
-      this.pdet.innerHTML = BACK + `<div class="dl-lm__title"><i class="${esc(this.faOf(s.dataset.icon))}"></i><b>${esc(s.dataset.label)}</b></div><div class="dl-lm__crumb">Profile <i class="fa-solid fa-angle-right"></i> ${esc(s.dataset.label)}</div>`;
+      this.pdet.innerHTML = BACK + `<div class="dl-lm__title"><i class="${esc(this.faOf(s.dataset.icon))}"></i><b>${esc(s.dataset.label)}</b></div>`;
       this.pdet.appendChild(s);
       this.slide(this.ptrack, 1);
       this.emit('dl:layer-menu-page', {key: k});

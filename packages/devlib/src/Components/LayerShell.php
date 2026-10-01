@@ -2,6 +2,8 @@
 
 namespace Devlib\Components;
 
+use Devlib\Lang;
+
 // Kerangka aplikasi dengan navigasi x-dl::layer-menu di kiri dan TANPA top bar. Tab MDI, laci, modal
 // dan palet Ctrl+K diwarisi dari Shell (partial shell/work & shell/overlays). Semua isi menu avatar
 // Shell pindah ke roda gigi Layer Menu; chat tinggal di Layer Menu (tukar / dok kanan).
@@ -75,15 +77,14 @@ class LayerShell extends Shell
     public function actions(): array
     {
         return array_values(array_filter([
-            ['key' => 'palette', 'label' => \Devlib\Lang::text('Search (Ctrl K)'), 'icon' => 'search'],
             ['key' => 'notif', 'label' => 'Notifikasi', 'icon' => 'notification'],
             ['key' => 'ai', 'label' => 'Asisten AI', 'icon' => 'ai'],
             ['key' => 'edit', 'label' => 'Edit profil', 'icon' => 'fa-user-pen'],
-            ['key' => 'pass', 'label' => \Devlib\Lang::text('Change password'), 'icon' => 'password'],
+            ['key' => 'pass', 'label' => Lang::text('Change password'), 'icon' => 'password'],
             ['key' => 'help', 'label' => 'Bantuan & dukungan', 'icon' => 'help'],
             $this->developer ? ['key' => 'devmode', 'label' => 'Mode Developer', 'icon' => 'fa-bug'] : null,
             $this->classic ? ['key' => 'menu-classic', 'label' => 'Menu Classic', 'icon' => 'fa-table-columns'] : null,
-            ['key' => 'logout', 'label' => \Devlib\Lang::text('Sign out'), 'icon' => 'logout', 'tone' => 'danger', 'confirm' => 'Keluar dari aplikasi?'],
+            ['key' => 'logout', 'label' => Lang::text('Sign out'), 'icon' => 'logout', 'tone' => 'danger', 'confirm' => 'Keluar dari aplikasi?'],
         ]));
     }
 
