@@ -43,8 +43,10 @@ final class PettyCashPrint extends Document
     {
         $tx = FinPettyCashTx::with('pettyCash')->findOrFail($id);
         $po = $tx->po_id ? PoOrder::with(['lines' => fn ($q) => $q->orderBy('line_no')])->find($tx->po_id) : null;
-        $amount = (float) ($tx->actual_amount ?? abs((float) $tx->cash_effect));
-        $kind = FinPettyCashTx::TYPES[$tx->tx_type] ?? $tx->tx_type;
+        // Nilai transaksi per jenis: nota (Settlement / Reimburse) -> kasbon (Cash Advance) -> uang masuk kas (Top Up).
+        // actual_amount dan advance_amount tidak pernah NULL (bawaan 0), jadi dipilih yang terisi, bukan lewat ??.
+        $amount = (float) $tx->actual_amount ?: ((float) $tx->advance_amount ?: abs((float) $tx->cash_effect));
+        $kind = self::t(FinPettyCashTx::TYPES[$tx->tx_type] ?? $tx->tx_type);
         $rows = $po ? $po->lines->map(fn ($l) => ['name' => $l->i_description, 'qty' => (float) $l->i_qty, 'unit' => $l->i_uom, 'code' => $l->c_item_code,
             'price' => (float) $l->i_price, 'subtotal' => (float) $l->c_line_net])->all() : [['name' => $kind, 'qty' => 1, 'unit' => '', 'price' => $amount, 'subtotal' => $amount]];
 

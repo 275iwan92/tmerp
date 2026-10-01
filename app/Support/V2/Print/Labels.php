@@ -183,6 +183,8 @@ final class Labels
         'Transaction No.' => 'No Transaksi',
         'Cash Fund' => 'Kas',
         'Cash Advance' => 'Uang Muka',
+        'Top Up' => 'Isi Ulang Kas',
+        'Settlement' => 'Pertanggungjawaban',
         'Journal' => 'Jurnal',
         'Paid To' => 'Dibayar kepada',
         'Attach the original receipts. The cash advance difference is returned to the fund or paid to the receiver.' => 'Lampirkan nota asli. Selisih uang muka dikembalikan ke kas atau dibayarkan ke penerima.',
