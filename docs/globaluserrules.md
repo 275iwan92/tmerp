@@ -195,7 +195,9 @@
     kanan = **pihak luar** (supplier / customer / penerima / pengemudi), lalu **Menyetujui** (orang terakhir, paling kiri
     di antara orang dalam), **Mengetahui**, dan **Pembuat** di paling kanan. Contoh PO: Supplier, Hendra, Wiwik, Eka.
     **Pembuat = selalu user yang login** (nama orangnya). **Penanda tangan lain (Menyetujui, Mengetahui) = setting
-    konstanta per dokumen yang mudah diubah** (skema diusulkan, menunggu OK user; belum dibangun).
+    konstanta per dokumen yang mudah diubah** — **disetujui user 2026-10-01 ("taruh di constant")**: `sys_constant`
+    kategori Print-out, grup Signer, kunci `SIGN_<DOKUMEN>_APPROVER` / `SIGN_<DOKUMEN>_ACKNOWLEDGER`, diubah di Settings →
+    Constants; kosong = garis untuk tanda tangan tangan. Belum dibangun (dibangun saat cetakan dipasang ke aplikasi).
     **Format cetak Surat Jalan, Customer Order (dengan harga + tanpa harga), dan Purchase Requisition (Produksi + Non
     Produksi) = A (Approved) oleh user 2026-10-01** — tidak diubah lagi kecuali user sendiri yang meminta.
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
