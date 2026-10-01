@@ -42,6 +42,14 @@ PrintDoc.register(class CustomerOrder extends PrintDoc {
     static receivers = [['Pemesan', 'Customer']];
 });
 
+// Customer Order format kedua: tanpa harga (untuk pihak yang tidak boleh melihat harga). Field sama, kolom harga dan
+// kotak total hilang, diganti KETERANGAN (keputusan user 2026-10-01: CO punya 2 format).
+PrintDoc.register(class CustomerOrderNoPrice extends PrintDoc.registry.CustomerOrder {
+    static subtitle = 'Sales Order &middot; Tanpa Harga';
+    static extra = [...PrintDoc.registry.CustomerOrder.extra, {key: 'remark', label: 'KETERANGAN', width: 46}];
+    static priced = false;
+});
+
 // Acuan kertas: docs/attachments/purchase order.jpg
 PrintDoc.register(class PurchaseOrder extends PrintDoc {
     static title = 'PURCHASE ORDER';

@@ -14,6 +14,7 @@ $enc.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter([System.Drawi
 $jobs = @(
     @('surat_jalan_a5', 'SuratJalan', '', 1210), @('surat_jalan_a5_deviasi', 'SuratJalan', '&dev=1', 1720), @('surat_jalan_a4', 'SuratJalan', '&case=a4', 2336),
     @('customer_order_a5', 'CustomerOrder', '', 1210), @('customer_order_a5_deviasi', 'CustomerOrder', '&dev=1', 1720), @('customer_order_a4', 'CustomerOrder', '&case=a4', 2336),
+    @('customer_order_noprice_a5', 'CustomerOrderNoPrice', '', 1210), @('customer_order_noprice_a4', 'CustomerOrderNoPrice', '&case=a4', 2336),
     @('purchase_order_a5', 'PurchaseOrder', '', 1210), @('purchase_order_a5_deviasi', 'PurchaseOrder', '&dev=1', 1720),
     @('jadwal_kirim_a5', 'JadwalKirim', '', 1210), @('jadwal_kirim_a5_deviasi', 'JadwalKirim', '&dev=1', 1640), @('jadwal_kirim_a4', 'JadwalKirim', '&case=a4', 2336),
     @('inquiry_a5', 'Inquiry', '', 1210), @('purchase_requisition_a5', 'PurchaseRequisition', '', 1210))

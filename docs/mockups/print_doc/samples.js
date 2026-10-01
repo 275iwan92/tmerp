@@ -134,3 +134,4 @@ const SAMPLES = {
         more: [],
     },
 };
+SAMPLES.CustomerOrderNoPrice = {data: SAMPLES.CustomerOrder.data, more: SAMPLES.CustomerOrder.more};
