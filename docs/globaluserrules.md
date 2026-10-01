@@ -188,7 +188,7 @@
     tanpa harga** (tanpa harga = kolom Harga/Subtotal, total, dan Terbilang tidak dicetak). **Nama Pembuat di tanda tangan
     dan nama "oleh" di kaki dokumen harus sama** (satu sumber: nama orang pembuat dokumen). **Purchase Requisition ada
     dua jenis: Produksi** (kolom No CO + nama product di baris kedua nama barang) **dan Non Produksi** (ATK, komputer;
-    No CO kosong); harga estimasi tetap di kolom Harga / Subtotal (usulan tata letak, menunggu OK user).
+    No CO kosong); harga estimasi tetap di kolom Harga / Subtotal (disetujui user 2026-10-01).
     **Kop Telasih Makmur memakai alamat yang sama dengan CV. Langgeng Jaya Makmur** (Pondok Blimbing Indah Blok A5 No. 5,
     Malang 65126, Telp/Fax 62-341-471268) dan **tidak memakai NPWP**; NPWP hanya di kop dokumen PPN.
     **Urutan tanda tangan semua cetakan — KETENTUAN TETAP user 2026-10-01, jangan dibalik lagi:** dari paling kiri ke
@@ -196,8 +196,8 @@
     di antara orang dalam), **Mengetahui**, dan **Pembuat** di paling kanan. Contoh PO: Supplier, Hendra, Wiwik, Eka.
     **Pembuat = selalu user yang login** (nama orangnya). **Penanda tangan lain (Menyetujui, Mengetahui) = setting
     konstanta per dokumen yang mudah diubah** (skema diusulkan, menunggu OK user; belum dibangun).
-    **Format cetak Surat Jalan dan Customer Order (dengan harga + tanpa harga) = A (Approved) oleh user 2026-10-01** —
-    tidak diubah lagi kecuali user sendiri yang meminta.
+    **Format cetak Surat Jalan, Customer Order (dengan harga + tanpa harga), dan Purchase Requisition (Produksi + Non
+    Produksi) = A (Approved) oleh user 2026-10-01** — tidak diubah lagi kecuali user sendiri yang meminta.
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.
@@ -244,6 +244,8 @@
 | 2026-10-02 | A.15: scope modul — Inquiry & Quotation jadi menu besar `PREORDER` (saklar sendiri), pintasan master, kontrak A/B (ddt; tm2 menunggu OK). |
 | 2026-10-02 | A.15: menu = data (cara ScriptCase) — pintasan = baris ber-target sama, hidup-mati layar dihitung dari pohon menu, grup Flow jadi baris menu. |
 | 2026-10-02 | A.15: semua menu terkait Inquiry -> Quotation tersedia di dalam menu `PREORDER` (ACC Digital, Pro-Cost Instant, pintasan master Proses / Mesin / Kategori Bahan / Satuan / Currency / Kurs / Constants, Sales Flow) — ddt + tm2 (menu `PREORDER` dimigrasi ke `tm2sys` atas OK user). |
+| 2026-10-02 | A.15: WIN / LOST cukup di layar Quotation (filter status + kolom Closed, Customer Order, Reason); laporan terpisah "Hasil Quotation (WIN/LOST)" dihapus. Jangan buat layar baru untuk hal yang sudah bisa dilihat di layar dokumennya. |
+| 2026-10-02 | B.5: perubahan menu / kode yang disetujui user diterapkan di mockup.test DAN tmerp.test sekaligus (kodenya sama) — menu `PREORDER` di `tm2sys` kini sama dengan `ddtsys`. |
 | 2026-10-02 | C.21: bar alur order di atas layar ditiadakan (7 layar v2); alur ditulis di Help. |
 | 2026-10-02 | C.22: kotak statistik di atas grid diganti satu baris filter teks dengan garis bawah berjalan & berwarna (semua grid DevLib). |
 | 2026-10-01 | C.23: panel dieline — tombol Standard Sizes dihapus (dropdown saja), 3D di samping gambar & bisa diputar, Dimensions 2 baris berkelompok di bawah gambar. |
@@ -253,6 +255,7 @@
 | 2026-10-01 | C.24: cetakan tanpa "Jumlah baris"; kaki dokumen = "Dicetak pada tanggal jam oleh nama orang" saja (tanpa nama aplikasi, login, nomor dokumen, ukuran kertas). Surat Jalan dan dokumen lain tanpa nilai uang: tanpa total. Surat Jalan + kolom Berat (kg) dan Ikat. Customer Order 2 format cetak: dengan harga / tanpa harga. |
 | 2026-10-01 | C.24: urutan tanda tangan semua cetakan = pihak luar, Menyetujui, Mengetahui, Pembuat (kiri ke kanan, ketentuan tetap); Pembuat = user yang login; penanda tangan lain = konstanta per dokumen (skema menunggu OK). Kop Telasih Makmur = alamat Langgeng Jaya Makmur, tanpa NPWP. PR Produksi (No CO + nama product) / Non Produksi. |
 | 2026-10-01 | **C.24: format cetak Surat Jalan dan Customer Order (dengan harga + tanpa harga) = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. |
+| 2026-10-01 | **C.24: format cetak Purchase Requisition (Produksi + Non Produksi) = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. |
 | 2026-10-01 | B.14: master hanya diubah user; sistem hanya mengubah transaksi; default boleh diperbarui analisa sistem dan tetap bisa di-override. |
 | 2026-10-01 | Material Planning (Booking + MRP + MPS) dibangun di ddt: keputusan B1-B9 di `docs/materialbooking_tier1.md` §6-§7. |
 | 2026-10-01 | **A.17: ProDev berhak mengubah dieline & mockup part** — tab Part & Dieline di form ProDev v2 (dimensi, Flat Size, artwork luar/dalam), simpan dua arah `iqp_part` + `prod_part`, peringatan dampak (layout Confirmed / costing published / product aktif). |

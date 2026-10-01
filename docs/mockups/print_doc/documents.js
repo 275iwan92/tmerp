@@ -110,6 +110,7 @@ PrintDoc.register(class Inquiry extends PrintDoc {
 });
 
 PrintDoc.register(class PurchaseRequisition extends PrintDoc {
+    static approved = '2026-10-01';     // Produksi dan Non Produksi
     static title = 'PURCHASE REQUISITION';
     static subtitle = 'Permintaan Pembelian &middot; Internal';
     static numberLabel = 'No PR';
