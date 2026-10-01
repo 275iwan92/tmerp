@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pro-Dev - Canvas limit (usulan)</title>
+<style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Segoe UI",system-ui,sans-serif;background:#f4f6fb;color:#1f2a44;padding:26px 30px}
+    h1{font-size:19px;color:#2c3e69;margin-bottom:4px}
+    .sub{font-size:13px;color:#5b6784;margin-bottom:18px}
+    .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+    .tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.04em;border-radius:6px;padding:3px 9px;margin-bottom:8px}
+    .tag.a{background:#e3ecff;color:#2c4fb5}.tag.b{background:#e6f4ec;color:#1f7a55}.tag.c{background:#fff1d9;color:#8a5a00}.tag.d{background:#fde4e4;color:#b02a2a}
+    .card{background:#fff;border:1px solid #dfe5f2;border-radius:14px;padding:18px 18px 16px;position:relative}
+    .card h2{font-size:19px;color:#2c3e69;margin-bottom:14px}
+    label{display:block;font-size:13px;color:#33405f;margin:10px 0 5px}
+    .sel,.inp{border:1.5px solid #b9c2e0;border-radius:10px;padding:9px 12px;font-size:15px;background:#fff;display:flex;justify-content:space-between;align-items:center}
+    .sel.new{border-color:#e11d2e;box-shadow:0 0 0 3px rgba(225,29,46,.12)}
+    .sel i{font-style:normal;color:#5b6784;font-size:11px}
+    .inp.ro{background:#f1f4fa;color:#4a5674}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{margin-top:10px;border:1.5px solid #9fd3b9;background:#dff0e8;color:#1f7a55;border-radius:10px;padding:10px;text-align:center;font-size:15px}
+    .note{font-size:12.5px;color:#5b6784;margin-top:8px;line-height:1.45}
+    .box{font-size:12.5px;line-height:1.45;border-radius:9px;padding:9px 11px;margin-top:10px}
+    .box.info{background:#eaf1ff;color:#27408f}.box.warn{background:#fff4dc;color:#7a5200}.box.bad{background:#fde8e8;color:#a32525}
+    .mk{position:absolute;right:-10px;top:-10px;width:26px;height:26px;border-radius:50%;background:#e11d2e;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+    .legend{margin-top:20px;background:#fff;border:1px solid #dfe5f2;border-radius:14px;padding:14px 18px;font-size:13.5px;line-height:1.6;columns:2;column-gap:30px}
+    .legend p{break-inside:avoid;padding-left:30px;position:relative}
+    .legend p b:first-child{position:absolute;left:0;top:2px;width:22px;height:22px;border-radius:50%;background:#e11d2e;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+<h1>Pro-Dev &middot; 3. Lembar Cetak / Canvas &mdash; usulan pilihan "Canvas limit"</h1>
+<p class="sub">Contoh part: bentang dieline 54,6 &times; 38,0 cm. Kotak merah = elemen baru. Sisanya sama dengan layar sekarang.</p>
+
+<div class="cols">
+    <div>
+        <span class="tag a">A &middot; BAWAAN</span>
+        <div class="card"><span class="mk">1</span>
+            <h2>3. Lembar Cetak / Canvas</h2>
+            <label>Canvas limit</label>
+            <div class="sel new">Custom (follow dieline) <i>&#9660;</i></div>
+            <div class="row">
+                <div><label>Length (cm)</label><div class="inp">56.4</div></div>
+                <div><label>Width (cm)</label><div class="inp">39.8</div></div>
+            </div>
+            <div class="btn">&#10022; Suggestion</div>
+            <p class="note">Canvas = bentang dieline &times; jumlah up + gap + bleed + gripper. Tanpa batas meja. Jumlah up bawaan 1.</p>
+            <label>Grain direction</label>
+            <div class="sel">Along dieline length <i>&#9660;</i></div>
+        </div>
+    </div>
+    <div>
+        <span class="tag b">B &middot; MEJA CETAK</span>
+        <div class="card"><span class="mk">2</span>
+            <h2>3. Lembar Cetak / Canvas</h2>
+            <label>Canvas limit</label>
+            <div class="sel new">Press bed <i>&#9660;</i></div>
+            <div class="row">
+                <div><label>Length (cm)</label><div class="inp">102</div></div>
+                <div><label>Width (cm)</label><div class="inp">72</div></div>
+            </div>
+            <div class="btn">&#10022; Suggestion</div>
+            <div class="box info">Batas: <b>Komori GL440</b> 103 &times; 72 cm. Auto Up mencari jumlah up terbanyak di dalam batas ini (perilaku sekarang).</div>
+            <label>Grain direction</label>
+            <div class="sel">Along dieline length <i>&#9660;</i></div>
+        </div>
+    </div>
+    <div>
+        <span class="tag c">C &middot; MEJA POND</span>
+        <div class="card"><span class="mk">3</span>
+            <h2>3. Lembar Cetak / Canvas</h2>
+            <label>Canvas limit</label>
+            <div class="sel new">Die-cut bed (Pond) <i>&#9660;</i></div>
+            <div class="row">
+                <div><label>Length (cm)</label><div class="inp">56.4</div></div>
+                <div><label>Width (cm)</label><div class="inp">39.8</div></div>
+            </div>
+            <div class="btn">&#10022; Suggestion</div>
+            <div class="box warn">Ukuran meja <b>Ruian Die Cutter</b> belum diisi di Master Mesin, jadi belum ada batas. Isi dulu ukuran mejanya supaya pilihan ini bekerja.</div>
+            <label>Grain direction</label>
+            <div class="sel">Along dieline length <i>&#9660;</i></div>
+        </div>
+    </div>
+    <div>
+        <span class="tag d">D &middot; DIELINE TIDAK MUAT</span>
+        <div class="card"><span class="mk">4</span>
+            <h2>3. Lembar Cetak / Canvas</h2>
+            <label>Canvas limit</label>
+            <div class="sel new">Press bed <i>&#9660;</i></div>
+            <div class="row">
+                <div><label>Length (cm)</label><div class="inp">103</div></div>
+                <div><label>Width (cm)</label><div class="inp">72</div></div>
+            </div>
+            <div class="btn">&#10022; Suggestion</div>
+            <div class="box bad">Dieline 1 up butuh <b>140,6 &times; 48,2 cm</b>, melebihi meja Komori GL440 (103 &times; 72 cm). Pertimbangkan dipecah kiri / kanan (<b>Double Join</b>) atau kembali ke Custom.</div>
+            <label>Grain direction</label>
+            <div class="sel">Along dieline length <i>&#9660;</i></div>
+        </div>
+    </div>
+</div>
+
+<div class="legend">
+    <p><b>1</b><b>Custom (follow dieline)</b> jadi bawaan saat layar dibuka. Canvas dihitung dari dieline, tanpa batas meja dan tanpa batas minimum 25 &times; 20 cm. Length / Width tetap bisa diketik.</p>
+    <p><b>2</b><b>Press bed</b> = perilaku sekarang, batas dari mesin cetak yang dipilih di dropdown mesin.</p>
+    <p><b>3</b><b>Die-cut bed (Pond)</b> = batas dari mesin pond yang dipilih. Selama ukuran meja pond kosong di Master Mesin, muncul peringatan dan tidak ada batas.</p>
+    <p><b>4</b>Bila dieline 1 up tidak muat di meja yang dipilih, layar memberi saran pecah kiri / kanan (Double Join). Hanya saran; struktur part tetap diubah di Inquiry / Master Product.</p>
+</div>
+</body>
+</html>

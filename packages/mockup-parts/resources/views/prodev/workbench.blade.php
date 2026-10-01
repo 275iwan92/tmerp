@@ -76,6 +76,16 @@
                         </div>
                         <div class="io-group">
                             <h2>3. Lembar Cetak / Canvas</h2>
+                            <!-- Batas canvas pilihan officer (user 2026-10-01): Custom = ikut dieline tanpa batas meja (bawaan part
+                            baru); selain itu batas meja cetak, meja pond, atau terkecil dari keduanya (aturan 16-Sep). v2 saja. -->
+                            <label>Canvas limit</label>
+                            <select id="io-limit">
+                                <option value="CUSTOM">Custom (follow dieline)</option>
+                                <option value="PRESS">Press bed</option>
+                                <option value="DIECUT">Die-cut bed (Pond)</option>
+                                <option value="BOTH">Press + Die-cut (smallest of both)</option>
+                            </select>
+                            <div id="io-limitNote" class="io-notice info"></div>
                             <div class="io-row">
                                 <div><label>Length (cm)</label><input id="io-sl" type="number" min="1" step=".1"></div>
                                 <div><label>Width (cm)</label><input id="io-sw" type="number" min="1" step=".1"></div>

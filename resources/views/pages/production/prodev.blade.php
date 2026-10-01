@@ -212,6 +212,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             'source' => 'imposition_plano_optimizer',
             'canvas_l_cm' => $state['canvasL'] ?? null,
             'canvas_w_cm' => $state['canvasW'] ?? null,
+            // Pilihan "Canvas limit" layar v2 (CUSTOM / PRESS / DIECUT / BOTH); layar v1 tidak mengirimnya.
+            'canvas_limit' => $state['canvasLimit'] ?? null,
             'gap_cm' => $state['gapCm'] ?? null,
             'plano_name' => $state['spec']['planoName'] ?? null,
             'machine' => $state['machine'] ?? null,
@@ -616,8 +618,12 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             [$l, $w] = [max($l, $w), min($l, $w)];
 
             $spec = $src?->dieline_spec ?? [];
+            // Batas canvas yang terakhir dipakai. Layout lama (sebelum pilihan ini ada) dibuat dengan aturan
+            // meja cetak + plong = BOTH; part tanpa layout -> null (layar v2 memakai Custom).
+            $lastLayout = $p->layoutGroups()->orderByDesc('prod_layout_group.id_layout_group')->first();
 
             $jobs[] = [
+                'canvasLimit' => $lastLayout ? ($lastLayout->layout_detail['canvas_limit'] ?? 'BOTH') : null,
                 'id' => 'part-'.$p->id_part,
                 'kind' => 'real',
                 'partId' => $p->id_part,

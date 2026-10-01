@@ -3,6 +3,24 @@
 
 ---
 
+## 2026-10-01 -- ProDev: BOM kosong diperbaiki (satuan mm/cm) + pilihan Canvas limit
+
+- Laporan user: bagian Bill of Material macet di "Menghitung dari data Inquiry…" lalu "Perbaiki. Lalu jalankan saja soal ukuran
+  meja size custom".
+- **Sebab BOM kosong:** `iqp_part.flat_w/flat_h` (mm) dipakai sebagai cm -> blank 250 × 161 cm -> tidak ada plano yang muat ->
+  `calculator()` berhenti sebelum memanggil hitungan BOM / Ink / BOP. Diperbaiki di tiga tempat (zona beku, v1 + v2 memakai kode
+  yang sama): `pages/production/prodev.blade.php::jobs()` (flat ÷ 10), `saveLayout()` (`iqp_layout.flat_*_mm` tidak lagi × 10),
+  `SpecEngine::blankArea()` (mm² ÷ 100 = cm², dipakai luas tutupan tinta). Di `workbench.js` (v2) BOM / Ink / BOP kini tetap
+  diminta walau belum ada plano yang muat. Cek data: 102 (ddt) / 69 (tm2) part ber-flat semuanya mm; `iqp_layout` 2 baris,
+  tidak ada yang tersimpan × 10 -> tidak ada data yang perlu dikoreksi.
+- **Canvas limit** (rulebook A.18, usulan `docs/mockups/prodev_canvas_limit.jpg`): dropdown di panel 3. Lembar Cetak / Canvas —
+  Custom (follow dieline, bawaan, 1 up, tanpa batas meja), Press bed, Die-cut bed (Pond), Press + Die-cut (aturan 16-Sep).
+  Tersimpan di `layout_detail.canvas_limit`; layout lama dibuka sebagai Press + Die-cut. Hanya layar v2 (`workbench.js` /
+  `workbench.blade.php`); v1 tetap seperti semula.
+- Uji: workbench dijalankan tanpa browser (Chrome headless, jawaban server direkam): blank 25 × 16,1 cm, canvas Custom
+  26,6 × 18,1 cm, 1 up, BOM 8 baris tampil; test Prodev* + InquirySendToProdev + ratchet lolos. Belum dicek mata user.
+- Catatan data master (tidak diisi sendiri): ukuran meja 4 mesin pond dan Sakurai Oliver 58 masih kosong, jumlah warna mesin kosong.
+
 ## 2026-10-01 -- Form ProDev v2: tab Part & Dieline + latar putih
 
 - Perintah user: "saya ingin layar itu (Part & Dieline Inquiry) ditambahkan lagi di prodev form, karena prodev berhak merubah
@@ -18,7 +36,7 @@
   lewat token DevLib; 3 warna inline di `workbench.js` jadi kelas `io-warntxt`. Layar v1 tidak disentuh.
 - Uji: render tanpa browser + potret Chrome headless (kedua tab), simpan diuji di dalam transaksi yang dibatalkan (ddt tidak berubah).
   Belum dicek mata user di browser.
-- **Temuan (belum diperbaiki, zona beku, menunggu OK user):** workbench membaca `iqp_part.flat_w/flat_h` (mm) sebagai **cm**
+- **Temuan (sudah diperbaiki, lihat entri di atas):** workbench membaca `iqp_part.flat_w/flat_h` (mm) sebagai **cm**
   (`pages/production/prodev.blade.php::jobs()` dan `flat_w_mm = flat_w * 10` di `saveLayout()`), sehingga part dari Inquiry tampil
   "250 × 161 cm" dan tidak muat di canvas mana pun.
 

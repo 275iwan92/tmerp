@@ -135,7 +135,11 @@
           zoom: 1, auto: true, manualUp: 6, objs: [], selected: null, pl: planos[0], drag: null,
           conv: 'pcs', touched: false, sc0: 0, sx0: 0, sy0: 0,
           d: diecutters[0] || null,
+          // Batas canvas (user 2026-10-01): CUSTOM = ikut dieline, tanpa batas meja (bawaan part yang belum punya
+          // layout); PRESS / DIECUT / BOTH = batas meja. Layout lama tanpa catatan = BOTH (aturan 16-Sep).
+          limit: ['CUSTOM', 'PRESS', 'DIECUT', 'BOTH'].includes(p0.canvasLimit) ? p0.canvasLimit : 'CUSTOM',
       };
+      const NOLIM = 1e6;   // cm -- "tanpa batas meja"
       const app = self.el;
 
       // Jembatan ke komponen Livewire induk: layar ini client-side, tapi
@@ -164,6 +168,7 @@
               partId: S.p.partId,
               canvasL: S.L,
               canvasW: S.W,
+              canvasLimit: S.limit,
               gapCm: S.g,
               upCount: upValid(),
               method: S.touched ? 'MANUAL_NESTING' : 'AUTO_GRID',
@@ -922,7 +927,8 @@
           upModeUi();
           artworkLabel();
           syncActiveJob();
-          update(true);
+          $('limit').value = S.limit;
+          if (S.limit === 'CUSTOM') setLimit('CUSTOM', true); else update(true);
           samakanTinggiAcc();
           autoNestSoon();
           analyzeArtwork();
@@ -1888,6 +1894,7 @@
           };
           $('machine').onchange = e => { S.m = machines[e.target.value]; S.objs = []; suggest(); autoNestSoon(); };
           $('diecut').onchange = e => { S.d = diecutters[e.target.value]; S.objs = []; suggest(); autoNestSoon(); };
+          $('limit').onchange = e => setLimit(e.target.value, false);
           $('autoUp').onchange = e => {
               S.auto = e.target.checked;
               upModeUi();
@@ -1901,7 +1908,7 @@
               S.manualUp = Math.max(1, +e.target.value || 1);
               // Target berubah -> susunan dibangun ulang lalu jumlah object
               // dicocokkan ke target (termasuk yang harus di luar canvas).
-              if (!S.auto) { S.objs = []; S.touched = false; update(true); autoNestSoon(); }
+              if (!S.auto) { S.objs = []; S.touched = false; if (unlimited()) suggest(); else update(true); autoNestSoon(); }
           };
           // Ditekan user = optimasi menyeluruh (canvas + plano + pola).
           // Kalau susunan sudah diatur MANUAL (bukan hasil auto nesting),
@@ -1992,11 +1999,19 @@
       // muat di plong tetap tidak bisa diproduksi. Meja plong yang belum
       // diisi di Master Mesin tidak dikarang: batasnya sekadar tidak
       // diberlakukan, dan panel infonya mengatakan itu terang-terangan.
+      // Sejak 2026-10-01 batasnya mengikuti pilihan "Canvas limit" (S.limit):
+      // BOTH = aturan di atas; PRESS = meja cetak saja; DIECUT = meja pond
+      // saja; CUSTOM = tanpa batas meja (canvas mengikuti dieline).
+      function dieBed() { return S.d && S.d[1] && S.d[2] ? [S.d[1], S.d[2]] : null; }
       function bedLimits() {
-          let L = S.m[1], W = S.m[2];
-          if (S.d && S.d[1] && S.d[2]) { L = Math.min(L, S.d[1]); W = Math.min(W, S.d[2]); }
-          return [L, W];
+          const die = dieBed();
+          if (S.limit === 'CUSTOM') return [NOLIM, NOLIM];
+          if (S.limit === 'DIECUT') return die || [NOLIM, NOLIM];
+          if (S.limit === 'PRESS' || !die) return [S.m[1], S.m[2]];
+          return [Math.min(S.m[1], die[0]), Math.min(S.m[2], die[1])];
       }
+      function unlimited() { return bedLimits()[0] >= NOLIM; }
+      function limTxt() { const [bl, bw] = bedLimits(); return bl >= NOLIM ? 'tanpa batas meja' : bl + ' × ' + bw + ' cm'; }
 
       function ok() {
           const [bl, bw] = bedLimits();
@@ -2007,9 +2022,50 @@
       // nama mesinnya, bukan cuma angka.
       function bedOwner() {
           const [bl, bw] = bedLimits();
-          return (S.d && S.d[1] && S.d[2] && (bl < S.m[1] || bw < S.m[2]))
+          if (S.limit === 'DIECUT') return S.d ? S.d[0] + ' (plong)' : S.m[0];
+          return (S.limit === 'BOTH' && dieBed() && (bl < S.m[1] || bw < S.m[2]))
               ? S.d[0] + ' (plong)'
               : S.m[0];
+      }
+
+      // Mode Custom: canvas = dieline x jumlah up (grid, dua orientasi dicoba) + gap antar-up
+      // + margin keliling & gripper (aturan usable() di optimizeSheet). Tanpa minimum 25 x 20.
+      function customCanvas(n) {
+          const up1 = v => Math.ceil(v * 10 - 1e-6) / 10;
+          let bestC = null;
+          for (const [a, b] of [[S.p.l, S.p.w], [S.p.w, S.p.l]]) for (let c = 1; c <= n; c++) {
+              const r = Math.ceil(n / c), sx = c * a + (c - 1) * S.g, sy = r * b + (r - 1) * S.g;
+              // Length = sisi panjang lembar; gripper di sisi panjang (menambah Width).
+              const L = up1(Math.max(sx, sy) + 2 * MARGIN), W = up1(Math.min(sx, sy) + GRIPPER + MARGIN);
+              if (!bestC || L * W < bestC.L * bestC.W - 1e-9) bestC = { L, W };
+          }
+          return bestC;
+      }
+
+      // Keterangan di bawah pilihan Canvas limit + saran bila 1 up saja tidak muat di meja terpilih.
+      function limitNote() {
+          const box = $('limitNote'), [bl, bw] = bedLimits(), die = dieBed(), c1 = customCanvas(1);
+          const fits = (L, W) => (L <= bl && W <= bw) || (W <= bl && L <= bw);
+          let cls = 'info', html;
+          if (S.limit === 'CUSTOM') html = 'Canvas = dieline × up + gap + margin &amp; gripper. No bed limit. Default 1 up; raise it in <b>1. Jumlah Up</b>.';
+          else if (S.limit === 'DIECUT' && !die) { cls = 'bad'; html = 'The bed size of <b>' + esc(S.d ? S.d[0] : 'die-cut machine') + '</b> is not filled in Master Machine yet, so there is no limit. Fill it in first for this choice to work.'; }
+          else html = 'Limit: <b>' + esc(bedOwner()) + '</b> ' + bl + ' × ' + bw + ' cm' + (S.limit === 'BOTH' && !die ? ' (die-cut bed size not filled in yet: press bed only)' : '') + '.';
+          if (!unlimited() && !fits(c1.L, c1.W)) {
+              cls = 'bad';
+              html = 'Dieline 1 up needs <b>' + c1.L + ' × ' + c1.W + ' cm</b>, larger than ' + esc(bedOwner()) + ' (' + bl + ' × ' + bw + ' cm). Consider splitting the part left / right (<b>Double Join</b>) in Inquiry / Master Product, or go back to Custom.';
+          }
+          box.className = 'io-notice ' + cls; box.innerHTML = html;
+      }
+
+      // Ganti batas canvas: Custom -> Manual Up (bawaan 1 up saat layar dibuka), batas meja -> Auto Up seperti semula.
+      function setLimit(v, first) {
+          S.limit = v; $('limit').value = v;
+          S.objs = []; S.touched = false;
+          if (unlimited()) { S.auto = false; if (first) S.manualUp = 1; $('manualUp').value = S.manualUp; } else S.auto = true;
+          $('autoUp').checked = S.auto;
+          upModeUi();
+          suggest();
+          autoNestSoon();
       }
       function fit(L, W, a, b, g) {
           const c = Math.floor((L + g) / (a + g)), r = Math.floor((W + g) / (b + g));
@@ -2221,7 +2277,7 @@
               maxx = Math.max(...b.map(v => v.X)), maxy = Math.max(...b.map(v => v.Y)),
               cen = S.objs.map(o => ({ o, cx: (o.x + o.w / 2 - sx) / sc - minx + m, cy: (o.y + o.h / 2 - sy) / sc - miny + m })),
               rl = +(maxx - minx + 2 * m).toFixed(1), rw = +(maxy - miny + 2 * m).toFixed(1),
-              L = Math.min(rl, S.m[1]), W = Math.min(rw, S.m[2]),
+              L = Math.min(rl, bedLimits()[0]), W = Math.min(rw, bedLimits()[1]),
               area = S.objs.length * S.p.l * S.p.w, use = (area / (L * W) * 100).toFixed(1);
 
           S.L = L; S.W = W; $('sl').value = L; $('sw').value = W;
@@ -2229,7 +2285,7 @@
           cen.forEach(r => { r.o.w *= k; r.o.h *= k; r.o.x = nx + r.cx * n - r.o.w / 2; r.o.y = ny + r.cy * n - r.o.h / 2; });
           S.sc0 = n; S.sx0 = nx; S.sy0 = ny;
           $('suggestNote').textContent = (rl > L || rw > W)
-              ? 'Susunan custom butuh ' + rl + ' × ' + rw + ' cm — melebihi bed ' + S.m[0] + ' (' + S.m[1] + ' × ' + S.m[2] + '). Canvas dipotong ke ' + L + ' × ' + W + ' cm, object di luar batas ditandai merah.'
+              ? 'Susunan custom butuh ' + rl + ' × ' + rw + ' cm — melebihi meja ' + bedOwner() + ' (' + limTxt() + '). Canvas dipotong ke ' + L + ' × ' + W + ' cm, object di luar batas ditandai merah.'
               : 'Custom nesting: bounding box ' + S.objs.length + ' object + bleed ' + m + ' cm/sisi = ' + L + ' × ' + W + ' cm · pemakaian area ' + use + '%.';
           update(false);
       }
@@ -2241,6 +2297,18 @@
           // mesin cetak saja -- canvas yang muat di press tapi tidak muat
           // di plong tetap tidak bisa diproduksi.
           const m = bedLimits();
+          if (m[0] >= NOLIM) {
+              // Tanpa batas meja: Manual Up -> canvas pas untuk jumlah up itu; Auto Up -> canvas yang diketik dipertahankan.
+              if (!S.auto) {
+                  const c = customCanvas(Math.max(1, Math.round(S.manualUp) || 1));
+                  S.L = c.L; S.W = c.W; $('sl').value = S.L; $('sw').value = S.W;
+              }
+              $('suggestNote').textContent = S.auto
+                  ? 'Auto Up tanpa batas meja: jumlah up terbanyak di canvas yang diketik.'
+                  : 'Custom: canvas ' + S.L + ' × ' + S.W + ' cm mengikuti dieline untuk ' + S.manualUp + ' up (termasuk gap, margin & gripper).';
+              update(true);
+              return;
+          }
           let bestC = null;
           for (let L = 25; L <= m[0]; L += .5) for (let W = 20; W <= m[1]; W += .5) {
               const a = fit(L, W, p.l, p.w, S.g), b = fit(L, W, p.w, p.l, S.g), f = b.ups > a.ups ? b : a;
@@ -2274,6 +2342,7 @@
                   ? 'Maksimum meja plong: <b>' + S.d[1] + ' × ' + S.d[2] + ' cm</b>'
                   : '<span class="io-warntxt">⚠ Ukuran meja belum diisi di Master Mesin — batas plong belum bisa ditegakkan, canvas baru dibatasi bed mesin cetak saja.</span>');
           if (reset) S.objs = [];
+          limitNote();
           render();
           calculator();
       }
@@ -2298,9 +2367,16 @@
       function render() {
           if (!ok()) {
               const [bl, bw] = bedLimits();
-              const pembatas = (S.d && S.d[1] && S.d[2] && (bl < S.m[1] || bw < S.m[2])) ? S.d[0] + ' (plong)' : S.m[0];
+              const pembatas = bedOwner();
               $('arts').innerHTML = ''; $('grainG').innerHTML = '';
               $('sheetLabel').textContent = 'CANVAS ' + S.L + ' × ' + S.W + ' cm — DI LUAR BATAS MESIN';
+              if (!(S.L > 0 && S.W > 0)) {
+                  $('sheetLabel').textContent = 'CANVAS belum diisi';
+                  $('warning').classList.remove('show');
+                  msg('Isi Length dan Width canvas (lebih besar dari 0).', 'bad');
+                  $('status').textContent = 'Validation failed';
+                  return;
+              }
               $('warning').innerHTML = '⚠ Canvas ' + S.L + ' × ' + S.W + ' cm melebihi meja ' + pembatas +
                   '<br>Maksimum ' + bl + ' × ' + bw + ' cm — ' + S.objs.length + ' object disembunyikan';
               $('warning').classList.add('show');
@@ -2652,11 +2728,11 @@
                   ? (kurang.target > kurang.maxMesin
                       ? '<br><b>⚠ TARGET ' + kurang.target + ' UP TIDAK MUAT DI MESIN</b> — blank ' + S.p.l + ' × ' + S.p.w
                         + ' cm sebanyak itu melebihi meja ' + bedOwner() + '. Canvas terbesar yang diizinkan ('
-                        + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm) hanya memuat ' + kurang.maxMesin + ' up.'
+                        + limTxt() + ') hanya memuat ' + kurang.maxMesin + ' up.'
                       : '<br><b>⚠ TARGET ' + kurang.target + ' UP BELUM MUAT DI CANVAS INI</b> — canvas ' + S.L + ' × ' + S.W
                         + ' cm baru memuat ' + kurang.dapat + ' up, sisanya ditempatkan DI LUAR canvas (tandai merah) untuk digeser manual. '
-                        + 'Bisa juga diputar/di-mirror, perbesar canvas (meja ' + bedOwner() + ' masih mengizinkan sampai '
-                        + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm), atau tekan ✦ Suggestion.')
+                        + 'Bisa juga diputar/di-mirror, perbesar canvas (' + (unlimited() ? 'tanpa batas meja' : 'meja ' + bedOwner() + ' masih mengizinkan sampai ' + limTxt())
+                        + '), atau tekan ✦ Suggestion.')
                   : '');
 
           $('impoDetail').innerHTML = '<table>' +
