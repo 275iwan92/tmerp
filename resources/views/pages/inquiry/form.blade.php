@@ -427,7 +427,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->discount_qty_value = $inq->discount_qty_value !== null ? rtrim(rtrim((string) $inq->discount_qty_value, '0'), '.') : '';
         $this->discount_qty_min_ton = $inq->discount_qty_min_ton !== null ? rtrim(rtrim((string) $inq->discount_qty_min_ton, '0'), '.') : '';
         $this->sub_state = $inq->sub_state;
-        $this->stat_confirm = (bool) $inq->stat_confirm;
+        $this->stat_confirm = (bool) $inq->stat_confirm_sales;
         $this->stat_cancel = (bool) $inq->stat_cancel;
 
         // Tier 2 §11.2: begitu stat_confirm=1 form terkunci total (CONFIRMED/DONE/CANCELLED
@@ -2390,7 +2390,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->persist();
 
         $this->inquiry->update([
-            'stat_confirm' => true,
+            'stat_confirm_sales' => true,
             'sub_state' => 'SUBMITTED',
             'updated_by' => Auth::user()->login,
         ]);

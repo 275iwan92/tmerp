@@ -51,7 +51,7 @@ new #[Title('TELASIH MAKMUR — RECALC')] class extends Component
             $tier = $this->inquiry->tiers->first();
             $this->qty = $tier?->qty !== null ? rtrim(rtrim((string) $tier->qty, '0'), '.') : '';
             $this->deadline_quotation = optional($this->inquiry->deadline_quotation)->toDateString();
-            $this->readOnly = (bool) $this->inquiry->stat_confirm;
+            $this->readOnly = (bool) $this->inquiry->stat_confirm_sales;
 
             return;
         }
@@ -211,7 +211,7 @@ new #[Title('TELASIH MAKMUR — RECALC')] class extends Component
         $this->persistDraft();
 
         $this->inquiry->update([
-            'stat_confirm' => true,
+            'stat_confirm_sales' => true,
             'sub_state' => 'SUBMITTED',
             'updated_by' => Auth::user()->login,
         ]);

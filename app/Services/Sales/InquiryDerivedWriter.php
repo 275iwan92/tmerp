@@ -90,7 +90,7 @@ final class InquiryDerivedWriter
         if (! $doc->tiers()->exists()) {
             throw ValidationException::withMessages(['qty' => 'Qty order wajib diisi sebelum Confirm.']);
         }
-        $doc->update(['stat_confirm' => true, 'sub_state' => 'SUBMITTED', 'updated_by' => $this->login]);
+        $doc->update(['stat_confirm_sales' => true, 'sub_state' => 'SUBMITTED', 'updated_by' => $this->login]);
     }
 
     // DRAFT belum Confirm boleh dihapus (lifecycle dokumen: Simpan + Hapus + Confirm sebelum Confirm).
@@ -112,7 +112,7 @@ final class InquiryDerivedWriter
 
     private function assertEditable(?IqpInquiry $doc): void
     {
-        if ($doc?->stat_confirm) {
+        if ($doc?->stat_confirm_sales) {
             throw ValidationException::withMessages(['inquiry' => 'Dokumen sudah Confirm — tidak bisa diubah.']);
         }
     }

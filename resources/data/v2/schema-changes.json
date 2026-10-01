@@ -1,5 +1,258 @@
 [
     {
+        "at": "2026-10-01 23:01:18",
+        "items": [
+            {
+                "kind": "kolom dihapus",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "stat_confirm",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "stat_confirm_sales",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "confirm_sales_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "confirm_sales_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "stat_confirm_prodev",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "confirm_prodev_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "confirm_prodev_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "stat_confirm_procost",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "confirm_procost_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "confirm_procost_at",
+                "detail": "datetime"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-01 17:34:45",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_master_card",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_master_card_file",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-01 17:24:58",
+        "items": [
+            {
+                "kind": "kolom dihapus",
+                "db": "tm2sys",
+                "table": "sys_app_menu",
+                "column": "shortcut_of",
+                "detail": "bigint unsigned"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-01 17:24:56",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_app_menu",
+                "column": "shortcut_of",
+                "detail": "bigint unsigned"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-01 14:40:36",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_delivery",
+                "column": "original_date",
+                "detail": "date"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_delivery",
+                "column": "ship_time",
+                "detail": "time"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_delivery",
+                "column": "ready_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_delivery",
+                "column": "ready_source",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_delivery",
+                "column": "ready_by",
+                "detail": "varchar(50)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_delivery",
+                "column": "escalated_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "co_delay_reason",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "co_delivery_negotiation",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-01 14:40:07",
+        "items": [
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sdi",
+                "table": "v_co_delivery_outstanding",
+                "column": "customer_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-01 14:40:05",
+        "items": [
+            {
+                "kind": "tipe berubah",
+                "db": "tm2prd",
+                "table": "prd_wo_material",
+                "column": "material_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-01 14:40:04",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_delivery",
+                "column": "posted_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "co_order_delivery",
+                "column": "posted_by",
+                "detail": "varchar(50)"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-01 13:55:20",
+        "items": [
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sdi",
+                "table": "iqp_revise_change",
+                "column": "impact",
+                "detail": "varchar(30) null -> varchar(100) null"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-01 05:49:18",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "cust_receiving_hour",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "do_delivery_pod",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-10-01 05:26:48",
         "items": [
             {

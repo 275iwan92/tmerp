@@ -93,7 +93,7 @@ class UatFoodBoxInquirySeeder extends Seeder
                     'ppn_percent' => 11,
                     'pph_percent' => 2,
                     'sub_state' => 'DRAFT',
-                    'stat_confirm' => 0,
+                    'stat_confirm_sales' => 0,
                     'stat_cancel' => 0,
                     'is_approved' => 0,
                     'created_at' => $now, 'updated_at' => $now, 'created_by' => 'uat', 'updated_by' => 'uat',

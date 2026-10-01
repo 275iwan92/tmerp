@@ -56,7 +56,7 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
     {
         return IqpPart::with('materials')
             ->where('prod_part_id', $this->partId)
-            ->whereHas('inquiry', fn ($q) => $q->where('stat_confirm', true)->whereNotIn('sub_state', ['DRAFT', 'CANCELLED', 'LOST']))
+            ->whereHas('inquiry', fn ($q) => $q->where('stat_confirm_sales', true)->whereNotIn('sub_state', ['DRAFT', 'CANCELLED', 'LOST']))
             ->first();
     }
 

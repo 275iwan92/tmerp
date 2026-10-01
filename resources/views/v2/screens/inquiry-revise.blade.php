@@ -19,7 +19,7 @@
     abort_if($productId && ! $doc, 404);
     $source = $doc ? InquiryDerivedWriter::sourceOf(\App\Models\Master\ProdProduct::find($doc['id'])) : null;
     $parts = $inq ? ProductMaster::inquiryParts($inq) : ($source ? ProductMaster::inquiryParts($source) : []);
-    $locked = (bool) $inq?->stat_confirm;
+    $locked = (bool) $inq?->stat_confirm_sales;
     $scope = old('revise_scope', $inq?->reviseScopeArray() ?? []);
     $on = fn ($s) => in_array($s, $scope, true);
     $matOptions = $doc ? ProductMaster::materialOptions() : [];
@@ -38,18 +38,10 @@
 @if ($noProduct)<x-dl::alert tone="warn" message="The selected inquiry is not a Master Product yet (Quotation not WON). Choose a product from the list." />@endif
 
 @if (! $doc && ! request('pick') && ! $noProduct)
-    <x-dl::grid id="revise-docs" :rows="ProductMaster::derivedRows('REVISE')" search="Search inquiry no., product, customer..." actions="worklist" :active-key="null"
-        :new-url="$home.'?pick=1'" :open-url="$home.'?id={id}'"
-        source="{{ Src::of('tm2sdi.iqp_inquiry (inquiry_type = REVISE)', 'tm2sdi.iqp_revise_change') }}"
-        :columns="[
-            ['key' => 'name', 'label' => 'Product', 'type' => 'identity', 'code' => 'inquiry_no'],
-            ['key' => 'customer', 'label' => 'Customer'],
-            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'scope', 'label' => 'Scope revisi'],
-            ['key' => 'source', 'label' => 'Inquiry asal'],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => Sales::STATE_TONES],
-        ]"
-        :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Confirm (to ProDev/ProCost)'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn']]" />
+    {{-- Inquiry > Revise: meja Sales untuk jenis REVISE (satu tabel iqp_inquiry, saringan jenis + tanda; rulebook A.20, C.28). --}}
+    @php $g = (new \App\Support\V2\Grid\Sales\InquiryReviseGrid)->props(); @endphp
+    <x-dl::grid id="revise-docs" :rows="$g['rows']" :columns="$g['columns']" :stats="$g['stats']" :filters="$g['filters']" :detail="$g['detail']" :search="$g['search']"
+        actions="worklist" :active-key="null" :new-url="$g['newUrl']" :open-url="$g['openUrl']" :source="$g['source']" />
 @elseif (! $doc)
     <x-dl::card title="+ New Record — choose the product to revise" description="Only products from Master Product (born from a WON Quotation). Double-click a row.">
         <x-dl::grid id="revise-pick" :rows="ProductMaster::rows()" search="Search product, design no., customer..." :new-record="null" actions="worklist" :active-key="null"
@@ -154,7 +146,7 @@
             @if (! $locked)
                 @if ($inq)<x-dl::button preset="delete" type="submit" :formaction="route('v2.derived.delete', $inq->id_inquiry)" onclick="return confirm('Hapus draft {{ $inq->inquiry_no }}?')" formnovalidate />@endif
                 <x-dl::button preset="save" name="action" value="save" />
-                <x-dl::button preset="confirm" type="submit" name="action" value="confirm" onclick="return confirm('Confirm revisi ini? Form akan terkunci dan dikirim ke ProDev → ProCost.')" />
+                <x-dl::button preset="confirm" type="submit" name="action" value="confirm" onclick="return confirm('Confirm revisi ini? Form akan terkunci dan dikirim ke Pro-Dev, lalu Pro-Cost.')" />
             @elseif (! $inq->stat_cancel)
                 <x-dl::button preset="cancel" data-dl-open="revise-cancel" />
             @endif
@@ -166,15 +158,7 @@
     @endif
 
     @if ($locked && ! $inq->stat_cancel)
-        <x-dl::card title="Continue to Product Development" description="After Confirm, send each part to ProDev; from there continue to ProCost.">
-            <div class="mp-chips">
-                @foreach (ProductMaster::inquiryParts($inq) as $ip)
-                    @if ($ip['kind'] === 'COMPONENT')
-                        <form method="post" action="{{ route('v2.derived.prodev', $inq->id_inquiry) }}">@csrf<input type="hidden" name="part_id" value="{{ $ip['id'] }}"><x-dl::button type="submit" size="sm" icon="send" :label="'Kirim '.$ip['name'].' ke ProDev'" /></form>
-                    @endif
-                @endforeach
-            </div>
-        </x-dl::card>
+        <x-dl::alert tone="info" message="Confirmed by Sales: this revision is now in Pro-Dev › Revise. After Pro-Dev confirms every part it moves to Pro-Cost › Revise, then back here ready for Quotation." />
         <x-dl::modal id="revise-cancel" title="Cancel revisi" icon="cancel">
             <form method="post" action="{{ route('v2.derived.cancel', $inq->id_inquiry) }}">
                 @csrf

@@ -31,23 +31,42 @@ final class Prodev
         return $c;
     }
 
+    // Pro-Dev > Manual (Mode #2): part master yang TIDAK lahir dari Inquiry. Part dari Inquiry dikerjakan lewat grid
+    // Pro-Dev > New / Revise (satu baris = satu inquiry, rulebook A.20).
     public static function parts(): array
     {
-        $fromInquiry = IqpPart::whereNotNull('prod_part_id')->distinct()->pluck('prod_part_id')->flip();
+        $fromInquiry = IqpPart::whereNotNull('prod_part_id')->distinct()->pluck('prod_part_id');
 
-        return ProdPart::with(['product', 'layoutGroups'])->orderByDesc('id_part')->limit(200)->get()
-            ->map(function (ProdPart $p) use ($fromInquiry) {
+        return ProdPart::with(['product.customer:id_customer,customer_name', 'layoutGroups'])->whereNotIn('id_part', $fromInquiry)
+            ->orderByDesc('id_part')->limit(200)->get()
+            ->map(function (ProdPart $p) {
                 $latest = $p->layoutGroups->sortByDesc('id_layout_group')->first();
+                $n = fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
+                $status = ! $latest ? 'BELUM MULAI' : ($latest->status === 'CONFIRMED' ? 'CONFIRMED' : 'DRAFT');
 
                 return [
                     'id' => $p->id_part,
                     'part_name' => $p->part_name,
                     'code' => $p->mastercard_code ?: $p->part_code,
                     'product' => $p->product?->product_name,
-                    'origin' => $fromInquiry->has($p->id_part) ? 'INQUIRY' : 'MANUAL',
-                    'status' => ! $latest ? 'BELUM MULAI' : ($latest->status === 'CONFIRMED' ? 'CONFIRMED' : 'DRAFT'),
+                    'customer' => $p->product?->customer?->customer_name ?? '—',
+                    'updated' => $p->updated_at?->toDateString(),
+                    'status' => $status,
+                    'items' => [['product' => $p->product?->product_name, 'part' => $p->part_name, 'code' => $p->part_code,
+                        'size' => $n($p->cm_length).' × '.$n($p->cm_width).' × '.$n($p->cm_height), 'status' => $status]],
                 ];
             })->all();
+    }
+
+    // Tombol Back workbench: kembali ke grid asal part (Pro-Dev > New / Revise bila part dari Inquiry, selain itu Manual).
+    public static function listUrl(int $partId, ?int $inquiryId = null): string
+    {
+        $type = $inquiryId
+            ? \App\Models\Sdi\IqpInquiry::whereKey($inquiryId)->value('inquiry_type')
+            : \App\Models\Sdi\IqpInquiry::whereIn('id_inquiry', IqpPart::where('prod_part_id', $partId)->pluck('inquiry_id'))
+                ->whereIn('inquiry_type', \App\Services\Sales\InquiryStage::PRODEV_TYPES)->orderByDesc('id_inquiry')->value('inquiry_type');
+
+        return route('v2.screen', $type === 'REVISE' ? 'prodev-revise' : ($type === 'NEW' ? 'prodev-new' : 'prodev'));
     }
 
     public static function resolve(string $part): ?int

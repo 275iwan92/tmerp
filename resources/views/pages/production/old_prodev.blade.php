@@ -407,7 +407,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             // SELAMANYA walau Inquiry belakangan di-CANCEL/LOST (yg berubah
             // cuma sub_state, lihat cancel()/markLost() di inquiry/form.blade.php)
             // -- cek stat_confirm SAJA TIDAK CUKUP, harus digabung sub_state.
-            ->whereHas('inquiry', fn ($q) => $q->where('stat_confirm', true)
+            ->whereHas('inquiry', fn ($q) => $q->where('stat_confirm_sales', true)
                 ->whereNotIn('sub_state', ['DRAFT', 'CANCELLED', 'LOST']))
             ->orderByDesc('id_part')
             ->get()

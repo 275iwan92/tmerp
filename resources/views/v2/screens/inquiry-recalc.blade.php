@@ -16,7 +16,7 @@
     $noProduct = request('source_id') && ! $productId;
     $doc = $productId ? ProductMaster::doc($productId) : null;
     abort_if($productId && ! $doc, 404);
-    $locked = (bool) $inq?->stat_confirm;
+    $locked = (bool) $inq?->stat_confirm_sales;
     $rp = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
     $num = fn ($v) => \Devlib\Locale::number((float) $v, 0);
     $orders = $doc ? ProductMaster::orders($doc['id']) : [];
@@ -31,18 +31,10 @@
 @if ($noProduct)<x-dl::alert tone="warn" message="The selected inquiry is not a Master Product yet (Quotation not WON). Choose a product from the list." />@endif
 
 @if (! $doc && ! request('pick') && ! $noProduct)
-    <x-dl::grid id="recalc-docs" :rows="ProductMaster::derivedRows('RECALC')" search="Search inquiry no., product, customer..." actions="worklist" :active-key="null"
-        :new-url="$home.'?pick=1'" :open-url="$home.'?id={id}'"
-        source="{{ Src::of('tm2sdi.iqp_inquiry (inquiry_type = RECALC)', 'tm2sdi.iqp_tier') }}"
-        :columns="[
-            ['key' => 'name', 'label' => 'Product', 'type' => 'identity', 'code' => 'inquiry_no'],
-            ['key' => 'customer', 'label' => 'Customer'],
-            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'qty', 'label' => 'Qty order', 'type' => 'number'],
-            ['key' => 'deadline', 'label' => 'Deadline quotation', 'type' => 'date'],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => Sales::STATE_TONES],
-        ]"
-        :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Confirm (to ProDev/ProCost)'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn']]" />
+    {{-- Inquiry > Recalc: meja Sales untuk jenis RECALC (satu tabel iqp_inquiry, saringan jenis + tanda; rulebook A.20, C.28). --}}
+    @php $g = (new \App\Support\V2\Grid\Sales\InquiryRecalcGrid)->props(); @endphp
+    <x-dl::grid id="recalc-docs" :rows="$g['rows']" :columns="$g['columns']" :stats="$g['stats']" :filters="$g['filters']" :detail="$g['detail']" :search="$g['search']"
+        actions="worklist" :active-key="null" :new-url="$g['newUrl']" :open-url="$g['openUrl']" :source="$g['source']" />
 @elseif (! $doc)
     <x-dl::card title="+ New Record — choose the product to recalculate" description="Only products from Master Product (born from a WON Quotation). Double-click a row.">
         <x-dl::grid id="recalc-pick" :rows="ProductMaster::rows()" search="Search product, design no., customer..." :new-record="null" actions="worklist" :active-key="null"
@@ -126,7 +118,7 @@
             @if (! $locked)
                 @if ($inq)<x-dl::button preset="delete" type="submit" :formaction="route('v2.derived.delete', $inq->id_inquiry)" onclick="return confirm('Hapus draft {{ $inq->inquiry_no }}?')" formnovalidate />@endif
                 <x-dl::button preset="save" name="action" value="save" />
-                <x-dl::button preset="confirm" type="submit" name="action" value="confirm" onclick="return confirm('Confirm rekalkulasi ini? Form akan terkunci dan dikirim ke ProDev → ProCost.')" />
+                <x-dl::button preset="confirm" type="submit" name="action" value="confirm" onclick="return confirm('Confirm rekalkulasi ini? Form akan terkunci dan langsung dikirim ke Pro-Cost.')" />
             @elseif (! $inq->stat_cancel)
                 <x-dl::button preset="cancel" data-dl-open="recalc-cancel" />
             @endif
@@ -138,15 +130,7 @@
     @endif
 
     @if ($locked && ! $inq->stat_cancel)
-        <x-dl::card title="Continue to Product Development" description="After Confirm, send each part to ProDev; from there continue to ProCost.">
-            <div class="mp-chips">
-                @foreach (ProductMaster::inquiryParts($inq) as $ip)
-                    @if ($ip['kind'] === 'COMPONENT')
-                        <form method="post" action="{{ route('v2.derived.prodev', $inq->id_inquiry) }}">@csrf<input type="hidden" name="part_id" value="{{ $ip['id'] }}"><x-dl::button type="submit" size="sm" icon="send" :label="'Kirim '.$ip['name'].' ke ProDev'" /></form>
-                    @endif
-                @endforeach
-            </div>
-        </x-dl::card>
+        <x-dl::alert tone="info" message="Confirmed by Sales: this recalculation goes straight to Pro-Cost › Recalc (no Pro-Dev, the specification is unchanged). After Pro-Cost publishes the price it is ready for Quotation." />
         <x-dl::modal id="recalc-cancel" title="Cancel rekalkulasi" icon="cancel">
             <form method="post" action="{{ route('v2.derived.cancel', $inq->id_inquiry) }}">
                 @csrf

@@ -65,7 +65,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
             $this->scope = $this->inquiry->reviseScopeArray();
             $this->revise_reason = $this->inquiry->revise_reason ?? '';
             $this->design_number = $this->inquiry->design_number ?? '';
-            $this->readOnly = (bool) $this->inquiry->stat_confirm;
+            $this->readOnly = (bool) $this->inquiry->stat_confirm_sales;
 
             return;
         }
@@ -626,7 +626,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
             // R-CO-1/R-REV lineage: versi lama dikunci & ditandai superseded, CO/quotation
             // yang sudah pakai versi lama tetap aman (snapshot beku, tak tersentuh).
             $this->source->update([
-                'stat_confirm' => true,
+                'stat_confirm_sales' => true,
                 'stat_cancel' => true,
                 'cancel_reason' => 'Digantikan oleh revisi v'.$newRevisionNo.' ('.$this->inquiry->inquiry_no.')',
                 'sub_state' => 'CANCELLED',
@@ -653,7 +653,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
 
         $this->persist('SUBMITTED');
 
-        $this->inquiry->update(['stat_confirm' => true, 'updated_by' => Auth::user()->login]);
+        $this->inquiry->update(['stat_confirm_sales' => true, 'updated_by' => Auth::user()->login]);
         $this->readOnly = true;
         $this->flash = 'Inkuiri '.$this->inquiry->inquiry_no.' dikirim ke Costing — status SUBMITTED, form terkunci.';
     }

@@ -32,7 +32,7 @@ class InquiryForm extends DevlibComponent
         public ?string $prodevUrl = null,
         public array $urls = [],
     ) {
-        $this->doc += ['id' => null, 'inquiry_no' => null, 'sub_state' => 'DRAFT', 'stat_confirm' => false, 'stat_cancel' => false];
+        $this->doc += ['id' => null, 'inquiry_no' => null, 'sub_state' => 'DRAFT', 'stat_confirm_sales' => false, 'stat_cancel' => false];
     }
 
     public function tag(): string
@@ -74,10 +74,10 @@ class InquiryForm extends DevlibComponent
                 <x-dl::card class="mp-inq__main">
                     <div class="mp-toolbar">
                         <x-dl::button preset="save" type="button" data-inq-save />
-                        <x-dl::button preset="confirm" data-inq-confirm :hidden="$d['stat_confirm']" />
-                        <x-dl::button variant="danger" icon="✖" label="Batalkan" data-dl-open="inq-cancel" data-inq-keep data-inq-when="cancel" :hidden="! ($d['stat_confirm'] && ! $d['stat_cancel'])" />
+                        <x-dl::button preset="confirm" data-inq-confirm :hidden="$d['stat_confirm_sales']" />
+                        <x-dl::button variant="danger" icon="✖" label="Batalkan" data-dl-open="inq-cancel" data-inq-keep data-inq-when="cancel" :hidden="! ($d['stat_confirm_sales'] && ! $d['stat_cancel'])" />
                         <x-dl::button variant="danger" icon="❌" label="Tandai Kalah" data-dl-open="inq-lost" data-inq-keep data-inq-when="lost"
-                            :hidden="! ($d['stat_confirm'] && ! in_array($d['sub_state'], ['CANCELLED', 'CONVERTED', 'LOST'], true))" />
+                            :hidden="! ($d['stat_confirm_sales'] && ! in_array($d['sub_state'], ['CANCELLED', 'CONVERTED', 'LOST'], true))" />
                         {{-- Duplicate ke customer lain (user 2026-10-01: pindah dari baris grid); modal dup-modal dipasang layar. --}}
                         <x-dl::button variant="secondary" icon="copy" label="Duplicate" type="button" data-dl-open="dup-modal" data-inq-keep data-inq-saved-only :hidden="! $d['id']" />
                         <span class="mp-grow"></span>

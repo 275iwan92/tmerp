@@ -36,6 +36,14 @@ final class MenuRoutes
             // Menu PREORDER (Inquiry & Quotation): layar v1 yang sama dibuka juga dari modul ini (migration
             // 2026_10_02_000008). Pro-Cost Instant = Mode #2 standalone, di v1 hanya lewat link di grid Pro-Cost.
             'PRE_COST_INSTANT' => route('inquiry.costing.instant.list'),
+            // Meja per jenis dokumen (migration 2026_10_02_000021, rulebook A.20): hanya ada di v2.
+            'PRE_INQ_NEW' => route('v2.screen', 'inquiry-list-new'),
+            'PRE_INQ_REVISE' => route('v2.screen', 'inquiry-revise'),
+            'PRE_INQ_RECALC' => route('v2.screen', 'inquiry-recalc'),
+            'PRE_PRODEV_NEW' => route('v2.screen', 'prodev-new'),
+            'PRE_PRODEV_REVISE' => route('v2.screen', 'prodev-revise'),
+            'PRE_COST_REVISE' => route('v2.screen', 'sales-procost-revise'),
+            'PRE_COST_RECALC' => route('v2.screen', 'sales-procost-recalc'),
             // Pintasan master: dipakai selama baris asalnya belum ber-target v2 (tm2sys); di ddtsys target v2 yang menang.
             'PRE_MD_CUST' => route('master.customer'),
             'PRE_MD_PROD' => route('master.produk'),

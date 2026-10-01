@@ -14,7 +14,7 @@ namespace Devlib\Components;
 //            'code' => kolom kode (identity), 'avatar' => false (identity tanpa bulatan), 'tones' => [nilai => tone] (badge),
 //            'fallback' => kolom nama (image: tanpa foto -> inisial di kotak yang sama),
 //            'visible' => true, 'sortable' => true, 'sum' => false (money/number)]]
-// stats/tabs: [['label', 'where' => [kolom => nilai|[nilai..]], 'tone']]  (tanpa where = total)
+// stats/tabs: [['label', 'where' => [kolom => nilai|[nilai..]], 'tone']]  (tanpa where = total); stats 'default' => true = saringan awal
 // actions: master (Edit + Aktif/Nonaktif, Pilihan C) | worklist (Buka saja; Confirm/Approve TIDAK di grid, hanya di form) | none
 // link: nilai hasil transaksi (Grid Master, mis. 'Valued transactions'), hanya-baca; 'format' => money|number,
 //   'url' => alamat daftar transaksi baris itu ({id}); tanpa url -> event dl:grid-link.

@@ -132,7 +132,7 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
     #[Computed]
     public function statUnconfirmed(): int
     {
-        return IqpInquiry::where('stat_confirm', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])->count();
+        return IqpInquiry::where('stat_confirm_sales', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])->count();
     }
 
     #[Computed]
@@ -151,7 +151,7 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
     {
         return [
             'unconfirmed' => ['label' => Translator::t('sales_hub_stat_not_confirm', 'Not Confirm'), 'value' => $this->statUnconfirmed, 'tone' => 'warn',
-                'filter' => fn ($q) => $q->where('stat_confirm', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])],
+                'filter' => fn ($q) => $q->where('stat_confirm_sales', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])],
             'ready' => ['label' => Translator::t('sales_hub_btn_ready_to_quote', 'Ready to Quote'), 'value' => $this->readyToQuoteIds->count(), 'tone' => 'total',
                 'filter' => fn ($q) => $q->whereKey($this->readyToQuoteIds)],
             'prodev' => ['label' => Translator::t('sales_hub_stat_prodev', 'Processed by Pro-Dev'), 'value' => $this->statProdev, 'tone' => 'extra',

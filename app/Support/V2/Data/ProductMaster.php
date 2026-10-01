@@ -52,19 +52,6 @@ final class ProductMaster
         ])->all();
     }
 
-    // Grid dokumen Rekalkulasi / Revisi (iqp_inquiry per jenis) + product asalnya.
-    public static function derivedRows(string $type): array
-    {
-        $docs = IqpInquiry::where('inquiry_type', $type)->with(['customer:id_customer,customer_name', 'tiers' => fn ($q) => $q->where('is_primary', true), 'parentInquiry:id_inquiry,inquiry_no,product_id'])
-            ->orderByDesc('id_inquiry')->limit(500)->get();
-
-        return $docs->map(fn ($i) => [
-            'id' => $i->id_inquiry, 'inquiry_no' => $i->inquiry_no, 'name' => $i->product_draft_name ?: '(tanpa nama)', 'customer' => $i->customer?->customer_name ?? $i->prospect_name ?? '—',
-            'date' => $i->inquiry_date?->toDateString(), 'source' => $i->parentInquiry?->inquiry_no ?? '—', 'qty' => (float) ($i->tiers->first()?->qty ?? 0),
-            'scope' => $i->revise_scope ? str_replace(',', ', ', $i->revise_scope) : '—', 'status' => $i->sub_state, 'deadline' => $i->deadline_quotation?->toDateString(),
-        ])->all();
-    }
-
     public static function doc(int $id): ?array
     {
         $p = ProdProduct::with(['customer:id_customer,customer_name,customer_code', 'parentProduct:id_product,product_name,design_no,revision_no',

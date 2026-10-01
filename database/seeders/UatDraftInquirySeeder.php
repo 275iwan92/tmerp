@@ -150,7 +150,7 @@ class UatDraftInquirySeeder extends Seeder
             'sales_note' => $note,
             'inquiry_type' => 'NEW', 'revision_no' => 0, 'material_source' => 'OWN', 'job_nature' => 'PRODUCT',
             'tax_scheme' => 'PPN', 'pph_applicable' => 0, 'ppn_percent' => 11, 'pph_percent' => 2,
-            'sub_state' => 'DRAFT', 'stat_confirm' => 0, 'stat_cancel' => 0, 'is_approved' => 0,
+            'sub_state' => 'DRAFT', 'stat_confirm_sales' => 0, 'stat_cancel' => 0, 'is_approved' => 0,
             'created_at' => $now, 'updated_at' => $now, 'created_by' => self::BY, 'updated_by' => self::BY, 'data_origin' => 'DUMMY',
         ]);
 
@@ -290,7 +290,7 @@ class UatDraftInquirySeeder extends Seeder
     private function reset(): int
     {
         $ids = $this->db->table('iqp_inquiry')->where('data_origin', 'DUMMY')->where('inquiry_no', 'not like', self::KEEP.'%')
-            ->where(fn ($q) => $q->where('inquiry_no', 'like', self::PREFIX.'%')->orWhere(fn ($d) => $d->where('sub_state', 'DRAFT')->where('stat_confirm', 0)))
+            ->where(fn ($q) => $q->where('inquiry_no', 'like', self::PREFIX.'%')->orWhere(fn ($d) => $d->where('sub_state', 'DRAFT')->where('stat_confirm_sales', 0)))
             ->pluck('id_inquiry');
         $parts = $this->db->table('iqp_part')->whereIn('inquiry_id', $ids)->get(['id_part', 'inquiry_id', 'prod_part_id']);
         $partIds = $parts->pluck('id_part');

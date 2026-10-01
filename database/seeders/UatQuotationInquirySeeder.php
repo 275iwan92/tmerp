@@ -128,7 +128,7 @@ class UatQuotationInquirySeeder extends Seeder
 
         // Inquiry batal (closed tanpa quotation) untuk sumber Revise/Recalc dari inquiry "mati".
         $this->db->table('iqp_inquiry')->where('inquiry_no', self::PREFIX.'011')
-            ->update(['sub_state' => 'CANCELLED', 'stat_confirm' => 1, 'stat_cancel' => 1, 'cancel_reason' => 'Customer membatalkan permintaan (data UAT)']);
+            ->update(['sub_state' => 'CANCELLED', 'stat_confirm_sales' => 1, 'stat_cancel' => 1, 'cancel_reason' => 'Customer membatalkan permintaan (data UAT)']);
     }
 
     // [jenis, hari lalu, hasil, catatan, tindak lanjut, tindak lanjut +hari]

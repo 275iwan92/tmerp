@@ -30,7 +30,7 @@
     <x-dl::tabs :tabs="['impo' => ['Imposition', 'fa-table-cells'], 'dieline' => ['Part & Dieline', 'fa-box-open']]">
         <x-slot:impo>
             {{-- Print / Email ada di panel atas workbench (Master Card + ACC Digital), bukan lagi bar terpisah di atas layar. --}}
-            <x-mp::prodev.workbench :data="Prodev::workbench($partId, route('v2.screen', 'prodev'), route('v2.screen', 'procost').'?part='.$partId,
+            <x-mp::prodev.workbench :data="Prodev::workbench($partId, Prodev::listUrl($partId, (int) request('inquiry') ?: null), route('v2.screen', 'procost').'?part='.$partId,
                 $accDoc ? route('v2.screen', 'product-acc').'?id='.$accDoc['id'] : null)" />
         </x-slot:impo>
         <x-slot:dieline>
@@ -48,18 +48,27 @@
         </x-dl::card>
     @endif
 @else
+    {{-- Pro-Dev > Manual (Mode #2): part tanpa Inquiry. Part dari Inquiry = grid Pro-Dev > New / Revise (rulebook A.20, C.28). --}}
     <x-dl::grid id="prodev-list" :rows="Prodev::parts()" actions="worklist" :active-key="null" :new-record="null" :open-url="route('v2.screen', 'prodev').'?part={id}'"
-        search="Search part or product name/code…" source="{{ Src::of('tm2mst.prod_part', 'tm2mst.prod_product', 'tm2mst.prod_layout_group', 'tm2sdi.iqp_part.prod_part_id') }}"
+        search="Search part or product name/code…" source="{{ Src::of('tm2mst.prod_part', 'tm2mst.prod_product', 'tm2mst.prod_layout_group', 'tm2sdi.iqp_part.prod_part_id (kosong = manual)') }}"
         :columns="[
-            ['key' => 'part_name', 'label' => 'Part', 'type' => 'identity', 'code' => 'code', 'src' => Src::of('tm2mst.prod_part.part_name', 'tm2mst.prod_part.mastercard_code')],
-            ['key' => 'product', 'label' => 'Produk', 'src' => Src::of('tm2mst.prod_product.product_name')],
-            ['key' => 'origin', 'label' => 'Asal', 'type' => 'badge', 'tones' => ['INQUIRY' => 'info', 'MANUAL' => 'violet'], 'src' => Src::of('tm2sdi.iqp_part.prod_part_id').' (ada = dari Inquiry, Mode #1)'],
+            ['key' => 'code', 'label' => 'Master Card / Customer', 'type' => 'doc', 'party' => 'customer', 'src' => Src::of('tm2mst.prod_part.mastercard_code', 'tm2mst.cust_customer.customer_name')],
+            ['key' => 'part_name', 'label' => 'Part', 'src' => Src::of('tm2mst.prod_part.part_name')],
+            ['key' => 'product', 'label' => 'Product', 'src' => Src::of('tm2mst.prod_product.product_name')],
+            ['key' => 'updated', 'label' => 'Last Updated', 'type' => 'date', 'src' => Src::of('tm2mst.prod_part.updated_at')],
             ['key' => 'status', 'label' => 'Status Layout', 'type' => 'badge', 'tones' => ['CONFIRMED' => 'success', 'DRAFT' => 'warn', 'BELUM MULAI' => 'neutral'], 'src' => Src::of('tm2mst.prod_layout_group.status').' (terbaru)'],
         ]"
         :stats="[
-            ['label' => 'Total Part', 'where' => [], 'tone' => 'accent'],
-            ['label' => t('Confirmed'), 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
+            ['label' => 'All'],
             ['label' => t('Not Confirmed'), 'where' => ['status' => ['DRAFT', 'BELUM MULAI']], 'tone' => 'warn'],
+            ['label' => t('Confirmed'), 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
         ]"
-        :filters="['origin' => 'Asal', 'status' => 'Status Layout']" />
+        :filters="['customer' => 'Customer', 'status' => 'Status Layout']"
+        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
+            ['key' => 'product', 'label' => 'Product', 'strong' => true],
+            ['key' => 'part', 'label' => 'Part'],
+            ['key' => 'code', 'label' => 'Part Code'],
+            ['key' => 'size', 'label' => 'Size (cm)'],
+            ['key' => 'status', 'label' => 'Layout'],
+        ]]" />
 @endif

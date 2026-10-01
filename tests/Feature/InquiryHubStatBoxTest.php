@@ -48,21 +48,21 @@ class InquiryHubStatBoxTest extends TestCase
         // 1 NEW belum confirm (harus kehitung statUnconfirmedByType('NEW')).
         $newUnconfirmed = IqpInquiry::create([
             'inquiry_no' => 'IQTESTHUB01', 'inquiry_date' => $thisYear, 'product_draft_name' => 'Test Hub NEW Unconfirmed',
-            'inquiry_type' => 'NEW', 'sub_state' => 'DRAFT', 'stat_confirm' => false, 'is_approved' => false,
+            'inquiry_type' => 'NEW', 'sub_state' => 'DRAFT', 'stat_confirm_sales' => false, 'is_approved' => false,
         ]);
         $this->inquiryIds[] = $newUnconfirmed->id_inquiry;
 
         // 1 NEW sudah confirm + CANCELLED -- TIDAK boleh kehitung di manapun (mati).
         $newCancelled = IqpInquiry::create([
             'inquiry_no' => 'IQTESTHUB02', 'inquiry_date' => $thisYear, 'product_draft_name' => 'Test Hub NEW Cancelled',
-            'inquiry_type' => 'NEW', 'sub_state' => 'CANCELLED', 'stat_confirm' => false, 'is_approved' => false,
+            'inquiry_type' => 'NEW', 'sub_state' => 'CANCELLED', 'stat_confirm_sales' => false, 'is_approved' => false,
         ]);
         $this->inquiryIds[] = $newCancelled->id_inquiry;
 
         // 1 REVISE PRICE_APPROVED (harus kehitung statPricedNotQuotedByType('REVISE') + statApprovedThisYear).
         $revisePriced = IqpInquiry::create([
             'inquiry_no' => 'IQTESTHUB03', 'inquiry_date' => $thisYear, 'product_draft_name' => 'Test Hub REVISE Priced',
-            'inquiry_type' => 'REVISE', 'sub_state' => 'PRICE_APPROVED', 'stat_confirm' => true, 'is_approved' => true,
+            'inquiry_type' => 'REVISE', 'sub_state' => 'PRICE_APPROVED', 'stat_confirm_sales' => true, 'is_approved' => true,
         ]);
         $this->inquiryIds[] = $revisePriced->id_inquiry;
 
@@ -70,7 +70,7 @@ class InquiryHubStatBoxTest extends TestCase
         // TAPI sub_state bukan PRICE_APPROVED lagi -- TIDAK boleh kehitung statPricedNotQuotedByType('RECALC').
         $recalcQuoted = IqpInquiry::create([
             'inquiry_no' => 'IQTESTHUB04', 'inquiry_date' => $thisYear, 'product_draft_name' => 'Test Hub RECALC Quoted',
-            'inquiry_type' => 'RECALC', 'sub_state' => 'QUOTED', 'stat_confirm' => true, 'is_approved' => true,
+            'inquiry_type' => 'RECALC', 'sub_state' => 'QUOTED', 'stat_confirm_sales' => true, 'is_approved' => true,
         ]);
         $this->inquiryIds[] = $recalcQuoted->id_inquiry;
 
@@ -83,10 +83,10 @@ class InquiryHubStatBoxTest extends TestCase
             ->assertSee('Processed by Pro-Cost');
         $component = $test->instance();
 
-        $expected = IqpInquiry::where('stat_confirm', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])->count();
+        $expected = IqpInquiry::where('stat_confirm_sales', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])->count();
         $this->assertSame($expected, $component->statUnconfirmed);
         $this->assertGreaterThanOrEqual(1, $component->statUnconfirmed);
-        $this->assertSame(0, IqpInquiry::whereKey($newCancelled->id_inquiry)->where('stat_confirm', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])->count(), 'CANCELLED tidak boleh ikut query belum-confirm');
+        $this->assertSame(0, IqpInquiry::whereKey($newCancelled->id_inquiry)->where('stat_confirm_sales', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])->count(), 'CANCELLED tidak boleh ikut query belum-confirm');
         $this->assertSame(IqpInquiry::whereHas('costing')->count(), $component->statProcost);
         $this->assertSame(IqpInquiry::whereHas('parts', fn ($p) => $p->whereNotNull('prod_part_id'))->count(), $component->statProdev);
     }

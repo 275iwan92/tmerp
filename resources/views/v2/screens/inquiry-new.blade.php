@@ -5,7 +5,7 @@
     use MockupParts\Components\Sales\InquiryForm;
 
     $doc = request('id') ? Sales::inquiryDoc((int) request('id')) : null;
-    $readonly = $doc && ($doc['stat_confirm'] || request('view'));
+    $readonly = $doc && ($doc['stat_confirm_sales'] || request('view'));
     $types = Sales::dielineTypes();
     $typeCode = $doc['type_code'] ?? '';
     $finishing = array_column(Sales::masters()['finishing_types'], 'finishing_name', 'id_finishing_type');
@@ -28,7 +28,7 @@
     :links="['🔀 Imposition' => route('v2.screen', 'prodev'), '🖨 Cetak Nota' => route('v2.screen', 'nota-inquiry').($doc ? '?id='.$doc['id'] : '')]"
     :prodev-url="route('v2.screen', 'prodev').'?part={part}&inquiry={inquiry}'"
     :urls="['save' => route('v2.inquiry.save'), 'end' => route('v2.inquiry.end', '__ID__'), 'artwork' => route('v2.inquiry.artwork', '__ID__'),
-        'prodev' => route('v2.inquiry.prodev', '__ID__'), 'customer' => route('v2.inquiry.customer')]">
+        'customer' => route('v2.inquiry.customer')]">
 
     <x-slot:header>
         <x-dl::divider label="Header Inkuiri" />

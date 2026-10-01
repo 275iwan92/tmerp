@@ -10,6 +10,7 @@ use App\Models\Master\ProdType;
 use App\Models\Master\RefFinishingType;
 use App\Models\Master\SalesPerson;
 use App\Models\Sdi\IqpInquiry;
+use App\Services\Sales\InquiryStage;
 use App\Services\Sales\QuotationBuilder;
 
 // Data modul Sales untuk layar v2 — SEMUA dari database situs (ddt* di mockup.test, tm2* live):
@@ -165,7 +166,7 @@ final class Sales
             'prospect_name' => $i->prospect_name, 'customer' => $i->is_prospect ? $i->prospect_name : ($i->customer?->customer_name ?? '—'),
             'product_draft_name' => $i->product_draft_name, 'sales_note' => $i->sales_note ?? '', 'material_source' => $i->material_source,
             'cust_material_spec' => $i->cust_material_spec ?? '', 'cust_material_eta' => $i->cust_material_eta?->toDateString(),
-            'stat_confirm' => (bool) $i->stat_confirm, 'stat_cancel' => (bool) $i->stat_cancel, 'cancel_reason' => $i->cancel_reason,
+            'stat_confirm_sales' => (bool) $i->stat_confirm_sales, 'stat_cancel' => (bool) $i->stat_cancel, 'cancel_reason' => $i->cancel_reason,
             'is_approved' => (bool) $i->is_approved, 'revision_no' => (int) $i->revision_no, 'design_number' => $i->design_number,
             'revise_scope' => $i->reviseScopeArray(), 'revise_reason' => $i->revise_reason ?? '', 'parent_id' => $i->parent_inquiry_id, 'product_id' => $i->product_id,
             'type_code' => isset(self::dielineTypes()[$code]) ? $code : '',
@@ -222,10 +223,9 @@ final class Sales
         return $parent ? self::inquiryDoc((int) $parent) : null;
     }
 
-    // Worklist Inquiry dari database situs (mockup.test = ddtsdi). prodev/procost/ready =
-    // bendera untuk tombol & kotak statistik (keputusan user 2026-09-28):
-    // prodev = ada part yang sudah punya prod_part (Pro-Dev), procost = sudah ada costing,
-    // ready = sama persis dgn jendela "Choose inquiry" Quotation (costing published, belum di-quote).
+    // Worklist Inquiry dari database situs (mockup.test = ddtsdi). Satu tabel, tiga tanda (rulebook A.20):
+    // prodev / procost = inquiry sedang di meja bagian itu (dihitung dari stat_confirm_*), ready = sama persis dgn jendela
+    // "Choose inquiry" Quotation (costing published, belum di-quote). items = baris anak grid (part + status ProDev-nya).
     public static function inquiries(): array
     {
         static $rows;
@@ -235,15 +235,21 @@ final class Sales
         }
 
         $ready = QuotationBuilder::availableInquiries()->pluck('id_inquiry')->flip();
-
-        return $rows = IqpInquiry::query()
+        $list = IqpInquiry::query()
             ->with(['customer:id_customer,customer_code,customer_name', 'tiers' => fn ($q) => $q->where('is_primary', true),
-                'parts' => fn ($q) => $q->orderBy('part_seq')])
-            ->withExists(['costing as procost', 'parts as prodev' => fn ($q) => $q->whereNotNull('prod_part_id')])
+                'parts' => fn ($q) => $q->orderBy('part_seq'), 'costing:id_costing,inquiry_id,doc_status', 'parentInquiry:id_inquiry,inquiry_no'])
             ->orderByDesc('id_inquiry')
             ->limit(500)
-            ->get()
-            ->map(fn (IqpInquiry $i) => [
+            ->get();
+        $partStatus = InquiryStage::partStatuses($list->modelKeys())->keyBy('id_part');
+
+        return $rows = $list->map(function (IqpInquiry $i) use ($ready, $partStatus) {
+            $dead = $i->stat_cancel || in_array($i->sub_state, ['CANCELLED', 'LOST'], true);
+            $viaProdev = in_array($i->inquiry_type, InquiryStage::PRODEV_TYPES, true);
+            $atProdev = ! $dead && $viaProdev && $i->stat_confirm_sales && ! $i->stat_confirm_prodev;
+            $atProcost = ! $dead && $i->stat_confirm_sales && ! $i->stat_confirm_procost && (! $viaProdev || $i->stat_confirm_prodev);
+
+            return [
                 'id' => $i->id_inquiry,
                 'inquiry_no' => $i->inquiry_no,
                 'inquiry_date' => $i->inquiry_date?->toDateString(),
@@ -255,13 +261,73 @@ final class Sales
                 'qty' => (float) ($i->tiers->first()?->qty ?? 0),
                 'sub_state' => $i->sub_state,
                 'inquiry_type' => $i->inquiry_type,
-                'stat_confirm' => (bool) $i->stat_confirm,
+                'stat_confirm_sales' => (bool) $i->stat_confirm_sales,
+                'stat_confirm_prodev' => (bool) $i->stat_confirm_prodev,
+                'stat_confirm_procost' => (bool) $i->stat_confirm_procost,
+                'sales_at' => $i->confirm_sales_at?->toDateString(),
+                'prodev_at' => $i->confirm_prodev_at?->toDateString(),
+                'procost_at' => $i->confirm_procost_at?->toDateString(),
+                'dead' => $dead,
                 'is_approved' => (bool) $i->is_approved,
                 'pic_sales' => $i->pic_sales,
                 'deadline_quotation' => $i->deadline_quotation?->toDateString(),
-                'prodev' => (bool) $i->prodev,
-                'procost' => (bool) $i->procost,
+                'costing' => $i->costing?->doc_status ?? 'NOT STARTED',
+                'scope' => $i->revise_scope ? str_replace(',', ', ', $i->revise_scope) : null,
+                'source' => $i->parentInquiry?->inquiry_no,
+                'prodev' => $atProdev,
+                'procost' => $atProcost,
                 'ready' => $ready->has($i->id_inquiry),
-            ])->all();
+                'stage' => match (true) {
+                    $dead => $i->sub_state,
+                    ! $i->stat_confirm_sales => 'Draft',
+                    $atProdev => 'Pro-Dev',
+                    $atProcost => 'Pro-Cost',
+                    $ready->has($i->id_inquiry) => 'Ready to Quote',
+                    default => $i->sub_state,
+                },
+                'items' => $i->parts->map(function ($p) use ($partStatus) {
+                    $d = $p->dieline_spec['dims'] ?? [];
+                    $n = fn ($v) => rtrim(rtrim(number_format((float) $v, 1, '.', ''), '0'), '.');
+
+                    return ['part' => $p->part_name, 'kind' => $p->part_kind === 'ASSEMBLY' ? 'Assembly' : ($p->part_type ?: '—'),
+                        'type' => $p->dieline_spec['type_code'] ?? '—',
+                        'size' => isset($d['product_length']) ? $n($d['product_length']).' × '.$n($d['product_width'] ?? 0).' × '.$n($d['product_height'] ?? 0) : '—',
+                        'flat' => $p->flat_w ? $n($p->flat_w).' × '.$n($p->flat_h) : '—',
+                        'color' => $p->cfg_color ?: '—',
+                        'prodev' => $p->part_kind === 'ASSEMBLY' ? '—' : (['NOT_STARTED' => 'Not started', 'DRAFT' => 'Draft', 'CONFIRMED' => 'Confirmed'][$partStatus[$p->id_part]->status ?? 'NOT_STARTED'])];
+                })->all(),
+            ];
+        })->all();
+    }
+
+    public const STAGE_TONES = ['Draft' => 'neutral', 'Pro-Dev' => 'violet', 'Pro-Cost' => 'warn', 'Ready to Quote' => 'success'] + self::STATE_TONES;
+
+    // Baris anak grid Inquiry / Pro-Dev / Pro-Cost (rulebook C.28): nama product di judul, part di tabel (7 kolom).
+    public const PART_DETAIL = ['key' => 'items', 'title' => 'Product: {product_draft_name}', 'columns' => [
+        ['key' => 'part', 'label' => 'Part', 'strong' => true],
+        ['key' => 'kind', 'label' => 'Part Type'],
+        ['key' => 'type', 'label' => 'Product Type'],
+        ['key' => 'size', 'label' => 'Size (mm)'],
+        ['key' => 'flat', 'label' => 'Flat Size (mm)'],
+        ['key' => 'color', 'label' => 'Colors'],
+        ['key' => 'prodev', 'label' => 'Pro-Dev'],
+    ]];
+
+    // Saringan satu meja: $type = NEW | REVISE | RECALC | null (semua); $desk = SALES | PRODEV | PROCOST.
+    // PRODEV  = sudah Confirm Sales (To Do: belum Confirm ProDev);  PROCOST = sudah lewat ProDev (RECALC: langsung dari Sales).
+    public static function desk(?string $type, string $desk): array
+    {
+        return array_values(array_filter(self::inquiries(), function ($r) use ($type, $desk) {
+            if ($type && $r['inquiry_type'] !== $type) {
+                return false;
+            }
+            $viaProdev = in_array($r['inquiry_type'], InquiryStage::PRODEV_TYPES, true);
+
+            return match ($desk) {
+                'PRODEV' => $viaProdev && $r['stat_confirm_sales'] && ! $r['dead'],
+                'PROCOST' => $r['stat_confirm_sales'] && ! $r['dead'] && (! $viaProdev || $r['stat_confirm_prodev']),
+                default => true,
+            };
+        }));
     }
 }

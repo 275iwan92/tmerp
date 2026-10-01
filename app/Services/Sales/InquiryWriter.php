@@ -26,7 +26,7 @@ final class InquiryWriter
 
     public function save(array $in, ?IqpInquiry $inquiry, array $artworks = []): IqpInquiry
     {
-        if ($inquiry?->stat_confirm) {
+        if ($inquiry?->stat_confirm_sales) {
             throw ValidationException::withMessages(['inquiry' => 'Inkuiri sudah dikonfirmasi — tidak bisa diubah.']);
         }
 
@@ -56,12 +56,12 @@ final class InquiryWriter
 
     public function confirm(IqpInquiry $inquiry): void
     {
-        $inquiry->update(['stat_confirm' => true, 'sub_state' => 'SUBMITTED', 'updated_by' => $this->login]);
+        $inquiry->update(['stat_confirm_sales' => true, 'sub_state' => 'SUBMITTED', 'updated_by' => $this->login]);
     }
 
     public function cancel(IqpInquiry $inquiry, string $reason): void
     {
-        if (! $inquiry->stat_confirm || $inquiry->stat_cancel) {
+        if (! $inquiry->stat_confirm_sales || $inquiry->stat_cancel) {
             throw ValidationException::withMessages(['cancel_reason' => 'Hanya inkuiri yang sudah Confirm & belum batal yang bisa dibatalkan.']);
         }
 
@@ -71,7 +71,7 @@ final class InquiryWriter
     // LOST boleh dari sub_state mana pun selama sudah Confirm & belum terminal (markLost() v1).
     public function markLost(IqpInquiry $inquiry, string $reason): void
     {
-        if (! $inquiry->stat_confirm || in_array($inquiry->sub_state, ['CANCELLED', 'CONVERTED', 'LOST'], true)) {
+        if (! $inquiry->stat_confirm_sales || in_array($inquiry->sub_state, ['CANCELLED', 'CONVERTED', 'LOST'], true)) {
             throw ValidationException::withMessages(['lost_reason' => 'Hanya inkuiri yang sudah Confirm & belum selesai yang bisa ditandai kalah.']);
         }
 
@@ -96,7 +96,7 @@ final class InquiryWriter
     // Mode #1 Inquiry(BARU) -> ProDev: seed prod_product draft + prod_part (sendToProDev() v1).
     public function sendToProDev(IqpInquiry $inquiry, IqpPart $part): int
     {
-        if (! $inquiry->stat_confirm) {
+        if (! $inquiry->stat_confirm_sales) {
             throw ValidationException::withMessages(['part' => 'Confirm inquiry ini dulu sebelum kirim ke ProDev (spec harus FIX).']);
         }
 

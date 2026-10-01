@@ -12,15 +12,16 @@
     $screenOf = ['NEW' => 'inquiry-new', 'RECALC' => 'inquiry-recalc', 'REVISE' => 'inquiry-revise'];
     $rows = array_map(fn ($r) => $r + ['open_url' => route('v2.screen', $screenOf[$r['inquiry_type']] ?? 'inquiry-new').'?id='.$r['id'].($r['sub_state'] === 'DRAFT' ? '' : '&view=1')], Sales::inquiries());
     $col = fn (string $key, string $label, string $src, array $more = []) => ['key' => $key, 'label' => $label, 'src' => $src] + $more;
+    // Rulebook C.28: kolom pertama = persegi dokumen (No. inquiry + customer); induk 7 kolom tampil; Expand = tabel part.
     $columns = [
-        $col('product_draft_name', 'Product / Customer', Src::of('tm2sdi.iqp_inquiry.product_draft_name', 'tm2mst.cust_customer.customer_name', 'tm2sdi.iqp_inquiry.prospect_name'), ['type' => 'identity', 'code' => 'customer']),
-        $col('inquiry_no', 'Inquiry No.', Src::of('tm2sdi.iqp_inquiry.inquiry_no')),
+        $col('inquiry_no', 'Inquiry No. / Customer', Src::of('tm2sdi.iqp_inquiry.inquiry_no', 'tm2mst.cust_customer.customer_name', 'tm2sdi.iqp_inquiry.prospect_name'), ['type' => 'doc', 'party' => 'customer']),
         $col('inquiry_date', t('Date'), Src::of('tm2sdi.iqp_inquiry.inquiry_date'), ['type' => 'date']),
-        $col('customer', 'Customer', Src::of('tm2sdi.iqp_inquiry.customer_id', 'tm2mst.cust_customer.customer_name'), ['visible' => false]),
+        $col('product_draft_name', 'Product', Src::of('tm2sdi.iqp_inquiry.product_draft_name')),
         $col('part_type', t('Product Type'), Src::of('tm2sdi.iqp_part.dieline_spec.type_code').' (part pertama)'),
         $col('qty', t('Main tier qty'), Src::of('tm2sdi.iqp_tier.qty').' (is_primary = 1)', ['type' => 'number']),
         $col('inquiry_type', t('Type'), Src::of('tm2sdi.iqp_inquiry.inquiry_type'), ['type' => 'badge', 'tones' => Sales::TYPE_TONES]),
-        $col('sub_state', 'Status', Src::of('tm2sdi.iqp_inquiry.sub_state'), ['type' => 'badge', 'tones' => Sales::STATE_TONES]),
+        $col('stage', 'Stage', Src::of('tm2sdi.iqp_inquiry.stat_confirm_sales', 'stat_confirm_prodev', 'stat_confirm_procost', 'sub_state'), ['type' => 'badge', 'tones' => Sales::STAGE_TONES]),
+        $col('sub_state', 'Status', Src::of('tm2sdi.iqp_inquiry.sub_state'), ['type' => 'badge', 'tones' => Sales::STATE_TONES, 'visible' => false]),
         $col('pic_sales', 'PIC Sales', Src::of('tm2sdi.iqp_inquiry.pic_sales'), ['visible' => false]),
         $col('deadline_quotation', t('Quotation deadline'), Src::of('tm2sdi.iqp_inquiry.deadline_quotation'), ['type' => 'date', 'visible' => false]),
     ];
@@ -40,7 +41,7 @@
     new-modal="wiz-type" open-url="{open_url}"
     :stats="[
         ['label' => t('All')],
-        ['label' => 'Draft', 'where' => ['stat_confirm' => false, 'sub_state' => array_values(array_diff(Sales::STATES, ['CANCELLED', 'LOST']))], 'tone' => 'neutral'],
+        ['label' => 'Draft', 'where' => ['stage' => 'Draft'], 'tone' => 'neutral'],
         ['label' => 'Ready to Quote', 'where' => ['ready' => true], 'tone' => 'warn'],
         ['label' => 'Pro-Dev', 'where' => ['prodev' => true], 'tone' => 'violet'],
         ['label' => 'Pro-Cost', 'where' => ['procost' => true], 'tone' => 'success'],
@@ -52,7 +53,7 @@
         ['label' => t('Change Specification'), 'where' => ['inquiry_type' => 'REVISE']],
     ]"
     :filters="['sub_state' => 'Status', 'customer' => 'Customer', 'pic_sales' => 'PIC Sales']"
-    :expand="['pic_sales', 'deadline_quotation']" />
+    :detail="Sales::PART_DETAIL" />
 
 {{-- Wizard Create Inquiry: 1 jenis -> 2 sumber (RECALC/REVISE) -> 3 pilih inquiry -> form. --}}
 <x-dl::modal id="wiz-type" title="Create Inquiry — Step 1: choose the type" size="lg" icon="plus">
@@ -107,7 +108,7 @@
             ? 'Semua spesifikasi disalin dari inkuiri terpilih dan DIKUNCI. Anda hanya mengisi qty & deadline.'
             : 'Spesifikasi disalin lalu BISA DIUBAH. Tipe produk tetap terkunci — kalau tipe berubah, gunakan Produk Baru.'" />
         <x-dl::grid :id="'pick-'.strtolower($type).'-grid'" :rows="$saved" :per-page="8" :new-record="null" :search="t('Search inquiry no. / customer / product...')" actions="worklist" :active-key="null"
-            :columns="array_values(array_filter($columns, fn ($c) => in_array($c['key'], ['product_draft_name', 'inquiry_no', 'inquiry_date', 'part_type', 'qty', 'sub_state'])))"
+            :columns="array_values(array_filter($columns, fn ($c) => in_array($c['key'], ['inquiry_no', 'inquiry_date', 'product_draft_name', 'part_type', 'qty', 'stage'])))"
             :open-url="route('v2.screen', 'inquiry-'.strtolower($type)).'?source_id={id}'" />
         <x-slot:footer>
             <x-dl::button variant="secondary" icon="prev" label="Back" :data-dl-open="'wiz-src-'.strtolower($type)" data-dl-close-modal />

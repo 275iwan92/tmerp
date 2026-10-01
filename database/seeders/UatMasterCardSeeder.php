@@ -136,7 +136,7 @@ class UatMasterCardSeeder extends Seeder
             'inquiry_no' => $p['inq'], 'inquiry_date' => $p['date'], 'source' => 'EMAIL', 'pic_sales' => 'Firman', 'customer_id' => $customer, 'is_prospect' => 0,
             'deadline_quotation' => $p['date'], 'product_draft_name' => $p['name'], 'design_number' => $p['design'], 'sales_note' => $p['note'],
             'inquiry_type' => 'NEW', 'revision_no' => 0, 'material_source' => 'OWN', 'job_nature' => 'PRODUCT', 'tax_scheme' => 'PPN',
-            'pph_applicable' => 0, 'ppn_percent' => 11, 'pph_percent' => 2, 'sub_state' => 'SUBMITTED', 'stat_confirm' => 1, 'stat_cancel' => 0, 'is_approved' => 1,
+            'pph_applicable' => 0, 'ppn_percent' => 11, 'pph_percent' => 2, 'sub_state' => 'SUBMITTED', 'stat_confirm_sales' => 1, 'stat_cancel' => 0, 'is_approved' => 1,
         ]));
         $tierId = $this->sdi->table('iqp_tier')->insertGetId($row(['inquiry_id' => $inquiryId, 'tier_seq' => 1, 'qty' => $p['qty'], 'is_primary' => 1]));
 

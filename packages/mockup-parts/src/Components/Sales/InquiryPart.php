@@ -98,7 +98,6 @@ class InquiryPart extends DevlibComponent
                 <header class="mp-part__head">
                     <b data-inq-part-title>{{ $p['part_name'] !== '' ? $p['part_name'] : 'Part' }}</b>
                     <span class="mp-grow"></span>
-                    <x-dl::button size="sm" variant="secondary" icon="🏭" label="Kirim ke ProDev" data-inq-send data-inq-keep :hidden="true" />
                     @if ($p['sent'])<x-dl::badge label="sudah di ProDev" tone="success" />@endif
                     <x-dl::button size="sm" variant="danger" icon="✕" label="hapus part" data-inq-remove />
                 </header>

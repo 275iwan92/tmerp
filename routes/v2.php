@@ -30,6 +30,7 @@ use App\Services\Sales\DeliveryPromiseService;
 use App\Services\Sales\InquiryAssembly;
 use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
+use App\Services\Sales\InquiryStage;
 use App\Services\Sales\InquiryWriter;
 use App\Support\Branding\Brand;
 use App\Support\Localization\Dictionary;
@@ -174,7 +175,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
             }
 
             return response()->json(['id' => $inq->id_inquiry, 'url' => route('v2.screen', 'inquiry-new').'?id='.$inq->id_inquiry,
-                'message' => $confirm ? "Inkuiri {$inq->inquiry_no} dikonfirmasi — status SUBMITTED, form terkunci." : "Tersimpan sebagai {$inq->inquiry_no} ({$inq->refresh()->sub_state})."]);
+                'message' => $confirm ? "Inkuiri {$inq->inquiry_no} dikonfirmasi — form terkunci, sekarang ada di Pro-Dev › New." : "Tersimpan sebagai {$inq->inquiry_no} ({$inq->refresh()->sub_state})."]);
         })->name('save');
 
         Route::post('/{id}/end', function (Request $r, int $id) use ($writer, $doc) {
@@ -195,14 +196,6 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return response()->json(['message' => 'Artwork '.($inner ? 'sisi dalam ' : '')."{$part->part_name} tersimpan."]);
         })->name('artwork');
-
-        Route::post('/{id}/prodev', function (Request $r, int $id) use ($writer, $doc) {
-            $inq = $doc($id);
-            $part = $inq->parts()->findOrFail((int) $r->input('part_id'));
-            $prodPart = $writer()->sendToProDev($inq, $part);
-
-            return response()->json(['url' => route('v2.screen', 'prodev').'?part='.$prodPart.'&inquiry='.$inq->id_inquiry]);
-        })->name('prodev');
 
         // Quick-add customer dari Inquiry (status DRAFT, review Finance/Credit tetap wajib).
         Route::post('/customer', function (Request $r) use ($writer) {
@@ -957,12 +950,27 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->whereNumber('id')->name('post');
     });
 
+    // Grid Pro-Dev New / Revise (satu baris = satu inquiry yang sudah Confirm Sales): buka = workbench part pertama yang belum
+    // Confirmed. Part master dibuat di sini (pengganti tombol "Kirim ke ProDev" di form Sales; rulebook A.20).
+    Route::get('/prodev/open/{inquiry}', function (int $inquiry) {
+        $inq = IqpInquiry::findOrFail($inquiry);
+        $part = InquiryStage::openInProdev($inq, Auth::user()->login);
+
+        return $part
+            ? redirect(route('v2.screen', 'prodev').'?part='.$part.'&inquiry='.$inq->id_inquiry)
+            : redirect()->route('v2.screen', 'prodev-'.strtolower($inq->inquiry_type))->withErrors(['part' => "Inquiry {$inq->inquiry_no} has no part yet."]);
+    })->whereNumber('inquiry')->middleware('module:PROD')->name('prodev.open');
+
     // ProDev workbench: panggilan server = method komponen v1 pages::production.prodev (App\Support\V2\Data\Prodev).
     Route::prefix('prodev/{part}')->name('prodev.')->whereNumber('part')->middleware('module:PROD')->group(function () {
         Route::post('/call', function (Request $r, int $part) {
             $d = $r->validate(['method' => ['required', 'in:'.implode(',', Prodev::CALLS)], 'args' => ['array']]);
 
-            return response()->json(Prodev::call($part, $d['method'], $d['args'] ?? []));
+            $out = Prodev::call($part, $d['method'], $d['args'] ?? []);
+            // Layout disimpan / di-Confirm -> tanda stat_confirm_prodev inquiry-nya dihitung ulang (1 saat semua part Confirmed).
+            InquiryStage::syncProdevForParts([$part]);
+
+            return response()->json($out);
         })->name('call');
         Route::post('/artwork', function (Request $r, int $part) {
             $r->validate(['file' => ['required', 'file']]);
@@ -1019,15 +1027,6 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return redirect(route('v2.screen', $doc->inquiry_type === 'RECALC' ? 'inquiry-recalc' : 'inquiry-revise'))->with('v2_flash', "Draft {$doc->inquiry_no} dihapus.");
         })->whereNumber('id')->name('delete');
-
-        // Sesudah Confirm: kirim part ke ProDev (REVISE -> product turunan dibuat di sini, IqpInquiry::ensureDraftProduct).
-        Route::post('/{id}/prodev', function (Request $r, int $id) use ($guard) {
-            $guard();
-            $doc = IqpInquiry::whereIn('inquiry_type', ['RECALC', 'REVISE'])->findOrFail($id);
-            $part = $doc->parts()->findOrFail((int) $r->input('part_id'));
-
-            return redirect(route('v2.screen', 'prodev').'?part='.(new InquiryWriter(Auth::user()->login))->sendToProDev($doc, $part));
-        })->whereNumber('id')->name('prodev');
 
         Route::post('/{id}/cancel', function (Request $r, int $id) use ($guard, $open) {
             $guard();

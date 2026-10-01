@@ -26,6 +26,9 @@
       this.st = Object.assign({search: '', sort: null, dir: 1, stat: null, tab: 0, filters: {}, hidden: this.cols.filter(c => !c.visible).map(c => c.key),
         group: this.cfg.groupBy || '', view: 'table', page: 1, perPage: this.cfg.perPage, density: this.report ? 'compact' : 'normal', lines: 'fixed', linesN: 1, collapsed: [], open: []}, this.saved, {page: 1, search: '', colf: {}}, this.entry ? {density: this.cfg.actions === 'master' ? 'normal' : 'compact', lines: 'fixed', linesN: 1} : {});
 
+      // Saringan awal: stats bertanda 'default' aktif saat grid dibuka (mis. To Do di meja kerja); All tetap bisa dipilih.
+      const ds = this.cfg.stats.findIndex(s => s.default); if (ds >= 0) this.st.stat = ds;
+
       this.sel = new Set();
       this.lastIdx = null;
       this.current = [];

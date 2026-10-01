@@ -66,7 +66,7 @@ class UatKsPowerSeeder extends Seeder
             'product_draft_name' => 'KS Power N120 MF', 'design_number' => 'DS003637',
             'sales_note' => 'Kemasan aki truk KS Power N120 MF. Dibuat 2 part (A & B, masing-masing 1/2 UP) lalu direkatkan 2 sisi (Double Join). Keterangan: GERMAN FLAG-PRECAUTIONS-CCA-RC. ACC E-mail 23 Sep 2026 oleh Pak Habibi.',
             'inquiry_type' => 'NEW', 'revision_no' => 0, 'material_source' => 'OWN', 'job_nature' => 'PRODUCT', 'tax_scheme' => 'PPN',
-            'pph_applicable' => 0, 'ppn_percent' => 11, 'pph_percent' => 2, 'sub_state' => 'SUBMITTED', 'stat_confirm' => 1, 'stat_cancel' => 0, 'is_approved' => 1,
+            'pph_applicable' => 0, 'ppn_percent' => 11, 'pph_percent' => 2, 'sub_state' => 'SUBMITTED', 'stat_confirm_sales' => 1, 'stat_cancel' => 0, 'is_approved' => 1,
         ]));
         $tierId = $this->sdi->table('iqp_tier')->insertGetId($row(['inquiry_id' => $inquiryId, 'tier_seq' => 1, 'qty' => 30000, 'is_primary' => 1]));
 

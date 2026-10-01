@@ -14,7 +14,7 @@ use Tests\TestCase;
 class MultiLanguageRatchetTest extends TestCase
 {
     private const BASELINE = [
-        'id_label' => 32,         // sisa 2026-10-01: purchase-quotation (sesi Purchase); cpdel sudah English (sesi CPDEL)
+        'id_label' => 31,         // sisa 2026-10-01: purchase-quotation (sesi Purchase); cpdel sudah English (sesi CPDEL)
         'number_format_id' => 0,
         'format_d_M_Y' => 0,
         'js_locale_id' => 0,

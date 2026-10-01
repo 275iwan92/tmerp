@@ -326,7 +326,7 @@ final class MasterCardService
             'customer_id' => $first->customer_id, 'is_prospect' => 0, 'deadline_quotation' => $o['deadline'] ?? null, 'product_draft_name' => $name,
             'design_number' => $first->design_no, 'sales_note' => trim('From legacy master card '.($first->card_code ?? '#'.$first->id_master_card).'. '.($first->notes ?? '')),
             'inquiry_type' => 'NEW', 'revision_no' => 0, 'material_source' => 'OWN', 'job_nature' => 'PRODUCT', 'tax_scheme' => 'PPN', 'pph_applicable' => 0,
-            'ppn_percent' => 11, 'pph_percent' => 2, 'sub_state' => $o['state'], 'stat_confirm' => $o['confirm'] ? 1 : 0, 'stat_cancel' => 0, 'is_approved' => $o['confirm'] ? 1 : 0,
+            'ppn_percent' => 11, 'pph_percent' => 2, 'sub_state' => $o['state'], 'stat_confirm_sales' => $o['confirm'] ? 1 : 0, 'stat_cancel' => 0, 'is_approved' => $o['confirm'] ? 1 : 0,
         ]));
         if (! empty($o['qty'])) {
             $sdi->table('iqp_tier')->insert($row(['inquiry_id' => $inqId, 'tier_seq' => 1, 'qty' => $o['qty'], 'is_primary' => 1]));

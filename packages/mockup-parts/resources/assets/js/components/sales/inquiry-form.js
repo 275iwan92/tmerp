@@ -28,7 +28,7 @@
       this.template();
       this.custMaterial();
       this.removable();
-      if (this.cfg.readonly || this.doc.stat_confirm) this.lock();
+      if (this.cfg.readonly || this.doc.stat_confirm_sales) this.lock();
       // Artwork part tersimpan pada dokumen terkunci langsung dikirim (tidak ada tombol Simpan lagi).
       // Artwork dipilih/ditarik/dihapus -> pratinjau transparan di dieline & 3D; dokumen terkunci -> langsung tersimpan.
       this.el.addEventListener('dl:upload', e => {
@@ -41,7 +41,7 @@
       try { const m = sessionStorage.getItem('inq-flash'); if (m) { sessionStorage.removeItem('inq-flash'); this.flash(m); } } catch (err) { /* tanpa storage: pesan dilewati */ }
     }
 
-    locked() { return !!(this.cfg.readonly || this.doc.stat_confirm); }
+    locked() { return !!(this.cfg.readonly || this.doc.stat_confirm_sales); }
 
     // POST ke server (CSRF + JSON). 422 -> pesan per field; selain itu pesan umum.
     async call(url, body) {
@@ -131,7 +131,6 @@
       const pick = x.closest('[data-inq-role-pick]');
       if (pick && this.rolePart) { this.applyRole(this.rolePart, pick.dataset.inqRolePick); closeLayer(pick.closest('.dl-mov')); this.template(); return; }
       const end = x.closest('[data-inq-end]'); if (end) return this.end(end.dataset.inqEnd, end.closest('.dl-mov'));
-      if (x.closest('[data-inq-send]')) return this.send(part);
       if (x.closest('[data-inq-newcust-save]')) return this.newCustomer(x.closest('.dl-mov'));
     }
 
@@ -370,7 +369,7 @@
       $(this.el, '[data-inq-confirm]').hidden = true;
       $(this.el, '[data-inq-when="cancel"]').hidden = !!this.doc.stat_cancel || done;
       $(this.el, '[data-inq-when="lost"]').hidden = done;
-      this.parts().forEach(p => { $(p, '[data-inq-send]').hidden = !p.dataset.saved; $(p, '[data-inq-remove]').hidden = true; });
+      this.parts().forEach(p => { $(p, '[data-inq-remove]').hidden = true; });
       $$(this.el, '[data-inq-add-part]').forEach(b => { b.hidden = true; });
     }
 
@@ -380,15 +379,6 @@
       fieldErr(inp, '');
       const fd = new FormData(); fd.append('state', state); fd.append('reason', inp.value.trim());
       this.call(this.url('end'), fd).then(j => { closeLayer(modal); this.reload(j); }).catch(() => {});
-    }
-
-    // Mode #1: part dikirim ke ProDev (seed prod_part) — wajib tersimpan & inkuiri sudah Confirm (sendToProDev tmerp).
-    send(p) {
-      const partId = $(p, '[data-inq-part-id]').value;
-      if (!partId) return this.flash('Simpan inquiry dulu (tombol Simpan) sebelum kirim part ke ProDev.', 'warn');
-      if (!this.doc.stat_confirm) return this.flash('Confirm inquiry ini dulu sebelum kirim ke ProDev (spec harus FIX).', 'warn');
-      const fd = new FormData(); fd.append('part_id', partId);
-      this.call(this.url('prodev'), fd).then(j => { location.href = j.url; }).catch(() => {});
     }
 
     // Customer baru langsung tersimpan ke master (DRAFT) lalu dipakai di lookup Customer.

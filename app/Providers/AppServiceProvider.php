@@ -49,6 +49,9 @@ class AppServiceProvider extends ServiceProvider
 
         $this->applyTimezone();
 
+        // Tanda tahap Inquiry (ProDev selesai / costing published) mengikuti sumbernya di layar mana pun.
+        \App\Services\Sales\InquiryStage::listen();
+
         // Struktur DB berubah (migrate / rollback) -> Data Dictionary layar v2 ikut diperbarui.
         Event::listen(MigrationsEnded::class, fn () => Artisan::call('schema:dictionary'));
     }

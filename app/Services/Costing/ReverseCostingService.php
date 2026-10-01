@@ -91,7 +91,8 @@ class ReverseCostingService
                 'product_draft_name' => $costing->product_name_draft,
                 'inquiry_type' => 'NEW',
                 'sub_state' => 'PRICE_CALCULATED',
-                'stat_confirm' => true,
+                'stat_confirm_sales' => true,
+                'stat_confirm_prodev' => true,
                 'created_by' => $actingLogin,
                 'updated_by' => $actingLogin,
             ]);

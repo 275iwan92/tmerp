@@ -52,7 +52,15 @@ class IqpInquiry extends Model
         'design_number',
         'co_id',
         'sub_state',
-        'stat_confirm',
+        'stat_confirm_sales',
+        'confirm_sales_by',
+        'confirm_sales_at',
+        'stat_confirm_prodev',
+        'confirm_prodev_by',
+        'confirm_prodev_at',
+        'stat_confirm_procost',
+        'confirm_procost_by',
+        'confirm_procost_at',
         'stat_cancel',
         'cancel_reason',
         'is_approved',
@@ -71,13 +79,29 @@ class IqpInquiry extends Model
         'approved_at' => 'datetime',
         'is_prospect' => 'boolean',
         'pph_applicable' => 'boolean',
-        'stat_confirm' => 'boolean',
+        'stat_confirm_sales' => 'boolean',
+        'stat_confirm_prodev' => 'boolean',
+        'stat_confirm_procost' => 'boolean',
+        'confirm_sales_at' => 'datetime',
+        'confirm_prodev_at' => 'datetime',
+        'confirm_procost_at' => 'datetime',
         'stat_cancel' => 'boolean',
         'is_approved' => 'boolean',
         'ppn_percent' => 'decimal:4',
         'pph_percent' => 'decimal:4',
         'revision_no' => 'integer',
     ];
+
+    // Confirm Sales dipasang di banyak layar (v1 & v2): siapa & kapan dicatat di satu tempat ini.
+    protected static function booted(): void
+    {
+        static::saving(function (self $i) {
+            if ($i->isDirty('stat_confirm_sales')) {
+                $i->confirm_sales_by = $i->stat_confirm_sales ? ($i->confirm_sales_by ?: (auth()->user()?->login ?? $i->updated_by)) : null;
+                $i->confirm_sales_at = $i->stat_confirm_sales ? ($i->confirm_sales_at ?: now()) : null;
+            }
+        });
+    }
 
     // FK dalam-DB (tm2sdi): inquiry_type -> iqp_type.type_code.
     public function type(): BelongsTo
