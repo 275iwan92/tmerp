@@ -162,7 +162,7 @@
         const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
         const view = /^\d{4}-\d{2}-\d{2}$/.test(cur || '') ? new Date(cur + 'T00:00') : new Date(); view.setDate(1);
         p.className = 'dl-pick__panel is-open dl-sheet__calpanel';
-        p.innerHTML = '<div class="dl-pick__nav"><button type="button" data-p>&lt;</button><span data-t></span><button type="button" data-n>&gt;</button></div><div class="dl-cal dl-cal--names">' + (String(NUM.intl).startsWith('id') ? ['Mg', 'Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb'] : Array.from({length: 7}, (_, i) => new Date(2000, 0, 2 + i).toLocaleString(NUM.intl, {weekday: 'short'}).replace('.', '').slice(0, 2))).map(d => '<div>' + d + '</div>').join('') + '</div><div class="dl-cal" data-d></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-h>' + esc(T('today')) + '</button></div>';
+        p.innerHTML = '<div class="dl-pick__nav"><button type="button" data-p>&lt;</button><span data-t></span><button type="button" data-n>&gt;</button></div><div class="dl-cal dl-cal--names">' + Devlib.h.dow2().map(d => '<div>' + d + '</div>').join('') + '</div><div class="dl-cal" data-d></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-h>' + esc(T('today')) + '</button></div>';
         const draw = () => {
           $(p, '[data-t]').textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
           let h = '<div></div>'.repeat(view.getDay()), n = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();

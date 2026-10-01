@@ -91,6 +91,8 @@ window.Devlib = window.Devlib || {};
   // TIDAK mengubah cara membaca isian yang sudah tampil. Server selalu menerima angka kanonik 1234.5 (lihat 'formdata' di bawah).
   const NUM = Object.assign({lang: 'id', intl: 'id-ID', dec: ',', grp: '.', months: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']}, window.DL_NUM || {});
   const MON_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  // Nama hari 2 huruf untuk kepala kalender (Minggu dulu). Intl memberi "Se Se" untuk Senin/Selasa di Indonesia, jadi daftar sendiri.
+  const dow2 = () => String(NUM.intl).startsWith('id') ? ['Mg', 'Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb'] : Array.from({length: 7}, (_, i) => new Date(2000, 0, 2 + i).toLocaleString(NUM.intl, {weekday: 'short'}).replace('.', '').slice(0, 2));
   // min..max digit desimal; pemisah dari NUM (bukan Intl) supaya sama persis dengan Locale::number di PHP.
   const numFmt = (n, min = 0, max = min) => { n = +n; if (!isFinite(n)) return ''; return n.toLocaleString('en-US', {minimumFractionDigits: min, maximumFractionDigits: Math.max(min, max)}).replace(/[,.]/g, c => c === ',' ? NUM.grp : NUM.dec); };
   // Ketikan/tampilan -> string kanonik "1234.5" ('' = kosong/bukan angka). SAMA PERSIS dengan Devlib\Locale::parse (PHP).
@@ -788,6 +790,6 @@ window.Devlib = window.Devlib || {};
 
   // Asal data kolom (grid/lines): {src: 'tm2sdi.iqp_inquiry.qty'} -> tooltip Mode Developer di header kolom.
   const srcAttr = (c, kind = 'kolom') => c && c.src ? ` data-dl="${kind} ${esc(c.label || c.key)}" data-dl-class="kolom" data-dl-src="${esc(c.src)}"` : '';
-  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, Tf, t, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, numStr, numIn, numFmt, NUM, MON_EN, DlDate, DlNumber, DlTime, DlDateTime, DlText, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
+  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, Tf, t, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, numStr, numIn, numFmt, NUM, MON_EN, dow2, DlDate, DlNumber, DlTime, DlDateTime, DlText, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
   Object.assign(Devlib, {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words}, {initDevMode});
 })();

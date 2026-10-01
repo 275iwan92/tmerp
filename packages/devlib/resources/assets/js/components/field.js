@@ -1,7 +1,7 @@
 /* DevLib · Field */
 (function (Devlib) {
   'use strict';
-  const {$, $$, CASES, CASE_LABEL, applyCase, bindPanel, T, Tf, words, fmt, NUM, parseNum, DlDate, DlTime, DlDateTime} = Devlib.h;
+  const {$, $$, CASES, CASE_LABEL, applyCase, bindPanel, T, Tf, words, fmt, NUM, dow2, parseNum, DlDate, DlTime, DlDateTime} = Devlib.h;
 
   class Field extends Devlib.Component {
     static selector = ".dl-field";
@@ -129,7 +129,7 @@
         const typed = () => { const s = text.value.trim(), v = DlDate.of(s); if (!s) setVal(null); else if (v) { if (v.iso() !== hidden.value) setVal(v); else text.value = v.display(); } else this.el.classList.add('is-invalid'); };
         text.addEventListener('change', typed);
         text.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); typed(); } });
-        const dn = $(this.dt, '.dl-cal--names'); if (dn) dn.innerHTML = Array.from({length: 7}, (_, i) => `<div>${new Date(2000, 0, 2 + i).toLocaleString(NUM.intl, {weekday: 'short'}).replace('.', '').slice(0, 2)}</div>`).join('');
+        const dn = $(this.dt, '.dl-cal--names'); if (dn) dn.innerHTML = dow2().map(d => `<div>${d}</div>`).join('');
         const draw = () => {
           title.textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
           const first = new Date(view.getFullYear(), view.getMonth(), 1).getDay(), total = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
