@@ -113,12 +113,11 @@ PrintDoc.register(class PurchaseOrder extends PrintDoc {
 });
 
 // Acuan kertas: docs/attachments/expedisi.jpg (Jadwal Kirim; satu lembar per tugas armada).
-// Satu baris = satu perhentian, TIGA baris teks: nama tujuan / tempat ambil + kota, alamat, lalu barang + No CO.
-// ETD = rencana berangkat menuju perhentian itu, ETA = rencana tiba; selisihnya = lama di jalan (dihitung). Ketiganya
-// ditumpuk di kolom JENIS: AMBIL / KIRIM, ETD - ETA, lama di jalan (keputusan user 2026-10-01: rencana lebih matang).
-// IN / OUT = kenyataan, ditulis tangan pengemudi.
-// Ruang kosong blok atas (3 baris field saja) dan zona penutup dipindah ke tinggi baris, dan kolom barang dihapus,
-// supaya kolom tulis tangan IN / OUT besar (keputusan user 2026-10-01).
+// Satu baris = satu perhentian, TIGA baris teks: nama tempat + kota, alamat, lalu barang + No CO.
+// Model waktu (koreksi user 2026-10-01): tiap perhentian punya ETA (rencana tiba) dan ETD (rencana berangkat dari
+// tempat itu). Baris pertama = pangkalan: hanya ETD (mulai muat -> berangkat). Baris terakhir = kembali: hanya ETA.
+// Dari situ dihitung dua durasi: di jalan = ETA perhentian ini - ETD perhentian sebelumnya; di tempat (muat /
+// bongkar) = ETD - ETA. IN / OUT = jam tiba dan berangkat sebenarnya, ditulis tangan pengemudi (IN ~ ETA, OUT ~ ETD).
 PrintDoc.register(class JadwalKirim extends PrintDoc {
     static title = 'JADWAL KIRIM';
     static subtitle = 'Tugas Armada &middot; Internal';
@@ -129,24 +128,39 @@ PrintDoc.register(class JadwalKirim extends PrintDoc {
     ];
     static partyLabel = 'Kendaraan';
     static side = {key: 'driver', label: 'Pengemudi'};
-    static nb = '<b>NB:</b>&nbsp;ETD = rencana berangkat, ETA = rencana tiba. IN / OUT = jam tiba dan jam berangkat sebenarnya, diisi pengemudi.';
-    static nameLabel = 'TUJUAN &middot; KOTA / ALAMAT / BARANG';
-    static extra = [{key: 'plan', label: 'JENIS / ETD - ETA', width: 36, type: 'html'}, {key: 'in', label: 'IN', width: 24, hand: true}, {key: 'out', label: 'OUT', width: 24, hand: true}];
+    static nb = '<b>NB:</b>&nbsp;ETA = rencana tiba, ETD = rencana berangkat dari tempat itu. IN / OUT = jam tiba dan berangkat sebenarnya, diisi pengemudi.';
+    static nameLabel = 'TEMPAT &middot; KOTA / ALAMAT / BARANG';
+    static extra = [{key: 'plan', label: 'JENIS / ETA - ETD', width: 40, type: 'html'}, {key: 'in', label: 'IN', width: 22, hand: true}, {key: 'out', label: 'OUT', width: 22, hand: true}];
     static receivers = [['Pengemudi', '']];
     static infoRows = 3;
     static tailHeight = 2;
     static rowHeight = 13;
     static rows = {a5: 5, a4: 15};
-    // Lama di jalan dari dua jam 'HH:MM' -> '45 mnt' / '1 j 45 mnt'.
-    static road(etd, eta) {
-        const min = t => { const [h, m] = t.split(':'); return h * 60 + +m; }, d = min(eta) - min(etd), h = Math.floor(d / 60), m = d % 60;
+    static WORK = {MUAT: 'muat', AMBIL: 'muat', KIRIM: 'bongkar'};     // pekerjaan di tempat, per jenis perhentian
+
+    // Selisih dua jam 'HH:MM' -> '45 mnt' / '2 j' / '1 j 30 mnt'.
+    static span(from, to) {
+        const min = t => { const [h, m] = t.split(':'); return h * 60 + +m; }, d = min(to) - min(from), h = Math.floor(d / 60), m = d % 60;
         return [h && `${h} j`, m && `${m} mnt`].filter(Boolean).join(' ') || '0 mnt';
     }
 
+    // Kolom rencana: baris 1 jenis; baris 2 tiba (+ lama di jalan); baris 3 berangkat (+ lama muat / bongkar).
+    static plan(r, prevEtd, sameAs) {
+        const line = (l, d) => `<span><i>${l}</i>${d ? `<em>${d}</em>` : ''}</span>`, work = JadwalKirim.WORK[r.kind];
+        if (sameAs) return `<b>${esc(r.kind)}</b>` + line(`<u>tempat sama, baris ${sameAs}</u>`);
+        const arrive = r.eta ? line(`ETA ${esc(r.eta)}`, prevEtd && `jalan ${JadwalKirim.span(prevEtd, r.eta)}`) : line(`Mulai ${esc(r.start)}`);
+        const leave = r.etd ? line(`ETD ${esc(r.etd)}`, `${work} ${JadwalKirim.span(r.eta ?? r.start, r.etd)}`) : '';
+        return `<b>${esc(r.kind)}</b>${arrive}${leave}`;
+    }
+
     constructor(data) {
-        super({...data, rows: data.rows.map(r => ({...r, name: [r.place, r.city].filter(Boolean).join(' · '), sub: r.address,
-            sub2: [r.co_no && 'CO ' + r.co_no, r.item, r.note].filter(Boolean).join(' · '),
-            plan: `<b>${esc(r.kind)}</b><span>ETD ${esc(r.etd)} &rarr; ETA ${esc(r.eta)}</span><span>di jalan ${JadwalKirim.road(r.etd, r.eta)}</span>`}))});
+        let prevEtd = null, stopRow = 0;
+        super({...data, rows: data.rows.map((r, i) => {
+            const plan = JadwalKirim.plan(r, prevEtd, r.same ? stopRow : 0);
+            if (!r.same) { stopRow = i + 1; prevEtd = r.etd ?? prevEtd; }
+            return {...r, name: [r.place, r.city].filter(Boolean).join(' · '), sub: r.address, plan,
+                sub2: [r.co_no && 'CO ' + r.co_no, r.item, r.note].filter(Boolean).join(' · '), ...(r.same ? {in: 's.d.a.', out: 's.d.a.'} : {})};
+        })});
     }
 });
 
