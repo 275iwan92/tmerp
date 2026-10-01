@@ -191,8 +191,9 @@
     No CO kosong); harga estimasi tetap di kolom Harga / Subtotal (usulan tata letak, menunggu OK user).
     **Kop Telasih Makmur memakai alamat yang sama dengan CV. Langgeng Jaya Makmur** (Pondok Blimbing Indah Blok A5 No. 5,
     Malang 65126, Telp/Fax 62-341-471268) dan **tidak memakai NPWP**; NPWP hanya di kop dokumen PPN.
-    **Tanda tangan Purchase Order, dari paling kiri ke kanan: Supplier, Menyetujui (Hendra), Mengetahui (Wiwik), Pembuat
-    (Eka) di paling kanan — KETENTUAN TETAP user 2026-10-01, jangan dibalik lagi.**
+    **Urutan tanda tangan semua cetakan — KETENTUAN TETAP user 2026-10-01, jangan dibalik lagi:** dari paling kiri ke
+    kanan = **pihak luar** (supplier / customer / penerima / pengemudi), lalu **Menyetujui** (orang terakhir, paling kiri
+    di antara orang dalam), **Mengetahui**, dan **Pembuat** di paling kanan. Contoh PO: Supplier, Hendra, Wiwik, Eka.
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.

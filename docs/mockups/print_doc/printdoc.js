@@ -51,10 +51,8 @@ class PrintDoc {
     static nameLabel = 'NAMA BARANG';
     static extra = [];                  // kolom zona varian: {key, label, width(mm), type: text|date|money|int, hand?}
     static priced = false;              // true = kolom harga + kotak total rupiah + terbilang
-    static receivers = [];              // tanda tangan slot 1-2: [peran, keterangan]
-    static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat
-    static signReversed = false;        // true = dari kiri: pihak luar, Menyetujui, Mengetahui, Pembuat, dibagi rata (PO)
-    static qrHint = 'dokumen online';
+    static receivers = [];              // tanda tangan pihak luar / penerima, paling kiri: [peran, keterangan]
+    static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat    static qrHint = 'dokumen online';
 
     constructor(data) {
         this.d = data;
@@ -146,12 +144,10 @@ class PrintDoc {
         const [r1, r2] = this.f.receivers, [a, b, c] = this.f.internal;
         const slot = s => s ? `<div><span>${esc(s[0])}</span><small>${esc(s[1])}</small><i></i><b>(${s[2] ? `<u class="nm">${esc(s[2])}</u>` : '<u></u>'})</b></div>` : '<div></div>';
         const know = ['Mengetahui', a, this.d.knownBy], agree = ['Menyetujui', b, this.d.approvedBy], maker = ['Pembuat', c, this.d.createdBy];
-        // Urutan terbalik (PO): hanya slot terisi, dibagi rata, supaya pihak luar tepat di paling kiri dan Pembuat di paling kanan.
-        if (this.f.signReversed) {
-            const used = [r1, r2, agree, know, maker].filter(Boolean);
-            return `<section class="sign" style="grid-template-columns:repeat(${used.length},1fr)">${used.map(slot).join('')}</section>`;
-        }
-        return `<section class="sign">${[r1, r2, know, agree, maker].map(slot).join('')}</section>`;
+        // KETENTUAN user 2026-10-01 (jangan dibalik): dari kiri = pihak luar, lalu Menyetujui, Mengetahui, Pembuat di paling
+        // kanan. Hanya slot terisi yang dicetak, dibagi rata.
+        const used = [r1, r2, agree, know, maker].filter(Boolean);
+        return `<section class="sign" style="grid-template-columns:repeat(${used.length},1fr)">${used.map(slot).join('')}</section>`;
     }
 
     foot() {

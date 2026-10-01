@@ -64,7 +64,7 @@ table.items{width:100%;border-collapse:collapse;border-top:.5mm solid #222;borde
 .tot .g b{font-weight:700}
 .tot .g{border-top:.3mm solid #222;margin-top:.4mm;height:4.4mm;font-weight:700;font-size:10pt}
 
-/* 6. Tanda tangan: 5 slot tetap. Slot 1-2 = pihak penerima (varian), slot 3-5 = Mengetahui, Menyetujui, Pembuat. */
+/* 6. Tanda tangan, dari kiri: pihak luar / penerima (varian), lalu Menyetujui, Mengetahui, Pembuat di paling kanan; dibagi rata. */
 .sign{display:grid;grid-template-columns:repeat(5,1fr);gap:3mm;margin-top:auto;text-align:center}
 .sign span{display:block;font-size:9pt;letter-spacing:.06em;text-transform:uppercase}
 .sign small{display:block;font-size:7.5pt;color:#444;height:3mm}
