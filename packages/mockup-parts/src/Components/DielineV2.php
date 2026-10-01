@@ -78,15 +78,19 @@ class DielineV2 extends Dieline
                         <label class="dl-choice"><input type="checkbox" data-d-dims-on @checked($dimensions)> Dimension lines</label>
                         <label class="dl-choice" data-d-mirror-wrap hidden><input type="checkbox" data-d-opt="mirror"> Mirror <x-dl::tooltip text="Centang bila file sisi dalam dibuat di atas dieline yang dicerminkan (dilihat dari dalam) — gambar dibalik agar jatuh pas di panelnya."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
                     </div>
-                    <div class="dl-dieline__canvas"><div class="dl-dieline__preview" data-d-preview></div></div>
-                    @if ($level() >= 3)<div class="dl-dieline__foot"><div class="dl-dieline__lens" data-d-lens></div><div class="dl-dieline__3d" data-d-3d title="Tampilan 3D statis (ilustrasi)"></div></div>@endif
+                    {{-- v3: jendela 3D di samping kanvas, tinggi sama (user 2026-10-01); kotak bisa diputar dengan drag. --}}
+                    <div @class(['dl-dieline__view', 'dl-dieline__view--3d' => $level() >= 3])>
+                        <div class="dl-dieline__canvas"><div class="dl-dieline__preview" data-d-preview></div></div>
+                        @if ($level() >= 3)<div class="dl-dieline__3d" data-d-3d></div>@endif
+                    </div>
+                    @if ($level() >= 3)<div class="dl-dieline__lens" data-d-lens></div>@endif
                     <div class="dl-dieline__info" data-d-info></div>
                     <div class="dl-dieline__terms" data-d-terms></div>
                 </div>
-                {{-- Dimensi di BAWAH gambar (user 2026-10-01): kanvas dieline memakai lebar penuh. --}}
+                {{-- Dimensi di BAWAH gambar (user 2026-10-01), 2 baris berkelompok: ukuran produk | Flat Size, lalu flap & allowance. --}}
                 <div class="dl-dieline__side">
                     <div class="dl-dieline__dimwrap">
-                        <div class="dl-dieline__cap">Dimensions</div>
+                        <div class="dl-dieline__cap">Product Size</div>
                         <div class="dl-dieline__dims" data-d-dims></div>
                     </div>
                     <div class="dl-dieline__flat">
@@ -97,6 +101,10 @@ class DielineV2 extends Dieline
                             <label>H <input type="text" inputmode="decimal" name="{{ $name }}[flat_h]" data-d-fh readonly></label>
                             <label>Area <input type="text" name="{{ $name }}[flat_area]" data-d-fa readonly></label>
                         </div>
+                    </div>
+                    <div class="dl-dieline__dimwrap" data-d-dims2-wrap>
+                        <div class="dl-dieline__cap">Flaps &amp; Allowances</div>
+                        <div class="dl-dieline__dims" data-d-dims2></div>
                     </div>
                 </div>
             </div>

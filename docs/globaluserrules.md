@@ -138,6 +138,11 @@
     kiri = status (dari `stats`), garis pemisah, kanan = jenis (dari `tabs`). Garis bawah **bergeser** ke pilihan aktif dan
     **berganti warna** sesuai pilihan. "All" cukup satu (di kiri); klik lagi pilihan jenis yang aktif = lepas. Label singkat
     (mis. Pro-Dev, Pro-Cost).
+23. **Panel dieline (Inquiry, Master Product, Master Card) — user 2026-10-01:** tidak ada deretan tombol **Standard Sizes**
+    di panel dieline; ukuran standar dipilih lewat **dropdown** saja. Gambar dieline memakai lebar penuh, **jendela 3D di
+    samping gambar dengan tinggi sama** (lebih sempit) dan kotaknya **bisa diputar** (drag = putar, Shift+drag = miring,
+    tombol auto-spin / zoom / reset). **Dimensions di bawah gambar, 2 baris berkelompok** (Product Size | Flat Size, lalu
+    Flaps & Allowances) — tidak boleh ada satu field tersisa sendiri di baris bawah.
 
 ## D. Cara kerja developer / agen
 
@@ -183,6 +188,7 @@
 | 2026-10-02 | A.15: semua menu terkait Inquiry -> Quotation tersedia di dalam menu `PREORDER` (ACC Digital, Pro-Cost Instant, pintasan master Proses / Mesin / Kategori Bahan / Satuan / Currency / Kurs / Constants, Sales Flow) — ddt; tm2 menunggu OK. |
 | 2026-10-02 | C.21: bar alur order di atas layar ditiadakan (7 layar v2); alur ditulis di Help. |
 | 2026-10-02 | C.22: kotak statistik di atas grid diganti satu baris filter teks dengan garis bawah berjalan & berwarna (semua grid DevLib). |
+| 2026-10-01 | C.23: panel dieline — tombol Standard Sizes dihapus (dropdown saja), 3D di samping gambar & bisa diputar, Dimensions 2 baris berkelompok di bawah gambar. |
 | 2026-10-02 | C.3: grid Inquiry Product = `x-dl::grid` biasa (komponen turunan InquiryWorklist dibuang); alamat buka per baris (`open-url="{open_url}"`) dan `new-modal` jadi fitur Grid DevLib. |
 | 2026-10-01 | B.14: master hanya diubah user; sistem hanya mengubah transaksi; default boleh diperbarui analisa sistem dan tetap bisa di-override. |
 | 2026-10-01 | Material Planning (Booking + MRP + MPS) dibangun di ddt: keputusan B1-B9 di `docs/materialbooking_tier1.md` §6-§7. |

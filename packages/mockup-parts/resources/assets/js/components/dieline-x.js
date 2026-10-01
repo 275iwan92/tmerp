@@ -4,8 +4,11 @@
   const {$, $$, esc, toast, T, val} = Devlib.h;
   /* ===================== DIELINE v2 / v3 (salinan v1 + ukuran) ===================== */
   // v1 (initDieline) SENGAJA tidak diubah. level 2 = garis ukuran + istilah internasional + mm/cm;
-  // level 3 = v2 + judul spesifikasi + panjang cutting/creasing/perforasi + jendela 3D statis.
+  // level 3 = v2 + judul spesifikasi + panjang cutting/creasing/perforasi + jendela 3D (kotak bisa diputar).
   // Hanya "lem" UI; semua geometri dihitung TMDieline (salinan utuh dari tmerp).
+  // Ukuran produk (baris 1 panel Dimensions); param lain (flap, bleed, dst) masuk baris "Flaps & Allowances".
+  const MAIN_DIMS = ['product_length', 'product_width', 'product_height', 'diameter', 'lid_height', 'top_length', 'top_width'];
+  const ROT0 = {x: -22, y: -38, z: 0, k: 1};
   class DielineX extends Devlib.Component {
     static selector = "[data-dl-dieline-x]";
     init() {
@@ -28,6 +31,7 @@
       this.inArt = this.savedIn;
       this.side = 'out';
       this.art = this.outArt;
+      this.rot = {...ROT0};
       this.q = s => $(this.el, s);
       this.fw = this.q('[data-d-fw]');
       this.fh = this.q('[data-d-fh]');
@@ -47,6 +51,7 @@
         if (s) { Object.assign(this.dims, this.T[this.code].sizes[+s.dataset.dSize].dims); $$(this.el, '[data-d-dim]').forEach(i => { i.value = this.dims[i.dataset.dDim] ?? ''; }); return this.redraw(); }
         const u = e.target.closest('[data-d-unit] .dl-segment__opt'); if (u) { this.unit = u.dataset.value; return this.redraw(); }
         const sd = e.target.closest('[data-d-side] .dl-segment__opt'); if (sd) return this.showSide(sd.dataset.value);
+        const a3 = e.target.closest('[data-d-3d-act]'); if (a3) return this.act3d(a3.getAttribute('data-d-3d-act'));
         const z = e.target.closest('[data-d-zoom]'); if (z) { this.zoom = Math.min(3, Math.max(0.4, Math.round((this.zoom + +z.dataset.dZoom * 0.2) * 10) / 10)); return this.redraw(); }
         if (e.target.closest('[data-d-svg]')) {
           const svgEl = this.q('[data-d-preview] svg'); if (!svgEl) return toast('Isi dimensi dulu.', 'warn');
@@ -61,6 +66,7 @@
         // File sisi dalam baru langsung ditampilkan; dihapus & tak ada yang tersimpan -> kembali ke sisi luar.
         setArtworkInner: url => { this.inArt = url || this.savedIn; this.showSide(url ? 'in' : this.inArt ? this.side : 'out'); }};
       if (!window.TMDieline) { this.q('[data-d-preview]').textContent = 'TMDieline tidak termuat.'; return; }
+      this.bind3d();
       this.sideUi();
       this.fields();this.redraw();
       if (this.art) this.loadArt();
@@ -90,7 +96,10 @@
     fields() {
       const t = this.T[this.code]; if (!t) return;
       this.dims = Object.fromEntries(Object.entries(t.params).map(([k, p]) => [k, this.dims[k] ?? p.default ?? '']));
-      this.q('[data-d-dims]').innerHTML = Object.entries(t.params).filter(([, p]) => p.type === 'NUM' || typeof p.default === 'number').map(([k, p]) => `<label class="dl-dieline__dim" title="${esc(p.label)}"><span>${esc(this.term(k, p))}</span><span class="dl-field__box"><input class="dl-input" type="text" inputmode="decimal" name="${esc(this.name)}[dims][${esc(k)}]" data-d-dim="${esc(k)}" value="${esc(this.dims[k] ?? '')}"><em>${esc(p.unit || 'mm')}</em></span></label>`).join('');
+      const num = Object.entries(t.params).filter(([, p]) => p.type === 'NUM' || typeof p.default === 'number'), d2 = this.q('[data-d-dims2]');
+      const row = ([k, p]) => `<label class="dl-dieline__dim" title="${esc(p.label)}"><span>${esc(this.term(k, p))}</span><span class="dl-field__box"><input class="dl-input" type="text" inputmode="decimal" name="${esc(this.name)}[dims][${esc(k)}]" data-d-dim="${esc(k)}" value="${esc(this.dims[k] ?? '')}"><em>${esc(p.unit || 'mm')}</em></span></label>`;
+      this.q('[data-d-dims]').innerHTML = num.filter(([k]) => !d2 || MAIN_DIMS.includes(k)).map(row).join('');
+      if (d2) { d2.innerHTML = num.filter(([k]) => !MAIN_DIMS.includes(k)).map(row).join(''); this.q('[data-d-dims2-wrap]').hidden = !d2.innerHTML; }
       this.markSize();
     }
 
@@ -182,14 +191,16 @@
 
     // Tepi potong, garis lipat, kotak bleed, dan area panel utama (tanpa glue flap) dari hasil render TMDieline.
     geo(svg) {
-      const S = window.TMDieline.STROKE, crease = S.CREASE.toLowerCase(), bleed = S.BLEED.toLowerCase();
+      const S = window.TMDieline.STROKE, crease = S.CREASE.toLowerCase(), bleed = S.BLEED.toLowerCase(), cut = S.CUT.toLowerCase();
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, b0 = Infinity, c0 = Infinity, b1 = -Infinity, c1 = -Infinity;
-      const xs = [], hs = [];
+      const xs = [], hs = [], cuts = [];
       $$(svg, 'line,rect,path,circle,polyline,polygon').forEach(n => {
         if (n.closest('.dl-deco, .dl-dim')) return;
         const st = (n.getAttribute('stroke') || '').toLowerCase(), b = n.getBBox();
         if (st === bleed) { b0 = Math.min(b0, b.x); c0 = Math.min(c0, b.y); b1 = Math.max(b1, b.x + b.width); c1 = Math.max(c1, b.y + b.height); return; }
         x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
+        // Bentuk potong per flap/tutup (bukan garis lurus) -> dipakai mencari tutup atas/bawah kotak 3D.
+        if (st === cut && n.tagName !== 'line') cuts.push(b);
         if (st === crease && n.tagName === 'line' && !n.getAttribute('stroke-dasharray')) {
           const a = +n.getAttribute('x1'), c = +n.getAttribute('x2'), d = +n.getAttribute('y1'), f = +n.getAttribute('y2');
           if (Math.abs(a - c) < 0.01) xs.push(a); else if (Math.abs(d - f) < 0.01) hs.push({y: d, a: Math.min(a, c), b: Math.max(a, c)});
@@ -207,7 +218,7 @@
       }
       const py0 = ys.length ? ys[0] : y0, py1 = ys.length > 1 ? ys[ys.length - 1] : y1;
       const bb = isFinite(b0) ? {x0: b0, y0: c0, x1: b1, y1: c1} : {x0, y0, x1, y1};
-      return {x0, y0, x1, y1, px0, px1, py0, py1, glue, inX, ys, hs, bb};
+      return {x0, y0, x1, y1, px0, px1, py0, py1, glue, inX, ys, hs, bb, cuts};
     }
 
     // Lapisan tampilan di atas hasil TMDieline: artwork transparan, glue margin, arah serat, tanda register, lock tab, bleed on/off.
@@ -257,33 +268,95 @@
       }
     }
 
-    // Artwork di sisi 3D: tiap sisi = transformasi afin gambar ke bidang isometrik, dipotong sesuai urutan panel dieline (L, W, L, W).
-    art3d(L, Wd, H, c, s) {
-      // 3D = tampak luar kotak; sisi dalam tidak dipasang di sini.
-      if (!this.art || this.side === 'in' || !this.opt('artwork') || !this.g) return '';
-      const g = this.g, R = this.artRect(g), F = this.faces3d(g), id = this.uid + 'f', href = esc(this.art);
-      if (!F) return '';
-      // Sumber [x,y,w,h] di bentangan -> sisi w x h: gambar (menempati R) diskalakan & digeser agar sumber jatuh di 0..w, 0..h.
-      const face = (k, m, w, h, src) => {
-        const kx = w / src[2], ky = h / src[3];
-        return `<clipPath id="${id}${k}"><rect width="${w}" height="${h}"/></clipPath><g transform="matrix(${m.join(',')})"><image class="dl-3d__art" href="${href}" x="${(R.x - src[0]) * kx}" y="${(R.y - src[1]) * ky}" width="${R.w * kx}" height="${R.h * ky}" preserveAspectRatio="none" clip-path="url(#${id}${k})"/></g>`;
+    // Sumber gambar 6 sisi kotak (koordinat bentangan). Kotak tuck = panel berjajar L, W, L, W (depan, kanan, belakang, kiri);
+    // tutup atas/bawah = bentuk potong di atas/bawah panel L tempat ia menempel (menempel di panel belakang -> gambar diputar 180°).
+    // Model nampan: 3 sisi dari faces3d, sisi lainnya polos.
+    sides3d(g) {
+      const F = this.faces3d(g); if (!F) return {};
+      const out = {front: {src: F.front}, right: {src: F.side}, top: {src: F.top}};
+      const cols = [g.x0, ...g.inX, g.x1], i = cols.indexOf(g.px0);
+      if (!(g.ys.length <= 2 && g.inX.length >= 3 && i >= 0 && i + 2 < cols.length)) return out;
+      const h = g.py1 - g.py0, col = n => (i + n + 1 < cols.length ? [cols[i + n], cols[i + n + 1]] : null), f = col(0), b = col(2), l = col(3);
+      if (b) out.back = {src: [b[0], g.py0, b[1] - b[0], h]};
+      if (l) out.left = {src: [l[0], g.py0, l[1] - l[0], h]};
+      const lid = above => {
+        const c = g.cuts.filter(r => (above ? r.y + r.height <= g.py0 + 0.5 : r.y >= g.py1 - 0.5) && [f, b].some(p => p && r.x >= p[0] - 0.5 && r.x + r.width <= p[1] + 0.5)).sort((p, q) => q.height - p.height)[0];
+        return c ? {src: [c.x, c.y, c.width, c.height], flip: !!b && c.x >= b[0] - 0.5} : null;
       };
-      return face('a', [c, s, 0, 1, -Wd * c, Wd * s - H], L, H, F.front) + face('b', [c, -s, 0, 1, (L - Wd) * c, (L + Wd) * s - H], Wd, H, F.side) + face('c', [c, s, -c, s, 0, -H], L, Wd, F.top);
+      out.top = lid(true) || out.top;
+      const bottom = lid(false); if (bottom) out.bottom = bottom;
+      return out;
+    }
+
+    // Kotak 3D yang bisa diputar: 6 sisi CSS 3D berukuran proporsional L x W x H (satuan --u mengikuti ukuran jendela),
+    // gambar tiap sisi = area panelnya di bentangan. Ilustrasi kotak tertutup, bukan simulasi lipatan.
+    box3d(box, L, Wd, H) {
+      // 3D = tampak luar kotak; sisi dalam tidak dipasang di sini.
+      const on = this.art && this.side !== 'in' && this.opt('artwork') && this.g, S = on ? this.sides3d(this.g) : {}, R = on ? this.artRect(this.g) : null;
+      const u = n => `calc(${Math.round(n * 1000) / 1000} * var(--u))`, href = on ? esc(String(this.art).replace(/'/g, '%27')) : '';
+      // Sumber [x,y,w,h] di bentangan -> sisi w x h: gambar (menempati R) diskalakan & digeser agar sumber jatuh di 0..w, 0..h.
+      const face = (k, w, h, tf) => {
+        const s = S[k] && S[k].src[2] > 0 && S[k].src[3] > 0 ? S[k] : null, kx = s ? w / s.src[2] : 0, ky = s ? h / s.src[3] : 0;
+        const bg = s ? `background-image:url('${href}');background-size:${u(R.w * kx)} ${u(R.h * ky)};background-position:${u((R.x - s.src[0]) * kx)} ${u((R.y - s.src[1]) * ky)};` : '';
+        return `<div class="dl-3d__face is-${k}" style="width:${u(w)};height:${u(h)};margin:${u(-h / 2)} 0 0 ${u(-w / 2)};transform:${tf}${s && s.flip ? ' rotate(180deg)' : ''};${bg}"></div>`;
+      };
+      const diag = Math.hypot(L, Wd, H), btn = (a, icon, title) => `<button type="button" class="dl-3d__btn${a === 'spin' && this.spin ? ' is-on' : ''}" data-d-3d-act="${a}" title="${title}"><i class="fa-solid ${icon}"></i></button>`;
+      box.classList.add('is-live');
+      box.innerHTML = `<div class="dl-3d__scene" style="--u:min(84cqw / ${Math.hypot(L, Wd)}, 76cqh / ${diag});perspective:${u(diag * 4)}"><div class="dl-3d__box">`
+        + face('front', L, H, `translateZ(${u(Wd / 2)})`) + face('back', L, H, `rotateY(180deg) translateZ(${u(Wd / 2)})`)
+        + face('right', Wd, H, `rotateY(90deg) translateZ(${u(L / 2)})`) + face('left', Wd, H, `rotateY(-90deg) translateZ(${u(L / 2)})`)
+        + face('top', L, Wd, `rotateX(90deg) translateZ(${u(H / 2)})`) + face('bottom', L, Wd, `rotateX(-90deg) translateZ(${u(H / 2)})`)
+        + `</div></div><span>3D</span><div class="dl-3d__bar">${btn('spin', 'fa-arrows-rotate', 'Auto-spin')}${btn('out', 'fa-minus', 'Zoom out')}${btn('in', 'fa-plus', 'Zoom in')}${btn('reset', 'fa-rotate-left', 'Reset view')}<b data-d-3d-deg title="Drag to rotate · Shift+drag to tilt · double-click to reset"></b></div>`;
+      this.turn3d();
+    }
+
+    turn3d() {
+      const b = this.q('.dl-3d__box'), r = this.rot, d = this.q('[data-d-3d-deg]'); if (!b) return;
+      b.style.transform = `scale(${r.k}) rotateZ(${r.z}deg) rotateX(${r.x}deg) rotateY(${r.y}deg)`;
+      const deg = v => Math.round((((v + 180) % 360) + 360) % 360 - 180);
+      if (d) d.textContent = `X ${deg(r.x)}° · Y ${deg(r.y)}° · Z ${deg(r.z)}°`;
+    }
+
+    act3d(a) {
+      const r = this.rot;
+      if (a === 'spin') return this.spin3d(!this.spin);
+      if (a === 'reset') { this.spin3d(false); this.rot = {...ROT0}; } else r.k = Math.min(1.8, Math.max(0.6, Math.round((r.k + (a === 'in' ? 0.2 : -0.2)) * 10) / 10));
+      this.turn3d();
+    }
+
+    spin3d(on) {
+      this.spin = on; cancelAnimationFrame(this.raf);
+      const b = this.q('[data-d-3d-act="spin"]'); if (b) b.classList.toggle('is-on', on);
+      const step = () => { if (!this.spin || !this.el.isConnected) return; if (!this.drag) { this.rot.y += 0.6; this.turn3d(); } this.raf = requestAnimationFrame(step); };
+      if (on) step();
+    }
+
+    // Drag = orbit (sumbu Y lalu X), Shift+drag = miring (sumbu Z), klik ganda = reset.
+    bind3d() {
+      const d3 = this.q('[data-d-3d]'); if (!d3) return;
+      d3.addEventListener('pointerdown', e => { if (e.target.closest('.dl-3d__bar') || !$(d3, '.dl-3d__box')) return; this.drag = {x: e.clientX, y: e.clientY}; try { d3.setPointerCapture(e.pointerId); } catch (err) { /* pointer sudah lepas */ } e.preventDefault(); });
+      d3.addEventListener('pointermove', e => {
+        const p = this.drag, r = this.rot; if (!p) return;
+        const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+        if (e.shiftKey) r.z += dx * 0.5; else { r.y += dx * 0.5; r.x = Math.max(-85, Math.min(85, r.x - dy * 0.5)); }
+        this.turn3d();
+      });
+      const up = () => { this.drag = null; };
+      d3.addEventListener('pointerup', up); d3.addEventListener('pointercancel', up);
+      d3.addEventListener('dblclick', e => { if (!e.target.closest('.dl-3d__bar')) this.act3d('reset'); });
     }
 
     preview3d() {
       const box = this.q('[data-d-3d]'), t = this.T[this.code]; if (!box || !t) return;
       const L = +this.dims.product_length || 0, Wd = +this.dims.product_width || 0, H = +this.dims.product_height || +this.dims.lid_height || 0, D = +this.dims.diameter || 0;
+      if (!D && L && Wd && H) return this.box3d(box, L, Wd, H);
+      // Tabung & barang lembaran: gambar isometrik statis.
+      box.classList.remove('is-live');
       const c = Math.cos(Math.PI / 6), s = 0.5, iso = (x, y, z) => [(x - y) * c, (x + y) * s - z];
       let body = '';
       if (D && H) {
         const r = D / 2, top = iso(0, 0, H), bot = iso(0, 0, 0), rx = r * 1.22, ry = r * 0.7;
         body = `<path d="M${bot[0] - rx},${top[1]} L${bot[0] - rx},${bot[1]} A${rx},${ry} 0 0 0 ${bot[0] + rx},${bot[1]} L${bot[0] + rx},${top[1]} Z" class="dl-3d__side"/><ellipse cx="${top[0]}" cy="${top[1]}" rx="${rx}" ry="${ry}" class="dl-3d__top"/>`;
-      } else if (L && Wd && H) {
-        const P = (x, y, z) => iso(x, y, z).join(','), poly = (pts, cls) => `<polygon points="${pts.join(' ')}" class="${cls}"/>`;
-        body = poly([P(0, Wd, 0), P(L, Wd, 0), P(L, Wd, H), P(0, Wd, H)], 'dl-3d__front') + poly([P(L, 0, 0), P(L, Wd, 0), P(L, Wd, H), P(L, 0, H)], 'dl-3d__side') + poly([P(0, 0, H), P(L, 0, H), P(L, Wd, H), P(0, Wd, H)], 'dl-3d__top')
-          + this.art3d(L, Wd, H, c, s)
-          + `<line x1="${iso(L, Wd, 0)[0]}" y1="${iso(L, Wd, 0)[1]}" x2="${iso(L, Wd, H)[0]}" y2="${iso(L, Wd, H)[1]}" class="dl-3d__edge"/>`;
       } else {
         const fwv = +this.fw.value || 100, fhv = +this.fh.value || 70, P = (x, y) => iso(x, y, 0).join(',');
         body = `<polygon points="${[P(0, 0), P(fwv, 0), P(fwv, fhv), P(0, fhv)].join(' ')}" class="dl-3d__top"/>`;

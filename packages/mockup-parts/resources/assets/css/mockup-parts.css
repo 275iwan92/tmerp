@@ -122,15 +122,34 @@
 .dl-dieline__lens .is-cut{--k:var(--dl-dl-cut)}.dl-dieline__lens .is-crease{--k:var(--dl-dl-crease)}.dl-dieline__lens .is-hole{--k:var(--dl-dl-hole);border-bottom-style:dotted}
 .dl-dieline__lens b{font-size:calc(15px * var(--dl-font-scale));color:var(--dl-ink-strong);font-variant-numeric:tabular-nums}
 .dl-dieline__lens span{font-size:calc(11px * var(--dl-font-scale));font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--dl-muted)}
-.dl-dieline__foot{display:grid;grid-template-columns:1fr 150px;gap:10px;align-items:center}
-.dl-dieline__foot .dl-dieline__3d{position:relative;right:auto;top:auto;height:120px;border:1px solid var(--dl-border);box-shadow:none;background:var(--dl-surface)}
-/* v2/v3: kanvas selebar penuh, panel Dimensions + Flat Size jadi satu baris di bawahnya (v1 tetap panel kiri). */
+/* v2/v3 (v1 tetap panel kiri): kanvas selebar penuh; di v3 jendela 3D di samping kanvas, tinggi sama; panel Dimensions di bawah. */
 .dl-dieline[data-dl-dieline-x]{grid-template-columns:minmax(0,1fr)}
-.dl-dieline[data-dl-dieline-x] .dl-dieline__side{flex-direction:row;flex-wrap:wrap;gap:10px 20px;align-items:flex-start}
-.dl-dieline__dimwrap{flex:1 1 420px;min-width:0;display:flex;flex-direction:column;gap:6px}
-.dl-dieline[data-dl-dieline-x] .dl-dieline__dims{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.dl-dieline__view--3d{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:10px;align-items:stretch}
+.dl-dieline__view .dl-dieline__3d{position:relative;right:auto;top:auto;width:auto;height:var(--dl-dl-h);padding:0;border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);box-shadow:none;background:var(--dl-surface);overflow:hidden;container-type:size}
+.dl-dieline__view .dl-dieline__3d > svg{padding:14px}
+/* Dimensions 2 baris berkelompok: [Product Size | Flat Size] lalu [Flaps & Allowances | kosong]; kolom kedua baris sejajar. */
+.dl-dieline[data-dl-dieline-x] .dl-dieline__side{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,3fr);gap:12px 28px;align-items:start}
+.dl-dieline__dimwrap{display:flex;flex-direction:column;gap:6px;min-width:0}
+.dl-dieline__dimwrap[hidden]{display:none}
+.dl-dieline[data-dl-dieline-x] .dl-dieline__dims{grid-template-columns:repeat(5,minmax(0,1fr))}
 .dl-dieline[data-dl-dieline-x] .dl-dieline__dim > span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dl-dieline[data-dl-dieline-x] .dl-dieline__flat{flex:0 1 300px}
+@media (max-width:860px){.dl-dieline__view--3d,.dl-dieline[data-dl-dieline-x] .dl-dieline__side{grid-template-columns:minmax(0,1fr)}.dl-dieline[data-dl-dieline-x] .dl-dieline__dims{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
+/* Kotak 3D yang bisa diputar (CSS 3D, 6 sisi); --sh = bayangan per sisi. */
+.dl-dieline__3d.is-live{cursor:grab;touch-action:none;user-select:none}
+.dl-dieline__3d.is-live:active{cursor:grabbing}
+.dl-3d__scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.dl-3d__box{position:relative;width:0;height:0;transform-style:preserve-3d}
+.dl-3d__face{position:absolute;left:0;top:0;backface-visibility:hidden;background-color:var(--dl-3d-front);background-repeat:no-repeat;box-shadow:inset 0 0 0 1px rgba(0,0,0,.28)}
+.dl-3d__face::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,var(--sh,0));pointer-events:none}
+.dl-3d__face.is-right,.dl-3d__face.is-left{background-color:var(--dl-3d-side);--sh:.14}
+.dl-3d__face.is-top{background-color:var(--dl-3d-top)}
+.dl-3d__face.is-bottom{background-color:var(--dl-3d-side);--sh:.24}
+.dl-3d__face.is-back{--sh:.08}
+.dl-3d__bar{position:absolute;left:6px;right:6px;bottom:6px;display:flex;align-items:center;gap:4px}
+.dl-3d__bar b{margin-left:auto;font-size:10px;font-weight:600;color:var(--dl-muted);font-variant-numeric:tabular-nums;cursor:help}
+.dl-3d__btn{width:24px;height:24px;display:grid;place-items:center;border:1px solid var(--dl-border);border-radius:6px;background:var(--dl-surface);color:var(--dl-ink);font-size:11px;cursor:pointer}
+.dl-3d__btn:hover{border-color:var(--dl-accent);color:var(--dl-accent)}
+.dl-3d__btn.is-on{background:var(--dl-accent);border-color:var(--dl-accent);color:var(--dl-white)}
 /* ================= FLOW CONFIG (Part 6) ================= */
 .dl-flowcfg{display:flex;flex-direction:column;gap:10px}
 .dl-flowcfg__panel{display:grid;grid-template-columns:1fr 320px;gap:12px;align-items:start;padding-top:10px}
@@ -362,7 +381,6 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .dl-deco__grain text{stroke:none;font-family:var(--dl-font);font-weight:800}
 .dl-deco__cross{stroke:var(--dl-dl-reg);fill:none;stroke-width:.6;vector-effect:non-scaling-stroke}
 .dl-deco__lock{stroke:var(--dl-dl-lock);stroke-width:2.5;vector-effect:non-scaling-stroke}
-.dl-3d__art{opacity:.9}
 :root{--dl-dl-grain:#ffd166;--dl-dl-reg:#e6e6e6;--dl-dl-lock:#ff9f1c;--dl-dl-glue:rgba(255,255,255,.28)}
 .mp-part__art{display:flex;flex-direction:column;gap:8px}
 
