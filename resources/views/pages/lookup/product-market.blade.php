@@ -12,7 +12,7 @@ use Livewire\WithPagination;
 
 // Lookup Product Market (officer ProDev, user 2026-09-26): daftar "Kategori Produk" yang dipilih sales di
 // Inquiry New. Pola Grid for Master DevLib: kotak foto di kolom pertama, Edit + Aktif/Nonaktif.
-new #[Title('Lookup Product Market — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Master Product Market — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridPagination;
     use HasGridStatFilter;

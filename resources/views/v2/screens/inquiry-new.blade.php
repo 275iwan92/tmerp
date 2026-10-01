@@ -64,9 +64,9 @@
         <div data-inq-custom hidden>
             <x-dl::form.row cols="2">
                 <x-dl::field.text name="product_detail_custom" label="Custom Product Name" required placeholder="mis. Stand Smartphone / Dus Telur / Dus Pot Tanaman"
-                    :source="'catatan detail custom (belum ada di Lookup Product Market)'" />
+                    :source="'catatan detail custom (belum ada di Master Product Market)'" />
                 <x-dl::alert tone="info">Produk belum ada di daftar: pilih <b>Tipe Produk</b> (dieline) yang paling mirip dan isi dimensi manual di part.
-                    Bila sering dipesan, minta officer ProDev menambahkannya di <b>Lookup Product Market</b>.</x-dl::alert>
+                    Bila sering dipesan, minta officer ProDev menambahkannya di <b>Master Product Market</b>.</x-dl::alert>
             </x-dl::form.row>
         </div>
         <x-dl::form.row cols="2">

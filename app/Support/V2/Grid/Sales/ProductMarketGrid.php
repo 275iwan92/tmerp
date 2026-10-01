@@ -7,7 +7,7 @@ use App\Support\V2\Grid\DbGrid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// Lookup Product Market (v1: pages::lookup.product-market + entry) = Kategori Produk di Inquiry.
+// Master Product Market (v1: pages::lookup.product-market + entry) = Kategori Produk di Inquiry.
 class ProductMarketGrid extends DbGrid
 {
     public function slug(): string
@@ -17,7 +17,7 @@ class ProductMarketGrid extends DbGrid
 
     public function title(): string
     {
-        return 'Lookup Product Market';
+        return 'Master Product Market';
     }
 
     public function module(): string
