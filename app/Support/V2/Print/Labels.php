@@ -191,6 +191,11 @@ final class Labels
         'Code' => 'Kode',
         'Receipt No.' => 'No Nota',
         'Receives the money' => 'Menerima uang',
+        // Surat Jalan Subkon
+        'Subcontract Delivery Note' => 'Surat Jalan Subkon',
+        'Process' => 'Proses',
+        'Subcontractor' => 'Subkon',
+        'The goods stay the property of the sender and are returned after the process, quoting this note number.' => 'Barang tetap milik pengirim dan dikembalikan setelah proses selesai dengan menyebut nomor surat jalan ini.',
         // Faktur Penjualan / Tagihan Uang Muka
         'Sales Invoice' => 'Faktur Penjualan',
         'Down Payment Invoice' => 'Tagihan Uang Muka',

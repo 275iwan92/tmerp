@@ -99,6 +99,7 @@ final class MenuRoutes
             // Konversi Satuan: di v1 panel di dalam Master Satuan; baris menunya sendiri hanya punya layar v2 (Grid Lookup).
             'MD_UOM_CONV' => route('v2.screen', 'md-uom-conversion'),
             'MD_PRODCAT' => route('v2.screen', 'md-product-category'),
+            'SALES_DN_SUBCON' => route('v2.screen', 'subcon-delivery-note'),
             // Shortcut "Master Data Terkait" di dalam modul WM (2026-08-31) --
             // reuse route MDATA yang sama persis (bukan duplikasi layar/data).
             'INV_REF_RAW' => route('master.raw-material.list'),

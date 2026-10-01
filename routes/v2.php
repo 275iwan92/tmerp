@@ -48,6 +48,7 @@ use App\Support\V2\Data\PurchaseQuotation;
 use App\Support\V2\Data\PurchaseReceive;
 use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\Quotation;
+use App\Support\V2\Data\SubconDelivery;
 use App\Support\V2\Data\WorkCalendar;
 use App\Support\V2\Flows;
 use App\Support\V2\Grid\DbGrid;
@@ -773,6 +774,41 @@ Route::prefix('v2')->name('v2.')->group(function () {
             }
 
             return $err ? $open($id, $slug)->withErrors(['save' => $err]) : $open($id, $slug)->with('v2_flash', $action === 'pull' ? 'Baris ditarik dari jadwal kirim CO.' : 'DO tersimpan.');
+        })->whereNumber('id')->name('save');
+    });
+
+    // Surat Jalan Subkon v2 (App\Support\V2\Data\SubconDelivery, backlog02 19.1): action = save | confirm | cancel | delete.
+    Route::prefix('subcon')->name('subcon.')->middleware('module:SALES')->group(function () {
+        $home = fn () => route('v2.screen', 'subcon-delivery-note');
+        $open = fn (int $id) => redirect($home().'?id='.$id);
+        Route::post('/create', function (Request $r) use ($open) {
+            $d = $r->validate(['supplier_id' => ['required', 'integer'], 'subcon_process' => ['required', 'string', 'max:80']], [], ['supplier_id' => 'Subcontractor', 'subcon_process' => 'Subcontract Process']);
+            $do = SubconDelivery::create((int) $d['supplier_id'], $d['subcon_process']);
+
+            return $open($do->id_delivery)->with('v2_flash', t('Draft created. Add the items, then Confirm.'));
+        })->name('create');
+        Route::post('/{id}/save', function (Request $r, int $id) use ($home, $open) {
+            $do = SubconDelivery::find($id) ?? abort(404);
+            $action = (string) $r->input('action', 'save');
+            if ($action === 'delete') {
+                SubconDelivery::delete($do);
+
+                return redirect($home())->with('v2_flash', t('Draft deleted.'));
+            }
+            if ($action === 'cancel') {
+                $err = SubconDelivery::act($do, 'cancel', (string) $r->input('_reason', ''));
+
+                return $err ? $open($id)->withErrors(['cancel' => $err]) : $open($id)->with('v2_flash', t('Delivery note cancelled.'));
+            }
+            $r->validate(['do_date' => ['nullable', 'date'], 'scheduled_ship_date' => ['nullable', 'date'], 'supplier_id' => ['nullable', 'integer'], 'pr_id' => ['nullable', 'integer']]);
+            SubconDelivery::save($do, $r->all());
+            if ($action === 'confirm') {
+                $err = SubconDelivery::act($do->refresh(), 'confirm');
+
+                return $err ? $open($id)->withErrors(['confirm' => $err]) : $open($id)->with('v2_flash', t('Confirmed. The delivery note is ready to print.'));
+            }
+
+            return $open($id)->with('v2_flash', t('Saved.'));
         })->whereNumber('id')->name('save');
     });
 

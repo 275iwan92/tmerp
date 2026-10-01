@@ -33,7 +33,8 @@ final class DeliveryOrder
 
     public static function rows(array $statuses = []): array
     {
-        $dos = DoDelivery::with(['lines', 'lines.order:id_order,co_no'])->when($statuses, fn ($q) => $q->whereIn('status', $statuses))
+        // Surat jalan subkon (do_type SUBCON) punya layarnya sendiri (subcon-delivery-note), tidak ikut daftar DO / Surat Jalan / POD.
+        $dos = DoDelivery::with(['lines', 'lines.order:id_order,co_no'])->where('do_type', '<>', 'SUBCON')->when($statuses, fn ($q) => $q->whereIn('status', $statuses))
             ->orderByDesc('id_delivery')->limit(500)->get();
         $cust = CustCustomer::whereIn('id_customer', $dos->pluck('customer_id')->filter()->unique())->pluck('customer_name', 'id_customer');
 

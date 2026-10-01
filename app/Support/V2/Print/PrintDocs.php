@@ -35,6 +35,7 @@ final class PrintDocs
         'maintenance-request' => [MaintenanceRequestPrint::class, 'maintenance-request', 'MR'],
         'maintenance-wo' => [MaintenanceWoPrint::class, 'maintenance-wo', 'MWO'],
         'petty-cash' => [PettyCashPrint::class, 'petty-cash', 'PC'],
+        'subcon-delivery-note' => [SubconDeliveryNotePrint::class, 'subcon-delivery-note', 'SDN'],
         'sales-invoice' => [SalesInvoicePrint::class, 'acc-receivables', 'INV'],
         'payment-voucher' => [PaymentVoucherPrint::class, 'acc-cash-bank', 'PVC'],
     ];
