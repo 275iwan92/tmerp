@@ -3,6 +3,22 @@
 
 ---
 
+## 2026-10-02 -- Menu modul Inquiry & Quotation (PREORDER) dilengkapi
+
+- Perintah user: "Module inquiry until quotation is it done become one module? If ok, make sure all menu related with this
+  module available in one module". Jawaban: sudah satu modul (menu `PREORDER`) di **ddt**; di `tm2sys` belum (migrasi menunggu OK).
+- Audit layar terkait vs baris menu -> 10 baris ditambah (migration `2026_10_02_000008`, **baru di ddt**):
+  Pro-Dev > **ACC Digital / Proof Digital** (layar v2 sudah ada tapi tidak punya baris menu di mana pun);
+  **Pro-Cost Instant** (Mode #2 standalone; di v2 tidak bisa dibuka dari menu, hanya dari link di grid Pro-Cost v1; izin `COSTING`);
+  Master Data > Kategori Bahan Baku (`MDATA`), Master Proses + Master Mesin (`PROD`), Satuan / Currency / Kurs (`MDATA`, layar v1),
+  Constants (`SETUP`, layar v1, khusus admin); Flow > Sales Flow: Inquiry -> CPDEL (salinan baris `F-SALES`).
+- Pintasan = baris ber-target sama dengan baris asal (label/ikon ikut asal), izin tetap modul pemilik layar. 5 baris layar v1
+  dipetakan di `MenuRoutes`. Tidak ada layar/kode layar yang diubah (zona beku tidak disentuh).
+- Uji: pohon menu admin di mockup.test menampilkan 25 item, 10 baris baru semuanya ter-resolve ke alamat yang benar; `tm2sys` tidak
+  tersentuh (0 baris `PRE*`). Belum dicek mata di browser.
+- Belum: layar input master Pro-Cost (rate coating / sheet / grammage, ukuran plano, tipe produk) memang belum ada layarnya,
+  jadi belum bisa diberi menu; Nota Inquiry tetap lewat tombol Print di form.
+
 ## 2026-10-01 -- Dummy Inquiry DRAFT dibangun ulang (untuk mencoba dieline & mockup)
 
 - Perintah user: "rebuild data dummy for all inquiry data but status draft, so I could see how dieline mockup works".

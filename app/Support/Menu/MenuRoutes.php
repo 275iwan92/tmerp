@@ -33,6 +33,13 @@ final class MenuRoutes
             'SALES_IMPO' => route('production.prodev.list'),
             'SALES_PMKT' => route('lookup.product-market'),
             'SALES_COST' => route('inquiry.costing.list'),
+            // Menu PREORDER (Inquiry & Quotation): layar v1 yang sama dibuka juga dari modul ini (migration
+            // 2026_10_02_000008). Pro-Cost Instant = Mode #2 standalone, di v1 hanya lewat link di grid Pro-Cost.
+            'PRE_COST_INSTANT' => route('inquiry.costing.instant.list'),
+            'PRE_MD_UOM' => route('master.uom'),
+            'PRE_MD_CURRENCY' => route('master.currency'),
+            'PRE_MD_EXCHRATE' => route('master.exchange-rate'),
+            'PRE_SET_CONSTANTS' => route('setup.constants'),
             // Nota TIDAK LAGI menu top-level -- dokumen per-inquiry, reachable lewat
             // tombol "🖨 Cetak Nota" di dalam Inquiry Product (inquiry/form.blade.php toolbar).
             // Quotation SEKARANG per-customer (redesain 2026-08-20, bukan lagi

@@ -63,6 +63,8 @@
     `sys_app_menu` ber-`target` sama (mis. Master Customer di menu PREORDER, izin `MDATA`) — tanpa kode, tanpa salinan layar.
     Layar terbuka selama masih ada satu baris menu aktif (beserta induknya) yang menunjuk ke situ (`AppMenu::open`).
     Modul / grup / item baru, termasuk grup Flow, ditambah lewat baris data, bukan kode.
+    **Satu modul = lengkap sendiri:** semua layar yang dipakai modul (transaksi, master penyerta, laporan, alur) wajib bisa
+    dibuka dari menu modul itu sendiri — bila layarnya milik modul lain, tambahkan baris pintasan (izin tetap modul pemilik).
 
 ## B. Database & data
 
@@ -178,6 +180,7 @@
 | 2026-10-01 | C.18–C.20: Layer Menu baru (nama aplikasi, baris ikon, mini, tanpa garis/breadcrumb); layar selebar panel kanan tepi 6px; setiap item menu wajib berikon. |
 | 2026-10-02 | A.15: scope modul — Inquiry & Quotation jadi menu besar `PREORDER` (saklar sendiri), pintasan master, kontrak A/B (ddt; tm2 menunggu OK). |
 | 2026-10-02 | A.15: menu = data (cara ScriptCase) — pintasan = baris ber-target sama, hidup-mati layar dihitung dari pohon menu, grup Flow jadi baris menu. |
+| 2026-10-02 | A.15: semua menu terkait Inquiry -> Quotation tersedia di dalam menu `PREORDER` (ACC Digital, Pro-Cost Instant, pintasan master Proses / Mesin / Kategori Bahan / Satuan / Currency / Kurs / Constants, Sales Flow) — ddt; tm2 menunggu OK. |
 | 2026-10-02 | C.21: bar alur order di atas layar ditiadakan (7 layar v2); alur ditulis di Help. |
 | 2026-10-02 | C.22: kotak statistik di atas grid diganti satu baris filter teks dengan garis bawah berjalan & berwarna (semua grid DevLib). |
 | 2026-10-02 | C.3: grid Inquiry Product = `x-dl::grid` biasa (komponen turunan InquiryWorklist dibuang); alamat buka per baris (`open-url="{open_url}"`) dan `new-modal` jadi fitur Grid DevLib. |
