@@ -60,3 +60,4 @@
 
 - Isi tabel di atas hasil pembacaan Claude Code 2026-08-29 (PDF/PPTX/JPEG penuh; file Excel `.xlsx`/`.xlsb`/`.xls` baru terdaftar namanya, belum dibongkar datanya — sesuai instruksi user, tidak perlu dibongkar sampai benar-benar mau dipakai).
 - Kalau nambah file baru ke `docs/attachments/`, update baris di tabel ini juga (minta "reindex attachment") — jangan biarkan folder ini "diam-diam" beda dari daftar.
+- **`KEBUTUHAN PAK IWAN.xlsx`** (user 2026-10-01) = daftar STAFF nyata: 38 orang (nama, bank + no. rekening, tanggal masuk, NIK, no. telepon). DATA REAL -- ke-38 sudah ada di `emp_employee` dan dikunci sebagai data nyata (migration `2026_10_01_000064_lock_real_staff_list`: LIVE + `data_origin_manual=1` + aktif) sampai user memberi daftar terbaru. File berisi NIK & rekening: JANGAN di-commit ke git. NIK/telepon/rekening dari file ini BELUM diisikan ke master (beberapa NIK di Excel terpotong jadi berakhiran 0000) -- menunggu keputusan user.
