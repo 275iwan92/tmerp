@@ -40,7 +40,9 @@ Perintah user: "kerjakan yang kamu bisa kerjakan selama saya tidur, mandiri tanp
 - **Kamus**: terjemahan Indonesia untuk teks baru (migration `2026_10_02_000044` dan `000046`, cache kamus dibuang otomatis).
   Batas panjang kamus: teks English dan terjemahannya masing-masing paling banyak 255 huruf -- teks panduan grid dipendekkan.
 - Migration `2026_10_02_000040` s/d `000046` dijalankan di ddtsys DAN tm2sys (satu per satu dengan `--path`, hasil dicek di tabel migrations).
-- Uji akhir: `MultiLanguageRatchetTest`, `UiRatchetTest`, `V2ShellTest`, `NoHardcodedDatabaseNameTest`, `MainMenuShellSmokeTest` lolos.
+- Uji akhir: seluruh test suite 262 test -- 249 lolos, 12 dilewati (Firebase emulator mati, wajar), 1 error lama yang sama
+  (`MasterMachineMigratedDataTest`: tabel `prod_machine_model` belum ada di tm2, migration fitur lain yang masih pending). Semua grid
+  baru juga dimuat terhadap tm2 (hanya baca): 20 layar tanpa error.
 - **Temuan untuk ditinjau user** (tidak diubah):
   - Dummy stok di ddt punya saldo awal minus (ANIMAL GLUE, saldo awal -60) -- dummy stok perlu dibuat ulang setelah desain gudang disetujui.
   - Bukti Kas Kecil jenis Cash Advance: baris barang = harga perkiraan PO, sedangkan total = nilai kasbon, jadi subtotal baris tidak
