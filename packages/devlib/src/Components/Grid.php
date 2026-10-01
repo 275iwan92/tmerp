@@ -21,8 +21,9 @@ namespace Devlib\Components;
 //   toggle (saklar, bisa diubah -> dl:grid-cell), rating, spark (array angka), button ('text', 'action' -> dl:grid-action).
 // detail: ['key' => kolom array baris anak, 'columns' => [[key,label,type]], 'title'] -> baris dibuka = tabel detail bersarang.
 // cards: ['image','title','sub','badge','tones','meta' => [kolom..]] -> tombol Tabel/Kartu (CardView).
-// openUrl: alamat buka baris, {id} diganti nilai rowKey (klik 2x / tombol Buka / Edit langsung pindah layar).
-// newUrl: alamat tombol + New Record (pindah ke form baru / pemilih sumber).
+// openUrl: alamat buka baris, {id} diganti nilai rowKey (klik 2x / tombol Buka / Edit langsung pindah layar);
+//   {kolom} lain diganti nilai kolom baris itu, mis. '{open_url}' bila tiap baris membawa alamatnya sendiri.
+// newUrl: alamat tombol + New Record (pindah ke form baru / pemilih sumber). newModal: id x-dl::modal yang dibuka (wizard).
 // toggleUrl: POST ke alamat ini ({id}) saat Aktif/Nonaktif (Grid Master) -> status dari jawaban server {active}; tanpa toggleUrl = pratinjau saja.
 // quickAdd: [kolom..] -> baris isian cepat di atas tabel (Enter = tambah, event dl:grid-add). groupBy = grup awal.
 // mode (user 2026-09-26, dua keluarga grid yang dipisah):
@@ -59,6 +60,7 @@ class Grid extends DevlibComponent
         public ?string $source = null,
         public ?string $openUrl = null,
         public ?string $newUrl = null,
+        public ?string $newModal = null,
         public ?string $toggleUrl = null,
         public string $mode = 'entry',
     ) {
@@ -98,7 +100,7 @@ class Grid extends DevlibComponent
             'id' => $this->id, 'columns' => array_values(array_map(fn ($c) => $c + ['type' => 'text', 'visible' => true, 'sortable' => true], $this->columns)),
             'rowKey' => $this->rowKey, 'stats' => $this->stats, 'tabs' => $this->tabs, 'filters' => $this->filters, 'groups' => $this->groups,
             'bulk' => $this->bulk, 'expand' => $this->expand, 'actions' => $this->actions, 'activeKey' => $this->activeKey, 'perPage' => $this->perPage,
-            'openUrl' => $this->openUrl, 'newUrl' => $this->newUrl,
+            'openUrl' => $this->openUrl, 'newUrl' => $this->newUrl, 'newModal' => $this->newModal,
             'toggleUrl' => $this->toggleUrl, 'csrf' => $this->toggleUrl ? csrf_token() : null, 'detail' => $this->detail ?: null, 'cards' => $this->cards ?: null, 'quickAdd' => $this->quickAdd, 'groupBy' => $this->groupBy,
             'mode' => $this->mode, 'pageSizes' => $this->isReport() ? [50, 100, 250, 500] : [10, 25, 50, 100],
         ];

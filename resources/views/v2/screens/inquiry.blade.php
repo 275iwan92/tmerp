@@ -1,6 +1,6 @@
 {{-- Inquiry Product (worklist). Alur & field: tmerp pages/inquiry/hub.blade.php. Keputusan user 2026-09-28:
      wizard jenis -> sumber -> pilih inquiry. Win/Lost ada di Quotation.
-     User 2026-10-01: tampilan = Grid Transactional (sama dengan Quotation / Customer Order): + New Record di toolbar
+     User 2026-10-01/02: Grid Transactional DevLib biasa (x-dl::grid, sama dengan Quotation / Customer Order): + New Record di toolbar
      membuka wizard; Continue Draft / Ready to Quote = filter teks Draft / Ready to Quote di baris filter (klik = saring);
      Duplicate = tombol di dalam form Inquiry (screens/_inquiry-duplicate), bukan ikon di baris grid. --}}
 @php
@@ -8,7 +8,9 @@
     use App\Support\V2\Src;
     use MockupParts\Components\Sales\InquiryTypeCard;
 
-    $rows = Sales::inquiries();
+    // Tiap baris membawa alamat bukanya sendiri: layar sesuai jenis dokumen (3 layar terpisah); selain DRAFT = lihat-saja.
+    $screenOf = ['NEW' => 'inquiry-new', 'RECALC' => 'inquiry-recalc', 'REVISE' => 'inquiry-revise'];
+    $rows = array_map(fn ($r) => $r + ['open_url' => route('v2.screen', $screenOf[$r['inquiry_type']] ?? 'inquiry-new').'?id='.$r['id'].($r['sub_state'] === 'DRAFT' ? '' : '&view=1')], Sales::inquiries());
     $col = fn (string $key, string $label, string $src, array $more = []) => ['key' => $key, 'label' => $label, 'src' => $src] + $more;
     $columns = [
         $col('product_draft_name', 'Product / Customer', Src::of('tm2sdi.iqp_inquiry.product_draft_name', 'tm2mst.cust_customer.customer_name', 'tm2sdi.iqp_inquiry.prospect_name'), ['type' => 'identity', 'code' => 'customer']),
@@ -22,7 +24,6 @@
         $col('pic_sales', 'PIC Sales', Src::of('tm2sdi.iqp_inquiry.pic_sales'), ['visible' => false]),
         $col('deadline_quotation', t('Quotation deadline'), Src::of('tm2sdi.iqp_inquiry.deadline_quotation'), ['type' => 'date', 'visible' => false]),
     ];
-    $picker = fn (string $type) => ['*' => route('v2.screen', 'inquiry-'.strtolower($type)).'?source_id={id}'];
     $saved = array_values(array_filter($rows, fn ($r) => $r['inquiry_no']));
     $srcTitle = ['RECALC' => 'Hitung Ulang Harga', 'REVISE' => 'Ubah Spesifikasi'];
 @endphp
@@ -34,10 +35,9 @@
     <x-dl::alert tone="danger" :message="$errors->first()" />
 @endif
 
-<x-mp::sales.inquiry-worklist id="inquiry-list" :rows="$rows" :columns="$columns" :search="t('Search inquiry no. / product / customer...')"
+<x-dl::grid id="inquiry-list" :rows="$rows" :columns="$columns" :search="t('Search inquiry no. / product / customer...')" actions="worklist" :active-key="null"
     source="{{ Src::of('tm2sdi.iqp_inquiry', 'tm2sdi.iqp_tier', 'tm2sdi.iqp_part', 'tm2sdi.iqp_costing', 'tm2mst.cust_customer') }}"
-    data-new-modal="wiz-type"
-    :data-open="json_encode(['NEW' => route('v2.screen', 'inquiry-new').'?id={id}', 'RECALC' => route('v2.screen', 'inquiry-recalc').'?id={id}', 'REVISE' => route('v2.screen', 'inquiry-revise').'?id={id}'])"
+    new-modal="wiz-type" open-url="{open_url}"
     :stats="[
         ['label' => t('All')],
         ['label' => 'Draft', 'where' => ['stat_confirm' => false, 'sub_state' => array_values(array_diff(Sales::STATES, ['CANCELLED', 'LOST']))], 'tone' => 'neutral'],
@@ -68,7 +68,7 @@
                 @if ($type === 'NEW')
                     <x-dl::button size="sm" label="Choose" :href="route('v2.screen', 'inquiry-new')" />
                 @else
-                    <x-dl::button size="sm" label="Choose" data-dl-open="wiz-src-{{ strtolower($type) }}" data-inq-next />
+                    <x-dl::button size="sm" label="Choose" data-dl-open="wiz-src-{{ strtolower($type) }}" data-dl-close-modal />
                 @endif
             </div>
         @endforeach
@@ -85,7 +85,7 @@
                     <b>Dari Inquiry Lama</b>
                     <p>Semua inquiry bernomor ikut, termasuk yang Cancelled/Lost — spec-nya dipakai lagi.</p>
                 </div>
-                <x-dl::button size="sm" label="Choose" data-dl-open="pick-{{ strtolower($type) }}" data-inq-next />
+                <x-dl::button size="sm" label="Choose" data-dl-open="pick-{{ strtolower($type) }}" data-dl-close-modal />
             </div>
             <div class="mp-wiz__opt is-off">
                 <span class="mp-wiz__emoji">📦</span>
@@ -97,7 +97,7 @@
             </div>
         </div>
         <x-slot:footer>
-            <x-dl::button variant="secondary" icon="prev" label="Back" data-dl-open="wiz-type" data-inq-next />
+            <x-dl::button variant="secondary" icon="prev" label="Back" data-dl-open="wiz-type" data-dl-close-modal />
             <x-dl::button preset="cancel" data-dl-close-modal />
         </x-slot:footer>
     </x-dl::modal>
@@ -106,11 +106,11 @@
         <x-dl::alert :tone="$type === 'RECALC' ? 'info' : 'warn'" :message="$type === 'RECALC'
             ? 'Semua spesifikasi disalin dari inkuiri terpilih dan DIKUNCI. Anda hanya mengisi qty & deadline.'
             : 'Spesifikasi disalin lalu BISA DIUBAH. Tipe produk tetap terkunci — kalau tipe berubah, gunakan Produk Baru.'" />
-        <x-mp::sales.inquiry-worklist :id="'pick-'.strtolower($type).'-grid'" :rows="$saved" :per-page="8" :new-record="null" :search="t('Search inquiry no. / customer / product...')"
+        <x-dl::grid :id="'pick-'.strtolower($type).'-grid'" :rows="$saved" :per-page="8" :new-record="null" :search="t('Search inquiry no. / customer / product...')" actions="worklist" :active-key="null"
             :columns="array_values(array_filter($columns, fn ($c) => in_array($c['key'], ['product_draft_name', 'inquiry_no', 'inquiry_date', 'part_type', 'qty', 'sub_state'])))"
-            :data-open="json_encode($picker($type))" />
+            :open-url="route('v2.screen', 'inquiry-'.strtolower($type)).'?source_id={id}'" />
         <x-slot:footer>
-            <x-dl::button variant="secondary" icon="prev" label="Back" :data-dl-open="'wiz-src-'.strtolower($type)" data-inq-next />
+            <x-dl::button variant="secondary" icon="prev" label="Back" :data-dl-open="'wiz-src-'.strtolower($type)" data-dl-close-modal />
             <x-dl::button preset="cancel" data-dl-close-modal />
         </x-slot:footer>
     </x-dl::modal>

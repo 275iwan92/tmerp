@@ -397,11 +397,12 @@ window.Devlib = window.Devlib || {};
   }, true);
 
   // Modal & drawer library: data-dl-open="<id>" membuka, [data-dl-close-modal] / Esc / klik luar menutup.
+  // Keduanya di satu tombol = langkah wizard: tutup modal tempat tombol itu berada, lalu buka tujuannya.
   const layer = id => document.querySelector(`[data-dl-modal-id="${id}"],[data-dl-drawer-id="${id}"]`);
   const openLayer = id => { const l = layer(id); if (l) { l.classList.add('is-on'); const f = l.querySelector('input,textarea,select,button:not([data-dl-close-modal])'); if (f) setTimeout(() => f.focus(), 50); } };
   const closeLayer = l => l && l.classList.remove('is-on');
   document.addEventListener('click', e => {
-    const o = e.target.closest('[data-dl-open]'); if (o) { e.preventDefault(); openLayer(o.dataset.dlOpen); return; }
+    const o = e.target.closest('[data-dl-open]'); if (o) { e.preventDefault(); if (o.hasAttribute('data-dl-close-modal')) closeLayer(o.closest('[data-dl-modal-id],[data-dl-drawer-id]')); openLayer(o.dataset.dlOpen); return; }
     const c = e.target.closest('[data-dl-close-modal]'); if (c) { closeLayer(c.closest('[data-dl-modal-id],[data-dl-drawer-id]')); return; }
     if (e.target.matches('[data-dl-modal-id].dl-mov')) closeLayer(e.target);
   });
