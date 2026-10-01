@@ -108,8 +108,9 @@ PrintDoc.register(class PurchaseOrder extends PrintDoc {
 });
 
 // Acuan kertas: docs/attachments/expedisi.jpg (Jadwal Kirim; satu lembar per tugas armada).
-// Satu baris = satu perhentian: JENIS (AMBIL / KIRIM), JAM rencana tiba, tujuan + KOTA (baris 1) dan ALAMAT (baris 2),
-// barang + No CO di kolom BARANG / CO (keputusan user 2026-10-01: ambil dan kirim, jam, kota, alamat harus ada).
+// Satu baris = satu perhentian, TIGA baris teks: nama tujuan / tempat ambil + kota, alamat, lalu barang + No CO.
+// Ruang kosong blok atas (3 baris field saja) dan zona penutup dipindah ke tinggi baris, dan kolom barang dihapus,
+// supaya kolom tulis tangan IN / OUT besar (keputusan user 2026-10-01).
 PrintDoc.register(class JadwalKirim extends PrintDoc {
     static title = 'JADWAL KIRIM';
     static subtitle = 'Tugas Armada &middot; Internal';
@@ -119,15 +120,19 @@ PrintDoc.register(class JadwalKirim extends PrintDoc {
         {key: 'finish_time', label: 'Jam Selesai'},
     ];
     static partyLabel = 'Kendaraan';
+    static side = {key: 'driver', label: 'Pengemudi'};
     static nb = '<b>NB:</b>&nbsp;JAM = rencana tiba. IN / OUT = jam tiba dan jam selesai sebenarnya di tujuan, diisi pengemudi.';
-    static nameLabel = 'TUJUAN &middot; KOTA / ALAMAT';
-    static extra = [{key: 'kind', label: 'JENIS', width: 13}, {key: 'time', label: 'JAM', width: 11}, {key: 'goods', label: 'BARANG / CO', width: 42, wrap: true},
-        {key: 'in', label: 'IN', width: 9, hand: true}, {key: 'out', label: 'OUT', width: 9, hand: true}];
+    static nameLabel = 'TUJUAN &middot; KOTA / ALAMAT / BARANG';
+    static extra = [{key: 'kind', label: 'JENIS', width: 13}, {key: 'time', label: 'JAM', width: 11}, {key: 'in', label: 'IN', width: 30, hand: true}, {key: 'out', label: 'OUT', width: 30, hand: true}];
     static receivers = [['Pengemudi', '']];
+    static infoRows = 3;
+    static tailHeight = 2;
+    static rowHeight = 13;
+    static rows = {a5: 5, a4: 15};
 
     constructor(data) {
         super({...data, rows: data.rows.map(r => ({...r, name: [r.place, r.city].filter(Boolean).join(' · '), sub: r.address,
-            goods: [r.co_no && 'CO ' + r.co_no, r.item, r.note].filter(Boolean).join(' · ')}))});
+            sub2: [r.co_no && 'CO ' + r.co_no, r.item, r.note].filter(Boolean).join(' · ')}))});
     }
 });
 

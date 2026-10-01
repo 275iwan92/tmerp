@@ -86,7 +86,7 @@ const SAMPLES = {
     // Alamat di contoh ini adalah data contoh (di aplikasi: alamat kirim customer / alamat supplier dari master).
     JadwalKirim: {
         data: {...PRINTED, number: 'JK26100101', date: '2026-10-01', status: 'CONFIRMED', start_time: '09:30', finish_time: '18:00', createdBy: 'Johannes Iwan',
-            party: {name: 'N 8035 AB', lines: ['Driver: TRIO & AGUNG']},
+            driver: 'TRIO & AGUNG', party: {name: 'N 8035 AB'},
             rows: [
                 {kind: 'AMBIL', time: '10:15', place: 'GUDANG LBI', city: 'MALANG', address: 'JL. RAYA KARANGLO 88, SINGOSARI', item: 'BAHAN R8', qty: 2, unit: 'PALLET'},
                 {kind: 'KIRIM', time: '12:30', place: 'PT SELATAN JADI JAYA', city: 'SIDOARJO', address: 'JL. RAYA PANJUNAN 8 SUKODONO', item: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', co_no: '2602377', qty: 3000, unit: 'PCS', note: 'max 3100'},
@@ -94,7 +94,7 @@ const SAMPLES = {
                 {kind: 'AMBIL', time: '13:00', place: 'PT SELATAN JADI JAYA', city: 'SIDOARJO', address: 'JL. RAYA PANJUNAN 8 SUKODONO', item: 'TAGIHAN & GIRO'},
                 {kind: 'KIRIM', time: '14:00', place: 'GOLDEN (SUBKON PAK TASMAN)', city: 'PASURUAN', address: 'JL. RAYA PANDAAN KM 3', item: 'BARANG SUBKON', qty: 7840, unit: 'PCS', note: 'semua'}]},
         alt: {...PRINTED, number: 'JK26100102', date: '2026-10-01', status: 'CONFIRMED', start_time: '07:45', finish_time: '17:00', createdBy: 'Johannes Iwan',
-            party: {name: 'N 8381 BK', lines: ['Driver: PUJI & DWI']},
+            driver: 'PUJI & DWI', party: {name: 'N 8381 BK'},
             rows: [
                 {kind: 'AMBIL', time: '08:00', place: 'GUDANG LBI (RIT 1)', city: 'MALANG', address: 'JL. RAYA KARANGLO 88, SINGOSARI', item: 'BAHAN R8', qty: 6, unit: 'PALLET'},
                 {kind: 'KIRIM', time: '09:15', place: 'TELASIH MAKMUR', city: 'MALANG', address: 'PONDOK BLIMBING INDAH BLOK A5 NO. 5', item: 'BAHAN R8 DARI GUDANG LBI (BONGKAR)', qty: 6, unit: 'PALLET'},
@@ -105,13 +105,13 @@ const SAMPLES = {
                 {kind: 'KIRIM', time: '15:30', place: '93 DONUT', city: 'MALANG', address: 'PERUMAHAN CITRA KAYANE RESIDENCE', item: 'JD BOX DONAT UK 20 X 20 X 6 CM (DS000)', co_no: '2602282', qty: 3000, unit: 'PCS', note: 'semua'}]},
         dev: {
             title: 'Perubahan terhadap format sekarang (docs/attachments/expedisi.jpg, tabel Excel)',
-            marks: [[1, '[data-k=number]', -5, 0], [2, '[data-k=party]', -5, 0], [3, 'thead th:nth-child(2)', -1, -2.5], [4, 'thead th:nth-child(5)', 0, -2.5], [5, 'thead th:nth-child(8)', 0, -2.5], [6, '.sign', -5, 0]],
+            marks: [[1, '[data-k=number]', -5, 0], [2, '[data-k=party]', -5, 0], [3, 'thead th:nth-child(2)', -1, -2.5], [4, 'thead th:nth-child(5)', 0, -2.5], [5, 'thead th:nth-child(7)', 0, -2.5], [6, '.sign', -5, 0]],
             legend: [
                 '<b>Satu lembar per tugas armada</b> (di Excel: banyak tugas dalam satu halaman). Diberi nomor tugas supaya bisa dilacak; format nomor menunggu keputusan.',
-                '<b>No Pol dan Driver</b> masuk blok kanan; Jam Mulai / Jam Selesai di kiri.',
-                '<b>Tujuan + kota</b> di baris pertama, <b>alamat</b> di baris kedua. Barang dan No CO pindah ke kolom BARANG / CO.',
+                '<b>No Pol dan Pengemudi</b> masuk blok kanan; Jam Mulai / Jam Selesai di kiri. Blok atas hanya 3 baris, sisanya dipakai untuk tinggi baris.',
+                '<b>Tiga baris per perhentian</b>: nama tujuan / tempat ambil + kota, alamat, lalu barang + No CO.',
                 '<b>Jenis</b> AMBIL atau KIRIM dan <b>Jam</b> rencana tiba, satu baris per perhentian.',
-                '<b>IN / OUT</b> tetap kolom kosong untuk diisi tangan (jam sebenarnya).',
+                '<b>IN / OUT</b> kolom lebar dan tinggi untuk tulis tangan (jam sebenarnya).',
                 '<b>Tanda tangan</b> dari kiri ke kanan: Pengemudi, Menyetujui, Mengetahui, Pembuat.',
             ],
         },

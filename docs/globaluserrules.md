@@ -204,7 +204,8 @@
     **Cetakan CPDEL (Customer Plan Delivery) wajib ada, tanpa harga, dan split harus jelas** (user 2026-10-01): satu
     baris per kiriman; baris hasil split diberi garis tebal di kiri, kolom Kiriman "SPLIT 1/3", dan ringkasan Split di
     bawah tabel. **Jadwal Kirim wajib memuat Ambil / Kirim, jam, kota, dan alamat** (user 2026-10-01): satu baris per
-    perhentian; tujuan + kota di baris pertama, alamat di baris kedua.
+    perhentian, **tiga baris teks**: nama tujuan / tempat ambil + kota, alamat, lalu barang yang dikirim / diambil (+ No
+    CO). Ruang kosong blok atas dipakai untuk tinggi baris, dan **kolom tulis tangan IN / OUT dibuat besar**.
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.

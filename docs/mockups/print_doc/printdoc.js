@@ -27,7 +27,7 @@ const Fmt = {
 };
 
 class PrintDoc {
-    static ROWS = {a5: 5, a4: 22};                  // kapasitas baris per lembar
+    static A5_MAX = 5;                              // aturan kertas: sampai 5 baris = A5 landscape, lebih = A4 portrait
     static EXTRA_WIDTH = {plain: 84, priced: 38};   // mm, lebar zona kolom varian per jenis dokumen
     // Dokumen berharga: HARGA dan SUBTOTAL selalu di posisi yang sama, di kanan zona varian.
     static PRICE_COLS = [{key: 'price', label: 'HARGA', width: 21, type: 'money'}, {key: 'subtotal', label: 'SUBTOTAL', width: 25, type: 'money'}];
@@ -54,6 +54,11 @@ class PrintDoc {
     static receivers = [];              // tanda tangan pihak luar / penerima, paling kiri: [peran, keterangan]
     static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat
     static qrHint = 'dokumen online';
+    // Ukuran blok yang boleh ditukar per dokumen: ruang kosong di blok atas / zona penutup dipindah ke tinggi baris.
+    static rows = {a5: 5, a4: 22};      // kapasitas baris per lembar
+    static rowHeight = 7.6;             // mm
+    static infoRows = 6;                // jumlah baris blok field (kiri dan kanan)
+    static tailHeight = 18.5;           // mm, zona catatan + total
     static approved = null;             // tanggal user menandai format ini A (Approved): tidak diubah lagi kecuali user minta
 
     constructor(data) {
@@ -65,7 +70,7 @@ class PrintDoc {
     }
 
     // Aturan kertas: 1-5 baris = A5 landscape, lebih dari 5 = A4 portrait.
-    get paper() { return this.d.rows.length <= PrintDoc.ROWS.a5 ? 'a5' : 'a4'; }
+    get paper() { return this.d.rows.length <= PrintDoc.A5_MAX ? 'a5' : 'a4'; }
 
     get company() { return this.d.ppn > 0 ? PrintDoc.companyPpn : PrintDoc.company; }
 
@@ -87,30 +92,31 @@ class PrintDoc {
     }
 
     info() {
-        const d = this.d, p = d.party ?? {}, slot = i => this.row(this.f.refs[i]);
+        const d = this.d, p = d.party ?? {}, slot = i => this.row(this.f.refs[i]), n = this.f.infoRows, seq = k => Array.from({length: k}, (_, i) => i);
         const line = i => `<div class="f addr"><span></span><i></i><b>${esc(p.lines?.[i])}</b></div>`;
         return `<section class="info">
             <div>
                 <div class="f big" data-k="number"><span>${this.f.numberLabel}</span><i>:</i><b>${esc(d.number)}</b></div>
-                ${[0, 1, 2, 3, 4].map(slot).join('')}
+                ${seq(n - 1).map(slot).join('')}
             </div>
             <div>
                 <div class="f st" data-k="date"><span>Tanggal</span><i>:</i><b>${Fmt.date(d.date)}</b><span class="stamp">${esc(d.status)}</span></div>
                 <div class="f" data-k="party"><span>${this.f.partyLabel}</span><i>:</i><b><strong>${esc(p.name)}</strong>${p.code ? ' &middot; ' + esc(p.code) : ''}</b></div>
-                ${line(0)}${line(1)}${line(2)}${this.row(this.f.side)}
+                ${seq(n - 3).map(line).join('')}${this.row(this.f.side)}
             </div>
         </section>`;
     }
 
     table() {
-        const x = this.cols, n = PrintDoc.ROWS[this.paper], cls = c => c.type === 'money' || c.type === 'int' ? 'num' : c.hand ? 'hd' : c.wrap ? 'wr' : '';
+        const x = this.cols, n = this.f.rows[this.paper], cls = c => c.type === 'money' || c.type === 'int' ? 'num' : c.hand ? 'hd' : c.wrap ? 'wr' : '';
         const head = `<th></th><th>${this.f.nameLabel}</th><th class="num">JUMLAH</th><th>SATUAN</th>` + x.map(c => `<th class="${cls(c)}">${c.label}</th>`).join('');
         const cell = (c, r) => { const v = r[c.key] == null || r[c.key] === '' ? '' : this.val(c, r); return `<td class="${cls(c)}" data-c="${c.key}">${c.wrap ? `<div class="w2">${v}</div>` : v}</td>`; };
         const body = Array.from({length: n}, (_, i) => {
             const r = this.d.rows[i];
             // Nama: 2 baris. Tanpa `sub` nama boleh turun baris; dengan `sub` baris kedua = keterangan kecil.
+            // `sub2` = baris ketiga (hanya untuk dokumen berbaris tinggi, mis. Jadwal Kirim).
             return `<tr${r?.cls ? ` class="${r.cls}"` : ''}><td class="no">${i + 1}.</td>` + (r
-                ? `<td class="nm ${r.sub ? 'two' : ''}"><div class="n1">${esc(r.name)}</div>${r.sub ? `<div class="n2">${esc(r.sub)}</div>` : ''}</td>
+                ? `<td class="nm ${r.sub ? 'two' : ''}"><div class="n1">${esc(r.name)}</div>${r.sub ? `<div class="n2">${esc(r.sub)}</div>` : ''}${r.sub2 ? `<div class="n3">${esc(r.sub2)}</div>` : ''}</td>
                    <td class="num">${r.qty == null ? '' : Fmt.num(r.qty)}</td><td>${esc(r.unit)}</td>` + x.map(c => cell(c, r)).join('')
                 : '<td></td>'.repeat(3 + x.length)) + '</tr>';
         }).join('');
@@ -160,13 +166,14 @@ class PrintDoc {
     }
 
     render() {
-        return `<div class="sheet ${this.paper}">${this.kop()}${this.info()}<p class="nb">${this.f.nb}</p>${this.table()}${this.tail()}${this.sign()}${this.foot()}</div>`;
+        const f = this.f;
+        return `<div class="sheet ${this.paper}" style="--info-rows:${f.infoRows};--rh:${f.rowHeight}mm;--tail:${f.tailHeight}mm">${this.kop()}${this.info()}<p class="nb">${this.f.nb}</p>${this.table()}${this.tail()}${this.sign()}${this.foot()}</div>`;
     }
 
     // Teks sel yang terlalu panjang dikecilkan bertahap sampai muat (batas 6,5 pt), bukan dipotong.
     static fit(root) {
         const shrink = (el, over) => { let s = parseFloat(getComputedStyle(el).fontSize) * .75; while (over() && s > 6.5) el.style.fontSize = (s -= .25) + 'pt'; };
-        root.querySelectorAll('.items .n1, .items .n2, .items .w2').forEach(el => shrink(el, () => el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1));
+        root.querySelectorAll('.items .n1, .items .n2, .items .n3, .items .w2').forEach(el => shrink(el, () => el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1));
         root.querySelectorAll('.items td:not(.nm):not(.no):not(.wr)').forEach(td => shrink(td, () => td.scrollWidth > td.clientWidth));
     }
 
