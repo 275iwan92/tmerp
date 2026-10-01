@@ -143,6 +143,13 @@
     samping gambar dengan tinggi sama** (lebih sempit) dan kotaknya **bisa diputar** (drag = putar, Shift+drag = miring,
     tombol auto-spin / zoom / reset). **Dimensions di bawah gambar, 2 baris berkelompok** (Product Size | Flat Size, lalu
     Flaps & Allowances) — tidak boleh ada satu field tersisa sendiri di baris bawah.
+24. **Cetakan dokumen — user 2026-10-01:** kertas **A5 landscape** bila isi **1-5 baris**, **A4 portrait** bila **lebih dari
+    5 baris**; berlaku untuk semua dokumen (Surat Jalan, Customer Order, Inquiry, PR, PO, Jadwal Kirim, dst). Dibuat sebagai
+    **satu generator berorientasi objek** (kelas induk + turunan per dokumen): semua yang bisa diletakkan di posisi yang sama
+    harus di posisi yang sama (kop, judul, nomor, tanggal, status, kolom Jumlah/Satuan/Harga/Subtotal, total, tanda tangan);
+    variasi hanya pada **field yang dicetak**. Huruf **mudah dibaca, tidak kurus dan tidak tebal**. Format kertas lama di
+    `docs/attachments` adalah acuan isi, **bukan untuk disalin**: tata letaknya diimprovisasi. Mockup dan generator contoh:
+    `docs/mockups/print_doc/` (masih dikoreksi user; belum dipasang ke DevLib).
 
 ## D. Cara kerja developer / agen
 
@@ -191,5 +198,6 @@
 | 2026-10-01 | C.23: panel dieline — tombol Standard Sizes dihapus (dropdown saja), 3D di samping gambar & bisa diputar, Dimensions 2 baris berkelompok di bawah gambar. |
 | 2026-10-01 | **Inquiry Product v2 = A (Approved) oleh user** — lencana menu hijau (`sys_app_menu.status_code = LOCKED`, baris `SALES_INQ`, ddtsys). Layar ini **tidak diubah lagi** kecuali user sendiri yang meminta. |
 | 2026-10-02 | C.3: grid Inquiry Product = `x-dl::grid` biasa (komponen turunan InquiryWorklist dibuang); alamat buka per baris (`open-url="{open_url}"`) dan `new-modal` jadi fitur Grid DevLib. |
+| 2026-10-01 | C.24: cetakan dokumen A5 landscape (1-5 baris) / A4 portrait (lebih dari 5 baris), satu generator, posisi sama, huruf mudah dibaca; mockup di `docs/mockups/print_doc/`. |
 | 2026-10-01 | B.14: master hanya diubah user; sistem hanya mengubah transaksi; default boleh diperbarui analisa sistem dan tetap bisa di-override. |
 | 2026-10-01 | Material Planning (Booking + MRP + MPS) dibangun di ddt: keputusan B1-B9 di `docs/materialbooking_tier1.md` §6-§7. |
