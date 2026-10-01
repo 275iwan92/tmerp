@@ -18,7 +18,7 @@ class MultiLanguageRatchetTest extends TestCase
         'number_format_id' => 0,
         'format_d_M_Y' => 0,
         'js_locale_id' => 0,
-        'js_id_text' => 132,      // teks Indonesia mentah di JS DevLib (grid/lines/sheet/form sudah dipindah 2026-10-01) -> pindahkan ke T('kunci') + pasangan Devlib\Lang
+        'js_id_text' => 94,      // teks Indonesia mentah di JS DevLib (grid/lines/sheet/form sudah dipindah 2026-10-01) -> pindahkan ke T('kunci') + pasangan Devlib\Lang
     ];
 
     /** @return array<string, int> */

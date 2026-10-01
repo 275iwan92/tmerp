@@ -1,7 +1,7 @@
 /* DevLib · Kanban */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, T, visible, fmt, at, emit} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, T, Tf, visible, fmt, at, emit} = Devlib.h;
   /* ============================ KANBAN ============================ */
   class Kanban extends Devlib.Component {
     static selector = "[data-dl-kanban]";
@@ -46,7 +46,7 @@
           const card = this.cardById(mv.closest('[data-k-card]').dataset.kCard);
           $$(document, '.dl-kanban__menu').forEach(m => m.remove());
           const m = document.createElement('div'); m.className = 'dl-kanban__menu';
-          m.innerHTML = `<div class="dl-kanban__menutitle">Pindah ke</div>` + this.cols.map(c => `<button type="button" data-k-to="${esc(c.key)}" ${c.key === card.col || !this.allowed(card.col, c.key) ? 'disabled' : ''}>${esc(c.label)}</button>`).join('');
+          m.innerHTML = `<div class="dl-kanban__menutitle">${esc(T('k_move_to'))}</div>` + this.cols.map(c => `<button type="button" data-k-to="${esc(c.key)}" ${c.key === card.col || !this.allowed(card.col, c.key) ? 'disabled' : ''}>${esc(c.label)}</button>`).join('');
           const r = mv.getBoundingClientRect(); m.style.cssText = `left:${Math.min(r.left + scrollX, innerWidth - 200)}px;top:${r.bottom + scrollY + 4}px`;
           m.addEventListener('click', ev => { const b = ev.target.closest('[data-k-to]'); if (b) { this.move(card, b.dataset.kTo); m.remove(); } });
           document.body.appendChild(m); setTimeout(() => document.addEventListener('click', () => m.remove(), {once: true}));
@@ -117,7 +117,7 @@
           ${(c.comments || []).length ? `<span class="dl-kcard__ck"><i class="fa-regular fa-comment"></i> ${c.comments.length}</span>` : ''}
           <span class="dl-kcard__spacer"></span>
           ${(c.members || (c.assignee ? [c.assignee] : [])).map(m => `<span class="dl-kcard__av" title="${esc(m)}">${esc(this.ini(m))}</span>`).join('')}
-          <button type="button" class="dl-kcard__menu" data-k-move title="Pindah ke... (tanpa drag)"><i class="fa-solid fa-ellipsis"></i></button>
+          <button type="button" class="dl-kcard__menu" data-k-move title="${esc(T('k_move_tip'))}"><i class="fa-solid fa-ellipsis"></i></button>
         </div></div>`;
     }
 
@@ -128,24 +128,24 @@
           <header class="dl-kcol__head"><span class="dl-kcol__title" contenteditable="true" spellcheck="false" data-k-rename title="Klik untuk ganti nama">${esc(col.label)}</span>
             <span class="dl-kcol__count" title="${col.limit ? 'Batas WIP ' + col.limit : ''}">${list.length}${col.limit ? ' / ' + col.limit : ''}</span></header>
           <div class="dl-kcol__body" data-k-drop>${shown.map(this.cardHtml).join('') || '<div class="dl-kcol__empty">Tidak ada kartu</div>'}</div>
-          ${this.canAddCard ? `<footer class="dl-kcol__foot"><button type="button" class="dl-kcol__add" data-k-add><i class="fa-solid fa-plus"></i> Tambah kartu</button>
+          ${this.canAddCard ? `<footer class="dl-kcol__foot"><button type="button" class="dl-kcol__add" data-k-add><i class="fa-solid fa-plus"></i> ${esc(T('k_add_card'))}</button>
             <div class="dl-kcol__composer" hidden><textarea rows="2" placeholder="Judul kartu..." data-k-new-title></textarea><input type="datetime-local" data-k-new-due title="Tenggat">
             <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-k-new-save>Save</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-k-new-cancel>Cancel</button></div></div></footer>` : ''}
         </section>`;
-      }).join('') + (this.canAddCol ? '<button type="button" class="dl-kanban__addcol" data-k-addcol><i class="fa-solid fa-plus"></i> Tambah kolom</button>' : '');
+      }).join('') + (this.canAddCol ? '<button type="button" class="dl-kanban__addcol" data-k-addcol><i class="fa-solid fa-plus"></i> ' + esc(T('k_add_col')) + '</button>' : '');
     }
 
     move(card, to, index) {
       const from = card.col;
-      if (!this.allowed(from, to)) { toast(`Tidak boleh pindah dari "${this.colOf(from).label}" ke "${this.colOf(to).label}".`, 'danger'); this.render(); return false; }
+      if (!this.allowed(from, to)) { toast(Tf('k_move_denied', {from: this.colOf(from).label, to: this.colOf(to).label}), 'danger'); this.render(); return false; }
       const tgt = this.colOf(to);
-      if (from !== to && tgt.limit && this.cards.filter(c => c.col === to).length >= tgt.limit) toast(`Kolom "${tgt.label}" melewati batas WIP (${tgt.limit}).`, 'warn');
+      if (from !== to && tgt.limit && this.cards.filter(c => c.col === to).length >= tgt.limit) toast(Tf('k_wip_over', {col: tgt.label, n: tgt.limit}), 'warn');
       this.cards.splice(this.cards.indexOf(card), 1);
       card.col = to;
       const inCol = this.cards.filter(c => c.col === to);
       const before = index == null || index >= inCol.length ? null : inCol[index];
       this.cards.splice(before ? this.cards.indexOf(before) : this.cards.length, 0, card);
-      if (from !== to) (card.activity = card.activity || []).unshift({by: this.me, at: `${fmt.date()} ${fmt.time()}`, text: `memindahkan dari ${this.colOf(from).label} ke ${tgt.label}`});
+      if (from !== to) (card.activity = card.activity || []).unshift({by: this.me, at: `${fmt.date()} ${fmt.time()}`, text: Tf('k_act_moved', {from: this.colOf(from).label, to: tgt.label})});
       this.render(); this._emit('move', card, from, to);
       return true;
     }
@@ -172,24 +172,24 @@
       const members = [...new Set([this.me, ...this.members0, ...this.cards.flatMap(c => c.members || (c.assignee ? [c.assignee] : []))])];
       card.members = card.members || (card.assignee ? [card.assignee] : []);
       const popHtml = {
-        labels: () => `<input class="dl-kmodal__in" placeholder="Cari / buat label..." data-m-labelq value="${esc(labelQ)}">
+        labels: () => `<input class="dl-kmodal__in" placeholder="${esc(T('k_label_search'))}" data-m-labelq value="${esc(labelQ)}">
           <div class="dl-kpop__list">${this.allLabels().filter(t => !labelQ || t.label.toLowerCase().includes(labelQ.toLowerCase())).map(t => `<label class="dl-kpop__row"><input type="checkbox" data-m-label="${esc(t.label)}" ${(card.tags || []).some(x => (x.label || x) === t.label) ? 'checked' : ''}><span class="dl-badge dl-badge--${esc(t.tone)}">${esc(t.label)}</span></label>`).join('')}</div>
-          ${labelQ && !this.allLabels().some(t => t.label.toLowerCase() === labelQ.toLowerCase()) ? `<button type="button" class="dl-btn dl-btn--secondary dl-btn--sm" data-m-labelnew>+ Buat label "${esc(labelQ)}"</button>` : ''}`,
-        dates: () => `<span class="dl-kpop__lbl">Tenggat (tanggal & jam, WIB)</span><input type="datetime-local" class="dl-kmodal__in" data-m-due value="${esc((card.due || '').replace(' ', 'T'))}">
-          <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-duesave>Save</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-m-dueclear>Hapus tenggat</button></div>`,
-        checklist: () => `<span class="dl-kpop__lbl">Judul checklist</span><input class="dl-kmodal__in" data-m-cktitle value="Checklist">
-          <button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-ckcreate>Tambah</button>`,
+          ${labelQ && !this.allLabels().some(t => t.label.toLowerCase() === labelQ.toLowerCase()) ? `<button type="button" class="dl-btn dl-btn--secondary dl-btn--sm" data-m-labelnew>+ ${esc(Tf('k_label_new', {label: labelQ}))}</button>` : ''}`,
+        dates: () => `<span class="dl-kpop__lbl">${esc(T('k_due_label'))}</span><input type="datetime-local" class="dl-kmodal__in" data-m-due value="${esc((card.due || '').replace(' ', 'T'))}">
+          <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-duesave>Save</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-m-dueclear>${esc(T('k_clear_due'))}</button></div>`,
+        checklist: () => `<span class="dl-kpop__lbl">${esc(T('k_checklist_title'))}</span><input class="dl-kmodal__in" data-m-cktitle value="Checklist">
+          <button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-ckcreate>${esc(T('k_add'))}</button>`,
         members: () => `<div class="dl-kpop__list">${members.map(m => `<label class="dl-kpop__row"><input type="checkbox" data-m-member="${esc(m)}" ${card.members.includes(m) ? 'checked' : ''}><span class="dl-kcard__av">${esc(this.ini(m))}</span>${esc(m)}</label>`).join('')}</div>`,
         priority: () => `<div class="dl-kpop__list">${['High', 'Medium', 'Low', ''].map(p => `<button type="button" class="dl-kpop__opt ${p === (card.priority || '') ? 'is-active' : ''}" data-m-prio="${p}">${p ? `<span class="dl-kcard__prio is-${p.toLowerCase()}">${p}</span>` : 'Tanpa prioritas'}</button>`).join('')}</div>`,
         move: () => `<div class="dl-kpop__list">${this.cols.map(c => `<button type="button" class="dl-kpop__opt ${c.key === card.col ? 'is-active' : ''}" data-m-to="${esc(c.key)}" ${c.key === card.col || !this.allowed(card.col, c.key) ? 'disabled' : ''}>${esc(c.label)}</button>`).join('')}</div>`,
       };
-      const TITLES = {labels: 'Labels', dates: 'Dates', checklist: 'Checklist', members: 'Members', priority: 'Prioritas', move: 'Pindah ke'};
+      const TITLES = {labels: 'Labels', dates: 'Dates', checklist: 'Checklist', members: 'Members', priority: T('k_priority'), move: T('k_move_to')};
       const actionBtn = (k, icon) => `<div class="dl-kmodal__ag"><button type="button" class="dl-kmodal__abtn ${pop === k ? 'is-on' : ''}" data-m-pop="${k}"><i class="fa-solid ${icon}"></i> ${TITLES[k]}</button>${pop === k ? `<div class="dl-kpop"><div class="dl-kpop__head">${TITLES[k]}<button type="button" data-m-popclose>&times;</button></div>${popHtml[k]()}</div>` : ''}</div>`;
       const draw = () => {
         const ck = card.checklist || [], done = ck.filter(i => i.done).length, pct = ck.length ? Math.round(done / ck.length * 100) : 0, d = this.due(card);
         const hasCk = card.checklistTitle != null || ck.length;
         ov.innerHTML = `<div class="dl-modal dl-kmodal__box" role="dialog" aria-modal="true">
-          <div class="dl-kmodal__head"><i class="fa-regular fa-square-check dl-kmodal__hicon"></i><div class="dl-kmodal__titlewrap"><input class="dl-kmodal__title" value="${esc(card.title)}" data-m-title aria-label="Judul kartu"><small>di kolom <b>${esc(this.colOf(card.col).label)}</b></small></div><button type="button" class="dl-modal__x" data-m-close aria-label="Tutup">&times;</button></div>
+          <div class="dl-kmodal__head"><i class="fa-regular fa-square-check dl-kmodal__hicon"></i><div class="dl-kmodal__titlewrap"><input class="dl-kmodal__title" value="${esc(card.title)}" data-m-title aria-label="${esc(T('k_card_title'))}"><small>${esc(T('k_in_column'))} <b>${esc(this.colOf(card.col).label)}</b></small></div><button type="button" class="dl-modal__x" data-m-close aria-label="${esc(T('close'))}">&times;</button></div>
           <div class="dl-kmodal__body">
             <div class="dl-kmodal__main">
               <div class="dl-kmodal__actions">${actionBtn('labels', 'fa-tag')}${actionBtn('dates', 'fa-clock')}${actionBtn('checklist', 'fa-square-check')}${actionBtn('members', 'fa-user')}${actionBtn('priority', 'fa-flag')}${actionBtn('move', 'fa-arrow-right-arrow-left')}</div>
@@ -197,25 +197,25 @@
                 ${card.members.length ? `<div><span>Members</span><div class="dl-row">${card.members.map(m => `<span class="dl-kcard__av" title="${esc(m)}">${esc(this.ini(m))}</span>`).join('')}</div></div>` : ''}
                 ${(card.tags || []).length ? `<div><span>Labels</span><div class="dl-row">${card.tags.map(t => `<span class="dl-badge dl-badge--${esc(t.tone || 'accent')}">${esc(t.label || t)}</span>`).join('')}</div></div>` : ''}
                 ${d ? `<div><span>Tenggat</span><b class="${d < new Date() ? 'dl-kcard__due is-late' : ''}">${esc(this.dueTxt(card))}</b></div>` : ''}
-                ${card.priority ? `<div><span>Prioritas</span><span class="dl-kcard__prio is-${esc(card.priority.toLowerCase())}">${esc(card.priority)}</span></div>` : ''}
+                ${card.priority ? `<div><span>${esc(T('k_priority'))}</span><span class="dl-kcard__prio is-${esc(card.priority.toLowerCase())}">${esc(card.priority)}</span></div>` : ''}
               </div>` : ''}
-              <p class="dl-kmodal__cap"><i class="fa-solid fa-align-left"></i> Deskripsi</p>
-              ${editDesc ? `<textarea rows="5" class="dl-kmodal__desc" data-m-desc placeholder="Tambahkan deskripsi yang lebih rinci...">${esc(card.desc || '')}</textarea>
+              <p class="dl-kmodal__cap"><i class="fa-solid fa-align-left"></i> ${esc(T('k_description'))}</p>
+              ${editDesc ? `<textarea rows="5" class="dl-kmodal__desc" data-m-desc placeholder="${esc(T('k_desc_hint'))}">${esc(card.desc || '')}</textarea>
                 <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-descsave>Save</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-m-desccancel>Cancel</button></div>`
-                : `<div class="dl-kmodal__descview ${card.desc ? '' : 'is-empty'}" data-m-descedit tabindex="0">${esc(card.desc || 'Tambahkan deskripsi yang lebih rinci...')}</div>`}
+                : `<div class="dl-kmodal__descview ${card.desc ? '' : 'is-empty'}" data-m-descedit tabindex="0">${esc(card.desc || T('k_desc_hint'))}</div>`}
               ${hasCk ? `<div class="dl-kmodal__ckhead"><p class="dl-kmodal__cap"><i class="fa-regular fa-square-check"></i> ${esc(card.checklistTitle || 'Checklist')}</p><button type="button" class="dl-btn dl-btn--danger-soft dl-btn--sm" data-m-ckdelall>Delete</button></div>
                 <div class="dl-kmodal__pct"><span>${pct}%</span><div class="dl-progress__track"><div class="dl-progress__bar ${pct === 100 ? 'is-done' : ''}" style="width:${pct}%"></div></div></div>
-                <ul class="dl-kmodal__ck">${ck.map((i, k) => `<li><label class="dl-choice"><input type="checkbox" data-m-ck="${k}" ${i.done ? 'checked' : ''}> <span class="${i.done ? 'is-done' : ''}">${esc(i.text)}</span></label><button type="button" data-m-ckdel="${k}" title="Hapus item"><i class="fa-solid fa-xmark"></i></button></li>`).join('')}</ul>
-                ${addItem ? `<textarea rows="2" class="dl-kmodal__in" placeholder="Tambah item" data-m-cknew></textarea><div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-ckadd>Tambah</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-m-cknewcancel>&times;</button></div>`
-                  : '<button type="button" class="dl-kmodal__additem" data-m-ckopen>Tambah item</button>'}` : ''}
+                <ul class="dl-kmodal__ck">${ck.map((i, k) => `<li><label class="dl-choice"><input type="checkbox" data-m-ck="${k}" ${i.done ? 'checked' : ''}> <span class="${i.done ? 'is-done' : ''}">${esc(i.text)}</span></label><button type="button" data-m-ckdel="${k}" title="${esc(T('k_del_item'))}"><i class="fa-solid fa-xmark"></i></button></li>`).join('')}</ul>
+                ${addItem ? `<textarea rows="2" class="dl-kmodal__in" placeholder="${esc(T('k_add_item'))}" data-m-cknew></textarea><div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-ckadd>${esc(T('k_add'))}</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-m-cknewcancel>&times;</button></div>`
+                  : '<button type="button" class="dl-kmodal__additem" data-m-ckopen>' + esc(T('k_add_item')) + '</button>'}` : ''}
             </div>
             <aside class="dl-kmodal__side">
-              <p class="dl-kmodal__cap"><i class="fa-regular fa-comments"></i> Komentar & Aktivitas</p>
-              <div class="dl-kmodal__cmt"><span class="dl-kcard__av">${esc(this.ini(this.me))}</span><textarea rows="1" class="dl-kmodal__in" placeholder="Tulis komentar..." data-m-cmt></textarea></div>
-              <ul class="dl-kmodal__act">${[...(card.comments || []).map(c => ({...c, kind: 'c'})), ...(card.activity || [])].map(a => `<li><span class="dl-kcard__av">${esc(this.ini(a.by))}</span><div><b>${esc(a.by)}</b> ${a.kind === 'c' ? '' : esc(a.text)}${a.kind === 'c' ? `<q>${esc(a.text)}</q>` : ''}<small>${esc(a.at)}</small></div></li>`).join('') || '<li class="dl-kcol__empty">Belum ada aktivitas</li>'}</ul>
+              <p class="dl-kmodal__cap"><i class="fa-regular fa-comments"></i> ${esc(T('k_comments'))}</p>
+              <div class="dl-kmodal__cmt"><span class="dl-kcard__av">${esc(this.ini(this.me))}</span><textarea rows="1" class="dl-kmodal__in" placeholder="${esc(T('k_write_comment'))}" data-m-cmt></textarea></div>
+              <ul class="dl-kmodal__act">${[...(card.comments || []).map(c => ({...c, kind: 'c'})), ...(card.activity || [])].map(a => `<li><span class="dl-kcard__av">${esc(this.ini(a.by))}</span><div><b>${esc(a.by)}</b> ${a.kind === 'c' ? '' : esc(a.text)}${a.kind === 'c' ? `<q>${esc(a.text)}</q>` : ''}<small>${esc(a.at)}</small></div></li>`).join('') || '<li class="dl-kcol__empty">' + esc(T('k_no_activity')) + '</li>'}</ul>
             </aside>
           </div>
-          <div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--danger dl-btn--md" data-m-del><i class="fa-solid fa-trash-can"></i> Hapus kartu</button><span class="dl-kcard__spacer"></span><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-m-close>Tutup</button></div>
+          <div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--danger dl-btn--md" data-m-del><i class="fa-solid fa-trash-can"></i> ${esc(T('k_del_card'))}</button><span class="dl-kcard__spacer"></span><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-m-close>${esc(T('close'))}</button></div>
         </div>`;
       };
       const keepTitle = () => { const t = $(ov, '[data-m-title]'); if (t && t.value.trim()) card.title = t.value.trim(); };
@@ -240,8 +240,8 @@
         if (x.closest('[data-m-cknewcancel]')) { addItem = false; return redraw(); }
         if (x.closest('[data-m-ckadd]')) { const i = $(ov, '[data-m-cknew]'); if (i.value.trim()) { (card.checklist = card.checklist || []).push({text: i.value.trim(), done: false}); } return redraw('[data-m-cknew]'); }
         const del = x.closest('[data-m-ckdel]'); if (del) { card.checklist.splice(+del.dataset.mCkdel, 1); return redraw(); }
-        if (x.closest('[data-m-ckdelall]')) return confirmBox({message: `Hapus checklist "${card.checklistTitle || 'Checklist'}" beserta semua itemnya?`, tone: 'danger'}).then(ok => { if (ok) { card.checklist = []; card.checklistTitle = null; addItem = false; redraw(); } });
-        if (x.closest('[data-m-del]')) confirmBox({message: `Hapus kartu "${card.title}"?`, tone: 'danger'}).then(ok => { if (!ok) return; this.cards.splice(this.cards.indexOf(card), 1); ov.remove(); this.render(); this._emit('delete', card, card.col, null); });
+        if (x.closest('[data-m-ckdelall]')) return confirmBox({message: Tf('k_ask_del_checklist', {title: card.checklistTitle || 'Checklist'}), tone: 'danger'}).then(ok => { if (ok) { card.checklist = []; card.checklistTitle = null; addItem = false; redraw(); } });
+        if (x.closest('[data-m-del]')) confirmBox({message: Tf('k_ask_del_card', {title: card.title}), tone: 'danger'}).then(ok => { if (!ok) return; this.cards.splice(this.cards.indexOf(card), 1); ov.remove(); this.render(); this._emit('delete', card, card.col, null); });
       });
       ov.addEventListener('input', e => { if (e.target.matches('[data-m-labelq]')) { labelQ = e.target.value; redraw('[data-m-labelq]'); } });
       ov.addEventListener('change', e => {

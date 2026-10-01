@@ -1,7 +1,7 @@
 /* DevLib · Gantt */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, TZ, fmt, setField} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, TZ, fmt, setField, T, Tf} = Devlib.h;
   /* ============================ GANTT ============================ */
   class Gantt extends Devlib.Component {
     static selector = "[data-dl-gantt]";
@@ -44,7 +44,7 @@
       this.board.addEventListener('pointerup', e => {
         if (!this.op) { const b = e.target.closest('[data-g2-task]'); if (b && this.live()) this.showPop(this.task(b.dataset.g2Task), b); return; }
         const o = this.op; this.op = null;
-        if (o.locked) { if (Math.abs(e.clientX - o.x0) > 3) toast('QC Hold terkunci sampai QA memutuskan.', 'warn'); else this.showPop(o.t, o.b); return; }
+        if (o.locked) { if (Math.abs(e.clientX - o.x0) > 3) toast(T('gt_qc_locked'), 'warn'); else this.showPop(o.t, o.b); return; }
         if (!o.moved) return this.showPop(o.t, o.b);
         if (o.t.s !== o.s0 || o.t.e !== o.e0) this.touch(o.t, o.rz ? 'resize' : 'move');
         this.render();
@@ -53,16 +53,16 @@
         const b = e.target.closest('[data-g2-task]'); if (!b || this.live()) return;
         this.closePop();
         const t = this.task(b.dataset.g2Task);
-        if (t.state === 'qchold') { toast('QC Hold terkunci sampai QA memutuskan.', 'warn'); return; }
+        if (t.state === 'qchold') { toast(T('gt_qc_locked'), 'warn'); return; }
         const ov = document.createElement('div'); ov.className = 'dl-mov is-on';
-        ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="dialog" aria-modal="true"><div class="dl-modal__head"><h3>Ubah Task</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div>
-          <div class="dl-modal__body dl-gantt__edit"><label><span>Kode</span><input value="${esc(t.label)}" disabled></label>
+        ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="dialog" aria-modal="true"><div class="dl-modal__head"><h3>${esc(T('gt_edit_task'))}</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div>
+          <div class="dl-modal__body dl-gantt__edit"><label><span>${esc(T('gt_code'))}</span><input value="${esc(t.label)}" disabled></label>
           <label><span>Resource</span><select data-e-row>${this.rows.map(r => `<option value="${esc(r.key)}" ${r.key === t.row ? 'selected' : ''}>${esc(r.label)}${r.section ? ' (' + esc(r.section.split(' ')[0].toLowerCase()) + ')' : ''}</option>`).join('')}</select></label>
-          <label><span>Proses</span><select data-e-proc>${Object.entries(this.cats).map(([k, c]) => `<option value="${esc(k)}" ${k === t.process ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}</select></label></div>
+          <label><span>${esc(T('gt_process'))}</span><select data-e-proc>${Object.entries(this.cats).map(([k, c]) => `<option value="${esc(k)}" ${k === t.process ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}</select></label></div>
           <div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-x>Cancel</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-e-save>Save</button></div></div>`;
         ov.addEventListener('click', ev => {
           if (ev.target === ov || ev.target.closest('[data-x]')) return ov.remove();
-          if (ev.target.closest('[data-e-save]')) { const nr = $(ov, '[data-e-row]').value, np = $(ov, '[data-e-proc]').value; if (nr !== t.row || np !== t.process) { t.row = nr; t.process = np; this.touch(t, 'reassign'); toast(`${t.label} dipindah ke ${this.rows.find(r => r.key === nr).label}.`, 'success'); } ov.remove(); this.render(); }
+          if (ev.target.closest('[data-e-save]')) { const nr = $(ov, '[data-e-row]').value, np = $(ov, '[data-e-proc]').value; if (nr !== t.row || np !== t.process) { t.row = nr; t.process = np; this.touch(t, 'reassign'); toast(Tf('gt_moved', {task: t.label, res: this.rows.find(r => r.key === nr).label}), 'success'); } ov.remove(); this.render(); }
         });
         document.body.appendChild(ov); $(ov, '[data-e-row]').focus();
       });
@@ -70,7 +70,7 @@
         const s = e.target.closest('[data-g2-hi]'); if (s) { const k = s.dataset.g2Hi; this.hi = k === 'all' || k === 'none' || this.hi === k ? null : k; return this.render(); }
         const c = e.target.closest('[data-g2-chip]'); if (c) { if (c.dataset.g2Chip !== 'proc') { this.fRes = ''; this.setSel('gantt_resource', ''); } if (c.dataset.g2Chip !== 'res') { this.fProc = ''; this.setSel('gantt_process', ''); } return this.render(); }
         const m = e.target.closest('[data-g2-mode] .dl-segment__opt'); if (m) { this.el.dataset.mode = m.dataset.value; $$(this.el, '[data-g2-mode] .dl-segment__opt').forEach(x => x.classList.toggle('is-active', x === m)); this.closePop(); return this.render(); }
-        if (e.target.closest('[data-g2-submit]')) confirmBox({message: `Kirim ${this.changed.size} perubahan simulasi ke Master Schedule?`, tone: 'warn'}).then(ok => { if (!ok) return; this.el.dispatchEvent(new CustomEvent('dl:gantt-submit', {bubbles: true, detail: {tasks: this.tasks.filter(t => this.changed.has(t.id)).map(t => ({...t, start: this.hm(t.s), end: this.hm(t.e)}))}})); toast(`${this.changed.size} perubahan dikirim ke Master Schedule.`, 'success'); this.changed.clear(); this.render(); });
+        if (e.target.closest('[data-g2-submit]')) confirmBox({message: Tf('gt_ask_submit', {n: this.changed.size}), tone: 'warn'}).then(ok => { if (!ok) return; this.el.dispatchEvent(new CustomEvent('dl:gantt-submit', {bubbles: true, detail: {tasks: this.tasks.filter(t => this.changed.has(t.id)).map(t => ({...t, start: this.hm(t.s), end: this.hm(t.e)}))}})); toast(Tf('gt_submitted', {n: this.changed.size}), 'success'); this.changed.clear(); this.render(); });
       });
       this.el.addEventListener('change', e => {
         if (e.target.name === 'gantt_resource') { this.fRes = e.target.value; this.render(); }
@@ -111,16 +111,16 @@
     stats() {
       const risk = this.tasks.filter(t => t.risk).length, idle = this.rows.filter(r => this.bigIdle(r.key)).length;
       $(this.el, '[data-g2-stats]').innerHTML = [
-        ['all', 'Total Task Aktif', this.tasks.length, 'accent', 'klik untuk reset sorotan'],
-        ['none', 'Belum Terjadwal', this.cfg.unscheduled, 'danger', '—'],
-        ['risk', 'Berisiko Telat', risk, 'warn', 'klik untuk sorot di board'],
-        ['idle', `Resource Kosong >${this.cfg.idle} jam`, idle, 'info', 'klik untuk sorot di board'],
+        ['all', T('gt_stat_all'), this.tasks.length, 'accent', T('gt_sub_reset')],
+        ['none', T('gt_stat_none'), this.cfg.unscheduled, 'danger', '—'],
+        ['risk', T('gt_stat_risk'), risk, 'warn', T('gt_sub_hi')],
+        ['idle', Tf('gt_stat_idle', {n: this.cfg.idle}), idle, 'info', T('gt_sub_hi')],
       ].map(([k, l, v, tone, sub]) => `<button type="button" class="dl-stat dl-stat--${tone} is-filter ${this.hi === k ? 'is-active' : ''}" data-g2-hi="${k}"><span class="dl-stat__label">${esc(l)}</span><span class="dl-stat__value">${v}</span><span class="dl-stat__sub">${esc(sub)}</span></button>`).join('');
     }
 
     legend() {
       $(this.el, '[data-g2-legend]').innerHTML = Object.entries(this.cats).map(([k, c]) => `<span><i class="dl-gantt__sw dl-gantt--${esc(c.tone)}"></i>${esc(c.label)}</span>`).join('')
-        + '<span class="dl-gantt__lsep"></span><span><i class="dl-gantt__sw dl-gantt--breakdown"></i>Breakdown</span><span><i class="dl-gantt__sw is-qchold"></i>QC Hold</span><span><i class="dl-gantt__sw is-hot"></i>🔥 Hot Job</span><span class="dl-gantt__lsep"></span><span>▬ garis dalam blok = progress</span>';
+        + '<span class="dl-gantt__lsep"></span><span><i class="dl-gantt__sw dl-gantt--breakdown"></i>Breakdown</span><span><i class="dl-gantt__sw is-qchold"></i>QC Hold</span><span><i class="dl-gantt__sw is-hot"></i>🔥 Hot Job</span><span class="dl-gantt__lsep"></span><span>▬ ' + esc(T('gt_legend_progress')) + '</span>';
     }
 
     block(t) {
@@ -143,16 +143,16 @@
         html += `<div class="dl-gantt__row" data-g2-row="${esc(r.key)}"><div class="dl-gantt__res"><b>${esc(r.label)}</b>${r.sub ? `<small><i class="fa-solid fa-user"></i> ${esc(r.sub)}</small>` : ''}</div>
           <div class="dl-gantt__lane" style="width:${this.W}px;background-size:${this.PX}px 100%">${this.fProc ? '' : this.gaps(r.key).map(([a, b]) => `<div class="dl-gantt__idle" style="left:${(a - this.S) * this.PX}px;width:${(b - a) * this.PX}px">idle</div>`).join('')}${list.map(this.block).join('')}</div></div>`;
       });
-      if (!vis.length) html += '<div class="dl-empty"><b class="dl-empty__title">Tidak ada resource yang cocok dengan filter</b></div>';
+      if (!vis.length) html += '<div class="dl-empty"><b class="dl-empty__title">' + esc(T('gt_no_resource')) + '</b></div>';
       const now = new Date(new Date().toLocaleString('en-US', {timeZone: TZ()})), nh = now.getHours() + now.getMinutes() / 60;
       if (nh >= this.S && nh <= this.E) html += `<div class="dl-gantt__now" style="left:calc(var(--dl-gantt-res) + ${(nh - this.S) * this.PX}px)" title="Sekarang ${fmt.time()}"></div>`;
       this.board.innerHTML = html;
       this.stats();
-      const chips = [...(this.fRes ? [['res', 'Resource: ' + this.rows.find(r => r.key === this.fRes).label]] : []), ...(this.fProc ? [['proc', 'Proses: ' + this.catOf({process: this.fProc}).label]] : [])];
+      const chips = [...(this.fRes ? [['res', 'Resource: ' + this.rows.find(r => r.key === this.fRes).label]] : []), ...(this.fProc ? [['proc', T('gt_process') + ': ' + this.catOf({process: this.fProc}).label]] : [])];
       const cb = $(this.el, '[data-g2-chips]'); cb.hidden = !chips.length;
       cb.innerHTML = chips.map(([k, l]) => `<span class="dl-tags__chip">${esc(l)}<button type="button" data-g2-chip="${k}">&times;</button></span>`).join('') + (chips.length ? '<button type="button" class="dl-btn dl-btn--link" data-g2-chip="all">Reset semua filter</button>' : '');
       const sb = $(this.el, '[data-g2-submit]'); if (sb) { sb.disabled = !this.changed.size || this.live(); sb.dataset.count = this.changed.size; }
-      $(this.el, '[data-g2-modehelp]').textContent = this.live() ? 'Mode Live: jadwal hanya bisa dilihat.' : `Mode Simulasi: ${this.changed.size} perubahan belum dikirim ke jadwal Live sampai Submit. QC Hold terkunci sampai QA memutuskan.`;
+      $(this.el, '[data-g2-modehelp]').textContent = this.live() ? T('gt_mode_live') : Tf('gt_mode_sim', {n: this.changed.size});
     }
 
     setSel(name, v) { const f = $(this.el, `[name="${name}"]`); if (f) setField(this.el, name, v); }
@@ -161,13 +161,13 @@
       return this.tasks.find(t => String(t.id) === String(id));
     }
 
-    touch(t, type) { this.changed.add(t.id); this.el.dispatchEvent(new CustomEvent('dl:gantt', {bubbles: true, detail: {type, task: {...t, start: this.hm(t.s), end: this.hm(t.e)}}})); if (this.conflict(t)) toast(`${t.label} bertabrakan dengan task lain di resource yang sama.`, 'warn'); }
+    touch(t, type) { this.changed.add(t.id); this.el.dispatchEvent(new CustomEvent('dl:gantt', {bubbles: true, detail: {type, task: {...t, start: this.hm(t.s), end: this.hm(t.e)}}})); if (this.conflict(t)) toast(Tf('gt_conflict', {task: t.label}), 'warn'); }
     closePop() { if (this.pop) { this.pop.remove(); this.pop = null; } }
 
     showPop(t, b) {
       this.closePop();
       this.pop = document.createElement('div'); this.pop.className = 'dl-gantt__pop';
-      this.pop.innerHTML = `<button type="button" class="dl-gantt__popx" aria-label="Tutup">&times;</button><h3>${esc(t.label)}</h3><dl><dt>Resource</dt><dd>${esc(this.rows.find(r => r.key === t.row)?.label || '')}</dd><dt>Proses</dt><dd>${esc(this.catOf(t).label)}</dd><dt>Waktu</dt><dd>${this.hm(t.s)}–${this.hm(t.e)}</dd><dt>Progress</dt><dd>${+t.progress || 0}%</dd><dt>Status</dt><dd>${esc(t.status || {hot: 'Hot Job', qchold: 'QC Hold', breakdown: 'Breakdown'}[t.state] || 'Terjadwal')}</dd></dl>`;
+      this.pop.innerHTML = `<button type="button" class="dl-gantt__popx" aria-label="${esc(T('close'))}">&times;</button><h3>${esc(t.label)}</h3><dl><dt>Resource</dt><dd>${esc(this.rows.find(r => r.key === t.row)?.label || '')}</dd><dt>${esc(T('gt_process'))}</dt><dd>${esc(this.catOf(t).label)}</dd><dt>${esc(T('gt_time'))}</dt><dd>${this.hm(t.s)}–${this.hm(t.e)}</dd><dt>Progress</dt><dd>${+t.progress || 0}%</dd><dt>Status</dt><dd>${esc(t.status || {hot: 'Hot Job', qchold: 'QC Hold', breakdown: 'Breakdown'}[t.state] || T('gt_scheduled'))}</dd></dl>`;
       const r = b.getBoundingClientRect(); this.pop.style.cssText = `left:${Math.min(r.left + scrollX, innerWidth - 260)}px;top:${r.bottom + scrollY + 6}px`;
       this.pop.querySelector('.dl-gantt__popx').addEventListener('click', this.closePop);
       document.body.appendChild(this.pop);
