@@ -39,14 +39,17 @@ final class PurchaseQuotation
 
     public static function rows(): array
     {
-        $pqs = PqQuotation::withCount('lines')->orderByDesc('pq_id')->limit(500)->get();
+        $pqs = PqQuotation::with('lines')->orderByDesc('pq_id')->limit(500)->get();
         $sup = PurchaseOrder::suppliers($pqs->pluck('i_supplier_id')->filter()->unique()->all());
         $prs = PrRequisition::whereIn('pr_id', $pqs->pluck('i_pr_id')->filter()->unique())->pluck('doc_no', 'pr_id');
 
         return $pqs->map(fn ($q) => ['id' => $q->pq_id, 'no' => $q->doc_no ?: '(draft #'.$q->pq_id.')',
             'supplier' => $sup[$q->i_supplier_id] ?? (($q->i_supplier_text ?: '—').' (belum cocok)'), 'pr' => $prs[$q->i_pr_id] ?? '—',
             'date' => $q->i_doc_date?->toDateString(), 'valid' => $q->i_quotation_valid_until?->toDateString(), 'file' => $q->source_name ?? '—',
-            'read' => self::READ_LABELS[$q->extract_status] ?? '—', 'lines' => $q->lines_count, 'total' => (float) $q->c_total_idr, 'status' => $q->status])->all();
+            'read' => self::READ_LABELS[$q->extract_status] ?? '—', 'lines' => $q->lines->count(), 'total' => (float) $q->c_total_idr, 'status' => $q->status,
+            // Baris anak grid (Expand): nama item selalu tampil, tanpa harga.
+            'items' => $q->lines->map(fn ($l) => ['name' => $l->i_description ?: $l->i_source_text, 'qty' => (float) $l->i_qty, 'unit' => $l->i_uom,
+                'lead' => $l->i_lead_time_day, 'note' => $l->i_notes])->all()])->all();
     }
 
     // PR yang boleh ditawar: APPROVED / sebagian di-PO, belum batal (sama dgn openRequisitions v1).

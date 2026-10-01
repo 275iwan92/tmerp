@@ -49,12 +49,19 @@ final class PurchaseOrder
 
     public static function rows(): array
     {
-        $pos = PoOrder::withCount('lines')->orderByDesc('po_id')->limit(500)->get();
+        $pos = PoOrder::with('lines')->orderByDesc('po_id')->limit(500)->get();
         $sup = self::suppliers($pos->pluck('i_supplier_id')->unique()->all());
 
         return $pos->map(fn ($p) => ['id' => $p->po_id, 'no' => $p->doc_no ?: '(draft #'.$p->po_id.')', 'supplier' => $sup[$p->i_supplier_id] ?? '—',
-            'date' => $p->i_doc_date?->toDateString(), 'delivery' => $p->i_delivery_date?->toDateString(), 'lines' => $p->lines_count,
+            'date' => $p->i_doc_date?->toDateString(), 'delivery' => $p->i_delivery_date?->toDateString(), 'lines' => $p->lines->count(), 'items' => self::lineRows($p),
             'total' => (float) $p->c_grand_total, 'status' => $p->status])->all();
+    }
+
+    // Baris anak grid (Expand) PO / Petty Cash: nama item selalu tampil, tanpa harga. Butuh relasi lines.
+    public static function lineRows(PoOrder $p): array
+    {
+        return $p->lines->map(fn ($l) => ['code' => $l->c_item_code, 'name' => $l->i_description, 'qty' => (float) $l->i_qty, 'unit' => $l->i_uom,
+            'received' => (float) $l->c_qty_received, 'outstanding' => (float) $l->c_qty_outstanding, 'status' => $l->c_line_status])->all();
     }
 
     public static function suppliers(?array $ids = null): array

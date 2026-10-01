@@ -38,13 +38,16 @@ final class PurchaseReceive
 
     public static function rows(): array
     {
-        $pvs = PvReceipt::withCount('lines')->orderByDesc('pv_id')->limit(500)->get();
+        $pvs = PvReceipt::with('lines')->orderByDesc('pv_id')->limit(500)->get();
         $sup = PurchaseOrder::suppliers($pvs->pluck('i_supplier_id')->filter()->unique()->all());
         $cust = DB::connection('tm2mst')->table('cust_customer')->whereIn('id_customer', $pvs->pluck('i_customer_id')->filter()->unique())->pluck('customer_name', 'id_customer');
 
         return $pvs->map(fn ($p) => ['id' => $p->pv_id, 'no' => $p->doc_no, 'supplier' => $p->i_receipt_type === 'CUSTOMER' ? ($cust[$p->i_customer_id] ?? '—') : ($sup[$p->i_supplier_id] ?? '—'),
             'type' => self::TYPES[$p->i_receipt_type] ?? $p->i_receipt_type, 'date' => $p->i_doc_date?->toDateString(),
-            'warehouse' => $p->i_warehouse_code ?: '—', 'po' => $p->c_po_doc_list, 'lines' => $p->lines_count, 'status' => $p->status])->all();
+            'warehouse' => $p->i_warehouse_code ?: '—', 'po' => $p->c_po_doc_list, 'lines' => $p->lines->count(), 'status' => $p->status,
+            // Baris anak grid (Expand): nama item selalu tampil, tanpa harga.
+            'items' => $p->lines->map(fn ($l) => ['code' => $l->c_item_code, 'name' => $l->i_description, 'po' => $l->c_po_doc_no, 'qty' => (float) $l->i_qty_purchase,
+                'unit' => $l->i_uom_purchase, 'accepted' => (float) $l->c_qty_accepted, 'rejected' => (float) $l->c_qty_rejected])->all()])->all();
     }
 
     // CO yang boleh menerima bahan customer: Confirmed / Submitted, belum batal. Label = No. CO · customer.

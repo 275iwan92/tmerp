@@ -156,24 +156,37 @@
     @if ($waiting)
         <x-dl::grid id="petty-waiting" :rows="$waiting" search="Search cash PO..." actions="worklist" :active-key="null" :open-url="$home.'?po={id}'" source="{{ Src::of('tm2pur.po_order (CASH, APPROVED)') }}"
             :columns="[
-                ['key' => 'shop', 'label' => 'Waiting Cash PO', 'type' => 'identity', 'code' => 'no'],
+                ['key' => 'no', 'label' => 'Cash PO No. / Shop', 'type' => 'doc', 'party' => 'shop'],
+                ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
                 ['key' => 'total', 'label' => 'Total', 'type' => 'money'],
                 ['key' => 'step', 'label' => 'Next Step', 'type' => 'badge', 'tones' => PettyCash::STEP_TONES],
                 ['key' => 'by', 'label' => 'Created By'],
-            ]" />
+            ]"
+        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
+            ['key' => 'code', 'label' => 'Code'],
+            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+        ]]" />
     @endif
     <x-dl::grid id="petty-tx" :rows="PettyCash::rows($fund)" search="Search transaction, PO, receiver..." actions="worklist" :active-key="null" :open-url="$home.'?tx={id}'" source="{{ Src::of('tm2acc.fin_petty_cash_tx', 'tm2acc.fin_voucher') }}"
         :columns="[
-            ['key' => 'type', 'label' => 'Transaction', 'type' => 'identity', 'code' => 'no'],
+            ['key' => 'no', 'label' => 'Transaction No. / Receiver', 'type' => 'doc', 'party' => 'who'],
+            ['key' => 'type', 'label' => 'Transaction'],
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'po', 'label' => 'Cash PO'],
-            ['key' => 'who', 'label' => 'Receiver'],
             ['key' => 'in', 'label' => 'In', 'type' => 'money', 'sum' => true],
             ['key' => 'out', 'label' => 'Out', 'type' => 'money', 'sum' => true],
             ['key' => 'voucher', 'label' => 'Journal'],
-            ['key' => 'note', 'label' => 'Notes'],
+            ['key' => 'note', 'label' => 'Notes', 'visible' => false],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Posted' => 'success', 'Cancelled' => 'danger']],
         ]"
+        :detail="['key' => 'items', 'title' => 'Item (Cash PO)', 'columns' => [
+            ['key' => 'code', 'label' => 'Code'],
+            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+        ]]"
         :stats="[['label' => 'All'], ['label' => 'Cash Advance', 'where' => ['type' => 'Cash Advance'], 'tone' => 'warn'], ['label' => 'Settlement / Reimburse', 'where' => ['type' => ['Settlement', 'Reimburse']], 'tone' => 'info'], ['label' => 'Top Up', 'where' => ['type' => 'Top Up'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'Cancelled'], 'tone' => 'danger']]"
         :filters="['type' => 'Transaction']" />
 @endif

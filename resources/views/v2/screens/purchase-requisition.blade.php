@@ -19,14 +19,21 @@
     <x-dl::grid id="pr-list" :rows="PurchaseRequisition::rows()" search="Search PR no., department..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.pr_requisition', 'tm2pur.pr_line') }}"
         :columns="[
-            ['key' => 'no', 'label' => 'No. PR'],
+            ['key' => 'no', 'label' => 'PR No. / Department', 'type' => 'doc', 'party' => 'dept'],
             ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'dept', 'label' => 'Departemen'],
             ['key' => 'need', 'label' => t('Need Date'), 'type' => 'date'],
-            ['key' => 'lines', 'label' => 'Item', 'type' => 'number'],
             ['key' => 'total', 'label' => 'Est. Total', 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseRequisition::STATUS_TONES],
         ]"
+        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
+            ['key' => 'code', 'label' => 'Code'],
+            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+            ['key' => 'need', 'label' => 'Need Date', 'type' => 'date'],
+            ['key' => 'ordered', 'label' => 'Ordered', 'type' => 'number'],
+            ['key' => 'note', 'label' => 'Notes'],
+        ]]"
         :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved', 'where' => ['status' => ['APPROVED', 'PARTIALLY_ORDERED']], 'tone' => 'success']]"
         :filters="['dept' => 'Departemen', 'status' => 'Status']" />
 @elseif (! $pr)

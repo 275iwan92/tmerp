@@ -19,13 +19,21 @@
     <x-dl::grid id="po-list" :rows="PurchaseOrder::rows()" search="Search PO no., supplier..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.po_order', 'tm2pur.po_line', 'tm2mst.sup_supplier') }}"
         :columns="[
-            ['key' => 'supplier', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'no'],
+            ['key' => 'no', 'label' => 'PO No. / Supplier', 'type' => 'doc', 'party' => 'supplier'],
             ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
             ['key' => 'delivery', 'label' => t('Ship Date'), 'type' => 'date'],
-            ['key' => 'lines', 'label' => t('Lines'), 'type' => 'number'],
             ['key' => 'total', 'label' => 'Grand Total', 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseOrder::STATUS_TONES],
         ]"
+        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
+            ['key' => 'code', 'label' => 'Code'],
+            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+            ['key' => 'received', 'label' => 'Received', 'type' => 'number'],
+            ['key' => 'outstanding', 'label' => 'Outstanding', 'type' => 'number'],
+            ['key' => 'status', 'label' => 'Line Status'],
+        ]]"
         :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved / Sent', 'where' => ['status' => ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED']], 'tone' => 'success']]"
         :filters="['supplier' => 'Supplier', 'status' => 'Status']" />
 @elseif (! $po)

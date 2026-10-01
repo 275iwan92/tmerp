@@ -25,14 +25,22 @@
     <x-dl::grid id="pv-list" :rows="PurchaseReceive::rows()" search="Search receipt no., supplier, PO no...." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.pv_receipt', 'tm2pur.pv_line') }}"
         :columns="[
-            ['key' => 'supplier', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'no'],
+            ['key' => 'no', 'label' => 'Receipt No. / Supplier', 'type' => 'doc', 'party' => 'supplier'],
             ['key' => 'type', 'label' => 'Receipt Type', 'type' => 'badge', 'tones' => PurchaseReceive::TYPE_TONES],
             ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
             ['key' => 'warehouse', 'label' => t('Warehouse')],
             ['key' => 'po', 'label' => 'No. PO'],
-            ['key' => 'lines', 'label' => t('Lines'), 'type' => 'number'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseReceive::STATUS_TONES],
         ]"
+        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
+            ['key' => 'code', 'label' => 'Code'],
+            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
+            ['key' => 'po', 'label' => 'PO No.'],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+            ['key' => 'accepted', 'label' => 'Accepted', 'type' => 'number'],
+            ['key' => 'rejected', 'label' => 'Rejected', 'type' => 'number'],
+        ]]"
         :stats="[['label' => t('All')], ['label' => 'Draft / QC', 'where' => ['status' => ['DRAFT', 'QC_PENDING']], 'tone' => 'warn'], ['label' => 'Posted', 'where' => ['status' => 'POSTED'], 'tone' => 'success'], ['label' => 'From Customer', 'where' => ['type' => 'From Customer'], 'tone' => 'info'], ['label' => 'From Subcon', 'where' => ['type' => 'From Subcon'], 'tone' => 'warn']]"
         :filters="['supplier' => 'Supplier', 'warehouse' => 'Gudang', 'status' => 'Status']" />
 @elseif (! $pv)

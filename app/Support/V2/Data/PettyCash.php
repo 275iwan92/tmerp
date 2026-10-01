@@ -42,7 +42,11 @@ final class PettyCash
         $vouchers = DB::connection('tm2acc')->table('fin_voucher')->whereIn('voucher_id', FinPettyCashTx::where('petty_cash_id', $p->id_petty_cash)->pluck('voucher_id')->filter()->all())
             ->pluck('voucher_number', 'voucher_id');
 
-        return FinPettyCashTx::where('petty_cash_id', $p->id_petty_cash)->orderByDesc('id_petty_tx')->limit(500)->get()->map(fn ($t) => ['id' => $t->id_petty_tx,
+        $txs = FinPettyCashTx::where('petty_cash_id', $p->id_petty_cash)->orderByDesc('id_petty_tx')->limit(500)->get();
+        // Baris anak grid (Expand): item dari Cash PO transaksi itu (tm2acc -> tm2pur, query terpisah).
+        $pos = PoOrder::with('lines')->whereIn('po_id', $txs->pluck('po_id')->filter()->unique())->get()->keyBy('po_id');
+
+        return $txs->map(fn ($t) => ['id' => $t->id_petty_tx, 'items' => $pos->has($t->po_id) ? PurchaseOrder::lineRows($pos[$t->po_id]) : [],
             'no' => $t->tx_no, 'type' => FinPettyCashTx::TYPES[$t->tx_type] ?? $t->tx_type, 'date' => $t->tx_date?->toDateString(), 'po' => $t->po_no ?: '—',
             'who' => $t->receiver_name ?: '—', 'in' => $t->cash_effect > 0 ? (float) $t->cash_effect : null, 'out' => $t->cash_effect < 0 ? -(float) $t->cash_effect : null,
             'voucher' => $vouchers[$t->voucher_id] ?? '—', 'note' => $t->notes ?: '—', 'status' => $t->status === 'POSTED' ? 'Posted' : 'Cancelled'])->all();
@@ -53,10 +57,11 @@ final class PettyCash
     {
         $sup = PurchaseOrder::suppliers();
 
-        return PoOrder::where('i_procure_type', 'CASH')->where('status', 'APPROVED')->orderBy('po_id')->get()
+        return PoOrder::with('lines')->where('i_procure_type', 'CASH')->where('status', 'APPROVED')->orderBy('po_id')->get()
             ->map(fn ($po) => ['po' => $po, 'step' => PettyCashService::nextStep($po)])->filter(fn ($x) => $x['step'])
             ->map(fn ($x) => ['id' => $x['po']->po_id, 'no' => $x['po']->doc_no, 'shop' => $x['po']->i_shop_name ?: ($sup[$x['po']->i_supplier_id] ?? '—'),
                 'total' => (float) $x['po']->c_grand_total, 'step' => self::STEP_LABELS[$x['step']],
+                'date' => $x['po']->i_doc_date?->toDateString(), 'items' => PurchaseOrder::lineRows($x['po']),
                 'by' => $x['po']->created_by])->values()->all();
     }
 

@@ -32,11 +32,14 @@ final class PurchaseRequisition
 
     public static function rows(): array
     {
-        $prs = PrRequisition::withCount('lines')->orderByDesc('pr_id')->limit(500)->get();
+        $prs = PrRequisition::with('lines')->orderByDesc('pr_id')->limit(500)->get();
         $dept = OrgDepartment::whereIn('department_id', $prs->pluck('i_department_id')->unique())->pluck('department_name', 'department_id');
 
         return $prs->map(fn ($p) => ['id' => $p->pr_id, 'no' => $p->doc_no ?: '(draft #'.$p->pr_id.')', 'dept' => $dept[$p->i_department_id] ?? '—',
-            'date' => $p->i_doc_date?->toDateString(), 'need' => $p->i_need_date?->toDateString(), 'lines' => $p->lines_count,
+            'date' => $p->i_doc_date?->toDateString(), 'need' => $p->i_need_date?->toDateString(), 'lines' => $p->lines->count(),
+            // Baris anak grid (Expand): nama item selalu tampil, tanpa harga.
+            'items' => $p->lines->map(fn ($l) => ['code' => $l->c_item_code, 'name' => $l->i_description, 'qty' => (float) $l->i_qty, 'unit' => $l->i_uom,
+                'need' => $l->i_need_date?->toDateString(), 'ordered' => (float) $l->c_qty_ordered, 'note' => $l->i_notes])->all(),
             'total' => (float) $p->c_est_total, 'status' => $p->status])->all();
     }
 

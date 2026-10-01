@@ -41,16 +41,22 @@
     <x-dl::grid id="pq-list" :rows="PurchaseQuotation::rows()" search="Cari no. PQ, supplier, PR, nama file..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.pq_quotation', 'tm2pur.pq_line', 'tm2mst.sup_supplier') }}"
         :columns="[
-            ['key' => 'supplier', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'no'],
+            ['key' => 'no', 'label' => 'PQ No. / Supplier', 'type' => 'doc', 'party' => 'supplier'],
             ['key' => 'pr', 'label' => 'PR Acuan'],
             ['key' => 'date', 'label' => 'Tanggal', 'type' => 'date'],
             ['key' => 'valid', 'label' => 'Berlaku s/d', 'type' => 'date'],
             ['key' => 'file', 'label' => 'File'],
             ['key' => 'read', 'label' => 'Hasil Baca', 'type' => 'badge', 'tones' => PurchaseQuotation::READ_TONES],
-            ['key' => 'lines', 'label' => 'Baris', 'type' => 'number'],
             ['key' => 'total', 'label' => 'Total (IDR)', 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseQuotation::STATUS_TONES],
         ]"
+        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
+            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+            ['key' => 'lead', 'label' => 'Lead Time (days)', 'type' => 'number'],
+            ['key' => 'note', 'label' => 'Notes'],
+        ]]"
         :stats="[['label' => 'Semua'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Perlu cek', 'where' => ['status' => 'DRAFT', 'read' => ['Perlu cek', 'Isi manual', 'Gagal dibaca']], 'tone' => 'warn'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Closed (jadi PO)', 'where' => ['status' => 'CLOSED'], 'tone' => 'info']]"
         :filters="['supplier' => 'Supplier', 'pr' => 'PR Acuan', 'status' => 'Status']" />
     <form method="get" action="{{ $home }}">
