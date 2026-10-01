@@ -11,15 +11,6 @@ General Ledger, Account Receivable, Account Payable, kas & bank, pajak, dan Acco
 
 ## 7. FINANCE & ACCOUNTING (tm2acc)
 
-- **Aset Tetap (Fixed Asset)** — modul **belum ada sama sekali** (dicek
-  2026-09-02: cuma akun COA "ASET TETAP PABRIK"/"Akumulasi Penyusutan
-  Mesin" di `fin_account`, bukan tabel register). Menu placeholder
-  `ACC_FIXEDASSET` (NOT_BUILT) sudah ditaruh di grup ACC (migration
-  `2026_09_02_000019`), permintaan user. Butuh desain dulu sebelum
-  dibangun: skema register (kode aset, tgl/nilai perolehan, metode &
-  umur penyusutan, lokasi/departemen pemegang, link ke akun aset vs
-  akumulasi penyusutan di COA), siapa yang input, apakah auto-jurnal
-  penyusutan bulanan (mirip `JournalPostingService` PV) atau manual.
 - **Auto-jurnal Delivery/Invoice** — PV & Stock Out(RM) sudah auto-posting
   (`JournalPostingService`), tapi Delivery(DO)/Invoice sengaja ditunda
   karena butuh mekanisme snapshot Costing V2 di titik shipment (Keputusan B
@@ -43,18 +34,11 @@ General Ledger, Account Receivable, Account Payable, kas & bank, pajak, dan Acco
 
 Konteks lengkap audit ini ada di `BACKLOG.md`.
 
-### 12.3 Procurement/Finance — subsistem yang belum ada sama sekali
+### 12.3 Procurement/Finance
 
-- **Purchase Invoice (SUPPLIER_DP/SUPPLIER_BILL)** — belum dibangun,
-  butuh tabel delta `fin_invoice_line` yang belum ada.
-- **Seluruh subsistem AR/AP Finance** (Invoice Entry+print, e-Faktur,
-  Billing Status, Payment Record, AR/AP Aging, Statement of Account,
-  Kwitansi, GL Trial Balance dashboard) — belum ada 1 layar pun,
-  Journal Entry sendiri sudah live (Cash & Bank + auto-posting).
-- **Grup A (Kategori Produk → akun COA)** — resolve chain sudah dibangun
-  (`docs/LOG_JOB_DONE.md` 2026-09-11). **Sisa yang BELUM**: UI layar Master
-  Kategori Produk CRUD (belum pernah ada, cuma dropdown read-only di
-  `produk.blade.php`) — kolom akun tetap NULL sampai ada cara isi.
+- Dicek 2026-10-02: Fixed Assets, Amortization, Order to Cash, Procure to Pay, Down Payment, Journal, General Ledger, Trial Balance,
+  dan laporan keuangan SUDAH ada (v1 + grid v2). Cetakan Sales Invoice dan Payment Voucher ada (belum A). Master Kategori Produk + akun
+  bawaannya sudah punya layar (Master Data > Product Category). Belum ada: e-Faktur, Statement of Account, Kwitansi, tagihan DP supplier.
 - **Grup B (Partner Account local/import, §3.1-3.2) — TERNYATA BUKAN "boleh
   jalan sekarang" lagi, dicabut dari kategori itu.** Verifikasi §4 (2026-09-11,
   sesuai instruksi dokumen sendiri "jangan ALTER buta") menemukan akun `211`/

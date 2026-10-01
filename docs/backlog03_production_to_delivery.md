@@ -49,21 +49,6 @@ sebelum eksekusi):
 
 ---
 
-## 24. TEST YANG MENINGGALKAN SAMPAH DATA (temuan 2026-09-21)
-
-`ProductionWoGenerationTest::test_generate_creates_wo_with_operations_and_correct_qty`
-menyisipkan 1 baris `tm2sdi.co_order_delivery` (`created_by='test'`, ship_qty 200)
-tiap kali dijalankan dan TIDAK menghapusnya (tidak ada `tearDown`). Melanggar aturan
-CLAUDE.md "test yang menyisipkan data wajib cleanup sendiri". Baris id 134 adalah
-sisa lama yang belum dihapus.
-
-| # | Pekerjaan | Status |
-|---|---|---|
-| 24.4 | **`ProductionWoGenerationTest` masih bocor** — pola rusak yang sama (hardcode `order_id=2`/`inquiry_id=5` di baris 38-41, cleanup baris 69-71 hanya jalan di happy path). Kedua test-nya sekarang gagal di assertion angka (`6000.0` vs `6400`, `0.0` vs `6000`), jadi tiap `php artisan test` meninggalkan 5 delivery + 5 WO + 20 operasi. Terapkan pola fixture 24.1. Kegagalan angkanya dipisah — itu soal perilaku engine, bukan fixture | **BELUM** |
-| 24.5 | **Run 2026-09-29 malam**: `ProductionWorklistWoTest` breakdown (subcontract test) tiap run menambah baris `prd_breakdown_event` op WO2600231 dan membiarkan op `BREAKDOWN` -> `test_breakdown_reroute` gagal (harap RUNNING). Sisa run malam ini (event 229/230, co_order_delivery 983) sudah dihapus manual. Juga 4 test lama gagal karena teks UI berubah (bukan regresi): InquirySendToProdev "Referensi Inquiry Asal", InquiryHubStatBox "NEW belum confirm", SchedulingBoard "Plong 1", WorklistWo "Lapor Breakdown" | **BELUM** |
-
----
-
 ## 26. MRP & MPS — DITELANTARKAN SENGAJA, DIRANCANG ULANG NANTI (keputusan user 2026-09-22)
 
 > User: *"MRP dan MPS ini kenapa saya telantarkan, karena saya sama sekali

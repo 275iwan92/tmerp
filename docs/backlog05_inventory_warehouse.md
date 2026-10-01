@@ -47,4 +47,4 @@ jadi bin; yang ditambah = lapis **`wh_zone`** di atasnya (bukan `wh_bin`).
 | 05.14 | Cari Barang multi lokasi, Stock Card simple + extended, Item per Lokasi + riwayat, Master Stock, Stock On Hand | 1 | preview dibuat 2026-10-01, menunggu OK |
 | 05.15 | Adjustment dengan approval v2 (A1–A2) | 1 | menunggu user |
 | 05.16 | Material Booking dari CO (`materialbooking_tier1.md`, B1–B9) | 1–2 | preview dibuat 2026-10-01, menunggu OK |
-| 05.17 | Periksa saldo berjalan `rm_stockcard.qty_eb` yang tidak konsisten (ANIMAL GLUE, UNKNOWN-LEGACY negatif) | — | temuan 2026-10-01 |
+| 05.17 | Saldo berjalan kartu stok tidak konsisten di dummy lama: `php artisan data:audit --only=stock` (ddt: 3 temuan, tm2: 10 -- ANIMAL GLUE minus, saldo awal tidak nyambung). Perbaikannya = buat ulang dummy stok setelah desain gudang disetujui; dummy stok tm2 dipakai test | — | audit 2026-10-02, menunggu desain gudang |

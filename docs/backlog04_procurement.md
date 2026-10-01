@@ -27,7 +27,8 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
 - **Purchase Return v2 — dibahas di sesi lain (user 2026-10-01, "agar lebih detail").** Preview desain sudah pernah
   ditunjukkan (Draft -> Confirm -> approval PRT -> Kirim Barang: Stock Out + Dr GR/IR / Cr Persediaan -> Closed saat CN
   diterima / barang pengganti masuk). Retur v1 sekarang belum mengeluarkan stok, belum menjurnal, belum update PO.
-- **Purchase Invoice / hutang supplier** belum ada (backlog07 §12.3) -> GR/IR (211900) belum pernah dilunasi.
+- **Tagihan supplier** sudah ada di Finance > Procure to Pay (`fin_invoice` SUPPLIER_BILL, dicek 2026-10-02). Yang belum dicek: apakah posting
+  tagihan itu melunasi GR/IR (211900) yang dibuat saat SPB -- perlu uji alur PO -> SPB -> tagihan -> bayar dengan Finance.
 - **Konversi roll -> rim saat terima**: rumus berat 1 rim = lebar roll cm x panjang potong cm x GSM / 20.000;
   rim = berat bersih roll / berat 1 rim. Butuh keputusan user: satuan beli kg/roll, kapan panjang potong ditentukan, % waste.
 
@@ -45,6 +46,6 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
    keduanya bersama saat migration sesi lain dijalankan ke tm2*; sebelum itu PO Kontan di tmerp.test belum punya approver.
 3. **Kas Kecil**: plafon (imprest) belum diisi — isi di Kas Kecil > Setting; saldo awal masuk lewat Top Up.
 4. **PQ**: `ANTHROPIC_API_KEY` belum diisi (PDF/foto penawaran belum terbaca otomatis; keputusan user: key & izin data
-   penawaran dikirim ke Anthropic); .eml/.msg belum didukung; CSV angka Indonesia ("12.500") bisa terbaca 12,5.
+   penawaran dikirim ke Anthropic); .eml/.msg belum didukung.
 
 ---

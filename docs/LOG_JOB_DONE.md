@@ -3,6 +3,51 @@
 
 ---
 
+## 2026-10-02 (pagi, lanjutan) -- "semua di backlog yang bisa dikerjakan": sisa UI-20, UI-18, UI-19, 19.1, audit data, PWA, label PQ
+
+Perintah user: "lanjutkan apa yang belum" lalu "semua di backlog yang bisa dikerjakan, kerjakan". Semua di `main`, sudah di-push.
+Semua backlog (01-10) dibaca; yang butuh keputusan user tidak disentuh (daftar di akhir entri ini).
+
+- **UI-20 selesai untuk semua layar yang berupa daftar** (20 grid lagi; total hari ini 39):
+  Finance `acc-cash-bank`, `acc-dp-invoice`, `acc-receivables`, `acc-payables` (induk `InvoiceGrid`), `acc-fixed-asset`,
+  `acc-amortization` (induk `AssetGrid`); Setup `setup-constants` + `setup-constant-categories` (Grid Lookup), `security-accounts`,
+  `security-groups` (Grid Master); `rcr-talent-pool`; `prod-bop-rule` (model baru `ProdBopRule`, hanya baca); Production Output memakai
+  layar Work Order (di v1 juga satu layar). Buka / New = layar v1, yang kini membuka baris / form baru dari `?open={id}` / `?new=1`
+  (10 layar v1 dipasangi trait `OpensFromQuery`). Sisa UI-20 = papan / proses / dasbor (bukan daftar), lihat backlog01.
+- **UI-18**: kategori konstanta bisa ditambah dari layar (Setup > Constant Categories). Model `SysConstantCategory` kunci = `id_constant_category`.
+- **backlog07 Grup A**: Master Data > Product Category (Grid Lookup) dengan akun Persediaan dan HPP bawaan -- diuji: product tanpa akun
+  sendiri langsung memakai akun kategorinya.
+- **UI-19**: cetakan Sales Invoice / Down Payment Invoice (`sales-invoice`) dan bukti kas / bank (`payment-voucher`) di objek cetak DevLib;
+  kop PPN otomatis bila dokumennya kena PPN. `Document::priceColumns()` kini bisa ditimpa (voucher mencetak Debit / Credit).
+  Tombol Print per baris di grid Order to Cash, Down Payment, Cash & Bank (`DbGrid::actionUrls`, diuji di Chrome headless).
+  Konstanta `SIGN_INV_*` / `SIGN_PVC_*`. Contoh: `docs/mockups/print_doc/app/sales_invoice_a5.jpg`, `payment_voucher_a5.jpg`,
+  `receipt_voucher_a5.jpg`. **Format belum A.**
+- **backlog02 §19.1 Surat Jalan Subkon v2** (journey disetujui 2026-09-30): layar `subcon-delivery-note` di Sales > Delivery
+  (`App\Support\V2\Data\SubconDelivery`): Draft = New / Save / Delete / Confirm, Confirmed = Cancel / Print; header supplier subkon,
+  proses, PR subkon; baris = baris Customer Order + barang dikirim + qty (tanpa harga). Confirm mensyaratkan supplier, proses, dan baris
+  CO di tiap barang. Surat jalan subkon tidak lagi ikut daftar DO / Delivery Notes / POD. Cetakan `subcon-delivery-note` (belum A,
+  contoh `subcon_delivery_note_a5.jpg`). Dummy 2 dokumen di ddt (CENTRAL GRAFIK), baseline ddt disimpan ulang (ddt tidak berubah sejak
+  baseline sebelumnya). Uji: 14 pemeriksaan alur dalam transaksi yang di-rollback.
+- **backlog09 §14 + backlog05 05.17**: perintah baru `php artisan data:audit [--env=mockup] [--only=identity|stock]`, hanya membaca.
+  Hasil pertama: nama akun vs pegawai tidak ada yang beda (ddt dan tm2); **25 akun aktif menempel pada pegawai nonaktif** (akibat
+  penguncian daftar staf 2026-10-01 yang lewat migration, bukan lewat layar); kartu stok dummy lama punya saldo minus / saldo awal
+  tidak nyambung (ddt 3, tm2 10 temuan).
+- **backlog04**: file penawaran CSV kini dibaca sebagai teks -- "12.500" tidak lagi terbaca 12,5 (`PqFileReaderCsvTest`).
+- **backlog09 §13**: 31 label Indonesia terakhir di layar Purchase Quotation diganti English + kamus (ratchet `id_label` 31 -> 0);
+  tampilan Indonesia dicek tetap sama di daftar, New, form Draft / Confirmed, dan Bandingkan.
+- **backlog10 10.6**: ikon PWA dibuat dari logo (`App\Support\Branding\PwaIcon`, route `pwa.icon`); tanpa logo tetap ikon bawaan.
+- **backlog03 §24** (test meninggalkan sampah) diverifikasi sudah tertutup: jumlah baris produksi di tm2 sama sebelum dan sesudah
+  `ProductionWoGenerationTest` + `ProductionWorklistWoTest`. Entri basi backlog04 / 07 dibetulkan (tagihan supplier, aset tetap, AR / AP sudah ada).
+- Migration `2026_10_02_000047` s/d `000055` di ddtsys DAN tm2sys (dicek di tabel migrations); `000054` (dummy) tidak menulis di tm2.
+- **Menunggu keputusan user (tidak dikerjakan):**
+  - 25 akun aktif pada pegawai nonaktif: dinonaktifkan? (daftarnya: `php artisan data:audit --only=identity`)
+  - Surat Jalan Subkon: kapan dokumen dianggap Closed (saat barang kembali di Penerimaan dari Subkon?) -- sekarang berhenti di Confirmed.
+  - Format cetak belum A: Sales Invoice, Payment Voucher, Surat Jalan Subkon (+ Purchase Quotation, Bukti Kas Kecil dari malam).
+  - UI-03 (kerapatan grid) vs keputusan Grid Pre-Entry 30-Sep; dummy stok (menunggu desain gudang K1-K11); usul kasbon satu baris.
+  - Butuh keputusan / data nyata: spek & tarif mesin (27), peran part / material role (28), uang roti & tarif lembur payroll (06),
+    jurnal payroll & COGS saat DO (07), sistem laporan manajemen (08), arah mobile (10), chat v2, tujuan e-mail dari kontak, Maintenance M2 / M3.
+  - `js_id_text` 180 teks Indonesia di JS DevLib belum dipindah ke kamus (bertahap).
+
 ## 2026-10-02 (malam, berjalan sendiri) -- Probe semua layar + rollout grid v2 lanjutan (UI-20) + cetakan PQ / Kas Kecil diuji
 
 Perintah user: "kerjakan yang kamu bisa kerjakan selama saya tidur, mandiri tanpa prompting". Semua di `main`, sudah di-push.

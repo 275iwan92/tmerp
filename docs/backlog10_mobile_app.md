@@ -16,7 +16,7 @@ Aplikasi sudah bisa dipasang di HP sebagai **PWA**, bukan aplikasi native:
 |---|---|
 | `manifest.json` | **dinamis** lewat route `pwa.manifest` di `routes/web.php` (bukan file statis) supaya nama ikut `Brand::name()` |
 | Service worker | `public/sw.js` |
-| Ikon | `public/images/pwa-icon-192.png` & `-512.png`, masih placeholder navy "TM" — belum auto-generate dari logo custom |
+| Ikon | dibuat otomatis dari logo (Settings > Identifikasi) lewat `App\Support\Branding\PwaIcon`; tanpa logo = ikon bawaan navy "TM" |
 | Layar yang sudah mobile-minded | `Scan Transaction (Mobile Camera)` dan `Absen GPS (Mobile)` (ada di `sys_app_menu`) |
 
 ## YANG BELUM
@@ -28,7 +28,6 @@ Aplikasi sudah bisa dipasang di HP sebagai **PWA**, bukan aplikasi native:
 | 10.3 | Autentikasi mobile (token/Sanctum) terpisah dari session web, termasuk alur lupa password 4-pertanyaan yang sudah ada | **BELUM** |
 | 10.4 | Notifikasi push (Android/iOS), beda mekanisme dari notifikasi in-app yang sekarang | **BELUM** |
 | 10.5 | Mode offline untuk layar lapangan (absen GPS, scan stok) — antre lalu sinkron saat online | **BELUM** |
-| 10.6 | Ikon PWA auto-generate dari `APP_LOGO_PATH` (resize/crop) — sekarang masih placeholder | **BELUM** |
 | 10.7 | Daftar layar mana saja yang perlu versi mobile. Tidak semua layar ERP masuk akal di HP; perlu dipilih user | menunggu user |
 
 Belum ada mockup mobile. Perlu arahan user (10.1 & 10.7) sebelum dirancang.

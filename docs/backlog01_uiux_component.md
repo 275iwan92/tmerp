@@ -34,8 +34,6 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 | UI-03 | Setelan grid "compact": kerapatan baris + baris per sel | 🟡 SIAP | — | Tempatnya sudah ada: drawer Configuration → Grid ("segera") |
 | UI-16 | Grid spreadsheet: panah, multi-sel, tanda "berubah", undo | ⚪ IDE | — | `spreadsheetgridstandard.md` §8 |
 | UI-17 | Edit tampilan nota lewat GUI (WYSIWYG) | ⚪ IDE | — | `printnotastandard.md` §8 |
-| UI-18 | Kategori `sys_constant_category` baru (mis. HRM) | ⚪ IDE | Tambah saat ada konstanta baru | Sekarang 5 kategori |
-| UI-19 | Layar cetak SPB/Penerimaan, Invoice Penjualan, Pembayaran Pembelian — dengan pilihan kop Non PPN/PPN | 🟡 SIAP | — (mekanisme kop PPN sudah ada) | Ketiga layar cetak belum ada; pakai `x-print.* :ppn` |
 
 ---
 
@@ -55,24 +53,16 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 Pola: `app/Support/V2/Grid/DbGrid.php` + satu class per layar + daftar di `Grids::ALL`; buka/new ke form v1 lewat `?open=`/`?new=1`
 (trait `OpensFromQuery`). Menu ddtsys `target='v2:<slug>'`. Laporan = submenu **Report** di dalam grupnya. Harga penjualan
 dibuang di server lewat `restrictedKeys()` + `SecUser::canViewSalesPrice()`.
-- **BOP Rule** (belum punya model Eloquent).
-- **Recruitment**: Talent Pool (daftar kandidat + undang ke lowongan, tetap v1).
-- **Inventory**: Label History (belum ada layar / data). Stock Balance, Stock Card, Slow Moving SELESAI 2026-10-02 malam (LOG).
-- **Finance**: Cash & Bank, Bank & Reconciliation, Down Payment, Order to Cash, Procure to Pay, Fixed Assets, Amortization, Period
-  Closing, Tax, Balance Sheet, Income Statement, Cash Flow, Financial Statements, Dashboard, Process Engine (layar v1 yang punya
-  alur sendiri, bukan daftar murni). Journal Entries, General Ledger, Trial Balance SELESAI 2026-10-02 malam.
-- **Production**: Target Rate (ditunda: sedang dikerjakan ulang oleh speed-target engine), Jadwal Shift (papan roster, bukan daftar),
-  Production Output, MPS Gantt / Kanban / Spreadsheet (papan).
-- **Setup**: Account / Group / Group per Submodule (Security), Language, Localization, Constants, Identifikasi.
-- **HR**: Struktur Organisasi, Self-Service, Upload Presensi, Generator Transfer Bank, Roster Cash, Pipeline Board, Shift Roster.
-- **Laporan Manajemen** (7 dasbor v1).
-- Lookup Master Data (Satuan, Konversi Satuan, Currency, Kurs, Kategori Supplier), Purchase Return, Support Tickets SELESAI
-  2026-10-02 malam (LOG).
+- **Sisa = layar v1 yang BUKAN daftar** (papan, proses, dasbor) -- menunggu rancangan v2 masing-masing, bukan pekerjaan DbGrid:
+  Finance (Bank & Reconciliation, Period Closing, Tax, Balance Sheet, Income Statement, Cash Flow, Financial Statements, Dashboard, Process Engine),
+  Production (Target Rate -- sedang dikerjakan ulang oleh speed-target engine; Jadwal Shift, MPS Gantt / Kanban / Spreadsheet),
+  Setup (Group per Submodule, Migration, Language, Localization, Identifikasi, Dummy & Legacy Data),
+  HR (Struktur Organisasi, Self-Service, Upload Presensi, Generator Transfer Bank, Roster Cash, Pipeline Board, Shift Roster), Laporan Manajemen (7 dasbor).
+- Inventory: Label History belum punya layar / data.
+- Semua daftar v1 lain SELESAI 2026-10-02 (LOG): lookup Master Data, laporan stok, Purchase Return, Support Tickets, Finance (9 layar), Constants,
+  Constant Categories, Account, Group, Talent Pool, BOP Rule, Product Category.
 - Migration `2026_09_30_000011` (field pengiriman CO) baru jalan di ddt*.
 
 ### UI-03 — Grid compact (kerapatan + baris per sel)  🟡
 Keputusan lengkap (2026-09-22): Rapat/Normal/Longgar + Otomatis/Tetap N; **satu setelan untuk semua grid, per USER** (kolom `sec_user.grid_density`, `sec_user.grid_lines`), **tanpa** deteksi resolusi otomatis. Dua pintu: drawer Configuration → Grid, dan panel cepat di toolbar grid. Gotcha: `line-clamp` jangan di `<td>` langsung. Mockup: `docs/mockups/grid_kerapatan_baris.jpg`.
-
-### UI-19 — Tiga layar cetak dokumen ber-PPN  🟡
-SPB/Penerimaan Barang (`pur/pv`), Invoice Penjualan (`fin_invoice`/`dp-invoice`), Pembayaran Pembelian (`fin_voucher`) belum punya layar cetak. Keputusan user 2026-09-23: dokumen ber-PPN diberi pilihan kop Non PPN (default, "Telasih Makmur") / PPN ("CV. Langgeng Jaya Makmur" + NPWP), hanya saat cetak/preview. Mekanisme siap: `x-print.document :ppn` + `x-print.header :ppn` (`printnotastandard.md` §3a). Sumber flag PPN tiap dokumen ditentukan saat layarnya dibangun (Voucher `ppn_type`, Invoice `tax_amount`).
 

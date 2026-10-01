@@ -99,81 +99,6 @@ tertentu — cek dgn user kalau soal ini jadi relevan pas eksekusi.
 
 ---
 
-## 14. DATA INTEGRITY — AUDIT KETERKAITAN IDENTITAS (sec_user ↔ emp_employee ↔ dst)
-
-> **Instruksi user 2026-09-09**: "masukkan ke pekerjaan backlog bahwa hal
-> ini tidak boleh terjadi, tulis apa saja yang harus di-check agar tidak
-> terulang". **Dikerjakan (prosesnya) nanti malam** — entry ini HANYA
-> menulis rencana pengecekan, BELUM ada eksekusi apa pun.
-
-**Kronologi insiden**: user melapor lewat screenshot Self-Service Karyawan
-— header profil masih menampilkan "Budi Santoso" / "Senior Heidelberg
-Operator" padahal akun login (`sec_user` id=1, login `johiwan`) baru saja
-dibetulkan namanya jadi "Johannes Iwan". Ditemukan bahwa header itu
-sumbernya BUKAN `sec_user`, melainkan `emp_employee` (master HR) yang
-ditaut lewat `sec_user.employee_id` — dan `employee_id` itu menunjuk ke
-`emp_employee` id=1 (TM-00001) yang isinya masih 100% data dummy testing
-dari `HrmMasterSeeder.php`. Root cause ganda:
-1. **Niat seeder vs kenyataan DB sudah menyimpang tanpa jejak.**
-   `HrmMasterSeeder.php:39-42` eksplisit menaut TM-00001 ke login **`admin`**
-   (dulu juga kebetulan bernama "Budi Santoso", niatnya cuma sample data
-   testing). Tapi di DB live, `admin.employee_id` = NULL dan yang tertaut ke
-   TM-00001 justru **`johiwan`** (akun asli user) — perubahan ini tidak ada
-   di kode/migration manapun (dicek via `grep`), berarti dilakukan manual
-   (tinker/DB langsung) di sesi lampau tanpa dicatat.
-2. **Tidak ada mekanisme yang mendeteksi mismatch.** Begitu `sec_user.name`
-   dibetulkan tapi `emp_employee.full_name` yang ditaut tidak ikut, tidak
-   ada validasi/dashboard/audit apa pun yang akan bunyi — baru ketahuan
-   karena user kebetulan buka halaman itu di browser.
-
-**Yang harus DICEK malam ini** (audit dulu, jangan langsung ubah data tanpa
-lapor — ikuti pola konfirmasi yang sudah dipakai sesi ini):
-
-1. **Audit semua `sec_user` dengan `employee_id IS NOT NULL`** — bandingkan
-   `sec_user.name` vs `emp_employee.full_name` di baris yang ditaut untuk
-   TIAP baris (bukan cuma id=1). Laporkan tiap ketidakcocokan nama, jangan
-   langsung perbaiki sepihak.
-2. **Cek tabel lain yang ikut menyimpan identitas per-`employee_id`**
-   (`emp_family`, data attendance/payroll kalau sudah ada isinya untuk
-   employee_id=1, dst) — pastikan tidak ada sisa data dummy lain yang
-   nyasar ke identitas akun real user selain yang sudah dibetulkan sesi ini
-   (email, keluarga, jabatan, NIK, NPWP, telepon, tanggal join).
-3. **Cek balik akun dummy `admin`** (id_user=213, `employee_id` masih NULL)
-   — sesuai niat asli seeder, apakah dia yang seharusnya ditaut ke TM-00001
-   supaya portal self-service dummy tetap ada sample data untuk testing.
-   Kalau iya: usulkan tautkan `admin` ke TM-00001 (JANGAN hapus/ubah isi
-   TM-00001 — tetap dummy, cuma pindah pemiliknya — sesuai prinsip
-   `feedback_keep_dummy_data`).
-4. **Cari pola seeder/migration serupa** yang menautkan `employee_id`/
-   entity lain berdasarkan ASUMSI (nama kebetulan sama, urutan insert,
-   dsb.) tanpa constraint tegas — pola persis yang menyebabkan bug ini
-   (lihat komentar `HrmMasterSeeder.php:39-42`). Kalau ada pola serupa di
-   modul lain (Payroll `pyr_*`, Attendance `att_*`, Recruitment), tandai
-   sebagai fragile, jangan langsung diubah.
-5. **Usulkan (jangan langsung bangun — ini keputusan arsitektural, perlu
-   konfirmasi user dulu) mekanisme pencegahan jangka panjang**, sampaikan
-   opsi & trade-off, contoh kandidat:
-   - Artisan command audit (`php artisan data:audit-identity` atau
-     sejenis) yang expose mismatch `sec_user.name` vs
-     `emp_employee.full_name` untuk semua baris tertaut, bisa dijalankan
-     manual/terjadwal.
-   - Validasi di layar yang mengubah `employee_id` (Master Employee/
-     Security User): tampilkan preview nama employee yang akan ditaut,
-     supaya operator sadar kalau salah SEBELUM simpan.
-   - Aturan kerja (non-kode): setiap koreksi data identitas manual
-     (tinker/DB langsung, di luar migration/seeder) WAJIB cross-check
-     SEMUA tabel yang overlap (checklist poin 2 di atas) dalam satu sesi,
-     bukan reaktif menunggu user menemukan sendiri per-layar.
-6. Tulis hasil audit (temuan mismatch, keputusan `admin`↔TM-00001, opsi
-   pencegahan yang dipilih) ke `docs/LOG_JOB_DONE.md`, lalu hapus/tandai
-   selesai section ini. **Tidak ada perubahan data/kode tanpa persetujuan
-   eksplisit user** untuk temuan apa pun di luar yang sudah dikonfirmasi
-   sesi ini (email/keluarga/jabatan/NIK/NPWP/telepon/join_date TM-00001↔
-   johiwan, itu sudah selesai & tidak perlu diulang).
-
----
-
----
 ## 13. I18N APP-WIDE -- STATUS & SISA PEKERJAAN
 
 Rollout bertahap "7 malam" (2026-09-07 s/d 2026-09-11) sudah dituntaskan --
@@ -230,7 +155,6 @@ mode EN: baris Indonesia 1696 -> 824. Kolom `sys_dictionary.source_en` = utf8mb4
 Teks bawaan JS grid/lines/sheet/form -> `T()` / `Tf()` + pasangan Lang (dijaga test kunci JS).
 
 **SISA lain (bertahap, terukur di MultiLanguageRatchetTest):**
-1. `id_label` 48: `purchase-quotation` (sesi Purchase, sudah diberi tahu) + `cpdel` (sesi CPDEL menulis ulang layar dengan English).
 1b. `js_id_text` 180: teks Indonesia di JS DevLib lain (core, gantt, kanban, import, approval, calendar, chat, ...) -> `T('kunci')` + Lang.
 1c. Teks di luar pola ratchet: kolom `x-dl::table` bentuk ['kunci' => 'Label'], tab, teks isi Blade (`<p>`, `<th>`), komentar/penampil kode.
 2. Setelah contoh JPEG disetujui: label layar/nota v2 yang masih teks Indonesia mentah -> sumber English + kamus, per dokumen:
@@ -241,7 +165,6 @@ Teks bawaan JS grid/lines/sheet/form -> `T()` / `Tf()` + pasangan Lang (dijaga t
 4. Kamus `Devlib\Lang` (pasangan [ID, EN] di kode) untuk bahasa ke-3 diterjemahkan
    lewat `sys_dictionary` context `ui` (sumber = teks English) -- JS `T()` baru mengenal id/en.
 5. Nama hari di pemilih tanggal & Calendar sudah Intl; komponen lain yang masih teks Indonesia (Grid toolbar, dsb) bertahap.
-6. `purchase-quotation` (sesi Purchase) masih `number_format(',', '.')` -- dirapikan setelah sesi itu selesai.
 
 ### Gap desain lama (format angka sudah diputuskan di atas)
 - ~~**Format angka tidak ikut bahasa**~~ (diputuskan 2026-10-01, lihat atas): `number_format()` di ratusan titik
