@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Concerns\HasGridPagination;
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Models\Sys\SysSupportReply;
 use App\Models\Sys\SysSupportTicket;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,7 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
     use HasGridPagination;
+    use OpensFromQuery;
 
     public string $search = '';
 
@@ -58,6 +60,12 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
     public function selected(): ?SysSupportTicket
     {
         return $this->selectedId ? SysSupportTicket::with(['creator', 'attachments', 'replies'])->find($this->selectedId) : null;
+    }
+
+    // Dibuka dari grid v2 (?open={id}): langsung ke tiket itu.
+    protected function openFromQuery(int $id): void
+    {
+        $this->open($id);
     }
 
     public function open(int $id): void

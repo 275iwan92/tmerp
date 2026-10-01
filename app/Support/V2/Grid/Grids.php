@@ -77,6 +77,8 @@ final class Grids
         Pur\OutstandingPrReport::class,
         Pur\OutstandingPoReport::class,
         Pur\OutstandingPvReport::class,
+        Pur\PurchaseReturnGrid::class,
+        Setup\SupportTicketGrid::class,
         Inv\RmStockInGrid::class,
         Inv\RmStockOutGrid::class,
         Inv\RmStockReturnGrid::class,

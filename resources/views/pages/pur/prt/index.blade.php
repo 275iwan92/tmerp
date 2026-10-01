@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Concerns\HasGridPagination;
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Models\Pur\PrtReturn;
 use App\Models\Pur\PvReceipt;
 use App\Support\Localization\Translator;
@@ -19,6 +20,7 @@ use Livewire\WithPagination;
 new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridPagination;
+    use OpensFromQuery;
     use WithPagination;
 
     public string $search = '';
@@ -95,6 +97,12 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
             ->where('activate', true)
             ->where(fn ($q) => $q->where('supplier_name', 'like', "%{$this->supplierSearch}%")->orWhere('supplier_code', 'like', "%{$this->supplierSearch}%"))
             ->orderBy('supplier_name')->limit(15)->get();
+    }
+
+    // Dibuka dari grid v2 (+ New Record -> ?new=1): langsung ke pemilih sumber.
+    protected function newFromQuery(): void
+    {
+        $this->openPicker();
     }
 
     public function openPicker(): void
