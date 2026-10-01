@@ -4,6 +4,7 @@ namespace App\Support\V2\Grid\Hrm;
 
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
+use Devlib\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -76,7 +77,7 @@ class PayrollRunGrid extends HrmGrid
         $s = $this->slips[$m->getKey()] ?? null;
 
         return [
-            'period' => \Devlib\Locale::date(substr((string) $m->period_start, 0, 10)), 'type' => $m->period_type, 'start' => substr((string) $m->period_start, 0, 10), 'end' => substr((string) $m->period_end, 0, 10),
+            'period' => Locale::date(substr((string) $m->period_start, 0, 10)), 'type' => $m->period_type, 'start' => substr((string) $m->period_start, 0, 10), 'end' => substr((string) $m->period_end, 0, 10),
             'slips' => (int) ($s->n ?? 0), 'anomaly' => (int) ($s->anomaly ?? 0), 'status' => $m->run_status,
         ];
     }
