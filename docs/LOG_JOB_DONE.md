@@ -3,6 +3,21 @@
 
 ---
 
+## 2026-10-01 -- Dummy Inquiry DRAFT dibangun ulang (untuk mencoba dieline & mockup)
+
+- Perintah user: "rebuild data dummy for all inquiry data but status draft, so I could see how dieline mockup works".
+  Dibaca sebagai: set dummy DRAFT baru yang mencakup semua jenis inquiry; inquiry non-draft (rantai Quotation / CO / WO) tidak disentuh.
+- `UatDraftInquirySeeder` (ddt saja, bisa diulang): 32 draft dummy lama dihapus (11 NEW + 12 RECALC + 9 REVISE; RECALC/REVISE lama
+  tidak punya Master Product sehingga tidak bisa dibuka), diganti **33 draft `IQ99DRF001-033`**:
+  27 NEW = satu per tipe dieline aktif (ukuran = bawaan parameter + Ukuran Pasaran pertama; Body + Lid untuk Tray / Lid and Base / Round Box;
+  Part A + Part B untuk karton 2-piece), 3 RECALC + 3 REVISE dari Master Product dummy lewat `InquiryDerivedWriter` (REVISE berisi
+  perubahan Dimensi / Warna / Artwork). Tetap ada: 7 sampel desain customer `IQ99FBX*` (punya artwork) dan 2 draft LIVE buatan user.
+- Bug yang ketemu & diperbaiki: (1) `iqp_revise_change.impact` varchar(30) lebih pendek dari teks dampak Dimensi -> Simpan Revisi
+  scope Dimensi selalu gagal; migration `2026_10_02_000006` melebarkan ke 100 (**baru di ddt, tm2 menunggu OK user**).
+  (2) tabel perbedaan Revisi menampilkan 260 mm sebagai "26" (nol di belakang bilangan bulat ikut terbuang).
+- Uji: 33 form dirender lewat kernel mockup.test = 200 semua, tiap part NEW menghasilkan SVG dieline + bentangan; seeder dijalankan 2x
+  (hasil sama, tanpa part/tier yatim). Baseline ddt disimpan ulang. Belum dicek mata di browser.
+
 ## 2026-10-01 -- Grid Inquiry Product v2 disamakan dengan Grid Transactional
 
 - Perintah user: grid Inquiry harus konsisten dengan Grid Transactional (Quotation / Customer Order).
@@ -12,8 +27,8 @@
 - Ikon baris = Open baku (bukan pensil/panah berbeda); DRAFT tetap terbuka untuk edit, status lain lihat-saja.
 - **Duplicate pindah dari baris grid ke dalam form** (user setuju 2026-10-01): tombol Duplicate di toolbar form Inquiry New
   (`InquiryForm`) dan di baris tombol form Recalc / Revise, muncul setelah dokumen tersimpan (semua status). Modal + rute sama
-  (`screens/_inquiry-duplicate`, `v2.inquiry.duplicate`). Catatan: 45 dummy RECALC/REVISE lama tidak punya Master Product sehingga
-  tidak membuka form (sudah begitu sebelumnya) -> Duplicate-nya tidak terjangkau sampai dummy itu diperbaiki.
+  (`screens/_inquiry-duplicate`, `v2.inquiry.duplicate`). Catatan: dummy RECALC/REVISE lama tidak punya Master Product sehingga
+  tidak membuka form (sudah begitu sebelumnya); yang DRAFT sudah diganti (entri di atas), 24 yang non-draft masih begitu.
 - Judul kolom English; Status jadi kolom terakhir. Tab jenis (New / Recalculate / Change Specification) tetap.
 - Alur, data, wizard, dan form Inquiry tidak diubah. Uji: render kernel mockup.test = 200; belum dicek mata di browser.
 

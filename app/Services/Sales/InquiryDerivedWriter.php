@@ -193,7 +193,9 @@ final class InquiryDerivedWriter
     {
         $doc->reviseChanges()->delete();
         $joins = MatJoinType::pluck('label', 'id_join_type');
-        $dims = fn ($p) => implode(' × ', array_map(fn ($k) => rtrim(rtrim((string) ($p->dieline_spec['dims'][$k] ?? '-'), '0'), '.'), ['product_length', 'product_width', 'product_height'])).' mm';
+        // Nol di belakang hanya dibuang dari pecahan (260.50 -> 260.5); bilangan bulat 260 tetap 260, bukan 26.
+        $trim = fn ($v) => str_contains((string) $v, '.') ? rtrim(rtrim((string) $v, '0'), '.') : (string) $v;
+        $dims = fn ($p) => implode(' × ', array_map(fn ($k) => $trim($p->dieline_spec['dims'][$k] ?? '-'), ['product_length', 'product_width', 'product_height'])).' mm';
         $add = fn ($part, $scope, $label, $old, $new) => (string) $old === (string) $new ? null : IqpReviseChange::create([
             'inquiry_id' => $doc->id_inquiry, 'part_id' => $part?->id_part, 'scope' => $scope, 'field_label' => $label,
             'old_value' => mb_substr((string) $old, 0, 500), 'new_value' => mb_substr((string) $new, 0, 500), 'impact' => self::IMPACT[$scope],
