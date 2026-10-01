@@ -25,8 +25,6 @@
     $home = route('v2.screen', 'inquiry-recalc');
 @endphp
 
-<x-mp::sales.flow-steps current="inquiry" note="Recalculation = same product, new price. After Confirm it goes to Product Development and Product Costing, then the new price returns here." />
-
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 

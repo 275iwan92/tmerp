@@ -17,8 +17,6 @@
     $trim = fn ($v) => $v === null ? '' : rtrim(rtrim(number_format((float) $v, 4, '.', ''), '0'), '.');
 @endphp
 
-<x-mp::sales.flow-steps current="order" note="Customer Order = the order is confirmed. Every product line needs a due date; Confirm creates the default shipping schedule." />
-
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 

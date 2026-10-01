@@ -123,6 +123,7 @@
     Pengecualian: halaman Pedoman (teks bacaan).
 20. **Setiap item menu wajib punya ikon sendiri** yang menggambarkan isinya dan berbeda dari item lain di daftar yang sama
     (menu mini hanya menampilkan ikon). Item menu baru tanpa ikon = belum selesai.
+21. **Tidak ada bar alur (langkah 1-8) di atas layar** — membuat layar jelek. Penjelasan alur ditulis di **Help**, bukan di layar.
 
 ## D. Cara kerja developer / agen
 
@@ -164,3 +165,4 @@
 | 2026-10-01 | C.18–C.20: Layer Menu baru (nama aplikasi, baris ikon, mini, tanpa garis/breadcrumb); layar selebar panel kanan tepi 6px; setiap item menu wajib berikon. |
 | 2026-10-02 | A.15: scope modul — Inquiry & Quotation jadi menu besar `PREORDER` (saklar sendiri), pintasan master, kontrak A/B (ddt; tm2 menunggu OK). |
 | 2026-10-02 | A.15: menu = data (cara ScriptCase) — pintasan = baris ber-target sama, hidup-mati layar dihitung dari pohon menu, grup Flow jadi baris menu. |
+| 2026-10-02 | C.21: bar alur order di atas layar ditiadakan (7 layar v2); alur ditulis di Help. |

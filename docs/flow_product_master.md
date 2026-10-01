@@ -137,8 +137,16 @@ KS Power N120 MF
 - **Setiap layar input dimulai dari GRID** (DevLib; pilih keluarga yang cocok: Grid for Master / Pre-Data Entry / Report),
   lalu form: **+ New Record → isi → Simpan (DRAFT, bisa diedit & dihapus) → Confirm** (terkunci) → sesudahnya hanya
   **Cancel** (+ Print). Pakai istilah **Confirm** (bukan Submit) supaya mindset user tidak berubah.
-- **Bar alur order di atas layar** (x-mp::sales.flow-steps): Inquiry → Product Development → Product Costing →
-  Priced Inquiry → Quotation (WIN → Master Product) → Customer Order → Shipping Schedule → Post to Production.
+- **Tidak ada bar alur di atas layar** (user 2026-10-02: membuat layar jelek). Alur order — Inquiry → Product Development →
+  Product Costing → Priced Inquiry → Quotation (WIN → Master Product) → Customer Order → Shipping Schedule → Post to
+  Production — ditulis di **Help**. Teks penjelasan per layar yang dulu tampil di bar (bahan Help):
+  - `quotation`: Quotation = official offer to the customer. Confirm locks it; WIN creates the Customer Order and the Master Product.
+  - `product-acc`: ACC Digital comes from the CTP sample print (usually after the customer PO) and is REQUIRED before printing.
+  - `master-product`: Master Product is created when a Quotation is WON; Revision and Recalculation start again from Inquiry.
+  - `inquiry-revise`: Revision = a new derived product. The changes below flow to Product Development and Product Costing so they know what must be redone.
+  - `inquiry-recalc`: Recalculation = same product, new price. After Confirm it goes to Product Development and Product Costing, then the new price returns here.
+  - `customer-order`: Customer Order = the order is confirmed. Every product line needs a due date; Confirm creates the default shipping schedule.
+  - `cpdel`: Every delivery line holds two promises that must match exactly: the slot agreed with the customer and the time production commits to be ready.
 - **ACC Digital / Proof Digital = dokumen CETAK.** Pencatatan ACC customer (tanggal & jam, penyetuju, saluran, bukti)
   ada di **form ProDev**, dengan **tombol khusus "Print ACC / Proof Digital"** di form itu. Tidak ada menu terpisah.
 - **Print & Email di setiap form (✅ dibangun 2026-09-29)** = objek DevLib **`x-dl::doc-share`** (`Devlib\Components\DocShare`

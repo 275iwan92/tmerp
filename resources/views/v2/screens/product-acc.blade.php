@@ -14,8 +14,6 @@
     $digital = $doc ? collect($doc['accs'])->firstWhere('type', 'DIGITAL') : null;
 @endphp
 
-<x-mp::sales.flow-steps current="order" note="ACC Digital comes from the CTP sample print (usually after the customer PO) and is REQUIRED before printing." />
-
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 

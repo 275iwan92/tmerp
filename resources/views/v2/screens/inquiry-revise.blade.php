@@ -32,8 +32,6 @@
     $dim = fn ($p, $k) => isset($p['dims'][$k]) ? rtrim(rtrim((string) $p['dims'][$k], '0'), '.') : '';
 @endphp
 
-<x-mp::sales.flow-steps current="inquiry" note="Revision = a new derived product. The changes below flow to Product Development and Product Costing so they know what must be redone." />
-
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 

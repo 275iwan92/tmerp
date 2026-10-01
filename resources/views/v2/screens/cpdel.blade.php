@@ -24,8 +24,6 @@
         'LATE' => 'Late', 'SHIPPED' => 'Shipped'];
 @endphp
 
-<x-mp::sales.flow-steps current="shipping" note="Every delivery line holds two promises that must match exactly: the slot agreed with the customer and the time production commits to be ready." />
-
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 

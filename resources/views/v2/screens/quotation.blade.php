@@ -18,8 +18,6 @@
     $trim = fn ($v) => $v === null ? '' : rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
 @endphp
 
-<x-mp::sales.flow-steps current="quotation" note="Quotation = official offer to the customer. Confirm locks it; WIN creates the Customer Order and the Master Product." />
-
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 

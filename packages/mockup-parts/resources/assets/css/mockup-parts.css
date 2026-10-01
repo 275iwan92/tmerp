@@ -391,18 +391,6 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .mp-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .mp-pm-node[hidden]{display:none}
 .mp-mt{margin-top:12px}
-/* Bar alur order (Sales) */
-.mp-flow{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:12px;padding:10px 12px;margin-bottom:12px;overflow-x:auto}
-.mp-flow ol{list-style:none;margin:0;padding:0;display:flex;gap:4px;min-width:max-content}
-.mp-flow li{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:8px;color:var(--dl-muted);font-size:12.5px;font-weight:700;position:relative}
-.mp-flow li+li::before{content:'→';position:absolute;left:-6px;color:var(--dl-border)}
-.mp-flow li b{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--dl-chip);font-size:11px;flex:none}
-.mp-flow li small{display:block;font-weight:500;font-size:10.5px}
-.mp-flow li.is-done{color:var(--dl-ink)}
-.mp-flow li.is-done b{background:var(--dl-success,#1f9d6b);color:#fff}
-.mp-flow li.is-now{background:var(--dl-accent-soft);color:var(--dl-ink-strong)}
-.mp-flow li.is-now b{background:var(--dl-accent);color:#fff}
-.mp-flow p{margin:6px 2px 0;font-size:12px;color:var(--dl-muted)}
 /* Proof Digital / ACC Digital (format DS003637) */
 .mp-proof{background:#fff;color:#1d2433;border:1px solid var(--dl-border);border-radius:6px;padding:18px;margin:12px 0;overflow-x:auto}
 .mp-proof table{border-collapse:collapse}
@@ -425,7 +413,7 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .mp-proof__sw{display:inline-block;width:10px;height:14px;vertical-align:middle}
 .mp-proof__red{color:#c62828;font-weight:800;font-style:italic;font-size:12px;margin:8px 0 0}
 @media print{
-  .mp-noprint,.mp-flow,.dl-action-bar,.dl-cat__nav,.dl-code-btn,.dl-alert{display:none!important}
+  .mp-noprint,.dl-action-bar,.dl-cat__nav,.dl-code-btn,.dl-alert{display:none!important}
   .mp-proof{border:0;margin:0;padding:0}
 }
 .mp-bigname{font-size:22px;font-weight:800;color:var(--dl-ink-strong);margin:10px 0 2px}

@@ -25,8 +25,6 @@
     $lastAcc = fn ($t) => $doc ? collect($doc['accs'])->firstWhere('type', $t) : null;
 @endphp
 
-<x-mp::sales.flow-steps current="quotation" note="Master Product is created when a Quotation is WON; Revision and Recalculation start again from Inquiry." />
-
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
