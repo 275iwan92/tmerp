@@ -89,6 +89,15 @@ final class Grids
         Inv\SfgStockOutGrid::class,
         Inv\SfgStockReturnGrid::class,
         Inv\SfgStockAdjGrid::class,
+        Inv\RmStockBalanceReport::class,
+        Inv\RmStockCardReport::class,
+        Inv\RmSlowMovingReport::class,
+        Inv\FgStockBalanceReport::class,
+        Inv\FgStockCardReport::class,
+        Inv\FgSlowMovingReport::class,
+        Inv\SfgStockBalanceReport::class,
+        Inv\SfgStockCardReport::class,
+        Inv\SfgSlowMovingReport::class,
     ];
 
     public static function find(string $slug): ?DbGrid
