@@ -99,3 +99,9 @@
 | B7 | "langsung ikut booking" | Stok FG produk yang sama dibooking dulu (Langkah 0) sebelum hitung bahan; bahan hanya untuk sisa qty |
 | B8 | setuju | PR per supplier, dibulatkan kemasan beli; lead time per kategori + override per item, layar input baru |
 | B9 | "buat MRP dan MPS baru yang lebih baik; berbasis CO saja kurang baik" | **Keputusan membalik rekomendasi**: booking menjadi bagian dari MRP/MPS BARU (engine lama tetap arsip, tidak dihidupkan). Desain MRP/MPS baru menyusul (§7) |
+
+## 7. Status build (2026-10-01, jalan mandiri atas izin user — belum direview)
+- Aturan user: master tidak diubah sistem; hanya transaksi. Nilai default boleh diperbarui analisa sistem, tetap bisa di-override user.
+- Keputusan agen (menunggu review): rebutan stok = prioritas CONFIRMED -> DRAFT -> FORECAST, lalu tanggal butuh; standar pemakaian per role (mat_usage_standard, nilai awal usulan industri); MPS = forecast per customer x product x bulan, CO memakan forecast bulan yang sama; horizon 90 hari; kapasitas mesin = tahap 2; POST to Production = booking menempel ke WO (belum dibangun).
+- SUDAH: migration `2026_10_01_000070` (ddt* saja), model RmBooking/RmBookingD/RmBookingAlloc/MatUsageStandard/PrdDemandForecast, engine `App\Services\Planning\MaterialPlanningEngine` (demand CO+forecast, FG dulu, pecah semua bahan, netting stok/PO/PR, persist/confirm/unlock/release) — diuji ke ddt: 104 kebutuhan, 18 bahan.
+- BELUM: layar v2 (material-booking, material-planning, demand-forecast, usage-standard, purchase-lead-time), routes/v2_planning.php, popup notifikasi (DevLib Modal tone), trigger CO Confirm/Cancel + WO created, perintah malam, Create PR, dummy stok benar (hapus yang salah), preview artifact baru.
