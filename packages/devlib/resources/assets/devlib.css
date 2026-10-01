@@ -19,6 +19,9 @@
   --dl-amber:#b6852a; --dl-amber-2:#e5a324; --dl-green:#22b07d; --dl-orange:#d85a30; --dl-pink:#d4537e; --dl-lime:#639922;
   --dl-toast:#2f3a5e; --dl-overlay:rgba(20,27,48,.45); --dl-overlay-soft:rgba(20,27,48,.4);
   --dl-logo:conic-gradient(from 200deg,#ff5f6d,#ffc371,#2f6fed,#8a5cf6,#ff5f6d);
+  /* persegi dokumen Grid Transactional (.dl-doctag): 8 pasangan gradasi pilihan user 2026-10-02, tanpa kuning / hijau zaitun */
+  --dl-doc-1a:#a63fc9; --dl-doc-1b:#b2378c; --dl-doc-2a:#3f62d6; --dl-doc-2b:#6b3bb5; --dl-doc-3a:#e8743b; --dl-doc-3b:#d4537e; --dl-doc-4a:#17a59c; --dl-doc-4b:#2f6fed;
+  --dl-doc-5a:#e0528f; --dl-doc-5b:#8a4fd0; --dl-doc-6a:#22b07d; --dl-doc-6b:#0e8a96; --dl-doc-7a:#e59a24; --dl-doc-7b:#d85a30; --dl-doc-8a:#4b4fd6; --dl-doc-8b:#2f8fe0;
   /* form (mockup UIUX_components_part1) */
   --dl-f-ink:#111827; --dl-f-label:#374151; --dl-f-muted:#4b5563;
   /* garis, badge huruf & latar read-only field DICAMPUR dari warna tema (FORM_UI_STANDARD 1b) */
@@ -657,6 +660,11 @@ body.dl-page-body{overflow:auto;height:auto;min-height:100vh}
 .dl-avatar-id__txt{display:flex;flex-direction:column;line-height:1.2}
 .dl-avatar-id__txt b{font-size:calc(13px * var(--dl-font-scale));color:var(--dl-ink-strong)}
 .dl-avatar-id__txt small{font-family:var(--dl-font-mono);font-size:calc(11px * var(--dl-font-scale));color:var(--dl-muted)}
+.dl-doctag{display:inline-flex;flex-direction:column;align-items:flex-start;vertical-align:middle;box-sizing:border-box;width:160px;padding:4px 10px;border-radius:var(--dl-radius);line-height:1.25;white-space:nowrap;color:var(--dl-white);background:linear-gradient(135deg,var(--dl-doc-a),var(--dl-doc-b))}
+.dl-doctag b{font-size:calc(12.5px * var(--dl-font-scale));font-weight:800;font-variant-numeric:tabular-nums;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.dl-doctag small{font-size:calc(11.5px * var(--dl-font-scale));opacity:.93;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.dl-doctag--1{--dl-doc-a:var(--dl-doc-1a);--dl-doc-b:var(--dl-doc-1b)}.dl-doctag--2{--dl-doc-a:var(--dl-doc-2a);--dl-doc-b:var(--dl-doc-2b)}.dl-doctag--3{--dl-doc-a:var(--dl-doc-3a);--dl-doc-b:var(--dl-doc-3b)}.dl-doctag--4{--dl-doc-a:var(--dl-doc-4a);--dl-doc-b:var(--dl-doc-4b)}
+.dl-doctag--5{--dl-doc-a:var(--dl-doc-5a);--dl-doc-b:var(--dl-doc-5b)}.dl-doctag--6{--dl-doc-a:var(--dl-doc-6a);--dl-doc-b:var(--dl-doc-6b)}.dl-doctag--7{--dl-doc-a:var(--dl-doc-7a);--dl-doc-b:var(--dl-doc-7b)}.dl-doctag--8{--dl-doc-a:var(--dl-doc-8a);--dl-doc-b:var(--dl-doc-8b)}
 /* progress */
 .dl-progress__label{display:flex;justify-content:space-between;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-ink);margin-bottom:4px}
 .dl-progress__track{height:8px;border-radius:8px;background:var(--dl-chip);overflow:hidden}
@@ -964,6 +972,7 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-grid--report .dl-grid__row:hover td{background:var(--dl-hover)}
 .dl-grid--report .dl-grid__txt{max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dl-grid--report .dl-avatar-id__pic{display:none}
+.dl-grid--report .dl-doctag{width:auto;padding:0;background:none;color:inherit}
 .dl-grid__fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 14px;margin-bottom:12px}
 .dl-grid__fgrid input{padding:6px 8px;border:1px solid var(--dl-f-line);border-radius:var(--dl-radius-sm);background:var(--dl-surface);color:var(--dl-ink);font-family:inherit}
 .dl-grid__count{color:var(--dl-muted);font-size:calc(12px * var(--dl-font-scale));font-variant-numeric:tabular-nums}

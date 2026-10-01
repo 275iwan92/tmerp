@@ -9,7 +9,8 @@ namespace Devlib\Components;
 //   centang (Shift = rentang) + aksi massal, baris bisa dibuka, klik 2x = buka (LOCKED),
 //   export CSV = kolom yang tampil, pagination ala ScriptCase, setelan diingat per grid.
 //
-// columns: [['key', 'label', 'type' => text|identity|number|money|date|badge|toggle,
+// columns: [['key', 'label', 'type' => text|identity|doc|number|money|date|badge|toggle,
+//            doc = persegi dokumen Grid Transactional: 'key' = nomor dokumen, 'party' => kolom nama pihak (baris kedua; warna persegi dari nama ini),
 //            'code' => kolom kode (identity), 'avatar' => false (identity tanpa bulatan), 'tones' => [nilai => tone] (badge),
 //            'fallback' => kolom nama (image: tanpa foto -> inisial di kotak yang sama),
 //            'visible' => true, 'sortable' => true, 'sum' => false (money/number)]]

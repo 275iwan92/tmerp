@@ -142,7 +142,7 @@
         (opts.noTab || !this.cfg.tabs.length || this.match(r, this.cfg.tabs[this.st.tab].where)) &&
         Object.entries(this.st.filters).every(([k, v]) => v === '' || String(this.val(r, k)) === v) &&
         Object.entries(this.st.colf).every(([k, t]) => this.colMatch(k, t, r)) &&
-        (!term || vis.some(c => String(this.fmtCell(c, this.val(r, c.key))).toLowerCase().includes(term) || (c.code && String(this.val(r, c.code)).toLowerCase().includes(term)))));
+        (!term || vis.some(c => String(this.fmtCell(c, this.val(r, c.key))).toLowerCase().includes(term) || ((c.code || c.party) && String(this.val(r, c.code || c.party)).toLowerCase().includes(term)))));
     }
 
     // Angka: ">1000", "<=5", "=12"; selain itu teks mengandung (tanpa beda huruf besar/kecil).
@@ -151,7 +151,7 @@
       const c = this.cols.find(x => x.key === k) || {key: k}, v = this.val(r, k);
       const m = ['number', 'money'].includes(c.type) && t.match(/^(>=|<=|>|<|=)\s*(-?[\d.,]+)$/);
       if (m) { const n = parseNum(m[2]), x = +v; return {'>': x > n, '<': x < n, '>=': x >= n, '<=': x <= n, '=': x === n}[m[1]]; }
-      return String(this.fmtCell(c, v)).toLowerCase().includes(t.toLowerCase()) || (c.code && String(this.val(r, c.code)).toLowerCase().includes(t.toLowerCase()));
+      return String(this.fmtCell(c, v)).toLowerCase().includes(t.toLowerCase()) || ((c.code || c.party) && String(this.val(r, c.code || c.party)).toLowerCase().includes(t.toLowerCase()));
     }
 
     // Pop-up Filter (Grid for Reporting): pilihan tetap (filters) + kriteria per kolom; berlaku setelah Terapkan.
@@ -232,6 +232,13 @@
           const name = String(v || '?'), w = name.trim().split(/\s+/), ini = (w[0][0] + (w[1] ? w[1][0] : '')).toUpperCase();
           let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 360;
           return `<td><span class="dl-avatar-id">${c.avatar === false ? '' : `<span class="dl-avatar-id__pic" style="--h:${h}">${esc(ini)}</span>`}<span class="dl-avatar-id__txt"><b>${esc(name)}</b>${c.code ? `<small>${esc(this.val(r, c.code))}</small>` : ''}</span></span></td>`;
+        }
+        // Persegi dokumen (Grid Transactional, user 2026-10-02): nomor dokumen di atas, nama pihak ('party') di bawah.
+        // Warna = satu dari 8 gradasi pilihan, dihitung dari nama pihak supaya pihak yang sama selalu berwarna sama.
+        case 'doc': {
+          const party = c.party ? String(this.val(r, c.party)) : '';
+          let h = 0; for (const ch of (party || String(v))) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+          return `<td><span class="dl-doctag dl-doctag--${(Math.imul(h ^ (h >>> 15), 0x9E3779B1) >>> 29) + 1}"><b>${esc(v)}</b>${party ? `<small>${esc(party)}</small>` : ''}</span></td>`;
         }
         case 'badge': return `<td><span class="dl-badge dl-badge--pill dl-badge--${esc((c.tones || {})[v] || 'neutral')}">${esc(v)}</span></td>`;
         case 'money': case 'number': return `<td class="num">${esc(this.fmtCell(c, v))}</td>`;
@@ -348,7 +355,7 @@
 
     exportCsv() {
       const vis = this.shown(), list = this.sorted(this.filtered()), cellTxt = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
-      const csv = [vis.map(c => cellTxt(c.label)).join(';'), ...list.map(r => vis.map(c => cellTxt(c.type === 'identity' && c.code ? `${this.val(r, c.key)} (${this.val(r, c.code)})` : this.val(r, c.key))).join(';'))].join('\r\n');
+      const csv = [vis.map(c => cellTxt(c.label)).join(';'), ...list.map(r => vis.map(c => cellTxt(c.type === 'identity' && c.code ? `${this.val(r, c.key)} (${this.val(r, c.code)})` : c.type === 'doc' && c.party ? `${this.val(r, c.key)} (${this.val(r, c.party)})` : this.val(r, c.key))).join(';'))].join('\r\n');
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], {type: 'text/csv'})); a.download = this.cfg.id + '.csv'; a.click();
       toast(Tf('g_export_done', {n: fmt.number(list.length), c: vis.length}), 'success');
     }
