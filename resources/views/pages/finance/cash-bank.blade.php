@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Models\Acc\FinAccount;
 use App\Models\Acc\FinVoucher;
 use App\Models\Acc\FinVoucherLine;
@@ -25,6 +26,8 @@ use Livewire\Component;
 // validasi e-Faktur atau rekonsiliasi bank yang diminta/dibangun di modul ini.
 new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
     private const TYPE_JOURNAL = ['BKM' => 'CSH', 'BKK' => 'CSH', 'BBM' => 'BNK', 'BBK' => 'BNK'];
 
     private const TYPE_LABEL = [

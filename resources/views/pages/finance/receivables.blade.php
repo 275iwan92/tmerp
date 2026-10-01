@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Livewire\Concerns\FinanceScreen;
 use App\Models\Acc\FinInvoice;
 use App\Models\Master\CustCustomer;
@@ -18,6 +19,20 @@ use Livewire\Component;
 // Dr Bank / Cr Piutang, alokasi tak boleh melebihi sisa faktur.
 new #[Title('Order to Cash — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    // Dibuka dari grid v2 (?open={id}).
+    protected function openFromQuery(int $id): void
+    {
+        $this->openView($id);
+    }
+
+    // Dibuka dari grid v2 (+ New Record -> ?new=1).
+    protected function newFromQuery(): void
+    {
+        $this->openCreate();
+    }
+
     use FinanceScreen;
 
     public string $search = '';

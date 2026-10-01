@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Models\Acc\FinAccount;
 use App\Models\Acc\FinDpAllocation;
 use App\Models\Acc\FinDpOutstanding;
@@ -27,6 +28,14 @@ use Livewire\Component;
 // teks); kolom co_id tetap disimpan logis-opsional utk rewiring sesi lain.
 new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    // Dibuka dari grid v2 (+ New Record -> ?new=1).
+    protected function newFromQuery(): void
+    {
+        $this->openEntryModal();
+    }
+
     public bool $showEntryModal = false;
 
     public bool $showAllocModal = false;

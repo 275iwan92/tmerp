@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\OpensFromQuery;
 use App\Livewire\Concerns\FinanceScreen;
 use App\Models\Acc\FinAccount;
 use App\Models\Acc\FinAsset;
@@ -18,6 +19,14 @@ use Livewire\Component;
 // ada di layar Amortization -- engine & tabelnya sama (AssetService).
 new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    // Dibuka dari grid v2 (?open={id}).
+    protected function openFromQuery(int $id): void
+    {
+        $this->openView($id);
+    }
+
     use FinanceScreen;
 
     private const TYPES = ['FIXED'];
