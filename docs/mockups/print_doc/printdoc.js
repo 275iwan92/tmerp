@@ -169,7 +169,7 @@ class PrintDoc {
 
     render() {
         const f = this.f;
-        return `<div class="sheet ${this.paper}" style="--info-rows:${f.infoRows};--rh:${f.rowHeight}mm;--tail:${f.tailHeight}mm">${this.kop()}${this.info()}<p class="nb">${this.f.nb}</p>${this.table()}${this.tail()}${this.sign()}${this.foot()}</div>`;
+        return `<div class="sheet ${this.paper} doc-${f.name}" style="--info-rows:${f.infoRows};--rh:${f.rowHeight}mm;--tail:${f.tailHeight}mm">${this.kop()}${this.info()}<p class="nb">${this.f.nb}</p>${this.table()}${this.tail()}${this.sign()}${this.foot()}</div>`;
     }
 
     // Teks sel yang terlalu panjang dikecilkan bertahap sampai muat (batas 6,5 pt), bukan dipotong.

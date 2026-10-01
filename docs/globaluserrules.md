@@ -200,14 +200,15 @@
     Constants; kosong = garis untuk tanda tangan tangan. Belum dibangun (dibangun saat cetakan dipasang ke aplikasi).
     **Format cetak Surat Jalan, Customer Order (dengan harga + tanpa harga), Purchase Requisition (Produksi + Non
     Produksi), Purchase Order, dan Inquiry = A (Approved) oleh user 2026-10-01** — tidak diubah lagi kecuali user sendiri
-    yang meminta. Belum A: Jadwal Kirim, CPDEL.
+    yang meminta. **CPDEL = A juga (user 2026-10-01).** Belum A: Jadwal Kirim.
     **Cetakan CPDEL (Customer Plan Delivery) wajib ada, tanpa harga, dan split harus jelas** (user 2026-10-01): satu
     baris per kiriman; baris hasil split diberi garis tebal di kiri, kolom Kiriman "SPLIT 1/3", dan ringkasan Split di
     bawah tabel. **Penanda tangan CPDEL: Operations Manager, PPIC, dan Sales (pembuat) saling setuju, terakhir
     Customer** — dicetak dari kiri: Customer, Operations Manager, PPIC, Sales.
     **Jadwal Kirim wajib memuat Ambil / Kirim, jam, kota, dan alamat** (user 2026-10-01): satu baris per
     perhentian, **tiga baris teks**: nama tujuan / tempat ambil + kota, alamat, lalu barang yang dikirim / diambil (+ No
-    CO). Ruang kosong blok atas dipakai untuk tinggi baris, dan **kolom tulis tangan IN / OUT dibuat besar**.
+    CO). Ruang kosong blok atas dipakai untuk tinggi baris, dan **kolom tulis tangan IN / OUT dibuat besar**. Tiga
+    baris itu **dibedakan gaya dan jenis hurufnya**: tujuan + kota tebal, alamat miring abu-abu, barang huruf berkait.
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.
@@ -267,6 +268,7 @@
 | 2026-10-01 | C.24: cetakan tanpa "Jumlah baris"; kaki dokumen = "Dicetak pada tanggal jam oleh nama orang" saja (tanpa nama aplikasi, login, nomor dokumen, ukuran kertas). Surat Jalan dan dokumen lain tanpa nilai uang: tanpa total. Surat Jalan + kolom Berat (kg) dan Ikat. Customer Order 2 format cetak: dengan harga / tanpa harga. |
 | 2026-10-01 | C.24: urutan tanda tangan semua cetakan = pihak luar, Menyetujui, Mengetahui, Pembuat (kiri ke kanan, ketentuan tetap); Pembuat = user yang login; penanda tangan lain = konstanta per dokumen (skema menunggu OK). Kop Telasih Makmur = alamat Langgeng Jaya Makmur, tanpa NPWP. PR Produksi (No CO + nama product) / Non Produksi. |
 | 2026-10-01 | **C.24: format cetak Surat Jalan dan Customer Order (dengan harga + tanpa harga) = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. |
+| 2026-10-01 | **C.24: cetakan CPDEL (tanpa harga, split jelas, penanda tangan Customer / Operations Manager / PPIC / Sales) = A (Approved) oleh user.** Jadwal Kirim dirancang ulang (Ambil / Kirim, jam, kota, alamat, tiga baris berbeda huruf, IN / OUT besar), belum A. |
 | 2026-10-01 | **C.24: format cetak Purchase Order dan Inquiry = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. Belum A: Jadwal Kirim. |
 | 2026-10-01 | **C.24: format cetak Purchase Requisition (Produksi + Non Produksi) = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. |
 | 2026-10-01 | B.14: master hanya diubah user; sistem hanya mengubah transaksi; default boleh diperbarui analisa sistem dan tetap bisa di-override. |

@@ -56,6 +56,7 @@ PrintDoc.register(class CustomerOrderNoPrice extends PrintDoc.registry.CustomerO
 // (split) dicetak berurutan dan ditandai tiga kali: garis tebal di kiri baris, kolom KIRIMAN "SPLIT 1/3" tebal, dan
 // ringkasan "Split" di bawah tabel (keputusan user 2026-10-01: harus jelas jika terjadi split). `item` = id baris CO.
 PrintDoc.register(class CustomerPlanDelivery extends PrintDoc {
+    static approved = '2026-10-01';
     static title = 'CUSTOMER PLAN DELIVERY';
     static subtitle = 'Rencana Kirim &middot; Tanpa Harga';
     static numberLabel = 'No CO';
