@@ -62,6 +62,7 @@ final class Grids
         Maint\MaintenanceCodeLookup::class,
         Maint\MaintenanceWoReport::class,
         Setup\TranslationDictionaryLookup::class,
+        Setup\MenuSetupLookup::class,
         Planning\MaterialBookingGrid::class,
         Planning\MaterialPlanningGrid::class,
         Planning\DemandForecastLookup::class,

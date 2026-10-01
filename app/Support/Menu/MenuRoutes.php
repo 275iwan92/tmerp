@@ -246,6 +246,8 @@ final class MenuRoutes
             'SET_PERM' => route('security.index', ['tab' => 'perms']),
             'SET_MIGRATION' => route('security.index', ['tab' => 'migration']),
             'SET_TICKETS' => route('setup.support-tickets'),
+            // Menu Setup hanya punya layar v2 (Grid Lookup atas sys_app_menu).
+            'SET_MENU' => route('v2.screen', 'menu-setup'),
         ];
     }
 }

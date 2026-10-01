@@ -145,7 +145,7 @@ class MainMenuShellSmokeTest extends TestCase
         $this->assertSame('group', $securityGroup['menuType']);
 
         $this->assertSame(
-            ['Identifikasi', 'Language', 'Localization', 'Constants', 'Translation Dictionary', 'Dummy & Legacy Data', 'DevLib UI UX'],
+            ['Identifikasi', 'Language', 'Localization', 'Constants', 'Translation Dictionary', 'Dummy & Legacy Data', 'Menu Setup', 'DevLib UI UX'],
             collect($settingsGroup['children'])->pluck('label')->all()
         );
         $this->assertSame(
@@ -153,6 +153,7 @@ class MainMenuShellSmokeTest extends TestCase
             collect($securityGroup['children'])->pluck('label')->all()
         );
 
+        // 2026-10-02: SET_MENU hidup lagi sebagai Menu Setup (layar v2) di dalam grup Settings (migration 2026_10_02_000045).
         // SET_THEME/SET_MENU (dead entries lama, NOT_BUILT tanpa route nyata)
         // sengaja dinonaktifkan (migration 2026_09_07_000005) supaya tidak
         // ikut nongol di footer sbg efek samping data-driven-nya SETUP.
