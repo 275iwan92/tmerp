@@ -249,6 +249,8 @@
 | 2026-10-02 | A.15: semua menu terkait Inquiry -> Quotation tersedia di dalam menu `PREORDER` (ACC Digital, Pro-Cost Instant, pintasan master Proses / Mesin / Kategori Bahan / Satuan / Currency / Kurs / Constants, Sales Flow) — ddt + tm2 (menu `PREORDER` dimigrasi ke `tm2sys` atas OK user). |
 | 2026-10-02 | A.15: WIN / LOST cukup di layar Quotation (filter status + kolom Closed, Customer Order, Reason); laporan terpisah "Hasil Quotation (WIN/LOST)" dihapus. Jangan buat layar baru untuk hal yang sudah bisa dilihat di layar dokumennya. |
 | 2026-10-02 | B.5: perubahan menu / kode yang disetujui user diterapkan di mockup.test DAN tmerp.test sekaligus (kodenya sama) — menu `PREORDER` di `tm2sys` kini sama dengan `ddtsys`. |
+| 2026-10-02 | A.15: pintasan master di sebuah modul hanya master yang berhubungan langsung (Inquiry: Customer, Product, Bahan Baku, Kategori Bahan Baku, Proses, Mesin) — bukan lookup umum seperti Satuan / Currency / Kurs / Constants. |
+| 2026-10-02 | C.21: alur (Sales Flow, Costing Flow) sementara di Bantuan & dukungan (F1), bukan grup menu Flow — user akan memikirkan ulang tempatnya. |
 | 2026-10-02 | C.21: bar alur order di atas layar ditiadakan (7 layar v2); alur ditulis di Help. |
 | 2026-10-02 | C.22: kotak statistik di atas grid diganti satu baris filter teks dengan garis bawah berjalan & berwarna (semua grid DevLib). |
 | 2026-10-01 | C.23: panel dieline — tombol Standard Sizes dihapus (dropdown saja), 3D di samping gambar & bisa diputar, Dimensions 2 baris berkelompok di bawah gambar. |

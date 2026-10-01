@@ -9,6 +9,9 @@
                 <x-dl::action-bar>
                     <x-dl::button variant="secondary" block icon="fa-book" label="Pedoman Aturan ERP" data-dl-tab-url="{{ route('v2.guide', 'aturan') }}" data-dl-tab-code="G-RULES" data-dl-tab-label="Pedoman Aturan ERP" data-dl-tab-icon="fa-solid fa-book" />
                     <x-dl::button variant="secondary" block icon="fa-book-open" label="Pedoman: Master Product & Revisi" data-dl-tab-url="{{ route('v2.guide', 'product-master') }}" data-dl-tab-code="G-PRODUCT" data-dl-tab-label="Pedoman: Master Product & Revisi" data-dl-tab-icon="fa-solid fa-book-open" />
+                    {{-- Alur dokumen: sementara di sini, bukan grup menu "Flow" (user 2026-10-02, akan dipikirkan ulang). --}}
+                    <x-dl::button variant="secondary" block icon="fa-diagram-project" label="Sales Flow: Inquiry → CPDEL" data-dl-tab-url="{{ route('v2.flow', 'SALES') }}" data-dl-tab-code="F-SALES" data-dl-tab-label="Sales Flow: Inquiry → CPDEL" data-dl-tab-icon="fa-solid fa-diagram-project" />
+                    <x-dl::button variant="secondary" block icon="fa-diagram-project" label="Costing Flow: ProDev → ProCost → Publish" data-dl-tab-url="{{ route('v2.flow', 'COSTING') }}" data-dl-tab-code="F-COSTING" data-dl-tab-label="Costing Flow: ProDev → ProCost → Publish" data-dl-tab-icon="fa-solid fa-diagram-project" />
                     <x-dl::button variant="primary" block icon="fa-ticket" label="Tiket Bantuan" data-lm-page-open="ticket" />
                 </x-dl::action-bar>
             </section>
@@ -39,6 +42,6 @@
         @include('v2.partials.material-alert')
         <p>Ini <b>Build &amp; UAT</b>: layar ERP disusun dari objek <b>DevLib</b> dengan data <b>dummy</b> ({{ config('database.connections.tm2mst.database') }} dst). Lencana di menu:
             <b>Review</b> = layar v2 menunggu penilaian, <b>v1</b> = sementara membuka layar lama, <b>Belum</b> = belum ada layar.
-            Grup <b>Alur</b> menunjukkan perjalanan dokumen antar layar.</p>
+            Alur dokumen antar layar ada di <b>Bantuan &amp; dukungan</b> (tekan <kbd>F1</kbd>).</p>
     </x-dl::layer-shell>
 @endsection

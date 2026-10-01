@@ -52,10 +52,6 @@ final class MenuRoutes
             'F-SALES' => route('v2.flow', 'SALES'),
             'F-COSTING' => route('v2.flow', 'COSTING'),
             'G-PRODUCT' => route('v2.guide', 'product-master'),
-            'PRE_MD_UOM' => route('master.uom'),
-            'PRE_MD_CURRENCY' => route('master.currency'),
-            'PRE_MD_EXCHRATE' => route('master.exchange-rate'),
-            'PRE_SET_CONSTANTS' => route('setup.constants'),
             // Nota TIDAK LAGI menu top-level -- dokumen per-inquiry, reachable lewat
             // tombol "🖨 Cetak Nota" di dalam Inquiry Product (inquiry/form.blade.php toolbar).
             // Quotation SEKARANG per-customer (redesain 2026-08-20, bukan lagi

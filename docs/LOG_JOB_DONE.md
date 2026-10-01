@@ -40,6 +40,19 @@
   (`pages/production/prodev.blade.php::jobs()` dan `flat_w_mm = flat_w * 10` di `saveLayout()`), sehingga part dari Inquiry tampil
   "250 × 161 cm" dan tidak muat di canvas mana pun.
 
+## 2026-10-02 -- Flow pindah sementara ke Help; Master Data modul Inquiry hanya master terkait
+
+- Perintah user: "flow ini bagus tapi taruh sementara di help, nanti saya pikirkan ulang" dan "master data di inquiry jangan ada
+  currency, rate lain sebagainya, masukkan aja master yang berhubungan seperti master kategori bahan baku, master product buat lihat".
+- Grup menu **Flow** di modul Inquiry & Quotation dan Sales dimatikan (migration `2026_10_02_000011`, baris tidak dihapus supaya mudah
+  dihidupkan lagi). Sales Flow dan Costing Flow jadi tombol di **Bantuan & dukungan (F1)**, di samping Guide Master Product yang
+  sudah ada di sana. Teks beranda v2 disesuaikan.
+- Pintasan **Satuan, Currency, Kurs, Constants** dicabut dari Master Data modul Inquiry (migration `2026_10_02_000012` + `MenuRoutes`).
+  Tersisa: Customer, Product, Bahan Baku, Kategori Bahan Baku, Proses, Mesin. Layar yang dicabut tetap ada di Master Data / Setup.
+- Dijalankan di ddt + tm2. Uji: menu kedua situs tanpa grup Flow, tombol Help ada di halaman /v2, halaman flow & guide 200,
+  4 test (menu + ratchet bahasa) lulus. Belum dicek mata di browser.
+- Terbuka: Proses & Mesin tetap ada di grup itu (dipakai Inquiry / Pro-Dev / Pro-Cost) -- menunggu konfirmasi user apakah ikut dicabut.
+
 ## 2026-10-02 -- WIN / LOST digabung ke layar Quotation; menu PREORDER live disamakan dengan dummy
 
 - Perintah user: "Win and lost langsung di dalam quotation, tidak perlu layar baru ... hilangkan win and lost masukkan ke quotation saja",
