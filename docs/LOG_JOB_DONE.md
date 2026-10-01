@@ -56,6 +56,7 @@
   offer entry v1; nilai gaji tidak ditampilkan di grid), Hire Provisioning (?open membuka panel provisioning v1), Portal Sync Log (report).
 - Pipeline Board & Portal Candidate tetap layar v1 (kanban / portal publik).
 - Menu ddtsys: migration `2026_10_02_000003` (ddt saja). Probe: semua layar + 130 form = 200.
+- **tm2*** (OK user 2026-10-02): migration `2026_10_02_000001`, `000002`, `000003` dijalankan satu per satu dengan `--path`; 25 item menu tm2sys -> `v2:*`. Menu v1 tmerp.test tidak berubah (membuka lewat kode menu, bukan `target`).
 
 ## 2026-10-02 -- Run malam: grid v2 Work Order, Rule Library, Outstanding PR/PO/PV (UI-20)
 
