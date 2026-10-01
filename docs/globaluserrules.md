@@ -50,6 +50,11 @@
     dokumen "mengambang".
 13. **Snapshot:** transaksi membekukan nilai master saat momen penting; master berubah, transaksi lama tetap.
 14. **ACC Digital artwork wajib** sebelum produksi.
+15. **[2026-10-01] Customer memilih SATU qty per product di CO.** Quotation boleh menawarkan beberapa pilihan qty (tier) untuk
+    product yang sama; saat menjadi CO, customer memilih salah satunya (tombol **Choose** di CO draft) dan pilihan qty lain
+    dibuang dari CO. CO tidak bisa di-Confirm selama satu product masih punya lebih dari satu baris qty.
+16. **[2026-10-01] Work Order hanya untuk product yang punya Inquiry dengan costing sudah di-publish**, juga untuk CO direct
+    (INSTANT). Tidak ada jalan pintas di engine; dummy yang tidak memenuhi dihapus dan dibuat ulang dengan benar (B.12).
 15. **Scope modul (2026-10-02):** satu modul = satu menu besar dengan saklar `activate` sendiri (mati = menu + route tertutup,
     data tetap). Antar modul hanya lewat kontrak (snapshot + status akhir): A = Quotation published/WIN -> Customer Order,
     B = CO Confirmed + Post to Production -> Production. CO direct (INSTANT) selalu tersedia walau modul pre-order mati.
@@ -164,6 +169,7 @@
 | 2026-10-01 | Pedoman ini dibuka dari menu akun v2 → **Bantuan & dukungan**. |
 | 2026-10-01 | A.3 dibangun di v2 (ddt): Post to Production, DO hanya dari baris Posted, laporan Shipped Without Production Output. |
 | 2026-10-01 | C.17: F1 = Bantuan & dukungan di v2; Tiket Bantuan di profil dengan ikon jelas; Back kembali ke Profile. |
+| 2026-10-01 | A.15: customer memilih satu qty per product di CO (tombol Choose); A.16: WO hanya untuk product dengan costing published, dummy salah dihapus & dibuat ulang (sampel Master Card/KS Power kini lewat ProCost). |
 | 2026-10-01 | B.12: dummy yang salah selalu dihapus dan diganti baru (aturan main tetap, tanpa tanya). |
 | 2026-10-01 | C.3: grid Inquiry Product v2 ikut Grid Transactional (+ New Record di toolbar membuka wizard; Draft / Ready to Quote = kotak statistik; tanpa kartu tombol di atas grid; Duplicate = tombol di form, bukan ikon di baris grid). |
 | 2026-10-01 | C.18–C.20: Layer Menu baru (nama aplikasi, baris ikon, mini, tanpa garis/breadcrumb); layar selebar panel kanan tepi 6px; setiap item menu wajib berikon. |

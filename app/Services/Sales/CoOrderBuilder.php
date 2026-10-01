@@ -14,6 +14,7 @@ use App\Models\Sdi\IqpCostingPriceTier;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
 use App\Services\Flow\FlowEngineService;
+use App\Support\Localization\Dictionary;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -191,6 +192,9 @@ class CoOrderBuilder
         $order->loadMissing(['items.deliveries']);
         if ($order->doc_status !== 'DRAFT' || ! $order->isConfirmable()) {
             return 'Belum bisa Confirm: tiap baris PRODUCT wajib punya Due Date'.($order->isInstant() ? ' dan Master Product' : '').'.';
+        }
+        if ($order->itemsWithUnpickedQty()->isNotEmpty()) {
+            return Dictionary::t('Pick one qty per product: delete the qty lines the customer did not choose, then Confirm.');
         }
         $flow = app(FlowEngineService::class);
         if (! $flow->activeConfig('CO')) {

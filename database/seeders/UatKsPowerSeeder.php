@@ -3,9 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Sdi\IqpInquiry;
-use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SecUser;
-use App\Services\Sales\CoOrderBuilder;
+use Database\Seeders\Concerns\PricedDummyChain;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +21,8 @@ use RuntimeException;
 //   php artisan ddt:baseline save --env=mockup --no-interaction --force
 class UatKsPowerSeeder extends Seeder
 {
+    use PricedDummyChain;
+
     private const INQ_NO = 'IQ99KSP001';
 
     private const MARK = 'UAT-KSPOWER';
@@ -103,19 +104,10 @@ class UatKsPowerSeeder extends Seeder
             $this->sdi->table('iqp_part')->where('id_part', $part)->update(['artwork_path' => $path, 'artwork_original_filename' => $file]);
         }
 
-        // Quotation PUBLISHED (harga contoh) -> CO lahir = WIN -> Master Product.
-        $quoId = $this->sdi->table('quo_quotation')->insertGetId($row([
-            'quotation_no' => QuoQuotation::nextQuotationNo(), 'customer_id' => $customer, 'attn_contact' => 'Pak Habibi', 'sales_pic' => 'Firman',
-            'revision_no' => 0, 'issued_date' => '2026-09-26', 'valid_until' => '2026-10-26', 'payment_term' => '30 hari', 'tax_scheme' => 'EXCL',
-            'currency_code' => 'IDR', 'notes' => self::MARK, 'doc_status' => 'PUBLISHED', 'issued_by' => 'uat',
-        ]));
-        $this->sdi->table('quo_quotation_item')->insert($row([
-            'quotation_id' => $quoId, 'line_seq' => 1, 'source_type' => 'INQUIRY_TIER', 'inquiry_id' => $inquiryId, 'tier_id' => $tierId,
-            'description' => 'KS Power N120 MF', 'spec_note' => 'Duplex 310 gsm + SH B/C Flute · CMYK · Laminating Glossy · Double Join · 10 pcs/pack',
-            'qty' => 30000, 'qty_unit' => 'PCS', 'unit_price' => 4620, 'discount_pct' => 0, 'subtotal' => 30000 * 4620,
-        ]));
-
-        $order = CoOrderBuilder::findOrCreateFromQuotation(QuoQuotation::findOrFail($quoId));
+        // Aturan A.1: ProCost (publish) -> Quotation dari harga costing -> CO lahir = WIN -> Master Product.
+        $this->priceAndPublish($inquiryId);
+        $order = $this->winViaQuotation($inquiryId, ['attn_contact' => 'Pak Habibi', 'sales_pic' => 'Firman', 'issued_date' => '2026-09-26',
+            'valid_until' => '2026-10-26', 'payment_term' => '30 hari', 'notes' => self::MARK, 'data_origin' => 'DUMMY']);
         $this->sdi->table('co_order')->where('id_order', $order->id_order)->update(['data_origin' => 'DUMMY']);
         $this->sdi->table('co_order_item')->where('order_id', $order->id_order)->update(['data_origin' => 'DUMMY', 'due_date' => '2026-10-19']);
         $product = IqpInquiry::find($inquiryId)->product_id;
@@ -163,6 +155,7 @@ class UatKsPowerSeeder extends Seeder
         if (! $inq) {
             return;
         }
+        $this->dropCosting($inq->id_inquiry);
 
         if ($inq->product_id) {
             $parts = $this->mst->table('prod_part')->where('product_id', $inq->product_id)->pluck('id_part');

@@ -19,14 +19,17 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 
-// Pengganti dummy CO2600001 (user 2026-10-01, pilihan A: "data dummy salah selalu hapus dan create baru").
-// CO2600001 = CO uji manual (quotation manual tanpa inquiry -> melanggar aturan A.1) yang menjadi jangkar seluruh dummy
-// produksi (WO berjalan/selesai/breakdown). Seeder ini menghapusnya lalu membangun rantai baru LEWAT ALUR RESMI:
-// Inquiry (costing published + routing) -> Quotation -> WIN -> CO Confirmed (2 approval) -> CPDEL -> Post to Production
-// -> WO (+ contoh status produksi) -> DO jalan pintas (laporan Shipped Without Production Output).
-// Hanya ddt*: php artisan db:seed --class=UatOrderChainSeeder --env=mockup --force, lalu ddt:baseline save.
+// Dummy rantai order yang BENAR (user 2026-10-01: "data dummy salah selalu hapus dan create baru").
+// Menghapus dummy salah: CO2600001 (CO uji manual + quotation manual, melanggar aturan A.1) beserta WO/DO-nya, CO INSTANT
+// CO2600004/005 (Master Product tanpa inquiry ber-harga -> tidak bisa di-Post), dan CO lama yang masih memuat lebih dari
+// satu pilihan qty per product (aturan: customer memilih SATU qty di CO). Lalu membangun ulang LEWAT ALUR RESMI:
+// Inquiry (costing published + routing) -> Quotation -> WIN -> pilih satu qty -> CO Confirmed (2 approval) -> CPDEL ->
+// Post to Production -> WO (+ contoh status produksi) -> DO jalan pintas (laporan Shipped Without Production Output).
+// Boleh diulang (rantai [UAT-CHAIN] sebelumnya dihapus dulu):
+//   php artisan db:seed --class=UatOrderChainSeeder --env=mockup --force   lalu   php artisan ddt:baseline save --env=mockup
 class UatOrderChainSeeder extends Seeder
 {
     public const MARK = '[UAT-CHAIN] dummy rantai Inquiry-Quotation-CO-Produksi 2026-10-01.';
@@ -50,14 +53,10 @@ class UatOrderChainSeeder extends Seeder
 
     public function run(): void
     {
-        $sdi = DB::connection('tm2sdi');
-        if (! str_starts_with($sdi->getDatabaseName(), 'ddt')) {
-            throw new RuntimeException('UatOrderChainSeeder hanya untuk database dummy ddt* (--env=mockup).');
-        }
-        if (CoOrder::where('notes', self::MARK)->exists()) {
-            $this->command?->warn('Rantai [UAT-CHAIN] sudah ada -- tidak dibuat dobel.');
-
-            return;
+        // HANYA ddt*. Dummy CO2600001 + WO2600225..262 di tm2* adalah FIXTURE test regresi produksi/CO (21 test menunjuk
+        // order_id 2, inquiry 5, nomor WO itu): menghapusnya di tm2 mematahkan test (terjadi & dipulihkan 2026-10-01).
+        if (! str_starts_with(DB::connection('tm2sdi')->getDatabaseName(), 'ddt')) {
+            throw new RuntimeException('UatOrderChainSeeder hanya untuk database dummy ddt* (--env=mockup); dummy tm2* = fixture test.');
         }
         $this->admin = SecUser::where('login', 'johiwan')->firstOrFail();
         Auth::login($this->admin);
@@ -86,8 +85,19 @@ class UatOrderChainSeeder extends Seeder
 
     private function build(): void
     {
-
-        $this->dropOldChain('CO2600001');
+        // 1. Hapus rantai seeder ini sebelumnya (inquiry kembali siap tawar, Master Product hasil WIN ikut dihapus).
+        foreach (CoOrder::where('notes', 'like', '[UAT-CHAIN]%')->orderByDesc('id_order')->pluck('co_no') as $no) {
+            $this->dropChain($no, 'PRICE_CALCULATED', true);
+        }
+        // 2. Hapus dummy salah.
+        $this->dropChain('CO2600001', 'SUBMITTED', false);
+        foreach (['CO2600004', 'CO2600005'] as $no) {
+            $this->dropChain($no, 'SUBMITTED', false);
+        }
+        // CO lama dari quotation yang masih memuat >1 pilihan qty per product dan sudah lewat DRAFT (mis. [SEED-WIN] di tm2).
+        foreach (CoOrder::with('items')->where('doc_status', '<>', 'DRAFT')->get()->filter(fn ($o) => $o->itemsWithUnpickedQty()->isNotEmpty())->pluck('co_no') as $no) {
+            $this->dropChain($no, 'PRICE_CALCULATED', true, keepQuotation: true);
+        }
         $this->addRouting();
 
         // Rantai 1: Folding Box Kosmetik (IQ99DUM001) -> 1 jadwal kirim, di-Post, WO sedang berjalan.
@@ -96,10 +106,11 @@ class UatOrderChainSeeder extends Seeder
         // Rantai 2: Karton Box Susu (IQ99DUM003) -> jadwal kirim dipecah 2 tanggal; baris 1 di-Post (WO breakdown),
         // baris 2 dibiarkan PLANNED supaya tombol Post to Production bisa dicoba sendiri.
         [$co2, $d2] = $this->integrated('IQ99DUM003', '2026-10-22');
-        $this->check(Cpdel::split($d2->id_delivery, (string) floor($d2->ship_qty / 2), '2026-10-29'), 'split CPDEL');
+        $this->check(Cpdel::split($d2->id_delivery, (string) floor($d2->ship_qty / 2), '2026-10-20'), 'split CPDEL');
         $this->post($d2->refresh());
         // Rantai 3: CO INSTANT (direct, aturan A.2) dari Master Product hasil WIN rantai 1 -> Post -> DO jalan pintas.
-        [$co3, $d3] = $this->instant($co1, '2026-10-08');
+        $co3 = $this->instant($co1, '2026-10-08', 500, 'Pesanan kilat Direksi (CO direct, tanpa Quotation).');
+        $d3 = $this->confirm($co3);
         $this->post($d3);
         $do = DeliveryOrder::create((int) $co3->customer_id);
         $this->check(DeliveryOrder::pull($do, [$d3->id_delivery]), 'tarik DO');
@@ -108,15 +119,19 @@ class UatOrderChainSeeder extends Seeder
             throw new RuntimeException('DO confirm: '.$msg);
         }
         $do->update(['notes' => self::MARK]);
+        // Rantai 4: CO INSTANT menunggu approval (contoh untuk Approval Center).
+        $co4 = $this->instant($co2, '2026-10-27', 1000, 'Order ulang lewat telepon, menunggu approval.');
+        $this->check(CustomerOrder::confirm($co4->refresh()), "confirm {$co4->co_no}");
 
         $this->productionSamples($d1, $d2);
 
-        $this->command?->info("Rantai baru: {$co1->co_no} (Posted, WO berjalan), {$co2->co_no} (1 Posted + 1 PLANNED, WO breakdown), "
-            ."{$co3->co_no} INSTANT (Posted, DO {$do->do_no} tanpa hasil produksi).");
+        $this->command?->info(DB::connection('tm2sdi')->getDatabaseName().": {$co1->co_no} (Posted, WO berjalan), {$co2->co_no} (1 Posted + 1 PLANNED, WO breakdown), "
+            ."{$co3->co_no} INSTANT (Posted, DO {$do->do_no} tanpa hasil produksi), {$co4->co_no} INSTANT (menunggu approval).");
     }
 
-    // Hapus CO uji beserta quotation manual, DO, WO + riwayat produksinya (dummy lama tanpa alur resmi).
-    private function dropOldChain(string $coNo): void
+    // Hapus satu CO beserta DO, WO + riwayat produksi, log approval, (quotation), dan kembalikan inquiry-nya.
+    // $dropProduct = Master Product hasil WIN ikut dihapus (inquiry kembali belum punya product).
+    private function dropChain(string $coNo, string $inquiryState, bool $dropProduct, bool $keepQuotation = false): void
     {
         $sdi = DB::connection('tm2sdi');
         $prd = DB::connection('tm2prd');
@@ -128,7 +143,9 @@ class UatOrderChainSeeder extends Seeder
         $wos = $prd->table('prd_wo')->where('source_co_id', $o->id_order)->orWhereIn('source_delivery_id', $deliveries)->pluck('wo_id');
         $ops = $prd->table('prd_wo_operation')->whereIn('wo_id', $wos)->pluck('operation_id');
         $events = $prd->table('prd_breakdown_event')->whereIn('operation_id', $ops)->pluck('event_id');
-        $prd->table('mnt_request')->whereIn('breakdown_event_id', $events)->update(['breakdown_event_id' => null]);
+        if (Schema::connection('tm2prd')->hasTable('mnt_request')) {
+            $prd->table('mnt_request')->whereIn('breakdown_event_id', $events)->update(['breakdown_event_id' => null]);
+        }
         $prd->table('prd_breakdown_event')->whereIn('event_id', $events)->delete();
         $prd->table('prd_crew_assignment')->whereIn('operation_id', $ops)->delete();
         $outputs = $prd->table('prd_wo_operation_output')->whereIn('operation_id', $ops)->pluck('output_id');
@@ -142,21 +159,55 @@ class UatOrderChainSeeder extends Seeder
 
         $dos = $sdi->table('do_line')->where('co_order_id', $o->id_order)->pluck('delivery_id')->unique();
         $sdi->table('do_line')->where('co_order_id', $o->id_order)->delete();
-        $sdi->table('do_delivery')->whereIn('id_delivery', $dos)->whereNotExists(fn ($q) => $q->from('do_line')->whereColumn('do_line.delivery_id', 'do_delivery.id_delivery'))->delete();
+        $emptyDos = $sdi->table('do_delivery')->whereIn('id_delivery', $dos)
+            ->whereNotExists(fn ($q) => $q->from('do_line')->whereColumn('do_line.delivery_id', 'do_delivery.id_delivery'))->pluck('id_delivery');
+        if (Schema::connection('tm2sdi')->hasTable('do_delivery_pod')) {
+            $sdi->table('do_delivery_pod')->whereIn('delivery_id', $emptyDos)->delete();
+        }
+        $sdi->table('do_delivery')->whereIn('id_delivery', $emptyDos)->delete();
 
         FlowLog::where('module_code', 'CO')->where('doc_id', $o->id_order)->delete();
-        $sdi->table('iqp_inquiry')->where('co_id', $o->id_order)->update(['co_id' => null, 'sub_state' => 'SUBMITTED', 'updated_by' => 'system']);
+        $inquiries = $sdi->table('iqp_inquiry')->where('co_id', $o->id_order)->get(['id_inquiry', 'product_id']);
         $sdi->table('co_order_delivery')->where('order_id', $o->id_order)->delete();
         $sdi->table('co_order_external_cost')->where('order_id', $o->id_order)->delete();
         $sdi->table('co_order_item')->where('order_id', $o->id_order)->delete();
         $sdi->table('co_order')->where('id_order', $o->id_order)->delete();
-        if ($o->quotation_id && ! $sdi->table('co_order')->where('quotation_id', $o->quotation_id)->exists()) {
+
+        foreach ($inquiries as $inq) {
+            $sdi->table('iqp_inquiry')->where('id_inquiry', $inq->id_inquiry)->update(['co_id' => null, 'sub_state' => $inquiryState, 'updated_by' => 'system']
+                + ($dropProduct ? ['product_id' => null] : []));
+            if ($dropProduct && $inq->product_id) {
+                $this->dropProduct((int) $inq->product_id, (int) $inq->id_inquiry);
+            }
+        }
+        if (! $keepQuotation && $o->quotation_id && ! $sdi->table('co_order')->where('quotation_id', $o->quotation_id)->exists()) {
             foreach (['quo_quotation_item', 'quo_quotation_cc', 'quo_activity'] as $t) {
                 $sdi->table($t)->where('quotation_id', $o->quotation_id)->delete();
             }
             $sdi->table('quo_quotation')->where('id_quotation', $o->quotation_id)->delete();
         }
         $this->command?->info("{$coNo} dihapus: ".count($wos).' WO, '.count($ops).' operasi, '.count($events).' breakdown, '.count($dos).' DO.');
+    }
+
+    // Master Product hasil WIN (ProductMasterSync) -- hanya bila tidak dipakai CO lain.
+    private function dropProduct(int $productId, int $inquiryId): void
+    {
+        $sdi = DB::connection('tm2sdi');
+        $mst = DB::connection('tm2mst');
+        if ($sdi->table('co_order_item')->where('product_id', $productId)->exists() || $sdi->table('iqp_inquiry')->where('product_id', $productId)->exists()) {
+            return;
+        }
+        $parts = $mst->table('prod_part')->where('product_id', $productId)->pluck('id_part');
+        $sdi->table('iqp_part')->where('inquiry_id', $inquiryId)->update(['prod_part_id' => null]);
+        $mst->table('prod_product_acc')->where('product_id', $productId)->delete();
+        foreach (['prod_part_material', 'prod_part_ink', 'prod_part_process', 'prod_part_finishing', 'prod_part_artwork', 'prod_part_attachment'] as $t) {
+            if (Schema::connection('tm2mst')->hasTable($t)) {
+                $mst->table($t)->whereIn('part_id', $parts)->delete();
+            }
+        }
+        $mst->table('prod_part')->whereIn('id_part', $parts)->update(['parent_part_id' => null]);
+        $mst->table('prod_part')->whereIn('id_part', $parts)->delete();
+        $mst->table('prod_product')->where('id_product', $productId)->delete();
     }
 
     private function addRouting(): void
@@ -176,33 +227,40 @@ class UatOrderChainSeeder extends Seeder
         $this->command?->info('Routing dummy ditambahkan ke '.count($parts).' part inquiry.');
     }
 
-    // Inquiry siap tawar -> Quotation -> Confirm -> WIN -> CO -> due date -> Confirm -> approval. Balikan [CO, jadwal kirim pertama].
+    // Inquiry siap tawar -> Quotation -> Confirm -> WIN -> pilih SATU qty -> due date -> Confirm -> approval.
+    // Balikan [CO, jadwal kirim pertama]. Quotation terbit yang sudah ada (tanpa CO) untuk inquiry itu dipakai ulang.
     private function integrated(string $inquiryNo, string $due): array
     {
         $inq = IqpInquiry::where('inquiry_no', $inquiryNo)->firstOrFail();
-        $q = Quotation::create([$inq->id_inquiry]);
-        $q->update(['notes' => self::MARK]);
-        Quotation::confirm($q->refresh());
+        $q = QuoQuotation::where('doc_status', 'PUBLISHED')->whereHas('items', fn ($x) => $x->where('inquiry_id', $inq->id_inquiry))
+            ->whereNotIn('id_quotation', CoOrder::whereNotNull('quotation_id')->select('quotation_id'))->first();
+        if (! $q) {
+            $q = Quotation::create([$inq->id_inquiry]);
+            $q->update(['notes' => self::MARK]);
+            Quotation::confirm($q->refresh());
+        }
         $coId = Quotation::win(QuoQuotation::with('items.inquiry')->findOrFail($q->id_quotation)) ?? throw new RuntimeException("WIN {$inquiryNo} gagal");
         $co = CoOrder::with('items')->findOrFail($coId);
         $co->update(['notes' => self::MARK, 'customer_po_no' => 'PO-'.substr($inquiryNo, -3).'-UAT']);
-        CustomerOrder::save($co->refresh(), ['items' => $co->items->where('line_kind', 'PRODUCT')->mapWithKeys(fn ($i) => [$i->id_item => ['due_date' => $due]])->all()]);
+        // Customer memilih satu qty (pilihan pertama); pilihan qty lain dari quotation dihapus dari CO.
+        $keep = $co->items->where('line_kind', 'PRODUCT')->first();
+        CustomerOrder::pickQty($co->refresh(), (int) $keep->id_item);
+        CustomerOrder::save($co->refresh(), ['items' => [$keep->id_item => ['due_date' => $due]]]);
 
         return [$co, $this->confirm($co)];
     }
 
-    // CO INSTANT dari Master Product rantai sebelumnya (pesanan kilat Direksi, aturan A.2).
-    private function instant(CoOrder $from, string $due): array
+    // CO INSTANT (DRAFT, siap Confirm) dari Master Product CO lain (pesanan langsung, aturan A.2).
+    private function instant(CoOrder $from, string $due, int $qty, string $note): CoOrder
     {
-        $product = $from->items()->whereNotNull('product_id')->value('product_id') ?? IqpInquiry::where('co_id', $from->id_order)->value('product_id')
-            ?? throw new RuntimeException('Master Product rantai 1 tidak ditemukan');
+        $product = $from->items()->whereNotNull('product_id')->value('product_id') ?? throw new RuntimeException("Master Product {$from->co_no} tidak ditemukan");
         $co = CustomerOrder::createInstant((int) $from->customer_id);
-        $co->update(['notes' => self::MARK.' Pesanan kilat Direksi (CO direct, tanpa Quotation).']);
+        $co->update(['notes' => self::MARK.' '.$note]);
         CustomerOrder::addProduct($co, (int) $product);
         $item = $co->items()->firstOrFail();
-        CustomerOrder::save($co->refresh(), ['items' => [$item->id_item => ['qty' => '500', 'unit_price' => (string) ($from->items()->value('unit_price') ?: 1500), 'due_date' => $due]]]);
+        CustomerOrder::save($co->refresh(), ['items' => [$item->id_item => ['qty' => (string) $qty, 'unit_price' => (string) ((float) $from->items()->value('unit_price') ?: 1500), 'due_date' => $due]]]);
 
-        return [$co, $this->confirm($co)];
+        return $co;
     }
 
     private function confirm(CoOrder $co): CoOrderDelivery

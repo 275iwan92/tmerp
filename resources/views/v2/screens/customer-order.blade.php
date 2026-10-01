@@ -184,6 +184,14 @@
             <x-dl::field.text name="notes" label="Internal notes (Ops / PPIC)" multiline placeholder="Internal notes for Ops/PPIC..." :value="old('notes', $o->notes)" :source="Src::of('tm2sdi.co_order.notes')" />
         </x-slot:notes>
         <x-slot:detail>
+            @if ($draft && $o->itemsWithUnpickedQty()->isNotEmpty())
+                <x-dl::alert tone="warn" :message="t('The quotation offered several qty options for the same product. The customer picks one: press Choose on the qty ordered; the other options are removed from this order.')" />
+                <x-dl::action-bar>
+                    @foreach ($o->itemsWithUnpickedQty() as $opt)
+                        <x-dl::button size="sm" variant="secondary" icon="fa-check" :label="t('Choose').' '.\Devlib\Locale::number((float) $opt->qty, 0).' '.$opt->qty_unit.' · '.\Illuminate\Support\Str::limit($opt->description, 40)" type="submit" name="action" :value="'pick_qty_'.$opt->id_item" formnovalidate />
+                    @endforeach
+                </x-dl::action-bar>
+            @endif
             <x-dl::lines name="items" title="Details" key-field="id_item" remove-field="remove" row-lock="editable" :addable="false" :duplicable="false" :min-rows="0" :rows="$lines" :readonly="! $draft"
                 source="{{ Src::of('tm2sdi.co_order_item') }}"
                 :columns="[

@@ -3,9 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Sdi\IqpInquiry;
-use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SecUser;
-use App\Services\Sales\CoOrderBuilder;
+use Database\Seeders\Concerns\PricedDummyChain;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,13 +12,15 @@ use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 // 5 sampel dummy dari master card Excel asli (user 2026-09-30): docs/attachments/MC-*.xlsx sheet "MC" (peta sel di
-// docs/attachments_index.md). Alur sama dengan UatKsPowerSeeder: Inquiry -> Quotation PUBLISHED -> CO (= WIN) -> Master Product.
-// Artwork = gambar proof di Excel, dipotong per part (docs/attachments/mastercard/dieline-*.jpg). Harga & qty order = contoh.
+// docs/attachments_index.md). Alur sama dengan UatKsPowerSeeder: Inquiry -> ProCost (publish) -> Quotation PUBLISHED -> CO (= WIN) -> Master Product.
+// Artwork = gambar proof di Excel, dipotong per part (docs/attachments/mastercard/dieline-*.jpg). Qty order = contoh; harga = hasil CostingEngine (aturan A.1, bukan harga sisipan).
 // Ukuran bentangan per part = ukuran pisau / jumlah UP; flap_extra/glue_flap/lock_tab diukur dari proof. Hanya ddt*.
 //   php artisan db:seed --class=UatMasterCardSeeder --env=mockup --force
 //   php artisan ddt:baseline save --env=mockup --no-interaction --force
 class UatMasterCardSeeder extends Seeder
 {
+    use PricedDummyChain;
+
     private const ASSETS = __DIR__.'/../../docs/attachments/mastercard/';
 
     private const BCF = ['Sheet', 'BCF', 'M125/M125X3/K125'];
@@ -182,17 +183,10 @@ class UatMasterCardSeeder extends Seeder
             }
         }
 
-        $quoId = $this->sdi->table('quo_quotation')->insertGetId($row([
-            'quotation_no' => QuoQuotation::nextQuotationNo(), 'customer_id' => $customer, 'attn_contact' => $p['attn'], 'sales_pic' => 'Firman',
-            'revision_no' => 0, 'issued_date' => $p['date'], 'valid_until' => date('Y-m-d', strtotime($p['date'].' +30 days')), 'payment_term' => '30 hari', 'tax_scheme' => 'EXCL',
-            'currency_code' => 'IDR', 'notes' => $p['mark'], 'doc_status' => 'PUBLISHED', 'issued_by' => 'uat',
-        ]));
-        $this->sdi->table('quo_quotation_item')->insert($row([
-            'quotation_id' => $quoId, 'line_seq' => 1, 'source_type' => 'INQUIRY_TIER', 'inquiry_id' => $inquiryId, 'tier_id' => $tierId,
-            'description' => $p['name'], 'spec_note' => $p['note'], 'qty' => $p['qty'], 'qty_unit' => 'PCS', 'unit_price' => $p['price'], 'discount_pct' => 0, 'subtotal' => $p['qty'] * $p['price'],
-        ]));
-
-        $order = CoOrderBuilder::findOrCreateFromQuotation(QuoQuotation::findOrFail($quoId));
+        // Aturan A.1: quotation selalu dari costing yang di-publish (ProCost Mode #2 + CostingEngine), bukan harga sisipan.
+        $this->priceAndPublish($inquiryId);
+        $order = $this->winViaQuotation($inquiryId, ['attn_contact' => $p['attn'], 'sales_pic' => 'Firman', 'issued_date' => $p['date'],
+            'valid_until' => date('Y-m-d', strtotime($p['date'].' +30 days')), 'payment_term' => '30 hari', 'notes' => $p['mark'], 'data_origin' => 'DUMMY']);
         $this->sdi->table('co_order')->where('id_order', $order->id_order)->update(['data_origin' => 'DUMMY']);
         $this->sdi->table('co_order_item')->where('order_id', $order->id_order)->update(['data_origin' => 'DUMMY', 'due_date' => date('Y-m-d', strtotime($p['date'].' +20 days'))]);
         $product = IqpInquiry::find($inquiryId)->product_id;
@@ -242,6 +236,7 @@ class UatMasterCardSeeder extends Seeder
         if (! $inq) {
             return;
         }
+        $this->dropCosting($inq->id_inquiry);
 
         if ($inq->product_id) {
             $parts = $this->mst->table('prod_part')->where('product_id', $inq->product_id)->pluck('id_part');

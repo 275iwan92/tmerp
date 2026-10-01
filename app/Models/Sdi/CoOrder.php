@@ -8,6 +8,7 @@ use App\Models\Master\SalesPerson;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class CoOrder extends Model
 {
@@ -104,6 +105,14 @@ class CoOrder extends Model
     // Syarat Confirm yang sama dipakai di grid maupun layar entry: ada isi,
     // semua baris PRODUCT punya due_date (dasar jadwal CPDEL), dan -- khusus
     // mode INSTANT -- semua baris PRODUCT sudah terkait Master Product.
+    // Aturan user 2026-10-01: quotation menawarkan beberapa pilihan qty (tier) per product; di CO customer memilih SATU.
+    // Balikan = baris PRODUCT dari quotation yang product (inquiry)-nya masih punya lebih dari satu baris qty.
+    public function itemsWithUnpickedQty(): Collection
+    {
+        return $this->items->where('line_kind', 'PRODUCT')->whereNotNull('inquiry_id')->whereNotNull('quotation_item_id')
+            ->groupBy('inquiry_id')->filter(fn ($g) => $g->count() > 1)->flatten(1);
+    }
+
     public function isConfirmable(): bool
     {
         return $this->items->isNotEmpty()

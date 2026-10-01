@@ -819,6 +819,10 @@ Route::prefix('v2')->name('v2.')->group(function () {
             } elseif (str_starts_with($action, 'add_delivery_')) {
                 CustomerOrder::addDelivery($o, (int) substr($action, 13));
                 $msg = 'Jadwal kirim ditambahkan.';
+            } elseif (str_starts_with($action, 'pick_qty_')) {
+                // Customer memilih SATU qty per product; pilihan qty lain dari quotation dibuang dari CO (aturan user 2026-10-01).
+                CustomerOrder::pickQty($o, (int) substr($action, 9));
+                $msg = Dictionary::t('Qty chosen — the other qty options of that product were removed from this order.');
             } elseif ($action === 'confirm') {
                 $o = CoOrder::with('items.deliveries')->findOrFail($id);
                 if ($err = CustomerOrder::confirm($o)) {

@@ -9,6 +9,7 @@ use App\Services\Flow\FlowEngineService;
 use App\Services\Sales\CoOrderBuilder;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use App\Support\V2\Lookups;
+use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -152,6 +153,21 @@ final class CustomerOrder
         $c->pickProduct($productId);
     }
 
+    // Quotation menawarkan beberapa pilihan qty (tier) per product; customer memilih SATU di CO. Baris quotation lain untuk
+    // product (inquiry) yang sama dibuang dari CO -- jejak semua pilihan tetap ada di quotation-nya.
+    public static function pickQty(CoOrder $o, int $itemId): void
+    {
+        abort_unless($o->doc_status === 'DRAFT', 422, 'Customer Order sudah Confirm, tidak bisa diubah.');
+        $keep = $o->items()->whereKey($itemId)->where('line_kind', 'PRODUCT')->whereNotNull('inquiry_id')->firstOrFail();
+        DB::connection('tm2sdi')->transaction(function () use ($o, $keep) {
+            $drop = $o->items()->where('line_kind', 'PRODUCT')->where('inquiry_id', $keep->inquiry_id)->whereNotNull('quotation_item_id')
+                ->whereKeyNot($keep->id_item)->pluck('id_item');
+            $o->deliveries()->whereIn('item_id', $drop)->delete();
+            $o->items()->whereIn('id_item', $drop)->delete();
+            $o->update(['updated_by' => auth()->user()->login]);
+        });
+    }
+
     public static function addService(CoOrder $o): void
     {
         self::component($o->id_order)->addItem('SERVICE');
@@ -288,6 +304,6 @@ final class CustomerOrder
     // Kiriman form DevLib = angka kanonik (1234.5); ketikan manusia dibaca sesuai bahasa tampilan (Devlib\Locale::input).
     private static function num(mixed $v): string
     {
-        return \Devlib\Locale::input($v) ?? '0';
+        return Locale::input($v) ?? '0';
     }
 }
