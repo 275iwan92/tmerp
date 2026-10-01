@@ -2691,6 +2691,9 @@
               $('resultValue').textContent = '—';
               drawPlano(S.pl, c);
               impo(c, up);
+              // BOM / Ink / BOP tidak bergantung pada plano yang muat (specCtx memakai sheetsPerPlano 1):
+              // tanpa ini ketiga bagian itu macet di "Menghitung dari data Inquiry…" (user 2026-10-01).
+              specSoon();
               return;
           }
           const bi = bestPlanoIndex(), bp = { p: planos[bi], c: cut(planos[bi]) };

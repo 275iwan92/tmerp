@@ -270,8 +270,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             $iqpLayout = IqpLayout::firstOrNew(['part_id' => $iqpPart->id_part]);
 
             $iqpLayout->fill([
-                'flat_w_mm' => $iqpPart->flat_w ? round((float) $iqpPart->flat_w * 10, 2) : $canvasLMm,
-                'flat_h_mm' => $iqpPart->flat_h ? round((float) $iqpPart->flat_h * 10, 2) : $canvasWMm,
+                // flat_w/flat_h sudah milimeter (dulu dikali 10 lagi).
+                'flat_w_mm' => $iqpPart->flat_w ? round((float) $iqpPart->flat_w, 2) : $canvasLMm,
+                'flat_h_mm' => $iqpPart->flat_h ? round((float) $iqpPart->flat_h, 2) : $canvasWMm,
                 'gap_mm' => round((float) ($state['gapCm'] ?? 0) * 10, 2),
                 'plano_size_id' => $plano?->id_plano_size,
                 'plano_w_mm' => $payload['plano_w_mm'],
@@ -603,8 +604,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         foreach ($parts as $p) {
             $src = $origins->get($p->id_part);
 
-            $l = (float) ($p->die_w_cm ?: $p->printsize_p ?: $src?->flat_w ?: 0);
-            $w = (float) ($p->die_h_cm ?: $p->printsize_l ?: $src?->flat_h ?: 0);
+            // iqp_part.flat_w/flat_h = MILIMETER (hasil TMDieline), kolom teknis ProDev = cm. Sebelum
+            // 2026-10-01 flat dipakai mentah sebagai cm -> blank "250 x 161 cm" yang tak muat di canvas mana pun.
+            $l = (float) ($p->die_w_cm ?: $p->printsize_p ?: ($src?->flat_w ? $src->flat_w / 10 : 0));
+            $w = (float) ($p->die_h_cm ?: $p->printsize_l ?: ($src?->flat_h ? $src->flat_h / 10 : 0));
 
             if ($l <= 0 || $w <= 0) {
                 continue;

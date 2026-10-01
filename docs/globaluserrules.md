@@ -66,6 +66,21 @@
       Product (master ikut berubah; artwork baru = versi baru yang wajib **ACC Digital** lagi, A.14).
     - Yang **tetap milik Inquiry** (tampil saja di ProDev): nama part, Tipe Part, Qty per Set, isi per pack, dan **Tipe Produk
       (jenis dieline)**. Bahan, warna, finishing diatur ProDev lewat BOM / Ink / BOP seperti biasa.
+18. **[2026-10-01] Batas canvas ProDev = pilihan officer ("Canvas limit"), bawaan Custom mengikuti dieline.** Di form ProDev v2,
+    panel *3. Lembar Cetak / Canvas* punya pilihan:
+    - **Custom (follow dieline)** — bawaan part yang belum punya layout: canvas = bentang dieline × jumlah up + gap + margin &
+      gripper, **tanpa batas meja** dan tanpa minimum 25 × 20 cm; jumlah up bawaan **1** dan boleh dinaikkan; Length / Width tetap
+      bisa diketik.
+    - **Press bed** = batas meja mesin cetak terpilih; **Die-cut bed (Pond)** = batas meja mesin pond terpilih (selama ukuran
+      mejanya kosong di Master Mesin: hanya peringatan, tanpa batas); **Press + Die-cut** = terkecil dari keduanya.
+    - Aturan 16-Sep-2026 ("canvas wajib muat di meja cetak **dan** meja plong") **tidak lagi otomatis**: berlaku bila officer
+      memilih *Press + Die-cut*. Layout lama (tanpa catatan pilihan) dibuka sebagai *Press + Die-cut*.
+    - Bila dieline 1 up tidak muat di meja terpilih, layar menulis ukuran yang dibutuhkan dan **menyarankan** part dipecah
+      kiri / kanan (Double Join). Hanya saran; struktur part tetap diubah di Inquiry / Master Product.
+    - Pilihan tersimpan bersama layout (`layout_detail.canvas_limit`), tanpa kolom baru.
+19. **Satuan ukuran bentangan:** `iqp_part.flat_w/flat_h` dan `prod_part.flat_w/flat_h` = **milimeter**; kolom teknis ProDev
+    (`die_w_cm`, `printsize_*`, canvas, plano) = **cm**. Setiap pemakaian silang wajib dikonversi (kejadian 2026-10-01: flat
+    dibaca sebagai cm sehingga blank jadi "250 × 161 cm" dan BOM / Ink / BOP tidak pernah terhitung).
 15. **Scope modul (2026-10-02):** satu modul = satu menu besar dengan saklar `activate` sendiri (mati = menu + route tertutup,
     data tetap). Antar modul hanya lewat kontrak (snapshot + status akhir): A = Quotation published/WIN -> Customer Order,
     B = CO Confirmed + Post to Production -> Production. CO direct (INSTANT) selalu tersedia walau modul pre-order mati.
@@ -176,8 +191,8 @@
     No CO kosong); harga estimasi tetap di kolom Harga / Subtotal (usulan tata letak, menunggu OK user).
     **Kop Telasih Makmur memakai alamat yang sama dengan CV. Langgeng Jaya Makmur** (Pondok Blimbing Indah Blok A5 No. 5,
     Malang 65126, Telp/Fax 62-341-471268) dan **tidak memakai NPWP**; NPWP hanya di kop dokumen PPN.
-    **Tanda tangan Purchase Order: Supplier paling kanan, lalu ke kiri rapat Menyetujui (Hendra), Mengetahui (Wiwik),
-    Pembuat (Eka).**
+    **Tanda tangan Purchase Order, dari paling kiri ke kanan: Supplier, Menyetujui (Hendra), Mengetahui (Wiwik), Pembuat
+    (Eka) di paling kanan — KETENTUAN TETAP user 2026-10-01, jangan dibalik lagi.**
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.
@@ -235,3 +250,5 @@
 | 2026-10-01 | Material Planning (Booking + MRP + MPS) dibangun di ddt: keputusan B1-B9 di `docs/materialbooking_tier1.md` §6-§7. |
 | 2026-10-01 | **A.17: ProDev berhak mengubah dieline & mockup part** — tab Part & Dieline di form ProDev v2 (dimensi, Flat Size, artwork luar/dalam), simpan dua arah `iqp_part` + `prod_part`, peringatan dampak (layout Confirmed / costing published / product aktif). |
 | 2026-10-01 | C.25: workbench Imposition ProDev berlatar putih (token tema DevLib), tata letak tidak berubah. |
+| 2026-10-01 | A.19: perbaikan satuan di ProDev (zona beku, diminta user "perbaiki" BOM kosong) — bentangan Inquiry (mm) dibaca sebagai cm di `jobs()`, `saveLayout()` dan `SpecEngine::blankArea()`; BOM / Ink / BOP kini tetap dihitung walau belum ada plano yang muat. |
+| 2026-10-01 | **A.18: pilihan Canvas limit** di ProDev v2 (Custom ikut dieline = bawaan, Press bed, Die-cut bed, Press + Die-cut); aturan 16-Sep jadi salah satu pilihan, bukan otomatis. Mockup: `docs/mockups/prodev_canvas_limit.jpg`. |

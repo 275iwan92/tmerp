@@ -199,7 +199,8 @@ class SpecEngine
 
     private function blankArea(ProdPart $part, ?IqpPart $iqp): float
     {
-        return ((float) $part->die_w_cm * (float) $part->die_h_cm) ?: ((float) $iqp?->flat_w * (float) $iqp?->flat_h);
+        // Hasil = cm2. die_*_cm sudah cm; flat_w/flat_h Inquiry = milimeter -> mm2 dibagi 100.
+        return ((float) $part->die_w_cm * (float) $part->die_h_cm) ?: ((float) $iqp?->flat_w * (float) $iqp?->flat_h / 100);
     }
 
     private function gsmFromName(?string $name): ?float
