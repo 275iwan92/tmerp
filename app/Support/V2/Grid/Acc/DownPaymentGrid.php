@@ -45,6 +45,11 @@ class DownPaymentGrid extends InvoiceGrid
         return 'Customer';
     }
 
+    protected function printable(): bool
+    {
+        return true;
+    }
+
     protected function models(): array
     {
         return [FinInvoice::class, CustCustomer::class];
@@ -77,6 +82,8 @@ class DownPaymentGrid extends InvoiceGrid
     {
         $cols = parent::columns();
         array_splice($cols, -2, 0, [['key' => 'dp_remaining', 'label' => 'DP Not Yet Applied', 'type' => 'money']]);
+        // Jatuh tempo disembunyikan supaya baris induk tetap paling banyak 8 kolom (rulebook C.28).
+        $cols = array_map(fn (array $c) => $c['key'] === 'due' ? ['visible' => false] + $c : $c, $cols);
 
         return $cols;
     }

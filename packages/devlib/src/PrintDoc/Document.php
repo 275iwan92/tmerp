@@ -173,7 +173,14 @@ abstract class Document
     /** @return list<array> kolom zona varian + (dokumen berharga) Harga dan Subtotal di posisi tetap */
     public function columns(): array
     {
-        return array_merge($this->extra, $this->priced ? self::PRICE_COLS : []);
+        return array_merge($this->extra, $this->priced ? $this->priceColumns() : []);
+    }
+
+    // Dua kolom nilai di posisi tetap (46 mm). Bawaan Price + Subtotal; dokumen jurnal menggantinya dengan Debit + Credit
+    // -- lebar total harus tetap sama supaya posisi kolom tidak bergeser antar dokumen.
+    protected function priceColumns(): array
+    {
+        return self::PRICE_COLS;
     }
 
     public function columnClass(array $c): string

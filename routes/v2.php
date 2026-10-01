@@ -126,7 +126,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         abort_unless(isset(PrintDocs::MAP[$type]), 404);
         $screen = PrintDocs::MAP[$type][1];
         abort_unless(Auth::user()->canAccessModule((Screens::screen($screen) ?? Grids::screen($screen))['module_code'] ?? 'SALES'), 403);
-        $from = Screens::screen((string) $r->query('from')) ? (string) $r->query('from') : $screen;
+        $from = (Screens::screen((string) $r->query('from')) ?? Grids::screen((string) $r->query('from'))) ? (string) $r->query('from') : $screen;
         $prices = $r->query('prices', '1') !== '0';
 
         return view('v2.print-doc', ['doc' => PrintDocs::make($type, $id, ['prices' => $prices]), 'type' => $type, 'id' => $id, 'prices' => $prices,

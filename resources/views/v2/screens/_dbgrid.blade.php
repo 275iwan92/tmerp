@@ -3,6 +3,15 @@
 @if ($guide = $screen['grid']->guide())
     <x-dl::alert tone="info" :message="$guide" />
 @endif
+@if ($actionUrls = $screen['grid']->actionUrls())
+{{-- Tombol di baris (mis. Print): buka alamat dokumennya di tab baru. --}}
+<script>
+    document.addEventListener('dl:grid-action', function (e) {
+        var url = @json($actionUrls)[e.detail.action];
+        if (url) { e.preventDefault(); window.open(url.replace('{id}', encodeURIComponent(e.detail.id)), '_blank'); }
+    });
+</script>
+@endif
 @if ($screen['grid']->family() === \App\Support\V2\Grid\DbLookup::LOOKUP)
 <x-dl::lookup-grid :rows="$p['rows']" :columns="$p['columns']" :save-url="$p['saveUrl']" :source="$p['source']" />
 @else

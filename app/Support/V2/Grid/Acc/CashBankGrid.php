@@ -63,6 +63,11 @@ class CashBankGrid extends AccGrid
         return FinVoucher::query()->with(['lines.account', 'mainAccount'])->whereNotNull('voucher_type')->orderByDesc('entry_date')->orderByDesc('voucher_id');
     }
 
+    public function actionUrls(): array
+    {
+        return ['print' => $this->printUrl('payment-voucher')];
+    }
+
     public function columns(): array
     {
         return [
@@ -74,6 +79,7 @@ class CashBankGrid extends AccGrid
             ['key' => 'reference', 'label' => 'Reference', 'visible' => false],
             ['key' => 'amount', 'label' => 'Amount', 'type' => 'money'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::STATUS_TONES],
+            $this->printColumn(),
         ];
     }
 

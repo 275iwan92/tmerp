@@ -35,10 +35,12 @@ final class PrintDocs
         'maintenance-request' => [MaintenanceRequestPrint::class, 'maintenance-request', 'MR'],
         'maintenance-wo' => [MaintenanceWoPrint::class, 'maintenance-wo', 'MWO'],
         'petty-cash' => [PettyCashPrint::class, 'petty-cash', 'PC'],
+        'sales-invoice' => [SalesInvoicePrint::class, 'acc-receivables', 'INV'],
+        'payment-voucher' => [PaymentVoucherPrint::class, 'acc-cash-bank', 'PVC'],
     ];
 
     // Dokumen yang tombol Back-nya kembali ke daftar (id cetak bukan id form layarnya).
-    public const BACK_TO_LIST = ['cpdel', 'petty-cash'];
+    public const BACK_TO_LIST = ['cpdel', 'petty-cash', 'sales-invoice', 'payment-voucher'];
 
     private static bool $booted = false;
 

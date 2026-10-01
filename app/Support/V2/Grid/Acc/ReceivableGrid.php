@@ -38,6 +38,11 @@ class ReceivableGrid extends InvoiceGrid
         return 'Customer';
     }
 
+    protected function printable(): bool
+    {
+        return true;
+    }
+
     protected function models(): array
     {
         return [FinInvoice::class, CustCustomer::class];

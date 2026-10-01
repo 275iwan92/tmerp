@@ -104,6 +104,23 @@ abstract class DbGrid
         return [];
     }
 
+    // Tombol di baris (kolom type button, mis. Print): aksi => alamat berpola {id}, dibuka di tab baru oleh layar grid generik.
+    public function actionUrls(): array
+    {
+        return [];
+    }
+
+    // Kolom tombol Print + alamatnya, untuk grid yang dokumennya punya cetakan (route v2.print).
+    protected function printColumn(): array
+    {
+        return ['key' => 'print', 'label' => 'Print', 'type' => 'button', 'text' => 'Print', 'action' => 'print', 'sortable' => false];
+    }
+
+    protected function printUrl(string $type): string
+    {
+        return str_replace('987654321', '{id}', route('v2.print', ['type' => $type, 'id' => 987654321]));
+    }
+
     public function stats(): array
     {
         return $this->family() === self::MASTER ? [
