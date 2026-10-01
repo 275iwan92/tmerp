@@ -56,6 +56,7 @@
         @if ($tx->attachment_path)
             <x-dl::action-bar><x-dl::button size="sm" variant="secondary" icon="fa-receipt" label="Receipt Photo" :href="\Illuminate\Support\Facades\Storage::disk('public')->url($tx->attachment_path)" target="_blank" /></x-dl::action-bar>
         @endif
+        <x-dl::action-bar><x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('petty-cash', $tx->id_petty_tx)" target="_blank" /></x-dl::action-bar>
         @if ($tx->status !== 'POSTED')
             <x-dl::alert tone="warn" :message="'Cancelled by '.$tx->cancelled_by.' · '.\Devlib\Locale::dt($tx->cancelled_at).' — '.$tx->cancel_reason" />
         @endif

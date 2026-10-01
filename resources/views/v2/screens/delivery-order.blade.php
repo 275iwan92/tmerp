@@ -64,7 +64,7 @@
         :created-by="$do->created_by" :created-at="$do->created_at?->toDateTimeString()" :updated-by="$do->updated_by" :updated-at="$do->updated_at?->toDateTimeString()">
         <x-slot:special>
             @if (in_array($do->status, ['CONFIRMED', 'SHIPPED'], true))
-                <x-dl::button size="sm" preset="print" label="Nota DO" :href="route('dispatch.do.print', ['doId' => $do->id_delivery])" target="_blank" />
+                <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('delivery-order', $do->id_delivery)" target="_blank" />
                 <x-dl::button size="sm" variant="secondary" icon="print" :label="t('Delivery Note')" :href="route('v2.screen', 'delivery-notes').'?id='.$do->id_delivery" />
             @endif
             @if ($do->status === 'CONFIRMED')<x-dl::button size="sm" variant="success" icon="fa-truck" :label="t('Shipped')" type="submit" name="action" value="ship" formnovalidate onclick="return confirm('Tandai barang sudah dikirim?')" />@endif

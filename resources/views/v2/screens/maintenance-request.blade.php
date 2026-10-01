@@ -68,6 +68,7 @@
         :hide="['delete', 'confirm', 'duplicate', 'email', 'print']" :tabs="['general' => 'General', 'decision' => 'Decision']"
         :created-by="$req->created_by" :created-at="$req->created_at?->toDateTimeString()" :updated-by="$req->updated_by" :updated-at="$req->updated_at?->toDateTimeString()">
         <x-slot:special>
+            <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('maintenance-request', $req->id_request)" target="_blank" />
             @if ($open && $head)
                 <x-dl::button size="sm" variant="danger" icon="reject" label="Reject" data-f-act="reject" />
                 <x-dl::button size="sm" variant="success" icon="approve" label="Accept" type="submit" name="action" value="accept" formnovalidate />

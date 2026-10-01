@@ -123,8 +123,7 @@
         :tabs="['general' => 'General', 'finance' => 'Finance', 'notes' => 'Notes']"
         :created-by="$q->created_by" :created-at="$q->created_at?->toDateTimeString()" :updated-by="$q->updated_by" :updated-at="$q->updated_at?->toDateTimeString()">
         <x-slot:special>
-            <x-dl::button size="sm" preset="print" label="Nota" :href="route('quotation.print', $q->id_quotation)" target="_blank" />
-            <x-dl::doc-share size="sm" target="#quotation-form" type="quotation" :doc-id="$q->id_quotation" :number="$q->quotation_no" title="Quotation" />
+            <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('quotation', $q->id_quotation)" target="_blank" />
             @if ($status === 'PUBLISHED')
                 <x-dl::button size="sm" preset="cancel" variant="danger" data-dl-open="quotation-cancel" />
                 <x-dl::button size="sm" variant="danger" icon="reject" label="LOST" data-dl-open="quotation-lost" />

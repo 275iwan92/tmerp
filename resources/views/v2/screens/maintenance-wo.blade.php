@@ -99,6 +99,7 @@
         :tabs="['general' => 'General', 'failure' => 'Failure', 'plan' => 'Schedule']"
         :created-by="$wo->created_by" :created-at="$wo->created_at?->toDateTimeString()" :updated-by="$wo->updated_by" :updated-at="$wo->updated_at?->toDateTimeString()">
         <x-slot:special>
+            <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('maintenance-wo', $wo->id_wo)" target="_blank" />
             @if ($doc === 'OPEN' && $wo->work_status === 'SCHEDULED')
                 <x-dl::button size="sm" variant="success" icon="fa-play" label="Start" type="submit" name="action" value="start" formnovalidate />
             @elseif ($wo->work_status === 'IN_PROGRESS' && $doc === 'OPEN')

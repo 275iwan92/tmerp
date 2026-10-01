@@ -62,6 +62,9 @@
         :status="$pods->isEmpty() ? 'new' : 'active'" :hide="['deactivate', 'new']" :can-input="! $done" :action="route('v2.pod.save', $do->id_delivery)" action-field="action"
         :back="$home" enctype="multipart/form-data"
         :created-by="$last?->created_by" :created-at="$last?->created_at?->toDateTimeString()" :updated-by="$last?->updated_by" :updated-at="$last?->updated_at?->toDateTimeString()">
+        <x-slot:special>
+            <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('proof-of-delivery', $do->id_delivery)" target="_blank" />
+        </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('Delivery Note')</span><b>{{ $do->do_no }}</b></div>
             <div class="dl-strip__kv"><span>Promised</span><b>{{ Locale::d($promise['date']) ?? '—' }}{{ $promise['time'] ? ' '.substr($promise['time'], 0, 5) : '' }}</b></div>

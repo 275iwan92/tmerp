@@ -204,10 +204,23 @@ abstract class Document
     }
 
     // Kotak total (hanya dokumen berharga): ['lines' => [[label, teks, tebal]], 'grand' => float|null].
+    // Dokumen yang totalnya sudah dihitung dan disimpan sistem menyerahkannya apa adanya lewat $data['sums']:
+    //   ['lines' => [[label English, angka, 'minus' => bool?, 'suffix' => ' 11%'?]], 'grand' => angka] -- cetakan tidak menghitung ulang.
     public function totals(): array
     {
         if (! $this->priced) {
             return ['lines' => [], 'grand' => null];
+        }
+        if (isset($this->data['sums'])) {
+            $lines = array_map(function (array $l) {
+                $amount = Locale::number($l[1], 2);
+
+                return [self::t($l[0]).($l['suffix'] ?? ''), ! empty($l['minus']) ? '('.$amount.')' : $amount, false];
+            }, $this->data['sums']['lines'] ?? []);
+            $grand = (float) $this->data['sums']['grand'];
+            $lines[] = [self::t('Total').' ('.$this->currency.')', Locale::number($grand, 2), true];
+
+            return ['lines' => $lines, 'grand' => $grand];
         }
         $d = $this->data;
         $r2 = fn ($v) => round($v, 2);

@@ -140,7 +140,7 @@
         :created-by="$pv->created_by" :created-at="$pv->created_at?->toDateTimeString()" :updated-by="$pv->updated_by" :updated-at="$pv->updated_at?->toDateTimeString()">
         @if ($pv->status === 'POSTED')
             <x-slot:special>
-                <x-dl::button size="sm" preset="print" label="Print Receipt" :href="route($isCust ? 'v2.pv.print-customer' : 'v2.pv.print', $pv->pv_id)" target="_blank" />
+                <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('goods-receipt', $pv->pv_id)" target="_blank" />
             </x-slot:special>
         @endif
         <x-slot:strip>
@@ -225,7 +225,7 @@
         :created-by="$pv->created_by" :created-at="$pv->created_at?->toDateTimeString()" :updated-by="$pv->updated_by" :updated-at="$pv->updated_at?->toDateTimeString()">
         @if ($pv->status === 'POSTED')
             <x-slot:special>
-                <x-dl::button size="sm" preset="print" label="Print SPB" :href="route('v2.pv.print', $pv->pv_id)" target="_blank" />
+                <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('goods-receipt', $pv->pv_id)" target="_blank" />
             </x-slot:special>
         @endif
         <x-slot:strip>

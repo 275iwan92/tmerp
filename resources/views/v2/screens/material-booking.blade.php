@@ -49,6 +49,7 @@
                     <x-dl::badge :label="$b ? $b->booking_no.' · '.$b->doc_status : 'NOT BOOKED'" :tone="MaterialPlanning::BOOKING_TONES[$b->doc_status ?? 'NOT BOOKED'] ?? 'neutral'" />
                 </span>
                 <x-dl::button variant="secondary" icon="send" :label="t('Open Customer Order')" :href="route('v2.screen', 'customer-order').'?id='.$co->id_order" />
+                <x-dl::button preset="print" :href="\App\Support\V2\Print\PrintDocs::url('material-booking', $co->id_order)" target="_blank" />
                 @if ($confirmedCo && ! $locked)
                     <x-dl::button type="submit" name="action" value="run" variant="secondary" icon="fa-rotate" :label="t('Recalculate')" />
                     @if ($b)<x-dl::button type="submit" name="action" value="confirm" variant="success" icon="confirm" label="Confirm" />@endif

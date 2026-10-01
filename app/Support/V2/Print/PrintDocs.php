@@ -17,15 +17,27 @@ final class PrintDocs
 {
     use FlowDocument;
 
-    // jenis => [kelas, slug layar asal (tombol Back), kode modul hak akses, kode konstanta penanda tangan]
+    // jenis => [kelas, slug layar asal (tombol Back + hak akses modulnya), kode konstanta penanda tangan]
     public const MAP = [
-        'delivery-note' => [DeliveryNotePrint::class, 'delivery-notes', 'SALES', 'DN'],
-        'customer-order' => [CustomerOrderPrint::class, 'customer-order', 'SALES', 'CO'],
-        'cpdel' => [CpdelPrint::class, 'cpdel', 'SALES', 'CPDEL'],
-        'inquiry' => [InquiryPrint::class, 'inquiry-new', 'SALES', 'INQ'],
-        'purchase-requisition' => [PurchaseRequisitionPrint::class, 'purchase-requisition', 'PROC', 'PR'],
-        'purchase-order' => [PurchaseOrderPrint::class, 'purchase-order', 'PROC', 'PO'],
+        'inquiry' => [InquiryPrint::class, 'inquiry-new', 'INQ'],
+        'quotation' => [QuotationPrint::class, 'quotation', 'QUO'],
+        'customer-order' => [CustomerOrderPrint::class, 'customer-order', 'CO'],
+        'cpdel' => [CpdelPrint::class, 'cpdel', 'CPDEL'],
+        'delivery-order' => [DeliveryOrderPrint::class, 'delivery-order', 'DO'],
+        'delivery-note' => [DeliveryNotePrint::class, 'delivery-notes', 'DN'],
+        'proof-of-delivery' => [ProofOfDeliveryPrint::class, 'proof-of-delivery', 'POD'],
+        'purchase-requisition' => [PurchaseRequisitionPrint::class, 'purchase-requisition', 'PR'],
+        'purchase-quotation' => [PurchaseQuotationPrint::class, 'purchase-quotation', 'PQ'],
+        'purchase-order' => [PurchaseOrderPrint::class, 'purchase-order', 'PO'],
+        'goods-receipt' => [GoodsReceiptPrint::class, 'purchase-receive', 'SPB'],
+        'material-booking' => [MaterialBookingPrint::class, 'material-booking', 'MB'],
+        'maintenance-request' => [MaintenanceRequestPrint::class, 'maintenance-request', 'MR'],
+        'maintenance-wo' => [MaintenanceWoPrint::class, 'maintenance-wo', 'MWO'],
+        'petty-cash' => [PettyCashPrint::class, 'petty-cash', 'PC'],
     ];
+
+    // Dokumen yang tombol Back-nya kembali ke daftar (id cetak bukan id form layarnya).
+    public const BACK_TO_LIST = ['cpdel', 'petty-cash'];
 
     private static bool $booted = false;
 
@@ -73,7 +85,7 @@ final class PrintDocs
     // Penanda tangan per dokumen = konstanta (user 2026-10-01): SIGN_<KODE>_APPROVER / SIGN_<KODE>_ACKNOWLEDGER; kosong = garis kosong.
     public static function signers(string $type): array
     {
-        $code = self::MAP[$type][3] ?? null;
+        $code = self::MAP[$type][2] ?? null;
 
         return $code ? ['approve' => SysConstant::text("SIGN_{$code}_APPROVER"), 'know' => SysConstant::text("SIGN_{$code}_ACKNOWLEDGER")] : [];
     }

@@ -115,7 +115,7 @@
                 @foreach ($open as $l)<input type="hidden" name="pq_line_ids[]" value="{{ $l->pq_line_id }}" form="pq-po-{{ $pq->pq_id }}">@endforeach
                 <x-dl::button size="sm" variant="success" icon="fa-file-invoice-dollar" label="Buat PO" type="submit" form="pq-po-{{ $pq->pq_id }}" onclick="return confirm('Jadikan semua baris PQ ini ({{ $open->count() }}) Draft PO ke supplier ini?')" />
             @endif
-            @unless ($draft)<x-dl::button size="sm" preset="print" label="Print" :href="route('pur.pq.print', ['pq' => $pq->pq_id])" target="_blank" />@endunless
+            @unless ($draft)<x-dl::button size="sm" preset="print" label="Print" :href="\App\Support\V2\Print\PrintDocs::url('purchase-quotation', $pq->pq_id)" target="_blank" />@endunless
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>No. PQ</span><b>{{ $pq->doc_no ?: '(saat Confirm)' }}</b></div>

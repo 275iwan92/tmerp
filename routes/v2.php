@@ -124,13 +124,13 @@ Route::prefix('v2')->name('v2.')->group(function () {
     // x-dl::print-doc (Devlib\PrintDoc\Document); satu kelas per dokumen di App\Support\V2\Print. ?prices=0 = format tanpa harga.
     Route::get('/print/{type}/{id}', function (Request $r, string $type, int $id) {
         abort_unless(isset(PrintDocs::MAP[$type]), 404);
-        [, $screen, $module] = PrintDocs::MAP[$type];
-        abort_unless(Auth::user()->canAccessModule($module), 403);
+        $screen = PrintDocs::MAP[$type][1];
+        abort_unless(Auth::user()->canAccessModule((Screens::screen($screen) ?? Grids::screen($screen))['module_code'] ?? 'SALES'), 403);
         $from = Screens::screen((string) $r->query('from')) ? (string) $r->query('from') : $screen;
         $prices = $r->query('prices', '1') !== '0';
 
         return view('v2.print-doc', ['doc' => PrintDocs::make($type, $id, ['prices' => $prices]), 'type' => $type, 'id' => $id, 'prices' => $prices,
-            'back' => route('v2.screen', $from).($type === 'cpdel' ? '' : '?id='.$id)]);
+            'back' => route('v2.screen', $from).(in_array($type, PrintDocs::BACK_TO_LIST, true) ? '' : '?id='.$id)]);
     })->whereNumber('id')->name('print');
 
     // Aktif/Nonaktif baris Grid Master (App\Support\V2\Grid\DbGrid::toggle) -> status terbaru dari database.
