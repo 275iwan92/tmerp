@@ -3,6 +3,7 @@
 use App\Models\Sys\SysDocShare;
 use App\Services\Portal\CandidateAuthService;
 use App\Support\Branding\Brand;
+use App\Support\Branding\PwaIcon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -11,10 +12,9 @@ Route::get('/', fn () => redirect(config('app.ui') === 'v2' ? '/v2' : '/menu'));
 
 // PWA manifest -- dibuat dinamis (bukan public/manifest.json statis) supaya
 // nama aplikasi ikut Brand::name() (tm2sys.sys_constant APP_NAME, bisa
-// diedit lewat layar Configuration) tanpa perlu sinkron 2 tempat. Ikon
-// masih placeholder statis (navy + "TM", lihat public/images/pwa-icon-*.png)
-// -- BELUM auto-generate dari APP_LOGO_PATH kalau ada logo custom diupload,
-// itu butuh resize/crop terpisah, dicatat sbg simplifikasi.
+// diedit lewat layar Configuration) tanpa perlu sinkron 2 tempat. Ikon =
+// App\Support\Branding\PwaIcon: dibuat dari logo (APP_LOGO_PATH) bila ada,
+// selain itu ikon bawaan public/images/pwa-icon-*.png.
 Route::get('/manifest.json', function () {
     return response()->json([
         'name' => Brand::name(),
@@ -24,11 +24,14 @@ Route::get('/manifest.json', function () {
         'background_color' => '#2c3e69',
         'theme_color' => '#2c3e69',
         'icons' => [
-            ['src' => asset('images/pwa-icon-192.png'), 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any maskable'],
-            ['src' => asset('images/pwa-icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any maskable'],
+            ['src' => PwaIcon::url(192), 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any maskable'],
+            ['src' => PwaIcon::url(512), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any maskable'],
         ],
     ])->header('Content-Type', 'application/manifest+json');
 })->name('pwa.manifest');
+
+Route::get('/pwa-icon/{size}.png', fn (int $size) => response()->file(PwaIcon::file($size), ['Content-Type' => 'image/png', 'Cache-Control' => 'public, max-age=86400']))
+    ->whereIn('size', array_map('strval', PwaIcon::SIZES))->name('pwa.icon');
 
 // Dokumen online hasil Print/Email (QR serah terima) -- publik tanpa login, token acak 128-bit, isi = snapshot saat dicetak.
 Route::get('/d/{token}', function (string $token) {

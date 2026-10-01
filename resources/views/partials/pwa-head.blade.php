@@ -11,8 +11,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ERP TM">
-<link rel="apple-touch-icon" href="{{ asset('images/pwa-icon-192.png') }}">
-<link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/pwa-icon-192.png') }}">
+<link rel="apple-touch-icon" href="{{ \App\Support\Branding\PwaIcon::url(192) }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ \App\Support\Branding\PwaIcon::url(192) }}">
 
 <script>
     if ('serviceWorker' in navigator) {
