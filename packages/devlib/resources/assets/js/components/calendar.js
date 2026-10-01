@@ -1,7 +1,7 @@
 /* DevLib · Calendar */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, T, TZ, emit, NUM} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, T, Tf, TZ, emit, NUM} = Devlib.h;
   /* ============================ CALENDAR ============================ */
   class Calendar extends Devlib.Component {
     static selector = "[data-dl-calendar]";
@@ -51,7 +51,7 @@
         const d = this.parse(t.dataset.cDrop), dur = this.drag.e - this.drag.s;
         if (t.hasAttribute('data-c-col')) { const r = t.getBoundingClientRect(), mins = Math.max(0, Math.min(23.5 * 60, Math.round((e.clientY - r.top) / this.HPX * 2) * 30)); d.setHours(0, mins); this.drag.allDay = false; this.drag.s = d; this.drag.e = new Date(d.getTime() + (dur || 3600000)); }
         else { const s = new Date(d); if (!this.drag.allDay) s.setHours(this.drag.s.getHours(), this.drag.s.getMinutes()); this.drag.s = s; this.drag.e = new Date(s.getTime() + dur); if (t.hasAttribute('data-c-allday')) this.drag.allDay = true; }
-        const moved = this.drag; this.drag = null; this.sel = new Date(moved.s); this.render(); this._emit('move', moved); toast(`"${moved.title}" dipindah ke ${moved.s.getDate()} ${this.MON[moved.s.getMonth()]}${moved.allDay ? '' : ', ' + this.hhmm(moved.s)}.`, 'success');
+        const moved = this.drag; this.drag = null; this.sel = new Date(moved.s); this.render(); this._emit('move', moved); toast(Tf('c_moved', {title: moved.title, when: `${moved.s.getDate()} ${this.MON[moved.s.getMonth()]}${moved.allDay ? '' : ', ' + this.hhmm(moved.s)}`}), 'success');
       });
       this.sIn = $(this.el, '[data-c-search]');
       if (this.sIn) this.sIn.addEventListener('input', () => { this.q = this.sIn.value.trim().toLowerCase(); this.render(); });
@@ -91,7 +91,7 @@
     onDay(d0) { const d = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate()); return this.events.filter(e => { const s0 = new Date(e.s.getFullYear(), e.s.getMonth(), e.s.getDate()), e0 = new Date(e.e.getFullYear(), e.e.getMonth(), e.e.getDate()); return d >= s0 && d <= e0; }).sort((a, b) => (b.allDay - a.allDay) || a.s - b.s); }
 
     when(e) {
-      return e.allDay ? 'Sepanjang hari' : `${this.hhmm(e.s)} – ${this.hhmm(e.e)} WIB`;
+      return e.allDay ? T('c_all_day') : `${this.hhmm(e.s)} – ${this.hhmm(e.e)} WIB`;
     }
 
     match(e) {
@@ -162,7 +162,7 @@
     side() {
       const tl = $(this.el, '[data-c-today-list]'), dl = $(this.el, '[data-c-day-list]'); if (!tl) return;
       const t = this.nowW(), item = e => `<div class="dl-cal2__item dl-cal2--${esc(e.tone)}" data-c-ev="${esc(e.id)}"><b>${esc(e.title)}</b><small><i class="fa-regular fa-clock"></i> ${esc(this.when(e))}</small>${e.desc ? `<p>${esc(e.desc)}</p>` : ''}</div>`;
-      tl.innerHTML = `<p class="dl-cal2__cap"><span class="dl-cal2__dot"></span>Acara hari ini</p>${this.onDay(t).map(item).join('') || '<p class="dl-cal2__none">Tidak ada acara hari ini.</p>'}`;
+      tl.innerHTML = `<p class="dl-cal2__cap"><span class="dl-cal2__dot"></span>${esc(T('c_today_events'))}</p>${this.onDay(t).map(item).join('') || '<p class="dl-cal2__none">' + esc(T('c_no_events_today')) + '</p>'}`;
       const list = this.onDay(this.sel);
       dl.innerHTML = `<h3 class="dl-cal2__selh">${this.DAYL[this.sel.getDay()]}, ${this.sel.getDate()} ${this.MON[this.sel.getMonth()]}</h3><small class="dl-cal2__selc">${list.length} acara</small>${list.map(item).join('') || '<p class="dl-cal2__none">Klik 2x slot kosong untuk membuat acara.</p>'}`;
       const f = $(this.el, '[data-c-found]'); if (f) f.innerHTML = this.q ? `<p class="dl-cal2__cap">${this.events.filter(this.match).length} ditemukan</p>` + this.events.filter(this.match).slice(0, 8).map(e => `<button type="button" class="dl-cal2__hit" data-c-go="${this.ymd(e.s)}"><b>${esc(e.title)}</b><small>${e.s.getDate()} ${this.MON[e.s.getMonth()].slice(0, 3)} · ${esc(this.when(e))}</small></button>`).join('') : '';
@@ -183,10 +183,10 @@
       const ov = document.createElement('div'); ov.className = 'dl-mov is-on';
       const v = d => e.allDay ? this.ymd(d) : `${this.ymd(d)}T${this.pad(d.getHours())}:${this.pad(d.getMinutes())}`;
       const draw = () => {
-        ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="dialog" aria-modal="true"><div class="dl-modal__head"><h3>${isNew ? 'Acara baru' : 'Ubah acara'}</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div>
+        ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="dialog" aria-modal="true"><div class="dl-modal__head"><h3>${esc(T(isNew ? 'c_new_event' : 'c_edit_event'))}</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div>
         <div class="dl-modal__body dl-gantt__edit">
           <label><span>Judul *</span><input data-e-title value="${esc(e.title || '')}" placeholder="Judul acara"></label>
-          <label class="dl-choice"><input type="checkbox" data-e-allday ${e.allDay ? 'checked' : ''}> Sepanjang hari</label>
+          <label class="dl-choice"><input type="checkbox" data-e-allday ${e.allDay ? 'checked' : ''}> ${esc(T('c_all_day'))}</label>
           <label><span>Mulai</span><input type="${e.allDay ? 'date' : 'datetime-local'}" data-e-start value="${v(e.s)}"></label>
           <label><span>Selesai</span><input type="${e.allDay ? 'date' : 'datetime-local'}" data-e-end value="${v(e.e)}"></label>
           <div><span class="dl-kpop__lbl">Warna</span><div class="dl-cal2__tones">${this.TONES.map(t => `<button type="button" class="dl-cal2--${t} ${t === e.tone ? 'is-on' : ''}" data-e-tone="${t}" aria-label="${t}"></button>`).join('')}</div></div>
@@ -202,12 +202,12 @@
         if (x === ov || x.closest('[data-x]')) return ov.remove();
         const t = x.closest('[data-e-tone]'); if (t) { read(); e.tone = t.dataset.eTone; return draw(); }
         if (x.closest('[data-e-save]')) {
-          read(); const err = !e.title ? 'Judul wajib diisi.' : e.e < e.s ? 'Waktu selesai tidak boleh sebelum mulai.' : '';
+          read(); const err = !e.title ? T('c_title_required') : e.e < e.s ? T('c_end_before_start') : '';
           if (err) { $(ov, '[data-e-err]').textContent = err; return; }
           if (isNew) this.events.push(e);
           ov.remove(); this.sel = new Date(e.s); this.render(); this._emit(isNew ? 'create' : 'update', e); toast(`Acara "${e.title}" ${isNew ? 'dibuat' : 'disimpan'}.`, 'success');
         }
-        if (x.closest('[data-e-del]')) confirmBox({message: `Hapus acara "${e.title}"?`, tone: 'danger'}).then(ok => { if (!ok) return; this.events.splice(this.events.indexOf(e), 1); ov.remove(); this.render(); this._emit('delete', e); });
+        if (x.closest('[data-e-del]')) confirmBox({message: Tf('c_delete_event', {title: e.title}), tone: 'danger'}).then(ok => { if (!ok) return; this.events.splice(this.events.indexOf(e), 1); ov.remove(); this.render(); this._emit('delete', e); });
       });
       ov.addEventListener('change', ev => { if (ev.target.matches('[data-e-allday]')) { read(); draw(); } });
       document.body.appendChild(ov); $(ov, '[data-e-title]').focus();

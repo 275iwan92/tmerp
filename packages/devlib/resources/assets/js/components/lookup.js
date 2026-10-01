@@ -1,7 +1,7 @@
 /* DevLib · Lookup */
 (function (Devlib) {
   'use strict';
-  const {$, $$, bindPanel, toast} = Devlib.h;
+  const {$, $$, bindPanel, toast, esc, T} = Devlib.h;
   /* ======================= SMALL COMPONENTS ======================= */
   // Lookup: cari di semua kolom, pilih baris -> nilai tersimpan + field lain terisi otomatis.
   class Lookup extends Devlib.Component {
@@ -23,7 +23,7 @@
             if (my !== seq) return;
             this.rows = res;
             list.innerHTML = res.map((r, i) => `<tr class="dl-dd__item" data-i="${i}">${cols.map(c => `<td>${Devlib.h.esc(r[c] ?? '')}</td>`).join('')}</tr>`).join('')
-              || `<tr><td colspan="${cols.length}">Tidak ditemukan.</td></tr>`;
+              || `<tr><td colspan="${cols.length}">${esc(T('l_not_found'))}.</td></tr>`;
           }, 250);
         });
       }

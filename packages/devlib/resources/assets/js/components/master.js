@@ -1,7 +1,7 @@
 /* DevLib · Master */
 (function (Devlib) {
   'use strict';
-  const {$, $$, toast, dirtyForms, fillForm, hasValue, at} = Devlib.h;
+  const {$, $$, toast, dirtyForms, fillForm, hasValue, at, T, Tf} = Devlib.h;
 
   class Master extends Devlib.Component {
     static selector = "[data-dl-master]";
@@ -17,9 +17,9 @@
       this.form.addEventListener('submit', e => {
         e.preventDefault();
         const missing = $$(this.form, '.dl-field').filter(f => $(f, '.dl-field__req') && !hasValue(f));
-        missing.forEach(f => { f.classList.add('is-invalid'); const er = $(f, '[data-dl-field-error]'); if (er) er.textContent = 'Wajib diisi'; });
+        missing.forEach(f => { f.classList.add('is-invalid'); const er = $(f, '[data-dl-field-error]'); if (er) er.textContent = T('m_required'); });
         const lines = $$(this.form, '[data-dl-lines]'), lineBad = lines.reduce((n, l) => n + l.dlLines.validate(), 0);
-        if (missing.length || lineBad) { dirtyForms.add(this.form); toast(`${missing.length + lineBad} isian wajib belum diisi.`, 'danger'); (missing[0] || $(this.form, '.dl-lines td.is-invalid, .dl-lines__err:not(:empty)'))?.scrollIntoView({block: 'center'}); return; }
+        if (missing.length || lineBad) { dirtyForms.add(this.form); toast(Tf('m_required_n', {n: missing.length + lineBad}), 'danger'); (missing[0] || $(this.form, '.dl-lines td.is-invalid, .dl-lines__err:not(:empty)'))?.scrollIntoView({block: 'center'}); return; }
         const data = {};
         new FormData(this.form).forEach((v, k) => { if (k !== '_token' && !k.includes('[')) data[k] = v; });
         lines.forEach(l => { data[l.dataset.name] = l.dlLines.rows; if (l.dataset.totalKey) data[l.dataset.totalKey] = l.dlLines.total().grand; if (l.dataset.countKey) data[l.dataset.countKey] = l.dlLines.rows.length; });
@@ -41,7 +41,7 @@
       const g = this.grid.dlGrid;
       this.cur = id == null ? null : g.rows.find(r => String(r[g.cfg.rowKey]) === String(id));
       fillForm(this.form, this.cur || {}, true);
-      $(this.form, '[data-m-heading]').textContent = this.cur ? `Edit ${this.d.title} · ${this.cur[this.d.nameKey] ?? ''}` : `${this.d.title} baru`;
+      $(this.form, '[data-m-heading]').textContent = this.cur ? `Edit ${this.d.title} · ${this.cur[this.d.nameKey] ?? ''}` : Tf('m_new_title', {title: this.d.title});
       $(this.form, '[data-m-sub]').textContent = this.cur ? (this.d.codeKey ? this.cur[this.d.codeKey] ?? '' : '') : 'Belum disimpan';
       const pipe = $(this.form, '[data-m-pipe]');
       if (pipe) { const steps = $$(pipe, '[data-step]'), at = this.cur ? steps.findIndex(s => s.dataset.step === String(this.cur[this.d.pipelineKey])) : 0; steps.forEach((s, i) => { s.classList.toggle('is-done', i < at); s.classList.toggle('is-active', i === at); }); }
