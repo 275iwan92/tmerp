@@ -1,6 +1,8 @@
 {{-- ProDev workbench: markup salinan PERSIS tmerp (semua id io-* dipertahankan; perilaku di JS ProdevWorkbench). --}}
 @once
     <link rel="stylesheet" href="{{ \MockupParts\MockupPartsServiceProvider::asset('prodev.css') }}">
+    {{-- Kulit terang (user 2026-10-01): hanya menimpa warna prodev.css lewat token DevLib. --}}
+    <link rel="stylesheet" href="{{ \MockupParts\MockupPartsServiceProvider::asset('prodev-light.css') }}">
     <script src="{{ \MockupParts\MockupPartsServiceProvider::asset('tmdieline.js') }}"></script>
 @endonce
 <div {{ $attributes->class('io-app') }} {!! $dl() !!} data-mp-prodev data-config="{{ json_encode($config()) }}">

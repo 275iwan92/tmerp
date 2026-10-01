@@ -59,6 +59,8 @@
 .io-chip{display:inline-block;padding:1px 8px;border-radius:10px;background:#12304a;border:1px solid #2d5878;font-size:11px;line-height:1.7}
 .io-sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:6px;border:1px solid #ffffff40}
 .io-warns{margin:10px 0 0;padding-left:18px;color:#ffd9a1;font-size:11.5px;line-height:1.6}
+/* v2 saja: dulu style inline di workbench.js, dijadikan kelas supaya kulit terang (prodev-light.css) bisa menimpanya. */
+.io-warntxt{color:#ffd9a1}
 .io-subh{margin:12px 0 6px;font-size:10.5px;font-weight:800;letter-spacing:.05em;color:var(--io-muted);text-transform:uppercase}
 .io-colors{display:flex;flex-wrap:wrap;gap:6px}
 .io-colorchip{font-size:11.5px;color:#d9f5ff;padding:3px 9px;border-radius:8px;background:#0b2236;border:1px solid #1d3a52}

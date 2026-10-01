@@ -2267,12 +2267,12 @@
       function update(reset) {
           metrics();
           $('machineInfo').innerHTML = '<b>' + S.m[0] + '</b><br>Maximum printable bed: <b>' + S.m[1] + ' × ' + S.m[2] + ' cm</b>'
-              + (S.m[3] ? '<br><span style="color:#ffd9a1">⚠ max_paper_size belum diisi di Master Mesin — angka di atas asumsi.</span>' : '');
+              + (S.m[3] ? '<br><span class="io-warntxt">⚠ max_paper_size belum diisi di Master Mesin — angka di atas asumsi.</span>' : '');
           $('diecutInfo').innerHTML = !S.d
-              ? '<span style="color:#ffd9a1">⚠ Belum ada mesin plong aktif di Master Mesin.</span>'
+              ? '<span class="io-warntxt">⚠ Belum ada mesin plong aktif di Master Mesin.</span>'
               : '<b>' + S.d[0] + '</b><br>' + (S.d[1] && S.d[2]
                   ? 'Maksimum meja plong: <b>' + S.d[1] + ' × ' + S.d[2] + ' cm</b>'
-                  : '<span style="color:#ffd9a1">⚠ Ukuran meja belum diisi di Master Mesin — batas plong belum bisa ditegakkan, canvas baru dibatasi bed mesin cetak saja.</span>');
+                  : '<span class="io-warntxt">⚠ Ukuran meja belum diisi di Master Mesin — batas plong belum bisa ditegakkan, canvas baru dibatasi bed mesin cetak saja.</span>');
           if (reset) S.objs = [];
           render();
           calculator();

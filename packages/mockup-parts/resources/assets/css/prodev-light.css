@@ -1,0 +1,86 @@
+/* ProDev workbench — kulit TERANG (user 2026-10-01: "warna bg nya buat putih juga").
+   prodev.css tetap salinan persis v1 (gelap) dan tidak diubah; file ini hanya menimpa WARNA lewat token DevLib
+   (ikut tema), tata letak tidak disentuh. Melepas <link>-nya di workbench.blade.php = kembali gelap.
+   Pratinjau Master Card (.io-mc-*) sengaja dibiarkan: lembarnya memang sudah putih. */
+.io-app{--io-panel:var(--dl-surface);--io-line:var(--dl-border);--io-text:var(--dl-ink-strong);--io-muted:var(--dl-f-muted);--io-cyan:var(--dl-accent);
+    --io-ok:var(--dl-success);--io-ok-soft:color-mix(in srgb,var(--dl-success) 12%,var(--dl-surface));--io-ok-line:color-mix(in srgb,var(--dl-success) 40%,var(--dl-surface));
+    --io-warn:color-mix(in srgb,var(--dl-amber) 75%,var(--dl-ink-strong));--io-warn-soft:color-mix(in srgb,var(--dl-amber) 12%,var(--dl-surface));
+    background:var(--dl-surface)}
+.io-app .io-badge{border-color:var(--dl-info-line);background:var(--dl-accent-soft);color:var(--dl-accent)}
+.io-app .io-sec,.io-app .io-panel,.io-app .io-canvas-card{background:var(--dl-surface);box-shadow:none}
+.io-app .io-sec-head{color:var(--dl-ink-strong)}
+.io-app .io-sec.open .io-sec-head{background:var(--dl-accent-soft)}
+.io-app .io-sec:not(.open) .io-sec-head{background:var(--dl-surface-alt)}
+.io-app .io-sec:not(.open) .io-sec-head:hover{background:var(--dl-hover);color:var(--dl-accent)}
+.io-app .io-sec-count,.io-app .io-src,.io-app .io-pill{background:var(--dl-accent-soft);color:var(--dl-accent)}
+.io-app .io-src.warn{background:var(--io-warn-soft);color:var(--io-warn)}
+.io-app .io-empty{border-color:var(--dl-border-hover)}
+.io-app .io-tbl th{border-bottom-color:var(--dl-border-hover)}
+.io-app .io-tbl td{border-bottom-color:var(--dl-border);color:var(--dl-ink-strong)}
+.io-app .io-inputs{color:var(--dl-ink)}
+.io-app .io-chip{background:var(--dl-chip);border-color:var(--dl-border-hover)}
+.io-app .io-sw{border-color:var(--dl-border-hover)}
+.io-app .io-warns,.io-app .io-warntxt{color:var(--io-warn)}
+.io-app .io-colorchip{color:var(--dl-ink-strong);background:var(--dl-surface-alt);border-color:var(--dl-border)}
+.io-app .io-mbtn{color:var(--dl-ink-strong);border-color:var(--dl-border-hover);background:var(--dl-surface)}
+.io-app .io-mbtn:hover{background:var(--dl-hover);color:var(--dl-accent)}
+.io-app .io-mbtn.on{background:var(--dl-accent);border-color:var(--dl-accent);color:var(--dl-white)}
+.io-app .io-mbtn.warn{border-color:var(--dl-amber);color:var(--io-warn);background:var(--io-warn-soft)}
+.io-app .io-ibtn{color:var(--dl-f-muted)}
+.io-app .io-ibtn:hover{background:var(--dl-hover);color:var(--dl-accent)}
+.io-app .io-ibtn.bad:hover{background:var(--dl-danger-soft);color:var(--dl-danger)}
+.io-app .io-dd{background:var(--dl-surface);border-color:var(--dl-accent);box-shadow:var(--dl-shadow-pop)}
+.io-app .io-dd button:hover{background:var(--dl-hover)}
+.io-app .io-dd b{color:var(--dl-ink-strong)}
+.io-app .io-dialog{border-color:var(--dl-amber);background:var(--io-warn-soft);color:var(--dl-ink-strong)}
+.io-app .io-row3 label{color:var(--dl-f-label)}
+.io-app .io-stat.ok{background:var(--io-ok-soft);color:var(--io-ok)}
+.io-app .io-stat.warn{background:var(--io-warn-soft);color:var(--io-warn)}
+.io-app .io-stat.bad{background:var(--dl-danger-soft);color:var(--dl-danger)}
+.io-app .io-stat.mute{background:var(--dl-chip);color:var(--dl-f-muted)}
+.io-app .io-panel h2{color:var(--dl-ink-strong)}
+.io-app label{color:var(--dl-f-label)}
+.io-app select,.io-app input{background:var(--dl-surface)!important;border-color:var(--dl-f-line)!important}
+.io-app select:focus,.io-app input:focus{box-shadow:0 0 0 3px var(--dl-accent-ring)}
+.io-app select option{background:var(--dl-surface)}
+.io-app .io-btn{border-color:var(--dl-border-hover);background:var(--dl-surface);color:var(--dl-ink-strong)}
+.io-app .io-btn:hover{background:var(--dl-hover)}
+.io-app .io-btn.green{background:var(--io-ok-soft);border-color:var(--io-ok-line);color:var(--io-ok)}
+.io-app .io-btn.warn{background:var(--io-warn-soft);border-color:var(--dl-amber);color:var(--io-warn)}
+.io-app .io-metric,.io-app .io-mini,.io-app .io-jobfix,.io-app .io-spec,.io-app .io-compact,.io-app .io-bar{background:var(--dl-surface-alt);border-color:var(--dl-border)}
+.io-app .io-jobfix b{color:var(--dl-ink-strong)}
+.io-app .io-spec td{border-bottom-color:var(--dl-border)}
+.io-app .io-spec td:last-child{color:var(--dl-ink-strong)}
+.io-app .io-spec table.rank tr.best td{color:var(--io-ok)}
+.io-app .io-spec table.rank th{border-bottom-color:var(--dl-border)}
+.io-app .io-notice.info{color:var(--dl-accent);background:var(--dl-info-soft);border-color:var(--dl-info-line)}
+.io-app .io-notice.ok{color:var(--io-ok);background:var(--io-ok-soft);border-color:var(--io-ok-line)}
+.io-app .io-notice.bad{color:var(--dl-danger);background:var(--dl-danger-soft);border-color:var(--dl-danger-line)}
+.io-app .io-auto-box{background:var(--dl-accent-soft);border-color:var(--dl-info-line)}
+.io-app .io-toggle-row b{color:var(--dl-ink-strong)}
+.io-app .io-slider{background:var(--dl-switch-off);border-color:var(--dl-border-hover)}
+.io-app .io-slider:before,.io-app .io-toggle input:checked+.io-slider:before{background:var(--dl-white)}
+.io-app .io-toggle input:checked+.io-slider{background:var(--dl-success);border-color:var(--dl-success)}
+.io-app .io-auto-result{background:var(--dl-surface);border-color:var(--dl-info-line)}
+.io-app .io-auto-result b{color:var(--dl-accent)}
+/* Area gambar: latar abu muda supaya lembar cetak (putih) tetap terlihat. */
+.io-app .io-stage{border-color:var(--dl-border-hover);background-color:var(--dl-bg);
+    background-image:linear-gradient(var(--dl-border) 1px,transparent 1px),linear-gradient(90deg,var(--dl-border) 1px,transparent 1px)}
+.io-app .io-rulerx,.io-app .io-rulery{background:var(--dl-surface-alt);border-color:var(--dl-border-hover);color:var(--dl-f-muted)}
+.io-app .io-sheetlabel{background:color-mix(in srgb,var(--dl-surface) 88%,transparent);border:1px solid var(--dl-border)}
+.io-app .io-warn{background:var(--dl-danger-soft);border-color:var(--dl-danger);color:var(--dl-danger)}
+.io-app .io-upload{border-color:var(--dl-border-hover);background:var(--dl-surface-alt);color:var(--dl-accent)}
+.io-app .io-file{color:var(--dl-f-muted)}
+.io-app .io-mode-switch{background:var(--dl-chip);border-color:var(--dl-border)}
+.io-app .io-mode-switch button{color:var(--dl-f-muted)}
+.io-app .io-mode-switch button.active{background:var(--dl-surface);color:var(--dl-accent);box-shadow:0 1px 3px var(--dl-overlay-soft)}
+.io-app .io-result{background:var(--io-ok-soft);border-color:var(--io-ok-line);color:var(--io-ok)}
+.io-app .io-result .caption,.io-app .io-result small{color:var(--io-ok)}
+.io-app .io-result b{color:var(--dl-ink-strong)}
+.io-app .io-bar i{background:linear-gradient(90deg,color-mix(in srgb,var(--dl-success) 30%,var(--dl-surface)),color-mix(in srgb,var(--dl-success) 65%,var(--dl-surface)))}
+.io-app .io-bar span{color:var(--dl-ink-strong);text-shadow:none}
+/* Diagram potong plano: teks SVG memakai atribut fill terang (untuk latar gelap) -> ditimpa di sini. */
+.io-app .io-cut{background:var(--dl-surface-alt);border-color:var(--dl-border)}
+.io-app .io-cut text{fill:var(--dl-ink)}
+.io-app .io-instructions{color:var(--dl-ink);background:var(--dl-info-soft);border-color:var(--dl-info-line)}
+.io-app .io-instructions b{color:var(--dl-accent)}
