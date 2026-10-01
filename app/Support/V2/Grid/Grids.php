@@ -31,6 +31,7 @@ final class Grids
         Master\CurrencyLookup::class,
         Master\ExchangeRateLookup::class,
         Master\SupplierCategoryLookup::class,
+        Master\ProductCategoryLookup::class,
         Master\OfficeHoursLookup::class,
         Master\CustomerReceivingHoursLookup::class,
         Master\DeliveryDelayReasonsLookup::class,
