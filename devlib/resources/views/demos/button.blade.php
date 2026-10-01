@@ -16,4 +16,11 @@
     <x-dl::card title="Split button">
         <x-dl::split-button />
     </x-dl::card>
+    <x-dl::card title="Menu button" description="Satu tombol, beberapa pilihan (mis. Print / Email untuk form yang punya lebih dari satu dokumen). Item ber-act memancarkan event dl:menu.">
+        <div class="dl-row">
+            <x-dl::menu-button preset="print" :items="[['label' => 'Master Card', 'icon' => 'fa-id-card', 'sub' => 'A4 landscape', 'act' => 'print-mc'], ['label' => 'ACC Digital', 'icon' => 'fa-stamp', 'sub' => 'Proof sheet', 'act' => 'print-acc']]" />
+            <x-dl::menu-button preset="email" :items="[['label' => 'Master Card', 'icon' => 'fa-id-card', 'act' => 'email-mc'], ['label' => 'ACC Digital', 'icon' => 'fa-stamp', 'disabled' => true, 'title' => 'Belum ada dokumen']]" />
+            <x-dl::menu-button label="More" icon="fa-ellipsis" :items="[['label' => 'Open DevLib', 'icon' => 'link', 'href' => '#']]" />
+        </div>
+    </x-dl::card>
 </div>

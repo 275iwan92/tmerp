@@ -86,3 +86,8 @@
 .io-app .io-instructions b{color:var(--dl-accent)}
 /* Kotak pilih warna tinta: padding isian umum (9px) membuat contoh warnanya tinggal segaris. */
 .io-app .io-edit input[type=color]{padding:2px!important;width:56px;min-width:56px;height:32px;cursor:pointer}
+/* Panel atas = panel form standar DevLib; pratinjau Master Card di bawah dialog DevLib (.dl-mov z-index 120) supaya dialog e-mail tampil di atasnya. */
+.io-app .dl-form__panel{margin-bottom:11px}
+.io-app .dl-form__panel .io-status{margin-left:0}
+.io-app .io-mc-modal{z-index:110}
+.io-app .io-mc-bar .dl-docshare__menu{display:none}

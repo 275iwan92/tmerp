@@ -220,7 +220,7 @@
           if (!ok()) { msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum simpan.', 'bad'); return; }
 
           const btn = confirm ? $('confirm') : $('save');
-          const label = btn.textContent;
+          const label = btn.innerHTML;   // tombol DevLib berisi ikon + label
           btn.disabled = true;
           btn.textContent = confirm ? 'Menyimpan & confirm…' : 'Menyimpan…';
 
@@ -262,7 +262,44 @@
               msg('Gagal menyimpan: ' + (e && e.message ? e.message : e), 'bad');
           } finally {
               btn.disabled = false;
-              btn.textContent = label;
+              btn.innerHTML = label;
+              docState();
+          }
+      }
+
+      // Badge status di panel atas (istilah baku form: Draft / Confirmed).
+      function docState() {
+          const b = $('docState');
+          b.textContent = S.p.confirmed ? 'Confirmed' : 'Draft';
+          b.className = 'dl-badge dl-badge--' + (S.p.confirmed ? 'success' : 'neutral');
+      }
+
+      // Salinan online / e-mail Master Card tidak memuat prodev.css -> aturan .io-mc-* ikut di dalam lembarnya.
+      function mcInlineCss() {
+          const sheet = document.querySelector('.io-mc-sheet');
+          if (!sheet || sheet.querySelector('style[data-mc]')) return;
+          let css = '';
+          for (const ss of document.styleSheets) {
+              try { for (const r of ss.cssRules) if (r.selectorText && r.selectorText.includes('.io-mc-')) css += r.cssText; } catch (e) { /* stylesheet lintas-asal */ }
+          }
+          const st = document.createElement('style');
+          st.setAttribute('data-mc', ''); st.textContent = css;
+          sheet.prepend(st);
+      }
+
+      // Print ▾ / Email ▾ di panel atas: Master Card = pratinjau ini (Email -> dialog e-mail doc-share dengan lembar ini).
+      function panelMenu(act) {
+          if (act !== 'print-mc' && act !== 'email-mc') return;
+          openMasterCard();
+          if (act === 'email-mc') {
+              mcInlineCss();
+              const ds = $('mcShare'), share = ds && ds.dlDocShare;
+              if (!share) return;
+              // Master Card digambar di layar ini (teksnya tidak ikut kamus), jadi bahasa cetak = bahasa layar:
+              // pilihan bahasa di dialog e-mail dibuang supaya tidak mengirim lembar kosong dari salinan halaman.
+              share.lang = Devlib.h.NUM.lang;
+              if (share.mail) share.mail.querySelectorAll('[data-ds-langs]').forEach(x => x.remove());
+              share.run('email');
           }
       }
 
@@ -920,6 +957,7 @@
           accInit();
           fitViewBox();
           jobIdentity();
+          docState();
           if (S.p.orderQty > 0) $('converterInput').value = S.p.orderQty;
           bindSpecEvents();
           renderSpecSections();
@@ -1348,7 +1386,7 @@
           }).join('');
           return '<div class="io-subh">Special colours — filled in by the officer</div>'
               + '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>Slot</th><th>Unit</th><th>Ink name</th><th>Colour</th><th>Coverage %</th><th>Area / pcs</th><th>Area / sheet</th></tr>' + tr + '</table></div>'
-              + '<div class="io-note-s">Empty slots are not saved. A filled slot is saved with Save All; clear the ink name to remove it.</div>';
+              + '<div class="io-note-s">Empty slots are not saved. A filled slot is saved with Save; clear the ink name to remove it.</div>';
       }
 
       function inkHtml(p, sp) {
@@ -1986,7 +2024,7 @@
           $('resetLayout').onclick = () => { S.objs = []; S.selected = null; update(true); };
           $('save').onclick = () => persist(false);
           $('confirm').onclick = () => persist(true);
-          $('printMc').onclick = openMasterCard;
+          app.addEventListener('dl:menu', e => panelMenu(e.detail.act));
           $('mcPrint').onclick = () => window.print();
           $('mcClose').onclick = closeMasterCard;
           $('mcModal').onclick = e => { if (e.target === $('mcModal')) closeMasterCard(); };

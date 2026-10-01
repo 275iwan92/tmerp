@@ -2516,6 +2516,7 @@ html.dl-locked body{overflow:hidden}
 .dl-docshare.is-open .dl-docshare__list{display:block}
 .dl-docshare__list button{display:grid;grid-template-columns:22px 1fr;column-gap:8px;width:100%;padding:8px 10px;border:0;background:none;border-radius:7px;color:var(--dl-ink);text-align:left;cursor:pointer;font:inherit}
 .dl-docshare__list button:hover{background:var(--dl-hover)}
+.dl-docshare__list button:disabled{opacity:.45;cursor:not-allowed;background:none}
 .dl-docshare__list button i{grid-row:span 2;align-self:center;color:var(--dl-accent)}
 .dl-docshare__list small{grid-column:2;color:var(--dl-muted);font-size:.78em}
 .dl-docshare.is-busy{opacity:.6;cursor:progress}

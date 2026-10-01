@@ -25,14 +25,13 @@
         $accProduct = \App\Models\Master\ProdPart::whereKey($partId)->value('product_id');
         $accDoc = $accProduct ? \App\Support\V2\Data\ProductMaster::doc($accProduct) : null;
     @endphp
-    <x-dl::action-bar>
-        <x-dl::doc-share target="[data-mp-prodev]" type="prodev" :doc-id="$partId" :number="\App\Models\Master\ProdPart::whereKey($partId)->value('mastercard_code')" title="Pro-Dev Layout" orientation="landscape" />
-    </x-dl::action-bar>
     {{-- Part & Dieline (rulebook A.17): ProDev berhak mengubah dieline & mockup. Tab ke-2 supaya workbench tampil seperti semula. --}}
     @php $dieline = Prodev::dieline($partId); @endphp
     <x-dl::tabs :tabs="['impo' => ['Imposition', 'fa-table-cells'], 'dieline' => ['Part & Dieline', 'fa-box-open']]">
         <x-slot:impo>
-            <x-mp::prodev.workbench :data="Prodev::workbench($partId, route('v2.screen', 'prodev'), route('v2.screen', 'procost').'?part='.$partId)" />
+            {{-- Print / Email ada di panel atas workbench (Master Card + ACC Digital), bukan lagi bar terpisah di atas layar. --}}
+            <x-mp::prodev.workbench :data="Prodev::workbench($partId, route('v2.screen', 'prodev'), route('v2.screen', 'procost').'?part='.$partId,
+                $accDoc ? route('v2.screen', 'product-acc').'?id='.$accDoc['id'] : null)" />
         </x-slot:impo>
         <x-slot:dieline>
             @if ($dieline)

@@ -8,24 +8,29 @@
 <div {{ $attributes->class('io-app') }} {!! $dl() !!} data-mp-prodev data-config="{{ json_encode($config()) }}">
     <input type="file" id="io-artFileReal" accept="image/jpeg,image/png,application/pdf,.ai,.eps" hidden>
     <div class="io-shell">
-        <div class="io-top">
-            <div>
-                <h1>Imposition Plano Optimizer</h1>
-                <p class="io-sub">Pro-Dev — nesting manual &amp; optimasi plano per job cetak (artwork vector + garis dieline struktural)</p>
-            </div>
-            <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
-                <!-- Label "Back" dikunci berbahasa Inggris di kedua mode bahasa
-                (FORM_UI_STANDARD.md §1). href diisi JS dari window.__PRODEV.backUrl
-                karena blok ini ada di dalam blok verbatim -- route() Blade tidak jalan. -->
-                <a class="io-btn" id="io-back" href="#">← Back</a>
-                <!-- 3 tombol aksi di top bar (permintaan user 2026-09-18):
-                Save All, Confirm, dan pratinjau/cetak Master Card. -->
-                <button class="io-btn" id="io-save">💾 Save All</button>
-                <button class="io-btn green" id="io-confirm">✓ Confirm</button>
-                <button class="io-btn" id="io-printMc">🖨 Preview &amp; Print Master Card</button>
-                <span class="io-status" id="io-status"></span>
-                <div class="io-badge" id="io-jobcount">LIVE PACKAGING JOBS</div>
-            </div>
+        {{-- Panel atas = panel form standar DevLib (user 2026-10-01): judul + kode + status, lalu Email, Print, Confirm, Save, Back di ujung.
+             Print / Email punya dua dokumen: Master Card dan ACC Digital. id io-* dipertahankan (dipakai workbench.js). --}}
+        @php
+            $cfg = $config();   // properti bernama $data tidak diteruskan Laravel ke view komponen
+            $accUrl = $cfg['accUrl'] ?? null;
+            $noAcc = t('This part has no product yet, so there is no ACC Digital document.');
+            $docs = fn (string $verb) => [
+                ['label' => 'Master Card', 'icon' => 'fa-id-card', 'sub' => t('Layout, BOM, ink and BOP on one A4 landscape sheet'), 'act' => $verb.'-mc'],
+                ['label' => 'ACC Digital', 'icon' => 'fa-stamp', 'sub' => t('Digital proof / customer ACC sheet'), 'href' => $accUrl ? $accUrl.($verb === 'email' ? '&ds_do=email' : '') : null,
+                    'disabled' => ! $accUrl, 'title' => $accUrl ? null : $noAcc],
+            ];
+        @endphp
+        <div class="dl-form__panel">
+            <div class="dl-form__heading"><div class="dl-form__title">Imposition Plano Optimizer</div><small id="io-jobcount"></small></div>
+            <x-dl::badge label="Draft" tone="neutral" id="io-docState" />
+            <span class="io-status" id="io-status"></span>
+            <span class="dl-print__spacer"></span>
+            <x-dl::menu-button preset="email" size="sm" :items="$docs('email')" />
+            <x-dl::menu-button preset="print" size="sm" :items="$docs('print')" />
+            <x-dl::button preset="confirm" size="sm" id="io-confirm" />
+            <x-dl::button preset="save" size="sm" type="button" id="io-save" />
+            <span class="dl-form__sep"></span>
+            <x-dl::button variant="secondary" size="sm" icon="back" label="Back" href="#" id="io-back" />
         </div>
 
         <div class="io-layout">
@@ -260,6 +265,8 @@
             <span id="io-mcState" class="io-mc-state"></span>
             <span style="flex:1"></span>
             <button class="io-btn" id="io-mcPrint">🖨 Print (A4 landscape)</button>
+            {{-- Email Master Card: lembar pratinjau ini jadi dokumennya (menu cetak doc-share disembunyikan: cetak = tombol di kiri). --}}
+            <x-dl::doc-share id="io-mcShare" target=".io-mc-sheet" type="prodev-mastercard" :doc-id="$cfg['partId'] ?? null" :number="$cfg['docNo'] ?? null" title="Master Card" orientation="landscape" size="sm" />
             <button class="io-btn warn" id="io-mcClose">✕ Tutup</button>
         </div>
         <div class="io-mc-scroll">

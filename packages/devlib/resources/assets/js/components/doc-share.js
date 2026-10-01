@@ -41,6 +41,9 @@
         try { localStorage.setItem('dl-print-lang:' + this.cfg.type, this.lang); } catch (_) {}
       }));
       paint();
+      // Dibuka dari layar lain dengan ?ds_do=email (mis. Email ▾ > ACC Digital di form ProDev): dialog e-mail langsung terbuka.
+      const q = new URLSearchParams(location.search);
+      if (this.mail && q.get('ds_do') === 'email' && !q.has('print_lang')) setTimeout(() => this.run('email'), 0);
     }
 
     // DocShare yang mencetak: diri sendiri bila bahasa cetak = bahasa layar; selain itu salinan halaman yang sama dirender server

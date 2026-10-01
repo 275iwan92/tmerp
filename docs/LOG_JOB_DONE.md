@@ -3,6 +3,22 @@
 
 ---
 
+## 2026-10-01 -- ProDev v2: panel atas = panel form standar, Print / Email berpilihan
+
+- Perintah user: panel atas disamakan dengan panel form standar; Print jadi satu tombol dengan 2 pilihan (Master Card, ACC Digital),
+  Email juga untuk keduanya (rulebook C.27).
+- Objek DevLib baru `x-dl::menu-button` (`MenuButton.php`, `menu-button.js`, contoh di demo Button devlib.test): tombol + daftar pilihan;
+  item ber-href membuka alamat, item ber-act memancarkan event `dl:menu`. `x-dl::doc-share`: `?ds_do=email` membuka dialog e-mail langsung.
+- `workbench.blade.php`: bar `io-top` diganti `dl-form__panel` (judul, kode MC, badge Draft/Confirmed, Email ▾, Print ▾, Confirm, Save, Back);
+  id `io-save` / `io-confirm` / `io-back` / `io-status` / `io-jobcount` dipertahankan. Bar doc-share lama (mencetak layar workbench) dilepas.
+- Print > Master Card = pratinjau Master Card (tombol cetak A4 landscape di situ); Email > Master Card = dialog e-mail doc-share dengan
+  lembar Master Card (gambar / PDF / link online; CSS lembar ikut di dalam salinan). Print / Email > ACC Digital = layar ACC / Proof
+  Digital product itu (Email langsung membuka dialog e-mail). Part tanpa product: pilihan ACC Digital mati + keterangan.
+- Uji: headless (2 menu, 4 item, badge Draft, dialog e-mail tampil di atas pratinjau, subjek "Master Card MC-463"); test ratchet +
+  V2Shell + ProdevPrintMastercard lolos. Pengiriman e-mail sungguhan dan cek mata di browser belum dilakukan.
+- Belum ada (alur belum tersedia di ProDev): Undo, Delete, Cancel, Back to Draft, New, tab History, kunci isian setelah Confirm;
+  Master Card belum punya unduhan PDF / JPEG / HTML online dari menu Print (baru printer + e-mail).
+
 ## 2026-10-01 -- ProDev v2: 4 slot warna khusus di Ink Configuration
 
 - Perintah user: "sediakan 4 lagi untuk warna khusus untuk di isi oleh officer" (rulebook C.26).

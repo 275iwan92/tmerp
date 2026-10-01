@@ -55,7 +55,8 @@ final class Prodev
         return ctype_digit($part) && ProdPart::whereKey((int) $part)->exists() ? (int) $part : null;
     }
 
-    public static function workbench(int $id, string $backUrl, ?string $costingUrl): array
+    // $accUrl = layar cetak ACC Digital product part ini (null = belum ada product) -> pilihan kedua Print / Email di panel atas.
+    public static function workbench(int $id, string $backUrl, ?string $costingUrl, ?string $accUrl = null): array
     {
         $c = self::component($id);
 
@@ -71,6 +72,9 @@ final class Prodev
             'marginMm' => SysConstant::number('PRODEV_MARGIN_MM', 8.0),
             'backUrl' => $backUrl,
             'costingUrl' => $costingUrl,
+            'accUrl' => $accUrl,
+            'partId' => $id,
+            'docNo' => ProdPart::find($id)?->displayMastercardCode(),
             'serverUrl' => route('v2.prodev.call', $id),
             'uploadUrl' => route('v2.prodev.artwork', $id),
             'uploadMaxMb' => $c->artworkMaxMb(),
