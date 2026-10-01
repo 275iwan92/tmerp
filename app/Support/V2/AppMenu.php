@@ -22,7 +22,7 @@ final class AppMenu
 
     public static function modules(SecUser $user): array
     {
-        $rows = self::withShortcuts(SysAppMenu::query()->where('activate', true)->orderBy('sort_order')->orderBy('id')->get());
+        $rows = SysAppMenu::query()->where('activate', true)->orderBy('sort_order')->orderBy('id')->get();
         $children = $rows->whereNotNull('parent_id')->groupBy('parent_id');
         $allowed = $user->is_admin ? null : $user->accessibleModules()->keys();
         // Direksi boleh melihat menu operasional (aturan user 2026-09-25); pendaratan awalnya Laporan Manajemen (login).
@@ -43,9 +43,6 @@ final class AppMenu
                 } else {
                     $out[] = self::item($c, $routes);
                 }
-            }
-            foreach (self::extraGroups($m->code) as $g) {
-                $out[] = $g;
             }
             if ($out) {
                 $modules[] = ['code' => $m->code, 'short' => $m->short_label, 'label' => self::label($m), 'icon' => $m->icon ?: 'fa-solid fa-folder', 'children' => $out];
@@ -80,7 +77,7 @@ final class AppMenu
 
     private static function item(SysAppMenu $i, array $routes): array
     {
-        $v2 = str_starts_with((string) $i->target, 'v2:');
+        $v2 = str_starts_with((string) $i->target, 'v2:') || str_starts_with((string) $i->target, '/');
         [$badge, $tone] = $v2 ? ($i->status_code === 'LOCKED' ? self::APPROVED : self::REVIEW)
             : (isset($routes[$i->code]) ? ['v1', null] : ['Belum', 'todo']);
 
@@ -93,61 +90,14 @@ final class AppMenu
         return $n->trans_key ? Translator::t($n->trans_key, $n->label) : $n->label;
     }
 
-    // Pintasan (shortcut_of) = baris menu yang menunjuk ke baris asli di modul lain: label/ikon/target/lencana diwarisi dari
-    // aslinya (satu layar, satu perilaku). Asli nonaktif/hilang -> pintasan ikut hilang.
-    private static function withShortcuts($rows)
-    {
-        $by = $rows->keyBy('id');
-
-        return $rows->filter(function (SysAppMenu $r) use ($by) {
-            if ($r->shortcut_of === null) {
-                return true;
-            }
-            $o = $by->get($r->shortcut_of);
-            if (! $o) {
-                return false;
-            }
-            self::inherit($r, $o);
-
-            return true;
-        })->values();
-    }
-
-    private static function inherit(SysAppMenu $r, SysAppMenu $o): void
-    {
-        foreach (['label', 'trans_key', 'icon', 'object_type', 'target', 'status_code'] as $f) {
-            $r->{$f} = $o->{$f};
-        }
-    }
-
-    // Grup Alur (perjalanan dokumen antar layar) -- milik v2, bukan baris sys_app_menu.
-    private static function extraGroups(string $module): array
-    {
-        return match ($module) {
-            'SALES' => [['label' => 'Alur', 'icon' => 'fa-solid fa-diagram-project', 'items' => [
-                ['code' => 'F-SALES', 'label' => 'Alur Sales: Inquiry → CPDEL', 'icon' => 'fa-solid fa-diagram-project', 'url' => route('v2.flow', 'SALES'), 'type' => 'report'],
-            ]]],
-            'PREORDER' => [['label' => 'Alur', 'icon' => 'fa-solid fa-diagram-project', 'items' => [
-                ['code' => 'F-COSTING', 'label' => 'Alur Costing: ProDev → ProCost → Publish', 'icon' => 'fa-solid fa-diagram-project', 'url' => route('v2.flow', 'COSTING'), 'type' => 'report'],
-                ['code' => 'G-PRODUCT', 'label' => 'Pedoman: Master Product & Revisi', 'icon' => 'fa-solid fa-book', 'url' => route('v2.guide', 'product-master'), 'type' => 'report'],
-            ]]],
-            default => [],
-        };
-    }
-
     // URL tujuan satu item: layar v2 (target v2:slug), layar v1, atau null (belum ada layar).
     public static function resolve(string $code): array
     {
         $i = SysAppMenu::query()->where('code', $code)->first();
         abort_unless($i, 404);
-        if ($i->shortcut_of !== null) {
-            $o = SysAppMenu::query()->find($i->shortcut_of);
-            abort_unless($o && $o->activate, 404);
-            self::inherit($i, $o);
-        }
-        // Modul/grup induk dimatikan (activate=0) -> route itemnya ikut tertutup, bukan hanya menunya.
-        for ($p = $i; $p; $p = $p->parent_id ? SysAppMenu::query()->find($p->parent_id) : null) {
-            abort_unless($p->activate, 404);
+        abort_unless(self::active($i, SysAppMenu::query()->get()->keyBy('id')), 404);
+        if (str_starts_with((string) $i->target, '/')) {
+            return ['v2', url($i->target), $i];
         }
         if (str_starts_with((string) $i->target, 'v2:')) {
             return ['v2', route('v2.screen', substr($i->target, 3)), $i];
@@ -155,6 +105,32 @@ final class AppMenu
         $v1 = MenuRoutes::map()[$code] ?? null;
 
         return $v1 ? ['v1', $v1, $i] : ['none', null, $i];
+    }
+
+    // Layar tanpa baris menu sendiri (form dari tombol di grid, dsb.) ikut hidup-mati layar induknya.
+    private const PART_OF = ['inquiry-new' => 'inquiry', 'inquiry-revise' => 'inquiry', 'inquiry-recalc' => 'inquiry', 'nota-inquiry' => 'inquiry',
+        'sales-price' => 'sales-procost', 'procost' => 'sales-procost', 'procost-instant' => 'sales-procost'];
+
+    // Menu = data yang menunjuk ke layar (cara ScriptCase): layar boleh muncul di banyak menu, cukup tambah baris ber-target sama.
+    // Layar terbuka selama masih ada SATU baris menu aktif (beserta semua induknya) yang menunjuk ke situ; modul dimatikan ->
+    // layarnya tertutup kecuali modul lain juga memakainya. Layar yang tidak dikelola menu selalu terbuka.
+    public static function open(string $slug): bool
+    {
+        $by = SysAppMenu::query()->get()->keyBy('id');
+        $rows = $by->where('target', 'v2:'.(self::PART_OF[$slug] ?? $slug));
+
+        return $rows->isEmpty() || $rows->contains(fn (SysAppMenu $r) => self::active($r, $by));
+    }
+
+    private static function active(SysAppMenu $i, $by): bool
+    {
+        for ($p = $i; $p; $p = $by->get($p->parent_id)) {
+            if (! $p->activate) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // Mode Developer (F10) hanya untuk Administrator (is_admin) atau anggota grup security DEVELOPER.

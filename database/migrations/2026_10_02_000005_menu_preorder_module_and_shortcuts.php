@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Schema;
 // Scope modul (user 2026-10-02): Inquiry + Pro-Dev + Pro-Cost + Quotation = SATU menu besar sendiri (modul menu PREORDER)
 // yang punya saklar `activate` sendiri; mati -> menu & route-nya tertutup, Customer Order / CPDEL / Delivery (SALES) tetap jalan.
 // Izin tetap memakai modul SALES (required_object), jadi tidak ada perubahan matriks hak akses.
-// Master yang dibutuhkan muncul sebagai PINTASAN (shortcut_of -> baris asli di Master Data): layar, route, dan hak akses
-// ikut layar aslinya; salinan layar tidak ada.
+// Master yang dibutuhkan muncul sebagai PINTASAN = baris menu biasa ber-target sama dengan baris di Master Data (izin MDATA):
+// satu layar, tanpa salinan. (Kolom shortcut_of yang sempat dibuat di sini dibuang lagi oleh migrasi 000006.)
 return new class extends Migration
 {
     protected $connection = 'tm2sys';
@@ -23,7 +23,6 @@ return new class extends Migration
                 $t->unsignedBigInteger('shortcut_of')->nullable()->after('parent_id');
             });
         }
-        $menu = $db->table('sys_app_menu');
         $grp = $db->table('sys_app_menu')->where('code', 'SALES_INQGRP')->first();
         if (! $grp || $db->table('sys_app_menu')->where('code', 'PREORDER')->exists()) {
             return;

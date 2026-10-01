@@ -103,6 +103,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
     Route::get('/s/{slug}', function (string $slug) {
         $screen = Screens::screen($slug) ?? Grids::screen($slug) ?? abort(404);
+        abort_unless(AppMenu::open($slug), 404);
         abort_unless(Auth::user()->canAccessModule($screen['module_code'] ?? 'SALES'), 403);
         $file = resource_path("views/v2/screens/{$slug}.blade.php");
 
