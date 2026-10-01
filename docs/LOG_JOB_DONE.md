@@ -32,8 +32,14 @@ Perintah user: "kerjakan yang kamu bisa kerjakan selama saya tidur, mandiri tanp
   `docs/mockups/print_doc/app/purchase_quotation_a5|a4.jpg`, `petty_cash_topup|advance|settle_a5.jpg`.
   Perbaikan: nilai Top Up dan Cash Advance tercetak 0 (kolom tidak pernah NULL sehingga `??` tidak jalan); jenis transaksi kini
   ikut bahasa cetak. Format keduanya tetap belum A.
-- **Kamus**: terjemahan Indonesia untuk teks baru (migration `2026_10_02_000044`, cache kamus dibuang otomatis).
-- Migration menu `2026_10_02_000040` s/d `000044` dijalankan di ddtsys DAN tm2sys (satu per satu dengan `--path`).
+- **Setup > Menu Setup (backlog UI-21)**: Grid Lookup v2 atas `sys_app_menu` (`menu-setup`) -- label, label pendek, ikon, urutan, dan
+  aktif / nonaktif tiap baris menu diubah langsung di sel, baris tampil berurutan seperti pohon menu dengan kolom "Under" (induknya).
+  Tidak diubah di sini: baris baru, pindah induk, alamat layar, hak akses, status A / R (tetap lewat migration; LOCKED hanya user).
+  Baris layar ini sendiri beserta induknya (grup Settings, modul Setup) tidak bisa dimatikan dari sini. Memakai lagi baris `SET_MENU`
+  ("Susunan Menu" v1 yang mati) -- dipindah ke grup Settings. Uji: 14 pemeriksaan simpan di ddtsys dalam transaksi yang di-rollback.
+- **Kamus**: terjemahan Indonesia untuk teks baru (migration `2026_10_02_000044` dan `000046`, cache kamus dibuang otomatis).
+  Batas panjang kamus: teks English dan terjemahannya masing-masing paling banyak 255 huruf -- teks panduan grid dipendekkan.
+- Migration `2026_10_02_000040` s/d `000046` dijalankan di ddtsys DAN tm2sys (satu per satu dengan `--path`, hasil dicek di tabel migrations).
 - Uji akhir: `MultiLanguageRatchetTest`, `UiRatchetTest`, `V2ShellTest`, `NoHardcodedDatabaseNameTest`, `MainMenuShellSmokeTest` lolos.
 - **Temuan untuk ditinjau user** (tidak diubah):
   - Dummy stok di ddt punya saldo awal minus (ANIMAL GLUE, saldo awal -60) -- dummy stok perlu dibuat ulang setelah desain gudang disetujui.
