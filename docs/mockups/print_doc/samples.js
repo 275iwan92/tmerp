@@ -1,6 +1,6 @@
 // Data contoh: lampiran kertas (docs/attachments) + database dummy ddt*.
 // `more` = baris tambahan untuk memperagakan A4 portrait (lebih dari 5 baris); `alt` = data lain untuk kasus A4.
-const PRINTED = {printedBy: 'johiwan', printedAt: '01-Okt-2026 15:40'};
+const PRINTED = {printedBy: 'Yuna', printedAt: '01-Okt-2026 16:12'};
 const SAMPLES = {
     SuratJalan: {
         data: {...PRINTED, number: '10262874', date: '2026-10-01', status: 'DRAFT', co_no: '2602282', createdBy: 'yuna',
@@ -25,7 +25,7 @@ const SAMPLES = {
                 '<b>A5 landscape = 5 baris</b> (kertas lama 10 baris). Lebih dari 5 baris otomatis A4 portrait, 22 baris.',
                 '<b>Jumlah dan Satuan</b>: kolom tetap di posisi yang sama di semua dokumen; angka format Indonesia (508,00).',
                 '<b>Kotak total</b> selalu di kanan bawah tabel; catatan di kirinya.',
-                '<b>Kaki dokumen</b>: dicetak oleh siapa, kapan, ukuran kertas, nomor lembar. Nama Pembuat tercetak otomatis.',
+                '<b>Kaki dokumen</b>: "Dicetak pada tanggal jam oleh nama orangnya" (bukan login, tanpa nama aplikasi, nomor dokumen, atau ukuran kertas); kanan: nomor lembar.',
             ],
         },
     },

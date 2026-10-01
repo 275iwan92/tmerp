@@ -119,7 +119,7 @@ class PrintDoc {
         const rows = this.d.rows;
         if (!this.f.priced) {
             const sum = {}; rows.forEach(r => { if (r.qty != null) sum[r.unit] = (sum[r.unit] ?? 0) + +r.qty; });
-            return {lines: [['Jumlah baris', String(rows.length)], ...Object.entries(sum).map(([u, q], i, a) => [i ? '' : 'Total', `${Fmt.num(q)} ${u}`, a.length === 1])]};
+            return {lines: Object.entries(sum).map(([u, q], i, a) => [i ? '' : 'Total', `${Fmt.num(q)} ${u}`, a.length === 1])};
         }
         const r2 = v => Math.round(v * 100) / 100, sub = r2(rows.reduce((t, r) => t + +r.subtotal, 0)), disc = r2(sub * (this.d.disc ?? 0) / 100), dpp = sub - disc;
         const ppn = r2(dpp * (this.d.ppn ?? 0) / 100), pph = r2(dpp * (this.d.pph ?? 0) / 100), grand = r2(dpp + ppn - pph);
@@ -147,8 +147,9 @@ class PrintDoc {
     }
 
     foot() {
-        return `<footer class="foot"><span>Dicetak dari TMERP &middot; ${esc(this.d.printedBy)} &middot; ${esc(this.d.printedAt)} &middot; ${esc(this.d.number)}</span>
-            <span>${this.paper === 'a5' ? 'A5 landscape' : 'A4 portrait'} &middot; Lembar 1/1</span></footer>`;
+        // printedBy = nama orang yang mencetak (bukan login); tanpa nama aplikasi (keputusan user 2026-10-01).
+        return `<footer class="foot"><span>Dicetak pada ${esc(this.d.printedAt)} oleh ${esc(this.d.printedBy)}</span>
+            <span>Lembar 1/1</span></footer>`;
     }
 
     render() {
