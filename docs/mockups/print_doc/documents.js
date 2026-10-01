@@ -69,6 +69,8 @@ PrintDoc.register(class PurchaseOrder extends PrintDoc {
     static extra = [{key: 'disc', label: 'DISK.', width: 17}, {key: 'due_date', label: 'TGL KIRIM', width: 21, type: 'date'}];
     static priced = true;
     static receivers = [['Supplier', 'Menerima pesanan']];
+    // Keputusan user 2026-10-01: PO dari kiri = Pembuat, Mengetahui, Menyetujui, lalu Supplier paling kanan.
+    static signReversed = true;
 });
 
 // Acuan kertas: docs/attachments/expedisi.jpg (Jadwal Kirim; satu lembar per tugas armada)

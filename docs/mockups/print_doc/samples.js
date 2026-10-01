@@ -62,7 +62,7 @@ const SAMPLES = {
         },
     },
     PurchaseOrder: {
-        data: {...PRINTED, number: 'PO26000001976', date: '2026-10-01', status: 'CONFIRMED', pr_no: 'PR2600000166', ppn: 11, createdBy: 'Wiwik A', approvedBy: 'Hendra',
+        data: {...PRINTED, number: 'PO26000001976', date: '2026-10-01', status: 'CONFIRMED', pr_no: 'PR2600000166', ppn: 11, createdBy: 'Eka', knownBy: 'Wiwik', approvedBy: 'Hendra',
             ship_to: 'Gudang Telasih Makmur',
             party: {name: 'PT MAKMUR JAYA USAHA', lines: []},
             notes: [['Catatan', 'Atas kerjasamanya kami ucapkan terima kasih.']],
@@ -79,7 +79,7 @@ const SAMPLES = {
                 '<b>Tabel berkepala</b>: Jumlah, Satuan, Harga, Subtotal di kolom tetap; "IDR" tidak diulang tiap angka.',
                 '<b>Terbilang</b> dihitung sistem sampai sen (kertas membulatkan ke rupiah).',
                 '<b>Total</b>: Diskon hanya muncul bila ada; PPN ditulis persennya.',
-                '<b>Tanda tangan</b>: Supplier, Mengetahui, Menyetujui (nama penyetuju otomatis), Pembuat (nama pembuat otomatis).',
+                '<b>Tanda tangan</b> dari kiri: Pembuat, Mengetahui, Menyetujui, lalu Supplier paling kanan. Nama ketiganya tercetak otomatis.',
             ],
         },
     },
