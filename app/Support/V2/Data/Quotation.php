@@ -9,6 +9,7 @@ use App\Models\Sdi\QuoActivity;
 use App\Models\Sdi\QuoQuotation;
 use App\Services\Sales\CoOrderBuilder;
 use App\Services\Sales\QuotationBuilder;
+use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -42,13 +43,28 @@ final class Quotation
 
     public static function rows(): array
     {
-        $quotes = QuoQuotation::with(['items.inquiry:id_inquiry,sub_state', 'activities'])->orderByDesc('id_quotation')->limit(500)->get();
+        $quotes = QuoQuotation::with(['items.inquiry:id_inquiry,sub_state,cancel_reason', 'activities'])->orderByDesc('id_quotation')->limit(500)->get();
         $customers = CustCustomer::whereIn('id_customer', $quotes->pluck('customer_id')->unique())->pluck('customer_name', 'id_customer');
+        $orders = CoOrder::whereIn('quotation_id', $quotes->pluck('id_quotation'))->get(['quotation_id', 'co_no', 'co_date'])->keyBy('quotation_id');
 
-        return $quotes->map(function (QuoQuotation $q) use ($customers) {
+        return $quotes->map(function (QuoQuotation $q) use ($customers, $orders) {
             $next = $q->activities->whereNotNull('next_action_date')->sortByDesc('activity_date')->first();
+            // Hasil WIN / LOST / Cancel tampil di grid Quotation sendiri (user 2026-10-02: tanpa layar laporan terpisah).
+            $status = self::status($q);
+            $order = $orders->get($q->id_quotation);
 
             return [
+                'closed' => match ($status) {
+                    'WON' => $order?->co_date?->toDateString(),
+                    'LOST', 'CANCELLED' => $q->updated_at?->toDateString(),
+                    default => null,
+                },
+                'co' => $order?->co_no,
+                'reason' => match ($status) {
+                    'LOST' => $q->items->pluck('inquiry.cancel_reason')->filter()->first(),
+                    'CANCELLED' => $q->cancel_reason,
+                    default => null,
+                },
                 'id' => $q->id_quotation,
                 'no' => $q->quotation_no,
                 'customer' => $customers[$q->customer_id] ?? '—',
@@ -59,7 +75,7 @@ final class Quotation
                 'total' => $q->totals()['grand'],
                 'followups' => $q->activities->count(),
                 'next' => $next?->next_action_date?->toDateString(),
-                'status' => self::status($q),
+                'status' => $status,
             ];
         })->all();
     }
@@ -74,12 +90,6 @@ final class Quotation
 
             return $r;
         })->values()->all();
-    }
-
-    // Quotation yang sudah ditutup: WIN / LOST / CANCELLED, dengan bulan tutup & alasan.
-    public static function resultRows(): array
-    {
-        return collect(self::closedOrOpen())->whereIn('status', ['WON', 'LOST', 'CANCELLED'])->values()->all();
     }
 
     public static function followupRows(): array
@@ -291,6 +301,6 @@ final class Quotation
     // Kiriman form DevLib = angka kanonik (1234.5); ketikan manusia dibaca sesuai bahasa tampilan (Devlib\Locale::input).
     private static function num(mixed $v): string
     {
-        return \Devlib\Locale::input($v) ?? '0';
+        return Locale::input($v) ?? '0';
     }
 }

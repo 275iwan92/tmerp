@@ -56,7 +56,6 @@ final class Screens
                 ['label' => 'Laporan', 'items' => [
                     $it('win-rate', ['Win-Rate Sales', 'fa-solid fa-trophy', 'sales/win-rate.blade.php', null]),
                     $it('quotation-outstanding', ['Quotation Terbuka', 'fa-solid fa-hourglass-half', 'v2 baru: quo_quotation PUBLISHED belum WIN/LOST', null]),
-                    $it('quotation-result', ['Hasil Quotation (WIN/LOST)', 'fa-solid fa-chart-column', 'v2 baru: quo_quotation ditutup', null]),
                     $it('quotation-followup', ['Follow-up Quotation', 'fa-solid fa-phone', 'v2 baru: quo_activity', null]),
                 ]],
                 ['label' => 'Alur', 'items' => [self::flowItem('SALES', 'Alur Sales: Inquiry → CPDEL')]],

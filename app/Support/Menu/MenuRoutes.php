@@ -45,6 +45,9 @@ final class MenuRoutes
             'PRE_MD_MACHINE' => route('master.machine'),
             // Halaman yang hanya ada di v2: menu v1 (top bar) membukanya apa adanya supaya barisnya bukan link mati.
             'PRE_PROD_ACC' => route('v2.screen', 'product-acc'),
+            'SALES_MCARD' => route('v2.screen', 'master-card-collection'),
+            'SALES_RPT_QUOOPEN' => route('v2.screen', 'quotation-outstanding'),
+            'SALES_RPT_QUOFU' => route('v2.screen', 'quotation-followup'),
             'PRE_F_SALES' => route('v2.flow', 'SALES'),
             'F-SALES' => route('v2.flow', 'SALES'),
             'F-COSTING' => route('v2.flow', 'COSTING'),

@@ -26,8 +26,9 @@ class SalesMenuNoReportGroupTest extends TestCase
         $this->assertNull($reportGroup, 'Grup "Laporan" terpisah tidak boleh ada lagi di modul Sales.');
 
         $expectedParents = [
-            // Inquiry & Quotation = modul menu sendiri (PREORDER) sejak 2026-10-02, bukan lagi grup 938 di dalam Sales.
-            'SALES_WINRATE' => $db->table('sys_app_menu')->where('code', 'PREORDER')->value('id'),
+            // Inquiry & Quotation = modul menu sendiri (PREORDER) sejak 2026-10-02, bukan lagi grup 938 di dalam Sales;
+            // laporannya di grup Report modul itu (sama dengan menu v2 di ddtsys).
+            'SALES_WINRATE' => $db->table('sys_app_menu')->where('code', 'SALES_INQGRP_RPT')->value('id'),
             'SALES_GRID_SO' => 939,  // Sales Order
             'SALES_MON_ORD' => 939,
             'SALES_RPT' => 939,

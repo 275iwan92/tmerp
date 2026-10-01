@@ -40,6 +40,22 @@
   (`pages/production/prodev.blade.php::jobs()` dan `flat_w_mm = flat_w * 10` di `saveLayout()`), sehingga part dari Inquiry tampil
   "250 × 161 cm" dan tidak muat di canvas mana pun.
 
+## 2026-10-02 -- WIN / LOST digabung ke layar Quotation; menu PREORDER live disamakan dengan dummy
+
+- Perintah user: "Win and lost langsung di dalam quotation, tidak perlu layar baru ... hilangkan win and lost masukkan ke quotation saja",
+  lalu "ubah di mockup juga ubah di tmerp.test karena kan sama code".
+- Laporan **Hasil Quotation (WIN/LOST)** dihapus: baris menu `SALES_RPT_QUORES` (migration `2026_10_02_000009`, ddt + tm2), layar
+  `quotation-result.blade.php` dipindah ke arsip unused, `Quotation::resultRows()` dan entri `Screens` dibuang.
+  Isinya pindah ke grid Quotation: kolom baru **Closed**, **Customer Order**, **Reason (LOST / Cancel)**; filter WIN / LOST / Cancelled
+  dan tombol WIN / LOST di form sudah ada sebelumnya. Win-Rate Sales, Quotation Terbuka, Follow-up Quotation tidak diubah.
+- tm2sys disamakan dengan ddtsys untuk modul ini: grup Report (Quotation Terbuka, Follow-up Quotation, Win-Rate Sales) + izin `COSTING`
+  di baris Pro-Cost (migration `2026_10_02_000010`), Master Card Collection (`2026_10_01_000002`: 2 tabel baru kosong di tm2mst + baris menu).
+  Halaman v2 itu diberi alamat di `MenuRoutes` untuk menu v1. `SalesMenuNoReportGroupTest` disesuaikan lagi (Win-Rate di grup Report).
+- Uji: grid Quotation 200 di kedua situs (kolom Reason tampil; dummy 9 WIN + 1 LOST terisi No. CO / alasan), `/v2/s/quotation-result` = 404,
+  pohon menu PREORDER live vs dummy identik kecuali label "Master Produk" (live) vs "Master Product" (dummy); 3 test menu lulus.
+  Belum dicek mata di browser.
+- Catatan arah (belum keputusan): user berpendapat setelah live, kode mockup.test dan tmerp.test sebaiknya dipisah.
+
 ## 2026-10-02 -- Menu modul Inquiry & Quotation (PREORDER) dilengkapi
 
 - Perintah user: "Module inquiry until quotation is it done become one module? If ok, make sure all menu related with this
