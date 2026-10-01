@@ -52,7 +52,7 @@
 
     <div class="dl-pal-ov" data-dl-palette data-dl="palet perintah Ctrl+K" data-dl-class="bagian Shell" data-dl-src="{{ $menuSource }} (semua item)">
         <div class="dl-pal">
-            <div class="dl-pal__in"><span>🔎</span><input data-dl-pal-input placeholder="{{ \Devlib\Lang::text('Type a form, grid or report name…') }}" autocomplete="off"></div>
+            <div class="dl-pal__in"><span>🔎</span><input data-dl-pal-input placeholder="{{ \Devlib\Lang::text('Type a form, grid or report name…') }}" autocomplete="off"><button type="button" class="dl-pal__x" data-dl-pal-close title="{{ \Devlib\Lang::text('Close') }}" aria-label="{{ \Devlib\Lang::text('Close') }}"><i class="fa-solid fa-xmark"></i></button></div>
             <div class="dl-pal__list" data-dl-pal-list></div>
             <div class="dl-pal__foot"><span><kbd>↑</kbd><kbd>↓</kbd> pilih</span><span><kbd>↵</kbd> buka</span><span><kbd>esc</kbd> tutup</span></div>
         </div>

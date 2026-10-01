@@ -57,7 +57,7 @@
       this.palList = $(this.el, '[data-dl-pal-list]');
       this.pres = [];
       this.psel = 0;
-      this.palOv.addEventListener('click', e => { if (e.target === this.palOv) this.closePalette(); });
+      this.palOv.addEventListener('click', e => { if (e.target === this.palOv || e.target.closest('[data-dl-pal-close]')) this.closePalette(); });
       this.palIn.addEventListener('input', e => this.prender(e.target.value));
       this.palIn.addEventListener('keydown', e => {
         if (e.key === 'ArrowDown') { e.preventDefault(); this.psel = Math.min(this.psel + 1, this.pres.length - 1); this.phi(); }
