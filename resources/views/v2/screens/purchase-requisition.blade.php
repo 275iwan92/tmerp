@@ -73,7 +73,7 @@
         :tabs="['general' => 'General', 'notes' => 'Notes']"
         :created-by="$pr->created_by" :created-at="$pr->created_at?->toDateTimeString()" :updated-by="$pr->updated_by" :updated-at="$pr->updated_at?->toDateTimeString()">
         <x-slot:special>
-            @unless (in_array($pr->status, ['DRAFT', 'SUBMITTED'], true))<x-dl::button size="sm" preset="print" label="Print" :href="route('pur.pr.print', ['pr' => $pr->pr_id])" target="_blank" />@endunless
+            @unless (in_array($pr->status, ['DRAFT', 'SUBMITTED'], true))<x-dl::button size="sm" preset="print" label="Print" :href="\App\Support\V2\Print\PrintDocs::url('purchase-requisition', $pr->pr_id)" target="_blank" />@endunless
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>No. PR</span><b>{{ $pr->doc_no ?: '(saat Confirm)' }}</b></div>

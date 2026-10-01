@@ -27,6 +27,8 @@
     <script nonce="{{ $nonce }}">
         new QRCode(document.getElementById('dl-share-qr'), {text: @json($share->url()), width: 84, height: 84, correctLevel: QRCode.CorrectLevel.M});
         document.getElementById('dl-share-print').addEventListener('click', () => window.print());
+        // Cetakan dokumen (x-dl::print-doc): kotak QR di lembar diisi tautan salinan online ini.
+        document.querySelectorAll('.dl-share-page__doc [data-pd-qr]').forEach(e => { e.innerHTML = ''; new QRCode(e, {text: @json($share->url()), width: 96, height: 96, correctLevel: QRCode.CorrectLevel.M}); e.classList.add('is-on'); });
         document.querySelectorAll('.dl-share-page__doc input, .dl-share-page__doc select, .dl-share-page__doc textarea, .dl-share-page__doc button').forEach(e => e.disabled = true);
     </script>
 </body>

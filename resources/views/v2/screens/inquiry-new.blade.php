@@ -20,7 +20,7 @@
 
 @if ($doc)
     <x-dl::action-bar>
-        <x-dl::doc-share target="[data-mp-inquiry]" type="inquiry-new" :doc-id="$doc['id']" :number="$doc['inquiry_no'] ?? null" title="New Inquiry" />
+        <x-dl::button preset="print" :href="\App\Support\V2\Print\PrintDocs::url('inquiry', $doc['id'], ['from' => 'inquiry-new'])" target="_blank" />
     </x-dl::action-bar>
 @endif
 

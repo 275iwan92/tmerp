@@ -68,7 +68,7 @@
                     <x-dl::badge :label="$inq ? $inq->inquiry_no : 'Belum tersimpan'" />
                     <x-dl::badge :label="$inq?->sub_state ?? 'DRAFT'" :tone="Sales::STATE_TONES[$inq?->sub_state ?? 'DRAFT'] ?? 'neutral'" />
                 </span>
-                <x-dl::doc-share target="#revise-form" type="inquiry-revise" :doc-id="$inq?->id_inquiry" :number="$inq?->inquiry_no" title="Inquiry Revisi" />
+                @if ($inq)<x-dl::button preset="print" :href="\App\Support\V2\Print\PrintDocs::url('inquiry', $inq->id_inquiry, ['from' => 'inquiry-revise'])" target="_blank" />@endif
             </x-dl::action-bar>
             <h2 class="mp-bigname">{{ $doc['name'] }} <small class="mp-hint">→ Rev.{{ $doc['revision_no'] + 1 }}</small></h2>
             <p class="mp-hint">Induk: {{ $doc['code'] }} · No. Desain {{ $doc['design_no'] ?? '—' }} · {{ $doc['customer'] }} · inquiry asal {{ $source?->inquiry_no }}. Product induk tetap utuh.</p>

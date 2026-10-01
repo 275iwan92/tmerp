@@ -134,6 +134,44 @@
       } finally { stage.remove(); html.dataset.dlTheme = theme; }
     }
 
+    // ---- Dokumen cetak (x-dl::print-doc): lembar sudah berukuran kertas (A5 landscape / A4 portrait), jadi tiap lembar
+    // menjadi satu halaman utuh tanpa kepala tambahan; QR salinan online ditaruh di kotak QR lembar itu sendiri.
+    sheets() { const src = this.source(); return src.matches('[data-pd-sheet]') ? [src] : $$(src, '[data-pd-sheet]'); }
+
+    async sheetImages() {
+      await loadLib(LIB_IMG, () => window.htmlToImage);
+      const qr = this.share ? await this.qrData(this.share.url, 220) : null, pages = [];
+      for (const sheet of this.sheets()) {
+        const box = $(sheet, '[data-pd-qr]');
+        if (box && qr) { box.innerHTML = `<img src="${qr}" alt="QR">`; box.classList.add('is-on'); }
+        pages.push({a5: sheet.classList.contains('is-a5'),
+          img: await window.htmlToImage.toJpeg(sheet, {quality: 0.95, pixelRatio: 3, backgroundColor: '#ffffff', style: {boxShadow: 'none'}})});
+      }
+      return pages;
+    }
+
+    async sheetPdf(pages) {
+      await loadLib(LIB_PDF, () => window.jspdf);
+      let doc = null;
+      pages.forEach(p => {
+        const format = p.a5 ? 'a5' : 'a4', orientation = p.a5 ? 'landscape' : 'portrait';
+        if (doc) doc.addPage(format, orientation); else doc = new window.jspdf.jsPDF({orientation, unit: 'mm', format});
+        doc.addImage(p.img, 'JPEG', 0, 0, 210, p.a5 ? 148 : 297, undefined, 'FAST');
+      });
+      return doc;
+    }
+
+    printSheets(pages) {
+      const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;width:0;height:0;border:0;right:0;bottom:0';
+      document.body.appendChild(f);
+      const size = pages[0].a5 ? '210mm 148mm' : 'A4 portrait', h = pages[0].a5 ? 148 : 297;
+      f.contentDocument.write(`<!doctype html><title>${esc(this.fileName())}</title><style>@page{size:${size};margin:0}body{margin:0}img{display:block;width:210mm;height:${h}mm;page-break-after:always}</style>`
+        + pages.map(p => `<img src="${p.img}">`).join(''));
+      f.contentDocument.close();
+      const imgs = $$(f.contentDocument, 'img'); let left = imgs.length;
+      imgs.forEach(i => { i.onload = () => { if (--left === 0) { f.contentWindow.print(); setTimeout(() => f.remove(), 1000); } }; });
+    }
+
     async pdf(img) {
       await loadLib(LIB_PDF, () => window.jspdf);
       const doc = new window.jspdf.jsPDF({orientation: this.cfg.landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4'});
@@ -150,7 +188,7 @@
 
     fileName() { return (this.share && this.share.file) || (this.cfg.title + (this.cfg.no ? '_' + this.cfg.no : '')).replace(/[^A-Za-z0-9._-]+/g, '_'); }
 
-    save(href, ext) { const a = document.createElement('a'); a.href = href; a.download = this.fileName() + '.' + ext; document.body.appendChild(a); a.click(); a.remove(); }
+    save(href, ext, suffix = '') { const a = document.createElement('a'); a.href = href; a.download = this.fileName() + suffix + '.' + ext; document.body.appendChild(a); a.click(); a.remove(); }
 
     busy(on) { this.el.classList.toggle('is-busy', on); $$(this.el, 'button').forEach(b => b.disabled = on); }
 
@@ -164,6 +202,13 @@
           $(this.online, '[data-ds-url] input, input[name=ds_url]').value = this.share.url;
           $(this.online, '[data-ds-qr]').innerHTML = `<img src="${await this.qrData(this.share.url, 180)}" alt="QR">`;
           openLayer(this.el.dataset.online);
+          return;
+        }
+        if (ds.sheets().length) {
+          const pages = await ds.sheetImages();
+          if (what === 'jpeg') pages.forEach((p, i) => this.save(p.img, 'jpg', pages.length > 1 ? '-' + (i + 1) : ''));
+          else if (what === 'pdf') (await ds.sheetPdf(pages)).save(this.fileName() + '.pdf');
+          else if (what === 'printer') this.printSheets(pages);
           return;
         }
         const img = await ds.jpeg();
@@ -193,9 +238,9 @@
         ['to', 'cc', 'bcc', 'subject', 'message'].forEach(n => f.append(n, v(n)));
         f.append('with_link', on('with_link') ? 1 : 0);
         if (on('with_image') || on('with_pdf')) {
-          const img = await ds.jpeg();
+          const pages = ds.sheets().length ? await ds.sheetImages() : null, img = pages ? pages[0].img : await ds.jpeg();
           if (on('with_image')) f.append('image', await (await fetch(img)).blob(), 'dokumen.jpg');
-          if (on('with_pdf')) f.append('pdf', (await ds.pdf(img)).output('blob'), this.fileName() + '.pdf');
+          if (on('with_pdf')) f.append('pdf', (pages ? await ds.sheetPdf(pages) : await ds.pdf(img)).output('blob'), this.fileName() + '.pdf');
         }
         const r = await this.post(this.cfg.endpoint.replace(/\/$/, '') + '/' + this.share.token + '/email', f);
         this.mail.classList.remove('is-on');

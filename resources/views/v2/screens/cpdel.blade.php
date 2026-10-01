@@ -105,6 +105,7 @@
                 @if ($posted)<x-dl::badge label="Posted to Production" tone="info" />@endif
             </span>
             <x-dl::button variant="secondary" icon="send" label="Open Customer Order" :href="route('v2.screen', 'customer-order').'?id='.$d->order_id" />
+            <x-dl::button preset="print" :href="\App\Support\V2\Print\PrintDocs::url('cpdel', $d->order_id)" target="_blank" />
         </x-dl::action-bar>
         <h2 class="mp-bigname">{{ $d->item?->description }}</h2>
         <x-dl::form.row cols="4">

@@ -54,6 +54,7 @@ use App\Support\V2\Grid\DbGrid;
 use App\Support\V2\Grid\DbLookup;
 use App\Support\V2\Grid\Grids;
 use App\Support\V2\InquiryPayload;
+use App\Support\V2\Print\PrintDocs;
 use App\Support\V2\Schema;
 use App\Support\V2\Screens;
 use Devlib\Locale;
@@ -118,6 +119,19 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return view('v2.screen', ['screen' => $screen, 'built' => is_file($file), 'code' => is_file($file) ? file_get_contents($file) : '']);
     })->name('screen');
+
+    // Cetakan dokumen transaksi (user 2026-10-01): A5 landscape untuk 1-5 baris, A4 portrait di atas itu. Tata letak = objek DevLib
+    // x-dl::print-doc (Devlib\PrintDoc\Document); satu kelas per dokumen di App\Support\V2\Print. ?prices=0 = format tanpa harga.
+    Route::get('/print/{type}/{id}', function (Request $r, string $type, int $id) {
+        abort_unless(isset(PrintDocs::MAP[$type]), 404);
+        [, $screen, $module] = PrintDocs::MAP[$type];
+        abort_unless(Auth::user()->canAccessModule($module), 403);
+        $from = Screens::screen((string) $r->query('from')) ? (string) $r->query('from') : $screen;
+        $prices = $r->query('prices', '1') !== '0';
+
+        return view('v2.print-doc', ['doc' => PrintDocs::make($type, $id, ['prices' => $prices]), 'type' => $type, 'id' => $id, 'prices' => $prices,
+            'back' => route('v2.screen', $from).($type === 'cpdel' ? '' : '?id='.$id)]);
+    })->whereNumber('id')->name('print');
 
     // Aktif/Nonaktif baris Grid Master (App\Support\V2\Grid\DbGrid::toggle) -> status terbaru dari database.
     Route::post('/grid/{slug}/toggle/{id}', function (string $slug, int $id) {

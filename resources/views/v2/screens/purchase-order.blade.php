@@ -85,7 +85,7 @@
         :tabs="['general' => 'General', 'supplier' => 'Supplier', 'finance' => 'Finance', 'delivery' => 'Delivery', 'notes' => 'Notes']"
         :created-by="$po->created_by" :created-at="$po->created_at?->toDateTimeString()" :updated-by="$po->updated_by" :updated-at="$po->updated_at?->toDateTimeString()">
         <x-slot:special>
-            @unless (in_array($po->status, ['DRAFT', 'SUBMITTED'], true))<x-dl::button size="sm" preset="print" label="Print" :href="route('pur.po.print', ['po' => $po->po_id])" target="_blank" />@endunless
+            @unless (in_array($po->status, ['DRAFT', 'SUBMITTED'], true))<x-dl::button size="sm" preset="print" label="Print" :href="\App\Support\V2\Print\PrintDocs::url('purchase-order', $po->po_id)" target="_blank" />@endunless
             @if ($pettyStep)<x-dl::button size="sm" variant="success" icon="fa-wallet" :label="\App\Support\V2\Data\PettyCash::STEP_LABELS[$pettyStep]" :href="route('v2.screen', 'petty-cash').'?po='.$po->po_id" />@endif
             @if ($po->status === 'APPROVED' && ! $cash)<x-dl::button size="sm" variant="success" icon="fa-paper-plane" :label="t('Send to Supplier')" type="submit" name="action" value="send" formnovalidate onclick="return confirm('Tandai PO ini sudah dikirim ke supplier?')" />@endif
         </x-slot:special>
