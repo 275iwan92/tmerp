@@ -15,9 +15,10 @@ use RuntimeException;
 //   - NEW: satu inquiry per tipe dieline aktif (prod_type yang punya dieline_spec.elements) -> semua bentuk dieline terwakili.
 //     Ukuran = nilai bawaan parameter tipe, ditimpa Ukuran Pasaran pertama tipe itu (bukan angka karangan).
 //   - RECALC / REVISE: lewat InquiryDerivedWriter dari Master Product dummy yang punya inquiry asal, supaya membuka form
-//     (draft lama RECALC/REVISE tidak punya product -> jatuh ke daftar, tidak bisa dibuka).
+//     (dummy lama RECALC/REVISE tidak punya product -> jatuh ke daftar, tidak bisa dibuka). Tiap product: satu DRAFT +
+//     satu Confirmed (SUBMITTED) dari jenis sebaliknya. RECALC/REVISE lama yang tidak terhubung dibereskan di legacy().
 // Draft dummy lama yang digantikan DIHAPUS (aturan B.12); yang tidak disentuh: sampel desain customer IQ99FBX*
-// (UatFoodBoxInquirySeeder, punya artwork asli), draft LIVE buatan user, dan semua inquiry non-draft (rantai Quotation/CO).
+// (UatFoodBoxInquirySeeder, punya artwork asli), draft LIVE buatan user, dan inquiry NEW non-draft (rantai Quotation/CO).
 // Hanya jalan di ddt*. Diulang = reset (IQ99DRF* lama dihapus).
 //   php artisan db:seed --class=UatDraftInquirySeeder --env=mockup
 class UatDraftInquirySeeder extends Seeder
@@ -99,7 +100,8 @@ class UatDraftInquirySeeder extends Seeder
         $n = 0;
         $this->db->transaction(function () use ($types, $sales, $customers, &$n) {
             $removed = $this->reset();
-            $this->command?->info("Draft dummy lama dihapus: $removed.");
+            [$deleted, $converted] = $this->legacy();
+            $this->command?->info("Draft dummy lama dihapus: $removed. RECALC/REVISE lama tanpa Master Product: $deleted dihapus, $converted dijadikan NEW.");
 
             foreach ($types as $code => $t) {
                 $n++;
@@ -151,7 +153,7 @@ class UatDraftInquirySeeder extends Seeder
             $n = $this->derived($n);
         });
 
-        $this->command?->info($n.' inquiry '.self::PREFIX.'* (DRAFT) siap di '.$this->db->getDatabaseName().': '.count($types).' NEW (satu per tipe dieline) + '.($n - count($types)).' RECALC/REVISE.');
+        $this->command?->info($n.' inquiry '.self::PREFIX.'* siap di '.$this->db->getDatabaseName().': '.count($types).' NEW DRAFT (satu per tipe dieline) + '.($n - count($types)).' RECALC/REVISE (separuh DRAFT, separuh Confirmed).');
     }
 
     // Tipe aktif yang punya dieline (sama dengan Sales::dielineTypes()): spec, ukuran = bawaan parameter + Ukuran Pasaran pertama.
@@ -194,28 +196,66 @@ class UatDraftInquirySeeder extends Seeder
         $products = ProdProduct::where('data_origin', 'DUMMY')->whereNotNull('source_inquiry_id')
             ->whereIn('source_inquiry_id', $this->db->table('iqp_inquiry')->pluck('id_inquiry'))->orderBy('id_product')->get();
 
-        foreach ($products as $i => $product) {
-            $source = InquiryDerivedWriter::sourceOf($product);
-            $qty = (float) ($this->db->table('iqp_tier')->where('inquiry_id', $source->id_inquiry)->where('is_primary', 1)->value('qty') ?: 10000);
-            if ($i % 2 === 0) {
-                $doc = $writer->recalc($product, null, ['qty' => $qty * 2, 'deadline_quotation' => now()->addDays(10)->toDateString()]);
-            } else {
-                [$scope, $reason, $taller] = self::REVISES[intdiv($i, 2) % count(self::REVISES)];
-                $parts = [];
-                foreach ($source->parts as $p) {
-                    $h = (float) ($p->dieline_spec['dims']['product_height'] ?? 0);
-                    $parts[$p->part_seq] = ['dims' => ['product_height' => $h + $taller], 'cfg_color' => '5/0', 'cfg_ink' => $p->cfg_ink];
+        // Tiap product: satu dokumen DRAFT + satu dokumen Confirmed (SUBMITTED) dari jenis sebaliknya, supaya kedua tab
+        // (Recalculate / Change Specification) punya contoh yang masih bisa diedit dan yang sudah terkunci.
+        foreach ([false, true] as $confirmed) {
+            foreach ($products as $i => $product) {
+                $source = InquiryDerivedWriter::sourceOf($product);
+                if (($i % 2 === 0) !== $confirmed) {
+                    $qty = (float) ($this->db->table('iqp_tier')->where('inquiry_id', $source->id_inquiry)->where('is_primary', 1)->value('qty') ?: 10000);
+                    $doc = $writer->recalc($product, null, ['qty' => $qty * ($confirmed ? 3 : 2), 'deadline_quotation' => now()->addDays(10)->toDateString()]);
+                } else {
+                    [$scope, $reason, $taller] = self::REVISES[(intdiv($i, 2) + (int) $confirmed) % count(self::REVISES)];
+                    $parts = [];
+                    foreach ($source->parts as $p) {
+                        $h = (float) ($p->dieline_spec['dims']['product_height'] ?? 0);
+                        $parts[$p->part_seq] = ['dims' => ['product_height' => $h + $taller], 'cfg_color' => '5/0', 'cfg_ink' => $p->cfg_ink];
+                    }
+                    $doc = $writer->revise($product, null, ['scope' => $scope, 'reason' => $reason, 'design_number' => in_array('ARTWORK', $scope, true) ? 'DS-2027-'.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT) : '', 'parts' => $parts]);
                 }
-                $doc = $writer->revise($product, null, ['scope' => $scope, 'reason' => $reason, 'design_number' => in_array('ARTWORK', $scope, true) ? 'DS-2027-'.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT) : '', 'parts' => $parts]);
-            }
-            $n++;
-            $this->db->table('iqp_inquiry')->where('id_inquiry', $doc->id_inquiry)->update(['inquiry_no' => $this->no($n), 'data_origin' => 'DUMMY', 'created_by' => self::BY, 'updated_by' => self::BY]);
-            foreach (['iqp_part', 'iqp_tier'] as $t) {
-                $this->db->table($t)->where('inquiry_id', $doc->id_inquiry)->update(['data_origin' => 'DUMMY']);
+                if ($confirmed) {
+                    $writer->confirm($doc);
+                }
+                $n++;
+                $this->db->table('iqp_inquiry')->where('id_inquiry', $doc->id_inquiry)->update(['inquiry_no' => $this->no($n), 'data_origin' => 'DUMMY', 'created_by' => self::BY, 'updated_by' => self::BY]);
+                foreach (['iqp_part', 'iqp_tier'] as $t) {
+                    $this->db->table($t)->where('inquiry_id', $doc->id_inquiry)->update(['data_origin' => 'DUMMY']);
+                }
             }
         }
 
         return $n;
+    }
+
+    // RECALC / REVISE dummy lama yang tidak lahir dari Master Product (product_id & parent_inquiry_id kosong): layar v2 tidak
+    // bisa membukanya (jatuh ke daftar). User 2026-10-01 mengizinkan perbaikan:
+    //   - tanpa tier qty dan tidak dipakai dokumen lain = dummy generik rusak -> DIHAPUS (costing-nya ikut lewat FK cascade;
+    //     prod_part/product ProDev yang pernah dibuat darinya tidak disentuh);
+    //   - bertier / dipakai Quotation (salinan berharga UatQuotationInquirySeeder) -> dijadikan NEW: datanya utuh & konsisten,
+    //     hanya jenisnya yang salah (Recalc/Revise sungguhan harus dari Master Product, docs/flow_product_master.md §4).
+    private function legacy(): array
+    {
+        $ids = $this->db->table('iqp_inquiry')->where('data_origin', 'DUMMY')->whereIn('inquiry_type', ['RECALC', 'REVISE'])
+            ->whereNull('product_id')->whereNull('parent_inquiry_id')->where('inquiry_no', 'not like', self::PREFIX.'%')->pluck('id_inquiry');
+        $partIds = $this->db->table('iqp_part')->whereIn('inquiry_id', $ids)->pluck('inquiry_id', 'id_part');
+        $keep = collect()
+            ->merge($this->db->table('iqp_tier')->whereIn('inquiry_id', $ids)->pluck('inquiry_id'))
+            ->merge($this->db->table('quo_quotation_item')->whereIn('inquiry_id', $ids)->pluck('inquiry_id'))
+            ->merge($this->db->table('co_order_item')->whereIn('inquiry_id', $ids)->pluck('inquiry_id'))
+            ->merge($this->db->table('iqp_inquiry')->whereIn('parent_inquiry_id', $ids)->pluck('parent_inquiry_id'))
+            ->merge($this->mst->table('prod_product')->whereIn('source_inquiry_id', $ids)->pluck('source_inquiry_id'))
+            ->merge($this->mst->table('prod_master_card')->whereIn('inquiry_id', $ids)->pluck('inquiry_id'))
+            ->merge($this->mst->table('prod_part')->whereIn('source_iqp_part_id', $partIds->keys())->pluck('source_iqp_part_id')->map(fn ($p) => $partIds[$p]))
+            ->merge(DB::connection('tm2prd')->table('prd_wo')->whereIn('source_iqp_part_id', $partIds->keys())->pluck('source_iqp_part_id')->map(fn ($p) => $partIds[$p]))
+            ->unique();
+        $convert = $ids->intersect($keep)->values();
+        $delete = $ids->diff($keep)->values();
+
+        $this->db->table('iqp_inquiry')->whereIn('id_inquiry', $convert)->update(['inquiry_type' => 'NEW', 'revise_scope' => null, 'revise_reason' => null, 'updated_by' => self::BY, 'updated_at' => now()]);
+        $this->db->table('iqp_part')->whereIn('inquiry_id', $delete)->update(['parent_part_id' => null]);
+        $this->db->table('iqp_inquiry')->whereIn('id_inquiry', $delete)->delete();
+
+        return [$delete->count(), $convert->count()];
     }
 
     private function no(int $n): string

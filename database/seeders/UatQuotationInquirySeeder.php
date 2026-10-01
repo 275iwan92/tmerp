@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 // Data UAT Quotation (user 2026-09-26): inquiry berharga (costing published) yang
-// belum di-quotation-kan, dari 3 menu Inquiry (NEW/REVISE/RECALC), untuk mencoba
+// belum di-quotation-kan (semua jenis NEW, lihat PLAN), untuk mencoba
 // "Choose inquiry window". Tiap inquiry = salinan utuh inquiry DUMMY berharga yang
 // sudah ada (part/bahan/proses/tier/tooling/costing/harga tier), jadi angkanya tetap
 // hasil engine, bukan karangan. Hanya jalan di ddt*. Diulang = reset (IQ99UAT* lama dihapus).
@@ -25,13 +25,15 @@ class UatQuotationInquirySeeder extends Seeder
     private const PREFIX = 'IQ99UAT';
 
     // [no. sumber, jenis, grup customer]; grup sama = customer sama (uji pilih >1 inquiry).
+    // Semua NEW (2026-10-01): salinan ini tidak lahir dari Master Product, jadi tidak boleh berjenis REVISE/RECALC
+    // (layar v2 tidak bisa membukanya). Contoh REVISE/RECALC yang benar dibuat UatDraftInquirySeeder lewat InquiryDerivedWriter.
     private const PLAN = [
         ['IQ99DUM001', 'NEW', 0], ['IQ99DUM004', 'NEW', 0],
-        ['IQ99DUM002', 'NEW', 1], ['IQ99DUM003', 'REVISE', 1],
-        ['IQ99DUM005', 'REVISE', 2], ['IQ99DUM006', 'RECALC', 2],
-        ['IQ99DUM001', 'RECALC', 3], ['IQ99DUM002', 'NEW', 3],
+        ['IQ99DUM002', 'NEW', 1], ['IQ99DUM003', 'NEW', 1],
+        ['IQ99DUM005', 'NEW', 2], ['IQ99DUM006', 'NEW', 2],
+        ['IQ99DUM001', 'NEW', 3], ['IQ99DUM002', 'NEW', 3],
         ['IQ99DUM003', 'NEW', 4],
-        ['IQ99DUM001', 'NEW', 4], ['IQ99DUM002', 'NEW', 0], ['IQ99DUM003', 'RECALC', 3],
+        ['IQ99DUM001', 'NEW', 4], ['IQ99DUM002', 'NEW', 0], ['IQ99DUM003', 'NEW', 3],
     ];
 
     private $db;

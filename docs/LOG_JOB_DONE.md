@@ -17,6 +17,12 @@
   (2) tabel perbedaan Revisi menampilkan 260 mm sebagai "26" (nol di belakang bilangan bulat ikut terbuang).
 - Uji: 33 form dirender lewat kernel mockup.test = 200 semua, tiap part NEW menghasilkan SVG dieline + bentangan; seeder dijalankan 2x
   (hasil sama, tanpa part/tier yatim). Baseline ddt disimpan ulang. Belum dicek mata di browser.
+- **Lanjutan (user OK 2026-10-01):** migration `2026_10_02_000006` dijalankan di **tm2sdi** (impact = varchar(100)).
+  24 dummy RECALC/REVISE non-draft tanpa Master Product dibereskan oleh seeder yang sama (`legacy()`): 19 dummy generik
+  `IQ2690040-66` (tanpa tier qty, tanpa product) **dihapus** -- 2 costing-nya ikut terhapus, product/part ProDev 68-75 yang pernah
+  dibuat darinya tidak disentuh; 5 salinan berharga `IQ99UAT004/005/006/007/012` (dipakai Quotation) **dijadikan NEW**
+  (`UatQuotationInquirySeeder` PLAN ikut diubah). Pengganti: 6 dokumen Confirmed `IQ99DRF034-039` (3 RECALC + 3 REVISE) dari
+  Master Product. Hasil: 96 inquiry dummy, semuanya membuka form (uji kernel 96/96 = 200); Ready to Quote tetap 5; baseline disimpan ulang.
 
 ## 2026-10-01 -- Grid Inquiry Product v2 disamakan dengan Grid Transactional
 
