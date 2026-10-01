@@ -114,13 +114,11 @@ class PrintDoc {
             <thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
     }
 
-    // Kotak total: [label, teks, tebal?]. Dokumen berharga menghitung pajak; dokumen tanpa harga menjumlah qty per satuan.
+    // Kotak total: [label, teks, tebal?]. Hanya dokumen berharga; dokumen tanpa nilai uang (Surat Jalan, dst) tidak
+    // mencetak total (keputusan user 2026-10-01). Zona penutup tetap setinggi itu supaya tanda tangan tidak bergeser.
     totals() {
         const rows = this.d.rows;
-        if (!this.f.priced) {
-            const sum = {}; rows.forEach(r => { if (r.qty != null) sum[r.unit] = (sum[r.unit] ?? 0) + +r.qty; });
-            return {lines: Object.entries(sum).map(([u, q], i, a) => [i ? '' : 'Total', `${Fmt.num(q)} ${u}`, a.length === 1])};
-        }
+        if (!this.f.priced) return {lines: []};
         const r2 = v => Math.round(v * 100) / 100, sub = r2(rows.reduce((t, r) => t + +r.subtotal, 0)), disc = r2(sub * (this.d.disc ?? 0) / 100), dpp = sub - disc;
         const ppn = r2(dpp * (this.d.ppn ?? 0) / 100), pph = r2(dpp * (this.d.pph ?? 0) / 100), grand = r2(dpp + ppn - pph);
         const lines = [['Subtotal', Fmt.num(sub)]];

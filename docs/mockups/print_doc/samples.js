@@ -14,7 +14,7 @@ const SAMPLES = {
         dev: {
             title: 'Perubahan terhadap format kertas sekarang (docs/attachments/surat jalan.jpg)',
             marks: [[1, '.co', -5, -2], [2, '.kopr', 14, -3], [3, '[data-k=co_no]', -5, 0], [4, '[data-k=vehicle]', -5, 0], [5, '[data-k=date]', 58, 0],
-                [6, '[data-k=contact]', -5, 0], [7, 'tbody tr:nth-child(5) td', -5.5, 1.5], [8, 'thead th:nth-child(3)', -4, .3], [9, '.tot', -6, 0], [10, '.foot', -5, -1.5]],
+                [6, '[data-k=contact]', -5, 0], [7, 'tbody tr:nth-child(5) td', -5.5, 1.5], [8, 'thead th:nth-child(3)', -4, .3], [9, '.tail', -5.5, 1], [10, '.foot', -5, -1.5]],
             legend: [
                 '<b>Kop perusahaan</b>: logo, nama, alamat. Dokumen PPN: kop berganti ke CV. Langgeng Jaya Makmur + NPWP.',
                 '<b>QR code</b>: scan membuka dokumen online. Aturan: setiap cetakan membawa QR.',
@@ -24,7 +24,7 @@ const SAMPLES = {
                 '<b>Telp / UP</b> penerima, untuk pengemudi.',
                 '<b>A5 landscape = 5 baris</b> (kertas lama 10 baris). Lebih dari 5 baris otomatis A4 portrait, 22 baris.',
                 '<b>Jumlah dan Satuan</b>: kolom tetap di posisi yang sama di semua dokumen; angka format Indonesia (508,00).',
-                '<b>Kotak total</b> selalu di kanan bawah tabel; catatan di kirinya.',
+                '<b>Tanpa total</b>: Surat Jalan tidak punya nilai uang, jadi tidak ada kotak total. Ruang ini untuk catatan.',
                 '<b>Kaki dokumen</b>: "Dicetak pada tanggal jam oleh nama orangnya" (bukan login, tanpa nama aplikasi, nomor dokumen, atau ukuran kertas); kanan: nomor lembar.',
             ],
         },
@@ -101,13 +101,13 @@ const SAMPLES = {
                 {name: 'TELASIH', kind: 'FINISH', start: '17:00'}]},
         dev: {
             title: 'Perubahan terhadap format sekarang (docs/attachments/expedisi.jpg, tabel Excel)',
-            marks: [[1, '[data-k=number]', -5, 0], [2, '[data-k=party]', -5, 0], [3, 'thead th:nth-child(2)', -1, -2.5], [4, 'thead th:nth-child(9)', 0, -2.5], [5, '.tot', -6, 0], [6, '.sign', -5, 0]],
+            marks: [[1, '[data-k=number]', -5, 0], [2, '[data-k=party]', -5, 0], [3, 'thead th:nth-child(2)', -1, -2.5], [4, 'thead th:nth-child(9)', 0, -2.5], [5, '.tail', -5.5, 1], [6, '.sign', -5, 0]],
             legend: [
                 '<b>Satu lembar per tugas armada</b> (di Excel: banyak tugas dalam satu halaman). Diberi nomor tugas supaya bisa dilacak; format nomor menunggu keputusan.',
                 '<b>No Pol dan Driver</b> masuk blok kanan; Jam Mulai / Jam Selesai di kiri.',
                 '<b>Tujuan dan Item</b> digabung dalam satu kolom dua baris, supaya Jumlah dan Satuan tetap di posisi yang sama dengan dokumen lain.',
                 '<b>IN / OUT</b> tetap kolom kosong untuk diisi tangan.',
-                '<b>Total per satuan</b> (PCS, PALLET) dihitung otomatis.',
+                '<b>Tanpa total</b>: dokumen tanpa nilai uang tidak mencetak kotak total.',
                 '<b>Tanda tangan</b>: Pengemudi, Mengetahui, Menyetujui, Pembuat.',
             ],
         },
