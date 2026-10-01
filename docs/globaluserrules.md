@@ -106,6 +106,15 @@
 16. **Nama file/folder tanpa emoji atau karakter non-ASCII.**
 17. **F1 = Bantuan & dukungan** di setiap layar (v1 dan v2). Di v2, F1 / menu akun membuka halaman profil **Bantuan & dukungan**
     (Pedoman Aturan ERP, pedoman alur) dan **Tiket Bantuan** (kirim + lihat tiket ke tim support). Back selalu kembali ke Profile.
+18. **Layer Menu (panel kiri) — disetujui user 2026-10-01:** baris 1 = logo + **nama aplikasi** (Settings → Identifikasi, mis. "ERP TM"),
+    bukan nama perusahaan; baris 2 = ikon (tukar menu Operasional/Laporan di kiri, **cari** dan **kecilkan menu** di kanan).
+    Tidak ada garis penanda layer dan **tidak ada breadcrumb di panel kiri** (breadcrumb hanya di layar kanan).
+    Ikon kecilkan menu = panel jadi **satu lajur ikon** (diingat per browser); saat mini, klik cabang/Back/avatar membuat
+    menu lengkap melayang di atas layar dan menutup sendiri setelah layar dipilih atau klik di luar.
+19. **Layar selebar panel kanan:** isi layar v2 tidak dibatasi lebar tengah; tepi kiri-kanan hanya 6px (±1,5 mm).
+    Pengecualian: halaman Pedoman (teks bacaan).
+20. **Setiap item menu wajib punya ikon sendiri** yang menggambarkan isinya dan berbeda dari item lain di daftar yang sama
+    (menu mini hanya menampilkan ikon). Item menu baru tanpa ikon = belum selesai.
 
 ## D. Cara kerja developer / agen
 
@@ -143,3 +152,4 @@
 | 2026-10-01 | A.3 dibangun di v2 (ddt): Post to Production, DO hanya dari baris Posted, laporan Shipped Without Production Output. |
 | 2026-10-01 | C.17: F1 = Bantuan & dukungan di v2; Tiket Bantuan di profil dengan ikon jelas; Back kembali ke Profile. |
 | 2026-10-01 | B.12: dummy yang salah selalu dihapus dan diganti baru (aturan main tetap, tanpa tanya). |
+| 2026-10-01 | C.18–C.20: Layer Menu baru (nama aplikasi, baris ikon, mini, tanpa garis/breadcrumb); layar selebar panel kanan tepi 6px; setiap item menu wajib berikon. |

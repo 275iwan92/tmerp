@@ -36,6 +36,7 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 | UI-17 | Edit tampilan nota lewat GUI (WYSIWYG) | ⚪ IDE | — | `printnotastandard.md` §8 |
 | UI-18 | Kategori `sys_constant_category` baru (mis. HRM) | ⚪ IDE | Tambah saat ada konstanta baru | Sekarang 5 kategori |
 | UI-19 | Layar cetak SPB/Penerimaan, Invoice Penjualan, Pembayaran Pembelian — dengan pilihan kop Non PPN/PPN | 🟡 SIAP | — (mekanisme kop PPN sudah ada) | Ketiga layar cetak belum ada; pakai `x-print.* :ppn` |
+| UI-21 | Layar v2 untuk mengubah ikon/label/urutan menu (`sys_app_menu`) — sekarang ikon hanya bisa diubah lewat migration | 🟡 SIAP | — | Aturan "semua data wajib punya inputan". Susunan Menu v1 (`SET_MENU`) nonaktif. Ikon semua item sudah diisi (migration `2026_10_02_000004`, ddtsys saja; tm2sys menunggu OK user) |
 
 ---
 

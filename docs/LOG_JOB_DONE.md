@@ -3,6 +3,17 @@
 
 ---
 
+## 2026-10-01 -- Layer Menu: kepala panel baru, mode mini, ikon semua menu, layar selebar panel
+
+- DevLib `x-dl::layer-menu`: baris 1 logo + nama aplikasi, baris 2 ikon (tukar view | cari | kecilkan menu); garis penanda layer
+  dan breadcrumb panel kiri dihapus. Prop baru `search`, `collapsible`. Mode mini = satu lajur ikon (localStorage per browser);
+  klik cabang/Back/avatar saat mini = menu lengkap melayang (`is-peek`), menutup setelah layar dipilih / klik di luar.
+- v2: nama aplikasi dari `Brand::name()` (sys_constant APP_NAME = "ERP TM", diubah di Settings -> Identifikasi).
+- Layar v2 selebar panel kanan, tepi 6px (`body.dl-page-wide`); katalog DevLib tetap 1100px.
+- Ikon menu: migration `2026_10_02_000004_menu_icons_every_item` (198 item kosong diisi + 6 ikon grafik berulang diganti).
+  Dijalankan di ddtsys saja; tm2sys menunggu OK user.
+- Uji: simulasi klik headless (jsdom) 16 langkah lulus, render v2 home OK, ratchet test lulus. Belum dicek mata di browser.
+
 ## 2026-10-02 -- Run malam: grid v2 Recruitment (UI-20)
 
 - `App\Support\V2\Grid\Rcr\*`: Manpower Requisition (buka = entry v1), Job Vacancy (New = form v1), Candidate Form Review
