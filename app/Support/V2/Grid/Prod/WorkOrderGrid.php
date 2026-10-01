@@ -2,6 +2,7 @@
 
 namespace App\Support\V2\Grid\Prod;
 
+use App\Models\Master\CustCustomer;
 use App\Models\Master\ProdProduct;
 use App\Models\Prd\PrdWo;
 use App\Models\Sdi\CoOrder;
@@ -18,6 +19,8 @@ class WorkOrderGrid extends ProdGrid
     private array $products = [];
 
     private array $orders = [];
+
+    private array $customers = [];
 
     public function slug(): string
     {
@@ -56,7 +59,7 @@ class WorkOrderGrid extends ProdGrid
 
     protected function models(): array
     {
-        return [PrdWo::class, ProdProduct::class, CoOrder::class];
+        return [PrdWo::class, ProdProduct::class, CoOrder::class, CustCustomer::class];
     }
 
     public function search(): string
@@ -73,15 +76,17 @@ class WorkOrderGrid extends ProdGrid
     {
         $this->products = ProdProduct::query()->whereKey($items->pluck('product_id')->filter()->unique()->all())
             ->get(['id_product', 'product_code', 'product_name'])->keyBy('id_product')->all();
-        $this->orders = CoOrder::query()->whereKey($items->pluck('source_co_id')->filter()->unique()->all())
-            ->pluck('co_no', 'id_order')->all();
+        $orders = CoOrder::query()->whereKey($items->pluck('source_co_id')->filter()->unique()->all())->get(['id_order', 'co_no', 'customer_id']);
+        $this->orders = $orders->pluck('co_no', 'id_order')->all();
+        $names = CustCustomer::query()->whereKey($orders->pluck('customer_id')->filter()->unique()->all())->pluck('customer_name', 'id_customer');
+        $this->customers = $orders->mapWithKeys(fn ($o) => [$o->id_order => $names[$o->customer_id] ?? null])->all();
     }
 
     public function columns(): array
     {
         return [
-            ['key' => 'wo_no', 'label' => 'WO No'],
-            ['key' => 'product', 'label' => 'Product', 'type' => 'identity', 'code' => 'product_code', 'avatar' => false],
+            ['key' => 'wo_no', 'label' => 'WO No. / Customer', 'type' => 'doc', 'party' => 'customer'],
+            ['key' => 'product', 'label' => 'Product'],
             ['key' => 'part', 'label' => 'Part'],
             ['key' => 'co_no', 'label' => 'Customer Order'],
             ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
@@ -96,10 +101,23 @@ class WorkOrderGrid extends ProdGrid
         $p = $this->products[$m->product_id] ?? null;
 
         return [
-            'wo_no' => $m->wo_no, 'product' => $p?->product_name, 'product_code' => $p?->product_code, 'part' => $m->part_code,
+            'wo_no' => $m->wo_no, 'customer' => $this->customers[$m->source_co_id] ?? null,
+            'product' => $p?->product_name, 'product_code' => $p?->product_code, 'part' => $m->part_code,
+            'items' => [['product' => $p?->product_name, 'code' => $p?->product_code, 'part' => $m->part_code, 'qty' => (float) $m->qty, 'due' => $m->due_date?->toDateString()]],
             'co_no' => $this->orders[$m->source_co_id] ?? null, 'qty' => (float) $m->qty, 'due' => $m->due_date?->toDateString(),
             'hot' => $m->is_hot_job ? 'Hot' : null, 'status' => $m->wo_status,
         ];
+    }
+
+    public function detail(): array
+    {
+        return ['key' => 'items', 'title' => 'Product', 'columns' => [
+            ['key' => 'product', 'label' => 'Product', 'strong' => true],
+            ['key' => 'code', 'label' => 'Product Code'],
+            ['key' => 'part', 'label' => 'Part'],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'due', 'label' => 'Due Date', 'type' => 'date'],
+        ]];
     }
 
     public function stats(): array

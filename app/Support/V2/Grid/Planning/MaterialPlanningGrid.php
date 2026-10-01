@@ -33,6 +33,11 @@ class MaterialPlanningGrid extends MaterialBookingGrid
         return MaterialPlanning::materialRows();
     }
 
+    public function detail(): array
+    {
+        return [];
+    }
+
     public function columns(): array
     {
         return [

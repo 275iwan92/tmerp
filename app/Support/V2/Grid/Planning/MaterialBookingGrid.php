@@ -77,17 +77,28 @@ class MaterialBookingGrid extends DbGrid
     public function columns(): array
     {
         return [
-            ['key' => 'co', 'label' => 'Customer Order', 'type' => 'identity', 'code' => 'customer', 'avatar' => false],
+            ['key' => 'co', 'label' => 'CO No. / Customer', 'type' => 'doc', 'party' => 'customer'],
             ['key' => 'co_status', 'label' => 'CO Status', 'type' => 'badge', 'tones' => MaterialPlanning::CO_TONES],
             ['key' => 'need', 'label' => 'Material Needed By', 'type' => 'date'],
-            ['key' => 'lines', 'label' => 'Material Lines', 'type' => 'number'],
             ['key' => 'short', 'label' => 'Lines Not Covered', 'type' => 'number'],
             ['key' => 'cover', 'label' => 'Coverage', 'type' => 'badge', 'tones' => MaterialPlanning::COVER_TONES],
             ['key' => 'booking_no', 'label' => 'Booking No.'],
             ['key' => 'booking', 'label' => 'Booking', 'type' => 'badge', 'tones' => MaterialPlanning::BOOKING_TONES],
             ['key' => 'changed', 'label' => 'Note', 'type' => 'badge', 'tones' => ['CO changed' => 'danger']],
-            ['key' => 'customer', 'label' => 'Customer', 'visible' => false],
         ];
+    }
+
+    public function detail(): array
+    {
+        return ['key' => 'items', 'title' => 'Product & Material', 'columns' => [
+            ['key' => 'product', 'label' => 'Product', 'strong' => true],
+            ['key' => 'part', 'label' => 'Part'],
+            ['key' => 'material', 'label' => 'Material'],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'uom', 'label' => 'UoM'],
+            ['key' => 'need', 'label' => 'Needed By', 'type' => 'date'],
+            ['key' => 'status', 'label' => 'Coverage'],
+        ]];
     }
 
     public function stats(): array

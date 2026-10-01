@@ -5,6 +5,9 @@ namespace App\Support\V2\Grid\Inv;
 use App\Models\Inventory\FgStock;
 use App\Models\Inventory\RmStock;
 use App\Models\Inventory\SfgStock;
+use App\Models\Master\MatRaw;
+use App\Models\Master\ProdPart;
+use App\Models\Master\ProdProduct;
 use App\Models\Master\WhWarehouse;
 use App\Support\V2\Grid\DbGrid;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,6 +35,9 @@ abstract class StockDocGrid extends DbGrid
         'POSTED' => 'success', 'REJECTED' => 'danger', 'CANCELLED' => 'danger'];
 
     private array $warehouses = [];
+
+    // Nama item per baris dokumen (RM = bahan, FG = product, SFG = part), kunci = id item.
+    private array $itemNames = [];
 
     abstract protected function category(): string;
 
@@ -105,7 +111,7 @@ abstract class StockDocGrid extends DbGrid
 
     protected function query(): Builder
     {
-        $q = (self::MODELS[$this->category()])::query()->withCount('lines')->orderByDesc('doc_date')->orderByDesc('doc_id');
+        $q = (self::MODELS[$this->category()])::query()->with('lines')->orderByDesc('doc_date')->orderByDesc('doc_id');
 
         return match ($this->kind()) {
             'in' => $q->where('doc_type', 1)->where('doc_cat', '<>', 'RETURN'),
@@ -119,18 +125,31 @@ abstract class StockDocGrid extends DbGrid
     {
         $this->warehouses = WhWarehouse::query()->whereKey($items->pluck('warehouse_id')->filter()->unique()->all())
             ->get()->pluck('warehouse_name', (new WhWarehouse)->getKeyName())->all();
+        // Lintas-DB (tm2inv -> tm2mst): satu query nama item untuk semua baris halaman ini.
+        $ids = $items->flatMap(fn ($d) => $d->lines->pluck($this->itemColumn()))->filter()->unique()->all();
+        $this->itemNames = match ($this->category()) {
+            'RM' => MatRaw::query()->whereKey($ids)->get(['material_id', 'material_code', 'material_name'])
+                ->mapWithKeys(fn ($m) => [$m->material_id => [$m->material_code, $m->material_name]])->all(),
+            'FG' => ProdProduct::query()->whereKey($ids)->get(['id_product', 'product_code', 'product_name'])
+                ->mapWithKeys(fn ($m) => [$m->id_product => [$m->product_code, $m->product_name]])->all(),
+            default => ProdPart::query()->whereKey($ids)->get(['id_part', 'part_code', 'part_name'])
+                ->mapWithKeys(fn ($m) => [$m->id_part => [$m->part_code, $m->part_name]])->all(),
+        };
+    }
+
+    private function itemColumn(): string
+    {
+        return ['RM' => 'material_id', 'FG' => 'product_id', 'SFG' => 'parts_id'][$this->category()];
     }
 
     public function columns(): array
     {
         return [
-            ['key' => 'doc_no', 'label' => 'Doc No'],
+            ['key' => 'doc_no', 'label' => 'Doc No. / Warehouse', 'type' => 'doc', 'party' => 'warehouse'],
             ['key' => 'doc_date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'doc_cat', 'label' => 'Category'],
             ['key' => 'source', 'label' => 'Source'],
             ['key' => 'ref_no', 'label' => 'Reference'],
-            ['key' => 'warehouse', 'label' => 'Warehouse'],
-            ['key' => 'lines', 'label' => 'Lines', 'type' => 'number'],
             ['key' => 'notes', 'label' => 'Notes'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::STATUS_TONES],
         ];
@@ -141,8 +160,21 @@ abstract class StockDocGrid extends DbGrid
         return [
             'doc_no' => $m->doc_no, 'doc_date' => $m->doc_date?->toDateString(), 'doc_cat' => $m->doc_cat,
             'source' => $m->ref_doc_type ?: 'MANUAL', 'ref_no' => $m->ref_doc_no, 'warehouse' => $this->warehouses[$m->warehouse_id] ?? null,
-            'lines' => (int) $m->lines_count, 'notes' => $m->notes, 'status' => $m->flow_status ?: 'DRAFT',
+            'lines' => $m->lines->count(), 'notes' => $m->notes, 'status' => $m->flow_status ?: 'DRAFT',
+            'items' => $m->lines->map(fn ($l) => ['code' => $this->itemNames[$l->{$this->itemColumn()}][0] ?? null, 'name' => $this->itemNames[$l->{$this->itemColumn()}][1] ?? null,
+                'qty' => (float) $l->qty, 'unit' => $l->uom_code, 'lot' => $l->lot_no])->all(),
         ];
+    }
+
+    public function detail(): array
+    {
+        return ['key' => 'items', 'title' => 'Item', 'columns' => [
+            ['key' => 'code', 'label' => 'Code'],
+            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+            ['key' => 'lot', 'label' => 'Lot No.'],
+        ]];
     }
 
     public function stats(): array

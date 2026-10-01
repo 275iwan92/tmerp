@@ -45,6 +45,9 @@ final class MaterialPlanning
             $out[] = ['id' => $f['co_id'] ?: 0, 'co' => $f['co_no'], 'customer' => $f['customer'], 'co_status' => $f['co_status'],
                 'booking_no' => $b->booking_no ?? '—', 'booking' => $f['type'] === 'FORECAST' ? 'FORECAST' : ($b ? $b->doc_status : 'NOT BOOKED'),
                 'need' => $rows->min('need_date'), 'lines' => $rows->count(),
+                // Baris anak grid (Expand): product + bahan yang dibutuhkan CO ini.
+                'items' => $rows->map(fn ($l) => ['product' => $l['product'], 'part' => $l['part'] ?? '—', 'material' => $l['material'], 'qty' => (float) $l['qty'],
+                    'uom' => $l['uom'], 'need' => $l['need_date'], 'status' => self::COVER[$l['status']] ?? $l['status']])->values()->all(),
                 'short' => $rows->filter(fn ($l) => in_array($l['status'], ['SHORT', 'NEED_ITEM', 'NEED_LAYOUT'], true))->count(),
                 'cover' => self::COVER[$worst] ?? $worst,
                 'changed' => $b && $b->stat_confirm && $b->co_fingerprint !== $engine->fingerprint((int) $f['co_id']) ? 'CO changed' : ''];

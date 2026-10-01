@@ -97,6 +97,13 @@ abstract class DbGrid
         return null;
     }
 
+    // Grid Transactional (user 2026-10-02): baris yang dibuka = tabel anak (paling banyak 7 kolom) yang SELALU memuat nama
+    // item / product. Bentuk = prop detail x-dl::grid: ['key' => kolom array di row(), 'title', 'columns' => [...]]. [] = tanpa Expand.
+    public function detail(): array
+    {
+        return [];
+    }
+
     public function stats(): array
     {
         return $this->family() === self::MASTER ? [
@@ -196,6 +203,7 @@ abstract class DbGrid
             'filters' => $this->filters(),
             'groups' => $this->groups(),
             'groupBy' => $this->groupBy(),
+            'detail' => $this->detail(),
             'search' => $this->search(),
             'mode' => $this->family() === self::REPORT ? 'report' : 'entry',
             'actions' => match ($this->family()) {
