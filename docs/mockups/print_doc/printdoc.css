@@ -50,6 +50,11 @@ table.items{width:100%;border-collapse:collapse;border-top:.5mm solid #222;borde
 .items td.hd{border-left:.15mm dotted #9a9a9a;border-right:.15mm dotted #9a9a9a}
 .items td.nm,.items td.wr{white-space:normal}
 .items td.wr{font-size:8pt;line-height:1.1}
+/* Sel teks panjang: boleh sampai 3 baris; huruf dikecilkan seperlunya oleh PrintDoc.fit() */
+.w2{max-height:7.2mm;line-height:1.05;overflow:hidden}
+/* Baris hasil split (CPDEL): garis tebal di kiri + tulisan SPLIT tebal, supaya kelompoknya terlihat */
+.items tr.split td.no{border-left:1.1mm solid #222}
+.items tr.split td[data-c=part]{font-weight:700}
 .n1{font-size:9pt;line-height:1.12;max-height:2.3em;overflow:hidden}
 .nm.two .n1{white-space:nowrap;max-height:1.15em}
 .n2{font-size:8pt;line-height:1.15;color:#333;white-space:nowrap;overflow:hidden}

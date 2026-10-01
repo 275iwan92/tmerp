@@ -83,35 +83,35 @@ const SAMPLES = {
             ],
         },
     },
+    // Alamat di contoh ini adalah data contoh (di aplikasi: alamat kirim customer / alamat supplier dari master).
     JadwalKirim: {
         data: {...PRINTED, number: 'JK26100101', date: '2026-10-01', status: 'CONFIRMED', start_time: '09:30', finish_time: '18:00', createdBy: 'Johannes Iwan',
             party: {name: 'N 8035 AB', lines: ['Driver: TRIO & AGUNG']},
             rows: [
-                {name: 'PT SELATAN JADI JAYA', sub: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', qty: 3000, unit: 'PCS', kind: 'KIRIM', co_no: '2602377', start: '12:30', stop: '13:30', note: 'MAX. KIRIM 3100'},
-                {name: 'PT SELATAN JADI JAYA', sub: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 1000, unit: 'PCS', kind: 'KIRIM', co_no: '2602381', note: 'MAX. KIRIM 1100'},
-                {name: 'PT SELATAN JADI JAYA', sub: 'TAGIHAN & AMBIL GIRO', kind: 'KIRIM'},
-                {name: 'GOLDEN', sub: 'SUBKON PAK TASMAN', qty: 7840, unit: '', kind: 'KIRIM', start: '14:00', stop: '15:00', note: 'SEMUA'},
-                {name: 'TELASIH', kind: 'FINISH', start: '18:00'}]},
+                {kind: 'AMBIL', time: '10:15', place: 'GUDANG LBI', city: 'MALANG', address: 'JL. RAYA KARANGLO 88, SINGOSARI', item: 'BAHAN R8', qty: 2, unit: 'PALLET'},
+                {kind: 'KIRIM', time: '12:30', place: 'PT SELATAN JADI JAYA', city: 'SIDOARJO', address: 'JL. RAYA PANJUNAN 8 SUKODONO', item: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', co_no: '2602377', qty: 3000, unit: 'PCS', note: 'max 3100'},
+                {kind: 'KIRIM', time: '12:30', place: 'PT SELATAN JADI JAYA', city: 'SIDOARJO', address: 'JL. RAYA PANJUNAN 8 SUKODONO', item: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', co_no: '2602381', qty: 1000, unit: 'PCS', note: 'max 1100'},
+                {kind: 'AMBIL', time: '13:00', place: 'PT SELATAN JADI JAYA', city: 'SIDOARJO', address: 'JL. RAYA PANJUNAN 8 SUKODONO', item: 'TAGIHAN & GIRO'},
+                {kind: 'KIRIM', time: '14:00', place: 'GOLDEN (SUBKON PAK TASMAN)', city: 'PASURUAN', address: 'JL. RAYA PANDAAN KM 3', item: 'BARANG SUBKON', qty: 7840, unit: 'PCS', note: 'semua'}]},
         alt: {...PRINTED, number: 'JK26100102', date: '2026-10-01', status: 'CONFIRMED', start_time: '07:45', finish_time: '17:00', createdBy: 'Johannes Iwan',
             party: {name: 'N 8381 BK', lines: ['Driver: PUJI & DWI']},
             rows: [
-                {name: 'GUDANG LBI (RIT 1)', sub: 'AMBIL (BAHAN R8)', qty: 6, unit: 'PALLET', kind: 'AMBIL', start: '08:00', stop: '09:00'},
-                {name: 'TELASIH', sub: 'BAHAN R8 DARI GUDANG LBI', qty: 6, unit: 'PALLET', kind: 'BONGKAR', start: '09:15', stop: '09:45'},
-                {name: 'GUDANG LBI (RIT 2)', sub: 'AMBIL (BAHAN R8)', qty: 2, unit: 'PALLET', kind: 'AMBIL', start: '10:00', stop: '10:30'},
-                {name: 'TELASIH', sub: 'BAHAN R8 DARI GUDANG LBI + MUAT KIRIMAN KOTA KOTA', kind: 'BONGKAR', start: '10:45', stop: '12:00'},
-                {name: 'PT. SARANA JAYA SERBAGUNA', sub: 'SJS IB BDM YTUBE 2.50/2.75-14 (DS003437)', qty: 30000, unit: 'PCS', kind: 'KIRIM', co_no: '2602262', start: '13:00', stop: '14:00', note: 'MAX. KIRIM 31000'},
-                {name: 'PT. SARANA JAYA SERBAGUNA', sub: 'SJS IB BDM YTUBE 2.50/2.75-17 (DS003438)', qty: 30000, unit: 'PCS', kind: 'KIRIM', co_no: '2602266', note: 'MAX. KIRIM 31000'},
-                {name: '93 DONUT', sub: 'JD BOX DONAT UK 20 X 20 X 6 CM (DS000)', qty: 3000, unit: 'PCS', kind: 'KIRIM', co_no: '2602282', start: '15:30', stop: '16:00', note: 'SEMUA'},
-                {name: 'TELASIH', kind: 'FINISH', start: '17:00'}]},
+                {kind: 'AMBIL', time: '08:00', place: 'GUDANG LBI (RIT 1)', city: 'MALANG', address: 'JL. RAYA KARANGLO 88, SINGOSARI', item: 'BAHAN R8', qty: 6, unit: 'PALLET'},
+                {kind: 'KIRIM', time: '09:15', place: 'TELASIH MAKMUR', city: 'MALANG', address: 'PONDOK BLIMBING INDAH BLOK A5 NO. 5', item: 'BAHAN R8 DARI GUDANG LBI (BONGKAR)', qty: 6, unit: 'PALLET'},
+                {kind: 'AMBIL', time: '10:00', place: 'GUDANG LBI (RIT 2)', city: 'MALANG', address: 'JL. RAYA KARANGLO 88, SINGOSARI', item: 'BAHAN R8', qty: 2, unit: 'PALLET'},
+                {kind: 'KIRIM', time: '10:45', place: 'TELASIH MAKMUR', city: 'MALANG', address: 'PONDOK BLIMBING INDAH BLOK A5 NO. 5', item: 'BAHAN R8 (BONGKAR) + MUAT KIRIMAN KOTA', qty: 2, unit: 'PALLET'},
+                {kind: 'KIRIM', time: '13:00', place: 'PT. SARANA JAYA SERBAGUNA', city: 'MALANG', address: 'JL. TENAGA BARU 12, BLIMBING', item: 'SJS IB BDM YTUBE 2.50/2.75-14 (DS003437)', co_no: '2602262', qty: 30000, unit: 'PCS', note: 'max 31000'},
+                {kind: 'KIRIM', time: '13:00', place: 'PT. SARANA JAYA SERBAGUNA', city: 'MALANG', address: 'JL. TENAGA BARU 12, BLIMBING', item: 'SJS IB BDM YTUBE 2.50/2.75-17 (DS003438)', co_no: '2602266', qty: 30000, unit: 'PCS', note: 'max 31000'},
+                {kind: 'KIRIM', time: '15:30', place: '93 DONUT', city: 'MALANG', address: 'PERUMAHAN CITRA KAYANE RESIDENCE', item: 'JD BOX DONAT UK 20 X 20 X 6 CM (DS000)', co_no: '2602282', qty: 3000, unit: 'PCS', note: 'semua'}]},
         dev: {
             title: 'Perubahan terhadap format sekarang (docs/attachments/expedisi.jpg, tabel Excel)',
-            marks: [[1, '[data-k=number]', -5, 0], [2, '[data-k=party]', -5, 0], [3, 'thead th:nth-child(2)', -1, -2.5], [4, 'thead th:nth-child(9)', 0, -2.5], [5, '.tail', -5.5, 1], [6, '.sign', -5, 0]],
+            marks: [[1, '[data-k=number]', -5, 0], [2, '[data-k=party]', -5, 0], [3, 'thead th:nth-child(2)', -1, -2.5], [4, 'thead th:nth-child(5)', 0, -2.5], [5, 'thead th:nth-child(8)', 0, -2.5], [6, '.sign', -5, 0]],
             legend: [
                 '<b>Satu lembar per tugas armada</b> (di Excel: banyak tugas dalam satu halaman). Diberi nomor tugas supaya bisa dilacak; format nomor menunggu keputusan.',
                 '<b>No Pol dan Driver</b> masuk blok kanan; Jam Mulai / Jam Selesai di kiri.',
-                '<b>Tujuan dan Item</b> digabung dalam satu kolom dua baris, supaya Jumlah dan Satuan tetap di posisi yang sama dengan dokumen lain.',
-                '<b>IN / OUT</b> tetap kolom kosong untuk diisi tangan.',
-                '<b>Tanpa total</b>: dokumen tanpa nilai uang tidak mencetak kotak total.',
+                '<b>Tujuan + kota</b> di baris pertama, <b>alamat</b> di baris kedua. Barang dan No CO pindah ke kolom BARANG / CO.',
+                '<b>Jenis</b> AMBIL atau KIRIM dan <b>Jam</b> rencana tiba, satu baris per perhentian.',
+                '<b>IN / OUT</b> tetap kolom kosong untuk diisi tangan (jam sebenarnya).',
                 '<b>Tanda tangan</b> dari kiri ke kanan: Pengemudi, Menyetujui, Mengetahui, Pembuat.',
             ],
         },
@@ -143,5 +143,20 @@ const SAMPLES = {
                     {name: 'Mouse wireless', qty: 5, unit: 'PCS', need_date: '2026-10-08', price: 85000, subtotal: 425000}]},
         },
     },
+};
+// CPDEL: contoh CO 2602410, produk pertama dipecah 3 kiriman, produk kedua kirim penuh.
+SAMPLES.CustomerPlanDelivery = {
+    data: {...PRINTED, number: '2602410', date: '2026-10-01', status: 'CONFIRMED', customer: 'PT. SELATAN JADI JAYA', customer_po_no: 'B2L-260930-0002', co_date: '2026-09-30', createdBy: 'Ehaningtias',
+        party: {name: 'PT. SELATAN JADI JAYA', lines: ['JL. RAYA PANJUNAN 8 SUKODONO', 'SIDOARJO']},
+        rows: [
+            {item: 1, name: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 8000, unit: 'PCS', ship_date: '2026-10-09', ship_time: '10:00', due_date: '2026-10-09', state: 'Posted'},
+            {item: 1, name: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 8000, unit: 'PCS', ship_date: '2026-10-14', ship_time: '10:00', due_date: '2026-10-09', state: 'Planned'},
+            {item: 1, name: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 4000, unit: 'PCS', ship_date: '2026-10-19', ship_time: '13:00', due_date: '2026-10-09', state: 'Planned'},
+            {item: 2, name: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', qty: 3000, unit: 'PCS', ship_date: '2026-10-09', ship_time: '10:00', due_date: '2026-10-09', state: 'Posted'}]},
+    more: [
+        {item: 3, name: 'IB COCO TOKYO FLAT C-25 1KG (DS001477)', qty: 2000, unit: 'PCS', ship_date: '2026-10-16', ship_time: '09:00', due_date: '2026-10-16', state: 'Planned'},
+        {item: 3, name: 'IB COCO TOKYO FLAT C-25 1KG (DS001477)', qty: 2000, unit: 'PCS', ship_date: '2026-10-23', ship_time: '09:00', due_date: '2026-10-16', state: 'Planned'},
+        {item: 4, name: 'OB COCO TOKYO FLAT C-25 1KG', qty: 400, unit: 'PCS', ship_date: '2026-10-16', ship_time: '09:00', due_date: '2026-10-16', state: 'Planned'},
+        {item: 5, name: 'JD BOX DONAT UK 20 X 20 X 6 CM (DS000)', qty: 3000, unit: 'PCS', ship_date: '2026-10-22', ship_time: '14:00', due_date: '2026-10-22', state: 'Planned'}],
 };
 SAMPLES.CustomerOrderNoPrice = {data: SAMPLES.CustomerOrder.data, more: SAMPLES.CustomerOrder.more};

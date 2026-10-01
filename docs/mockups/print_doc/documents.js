@@ -52,6 +52,39 @@ PrintDoc.register(class CustomerOrderNoPrice extends PrintDoc.registry.CustomerO
     static priced = false;
 });
 
+// CPDEL (Customer Plan Delivery): rencana kirim satu CO, TANPA HARGA. Satu baris = satu kiriman. Produk yang dipecah
+// (split) dicetak berurutan dan ditandai tiga kali: garis tebal di kiri baris, kolom KIRIMAN "SPLIT 1/3" tebal, dan
+// ringkasan "Split" di bawah tabel (keputusan user 2026-10-01: harus jelas jika terjadi split). `item` = id baris CO.
+PrintDoc.register(class CustomerPlanDelivery extends PrintDoc {
+    static title = 'CUSTOMER PLAN DELIVERY';
+    static subtitle = 'Rencana Kirim &middot; Tanpa Harga';
+    static numberLabel = 'No CO';
+    static refs = [
+        {key: 'customer', label: 'Customer'},
+        {key: 'customer_po_no', label: 'No PO Customer'},
+        {key: 'co_date', label: 'Tanggal CO', type: 'date'},
+    ];
+    static partyLabel = 'Dikirim ke';
+    static side = {key: 'contact', label: 'Telp / UP'};
+    static nb = '<b>NB:</b>&nbsp;SPLIT = satu produk dikirim bertahap (garis tebal di kiri). JUMLAH adalah jumlah per kiriman.';
+    static nameLabel = 'NAMA PRODUK';
+    static extra = [{key: 'part', label: 'KIRIMAN', width: 17}, {key: 'ship_date', label: 'TGL KIRIM', width: 21, type: 'date'}, {key: 'ship_time', label: 'JAM', width: 11},
+        {key: 'due_date', label: 'DUE CO', width: 21, type: 'date'}, {key: 'state', label: 'STATUS', width: 14}];
+    static receivers = [['Customer', 'Menyetujui jadwal']];
+
+    constructor(data) {
+        const groups = {};
+        data.rows.forEach(r => (groups[r.item] ??= []).push(r));
+        const total = g => g.reduce((t, r) => t + +r.qty, 0);
+        const rows = data.rows.map(r => {
+            const g = groups[r.item];
+            return g.length > 1 ? {...r, cls: 'split', part: `SPLIT ${g.indexOf(r) + 1}/${g.length}`} : {...r, part: 'Penuh'};
+        });
+        const notes = Object.values(groups).filter(g => g.length > 1).map(g => ['Split', `${g[0].name} — ${Fmt.num(total(g))} ${g[0].unit} = ${g.map(r => Fmt.num(r.qty)).join(' + ')}`]);
+        super({...data, rows, notes: [...notes, ...(data.notes ?? [])]});
+    }
+});
+
 // Acuan kertas: docs/attachments/purchase order.jpg
 PrintDoc.register(class PurchaseOrder extends PrintDoc {
     static approved = '2026-10-01';
@@ -74,7 +107,9 @@ PrintDoc.register(class PurchaseOrder extends PrintDoc {
     static receivers = [['Supplier', 'Menerima pesanan']];
 });
 
-// Acuan kertas: docs/attachments/expedisi.jpg (Jadwal Kirim; satu lembar per tugas armada)
+// Acuan kertas: docs/attachments/expedisi.jpg (Jadwal Kirim; satu lembar per tugas armada).
+// Satu baris = satu perhentian: JENIS (AMBIL / KIRIM), JAM rencana tiba, tujuan + KOTA (baris 1) dan ALAMAT (baris 2),
+// barang + No CO di kolom BARANG / CO (keputusan user 2026-10-01: ambil dan kirim, jam, kota, alamat harus ada).
 PrintDoc.register(class JadwalKirim extends PrintDoc {
     static title = 'JADWAL KIRIM';
     static subtitle = 'Tugas Armada &middot; Internal';
@@ -84,11 +119,16 @@ PrintDoc.register(class JadwalKirim extends PrintDoc {
         {key: 'finish_time', label: 'Jam Selesai'},
     ];
     static partyLabel = 'Kendaraan';
-    static nb = '<b>NB:</b>&nbsp;IN / OUT = jam tiba dan jam selesai di tujuan, diisi pengemudi.';
-    static nameLabel = 'TUJUAN / ITEM';
-    static extra = [{key: 'kind', label: 'JENIS', width: 13}, {key: 'co_no', label: 'CO', width: 13}, {key: 'start', label: 'START', width: 11}, {key: 'stop', label: 'STOP', width: 10},
-        {key: 'in', label: 'IN', width: 9, hand: true}, {key: 'out', label: 'OUT', width: 9, hand: true}, {key: 'note', label: 'NOTE', width: 19, wrap: true}];
+    static nb = '<b>NB:</b>&nbsp;JAM = rencana tiba. IN / OUT = jam tiba dan jam selesai sebenarnya di tujuan, diisi pengemudi.';
+    static nameLabel = 'TUJUAN &middot; KOTA / ALAMAT';
+    static extra = [{key: 'kind', label: 'JENIS', width: 13}, {key: 'time', label: 'JAM', width: 11}, {key: 'goods', label: 'BARANG / CO', width: 42, wrap: true},
+        {key: 'in', label: 'IN', width: 9, hand: true}, {key: 'out', label: 'OUT', width: 9, hand: true}];
     static receivers = [['Pengemudi', '']];
+
+    constructor(data) {
+        super({...data, rows: data.rows.map(r => ({...r, name: [r.place, r.city].filter(Boolean).join(' · '), sub: r.address,
+            goods: [r.co_no && 'CO ' + r.co_no, r.item, r.note].filter(Boolean).join(' · ')}))});
+    }
 });
 
 PrintDoc.register(class Inquiry extends PrintDoc {

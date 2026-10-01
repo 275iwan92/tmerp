@@ -52,7 +52,8 @@ class PrintDoc {
     static extra = [];                  // kolom zona varian: {key, label, width(mm), type: text|date|money|int, hand?}
     static priced = false;              // true = kolom harga + kotak total rupiah + terbilang
     static receivers = [];              // tanda tangan pihak luar / penerima, paling kiri: [peran, keterangan]
-    static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat    static qrHint = 'dokumen online';
+    static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat
+    static qrHint = 'dokumen online';
     static approved = null;             // tanggal user menandai format ini A (Approved): tidak diubah lagi kecuali user minta
 
     constructor(data) {
@@ -104,11 +105,11 @@ class PrintDoc {
     table() {
         const x = this.cols, n = PrintDoc.ROWS[this.paper], cls = c => c.type === 'money' || c.type === 'int' ? 'num' : c.hand ? 'hd' : c.wrap ? 'wr' : '';
         const head = `<th></th><th>${this.f.nameLabel}</th><th class="num">JUMLAH</th><th>SATUAN</th>` + x.map(c => `<th class="${cls(c)}">${c.label}</th>`).join('');
-        const cell = (c, r) => `<td class="${cls(c)}">${r[c.key] == null || r[c.key] === '' ? '' : this.val(c, r)}</td>`;
+        const cell = (c, r) => { const v = r[c.key] == null || r[c.key] === '' ? '' : this.val(c, r); return `<td class="${cls(c)}" data-c="${c.key}">${c.wrap ? `<div class="w2">${v}</div>` : v}</td>`; };
         const body = Array.from({length: n}, (_, i) => {
             const r = this.d.rows[i];
             // Nama: 2 baris. Tanpa `sub` nama boleh turun baris; dengan `sub` baris kedua = keterangan kecil.
-            return `<tr><td class="no">${i + 1}.</td>` + (r
+            return `<tr${r?.cls ? ` class="${r.cls}"` : ''}><td class="no">${i + 1}.</td>` + (r
                 ? `<td class="nm ${r.sub ? 'two' : ''}"><div class="n1">${esc(r.name)}</div>${r.sub ? `<div class="n2">${esc(r.sub)}</div>` : ''}</td>
                    <td class="num">${r.qty == null ? '' : Fmt.num(r.qty)}</td><td>${esc(r.unit)}</td>` + x.map(c => cell(c, r)).join('')
                 : '<td></td>'.repeat(3 + x.length)) + '</tr>';
@@ -165,7 +166,7 @@ class PrintDoc {
     // Teks sel yang terlalu panjang dikecilkan bertahap sampai muat (batas 6,5 pt), bukan dipotong.
     static fit(root) {
         const shrink = (el, over) => { let s = parseFloat(getComputedStyle(el).fontSize) * .75; while (over() && s > 6.5) el.style.fontSize = (s -= .25) + 'pt'; };
-        root.querySelectorAll('.items .n1, .items .n2').forEach(el => shrink(el, () => el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1));
+        root.querySelectorAll('.items .n1, .items .n2, .items .w2').forEach(el => shrink(el, () => el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1));
         root.querySelectorAll('.items td:not(.nm):not(.no):not(.wr)').forEach(td => shrink(td, () => td.scrollWidth > td.clientWidth));
     }
 
