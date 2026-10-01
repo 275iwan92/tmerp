@@ -79,7 +79,7 @@ const SAMPLES = {
                 '<b>Tabel berkepala</b>: Jumlah, Satuan, Harga, Subtotal di kolom tetap; "IDR" tidak diulang tiap angka.',
                 '<b>Terbilang</b> dihitung sistem sampai sen (kertas membulatkan ke rupiah).',
                 '<b>Total</b>: Diskon hanya muncul bila ada; PPN ditulis persennya.',
-                '<b>Tanda tangan</b> dari kiri: Pembuat, Mengetahui, Menyetujui, lalu Supplier paling kanan. Nama ketiganya tercetak otomatis.',
+                '<b>Tanda tangan</b>: Supplier paling kanan, di kirinya Menyetujui, Mengetahui, Pembuat. Nama ketiganya tercetak otomatis.',
             ],
         },
     },

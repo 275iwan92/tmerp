@@ -53,7 +53,7 @@ class PrintDoc {
     static priced = false;              // true = kolom harga + kotak total rupiah + terbilang
     static receivers = [];              // tanda tangan slot 1-2: [peran, keterangan]
     static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat
-    static signReversed = false;        // true = Pembuat, Mengetahui, Menyetujui dari kiri, pihak luar paling kanan (PO)
+    static signReversed = false;        // true = pihak luar paling kanan, di kirinya rapat Menyetujui, Mengetahui, Pembuat (PO)
     static qrHint = 'dokumen online';
 
     constructor(data) {
@@ -146,7 +146,7 @@ class PrintDoc {
         const [r1, r2] = this.f.receivers, [a, b, c] = this.f.internal;
         const slot = s => s ? `<div><span>${esc(s[0])}</span><small>${esc(s[1])}</small><i></i><b>(${s[2] ? `<u class="nm">${esc(s[2])}</u>` : '<u></u>'})</b></div>` : '<div></div>';
         const know = ['Mengetahui', a, this.d.knownBy], agree = ['Menyetujui', b, this.d.approvedBy], maker = ['Pembuat', c, this.d.createdBy];
-        return `<section class="sign">${(this.f.signReversed ? [maker, know, agree, r2, r1] : [r1, r2, know, agree, maker]).map(slot).join('')}</section>`;
+        return `<section class="sign">${(this.f.signReversed ? [r2, maker, know, agree, r1] : [r1, r2, know, agree, maker]).map(slot).join('')}</section>`;
     }
 
     foot() {
