@@ -143,6 +143,9 @@
     samping gambar dengan tinggi sama** (lebih sempit) dan kotaknya **bisa diputar** (drag = putar, Shift+drag = miring,
     tombol auto-spin / zoom / reset). **Dimensions di bawah gambar, 2 baris berkelompok** (Product Size | Flat Size, lalu
     Flaps & Allowances) — tidak boleh ada satu field tersisa sendiri di baris bawah.
+    **Hole (front panel)** di sebelah Flaps & Allowances: Hole Type None / Round / Rectangle + Width / Ø + Height, digambar di
+    tengah panel depan (garis biru), terhitung di kotak **Perforation / hole**, tampil di 3D, tersimpan di
+    `dieline_spec.dims` (`hole_type`, `hole_w`, `hole_h`) hanya bila dipakai. Belum masuk hitungan pisau ProDev / harga ProCost.
 24. **Cetakan dokumen — user 2026-10-01:** kertas **A5 landscape** bila isi **1-5 baris**, **A4 portrait** bila **lebih dari
     5 baris**; berlaku untuk semua dokumen (Surat Jalan, Customer Order, Inquiry, PR, PO, Jadwal Kirim, dst). Dibuat sebagai
     **satu generator berorientasi objek** (kelas induk + turunan per dokumen): semua yang bisa diletakkan di posisi yang sama

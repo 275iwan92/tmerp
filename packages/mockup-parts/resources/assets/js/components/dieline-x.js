@@ -20,6 +20,8 @@
       this.v3 = this.el.dataset.level === '3';
       this.code = this.el.dataset.type;
       this.dims = JSON.parse(this.el.dataset.dims || '{}');
+      // Lubang / jendela di panel depan: bukan param tipe (prod_type_param), disimpan bersama dims hanya bila dipakai.
+      this.hole = {type: ['ROUND', 'RECT'].includes(this.dims.hole_type) ? this.dims.hole_type : 'NONE', w: +this.dims.hole_w || '', h: +this.dims.hole_h || ''};
       this.zoom = 1;
       this.manual = false;
       this.unit = this.el.dataset.unit || 'mm';
@@ -39,10 +41,13 @@
       this.el.addEventListener('input', e => {
         const d = e.target.dataset.dDim;
         if (d !== undefined) { this.dims[d] = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.')); return this.redraw(); }
+        const hk = e.target.dataset.dHole;
+        if (hk === 'w' || hk === 'h') { this.hole[hk] = parseFloat(e.target.value.replace(',', '.')) || ''; return this.redraw(); }
         if (e.target.matches('[data-d-fw],[data-d-fh]') && this.manual) this.redraw();
       });
       this.el.addEventListener('change', e => {
         if (e.target.name === this.name + '[type]') { this.code = e.target.value; this.dims = {}; this.fields(); this.redraw(); }
+        if (e.target.name === this.name + '[hole_ui]') { this.hole.type = e.target.value || 'NONE'; this.holeUi(); this.redraw(); }
         if (e.target.matches('[data-d-manual]')) { this.manual = e.target.checked; this.fw.readOnly = this.fh.readOnly = !this.manual; this.redraw(); }
         if (e.target.matches('[data-d-dims-on], [data-d-opt]')) this.redraw();
       });
@@ -67,6 +72,7 @@
         setArtworkInner: url => { this.inArt = url || this.savedIn; this.showSide(url ? 'in' : this.inArt ? this.side : 'out'); }};
       if (!window.TMDieline) { this.q('[data-d-preview]').textContent = 'TMDieline tidak termuat.'; return; }
       this.bind3d();
+      this.holeUi(true);
       this.sideUi();
       this.fields();this.redraw();
       if (this.art) this.loadArt();
@@ -114,7 +120,7 @@
       this.decorate();
       this.annotate();
       this.q('[data-d-preview]').style.transform = `scale(${this.zoom})`; this.q('[data-d-zoomval]').textContent = Math.round(this.zoom * 100) + '%';
-      this.q('[data-d-info]').innerHTML = t ? `<b>${esc(t.label)}</b>${t.category ? ` · ${esc(t.category)}` : ''} · Bentang <b>${this.numStr(this.fw.value)} × ${this.numStr(this.fh.value)} mm</b> · Luas <b>${this.numStr(a / 100)} cm²</b>${this.manual ? ' <span class="dl-badge dl-badge--warn">manual</span>' : ''}` : '';
+      this.q('[data-d-info]').innerHTML = t ? `<b>${esc(t.label)}</b>${t.category ? ` · ${esc(t.category)}` : ''} · Bentang <b>${this.numStr(this.fw.value)} × ${this.numStr(this.fh.value)} mm</b> · Luas <b>${this.numStr(a / 100)} cm²</b>${this.manual ? ' <span class="dl-badge dl-badge--warn">manual</span>' : ''}${this.holeOver ? ' <span class="dl-badge dl-badge--warn">hole larger than panel</span>' : ''}` : '';
       this.markSize();
       this.el.dispatchEvent(new CustomEvent('dl:dieline', {bubbles: true, detail: {type: this.code, dims: {...this.dims}, flat: {w: +this.fw.value || 0, h: +this.fh.value || 0, area: a}, manual: this.manual}}));
     }
@@ -230,6 +236,7 @@
       $$(svg, 'line,rect,path,circle,polyline,polygon').forEach(n => { if ((n.getAttribute('stroke') || '').toLowerCase() === bleed) n.style.display = this.opt('overflow') ? '' : 'none'; });
       const W = g.x1 - g.x0, H = g.y1 - g.y0, u = Math.max(W, H) / 100, ns = 'http://www.w3.org/2000/svg';
       this.g = g;
+      this.drawHole(svg, g);
       if (this.art && this.opt('artwork')) {
         const img = document.createElementNS(ns, 'image'), R = this.artRect(g);
         img.setAttribute('class', 'dl-deco dl-deco__art');
@@ -268,6 +275,37 @@
       }
     }
 
+    // Kotak tuck = panel berjajar (L, W, L, W) di antara lipatan atas & bawah; selain itu model nampan / lembaran.
+    isTuck(g) {
+      const cols = [g.x0, ...g.inX, g.x1], i = cols.indexOf(g.px0);
+      return g.ys.length <= 2 && g.inX.length >= 3 && i >= 0 && i + 2 < cols.length;
+    }
+
+    // Lubang di tengah panel depan (kotak tuck) / panel utama (nampan, lembaran): Round = lingkaran Ø w, Rectangle = w x h.
+    // null bila tidak dipakai / ukuran belum diisi. pw, ph = ukuran panelnya.
+    holeShape(g) {
+      const H = this.hole, F = H.type === 'NONE' ? null : this.faces3d(g), P = F ? (this.isTuck(g) ? F.front : F.top) : null;
+      const w = +H.w || 0, h = H.type === 'ROUND' ? w : +H.h || 0;
+      return P && w > 0 && h > 0 ? {round: H.type === 'ROUND', w, h, cx: P[0] + P[2] / 2, cy: P[1] + P[3] / 2, pw: P[2], ph: P[3]} : null;
+    }
+
+    // Digambar sebagai garis HOLE di luar lapisan dl-deco supaya ikut terhitung di "Perforation / hole" dan ikut ke unduhan SVG.
+    drawHole(svg, g) {
+      const o = this.holeShape(g), at = `fill="none" stroke="${window.TMDieline.STROKE.HOLE}" stroke-width="1"`;
+      this.holeOver = !!o && (o.w > o.pw || o.h > o.ph);
+      if (!o) return;
+      svg.insertAdjacentHTML('beforeend', o.round ? `<circle cx="${o.cx}" cy="${o.cy}" r="${o.w / 2}" ${at}/>`
+        : `<rect x="${o.cx - o.w / 2}" y="${o.cy - o.h / 2}" width="${o.w}" height="${o.h}" rx="${Math.min(3, o.w / 8, o.h / 8)}" ${at}/>`);
+    }
+
+    // Field lubang: None -> semua mati (tidak ikut tersimpan); Round -> hanya Width / Ø; Rectangle -> Width + Height.
+    holeUi(fill) {
+      const H = this.hole, t = this.q('[data-d-hole="type"]'), w = this.q('[data-d-hole="w"]'), h = this.q('[data-d-hole="h"]'); if (!t) return;
+      t.value = H.type; t.disabled = H.type === 'NONE';
+      w.disabled = H.type === 'NONE'; h.disabled = H.type !== 'RECT';
+      if (fill) { w.value = H.w; h.value = H.h; }
+    }
+
     // Sumber gambar 6 sisi kotak (koordinat bentangan). Kotak tuck = panel berjajar L, W, L, W (depan, kanan, belakang, kiri);
     // tutup atas/bawah = bentuk potong di atas/bawah panel L tempat ia menempel (menempel di panel belakang -> gambar diputar 180°).
     // Model nampan: 3 sisi dari faces3d, sisi lainnya polos.
@@ -275,7 +313,7 @@
       const F = this.faces3d(g); if (!F) return {};
       const out = {front: {src: F.front}, right: {src: F.side}, top: {src: F.top}};
       const cols = [g.x0, ...g.inX, g.x1], i = cols.indexOf(g.px0);
-      if (!(g.ys.length <= 2 && g.inX.length >= 3 && i >= 0 && i + 2 < cols.length)) return out;
+      if (!this.isTuck(g)) return out;
       const h = g.py1 - g.py0, col = n => (i + n + 1 < cols.length ? [cols[i + n], cols[i + n + 1]] : null), f = col(0), b = col(2), l = col(3);
       if (b) out.back = {src: [b[0], g.py0, b[1] - b[0], h]};
       if (l) out.left = {src: [l[0], g.py0, l[1] - l[0], h]};
@@ -295,10 +333,12 @@
       const on = this.art && this.side !== 'in' && this.opt('artwork') && this.g, S = on ? this.sides3d(this.g) : {}, R = on ? this.artRect(this.g) : null;
       const u = n => `calc(${Math.round(n * 1000) / 1000} * var(--u))`, href = on ? esc(String(this.art).replace(/'/g, '%27')) : '';
       // Sumber [x,y,w,h] di bentangan -> sisi w x h: gambar (menempati R) diskalakan & digeser agar sumber jatuh di 0..w, 0..h.
+      const ho = this.g ? this.holeShape(this.g) : null, hp = this.g && this.isTuck(this.g) ? 'front' : 'top';
       const face = (k, w, h, tf) => {
         const s = S[k] && S[k].src[2] > 0 && S[k].src[3] > 0 ? S[k] : null, kx = s ? w / s.src[2] : 0, ky = s ? h / s.src[3] : 0;
         const bg = s ? `background-image:url('${href}');background-size:${u(R.w * kx)} ${u(R.h * ky)};background-position:${u((R.x - s.src[0]) * kx)} ${u((R.y - s.src[1]) * ky)};` : '';
-        return `<div class="dl-3d__face is-${k}" style="width:${u(w)};height:${u(h)};margin:${u(-h / 2)} 0 0 ${u(-w / 2)};transform:${tf}${s && s.flip ? ' rotate(180deg)' : ''};${bg}"></div>`;
+        const o = k === hp && ho ? `<i class="dl-3d__hole${ho.round ? ' is-round' : ''}" style="width:${u(ho.w * w / ho.pw)};height:${u(ho.h * h / ho.ph)}"></i>` : '';
+        return `<div class="dl-3d__face is-${k}" style="width:${u(w)};height:${u(h)};margin:${u(-h / 2)} 0 0 ${u(-w / 2)};transform:${tf}${s && s.flip ? ' rotate(180deg)' : ''};${bg}">${o}</div>`;
       };
       const diag = Math.hypot(L, Wd, H), btn = (a, icon, title) => `<button type="button" class="dl-3d__btn${a === 'spin' && this.spin ? ' is-on' : ''}" data-d-3d-act="${a}" title="${title}"><i class="fa-solid ${icon}"></i></button>`;
       box.classList.add('is-live');

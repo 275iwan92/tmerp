@@ -164,7 +164,8 @@ final class MasterCardService
         }
 
         $type = $in['type_code'] ?? null;
-        $dims = array_map($num, array_filter($in['dieline']['dims'] ?? [], fn ($v) => $v !== null && $v !== ''));
+        // Nilai bukan angka (mis. hole_type ROUND/RECT) disimpan apa adanya.
+        $dims = array_map(fn ($v) => is_numeric(str_replace(',', '.', (string) $v)) ? $num($v) : $v, array_filter($in['dieline']['dims'] ?? [], fn ($v) => $v !== null && $v !== ''));
         if ($type && ($type !== $card->type_code || ! $dims)) {
             $dims = MasterCardShape::fit($card->toArray(), $type);
         }

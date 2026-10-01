@@ -106,6 +106,17 @@ class DielineV2 extends Dieline
                         <div class="dl-dieline__cap">Flaps &amp; Allowances</div>
                         <div class="dl-dieline__dims" data-d-dims2></div>
                     </div>
+                    {{-- Lubang / jendela di panel depan (user 2026-10-01). Ikut tersimpan di dims (hole_type, hole_w, hole_h) hanya bila dipakai:
+                         field dims dimatikan saat None, pilihan tipe sendiri (hole_ui) bukan bagian dims. --}}
+                    <div class="dl-dieline__dimwrap">
+                        <div class="dl-dieline__cap">Hole (front panel)</div>
+                        <div class="dl-dieline__dims dl-dieline__dims--3">
+                            <x-dl::field.select :name="$name.'[hole_ui]'" label="Hole Type" :options="['NONE' => 'None', 'ROUND' => 'Round', 'RECT' => 'Rectangle']" :value="$dims['hole_type'] ?? 'NONE'" />
+                            <input type="hidden" name="{{ $name }}[dims][hole_type]" data-d-hole="type" disabled>
+                            <label class="dl-dieline__dim"><span>Hole Width / Ø</span><span class="dl-field__box"><input class="dl-input" type="text" inputmode="decimal" name="{{ $name }}[dims][hole_w]" data-d-hole="w" disabled><em>mm</em></span></label>
+                            <label class="dl-dieline__dim"><span>Hole Height</span><span class="dl-field__box"><input class="dl-input" type="text" inputmode="decimal" name="{{ $name }}[dims][hole_h]" data-d-hole="h" disabled><em>mm</em></span></label>
+                        </div>
+                    </div>
                 </div>
             </div>
             BLADE;
