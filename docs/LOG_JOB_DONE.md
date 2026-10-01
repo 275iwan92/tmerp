@@ -3,6 +3,45 @@
 
 ---
 
+## 2026-10-02 (malam, berjalan sendiri) -- Probe semua layar + rollout grid v2 lanjutan (UI-20) + cetakan PQ / Kas Kecil diuji
+
+Perintah user: "kerjakan yang kamu bisa kerjakan selama saya tidur, mandiri tanpa prompting". Semua di `main`, sudah di-push.
+
+- **Probe mockup.test (ddt, hanya GET, lewat kernel)**: 201 item menu, 78 grid + form buka / baru, 555 form dan cetakan dengan id
+  dokumen asli -- semuanya HTTP 200, tidak ada error 500. Yang 404 memang wajar (grup Flow yang dimatikan, bahan tanpa data
+  planning). Tidak ada data yang berubah.
+- **Master Data -> Grid Lookup v2** (`f11b1e6f`): Units of Measure (`md-uom`), Unit Conversion (`md-uom-conversion`, baris menu baru
+  `MD_UOM_CONV`), Currency (`md-currency`), Exchange Rate (`md-exchange-rate`), Supplier Category (`md-supplier-category`).
+  Aturan simpan = layar v1: satu satuan dasar per dimensi, dimensi Specification tanpa satuan dasar, konversi hanya antar satuan
+  sedimensi dan satu pasangan sekali, satu kurs Aktif per mata uang (baris lama jadi riwayat), kode huruf besar.
+  - Objek DevLib: kolom `lockSaved` di `x-dl::sheet` / `x-dl::lookup-grid` = kode hanya bisa diisi di baris baru, terkunci setelah
+    tersimpan (server ikut menolak). Contoh: devlib.test > Grid Lookup > "code locked once saved".
+  - `DbLookup` mendapat kait `prepare()` / `check()` / `saved()` untuk aturan lintas kolom dan lintas baris.
+  - Model `SupCategory`: kunci utama = `id_category` (sesuai tabel; dulu masih `category_code`).
+  - Uji: 26 pemeriksaan simpan di ddt di dalam transaksi yang di-rollback (tanpa sisa data); `lockSaved` diuji di Chrome headless.
+- **Laporan stok -> Grid Report v2** (commit berikutnya): Stock Balance, Stock Card, Slow Moving Item untuk RM / FG / SFG (9 layar,
+  `inv-<kelas>-rpt-balance|card|slow`). Sumber = view stok yang sama dengan v1 (`v_*_onhand`, `v_inv_movement`).
+  Stock Balance = saldo sekarang per barang x lokasi + saldo awal / masuk / keluar / penyesuaian bulan berjalan + tanda di bawah
+  minimum; Stock Card = semua pergerakan (cari kode barang / grup per Item); Slow Moving = diam 3 bulan atau lebih dengan saringan
+  3-6 / 6-9 / 9-12 / lebih dari 12 bulan / belum pernah bergerak.
+- **Purchase Return dan Support Tickets -> Grid Transactional v2** (persegi dokumen + tabel anak barang). Buka = form v1;
+  + New Record Purchase Return membuka pemilih sumber v1.
+- **Finance -> grid v2**: Journal Entries (`acc-journal`, persegi dokumen + baris jurnal), General Ledger (`acc-rpt-ledger`),
+  Trial Balance (`acc-rpt-trial-balance`). Trial Balance dicocokkan dengan v1: 67 akun, total debit = kredit, angka sama.
+- **Cetakan Purchase Quotation dan Bukti Kas Kecil dirender dari aplikasi** memakai baris sementara (di-rollback):
+  `docs/mockups/print_doc/app/purchase_quotation_a5|a4.jpg`, `petty_cash_topup|advance|settle_a5.jpg`.
+  Perbaikan: nilai Top Up dan Cash Advance tercetak 0 (kolom tidak pernah NULL sehingga `??` tidak jalan); jenis transaksi kini
+  ikut bahasa cetak. Format keduanya tetap belum A.
+- **Kamus**: terjemahan Indonesia untuk teks baru (migration `2026_10_02_000044`, cache kamus dibuang otomatis).
+- Migration menu `2026_10_02_000040` s/d `000044` dijalankan di ddtsys DAN tm2sys (satu per satu dengan `--path`).
+- Uji akhir: `MultiLanguageRatchetTest`, `UiRatchetTest`, `V2ShellTest`, `NoHardcodedDatabaseNameTest`, `MainMenuShellSmokeTest` lolos.
+- **Temuan untuk ditinjau user** (tidak diubah):
+  - Dummy stok di ddt punya saldo awal minus (ANIMAL GLUE, saldo awal -60) -- dummy stok perlu dibuat ulang setelah desain gudang disetujui.
+  - Bukti Kas Kecil jenis Cash Advance: baris barang = harga perkiraan PO, sedangkan total = nilai kasbon, jadi subtotal baris tidak
+    sama dengan total. Usul: untuk Cash Advance cetak satu baris "Kasbon PO ..." saja.
+  - 76 satuan lama belum punya dimensi; tiga konversi lama (IK25 / IK50 / IK100 -> PCS) memakai satuan tanpa dimensi.
+  - Purchase Quotation, Purchase Return, Support Tickets, Petty Cash belum punya data dummy di ddt (layar tampil kosong).
+
 ## 2026-10-02 -- Cetakan dokumen A5 landscape / A4 portrait dipasang ke aplikasi (objek DevLib)
 
 - Perintah user: semua entry transaksional punya cetakan A5 landscape (1-5 baris) / A4 portrait (lebih dari 5); polanya dipasang

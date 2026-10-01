@@ -30,7 +30,7 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 
 | ID | Pekerjaan | Status | Yang dibutuhkan untuk lanjut | Progres / catatan |
 |---|---|---|---|---|
-| UI-20 | Semua layar daftar v2 = turunan `DbGrid` (data DB, keluarga Grid Master/Transaksi/Report DevLib) | 🔵 BERJALAN | — | Selesai 2026-09-30: 13 HR, 15 Master/Produksi/COA/Pro-Cost/Product Market/Win-Rate, 3 laporan CO + General Report. Sisa: detail di bawah |
+| UI-20 | Semua layar daftar v2 = turunan `DbGrid` (data DB, keluarga Grid Master/Transaksi/Report DevLib) | 🔵 BERJALAN | — | Selesai 2026-09-30: 13 HR, 15 Master/Produksi/COA/Pro-Cost/Product Market/Win-Rate, 3 laporan CO + General Report. 2026-10-02: + 25 (Inventory, WO, Outstanding, Recruitment), malam + 19 (lookup Master Data, laporan stok, Purchase Return, Support Tickets, Finance). Sisa: detail di bawah |
 | UI-03 | Setelan grid "compact": kerapatan baris + baris per sel | 🟡 SIAP | — | Tempatnya sudah ada: drawer Configuration → Grid ("segera") |
 | UI-16 | Grid spreadsheet: panah, multi-sel, tanda "berubah", undo | ⚪ IDE | — | `spreadsheetgridstandard.md` §8 |
 | UI-17 | Edit tampilan nota lewat GUI (WYSIWYG) | ⚪ IDE | — | `printnotastandard.md` §8 |
@@ -56,15 +56,20 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 Pola: `app/Support/V2/Grid/DbGrid.php` + satu class per layar + daftar di `Grids::ALL`; buka/new ke form v1 lewat `?open=`/`?new=1`
 (trait `OpensFromQuery`). Menu ddtsys `target='v2:<slug>'`. Laporan = submenu **Report** di dalam grupnya. Harga penjualan
 dibuang di server lewat `restrictedKeys()` + `SecUser::canViewSalesPrice()`.
-- **Grid Lookup** (edit di sel, `x-dl::lookup-grid`, butuh sambungan simpan DB): UoM, Currency, Kurs, Hari Libur, Kategori Supplier.
 - **BOP Rule** (belum punya model Eloquent).
-- **Recruitment**: Talent Pool (daftar kandidat + undang ke lowongan, tetap v1). Sisanya SELESAI 2026-10-02 (LOG).
-- **Inventory**: Report Stock Balance/Stock Card/Slow Moving/Label History (menu sudah di submenu Report, layar belum). Stock In/Out/Return/Adjustment SELESAI 2026-10-02 (LOG).
-- **Procurement**: Purchase Return (grid v1). Outstanding PR/PO/PV SELESAI 2026-10-02 (Purchase Quotation sudah layar v2).
-- **Finance**: Cash & Bank, Down Payment, Journal, GL, Trial Balance, dst.
-- **Production**: Target Rate, Jadwal Shift, Output. Work Order + Rule Library SELESAI 2026-10-02.
-- **Setup**: Account/Group (Security), Language, Support Tickets.
-- Menu ddtsys belum disalin ke tm2sys; migration `2026_09_30_000011` (field pengiriman CO) baru jalan di ddt*.
+- **Recruitment**: Talent Pool (daftar kandidat + undang ke lowongan, tetap v1).
+- **Inventory**: Label History (belum ada layar / data). Stock Balance, Stock Card, Slow Moving SELESAI 2026-10-02 malam (LOG).
+- **Finance**: Cash & Bank, Bank & Reconciliation, Down Payment, Order to Cash, Procure to Pay, Fixed Assets, Amortization, Period
+  Closing, Tax, Balance Sheet, Income Statement, Cash Flow, Financial Statements, Dashboard, Process Engine (layar v1 yang punya
+  alur sendiri, bukan daftar murni). Journal Entries, General Ledger, Trial Balance SELESAI 2026-10-02 malam.
+- **Production**: Target Rate (ditunda: sedang dikerjakan ulang oleh speed-target engine), Jadwal Shift (papan roster, bukan daftar),
+  Production Output, MPS Gantt / Kanban / Spreadsheet (papan).
+- **Setup**: Account / Group / Group per Submodule (Security), Language, Localization, Constants, Identifikasi.
+- **HR**: Struktur Organisasi, Self-Service, Upload Presensi, Generator Transfer Bank, Roster Cash, Pipeline Board, Shift Roster.
+- **Laporan Manajemen** (7 dasbor v1).
+- Lookup Master Data (Satuan, Konversi Satuan, Currency, Kurs, Kategori Supplier), Purchase Return, Support Tickets SELESAI
+  2026-10-02 malam (LOG).
+- Migration `2026_09_30_000011` (field pengiriman CO) baru jalan di ddt*.
 
 ### UI-03 — Grid compact (kerapatan + baris per sel)  🟡
 Keputusan lengkap (2026-09-22): Rapat/Normal/Longgar + Otomatis/Tetap N; **satu setelan untuk semua grid, per USER** (kolom `sec_user.grid_density`, `sec_user.grid_lines`), **tanpa** deteksi resolusi otomatis. Dua pintu: drawer Configuration → Grid, dan panel cepat di toolbar grid. Gotcha: `line-clamp` jangan di `<td>` langsung. Mockup: `docs/mockups/grid_kerapatan_baris.jpg`.
