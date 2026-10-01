@@ -84,3 +84,5 @@
 .io-app .io-cut text{fill:var(--dl-ink)}
 .io-app .io-instructions{color:var(--dl-ink);background:var(--dl-info-soft);border-color:var(--dl-info-line)}
 .io-app .io-instructions b{color:var(--dl-accent)}
+/* Kotak pilih warna tinta: padding isian umum (9px) membuat contoh warnanya tinggal segaris. */
+.io-app .io-edit input[type=color]{padding:2px!important;width:56px;min-width:56px;height:32px;cursor:pointer}

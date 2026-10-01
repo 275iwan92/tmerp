@@ -213,6 +213,11 @@
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.
 
+26. **Ink Configuration ProDev: 4 slot warna khusus — user 2026-10-01.** Di bawah tinta proses (CMYK) selalu tersedia **4 slot
+    warna khusus** (Special 1-4 = Unit 5-8, pass pertama) yang **diisi officer langsung** di tampilan biasa: nama tinta
+    (mis. PANTONE 485 C), warna, dan tutupan %. Slot kosong tidak disimpan; slot terisi tersimpan saat **Save All** (master +
+    Inquiry) dan menjadi baris tinta di Bill of Material selama BOM masih mengikuti engine. Nama dikosongkan = slot dihapus.
+
 ## D. Cara kerja developer / agen
 
 1. **Peran:** system analyst, developer, dan database designer. Aktif menilai desain; audit integritas data
@@ -277,3 +282,4 @@
 | 2026-10-01 | C.25: workbench Imposition ProDev berlatar putih (token tema DevLib), tata letak tidak berubah. |
 | 2026-10-01 | A.19: perbaikan satuan di ProDev (zona beku, diminta user "perbaiki" BOM kosong) — bentangan Inquiry (mm) dibaca sebagai cm di `jobs()`, `saveLayout()` dan `SpecEngine::blankArea()`; BOM / Ink / BOP kini tetap dihitung walau belum ada plano yang muat. |
 | 2026-10-01 | **A.18: pilihan Canvas limit** di ProDev v2 (Custom ikut dieline = bawaan, Press bed, Die-cut bed, Press + Die-cut); aturan 16-Sep jadi salah satu pilihan, bukan otomatis. Mockup: `docs/mockups/prodev_canvas_limit.jpg`. |
+| 2026-10-01 | C.26: Ink Configuration ProDev v2 — 4 slot warna khusus (Unit 5-8) diisi officer langsung, tersimpan saat Save All. |

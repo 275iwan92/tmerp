@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-10-01 -- ProDev v2: 4 slot warna khusus di Ink Configuration
+
+- Perintah user: "sediakan 4 lagi untuk warna khusus untuk di isi oleh officer" (rulebook C.26).
+- `workbench.js`: di bawah tabel tinta selalu ada 4 slot Special 1-4 (Unit 5-8, pass pertama, jenis SPOT) berisi isian nama tinta,
+  warna, tutupan %. Isian pertama membuat baris override tinta (alur override yang sudah ada: Save All -> `prod_part_ink` +
+  `iqp_part_ink`); slot kosong dibuang server. Tidak ada perubahan engine / tabel. Kotak pilih warna diperbaiki di kulit terang.
+- Uji: headless (slot 1 diisi -> terkirim sebagai override, label OVERRIDE OFFICER); server: PANTONE 485 C 12,5% -> 182,7 cm2,
+  baris BOM "TINTA PANTONE 485 C (belum ada di Master Bahan)" 0,3133 KG, slot kosong tidak ikut. Belum dicek mata user.
+
 ## 2026-10-01 -- ProDev: BOM kosong diperbaiki (satuan mm/cm) + pilihan Canvas limit
 
 - Laporan user: bagian Bill of Material macet di "Menghitung dari data Inquiry…" lalu "Perbaiki. Lalu jalankan saja soal ukuran

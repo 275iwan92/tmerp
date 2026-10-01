@@ -1327,6 +1327,30 @@
               + '<b>' + esc(m.name) + '</b><span>' + esc(m.code) + ' · ' + esc(m.category || '') + ' · stok ' + fmtAngka(m.stock) + ' ' + esc(m.uom || '') + '</span></button>').join('') + '</div>';
       }
 
+      // Warna khusus (user 2026-10-01): 4 slot tetap -- Unit 5..8 pass pertama -- yang diisi officer langsung di
+      // tampilan biasa, tanpa masuk mode Edit. Slot kosong tidak disimpan (server membuang tinta tanpa nama);
+      // slot terisi = override officer, ikut Save All ke prod_part_ink + iqp_part_ink seperti tinta lain.
+      const SPOT_UNITS = [5, 6, 7, 8];
+      const isSpot = r => +r.pass_seq === 1 && SPOT_UNITS.includes(+r.unit_no);
+      const spotOf = (list, u) => (list || []).find(r => +r.pass_seq === 1 && +r.unit_no === u);
+
+      function spotHtml(p, rows) {
+          const src = p.edit.inks || rows;
+          const tr = SPOT_UNITS.map((u, n) => {
+              const r = spotOf(src, u) || {}, c = spotOf(rows, u) || {};
+              const at = f => ' data-spot="' + u + '" data-f="' + f + '"';
+              return '<tr><td class="io-nowrap">Special ' + (n + 1) + '</td><td class="io-nowrap">Unit ' + u + '</td>'
+                  + '<td><input list="io-inknames" placeholder="e.g. PANTONE 485 C"' + at('ink_name') + ' value="' + esc(r.ink_name || '') + '"></td>'
+                  + '<td><input type="color"' + at('color_hex') + ' value="' + esc(r.color_hex || '#888888') + '"></td>'
+                  + '<td><input type="number" min="0" max="100" step="0.1"' + at('coverage_pct') + ' value="' + esc(r.coverage_pct ?? '') + '"></td>'
+                  + '<td class="io-nowrap">' + (c.coverage_cm2 !== undefined && c.coverage_cm2 !== null ? fmtAngka(c.coverage_cm2) + ' cm²' : '—') + '</td>'
+                  + '<td class="io-nowrap">' + (c.coverage_cm2_sheet !== undefined && c.coverage_cm2_sheet !== null ? fmtAngka(c.coverage_cm2_sheet) + ' cm²' : '—') + '</td></tr>';
+          }).join('');
+          return '<div class="io-subh">Special colours — filled in by the officer</div>'
+              + '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>Slot</th><th>Unit</th><th>Ink name</th><th>Colour</th><th>Coverage %</th><th>Area / pcs</th><th>Area / sheet</th></tr>' + tr + '</table></div>'
+              + '<div class="io-note-s">Empty slots are not saved. A filled slot is saved with Save All; clear the ink name to remove it.</div>';
+      }
+
       function inkHtml(p, sp) {
           const rows = rowsOf(p, 'inks'), ed = p.editing.inks, raw = p.edit.inks || [];
           const art = p.artBusy ? '<div class="io-empty">Menganalisa warna artwork…</div>'
@@ -1353,12 +1377,14 @@
                   + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="inks">＋ Tambah tinta</button>';
           } else if (rows.length) {
               h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>Pass</th><th>Unit</th><th>Tinta</th><th>Tutupan</th><th>Luas / pcs</th><th>Luas / lembar</th></tr>'
-                  + rows.map(r => '<tr><td>' + (+r.pass_seq === 1 ? 'Warna Pertama' : 'Warna Kedua') + ': ' + esc(r.pass_label) + '</td><td>Unit ' + r.unit_no + '</td><td>'
+                  + rows.filter(r => !isSpot(r)).map(r => '<tr><td>' + (+r.pass_seq === 1 ? 'Warna Pertama' : 'Warna Kedua') + ': ' + esc(r.pass_label) + '</td><td>Unit ' + r.unit_no + '</td><td>'
                       + '<i class="io-sw" style="background:' + esc(r.color_hex || '#888') + '"></i><b>' + esc(r.ink_name) + '</b></td><td>'
                       + (r.coverage_pct !== null ? fmtAngka(r.coverage_pct) + '%' : '—') + '</td><td>'
                       + (r.coverage_cm2 !== null ? fmtAngka(r.coverage_cm2) + ' cm²' : '—') + '</td><td>'
                       + (r.coverage_cm2_sheet !== null ? fmtAngka(r.coverage_cm2_sheet) + ' cm²' : '—') + '</td></tr>').join('') + '</table></div>';
           }
+
+          if (!ed) h += spotHtml(p, rows);
 
           return h + art
               + (sp.colors.length
@@ -1529,6 +1555,25 @@
                   if (pr) row.label = pr.name;
               }
               touch(p, k);
+          });
+
+          // Slot warna khusus: isian pertama membuat baris tinta SPOT di unit itu; nama dikosongkan = baris dibuang.
+          acc.addEventListener('change', e => {
+              const el = e.target, u = el.dataset ? +el.dataset.spot : 0;
+              if (!u) return;
+              const p = S.p, f = el.dataset.f, v = el.value;
+              specInit(p);
+              if (!p.spec) return;
+              if (!p.edit.inks) p.edit.inks = toEditable('inks', rowsOf(p, 'inks'));
+              let row = spotOf(p.edit.inks, u);
+              if (!row) {
+                  row = { pass_seq: 1, pass_label: 'SPOT', unit_no: u, ink_name: '', color_hex: null, coverage_pct: null };
+                  p.edit.inks.push(row);
+              }
+              row[f] = f === 'coverage_pct' ? (v === '' ? null : +v) : f === 'ink_name' ? v.trim().toUpperCase() : v;
+              if (f === 'ink_name' && !row.ink_name) p.edit.inks.splice(p.edit.inks.indexOf(row), 1);
+              touch(p, 'inks');
+              renderSpecSections();
           });
 
           acc.addEventListener('input', e => {
