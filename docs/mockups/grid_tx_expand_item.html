@@ -25,51 +25,52 @@
 </style>
 </head>
 <body>
-<h1>Grid Transactional &mdash; isi baris saat di-Expand: nama product / nama item selalu muncul</h1>
-<p class="lead">Revisi 2: kolom jumlah item di grid dan tulisan jumlah baris di dalam Expand dihapus. Baris kedua tiap contoh sedang dibuka. Kolom pertama sudah memakai persegi Palet 1.</p>
+<h1>Grid Transactional &mdash; baris induk 5 sampai 8 kolom, baris anak (Expand) sampai 7 kolom</h1>
+<p class="lead">Revisi 3. Baris kedua tiap contoh sedang dibuka. Nama item / product selalu ada di baris anak. Tanpa kolom jumlah item dan tanpa tulisan jumlah baris.</p>
 
 <div id="out"></div>
 
 <script>
 const p1 = [['#a63fc9', '#b2378c'], ['#3f62d6', '#6b3bb5'], ['#e8743b', '#d4537e'], ['#17a59c', '#2f6fed']];
-const po = [
-  ['PO-2609-0001', 'UD Lem Sejahtera', '02-Sep-2026', 4, 'Rp 52.152.240', 0],
-  ['PO-2609-0002', 'CV Tinta Nusantara', '03-Sep-2026', 3, 'Rp 32.934.810', 1],
-  ['PO-2609-0003', 'PT Plat Offset Prima', '04-Sep-2026', 2, 'Rp 98.956.500', 2],
-];
-const lines = [
-  ['TNT-CY-01', 'Tinta Offset Process Cyan', 'Kaleng 1 kg', 25, 'Kaleng'],
-  ['TNT-MG-01', 'Tinta Offset Process Magenta', 'Kaleng 1 kg', 25, 'Kaleng'],
-  ['TNT-PT-485', 'Tinta Khusus Pantone 485 C', 'Kaleng 1 kg', 10, 'Kaleng'],
-];
-const iq = [
-  ['IQ2690071', 'PT Sari Rasa Nusantara', '22-Sep-2026', 'Box Kue Lapis 20x20x8', '5.000', 'NEW', 3],
-  ['IQ2690072', 'CV Herbal Alam Segar', '23-Sep-2026', 'Dus Teh Celup isi 25', '20.000', 'RECALC', 1],
-  ['IQ2690073', 'PT Kosmetika Indah', '24-Sep-2026', 'Sleeve Serum 30 ml', '10.000', 'REVISE', 0],
-];
 const tag = (no, name, i) => `<span class="doc" style="--c1:${p1[i][0]};--c2:${p1[i][1]}"><span class="doc__no">${no}</span><span class="doc__name">${name}</span></span>`;
 const th = l => `<th class="is-sortable">${l} <i class="fa-solid fa-sort"></i></th>`;
+const nth = l => `<th class="num is-sortable">${l} <i class="fa-solid fa-sort"></i></th>`;
 const act = open => `<td class="dl-grid__act"><button type="button" class="dl-iconbtn"><i class="fa-solid fa-up-right-from-square"></i></button></td><td class="dl-grid__exp"><button type="button" class="dl-grid__chev ${open ? 'is-open' : ''}"><i class="fa-solid fa-chevron-right"></i></button></td>`;
 const wrap = (head, body) => `<div class="dl-grid dl-grid--entry"><div class="dl-grid__panel"><div class="dl-grid__wrap" style="border-top:none"><table class="dl-grid__table"><thead><tr><th class="dl-grid__act"></th><th class="dl-grid__exp"></th>${head}</tr></thead><tbody>${body}</tbody></table></div></div></div>`;
-const head = (cls, tagTxt, title, note) => `<div class="opt__head"><span class="opt__tag ${cls}">${tagTxt}</span><span class="opt__title">${title}</span><span class="opt__note">${note}</span></div>`;
+const head = (title, note) => `<div class="opt__head"><span class="opt__title">${title}</span><span class="opt__note">${note}</span></div>`;
+const badge = (t, tone) => `<span class="dl-badge dl-badge--pill dl-badge--${tone}">${t}</span>`;
+const child = (span, title, cols, rows) => `<tr class="dl-grid__detail"><td colspan="${span}"><div class="dl-grid__nest"><b>${title}</b><table><thead><tr>${cols.map(c => `<th class="${c[1] || ''}">${c[0]}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((v, i) => `<td class="${cols[i][1] || ''}">${cols[i][2] ? `<b>${v}</b>` : v}</td>`).join('')}</tr>`).join('')}</tbody></table></div></td></tr>`;
 
-const poHead = th('No. PO / Supplier') + th('Tanggal') + '<th class="num">Jumlah</th>' + th('Status');
-const poRow = (r, open) => `<tr class="dl-grid__row">${act(open)}<td>${tag(r[0], r[1], r[5])}</td><td class="dl-grid__date">${r[2]}</td><td class="num">${r[4]}</td><td><span class="dl-badge dl-badge--pill dl-badge--success">Confirmed</span></td></tr>`;
-const poBody = detail => po.map((r, i) => poRow(r, i === 1) + (i === 1 ? detail : '')).join('');
+// PO: induk 7 kolom, anak 7 kolom
+const po = [
+  ['PO-2609-0001', 'UD Lem Sejahtera', '02-Sep-2026', '09-Sep-2026', 'Net 30', 'Rp 52.152.240', 'Reguler', 0],
+  ['PO-2609-0002', 'CV Tinta Nusantara', '03-Sep-2026', '10-Sep-2026', 'Net 14', 'Rp 32.934.810', 'Reguler', 1],
+  ['PO-2609-0003', 'PT Plat Offset Prima', '04-Sep-2026', '11-Sep-2026', 'COD', 'Rp 98.956.500', 'Kirim bertahap', 2],
+];
+const poHead = th('No. PO / Supplier') + th('Tanggal') + th('Tgl Kirim') + th('Syarat Bayar') + nth('Jumlah') + th('Status') + th('Catatan');
+const poChild = child(9, 'Item', [['Kode'], ['Nama Item', '', 1], ['Spesifikasi'], ['Qty', 'num'], ['Satuan'], ['Diterima', 'num'], ['Sisa', 'num']], [
+  ['TNT-CY-01', 'Tinta Offset Process Cyan', 'Kaleng 1 kg', 25, 'Kaleng', 10, 15],
+  ['TNT-MG-01', 'Tinta Offset Process Magenta', 'Kaleng 1 kg', 25, 'Kaleng', 25, 0],
+  ['TNT-PT-485', 'Tinta Khusus Pantone 485 C', 'Kaleng 1 kg', 10, 'Kaleng', 0, 10],
+]);
+const poBody = po.map((r, i) => `<tr class="dl-grid__row">${act(i === 1)}<td>${tag(r[0], r[1], r[7])}</td><td class="dl-grid__date">${r[2]}</td><td class="dl-grid__date">${r[3]}</td><td>${r[4]}</td><td class="num">${r[5]}</td><td>${badge('Confirmed', 'success')}</td><td><div class="dl-grid__txt">${r[6]}</div></td></tr>` + (i === 1 ? poChild : '')).join('');
 
-const table = `<tr class="dl-grid__detail"><td colspan="6"><div class="dl-grid__nest"><b>Item</b><table><thead><tr><th>Kode</th><th>Nama Item</th><th>Spesifikasi</th><th class="num">Qty</th><th>Satuan</th></tr></thead><tbody>${lines.map(l => `<tr><td>${l[0]}</td><td><b>${l[1]}</b></td><td>${l[2]}</td><td class="num">${l[3]}</td><td>${l[4]}</td></tr>`).join('')}</tbody></table></div>
-  <div class="dl-grid__detailbox"><div><small>Pemohon</small><b>Rina Purchasing</b></div><div><small>Catatan</small><b>Reguler</b></div></div></td></tr>`;
-const list = `<tr class="dl-grid__detail"><td colspan="6"><div class="names"><small>Item</small><b>${lines.map(l => l[1]).join(' &nbsp;&middot;&nbsp; ')}</b></div>
-  <div class="dl-grid__detailbox"><div><small>Pemohon</small><b>Rina Purchasing</b></div><div><small>Catatan</small><b>Reguler</b></div></div></td></tr>`;
-
-const iqHead = th('No. Inquiry / Customer') + th('Tanggal') + th('Product') + '<th class="num">Qty</th>' + th('Jenis') + th('Status');
-const iqDetail = `<tr class="dl-grid__detail"><td colspan="8"><div class="dl-grid__detailbox"><div><small>Product</small><b>Dus Teh Celup isi 25</b></div><div><small>Tipe Produk</small><b>Reverse Tuck End</b></div><div><small>PIC Sales</small><b>Dewi Kusuma</b></div><div><small>Deadline quotation</small><b>30-Sep-2026</b></div></div></td></tr>`;
-const iqBody = iq.map((r, i) => `<tr class="dl-grid__row">${act(i === 1)}<td>${tag(r[0], r[1], r[6])}</td><td class="dl-grid__date">${r[2]}</td><td><div class="dl-grid__txt">${r[3]}</div></td><td class="num">${r[4]}</td><td><span class="dl-badge dl-badge--pill dl-badge--info">${r[5]}</span></td><td><span class="dl-badge dl-badge--pill dl-badge--neutral">DRAFT</span></td></tr>` + (i === 1 ? iqDetail : '')).join('');
+// Inquiry: induk 7 kolom, anak 7 kolom
+const iq = [
+  ['IQ2690071', 'PT Sari Rasa Nusantara', '22-Sep-2026', 'Box Kue Lapis 20x20x8', '5.000', 'NEW', '29-Sep-2026', 3],
+  ['IQ2690072', 'CV Herbal Alam Segar', '23-Sep-2026', 'Hardbox Teh Premium isi 25', '20.000', 'NEW', '30-Sep-2026', 1],
+  ['IQ2690073', 'PT Kosmetika Indah', '24-Sep-2026', 'Sleeve Serum 30 ml', '10.000', 'REVISE', '01-Oct-2026', 0],
+];
+const iqHead = th('No. Inquiry / Customer') + th('Tanggal') + th('Product') + nth('Qty') + th('Jenis') + th('Status') + th('Deadline Quotation');
+const iqChild = child(9, 'Product: Hardbox Teh Premium isi 25', [['Part', '', 1], ['Peran'], ['Tipe Produk'], ['Ukuran (mm)'], ['Bahan'], ['Warna'], ['Finishing']], [
+  ['Body', 'Body', 'Rigid Box Base', '160 x 120 x 60', 'Greyboard 2 mm + Art Paper 150', '4/0', 'Laminasi Doff'],
+  ['Lid', 'Lid', 'Rigid Box Lid', '164 x 124 x 30', 'Greyboard 2 mm + Art Paper 150', '4/0 + Emas', 'Laminasi Doff, Hot Print'],
+]);
+const iqBody = iq.map((r, i) => `<tr class="dl-grid__row">${act(i === 1)}<td>${tag(r[0], r[1], r[7])}</td><td class="dl-grid__date">${r[2]}</td><td><div class="dl-grid__txt">${r[3]}</div></td><td class="num">${r[4]}</td><td>${badge(r[5], 'info')}</td><td>${badge('DRAFT', 'neutral')}</td><td class="dl-grid__date">${r[6]}</td></tr>` + (i === 1 ? iqChild : '')).join('');
 
 document.getElementById('out').innerHTML =
-  `<section class="opt">${head('opt__tag--rec', 'Cara 1 (saran)', 'Dokumen banyak baris: tabel item di dalam baris yang dibuka', 'PO, PR, penerimaan, Quotation, Customer Order, DO, Surat Jalan. Tanpa harga, supaya aman untuk semua pemakai.')}${wrap(poHead, poBody(table))}</section>
-   <section class="opt">${head('', 'Cara 2', 'Dokumen banyak baris: nama item ditulis berjajar satu baris', 'Lebih pendek, tetapi tanpa qty dan satuan.')}${wrap(poHead, poBody(list))}</section>
-   <section class="opt">${head('', 'Dokumen satu product', 'Nama product ditulis sebagai isian pertama', 'Inquiry, ProDev, Work Order, CPDEL. Sama untuk Cara 1 maupun Cara 2.')}${wrap(iqHead, iqBody)}</section>`;
+  `<section class="opt">${head('Dokumen banyak baris (contoh PO)', 'Induk 7 kolom. Anak 7 kolom: Kode, Nama Item, Spesifikasi, Qty, Satuan, Diterima, Sisa.')}${wrap(poHead, poBody)}</section>
+   <section class="opt">${head('Dokumen satu product (contoh Inquiry)', 'Induk 7 kolom. Anak: nama product sebagai judul, lalu 7 kolom part.')}${wrap(iqHead, iqBody)}</section>`;
 </script>
 </body>
 </html>

@@ -20,13 +20,19 @@
     <x-dl::grid id="sj-list" :rows="DeliveryOrder::rows(['CONFIRMED', 'SHIPPED'])" search="Search delivery note no., customer, address..." actions="worklist" :active-key="null"
         :new-record="false" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2sdi.do_delivery (CONFIRMED / SHIPPED)') }}"
         :columns="[
-            ['key' => 'customer', 'label' => 'Customer', 'type' => 'identity', 'code' => 'no'],
+            ['key' => 'no', 'label' => 'Delivery Note No. / Customer', 'type' => 'doc', 'party' => 'customer'],
+            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
             ['key' => 'ship', 'label' => t('Planned Shipment'), 'type' => 'date'],
             ['key' => 'shipped', 'label' => t('Shipped'), 'type' => 'date'],
             ['key' => 'address', 'label' => 'Tujuan'],
-            ['key' => 'lines', 'label' => t('Lines'), 'type' => 'number'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => DeliveryOrder::STATUS_TONES],
         ]"
+        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
+            ['key' => 'product', 'label' => 'Product', 'strong' => true],
+            ['key' => 'co', 'label' => 'CO No.'],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+        ]]"
         :stats="[['label' => t('All')], ['label' => t('Ready to ship'), 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Terkirim', 'where' => ['status' => 'SHIPPED'], 'tone' => 'info']]"
         :filters="['customer' => 'Customer', 'status' => 'Status']" />
 @else

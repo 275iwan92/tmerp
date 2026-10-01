@@ -38,6 +38,9 @@ final class Cpdel
             'co' => $d->order?->co_no,
             'customer' => $customers[$d->order?->customer_id] ?? '—',
             'item' => $d->item?->description,
+            // Baris anak grid (Expand): product baris kirim ini.
+            'items' => [['product' => $d->item?->description, 'spec' => $d->item?->spec_note, 'order_qty' => (float) ($d->item?->qty ?? 0), 'unit' => $d->item?->qty_unit,
+                'ship_qty' => (float) $d->ship_qty, 'due' => $d->item?->due_date?->toDateString()]],
             'slot' => $d->ship_date?->toDateString(),
             'time' => $d->ship_time ? substr($d->ship_time, 0, 5) : t('not set'),
             'ready' => Locale::dt($d->ready_at) ?? '—',

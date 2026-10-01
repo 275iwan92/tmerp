@@ -47,18 +47,25 @@
         :open-url="$home.'?id={id}'" group-by="co"
         source="{{ Src::of('tm2sdi.co_order_delivery', 'tm2sdi.co_order (CONFIRMED)', 'tm2prd.prd_wo.source_delivery_id') }}"
         :columns="[
-            ['key' => 'item', 'label' => 'Product', 'type' => 'identity', 'code' => 'co'],
-            ['key' => 'customer', 'label' => 'Customer'],
+            ['key' => 'co', 'label' => 'CO No. / Customer', 'type' => 'doc', 'party' => 'customer'],
+            ['key' => 'item', 'label' => 'Product'],
             ['key' => 'slot', 'label' => 'Customer slot', 'type' => 'date'],
             ['key' => 'time', 'label' => 'Time'],
             ['key' => 'ready', 'label' => 'Production ready'],
-            ['key' => 'gap', 'label' => 'Gap (days)', 'type' => 'number'],
+            ['key' => 'gap', 'label' => 'Gap (days)', 'type' => 'number', 'visible' => false],
             ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'sum' => true],
             ['key' => 'original', 'label' => 'Original promise', 'type' => 'date', 'visible' => false],
             ['key' => 'production', 'label' => 'Production'],
             ['key' => 'state', 'label' => 'Promise', 'type' => 'badge', 'tones' => Promise::STATES],
-            ['key' => 'co', 'label' => 'CO No.', 'visible' => false],
         ]"
+        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
+            ['key' => 'product', 'label' => 'Product', 'strong' => true],
+            ['key' => 'spec', 'label' => 'Specification'],
+            ['key' => 'order_qty', 'label' => 'Order Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+            ['key' => 'ship_qty', 'label' => 'This Shipment', 'type' => 'number'],
+            ['key' => 'due', 'label' => 'Due Date', 'type' => 'date'],
+        ]]"
         :stats="[
             ['label' => 'All'],
             ['label' => 'Waiting for PPIC', 'where' => ['state' => 'WAITING_PPIC'], 'tone' => 'neutral'],

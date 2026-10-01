@@ -51,6 +51,9 @@ final class CustomerOrder
             'quotation' => $o->quotation?->quotation_no,
             'po' => $o->customer_po_no,
             'lines' => $o->items->count(),
+            // Baris anak grid (Expand): nama product selalu tampil, tanpa harga.
+            'items' => $o->items->sortBy('line_seq')->map(fn ($i) => ['product' => $i->description, 'spec' => $i->spec_note, 'kind' => $i->line_kind,
+                'qty' => (float) $i->qty, 'unit' => $i->qty_unit, 'due' => $i->due_date?->toDateString()])->values()->all(),
             'due' => $o->items->where('line_kind', 'PRODUCT')->min('due_date')?->toDateString(),
             'total' => $o->totals()['total_billing'],
             'status' => $o->doc_status,

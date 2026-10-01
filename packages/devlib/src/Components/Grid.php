@@ -20,7 +20,10 @@ namespace Devlib\Components;
 //   'url' => alamat daftar transaksi baris itu ({id}); tanpa url -> event dl:grid-link.
 // Tipe kolom tambahan: image (thumbnail + perbesar), progress (0-100), steps ('steps' => [tahap..], nilai = tahap sekarang),
 //   toggle (saklar, bisa diubah -> dl:grid-cell), rating, spark (array angka), button ('text', 'action' -> dl:grid-action).
-// detail: ['key' => kolom array baris anak, 'columns' => [[key,label,type]], 'title'] -> baris dibuka = tabel detail bersarang.
+// detail: ['key' => kolom array baris anak, 'columns' => [[key,label,type,'strong' => true (tebal)]], 'title'] -> baris dibuka = tabel detail bersarang.
+//   Judul boleh memuat {kolom} baris induk (mis. 'Product: {product}'); jumlah baris tidak ditulis (user 2026-10-02).
+// Aturan Grid Transactional (user 2026-10-02): kolom pertama = persegi dokumen (type doc); baris induk 5-8 kolom tampil,
+//   tanpa kolom "jumlah item"; baris anak (detail) paling banyak 7 kolom dan SELALU memuat nama item / product.
 // cards: ['image','title','sub','badge','tones','meta' => [kolom..]] -> tombol Tabel/Kartu (CardView).
 // openUrl: alamat buka baris, {id} diganti nilai rowKey (klik 2x / tombol Buka / Edit langsung pindah layar);
 //   {kolom} lain diganti nilai kolom baris itu, mis. '{open_url}' bila tiap baris membawa alamatnya sendiri.

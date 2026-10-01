@@ -26,19 +26,25 @@
         :new-url="$home.'?pick=1'" :open-url="$home.'?id={id}'"
         source="{{ Src::of('tm2sdi.quo_quotation', 'tm2sdi.quo_quotation_item', 'tm2sdi.quo_activity', 'tm2sdi.iqp_inquiry.sub_state + cancel_reason', 'tm2sdi.co_order') }}"
         :columns="[
-            ['key' => 'customer', 'label' => 'Customer', 'type' => 'identity', 'code' => 'no'],
+            ['key' => 'no', 'label' => 'Quotation No. / Customer', 'type' => 'doc', 'party' => 'customer'],
             ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'valid', 'label' => 'Berlaku s/d', 'type' => 'date'],
+            ['key' => 'valid', 'label' => 'Berlaku s/d', 'type' => 'date', 'visible' => false],
             ['key' => 'sales', 'label' => 'Sales PIC'],
-            ['key' => 'lines', 'label' => t('Lines'), 'type' => 'number'],
             ['key' => 'total', 'label' => 'Grand total', 'type' => 'money', 'sum' => true],
-            ['key' => 'followups', 'label' => 'Follow-up', 'type' => 'number'],
-            ['key' => 'next', 'label' => 'Tindak lanjut berikut', 'type' => 'date'],
+            ['key' => 'followups', 'label' => 'Follow-up', 'type' => 'number', 'visible' => false],
+            ['key' => 'next', 'label' => 'Tindak lanjut berikut', 'type' => 'date', 'visible' => false],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => Quotation::STATUS_TONES],
             ['key' => 'closed', 'label' => 'Closed', 'type' => 'date'],
             ['key' => 'co', 'label' => 'Customer Order'],
             ['key' => 'reason', 'label' => 'Reason (LOST / Cancel)'],
         ]"
+        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
+            ['key' => 'product', 'label' => 'Product', 'strong' => true],
+            ['key' => 'spec', 'label' => 'Specification'],
+            ['key' => 'inquiry', 'label' => 'Inquiry No.'],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+        ]]"
         :stats="[
             ['label' => t('All')],
             ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],

@@ -43,7 +43,7 @@ final class Quotation
 
     public static function rows(): array
     {
-        $quotes = QuoQuotation::with(['items.inquiry:id_inquiry,sub_state,cancel_reason', 'activities'])->orderByDesc('id_quotation')->limit(500)->get();
+        $quotes = QuoQuotation::with(['items.inquiry:id_inquiry,inquiry_no,sub_state,cancel_reason', 'activities'])->orderByDesc('id_quotation')->limit(500)->get();
         $customers = CustCustomer::whereIn('id_customer', $quotes->pluck('customer_id')->unique())->pluck('customer_name', 'id_customer');
         $orders = CoOrder::whereIn('quotation_id', $quotes->pluck('id_quotation'))->get(['quotation_id', 'co_no', 'co_date'])->keyBy('quotation_id');
 
@@ -72,6 +72,9 @@ final class Quotation
                 'valid' => $q->valid_until?->toDateString(),
                 'sales' => $q->sales_pic,
                 'lines' => $q->items->count(),
+                // Baris anak grid (Expand): nama product selalu tampil, tanpa harga.
+                'items' => $q->items->sortBy('line_seq')->map(fn ($i) => ['product' => $i->description, 'spec' => $i->spec_note, 'inquiry' => $i->inquiry?->inquiry_no,
+                    'qty' => (float) $i->qty, 'unit' => $i->qty_unit])->values()->all(),
                 'total' => $q->totals()['grand'],
                 'followups' => $q->activities->count(),
                 'next' => $next?->next_action_date?->toDateString(),

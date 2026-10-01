@@ -25,16 +25,23 @@
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'"
         source="{{ Src::of('tm2sdi.co_order', 'tm2sdi.co_order_item', 'tm2sdi.co_order_external_cost', 'tm2sdi.quo_quotation.quotation_no') }}"
         :columns="[
-            ['key' => 'customer', 'label' => 'Customer', 'type' => 'identity', 'code' => 'no'],
+            ['key' => 'no', 'label' => 'CO No. / Customer', 'type' => 'doc', 'party' => 'customer'],
             ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
             ['key' => 'mode', 'label' => 'Jalur', 'type' => 'badge', 'tones' => CustomerOrder::MODE_TONES],
             ['key' => 'quotation', 'label' => 'Quotation'],
             ['key' => 'po', 'label' => 'No. PO customer'],
-            ['key' => 'lines', 'label' => t('Lines'), 'type' => 'number'],
             ['key' => 'due', 'label' => 'Due date terdekat', 'type' => 'date'],
             ['key' => 'total', 'label' => t('Total due'), 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => CustomerOrder::STATUS_TONES],
         ]"
+        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
+            ['key' => 'product', 'label' => 'Product', 'strong' => true],
+            ['key' => 'spec', 'label' => 'Specification'],
+            ['key' => 'kind', 'label' => 'Line Type'],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+            ['key' => 'due', 'label' => 'Due Date', 'type' => 'date'],
+        ]]"
         :stats="[
             ['label' => t('All')],
             ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],

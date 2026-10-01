@@ -2,7 +2,7 @@
     :columns="[
         ['key' => 'po_no', 'label' => 'No. PO / Supplier', 'type' => 'doc', 'party' => 'supplier'],
         ['key' => 'po_date', 'label' => 'Tanggal', 'type' => 'date'],
-        ['key' => 'items', 'label' => 'Item', 'type' => 'number', 'sum' => true],
+        ['key' => 'requester', 'label' => 'Pemohon'],
         ['key' => 'total', 'label' => 'Total', 'type' => 'money', 'sum' => true],
         ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Draft' => 'neutral', 'Confirmed' => 'success', 'Cancelled' => 'danger', 'Closed' => 'info']],
         ['key' => 'note', 'label' => 'Catatan'],
@@ -15,4 +15,10 @@
     ]"
     :filters="['supplier' => 'Supplier', 'requester' => 'Pemohon']"
     :groups="['supplier' => 'Supplier', 'status' => 'Status']"
-    :expand="['requester', 'note']" />
+    :detail="['key' => 'lines', 'title' => 'Item', 'columns' => [
+        ['key' => 'item', 'label' => 'Kode'],
+        ['key' => 'item_label', 'label' => 'Nama Item', 'strong' => true],
+        ['key' => 'spec', 'label' => 'Spesifikasi'],
+        ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+        ['key' => 'uom', 'label' => 'Satuan'],
+    ]]" />

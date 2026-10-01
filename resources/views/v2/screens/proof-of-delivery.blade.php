@@ -34,12 +34,19 @@
     <x-dl::grid id="pod-list" :rows="ProofOfDelivery::rows()" search="Search delivery note no., customer..." actions="worklist" :active-key="null"
         :new-record="false" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2sdi.do_delivery (CONFIRMED / SHIPPED)', 'tm2sdi.do_delivery_pod') }}"
         :columns="[
-            ['key' => 'customer', 'label' => 'Customer', 'type' => 'identity', 'code' => 'no'],
+            ['key' => 'no', 'label' => 'Delivery Note No. / Customer', 'type' => 'doc', 'party' => 'customer'],
             ['key' => 'promise', 'label' => 'Promised date', 'type' => 'date'],
+            ['key' => 'address', 'label' => 'Tujuan'],
             ['key' => 'arrived', 'label' => 'Arrived'],
             ['key' => 'result', 'label' => 'Result'],
             ['key' => 'state', 'label' => 'Promise', 'type' => 'badge', 'tones' => ProofOfDelivery::STATE_TONES],
         ]"
+        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
+            ['key' => 'product', 'label' => 'Product', 'strong' => true],
+            ['key' => 'co', 'label' => 'CO No.'],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+        ]]"
         :stats="[['label' => 'All'], ['label' => 'Waiting', 'where' => ['state' => 'Waiting'], 'tone' => 'warn'], ['label' => 'Kept', 'where' => ['state' => 'Kept'], 'tone' => 'success'],
             ['label' => 'Missed', 'where' => ['state' => 'Missed'], 'tone' => 'danger'], ['label' => 'Retry', 'where' => ['state' => 'Retry'], 'tone' => 'info']]"
         :filters="['customer' => 'Customer', 'state' => 'Promise']" />

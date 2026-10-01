@@ -17,7 +17,7 @@ final class ProofOfDelivery
 
     public static function rows(): array
     {
-        $dos = DoDelivery::query()->whereIn('status', ['CONFIRMED', 'SHIPPED'])->orderByDesc('scheduled_ship_date')->limit(500)->get();
+        $dos = DoDelivery::query()->with(['lines', 'lines.order:id_order,co_no'])->whereIn('status', ['CONFIRMED', 'SHIPPED'])->orderByDesc('scheduled_ship_date')->limit(500)->get();
         $cust = CustCustomer::whereIn('id_customer', $dos->pluck('customer_id')->filter()->unique())->pluck('customer_name', 'id_customer');
         $pods = DoDeliveryPod::whereIn('delivery_id', $dos->modelKeys())->orderBy('attempt_no')->get()->groupBy('delivery_id');
 
@@ -27,7 +27,7 @@ final class ProofOfDelivery
             return ['id' => $d->id_delivery, 'no' => $d->do_no, 'customer' => $cust[$d->customer_id] ?? '—',
                 'promise' => ($d->scheduled_ship_date ?? $d->do_date)?->toDateString(), 'arrived' => Locale::dt($last?->arrived_at),
                 'result' => $last ? DeliveryPromiseService::RESULTS[$last->result] ?? $last->result : null,
-                'state' => self::state($last)];
+                'address' => $d->ship_address_label, 'items' => DeliveryOrder::lineRows($d), 'state' => self::state($last)];
         })->all();
     }
 

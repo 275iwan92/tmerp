@@ -33,13 +33,20 @@ final class DeliveryOrder
 
     public static function rows(array $statuses = []): array
     {
-        $dos = DoDelivery::withCount(['lines' => fn ($q) => $q->where('status', '<>', 'CANCELLED')])->when($statuses, fn ($q) => $q->whereIn('status', $statuses))
+        $dos = DoDelivery::with(['lines', 'lines.order:id_order,co_no'])->when($statuses, fn ($q) => $q->whereIn('status', $statuses))
             ->orderByDesc('id_delivery')->limit(500)->get();
         $cust = CustCustomer::whereIn('id_customer', $dos->pluck('customer_id')->filter()->unique())->pluck('customer_name', 'id_customer');
 
         return $dos->map(fn ($d) => ['id' => $d->id_delivery, 'no' => $d->do_no ?: '(draft #'.$d->id_delivery.')', 'customer' => $cust[$d->customer_id] ?? '—',
             'date' => $d->do_date?->toDateString(), 'ship' => $d->scheduled_ship_date?->toDateString(), 'shipped' => $d->actual_ship_date?->toDateString(),
-            'address' => $d->ship_address_label, 'lines' => $d->lines_count, 'status' => $d->status])->all();
+            'address' => $d->ship_address_label, 'lines' => $d->lines->where('status', '<>', 'CANCELLED')->count(), 'items' => self::lineRows($d), 'status' => $d->status])->all();
+    }
+
+    // Baris anak grid (Expand) DO / Surat Jalan / POD: nama product selalu tampil, tanpa harga. Butuh relasi lines.order.
+    public static function lineRows(DoDelivery $d): array
+    {
+        return $d->lines->where('status', '<>', 'CANCELLED')->map(fn ($l) => ['product' => $l->item_description, 'co' => $l->order?->co_no,
+            'qty' => (float) $l->qty_do, 'unit' => $l->qty_unit])->values()->all();
     }
 
     public static function customerOptions(): array

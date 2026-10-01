@@ -18,13 +18,19 @@
     <x-dl::grid id="do-list" :rows="DeliveryOrder::rows()" search="Search DO no., customer, address..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2sdi.do_delivery', 'tm2sdi.do_line') }}"
         :columns="[
-            ['key' => 'customer', 'label' => 'Customer', 'type' => 'identity', 'code' => 'no'],
+            ['key' => 'no', 'label' => 'DO No. / Customer', 'type' => 'doc', 'party' => 'customer'],
             ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
             ['key' => 'ship', 'label' => t('Planned Shipment'), 'type' => 'date'],
+            ['key' => 'shipped', 'label' => t('Shipped'), 'type' => 'date'],
             ['key' => 'address', 'label' => 'Tujuan'],
-            ['key' => 'lines', 'label' => t('Lines'), 'type' => 'number'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => DeliveryOrder::STATUS_TONES],
         ]"
+        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
+            ['key' => 'product', 'label' => 'Product', 'strong' => true],
+            ['key' => 'co', 'label' => 'CO No.'],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+        ]]"
         :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Shipped', 'where' => ['status' => 'SHIPPED'], 'tone' => 'info']]"
         :filters="['customer' => 'Customer', 'status' => 'Status']" />
 @elseif (! $do)
