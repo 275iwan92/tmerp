@@ -168,6 +168,8 @@
     Koreksi user 2026-10-01: kotak total **tanpa "Jumlah baris"**; kaki dokumen cukup **"Dicetak pada 01-Okt-2026 16:12 oleh
     Yuna"** (nama orang, bukan login) — tanpa nama aplikasi, nomor dokumen, dan tulisan ukuran kertas. **Dokumen tanpa
     nilai uang (Surat Jalan, dst) tidak mencetak total**; kotak total hanya untuk dokumen berharga (CO, PO, PR).
+    **Surat Jalan punya kolom Berat (kg) dan Ikat**; Ikat hanya terisi bila barang dikemas per ikat (sumber data belum ada
+    di database — perlu input sebelum dipasang ke aplikasi).
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.

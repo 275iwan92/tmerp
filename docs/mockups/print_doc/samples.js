@@ -5,16 +5,19 @@ const SAMPLES = {
     SuratJalan: {
         data: {...PRINTED, number: '10262874', date: '2026-10-01', status: 'DRAFT', co_no: '2602282', createdBy: 'yuna',
             party: {name: 'PAK A. YANI', lines: ['PERUMAHAN CITRA KAYANE RESIDENCE', 'MALANG']},
-            rows: [{name: 'YAN OB KINGZANA KRIPIK PISANG (DS000)', qty: 508, unit: 'PCS'}]},
+            rows: [{name: 'YAN OB KINGZANA KRIPIK PISANG (DS000)', qty: 508, unit: 'PCS', weight_kg: 12.7, bundles: 6, remark: 'isi 100 / ikat'}]},
         more: [
-            {name: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', qty: 3000, unit: 'PCS'}, {name: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 1000, unit: 'PCS'},
-            {name: 'SJS IB BDM YTUBE 2.50/2.75-14 (DS003437)', qty: 30000, unit: 'PCS'}, {name: 'SJS IB BDM YTUBE 2.50/2.75-17 (DS003438)', qty: 30000, unit: 'PCS'},
-            {name: 'JD BOX DONAT UK 20 X 20 X 6 CM (DS000)', qty: 3000, unit: 'PCS'}, {name: 'IB COCO TOKYO FLAT C-25 1KG (DS001477)', qty: 4000, unit: 'PCS'},
-            {name: 'OB COCO TOKYO FLAT C-25 1KG', qty: 400, unit: 'PCS'}],
+            {name: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', qty: 3000, unit: 'PCS', weight_kg: 54, bundles: 30, remark: 'isi 100 / ikat'},
+            {name: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 1000, unit: 'PCS', weight_kg: 18, bundles: 10, remark: 'isi 100 / ikat'},
+            {name: 'SJS IB BDM YTUBE 2.50/2.75-14 (DS003437)', qty: 30000, unit: 'PCS', weight_kg: 96, remark: '12 dus'},
+            {name: 'SJS IB BDM YTUBE 2.50/2.75-17 (DS003438)', qty: 30000, unit: 'PCS', weight_kg: 99, remark: '12 dus'},
+            {name: 'JD BOX DONAT UK 20 X 20 X 6 CM (DS000)', qty: 3000, unit: 'PCS', weight_kg: 81, bundles: 60, remark: 'isi 50 / ikat'},
+            {name: 'IB COCO TOKYO FLAT C-25 1KG (DS001477)', qty: 4000, unit: 'PCS', weight_kg: 72.5, bundles: 40, remark: 'isi 100 / ikat'},
+            {name: 'OB COCO TOKYO FLAT C-25 1KG', qty: 400, unit: 'PCS', weight_kg: 38.4, remark: '4 pallet'}],
         dev: {
             title: 'Perubahan terhadap format kertas sekarang (docs/attachments/surat jalan.jpg)',
             marks: [[1, '.co', -5, -2], [2, '.kopr', 14, -3], [3, '[data-k=co_no]', -5, 0], [4, '[data-k=vehicle]', -5, 0], [5, '[data-k=date]', 58, 0],
-                [6, '[data-k=contact]', -5, 0], [7, 'tbody tr:nth-child(5) td', -5.5, 1.5], [8, 'thead th:nth-child(3)', -4, .3], [9, '.tail', -5.5, 1], [10, '.foot', -5, -1.5]],
+                [6, '[data-k=contact]', -5, 0], [7, 'tbody tr:nth-child(5) td', -5.5, 1.5], [8, 'thead th:nth-child(3)', -4, .3], [9, '.tail', -5.5, 1], [10, '.foot', -5, -1.5], [11, 'thead th:nth-child(5)', 14, .3]],
             legend: [
                 '<b>Kop perusahaan</b>: logo, nama, alamat. Dokumen PPN: kop berganti ke CV. Langgeng Jaya Makmur + NPWP.',
                 '<b>QR code</b>: scan membuka dokumen online. Aturan: setiap cetakan membawa QR.',
@@ -26,6 +29,7 @@ const SAMPLES = {
                 '<b>Jumlah dan Satuan</b>: kolom tetap di posisi yang sama di semua dokumen; angka format Indonesia (508,00).',
                 '<b>Tanpa total</b>: Surat Jalan tidak punya nilai uang, jadi tidak ada kotak total. Ruang ini untuk catatan.',
                 '<b>Kaki dokumen</b>: "Dicetak pada tanggal jam oleh nama orangnya" (bukan login, tanpa nama aplikasi, nomor dokumen, atau ukuran kertas); kanan: nomor lembar.',
+                '<b>Berat (kg) dan Ikat</b>: kolom baru. Ikat hanya terisi bila barang dikemas per ikat. Sumber datanya belum ada di database (angka contoh).',
             ],
         },
     },

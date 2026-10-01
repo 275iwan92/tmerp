@@ -46,7 +46,7 @@ class PrintDoc {
     static side = null;                 // 1 slot kanan (baris 6)
     static nb = '';
     static nameLabel = 'NAMA BARANG';
-    static extra = [];                  // kolom zona varian: {key, label, width(mm), type: text|date|money, hand?}
+    static extra = [];                  // kolom zona varian: {key, label, width(mm), type: text|date|money|int, hand?}
     static priced = false;              // true = kolom harga + kotak total rupiah + terbilang
     static receivers = [];              // tanda tangan slot 1-2: [peran, keterangan]
     static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat
@@ -68,7 +68,7 @@ class PrintDoc {
     val(def, src = this.d) {
         const v = src[def.key];
         if (v == null || v === '') return def.hand ? '<span class="hand"></span>' : '&mdash;';
-        return def.type === 'date' ? Fmt.date(v) : def.type === 'money' ? Fmt.num(v) : esc(v);
+        return def.type === 'date' ? Fmt.date(v) : def.type === 'money' ? Fmt.num(v) : def.type === 'int' ? Fmt.num(v, 0) : esc(v);
     }
 
     row(def) { return def && def.label ? `<div class="f" data-k="${def.key}"><span>${esc(def.label)}</span><i>:</i><b>${this.val(def)}</b></div>` : '<div class="f"></div>'; }
@@ -99,7 +99,7 @@ class PrintDoc {
     }
 
     table() {
-        const x = this.cols, n = PrintDoc.ROWS[this.paper], cls = c => c.type === 'money' ? 'num' : c.hand ? 'hd' : c.wrap ? 'wr' : '';
+        const x = this.cols, n = PrintDoc.ROWS[this.paper], cls = c => c.type === 'money' || c.type === 'int' ? 'num' : c.hand ? 'hd' : c.wrap ? 'wr' : '';
         const head = `<th></th><th>${this.f.nameLabel}</th><th class="num">JUMLAH</th><th>SATUAN</th>` + x.map(c => `<th class="${cls(c)}">${c.label}</th>`).join('');
         const cell = (c, r) => `<td class="${cls(c)}">${r[c.key] == null || r[c.key] === '' ? '' : this.val(c, r)}</td>`;
         const body = Array.from({length: n}, (_, i) => {

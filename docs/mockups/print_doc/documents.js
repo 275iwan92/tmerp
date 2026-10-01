@@ -16,7 +16,8 @@ PrintDoc.register(class SuratJalan extends PrintDoc {
     static partyLabel = 'Dikirim ke';
     static side = {key: 'contact', label: 'Telp / UP', hand: true};
     static nb = '<b>NB:</b>&nbsp;Pengaduan maksimum 7 hari setelah barang diterima';
-    static extra = [{key: 'remark', label: 'KETERANGAN', width: 84}];
+    // IKAT hanya terisi bila barang dikemas per ikat; kosong untuk kemasan lain (keputusan user 2026-10-01).
+    static extra = [{key: 'weight_kg', label: 'BERAT (KG)', width: 21, type: 'money'}, {key: 'bundles', label: 'IKAT', width: 13, type: 'int'}, {key: 'remark', label: 'KETERANGAN', width: 50}];
     static receivers = [['Penerima', 'Customer'], ['Pengemudi', '']];
 });
 
