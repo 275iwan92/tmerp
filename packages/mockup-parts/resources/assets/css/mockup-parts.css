@@ -124,6 +124,13 @@
 .dl-dieline__lens span{font-size:calc(11px * var(--dl-font-scale));font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--dl-muted)}
 .dl-dieline__foot{display:grid;grid-template-columns:1fr 150px;gap:10px;align-items:center}
 .dl-dieline__foot .dl-dieline__3d{position:relative;right:auto;top:auto;height:120px;border:1px solid var(--dl-border);box-shadow:none;background:var(--dl-surface)}
+/* v2/v3: kanvas selebar penuh, panel Dimensions + Flat Size jadi satu baris di bawahnya (v1 tetap panel kiri). */
+.dl-dieline[data-dl-dieline-x]{grid-template-columns:minmax(0,1fr)}
+.dl-dieline[data-dl-dieline-x] .dl-dieline__side{flex-direction:row;flex-wrap:wrap;gap:10px 20px;align-items:flex-start}
+.dl-dieline__dimwrap{flex:1 1 420px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.dl-dieline[data-dl-dieline-x] .dl-dieline__dims{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.dl-dieline[data-dl-dieline-x] .dl-dieline__dim > span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-dieline[data-dl-dieline-x] .dl-dieline__flat{flex:0 1 300px}
 /* ================= FLOW CONFIG (Part 6) ================= */
 .dl-flowcfg{display:flex;flex-direction:column;gap:10px}
 .dl-flowcfg__panel{display:grid;grid-template-columns:1fr 320px;gap:12px;align-items:start;padding-top:10px}

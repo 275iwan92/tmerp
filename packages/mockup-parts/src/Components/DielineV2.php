@@ -51,24 +51,11 @@ class DielineV2 extends Dieline
         return <<<'BLADE'
             @once<script src="{{ \MockupParts\MockupPartsServiceProvider::asset('tmdieline.js') }}"></script>@endonce
             <div {{ $attributes->class(['dl-dieline', 'dl-dieline--v'.$level()]) }} {!! $dl() !!} data-dl-dieline-x data-level="{{ $level() }}" data-types="{{ json_encode($types) }}" data-type="{{ $type ?? array_key_first($types) }}" data-dims="{{ json_encode((object) $dims) }}" data-name="{{ $name }}" data-terms="{{ json_encode($terms()) }}" data-unit="{{ $unit }}" style="--dl-dl-h:{{ $height }}">
-                <div class="dl-dieline__side">
-                    @if ($picker)
-                        <x-dl::field.select :name="$name.'[type]'" label="Product Type" :options="collect($types)->map(fn ($t) => $t['label'])->all()" :value="$type ?? array_key_first($types)" />
-                    @else
-                        <input type="hidden" name="{{ $name }}[type]" value="{{ $type }}">
-                    @endif
-                    <div class="dl-dieline__cap">Dimensions</div>
-                    <div class="dl-dieline__dims" data-d-dims></div>
-                    <div class="dl-dieline__flat">
-                        <div class="dl-dieline__cap">Flat Size (Blank) <label class="dl-choice"><input type="checkbox" name="{{ $name }}[flat_manual]" value="1" data-d-manual> Manual</label></div>
-                        <div class="dl-dieline__flatrow">
-                            <label>W <input type="text" inputmode="decimal" name="{{ $name }}[flat_w]" data-d-fw readonly></label>
-                            <span>×</span>
-                            <label>H <input type="text" inputmode="decimal" name="{{ $name }}[flat_h]" data-d-fh readonly></label>
-                            <label>Area <input type="text" name="{{ $name }}[flat_area]" data-d-fa readonly></label>
-                        </div>
-                    </div>
-                </div>
+                @if ($picker)
+                    <x-dl::field.select :name="$name.'[type]'" label="Product Type" :options="collect($types)->map(fn ($t) => $t['label'])->all()" :value="$type ?? array_key_first($types)" />
+                @else
+                    <input type="hidden" name="{{ $name }}[type]" value="{{ $type }}">
+                @endif
                 <div class="dl-dieline__stage">
                     @if ($level() >= 3)<div class="dl-dieline__title" data-d-title></div>@endif
                     <div class="dl-dieline__tools">
@@ -95,6 +82,22 @@ class DielineV2 extends Dieline
                     @if ($level() >= 3)<div class="dl-dieline__foot"><div class="dl-dieline__lens" data-d-lens></div><div class="dl-dieline__3d" data-d-3d title="Tampilan 3D statis (ilustrasi)"></div></div>@endif
                     <div class="dl-dieline__info" data-d-info></div>
                     <div class="dl-dieline__terms" data-d-terms></div>
+                </div>
+                {{-- Dimensi di BAWAH gambar (user 2026-10-01): kanvas dieline memakai lebar penuh. --}}
+                <div class="dl-dieline__side">
+                    <div class="dl-dieline__dimwrap">
+                        <div class="dl-dieline__cap">Dimensions</div>
+                        <div class="dl-dieline__dims" data-d-dims></div>
+                    </div>
+                    <div class="dl-dieline__flat">
+                        <div class="dl-dieline__cap">Flat Size (Blank) <label class="dl-choice"><input type="checkbox" name="{{ $name }}[flat_manual]" value="1" data-d-manual> Manual</label></div>
+                        <div class="dl-dieline__flatrow">
+                            <label>W <input type="text" inputmode="decimal" name="{{ $name }}[flat_w]" data-d-fw readonly></label>
+                            <span>×</span>
+                            <label>H <input type="text" inputmode="decimal" name="{{ $name }}[flat_h]" data-d-fh readonly></label>
+                            <label>Area <input type="text" name="{{ $name }}[flat_area]" data-d-fa readonly></label>
+                        </div>
+                    </div>
                 </div>
             </div>
             BLADE;
