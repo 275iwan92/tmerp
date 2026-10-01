@@ -42,7 +42,7 @@ class LeaveRequestGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari karyawan, jenis, alasan...';
+        return 'Search employee, type, reason...';
     }
 
     protected function query(): Builder
@@ -59,8 +59,8 @@ class LeaveRequestGrid extends HrmGrid
             ['key' => 'from', 'label' => 'From', 'type' => 'date'],
             ['key' => 'to', 'label' => 'Until', 'type' => 'date'],
             ['key' => 'days', 'label' => 'Day', 'type' => 'number'],
-            ['key' => 'reason', 'label' => 'Alasan'],
-            ['key' => 'requested', 'label' => 'Diajukan', 'type' => 'date'],
+            ['key' => 'reason', 'label' => 'Reason'],
+            ['key' => 'requested', 'label' => 'Submitted', 'type' => 'date'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::REQUEST_TONES],
         ];
     }
@@ -81,6 +81,6 @@ class LeaveRequestGrid extends HrmGrid
 
     public function filters(): array
     {
-        return ['type' => 'Jenis', 'status' => 'Status'];
+        return ['type' => 'Type', 'status' => 'Status'];
     }
 }

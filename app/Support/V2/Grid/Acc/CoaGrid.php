@@ -47,7 +47,7 @@ class CoaGrid extends DbGrid
 
     public function search(): string
     {
-        return 'Cari kode, nama akun...';
+        return 'Search code, account name...';
     }
 
     protected function query(): Builder
@@ -61,9 +61,9 @@ class CoaGrid extends DbGrid
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Account Name', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'type', 'label' => 'Type'],
-            ['key' => 'normal', 'label' => 'Saldo Normal'],
+            ['key' => 'normal', 'label' => 'Normal Balance'],
             ['key' => 'level', 'label' => 'Level', 'type' => 'number'],
-            ['key' => 'parent', 'label' => 'Induk'],
+            ['key' => 'parent', 'label' => 'Parent'],
             ['key' => 'postable', 'label' => 'Postable', 'type' => 'badge', 'tones' => ['Ya' => 'success', 'Header' => 'neutral']],
             ['key' => 'cc', 'label' => 'Default Cost Center'],
         ];
@@ -78,6 +78,6 @@ class CoaGrid extends DbGrid
 
     public function filters(): array
     {
-        return ['type' => 'Jenis', 'level' => 'Level', 'postable' => 'Postable'];
+        return ['type' => 'Type', 'level' => 'Level', 'postable' => 'Postable'];
     }
 }

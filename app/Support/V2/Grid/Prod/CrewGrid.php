@@ -31,7 +31,7 @@ class CrewGrid extends ProdGrid
 
     public function search(): string
     {
-        return 'Cari crew, proses...';
+        return 'Search crew, process...';
     }
 
     protected function query(): Builder
@@ -55,6 +55,6 @@ class CrewGrid extends ProdGrid
 
     public function filters(): array
     {
-        return ['process' => 'Proses Default'];
+        return ['process' => 'Default Process'];
     }
 }

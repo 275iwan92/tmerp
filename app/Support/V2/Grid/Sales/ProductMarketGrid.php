@@ -57,7 +57,7 @@ class ProductMarketGrid extends DbGrid
 
     public function search(): string
     {
-        return 'Cari product market, tipe produk...';
+        return 'Search product market, product type...';
     }
 
     protected function query(): Builder
@@ -68,10 +68,10 @@ class ProductMarketGrid extends DbGrid
     public function columns(): array
     {
         return [
-            ['key' => 'photo', 'label' => 'Foto', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
+            ['key' => 'photo', 'label' => 'Photo', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Product Market', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'parent', 'label' => 'Induk'],
-            ['key' => 'type', 'label' => 'Tipe Produk'],
+            ['key' => 'parent', 'label' => 'Parent'],
+            ['key' => 'type', 'label' => 'Product Type'],
             ['key' => 'color', 'label' => 'Initial Colour'],
             ['key' => 'sizes', 'label' => 'Standard Size', 'type' => 'link', 'format' => 'number'],
         ];
@@ -85,6 +85,6 @@ class ProductMarketGrid extends DbGrid
 
     public function filters(): array
     {
-        return ['type' => 'Tipe Produk', 'parent' => 'Induk'];
+        return ['type' => 'Product Type', 'parent' => 'Parent'];
     }
 }

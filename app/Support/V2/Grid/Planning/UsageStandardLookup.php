@@ -41,9 +41,9 @@ class UsageStandardLookup extends DbLookup
 
     public function guide(): ?string
     {
-        return 'How much ink, varnish, coating, film and glue a job uses. Material Planning multiplies these by the sheet area or quantity of each order. '
-            .'A standard (other than ink) applies to a part when one of its trigger words appears in the part process names or finishing. '
-            .'The starting values are general offset-printing figures, not factory data: please correct them. Default Item = material_id of the stock item to book (Master Raw Material).';
+        // Maksimal 255 huruf supaya bisa diterjemahkan lewat kamus.
+        return 'Ink, varnish, coating, film and glue used per job; Material Planning multiplies them by the sheet area or quantity. '
+            .'A standard other than ink applies when a trigger word is in the part processes or finishing. Starting values are general: correct them.';
     }
 
     protected function query(): Builder

@@ -42,7 +42,7 @@ class WinRateGrid extends DbGrid
 
     public function search(): string
     {
-        return 'Cari inquiry, PIC, alasan...';
+        return 'Search inquiry, PIC, reason...';
     }
 
     protected function query(): Builder
@@ -55,10 +55,10 @@ class WinRateGrid extends DbGrid
         return [
             ['key' => 'no', 'label' => 'Inquiry'],
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
-            ['key' => 'product', 'label' => 'Produk'],
-            ['key' => 'pic', 'label' => 'PIC Sales'],
-            ['key' => 'result', 'label' => 'Hasil', 'type' => 'badge', 'tones' => ['Menang' => 'success', 'Kalah' => 'danger']],
-            ['key' => 'reason', 'label' => 'Alasan Kalah'],
+            ['key' => 'product', 'label' => 'Product'],
+            ['key' => 'pic', 'label' => 'Sales PIC'],
+            ['key' => 'result', 'label' => 'Result', 'type' => 'badge', 'tones' => ['Menang' => 'success', 'Kalah' => 'danger']],
+            ['key' => 'reason', 'label' => 'Lost Reason'],
         ];
     }
 
@@ -71,6 +71,6 @@ class WinRateGrid extends DbGrid
 
     public function filters(): array
     {
-        return ['pic' => 'PIC Sales', 'result' => 'Hasil'];
+        return ['pic' => 'Sales PIC', 'result' => 'Result'];
     }
 }

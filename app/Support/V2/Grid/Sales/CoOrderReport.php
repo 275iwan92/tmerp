@@ -22,10 +22,10 @@ class CoOrderReport extends CoReportGrid
 
     public function guide(): ?string
     {
-        return 'Satu laporan untuk semua kebutuhan: klik tombol Kolom untuk menyalakan kolom tambahan '
-            .($this->seesPrice() ? '(Status, Harga Satuan, Diskon, Subtotal, Rencana Kirim, Terkirim, Sisa, Bulan, Mode). ' : '(Status, Rencana Kirim, Terkirim, Sisa, Bulan, Mode). ')
-            .'Kotak di atas menyaring Open / Confirmed / Outstanding / Batal, Filter menyaring per kolom, '
-            .($this->seesPrice() ? 'dan Grup (Customer, Bulan, Status, Sales By) menjumlahkan Qty & Subtotal = Total Sales.' : 'dan Grup (Customer, Bulan, Status, Sales By) menjumlahkan Qty.');
+        // Dua kalimat utuh (bukan sambungan) supaya masing-masing punya terjemahan di kamus; maksimal 255 huruf.
+        return $this->seesPrice()
+            ? 'One report for every need. Columns switches on extra columns (Status, Unit Price, Discount, Subtotal, Planned Shipment, Shipped, Remaining, Month, Mode). The boxes above filter by status; Group totals Qty & Subtotal = Total Sales.'
+            : 'One report for every need. Columns switches on extra columns (Status, Planned Shipment, Shipped, Remaining, Month, Mode). The boxes above filter by status; Group (Customer, Month, Status, Sales By) totals the Qty.';
     }
 
     public function columns(): array
@@ -35,14 +35,14 @@ class CoOrderReport extends CoReportGrid
         return [
             ...$this->qtyColumns(),
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::STATUS_TONES] + $hidden,
-            ['key' => 'mode', 'label' => 'Mode CO', 'type' => 'badge', 'tones' => ['INTEGRATED' => 'info', 'INSTANT' => 'accent']] + $hidden,
+            ['key' => 'mode', 'label' => 'CO Mode', 'type' => 'badge', 'tones' => ['INTEGRATED' => 'info', 'INSTANT' => 'accent']] + $hidden,
             ['key' => 'month', 'label' => 'Month'] + $hidden,
-            ['key' => 'currency', 'label' => 'Mata Uang'] + $hidden,
+            ['key' => 'currency', 'label' => 'Currency'] + $hidden,
             ['key' => 'price', 'label' => 'Unit Price', 'type' => 'money'] + $hidden,
             ['key' => 'disc', 'label' => 'Discount %', 'type' => 'number'] + $hidden,
             ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'sum' => true] + $hidden,
             ['key' => 'planned', 'label' => 'Planned Shipment', 'type' => 'number', 'sum' => true] + $hidden,
-            ['key' => 'shipped', 'label' => 'Terkirim', 'type' => 'number', 'sum' => true] + $hidden,
+            ['key' => 'shipped', 'label' => 'Shipped', 'type' => 'number', 'sum' => true] + $hidden,
             ['key' => 'remain', 'label' => 'Remaining', 'type' => 'number', 'sum' => true] + $hidden,
         ];
     }

@@ -38,7 +38,7 @@ class ContactGapGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari nama, kode...';
+        return 'Search name, code...';
     }
 
     protected function query(): Builder
@@ -51,8 +51,8 @@ class ContactGapGrid extends HrmGrid
     {
         return [
             ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'dept', 'label' => 'Departemen'],
-            ['key' => 'position', 'label' => 'Posisi'],
+            ['key' => 'dept', 'label' => 'Department'],
+            ['key' => 'position', 'label' => 'Position'],
             ['key' => 'birth', 'label' => 'Birth Date', 'type' => 'date'],
         ];
     }
@@ -67,6 +67,6 @@ class ContactGapGrid extends HrmGrid
 
     public function filters(): array
     {
-        return ['dept' => 'Departemen', 'position' => 'Posisi'];
+        return ['dept' => 'Department', 'position' => 'Position'];
     }
 }

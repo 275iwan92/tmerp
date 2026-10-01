@@ -38,9 +38,9 @@ class PurchaseLeadTimeLookup extends DbLookup
 
     public function guide(): ?string
     {
-        return 'Working days from ordering to goods received, per material category (level 1 and 2). Material Planning uses it for "Order By (latest)". '
-            .'An item can override it in Master Raw Material; an empty category follows its parent, then the default in Setup > Constants (PURCHASE_LEAD_DAYS_DEFAULT). '
-            .'Categories themselves are added in Master Material Category, not here.';
+        // Maksimal 255 huruf supaya bisa diterjemahkan lewat kamus.
+        return 'Working days from order to goods received, per material category; used for "Order By (latest)" in Material Planning. '
+            .'An item can override it in Master Raw Material; an empty category follows its parent, then PURCHASE_LEAD_DAYS_DEFAULT in Constants.';
     }
 
     protected function query(): Builder

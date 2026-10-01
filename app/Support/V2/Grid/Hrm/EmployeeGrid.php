@@ -47,7 +47,7 @@ class EmployeeGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari nama, kode, NIK, jabatan...';
+        return 'Search name, code, NIK, position...';
     }
 
     protected function query(): Builder
@@ -65,16 +65,16 @@ class EmployeeGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'photo', 'label' => 'Foto', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
+            ['key' => 'photo', 'label' => 'Photo', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'position', 'label' => 'Position'],
-            ['key' => 'dept', 'label' => 'Departemen'],
-            ['key' => 'work_status', 'label' => 'Status Kerja', 'type' => 'badge', 'tones' => ['Bekerja' => 'success', 'Dirumahkan' => 'warn', 'Cuti' => 'info']],
+            ['key' => 'dept', 'label' => 'Department'],
+            ['key' => 'work_status', 'label' => 'Work Status', 'type' => 'badge', 'tones' => ['Bekerja' => 'success', 'Dirumahkan' => 'warn', 'Cuti' => 'info']],
             ['key' => 'pay', 'label' => 'Salary', 'type' => 'badge', 'tones' => ['Mingguan' => 'warn', 'Bulanan' => 'info']],
             ['key' => 'join_date', 'label' => 'Join Date', 'type' => 'date'],
             ['key' => 'attendance_ytd', 'label' => 'Attendance this year (days)', 'type' => 'link', 'format' => 'number'],
             ['key' => 'nik', 'label' => 'NIK KTP', 'visible' => false],
-            ['key' => 'phone', 'label' => 'No. HP', 'visible' => false],
+            ['key' => 'phone', 'label' => 'Mobile No.', 'visible' => false],
         ];
     }
 
@@ -100,14 +100,14 @@ class EmployeeGrid extends HrmGrid
         return [
             ['label' => 'All'],
             ['label' => 'Active', 'where' => ['active' => true], 'tone' => 'success'],
-            ['label' => 'Mingguan', 'where' => ['active' => true, 'pay' => 'Mingguan'], 'tone' => 'warn'],
-            ['label' => 'Bulanan', 'where' => ['active' => true, 'pay' => 'Bulanan'], 'tone' => 'info'],
+            ['label' => 'Weekly', 'where' => ['active' => true, 'pay' => 'Mingguan'], 'tone' => 'warn'],
+            ['label' => 'Monthly', 'where' => ['active' => true, 'pay' => 'Bulanan'], 'tone' => 'info'],
             ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'danger'],
         ];
     }
 
     public function filters(): array
     {
-        return ['dept' => 'Departemen', 'position' => 'Jabatan', 'work_status' => 'Status Kerja', 'pay' => 'Gaji'];
+        return ['dept' => 'Department', 'position' => 'Position', 'work_status' => 'Work Status', 'pay' => 'Pay Frequency'];
     }
 }

@@ -31,7 +31,7 @@ class ProcessGrid extends ProdGrid
 
     public function search(): string
     {
-        return 'Cari kode, nama proses...';
+        return 'Search code, process name...';
     }
 
     protected function query(): Builder
@@ -44,9 +44,9 @@ class ProcessGrid extends ProdGrid
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Process', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'stage', 'label' => 'Tahap'],
-            ['key' => 'dept', 'label' => 'Departemen'],
-            ['key' => 'where', 'label' => 'Dikerjakan', 'type' => 'badge', 'tones' => ['In-house' => 'success', 'Subkon' => 'warn']],
+            ['key' => 'stage', 'label' => 'Stage'],
+            ['key' => 'dept', 'label' => 'Department'],
+            ['key' => 'where', 'label' => 'Performed By', 'type' => 'badge', 'tones' => ['In-house' => 'success', 'Subkon' => 'warn']],
             ['key' => 'manual', 'label' => 'Manual', 'type' => 'badge', 'tones' => ['Ya' => 'info']],
             ['key' => 'speed', 'label' => 'Default Speed/Hour', 'type' => 'number'],
             ['key' => 'machines', 'label' => 'Machines', 'type' => 'link', 'format' => 'number'],
@@ -65,6 +65,6 @@ class ProcessGrid extends ProdGrid
 
     public function filters(): array
     {
-        return ['stage' => 'Tahap', 'dept' => 'Departemen', 'where' => 'Dikerjakan'];
+        return ['stage' => 'Stage', 'dept' => 'Department', 'where' => 'Performed By'];
     }
 }

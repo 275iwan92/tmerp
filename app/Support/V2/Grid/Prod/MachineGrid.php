@@ -31,7 +31,7 @@ class MachineGrid extends ProdGrid
 
     public function search(): string
     {
-        return 'Cari kode, nama, merek/model...';
+        return 'Search code, name, brand/model...';
     }
 
     protected function query(): Builder
@@ -45,11 +45,11 @@ class MachineGrid extends ProdGrid
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Machine', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'nickname', 'label' => 'Nickname'],
-            ['key' => 'model', 'label' => 'Model (katalog)'],
-            ['key' => 'role', 'label' => 'Peran', 'type' => 'badge', 'tones' => ['Produksi' => 'info', 'Penunjang' => 'neutral']],
+            ['key' => 'model', 'label' => 'Model (catalogue)'],
+            ['key' => 'role', 'label' => 'Role', 'type' => 'badge', 'tones' => ['Produksi' => 'info', 'Penunjang' => 'neutral']],
             ['key' => 'type', 'label' => 'Type'],
-            ['key' => 'brand', 'label' => 'Merek / Model'],
-            ['key' => 'sheet', 'label' => 'Lembar Maks (mm)'],
+            ['key' => 'brand', 'label' => 'Brand / Model'],
+            ['key' => 'sheet', 'label' => 'Max Sheet (mm)'],
             ['key' => 'speed', 'label' => 'Max Speed/Hour', 'type' => 'number'],
             ['key' => 'year', 'label' => 'Year'],
             ['key' => 'processes', 'label' => 'Processes', 'type' => 'link', 'format' => 'number'],
@@ -72,13 +72,13 @@ class MachineGrid extends ProdGrid
             ['label' => 'All'],
             ['label' => 'Active', 'where' => ['active' => true], 'tone' => 'success'],
             ['label' => 'No spec yet', 'where' => ['sheet' => null], 'tone' => 'warn'],
-            ['label' => 'Penunjang (non-produksi)', 'where' => ['role' => 'Penunjang'], 'tone' => 'neutral'],
+            ['label' => 'Supporting (non-production)', 'where' => ['role' => 'Penunjang'], 'tone' => 'neutral'],
             ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'danger'],
         ];
     }
 
     public function filters(): array
     {
-        return ['type' => 'Jenis', 'role' => 'Peran', 'brand' => 'Merek / Model'];
+        return ['type' => 'Type', 'role' => 'Role', 'brand' => 'Brand / Model'];
     }
 }

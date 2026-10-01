@@ -51,7 +51,7 @@ class BankAccountGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari nama, kode, no. rekening...';
+        return 'Search name, code, account no....';
     }
 
     protected function query(): Builder
@@ -69,11 +69,11 @@ class BankAccountGrid extends HrmGrid
     {
         return [
             ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
-            ['key' => 'dept', 'label' => 'Departemen'],
-            ['key' => 'position', 'label' => 'Posisi'],
+            ['key' => 'dept', 'label' => 'Department'],
+            ['key' => 'position', 'label' => 'Position'],
             ['key' => 'method', 'label' => 'Salary Method', 'type' => 'badge', 'tones' => ['Transfer' => 'info', 'Tunai' => 'warn']],
             ['key' => 'bank', 'label' => 'Bank'],
-            ['key' => 'account', 'label' => 'No. Rekening'],
+            ['key' => 'account', 'label' => 'Account No.'],
             ['key' => 'holder', 'label' => 'Account Holder'],
         ];
     }
@@ -94,12 +94,12 @@ class BankAccountGrid extends HrmGrid
         return [
             ['label' => 'Active Employees'],
             ['label' => 'Transfer', 'where' => ['method' => 'Transfer'], 'tone' => 'info'],
-            ['label' => 'Tunai', 'where' => ['method' => 'Tunai'], 'tone' => 'warn'],
+            ['label' => 'Cash', 'where' => ['method' => 'Tunai'], 'tone' => 'warn'],
         ];
     }
 
     public function filters(): array
     {
-        return ['dept' => 'Departemen', 'method' => 'Metode Gaji', 'bank' => 'Bank'];
+        return ['dept' => 'Department', 'method' => 'Salary Method', 'bank' => 'Bank'];
     }
 }

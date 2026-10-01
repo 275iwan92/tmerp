@@ -42,7 +42,7 @@ class CorrectionRequestGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari karyawan, field, nilai...';
+        return 'Search employee, field, value...';
     }
 
     protected function query(): Builder
@@ -56,10 +56,10 @@ class CorrectionRequestGrid extends HrmGrid
         return [
             ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
             ['key' => 'field', 'label' => 'Field'],
-            ['key' => 'old', 'label' => 'Nilai Lama'],
+            ['key' => 'old', 'label' => 'Old Value'],
             ['key' => 'new', 'label' => 'New Value'],
-            ['key' => 'reason', 'label' => 'Alasan'],
-            ['key' => 'requested', 'label' => 'Diajukan', 'type' => 'date'],
+            ['key' => 'reason', 'label' => 'Reason'],
+            ['key' => 'requested', 'label' => 'Submitted', 'type' => 'date'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::REQUEST_TONES],
         ];
     }

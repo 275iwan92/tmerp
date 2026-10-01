@@ -40,7 +40,7 @@ class ShiftGrid extends MasterDataGrid
 
     public function search(): string
     {
-        return 'Cari nama shift, departemen...';
+        return 'Search shift name, department...';
     }
 
     protected function query(): Builder
@@ -59,7 +59,7 @@ class ShiftGrid extends MasterDataGrid
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Shift Name', 'type' => 'identity', 'avatar' => false],
-            ['key' => 'dept', 'label' => 'Departemen'],
+            ['key' => 'dept', 'label' => 'Department'],
             ['key' => 'employees', 'label' => 'Active employees', 'type' => 'link', 'format' => 'number'],
         ];
     }
@@ -72,6 +72,6 @@ class ShiftGrid extends MasterDataGrid
 
     public function filters(): array
     {
-        return ['dept' => 'Departemen'];
+        return ['dept' => 'Department'];
     }
 }

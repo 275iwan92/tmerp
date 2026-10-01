@@ -51,7 +51,7 @@ class SalaryGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari nama, kode pegawai...';
+        return 'Search name, employee code...';
     }
 
     protected function query(): Builder
@@ -74,7 +74,7 @@ class SalaryGrid extends HrmGrid
             ['key' => 'ptkp', 'label' => 'PTKP'],
             ['key' => 'bpjs', 'label' => 'BPJS', 'type' => 'badge', 'tones' => ['Aktif' => 'success', 'Tidak' => 'neutral']],
             ['key' => 'pph21', 'label' => 'PPh21', 'type' => 'badge', 'tones' => ['Aktif' => 'success', 'Tidak' => 'neutral']],
-            ['key' => 'set', 'label' => 'Setelan', 'type' => 'badge', 'tones' => ['Sudah' => 'success', 'Belum diatur' => 'warn']],
+            ['key' => 'set', 'label' => 'Salary Setup', 'type' => 'badge', 'tones' => ['Sudah' => 'success', 'Belum diatur' => 'warn']],
         ];
     }
 
@@ -102,6 +102,6 @@ class SalaryGrid extends HrmGrid
 
     public function filters(): array
     {
-        return ['ptkp' => 'PTKP', 'set' => 'Setelan'];
+        return ['ptkp' => 'PTKP', 'set' => 'Salary Setup'];
     }
 }

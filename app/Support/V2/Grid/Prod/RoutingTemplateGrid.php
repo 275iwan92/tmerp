@@ -31,7 +31,7 @@ class RoutingTemplateGrid extends ProdGrid
 
     public function search(): string
     {
-        return 'Cari kode, nama template...';
+        return 'Search code, template name...';
     }
 
     protected function query(): Builder
@@ -44,7 +44,7 @@ class RoutingTemplateGrid extends ProdGrid
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Template', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'type', 'label' => 'Tipe Produk'],
+            ['key' => 'type', 'label' => 'Product Type'],
             ['key' => 'substrate', 'label' => 'Material'],
             ['key' => 'default', 'label' => 'Default', 'type' => 'badge', 'tones' => ['Ya' => 'success']],
             ['key' => 'steps', 'label' => 'Steps', 'type' => 'link', 'format' => 'number'],
@@ -59,6 +59,6 @@ class RoutingTemplateGrid extends ProdGrid
 
     public function filters(): array
     {
-        return ['type' => 'Tipe Produk'];
+        return ['type' => 'Product Type'];
     }
 }

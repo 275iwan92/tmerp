@@ -45,7 +45,7 @@ class PayrollRunGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari periode, status...';
+        return 'Search period, status...';
     }
 
     protected function query(): Builder
@@ -66,7 +66,7 @@ class PayrollRunGrid extends HrmGrid
             ['key' => 'start', 'label' => 'From', 'type' => 'date', 'visible' => false],
             ['key' => 'end', 'label' => 'Until', 'type' => 'date'],
             ['key' => 'slips', 'label' => 'Slip', 'type' => 'number'],
-            ['key' => 'anomaly', 'label' => 'Anomali', 'type' => 'number'],
+            ['key' => 'anomaly', 'label' => 'Anomaly', 'type' => 'number'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'steps', 'steps' => ['DRAFT', 'CALCULATED', 'VERIFIED', 'CONFIRMED', 'PAID', 'CLOSED']],
         ];
     }
@@ -85,7 +85,7 @@ class PayrollRunGrid extends HrmGrid
     {
         return [
             ['label' => 'All periods'],
-            ['label' => 'Berjalan', 'where' => ['status' => ['DRAFT', 'CALCULATED', 'VERIFIED']], 'tone' => 'warn'],
+            ['label' => 'In Progress', 'where' => ['status' => ['DRAFT', 'CALCULATED', 'VERIFIED']], 'tone' => 'warn'],
             ['label' => 'Confirmed / Paid', 'where' => ['status' => ['CONFIRMED', 'PAID']], 'tone' => 'info'],
             ['label' => 'Closed', 'where' => ['status' => 'CLOSED'], 'tone' => 'success'],
         ];
@@ -93,6 +93,6 @@ class PayrollRunGrid extends HrmGrid
 
     public function filters(): array
     {
-        return ['type' => 'Periode', 'status' => 'Status'];
+        return ['type' => 'Period', 'status' => 'Status'];
     }
 }

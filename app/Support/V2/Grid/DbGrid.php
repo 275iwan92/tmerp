@@ -65,7 +65,7 @@ abstract class DbGrid
 
     public function search(): string
     {
-        return 'Cari...';
+        return 'Search...';
     }
 
     public function filters(): array

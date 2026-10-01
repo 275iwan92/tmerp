@@ -45,8 +45,9 @@ class DemandForecastLookup extends DbLookup
 
     public function guide(): ?string
     {
-        return 'Expected orders per customer, product and month (use the first day of the month). A Customer Order of the same customer and product in that month '
-            .'uses up the forecast; only the remainder is planned. Forecast never reserves stock: it only shows what must be bought in time (Material Planning).';
+        // Maksimal 255 huruf supaya bisa diterjemahkan lewat kamus.
+        return 'Expected orders per customer, product and month (first day of the month). A Customer Order for the same customer, product and month uses up the forecast; '
+            .'only the remainder is planned. Forecast never reserves stock: it shows what to buy in time.';
     }
 
     protected function query(): Builder

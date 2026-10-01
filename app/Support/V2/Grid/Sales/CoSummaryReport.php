@@ -24,9 +24,9 @@ class CoSummaryReport extends CoReportGrid
 
     public function guide(): ?string
     {
-        return 'Satu baris = satu CO. Grup per Customer / Bulan / Sales By menjumlahkan Total Qty'
-            .($this->seesPrice() ? ' & Nilai Order (= Total Sales)' : '').'. '
-            .'Klik tombol Kolom untuk menambah Mode, Rencana Kirim, Sisa, Note, Due Date terdekat.';
+        return $this->seesPrice()
+            ? 'One row = one CO. Group by Customer / Month / Sales By totals Total Qty & Order Value (= Total Sales). Use Columns to add Mode, Planned Shipment, Remaining, Note, Nearest Due Date.'
+            : 'One row = one CO. Group by Customer / Month / Sales By totals Total Qty. Use Columns to add Mode, Planned Shipment, Remaining, Note, Nearest Due Date.';
     }
 
     protected function query(): Builder
@@ -71,28 +71,28 @@ class CoSummaryReport extends CoReportGrid
         $hidden = ['visible' => false];
 
         return [
-            ['key' => 'co', 'label' => 'No CO'],
+            ['key' => 'co', 'label' => 'CO No.'],
             ['key' => 'co_date', 'label' => 'CO Date', 'type' => 'date'],
             ['key' => 'customer', 'label' => 'Customer'],
-            ['key' => 'po', 'label' => 'No PO Customer'],
+            ['key' => 'po', 'label' => 'Customer PO No.'],
             ['key' => 'sales', 'label' => 'Sales By'],
             ['key' => 'ship_method', 'label' => 'Shipment Method'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::STATUS_TONES],
             ['key' => 'order_type', 'label' => 'Order Type'] + $hidden,
             ['key' => 'items', 'label' => 'Item', 'type' => 'number'],
             ['key' => 'qty', 'label' => 'Total Qty', 'type' => 'number', 'sum' => true],
-            ['key' => 'value', 'label' => 'Nilai Order', 'type' => 'money', 'sum' => true],
-            ['key' => 'shipped', 'label' => 'Terkirim', 'type' => 'number', 'sum' => true],
+            ['key' => 'value', 'label' => 'Order Value', 'type' => 'money', 'sum' => true],
+            ['key' => 'shipped', 'label' => 'Shipped', 'type' => 'number', 'sum' => true],
             ['key' => 'progress', 'label' => '% Shipped', 'type' => 'progress'],
             ['key' => 'remain', 'label' => 'Remaining', 'type' => 'number', 'sum' => true] + $hidden,
             ['key' => 'planned', 'label' => 'Planned Shipment', 'type' => 'number', 'sum' => true] + $hidden,
             ['key' => 'confirm', 'label' => 'Confirm', 'type' => 'badge', 'tones' => ['Yes' => 'success', 'No' => 'neutral']] + $hidden,
-            ['key' => 'mode', 'label' => 'Mode CO', 'type' => 'badge', 'tones' => ['INTEGRATED' => 'info', 'INSTANT' => 'accent']] + $hidden,
-            ['key' => 'currency', 'label' => 'Mata Uang'] + $hidden,
+            ['key' => 'mode', 'label' => 'CO Mode', 'type' => 'badge', 'tones' => ['INTEGRATED' => 'info', 'INSTANT' => 'accent']] + $hidden,
+            ['key' => 'currency', 'label' => 'Currency'] + $hidden,
             ['key' => 'month', 'label' => 'Month'] + $hidden,
-            ['key' => 'due', 'label' => 'Due Date terdekat', 'type' => 'date'] + $hidden,
+            ['key' => 'due', 'label' => 'Nearest Due Date', 'type' => 'date'] + $hidden,
             ['key' => 'note', 'label' => 'Note'] + $hidden,
-            ['key' => 'recipient', 'label' => 'Penerima'] + $hidden,
+            ['key' => 'recipient', 'label' => 'Receiver'] + $hidden,
             ['key' => 'shipper', 'label' => 'Shipper'] + $hidden,
             ['key' => 'forwarder', 'label' => 'Forwarder'] + $hidden,
         ];

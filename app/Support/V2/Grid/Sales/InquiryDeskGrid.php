@@ -86,7 +86,7 @@ abstract class InquiryDeskGrid extends DbGrid
         $doc = ['key' => 'inquiry_no', 'label' => 'Inquiry No. / Customer', 'type' => 'doc', 'party' => 'customer'];
         $product = ['key' => 'product_draft_name', 'label' => 'Product'];
         $qty = ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'];
-        $pic = ['key' => 'pic_sales', 'label' => 'PIC Sales'];
+        $pic = ['key' => 'pic_sales', 'label' => 'Sales PIC'];
         $todo = ['key' => 'todo', 'label' => 'Work', 'type' => 'badge', 'tones' => ['To Do' => 'warn', 'Done' => 'success']];
 
         return match ($this->desk()) {
@@ -124,6 +124,6 @@ abstract class InquiryDeskGrid extends DbGrid
 
     public function filters(): array
     {
-        return ['customer' => 'Customer', 'pic_sales' => 'PIC Sales'];
+        return ['customer' => 'Customer', 'pic_sales' => 'Sales PIC'];
     }
 }

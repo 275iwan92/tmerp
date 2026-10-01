@@ -80,7 +80,7 @@ abstract class CoReportGrid extends DbGrid
 
     public function search(): string
     {
-        return 'Cari no. CO, customer, no. PO, product...';
+        return 'Search CO no., customer, PO no., product...';
     }
 
     protected function models(): array
@@ -185,10 +185,10 @@ abstract class CoReportGrid extends DbGrid
     protected function qtyColumns(): array
     {
         return [
-            ['key' => 'co', 'label' => 'No CO'],
+            ['key' => 'co', 'label' => 'CO No.'],
             ['key' => 'co_date', 'label' => 'CO Date', 'type' => 'date'],
             ['key' => 'customer', 'label' => 'Customer'],
-            ['key' => 'po', 'label' => 'No PO Customer'],
+            ['key' => 'po', 'label' => 'Customer PO No.'],
             ['key' => 'ship_method', 'label' => 'Shipment Method'],
             ['key' => 'confirm', 'label' => 'Confirm', 'type' => 'badge', 'tones' => ['Yes' => 'success', 'No' => 'neutral']],
             ['key' => 'note', 'label' => 'Note'],
@@ -202,7 +202,7 @@ abstract class CoReportGrid extends DbGrid
             ['key' => 'qty_min', 'label' => 'Qty Limit Min', 'type' => 'number'],
             ['key' => 'qty_max', 'label' => 'Qty Limit Max', 'type' => 'number'],
             ['key' => 'due', 'label' => 'Due Date', 'type' => 'date'],
-            ['key' => 'recipient', 'label' => 'Penerima', 'visible' => false],
+            ['key' => 'recipient', 'label' => 'Receiver', 'visible' => false],
             ['key' => 'shipper', 'label' => 'Shipper', 'visible' => false],
             ['key' => 'forwarder', 'label' => 'Forwarder', 'visible' => false],
         ];
@@ -215,11 +215,11 @@ abstract class CoReportGrid extends DbGrid
 
     public function filters(): array
     {
-        return ['customer' => 'Customer', 'sales' => 'Sales By', 'order_type' => 'Order Type', 'ship_method' => 'Shipment Method', 'qty_minim' => 'Qty Minim', 'confirm' => 'Confirm', 'status' => 'Status', 'month' => 'Bulan'];
+        return ['customer' => 'Customer', 'sales' => 'Sales By', 'order_type' => 'Order Type', 'ship_method' => 'Shipment Method', 'qty_minim' => 'Qty Minim', 'confirm' => 'Confirm', 'status' => 'Status', 'month' => 'Month'];
     }
 
     public function groups(): array
     {
-        return ['customer' => 'Customer', 'status' => 'Status', 'order_type' => 'Order Type', 'sales' => 'Sales By', 'month' => 'Bulan', 'co' => 'No CO'];
+        return ['customer' => 'Customer', 'status' => 'Status', 'order_type' => 'Order Type', 'sales' => 'Sales By', 'month' => 'Month', 'co' => 'CO No.'];
     }
 }

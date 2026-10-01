@@ -43,7 +43,7 @@ class GpsApprovalGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari karyawan...';
+        return 'Search employee...';
     }
 
     protected function query(): Builder
@@ -59,7 +59,7 @@ class GpsApprovalGrid extends HrmGrid
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'time', 'label' => 'Time'],
             ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['Masuk' => 'info', 'Pulang' => 'neutral']],
-            ['key' => 'distance', 'label' => 'Jarak (m)', 'type' => 'number'],
+            ['key' => 'distance', 'label' => 'Distance (m)', 'type' => 'number'],
             ['key' => 'geofence', 'label' => 'Radius', 'type' => 'badge', 'tones' => ['Di luar radius' => 'danger', 'Dalam radius' => 'success']],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::REQUEST_TONES],
         ];
@@ -84,6 +84,6 @@ class GpsApprovalGrid extends HrmGrid
 
     public function filters(): array
     {
-        return ['type' => 'Jenis', 'geofence' => 'Radius', 'status' => 'Status'];
+        return ['type' => 'Type', 'geofence' => 'Radius', 'status' => 'Status'];
     }
 }

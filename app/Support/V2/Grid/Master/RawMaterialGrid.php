@@ -49,7 +49,7 @@ class RawMaterialGrid extends MasterDataGrid
 
     public function search(): string
     {
-        return 'Cari kode, nama, merek...';
+        return 'Search code, name, brand...';
     }
 
     protected function query(): Builder
@@ -64,11 +64,11 @@ class RawMaterialGrid extends MasterDataGrid
             ['key' => 'name', 'label' => 'Raw Material', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'category', 'label' => 'Category'],
             ['key' => 'type', 'label' => 'Item Type'],
-            ['key' => 'brand', 'label' => 'Merek'],
+            ['key' => 'brand', 'label' => 'Brand'],
             ['key' => 'uom', 'label' => 'Stock Unit'],
             ['key' => 'reorder', 'label' => 'Reorder Point', 'type' => 'number'],
             ['key' => 'stock', 'label' => 'Stock on hand', 'type' => 'link', 'format' => 'number'],
-            ['key' => 'gsm', 'label' => 'Gramatur', 'type' => 'number', 'visible' => false],
+            ['key' => 'gsm', 'label' => 'Grammage', 'type' => 'number', 'visible' => false],
         ];
     }
 
@@ -83,6 +83,6 @@ class RawMaterialGrid extends MasterDataGrid
 
     public function filters(): array
     {
-        return ['category' => 'Kategori', 'type' => 'Jenis Item', 'uom' => 'Satuan'];
+        return ['category' => 'Category', 'type' => 'Item Type', 'uom' => 'Unit'];
     }
 }

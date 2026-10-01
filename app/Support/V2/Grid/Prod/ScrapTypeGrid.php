@@ -31,7 +31,7 @@ class ScrapTypeGrid extends ProdGrid
 
     public function search(): string
     {
-        return 'Cari kode, nama tipe...';
+        return 'Search code, type name...';
     }
 
     protected function query(): Builder
@@ -43,7 +43,7 @@ class ScrapTypeGrid extends ProdGrid
     {
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
-            ['key' => 'name', 'label' => 'Tipe Scrap', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Scrap Type', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'category', 'label' => 'Category'],
         ];
     }
@@ -55,6 +55,6 @@ class ScrapTypeGrid extends ProdGrid
 
     public function filters(): array
     {
-        return ['category' => 'Kategori'];
+        return ['category' => 'Category'];
     }
 }

@@ -41,7 +41,7 @@ class CustomerGrid extends MasterDataGrid
 
     public function search(): string
     {
-        return 'Cari nama, kode, grup, industri...';
+        return 'Search name, code, group, industry...';
     }
 
     protected function query(): Builder
@@ -60,11 +60,11 @@ class CustomerGrid extends MasterDataGrid
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Customer', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'group', 'label' => 'Grup'],
-            ['key' => 'type', 'label' => 'Tipe', 'type' => 'badge', 'tones' => ['Lokal' => 'info', 'Import' => 'accent', 'Prospek' => 'warn']],
-            ['key' => 'industry', 'label' => 'Industri'],
-            ['key' => 'credit', 'label' => 'Limit Kredit', 'type' => 'money'],
-            ['key' => 'term', 'label' => 'Termin'],
+            ['key' => 'group', 'label' => 'Group'],
+            ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['Lokal' => 'info', 'Import' => 'accent', 'Prospek' => 'warn']],
+            ['key' => 'industry', 'label' => 'Industry'],
+            ['key' => 'credit', 'label' => 'Credit Limit', 'type' => 'money'],
+            ['key' => 'term', 'label' => 'Payment Term'],
             ['key' => 'approval', 'label' => 'Approval', 'type' => 'badge', 'tones' => ['APPROVED' => 'success', 'DRAFT' => 'neutral', 'BLOCKED' => 'danger']],
             ['key' => 'orders', 'label' => 'Customer Orders', 'type' => 'link', 'format' => 'number'],
         ];
@@ -86,13 +86,13 @@ class CustomerGrid extends MasterDataGrid
             ['label' => 'All'],
             ['label' => 'Active', 'where' => ['active' => true], 'tone' => 'success'],
             ['label' => 'Draft', 'where' => ['approval' => 'DRAFT'], 'tone' => 'warn'],
-            ['label' => 'Diblokir', 'where' => ['approval' => 'BLOCKED'], 'tone' => 'danger'],
+            ['label' => 'Blocked', 'where' => ['approval' => 'BLOCKED'], 'tone' => 'danger'],
             ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'neutral'],
         ];
     }
 
     public function filters(): array
     {
-        return ['type' => 'Tipe', 'industry' => 'Industri', 'term' => 'Termin', 'approval' => 'Approval'];
+        return ['type' => 'Type', 'industry' => 'Industry', 'term' => 'Payment Term', 'approval' => 'Approval'];
     }
 }

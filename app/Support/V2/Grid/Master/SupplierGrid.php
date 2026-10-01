@@ -41,7 +41,7 @@ class SupplierGrid extends MasterDataGrid
 
     public function search(): string
     {
-        return 'Cari nama, kode, kategori, kontak...';
+        return 'Search name, code, category, contact...';
     }
 
     protected function query(): Builder
@@ -61,9 +61,9 @@ class SupplierGrid extends MasterDataGrid
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'category', 'label' => 'Category'],
-            ['key' => 'contact', 'label' => 'Kontak PIC'],
-            ['key' => 'term', 'label' => 'Termin'],
-            ['key' => 'subcon', 'label' => 'Subkon', 'type' => 'badge', 'tones' => ['Ya' => 'info']],
+            ['key' => 'contact', 'label' => 'Contact Person'],
+            ['key' => 'term', 'label' => 'Payment Term'],
+            ['key' => 'subcon', 'label' => 'Subcontractor', 'type' => 'badge', 'tones' => ['Ya' => 'info']],
             ['key' => 'blacklist', 'label' => 'Blacklist', 'type' => 'badge', 'tones' => ['Ya' => 'danger']],
             ['key' => 'orders', 'label' => 'Purchase Orders', 'type' => 'link', 'format' => 'number'],
         ];
@@ -80,6 +80,6 @@ class SupplierGrid extends MasterDataGrid
 
     public function filters(): array
     {
-        return ['category' => 'Kategori', 'term' => 'Termin'];
+        return ['category' => 'Category', 'term' => 'Payment Term'];
     }
 }

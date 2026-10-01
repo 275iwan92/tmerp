@@ -41,7 +41,7 @@ class WarehouseGrid extends MasterDataGrid
 
     public function search(): string
     {
-        return 'Cari kode, nama gudang...';
+        return 'Search code, warehouse name...';
     }
 
     protected function query(): Builder
@@ -54,8 +54,8 @@ class WarehouseGrid extends MasterDataGrid
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Warehouse', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'type', 'label' => 'Tipe'],
-            ['key' => 'locations', 'label' => 'Lokasi', 'type' => 'link', 'format' => 'number'],
+            ['key' => 'type', 'label' => 'Type'],
+            ['key' => 'locations', 'label' => 'Location', 'type' => 'link', 'format' => 'number'],
         ];
     }
 
@@ -66,6 +66,6 @@ class WarehouseGrid extends MasterDataGrid
 
     public function filters(): array
     {
-        return ['type' => 'Tipe'];
+        return ['type' => 'Type'];
     }
 }

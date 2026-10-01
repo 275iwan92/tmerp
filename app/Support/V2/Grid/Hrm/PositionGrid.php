@@ -52,7 +52,7 @@ class PositionGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari posisi, kode, departemen...';
+        return 'Search position, code, department...';
     }
 
     protected function query(): Builder
@@ -69,8 +69,8 @@ class PositionGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Posisi', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'dept', 'label' => 'Departemen'],
+            ['key' => 'name', 'label' => 'Position', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'dept', 'label' => 'Department'],
             ['key' => 'level', 'label' => 'Level'],
             ['key' => 'reports_to', 'label' => 'Reports To'],
             ['key' => 'holders', 'label' => 'Active employees', 'type' => 'link', 'format' => 'number'],
@@ -88,6 +88,6 @@ class PositionGrid extends HrmGrid
 
     public function filters(): array
     {
-        return ['dept' => 'Departemen', 'level' => 'Level'];
+        return ['dept' => 'Department', 'level' => 'Level'];
     }
 }

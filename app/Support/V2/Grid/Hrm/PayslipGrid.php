@@ -56,7 +56,7 @@ class PayslipGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari pegawai, periode...';
+        return 'Search employee, period...';
     }
 
     protected function query(): Builder
@@ -76,12 +76,12 @@ class PayslipGrid extends HrmGrid
     {
         return [
             ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
-            ['key' => 'period', 'label' => 'Periode'],
-            ['key' => 'dept', 'label' => 'Departemen'],
+            ['key' => 'period', 'label' => 'Period'],
+            ['key' => 'dept', 'label' => 'Department'],
             ['key' => 'net', 'label' => 'Net Salary', 'type' => 'money'],
             ['key' => 'printed', 'label' => 'Printout', 'type' => 'badge', 'tones' => ['Sudah' => 'success', 'Belum' => 'neutral']],
             ['key' => 'wa', 'label' => 'Send WhatsApp', 'type' => 'badge', 'tones' => ['Terkirim' => 'success', 'Belum' => 'neutral']],
-            ['key' => 'anomaly', 'label' => 'Anomali', 'type' => 'badge', 'tones' => ['Ada' => 'danger']],
+            ['key' => 'anomaly', 'label' => 'Anomaly', 'type' => 'badge', 'tones' => ['Ada' => 'danger']],
         ];
     }
 
@@ -104,12 +104,12 @@ class PayslipGrid extends HrmGrid
             ['label' => 'All slips'],
             ['label' => 'Not printed', 'where' => ['printed' => 'Belum'], 'tone' => 'warn'],
             ['label' => 'WhatsApp not sent', 'where' => ['wa' => 'Belum'], 'tone' => 'info'],
-            ['label' => 'Anomali', 'where' => ['anomaly' => 'Ada'], 'tone' => 'danger'],
+            ['label' => 'Anomaly', 'where' => ['anomaly' => 'Ada'], 'tone' => 'danger'],
         ];
     }
 
     public function filters(): array
     {
-        return ['period' => 'Periode', 'dept' => 'Departemen'];
+        return ['period' => 'Period', 'dept' => 'Department'];
     }
 }

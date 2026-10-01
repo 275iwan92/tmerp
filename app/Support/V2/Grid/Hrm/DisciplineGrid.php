@@ -43,7 +43,7 @@ class DisciplineGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari karyawan, kategori...';
+        return 'Search employee, category...';
     }
 
     protected function query(): Builder
@@ -59,10 +59,10 @@ class DisciplineGrid extends HrmGrid
         return [
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'dept', 'label' => 'Departemen'],
+            ['key' => 'dept', 'label' => 'Department'],
             ['key' => 'shift', 'label' => 'Shift Hours'],
             ['key' => 'in', 'label' => 'Clock-in Time'],
-            ['key' => 'late', 'label' => 'Telat (Mnt)', 'type' => 'number'],
+            ['key' => 'late', 'label' => 'Late (min)', 'type' => 'number'],
             ['key' => 'category', 'label' => 'Category'],
             ['key' => 'kind', 'label' => 'Type'],
         ];
@@ -81,6 +81,6 @@ class DisciplineGrid extends HrmGrid
 
     public function filters(): array
     {
-        return ['kind' => 'Jenis', 'category' => 'Kategori', 'dept' => 'Departemen'];
+        return ['kind' => 'Type', 'category' => 'Category', 'dept' => 'Department'];
     }
 }

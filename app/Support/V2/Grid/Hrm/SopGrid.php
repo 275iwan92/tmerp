@@ -47,7 +47,7 @@ class SopGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari judul, kode SOP...';
+        return 'Search title, SOP code...';
     }
 
     protected function query(): Builder
@@ -58,10 +58,10 @@ class SopGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Dokumen SOP', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'dept', 'label' => 'Cakupan Departemen'],
-            ['key' => 'revision', 'label' => 'Revisi'],
-            ['key' => 'effective', 'label' => 'Berlaku', 'type' => 'date'],
+            ['key' => 'name', 'label' => 'SOP Document', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'dept', 'label' => 'Department Scope'],
+            ['key' => 'revision', 'label' => 'Revision'],
+            ['key' => 'effective', 'label' => 'Effective', 'type' => 'date'],
         ];
     }
 
@@ -75,6 +75,6 @@ class SopGrid extends HrmGrid
 
     public function filters(): array
     {
-        return ['dept' => 'Departemen'];
+        return ['dept' => 'Department'];
     }
 }

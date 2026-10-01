@@ -33,16 +33,18 @@ class CoShipDetailReport extends CoReportGrid
 
     public function guide(): ?string
     {
-        return 'Satu baris = satu jadwal kirim. Klik tombol Kolom untuk menambah Sales By, Due Date, Status CO'.($this->seesPrice() ? ', Harga' : '').', Terkirim, Sisa; Grup per Customer / Tgl Kirim / No CO menjumlahkan Qty Kirim.';
+        return $this->seesPrice()
+            ? 'One row = one shipment schedule. Use Columns to add Sales By, Due Date, CO Status, Price, Shipped, Remaining; Group by Customer / Ship Date / CO No. totals Ship Qty.'
+            : 'One row = one shipment schedule. Use Columns to add Sales By, Due Date, CO Status, Shipped, Remaining; Group by Customer / Ship Date / CO No. totals Ship Qty.';
     }
 
     public function columns(): array
     {
         return [
-            ['key' => 'co', 'label' => 'No CO'],
+            ['key' => 'co', 'label' => 'CO No.'],
             ['key' => 'co_date', 'label' => 'CO Date', 'type' => 'date'],
             ['key' => 'customer', 'label' => 'Customer'],
-            ['key' => 'po', 'label' => 'No PO Customer'],
+            ['key' => 'po', 'label' => 'Customer PO No.'],
             ['key' => 'product', 'label' => 'Product'],
             ['key' => 'order_type', 'label' => 'Order Type', 'type' => 'badge', 'tones' => ['NEW' => 'info', 'RTP' => 'success', 'RDP' => 'warn'], 'visible' => false],
             ['key' => 'cfg_color', 'label' => 'Cfg Color', 'visible' => false],
@@ -52,26 +54,26 @@ class CoShipDetailReport extends CoReportGrid
             ['key' => 'ship_qty', 'label' => 'Ship Qty', 'type' => 'number', 'sum' => true],
             ['key' => 'ship_type', 'label' => 'Shipping Type'],
             ['key' => 'ship_method', 'label' => 'Shipment Method'],
-            ['key' => 'recipient', 'label' => 'Penerima', 'visible' => false],
+            ['key' => 'recipient', 'label' => 'Receiver', 'visible' => false],
             ['key' => 'shipper', 'label' => 'Shipper', 'visible' => false],
             ['key' => 'forwarder', 'label' => 'Forwarder', 'visible' => false],
             ['key' => 'ship_status', 'label' => 'Send Status', 'type' => 'badge', 'tones' => ['PLANNED' => 'warn', 'SHIPPED' => 'success']],
             ['key' => 'due', 'label' => 'Due Date', 'type' => 'date', 'visible' => false],
             ['key' => 'sales', 'label' => 'Sales By', 'visible' => false],
-            ['key' => 'status', 'label' => 'Status CO', 'type' => 'badge', 'tones' => self::STATUS_TONES, 'visible' => false],
+            ['key' => 'status', 'label' => 'CO Status', 'type' => 'badge', 'tones' => self::STATUS_TONES, 'visible' => false],
             ['key' => 'price', 'label' => 'Unit Price', 'type' => 'money', 'visible' => false],
-            ['key' => 'shipped', 'label' => 'Terkirim (item)', 'type' => 'number', 'visible' => false],
+            ['key' => 'shipped', 'label' => 'Shipped (items)', 'type' => 'number', 'visible' => false],
             ['key' => 'remain', 'label' => 'Remaining (items)', 'type' => 'number', 'visible' => false],
         ];
     }
 
     public function filters(): array
     {
-        return ['customer' => 'Customer', 'ship_status' => 'Status Kirim', 'ship_type' => 'Jenis Kirim'];
+        return ['customer' => 'Customer', 'ship_status' => 'Send Status', 'ship_type' => 'Shipping Type'];
     }
 
     public function groups(): array
     {
-        return ['customer' => 'Customer', 'ship_date' => 'Tgl Kirim', 'co' => 'No CO', 'ship_status' => 'Status Kirim'];
+        return ['customer' => 'Customer', 'ship_date' => 'Ship Date', 'co' => 'CO No.', 'ship_status' => 'Send Status'];
     }
 }

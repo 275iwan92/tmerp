@@ -51,7 +51,7 @@ class AttendanceGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Cari karyawan, status...';
+        return 'Search employee, status...';
     }
 
     protected function query(): Builder
@@ -67,11 +67,11 @@ class AttendanceGrid extends HrmGrid
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'shift', 'label' => 'Shift'],
             ['key' => 'in', 'label' => 'Sign in'],
-            ['key' => 'out', 'label' => 'Pulang'],
-            ['key' => 'late', 'label' => 'Telat (Mnt)', 'type' => 'number'],
+            ['key' => 'out', 'label' => 'Clock-out Time'],
+            ['key' => 'late', 'label' => 'Late (min)', 'type' => 'number'],
             ['key' => 'overtime', 'label' => 'Overtime (Min)', 'type' => 'number'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['H' => 'success', 'A' => 'danger'] + array_fill_keys(self::LATE, 'warn')],
-            ['key' => 'source', 'label' => 'Sumber', 'visible' => false],
+            ['key' => 'source', 'label' => 'Source', 'visible' => false],
         ];
     }
 
@@ -89,14 +89,14 @@ class AttendanceGrid extends HrmGrid
     {
         return [
             ['label' => 'Last 60 days'],
-            ['label' => 'Hadir', 'where' => ['status' => 'H'], 'tone' => 'success'],
-            ['label' => 'Terlambat', 'where' => ['status' => self::LATE], 'tone' => 'warn'],
+            ['label' => 'Present', 'where' => ['status' => 'H'], 'tone' => 'success'],
+            ['label' => 'Late', 'where' => ['status' => self::LATE], 'tone' => 'warn'],
             ['label' => 'Absent', 'where' => ['status' => self::ABSENT], 'tone' => 'danger'],
         ];
     }
 
     public function filters(): array
     {
-        return ['status' => 'Status', 'source' => 'Sumber'];
+        return ['status' => 'Status', 'source' => 'Source'];
     }
 }

@@ -40,7 +40,7 @@ class MatCategoryGrid extends MasterDataGrid
 
     public function search(): string
     {
-        return 'Cari kategori, induk...';
+        return 'Search category, parent...';
     }
 
     protected function query(): Builder
@@ -61,8 +61,8 @@ class MatCategoryGrid extends MasterDataGrid
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Category', 'type' => 'identity', 'code' => 'prefix', 'avatar' => false],
             ['key' => 'level', 'label' => 'Level', 'type' => 'number'],
-            ['key' => 'parent', 'label' => 'Induk'],
-            ['key' => 'class', 'label' => 'Kelas Stok', 'type' => 'badge', 'tones' => ['RM' => 'info', 'FG' => 'success', 'SFG' => 'warn']],
+            ['key' => 'parent', 'label' => 'Parent'],
+            ['key' => 'class', 'label' => 'Stock Class', 'type' => 'badge', 'tones' => ['RM' => 'info', 'FG' => 'success', 'SFG' => 'warn']],
             ['key' => 'materials', 'label' => 'Materials (level 1)', 'type' => 'link', 'format' => 'number'],
         ];
     }
@@ -75,6 +75,6 @@ class MatCategoryGrid extends MasterDataGrid
 
     public function filters(): array
     {
-        return ['level' => 'Level', 'class' => 'Kelas Stok', 'parent' => 'Induk'];
+        return ['level' => 'Level', 'class' => 'Stock Class', 'parent' => 'Parent'];
     }
 }
