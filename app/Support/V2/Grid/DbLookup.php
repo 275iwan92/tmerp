@@ -30,6 +30,21 @@ abstract class DbLookup extends DbGrid
         return [];
     }
 
+    // Rapikan kiriman satu baris sebelum divalidasi (mis. kode jadi huruf besar tanpa spasi tepi).
+    protected function prepare(array $in): array
+    {
+        return $in;
+    }
+
+    // Aturan lintas kolom / lintas baris yang tidak bisa ditulis sebagai rule per kolom. Kembalian = pesan salah, null = lolos.
+    protected function check(array $in, ?int $id): ?string
+    {
+        return null;
+    }
+
+    // Akibat simpan satu baris pada baris lain (mis. hanya satu baris aktif per jenis) -- masih di dalam transaksi yang sama.
+    protected function saved(Model $row): void {}
+
     protected function row(Model $m): array
     {
         $row = [];
@@ -61,6 +76,7 @@ abstract class DbLookup extends DbGrid
         $model->getConnection()->transaction(function () use ($changed, $model, $cols, $login) {
             foreach ($changed as $i => $in) {
                 $id = is_numeric($in['id'] ?? null) ? (int) $in['id'] : null;
+                $in = $this->prepare($in);
                 $rules = $cols->mapWithKeys(fn ($c) => [$c['key'] => array_values(array_filter([
                     ! empty($c['required']) ? 'required' : 'nullable',
                     ($c['type'] ?? 'text') === 'number' ? 'numeric' : null,
@@ -68,12 +84,16 @@ abstract class DbLookup extends DbGrid
                     ! empty($c['unique']) ? Rule::unique($model->getConnectionName().'.'.$model->getTable(), $c['key'])->ignore($id, $model->getKeyName()) : null,
                 ]))])->all();
                 $v = Validator::make($in, array_merge_recursive($rules, $this->rules()), [], $cols->pluck('label', 'key')->all());
-                if ($v->fails()) {
-                    throw ValidationException::withMessages(['row' => 'Baris '.($i + 1).': '.$v->errors()->first()]);
+                if ($error = $v->fails() ? $v->errors()->first() : $this->check($in, $id)) {
+                    throw ValidationException::withMessages(['row' => 'Baris '.($i + 1).': '.$error]);
                 }
-                $data = $cols->mapWithKeys(fn ($c) => [$c['key'] => $in[$c['key']] === '' ? null : $in[$c['key']]])->all();
+                // lockSaved = kolom kode yang sudah dirujuk data lain: hanya bisa diisi di baris baru (layar mengunci selnya,
+                // server tetap mengabaikan kiriman untuk baris yang sudah tersimpan).
+                $data = $cols->reject(fn ($c) => $id && ! empty($c['lockSaved']))
+                    ->mapWithKeys(fn ($c) => [$c['key'] => ($in[$c['key']] ?? null) === '' ? null : ($in[$c['key']] ?? null)])->all();
                 $row = $id ? $model->newQuery()->findOrFail($id) : $model->newInstance(['created_by' => $login]);
                 $row->fill($data + ['updated_by' => $login])->save();
+                $this->saved($row);
             }
         });
 

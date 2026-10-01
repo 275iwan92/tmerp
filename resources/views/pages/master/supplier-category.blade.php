@@ -74,7 +74,7 @@ new #[Title('Master Kategori Supplier — TELASIH MAKMUR ERP')] class extends Co
         ];
 
         if ($existingId) {
-            SupCategory::whereKey($existingId)->update($payload);
+            SupCategory::where('category_code', $existingId)->update($payload);
         } else {
             SupCategory::create($payload + ['category_code' => $data['category_code'], 'created_by' => Auth::user()->login]);
         }

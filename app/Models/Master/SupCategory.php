@@ -13,11 +13,8 @@ class SupCategory extends Model
 
     protected $table = 'sup_category';
 
-    protected $primaryKey = 'category_code';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
+    // PK = id_category (BIGINT auto number, aturan PK 2026-09-30); category_code = kode unik yang dirujuk sup_supplier.category.
+    protected $primaryKey = 'id_category';
 
     protected $fillable = [
         'category_code',

@@ -96,6 +96,8 @@ final class MenuRoutes
             'MD_MATCAT' => route('master.mat-category'),
             'MD_WH' => route('master.warehouse.list'),
             'MD_UOM' => route('master.uom'),
+            // Konversi Satuan: di v1 panel di dalam Master Satuan; baris menunya sendiri hanya punya layar v2 (Grid Lookup).
+            'MD_UOM_CONV' => route('v2.screen', 'md-uom-conversion'),
             // Shortcut "Master Data Terkait" di dalam modul WM (2026-08-31) --
             // reuse route MDATA yang sama persis (bukan duplikasi layar/data).
             'INV_REF_RAW' => route('master.raw-material.list'),

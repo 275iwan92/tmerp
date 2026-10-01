@@ -39,14 +39,14 @@
         if (ctrl && e.key.toLowerCase() === 'y') { e.preventDefault(); const u = this.redo.pop(); if (u) this.undo.push(this.apply(u, true)); return this.render(); }
         if (ctrl) return;  // Ctrl+C / Ctrl+V lewat event copy/paste
         const k = e.key;
-        if (e.altKey && k === 'ArrowDown' && this.isPick(this.cols[this.cur.c]) && !this.cols[this.cur.c].readonly) { e.preventDefault(); return this.openPick(); }
+        if (e.altKey && k === 'ArrowDown' && this.isPick(this.cols[this.cur.c]) && !this.ro(this.cols[this.cur.c], this.data[this.cur.r])) { e.preventDefault(); return this.openPick(); }
         if (k === 'ArrowDown') { e.preventDefault(); this.move(1, 0, e.shiftKey); }
         else if (k === 'ArrowUp') { e.preventDefault(); this.move(-1, 0, e.shiftKey); }
         else if (k === 'ArrowRight') { e.preventDefault(); this.move(0, 1, e.shiftKey); }
         else if (k === 'ArrowLeft') { e.preventDefault(); this.move(0, -1, e.shiftKey); }
         else if (k === 'Tab') { e.preventDefault(); this.move(0, e.shiftKey ? -1 : 1); }
         else if (k === 'Enter' || k === 'F2') { e.preventDefault(); this.startEdit(); }
-        else if (k === 'Delete' || k === 'Backspace') { e.preventDefault(); const R = this.rng(), list = []; for (let r = R.r0; r <= R.r1; r++) for (let c = R.c0; c <= R.c1; c++) if (!this.cols[c].readonly) list.push({r, k: this.cols[c].key, v: this.cols[c].type === 'check' ? false : ''}); if (list.length) this.apply(list); }
+        else if (k === 'Delete' || k === 'Backspace') { e.preventDefault(); const R = this.rng(), list = []; for (let r = R.r0; r <= R.r1; r++) for (let c = R.c0; c <= R.c1; c++) if (!this.ro(this.cols[c], this.data[r])) list.push({r, k: this.cols[c].key, v: this.cols[c].type === 'check' ? false : ''}); if (list.length) this.apply(list); }
         else if (k === ' ' && this.cols[this.cur.c].type === 'check') { e.preventDefault(); this.startEdit(); }
         else if (k.length === 1 && !e.altKey) { e.preventDefault(); this.anchor = null; this.startEdit(k); }
       });
@@ -56,7 +56,7 @@
         if (this.edit) return; e.preventDefault();
         const grid = (e.clipboardData.getData('text/plain') || '').replace(/\r/g, '').replace(/\n$/, '').split('\n').map(l => l.split('\t'));
         const list = [];
-        grid.forEach((line, i) => { const r = this.cur.r + i; while (r >= this.data.length) this.data.push(this.blank()); line.forEach((v, j) => { const c = this.cur.c + j; if (c < this.cols.length && !this.cols[c].readonly) list.push({r, k: this.cols[c].key, v: this.parse(this.cols[c], v)}); }); });
+        grid.forEach((line, i) => { const r = this.cur.r + i; while (r >= this.data.length) this.data.push(this.blank()); line.forEach((v, j) => { const c = this.cur.c + j; if (c < this.cols.length && !this.ro(this.cols[c], this.data[r])) list.push({r, k: this.cols[c].key, v: this.parse(this.cols[c], v)}); }); });
         this.anchor = {...this.cur}; this.cur = {r: Math.min(this.data.length - 1, this.cur.r + grid.length - 1), c: Math.min(this.cols.length - 1, this.cur.c + (grid[0]?.length || 1) - 1)};
         this.apply(list); toast(`${list.length} sel ditempel.`, 'success');
       });
@@ -82,7 +82,7 @@
           const col = this.cols[c]; if (col.readonly) continue;
           const src = []; for (let r = F.r0; r <= F.r1; r++) src.push(this.data[r][col.key]);
           const step = this.num(col) && src.length >= 2 && src.every(v => typeof v === 'number') && src.every((v, i) => !i || v - src[i - 1] === src[1] - src[0]) ? src[1] - src[0] : null;
-          for (let r = F.r1 + 1, i = 0; r <= F.to; r++, i++) list.push({r, k: col.key, v: step !== null ? src[src.length - 1] + step * (i + 1) : src[i % src.length]});
+          for (let r = F.r1 + 1, i = 0; r <= F.to; r++, i++) if (!this.ro(col, this.data[r])) list.push({r, k: col.key, v: step !== null ? src[src.length - 1] + step * (i + 1) : src[i % src.length]});
         }
         this.anchor = {r: F.r0, c: F.c0}; this.cur = {r: F.to, c: F.c1}; if (list.length) { this.apply(list); toast(Tf('s_filled', {n: list.length}), 'success'); } else this.render();
       });
@@ -190,6 +190,10 @@
       ['mousedown', 'keydown', 'scroll'].forEach(t => document.removeEventListener(t, this.pickOff, true));
     }
 
+    // readonly = kolom hanya-baca; lockSaved = kolom kunci (kode) yang hanya bisa diisi di baris BARU -- baris yang sudah
+    // tersimpan terkunci, karena kodenya sudah dirujuk data lain.
+    ro(c, row) { return !!c.readonly || (!!c.lockSaved && !!row && this.orig.has(String(row[this.cfg.rowKey]))); }
+
     firstEditable() { const i = this.cols.findIndex(c => !c.readonly); return i < 0 ? 0 : i; }
 
     num(c) {
@@ -240,7 +244,7 @@
     render() {
       const R = this.rng();
       this.table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
-        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${c.readonly ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !c.readonly ? `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${c.type === 'date' ? 'Pilih tanggal' : c.type === 'time' ? 'Pilih jam' : 'Kalkulator'} (Alt+Panah Bawah)"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : c.type === 'time' ? 'fa-regular fa-clock' : 'fa-solid fa-calculator'}"></i></button>` : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${this.ro(c, r) ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !this.ro(c, r) ? `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${c.type === 'date' ? 'Pilih tanggal' : c.type === 'time' ? 'Pilih jam' : 'Kalkulator'} (Alt+Panah Bawah)"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : c.type === 'time' ? 'fa-regular fa-clock' : 'fa-solid fa-calculator'}"></i></button>` : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
       const changed = this.changes(), info = $(this.el, '[data-s-info]'), sv = $(this.el, '[data-s-save]');
       sv.disabled = !changed.length;
       if (this.lookup) {
@@ -288,7 +292,7 @@
     move(dr, dc, extend) { if (extend && !this.anchor) this.anchor = {...this.cur}; if (!extend) this.anchor = null; this.cur = {r: Math.max(0, Math.min(this.data.length - 1, this.cur.r + dr)), c: Math.max(0, Math.min(this.cols.length - 1, this.cur.c + dc))}; this.render(); }
 
     startEdit(initial) {
-      const c = this.cols[this.cur.c]; if (c.readonly) return;
+      const c = this.cols[this.cur.c]; if (this.ro(c, this.data[this.cur.r])) return;
       if (c.type === 'check') { this.apply([{r: this.cur.r, k: c.key, v: !this.data[this.cur.r][c.key]}]); return; }
       const td = this.cellEl(this.cur.r, this.cur.c); if (!td) return;
       this.edit = {r: this.cur.r, c: this.cur.c};

@@ -6,6 +6,8 @@ namespace Devlib\Components;
 // Klik sel, panah/Tab pindah, ketik = edit, Enter/F2 edit, Esc batal, Shift/drag = rentang, Ctrl+C/Ctrl+V
 // dengan Excel, pegangan isi di pojok seleksi (salin / lanjutkan deret angka), Ctrl+Z / Ctrl+Y, Delete kosongkan.
 // columns: [['key','label','type' => text|number|money|select|date|time|check,'options','required','readonly','width']]
+// 'lockSaved' => true: kolom kunci (kode) hanya bisa diisi di baris BARU; di baris yang sudah tersimpan selnya terkunci
+//   (kode sudah dirujuk data lain -- baris cukup dinonaktifkan).
 // Kolom teks: badge aa/Aa/AA di sel yang diedit (seperti x-dl::field.text), diingat per kolom; 'case' => uppercase|capitalize = awal.
 // Kolom angka: 'decimals' => n = selalu tampil n digit (18.450,00). Edit seperti sel Excel: angka mentah (1250000,5), format saat keluar sel.
 // Kolom date: tampil dd-Mmm-yyyy, ketik 10-10-26 / 10 okt / 2026-10-10 (disimpan YYYY-MM-DD). time: ketik 8 / 830 / 8.30 -> 08:30.
