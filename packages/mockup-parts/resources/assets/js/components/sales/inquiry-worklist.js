@@ -1,7 +1,5 @@
 /* MockupParts · Sales · InquiryWorklist (turunan Grid DevLib: hanya method yang berbeda) */
 (window.DevlibReady ||= []).push(Devlib => {
-  const {esc} = Devlib.h;
-
   class InquiryWorklist extends Devlib.classes.Grid {
     init() {
       // data-open='{"NEW":"/s/x?id={id}", ...}' per jenis, atau {"*": ...} untuk semua (pemilih inquiry sumber).
@@ -21,23 +19,6 @@
         e.preventDefault();
         m.classList.add('is-on');
       });
-      if (this.open['*']) return;
-      document.addEventListener('click', e => {
-        const d = e.target.closest('[data-inq-dup]');
-        if (d) {
-          const r = this.rows.find(v => String(v.id) === d.dataset.inqDup);
-          const m = document.getElementById('dup-form');
-          if (!r || !m) return;
-          m.querySelector('[data-dup-source]').value = r.id;
-          m.querySelector('[data-dup-label]').textContent = `${r.inquiry_no || '(draft)'} — ${r.product_draft_name} · customer asal: ${r.customer}`;
-        }
-      });
-    }
-    // Sel aksi = baku Grid Transactional (Open); worklist utama menambah Duplicate ke customer lain.
-    actionsCell(r) {
-      const cell = super.actionsCell(r);
-      if (this.open['*']) return cell;
-      return cell.replace('</td>', `<button type="button" class="dl-iconbtn" data-inq-dup="${esc(r[this.cfg.rowKey])}" data-dl-open="dup-modal" title="Duplicate ke customer lain"><i class="fa-solid fa-copy"></i></button></td>`);
     }
   }
   Devlib.register(InquiryWorklist);

@@ -134,6 +134,7 @@
 </x-mp::sales.inquiry-form>
 
 @if ($doc)
+    @include('v2.screens._inquiry-duplicate', ['source' => $doc['id'], 'label' => ($doc['inquiry_no'] ?: '(draft)').' — '.$doc['product_draft_name'].' · '.$doc['customer']])
     {{-- Rakitan (docs/flow_product_master.md §3): di luar form part supaya alur isian part tidak berubah; tersimpan langsung. --}}
     @php
         $inqModel = \App\Models\Sdi\IqpInquiry::find($doc['id']);

@@ -1,9 +1,9 @@
 {{-- Inquiry Product (worklist). Alur & field: tmerp pages/inquiry/hub.blade.php. Keputusan user 2026-09-28:
-     wizard jenis -> sumber -> pilih inquiry, dan Duplicate per baris. Win/Lost ada di Quotation.
+     wizard jenis -> sumber -> pilih inquiry. Win/Lost ada di Quotation.
      User 2026-10-01: tampilan = Grid Transactional (sama dengan Quotation / Customer Order): + New Record di toolbar
-     membuka wizard; Continue Draft / Ready to Quote = kotak statistik Draft / Ready to Quote (klik = saring). --}}
+     membuka wizard; Continue Draft / Ready to Quote = kotak statistik Draft / Ready to Quote (klik = saring);
+     Duplicate = tombol di dalam form Inquiry (screens/_inquiry-duplicate), bukan ikon di baris grid. --}}
 @php
-    use App\Models\Master\CustCustomer;
     use App\Support\V2\Data\Sales;
     use App\Support\V2\Src;
     use MockupParts\Components\Sales\InquiryTypeCard;
@@ -24,8 +24,6 @@
     ];
     $picker = fn (string $type) => ['*' => route('v2.screen', 'inquiry-'.strtolower($type)).'?source_id={id}'];
     $saved = array_values(array_filter($rows, fn ($r) => $r['inquiry_no']));
-    $customers = CustCustomer::where('activate', true)->orderBy('customer_name')->get(['id_customer', 'customer_code', 'customer_name'])
-        ->mapWithKeys(fn ($c) => [$c->id_customer => $c->customer_name.' ('.$c->customer_code.')'])->all();
     $srcTitle = ['RECALC' => 'Hitung Ulang Harga', 'REVISE' => 'Ubah Spesifikasi'];
 @endphp
 
@@ -117,19 +115,3 @@
         </x-slot:footer>
     </x-dl::modal>
 @endforeach
-
-{{-- Duplicate: spec sama, customer lain -> NEW DRAFT baru (routes/v2.php v2.inquiry.duplicate). --}}
-<x-dl::modal id="dup-modal" title="Duplicate Inquiry" size="md" icon="copy">
-    <form method="POST" action="{{ route('v2.inquiry.duplicate') }}" id="dup-form" class="mp-dup">
-        @csrf
-        <input type="hidden" name="source_id" data-dup-source>
-        <p class="mp-dup__src" data-dup-label></p>
-        <x-dl::field.select name="customer_id" label="Customer tujuan" required :options="$customers" placeholder="Choose customer..."
-            :source="Src::of('tm2mst.cust_customer.customer_name')" />
-        <x-dl::alert tone="info" message="Spec (parts, material, process, finishing, ink) is copied as is. Qty & price are not: the new inquiry is born as a DRAFT New Product and goes through Pro-Dev → Pro-Cost again." />
-    </form>
-    <x-slot:footer>
-        <x-dl::button preset="cancel" data-dl-close-modal />
-        <x-dl::button icon="⧉" label="Duplicate" type="submit" form="dup-form" />
-    </x-slot:footer>
-</x-dl::modal>

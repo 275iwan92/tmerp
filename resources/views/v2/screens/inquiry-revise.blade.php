@@ -152,6 +152,7 @@
         @endforeach
 
         <x-dl::action-bar>
+            @if ($inq)<x-dl::button variant="secondary" icon="copy" label="Duplicate" type="button" data-dl-open="dup-modal" />@endif
             @if (! $locked)
                 @if ($inq)<x-dl::button preset="delete" type="submit" :formaction="route('v2.derived.delete', $inq->id_inquiry)" onclick="return confirm('Hapus draft {{ $inq->inquiry_no }}?')" formnovalidate />@endif
                 <x-dl::button preset="save" name="action" value="save" />
@@ -161,6 +162,10 @@
             @endif
         </x-dl::action-bar>
     </form>
+
+    @if ($inq)
+        @include('v2.screens._inquiry-duplicate', ['source' => $inq->id_inquiry, 'label' => $inq->inquiry_no.' — '.$doc['name'].' · '.$doc['customer']])
+    @endif
 
     @if ($locked && ! $inq->stat_cancel)
         <x-dl::card title="Continue to Product Development" description="After Confirm, send each part to ProDev; from there continue to ProCost.">

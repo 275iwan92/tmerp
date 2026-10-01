@@ -9,7 +9,11 @@
 - Kartu 3 tombol di atas grid dihapus: Create Inquiry -> **+ New Record** di toolbar (membuka wizard jenis yang sama);
   Continue Draft / Ready to Quote -> kotak statistik **Draft** / **Ready to Quote** (klik = saring; isi Draft = Not Confirm lama, 41 baris sama).
 - Kotak statistik: All, Draft, Ready to Quote, Processed by Pro-Dev, Processed by Pro-Cost (ukuran baku, CSS khusus dihapus).
-- Ikon baris = Open baku (bukan pensil/panah berbeda); DRAFT tetap terbuka untuk edit, status lain lihat-saja. Duplicate per baris tetap.
+- Ikon baris = Open baku (bukan pensil/panah berbeda); DRAFT tetap terbuka untuk edit, status lain lihat-saja.
+- **Duplicate pindah dari baris grid ke dalam form** (user setuju 2026-10-01): tombol Duplicate di toolbar form Inquiry New
+  (`InquiryForm`) dan di baris tombol form Recalc / Revise, muncul setelah dokumen tersimpan (semua status). Modal + rute sama
+  (`screens/_inquiry-duplicate`, `v2.inquiry.duplicate`). Catatan: 45 dummy RECALC/REVISE lama tidak punya Master Product sehingga
+  tidak membuka form (sudah begitu sebelumnya) -> Duplicate-nya tidak terjangkau sampai dummy itu diperbaiki.
 - Judul kolom English; Status jadi kolom terakhir. Tab jenis (New / Recalculate / Change Specification) tetap.
 - Alur, data, wizard, dan form Inquiry tidak diubah. Uji: render kernel mockup.test = 200; belum dicek mata di browser.
 

@@ -8,8 +8,8 @@ use Devlib\Components\Grid;
 // user 2026-10-01) + aturan khas (JS InquiryWorklist):
 //   - buka baris ke layar sesuai jenis dokumen (NEW / REVISE / RECALC = 3 layar terpisah, CLAUDE.md §4),
 //     alamatnya dari atribut data-open='{"NEW":"/s/inquiry-new?id={id}", ...}'; DRAFT = edit, status lain lihat-saja;
-//   - + New Record membuka wizard jenis inquiry (atribut data-new-modal), bukan pindah layar;
-//   - Duplicate ke customer lain per baris.
+//   - + New Record membuka wizard jenis inquiry (atribut data-new-modal), bukan pindah layar.
+// Baris hanya Open + Expand (baku); Duplicate ada di dalam form Inquiry.
 class InquiryWorklist extends Grid
 {
     public function tag(): string

@@ -3,6 +3,7 @@
 namespace MockupParts\Components\Sales;
 
 use Devlib\Components\DevlibComponent;
+use MockupParts\Src;
 
 // Bingkai dokumen Inquiry Product (tmerp pages/inquiry/form.blade.php — flow SAMA, hanya ditulis ulang sebagai objek):
 // bar judul (jenis + no + status + Back) -> catatan -> kartu toolbar (Simpan, Confirm, Batalkan, Tandai Kalah,
@@ -41,7 +42,7 @@ class InquiryForm extends DevlibComponent
 
     public function source(): string
     {
-        return \MockupParts\Src::of('tm2sdi.iqp_inquiry');
+        return Src::of('tm2sdi.iqp_inquiry');
     }
 
     public function roles(): array
@@ -77,6 +78,8 @@ class InquiryForm extends DevlibComponent
                         <x-dl::button variant="danger" icon="✖" label="Batalkan" data-dl-open="inq-cancel" data-inq-keep data-inq-when="cancel" :hidden="! ($d['stat_confirm'] && ! $d['stat_cancel'])" />
                         <x-dl::button variant="danger" icon="❌" label="Tandai Kalah" data-dl-open="inq-lost" data-inq-keep data-inq-when="lost"
                             :hidden="! ($d['stat_confirm'] && ! in_array($d['sub_state'], ['CANCELLED', 'CONVERTED', 'LOST'], true))" />
+                        {{-- Duplicate ke customer lain (user 2026-10-01: pindah dari baris grid); modal dup-modal dipasang layar. --}}
+                        <x-dl::button variant="secondary" icon="copy" label="Duplicate" type="button" data-dl-open="dup-modal" data-inq-keep data-inq-saved-only :hidden="! $d['id']" />
                         <span class="mp-grow"></span>
                         @foreach ($links as $label => $url)
                             <x-dl::button variant="secondary" size="sm" :label="$label" :href="$url" data-inq-keep data-inq-saved-only :hidden="! $d['id']" />
