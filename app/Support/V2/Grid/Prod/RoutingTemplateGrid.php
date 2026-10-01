@@ -46,7 +46,7 @@ class RoutingTemplateGrid extends ProdGrid
             ['key' => 'name', 'label' => 'Template', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'type', 'label' => 'Product Type'],
             ['key' => 'substrate', 'label' => 'Material'],
-            ['key' => 'default', 'label' => 'Default', 'type' => 'badge', 'tones' => ['Ya' => 'success']],
+            ['key' => 'default', 'label' => 'Default', 'type' => 'badge', 'tones' => [t('Yes') => 'success']],
             ['key' => 'steps', 'label' => 'Steps', 'type' => 'link', 'format' => 'number'],
         ];
     }
@@ -54,7 +54,7 @@ class RoutingTemplateGrid extends ProdGrid
     protected function row(Model $m): array
     {
         return ['photo' => null, 'name' => $m->template_name, 'code' => $m->template_code, 'type' => $m->prod_type_code,
-            'substrate' => $m->substrate_hint, 'default' => $m->is_default ? 'Ya' : null, 'steps' => (int) $m->steps_count];
+            'substrate' => $m->substrate_hint, 'default' => $m->is_default ? t('Yes') : null, 'steps' => (int) $m->steps_count];
     }
 
     public function filters(): array

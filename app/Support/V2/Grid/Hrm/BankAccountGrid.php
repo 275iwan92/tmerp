@@ -71,7 +71,7 @@ class BankAccountGrid extends HrmGrid
             ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
             ['key' => 'dept', 'label' => 'Department'],
             ['key' => 'position', 'label' => 'Position'],
-            ['key' => 'method', 'label' => 'Salary Method', 'type' => 'badge', 'tones' => ['Transfer' => 'info', 'Tunai' => 'warn']],
+            ['key' => 'method', 'label' => 'Salary Method', 'type' => 'badge', 'tones' => ['Transfer' => 'info', t('Cash') => 'warn']],
             ['key' => 'bank', 'label' => 'Bank'],
             ['key' => 'account', 'label' => 'Account No.'],
             ['key' => 'holder', 'label' => 'Account Holder'],
@@ -84,7 +84,7 @@ class BankAccountGrid extends HrmGrid
 
         return [
             'name' => $m->full_name, 'code' => $m->employee_code, 'dept' => $m->position?->department?->department_name,
-            'position' => $m->position?->position_name, 'method' => $b ? 'Transfer' : 'Tunai',
+            'position' => $m->position?->position_name, 'method' => $b ? 'Transfer' : t('Cash'),
             'bank' => $b?->bank?->supplier_name ?? $b?->bank_name, 'account' => $b?->account_no, 'holder' => $b?->account_holder_name,
         ];
     }
@@ -94,7 +94,7 @@ class BankAccountGrid extends HrmGrid
         return [
             ['label' => 'Active Employees'],
             ['label' => 'Transfer', 'where' => ['method' => 'Transfer'], 'tone' => 'info'],
-            ['label' => 'Cash', 'where' => ['method' => 'Tunai'], 'tone' => 'warn'],
+            ['label' => 'Cash', 'where' => ['method' => t('Cash')], 'tone' => 'warn'],
         ];
     }
 

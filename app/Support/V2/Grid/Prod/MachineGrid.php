@@ -46,7 +46,7 @@ class MachineGrid extends ProdGrid
             ['key' => 'name', 'label' => 'Machine', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'nickname', 'label' => 'Nickname'],
             ['key' => 'model', 'label' => 'Model (catalogue)'],
-            ['key' => 'role', 'label' => 'Role', 'type' => 'badge', 'tones' => ['Produksi' => 'info', 'Penunjang' => 'neutral']],
+            ['key' => 'role', 'label' => 'Role', 'type' => 'badge', 'tones' => [t('Production') => 'info', t('Supporting') => 'neutral']],
             ['key' => 'type', 'label' => 'Type'],
             ['key' => 'brand', 'label' => 'Brand / Model'],
             ['key' => 'sheet', 'label' => 'Max Sheet (mm)'],
@@ -59,7 +59,7 @@ class MachineGrid extends ProdGrid
     protected function row(Model $m): array
     {
         return [
-            'photo' => null, 'name' => $m->machine_name, 'code' => $m->machine_code, 'nickname' => $m->nickname, 'model' => $m->machineModel?->model_code, 'role' => $m->is_process_machine ? 'Produksi' : 'Penunjang', 'type' => $m->machine_type, 'brand' => $m->brand_model,
+            'photo' => null, 'name' => $m->machine_name, 'code' => $m->machine_code, 'nickname' => $m->nickname, 'model' => $m->machineModel?->model_code, 'role' => t($m->is_process_machine ? 'Production' : 'Supporting'), 'type' => $m->machine_type, 'brand' => $m->brand_model,
             'sheet' => $m->max_sheet_length_mm ? (int) $m->max_sheet_length_mm.' x '.(int) $m->max_sheet_width_mm : null,
             'speed' => $m->max_speed_per_hour ? (float) $m->max_speed_per_hour : null, 'year' => $m->year_acquired,
             'processes' => (int) $m->processes_count,
@@ -72,7 +72,7 @@ class MachineGrid extends ProdGrid
             ['label' => 'All'],
             ['label' => 'Active', 'where' => ['active' => true], 'tone' => 'success'],
             ['label' => 'No spec yet', 'where' => ['sheet' => null], 'tone' => 'warn'],
-            ['label' => 'Supporting (non-production)', 'where' => ['role' => 'Penunjang'], 'tone' => 'neutral'],
+            ['label' => 'Supporting (non-production)', 'where' => ['role' => t('Supporting')], 'tone' => 'neutral'],
             ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'danger'],
         ];
     }

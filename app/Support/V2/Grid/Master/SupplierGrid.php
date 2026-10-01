@@ -63,8 +63,8 @@ class SupplierGrid extends MasterDataGrid
             ['key' => 'category', 'label' => 'Category'],
             ['key' => 'contact', 'label' => 'Contact Person'],
             ['key' => 'term', 'label' => 'Payment Term'],
-            ['key' => 'subcon', 'label' => 'Subcontractor', 'type' => 'badge', 'tones' => ['Ya' => 'info']],
-            ['key' => 'blacklist', 'label' => 'Blacklist', 'type' => 'badge', 'tones' => ['Ya' => 'danger']],
+            ['key' => 'subcon', 'label' => 'Subcontractor', 'type' => 'badge', 'tones' => [t('Yes') => 'info']],
+            ['key' => 'blacklist', 'label' => 'Blacklist', 'type' => 'badge', 'tones' => [t('Yes') => 'danger']],
             ['key' => 'orders', 'label' => 'Purchase Orders', 'type' => 'link', 'format' => 'number'],
         ];
     }
@@ -73,8 +73,8 @@ class SupplierGrid extends MasterDataGrid
     {
         return [
             'photo' => null, 'name' => $m->supplier_name, 'code' => $m->supplier_code, 'category' => $m->category,
-            'contact' => $m->contact_name, 'term' => $m->paymentTerm?->term_label, 'subcon' => $m->is_subcon ? 'Ya' : null,
-            'blacklist' => $m->is_blacklisted ? 'Ya' : null, 'orders' => (int) ($this->orders[$m->getKey()] ?? 0),
+            'contact' => $m->contact_name, 'term' => $m->paymentTerm?->term_label, 'subcon' => $m->is_subcon ? t('Yes') : null,
+            'blacklist' => $m->is_blacklisted ? t('Yes') : null, 'orders' => (int) ($this->orders[$m->getKey()] ?? 0),
         ];
     }
 

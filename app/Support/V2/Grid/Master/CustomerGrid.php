@@ -61,7 +61,7 @@ class CustomerGrid extends MasterDataGrid
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Customer', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'group', 'label' => 'Group'],
-            ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['Lokal' => 'info', 'Import' => 'accent', 'Prospek' => 'warn']],
+            ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => [t('Local') => 'info', 'Import' => 'accent', t('Prospect') => 'warn']],
             ['key' => 'industry', 'label' => 'Industry'],
             ['key' => 'credit', 'label' => 'Credit Limit', 'type' => 'money'],
             ['key' => 'term', 'label' => 'Payment Term'],
@@ -74,7 +74,7 @@ class CustomerGrid extends MasterDataGrid
     {
         return [
             'photo' => null, 'name' => $m->customer_name, 'code' => $m->customer_code, 'group' => $m->parent_group,
-            'type' => $m->is_prospect ? 'Prospek' : ($m->customer_type === 'import' ? 'Import' : 'Lokal'),
+            'type' => $m->is_prospect ? t('Prospect') : ($m->customer_type === 'import' ? 'Import' : t('Local')),
             'industry' => $m->industry_category, 'credit' => (float) $m->credit_limit, 'term' => $m->paymentTerm?->term_label,
             'approval' => $m->is_blacklisted ? 'BLOCKED' : ($m->approval_status ?? 'DRAFT'), 'orders' => (int) ($this->orders[$m->getKey()] ?? 0),
         ];

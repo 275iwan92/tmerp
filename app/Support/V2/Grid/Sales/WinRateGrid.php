@@ -57,7 +57,7 @@ class WinRateGrid extends DbGrid
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'product', 'label' => 'Product'],
             ['key' => 'pic', 'label' => 'Sales PIC'],
-            ['key' => 'result', 'label' => 'Result', 'type' => 'badge', 'tones' => ['Menang' => 'success', 'Kalah' => 'danger']],
+            ['key' => 'result', 'label' => 'Result', 'type' => 'badge', 'tones' => [t('Won') => 'success', t('Lost') => 'danger']],
             ['key' => 'reason', 'label' => 'Lost Reason'],
         ];
     }
@@ -65,7 +65,7 @@ class WinRateGrid extends DbGrid
     protected function row(Model $m): array
     {
         return ['no' => $m->inquiry_no, 'date' => $m->inquiry_date?->toDateString(), 'product' => $m->product_draft_name,
-            'pic' => $m->pic_sales ?: '(tanpa PIC)', 'result' => $m->sub_state === 'CONVERTED' ? 'Menang' : 'Kalah',
+            'pic' => $m->pic_sales ?: t('(no PIC)'), 'result' => t($m->sub_state === 'CONVERTED' ? 'Won' : 'Lost'),
             'reason' => $m->sub_state === 'LOST' ? $m->cancel_reason : null];
     }
 

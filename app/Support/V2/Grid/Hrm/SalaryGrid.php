@@ -72,9 +72,9 @@ class SalaryGrid extends HrmGrid
             ['key' => 'basic', 'label' => 'Base Salary/Month', 'type' => 'money'],
             ['key' => 'skill', 'label' => 'Skill Allowance/Month', 'type' => 'money'],
             ['key' => 'ptkp', 'label' => 'PTKP'],
-            ['key' => 'bpjs', 'label' => 'BPJS', 'type' => 'badge', 'tones' => ['Aktif' => 'success', 'Tidak' => 'neutral']],
-            ['key' => 'pph21', 'label' => 'PPh21', 'type' => 'badge', 'tones' => ['Aktif' => 'success', 'Tidak' => 'neutral']],
-            ['key' => 'set', 'label' => 'Salary Setup', 'type' => 'badge', 'tones' => ['Sudah' => 'success', 'Belum diatur' => 'warn']],
+            ['key' => 'bpjs', 'label' => 'BPJS', 'type' => 'badge', 'tones' => [t('Active') => 'success', t('No') => 'neutral']],
+            ['key' => 'pph21', 'label' => 'PPh21', 'type' => 'badge', 'tones' => [t('Active') => 'success', t('No') => 'neutral']],
+            ['key' => 'set', 'label' => 'Salary Setup', 'type' => 'badge', 'tones' => [t('Set') => 'success', t('Not set') => 'warn']],
         ];
     }
 
@@ -85,8 +85,8 @@ class SalaryGrid extends HrmGrid
         return [
             'name' => $m->full_name, 'code' => $m->employee_code,
             'basic' => $s ? (float) $s->basic_salary_monthly : null, 'skill' => $s ? (float) $s->tj_keahlian_monthly : null,
-            'ptkp' => $s?->ptkp_status, 'bpjs' => $s?->bpjs_active ? 'Aktif' : 'Tidak', 'pph21' => $s?->pph21_active ? 'Aktif' : 'Tidak',
-            'set' => $s ? 'Sudah' : 'Belum diatur',
+            'ptkp' => $s?->ptkp_status, 'bpjs' => t($s?->bpjs_active ? 'Active' : 'No'), 'pph21' => t($s?->pph21_active ? 'Active' : 'No'),
+            'set' => t($s ? 'Set' : 'Not set'),
         ];
     }
 
@@ -94,9 +94,9 @@ class SalaryGrid extends HrmGrid
     {
         return [
             ['label' => 'Active Employees'],
-            ['label' => 'Not set', 'where' => ['set' => 'Belum diatur'], 'tone' => 'warn'],
-            ['label' => 'BPJS active', 'where' => ['bpjs' => 'Aktif'], 'tone' => 'info'],
-            ['label' => 'PPh21 active', 'where' => ['pph21' => 'Aktif'], 'tone' => 'success'],
+            ['label' => 'Not set', 'where' => ['set' => t('Not set')], 'tone' => 'warn'],
+            ['label' => 'BPJS active', 'where' => ['bpjs' => t('Active')], 'tone' => 'info'],
+            ['label' => 'PPh21 active', 'where' => ['pph21' => t('Active')], 'tone' => 'success'],
         ];
     }
 

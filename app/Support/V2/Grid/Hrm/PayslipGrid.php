@@ -79,9 +79,9 @@ class PayslipGrid extends HrmGrid
             ['key' => 'period', 'label' => 'Period'],
             ['key' => 'dept', 'label' => 'Department'],
             ['key' => 'net', 'label' => 'Net Salary', 'type' => 'money'],
-            ['key' => 'printed', 'label' => 'Printout', 'type' => 'badge', 'tones' => ['Sudah' => 'success', 'Belum' => 'neutral']],
-            ['key' => 'wa', 'label' => 'Send WhatsApp', 'type' => 'badge', 'tones' => ['Terkirim' => 'success', 'Belum' => 'neutral']],
-            ['key' => 'anomaly', 'label' => 'Anomaly', 'type' => 'badge', 'tones' => ['Ada' => 'danger']],
+            ['key' => 'printed', 'label' => 'Printout', 'type' => 'badge', 'tones' => [t('Printed') => 'success', t('Not printed') => 'neutral']],
+            ['key' => 'wa', 'label' => 'Send WhatsApp', 'type' => 'badge', 'tones' => [t('Sent') => 'success', t('Not sent') => 'neutral']],
+            ['key' => 'anomaly', 'label' => 'Anomaly', 'type' => 'badge', 'tones' => [t('Yes') => 'danger']],
         ];
     }
 
@@ -93,8 +93,8 @@ class PayslipGrid extends HrmGrid
         return [
             'period' => $run ? $run->period_type.' '.substr((string) $run->period_start, 0, 10).' s/d '.substr((string) $run->period_end, 0, 10) : null,
             'name' => $e?->full_name, 'code' => $e?->employee_code, 'dept' => $e?->position?->department?->department_name,
-            'net' => (float) $m->total_gaji_bersih, 'printed' => $m->print_flag ? 'Sudah' : 'Belum', 'wa' => $m->wa_flag ? 'Terkirim' : 'Belum',
-            'anomaly' => $m->has_anomaly ? 'Ada' : null,
+            'net' => (float) $m->total_gaji_bersih, 'printed' => t($m->print_flag ? 'Printed' : 'Not printed'), 'wa' => t($m->wa_flag ? 'Sent' : 'Not sent'),
+            'anomaly' => $m->has_anomaly ? t('Yes') : null,
         ];
     }
 
@@ -102,9 +102,9 @@ class PayslipGrid extends HrmGrid
     {
         return [
             ['label' => 'All slips'],
-            ['label' => 'Not printed', 'where' => ['printed' => 'Belum'], 'tone' => 'warn'],
-            ['label' => 'WhatsApp not sent', 'where' => ['wa' => 'Belum'], 'tone' => 'info'],
-            ['label' => 'Anomaly', 'where' => ['anomaly' => 'Ada'], 'tone' => 'danger'],
+            ['label' => 'Not printed', 'where' => ['printed' => t('Not printed')], 'tone' => 'warn'],
+            ['label' => 'WhatsApp not sent', 'where' => ['wa' => t('Not sent')], 'tone' => 'info'],
+            ['label' => 'Anomaly', 'where' => ['anomaly' => t('Yes')], 'tone' => 'danger'],
         ];
     }
 

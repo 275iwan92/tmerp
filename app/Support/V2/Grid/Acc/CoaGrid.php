@@ -64,7 +64,7 @@ class CoaGrid extends DbGrid
             ['key' => 'normal', 'label' => 'Normal Balance'],
             ['key' => 'level', 'label' => 'Level', 'type' => 'number'],
             ['key' => 'parent', 'label' => 'Parent'],
-            ['key' => 'postable', 'label' => 'Postable', 'type' => 'badge', 'tones' => ['Ya' => 'success', 'Header' => 'neutral']],
+            ['key' => 'postable', 'label' => 'Postable', 'type' => 'badge', 'tones' => [t('Yes') => 'success', 'Header' => 'neutral']],
             ['key' => 'cc', 'label' => 'Default Cost Center'],
         ];
     }
@@ -73,7 +73,7 @@ class CoaGrid extends DbGrid
     {
         return ['photo' => null, 'name' => $m->account_name, 'code' => $m->account_code, 'type' => $m->account_type,
             'normal' => $m->normal_balance, 'level' => (int) $m->tree_level, 'parent' => $m->parent?->account_name,
-            'postable' => $m->is_postable ? 'Ya' : 'Header', 'cc' => $m->default_cc_code];
+            'postable' => $m->is_postable ? t('Yes') : 'Header', 'cc' => $m->default_cc_code];
     }
 
     public function filters(): array

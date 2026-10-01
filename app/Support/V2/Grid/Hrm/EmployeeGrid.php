@@ -69,8 +69,8 @@ class EmployeeGrid extends HrmGrid
             ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'position', 'label' => 'Position'],
             ['key' => 'dept', 'label' => 'Department'],
-            ['key' => 'work_status', 'label' => 'Work Status', 'type' => 'badge', 'tones' => ['Bekerja' => 'success', 'Dirumahkan' => 'warn', 'Cuti' => 'info']],
-            ['key' => 'pay', 'label' => 'Salary', 'type' => 'badge', 'tones' => ['Mingguan' => 'warn', 'Bulanan' => 'info']],
+            ['key' => 'work_status', 'label' => 'Work Status', 'type' => 'badge', 'tones' => [t('Working') => 'success', t('Furloughed') => 'warn', t('On Leave') => 'info']],
+            ['key' => 'pay', 'label' => 'Pay Frequency', 'type' => 'badge', 'tones' => [t('Weekly') => 'warn', t('Monthly') => 'info']],
             ['key' => 'join_date', 'label' => 'Join Date', 'type' => 'date'],
             ['key' => 'attendance_ytd', 'label' => 'Attendance this year (days)', 'type' => 'link', 'format' => 'number'],
             ['key' => 'nik', 'label' => 'NIK KTP', 'visible' => false],
@@ -86,8 +86,8 @@ class EmployeeGrid extends HrmGrid
             'code' => $m->employee_code,
             'position' => $m->position?->position_name,
             'dept' => $m->position?->department?->department_name,
-            'work_status' => ['WORKING' => 'Bekerja', 'DIRUMAHKAN' => 'Dirumahkan', 'CUTI' => 'Cuti'][$m->work_status] ?? $m->work_status,
-            'pay' => ['WEEKLY' => 'Mingguan', 'MONTHLY' => 'Bulanan'][$m->payment_frequency] ?? $m->payment_frequency,
+            'work_status' => ['WORKING' => t('Working'), 'DIRUMAHKAN' => t('Furloughed'), 'CUTI' => t('On Leave')][$m->work_status] ?? $m->work_status,
+            'pay' => ['WEEKLY' => t('Weekly'), 'MONTHLY' => t('Monthly')][$m->payment_frequency] ?? $m->payment_frequency,
             'join_date' => $m->join_date?->toDateString(),
             'attendance_ytd' => (int) ($this->attendance[$m->getKey()] ?? 0),
             'nik' => $m->nik_ktp,
@@ -100,8 +100,8 @@ class EmployeeGrid extends HrmGrid
         return [
             ['label' => 'All'],
             ['label' => 'Active', 'where' => ['active' => true], 'tone' => 'success'],
-            ['label' => 'Weekly', 'where' => ['active' => true, 'pay' => 'Mingguan'], 'tone' => 'warn'],
-            ['label' => 'Monthly', 'where' => ['active' => true, 'pay' => 'Bulanan'], 'tone' => 'info'],
+            ['label' => 'Weekly', 'where' => ['active' => true, 'pay' => t('Weekly')], 'tone' => 'warn'],
+            ['label' => 'Monthly', 'where' => ['active' => true, 'pay' => t('Monthly')], 'tone' => 'info'],
             ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'danger'],
         ];
     }

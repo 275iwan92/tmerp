@@ -58,9 +58,9 @@ class GpsApprovalGrid extends HrmGrid
             ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'time', 'label' => 'Time'],
-            ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['Masuk' => 'info', 'Pulang' => 'neutral']],
+            ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => [t('Clock In') => 'info', t('Clock Out') => 'neutral']],
             ['key' => 'distance', 'label' => 'Distance (m)', 'type' => 'number'],
-            ['key' => 'geofence', 'label' => 'Radius', 'type' => 'badge', 'tones' => ['Di luar radius' => 'danger', 'Dalam radius' => 'success']],
+            ['key' => 'geofence', 'label' => 'Radius', 'type' => 'badge', 'tones' => [t('Outside radius') => 'danger', t('Inside radius') => 'success']],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::REQUEST_TONES],
         ];
     }
@@ -72,8 +72,8 @@ class GpsApprovalGrid extends HrmGrid
         return [
             'name' => $m->employee?->full_name, 'code' => $m->employee?->employee_code,
             'date' => $at?->toDateString(), 'time' => $at?->format('H:i'),
-            'type' => $m->clock_type === 'IN' ? 'Masuk' : 'Pulang', 'distance' => (float) $m->distance_meters,
-            'geofence' => $m->geofence_status === 'OUT_OF_RADIUS' ? 'Di luar radius' : 'Dalam radius', 'status' => $m->hr_approval_status,
+            'type' => t($m->clock_type === 'IN' ? 'Clock In' : 'Clock Out'), 'distance' => (float) $m->distance_meters,
+            'geofence' => t($m->geofence_status === 'OUT_OF_RADIUS' ? 'Outside radius' : 'Inside radius'), 'status' => $m->hr_approval_status,
         ];
     }
 
