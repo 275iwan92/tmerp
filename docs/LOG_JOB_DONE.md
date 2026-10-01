@@ -37,6 +37,14 @@
   tersentuh (0 baris `PRE*`). Belum dicek mata di browser.
 - Belum: layar input master Pro-Cost (rate coating / sheet / grammage, ukuran plano, tipe produk) memang belum ada layarnya,
   jadi belum bisa diberi menu; Nota Inquiry tetap lewat tombol Print di form.
+- **Lanjutan (user OK 2026-10-02, "boleh banget"):** migration `2026_10_02_000005`, `000006_menu_as_data_flow_rows_drop_shortcut`,
+  dan `000008` dijalankan di **tm2sys** (228 -> 248 baris; salinan sebelum migrasi disimpan sebagai JSON di scratchpad sesi).
+  tmerp.test (menu v1) sekarang punya modul **Inquiry & Quotation** di depan Sales; Sales tinggal Sales Order + Delivery + Flow.
+  Karena menu live masih v1, pintasan master dan halaman khusus v2 (ACC Digital, Flow, Guide) diberi alamat di `MenuRoutes`
+  supaya bukan link mati. `SalesMenuNoReportGroupTest` disesuaikan (Win-Rate Sales kini anak modul PREORDER).
+  Uji: 3 test menu lulus (19 test), halaman baru 200 lewat kernel tmerp.test. Belum dicek mata di browser.
+  Beda live vs dummy yang tersisa (migrasinya belum diminta): label masih "Lookup Product Market" (`000007`), belum ada
+  Master Card Collection dan grup Report Quotation, `SALES_COST` di tm2sys tanpa izin `COSTING` di baris menunya.
 
 ## 2026-10-01 -- Dummy Inquiry DRAFT dibangun ulang (untuk mencoba dieline & mockup)
 

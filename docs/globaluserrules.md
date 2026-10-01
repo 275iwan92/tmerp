@@ -223,7 +223,7 @@
 | 2026-10-01 | C.18–C.20: Layer Menu baru (nama aplikasi, baris ikon, mini, tanpa garis/breadcrumb); layar selebar panel kanan tepi 6px; setiap item menu wajib berikon. |
 | 2026-10-02 | A.15: scope modul — Inquiry & Quotation jadi menu besar `PREORDER` (saklar sendiri), pintasan master, kontrak A/B (ddt; tm2 menunggu OK). |
 | 2026-10-02 | A.15: menu = data (cara ScriptCase) — pintasan = baris ber-target sama, hidup-mati layar dihitung dari pohon menu, grup Flow jadi baris menu. |
-| 2026-10-02 | A.15: semua menu terkait Inquiry -> Quotation tersedia di dalam menu `PREORDER` (ACC Digital, Pro-Cost Instant, pintasan master Proses / Mesin / Kategori Bahan / Satuan / Currency / Kurs / Constants, Sales Flow) — ddt; tm2 menunggu OK. |
+| 2026-10-02 | A.15: semua menu terkait Inquiry -> Quotation tersedia di dalam menu `PREORDER` (ACC Digital, Pro-Cost Instant, pintasan master Proses / Mesin / Kategori Bahan / Satuan / Currency / Kurs / Constants, Sales Flow) — ddt + tm2 (menu `PREORDER` dimigrasi ke `tm2sys` atas OK user). |
 | 2026-10-02 | C.21: bar alur order di atas layar ditiadakan (7 layar v2); alur ditulis di Help. |
 | 2026-10-02 | C.22: kotak statistik di atas grid diganti satu baris filter teks dengan garis bawah berjalan & berwarna (semua grid DevLib). |
 | 2026-10-01 | C.23: panel dieline — tombol Standard Sizes dihapus (dropdown saja), 3D di samping gambar & bisa diputar, Dimensions 2 baris berkelompok di bawah gambar. |

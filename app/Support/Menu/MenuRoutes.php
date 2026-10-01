@@ -36,6 +36,19 @@ final class MenuRoutes
             // Menu PREORDER (Inquiry & Quotation): layar v1 yang sama dibuka juga dari modul ini (migration
             // 2026_10_02_000008). Pro-Cost Instant = Mode #2 standalone, di v1 hanya lewat link di grid Pro-Cost.
             'PRE_COST_INSTANT' => route('inquiry.costing.instant.list'),
+            // Pintasan master: dipakai selama baris asalnya belum ber-target v2 (tm2sys); di ddtsys target v2 yang menang.
+            'PRE_MD_CUST' => route('master.customer'),
+            'PRE_MD_PROD' => route('master.produk'),
+            'PRE_MD_RAW' => route('master.raw-material.list'),
+            'PRE_MD_MATCAT' => route('master.mat-category'),
+            'PRE_MD_PROCESS' => route('production.master-process'),
+            'PRE_MD_MACHINE' => route('master.machine'),
+            // Halaman yang hanya ada di v2: menu v1 (top bar) membukanya apa adanya supaya barisnya bukan link mati.
+            'PRE_PROD_ACC' => route('v2.screen', 'product-acc'),
+            'PRE_F_SALES' => route('v2.flow', 'SALES'),
+            'F-SALES' => route('v2.flow', 'SALES'),
+            'F-COSTING' => route('v2.flow', 'COSTING'),
+            'G-PRODUCT' => route('v2.guide', 'product-master'),
             'PRE_MD_UOM' => route('master.uom'),
             'PRE_MD_CURRENCY' => route('master.currency'),
             'PRE_MD_EXCHRATE' => route('master.exchange-rate'),
