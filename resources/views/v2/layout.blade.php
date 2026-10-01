@@ -11,7 +11,7 @@
     <script src="{{ \Devlib\DevlibServiceProvider::asset('devlib.js') }}" defer></script>
     <script src="{{ \MockupParts\MockupPartsServiceProvider::asset('mockup-parts.js') }}" defer></script>
 </head>
-<body class="dl-body {{ $bodyClass ?? '' }}" @if ($dev ?? false) data-dl-dev="1" @endif>
+<body class="dl-body dl-page-wide {{ $bodyClass ?? '' }}" @if ($dev ?? false) data-dl-dev="1" @endif>
     @yield('body')
 </body>
 </html>

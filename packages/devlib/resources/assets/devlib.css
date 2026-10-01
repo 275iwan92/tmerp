@@ -758,6 +758,8 @@ body.dl-page-body{overflow:auto;height:auto;min-height:100vh}
 .dl-table__empty{text-align:center;color:var(--dl-muted);padding:20px!important}
 /* halaman kategori DevLib: breadcrumb + daftar komponen */
 .dl-cat{max-width:1100px;margin:0 auto;padding:18px 24px 60px;font-family:var(--dl-font)}
+/* Layar aplikasi (body.dl-page-wide): isi selebar panel, tepi kiri-kanan hanya 6px (~1,5 mm). Katalog DevLib tetap 1100px. */
+body.dl-page-wide .dl-cat{max-width:none;padding-left:6px;padding-right:6px}
 .dl-cat__nav{position:sticky;top:0;z-index:50;background:var(--dl-bg);padding:10px 0;border-bottom:1px solid var(--dl-border);margin-bottom:14px}
 .dl-cat__chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .dl-cat__item{scroll-margin-top:110px;margin-bottom:26px}
