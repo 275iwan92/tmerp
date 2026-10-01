@@ -3,6 +3,32 @@
 
 ---
 
+## 2026-10-02 -- Cetakan dokumen A5 landscape / A4 portrait dipasang ke aplikasi (objek DevLib)
+
+- Perintah user: semua entry transaksional punya cetakan A5 landscape (1-5 baris) / A4 portrait (lebih dari 5); polanya dipasang
+  di DevLib supaya dokumen tinggal diturunkan (rulebook C.24). Format = yang ditinjau user di `docs/mockups/print_doc/`.
+- **DevLib**: `Devlib\PrintDoc\Document` (kelas induk: tata letak, aturan kertas, lembar, total, terbilang sampai sen, urutan
+  tanda tangan, kaki "Dicetak pada ... oleh ..."), `Devlib\PrintDoc\Labels` (istilah cetak Indonesia), komponen `x-dl::print-doc`
+  (+ CSS `.dl-pdoc*`, `print-doc.js` auto-fit), `x-dl::doc-share` mode lembar (PDF / printer berukuran kertas, QR di dalam lembar).
+  Demo: devlib.test > Documents > Print Document (A5 / A4).
+- **Aplikasi**: `App\Support\V2\Print\*` satu kelas per dokumen (membaca database) + `PrintDocs` (daftar jenis, kop, penanda
+  tangan); rute `v2.print` + `resources/views/v2/print-doc.blade.php`. 15 dokumen: Inquiry, Quotation, Customer Order (dengan /
+  tanpa harga), CPDEL, Delivery Order, Surat Jalan, Bukti Terima, PR, Purchase Quotation, PO, SPB, Material Booking,
+  Maintenance Request, Maintenance WO, Bukti Kas Kecil. Tombol Print di tiap form membuka halaman ini (menggantikan cetak
+  tampilan form dan tautan nota v1).
+- Penanda tangan: Pembuat = user yang login; Menyetujui = penyetuju sebenarnya dari approval sistem, kalau tidak ada =
+  konstanta `SIGN_<DOK>_APPROVER`; Mengetahui = `SIGN_<DOK>_ACKNOWLEDGER` (migration `2026_10_02_000030`, kategori PRINT,
+  diubah di Setup > Constants; PO diisi Hendra / Wiwik).
+- **Baru di ddt**: migration konstanta + alamat perusahaan `ddtmst.org_company` (Pondok Blimbing Indah Blok A5 No. 5, Malang
+  65126; Telp 62-341-471268). `tm2*` belum disentuh, menunggu OK user.
+- Uji: 14 dari 15 jenis dirender dari data dummy lewat kernel HTTP (200) dan dipotret (`docs/mockups/print_doc/app/`); mode
+  lembar doc-share diuji di Chrome headless (gambar 2382x1677, PDF 210x148 mm); `PrintDocDocumentTest` + ratchet lolos.
+  Purchase Quotation dan Bukti Kas Kecil belum punya data dummy, jadi belum pernah dirender dengan data. Print / PDF / Email
+  sungguhan di browser belum dicoba.
+- Belum: kolom Type di Customer Order dan Berat / Ikat / Kendaraan / Pengemudi di Surat Jalan belum punya sumber data
+  (tercetak kosong); Jadwal Kirim belum punya layar / tabel; halaman cetak SPB lama (`v2.pv.print*`) masih ada tetapi tidak
+  ditautkan lagi; pilihan penanda tangan dari Master Pegawai (sekarang teks bebas di Constants).
+
 ## 2026-10-01 -- Menu ACC Digital / Proof Digital dihapus
 
 - Perintah user: "dengan begitu menu acc digital bisa di hapus ... cukup dari print out saja".
