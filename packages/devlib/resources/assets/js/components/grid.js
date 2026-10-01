@@ -110,7 +110,7 @@
       fetch(this.cfg.toggleUrl.replace('{id}', encodeURIComponent(id)), {method: 'POST', credentials: 'same-origin', headers: {'X-CSRF-TOKEN': this.cfg.csrf || '', 'Accept': 'application/json'}})
         .then(res => res.ok ? res.json() : Promise.reject(res))
         .then(j => { r[this.cfg.activeKey] = !!j.active; toast((j.active ? 'Diaktifkan: ' : 'Dinonaktifkan: ') + (r.name || id), 'success'); this.redraw(); })
-        .catch(() => toast('Gagal menyimpan status aktif.', 'danger'));
+        .catch(() => toast(T('g_toggle_failed'), 'danger'));
     }
 
     _emit(name, detail) {
@@ -247,7 +247,7 @@
         case 'money': case 'number': return `<td class="num">${esc(this.fmtCell(c, v))}</td>`;
         case 'date': return `<td class="dl-grid__date">${esc(this.fmtCell(c, v))}</td>`;
         // Nilai dari transaksi (Grid Master, user 2026-09-30): hanya-baca, klik = buka transaksi baris ini (url {id}).
-        case 'link': { const u = c.url ? c.url.replace('{id}', encodeURIComponent(r[this.cfg.rowKey])) : '#'; return `<td class="num"><a class="dl-grid__link" href="${esc(u)}" data-g-link="${esc(c.key)}" title="Buka transaksi">${esc(this.fmtCell(c, v))} <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>`; }
+        case 'link': { const u = c.url ? c.url.replace('{id}', encodeURIComponent(r[this.cfg.rowKey])) : '#'; return `<td class="num"><a class="dl-grid__link" href="${esc(u)}" data-g-link="${esc(c.key)}" title="${esc(T('g_open_tx'))}">${esc(this.fmtCell(c, v))} <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>`; }
         case 'image': return `<td class="dl-grid__imgcell">${v ? `<button type="button" class="dl-grid__thumb" data-g-img="${esc(v)}" title="Perbesar"><img src="${esc(v)}" alt="" loading="lazy"></button>` : (c.fallback ? `<span class="dl-grid__noimg dl-grid__noimg--ini">${esc(String(this.val(r, c.fallback) || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase())}</span>` : '<span class="dl-grid__noimg"><i class="fa-regular fa-image"></i></span>')}</td>`;
         case 'progress': { const n = Math.max(0, Math.min(100, +v || 0)), t = n >= 100 ? 'success' : n >= 60 ? 'accent' : n >= 30 ? 'warn' : 'danger'; return `<td><span class="dl-grid__prog dl-chart--${t}"><span style="width:${n}%"></span></span><small class="dl-grid__progv">${n}%</small></td>`; }
         case 'steps': { const at = (c.steps || []).indexOf(v); return `<td><span class="dl-grid__steps" title="${esc(v)}">${(c.steps || []).map((s2, i) => `<i class="${i < at ? 'is-done' : i === at ? 'is-now' : ''}" title="${esc(s2)}"></i>`).join('')}</span><small class="dl-grid__stepv">${esc(v)}</small></td>`; }
@@ -275,7 +275,7 @@
         + (this.chk ? `<td class="dl-grid__chk"><input type="checkbox" ${this.sel.has(id) ? 'checked' : ''} aria-label="${esc(T('g_select_row'))}"></td>` : '')
         + (this.hasExp ? `<td class="dl-grid__exp"><button type="button" class="dl-grid__chev ${open ? 'is-open' : ''}" data-g-exp aria-label="${esc(T('g_open_detail'))}"><i class="fa-solid fa-chevron-right"></i></button></td>` : '')
         + this.shown().map(c => this.cell(c, r)).join('') + (this.actLast() ? this.actionsCell(r) : '') + '</tr>';
-      if (open && this.cfg.detail) { const D = this.cfg.detail, kids = r[D.key] || []; h += `<tr class="dl-grid__detail"><td colspan="${span}"><div class="dl-grid__nest"><b>${esc(String(D.title || 'Detail').replace(/\{(\w+)\}/g, (m, k) => r[k] ?? ''))}</b><table><thead><tr>${D.columns.map(c => `<th class="${['number', 'money'].includes(c.type) ? 'num' : ''}">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${kids.map(k => `<tr>${D.columns.map(c => `<td class="${['number', 'money'].includes(c.type) ? 'num' : ''}">${c.strong ? '<b>' : ''}${esc(this.fmtCell(c, k[c.key] ?? ''))}${c.strong ? '</b>' : ''}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${D.columns.length}">Tidak ada detail</td></tr>`}</tbody></table></div></td></tr>`; }
+      if (open && this.cfg.detail) { const D = this.cfg.detail, kids = r[D.key] || []; h += `<tr class="dl-grid__detail"><td colspan="${span}"><div class="dl-grid__nest"><b>${esc(String(D.title || 'Detail').replace(/\{(\w+)\}/g, (m, k) => r[k] ?? ''))}</b><table><thead><tr>${D.columns.map(c => `<th class="${['number', 'money'].includes(c.type) ? 'num' : ''}">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${kids.map(k => `<tr>${D.columns.map(c => `<td class="${['number', 'money'].includes(c.type) ? 'num' : ''}">${c.strong ? '<b>' : ''}${esc(this.fmtCell(c, k[c.key] ?? ''))}${c.strong ? '</b>' : ''}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${D.columns.length}">${esc(T('g_no_detail'))}</td></tr>`}</tbody></table></div></td></tr>`; }
       else if (open) h += `<tr class="dl-grid__detail"><td colspan="${span}"><div class="dl-grid__detailbox">${this.cfg.expand.map(k => { const c = this.cols.find(x => x.key === k) || {key: k, label: k}; return `<div><small>${esc(c.label)}</small><b>${esc(this.fmtCell(c, this.val(r, k)) || '—')}</b></div>`; }).join('')}</div></td></tr>`;
       return h;
     }
@@ -293,7 +293,7 @@
         page.forEach((r, i) => { const g = String(this.val(r, this.st.group)) || T('g_empty_group'); if (!buckets.has(g)) buckets.set(g, []); buckets.get(g).push([r, i]); });
         buckets.forEach((items, g) => {
           const shut = this.st.collapsed.includes(g);
-          html += `<tr class="dl-grid__group"><td colspan="${span}"><button type="button" data-g-grp="${esc(g)}"><i class="fa-solid fa-chevron-${shut ? 'right' : 'down'}"></i> ${esc(gcol ? gcol.label : this.st.group)}: <b>${esc(g)}</b> <span>${items.length} baris</span>${sums.map(c => ` · ${esc(c.label)} <b>${esc(this.fmtCell(c, items.reduce((t, [r]) => t + (+this.val(r, c.key) || 0), 0)))}</b>`).join('')}</button></td></tr>`;
+          html += `<tr class="dl-grid__group"><td colspan="${span}"><button type="button" data-g-grp="${esc(g)}"><i class="fa-solid fa-chevron-${shut ? 'right' : 'down'}"></i> ${esc(gcol ? gcol.label : this.st.group)}: <b>${esc(g)}</b> <span>${esc(Tf('g_n_rows', {n: items.length}))}</span>${sums.map(c => ` · ${esc(c.label)} <b>${esc(this.fmtCell(c, items.reduce((t, [r]) => t + (+this.val(r, c.key) || 0), 0)))}</b>`).join('')}</button></td></tr>`;
           if (!shut) items.forEach(([r, i]) => { html += this.rowHtml(r, i); });
         });
       } else page.forEach((r, i) => { html += this.rowHtml(r, i); });
@@ -353,7 +353,7 @@
       if (!first || !first.value.trim()) { first && first.focus(); toast(Tf('g_required_x', {x: this.cols.find(c => c.key === this.cfg.quickAdd[0])?.label || T('g_first_field')}), 'warn'); return; }
       const r = {[this.cfg.rowKey]: 'n' + Date.now()}; if (this.cfg.activeKey) r[this.cfg.activeKey] = true;
       inputs.forEach(i => { const c = this.cols.find(x => x.key === i.dataset.gQa) || {}; r[i.dataset.gQa] = ['number', 'money'].includes(c.type) ? parseNum(i.value) || 0 : i.value.trim(); });
-      this.rows.unshift(r); this.redraw(); this._emit('dl:grid-add', {row: r}); toast('Baris ditambahkan.', 'success'); const f = this.q('[data-g-qa]'); if (f) f.focus();
+      this.rows.unshift(r); this.redraw(); this._emit('dl:grid-add', {row: r}); toast(T('g_row_added'), 'success'); const f = this.q('[data-g-qa]'); if (f) f.focus();
     }
 
     exportCsv() {

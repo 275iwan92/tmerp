@@ -92,7 +92,7 @@
         if (e.target.closest('[data-s-add]')) { this.data.push(this.blank()); this.cur = {r: this.data.length - 1, c: this.firstEditable()}; this.anchor = null; this.render(); this.wrap.focus(); return; }
         if (e.target.closest('[data-s-revert]')) {
           if (!this.changes().length) return;
-          confirmBox({message: 'Buang semua perubahan yang belum disimpan?', tone: 'danger'}).then(ok => { if (!ok) return; this.data = this.data.filter(r => this.orig.has(String(r[this.cfg.rowKey]))).map(r => ({...this.orig.get(String(r[this.cfg.rowKey]))})); this.cur = {r: 0, c: this.firstEditable()}; this.anchor = null; this.undo.length = 0; this.redo.length = 0; this.render(); });
+          confirmBox({message: T('f_discard_all'), tone: 'danger'}).then(ok => { if (!ok) return; this.data = this.data.filter(r => this.orig.has(String(r[this.cfg.rowKey]))).map(r => ({...this.orig.get(String(r[this.cfg.rowKey]))})); this.cur = {r: 0, c: this.firstEditable()}; this.anchor = null; this.undo.length = 0; this.redo.length = 0; this.render(); });
           return;
         }
         if (e.target.closest('[data-s-del]')) { const R = this.rng(), n = R.r1 - R.r0 + 1; confirmBox({message: Tf('s_delete_n', {n}), tone: 'danger'}).then(ok => { if (!ok) return; this.data.splice(R.r0, n); this.cur = {r: Math.max(0, Math.min(R.r0, this.data.length - 1)), c: this.cur.c}; this.anchor = null; this.undo.length = 0; this.render(); }); return; }
@@ -162,7 +162,7 @@
         const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
         const view = /^\d{4}-\d{2}-\d{2}$/.test(cur || '') ? new Date(cur + 'T00:00') : new Date(); view.setDate(1);
         p.className = 'dl-pick__panel is-open dl-sheet__calpanel';
-        p.innerHTML = '<div class="dl-pick__nav"><button type="button" data-p>&lt;</button><span data-t></span><button type="button" data-n>&gt;</button></div><div class="dl-cal dl-cal--names"><div>Mg</div><div>Sn</div><div>Sl</div><div>Rb</div><div>Km</div><div>Jm</div><div>Sb</div></div><div class="dl-cal" data-d></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-h>Hari ini</button></div>';
+        p.innerHTML = '<div class="dl-pick__nav"><button type="button" data-p>&lt;</button><span data-t></span><button type="button" data-n>&gt;</button></div><div class="dl-cal dl-cal--names">' + (String(NUM.intl).startsWith('id') ? ['Mg', 'Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb'] : Array.from({length: 7}, (_, i) => new Date(2000, 0, 2 + i).toLocaleString(NUM.intl, {weekday: 'short'}).replace('.', '').slice(0, 2))).map(d => '<div>' + d + '</div>').join('') + '</div><div class="dl-cal" data-d></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-h>' + esc(T('today')) + '</button></div>';
         const draw = () => {
           $(p, '[data-t]').textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
           let h = '<div></div>'.repeat(view.getDay()), n = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
@@ -244,7 +244,7 @@
     render() {
       const R = this.rng();
       this.table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
-        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${this.ro(c, r) ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !this.ro(c, r) ? `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${c.type === 'date' ? 'Pilih tanggal' : c.type === 'time' ? 'Pilih jam' : 'Kalkulator'} (Alt+Panah Bawah)"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : c.type === 'time' ? 'fa-regular fa-clock' : 'fa-solid fa-calculator'}"></i></button>` : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${this.ro(c, r) ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !this.ro(c, r) ? `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${esc(T(c.type === 'date' ? 's_tip_date' : c.type === 'time' ? 's_tip_time' : 's_tip_calc'))}"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : c.type === 'time' ? 'fa-regular fa-clock' : 'fa-solid fa-calculator'}"></i></button>` : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
       const changed = this.changes(), info = $(this.el, '[data-s-info]'), sv = $(this.el, '[data-s-save]');
       sv.disabled = !changed.length;
       if (this.lookup) {
@@ -260,7 +260,7 @@
 
     // Simpan ke database: server memvalidasi & menulis, lalu mengirim isi terbaru (baris baru mendapat id asli).
     saveServer(changed) {
-      if (!changed.length) return toast('Tidak ada perubahan.');
+      if (!changed.length) return toast(T('s_no_changes'));
       fetch(this.cfg.saveUrl, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': this.cfg.csrf || ''},
         body: JSON.stringify({changed})})
         .then(res => res.json().then(j => ({ok: res.ok, j})))

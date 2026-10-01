@@ -20,7 +20,7 @@
         if (this.el.getAttribute('action')) return;
         e.preventDefault();
         const data = {}; new FormData(this.el).forEach((v, k) => { if (k !== '_token') data[k] = v; });
-        toast('Aksi: ' + (this.el.querySelector('[data-dl-split-value]')?.value || 'Save') + ' (pratinjau, tidak dikirim)', 'success');
+        toast(Tf('f_action_preview', {a: this.el.querySelector('[data-dl-split-value]')?.value || 'Save'}), 'success');
         this.el.dispatchEvent(new CustomEvent('dl:form-submit', {bubbles: true, detail: data}));
         if (this.viewMode) { this.snapshot = null; this.setView(true); }
         const layer = this.el.closest('[data-dl-modal-id],[data-dl-drawer-id]'); if (layer) closeLayer(layer);
@@ -55,8 +55,8 @@
 
     // Undo = buang perubahan yang belum disimpan, kembali ke isi saat form dibuka (tanpa kirim ke server).
     undo() {
-      if (!this.el.classList.contains('is-dirty')) return toast('Tidak ada perubahan untuk di-Undo.');
-      confirmBox({message: 'Buang semua perubahan yang belum disimpan?', tone: 'warn'}).then(ok => {
+      if (!this.el.classList.contains('is-dirty')) return toast(T('f_nothing_undo'));
+      confirmBox({message: T('f_discard_all'), tone: 'warn'}).then(ok => {
         if (!ok) return;
         fillForm(this.el, this.saved, false);
         $$(this.el, '.dl-field.is-invalid').forEach(f => f.classList.remove('is-invalid')); $$(this.el, '.dl-tabs__err').forEach(x => x.remove());
@@ -67,8 +67,8 @@
     // Tombol panel (selain Save = submit biasa). Ada action -> kirim ulang form dgn _action=<act>; tanpa action = pratinjau DevLib.
     act(a) {
       // [pesan, nada, alasan wajib?] -- Cancel, Reject, Back to Draft wajib alasan (tercatat di History).
-      const ask = {delete: ['Hapus data ini? Tidak bisa dikembalikan.', 'danger'], confirm: ['Confirm dokumen ini? Setelah confirm isi terkunci dan masuk approval (bila ada).', 'warn'], cancel: ['Batalkan dokumen ini?', 'danger', true], draft: ['Kembalikan dokumen ini ke Draft? Isinya bisa diubah lagi dan harus di-Confirm ulang.', 'warn', true],
-        approve: ['Setujui dokumen ini di tingkat approval Anda? Keputusan ini final, tidak bisa dibatalkan.', 'success'], reject: ['Tolak dokumen ini? Keputusan ini final, tidak bisa dibatalkan (Rejected); pembuat bisa membuat ulang lewat Duplicate.', 'danger', true], hold: ['Tahan (Hold) dokumen ini? Status sementara: nanti tetap diputuskan Approve atau Reject.', 'warn', true], deactivate: ['Nonaktifkan data ini? Data tidak muncul lagi di pilihan.', 'warn'], activate: ['Aktifkan kembali data ini?', 'warn']}[a];
+      const ask = {delete: [T('f_ask_delete'), 'danger'], confirm: [T('f_ask_confirm'), 'warn'], cancel: [T('f_ask_cancel'), 'danger', true], draft: [T('f_ask_draft'), 'warn', true],
+        approve: [T('f_ask_approve'), 'success'], reject: [T('f_ask_reject'), 'danger', true], hold: [T('f_ask_hold'), 'warn', true], deactivate: [T('f_ask_deactivate'), 'warn'], activate: [T('f_ask_activate'), 'warn']}[a];
       const go = why => {
         this.el.dispatchEvent(new CustomEvent('dl:form-action', {bubbles: true, detail: {action: a}}));
         // Print/Email tidak mengubah dokumen -> tidak kirim form (layar menangkap dl:form-action, mis. buka x-dl::doc-share).
