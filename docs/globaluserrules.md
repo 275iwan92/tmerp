@@ -198,8 +198,9 @@
     konstanta per dokumen yang mudah diubah** — **disetujui user 2026-10-01 ("taruh di constant")**: `sys_constant`
     kategori Print-out, grup Signer, kunci `SIGN_<DOKUMEN>_APPROVER` / `SIGN_<DOKUMEN>_ACKNOWLEDGER`, diubah di Settings →
     Constants; kosong = garis untuk tanda tangan tangan. Belum dibangun (dibangun saat cetakan dipasang ke aplikasi).
-    **Format cetak Surat Jalan, Customer Order (dengan harga + tanpa harga), dan Purchase Requisition (Produksi + Non
-    Produksi) = A (Approved) oleh user 2026-10-01** — tidak diubah lagi kecuali user sendiri yang meminta.
+    **Format cetak Surat Jalan, Customer Order (dengan harga + tanpa harga), Purchase Requisition (Produksi + Non
+    Produksi), Purchase Order, dan Inquiry = A (Approved) oleh user 2026-10-01** — tidak diubah lagi kecuali user sendiri
+    yang meminta. Belum A: Jadwal Kirim.
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.
@@ -257,6 +258,7 @@
 | 2026-10-01 | C.24: cetakan tanpa "Jumlah baris"; kaki dokumen = "Dicetak pada tanggal jam oleh nama orang" saja (tanpa nama aplikasi, login, nomor dokumen, ukuran kertas). Surat Jalan dan dokumen lain tanpa nilai uang: tanpa total. Surat Jalan + kolom Berat (kg) dan Ikat. Customer Order 2 format cetak: dengan harga / tanpa harga. |
 | 2026-10-01 | C.24: urutan tanda tangan semua cetakan = pihak luar, Menyetujui, Mengetahui, Pembuat (kiri ke kanan, ketentuan tetap); Pembuat = user yang login; penanda tangan lain = konstanta per dokumen (skema menunggu OK). Kop Telasih Makmur = alamat Langgeng Jaya Makmur, tanpa NPWP. PR Produksi (No CO + nama product) / Non Produksi. |
 | 2026-10-01 | **C.24: format cetak Surat Jalan dan Customer Order (dengan harga + tanpa harga) = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. |
+| 2026-10-01 | **C.24: format cetak Purchase Order dan Inquiry = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. Belum A: Jadwal Kirim. |
 | 2026-10-01 | **C.24: format cetak Purchase Requisition (Produksi + Non Produksi) = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. |
 | 2026-10-01 | B.14: master hanya diubah user; sistem hanya mengubah transaksi; default boleh diperbarui analisa sistem dan tetap bisa di-override. |
 | 2026-10-01 | Material Planning (Booking + MRP + MPS) dibangun di ddt: keputusan B1-B9 di `docs/materialbooking_tier1.md` §6-§7. |

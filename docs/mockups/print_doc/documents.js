@@ -54,6 +54,7 @@ PrintDoc.register(class CustomerOrderNoPrice extends PrintDoc.registry.CustomerO
 
 // Acuan kertas: docs/attachments/purchase order.jpg
 PrintDoc.register(class PurchaseOrder extends PrintDoc {
+    static approved = '2026-10-01';
     static title = 'PURCHASE ORDER';
     static subtitle = 'Surat Pesanan';
     static numberLabel = 'No PO';
@@ -91,6 +92,7 @@ PrintDoc.register(class JadwalKirim extends PrintDoc {
 });
 
 PrintDoc.register(class Inquiry extends PrintDoc {
+    static approved = '2026-10-01';
     static title = 'INQUIRY';
     static subtitle = 'Permintaan Produk &middot; Internal';
     static numberLabel = 'No Inquiry';
