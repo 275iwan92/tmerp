@@ -228,6 +228,7 @@
     Print / Email terpisah di atas layar. Form lain yang punya lebih dari satu dokumen cetak memakai pola yang sama
     (objek DevLib `x-dl::menu-button`).
     Belum ada di panel ProDev karena alurnya belum tersedia: Undo, Delete, Cancel, Back to Draft, New, tab History.
+    **Menu "ACC Digital / Proof Digital" ditiadakan** (user 2026-10-01): dokumen itu cukup dibuka dari Print / Email di form ProDev.
 
 ## D. Cara kerja developer / agen
 
@@ -295,3 +296,4 @@
 | 2026-10-01 | **A.18: pilihan Canvas limit** di ProDev v2 (Custom ikut dieline = bawaan, Press bed, Die-cut bed, Press + Die-cut); aturan 16-Sep jadi salah satu pilihan, bukan otomatis. Mockup: `docs/mockups/prodev_canvas_limit.jpg`. |
 | 2026-10-01 | C.26: Ink Configuration ProDev v2 — 4 slot warna khusus (Unit 5-8) diisi officer langsung, tersimpan saat Save All. |
 | 2026-10-01 | C.27: panel atas ProDev v2 disamakan dengan panel form standar; Print ▾ dan Email ▾ masing-masing berisi Master Card + ACC Digital (objek baru `x-dl::menu-button`). |
+| 2026-10-01 | C.27: menu ACC Digital / Proof Digital dihapus (cukup dari Print / Email di form ProDev); layarnya tetap ada. ddt sudah, tm2 menunggu OK. |

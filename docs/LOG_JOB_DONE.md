@@ -3,6 +3,17 @@
 
 ---
 
+## 2026-10-01 -- Menu ACC Digital / Proof Digital dihapus
+
+- Perintah user: "dengan begitu menu acc digital bisa di hapus ... cukup dari print out saja".
+- Migration `2026_10_02_000013_menu_drop_acc_digital` menghapus baris `PRE_PROD_ACC` (Pro-Dev > ACC Digital / Proof Digital);
+  pemetaan `MenuRoutes` untuk kode itu dilepas. Layar `product-acc` tetap ada dan tetap terbuka tanpa baris menu
+  (`AppMenu::open`), dibuka dari Print / Email > ACC Digital di form ProDev dan dari kartu ACC di bawah form.
+- **Baru dijalankan di ddt** (mockup.test); `tm2sys` masih punya barisnya (id 1096), menunggu OK user.
+- Akibat: daftar product + status ACC ("No Digital ACC yet") yang tampil saat menu itu dibuka tanpa product tidak lagi punya pintu
+  dari menu.
+- Uji: baris 0 di ddtsys, `/v2/s/product-acc?id=...` (juga dengan `ds_do=email`) HTTP 200, V2ShellTest lolos.
+
 ## 2026-10-01 -- ProDev v2: panel atas = panel form standar, Print / Email berpilihan
 
 - Perintah user: panel atas disamakan dengan panel form standar; Print jadi satu tombol dengan 2 pilihan (Master Card, ACC Digital),
