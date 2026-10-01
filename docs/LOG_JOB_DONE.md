@@ -19,8 +19,9 @@
 - Penanda tangan: Pembuat = user yang login; Menyetujui = penyetuju sebenarnya dari approval sistem, kalau tidak ada =
   konstanta `SIGN_<DOK>_APPROVER`; Mengetahui = `SIGN_<DOK>_ACKNOWLEDGER` (migration `2026_10_02_000030`, kategori PRINT,
   diubah di Setup > Constants; PO diisi Hendra / Wiwik).
-- **Baru di ddt**: migration konstanta + alamat perusahaan `ddtmst.org_company` (Pondok Blimbing Indah Blok A5 No. 5, Malang
-  65126; Telp 62-341-471268). `tm2*` belum disentuh, menunggu OK user.
+- Migration konstanta dijalankan di ddt DAN tm2 (30 baris, terverifikasi). Alamat perusahaan baru diisi di `ddtmst.org_company` (Pondok Blimbing Indah Blok A5 No. 5, Malang
+  65126; Telp 62-341-471268); `tm2mst.org_company` (data real) belum diisi. Di tm2 skema Setting Approval v2 belum ada, jadi
+  penyetuju dari approval sistem tidak terbaca di sana dan cetakan memakai konstanta.
 - Uji: 13 dari 15 jenis dirender dari data dummy lewat kernel HTTP (200) dan dipotret (`docs/mockups/print_doc/app/`); mode
   lembar doc-share diuji di Chrome headless (gambar 2382x1677, PDF 210x148 mm); `PrintDocDocumentTest` + ratchet lolos.
   Purchase Quotation dan Bukti Kas Kecil belum punya data dummy, jadi belum pernah dirender dengan data. Print / PDF / Email

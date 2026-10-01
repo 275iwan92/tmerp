@@ -8,6 +8,7 @@ use App\Models\Sys\SysConstant;
 use App\Support\Branding\Brand;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use Devlib\PrintDoc\Document;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 
 // Daftar cetakan dokumen transaksi v2 (user 2026-10-01: semua entry transaksional punya cetakan A5 landscape / A4 portrait).
@@ -108,9 +109,15 @@ final class PrintDocs
     }
 
     // Bila dokumen disetujui lewat sistem: nama penyetuju terakhir yang sebenarnya (mengalahkan konstanta) + "Level n / N".
+    // tmerp.test (tm2mst) belum punya skema Setting Approval v2 (flow_config_step.activate, migrasi fitur lain yang masih
+    // pending di sana): cetakan tetap jalan, penanda tangan jatuh ke konstanta.
     public static function approval(string $module, int $docId, float $amount): array
     {
-        $state = self::approvalState($module, $docId, $amount);
+        try {
+            $state = self::approvalState($module, $docId, $amount);
+        } catch (QueryException) {
+            return ['by' => null, 'level' => null];
+        }
         $done = collect($state['steps'])->where('status', 'done');
 
         return ['by' => self::person($done->last()['by'] ?? null),
