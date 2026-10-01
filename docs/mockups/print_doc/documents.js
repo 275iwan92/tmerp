@@ -3,6 +3,7 @@
 
 // Acuan kertas: docs/attachments/surat jalan.jpg
 PrintDoc.register(class SuratJalan extends PrintDoc {
+    static approved = '2026-10-01';
     static title = 'SURAT JALAN';
     static numberLabel = 'No Surat Jalan';
     static qrHint = 'dokumen online<br>&amp; bukti terima';
@@ -23,6 +24,7 @@ PrintDoc.register(class SuratJalan extends PrintDoc {
 
 // Acuan kertas: docs/attachments/customer order 1.jpg
 PrintDoc.register(class CustomerOrder extends PrintDoc {
+    static approved = '2026-10-01';     // kedua format (dengan harga dan tanpa harga)
     static title = 'CUSTOMER ORDER';
     static subtitle = 'Sales Order';
     static numberLabel = 'No CO';

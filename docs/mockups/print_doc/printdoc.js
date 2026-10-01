@@ -53,6 +53,7 @@ class PrintDoc {
     static priced = false;              // true = kolom harga + kotak total rupiah + terbilang
     static receivers = [];              // tanda tangan pihak luar / penerima, paling kiri: [peran, keterangan]
     static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat    static qrHint = 'dokumen online';
+    static approved = null;             // tanggal user menandai format ini A (Approved): tidak diubah lagi kecuali user minta
 
     constructor(data) {
         this.d = data;

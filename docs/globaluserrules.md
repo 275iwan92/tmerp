@@ -194,6 +194,10 @@
     **Urutan tanda tangan semua cetakan — KETENTUAN TETAP user 2026-10-01, jangan dibalik lagi:** dari paling kiri ke
     kanan = **pihak luar** (supplier / customer / penerima / pengemudi), lalu **Menyetujui** (orang terakhir, paling kiri
     di antara orang dalam), **Mengetahui**, dan **Pembuat** di paling kanan. Contoh PO: Supplier, Hendra, Wiwik, Eka.
+    **Pembuat = selalu user yang login** (nama orangnya). **Penanda tangan lain (Menyetujui, Mengetahui) = setting
+    konstanta per dokumen yang mudah diubah** (skema diusulkan, menunggu OK user; belum dibangun).
+    **Format cetak Surat Jalan dan Customer Order (dengan harga + tanpa harga) = A (Approved) oleh user 2026-10-01** —
+    tidak diubah lagi kecuali user sendiri yang meminta.
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.
@@ -247,6 +251,8 @@
 | 2026-10-02 | C.3: grid Inquiry Product = `x-dl::grid` biasa (komponen turunan InquiryWorklist dibuang); alamat buka per baris (`open-url="{open_url}"`) dan `new-modal` jadi fitur Grid DevLib. |
 | 2026-10-01 | C.24: cetakan dokumen A5 landscape (1-5 baris) / A4 portrait (lebih dari 5 baris), satu generator, posisi sama, huruf mudah dibaca; mockup di `docs/mockups/print_doc/`. |
 | 2026-10-01 | C.24: cetakan tanpa "Jumlah baris"; kaki dokumen = "Dicetak pada tanggal jam oleh nama orang" saja (tanpa nama aplikasi, login, nomor dokumen, ukuran kertas). Surat Jalan dan dokumen lain tanpa nilai uang: tanpa total. Surat Jalan + kolom Berat (kg) dan Ikat. Customer Order 2 format cetak: dengan harga / tanpa harga. |
+| 2026-10-01 | C.24: urutan tanda tangan semua cetakan = pihak luar, Menyetujui, Mengetahui, Pembuat (kiri ke kanan, ketentuan tetap); Pembuat = user yang login; penanda tangan lain = konstanta per dokumen (skema menunggu OK). Kop Telasih Makmur = alamat Langgeng Jaya Makmur, tanpa NPWP. PR Produksi (No CO + nama product) / Non Produksi. |
+| 2026-10-01 | **C.24: format cetak Surat Jalan dan Customer Order (dengan harga + tanpa harga) = A (Approved) oleh user** — tidak diubah lagi kecuali user meminta. |
 | 2026-10-01 | B.14: master hanya diubah user; sistem hanya mengubah transaksi; default boleh diperbarui analisa sistem dan tetap bisa di-override. |
 | 2026-10-01 | Material Planning (Booking + MRP + MPS) dibangun di ddt: keputusan B1-B9 di `docs/materialbooking_tier1.md` §6-§7. |
 | 2026-10-01 | **A.17: ProDev berhak mengubah dieline & mockup part** — tab Part & Dieline di form ProDev v2 (dimensi, Flat Size, artwork luar/dalam), simpan dua arah `iqp_part` + `prod_part`, peringatan dampak (layout Confirmed / costing published / product aktif). |
