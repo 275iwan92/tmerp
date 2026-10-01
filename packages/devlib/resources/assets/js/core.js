@@ -73,7 +73,7 @@ window.Devlib = window.Devlib || {};
     let ov = document.querySelector('.dl-qr');
     if (!ov) {
       ov = document.createElement('div'); ov.className = 'dl-mov dl-qr';
-      ov.innerHTML = '<div class="dl-modal" style="max-width:300px"><div class="dl-modal__head"><h3>Form QR Code Data</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div><div class="dl-modal__body" style="display:flex;justify-content:center"><div data-qr></div></div><div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-x>Tutup</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-qr-dl>Download PNG</button></div></div>';
+      ov.innerHTML = '<div class="dl-modal" style="max-width:300px"><div class="dl-modal__head"><h3>Form QR Code Data</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div><div class="dl-modal__body" style="display:flex;justify-content:center"><div data-qr></div></div><div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-x>' + esc(T('close')) + '</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-qr-dl>Download PNG</button></div></div>';
       document.body.appendChild(ov);
       ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-x]')) ov.classList.remove('is-on'); });
       ov.querySelector('[data-dl-qr-dl]').addEventListener('click', () => { const img = ov.querySelector('[data-qr] img, [data-qr] canvas'); if (!img) return; const a = document.createElement('a'); a.href = img.src || img.toDataURL(); a.download = 'form-qrcode.png'; a.click(); });
@@ -290,8 +290,8 @@ window.Devlib = window.Devlib || {};
     if (on) {
       const all = $$(document, 'button,a,input,select,textarea,table');
       const lib = all.filter(el => el.closest('[data-dl]')).length;
-      box.querySelector('[data-dev-pct]').textContent = `${all.length ? Math.round(lib * 100 / all.length) : 100}% objek dari library`;
-      box.querySelector('[data-dev-body]').innerHTML = '<span class="k">Arahkan mouse ke objek…</span>';
+      box.querySelector('[data-dev-pct]').textContent = Tf('dev_pct', {n: all.length ? Math.round(lib * 100 / all.length) : 100});
+      box.querySelector('[data-dev-body]').innerHTML = '<span class="k">' + esc(T('dev_hover')) + '</span>';
     } else if (hit) { hit.classList.remove('dl-dev-hit'); hit = null; }
     // Frame tab ikut diberi tahu supaya isinya juga menampilkan inspektur.
     document.querySelectorAll('iframe').forEach(f => { try { f.contentWindow.postMessage({dlDev: on}, '*'); } catch (e) {} });
@@ -312,7 +312,7 @@ window.Devlib = window.Devlib || {};
       if (el) {
         body.innerHTML = `<b>${esc(el.dataset.dl)}</b><br><span class="k">turunan:</span> ${esc(el.dataset.dlClass || '—')}<br><span class="k">sumber data:</span> ${esc(el.dataset.dlSrc || '—')}`;
       } else if (e.target.classList && e.target.classList.contains('dl-nolib')) {
-        body.innerHTML = '<b>BUKAN dari library</b><br><span class="k">elemen:</span> &lt;' + esc(e.target.tagName.toLowerCase()) + '&gt;';
+        body.innerHTML = '<b>' + esc(T('dev_not_lib')) + '</b><br><span class="k">' + esc(T('dev_element')) + ':</span> &lt;' + esc(e.target.tagName.toLowerCase()) + '&gt;';
       }
       if (el !== hit) { hit?.classList.remove('dl-dev-hit'); hit = el; hit?.classList.add('dl-dev-hit'); }
     });
@@ -377,7 +377,7 @@ window.Devlib = window.Devlib || {};
       ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="alertdialog" aria-modal="true"><div class="dl-confirm__body"><span class="dl-confirm__icon dl-confirm__icon--${tone}"><i class="fa-solid ${icon}"></i></span><div><h3>${esc(title)}</h3><p>${esc(message)}</p>${reason ? '<label class="dl-confirm__why"><span>Alasan <b class="dl-field__req">*</b></span><textarea rows="2" data-why></textarea><em data-why-err></em></label>' : ''}</div></div>`
         + `<div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--secondary dl-btn--md" data-no>${esc(cancelLabel)}</button><button type="button" class="dl-btn dl-btn--${tone === 'danger' ? 'danger' : 'primary'} dl-btn--md" data-yes>${esc(ok)}</button></div></div>`;
       const done = v => { ov.remove(); document.removeEventListener('keydown', key); resolve(v); };
-      const yes = () => { if (!reason) return done(true); const w = $(ov, '[data-why]').value.trim(); if (!w) { $(ov, '[data-why-err]').textContent = 'Alasan wajib diisi.'; return $(ov, '[data-why]').focus(); } done(w); };
+      const yes = () => { if (!reason) return done(true); const w = $(ov, '[data-why]').value.trim(); if (!w) { $(ov, '[data-why-err]').textContent = T('reason_required'); return $(ov, '[data-why]').focus(); } done(w); };
       const key = e => { if (e.key === 'Escape') done(false); else if (e.key === 'Enter' && !(reason && e.target.matches('textarea') && e.shiftKey)) { if (!reason || !e.target.matches('textarea')) { e.preventDefault(); yes(); } } };
       ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-no]')) done(false); else if (e.target.closest('[data-yes]')) yes(); });
       document.addEventListener('keydown', key);
@@ -513,10 +513,10 @@ window.Devlib = window.Devlib || {};
   // Pintasan keyboard: tombol ber-data-dl-key (preset Simpan = Ctrl+S, Baru = Alt+N), '?' = daftar pintasan.
   const keyName = e => [e.ctrlKey || e.metaKey ? 'ctrl' : '', e.altKey ? 'alt' : '', e.shiftKey ? 'shift' : '', e.key.toLowerCase()].filter(Boolean).join('+');
   const visible = el => el.offsetParent !== null && !el.disabled;
-  const BUILTIN = [['ctrl+k', 'Cari menu / perintah'], ['esc', 'Tutup modal / drawer / popup'], ['f1', 'Bantuan & dukungan (pedoman + tiket)'], ['f10', 'Mode Developer nyala / mati (admin)'], ['?', 'Tampilkan daftar pintasan ini']];
+  const BUILTIN = [['ctrl+k', 'sc_search'], ['esc', 'sc_esc'], ['f1', 'sc_help'], ['f10', 'sc_dev'], ['?', 'sc_list']];
   function showShortcuts() {
     const own = $$(document, '[data-dl-key]').filter(visible).map(b => [b.dataset.dlKey, b.textContent.trim() || b.title]);
-    const rows = [...new Map([...own, ...BUILTIN].map(r => [r[0], r])).values()];
+    const rows = [...new Map([...own, ...BUILTIN.map(([k, d]) => [k, T(d)])].map(r => [r[0], r])).values()];
     const ov = document.createElement('div'); ov.className = 'dl-mov is-on';
     ov.innerHTML = `<div class="dl-modal dl-modal--sm"><div class="dl-modal__head"><h3><i class="fa-solid fa-keyboard"></i> ${esc(T('shortcuts'))}</h3><button type="button" class="dl-modal__x">&times;</button></div><div class="dl-modal__body"><table class="dl-keys">${rows.map(([k, d]) => `<tr><td>${k.split('+').map(p => `<kbd>${esc(p === 'ctrl' ? 'Ctrl' : p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1))}</kbd>`).join(' + ')}</td><td>${esc(d)}</td></tr>`).join('')}</table></div></div>`;
     ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('.dl-modal__x')) ov.remove(); });
@@ -647,7 +647,7 @@ window.Devlib = window.Devlib || {};
     if (q('[data-dl-date]')) return q('[data-dl-date-text]').value;
     if (q('[data-dl-phonebox]')) return q('[data-dl-phone]').value ? q('[data-dl-prefix-b]').textContent + ' ' + q('[data-dl-phone]').value : '';
     if (q('[data-dl-toggle]')) return q('[data-dl-toggle-label]').textContent;
-    if (q('[data-dl-sign]')) return q('[data-dl-value]').value ? '✓ Sudah ditandatangani' : '';
+    if (q('[data-dl-sign]')) return q('[data-dl-value]').value ? '✓ ' + T('sg_signed') : '';
     const radio = q('input[type=radio]:checked'); if (radio) return radio.closest('label').textContent.trim();
     const checks = $$(f, 'input[type=checkbox]:checked'); if (checks.length) return checks.map(c => c.closest('label')?.textContent.trim() || '✓').join(', ');
     const i = q('input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea, select');

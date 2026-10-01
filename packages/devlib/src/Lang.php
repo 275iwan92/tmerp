@@ -339,6 +339,17 @@ final class Lang
         'ph_too_short' => ['Terlalu pendek: minimal {n} digit setelah {dial}', 'Too short: at least {n} digits after {dial}'],
         'pv_source_rows' => ['{n} baris sumber', '{n} source rows'],
         'sl_days' => ['{n} hari', '{n} days'],
+        // Teks JS inti (mode developer, pintasan, alasan), dipindah 2026-10-02.
+        'dev_pct' => ['{n}% objek dari library', '{n}% of the objects come from the library'],
+        'dev_hover' => ['Arahkan mouse ke objek…', 'Point the mouse at an object…'],
+        'dev_not_lib' => ['BUKAN dari library', 'NOT from the library'],
+        'dev_element' => ['elemen', 'element'],
+        'reason_required' => ['Alasan wajib diisi.', 'A reason is required.'],
+        'sc_search' => ['Cari menu / perintah', 'Search a menu / command'],
+        'sc_esc' => ['Tutup modal / drawer / popup', 'Close the modal / drawer / popup'],
+        'sc_help' => ['Bantuan & dukungan (pedoman + tiket)', 'Help & support (guide + tickets)'],
+        'sc_dev' => ['Mode Developer nyala / mati (admin)', 'Developer Mode on / off (admin)'],
+        'sc_list' => ['Tampilkan daftar pintasan ini', 'Show this list of shortcuts'],
         'print_unsaved' => ['Perubahan belum disimpan tidak ikut tercetak. Save dulu bila perlu.', 'Unsaved changes are not printed. Save first if needed.'],
     ];
 
