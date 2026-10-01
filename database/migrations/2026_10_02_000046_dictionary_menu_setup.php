@@ -10,7 +10,7 @@ return new class extends Migration
 {
     private const UI = [
         'Menu Setup' => 'Pengaturan Menu', 'Under' => 'Di Bawah', 'Short Label' => 'Label Pendek', 'Icon' => 'Ikon', 'Order' => 'Urutan',
-        'Change the label, icon, order and active flag of every menu row here. Icon = Font Awesome class (fa-solid fa-truck); each item in one list needs its own icon. Switching a row off hides it and closes its screen. Reload the page to see the menu change.' => 'Ubah label, ikon, urutan, dan aktif / nonaktif setiap baris menu di sini. Ikon = kelas Font Awesome (fa-solid fa-truck); tiap item dalam satu daftar perlu ikon sendiri. Baris yang dimatikan hilang dari menu dan layarnya tertutup. Muat ulang halaman untuk melihat perubahan menu.',
+        'Change the label, icon, order and active flag of every menu row here. Icon = Font Awesome class (fa-solid fa-truck); each item in one list needs its own icon. Switching a row off hides it and closes its screen. Reload the page to see the menu change.' => 'Ubah label, ikon, urutan, dan aktif / nonaktif tiap baris menu. Ikon = kelas Font Awesome (fa-solid fa-truck); tiap item dalam satu daftar perlu ikon sendiri. Baris yang dimatikan hilang dan layarnya tertutup. Muat ulang halaman untuk melihat perubahan.',
     ];
 
     public function up(): void
