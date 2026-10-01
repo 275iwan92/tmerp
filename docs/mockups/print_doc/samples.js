@@ -1,9 +1,9 @@
 // Data contoh: lampiran kertas (docs/attachments) + database dummy ddt*.
 // `more` = baris tambahan untuk memperagakan A4 portrait (lebih dari 5 baris); `alt` = data lain untuk kasus A4.
-const PRINTED = {printedBy: 'Yuna', printedAt: '01-Okt-2026 16:12'};
+const PRINTED = {printedAt: '01-Okt-2026 16:12'};
 const SAMPLES = {
     SuratJalan: {
-        data: {...PRINTED, number: '10262874', date: '2026-10-01', status: 'DRAFT', co_no: '2602282', createdBy: 'yuna',
+        data: {...PRINTED, number: '10262874', date: '2026-10-01', status: 'DRAFT', co_no: '2602282', createdBy: 'Yuna',
             party: {name: 'PAK A. YANI', lines: ['PERUMAHAN CITRA KAYANE RESIDENCE', 'MALANG']},
             rows: [{name: 'YAN OB KINGZANA KRIPIK PISANG (DS000)', qty: 508, unit: 'PCS', weight_kg: 12.7, bundles: 6, remark: 'isi 100 / ikat'}]},
         more: [
@@ -34,7 +34,7 @@ const SAMPLES = {
         },
     },
     CustomerOrder: {
-        data: {...PRINTED, number: '2602410', date: '2026-10-01', status: 'DRAFT', customer: 'PT. SELATAN JADI JAYA', customer_po_no: 'B2L-260930-0002', ppn: 0, createdBy: 'ehaningtias',
+        data: {...PRINTED, number: '2602410', date: '2026-10-01', status: 'DRAFT', customer: 'PT. SELATAN JADI JAYA', customer_po_no: 'B2L-260930-0002', ppn: 0, createdBy: 'Ehaningtias',
             party: {name: 'PT. SELATAN JADI JAYA', lines: ['JL. RAYA PANJUNAN 8 SUKODONO', 'SIDOARJO']},
             notes: [['Catatan', 'PAKAI SNI, JAPAN TECHNOLOGY BUATAN INDONESIA DI PRODUKSI OLEH PT SJJ SIDOARJO INDONESIA']],
             rows: [{name: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 20000, unit: 'PCS', cfg: '4/0', type: 'RTP', due_date: '2026-10-09', price: 1800, subtotal: 36000000}]},
@@ -84,7 +84,7 @@ const SAMPLES = {
         },
     },
     JadwalKirim: {
-        data: {...PRINTED, number: 'JK26100101', date: '2026-10-01', status: 'CONFIRMED', start_time: '09:30', finish_time: '18:00', createdBy: 'johiwan',
+        data: {...PRINTED, number: 'JK26100101', date: '2026-10-01', status: 'CONFIRMED', start_time: '09:30', finish_time: '18:00', createdBy: 'Johannes Iwan',
             party: {name: 'N 8035 AB', lines: ['Driver: TRIO & AGUNG']},
             rows: [
                 {name: 'PT SELATAN JADI JAYA', sub: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', qty: 3000, unit: 'PCS', kind: 'KIRIM', co_no: '2602377', start: '12:30', stop: '13:30', note: 'MAX. KIRIM 3100'},
@@ -92,7 +92,7 @@ const SAMPLES = {
                 {name: 'PT SELATAN JADI JAYA', sub: 'TAGIHAN & AMBIL GIRO', kind: 'KIRIM'},
                 {name: 'GOLDEN', sub: 'SUBKON PAK TASMAN', qty: 7840, unit: '', kind: 'KIRIM', start: '14:00', stop: '15:00', note: 'SEMUA'},
                 {name: 'TELASIH', kind: 'FINISH', start: '18:00'}]},
-        alt: {...PRINTED, number: 'JK26100102', date: '2026-10-01', status: 'CONFIRMED', start_time: '07:45', finish_time: '17:00', createdBy: 'johiwan',
+        alt: {...PRINTED, number: 'JK26100102', date: '2026-10-01', status: 'CONFIRMED', start_time: '07:45', finish_time: '17:00', createdBy: 'Johannes Iwan',
             party: {name: 'N 8381 BK', lines: ['Driver: PUJI & DWI']},
             rows: [
                 {name: 'GUDANG LBI (RIT 1)', sub: 'AMBIL (BAHAN R8)', qty: 6, unit: 'PALLET', kind: 'AMBIL', start: '08:00', stop: '09:00'},
@@ -117,7 +117,7 @@ const SAMPLES = {
         },
     },
     Inquiry: {
-        data: {...PRINTED, number: 'IQ26090067', date: '2026-09-04', status: 'CONFIRMED', inquiry_type: 'NEW', source: 'EMAIL', sales: 'johiwan', createdBy: 'johiwan',
+        data: {...PRINTED, number: 'IQ26090067', date: '2026-09-04', status: 'CONFIRMED', inquiry_type: 'NEW', source: 'EMAIL', sales: 'Johannes Iwan', createdBy: 'Johannes Iwan',
             deadline_quotation: '2026-09-10', contact: 'PAK RUDI · +62 812-3567-289', product_type: 'Card Box – Reverse Tuck End',
             party: {name: 'PAK RUDI LAWANG', code: '1130000001', lines: ['Jl. Argopuro no. 24', 'Lawang']},
             notes: [['Finishing', 'Laminasi Doff · Pond · Lem samping'], ['Qty alternatif', '20.000 · 50.000 PCS'], ['Pajak / Bahan', 'PPN 11% · bahan sendiri'], ['Catatan Sales', 'Minta sampel dummy putih. Artwork dari customer.']],
@@ -125,9 +125,9 @@ const SAMPLES = {
         more: [],
     },
     PurchaseRequisition: {
-        data: {...PRINTED, number: 'PR2600009', date: '2026-10-01', status: 'CONFIRMED', source: 'MANUAL', purpose: 'Stok bahan baku Oktober', createdBy: 'johiwan',
+        data: {...PRINTED, number: 'PR2600009', date: '2026-10-01', status: 'CONFIRMED', source: 'MANUAL', purpose: 'Stok bahan baku Oktober', createdBy: 'Johannes Iwan',
             approval: 'Level 2 dari 2', ppn: 0,
-            party: {name: 'Production', lines: ['Diminta oleh: johiwan']},
+            party: {name: 'Production', lines: ['Diminta oleh: Johannes Iwan']},
             rows: [{name: 'IVORY 300 79 X 109', qty: 40, unit: 'RIM', code: 'PYJ31', need_date: '2026-10-15', price: 1185000, subtotal: 47400000},
                 {name: 'HVS 58 GR RAINBOW 79 X 109 CM', qty: 200, unit: 'RIM', code: 'P4454', need_date: '2026-10-15', price: 455000, subtotal: 91000000},
                 {name: 'DUPLEX NONE COATED 260 GR 76 X 108 CM', qty: 25, unit: 'RIM', code: 'PZ00083', need_date: '2026-10-15', price: 905000, subtotal: 22625000}]},

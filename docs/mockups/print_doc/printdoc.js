@@ -137,7 +137,7 @@ class PrintDoc {
         </section>`;
     }
 
-    // Menyetujui dan Pembuat mencetak nama user dari dokumen (approved_by / created_by) secara otomatis.
+    // Menyetujui dan Pembuat mencetak nama orang dari dokumen (approved_by / created_by) secara otomatis.
     sign() {
         const [r1, r2] = this.f.receivers, [a, b, c] = this.f.internal;
         const slot = s => s ? `<div><span>${esc(s[0])}</span><small>${esc(s[1])}</small><i></i><b>(${s[2] ? `<u class="nm">${esc(s[2])}</u>` : '<u></u>'})</b></div>` : '<div></div>';
@@ -145,8 +145,9 @@ class PrintDoc {
     }
 
     foot() {
-        // printedBy = nama orang yang mencetak (bukan login); tanpa nama aplikasi (keputusan user 2026-10-01).
-        return `<footer class="foot"><span>Dicetak pada ${esc(this.d.printedAt)} oleh ${esc(this.d.printedBy)}</span>
+        // Nama di kaki = nama Pembuat di tanda tangan, satu sumber (createdBy, nama orang bukan login) supaya selalu sama;
+        // tanpa nama aplikasi (keputusan user 2026-10-01).
+        return `<footer class="foot"><span>Dicetak pada ${esc(this.d.printedAt)} oleh ${esc(this.d.createdBy)}</span>
             <span>Lembar 1/1</span></footer>`;
     }
 
