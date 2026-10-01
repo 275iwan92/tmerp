@@ -209,6 +209,8 @@
     perhentian, **tiga baris teks**: nama tujuan / tempat ambil + kota, alamat, lalu barang yang dikirim / diambil (+ No
     CO). Ruang kosong blok atas dipakai untuk tinggi baris, dan **kolom tulis tangan IN / OUT dibuat besar**. Tiga
     baris itu **dibedakan gaya dan jenis hurufnya**: tujuan + kota tebal, alamat miring abu-abu, barang huruf berkait.
+    Rencana memakai istilah **ETD (rencana berangkat) dan ETA (rencana tiba)**, ditumpuk di kolom Jenis bersama AMBIL /
+    KIRIM dan **lama di jalan** (ETA - ETD); IN / OUT = jam sebenarnya, tulis tangan.
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.

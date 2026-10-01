@@ -65,6 +65,11 @@ table.items{width:100%;border-collapse:collapse;border-top:.5mm solid #222;borde
    1 tujuan + kota = Tahoma tebal; 2 alamat = Tahoma miring abu-abu; 3 barang = huruf berkait (Cambria) tegak hitam. */
 .doc-JadwalKirim .n1{font-weight:700;font-size:9.5pt}
 .doc-JadwalKirim .n2{font-style:italic;color:#555}
+/* Kolom JENIS / ETA / ETD: tiga baris bertumpuk */
+.doc-JadwalKirim td[data-c=plan]{white-space:normal;line-height:1.2}
+.doc-JadwalKirim td[data-c=plan] b{display:block;font-weight:700;font-size:9.5pt}
+.doc-JadwalKirim td[data-c=plan] span{display:block;font-size:8.5pt;white-space:nowrap}
+.doc-JadwalKirim td[data-c=plan] span+span{color:#555;font-style:italic}
 .doc-JadwalKirim .n3{font-family:Cambria,Georgia,"Times New Roman",serif;font-size:8.5pt;color:#111}
 
 /* 5. Zona penutup: catatan kiri, kotak total kanan (tinggi tetap) */

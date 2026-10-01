@@ -114,6 +114,9 @@ PrintDoc.register(class PurchaseOrder extends PrintDoc {
 
 // Acuan kertas: docs/attachments/expedisi.jpg (Jadwal Kirim; satu lembar per tugas armada).
 // Satu baris = satu perhentian, TIGA baris teks: nama tujuan / tempat ambil + kota, alamat, lalu barang + No CO.
+// ETD = rencana berangkat menuju perhentian itu, ETA = rencana tiba; selisihnya = lama di jalan (dihitung). Ketiganya
+// ditumpuk di kolom JENIS: AMBIL / KIRIM, ETD - ETA, lama di jalan (keputusan user 2026-10-01: rencana lebih matang).
+// IN / OUT = kenyataan, ditulis tangan pengemudi.
 // Ruang kosong blok atas (3 baris field saja) dan zona penutup dipindah ke tinggi baris, dan kolom barang dihapus,
 // supaya kolom tulis tangan IN / OUT besar (keputusan user 2026-10-01).
 PrintDoc.register(class JadwalKirim extends PrintDoc {
@@ -126,18 +129,24 @@ PrintDoc.register(class JadwalKirim extends PrintDoc {
     ];
     static partyLabel = 'Kendaraan';
     static side = {key: 'driver', label: 'Pengemudi'};
-    static nb = '<b>NB:</b>&nbsp;JAM = rencana tiba. IN / OUT = jam tiba dan jam selesai sebenarnya di tujuan, diisi pengemudi.';
+    static nb = '<b>NB:</b>&nbsp;ETD = rencana berangkat, ETA = rencana tiba. IN / OUT = jam tiba dan jam berangkat sebenarnya, diisi pengemudi.';
     static nameLabel = 'TUJUAN &middot; KOTA / ALAMAT / BARANG';
-    static extra = [{key: 'kind', label: 'JENIS', width: 13}, {key: 'time', label: 'JAM', width: 11}, {key: 'in', label: 'IN', width: 30, hand: true}, {key: 'out', label: 'OUT', width: 30, hand: true}];
+    static extra = [{key: 'plan', label: 'JENIS / ETD - ETA', width: 36, type: 'html'}, {key: 'in', label: 'IN', width: 24, hand: true}, {key: 'out', label: 'OUT', width: 24, hand: true}];
     static receivers = [['Pengemudi', '']];
     static infoRows = 3;
     static tailHeight = 2;
     static rowHeight = 13;
     static rows = {a5: 5, a4: 15};
+    // Lama di jalan dari dua jam 'HH:MM' -> '45 mnt' / '1 j 45 mnt'.
+    static road(etd, eta) {
+        const min = t => { const [h, m] = t.split(':'); return h * 60 + +m; }, d = min(eta) - min(etd), h = Math.floor(d / 60), m = d % 60;
+        return [h && `${h} j`, m && `${m} mnt`].filter(Boolean).join(' ') || '0 mnt';
+    }
 
     constructor(data) {
         super({...data, rows: data.rows.map(r => ({...r, name: [r.place, r.city].filter(Boolean).join(' · '), sub: r.address,
-            sub2: [r.co_no && 'CO ' + r.co_no, r.item, r.note].filter(Boolean).join(' · ')}))});
+            sub2: [r.co_no && 'CO ' + r.co_no, r.item, r.note].filter(Boolean).join(' · '),
+            plan: `<b>${esc(r.kind)}</b><span>ETD ${esc(r.etd)} &rarr; ETA ${esc(r.eta)}</span><span>di jalan ${JadwalKirim.road(r.etd, r.eta)}</span>`}))});
     }
 });
 

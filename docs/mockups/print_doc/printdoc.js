@@ -49,7 +49,7 @@ class PrintDoc {
     static side = null;                 // 1 slot kanan (baris 6)
     static nb = '';
     static nameLabel = 'NAMA BARANG';
-    static extra = [];                  // kolom zona varian: {key, label, width(mm), type: text|date|money|int, hand?}
+    static extra = [];                  // kolom zona varian: {key, label, width(mm), type: text|date|money|int|html (html = sudah berupa HTML aman), hand?}
     static priced = false;              // true = kolom harga + kotak total rupiah + terbilang
     static receivers = [];              // tanda tangan pihak luar / penerima, paling kiri: [peran, keterangan]
     static internal = ['', '', ''];     // keterangan di bawah Mengetahui, Menyetujui, Pembuat
@@ -78,7 +78,7 @@ class PrintDoc {
     val(def, src = this.d) {
         const v = src[def.key];
         if (v == null || v === '') return def.hand ? '<span class="hand"></span>' : '&mdash;';
-        return def.type === 'date' ? Fmt.date(v) : def.type === 'money' ? Fmt.num(v) : def.type === 'int' ? Fmt.num(v, 0) : esc(v);
+        return def.type === 'date' ? Fmt.date(v) : def.type === 'money' ? Fmt.num(v) : def.type === 'int' ? Fmt.num(v, 0) : def.type === 'html' ? v : esc(v);
     }
 
     row(def) { return def && def.label ? `<div class="f" data-k="${def.key}"><span>${esc(def.label)}</span><i>:</i><b>${this.val(def)}</b></div>` : '<div class="f"></div>'; }
