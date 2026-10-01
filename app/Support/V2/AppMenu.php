@@ -22,7 +22,7 @@ final class AppMenu
 
     public static function modules(SecUser $user): array
     {
-        $rows = SysAppMenu::query()->where('activate', true)->orderBy('sort_order')->orderBy('id')->get();
+        $rows = self::withShortcuts(SysAppMenu::query()->where('activate', true)->orderBy('sort_order')->orderBy('id')->get());
         $children = $rows->whereNotNull('parent_id')->groupBy('parent_id');
         $allowed = $user->is_admin ? null : $user->accessibleModules()->keys();
         // Direksi boleh melihat menu operasional (aturan user 2026-09-25); pendaratan awalnya Laporan Manajemen (login).
@@ -93,12 +93,41 @@ final class AppMenu
         return $n->trans_key ? Translator::t($n->trans_key, $n->label) : $n->label;
     }
 
+    // Pintasan (shortcut_of) = baris menu yang menunjuk ke baris asli di modul lain: label/ikon/target/lencana diwarisi dari
+    // aslinya (satu layar, satu perilaku). Asli nonaktif/hilang -> pintasan ikut hilang.
+    private static function withShortcuts($rows)
+    {
+        $by = $rows->keyBy('id');
+
+        return $rows->filter(function (SysAppMenu $r) use ($by) {
+            if ($r->shortcut_of === null) {
+                return true;
+            }
+            $o = $by->get($r->shortcut_of);
+            if (! $o) {
+                return false;
+            }
+            self::inherit($r, $o);
+
+            return true;
+        })->values();
+    }
+
+    private static function inherit(SysAppMenu $r, SysAppMenu $o): void
+    {
+        foreach (['label', 'trans_key', 'icon', 'object_type', 'target', 'status_code'] as $f) {
+            $r->{$f} = $o->{$f};
+        }
+    }
+
     // Grup Alur (perjalanan dokumen antar layar) -- milik v2, bukan baris sys_app_menu.
     private static function extraGroups(string $module): array
     {
         return match ($module) {
             'SALES' => [['label' => 'Alur', 'icon' => 'fa-solid fa-diagram-project', 'items' => [
                 ['code' => 'F-SALES', 'label' => 'Alur Sales: Inquiry → CPDEL', 'icon' => 'fa-solid fa-diagram-project', 'url' => route('v2.flow', 'SALES'), 'type' => 'report'],
+            ]]],
+            'PREORDER' => [['label' => 'Alur', 'icon' => 'fa-solid fa-diagram-project', 'items' => [
                 ['code' => 'F-COSTING', 'label' => 'Alur Costing: ProDev → ProCost → Publish', 'icon' => 'fa-solid fa-diagram-project', 'url' => route('v2.flow', 'COSTING'), 'type' => 'report'],
                 ['code' => 'G-PRODUCT', 'label' => 'Pedoman: Master Product & Revisi', 'icon' => 'fa-solid fa-book', 'url' => route('v2.guide', 'product-master'), 'type' => 'report'],
             ]]],
@@ -111,6 +140,15 @@ final class AppMenu
     {
         $i = SysAppMenu::query()->where('code', $code)->first();
         abort_unless($i, 404);
+        if ($i->shortcut_of !== null) {
+            $o = SysAppMenu::query()->find($i->shortcut_of);
+            abort_unless($o && $o->activate, 404);
+            self::inherit($i, $o);
+        }
+        // Modul/grup induk dimatikan (activate=0) -> route itemnya ikut tertutup, bukan hanya menunya.
+        for ($p = $i; $p; $p = $p->parent_id ? SysAppMenu::query()->find($p->parent_id) : null) {
+            abort_unless($p->activate, 404);
+        }
         if (str_starts_with((string) $i->target, 'v2:')) {
             return ['v2', route('v2.screen', substr($i->target, 3)), $i];
         }

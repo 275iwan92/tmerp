@@ -25,6 +25,7 @@ class SysAppMenu extends Model
     protected $fillable = [
         'id',
         'parent_id',
+        'shortcut_of',
         'code',
         'label',
         'trans_key',

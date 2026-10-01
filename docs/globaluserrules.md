@@ -50,6 +50,11 @@
     dokumen "mengambang".
 13. **Snapshot:** transaksi membekukan nilai master saat momen penting; master berubah, transaksi lama tetap.
 14. **ACC Digital artwork wajib** sebelum produksi.
+15. **Scope modul (2026-10-02):** satu modul = satu menu besar dengan saklar `activate` sendiri (mati = menu + route tertutup,
+    data tetap). Antar modul hanya lewat kontrak (snapshot + status akhir): A = Quotation published/WIN -> Customer Order,
+    B = CO Confirmed + Post to Production -> Production. Master yang dibutuhkan muncul sebagai **pintasan** (`shortcut_of`)
+    ke layar Master yang sama; hak akses mengikuti layar asli. CO direct (INSTANT) selalu tersedia walau modul pre-order mati.
+    Modul Inquiry & Quotation = menu `PREORDER` (izin masih memakai modul `SALES`).
 
 ## B. Database & data
 
@@ -154,3 +159,4 @@
 | 2026-10-01 | B.12: dummy yang salah selalu dihapus dan diganti baru (aturan main tetap, tanpa tanya). |
 | 2026-10-01 | C.3: grid Inquiry Product v2 ikut Grid Transactional (+ New Record di toolbar membuka wizard; Draft / Ready to Quote = kotak statistik; tanpa kartu tombol di atas grid; Duplicate = tombol di form, bukan ikon di baris grid). |
 | 2026-10-01 | C.18–C.20: Layer Menu baru (nama aplikasi, baris ikon, mini, tanpa garis/breadcrumb); layar selebar panel kanan tepi 6px; setiap item menu wajib berikon. |
+| 2026-10-02 | A.15: scope modul — Inquiry & Quotation jadi menu besar `PREORDER` (saklar sendiri), pintasan master, kontrak A/B (ddt; tm2 menunggu OK). |
