@@ -32,8 +32,11 @@ class PrintDoc {
     // Dokumen berharga: HARGA dan SUBTOTAL selalu di posisi yang sama, di kanan zona varian.
     static PRICE_COLS = [{key: 'price', label: 'HARGA', width: 21, type: 'money'}, {key: 'subtotal', label: 'SUBTOTAL', width: 25, type: 'money'}];
     // Kop: dokumen Non PPN = Telasih Makmur; dokumen PPN = badan hukum + NPWP (keputusan user 2026-09-23).
-    static company = {initials: 'TM', name: 'TELASIH MAKMUR', lines: ['packaging solution'], missing: 'Alamat &middot; Telp &middot; Email (Settings &rarr; Identification)'};
-    static companyPpn = {initials: 'LJM', name: 'CV. LANGGENG JAYA MAKMUR', lines: ['Pondok Blimbing Indah Blok A5 No. 5, Malang 65126', 'Telp 62-341-471268 &middot; Fax 62-341-471268'], missing: 'NPWP (Settings &rarr; Identification)'};
+    // Alamat Telasih Makmur = alamat CV. Langgeng Jaya Makmur (keterangan user 2026-10-01).
+    static ADDRESS = ['Pondok Blimbing Indah Blok A5 No. 5, Malang 65126', 'Telp 62-341-471268 &middot; Fax 62-341-471268'];
+    // Telasih Makmur tidak memakai NPWP; NPWP hanya di kop dokumen PPN (CV. Langgeng Jaya Makmur).
+    static company = {initials: 'TM', name: 'TELASIH MAKMUR', lines: ['packaging solution', ...PrintDoc.ADDRESS]};
+    static companyPpn = {initials: 'LJM', name: 'CV. LANGGENG JAYA MAKMUR', lines: PrintDoc.ADDRESS, missing: 'NPWP (Settings &rarr; Identification)'};
     static registry = {};
     static register(c) { PrintDoc.registry[c.name] = c; return c; }
 
@@ -76,7 +79,7 @@ class PrintDoc {
     kop() {
         const c = this.company;
         return `<header class="kop">
-            <div class="co"><span class="logo">${c.initials}</span><div><b>${c.name}</b>${c.lines.map(l => `<small>${l}</small>`).join('')}<small class="ph">${c.missing}</small></div></div>
+            <div class="co"><span class="logo">${c.initials}</span><div><b>${c.name}</b>${c.lines.map(l => `<small>${l}</small>`).join('')}${c.missing ? `<small class="ph">${c.missing}</small>` : ''}</div></div>
             <h1>${this.f.title}${this.f.subtitle ? `<small>${this.f.subtitle}</small>` : ''}</h1>
             <div class="kopr"><small>Scan untuk<br>${this.f.qrHint}</small><div class="qr">${PrintDoc.qr()}</div></div>
         </header>`;
