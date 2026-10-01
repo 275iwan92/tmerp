@@ -230,6 +230,21 @@
     Belum ada di panel ProDev karena alurnya belum tersedia: Undo, Delete, Cancel, Back to Draft, New, tab History.
     **Menu "ACC Digital / Proof Digital" ditiadakan** (user 2026-10-01): dokumen itu cukup dibuka dari Print / Email di form ProDev.
 
+28. **Grid Transactional: persegi dokumen + tabel anak — user 2026-10-02.** Berlaku untuk SEMUA grid transaksi.
+    - **Kolom pertama = persegi dokumen** (kolom `type => doc`): persegi panjang lebar 160, **nomor dokumen di atas (tebal), nama
+      pihak di bawah** (customer / supplier / departemen / gudang), huruf putih di atas **gradasi dua rona**. Warna diambil dari
+      **8 gradasi pilihan (Palet 1)** menurut nama pihak — pihak yang sama selalu berwarna sama; tanpa kuning / hijau zaitun.
+      Tidak ada lagi kotak inisial di grid transaksi.
+    - **Baris induk 5 sampai 8 kolom tampil.** Kolom lain boleh ada tetapi tersembunyi (dinyalakan lewat tombol Kolom).
+      **Tidak ada kolom jumlah item / jumlah baris.**
+    - **Expand (›) = tabel anak, paling banyak 7 kolom, dan SELALU memuat nama item / product.** Judul tabel tanpa jumlah baris.
+      Tanpa harga (aman untuk semua pemakai). Dokumen satu product: nama product tetap muncul di tabel anak.
+    - Objek: `x-dl::grid` (`type doc` + `party`, prop `detail`), `DbGrid::detail()`. Pratinjau yang disetujui:
+      `docs/mockups/grid_tx_kolom_pertama_persegi.jpg`, `docs/mockups/grid_tx_expand_item.jpg`.
+    - Sudah dipasang: contoh DevLib, Quotation, Customer Order, CPDEL, DO, Surat Jalan, POD, PR, PQ, PO, Penerimaan, Kas Kecil,
+      Work Order, dokumen stok RM / FG / SFG, Material Booking. **Belum:** Inquiry, ProDev, ProCost (menunggu diskusi user),
+      Maintenance, grid HR / Payroll / Recruitment.
+
 ## D. Cara kerja developer / agen
 
 1. **Peran:** system analyst, developer, dan database designer. Aktif menilai desain; audit integritas data
@@ -297,3 +312,4 @@
 | 2026-10-01 | C.26: Ink Configuration ProDev v2 — 4 slot warna khusus (Unit 5-8) diisi officer langsung, tersimpan saat Save All. |
 | 2026-10-01 | C.27: panel atas ProDev v2 disamakan dengan panel form standar; Print ▾ dan Email ▾ masing-masing berisi Master Card + ACC Digital (objek baru `x-dl::menu-button`). |
 | 2026-10-01 | C.27: menu ACC Digital / Proof Digital dihapus (cukup dari Print / Email di form ProDev); layarnya tetap ada. ddt sudah, tm2 menunggu OK. |
+| 2026-10-02 | C.28: Grid Transactional — kolom pertama persegi dokumen (nomor + nama pihak, 8 gradasi Palet 1), baris induk 5-8 kolom tanpa jumlah item, Expand = tabel anak maks 7 kolom yang selalu memuat nama item / product. Inquiry / ProDev / ProCost menunggu diskusi. |
