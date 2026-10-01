@@ -53,8 +53,13 @@
 15. **[2026-10-01] Customer memilih SATU qty per product di CO.** Quotation boleh menawarkan beberapa pilihan qty (tier) untuk
     product yang sama; saat menjadi CO, customer memilih salah satunya (tombol **Choose** di CO draft) dan pilihan qty lain
     dibuang dari CO. CO tidak bisa di-Confirm selama satu product masih punya lebih dari satu baris qty.
-16. **[2026-10-01] Work Order hanya untuk product yang punya Inquiry dengan costing sudah di-publish**, juga untuk CO direct
-    (INSTANT). Tidak ada jalan pintas di engine; dummy yang tidak memenuhi dihapus dan dibuat ulang dengan benar (B.12).
+16. ~~**[2026-10-01] Work Order hanya untuk product yang punya Inquiry dengan costing sudah di-publish**, juga untuk CO direct
+    (INSTANT). Tidak ada jalan pintas di engine.~~ **Dicabut user 2026-10-02:** software lama tidak punya Inquiry maupun Post to
+    Production (koordinasi verbal), dan percepatan Direksi masuk lewat CO langsung.
+    **[2026-10-02] SEMUA jenis CO boleh di-Post to Production, asal CO-nya sudah Confirmed dan approved.** Costing published
+    tidak lagi disyaratkan. Product yang punya Inquiry + part: WO per part dengan routing dan bahan seperti biasa. Product
+    tanpa Inquiry (CO direct): **WO sederhana**, satu per baris kirim, tanpa routing dan bahan — hasil produksi tetap bisa
+    dicatat (A.3). Baris CO wajib punya Master Product.
 17. **[2026-10-01] ProDev berhak mengubah dieline & mockup part.** Form ProDev (v2) punya tab **Part & Dieline** — panel
     yang sama dengan Inquiry Product (gambar dieline, kotak 3D, Dimensions, Flat Size, artwork luar/dalam) — dan ProDev boleh
     **mengubah dimensi, bentangan (Flat Size), dan artwork** lalu **Save**, walaupun inquiry-nya sudah Confirmed.
@@ -345,3 +350,4 @@
 | 2026-10-02 | C.28: Grid Transactional — kolom pertama persegi dokumen (nomor + nama pihak, 8 gradasi Palet 1), baris induk 5-8 kolom tanpa jumlah item, Expand = tabel anak maks 7 kolom yang selalu memuat nama item / product. Inquiry / ProDev / ProCost menunggu diskusi. |
 | 2026-10-02 | **A.20: alur Inquiry → Pro-Dev → Pro-Cost lewat tiga tanda** (`stat_confirm_sales` / `_prodev` / `_procost`) di satu tabel; menu dipisah New / Revise / Recalc; Confirm Sales otomatis muncul di Pro-Dev (tombol Kirim ke ProDev dihapus); Recalc langsung ke Pro-Cost; `stat_confirm` inquiry diganti nama. ddt + tm2. |
 | 2026-10-02 | A.20: CO direct ada dua macam (repeat tanpa perubahan / percepatan Direksi); "back process" percepatan belum diputuskan. |
+| 2026-10-02 | **A.16 diganti:** semua jenis CO boleh di-Post to Production asal Confirmed + approved; costing published tidak disyaratkan; product tanpa Inquiry mendapat WO sederhana (tanpa routing / bahan). |

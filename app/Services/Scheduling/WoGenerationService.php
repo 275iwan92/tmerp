@@ -22,6 +22,10 @@ use Illuminate\Support\Facades\DB;
  *
  * 1 iqp_part = 1 prd_wo (keputusan user, delta doc §2) -- konvergensi
  * antar-part SENGAJA belum dimodelkan.
+ *
+ * Syarat (user 2026-10-02, pedoman A.16): SEMUA jenis CO boleh di-Post to Production asal CO-nya sudah Confirmed
+ * dan approved (doc_status CONFIRMED). Costing published TIDAK lagi disyaratkan. Product tanpa Inquiry / part
+ * (CO direct percepatan) mendapat WO sederhana: satu WO per baris kirim, tanpa routing & bahan -- PPIC melengkapi.
  */
 class WoGenerationService
 {
@@ -33,8 +37,8 @@ class WoGenerationService
     /**
      * @return Collection<int, PrdWo>
      *
-     * @throws \RuntimeException kalau delivery ini sudah pernah generate WO,
-     *                           atau tidak py inquiry/part sama sekali.
+     * @throws \RuntimeException kalau delivery ini sudah pernah generate WO, CO belum Confirmed / approved,
+     *                           atau baris CO tidak punya Master Product.
      */
     public function generateFromDelivery(CoOrderDelivery $delivery): Collection
     {
@@ -51,28 +55,14 @@ class WoGenerationService
                 ->where('stat_cancel', false)->orderByDesc('id_inquiry')->first();
         }
 
-        if (! $inquiry) {
-            throw new \RuntimeException("Delivery #{$delivery->id_delivery}: item tidak terhubung ke Inquiry manapun, tidak ada BOM/BOP utk digenerate.");
-        }
-
-        if ($inquiry->parts->isEmpty()) {
-            throw new \RuntimeException("Inquiry #{$inquiry->id_inquiry}: belum py part apa pun (iqp_part kosong).");
-        }
-
-        // Syarat urutan dokumen (instruksi user 2026-09-18): WO baru boleh lahir
-        // setelah Inquiry BERHARGA (costing dipublish = disetujui Direksi) dan
-        // CO-nya CONFIRMED. Tanpa ini WO bisa jalan mendahului harga.
+        // Satu-satunya syarat (user 2026-10-02): CO sudah Confirmed dan approved.
         if ($delivery->order?->doc_status !== 'CONFIRMED') {
-            throw new \RuntimeException("CO delivery #{$delivery->id_delivery} belum CONFIRMED -- WO belum boleh dibuat.");
+            throw new \RuntimeException("CO delivery #{$delivery->id_delivery} belum Confirmed / approved -- WO belum boleh dibuat.");
         }
 
-        $priced = DB::connection('tm2sdi')->table('iqp_costing')
-            ->where('inquiry_id', $inquiry->id_inquiry)
-            ->where(fn ($q) => $q->where('published_flag', 1)->orWhere('is_approved', 1))
-            ->exists();
-
-        if (! $priced) {
-            throw new \RuntimeException("Inquiry {$inquiry->inquiry_no}: costing belum dipublish/disetujui -- harga belum final, WO belum boleh dibuat.");
+        // Tanpa Inquiry / part (CO direct untuk product yang belum pernah lewat Inquiry): WO sederhana.
+        if (! $inquiry || $inquiry->parts->isEmpty()) {
+            return collect([$this->simpleWo($delivery, $inquiry)]);
         }
 
         return DB::connection('tm2prd')->transaction(function () use ($delivery, $inquiry) {
@@ -183,6 +173,31 @@ class WoGenerationService
 
             return $created;
         });
+    }
+
+    // Satu WO untuk satu baris kirim, tanpa operasi dan bahan (tidak ada BOM / BOP sebagai sumber). Hasil produksi tetap
+    // bisa dicatat (pedoman A.3); PPIC menambah proses di WO Detail bila perlu.
+    private function simpleWo(CoOrderDelivery $delivery, ?IqpInquiry $inquiry): PrdWo
+    {
+        $productId = $delivery->item?->product_id ?: $inquiry?->product_id;
+        if (! $productId) {
+            throw new \RuntimeException("Delivery #{$delivery->id_delivery}: baris CO belum punya Master Product -- pilih product di baris CO dulu.");
+        }
+
+        return PrdWo::create([
+            'wo_no' => PrdWo::nextWoNo(),
+            'wo_type' => 'MTO',
+            'source_type' => 'CO_CONFIRMED',
+            'source_co_id' => $delivery->order_id,
+            'source_delivery_id' => $delivery->id_delivery,
+            'product_id' => $productId,
+            'part_code' => mb_substr((string) $delivery->item?->description, 0, 50) ?: null,
+            'qty' => (float) $delivery->ship_qty,
+            'due_date' => $delivery->ship_date,
+            'wo_status' => 'DRAFT',
+            'schedule_layer' => 'SIMULATED',
+            'created_by' => 'system',
+        ]);
     }
 
     private function lookupDefaultMachineRate(?int $productId, ?string $partCode, ?int $processId, ?int $machineId): ?float
