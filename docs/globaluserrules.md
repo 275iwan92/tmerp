@@ -171,7 +171,9 @@
     **Surat Jalan punya kolom Berat (kg) dan Ikat**; Ikat hanya terisi bila barang dikemas per ikat (sumber data belum ada
     di database — perlu input sebelum dipasang ke aplikasi). **Customer Order punya 2 format cetak: dengan harga dan
     tanpa harga** (tanpa harga = kolom Harga/Subtotal, total, dan Terbilang tidak dicetak). **Nama Pembuat di tanda tangan
-    dan nama "oleh" di kaki dokumen harus sama** (satu sumber: nama orang pembuat dokumen).
+    dan nama "oleh" di kaki dokumen harus sama** (satu sumber: nama orang pembuat dokumen). **Purchase Requisition ada
+    dua jenis: Produksi** (kolom No CO + nama product di baris kedua nama barang) **dan Non Produksi** (ATK, komputer;
+    No CO kosong); harga estimasi tetap di kolom Harga / Subtotal (usulan tata letak, menunggu OK user).
 25. **Form ProDev berlatar putih — user 2026-10-01:** workbench Imposition (dulu gelap/navy) memakai **latar putih** seperti
     layar lain, warnanya lewat token tema DevLib (bukan hex). Tata letak dan isi tidak berubah; area gambar berlatar abu muda
     supaya lembar cetak (putih) tetap terlihat. Pratinjau & cetak Master Card tidak berubah.

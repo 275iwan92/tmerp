@@ -112,13 +112,16 @@ PrintDoc.register(class PurchaseRequisition extends PrintDoc {
     static subtitle = 'Permintaan Pembelian &middot; Internal';
     static numberLabel = 'No PR';
     static refs = [
+        {key: 'category', label: 'Jenis'},
         {key: 'source', label: 'Sumber'},
         {key: 'purpose', label: 'Untuk'},
         {key: 'approval', label: 'Approval'},
     ];
     static partyLabel = 'Pemohon';
     static nb = '<b>NB:</b>&nbsp;Harga adalah estimasi. Harga final mengikuti Purchase Quotation dan Purchase Order.';
-    static extra = [{key: 'code', label: 'KODE', width: 17}, {key: 'need_date', label: 'TGL PERLU', width: 21, type: 'date'}];
+    // PR produksi: NO CO di kolom, nama product di baris kedua nama barang (`sub`), supaya HARGA dan SUBTOTAL estimasi
+    // tetap muat di posisi tetap. PR non produksi (ATK, komputer): NO CO kosong, baris kedua = keterangan bila ada.
+    static extra = [{key: 'co_no', label: 'NO CO', width: 17}, {key: 'need_date', label: 'TGL PERLU', width: 21, type: 'date'}];
     static priced = true;
     static receivers = [['Diterima', 'Purchasing']];
 });

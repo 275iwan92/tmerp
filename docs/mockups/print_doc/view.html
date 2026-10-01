@@ -6,13 +6,13 @@
 <link rel="stylesheet" href="printdoc.css">
 </head>
 <body>
-<!-- Pakai: view.html?doc=SuratJalan  (&case=a4 = contoh lebih dari 5 baris, &dev=1 = penanda deviasi) -->
+<!-- Pakai: view.html?doc=SuratJalan  (&case=a4 = contoh lebih dari 5 baris, &case=nama = data lain di `cases`, &dev=1 = penanda deviasi) -->
 <script src="printdoc.js"></script>
 <script src="documents.js"></script>
 <script src="samples.js"></script>
 <script>
     const q = new URLSearchParams(location.search), name = q.get('doc') || 'SuratJalan', s = SAMPLES[name], a4 = q.get('case') === 'a4';
-    const data = a4 ? (s.alt ?? {...s.data, rows: [...s.data.rows, ...s.more]}) : s.data;
+    const data = a4 ? (s.alt ?? {...s.data, rows: [...s.data.rows, ...s.more]}) : s.cases?.[q.get('case')] ?? s.data;
     document.title = `${name} - ${data.number}`;
     document.body.insertAdjacentHTML('afterbegin', new PrintDoc.registry[name](data).render());
     PrintDoc.fit(document.body);

@@ -125,13 +125,23 @@ const SAMPLES = {
         more: [],
     },
     PurchaseRequisition: {
-        data: {...PRINTED, number: 'PR2600009', date: '2026-10-01', status: 'CONFIRMED', source: 'MANUAL', purpose: 'Stok bahan baku Oktober', createdBy: 'Johannes Iwan',
+        // Produksi: tiap baris terikat ke baris CO (pr_line.i_co_line_id) -> NO CO + nama product (baris kedua).
+        data: {...PRINTED, number: 'PR2600009', date: '2026-10-01', status: 'CONFIRMED', category: 'Produksi', source: 'MANUAL', purpose: 'Bahan baku order Oktober', createdBy: 'Johannes Iwan',
             approval: 'Level 2 dari 2', ppn: 0,
             party: {name: 'Production', lines: ['Diminta oleh: Johannes Iwan']},
-            rows: [{name: 'IVORY 300 79 X 109', qty: 40, unit: 'RIM', code: 'PYJ31', need_date: '2026-10-15', price: 1185000, subtotal: 47400000},
-                {name: 'HVS 58 GR RAINBOW 79 X 109 CM', qty: 200, unit: 'RIM', code: 'P4454', need_date: '2026-10-15', price: 455000, subtotal: 91000000},
-                {name: 'DUPLEX NONE COATED 260 GR 76 X 108 CM', qty: 25, unit: 'RIM', code: 'PZ00083', need_date: '2026-10-15', price: 905000, subtotal: 22625000}]},
+            rows: [{name: 'IVORY 300 79 X 109', sub: 'SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639', qty: 40, unit: 'RIM', co_no: '2602410', need_date: '2026-10-15', price: 1185000, subtotal: 47400000},
+                {name: 'HVS 58 GR RAINBOW 79 X 109 CM', sub: 'SJS IB BDM YTUBE 2.50/2.75-14 (DS003437)', qty: 200, unit: 'RIM', co_no: '2602262', need_date: '2026-10-15', price: 455000, subtotal: 91000000},
+                {name: 'DUPLEX NONE COATED 260 GR 76 X 108 CM', sub: 'JD BOX DONAT UK 20 X 20 X 6 CM (DS000)', qty: 25, unit: 'RIM', co_no: '2602282', need_date: '2026-10-15', price: 905000, subtotal: 22625000}]},
         more: [],
+        cases: {
+            nonprod: {...PRINTED, number: 'PR2600010', date: '2026-10-01', status: 'CONFIRMED', category: 'Non Produksi', source: 'MANUAL', purpose: 'Kebutuhan kantor Oktober', createdBy: 'Johannes Iwan',
+                approval: 'Level 1 dari 2', ppn: 0,
+                party: {name: 'General Affairs', lines: ['Diminta oleh: Johannes Iwan']},
+                rows: [{name: 'Kertas HVS A4 80 gr', qty: 20, unit: 'RIM', need_date: '2026-10-08', price: 52000, subtotal: 1040000},
+                    {name: 'Toner printer HP 107A', qty: 4, unit: 'PCS', need_date: '2026-10-08', price: 950000, subtotal: 3800000},
+                    {name: 'Laptop 14 inci Core i5 / 16 GB / SSD 512 GB', sub: 'Untuk staf Accounting, pengganti unit rusak', qty: 1, unit: 'UNIT', need_date: '2026-10-20', price: 11500000, subtotal: 11500000},
+                    {name: 'Mouse wireless', qty: 5, unit: 'PCS', need_date: '2026-10-08', price: 85000, subtotal: 425000}]},
+        },
     },
 };
 SAMPLES.CustomerOrderNoPrice = {data: SAMPLES.CustomerOrder.data, more: SAMPLES.CustomerOrder.more};

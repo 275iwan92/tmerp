@@ -17,7 +17,8 @@ $jobs = @(
     @('customer_order_noprice_a5', 'CustomerOrderNoPrice', '', 1210), @('customer_order_noprice_a4', 'CustomerOrderNoPrice', '&case=a4', 2336),
     @('purchase_order_a5', 'PurchaseOrder', '', 1210), @('purchase_order_a5_deviasi', 'PurchaseOrder', '&dev=1', 1720),
     @('jadwal_kirim_a5', 'JadwalKirim', '', 1210), @('jadwal_kirim_a5_deviasi', 'JadwalKirim', '&dev=1', 1640), @('jadwal_kirim_a4', 'JadwalKirim', '&case=a4', 2336),
-    @('inquiry_a5', 'Inquiry', '', 1210), @('purchase_requisition_a5', 'PurchaseRequisition', '', 1210))
+    @('inquiry_a5', 'Inquiry', '', 1210), @('purchase_requisition_a5', 'PurchaseRequisition', '', 1210),
+    @('purchase_requisition_nonprod_a5', 'PurchaseRequisition', '&case=nonprod', 1210))
 
 foreach ($j in $jobs) {
     if ($Only -and $j[1] -ne $Only) { continue }
