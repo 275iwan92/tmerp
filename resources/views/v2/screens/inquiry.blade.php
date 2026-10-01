@@ -1,6 +1,7 @@
 {{-- Inquiry Product (worklist). Alur & field: tmerp pages/inquiry/hub.blade.php. Keputusan user 2026-09-28:
-     3 tombol (Create Inquiry / Continue Draft / Ready to Quote), 2 kotak statistik (Pro-Dev, Pro-Cost),
-     wizard jenis -> sumber -> pilih inquiry, dan Duplicate per baris. Win/Lost ada di Quotation. --}}
+     wizard jenis -> sumber -> pilih inquiry, dan Duplicate per baris. Win/Lost ada di Quotation.
+     User 2026-10-01: tampilan = Grid Transactional (sama dengan Quotation / Customer Order): + New Record di toolbar
+     membuka wizard; Continue Draft / Ready to Quote = kotak statistik Draft / Ready to Quote (klik = saring). --}}
 @php
     use App\Models\Master\CustCustomer;
     use App\Support\V2\Data\Sales;
@@ -10,21 +11,19 @@
     $rows = Sales::inquiries();
     $col = fn (string $key, string $label, string $src, array $more = []) => ['key' => $key, 'label' => $label, 'src' => $src] + $more;
     $columns = [
-        $col('product_draft_name', 'Produk / Customer', Src::of('tm2sdi.iqp_inquiry.product_draft_name', 'tm2mst.cust_customer.customer_name', 'tm2sdi.iqp_inquiry.prospect_name'), ['type' => 'identity', 'code' => 'customer']),
-        $col('inquiry_no', 'No. Inkuiri', Src::of('tm2sdi.iqp_inquiry.inquiry_no')),
-        $col('inquiry_date', 'Tgl', Src::of('tm2sdi.iqp_inquiry.inquiry_date'), ['type' => 'date']),
+        $col('product_draft_name', 'Product / Customer', Src::of('tm2sdi.iqp_inquiry.product_draft_name', 'tm2mst.cust_customer.customer_name', 'tm2sdi.iqp_inquiry.prospect_name'), ['type' => 'identity', 'code' => 'customer']),
+        $col('inquiry_no', 'Inquiry No.', Src::of('tm2sdi.iqp_inquiry.inquiry_no')),
+        $col('inquiry_date', t('Date'), Src::of('tm2sdi.iqp_inquiry.inquiry_date'), ['type' => 'date']),
         $col('customer', 'Customer', Src::of('tm2sdi.iqp_inquiry.customer_id', 'tm2mst.cust_customer.customer_name'), ['visible' => false]),
-        $col('part_type', 'Tipe Produk', Src::of('tm2sdi.iqp_part.dieline_spec.type_code').' (part pertama)'),
-        $col('qty', 'Qty tier utama', Src::of('tm2sdi.iqp_tier.qty').' (is_primary = 1)', ['type' => 'number']),
+        $col('part_type', t('Product Type'), Src::of('tm2sdi.iqp_part.dieline_spec.type_code').' (part pertama)'),
+        $col('qty', t('Main tier qty'), Src::of('tm2sdi.iqp_tier.qty').' (is_primary = 1)', ['type' => 'number']),
+        $col('inquiry_type', t('Type'), Src::of('tm2sdi.iqp_inquiry.inquiry_type'), ['type' => 'badge', 'tones' => Sales::TYPE_TONES]),
         $col('sub_state', 'Status', Src::of('tm2sdi.iqp_inquiry.sub_state'), ['type' => 'badge', 'tones' => Sales::STATE_TONES]),
-        $col('inquiry_type', 'Jenis', Src::of('tm2sdi.iqp_inquiry.inquiry_type'), ['type' => 'badge', 'tones' => Sales::TYPE_TONES]),
         $col('pic_sales', 'PIC Sales', Src::of('tm2sdi.iqp_inquiry.pic_sales'), ['visible' => false]),
-        $col('deadline_quotation', 'Batas Quotation', Src::of('tm2sdi.iqp_inquiry.deadline_quotation'), ['type' => 'date', 'visible' => false]),
+        $col('deadline_quotation', t('Quotation deadline'), Src::of('tm2sdi.iqp_inquiry.deadline_quotation'), ['type' => 'date', 'visible' => false]),
     ];
     $picker = fn (string $type) => ['*' => route('v2.screen', 'inquiry-'.strtolower($type)).'?source_id={id}'];
     $saved = array_values(array_filter($rows, fn ($r) => $r['inquiry_no']));
-    $draftCount = count(array_filter($rows, fn ($r) => $r['sub_state'] === 'DRAFT'));
-    $readyCount = count(array_filter($rows, fn ($r) => $r['ready']));
     $customers = CustCustomer::where('activate', true)->orderBy('customer_name')->get(['id_customer', 'customer_code', 'customer_name'])
         ->mapWithKeys(fn ($c) => [$c->id_customer => $c->customer_name.' ('.$c->customer_code.')'])->all();
     $srcTitle = ['RECALC' => 'Hitung Ulang Harga', 'REVISE' => 'Ubah Spesifikasi'];
@@ -37,19 +36,14 @@
     <x-dl::alert tone="danger" :message="$errors->first()" />
 @endif
 
-<div class="mp-inq-actions">
-    <x-dl::button icon="＋" label="Create Inquiry" data-dl-open="wiz-type" />
-    <x-dl::button variant="secondary" icon="📝" :label="'Continue Draft ('.$draftCount.')'" data-inq-preset="draft" :title="t('Filter the grid to DRAFT inquiries')" />
-    <x-dl::button variant="secondary" icon="💰" :label="'Ready to Quote ('.$readyCount.')'" data-inq-preset="ready" :title="t('Priced, not yet sent to the customer through a Quotation')" />
-    <span class="mp-inq-actions__hint">Klik 2x baris untuk buka. DRAFT bisa diedit; status lain lihat-saja.</span>
-</div>
-
-<x-mp::sales.inquiry-worklist class="mp-inq-grid" :rows="$rows" :columns="$columns" :search="t('Search inquiry no. / product / customer...')"
+<x-mp::sales.inquiry-worklist id="inquiry-list" :rows="$rows" :columns="$columns" :search="t('Search inquiry no. / product / customer...')"
     source="{{ Src::of('tm2sdi.iqp_inquiry', 'tm2sdi.iqp_tier', 'tm2sdi.iqp_part', 'tm2sdi.iqp_costing', 'tm2mst.cust_customer') }}"
+    data-new-modal="wiz-type"
     :data-open="json_encode(['NEW' => route('v2.screen', 'inquiry-new').'?id={id}', 'RECALC' => route('v2.screen', 'inquiry-recalc').'?id={id}', 'REVISE' => route('v2.screen', 'inquiry-revise').'?id={id}'])"
     :stats="[
-        ['label' => 'Not Confirm', 'where' => ['stat_confirm' => false, 'sub_state' => array_values(array_diff(Sales::STATES, ['CANCELLED', 'LOST']))], 'tone' => 'warn'],
-        ['label' => 'Ready to Quote', 'where' => ['ready' => true], 'tone' => 'accent'],
+        ['label' => t('All')],
+        ['label' => 'Draft', 'where' => ['stat_confirm' => false, 'sub_state' => array_values(array_diff(Sales::STATES, ['CANCELLED', 'LOST']))], 'tone' => 'neutral'],
+        ['label' => 'Ready to Quote', 'where' => ['ready' => true], 'tone' => 'warn'],
         ['label' => 'Processed by Pro-Dev', 'where' => ['prodev' => true], 'tone' => 'info'],
         ['label' => 'Processed by Pro-Cost', 'where' => ['procost' => true], 'tone' => 'success'],
     ]"
@@ -60,7 +54,6 @@
         ['label' => t('Change Specification'), 'where' => ['inquiry_type' => 'REVISE']],
     ]"
     :filters="['sub_state' => 'Status', 'customer' => 'Customer', 'pic_sales' => 'PIC Sales']"
-    :groups="['customer' => 'Customer', 'sub_state' => 'Status', 'part_type' => 'Tipe Produk']"
     :expand="['pic_sales', 'deadline_quotation']" />
 
 {{-- Wizard Create Inquiry: 1 jenis -> 2 sumber (RECALC/REVISE) -> 3 pilih inquiry -> form. --}}
@@ -115,7 +108,7 @@
         <x-dl::alert :tone="$type === 'RECALC' ? 'info' : 'warn'" :message="$type === 'RECALC'
             ? 'Semua spesifikasi disalin dari inkuiri terpilih dan DIKUNCI. Anda hanya mengisi qty & deadline.'
             : 'Spesifikasi disalin lalu BISA DIUBAH. Tipe produk tetap terkunci — kalau tipe berubah, gunakan Produk Baru.'" />
-        <x-mp::sales.inquiry-worklist :id="'pick-'.strtolower($type).'-grid'" :rows="$saved" :per-page="8" :search="t('Search inquiry no. / customer / product...')"
+        <x-mp::sales.inquiry-worklist :id="'pick-'.strtolower($type).'-grid'" :rows="$saved" :per-page="8" :new-record="null" :search="t('Search inquiry no. / customer / product...')"
             :columns="array_values(array_filter($columns, fn ($c) => in_array($c['key'], ['product_draft_name', 'inquiry_no', 'inquiry_date', 'part_type', 'qty', 'sub_state'])))"
             :data-open="json_encode($picker($type))" />
         <x-slot:footer>

@@ -152,4 +152,5 @@
 | 2026-10-01 | A.3 dibangun di v2 (ddt): Post to Production, DO hanya dari baris Posted, laporan Shipped Without Production Output. |
 | 2026-10-01 | C.17: F1 = Bantuan & dukungan di v2; Tiket Bantuan di profil dengan ikon jelas; Back kembali ke Profile. |
 | 2026-10-01 | B.12: dummy yang salah selalu dihapus dan diganti baru (aturan main tetap, tanpa tanya). |
+| 2026-10-01 | C.3: grid Inquiry Product v2 ikut Grid Transactional (+ New Record di toolbar membuka wizard; Draft / Ready to Quote = kotak statistik; tanpa kartu tombol di atas grid). |
 | 2026-10-01 | C.18–C.20: Layer Menu baru (nama aplikasi, baris ikon, mini, tanpa garis/breadcrumb); layar selebar panel kanan tepi 6px; setiap item menu wajib berikon. |

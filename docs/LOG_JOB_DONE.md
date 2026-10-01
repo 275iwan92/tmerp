@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-10-01 -- Grid Inquiry Product v2 disamakan dengan Grid Transactional
+
+- Perintah user: grid Inquiry harus konsisten dengan Grid Transactional (Quotation / Customer Order).
+- Kartu 3 tombol di atas grid dihapus: Create Inquiry -> **+ New Record** di toolbar (membuka wizard jenis yang sama);
+  Continue Draft / Ready to Quote -> kotak statistik **Draft** / **Ready to Quote** (klik = saring; isi Draft = Not Confirm lama, 41 baris sama).
+- Kotak statistik: All, Draft, Ready to Quote, Processed by Pro-Dev, Processed by Pro-Cost (ukuran baku, CSS khusus dihapus).
+- Ikon baris = Open baku (bukan pensil/panah berbeda); DRAFT tetap terbuka untuk edit, status lain lihat-saja. Duplicate per baris tetap.
+- Judul kolom English; Status jadi kolom terakhir. Tab jenis (New / Recalculate / Change Specification) tetap.
+- Alur, data, wizard, dan form Inquiry tidak diubah. Uji: render kernel mockup.test = 200; belum dicek mata di browser.
+
 ## 2026-10-01 -- Layer Menu: kepala panel baru, mode mini, ikon semua menu, layar selebar panel
 
 - DevLib `x-dl::layer-menu`: baris 1 logo + nama aplikasi, baris 2 ikon (tukar view | cari | kecilkan menu); garis penanda layer

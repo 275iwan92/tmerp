@@ -281,8 +281,6 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .mp-typecard__req b{color:var(--dl-ink-strong)}
 .mp-typecard .dl-actionbar{width:100%;border-top:none;padding-top:4px}
 .mp-typecard .dl-actionbar>*{flex:1;justify-content:center}
-.mp-inq-grid .dl-grid__stats>*{flex:1 1 calc(25% - 10px);min-width:0}
-@media (max-width:760px){.mp-inq-grid .dl-grid__stats>*{flex-basis:calc(50% - 10px)}}
 
 /* ===== Sales · Inquiry (form dokumen) ===== */
 .mp-grow{flex:1}
@@ -339,10 +337,7 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 @media (max-width:760px){.mp-reuse{grid-template-columns:repeat(2,minmax(0,1fr))}.mp-impact__row{grid-template-columns:1fr 60px}.mp-impact__row small{grid-column:1/-1}}
 .mp-thumb__box img{max-width:100%;max-height:100%;object-fit:contain}
 
-/* Inquiry worklist v2 (keputusan user 2026-09-28): 3 tombol aksi, wizard Create Inquiry, Duplicate */
-.mp-inq-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);padding:10px 12px;margin-bottom:12px}
-.mp-inq-actions__hint{flex-basis:100%;font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted)}
-.mp-inq-actions [data-inq-preset].is-on{background:var(--dl-accent);border-color:var(--dl-accent);color:#fff}
+/* Inquiry worklist v2: wizard Create Inquiry (dibuka dari + New Record), Duplicate */
 .mp-wiz{display:flex;flex-direction:column;gap:10px}
 .mp-wiz__opt{display:flex;align-items:center;gap:12px;border:1px solid var(--dl-border);border-left:3px solid var(--mp-tc,var(--dl-border));border-radius:var(--dl-radius);padding:12px 14px;background:var(--dl-surface)}
 .mp-wiz__opt.is-off{opacity:.6}
