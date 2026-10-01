@@ -17,7 +17,9 @@ Kedua saklar default MATI sampai SMTP nyata terpasang. Sisa:
 - [ ] **Bounce yang datang belakangan** (mailbox penuh / alamat salah setelah diterima server) -> butuh baca kotak masuk
       pengirim (IMAP) atau webhook penyedia SMTP; status `sys_doc_email.status` = BOUNCED belum pernah terisi. Perlu keputusan
       penyedia e-mail perusahaan.
-- [ ] Alamat tujuan: pilih dari kontak customer / user (sekarang ketik bebas, format divalidasi).
+- Alamat tujuan dari kontak: SELESAI 2026-10-02 (kotak "Find contact" di dialog Email, lihat LOG_JOB_DONE). Catatan data:
+  `cust_customer_contact` / `sup_supplier_contact` belum punya satu pun e-mail (0 baris terisi), jadi yang muncul sekarang
+  e-mail utama customer (8) / supplier (20) dan user (156) -- kontak per orang muncul sendiri begitu diisi di master.
 
 ## 16. CHAT ANTAR USER — LENGKAPI "NEW CHAT" ALA WHATSAPP (instruksi user 2026-09-09)
 
@@ -155,8 +157,15 @@ mode EN: baris Indonesia 1696 -> 824. Kolom `sys_dictionary.source_en` = utf8mb4
 Teks bawaan JS grid/lines/sheet/form -> `T()` / `Tf()` + pasangan Lang (dijaga test kunci JS).
 
 **SISA lain (bertahap, terukur di MultiLanguageRatchetTest):**
-1b. `js_id_text` 180: teks Indonesia di JS DevLib lain (core, gantt, kanban, import, approval, calendar, chat, ...) -> `T('kunci')` + Lang.
-1c. Teks di luar pola ratchet: kolom `x-dl::table` bentuk ['kunci' => 'Label'], tab, teks isi Blade (`<p>`, `<th>`), komentar/penampil kode.
+1b. SELESAI 2026-10-02: teks Indonesia di JS DevLib dipindah ke `T('kunci')` / `Tf('kunci', {..})` + pasangan `Devlib\Lang`
+    (`js_id_text` 180 -> 44). Sisa 44 = separuh Indonesia tabel dua bahasa di `core.js` (LOGIN_T, AUTH_T, PRESET_T, kata bilangan)
+    + 5 bukan teks layar; bukan utang. Daftar kata penjaga (`Dictionary::ID_WORDS`) diperluas 2026-10-02 (dulu meloloskan
+    Departemen / Tipe / Sumber / Berlaku / Mingguan ...): label, kotak cari, nilai tampilan dan teks panduan kelas grid v2 serta
+    46 label layar v2 ikut dikonversi; `id_label` tetap 0.
+1c. Teks di luar pola ratchet: kolom `x-dl::table` bentuk ['kunci' => 'Label'], tab, teks isi Blade (`<p>`, `<th>`, `x-dl::alert`
+    berisi kalimat), komentar/penampil kode. Ukuran kasar 2026-10-02: 242 baris `sys_dictionary` konteks `ui` belum punya
+    terjemahan Indonesia; sebagian besar adalah teks sumber yang MASIH Indonesia di layar Inquiry / ProDev / Quotation
+    (mis. "Alasan Pembatalan", "Batas Quotation", "Jenjang qty ditawarkan") -> konversi per layar seperti butir 2.
 2. Setelah contoh JPEG disetujui: label layar/nota v2 yang masih teks Indonesia mentah -> sumber English + kamus, per dokumen:
    Inquiry (zona beku -- label saja, izin sudah ada utk ID->EN), ProDev, Quotation, CO, PR, PO, SPB, DO/Surat Jalan.
    Nota lama v1 yang dipanggil tombol "Nota" (quotation.print, co.print, pur.pr/po.print, dispatch.do.print) belum ikut print_lang.
@@ -164,7 +173,8 @@ Teks bawaan JS grid/lines/sheet/form -> `T()` / `Tf()` + pasangan Lang (dijaga t
    data REAL (prod_process) & zona beku hanya dengan izin user.
 4. Kamus `Devlib\Lang` (pasangan [ID, EN] di kode) untuk bahasa ke-3 diterjemahkan
    lewat `sys_dictionary` context `ui` (sumber = teks English) -- JS `T()` baru mengenal id/en.
-5. Nama hari di pemilih tanggal & Calendar sudah Intl; komponen lain yang masih teks Indonesia (Grid toolbar, dsb) bertahap.
+5. Nama hari pemilih tanggal: satu helper `Devlib.h.dow2()` (Indonesia Mg/Sn/Sl/Rb/Km/Jm/Sb, bahasa lain Intl) -- 2026-10-02.
+   Toolbar Grid, Permission Matrix, bantuan Sheet, kotak konfirmasi bawaan sudah lewat kunci Lang (2026-10-02).
 
 ### Gap desain lama (format angka sudah diputuskan di atas)
 - ~~**Format angka tidak ikut bahasa**~~ (diputuskan 2026-10-01, lihat atas): `number_format()` di ratusan titik

@@ -63,6 +63,24 @@ ini ada di katalog tools §4.3 dokumen itu tapi TIDAK termasuk checklist
 > so cross-module flows (Inquiry -> Imposition -> Costing -> Master Card -> CO)
 > can be tested end-to-end with connected data"*.
 
+### 25.0 Status 2026-10-02 (baca ini dulu; 25.1-25.2 di bawah = keadaan `tm2*` per 2026-09-22)
+
+Sejak rencana ini ditulis, rantai dummy dibangun di **`ddt*` (mockup.test)**, bukan di atas tiga sampel UAT lama:
+- Seeder `UatOrderChainSeeder` + `UatMasterCardSeeder` + `UatKsPowerSeeder` (trait `PricedDummyChain`, harga lewat
+  ProCost Mode #2 + CostingEngine + QuotationBuilder). Isi `ddt*` per 2026-10-02: 13 quotation, 24 costing published,
+  11 CO (terakhir CO2600027-CO2600030: Posted + WO jalan, WO breakdown, INSTANT + DO tanpa output, INSTANT menunggu approval), 5 WO.
+- Aturan baru yang menggantikan sebagian rencana 25.2: Quotation wajib integrated (A, 2026-10-01), satu qty per produk di CO (A.15),
+  WO hanya untuk inquiry ber-costing published (A.16), dummy `tm2*` = fixture test dan tidak dihapus (B.12 hanya untuk `ddt*`).
+- 25.3.1 sudah dijawab user 2026-10-01: Plong = Pond; "PLONG 2" minimal kelas ML-1040/ML-1100 (bukan ML-750).
+
+Yang MASIH terbuka dari rencana ini (cek ulang sebelum dikerjakan, keadaan `ddt*` 2026-10-02):
+- Master Card lengkap sampai 5 sign-off: `prod_mastercard_signoff` masih 0 baris; `card_status` = 8 ACTIVE, sisanya DRAFT.
+- `prod_dieline_template` masih 0 baris.
+- 5 WO dummy di `ddt*` masih bertanda `data_origin='LIVE'` (catatan di 25.2 belum dibetulkan).
+- Tiga kode `UAT-ALSAMSI-SIG` / `UAT-ALSAMSI-TOP` / `UAT-OSIMA` tidak ada di `ddt*` (hanya di `tm2*`); rantai `ddt*` memakai produk dummy lain.
+- 25.3.2-25.3.3 (spek die cutter, angka mockup Master Card) masih menunggu user / data nyata. 25.3.4 (pemilihan kertas di
+  Inquiry) sudah ada di layar v2 Inquiry (Bahan = rantai material, 2026-09-29).
+
 ### 25.1 Keadaan sekarang (hasil audit DB 2026-09-22 — jangan diaudit ulang)
 
 Tidak ada satu pun rantai dummy yang utuh. Yang ada dua, dan keduanya putus

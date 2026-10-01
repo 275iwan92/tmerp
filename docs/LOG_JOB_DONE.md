@@ -3,6 +3,45 @@
 
 ---
 
+## 2026-10-02 (siang, lanjutan ke-2) -- Bahasa: teks JS DevLib, label / nilai grid v2, 46 label layar; pemilih kontak e-mail
+
+Lanjutan perintah "semua di backlog yang bisa dikerjakan". Semua di `main`, sudah di-push. Tidak ada perubahan alur / data bisnis:
+hanya teks tampilan (English di kode + kamus) dan satu fasilitas baru di dialog Email.
+
+- **backlog09 §13 butir 1b SELESAI -- teks Indonesia di JS DevLib -> kunci terjemahan** (`T('kunci')` / `Tf('kunci', {..})` +
+  pasangan [ID, EN] di `Devlib\Lang`): form, sheet, grid, lines, approval, calendar, master, notif, lookup, pick-matrix, kanban,
+  import, gantt, credit-card, shell, wizard, perm-matrix, signature, chat, side-menu, drill, field, org-chart, barcode, phone, pivot,
+  slider, doc-share, core (mode developer, daftar pintasan, kotak konfirmasi bawaan). `js_id_text` 180 -> 44; sisa 44 = tabel dua
+  bahasa di `core.js` + 5 bukan teks layar. Diuji di Chrome headless dua bahasa (approval, kanban + modal kartu, gantt, import,
+  credit card, signature, pintasan, konfirmasi) tanpa error JS; semua kunci yang dipanggil JS ada di Lang.
+- **Pemilih tanggal**: inisial hari satu helper `Devlib.h.dow2()` -- Indonesia Mg/Sn/Sl/Rb/Km/Jm/Sb (dulu Intl memberi "Se Se"
+  untuk Senin / Selasa di `x-dl::field.date`).
+- **Kelas grid v2 -- label yang lolos dari penjaga**: 183 label kolom / filter / grup / kotak cari di 34 kelas grid (No CO, Mata Uang,
+  Departemen, Tipe Produk, Lembar Maks, ...) ditulis English; teks panduan laporan CO dan 3 lookup Material Planning dipendekkan
+  <= 255 huruf supaya bisa masuk kamus (15 teks panduan kini punya terjemahan). Nilai tampilan (Ya, Mingguan / Bulanan, Sudah / Belum,
+  Menang / Kalah, Produksi / Penunjang, ...) di 13 grid lewat `t()` yang sama untuk nilai baris, kunci warna, dan saringan kotak
+  statistik -> cocok di bahasa apa pun. Tampilan Indonesia dicek tetap sama; English lewat `?print_lang=en`.
+- **Penjaga diperketat**: `Dictionary::ID_WORDS` + ~70 kata (departemen, tipe, sumber, berlaku, mingguan, ...). Temuan baru 49 label
+  di layar v2 (Quotation, Follow-up, Outstanding, PR, PO, SPB, CO, Delivery Notes, Approval Setting, Master Card Collection,
+  Master Product, Inquiry New / Revise / Recalc -- zona beku: hanya teks ID -> EN, izin sudah ada) + toolbar Grid DevLib (Group,
+  Density, Columns shown, ...), Permission Matrix, bantuan Sheet -> English / kunci Lang. `id_label` kembali 0.
+- **backlog09 §18 -- alamat e-mail dari kontak**: objek DevLib `x-dl::doc-share` punya kotak **Find contact** di dialog Email
+  (`:contacts` statis dan / atau `contacts-url`); klik kontak = masuk ke kotak To / CC / BCC yang terakhir diklik, klik lagi = dicabut.
+  tmerp: `GET /v2/mail-contacts?q=` (`App\Support\V2\Data\MailContacts`: e-mail utama customer / supplier, kontak customer / supplier,
+  user; hanya baris aktif ber-e-mail sah, maks 6 per sumber). Pesan dialog + pesan server e-mail kini English + kamus.
+  Test `MailContactsTest` (3). Demo devlib `doc-share` diberi contoh `:contacts`.
+- Migration kamus `2026_10_02_000056` s/d `000059` di ddtsys DAN tm2sys (dicek di tabel migrations).
+- backlog02 §25 diberi "25.0 Status 2026-10-02" (rantai dummy kini di `ddt*`; apa yang masih terbuka).
+- Probe ulang: 206 item menu, 111 grid (+ Buka / New), 555 form / cetakan = 200 (16 URL lama di daftar probe = id yang sudah tidak ada).
+- **Temuan untuk user (tidak diubah):**
+  - `cust_customer_contact` dan `sup_supplier_contact` belum punya satu pun e-mail -> pemilih kontak baru menampilkan e-mail utama
+    customer (8) / supplier (20) dan user. Mengisi kontak per orang = lewat Master Customer / Supplier.
+  - 242 teks di kamus (konteks `ui`) belum punya terjemahan; sebagian besar teks sumbernya masih Indonesia di layar Inquiry / ProDev /
+    Quotation (isi `<p>`, `x-dl::alert`, kolom tabel bentuk lain) -> butir 1c / 2 backlog09 §13, per layar.
+  - Beberapa kata berubah tipis di tampilan Indonesia karena kamus sudah punya terjemahan lain untuk teks English yang sama
+    -- yang terlihat: "Tipe" -> "Jenis", "Posisi" -> "Jabatan", "Terkirim" -> "Dikirim", "Berlaku" (SOP) -> "Berlaku Sejak",
+    "No CO" -> "No. CO", "Belum" (slip gaji, cetak) -> "Belum dicetak". Bisa diubah di Setup > Translation Dictionary.
+
 ## 2026-10-02 (pagi, lanjutan) -- "semua di backlog yang bisa dikerjakan": sisa UI-20, UI-18, UI-19, 19.1, audit data, PWA, label PQ
 
 Perintah user: "lanjutkan apa yang belum" lalu "semua di backlog yang bisa dikerjakan, kerjakan". Semua di `main`, sudah di-push.
@@ -45,8 +84,8 @@ Semua backlog (01-10) dibaca; yang butuh keputusan user tidak disentuh (daftar d
   - Format cetak belum A: Sales Invoice, Payment Voucher, Surat Jalan Subkon (+ Purchase Quotation, Bukti Kas Kecil dari malam).
   - UI-03 (kerapatan grid) vs keputusan Grid Pre-Entry 30-Sep; dummy stok (menunggu desain gudang K1-K11); usul kasbon satu baris.
   - Butuh keputusan / data nyata: spek & tarif mesin (27), peran part / material role (28), uang roti & tarif lembur payroll (06),
-    jurnal payroll & COGS saat DO (07), sistem laporan manajemen (08), arah mobile (10), chat v2, tujuan e-mail dari kontak, Maintenance M2 / M3.
-  - `js_id_text` 180 teks Indonesia di JS DevLib belum dipindah ke kamus (bertahap).
+    jurnal payroll & COGS saat DO (07), sistem laporan manajemen (08), arah mobile (10), chat v2, Maintenance M2 / M3.
+  - (Tujuan e-mail dari kontak dan teks JS DevLib: selesai di entri "siang, lanjutan ke-2" di atas.)
 
 ## 2026-10-02 (malam, berjalan sendiri) -- Probe semua layar + rollout grid v2 lanjutan (UI-20) + cetakan PQ / Kas Kecil diuji
 
