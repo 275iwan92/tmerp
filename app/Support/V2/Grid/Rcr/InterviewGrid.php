@@ -58,7 +58,7 @@ class InterviewGrid extends RcrGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Candidate', 'type' => 'identity', 'code' => 'phone'],
+            ['key' => 'name', 'label' => 'Candidate / Phone', 'type' => 'doc', 'party' => 'phone'],
             ['key' => 'stage', 'label' => 'Stage'],
             ['key' => 'at', 'label' => 'Schedule', 'type' => 'date'],
             ['key' => 'time', 'label' => 'Time'],

@@ -75,15 +75,17 @@ final class Maintenance
         if ($technicianId) {
             $q->where('assigned_to', $technicianId);
         }
-        $wos = $q->get();
+        $wos = $q->with('parts')->get();
         $mach = self::machineMap($wos->pluck('machine_id'));
+        // Baris anak grid (Expand): suku cadang WO, tanpa harga (tm2prd -> tm2mst, satu query nama bahan).
+        $mats = MatRaw::whereIn('material_id', $wos->flatMap(fn ($w) => $w->parts->pluck('material_id'))->unique())->get(['material_id', 'material_code', 'material_name'])->keyBy('material_id');
         $emp = self::employeeNames($wos->pluck('assigned_to'));
         $src = MntRequest::whereIn('id_request', $wos->pluck('request_id')->filter())->pluck('doc_no', 'id_request');
         $plans = MntPlan::whereIn('id_plan', $wos->pluck('plan_id')->filter())->pluck('plan_code', 'id_plan');
         $down = ProdMachineDowntime::whereIn('downtime_id', $wos->pluck('downtime_id')->filter())->get()->keyBy('downtime_id');
         $today = now()->startOfDay();
 
-        return $wos->map(function (MntWo $w) use ($mach, $emp, $src, $plans, $down, $today) {
+        return $wos->map(function (MntWo $w) use ($mach, $emp, $src, $plans, $down, $today, $mats) {
             $m = $mach[$w->machine_id] ?? null;
             $dt = $w->downtime_id ? ($down[$w->downtime_id] ?? null) : null;
             $mins = $dt ? (int) $dt->start_at->diffInMinutes($dt->end_at ?? now(), true) : null;
@@ -98,6 +100,8 @@ final class Maintenance
                 'downtime' => $mins === null ? '—' : intdiv($mins, 60).' h '.($mins % 60).' m'.($dt->end_at ? '' : ' ●'),
                 'source' => $w->request_id ? ($src[$w->request_id] ?? 'Request') : ($w->plan_id ? ($plans[$w->plan_id] ?? 'Plan') : 'Manual'),
                 'cost' => $w->totalCost(), 'open' => $open ? 'Open' : 'Finished',
+                'items' => $w->parts->map(fn ($p) => ['code' => $mats[$p->material_id]->material_code ?? null, 'name' => $mats[$p->material_id]->material_name ?? '#'.$p->material_id,
+                    'plan' => (float) $p->qty_plan, 'used' => $p->qty_used === null ? null : (float) $p->qty_used, 'unit' => $p->uom_code])->values()->all(),
                 'overdue' => $open && $w->wo_type === 'PREVENTIVE' && $w->planned_start && $w->planned_start->lt($today) && ! $w->actual_start ? 'Overdue' : '',
                 'done_month' => $w->actual_end && $w->actual_end->isSameMonth(now()) ? 'Yes' : '',
             ];
@@ -192,7 +196,7 @@ final class Maintenance
 
     public static function planRows(): array
     {
-        $plans = MntPlan::withCount('tasks')->orderBy('plan_code')->get();
+        $plans = MntPlan::with('tasks')->orderBy('plan_code')->get();
         $mach = self::machineMap($plans->pluck('machine_id'));
         $today = now()->startOfDay();
 
@@ -202,7 +206,10 @@ final class Maintenance
             'type' => MntPlan::TYPES[$p->wo_type] ?? $p->wo_type, 'trigger' => self::triggerText($p), 'mode' => ucfirst(strtolower($p->schedule_mode)),
             'last' => $p->last_done_date?->toDateString(), 'next' => $p->next_due_date?->toDateString(),
             'due' => $p->next_due_date && $p->next_due_date->lt($today) ? 'Overdue' : ($p->next_due_date && $p->next_due_date->lte($today->copy()->addDays((int) $p->lead_days)) ? 'Due' : 'OK'),
-            'tasks' => $p->tasks_count, 'active' => (bool) $p->activate,
+            'tasks' => $p->tasks->count(), 'active' => (bool) $p->activate,
+            // Baris anak grid (Expand): daftar tugas plan.
+            'items' => $p->tasks->map(fn ($t) => ['seq' => $t->seq_no, 'task' => $t->task_text, 'kind' => $t->task_kind, 'uom' => $t->measure_uom,
+                'min' => $t->min_value, 'max' => $t->max_value, 'required' => $t->is_required ? 'Yes' : 'No'])->values()->all(),
         ])->all();
     }
 

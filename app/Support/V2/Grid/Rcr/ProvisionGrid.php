@@ -61,7 +61,7 @@ class ProvisionGrid extends RcrGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Candidate', 'type' => 'identity', 'code' => 'phone'],
+            ['key' => 'name', 'label' => 'Candidate / Phone', 'type' => 'doc', 'party' => 'phone'],
             ['key' => 'vacancy', 'label' => 'Vacancy'],
             ['key' => 'employee', 'label' => 'Employee'],
             ['key' => 'at', 'label' => 'Provisioned', 'type' => 'date'],

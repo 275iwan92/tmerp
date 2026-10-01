@@ -32,8 +32,8 @@
     <x-dl::grid id="mnt-wo-list" :rows="Maintenance::woRows()" search="Search WO, machine, technician..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2prd.mnt_wo', 'tm2mst.prod_machine', 'tm2mst.prod_machine_downtime') }}"
         :columns="[
-            ['key' => 'no', 'label' => 'WO', 'type' => 'identity', 'code' => 'desc', 'avatar' => false],
-            ['key' => 'machine', 'label' => 'Machine'],
+            ['key' => 'no', 'label' => 'WO No. / Machine', 'type' => 'doc', 'party' => 'machine'],
+            ['key' => 'desc', 'label' => 'Description'],
             ['key' => 'support', 'label' => 'Machine Kind', 'visible' => false],
             ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => Maintenance::TYPE_TONES],
             ['key' => 'priority', 'label' => 'Priority', 'type' => 'badge', 'tones' => Maintenance::PRIO_TONES],
@@ -41,10 +41,17 @@
             ['key' => 'planned_at', 'label' => 'Planned'],
             ['key' => 'technician', 'label' => 'Technician'],
             ['key' => 'downtime', 'label' => 'Downtime'],
-            ['key' => 'source', 'label' => 'Source'],
+            ['key' => 'source', 'label' => 'Source', 'visible' => false],
             ['key' => 'cost', 'label' => 'Cost', 'type' => 'money', 'sum' => true, 'visible' => false],
         ]"
         :stats="Maintenance::woStats()"
+        :detail="['key' => 'items', 'title' => 'Spare Parts', 'columns' => [
+            ['key' => 'code', 'label' => 'Code'],
+            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
+            ['key' => 'plan', 'label' => 'Planned Qty', 'type' => 'number'],
+            ['key' => 'used', 'label' => 'Used Qty', 'type' => 'number'],
+            ['key' => 'unit', 'label' => 'Unit'],
+        ]]"
         :filters="['type' => 'Type', 'work' => 'Work Status', 'machine' => 'Machine', 'technician' => 'Technician', 'priority' => 'Priority']" />
 @elseif (! $wo)
     <form method="post" action="{{ route('v2.mnt.wo.create') }}">

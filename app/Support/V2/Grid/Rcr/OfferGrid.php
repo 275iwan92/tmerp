@@ -54,7 +54,7 @@ class OfferGrid extends RcrGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Candidate', 'type' => 'identity', 'code' => 'phone'],
+            ['key' => 'name', 'label' => 'Candidate / Phone', 'type' => 'doc', 'party' => 'phone'],
             ['key' => 'vacancy', 'label' => 'Vacancy'],
             ['key' => 'rounds', 'label' => 'Offers', 'type' => 'number'],
             ['key' => 'type', 'label' => 'Employment Type'],

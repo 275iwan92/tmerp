@@ -54,7 +54,7 @@ class LeaveRequestGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
             ['key' => 'type', 'label' => 'Type'],
             ['key' => 'from', 'label' => 'From', 'type' => 'date'],
             ['key' => 'to', 'label' => 'Until', 'type' => 'date'],

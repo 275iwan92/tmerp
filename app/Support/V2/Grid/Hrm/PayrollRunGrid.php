@@ -62,8 +62,8 @@ class PayrollRunGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'type', 'label' => 'Periode', 'type' => 'badge', 'tones' => ['WEEKLY' => 'warn', 'MONTHLY' => 'info']],
-            ['key' => 'start', 'label' => 'From', 'type' => 'date'],
+            ['key' => 'period', 'label' => 'Period Start / Type', 'type' => 'doc', 'party' => 'type'],
+            ['key' => 'start', 'label' => 'From', 'type' => 'date', 'visible' => false],
             ['key' => 'end', 'label' => 'Until', 'type' => 'date'],
             ['key' => 'slips', 'label' => 'Slip', 'type' => 'number'],
             ['key' => 'anomaly', 'label' => 'Anomali', 'type' => 'number'],
@@ -76,7 +76,7 @@ class PayrollRunGrid extends HrmGrid
         $s = $this->slips[$m->getKey()] ?? null;
 
         return [
-            'type' => $m->period_type, 'start' => substr((string) $m->period_start, 0, 10), 'end' => substr((string) $m->period_end, 0, 10),
+            'period' => \Devlib\Locale::date(substr((string) $m->period_start, 0, 10)), 'type' => $m->period_type, 'start' => substr((string) $m->period_start, 0, 10), 'end' => substr((string) $m->period_end, 0, 10),
             'slips' => (int) ($s->n ?? 0), 'anomaly' => (int) ($s->anomaly ?? 0), 'status' => $m->run_status,
         ];
     }

@@ -49,7 +49,7 @@ class ApplicationGrid extends RcrGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Candidate', 'type' => 'identity', 'code' => 'phone'],
+            ['key' => 'name', 'label' => 'Candidate / Phone', 'type' => 'doc', 'party' => 'phone'],
             ['key' => 'email', 'label' => 'Email'],
             ['key' => 'vacancy', 'label' => 'Vacancy'],
             ['key' => 'applied', 'label' => 'Applied', 'type' => 'date'],

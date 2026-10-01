@@ -24,16 +24,24 @@
     <x-dl::grid id="mnt-plan-list" :rows="Maintenance::planRows()" search="Search plan, machine..." actions="worklist" :active-key="null"
         :new-url="$head ? $home.'?new=1' : null" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2prd.mnt_plan', 'tm2prd.mnt_plan_task', 'tm2mst.prod_machine') }}"
         :columns="[
-            ['key' => 'code', 'label' => 'Plan', 'type' => 'identity', 'code' => 'name', 'avatar' => false],
-            ['key' => 'machine', 'label' => 'Machine'],
+            ['key' => 'code', 'label' => 'Plan Code / Machine', 'type' => 'doc', 'party' => 'machine'],
+            ['key' => 'name', 'label' => 'Plan Name'],
             ['key' => 'type', 'label' => 'WO Type', 'type' => 'badge', 'tones' => Maintenance::TYPE_TONES],
             ['key' => 'trigger', 'label' => 'Trigger'],
             ['key' => 'mode', 'label' => 'Schedule'],
-            ['key' => 'tasks', 'label' => 'Tasks', 'type' => 'number'],
             ['key' => 'last', 'label' => 'Last Done', 'type' => 'date'],
             ['key' => 'next', 'label' => 'Next Due', 'type' => 'date'],
             ['key' => 'due', 'label' => 'Due', 'type' => 'badge', 'tones' => ['Overdue' => 'danger', 'Due' => 'warn', 'OK' => 'success']],
         ]"
+        :detail="['key' => 'items', 'title' => 'Tasks', 'columns' => [
+            ['key' => 'seq', 'label' => 'No.', 'type' => 'number'],
+            ['key' => 'task', 'label' => 'Task', 'strong' => true],
+            ['key' => 'kind', 'label' => 'Kind'],
+            ['key' => 'uom', 'label' => 'Unit'],
+            ['key' => 'min', 'label' => 'Min', 'type' => 'number'],
+            ['key' => 'max', 'label' => 'Max', 'type' => 'number'],
+            ['key' => 'required', 'label' => 'Required'],
+        ]]"
         :stats="[['label' => 'All'], ['label' => 'Overdue', 'where' => ['due' => 'Overdue'], 'tone' => 'danger'], ['label' => 'Due soon', 'where' => ['due' => 'Due'], 'tone' => 'warn'], ['label' => 'Inspection', 'where' => ['type' => 'Inspection'], 'tone' => 'success']]"
         :filters="['machine' => 'Machine', 'type' => 'WO Type', 'due' => 'Due']" />
 @else

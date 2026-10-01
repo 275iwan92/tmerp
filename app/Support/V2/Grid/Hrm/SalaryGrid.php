@@ -68,7 +68,7 @@ class SalaryGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
             ['key' => 'basic', 'label' => 'Base Salary/Month', 'type' => 'money'],
             ['key' => 'skill', 'label' => 'Skill Allowance/Month', 'type' => 'money'],
             ['key' => 'ptkp', 'label' => 'PTKP'],

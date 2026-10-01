@@ -54,7 +54,7 @@ class CorrectionRequestGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
             ['key' => 'field', 'label' => 'Field'],
             ['key' => 'old', 'label' => 'Nilai Lama'],
             ['key' => 'new', 'label' => 'New Value'],

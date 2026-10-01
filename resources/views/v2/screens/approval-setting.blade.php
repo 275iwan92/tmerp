@@ -18,8 +18,7 @@
     <x-dl::grid id="approval-setting-list" :rows="ApprovalSetting::rows()" search="Search module, position..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2mst.flow_config', 'tm2mst.flow_config_step') }}"
         :columns="[
-            ['key' => 'module', 'label' => t('Code')],
-            ['key' => 'name', 'label' => 'Dokumen'],
+            ['key' => 'module', 'label' => 'Document Code / Name', 'type' => 'doc', 'party' => 'name'],
             ['key' => 'levels', 'label' => t('Number of Levels'), 'type' => 'number'],
             ['key' => 'approvers', 'label' => t('Approver per Level (position)')],
             ['key' => 'final', 'label' => t('Final Status')],

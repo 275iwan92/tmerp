@@ -75,8 +75,8 @@ class PayslipGrid extends HrmGrid
     public function columns(): array
     {
         return [
+            ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
             ['key' => 'period', 'label' => 'Periode'],
-            ['key' => 'name', 'label' => 'Pegawai', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'dept', 'label' => 'Departemen'],
             ['key' => 'net', 'label' => 'Net Salary', 'type' => 'money'],
             ['key' => 'printed', 'label' => 'Printout', 'type' => 'badge', 'tones' => ['Sudah' => 'success', 'Belum' => 'neutral']],

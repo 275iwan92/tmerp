@@ -23,14 +23,14 @@
     <x-dl::grid id="mnt-req-list" :rows="Maintenance::requestRows()" search="Search request, machine, symptom..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2prd.mnt_request', 'tm2mst.prod_machine') }}"
         :columns="[
-            ['key' => 'no', 'label' => 'Request', 'type' => 'identity', 'code' => 'symptom', 'avatar' => false],
+            ['key' => 'no', 'label' => 'Request No. / Machine', 'type' => 'doc', 'party' => 'machine'],
+            ['key' => 'symptom', 'label' => 'Symptom'],
             ['key' => 'at', 'label' => 'Reported'],
-            ['key' => 'machine', 'label' => 'Machine'],
             ['key' => 'kind', 'label' => 'Kind', 'type' => 'badge', 'tones' => ['Breakdown' => 'danger', 'Corrective' => 'warn', 'Safety' => 'danger', 'Improvement' => 'info']],
             ['key' => 'priority', 'label' => 'Priority', 'type' => 'badge', 'tones' => Maintenance::PRIO_TONES],
             ['key' => 'stopped', 'label' => 'Machine', 'type' => 'badge', 'tones' => ['Stopped' => 'danger', 'Running' => 'success']],
-            ['key' => 'reporter', 'label' => 'Reported by'],
-            ['key' => 'age', 'label' => 'Waiting'],
+            ['key' => 'reporter', 'label' => 'Reported by', 'visible' => false],
+            ['key' => 'age', 'label' => 'Waiting', 'visible' => false],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => Maintenance::REQ_TONES],
             ['key' => 'wo', 'label' => 'Work Order'],
         ]"

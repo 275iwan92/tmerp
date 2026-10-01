@@ -63,15 +63,15 @@ class AttendanceGrid extends HrmGrid
     public function columns(): array
     {
         return [
+            ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
-            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'shift', 'label' => 'Shift'],
             ['key' => 'in', 'label' => 'Sign in'],
             ['key' => 'out', 'label' => 'Pulang'],
             ['key' => 'late', 'label' => 'Telat (Mnt)', 'type' => 'number'],
             ['key' => 'overtime', 'label' => 'Overtime (Min)', 'type' => 'number'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['H' => 'success', 'A' => 'danger'] + array_fill_keys(self::LATE, 'warn')],
-            ['key' => 'source', 'label' => 'Sumber'],
+            ['key' => 'source', 'label' => 'Sumber', 'visible' => false],
         ];
     }
 

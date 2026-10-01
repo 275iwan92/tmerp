@@ -59,7 +59,7 @@ class AssessmentGrid extends RcrGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Candidate', 'type' => 'identity', 'code' => 'phone'],
+            ['key' => 'name', 'label' => 'Candidate / Phone', 'type' => 'doc', 'party' => 'phone'],
             ['key' => 'stage', 'label' => 'Stage'],
             ['key' => 'score', 'label' => 'Score', 'type' => 'number'],
             ['key' => 'recommendation', 'label' => 'Recommendation', 'type' => 'badge', 'tones' => ['LANJUT' => 'success', 'TIDAK_LANJUT' => 'danger', 'PERTIMBANGKAN' => 'warn']],

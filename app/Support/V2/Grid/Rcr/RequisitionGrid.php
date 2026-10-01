@@ -62,9 +62,8 @@ class RequisitionGrid extends RcrGrid
     public function columns(): array
     {
         return [
-            ['key' => 'no', 'label' => 'Requisition No'],
+            ['key' => 'no', 'label' => 'Requisition No. / Department', 'type' => 'doc', 'party' => 'department'],
             ['key' => 'position', 'label' => 'Position'],
-            ['key' => 'department', 'label' => 'Department'],
             ['key' => 'track', 'label' => 'Track'],
             ['key' => 'headcount', 'label' => 'Headcount', 'type' => 'number'],
             ['key' => 'vacancies', 'label' => 'Vacancies', 'type' => 'number'],

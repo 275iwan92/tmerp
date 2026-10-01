@@ -55,7 +55,7 @@ class GpsApprovalGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'code', 'label' => 'Employee No. / Name', 'type' => 'doc', 'party' => 'name'],
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'time', 'label' => 'Time'],
             ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['Masuk' => 'info', 'Pulang' => 'neutral']],

@@ -58,9 +58,8 @@ class RuleLibraryGrid extends ProdGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Rule'],
+            ['key' => 'name', 'label' => 'Rule / Machine', 'type' => 'doc', 'party' => 'machine'],
             ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['BATCHING' => 'info', 'SEQUENCE' => 'accent']],
-            ['key' => 'machine', 'label' => 'Machine'],
             ['key' => 'process', 'label' => 'Process'],
             ['key' => 'condition', 'label' => 'Condition'],
             ['key' => 'from', 'label' => 'Effective From', 'type' => 'date'],

@@ -48,8 +48,7 @@ class VacancyGrid extends RcrGrid
     public function columns(): array
     {
         return [
-            ['key' => 'code', 'label' => 'Vacancy Code'],
-            ['key' => 'title', 'label' => 'Title'],
+            ['key' => 'code', 'label' => 'Vacancy Code / Title', 'type' => 'doc', 'party' => 'title'],
             ['key' => 'requisition', 'label' => 'Requisition'],
             ['key' => 'channel', 'label' => 'Channel'],
             ['key' => 'published', 'label' => 'Published', 'type' => 'date'],
