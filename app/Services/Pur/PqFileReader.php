@@ -99,7 +99,7 @@ final class PqFileReader
     // Tanpa AI: cari baris judul (Nama Barang / Qty / Satuan / Harga) di 30 baris teratas, lalu baca baris di bawahnya.
     private static function viaSheet(string $path): array
     {
-        $rows = IOFactory::load($path)->getActiveSheet()->toArray(null, true, false, false);
+        $rows = self::rows($path, false);
         $cols = null;
         $start = 0;
         foreach (array_slice($rows, 0, 30, true) as $i => $row) {
@@ -139,10 +139,33 @@ final class PqFileReader
             'payment_term' => null, 'lead_time_day' => null, 'lines' => $lines];
     }
 
+    // Isi lembar sebagai baris-baris sel. CSV dibaca sendiri sebagai TEKS: pembaca CSV PhpSpreadsheet mengubah "12.500" menjadi
+    // angka 12,5 sebelum number() sempat menafsirkannya sebagai dua belas ribu lima ratus (angka gaya Indonesia).
+    private static function rows(string $path, bool $formatted): array
+    {
+        if (IOFactory::identify($path) !== 'Csv') {
+            return IOFactory::load($path)->getActiveSheet()->toArray(null, true, $formatted, false);
+        }
+        $text = preg_replace('/^\xEF\xBB\xBF/', '', (string) file_get_contents($path));
+        $first = strtok($text, "\r\n") ?: '';
+        // Pemisah = yang paling banyak muncul di baris pertama (Excel Indonesia menyimpan CSV dengan titik koma).
+        $delimiter = collect([';', "\t", ','])->sortByDesc(fn ($d) => substr_count($first, $d))->first();
+        $rows = [];
+        $handle = fopen('php://memory', 'r+');
+        fwrite($handle, $text);
+        rewind($handle);
+        while (($row = fgetcsv($handle, null, $delimiter, '"', '')) !== false) {
+            $rows[] = array_map(fn ($v) => $v === null ? null : trim((string) $v), $row);
+        }
+        fclose($handle);
+
+        return $rows;
+    }
+
     private static function sheetAsCsv(string $path): string
     {
         $out = '';
-        foreach (IOFactory::load($path)->getActiveSheet()->toArray(null, true, true, false) as $row) {
+        foreach (self::rows($path, true) as $row) {
             if (array_filter($row, fn ($v) => $v !== null && $v !== '')) {
                 $out .= implode(';', array_map(fn ($v) => str_replace(["\n", ';'], [' ', ','], (string) $v), $row))."\n";
             }
