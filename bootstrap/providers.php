@@ -2,6 +2,7 @@
 
 use App\Providers\AppServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
+use App\Providers\PlanningServiceProvider;
 use App\Providers\RecruitmentServiceProvider;
 use App\Providers\SchedulingServiceProvider;
 use MockupParts\MockupPartsServiceProvider;
@@ -11,5 +12,6 @@ return [
     AdminPanelProvider::class,
     SchedulingServiceProvider::class,
     RecruitmentServiceProvider::class,
+    PlanningServiceProvider::class,
     MockupPartsServiceProvider::class,
 ];

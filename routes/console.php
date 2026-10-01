@@ -20,3 +20,8 @@ Schedule::command('production:suggest-speed-targets')->dailyAt('03:00')->without
 
 // Maintenance: plan preventive jatuh tempo -> MWO Draft (docs/maintenance_tier1.md §6).
 Schedule::command('maintenance:generate-pm')->dailyAt('06:00')->withoutOverlapping();
+
+// Material Planning: lepas booking CO yang batal + hitung ulang usulan booking CO CONFIRMED yang belum dikunci (tiap malam).
+// Lingkungan yang belum punya skema Material Planning (tm2* sebelum disetujui user) dilewati.
+Schedule::command('planning:run')->dailyAt('01:30')->withoutOverlapping()
+    ->when(fn () => \Illuminate\Support\Facades\Schema::connection('tm2inv')->hasColumn('rm_booking', 'co_id'));

@@ -100,8 +100,31 @@
 | B8 | setuju | PR per supplier, dibulatkan kemasan beli; lead time per kategori + override per item, layar input baru |
 | B9 | "buat MRP dan MPS baru yang lebih baik; berbasis CO saja kurang baik" | **Keputusan membalik rekomendasi**: booking menjadi bagian dari MRP/MPS BARU (engine lama tetap arsip, tidak dihidupkan). Desain MRP/MPS baru menyusul (§7) |
 
-## 7. Status build (2026-10-01, jalan mandiri atas izin user — belum direview)
-- Aturan user: master tidak diubah sistem; hanya transaksi. Nilai default boleh diperbarui analisa sistem, tetap bisa di-override user.
-- Keputusan agen (menunggu review): rebutan stok = prioritas CONFIRMED -> DRAFT -> FORECAST, lalu tanggal butuh; standar pemakaian per role (mat_usage_standard, nilai awal usulan industri); MPS = forecast per customer x product x bulan, CO memakan forecast bulan yang sama; horizon 90 hari; kapasitas mesin = tahap 2; POST to Production = booking menempel ke WO (belum dibangun).
-- SUDAH: migration `2026_10_01_000070` (ddt* saja), model RmBooking/RmBookingD/RmBookingAlloc/MatUsageStandard/PrdDemandForecast, engine `App\Services\Planning\MaterialPlanningEngine` (demand CO+forecast, FG dulu, pecah semua bahan, netting stok/PO/PR, persist/confirm/unlock/release) — diuji ke ddt: 104 kebutuhan, 18 bahan.
-- BELUM: layar v2 (material-booking, material-planning, demand-forecast, usage-standard, purchase-lead-time), routes/v2_planning.php, popup notifikasi (DevLib Modal tone), trigger CO Confirm/Cancel + WO created, perintah malam, Create PR, dummy stok benar (hapus yang salah), preview artifact baru.
+## 7. Status build (2026-10-01) — SUDAH DIBANGUN di ddt* (mockup.test), menunggu review user
+
+Aturan user: master tidak diubah sistem; hanya transaksi. Nilai default boleh diperbarui analisa sistem, tetap bisa di-override user.
+
+**Keputusan agen (jalan mandiri atas izin user — silakan dikoreksi):**
+- Rebutan stok: CO CONFIRMED -> DRAFT/SUBMITTED -> FORECAST, lalu tanggal butuh terawal. Pindah stok antar CO oleh Ops Manager BELUM dibangun.
+- MPS = forecast per customer x product x bulan; CO bulan yang sama memakan forecast; horizon `MRP_HORIZON_DAYS` 90 hari. Cek kapasitas mesin = tahap 2.
+- Standar pemakaian `mat_usage_standard` (nilai awal = angka umum offset, BUKAN data pabrik). Tinta: per warna dari `prod_part_ink` (coverage) atau `cfg_color` + `BOOKING_INK_COVERAGE_PCT`; item tinta dicocokkan dari nama (mis. "BRITE INK CYAN"). Varnish/coating/film/lem: berlaku bila kata pemicu ada di nama proses part / finishing.
+- Dasar lembar kertas: layout ProDev CONFIRMED -> costing inquiry CO (cut per plano x isi) -> ukuran BOM vs bentangan part; tak ada = `NEED_LAYOUT`.
+- Item belum ada di BOM = `NEED_ITEM` -> **Pick Item** di booking (disimpan `rm_booking_d.note_detail = PICK`, bertahan saat hitung ulang; Master Product tidak diubah).
+- Hard booking = header `stat_confirm = 1` (view `v_rm_available` sudah mengurangi `qty_book - qty_issued`), stok dikunci per lokasi. CO berubah sesudah Confirm -> lencana "CO changed" -> Back to Draft.
+- Create PR: satu PR Draft per supplier usulan (`i_source = MRP`), qty dibulatkan ke satuan beli, `i_need_date` + `i_co_line_id` terisi.
+- Popup: `x-dl::modal tone="danger"` (objek DevLib baru: prop `tone`) di layar pembuka, sekali per login / saat jumlah berubah + kartu merah tetap; untuk user yang punya akses PROD / INV / FINACC / MGMT / PROC. WhatsApp belum.
+- Pemicu: `PlanningServiceProvider` (CO jadi CONFIRMED = usulan dibuat; batal / kembali Draft = dilepas; WO lahir = hitung ulang + catat WO pertama), `planning:run` tiap malam 01:30. Pick List per WO = Warehouse tahap 2.
+
+**User journey:**
+1. Production > Planning > **Material Booking**: daftar semua CO aktif + forecast, kolom Coverage (Short / Need item / Late / Waiting PO/PR / Covered / Booked), kotak statistik = filter. Tombol Recalculate All.
+2. Klik 2x CO: baris bahan (produk, part, bahan, tanggal butuh, qty, ditutup oleh, kurang, rumus). CO belum Confirmed = pratinjau saja. CO Confirmed: **Recalculate** -> **Pick Item** (baris tanpa item) -> **Confirm** (kunci stok) -> **Back to Draft** bila perlu.
+3. Production > Planning > **Material Planning (MRP)**: satu baris per bahan (butuh, dari stok, dari PO/PR, kurang, butuh pertama, pesan paling lambat, supplier). Centang bahan kurang -> **Create PR** -> terbuka di Purchase Requisition (Draft). Klik 2x bahan = proyeksi saldo per tanggal.
+4. Production > Planning > **Demand Forecast (MPS)**: isi langsung di sel (customer, product, bulan, qty) -> Save.
+5. Master Data > **Material Usage Standard** dan **Purchase Lead Time**: isi langsung di sel -> Save.
+6. Layar pembuka: popup merah "Material Shortage" + kartu merah dengan tombol Open Material Planning.
+
+**File:** migration `2026_10_01_000070` (skema) + `000071` (menu aktif, `material_id` nullable, perbaikan dummy stok); `app/Services/Planning/MaterialPlanningEngine.php`; `app/Support/V2/Data/MaterialPlanning.php`; `app/Support/V2/Grid/Planning/*`; `resources/views/v2/screens/material-booking|material-planning.blade.php`; `resources/views/v2/partials/material-alert.blade.php`; `routes/v2_planning.php`; `app/Console/Commands/PlanningRun.php` (`--demo` = contoh forecast + pick, ddt saja); `app/Providers/PlanningServiceProvider.php`.
+
+**Dummy (aturan B.12):** Stock Out tanpa stok masuk (AC 210 GR, -10) dihapus; saldo berjalan `rm_stockcard` dihitung ulang (FREON -1000 -> 0, ANIMAL GLUE 50 -> 1030). Contoh forecast + pick dibuat `planning:run --demo` (dinamis; CO dummy dibuat ulang sesi lain saat pekerjaan ini berjalan).
+
+**Belum / terbuka:** tm2* belum dimigrasi (menunggu OK); pindah stok antar CO + persetujuan Ops Manager; Substitute & Reschedule; Pick List per WO; kapasitas mesin di MPS; notifikasi WhatsApp; terjemahan Indonesia label baru (Setup > Translation Dictionary); baseline `ddt` belum disimpan ulang; preview artifact lama (tab di artifact gudang) belum diperbarui — layar asli di mockup.test menggantikannya.

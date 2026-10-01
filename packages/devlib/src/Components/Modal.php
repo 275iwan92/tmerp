@@ -3,6 +3,7 @@
 namespace Devlib\Components;
 
 // Jendela modal. Dibuka tombol ber-atribut data-dl-open="<id>" atau Devlib.modal.open(id). Slot "footer" = tombol bawah.
+// tone = danger | warn | info | success: kepala modal berwarna mencolok (peringatan yang harus terlihat, mis. popup saat login).
 class Modal extends DevlibComponent
 {
     public function __construct(
@@ -11,6 +12,7 @@ class Modal extends DevlibComponent
         public string $size = 'md',
         public bool $open = false,
         public ?string $icon = null,
+        public ?string $tone = null,
     ) {}
 
     public function tag(): string
@@ -22,7 +24,7 @@ class Modal extends DevlibComponent
     {
         return <<<'BLADE'
             <div {{ $attributes->class(['dl-mov', 'is-on' => $open]) }} {!! $dl() !!} data-dl-modal-id="{{ $id }}" role="dialog" aria-modal="true" aria-label="{{ $title }}">
-                <div class="dl-modal dl-modal--{{ $size }}">
+                <div @class(['dl-modal', 'dl-modal--'.$size, 'dl-modal--tone dl-modal--'.$tone => $tone])>
                     @if ($title)
                         <div class="dl-modal__head"><h3>@if ($icon)<i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i> @endif{{ $title }}</h3><button type="button" class="dl-modal__x" data-dl-close-modal aria-label="{{ \Devlib\Lang::text('Close') }}">&times;</button></div>
                     @endif

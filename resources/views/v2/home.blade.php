@@ -36,6 +36,7 @@
                 @endforelse
             </section>
         </x-slot:profilePages>
+        @include('v2.partials.material-alert')
         <p>Ini <b>Build &amp; UAT</b>: layar ERP disusun dari objek <b>DevLib</b> dengan data <b>dummy</b> ({{ config('database.connections.tm2mst.database') }} dst). Lencana di menu:
             <b>Review</b> = layar v2 menunggu penilaian, <b>v1</b> = sementara membuka layar lama, <b>Belum</b> = belum ada layar.
             Grup <b>Alur</b> menunjukkan perjalanan dokumen antar layar.</p>

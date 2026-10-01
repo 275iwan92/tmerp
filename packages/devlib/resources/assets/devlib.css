@@ -786,6 +786,11 @@ body.dl-page-wide .dl-cat{max-width:none;padding-left:6px;padding-right:6px}
 /* modal: ukuran & konfirmasi */
 .dl-modal--sm{max-width:400px}.dl-modal--md{max-width:520px}.dl-modal--lg{max-width:760px}.dl-modal--xl{max-width:1000px}
 .dl-modal__head h3 i{color:var(--dl-accent);margin-right:4px}
+/* Modal bernada (tone): kepala berwarna mencolok untuk peringatan yang wajib terlihat (popup saat login). */
+.dl-modal--tone{border-top:6px solid var(--dl-tone, var(--dl-accent))}
+.dl-modal--tone .dl-modal__head{background:color-mix(in srgb, var(--dl-tone, var(--dl-accent)) 14%, transparent)}
+.dl-modal--tone .dl-modal__head h3,.dl-modal--tone .dl-modal__head h3 i{color:var(--dl-tone, var(--dl-accent))}
+.dl-modal--danger{--dl-tone:var(--dl-danger)}.dl-modal--warn{--dl-tone:var(--dl-amber)}.dl-modal--info{--dl-tone:var(--dl-accent)}.dl-modal--success{--dl-tone:var(--dl-success)}
 .dl-mov .dl-modal{max-height:90dvh;display:flex;flex-direction:column}
 .dl-mov .dl-modal__body{overflow:auto}
 .dl-confirm__body{display:flex;gap:14px;padding:20px}

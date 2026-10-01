@@ -36,6 +36,8 @@ final class MaterialPlanningEngine
 
     private static ?array $cache = null;
 
+    private static ?Collection $frozen = null;
+
     private array $holidays = [];
 
     private array $offDays = [];
@@ -55,6 +57,7 @@ final class MaterialPlanningEngine
     public static function forget(): void
     {
         self::$cache = null;
+        self::$frozen = null;
     }
 
     // ------------------------------------------------------------------ hasil lengkap (dipakai semua layar)
@@ -68,13 +71,42 @@ final class MaterialPlanningEngine
         $lines = [];
         $frozenCos = RmBooking::where('stat_confirm', 1)->where('stat_cancel', 0)->where('stat_closed', 0)->whereNotNull('co_id')->pluck('co_id')->flip();
         $demands = $this->demands();
+        $picks = $this->picks();
         foreach ($this->netFinishedGoods($demands->reject(fn ($d) => isset($frozenCos[$d['co_id'] ?? 0]))) as $d) {
-            array_push($lines, ...$this->explode($d));
+            foreach ($this->explode($d) as $l) {
+                // Pick Item PPIC (disimpan di booking, BUKAN di Master Product) menggantikan baris NEED_ITEM.
+                $pick = $l['status'] === 'NEED_ITEM' ? ($picks[self::pickKey($l)] ?? null) : null;
+                if ($pick && ($m = $this->material((int) $pick))) {
+                    $l = ['material_id' => (int) $pick, 'material' => $m->material_name, 'status' => null, 'picked' => true] + $l;
+                }
+                $lines[] = $l;
+            }
         }
         $lines = $this->net($lines);
         array_push($lines, ...$this->frozenLines());
 
         return self::$cache = ['lines' => $lines, 'materials' => $this->summarize($lines)];
+    }
+
+    public static function pickKey(array $l): string
+    {
+        return implode('|', [$l['co_item_id'] ?? 0, $l['part_id'] ?? 0, $l['role'], mb_substr((string) ($l['spec'] ?? ''), 0, 150)]);
+    }
+
+    // Item pilihan PPIC per kebutuhan (rm_booking_d.note_detail = 'PICK'), bertahan saat booking dihitung ulang.
+    private function picks(): array
+    {
+        return DB::connection('tm2inv')->table('rm_booking_d as d')->join('rm_booking as h', 'h.booking_id', '=', 'd.booking_id')->where('h.stat_cancel', 0)
+            ->where('d.note_detail', 'PICK')->whereNotNull('d.material_id')->get(['d.co_detail_id', 'd.part_id', 'd.material_role', 'd.spec_text', 'd.material_id'])
+            ->mapWithKeys(fn ($r) => [implode('|', [$r->co_detail_id ?? 0, $r->part_id ?? 0, $r->material_role, $r->spec_text ?? '']) => (int) $r->material_id])->all();
+    }
+
+    public function pick(RmBookingD $d, int $materialId): void
+    {
+        abort_unless($this->material($materialId), 422, 'Item not found.');
+        $d->update(['material_id' => $materialId, 'note_detail' => 'PICK', 'update_by' => $this->login]);
+        self::forget();
+        $this->persist((int) $d->co_id);
     }
 
     public function linesForCo(int $coId): array
@@ -370,14 +402,16 @@ final class MaterialPlanningEngine
             ->map(fn ($q) => (float) $q)->all(), 'STOCK');
         $po = DB::connection('tm2pur')->table('po_line as l')->join('po_order as o', 'o.po_id', '=', 'l.po_id')->whereIn('l.item_id', $ids)
             ->where('o.stat_cancel', 0)->whereNotIn('o.status', ['DRAFT', 'CANCELLED', 'CLOSED', 'RECEIVED', 'REJECTED'])->where('l.c_qty_outstanding', '>', 0)
-            ->orderBy('o.i_delivery_date')->get(['l.po_line_id as id', 'l.item_id', 'o.doc_no as no', 'o.i_delivery_date as date', 'l.c_qty_outstanding as qty'])
+            ->orderBy('o.i_delivery_date')->get(['l.po_line_id as id', 'l.item_id', 'o.doc_no as no', 'o.i_delivery_date as date', DB::raw('l.c_qty_outstanding * IF(IFNULL(l.c_conv_to_stock, 0) > 0, l.c_conv_to_stock, 1) as qty')])
             ->map(fn ($r) => (array) $r + ['type' => 'PO'])->all();
         $pr = DB::connection('tm2pur')->table('pr_line as l')->join('pr_requisition as r', 'r.pr_id', '=', 'l.pr_id')->whereIn('l.item_id', $ids)
             ->where('r.stat_cancel', 0)->whereNotIn('r.status', ['REJECTED', 'CANCELLED', 'CLOSED', 'FULLY_ORDERED'])
             ->whereRaw('l.i_qty > IFNULL(l.c_qty_ordered, 0)')->orderBy('l.i_need_date')
             ->get(['l.pr_line_id as id', 'l.item_id', 'r.doc_no as no', DB::raw('COALESCE(l.i_need_date, r.i_need_date) as date'), DB::raw('l.i_qty - IFNULL(l.c_qty_ordered, 0) as qty')])
             ->map(fn ($r) => (array) $r + ['type' => 'PR'])->all();
-        $incoming = collect([...$po, ...$pr])->map(fn ($s) => $s + ['left' => (float) $s['qty'] - $this->frozenPeg($s['type'], (int) $s['id'])])
+        // PO/PR ditulis dalam satuan beli -> dikali konversi ke satuan stok (PO: c_conv_to_stock baris; PR: konversi master item).
+        $conv = fn (array $s) => $s['type'] === 'PR' ? ((float) ($this->material((int) $s['item_id'])->conversion_to_stock ?? 0) ?: 1) : 1;
+        $incoming = collect([...$po, ...$pr])->map(fn ($s) => $s + ['left' => (float) $s['qty'] * $conv($s) - $this->frozenPeg($s['type'], (int) $s['id'])])
             ->groupBy('item_id')->map->all()->all();
 
         $order = collect($lines)->map(fn ($l, $i) => $l + ['_i' => $i])->filter(fn ($l) => $l['material_id'] && $l['status'] === null);
@@ -434,9 +468,7 @@ final class MaterialPlanningEngine
     // Sumber yang sudah dipegang booking CONFIRMED (hard) tidak boleh dipakai lagi oleh usulan lain.
     private function frozenAllocs(): Collection
     {
-        static $rows = null;
-
-        return $rows ??= DB::connection('tm2inv')->table('rm_booking_alloc as a')->join('rm_booking_d as d', 'd.booking_detail_id', '=', 'a.booking_detail_id')
+        return self::$frozen ??= DB::connection('tm2inv')->table('rm_booking_alloc as a')->join('rm_booking_d as d', 'd.booking_detail_id', '=', 'a.booking_detail_id')
             ->join('rm_booking as h', 'h.booking_id', '=', 'd.booking_id')->where('h.stat_confirm', 1)->where('h.stat_cancel', 0)->where('h.stat_closed', 0)
             ->get(['a.source_type', 'a.source_id', 'a.qty', 'a.qty as q', 'd.material_id', 'd.product_id', 'd.qty_issued']);
     }
@@ -553,7 +585,7 @@ final class MaterialPlanningEngine
                     'material_role' => $l['role'], 'uom_code' => $l['uom'], 'qty_need' => $l['qty'], 'need_date' => $l['need_date'], 'line_status' => $l['status'],
                     'calc_source' => $l['source'], 'calc_note' => mb_substr((string) $l['note'], 0, 255), 'spec_text' => $l['spec'] ? mb_substr($l['spec'], 0, 150) : null,
                     'qty_book' => 0, 'qty_purchase' => collect($l['alloc'])->whereIn('type', ['PO', 'PR'])->sum('qty'), 'qty_short' => $l['short'] ?? 0,
-                    'qty_replacement' => 0, 'qty_issued' => 0, 'stat_cancel' => 0, 'create_by' => $this->login]);
+                    'qty_replacement' => 0, 'qty_issued' => 0, 'stat_cancel' => 0, 'note_detail' => empty($l['picked']) ? null : 'PICK', 'create_by' => $this->login]);
                 foreach ($l['alloc'] as $a) {
                     RmBookingAlloc::create(['booking_detail_id' => $d->booking_detail_id, 'source_type' => $a['type'], 'source_id' => $a['id'], 'source_no' => $a['no'],
                         'source_date' => $a['date'], 'qty' => $a['qty'], 'is_late' => $a['late'], 'created_by' => $this->login]);
@@ -591,8 +623,8 @@ final class MaterialPlanningEngine
                         // Stok di lokasi lain: baris tambahan qty_need 0 (bukan kebutuhan baru), hanya memegang stok lokasi itu.
                         RmBookingD::create(array_merge($d->only(['booking_id', 'co_id', 'co_detail_id', 'co_delivery_id', 'product_id', 'part_id', 'material_id',
                             'material_role', 'uom_code', 'need_date', 'calc_source']), ['seq_no' => $d->seq_no, 'qty_need' => 0, 'qty_book' => $q, 'qty_purchase' => 0,
-                            'qty_short' => 0, 'qty_replacement' => 0, 'qty_issued' => 0, 'location_id' => $loc->location_id, 'line_status' => 'STOCK',
-                            'calc_note' => 'Stock held at another location for line '.$d->seq_no, 'stat_cancel' => 0, 'create_by' => $this->login]));
+                                'qty_short' => 0, 'qty_replacement' => 0, 'qty_issued' => 0, 'location_id' => $loc->location_id, 'line_status' => 'STOCK',
+                                'calc_note' => 'Stock held at another location for line '.$d->seq_no, 'stat_cancel' => 0, 'create_by' => $this->login]));
                     }
                 }
             }
@@ -612,6 +644,23 @@ final class MaterialPlanningEngine
         });
         self::forget();
         $this->persist((int) $b->co_id);
+    }
+
+    // Hitung ulang semua: lepas booking yang CO-nya dibatalkan / sudah tidak ada, lalu simpan usulan tiap CO CONFIRMED
+    // (booking yang sudah dikunci tidak disentuh). Dipanggil tombol Recalculate All, perintah malam, dan pemicu CO.
+    public function runAll(): int
+    {
+        $alive = DB::connection('tm2sdi')->table('co_order')->where('doc_status', 'CONFIRMED')->where('stat_cancel', 0)->pluck('id_order');
+        foreach (RmBooking::where('stat_cancel', 0)->whereNotNull('co_id')->whereNotIn('co_id', $alive)->pluck('co_id') as $gone) {
+            $this->release((int) $gone, 'Customer Order cancelled, reopened or removed');
+        }
+        self::forget();
+        $n = 0;
+        foreach ($alive as $id) {
+            $n += $this->persist((int) $id) ? 1 : 0;
+        }
+
+        return $n;
     }
 
     public function release(int $coId, string $why): void
