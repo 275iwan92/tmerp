@@ -43,7 +43,8 @@
   Karena menu live masih v1, pintasan master dan halaman khusus v2 (ACC Digital, Flow, Guide) diberi alamat di `MenuRoutes`
   supaya bukan link mati. `SalesMenuNoReportGroupTest` disesuaikan (Win-Rate Sales kini anak modul PREORDER).
   Uji: 3 test menu lulus (19 test), halaman baru 200 lewat kernel tmerp.test. Belum dicek mata di browser.
-  Beda live vs dummy yang tersisa (migrasinya belum diminta): label masih "Lookup Product Market" (`000007`), belum ada
+  `000007` (label "Master Product Market") menyusul dijalankan di tm2sys hari yang sama atas permintaan user.
+  Beda live vs dummy yang tersisa (migrasinya belum diminta): belum ada
   Master Card Collection dan grup Report Quotation, `SALES_COST` di tm2sys tanpa izin `COSTING` di baris menunya.
 
 ## 2026-10-01 -- Dummy Inquiry DRAFT dibangun ulang (untuk mencoba dieline & mockup)
