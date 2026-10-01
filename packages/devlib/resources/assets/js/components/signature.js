@@ -1,7 +1,7 @@
 /* DevLib · Signature */
 (function (Devlib) {
   'use strict';
-  const {$, toast} = Devlib.h;
+  const {$, toast, T} = Devlib.h;
   // Tanda tangan: goresan disimpan per garis (untuk Undo), digambar ulang saat ukuran berubah.
   class Signature extends Devlib.Component {
     static selector = "[data-dl-sign]";
@@ -23,7 +23,7 @@
         $(this.el, '[data-dl-sign-undo]').addEventListener('click', () => { if (this.strokes.length) this.strokes.pop(); else this.bg = null; this.draw(); this.sync(); });
         $(this.el, '[data-dl-sign-clear]').addEventListener('click', () => { this.strokes = []; this.bg = null; this.draw(); this.sync(); });
       }
-      $(this.el, '[data-dl-sign-png]').addEventListener('click', () => { if (!this.hidden.value) { toast('Belum ada tanda tangan.', 'warn'); return; } const a = document.createElement('a'); a.href = this.hidden.value; a.download = 'tanda-tangan.png'; a.click(); });
+      $(this.el, '[data-dl-sign-png]').addEventListener('click', () => { if (!this.hidden.value) { toast(T('sg_none'), 'warn'); return; } const a = document.createElement('a'); a.href = this.hidden.value; a.download = 'tanda-tangan.png'; a.click(); });
       if (this.hidden.value) { const im = new Image(); im.onload = () => { this.bg = im; this.draw(); this.sync(); }; im.src = this.hidden.value; }
       new ResizeObserver(this.draw).observe(this.cv);this.draw();if (!this.hidden.value) this.sync();
     }
@@ -42,7 +42,7 @@
 
     sync() {
       const has = this.strokes.length > 0 || !!this.bg;
-      this.ph.hidden = has; this.st.textContent = has ? 'Sudah ditandatangani' : 'Belum ditandatangani'; this.el.classList.toggle('is-signed', has);
+      this.ph.hidden = has; this.st.textContent = T(has ? 'sg_signed' : 'sg_unsigned'); this.el.classList.toggle('is-signed', has);
       this.hidden.value = has ? this.cv.toDataURL('image/png') : ''; this.hidden.dispatchEvent(new Event('change', {bubbles: true}));
     }
 

@@ -1,7 +1,7 @@
 /* DevLib · Field */
 (function (Devlib) {
   'use strict';
-  const {$, $$, CASES, CASE_LABEL, applyCase, bindPanel, T, words, fmt, NUM, parseNum, DlDate, DlTime, DlDateTime} = Devlib.h;
+  const {$, $$, CASES, CASE_LABEL, applyCase, bindPanel, T, Tf, words, fmt, NUM, parseNum, DlDate, DlTime, DlDateTime} = Devlib.h;
 
   class Field extends Devlib.Component {
     static selector = ".dl-field";
@@ -48,9 +48,9 @@
         const u = () => {
           if (!hint || !a.value || !b.value) return;
           const d1 = new Date(a.value), d2 = new Date(b.value);
-          if (d2 < d1) { hint.textContent = 'Durasi: Tanggal akhir tidak valid.'; return; }
+          if (d2 < d1) { hint.textContent = T('fd_dur_invalid'); return; }
           const m = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
-          hint.textContent = `Durasi: ${Math.floor(m / 12)} Tahun ${m % 12} Bulan`;
+          hint.textContent = Tf('fd_duration', {y: Math.floor(m / 12), m: m % 12});
         };
         a.addEventListener('change', u); b.addEventListener('change', u); u();
       }

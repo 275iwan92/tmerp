@@ -1,7 +1,7 @@
 /* DevLib · OrgChart */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast} = Devlib.h;
+  const {$, $$, esc, toast, T, Tf} = Devlib.h;
   /* ============================ ORG CHART ============================ */
   class OrgChart extends Devlib.Component {
     static selector = "[data-dl-org]";
@@ -94,9 +94,9 @@
     move(id, to) {
       const n = this.byId(id);
       if (!n || String(n.id) === String(to) || String(n.parent) === String(to)) return;
-      if (this.isUnder(to, id)) { toast('Tidak bisa dipindah ke bawahannya sendiri.', 'danger'); return; }
+      if (this.isUnder(to, id)) { toast(T('oc_own_child'), 'danger'); return; }
       this.undo.push([n.id, n.parent]); const from = n.parent; n.parent = to; this.collapsed.delete(String(to));
-      this.render(); toast(`${n.title} kini di bawah ${this.byId(to).title}.`, 'success');
+      this.render(); toast(Tf('oc_moved', {a: n.title, b: this.byId(to).title}), 'success');
       this.el.dispatchEvent(new CustomEvent('dl:orgchart', {bubbles: true, detail: {id: n.id, from, to}}));
     }
   }

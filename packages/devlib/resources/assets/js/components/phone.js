@@ -1,7 +1,7 @@
 /* DevLib · Phone */
 (function (Devlib) {
   'use strict';
-  const {$, $$, applyMask, fieldErr} = Devlib.h;
+  const {$, $$, applyMask, fieldErr, T, Tf} = Devlib.h;
   // Telepon per negara: aturan dari Devlib\PhoneFormat (data-countries).
   class Phone extends Devlib.Component {
     static selector = "[data-dl-phonebox]";
@@ -50,8 +50,8 @@
     }
 
     check() {
-      const c = this.cc.value, { d, r } = this.last, what = this.kind === 'landline' ? 'telepon rumah/kantor' : this.kind === 'mobile' ? 'HP' : 'telepon';
-      fieldErr(this.el, !d ? '' : !r ? `Nomor ${what} ${this.C[c].name} tidak sesuai pola, contoh ${this.C[c].dial} ${this.inp.placeholder}` : d.length < r[2] ? `Terlalu pendek: minimal ${r[2]} digit setelah ${this.C[c].dial}` : '');
+      const c = this.cc.value, { d, r } = this.last, what = T(this.kind === 'landline' ? 'ph_landline' : this.kind === 'mobile' ? 'ph_mobile' : 'ph_phone');
+      fieldErr(this.el, !d ? '' : !r ? Tf('ph_bad_pattern', {what, country: this.C[c].name, ex: this.C[c].dial + ' ' + this.inp.placeholder}) : d.length < r[2] ? Tf('ph_too_short', {n: r[2], dial: this.C[c].dial}) : '');
     }
   }
   Devlib.define("Phone", Phone);

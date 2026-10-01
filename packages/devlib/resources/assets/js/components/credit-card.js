@@ -1,7 +1,7 @@
 /* DevLib · CreditCard */
 (function (Devlib) {
   'use strict';
-  const {$, CASES, CASE_LABEL, applyCase, TZ, fieldErr, CC, luhn} = Devlib.h;
+  const {$, CASES, CASE_LABEL, applyCase, TZ, fieldErr, CC, luhn, T, Tf} = Devlib.h;
 
   class CreditCard extends Devlib.Component {
     static selector = "[data-dl-cc]";
@@ -49,25 +49,25 @@
         let used = 0; const shownGroups = mask.filter((_, i) => { const st = used; used += groups[i]; return st < Math.max(dd.length, (this.brand ? Math.min(...this.brand[3]) : 16)); });
         this.q('[data-dl-cc-shown]').textContent = shownGroups.join(' ');
         this.q('[data-dl-cc-exp-shown]').textContent = this.exp.value || 'MM/YY';
-        if (this.hol) this.q('[data-dl-cc-holder-shown]').textContent = this.hol.value.toUpperCase() || 'NAMA PEMEGANG';
+        if (this.hol) this.q('[data-dl-cc-holder-shown]').textContent = this.hol.value.toUpperCase() || T('cc_holder');
       }
     }
 
     check() {
       const d = this.num.value.replace(/\D/g, ''), msgs = [];
       if (d) {
-        if (!this.brand) msgs.push('Jenis kartu tidak dikenal');
-        else if (!this.brand[3].includes(d.length)) msgs.push(`Nomor ${this.brand[6]} harus ${this.brand[3].join(' / ')} digit`);
-        else if (!luhn(d)) msgs.push('Nomor kartu tidak valid (cek kembali angkanya)');
+        if (!this.brand) msgs.push(T('cc_unknown'));
+        else if (!this.brand[3].includes(d.length)) msgs.push(Tf('cc_digits', {brand: this.brand[6], n: this.brand[3].join(' / ')}));
+        else if (!luhn(d)) msgs.push(T('cc_invalid'));
       }
       const m = this.exp.value.match(/^(\d{2})\/(\d{2})$/);
-      if (this.exp.value && !m) msgs.push('Masa berlaku harus MM/YY');
+      if (this.exp.value && !m) msgs.push(T('cc_exp_format'));
       else if (m) {
         const now = new Date(new Date().toLocaleString('en-US', {timeZone: TZ()})), mm = +m[1], yy = 2000 + +m[2];
-        if (mm < 1 || mm > 12) msgs.push('Bulan berlaku 01–12');
-        else if (yy < now.getFullYear() || yy === now.getFullYear() && mm < now.getMonth() + 1) msgs.push('Kartu sudah kedaluwarsa');
+        if (mm < 1 || mm > 12) msgs.push(T('cc_exp_month'));
+        else if (yy < now.getFullYear() || yy === now.getFullYear() && mm < now.getMonth() + 1) msgs.push(T('cc_expired'));
       }
-      if (this.cvv.value && this.cvv.value.length !== this.cvv.maxLength) msgs.push(`CVV harus ${this.cvv.maxLength} digit`);
+      if (this.cvv.value && this.cvv.value.length !== this.cvv.maxLength) msgs.push(Tf('cc_cvv', {n: this.cvv.maxLength}));
       fieldErr(this.el, msgs.join(' · '));
     }
   }

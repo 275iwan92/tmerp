@@ -1,7 +1,7 @@
 /* DevLib · Chat */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, CASES, CASE_LABEL, applyCase, toast, TZ, at} = Devlib.h;
+  const {$, $$, esc, CASES, CASE_LABEL, applyCase, toast, TZ, at, T} = Devlib.h;
   /* ============================ CHAT (WhatsApp) ============================ */
   class Chat extends Devlib.Component {
     static selector = "[data-dl-chat]";
@@ -42,10 +42,10 @@
       });
       $(this.el, '[data-wa-file]').addEventListener('change', e => {
         const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-        if (!f.type.startsWith('image/')) return toast('Hanya foto yang bisa dikirim.', 'warn');
-        if (f.size > 5 * 1024 * 1024) return toast('Foto maksimal 5 MB.', 'warn');
+        if (!f.type.startsWith('image/')) return toast(T('ch_only_photo'), 'warn');
+        if (f.size > 5 * 1024 * 1024) return toast(T('ch_photo_max'), 'warn');
         const r = new FileReader();
-        r.onload = () => { this.pending = r.result; const pv = $(this.el, '[data-wa-preview]'); pv.hidden = false; pv.innerHTML = `<img src="${this.pending}" alt=""><span>Tambahkan keterangan lalu tekan kirim</span><button type="button" class="dl-wa__ib" data-wa-unpend aria-label="Batalkan foto"><i class="fa-solid fa-xmark"></i></button>`; $(this.el, '[data-wa-text]').focus(); };
+        r.onload = () => { this.pending = r.result; const pv = $(this.el, '[data-wa-preview]'); pv.hidden = false; pv.innerHTML = `<img src="${this.pending}" alt=""><span>${esc(T('ch_caption_hint'))}</span><button type="button" class="dl-wa__ib" data-wa-unpend aria-label="${esc(T('ch_cancel_photo'))}"><i class="fa-solid fa-xmark"></i></button>`; $(this.el, '[data-wa-text]').focus(); };
         r.readAsDataURL(f);
       });
       $(this.el, '[data-wa-meav]').outerHTML = this.avatar(this.me);

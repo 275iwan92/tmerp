@@ -54,7 +54,7 @@
       return `<td class="${this.isNum(c) ? 'num' : ''} ${this.tone(c, v)} ${c.bold ? 'is-b' : ''}">${txt}${c.sub && r[c.sub] ? `<small>${esc(r[c.sub])}</small>` : ''}</td>`;
     }
 
-    compile(expr) { if (!/^[\w\s+\-*/().]+$/.test(expr)) throw new Error('rumus tidak sah: ' + expr); return new Function('r', 'return ' + expr.replace(/[A-Za-z_]\w*/g, k => `(+r[${JSON.stringify(k)}]||0)`)); }
+    compile(expr) { if (!/^[\w\s+\-*/().]+$/.test(expr)) throw new Error('invalid formula: ' + expr); return new Function('r', 'return ' + expr.replace(/[A-Za-z_]\w*/g, k => `(+r[${JSON.stringify(k)}]||0)`)); }
 
     sumOf(list, k) {
       return list.reduce((t, r) => t + (+r[k] || 0), 0);

@@ -1,7 +1,7 @@
 /* DevLib · Slider */
 (function (Devlib) {
   'use strict';
-  const {$, $$, idNum, fmt} = Devlib.h;
+  const {$, $$, idNum, fmt, Tf} = Devlib.h;
   // Slider: angka / tanggal, satu gagang / rentang, horizontal / vertikal.
   class Slider extends Devlib.Component {
     static selector = "[data-dl-slider]";
@@ -35,7 +35,7 @@
       this.el.style.setProperty('--a', this.ib ? this.pct(a) : 0); this.el.style.setProperty('--b', this.pct(b));
       this.ia.style.zIndex = this.ib && a >= this.max - (this.max - this.min) * 0.02 ? 3 : 1;
       this.ha.value = this.date ? this.iso(a) : a; if (this.hb) this.hb.value = this.date ? this.iso(b) : b;
-      this.out.textContent = this.ib ? `${this.show(a)} – ${this.show(b)}` + (this.date ? ` · ${b - a + 1} hari` : '') : this.show(a);
+      this.out.textContent = this.ib ? `${this.show(a)} – ${this.show(b)}` + (this.date ? ' · ' + Tf('sl_days', {n: b - a + 1}) : '') : this.show(a);
     }
   }
   Devlib.define("Slider", Slider);

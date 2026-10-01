@@ -1,7 +1,7 @@
 /* DevLib · Wizard */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, hasValue, fieldText, at} = Devlib.h;
+  const {$, $$, esc, toast, hasValue, fieldText, at, T, Tf} = Devlib.h;
 
   class Wizard extends Devlib.Component {
     static selector = "[data-dl-wizard]";
@@ -23,7 +23,7 @@
         if (!this.el.getAttribute('action')) {
           e.preventDefault();
           const data = {}; new FormData(this.el).forEach((v, k) => { if (k !== '_token') data[k] = v; });
-          toast('Selesai: data terkumpul (pratinjau, tidak dikirim).', 'success');
+          toast(T('w_finish_preview'), 'success');
           this.el.dispatchEvent(new CustomEvent('dl:wizard-finish', {bubbles: true, detail: data}));
         }
       });
@@ -36,7 +36,7 @@
 
     summary() {
       const box = $(this.el, '[data-w-summary]'); if (!box) return;
-      box.innerHTML = this.steps.filter(s => !s.hasAttribute('data-w-review')).map((s, i) => `<div class="dl-wizard__sum"><div class="dl-wizard__sumhead"><b>${esc(s.dataset.title)}</b><button type="button" class="dl-btn dl-btn--link dl-btn--sm" data-w-go="${i}">Ubah</button></div><dl>${$$(s, '.dl-field').map(f => `<dt>${esc($(f, '.dl-field__label')?.textContent || '')}</dt><dd>${esc(fieldText(f)) || '<span class="dl-wizard__none">—</span>'}</dd>`).join('')}</dl></div>`).join('');
+      box.innerHTML = this.steps.filter(s => !s.hasAttribute('data-w-review')).map((s, i) => `<div class="dl-wizard__sum"><div class="dl-wizard__sumhead"><b>${esc(s.dataset.title)}</b><button type="button" class="dl-btn dl-btn--link dl-btn--sm" data-w-go="${i}">${esc(T('w_change'))}</button></div><dl>${$$(s, '.dl-field').map(f => `<dt>${esc($(f, '.dl-field__label')?.textContent || '')}</dt><dd>${esc(fieldText(f)) || '<span class="dl-wizard__none">—</span>'}</dd>`).join('')}</dl></div>`).join('');
     }
 
     go(i) {
@@ -53,8 +53,8 @@
 
     check(i) {
       const bad = this.invalid(this.steps[i]);
-      bad.forEach(f => { f.classList.add('is-invalid'); const e = $(f, '[data-dl-field-error]'); if (e) e.textContent = 'Wajib diisi'; });
-      if (bad.length) { toast(`${bad.length} isian wajib di langkah "${this.steps[i].dataset.title}" belum diisi.`, 'danger'); $(bad[0], 'input:not([type=hidden]), textarea, button')?.focus(); }
+      bad.forEach(f => { f.classList.add('is-invalid'); const e = $(f, '[data-dl-field-error]'); if (e) e.textContent = T('m_required'); });
+      if (bad.length) { toast(Tf('w_required_n', {n: bad.length, step: this.steps[i].dataset.title}), 'danger'); $(bad[0], 'input:not([type=hidden]), textarea, button')?.focus(); }
       return !bad.length;
     }
 

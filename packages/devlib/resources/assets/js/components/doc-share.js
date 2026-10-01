@@ -61,7 +61,7 @@
         const t0 = Date.now(), sel = `[data-dl-docshare][data-type="${CSS.escape(this.cfg.type)}"]`;
         const tick = () => {
           try { const el = f.contentDocument && f.contentDocument.querySelector(sel); if (el && el.dlDocShare) return ok(el.dlDocShare); } catch (e) { return bad(e); }
-          if (Date.now() - t0 > 20000) { f.remove(); return bad(new Error('Halaman cetak (' + this.lang + ') tidak termuat')); }
+          if (Date.now() - t0 > 20000) { f.remove(); return bad(new Error('Print page (' + this.lang + ') did not load')); }
           setTimeout(tick, 150);
         };
         tick();
@@ -73,7 +73,7 @@
 
     source() {
       const el = this.cfg.target ? document.querySelector(this.cfg.target) : this.el.closest('form, .dl-card, main');
-      if (!el) throw new Error('Area dokumen tidak ditemukan: ' + this.cfg.target);
+      if (!el) throw new Error('Document area not found: ' + this.cfg.target);
       return el;
     }
 

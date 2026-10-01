@@ -1,7 +1,7 @@
 /* DevLib · SideMenu */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast} = Devlib.h;
+  const {$, $$, esc, toast, Tf} = Devlib.h;
   /* ============================ SIDE MENU (kiri / kanan) ============================ */
   class SideMenu extends Devlib.Component {
     static selector = "[data-dl-side-menu]";
@@ -30,7 +30,7 @@
           const on = !node.classList.contains('is-open'); node.classList.toggle('is-open', on); t.setAttribute('aria-expanded', String(on)); return;
         }
         const s = x.closest('[data-sm-star]');
-        if (s) { const k = s.dataset.smStar; this.fav = this.fav.includes(k) ? this.fav.filter(z => z !== k) : [...this.fav, k]; this.save('-fav', this.fav); this.extras(); toast(this.fav.includes(k) ? `${this.labelOf(k)} ditambahkan ke Favorit.` : `${this.labelOf(k)} dilepas dari Favorit.`); return; }
+        if (s) { const k = s.dataset.smStar; this.fav = this.fav.includes(k) ? this.fav.filter(z => z !== k) : [...this.fav, k]; this.save('-fav', this.fav); this.extras(); toast(Tf(this.fav.includes(k) ? 'sm_fav_added' : 'sm_fav_removed', {label: this.labelOf(k)})); return; }
         const a = x.closest('[data-sm-key]');
         if (a) {
           const k = a.dataset.smKey;

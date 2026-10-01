@@ -1,7 +1,7 @@
 /* DevLib · Shell */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, typeIcon, HOME, setDevMode, toast} = Devlib.h;
+  const {$, $$, esc, typeIcon, HOME, setDevMode, toast, T, Tf} = Devlib.h;
 
   // Kerangka aplikasi = kerangka kerja (tab MDI, konten, laci, modal, palet Ctrl+K, asisten AI) + navigasi.
   // Shell = navigasi Classic (mega menu + sidebar + top bar). Turunan menimpa initNav() & markActiveLeaf().
@@ -77,7 +77,7 @@
       this.backdrop = $(this.el, '[data-dl-backdrop]');
       this.backdrop.addEventListener('click', this.closeDrawers);
       $$(this.el, '[data-dl-close]').forEach(b => b.addEventListener('click', this.closeDrawers));
-      $(this.el, '[data-dl-markread]').addEventListener('click', () => { this.notifCount = 0; this.refreshCounts(); $$(this.el, '.dl-nz__dot').forEach(d => d.classList.add('is-read')); toast('Semua notifikasi ditandai terbaca.'); });
+      $(this.el, '[data-dl-markread]').addEventListener('click', () => { this.notifCount = 0; this.refreshCounts(); $$(this.el, '.dl-nz__dot').forEach(d => d.classList.add('is-read')); toast(T('n_all_read')); });
 
       this.chatEl = $(this.el, '[data-dl-drawer="chat"] [data-dl-chat]');
       if (this.chatEl?.dlChat) this.chatCount = this.chatEl.dlChat.unread;
@@ -171,7 +171,7 @@
       this.openTab(code);
     }
 
-    arrow(d) { const b = document.createElement('button'); b.type = 'button'; b.className = `dl-mega__arrow is-${d < 0 ? 'l' : 'r'}`; b.innerHTML = `<i class="fa-solid fa-chevron-${d < 0 ? 'left' : 'right'}"></i>`; b.title = d < 0 ? 'Geser kiri' : 'Geser kanan'; b.addEventListener('click', () => this.mega.scrollBy({left: d * 200, behavior: 'smooth'})); return b; }
+    arrow(d) { const b = document.createElement('button'); b.type = 'button'; b.className = `dl-mega__arrow is-${d < 0 ? 'l' : 'r'}`; b.innerHTML = `<i class="fa-solid fa-chevron-${d < 0 ? 'left' : 'right'}"></i>`; b.title = T(d < 0 ? 'sh_scroll_left' : 'sh_scroll_right'); b.addEventListener('click', () => this.mega.scrollBy({left: d * 200, behavior: 'smooth'})); return b; }
     megaEdge() { this.aL.hidden = this.mega.scrollLeft <= 2; this.aR.hidden = this.mega.scrollLeft + this.mega.clientWidth >= this.mega.scrollWidth - 2; }
 
     badge(it) {
@@ -186,7 +186,7 @@
       $$(this.mega, '.dl-mega__item').forEach(b => b.classList.toggle('is-active', b.dataset.mod === code));
       if (code === 'HOME') {
         this.modTitle.innerHTML = `<span class="ic"><i class="${HOME.icon}"></i></span><span class="lbl">HOME</span>`;
-        this.sideNav.innerHTML = `<div class="dl-side__hint">Modul <b>Home</b>. Pilih modul lain di atas untuk menampilkan submenunya di sini.</div>`;
+        this.sideNav.innerHTML = `<div class="dl-side__hint">${esc(T('sh_home_hint'))}</div>`;
         this.showHome(); return;
       }
       const m = this.modules.find(x => x.code === code);
@@ -263,7 +263,7 @@
     prender(q) {
       q = q.trim(); const toks = q.toLowerCase().split(/\s+/).filter(Boolean);
       this.pres = q ? this.items.filter(o => { const h = (o.label + ' ' + o.mod).toLowerCase(); return toks.every(t => h.includes(t)); }) : this.items.slice(0, 7);
-      this.palList.innerHTML = this.pres.length ? this.pres.map(o => `<div class="dl-pal__row" data-code="${esc(o.code)}"><span class="lic"><i class="${esc(o.icon || typeIcon(o.type))}"></i></span><div><div class="nm">${esc(o.label)}</div><div class="mm">${esc(o.mod)}</div></div></div>`).join('') : `<div class="dl-pal__empty">Tak ada yang cocok dengan “${esc(q)}”.</div>`;
+      this.palList.innerHTML = this.pres.length ? this.pres.map(o => `<div class="dl-pal__row" data-code="${esc(o.code)}"><span class="lic"><i class="${esc(o.icon || typeIcon(o.type))}"></i></span><div><div class="nm">${esc(o.label)}</div><div class="mm">${esc(o.mod)}</div></div></div>`).join('') : `<div class="dl-pal__empty">${esc(Tf('sh_pal_none', {q}))}</div>`;
       this.psel = 0; this.phi();
     }
 
@@ -291,8 +291,8 @@
       q = q.trim(); if (!q) return; this.addAi('me', q);
       const toks = q.toLowerCase().split(/\s+/).filter(t => t.length > 2);
       const hit = this.items.find(o => { const h = (o.label + ' ' + o.mod).toLowerCase(); return toks.some(t => h.includes(t)); });
-      if (hit) { this.addAi('bot', 'Baik, saya buka “' + hit.label + '” untuk Anda.'); setTimeout(() => { this.openTab(hit.code); this.closeDrawers(); }, 650); }
-      else this.addAi('bot', 'Saya belum menemukan objek yang cocok. Sebut nama komponen, mis. “login”, “grid”, atau “kanban”.');
+      if (hit) { this.addAi('bot', Tf('sh_ai_open', {label: hit.label})); setTimeout(() => { this.openTab(hit.code); this.closeDrawers(); }, 650); }
+      else this.addAi('bot', T('sh_ai_none'));
     }
   }
   Devlib.define("Shell", Shell);

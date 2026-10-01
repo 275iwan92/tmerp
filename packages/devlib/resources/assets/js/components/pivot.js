@@ -1,7 +1,7 @@
 /* DevLib · Pivot */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, val, fmt} = Devlib.h;
+  const {$, $$, esc, val, fmt, Tf} = Devlib.h;
   /* ============================ PIVOT ============================ */
   class Pivot extends Devlib.Component {
     static selector = "[data-dl-pivot]";
@@ -33,7 +33,7 @@
         if (!this.el.dispatchEvent(new CustomEvent('dl:pivot-cell', {bubbles: true, cancelable: true, detail: {rows: list, filter: {[this.st.r[0]]: f0, ...(f1 != null && r1k ? {[r1k]: f1} : {}), ...(cv != null ? {[this.st.c]: cv} : {})}}}))) return;
         const keys = Object.keys(list[0] || {}).slice(0, 7);
         const ov = document.createElement('div'); ov.className = 'dl-mov is-on';
-        ov.innerHTML = `<div class="dl-modal" style="max-width:860px;width:calc(100% - 32px)"><div class="dl-modal__head"><h3>${esc([f0, f1, cv].filter(v => v != null).join(' · '))} — ${list.length} baris sumber</h3><button type="button" class="dl-modal__x">&times;</button></div><div class="dl-modal__body" style="max-height:60vh;overflow:auto"><table class="dl-pivot__table"><thead><tr>${keys.map(k => `<th>${esc(this.F[k] || this.M[k] || k)}</th>`).join('')}</tr></thead><tbody>${list.map(r => `<tr>${keys.map(k => `<td>${esc(typeof r[k] === 'number' ? fmt.num(r[k], 3) : r[k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+        ov.innerHTML = `<div class="dl-modal" style="max-width:860px;width:calc(100% - 32px)"><div class="dl-modal__head"><h3>${esc([f0, f1, cv].filter(v => v != null).join(' · '))} — ${esc(Tf('pv_source_rows', {n: list.length}))}</h3><button type="button" class="dl-modal__x">&times;</button></div><div class="dl-modal__body" style="max-height:60vh;overflow:auto"><table class="dl-pivot__table"><thead><tr>${keys.map(k => `<th>${esc(this.F[k] || this.M[k] || k)}</th>`).join('')}</tr></thead><tbody>${list.map(r => `<tr>${keys.map(k => `<td>${esc(typeof r[k] === 'number' ? fmt.num(r[k], 3) : r[k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
         ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.dl-modal__x')) ov.remove(); });
         document.body.appendChild(ov);
       });

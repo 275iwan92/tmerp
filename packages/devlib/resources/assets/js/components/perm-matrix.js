@@ -1,7 +1,7 @@
 /* DevLib · PermMatrix */
 (function (Devlib) {
   'use strict';
-  const {$, esc, toast} = Devlib.h;
+  const {$, esc, toast, T, Tf} = Devlib.h;
   /* ============================ PERMISSION MATRIX ============================ */
   class PermMatrix extends Devlib.Component {
     static selector = "[data-dl-perm]";
@@ -16,7 +16,7 @@
       this.q = $(this.el, '[data-pm-q]');
       this.el.addEventListener('change', e => {
         if (e.target.matches('[data-pm-obj]')) { this.set(e.target.dataset.pmObj, e.target.value); return this.draw(); }
-        if (e.target.matches('[data-pm-bulk]') && e.target.value !== '') { this.shown().forEach(o => this.set(o.key, e.target.value)); toast(`${this.shown().length} objek diset ke: ${this.LV[+e.target.value]}`); e.target.value = ''; return this.draw(); }
+        if (e.target.matches('[data-pm-bulk]') && e.target.value !== '') { this.shown().forEach(o => this.set(o.key, e.target.value)); toast(Tf('pmx_bulk_set', {n: this.shown().length, level: this.LV[+e.target.value]})); e.target.value = ''; return this.draw(); }
         if (e.target === this.gSel || e.target === this.mSel) this.draw();
       });
       this.q.addEventListener('input', this.draw);
@@ -47,7 +47,7 @@
     draw() {
       const g = this.gSel.value;
       $(this.el, '[data-pm-body]').innerHTML = this.shown().map(o => { const v = this.get(this.work, g, o.key), ch = v !== this.get(this.saved, g, o.key); return `<tr class="${ch ? 'is-dirty' : ''}"><td>${esc(o.name)}</td><td><span class="dl-perm__pill is-${esc(String(o.type).toLowerCase())}">${esc(o.type)}</span></td><td>${esc(o.module)}</td><td><select data-pm-obj="${esc(o.key)}" aria-label="Hak akses ${esc(o.name)}" class="is-l${v}">${this.LV.map((l, i) => `<option value="${i}" ${i === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></td></tr>`; }).join('') || '<tr><td colspan="4" class="dl-perm__none">Tidak ada objek.</td></tr>';
-      const n = this.dirtyCount(); $(this.el, '[data-pm-dirty]').textContent = n ? `${n} perubahan belum disimpan` : 'Tidak ada perubahan';
+      const n = this.dirtyCount(); $(this.el, '[data-pm-dirty]').textContent = n ? Tf('pmx_dirty', {n}) : T('pmx_clean');
       this.el.classList.toggle('is-dirty', n > 0);
     }
 
