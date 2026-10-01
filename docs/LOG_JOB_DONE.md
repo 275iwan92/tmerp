@@ -11,7 +11,7 @@
 - v2: nama aplikasi dari `Brand::name()` (sys_constant APP_NAME = "ERP TM", diubah di Settings -> Identifikasi).
 - Layar v2 selebar panel kanan, tepi 6px (`body.dl-page-wide`); katalog DevLib tetap 1100px.
 - Ikon menu: migration `2026_10_02_000004_menu_icons_every_item` (198 item kosong diisi + 6 ikon grafik berulang diganti).
-  Dijalankan di ddtsys saja; tm2sys menunggu OK user.
+  Dijalankan di ddtsys dan tm2sys (user OK 2026-10-01 "apply to all"; semua item kedua DB berikon).
 - Uji: simulasi klik headless (jsdom) 16 langkah lulus, render v2 home OK, ratchet test lulus. Belum dicek mata di browser.
 
 ## 2026-10-02 -- Run malam: grid v2 Recruitment (UI-20)
