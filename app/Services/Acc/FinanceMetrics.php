@@ -87,11 +87,11 @@ class FinanceMetrics
         $taxDue = FinTaxRegister::whereNotIn('status', ['FILED'])->whereNotNull('payment_due')->where('payment_due', '<=', today()->addDays(14))->count();
 
         return [
-            ['!', 're', 'Unapproved journals', $unapproved->count().' journals waiting for review or approval', $unapproved->count() ? Fmt::short($unapproved->sum(fn ($v) => $v->totalAmount())) : '0'],
-            ['▥', 'or', 'Bank reconciliation difference', $unmatched->count().' unmatched movements'.($recon ? ' · last diff '.Fmt::rp($recon->difference) : ''), (string) $unmatched->count()],
-            ['%', 'or', 'Input VAT validation', $inputVat ? $inputVat.' supplier tax invoices need review' : 'All supplier tax invoices validated', (string) $inputVat],
-            ['◔', 'bl', 'Scheduled entries', $schedules->count().' depreciation/amortization schedules due this month', (string) $schedules->count()],
-            ['◷', 'or', 'Tax obligations due', $taxDue.' obligations due within 14 days', (string) $taxDue],
+            ['!', 're', t('Unapproved journals'), str_replace(':n', (string) $unapproved->count(), t(':n journals waiting for review or approval')), $unapproved->count() ? Fmt::short($unapproved->sum(fn ($v) => $v->totalAmount())) : '0'],
+            ['▥', 'or', t('Bank reconciliation difference'), str_replace(':n', (string) $unmatched->count(), t(':n unmatched movements')).($recon ? ' · '.t('last diff').' '.Fmt::rp($recon->difference) : ''), (string) $unmatched->count()],
+            ['%', 'or', t('Input VAT validation'), $inputVat ? str_replace(':n', (string) $inputVat, t(':n supplier tax invoices need review')) : t('All supplier tax invoices validated'), (string) $inputVat],
+            ['◔', 'bl', t('Scheduled entries'), str_replace(':n', (string) $schedules->count(), t(':n depreciation/amortization schedules due this month')), (string) $schedules->count()],
+            ['◷', 'or', t('Tax obligations due'), str_replace(':n', (string) $taxDue, t(':n obligations due within 14 days')), (string) $taxDue],
         ];
     }
 
@@ -105,10 +105,10 @@ class FinanceMetrics
         $draftAssets = FinAsset::where('status', 'DRAFT')->count();
 
         return [
-            ['!', 're', 'Overdue customer invoices', 'Follow-up required', (string) $overdueAr],
-            ['◷', 'or', 'Vendor bills due this week', 'Payment run required', (string) $dueAp],
-            ['✓', 'bl', ($period?->period_name ?? 'Period').' close', $tasks->count() ? $tasks->where('status', 'COMPLETE')->count().' of '.$tasks->count().' controls complete' : 'Checklist not started', $tasks->count() ? (int) round($tasks->where('status', 'COMPLETE')->count() / $tasks->count() * 100).'%' : '0%'],
-            ['▰', 'pu', 'Assets awaiting capitalization', 'Review and capitalize', (string) $draftAssets],
+            ['!', 're', t('Overdue customer invoices'), t('Follow-up required'), (string) $overdueAr],
+            ['◷', 'or', t('Vendor bills due this week'), t('Payment run required'), (string) $dueAp],
+            ['✓', 'bl', str_replace(':period', $period?->period_name ?? t('Period'), t(':period close')), $tasks->count() ? str_replace([':done', ':total'], [$tasks->where('status', 'COMPLETE')->count(), $tasks->count()], t(':done of :total controls complete')) : t('Checklist not started'), $tasks->count() ? (int) round($tasks->where('status', 'COMPLETE')->count() / $tasks->count() * 100).'%' : '0%'],
+            ['▰', 'pu', t('Assets awaiting capitalization'), t('Review and capitalize'), (string) $draftAssets],
         ];
     }
 
@@ -118,15 +118,15 @@ class FinanceMetrics
         $out = [];
         foreach (FinTaxRegister::whereNotIn('status', ['FILED'])->whereNotNull('payment_due')->orderBy('payment_due')->limit(3)->get() as $r) {
             $days = (int) today()->diffInDays($r->payment_due, false);
-            $out[] = [$days < 0 ? '!' : '%', $days < 0 ? 're' : 'or', $r->description, $days < 0 ? 'Terlambat '.abs($days).' hari' : 'Bayar '.Fmt::date($r->payment_due), $days < 0 ? abs($days).'d late' : $days.'d'];
+            $out[] = [$days < 0 ? '!' : '%', $days < 0 ? 're' : 'or', $r->description, $days < 0 ? str_replace(':n', (string) abs($days), t('Late :n days')) : t('Pay', 'action').' '.Fmt::date($r->payment_due), $days < 0 ? str_replace(':n', (string) abs($days), t(':nd late')) : $days.'d'];
         }
         if ($period = $this->close->currentPeriod()) {
             $tasks = $period->tasks;
-            $out[] = ['✓', 'bl', $period->period_name.' period close', $tasks->count() ? $tasks->where('status', 'COMPLETE')->count().' of '.$tasks->count().' closing tasks completed' : 'Checklist belum dibuat',
+            $out[] = ['✓', 'bl', str_replace(':period', $period->period_name, t(':period period close')), $tasks->count() ? str_replace([':done', ':total'], [$tasks->where('status', 'COMPLETE')->count(), $tasks->count()], t(':done of :total closing tasks completed')) : t('Checklist not created yet'),
                 ($tasks->count() ? (int) round($tasks->where('status', 'COMPLETE')->count() / $tasks->count() * 100) : 0).'%'];
         }
         $sched = $this->assets->preview((int) now()->format('Y'), (int) now()->format('m'));
-        $out[] = ['◔', 'or', now()->format('F').' depreciation & amortization', $sched->count() ? 'Scheduled for period close' : 'Sudah diposting', (string) $sched->count()];
+        $out[] = ['◔', 'or', str_replace(':month', now()->format('F'), t(':month depreciation & amortization')), $sched->count() ? t('Scheduled for period close') : t('Already posted'), (string) $sched->count()];
 
         return $out;
     }

@@ -75,7 +75,7 @@ final class PurchaseQuotation
     {
         $ext = strtolower($file->getClientOriginalExtension());
         if (! in_array($ext, PqFileReader::ACCEPT, true)) {
-            throw new InvalidArgumentException("File {$file->getClientOriginalName()}: jenis .{$ext} belum didukung (PDF, Excel, CSV, JPG, PNG).");
+            throw new InvalidArgumentException(str_replace([':file', ':ext'], [$file->getClientOriginalName(), $ext], t('File :file: type .:ext is not supported yet (PDF, Excel, CSV, JPG, PNG).')));
         }
         $login = Auth::user()->login;
         $path = $file->store('pur/pq/'.now()->format('Ym'), 'public');
@@ -199,10 +199,10 @@ final class PurchaseQuotation
         }
         foreach ($pq->lines as $l) {
             if ((float) $l->i_qty <= 0 || (float) $l->i_price_fx <= 0) {
-                $err[] = "Baris {$l->line_no}: qty dan harga wajib > 0.";
+                $err[] = str_replace(':n', (string) $l->line_no, t('Line :n: qty and price must be > 0.'));
             }
             if (! $l->pr_line_id && ! $l->item_id) {
-                $err[] = "Baris {$l->line_no}: pilih baris PR atau item Master Bahan.";
+                $err[] = str_replace(':n', (string) $l->line_no, t('Line :n: choose a PR line or a Material Master item.'));
             }
         }
 
@@ -303,17 +303,17 @@ final class PurchaseQuotation
             foreach ($lines as $pl) {
                 $q = $pl->quotation;
                 if ($q->status !== 'CONFIRMED') {
-                    throw new InvalidArgumentException("Baris {$pl->line_no} {$q->doc_no}: PQ belum Confirmed.");
+                    throw new InvalidArgumentException(str_replace([':no', ':n'], [(string) $q->doc_no, (string) $pl->line_no], t('Line :n :no: the PQ is not Confirmed yet.')));
                 }
                 if (isset($done[$pl->pq_line_id])) {
-                    throw new InvalidArgumentException("Baris {$pl->line_no} {$q->doc_no} sudah jadi PO.");
+                    throw new InvalidArgumentException(str_replace([':no', ':n'], [(string) $q->doc_no, (string) $pl->line_no], t('Line :n :no is already on a PO.')));
                 }
                 $po = $pos[$q->i_supplier_id] ??= PoBuilderService::findOrCreateDraft($q->i_supplier_id);
 
                 if ($pl->pr_line_id) {
                     $prLine = PrLine::findOrFail($pl->pr_line_id);
                     if (strcasecmp(trim($pl->i_uom), trim((string) $prLine->i_uom)) !== 0) {
-                        throw new InvalidArgumentException("Baris {$pl->line_no} {$q->doc_no}: satuan penawaran ({$pl->i_uom}) beda dengan PR ({$prLine->i_uom}) — samakan dulu.");
+                        throw new InvalidArgumentException(str_replace([':no', ':n', ':quoted', ':pr'], [(string) $q->doc_no, (string) $pl->line_no, (string) $pl->i_uom, (string) $prLine->i_uom], t('Line :n :no: the quoted unit (:quoted) differs from the PR (:pr) — make them the same first.')));
                     }
                     if (! $prLine->allocations()->exists()) {
                         PrAllocationService::ensureDefaultAllocation($prLine);
@@ -321,7 +321,7 @@ final class PurchaseQuotation
                     $alloc = PrLineAlloc::where('pr_line_id', $prLine->pr_line_id)->where('c_is_converted', false)->orderBy('alloc_no')->first();
                     $poLine = $alloc ? PoBuilderService::addAllocation($po, $alloc) : null;
                     if (! $poLine) {
-                        throw new InvalidArgumentException("Baris PR {$prLine->i_description} sudah di-PO.");
+                        throw new InvalidArgumentException(str_replace(':item', (string) $prLine->i_description, t('PR line :item is already on a PO.')));
                     }
                     $poLine->fill(['pq_line_id' => $pl->pq_line_id, 'i_price' => $pl->c_price_idr]);
                 } else {
