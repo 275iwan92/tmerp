@@ -215,8 +215,10 @@
     - Daftar laporan gudang dan stok **mengacu ERP populer**; acuan + sumbernya di
       `docs/md_for_systems/inventoryreport_references.md`. Yang tidak bisa diverifikasi tidak dijadikan dasar.
     - Laporan semua kelas ada di Inventory > Warehouse > Report; laporan per kelas tetap di menu kelasnya.
-    - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**. Yang diputuskan agen sendiri dan menunggu
-      koreksi: `docs/md_for_systems/inventoryreport_review.md` bagian 4.
+    - Status: terpasang di mockup.test dan tmerp.test (user 2026-10-03: "apply to mockup.test and tmerp.test, make sure all
+      connected to table and database ... don't forget data dummy on mockup.test"); data dummy laporan hanya di mockup.test
+      (`UatStockReportSeeder`). **Menunggu penilaian user**; yang diputuskan agen sendiri dan menunggu koreksi:
+      `docs/md_for_systems/inventoryreport_review.md` bagian 4.
 
 24. **[2026-10-02] Kartu stok: dokumen bertanggal mundur dihitung ulang; periode tertutup ditolak; yang sudah Confirm dikoreksi lewat adjustment.**
     Kata user: *"pilih a"* (hitung ulang baris sesudahnya) — *"iya ditolak dan diinput adjustment (penyesuaian)"* — *"data
@@ -689,3 +691,4 @@
 | 2026-10-02 | B.15: set stage 8–12 dibangun (Posted to Production + Work Order belum dimulai, Delivery Order Draft, Delivery Order Confirmed, Customer Invoice Draft, Customer Invoice Confirmed menunggu pembayaran) — usulan agen, belum dikonfirmasi user; rantai PO di samping: stage 4 PO Draft, 5–7 menunggu approval level 1–3, 8+ Approved. Build sungguhan tanpa transaksi. |
 | 2026-10-02 | **A.23: laporan stok dan gudang** — set lengkap mengacu ERP populer (SAP, Odoo, Dynamics 365, Zahir, Accurate, Oracle NetSuite, ERPNext): Stock Card, Stock Recapitulation, Stock Summary, Stock Opname, Stock Loss & Gain (per bulan), Stock in Inspection, Stock by Location terkelompok per gedung; selisih stok masuk lewat stock opname. Grid Report mendapat periode (Period + Show) dan cetakan `x-dl::report`. Dibangun di ddt; review: `md_for_systems/inventoryreport_review.md`. |
 | 2026-10-03 | **A.24: kartu stok** — dokumen bertanggal mundur disisipkan dan baris sesudahnya dihitung ulang (pilihan (a) user); dokumen bertanggal di periode inventory tertutup ditolak, koreksi lewat Stock Adjustment; belum Confirm boleh dibetulkan, sudah Confirm dikoreksi lewat adjustment; dummy kartu stok yang salah dihapus dan dibangun ulang. Kode sama untuk mockup.test dan tmerp.test. Belum diputuskan: jurnal koreksi untuk baris Stock Out yang harganya berubah (sekarang peringatan). |
+| 2026-10-03 | A.23: laporan stok semua kelas dipasang juga di tmerp.test (menu, Help, kamus); tiap laporan diperiksa tersambung ke tabel di kedua database; sidebar menu lama menampilkan grup di dalam grup sebagai grup sendiri ("Warehouse › Report"). Data dummy laporan (`UatStockReportSeeder`) hanya di mockup.test, tanpa dokumen di periode akuntansi tertutup. |

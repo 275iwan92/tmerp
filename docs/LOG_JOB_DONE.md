@@ -3,6 +3,28 @@
 
 ---
 
+## 2026-10-03 -- Laporan stok semua kelas: dipasang di tmerp.test, diperiksa tersambung, data dummy di mockup.test
+
+User: "apply to mockup.test and tmerp.test, make sure all connected to table and database. After apply, don't forget data dummy
+on mockup.test. If everything set up, make sure no jobs, hand over, commit then end of this session."
+
+- **tmerp.test:** ketujuh laporan ada di Inventory > Warehouse > Report (grup Warehouse dipasang sesi Inventory & Warehouse pada
+  hari yang sama; migrasi `2026_10_03_000010_menu_inventory_stock_reports_live` = cadangan untuk database tanpa grup itu),
+  `MenuRoutes` membukanya dari menu lama, Help 6 topik diimpor, kamus sudah ada.
+- **Sidebar menu lama dua tingkat:** `pages/main-menu` mengangkat grup di dalam grup jadi grup sendiri ("Warehouse › Report",
+  "Warehouse › Setup") -- sebelumnya grup bersarang tampil sebagai baris mati sehingga isinya tidak bisa dibuka.
+- **Pemeriksaan sambungan** (kedua database): tabel / view sumber tiap laporan ada, baris terbaca, cetakan tersusun, baris menu
+  aktif dan mengarah ke layarnya -- 7 dari 7 di ddt dan di tm2.
+- **Stock in Inspection + widget Incoming QC:** "belum dinilai" = `qc_quality_status` PENDING (bawaan kolom, bukan NULL) atau QC qty
+  belum DONE, pada penerimaan DRAFT / QC_PENDING; qty ditolak tampil sebelum maupun sesudah diposting. Widget dulu selalu 0.
+- **Data dummy laporan** `Database\Seeders\UatStockReportSeeder` (ddt saja, sesudah `UatWarehouseSeeder`): 6 posisi stok baru,
+  17 dokumen (Stock In, Stock Out, 6 opname + 1 penyesuaian Posted, 1 opname menunggu approval, 1 penyesuaian Draft) lewat
+  `StockDocumentService` + `StockPostingService` berurutan tanggal, bin diblokir berisi stok, 2 penerimaan barang (menunggu QC,
+  ditolak sebagian). Jadwal otomatis dirapatkan supaya tidak ada dokumen di periode akuntansi tertutup (aturan 05.23).
+  Disimpan sebagai set dummy `stock-reports` (Developer > Data Dummy).
+- Uji: `StockReportsTest` 8 test (tambahan: baris penerimaan menunggu QC / ditolak, laporan terjangkau dari sidebar dua tingkat);
+  daftar grup Settings di `MainMenuShellSmokeTest` disamakan dengan menu sekarang.
+
 ## 2026-10-02 -- Laporan stok semua kelas: Stock Card, Recapitulation, Summary, Opname, Loss & Gain, Stock in Inspection
 
 User: "build all reports related with inventory movement, stock card and other reports" ... "stockcard, summary all stocks,
