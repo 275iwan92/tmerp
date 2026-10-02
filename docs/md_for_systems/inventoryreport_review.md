@@ -7,7 +7,8 @@ warehouse, loss and gain all items every monthly"* — dengan acuan ERP populer 
 Situs: **mockup.test** (database dummy `ddt*`) dan **tmerp.test** (`tm2*`), terpasang 2026-10-03. Menu di keduanya:
 **Inventory > Warehouse > Report** (di menu lama tmerp.test tampil sebagai grup "Warehouse › Report" di sidebar Inventory).
 Tangkapan layar dari situs dummy: `docs/mockups/inventory_report_app/` (1 Stock Card, 2 Stock Recapitulation, 3 Stock Summary,
-4 Stock Opname, 5 Stock Loss & Gain, 6 Stock in Inspection, 7 Stock by Location, 8 dan 9 cetakan).
+4 Stock Opname, 5 Stock Loss & Gain, 6 Stock in Inspection, 7 Stock by Location, 8 dan 9 cetakan, 10 Stock Recapitulation di
+tmerp.test). Gambar 3 sampai 6 diambil sesudah data dummy laporan dipasang (2026-10-03).
 
 ## 1. Yang bisa dibuka sekarang
 
