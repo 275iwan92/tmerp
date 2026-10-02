@@ -241,7 +241,7 @@ Object.assign(SAMPLES, {
 const MJU = {name: 'PT MAKMUR JAYA USAHA', lines: ['Surabaya']}, MJU_UP = 'Bp. Anton (Sales)';
 Object.assign(SAMPLES, {
     StockIn: {
-        data: {...PRINTED, number: 'IN/26/00014', date: '2026-10-08', status: 'POSTED', category: 'Bahan Baku', warehouse: 'GD-BB · Gudang Bahan Baku', source: 'Penerimaan Barang', ref_no: 'SPB2600031',
+        data: {...PRINTED, number: 'SPB2600031', date: '2026-10-08', status: 'POSTED', category: 'Bahan Baku', warehouse: 'GD-BB · Gudang Bahan Baku', source: 'Pembelian', ref_no: 'PO26000001976',
             createdBy: 'Yuna', party: MJU,
             rows: [{name: 'DC 310 IKA DA GR 79 x 109 CM', qty: 22, unit: 'RIM', code: 'PZ00083', lot_no: 'R8-2610', location: 'A-01-02'},
                 {name: 'IVORY 300 79 X 109', qty: 40, unit: 'RIM', code: 'PYJ31', lot_no: 'R8-2611', location: 'A-01-03'}]},
@@ -295,16 +295,25 @@ Object.assign(SAMPLES, {
                 {name: 'Purchase Advance', code: '114300', narration: 'Uang muka CPO2600031', credit: 500000}]},
         more: [],
     },
-    SupplierBill: {
-        data: {...PRINTED, number: 'BILL2600027', date: '2026-10-09', status: 'OPEN', supplier_invoice: 'INV/MJU/10/0456', tax_invoice: '010.004-26.12345678', po_no: 'PO26000001976', due_date: '2026-11-08',
-            payment_status: 'Belum dibayar', contact: MJU_UP, ppn: 11, createdBy: 'Eka', party: MJU,
-            rows: [{name: 'DC 310 IKA DA GR 79 x 109 CM', qty: 22, unit: 'RIM', spb_no: 'SPB2600031', po_line: '1', price: 1567737.28, subtotal: 34490220.16}]},
+    SupplierInvoiceReceipt: {
+        data: {...PRINTED, number: 'TT2600027', date: '2026-10-09', status: 'RECEIVED', payment_term: '30 hari', pay_date: '2026-11-08', pay_method: 'Transfer', handed_by: 'Bp. Anton', ppn: 11,
+            createdBy: 'Eka', party: MJU,
+            notes: [['Lampiran', '☑ Invoice asli   ☑ Faktur Pajak   ☑ Surat Jalan / SPB   ☐ Kuitansi']],
+            rows: [{name: 'INV/MJU/10/0456', sub: 'SPB2600031', invoice_date: '2026-10-08', po_no: 'PO26000001976', tax_invoice: '010.004-26.12345678', amount: 38284144.38},
+                {name: 'INV/MJU/10/0461', sub: 'SPB2600034', invoice_date: '2026-10-09', po_no: 'PO26000001981', tax_invoice: '010.004-26.12345702', amount: 12765000}]},
         more: [],
     },
     DownPaymentInvoice: {
         data: {...PRINTED, number: 'DP2600003', date: '2026-10-01', status: 'OPEN', co_no: 'CO2600029', customer_po_no: 'PO-003-UAT', due_date: '2026-10-05', payment_term: 'DP 30%, pelunasan saat kirim', contact: 'PAK RUDI · +62 812-3567-289', ppn: 11,
             createdBy: 'Ehaningtias', party: {name: 'PAK RUDI LAWANG', code: '1130000001', lines: ['Jl. Argopuro no. 24', 'Lawang']},
             rows: [{name: 'Uang muka 30% atas Customer Order', sub: 'Folding Box Kosmetik Duplex · 500 PCS', qty: 1, unit: 'LS', co_ref: 'CO2600029', percent: '30%', price: 241764.71, subtotal: 241764.71}]},
+        more: [],
+    },
+    DownPaymentReceipt: {
+        data: {...PRINTED, number: 'TTDP2600003', date: '2026-10-03', status: 'RECEIVED', invoice_no: 'DP2600003', co_no: 'CO2600029', customer_po_no: 'PO-003-UAT', pay_method: 'Transfer', received_at: 'Bank',
+            contact: 'PAK RUDI · +62 812-3567-289', ppn: 11, createdBy: 'Eka', party: {name: 'PAK RUDI LAWANG', code: '1130000001', lines: ['Jl. Argopuro no. 24', 'Lawang']},
+            notes: [['Sisa tagihan', '626.170,59 — dilunasi saat kirim']],
+            rows: [{name: 'Uang muka atas Customer Order', sub: 'Folding Box Kosmetik Duplex · 500 PCS', co_ref: 'CO2600029', order_value: 894529.42, percent: '30%', amount: 268358.83}]},
         more: [],
     },
     LeaveRequest: {

@@ -399,10 +399,11 @@ PrintDoc.register(class PettyCash extends PrintDoc {
 // Isi mengikuti field layar / tabel aplikasi; belum ada form kertas acuan. Menunggu review user; belum A. =====
 
 // Gudang (Bahan Baku / Barang Jadi / Setengah Jadi memakai format yang sama; Kategori di blok atas). Tanpa harga.
+// Nama dokumen barang masuk = SPB, Surat Penerimaan Barang (user 2026-10-02).
 PrintDoc.register(class StockIn extends PrintDoc {
-    static title = 'BUKTI BARANG MASUK';
-    static subtitle = 'Stock In &middot; Internal';
-    static numberLabel = 'No Dokumen';
+    static title = 'SURAT PENERIMAAN BARANG';
+    static subtitle = 'SPB &middot; Stock In';
+    static numberLabel = 'No SPB';
     static refs = [
         {key: 'category', label: 'Kategori'},
         {key: 'warehouse', label: 'Gudang'},
@@ -418,6 +419,7 @@ PrintDoc.register(class StockIn extends PrintDoc {
 PrintDoc.register(class StockOut extends PrintDoc.registry.StockIn {
     static title = 'BUKTI BARANG KELUAR';
     static subtitle = 'Stock Out &middot; Internal';
+    static numberLabel = 'No Dokumen';
     static refs = [
         {key: 'category', label: 'Kategori'},
         {key: 'warehouse', label: 'Gudang'},
@@ -433,6 +435,7 @@ PrintDoc.register(class StockOut extends PrintDoc.registry.StockIn {
 PrintDoc.register(class StockReturn extends PrintDoc.registry.StockIn {
     static title = 'RETUR DARI PRODUKSI';
     static subtitle = 'Return from Production &middot; Internal';
+    static numberLabel = 'No Dokumen';
     static refs = [
         {key: 'category', label: 'Kategori'},
         {key: 'warehouse', label: 'Gudang'},
@@ -528,24 +531,32 @@ PrintDoc.register(class JournalVoucher extends PrintDoc {
     }
 });
 
-// Tagihan dari supplier (hutang). Kop PPN bila tagihan ber-PPN.
-PrintDoc.register(class SupplierBill extends PrintDoc {
-    static title = 'TAGIHAN SUPPLIER';
-    static subtitle = 'Supplier Bill &middot; Internal';
-    static numberLabel = 'No Tagihan';
+// Tanda terima tagihan supplier (tukar faktur). Koreksi user 2026-10-02: yang dicetak bukan "Tagihan Supplier" melainkan
+// tanda terimanya. Satu baris = satu invoice supplier yang diserahkan; lembar ini dibawa pulang supplier sebagai bukti.
+PrintDoc.register(class SupplierInvoiceReceipt extends PrintDoc {
+    static title = 'TANDA TERIMA TAGIHAN';
+    static subtitle = 'Supplier Invoice Receipt';
+    static numberLabel = 'No Tanda Terima';
     static refs = [
-        {key: 'supplier_invoice', label: 'No Invoice Supplier'},
-        {key: 'tax_invoice', label: 'No Faktur Pajak'},
-        {key: 'po_no', label: 'No PO'},
-        {key: 'due_date', label: 'Jatuh Tempo', type: 'date'},
-        {key: 'payment_status', label: 'Pembayaran'},
+        {key: 'payment_term', label: 'Syarat Bayar'},
+        {key: 'pay_date', label: 'Rencana Bayar', type: 'date'},
+        {key: 'pay_method', label: 'Cara Bayar'},
     ];
-    static partyLabel = 'Supplier';
-    static side = {key: 'contact', label: 'Telp / UP'};
-    static nb = '<b>NB:</b>&nbsp;Dicocokkan dengan Purchase Order dan Penerimaan Barang sebelum dibayar.';
-    static nameLabel = 'NAMA BARANG / JASA';
-    static extra = [{key: 'spb_no', label: 'NO SPB', width: 21}, {key: 'po_line', label: 'BARIS PO', width: 17}];
-    static priced = true;
+    static partyLabel = 'Diterima dari';
+    static side = {key: 'handed_by', label: 'Diserahkan oleh', hand: true};
+    static nb = '<b>NB:</b>&nbsp;Tanda terima ini bukan bukti pembayaran. Dibayar sesuai Rencana Bayar setelah dicocokkan dengan PO dan SPB.';
+    static nameLabel = 'NO INVOICE SUPPLIER';
+    static qtyCols = false;
+    static extra = [{key: 'invoice_date', label: 'TGL INVOICE', width: 22, type: 'date'}, {key: 'po_no', label: 'NO PO', width: 30}, {key: 'tax_invoice', label: 'NO FAKTUR PAJAK', width: 38},
+        {key: 'amount', label: 'NILAI TAGIHAN', width: 30, type: 'money'}];
+    static receivers = [['Supplier', 'Yang menyerahkan']];
+    static internalLabels = ['Mengetahui', '', 'Penerima'];
+    static internal = ['', '', 'Finance'];
+
+    totals() {
+        const grand = Math.round(this.d.rows.reduce((t, r) => t + (+r.amount || 0), 0) * 100) / 100;
+        return {lines: [['TOTAL (IDR)', Fmt.num(grand), true]], grand};
+    }
 });
 
 // Tagihan uang muka ke customer.
@@ -567,6 +578,35 @@ PrintDoc.register(class DownPaymentInvoice extends PrintDoc {
     static extra = [{key: 'co_ref', label: 'NO CO', width: 21}, {key: 'percent', label: 'PERSEN', width: 17}];
     static priced = true;
     static receivers = [['Customer', 'Menerima tagihan']];
+});
+
+// Tanda terima uang muka (user 2026-10-02): bukti untuk customer bahwa uang muka sudah kami terima.
+PrintDoc.register(class DownPaymentReceipt extends PrintDoc {
+    static title = 'TANDA TERIMA UANG MUKA';
+    static subtitle = 'Down Payment Receipt';
+    static numberLabel = 'No Tanda Terima';
+    static refs = [
+        {key: 'invoice_no', label: 'No Tagihan'},
+        {key: 'co_no', label: 'No CO'},
+        {key: 'customer_po_no', label: 'No PO Customer'},
+        {key: 'pay_method', label: 'Cara Bayar'},
+        {key: 'received_at', label: 'Diterima di'},
+    ];
+    static partyLabel = 'Diterima dari';
+    static side = {key: 'contact', label: 'Telp / UP'};
+    static nb = 'Telah kami terima uang muka atas pesanan berikut:';
+    static nameLabel = 'URAIAN';
+    static qtyCols = false;
+    static extra = [{key: 'co_ref', label: 'NO CO', width: 28}, {key: 'order_value', label: 'NILAI PESANAN', width: 34, type: 'money'}, {key: 'percent', label: 'PERSEN', width: 20},
+        {key: 'amount', label: 'DITERIMA', width: 38, type: 'money'}];
+    static receivers = [['Customer', 'Yang menyerahkan']];
+    static internalLabels = ['Mengetahui', '', 'Penerima'];
+    static internal = ['', '', 'Finance'];
+
+    totals() {
+        const grand = Math.round(this.d.rows.reduce((t, r) => t + (+r.amount || 0), 0) * 100) / 100;
+        return {lines: [['TOTAL (IDR)', Fmt.num(grand), true]], grand};
+    }
 });
 
 // HR: permohonan cuti / sakit / izin. Tanpa kolom jumlah barang.

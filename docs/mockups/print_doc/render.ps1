@@ -25,7 +25,7 @@ $jobs = @(
     @('maintenance_request_a5', 'MaintenanceRequest', '', 1210), @('maintenance_wo_a5', 'MaintenanceWorkOrder', '', 1210), @('petty_cash_a5', 'PettyCash', '', 1210),
     @('stock_in_a5', 'StockIn', '', 1210), @('stock_out_a5', 'StockOut', '', 1210), @('stock_return_a5', 'StockReturn', '', 1210), @('stock_adjustment_a5', 'StockAdjustment', '', 1210),
     @('purchase_return_a5', 'PurchaseReturn', '', 1210), @('work_order_a5', 'WorkOrder', '', 1210), @('journal_voucher_a5', 'JournalVoucher', '', 1210),
-    @('supplier_bill_a5', 'SupplierBill', '', 1210), @('down_payment_a5', 'DownPaymentInvoice', '', 1210), @('leave_request_a5', 'LeaveRequest', '', 1210),
+    @('supplier_invoice_receipt_a5', 'SupplierInvoiceReceipt', '', 1210), @('down_payment_a5', 'DownPaymentInvoice', '', 1210), @('down_payment_receipt_a5', 'DownPaymentReceipt', '', 1210), @('leave_request_a5', 'LeaveRequest', '', 1210),
     @('manpower_requisition_a5', 'ManpowerRequisition', '', 1210))
 
 foreach ($j in $jobs) {

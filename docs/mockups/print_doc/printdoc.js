@@ -156,8 +156,8 @@ class PrintDoc {
         const [lk, la, lm] = this.f.internalLabels;
         const know = [lk, a, this.d.knownBy], agree = [la, b, this.d.approvedBy], maker = [lm, c, this.d.createdBy];
         // KETENTUAN user 2026-10-01 (jangan dibalik): dari kiri = pihak luar, lalu Menyetujui, Mengetahui, Pembuat di paling
-        // kanan. Hanya slot terisi yang dicetak, dibagi rata.
-        const used = [r1, r2, agree, know, maker].filter(Boolean);
+        // kanan. Hanya slot terisi yang dicetak, dibagi rata; slot internal dengan judul kosong tidak dicetak.
+        const used = [r1, r2, agree, know, maker].filter(x => x && x[0]);
         return `<section class="sign" style="grid-template-columns:repeat(${used.length},1fr)">${used.map(slot).join('')}</section>`;
     }
 
