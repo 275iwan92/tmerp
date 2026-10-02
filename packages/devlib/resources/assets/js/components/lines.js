@@ -148,6 +148,7 @@
 
     show(c, v) {
       if (c.type === 'date') return v ? fmt.gridDate(v) : '';  // tampilan read-only: dd-Mmm-yyyy (baku grid)
+      if (c.type === 'select') return (c.options || {})[v] ?? v ?? '';  // read-only: teks pilihannya, bukan kuncinya
       return (v === '' || v == null) && !c.fn ? '' : c.type === 'money' || (c.fn && c.type !== 'number') ? this.money(v) : c.type === 'number' ? (v === '' ? '' : fmt.num(+v, 3)) : v;
     }
 
