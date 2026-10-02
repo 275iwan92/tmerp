@@ -65,11 +65,25 @@ Test: `LanguageAccountTest` (6), `MultiLanguageAutoTest`, `MultiLanguageRatchetT
    Proof of Delivery, Customer Invoice) tetap English di dua bahasa — sesuai aturan status selalu English.
 9. `Engine Catalog` (`EngineRegistry`) masih English saja.
 
+10. **Menu v1 (shell lama)** menampilkan label menu English apa adanya (tidak lewat kamus) — v1 tidak ditarik ke multi-bahasa.
+
 ## 5. Di luar multi-bahasa (ditemukan, tidak diubah)
 - `App\Services\Dispatch\DispatchService` baris 225-241: menyiapkan pesan hasil lalu melempar `RuntimeException('rollback')`
   tanpa ditangkap, sehingga user melihat "rollback". Perlu diperiksa pemilik modul Delivery.
 - Route cetak lama `v2.pv.print` (`routes/v2.php` 673-711) tampaknya sudah digantikan `GoodsReceiptPrint`; tidak ada
   rujukan dari layar v2.
+
+- **tmerp.test (tm2) — 9 layar v2 gagal dibuka karena migrasi modul lain belum dijalankan di tm2** (bukan soal bahasa; uji
+  `php tools/multilanguage/siteprobe.php tmerp.test`): Master Mesin (form), Machine Model Catalog, Maintenance Codes,
+  Maintenance WO Report, Material Booking, Material Planning, Demand Forecast, Material Usage Standard; juga form Purchase
+  Requisition (`flow_config_step.activate` belum ada). 23 migrasi masih pending di tm2 (approval flow 2026_09_30_000006-10,
+  machine model 2026_10_01_000010-13 / 31-33, speed engine 000030, cash PO 000035, maintenance 000040, material planning
+  000070, dan beberapa menu / dummy khusus ddt). Menjalankannya di database live = keputusan user. mockup.test (ddt): semua
+  layar terbuka.
+- Test yang gagal bukan karena sapuan ini (per 2026-10-03): `NoHardcodedDatabaseNameTest` (`StageBuilder.php:105`),
+  `EngineCatalogTest` (engines.json tertinggal dari `PalletService`), `HelpContentTest` (`stack-monitor` belum punya Help),
+  `AccountingEngineTest::test_semua_layar_finance_bisa_dirender` (layar v1 receivables sudah diarsipkan),
+  `MasterMachineMigratedDataTest` dan `PurchaseRequisitionFreeTextLineTest` (migrasi tm2 di atas).
 
 ## 6. Cara menambah bahasa ke-3
 1. Tambah baris di `tm2sys.sys_languages` (kode, pemisah angka, `intl_locale`, aktif) — bendera muncul sendiri.

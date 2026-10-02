@@ -15,3 +15,7 @@ user di mockup.test). Hasil ditulis ke `tools/multilanguage/probe/` (tidak ikut 
 
 Urutan yang dipakai: snapshot "sebelum" -> ubah kode -> snapshot "sesudah" -> `snapdiff.py id` harus kosong dari teks
 English baru (mode Indonesia tidak berubah) dan `snapdiff.py en` harus kosong dari teks Indonesia baru.
+
+Tambahan:
+- `smoke.php <host>`: tujuh layar dalam English dan Indonesia di satu situs + nama databasenya (cek cepat sesudah deploy).
+- `siteprobe.php <host> [en|id]`: membuka semua menu dan grid satu situs (GET saja) dan menampilkan yang gagal.
