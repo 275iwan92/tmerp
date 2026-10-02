@@ -372,3 +372,47 @@ konsultan pajak perusahaan sebelum dijadikan aturan aplikasi.
 12. **Saldo awal piutang lewat lembar kerja di aplikasi**: invoice lama yang kemungkinan masih terbuka
     ditampilkan, Finance mencentang lunas / belum dan mengisi sisa. Per 10-Sep-2026: 218 invoice belum jatuh
     tempo (Rp 3,07 miliar); 842 invoice dalam 90 hari terakhir (Rp 9,55 miliar).
+
+---
+
+## 10. Tahap 0 — perjalanan user dan mockup (menunggu OK user)
+
+Mockup layar: `docs/mockups/customer_invoice_v2.jpg` (sumber `.html`), dua belas hal bertanda untuk disetujui.
+Mockup cetakan (`docs/mockups/print_doc/`): `customer_invoice_a5.jpg` (Non PPN), `customer_invoice_ppn_a5.jpg` (PPN),
+`down_payment_a5.jpg`, `down_payment_receipt_a5.jpg`. Semua format cetak **belum A**.
+
+### 10.1 Menagih barang yang sudah dikirim (Penagihan)
+
+| Buka | Lihat | Klik | Dapat |
+|---|---|---|---|
+| Finance › Receivables › Customer Invoice | grid semua invoice dan tagihan uang muka; baris merah muda = lewat jatuh tempo | **To Invoice** atau **+ New Record** | layar pilih: Invoice Type, Customer, Customer Order |
+| layar pilih | baris Surat Jalan order itu: dikirim, diterima, sudah ditagih, sisa | centang baris → **Create** | Draft terisi: baris product, harga dari CO, tanggal = Surat Jalan terakhir, jatuh tempo, rekening transfer, usulan potongan uang muka |
+| form Draft | Amount, potongan uang muka, Balance Due, pratinjau jurnal | ubah Qty Invoiced / nilai potongan bila perlu → **Save** → **Confirm** | nomor invoice terbit, jurnal terposting, Surat Jalan tertandai sudah ditagih, uang muka terpakai |
+| form Confirmed | tombol Print ▾, Email ▾, Cancel | **Print** | cetakan A5 / A4 sesuai identitas (Telasih Makmur atau CV. Langgeng Jaya Makmur) |
+
+Salah sesudah Confirm: **Cancel** + alasan (periode masih terbuka, belum ada pembayaran) lalu buat ulang; di luar
+itu Credit Note (tahap 3).
+
+### 10.2 Uang muka (Accounting dan Kasir)
+
+| Buka | Lihat | Klik | Dapat |
+|---|---|---|---|
+| Customer Invoice › + New Record | Invoice Type | pilih **Down Payment** → Customer → Customer Order → **Create** | Draft: nilai order, persen (bawaan 50%) atau nominal, Bill Amount, sisa |
+| form Draft | Bill Amount, rekening transfer | **Save** → **Confirm** | nomor tagihan uang muka terbit; **belum ada jurnal**; cetakan Tagihan Uang Muka |
+| form Confirmed (waiting payment) | tombol **Record Receipt** | isi tanggal, rekening penerima, nilai → **Confirm Receipt** | bukti bank masuk, jurnal uang muka (+ PPN untuk order PPN), status Paid, cetakan Tanda Terima Uang Muka |
+| invoice order yang sama (10.1) | kotak "Down Payment of this order" | — | uang muka itu sudah diusulkan sebagai potongan |
+
+Uang muka yang datang tanpa tagihan lebih dulu: langkah pertama dan ketiga dikerjakan berurutan saat uang masuk;
+hasilnya sama.
+
+### 10.3 Menerima pelunasan (Kasir, tahap 2)
+
+| Buka | Lihat | Klik | Dapat |
+|---|---|---|---|
+| Finance › Receivables › Customer Receipt › + New Record | Customer, rekening, nilai diterima | pilih customer | daftar invoice terbuka customer itu, urut jatuh tempo |
+| form Draft | Outstanding per invoice | centang invoice, isi Paid / PPh 23 / biaya bank → **Save** → **Confirm** | bukti bank atau kas masuk, jurnal, invoice jadi Paid atau Partially paid; sisa lebih jadi uang muka customer |
+
+### 10.4 Melihat piutang (Finance, pimpinan, tahap 2)
+
+AR Aging dan Statement of Account dari grup Reports; saringan Overdue dan Due this week di grid Customer Invoice;
+tab Billing di Customer Order menunjukkan uang muka, invoice, pembayaran, dan sisa order itu.

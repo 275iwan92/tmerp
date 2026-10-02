@@ -26,7 +26,8 @@ $jobs = @(
     @('qc_inspection_a5', 'QcInspection', '', 1210), @('stock_out_a5', 'StockOut', '', 1210), @('stock_return_a5', 'StockReturn', '', 1210), @('stock_adjustment_a5', 'StockAdjustment', '', 1210),
     @('purchase_return_a5', 'PurchaseReturn', '', 1210), @('work_order_a5', 'WorkOrder', '', 1210), @('journal_voucher_a5', 'JournalVoucher', '', 1210),
     @('supplier_invoice_receipt_a5', 'SupplierInvoiceReceipt', '', 1210), @('down_payment_a5', 'DownPaymentInvoice', '', 1210), @('down_payment_receipt_a5', 'DownPaymentReceipt', '', 1210), @('leave_request_a5', 'LeaveRequest', '', 1210),
-    @('manpower_requisition_a5', 'ManpowerRequisition', '', 1210))
+    @('manpower_requisition_a5', 'ManpowerRequisition', '', 1210),
+    @('customer_invoice_a5', 'CustomerInvoice', '', 1210), @('customer_invoice_ppn_a5', 'CustomerInvoice', '&case=ppn', 1210))
 
 foreach ($j in $jobs) {
     if ($Only -and $j[1] -ne $Only) { continue }

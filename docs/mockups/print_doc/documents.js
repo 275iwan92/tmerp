@@ -648,6 +648,44 @@ PrintDoc.register(class DownPaymentReceipt extends PrintDoc {
     }
 });
 
+// Customer Invoice (user 2026-10-02, docs/md_for_systems/customerinvoice_accounting.md): baris = barang yang diterima
+// customer per Surat Jalan. Nilai invoice selalu penuh; uang muka tampil sebagai potongan dan yang ditagih = sisanya.
+// Order PPN: kop CV. Langgeng Jaya Makmur, PPN 12% x DPP nilai lain (11/12 harga jual). Rekening transfer ikut identitas.
+PrintDoc.register(class CustomerInvoice extends PrintDoc {
+    static title = 'CUSTOMER INVOICE';
+    static subtitle = 'Faktur Tagihan';
+    static numberLabel = 'No Invoice';
+    static refs = [
+        {key: 'co_no', label: 'No CO'},
+        {key: 'customer_po_no', label: 'No PO Customer'},
+        {key: 'payment_term', label: 'Syarat Bayar'},
+        {key: 'due_date', label: 'Jatuh Tempo', type: 'date'},
+        {key: 'note', label: 'Catatan'},
+    ];
+    static partyLabel = 'Ditagih ke';
+    static side = {key: 'tax_id', label: 'NPWP / NIK'};
+    static nb = '<b>Pelunasan harap ditransfer ke {bank}</b>';
+    static nameLabel = 'NAMA PRODUK';
+    static extra = [{key: 'cfg', label: 'CFG', width: 9}, {key: 'type', label: 'TIPE', width: 9}, {key: 'dn', label: 'NO SRT JALAN', width: 20, wrap: true}];
+    static priced = true;
+    static receivers = [['Customer', 'Menerima invoice']];
+    static rowHeight = 7.1;
+    static tailHeight = 21;
+
+    totals() {
+        const d = this.d, r2 = v => Math.round(v * 100) / 100, sub = r2(d.rows.reduce((t, r) => t + +r.subtotal, 0));
+        const ppn = d.ppn ? r2(r2(sub * 11 / 12) * d.ppn / 100) : 0, total = r2(sub + ppn), dp = d.dp ?? [], paid = r2(dp.reduce((t, x) => t + +x.amount, 0)), grand = r2(total - paid);
+        const lines = [['Subtotal', Fmt.num(sub)]];
+        if (ppn) lines.push([`PPN ${d.ppn}% × DPP Nilai Lain`, Fmt.num(ppn)]);
+        if (!dp.length) return {lines: [...lines, ['TOTAL (IDR)', Fmt.num(total), true]], grand: total};
+        if (ppn) lines.push(['Total', Fmt.num(total)]);
+        dp.forEach(x => lines.push([`Uang Muka ${Fmt.date(x.date)}`, `(${Fmt.num(x.amount)})`]));
+        return {lines: [...lines, ['SISA TAGIHAN', Fmt.num(grand), true]], grand};
+    }
+
+    render() { return super.render().replace('{bank}', esc(this.d.bank)); }
+});
+
 // HR: permohonan cuti / sakit / izin. Tanpa kolom jumlah barang.
 PrintDoc.register(class LeaveRequest extends PrintDoc {
     static title = 'PERMOHONAN CUTI / IZIN';

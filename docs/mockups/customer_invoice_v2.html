@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Customer Invoice + AR v2 — Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .inp { width: 100%; border: 1px solid #c9d6ea; border-radius: 6px; padding: 5px 8px; font-size: 12px; background: #f7faff; display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+  .inp.ro { background: #f1f5f9; color: #475569; }
+  .inp.num { justify-content: flex-end; font-variant-numeric: tabular-nums; }
+  .aa { font-size: 9px; font-weight: 700; color: #2c7be5; background: #e3edfb; border-radius: 4px; padding: 1px 4px; }
+  .btn { padding: 4px 11px; border-radius: 6px; font-weight: 600; font-size: 11.5px; border: 1px solid #cbd5e1; background: #fff; color: #334155; white-space: nowrap; }
+  .btn.pri { background: #2c7be5; color: #fff; border-color: #2c7be5; }
+  .btn.ok { background: #16a34a; color: #fff; border-color: #16a34a; }
+  .btn.dng { color: #b91c1c; border-color: #fca5a5; }
+  .btn.dis { opacity: .4; }
+  th { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600; text-align: left; padding: 6px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .r { text-align: right; font-variant-numeric: tabular-nums; }
+  .cap { font-size: 13px; font-weight: 700; color: #334155; margin: 18px 0 6px; }
+  .note { font-size: 11px; color: #64748b; }
+  .bdg { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .tab { padding: 6px 12px; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; }
+  .tab.on { color: #2c3e69; border-color: #2c7be5; }
+  .tag { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; font-weight:700; margin-right:4px; flex: none; }
+  .doc { display: inline-block; min-width: 168px; border-radius: 8px; padding: 4px 10px; color: #fff; line-height: 1.25; }
+  .doc b { display: block; font-size: 12px; } .doc span { font-size: 10.5px; opacity: .95; }
+  .flt { padding: 4px 2px; margin-right: 14px; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .flt b { font-weight: 700; margin-left: 3px; }
+  .flt.on { color: #2c3e69; border-color: #2c7be5; }
+  .sum div { display: flex; justify-content: space-between; padding: 2px 0; }
+  .jr td, .jr th { padding: 3px 6px; font-size: 11px; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-4 max-w-[1400px] mx-auto">
+
+<div class="flex items-end justify-between">
+  <div>
+    <div class="text-lg font-bold text-navy">Customer Invoice + Accounts Receivable v2 — usulan layar</div>
+    <div class="note">Mockup untuk persetujuan · data contoh (angka sama dengan contoh di customerinvoice_accounting.md bagian 6) · label layar English (istilah baku), kalimat bantu ikut bahasa user</div>
+  </div>
+  <div class="note text-right"><span class="tag">1</span>…<span class="tag">12</span> = hal yang perlu OK (legenda paling bawah)</div>
+</div>
+
+<!-- ======================= 1. GRID ======================= -->
+<div class="cap">① Finance › Receivables › Customer Invoice — grid (DevLib Transactional) <span class="tag">1</span></div>
+<section class="card p-3 space-y-2">
+  <div class="flex items-center gap-2">
+    <div class="inp" style="width:280px"><span class="text-slate-400"><i class="fa-solid fa-magnifying-glass mr-1"></i>Search invoice no, customer, CO…</span></div>
+    <span class="btn">Customer: All <i class="fa-solid fa-caret-down"></i></span>
+    <span class="btn">Identity: All <i class="fa-solid fa-caret-down"></i></span>
+    <span class="btn"><i class="fa-solid fa-table-columns"></i> Columns</span>
+    <span class="btn"><i class="fa-solid fa-bars-staggered"></i> Density</span>
+    <span class="btn ml-auto"><i class="fa-solid fa-list-check"></i> To Invoice <b class="text-accent">17</b> <span class="tag" style="margin:0 0 0 4px">2</span></span>
+    <span class="btn pri">+ New Record</span>
+  </div>
+  <div class="flex border-b">
+    <span class="flt on">All <b>412</b></span><span class="flt">Draft <b>3</b></span><span class="flt">Open <b>86</b></span><span class="flt text-amber-600">Due this week <b>14</b></span>
+    <span class="flt text-red-600">Overdue <b>9</b></span><span class="flt text-emerald-700">Paid <b>300</b></span><span class="flt">Cancelled <b>2</b></span>
+    <span class="flt text-violet-700">Down Payment <b>12</b></span>
+  </div>
+  <table class="w-full">
+    <thead><tr><th style="width:26px"></th><th style="width:22px"></th><th>Invoice No. / Customer</th><th>Date</th><th>Due Date</th><th>Customer Order</th><th class="r">Total</th><th class="r">Down Payment</th><th class="r">Outstanding</th><th>Status</th><th style="width:30px"></th></tr></thead>
+    <tbody>
+      <tr><td><i class="fa-solid fa-up-right-from-square text-slate-400"></i></td><td><i class="fa-solid fa-chevron-right text-slate-400"></i></td>
+        <td><span class="doc" style="background:linear-gradient(90deg,#64748b,#94a3b8)"><b>Draft #413</b><span>CV Herbal Alam Segar</span></span></td>
+        <td>01-Oct-2026</td><td>31-Oct-2026</td><td>CO2600033</td><td class="r">12.850.000</td><td class="r">—</td><td class="r">—</td><td><span class="bdg bg-slate-100 text-slate-600">Draft</span></td><td></td></tr>
+      <tr style="background:#fff5f5"><td><i class="fa-solid fa-up-right-from-square text-slate-400"></i></td><td><i class="fa-solid fa-chevron-right text-slate-400"></i></td>
+        <td><span class="doc" style="background:linear-gradient(90deg,#0d9488,#2563eb)"><b>275/TM/IX/2026</b><span>PAK RUDI LAWANG</span></span></td>
+        <td>30-Sep-2026</td><td>30-Sep-2026</td><td>CO2600031</td><td class="r">3.657.600</td><td class="r">2.000.000</td><td class="r font-bold">1.657.600</td><td><span class="bdg bg-red-100 text-red-700">Overdue · 2 d</span></td><td><i class="fa-solid fa-print text-slate-500"></i></td></tr>
+      <tr><td><i class="fa-solid fa-up-right-from-square text-slate-400"></i></td><td><i class="fa-solid fa-chevron-down text-accent"></i></td>
+        <td><span class="doc" style="background:linear-gradient(90deg,#4f46e5,#6d28d9)"><b>118/LJM/IX/2026</b><span>PT. SELATAN JADI JAYA</span></span></td>
+        <td>28-Sep-2026</td><td>28-Oct-2026</td><td>CO2600027</td><td class="r">11.100.000</td><td class="r">5.550.000</td><td class="r font-bold">5.550.000</td><td><span class="bdg bg-sky-100 text-sky-700">Open</span></td><td><i class="fa-solid fa-print text-slate-500"></i></td></tr>
+      <tr><td colspan="11" style="background:#f8fafc;padding:8px 8px 10px 56px">
+        <div class="font-bold mb-1">Item</div>
+        <table class="w-full bg-white">
+          <thead><tr><th>Product</th><th>Delivery Note</th><th class="r">Qty Received</th><th class="r">Qty Invoiced</th><th>Unit</th><th class="r">Price</th><th class="r">Amount</th></tr></thead>
+          <tbody>
+            <tr><td><b>SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639</b></td><td>10262811, 10262840</td><td class="r">20.000</td><td class="r">20.000</td><td>PCS</td><td class="r">400</td><td class="r">8.000.000</td></tr>
+            <tr><td><b>OB COCO TOKYO FLAT C-25 1KG</b></td><td>10262840</td><td class="r">400</td><td class="r">400</td><td>PCS</td><td class="r">5.000</td><td class="r">2.000.000</td></tr>
+          </tbody>
+        </table></td></tr>
+      <tr><td><i class="fa-solid fa-up-right-from-square text-slate-400"></i></td><td><i class="fa-solid fa-chevron-right text-slate-400"></i></td>
+        <td><span class="doc" style="background:linear-gradient(90deg,#c026d3,#7c3aed)"><b>5/UM-LJM/X/2026</b><span>PAK RUDI LAWANG</span></span></td>
+        <td>01-Oct-2026</td><td>05-Oct-2026</td><td>CO2600029</td><td class="r">268.358,83</td><td class="r">—</td><td class="r">268.358,83</td><td><span class="bdg bg-violet-100 text-violet-700">Down Payment · waiting</span></td><td><i class="fa-solid fa-print text-slate-500"></i></td></tr>
+      <tr><td><i class="fa-solid fa-up-right-from-square text-slate-400"></i></td><td><i class="fa-solid fa-chevron-right text-slate-400"></i></td>
+        <td><span class="doc" style="background:linear-gradient(90deg,#ea580c,#e11d48)"><b>117/LJM/IX/2026</b><span>PT Sari Rasa Nusantara</span></span></td>
+        <td>25-Sep-2026</td><td>25-Oct-2026</td><td>CO2600021</td><td class="r">23.800.053,90</td><td class="r">11.900.026,95</td><td class="r">0</td><td><span class="bdg bg-emerald-100 text-emerald-700">Paid</span></td><td><i class="fa-solid fa-print text-slate-500"></i></td></tr>
+      <tr class="text-slate-400"><td><i class="fa-solid fa-up-right-from-square"></i></td><td><i class="fa-solid fa-chevron-right"></i></td>
+        <td><span class="doc" style="background:#cbd5e1;color:#475569"><b>274/TM/IX/2026</b><span>UD Lem Sejahtera</span></span></td>
+        <td>29-Sep-2026</td><td>—</td><td>CO2600030</td><td class="r">4.208.000</td><td class="r">—</td><td class="r">—</td><td><span class="bdg bg-red-50 text-red-600">Cancelled</span></td><td></td></tr>
+    </tbody>
+  </table>
+  <div class="note">Baris merah muda = lewat jatuh tempo. Invoice batal tetap tampil dengan nomornya. Uang muka ada di grid yang sama (saringan Down Payment).</div>
+</section>
+
+<!-- ======================= 2. NEW RECORD ======================= -->
+<div class="cap">② + New Record (atau tombol To Invoice) — pilih yang ditagih <span class="tag">2</span></div>
+<section class="card p-3">
+  <div class="grid grid-cols-[150px_1fr_1fr_150px] gap-3 items-end">
+    <div><div class="lbl">Invoice Type</div><div class="inp">Invoice <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+    <div><div class="lbl">Customer</div><div class="inp">PT. SELATAN JADI JAYA <i class="fa-solid fa-magnifying-glass text-slate-400"></i></div></div>
+    <div><div class="lbl">Customer Order (yang punya Surat Jalan belum ditagih)</div><div class="inp">CO2600027 · PPN · B2L-260905-0002 <i class="fa-solid fa-magnifying-glass text-slate-400"></i></div></div>
+    <div class="text-right"><span class="btn">Back</span> <span class="btn pri">Create</span></div>
+  </div>
+  <table class="w-full mt-3">
+    <thead><tr><th style="width:26px"></th><th>Delivery Note</th><th>Date</th><th>Product</th><th class="r">Shipped</th><th class="r">Received <span class="tag" style="margin:0 0 0 2px">3</span></th><th class="r">Already Invoiced</th><th class="r">To Invoice</th><th>Unit</th></tr></thead>
+    <tbody>
+      <tr><td><i class="fa-solid fa-square-check text-accent"></i></td><td>10262811</td><td>21-Sep-2026</td><td><b>SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639</b></td><td class="r">12.000</td><td class="r">12.000</td><td class="r">0</td><td class="r font-bold">12.000</td><td>PCS</td></tr>
+      <tr><td><i class="fa-solid fa-square-check text-accent"></i></td><td>10262840</td><td>28-Sep-2026</td><td><b>SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639</b></td><td class="r">8.050</td><td class="r">8.000</td><td class="r">0</td><td class="r font-bold">8.000</td><td>PCS</td></tr>
+      <tr><td><i class="fa-solid fa-square-check text-accent"></i></td><td>10262840</td><td>28-Sep-2026</td><td><b>OB COCO TOKYO FLAT C-25 1KG</b></td><td class="r">400</td><td class="r">400</td><td class="r">0</td><td class="r font-bold">400</td><td>PCS</td></tr>
+      <tr class="text-slate-400"><td><i class="fa-regular fa-square"></i></td><td>10262866</td><td>30-Sep-2026</td><td>IB COCO TOKYO FLAT C-25 1KG (DS001477)</td><td class="r">4.000</td><td class="r">—</td><td class="r">0</td><td class="r">—</td><td>PCS</td></tr>
+    </tbody>
+  </table>
+  <div class="note mt-1">Baris abu-abu: Surat Jalan belum kembali (Proof of Delivery belum diisi), belum bisa ditagih. Untuk <b>Invoice Type = Down Payment</b> cukup Customer + Customer Order; tabel ini tidak muncul.</div>
+</section>
+
+<!-- ======================= 3. INVOICE FORM ======================= -->
+<div class="cap">③ Customer Invoice form — Master-Detail (x-dl::form panel="top") · contoh order PPN dengan uang muka, masih Draft</div>
+<section class="card overflow-hidden">
+  <div class="bg-navy text-white px-4 py-2.5 flex items-center gap-2">
+    <div><div class="text-sm font-bold">Customer Invoice · Draft #414</div><div class="text-[10px] opacity-70">PT. SELATAN JADI JAYA · CV. Langgeng Jaya Makmur (PPN)</div></div>
+    <span class="bdg bg-slate-100 text-slate-600 ml-3">Draft</span>
+    <div class="ml-auto flex items-center gap-1.5">
+      <span class="btn">New</span><span class="btn">Print <i class="fa-solid fa-caret-down"></i></span><span class="btn">Email <i class="fa-solid fa-caret-down"></i></span>
+      <span class="btn">Undo</span><span class="btn dng">Delete</span>
+      <span class="btn ok"><i class="fa-solid fa-check"></i> Confirm <span class="tag" style="margin:0 0 0 4px">6</span></span>
+      <span class="btn pri">Save</span>
+      <span class="inline-flex items-center gap-2 pl-3 pr-1 py-1 bg-[#43508a] rounded-full ml-1"><span class="text-[11px] font-bold uppercase text-white">Back</span><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a]"><i class="fa-solid fa-arrow-left"></i></span></span>
+    </div>
+  </div>
+  <div class="px-4 py-2 bg-slate-50 border-b grid grid-cols-[170px_150px_1fr_170px_150px] gap-4 items-end">
+    <div><div class="lbl">Invoice No. <span class="tag" style="margin:0 0 0 2px">6</span></div><div class="font-bold text-slate-400">(on Confirm) …/LJM/IX/2026</div></div>
+    <div><div class="lbl">Invoice Date <span class="tag" style="margin:0 0 0 2px">4</span></div><div class="inp">28-Sep-2026 <i class="fa-regular fa-calendar text-slate-400"></i></div></div>
+    <div><div class="lbl">Customer</div><div class="inp ro">PT. SELATAN JADI JAYA</div></div>
+    <div><div class="lbl">Customer Order</div><div class="inp ro">CO2600027 <span class="text-accent">↗</span></div></div>
+    <div><div class="lbl">Identity</div><div class="inp ro">PPN · LJM</div></div>
+  </div>
+  <div class="grid grid-cols-[1fr_330px] gap-3 p-3">
+    <div class="space-y-3">
+      <div class="flex border-b"><span class="tab on">General</span><span class="tab">Tax</span><span class="tab">Notes</span><span class="tab">Payments</span><span class="tab">History</span></div>
+      <div class="grid grid-cols-4 gap-3">
+        <div><div class="lbl">Customer PO No.</div><div class="inp ro">B2L-260905-0002</div></div>
+        <div><div class="lbl">Payment Term</div><div class="inp">Bayar 30 Hari <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+        <div><div class="lbl">Due Date</div><div class="inp ro">28-Oct-2026</div></div>
+        <div><div class="lbl">Sales</div><div class="inp ro">Carrij Soehendra</div></div>
+        <div class="col-span-2"><div class="lbl">Bill To</div><div class="inp" style="min-height:44px;align-items:flex-start">PT. SELATAN JADI JAYA · JL. RAYA PANJUNAN 8 SUKODONO, SIDOARJO <span class="aa">Aa</span></div></div>
+        <div class="col-span-2"><div class="lbl">Transfer To <span class="tag" style="margin:0 0 0 2px">8</span></div><div class="inp">Maspion 124.200.1997 · CV. Langgeng Jaya Makmur <i class="fa-solid fa-caret-down text-slate-400"></i></div>
+          <div class="note mt-0.5">Bawaan mengikuti identitas (PPN / Non PPN); dipilih dari master rekening perusahaan.</div></div>
+      </div>
+
+      <div class="flex items-center border-b"><span class="tab on">Items (2)</span><span class="tab">Down Payment (1)</span><span class="tab">Other Charges</span><span class="btn ml-auto mb-1">+ Delivery Note line</span></div>
+      <table class="w-full">
+        <thead><tr><th>#</th><th>Product</th><th>Cfg</th><th>Type</th><th>Delivery Note</th><th class="r">Received</th><th class="r">Invoiced before</th><th class="r" style="width:110px">Qty Invoiced <span class="tag" style="margin:0 0 0 2px">5</span></th><th>Unit</th><th class="r">Price</th><th class="r">Amount</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><b>SJJ IB ND NIPPONDENSO FS GTZ-5S MF (12V5AH) DS001639</b></td><td>4/0</td><td>RTP</td><td>10262811, 10262840</td><td class="r">20.000</td><td class="r">0</td><td><div class="inp num">20.000</div></td><td>PCS</td><td class="r">400</td><td class="r font-semibold">8.000.000</td><td><i class="fa-solid fa-xmark text-slate-400"></i></td></tr>
+          <tr><td>2</td><td><b>OB COCO TOKYO FLAT C-25 1KG</b></td><td>2/0</td><td>RTP</td><td>10262840</td><td class="r">400</td><td class="r">0</td><td><div class="inp num">400</div></td><td>PCS</td><td class="r">5.000</td><td class="r font-semibold">2.000.000</td><td><i class="fa-solid fa-xmark text-slate-400"></i></td></tr>
+        </tbody>
+      </table>
+      <div class="note">Harga dari Customer Order (tidak bisa diketik). Qty Invoiced boleh dikurangi, tidak boleh lebih dari Received − Invoiced before. Baris <b>Qty Minim</b> (harga borongan): Amount = harga, ditagih satu kali.</div>
+
+      <div class="rounded-lg border border-violet-200 bg-violet-50/50 p-2.5">
+        <div class="font-bold text-violet-800 mb-1">Down Payment of this order <span class="tag">7</span></div>
+        <table class="w-full bg-white">
+          <thead><tr><th>Down Payment No.</th><th>Received</th><th class="r">Received Amount</th><th class="r">Used before</th><th class="r">Remaining</th><th class="r" style="width:130px">Apply to this invoice</th></tr></thead>
+          <tbody><tr><td><b>3/UM-LJM/IX/2026</b> <span class="text-accent">↗</span></td><td>05-Sep-2026</td><td class="r">5.550.000</td><td class="r">0</td><td class="r">5.550.000</td><td><div class="inp num">5.550.000</div></td></tr></tbody>
+        </table>
+        <div class="note mt-1">Diusulkan otomatis: uang muka order ini yang sudah diterima dan belum terpakai. Nilainya boleh dikurangi (sisanya untuk invoice berikut), tidak boleh melebihi Remaining.</div>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <div class="card p-3 sum">
+        <div class="font-bold text-navy mb-1">Amount</div>
+        <div><span>Subtotal</span><b>10.000.000,00</b></div>
+        <div><span>Other charges</span><span>0,00</span></div>
+        <div class="text-slate-500"><span>Tax base (DPP nilai lain 11/12)</span><span>9.166.666,67</span></div>
+        <div><span>VAT 12% × tax base</span><b>1.100.000,00</b></div>
+        <div class="border-t mt-1 pt-1"><span>Total</span><b>11.100.000,00</b></div>
+        <div class="text-violet-700"><span>Down Payment 05-Sep-2026</span><b>(5.550.000,00)</b></div>
+        <div class="border-t mt-1 pt-1 text-sm"><span class="font-bold">Balance Due</span><b class="text-navy">5.550.000,00</b></div>
+        <div class="note mt-1 !block">Lima juta lima ratus lima puluh ribu rupiah</div>
+      </div>
+      <div class="card p-3">
+        <div class="font-bold text-navy mb-1">Journal on Confirm <span class="tag">9</span></div>
+        <table class="w-full jr">
+          <thead><tr><th>Account</th><th class="r">Debit</th><th class="r">Credit</th></tr></thead>
+          <tbody>
+            <tr><td>112100 Piutang Usaha</td><td class="r">11.100.000</td><td></td></tr>
+            <tr><td>411000 Penjualan</td><td></td><td class="r">10.000.000</td></tr>
+            <tr><td>212100 PPN Keluaran</td><td></td><td class="r">1.100.000</td></tr>
+            <tr class="text-violet-700"><td>213200 Uang Muka Penjualan</td><td class="r">5.000.000</td><td></td></tr>
+            <tr class="text-violet-700"><td>212100 PPN Keluaran</td><td class="r">550.000</td><td></td></tr>
+            <tr class="text-violet-700"><td>112100 Piutang Usaha</td><td></td><td class="r">5.550.000</td></tr>
+          </tbody>
+        </table>
+        <div class="note mt-1">Hanya terlihat oleh yang berhak melihat jurnal. Sesudah Confirm: tautan ke voucher di Journal Entries.</div>
+      </div>
+      <div class="card p-3">
+        <div class="font-bold text-navy mb-1">Tax invoice (Faktur Pajak)</div>
+        <div class="lbl">Tax Invoice No. — diisi sesudah unggah Coretax</div><div class="inp text-slate-400">— <span class="aa">AA</span></div>
+        <div class="note mt-1">Pelunasan; merujuk Faktur Pajak uang muka 3/UM-LJM/IX/2026. Order Non PPN: kotak ini dan baris VAT tidak tampil.</div>
+      </div>
+    </div>
+  </div>
+  <div class="px-4 py-2 bg-slate-50 border-t note">Sesudah <b>Confirm</b>: tombol tinggal New · Print ▾ · Email ▾ · <b>Cancel</b> (wajib alasan) · Back. Tidak ada Save / Delete. Status: Draft → Confirmed (Open / Partially paid / Overdue) → Closed (lunas) / Cancelled.</div>
+</section>
+
+<!-- ======================= 4. DOWN PAYMENT FORM ======================= -->
+<div class="cap">④ Form yang sama, Invoice Type = Down Payment — sudah Confirmed, menunggu pembayaran</div>
+<section class="card overflow-hidden">
+  <div class="bg-navy text-white px-4 py-2.5 flex items-center gap-2">
+    <div><div class="text-sm font-bold">Down Payment Invoice · 5/UM-LJM/X/2026</div><div class="text-[10px] opacity-70">PAK RUDI LAWANG · CV. Langgeng Jaya Makmur (PPN)</div></div>
+    <span class="bdg bg-emerald-100 text-emerald-700 ml-3">Confirmed</span><span class="bdg bg-violet-100 text-violet-700">Waiting payment</span>
+    <div class="ml-auto flex items-center gap-1.5">
+      <span class="btn">New</span><span class="btn">Print <i class="fa-solid fa-caret-down"></i></span><span class="btn">Email <i class="fa-solid fa-caret-down"></i></span><span class="btn dng">Cancel</span>
+      <span class="btn ok"><i class="fa-solid fa-money-bill-wave"></i> Record Receipt <span class="tag" style="margin:0 0 0 4px">10</span></span>
+      <span class="inline-flex items-center gap-2 pl-3 pr-1 py-1 bg-[#43508a] rounded-full ml-1"><span class="text-[11px] font-bold uppercase text-white">Back</span><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a]"><i class="fa-solid fa-arrow-left"></i></span></span>
+    </div>
+  </div>
+  <div class="grid grid-cols-[1fr_420px] gap-3 p-3">
+    <div class="space-y-3">
+      <div class="grid grid-cols-4 gap-3">
+        <div><div class="lbl">Date</div><div class="inp ro">01-Oct-2026</div></div>
+        <div><div class="lbl">Customer Order</div><div class="inp ro">CO2600029 <span class="text-accent">↗</span></div></div>
+        <div><div class="lbl">Payment Term</div><div class="inp ro">Bayar Dimuka</div></div>
+        <div><div class="lbl">Due Date</div><div class="inp ro">05-Oct-2026</div></div>
+        <div class="col-span-2"><div class="lbl">Transfer To</div><div class="inp ro">Maspion 124.200.1997 · CV. Langgeng Jaya Makmur</div></div>
+        <div class="col-span-2"><div class="lbl">Description</div><div class="inp ro">Uang muka 30% · Folding Box Kosmetik Duplex · 500 PCS</div></div>
+      </div>
+      <div class="flex border-b"><span class="tab on">Amount</span><span class="tab">Notes and Bill To</span><span class="tab">History</span></div>
+      <div class="grid grid-cols-2 gap-x-8 sum">
+        <div><span>Total Order Amount (termasuk PPN)</span><b>894.529,42</b></div>
+        <div><span>Down payment method</span><span>30 % of order <span class="note">(atau nominal)</span></span></div>
+        <div><span>Billed before (uang muka lain order ini)</span><span>0,00</span></div>
+        <div><span>— Price part</span><span>241.764,71</span></div>
+        <div class="text-sm"><span class="font-bold">Bill Amount</span><b class="text-navy">268.358,83</b></div>
+        <div><span>— VAT part</span><span>26.594,12</span></div>
+        <div><span>Balance (sisa yang ditagih saat kirim)</span><span>626.170,59</span></div>
+        <div class="note !block">Dua ratus enam puluh delapan ribu tiga ratus lima puluh delapan rupiah delapan puluh tiga sen</div>
+      </div>
+      <div class="rounded-lg border border-amber-200 bg-amber-50 p-2 note text-amber-800"><i class="fa-solid fa-circle-info"></i> Tagihan uang muka <b>belum menjurnal</b> dan tidak masuk umur piutang. Jurnal dan Faktur Pajak uang muka lahir saat Record Receipt. <span class="tag" style="margin:0 0 0 2px">11</span></div>
+    </div>
+    <div class="card p-3 border-emerald-200">
+      <div class="font-bold text-emerald-800 mb-2"><i class="fa-solid fa-money-bill-wave"></i> Record Receipt (dialog)</div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><div class="lbl">Received Date</div><div class="inp">03-Oct-2026 <i class="fa-regular fa-calendar text-slate-400"></i></div></div>
+        <div><div class="lbl">Amount Received</div><div class="inp num">268.358,83</div></div>
+        <div class="col-span-2"><div class="lbl">Received In</div><div class="inp">Maspion 124.200.1997 · CV. Langgeng Jaya Makmur <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+        <div class="col-span-2"><div class="lbl">Tax Invoice No. (Uang Muka) — boleh diisi belakangan</div><div class="inp text-slate-400">— <span class="aa">AA</span></div></div>
+      </div>
+      <table class="w-full jr mt-2">
+        <thead><tr><th>Journal</th><th class="r">Debit</th><th class="r">Credit</th></tr></thead>
+        <tbody>
+          <tr><td>1112xx Bank Maspion LJM</td><td class="r">268.358,83</td><td></td></tr>
+          <tr><td>213200 Uang Muka Penjualan</td><td></td><td class="r">241.764,71</td></tr>
+          <tr><td>212100 PPN Keluaran</td><td></td><td class="r">26.594,12</td></tr>
+        </tbody>
+      </table>
+      <div class="flex justify-end gap-2 mt-2"><span class="btn">Cancel</span><span class="btn ok">Confirm Receipt</span></div>
+      <div class="note mt-1">Hasil: bukti bank masuk (BBM), status Paid, cetakan <b>Tanda Terima Uang Muka</b>, dan uang muka ini muncul sebagai usulan potongan di invoice order CO2600029.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 5. CUSTOMER RECEIPT ======================= -->
+<div class="cap">⑤ Finance › Receivables › Customer Receipt — form (tahap 2) <span class="tag">12</span></div>
+<section class="card overflow-hidden">
+  <div class="bg-navy text-white px-4 py-2.5 flex items-center gap-2">
+    <div><div class="text-sm font-bold">Customer Receipt · Draft</div><div class="text-[10px] opacity-70">PT. SELATAN JADI JAYA</div></div>
+    <span class="bdg bg-slate-100 text-slate-600 ml-3">Draft</span>
+    <div class="ml-auto flex items-center gap-1.5"><span class="btn">New</span><span class="btn">Undo</span><span class="btn dng">Delete</span><span class="btn ok"><i class="fa-solid fa-check"></i> Confirm</span><span class="btn pri">Save</span>
+      <span class="inline-flex items-center gap-2 pl-3 pr-1 py-1 bg-[#43508a] rounded-full ml-1"><span class="text-[11px] font-bold uppercase text-white">Back</span><span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a]"><i class="fa-solid fa-arrow-left"></i></span></span></div>
+  </div>
+  <div class="p-3 space-y-3">
+    <div class="grid grid-cols-5 gap-3">
+      <div><div class="lbl">Receipt Date</div><div class="inp">30-Oct-2026 <i class="fa-regular fa-calendar text-slate-400"></i></div></div>
+      <div class="col-span-2"><div class="lbl">Customer</div><div class="inp">PT. SELATAN JADI JAYA <i class="fa-solid fa-magnifying-glass text-slate-400"></i></div></div>
+      <div><div class="lbl">Received In</div><div class="inp">Maspion · CV. LJM <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+      <div><div class="lbl">Amount Received</div><div class="inp num font-bold">9.850.000,00</div></div>
+    </div>
+    <table class="w-full">
+      <thead><tr><th style="width:26px"></th><th>Invoice No.</th><th>Date</th><th>Due Date</th><th class="r">Outstanding</th><th class="r" style="width:130px">Paid (cash / bank)</th><th class="r" style="width:120px">Income tax 23 withheld</th><th class="r" style="width:120px">Bank charge / rounding</th><th class="r">Remaining</th></tr></thead>
+      <tbody>
+        <tr><td><i class="fa-solid fa-square-check text-accent"></i></td><td><b>118/LJM/IX/2026</b></td><td>28-Sep-2026</td><td>28-Oct-2026</td><td class="r">5.550.000,00</td><td><div class="inp num">5.539.000,00</div></td><td><div class="inp num">0,00</div></td><td><div class="inp num">11.000,00</div></td><td class="r">0,00</td></tr>
+        <tr><td><i class="fa-solid fa-square-check text-accent"></i></td><td><b>131/LJM/X/2026</b></td><td>09-Oct-2026</td><td>08-Nov-2026</td><td class="r">7.326.000,00</td><td><div class="inp num">4.311.000,00</div></td><td><div class="inp num">0,00</div></td><td><div class="inp num">0,00</div></td><td class="r font-bold text-amber-700">3.015.000,00</td></tr>
+        <tr class="text-slate-400"><td><i class="fa-regular fa-square"></i></td><td>140/LJM/X/2026</td><td>20-Oct-2026</td><td>19-Nov-2026</td><td class="r">2.220.000,00</td><td></td><td></td><td></td><td class="r">2.220.000,00</td></tr>
+      </tbody>
+    </table>
+    <div class="flex items-center gap-6">
+      <div>Allocated <b>9.850.000,00</b></div><div>Not allocated <b>0,00</b> <span class="note">(sisa lebih masuk Uang Muka customer)</span></div>
+      <div class="note ml-auto">Confirm = bukti bank masuk + jurnal Bank pada Piutang; invoice 118 jadi Paid, invoice 131 Partially paid.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= LEGEND ======================= -->
+<div class="cap">Hal yang perlu OK</div>
+<section class="card p-3 grid grid-cols-2 gap-x-8 gap-y-1.5">
+  <div class="flex"><span class="tag">1</span><span><b>Satu grid</b> untuk Invoice dan Down Payment (saringan teks, tanpa kotak statistik); menggantikan menu Order to Cash dan Down Payment sekarang.</span></div>
+  <div class="flex"><span class="tag">2</span><span><b>Invoice dibuat dari Surat Jalan</b>: pilih customer → Customer Order → centang baris yang ditagih. Tombol To Invoice = daftar yang belum ditagih.</span></div>
+  <div class="flex"><span class="tag">3</span><span><b>Received</b> diisi di Proof of Delivery (kolom baru, bawaan = qty kirim). Surat Jalan yang belum kembali belum bisa ditagih.</span></div>
+  <div class="flex"><span class="tag">4</span><span><b>Invoice Date</b> bawaan = tanggal Surat Jalan terakhir yang ditagih; boleh diubah selama periodenya masih terbuka.</span></div>
+  <div class="flex"><span class="tag">5</span><span><b>Qty Invoiced</b> satu-satunya angka baris yang bisa diubah, paling banyak sisa yang belum ditagih. Harga tidak bisa diketik.</span></div>
+  <div class="flex"><span class="tag">6</span><span><b>Nomor lahir saat Confirm</b> dari seri identitasnya (TM / LJM). Draft belum bernomor.</span></div>
+  <div class="flex"><span class="tag">7</span><span><b>Uang muka diusulkan otomatis</b> dan tampil sebagai baris sendiri; nilai potongan boleh dikurangi.</span></div>
+  <div class="flex"><span class="tag">8</span><span><b>Transfer To</b> dari master rekening perusahaan, bawaan mengikuti identitas PPN / Non PPN.</span></div>
+  <div class="flex"><span class="tag">9</span><span><b>Pratinjau jurnal</b> di form, sebelum Confirm (hanya untuk yang berhak melihat jurnal).</span></div>
+  <div class="flex"><span class="tag">10</span><span><b>Record Receipt</b> di form Down Payment: sekali isi menghasilkan bukti bank masuk, jurnal, dan Tanda Terima Uang Muka.</span></div>
+  <div class="flex"><span class="tag">11</span><span><b>Tagihan uang muka tanpa jurnal</b> (keputusan C) dan PPN uang muka saat uang diterima (keputusan B).</span></div>
+  <div class="flex"><span class="tag">12</span><span><b>Customer Receipt</b> (tahap 2): satu penerimaan untuk banyak invoice, boleh sebagian, dengan PPh 23 dan biaya bank per invoice.</span></div>
+</section>
+<div class="note mt-2">Cetakan: docs/mockups/print_doc/customer_invoice_a5.jpg (Non PPN), customer_invoice_ppn_a5.jpg (PPN), down_payment_a5.jpg, down_payment_receipt_a5.jpg.</div>
+
+</main>
+</body>
+</html>
