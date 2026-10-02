@@ -18,6 +18,13 @@ class NoHardcodedDatabaseNameTest extends TestCase
         'app/Console/Commands/DdtCopySys.php' => 'alat salin tm2sys -> ddtsys',
     ];
 
+    // Berkas yang hanya BARIS tertentunya boleh menyebut tm2* (pola baris); baris lain di berkas itu tetap diperiksa.
+    private const ALLOWED_LINES = [
+        // Daftar engine: 'reads' / 'writes' = teks dokumentasi tabel yang dibaca / ditulis engine (tampil di Engines dan
+        // engines.json), tidak pernah dijalankan sebagai SQL. Nama tm2* = nama rancangan, sama di mockup.test.
+        'app/Support/Engines/EngineRegistry.php' => '/^\s*[\'"](reads|writes)[\'"]\s*=>\s*\[/',
+    ];
+
     public function test_no_sql_names_a_tm2_database_directly(): void
     {
         $root = dirname(__DIR__, 2);
@@ -34,6 +41,9 @@ class NoHardcodedDatabaseNameTest extends TestCase
                 foreach (file($file->getPathname()) as $n => $line) {
                     // Lewati baris komentar (PHP & Blade).
                     if (preg_match('#^\s*(//|\*|/\*|\{\{--)#', $line)) {
+                        continue;
+                    }
+                    if (isset(self::ALLOWED_LINES[$rel]) && preg_match(self::ALLOWED_LINES[$rel], $line)) {
                         continue;
                     }
                     // DbName::table() = sudah aman; Src::of()/'source' => = label tooltip sumber data, bukan SQL.
