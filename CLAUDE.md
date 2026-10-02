@@ -529,6 +529,13 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
   ACC Digital wajib, due date CO +14 hari kerja adjustable. Tampil di Menu v2 →
   Sales → Alur → Pedoman (`/v2/pedoman/product-master`) — update dokumen ini tiap
   ada keputusan alur baru.
+- `matcategory_delta.md` §5 — **wajib dibaca sebelum menyentuh Material Category, Raw Material, kode item, atau dropdown
+  kategori di PR / PO** (user 2026-10-03, sudah disampaikan 7 kali — JANGAN ditanyakan lagi; `docs/globaluserrules.md` B.16):
+  **Material Category = PEMBENTUK KODE ITEM.** Acuan `docs/ddl/doc_rmprefix1.sql` (`doc_rmprefix1..5`, sekarang
+  `mat_category` level 1–5). Kode item = prefix1+prefix2+prefix3+prefix4+prefix5 (Paper › Art carton › 210gr ›
+  65 X 100 CM › GOLDEN = `PCC02002`). Layar = **dropdown yang saling terkait** Category 1 → … → Category 5 (seperti yang
+  lama), bukan daftar rata Level + Parent. Arti tiap tingkat berbeda per kategori — label layar Category 1 … 5, bukan
+  "gramatur / ukuran / merek". Kategori + Type 2 tingkat di `tm2old` BUKAN pembentuk kode dan bukan penggantinya.
 - `warehouselayout_tier1.md` (di `docs/`) — **wajib dibaca sebelum menyentuh gudang, bin, peta gudang, Stock Transfer,
   label / QR, atau hitungan dead stock** (user 2026-10-02, `docs/globaluserrules.md` A.22): gudang = GEDUNG nyata
   (`wh_warehouse`: ukuran meter, bentuk, 1-3 lantai) → area (`wh_zone`) → bin (`wh_loc`); pindah stok hanya lewat
