@@ -6,7 +6,7 @@ use App\Models\Pur\PvReceipt;
 use Devlib\PrintDoc\Document;
 use Illuminate\Support\Facades\DB;
 
-// Penerimaan Barang / SPB (format A, user 2026-10-02): dokumen gudang, TANPA harga, untuk ketiga jenis penerimaan (dari supplier, kembali
+// Surat Penerimaan Barang / SPB (format A, user 2026-10-02; judul "Surat Penerimaan Barang" atas permintaan user): dokumen gudang, TANPA harga, untuk ketiga jenis penerimaan (dari supplier, kembali
 // dari subkon, bahan dari customer). Qty = jumlah datang; Diterima / Ditolak = hasil QC. Sumber: tm2pur.pv_receipt + pv_line.
 final class GoodsReceiptPrint extends Document
 {

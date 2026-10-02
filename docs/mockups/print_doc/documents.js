@@ -293,7 +293,7 @@ PrintDoc.register(class PurchaseQuotation extends PrintDoc {
 // Layar v2: purchase-receive (SPB). Dokumen gudang, tanpa harga.
 PrintDoc.register(class GoodsReceipt extends PrintDoc {
     static approved = '2026-10-02';
-    static title = 'PENERIMAAN BARANG';
+    static title = 'SURAT PENERIMAAN BARANG';   // nama dokumen = SPB, Surat Penerimaan Barang (user 2026-10-02)
     static subtitle = 'SPB &middot; Goods Receipt';
     static numberLabel = 'No SPB';
     static refs = [

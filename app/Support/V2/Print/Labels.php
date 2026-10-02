@@ -125,7 +125,7 @@ final class Labels
         'Lead (days)' => 'Lead (hari)',
         'days' => 'hari',
         // Penerimaan Barang (SPB)
-        'Goods Receipt' => 'Penerimaan Barang',
+        'Goods Receipt' => 'Surat Penerimaan Barang',
         'SPB No.' => 'No SPB',
         'PO / CO No.' => 'No PO / CO',
         'Sender Delivery Note No.' => 'No SJ Pengirim',
