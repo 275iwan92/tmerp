@@ -211,7 +211,8 @@ class StockPostingOrderTest extends TestCase
         $result = $this->postDoc(-1, 'STOCK', 10, $day, 1000, 'PV_CANCEL');
 
         $this->assertFalse($result['posted'], 'The receiving bin holds nothing, so the reversal must be refused.');
-        $this->assertStringContainsString('below zero', (string) $result['error']);
+        // Pesannya diterjemahkan kamus; yang diperiksa = tanggal baris sesudahnya (transfer hari ini) yang akan minus.
+        $this->assertStringContainsString(now()->toDateString(), (string) $result['error']);
         $this->assertFalse((bool) RmStock::query()->whereKey($result['doc_id'])->value('stat_confirm'));
         $this->assertPosition($this->bin, 0);
         $this->assertPosition($this->other, 10, 10000);
