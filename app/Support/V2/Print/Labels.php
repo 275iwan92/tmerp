@@ -312,5 +312,18 @@ final class Labels
         'All accepted' => 'Diterima semua',
         'All rejected' => 'Ditolak semua',
         'Partly accepted' => 'Diterima sebagian',
+        // Stock Transfer (pindah stok antar bin / gudang)
+        'Stock Transfer' => 'Transfer Stok',
+        'Internal Stock Movement' => 'Pindah Stok Internal',
+        'Transfer No.' => 'No Transfer',
+        'From Warehouse' => 'Dari Gudang',
+        'To Warehouse' => 'Ke Gudang',
+        'Carried By' => 'Dibawa oleh',
+        'From Bin' => 'Bin Asal',
+        'To Bin' => 'Bin Tujuan',
+        'Lot No.' => 'No Lot',
+        'Receiving Warehouse' => 'Gudang Penerima',
+        'Receives the goods' => 'Menerima barang',
+        'Stock moves between bins of the company. Ownership and value do not change. DEAD = item that has not moved for months.' => 'Stok berpindah antar bin milik perusahaan. Kepemilikan dan nilainya tidak berubah. DEAD = item yang sudah berbulan-bulan tidak bergerak.',
     ];
 }

@@ -4,7 +4,7 @@
         <div class="dl-cat__nav">
             {{-- Modul/Grup = buka Layer Menu di cabang itu; nama layar = kembali ke grid (DevLib Breadcrumb menu + current). --}}
             <x-dl::breadcrumb menu :items="[$screen['module'] => null, $screen['group'] => null, $screen['label'] => $screen['url']]"
-                :current="request()->query() ? (request('id') ? 'Form' : '+ New Record') : null" />
+                :current="request('id') ? 'Form' : (request('new') || (request()->query() && empty($screen['filters'])) ? '+ New Record' : null)" />
         </div>
         @if ($built)
             @include($screen['view'] ?? 'v2.screens.'.$screen['slug'], ['screen' => $screen])

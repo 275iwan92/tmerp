@@ -45,6 +45,7 @@ final class PrintDocs
         'dp-receipt' => [DownPaymentReceiptPrint::class, 'customer-invoice', 'DPR'],
         'qc-inspection' => [QcInspectionPrint::class, 'purchase-receive', 'QCI'],
         'customer-complaint' => [CustomerComplaintPrint::class, 'crm-complaint', 'CCR'],
+        'stock-transfer' => [StockTransferPrint::class, 'stock-transfer', 'TF'],
     ];
 
     // Dokumen yang dicetak dari sumber yang sama (id sama): halaman cetak menampilkan tombol pindah di antara keduanya.
