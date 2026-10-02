@@ -179,7 +179,7 @@ new #[Title('Procure to Pay — TELASIH MAKMUR ERP')] class extends Component
         $this->supplier_label = $s->supplier_name;
         $this->supQuery = '';
         $this->pph_code = $s->is_subcon ? 'PPH23' : '';
-        $days = FinPaymentTerm::find($s->payment_term)?->days ?? (preg_match('/(\d+)/', (string) $s->payment_term, $m) ? (int) $m[1] : 30);
+        $days = FinPaymentTerm::firstWhere('payment_term_code', $s->payment_term)?->days ?? (preg_match('/(\d+)/', (string) $s->payment_term, $m) ? (int) $m[1] : 30);
         $this->due_date = \Carbon\Carbon::parse($this->bill_date ?: now())->addDays($days)->toDateString();
     }
 

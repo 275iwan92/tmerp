@@ -184,7 +184,7 @@ new #[Title('Order to Cash — TELASIH MAKMUR ERP')] class extends Component
         $this->customer_id = $c->id_customer;
         $this->customer_label = $c->customer_name;
         $this->custQuery = '';
-        $days = FinPaymentTerm::find($c->payment_term)?->days ?? (preg_match('/(\d+)/', (string) $c->payment_term, $m) ? (int) $m[1] : 30);
+        $days = FinPaymentTerm::firstWhere('payment_term_code', $c->payment_term)?->days ?? (preg_match('/(\d+)/', (string) $c->payment_term, $m) ? (int) $m[1] : 30);
         $this->due_date = \Carbon\Carbon::parse($this->inv_date ?: now())->addDays($days)->toDateString();
     }
 

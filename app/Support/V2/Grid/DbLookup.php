@@ -45,6 +45,12 @@ abstract class DbLookup extends DbGrid
     // Akibat simpan satu baris pada baris lain (mis. hanya satu baris aktif per jenis) -- masih di dalam transaksi yang sama.
     protected function saved(Model $row): void {}
 
+    // Nilai kolom wajib yang tidak tampil di sheet, hanya untuk baris baru (mis. company_id selama perusahaannya satu).
+    protected function defaults(): array
+    {
+        return [];
+    }
+
     protected function row(Model $m): array
     {
         $row = [];
@@ -91,7 +97,7 @@ abstract class DbLookup extends DbGrid
                 // server tetap mengabaikan kiriman untuk baris yang sudah tersimpan).
                 $data = $cols->reject(fn ($c) => $id && ! empty($c['lockSaved']))
                     ->mapWithKeys(fn ($c) => [$c['key'] => ($in[$c['key']] ?? null) === '' ? null : ($in[$c['key']] ?? null)])->all();
-                $row = $id ? $model->newQuery()->findOrFail($id) : $model->newInstance(['created_by' => $login]);
+                $row = $id ? $model->newQuery()->findOrFail($id) : $model->newInstance(['created_by' => $login] + $this->defaults());
                 $row->fill($data + ['updated_by' => $login])->save();
                 $this->saved($row);
             }

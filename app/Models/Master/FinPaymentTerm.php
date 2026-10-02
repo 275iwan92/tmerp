@@ -10,11 +10,8 @@ class FinPaymentTerm extends Model
 
     protected $table = 'fin_payment_term';
 
-    protected $primaryKey = 'payment_term_code';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
+    // PK = nomor urut (aturan PK BIGINT 2026-09-30); payment_term_code tetap kunci bisnis UNIQUE yang disimpan dokumen.
+    protected $primaryKey = 'id_payment_term';
 
     protected $fillable = [
         'payment_term_code',

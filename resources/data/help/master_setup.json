@@ -133,6 +133,54 @@
     ]
   },
   {
+    "key": "md-sales-person",
+    "type": "INPUT",
+    "module": "MDATA",
+    "title": "Sales Person",
+    "purpose": {
+      "en": "The list of people who can be chosen as PIC Sales in Inquiry, Quotation and Customer Order. Open it to add a sales person or switch one off.",
+      "id": "Daftar orang yang bisa dipilih sebagai PIC Sales di Inquiry, Quotation dan Customer Order. Buka untuk menambah sales atau menonaktifkannya."
+    },
+    "keywords": "sales person, pic sales, nama sales, salesman, sales internal, sales eksternal, agen, freelance, komisi, lookup sales",
+    "steps": [
+      {"en": "Open Sales Person. Each row is one person and is edited directly in the cell.", "id": "Buka Sales Person. Tiap baris adalah satu orang dan diedit langsung di selnya."},
+      {"en": "Click Row to add a new line, then type the Sales Name and pick the Type.", "id": "Klik Row untuk menambah baris baru, lalu ketik Sales Name dan pilih Type."},
+      {"en": "For an internal sales person pick the Employee. Leave Employee empty for an external one.", "id": "Untuk sales internal pilih Employee. Untuk sales eksternal, Employee dikosongkan."},
+      {"en": "Click Save. All changed rows are saved together; if one row is wrong nothing is saved and the message names the row. Undo drops the unsaved changes.", "id": "Klik Save. Semua baris yang berubah disimpan bersamaan; bila satu baris salah, tidak ada yang tersimpan dan pesan menyebut barisnya. Undo membuang perubahan yang belum disimpan."}
+    ],
+    "fields": [
+      {"label": "Sales Name", "en": "Name shown in the PIC Sales lists, up to 150 characters, unique. Required. A saved name cannot be changed because documents refer to it.", "id": "Nama yang tampil di daftar PIC Sales, maksimal 150 karakter, tidak boleh kembar. Wajib. Nama yang sudah disimpan tidak bisa diganti karena dirujuk dokumen."},
+      {"label": "Type", "en": "Internal = our own employee. External = agent or freelance outside the company. Required.", "id": "Internal = pegawai sendiri. External = agen atau freelance di luar perusahaan. Wajib."},
+      {"label": "Employee", "en": "The employee behind an internal sales person, picked from Master Employee. Must stay empty for an external one.", "id": "Pegawai di balik sales internal, dipilih dari Master Employee. Harus kosong untuk sales eksternal."},
+      {"label": "Phone", "en": "Phone number of the sales person, up to 50 characters. Optional.", "id": "Nomor telepon sales, maksimal 50 karakter. Boleh kosong."},
+      {"label": "Active", "en": "Untick to stop offering the person in the PIC Sales lists. Rows are not deleted, only switched off.", "id": "Hilangkan centang supaya orang ini tidak ditawarkan lagi di daftar PIC Sales. Baris tidak dihapus, hanya dinonaktifkan."}
+    ]
+  },
+  {
+    "key": "md-payment-term",
+    "type": "INPUT",
+    "module": "MDATA",
+    "title": "Payment Terms",
+    "purpose": {
+      "en": "The list of payment terms chosen in Master Customer, Master Supplier, Quotation and Customer Order. Open it to add a term, change its credit days or switch it off.",
+      "id": "Daftar syarat bayar yang dipilih di Master Customer, Master Supplier, Quotation dan Customer Order. Buka untuk menambah syarat bayar, mengubah hari kreditnya atau menonaktifkannya."
+    },
+    "keywords": "payment terms, syarat bayar, termin, top, tempo, jatuh tempo, net 30, cod, cash, kredit, hari kredit, lookup payment term",
+    "steps": [
+      {"en": "Open Payment Terms. Each row is one term and is edited directly in the cell.", "id": "Buka Payment Terms. Tiap baris adalah satu syarat bayar dan diedit langsung di selnya."},
+      {"en": "Click Row to add a new line, then type the Code and the Term Name.", "id": "Klik Row untuk menambah baris baru, lalu ketik Code dan Term Name."},
+      {"en": "Type Days when the term gives credit, and Order to place the term in the lists.", "id": "Ketik Days bila syarat bayar memberi kredit, dan Order untuk menentukan urutannya di daftar pilihan."},
+      {"en": "Click Save. All changed rows are saved together; if one row is wrong nothing is saved and the message names the row. Undo drops the unsaved changes.", "id": "Klik Save. Semua baris yang berubah disimpan bersamaan; bila satu baris salah, tidak ada yang tersimpan dan pesan menyebut barisnya. Undo membuang perubahan yang belum disimpan."}
+    ],
+    "fields": [
+      {"label": "Code", "en": "Unique code, up to 20 characters: capital letters, digits, dash or underscore. Required. A saved code cannot be changed because documents store it.", "id": "Kode unik, maksimal 20 karakter: huruf besar, angka, tanda hubung atau garis bawah. Wajib. Kode yang sudah disimpan tidak bisa diganti karena disimpan dokumen."},
+      {"label": "Term Name", "en": "Name shown in the Payment Terms lists and on the Quotation print, up to 60 characters. Required.", "id": "Nama yang tampil di daftar Payment Terms dan di cetakan Quotation, maksimal 60 karakter. Wajib."},
+      {"label": "Days", "en": "Credit days. A new customer or supplier invoice gets its due date from the invoice date plus these days. Leave empty when no due date applies.", "id": "Hari kredit. Tagihan customer atau supplier yang baru mendapat jatuh tempo dari tanggal tagihan ditambah hari ini. Kosongkan bila tanpa jatuh tempo."},
+      {"label": "Order", "en": "Position of the term in the lists, smallest first. Empty is saved as 999, the bottom.", "id": "Urutan syarat bayar di daftar pilihan, angka terkecil lebih dulu. Kosong disimpan sebagai 999, paling bawah."},
+      {"label": "Active", "en": "Untick to stop offering the term in the lists. Rows are not deleted, only switched off.", "id": "Hilangkan centang supaya syarat bayar tidak ditawarkan lagi di daftar pilihan. Baris tidak dihapus, hanya dinonaktifkan."}
+    ]
+  },
+  {
     "key": "md-raw",
     "type": "INPUT",
     "module": "MDATA",

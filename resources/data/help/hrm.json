@@ -88,6 +88,29 @@
     ]
   },
   {
+    "key": "hrm-department",
+    "type": "INPUT",
+    "module": "HRM",
+    "title": "Department",
+    "purpose": {
+      "en": "The list of departments chosen in Master Position, Purchase Requisition, Shift, Roster and Stock Out. Open it to add a department, rename it or switch it off.",
+      "id": "Daftar departemen yang dipilih di Master Posisi, Purchase Requisition, Shift, Roster dan Stock Out. Buka untuk menambah departemen, mengganti namanya atau menonaktifkannya."
+    },
+    "keywords": "department, departemen, bagian, divisi, struktur organisasi, org department, unit kerja, lookup departemen",
+    "steps": [
+      {"en": "Open Department. Each row is one department and is edited directly in the cell.", "id": "Buka Department. Tiap baris adalah satu departemen dan diedit langsung di selnya."},
+      {"en": "Click Row to add a new line, then type the Code and the Department Name.", "id": "Klik Row untuk menambah baris baru, lalu ketik Code dan Department Name."},
+      {"en": "Pick the Division the department belongs to, or leave it empty when the department serves all divisions.", "id": "Pilih Division tempat departemen itu berada, atau kosongkan bila departemen melayani semua divisi."},
+      {"en": "Click Save. All changed rows are saved together; if one row is wrong nothing is saved and the message names the row. Undo drops the unsaved changes.", "id": "Klik Save. Semua baris yang berubah disimpan bersamaan; bila satu baris salah, tidak ada yang tersimpan dan pesan menyebut barisnya. Undo membuang perubahan yang belum disimpan."}
+    ],
+    "fields": [
+      {"label": "Code", "en": "Unique code, up to 20 characters, always capital letters. Required. A saved code cannot be changed because programs and documents refer to it.", "id": "Kode unik, maksimal 20 karakter, selalu huruf besar. Wajib. Kode yang sudah disimpan tidak bisa diganti karena dirujuk program dan dokumen."},
+      {"label": "Department Name", "en": "Name shown in every department list, up to 150 characters. Required.", "id": "Nama yang tampil di semua daftar departemen, maksimal 150 karakter. Wajib."},
+      {"label": "Division", "en": "The division the department belongs to, picked from the division list. Optional.", "id": "Divisi tempat departemen itu berada, dipilih dari daftar divisi. Boleh kosong."},
+      {"label": "Active", "en": "Untick to stop offering the department in the lists. Rows are not deleted, only switched off.", "id": "Hilangkan centang supaya departemen tidak ditawarkan lagi di daftar pilihan. Baris tidak dihapus, hanya dinonaktifkan."}
+    ]
+  },
+  {
     "key": "hrm-position",
     "type": "INPUT",
     "module": "HRM",
