@@ -4,10 +4,10 @@ namespace App\Models\Inventory;
 
 use Illuminate\Database\Eloquent\Model;
 
-// Riwayat cetak label (lokasi / item): siapa mencetak apa, kapan, berapa lembar.
+// Riwayat cetak label (lokasi / item / palet): siapa mencetak apa, kapan, berapa lembar.
 class InvLabelPrint extends Model
 {
-    public const TYPES = ['LOCATION' => 'Location', 'ITEM' => 'Item'];
+    public const TYPES = ['LOCATION' => 'Location', 'ITEM' => 'Item', 'PALLET' => 'Pallet'];
 
     protected $connection = 'tm2inv';
 

@@ -5,6 +5,9 @@ namespace Database\Seeders;
 use App\Models\Inventory\FgStock;
 use App\Models\Inventory\FgStockcard;
 use App\Models\Inventory\FgStockD;
+use App\Models\Inventory\InvLabelPrint;
+use App\Models\Inventory\InvPallet;
+use App\Models\Inventory\InvPalletLog;
 use App\Models\Inventory\InvTransfer;
 use App\Models\Inventory\InvTransferLine;
 use App\Models\Inventory\RmStock;
@@ -16,6 +19,7 @@ use App\Models\Master\WhLoc;
 use App\Models\Master\WhWarehouse;
 use App\Models\Master\WhZone;
 use App\Services\Inventory\BinGenerator;
+use App\Services\Inventory\PalletService;
 use App\Services\Inventory\StockDocumentService;
 use App\Services\Inventory\StockPostingService;
 use App\Services\Inventory\StockTransferService;
@@ -27,18 +31,25 @@ use RuntimeException;
 // Dummy Inventory & Warehouse (user 2026-10-02): tiga gedung nyata A10 / A5 / A6 (kotak, 2 lantai; ukuran = PERKIRAAN,
 // "nanti di-adjust oleh officer"), area + bin per lantai, stok contoh yang masuk lewat Stock In sungguhan (kartu stok,
 // harga rata-rata) dengan tanggal berbeda supaya ada bin terisi, penuh, lebih dari kapasitas, diblokir, dan DEAD STOCK,
-// lalu tiga Stock Transfer (dua Confirmed, satu Draft). Hanya ddt*; diulang = dummy seeder ini dihapus lalu dibuat lagi.
+// lalu Stock Transfer (tiga Confirmed, satu Draft). Putaran 2: tinggi tiap lantai + tinggi tumpuk area (kapasitas m3),
+// palet berlabel (kode palet supplier, lot, kedaluwarsa: ada yang kedaluwarsa dan yang segera), posisi yang BELUM berlabel
+// (label kedatangan) dan yang labelnya tidak cocok lagi (label ulang). Hanya ddt*; diulang = dummy ini dihapus lalu dibuat lagi.
 //   php artisan db:seed --class=UatWarehouseSeeder --env=mockup --force
 class UatWarehouseSeeder extends Seeder
 {
     private const BY = 'uat_warehouse';
 
-    // kode => [nama, panjang m, lebar m, lantai]
+    // kode => [nama, panjang m, lebar m, lantai, [tinggi bersih lantai 1, lantai 2] m] -- semua PERKIRAAN.
     private const BUILDINGS = [
-        'A10' => ['Warehouse A10', 30, 20, 2],
-        'A5' => ['Warehouse A5', 24, 16, 2],
-        'A6' => ['Warehouse A6', 20, 12, 2],
+        'A10' => ['Warehouse A10', 30, 20, 2, [7, 3.5]],
+        'A5' => ['Warehouse A5', 24, 16, 2, [6, 3.2]],
+        'A6' => ['Warehouse A6', 20, 12, 2, [5, 3]],
     ];
+
+    // Tinggi tumpuk per area (m): tumpukan palet kertas, rak, barang jadi; area lain = STACK_DEFAULT.
+    private const STACK = ['PPR' => 1.6, 'PPR2' => 1.6, 'SHT' => 1.6, 'CSG' => 1.6, 'DSK' => 1.6, 'INK' => 2.4, 'TLG' => 2.0, 'FG' => 1.8, 'STR' => 1.8];
+
+    private const STACK_DEFAULT = 1.5;
 
     // gedung => [[lantai, kode, nama, jenis, cara simpan, kelas stok, x, y, w, h, [lajur/rak, slot/kolom, tingkat], kapasitas kg, kapasitas pallet]]
     private const ZONES = [
@@ -74,7 +85,8 @@ class UatWarehouseSeeder extends Seeder
         ['PYJ31', 'A10-PPR-L05-03', 4000, 2, 3100],
         ['IOH12', 'A10-INK-R01-01-1', 60, 15, 150000], ['IZ06028', 'A10-INK-R01-01-2', 120, 25, 135000], ['IZ05964', 'A10-INK-R01-02-1', 40, 335, 120000],
         ['GZ00726', 'A10-INK-R02-01-1', 280, 7, 100000], ['TZ04469', 'A10-INK-R02-03-2', 200, 40, 65000],
-        ['PYJ31', 'A10-RCV', 5000, 0, 3150], ['PZ00083', 'A10-QC', 2500, 1, 1900],
+        // Paling baru = kemarin: tidak ada baris kartu bertanggal hari ini, supaya penerimaan yang dicoba user hari ini selalu baris terakhir.
+        ['PYJ31', 'A10-RCV', 5000, 1, 3150], ['PZ00083', 'A10-QC', 2500, 3, 1900],
         ['PYJ31', 'A5-PPR-L01-01', 10000, 35, 3050], ['PZ05893', 'A5-PPR-L01-02', 9000, 50, 2850], ['P4454', 'A5-PPR-L02-01', 30000, 70, 600],
         ['PDD37037', 'A5-PPR-L03-01', 6000, 300, 2300], ['PZ00083', 'A5-PPR-L03-02', 5000, 20, 1850], ['PZ00083', 'A5-PPR2-L01-01', 8000, 90, 1850],
         ['TZ04469', 'A6-STR-L01-01', 500, 15, 65000],
@@ -85,10 +97,29 @@ class UatWarehouseSeeder extends Seeder
         ['FB-DUPLEX-001', 'A10-FG-L01-01', 12000, 12], ['RSC-CORR-002', 'A10-FG-L01-02', 800, 30], ['LBL-STK-003', 'A10-FG-L02-01', 50000, 245],
     ];
 
+    // [kode bahan, kode bin, [qty per palet], awalan kode palet supplier, kedaluwarsa = hari sesudah tanggal datang]
+    // Posisi yang tidak disebut di sini sengaja belum berlabel (muncul di daftar "Arrival label").
+    private const PALLETS = [
+        ['PYJ31', 'A10-PPR-L01-01', [5000, 5000], 'IKPP', 365], ['PYJ31', 'A10-PPR-L01-02', [5500, 5500], 'IKPP', 365], ['PZ00083', 'A10-PPR-L01-03', [4500, 4500], 'SPM', 365],
+        ['PZ05893', 'A10-PPR-L02-01', [6250, 6250], 'FSW', 365], ['PDD37037', 'A10-PPR-L02-02', [4000, 4000], 'PKR', 365], ['P4454', 'A10-PPR-L02-04', [10000, 10000], 'SPM', 365],
+        // datang 275 hari lalu + 300 hari = kedaluwarsa 25 hari lagi (Expires soon)
+        ['PZ06061', 'A10-PPR-L03-01', [7500, 7500], 'IKPP', 300],
+        // datang 395 hari lalu + 365 hari = sudah kedaluwarsa; ikut pindah ke A6 lewat transfer kedua
+        ['PZ05649', 'A10-PPR-L03-02', [3000], 'FSW', 365],
+        ['PZ00083', 'A10-PPR-L04-01', [3000, 3000], 'SPM', 365],
+        ['IOH12', 'A10-INK-R01-01-1', [60], 'DIC', 540], ['IZ06028', 'A10-INK-R01-01-2', [60, 60], 'TOYO', 365], ['IZ05964', 'A10-INK-R01-02-1', [40], 'TOYO', 360],
+        ['GZ00726', 'A10-INK-R02-01-1', [140, 140], 'HNK', 180],
+        // 4.000 pertama ikut pindah ke A10 lewat transfer pertama (palet tertua yang jumlahnya persis sama)
+        ['PYJ31', 'A5-PPR-L01-01', [4000, 3000, 3000], 'IKPP', 365], ['PZ05893', 'A5-PPR-L01-02', [4500, 4500], 'FSW', 365], ['P4454', 'A5-PPR-L02-01', [15000, 15000], 'SPM', 365],
+        ['PDD37037', 'A5-PPR-L03-01', [6000], 'PKR', 280],
+    ];
+
     // [gedung asal, gedung tujuan, alasan, catatan, pembawa, confirm?, [[kode bahan, bin asal, bin tujuan, qty]]]
     private const TRANSFERS = [
         ['A5', 'A10', 'REPLENISH', 'Paper for next week print run.', 'MAHMUD SUPAAT', true, [['PYJ31', 'A5-PPR-L01-01', 'A10-PPR-L05-03', 4000]]],
         ['A10', 'A6', 'DEAD_STOCK', 'Dead stock moved aside to free a paper lane.', 'MAHMUD SUPAAT', true, [['PZ05649', 'A10-PPR-L03-02', 'A6-DSK-L01-01', 3000]]],
+        // Sebagian isi satu palet: palet tidak ikut pindah -> bin asal minta label ulang, area staging minta label baru.
+        ['A10', 'A10', 'TO_PRODUCTION', 'Board for the corrugated order: part of one pallet, to the staging area.', 'MAHMUD SUPAAT', true, [['P4454', 'A10-PPR-L02-04', 'A10-STG', 3000]]],
         ['A10', 'A10', 'TO_PRODUCTION', 'Duplex for the folding box order, to the staging area.', null, false, [['PZ00083', 'A10-PPR-L04-01', 'A10-STG', 2000]]],
     ];
 
@@ -100,6 +131,7 @@ class UatWarehouseSeeder extends Seeder
         $this->clean();
         $bins = $this->layout();
         $this->stock($bins);
+        $this->pallets($bins);
         $this->transfers($bins);
     }
 
@@ -112,6 +144,10 @@ class UatWarehouseSeeder extends Seeder
             $inv->table($card)->where('reference_name', 'like', StockTransferService::REF.'%')->whereIn('reference_detail_id', $lineIds ?: [0])->delete();
         }
         InvTransfer::query()->where('created_by', self::BY)->delete();
+        $palletIds = InvPallet::query()->where('created_by', self::BY)->pluck('id_pallet')->all();
+        InvPalletLog::query()->whereIn('pallet_id', $palletIds ?: [0])->delete();
+        InvPallet::query()->whereIn('id_pallet', $palletIds ?: [0])->delete();
+        InvLabelPrint::query()->where('printed_by', self::BY)->delete();
 
         foreach ([[RmStock::class, RmStockD::class, RmStockcard::class, 'tm2inv.rm_stock_d', 'material_id', MatRaw::class],
             [FgStock::class, FgStockD::class, FgStockcard::class, 'tm2inv.fg_stock_d', 'product_id', ProdProduct::class]] as [$head, $line, $card, $ref, $itemKey, $master]) {
@@ -133,16 +169,18 @@ class UatWarehouseSeeder extends Seeder
     // Gedung, area, bin. Kembalian: kode bin => WhLoc.
     private function layout(): Collection
     {
-        foreach (self::BUILDINGS as $code => [$name, $length, $width, $floors]) {
+        foreach (self::BUILDINGS as $code => [$name, $length, $width, $floors, $heights]) {
             if (WhWarehouse::query()->where('warehouse_code', $code)->exists()) {
                 throw new RuntimeException("Warehouse {$code} already exists and was not made by this seeder.");
             }
             $wh = WhWarehouse::create(['warehouse_code' => $code, 'warehouse_name' => $name, 'warehouse_type' => 'MIX', 'activate' => true, 'length_m' => $length, 'width_m' => $width,
-                'floor_count' => $floors, 'shape' => 'RECT', 'created_by' => self::BY, 'updated_by' => self::BY]);
+                'floor_count' => $floors, 'shape' => 'RECT', 'height_f1_m' => $heights[0] ?? null, 'height_f2_m' => $heights[1] ?? null, 'height_f3_m' => $heights[2] ?? null,
+                'created_by' => self::BY, 'updated_by' => self::BY]);
             DB::connection('tm2mst')->table('wh_warehouse')->where('id_warehouse', $wh->id_warehouse)->update(['data_origin' => 'DUMMY']);
             foreach (self::ZONES[$code] as $i => [$floor, $zc, $zn, $type, $mode, $class, $x, $y, $w, $h, $gen, $kg, $pallet]) {
                 $zone = WhZone::create(['warehouse_id' => $wh->id_warehouse, 'floor_no' => $floor, 'zone_code' => $zc, 'zone_name' => $zn, 'zone_type' => $type, 'storage_mode' => $mode,
-                    'stock_class' => $class, 'map_x' => $x, 'map_y' => $y, 'map_w' => $w, 'map_h' => $h, 'sort_order' => ($i + 1) * 10, 'activate' => true,
+                    'stock_class' => $class, 'map_x' => $x, 'map_y' => $y, 'map_w' => $w, 'map_h' => $h, 'stack_height_m' => self::STACK[$zc] ?? self::STACK_DEFAULT,
+                    'sort_order' => ($i + 1) * 10, 'activate' => true,
                     'created_at' => now(), 'updated_at' => now(), 'created_by' => self::BY, 'updated_by' => self::BY]);
                 BinGenerator::generate($zone->setRelation('warehouse', $wh), ['rows_from' => 1, 'rows_to' => $gen[0] ?? 1, 'cols_from' => 1, 'cols_to' => $gen[1] ?? 1,
                     'levels' => $gen[2] ?? 1, 'capacity_kg' => $kg, 'capacity_pallet' => $pallet], self::BY);
@@ -193,13 +231,31 @@ class UatWarehouseSeeder extends Seeder
         DB::connection('tm2inv')->table('fg_stockcard')->where('create_by', self::BY)->update(['data_origin' => 'DUMMY']);
     }
 
+    // Label palet kedatangan lewat PalletService (aturan yang sama dengan layar Print Pallet Label).
+    private function pallets($bins): void
+    {
+        $materials = MatRaw::withoutGlobalScopes()->whereIn('material_code', array_unique(array_column(self::PALLETS, 0)))->get()->keyBy('material_code');
+        $lots = collect(self::RM_STOCK)->mapWithKeys(fn ($r) => [$r[0].'|'.$r[1] => $r[3]]);
+        foreach (self::PALLETS as $n => [$code, $bin, $split, $prefix, $shelf]) {
+            $days = (int) $lots[$code.'|'.$bin];
+            $arrived = now()->subDays($days);
+            $key = 'RM:'.$materials[$code]->material_id.':0:'.$bins[$bin]->location_id;
+            $rows = [];
+            foreach ($split as $i => $qty) {
+                $rows[] = ['qty' => $qty, 'supplier_pallet_code' => $prefix.'-'.$arrived->format('ymd').'-'.str_pad((string) ($n * 3 + $i + 1), 3, '0', STR_PAD_LEFT),
+                    'lot_no' => 'LOT-'.$arrived->format('ymd'), 'expiry_date' => $arrived->copy()->addDays($shelf)->toDateString()];
+            }
+            PalletService::create($key, $rows, ['arrived_at' => $arrived->toDateString(), 'notes' => null], self::BY);
+        }
+    }
+
     private function transfers($bins): void
     {
         $svc = new StockTransferService;
         $wh = WhWarehouse::query()->where('created_by', self::BY)->pluck('id_warehouse', 'warehouse_code');
         $materials = MatRaw::withoutGlobalScopes()->whereIn('material_code', collect(self::TRANSFERS)->flatMap(fn ($t) => array_column($t[6], 0))->unique()->all())->get()->keyBy('material_code');
         foreach (self::TRANSFERS as $n => [$from, $to, $reason, $notes, $carrier, $confirm, $lines]) {
-            $t = InvTransfer::create(['transfer_date' => now()->subDays($confirm ? 2 - $n : 0)->toDateString(), 'from_warehouse_id' => $wh[$from], 'to_warehouse_id' => $wh[$to], 'reason' => $reason,
+            $t = InvTransfer::create(['transfer_date' => now()->subDays($confirm ? max(0, 2 - $n) : 0)->toDateString(), 'from_warehouse_id' => $wh[$from], 'to_warehouse_id' => $wh[$to], 'reason' => $reason,
                 'notes' => $notes, 'carried_by' => $carrier, 'created_by' => self::BY, 'updated_by' => self::BY]);
             foreach ($lines as $i => [$code, $src, $dst, $qty]) {
                 $m = $materials[$code];

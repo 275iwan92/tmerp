@@ -29,7 +29,12 @@ class WhZone extends Model
 
     protected $guarded = ['id_zone'];
 
-    protected $casts = ['activate' => 'boolean', 'floor_no' => 'integer', 'map_x' => 'float', 'map_y' => 'float', 'map_w' => 'float', 'map_h' => 'float'];
+    protected $casts = ['activate' => 'boolean', 'floor_no' => 'integer', 'map_x' => 'float', 'map_y' => 'float', 'map_w' => 'float', 'map_h' => 'float', 'stack_height_m' => 'float'];
+
+    public function areaM2(): float
+    {
+        return round((float) $this->map_w * (float) $this->map_h, 2);
+    }
 
     public function warehouse(): BelongsTo
     {

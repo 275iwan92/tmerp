@@ -28,12 +28,13 @@ class WhWarehouse extends Model
     protected $fillable = [
         'warehouse_code', 'warehouse_name', 'warehouse_type', 'activate',
         'length_m', 'width_m', 'floor_count', 'shape', 'notch_length_m', 'notch_width_m', 'notch_corner', 'outline', 'address',
+        'height_f1_m', 'height_f2_m', 'height_f3_m',
         'created_by', 'updated_by',
     ];
 
     protected $casts = [
         'activate' => 'boolean', 'length_m' => 'float', 'width_m' => 'float', 'floor_count' => 'integer',
-        'notch_length_m' => 'float', 'notch_width_m' => 'float',
+        'notch_length_m' => 'float', 'notch_width_m' => 'float', 'height_f1_m' => 'float', 'height_f2_m' => 'float', 'height_f3_m' => 'float',
     ];
 
     public function locations(): HasMany
@@ -49,6 +50,14 @@ class WhWarehouse extends Model
     public function floors(): int
     {
         return max(1, min(self::MAX_FLOORS, (int) ($this->floor_count ?: 1)));
+    }
+
+    // Tinggi bersih satu lantai (meter); null = belum diisi (volume lantai itu tidak dihitung).
+    public function floorHeight(int $floor): ?float
+    {
+        $h = (float) $this->getAttribute('height_f'.max(1, min(self::MAX_FLOORS, $floor)).'_m');
+
+        return $h > 0 ? $h : null;
     }
 
     public function hasLayout(): bool

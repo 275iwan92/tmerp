@@ -40,9 +40,15 @@ class InvTransfer extends Model
         return $this->belongsTo(WhWarehouse::class, 'to_warehouse_id', 'id_warehouse');
     }
 
+    // SUBMITTED / REJECTED hanya muncul bila approval Stock Transfer diaktifkan (Setup > Setting Approval, kode TF).
     public function status(): string
     {
-        return $this->stat_cancel ? 'CANCELLED' : ($this->stat_confirm ? 'CONFIRMED' : 'DRAFT');
+        return match (true) {
+            (bool) $this->stat_cancel => 'CANCELLED',
+            (bool) $this->stat_confirm => 'CONFIRMED',
+            in_array($this->flow_status, ['SUBMITTED', 'REJECTED'], true) => $this->flow_status,
+            default => 'DRAFT',
+        };
     }
 
     public function label(): string

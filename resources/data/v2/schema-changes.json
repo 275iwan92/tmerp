@@ -1,5 +1,66 @@
 [
     {
+        "at": "2026-10-02 21:42:33",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer",
+                "column": "flow_status",
+                "detail": "varchar(20)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_transfer_line",
+                "column": "pallet_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_pallet",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_pallet_log",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "height_f1_m",
+                "detail": "decimal(5,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "height_f2_m",
+                "detail": "decimal(5,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "height_f3_m",
+                "detail": "decimal(5,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_zone",
+                "column": "stack_height_m",
+                "detail": "decimal(5,2)"
+            }
+        ]
+    },
+    {
         "at": "2026-10-02 20:01:57",
         "items": [
             {

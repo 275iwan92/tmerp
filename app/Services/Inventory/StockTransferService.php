@@ -8,6 +8,7 @@ use App\Models\Inventory\InvTransferLine;
 use App\Models\Inventory\RmStockcard;
 use App\Models\Inventory\SfgStockcard;
 use App\Models\Master\WhLoc;
+use App\Services\Flow\FlowEngineService;
 use Devlib\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -22,8 +23,14 @@ use RuntimeException;
 // keduanya doc_type 'TF'. Nilai ikut pindah dengan harga rata-rata bin asal; saldo item secara keseluruhan (cur_stock)
 // tidak berubah dan TIDAK ada jurnal (pemilik dan nilai sama). Cancel = pindah balik (..:CANCEL_OUT / ..:CANCEL_IN).
 // Saldo satu posisi = baris kartu TERAKHIR (doc_date, doc_id) item itu di bin itu -- sama dengan view v_*_onhand.
+// Approval (user 2026-10-02: "untuk sementara di-skip tapi fasilitasnya dibuat dan bisa diaktifkan kapan saja"): modul
+// flow 'TF' di Setup > Setting Approval. Tidak aktif = Confirm langsung memindahkan stok. Aktif = Confirm mengajukan
+// (nomor lahir, stok BELUM pindah); stok baru pindah saat level terakhir menyetujui. Palet berlabel ikut pindah
+// (App\Services\Inventory\PalletService).
 class StockTransferService
 {
+    public const FLOW = 'TF';
+
     // kelas => [model kartu, kolom item]
     private const CARDS = ['RM' => [RmStockcard::class, 'material_id'], 'SFG' => [SfgStockcard::class, 'parts_id'], 'FG' => [FgStockcard::class, 'product_id']];
 
@@ -79,8 +86,15 @@ class StockTransferService
         return $errors;
     }
 
-    // Confirm = stok pindah + nomor lahir. Kembalian = pesan salah, null = berhasil.
+    // Confirm dari layar. Kembalian = pesan salah, null = berhasil (status sesudahnya: CONFIRMED atau SUBMITTED).
     public function confirm(InvTransfer $transfer, string $login): ?string
+    {
+        return app(FlowEngineService::class)->activeConfig(self::FLOW) ? $this->submit($transfer, $login) : $this->post($transfer, $login);
+    }
+
+    // Approval aktif: nomor lahir dan dokumen masuk antrian pemeriksa; stok belum pindah. Tidak ada level yang cocok
+    // dengan nilainya = langsung pindah.
+    public function submit(InvTransfer $transfer, string $login): ?string
     {
         try {
             DB::connection('tm2inv')->transaction(function () use ($transfer, $login) {
@@ -91,14 +105,11 @@ class StockTransferService
                 if ($errors = $this->confirmErrors($t)) {
                     throw new RuntimeException(implode(' ', $errors));
                 }
-                $bins = WhLoc::query()->whereKey($t->lines->pluck('from_location_id')->merge($t->lines->pluck('to_location_id'))->unique()->all())->get()->keyBy('location_id');
-                $dead = WarehouseStock::positions($t->lines->pluck('from_location_id')->unique()->all())->where('dead', true)->pluck('key')->flip();
-                foreach ($t->lines as $l) {
-                    $cost = $this->move($l, (int) $l->from_location_id, (int) $l->to_location_id, $bins, 'OUT', 'IN', $login);
-                    $l->forceFill(['unit_cost' => $cost, 'updated_by' => $login,
-                        'was_dead_stock' => $dead->has(WarehouseStock::key($l->stock_class, (int) $l->item_id, $l->part_id, (int) $l->from_location_id))])->save();
+                $t->forceFill(['transfer_no' => $t->transfer_no ?: InvTransfer::nextNo(), 'flow_status' => 'SUBMITTED', 'updated_by' => $login])->save();
+                $res = app(FlowEngineService::class)->submit(self::FLOW, (int) $t->id_transfer, 'SUBMITTED', $this->value($t));
+                if (! $res || ! $res['pending_step_id']) {
+                    $this->apply($t, $login, 'APPROVED');
                 }
-                $t->forceFill(['transfer_no' => InvTransfer::nextNo(), 'stat_confirm' => true, 'confirmed_by' => $login, 'confirmed_at' => now(), 'updated_by' => $login])->save();
             });
         } catch (RuntimeException $e) {
             return $e->getMessage();
@@ -107,7 +118,51 @@ class StockTransferService
         return null;
     }
 
-    // Cancel = stok dikembalikan ke bin asal (bila masih ada di bin tujuan), alasan wajib.
+    // Stok pindah. $approved = dipanggil sesudah persetujuan terakhir (dokumen berstatus SUBMITTED), selain itu dari Draft.
+    public function post(InvTransfer $transfer, string $login, bool $approved = false): ?string
+    {
+        try {
+            DB::connection('tm2inv')->transaction(function () use ($transfer, $login, $approved) {
+                $t = InvTransfer::query()->lockForUpdate()->findOrFail($transfer->id_transfer);
+                if ($t->status() !== ($approved ? 'SUBMITTED' : 'DRAFT')) {
+                    throw new RuntimeException(self::msg($approved ? 'This transfer is not waiting for approval.' : 'Only a Draft can be confirmed.'));
+                }
+                if ($errors = $this->confirmErrors($t)) {
+                    throw new RuntimeException(implode(' ', $errors));
+                }
+                $this->apply($t, $login, $approved ? 'APPROVED' : null);
+            });
+        } catch (RuntimeException $e) {
+            return $e->getMessage();
+        }
+
+        return null;
+    }
+
+    // Nilai dokumen untuk batas approval: qty x harga rata-rata bin asal (yang tidak bernilai dihitung 0).
+    public function value(InvTransfer $t): float
+    {
+        return round((float) $t->lines->sum(fn (InvTransferLine $l) => $l->qty
+            * (float) ($this->last($l->stock_class, (int) $l->item_id, $l->part_id, (int) $l->from_location_id)->first()?->avg_unitprice ?? 0)), 2);
+    }
+
+    // Tulis kartu stok semua baris, tandai Confirmed, pindahkan palet. Dipanggil di dalam transaksi, dokumen sudah dikunci.
+    private function apply(InvTransfer $t, string $login, ?string $flowStatus): void
+    {
+        $bins = WhLoc::query()->whereKey($t->lines->pluck('from_location_id')->merge($t->lines->pluck('to_location_id'))->unique()->all())->get()->keyBy('location_id');
+        $dead = WarehouseStock::positions($t->lines->pluck('from_location_id')->unique()->all())->where('dead', true)->pluck('key')->flip();
+        foreach ($t->lines as $l) {
+            $cost = $this->move($l, (int) $l->from_location_id, (int) $l->to_location_id, $bins, 'OUT', 'IN', $login);
+            $l->forceFill(['unit_cost' => $cost, 'updated_by' => $login,
+                'was_dead_stock' => $dead->has(WarehouseStock::key($l->stock_class, (int) $l->item_id, $l->part_id, (int) $l->from_location_id))])->save();
+        }
+        $t->forceFill(['transfer_no' => $t->transfer_no ?: InvTransfer::nextNo(), 'stat_confirm' => true, 'confirmed_by' => $login, 'confirmed_at' => now(),
+            'flow_status' => $flowStatus, 'updated_by' => $login])->save();
+        PalletService::followTransfer($t, $login);
+    }
+
+    // Cancel = stok dikembalikan ke bin asal (bila masih ada di bin tujuan), alasan wajib. Dokumen yang masih menunggu
+    // approval dibatalkan tanpa gerakan stok (stoknya memang belum pindah).
     public function cancel(InvTransfer $transfer, string $reason, string $login): ?string
     {
         if (trim($reason) === '') {
@@ -116,12 +171,15 @@ class StockTransferService
         try {
             DB::connection('tm2inv')->transaction(function () use ($transfer, $reason, $login) {
                 $t = InvTransfer::query()->with('lines')->lockForUpdate()->findOrFail($transfer->id_transfer);
-                if ($t->status() !== 'CONFIRMED') {
+                if (! in_array($t->status(), ['CONFIRMED', 'SUBMITTED'], true)) {
                     throw new RuntimeException(self::msg('Only a Confirmed transfer can be cancelled.'));
                 }
-                $bins = WhLoc::query()->whereKey($t->lines->pluck('from_location_id')->merge($t->lines->pluck('to_location_id'))->unique()->all())->get()->keyBy('location_id');
-                foreach ($t->lines as $l) {
-                    $this->move($l, (int) $l->to_location_id, (int) $l->from_location_id, $bins, 'CANCEL_OUT', 'CANCEL_IN', $login);
+                if ($t->status() === 'CONFIRMED') {
+                    $bins = WhLoc::query()->whereKey($t->lines->pluck('from_location_id')->merge($t->lines->pluck('to_location_id'))->unique()->all())->get()->keyBy('location_id');
+                    foreach ($t->lines as $l) {
+                        $this->move($l, (int) $l->to_location_id, (int) $l->from_location_id, $bins, 'CANCEL_OUT', 'CANCEL_IN', $login);
+                    }
+                    PalletService::revertTransfer($t, $login);
                 }
                 $t->forceFill(['stat_cancel' => true, 'cancel_reason' => mb_substr(trim($reason), 0, 255), 'updated_by' => $login])->save();
             });
