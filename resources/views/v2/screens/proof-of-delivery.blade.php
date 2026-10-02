@@ -25,9 +25,9 @@
     @endphp
     <div class="dl-kpis">
         <x-dl::kpi label="Delivery promise kept (this month)" :value="$kpi['pct'] ?? 0" format="percent" :previous="$prev['pct']" :target="100" icon="fa-handshake" tone="success"
-            :hint="$kpi['kept'].' / '.$kpi['total'].' shipments'" />
+            :hint="raw($kpi['kept'].' / '.$kpi['total']).' shipments'" />
         @foreach ($kpi['by_dept'] as $dept => $n)
-            <x-dl::kpi :label="'Missed: '.$dept" :value="$n" good-when="down" icon="fa-triangle-exclamation" tone="danger" />
+            <x-dl::kpi :label="'Missed: '.raw($dept)" :value="$n" good-when="down" icon="fa-triangle-exclamation" tone="danger" />
         @endforeach
     </div>
     <br>
@@ -58,7 +58,7 @@
         $last = $pods->last();
         $done = $last && in_array($last->result, ['RECEIVED', 'PARTIAL', 'NOT_SHIPPED'], true);
     @endphp
-    <x-dl::form id="pod-form" :title="'Proof of Delivery · '.$do->do_no" :subtitle="$do->customer?->customer_name" panel="top" kind="master"
+    <x-dl::form id="pod-form" :title="'Proof of Delivery · '.raw($do->do_no)" :subtitle="raw($do->customer?->customer_name)" panel="top" kind="master"
         :status="$pods->isEmpty() ? 'new' : 'active'" :hide="['deactivate', 'new']" :can-input="! $done" :action="route('v2.pod.save', $do->id_delivery)" action-field="action"
         :back="$home" enctype="multipart/form-data"
         :created-by="$last?->created_by" :created-at="$last?->created_at?->toDateTimeString()" :updated-by="$last?->updated_by" :updated-at="$last?->updated_at?->toDateTimeString()">

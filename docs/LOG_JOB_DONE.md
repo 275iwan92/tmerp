@@ -56,6 +56,9 @@ Masalah: `DevlibComponent::translateTexts()` menerjemahkan semua prop teks (titl
   `tm2sys`: 0 (belum tercemar).
 - **Belum:** pesan flash berisi data yang dikirim sebagai variabel utuh (`:message="$error"`) tidak bisa dibedakan dari
   label; yang bernomor dokumen tertahan jaring pengaman, sisanya tetap bisa tercatat.
+- **Susulan (setelah sesi Customer Invoice meng-commit berkasnya):** `proof-of-delivery.blade.php` memakai `raw()` — hint
+  KPI `kept / total`, label `Missed: <departemen>`, judul form (no. Delivery Note) dan subjudul (nama customer). Penjaga
+  `data_in_text_prop` turun 5 → 2; sisanya hanya zona beku (`prodev.blade.php`, `inquiry-revise.blade.php`), menunggu izin user.
 
 ## 2026-10-02 -- Customer Invoice + AR: keputusan A–E, dokumen akuntansi, Qty Minim = harga borongan
 

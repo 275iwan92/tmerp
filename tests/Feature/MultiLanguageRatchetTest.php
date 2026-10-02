@@ -19,7 +19,7 @@ class MultiLanguageRatchetTest extends TestCase
         'number_format_id' => 0,
         'format_d_M_Y' => 0,
         'js_locale_id' => 0,
-        'data_in_text_prop' => 5,  // 2026-10-02: sisa = proof-of-delivery (3; berkasnya sedang diubah sesi Customer Invoice) + zona beku, menunggu izin user: prodev (judul kartu ACC customer) + inquiry-revise (hint Data lama)
+        'data_in_text_prop' => 2,  // 2026-10-02: sisa = zona beku, menunggu izin user: prodev (judul kartu ACC customer) + inquiry-revise (hint Data lama)
         'js_id_text' => 43,     // sisa = separuh Indonesia tabel dua bahasa di core.js (LOGIN_T, AUTH_T, PRESET_T, kata bilangan) + 4 bukan teks layar (hash '#kode', atribut dev 'kolom', salah tangkap di grid.js). 42 -> 44 hanya karena daftar kata penjaga diperluas 2026-10-02; 44 -> 43: teks chat.js pindah ke T('ch_*'). Teks baru: T('kunci') + pasangan Devlib\Lang
     ];
 
