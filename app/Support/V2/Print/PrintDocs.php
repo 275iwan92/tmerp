@@ -43,6 +43,7 @@ final class PrintDocs
         'supplier-invoice-receipt' => [SupplierInvoiceReceiptPrint::class, 'supplier-invoice-receipt', 'SIR'],
         'dp-receipt' => [DownPaymentReceiptPrint::class, 'acc-dp-invoice', 'DPR'],
         'qc-inspection' => [QcInspectionPrint::class, 'purchase-receive', 'QCI'],
+        'customer-complaint' => [CustomerComplaintPrint::class, 'crm-complaint', 'CCR'],
     ];
 
     // Dokumen yang dicetak dari sumber yang sama (id sama): halaman cetak menampilkan tombol pindah di antara keduanya.

@@ -1,5 +1,45 @@
 [
     {
+        "at": "2026-10-02 14:02:04",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2prd",
+                "table": "qc_complaint_review",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel dihapus",
+                "db": "tm2sdi",
+                "table": "quo_activity",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "crm_activity",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "crm_complaint",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "crm_complaint_item",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-10-02 13:41:55",
         "items": [
             {

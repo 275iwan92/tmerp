@@ -2298,5 +2298,305 @@
                 "id": "Subtotal Ship Qty per status kirim."
             }
         ]
+    },
+    {
+        "key": "crm-customer",
+        "type": "REPORT",
+        "module": "SALES",
+        "title": "Customer 360",
+        "purpose": {
+            "en": "See everything about one customer on one screen before you call or visit: orders, quotations, deliveries, complaints, contacts and what has to be followed up. It only reads; nothing is changed here.",
+            "id": "Melihat semua hal tentang satu customer di satu layar sebelum menelepon atau berkunjung: order, quotation, kiriman, komplain, kontak dan apa yang harus ditindaklanjuti. Hanya membaca; tidak ada yang diubah di sini."
+        },
+        "keywords": "crm, customer 360, profil customer, riwayat customer, riwayat order, repeat order, customer tidur, sleeping, follow up, hubungan customer, kontak customer",
+        "steps": [
+            {
+                "en": "Open the list. Customers with a follow-up that is late, due today or due soon are at the top, then customers with an open complaint, then the customers who order most.",
+                "id": "Buka daftar. Customer dengan follow-up yang lewat, hari ini atau segera ada di paling atas, lalu customer dengan komplain terbuka, lalu customer yang paling sering order."
+            },
+            {
+                "en": "Use the filter row: Overdue, Today, Due soon, Open complaint on the left; Active, Sleeping, Prospect, No order on the right.",
+                "id": "Pakai baris filter: Overdue, Today, Due soon, Open complaint di kiri; Active, Sleeping, Prospect, No order di kanan."
+            },
+            {
+                "en": "Double-click a customer to open the customer page.",
+                "id": "Klik dua kali satu customer untuk membuka halaman customer itu."
+            },
+            {
+                "en": "Read the key figures at the top, then the tabs: Overview, Activities, Quotations, Orders, Deliveries, Complaints, Contacts.",
+                "id": "Baca angka kunci di atas, lalu tab: Overview, Activities, Quotations, Orders, Deliveries, Complaints, Contacts."
+            },
+            {
+                "en": "Click + Activity to record a call or visit for this customer, or + Complaint to record a complaint.",
+                "id": "Klik + Activity untuk mencatat telepon atau kunjungan ke customer ini, atau + Complaint untuk mencatat komplain."
+            },
+            {
+                "en": "Click Master Customer to change the customer data, contacts or branches.",
+                "id": "Klik Master Customer untuk mengubah data customer, kontak atau cabang."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Segment",
+                "en": "Active = ordered recently. Sleeping = ordered before, but the last order is older than the number of days in Settings > Constants (CRM_SLEEPING_DAYS). Prospect and No order = never ordered.",
+                "id": "Active = baru-baru ini order. Sleeping = pernah order, tetapi order terakhir lebih lama dari jumlah hari di Settings > Constants (CRM_SLEEPING_DAYS). Prospect dan No order = belum pernah order."
+            },
+            {
+                "label": "Last Order",
+                "en": "Date of the newest order, from the new system and from the archive of the old system.",
+                "id": "Tanggal order terbaru, dari sistem baru dan dari arsip sistem lama."
+            },
+            {
+                "label": "Orders (12 months)",
+                "en": "Number of orders in the last 12 months, cancelled orders not counted.",
+                "id": "Jumlah order dalam 12 bulan terakhir, order batal tidak dihitung."
+            },
+            {
+                "label": "Open Quotations",
+                "en": "Published quotations that are not WIN, LOST or cancelled yet.",
+                "id": "Quotation terbit yang belum WIN, LOST atau batal."
+            },
+            {
+                "label": "Open Orders",
+                "en": "Customer Orders that are Draft, waiting for approval or Confirmed.",
+                "id": "Customer Order yang masih Draft, menunggu approval atau Confirmed."
+            },
+            {
+                "label": "Last Contact",
+                "en": "Date of the newest activity recorded for this customer.",
+                "id": "Tanggal aktivitas terbaru yang dicatat untuk customer ini."
+            },
+            {
+                "label": "Next Follow-up",
+                "en": "The earliest follow-up that is still open. The Due column and the row colour say how urgent it is.",
+                "id": "Follow-up paling awal yang masih terbuka. Kolom Due dan warna baris menunjukkan seberapa mendesak."
+            },
+            {
+                "label": "Open Complaints",
+                "en": "Confirmed complaints that are not closed yet.",
+                "id": "Komplain Confirmed yang belum ditutup."
+            },
+            {
+                "label": "Order Value (all time)",
+                "en": "Total value of all orders. Shown only to users who may see sales prices.",
+                "id": "Total nilai semua order. Hanya tampil untuk user yang berhak melihat harga jual."
+            },
+            {
+                "label": "Most Ordered Products",
+                "en": "The products this customer ordered most often, with the last order date: useful when offering a repeat order.",
+                "id": "Product yang paling sering dipesan customer ini, dengan tanggal order terakhir: berguna saat menawarkan repeat order."
+            }
+        ]
+    },
+    {
+        "key": "crm-activity",
+        "type": "INPUT",
+        "module": "SALES",
+        "title": "Activities & Follow-up",
+        "purpose": {
+            "en": "Record every contact with a customer (call, visit, WhatsApp, e-mail, meeting) and what has to be done next. The same list shows which follow-ups are late, due today or due soon.",
+            "id": "Mencatat setiap kontak dengan customer (telepon, kunjungan, WhatsApp, e-mail, rapat) dan apa yang harus dilakukan berikutnya. Daftar yang sama menunjukkan follow-up yang lewat, hari ini atau segera."
+        },
+        "keywords": "crm, aktivitas, activity, follow up, tindak lanjut, kunjungan, visit, telepon customer, call, whatsapp, catatan sales, laporan kunjungan, to do sales",
+        "steps": [
+            {
+                "en": "Click + New Record and choose the customer, then click Continue.",
+                "id": "Klik + New Record dan pilih customer, lalu klik Continue."
+            },
+            {
+                "en": "Fill in Date, Type, Topic and the Notes of what was discussed.",
+                "id": "Isi Date, Type, Topic dan Notes tentang apa yang dibicarakan."
+            },
+            {
+                "en": "When something has to be done next, fill in Follow-up Date and Next Action.",
+                "id": "Bila ada yang harus dilakukan berikutnya, isi Follow-up Date dan Next Action."
+            },
+            {
+                "en": "Click Save. The activity appears in the list and on the customer page in Customer 360.",
+                "id": "Klik Save. Aktivitas muncul di daftar dan di halaman customer di Customer 360."
+            },
+            {
+                "en": "When the follow-up date comes, open the activity and click Log Result to record what happened. The old follow-up is closed by itself.",
+                "id": "Saat tanggal follow-up tiba, buka aktivitasnya dan klik Log Result untuk mencatat hasilnya. Follow-up lama tertutup sendiri."
+            },
+            {
+                "en": "Click Follow-up Done when the follow-up is finished without a new activity. Reopen Follow-up opens it again.",
+                "id": "Klik Follow-up Done bila follow-up selesai tanpa aktivitas baru. Reopen Follow-up membukanya lagi."
+            },
+            {
+                "en": "Only the person who recorded an activity can change or delete it.",
+                "id": "Hanya pencatat aktivitas yang bisa mengubah atau menghapusnya."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Customer",
+                "en": "Picked from Master Customer when the activity is created. It cannot be changed afterwards.",
+                "id": "Dipilih dari Master Customer saat aktivitas dibuat. Tidak bisa diubah sesudahnya."
+            },
+            {
+                "label": "Date",
+                "en": "The day the contact took place.",
+                "id": "Hari kontak itu terjadi."
+            },
+            {
+                "label": "Type",
+                "en": "How the customer was contacted: Call, Visit, WhatsApp, E-mail, Meeting or Other.",
+                "id": "Cara menghubungi customer: Call, Visit, WhatsApp, E-mail, Meeting atau Other."
+            },
+            {
+                "label": "Topic",
+                "en": "What the contact was about: Quotation, Order / Delivery, Prospecting, Complaint, Payment or Relationship. Used to filter the list.",
+                "id": "Isi pembicaraan: Quotation, Order / Delivery, Prospecting, Complaint, Payment atau Relationship. Dipakai untuk menyaring daftar."
+            },
+            {
+                "label": "Result",
+                "en": "Your impression of the contact: Positive, Neutral, Negative or No answer.",
+                "id": "Kesan hasil kontak: Positive, Neutral, Negative atau No answer."
+            },
+            {
+                "label": "Contact",
+                "en": "The person you spoke to, picked from the contact persons in Master Customer.",
+                "id": "Orang yang dihubungi, dipilih dari kontak person di Master Customer."
+            },
+            {
+                "label": "Other Contact (not in master)",
+                "en": "Type the name only when the person is not in Master Customer yet.",
+                "id": "Ketik namanya hanya bila orang itu belum ada di Master Customer."
+            },
+            {
+                "label": "Quotation (optional)",
+                "en": "Pick the quotation when the contact is a follow-up of that quotation. The activity then also appears in the Quotation screen.",
+                "id": "Pilih quotation bila kontak ini follow-up quotation itu. Aktivitas lalu muncul juga di layar Quotation."
+            },
+            {
+                "label": "Notes",
+                "en": "What was discussed and what the customer said.",
+                "id": "Apa yang dibicarakan dan apa kata customer."
+            },
+            {
+                "label": "Follow-up Date",
+                "en": "The day the next action has to be done. Leave it empty when nothing has to be followed up.",
+                "id": "Hari tindak lanjut harus dilakukan. Kosongkan bila tidak ada yang perlu ditindaklanjuti."
+            },
+            {
+                "label": "Next Action",
+                "en": "What has to be done on the follow-up date.",
+                "id": "Apa yang harus dilakukan pada tanggal follow-up."
+            },
+            {
+                "label": "Due",
+                "en": "Late, Today, D-1 and so on, counted in working days. The yellow limit is CRM_FOLLOWUP_SOON_DAYS in Settings > Constants.",
+                "id": "Late, Today, D-1 dan seterusnya, dihitung hari kerja. Batas kuning = CRM_FOLLOWUP_SOON_DAYS di Settings > Constants."
+            }
+        ]
+    },
+    {
+        "key": "crm-complaint",
+        "type": "INPUT",
+        "module": "SALES",
+        "title": "Complaint & Return",
+        "purpose": {
+            "en": "Record a customer complaint or a sales return so Sales knows about it, send quality problems to QA, and record how it was settled with the customer.",
+            "id": "Mencatat komplain customer atau retur penjualan supaya Sales tahu, meneruskan masalah mutu ke QA, dan mencatat penyelesaiannya dengan customer."
+        },
+        "keywords": "crm, komplain, complaint, keluhan customer, retur penjualan, sales return, barang kembali, klaim, claim, qa, mutu, reject customer",
+        "steps": [
+            {
+                "en": "Click + New Record, choose the customer and the Type (Complaint, or Sales Return when goods come back), then click Create.",
+                "id": "Klik + New Record, pilih customer dan Type (Complaint, atau Sales Return bila ada barang kembali), lalu klik Create."
+            },
+            {
+                "en": "Fill in the Category, what the customer complains about, and what the customer asks for.",
+                "id": "Isi Category, isi keluhan customer, dan permintaan customer."
+            },
+            {
+                "en": "Add the products in Details with the quantity complained about and the quantity returned.",
+                "id": "Tambahkan product di Details dengan qty yang dikeluhkan dan qty yang kembali."
+            },
+            {
+                "en": "Click Confirm. The complaint gets its number. A quality complaint appears on the QA desk in Production > Complaint Review.",
+                "id": "Klik Confirm. Komplain mendapat nomor. Komplain mutu muncul di meja QA di Production > Complaint Review."
+            },
+            {
+                "en": "Read the answer of QA in the QA Review tab.",
+                "id": "Baca jawaban QA di tab QA Review."
+            },
+            {
+                "en": "Fill in the Resolution tab with what was agreed with the customer, then click Close.",
+                "id": "Isi tab Resolution dengan kesepakatan dengan customer, lalu klik Close."
+            },
+            {
+                "en": "A Draft can be deleted. A Confirmed complaint can only be cancelled, with a reason.",
+                "id": "Draft bisa dihapus. Komplain Confirmed hanya bisa di-Cancel, dengan alasan."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Type",
+                "en": "Complaint = the customer reports a problem. Sales Return = goods come back to the factory; the returned quantity must be filled in.",
+                "id": "Complaint = customer melaporkan masalah. Sales Return = barang kembali ke pabrik; qty kembali wajib diisi."
+            },
+            {
+                "label": "Category",
+                "en": "What kind of problem: product quality, quantity, delivery, wrong item, document, service or other. Product quality always goes to QA.",
+                "id": "Jenis masalah: mutu barang, jumlah, kiriman, salah barang, dokumen, pelayanan atau lainnya. Mutu barang selalu diteruskan ke QA."
+            },
+            {
+                "label": "Received Via",
+                "en": "How the complaint reached us: call, visit, WhatsApp, e-mail or meeting.",
+                "id": "Lewat apa komplain diterima: telepon, kunjungan, WhatsApp, e-mail atau rapat."
+            },
+            {
+                "label": "Contact",
+                "en": "The person at the customer who complained, picked from Master Customer.",
+                "id": "Orang customer yang menyampaikan komplain, dipilih dari Master Customer."
+            },
+            {
+                "label": "Customer Order",
+                "en": "The order the complaint is about, picked from the Customer Orders of this customer.",
+                "id": "Order yang dikeluhkan, dipilih dari Customer Order customer ini."
+            },
+            {
+                "label": "Reference Doc No.",
+                "en": "Type the old CO number, delivery note number or customer PO when the order is not in the new system.",
+                "id": "Ketik no. CO lama, no. surat jalan atau PO customer bila ordernya belum ada di sistem baru."
+            },
+            {
+                "label": "Customer Asks For",
+                "en": "What the customer wants: replacement, rework, price reduction, refund or only an explanation.",
+                "id": "Yang diminta customer: ganti barang, perbaikan, potongan harga, uang kembali atau penjelasan saja."
+            },
+            {
+                "label": "Send to QA for review",
+                "en": "Tick it when QA has to check the quality. It is always on for the category Product quality.",
+                "id": "Centang bila QA perlu memeriksa mutunya. Selalu aktif untuk kategori Product quality."
+            },
+            {
+                "label": "What the Customer Complains About",
+                "en": "The complaint in the words of the customer. Required before Confirm.",
+                "id": "Isi keluhan menurut customer. Wajib sebelum Confirm."
+            },
+            {
+                "label": "Master Product",
+                "en": "Pick the product from Master Product. Type the name in the next column only when it is not in the master.",
+                "id": "Pilih product dari Master Product. Ketik namanya di kolom sebelahnya hanya bila belum ada di master."
+            },
+            {
+                "label": "Qty Complained",
+                "en": "How many pieces the complaint is about.",
+                "id": "Berapa banyak yang dikeluhkan."
+            },
+            {
+                "label": "Qty Returned",
+                "en": "How many pieces really came back. Information only: it does not move stock.",
+                "id": "Berapa banyak yang benar-benar kembali. Hanya informasi: tidak menggerakkan stok."
+            },
+            {
+                "label": "Resolution Given to the Customer",
+                "en": "What was finally done for the customer. Filled in after Confirm and required before Close.",
+                "id": "Apa yang akhirnya dilakukan untuk customer. Diisi setelah Confirm dan wajib sebelum Close."
+            }
+        ]
     }
 ]

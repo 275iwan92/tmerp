@@ -3355,3 +3355,16 @@ baru. Full suite: 103 test, 94 passed, 9 skipped (Firebase, tidak terkait), 0 ga
   jenis (migration `2026_10_02_000021`). Tombol "Kirim ke ProDev" dihapus; Recalc langsung ke Pro-Cost.
 - Belum diputuskan: back process CO direct karena percepatan Direksi; kode jenis order RTP / RCL; Sales PIC dari master (komisi).
 
+## 2026-10-02 — Sales = satu grup besar; CRM dibangun (ddt, menunggu penilaian user)
+
+- **Menu Sales (pedoman A.21):** Sales > Inquiry & Quotation | Order | Delivery | CRM; tiap grup kecil punya saklar `activate`
+  sendiri (migration `2026_10_02_000131`, hanya `ddtsys`). Rute simpan CRM ikut tertutup bila grupnya dimatikan.
+- **CRM** (`docs/md_for_systems/sales_tier1.md`): Customer 360 (`crm-customer`, hanya membaca; order baru + arsip 20 ribu CO lama,
+  grafik 24 bulan, product paling sering dipesan), Activities & Follow-up (`crm-activity`; baris berwarna menurut jatuh tempo,
+  Log Result menutup follow-up asal), Complaint & Return (`crm-complaint`; Draft → Confirmed → Closed | Cancelled, cetakan
+  `customer-complaint`), Complaint Review QA (`qc-complaint-review`, Production › Quality).
+- **Database** (migration `2026_10_02_000130`, ddt + tm2): `quo_activity` → `crm_activity` (+ `customer_id`, `contact_id`, `topic`,
+  `next_done`); baru `crm_complaint`, `crm_complaint_item`, `tm2prd.qc_complaint_review`; konstanta `CRM_FOLLOWUP_SOON_DAYS`,
+  `CRM_SLEEPING_DAYS`, `SIGN_CCR_*`; kategori konstanta `SALES`.
+- Data contoh ddt (migration `000132`), kamus Indonesia (`000133`, ddt + tm2), Help 4 layar, test `CrmTest` (5 test).
+- Pratinjau layar: `docs/mockups/crm/`. Belum: menu + Help di `tm2sys`, izin per grup, retur masuk stok, target Sales.

@@ -201,6 +201,8 @@ lintas modul) · `uom_` satuan · `geo_` wilayah ·
 
 **Transaksi (tm2sdi):**
 `iqp_` inquiry product (+ costing turunan) · `quo_` quotation · `co_` customer order · `do_` delivery order.
+`crm_` hubungan customer: `crm_activity` (aktivitas + follow-up per customer, perluasan `quo_activity`) · `crm_complaint` (komplain / retur penjualan).
+Jawaban mutu QA atas komplain = `tm2prd.qc_complaint_review` (prefix `qc_`). Peta Sales (Inquiry & Quotation, Order, CRM): `docs/md_for_systems/sales_tier1.md`.
 
 **Aturan:** prefix = **domain/entitas**, bukan "pemakai". Lookup ber-domain nempel
 ke induk (`iqp_type`), lookup generik ke `ref_`. Prefix `cost_` DIHAPUS (costing

@@ -55,6 +55,11 @@ final class MenuRoutes
             'SALES_MCARD' => route('v2.screen', 'master-card-collection'),
             'SALES_RPT_QUOOPEN' => route('v2.screen', 'quotation-outstanding'),
             'SALES_RPT_QUOFU' => route('v2.screen', 'quotation-followup'),
+            // CRM (grup kecil di dalam Sales, 2026-10-02) + Complaint Review QA: hanya ada di v2.
+            'CRM_CUST360' => route('v2.screen', 'crm-customer'),
+            'CRM_ACTIVITY' => route('v2.screen', 'crm-activity'),
+            'CRM_COMPLAINT' => route('v2.screen', 'crm-complaint'),
+            'PROD_QC_COMPLAINT' => route('v2.screen', 'qc-complaint-review'),
             'PRE_F_SALES' => route('v2.flow', 'SALES'),
             'F-SALES' => route('v2.flow', 'SALES'),
             'F-COSTING' => route('v2.flow', 'COSTING'),

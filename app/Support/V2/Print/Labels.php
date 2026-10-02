@@ -7,6 +7,21 @@ namespace App\Support\V2\Print;
 final class Labels
 {
     public const ID = [
+        // Komplain / Retur Penjualan
+        'Customer Complaint' => 'Komplain Customer',
+        'Sales Return' => 'Retur Penjualan',
+        'Complaint No.' => 'No Komplain',
+        'Category' => 'Kategori',
+        'Received Via' => 'Diterima lewat',
+        'Order / Ref.' => 'Order / Ref.',
+        'Customer Asks For' => 'Permintaan',
+        'Qty Returned' => 'Qty Kembali',
+        'Problem' => 'Masalah',
+        'Complaint' => 'Keluhan',
+        'QA Verdict' => 'Keputusan QA',
+        'Corrective Action' => 'Tindakan Perbaikan',
+        'Resolution' => 'Penyelesaian',
+        'Quality Assurance' => 'Quality Assurance',
         // Surat Jalan
         'Delivery Note' => 'Surat Jalan',
         'Delivery Note No.' => 'No Surat Jalan',

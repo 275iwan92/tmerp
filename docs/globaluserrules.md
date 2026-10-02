@@ -144,6 +144,21 @@
     - **Setiap urusan keuangan dan akuntansi wajib terdokumentasi jelas** (jurnal, nomor, pajak, pengendalian) di
       dokumen di atas, dan diperbarui tiap ada keputusan baru.
 
+21. **[2026-10-02] Sales = satu grup besar dengan tiga bagian: Inquiry & Quotation, Order, CRM.** Kata user: *Inquiry adalah
+    tools dalam mencapai percepatan keluarnya harga jual; Order adalah pencatatnya; CRM adalah bangun hubungan dengan customer.*
+    - **Menu:** Sales (modul) > grup kecil **Inquiry & Quotation** (baris `PREORDER`, kini grup di dalam Sales), **Order**,
+      **Delivery**, **CRM**. Tiap grup kecil modular dan **bisa dilepas-pasang**: saklar `activate` di baris grupnya; mati = menu,
+      layar, dan rute simpannya tertutup, data tetap. Ini menggantikan A.15 "Inquiry & Quotation = menu besar sendiri".
+    - **Aktivitas Sales = satu tabel per customer** (`crm_activity`, perluasan `quo_activity`): customer wajib, quotation boleh
+      kosong. Follow-up quotation dan kunjungan rutin tercatat di tempat yang sama; follow-up punya tanda selesai sendiri.
+    - **Retur penjualan / komplain: informasinya ke Sales, mutunya ke QA.** Dokumen komplain (`crm_complaint`) milik Sales:
+      Draft → Confirmed → Closed | Cancelled. Kategori mutu diteruskan ke QA; QA menjawab di tabelnya sendiri
+      (`tm2prd.qc_complaint_review`, layar Production › Quality › Complaint Review) dan Sales baru bisa Close setelah QA menjawab.
+    - **Customer 360 hanya membaca** (order baru + arsip sistem lama, quotation, kiriman, aktivitas, komplain); data customer
+      tetap diubah di Master Customer. Nilai rupiah hanya untuk yang berhak melihat harga (A.9).
+    - Peta lengkap + yang masih terbuka (tempat Delivery, izin per grup, retur masuk stok, target Sales): `docs/md_for_systems/sales_tier1.md`.
+    - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**; menu `tm2sys` belum diubah.
+
 ## B. Database & data
 
 1. **[LOCKED] Database-per-modul** (`tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`,
@@ -474,3 +489,4 @@
 | 2026-10-02 | B.6 / B.7 (hasil audit `docs/audit_input_report_lookup_2026_10_02.md`, urutan disetujui user): tarif PPN + PPh 23 Customer Order dan PPN Quotation dibaca dari Settings → Constants, Non PPN = tanpa PPN; layar isi baru Sales Person, Payment Terms, Department; Edit profil, Change password, Notifikasi di menu akun v2 tersambung database. ddt + tm2. |
 | 2026-10-02 | **A.21: Customer Invoice + AR satu modul** — dua seri nomor (Non PPN `…/TM/…`, PPN `…/LJM/…`), nomor terbit saat Confirm; tagihan uang muka tanpa jurnal sampai uangnya diterima (menggantikan butir LOCKED `downpayment_tier1-4.md`); PPN uang muka mengikuti aturan pajak dengan setelan cadangan; nilai invoice penuh + potongan uang muka; dasar tagih = qty diterima; lima rekening bank lama boleh disalin. Ketentuan keuangan dan akuntansi: `docs/md_for_systems/customerinvoice_accounting.md`. Modul belum dibangun. |
 | 2026-10-02 | A.21: **Qty Minim = harga borongan** — nilai baris Customer Order dan Delivery Order = harga, bukan qty × harga (sama dengan sistem lama). Kode: `CoOrderItem::recalcSubtotal`, `DoLine::recalcSubtotal`; test `QtyMinimLumpSumTest`. Berlaku untuk mockup.test dan tmerp.test (kode yang sama; belum ada baris Qty Minim di kedua database). |
+| 2026-10-02 | **A.21: Sales = satu grup besar** dengan grup kecil Inquiry & Quotation, Order, Delivery, CRM yang bisa dilepas-pasang (saklar per grup). **CRM dibangun di ddt**: Customer 360 (hanya membaca, termasuk arsip order lama), Activities & Follow-up (`quo_activity` diperluas menjadi `crm_activity` per customer), Complaint & Return (informasi ke Sales) + Complaint Review QA (mutu ke QA). Tabel sudah ada di tm2; menu, Help, dan data contoh baru di ddt, menunggu penilaian user. |

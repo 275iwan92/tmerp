@@ -1090,5 +1090,30 @@
       {"label": "Vendor", "en": "Hidden column: outside service cost. Summed.", "id": "Kolom tersembunyi: biaya jasa pihak luar. Dijumlahkan."},
       {"label": "Total Cost", "en": "Column: total of spare parts, labour and vendor cost. Summed.", "id": "Kolom: total biaya suku cadang, tenaga kerja dan vendor. Dijumlahkan."}
     ]
+  },
+  {
+    "key": "qc-complaint-review",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Complaint Review (QA)",
+    "purpose": {
+      "en": "QA answers the customer complaints that Sales confirmed and sent to QA: whose fault it is, the root cause, the corrective and preventive action, and what happens to returned goods.",
+      "id": "QA menjawab komplain customer yang sudah di-Confirm Sales dan diteruskan ke QA: salah siapa, akar masalah, tindakan perbaikan dan pencegahan, serta nasib barang yang kembali."
+    },
+    "keywords": "qa, qc, quality, mutu, komplain customer, review komplain, akar masalah, root cause, capa, tindakan perbaikan, retur penjualan, barang kembali",
+    "steps": [
+      {"en": "Open the list. It starts with the complaints that still have to be reviewed.", "id": "Buka daftar. Daftar dibuka dengan komplain yang masih perlu direview."},
+      {"en": "Double-click a complaint. Read the complaint in the Complaint tab and the products in Details.", "id": "Klik dua kali satu komplain. Baca keluhannya di tab Complaint dan product-nya di Details."},
+      {"en": "Fill in the QA Review tab: Verdict, Root Cause, Corrective Action and Preventive Action.", "id": "Isi tab QA Review: Verdict, Root Cause, Corrective Action dan Preventive Action."},
+      {"en": "When goods came back, choose Returned Goods: Rework, Scrap or Back to stock.", "id": "Bila ada barang kembali, pilih Returned Goods: Rework, Scrap atau Back to stock."},
+      {"en": "Click Save to keep a draft answer, or Confirm when the answer is final. After Confirm it cannot be changed and Sales can close the complaint.", "id": "Klik Save untuk menyimpan jawaban sementara, atau Confirm bila jawaban sudah final. Setelah Confirm tidak bisa diubah dan Sales bisa menutup komplain."}
+    ],
+    "fields": [
+      {"label": "Verdict", "en": "Accepted = our fault, Partly accepted, or Not accepted. Required before Confirm.", "id": "Accepted = salah kita, Partly accepted, atau Not accepted. Wajib sebelum Confirm."},
+      {"label": "Returned Goods", "en": "What happens to the goods that came back: Rework, Scrap, Back to stock, or No goods returned. Required when a returned quantity is recorded.", "id": "Nasib barang yang kembali: Rework, Scrap, Back to stock, atau No goods returned. Wajib bila ada qty kembali."},
+      {"label": "Root Cause", "en": "Why the problem happened. Required before Confirm.", "id": "Mengapa masalah terjadi. Wajib sebelum Confirm."},
+      {"label": "Corrective Action", "en": "What is done to fix this case.", "id": "Apa yang dilakukan untuk memperbaiki kasus ini."},
+      {"label": "Preventive Action", "en": "What is changed so it does not happen again.", "id": "Apa yang diubah supaya tidak terulang."}
+    ]
   }
 ]

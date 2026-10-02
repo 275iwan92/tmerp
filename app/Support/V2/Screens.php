@@ -41,7 +41,7 @@ final class Screens
                     $it('quotation', ['Quotation', 'fa-solid fa-file-signature', 'quotation/entry.blade.php + list', 'mockup_sales_quotation_entry.html']),
                     $it('nota-inquiry', ['Nota Inquiry', 'fa-solid fa-receipt', 'inquiry/nota.blade.php', 'nota_inquiry_mockup.html']),
                 ]],
-                ['label' => 'Sales Order', 'items' => [
+                ['label' => 'Order', 'items' => [
                     $it('customer-order', ['Customer Order', 'fa-solid fa-bag-shopping', 'co/entry.blade.php + list', 'mockup_co_entry.html']),
                     $it('cpdel', ['Customer Plan Delivery', 'fa-solid fa-truck-ramp-box', 'co/delivery-plan.blade.php', 'co_delivery_plan_mockup.html']),
                     $it('approval-co', ['CO Approval Center', 'fa-solid fa-stamp', 'v2 baru: DevLib Form Approval + flow engine CO (F&A SPV -> Operational Manager)', null]),
@@ -51,6 +51,11 @@ final class Screens
                     $it('delivery-notes', ['Delivery Notes (Surat Jalan)', 'fa-solid fa-file-lines', 'dispatch/do/print-surat-jalan.blade.php', null]),
                     $it('proof-of-delivery', ['Proof of Delivery', 'fa-solid fa-clipboard-check', 'v2 baru: tm2sdi.do_delivery_pod (KPI janji kirim)', null]),
                     $it('subcon-delivery-note', ['Subcontract Delivery Note', 'fa-solid fa-dolly', 'v2 baru: tm2sdi.do_delivery do_type SUBCON (backlog02 19.1)', null]),
+                ]],
+                ['label' => 'CRM', 'items' => [
+                    $it('crm-customer', ['Customer 360', 'fa-solid fa-address-card', 'v2 baru: ringkasan satu customer (docs/md_for_systems/sales_tier1.md)', null]),
+                    $it('crm-activity', ['Activities & Follow-up', 'fa-solid fa-phone-volume', 'v2 baru: tm2sdi.crm_activity (perluasan quo_activity)', null]),
+                    $it('crm-complaint', ['Complaint & Return', 'fa-solid fa-triangle-exclamation', 'v2 baru: tm2sdi.crm_complaint + crm_complaint_item', null]),
                 ]],
                 ['label' => 'Master', 'items' => [$it('master-product'), $it('product-acc'), $it('master-raw'), $it('master-customer'), $it('master-card')]],
                 ['label' => 'Lookup', 'items' => [$it('master-matcat'), $it('master-uom'), $it('master-currency')]],
@@ -98,6 +103,11 @@ final class Screens
             ['code' => 'INV', 'short' => 'INV', 'label' => 'Inventory', 'icon' => 'fa-solid fa-warehouse', 'groups' => [
                 ['label' => 'Stock Adjustment', 'items' => [
                     $it('approval-stock', ['Adjustment & Opname Approval Center', 'fa-solid fa-stamp', 'inventory/stock-adjustment-approval.blade.php', null]),
+                ]],
+            ]],
+            ['code' => 'PROD', 'short' => 'PP', 'label' => 'Production', 'icon' => 'fa-solid fa-industry', 'groups' => [
+                ['label' => 'Quality', 'items' => [
+                    $it('qc-complaint-review', ['Complaint Review (QA)', 'fa-solid fa-magnifying-glass-chart', 'v2 baru: tm2prd.qc_complaint_review (jawaban QA atas tm2sdi.crm_complaint)', null]),
                 ]],
             ]],
             ['code' => 'MAINT', 'short' => 'MT', 'label' => 'Maintenance', 'icon' => 'fa-solid fa-screwdriver-wrench', 'groups' => [

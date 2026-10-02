@@ -14,6 +14,7 @@ use App\Models\Pur\PrRequisition;
 use App\Models\Pur\PvReceipt;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderDelivery;
+use App\Models\Sdi\CrmActivity;
 use App\Models\Sdi\DoDelivery;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
@@ -21,6 +22,7 @@ use App\Models\Sys\SysConstant;
 use App\Models\Sys\SysDocShare;
 use App\Models\Sys\SysMailSetting;
 use App\Models\Sys\SysSupportTicket;
+use App\Providers\AssistantHostProvider;
 use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
 use App\Services\ProDev\PartDieline;
@@ -33,12 +35,16 @@ use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryStage;
 use App\Services\Sales\InquiryWriter;
 use App\Support\Branding\Brand;
+use App\Support\Branding\CompanyLogo;
 use App\Support\Localization\Dictionary;
 use App\Support\Mail\MailSettings;
 use App\Support\V2\AppMenu;
+use App\Support\V2\Data\Account;
 use App\Support\V2\Data\ApprovalCenter;
 use App\Support\V2\Data\ApprovalSetting;
 use App\Support\V2\Data\Cpdel;
+use App\Support\V2\Data\CrmActivities;
+use App\Support\V2\Data\CrmComplaints;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DeliveryOrder;
 use App\Support\V2\Data\MailContacts;
@@ -50,16 +56,17 @@ use App\Support\V2\Data\PurchaseReceive;
 use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\Quotation;
 use App\Support\V2\Data\SubconDelivery;
+use App\Support\V2\Data\SupplierInvoiceReceipt;
 use App\Support\V2\Data\WorkCalendar;
 use App\Support\V2\Flows;
 use App\Support\V2\Grid\DbGrid;
-use App\Support\V2\Data\SupplierInvoiceReceipt;
 use App\Support\V2\Grid\DbLookup;
 use App\Support\V2\Grid\Grids;
 use App\Support\V2\InquiryPayload;
 use App\Support\V2\Print\PrintDocs;
 use App\Support\V2\Schema;
 use App\Support\V2\Screens;
+use Chat\ChatService;
 use Devlib\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -77,8 +84,8 @@ use Illuminate\Validation\ValidationException;
 Route::prefix('v2')->name('v2.')->group(function () {
     // ?open=<kode menu> = tab yang dibuka saat mulai (mis. Direksi -> MGMT_EXEC), bila belum ada tab yang dipulihkan.
     Route::get('/', fn (Request $r) => view('v2.home', ['modules' => AppMenu::modules(Auth::user()), 'user' => AppMenu::user(Auth::user()),
-        'open' => $r->query('open'), 'profilePage' => session('v2_profile_page'), 'assistant' => \App\Providers\AssistantHostProvider::drawer(Auth::user()), 'chat' => app(\Chat\ChatService::class)->boot(Auth::user()),
-        'account' => \App\Support\V2\Data\Account::shell(Auth::user()),
+        'open' => $r->query('open'), 'profilePage' => session('v2_profile_page'), 'assistant' => AssistantHostProvider::drawer(Auth::user()), 'chat' => app(ChatService::class)->boot(Auth::user()),
+        'account' => Account::shell(Auth::user()),
         'tickets' => SysSupportTicket::with('replies')->where('created_by_user_id', Auth::id())->orderByDesc('id_ticket')->limit(20)->get()]))->name('home');
 
     // Tiket Bantuan dari halaman profil (menu akun / F1) -> tm2sys.sys_support_ticket, dijawab tim developer di Setup > Support Tickets.
@@ -670,7 +677,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return view('v2.print-receipt', ['pv' => $pv, 'supplier' => $supplier, 'parties' => $parties, 'columns' => $columns, 'rows' => $rows,
                 'title' => $sub ? 'Subcon Return Receipt' : 'Goods Receipt Note', 'subtitle' => $sub ? 'Penerimaan dari Subkon' : 'Surat Penerimaan Barang (SPB)',
                 'company' => ['name' => Brand::companyName(), 'tagline' => Brand::tagline(), 'initials' => mb_strtoupper(mb_substr(Brand::companyName(), 0, 2)),
-                    'logo' => \App\Support\Branding\CompanyLogo::url(), 'logoBw' => \App\Support\Branding\CompanyLogo::url('bw')],
+                    'logo' => CompanyLogo::url(), 'logoBw' => CompanyLogo::url('bw')],
                 'signatures' => $sub ? [['Handed Over By', 'Subcontractor / Driver'], ['Received By', 'Production / PPIC'], ['Checked By', 'Quality Control']]
                     : [['Handed Over By', 'Supplier / Driver'], ['Received By', 'Warehouse'], ['Checked By', 'Quality Control']]]);
         })->whereNumber('id')->name('print');
@@ -686,7 +693,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 'coNo' => DB::connection('tm2sdi')->table('co_order')->where('id_order', $pv->i_co_id)->value('co_no'),
                 'warehouse' => $pv->i_warehouse_code ? $pv->i_warehouse_code.' · '.$mst->table('wh_warehouse')->where('warehouse_code', $pv->i_warehouse_code)->value('warehouse_name') : null,
                 'company' => ['name' => Brand::companyName(), 'tagline' => Brand::tagline(), 'initials' => mb_strtoupper(mb_substr(Brand::companyName(), 0, 2)),
-                    'logo' => \App\Support\Branding\CompanyLogo::url(), 'logoBw' => \App\Support\Branding\CompanyLogo::url('bw')],
+                    'logo' => CompanyLogo::url(), 'logoBw' => CompanyLogo::url('bw')],
                 'rows' => $pv->lines->map(fn ($l) => ['co_item' => isset($items[$l->i_co_line_id]) ? '#'.$items[$l->i_co_line_id]->line_seq.' '.$items[$l->i_co_line_id]->description : '—',
                     'name' => $l->i_description, 'code' => $mat[$l->item_id] ?? '', 'qty' => (float) $l->i_qty_purchase, 'uom' => $l->i_uom_purchase, 'lot' => $l->i_lot_no ?: ''])->all(),
             ]);
@@ -817,10 +824,6 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->whereNumber('id')->name('save');
     });
 
-    // Customer Order v2 (App\Support\V2\Data\CustomerOrder = aturan komponen v1 pages::co.entry). Tombol "+" menyimpan isian dulu.
-    Route::prefix('co')->name('co.')->middleware('module:SALES')->group(function () {
-        $open = fn (int $id) => redirect(route('v2.screen', 'customer-order').'?id='.$id);
-        Route::post('/create', function (Request $r) use ($open) {
     // Tanda Terima Tagihan Supplier v2 (App\Support\V2\Data\SupplierInvoiceReceipt): action = save | confirm | cancel | delete.
     Route::prefix('invoice-receipt')->name('invoice-receipt.')->middleware('module:FINACC')->group(function () {
         $home = fn () => route('v2.screen', 'supplier-invoice-receipt');
@@ -855,6 +858,92 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->whereNumber('id')->name('save');
     });
 
+    // CRM v2 (user 2026-10-02): aktivitas per customer + komplain / retur penjualan. Grup menu CRM dimatikan = rute ini ikut tertutup.
+    Route::prefix('crm')->name('crm.')->middleware('module:SALES')->group(function () {
+        $guard = fn (string $slug) => abort_unless(AppMenu::open($slug), 404);
+        $actHome = fn () => route('v2.screen', 'crm-activity');
+        $actRules = ['activity_date' => ['required', 'date'], 'next_action_date' => ['nullable', 'date'], 'activity_type' => ['required', 'string'], 'topic' => ['required', 'string']];
+
+        // Aktivitas baru (customer dari langkah pilih customer / Customer 360; from = follow-up yang hasilnya dicatat).
+        Route::post('/activity', function (Request $r) use ($guard, $actHome, $actRules) {
+            $guard('crm-activity');
+            $d = $r->validate(['customer_id' => ['required', 'integer', 'exists:tm2mst.cust_customer,id_customer']] + $actRules);
+            $a = CrmActivities::save(CrmActivities::blank((int) $d['customer_id']), $r->all(), $r->integer('from') ?: null);
+
+            return redirect($actHome().'?id='.$a->id_activity)->with('v2_flash', t('Activity recorded.'));
+        })->name('activity.store');
+        // action = save | delete | done | reopen.
+        Route::post('/activity/{id}', function (Request $r, int $id) use ($guard, $actHome, $actRules) {
+            $guard('crm-activity');
+            $a = CrmActivity::query()->findOrFail($id);
+            $action = (string) $r->input('action', 'save');
+            if ($action === 'delete') {
+                CrmActivities::delete($a);
+
+                return redirect($actHome())->with('v2_flash', t('Activity deleted.'));
+            }
+            if (in_array($action, ['done', 'reopen'], true)) {
+                CrmActivities::done($a, $action === 'done');
+
+                return redirect($actHome().'?id='.$id)->with('v2_flash', $action === 'done' ? t('Follow-up marked as done.') : t('Follow-up reopened.'));
+            }
+            $r->validate($actRules);
+            CrmActivities::save($a, $r->all());
+
+            return redirect($actHome().'?id='.$id)->with('v2_flash', t('Saved.'));
+        })->whereNumber('id')->name('activity.save');
+
+        $home = fn () => route('v2.screen', 'crm-complaint');
+        $open = fn (int $id) => redirect($home().'?id='.$id);
+        Route::post('/complaint/create', function (Request $r) use ($guard, $open) {
+            $guard('crm-complaint');
+            $d = $r->validate(['customer_id' => ['required', 'integer', 'exists:tm2mst.cust_customer,id_customer'], 'complaint_type' => ['required', 'string']], [], ['customer_id' => 'Customer']);
+
+            return $open(CrmComplaints::create((int) $d['customer_id'], $d['complaint_type'])->id_complaint)->with('v2_flash', t('Draft created. Describe the complaint and add the products, then Confirm.'));
+        })->name('complaint.create');
+        // action = save | confirm | cancel | close | delete.
+        Route::post('/complaint/{id}/save', function (Request $r, int $id) use ($guard, $home, $open) {
+            $guard('crm-complaint');
+            $doc = CrmComplaints::find($id) ?? abort(404);
+            $action = (string) $r->input('action', 'save');
+            if ($action === 'delete') {
+                CrmComplaints::delete($doc);
+
+                return redirect($home())->with('v2_flash', t('Draft deleted.'));
+            }
+            if ($action === 'cancel') {
+                $err = CrmComplaints::act($doc, 'cancel', (string) $r->input('_reason', ''));
+
+                return $err ? $open($id)->withErrors(['cancel' => t($err)]) : $open($id)->with('v2_flash', t('Complaint cancelled.'));
+            }
+            $r->validate(['complaint_date' => ['nullable', 'date']]);
+            CrmComplaints::save($doc, $r->all());
+            if (in_array($action, ['confirm', 'close'], true)) {
+                $err = CrmComplaints::act(CrmComplaints::find($id), $action);
+                $done = $action === 'confirm' ? ($doc->needs_qa ? t('Confirmed. The complaint is now on the QA desk.') : t('Confirmed.')) : t('Complaint closed.');
+
+                return $err ? $open($id)->withErrors([$action => t($err)]) : $open($id)->with('v2_flash', $done);
+            }
+
+            return $open($id)->with('v2_flash', t('Saved.'));
+        })->whereNumber('id')->name('complaint.save');
+    });
+
+    // QA: jawaban atas komplain customer (Production > Complaint Review). action = save | confirm. Dokumen komplain milik Sales tidak diubah.
+    Route::post('/qc/complaint-review/{id}/save', function (Request $r, int $id) {
+        abort_unless(AppMenu::open('qc-complaint-review'), 404);
+        $doc = CrmComplaints::reviewable($id) ?? abort(404);
+        $confirm = $r->input('action') === 'confirm';
+        $err = CrmComplaints::saveReview($doc, $r->all(), $confirm);
+        $back = redirect(route('v2.screen', 'qc-complaint-review').'?id='.$id);
+
+        return $err ? $back->withErrors(['review' => t($err)]) : $back->with('v2_flash', $confirm ? t('Answer confirmed. Sales can now close the complaint.') : t('Saved.'));
+    })->whereNumber('id')->middleware('module:PROD')->name('qc.complaint-review.save');
+
+    // Customer Order v2 (App\Support\V2\Data\CustomerOrder = aturan komponen v1 pages::co.entry). Tombol "+" menyimpan isian dulu.
+    Route::prefix('co')->name('co.')->middleware('module:SALES')->group(function () {
+        $open = fn (int $id) => redirect(route('v2.screen', 'customer-order').'?id='.$id);
+        Route::post('/create', function (Request $r) use ($open) {
             $d = $r->validate(['mode' => ['required', 'in:INTEGRATED,INSTANT'], 'quotation_id' => ['required_if:mode,INTEGRATED', 'nullable', 'integer'],
                 'customer_id' => ['required_if:mode,INSTANT', 'nullable', 'integer']], [], ['quotation_id' => 'Quotation', 'customer_id' => 'Customer']);
             $o = $d['mode'] === 'INTEGRATED' ? CustomerOrder::createIntegrated((int) $d['quotation_id']) : CustomerOrder::createInstant((int) $d['customer_id']);
