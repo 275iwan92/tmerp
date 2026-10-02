@@ -35,6 +35,10 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
     public string $freeUom = '';
 
+    public string $freeAccountId = '';
+
+    public string $freeError = '';
+
     // Pencarian cepat (kode/nama) -- alternatif utk user yang sudah hafal
     // kodenya, supaya tak wajib klik 5 dropdown kategori kalau tak perlu.
     // Cascade kategori TETAP ada di bawahnya utk yang belum hafal.
@@ -205,7 +209,17 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
     public function addFreeText(): void
     {
+        $this->freeError = '';
+
         if ($this->pr->status !== 'DRAFT' || trim($this->freeDescription) === '') {
+            return;
+        }
+
+        // pr_line.i_coa_account_id NOT NULL, dan teks bebas tak punya kategori yang menuntun ke akun
+        // (beda dgn Item Master) -- jadi akun dipilih saat menambah, bukan sesudah baris tersimpan.
+        if (! $this->isPostableAccount($this->freeAccountId)) {
+            $this->freeError = t('Choose the account for the free-text item.');
+
             return;
         }
 
@@ -221,7 +235,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
             'i_qty' => 1,
             'i_uom' => $this->freeUom ?: '-',
             'i_department_id' => $this->pr->i_department_id,
-            'i_coa_account_id' => null,
+            'i_coa_account_id' => (int) $this->freeAccountId,
             'is_stock' => false,
             'created_by' => $login,
             'updated_by' => $login,
@@ -229,6 +243,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
         $this->freeDescription = '';
         $this->freeUom = '';
+        $this->freeAccountId = '';
         $this->recalcTotal();
         unset($this->pr);
     }
@@ -245,6 +260,15 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
             return;
         }
 
+        // Kolom NOT NULL: pilihan kosong / isian yang dikosongkan diabaikan (nilai lama tetap), bukan disimpan NULL.
+        if (($value === '' || $value === null) && in_array($field, ['i_description', 'i_qty', 'i_uom', 'i_department_id', 'i_coa_account_id'], true)) {
+            return;
+        }
+
+        if ($field === 'i_coa_account_id' && ! $this->isPostableAccount($value)) {
+            return;
+        }
+
         $line = PrLine::where('pr_id', $this->prId)->findOrFail($lineId);
         $line->{$field} = $value === '' ? null : $value;
         $line->recalcSubtotal();
@@ -253,6 +277,12 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
         $this->recalcTotal();
         unset($this->pr);
+    }
+
+    // Pengganti FK lintas-DB ke tm2acc.fin_account (is_postable=1).
+    protected function isPostableAccount($accountId): bool
+    {
+        return (int) $accountId > 0 && $this->coaAccounts->contains('account_id', (int) $accountId);
     }
 
     public function removeLine(int $lineId): void
@@ -520,8 +550,17 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                     <div class="w-[140px] shrink-0">
                         <x-form.input label="{{ Translator::t('proc_pv_col_uom', 'UoM') }}" wire:model="freeUom" placeholder="{{ Translator::t('proc_entry_unit_placeholder', 'Unit') }}" />
                     </div>
+                    <div class="flex-1">
+                        <x-form.select wire:model="freeAccountId" :selected="$freeAccountId"
+                            :options="$this->coaAccounts->mapWithKeys(fn ($acc) => [$acc->account_id => $acc->account_code.' - '.$acc->account_name])->all()">
+                            <x-slot:label>{{ Translator::t('proc_entry_coa_account', 'Akun COA') }} <span class="text-red-600">*</span></x-slot:label>
+                        </x-form.select>
+                    </div>
                     <button type="button" wire:click="addFreeText" class="text-[11px] font-bold text-white bg-navy rounded px-3 py-1.5">＋ {{ Translator::t('shared_grid_add_row', 'Tambah') }}</button>
                 </div>
+                @if ($freeError)
+                    <p class="text-[11px] text-red-600 mb-2">⚠ {{ $freeError }}</p>
+                @endif
                 <p class="text-[11px] text-muted mt-2">{{ Translator::t('proc_pr_entry_free_text_hint', 'Teks bebas dipakai untuk pembelian sekali pakai (mesin, laptop, renovasi, jasa tak terdaftar) — departemen & akun COA wajib diisi manual per baris.') }}</p>
             </div>
         @endif

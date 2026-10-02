@@ -3580,3 +3580,18 @@ baru. Full suite: 103 test, 94 passed, 9 skipped (Firebase, tidak terkait), 0 ga
   `CRM_SLEEPING_DAYS`, `SIGN_CCR_*`; kategori konstanta `SALES`.
 - Data contoh ddt (migration `000132`), kamus Indonesia (`000133`, ddt + tm2), Help 4 layar, test `CrmTest` (5 test).
 - Pratinjau layar: `docs/mockups/crm/`. Belum: menu + Help di `tm2sys`, izin per grup, retur masuk stok, target Sales.
+
+## 2026-10-02 — Purchase Requisition: item teks bebas selalu gagal disimpan (akun wajib dipilih saat menambah)
+
+- **Bug**: `addFreeText()` di `pages/pur/pr/entry.blade.php` menyimpan `i_coa_account_id = NULL`, padahal kolom
+  `pr_line.i_coa_account_id` NOT NULL (ddtpur dan tm2pur sama) -> `SQLSTATE[23000] 1048 Column 'i_coa_account_id' cannot be null`.
+  Kena layar v1 dan v2 ("+ Item Bebas"), karena v2 memanggil komponen yang sama. Item Master tidak kena (20 kategori
+  level 1 semuanya punya akun default).
+- **Perbaikan tanpa ubah skema**: akun dipilih saat item bebas ditambahkan (lookup akun yang bisa diposting) — v1: pilihan
+  "Akun COA" di tab Teks Bebas; v2: pilihan "Account" di sebelah uraian + satuan, dan kolom Account di panel rincian
+  baris (bisa diganti selama Draft). Tanpa akun: baris tidak dibuat, muncul pesan.
+- `updateLine()`: nilai kosong untuk kolom NOT NULL (uraian, qty, satuan, departemen, akun) diabaikan — dulu memilih
+  "— pilih —" di kolom Departemen / Akun COA baris juga berakhir error 1048.
+- Submit tidak diberi pemeriksaan tambahan: kolom tetap NOT NULL, jadi baris tanpa akun tidak mungkin ada.
+- Test `PurchaseRequisitionFreeTextLineTest` (6 test, membersihkan PR buatannya sendiri). Dokumen: `procurement_tier2.md` A-1.2,
+  `screen_pur_pr_entry.md`.

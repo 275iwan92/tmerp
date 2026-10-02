@@ -35,6 +35,10 @@ Sistem mengisi otomatis dari `m_raw_material`: nama, `uom_purchase`, `uom_stock`
 **(b) `FREE_TEXT`** — pembelian sekali pakai (mesin, laptop, renovasi, jasa tak terdaftar). Tanpa hirarki kategori sama sekali.
 - `i_description` wajib · `i_uom` diketik manual · `item_id` NULL
 - `i_department_id` dan `i_coa_account_id` **wajib manual** (tak ada prefix1 yang menuntun ke akun)
+- **Akun dipilih saat baris ditambahkan** (lookup akun `is_postable=1`, di sebelah uraian + satuan), bukan sesudah baris
+  tersimpan: `pr_line.i_coa_account_id` NOT NULL, jadi baris tanpa akun tidak pernah ada di database dan Submit tidak
+  perlu memeriksanya lagi. Akun baris masih bisa diganti selama DRAFT, tapi tidak bisa dikosongkan. Departemen baris =
+  departemen header (bisa diganti per baris). (2026-10-02; sebelumnya `addFreeText()` menyimpan NULL -> error 1048.)
 - Otomatis `is_stock=0` — tak pernah masuk `rm_stock`
 
 > Aturan ini menutup masalah "beli mesin susah dimasukkan kategori": barang sekali beli **tidak dipaksa** masuk `doc_rmprefix*`.
