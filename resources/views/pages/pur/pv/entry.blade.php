@@ -230,7 +230,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">🚚 {{ $this->pv->doc_no }}</b>
+        <b class="text-[15px]">🚚 {{ $this->pv->label() }}</b>
         <span class="text-xs text-white/75">{{ $this->supplier?->supplier_name }} · {{ $this->pv->i_warehouse_code }}</span>
         <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#e2e0ff] text-[#4b3fa8]">🔒 {{ Translator::t('proc_pv_entry_side_b_hint', 'Sisi B — tanpa harga di layar ini kecuali panel nilai') }}</span>
         @if (($this->pv->c_po_count ?? 0) > 1)

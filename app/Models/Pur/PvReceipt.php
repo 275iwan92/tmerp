@@ -39,6 +39,13 @@ class PvReceipt extends Model
     // bisa diperiksa accounting terhadap tagihan supplier; bahan baku dari customer dan barang dari subkon punya seri sendiri.
     public const NUMBER_PREFIX = ['PO' => 'SPB', 'CUSTOMER' => 'PBC', 'SUBCON' => 'PBS'];
 
+    // Nomor lahir saat dokumen diposting (user 2026-10-02), bukan saat Draft dibuat: Draft yang dihapus tidak boleh
+    // meninggalkan nomor kosong di urutan SPB. Draft tampil sebagai "Draft #<id>".
+    public function label(): string
+    {
+        return $this->doc_no ?: 'Draft #'.$this->pv_id;
+    }
+
     public static function nextDocNo(string $type = 'PO'): string
     {
         $prefix = (self::NUMBER_PREFIX[$type] ?? self::NUMBER_PREFIX['PO']).now()->format('y');

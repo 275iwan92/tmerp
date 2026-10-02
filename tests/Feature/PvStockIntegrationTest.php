@@ -6,10 +6,10 @@ use App\Models\Inventory\RmStock;
 use App\Models\Master\MatRaw;
 use App\Models\Pur\PoLine;
 use App\Models\Pur\PoOrder;
+use App\Models\Pur\PvReceipt;
 use App\Models\Sys\SecUser;
 use App\Services\Pur\PvBuilderService;
 use App\Services\Pur\PvPostingService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -87,6 +87,9 @@ class PvStockIntegrationTest extends TestCase
 
         $pv = PvBuilderService::createFromLines($this->po->i_supplier_id, 'WH-RAW-01', [$poLine->po_line_id]);
         $this->assertSame('DRAFT', $pv->status);
+        // Nomor SPB lahir saat posting (user 2026-10-02): Draft belum bernomor, jadi Draft yang dihapus tidak membuat nomor loncat.
+        $this->assertNull($pv->doc_no);
+        $expectedNo = PvReceipt::nextDocNo('PO');
 
         $line = $pv->lines()->firstOrFail();
         $line->update([
@@ -108,6 +111,7 @@ class PvStockIntegrationTest extends TestCase
 
         $pv->refresh();
         $this->assertSame('POSTED', $pv->status);
+        $this->assertSame($expectedNo, $pv->doc_no);
         $this->assertNotNull($pv->rm_stock_doc_id);
         $this->rmStockDocId = $pv->rm_stock_doc_id;
 

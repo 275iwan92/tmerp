@@ -82,10 +82,18 @@ class PvPostingService
         }
 
         $login = Auth::user()->login;
+        // Nomor SPB lahir saat posting (user 2026-10-02) supaya urutannya tidak bolong oleh Draft yang dihapus. Dokumen stok
+        // dan jurnal merujuk nomor ini, jadi ditetapkan dulu di memori; baru tersimpan bersama status POSTED di bawah.
+        $numbered = (bool) $pv->doc_no;
+        $pv->doc_no = $pv->doc_no ?: PvReceipt::nextDocNo((string) ($pv->i_receipt_type ?: 'PO'));
 
         try {
             $stockDocId = static::postToInventory($pv, $login);
         } catch (\Throwable $e) {
+            if (! $numbered) {
+                $pv->doc_no = null;
+            }
+
             return ['ok' => false, 'message' => 'Gagal posting stok fisik: '.$e->getMessage()];
         }
 

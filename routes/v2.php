@@ -617,7 +617,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 return back()->withErrors(['po_line_ids' => $e->getMessage()]);
             }
 
-            return $open($pv->pv_id)->with('v2_flash', "Penerimaan {$pv->doc_no} dibuat — isi qty diterima, QC qty & kualitas, lalu Confirm (Post).");
+            return $open($pv->pv_id)->with('v2_flash', "Penerimaan {$pv->label()} dibuat — isi qty diterima, QC qty & kualitas, lalu Confirm (Post).");
         })->name('create');
         // Bahan dari customer (wajib No. CO) & barang kembali dari subkon (SpecialReceiptService).
         Route::post('/create-customer', function (Request $r) use ($open) {
@@ -628,7 +628,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 return back()->withErrors(['co_id' => $e->getMessage()]);
             }
 
-            return $open($pv->pv_id)->with('v2_flash', "Penerimaan bahan customer {$pv->doc_no} dibuat — cek uraian & qty per baris, lalu Confirm.");
+            return $open($pv->pv_id)->with('v2_flash', "Penerimaan bahan customer {$pv->label()} dibuat — cek uraian & qty per baris, lalu Confirm.");
         })->name('create-customer');
         Route::post('/create-subcon', function (Request $r) use ($open) {
             $d = $r->validate(['supplier_id' => ['required', 'integer'], 'po_line_ids' => ['required', 'array', 'min:1'], 'do_id' => ['nullable', 'integer']],
@@ -639,7 +639,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 return back()->withErrors(['po_line_ids' => $e->getMessage()]);
             }
 
-            return $open($pv->pv_id)->with('v2_flash', "Penerimaan dari subkon {$pv->doc_no} dibuat — isi qty kembali & proses berikutnya, lalu Confirm.");
+            return $open($pv->pv_id)->with('v2_flash', "Penerimaan dari subkon {$pv->label()} dibuat — isi qty kembali & proses berikutnya, lalu Confirm.");
         })->name('create-subcon');
         // Cetak SPB jenis PO & Subkon (x-dl::print-out + doc-share); jenis Customer punya cetak sendiri (print-customer).
         Route::get('/{id}/print', function (int $id) {
@@ -720,7 +720,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
             if ($action === 'delete') {
                 PurchaseReceive::delete($pv);
 
-                return redirect(route('v2.screen', 'purchase-receive'))->with('v2_flash', "Draft {$pv->doc_no} dihapus.");
+                return redirect(route('v2.screen', 'purchase-receive'))->with('v2_flash', "{$pv->label()} dihapus.");
             }
             $r->validate(['i_doc_date' => ['nullable', 'date']]);
             if ($pv->i_receipt_type !== 'PO') {

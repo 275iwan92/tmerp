@@ -132,7 +132,7 @@
             'i_next_process' => $l->i_next_process, 'i_lot_no' => $l->i_lot_no, 'short' => (float) $l->c_qty_short > 0 ? \Devlib\Locale::decimal($l->c_qty_short, 2).' — '.$l->i_short_note : '—',
         ])->values()->all();
     @endphp
-    <x-dl::form id="pv-special" :title="($isCust ? 'Material from Customer · ' : 'Return from Subcon · ').$pv->doc_no" :subtitle="$party.' · '.$pv->status"
+    <x-dl::form id="pv-special" :title="($isCust ? 'Material from Customer · ' : 'Return from Subcon · ').$pv->label()" :subtitle="$party.' · '.$pv->status"
         panel="top" kind="document" :status="PurchaseReceive::formStatus($pv)" :pipeline="true"
         :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1&type='.$pv->i_receipt_type"
         :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $draft ? [] : ['delete'])"
@@ -144,7 +144,7 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>No.</span><b>{{ $pv->doc_no }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>No.</span><b>{{ $pv->doc_no ?: t('(on Post)') }}</b></div>
             <x-dl::field.date name="i_doc_date" label="Received Date" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />
             <x-dl::field.display :label="$isCust ? 'Customer' : 'Subcontractor'" :value="$party" :source="Src::of($isCust ? 'tm2mst.cust_customer' : 'tm2mst.sup_supplier')" />
             <x-dl::field.display :label="$isCust ? 'Customer Order' : 'Subcon PO'" :value="$isCust ? $co : ($pv->c_po_doc_list ?: '—')" :source="Src::of($isCust ? 'tm2pur.pv_receipt.i_co_id' : 'tm2pur.pv_receipt.c_po_doc_list')" />
@@ -218,7 +218,7 @@
     @endphp
     @if ($blockers)<x-dl::alert tone="warn" :message="'Belum bisa Confirm (Post): '.implode(' ', $blockers)" />@endif
 
-    <x-dl::form id="pv-form" :title="'Penerimaan Barang · '.$pv->doc_no" :subtitle="($sup->supplier_name ?? '—').' · '.$pv->status"
+    <x-dl::form id="pv-form" :title="'Penerimaan Barang · '.$pv->label()" :subtitle="($sup->supplier_name ?? '—').' · '.$pv->status"
         panel="top" kind="document" :status="PurchaseReceive::formStatus($pv)" :pipeline="true"
         :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $pv->status === 'DRAFT' ? [] : ['delete'])"
         :tabs="['general' => 'General', 'supplier' => 'Supplier', 'notes' => 'Notes']"
@@ -229,7 +229,7 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>No. SPB</span><b>{{ $pv->doc_no }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>No. SPB</span><b>{{ $pv->doc_no ?: t('(on Post)') }}</b></div>
             <x-dl::field.date name="i_doc_date" label="Receipt Date" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />
             <x-dl::field.display label="Receiving Warehouse" :value="$pv->i_warehouse_code" :source="Src::of('tm2pur.pv_receipt.i_warehouse_code')" />
             <div class="dl-strip__kv dl-strip__grand"><span>Nilai Diterima</span><b>{{ $money($value) }}</b></div>

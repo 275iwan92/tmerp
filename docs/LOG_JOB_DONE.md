@@ -20,6 +20,18 @@ saran + "semua didokumentasi jelas urusan keuangan dan akuntansi", D ok, E "untu
   Qty Minim di `ddtsdi` maupun `tm2sdi`, jadi tidak ada data yang berubah.
 - **Belum:** modulnya sendiri (Tahap 0 mockup menunggu OK user, lalu Tahap 1–3; backlog07).
 
+## 2026-10-02 -- Penerimaan: nomor lahir saat posting (urutan SPB tidak bolong)
+
+User setuju usulan: Draft tidak bernomor; nomor SPB / PBC / PBS diberikan saat dokumen diposting.
+- `PvBuilderService::createFromLines` dan `SpecialReceiptService::createCustomer|createSubcon` membuat Draft dengan `doc_no`
+  kosong. `PvPostingService::post` menetapkan nomor sebelum dokumen stok dan jurnal dibuat (keduanya merujuk nomor itu) dan
+  menyimpannya bersama status POSTED; gagal posting stok = nomor tidak terpakai. `SpecialReceiptService::post` memberi nomor
+  di dalam transaksi status. Dokumen lama yang sudah bernomor (SPB2600001 QC_PENDING) memakai nomornya sendiri.
+- Tampilan Draft: `PvReceipt::label()` = "Draft #id"; grid v2 "DRAFT-id"; strip form "(on Post)" (kamus Indonesia: migrasi
+  000104, ddt + tm2); layar v1 `pur/pv` ikut memakai `label()`.
+- Test: `PvStockIntegrationTest` kini memeriksa Draft tanpa nomor dan nomor yang lahir saat posting. Diuji juga lewat layar
+  (Draft tanpa nomor, posting bahan customer -> PBC2600001) di dalam transaksi yang di-rollback: tidak ada baris tertinggal.
+
 ## 2026-10-02 -- Penerimaan: tiga judul dan tiga seri nomor (SPB / PBC / PBS)
 
 User: field "Jenis" di SPB tidak perlu; penerimaan dari customer dan dari subkon diberi judul dan penomoran sendiri, karena SPB

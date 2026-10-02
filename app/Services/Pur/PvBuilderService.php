@@ -75,7 +75,7 @@ class PvBuilderService
 
         return DB::connection('tm2pur')->transaction(function () use ($lines, $supplierId, $warehouseCode, $login) {
             $pv = PvReceipt::create([
-                'doc_no' => PvReceipt::nextDocNo(),
+                'doc_no' => null, // nomor SPB lahir saat diposting (PvPostingService::post)
                 'i_doc_date' => now()->toDateString(),
                 'i_supplier_id' => $supplierId,
                 'i_warehouse_code' => $warehouseCode,

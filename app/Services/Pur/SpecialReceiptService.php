@@ -41,7 +41,7 @@ final class SpecialReceiptService
             ->where('i.order_id', $coId)->orderBy('i.line_seq')->get(['i.id_item', 'i.description', 'q.material_source', 'q.cust_material_spec']);
 
         return DB::connection('tm2pur')->transaction(function () use ($co, $items, $warehouse, $login) {
-            $pv = PvReceipt::create(['doc_no' => PvReceipt::nextDocNo('CUSTOMER'), 'i_receipt_type' => 'CUSTOMER', 'i_doc_date' => now()->toDateString(),
+            $pv = PvReceipt::create(['doc_no' => null, 'i_receipt_type' => 'CUSTOMER', 'i_doc_date' => now()->toDateString(),
                 'i_customer_id' => $co->customer_id, 'i_co_id' => $co->id_order, 'i_warehouse_code' => $warehouse ?: null, 'c_po_doc_list' => $co->co_no,
                 'status' => 'DRAFT', 'created_by' => $login, 'updated_by' => $login]);
             // Baris awal per item CO; spesifikasi bahan dari Inquiry bila Inquiry menyebut "bahan dari customer".
@@ -63,7 +63,7 @@ final class SpecialReceiptService
         }
 
         return DB::connection('tm2pur')->transaction(function () use ($supplierId, $lines, $doId, $login) {
-            $pv = PvReceipt::create(['doc_no' => PvReceipt::nextDocNo('SUBCON'), 'i_receipt_type' => 'SUBCON', 'i_doc_date' => now()->toDateString(),
+            $pv = PvReceipt::create(['doc_no' => null, 'i_receipt_type' => 'SUBCON', 'i_doc_date' => now()->toDateString(),
                 'i_supplier_id' => $supplierId, 'i_do_id' => $doId, 'c_po_doc_list' => $lines->pluck('order.doc_no')->unique()->implode(', '),
                 'c_po_count' => $lines->pluck('po_id')->unique()->count(), 'status' => 'DRAFT', 'created_by' => $login, 'updated_by' => $login]);
             foreach ($lines->values() as $i => $l) {
@@ -145,7 +145,8 @@ final class SpecialReceiptService
         }
 
         DB::connection('tm2pur')->transaction(function () use ($pv, $login) {
-            $pv->update(['status' => 'POSTED', 'posted_at' => now(), 'posted_by' => $login, 'updated_by' => $login]);
+            // Nomor lahir di sini (seri PBC / PBS), di dalam transaksi yang sama dengan perubahan status.
+            $pv->update(['doc_no' => $pv->doc_no ?: PvReceipt::nextDocNo((string) $pv->i_receipt_type), 'status' => 'POSTED', 'posted_at' => now(), 'posted_by' => $login, 'updated_by' => $login]);
             foreach ($pv->lines->pluck('c_po_id')->filter()->unique() as $poId) {
                 PvPostingService::recalcPo((int) $poId);
             }

@@ -184,7 +184,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                     <tbody>
                         @forelse ($this->receipts as $pv)
                             <tr wire:key="pv-{{ $pv->pv_id }}" wire:dblclick="openReceipt({{ $pv->pv_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
-                                <x-grid.identity-cell :id="$pv->pv_id" :name="$this->supplierNames[$pv->i_supplier_id] ?? '—'" :code="$pv->doc_no" />
+                                <x-grid.identity-cell :id="$pv->pv_id" :name="$this->supplierNames[$pv->i_supplier_id] ?? '—'" :code="$pv->label()" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $pv->i_doc_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     @if (($pv->c_po_count ?? 0) > 1)

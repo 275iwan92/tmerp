@@ -42,7 +42,7 @@ final class PurchaseReceive
         $sup = PurchaseOrder::suppliers($pvs->pluck('i_supplier_id')->filter()->unique()->all());
         $cust = DB::connection('tm2mst')->table('cust_customer')->whereIn('id_customer', $pvs->pluck('i_customer_id')->filter()->unique())->pluck('customer_name', 'id_customer');
 
-        return $pvs->map(fn ($p) => ['id' => $p->pv_id, 'no' => $p->doc_no, 'supplier' => $p->i_receipt_type === 'CUSTOMER' ? ($cust[$p->i_customer_id] ?? '—') : ($sup[$p->i_supplier_id] ?? '—'),
+        return $pvs->map(fn ($p) => ['id' => $p->pv_id, 'no' => $p->doc_no ?: 'DRAFT-'.$p->pv_id, 'supplier' => $p->i_receipt_type === 'CUSTOMER' ? ($cust[$p->i_customer_id] ?? '—') : ($sup[$p->i_supplier_id] ?? '—'),
             'type' => self::TYPES[$p->i_receipt_type] ?? $p->i_receipt_type, 'date' => $p->i_doc_date?->toDateString(),
             'warehouse' => $p->i_warehouse_code ?: '—', 'po' => $p->c_po_doc_list, 'lines' => $p->lines->count(), 'status' => $p->status,
             // Baris anak grid (Expand): nama item selalu tampil, tanpa harga.
@@ -67,8 +67,8 @@ final class PurchaseReceive
             ->whereIn('status', ['DRAFT', 'POSTED'])->orderBy('pv_id')->get();
         $items = DB::connection('tm2sdi')->table('co_order_item')->where('order_id', $coId)->pluck('line_seq', 'id_item');
 
-        return ['receipts' => $pvs->map(fn ($p) => ['id' => $p->pv_id, 'no' => $p->doc_no, 'status' => $p->status])->all(),
-            'rows' => $pvs->flatMap(fn ($p) => $p->lines->map(fn ($l) => ['doc' => $p->doc_no.($p->status === 'DRAFT' ? ' (Draft)' : ''), 'date' => Locale::d($p->i_doc_date),
+        return ['receipts' => $pvs->map(fn ($p) => ['id' => $p->pv_id, 'no' => $p->label(), 'status' => $p->status])->all(),
+            'rows' => $pvs->flatMap(fn ($p) => $p->lines->map(fn ($l) => ['doc' => $p->doc_no ?: 'Draft #'.$p->pv_id, 'date' => Locale::d($p->i_doc_date),
                 'item' => isset($items[$l->i_co_line_id]) ? '#'.$items[$l->i_co_line_id] : '—', 'material' => $l->i_description, 'qty' => (float) $l->i_qty_purchase,
                 'uom' => $l->i_uom_purchase, 'lot' => $l->i_lot_no ?: '—']))->values()->all()];
     }
