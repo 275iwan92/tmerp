@@ -50,6 +50,7 @@ Rancangan: **[`warehouselayout_tier1.md`](warehouselayout_tier1.md)** (bagian 13
 | 05.34 | Laporan stok semua kelas: hak lihat NILAI (sekarang semua yang boleh membuka Inventory melihat nilai, sama dengan Stock Balance). Usulan lama S1: hanya Finance, Costing, Ops Manager ke atas | — | **menunggu user** |
 | 05.35 | Stock Card: pilih item lewat lookup master (sekarang kotak teks kode / nama), dan Stock Card "simple" yang menyembunyikan transfer dalam satu gudang | 2 | belum |
 | 05.36 | Stock Opname: lembar hitung kosong untuk dicetak sebelum menghitung (count sheet per gudang / area), dan cetakan berita acara per dokumen | 2 | belum |
+| 05.37 | **Tumpukan (stack) dan sisa 1 - 2 rim** (user 2026-10-03, IMPORTANT): alamat barang = X - Y - Stack; di lantai stack = nomor tumpukan pada palet / pak, sisa = satuan PACK dengan tag Remnant, aturan tinggi tumpuk / tertimbun / sisa dipakai dulu. Analisa + usulan: `warehouselayout_tier1.md` bagian 15 | 2 | **analisa selesai; menunggu jawaban user S1 - S5** |
 
 ---
 

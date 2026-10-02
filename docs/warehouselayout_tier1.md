@@ -629,3 +629,95 @@ Engine Catalog: Warehouse Stock, Stock Transfer Posting, Pallet Labels. Test: `P
   tm2 belum ada, jadi dilewati dan Confirm langsung memindahkan stok).
 - Data contoh mockup.test: `UatWarehouseSeeder`; tersimpan di baseline Reset dan set "Mixed dummy" (2026-10-03).
 
+---
+
+## 15. Analisa 2026-10-03: tumpukan (stack) dan sisa 1 - 2 rim — MENUNGGU KEPUTUSAN USER, belum ada kode
+
+Perintah user 2026-10-03: *"Lokasi penempatan barang selain posisi X dan Y juga ada stack, terutama untuk barang yang
+tersisa 1 atau 2 rim. Analisa lagi dalam penyimpanan di gudang. IMPORTANT !!!"*
+
+### 15.1 Keadaan sekarang (dicek ke kode dan ddt 2026-10-03)
+
+| Hal | Fakta | Akibat |
+|---|---|---|
+| `wh_loc` | punya tiga koordinat sejak awal: `row_code` (X), `col_code` (Y), `stack_code` (tumpukan) | kolomnya ada |
+| `BinGenerator` | tingkat hanya untuk area RACK (1 - 9). Area FLOOR dipaksa satu tingkat | 147 bin lantai di ddt semuanya stack 1 (PPR, SHT, CSG, FG, STR, DSK); hanya INK dan TLG yang bertingkat |
+| Stok | menempel ke item x bin. Palet (`inv_pallet`) hanya tahu `location_id` | dua palet di satu bin: sistem tidak tahu mana di bawah, mana di atas |
+| `capacity_pallet` | 2 - 4 per bin lantai, hanya ditampilkan | tidak ikut menentukan penuh / tidak; tidak membedakan berjajar dan bertumpuk |
+| Palet | satu palet = satu item, satuan yang sama untuk palet penuh dan sisa | sisa 2 rim tercatat sebagai "palet" (atau tidak berlabel sama sekali) dan dihitung satu palet |
+| Dead stock | dihitung per item di semua lokasi | sisa 1 rim dari item yang masih laku di bin lain tidak pernah merah, padahal sisa itu sendiri sudah berbulan-bulan |
+| Volume | isi bin = lembar x ukuran x tebal | sisa 2 rim hanya sekitar 0,1 m3, tetapi bila berdiri sendiri ia memakan satu tapak palet penuh |
+
+Kesimpulan: untuk rak, tumpukan sudah tercatat. Untuk barang di lantai (kertas plano, sheet, barang jadi) sistem berhenti
+di X dan Y. Sisa rim tidak punya perlakuan sendiri.
+
+### 15.2 Empat cara simpan yang nyata di gudang percetakan
+
+| Cara | Contoh | Tumpukannya |
+|---|---|---|
+| A. Palet penuh di lantai, palet di atas palet | kertas plano dari pabrik, barang jadi | tidak tetap: palet atas turun saat palet bawah diambil |
+| B. Rak bertingkat | tinta, lem, pisau pond | tetap: tingkat rak tidak pernah pindah |
+| C. Palet terbuka | palet yang sedang dipakai produksi | sama dengan A, biasanya paling atas atau di staging |
+| D. Sisa (1 - 2 rim, terbungkus) | sisa order, sisa potong | ditaruh di atas palet lain, dikumpulkan di satu palet campuran, atau di rak sisa |
+
+Pokok analisanya: **tumpukan di rak adalah bagian dari alamat, tumpukan di lantai adalah sifat barangnya.** Tingkat rak
+tidak bergerak, jadi tepat dijadikan bin (sudah begitu). Tumpukan di lantai bergeser setiap kali palet bawah diambil; bila
+tiap tumpukan lantai dijadikan bin, setiap pergeseran harus dibuatkan Stock Transfer dan dalam seminggu datanya tidak
+cocok lagi dengan lantai. SAP memperlakukan penyimpanan blok di lantai dengan cara yang sama: bin = lajur, tinggi tumpuk
+= aturan per jenis satuan simpan, bukan bin per tingkat.
+
+### 15.3 Usulan
+
+**1. Alamat barang = X - Y - Stack, dengan dua sumber stack.**
+
+| Area | X - Y | Stack |
+|---|---|---|
+| RACK | rak - kolom | tingkat rak = bin (tetap seperti sekarang) |
+| FLOOR | lajur - slot = satu tapak palet | **nomor tumpukan pada palet / pak** (`inv_pallet.stack_no`, 1 = paling bawah) |
+| AREA | satu bin | tanpa stack |
+
+Label, peta, lacak QR dan Stock by Location menampilkan alamat lengkap, mis. `A10-PPR-L03-05 · Stack 3 of 3`.
+Nomor tumpukan dijaga sistem: barang baru masuk = paling atas; satuan keluar atau habis = yang di atasnya turun satu
+nomor otomatis; petugas bisa menukar urutan (Restack) di panel bin. Tidak ada dokumen stok untuk itu, karena bin dan
+jumlah stok tidak berubah. Pindah ke bin lain tetap hanya lewat Stock Transfer.
+
+**2. Dua jenis satuan berlabel:** `unit_kind` = `PALLET` (palet penuh / terbuka) dan `PACK` (pak lepas: rim, dus, kaleng).
+Sisa = PACK. PACK tidak dihitung dalam jumlah palet per bin, tetap dihitung dalam kg dan volume, dan memakai label item
+100 x 50 mm (bukan label palet 100 x 150 mm). Satu tapak boleh berisi palet item A di bawah dan pak sisa item B, C di
+atasnya: tiap satuan punya nomor tumpukan sendiri, jadi "palet campuran sisa" juga tertampung tanpa tabel baru.
+
+**3. Sisa (remnant) dikenali sistem.** Batas di Settings > Constants, mis. `WH_REMNANT_MAX_SHEETS` = 1000 lembar (2 rim).
+Saat label ulang sesudah pemakaian, bila qty sisa di bawah batas, sistem mengusulkan: jadikan PACK, lalu pilih tempatnya
+(tetap di tapak itu / di atas palet lain / area sisa). Bila pindah bin, draft Stock Transfer dibuatkan. Tag **Remnant**
+tampil di label, peta (saringan legenda), panel bin dan Stock by Location, seperti tag Expired.
+
+**4. Aturan tumpukan (semua berupa saran / peringatan, petugas yang memutuskan):**
+
+- `wh_zone.max_stack` = berapa palet boleh ditumpuk di satu tapak. Arti `capacity_pallet` dipertegas mengikuti ini.
+- Tinggi tumpukan = jumlah tinggi satuan (lembar x tebal + tinggi palet kayu) dibanding `stack_height_m` area.
+- **Tertimbun**: satuan tertua (FIFO) atau yang hampir kedaluwarsa berada di bawah satuan lain. Tampil sebagai tanda di
+  peta dan di daftar ambil: "pindahkan 2 satuan di atasnya dulu".
+- **Sisa dipakai dulu**: saran ambil bahan mendahulukan PACK sisa item yang sama sebelum membuka palet penuh.
+- **Sisa lama**: daftar sisa berumur lebih dari N bulan dihitung per satuan (tanggal tiba / label terakhir), karena dead
+  stock per item tidak menangkapnya.
+
+### 15.4 Yang berubah bila disetujui
+
+| Lapis | Perubahan |
+|---|---|
+| Skema | `inv_pallet` + `unit_kind`, `stack_no`; `inv_pallet_log` + aksi RESTACK; `wh_zone` + `max_stack`; konstanta batas sisa dan tinggi palet kayu. Tabel stok, kartu stok dan `wh_loc` **tidak berubah** |
+| Service | `PalletService` (nomor tumpukan otomatis, restack, usul sisa), `WarehouseStock` (jumlah palet tanpa PACK, tag Remnant, tertimbun, tinggi tumpukan), `Labels` |
+| DevLib | `x-dl::wh-map`: panel bin menampilkan tampak samping tumpukan; `x-dl::label`: baris Stack |
+| Layar | Warehouse Map, Print Pallet Label (jenis satuan, label ulang jadi sisa), Stock by Location, Track via QR, Stock Transfer (satuan mana yang ikut) |
+| Situs | ddt dan tm2; data contoh hanya ddt |
+
+### 15.5 Pertanyaan ke user
+
+| # | Pertanyaan | Bawaan bila tidak dijawab |
+|---|---|---|
+| S1 | Kertas plano di lantai: palet ditumpuk berapa tinggi? Satu slot = satu tapak palet? | 2 tumpuk, satu slot = satu tapak |
+| S2 | Sisa 1 - 2 rim sekarang ditaruh di mana: di atas palet lain, dikumpulkan di satu palet sisa, atau rak khusus? | ketiganya bisa; tanpa area sisa wajib |
+| S3 | Batas "sisa": 2 rim (1000 lembar)? Berlaku juga untuk selain kertas (kaleng tinta terbuka, dus barang jadi)? | 1000 lembar, kertas saja dulu |
+| S4 | Nomor tumpukan 1 = paling bawah? | ya |
+| S5 | Sistem menyarankan sisa dipakai lebih dulu daripada membuka palet baru? | ya, sebagai saran |
+
