@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Models\Master\WhLoc;
 use App\Models\Master\WhWarehouse;
 use App\Models\Sys\SecUser;
+use App\Models\Sys\SysAppMenu;
 use App\Services\Inventory\StockLedger;
 use App\Support\V2\Board\Numbers;
 use App\Support\V2\Grid\Grids;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 // Laporan stok semua kelas (Inventory > Warehouse > Report): Stock Card, Stock Recapitulation, Stock Summary, Stock Opname,
@@ -276,6 +278,26 @@ class StockReportsTest extends TestCase
         $this->get(route('v2.screen', 'inv-rpt-opname').$query)->assertSee('ZZR-OP1');
         $this->get(route('v2.report.print', 'inv-rpt-recap').$query)->assertOk()->assertSee('#'.self::ITEM);
         $this->get(route('v2.report.print', 'inv-rm-rpt-card'))->assertNotFound();
+    }
+
+    // Menu lama (sidebar dua tingkat): grup di dalam grup diangkat jadi grup sendiri supaya laporannya bisa dibuka.
+    public function test_reports_are_reachable_from_the_two_level_sidebar_menu(): void
+    {
+        if (! SysAppMenu::query()->where('code', 'INV_WH_RPT_CARD')->where('activate', true)->exists()) {
+            $this->markTestSkipped('Baris menu laporan stok belum ada di database ini.');
+        }
+        $this->actingAs(SecUser::query()->where('is_admin', 1)->firstOrFail());
+        $inventory = collect(Livewire::test('pages::main-menu')->instance()->menuTree())->firstWhere('code', 'INV');
+        $groups = collect($inventory['children'])->where('menuType', 'group');
+
+        $this->assertFalse($groups->contains(fn (array $g) => collect($g['children'])->contains('menuType', 'group')), 'Tidak boleh ada grup di dalam grup di sidebar.');
+        $reports = $groups->first(fn (array $g) => collect($g['children'])->contains('code', 'INV_WH_RPT_CARD'));
+        $this->assertNotNull($reports, 'Grup laporan stok harus tampil di sidebar.');
+        $urls = collect($reports['children'])->pluck('url', 'code');
+        foreach (['INV_WH_RPT_LOC' => 'inv-rpt-location', 'INV_WH_RPT_CARD' => 'inv-rpt-card', 'INV_WH_RPT_RECAP' => 'inv-rpt-recap', 'INV_WH_RPT_SUM' => 'inv-rpt-summary',
+            'INV_WH_RPT_OPN' => 'inv-rpt-opname', 'INV_WH_RPT_LG' => 'inv-rpt-loss-gain', 'INV_WH_RPT_QC' => 'inv-rpt-inspection'] as $code => $slug) {
+            $this->assertSame(route('v2.screen', $slug), $urls[$code] ?? null, $code);
+        }
     }
 
     private function rowsForPrint(): array

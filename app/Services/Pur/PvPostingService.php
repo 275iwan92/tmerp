@@ -88,7 +88,7 @@ class PvPostingService
         $pv->doc_no = $pv->doc_no ?: PvReceipt::nextDocNo((string) ($pv->i_receipt_type ?: 'PO'));
 
         try {
-            $stockDocId = static::postToInventory($pv, $login);
+            [$stockDocId, $stockWarning] = static::postToInventory($pv, $login);
         } catch (\Throwable $e) {
             if (! $numbered) {
                 $pv->doc_no = null;
@@ -116,7 +116,7 @@ class PvPostingService
 
         $journalWarning = static::postPurchaseJournal($pv, $login);
 
-        return ['ok' => true, 'message' => null, 'journal_warning' => $journalWarning];
+        return ['ok' => true, 'message' => null, 'journal_warning' => $journalWarning, 'stock_warning' => $stockWarning];
     }
 
     // CANCEL SPB (user 2026-10-01) -- pengganti trigger legacy pur_prcv_detail AFTER DELETE (hitung ulang barang masuk
@@ -145,7 +145,7 @@ class PvPostingService
         $login = Auth::user()->login;
 
         try {
-            $revDocId = static::reverseInventory($pv, $login);
+            [$revDocId, $stockWarning] = static::reverseInventory($pv, $login);
         } catch (\Throwable $e) {
             return ['ok' => false, 'message' => tf('Failed to reverse the stock: :error', ['error' => $e->getMessage()])];
         }
@@ -172,15 +172,16 @@ class PvPostingService
             }
         }
 
-        return ['ok' => true, 'message' => null, 'journal_warning' => $warning];
+        return ['ok' => true, 'message' => null, 'journal_warning' => $warning, 'stock_warning' => $stockWarning];
     }
 
     // Stock Out RM berisi baris yang persis sama dgn dokumen Stock In hasil post() (item, lokasi, lot, qty).
-    protected static function reverseInventory(PvReceipt $pv, string $login): ?int
+    // Kembalian: [id dokumen stok | null, peringatan nilai stok | null].
+    protected static function reverseInventory(PvReceipt $pv, string $login): array
     {
         $in = $pv->rm_stock_doc_id ? RmStock::with('lines')->find($pv->rm_stock_doc_id) : null;
         if (! $in || ! $in->stat_confirm || $in->lines->isEmpty()) {
-            return null;
+            return [null, null];
         }
 
         $docService = app(StockDocumentService::class);
@@ -204,7 +205,7 @@ class PvPostingService
             throw new \RuntimeException(($result['error'] ?? t('unknown')).' '.t('The goods have probably been used — use Purchase Return / Stock Adjustment.'));
         }
 
-        return $docId;
+        return [$docId, $result['stock_warning'] ?? null];
     }
 
     // Bangun + posting SATU dokumen Stock In RM dari baris PV yang is_stock=1
@@ -216,14 +217,15 @@ class PvPostingService
     // dilempar exception (bukan ditebak location_id sembarang -- itu akan
     // merusak akurasi kartu stok fisik). Return null kalau tak ada baris stok
     // (mis. PV isinya jasa semua) -- rm_stock_doc_id tetap NULL, itu valid.
-    protected static function postToInventory(PvReceipt $pv, string $login): ?int
+    // Kembalian: [id dokumen stok | null, peringatan nilai stok | null].
+    protected static function postToInventory(PvReceipt $pv, string $login): array
     {
         $pv->loadMissing('lines');
 
         $stockLines = $pv->lines->filter(fn ($l) => $l->is_stock && $l->item_id && (float) $l->c_qty_accepted > 0);
 
         if ($stockLines->isEmpty()) {
-            return null;
+            return [null, null];
         }
 
         $warehouse = WhWarehouse::where('warehouse_code', $pv->i_warehouse_code)->first();
@@ -287,7 +289,7 @@ class PvPostingService
             throw new \RuntimeException($result['error'] ?? t('Failed to post the stock (unknown).'));
         }
 
-        return $docId;
+        return [$docId, $result['stock_warning'] ?? null];
     }
 
     // Dr Persediaan / Cr GR-IR Clearing per baris is_stock=1 yang c_qty_accepted>0,

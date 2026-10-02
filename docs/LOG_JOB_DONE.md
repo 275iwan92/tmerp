@@ -30,6 +30,27 @@ make sure connect to database and tables". Rincian + sisa keputusan: `docs/md_fo
   kode; mode Indonesia tidak berubah kecuali tombol / badge / status (selalu English) dan label yang dulu English kini Indonesia.
 
 ---
+## 2026-10-03 -- Laporan stok semua kelas: dipasang di tmerp.test, diperiksa tersambung, data dummy di mockup.test
+
+User: "apply to mockup.test and tmerp.test, make sure all connected to table and database. After apply, don't forget data dummy
+on mockup.test. If everything set up, make sure no jobs, hand over, commit then end of this session."
+
+- **tmerp.test:** ketujuh laporan ada di Inventory > Warehouse > Report (grup Warehouse dipasang sesi Inventory & Warehouse pada
+  hari yang sama; migrasi `2026_10_03_000010_menu_inventory_stock_reports_live` = cadangan untuk database tanpa grup itu),
+  `MenuRoutes` membukanya dari menu lama, Help 6 topik diimpor, kamus sudah ada.
+- **Sidebar menu lama dua tingkat:** `pages/main-menu` mengangkat grup di dalam grup jadi grup sendiri ("Warehouse › Report",
+  "Warehouse › Setup") -- sebelumnya grup bersarang tampil sebagai baris mati sehingga isinya tidak bisa dibuka.
+- **Pemeriksaan sambungan** (kedua database): tabel / view sumber tiap laporan ada, baris terbaca, cetakan tersusun, baris menu
+  aktif dan mengarah ke layarnya -- 7 dari 7 di ddt dan di tm2.
+- **Stock in Inspection + widget Incoming QC:** "belum dinilai" = `qc_quality_status` PENDING (bawaan kolom, bukan NULL) atau QC qty
+  belum DONE, pada penerimaan DRAFT / QC_PENDING; qty ditolak tampil sebelum maupun sesudah diposting. Widget dulu selalu 0.
+- **Data dummy laporan** `Database\Seeders\UatStockReportSeeder` (ddt saja, sesudah `UatWarehouseSeeder`): 6 posisi stok baru,
+  17 dokumen (Stock In, Stock Out, 6 opname + 1 penyesuaian Posted, 1 opname menunggu approval, 1 penyesuaian Draft) lewat
+  `StockDocumentService` + `StockPostingService` berurutan tanggal, bin diblokir berisi stok, 2 penerimaan barang (menunggu QC,
+  ditolak sebagian). Jadwal otomatis dirapatkan supaya tidak ada dokumen di periode akuntansi tertutup (aturan 05.23).
+  Disimpan sebagai set dummy `stock-reports` (Developer > Data Dummy).
+- Uji: `StockReportsTest` 8 test (tambahan: baris penerimaan menunggu QC / ditolak, laporan terjangkau dari sidebar dua tingkat);
+  daftar grup Settings di `MainMenuShellSmokeTest` disamakan dengan menu sekarang.
 
 ## 2026-10-02 -- Laporan stok semua kelas: Stock Card, Recapitulation, Summary, Opname, Loss & Gain, Stock in Inspection
 
@@ -3840,4 +3861,22 @@ QR code ... warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BU
   `storage/app/backups/`) dan set "Mixed dummy" yang disimpan ulang dengan data gudang putaran 2.
 - Uji: 20 layar terbuka di tmerp.test; alur transfer + palet + label + tata letak dijalankan di tm2 dan ddt di dalam
   transaksi yang dibatalkan; `PalletServiceTest` + `StockTransferServiceTest` lolos; tidak ada sisa di database.
+
+### 2026-10-03 — Kartu stok: posting bertanggal mundur dihitung ulang (backlog 05.23, rulebook A.24)
+
+- **Cacat yang ditutup** (terbukti lewat test 2026-10-02): dokumen bertanggal lebih awal dari baris terakhir tertulis di
+  kartu tetapi tidak sampai ke saldo; dua dokumen pada tanggal yang sama saling tidak melihat begitu nomor baris kartu
+  melewati nomor dokumen; Cancel SPB diterima walau barangnya sudah dipindah; adjustment bertanggal mundur tidak
+  mengoreksi saldo; penolakan di baris ke-2 meninggalkan baris kartu baris ke-1.
+- **`StockCardChain`** (baru): rantai saldo satu posisi, urut (doc_date, doc_id); menghitung ulang saldo, harga rata-rata
+  dan nilai dari satu baris sampai baris terakhir, merambat ke bin tujuan transfer bila harga yang ikut pindah berubah.
+- **`StockPostingService::postDocument()`**: baris disisipkan lalu rantainya dihitung ulang; saldo minus (baris itu atau
+  sesudahnya) = seluruh dokumen batal (`StockPostingRefused`, transaksi di-rollback); tanggal di periode inventory
+  CLOSED ditolak (`InvPeriod::closedThrough()`); hasil membawa `revaluation` + `stock_warning` bila harga baris keluar
+  sesudahnya berubah. `value_in` ditulis di baris masuk (juga oleh `StockTransferService`).
+- **Layar**: pesan berhasil Stock In / Out / Return / Adjustment dan Penerimaan Barang v2 menampilkan peringatan nilai;
+  Stock Adjustment "tarik seluruh item" membaca baris terakhir menurut tanggal + nomor (dulu nomor terbesar).
+- Tidak ada perubahan skema (kolom `value_in` sudah ada). Kode yang sama berlaku di mockup.test dan tmerp.test.
+- Test: `StockPostingOrderTest` (9 test). Belum dikerjakan: jurnal koreksi (menunggu keputusan user), hapus + bangun
+  ulang dummy kartu stok yang salah, layar tutup periode inventory (backlog 05.23, 05.37).
 

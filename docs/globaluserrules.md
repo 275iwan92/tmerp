@@ -215,8 +215,30 @@
     - Daftar laporan gudang dan stok **mengacu ERP populer**; acuan + sumbernya di
       `docs/md_for_systems/inventoryreport_references.md`. Yang tidak bisa diverifikasi tidak dijadikan dasar.
     - Laporan semua kelas ada di Inventory > Warehouse > Report; laporan per kelas tetap di menu kelasnya.
-    - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**. Yang diputuskan agen sendiri dan menunggu
-      koreksi: `docs/md_for_systems/inventoryreport_review.md` bagian 4.
+    - Status: terpasang di mockup.test dan tmerp.test (user 2026-10-03: "apply to mockup.test and tmerp.test, make sure all
+      connected to table and database ... don't forget data dummy on mockup.test"); data dummy laporan hanya di mockup.test
+      (`UatStockReportSeeder`). **Menunggu penilaian user**; yang diputuskan agen sendiri dan menunggu koreksi:
+      `docs/md_for_systems/inventoryreport_review.md` bagian 4.
+
+24. **[2026-10-02] Kartu stok: dokumen bertanggal mundur dihitung ulang; periode tertutup ditolak; yang sudah Confirm dikoreksi lewat adjustment.**
+    Kata user: *"pilih a"* (hitung ulang baris sesudahnya) — *"iya ditolak dan diinput adjustment (penyesuaian)"* — *"data
+    dummy yang salah dihapus aja, dibangun ulang saja data dummy baru yang bener"* — *"jika salah tapi masih belum confirm
+    masih boleh dibenerin, tapi kalau sudah confirm maka di-adjust"*.
+    - **Urutan kartu stok = tanggal dokumen.** Dokumen stok (Stock In / Out / Return / Adjustment / Opname, penerimaan
+      barang, pembalik penerimaan) yang tanggalnya lebih awal dari baris terakhir item itu di bin itu **disisipkan di
+      tempatnya**, lalu **semua baris sesudahnya dihitung ulang**: saldo awal, saldo akhir, harga rata-rata, nilai. Bila
+      harga rata-rata bin asal berubah, nilai yang sudah ikut Stock Transfer ke bin lain ikut dihitung ulang.
+    - **Posting ditolak utuh** (tidak ada yang tertulis) bila membuat saldo minus — di baris itu atau di baris yang
+      bertanggal sesudahnya (pengecualian lama tetap: Adjustment / Opname boleh).
+    - **Periode inventory yang sudah ditutup:** dokumen bertanggal di dalamnya (atau sebelumnya) **ditolak**; koreksinya
+      diinput sebagai **Stock Adjustment** bertanggal di periode yang masih terbuka.
+    - **Belum Confirm boleh dibetulkan; sudah Confirm tidak diubah** — dikoreksi lewat adjustment (atau dokumen pembalik
+      yang memang ada, mis. Cancel SPB).
+    - **Dummy kartu stok yang salah dihapus dan dibangun ulang**, bukan diperbaiki di tempat.
+    - Belum diputuskan (accounting): harga rata-rata baris Stock Out sesudahnya berubah, sedangkan jurnal pemakaiannya
+      sudah diposting dengan harga lama. Sekarang selisih nilainya **ditampilkan sebagai peringatan**, jurnal tidak diubah.
+    - Kode: `App\Services\Inventory\StockCardChain` (rantai saldo), `StockPostingService`, `InvPeriod::closedThrough()`;
+      test `StockPostingOrderTest`. Rincian: `docs/md_for_systems/inventory_tier2.md` bagian "Urutan kartu stok".
 
 ## B. Database & data
 
@@ -694,5 +716,7 @@
 | 2026-10-03 | A.22: **tinta khusus hasil campuran tidak boleh hilang dari stok** — tinta sering dicampur untuk mendapat warna khusus dan hasilnya selama ini tidak terpantau. Konsep dokumen Ink Mixing: `warehouselayout_tier1.md` bagian 16 (menunggu jawaban user, belum dibangun). |
 | 2026-10-02 | B.15: set stage 8–12 dibangun (Posted to Production + Work Order belum dimulai, Delivery Order Draft, Delivery Order Confirmed, Customer Invoice Draft, Customer Invoice Confirmed menunggu pembayaran) — usulan agen, belum dikonfirmasi user; rantai PO di samping: stage 4 PO Draft, 5–7 menunggu approval level 1–3, 8+ Approved. Build sungguhan tanpa transaksi. |
 | 2026-10-02 | **A.23: laporan stok dan gudang** — set lengkap mengacu ERP populer (SAP, Odoo, Dynamics 365, Zahir, Accurate, Oracle NetSuite, ERPNext): Stock Card, Stock Recapitulation, Stock Summary, Stock Opname, Stock Loss & Gain (per bulan), Stock in Inspection, Stock by Location terkelompok per gedung; selisih stok masuk lewat stock opname. Grid Report mendapat periode (Period + Show) dan cetakan `x-dl::report`. Dibangun di ddt; review: `md_for_systems/inventoryreport_review.md`. |
+| 2026-10-03 | **A.24: kartu stok** — dokumen bertanggal mundur disisipkan dan baris sesudahnya dihitung ulang (pilihan (a) user); dokumen bertanggal di periode inventory tertutup ditolak, koreksi lewat Stock Adjustment; belum Confirm boleh dibetulkan, sudah Confirm dikoreksi lewat adjustment; dummy kartu stok yang salah dihapus dan dibangun ulang. Kode sama untuk mockup.test dan tmerp.test. Belum diputuskan: jurnal koreksi untuk baris Stock Out yang harganya berubah (sekarang peringatan). |
+| 2026-10-03 | A.23: laporan stok semua kelas dipasang juga di tmerp.test (menu, Help, kamus); tiap laporan diperiksa tersambung ke tabel di kedua database; sidebar menu lama menampilkan grup di dalam grup sebagai grup sendiri ("Warehouse › Report"). Data dummy laporan (`UatStockReportSeeder`) hanya di mockup.test, tanpa dokumen di periode akuntansi tertutup. |
 | 2026-10-03 | **B.16: Material Category = pembentuk KODE ITEM** (user: "Material category ini pembentuk KODE ITEM. IMPORTANT !!!!", disampaikan untuk ke-7 kalinya; acuan `docs/ddl/doc_rmprefix1.sql`). Rantai 5 tingkat, kode item = gabungan prefix tiap tingkat (`PCC02002`), layar = dropdown yang saling terkait seperti yang lama; daftar rata Level + Parent di v2 salah. Arti tiap tingkat berbeda per kategori, label layar Category 1 … 5. Rinci: `md_for_systems/matcategory_delta.md` §5. |
 | 2026-10-03 | B.3: sapuan multi-bahasa — sekitar 3.000 teks layar v2, pesan, objek DevLib, mockup-parts dan service kini English di kode + pasangan Indonesia di kamus (ddt + tm2); bahasa ikut akun user; pesan validasi Indonesia (`lang/id`); label menu English + kamus; penjaga `MultiLanguageRatchetTest` memakai kosakata 2.100 kata; status dan sisa keputusan di `docs/md_for_systems/multilanguage_status.md`. |

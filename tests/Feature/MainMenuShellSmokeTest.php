@@ -147,7 +147,11 @@ class MainMenuShellSmokeTest extends TestCase
         $this->assertSame('group', $securityGroup['menuType']);
 
         $this->assertSame(
-            ['Identifikasi', 'Language', 'Localization', 'Document Number Series', 'Constants', 'Constant Categories', 'Translation Dictionary', 'Dummy & Legacy Data', 'Menu Setup', 'Help Topics', 'Help Lines', 'DevLib UI UX'],
+            // 2026-10-03: daftar disamakan dengan tm2sys sekarang (Identification, Assistant Questions / Log, Opening Dashboards dkk
+            // ditambahkan sesi asisten dan opening board tanpa memperbarui daftar ini).
+            ['Identification', 'Language', 'Localization', 'Document Number Series', 'Constants', 'Constant Categories', 'Translation Dictionary', 'Dummy & Legacy Data', 'Menu Setup',
+                'Help Topics', 'Help Lines', 'Assistant Questions', 'DevLib UI UX', 'Opening Dashboards', 'Assistant Log', 'Opening Board Widgets', 'Opening Board Templates', 'KPI Targets',
+                'Daily Quotes'],
             collect($settingsGroup['children'])->pluck('label')->all()
         );
         $this->assertSame(

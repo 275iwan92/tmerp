@@ -3,7 +3,10 @@
 namespace App\Models\Inventory;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+// Periode inventory per bulan (i_period_code YYYYMM; OPEN | CLOSING | CLOSED). CLOSED = dokumen stok bertanggal di
+// dalamnya (atau sebelumnya) ditolak StockPostingService; koreksinya lewat Stock Adjustment di periode yang terbuka.
 class InvPeriod extends Model
 {
     protected $connection = 'tm2inv';
@@ -22,4 +25,12 @@ class InvPeriod extends Model
         'i_date_end' => 'date',
         'c_closed_at' => 'datetime',
     ];
+
+    // Hari terakhir periode CLOSED yang paling akhir; null = belum ada periode yang ditutup.
+    public static function closedThrough(): ?Carbon
+    {
+        $end = static::query()->where('i_status', 'CLOSED')->max('i_date_end');
+
+        return $end ? Carbon::parse($end)->endOfDay() : null;
+    }
 }
