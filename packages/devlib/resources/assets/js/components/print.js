@@ -111,7 +111,9 @@
       this.pages.appendChild(s); return s;
     }
 
-    fits(s) { const inner = $(s, '.dl-print__inner'); return inner.scrollHeight <= inner.clientHeight + 1; }
+    // Yang diukur = area isi (flex:1, menyusut mengikuti lembar), bukan lembarnya: isi yang meluber dari area itu menimpa
+    // kaki halaman dan margin bawah jauh sebelum lembarnya sendiri dianggap penuh.
+    fits(s) { const body = $(s, '[data-p-body]'); return body.scrollHeight <= body.clientHeight + 1; }
 
     build() {
       this.pages.innerHTML = '';
