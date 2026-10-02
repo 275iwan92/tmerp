@@ -31,7 +31,6 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 | ID | Pekerjaan | Status | Yang dibutuhkan untuk lanjut | Progres / catatan |
 |---|---|---|---|---|
 | UI-20 | Semua layar daftar v2 = turunan `DbGrid` (data DB, keluarga Grid Master/Transaksi/Report DevLib) | 🔵 BERJALAN | — | Selesai 2026-09-30: 13 HR, 15 Master/Produksi/COA/Pro-Cost/Product Market/Win-Rate, 3 laporan CO + General Report. 2026-10-02: + 25 (Inventory, WO, Outstanding, Recruitment), malam + 19 (lookup Master Data, laporan stok, Purchase Return, Support Tickets, Finance). Sisa: detail di bawah |
-| UI-03 | Setelan grid "compact": kerapatan baris + baris per sel | 🟡 SIAP | — | Tempatnya sudah ada: drawer Configuration → Grid ("segera") |
 | UI-16 | Grid spreadsheet: panah, multi-sel, tanda "berubah", undo | ⚪ IDE | — | `spreadsheetgridstandard.md` §8 |
 | UI-17 | Edit tampilan nota lewat GUI (WYSIWYG) | ⚪ IDE | — | `printnotastandard.md` §8 |
 
@@ -62,12 +61,4 @@ dibuang di server lewat `restrictedKeys()` + `SecUser::canViewSalesPrice()`.
 - Semua daftar v1 lain SELESAI 2026-10-02 (LOG): lookup Master Data, laporan stok, Purchase Return, Support Tickets, Finance (9 layar), Constants,
   Constant Categories, Account, Group, Talent Pool, BOP Rule, Product Category.
 - Migration `2026_09_30_000011` (field pengiriman CO) baru jalan di ddt*.
-
-### UI-03 — Grid compact (kerapatan + baris per sel)  🟡
-**Keputusan user 2026-10-02 (menggantikan sebagian keputusan 2026-09-22 di bawah):** (1) setelan cukup seperti yang terpasang --
-per grid, tersimpan di browser lewat tombol Kerapatan di toolbar grid; kolom `sec_user.grid_density` / `grid_lines` TIDAK dibangun.
-(2) Grid Pre-Entry tetap tanpa tombol Kerapatan. (3) Pintu kedua di menu Profile: MENUNGGU user melihat preview
-`docs/mockups/ui03_grid_door_preview.png` (A = tanpa pintu, B = halaman "Grid" di Profile v2 sebagai bawaan semua grid di browser).
-Catatan: tulisan "segera" hanya ada di drawer Configuration menu lama (v1); menu v2 tidak punya.
-Keputusan lengkap (2026-09-22): Rapat/Normal/Longgar + Otomatis/Tetap N; **satu setelan untuk semua grid, per USER** (kolom `sec_user.grid_density`, `sec_user.grid_lines`), **tanpa** deteksi resolusi otomatis. Dua pintu: drawer Configuration → Grid, dan panel cepat di toolbar grid. Gotcha: `line-clamp` jangan di `<td>` langsung. Mockup: `docs/mockups/grid_kerapatan_baris.jpg`.
 

@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Blade;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-// Menu profil 2026-09-23: jendela Configuration (Themes/Language/Grid segera)
-// + Aktivitas saya, dibuka sebagai drawer kanan. Tema/bahasa johiwan diubah lalu
+// Menu profil 2026-09-23: jendela Configuration (Themes/Language; bagian Grid dihapus
+// atas keputusan user 2026-10-02) + Aktivitas saya, dibuka sebagai drawer kanan. Tema/bahasa johiwan diubah lalu
 // dikembalikan PERSIS ke nilai yang direkam di awal (bukan nilai tebakan).
 class UserProfileWindowsTest extends TestCase
 {
@@ -35,10 +35,12 @@ class UserProfileWindowsTest extends TestCase
             $c->assertSee('Pastel')->assertSee('Hitam')->assertSee('Klasik');
             $this->assertCount(4, $c->instance()->themeMatrix()['rows']);
 
+            $this->assertSame(['themes', 'language'], array_keys($c->instance()->sections()));
             $c->call('setSection', 'language')->assertSee('English');
-            $c->call('setSection', 'grid')->assertSee('Kerapatan baris');
+            // Bagian yang tidak ada (termasuk 'grid' yang sudah dihapus) diabaikan.
+            $c->call('setSection', 'grid')->assertDontSee('Kerapatan baris');
             $c->call('setSection', 'nope');
-            $this->assertSame('grid', $c->get('section'));
+            $this->assertSame('language', $c->get('section'));
 
             $target = $origTheme === 'dark_green' ? 'pastel_blue' : 'dark_green';
             $c->call('setTheme', $target);

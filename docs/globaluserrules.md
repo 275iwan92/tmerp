@@ -286,6 +286,10 @@
       Manual), Pro-Cost (New / Revise / Recalc), HR / Payroll (kode pegawai + nama), Recruitment, Rule Library, Setting Approval,
       Maintenance (WO: Expand suku cadang; Plan: Expand tugas). Grid tanpa item hanya memakai persegi, tanpa Expand.
       Daftar master (Master Product, Master Card Collection, ACC Digital) dan Material Planning tidak diubah.
+29. **Kerapatan grid cukup per grid — user 2026-10-02.** Kerapatan baris (Compact / Normal / Comfortable) dan baris per sel
+    diatur lewat tombol **Density** di toolbar tiap grid dan tersimpan di browser untuk grid itu. **Tidak ada** setelan kerapatan
+    per user di database, **tidak ada** pintu kedua di menu Profile / drawer Configuration, dan Grid Pre-Entry tetap tanpa tombol
+    Density. Menggantikan rencana 2026-09-22 (satu setelan per user + pintu Configuration → Grid).
 
 ## D. Cara kerja developer / agen
 
@@ -362,3 +366,4 @@
 | 2026-10-02 | A.20: CO direct ada dua macam (repeat tanpa perubahan / percepatan Direksi); "back process" percepatan belum diputuskan. |
 | 2026-10-02 | C.24: cetakan baru dipasang dengan objek yang sama, **belum A** (menunggu koreksi user): Sales Invoice / Down Payment Invoice, bukti kas / bank (Payment Voucher), Surat Jalan Subkon. Contoh hasil aplikasi di `docs/mockups/print_doc/app/`. |
 | 2026-10-02 | **A.16 diganti:** semua jenis CO boleh di-Post to Production asal Confirmed + approved; costing published tidak disyaratkan; product tanpa Inquiry mendapat WO sederhana (tanpa routing / bahan). |
+| 2026-10-02 | C.29: kerapatan grid cukup per grid lewat tombol Density (tersimpan di browser); rencana setelan per user + pintu Configuration → Grid dibatalkan, bagian "Grid (segera)" di drawer Configuration menu lama dihapus. |

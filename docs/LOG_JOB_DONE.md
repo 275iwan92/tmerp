@@ -3,6 +3,18 @@
 
 ---
 
+## 2026-10-02 -- UI-03 ditutup: kerapatan grid cukup per grid, pintu "Grid (segera)" dihapus
+
+Keputusan user 2026-10-02 (rulebook C.29), setelah melihat preview: (1) kerapatan cukup seperti yang terpasang -- tombol Density
+di toolbar tiap grid, tersimpan di browser; (2) Grid Pre-Entry tetap tanpa tombol itu; (3) pilihan A -- tidak ada pintu kedua.
+- Dihapus: bagian **Grid ("segera")** di drawer Configuration menu lama (`App\Livewire\Shell\UserConfiguration::sections()`,
+  blok di `livewire/shell/user-configuration.blade.php`, tanda "segera" di navigasinya, CSS `.tm-cfg-soon` / `.tm-cfg-soonbox`).
+  Tidak ada kolom `sec_user.grid_density` / `grid_lines` dan tidak ada baris terjemahan `shell_cfg_grid*` di ddtsys / tm2sys
+  (dicek), jadi tidak ada migrasi. Menu v2 memang tidak pernah punya pintu ini.
+- Mockup rencana lama `docs/mockups/grid_kerapatan_baris.{html,jpg}` dan preview `ui03_grid_door_preview.png` dipindah ke
+  `C:\Users\iwanp\tmerp_unused\` (MANIFEST). UI-03 dihapus dari backlog01.
+- Test `UserProfileWindowsTest` disesuaikan (bagian = Themes, Language); `npm run build` dijalankan.
+
 ## 2026-10-02 (siang, lanjutan ke-2) -- Bahasa: teks JS DevLib, label / nilai grid v2, 46 label layar; pemilih kontak e-mail
 
 Lanjutan perintah "semua di backlog yang bisa dikerjakan". Semua di `main`, sudah di-push. Tidak ada perubahan alur / data bisnis:
@@ -82,7 +94,7 @@ Semua backlog (01-10) dibaca; yang butuh keputusan user tidak disentuh (daftar d
   - 25 akun aktif pada pegawai nonaktif: dinonaktifkan? (daftarnya: `php artisan data:audit --only=identity`)
   - Surat Jalan Subkon: kapan dokumen dianggap Closed (saat barang kembali di Penerimaan dari Subkon?) -- sekarang berhenti di Confirmed.
   - Format cetak belum A: Sales Invoice, Payment Voucher, Surat Jalan Subkon (+ Purchase Quotation, Bukti Kas Kecil dari malam).
-  - UI-03 (kerapatan grid) vs keputusan Grid Pre-Entry 30-Sep; dummy stok (menunggu desain gudang K1-K11); usul kasbon satu baris.
+  - Dummy stok (menunggu desain gudang K1-K11); usul kasbon satu baris. (UI-03 kerapatan grid: diputuskan 2026-10-02, lihat entri teratas.)
   - Butuh keputusan / data nyata: spek & tarif mesin (27), peran part / material role (28), uang roti & tarif lembur payroll (06),
     jurnal payroll & COGS saat DO (07), sistem laporan manajemen (08), arah mobile (10), chat v2, Maintenance M2 / M3.
   - (Tujuan e-mail dari kontak dan teks JS DevLib: selesai di entri "siang, lanjutan ke-2" di atas.)

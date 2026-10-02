@@ -13,8 +13,8 @@ use Livewire\Component;
 // Isi drawer "Configuration" di menu profil (permintaan user 2026-09-23):
 // pengaturan MILIK TIAP USER (semua user), terpisah dari pengaturan tingkat
 // aplikasi yang tetap di grup Settings sidebar kiri bawah (khusus admin).
-// Bagian baru (mis. kerapatan grid, backlog01 §22.3) = tambah entri sections()
-// + satu blok @if di view.
+// Bagian baru = tambah entri sections() + satu blok @if di view.
+// Kerapatan grid TIDAK di sini (keputusan user 2026-10-02): cukup tombol Kerapatan di toolbar tiap grid.
 class UserConfiguration extends Component
 {
     public string $section = 'themes';
@@ -22,9 +22,8 @@ class UserConfiguration extends Component
     public function sections(): array
     {
         return [
-            'themes' => ['label' => Translator::t('shell_cfg_themes', 'Themes'), 'icon' => 'fa-solid fa-palette', 'soon' => false],
-            'language' => ['label' => Translator::t('shell_cfg_language', 'Language'), 'icon' => 'fa-solid fa-language', 'soon' => false],
-            'grid' => ['label' => Translator::t('shell_cfg_grid', 'Grid'), 'icon' => 'fa-solid fa-table-cells', 'soon' => true],
+            'themes' => ['label' => Translator::t('shell_cfg_themes', 'Themes'), 'icon' => 'fa-solid fa-palette'],
+            'language' => ['label' => Translator::t('shell_cfg_language', 'Language'), 'icon' => 'fa-solid fa-language'],
         ];
     }
 

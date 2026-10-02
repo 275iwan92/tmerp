@@ -8,7 +8,6 @@
             <button type="button" wire:key="cfg-nav-{{ $key }}" wire:click="setSection('{{ $key }}')"
                 class="tm-cfg-nav-item {{ $section === $key ? 'on' : '' }}">
                 <i class="{{ $s['icon'] }}"></i><span>{{ $s['label'] }}</span>
-                @if ($s['soon'])<em>{{ Translator::t('shell_cfg_soon', 'segera') }}</em>@endif
             </button>
         @endforeach
     </nav>
@@ -63,17 +62,6 @@
                         @if ($lang['code'] === $this->currentLangCode())<i class="fa-solid fa-circle-check"></i>@endif
                     </button>
                 @endforeach
-            </div>
-        @endif
-
-        @if ($section === 'grid')
-            <h4>{{ Translator::t('shell_cfg_grid', 'Grid') }} <em class="tm-cfg-soon">{{ Translator::t('shell_cfg_soon', 'segera') }}</em></h4>
-            <p class="tm-cfg-hint">{{ Translator::t('shell_cfg_grid_hint', 'Rencana: satu setelan tampilan tabel untuk semua grid, tersimpan di akun Anda. Belum aktif — pratinjau saja.') }}</p>
-            <div class="tm-cfg-soonbox">
-                <div class="lbl">{{ Translator::t('shell_cfg_grid_density', 'Kerapatan baris') }}</div>
-                <div class="opts"><span>Rapat</span><span class="on">Normal</span><span>Longgar</span></div>
-                <div class="lbl">{{ Translator::t('shell_cfg_grid_lines', 'Baris per sel') }}</div>
-                <div class="opts"><span>Otomatis</span><span class="on">Tetap 1</span></div>
             </div>
         @endif
     </section>
