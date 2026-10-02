@@ -264,3 +264,24 @@ saya beri catatan letak, isi §6 tidak saya ubah.
 6. **Isian bebas → lookup**: satuan, syarat bayar, proses, lokasi rak, kontak customer.
 7. Daftar pilihan yang ditulis mati (D.5) → tabel + Grid Lookup, mulai dari yang mempengaruhi laporan (sebab janji
    meleset di POD memakai `co_delay_reason`).
+
+---
+
+## G. Tindak lanjut 2026-10-02 (urutan F disetujui user: "setuju selama itu yang terbaik dan tidak menjadikan problem baru")
+
+| Butir | Status | Yang dikerjakan |
+|---|---|---|
+| B.1 #1 Change password | **selesai** (ddt + tm2) | Dialog benar-benar mengganti password: password lama dicek, baru minimal 8 huruf + konfirmasi, aturan `PasswordResetService` (tidak boleh sama dengan password default). |
+| B.1 #2 Edit profil | **selesai** | Nama, e-mail, No. telepon tersimpan ke `sec_user` (aturan sama dengan menu lama); e-mail berubah = verifikasi diulang. Telepon contoh dan tombol "Ubah foto" (tidak berfungsi) dihilangkan dari situs ERP; Jabatan dari struktur organisasi. |
+| C.1 #1 Notifikasi | **selesai** | Laci membaca `sys_notifications` milik user (30 terbaru), klik = ditandai dibaca + membuka tautannya sebagai tab, "Tandai semua terbaca" tersimpan. Kosong = "Tidak ada notifikasi". |
+| B.1 #3 / C.1 #2 Chat | **selesai oleh sesi lain** | Chat antar user (rulebook C.31) menggantikan data contoh. |
+| B.1 #4 tema / bahasa per browser | belum | Menunggu keputusan: tetap per browser atau disimpan di akun. |
+| B.2 #5 + C.3 PPN Customer Order | **selesai** | `CoOrder::totals()`: Non PPN = PPN 0; tarif PPN dan PPh 23 dari Settings → Constants (`PPN`, `PPH23_JASA`). Kedua situs belum punya CO Non PPN, jadi angka dokumen lama tidak berubah. |
+| C.3 PPN Quotation | **selesai** | `QuoQuotation::totals()` + label pilihan Tax scheme memakai konstanta `PPN`. |
+| B.2 #6 Inquiry Revise (dimensi terpotong) | **menunggu OK user** | Preview sebelum → sesudah sudah diberikan (zona beku). Pola yang sama ada di ProDev tab Part & Dieline, isian tampil "Qty per Pack" (400 tampil 4), ikut dalam preview. |
+| D.2 Sales Person, Payment Terms, Department | **selesai** (ddt + tm2) | Tiga Grid Lookup baru: Master Data › Sales Person, Master Data › Payment Terms, Human Resources › Organization › Department; masing-masing punya Help. Model `FinPaymentTerm` memakai PK `id_payment_term`. |
+| D.2 lainnya (Division, Level, Tax Scheme, Customer Category, Payroll, Finance, Recruitment, ...) | belum | Lanjutan berikutnya, pola yang sama. Tabel tarif Pro-Cost perlu izin (zona beku). |
+| C.2 Laporan Manajemen, D.5, D.6 | belum | — |
+
+Diuji: tiga layar baru dan menu akun dicoba di database dummy di dalam transaksi yang dibatalkan (tidak meninggalkan data),
+dialog dijalankan di Chrome headless dengan jaringan tiruan, 18 layar terkait dibuka (GET) = 200, test `SalesDocumentTaxTest`.
