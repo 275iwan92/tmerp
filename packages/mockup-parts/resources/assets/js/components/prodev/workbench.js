@@ -7,7 +7,9 @@
      uploadArtwork(): upload artwork job aktif (tmerp: Livewire WithFileUploads) */
 (function (Devlib) {
   'use strict';
-  const _t = Devlib.h.t;   // kamus aplikasi (tulis English)
+  // Kamus aplikasi (tulis English; kunci sama dengan layar v1 pages/production/prodev). _tf = dengan isian :nama.
+  const _t = Devlib.h.t;
+  const _tf = (s, r) => { let x = _t(s); Object.keys(r).forEach(k => { x = x.split(':' + k).join(r[k]); }); return x; };
 
   class ProdevWorkbench extends Devlib.Component {
     static selector = '[data-mp-prodev]';
@@ -119,7 +121,7 @@
           // Alasan spesifik dari server (mis. part belum punya dimensi dieline)
           // lebih berguna daripada pesan umum -- jangan biarkan layar diam.
           box.textContent = DATA.jobIssue
-              || _t('Master data is incomplete: needs at least 1 part with dimensions, 1 printing machine and 1 active plano size.');
+              || _t('Master data is incomplete: needs at least 1 part with dimensions, 1 printing machine, and 1 active plano size.');
           return;
       }
 
@@ -216,9 +218,9 @@
       async function persist(confirm) {
           const w = wire();
 
-          if (!w) { msg(_t('The component is not ready yet, try again in a moment.'), 'bad'); return; }
+          if (!w) { msg(_t('The component is not ready yet, try again shortly.'), 'bad'); return; }
           if (!S.p.partId) { msg(_t('A demo job cannot be saved — choose a real job from the Part list.'), 'bad'); return; }
-          if (!ok()) { msg(_t('The canvas is still outside the machine limits — fix it before saving.'), 'bad'); return; }
+          if (!ok()) { msg(_t('The canvas is still outside the machine limits — fix it first before saving.'), 'bad'); return; }
 
           const btn = confirm ? $('confirm') : $('save');
           const label = btn.innerHTML;   // tombol DevLib berisi ikon + label
@@ -252,13 +254,12 @@
               }
 
               if (res.costingUrl) {
-                  msg(_t('Layout CONFIRMED') + ' (' + res.mastercardCode + ') — ' + _t('opening Product Costing…'), 'ok');
+                  msg(_tf('Layout CONFIRMED (:code) — opening Product Costing…', { code: res.mastercardCode }), 'ok');
                   window.location.href = res.costingUrl;
                   return;
               }
 
-              msg(_t('Layout CONFIRMED') + ' (' + res.mastercardCode + '). '
-                  + _t('This job is Mode #2 (no Inquiry), so there is no Product Costing screen to go to yet.'), 'ok');
+              msg(_tf('Layout CONFIRMED (:code). This job is Mode #2 (without Inquiry), so there is no Product Costing screen to go to yet.', { code: res.mastercardCode }), 'ok');
           } catch (e) {
               msg(_t('Failed to save:') + ' ' + (e && e.message ? e.message : e), 'bad');
           } finally {
@@ -720,9 +721,9 @@
 
               const stepX = Math.max(1, Math.round(M0.w / 16)), stepY = Math.max(1, Math.round(M0.h / 16));
               for (let sx = 0; sx < M0.w; sx += stepX)
-                  cfgs.push({ kind: 'row', M0, M1, r: b, s: sx, label: _t('Interlock between rows (180°)') + (sx ? ' ' + _t('shifted') + ' ' + Math.round(sx / M0.w * 100) + '%' : '') + tag });
+                  cfgs.push({ kind: 'row', M0, M1, r: b, s: sx, label: _t('Interlock between rows (180°)') + (sx ? ' ' + _t('shift') + ' ' + Math.round(sx / M0.w * 100) + '%' : '') + tag });
               for (let sy = 0; sy < M0.h; sy += stepY)
-                  cfgs.push({ kind: 'col', M0, M1, r: b, s: sy, label: _t('Interlock between columns (180°)') + (sy ? ' ' + _t('shifted') + ' ' + Math.round(sy / M0.h * 100) + '%' : '') + tag });
+                  cfgs.push({ kind: 'col', M0, M1, r: b, s: sy, label: _t('Interlock between columns (180°)') + (sy ? ' ' + _t('shift') + ' ' + Math.round(sy / M0.h * 100) + '%' : '') + tag });
           }
 
           return cfgs;
@@ -856,10 +857,10 @@
               if (win) applyPlacements(win.placements, win.label, marg, grip);
 
               const sesudah = hasilPerPlano();
-              $('suggestNote').textContent = 'Canvas ' + S.L + ' × ' + S.W + ' cm (' + _t('plano divided') + ' ' + best.nc + ' × ' + best.nr + ')'
+              $('suggestNote').textContent = _tf('Canvas :l × :w cm (plano divided :nc × :nr)', { l: S.L, w: S.W, nc: best.nc, nr: best.nr })
                   + ' · plano ' + S.pl[0] + ' · ' + (win ? win.up : best.up) + ' up/canvas.';
               msg(_t('Material optimization:') + ' ' + S.pl[0] + ', canvas ' + S.L + ' × ' + S.W + ' cm, ' + (win ? win.label : best.label)
-                  + ' → ' + sesudah + ' pcs/plano (' + best.perPc.toFixed(1) + ' ' + _t('cm² material per pcs') + ')'
+                  + ' → ' + sesudah + ' pcs/plano (' + _tf(':a cm² of material per pcs', { a: best.perPc.toFixed(1) }) + ')'
                   + (sebelum && sesudah > sebelum ? ' · ' + _t('previously') + ' ' + sebelum + ' pcs/plano' : ''), 'ok');
           } catch (e) {
               msg(_t('Optimization failed:') + ' ' + (e && e.message ? e.message : e), 'bad');
@@ -885,9 +886,9 @@
       // hemat, dropdown memang tidak berubah dan officer mengira tidak jalan.
       function pickBestPlano() {
           const lama = S.pl[0], i = bestPlanoIndex();
-          if (i < 0) return _t('no standard plano fits canvas') + ' ' + S.L + ' × ' + S.W + ' cm';
+          if (i < 0) return _tf('no standard plano fits the canvas :l × :w cm', { l: S.L, w: S.W });
           S.pl = planos[i]; $('plano').value = String(i);
-          return lama === S.pl[0] ? _t('plano unchanged') + ' ' + S.pl[0] + ' (' + _t('already the most economical') + ')' : _t('plano changed') + ' ' + lama + ' → ' + S.pl[0];
+          return lama === S.pl[0] ? _tf('plano stays :p (already the most economical)', { p: S.pl[0] }) : _tf('plano changed :old → :new', { old: lama, new: S.pl[0] });
       }
 
       function hasilPerPlano() {
@@ -912,7 +913,7 @@
 
       async function autoNest(silent) {
           if (!ok()) {
-              if (!silent) msg(_t('The canvas is still outside the machine limits — fix it before auto nesting.'), 'bad');
+              if (!silent) msg(_t('The canvas is still outside the machine limits — fix it first before auto nesting.'), 'bad');
               return;
           }
 
@@ -925,7 +926,7 @@
               const best = bestLattice(patternConfigs(base), Math.round(S.L * 10), Math.round(S.W * 10), gap, true);
 
               if (!best) {
-                  if (!silent) msg(_t('Auto nesting found no layout that fits this canvas.'), 'bad');
+                  if (!silent) msg(_t('Auto nesting found no arrangement that fits this canvas.'), 'bad');
                   return;
               }
 
@@ -933,9 +934,9 @@
 
               const gain = best.plainBest ? Math.round((best.up - best.plainBest) / best.plainBest * 100) : 0;
               msg(_t('Auto nesting:') + ' ' + best.label + ' → ' + best.up + ' up'
-                  + (gain > 0 ? ' (+' + gain + '% ' + _t('vs standard grid') + ', ' + (best.up - best.plainBest) + ' ' + _t('more ups') + ')'
-                      : ' (' + _t('the standard grid is already the densest for this shape') + ')')
-                  + (best.ditolak ? ' · ' + best.ditolak + ' ' + _t('patterns rejected because they still collide') : '')
+                  + ' (' + (gain > 0 ? _tf('+:g% vs standard grid, :n more ups', { g: gain, n: best.up - best.plainBest })
+                      : _t('the standard grid is already the densest for this shape')) + ')'
+                  + (best.ditolak ? ' · ' + _tf(':n patterns rejected because they still collide', { n: best.ditolak }) : '')
                   + (base.shaped ? '' : ' · ' + _t('this type has no dieline yet, calculated as a plain box')), 'ok');
           } catch (e) {
               if (!silent) msg(_t('Auto nesting failed:') + ' ' + (e && e.message ? e.message : e), 'bad');
@@ -1122,7 +1123,7 @@
                   if (url) URL.revokeObjectURL(url);
                   try { resolve(cx.getImageData(0, 0, W, H)); } catch (e) { reject(e); }
               };
-              img.onerror = () => { if (url) URL.revokeObjectURL(url); reject(new Error(_t('artwork cannot be read'))); };
+              img.onerror = () => { if (url) URL.revokeObjectURL(url); reject(new Error(_t('the artwork cannot be read'))); };
               if (p.artworkUrl) { img.src = p.artworkUrl; return; }
               // Garis potong/lipat bukan tinta -- disembunyikan saat dianalisa.
               const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">'
@@ -1253,27 +1254,27 @@
               + ' <b style="margin-left:10px">' + tx('Qty / pack:') + '</b> ' + esc(sp.inputs.packQty || '—') + '</div>';
 
           if (ed) {
-              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>#</th><th>' + tx('Process') + '</th><th>' + tx('Label in Routing') + '</th><th>' + tx('Machine') + '</th>'
-                  + '<th>' + tx('Target / hour') + '</th><th>' + tx('Waste %') + '</th><th>' + tx('Tolerance %') + '</th><th>' + tx('Subcontract to') + '</th><th></th></tr>'
+              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>#</th><th>' + tx('Process') + '</th><th>' + tx('Label in routing') + '</th><th>' + tx('Machine') + '</th>'
+                  + '<th>' + tx('Target / hour') + '</th><th>' + tx('Waste %') + '</th><th>' + tx('Tolerance %') + '</th><th>' + tx('Subcon to') + '</th><th></th></tr>'
                   + raw.map((r, i) => '<tr><td>' + (i + 1) + '</td>'
-                      + '<td><select' + field('bop', i, 'process_id', '') + '>' + opts(LK.processes, r.process_id, _t('— process —')) + '</select></td>'
+                      + '<td><select' + field('bop', i, 'process_id', '') + '>' + opts(LK.processes, r.process_id, '— ' + _t('process') + ' —') + '</select></td>'
                       + '<td><input' + field('bop', i, 'label', r.label) + '></td>'
-                      + '<td><select' + field('bop', i, 'machine_id', '') + '>' + opts(LK.machines, r.machine_id, _t('— no machine —')) + '</select></td>'
+                      + '<td><select' + field('bop', i, 'machine_id', '') + '>' + opts(LK.machines, r.machine_id, '— ' + _t('no machine') + ' —') + '</select></td>'
                       + '<td><input type="number" min="0" step="1"' + field('bop', i, 'target_qty_per_hour', r.target_qty_per_hour) + '></td>'
                       + '<td><input type="number" min="0" max="100" step="0.1"' + field('bop', i, 'waste_pct', r.waste_pct) + '></td>'
                       + '<td><input type="number" min="0" max="100" step="0.1"' + field('bop', i, 'tolerance_pct', r.tolerance_pct) + '></td>'
-                      + '<td><select' + field('bop', i, 'subcon_supplier_id', '') + '>' + opts(LK.subcons, r.subcon_supplier_id, _t('— in-house —')) + '</select></td>'
+                      + '<td><select' + field('bop', i, 'subcon_supplier_id', '') + '>' + opts(LK.subcons, r.subcon_supplier_id, '— ' + _t('in-house') + ' —') + '</select></td>'
                       + '<td class="io-nowrap"><button type="button" class="io-ibtn" data-act="up" data-sec="bop" data-i="' + i + '" title="' + tx('Move up') + '">▲</button>'
                       + '<button type="button" class="io-ibtn" data-act="down" data-sec="bop" data-i="' + i + '" title="' + tx('Move down') + '">▼</button>'
-                      + '<button type="button" class="io-ibtn bad" data-act="del" data-sec="bop" data-i="' + i + '" title="' + tx('Remove') + '">✕</button></td></tr>').join('')
-                  + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bop">＋ ' + tx('Add Step') + '</button>';
+                      + '<button type="button" class="io-ibtn bad" data-act="del" data-sec="bop" data-i="' + i + '" title="' + tx('Delete') + '">✕</button></td></tr>').join('')
+                  + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bop">＋ ' + tx('Add step') + '</button>';
           } else if (rows.length) {
               h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>#</th><th>' + tx('Work Sequence') + '</th><th>' + tx('Machine') + '</th><th>' + tx('Default target') + '</th>'
-                  + '<th>' + tx('Qty in') + '</th><th>' + tx('Waste') + '</th><th>' + tx('Tolerance %') + '</th><th>' + tx('Est. hours') + '</th><th>' + tx('Subcontract') + '</th></tr>'
+                  + '<th>' + tx('Qty in') + '</th><th>' + tx('Waste') + '</th><th>' + tx('Tolerance') + '</th><th>' + tx('Est. hours') + '</th><th>' + tx('Subcon') + '</th></tr>'
                   + rows.map((r, i) => '<tr><td>' + (i + 1) + '</td><td><b>' + esc(r.label) + '</b>'
                       + (r.note ? '<div class="io-sub">' + esc(r.note) + '</div>' : '') + '</td>'
                       + '<td>' + esc(r.machine || '—') + '</td>'
-                      + '<td>' + (r.target_qty_per_hour ? fmtAngka(r.target_qty_per_hour) + ' ' + esc(r.uom || '') + tx('/hour')
+                      + '<td>' + (r.target_qty_per_hour ? fmtAngka(r.target_qty_per_hour) + ' ' + esc(r.uom || '') + '/' + tx('hour')
                           + '<div class="io-sub">' + esc(r.target_source || '') + '</div>' : '<span class="io-sub">' + tx('none yet') + '</span>') + '</td>'
                       + '<td>' + qty(r, r.qty_in) + '</td>'
                       + '<td>' + fmtAngka(r.waste_pct ?? 0) + '%<div class="io-sub">' + qty(r, r.qty_waste) + '</div></td>'
@@ -1283,7 +1284,7 @@
                           ? (r.subcon_supplier ? '<div class="io-sub">' + esc(r.subcon_supplier) + '</div>' : '')
                             + (r.subcon_pr ? '<div class="io-sub">' + esc(r.subcon_pr) + '</div>' : '')
                             + (r.subcon_do ? '<div class="io-sub">' + esc(r.subcon_do) + '</div>' : '')
-                            + '<button type="button" class="io-mbtn warn" data-act="subcon" data-i="' + i + '">⇄ ' + tx('Subcontract') + '</button>'
+                            + '<button type="button" class="io-mbtn warn" data-act="subcon" data-i="' + i + '">⇄ ' + tx('Subcon') + '</button>'
                           : '<span class="io-sub">' + tx('in-house') + '</span>') + '</td></tr>').join('')
                   + '</table></div>';
           } else {
@@ -1297,15 +1298,15 @@
 
       function subconDialog(p, r) {
           const co = p.coOptions || [];
-          return '<div class="io-dialog"><b>' + tx('Subcontract:') + ' ' + esc(r.label) + '</b>'
-              + '<div class="io-sub">' + tx('Qty sent:') + ' ' + fmtAngka(r.qty_in) + ' ' + esc(r.uom || '') + ' · ' + tx('Subcontract PR is created as DRAFT (through PR approval).') + '</div>'
+          return '<div class="io-dialog"><b>' + tx('Subcon') + ': ' + esc(r.label) + '</b>'
+              + '<div class="io-sub">' + tx('Qty sent:') + ' ' + fmtAngka(r.qty_in) + ' ' + esc(r.uom || '') + ' · ' + tx('subcon PR is created as DRAFT (through PR approval).') + '</div>'
               + '<div class="io-row3">'
-              + '<label>' + tx('Subcontract supplier') + '<select id="io-sc-sup">' + opts(LK.subcons, r.subcon_supplier_id, _t('— choose supplier —')) + '</select></label>'
-              + '<label>' + tx('CO (required for the delivery note)') + '<select id="io-sc-co">' + opts(co.map(c => ({ id: c.id, name: c.label })), '', co.length ? _t('— choose CO —') : _t('— no CO for this Inquiry yet —')) + '</select></label>'
-              + '<label>' + tx('Dispatch date') + '<input type="date" id="io-sc-date"></label>'
+              + '<label>' + tx('Subcon supplier') + '<select id="io-sc-sup">' + opts(LK.subcons, r.subcon_supplier_id, '— ' + _t('choose supplier') + ' —') + '</select></label>'
+              + '<label>' + tx('CO (required for the delivery note)') + '<select id="io-sc-co">' + opts(co.map(c => ({ id: c.id, name: c.label })), '', co.length ? '— ' + _t('choose CO') + ' —' : '— ' + _t('no CO for this Inquiry yet') + ' —') + '</select></label>'
+              + '<label>' + tx('Send date') + '<input type="date" id="io-sc-date"></label>'
               + '<label>' + tx('Estimated cost (Rp)') + '<input type="number" min="0" id="io-sc-cost"></label>'
-              + '</div><div class="io-sub">' + tx('Without a CO: the subcontract PR is still created, the delivery note follows once the CO is issued (click Subcontract again).') + '</div>'
-              + '<div style="margin-top:8px"><button type="button" class="io-mbtn on" data-act="subcon-go">' + tx('Process Subcontract') + '</button> '
+              + '</div><div class="io-sub">' + tx('Without CO: the subcon PR is still created, the delivery note follows once the CO is issued (click Subcon again).') + '</div>'
+              + '<div style="margin-top:8px"><button type="button" class="io-mbtn on" data-act="subcon-go">' + tx('Process Subcon') + '</button> '
               + '<button type="button" class="io-mbtn" data-act="subcon-cancel">' + tx('Cancel') + '</button></div></div>';
       }
 
@@ -1313,10 +1314,10 @@
           const rows = rowsOf(p, 'bom'), ed = p.editing.bom, raw = p.edit.bom || [];
           let h = tools(p, 'bom')
               + '<div class="io-inputs"><b>' + tx('Qty order:') + '</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
-              + ' <b style="margin-left:10px">' + tx('Print sheets needed:') + '</b> ' + (sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' ' + tx('sheets (including waste & BOP tolerance)') : '—') + '</div>';
+              + ' <b style="margin-left:10px">' + tx('Print sheets needed:') + '</b> ' + (sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' ' + tx('sheets (including BOP waste & tolerance)') : '—') + '</div>';
 
           if (ed) {
-              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>' + tx('BOM role') + '</th><th>' + tx('Material') + '</th><th>' + tx('Grammage') + '</th><th>' + tx('L (cm)') + '</th><th>' + tx('W (cm)') + '</th>'
+              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>' + tx('Role') + '</th><th>' + tx('Material') + '</th><th>' + tx('Grammage') + '</th><th>' + tx('Len. (cm)') + '</th><th>' + tx('Wid. (cm)') + '</th>'
                   + '<th>' + tx('Qty / sheet') + '</th><th>' + tx('Unit') + '</th><th>' + tx('Requirement') + '</th><th></th></tr>'
                   + raw.map((r, i) => {
                       const c = rows[i] || {};
@@ -1329,11 +1330,11 @@
                           + '<td><input type="number" min="0" step="any"' + field('bom', i, 'qty_per_sheet', r.qty_per_sheet) + '></td>'
                           + '<td><select' + field('bom', i, 'uom', '') + '>' + optsTxt(LK.uoms, r.uom) + '</select></td>'
                           + '<td>' + (c.qty_need !== undefined && c.qty_need !== null ? fmtAngka(c.qty_need) + ' ' + esc(c.uom || '') : '—') + '</td>'
-                          + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="bom" data-i="' + i + '" title="' + tx('Remove') + '">✕</button></td></tr>';
+                          + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="bom" data-i="' + i + '" title="' + tx('Delete') + '">✕</button></td></tr>';
                   }).join('')
                   + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bom">＋ ' + tx('Add material') + '</button>';
           } else if (rows.length) {
-              h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>' + tx('BOM role') + '</th><th>' + tx('Material') + '</th><th>' + tx('Brand') + '</th><th>' + tx('Specification') + '</th><th>' + tx('Per print sheet') + '</th>'
+              h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>' + tx('Role') + '</th><th>' + tx('Material') + '</th><th>' + tx('Brand') + '</th><th>' + tx('Specification') + '</th><th>' + tx('Per print sheet') + '</th>'
                   + '<th>' + tx('Qty required') + '</th><th>' + tx('Available stock (warehouse)') + '</th><th>' + tx('Status') + '</th><th></th></tr>'
                   + rows.map((r, i) => {
                       const spec = [r.gsm ? fmtAngka(r.gsm) + ' gsm' : '', r.size_p ? fmtAngka(r.size_p) + (r.size_l ? ' × ' + fmtAngka(r.size_l) : '') + ' cm' : ''].filter(Boolean).join(' · ');
