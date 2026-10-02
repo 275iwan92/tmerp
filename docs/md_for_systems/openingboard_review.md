@@ -236,7 +236,7 @@ Hak:
 | Capacity Load, Machine Load | 42 mesin punya jam per shift | **"jam per shift belum diisi"** — 45 mesin proses di tm2 belum punya jam per shift dan shift per hari (data nyata, diisi di Master Mesin) |
 | Target vs Result | contoh: target 3.000, hasil 750 | target dari Work Order contoh; hasil 0 sampai produksi mencatat output |
 | SOP, Work Instructions | 3 + 3 dokumen contoh | kosong — belum ada dokumen yang didaftarkan |
-| My Job Description | "belum diisi" (1 dari 111 jabatan terisi) | sama |
+| My Job Description | **General Manager terisi** (draf 2026-10-02, 2 dari 111 jabatan terisi) | teksnya sudah ada di jabatan General Manager, tetapi widget menampilkan "akun belum terhubung ke jabatan" — akun johiwan belum ditautkan ke data pegawai di tm2 |
 | Open Complaints | 3 komplain contoh | kosong — belum ada komplain yang terbuka di tm2 |
 | Jabatan di salam | General Manager | kosong untuk akun johiwan (belum terhubung ke data pegawai di tm2) |
 
@@ -250,10 +250,12 @@ Hak:
    yang ditetapkan manajemen per bulan (seperti target penjualan), perlu satu kunci target baru di Setup → KPI Targets.
 3. **Work Instruction** sekarang berupa teks (seperti SOP). Belum ada: langkah bergambar, lampiran file, kaitan ke proses /
    mesin, tanda "sudah dibaca" per pegawai.
-4. **Jabatan lain** (bukan top management) belum punya layar pembuka baru.
-5. Widget dari referensi yang belum bisa dibuat karena datanya belum ada: estimasi vs biaya nyata per job, OEE dan scrap %,
+4. **Job Description General Manager** = draf yang saya susun dari bagan pimpinan; mohon dikoreksi di Human Resources → Master
+   Posisi. 109 jabatan lain masih kosong (diisi HR). **Akun johiwan di tm2** belum ditautkan ke pegawai — perlu izin Anda.
+5. **Jabatan lain** (bukan top management) belum punya layar pembuka baru.
+6. Widget dari referensi yang belum bisa dibuat karena datanya belum ada: estimasi vs biaya nyata per job, OEE dan scrap %,
    DSO / DPO, proyeksi arus kas, barang diterima belum ditagih — rinciannya di `openingboard_references.md`.
-6. **Layar HP:** papan satu kolom di layar sempit; laci menu untuk HP belum dipasang.
+7. **Layar HP:** papan satu kolom di layar sempit; laci menu untuk HP belum dipasang.
 
 ---
 

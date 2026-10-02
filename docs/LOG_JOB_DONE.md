@@ -32,6 +32,12 @@ result, capacity planning".
   `openingboard_references.md`, pedoman C.33, Help (panduan + SOP & Work Instruction), gambar `docs/mockups/opening_board_app/11`–`14`.
 - Belum: jam per shift 45 mesin di tm2 (data nyata, menunggu user), target produksi dari manajemen, WI bergambar / lampiran.
 - Baseline dummy 2026-10-02 19:33:33 sudah memuat kolom `doc_type` dan dokumen contoh (`ddt:baseline check` = tanpa perubahan).
+- **Job Description General Manager** (user, melihat widget kosong: "build for me"): migrasi `2026_10_02_000165` mengisi
+  `org_position.job_description` jabatan `GENERALMANAGER` di ddt + tm2, **hanya bila masih kosong** (teks HR tidak ditimpa),
+  `job_description_updated_by = 'claude (draft)'`. Isi disusun dari bagan pimpinan 2026-09-28 (atasan Presiden Direktur, bawahan
+  Operational Manager; Finance & Accounting dan Product Costing di luar jabatan ini) — **draf, menunggu koreksi user**; diubah di
+  Human Resources → Master Posisi. Baseline dummy disimpan ulang 19:49:49. Di tm2 widget masih "akun belum terhubung ke jabatan"
+  karena `sec_user` johiwan belum ditautkan ke pegawai di database live (menunggu izin user).
 
 ## 2026-10-02 -- Reset data dummy: penjaga drift struktur (baseline vs ddt* sekarang)
 
