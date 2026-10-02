@@ -85,6 +85,13 @@
                 <x-dl::field.upload name="photo" label="Photo of signed delivery note" accept=".jpg,.jpeg,.png,.webp,.pdf" :source="Src::of('tm2sdi.do_delivery_pod.photo_path')" />
                 <x-dl::field.text name="notes" label="Notes" :value="old('notes')" :source="Src::of('tm2sdi.do_delivery_pod.notes')" />
             </x-dl::form.row>
+            {{-- Qty diterima per baris = dasar tagih Customer Invoice. Received: semua baris = qty kirim; Partially received: isi per baris. --}}
+            <x-dl::lines name="received" title="Received Quantity" key-field="id_line" :addable="false" :duplicable="false" :min-rows="$do->lines->count()"
+                :rows="$do->lines->map(fn ($l) => ['id_line' => $l->id_line, 'product' => $l->item_description, 'shipped' => Locale::number($l->qty_do, 2), 'unit' => $l->qty_unit, 'qty_received' => (float) ($l->qty_received ?? $l->qty_do)])->all()"
+                source="{{ Src::of('tm2sdi.do_line.qty_received') }}"
+                :columns="[['key' => 'product', 'label' => 'Product', 'type' => 'display'], ['key' => 'shipped', 'label' => 'Shipped', 'type' => 'display', 'width' => '120px'],
+                    ['key' => 'unit', 'label' => 'Unit', 'type' => 'display', 'width' => '80px'], ['key' => 'qty_received', 'label' => 'Received', 'type' => 'number', 'width' => '140px']]" />
+            <x-dl::alert tone="info" :message="t('Result Received: every line counts as fully received. Result Partially received: type the quantity the customer really received per line. The received quantity is what can be invoiced.')" />
         @endif
         <x-slot:detail>
             <x-dl::table :columns="['no' => '#', 'arrived' => 'Arrived', 'result' => 'Result', 'by' => 'Received by', 'kept' => 'Promise', 'cause' => 'Cause', 'photo' => 'Photo', 'rec' => 'Recorded by']"

@@ -7,6 +7,19 @@ namespace App\Support\V2\Print;
 final class Labels
 {
     public const ID = [
+        // Customer Invoice / Tagihan Uang Muka (customerinvoice_accounting.md)
+        'Customer Invoice' => 'Customer Invoice',
+        'Faktur Tagihan' => 'Faktur Tagihan',
+        'Payment Term' => 'Syarat Bayar',
+        'CFG' => 'CFG',
+        'Down Payment' => 'Uang Muka',
+        'Balance Due' => 'Sisa Tagihan',
+        'Other Charges' => 'Biaya Lain',
+        'Tax Base (DPP Nilai Lain)' => 'DPP Nilai Lain',
+        'Receives the invoice' => 'Menerima invoice',
+        'Please transfer the payment to' => 'Pelunasan harap ditransfer ke',
+        'Please transfer the down payment to' => 'Uang muka harap ditransfer ke',
+        'Order Value' => 'Nilai Pesanan',
         // Komplain / Retur Penjualan
         'Customer Complaint' => 'Komplain Customer',
         'Sales Return' => 'Retur Penjualan',

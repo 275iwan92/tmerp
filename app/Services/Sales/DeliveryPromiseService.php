@@ -8,7 +8,9 @@ use App\Models\Sdi\DoDelivery;
 use App\Models\Sdi\DoDeliveryPod;
 use App\Models\Sdi\DoLine;
 use Carbon\CarbonImmutable;
+use Devlib\Locale;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -95,12 +97,32 @@ final class DeliveryPromiseService
             throw ValidationException::withMessages(['miss_cause' => 'Promise missed: choose the cause.']);
         }
 
-        return DoDeliveryPod::create([
+        $pod = DoDeliveryPod::create([
             'delivery_id' => $do->id_delivery, 'attempt_no' => (int) DoDeliveryPod::where('delivery_id', $do->id_delivery)->max('attempt_no') + 1,
             'promise_date' => $promise['date'], 'promise_time' => $promise['time'], 'arrived_at' => $arrived, 'result' => $data['result'],
             'received_by' => $data['received_by'] ?? null, 'miss_cause' => $kept ? null : $data['miss_cause'], 'promise_kept' => $kept,
             'photo_path' => $photo?->store('pod/'.now()->format('Ym'), 'public'), 'notes' => $data['notes'] ?? null,
             'created_by' => $login, 'updated_by' => $login,
         ]);
+        self::applyReceived($do, $data['result'], (array) ($in['received'] ?? []), $login);
+
+        return $pod;
+    }
+
+    // Qty yang diterima customer per baris Surat Jalan = dasar tagih Customer Invoice (customerinvoice_accounting.md bagian 7).
+    // RECEIVED: semua baris = qty kirim. PARTIAL: isian per baris (kosong = qty kirim). Hasil lain tidak mengubah apa pun.
+    // Tidak pernah lebih dari qty kirim dan tidak pernah di bawah yang sudah ditagih. Kolomnya baru ada di database yang
+    // sudah menjalankan migrasi Customer Invoice; di database lain langkah ini dilewati.
+    public static function applyReceived(DoDelivery $do, string $result, array $received, ?string $login): void
+    {
+        if (! in_array($result, ['RECEIVED', 'PARTIAL'], true) || ! Schema::connection('tm2sdi')->hasColumn('do_line', 'qty_received')) {
+            return;
+        }
+        foreach ($do->lines()->get() as $l) {
+            $typed = $received[$l->id_line] ?? null;
+            $typed = Locale::input(is_array($typed) ? ($typed['qty_received'] ?? null) : $typed);
+            $qty = $result === 'PARTIAL' && $typed !== null && $typed !== '' ? (float) $typed : (float) $l->qty_do;
+            $l->update(['qty_received' => max((float) $l->qty_invoiced, min((float) $l->qty_do, max(0.0, $qty))), 'updated_by' => $login]);
+        }
     }
 }

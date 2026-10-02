@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <p class="dl-pdoc__nb">@if ($doc->nb !== '' && ! $doc->nbPlain)<b>NB:</b>&nbsp;@endif{{ $t($doc->nb) }}</p>
+            <p class="dl-pdoc__nb">@if ($doc->nb !== '' && ! $doc->nbPlain)<b>NB:</b>&nbsp;@endif{{ $doc->nbRaw ? $doc->nb : $t($doc->nb) }}</p>
 
             <table class="dl-pdoc__items">
                 <colgroup>

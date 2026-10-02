@@ -1,7 +1,7 @@
 # CUSTOMER INVOICE + ACCOUNTS RECEIVABLE — RENCANA MODUL
 
-> Status: **arah dan lima keputusan A–E DISETUJUI user 2026-10-02** (bagian 8). Modul belum dibangun; langkah
-> berikut = perjalanan user + mockup (bagian 10) untuk disetujui.
+> Status: **arah dan lima keputusan A–E DISETUJUI user 2026-10-02** (bagian 8). **Tahap 1 sudah dibangun di database
+> dummy (mockup.test) dan menunggu review user: `customerinvoice_review.md`.** Tahap 2 dan 3 belum.
 > Ketentuan keuangan dan akuntansi (jurnal, nomor, pajak, pengendalian): **`customerinvoice_accounting.md`**.
 > Analisa (penomoran, detail baris, software pasar, aturan Indonesia): bagian 9.
 > Acuan lapangan: `docs/attachments/` — `print out tagihan customer invoice.jpeg`,

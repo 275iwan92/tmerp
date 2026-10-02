@@ -1119,5 +1119,218 @@
         "id": "Kolom dan filter: Has balance atau Zero. Menunjukkan sekilas apakah akun punya saldo hari ini."
       }
     ]
+  },
+  {
+    "key": "customer-invoice",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Customer Invoice",
+    "purpose": {
+      "en": "Bills to customers and their down payments in one list. Open it to invoice goods the customer has received, to bill a down payment for an order, to record that a down payment was received, and to see what is still unpaid.",
+      "id": "Tagihan ke customer dan uang mukanya dalam satu daftar. Buka layar ini untuk menagih barang yang sudah diterima customer, menagih uang muka sebuah order, mencatat uang muka yang sudah diterima, dan melihat tagihan yang belum lunas."
+    },
+    "keywords": "customer invoice, invoice, faktur tagihan, tagihan customer, faktur, piutang, uang muka, down payment, dp, tagihan uang muka, tanda terima uang muka, order to cash, ar, sisa tagihan, faktur pajak, surat jalan",
+    "steps": [
+      {
+        "en": "Before invoicing, record the Proof of Delivery of the delivery note. Only lines the customer has received can be invoiced.",
+        "id": "Sebelum menagih, catat Proof of Delivery untuk Surat Jalannya. Hanya baris yang sudah diterima customer yang bisa ditagih."
+      },
+      {
+        "en": "Click + New Record. Choose Invoice or Down Payment, pick the Customer Order, then click Next (Invoice) or Create (Down Payment).",
+        "id": "Klik + New Record. Pilih Invoice atau Down Payment, pilih Customer Order, lalu klik Next (Invoice) atau Create (Down Payment)."
+      },
+      {
+        "en": "For an Invoice, set Invoice to No on delivery note lines you do not bill now, then click Create. A Draft is made with the price from the Customer Order.",
+        "id": "Untuk Invoice, ubah Invoice menjadi Tidak pada baris Surat Jalan yang belum ditagih sekarang, lalu klik Create. Draft dibuat dengan harga dari Customer Order."
+      },
+      {
+        "en": "Check the Draft: Invoice Date, Payment Term, Transfer To, Qty Invoiced, and the down payment that is applied. Click Save to recalculate.",
+        "id": "Periksa Draft: Invoice Date, Payment Term, Transfer To, Qty Invoiced, dan uang muka yang dipotong. Klik Save untuk menghitung ulang."
+      },
+      {
+        "en": "Click Confirm. The invoice number is issued from the number series, the journal is posted and the delivery note lines are marked as invoiced.",
+        "id": "Klik Confirm. Nomor invoice terbit dari seri nomor, jurnal diposting, dan baris Surat Jalan ditandai sudah ditagih."
+      },
+      {
+        "en": "Click Print for the invoice. After Confirm the document cannot be changed; a mistake is corrected with Cancel and a reason, while no payment exists.",
+        "id": "Klik Print untuk mencetak invoice. Sesudah Confirm dokumen tidak bisa diubah; kesalahan dikoreksi dengan Cancel dan alasannya, selama belum ada pembayaran."
+      },
+      {
+        "en": "For a Down Payment: fill Percent of Order or Bill Amount, Save, Confirm, and print it. No journal is posted yet.",
+        "id": "Untuk Down Payment: isi Percent of Order atau Bill Amount, Save, Confirm, lalu cetak. Belum ada jurnal yang diposting."
+      },
+      {
+        "en": "When the down payment money arrives, open the document, click Record Receipt, fill the date, bank account and amount, then Confirm Receipt. Print Receipt gives the receipt for the customer.",
+        "id": "Saat uang muka masuk, buka dokumennya, klik Record Receipt, isi tanggal, rekening, dan nilainya, lalu Confirm Receipt. Print Receipt mencetak tanda terima untuk customer."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Customer Order",
+        "en": "Picked when the Draft is made. Invoice lists orders with received delivery notes not yet invoiced; Down Payment lists confirmed orders. One document belongs to one order.",
+        "id": "Dipilih saat Draft dibuat. Invoice menampilkan order dengan Surat Jalan diterima yang belum ditagih; Down Payment menampilkan order Confirmed. Satu dokumen untuk satu order."
+      },
+      {
+        "label": "Invoice",
+        "en": "On the new invoice step: Yes = this delivery note line goes into the Draft, No = it stays for a later invoice.",
+        "id": "Di langkah invoice baru: Ya = baris Surat Jalan ini masuk Draft, Tidak = ditagih di invoice berikutnya."
+      },
+      {
+        "label": "Invoice Date",
+        "en": "Filled by the system with the date of the latest delivery note on the invoice. It may be changed while the accounting period is open. The due date and the number month follow it.",
+        "id": "Diisi sistem dengan tanggal Surat Jalan terakhir di invoice. Boleh diubah selama periode buku masih terbuka. Jatuh tempo dan bulan pada nomor mengikutinya."
+      },
+      {
+        "label": "Customer PO No.",
+        "en": "Copied from the Customer Order; may be corrected. Printed on the invoice.",
+        "id": "Disalin dari Customer Order; boleh dikoreksi. Dicetak di invoice."
+      },
+      {
+        "label": "Payment Term",
+        "en": "Copied from the Customer Order, picked from Payment Terms. The due date is the invoice date plus the days of the term.",
+        "id": "Disalin dari Customer Order, dipilih dari Payment Terms. Jatuh tempo = tanggal invoice ditambah hari pada syarat bayar."
+      },
+      {
+        "label": "Transfer To",
+        "en": "The company bank account printed on the invoice. Picked from Company Bank Accounts; the default follows the tax identity of the order. Required before Confirm.",
+        "id": "Rekening perusahaan yang dicetak di invoice. Dipilih dari Company Bank Accounts; bawaan mengikuti identitas pajak order. Wajib sebelum Confirm."
+      },
+      {
+        "label": "Bill To",
+        "en": "Customer name on the invoice, copied from Master Customer; may be changed for this invoice only.",
+        "id": "Nama customer di invoice, disalin dari Master Customer; boleh diubah untuk invoice ini saja."
+      },
+      {
+        "label": "Bill To Address",
+        "en": "Billing address, copied from Master Customer; may be changed for this invoice only.",
+        "id": "Alamat tagih, disalin dari Master Customer; boleh diubah untuk invoice ini saja."
+      },
+      {
+        "label": "Other Charges",
+        "en": "Freight or another cost billed to the customer on this invoice. It is added to the tax base. Leave 0 when there is none.",
+        "id": "Ongkos kirim atau biaya lain yang ditagihkan ke customer di invoice ini. Ikut masuk dasar pajak. Isi 0 bila tidak ada."
+      },
+      {
+        "label": "Other Charges Note",
+        "en": "Short text that names the other charge; printed in the totals.",
+        "id": "Teks singkat nama biaya lain; dicetak di bagian total."
+      },
+      {
+        "label": "Qty Invoiced",
+        "en": "Filled with what is left to invoice on the delivery note line. Lower it to bill part of it now; it cannot be more than received minus already invoiced.",
+        "id": "Terisi sisa yang belum ditagih pada baris Surat Jalan. Kurangi bila menagih sebagian dulu; tidak boleh lebih dari qty diterima dikurangi yang sudah ditagih."
+      },
+      {
+        "label": "Apply to This Invoice",
+        "en": "Down payment of the same order that was received and is not used up, proposed by the system. Lower it to keep part for a later invoice.",
+        "id": "Uang muka order yang sama yang sudah diterima dan belum habis, diusulkan sistem. Kurangi bila sebagian disimpan untuk invoice berikutnya."
+      },
+      {
+        "label": "Tax Invoice No.",
+        "en": "The tax invoice number given by Coretax after upload. Only for VAT orders; may be filled in later.",
+        "id": "Nomor Faktur Pajak dari Coretax sesudah diunggah. Hanya untuk order PPN; boleh diisi belakangan."
+      },
+      {
+        "label": "Notes",
+        "en": "Free text printed on the invoice.",
+        "id": "Teks bebas yang dicetak di invoice."
+      },
+      {
+        "label": "Percent of Order",
+        "en": "Down Payment only: percentage of the order total to bill. The default comes from Constants. Leave empty to type Bill Amount yourself.",
+        "id": "Hanya Down Payment: persen dari nilai order yang ditagih. Bawaan dari Constants. Kosongkan bila Bill Amount diketik sendiri."
+      },
+      {
+        "label": "Bill Amount",
+        "en": "Down Payment only: the amount billed when Percent of Order is empty. It includes VAT on a VAT order.",
+        "id": "Hanya Down Payment: nilai yang ditagih bila Percent of Order kosong. Sudah termasuk PPN untuk order PPN."
+      },
+      {
+        "label": "Description",
+        "en": "Down Payment only: the text printed on the down payment invoice line.",
+        "id": "Hanya Down Payment: teks yang dicetak di baris tagihan uang muka."
+      },
+      {
+        "label": "Received Date",
+        "en": "Record Receipt: the date the money arrived. It becomes the date of the journal.",
+        "id": "Record Receipt: tanggal uang masuk. Menjadi tanggal jurnalnya."
+      },
+      {
+        "label": "Amount Received",
+        "en": "Record Receipt: how much arrived. Less than the bill leaves the down payment partly paid.",
+        "id": "Record Receipt: jumlah uang yang masuk. Kurang dari tagihan berarti uang muka baru dibayar sebagian."
+      },
+      {
+        "label": "Received In",
+        "en": "Record Receipt: the company bank account that received the money. It needs a ledger account in Company Bank Accounts.",
+        "id": "Record Receipt: rekening perusahaan yang menerima uang. Rekening harus punya akun buku besar di Company Bank Accounts."
+      }
+    ]
+  },
+  {
+    "key": "fin-company-bank",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Company Bank Accounts",
+    "purpose": {
+      "en": "The bank accounts of the company. They are printed on customer invoices as the account to transfer to, and they are where received money is posted.",
+      "id": "Rekening bank perusahaan. Dicetak di invoice customer sebagai rekening tujuan transfer, dan menjadi tempat uang yang diterima dicatat."
+    },
+    "keywords": "bank, rekening, rekening perusahaan, company bank, bank account, transfer, bca, maspion, bni, no rekening, atas nama",
+    "steps": [
+      {
+        "en": "Type directly in the cells. Add a new account in the empty row at the bottom.",
+        "id": "Ketik langsung di sel. Tambah rekening baru di baris kosong paling bawah."
+      },
+      {
+        "en": "Fill Bank, Account No., Account Holder and Tax Identity.",
+        "id": "Isi Bank, Account No., Account Holder, dan Tax Identity."
+      },
+      {
+        "en": "Tick Default for the account proposed on new invoices of that tax identity. Only one account per identity stays the default.",
+        "id": "Centang Default untuk rekening yang diusulkan di invoice baru identitas pajak itu. Hanya satu rekening per identitas yang menjadi bawaan."
+      },
+      {
+        "en": "Fill Ledger Account with the account code from Master of Accounts, then click Save.",
+        "id": "Isi Ledger Account dengan kode akun dari Master of Accounts, lalu klik Save."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Bank",
+        "en": "Name of the bank, as printed on the invoice.",
+        "id": "Nama bank, seperti yang dicetak di invoice."
+      },
+      {
+        "label": "Account No.",
+        "en": "The bank account number.",
+        "id": "Nomor rekening."
+      },
+      {
+        "label": "Account Holder",
+        "en": "The name the account is in.",
+        "id": "Nama pemilik rekening."
+      },
+      {
+        "label": "Tax Identity",
+        "en": "PPN = for documents of the VAT entity, Non PPN = for non-VAT documents, Both = for either.",
+        "id": "PPN = untuk dokumen PPN, Non PPN = untuk dokumen Non PPN, Both = untuk keduanya."
+      },
+      {
+        "label": "Default",
+        "en": "The account proposed on a new invoice of that tax identity.",
+        "id": "Rekening yang diusulkan di invoice baru identitas pajak itu."
+      },
+      {
+        "label": "Ledger Account",
+        "en": "Account code in Master of Accounts where money received in this bank account is posted. It must be an account that can be journaled. Empty = money cannot be received into this account yet.",
+        "id": "Kode akun di Master of Accounts tempat uang yang masuk ke rekening ini dicatat. Harus akun yang bisa dijurnal. Kosong = rekening belum bisa menerima uang."
+      },
+      {
+        "label": "Active",
+        "en": "Untick to stop using the account on new documents.",
+        "id": "Hilangkan centang bila rekening tidak dipakai lagi di dokumen baru."
+      }
+    ]
   }
 ]

@@ -18,7 +18,7 @@ class DoLine extends Model
     protected $fillable = [
         'delivery_id', 'line_no',
         'co_order_id', 'co_order_item_id', 'co_delivery_id',
-        'item_description', 'qty_do', 'qty_unit', 'unit_price', 'subtotal',
+        'item_description', 'qty_do', 'qty_received', 'qty_unit', 'unit_price', 'subtotal',
         'price_overridden', 'original_unit_price',
         'qty_invoiced',
         'status', 'split_from_line_id',
@@ -27,6 +27,7 @@ class DoLine extends Model
 
     protected $casts = [
         'qty_do' => 'decimal:2',
+        'qty_received' => 'decimal:2',   // diterima customer (Proof of Delivery); NULL = Surat Jalan belum kembali
         'unit_price' => 'decimal:4',
         'subtotal' => 'decimal:2',
         'price_overridden' => 'boolean',

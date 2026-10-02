@@ -6,8 +6,11 @@
 >
 > Dasar: keputusan user 2026-10-02 (bagian 13), analisa data lama dan aturan di
 > `customerinvoice_plan.md` bagian 9. Rancangan layar dan tabel ada di `customerinvoice_plan.md`.
-> **Status: ketentuan disetujui user, aplikasi belum dibangun.** Butir pajak (bagian 8) wajib dikonfirmasi
-> konsultan pajak perusahaan sebelum dipakai di tmerp.test.
+> **Status: ketentuan disetujui user. Tahap 1 (menagih + uang muka) sudah dibangun di database dummy (mockup.test)
+> 2026-10-02 dan menunggu review user** — lihat `customerinvoice_review.md`. Butir pajak (bagian 8) wajib
+> dikonfirmasi konsultan pajak perusahaan sebelum dipakai di tmerp.test.
+> Belum dibangun: penerimaan pelunasan (5.4), Credit Note (5.6), pengembalian uang muka (5.7), laporan (bagian 11),
+> pengingat tenggat Faktur Pajak, pemisahan hak per aksi (bagian 10), saldo awal (bagian 12).
 
 ---
 
@@ -289,7 +292,7 @@ Semua butir di bawah perlu dikonfirmasi konsultan pajak perusahaan.
 
 | Pengendalian | Cara aplikasi menjaganya |
 |---|---|
-| Pemisahan tugas | hak membuat tagihan uang muka, membuat invoice, mencatat penerimaan, dan membatalkan = hak terpisah |
+| Pemisahan tugas | sasaran: hak membuat tagihan uang muka, membuat invoice, mencatat penerimaan, dan membatalkan = hak terpisah. **Tahap 1: masih satu hak modul Finance & Accounting** |
 | Tagih dobel | qty tertagih disimpan per baris Surat Jalan; total tertagih tidak bisa melebihi qty diterima |
 | Harga | dari Customer Order lewat Surat Jalan; tidak diketik di invoice |
 | Invoice tidak berubah | sesudah Confirm tidak ada Save dan tidak ada Delete; hanya Cancel (beralasan) atau Credit Note |

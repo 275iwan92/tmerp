@@ -757,5 +757,29 @@
       {"label": "Note", "en": "Free note for the translator.", "id": "Catatan bebas untuk penerjemah."},
       {"label": "Active", "en": "Untick to switch the entry off.", "id": "Hilangkan centang untuk menonaktifkan entri."}
     ]
+  },
+  {
+    "key": "setup-doc-series",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Document Number Series",
+    "purpose": {
+      "en": "The number formats of documents that take their number from a series: Customer Invoice and Down Payment Invoice. Open it to change how the next numbers look.",
+      "id": "Format nomor dokumen yang bernomor dari seri: Customer Invoice dan Down Payment Invoice. Buka layar ini untuk mengubah bentuk nomor berikutnya."
+    },
+    "keywords": "nomor dokumen, penomoran, number series, seri nomor, format nomor, nomor invoice, nomor faktur, romawi, urut ulang",
+    "steps": [
+      {"en": "Each row is one series. The Code is used by the program and cannot be changed after saving.", "id": "Tiap baris adalah satu seri. Code dipakai program dan tidak bisa diganti sesudah disimpan."},
+      {"en": "Change Number Format with the tokens {SEQ}, {SEQ:5}, {ROMAN}, {MM}, {YY}, {YYYY} and plain text between them.", "id": "Ubah Number Format dengan token {SEQ}, {SEQ:5}, {ROMAN}, {MM}, {YY}, {YYYY} dan teks biasa di antaranya."},
+      {"en": "Choose Restart: when the running number goes back to 1. The format must contain the month and year, or the year, that matches it.", "id": "Pilih Restart: kapan nomor urut kembali ke 1. Format harus memuat bulan dan tahun, atau tahun, yang sesuai."},
+      {"en": "Click Save. The change applies to the next number only; numbers already issued stay as they are.", "id": "Klik Save. Perubahan berlaku untuk nomor berikutnya saja; nomor yang sudah terbit tidak berubah."}
+    ],
+    "fields": [
+      {"label": "Code", "en": "Series code used by the program, for example INV_TM. Typed once; locked after saving.", "id": "Kode seri yang dipakai program, misalnya INV_TM. Diketik sekali; terkunci sesudah disimpan."},
+      {"label": "Series Name", "en": "What the series is for.", "id": "Kegunaan seri ini."},
+      {"label": "Number Format", "en": "How the number looks, for example {SEQ}/TM/{ROMAN}/{YYYY} gives 275/TM/IX/2026. {SEQ} is required.", "id": "Bentuk nomornya, misalnya {SEQ}/TM/{ROMAN}/{YYYY} menghasilkan 275/TM/IX/2026. {SEQ} wajib ada."},
+      {"label": "Restart", "en": "Every month, every year, or never: when the running number starts again from 1.", "id": "Tiap bulan, tiap tahun, atau tidak pernah: kapan nomor urut mulai lagi dari 1."},
+      {"label": "Active", "en": "An inactive series cannot issue numbers; Confirm of its documents is refused.", "id": "Seri yang tidak aktif tidak bisa menerbitkan nomor; Confirm dokumennya ditolak."}
+    ]
   }
 ]

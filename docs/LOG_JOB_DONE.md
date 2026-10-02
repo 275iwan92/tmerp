@@ -3,6 +3,36 @@
 
 ---
 
+## 2026-10-02 -- Customer Invoice + uang muka, Tahap 1 (dibangun di ddt, menunggu review user)
+
+Perintah user sesudah melihat mockup: "jalankan dulu lalu buatkan dokumentasinya buat saya review". Dokumen review:
+`docs/md_for_systems/customerinvoice_review.md` (cara mencoba, potret layar asli, aturan, batasan, yang perlu diputuskan).
+- **Tabel (migrasi `2026_10_02_000140`, HANYA dijalankan di ddt):** `tm2sys.sys_doc_series` + `sys_doc_series_counter`,
+  `tm2acc.fin_company_bank`, `tm2acc.fin_invoice_line`, 21 kolom baru `fin_invoice` (`invoice_number` boleh kosong selama
+  Draft), `tm2sdi.do_line.qty_received`, view `v1_fin_ar_aging` hanya invoice POSTED. Isi awal: 4 seri (`INV_TM`,
+  `INV_LJM`, `DP_TM`, `DP_LJM`), 5 rekening dari `tm2old.mst_bank_account` (izin user; di ddt akun buku besarnya sementara
+  111200, di tm2 nanti kosong), konstanta `DP_VAT_ON_RECEIPT` = 1 dan `DP_DEFAULT_PERCENT` = 50, menu Customer Invoice,
+  Company Bank Accounts, Document Number Series.
+- **Aturan + jurnal:** `App\Services\Acc\CustomerInvoiceService` — Draft dari baris Surat Jalan yang sudah diterima
+  (`qty_received - qty_invoiced`), harga dari CO, baris borongan ditagih sekali, usulan potongan uang muka, Confirm (nomor
+  dari `App\Support\Docs\DocSeries` di dalam transaksi `tm2acc`, satu voucher: piutang / penjualan / PPN + potongan uang
+  muka, `do_line.qty_invoiced` lewat koneksi yang sama), Cancel (jurnal balik, alokasi dan qty dilepas), tagihan uang muka
+  tanpa jurnal, `receiveDownPayment` (Bank pada Uang Muka + PPN Keluaran; tagihan uang muka cara lama ditutup ke Piutang).
+- **Layar v2:** `customer-invoice` (grid → + New Record → Draft → Confirm / Cancel, dialog Record Receipt) lewat
+  `App\Support\V2\Data\CustomerInvoice` dan `routes/v2_finance.php`; lookup `fin-company-bank` dan `setup-doc-series`.
+- **Proof of Delivery:** isian qty diterima per baris; `DeliveryPromiseService::applyReceived` (Received = qty kirim,
+  Partially received = isian). Dilewati di database yang belum punya kolomnya.
+- **Cetakan (belum A):** `customer-invoice`, `dp-invoice`. DevLib: `Document::$nbRaw` (kalimat pembuka berisi data),
+  `x-dl::table` kolom `'raw' => true` (angka yang sudah diformat).
+- **Lain:** terjemahan Indonesia + menu Down Payment lama dimatikan (migrasi 000141, ddt), contoh Draft `#367` dari
+  DO/26/00001 (migrasi 000142, hanya ddt), Help 3 topik (`help:import`, ddt).
+- **Test:** `CustomerInvoiceTest` 7 test / 102 pemeriksaan, dijalankan terhadap ddt (variabel `DB_*` dari `.env.mockup`);
+  di tm2 dilewati karena tabelnya belum ada. Data test dihapus dan penghitung nomor dikembalikan; diperiksa ke database.
+  Suite penuh di tm2: tidak ada kegagalan baru (yang gagal = menu Help di `MainMenuShellSmokeTest` dan
+  `prod_machine_model` yang belum ada di tm2, keduanya dari pekerjaan lain).
+- **Belum:** tm2 (migrasi 000140 + 000141), Customer Receipt v2 dan laporan (Tahap 2), Credit Note dkk (Tahap 3); sisa
+  kecil di `backlog07`.
+
 ## 2026-10-02 -- Kamus penerjemah tidak lagi mencatat nilai data (raw())
 
 Masalah: `DevlibComponent::translateTexts()` menerjemahkan semua prop teks (title, subtitle, description, ...) dan

@@ -41,6 +41,10 @@ class FinInvoice extends Model
         'payment_status',
         'created_by',
         'updated_by',
+        // Customer Invoice berbaris (2026-10-02, customerinvoice_accounting.md)
+        'is_ppn', 'tax_rate', 'payment_term_code', 'customer_po_no', 'bill_to_name', 'bill_to_address', 'company_bank_id',
+        'discount_pct', 'discount_amount', 'charge_amount', 'charge_note', 'dp_applied_amount', 'dp_plan', 'order_amount', 'dp_percent',
+        'notes', 'confirmed_by', 'confirmed_at', 'cancel_reason', 'cancelled_by', 'cancelled_at',
     ];
 
     protected $casts = [
@@ -52,7 +56,21 @@ class FinInvoice extends Model
         'paid_amount' => 'decimal:4',
         'pph_amount' => 'decimal:4',
         'tax_validated' => 'boolean',
+        'is_ppn' => 'boolean',
+        'dp_plan' => 'array',
+        'confirmed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
+
+    public function lines(): HasMany
+    {
+        return $this->hasMany(FinInvoiceLine::class, 'invoice_id', 'invoice_id')->orderBy('line_no');
+    }
+
+    public function companyBank(): BelongsTo
+    {
+        return $this->belongsTo(FinCompanyBank::class, 'company_bank_id', 'id_company_bank');
+    }
 
     public function voucher(): BelongsTo
     {

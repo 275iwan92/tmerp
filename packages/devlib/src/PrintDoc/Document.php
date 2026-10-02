@@ -54,6 +54,8 @@ abstract class Document
 
     public bool $nbPlain = false;                              // true = kalimat pembuka, tanpa awalan "NB:"
 
+    public bool $nbRaw = false;                                // true = $nb sudah jadi (memuat data dokumen, mis. rekening): dicetak apa adanya, tidak diterjemahkan
+
     public string $nameLabel = 'Item Name';
 
     /** @var list<array{key: string, label: string, width: int|float, type?: string, hand?: bool, wrap?: bool}> kolom zona varian */

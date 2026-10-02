@@ -39,6 +39,8 @@ final class PrintDocs
         'petty-cash' => [PettyCashPrint::class, 'petty-cash', 'PC'],
         'subcon-delivery-note' => [SubconDeliveryNotePrint::class, 'subcon-delivery-note', 'SDN'],
         'sales-invoice' => [SalesInvoicePrint::class, 'acc-receivables', 'INV'],
+        'customer-invoice' => [CustomerInvoicePrint::class, 'customer-invoice', 'INV'],
+        'dp-invoice' => [DownPaymentInvoicePrint::class, 'customer-invoice', 'INV'],
         'payment-voucher' => [PaymentVoucherPrint::class, 'acc-cash-bank', 'PVC'],
         'supplier-invoice-receipt' => [SupplierInvoiceReceiptPrint::class, 'supplier-invoice-receipt', 'SIR'],
         'dp-receipt' => [DownPaymentReceiptPrint::class, 'acc-dp-invoice', 'DPR'],
