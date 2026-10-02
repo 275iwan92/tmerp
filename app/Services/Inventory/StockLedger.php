@@ -149,6 +149,8 @@ final class StockLedger
             $movements[] = ['class' => $class, 'doc_id' => (int) $r->doc_id, 'date' => $r->doc_date?->toDateString(), 'doc_no' => $r->doc_no, 'doc_cat' => $r->doc_cat, 'kind' => $kind,
                 'item_id' => $itemId, 'item_code' => $r->item_code, 'item_name' => $r->item_name, 'warehouse' => $r->warehouse_name, 'location' => $r->location_name, 'lot' => $r->lot_no,
                 'ref_no' => $r->ref_doc_no, 'in' => $transfer ? 0.0 : $in, 'out' => $transfer ? 0.0 : $out, 'adj' => $adj, 'transfer' => $transfer ? $in - $out : 0.0,
+                // Baris kartu apa adanya (Stock Card): saldo lokasi sebelum baris ini, masuk / keluar termasuk transfer.
+                'bb' => (float) $r->qty_bb, 'qty_in' => $in, 'qty_out' => $out,
                 'location_balance' => (float) $r->qty_eb, 'item_balance' => $itemBalance[$itemKey], 'value' => $value, 'avg_price' => $r->avg_unitprice === null ? null : (float) $r->avg_unitprice,
                 'uom' => $r->uom_code];
         }

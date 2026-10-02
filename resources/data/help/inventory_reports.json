@@ -5,35 +5,31 @@
     "module": "INV",
     "title": "Stock Card",
     "purpose": {
-      "en": "The stock card of every item for a period: opening balance, each movement by date and the running balance. Open it to trace how the stock of an item became what it is, or to print the card of one item.",
-      "id": "Kartu stok tiap item untuk satu periode: saldo awal, tiap pergerakan urut tanggal, dan saldo berjalan. Buka untuk menelusuri asal saldo sebuah item, atau mencetak kartu stok satu item."
+      "en": "The stock card of every item for a period, as it is kept in the stock card table: one row per movement at one location, with the balance before and after it. No prices or amounts. Open it to trace the stock of an item, or to print its card.",
+      "id": "Kartu stok tiap item untuk satu periode, sesuai tabel kartu stok: satu baris per pergerakan di satu lokasi, dengan saldo sebelum dan sesudahnya. Tanpa harga dan nilai. Buka untuk menelusuri stok sebuah item, atau mencetak kartunya."
     },
-    "keywords": "stock card, kartu stok, kartu persediaan, mutasi stok, riwayat stok, movement, item ledger, saldo berjalan, semua stok, bahan baku, barang jadi, setengah jadi",
+    "keywords": "stock card, kartu stok, kartu persediaan, mutasi stok, riwayat stok, movement, BB, EB, beginning balance, end balance, saldo awal, saldo akhir, semua stok, bahan baku, barang jadi, setengah jadi",
     "steps": [
       {"en": "Set Period (first and last date), then click Show. The report opens on the current month.", "id": "Isi Period (tanggal awal dan akhir), lalu klik Show. Laporan terbuka pada bulan berjalan."},
       {"en": "For the card of one item, type its code or part of its name in Item and click Show.", "id": "Untuk kartu satu item, ketik kode atau sebagian namanya di Item lalu klik Show."},
-      {"en": "Read each group from top to bottom: the first row is the opening balance, the rows below are the movements by date.", "id": "Baca tiap kelompok dari atas ke bawah: baris pertama adalah saldo awal, baris di bawahnya pergerakan urut tanggal."},
-      {"en": "Click In, Out, Adjustment or Transfer above the table to see one kind of movement only.", "id": "Klik In, Out, Adjustment, atau Transfer di atas tabel untuk melihat satu jenis pergerakan saja."},
-      {"en": "Open Columns to show Lot No., Transfer, Balance in Location, Movement Value and Average Price.", "id": "Buka Columns untuk menampilkan Lot No., Transfer, Balance in Location, Movement Value, dan Average Price."},
-      {"en": "Click Print for the paper version: company header, the period, the same rows, totals and signature boxes.", "id": "Klik Print untuk versi kertas: kop perusahaan, periode, baris yang sama, total, dan kotak tanda tangan."}
+      {"en": "Each card starts with a heading: item name, code, unit and the period. The rows below are the movements by date.", "id": "Tiap kartu dibuka dengan kepala: nama item, kode, satuan, dan periode. Baris di bawahnya adalah pergerakan urut tanggal."},
+      {"en": "Read a row from left to right: BB + In - Out + Adj = EB, for that item at that location.", "id": "Baca satu baris dari kiri ke kanan: BB + In - Out + Adj = EB, untuk item itu di lokasi itu."},
+      {"en": "The Total row closes each card: BB and EB of the item in all locations, and the sum of In, Out and Adj.", "id": "Baris Total menutup tiap kartu: BB dan EB item itu di semua lokasi, serta jumlah In, Out, dan Adj."},
+      {"en": "Open Columns to show Doc No., Movement, Lot No., Reference, Unit, Warehouse and Class.", "id": "Buka Columns untuk menampilkan Doc No., Movement, Lot No., Reference, Unit, Warehouse, dan Class."},
+      {"en": "Click Print for the paper version. The card of one item opens with the item name, then the period, and shows BB, In, Out, Adj and EB on top.", "id": "Klik Print untuk versi kertas. Kartu satu item dibuka dengan nama item, lalu periode, dan menampilkan BB, In, Out, Adj, dan EB di atas."}
     ],
     "fields": [
-      {"label": "Period", "en": "First and last date of the card. Opening balance = the balance just before the first date.", "id": "Tanggal awal dan akhir kartu. Saldo awal = saldo tepat sebelum tanggal awal."},
-      {"label": "Item", "en": "Optional. Code or part of the name; items that match are shown even when they did not move.", "id": "Tidak wajib. Kode atau sebagian nama; item yang cocok tetap tampil walau tidak bergerak."},
-      {"label": "Date", "en": "Date of the document. On the opening row: the first date of the period.", "id": "Tanggal dokumen. Pada baris saldo awal: tanggal awal periode."},
-      {"label": "Doc No.", "en": "Number of the stock document or stock transfer behind the movement.", "id": "Nomor dokumen stok atau stock transfer di balik pergerakan itu."},
-      {"label": "Movement", "en": "Opening, In, Out, Adjustment, Transfer in or Transfer out.", "id": "Opening, In, Out, Adjustment, Transfer in, atau Transfer out."},
-      {"label": "Warehouse", "en": "Warehouse of the movement.", "id": "Gudang tempat pergerakan."},
-      {"label": "Location", "en": "Bin of the movement.", "id": "Bin tempat pergerakan."},
-      {"label": "Reference", "en": "Number of the source document, for example the goods receipt.", "id": "Nomor dokumen sumber, misalnya penerimaan barang."},
-      {"label": "In", "en": "Quantity received. Stock transfers are not counted here.", "id": "Qty masuk. Stock transfer tidak dihitung di sini."},
-      {"label": "Out", "en": "Quantity issued. Stock transfers are not counted here.", "id": "Qty keluar. Stock transfer tidak dihitung di sini."},
-      {"label": "Adjustment", "en": "Quantity added or taken off by an adjustment or a physical count (can be negative).", "id": "Qty yang ditambah atau dikurangi oleh penyesuaian atau stock opname (bisa negatif)."},
-      {"label": "Transfer", "en": "Quantity moved to (+) or from (-) this bin by a stock transfer. Hidden at first.", "id": "Qty yang dipindah ke (+) atau dari (-) bin ini oleh stock transfer. Awalnya tersembunyi."},
-      {"label": "Balance", "en": "Stock of the item in all bins right after the movement.", "id": "Stok item di semua bin tepat sesudah pergerakan itu."},
-      {"label": "Balance in Location", "en": "Stock of the item in that bin right after the movement. Hidden at first.", "id": "Stok item di bin itu tepat sesudah pergerakan. Awalnya tersembunyi."},
-      {"label": "Movement Value", "en": "Value the movement added to or took from the stock, at the moving average price. Hidden at first.", "id": "Nilai yang ditambah atau dikurangi pergerakan itu, dengan harga rata-rata bergerak. Awalnya tersembunyi."},
-      {"label": "Group by: Item / Warehouse / Movement", "en": "Gather the rows under headings with subtotals. The report opens grouped by Item.", "id": "Mengelompokkan baris di bawah judul dengan subtotal. Laporan terbuka terkelompok per Item."}
+      {"label": "Period", "en": "First and last date of the card.", "id": "Tanggal awal dan akhir kartu."},
+      {"label": "Item", "en": "Optional. Code or part of the name; items that match are shown even when they did not move (Total row only).", "id": "Tidak wajib. Kode atau sebagian nama; item yang cocok tetap tampil walau tidak bergerak (hanya baris Total)."},
+      {"label": "Date", "en": "Date of the stock document. Empty on the Total row.", "id": "Tanggal dokumen stok. Kosong pada baris Total."},
+      {"label": "Location", "en": "Warehouse and bin of the movement.", "id": "Gudang dan bin tempat pergerakan."},
+      {"label": "BB", "en": "Beginning balance: stock of the item at that location just before the movement. On the Total row: all locations, just before the period.", "id": "Beginning balance: stok item di lokasi itu tepat sebelum pergerakan. Pada baris Total: semua lokasi, tepat sebelum periode."},
+      {"label": "In", "en": "Quantity that came into that location, including a stock transfer from another location.", "id": "Qty yang masuk ke lokasi itu, termasuk stock transfer dari lokasi lain."},
+      {"label": "Out", "en": "Quantity that left that location, including a stock transfer to another location.", "id": "Qty yang keluar dari lokasi itu, termasuk stock transfer ke lokasi lain."},
+      {"label": "Adj", "en": "Quantity added or taken off by an adjustment or a physical count (can be negative).", "id": "Qty yang ditambah atau dikurangi oleh penyesuaian atau stock opname (bisa negatif)."},
+      {"label": "EB", "en": "End balance: stock of the item at that location right after the movement. On the Total row: all locations, at the end of the period.", "id": "End balance: stok item di lokasi itu tepat sesudah pergerakan. Pada baris Total: semua lokasi, di akhir periode."},
+      {"label": "Doc No.", "en": "Number of the stock document or stock transfer behind the movement. Hidden at first.", "id": "Nomor dokumen stok atau stock transfer di balik pergerakan itu. Awalnya tersembunyi."},
+      {"label": "Movement", "en": "In, Out, Adjustment, Transfer in, Transfer out or Total. Hidden at first.", "id": "In, Out, Adjustment, Transfer in, Transfer out, atau Total. Awalnya tersembunyi."}
     ]
   },
   {

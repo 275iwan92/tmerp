@@ -15,7 +15,7 @@ tmerp.test). Gambar 3 sampai 6 diambil sesudah data dummy laporan dipasang (2026
 | Laporan | Isi | Dibuka dengan |
 |---|---|---|
 | **Stock by Location** | Stok sekarang per item per bin, terkelompok per gedung; baris merah = dead stock | sudah ada; kini langsung terkelompok per gedung |
-| **Stock Card** | Per item: saldo awal, tiap pergerakan urut tanggal, saldo berjalan item di semua bin | Period + Show; kotak Item untuk satu item |
+| **Stock Card** | Susunan baru 2026-10-03 (user: ikuti tabel kartu stok): kepala = nama item lalu periode; rinci = Date, Location, BB, In, Out, Adj, EB per lokasi (`qty_bb` / `qty_eb` apa adanya), baris Total per item. Versi gudang: tanpa harga dan nilai | Period + Show; kotak Item untuk satu item |
 | **Stock Recapitulation** | Satu baris per item: awal, masuk, keluar, penyesuaian, akhir, nilai akhir | Period + Show |
 | **Stock Summary** | Nilai semua stok per kelas x kategori: awal, masuk, keluar, penyesuaian, akhir, porsi % | Period + Show |
 | **Stock Opname** | Hasil hitung fisik dan penyesuaian per dokumen per item: qty sistem, qty fisik, selisih, nilai | Period + Show |
@@ -42,7 +42,7 @@ tetap ada di menu kelasnya dan tidak diubah.
   di dalam periode (atau saldo awal bila tidak bergerak). Sama dengan cara view saldo (`v_*_onhand`) membaca stok.
 - **Nilai pergerakan** = nilai posisi sesudah baris itu dikurangi nilainya sebelum baris itu (harga rata-rata bergerak).
   Karena itu nilai awal + masuk - keluar + penyesuaian = nilai akhir selalu cocok.
-- **Stock Transfer bukan masuk / keluar item** (aturan A.22): di Stock Card tampil di kolom Transfer, di rekap tidak dihitung.
+- **Stock Transfer bukan masuk / keluar item** (aturan A.22): di rekap tidak dihitung. Di Stock Card (per lokasi) transfer = Out di lokasi asal dan In di lokasi tujuan, supaya BB + In - Out + Adj = EB di tiap baris.
 - **Stock Loss & Gain** hanya memuat penyesuaian yang sudah **Posted** (sudah mengubah stok); **Stock Opname** memuat
   semua dokumen termasuk Draft dan yang menunggu approval.
 - Dicek di ddt: total nilai akhir Stock Recapitulation = total nilai stok di view saldo (457.975.000).

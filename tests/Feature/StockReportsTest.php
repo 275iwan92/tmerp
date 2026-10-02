@@ -10,6 +10,7 @@ use App\Services\Inventory\StockLedger;
 use App\Support\V2\Board\Numbers;
 use App\Support\V2\Grid\Grids;
 use Carbon\CarbonImmutable;
+use Devlib\Lang;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -154,21 +155,54 @@ class StockReportsTest extends TestCase
         $this->assertEqualsWithDelta(7020.0, $april['opening_value'], 0.001);
     }
 
-    public function test_stock_card_has_an_opening_row_and_a_running_item_balance(): void
+    // Stock Card = baris kartu stok apa adanya: BB dan EB tiap baris adalah saldo item di lokasi itu (qty_bb / qty_eb),
+    // transfer = Out di lokasi asal + In di lokasi tujuan, lalu satu baris Total per item untuk semua lokasi.
+    public function test_stock_card_shows_bb_in_out_adj_eb_per_location_and_a_total_row(): void
     {
         $rows = $this->rows('inv-rpt-card', params: ['item' => '#'.self::ITEM]);
 
-        $this->assertSame(['Opening', 'In', 'Out', 'Transfer out', 'Transfer in', 'Adjustment', 'Adjustment'], array_column($rows, 'move'));
-        $this->assertSame([100.0, 150.0, 120.0, 120.0, 120.0, 115.0, 117.0], array_column($rows, 'balance'));
-        $this->assertSame([0.0, 0.0, 0.0, -20.0, 20.0, 0.0, 0.0], array_column($rows, 'transfer'));
-        $this->assertSame('ZZR-TF1', $rows[3]['doc_no']);
-        $this->assertEqualsWithDelta(4000.0, $rows[1]['value'], 0.001);
-        $this->assertEqualsWithDelta(-300.0, $rows[5]['value'], 0.001);
+        $this->assertSame(['In', 'Out', 'Transfer out', 'Transfer in', 'Adjustment', 'Adjustment', 'Total'], array_column($rows, 'move'));
+        $a = 'Test ZZR-A · ZZR-A-01';
+        $b = 'Test ZZR-A · ZZR-A-02';
+        $this->assertSame([$a, $a, $a, $b, $a, $b, 'Total'], array_column($rows, 'location'));
+        $this->assertSame([100.0, 150.0, 120.0, 0.0, 100.0, 20.0, 100.0], array_column($rows, 'bb'));
+        $this->assertSame([50.0, 0.0, 0.0, 20.0, 0.0, 0.0, 70.0], array_column($rows, 'in'));
+        $this->assertSame([0.0, 30.0, 20.0, 0.0, 0.0, 0.0, 50.0], array_column($rows, 'out'));
+        $this->assertSame([0.0, 0.0, 0.0, 0.0, -5.0, 2.0, -3.0], array_column($rows, 'adj'));
+        $this->assertSame([150.0, 120.0, 100.0, 20.0, 95.0, 22.0, 117.0], array_column($rows, 'eb'));
+        foreach ($rows as $r) {
+            $this->assertEqualsWithDelta($r['eb'], $r['bb'] + $r['in'] - $r['out'] + $r['adj'], 0.0001, $r['id']);
+            // Versi gudang: harga dan nilai tidak ikut di baris sama sekali.
+            $this->assertSame([], array_intersect(array_keys($r), ['value', 'avg_price', 'amount', 'price']));
+        }
+        $this->assertSame('ZZR-TF1', $rows[2]['doc_no']);
+        $this->assertSame(['2099-03-05', '2099-03-10', '2099-03-12', '2099-03-12', '2099-03-15', '2099-03-20', null], array_column($rows, 'doc_date'));
+        // Kepala kartu = nama item (dengan kode dan satuan), lalu periode.
+        $this->assertStringContainsString('#'.self::ITEM.' · KG · ', $rows[0]['card']);
+        $this->assertStringContainsString('2099', $rows[0]['card']);
+        $this->assertCount(1, array_unique(array_column($rows, 'card')));
 
-        // Tanpa saringan item: hanya item yang bergerak; April tidak memuat item uji, kecuali disaring namanya.
+        // Tanpa saringan item: hanya item yang bergerak; April tidak memuat item uji, kecuali disaring namanya (hanya baris Total).
         $this->assertNotEmpty(array_filter($this->rows('inv-rpt-card'), fn ($r) => $r['item_code'] === '#'.self::ITEM));
         $this->assertSame([], array_filter($this->rows('inv-rpt-card', '2099-04-01', '2099-04-30'), fn ($r) => $r['item_code'] === '#'.self::ITEM));
-        $this->assertSame(['Opening'], array_column($this->rows('inv-rpt-card', '2099-04-01', '2099-04-30', ['item' => '#'.self::ITEM]), 'move'));
+        $april = $this->rows('inv-rpt-card', '2099-04-01', '2099-04-30', ['item' => '#'.self::ITEM]);
+        $this->assertSame([['Total', 117.0, 0.0, 0.0, 0.0, 117.0]], array_map(fn ($r) => [$r['move'], $r['bb'], $r['in'], $r['out'], $r['adj'], $r['eb']], $april));
+    }
+
+    public function test_stock_card_screen_and_print_show_only_the_card_columns(): void
+    {
+        $grid = Grids::find('inv-rpt-card')->between(CarbonImmutable::parse('2099-03-01'), CarbonImmutable::parse('2099-03-31'))->with(['item' => '#'.self::ITEM]);
+
+        $shown = array_values(array_filter($grid->columns(), fn ($c) => ($c['visible'] ?? true) !== false));
+        $this->assertSame(['doc_date', 'location', 'bb', 'in', 'out', 'adj', 'eb'], array_column($shown, 'key'));
+        $this->assertSame(['Date', 'Location', 'BB', 'In', 'Out', 'Adj', 'EB'], array_map(fn ($c) => Lang::plain($c['label']), $shown));
+        $this->assertSame([], array_filter($grid->columns(), fn ($c) => ($c['sortable'] ?? true) !== false), 'Urutan kartu tidak boleh diubah.');
+        $this->assertSame([], array_intersect(array_column($grid->columns(), 'key'), ['value', 'avg_price']));
+
+        $print = $grid->printData();
+        $this->assertSame(['doc_date', 'location', 'bb', 'in', 'out', 'adj', 'eb'], array_column($print['columns'], 'key'));
+        $this->assertSame(['Item', 'Period'], array_slice(array_keys($print['criteria']), 0, 2), 'Kepala cetakan: item dulu, lalu periode.');
+        $this->assertSame([['BB', 100.0], ['In', 70.0], ['Out', 50.0], ['Adj', -3.0], ['EB', 117.0]], array_map(fn ($s) => [$s['label'], $s['value']], $grid->printSummary()));
     }
 
     public function test_recapitulation_and_summary_agree(): void
