@@ -20,7 +20,7 @@ new #[Title('Nota Customer Order — TELASIH MAKMUR ERP')] class extends Compone
         $doc = CoOrder::findOrFail($order);
 
         if ($doc->doc_status !== 'CONFIRMED') {
-            session()->flash('error', 'CO ini belum di-Confirm — confirm dulu sebelum bisa dicetak.');
+            session()->flash('error', t('This CO is not Confirmed yet — confirm it first before it can be printed.'));
             $this->redirect(route('co.entry', ['order' => $order]));
 
             return;
@@ -51,26 +51,26 @@ new #[Title('Nota Customer Order — TELASIH MAKMUR ERP')] class extends Compone
 
 <x-print.document :theme="['accent' => '#1f6f4a', 'accent-soft' => '#e9f6ef']" info="{{ $this->order->co_no }} · {{ $this->order->doc_status }}">
     <x-slot:toolbar>
-        <a href="{{ route('co.entry', ['order' => $this->orderId]) }}" class="sc" data-back>← Kembali ke CO</a>
+        <a href="{{ route('co.entry', ['order' => $this->orderId]) }}" class="sc" data-back>← {{ t('Back to CO') }}</a>
     </x-slot:toolbar>
 
     <x-print.sheet>
-        <x-print.header :company="$this->company" doc-title="NOTA CUSTOMER ORDER" :doc-no="$this->order->co_no">
+        <x-print.header :company="$this->company" :doc-title="t('CUSTOMER ORDER NOTE')" :doc-no="$this->order->co_no">
             <x-slot:meta>
-                Tanggal: {{ $this->order->co_date?->translatedFormat('d F Y') }}
-                @if ($this->order->customer_po_no) · No. PO Customer: <span class="ref">{{ $this->order->customer_po_no }}</span> @endif
-                · Ref. Quotation: <span class="ref">{{ $this->order->quotation?->quotation_no ?? '—' }}</span>
+                {{ t('Date') }}: {{ $this->order->co_date?->translatedFormat('d F Y') }}
+                @if ($this->order->customer_po_no) · {{ t('Customer PO Number') }}: <span class="ref">{{ $this->order->customer_po_no }}</span> @endif
+                · {{ t('Ref. Quotation') }}: <span class="ref">{{ $this->order->quotation?->quotation_no ?? '—' }}</span>
             </x-slot:meta>
         </x-print.header>
 
         <x-print.parties columns="1.2fr 1fr">
-            <x-print.party label="KEPADA YTH.">
+            <x-print.party :label="mb_strtoupper(t('Addressed to'))">
                 <div class="nm">{{ $this->order->quotation?->customer?->customer_name ?? '—' }}</div>
                 <div class="dt">
-                    Kode Customer: <b>{{ $this->order->quotation?->customer?->customer_code ?? '—' }}</b>
+                    {{ t('Customer Code') }}: <b>{{ $this->order->quotation?->customer?->customer_code ?? '—' }}</b>
                 </div>
             </x-print.party>
-            <x-print.party label="ALAMAT PENGIRIMAN">
+            <x-print.party :label="mb_strtoupper(t('Shipping Address'))">
                 <div class="dt">
                     {{ $this->order->ship_address_label ?? '—' }}<br>
                     {{ $this->order->ship_address_detail ?? '' }}
@@ -79,15 +79,15 @@ new #[Title('Nota Customer Order — TELASIH MAKMUR ERP')] class extends Compone
             </x-print.party>
         </x-print.parties>
 
-        <x-print.section number="1" title="Rincian Pesanan">
+        <x-print.section number="1" :title="t('Order Details')">
             <table class="items">
                 <thead>
                     <tr>
-                        <th style="width:6%">No.</th>
-                        <th class="desc">Deskripsi Produk &amp; Spesifikasi</th>
-                        <th class="num" style="width:11%">Qty</th>
-                        <th class="num" style="width:13%">Harga Satuan</th>
-                        <th class="num" style="width:16%">Subtotal</th>
+                        <th style="width:6%">{{ t('No.') }}</th>
+                        <th class="desc">{{ t('Product Description & Specification') }}</th>
+                        <th class="num" style="width:11%">{{ t('Qty') }}</th>
+                        <th class="num" style="width:13%">{{ t('Unit Price') }}</th>
+                        <th class="num" style="width:16%">{{ t('Subtotal') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -110,42 +110,42 @@ new #[Title('Nota Customer Order — TELASIH MAKMUR ERP')] class extends Compone
 
             <div class="totwrap">
                 <div class="tot-note">
-                    <h5>CATATAN</h5>
-                    {{ $this->order->notes ?: 'Pesanan ini mengikat setelah CO dikonfirmasi. Perubahan jumlah/spesifikasi harus melalui revisi tertulis.' }}
+                    <h5>{{ mb_strtoupper(t('Notes')) }}</h5>
+                    {{ $this->order->notes ?: t('This order is binding once the CO is confirmed.').' '.t('Changes to quantity/specification must go through a written revision.') }}
                 </div>
                 <table class="tot">
-                    <tr class="sub"><td class="k">Subtotal Item</td><td class="v">{{ number_format($this->totals['item_subtotal'], 0, ',', '.') }}</td></tr>
+                    <tr class="sub"><td class="k">{{ t('Item Subtotal') }}</td><td class="v">{{ number_format($this->totals['item_subtotal'], 0, ',', '.') }}</td></tr>
                     @if ($this->totals['discount_amount'] > 0)
-                        <tr class="sub"><td class="k">Diskon</td><td class="v">-{{ number_format($this->totals['discount_amount'], 0, ',', '.') }}</td></tr>
+                        <tr class="sub"><td class="k">{{ t('Discount') }}</td><td class="v">-{{ number_format($this->totals['discount_amount'], 0, ',', '.') }}</td></tr>
                     @endif
                     @if ($this->totals['external_cost'] > 0)
-                        <tr class="sub"><td class="k">Biaya Eksternal</td><td class="v">{{ number_format($this->totals['external_cost'], 0, ',', '.') }}</td></tr>
+                        <tr class="sub"><td class="k">{{ t('External Cost') }}</td><td class="v">{{ number_format($this->totals['external_cost'], 0, ',', '.') }}</td></tr>
                     @endif
-                    <tr class="sub"><td class="k">DPP</td><td class="v">{{ number_format($this->totals['dpp'], 0, ',', '.') }}</td></tr>
-                    <tr class="sub"><td class="k">PPN {{ number_format($this->totals['ppn_pct'], 0) }}%</td><td class="v">{{ number_format($this->totals['ppn'], 0, ',', '.') }}</td></tr>
+                    <tr class="sub"><td class="k">{{ t('DPP') }}</td><td class="v">{{ number_format($this->totals['dpp'], 0, ',', '.') }}</td></tr>
+                    <tr class="sub"><td class="k">{{ t('VAT') }} {{ number_format($this->totals['ppn_pct'], 0) }}%</td><td class="v">{{ number_format($this->totals['ppn'], 0, ',', '.') }}</td></tr>
                     @if ($this->totals['wht23'] > 0)
-                        <tr class="sub"><td class="k">PPh 23 (Jasa)</td><td class="v">-{{ number_format($this->totals['wht23'], 0, ',', '.') }}</td></tr>
+                        <tr class="sub"><td class="k">{{ t('WHT 23 (Service)') }}</td><td class="v">-{{ number_format($this->totals['wht23'], 0, ',', '.') }}</td></tr>
                     @endif
-                    <tr class="grand"><td class="k">TOTAL TAGIHAN</td><td class="v">Rp {{ number_format($this->totals['net_receivable'], 0, ',', '.') }}</td></tr>
+                    <tr class="grand"><td class="k">{{ mb_strtoupper(t('Total Bill')) }}</td><td class="v">Rp {{ number_format($this->totals['net_receivable'], 0, ',', '.') }}</td></tr>
                 </table>
             </div>
         </x-print.section>
 
         <x-print.signatures>
             <x-slot:intro>
-                Nota ini adalah konfirmasi resmi pesanan setelah CO dikonfirmasi oleh {{ \App\Support\Branding\Brand::companyName() }}.
-                Mohon simpan dokumen ini sebagai acuan pengiriman &amp; penagihan.
+                {{ str_replace(':company', \App\Support\Branding\Brand::companyName(), t('This note is the official order confirmation after the CO is confirmed by :company.')) }}
+                {{ t('Please keep this document as a reference for delivery & invoicing.') }}
             </x-slot:intro>
 
-            <x-print.signature company="Dikonfirmasi oleh, {{ \App\Support\Branding\Brand::companyName() }}"
-                role="Sales" name="{{ $this->order->updated_by ?? '—' }}" sub="Order Confirmed" />
-            <x-print.signature company="Diterima &amp; disetujui oleh" role="Customer"
-                name="( ................................. )" sub="Nama jelas, jabatan &amp; stempel" />
+            <x-print.signature :company="t('Confirmed by,').' '.\App\Support\Branding\Brand::companyName()"
+                :role="t('Sales')" name="{{ $this->order->updated_by ?? '—' }}" :sub="t('Order Confirmed')" />
+            <x-print.signature :company="t('Received & approved by')" :role="t('Customer')"
+                name="( ................................. )" :sub="t('Full name, position & stamp')" />
         </x-print.signatures>
 
-        <x-print.footer page="Halaman 1 dari 1">
+        <x-print.footer :page="str_replace([':p', ':n'], [1, 1], t('Page :p of :n'))">
             {{ $this->order->co_no }} · {{ $this->order->quotation?->customer?->customer_name }} ·
-            dicetak {{ now()->format('d/m/Y H:i') }} · dokumen sah terbit sistem TMERP
+            {{ t('printed on') }} {{ now()->format('d/m/Y H:i') }} · {{ t('valid document issued by the TMERP system') }}
         </x-print.footer>
     </x-print.sheet>
 </x-print.document>

@@ -292,10 +292,10 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                             <table class="w-full text-[11.5px] border-collapse ml-8 mt-2.5" style="width:calc(100% - 2rem)">
                                                 <thead>
                                                     <tr class="text-[10px] text-muted uppercase font-bold">
-                                                        <th class="text-left px-2 py-1">External Cost</th>
-                                                        <th class="text-left px-2 py-1">Description</th>
-                                                        <th class="text-right px-2 py-1 w-28">Nominal</th>
-                                                        <th class="text-center px-2 py-1 w-32">Tax Treatment</th>
+                                                        <th class="text-left px-2 py-1">{{ t('External Cost') }}</th>
+                                                        <th class="text-left px-2 py-1">{{ t('Description') }}</th>
+                                                        <th class="text-right px-2 py-1 w-28">{{ t('Nominal') }}</th>
+                                                        <th class="text-center px-2 py-1 w-32">{{ t('Tax Treatment') }}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>

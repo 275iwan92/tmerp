@@ -238,7 +238,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
     public function applyChoice()
     {
         if (! $this->chosen) {
-            $this->addError('chosen', 'Pilih minimal 1 inquiry.');
+            $this->addError('chosen', t('Choose at least 1 inquiry.'));
 
             return;
         }
@@ -417,7 +417,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
-        $this->validate(['lostReason' => ['required', 'string', 'max:255']], [], ['lostReason' => 'Alasan kalah']);
+        $this->validate(['lostReason' => ['required', 'string', 'max:255']], [], ['lostReason' => t('Lost Reason')]);
 
         $ids = $this->quotation->items->pluck('inquiry_id')->filter()->unique();
 
@@ -474,7 +474,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
             'act.notes' => ['nullable', 'string', 'max:2000'],
             'act.next_action_date' => ['nullable', 'date'],
             'act.next_action' => ['nullable', 'string', 'max:255'],
-        ], [], ['act.activity_date' => 'Tanggal', 'act.activity_type' => 'Jenis'])['act'];
+        ], [], ['act.activity_date' => t('Date'), 'act.activity_type' => t('Type')])['act'];
 
         QuoActivity::create(array_map(fn ($v) => $v === '' ? null : $v, $data) + [
             'quotation_id' => $this->quotationId,
@@ -490,6 +490,21 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
     {
         QuoActivity::where('quotation_id', $this->quotationId)->where('created_by', Auth::user()->login)->whereKey($id)->delete();
         unset($this->activities);
+    }
+
+    // QuoActivity::TYPES/RESULTS (model, dipakai juga layar v2) masih berlabel Indonesia: layar ini menampilkan English + t().
+    private const ACT_TYPE_EN = ['CALL' => 'Phone call', 'VISIT' => 'Visit', 'WHATSAPP' => 'WhatsApp', 'EMAIL' => 'Email', 'MEETING' => 'Meeting', 'OTHER' => 'Other'];
+
+    private const ACT_RESULT_EN = ['POSITIVE' => 'Positive', 'NEUTRAL' => 'Neutral', 'NEGATIVE' => 'Negative', 'NO_ANSWER' => 'No answer'];
+
+    private function actTypeLabel(string $code): string
+    {
+        return t(self::ACT_TYPE_EN[$code] ?? $code);
+    }
+
+    private function actResultLabel(string $code): string
+    {
+        return t(self::ACT_RESULT_EN[$code] ?? $code);
     }
 
     // "1 CO = 1 Quotation" (keputusan user 2026-08-20) -- lihat App\Services\Sales\CoOrderBuilder.
@@ -512,15 +527,15 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📄 Quotation Entry</b>
-        <span class="text-xs text-white/75">{{ $this->quotation->quotation_no ?? 'NEW' }}@if ($this->quotation->customer) · {{ $this->quotation->customer->customer_name }}@endif</span>
-        <x-form.badge :tone="$this->quotation->doc_status === 'PUBLISHED' ? 'success' : 'warn'">{{ $this->quotationId ? $this->quotation->doc_status : 'NEW' }}</x-form.badge>
+        <b class="text-[15px]">📄 {{ t('Quotation Entry') }}</b>
+        <span class="text-xs text-white/75">{{ $this->quotation->quotation_no ?? t('NEW') }}@if ($this->quotation->customer) · {{ $this->quotation->customer->customer_name }}@endif</span>
+        <x-form.badge :tone="$this->quotation->doc_status === 'PUBLISHED' ? 'success' : 'warn'">{{ $this->quotationId ? $this->quotation->doc_status : t('NEW') }}</x-form.badge>
         {{-- Cetak cuma boleh setelah diterbitkan (PUBLISHED) -- instruksi user
              2026-08-24, dikunci juga di sisi mount() quotation/print.blade.php. --}}
         @if ($this->quotation->doc_status === 'PUBLISHED')
-            <button type="button" x-data @click="$dispatch('tm-print-open')" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">🖨️ Preview Cetak</button>
+            <button type="button" x-data @click="$dispatch('tm-print-open')" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">🖨️ {{ t('Print Preview') }}</button>
         @endif
-        <x-back-button :fallback="route('quotation.list')" title="Kembali ke Daftar Quotation" class="ml-auto" />
+        <x-back-button :fallback="route('quotation.list')" :title="t('Back to Quotation List')" class="ml-auto" />
     </header>
 
     <div class="max-w-[1280px] mx-auto my-5 px-4">
@@ -535,62 +550,62 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                 {{-- HEADER --}}
                 <div class="bg-white border border-field-border rounded-md p-4 mb-4">
                     <div class="flex items-center mb-3">
-                        <h3 class="text-xs text-navy uppercase font-bold flex-1">Header Quotation</h3>
-                        <span class="text-[10.5px] text-muted"><x-form.auto-chip state="auto" /> = terisi otomatis · <x-form.auto-chip state="override" /> = diubah officer (klik untuk kembali ke otomatis)</span>
+                        <h3 class="text-xs text-navy uppercase font-bold flex-1">{{ t('Quotation Header') }}</h3>
+                        <span class="text-[10.5px] text-muted"><x-form.auto-chip state="auto" /> = {{ t('filled automatically') }} · <x-form.auto-chip state="override" /> = {{ t('changed by officer (click to revert to automatic)') }}</span>
                     </div>
                     <div class="grid">
-                        <x-form.input label="No. Quotation" readonly value="{{ $this->quotation->quotation_no ?? '(otomatis)' }}" class="bg-field-soft" />
-                        <x-form.date-picker label="Tanggal" value="{{ $this->quotation->issued_date?->format('Y-m-d') }}" :disabled="! $this->editable"
+                        <x-form.input :label="t('Quotation No.')" readonly value="{{ $this->quotation->quotation_no ?? t('(automatic)') }}" class="bg-field-soft" />
+                        <x-form.date-picker :label="t('Date')" value="{{ $this->quotation->issued_date?->format('Y-m-d') }}" :disabled="! $this->editable"
                             wire:change="updateHeader('issued_date', $event.target.value)" class="disabled:bg-field-soft" />
                         <div class="relative">
-                            <x-form.date-picker label="Berlaku s/d" value="{{ $this->quotation->valid_until?->format('Y-m-d') }}" :disabled="! $this->editable"
+                            <x-form.date-picker :label="t('Valid Until')" value="{{ $this->quotation->valid_until?->format('Y-m-d') }}" :disabled="! $this->editable"
                                 wire:change="updateHeader('valid_until', $event.target.value)" class="disabled:bg-field-soft" />
                             <x-form.auto-chip field="valid_until" :state="$this->autoState['valid_until'] ?? null" class="absolute top-0 right-0" />
                         </div>
                         <div class="relative">
-                            <x-form.date-picker label="Deadline Quotation" value="{{ $this->quotation->deadline_date?->format('Y-m-d') }}" :disabled="! $this->editable"
+                            <x-form.date-picker :label="t('Quotation Deadline')" value="{{ $this->quotation->deadline_date?->format('Y-m-d') }}" :disabled="! $this->editable"
                                 wire:change="updateHeader('deadline_date', $event.target.value)" class="disabled:bg-field-soft" />
                             <x-form.auto-chip field="deadline_date" :state="$this->autoState['deadline_date'] ?? null" class="absolute top-0 right-0" />
                         </div>
                         <div class="col-span-2 flex items-end gap-2">
                             <div class="flex-1">
-                                <x-form.input label="Customer (dari inquiry)" readonly value="{{ $this->quotation->customer ? $this->quotation->customer->customer_name.' ('.$this->quotation->customer->customer_code.')' : '' }}"
-                                    placeholder="Pilih inquiry dulu — customer terisi otomatis" class="bg-field-soft" />
+                                <x-form.input :label="t('Customer (from inquiry)')" readonly value="{{ $this->quotation->customer ? $this->quotation->customer->customer_name.' ('.$this->quotation->customer->customer_code.')' : '' }}"
+                                    :placeholder="t('Choose an inquiry first — customer is filled automatically')" class="bg-field-soft" />
                             </div>
                             @if (! $this->quotationId || $this->editable)
-                                <x-ui.button variant="outline" size="sm" icon="fa-list-check" wire:click="openChooser">Choose inquiry</x-ui.button>
+                                <x-ui.button variant="outline" size="sm" icon="fa-list-check" wire:click="openChooser">{{ t('Choose inquiry') }}</x-ui.button>
                             @endif
                         </div>
                         <div class="relative">
-                            <x-form.select label="Attn. (Contact)" :disabled="! $this->editable" wire:change="updateHeader('attn_contact', $event.target.value)" class="disabled:bg-field-soft"
+                            <x-form.select :label="t('Attn. (Contact)')" :disabled="! $this->editable" wire:change="updateHeader('attn_contact', $event.target.value)" class="disabled:bg-field-soft"
                                 :selected="$this->quotation->attn_contact" :options="$this->contactOptions" />
                             <x-form.auto-chip field="attn_contact" :state="$this->autoState['attn_contact'] ?? null" class="absolute top-0 right-0" />
                         </div>
                         <div wire:key="cc-{{ md5($this->quotation->attn_contact.'|'.$this->quotation->ccs->pluck('contact_name')->join('|')) }}">
                             @if ($this->editable)
-                                <x-form.multi-select label="CC" wire:change="updateCc($event.target.value)" placeholder="Pilih kontak CC..."
+                                <x-form.multi-select :label="t('CC')" wire:change="updateCc($event.target.value)" :placeholder="t('Choose CC contacts...')"
                                     :options="$this->ccOptions" :selected="$this->quotation->ccs->pluck('contact_name')->all()" />
                             @else
-                                <x-form.input label="CC" readonly value="{{ $this->quotation->ccs->pluck('contact_name')->join(', ') }}" class="bg-field-soft" />
+                                <x-form.input :label="t('CC')" readonly value="{{ $this->quotation->ccs->pluck('contact_name')->join(', ') }}" class="bg-field-soft" />
                             @endif
                         </div>
                         <div class="relative">
-                            <x-form.select label="PIC Sales" :disabled="! $this->editable" wire:change="updateHeader('sales_pic', $event.target.value)" class="disabled:bg-field-soft"
+                            <x-form.select :label="t('Sales PIC')" :disabled="! $this->editable" wire:change="updateHeader('sales_pic', $event.target.value)" class="disabled:bg-field-soft"
                                 :selected="$this->quotation->sales_pic" :options="$this->salesOptions" />
                             <x-form.auto-chip field="sales_pic" :state="$this->autoState['sales_pic'] ?? null" class="absolute top-0 right-0" />
                         </div>
                         <div class="relative">
-                            <x-form.select label="Termin Pembayaran" :disabled="! $this->editable" wire:change="updateHeader('payment_term', $event.target.value)" class="disabled:bg-field-soft"
+                            <x-form.select :label="t('Terms of Payment')" :disabled="! $this->editable" wire:change="updateHeader('payment_term', $event.target.value)" class="disabled:bg-field-soft"
                                 :selected="$this->quotation->payment_term" :options="$this->paymentTerms->pluck('term_label', 'payment_term_code')->all()" />
                             <x-form.auto-chip field="payment_term" :state="$this->autoState['payment_term'] ?? null" class="absolute top-0 right-0" />
                         </div>
                         <div class="relative">
-                            <x-form.select label="Skema Pajak" :disabled="! $this->editable" wire:change="updateHeader('tax_scheme', $event.target.value)" class="disabled:bg-field-soft"
-                                :placeholder="false" :selected="$this->quotation->tax_scheme" :options="['EXCL' => 'Exclusive PPN 11%', 'INCL' => 'Inclusive PPN 11%']" />
+                            <x-form.select :label="t('Tax Scheme')" :disabled="! $this->editable" wire:change="updateHeader('tax_scheme', $event.target.value)" class="disabled:bg-field-soft"
+                                :placeholder="false" :selected="$this->quotation->tax_scheme" :options="['EXCL' => t('Exclusive VAT 11%'), 'INCL' => t('Inclusive VAT 11%')]" />
                             <x-form.auto-chip field="tax_scheme" :state="$this->autoState['tax_scheme'] ?? null" class="absolute top-0 right-0" />
                         </div>
                         <div class="relative">
-                            <x-form.select label="Mata Uang" :disabled="! $this->editable" wire:change="updateHeader('currency_code', $event.target.value)" class="disabled:bg-field-soft"
+                            <x-form.select :label="t('Currency')" :disabled="! $this->editable" wire:change="updateHeader('currency_code', $event.target.value)" class="disabled:bg-field-soft"
                                 :placeholder="false" :selected="$this->quotation->currency_code" :options="$this->currencies" />
                             <x-form.auto-chip field="currency_code" :state="$this->autoState['currency_code'] ?? null" class="absolute top-0 right-0" />
                         </div>
@@ -600,11 +615,11 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                 {{-- ITEM LIST --}}
                 <div class="bg-white border border-field-border rounded-md mb-4 overflow-hidden">
                     <div class="flex items-center justify-between px-4 py-2.5 bg-field-soft border-b border-field-border">
-                        <h3 class="text-xs text-navy uppercase font-bold">Daftar Inquiry Terkonsolidasi</h3>
+                        <h3 class="text-xs text-navy uppercase font-bold">{{ t('Consolidated Inquiry List') }}</h3>
                         @if ($this->editable)
                             <div class="flex items-center gap-1.5">
-                                <button type="button" wire:click="addFreeform" class="text-[11px] font-bold text-navy bg-field-badge border border-dashed border-field-border rounded px-2.5 py-1 cursor-pointer">＋ Baris Bebas</button>
-                                <button type="button" wire:click="openChooser" class="text-[11px] font-bold text-accent bg-accent-soft border border-dashed border-accent rounded px-2.5 py-1 cursor-pointer">＋ Choose inquiry</button>
+                                <button type="button" wire:click="addFreeform" class="text-[11px] font-bold text-navy bg-field-badge border border-dashed border-field-border rounded px-2.5 py-1 cursor-pointer">＋ {{ t('Free Row') }}</button>
+                                <button type="button" wire:click="openChooser" class="text-[11px] font-bold text-accent bg-accent-soft border border-dashed border-accent rounded px-2.5 py-1 cursor-pointer">＋ {{ t('Choose inquiry') }}</button>
                             </div>
                         @endif
                     </div>
@@ -612,12 +627,12 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                     <table class="w-full text-xs border-collapse">
                         <thead>
                             <tr class="bg-field-soft">
-                                <th class="text-left px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Ref. Inquiry</th>
-                                <th class="text-left px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Deskripsi & Spesifikasi</th>
-                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Qty</th>
-                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Harga Satuan</th>
-                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Disc %</th>
-                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Subtotal</th>
+                                <th class="text-left px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">{{ t('Ref. Inquiry') }}</th>
+                                <th class="text-left px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">{{ t('Description & Specification') }}</th>
+                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">{{ t('Qty') }}</th>
+                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">{{ t('Unit Price') }}</th>
+                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">{{ t('Disc %') }}</th>
+                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">{{ t('Subtotal') }}</th>
                                 @if ($this->editable)
                                     <th class="px-2.5 py-2 border-b border-field-border"></th>
                                 @endif
@@ -629,7 +644,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                                     <td class="px-2.5 py-2 font-mono font-bold text-accent">{{ $item->inquiry?->inquiry_no ?? '—' }}</td>
                                     <td class="px-2.5 py-2">
                                         @if ($item->source_type === 'FREEFORM' && $this->editable)
-                                            <x-form.input value="{{ $item->description }}" placeholder="Deskripsi baris (mis. jasa/ongkos)..."
+                                            <x-form.input value="{{ $item->description }}" :placeholder="t('Row description (e.g. service/fee)...')"
                                                 wire:change="updateItem({{ $item->id_item }}, 'description', $event.target.value)" class="!py-1 font-medium" />
                                         @else
                                             <div class="font-medium text-navy">{{ $item->description }}</div>
@@ -638,9 +653,9 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                                             <div class="text-[10px] text-muted mt-0.5">{{ $item->spec_note }}</div>
                                         @endif
                                         @if ($item->source_type === 'INQUIRY_TOOLING')
-                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-[#fff5e0] text-[#8a5a00]">TOOLING</span>
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-[#fff5e0] text-[#8a5a00]">{{ t('TOOLING') }}</span>
                                         @elseif ($item->source_type === 'FREEFORM')
-                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-[#ede9fe] text-[#5b21b6]">BEBAS</span>
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-[#ede9fe] text-[#5b21b6]">{{ t('FREEFORM') }}</span>
                                         @endif
                                     </td>
                                     <td class="px-2.5 py-2 text-right">
@@ -667,12 +682,12 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                                     <td class="px-2.5 py-2 text-right font-bold text-navy">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                                     @if ($this->editable)
                                         <td class="px-2.5 py-2 text-center">
-                                            <button type="button" wire:click="removeItem({{ $item->id_item }})" wire:confirm="Hapus baris ini?" class="text-red-500 hover:text-red-700 cursor-pointer">✕</button>
+                                            <button type="button" wire:click="removeItem({{ $item->id_item }})" wire:confirm="{{ t('Delete this row?') }}" class="text-red-500 hover:text-red-700 cursor-pointer">✕</button>
                                         </td>
                                     @endif
                                 </tr>
                             @empty
-                                <tr><td colspan="7" class="text-center py-8 text-muted">Belum ada baris. Klik "＋ Choose inquiry" untuk mulai.</td></tr>
+                                <tr><td colspan="7" class="text-center py-8 text-muted">{{ t('No rows yet. Click "＋ Choose inquiry" to start.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -682,52 +697,52 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
             {{-- KANAN --}}
             <div class="lg:w-[320px] lg:shrink-0">
                 <div class="bg-white border border-field-border rounded-md p-4 mb-4">
-                    <h3 class="text-xs text-navy uppercase font-bold mb-2.5">Summary &amp; Pajak</h3>
+                    <h3 class="text-xs text-navy uppercase font-bold mb-2.5">{{ t('Summary & Tax') }}</h3>
                     <div class="space-y-1 text-xs">
-                        <div class="flex justify-between"><span class="text-muted">Subtotal Produk &amp; Layanan</span><span>{{ number_format($this->totals['subtotal'], 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between font-semibold border-t border-field-badge pt-1"><span>Dasar Pengenaan Pajak (DPP)</span><span>{{ number_format($this->totals['dpp'], 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between"><span class="text-muted">PPN {{ number_format($this->totals['ppn_pct'], 0) }}%</span><span>{{ number_format($this->totals['ppn'], 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between font-bold text-accent border-t border-field-badge pt-1 text-[13px]"><span>Grand Total</span><span>{{ number_format($this->totals['grand'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between"><span class="text-muted">{{ t('Products & Services Subtotal') }}</span><span>{{ number_format($this->totals['subtotal'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between font-semibold border-t border-field-badge pt-1"><span>{{ t('Tax Base (DPP)') }}</span><span>{{ number_format($this->totals['dpp'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between"><span class="text-muted">{{ t('VAT') }} {{ number_format($this->totals['ppn_pct'], 0) }}%</span><span>{{ number_format($this->totals['ppn'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between font-bold text-accent border-t border-field-badge pt-1 text-[13px]"><span>{{ t('Grand Total') }}</span><span>{{ number_format($this->totals['grand'], 0, ',', '.') }}</span></div>
                     </div>
                 </div>
 
                 <div class="bg-white border border-field-border rounded-md p-4 mb-4">
-                    <x-form.textarea label="Syarat & Ketentuan / Catatan" rows="4" :disabled="! $this->editable"
-                        wire:model.blur="notes" placeholder="Tuliskan syarat khusus yang tercetak di dokumen..." />
+                    <x-form.textarea :label="t('Terms & Conditions / Notes')" rows="4" :disabled="! $this->editable"
+                        wire:model.blur="notes" :placeholder="t('Write special terms to be printed on the document...')" />
                 </div>
 
                 @if (! $this->quotationId || $this->quotation->doc_status === 'DRAFT')
-                    <button type="button" wire:click="publish" wire:confirm="Terbitkan quotation ini? Setelah terbit, isi tidak bisa diedit lagi."
+                    <button type="button" wire:click="publish" wire:confirm="{{ t('Publish this quotation? Once published, the content can no longer be edited.') }}"
                         @disabled($this->quotation->items->isEmpty())
                         class="w-full px-4 py-2.5 rounded text-xs font-bold bg-accent text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                        Terbitkan Quotation
+                        {{ t('Issue Quotation') }}
                     </button>
                 @elseif ($this->outcome === 'LOST')
                     <x-ui.card variant="muted" size="sm" class="mb-4">
-                        <x-ui.badge tone="danger" pill icon="fa-xmark">LOST</x-ui.badge>
-                        <p class="text-xs mt-2"><b>{{ t('Lost reason') }}:</b> {{ $this->lostReasonText ?? '—' }}</p>
+                        <x-ui.badge tone="danger" pill icon="fa-xmark">{{ t('LOST') }}</x-ui.badge>
+                        <p class="text-xs mt-2"><b>{{ t('Lost Reason') }}:</b> {{ $this->lostReasonText ?? '—' }}</p>
                     </x-ui.card>
                 @else
-                    <x-alert.banner type="success" :message="$this->outcome === 'WON' ? '✓ WON — Customer Order sudah dibuat' : '✓ Sudah diterbitkan — isi terkunci'" />
+                    <x-alert.banner type="success" :message="$this->outcome === 'WON' ? '✓ '.t('WON — Customer Order has been created') : '✓ '.t('Published — content locked')" />
                     <div class="flex flex-col gap-2 mt-2.5 mb-4">
                         <x-ui.button variant="success" block icon="fa-box" wire:click="createOrOpenCo">
-                            {{ $this->outcome === 'WON' ? 'Buka Customer Order' : 'Win → Buat Customer Order' }}
+                            {{ $this->outcome === 'WON' ? t('Open Customer Order') : t('Win → Create Customer Order') }}
                         </x-ui.button>
                         @if (! $this->outcome)
-                            <x-ui.button variant="action-danger" block icon="fa-xmark" wire:click="openLostForm">Lost → Isi Alasan</x-ui.button>
+                            <x-ui.button variant="action-danger" block icon="fa-xmark" wire:click="openLostForm">{{ t('Lost → Enter Reason') }}</x-ui.button>
                         @endif
                     </div>
                 @endif
 
                 @if ($this->quotationId && $this->quotation->doc_status === 'PUBLISHED')
-                    <x-ui.card variant="section" size="sm" :title="'Follow-up ('.$this->activities->count().')'">
+                    <x-ui.card variant="section" size="sm" :title="t('Follow-up').' ('.$this->activities->count().')'">
                         <x-slot:actions>
-                            <x-ui.button size="xs" icon="fa-plus" wire:click="openActivityForm">Tambah</x-ui.button>
+                            <x-ui.button size="xs" icon="fa-plus" wire:click="openActivityForm">{{ t('Add') }}</x-ui.button>
                         </x-slot:actions>
                         <div class="flex flex-wrap gap-1 mb-2">
                             @foreach (\App\Models\Sdi\QuoActivity::TYPES as $code => $t)
                                 @if ($n = $this->activities->where('activity_type', $code)->count())
-                                    <x-ui.badge tone="info" size="xs" pill>{{ $t[0] }} {{ $t[1] }} ×{{ $n }}</x-ui.badge>
+                                    <x-ui.badge tone="info" size="xs" pill>{{ $t[0] }} {{ $this->actTypeLabel($code) }} ×{{ $n }}</x-ui.badge>
                                 @endif
                             @endforeach
                         </div>
@@ -735,13 +750,13 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                             @forelse ($this->activities as $a)
                                 <div wire:key="act-{{ $a->id_activity }}" class="border-l-2 border-accent pl-2.5 text-[11.5px]">
                                     <div class="flex items-center gap-1.5">
-                                        <b>{{ \App\Models\Sdi\QuoActivity::TYPES[$a->activity_type][0] ?? '' }} {{ \App\Models\Sdi\QuoActivity::TYPES[$a->activity_type][1] ?? $a->activity_type }}</b>
+                                        <b>{{ \App\Models\Sdi\QuoActivity::TYPES[$a->activity_type][0] ?? '' }} {{ $this->actTypeLabel($a->activity_type) }}</b>
                                         <span class="text-muted">{{ $a->activity_date?->format('d M Y') }}</span>
                                         @if ($a->result)
-                                            <x-ui.badge :tone="match ($a->result) { 'POSITIVE' => 'success', 'NEGATIVE' => 'danger', default => 'muted' }" size="xs" pill>{{ \App\Models\Sdi\QuoActivity::RESULTS[$a->result] ?? $a->result }}</x-ui.badge>
+                                            <x-ui.badge :tone="match ($a->result) { 'POSITIVE' => 'success', 'NEGATIVE' => 'danger', default => 'muted' }" size="xs" pill>{{ $this->actResultLabel($a->result) }}</x-ui.badge>
                                         @endif
                                         @if ($a->created_by === auth()->user()->login)
-                                            <x-ui.icon-button icon="fa-trash" size="xs" class="ml-auto" wire:click="deleteActivity({{ $a->id_activity }})" wire:confirm="Hapus catatan follow-up ini?" />
+                                            <x-ui.icon-button icon="fa-trash" size="xs" class="ml-auto" wire:click="deleteActivity({{ $a->id_activity }})" wire:confirm="{{ t('Delete this follow-up note?') }}" />
                                         @endif
                                     </div>
                                     @if ($a->contact_person)<div class="text-muted">{{ $a->contact_person }}</div>@endif
@@ -750,7 +765,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                                     <div class="text-[10px] text-muted">{{ $a->created_by }}</div>
                                 </div>
                             @empty
-                                <p class="text-[11px] text-muted">Belum ada follow-up. Catat tiap telepon, kunjungan, atau pesan ke customer.</p>
+                                <p class="text-[11px] text-muted">{{ t('No follow-up yet. Record every call, visit, or message to the customer.') }}</p>
                             @endforelse
                         </div>
                     </x-ui.card>
@@ -768,49 +783,49 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
             <template x-if="open">
                 <div class="fixed inset-0 z-[100] flex">
                     <div class="w-full md:w-[65vw] h-full bg-white shadow-2xl flex flex-col" x-transition:enter="transition duration-200" x-transition:enter-start="-translate-x-full">
-                        <iframe src="{{ route('quotation.print', ['quotation' => $this->quotationId]) }}" class="flex-1 w-full border-0" title="Preview cetak {{ $this->quotation->quotation_no }}"></iframe>
+                        <iframe src="{{ route('quotation.print', ['quotation' => $this->quotationId]) }}" class="flex-1 w-full border-0" title="{{ t('Print Preview') }} {{ $this->quotation->quotation_no }}"></iframe>
                     </div>
-                    <div class="flex-1 bg-black/40 cursor-pointer" @click="open = false" title="Tutup"></div>
+                    <div class="flex-1 bg-black/40 cursor-pointer" @click="open = false" title="{{ t('Close') }}"></div>
                 </div>
             </template>
         </div>
     @endif
 
     @if ($showLostForm)
-        <x-ui.modal title="Lost — alasan kalah" close="closeLostForm" size="md">
+        <x-ui.modal :title="t('Lost — reason')" close="closeLostForm" size="md">
             <div class="p-4 flex flex-col gap-2">
-                <p class="text-[11px] text-muted">Semua inquiry di quotation ini ditandai LOST. Alasan ini muncul di laporan Win-Rate Sales.</p>
-                <x-form.textarea label="Alasan kalah *" rows="3" wire:model="lostReason" placeholder="Mis. harga kompetitor lebih murah, customer batal proyek, lead time terlalu lama..." />
+                <p class="text-[11px] text-muted">{{ t('All inquiries in this quotation are marked LOST. This reason appears in the Sales Win-Rate report.') }}</p>
+                <x-form.textarea :label="t('Lost Reason *')" rows="3" wire:model="lostReason" :placeholder="t('E.g. competitor price is cheaper, customer cancelled the project, lead time too long...')" />
                 @error('lostReason')<p class="text-[11px] text-danger-ink">{{ $message }}</p>@enderror
             </div>
             <x-slot:footer>
                 <x-ui.button preset="cancel" wire:click="closeLostForm" />
-                <x-ui.button variant="danger" icon="fa-xmark" wire:click="markLost">Tandai Lost</x-ui.button>
+                <x-ui.button variant="danger" icon="fa-xmark" wire:click="markLost">{{ t('Mark as Lost') }}</x-ui.button>
             </x-slot:footer>
         </x-ui.modal>
     @endif
 
     @if ($showActivityForm)
-        <x-ui.modal title="Follow-up quotation" close="closeActivityForm" size="lg">
+        <x-ui.modal :title="t('Quotation follow-up')" close="closeActivityForm" size="lg">
             <div class="p-4 flex flex-col gap-3">
-                <x-form.toggle-group label="Jenis *">
+                <x-form.toggle-group :label="t('Kind *')">
                     @foreach (\App\Models\Sdi\QuoActivity::TYPES as $code => $t)
-                        <x-form.toggle-option :active="($act['activity_type'] ?? '') === $code" wire:click="setActType('{{ $code }}')">{{ $t[0] }} {{ $t[1] }}</x-form.toggle-option>
+                        <x-form.toggle-option :active="($act['activity_type'] ?? '') === $code" wire:click="setActType('{{ $code }}')">{{ $t[0] }} {{ $this->actTypeLabel($code) }}</x-form.toggle-option>
                     @endforeach
                 </x-form.toggle-group>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="sm:w-48"><x-form.date-picker label="Tanggal *" wire:model="act.activity_date" /></div>
-                    <div class="flex-1"><x-form.input label="Kontak yang dihubungi" wire:model="act.contact_person" /></div>
+                    <div class="sm:w-48"><x-form.date-picker :label="t('Date *')" wire:model="act.activity_date" /></div>
+                    <div class="flex-1"><x-form.input :label="t('Contact reached')" wire:model="act.contact_person" /></div>
                 </div>
-                <x-form.toggle-group label="Hasil">
+                <x-form.toggle-group :label="t('Result')">
                     @foreach (\App\Models\Sdi\QuoActivity::RESULTS as $code => $label)
-                        <x-form.toggle-option :active="($act['result'] ?? '') === $code" wire:click="setActResult('{{ $code }}')">{{ $label }}</x-form.toggle-option>
+                        <x-form.toggle-option :active="($act['result'] ?? '') === $code" wire:click="setActResult('{{ $code }}')">{{ $this->actResultLabel($code) }}</x-form.toggle-option>
                     @endforeach
                 </x-form.toggle-group>
-                <x-form.textarea label="Catatan" rows="3" wire:model="act.notes" placeholder="Apa yang dibicarakan, respon customer..." />
+                <x-form.textarea :label="t('Notes')" rows="3" wire:model="act.notes" :placeholder="t('What was discussed, customer response...')" />
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="sm:w-48"><x-form.date-picker label="Tindak lanjut tgl" wire:model="act.next_action_date" /></div>
-                    <div class="flex-1"><x-form.input label="Tindak lanjut berikutnya" wire:model="act.next_action" placeholder="Mis. telepon ulang, kirim sampel..." /></div>
+                    <div class="sm:w-48"><x-form.date-picker :label="t('Next action date')" wire:model="act.next_action_date" /></div>
+                    <div class="flex-1"><x-form.input :label="t('Next follow-up action')" wire:model="act.next_action" :placeholder="t('E.g. call back, send a sample...')" /></div>
                 </div>
                 @if ($errors->any())<x-alert.banner type="danger" :message="$errors->first()" />@endif
             </div>
@@ -822,17 +837,17 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
     @endif
 
     @if ($showChooser)
-        <x-ui.modal title="Choose inquiry window" close="closeChooser" size="2xl">
+        <x-ui.modal :title="t('Choose inquiry window')" close="closeChooser" size="2xl">
             <div class="p-4">
-                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="chooserSearch" placeholder="Cari no. inquiry / produk / customer..." class="mb-2" />
-                <p class="text-[11px] text-muted mb-2">Inquiry yang costing-nya sudah published dan belum masuk quotation mana pun. Satu quotation = satu customer; semua jenjang qty masuk sebagai baris terpisah.</p>
+                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="chooserSearch" :placeholder="t('Search inquiry no. / product / customer...')" class="mb-2" />
+                <p class="text-[11px] text-muted mb-2">{{ t('Inquiries whose costing is published and not yet in any quotation.') }} {{ t('One quotation = one customer; every qty tier becomes a separate row.') }}</p>
                 @if ($this->quotation->customer_id && $this->chosenCustomerId && $this->chosenCustomerId !== (int) $this->quotation->customer_id)
-                    <x-alert.banner type="warning" message="Customer berbeda dari quotation ini: customer akan diganti dan semua baris lama dihapus." />
+                    <x-alert.banner type="warning" :message="t('Different customer from this quotation: the customer will be replaced and all old rows deleted.')" />
                 @endif
                 <div class="max-h-[50vh] overflow-y-auto tm-scroll border border-field-border rounded">
                     <x-ui.table size="sm" sticky hover>
                         <thead>
-                            <tr><th class="w-8"></th><th>Inquiry</th><th>Customer · Produk</th><th>Tanggal</th><th class="text-right">Tier</th><th class="text-right">Harga/pcs</th></tr>
+                            <tr><th class="w-8"></th><th>{{ t('Inquiry') }}</th><th>{{ t('Customer · Product') }}</th><th>{{ t('Date') }}</th><th class="text-right">{{ t('Tier') }}</th><th class="text-right">{{ t('Price/pcs') }}</th></tr>
                         </thead>
                         <tbody>
                             @forelse ($this->chooserRows as $r)
@@ -841,14 +856,14 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                                     <td class="font-mono font-bold text-accent">{{ $r->no }}</td>
                                     <td>
                                         <div class="font-semibold text-navy">{{ $r->customer }}</div>
-                                        <div class="text-[10.5px] text-muted">{{ $r->product }}@if ($this->blocked($r->customer_id)) · customer lain @endif</div>
+                                        <div class="text-[10.5px] text-muted">{{ $r->product }}@if ($this->blocked($r->customer_id)) · {{ t('other customer') }} @endif</div>
                                     </td>
                                     <td>{{ $r->date?->format('d M Y') }}</td>
                                     <td class="text-right">{{ $r->tiers }}</td>
                                     <td class="text-right">{{ $r->price_min !== null ? number_format($r->price_min, 0, ',', '.').($r->price_max != $r->price_min ? ' – '.number_format($r->price_max, 0, ',', '.') : '') : '—' }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="text-center py-6 text-muted">Tidak ada inquiry berharga yang belum masuk quotation.</td></tr>
+                                <tr><td colspan="6" class="text-center py-6 text-muted">{{ t('No priced inquiries that are not yet in a quotation.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </x-ui.table>
@@ -856,9 +871,9 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                 @error('chosen')<p class="text-[11px] text-red-600 mt-1.5">{{ $message }}</p>@enderror
             </div>
             <x-slot:footer>
-                <span class="text-xs text-muted mr-auto self-center">{{ count($chosen) ? count($chosen).' inquiry dipilih' : '' }}</span>
+                <span class="text-xs text-muted mr-auto self-center">{{ count($chosen) ? str_replace(':n', count($chosen), t(':n inquiry selected')) : '' }}</span>
                 <x-ui.button preset="cancel" wire:click="closeChooser" />
-                <x-ui.button variant="primary" wire:click="applyChoice">Choose</x-ui.button>
+                <x-ui.button variant="primary" wire:click="applyChoice">{{ t('Choose') }}</x-ui.button>
             </x-slot:footer>
         </x-ui.modal>
     @endif

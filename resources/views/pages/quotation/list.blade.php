@@ -185,7 +185,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-2 border-b border-field-badge">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $q->doc_status === 'PUBLISHED' ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#fef6e7] text-[#b45309]' }}">{{ $q->doc_status }}</span>
                                     @if ($outcome = $q->outcome())
-                                        <x-ui.badge :tone="$outcome === 'WON' ? 'success' : 'danger'" size="xs" pill>{{ $outcome === 'WON' ? 'WIN' : 'LOST' }}</x-ui.badge>
+                                        <x-ui.badge :tone="$outcome === 'WON' ? 'success' : 'danger'" size="xs" pill>{{ $outcome === 'WON' ? t('WIN') : t('LOST') }}</x-ui.badge>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-field-badge text-right font-semibold">{{ number_format($this->grandTotals[$q->id_quotation] ?? 0, 0, ',', '.') }}</td>

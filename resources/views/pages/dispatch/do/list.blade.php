@@ -171,12 +171,12 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total DO', 'value' => $this->statTotal, 'tone' => 'total'],
-            'draft' => ['label' => 'Draft', 'value' => $this->statDraft, 'tone' => 'warn',
+            'total' => ['label' => t('Total DO'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => t('Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('status', 'DRAFT')],
-            'confirmed' => ['label' => 'Confirmed', 'value' => $this->statConfirmed, 'tone' => 'extra',
+            'confirmed' => ['label' => t('Confirmed'), 'value' => $this->statConfirmed, 'tone' => 'extra',
                 'filter' => fn ($q) => $q->where('status', 'CONFIRMED')],
-            'shipped' => ['label' => 'Shipped', 'value' => $this->statShipped, 'tone' => 'active',
+            'shipped' => ['label' => t('Shipped'), 'value' => $this->statShipped, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('status', 'SHIPPED')],
         ];
     }
@@ -191,7 +191,7 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. DO / customer…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search DO no. / customer…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -205,30 +205,30 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
                     <thead>
                         <tr>
                             <th class="px-2 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[32px]"></th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Delivery Order</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
-                            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">Baris</th>
-                            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Asal CO</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Nilai</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Delivery Order') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Date') }}</th>
+                            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">{{ t('Lines') }}</th>
+                            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Source CO') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ t('Value') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->deliveries as $d)
                             @php($isOpen = in_array($d->id_delivery, $this->expanded, true))
-                            <tr wire:key="do-{{ $d->id_delivery }}" wire:dblclick="openDelivery({{ $d->id_delivery }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                            <tr wire:key="do-{{ $d->id_delivery }}" wire:dblclick="openDelivery({{ $d->id_delivery }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                 <td class="px-2 py-2 border-b border-[#eef1f5] text-center">
-                                    <button type="button" wire:click.stop="toggleExpand({{ $d->id_delivery }})" title="{{ $isOpen ? 'Tutup preview baris' : 'Lihat baris' }}"
+                                    <button type="button" wire:click.stop="toggleExpand({{ $d->id_delivery }})" title="{{ $isOpen ? t('Close line preview') : t('View lines') }}"
                                         class="inline-flex items-center justify-center w-6 h-6 rounded text-muted hover:bg-[#eef3fb] hover:text-accent cursor-pointer">{{ $isOpen ? '▾' : '▸' }}</button>
                                 </td>
                                 <x-grid.identity-cell :id="$d->id_delivery" :name="$d->customer_name ?? '—'"
-                                    :code="($d->do_no ?: '(Draft)').(($d->do_type ?? 'CUSTOMER') === 'SUBCON' ? ' · SUBKON '.$d->subcon_process : '')" />
+                                    :code="($d->do_no ?: t('(Draft)')).(($d->do_type ?? 'CUSTOMER') === 'SUBCON' ? ' · '.t('SUBCON').' '.$d->subcon_process : '')" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ \Carbon\Carbon::parse($d->do_date)->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-center">{{ $d->line_count }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-center">
                                     @if ($d->co_count > 1)
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1ecfc] text-[#6d28d9]">{{ $d->co_count }} CO</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1ecfc] text-[#6d28d9]">{{ $d->co_count }} {{ t('CO') }}</span>
                                     @else
                                         <span class="text-muted">{{ $d->co_count }}</span>
                                     @endif
@@ -243,10 +243,10 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format($d->total_value, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka Delivery Order ini" action="openDelivery({{ $d->id_delivery }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" :title="t('Open this Delivery Order')" action="openDelivery({{ $d->id_delivery }})" />
                                     @if ($d->status === 'DRAFT' && $d->line_count >= 1)
-                                        <x-grid.action-icon icon="fa-check" title="Confirm DO ini" action="confirmDelivery({{ $d->id_delivery }})"
-                                            confirm="Confirm Delivery Order utk {{ $d->customer_name }}? Nomor DO akan diterbitkan &amp; baris terkunci." variant="success" />
+                                        <x-grid.action-icon icon="fa-check" :title="t('Confirm this DO')" action="confirmDelivery({{ $d->id_delivery }})"
+                                            confirm="{{ str_replace(':customer', $d->customer_name, t('Confirm Delivery Order for :customer? The DO number will be issued & the lines locked.')) }}" variant="success" />
                                     @endif
                                 </td>
                             </tr>
@@ -256,11 +256,11 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
                                         <table class="w-full text-[11.5px] border-collapse ml-8" style="width:calc(100% - 2rem)">
                                             <thead>
                                                 <tr class="text-[10px] text-muted uppercase font-bold">
-                                                    <th class="text-left px-2 py-1 w-24">No. CO</th>
-                                                    <th class="text-left px-2 py-1">Item</th>
-                                                    <th class="text-right px-2 py-1 w-24">Qty</th>
-                                                    <th class="text-right px-2 py-1 w-24">Harga</th>
-                                                    <th class="text-right px-2 py-1 w-28">Subtotal</th>
+                                                    <th class="text-left px-2 py-1 w-24">{{ t('CO No.') }}</th>
+                                                    <th class="text-left px-2 py-1">{{ t('Item') }}</th>
+                                                    <th class="text-right px-2 py-1 w-24">{{ t('Qty') }}</th>
+                                                    <th class="text-right px-2 py-1 w-24">{{ t('Price') }}</th>
+                                                    <th class="text-right px-2 py-1 w-28">{{ t('Subtotal') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -273,7 +273,7 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
                                                         <td class="px-2 py-1.5 text-right font-semibold">{{ number_format($line->subtotal, 0, ',', '.') }}</td>
                                                     </tr>
                                                 @empty
-                                                    <tr><td colspan="5" class="text-center py-3 text-muted text-[11px]">Belum ada baris.</td></tr>
+                                                    <tr><td colspan="5" class="text-center py-3 text-muted text-[11px]">{{ t('No rows yet.') }}</td></tr>
                                                 @endforelse
                                             </tbody>
                                         </table>
@@ -281,7 +281,7 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
                                 </tr>
                             @endif
                         @empty
-                            <x-grid.empty-row :colspan="8" message="Belum ada Delivery Order." />
+                            <x-grid.empty-row :colspan="8" :message="t('No Delivery Orders yet.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -295,10 +295,10 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" wire:click.self="closePicker">
             <div class="bg-white rounded-lg p-4 w-[480px] shadow-xl">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-bold text-navy">Pilih Customer</h3>
+                    <h3 class="text-sm font-bold text-navy">{{ t('Choose Customer') }}</h3>
                     <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
-                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="customerSearch" autofocus placeholder="Ketik min. 2 huruf nama/kode customer..." class="mb-2" />
+                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="customerSearch" autofocus :placeholder="t('Type at least 2 letters of customer name/code...')" class="mb-2" />
                 <div class="max-h-72 overflow-y-auto">
                     @forelse ($this->customerResults as $c)
                         <button type="button" wire:click="startForCustomer({{ $c->id_customer }})" class="w-full text-left px-2.5 py-2 rounded hover:bg-[#eef3fb] cursor-pointer border-b border-[#eef1f5] last:border-b-0">
@@ -307,7 +307,7 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
                         </button>
                     @empty
                         <div class="text-[11px] text-muted text-center py-4">
-                            {{ mb_strlen(trim($customerSearch)) < 2 ? 'Ketik min. 2 huruf untuk cari.' : 'Tidak ada customer cocok.' }}
+                            {{ mb_strlen(trim($customerSearch)) < 2 ? t('Type at least 2 letters to search.') : t('No matching customer.') }}
                         </div>
                     @endforelse
                 </div>
