@@ -78,6 +78,15 @@ Route::middleware('devlib.auth')->group(function () {
         ]);
     })->name('lib');
 
+    // Contoh papan widget: aksi Customize (POST) / muat ulang (GET) -> HTML papan terbaru; susunan di sesi (BoardDemo).
+    Route::match(['get', 'post'], '/board-demo', function (Request $r) {
+        if ($r->isMethod('post')) {
+            \App\Support\BoardDemo::apply($r->input('action'), $r->input('key'));
+        }
+
+        return ['html' => view('demos.widget-board')->render()];
+    })->name('board.demo');
+
     // Mockup asli (untuk yang komponennya belum dibangun, dan tautan dari ikon </>).
     Route::get('/mockup/{file}', function (string $file) {
         $mockup = Catalog::find($file) ?? abort(404);

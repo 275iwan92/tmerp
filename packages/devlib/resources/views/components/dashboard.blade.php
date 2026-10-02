@@ -48,6 +48,11 @@
         </div>
     </section>
 
+    {{-- Papan widget ($board['widgets']): menggantikan blok tetap di bawah; susunannya milik user (x-dl::widget-board). --}}
+    @if (array_key_exists('widgets', $d))
+        <x-dl::widget-board :widgets="$d['widgets']" :catalog="$d['catalog'] ?? []" :action-url="$d['board_url'] ?? null" :editable="$d['board_editable'] ?? true"
+            :title="$d['kpi_title'] ?? null" :id="$id.'-board'" :source="$d['board_source'] ?? null" />
+    @else
     {{-- 2. Pilihan periode --}}
     <div class="dl-dash__bar">
         <h2>{{ $d['kpi_title'] ?? 'KPI Saya' }}</h2>
@@ -215,6 +220,8 @@
             <x-dl::quote :quotes="$d['quotes']" order="day" />
             <div class="dl-dash__doy"><b data-dash-doy>—</b><small>dari {{ count($d['quotes']) >= 366 ? 365 : count($d['quotes']) }}</small></div>
         </div>
+    @endif
+
     @endif
 
     {{-- Job Description & SOP: HTML dari master jabatan (diisi HR Officer), tampil read-only --}}

@@ -173,6 +173,7 @@ final class Catalog
                         'dashboard-sales' => ['1 · Sales profile (Senior Staff Sales & Marketing)', $c('Dashboard', 'Kpi', 'Chart', 'Quote')],
                         'dashboard-management' => ['2 · Management profile (President Director, Director, GM — company-wide)', $c('Dashboard', 'Kpi', 'Chart', 'Quote')],
                         'dashboard-general' => ['3 · General profile (position without its own dashboard)', $c('Dashboard', 'Kpi', 'Chart', 'Quote')],
+                        'widget-board' => ['4 · Widget board (the owner arranges it: Customize, Add Widget, Reset to Template)', $c('WidgetBoard', 'Kpi', 'Chart')],
                     ], 'dashboard_home_sales.html'),
                     'p6-indicators' => $page('Dashboard Indicators', 'fa-solid fa-gauge-high', ['indicators' => ['KPI, gauge, progress ring, bullet, traffic light', $c('Kpi', 'Gauge', 'ProgressRing', 'Bullet', 'TrafficLight')]]),
                     'p6-codes' => $page('QR & Barcode', 'fa-solid fa-qrcode', ['codes' => ['QR & Barcode (Code128, EAN-13)', $c('Qr', 'Barcode')]]),

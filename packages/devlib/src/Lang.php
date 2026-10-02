@@ -276,6 +276,7 @@ final class Lang
         'i_go_none' => ['Tidak ada baris valid', 'No valid rows'],
         'gt_qc_locked' => ['QC Hold terkunci sampai QA memutuskan.', 'QC Hold is locked until QA decides.'],
         'gt_edit_task' => ['Ubah Task', 'Edit Task'],
+        'wb_failed' => ['Papan tidak bisa diperbarui. Muat ulang halaman lalu coba lagi.', 'The board could not be updated. Reload the page and try again.'],
         'gt_code' => ['Kode', 'Code'],
         'gt_process' => ['Proses', 'Process'],
         'gt_moved' => ['{task} dipindah ke {res}.', '{task} moved to {res}.'],

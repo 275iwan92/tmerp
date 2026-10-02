@@ -27,6 +27,8 @@ namespace Devlib\Components;
 //   'focus' => ['title', 'caption', 'rows' => [['name', 'sub', 'segment', 'tone', 'stage', 'counts', 'last', 'last_tone', 'action']]],
 //   'agenda' => [['time', 'duration', 'title', 'note', 'tone', 'done'], ...],
 //   'quotes' => [['t' => teks, 'a' => penulis], ...],    // 366 baris: baris ke-n = hari ke-n dalam tahun
+//   'widgets' => [...], 'catalog' => [...], 'board_url', 'board_editable', 'board_source'   // papan widget (x-dl::widget-board):
+//       bila kunci 'widgets' ada, blok KPI .. kata harian di atas diganti papan yang susunannya diatur pemiliknya
 // ]
 class Dashboard extends DevlibComponent
 {
