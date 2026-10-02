@@ -40,7 +40,6 @@ Rancangan: **[`warehouselayout_tier1.md`](warehouselayout_tier1.md)** (bagian 13
 | 05.19 | Kapasitas: volume hanya diperkirakan untuk lembaran kertas; tinta, lem, barang jadi, plat belum punya data ukuran / berat per item di master | 1 | **menunggu user** |
 | 05.20 | Menu + Help + gedung nyata di tmerp.test (tabel dan view sudah ada) | — | menunggu penilaian user |
 | 05.21 | Stock In / Out / Adjustment v2 yang memilih bin dari peta (sekarang layar v1) | 2 | belum |
-| 05.23 | Posting dokumen stok bertanggal lebih awal dari baris kartu terakhir item + bin yang sama tidak mengubah saldo yang tampil (`StockPostingService` tidak menghitung ulang baris sesudahnya) | — | perlu keputusan user: hitung ulang / tolak / selalu baris terakhir |
 | 05.24 | Approval Stock Transfer: pemeriksa dan batas nilai (fasilitas ada, bawaan mati); Setting Approval belum terpasang di tm2 | — | menunggu user |
 | 05.25 | Pilih palet per baris di form Stock Transfer (sekarang: palet ikut otomatis, atau lewat Move this Pallet) | 2 | belum |
 | 05.22 | Gudang lama buatan sistem (`WH-RAW-01`, `WH-FG-01`, `WH-MIX-01`, `WH-SCP-01`) dinonaktifkan setelah stoknya dipindah | — | menunggu user |
