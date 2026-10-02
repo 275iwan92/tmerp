@@ -23,13 +23,12 @@
 
 @if (! $card && ! $isNew)
     <x-dl::card title="Upload Master Card" description="Master card Excel (.xlsx, sheet MC) is read automatically + proof image extracted · card photo (.jpg/.png) is stored as an image, its fields completed in the form">
-        <form method="post" action="{{ route('v2.mcard.upload') }}" enctype="multipart/form-data">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.mcard.upload') }}" enctype="multipart/form-data">
             <x-dl::form.row cols="1">
                 <x-dl::field.upload name="files" :multiple="true" :preview="false" label="File master card (boleh banyak sekaligus)" accept=".xlsx,.xlsm,.xls,.jpg,.jpeg,.png" :source="Src::of('tm2mst.prod_master_card', 'tm2mst.prod_master_card_file')" />
             </x-dl::form.row>
             <x-dl::action-bar><x-dl::button type="submit" icon="fa-cloud-arrow-up" label="Upload" /></x-dl::action-bar>
-        </form>
+        </x-dl::action-form>
     </x-dl::card>
 
     <x-dl::grid id="mcard-list" :rows="MasterCardCollection::rows()" search="Search name / design no. / item code / customer..." actions="worklist" :active-key="null"
@@ -200,8 +199,7 @@
         @foreach (['product' => ['mcard-product', 'Make Master Product', 'fa-box', 'success'], 'inquiry' => ['mcard-inquiry', 'Make Inquiry', 'fa-file-circle-plus', 'primary']] as $target => [$mid, $title, $icon, $variant])
             @php($need = $svc->missing($card, $target))
             <x-dl::modal :id="$mid" :title="$title.' — '.raw($c->product_name)" :icon="$icon" size="lg" :open="session('mcard_dialog') === $target">
-                <form method="post" action="{{ route('v2.mcard.convert', $card->id_master_card) }}" id="{{ $mid }}-form">
-                    @csrf
+                <x-dl::action-form action="{{ route('v2.mcard.convert', $card->id_master_card) }}" id="{{ $mid }}-form">
                     <input type="hidden" name="target" value="{{ $target }}">
                     @if ($errors->has('dialog'))<x-dl::alert tone="danger" :message="$errors->first('dialog')" />@endif
                     <x-dl::alert tone="info" :message="$need ? 'Lengkapi '.count($need).' isian ini dulu. Yang lain sudah terisi dari kartu.' : 'Field kunci kartu sudah lengkap.'" />
@@ -224,7 +222,7 @@
                     <x-dl::alert tone="info" :message="$target === 'product'
                         ? 'Akan dibuat: Master Product “'.$c->product_name.'” · part '.implode(' + ', array_map(fn ($p) => $p === '' ? 'tunggal' : $p, $parts)).(count($parts) > 1 ? ' + Body rakitan' : '').' · '.($types[$c->type_code]['label'] ?? '—').' · '.count($c->process_json ?? []).' langkah proses · dieline (tipe + ukuran) ikut, SVG tetap tersimpan di kartu. Jalurnya lewat Inquiry sumber “MASTER CARD” (aturan Master Product tetap satu).'
                         : ($c->product_id ? 'Produk sudah ada → dibuka sebagai Inquiry Rekalkulasi.' : 'Akan dibuat: Inquiry BARU (DRAFT) berisi semua part, bahan, proses, artwork & dieline dari kartu — lanjutkan di layar Inquiry lalu Confirm.')" />
-                </form>
+                </x-dl::action-form>
                 <x-slot:footer>
                     <x-dl::button variant="secondary" label="Cancel" data-dl-close-modal />
                     <x-dl::button :variant="$variant" :icon="$icon" :label="$title" type="submit" form="{{ $mid }}-form" />

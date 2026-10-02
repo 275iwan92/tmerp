@@ -157,14 +157,12 @@
         @if ($errors->hasAny(['children', 'assembly_name', 'join_type_id', 'qty_in_parent']))<x-dl::alert tone="danger" :message="$errors->first()" />@endif
         @if (! $readonly)
             @foreach ($assemblies as $a)
-                <form method="post" action="{{ route('v2.inquiry.assembly.delete', [$doc['id'], $a['id']]) }}" style="display:inline">
-                    @csrf
+                <x-dl::action-form action="{{ route('v2.inquiry.assembly.delete', [$doc['id'], $a['id']]) }}" style="display:inline">
                     <x-dl::button variant="secondary" size="sm" icon="delete" :label="'Bongkar '.$a['name']" type="submit" onclick="return confirm('Bongkar rakitan {{ $a['name'] }}? Part-nya tetap ada.')" />
-                </form>
+                </x-dl::action-form>
             @endforeach
             @if (count($tree) >= 2)
-                <form method="post" action="{{ route('v2.inquiry.assembly.store', $doc['id']) }}">
-                    @csrf
+                <x-dl::action-form action="{{ route('v2.inquiry.assembly.store', $doc['id']) }}">
                     <x-dl::divider label="+ Add Assembly" />
                     <x-dl::form.row cols="3">
                         <x-dl::field.text name="assembly_name" label="Assembly name" required placeholder="Body" :value="old('assembly_name')" :source="\App\Support\V2\Src::of('tm2sdi.iqp_part.part_name')" />
@@ -173,7 +171,7 @@
                     </x-dl::form.row>
                     <x-dl::field.checkboxes name="children" label="Parts to combine (at least 2)" required :options="collect($tree)->mapWithKeys(fn ($n) => [$n['id'] => $n['name'].($n['kind'] === 'ASSEMBLY' ? ' (rakitan)' : '')])->all()" />
                     <x-dl::action-bar><x-dl::button preset="save" label="Buat Rakitan" /></x-dl::action-bar>
-                </form>
+                </x-dl::action-form>
             @else
                 <p class="mp-hint">Simpan minimal 2 part dulu untuk membuat rakitan.</p>
             @endif

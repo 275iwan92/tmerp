@@ -13,10 +13,9 @@ use Tests\TestCase;
 class DevlibOnlyRatchetTest extends TestCase
 {
     private const BASELINE = [
-        // 2026-10-02: 48 form kecil sudah x-dl::action-form. Sisa: zona beku, menunggu izin user (inquiry-new 2, inquiry-recalc 2,
-        // inquiry-revise 2, _inquiry-duplicate 1, product-acc-forms 2, master-card-collection 2); customer-invoice 4 +
-        // customer-order 2 (sedang diubah sesi lain saat konversi); maintenance-my-work 1 (membungkus slot kartu).
-        'raw_form' => 18,
+        // 2026-10-02: 65 form kecil sudah x-dl::action-form (zona beku atas izin user). Sisa: maintenance-my-work, form yang
+        // membungkus slot kartu -- menjadi komponen akan menelan slot itu.
+        'raw_form' => 1,
         'raw_button' => 1,        // share.blade.php: halaman publik tanpa devlib.js
         'raw_visible_input' => 0,
         'raw_select' => 0,
