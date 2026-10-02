@@ -242,8 +242,10 @@ window.Devlib = window.Devlib || {};
 
 
   // Urutan pilihan dari daftar: random, atau sequence (lanjut tiap halaman dibuka, diingat per kunci).
+  // order 'day': tanggal hari ini -> baris tetap (daftar 366 baris, baris ke-60 = 29 Feb).
   function pickIndex(len, order, key) {
     if (!len) return -1;
+    if (order === 'day') return dayIndex() % len;
     if (order !== 'sequence') return Math.floor(Math.random() * len);
     let i = -1; try { i = parseInt(localStorage.getItem('dl-seq-' + key) ?? '-1', 10); } catch (e) {}
     i = (i + 1) % len;
@@ -539,6 +541,12 @@ window.Devlib = window.Devlib || {};
   /* ============================ BASIC ============================ */
   // Format lokal baku di browser (sama dengan Devlib\Locale di PHP): zona waktu sistem, Rupiah, angka.
   const TZ = () => document.documentElement.dataset.dlTz || 'Asia/Jakarta';
+  // Tanggal hari ini menurut zona sistem -> [tahun, bulan, tanggal].
+  const todayParts = () => new Date().toLocaleDateString('en-CA', {timeZone: TZ()}).split('-').map(Number);
+  // Urutan tanggal dalam kalender tahun kabisat (0..365): tanggal yang sama = indeks yang sama setiap tahun.
+  const dayIndex = () => { const [, m, d] = todayParts(); return (Date.UTC(2024, m - 1, d) - Date.UTC(2024, 0, 1)) / 864e5; };
+  // Hari ke-n tahun berjalan (1..366).
+  const dayOfYear = () => { const [y, m, d] = todayParts(); return (Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 1)) / 864e5 + 1; };
   const fmt = {
     number: (n, d = 0) => numFmt(n, d),
     // desimal secukupnya (maks max): 12,5 / 1.250
@@ -790,6 +798,6 @@ window.Devlib = window.Devlib || {};
 
   // Asal data kolom (grid/lines): {src: 'tm2sdi.iqp_inquiry.qty'} -> tooltip Mode Developer di header kolom.
   const srcAttr = (c, kind = 'kolom') => c && c.src ? ` data-dl="${kind} ${esc(c.label || c.key)}" data-dl-class="kolom" data-dl-src="${esc(c.src)}"` : '';
-  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, Tf, t, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, numStr, numIn, numFmt, NUM, MON_EN, dow2, DlDate, DlNumber, DlTime, DlDateTime, DlText, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
+  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, dayOfYear, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, Tf, t, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, numStr, numIn, numFmt, NUM, MON_EN, dow2, DlDate, DlNumber, DlTime, DlDateTime, DlText, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
   Object.assign(Devlib, {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words}, {initDevMode});
 })();

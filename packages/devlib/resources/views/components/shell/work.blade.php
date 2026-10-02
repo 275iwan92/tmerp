@@ -1,6 +1,10 @@
         <div class="dl-tabbar" data-dl-tabbar data-dl="tab MDI" data-dl-class="bagian Shell" data-dl-src="—"></div>
         <div class="dl-content" data-dl-content>
             <div class="dl-pane is-active" data-dl-home>
+                {{-- Slot "dashboard" (x-dl::dashboard) = opening screen per jabatan; tanpa slot = sambutan bawaan. --}}
+                @isset($dashboard)
+                <div class="dl-home dl-home--dash">{{ $dashboard }}</div>
+                @else
                 <div class="dl-home">
                     <div class="dl-home__hero"></div>
                     <h1>{{ \Devlib\Lang::t('welcome') }}, {{ \Illuminate\Support\Str::before($user['name'], ' ') }} 👋</h1>
@@ -8,5 +12,6 @@
                     {{ $slot }}
                     <div class="dl-home__hint">{!! \Devlib\Lang::text($hint) !!}</div>
                 </div>
+                @endisset
             </div>
         </div>

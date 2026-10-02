@@ -3,6 +3,22 @@
 
 ---
 
+## 2026-10-02 -- Layar pembuka: popup tidak bisa ditutup + Opening Dashboard dikembalikan ke main
+
+- **Popup Material Shortage mengunci layar pembuka:** kerangka menu memakai `data-dl-open` (tab yang dibuka saat masuk),
+  pustaka modal menganggap atribut itu "tombol pembuka modal" sehingga semua klik di kerangka ditelan. Kerangka sekarang
+  memakai `data-dl-open-tab` (`shell.blade.php`, `layer-shell.blade.php`, `shell.js`).
+- **Opening Dashboard per jabatan (`x-dl::dashboard`)** dibangun 2026-09-29 di cabang `origin/claude/funny-pasteur-6bmiir`
+  (sesi cloud) dan tidak pernah digabung, jadi user tidak pernah melihatnya. Enam commit DevLib-nya (f7e72edd .. 1472c3f1)
+  dipasang ulang ke `main`: komponen `Dashboard` (salam, jam, cuaca, JD / SOP, KPI per periode, target vs pencapaian,
+  Target per Bidang, Pipeline Penjualan, Pencapaian Target per Sales, aktivitas, agenda, kata harian 366 baris), slot
+  `dashboard` di Shell, halaman katalog "Opening Dashboard (per position)", akun contoh yuna / sania / carrij, mockup
+  `docs/mockups/dashboard_home_sales.html`. Data = contoh `devlib/app/Support/DashboardData.php` (devlib.test, tanpa database).
+- **Tidak ikut dipasang:** laci Layer Menu untuk layar HP (commit e0be9d52, bentrok dengan Layer Menu baru 2026-10-01) dan
+  commit b3063eec (alamat shell `/menu` + `KeepScreensInShell`) -- keduanya menunggu keputusan user.
+- **Belum:** pemasangan di mockup.test / tmerp.test dengan data dari database, dan papan widget yang bisa diatur lewat
+  asisten AI (permintaan user 2026-10-02) -- menunggu persetujuan rancangan.
+
 ## 2026-10-02 -- Customer Invoice + uang muka, Tahap 1 (dibangun di ddt, menunggu review user)
 
 Perintah user sesudah melihat mockup: "jalankan dulu lalu buatkan dokumentasinya buat saya review". Dokumen review:
