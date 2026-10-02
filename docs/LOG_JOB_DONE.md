@@ -3813,3 +3813,21 @@ QR code ... warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BU
 - Uji: 20 layar terbuka di tmerp.test; alur transfer + palet + label + tata letak dijalankan di tm2 dan ddt di dalam
   transaksi yang dibatalkan; `PalletServiceTest` + `StockTransferServiceTest` lolos; tidak ada sisa di database.
 
+### 2026-10-03 — Kartu stok: posting bertanggal mundur dihitung ulang (backlog 05.23, rulebook A.24)
+
+- **Cacat yang ditutup** (terbukti lewat test 2026-10-02): dokumen bertanggal lebih awal dari baris terakhir tertulis di
+  kartu tetapi tidak sampai ke saldo; dua dokumen pada tanggal yang sama saling tidak melihat begitu nomor baris kartu
+  melewati nomor dokumen; Cancel SPB diterima walau barangnya sudah dipindah; adjustment bertanggal mundur tidak
+  mengoreksi saldo; penolakan di baris ke-2 meninggalkan baris kartu baris ke-1.
+- **`StockCardChain`** (baru): rantai saldo satu posisi, urut (doc_date, doc_id); menghitung ulang saldo, harga rata-rata
+  dan nilai dari satu baris sampai baris terakhir, merambat ke bin tujuan transfer bila harga yang ikut pindah berubah.
+- **`StockPostingService::postDocument()`**: baris disisipkan lalu rantainya dihitung ulang; saldo minus (baris itu atau
+  sesudahnya) = seluruh dokumen batal (`StockPostingRefused`, transaksi di-rollback); tanggal di periode inventory
+  CLOSED ditolak (`InvPeriod::closedThrough()`); hasil membawa `revaluation` + `stock_warning` bila harga baris keluar
+  sesudahnya berubah. `value_in` ditulis di baris masuk (juga oleh `StockTransferService`).
+- **Layar**: pesan berhasil Stock In / Out / Return / Adjustment dan Penerimaan Barang v2 menampilkan peringatan nilai;
+  Stock Adjustment "tarik seluruh item" membaca baris terakhir menurut tanggal + nomor (dulu nomor terbesar).
+- Tidak ada perubahan skema (kolom `value_in` sudah ada). Kode yang sama berlaku di mockup.test dan tmerp.test.
+- Test: `StockPostingOrderTest` (9 test). Belum dikerjakan: jurnal koreksi (menunggu keputusan user), hapus + bangun
+  ulang dummy kartu stok yang salah, layar tutup periode inventory (backlog 05.23, 05.37).
+

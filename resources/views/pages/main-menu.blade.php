@@ -125,7 +125,25 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             ];
         };
 
-        return $modules->map($build)->values()->all();
+        // Sidebar menu ini hanya dua tingkat (grup -> item). Grup di dalam grup (mis. Inventory > Warehouse > Report) diangkat
+        // jadi grup sendiri tepat di bawah induknya, berlabel "Induk › Anak", supaya item-nya tetap bisa dibuka dari sidebar.
+        $flatten = function (array $nodes, string $prefix = '') use (&$flatten): array {
+            $out = [];
+            foreach ($nodes as $node) {
+                if ($node['menuType'] !== 'group') {
+                    $out[] = $node;
+
+                    continue;
+                }
+                $label = $prefix === '' ? $node['label'] : $prefix.' › '.$node['label'];
+                $out[] = ['label' => $label, 'children' => array_values(array_filter($node['children'], fn ($c) => $c['menuType'] !== 'group'))] + $node;
+                array_push($out, ...$flatten(array_values(array_filter($node['children'], fn ($c) => $c['menuType'] === 'group')), $label));
+            }
+
+            return $out;
+        };
+
+        return $modules->map($build)->map(fn (array $module) => ['children' => $flatten($module['children'])] + $module)->values()->all();
     }
 
     // Font Awesome: module pakai icon kolom (sudah FA, lihat migration

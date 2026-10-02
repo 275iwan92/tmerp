@@ -278,7 +278,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
-        session()->flash('flash', 'Barang berhasil dikeluarkan & Kartu Stok ter-update.');
+        session()->flash('flash', 'Barang berhasil dikeluarkan & Kartu Stok ter-update.'.(isset($result['stock_warning']) ? ' '.$result['stock_warning'] : ''));
         if ($result['journal_warning'] ?? null) {
             session()->flash('journal_warning', $result['journal_warning']);
         }

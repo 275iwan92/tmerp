@@ -316,3 +316,33 @@ Stock Out dan Return tidak melewati persetujuan: keduanya menjejak dokumen hulu 
 | `INV.can_manage_period` | Buka/tutup periode, buat saldo awal |
 
 `approve` di sini berarti "boleh memposting/menyetujui", bukan sekadar melihat.
+
+---
+
+## Urutan kartu stok dan posting bertanggal mundur (keputusan user 2026-10-02)
+
+Berlaku untuk `rm_stockcard`, `sfg_stockcard`, `fg_stockcard` (satu jalur: `StockPostingService::postDocument()`).
+
+| Hal | Aturan |
+|---|---|
+| Urutan | Baris kartu satu posisi (item di satu bin; FG: product + part) berurut `doc_date` lalu `doc_id`. Saldo posisi = baris **terakhir** (view `v_*_onhand`, `StockTransferService::balance()`, `WarehouseStock`). |
+| Tempat baris baru | Sesudah semua baris yang `doc_date`-nya sama atau lebih awal; sebelum baris yang bertanggal lebih baru. Dokumen manual dan SPB berjam 00:00, Stock Transfer mencatat jam. |
+| Hitung ulang | Setelah baris disisipkan, `StockCardChain::recalculate()` menghitung baris itu dan **semua baris sesudahnya**: `qty_bb`, `qty_eb`, `avg_unitprice`, `value_eb`, `previous_doc_id`. |
+| Harga masuk | `value_in` = qty masuk x harga satuan, ditulis saat posting (juga baris masuk Stock Transfer = qty x harga rata-rata bin asal). Baris lama tanpa `value_in`: harga masuk diturunkan dari angka yang tersimpan. |
+| Harga rata-rata | Bergerak (moving average): baris masuk = rata-rata tertimbang saldo sebelumnya + yang masuk; baris keluar, adjustment, transfer keluar membawa harga rata-rata baris sebelumnya. |
+| Transfer | Bila harga rata-rata baris keluar transfer berubah, `value_in` baris masuk pasangannya di bin tujuan diganti dan rantai bin tujuan dihitung ulang (merambat, selalu maju di urutan waktu). Jumlah tidak berubah, hanya nilai. |
+| Saldo minus | Posting ditolak dan dibatalkan utuh bila baris baru atau baris sesudahnya jadi minus karena posting itu. Dokumen AD / OP dikecualikan (sama seperti sebelumnya). |
+| Periode tertutup (B-3) | `doc_date` <= hari terakhir `inv_period` berstatus `CLOSED` yang paling akhir = ditolak. Pesan mengarahkan ke Stock Adjustment bertanggal di periode terbuka. Tanggal tanpa baris `inv_period` = dianggap terbuka. |
+| Dokumen sudah diposting | Tidak pernah diubah. Yang salah dikoreksi lewat Stock Adjustment (atau dokumen pembalik: Cancel SPB, Cancel Transfer). Draft boleh dibetulkan. |
+
+### Nilai stok dan jurnal (akuntansi)
+
+- Hitung ulang mengubah harga rata-rata baris **Stock Out** yang bertanggal sesudah dokumen mundur. Jurnal pemakaian
+  (Dr HPP / Cr Persediaan, jurnal `USG`) baris itu sudah diposting dengan harga lama dan **tidak diubah**.
+- `postDocument()` melaporkan selisihnya: `revaluation` = `['rows' => n, 'value' => jumlah (qty keluar x (harga baru -
+  harga lama))]` dan `stock_warning` (kalimat untuk layar). Layar Stock In / Out / Return / Adjustment dan Penerimaan
+  Barang menampilkannya bersama pesan berhasil.
+- **Belum diputuskan user:** apakah selisih itu dijurnal koreksi otomatis (Dr/Cr HPP lawan Persediaan, bertanggal hari
+  posting). Sampai diputuskan, nilai kartu stok dan saldo akun Persediaan bisa berbeda sebesar selisih yang dilaporkan.
+- Baris transfer tidak dilaporkan: transfer bukan pemakaian dan tidak punya jurnal; nilainya hanya berpindah bin.
+- `inv_period` belum punya layar untuk menutup periode (hanya dibaca `FinPeriodGuard` saat tutup buku GL) — backlog 05.37.
