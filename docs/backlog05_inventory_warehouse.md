@@ -43,6 +43,7 @@ jadi bin; yang ditambah = lapis **`wh_zone`** di atasnya (bukan `wh_bin`).
 | 05.10 | Cycle count per zona/bin (reuse doc OP + scope) | 2 | menunggu OK desain |
 | 05.11 | Bin Utilization + peringatan kapasitas | 3 | — |
 | 05.12 | Denah nyata gudang dari user (sketsa/foto + daftar rak) sebelum dijalankan ke tm2 | — | **menunggu user (K9)** |
+| 05.18 | Pemetaan gudang nyata: sistem lama punya GUDANG A10 / A5 / A6, gudang v2 sekarang buatan sistem per kelas stok (`warehouselayout_tier1.md` §12, G1-G3) | 1 | **menunggu user** (2026-10-02) |
 | 05.13 | Multi lokasi: `wh_site` + gudang virtual IN-TRANSIT, transfer antar site 2 langkah (M1–M3) | 1 | menunggu user |
 | 05.14 | Cari Barang multi lokasi, Stock Card simple + extended, Item per Lokasi + riwayat, Master Stock, Stock On Hand | 1 | preview dibuat 2026-10-01, menunggu OK |
 | 05.15 | Adjustment dengan approval v2 (A1–A2) | 1 | menunggu user |

@@ -398,3 +398,47 @@ berubah setelah approval terakhir; sebelumnya tampil "Pending adj" di On Hand.
 **Temuan data**: saldo berjalan `ddtinv.rm_stockcard.qty_eb` ANIMAL GLUE tidak konsisten
 (IN 1.000 → ADJ +100 tercatat saldo 100) dan ada saldo negatif di UNKNOWN-LEGACY — perlu
 diperiksa sebelum laporan Stock Card/Master Stock dibangun di atas tabel ini.
+
+---
+
+## 12. Tambahan 2026-10-02: pemetaan gudang nyata (dari data sistem lama)
+
+Dicek ke `tm2old` (baca saja). Sistem lama punya **3 gudang nyata** di `mst_warehouse`,
+tanpa lapis rak / bin (hanya nama gudang di tiap dokumen):
+
+| Gudang lama | Item terdaftar | Isi utama (kategori bahan) | Penerimaan PO | Pengeluaran | Surat Jalan |
+|---|---|---|---|---|---|
+| GUDANG A10 | 3.554 | campuran: Others 1.259, Ink 717, Sheet 609, Single Face 477, Paper 417, Glue 10, Plate 7 | 7.166 | 2.726 | 15.937 |
+| GUDANG A5 | 889 | **kertas** (Paper 752) | 6.261 | 1.485 | 505 |
+| GUDANG A6 | 7 | hampir tidak dipakai | 38 | 0 | 17 |
+| (kosong) | 16.345 item tanpa gudang | — | 6.410 | 632 | 19.437 |
+
+Gudang v2 yang ada sekarang (`WH-RAW-01`, `WH-FG-01`, `WH-MIX-01`, `WH-SCP-01`) adalah
+**buatan sistem menurut kelas stok**, tidak sama dengan gedung nyata: A10 menyimpan bahan
+sekaligus mengirim barang jadi. Di ERP besar (§2) gudang = gedung fisik, fungsi = zona.
+Peta gudang hanya masuk akal bila digambar per gedung.
+
+**Usul pemetaan** (menunggu jawaban user, tidak ada yang diubah):
+
+| Lapis | Isi |
+|---|---|
+| `wh_warehouse` = gedung | A10, A5, A6 (+ virtual SUBCON, IN-TRANSIT) |
+| `wh_zone` = fungsi di dalam gedung | Receiving, QC, Paper, Ink & Chemicals, Sheet / Single Face, Finished Goods, Shipping, Staging, Reject, Tooling — `stock_class` ada di zona |
+| `wh_loc` = bin | lajur × slot / lorong-rak-tingkat |
+
+`warehouse_type` hanya dipakai label di layar master (tidak dipakai logika posting), jadi
+gudang per gedung aman. 7 lokasi lama + stok dummy yang menempel padanya tidak dihapus
+(dummy tm2 = fixture test); `WH-RAW-01` dst dinonaktifkan / dipetakan ke gedung setelah
+user memutuskan.
+
+| # | Pertanyaan | Rekomendasi |
+|---|---|---|
+| G1 | A5, A6, A10 = gedung terpisah (beda alamat / kavling) atau ruangan dalam satu gedung? Masih dipakai semua? | Beda kavling → cukup sebagai 3 gudang dalam 1 site (lapis `wh_site` baru perlu bila beda kota / perlu surat jalan internal) |
+| G2 | Gudang v2 mengikuti gedung nyata (A10 / A5 / A6), kelas stok pindah ke zona? | **Ya** |
+| G3 | Peta pertama digambar untuk gedung mana? | **A10** (paling ramai, bahan + pengiriman), lalu A5 (kertas) |
+
+Kebutuhan K9 jadi lebih kecil: cukup sketsa tangan / foto per gedung (pintu, area kertas,
+rak, area kirim) + perkiraan ukuran; rak dan lajur dibuat lewat generator bin.
+
+Mockup `mockups/warehouse_layout_v2.jpg` diperbarui 2026-10-02: label English, satu baris
+filter teks (tanpa kotak statistik) sesuai aturan C.21.
