@@ -24,7 +24,7 @@
         $noItem = collect($rows)->whereIn('status', ['Need item', 'Need layout'])->count();
     @endphp
     <x-dl::action-bar>
-        <form method="post" action="{{ route('v2.planning.run-all') }}">@csrf<x-dl::button type="submit" variant="secondary" icon="fa-rotate" :label="t('Recalculate All')" /></form>
+        <x-dl::action-form action="{{ route('v2.planning.run-all') }}"><x-dl::button type="submit" variant="secondary" icon="fa-rotate" :label="t('Recalculate All')" /></x-dl::action-form>
         <x-dl::button variant="secondary" icon="fa-boxes-packing" :label="t('Material Booking')" :href="route('v2.screen', 'material-booking')" />
         <x-dl::button variant="secondary" icon="fa-calendar-week" :label="t('Demand Forecast (MPS)')" :href="route('v2.screen', 'demand-forecast')" />
         <x-dl::button variant="secondary" icon="fa-fill-drip" :label="t('Material Usage Standard')" :href="route('v2.screen', 'usage-standard')" />
@@ -35,8 +35,7 @@
     @endif
     @include('v2.screens._dbgrid', ['screen' => $screen])
 
-    <form method="post" action="{{ route('v2.planning.create-pr') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.planning.create-pr') }}">
         <x-dl::card :title="t('Create Purchase Requisition')" icon="fa-file-circle-plus" :description="t('One requisition per suggested supplier. Quantity is rounded up to the purchase unit; the need date is the first date the material is needed. The requisition is created as Draft in Procurement.')">
             @if ($short->isEmpty())
                 <x-dl::empty-state :title="t('No short material with a stock item')" />
@@ -47,7 +46,7 @@
                 <x-dl::action-bar><x-dl::button type="submit" icon="fa-file-circle-plus" :label="t('Create PR')" /></x-dl::action-bar>
             @endif
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     <x-dl::card>
         <x-dl::action-bar>

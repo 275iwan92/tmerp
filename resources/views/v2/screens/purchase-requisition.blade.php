@@ -37,8 +37,7 @@
         :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved', 'where' => ['status' => ['APPROVED', 'PARTIALLY_ORDERED']], 'tone' => 'success']]"
         :filters="['dept' => 'Departemen', 'status' => 'Status']" />
 @elseif (! $pr)
-    <form method="post" action="{{ route('v2.pr.create') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.pr.create') }}">
         <x-dl::card title="+ New Record — Purchase Requisition" description="Choose the requesting department. The PR number is created on Confirm (submitted).">
             <x-dl::field.select name="department_id" label="Department" required :options="PurchaseRequisition::departments()" :source="Src::of('tm2mst.org_department')" />
             <x-dl::action-bar>
@@ -46,7 +45,7 @@
                 <x-dl::button preset="save" label="Buat PR" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     {{-- Form Master-Detail + Approval DevLib (disetujui user 2026-09-30). --}}
     @php

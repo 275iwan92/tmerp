@@ -23,8 +23,7 @@
 
 @if ($compare)
     {{-- Bandingkan: baris PR x supplier (PQ Confirmed), pilih pemenang per baris -> Buat PO. --}}
-    <form method="post" action="{{ route('v2.pq.po') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.pq.po') }}">
         <x-dl::card :title="'Compare Quotations — '.raw($compare['pr']->doc_no)" description="Unit price in IDR (after the rate). Ticked by default = the cheapest with the same unit as the PR; you may change it (e.g. faster lead time) or Skip.">
             <x-dl::pick-matrix name="pick" unit="PO" :source="Src::of('tm2pur.pq_line', 'tm2pur.pq_quotation (CONFIRMED)', 'tm2pur.pr_line')"
                 :columns="collect($compare['suppliers'])->mapWithKeys(fn ($s) => [$s['pq_id'] => ['label' => raw($s['name']), 'sub' => $s['no'].' · '.($s['term'] ?: t('terms').' —').' · '.t('until').' '.$s['valid']]])->all()"
@@ -36,7 +35,7 @@
                 <x-dl::button preset="save" label="Create PO" :onclick="'return confirm('.json_encode(t('Create a Draft PO for the selected lines?')).')'" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @elseif (! $pq && ! request('new'))
     <x-dl::grid id="pq-list" :rows="PurchaseQuotation::rows()" search="Search PQ no., supplier, PR, file name..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.pq_quotation', 'tm2pur.pq_line', 'tm2mst.sup_supplier') }}"
@@ -59,17 +58,16 @@
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Needs check', 'where' => ['status' => 'DRAFT', 'read' => ['Perlu cek', 'Isi manual', 'Gagal dibaca']], 'tone' => 'warn'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Closed (ordered)', 'where' => ['status' => 'CLOSED'], 'tone' => 'info']]"
         :filters="['supplier' => 'Supplier', 'pr' => 'Reference PR', 'status' => 'Status']" />
-    <form method="get" action="{{ $home }}">
+    <x-dl::action-form method="get" action="{{ $home }}">
         <x-dl::card title="Compare quotations per PR" description="Choose a PR that has Confirmed PQs from several suppliers, then pick the winner per line.">
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="compare" label="PR" required :options="PurchaseQuotation::prOptions()" :source="Src::of('tm2pur.pr_requisition (APPROVED / PARTIALLY_ORDERED)')" />
             </x-dl::form.row>
             <x-dl::action-bar><x-dl::button variant="secondary" icon="fa-scale-balanced" label="Compare" type="submit" /></x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @elseif (! $pq)
-    <form method="post" action="{{ route('v2.pq.upload') }}" enctype="multipart/form-data">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.pq.upload') }}" enctype="multipart/form-data">
         <x-dl::card title="+ New Record — Purchase Quotation" description="Upload the quotation file exactly as received from the supplier e-mail. One file = one Draft PQ; it is read and matched automatically, you only check it.">
             @unless (PqFileReader::aiEnabled())
                 <x-dl::alert tone="warn" message="The AI reader is not active (ANTHROPIC_API_KEY is not set in .env): Excel / CSV are still read automatically; PDF and photos become an empty Draft PQ to fill in by hand." />
@@ -83,7 +81,7 @@
                 <x-dl::button preset="save" label="Upload & Read" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     @php
         $draft = $pq->status === 'DRAFT';
@@ -171,5 +169,5 @@
                 ]))" />
         </x-slot:detail>
     </x-dl::form>
-    <form id="pq-po-{{ $pq->pq_id }}" method="post" action="{{ route('v2.pq.po') }}" hidden>@csrf</form>
+    <x-dl::action-form id="pq-po-{{ $pq->pq_id }}" action="{{ route('v2.pq.po') }}" hidden></x-dl::action-form>
 @endif

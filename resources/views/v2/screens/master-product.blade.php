@@ -62,8 +62,7 @@
                 <x-dl::badge :label="$doc['parent'] ? 'Turunan Rev.'.$doc['revision_no'] : 'Produk induk'" />
             </span>
         </x-dl::action-bar>
-        <form method="post" action="{{ route('v2.product.name', $doc['id']) }}" data-dl-guard>
-            @csrf
+        <x-dl::action-form action="{{ route('v2.product.name', $doc['id']) }}" data-dl-guard>
             <x-dl::form.row cols="3">
                 <x-dl::field.text name="product_name" label="Product name" required :value="old('product_name', $doc['name'])" hint="Changed by Sales to match the customer PO; printed on the CO Detail & Delivery Note." :source="Src::of('tm2mst.prod_product.product_name')" />
                 <x-dl::field.display label="Customer (pemilik product)" :value="$doc['customer']" :source="Src::of('tm2mst.prod_product.customer_id', 'tm2mst.cust_customer.customer_name')" />
@@ -75,7 +74,7 @@
                 <x-dl::field.display label="Order terakhir" :value="$orders ? ($orders[0]['co'] ?? $orders[0]['quotation']).' · '.$num($orders[0]['qty']).' pcs · '.$orders[0]['date'] : '—'" :source="Src::of('tm2sdi.co_order_item.product_id')" />
             </x-dl::form.row>
             <x-dl::action-bar><x-dl::button preset="save" /></x-dl::action-bar>
-        </form>
+        </x-dl::action-form>
     </x-dl::card>
 
     <x-mp::sales.product-tree :tree="$doc['tree']" :product="$doc['name']">

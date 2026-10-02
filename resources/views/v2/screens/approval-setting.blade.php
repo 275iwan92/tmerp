@@ -26,8 +26,7 @@
         ]"
         :stats="[['label' => t('All')], ['label' => t('Active'), 'where' => ['active' => 'Aktif'], 'tone' => 'success'], ['label' => t('Inactive'), 'where' => ['active' => 'Nonaktif'], 'tone' => 'neutral']]" />
 @elseif (! $cfg)
-    <form method="post" action="{{ route('v2.approval-setting.create') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.approval-setting.create') }}">
         <x-dl::card title="+ New Record — Setting Approval" description="The document code (e.g. PR, PO, CO) must match the code used by its document screen.">
             <x-dl::form.row :cols="3">
                 <x-dl::field.text name="module_code" label="Document Code" required :case-toggle="false" placeholder="PR" />
@@ -39,7 +38,7 @@
                 <x-dl::button preset="save" label="Save" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     @php
         $name = ApprovalSetting::MODULE_NAMES[$cfg->module_code] ?? $cfg->module_code;

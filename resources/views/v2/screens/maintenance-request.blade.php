@@ -37,8 +37,7 @@
         :stats="[['label' => 'All'], ['label' => 'Open', 'where' => ['status' => 'Open'], 'tone' => 'warn'], ['label' => 'Machine stopped', 'where' => ['stopped' => 'Stopped', 'status' => 'Open'], 'tone' => 'danger'], ['label' => 'Accepted', 'where' => ['status' => 'Accepted'], 'tone' => 'success'], ['label' => 'Rejected', 'where' => ['status' => 'Rejected'], 'tone' => 'neutral']]"
         :filters="['machine' => 'Machine', 'kind' => 'Kind', 'priority' => 'Priority', 'status' => 'Status']" />
 @elseif (! $req)
-    <form method="post" action="{{ route('v2.mnt.request.create') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.mnt.request.create') }}">
         <x-dl::card title="Report Problem — Maintenance Request" description="Machine, what happened, and whether it stopped. Priority is set automatically; a stopped machine (P1) becomes a Work Order at once.">
             <x-dl::form.row :cols="3">
                 <x-dl::field.select name="machine_id" label="Machine" required :options="Maintenance::machines()" :value="request('machine')" :source="Src::of('tm2mst.prod_machine')" />
@@ -55,7 +54,7 @@
                 <x-dl::button preset="save" label="Save" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     @php
         $open = $req->status === 'OPEN';

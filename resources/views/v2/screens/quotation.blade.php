@@ -73,8 +73,7 @@
         $first = IqpInquiry::find((int) request('inq'));
         $same = $first ? Quotation::available((int) $first->customer_id) : [];
     @endphp
-    <form method="post" action="{{ route('v2.quotation.create') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.quotation.create') }}">
         <x-dl::card :title="'Quotation baru — '.raw($same[0]['customer'] ?? 'customer')" description="One quotation = one customer. Tick other inquiries of the same customer if they are quoted too; every qty tier becomes a line.">
             @if (! $same)
                 <x-dl::alert tone="warn" message="This inquiry is no longer available (already quoted or not yet priced)." />
@@ -88,7 +87,7 @@
                 @if ($same)<x-dl::button preset="save" label="Buat Quotation" />@endif
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     {{-- Form Master-Detail DevLib (disetujui user 2026-09-30): panel aksi + tahapan -> ringkasan -> tab header -> Details di tengah
          -> footer (Tax + Summary + terbilang). Data & simpan = v1 quotation/entry lewat Quotation::save() (items[id][..], remove[id],
@@ -208,32 +207,28 @@
 
     @if ($more)
         <x-dl::modal id="quotation-add" title="Add inquiries of the same customer" icon="plus">
-            <form method="post" action="{{ route('v2.quotation.add-inquiry', $q->id_quotation) }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.quotation.add-inquiry', $q->id_quotation) }}">
                 <x-dl::field.checkboxes name="inquiry_ids" label="Inquiry siap ditawarkan" :options="collect($more)->mapWithKeys(fn ($r) => [$r['id'] => $r['no'].' · '.$r['product']])->all()" />
                 <x-dl::action-bar><x-dl::button preset="apply" type="submit" /></x-dl::action-bar>
-            </form>
+            </x-dl::action-form>
         </x-dl::modal>
     @endif
     @if ($status === 'PUBLISHED')
         <x-dl::modal id="quotation-cancel" title="Cancel quotation" icon="cancel">
-            <form method="post" action="{{ route('v2.quotation.cancel', $q->id_quotation) }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.quotation.cancel', $q->id_quotation) }}">
                 <x-dl::field.text name="cancel_reason" label="Cancellation reason" required />
                 <x-dl::action-bar><x-dl::button preset="save" label="Cancel document" variant="danger" /></x-dl::action-bar>
-            </form>
+            </x-dl::action-form>
         </x-dl::modal>
         <x-dl::modal id="quotation-lost" title="Close as LOST" icon="reject">
-            <form method="post" action="{{ route('v2.quotation.lost', $q->id_quotation) }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.quotation.lost', $q->id_quotation) }}">
                 <x-dl::field.text name="lost_reason" label="Reason lost (price, time, competitor, ...)" required />
                 <x-dl::action-bar><x-dl::button preset="save" label="Tandai LOST" variant="danger" /></x-dl::action-bar>
-            </form>
+            </x-dl::action-form>
         </x-dl::modal>
     @endif
     <x-dl::modal id="quotation-activity" title="Add follow-up" icon="plus">
-        <form method="post" action="{{ route('v2.quotation.activity', $q->id_quotation) }}">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.quotation.activity', $q->id_quotation) }}">
             <x-dl::form.row cols="2">
                 <x-dl::field.select name="act[activity_type]" label="Type" required :options="collect(QuoActivity::TYPES)->map(fn ($t) => implode(' ', $t))->all()" value="CALL" />
                 <x-dl::field.date name="act[activity_date]" label="Date" required :value="now()->toDateString()" />
@@ -248,6 +243,6 @@
                 <x-dl::field.text name="act[next_action]" label="Tindak lanjut apa" />
             </x-dl::form.row>
             <x-dl::action-bar><x-dl::button preset="save" /></x-dl::action-bar>
-        </form>
+        </x-dl::action-form>
     </x-dl::modal>
 @endif

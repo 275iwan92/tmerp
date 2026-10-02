@@ -422,6 +422,16 @@
     `docs/database/` = kilas balik untuk menemukan apa yang masih tertinggal.
 14. **Perbaikan di zona beku: preview dulu (user 2026-10-02).** Walaupun sudah diizinkan, tunjukkan dulu **sebelum → sesudah**
     ke user; dikerjakan setelah user bilang OK.
+15. **Semua layar = turunan objek DevLib (user 2026-10-02).** Layar v2 (mockup.test dan tmerp.test, kode yang sama) ditulis
+    dengan `x-dl::*` (dan `x-mp::*`, bagian khusus yang juga turunan `DevlibComponent`), bukan HTML mentah atau komponen v1.
+    Form kecil (tombol aksi, isian pop-up, saringan) = `x-dl::action-form`; form dokumen / master = `x-dl::form`.
+    Dijaga `DevlibOnlyRatchetTest` (angka HTML mentah tidak boleh naik). Layar v1 (menu lama) belum turunan DevLib: diganti
+    layar v2 satu per satu, tidak dipoles.
+16. **Setiap ENGINE wajib terdaftar dan dijelaskan (user 2026-10-02).** `App\Support\Engines\EngineRegistry` memuat kegunaan,
+    parameter input, output, cara kerja, tabel yang dibaca / ditulis, setelan, layar pemakai dan test tiap engine; tanda tangan
+    method dibaca dari kodenya. Tampil di **devlib.test → Engines → Engine Catalog** dan di menu **Developer → Engines**
+    (objek DevLib `x-dl::engine-catalog`). Engine baru / tanda tangan berubah: daftarkan, lalu `php artisan engine:catalog`
+    (dijaga `EngineCatalogTest`). Rumus harga ProCost rahasia: yang ditulis hanya alurnya, tanpa rumus dan angka.
 
 ## E. Help & Asisten AI
 
@@ -531,3 +541,4 @@
 | 2026-10-02 | C.18: klik logo atau nama aplikasi di kepala Layer Menu = semua tab ditutup dan opening screen tampil; posisi menu tetap; isian belum di-Save -> satu pertanyaan dulu. Objek DevLib `x-dl::layer-menu` prop `home` + `Shell::goHome`. |
 | 2026-10-02 | C.33 + E.3: **opening screen = papan widget** — top management dulu (yang lain masih template), katalog widget + susunan per user + target KPI sebagai data, widget dipasang / dilepas lewat Customize atau lewat asisten; dibangun di ddt, review `openingboard_review.md`. |
 | 2026-10-02 | C.33: papan widget **dipasang di tm2**; pilihan periode Harian – Tahunan (tersimpan per user, target bulanan dijumlah); order value merinci Draft di samping Confirmed; angka papan ikut setelan Dummy & Legacy Data. |
+| 2026-10-02 | D.15: semua layar v2 = turunan objek DevLib; objek baru `x-dl::action-form` untuk form kecil (48 form dikonversi), penjaga `DevlibOnlyRatchetTest`. D.16: Engine Catalog — 20 engine terdaftar di `EngineRegistry` dengan input, output dan cara kerja; tampil di devlib.test > Engines dan menu Developer > Engines; `php artisan engine:catalog`. |

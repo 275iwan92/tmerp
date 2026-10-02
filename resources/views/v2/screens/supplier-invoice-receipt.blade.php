@@ -38,8 +38,7 @@
         :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]"
         :filters="['supplier' => 'Supplier', 'status' => 'Status']" />
 @elseif (! $doc)
-    <form method="post" action="{{ route('v2.invoice-receipt.create') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.invoice-receipt.create') }}">
         <x-dl::card title="+ New Record — Supplier Invoice Receipt" description="Choose the supplier who hands over the invoices. The invoices are added on the next screen.">
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="supplier_id" label="Supplier" required :options="SupplierInvoiceReceipt::supplierOptions()" :source="Src::of('tm2mst.sup_supplier')" />
@@ -49,7 +48,7 @@
                 <x-dl::button preset="save" label="Create" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     @php
         $draft = $doc->status() === 'DRAFT';

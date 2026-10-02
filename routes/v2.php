@@ -1352,6 +1352,13 @@ Route::prefix('v2')->name('v2.')->group(function () {
             'duplicates' => Schema::duplicates(), 'copies' => Schema::copies(), 'changes' => Schema::changes()]);
     })->name('dictionary');
 
+    // Engine Catalog: daftar engine + input / output / cara kerja. Khusus Administrator / grup DEVELOPER.
+    Route::get('/engines', function () {
+        abort_unless(AppMenu::user(Auth::user())['developer'], 403);
+
+        return view('v2.engines', ['engines' => \App\Support\Engines\EngineRegistry::catalog()]);
+    })->name('engines');
+
     // Data dummy: baseline & reset (user 2026-09-28). Developer saja; ddt:baseline menolak bila bukan database ddt*.
     Route::prefix('dummy')->name('dummy.')->group(function () {
         $guard = fn () => abort_unless(AppMenu::user(Auth::user())['developer'], 403);

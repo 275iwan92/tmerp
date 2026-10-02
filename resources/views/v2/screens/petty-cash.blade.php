@@ -62,8 +62,7 @@
         @endif
     </x-dl::card>
     @if ($tx->status === 'POSTED')
-        <form method="post" action="{{ route('v2.petty.cancel', $tx->id_petty_tx) }}">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.petty.cancel', $tx->id_petty_tx) }}">
             <x-dl::card title="Cancel Transaction" description="For wrong input only. The journal is reversed and the transaction is kept as Cancelled. A settled advance, or a receipt whose goods are already in an SPB, must be cancelled from the later step first.">
                 <x-dl::field.text name="cancel_reason" label="Cancel Reason" required :value="old('cancel_reason')" placeholder="min. 10 characters" :source="Src::of('tm2acc.fin_petty_cash_tx.cancel_reason')" />
                 <x-dl::action-bar>
@@ -71,7 +70,7 @@
                     <x-dl::button variant="danger" icon="fa-ban" label="Cancel Transaction" type="submit" onclick="return confirm('Cancel this petty cash transaction and reverse its journal?')" />
                 </x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
     @else
         <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="$home" /></x-dl::action-bar>
     @endif
@@ -85,8 +84,7 @@
             :rows="$po->lines->map(fn ($l) => ['item' => $l->i_description, 'qty' => (float) $l->i_qty, 'uom' => $l->i_uom, 'est' => (float) $l->c_line_net])->all()" />
     </x-dl::card>
     @if ($step === 'ADVANCE')
-        <form method="post" action="{{ route('v2.petty.advance', $po->po_id) }}">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.petty.advance', $po->po_id) }}">
             <x-dl::card title="Cash Advance" description="Cash leaves the petty cash to the buyer. Journal: Dr Purchase Advance (114300) / Cr Petty Cash.">
                 <x-dl::form.row :cols="2">
                     <x-dl::field.money name="amount" label="Advance Amount" required :value="old('amount', (float) $po->c_grand_total)" :source="Src::of('tm2acc.fin_petty_cash_tx.advance_amount')" />
@@ -97,10 +95,9 @@
                     <x-dl::button preset="save" label="Give Advance" onclick="return confirm('Give this cash advance from petty cash?')" />
                 </x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
     @elseif (in_array($step, ['SETTLE', 'REIMBURSE'], true))
-        <form method="post" action="{{ route('v2.petty.settle', $po->po_id) }}" enctype="multipart/form-data">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.petty.settle', $po->po_id) }}" enctype="multipart/form-data">
             <x-dl::card :title="$step === 'SETTLE' ? 'Advance Settlement' : 'Reimburse'"
                 :description="$step === 'SETTLE' ? 'Advance '.raw($advance->tx_no.' '.$rp($advance->advance_amount)).' to '.raw($advance->receiver_name).'. Enter the receipt amount per line; change or shortfall is calculated automatically.' : 'Enter the receipt amount per line; the buyer is paid back from petty cash.'">
                 <x-dl::form.row :cols="2">
@@ -117,13 +114,12 @@
                     <x-dl::button preset="save" :label="$step === 'SETTLE' ? 'Post Settlement' : 'Pay Reimburse'" onclick="return confirm('Post this receipt to petty cash?')" />
                 </x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
     @else
         <x-dl::alert tone="info" message="This PO is not waiting for an advance or settlement (not approved, not a cash PO, or already done)." />
     @endif
 @elseif (request('topup'))
-    <form method="post" action="{{ route('v2.petty.topup') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.petty.topup') }}">
         <x-dl::card title="Petty Cash Top Up" description="Money from the bank into petty cash. Journal: Dr Petty Cash / Cr Bank. Suggested amount = limit − cash on hand − open advances.">
             <x-dl::form.row :cols="3">
                 <x-dl::field.money name="amount" label="Top Up Amount" required :value="old('amount', $sum['refill'])" :source="Src::of('tm2acc.fin_petty_cash_tx.cash_effect')" />
@@ -136,10 +132,9 @@
                 <x-dl::button preset="save" label="Top Up" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @elseif (request('setup'))
-    <form method="post" action="{{ route('v2.petty.setup') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.petty.setup') }}">
         <x-dl::card title="Petty Cash Setting" description="Name, custodian, and imprest limit (the fixed amount kept by Top Up).">
             <x-dl::form.row :cols="3">
                 <x-dl::field.text name="petty_name" label="Petty Cash Name" required :value="old('petty_name', $fund->petty_name)" :source="Src::of('tm2acc.fin_petty_cash.petty_name')" />
@@ -151,7 +146,7 @@
                 <x-dl::button preset="save" label="Save" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     @php $waiting = PettyCash::waiting(); @endphp
     @if ($waiting)

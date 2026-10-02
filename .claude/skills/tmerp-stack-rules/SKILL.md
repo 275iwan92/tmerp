@@ -29,6 +29,10 @@ Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 
 - **Dilarang** FK lintas-DB, `->join()`/`whereHas()` lintas koneksi. Pakai relasi Eloquent terpisah / `whereIn`; validasi `exists:tm2xxx.tabel,kolom`.
 - Kolom: `activate` (bukan `is_active`), `stat_confirm/stat_cancel/stat_close`, `created_by/updated_by` berisi `login` (cek per tabel: sebagian legacy `update_by`).
 - Logika bisnis di `app/Services/*`; migration mencerminkan dump `docs/tm2*.sql`.
+- **Engine baru / tanda tangan method engine berubah**: daftarkan di `App\Support\Engines\EngineRegistry` (kegunaan, input, output,
+  cara kerja, tabel; English) lalu `php artisan engine:catalog` -- dijaga `EngineCatalogTest`. Rumus harga ProCost tidak ditulis di sana.
+- **Layar v2 hanya objek DevLib** (`x-dl::*` / `x-mp::*`): form kecil (tombol aksi, isian pop-up, saringan GET) = `x-dl::action-form`
+  (token CSRF dipasang objeknya), bukan `<form>` mentah. Dijaga `DevlibOnlyRatchetTest`.
 - Tombol & status selalu English satu kata (New/Save/Undo/Delete/Confirm/Cancel/Back; Draft/Confirmed/Cancelled/Closed).
 
 ## Multi-bahasa (LOCKED user 2026-10-01) -- modul baru OTOMATIS siap ID + EN

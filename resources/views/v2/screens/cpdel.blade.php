@@ -117,8 +117,7 @@
     </x-dl::card>
 
     @if ($planned && Promise::canPlan($user))
-        <form method="post" action="{{ route('v2.cpdel.ready', $d->id_delivery) }}" data-dl-guard>
-            @csrf
+        <x-dl::action-form action="{{ route('v2.cpdel.ready', $d->id_delivery) }}" data-dl-guard>
             <x-dl::card title="Production promise (PPIC)" icon="fa-industry"
                 description="When will the goods be ready to load? If it is later than the customer slot, choose the reason: Sales will negotiate with the customer.">
                 <x-dl::form.row cols="4">
@@ -130,12 +129,11 @@
                 </x-dl::form.row>
                 <x-dl::action-bar><x-dl::button preset="save" /></x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
     @endif
 
     @if ($planned && Promise::canSell($user))
-        <form method="post" action="{{ route('v2.cpdel.reschedule', $d->id_delivery) }}" data-dl-guard>
-            @csrf
+        <x-dl::action-form action="{{ route('v2.cpdel.reschedule', $d->id_delivery) }}" data-dl-guard>
             <x-dl::card title="Change the customer slot (Sales)" icon="fa-handshake"
                 :description="$posted ? t('Posted to Production: only the slot time can change. Record who agreed and how.') : t('After the customer agrees by WhatsApp or phone: move the whole line, or fill Split qty to send part of it at the new slot. The slot must be inside Telasih office hours and the customer receiving hours.')">
                 <x-dl::form.row cols="4">
@@ -153,11 +151,10 @@
                 </x-dl::form.row>
                 <x-dl::action-bar><x-dl::button preset="save" /></x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
 
         @if (in_array($state, ['NEED_NEGOTIATION', 'LATE'], true))
-            <form method="post" action="{{ route('v2.cpdel.reject', $d->id_delivery) }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.cpdel.reject', $d->id_delivery) }}">
                 <x-dl::card title="Customer refused" icon="fa-circle-exclamation" description="The customer does not accept a new slot or split. This escalates the line to the Operational Manager.">
                     <x-dl::form.row cols="3">
                         <x-dl::field.select name="channel" label="Via" required :options="Promise::CHANNELS" value="WHATSAPP" />
@@ -166,14 +163,13 @@
                     </x-dl::form.row>
                     <x-dl::action-bar><x-dl::button type="submit" variant="danger" icon="fa-user-tie" label="Escalate" /></x-dl::action-bar>
                 </x-dl::card>
-            </form>
+            </x-dl::action-form>
         @endif
     @endif
 
     @if ($state === 'ESCALATED')
         @if (Promise::canDecide($user))
-            <form method="post" action="{{ route('v2.cpdel.decide', $d->id_delivery) }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.cpdel.decide', $d->id_delivery) }}">
                 <x-dl::card title="Decision (Operational Manager)" icon="fa-user-tie" description="Production must then commit a new ready time that meets the slot.">
                     <x-dl::form.row cols="2">
                         <x-dl::field.select name="decision" label="Decision" required :options="Promise::DECISIONS" />
@@ -181,32 +177,30 @@
                     </x-dl::form.row>
                     <x-dl::action-bar><x-dl::button preset="save" /></x-dl::action-bar>
                 </x-dl::card>
-            </form>
+            </x-dl::action-form>
         @else
             <x-dl::alert tone="danger" message="Waiting for the Operational Manager's decision." />
         @endif
     @endif
 
     @if ($planned && ! $posted)
-        <form method="post" action="{{ route('v2.cpdel.post', $d->id_delivery) }}">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.cpdel.post', $d->id_delivery) }}">
             <x-dl::card title="Post to Production" icon="fa-industry" description="Creates the Work Order for this line. After posting, the line can be pulled into a Delivery Order / Delivery Note right away (quick jobs of about {{ Locale::number((float) SysConstant::number('QUICK_JOB_MINUTES', 30), 0) }} minutes). Production output must still be entered afterwards: it is the KPI basis for all departments.">
                 <x-dl::action-bar><x-dl::button type="submit" icon="fa-industry" label="Post to Production" /></x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
     @elseif ($posted)
         <x-dl::alert tone="info" :message="'Posted to Production '.raw(Locale::dt($d->posted_at).' · '.$d->posted_by).' · Work Order: '.raw(PrdWo::where('source_delivery_id', $d->id_delivery)->pluck('wo_no')->join(', ') ?: '—').'. Production output must still be entered.'" />
     @endif
 
     @if ($planned && ! $posted && Promise::canSell($user) && $siblings->isNotEmpty())
-        <form method="post" action="{{ route('v2.cpdel.merge') }}">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.cpdel.merge') }}">
             <input type="hidden" name="ids[]" value="{{ $d->id_delivery }}">
             <x-dl::card title="Join lines" description="Join with other lines of the same CO and product; the result goes to the earliest date.">
                 <x-dl::field.checkboxes name="ids" label="Join with" :options="$siblings->mapWithKeys(fn ($s) => [$s->id_delivery => (Locale::d($s->ship_date) ?? '—').' · '.$num($s->ship_qty).' '.$unit])->all()" :source="Src::of('tm2sdi.co_order_delivery')" />
                 <x-dl::action-bar><x-dl::button preset="apply" label="Join" type="submit" /></x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
     @endif
 
     <x-dl::card title="Negotiation log">

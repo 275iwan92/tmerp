@@ -55,8 +55,7 @@
         :tabs="[['label' => 'All'], ...collect(CrmComplaint::TYPES)->map(fn ($l) => ['label' => $l, 'where' => ['type' => t($l)]])->values()->all()]"
         :filters="['customer' => 'Customer', 'category' => 'Category', 'status' => 'Status']" />
 @elseif (! $doc)
-    <form method="post" action="{{ route('v2.crm.complaint.create') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.crm.complaint.create') }}">
         <x-dl::card title="+ New Record — Complaint & Return" description="Choose the customer and whether goods come back. The details are filled in on the next screen.">
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="customer_id" label="Customer" required :options="CrmActivities::customerOptions()" :value="request('customer_id')" :source="Src::of('tm2mst.cust_customer')" />
@@ -67,7 +66,7 @@
                 <x-dl::button preset="save" label="Create" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     @php
         $status = $doc->status();

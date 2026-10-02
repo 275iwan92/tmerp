@@ -21,12 +21,11 @@
             <section data-lm-page="ticket" data-label="Tiket Bantuan" data-icon="fa-ticket">
                 @if (session('v2_flash') && session('v2_profile_page') === 'ticket')<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
                 @if ($errors->has('description'))<x-dl::alert tone="danger" :message="$errors->first('description')" />@endif
-                <form method="POST" action="{{ route('v2.support.ticket') }}">
-                    @csrf
+                <x-dl::action-form action="{{ route('v2.support.ticket') }}">
                     <x-dl::field.text name="screen_context" label="Screen / menu" :value="old('screen_context')" placeholder="E.g. Customer Order" />
                     <x-dl::field.text name="description" label="Problem description" :value="old('description')" multiline required placeholder="What happened, and what did you expect?" />
                     <x-dl::action-bar><x-dl::button type="submit" icon="fa-paper-plane" :label="t('Send ticket')" /></x-dl::action-bar>
-                </form>
+                </x-dl::action-form>
                 <h4>Tiket saya</h4>
                 @forelse ($tickets as $t)
                     <x-dl::card :title="raw($t->ticket_no.' · '.\Devlib\Locale::dt($t->created_at))" icon="fa-ticket">

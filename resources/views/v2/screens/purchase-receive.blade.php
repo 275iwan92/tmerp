@@ -52,8 +52,7 @@
     </x-dl::action-bar>
 @endif
 @if (! $pv && request('new') && request('type') === 'CUSTOMER')
-    <form method="post" action="{{ route('v2.pv.create-customer') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.pv.create-customer') }}">
         <x-dl::card title="+ New Record — Material from Customer" description="Material brought by the customer for a specific Customer Order (inquiry marked 'material from customer'). The CO number is mandatory. Not company stock: no stock value, no journal.">
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="co_id" label="Customer Order" required :options="PurchaseReceive::coOptions()" :value="request('co')" :source="Src::of('tm2sdi.co_order (CONFIRMED / SUBMITTED)')" />
@@ -64,11 +63,11 @@
                 <x-dl::button preset="save" label="Create Receipt" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @elseif (! $pv && request('new') && request('type') === 'SUBCON')
     @php $sub = (int) request('supplier'); @endphp
     <x-dl::card title="+ New Record — Return from Subcon" description="Goods coming back from a subcontractor against a Subcon PO. They usually go straight to the next process; shortages found later are recorded with Report Shortage.">
-        <form method="get" action="{{ $home }}">
+        <x-dl::action-form method="get" action="{{ $home }}">
             <input type="hidden" name="new" value="1"><input type="hidden" name="type" value="SUBCON">
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="supplier" label="Subcontractor" required :options="PurchaseReceive::subconSupplierOptions()" :value="$sub ?: null" :source="Src::of('tm2pur.po_order (SUBCONTRACT, SENT)')" />
@@ -77,23 +76,22 @@
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                 <x-dl::button type="submit" variant="secondary" :label="t('Next: choose PO lines')" />
             </x-dl::action-bar>
-        </form>
+        </x-dl::action-form>
         @if ($sub)
-            <form method="post" action="{{ route('v2.pv.create-subcon') }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.pv.create-subcon') }}">
                 <input type="hidden" name="supplier_id" value="{{ $sub }}">
                 <x-dl::form.row :cols="2">
                     <x-dl::field.select name="do_id" label="Subcon Delivery Note (optional)" :options="PurchaseReceive::subconDoOptions($sub)" :source="Src::of('tm2sdi.do_delivery (SUBCON)')" />
                 </x-dl::form.row>
                 <x-dl::field.checkboxes name="po_line_ids" label="Subcon PO lines coming back" required :options="PurchaseReceive::subconLineOptions($sub)" :source="Src::of('tm2pur.po_line (SUBCONTRACT, open)')" />
                 <x-dl::action-bar><x-dl::button preset="save" label="Create Receipt" /></x-dl::action-bar>
-            </form>
+            </x-dl::action-form>
         @endif
     </x-dl::card>
 @elseif (! $pv && request('new'))
     @php $sid = (int) request('supplier'); @endphp
     <x-dl::card title="+ New Record — Goods Receipt (SPB)" description="Step 1: choose a supplier with sent POs. Step 2: choose the receiving warehouse and the arriving PO lines.">
-        <form method="get" action="{{ $home }}">
+        <x-dl::action-form method="get" action="{{ $home }}">
             <input type="hidden" name="new" value="1">
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="supplier" label="Supplier" required :options="PurchaseReceive::supplierOptions()" :value="$sid ?: null" :source="Src::of('tm2pur.po_order (SENT / PARTIALLY_RECEIVED)')" />
@@ -102,17 +100,16 @@
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                 <x-dl::button type="submit" variant="secondary" :label="t('Next: choose PO lines')" />
             </x-dl::action-bar>
-        </form>
+        </x-dl::action-form>
         @if ($sid)
-            <form method="post" action="{{ route('v2.pv.create') }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.pv.create') }}">
                 <input type="hidden" name="supplier_id" value="{{ $sid }}">
                 <x-dl::form.row :cols="2">
                     <x-dl::field.select name="warehouse" label="Receiving Warehouse" required :options="PurchaseReceive::warehouses()" :source="Src::of('tm2mst.wh_warehouse')" />
                 </x-dl::form.row>
                 <x-dl::field.checkboxes name="po_line_ids" label="Arriving PO lines" required :options="PurchaseReceive::openLineOptions($sid)" :source="Src::of('tm2pur.po_line (sisa > 0)')" />
                 <x-dl::action-bar><x-dl::button preset="save" label="Buat Penerimaan" /></x-dl::action-bar>
-            </form>
+            </x-dl::action-form>
         @endif
     </x-dl::card>
 @elseif ($pv && $pv->i_receipt_type !== 'PO')
@@ -185,8 +182,7 @@
         </x-slot:detail>
     </x-dl::form>
     @if (! $isCust && $pv->status === 'POSTED')
-        <form method="post" action="{{ route('v2.pv.short', $pv->pv_id) }}">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.pv.short', $pv->pv_id) }}">
             <x-dl::card title="Report Shortage" description="A shortage found later in the next process lowers the received quantity; the Subcon PO and the subcon cost journal are corrected automatically.">
                 <x-dl::form.row :cols="3">
                     <x-dl::field.select name="pv_line_id" label="Line" required :options="$pv->lines->mapWithKeys(fn ($l) => [$l->pv_line_id => '#'.$l->line_no.' '.$l->i_description.' ('.\Devlib\Locale::decimal($l->i_qty_purchase, 2).' '.$l->i_uom_purchase.')'])->all()" :source="Src::of('tm2pur.pv_line')" />
@@ -195,7 +191,7 @@
                 </x-dl::form.row>
                 <x-dl::action-bar><x-dl::button variant="danger" icon="fa-triangle-exclamation" label="Record Shortage" type="submit" onclick="return confirm('Record this shortage? Received qty, PO and journal will be corrected.')" /></x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
     @endif
 @elseif ($pv)
     {{-- Form Master-Detail DevLib (disetujui user 2026-09-30). --}}

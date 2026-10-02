@@ -45,7 +45,7 @@
         :tabs="[['label' => 'All'], ...collect(CrmActivity::TOPICS)->map(fn ($l) => ['label' => $l, 'where' => ['topic' => t($l)]])->values()->all()]"
         :filters="['type' => 'Type', 'topic' => 'Topic', 'result' => 'Result', 'by' => 'By']" />
 @elseif (! $a && ! $customer)
-    <form method="get" action="{{ $home }}">
+    <x-dl::action-form method="get" action="{{ $home }}">
         <input type="hidden" name="new" value="1">
         <x-dl::card title="+ New Record — Activity" description="Choose the customer you contacted. The details are filled in on the next screen.">
             <x-dl::form.row :cols="2">
@@ -56,7 +56,7 @@
                 <x-dl::button preset="save" label="Continue" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     @php
         $new = ! $a;

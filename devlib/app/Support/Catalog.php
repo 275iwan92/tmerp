@@ -198,6 +198,12 @@ final class Catalog
                     'p8-lock' => $page('Lock Screen', 'fa-solid fa-lock', ['lock-screen' => ['Lock screen (idle / manual / Ctrl+Shift+L)', $c('LockScreen')]]),
                     'p8-security' => $page('Setup & Security', 'fa-solid fa-user-shield', ['security' => ['Users, Groups, Objects, Group Permissions, Language, Theme (vertical tabs)', $c('Tabs', 'Grid', 'PermissionMatrix', 'ThemePicker')]], 'security.html', $c('PermissionMatrix', 'Tabs')),
                 ]],
+            // Daftar ENGINE aplikasi (user 2026-10-02): kegunaan, input, output, cara kerja. Isinya dibuat tmerp
+            // (`php artisan engine:catalog` -> resources/data/v2/engines.json), objeknya x-dl::engine-catalog.
+            ['code' => 'EG', 'short' => 'EG', 'label' => 'Engines', 'icon' => 'fa-solid fa-gears',
+                'pages' => [
+                    'p9-engines' => $page('Engine Catalog', 'fa-solid fa-gears', ['engines' => ['Engine Catalog: every engine with its input, output and how it works', $c('EngineCatalog')]]),
+                ]],
             // Aturan untuk developer, bukan komponen yang dipakai user (user 2026-09-26).
             ['code' => 'DR', 'short' => 'DR', 'label' => 'DEV Rules', 'icon' => 'fa-solid fa-code',
                 'pages' => [

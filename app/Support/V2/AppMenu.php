@@ -55,6 +55,8 @@ final class AppMenu
                 ['label' => 'Database', 'items' => [['code' => 'V2-dictionary', 'label' => 'Data Dictionary', 'icon' => 'fa-solid fa-database', 'url' => route('v2.dictionary'), 'type' => 'report'],
                     // Hanya di situs dummy (database ddt*): baseline & reset data UAT.
                     ...(str_starts_with(DB::connection('tm2sdi')->getDatabaseName(), 'ddt') ? [['code' => 'V2-dummy', 'label' => 'Data Dummy (Reset)', 'icon' => 'fa-solid fa-rotate-left', 'url' => route('v2.dummy.index'), 'type' => 'report']] : [])]],
+                // Daftar engine: input, output, cara kerja (App\Support\Engines\EngineRegistry; sama dengan devlib.test > Engines).
+                ['label' => 'Engines', 'items' => [['code' => 'V2-engines', 'label' => 'Engine Catalog', 'icon' => 'fa-solid fa-gears', 'url' => route('v2.engines'), 'type' => 'report']]],
             ]];
         }
 

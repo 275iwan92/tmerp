@@ -34,8 +34,7 @@
         :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Shipped', 'where' => ['status' => 'SHIPPED'], 'tone' => 'info']]"
         :filters="['customer' => 'Customer', 'status' => 'Status']" />
 @elseif (! $do)
-    <form method="post" action="{{ route('v2.do.create') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.do.create') }}">
         <x-dl::card title="+ New Record — Delivery Order" description="Choose a customer. DO lines are pulled from the delivery schedule of Confirmed Customer Orders.">
             <x-dl::field.select name="customer_id" label="Customer" required :options="DeliveryOrder::customerOptions()" :source="Src::of('tm2mst.cust_customer')" />
             <x-dl::action-bar>
@@ -43,7 +42,7 @@
                 <x-dl::button preset="save" label="Buat DO" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     {{-- Form Master-Detail DevLib (disetujui user 2026-09-30). --}}
     @php

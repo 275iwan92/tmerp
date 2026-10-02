@@ -11,8 +11,7 @@
     <div class="dl-cat">
         @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
         @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
-        <form method="post" action="{{ route('v2.settings.mail.save') }}" autocomplete="off" data-dl-guard>
-            @csrf
+        <x-dl::action-form action="{{ route('v2.settings.mail.save') }}" autocomplete="off" data-dl-guard>
             <x-dl::card title="Setting E-mail (SMTP)" icon="email" description="Used by the Email button on every document and the user e-mail verification link. .env mode = use the server settings (MAIL_* in .env).">
                 <x-dl::form.row cols="3">
                     <x-dl::field.select name="mailer" label="Send mode" required :options="['env' => 'Ikut .env server', 'smtp' => 'SMTP (isi di bawah)', 'log' => 'Log saja (tidak terkirim, untuk uji)']" :value="old('mailer', $s->mailer ?? 'env')" :source="$t('mailer')" />
@@ -39,6 +38,6 @@
                     <x-dl::button preset="save" name="action" value="save" />
                 </x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
     </div>
 @endsection

@@ -23,16 +23,14 @@
             @endif
 
             <x-dl::action-bar>
-                <form method="POST" action="{{ route('v2.dummy.reset') }}">
-                    @csrf
+                <x-dl::action-form action="{{ route('v2.dummy.reset') }}">
                     <x-dl::button type="submit" variant="danger" icon="fa-rotate-left" label="Reset data dummy" :disabled="! $manifest"
                         data-dl-confirm="Semua perubahan pada data dummy sejak baseline akan hilang dan dikembalikan ke baseline. Lanjutkan?" />
-                </form>
-                <form method="POST" action="{{ route('v2.dummy.save') }}">
-                    @csrf
+                </x-dl::action-form>
+                <x-dl::action-form action="{{ route('v2.dummy.save') }}">
                     <x-dl::button type="submit" variant="secondary" icon="fa-floppy-disk" label="Jadikan kondisi sekarang baseline"
                         data-dl-confirm="Baseline lama ditimpa dengan kondisi data dummy sekarang. Lanjutkan?" data-dl-confirm-tone="warn" />
-                </form>
+                </x-dl::action-form>
             </x-dl::action-bar>
         </x-dl::card>
     </div>

@@ -19,10 +19,9 @@
                 <x-dl::field.display label="Verification required to send documents" :value="$setting->require_verified ? 'Ya' : 'Tidak (belum diwajibkan admin)'" :source="Src::of('tm2sys.sys_mail_setting.require_verified')" />
             </x-dl::form.row>
             @if ($u->email && ! $verified)
-                <form method="post" action="{{ route('v2.account.email.send') }}">
-                    @csrf
+                <x-dl::action-form action="{{ route('v2.account.email.send') }}">
                     <x-dl::action-bar><x-dl::button icon="send" :label="t('Send verification link')" type="submit" /></x-dl::action-bar>
-                </form>
+                </x-dl::action-form>
             @endif
             <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="route('v2.home')" /></x-dl::action-bar>
         </x-dl::card>

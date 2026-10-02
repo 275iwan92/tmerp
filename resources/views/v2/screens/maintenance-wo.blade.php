@@ -22,12 +22,11 @@
 
 @if (! $wo && ! request('new'))
     @if ($head)
-        <form method="post" action="{{ route('v2.mnt.wo.generate') }}">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.mnt.wo.generate') }}">
             <x-dl::action-bar>
                 <x-dl::button size="sm" variant="primary" icon="fa-bolt" label="Generate PM" type="submit" />
             </x-dl::action-bar>
-        </form>
+        </x-dl::action-form>
     @endif
     <x-dl::grid id="mnt-wo-list" :rows="Maintenance::woRows()" search="Search WO, machine, technician..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2prd.mnt_wo', 'tm2mst.prod_machine', 'tm2mst.prod_machine_downtime') }}"
@@ -54,8 +53,7 @@
         ]]"
         :filters="['type' => 'Type', 'work' => 'Work Status', 'machine' => 'Machine', 'technician' => 'Technician', 'priority' => 'Priority']" />
 @elseif (! $wo)
-    <form method="post" action="{{ route('v2.mnt.wo.create') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.mnt.wo.create') }}">
         <x-dl::card title="+ New Record — Maintenance Work Order" description="Manual WO (e.g. a planned repair). Sudden breakdowns go through Maintenance Request; routine care through Preventive Plan.">
             <x-dl::form.row :cols="3">
                 <x-dl::field.select name="machine_id" label="Machine" required :options="Maintenance::machines()" :source="Src::of('tm2mst.prod_machine')" />
@@ -67,7 +65,7 @@
                 <x-dl::button preset="save" label="Save" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     @php
         $doc = $wo->docStatus();

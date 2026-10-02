@@ -22,7 +22,7 @@
 @if (! $co)
     <x-dl::alert tone="info" :message="str_replace(':n', Locale::number((float) \App\Models\Sys\SysConstant::number('BOOKING_NEED_WORKDAYS', 3), 0), t('Material needs are shown from the moment a Customer Order is entered. Stock is reserved only after the order is Confirmed and the booking is confirmed (locked) here. Material must be ready by the due date, or at the latest :n working days after the CO date.'))" />
     <x-dl::action-bar>
-        <form method="post" action="{{ route('v2.planning.run-all') }}">@csrf<x-dl::button type="submit" variant="secondary" icon="fa-rotate" :label="t('Recalculate All')" /></form>
+        <x-dl::action-form action="{{ route('v2.planning.run-all') }}"><x-dl::button type="submit" variant="secondary" icon="fa-rotate" :label="t('Recalculate All')" /></x-dl::action-form>
         <x-dl::button variant="secondary" icon="fa-chart-gantt" :label="t('Material Planning (MRP)')" :href="route('v2.screen', 'material-planning')" />
         <x-dl::button variant="secondary" icon="fa-calendar-week" :label="t('Demand Forecast (MPS)')" :href="route('v2.screen', 'demand-forecast')" />
     </x-dl::action-bar>
@@ -39,8 +39,7 @@
         $customer = \Illuminate\Support\Facades\DB::connection('tm2mst')->table('cust_customer')->where('id_customer', $co->customer_id)->value('customer_name');
     @endphp
     <x-dl::card>
-        <form method="post" action="{{ route('v2.planning.booking', $co->id_order) }}">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.planning.booking', $co->id_order) }}">
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                 <span class="mp-chips">
@@ -57,7 +56,7 @@
                     <x-dl::button type="submit" name="action" value="unlock" variant="secondary" icon="fa-lock-open" label="Back to Draft" />
                 @endif
             </x-dl::action-bar>
-        </form>
+        </x-dl::action-form>
         <x-dl::form.row cols="4">
             <x-dl::field.display label="Customer" :value="$customer ?? '—'" :source="Src::of('tm2sdi.co_order.customer_id', 'tm2mst.cust_customer.customer_name')" />
             <x-dl::field.display label="CO Date" :value="Locale::d($co->co_date) ?? '—'" :source="Src::of('tm2sdi.co_order.co_date')" />
@@ -100,8 +99,7 @@
         :filters="['product' => 'Product', 'role' => 'Kind', 'status' => 'Coverage']" />
 
     @if ($pickable->isNotEmpty())
-        <form method="post" action="{{ route('v2.planning.pick', $co->id_order) }}">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.planning.pick', $co->id_order) }}">
             <x-dl::card :title="t('Pick Item')" icon="fa-hand-pointer" :description="t('Master Product only has the specification for these lines. Choose the stock item to book; the choice is kept on this booking (Master Product is not changed).')">
                 <x-dl::form.row cols="2">
                     <x-dl::field.select name="line_id" label="Line" required :options="$pickable->mapWithKeys(fn ($d) => [$d->booking_detail_id => $d->seq_no.' · '.$d->material_role.' · '.($d->spec_text ?: 'no specification').' · '.Locale::number((float) $d->qty_need, 2).' '.$d->uom_code])->all()"
@@ -110,7 +108,7 @@
                 </x-dl::form.row>
                 <x-dl::action-bar><x-dl::button type="submit" icon="confirm" :label="t('Pick Item')" /></x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
     @elseif ($confirmedCo && ! $b)
         <x-dl::alert tone="info" :message="t('Click Recalculate to save the booking proposal for this order; after that items can be picked and the booking confirmed.')" />
     @endif

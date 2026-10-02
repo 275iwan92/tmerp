@@ -37,8 +37,7 @@
         :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved / Sent', 'where' => ['status' => ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED']], 'tone' => 'success']]"
         :filters="['supplier' => 'Supplier', 'status' => 'Status']" />
 @elseif (! $po)
-    <form method="post" action="{{ route('v2.po.create') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.po.create') }}">
         <x-dl::card title="+ New Record — Purchase Order" description="Regular PO: choose the supplier (its open draft PO is reused). Cash PO: paid from Petty Cash, max. Rp {{ \Devlib\Locale::number(PurchaseOrder::maxCash(), 0) }}, approved by the Finance Director.">
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="po_kind" label="PO Kind" required :options="['NORMAL' => 'Regular PO (credit / terms)', 'CASH' => 'Cash PO (Petty Cash)']" :value="request('kind', 'NORMAL')" :source="Src::of('tm2pur.po_order.i_procure_type')" />
@@ -53,7 +52,7 @@
                 <x-dl::button preset="save" label="Buat PO" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     {{-- Form Master-Detail + Approval DevLib (disetujui user 2026-09-30). --}}
     @php

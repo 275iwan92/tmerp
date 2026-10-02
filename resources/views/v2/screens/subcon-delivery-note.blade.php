@@ -36,8 +36,7 @@
         :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]"
         :filters="['supplier' => 'Subcontractor', 'process' => 'Process', 'status' => 'Status']" />
 @elseif (! $do)
-    <form method="post" action="{{ route('v2.subcon.create') }}">
-        @csrf
+    <x-dl::action-form action="{{ route('v2.subcon.create') }}">
         <x-dl::card title="+ New Record — Subcontract Delivery Note" description="Choose the subcontractor and the process. Items are added on the next screen, each with its Customer Order line.">
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="supplier_id" label="Subcontractor" required :options="SubconDelivery::supplierOptions()" :source="Src::of('tm2mst.sup_supplier')" />
@@ -48,7 +47,7 @@
                 <x-dl::button preset="save" label="Create" />
             </x-dl::action-bar>
         </x-dl::card>
-    </form>
+    </x-dl::action-form>
 @else
     @php
         $draft = $do->status === 'DRAFT';

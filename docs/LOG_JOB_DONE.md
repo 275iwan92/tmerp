@@ -3,6 +3,38 @@
 
 ---
 
+## 2026-10-02 -- Engine Catalog + audit "semua layar turunan objek DevLib"
+
+User: "pastikan semua di mockup dan tmerp merupakan turunan dari object oriented di devlib dan pastikan ada list ENGINE
+yang terpasang di devlib dan jelaskan di sana keterangan parameter input dan outputnya dan cara kerjanya".
+
+**Engine Catalog**
+- Objek DevLib baru `x-dl::engine-catalog` (kartu per engine: kegunaan, cara memanggil, input, output, cara kerja, tabel
+  dibaca / ditulis, setelan, layar pemakai, test, berkas sumber; kotak cari + saringan grup) dan `Devlib\Engine\EngineInspector`
+  (tanda tangan method dibaca dari kode lewat reflection, jadi tidak bisa basi).
+- `App\Support\Engines\EngineRegistry`: 20 engine — Dieline (TMDieline), Imposition, Spec (BOP · BOM · Ink), Usage Rate,
+  Routing Template, Costing, Reverse Costing, Flow (Approval), CPDEL, CPDEL Two Promises, Material Planning, Work Order
+  Generation, PDR, Scheduling Rule, Hot Job Option Generator, Speed Target, Purchase Quotation Matcher, Tax, Payroll, Assistant.
+  Nama tabel dan letak dokumen dicocokkan ke database dan berkas yang ada. Costing: alurnya saja, tanpa rumus / angka (rahasia).
+- Tampil di **devlib.test → Engines → Engine Catalog** (membaca `resources/data/v2/engines.json`, dibuat
+  `php artisan engine:catalog`) dan di menu **Developer → Engines** aplikasi (`/v2/engines`, Administrator / grup DEVELOPER).
+- Test `EngineCatalogTest`: kelas `*Engine` / `*EngineService` baru wajib terdaftar; tiap entri punya input, output, cara
+  kerja; berkas JSON tidak boleh tertinggal dari kode.
+
+**Audit turunan DevLib (layar v2 = mockup.test dan tmerp.test, kode yang sama)**
+- Isi layar v2: 1.494 pemakaian `x-dl::*` + 16 `x-mp::*`; semua kelas komponen `x-dl::*` dan `x-mp::*` turunan
+  `DevlibComponent`; tidak ada komponen v1 (`x-ui` / `x-form` / `x-grid` / Livewire) di layar v2.
+- HTML mentah yang tersisa sebelum pekerjaan ini: 66 `<form>` pembungkus, 1 tombol, 2 tabel, 23 input tersembunyi.
+- Objek baru `x-dl::action-form` (form kecil tanpa panel; token CSRF dipasang sendiri). **48 form di 22 layar dikonversi**;
+  HTML hasil render dibandingkan sebelum / sesudah pada 108 halaman data dummy: tag form dan token identik.
+- Sisa 18 form: zona beku menunggu izin user (inquiry-new 2, inquiry-recalc 2, inquiry-revise 2, _inquiry-duplicate 1,
+  product-acc-forms 2, master-card-collection 2); customer-invoice 4 + customer-order 2 (sedang diubah sesi lain);
+  maintenance-my-work 1 (form membungkus slot kartu). Juga 1 tombol di halaman publik share dan 2 tabel lembar ACC.
+- Penjaga `DevlibOnlyRatchetTest`: angka HTML mentah di layar v2 tidak boleh naik.
+- **Bukan turunan DevLib:** layar v1. Menu aktif tanpa layar v2: mockup.test 48 dari 227 item (43 di antaranya memang belum
+  dibangun), tmerp.test 102 dari 193 item (menu `tm2sys` masih menu lama). Diganti layar v2 satu per satu.
+- Rulebook D.15, D.16 + changelog.
+
 ## 2026-10-02 -- Klik logo / nama aplikasi = opening screen, semua tab ditutup
 
 User: "jika saya click logo app atau nama app ERP TM maka opening screen akan muncul dan semua tab akan menutup" (alur
