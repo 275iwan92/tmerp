@@ -296,7 +296,7 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
 
         <x-print.footer page="{{ t('Page 1 of 1') }}">
             {{ $this->part->displayMastercardCode() }} · {{ $this->part->product?->product_name }} ·
-            {{ t('printed') }} {{ now()->format('d/m/Y H:i') }} · {{ t('official document issued by the TMERP system') }}
+            {{ t('printed on') }} {{ now()->format('d/m/Y H:i') }} · {{ t('official document issued by the TMERP system') }}
         </x-print.footer>
     </x-print.sheet>
 

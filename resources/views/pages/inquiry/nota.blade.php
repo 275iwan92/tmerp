@@ -284,7 +284,7 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
 
         <x-print.footer :page="t('Page 1 of 2')">
             {{ $this->inquiry->inquiry_no }} · {{ $this->inquiry->customer?->customer_name ?? $this->inquiry->prospect_name }} ·
-            {{ t('printed') }} {{ now()->format('d/m/Y H:i') }} · {{ t('terms & confirmation on page 2') }}
+            {{ t('printed on') }} {{ now()->format('d/m/Y H:i') }} · {{ t('terms & confirmation on page 2') }}
         </x-print.footer>
     </x-print.sheet>
 
