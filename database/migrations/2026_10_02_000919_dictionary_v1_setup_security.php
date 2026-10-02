@@ -230,7 +230,6 @@ return new class extends Migration
         'Base' => 'Dasar',
         'All other components (form, grid, screen) are built from the materials in this tab. Change the parent' => 'Semua komponen lain (form, grid, layar) disusun dari bahan di tab ini. Ubah induknya',
         'or token' => 'atau token',
-        'in' => 'di',
         'and the whole application follows — the list below also follows by itself because it is read directly from the parent class.' => 'dan seluruh aplikasi ikut — daftar di bawah juga ikut sendiri karena dibaca langsung dari class induk.',
         'Standard:' => 'Standar:',
         'Layer 0 — Color tokens' => 'Layer 0 — Token warna',
@@ -721,9 +720,15 @@ return new class extends Migration
         'Your current password' => 'Password saat ini',
     ];
 
+    // Kata depan: 'in' di konteks ui = Masuk (stok).
+    private const PREP = [
+        'in' => 'di',
+    ];
+
     public function up(): void
     {
         Dictionary::seed(self::ID);
+        Dictionary::seed(self::PREP, 'prep');
     }
 
     public function down(): void {}

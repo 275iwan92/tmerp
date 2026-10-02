@@ -62,7 +62,6 @@ return new class extends Migration
         'Diploma' => 'Ijazah',
         'All Willingness & Statement points must be checked.' => 'Semua poin Kesediaan & Pernyataan wajib dicentang.',
         'Cancel, back to vacancy details' => 'Batalkan, kembali ke detail lowongan',
-        'Apply' => 'Lamar',
         'All fields marked * must be filled in before the application can be submitted.' => 'Semua field bertanda * wajib diisi sebelum lamaran bisa dikirim.',
         'Your email is not verified yet.' => 'Email Anda belum diverifikasi.',
         'You can still fill in this form, but cannot submit it until the email is verified (check the inbox you used to register).' => 'Anda masih bisa mengisi form ini, tapi tidak bisa mengirim sampai email diverifikasi (cek inbox saat mendaftar).',
@@ -483,9 +482,15 @@ return new class extends Migration
         'Apply for Another Vacancy' => 'Lamar Lowongan Lain',
     ];
 
+    // Melamar lowongan: 'Apply' di konteks ui = Terapkan (filter).
+    private const JOB = [
+        'Apply' => 'Lamar',
+    ];
+
     public function up(): void
     {
         Dictionary::seed(self::ID);
+        Dictionary::seed(self::JOB, 'job');
     }
 
     public function down(): void {}

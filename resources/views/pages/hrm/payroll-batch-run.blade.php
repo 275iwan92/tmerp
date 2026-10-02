@@ -217,9 +217,9 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
 
             @if ($this->summary)
                 <x-grid.stat-row :count="4" class="mb-4">
-                    <x-grid.stat-box tone="total" :label="t('Total Employees')" :value="$this->summary['total_pegawai'].' '.t('ppl')" />
-                    <x-grid.stat-box tone="active" :label="t('Salary via Bank Transfer')" :value="$this->summary['bank_count'].' '.t('ppl')" :subtitle="'Rp '.number_format($this->summary['bank_total'], 0, ',', '.')" />
-                    <x-grid.stat-box tone="warn" :label="t('Salary via Cash')" :value="$this->summary['cash_count'].' '.t('ppl')" :subtitle="'Rp '.number_format($this->summary['cash_total'], 0, ',', '.')" />
+                    <x-grid.stat-box tone="total" :label="t('Total Employees')" :value="$this->summary['total_pegawai'].' '.t('ppl', 'abbr')" />
+                    <x-grid.stat-box tone="active" :label="t('Salary via Bank Transfer')" :value="$this->summary['bank_count'].' '.t('ppl', 'abbr')" :subtitle="'Rp '.number_format($this->summary['bank_total'], 0, ',', '.')" />
+                    <x-grid.stat-box tone="warn" :label="t('Salary via Cash')" :value="$this->summary['cash_count'].' '.t('ppl', 'abbr')" :subtitle="'Rp '.number_format($this->summary['cash_total'], 0, ',', '.')" />
                     <x-grid.stat-box tone="extra" :label="t('Total Net Salary')" :value="'Rp '.number_format($this->summary['grand_total'], 0, ',', '.')" />
                 </x-grid.stat-row>
 

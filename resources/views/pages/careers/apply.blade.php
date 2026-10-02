@@ -379,7 +379,7 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
 <div class="max-w-[820px] mx-auto my-8 px-5">
     @if (! $submitted)
         <a href="{{ route('careers.vacancy-detail', $vacancy_code) }}" class="text-[12px] font-bold text-muted hover:text-navy">&larr; {{ t('Cancel, back to vacancy details') }}</a>
-        <h1 class="text-[18px] font-extrabold text-navy mt-2 mb-1">{{ t('Apply') }}: {{ $this->vacancy->title }}</h1>
+        <h1 class="text-[18px] font-extrabold text-navy mt-2 mb-1">{{ t('Apply', 'job') }}: {{ $this->vacancy->title }}</h1>
         <p class="text-[11.5px] text-muted mb-4">{{ t('All fields marked * must be filled in before the application can be submitted.') }}</p>
 
         @unless ($this->emailVerified)

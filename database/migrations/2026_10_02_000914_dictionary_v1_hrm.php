@@ -157,7 +157,6 @@ return new class extends Migration
         'Calculates Base Salary, Allowances, Overtime, Meal Allowance, BPJS/PPh21 (if active), and Penalties' => 'Menghitung Gaji Pokok, Tunjangan, Overtime, Uang Roti, BPJS/PPh21 (kalau aktif), dan Denda',
         'Run Calculation' => 'Jalankan Kalkulasi',
         'Total Employees' => 'Total Pegawai',
-        'ppl' => 'Org',
         'Salary via Bank Transfer' => 'Gaji via Bank Transfer',
         'Salary via Cash' => 'Gaji via Cash',
         'Total Net Salary' => 'Total Gaji Bersih',
@@ -581,9 +580,15 @@ return new class extends Migration
         'Personnel' => 'Pegawai',
     ];
 
+    // Singkatan 'orang' di angka stat: 'Ppl' (judul kolom) di konteks ui = Jml.
+    private const ABBR = [
+        'ppl' => 'Org',
+    ];
+
     public function up(): void
     {
         Dictionary::seed(self::ID);
+        Dictionary::seed(self::ABBR, 'abbr');
     }
 
     public function down(): void {}

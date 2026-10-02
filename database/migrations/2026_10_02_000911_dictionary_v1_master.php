@@ -523,7 +523,7 @@ return new class extends Migration
         'Discipline Log' => 'Log Kedisiplinan',
         'Add Note' => 'Tambah Catatan',
         'Reason' => 'Alasan',
-        'Issued By' => 'Penerbit',
+        'Issuer' => 'Penerbit',
         'No notes yet — clean record.' => 'Belum ada catatan — clean record.',
         'Save Overview & Job Alignment' => 'Simpan Overview & Job Alignment',
         'Add Education History' => 'Tambah Riwayat Pendidikan',

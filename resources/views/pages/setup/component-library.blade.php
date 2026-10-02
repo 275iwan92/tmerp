@@ -1134,7 +1134,7 @@ new #[Title('DevLib UI UX')] class extends Component
         @php $ui = $this->uiCatalog(); @endphp
         <div class="flex flex-col gap-5 {{ $mainTab === 'base' ? '' : 'hidden' }}">
             <x-ui.card variant="panel" size="md" :title="t('Base').' — token & primitive x-ui.*'">
-                <x-slot:intro>{{ t('All other components (form, grid, screen) are built from the materials in this tab. Change the parent') }} (<code>app/View/Components/Ui/*</code> {{ t('or token') }} <code>@theme</code> {{ t('in') }} <code>app.css</code>) {{ t('and the whole application follows — the list below also follows by itself because it is read directly from the parent class.') }} {{ t('Standard:') }} <code>docs/componentstandard.md</code>.</x-slot:intro>
+                <x-slot:intro>{{ t('All other components (form, grid, screen) are built from the materials in this tab. Change the parent') }} (<code>app/View/Components/Ui/*</code> {{ t('or token') }} <code>@theme</code> {{ t('in', 'prep') }} <code>app.css</code>) {{ t('and the whole application follows — the list below also follows by itself because it is read directly from the parent class.') }} {{ t('Standard:') }} <code>docs/componentstandard.md</code>.</x-slot:intro>
             </x-ui.card>
 
             <x-ui.card :title="t('Layer 0 — Color tokens').' (--color-*)'">

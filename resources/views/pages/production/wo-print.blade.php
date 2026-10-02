@@ -177,7 +177,7 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
         </x-print.signatures>
 
         <x-print.footer :page="t('Page 1 of 1')">
-            {{ $this->wo->wo_no }} · {{ t('printed') }} {{ now()->format('d/m/Y H:i') }} · {{ t('internal work document, not a customer document') }}
+            {{ $this->wo->wo_no }} · {{ t('printed on') }} {{ now()->format('d/m/Y H:i') }} · {{ t('internal work document, not a customer document') }}
         </x-print.footer>
     </x-print.sheet>
 

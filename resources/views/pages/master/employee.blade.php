@@ -1215,7 +1215,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                     <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Date') }}</th>
                                     <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Type') }}</th>
                                     <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Reason') }}</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Issued By') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Issuer') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
