@@ -50,7 +50,37 @@ final class Dictionary
         self::remember($en, $context);
         $lang ??= Locale::lang();
 
-        return $lang === 'en' ? $en : (self::context($context, $lang)[$en] ?? $en);
+        return $lang === 'en' ? $en : (self::lookup($en, $context, $lang) ?? $en);
+    }
+
+    // Kunci kamus tidak peka huruf besar/kecil (collation utf8mb4_unicode_ci: 'WAITING' dan 'Waiting' satu baris), lookup PHP
+    // peka -> tanpa padanan persis dicari tanpa beda huruf, lalu bentuk hurufnya ikut sumber: 'CANCELLED' -> 'DIBATALKAN'.
+    private static function lookup(string $en, string $context, string $lang): ?string
+    {
+        $map = self::context($context, $lang);
+        if (isset($map[$en])) {
+            return $map[$en];
+        }
+        $ci = self::$cache['ci'][$lang][$context] ??= self::foldKeys($map);
+        $text = $ci[mb_strtolower($en)] ?? null;
+        if ($text === null) {
+            return null;
+        }
+        if ($en === mb_strtoupper($en) && $en !== mb_strtolower($en)) {
+            return mb_strtoupper($text);
+        }
+
+        return $en === mb_strtolower($en) ? mb_strtolower($text) : $text;
+    }
+
+    private static function foldKeys(array $map): array
+    {
+        $out = [];
+        foreach ($map as $k => $v) {
+            $out[mb_strtolower((string) $k)] ??= $v;
+        }
+
+        return $out;
     }
 
     // source_en => teks, satu konteks satu bahasa ('' = belum diterjemahkan tidak ikut).
@@ -67,6 +97,12 @@ final class Dictionary
     {
         return self::$cache['s'][$context] ??= self::cached("s:$context", fn () => array_fill_keys(
             self::db()->table('sys_dictionary')->where('context', $context)->pluck('source_en')->all(), true));
+    }
+
+    // Sama seperti sources(), tanpa beda huruf besar/kecil (database menganggap 'WAITING' = 'Waiting').
+    private static function foldedSources(string $context): array
+    {
+        return self::$cache['fs'][$context] ??= self::foldKeys(self::sources($context));
     }
 
     // Kamus 'ui' untuk browser (window.DL_DICT): semua sumber -> terjemahan bahasa itu ('' = belum ada; JS mencatat yang tidak dikenal).
@@ -156,7 +192,7 @@ final class Dictionary
                     $n += self::db()->table('sys_dictionary')->insertOrIgnore($chunk);
                 }
                 self::forget("s:$context");
-                unset(self::$cache['s'][$context]);
+                unset(self::$cache['s'][$context], self::$cache['fs'][$context]);
             }
         } catch (\Throwable) {
             // Tabel kamus belum ada di database ini -- abaikan, tampilan tetap English.
@@ -251,7 +287,8 @@ final class Dictionary
         if (! $force && (app()->runningInConsole() || ! config('devlib.dictionary_autoregister', true))) {
             return;
         }
-        if (isset(self::$pending[$context][$en]) || isset(self::sources($context)[$en]) || self::isTranslation($en, $context)) {
+        if (isset(self::$pending[$context][$en]) || isset(self::sources($context)[$en]) || isset(self::foldedSources($context)[mb_strtolower($en)])
+            || self::isTranslation($en, $context)) {
             return;
         }
         if (! self::$pending && ! $force) {

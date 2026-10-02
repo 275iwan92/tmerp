@@ -151,6 +151,17 @@ class MultiLanguageAutoTest extends TestCase
         $this->assertSame('Zq Delivery', Dictionary::t('Zq Delivery', self::CTX, 'en'));
     }
 
+    // Kunci kamus tidak peka huruf (collation DB): bentuk huruf besar / kecil memakai baris yang sama, hurufnya ikut sumber.
+    public function test_lookup_ignores_case_and_keeps_source_case(): void
+    {
+        $this->entry('Zq Cancelled', 'Zq Dibatalkan', self::CTX);
+
+        $this->assertSame('ZQ DIBATALKAN', Dictionary::t('ZQ CANCELLED', self::CTX, 'id'));
+        $this->assertSame('zq dibatalkan', Dictionary::t('zq cancelled', self::CTX, 'id'));
+        $this->assertSame('Zq Dibatalkan', Dictionary::t('Zq cancelled', self::CTX, 'id'));
+        $this->assertSame('ZQ CANCELLED', Dictionary::t('ZQ CANCELLED', self::CTX, 'en'));
+    }
+
     // English sumber diganti: terjemahan ikut; teks tujuan sudah ada -> digabung, terjemahan tujuan menang.
     public function test_rename_keeps_translations(): void
     {
