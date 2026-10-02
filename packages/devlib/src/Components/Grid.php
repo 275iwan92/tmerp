@@ -64,7 +64,7 @@ class Grid extends DevlibComponent
         public array $cards = [],
         public array $quickAdd = [],
         public ?string $groupBy = null,
-        public string $search = 'Cari...',
+        public string $search = 'Search...',
         public ?string $source = null,
         public ?string $openUrl = null,
         public ?string $newUrl = null,
@@ -100,7 +100,7 @@ class Grid extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'baris data grid';
+        return $this->source ?? 'grid data rows';
     }
 
     public function config(): array

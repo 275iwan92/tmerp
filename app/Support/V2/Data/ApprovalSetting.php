@@ -80,7 +80,7 @@ final class ApprovalSetting
     public static function create(string $module, string $notes, string $final): FlowConfig
     {
         $module = strtoupper(trim($module));
-        abort_if($module === '' || FlowConfig::where('module_code', $module)->exists(), 422, 'Kode modul kosong atau sudah punya setting.');
+        abort_if($module === '' || FlowConfig::where('module_code', $module)->exists(), 422, t('The module code is empty or already has a setting.'));
 
         return FlowConfig::create(['module_code' => $module, 'notes' => $notes, 'final_status' => strtoupper(trim($final)) ?: 'APPROVED',
             'reject_status' => 'REJECTED', 'total_step' => 0, 'activate' => true, 'created_by' => Auth::user()->login]);

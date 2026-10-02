@@ -15,9 +15,9 @@
 <body class="dl-body dl-share-page">
     <header class="dl-share-page__head">
         <div>
-            <small>{{ \App\Support\Branding\Brand::companyName() }} · dokumen online</small>
+            <small>{{ \App\Support\Branding\Brand::companyName() }} · {{ t('online document') }}</small>
             <b>{{ $share->title }}@if ($share->doc_no) · {{ $share->doc_no }}@endif</b>
-            <span>Salinan saat dicetak {{ \Devlib\Locale::dateTime($share->created_at) }}{{ $share->created_by ? ' oleh '.$share->created_by : '' }}@if ($share->expires_at) · berlaku s.d. {{ \Devlib\Locale::date($share->expires_at, 'long') }}@endif</span>
+            <span>{{ str_replace(':at', \Devlib\Locale::dateTime($share->created_at), t('Copy as printed :at')) }}{{ $share->created_by ? ' '.str_replace(':user', $share->created_by, t('by :user')) : '' }}@if ($share->expires_at) · {{ str_replace(':date', \Devlib\Locale::date($share->expires_at, 'long'), t('valid until :date')) }}@endif</span>
         </div>
         <div class="dl-share-page__qr" id="dl-share-qr" title="{{ $share->url() }}"></div>
         <button type="button" class="dl-btn dl-btn--secondary dl-btn--sm" id="dl-share-print"><span class="dl-btn__icon"><i class="fa-solid fa-print"></i></span>Print</button>

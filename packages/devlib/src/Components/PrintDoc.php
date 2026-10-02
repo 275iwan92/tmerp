@@ -19,7 +19,7 @@ class PrintDoc extends DevlibComponent
 
     public function source(): string
     {
-        return 'dokumen cetak: '.$this->doc->type.' ('.class_basename($this->doc).')';
+        return 'print document: '.$this->doc->type.' ('.class_basename($this->doc).')';
     }
 
     public function render()

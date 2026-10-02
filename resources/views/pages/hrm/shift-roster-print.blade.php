@@ -142,7 +142,7 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
 ?>
 
 @php
-    $dayLabels = collect(\App\Models\Master\EmpShift::DAY_ORDER)->map(fn ($d) => \App\Models\Master\EmpShift::DAY_LABELS[$d])->all();
+    $dayLabels = collect(\App\Models\Master\EmpShift::DAY_ORDER)->map(fn ($d) => \App\Models\Master\EmpShift::dayLabel($d))->all();
 @endphp
 
 <x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eaf0ff']"

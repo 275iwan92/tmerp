@@ -46,7 +46,7 @@ final class ProductMaster
             'id' => $p->id_product, 'photo' => isset($art[$p->id_product]) ? asset('storage/'.$art[$p->id_product]) : null,
             'name' => $p->product_name, 'code' => $p->design_no ?: $p->product_code, 'customer' => $p->customer?->customer_name ?? '—',
             'parts' => $p->parts_count, 'join' => $join[$p->id_product] ?? '—', 'status' => $p->card_status ?: 'DRAFT',
-            'revision' => $p->revision_no ? 'Rev.'.$p->revision_no : 'Induk',
+            'revision' => $p->revision_no ? 'Rev.'.$p->revision_no : t('Parent'),
             'acc_digital' => ($acc[$p->id_product] ?? collect())->contains('acc_type', 'DIGITAL') ? 'ADA' : 'BELUM',
             'active' => (bool) $p->activate, 'updated' => $p->updated_at?->toDateString(),
         ])->all();

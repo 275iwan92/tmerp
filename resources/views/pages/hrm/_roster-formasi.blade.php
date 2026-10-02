@@ -7,7 +7,7 @@
     $fmDates = $this->weekDates;
     $fmFocus = $this->focusDate();
     $fmLocked = $this->isLocked();
-    $fmDayLabels = \App\Models\Master\EmpShift::DAY_LABELS;
+    $fmDayLabels = array_map('t', \App\Models\Master\EmpShift::DAY_LABELS);
     $fmShiftTone = fn ($code) => match ($code) { 'SH1' => 'total', 'SH2' => 'warn', default => 'active' };
     $fmBoxes = 4 + count($fmStats['shifts']);
     $fmUnitNo = 0;

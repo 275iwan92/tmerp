@@ -91,7 +91,7 @@ final class CustomerOrder
     // Header, baris, jadwal kirim, biaya luar dari satu form. Hanya nilai yang berubah yang dikirim ke komponen v1.
     public static function save(CoOrder $o, array $in): void
     {
-        abort_unless($o->doc_status === 'DRAFT', 422, 'Customer Order sudah Confirm, tidak bisa diubah.');
+        abort_unless($o->doc_status === 'DRAFT', 422, t('The Customer Order is already Confirmed and cannot be changed.'));
         $c = self::component($o->id_order);
 
         foreach (self::HEADER as $f) {
@@ -160,7 +160,7 @@ final class CustomerOrder
     // product (inquiry) yang sama dibuang dari CO -- jejak semua pilihan tetap ada di quotation-nya.
     public static function pickQty(CoOrder $o, int $itemId): void
     {
-        abort_unless($o->doc_status === 'DRAFT', 422, 'Customer Order sudah Confirm, tidak bisa diubah.');
+        abort_unless($o->doc_status === 'DRAFT', 422, t('The Customer Order is already Confirmed and cannot be changed.'));
         $keep = $o->items()->whereKey($itemId)->where('line_kind', 'PRODUCT')->whereNotNull('inquiry_id')->firstOrFail();
         DB::connection('tm2sdi')->transaction(function () use ($o, $keep) {
             $drop = $o->items()->where('line_kind', 'PRODUCT')->where('inquiry_id', $keep->inquiry_id)->whereNotNull('quotation_item_id')
@@ -208,11 +208,11 @@ final class CustomerOrder
     {
         $pending = self::pending($o);
         if (! $pending || $o->doc_status !== 'SUBMITTED') {
-            return 'Customer Order ini tidak sedang menunggu approval Anda.';
+            return t('This Customer Order is not waiting for your approval.');
         }
         $note = trim($note);
         if ($action !== 'approve' && $note === '') {
-            return 'Alasan wajib diisi.';
+            return t('Reason is required.');
         }
         $flow = app(FlowEngineService::class);
         $amount = (float) $pending->amount_snapshot;
@@ -237,7 +237,7 @@ final class CustomerOrder
     // diperbaiki lalu diajukan lagi. 1 Quotation = 1 CO, jadi salinan selalu INSTANT; baris quotation menjadi manual.
     public static function duplicate(CoOrder $o): CoOrder
     {
-        abort_unless(in_array($o->doc_status, ['REJECTED', 'CANCELLED'], true), 422, 'Hanya CO Rejected / Cancelled yang bisa di-Duplicate.');
+        abort_unless(in_array($o->doc_status, ['REJECTED', 'CANCELLED'], true), 422, t('Only a Rejected / Cancelled CO can be Duplicated.'));
         $new = CoOrderBuilder::createInstant(CustCustomer::findOrFail($o->customer_id));
         $login = auth()->user()->login;
         DB::connection('tm2sdi')->transaction(function () use ($o, $new, $login) {
@@ -264,13 +264,13 @@ final class CustomerOrder
 
     public static function cancel(CoOrder $o, string $reason): ?string
     {
-        return trim($reason) === '' ? 'Alasan Cancel wajib diisi.' : CoOrderBuilder::cancel($o, trim($reason));
+        return trim($reason) === '' ? t('A Cancel reason is required.') : CoOrderBuilder::cancel($o, trim($reason));
     }
 
     // Hanya DRAFT INSTANT: CO INTEGRATED sudah menandai inquiry CONVERTED + Master Product (WIN), jadi tidak dihapus di sini.
     public static function delete(CoOrder $o): void
     {
-        abort_unless($o->doc_status === 'DRAFT' && $o->isInstant(), 422, 'Hanya draft INSTANT yang bisa dihapus.');
+        abort_unless($o->doc_status === 'DRAFT' && $o->isInstant(), 422, t('Only an INSTANT draft can be deleted.'));
         DB::connection('tm2sdi')->transaction(function () use ($o) {
             $o->deliveries()->delete();
             $o->externalCosts()->delete();

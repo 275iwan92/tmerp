@@ -82,7 +82,7 @@ class CustomerInvoiceService
     public function createInvoice(CoOrder $co, array $doLineIds, string $user): FinInvoice
     {
         $lines = $this->billable($co->id_order)->when($doLineIds, fn ($c) => $c->whereIn('id_line', array_map('intval', $doLineIds)))->values();
-        $this->fail($lines->isEmpty(), 'Nothing to invoice: no received delivery note line is left for this order.');
+        $this->fail($lines->isEmpty(), t('Nothing to invoice: no received delivery note line is left for this order.'));
         $customer = CustCustomer::withoutGlobalScopes()->findOrFail($co->customer_id);
         $date = $lines->max(fn (DoLine $l) => $l->delivery->do_date?->toDateString()) ?: now()->toDateString();
         $spec = $this->spec($lines->pluck('orderItem')->filter()->unique('id_item'));
@@ -116,7 +116,7 @@ class CustomerInvoiceService
         $customer = CustCustomer::withoutGlobalScopes()->findOrFail($co->customer_id);
         $co->loadMissing(['items', 'externalCosts']);
         $order = round((float) $co->totals()['total_billing'], 2);
-        $this->fail($order <= 0, 'This order has no value yet.');
+        $this->fail($order <= 0, t('This order has no value yet.'));
         $inv = new FinInvoice($this->header($co, $customer, self::DOWN_PAYMENT, now()->toDateString(), $user) + [
             'source_type' => 'ORDER', 'order_amount' => $order, 'dp_percent' => SysConstant::number('DP_DEFAULT_PERCENT', 50),
         ]);
@@ -262,7 +262,7 @@ class CustomerInvoiceService
      */
     public function saveDraft(FinInvoice $inv, array $in, string $user): FinInvoice
     {
-        $this->fail($inv->doc_status !== 'DRAFT', 'This document is already Confirmed and cannot be changed.');
+        $this->fail($inv->doc_status !== 'DRAFT', t('This document is already Confirmed and cannot be changed.'));
         $text = fn (string $k, int $max) => array_key_exists($k, $in) ? (mb_substr(trim((string) $in[$k]), 0, $max) ?: null) : $inv->{$k};
 
         return DB::connection('tm2acc')->transaction(function () use ($inv, $in, $user, $text) {
@@ -273,14 +273,14 @@ class CustomerInvoiceService
             ]);
             if (! empty($in['company_bank_id'])) {
                 $bank = FinCompanyBank::query()->where('activate', 1)->find((int) $in['company_bank_id']);
-                $this->fail(! $bank || ! $bank->usableFor((bool) $inv->is_ppn), 'This bank account is not for this tax identity.');
+                $this->fail(! $bank || ! $bank->usableFor((bool) $inv->is_ppn), t('This bank account is not for this tax identity.'));
                 $inv->company_bank_id = $bank->id_company_bank;
             }
 
             if ($inv->invoice_type === self::DOWN_PAYMENT) {
                 $inv->description = $text('description', 255);
                 $percent = array_key_exists('dp_percent', $in) && $in['dp_percent'] !== null && (float) $in['dp_percent'] > 0 ? (float) $in['dp_percent'] : null;
-                $this->fail($percent !== null && $percent > 100, 'The down payment cannot be more than 100% of the order.');
+                $this->fail($percent !== null && $percent > 100, t('The down payment cannot be more than 100% of the order.'));
                 $amount = $percent !== null ? round((float) $inv->order_amount * $percent / 100, 2) : round((float) ($in['bill_amount'] ?? $inv->total_amount), 2);
                 $inv->dp_percent = $percent;
                 $this->setDownPaymentAmount($inv, $amount);
@@ -328,51 +328,51 @@ class CustomerInvoiceService
     {
         $errors = [];
         if (! $inv->company_bank_id) {
-            $errors[] = 'Choose the bank account the customer transfers to.';
+            $errors[] = t('Choose the bank account the customer transfers to.');
         }
         if ($inv->invoice_type === self::DOWN_PAYMENT) {
             if (! $inv->co_id) {
-                $errors[] = 'A down payment must belong to a Customer Order.';
+                $errors[] = t('A down payment must belong to a Customer Order.');
             }
             if ((float) $inv->total_amount <= 0) {
-                $errors[] = 'The bill amount must be more than zero.';
+                $errors[] = t('The bill amount must be more than zero.');
             }
             $billed = (float) FinInvoice::withoutGlobalScopes()->where('invoice_type', self::DOWN_PAYMENT)->where('co_id', $inv->co_id)->where('doc_status', 'POSTED')
                 ->where('invoice_id', '<>', $inv->invoice_id)->sum('total_amount');
             if ($inv->order_amount !== null && $billed + (float) $inv->total_amount > (float) $inv->order_amount + 0.005) {
-                $errors[] = 'Down payments for this order would exceed the order value.';
+                $errors[] = t('Down payments for this order would exceed the order value.');
             }
 
             return $errors;
         }
         $inv->load('lines');
         if ($inv->lines->isEmpty()) {
-            $errors[] = 'Add at least one delivery note line.';
+            $errors[] = t('Add at least one delivery note line.');
         }
         if (! $inv->co_id || $inv->lines->contains(fn (FinInvoiceLine $l) => ! $l->do_line_id)) {
-            $errors[] = 'An invoice must come from delivery note lines of one Customer Order.';
+            $errors[] = t('An invoice must come from delivery note lines of one Customer Order.');
         }
         $live = DoLine::query()->whereKey($inv->lines->pluck('do_line_id')->filter()->all())->get()->keyBy('id_line');
         foreach ($inv->lines as $l) {
             $do = $live->get($l->do_line_id);
             if ((float) $l->qty_invoiced <= 0) {
-                $errors[] = "Line {$l->line_no}: the invoiced quantity must be more than zero.";
+                $errors[] = str_replace(':line', (string) $l->line_no, t('Line :line: the invoiced quantity must be more than zero.'));
             } elseif (! $do || $do->qty_received === null || (float) $l->qty_invoiced > $this->remaining($do) + 0.005) {
-                $errors[] = "Line {$l->line_no}: only ".($do ? $this->remaining($do) : 0).' is left to invoice on delivery note '.$l->delivery_no.'.';
+                $errors[] = str_replace([':line', ':qty', ':no'], [$l->line_no, $do ? $this->remaining($do) : 0, $l->delivery_no], t('Line :line: only :qty is left to invoice on delivery note :no.'));
             }
         }
         $t = $this->totals($inv);
         if ($t['total'] <= 0) {
-            $errors[] = 'The invoice total must be more than zero.';
+            $errors[] = t('The invoice total must be more than zero.');
         }
         $available = $this->downPaymentsAvailable($inv->co_id, $inv->invoice_id);
         foreach ((array) $inv->dp_plan as $id => $apply) {
             if ((float) $apply > (float) ($available[(int) $id]['remaining'] ?? 0) + 0.005) {
-                $errors[] = 'A down payment deduction is more than what is left of that down payment.';
+                $errors[] = t('A down payment deduction is more than what is left of that down payment.');
             }
         }
         if ($t['dp'] > $t['total'] + 0.005) {
-            $errors[] = 'The down payment deduction is more than the invoice total.';
+            $errors[] = t('The down payment deduction is more than the invoice total.');
         }
 
         return $errors;
@@ -382,7 +382,7 @@ class CustomerInvoiceService
 
     public function confirm(FinInvoice $inv, string $user): FinInvoice
     {
-        $this->fail($inv->doc_status !== 'DRAFT', 'Only a Draft can be confirmed.');
+        $this->fail($inv->doc_status !== 'DRAFT', t('Only a Draft can be confirmed.'));
         $this->fail((bool) ($errors = $this->confirmErrors($inv)), implode(' ', $errors));
         $date = $inv->invoice_date->toDateString();
         $series = ($inv->invoice_type === self::DOWN_PAYMENT ? 'DP_' : 'INV_').($inv->is_ppn ? 'LJM' : 'TM');
@@ -479,19 +479,19 @@ class CustomerInvoiceService
 
     public function cancel(FinInvoice $inv, string $reason, string $user): FinInvoice
     {
-        $this->fail($inv->doc_status !== 'POSTED', 'Only a Confirmed document can be cancelled.');
-        $this->fail(trim($reason) === '', 'Fill in the reason for cancelling.');
+        $this->fail($inv->doc_status !== 'POSTED', t('Only a Confirmed document can be cancelled.'));
+        $this->fail(trim($reason) === '', t('Fill in the reason for cancelling.'));
         $stamp = ['doc_status' => 'CANCELLED', 'cancel_reason' => mb_substr(trim($reason), 0, 255), 'cancelled_by' => $user, 'cancelled_at' => now(), 'updated_by' => $user];
 
         if ($inv->invoice_type === self::DOWN_PAYMENT) {
-            $this->fail((float) $inv->paid_amount > 0, 'This down payment has been received. Refunding a down payment is not available yet.');
+            $this->fail((float) $inv->paid_amount > 0, t('This down payment has been received. Refunding a down payment is not available yet.'));
             $inv->update($stamp);
 
             return $inv;
         }
 
         $cash = round((float) $inv->paid_amount - (float) $inv->dp_applied_amount, 2);
-        $this->fail($cash > 0.005 || FinPaymentAlloc::query()->where('invoice_id', $inv->invoice_id)->exists(), 'This invoice already has a payment. Correct it with a credit note instead.');
+        $this->fail($cash > 0.005 || FinPaymentAlloc::query()->where('invoice_id', $inv->invoice_id)->exists(), t('This invoice already has a payment. Correct it with a credit note instead.'));
         $date = $inv->invoice_date->toDateString();
         $this->guard->assertOpen($date);
 
@@ -511,7 +511,7 @@ class CustomerInvoiceService
 
     public function delete(FinInvoice $inv): void
     {
-        $this->fail($inv->doc_status !== 'DRAFT', 'Only a Draft can be deleted.');
+        $this->fail($inv->doc_status !== 'DRAFT', t('Only a Draft can be deleted.'));
         $inv->delete();
     }
 
@@ -523,14 +523,14 @@ class CustomerInvoiceService
      */
     public function receiveDownPayment(FinInvoice $dp, string $date, int $bankId, float $amount, ?string $taxInvoiceNo, string $user): FinVoucher
     {
-        $this->fail($dp->invoice_type !== self::DOWN_PAYMENT || $dp->doc_status !== 'POSTED', 'Only a Confirmed down payment invoice can receive money.');
+        $this->fail($dp->invoice_type !== self::DOWN_PAYMENT || $dp->doc_status !== 'POSTED', t('Only a Confirmed down payment invoice can receive money.'));
         $amount = round($amount, 2);
         $left = round((float) $dp->total_amount - (float) $dp->paid_amount, 2);
-        $this->fail($amount <= 0, 'The amount received must be more than zero.');
-        $this->fail($amount > $left + 0.005, 'The amount received is more than what is left of this down payment invoice.');
+        $this->fail($amount <= 0, t('The amount received must be more than zero.'));
+        $this->fail($amount > $left + 0.005, t('The amount received is more than what is left of this down payment invoice.'));
         $bank = FinCompanyBank::query()->where('activate', 1)->find($bankId);
-        $this->fail(! $bank, 'Choose the bank account that received the money.');
-        $this->fail(! ($bankAccount = $bank->glAccountId()), 'This bank account has no ledger account yet (Finance > Company Bank Accounts).');
+        $this->fail(! $bank, t('Choose the bank account that received the money.'));
+        $this->fail(! ($bankAccount = $bank->glAccountId()), t('This bank account has no ledger account yet (Finance > Company Bank Accounts).'));
         $this->guard->assertOpen($date);
         $customer = CustCustomer::withoutGlobalScopes()->findOrFail($dp->partner_id);
         $partner = ['partner_type' => 'CUSTOMER', 'partner_id' => $customer->id_customer, 'co_id' => $dp->co_id];
@@ -581,18 +581,18 @@ class CustomerInvoiceService
     public function receivePayment(int $customerId, string $date, int $bankId, array $allocations, string $user, string $note = ''): FinVoucher
     {
         $allocations = array_filter(array_map(fn ($v) => round((float) $v, 2), $allocations), fn ($v) => $v > 0);
-        $this->fail(! $allocations, 'Fill in the amount paid on at least one invoice.');
+        $this->fail(! $allocations, t('Fill in the amount paid on at least one invoice.'));
         $invoices = FinInvoice::withoutGlobalScopes()->whereKey(array_keys($allocations))->get();
         $this->fail($invoices->count() !== count($allocations) || $invoices->contains(fn (FinInvoice $i) => $i->invoice_type !== self::INVOICE || $i->doc_status !== 'POSTED'
-            || (int) $i->partner_id !== $customerId), 'Only Confirmed invoices of this customer can receive a payment.');
-        $this->fail($invoices->pluck('is_ppn')->unique()->count() > 1, 'One receipt cannot mix invoices of the two tax identities.');
+            || (int) $i->partner_id !== $customerId), t('Only Confirmed invoices of this customer can receive a payment.'));
+        $this->fail($invoices->pluck('is_ppn')->unique()->count() > 1, t('One receipt cannot mix invoices of the two tax identities.'));
         foreach ($invoices as $i) {
-            $this->fail($allocations[$i->invoice_id] > $i->outstanding() + 0.005, "The amount for {$i->invoice_number} is more than what is left to pay.");
+            $this->fail($allocations[$i->invoice_id] > $i->outstanding() + 0.005, str_replace(':no', $i->invoice_number, t('The amount for :no is more than what is left to pay.')));
         }
         $bank = FinCompanyBank::query()->where('activate', 1)->find($bankId);
-        $this->fail(! $bank, 'Choose the bank account that received the money.');
-        $this->fail(! $bank->usableFor((bool) $invoices->first()->is_ppn), 'This bank account is not for this tax identity.');
-        $this->fail(! ($bankAccount = $bank->glAccountId()), 'This bank account has no ledger account yet (Finance > Company Bank Accounts).');
+        $this->fail(! $bank, t('Choose the bank account that received the money.'));
+        $this->fail(! $bank->usableFor((bool) $invoices->first()->is_ppn), t('This bank account is not for this tax identity.'));
+        $this->fail(! ($bankAccount = $bank->glAccountId()), t('This bank account has no ledger account yet (Finance > Company Bank Accounts).'));
 
         return $this->arap->settle('RECEIPT', $bankAccount, $date, $allocations, $user, $note);
     }

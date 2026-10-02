@@ -6,7 +6,7 @@ namespace Devlib\Components;
 class EmptyState extends DevlibComponent
 {
     public function __construct(
-        public string $title = 'Belum ada data',
+        public string $title = 'No data yet',
         public ?string $message = null,
         public string $icon = 'file',
     ) {}

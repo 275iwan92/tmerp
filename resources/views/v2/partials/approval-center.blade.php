@@ -9,7 +9,7 @@
 @endphp
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
-<x-dl::approval :title="$title.' Menunggu Approval Saya'" :me="auth()->user()->name ?? auth()->user()->login"
-    approve-label="Setujui" :docs="ApprovalCenter::docs($screen)" :line-columns="ApprovalCenter::lineColumns($screen)"
+<x-dl::approval :title="raw($title).' Waiting for My Approval'" :me="auth()->user()->name ?? auth()->user()->login"
+    :approve-label="t('Approve')" :docs="ApprovalCenter::docs($screen)" :line-columns="ApprovalCenter::lineColumns($screen)"
     :log="ApprovalCenter::myLog($screen)" :action="route('v2.approval.decide', $screen)"
     :source="Src::of('tm2mst.flow_log', 'tm2mst.flow_config_step')" />

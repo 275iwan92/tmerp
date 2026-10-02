@@ -1,6 +1,6 @@
 {{-- Engine Catalog (user 2026-10-02): semua engine tmerp dengan input, output dan cara kerjanya. Isi = App\Support\Engines\EngineRegistry,
      tanda tangan method dibaca dari kode. Objek DevLib x-dl::engine-catalog; halaman yang sama ada di devlib.test > Engines. --}}
-@extends('v2.layout', ['title' => 'Engine Catalog', 'bodyClass' => 'dl-page-body'])
+@extends('v2.layout', ['title' => t('Engine Catalog'), 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">
         <x-dl::card title="Engine Catalog" icon="fa-gears"

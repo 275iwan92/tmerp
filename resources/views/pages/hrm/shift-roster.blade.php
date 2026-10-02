@@ -876,7 +876,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             $this->shiftForm['days'][$i] = ['on' => true, 'in' => $source['in'], 'out' => $source['out'], 'brk' => $source['brk']];
         }
 
-        $this->flash(str_replace([':to', ':in', ':out'], [EmpShift::DAY_LABELS[EmpShift::DAY_ORDER[$upto - 1]], $source['in'], $source['out']], t('Mon–:to set to :in–:out.')));
+        $this->flash(str_replace([':to', ':in', ':out'], [EmpShift::dayLabel(EmpShift::DAY_ORDER[$upto - 1]), $source['in'], $source['out']], t('Mon–:to set to :in–:out.')));
     }
 
     public function saveShift(): void
@@ -1343,7 +1343,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
 
         return collect($this->weekDates)->map(fn ($d, $i) => [
             'date' => $d->toDateString(),
-            'label' => \App\Models\Master\EmpShift::DAY_LABELS[$d->format('l')],
+            'label' => \App\Models\Master\EmpShift::dayLabel($d->format('l')),
             'on' => $pattern ? $pattern[$i]['on'] : $i < 6,
         ])->all();
     }
@@ -1836,7 +1836,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                     <div class="[display:grid] grid-cols-2 sm:grid-cols-4 lg:grid-cols-7">
                         @foreach ($pattern as $day)
                             <div class="border-l border-[var(--rs-border)] px-2.5 py-2.5 flex flex-col gap-1.5 {{ $day['on'] ? '' : 'bg-[var(--rs-sunken)]' }}">
-                                <b class="text-[13px] font-bold uppercase tracking-wide {{ $day['label'] === 'Min' ? 'text-[var(--rs-bad)]' : 'text-[var(--rs-ink)]' }}">{{ $day['label'] }}</b>
+                                <b class="text-[13px] font-bold uppercase tracking-wide {{ $day['label'] === t('Sun') ? 'text-[var(--rs-bad)]' : 'text-[var(--rs-ink)]' }}">{{ $day['label'] }}</b>
                                 @if ($day['on'])
                                     <span class="font-mono text-[11.5px] text-[var(--rs-ink-2)]">{{ $day['in'] }}</span>
                                     <span class="font-mono text-[11.5px] text-[var(--rs-ink-2)]">{{ $day['out'] }}{{ \App\Models\Master\EmpShift::isNight($day) ? ' +1' : '' }}</span>
@@ -2012,7 +2012,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                         @foreach (\App\Models\Master\EmpShift::DAY_ORDER as $i => $dayName)
                             <div wire:key="shiftday-{{ $i }}" class="border-l border-[var(--rs-border)] px-2 py-2 flex flex-col gap-1.5 {{ ($shiftForm['days'][$i]['on'] ?? false) ? '' : 'bg-[var(--rs-sunken)]' }}">
                                 <label class="flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wide cursor-pointer {{ $dayName === 'Sunday' ? 'text-[var(--rs-bad)]' : 'text-[var(--rs-ink)]' }}">
-                                    {{ \App\Models\Master\EmpShift::DAY_LABELS[$dayName] }}
+                                    {{ \App\Models\Master\EmpShift::dayLabel($dayName) }}
                                     {{-- Sengaja TETAP raw <input> (audit componentization 2026-09-13): checkbox
                                          ini menumpang di dalam <label> yang SUDAH membungkus teks nama hari --
                                          x-form.checkbox selalu bikin <label> sendiri, nesting label-in-label

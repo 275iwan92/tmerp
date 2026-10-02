@@ -67,14 +67,14 @@ final class DeliveryOrder
     {
         return DB::connection('tm2sdi')->table('v_co_delivery_outstanding')->where('customer_id', $do->customer_id)->where('qty_available', '>', 0)
             ->where('co_status', 'CONFIRMED')->whereIn('co_delivery_id', self::postedIds())->orderBy('co_no')->orderBy('item_description')->get()
-            ->mapWithKeys(fn ($r) => [$r->co_delivery_id => $r->co_no.' · '.$r->item_description.' · sisa '.Locale::decimal($r->qty_available, 2).' '.$r->qty_unit
-                .($r->ship_date ? ' · kirim '.Locale::d(Carbon::parse($r->ship_date)) : '')])->all();
+            ->mapWithKeys(fn ($r) => [$r->co_delivery_id => $r->co_no.' · '.$r->item_description.' · '.t('remaining').' '.Locale::decimal($r->qty_available, 2).' '.$r->qty_unit
+                .($r->ship_date ? ' · '.t('ship').' '.Locale::d(Carbon::parse($r->ship_date)) : '')])->all();
     }
 
     // Header + alamat (lookup wilayah) + qty/harga baris + hapus baris. Balasan = pesan error DispatchService (kosong = OK).
     public static function save(DoDelivery $do, array $in): string
     {
-        abort_unless($do->status === 'DRAFT', 422, 'DO sudah Confirm, tidak bisa diubah.');
+        abort_unless($do->status === 'DRAFT', 422, t('The DO is already Confirmed and cannot be changed.'));
         $c = self::component($do->id_delivery);
         foreach (self::HEADER as $f) {
             if (array_key_exists($f, $in) && self::changed(self::str($in[$f]), $do->{$f})) {
@@ -121,7 +121,7 @@ final class DeliveryOrder
     {
         $notPosted = DB::connection('tm2sdi')->table('co_order_delivery')->whereIn('id_delivery', array_map('intval', $coDeliveryIds))->whereNull('posted_at')->count();
         if ($notPosted) {
-            return 'Jadwal kirim yang dipilih belum di-Post to Production di Customer Plan Delivery.';
+            return t('The selected delivery schedule has not been Posted to Production in Customer Plan Delivery yet.');
         }
         $c = self::component($do->id_delivery);
         $c->checkedDeliveryIds = array_map('intval', $coDeliveryIds);
@@ -145,7 +145,7 @@ final class DeliveryOrder
         $fresh = DoDelivery::find($do->id_delivery);
         $want = ['confirm' => 'CONFIRMED', 'ship' => 'SHIPPED', 'cancel' => 'CANCELLED'][$action];
 
-        return [$fresh?->status === $want, $c->pullMessage ?: 'Status tidak berubah.'];
+        return [$fresh?->status === $want, $c->pullMessage ?: t('The status did not change.')];
     }
 
     // Draft > Confirmed > Closed (SHIPPED = barang sudah keluar).

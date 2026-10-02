@@ -1,4 +1,4 @@
-@extends('v2.layout', ['title' => 'Home'])
+@extends('v2.layout', ['title' => t('Home')])
 @section('body')
     {{-- Situs ERP v2 = Layer Menu saja (user 2026-09-29); Menu Classic hanya di katalog DevLib. --}}
     <x-dl::layer-shell :classic="false" :brand="\App\Support\Branding\Brand::name()" :tagline="\App\Support\Branding\Brand::tagline()" :logo="\App\Support\Branding\Brand::logoUrl()" :modules="$modules" :user="$user" :logout-action="route('v2.logout')" :chat="$chat" :developer="$user['developer']" :open="$open" :help-url="route('v2.guide', 'aturan')" :profile-page="$profilePage" :assistant="$assistant" :account="$account" menu-source="sys_app_menu ({{ config('database.connections.tm2sys.database') }})">

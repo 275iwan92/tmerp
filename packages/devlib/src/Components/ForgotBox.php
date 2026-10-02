@@ -13,7 +13,7 @@ class ForgotBox extends DevlibComponent
         public string $mode = 'email',
         public string $action = '',
         public string $loginUrl = '#',
-        public string $question = 'Nama hewan peliharaan pertama Anda?',
+        public string $question = 'What was the name of your first pet?',
     ) {}
 
     public function tag(): string
@@ -23,7 +23,7 @@ class ForgotBox extends DevlibComponent
 
     public function source(): string
     {
-        return $this->mode === 'email' ? 'password_reset_tokens (tautan email)' : 'sec_user: tgl lahir, ibu kandung, No. HP, jawaban keamanan';
+        return $this->mode === 'email' ? 'password_reset_tokens (e-mail link)' : 'sec_user: birth date, mother\'s name, mobile no., security answer';
     }
 
     public function render()

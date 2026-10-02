@@ -19,7 +19,7 @@ class Kanban extends DevlibComponent
         public array $members = [],
         public bool $addColumn = true,
         public bool $addCard = true,
-        public string $me = 'Saya',
+        public string $me = 'Me',
         public ?string $source = null,
     ) {}
 

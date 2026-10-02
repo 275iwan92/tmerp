@@ -15,7 +15,7 @@ class PickMatrix extends DevlibComponent
         public string $name = 'pick',
         public array $columns = [],
         public array $rows = [],
-        public string $empty = 'Belum ada penawaran untuk dibandingkan.',
+        public string $empty = 'No quotations to compare yet.',
         public string $unit = 'PO',
         public ?string $source = null,
     ) {}
@@ -27,7 +27,7 @@ class PickMatrix extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'baris x penawar';
+        return $this->source ?? 'lines x bidders';
     }
 
     // Sel diurutkan ikut kolom (kolom tanpa penawaran = null) -- tanpa @php di dalam loop Blade.

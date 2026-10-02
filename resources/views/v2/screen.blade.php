@@ -10,7 +10,7 @@
             @include($screen['view'] ?? 'v2.screens.'.$screen['slug'], ['screen' => $screen])
         @else
             <x-dl::card :title="$screen['label']" :icon="$screen['icon']" description="Not built in the mockup yet — its reference is mapped.">
-                <x-dl::table :columns="['k' => 'Item', 'v' => 'Description']" :rows="[
+                <x-dl::table :columns="['k' => 'Aspect', 'v' => 'Description']" :rows="[
                     ['k' => t('Module › Group'), 'v' => $screen['module'].' › '.$screen['group']],
                     ['k' => t('Flow & field reference (current tmerp)'), 'v' => 'resources/views/pages/'.$screen['ref']],
                     ['k' => t('Look reference (original mockup)'), 'v' => $screen['mockup'] ?? '—'],

@@ -6,8 +6,8 @@ namespace Devlib\Components\Field;
 class KeyValue extends Field
 {
     public function __construct(
-        public string $keyLabel = 'Nama',
-        public string $valueLabel = 'Nilai',
+        public string $keyLabel = 'Name',
+        public string $valueLabel = 'Value',
         string $name = '',
         string $label = '',
         ?string $tooltip = null,
