@@ -69,9 +69,9 @@ class RateBandResolver
         $found = $historical['datapoint_count'] ?? 0;
 
         throw new \RuntimeException(
-            "Rate Band manual utk proses '{$processName}' belum punya cukup histori Production Output ".
-            "(butuh minimal {$this->minDataPoint} data poin DONE/QC_PASSED, ada {$found}) — ".
-            'catat Production Output (F15) dulu, atau PPIC/Plant Manager input estimasi manual sementara.'
+            str_replace([':process', ':min', ':found'], [$processName, $this->minDataPoint, $found],
+                t("Manual Rate Band for process ':process' does not have enough Production Output history yet (needs at least :min DONE/QC_PASSED data points, found :found)")).' — '.
+            t('record Production Output (F15) first, or PPIC/Plant Manager enters a temporary manual estimate.')
         );
     }
 
@@ -135,8 +135,8 @@ class RateBandResolver
         }
 
         throw new \RuntimeException(
-            "Rate Band tidak ditemukan untuk machine_id={$machineId}, proses={$processName} — ".
-            'baik histori maupun master data kosong. Perlu input manual PPIC/Plant Manager.'
+            str_replace([':machine', ':process'], [$machineId, $processName], t('Rate Band not found for machine_id=:machine, process=:process')).' — '.
+            t('both history and master data are empty. PPIC/Plant Manager must enter it manually.')
         );
     }
 }

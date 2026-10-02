@@ -56,7 +56,7 @@ class PrAllocationService
         $totalQty = array_sum(array_column($splits, 'qty'));
 
         if ($totalQty > (float) $line->i_qty) {
-            throw new \InvalidArgumentException('Total qty alokasi melebihi qty baris PR.');
+            throw new \InvalidArgumentException(t('The total allocated qty exceeds the PR line qty.'));
         }
 
         $login = Auth::user()->login ?? null;

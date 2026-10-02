@@ -60,15 +60,15 @@ class PvBuilderService
         $lines = PoLine::with('order')->whereIn('po_line_id', $poLineIds)->get();
 
         if ($lines->isEmpty()) {
-            throw new \InvalidArgumentException('Tidak ada baris dipilih.');
+            throw new \InvalidArgumentException(t('No lines selected.'));
         }
 
         if ($lines->pluck('order.i_supplier_id')->unique()->count() > 1 || $lines->first()->order->i_supplier_id !== $supplierId) {
-            throw new \InvalidArgumentException('[PV-02] Semua baris wajib dari supplier yang sama.');
+            throw new \InvalidArgumentException(t('[PV-02] All lines must come from the same supplier.'));
         }
 
         if ($lines->pluck('order.i_currency_id')->unique()->count() > 1) {
-            throw new \InvalidArgumentException('[PV-04] Semua PO wajib mata uang yang sama.');
+            throw new \InvalidArgumentException(t('[PV-04] All POs must use the same currency.'));
         }
 
         $login = Auth::user()->login;

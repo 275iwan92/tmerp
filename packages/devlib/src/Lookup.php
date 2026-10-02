@@ -41,7 +41,7 @@ final class Lookup
             'rows' => array_values(array_map(fn ($r) => (array) $r, is_iterable($rows) ? (array) $rows : [])),
             'key' => $def['key'] ?? 'id',
             'label' => $def['label'] ?? 'name',
-            'columns' => $def['columns'] ?? [($def['label'] ?? 'name') => 'Nama'],
+            'columns' => $def['columns'] ?? [($def['label'] ?? 'name') => 'Name'],
             'fill' => $def['fill'] ?? [],
             'source' => $def['source'] ?? $name,
             'remote' => $remote,

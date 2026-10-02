@@ -16,12 +16,12 @@ class ProdMachineChangeover extends Model
     protected $primaryKey = 'changeover_id';
 
     public const KINDS = [
-        'COLOR' => 'Ganti Warna',
-        'SUBSTRATE' => 'Ganti Bahan',
-        'PLATE' => 'Ganti Plate',
-        'DIE' => 'Ganti Pisau / Plong',
-        'SIZE' => 'Ganti Ukuran',
-        'INK_TYPE' => 'Ganti Jenis Tinta',
+        'COLOR' => 'Color change',
+        'SUBSTRATE' => 'Substrate change',
+        'PLATE' => 'Plate change',
+        'DIE' => 'Die / cutter change',
+        'SIZE' => 'Size change',
+        'INK_TYPE' => 'Ink type change',
     ];
 
     protected $fillable = [

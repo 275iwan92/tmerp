@@ -34,7 +34,7 @@ class Formation extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'tm2hrm formasi harian (emp_schedule per posisi)';
+        return $this->source ?? 'tm2hrm daily formation (emp_schedule per position)';
     }
 
     public function render()
@@ -44,7 +44,7 @@ class Formation extends DevlibComponent
                 data-positions="{{ json_encode($positions) }}" data-shifts="{{ json_encode((object) $shifts) }}" data-days="{{ json_encode($days) }}"
                 data-people="{{ json_encode($people) }}" data-assign="{{ json_encode($assign) }}">
                 <div class="dl-fm__top">
-                    <div class="dl-roster__week"><x-dl::icon-button icon="prev" title="Minggu sebelumnya" data-fm-week="-1" /><div class="dl-fm__wk"><b>{{ $week }}</b><small>{{ $range }}</small></div><x-dl::icon-button icon="next" title="Minggu berikutnya" data-fm-week="1" /></div>
+                    <div class="dl-roster__week"><x-dl::icon-button icon="prev" title="Previous week" data-fm-week="-1" /><div class="dl-fm__wk"><b>{{ $week }}</b><small>{{ $range }}</small></div><x-dl::icon-button icon="next" title="Next week" data-fm-week="1" /></div>
                     <span class="dl-print__spacer"></span>
                     <span class="dl-fm__status" data-fm-status></span>
                     <x-dl::button preset="save" size="sm" variant="secondary" data-fm-save />
@@ -54,14 +54,14 @@ class Formation extends DevlibComponent
                 <div class="dl-fm__main">
                     <section class="dl-fm__sheet">
                         <div class="dl-fm__tools">
-                            <div class="dl-segment" data-fm-mode><button type="button" class="dl-segment__opt is-active" data-m="week">Ringkas seminggu</button><button type="button" class="dl-segment__opt" data-m="day">Per hari</button></div>
+                            <div class="dl-segment" data-fm-mode><button type="button" class="dl-segment__opt is-active" data-m="week">{{ t('Week summary') }}</button><button type="button" class="dl-segment__opt" data-m="day">{{ t('Per day') }}</button></div>
                             <div class="dl-fm__days" data-fm-days></div>
                             <span class="dl-print__spacer"></span>
-                            <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Cari nama di formasi…" data-fm-search aria-label="Cari nama"></div>
-                            <x-dl::button variant="secondary" size="sm" icon="fa-clone" label="Salin minggu lalu" data-fm-copy />
+                            <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ t('Search name in formation…') }}" data-fm-search aria-label="{{ t('Search name') }}"></div>
+                            <x-dl::button variant="secondary" size="sm" icon="fa-clone" :label="t('Copy last week')" data-fm-copy />
                             <x-dl::button preset="print" size="sm" data-fm-print />
                         </div>
-                        <div class="dl-fm__scroll"><table class="dl-fm__table"><thead><tr><th class="dl-fm__no">No</th><th>Posisi</th><th>Jam kerja</th><th data-fm-colhead>Yang bertugas</th><th></th></tr></thead><tbody data-fm-body></tbody></table></div>
+                        <div class="dl-fm__scroll"><table class="dl-fm__table"><thead><tr><th class="dl-fm__no">{{ t('No') }}</th><th>{{ t('Position') }}</th><th>{{ t('Working hours') }}</th><th data-fm-colhead>{{ t('On duty') }}</th><th></th></tr></thead><tbody data-fm-body></tbody></table></div>
                         <div class="dl-fm__legend" data-fm-legend></div>
                     </section>
                     <aside class="dl-fm__side" data-fm-side></aside>

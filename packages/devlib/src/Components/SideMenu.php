@@ -61,13 +61,13 @@ class SideMenu extends DevlibComponent
             <aside {{ $attributes->class(['dl-sm', 'dl-sm--'.$side, 'is-mini' => $collapsed]) }} {!! $dl() !!} data-dl-side-menu data-id="{{ $id }}">
                 <div class="dl-sm__head">
                     <b class="dl-sm__title">{{ $title }}</b>
-                    <button type="button" class="dl-sm__mini" data-sm-mini title="Ciutkan / lebarkan" aria-label="Ciutkan menu"><i class="fa-solid fa-angles-{{ $side === 'right' ? 'right' : 'left' }}"></i></button>
+                    <button type="button" class="dl-sm__mini" data-sm-mini title="{{ \Devlib\Lang::text('Collapse / expand') }}" aria-label="{{ \Devlib\Lang::text('Collapse menu') }}"><i class="fa-solid fa-angles-{{ $side === 'right' ? 'right' : 'left' }}"></i></button>
                 </div>
                 @if ($search)<div class="dl-sm__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search menu…') }}" data-sm-q aria-label="{{ \Devlib\Lang::text('Search menu') }}"></div>@endif
                 <div class="dl-sm__scroll">
                     @if ($favorites)
-                        <div class="dl-sm__extra" data-sm-fav hidden><div class="dl-sm__cap"><i class="fa-solid fa-star"></i> <span class="dl-sm__t">Favorit</span></div><ul class="dl-sm__ul" data-sm-favlist></ul></div>
-                        <div class="dl-sm__extra" data-sm-recent hidden><div class="dl-sm__cap"><i class="fa-solid fa-clock-rotate-left"></i> <span class="dl-sm__t">Terakhir dibuka</span></div><ul class="dl-sm__ul" data-sm-recentlist></ul></div>
+                        <div class="dl-sm__extra" data-sm-fav hidden><div class="dl-sm__cap"><i class="fa-solid fa-star"></i> <span class="dl-sm__t">{{ \Devlib\Lang::text('Favourites') }}</span></div><ul class="dl-sm__ul" data-sm-favlist></ul></div>
+                        <div class="dl-sm__extra" data-sm-recent hidden><div class="dl-sm__cap"><i class="fa-solid fa-clock-rotate-left"></i> <span class="dl-sm__t">{{ \Devlib\Lang::text('Recently opened') }}</span></div><ul class="dl-sm__ul" data-sm-recentlist></ul></div>
                     @endif
                     <nav data-sm-tree>{!! $tree($items) !!}</nav>
                 </div>

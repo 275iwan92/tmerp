@@ -50,7 +50,7 @@ class PrintOut extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'dokumen cetak';
+        return $this->source ?? 'print document';
     }
 
     public function config(): array

@@ -52,9 +52,9 @@ class MegaMenu extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <nav {{ $attributes->class(['dl-mm', 'dl-mm--'.$tone]) }} {!! $dl() !!} data-dl-mega aria-label="Menu utama">
+            <nav {{ $attributes->class(['dl-mm', 'dl-mm--'.$tone]) }} {!! $dl() !!} data-dl-mega aria-label="{{ \Devlib\Lang::text('Main menu') }}">
                 @if ($brand)<span class="dl-mm__brand">{{ $brand }}</span>@endif
-                <button type="button" class="dl-mm__burger" data-mm-burger aria-label="Buka menu"><i class="fa-solid fa-bars"></i></button>
+                <button type="button" class="dl-mm__burger" data-mm-burger aria-label="{{ \Devlib\Lang::text('Open menu') }}"><i class="fa-solid fa-bars"></i></button>
                 <ul class="dl-mm__bar" data-mm-bar>
                     @foreach ($items as $i => $it)
                         @php

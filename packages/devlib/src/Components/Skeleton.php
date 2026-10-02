@@ -20,7 +20,7 @@ class Skeleton extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <div {{ $attributes->class(['dl-skel', 'dl-skel--'.$type]) }} {!! $dl() !!} aria-busy="true" aria-label="Memuat...">
+            <div {{ $attributes->class(['dl-skel', 'dl-skel--'.$type]) }} {!! $dl() !!} aria-busy="true" aria-label="{{ \Devlib\Lang::text('Loading...') }}">
                 @switch($type)
                     @case('table')
                         @for ($r = 0; $r <= $rows; $r++)<div class="dl-skel__row">@for ($c = 0; $c < $cols; $c++)<span class="dl-skel__bar {{ $r === 0 ? 'is-head' : '' }}"></span>@endfor</div>@endfor

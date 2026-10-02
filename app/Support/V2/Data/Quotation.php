@@ -89,7 +89,7 @@ final class Quotation
     public static function outstandingRows(): array
     {
         return collect(self::closedOrOpen())->where('status', 'PUBLISHED')->map(function ($r) {
-            $r['expired'] = $r['valid'] && $r['valid'] < now()->toDateString() ? 'KEDALUWARSA' : 'BERLAKU';
+            $r['expired'] = $r['valid'] && $r['valid'] < now()->toDateString() ? t('EXPIRED') : t('VALID');
 
             return $r;
         })->values()->all();
@@ -112,7 +112,7 @@ final class Quotation
             'notes' => $a->notes,
             'next_date' => $a->next_action_date?->toDateString(),
             'next' => $a->next_action,
-            'due' => ! $a->next_action_date ? '—' : ($a->next_action_date->toDateString() < $today ? 'LEWAT' : ($a->next_action_date->toDateString() === $today ? 'HARI INI' : 'NANTI')),
+            'due' => ! $a->next_action_date ? '—' : ($a->next_action_date->toDateString() < $today ? t('PAST DUE') : ($a->next_action_date->toDateString() === $today ? t('TODAY') : t('LATER'))),
             'by' => $a->created_by,
         ])->all();
     }

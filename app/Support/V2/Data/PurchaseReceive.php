@@ -188,7 +188,7 @@ final class PurchaseReceive
     {
         $r = PvPostingService::cancel($pv->refresh()->load('lines'), $reason);
 
-        return [$r['ok'], $r['ok'] ? trim('Penerimaan dibatalkan — stok dikeluarkan lagi, PO dihitung ulang. '.($r['journal_warning'] ?? '')) : $r['message']];
+        return [$r['ok'], $r['ok'] ? trim(t('Receipt cancelled — stock taken out again, PO recalculated.').' '.($r['journal_warning'] ?? '')) : $r['message']];
     }
 
     public static function delete(PvReceipt $pv): void

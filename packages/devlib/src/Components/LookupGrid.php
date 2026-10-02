@@ -24,6 +24,6 @@ class LookupGrid extends Sheet
 
     public function source(): string
     {
-        return $this->source ?? 'tabel lookup (daftar bantu)';
+        return $this->source ?? 'lookup table (helper list)';
     }
 }

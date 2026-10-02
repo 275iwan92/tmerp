@@ -29,7 +29,7 @@ class Chart extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'data laporan';
+        return $this->source ?? 'report data';
     }
 
     public function render()

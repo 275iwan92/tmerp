@@ -133,7 +133,7 @@ class Ribbon extends DevlibComponent
                 </div>
                 @if ($file)
                     <div class="dl-rb__stage" data-rb-stage hidden>
-                        <nav class="dl-rb__stagenav"><button type="button" data-rb-stagex><i class="fa-solid fa-circle-arrow-left"></i> Kembali</button>
+                        <nav class="dl-rb__stagenav"><button type="button" data-rb-stagex><i class="fa-solid fa-circle-arrow-left"></i> {{ \Devlib\Lang::text('Back') }}</button>
                             @foreach ($file as $f)<button type="button" data-rb-key="{{ $f['key'] ?? $f['label'] }}">{!! $icon($f['icon'] ?? null) !!} {{ $f['label'] }}</button>@endforeach
                         </nav>
                         <div class="dl-rb__stagebody">{{ $slot }}</div>

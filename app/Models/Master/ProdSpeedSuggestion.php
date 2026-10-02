@@ -15,7 +15,7 @@ class ProdSpeedSuggestion extends Model
 
     protected $primaryKey = 'id_speed_suggestion';
 
-    public const STATUSES = ['PENDING' => 'Menunggu', 'ACCEPTED' => 'Diterima', 'REJECTED' => 'Ditolak', 'SUPERSEDED' => 'Diganti usulan baru'];
+    public const STATUSES = ['PENDING' => 'Pending', 'ACCEPTED' => 'Accepted', 'REJECTED' => 'Rejected', 'SUPERSEDED' => 'Superseded by a new suggestion'];
 
     protected $fillable = [
         'machine_id', 'capability_id', 'process_name', 'suggested_speed', 'uom', 'source_code', 'confidence', 'sample_size',

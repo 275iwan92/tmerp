@@ -478,7 +478,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                 </div>
                 <x-slot:tools>
                     <x-form.select wire:model.live="stageFilter" liveSync :selected="$stageFilter" :placeholder="t('All Stages')"
-                        :options="\App\Models\Master\ProdProcess::STAGES" class="shrink-0" />
+                        :options="array_map('t', \App\Models\Master\ProdProcess::STAGES)" class="shrink-0" />
                 </x-slot:tools>
                 <x-slot:newRecord>
                     <x-ui.button preset="new" size="sm" class="shrink-0" wire:click="openModal('new')" />
@@ -585,7 +585,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="num">
                                     @if ($p->standard_rate > 0)
                                         <div class="font-mono text-[11.5px]">{{ number_format((float) $p->standard_rate, 0, ',', '.') }}</div>
-                                        <div class="text-[10px] text-muted">{{ \App\Models\Master\ProdProcess::COST_BASIS[$p->cost_basis] ?? '—' }}</div>
+                                        <div class="text-[10px] text-muted">{{ isset(\App\Models\Master\ProdProcess::COST_BASIS[$p->cost_basis]) ? t(\App\Models\Master\ProdProcess::COST_BASIS[$p->cost_basis]) : '—' }}</div>
                                     @else
                                         <span class="text-[10.5px] text-warn-ink">{{ t('not set') }}</span>
                                     @endif
@@ -645,7 +645,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                         </div>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                            <x-form.select :label="t('Production Stage')" name="process_stage" wire:model="process_stage" :options="\App\Models\Master\ProdProcess::STAGES" :placeholder="t('— select stage —')" />
+                            <x-form.select :label="t('Production Stage')" name="process_stage" wire:model="process_stage" :options="array_map('t', \App\Models\Master\ProdProcess::STAGES)" :placeholder="t('— select stage —')" />
                             <x-form.select :label="t('Related Department')" name="department_id" wire:model="department_id" :options="$this->departmentOptions" :placeholder="t('— select department —')" />
                         </div>
 
@@ -676,7 +676,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                         <p class="text-[11px] text-muted mb-3">{!! t('The numbers here are the process <strong>default values</strong>.') !!} {!! t('If a machine has different numbers, fill its override in the <strong>Executing Machines</strong> tab — do not change these defaults.') !!}</p>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3">
-                            <x-form.select :label="t('Output Unit (UoM)')" name="output_uom" wire:model="output_uom" :placeholder="false" :options="\App\Models\Master\ProdProcess::OUTPUT_UOM" />
+                            <x-form.select :label="t('Output Unit (UoM)')" name="output_uom" wire:model="output_uom" :placeholder="false" :options="array_map('t', \App\Models\Master\ProdProcess::OUTPUT_UOM)" />
                             <x-form.input :label="t('Setup Time / Make-ready (minutes)')" type="number" name="default_setup_minutes" wire:model="default_setup_minutes" :placeholder="t('e.g. 45')" />
                         </div>
 
@@ -714,7 +714,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                     {{-- TAB 3 --}}
                     <div @if ($activeTab !== 'cost') style="display:none" @endif>
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3">
-                            <x-form.select :label="t('Cost Basis')" name="cost_basis" wire:model="cost_basis" :options="\App\Models\Master\ProdProcess::COST_BASIS" :placeholder="t('— select basis —')" />
+                            <x-form.select :label="t('Cost Basis')" name="cost_basis" wire:model="cost_basis" :options="array_map('t', \App\Models\Master\ProdProcess::COST_BASIS)" :placeholder="t('— select basis —')" />
                             <x-form.input :label="t('Standard Rate (IDR)')" name="standard_rate" wire:model="standard_rate" :placeholder="t('e.g. 250000')" :hint="t('In the basis unit next to it')" />
                         </div>
                         <p class="text-[11px] text-muted mt-2">{{ t('A rate without a basis will not be saved — "250.000" could mean per hour or per 1,000 sheets, and CostingEngine must not guess.') }}</p>

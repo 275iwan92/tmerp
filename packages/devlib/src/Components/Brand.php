@@ -19,7 +19,7 @@ class Brand extends DevlibComponent
 
     public function source(): string
     {
-        return 'identitas perusahaan (tmerp: Settings > Identifikasi)';
+        return 'company identity (tmerp: Settings > Identification)';
     }
 
     public function render()

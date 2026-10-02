@@ -1175,7 +1175,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('NPWP Validation') }}</label>
                             <x-form.checkbox wire:model="tax_validated" :label="t('NPWP verified by Finance')" />
                         </div>
-                        <x-form.select :label="t('KYC Status')" wire:model="kyc_status" :placeholder="false" :options="CustCustomer::KYC_STATUSES" />
+                        <x-form.select :label="t('KYC Status')" wire:model="kyc_status" :placeholder="false" :options="array_map('t', CustCustomer::KYC_STATUSES)" />
                     </div>
                     <div class="text-[11px] text-[#8a94a6] mt-3 leading-relaxed">{{ t('COA/GL & financial reports are generally internal (Side A) — data shared with Sales must go through publish, per CLAUDE.md §4.') }}</div>
                 </div>

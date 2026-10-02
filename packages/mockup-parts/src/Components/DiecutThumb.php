@@ -31,7 +31,7 @@ class DiecutThumb extends DevlibComponent
             @once<script src="{{ \MockupParts\MockupPartsServiceProvider::asset('tmdieline.js') }}"></script>@endonce
             <div {{ $attributes->class('mp-thumb') }} {!! $dl() !!}>
                 <small>{{ $label }}</small>
-                <div class="mp-thumb__box" data-mp-diecut data-spec="{{ json_encode($spec) }}" data-dims="{{ json_encode((object) $dims) }}">{{ empty($spec['elements']) ? 'Tak ada diecut' : '' }}</div>
+                <div class="mp-thumb__box" data-mp-diecut data-spec="{{ json_encode($spec) }}" data-dims="{{ json_encode((object) $dims) }}">{{ empty($spec['elements']) ? t('No diecut') : '' }}</div>
             </div>
             BLADE;
     }

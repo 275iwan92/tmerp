@@ -893,7 +893,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                     <div @if ($activeTab !== 'identity') style="display:none" @endif>
                         <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-3">
                             <x-form.input :label="t('Asset / Machine Code *')" name="machine_code" wire:model="machine_code" :placeholder="t('e.g. OFF-01')" :hint="t('Type prefix + sequence number')" />
-                            <x-form.select :label="t('Condition Status')" name="machine_status" wire:model="machine_status" :placeholder="false" :options="\App\Models\Master\ProdMachine::STATUSES" />
+                            <x-form.select :label="t('Condition Status')" name="machine_status" wire:model="machine_status" :placeholder="false" :options="array_map('t', \App\Models\Master\ProdMachine::STATUSES)" />
                             <x-form.select :label="t('Master Status')" wire:model="machine_activate" :placeholder="false" :options="['1' => t('Active (owned)'), '0' => t('Inactive (released)')]" />
                         </div>
                         <p class="text-[11px] text-muted mt-1.5">{!! t('The two statuses are deliberately separate: <strong>Condition</strong> changes daily (broken/maintenance), <strong>Master Status</strong> only when the machine is really released.') !!} {{ t('A broken machine stays active in master so its routing & WO history stays intact.') }}</p>
@@ -924,7 +924,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                         </div>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                            <x-form.select :label="t('Criticality Level')" name="criticality" wire:model="criticality" :options="\App\Models\Master\ProdMachine::CRITICALITY" :placeholder="t('— not assessed yet —')" />
+                            <x-form.select :label="t('Criticality Level')" name="criticality" wire:model="criticality" :options="array_map('t', \App\Models\Master\ProdMachine::CRITICALITY)" :placeholder="t('— not assessed yet —')" />
                             <x-form.input :label="t('Plant Code')" name="plant_code" wire:model="plant_code" :placeholder="t('e.g. P1')" />
                             <x-form.input :label="t('Location on the Production Floor')" name="location_note" wire:model="location_note" :placeholder="t('e.g. Block B, near the plate store')" />
                         </div>
@@ -1130,7 +1130,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                                 <x-slot:intro>{!! t('Planned or not is <strong>determined automatically from its type</strong>, not chosen by the operator — if it could be chosen, Availability would be easy to polish.') !!}</x-slot:intro>
                                 <div class="[display:grid] grid-cols-1 md:grid-cols-5 gap-2.5 items-end">
                                     <x-form.select :label="t('Type')" name="dtKind" wire:model="dtKind" :placeholder="false"
-                                        :options="collect(\App\Models\Master\ProdMachineDowntime::KINDS)->map(fn ($k) => $k['label'])->all()" />
+                                        :options="collect(\App\Models\Master\ProdMachineDowntime::KINDS)->map(fn ($k) => t($k['label']))->all()" />
                                     <x-form.date-picker :label="t('Start')" name="dtStart" wire:model="dtStart" mode="datetime" />
                                     <x-form.date-picker :label="t('End')" name="dtEnd" wire:model="dtEnd" mode="datetime" :hint="t('Leave empty if still ongoing')" />
                                     <x-form.input :label="t('Cause')" name="dtCause" wire:model="dtCause" :placeholder="t('e.g. ink roller jammed')" />

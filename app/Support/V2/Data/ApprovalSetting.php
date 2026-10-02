@@ -32,7 +32,7 @@ final class ApprovalSetting
             'levels' => $c->steps->where('step_type', 'APPROVAL')->count(),
             'approvers' => $c->steps->where('step_type', 'APPROVAL')->map(fn ($s) => 'L'.$s->step_no.' '.($pos[$s->position_id]['name'] ?? '—')
                 .((float) $s->min_amount > 0 ? ' (≥ '.Locale::number((float) $s->min_amount, 0).')' : ''))->implode(' → ') ?: t('No approval'),
-            'final' => $c->final_status ?? '—', 'active' => $c->activate ? 'Aktif' : 'Nonaktif'])->all();
+            'final' => $c->final_status ?? '—', 'active' => $c->activate ? t('Active') : t('Inactive')])->all();
     }
 
     // Jabatan: nama, pemegang (nama karyawan), PLT yang berlaku hari ini (nama user pengganti).

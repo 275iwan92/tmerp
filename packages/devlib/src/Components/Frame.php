@@ -47,7 +47,7 @@ class Frame extends DevlibComponent
 
     public function source(): string
     {
-        return 'gambar: media/bg/'.$this->bg.' · teks: media/text/'.$this->quotes;
+        return 'image: media/bg/'.$this->bg.' · text: media/text/'.$this->quotes;
     }
 
     private static function mediaPath(string $sub): string

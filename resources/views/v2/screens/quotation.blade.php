@@ -32,18 +32,18 @@
             ['key' => 'sales', 'label' => 'Sales PIC'],
             ['key' => 'total', 'label' => 'Grand total', 'type' => 'money', 'sum' => true],
             ['key' => 'followups', 'label' => 'Follow-up', 'type' => 'number', 'visible' => false],
-            ['key' => 'next', 'label' => 'Tindak lanjut berikut', 'type' => 'date', 'visible' => false],
+            ['key' => 'next', 'label' => 'Next follow-up', 'type' => 'date', 'visible' => false],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => Quotation::STATUS_TONES],
             ['key' => 'closed', 'label' => 'Closed', 'type' => 'date'],
             ['key' => 'co', 'label' => 'Customer Order'],
             ['key' => 'reason', 'label' => 'Reason (LOST / Cancel)'],
         ]"
-        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'spec', 'label' => 'Specification'],
-            ['key' => 'inquiry', 'label' => 'Inquiry No.'],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
+        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'spec', 'label' => t('Specification')],
+            ['key' => 'inquiry', 'label' => t('Inquiry No.')],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
         ]]"
         :stats="[
             ['label' => t('All')],
@@ -63,7 +63,7 @@
                 ['key' => 'customer', 'label' => 'Customer'],
                 ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
                 ['key' => 'type', 'label' => t('Type'), 'type' => 'badge', 'tones' => ['NEW' => 'info', 'RECALC' => 'accent', 'REVISE' => 'warn']],
-                ['key' => 'tiers', 'label' => 'Jenjang qty', 'type' => 'number'],
+                ['key' => 'tiers', 'label' => 'Qty tiers', 'type' => 'number'],
                 ['key' => 'price', 'label' => t('Price /pc')],
             ]" />
         <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="$home" /></x-dl::action-bar>
@@ -74,17 +74,17 @@
         $same = $first ? Quotation::available((int) $first->customer_id) : [];
     @endphp
     <x-dl::action-form action="{{ route('v2.quotation.create') }}">
-        <x-dl::card :title="'Quotation baru — '.raw($same[0]['customer'] ?? 'customer')" description="One quotation = one customer. Tick other inquiries of the same customer if they are quoted too; every qty tier becomes a line.">
+        <x-dl::card :title="'New quotation — '.raw($same[0]['customer'] ?? 'customer')" description="One quotation = one customer. Tick other inquiries of the same customer if they are quoted too; every qty tier becomes a line.">
             @if (! $same)
                 <x-dl::alert tone="warn" message="This inquiry is no longer available (already quoted or not yet priced)." />
             @else
                 <x-dl::field.checkboxes name="inquiry_ids" label="Quoted inquiries" required :value="[(string) request('inq')]"
-                    :options="collect($same)->mapWithKeys(fn ($r) => [$r['id'] => $r['no'].' · '.$r['product'].' · '.$r['tiers'].' jenjang'.($r['price'] ? ' · Rp '.$r['price'].'/pcs' : '')])->all()"
+                    :options="collect($same)->mapWithKeys(fn ($r) => [$r['id'] => $r['no'].' · '.$r['product'].' · '.str_replace(':n', $r['tiers'], t(':n tiers')).($r['price'] ? ' · Rp '.$r['price'].'/pcs' : '')])->all()"
                     :source="Src::of('tm2sdi.iqp_inquiry')" />
             @endif
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home.'?pick=1'" />
-                @if ($same)<x-dl::button preset="save" label="Buat Quotation" />@endif
+                @if ($same)<x-dl::button preset="save" :label="t('Create Quotation')" />@endif
             </x-dl::action-bar>
         </x-dl::card>
     </x-dl::action-form>
@@ -108,12 +108,12 @@
         $lines = $q->items->map(fn ($it) => [
             'id_item' => $it->id_item, 'description' => $it->description, 'qty' => (float) $it->qty, 'qty_unit' => $it->qty_unit,
             'unit_price' => (float) $it->unit_price, 'discount_pct' => (float) $it->discount_pct,
-            'source' => $it->inquiry ? $it->inquiry->inquiry_no.($it->source_type === 'INQUIRY_TOOLING' ? ' · tooling (biaya sekali)' : ' · jenjang qty') : 'Baris bebas',
+            'source' => $it->inquiry ? $it->inquiry->inquiry_no.' · '.($it->source_type === 'INQUIRY_TOOLING' ? t('tooling (one-time cost)') : t('qty tier')) : t('Free line'),
         ])->values()->all();
     @endphp
-    @if ($status === 'LOST')<x-dl::alert tone="danger" :message="'LOST — '.raw($lostReason ?: 'tanpa alasan')" />@endif
-    @if ($status === 'CANCELLED')<x-dl::alert tone="info" :message="'Cancelled — '.raw($q->cancel_reason ?: 'tanpa alasan')" />@endif
-    @if ($status === 'WON' && $order)<x-dl::alert tone="success" :message="'WIN — Customer Order '.$order->co_no.' sudah dibuat.'" />@endif
+    @if ($status === 'LOST')<x-dl::alert tone="danger" :message="'LOST — '.raw($lostReason ?: t('no reason'))" />@endif
+    @if ($status === 'CANCELLED')<x-dl::alert tone="info" :message="'Cancelled — '.raw($q->cancel_reason ?: t('no reason'))" />@endif
+    @if ($status === 'WON' && $order)<x-dl::alert tone="success" :message="raw(str_replace(':no', $order->co_no, t('WIN — Customer Order :no has been created.')))" />@endif
 
     <x-dl::form id="quotation-form" :title="'Quotation · '.raw($q->quotation_no)" :subtitle="raw(($q->customer?->customer_name ?? '—').' · '.$status)"
         panel="top" kind="document" :status="$formStatus" :pipeline="true"
@@ -126,16 +126,16 @@
             @if ($status === 'PUBLISHED')
                 <x-dl::button size="sm" preset="cancel" variant="danger" data-dl-open="quotation-cancel" />
                 <x-dl::button size="sm" variant="danger" icon="reject" label="LOST" data-dl-open="quotation-lost" />
-                <x-dl::button size="sm" variant="success" icon="approve" label="WIN — Buat Customer Order" type="submit" :formaction="route('v2.quotation.win', $q->id_quotation)" formnovalidate onclick="return confirm('Customer setuju? Customer Order dibuat dari quotation ini.')" />
+                <x-dl::button size="sm" variant="success" icon="approve" :label="t('WIN — Create Customer Order')" type="submit" :formaction="route('v2.quotation.win', $q->id_quotation)" formnovalidate onclick="return confirm({{ \Illuminate\Support\Js::from(t('Customer agrees? A Customer Order is created from this quotation.')) }})" />
             @elseif ($status === 'WON' && $order)
-                <x-dl::button size="sm" variant="secondary" icon="fa-file-invoice" label="Buka Customer Order" :href="route('v2.screen', 'customer-order').'?id='.$order->id_order" />
+                <x-dl::button size="sm" variant="secondary" icon="fa-file-invoice" :label="t('Open Customer Order')" :href="route('v2.screen', 'customer-order').'?id='.$order->id_order" />
             @endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>No. Quotation</span><b>{{ $q->quotation_no }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>{{ t('Quotation No.') }}</span><b>{{ $q->quotation_no }}</b></div>
             <x-dl::field.date name="issued_date" label="Document date" required :value="old('issued_date', $q->issued_date?->toDateString())" :source="Src::of('tm2sdi.quo_quotation.issued_date')" />
             <x-dl::field.display label="Customer" :value="$q->customer?->customer_name ?? '—'" hint="Follows the inquiry; a different customer = a new quotation." :source="Src::of('tm2mst.cust_customer')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b>{{ $money($totals['grand']) }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>{{ t('Grand Total') }}</span><b>{{ $money($totals['grand']) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">
@@ -146,7 +146,7 @@
             <input type="hidden" name="cc_present" value="1">
             <x-dl::form.row :cols="3">
                 <x-dl::field.date name="valid_until" label="Valid Until" :value="old('valid_until', $q->valid_until?->toDateString())" hint="Automatic +30 days" :source="Src::of('tm2sdi.quo_quotation.valid_until')" />
-                <x-dl::field.date name="deadline_date" label="Deadline jawaban" :value="old('deadline_date', $q->deadline_date?->toDateString())" hint="Automatic +14 days" :source="Src::of('tm2sdi.quo_quotation.deadline_date')" />
+                <x-dl::field.date name="deadline_date" label="Reply deadline" :value="old('deadline_date', $q->deadline_date?->toDateString())" hint="Automatic +14 days" :source="Src::of('tm2sdi.quo_quotation.deadline_date')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:finance>
@@ -162,7 +162,7 @@
             <x-dl::lines name="items" title="Details" key-field="id_item" remove-field="remove" :addable="false" :duplicable="false" :min-rows="0" :rows="$lines" :readonly="! $draft"
                 source="{{ Src::of('tm2sdi.quo_quotation_item') }}"
                 :columns="[
-                    ['key' => 'description', 'label' => 'Uraian', 'width' => '340px'],
+                    ['key' => 'description', 'label' => 'Line description', 'width' => '340px'],
                     ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'width' => '110px'],
                     ['key' => 'qty_unit', 'label' => t('Unit'), 'width' => '90px'],
                     ['key' => 'unit_price', 'label' => t('Unit price'), 'type' => 'money', 'width' => '130px'],
@@ -180,14 +180,14 @@
             <x-dl::doc-footer :tabs="['tax' => 'Tax']"
                 :words="\Devlib\Terbilang::words(round((float) $totals['grand']), $cur, $cur === 'IDR' ? 'id' : 'en')"
                 :summary="[
-                    ['Details', $money($totals['subtotal'])],
+                    [t('Details'), $money($totals['subtotal'])],
                     ['DPP', $money($totals['dpp']), 'dpp'],
                     ['PPN '.$totals['ppn_pct'].'%', $money($totals['ppn'])],
-                    ['Grand Total', $money($totals['grand']), 'grand'],
+                    [t('Grand Total'), $money($totals['grand']), 'grand'],
                 ]">
                 <x-slot:tax>
                     <x-dl::form.row :cols="2">
-                        <x-dl::field.select name="tax_scheme" label="Tax scheme" :options="['EXCL' => 'Exclusive PPN '.\Devlib\Locale::number($totals['ppn_pct']).'%', 'INCL' => 'Inclusive PPN '.\Devlib\Locale::number($totals['ppn_pct']).'%']" :value="old('tax_scheme', $q->tax_scheme)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation.tax_scheme')" />
+                        <x-dl::field.select name="tax_scheme" label="Tax scheme" :options="['EXCL' => str_replace(':p', \Devlib\Locale::number($totals['ppn_pct']), t('Exclusive PPN :p%')), 'INCL' => str_replace(':p', \Devlib\Locale::number($totals['ppn_pct']), t('Inclusive PPN :p%'))]" :value="old('tax_scheme', $q->tax_scheme)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation.tax_scheme')" />
                     </x-dl::form.row>
                 </x-slot:tax>
             </x-dl::doc-footer>
@@ -195,11 +195,11 @@
     </x-dl::form>
 
     <x-dl::card title="Follow-up customer" description="Phone / visit / WhatsApp / email notes until the customer decides.">
-        <x-dl::table :columns="['date' => 'Tanggal', 'type' => 'Jenis', 'contact' => 'Kontak', 'result' => 'Hasil', 'notes' => 'Catatan', 'next' => 'Tindak lanjut', 'by' => 'Oleh']"
+        <x-dl::table :columns="['date' => 'Date', 'type' => 'Kind', 'contact' => 'Contact', 'result' => 'Result', 'notes' => 'Notes', 'next' => 'Next action', 'by' => 'Recorded by']"
             :rows="$q->activities->map(fn ($a) => ['date' => \Devlib\Locale::d($a->activity_date), 'type' => implode(' ', QuoActivity::TYPES[$a->activity_type] ?? [$a->activity_type]),
                 'contact' => $a->contact_person ?? '—', 'result' => QuoActivity::RESULTS[$a->result] ?? '—', 'notes' => $a->notes ?? '—',
                 'next' => trim((\Devlib\Locale::d($a->next_action_date) ?? '').' '.($a->next_action ?? '')) ?: '—', 'by' => $a->created_by])->all()"
-            empty="Belum ada follow-up." source="{{ Src::of('tm2sdi.quo_activity') }}" />
+            empty="No follow-up yet." source="{{ Src::of('tm2sdi.quo_activity') }}" />
         @if (in_array($status, ['DRAFT', 'PUBLISHED'], true))
             <x-dl::action-bar><x-dl::button variant="secondary" icon="plus" :label="t('+ Add Follow-up')" data-dl-open="quotation-activity" /></x-dl::action-bar>
         @endif
@@ -208,7 +208,7 @@
     @if ($more)
         <x-dl::modal id="quotation-add" title="Add inquiries of the same customer" icon="plus">
             <x-dl::action-form action="{{ route('v2.quotation.add-inquiry', $q->id_quotation) }}">
-                <x-dl::field.checkboxes name="inquiry_ids" label="Inquiry siap ditawarkan" :options="collect($more)->mapWithKeys(fn ($r) => [$r['id'] => $r['no'].' · '.$r['product']])->all()" />
+                <x-dl::field.checkboxes name="inquiry_ids" label="Inquiries ready to quote" :options="collect($more)->mapWithKeys(fn ($r) => [$r['id'] => $r['no'].' · '.$r['product']])->all()" />
                 <x-dl::action-bar><x-dl::button preset="apply" type="submit" /></x-dl::action-bar>
             </x-dl::action-form>
         </x-dl::modal>
@@ -223,7 +223,7 @@
         <x-dl::modal id="quotation-lost" title="Close as LOST" icon="reject">
             <x-dl::action-form action="{{ route('v2.quotation.lost', $q->id_quotation) }}">
                 <x-dl::field.text name="lost_reason" label="Reason lost (price, time, competitor, ...)" required />
-                <x-dl::action-bar><x-dl::button preset="save" label="Tandai LOST" variant="danger" /></x-dl::action-bar>
+                <x-dl::action-bar><x-dl::button preset="save" :label="t('Mark LOST')" variant="danger" /></x-dl::action-bar>
             </x-dl::action-form>
         </x-dl::modal>
     @endif
@@ -240,7 +240,7 @@
             <x-dl::field.text name="act[notes]" label="Notes" multiline />
             <x-dl::form.row cols="2">
                 <x-dl::field.date name="act[next_action_date]" label="Follow-up date" />
-                <x-dl::field.text name="act[next_action]" label="Tindak lanjut apa" />
+                <x-dl::field.text name="act[next_action]" label="Next action (what)" />
             </x-dl::form.row>
             <x-dl::action-bar><x-dl::button preset="save" /></x-dl::action-bar>
         </x-dl::action-form>
