@@ -69,7 +69,7 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
         $offer = $this->offer;
 
         if ((float) $offer->proposed_salary <= 0) {
-            $this->addError('submit', 'Gaji diusulkan wajib diisi.');
+            $this->addError('submit', t('Proposed salary is required.'));
 
             return;
         }
@@ -139,7 +139,7 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">💼 Offering</b>
+        <b class="text-[15px]">💼 {{ t('Offering') }}</b>
         <span class="text-xs text-white/75">{{ $this->application->candidate->name ?? '' }}</span>
         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full
             {{ match ($this->offer->status) {
@@ -150,20 +150,20 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
                 'DECLINED', 'EXPIRED' => 'bg-[#fbeaea] text-[#a3241f]',
                 default => 'bg-[#eef1f5] text-[#4b5568]',
             } }}">{{ $this->offer->status }}</span>
-        <x-back-button :fallback="route('hrm.recruitment.offer.list')" title="Kembali" class="ml-auto" />
+        <x-back-button :fallback="route('hrm.recruitment.offer.list')" :title="t('Back')" class="ml-auto" />
     </header>
 
     <div class="max-w-[700px] mx-auto my-5 px-4">
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">Detail Penawaran</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('Offer Details') }}</h3>
             <div class="grid">
-                <x-form.input label="Gaji Diusulkan" type="number" step="0.01" value="{{ $this->offer->proposed_salary }}" :disabled="$this->offer->status !== 'DRAFT'"
+                <x-form.input :label="t('Proposed Salary')" type="number" step="0.01" value="{{ $this->offer->proposed_salary }}" :disabled="$this->offer->status !== 'DRAFT'"
                     wire:change="updateField('proposed_salary', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <x-form.select :disabled="$this->offer->status !== 'DRAFT'" wire:change="updateField('employment_type', $event.target.value)" class="disabled:bg-[#f8fafc]"
-                    :selected="$this->offer->employment_type" :options="['TETAP' => 'Tetap', 'KONTRAK' => 'Kontrak', 'HARIAN' => 'Harian', 'BORONGAN' => 'Borongan']" :placeholder="false">
-                    <x-slot:label>Jenis Kontrak</x-slot:label>
+                    :selected="$this->offer->employment_type" :options="['TETAP' => t('Permanent'), 'KONTRAK' => t('Contract'), 'HARIAN' => t('Daily'), 'BORONGAN' => t('Piecework')]" :placeholder="false">
+                    <x-slot:label>{{ t('Contract Type') }}</x-slot:label>
                 </x-form.select>
-                <x-form.date-picker label="Tanggal Mulai" value="{{ $this->offer->start_date?->format('Y-m-d') }}" :disabled="$this->offer->status !== 'DRAFT'"
+                <x-form.date-picker :label="t('Start Date')" value="{{ $this->offer->start_date?->format('Y-m-d') }}" :disabled="$this->offer->status !== 'DRAFT'"
                     wire:change="updateField('start_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
             </div>
         </div>
@@ -174,7 +174,7 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
 
         @if ($this->offer->approvals->isNotEmpty())
             <div class="border border-[#eef1f5] rounded-xl p-4 bg-white mb-4">
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-3">Progres Approval</p>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-3">{{ t('Approval Progress') }}</p>
                 <div class="flex items-center gap-2">
                     @foreach ($this->offer->approvals as $a)
                         <div class="flex-1 text-center">
@@ -183,7 +183,7 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
                                 'REJECTED' => 'bg-[#a3241f]',
                                 default => 'bg-[#c8ccd6]',
                             } }}">{{ $a->decision === 'APPROVED' ? '✓' : ($a->decision === 'REJECTED' ? '✕' : $a->approval_seq) }}</div>
-                            <p class="text-[10px] text-muted mt-1">Seq {{ $a->approval_seq }}</p>
+                            <p class="text-[10px] text-muted mt-1">{{ t('Seq') }} {{ $a->approval_seq }}</p>
                         </div>
                     @endforeach
                 </div>
@@ -192,35 +192,35 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
 
         @if ($this->offer->status === 'DRAFT')
             <div class="flex justify-end gap-2 mb-8">
-                <button type="button" wire:click="submit" wire:confirm="Ajukan offer ini untuk approval?" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Ajukan Approval</button>
+                <button type="button" wire:click="submit" wire:confirm="{{ t('Submit this offer for approval?') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Request Approval') }}</button>
             </div>
         @elseif ($this->pendingApproval)
             <div class="border-2 border-dashed border-[#d7dbe2] rounded-xl p-4 bg-white mb-8">
-                <p class="text-xs font-bold text-navy mb-2">Keputusan Approval — Seq {{ $this->pendingApproval->approval_seq }}</p>
+                <p class="text-xs font-bold text-navy mb-2">{{ t('Approval Decision') }} — {{ t('Seq') }} {{ $this->pendingApproval->approval_seq }}</p>
                 <div class="flex justify-end gap-2">
-                    <button type="button" wire:click="rejectDoc" wire:confirm="Tolak offer ini?" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ Tolak</button>
-                    <button type="button" wire:click="approveDoc" wire:confirm="Setujui offer ini?" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ Setujui</button>
+                    <button type="button" wire:click="rejectDoc" wire:confirm="{{ t('Reject this offer?') }}" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ {{ t('Reject') }}</button>
+                    <button type="button" wire:click="approveDoc" wire:confirm="{{ t('Approve this offer?') }}" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ {{ t('Approve') }}</button>
                 </div>
             </div>
         @elseif ($this->offer->status === 'APPROVED')
             <div class="flex justify-end gap-2 mb-8">
-                <button type="button" wire:click="markSent" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Kirim ke Kandidat</button>
+                <button type="button" wire:click="markSent" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Send to Candidate') }}</button>
             </div>
         @elseif ($this->offer->status === 'SENT')
             <div class="border-2 border-dashed border-[#d7dbe2] rounded-xl p-4 bg-white mb-8">
-                <p class="text-xs font-bold text-navy mb-2">Respons Kandidat <span class="font-normal text-muted">(input manual — portal belum ada tombol accept interaktif)</span></p>
+                <p class="text-xs font-bold text-navy mb-2">{{ t('Candidate Response') }} <span class="font-normal text-muted">({{ t('manual input — the portal has no interactive accept button yet') }})</span></p>
                 <div class="flex justify-end gap-2">
-                    <button type="button" wire:click="markDeclined" wire:confirm="Tandai kandidat menolak offer ini?" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">Kandidat Menolak</button>
-                    <button type="button" wire:click="markAccepted" wire:confirm="Tandai kandidat menerima offer ini?" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">Kandidat Menerima</button>
+                    <button type="button" wire:click="markDeclined" wire:confirm="{{ t('Mark the candidate as declining this offer?') }}" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">{{ t('Candidate Declines') }}</button>
+                    <button type="button" wire:click="markAccepted" wire:confirm="{{ t('Mark the candidate as accepting this offer?') }}" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">{{ t('Candidate Accepts') }}</button>
                 </div>
             </div>
         @elseif ($this->offer->status === 'DECLINED')
             <div class="flex justify-end gap-2 mb-8">
-                <button type="button" wire:click="revise" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Revisi Offer</button>
+                <button type="button" wire:click="revise" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Revise Offer') }}</button>
             </div>
         @elseif ($this->offer->status === 'ACCEPTED')
             <div class="bg-[#eaf7ee] border border-[#c8ecd6] text-[#1f8a4c] text-xs rounded-md px-4 py-2.5 mb-8">
-                ✓ Offer diterima. Lanjut ke <a href="{{ route('hrm.recruitment.hire-provision') }}" class="font-bold underline">Provisioning ke ERP</a>.
+                ✓ {{ t('Offer accepted.') }} {{ t('Continue to') }} <a href="{{ route('hrm.recruitment.hire-provision') }}" class="font-bold underline">{{ t('Provisioning to ERP') }}</a>.
             </div>
         @endif
     </div>

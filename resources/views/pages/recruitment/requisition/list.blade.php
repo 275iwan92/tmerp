@@ -98,19 +98,19 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
 <div class="max-w-[1400px] mx-auto my-5 px-4">
     <div class="grid mb-3.5">
         <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-            <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">{{ t('Total') }}</p>
             <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->stats['total'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Menunggu Approval</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">{{ t('Awaiting Approval') }}</p>
             <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->stats['submitted'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-            <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Approved</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">{{ t('Approved') }}</p>
             <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->stats['approved'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
-            <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Ditolak</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">{{ t('Rejected') }}</p>
             <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->stats['rejected'] }}</p>
         </div>
     </div>
@@ -118,7 +118,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
     <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-md px-2.5 py-2 overflow-x-auto mb-3">
         <div class="flex items-center gap-1.5 shrink-0">
             <span class="text-sm">🔍</span>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. permohonan atau posisi…"
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search request no. or position…') }}"
                 class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
         </div>
         <span class="flex-1"></span>
@@ -130,24 +130,24 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
         <table class="w-full text-xs">
             <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5] bg-[#f4f6fa]">
                 <tr>
-                    <th class="text-left px-3 py-2">Permohonan</th>
-                    <th class="text-left px-3 py-2">Departemen</th>
-                    <th class="text-left px-3 py-2">Track</th>
-                    <th class="text-right px-3 py-2">Headcount</th>
-                    <th class="text-left px-3 py-2">Status</th>
-                    <th class="px-3 py-2 text-right w-[70px]">Aksi</th>
+                    <th class="text-left px-3 py-2">{{ t('Request') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Department') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Track') }}</th>
+                    <th class="text-right px-3 py-2">{{ t('Headcount') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Status') }}</th>
+                    <th class="px-3 py-2 text-right w-[70px]">{{ t('Action') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-[#eef1f5]">
                 @forelse ($this->rows as $r)
                     <tr wire:key="req-{{ $r->id_requisition }}"
                         ondblclick="window.location.href='{{ route('hrm.recruitment.requisition.entry', $r->id_requisition) }}'"
-                        class="cursor-pointer hover:bg-[#f8fafc]" title="Klik 2x untuk buka detail">
+                        class="cursor-pointer hover:bg-[#f8fafc]" title="{{ t('Double-click to open detail') }}">
                         <td class="px-3 py-2">
                             <div class="flex items-center gap-2.5">
                                 <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($r->id_requisition) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($r->position_title ?: 'RC') }}</div>
                                 <div>
-                                    <div class="font-semibold text-[13px]">{{ $r->position_title ?: '(belum diisi)' }}</div>
+                                    <div class="font-semibold text-[13px]">{{ $r->position_title ?: t('(not filled in yet)') }}</div>
                                     <div class="text-[11px] text-muted font-mono">{{ $r->requisition_no }}</div>
                                 </div>
                             </div>
@@ -165,12 +165,12 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
                             } }}">{{ $r->status }}</span>
                         </td>
                         <td class="px-3 py-2 text-right whitespace-nowrap">
-                            <a href="{{ route('hrm.recruitment.requisition.entry', $r->id_requisition) }}" wire:click.stop title="Buka"
+                            <a href="{{ route('hrm.recruitment.requisition.entry', $r->id_requisition) }}" wire:click.stop title="{{ t('Open') }}"
                                 class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</a>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="px-3 py-6 text-center text-muted text-xs">Belum ada permohonan tenaga kerja.</td></tr>
+                    <tr><td colspan="6" class="px-3 py-6 text-center text-muted text-xs">{{ t('No manpower requests yet.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

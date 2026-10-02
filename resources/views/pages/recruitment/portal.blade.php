@@ -170,14 +170,14 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
     public ?string $lastSubmissionUuid = null;
 
     protected const WILLING_ITEMS = [
-        'probation' => 'Mengikuti masa percobaan',
-        'training' => 'Mengikuti training sesuai ketentuan Perusahaan',
-        'overtime' => 'Bekerja lembur (termasuk Sabtu/Minggu/hari besar)',
-        'guarantee_docs' => 'Menyerahkan jaminan Ijazah/BPKB jika dibutuhkan',
-        'resign_notice' => 'Mengajukan permohonan tertulis 1 (satu) bulan sebelumnya apabila hendak mengundurkan diri',
-        'obey_rules' => 'Mematuhi segala peraturan perusahaan yang berlaku',
-        'resign_if_married_pregnant' => 'Bersedia mengundurkan diri jika menikah dengan rekan sekerja atau hamil sebelum masa kerja 1 (satu) tahun',
-        'relocation' => 'Bersedia setiap saat dipindah/ditugaskan ke bagian/cabang lain',
+        'probation' => 'Undergo a probation period',
+        'training' => 'Attend training according to Company rules',
+        'overtime' => 'Work overtime (including Saturday/Sunday/public holidays)',
+        'guarantee_docs' => 'Hand over a Diploma/BPKB as guarantee if required',
+        'resign_notice' => 'Submit a written request 1 (one) month in advance when intending to resign',
+        'obey_rules' => 'Comply with all applicable company regulations',
+        'resign_if_married_pregnant' => 'Willing to resign if marrying a coworker or becoming pregnant before 1 (one) year of service',
+        'relocation' => 'Willing to be transferred/assigned to another department/branch at any time',
     ];
 
     public function mount(): void
@@ -224,7 +224,7 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
     public function enter(): void
     {
         if (trim($this->loginKtp) === '') {
-            $this->addError('login', 'Nomor KTP wajib diisi.');
+            $this->addError('login', t('ID card number is required.'));
 
             return;
         }
@@ -320,13 +320,13 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
     public function nextStep(): void
     {
         if ($this->step === 1 && trim($this->name) === '') {
-            $this->addError('name', 'Nama wajib diisi.');
+            $this->addError('name', t('Name is required.'));
 
             return;
         }
 
         if ($this->step === 12 && ! $this->applyVacancyId) {
-            $this->addError('apply', 'Pilih lowongan yang dilamar.');
+            $this->addError('apply', t('Select the vacancy you are applying for.'));
 
             return;
         }
@@ -342,13 +342,13 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
     public function submitApplication(): void
     {
         if (! $this->applyVacancyId) {
-            $this->addError('apply', 'Pilih lowongan yang dilamar.');
+            $this->addError('apply', t('Select the vacancy you are applying for.'));
 
             return;
         }
 
         if (! $this->agreement_signed || trim($this->signature_name) === '') {
-            $this->addError('apply', 'Anda wajib menyetujui pernyataan & mengisi nama sebagai tanda tangan (step Kesediaan & Pernyataan) sebelum mengirim lamaran.');
+            $this->addError('apply', t('You must agree to the statement & type your name as signature (Willingness & Statement step) before submitting the application.'));
 
             return;
         }
@@ -420,23 +420,23 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
 
 <div class="max-w-[760px] mx-auto my-5 px-4">
     <div class="bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0] text-[11px] rounded-md px-3 py-2 mb-4">
-        🧪 Ini simulasi portal kandidat — nantinya jadi app terpisah (Flutter, host lain). Form ini mengikuti persis formulir resmi "Data Calon Karyawan" HR.
+        🧪 {{ t('This is a candidate portal simulation — it will later become a separate app (Flutter, another host).') }} {{ t('This form follows the official HR "Employee Candidate Data" form exactly.') }}
     </div>
 
     @if ($step === 0)
         <div class="bg-white border border-[#d7dbe2] rounded-md p-5">
-            <h2 class="text-sm font-bold text-navy mb-1">Masuk / Daftar</h2>
-            <p class="text-[11.5px] text-muted mb-3">Masukkan No. KTP Anda. Kalau sudah pernah melamar, data Anda otomatis dimuat.</p>
+            <h2 class="text-sm font-bold text-navy mb-1">{{ t('Sign In / Register') }}</h2>
+            <p class="text-[11.5px] text-muted mb-3">{{ t('Enter your ID Card No. If you have applied before, your data is loaded automatically.') }}</p>
             @error('login') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
-            <x-form.input label="No. KTP" wire:model="loginKtp" placeholder="16 digit KTP" />
-            <button type="button" wire:click="enter" class="mt-3 bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Lanjut →</button>
+            <x-form.input :label="t('ID Card No.')" wire:model="loginKtp" :placeholder="t('16-digit ID card no.')" />
+            <button type="button" wire:click="enter" class="mt-3 bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Proceed') }} →</button>
         </div>
     @else
         @php
-            $stepLabels = ['Data Pribadi', 'Keluarga', 'Pendidikan', 'Organisasi', 'Pengalaman Kerja', 'Sosial & Referensi', 'Minat Pribadi', 'Kesehatan', 'Bahasa/Komputer/Info', 'Kesediaan', 'Dokumen', 'Lamar'];
+            $stepLabels = ['Personal Data', 'Family', 'Education', 'Organization', 'Work Experience', 'Social & References', 'Personal Interests', 'Health', 'Language/Computer/Info', 'Willingness', 'Documents', 'Apply'];
         @endphp
         @if ($step <= 12)
-            <p class="text-[10.5px] text-muted text-center mb-1">Langkah {{ $step }} dari 12 — {{ $stepLabels[$step - 1] }}</p>
+            <p class="text-[10.5px] text-muted text-center mb-1">{{ str_replace(':step', $step, t('Step :step of 12')) }} — {{ t($stepLabels[$step - 1]) }}</p>
             <div class="w-full h-1.5 bg-[#eef1f5] rounded-full mb-4 overflow-hidden">
                 <div class="h-full bg-navy" style="width: {{ round($step / 12 * 100) }}%"></div>
             </div>
@@ -444,318 +444,318 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
 
         <div class="bg-white border border-[#d7dbe2] rounded-md p-5">
             @if ($step === 1)
-                <h2 class="text-sm font-bold text-navy mb-3">Data Pribadi</h2>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Personal Data') }}</h2>
                 @error('name') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
                 <div class="space-y-3">
-                    <x-form.input label="No. KTP" wire:model="national_id" readonly class="bg-[#f8fafc]" />
+                    <x-form.input :label="t('ID Card No.')" wire:model="national_id" readonly class="bg-[#f8fafc]" />
                     <div class="grid two">
-                        <x-form.input label="Nama Lengkap" wire:model="name" />
-                        <x-form.input label="Nama Panggilan" wire:model="nickname" />
+                        <x-form.input :label="t('Full Name')" wire:model="name" />
+                        <x-form.input :label="t('Nickname')" wire:model="nickname" />
                     </div>
                     <div class="grid two">
-                        <x-form.select wire:model="gender" :options="['LAKI_LAKI' => 'Laki-laki', 'PEREMPUAN' => 'Perempuan']"><x-slot:label>Jenis Kelamin</x-slot:label></x-form.select>
-                        <x-form.input label="Agama" wire:model="religion" />
+                        <x-form.select wire:model="gender" :options="['LAKI_LAKI' => t('Male'), 'PEREMPUAN' => t('Female')]"><x-slot:label>{{ t('Gender') }}</x-slot:label></x-form.select>
+                        <x-form.input :label="t('Religion')" wire:model="religion" />
                     </div>
-                    <x-form.date-picker label="Tanggal Lahir" wire:model="birth_date" />
+                    <x-form.date-picker :label="t('Date of Birth')" wire:model="birth_date" />
                     <div class="grid two">
-                        <x-form.input label="Email" type="email" wire:model="email" />
-                        <x-form.input label="No. HP" wire:model="phone" />
+                        <x-form.input :label="t('Email')" type="email" wire:model="email" />
+                        <x-form.input :label="t('Mobile No.')" wire:model="phone" />
                     </div>
-                    <x-form.textarea rows="2" wire:model="address"><x-slot:label>Alamat Sesuai KTP</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="address_domisili"><x-slot:label>Alamat Tinggal (kalau beda dari KTP)</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="address"><x-slot:label>{{ t('Address as on ID Card') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="address_domisili"><x-slot:label>{{ t('Residential Address (if different from ID card)') }}</x-slot:label></x-form.textarea>
                     <div class="grid two">
-                        <x-form.select wire:model="vehicle_type" :options="['MOTOR' => 'Motor', 'MOBIL' => 'Mobil', 'TIDAK_ADA' => 'Tidak Ada']" placeholder="— pilih —"><x-slot:label>Kendaraan yang Dimiliki</x-slot:label></x-form.select>
+                        <x-form.select wire:model="vehicle_type" :options="['MOTOR' => t('Motorcycle'), 'MOBIL' => t('Car'), 'TIDAK_ADA' => t('No Vehicle')]" :placeholder="t('— select —')"><x-slot:label>{{ t('Vehicle Owned') }}</x-slot:label></x-form.select>
                         <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">SIM yang Dimiliki</label>
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Driving Licenses Held') }}</label>
                             <div class="flex gap-3 pt-1.5">
                                 @foreach (['C', 'A', 'B', 'B1'] as $sim)
-                                    <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" value="{{ $sim }}" wire:model="sim_types" class="!w-auto"> SIM {{ $sim }}</label>
+                                    <label class="flex items-center gap-1.5 text-xs"><input type="checkbox" value="{{ $sim }}" wire:model="sim_types" class="!w-auto"> {{ t('License') }} {{ $sim }}</label>
                                 @endforeach
                             </div>
                         </div>
                     </div>
                 </div>
             @elseif ($step === 2)
-                <h2 class="text-sm font-bold text-navy mb-3">Data Keluarga</h2>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Family Data') }}</h2>
                 <div class="grid two mb-3">
-                    <x-form.select wire:model="marital_status" :options="['LAJANG' => 'Lajang', 'MENIKAH' => 'Menikah', 'DUDA' => 'Duda', 'JANDA' => 'Janda']" placeholder="— pilih —"><x-slot:label>Status Pernikahan</x-slot:label></x-form.select>
-                    <x-form.date-picker label="Tanggal Menikah/Bercerai" wire:model="marital_date" />
+                    <x-form.select wire:model="marital_status" :options="['LAJANG' => t('Single'), 'MENIKAH' => t('Married'), 'DUDA' => t('Widower/Divorced Man'), 'JANDA' => t('Widow/Divorced Woman')]" :placeholder="t('— select —')"><x-slot:label>{{ t('Marital Status') }}</x-slot:label></x-form.select>
+                    <x-form.date-picker :label="t('Marriage/Divorce Date')" wire:model="marital_date" />
                 </div>
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Susunan Keluarga <span class="font-normal normal-case">(suami/istri, anak, orang tua, saudara kandung)</span></p>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-2">{{ t('Family Members') }} <span class="font-normal normal-case">({{ t('spouse, children, parents, siblings') }})</span></p>
                 @foreach ($family as $i => $f)
                     <div class="border border-[#eef1f5] rounded-md p-3 mb-2" wire:key="fam-{{ $i }}">
                         <div class="grid two mb-2">
-                            <x-form.select wire:model="family.{{ $i }}.relation_type" :options="['FATHER' => 'Ayah', 'MOTHER' => 'Ibu', 'SPOUSE' => 'Suami/Istri', 'CHILD' => 'Anak', 'SIBLING' => 'Saudara Kandung', 'FATHER_IN_LAW' => 'Mertua Ayah', 'MOTHER_IN_LAW' => 'Mertua Ibu']" :placeholder="false" />
-                            <x-form.input wire:model="family.{{ $i }}.name" placeholder="Nama" />
+                            <x-form.select wire:model="family.{{ $i }}.relation_type" :options="['FATHER' => t('Father'), 'MOTHER' => t('Mother'), 'SPOUSE' => t('Husband/Wife'), 'CHILD' => t('Child'), 'SIBLING' => t('Sibling'), 'FATHER_IN_LAW' => t('Father-in-law'), 'MOTHER_IN_LAW' => t('Mother-in-law')]" :placeholder="false" />
+                            <x-form.input wire:model="family.{{ $i }}.name" :placeholder="t('Name')" />
                         </div>
                         <div class="grid gap-2 mb-2" style="grid-template-columns: 90px 100px 1fr;">
-                            <x-form.select wire:model="family.{{ $i }}.gender" :options="['L' => 'L', 'P' => 'P']" placeholder="L/P" />
-                            <x-form.input type="number" wire:model="family.{{ $i }}.age" placeholder="Usia" />
-                            <x-form.input wire:model="family.{{ $i }}.last_education" placeholder="Pendidikan terakhir" />
+                            <x-form.select wire:model="family.{{ $i }}.gender" :options="['L' => 'L', 'P' => 'P']" :placeholder="t('M/F')" />
+                            <x-form.input type="number" wire:model="family.{{ $i }}.age" :placeholder="t('Age')" />
+                            <x-form.input wire:model="family.{{ $i }}.last_education" :placeholder="t('Last education')" />
                         </div>
-                        <x-form.input wire:model="family.{{ $i }}.current_job" placeholder="Pekerjaan" />
-                        <button type="button" wire:click="removeRow('family', {{ $i }})" class="text-[10.5px] text-[#a3241f] mt-2">✕ Hapus</button>
+                        <x-form.input wire:model="family.{{ $i }}.current_job" :placeholder="t('Occupation')" />
+                        <button type="button" wire:click="removeRow('family', {{ $i }})" class="text-[10.5px] text-[#a3241f] mt-2">✕ {{ t('Remove') }}</button>
                     </div>
                 @endforeach
-                <button type="button" wire:click="addRow('family', {{ json_encode(['relation_type' => 'FATHER', 'name' => '', 'gender' => '', 'age' => '', 'last_education' => '', 'current_job' => '', 'current_employer' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ Tambah Anggota Keluarga</button>
+                <button type="button" wire:click="addRow('family', {{ json_encode(['relation_type' => 'FATHER', 'name' => '', 'gender' => '', 'age' => '', 'last_education' => '', 'current_job' => '', 'current_employer' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ {{ t('Add Family Member') }}</button>
             @elseif ($step === 3)
-                <h2 class="text-sm font-bold text-navy mb-3">Riwayat Pendidikan</h2>
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Pendidikan Formal</p>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Education History') }}</h2>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-2">{{ t('Formal Education') }}</p>
                 @foreach ($education as $i => $e)
                     <div class="border border-[#eef1f5] rounded-md p-3 mb-2" wire:key="edu-{{ $i }}">
                         <div class="grid two mb-2">
-                            <x-form.input wire:model="education.{{ $i }}.level" placeholder="Jenjang (SLTP/SLTA/D3/S1/S2)" />
-                            <x-form.input wire:model="education.{{ $i }}.institution" placeholder="Instansi" />
+                            <x-form.input wire:model="education.{{ $i }}.level" :placeholder="t('Level (SLTP/SLTA/D3/S1/S2)')" />
+                            <x-form.input wire:model="education.{{ $i }}.institution" :placeholder="t('Institution')" />
                         </div>
                         <div class="grid gap-2" style="grid-template-columns: 1fr 90px 90px 90px;">
-                            <x-form.input wire:model="education.{{ $i }}.major" placeholder="Jurusan" />
-                            <x-form.input type="number" wire:model="education.{{ $i }}.period_start_year" placeholder="Dari Th" />
-                            <x-form.input type="number" wire:model="education.{{ $i }}.graduation_year" placeholder="S/d Th" />
-                            <x-form.input wire:model="education.{{ $i }}.final_score" placeholder="Nilai Akhir" />
+                            <x-form.input wire:model="education.{{ $i }}.major" :placeholder="t('Major')" />
+                            <x-form.input type="number" wire:model="education.{{ $i }}.period_start_year" :placeholder="t('From Yr')" />
+                            <x-form.input type="number" wire:model="education.{{ $i }}.graduation_year" :placeholder="t('To Yr')" />
+                            <x-form.input wire:model="education.{{ $i }}.final_score" :placeholder="t('Final Score')" />
                         </div>
-                        <button type="button" wire:click="removeRow('education', {{ $i }})" class="text-[10.5px] text-[#a3241f] mt-2">✕ Hapus</button>
+                        <button type="button" wire:click="removeRow('education', {{ $i }})" class="text-[10.5px] text-[#a3241f] mt-2">✕ {{ t('Remove') }}</button>
                     </div>
                 @endforeach
-                <button type="button" wire:click="addRow('education', {{ json_encode(['level' => '', 'institution' => '', 'major' => '', 'period_start_year' => '', 'graduation_year' => '', 'final_score' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded mb-4">＋ Tambah Pendidikan Formal</button>
+                <button type="button" wire:click="addRow('education', {{ json_encode(['level' => '', 'institution' => '', 'major' => '', 'period_start_year' => '', 'graduation_year' => '', 'final_score' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded mb-4">＋ {{ t('Add Formal Education') }}</button>
 
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-2 mt-4">Pendidikan Non-Formal (Kursus/Pelatihan)</p>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-2 mt-4">{{ t('Non-Formal Education (Courses/Training)') }}</p>
                 @foreach ($educationNonformal as $i => $e)
                     <div class="border border-[#eef1f5] rounded-md p-3 mb-2" wire:key="nonformal-{{ $i }}">
                         <div class="grid two mb-2">
-                            <x-form.input wire:model="educationNonformal.{{ $i }}.course_type" placeholder="Jenis Kursus/Pelatihan" />
-                            <x-form.input wire:model="educationNonformal.{{ $i }}.institution" placeholder="Nama Lembaga" />
+                            <x-form.input wire:model="educationNonformal.{{ $i }}.course_type" :placeholder="t('Course/Training Type')" />
+                            <x-form.input wire:model="educationNonformal.{{ $i }}.institution" :placeholder="t('Provider Name')" />
                         </div>
                         <div class="grid gap-2" style="grid-template-columns: 90px 90px 1fr;">
-                            <x-form.input type="number" wire:model="educationNonformal.{{ $i }}.period_start_year" placeholder="Dari Th" />
-                            <x-form.input type="number" wire:model="educationNonformal.{{ $i }}.period_end_year" placeholder="S/d Th" />
-                            <x-form.input wire:model="educationNonformal.{{ $i }}.certificate_no" placeholder="No. Ijazah/Sertifikat" />
+                            <x-form.input type="number" wire:model="educationNonformal.{{ $i }}.period_start_year" :placeholder="t('From Yr')" />
+                            <x-form.input type="number" wire:model="educationNonformal.{{ $i }}.period_end_year" :placeholder="t('To Yr')" />
+                            <x-form.input wire:model="educationNonformal.{{ $i }}.certificate_no" :placeholder="t('Diploma/Certificate No.')" />
                         </div>
-                        <button type="button" wire:click="removeRow('educationNonformal', {{ $i }})" class="text-[10.5px] text-[#a3241f] mt-2">✕ Hapus</button>
+                        <button type="button" wire:click="removeRow('educationNonformal', {{ $i }})" class="text-[10.5px] text-[#a3241f] mt-2">✕ {{ t('Remove') }}</button>
                     </div>
                 @endforeach
-                <button type="button" wire:click="addRow('educationNonformal', {{ json_encode(['course_type' => '', 'institution' => '', 'period_start_year' => '', 'period_end_year' => '', 'certificate_no' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ Tambah Kursus/Pelatihan</button>
+                <button type="button" wire:click="addRow('educationNonformal', {{ json_encode(['course_type' => '', 'institution' => '', 'period_start_year' => '', 'period_end_year' => '', 'certificate_no' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ {{ t('Add Course/Training') }}</button>
             @elseif ($step === 4)
-                <h2 class="text-sm font-bold text-navy mb-3">Pengalaman Organisasi</h2>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Organization Experience') }}</h2>
                 @foreach ($orgExperience as $i => $o)
                     <div class="border border-[#eef1f5] rounded-md p-3 mb-2" wire:key="org-{{ $i }}">
                         <div class="grid two mb-2">
-                            <x-form.input wire:model="orgExperience.{{ $i }}.organization_name" placeholder="Nama Organisasi" />
-                            <x-form.input wire:model="orgExperience.{{ $i }}.position" placeholder="Jabatan" />
+                            <x-form.input wire:model="orgExperience.{{ $i }}.organization_name" :placeholder="t('Organization Name')" />
+                            <x-form.input wire:model="orgExperience.{{ $i }}.position" :placeholder="t('Job Title')" />
                         </div>
-                        <x-form.input wire:model="orgExperience.{{ $i }}.period" placeholder="Periode (mis. 2020-2022)" class="mb-2" />
-                        <x-form.textarea rows="2" wire:model="orgExperience.{{ $i }}.task_description"><x-slot:label>Uraian Tugas</x-slot:label></x-form.textarea>
-                        <button type="button" wire:click="removeRow('orgExperience', {{ $i }})" class="text-[10.5px] text-[#a3241f] mt-2">✕ Hapus</button>
+                        <x-form.input wire:model="orgExperience.{{ $i }}.period" :placeholder="t('Period (e.g. 2020-2022)')" class="mb-2" />
+                        <x-form.textarea rows="2" wire:model="orgExperience.{{ $i }}.task_description"><x-slot:label>{{ t('Duties') }}</x-slot:label></x-form.textarea>
+                        <button type="button" wire:click="removeRow('orgExperience', {{ $i }})" class="text-[10.5px] text-[#a3241f] mt-2">✕ {{ t('Remove') }}</button>
                     </div>
                 @endforeach
-                <button type="button" wire:click="addRow('orgExperience', {{ json_encode(['organization_name' => '', 'position' => '', 'period' => '', 'task_description' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ Tambah Pengalaman Organisasi</button>
+                <button type="button" wire:click="addRow('orgExperience', {{ json_encode(['organization_name' => '', 'position' => '', 'period' => '', 'task_description' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ {{ t('Add Organization Experience') }}</button>
             @elseif ($step === 5)
-                <h2 class="text-sm font-bold text-navy mb-1">Pengalaman Kerja</h2>
-                <p class="text-[10.5px] text-muted mb-3">Urutan dari pengalaman kerja perusahaan terakhir.</p>
+                <h2 class="text-sm font-bold text-navy mb-1">{{ t('Work Experience') }}</h2>
+                <p class="text-[10.5px] text-muted mb-3">{{ t('Order from the most recent company work experience.') }}</p>
                 @foreach ($workExp as $i => $w)
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3" wire:key="work-{{ $i }}">
                         <div class="grid two mb-2">
-                            <x-form.input wire:model="workExp.{{ $i }}.company" placeholder="Nama Perusahaan" />
-                            <x-form.input wire:model="workExp.{{ $i }}.location" placeholder="Lokasi & Jenis Usaha" />
+                            <x-form.input wire:model="workExp.{{ $i }}.company" :placeholder="t('Company Name')" />
+                            <x-form.input wire:model="workExp.{{ $i }}.location" :placeholder="t('Location & Business Type')" />
                         </div>
                         <div class="grid two mb-2">
-                            <x-form.input wire:model="workExp.{{ $i }}.employee_count" placeholder="Jumlah Karyawan" />
-                            <x-form.input wire:model="workExp.{{ $i }}.company_phone" placeholder="No. Telepon Perusahaan" />
+                            <x-form.input wire:model="workExp.{{ $i }}.employee_count" :placeholder="t('Number of Employees')" />
+                            <x-form.input wire:model="workExp.{{ $i }}.company_phone" :placeholder="t('Company Phone No.')" />
                         </div>
-                        <p class="text-[10px] font-bold text-muted uppercase mt-2 mb-1">Jabatan Awal</p>
+                        <p class="text-[10px] font-bold text-muted uppercase mt-2 mb-1">{{ t('First Job Title') }}</p>
                         <div class="grid gap-2 mb-2" style="grid-template-columns:1fr 130px 130px;">
-                            <x-form.input wire:model="workExp.{{ $i }}.position" placeholder="Jabatan Awal" />
+                            <x-form.input wire:model="workExp.{{ $i }}.position" :placeholder="t('First Job Title')" />
                             <x-form.date-picker wire:model="workExp.{{ $i }}.start_date" />
                             <x-form.date-picker wire:model="workExp.{{ $i }}.end_date" />
                         </div>
-                        <p class="text-[10px] font-bold text-muted uppercase mt-2 mb-1">Jabatan Terakhir</p>
+                        <p class="text-[10px] font-bold text-muted uppercase mt-2 mb-1">{{ t('Last Job Title') }}</p>
                         <div class="grid gap-2 mb-2" style="grid-template-columns:1fr 130px 130px;">
-                            <x-form.input wire:model="workExp.{{ $i }}.position_end" placeholder="Jabatan Terakhir" />
+                            <x-form.input wire:model="workExp.{{ $i }}.position_end" :placeholder="t('Last Job Title')" />
                             <x-form.date-picker wire:model="workExp.{{ $i }}.position_end_start_date" />
                             <x-form.date-picker wire:model="workExp.{{ $i }}.position_end_end_date" />
                         </div>
                         <div class="grid gap-2 mb-2" style="grid-template-columns:1fr 1fr 1fr 1fr;">
-                            <x-form.input wire:model="workExp.{{ $i }}.subordinate_count_start" placeholder="Bawahan (awal)" />
-                            <x-form.input wire:model="workExp.{{ $i }}.subordinate_count_end" placeholder="Bawahan (akhir)" />
-                            <x-form.input type="number" wire:model="workExp.{{ $i }}.salary_start" placeholder="Gaji Awal" />
-                            <x-form.input type="number" wire:model="workExp.{{ $i }}.salary_end" placeholder="Gaji Terakhir" />
+                            <x-form.input wire:model="workExp.{{ $i }}.subordinate_count_start" :placeholder="t('Subordinates (start)')" />
+                            <x-form.input wire:model="workExp.{{ $i }}.subordinate_count_end" :placeholder="t('Subordinates (end)')" />
+                            <x-form.input type="number" wire:model="workExp.{{ $i }}.salary_start" :placeholder="t('Starting Salary')" />
+                            <x-form.input type="number" wire:model="workExp.{{ $i }}.salary_end" :placeholder="t('Last Salary')" />
                         </div>
-                        <x-form.input wire:model="workExp.{{ $i }}.benefits" placeholder="Fasilitas selain gaji" class="mb-2" />
+                        <x-form.input wire:model="workExp.{{ $i }}.benefits" :placeholder="t('Benefits besides salary')" class="mb-2" />
                         <div class="grid two mb-2">
-                            <x-form.input wire:model="workExp.{{ $i }}.supervisor_name" placeholder="Atasan Langsung" />
-                            <x-form.input wire:model="workExp.{{ $i }}.supervisor_phone" placeholder="No. Telp Atasan" />
+                            <x-form.input wire:model="workExp.{{ $i }}.supervisor_name" :placeholder="t('Direct Supervisor')" />
+                            <x-form.input wire:model="workExp.{{ $i }}.supervisor_phone" :placeholder="t('Supervisor Phone No.')" />
                         </div>
-                        <x-form.input wire:model="workExp.{{ $i }}.achievement" placeholder="Prestasi" class="mb-2" />
-                        <x-form.textarea rows="2" wire:model="workExp.{{ $i }}.description" class="mb-2"><x-slot:label>Uraian Pekerjaan</x-slot:label></x-form.textarea>
-                        <x-form.input wire:model="workExp.{{ $i }}.org_structure_note" placeholder="Gambarkan struktur organisasi yang menunjukkan posisi Anda" class="mb-2" />
-                        <x-form.textarea rows="2" wire:model="workExp.{{ $i }}.key_challenge" class="mb-2"><x-slot:label>Masalah penting yang pernah dihadapi & cara mengatasinya</x-slot:label></x-form.textarea>
-                        <x-form.textarea rows="2" wire:model="workExp.{{ $i }}.improvement_made" class="mb-2"><x-slot:label>Perubahan/pembaruan yang pernah Anda lakukan</x-slot:label></x-form.textarea>
-                        <x-form.input wire:model="workExp.{{ $i }}.leave_reason" placeholder="Alasan Keluar" />
-                        <button type="button" wire:click="removeRow('workExp', {{ $i }})" class="text-[10.5px] text-[#a3241f] mt-2">✕ Hapus Pengalaman Ini</button>
+                        <x-form.input wire:model="workExp.{{ $i }}.achievement" :placeholder="t('Achievements')" class="mb-2" />
+                        <x-form.textarea rows="2" wire:model="workExp.{{ $i }}.description" class="mb-2"><x-slot:label>{{ t('Job Description') }}</x-slot:label></x-form.textarea>
+                        <x-form.input wire:model="workExp.{{ $i }}.org_structure_note" :placeholder="t('Describe the organization structure showing your position')" class="mb-2" />
+                        <x-form.textarea rows="2" wire:model="workExp.{{ $i }}.key_challenge" class="mb-2"><x-slot:label>{{ t('Key problems you have faced & how you solved them') }}</x-slot:label></x-form.textarea>
+                        <x-form.textarea rows="2" wire:model="workExp.{{ $i }}.improvement_made" class="mb-2"><x-slot:label>{{ t('Changes/improvements you have made') }}</x-slot:label></x-form.textarea>
+                        <x-form.input wire:model="workExp.{{ $i }}.leave_reason" :placeholder="t('Reason for Leaving')" />
+                        <button type="button" wire:click="removeRow('workExp', {{ $i }})" class="text-[10.5px] text-[#a3241f] mt-2">✕ {{ t('Remove This Experience') }}</button>
                     </div>
                 @endforeach
-                <button type="button" wire:click="addRow('workExp', {{ json_encode(['company' => '', 'location' => '', 'business_type' => '', 'employee_count' => '', 'company_phone' => '', 'position' => '', 'start_date' => '', 'end_date' => '', 'position_end' => '', 'position_end_start_date' => '', 'position_end_end_date' => '', 'subordinate_count_start' => '', 'subordinate_count_end' => '', 'salary_start' => '', 'salary_end' => '', 'benefits' => '', 'supervisor_name' => '', 'supervisor_phone' => '', 'achievement' => '', 'description' => '', 'org_structure_note' => '', 'key_challenge' => '', 'improvement_made' => '', 'leave_reason' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ Tambah Pengalaman Kerja</button>
+                <button type="button" wire:click="addRow('workExp', {{ json_encode(['company' => '', 'location' => '', 'business_type' => '', 'employee_count' => '', 'company_phone' => '', 'position' => '', 'start_date' => '', 'end_date' => '', 'position_end' => '', 'position_end_start_date' => '', 'position_end_end_date' => '', 'subordinate_count_start' => '', 'subordinate_count_end' => '', 'salary_start' => '', 'salary_end' => '', 'benefits' => '', 'supervisor_name' => '', 'supervisor_phone' => '', 'achievement' => '', 'description' => '', 'org_structure_note' => '', 'key_challenge' => '', 'improvement_made' => '', 'leave_reason' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ {{ t('Add Work Experience') }}</button>
             @elseif ($step === 6)
-                <h2 class="text-sm font-bold text-navy mb-3">Aktivitas Sosial, Kegiatan & Referensi</h2>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Social Activities, Activities & References') }}</h2>
                 <div class="space-y-3 mb-4">
-                    <x-form.input label="Apakah Anda memiliki kenalan di perusahaan kami? (nama & jabatan)" wire:model="company_acquaintance" />
-                    <x-form.input label="Hobi" wire:model="hobby" />
-                    <x-form.input label="Bagaimana Anda mengisi waktu luang?" wire:model="leisure_activity" />
-                    <x-form.input label="Topik-topik apa saja yang Anda baca?" wire:model="reading_topics" />
-                    <x-form.textarea rows="2" wire:model="went_abroad"><x-slot:label>Apakah Anda pernah ke luar negeri? Kapan & untuk keperluan apa?</x-slot:label></x-form.textarea>
+                    <x-form.input :label="t('Do you know anyone in our company? (name & job title)')" wire:model="company_acquaintance" />
+                    <x-form.input :label="t('Hobbies')" wire:model="hobby" />
+                    <x-form.input :label="t('How do you spend your leisure time?')" wire:model="leisure_activity" />
+                    <x-form.input :label="t('What topics do you read about?')" wire:model="reading_topics" />
+                    <x-form.textarea rows="2" wire:model="went_abroad"><x-slot:label>{{ t('Have you ever been abroad? When & for what purpose?') }}</x-slot:label></x-form.textarea>
                 </div>
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Referensi <span class="font-normal normal-case">(minimal 2 orang, bukan keluarga)</span></p>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-2">{{ t('References') }} <span class="font-normal normal-case">({{ t('at least 2 people, not family') }})</span></p>
                 @foreach ($professionalReferences as $i => $r)
                     <div class="grid two gap-2 mb-2" wire:key="ref-{{ $i }}">
-                        <x-form.input wire:model="professionalReferences.{{ $i }}.name" placeholder="Nama" />
+                        <x-form.input wire:model="professionalReferences.{{ $i }}.name" :placeholder="t('Name')" />
                         <div class="flex gap-1">
-                            <x-form.input wire:model="professionalReferences.{{ $i }}.phone" placeholder="No. Telp" class="flex-1" />
+                            <x-form.input wire:model="professionalReferences.{{ $i }}.phone" :placeholder="t('Phone No.')" class="flex-1" />
                             <button type="button" wire:click="removeRow('professionalReferences', {{ $i }})" class="text-[#a3241f] text-xs px-2">✕</button>
                         </div>
                     </div>
                 @endforeach
-                <button type="button" wire:click="addRow('professionalReferences', {{ json_encode(['name' => '', 'phone' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded mb-4">＋ Tambah Referensi</button>
+                <button type="button" wire:click="addRow('professionalReferences', {{ json_encode(['name' => '', 'phone' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded mb-4">＋ {{ t('Add Reference') }}</button>
 
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-2 mt-4">Kontak Darurat <span class="font-normal normal-case">(minimal 3 orang, dengan hubungan & alamat)</span></p>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-2 mt-4">{{ t('Emergency Contacts') }} <span class="font-normal normal-case">({{ t('at least 3 people, with relation & address') }})</span></p>
                 @foreach ($emergencyContacts as $i => $c)
                     <div class="border border-[#eef1f5] rounded-md p-3 mb-2" wire:key="emg-{{ $i }}">
                         <div class="grid two mb-2">
-                            <x-form.input wire:model="emergencyContacts.{{ $i }}.name" placeholder="Nama" />
-                            <x-form.input wire:model="emergencyContacts.{{ $i }}.relation" placeholder="Hubungan" />
+                            <x-form.input wire:model="emergencyContacts.{{ $i }}.name" :placeholder="t('Name')" />
+                            <x-form.input wire:model="emergencyContacts.{{ $i }}.relation" :placeholder="t('Relation')" />
                         </div>
                         <div class="grid two mb-2">
-                            <x-form.input wire:model="emergencyContacts.{{ $i }}.phone" placeholder="No. Telp" />
-                            <x-form.input wire:model="emergencyContacts.{{ $i }}.address" placeholder="Alamat" />
+                            <x-form.input wire:model="emergencyContacts.{{ $i }}.phone" :placeholder="t('Phone No.')" />
+                            <x-form.input wire:model="emergencyContacts.{{ $i }}.address" :placeholder="t('Address')" />
                         </div>
-                        <button type="button" wire:click="removeRow('emergencyContacts', {{ $i }})" class="text-[10.5px] text-[#a3241f]">✕ Hapus</button>
+                        <button type="button" wire:click="removeRow('emergencyContacts', {{ $i }})" class="text-[10.5px] text-[#a3241f]">✕ {{ t('Remove') }}</button>
                     </div>
                 @endforeach
-                <button type="button" wire:click="addRow('emergencyContacts', {{ json_encode(['name' => '', 'relation' => '', 'phone' => '', 'address' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ Tambah Kontak Darurat</button>
+                <button type="button" wire:click="addRow('emergencyContacts', {{ json_encode(['name' => '', 'relation' => '', 'phone' => '', 'address' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ {{ t('Add Emergency Contact') }}</button>
             @elseif ($step === 7)
-                <h2 class="text-sm font-bold text-navy mb-3">Minat & Konsep Pribadi</h2>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Interests & Self-Concept') }}</h2>
                 <div class="space-y-3">
-                    <x-form.textarea rows="2" wire:model="why_join_us"><x-slot:label>Mengapa Anda ingin bekerja di Perusahaan kami?</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="what_you_know_about_us"><x-slot:label>Apa yang Anda ketahui mengenai perusahaan kami?</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="contribution_plan"><x-slot:label>Kontribusi apa yang dapat Anda berikan sehubungan dengan posisi yang dilamar?</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="role_plan_if_hired"><x-slot:label>Uraian apa yang akan Anda lakukan jika menduduki posisi tersebut?</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="job_type_preference"><x-slot:label>Jenis pekerjaan apa yang Anda senangi? (Perencana/Pelaksana) — sebutkan alasan</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="job_nature_preference"><x-slot:label>Sifat pekerjaan apa yang Anda senangi? (Penelitian/Teknis/Non-Teknis) — sebutkan alasan</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="work_environment_preference"><x-slot:label>Lingkungan/suasana kerja yang Anda senangi? (Pabrik/Kantor/Lapangan/Laboratorium) — sebutkan alasan</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="hindering_environment"><x-slot:label>Pekerjaan/lingkungan seperti apa yang dapat menghambat pekerjaan & memicu human error?</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="preferred_colleague_type"><x-slot:label>Tipe orang seperti apa yang Anda senangi bekerja sama?</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="difficult_decision_topic"><x-slot:label>Terhadap hal-hal apa Anda paling sulit mengambil keputusan tegas berdampak besar?</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="3" wire:model="strengths_weaknesses"><x-slot:label>Apa kelebihan & kekurangan Anda? (minimal masing-masing 5)</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="who_you_ask_when_stuck"><x-slot:label>Jika mengalami kesulitan menyelesaikan masalah, kepada siapa Anda bertanya? Mengapa?</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="why_join_us"><x-slot:label>{{ t('Why do you want to work at our Company?') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="what_you_know_about_us"><x-slot:label>{{ t('What do you know about our company?') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="contribution_plan"><x-slot:label>{{ t('What contribution can you make in the position applied for?') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="role_plan_if_hired"><x-slot:label>{{ t('What would you do if you held that position?') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="job_type_preference"><x-slot:label>{{ t('What type of work do you enjoy? (Planner/Executor) — give your reason') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="job_nature_preference"><x-slot:label>{{ t('What nature of work do you enjoy? (Research/Technical/Non-Technical) — give your reason') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="work_environment_preference"><x-slot:label>{{ t('What work environment do you enjoy? (Factory/Office/Field/Laboratory) — give your reason') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="hindering_environment"><x-slot:label>{{ t('What kind of work/environment can hinder your work & trigger human error?') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="preferred_colleague_type"><x-slot:label>{{ t('What type of people do you like to work with?') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="difficult_decision_topic"><x-slot:label>{{ t('On what matters do you find it hardest to make firm, high-impact decisions?') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="3" wire:model="strengths_weaknesses"><x-slot:label>{{ t('What are your strengths & weaknesses? (at least 5 each)') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="who_you_ask_when_stuck"><x-slot:label>{{ t('When you have difficulty solving a problem, whom do you ask? Why?') }}</x-slot:label></x-form.textarea>
                 </div>
             @elseif ($step === 8)
-                <h2 class="text-sm font-bold text-navy mb-3">Riwayat Kesehatan</h2>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Health History') }}</h2>
                 <div class="grid gap-2 mb-3" style="grid-template-columns:1fr 1fr 1fr;">
-                    <x-form.input label="Tinggi Badan (cm)" type="number" wire:model="height_cm" />
-                    <x-form.input label="Berat Badan (kg)" type="number" wire:model="weight_kg" />
-                    <x-form.input label="Golongan Darah" wire:model="blood_type" />
+                    <x-form.input :label="t('Height (cm)')" type="number" wire:model="height_cm" />
+                    <x-form.input :label="t('Weight (kg)')" type="number" wire:model="weight_kg" />
+                    <x-form.input :label="t('Blood Type')" wire:model="blood_type" />
                 </div>
                 <div class="space-y-3">
-                    <x-form.textarea rows="2" wire:model="illness_history"><x-slot:label>Penyakit apa yang pernah Anda derita? Berapa lama? Bagaimana kondisi saat ini?</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="hospitalized_history"><x-slot:label>Apakah pernah dirawat di RS? Karena apa? Akibat apa yang diderita sekarang?</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="illness_history"><x-slot:label>{{ t('What illnesses have you suffered? For how long? What is your current condition?') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="hospitalized_history"><x-slot:label>{{ t('Have you ever been hospitalized? For what? What lasting effects do you have now?') }}</x-slot:label></x-form.textarea>
                     <div class="grid two">
-                        <x-form.select wire:model="is_smoker" :options="[1 => 'Ya', 0 => 'Tidak']" placeholder="— pilih —"><x-slot:label>Apakah Anda merokok?</x-slot:label></x-form.select>
-                        <x-form.select wire:model="family_health_ok" :options="[1 => 'Ya, baik-baik saja', 0 => 'Ada masalah']" placeholder="— pilih —"><x-slot:label>Apakah kesehatan keluarga Anda baik?</x-slot:label></x-form.select>
+                        <x-form.select wire:model="is_smoker" :options="[1 => t('Yes'), 0 => t('No')]" :placeholder="t('— select —')"><x-slot:label>{{ t('Do you smoke?') }}</x-slot:label></x-form.select>
+                        <x-form.select wire:model="family_health_ok" :options="[1 => t('Yes, all fine'), 0 => t('There are problems')]" :placeholder="t('— select —')"><x-slot:label>{{ t('Is your family in good health?') }}</x-slot:label></x-form.select>
                     </div>
-                    <x-form.textarea rows="2" wire:model="physical_disability"><x-slot:label>Apakah Anda mempunyai gangguan jasmani yang tetap/keras?</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="physical_disability"><x-slot:label>{{ t('Do you have any permanent/severe physical impairment?') }}</x-slot:label></x-form.textarea>
                 </div>
             @elseif ($step === 9)
-                <h2 class="text-sm font-bold text-navy mb-3">Bahasa, Komputer & Info Lowongan</h2>
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Penguasaan Bahasa Asing</p>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Languages, Computer & Vacancy Info') }}</h2>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-2">{{ t('Foreign Language Proficiency') }}</p>
                 @foreach ($languageSkills as $i => $l)
                     <div class="grid gap-2 mb-2" style="grid-template-columns:1fr 110px 110px 1fr auto;" wire:key="lang-{{ $i }}">
-                        <x-form.input wire:model="languageSkills.{{ $i }}.language" placeholder="Bahasa" />
-                        <x-form.select wire:model="languageSkills.{{ $i }}.written" :options="['S' => 'Tertulis: Sedang', 'CB' => 'Tertulis: Cukup Baik', 'B' => 'Tertulis: Baik']" placeholder="Tertulis" />
-                        <x-form.select wire:model="languageSkills.{{ $i }}.oral" :options="['S' => 'Lisan: Sedang', 'CB' => 'Lisan: Cukup Baik', 'B' => 'Lisan: Baik']" placeholder="Lisan" />
-                        <x-form.input wire:model="languageSkills.{{ $i }}.notes" placeholder="Keterangan" />
+                        <x-form.input wire:model="languageSkills.{{ $i }}.language" :placeholder="t('Language Name')" />
+                        <x-form.select wire:model="languageSkills.{{ $i }}.written" :options="['S' => t('Written').': '.t('Fair'), 'CB' => t('Written').': '.t('Fairly Good'), 'B' => t('Written').': '.t('Good')]" :placeholder="t('Written')" />
+                        <x-form.select wire:model="languageSkills.{{ $i }}.oral" :options="['S' => t('Spoken').': '.t('Fair'), 'CB' => t('Spoken').': '.t('Fairly Good'), 'B' => t('Spoken').': '.t('Good')]" :placeholder="t('Spoken')" />
+                        <x-form.input wire:model="languageSkills.{{ $i }}.notes" :placeholder="t('Description')" />
                         <button type="button" wire:click="removeRow('languageSkills', {{ $i }})" class="text-[#a3241f] text-xs">✕</button>
                     </div>
                 @endforeach
-                <button type="button" wire:click="addRow('languageSkills', {{ json_encode(['language' => '', 'written' => '', 'oral' => '', 'notes' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded mb-4">＋ Tambah Bahasa</button>
+                <button type="button" wire:click="addRow('languageSkills', {{ json_encode(['language' => '', 'written' => '', 'oral' => '', 'notes' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded mb-4">＋ {{ t('Add Language') }}</button>
 
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-2 mt-4">Penguasaan Komputer</p>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-2 mt-4">{{ t('Computer Skills') }}</p>
                 @foreach ($computerSkills as $i => $c)
                     <div class="grid gap-2 mb-2" style="grid-template-columns:1fr 130px 1fr auto;" wire:key="comp-{{ $i }}">
-                        <x-form.input wire:model="computerSkills.{{ $i }}.skill" placeholder="Skill (mis. Desain Grafis)" />
-                        <x-form.select wire:model="computerSkills.{{ $i }}.level" :options="['S' => 'Sedang', 'CB' => 'Cukup Baik', 'B' => 'Baik']" placeholder="Level" />
-                        <x-form.input wire:model="computerSkills.{{ $i }}.notes" placeholder="Keterangan" />
+                        <x-form.input wire:model="computerSkills.{{ $i }}.skill" :placeholder="t('Skill (e.g. Graphic Design)')" />
+                        <x-form.select wire:model="computerSkills.{{ $i }}.level" :options="['S' => t('Fair'), 'CB' => t('Fairly Good'), 'B' => t('Good')]" :placeholder="t('Level')" />
+                        <x-form.input wire:model="computerSkills.{{ $i }}.notes" :placeholder="t('Description')" />
                         <button type="button" wire:click="removeRow('computerSkills', {{ $i }})" class="text-[#a3241f] text-xs">✕</button>
                     </div>
                 @endforeach
-                <button type="button" wire:click="addRow('computerSkills', {{ json_encode(['skill' => '', 'level' => '', 'notes' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded mb-4">＋ Tambah Skill Komputer</button>
+                <button type="button" wire:click="addRow('computerSkills', {{ json_encode(['skill' => '', 'level' => '', 'notes' => '']) }})" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded mb-4">＋ {{ t('Add Computer Skill') }}</button>
 
                 <div class="space-y-3 mt-4">
-                    <x-form.textarea rows="2" wire:model="still_receiving_aid"><x-slot:label>Apakah Anda masih mendapatkan bantuan? Dari siapa & berapa besar/lamanya?</x-slot:label></x-form.textarea>
-                    <x-form.textarea rows="2" wire:model="other_dependents"><x-slot:label>Apakah Anda punya tanggungan lain selain anak & istri/suami? Sebutkan & berapa besar</x-slot:label></x-form.textarea>
-                    <x-form.input label="Dari mana Anda menerima info lowongan di perusahaan kami?" wire:model="source_of_info" />
+                    <x-form.textarea rows="2" wire:model="still_receiving_aid"><x-slot:label>{{ t('Are you still receiving support? From whom & how much/how long?') }}</x-slot:label></x-form.textarea>
+                    <x-form.textarea rows="2" wire:model="other_dependents"><x-slot:label>{{ t('Do you have other dependents besides children & spouse? Name them & how much') }}</x-slot:label></x-form.textarea>
+                    <x-form.input :label="t('Where did you hear about vacancies at our company?')" wire:model="source_of_info" />
                     <div class="grid two">
-                        <x-form.input label="Gaji yang diinginkan" type="number" wire:model="expected_salary" />
-                        <x-form.date-picker label="Kesediaan mulai bekerja" wire:model="availability_date" />
+                        <x-form.input :label="t('Expected salary')" type="number" wire:model="expected_salary" />
+                        <x-form.date-picker :label="t('Available to start work')" wire:model="availability_date" />
                     </div>
-                    <x-form.input label="Fasilitas yang diinginkan" wire:model="expected_facility" />
+                    <x-form.input :label="t('Expected benefits')" wire:model="expected_facility" />
                 </div>
             @elseif ($step === 10)
-                <h2 class="text-sm font-bold text-navy mb-3">Kesediaan & Pernyataan</h2>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Willingness & Statement') }}</h2>
                 <div class="space-y-2 mb-4">
                     @foreach ($this->willingItems as $key => $label)
                         <label class="flex items-start gap-2 text-[12px] border border-[#eef1f5] rounded-md p-2.5">
                             <input type="checkbox" wire:model="willingness.{{ $key }}" class="!w-auto mt-0.5">
-                            <span>{{ $label }}</span>
+                            <span>{{ t($label) }}</span>
                         </label>
                     @endforeach
                 </div>
                 <div class="bg-[#f8fafc] border border-[#eef1f5] rounded-md p-3 text-[11px] text-muted mb-3">
-                    "Demikian informasi yang saya berikan adalah benar sesuai dengan kondisi saya, jika terdapat ketidaksesuaian dari informasi ini maka saya bersedia untuk berhenti/diberhentikan tanpa pesangon dan kompensasi berupa apapun serta seluruh konsekuensi yang diberikan oleh Telasih Makmur dan bersedia diproses sesuai hukum yang berlaku."
+                    "{{ t('I declare that the information I have given is true and reflects my condition.') }} {{ t('If any of this information is found to be inaccurate, I am willing to resign/be dismissed without severance or compensation of any kind,') }} {{ t('accept all consequences imposed by Telasih Makmur, and be processed according to the applicable law.') }}"
                 </div>
                 @error('apply') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
-                <label class="flex items-center gap-2 text-xs mb-2"><input type="checkbox" wire:model="agreement_signed" class="!w-auto"> Saya menyetujui pernyataan di atas</label>
-                <x-form.input label="Ketik nama lengkap Anda sebagai tanda tangan" wire:model="signature_name" placeholder="Nama lengkap" />
+                <label class="flex items-center gap-2 text-xs mb-2"><input type="checkbox" wire:model="agreement_signed" class="!w-auto"> {{ t('I agree to the statement above') }}</label>
+                <x-form.input :label="t('Type your full name as signature')" wire:model="signature_name" :placeholder="t('Full name')" />
             @elseif ($step === 11)
-                <h2 class="text-sm font-bold text-navy mb-3">Upload Dokumen</h2>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Upload Documents') }}</h2>
                 <div class="space-y-3">
                     <div>
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">CV <span class="text-[#a3241f]">*</span></label>
+                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('CV') }} <span class="text-[#a3241f]">*</span></label>
                         <input type="file" wire:model="cvFile" class="text-xs">
                         @if ($cvFile) <p class="text-[10.5px] text-[#1f8a4c] mt-1">✓ {{ $cvFile->getClientOriginalName() }}</p> @endif
                     </div>
                     <div>
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Ijazah <span class="text-[#a3241f]">*</span></label>
+                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Diploma') }} <span class="text-[#a3241f]">*</span></label>
                         <input type="file" wire:model="ijazahFile" class="text-xs">
                         @if ($ijazahFile) <p class="text-[10.5px] text-[#1f8a4c] mt-1">✓ {{ $ijazahFile->getClientOriginalName() }}</p> @endif
                     </div>
                 </div>
             @elseif ($step === 12)
-                <h2 class="text-sm font-bold text-navy mb-3">Review &amp; Lamar Lowongan</h2>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Review & Apply for Vacancy') }}</h2>
                 @error('apply') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
                 <div class="bg-[#f8fafc] border border-[#eef1f5] rounded-md p-3 text-xs mb-3 space-y-1">
                     <p><b>{{ $name }}</b> ({{ $nickname }}) — {{ $national_id }}</p>
                     <p class="text-muted">{{ $email }} · {{ $phone }}</p>
-                    <p class="text-muted">{{ count($family) }} data keluarga · {{ count($education) }} pendidikan formal · {{ count($educationNonformal) }} non-formal · {{ count($orgExperience) }} organisasi · {{ count($workExp) }} pengalaman kerja</p>
-                    <p class="text-muted">{{ count($professionalReferences) }} referensi · {{ count($emergencyContacts) }} kontak darurat · {{ count($languageSkills) }} bahasa · {{ count($computerSkills) }} skill komputer</p>
-                    <p class="text-muted">Kesediaan: {{ collect($willingness)->filter()->count() }}/{{ count($this->willingItems) }} disetujui · Tanda tangan: {{ $signature_name ?: '(belum diisi)' }}</p>
+                    <p class="text-muted">{{ count($family) }} {{ t('family records') }} · {{ count($education) }} {{ t('formal education') }} · {{ count($educationNonformal) }} {{ t('non-formal') }} · {{ count($orgExperience) }} {{ t('organizations') }} · {{ count($workExp) }} {{ t('work experiences') }}</p>
+                    <p class="text-muted">{{ count($professionalReferences) }} {{ t('references') }} · {{ count($emergencyContacts) }} {{ t('emergency contacts') }} · {{ count($languageSkills) }} {{ t('languages') }} · {{ count($computerSkills) }} {{ t('computer skills') }}</p>
+                    <p class="text-muted">{{ t('Willingness') }}: {{ collect($willingness)->filter()->count() }}/{{ count($this->willingItems) }} {{ t('agreed') }} · {{ t('Signature') }}: {{ $signature_name ?: t('(not filled in yet)') }}</p>
                 </div>
-                <x-form.select wire:model="applyVacancyId" :options="$this->openVacancies->pluck('title', 'id_vacancy')->all()" placeholder="— pilih lowongan —">
-                    <x-slot:label>Lowongan yang Dilamar</x-slot:label>
+                <x-form.select wire:model="applyVacancyId" :options="$this->openVacancies->pluck('title', 'id_vacancy')->all()" :placeholder="t('— select vacancy —')">
+                    <x-slot:label>{{ t('Vacancy Applied For') }}</x-slot:label>
                 </x-form.select>
             @elseif ($step === 13)
                 <div class="text-center py-4">
                     <p class="text-3xl mb-2">✅</p>
-                    <h2 class="text-sm font-bold text-[#1f8a4c] mb-1">Lamaran Terkirim</h2>
-                    <p class="text-[11.5px] text-muted">Terima kasih, lamaran Anda sudah kami terima.</p>
+                    <h2 class="text-sm font-bold text-[#1f8a4c] mb-1">{{ t('Application Submitted') }}</h2>
+                    <p class="text-[11.5px] text-muted">{{ t('Thank you, we have received your application.') }}</p>
                     @if ($lastSubmissionUuid)
-                        <p class="text-[10px] text-muted mt-1">Ref: {{ $lastSubmissionUuid }}</p>
+                        <p class="text-[10px] text-muted mt-1">{{ t('Ref') }}: {{ $lastSubmissionUuid }}</p>
                     @endif
                 </div>
                 @if ($this->myApplications->isEmpty())
                     <div class="bg-[#fff8e6] border border-[#f4e0a3] text-[#8a5a00] text-[11px] rounded-md px-3 py-2 mb-2">
-                        ⏳ Lamaran sedang menunggu sinkronisasi ke sistem internal HR (berjalan otomatis tiap 2 menit) -- muncul di riwayat di bawah begitu selesai.
+                        ⏳ {{ t('The application is waiting to be synced to the internal HR system (runs automatically every 2 minutes) -- it appears in the history below once done.') }}
                     </div>
                 @endif
                 <div class="border-t border-[#eef1f5] pt-4 mt-2">
-                    <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Riwayat Lamaran Saya</p>
+                    <p class="text-[10.5px] font-bold text-muted uppercase mb-2">{{ t('My Application History') }}</p>
                     @foreach ($this->myApplications as $app)
                         <div class="flex items-center justify-between text-[11.5px] py-1.5 border-b border-[#eef1f5] last:border-0">
                             <span>{{ $app->vacancy->title ?? '—' }}</span>
@@ -765,26 +765,26 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
                                 'OFFERING' => 'bg-[#f1ecfc] text-[#6d28d9]',
                                 default => 'bg-[#fff5e0] text-[#8a5a00]',
                             } }}">{{ match ($app->status) {
-                                'APPLIED', 'IN_PROGRESS' => 'DIPROSES',
-                                'OFFERING' => 'OFFERING',
-                                'HIRED' => 'DITERIMA',
-                                'REJECTED' => 'TIDAK LOLOS',
-                                'WITHDRAWN' => 'MUNDUR',
+                                'APPLIED', 'IN_PROGRESS' => t('PROCESSING'),
+                                'OFFERING' => t('OFFERING'),
+                                'HIRED' => t('ACCEPTED'),
+                                'REJECTED' => t('NOT PASSED'),
+                                'WITHDRAWN' => t('WITHDRAWN'),
                                 default => $app->status,
                             } }}</span>
                         </div>
                     @endforeach
                 </div>
-                <button type="button" wire:click="backToLanding" class="mt-4 text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ Lamar Lowongan Lain</button>
+                <button type="button" wire:click="backToLanding" class="mt-4 text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">＋ {{ t('Apply for Another Vacancy') }}</button>
             @endif
 
             @if ($step >= 1 && $step <= 12)
                 <div class="flex justify-between mt-4 pt-3 border-t border-[#eef1f5]">
-                    <button type="button" wire:click="prevStep" @if($step === 1) disabled @endif class="text-xs font-bold text-muted px-4 py-2 disabled:opacity-30">← Kembali</button>
+                    <button type="button" wire:click="prevStep" @if($step === 1) disabled @endif class="text-xs font-bold text-muted px-4 py-2 disabled:opacity-30">← {{ t('Back') }}</button>
                     @if ($step < 12)
-                        <button type="button" wire:click="nextStep" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Lanjut →</button>
+                        <button type="button" wire:click="nextStep" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Proceed') }} →</button>
                     @else
-                        <button type="button" wire:click="submitApplication" class="bg-[#1f8a4c] text-white text-xs font-bold px-4 py-2 rounded-md">Kirim Lamaran</button>
+                        <button type="button" wire:click="submitApplication" class="bg-[#1f8a4c] text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Submit Application') }}</button>
                     @endif
                 </div>
             @endif

@@ -79,7 +79,7 @@ new #[Title('Provisioning ke ERP — TELASIH MAKMUR ERP')] class extends Compone
     public function provision(): void
     {
         if (! $this->position_id) {
-            $this->addError('provision', 'Pilih posisi/jabatan karyawan baru dulu.');
+            $this->addError('provision', t('Select the new employee\'s position/job title first.'));
 
             return;
         }
@@ -155,14 +155,14 @@ new #[Title('Provisioning ke ERP — TELASIH MAKMUR ERP')] class extends Compone
 <div class="max-w-[1200px] mx-auto my-5 px-4">
     <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden mb-4">
         <div class="px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
-            <h3 class="text-xs text-navy uppercase font-bold">Siap Diprovision (Offer Diterima)</h3>
+            <h3 class="text-xs text-navy uppercase font-bold">{{ t('Ready to Provision (Offer Accepted)') }}</h3>
         </div>
         <table class="w-full text-xs">
             <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5]">
                 <tr>
-                    <th class="text-left px-3 py-2">Kandidat</th>
-                    <th class="text-left px-3 py-2">Lowongan</th>
-                    <th class="px-3 py-2 text-right w-[160px]">Aksi</th>
+                    <th class="text-left px-3 py-2">{{ t('Candidate') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Vacancy') }}</th>
+                    <th class="px-3 py-2 text-right w-[160px]">{{ t('Action') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-[#eef1f5]">
@@ -171,11 +171,11 @@ new #[Title('Provisioning ke ERP — TELASIH MAKMUR ERP')] class extends Compone
                         <td class="px-3 py-2 font-semibold">{{ $app->candidate->name ?? '—' }}</td>
                         <td class="px-3 py-2">{{ $app->vacancy->title ?? '—' }}</td>
                         <td class="px-3 py-2 text-right">
-                            <button type="button" wire:click="openProvision({{ $app->id_application }})" class="text-[11px] font-bold text-white bg-navy px-3 py-1.5 rounded">Provision ke ERP</button>
+                            <button type="button" wire:click="openProvision({{ $app->id_application }})" class="text-[11px] font-bold text-white bg-navy px-3 py-1.5 rounded">{{ t('Provision to ERP') }}</button>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="3" class="px-3 py-6 text-center text-muted text-xs">Tidak ada kandidat yang siap diprovision.</td></tr>
+                    <tr><td colspan="3" class="px-3 py-6 text-center text-muted text-xs">{{ t('No candidates are ready to be provisioned.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -183,11 +183,11 @@ new #[Title('Provisioning ke ERP — TELASIH MAKMUR ERP')] class extends Compone
 
     <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
         <div class="px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
-            <h3 class="text-xs text-navy uppercase font-bold">Riwayat Provisioning</h3>
+            <h3 class="text-xs text-navy uppercase font-bold">{{ t('Provisioning History') }}</h3>
         </div>
         <table class="w-full text-xs">
             <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5]">
-                <tr><th class="text-left px-3 py-2">Kandidat</th><th class="text-left px-3 py-2">Diprovision Pada</th></tr>
+                <tr><th class="text-left px-3 py-2">{{ t('Candidate') }}</th><th class="text-left px-3 py-2">{{ t('Provisioned At') }}</th></tr>
             </thead>
             <tbody class="divide-y divide-[#eef1f5]">
                 @forelse ($this->provisionedRecently as $app)
@@ -196,7 +196,7 @@ new #[Title('Provisioning ke ERP — TELASIH MAKMUR ERP')] class extends Compone
                         <td class="px-3 py-2 font-mono">{{ $app->provisioned_at?->translatedFormat('d M Y H:i') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="2" class="px-3 py-6 text-center text-muted text-xs">Belum ada.</td></tr>
+                    <tr><td colspan="2" class="px-3 py-6 text-center text-muted text-xs">{{ t('None yet.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -206,25 +206,25 @@ new #[Title('Provisioning ke ERP — TELASIH MAKMUR ERP')] class extends Compone
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('provisioningId', null)">
             <div class="bg-white rounded-xl w-full max-w-[460px] p-5">
                 @if (! $credentials)
-                    <h3 class="text-sm font-bold text-navy mb-2">Konfirmasi Provisioning</h3>
-                    <p class="text-[11.5px] text-muted mb-3">Akan membuat akun login baru untuk kandidat ini. Tindakan ini <b>tidak bisa dibatalkan</b>.</p>
+                    <h3 class="text-sm font-bold text-navy mb-2">{{ t('Confirm Provisioning') }}</h3>
+                    <p class="text-[11.5px] text-muted mb-3">{{ t('This will create a new login account for this candidate.') }} {{ t('This action') }} <b>{{ t('cannot be undone') }}</b>.</p>
                     @error('provision') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
-                    <x-form.select wire:model="position_id" :options="$this->positionsFor" placeholder="— pilih posisi/jabatan —">
-                        <x-slot:label>Posisi/Jabatan</x-slot:label>
+                    <x-form.select wire:model="position_id" :options="$this->positionsFor" :placeholder="t('— select position/job title —')">
+                        <x-slot:label>{{ t('Position/Job Title') }}</x-slot:label>
                     </x-form.select>
                     <div class="flex justify-end gap-2 mt-4">
-                        <button type="button" wire:click="$set('provisioningId', null)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">Batal</button>
-                        <button type="button" wire:click="provision" wire:confirm="Yakin provision karyawan ini ke ERP?" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Provision ke ERP</button>
+                        <button type="button" wire:click="$set('provisioningId', null)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">{{ t('Cancel') }}</button>
+                        <button type="button" wire:click="provision" wire:confirm="{{ t('Are you sure you want to provision this employee to the ERP?') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Provision to ERP') }}</button>
                     </div>
                 @else
-                    <h3 class="text-sm font-bold text-[#1f8a4c] mb-2">✓ Berhasil Diprovision</h3>
-                    <p class="text-[11.5px] text-muted mb-3">Infokan kredensial berikut ke karyawan baru secara manual:</p>
+                    <h3 class="text-sm font-bold text-[#1f8a4c] mb-2">✓ {{ t('Provisioned Successfully') }}</h3>
+                    <p class="text-[11.5px] text-muted mb-3">{{ t('Give the following credentials to the new employee manually:') }}</p>
                     <div class="bg-[#f8fafc] border border-[#d7dbe2] rounded-md p-3 text-xs space-y-1 font-mono">
-                        <p>Login: <b>{{ $credentials['login'] ?? '—' }}</b></p>
-                        <p>Password: <b>{{ $credentials['password'] ?? '—' }}</b></p>
+                        <p>{{ t('Login') }}: <b>{{ $credentials['login'] ?? '—' }}</b></p>
+                        <p>{{ t('Password') }}: <b>{{ $credentials['password'] ?? '—' }}</b></p>
                     </div>
                     <div class="flex justify-end mt-4">
-                        <button type="button" wire:click="$set('provisioningId', null)" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Tutup</button>
+                        <button type="button" wire:click="$set('provisioningId', null)" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Close') }}</button>
                     </div>
                 @endif
             </div>

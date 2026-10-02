@@ -256,7 +256,7 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
     public function submitApplication(): void
     {
         if (! $this->emailVerified) {
-            $this->addError('apply', 'Verifikasi email Anda dulu sebelum mengirim lamaran (cek inbox saat registrasi).');
+            $this->addError('apply', t('Verify your email before submitting an application (check the inbox you used to register).'));
 
             return;
         }
@@ -300,10 +300,10 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
         ];
 
         $attributes = [
-            'family.0.name' => 'Nama Ayah', 'family.1.name' => 'Nama Ibu',
-            'education' => 'Pendidikan Formal', 'educationNonformal' => 'Pendidikan Non-Formal', 'orgExperience' => 'Pengalaman Organisasi',
-            'workExp' => 'Pengalaman Kerja', 'professionalReferences' => 'Referensi', 'emergencyContacts' => 'Kontak Darurat',
-            'languageSkills' => 'Bahasa Asing', 'computerSkills' => 'Penguasaan Komputer', 'cvFile' => 'CV', 'ijazahFile' => 'Ijazah',
+            'family.0.name' => t('Father Name'), 'family.1.name' => t('Mother Name'),
+            'education' => t('Formal Education'), 'educationNonformal' => t('Non-Formal Education'), 'orgExperience' => t('Organization Experience'),
+            'workExp' => t('Work Experience'), 'professionalReferences' => t('References'), 'emergencyContacts' => t('Emergency Contacts'),
+            'languageSkills' => t('Foreign Languages'), 'computerSkills' => t('Computer Skills'), 'cvFile' => t('CV'), 'ijazahFile' => t('Diploma'),
         ];
 
         $validator = Validator::make($this->all(), $rules, [], $attributes);
@@ -313,7 +313,7 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
         // yang SAMA supaya kandidat lihat SEMUA kekurangan dalam 1 alert.
         $validator->after(function ($v) {
             if (in_array(false, $this->willingness, true) || count($this->willingness) < count(CandidateFormOptions::WILLING_ITEMS)) {
-                $v->errors()->add('willingness', 'Semua poin Kesediaan & Pernyataan wajib dicentang.');
+                $v->errors()->add('willingness', t('All Willingness & Statement points must be checked.'));
             }
         });
 
@@ -378,19 +378,19 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
 
 <div class="max-w-[820px] mx-auto my-8 px-5">
     @if (! $submitted)
-        <a href="{{ route('careers.vacancy-detail', $vacancy_code) }}" class="text-[12px] font-bold text-muted hover:text-navy">&larr; Batalkan, kembali ke detail lowongan</a>
-        <h1 class="text-[18px] font-extrabold text-navy mt-2 mb-1">Lamar: {{ $this->vacancy->title }}</h1>
-        <p class="text-[11.5px] text-muted mb-4">Semua field bertanda * wajib diisi sebelum lamaran bisa dikirim.</p>
+        <a href="{{ route('careers.vacancy-detail', $vacancy_code) }}" class="text-[12px] font-bold text-muted hover:text-navy">&larr; {{ t('Cancel, back to vacancy details') }}</a>
+        <h1 class="text-[18px] font-extrabold text-navy mt-2 mb-1">{{ t('Apply') }}: {{ $this->vacancy->title }}</h1>
+        <p class="text-[11.5px] text-muted mb-4">{{ t('All fields marked * must be filled in before the application can be submitted.') }}</p>
 
         @unless ($this->emailVerified)
             <div class="bg-[#fff8e6] border border-[#f4e0a3] text-[#8a5a00] text-[11.5px] rounded-md px-3 py-2 mb-4">
-                ⚠ Email Anda belum diverifikasi. Anda masih bisa mengisi form ini, tapi tidak bisa mengirim sampai email diverifikasi (cek inbox saat mendaftar).
+                ⚠ {{ t('Your email is not verified yet.') }} {{ t('You can still fill in this form, but cannot submit it until the email is verified (check the inbox you used to register).') }}
             </div>
         @endunless
 
         @if ($errors->any())
             <div class="bg-[#fbeaea] border border-[#f3c6c6] text-[#a3241f] text-[12px] rounded-md px-4 py-3 mb-4">
-                <p class="font-bold mb-1.5">⚠ Ada {{ $errors->count() }} isian yang belum lengkap:</p>
+                <p class="font-bold mb-1.5">⚠ {{ str_replace(':n', $errors->count(), t(':n fields are not complete yet:')) }}</p>
                 <ul class="list-disc list-inside space-y-0.5">
                     @foreach ($errors->all() as $message)
                         <li>{{ $message }}</li>
@@ -403,24 +403,24 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
             @include('pages::careers._apply-form-steps')
 
             <div class="mt-6 pt-5 border-t border-[#eef1f5]">
-                <h2 class="text-sm font-bold text-navy mb-3">Kirim Lamaran</h2>
+                <h2 class="text-sm font-bold text-navy mb-3">{{ t('Submit Application') }}</h2>
                 <button type="button" wire:click="submitApplication" wire:loading.attr="disabled" class="w-full bg-[#1f8a4c] text-white text-sm font-bold px-4 py-2.5 rounded-md disabled:opacity-50">
-                    <span wire:loading.remove wire:target="submitApplication">Kirim Lamaran</span>
-                    <span wire:loading wire:target="submitApplication">Mengirim...</span>
+                    <span wire:loading.remove wire:target="submitApplication">{{ t('Submit Application') }}</span>
+                    <span wire:loading wire:target="submitApplication">{{ t('Submitting...') }}</span>
                 </button>
             </div>
         </div>
     @else
         <div class="bg-white border border-[#e6e9ef] rounded-xl p-8 text-center">
             <p class="text-3xl mb-2">✅</p>
-            <h2 class="text-[16px] font-bold text-[#1f8a4c] mb-1">Lamaran Terkirim</h2>
-            <p class="text-[13px] text-muted mb-1">Terima kasih, lamaran Anda untuk <b>{{ $this->vacancy->title }}</b> sudah kami terima.</p>
+            <h2 class="text-[16px] font-bold text-[#1f8a4c] mb-1">{{ t('Application Submitted') }}</h2>
+            <p class="text-[13px] text-muted mb-1">{!! str_replace(':title', '<b>'.e($this->vacancy->title).'</b>', e(t('Thank you, we have received your application for :title.'))) !!}</p>
             @if ($lastSubmissionUuid)
-                <p class="text-[10px] text-muted mb-4">Ref: {{ $lastSubmissionUuid }}</p>
+                <p class="text-[10px] text-muted mb-4">{{ t('Ref') }}: {{ $lastSubmissionUuid }}</p>
             @endif
             <div class="flex justify-center gap-3">
-                <a href="{{ route('careers.dashboard') }}" class="bg-navy text-white text-[13px] font-bold px-4 py-2 rounded-md">Lihat Lamaran Saya</a>
-                <a href="{{ route('careers.landing') }}" class="border border-[#d7dbe2] text-[13px] font-bold px-4 py-2 rounded-md">Lowongan Lain</a>
+                <a href="{{ route('careers.dashboard') }}" class="bg-navy text-white text-[13px] font-bold px-4 py-2 rounded-md">{{ t('View My Applications') }}</a>
+                <a href="{{ route('careers.landing') }}" class="border border-[#d7dbe2] text-[13px] font-bold px-4 py-2 rounded-md">{{ t('Other Vacancies') }}</a>
             </div>
         </div>
     @endif

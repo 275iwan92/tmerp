@@ -242,7 +242,7 @@ new #[Title('Review Formulir Kandidat — TELASIH MAKMUR ERP')] class extends Co
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📄 Review Formulir Kandidat</b>
+        <b class="text-[15px]">📄 {{ t('Candidate Form Review') }}</b>
         <span class="text-xs text-white/75">{{ $name }} — {{ $this->application->vacancy->title ?? '' }}</span>
         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full
             {{ match ($this->application->status) {
@@ -252,7 +252,7 @@ new #[Title('Review Formulir Kandidat — TELASIH MAKMUR ERP')] class extends Co
                 'REJECTED', 'WITHDRAWN' => 'bg-[#fbeaea] text-[#a3241f]',
                 default => 'bg-[#eef1f5] text-[#4b5568]',
             } }}">{{ $this->application->status }}{{ $this->stageName ? ' · '.$this->stageName : '' }}</span>
-        <x-back-button :fallback="route('hrm.recruitment.candidate-review.list')" title="Kembali" class="ml-auto" />
+        <x-back-button :fallback="route('hrm.recruitment.candidate-review.list')" :title="t('Back')" class="ml-auto" />
     </header>
 
     <div class="max-w-[820px] mx-auto my-5 px-4">

@@ -32,7 +32,7 @@ new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Co
 
     public string $notes = '';
 
-    protected const RECS = ['LANJUT' => 'Lanjut', 'TIDAK_LANJUT' => 'Tidak Lanjut', 'PERTIMBANGAN' => 'Pertimbangan'];
+    protected const RECS = ['LANJUT' => 'Proceed', 'TIDAK_LANJUT' => 'Do Not Proceed', 'PERTIMBANGAN' => 'Under Consideration'];
 
     public function updatedSearch(): void
     {
@@ -98,7 +98,7 @@ new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Co
     public function save(): void
     {
         if (trim($this->notes) === '') {
-            $this->addError('form', 'Catatan wajib diisi.');
+            $this->addError('form', t('Notes are required.'));
 
             return;
         }
@@ -122,22 +122,22 @@ new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Co
 <div class="max-w-[1400px] mx-auto my-5 px-4">
     <div class="grid three mb-3.5">
         <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Menunggu Diisi</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">{{ t('Awaiting Input') }}</p>
             <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->stats['awaiting'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-            <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Hasil</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">{{ t('Total Results') }}</p>
             <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->stats['total'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-            <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Rekomendasi Lanjut</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">{{ t('Recommended to Proceed') }}</p>
             <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->stats['lanjut'] }}</p>
         </div>
     </div>
 
     @if ($this->candidatesAwaiting->isNotEmpty())
         <div class="bg-white border border-[#d7dbe2] rounded-md p-3 mb-3.5">
-            <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Menunggu Diisi</p>
+            <p class="text-[10.5px] font-bold text-muted uppercase mb-2">{{ t('Awaiting Input') }}</p>
             <div class="flex flex-wrap gap-2">
                 @foreach ($this->candidatesAwaiting as $row)
                     <button type="button" wire:click="openNew({{ $row->app->id_application }}, '{{ $row->stage->stage_code }}')"
@@ -152,7 +152,7 @@ new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Co
     <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-md px-2.5 py-2 overflow-x-auto mb-3">
         <div class="flex items-center gap-1.5 shrink-0">
             <span class="text-sm">🔍</span>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama kandidat…"
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search candidate name…') }}"
                 class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
         </div>
     </div>
@@ -161,11 +161,11 @@ new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Co
         <table class="w-full text-xs">
             <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5] bg-[#f4f6fa]">
                 <tr>
-                    <th class="text-left px-3 py-2">Kandidat</th>
-                    <th class="text-left px-3 py-2">Stage</th>
-                    <th class="text-right px-3 py-2">Skor</th>
-                    <th class="text-left px-3 py-2">Rekomendasi</th>
-                    <th class="text-left px-3 py-2">Catatan</th>
+                    <th class="text-left px-3 py-2">{{ t('Candidate') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Stage') }}</th>
+                    <th class="text-right px-3 py-2">{{ t('Score') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Recommendation') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Notes') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-[#eef1f5]">
@@ -179,12 +179,12 @@ new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Co
                                 'LANJUT' => 'bg-[#eaf7ee] text-[#1f8a4c]',
                                 'TIDAK_LANJUT' => 'bg-[#fbeaea] text-[#a3241f]',
                                 default => 'bg-[#fff5e0] text-[#8a5a00]',
-                            } }}">{{ self::RECS[$r->recommendation] ?? $r->recommendation }}</span>
+                            } }}">{{ t(self::RECS[$r->recommendation] ?? $r->recommendation) }}</span>
                         </td>
                         <td class="px-3 py-2 text-muted">{{ Str::limit($r->notes, 60) }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-3 py-6 text-center text-muted text-xs">Belum ada hasil assessment.</td></tr>
+                    <tr><td colspan="5" class="px-3 py-6 text-center text-muted text-xs">{{ t('No assessment results yet.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -195,18 +195,18 @@ new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Co
     @if ($showModal)
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('showModal', false)">
             <div class="bg-white rounded-xl w-full max-w-[420px] p-5">
-                <h3 class="text-sm font-bold text-navy mb-3">Input Hasil — {{ $stage_code }}</h3>
+                <h3 class="text-sm font-bold text-navy mb-3">{{ t('Enter Result') }} — {{ $stage_code }}</h3>
                 @error('form') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
                 <div class="space-y-3">
-                    <x-form.input label="Skor" type="number" step="0.01" wire:model="score" placeholder="opsional" />
-                    <x-form.select wire:model="recommendation" :options="$this->recommendations" :placeholder="false">
-                        <x-slot:label>Rekomendasi</x-slot:label>
+                    <x-form.input :label="t('Score')" type="number" step="0.01" wire:model="score" :placeholder="t('optional')" />
+                    <x-form.select wire:model="recommendation" :options="array_map('t', $this->recommendations)" :placeholder="false">
+                        <x-slot:label>{{ t('Recommendation') }}</x-slot:label>
                     </x-form.select>
-                    <x-form.textarea wire:model="notes" rows="3"><x-slot:label>Catatan</x-slot:label></x-form.textarea>
+                    <x-form.textarea wire:model="notes" rows="3"><x-slot:label>{{ t('Notes') }}</x-slot:label></x-form.textarea>
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" wire:click="$set('showModal', false)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">Batal</button>
-                    <button type="button" wire:click="save" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Simpan</button>
+                    <button type="button" wire:click="$set('showModal', false)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="save" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Save') }}</button>
                 </div>
             </div>
         </div>
