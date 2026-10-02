@@ -43,7 +43,7 @@ Rancangan: **[`warehouselayout_tier1.md`](warehouselayout_tier1.md)** (bagian 13
 | 05.24 | Approval Stock Transfer: pemeriksa dan batas nilai (fasilitas ada, bawaan mati); Setting Approval belum terpasang di tm2 | — | menunggu user |
 | 05.25 | Pilih palet per baris di form Stock Transfer (sekarang: palet ikut otomatis, atau lewat Move this Pallet) | 2 | belum |
 | 05.22 | Gudang lama buatan sistem (`WH-RAW-01`, `WH-FG-01`, `WH-MIX-01`, `WH-SCP-01`) dinonaktifkan setelah stoknya dipindah | — | menunggu user |
-| 05.23 | **Urutan posting kartu stok**: dokumen bertanggal lebih awal dari baris terakhir tidak sampai ke saldo (rincian di bawah) | 1 | **menunggu aturan dari user** |
+| 05.23 | **Urutan posting kartu stok**: dokumen bertanggal lebih awal dari baris terakhir tidak sampai ke saldo (rincian di bawah) | 1 | **aturan diputuskan user 2026-10-02 (hitung ulang); belum dibangun** |
 | 05.30 | Laporan umur stok (Stock Ageing: nilai dan qty per rentang 0-30 / 31-60 / 61-90 / lebih dari 90 hari sejak diterima). Ada di Odoo, Business Central, D365, Accurate, ERPNext (`md_for_systems/inventoryreport_references.md`) | 2 | belum; perlu keputusan rentang hari |
 | 05.31 | Analisis ABC item stok (nilai pemakaian, kelas A / B / C). Ada di SAP dan Business Central | 3 | belum |
 | 05.32 | Pembanding nilai stok vs saldo akun persediaan (rekonsiliasi gudang dengan buku besar) | 2 | belum; perlu keputusan accounting (akun persediaan per kelas) |
@@ -81,7 +81,34 @@ Temuan sampingan (belum diubah):
 - `stock-adjustment.blade.php::pullFullScope()` memakai `MAX(doc_id)` sebagai "baris terakhir" (bukan tanggal + nomor seperti tempat lain).
 - `data:audit --only=stock`: tm2inv 10 temuan, ddtinv 3 (sebagian data lama tanpa `create_by`; `sfg_stockcard` item 2 lokasi 4 = pola no. 1).
 
-**Pilihan aturan (menunggu user):**
+**KEPUTUSAN USER 2026-10-02 (belum dibangun — kode aplikasi belum diubah):**
+1. Aturan **(a)**: setelah posting bertanggal mundur, semua baris sesudahnya untuk item + bin itu dihitung ulang
+   (qty_bb / qty_eb / value_eb / avg_unitprice).
+2. Dokumen stok bertanggal di periode yang sudah ditutup **ditolak**; koreksinya diinput sebagai Stock Adjustment (penyesuaian).
+3. Data dummy kartu stok yang salah **dihapus**, lalu dibangun ulang data dummy baru yang benar (bukan diperbaiki di tempat).
+4. Dokumen yang salah tetapi **belum Confirm boleh dibetulkan**; yang **sudah Confirm tidak diubah, dikoreksi lewat adjustment**
+   (ini sudah perilaku `StockDocumentService::saveDraft()` / `cancel()`).
+
+Rancangan yang akan dibangun (belum dikerjakan):
+- Baris "sebelumnya" = baris terakhir dengan `doc_date <=` tanggal dokumen (urut `doc_date`, `doc_id` kartu) — tidak lagi
+  membandingkan nomor kartu dengan nomor kepala dokumen. Baris baru disisipkan, lalu rantai sesudahnya dihitung ulang.
+- Hitung ulang yang membuat saldo baris sesudahnya minus = posting ditolak dan dibatalkan utuh (kecuali dokumen AD / OP, sama
+  seperti sekarang). Penolakan harus me-rollback seluruh dokumen (sekarang baris kartu yang sudah tertulis ikut ter-commit).
+- Harga masuk tiap baris IN disimpan di `value_in` supaya hitung ulang tidak menebak. Bila harga rata-rata bin asal berubah, nilai
+  yang ikut Stock Transfer sesudahnya berubah juga, jadi kartu bin tujuan ikut dihitung ulang (merambat).
+- Penjaga periode: tolak bila tanggal dokumen jatuh di `inv_period` atau `fin_period` berstatus CLOSED.
+- `stock-adjustment.blade.php::pullFullScope()` wajib pindah dari `MAX(doc_id)` ke baris terakhir (tanggal + nomor), karena dengan
+  aturan (a) baris bernomor terbesar bukan lagi baris terakhir.
+- Uji `StockPostingOrderTest`: lepas pembungkus "KNOWN DEFECT" begitu aturan terpasang.
+
+**Masih perlu jawaban user (accounting):** hitung ulang mengubah harga rata-rata Stock Out sesudahnya, sedangkan jurnal pemakaian
+(HPP) baris itu sudah diposting dengan harga lama. Selisihnya dijurnal koreksi otomatis, atau cukup dilaporkan sebagai peringatan?
+
+**Hati-hati sebelum menghapus dummy (butir 3):** di tm2inv baris kartu yang salah bertanda `data_origin = LIVE` tanpa `create_by`
+(gudang `WH-TEST-01` 19 baris, `WH-RAW-01`, `WH-FG-01`, `WH-MIX-01`) dan ada 5 baris `LEGACY` hasil migrasi (`_migrate`). Periksa
+dulu kaitannya dengan fixture uji (CO2600001, WO2600225-262) dan tanyakan apakah baris `LEGACY` ikut dihapus.
+
+**Pilihan aturan yang ditawarkan:**
 - (a) Hitung ulang semua baris sesudahnya (qty_bb / qty_eb / value_eb / avg_unitprice) item + bin itu setelah posting bertanggal mundur.
 - (b) Tolak posting yang bertanggal sebelum baris terakhir item + bin itu.
 - (c) Selalu taruh baris baru paling akhir (seperti `StockTransferService::move()`); tanggal dokumen tetap tersimpan di kepala dokumen.
