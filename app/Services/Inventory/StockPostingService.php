@@ -4,6 +4,7 @@ namespace App\Services\Inventory;
 
 use App\Models\Inventory\FgStock;
 use App\Models\Inventory\FgStockcard;
+use App\Models\Inventory\InvPeriod;
 use App\Models\Inventory\RmStock;
 use App\Models\Inventory\RmStockcard;
 use App\Models\Inventory\SfgStock;
@@ -13,6 +14,7 @@ use App\Models\Master\MatRaw;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use App\Services\Acc\JournalPostingService;
+use Devlib\Locale;
 use Illuminate\Support\Facades\DB;
 
 // Port dari trigger legacy trg_rm_stock_confirm/trg_fg_stock_confirm/
@@ -22,6 +24,9 @@ use Illuminate\Support\Facades\DB;
 // logikanya diport ke sini (App\Services\*, bukan trigger SQL, konsisten
 // dgn Costing/Quotation/Flow Engine). Satu-satunya jalur SAH utk menulis
 // *_stockcard -- Livewire component TIDAK BOLEH insert langsung (INV_TIER_4 #7).
+// URUTAN (user 2026-10-02): baris kartu berurut (doc_date, doc_id). Dokumen bertanggal lebih awal dari baris terakhir
+// disisipkan di tempatnya dan baris sesudahnya dihitung ulang (StockCardChain); dokumen yang sudah diposting tidak
+// pernah diubah -- yang salah dikoreksi lewat Stock Adjustment.
 // AUTO-JURNAL PEMAKAIAN (2026-08-22, riset ERP Odoo/SAP/D365/Oracle; diperluas
 // ke SFG 2026-08-22 sore): Stock Out RM/SFG sungguhan (docType OUT) otomatis
 // posting Dr HPP (cogs_account_id) / Cr Persediaan (stock_asset_account_id) ke
@@ -51,160 +56,173 @@ class StockPostingService
         };
     }
 
+    // Pesan baru: teks English lewat kamus, nilai data disisipkan sesudahnya (tidak tercatat di kamus).
+    private static function msg(string $text, array $values = []): string
+    {
+        return strtr(t($text), collect($values)->mapWithKeys(fn ($v, $k) => [':'.$k => (string) $v])->all());
+    }
+
     /**
-     * Posting dokumen: hitung saldo berjalan per item+lokasi, insert baris
-     * stockcard, kunci header jadi POSTED. Return ['posted' => bool, 'error' => ?string].
+     * Posting dokumen: sisipkan baris kartu stok per baris dokumen di tempatnya menurut tanggal, hitung ulang saldo
+     * berjalan posisi itu (StockCardChain), kunci header jadi POSTED.
+     * Ditolak utuh (tidak ada yang tertulis): periode inventory tertutup, atau saldo jadi minus -- di baris itu
+     * maupun di baris yang bertanggal sesudahnya.
+     * Return ['posted' => bool, 'error' => ?string, 'journal_warning' => ?string, 'revaluation' => ?array, 'stock_warning' => ?string].
      */
     public function postDocument(string $category, int $docId, string $actingUser): array
     {
         $map = self::CATEGORY_MAP[$category] ?? null;
         abort_if(! $map, 404, "Kelas stok tidak dikenal: {$category}");
 
-        // Diisi di dalam transaksi (butuh $prevAvg per baris, cuma tersedia di
+        // Diisi di dalam transaksi (butuh harga rata-rata per baris, cuma tersedia di
         // situ), dipakai SETELAH commit -- fin_voucher/fin_voucher_line hidup di
         // koneksi tm2acc yang beda, jangan disatukan ke transaksi tm2inv di atas.
         $usageJournalRows = [];
+        // Baris keluar bertanggal sesudah dokumen ini yang harga rata-ratanya berubah karena hitung ulang.
+        $revalued = ['rows' => 0, 'value' => 0.0];
 
-        $result = DB::connection('tm2inv')->transaction(function () use ($map, $category, $docId, $actingUser, &$usageJournalRows) {
-            /** @var RmStock|FgStock|SfgStock $header */
-            $header = $map['header']::with('lines')->lockForUpdate()->findOrFail($docId);
+        try {
+            $result = DB::connection('tm2inv')->transaction(function () use ($map, $category, $docId, $actingUser, &$usageJournalRows, &$revalued) {
+                /** @var RmStock|FgStock|SfgStock $header */
+                $header = $map['header']::with('lines')->lockForUpdate()->findOrFail($docId);
 
-            if ($header->stat_confirm) {
-                return ['posted' => false, 'error' => 'Dokumen sudah pernah di-posting sebelumnya.'];
-            }
-            if ($header->stat_cancel) {
-                return ['posted' => false, 'error' => 'Dokumen sudah dibatalkan, tidak bisa diposting.'];
-            }
-
-            $cat = $this->normalizeDocCat($header->doc_cat);
-            $itemKey = $map['itemKey'];
-            $cardModel = $map['card'];
-            $refName = $this->referenceName($category);
-            $netByItem = [];
-
-            foreach ($header->lines as $line) {
-                if ($line->action_type === 'PURCHASE') {
-                    continue;
+                if ($header->stat_confirm) {
+                    return ['posted' => false, 'error' => 'Dokumen sudah pernah di-posting sebelumnya.'];
                 }
-                if ((float) $line->qty === 0.0 && $cat !== 'BB') {
-                    continue;
+                if ($header->stat_cancel) {
+                    return ['posted' => false, 'error' => 'Dokumen sudah dibatalkan, tidak bisa diposting.'];
+                }
+                // inventory_tier2 B-3 + user 2026-10-02: tanggal di periode tertutup ditolak; koreksinya = Stock Adjustment
+                // bertanggal di periode yang masih terbuka. Baris sesudahnya ikut terlindung karena semuanya bertanggal lebih baru.
+                $closed = InvPeriod::closedThrough();
+                if ($closed && $header->doc_date <= $closed) {
+                    return ['posted' => false, 'error' => self::msg('The document date is in a closed inventory period (closed through :date). Enter a Stock Adjustment dated in an open period instead.',
+                        ['date' => $closed->toDateString()])];
                 }
 
-                $qtyFinal = $this->qtyFinal($cat, (float) $line->qty, (int) $header->doc_type);
-                $itemId = $line->{$itemKey};
-                $locationId = $line->location_id;
+                $cat = $this->normalizeDocCat($header->doc_cat);
+                $itemKey = $map['itemKey'];
+                $cardModel = $map['card'];
+                $refName = $this->referenceName($category);
+                $netByItem = [];
 
-                // Idempotensi: kalau baris ini sudah pernah diposting (reference match), lewati -- jangan dobel.
-                $already = $cardModel::where('reference_name', $refName)->where('reference_detail_id', $line->getKey())->exists();
-                if ($already) {
-                    continue;
+                foreach ($header->lines as $line) {
+                    if ($line->action_type === 'PURCHASE') {
+                        continue;
+                    }
+                    if ((float) $line->qty === 0.0 && $cat !== 'BB') {
+                        continue;
+                    }
+
+                    $qtyFinal = $this->qtyFinal($cat, (float) $line->qty, (int) $header->doc_type);
+                    $itemId = $line->{$itemKey};
+                    $locationId = $line->location_id;
+
+                    // Idempotensi: kalau baris ini sudah pernah diposting (reference match), lewati -- jangan dobel.
+                    $already = $cardModel::where('reference_name', $refName)->where('reference_detail_id', $line->getKey())->exists();
+                    if ($already) {
+                        continue;
+                    }
+
+                    $docType = match (true) {
+                        $cat === 'BB' => 'BB',
+                        $cat === 'RETURN' => 'IN',
+                        in_array($cat, ['AD', 'OP'], true) => 'AD',
+                        (int) $header->doc_type === 1 => 'IN',
+                        default => 'OUT',
+                    };
+
+                    $unitPrice = (float) ($line->unit_price ?? 0);
+                    $qtyIn = ($cat !== 'AD' && $cat !== 'OP' && ((int) $header->doc_type === 1 || $cat === 'RETURN')) ? abs((float) $line->qty) : 0;
+                    $qtyOut = ($cat !== 'AD' && $cat !== 'OP' && (int) $header->doc_type === -1 && $cat !== 'RETURN') ? abs((float) $line->qty) : 0;
+                    $qtyAdj = in_array($cat, ['AD', 'OP'], true) ? $qtyFinal : 0;
+
+                    // Baris disisipkan di tempatnya menurut tanggal dokumen (sesudah baris lain bertanggal-jam sama), lalu
+                    // StockCardChain menghitung saldo baris ini dan SEMUA baris sesudahnya (aturan user 2026-10-02).
+                    // Valuasi AVG bergerak (moving average) -- FIFO/LIFO (inv_stock_layer) belum diimplementasikan di v1.
+                    $card = $cardModel::create([
+                        'doc_date' => $header->doc_date,
+                        $itemKey => $itemId,
+                        'doc_type' => $docType,
+                        'location_id' => $locationId,
+                        'warehouse_id' => $header->warehouse_id,
+                        'lot_no' => $line->lot_no,
+                        'qty' => $qtyFinal,
+                        'uom_code' => $line->uom_code,
+                        'reference_detail_id' => $line->getKey(),
+                        'reference_name' => $refName,
+                        'qty_bb' => 0,
+                        'qty_in' => $qtyIn,
+                        'qty_out' => $qtyOut,
+                        'qty_adj' => $qtyAdj,
+                        'qty_eb' => 0,
+                        'value_in' => $qtyIn > 0 ? $qtyIn * $unitPrice : null,
+                        'period_id' => $header->period_id,
+                        'create_by' => $actingUser,
+                        'update_by' => $actingUser,
+                    ]);
+                    $chain = StockCardChain::recalculate($category, $card, true);
+                    $card->refresh();
+
+                    if ($chain['negative'] && ! in_array($cat, ['AD', 'OP'], true)) {
+                        throw new StockPostingRefused((int) $chain['negative']['doc_id'] === (int) $card->getKey()
+                            ? "Saldo item #{$itemId} di lokasi #{$locationId} akan negatif ({$chain['negative']['qty']}) -- posting dibatalkan."
+                            : self::msg('Item #:item in location #:loc would go below zero on :date (:qty) because of movements dated after this document -- posting refused.',
+                                ['item' => $itemId, 'loc' => $locationId, 'date' => $chain['negative']['doc_date'], 'qty' => $chain['negative']['qty']]));
+                    }
+                    $revalued['rows'] += $chain['revalued_rows'];
+                    $revalued['value'] += $chain['revalued_value'];
+
+                    // Auto-jurnal pemakaian (2026-08-22, diperluas ke SFG 2026-08-22):
+                    // cuma Stock Out sungguhan (docType OUT, bukan BB/RETURN/AD/OP) yang
+                    // masuk HPP -- Adjustment/Opname punya makna akuntansi beda (koreksi,
+                    // bukan konsumsi produksi) & sengaja TIDAK dijurnal otomatis di sini.
+                    // SFG pakai ProdPart::resolveCogsAccountId()/resolveStockAccountId()
+                    // (BACKLOG §12.3, 2026-09-11) -- fallback 3-lapis part -> product ->
+                    // prod_category.default_*_account_id. Kalau semua lapis kosong, baris ini
+                    // dilewati + masuk peringatan "belum lengkap", bukan silent skip.
+                    // Nilai pakai harga rata-rata yang berlaku saat barang ini keluar (baris
+                    // keluar membawa harga rata-rata baris sebelumnya).
+                    // Pembalik penerimaan (Cancel SPB, ref PV_CANCEL) bukan pemakaian produksi: jurnalnya = pembalik jurnal
+                    // pembelian (PvPostingService::cancel), jadi TIDAK ikut jurnal HPP di sini.
+                    if (in_array($category, ['RM', 'SFG'], true) && $docType === 'OUT' && $header->ref_doc_type !== 'PV_CANCEL') {
+                        $usageJournalRows[] = ['category' => $category, 'item_id' => $itemId, 'qty' => abs($qtyFinal), 'unit_cost' => (float) $card->avg_unitprice];
+                    }
+
+                    $netByItem[$itemId] = ($netByItem[$itemId] ?? 0) + $qtyFinal;
                 }
 
-                $prev = $cardModel::where($itemKey, $itemId)
-                    ->where('location_id', $locationId)
-                    ->where(function ($q) use ($header) {
-                        $q->where('doc_date', '<', $header->doc_date)
-                            ->orWhere(function ($q2) use ($header) {
-                                $q2->where('doc_date', $header->doc_date)->where('doc_id', '<', $header->getKey());
-                            });
-                    })
-                    ->orderByDesc('doc_date')->orderByDesc('doc_id')
-                    ->lockForUpdate()
-                    ->first();
-
-                $qtyBb = $prev ? (float) $prev->qty_eb : 0.0;
-                $qtyEb = $qtyBb + $qtyFinal;
-
-                if ($qtyEb < 0 && ! in_array($cat, ['AD', 'OP'], true)) {
-                    return ['posted' => false, 'error' => "Saldo item #{$itemId} di lokasi #{$locationId} akan negatif ({$qtyEb}) -- posting dibatalkan."];
-                }
-
-                $docType = match (true) {
-                    $cat === 'BB' => 'BB',
-                    $cat === 'RETURN' => 'IN',
-                    in_array($cat, ['AD', 'OP'], true) => 'AD',
-                    (int) $header->doc_type === 1 => 'IN',
-                    default => 'OUT',
-                };
-
-                $prevAvg = $prev ? (float) $prev->avg_unitprice : 0.0;
-
-                // Auto-jurnal pemakaian (2026-08-22, diperluas ke SFG 2026-08-22):
-                // cuma Stock Out sungguhan (docType OUT, bukan BB/RETURN/AD/OP) yang
-                // masuk HPP -- Adjustment/Opname punya makna akuntansi beda (koreksi,
-                // bukan konsumsi produksi) & sengaja TIDAK dijurnal otomatis di sini.
-                // SFG pakai ProdPart::resolveCogsAccountId()/resolveStockAccountId()
-                // (BACKLOG §12.3, 2026-09-11) -- fallback 3-lapis part -> product ->
-                // prod_category.default_*_account_id, dulunya baca kolom prod_part
-                // langsung TANPA fallback sama sekali. Kolom kategori masih kosong
-                // (belum ada UI isinya) sampai sesi berikutnya, jadi perilaku SAAT
-                // INI tidak berubah -- kalau semua lapis kosong, baris ini tetap
-                // dilewati + masuk peringatan "belum lengkap", bukan silent skip.
-                // Nilai pakai avg_unitprice SEBELUM baris ini (prevAvg) -- itu
-                // valuasi moving-average yang sah saat barang ini keluar.
-                // Pembalik penerimaan (Cancel SPB, ref PV_CANCEL) bukan pemakaian produksi: jurnalnya = pembalik jurnal
-                // pembelian (PvPostingService::cancel), jadi TIDAK ikut jurnal HPP di sini.
-                if (in_array($category, ['RM', 'SFG'], true) && $docType === 'OUT' && $header->ref_doc_type !== 'PV_CANCEL') {
-                    $usageJournalRows[] = ['category' => $category, 'item_id' => $itemId, 'qty' => abs($qtyFinal), 'unit_cost' => $prevAvg];
-                }
-
-                $unitPrice = (float) ($line->unit_price ?? 0);
-                $qtyIn = ($cat !== 'AD' && $cat !== 'OP' && ((int) $header->doc_type === 1 || $cat === 'RETURN')) ? abs((float) $line->qty) : 0;
-                $qtyOut = ($cat !== 'AD' && $cat !== 'OP' && (int) $header->doc_type === -1 && $cat !== 'RETURN') ? abs((float) $line->qty) : 0;
-                $qtyAdj = in_array($cat, ['AD', 'OP'], true) ? $qtyFinal : 0;
-
-                // Valuasi AVG bergerak (moving average) -- FIFO/LIFO (inv_stock_layer) belum
-                // diimplementasikan di v1, costing_method per-item belum final (inventory_state.yaml).
-                $newAvg = $qtyIn > 0
-                    ? (($qtyBb * $prevAvg) + ($qtyIn * $unitPrice)) / max($qtyBb + $qtyIn, 0.0001)
-                    : $prevAvg;
-
-                $cardModel::create([
-                    'previous_doc_id' => $prev?->getKey(),
-                    'doc_date' => $header->doc_date,
-                    $itemKey => $itemId,
-                    'doc_type' => $docType,
-                    'location_id' => $locationId,
-                    'warehouse_id' => $header->warehouse_id,
-                    'lot_no' => $line->lot_no,
-                    'qty' => $qtyFinal,
-                    'uom_code' => $line->uom_code,
-                    'reference_detail_id' => $line->getKey(),
-                    'reference_name' => $refName,
-                    'qty_bb' => $qtyBb,
-                    'qty_in' => $qtyIn,
-                    'qty_out' => $qtyOut,
-                    'qty_adj' => $qtyAdj,
-                    'qty_eb' => $qtyEb,
-                    'avg_unitprice' => $newAvg,
-                    'value_eb' => $qtyEb * $newAvg,
-                    'period_id' => $header->period_id,
-                    'create_by' => $actingUser,
+                $header->update([
+                    'stat_confirm' => true,
+                    'flow_status' => 'POSTED',
+                    'posted_by' => $actingUser,
+                    'posted_at' => now(),
                     'update_by' => $actingUser,
                 ]);
 
-                $netByItem[$itemId] = ($netByItem[$itemId] ?? 0) + $qtyFinal;
-            }
+                // Sinkronkan cur_stock master item (netto delta dokumen ini, dijumlah semua lokasi).
+                // NULL-safe: ->increment() gagal diam-diam (NULL + x = NULL di SQL) -- banyak
+                // mat_raw.cur_stock legacy masih NULL (5893 baris blm pernah disentuh
+                // stok), jadi wajib COALESCE, bukan increment() polos.
+                foreach ($netByItem as $itemId => $delta) {
+                    $map['itemModel']::where($map['itemPk'], $itemId)
+                        ->update(['cur_stock' => DB::raw('COALESCE(cur_stock, 0) + ('.(float) $delta.')')]);
+                }
 
-            $header->update([
-                'stat_confirm' => true,
-                'flow_status' => 'POSTED',
-                'posted_by' => $actingUser,
-                'posted_at' => now(),
-                'update_by' => $actingUser,
-            ]);
+                return ['posted' => true, 'error' => null];
+            });
+        } catch (StockPostingRefused $e) {
+            // Transaksi sudah di-rollback: baris kartu baris-baris sebelumnya dan hitung ulangnya ikut batal.
+            return ['posted' => false, 'error' => $e->getMessage()];
+        }
 
-            // Sinkronkan cur_stock master item (netto delta dokumen ini, dijumlah semua lokasi).
-            // NULL-safe: ->increment() gagal diam-diam (NULL + x = NULL di SQL) -- banyak
-            // mat_raw.cur_stock legacy masih NULL (5893 baris blm pernah disentuh
-            // stok), jadi wajib COALESCE, bukan increment() polos.
-            foreach ($netByItem as $itemId => $delta) {
-                $map['itemModel']::where($map['itemPk'], $itemId)
-                    ->update(['cur_stock' => DB::raw('COALESCE(cur_stock, 0) + ('.(float) $delta.')')]);
-            }
-
-            return ['posted' => true, 'error' => null];
-        });
+        if ($result['posted'] && $revalued['rows'] > 0 && abs($revalued['value']) >= 0.005) {
+            // Jurnal pemakaian baris-baris itu sudah diposting dengan harga lama dan TIDAK diubah di sini (keputusan
+            // accounting belum ada: jurnal koreksi otomatis atau tidak) -- selisihnya dilaporkan, tidak disembunyikan.
+            $result['revaluation'] = $revalued;
+            $result['stock_warning'] = self::msg('The average price of :n later stock-out row(s) changed; their value changed by :value. Journals already posted for them were not changed.',
+                ['n' => $revalued['rows'], 'value' => Locale::decimal($revalued['value'], 2)]);
+        }
 
         if ($result['posted'] && ! empty($usageJournalRows)) {
             $result['journal_warning'] = $this->postUsageJournal($category, $docId, $usageJournalRows, $actingUser);

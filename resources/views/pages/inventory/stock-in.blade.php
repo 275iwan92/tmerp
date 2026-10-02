@@ -268,7 +268,7 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
-        session()->flash('flash', 'Dokumen berhasil di-posting ke Kartu Stok.');
+        session()->flash('flash', 'Dokumen berhasil di-posting ke Kartu Stok.'.(isset($result['stock_warning']) ? ' '.$result['stock_warning'] : ''));
         if ($this->panel === 'form') {
             $this->openEdit($id);
         }

@@ -242,8 +242,9 @@ class StockTransferService
         $ebTo = $balTo + $qty;
         // Harga rata-rata bin tujuan = rata-rata tertimbang isi lama + yang datang (yang tidak bernilai dihitung 0).
         $newAvg = $avg === null && $avgTo === null ? null : (($balTo * (float) $avgTo) + ($qty * (float) $avg)) / max($ebTo, 0.0001);
+        // value_in = nilai yang ikut pindah; StockCardChain memakainya bila rantai bin ini dihitung ulang.
         (new $card)->forceFill($base($to, $toId) + ['reference_name' => self::REF.':'.$inTag, 'qty' => $qty, 'qty_bb' => $balTo, 'qty_in' => $qty, 'qty_out' => 0,
-            'qty_eb' => $ebTo, 'avg_unitprice' => $newAvg, 'value_eb' => $newAvg === null ? null : $ebTo * $newAvg])->save();
+            'qty_eb' => $ebTo, 'avg_unitprice' => $newAvg, 'value_in' => $avg === null ? null : $qty * $avg, 'value_eb' => $newAvg === null ? null : $ebTo * $newAvg])->save();
 
         return $avg;
     }

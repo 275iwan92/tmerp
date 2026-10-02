@@ -368,7 +368,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                 ->update(['qty_returned' => DB::raw('COALESCE(qty_returned, 0) + ('.(float) $line->qty.')')]);
         }
 
-        session()->flash('flash', 'Retur berhasil diposting & Kartu Stok ter-update.');
+        session()->flash('flash', 'Retur berhasil diposting & Kartu Stok ter-update.'.(isset($result['stock_warning']) ? ' '.$result['stock_warning'] : ''));
         if ($this->panel === 'form') {
             $this->openEdit($id);
         }
