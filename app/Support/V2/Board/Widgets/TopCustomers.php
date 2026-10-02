@@ -56,6 +56,11 @@ final class TopCustomers extends Widget
         return ['customer terbesar', 'customer teratas', 'pelanggan terbesar', 'top customer', 'top customers', 'biggest customers'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'SALES';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         $by = $n->confirmed($n->from(), $n->to())->groupBy(fn ($o) => (int) $o->customer_id)

@@ -5,11 +5,19 @@
     use Devlib\Locale;
 
     $canEdit = $editable && $actionUrl;
-    $free = collect($catalog)->where('installed', false)->groupBy(fn ($c) => $c['group'] ?? 'General');
+    $groups = collect($catalog)->groupBy(fn ($c) => $c['group'] ?? 'General');
     $last = count($widgets) - 1;
 @endphp
 <div {{ $attributes->class(['dl-wb', 'is-edit' => $editing && $canEdit]) }} {!! $dl() !!} data-dl-wboard
     data-config="{{ json_encode(['action' => $actionUrl, 'csrf' => csrf_token()]) }}">
+    {{-- Dashboard: Overall (disusun pemiliknya) + dashboard per bidang (template). Klik = ganti dashboard, pilihan tersimpan. --}}
+    @if (count($dashboards) > 1 && $actionUrl)
+        <div class="dl-wb__tabs" role="tablist">
+            @foreach ($dashboards as $d)
+                <button type="button" class="dl-wb__tab {{ $d['code'] === $dashboard ? 'is-active' : '' }}" data-wb-dash="{{ $d['code'] }}"><i class="{{ str_contains($d['icon'] ?? '', ' ') ? $d['icon'] : 'fa-solid '.\Devlib\Icon::fa($d['icon'] ?? 'fa-gauge-high') }}"></i> {{ Lang::text($d['title']) }}</button>
+            @endforeach
+        </div>
+    @endif
     <div class="dl-wb__bar">
         <h2>{{ $title ?? Lang::text('My Board') }}</h2>
         @if ($periods && $actionUrl)
@@ -21,8 +29,8 @@
         @endif
         @if ($canEdit)
             <div class="dl-wb__tools">
-                <span class="dl-wb__only-edit dl-wb__hint">{{ Lang::text('Move, resize or remove a widget, or add one from the catalog.') }}</span>
-                <x-dl::button class="dl-wb__only-edit" variant="secondary" size="sm" icon="fa-plus" label="Add Widget" :data-dl-open="$id.'-add'" />
+                <span class="dl-wb__only-edit dl-wb__hint">{{ Lang::text('Drag a widget to move it; use the buttons to resize or remove it.') }}</span>
+                <x-dl::button variant="secondary" size="sm" icon="fa-list-check" label="Choose Widgets" :data-dl-open="$id.'-add'" />
                 <x-dl::button class="dl-wb__only-edit" variant="ghost" size="sm" icon="fa-rotate-left" label="Reset to Template" data-wb-act="reset"
                     :data-dl-confirm="Lang::text('Put the board back to the template of your position? Your own arrangement is removed.')" />
                 <x-dl::button class="dl-wb__only-edit" size="sm" icon="fa-check" label="Done" data-wb-edit />
@@ -32,7 +40,7 @@
     </div>
 
     @if (! $widgets)
-        <x-dl::empty-state title="No widgets on this board" message="Click Customize, then Add Widget to choose from the catalog." icon="fa-table-cells-large" />
+        <x-dl::empty-state title="No widgets on this board" :message="$canEdit ? 'Click Choose Widgets and tick the widgets you want to see.' : 'This dashboard has no widget your account may see.'" icon="fa-table-cells-large" />
     @endif
 
     <div class="dl-wb__grid">
@@ -130,23 +138,33 @@
                 @endif
             </div>
         @endforeach
+        @if ($canEdit)
+            {{-- Ubin tambah (seperti layar ponsel): klik = buka pilihan widget; tahan lama sebuah widget = mode atur; seret = pindah. --}}
+            <button type="button" class="dl-wb__addtile" data-dl-open="{{ $id }}-add"><i class="fa-solid fa-plus"></i><span>{{ Lang::text('Add widget') }}</span></button>
+        @endif
     </div>
 
     @if ($canEdit)
-        <x-dl::modal :id="$id.'-add'" title="Add Widget" icon="fa-plus" size="lg">
-            @forelse ($free as $group => $items)
-                <h4 class="dl-wb__group">{{ Lang::text($group) }}</h4>
+        {{-- Pilih widget dengan tanda centang, per bidang (= dashboard asal widget). Centang = tampil di papan; langsung tersimpan. --}}
+        <x-dl::modal :id="$id.'-add'" title="Choose Widgets" icon="fa-list-check" size="xl">
+            <div class="dl-wb__pick">
+                <input type="search" class="dl-wb__search" data-wb-search placeholder="{{ Lang::text('Search widget...') }}" autocomplete="off">
+                <span class="dl-wb__hint">{{ Lang::text('Tap a widget to add it; tap again to take it off. Saved at once.') }}</span>
+            </div>
+            @forelse ($groups as $group => $items)
+                <h4 class="dl-wb__group" data-wb-group>{{ Lang::text($group) }} <small>{{ $items->where('installed', true)->count() }} / {{ $items->count() }}</small></h4>
                 <div class="dl-wb__cat">
                     @foreach ($items as $c)
-                        <div class="dl-wb__catitem">
+                        <label class="dl-wb__catitem {{ $c['installed'] ? 'is-on' : '' }}" data-wb-find="{{ mb_strtolower(Lang::text($c['title']).' '.$c['title'].' '.Lang::text($c['description'] ?? '')) }}">
+                            <input type="checkbox" data-wb-toggle="{{ $c['key'] }}" @checked($c['installed'])>
                             <span class="dl-wb__caticon"><i class="{{ str_contains($c['icon'] ?? '', ' ') ? $c['icon'] : 'fa-solid '.\Devlib\Icon::fa($c['icon'] ?? 'fa-chart-simple') }}"></i></span>
-                            <div><b>{{ Lang::text($c['title']) }}</b><small>{{ Lang::text($c['description'] ?? '') }}</small></div>
-                            <x-dl::button size="sm" icon="fa-plus" label="Add" data-wb-add="{{ $c['key'] }}" />
-                        </div>
+                            <span class="dl-wb__cattext"><b>{{ Lang::text($c['title']) }}</b><small>{{ Lang::text($c['description'] ?? '') }}</small></span>
+                            @if (! empty($c['type']))<span class="dl-wb__cattype">{{ ['kpi' => 'KPI', 'chart' => 'Chart', 'progress' => 'Target', 'ranking' => 'Ranking', 'list' => 'List', 'quote' => 'Text'][$c['type']] ?? $c['type'] }}</span>@endif
+                        </label>
                     @endforeach
                 </div>
             @empty
-                <x-dl::empty-state title="Every widget you may use is already on the board" icon="fa-circle-check" />
+                <x-dl::empty-state title="No widget is available for your account" icon="fa-circle-check" />
             @endforelse
             <x-slot:footer><x-dl::button preset="close" data-dl-close-modal /></x-slot:footer>
         </x-dl::modal>

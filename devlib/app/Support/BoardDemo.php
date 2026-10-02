@@ -81,7 +81,7 @@ class BoardDemo
         return [
             'widgets' => $layout->map(fn ($l) => array_replace($all[$l[0]], ['size' => $l[1]]))->values()->all(),
             'catalog' => collect($all)->map(fn ($w) => ['key' => $w['key'], 'title' => $w['title'], 'description' => $w['description'], 'group' => $w['group'],
-                'icon' => $w['icon'], 'installed' => in_array($w['key'], $on, true)])->values()->all(),
+                'icon' => $w['icon'], 'type' => $w['type'], 'installed' => in_array($w['key'], $on, true)])->values()->all(),
             'periods' => array_map(fn (array $p) => $p[0], self::PERIODS), 'period' => self::period(),
         ];
     }
@@ -102,6 +102,11 @@ class BoardDemo
             $layout = self::TEMPLATE;
         } elseif ($action === 'add' && ! $found && isset(self::all()[$key])) {
             $layout[] = [$key, self::all()[$key]['size']];
+        } elseif ($action === 'move' && $found) {
+            $row = $layout[$i];
+            array_splice($layout, $i, 1);
+            $at = collect($layout)->search(fn ($l) => $l[0] === request('to'));
+            array_splice($layout, $at === false ? count($layout) : $at, 0, [$row]);
         } elseif ($action === 'remove' && $found) {
             array_splice($layout, $i, 1);
         } elseif ($action === 'left' && $found && $i > 0) {

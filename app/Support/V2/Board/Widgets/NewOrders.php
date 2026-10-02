@@ -60,6 +60,11 @@ final class NewOrders extends Widget
         return ['order baru', 'customer order baru', 'jumlah order', 'co baru', 'new orders', 'new customer orders'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'SALES';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         [$prevFrom, $prevTo] = $n->range(1);

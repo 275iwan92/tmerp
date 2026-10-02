@@ -60,6 +60,11 @@ final class RevenueTrend extends Widget
         return ['grafik omzet', 'grafik penjualan', 'tren omzet', 'target vs pencapaian', 'grafik nilai order', 'revenue trend', 'sales chart', 'target vs actual'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'SALES';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         $trend = $n->trend();

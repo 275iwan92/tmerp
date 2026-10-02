@@ -21,6 +21,8 @@ namespace Devlib\Components;
 // $catalog = [['key', 'title', 'description', 'group', 'icon', 'installed' => bool], ...]   // semua widget yang boleh dipasang user ini
 // $periods = ['daily' => 'Daily', ...] + $period = kunci yang aktif: tombol periode di kepala papan (aksi 'period', key = kunci);
 //            angka tiap widget dihitung server untuk periode itu. Kosong = papan tanpa pilihan periode.
+// $dashboards = [['code', 'title', 'icon'], ...] + $dashboard = kode yang aktif: baris tab di atas papan (aksi 'dashboard').
+//            Dashboard yang disusun pemiliknya (editable) punya Choose Widgets: daftar centang per kelompok (aksi add / remove).
 class WidgetBoard extends DevlibComponent
 {
     public const SIZES = [3, 4, 6, 8, 12];
@@ -36,6 +38,8 @@ class WidgetBoard extends DevlibComponent
         public ?string $source = null,
         public array $periods = [],
         public ?string $period = null,
+        public array $dashboards = [],
+        public ?string $dashboard = null,
     ) {}
 
     public function tag(): string

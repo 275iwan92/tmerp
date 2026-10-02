@@ -94,7 +94,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
     // Papan widget: GET = HTML papan terbaru (dipanggil sesudah perintah asisten), POST = satu aksi Customize lalu HTML terbaru.
     Route::match(['get', 'post'], '/board', function (Request $r) {
         abort_unless(Board::profile(Auth::user()), 403);
-        if ($r->isMethod('post') && ($error = Board::apply(Auth::user(), (string) $r->input('action'), $r->input('key')))) {
+        if ($r->isMethod('post') && ($error = Board::apply(Auth::user(), (string) $r->input('action'), $r->input('key'), $r->input('to')))) {
             return response()->json(['message' => t($error)], 422);
         }
 

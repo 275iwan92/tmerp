@@ -18,6 +18,27 @@ dikonfirmasi dulu, dijawab "benar").
   klik di browser belum diuji Claude — diuji user.
 - Rulebook C.18 + changelog.
 
+## 2026-10-02 -- Opening Dashboards tahap 3: 49 widget, Overall dengan centang, enam dashboard bidang, gaya layar ponsel
+
+Perintah user: widget sebanyak mungkin (20 - 30), direksi memilih dengan tanda centang untuk dashboard Overall; dashboard
+Sales / Purchasing / AR AP / Cashflow / Payroll / Human Resource berupa template; widget dashboard bidang itulah yang bisa
+dicentang ke Overall; cari referensi dari ERP lain; menambah widget semudah layar Android.
+- **Referensi:** riset dashboard Business Central, SAP, NetSuite, Odoo, ERPNext, Zoho, PrintVis, Accurate / Jurnal ->
+  `docs/md_for_systems/openingboard_references.md` (padanan tiap widget, yang belum bisa dibangun dan kenapa, yang tidak
+  terkonfirmasi).
+- **33 widget baru** (total 49): Sales 5, Purchasing 4, AR & AP 5, Cashflow 4, Payroll 4, Human Resource 6, Finance 2,
+  Production 2, Inventory 1. Angka baru di `Numbers` (CPDEL, antrian harga, menang / kalah, quotation terbuka, komplain, PO,
+  PR, hutang, pembayaran, kas, laba rugi, payroll, pegawai, kehadiran, cuti, rekrutmen, Work Order, nilai stok). Kelas widget
+  baru cukup `meta()` + `build()`.
+- **Dashboard:** tabel `sys_dashboard` (layar Setup -> Opening Dashboards), `sys_widget.dashboard_code`,
+  `sys_user_board.dashboard_code`; template profil MANAGEMENT menjadi OVERALL; template enam dashboard bidang (migrasi `000163`).
+  Widget gaji hanya untuk yang berhak melihat nilai payroll.
+- **DevLib `x-dl::widget-board`:** tab dashboard, Choose Widgets = daftar centang per kelompok dengan kotak cari dan label
+  jenis, ubin + Add widget, tekan-tahan = mode atur, seret untuk memindah (aksi `move`), jendela pilihan tetap terbuka.
+- **Asisten:** `buka dashboard <nama>`.
+- **Dipasang di ddt dan tm2** (migrasi `000163` + `help:import`). Test `OpeningBoardTest` 12 test: tiap widget untuk tiap
+  periode, konsistensi kas dan laba rugi, dashboard bidang, hak, seret. Uji browser tanpa jendela di mockup.test: 0 error.
+
 ## 2026-10-02 -- Opening Board tahap 2: dipasang di tm2, periode Harian – Tahunan, rincian Draft / Confirmed
 
 Jawaban user atas review: "pasang saja di tmerp", "dijelaskan saja draft sekian dan confirmed sekian", "boleh dari daily

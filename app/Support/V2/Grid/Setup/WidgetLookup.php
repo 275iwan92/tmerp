@@ -3,6 +3,7 @@
 namespace App\Support\V2\Grid\Setup;
 
 use App\Models\Sys\SecModule;
+use App\Models\Sys\SysDashboard;
 use App\Models\Sys\SysWidget;
 use App\Support\V2\Board\WidgetCatalog;
 use App\Support\V2\Grid\DbLookup;
@@ -47,8 +48,8 @@ class WidgetLookup extends DbLookup
     public function guide(): ?string
     {
         // Paling banyak 255 huruf (batas kamus terjemahan).
-        return 'Widgets a user may put on the opening board. The content is calculated by the program; here you set the title, who may install it '
-            .'(module and minimum level), the default width and the words the assistant listens for.';
+        return 'Widgets of the opening dashboards. The content is calculated by the program; here you set the title, the dashboard it belongs to, '
+            .'who may see it (module and minimum level), the default width and the words the assistant listens for.';
     }
 
     protected function query(): Builder
@@ -64,6 +65,8 @@ class WidgetLookup extends DbLookup
             ['key' => 'widget_key', 'label' => 'Key', 'required' => true, 'unique' => true, 'lockSaved' => true, 'width' => '170px'],
             ['key' => 'title', 'label' => 'Title', 'required' => true, 'width' => '230px'],
             ['key' => 'description', 'label' => 'Description', 'width' => '380px'],
+            ['key' => 'dashboard_code', 'label' => 'Dashboard', 'type' => 'select', 'options' => SysDashboard::query()->where('dashboard_code', '<>', SysDashboard::OVERALL)
+                ->orderBy('sort_order')->pluck('title', 'dashboard_code')->all(), 'width' => '170px'],
             ['key' => 'group_name', 'label' => 'Group', 'required' => true, 'width' => '120px'],
             ['key' => 'module_code', 'label' => 'Module', 'type' => 'select', 'options' => SecModule::query()->orderBy('sort_order')->pluck('module_name', 'module_code')->all(), 'width' => '170px'],
             ['key' => 'min_level', 'label' => 'Minimum level', 'type' => 'number', 'width' => '110px'],
@@ -77,7 +80,8 @@ class WidgetLookup extends DbLookup
     protected function rules(): array
     {
         return ['title' => ['string', 'max:100'], 'description' => ['nullable', 'string', 'max:255'], 'group_name' => ['string', 'max:40'], 'phrases' => ['nullable', 'string', 'max:255'],
-            'min_level' => ['nullable', 'integer', 'min:0', 'max:9'], 'default_size' => [Rule::in(WidgetBoard::SIZES)], 'module_code' => ['nullable', Rule::exists(SecModule::class, 'module_code')]];
+            'min_level' => ['nullable', 'integer', 'min:0', 'max:9'], 'default_size' => [Rule::in(WidgetBoard::SIZES)], 'module_code' => ['nullable', Rule::exists(SecModule::class, 'module_code')],
+            'dashboard_code' => ['nullable', Rule::exists(SysDashboard::class, 'dashboard_code')]];
     }
 
     protected function prepare(array $in): array

@@ -2,10 +2,26 @@
 
 namespace App\Support\V2\Board;
 
+use App\Models\Hrr\AppApplication;
+use App\Models\Hrr\VacVacancy;
+use App\Models\Inventory\StockOnhand;
+use App\Models\Master\AttDailyStatus;
 use App\Models\Master\CustCustomer;
+use App\Models\Master\EmpEmployee;
+use App\Models\Master\EmpLeaveRequest;
 use App\Models\Master\SalesPerson;
+use App\Models\Master\SupSupplier;
 use App\Models\Master\SysHoliday;
+use App\Models\Prd\PrdWo;
+use App\Models\Pur\PoOrder;
+use App\Models\Pur\PrRequisition;
+use App\Models\Pyr\PyrPayrollRun;
+use App\Models\Pyr\PyrPayslip;
 use App\Models\Sdi\CoOrder;
+use App\Models\Sdi\CoOrderDelivery;
+use App\Models\Sdi\CrmComplaint;
+use App\Models\Sdi\IqpInquiry;
+use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SysKpiTarget;
 use App\Support\DataOrigin\Visible;
 use App\Support\V2\Data\WorkCalendar;
@@ -142,20 +158,27 @@ final class Numbers
         return $sum;
     }
 
-    /** @return array<int, array{label: string, from: CarbonImmutable, to: CarbonImmutable, value: float, target: ?float}> order value per periode, lama -> baru */
-    public function trend(?int $points = null): array
+    /** @return array<int, array{label: string, from: CarbonImmutable, to: CarbonImmutable, back: int}> periode-periode grafik tren, lama -> baru */
+    public function buckets(?int $points = null): array
     {
         $points ??= self::TREND[$this->period];
-        [$first] = $this->range($points - 1);
-        $orders = $this->confirmed($first, $this->to());
         $out = [];
         for ($i = $points - 1; $i >= 0; $i--) {
             [$from, $to] = $this->range($i);
-            $out[] = ['label' => $this->label($from), 'from' => $from, 'to' => $to, 'target' => $this->periodTarget('REVENUE', 0, $i),
-                'value' => (float) $orders->filter(fn ($o) => $o->co_date >= $from->toDateString() && $o->co_date <= $to->toDateString())->sum('value')];
+            $out[] = ['label' => $this->label($from), 'from' => $from, 'to' => $to, 'back' => $i];
         }
 
         return $out;
+    }
+
+    /** @return array<int, array{label: string, from: CarbonImmutable, to: CarbonImmutable, value: float, target: ?float}> order value per periode, lama -> baru */
+    public function trend(?int $points = null): array
+    {
+        $buckets = $this->buckets($points);
+        $orders = $this->confirmed($buckets[0]['from'], $this->to());
+
+        return array_map(fn (array $b) => ['label' => $b['label'], 'from' => $b['from'], 'to' => $b['to'], 'target' => $this->periodTarget('REVENUE', 0, $b['back']),
+            'value' => (float) $orders->filter(fn ($o) => $o->co_date >= $b['from']->toDateString() && $o->co_date <= $b['to']->toDateString())->sum('value')], $buckets);
     }
 
     /** @return array{confirmed: float, draft: float, waiting: float, n_confirmed: int, n_draft: int, n_waiting: int} nilai dan jumlah dokumen per tahap */
@@ -278,6 +301,319 @@ final class Numbers
                     ->where('doc_status', 'PUBLISHED')->count(),
                 'ordered' => $this->orders($from, $to)->count(),
             ];
+        });
+    }
+
+    // ---- Sales: pengiriman, antrian harga, menang / kalah, komplain ----------------------------------------------------
+
+    /** @return Collection<int, object{co_no: ?string, customer_id: ?int, ship_date: string, qty: float, days: int}> baris CPDEL yang belum berangkat, days = hari sampai janji (minus = lewat) */
+    public function deliveriesOpen(): Collection
+    {
+        return $this->once('deliveries', function () {
+            $today = $this->now->startOfDay();
+
+            return CoOrderDelivery::query()->where('status', 'PLANNED')->whereNotNull('ship_date')->with('order:id_order,co_no,customer_id,doc_status,stat_cancel')
+                ->orderBy('ship_date')->limit(500)->get()
+                ->filter(fn (CoOrderDelivery $d) => $d->order && ! $d->order->stat_cancel && in_array($d->order->doc_status, self::CONFIRMED, true))
+                ->map(fn (CoOrderDelivery $d) => (object) ['co_no' => $d->order->co_no, 'customer_id' => $d->order->customer_id, 'ship_date' => substr((string) $d->ship_date, 0, 10),
+                    'qty' => (float) $d->ship_qty, 'days' => (int) $today->diffInDays(CarbonImmutable::parse(substr((string) $d->ship_date, 0, 10)), false)])->values();
+        });
+    }
+
+    /** @return array{prodev: Collection, procost: Collection} inquiry yang sudah di-Confirm Sales dan menunggu Pro-Dev / Pro-Cost */
+    public function waitingPrice(): array
+    {
+        return $this->once('waiting_price', function () {
+            $open = IqpInquiry::query()->where('stat_cancel', false)->where('stat_confirm_sales', true)->where('stat_confirm_procost', false)
+                ->whereNotIn('sub_state', ['CONVERTED', 'LOST', 'CANCELLED'])
+                ->get(['id_inquiry', 'inquiry_no', 'inquiry_type', 'customer_id', 'stat_confirm_prodev', 'confirm_sales_at', 'confirm_prodev_at']);
+            $age = fn ($at) => $at ? (int) CarbonImmutable::parse($at)->startOfDay()->diffInDays($this->now->startOfDay()) : 0;
+            $row = fn (IqpInquiry $i, $since) => (object) ['inquiry_no' => $i->inquiry_no, 'customer_id' => $i->customer_id, 'days' => $age($since)];
+
+            return ['prodev' => $open->where('stat_confirm_prodev', false)->map(fn ($i) => $row($i, $i->confirm_sales_at))->sortByDesc('days')->values(),
+                'procost' => $open->where('stat_confirm_prodev', true)->map(fn ($i) => $row($i, $i->confirm_prodev_at ?? $i->confirm_sales_at))->sortByDesc('days')->values()];
+        });
+    }
+
+    /** @return array{won: int, lost: int} inquiry bertanggal di rentang itu yang sudah selesai (definisi laporan Win-Rate Sales) */
+    public function winLoss(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return $this->once('win:'.$from->toDateString().':'.$to->toDateString(), function () use ($from, $to) {
+            $by = IqpInquiry::query()->whereBetween('inquiry_date', [$from->toDateString(), $to->toDateString()])->whereIn('sub_state', ['CONVERTED', 'LOST'])
+                ->selectRaw('sub_state, COUNT(*) AS n')->groupBy('sub_state')->pluck('n', 'sub_state');
+
+            return ['won' => (int) ($by['CONVERTED'] ?? 0), 'lost' => (int) ($by['LOST'] ?? 0)];
+        });
+    }
+
+    /** @return Collection<int, CrmComplaint> komplain / retur yang belum ditutup dan tidak batal */
+    public function openComplaints(): Collection
+    {
+        return $this->once('complaints', fn () => Schema::connection('tm2sdi')->hasTable('crm_complaint')
+            ? CrmComplaint::query()->where('stat_close', false)->where('stat_cancel', false)->orderBy('complaint_date')->get() : collect());
+    }
+
+    /** @return Collection<int, object{quotation_no: string, customer_id: ?int, issued: string, valid_until: ?string, value: float}> Quotation terbit yang belum menjadi Customer Order */
+    public function openQuotations(): Collection
+    {
+        return $this->once('open_quo', fn () => QuoQuotation::query()->where('doc_status', 'PUBLISHED')->where('stat_cancel', false)
+            ->whereNotIn('id_quotation', CoOrder::query()->whereNotNull('quotation_id')->select('quotation_id'))
+            ->withSum('items as value', 'subtotal')->orderBy('issued_date')->get(['id_quotation', 'quotation_no', 'customer_id', 'issued_date', 'valid_until'])
+            ->map(fn (QuoQuotation $q) => (object) ['quotation_no' => $q->quotation_no, 'customer_id' => $q->customer_id, 'issued' => substr((string) $q->issued_date, 0, 10),
+                'valid_until' => $q->valid_until ? substr((string) $q->valid_until, 0, 10) : null, 'value' => (float) $q->value]));
+    }
+
+    /** @return Collection<int, PrdWo> Work Order yang lewat due date dan belum selesai */
+    public function lateWorkOrders(): Collection
+    {
+        return $this->once('wo_late', fn () => PrdWo::query()->whereNotIn('wo_status', ['COMPLETED', 'CANCELLED'])->whereNotNull('due_date')
+            ->where('due_date', '<', $this->now->startOfDay()->toDateTimeString())->orderBy('due_date')->get(['wo_id', 'wo_no', 'wo_status', 'due_date', 'qty']));
+    }
+
+    /** @return array<string, int> jenis kelamin (L / P / kosong) => pegawai aktif */
+    public function headcountByGender(): array
+    {
+        return $this->once('gender', fn () => EmpEmployee::query()->where('activate', true)->selectRaw('gender, COUNT(*) AS n')->groupBy('gender')->pluck('n', 'gender')
+            ->mapWithKeys(fn ($n, $g) => [(string) $g => (int) $n])->all());
+    }
+
+    // ---- Laba rugi dari buku besar (voucher POSTED): pendapatan = REVENUE + OTHER_INCOME, biaya = COGS + EXPENSE + OTHER_EXPENSE ----
+
+    private const INCOME_TYPES = ['REVENUE', 'OTHER_INCOME'];
+
+    private const EXPENSE_TYPES = ['COGS', 'EXPENSE', 'OTHER_EXPENSE'];
+
+    /** @return Collection<int, object{date: string, account: string, type: string, amount: float}> gerak akun laba rugi sejak tanggal itu; amount positif = pendapatan atau biaya */
+    private function ledgerLines(CarbonImmutable $since): Collection
+    {
+        return $this->once('ledger:'.$since->toDateString(), function () use ($since) {
+            $q = DB::connection('tm2acc')->table('fin_voucher_line as l')->join('fin_voucher as v', 'v.voucher_id', '=', 'l.voucher_id')
+                ->join('fin_account as a', 'a.account_id', '=', 'l.account_id')->whereIn('a.account_type', [...self::INCOME_TYPES, ...self::EXPENSE_TYPES])
+                ->where('v.status', 'POSTED')->where('v.stat_cancel', 0)->where('v.entry_date', '>=', $since->toDateString())
+                ->groupBy('v.entry_date', 'a.account_name', 'a.account_type')
+                ->selectRaw('v.entry_date, a.account_name, a.account_type, SUM(l.debit) AS d, SUM(l.credit) AS c');
+
+            return Visible::apply($q, 'tm2acc', 'fin_voucher', 'v')->get()->map(fn ($r) => (object) ['date' => substr((string) $r->entry_date, 0, 10), 'account' => (string) $r->account_name,
+                'type' => (string) $r->account_type, 'amount' => in_array($r->account_type, self::INCOME_TYPES, true) ? (float) $r->c - (float) $r->d : (float) $r->d - (float) $r->c]);
+        });
+    }
+
+    /** @return array{income: float, expense: float, expenses: array<string, float>} laba rugi satu rentang; expenses = nama akun => biaya, terbesar dulu */
+    public function profitLoss(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        // Satu kali baca untuk semua rentang yang mungkin diminta papan: mulai dari periode grafik paling lama.
+        $since = min($this->buckets()[0]['from'], $this->range(1)[0], $from);
+        $rows = $this->ledgerLines($since)->filter(fn ($l) => $l->date >= $from->toDateString() && $l->date <= $to->toDateString());
+        $expenses = $rows->filter(fn ($l) => in_array($l->type, self::EXPENSE_TYPES, true));
+
+        return ['income' => (float) $rows->filter(fn ($l) => in_array($l->type, self::INCOME_TYPES, true))->sum('amount'), 'expense' => (float) $expenses->sum('amount'),
+            'expenses' => $expenses->groupBy('account')->map(fn ($set) => (float) $set->sum('amount'))->filter(fn ($v) => $v > 0)->sortDesc()->all()];
+    }
+
+    // ---- Purchasing --------------------------------------------------------------------------------------------------
+
+    public const PO_APPROVED = ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CLOSED'];
+
+    public const PO_OPEN = ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED'];
+
+    /** @return Collection<int, object{po_id: int, date: string, status: string, supplier_id: ?int, value: float}> PO tidak batal di rentang tanggal */
+    public function purchaseOrders(CarbonImmutable $from, CarbonImmutable $to): Collection
+    {
+        return $this->once('po:'.$from->toDateString().':'.$to->toDateString(), fn () => PoOrder::query()
+            ->whereBetween('i_doc_date', [$from->toDateString(), $to->toDateString()])->where('stat_cancel', false)
+            ->get(['po_id', 'i_doc_date', 'status', 'i_supplier_id', 'c_grand_total'])
+            ->map(fn (PoOrder $o) => (object) ['po_id' => (int) $o->po_id, 'date' => substr((string) $o->i_doc_date, 0, 10), 'status' => (string) $o->status,
+                'supplier_id' => $o->i_supplier_id, 'value' => (float) $o->c_grand_total]));
+    }
+
+    /** @return Collection<int, PoOrder> PO yang sudah disetujui / dikirim ke supplier dan belum diterima penuh, per hari ini */
+    public function purchaseOrdersOpen(): Collection
+    {
+        return $this->once('po_open', fn () => PoOrder::query()->where('stat_cancel', false)->whereIn('status', self::PO_OPEN)
+            ->orderBy('i_delivery_date')->get(['po_id', 'doc_no', 'i_doc_date', 'i_delivery_date', 'status', 'i_supplier_id', 'c_grand_total']));
+    }
+
+    /** @return array<string, int> jumlah Purchase Requisition per status, tidak batal */
+    public function requisitions(): array
+    {
+        return $this->once('pr', fn () => PrRequisition::query()->where('stat_cancel', false)->selectRaw('status, COUNT(*) AS n')->groupBy('status')->pluck('n', 'status')
+            ->map(fn ($n) => (int) $n)->all());
+    }
+
+    /** @return array<int, string> id => nama supplier */
+    public function supplierNames(array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter($ids)));
+
+        return $ids ? SupSupplier::query()->whereIn('id_supplier', $ids)->pluck('supplier_name', 'id_supplier')->all() : [];
+    }
+
+    // ---- Hutang, pembayaran, kas -------------------------------------------------------------------------------------
+
+    /** @return Collection<int, object> baris v1_fin_ap_aging yang masih punya sisa */
+    public function payables(): Collection
+    {
+        return $this->once('ap', function () {
+            if (! Schema::connection('tm2acc')->hasView('v1_fin_ap_aging')) {
+                return collect();
+            }
+            $acc = DB::connection('tm2acc');
+            $rows = $acc->table('v1_fin_ap_aging')->where('outstanding', '>', 0)->get(['invoice_id', 'invoice_number', 'partner_id', 'due_date', 'outstanding', 'days_overdue']);
+            $shown = Visible::apply($acc->table('fin_invoice'), 'tm2acc', 'fin_invoice')->whereIn('invoice_id', $rows->pluck('invoice_id'))->pluck('invoice_id')->flip();
+
+            return $rows->filter(fn ($r) => $shown->has($r->invoice_id))->values()
+                ->map(fn ($r) => (object) ['invoice_number' => $r->invoice_number, 'partner_id' => $r->partner_id, 'due_date' => $r->due_date,
+                    'outstanding' => (float) $r->outstanding, 'days_overdue' => (int) $r->days_overdue]);
+        });
+    }
+
+    // Uang yang dialokasikan ke invoice di rentang itu: CUSTOMER = diterima dari customer, SUPPLIER = dibayar ke supplier.
+    public function paid(string $partnerType, CarbonImmutable $from, CarbonImmutable $to): float
+    {
+        return $this->once('paid:'.$partnerType.':'.$from->toDateString().':'.$to->toDateString(), function () use ($partnerType, $from, $to) {
+            $q = DB::connection('tm2acc')->table('fin_payment_alloc as p')->join('fin_invoice as i', 'i.invoice_id', '=', 'p.invoice_id')
+                ->where('i.partner_type', $partnerType)->whereBetween('p.alloc_date', [$from->toDateString(), $to->toDateString()]);
+
+            return (float) Visible::apply($q, 'tm2acc', 'fin_invoice', 'i')->sum('p.amount');
+        });
+    }
+
+    /** @return Collection<int, object{voucher_id: int, date: string, account_id: int, net: float}> gerak akun kas / bank (fin_account.cf_line = CASH) dari voucher POSTED */
+    private function cashLines(): Collection
+    {
+        return $this->once('cash_lines', function () {
+            $q = DB::connection('tm2acc')->table('fin_voucher_line as l')->join('fin_voucher as v', 'v.voucher_id', '=', 'l.voucher_id')
+                ->join('fin_account as a', 'a.account_id', '=', 'l.account_id')->where('a.cf_line', 'CASH')->where('v.status', 'POSTED')->where('v.stat_cancel', 0)
+                ->groupBy('l.voucher_id', 'v.entry_date', 'l.account_id')->selectRaw('l.voucher_id, v.entry_date, l.account_id, SUM(l.debit - l.credit) AS net');
+
+            return Visible::apply($q, 'tm2acc', 'fin_voucher', 'v')->get()
+                ->map(fn ($r) => (object) ['voucher_id' => (int) $r->voucher_id, 'date' => substr((string) $r->entry_date, 0, 10), 'account_id' => (int) $r->account_id, 'net' => (float) $r->net]);
+        });
+    }
+
+    /** @return array<int, array{code: string, name: string, balance: float}> saldo tiap akun kas / bank per hari ini */
+    public function cashBalances(): array
+    {
+        return $this->once('cash_balance', function () {
+            $by = $this->cashLines()->filter(fn ($l) => $l->date <= $this->now->toDateString())->groupBy('account_id')->map(fn ($set) => (float) $set->sum('net'));
+            $names = DB::connection('tm2acc')->table('fin_account')->whereIn('account_id', $by->keys())->orderBy('account_code')->get(['account_id', 'account_code', 'account_name']);
+
+            return $names->map(fn ($a) => ['code' => $a->account_code, 'name' => $a->account_name, 'balance' => (float) $by[$a->account_id]])->all();
+        });
+    }
+
+    /** @return array{in: float, out: float} kas masuk dan keluar di rentang itu; pindah buku antar akun kas saling menghapus (dihitung bersih per voucher) */
+    public function cashFlow(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        $net = $this->cashLines()->filter(fn ($l) => $l->date >= $from->toDateString() && $l->date <= $to->toDateString())
+            ->groupBy('voucher_id')->map(fn ($set) => (float) $set->sum('net'));
+
+        return ['in' => (float) $net->filter(fn ($v) => $v > 0)->sum(), 'out' => (float) abs($net->filter(fn ($v) => $v < 0)->sum())];
+    }
+
+    // ---- Payroll (nilai terenkripsi: dijumlah lewat model, bukan SQL) -------------------------------------------------
+
+    /** @return array<int, array{id: int, label: string, start: string, end: string, status: string, slips: int, net: float, basic: float, allowance: float, bonus: float, overtime: float, deduction: float, anomaly: int}> $n run terakhir, lama -> baru */
+    public function payrollRuns(int $n = 8): array
+    {
+        return $this->once('payroll:'.$n, function () use ($n) {
+            $runs = PyrPayrollRun::query()->orderByDesc('period_end')->limit($n)->get()->reverse()->values();
+            $slips = PyrPayslip::query()->whereIn('id_run', $runs->pluck('id_run'))->get()->groupBy('id_run');
+
+            return $runs->map(function (PyrPayrollRun $r) use ($slips) {
+                $set = $slips->get($r->id_run) ?? collect();
+                $sum = fn (string ...$cols) => (float) $set->sum(fn (PyrPayslip $p) => array_sum(array_map(fn ($c) => (float) $p->{$c}, $cols)));
+
+                return ['id' => (int) $r->id_run, 'label' => (string) Locale::d($r->period_end), 'start' => substr((string) $r->period_start, 0, 10), 'end' => substr((string) $r->period_end, 0, 10),
+                    'status' => (string) $r->run_status, 'slips' => $set->count(), 'net' => $sum('total_gaji_bersih'), 'basic' => $sum('total_pokok'),
+                    'allowance' => $sum('total_tj_keahlian', 'total_tj_loyalitas', 'total_tj_prestasi'), 'bonus' => $sum('total_bonus_pagi', 'total_bonus_hadir', 'total_uang_roti'),
+                    'overtime' => $sum('total_overtime_pay'), 'deduction' => $sum('total_denda', 'total_bpjs_employee', 'total_pph21'), 'anomaly' => $set->where('has_anomaly', true)->count()];
+            })->all();
+        });
+    }
+
+    // ---- Human Resource -----------------------------------------------------------------------------------------------
+
+    public const ATT_LATE = ['T-5', 'T+5', 'T+15', 'PAT-5', 'PAT+5'];
+
+    public const ATT_LEAVE = ['C', 'CL', 'I', 'IS'];
+
+    /** @return array{active: int, joined: int, resigned: int} pegawai aktif per hari ini; masuk dan keluar di rentang itu */
+    public function headcount(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return $this->once('headcount:'.$from->toDateString().':'.$to->toDateString(), fn () => [
+            'active' => EmpEmployee::query()->where('activate', true)->count(),
+            'joined' => EmpEmployee::query()->whereBetween('join_date', [$from->toDateString(), $to->toDateString()])->count(),
+            'resigned' => EmpEmployee::query()->whereBetween('resign_date', [$from->toDateString(), $to->toDateString()])->count(),
+        ]);
+    }
+
+    /** @return array<string, int> nama departemen => pegawai aktif, terbanyak dulu */
+    public function headcountByDepartment(): array
+    {
+        return $this->once('headcount_dept', function () {
+            // emp_employee -> org_position -> org_department: satu database (tm2mst).
+            $q = DB::connection('tm2mst')->table('emp_employee as e')->leftJoin('org_position as p', 'p.position_id', '=', 'e.position_id')
+                ->leftJoin('org_department as d', 'd.department_id', '=', 'p.department_id')->where('e.activate', 1)
+                ->groupBy('d.department_name')->selectRaw('d.department_name AS name, COUNT(*) AS n')->orderByDesc('n');
+
+            return Visible::apply($q, 'tm2mst', 'emp_employee', 'e')->get()->mapWithKeys(fn ($r) => [(string) ($r->name ?? '—') => (int) $r->n])->all();
+        });
+    }
+
+    /** @return array{present: int, late: int, leave: int, sick: int, absent: int} hari-orang per status kehadiran di rentang itu */
+    public function attendance(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return $this->once('att:'.$from->toDateString().':'.$to->toDateString(), function () use ($from, $to) {
+            $by = AttDailyStatus::query()->whereBetween('attendance_date', [$from->toDateString(), $to->toDateString()])
+                ->selectRaw('status_code, COUNT(*) AS n')->groupBy('status_code')->pluck('n', 'status_code');
+            $sum = fn (array $codes) => (int) $by->only($codes)->sum();
+
+            return ['present' => $sum(['H']), 'late' => $sum(self::ATT_LATE), 'leave' => $sum(self::ATT_LEAVE), 'sick' => $sum(['S']), 'absent' => $sum(['A'])];
+        });
+    }
+
+    /** @return Collection<int, EmpLeaveRequest> permohonan cuti / izin / sakit yang menunggu keputusan */
+    public function leaveWaiting(): Collection
+    {
+        return $this->once('leave', fn () => EmpLeaveRequest::query()->where('status', 'PENDING')->orderBy('date_from')->get());
+    }
+
+    /** @return array<int, string> id => nama pegawai */
+    public function employeeNames(array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter($ids)));
+
+        return $ids ? EmpEmployee::query()->withoutGlobalScopes()->whereIn('employee_id', $ids)->pluck('full_name', 'employee_id')->all() : [];
+    }
+
+    /** @return array{vacancies: int, applications: array<string, int>} lowongan yang sedang dibuka dan lamaran per status */
+    public function recruitment(): array
+    {
+        return $this->once('recruitment', fn () => [
+            'vacancies' => VacVacancy::query()->where('is_published', true)->whereNull('closed_at')->count(),
+            'applications' => AppApplication::query()->selectRaw('status, COUNT(*) AS n')->groupBy('status')->pluck('n', 'status')->map(fn ($n) => (int) $n)->all(),
+        ]);
+    }
+
+    // ---- Produksi dan stok --------------------------------------------------------------------------------------------
+
+    /** @return array<string, int> jumlah Work Order per status */
+    public function workOrders(): array
+    {
+        return $this->once('wo', fn () => PrdWo::query()->selectRaw('wo_status, COUNT(*) AS n')->groupBy('wo_status')->pluck('n', 'wo_status')->map(fn ($n) => (int) $n)->all());
+    }
+
+    /** @return array<string, float> kelas stok (RM / SFG / FG) => nilai stok on hand yang bisa dipakai */
+    public function stockValue(): array
+    {
+        return $this->once('stock', function () {
+            $out = [];
+            foreach (array_keys(StockOnhand::ITEM_KEYS) as $class) {
+                $out[$class] = (float) StockOnhand::of($class)->where('is_usable', true)->sum('value_onhand');
+            }
+
+            return $out;
         });
     }
 

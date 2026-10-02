@@ -4,22 +4,6 @@ namespace App\Support\V2\Board;
 
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysWidget;
-use App\Support\V2\Board\Widgets\DeadstockValue;
-use App\Support\V2\Board\Widgets\MaterialShortage;
-use App\Support\V2\Board\Widgets\NewOrders;
-use App\Support\V2\Board\Widgets\OnTimeDelivery;
-use App\Support\V2\Board\Widgets\OrdersByStatus;
-use App\Support\V2\Board\Widgets\OrderValue;
-use App\Support\V2\Board\Widgets\OverdueReceivables;
-use App\Support\V2\Board\Widgets\QuoteOfDay;
-use App\Support\V2\Board\Widgets\ReceivablesAging;
-use App\Support\V2\Board\Widgets\RevenueTrend;
-use App\Support\V2\Board\Widgets\SalesPipeline;
-use App\Support\V2\Board\Widgets\SalesRanking;
-use App\Support\V2\Board\Widgets\SalesToday;
-use App\Support\V2\Board\Widgets\TargetsByArea;
-use App\Support\V2\Board\Widgets\TopCustomers;
-use App\Support\V2\Board\Widgets\WaitingDecision;
 
 // Katalog widget = kelas widget (daftar di bawah) + baris sys_widget yang dirawat user (judul, kelompok, modul, level minimum,
 // frasa asisten, aktif). Kelas baru otomatis mendapat baris dari nilai awal kelasnya -- pola yang sama dengan katalog
@@ -30,9 +14,18 @@ final class WidgetCatalog
     private const MANAGEMENT_REPORTS = 'MGMT';
 
     public const CLASSES = [
-        OrderValue::class, NewOrders::class, OverdueReceivables::class, OnTimeDelivery::class, SalesToday::class, RevenueTrend::class, TargetsByArea::class,
-        SalesPipeline::class, SalesRanking::class, WaitingDecision::class, OrdersByStatus::class, TopCustomers::class, ReceivablesAging::class,
-        MaterialShortage::class, DeadstockValue::class, QuoteOfDay::class,
+        Widgets\OrderValue::class, Widgets\NewOrders::class, Widgets\QuotationWinRate::class, Widgets\OnTimeDelivery::class,
+        Widgets\SalesToday::class, Widgets\OpenQuotations::class, Widgets\RevenueTrend::class, Widgets\SalesPipeline::class,
+        Widgets\SalesRanking::class, Widgets\TopCustomers::class, Widgets\OrdersByStatus::class, Widgets\DeliveriesDue::class,
+        Widgets\WaitingPrice::class, Widgets\OpenComplaints::class, Widgets\PurchaseValue::class, Widgets\OpenPurchaseOrders::class,
+        Widgets\PurchaseRequests::class, Widgets\TopSuppliers::class, Widgets\MaterialShortage::class, Widgets\OverdueReceivables::class,
+        Widgets\PayablesOverdue::class, Widgets\Collections::class, Widgets\SupplierPayments::class, Widgets\ReceivablesAging::class,
+        Widgets\PayablesAging::class, Widgets\TopDebtors::class, Widgets\NetCashFlow::class, Widgets\CashBalance::class, Widgets\CashInOut::class,
+        Widgets\TopExpenses::class, Widgets\PayrollCost::class, Widgets\PayrollRunStatus::class, Widgets\PayrollBreakdown::class,
+        Widgets\PayrollTrend::class, Widgets\Headcount::class, Widgets\HeadcountByGender::class, Widgets\AttendanceSummary::class,
+        Widgets\HeadcountByDepartment::class, Widgets\RecruitmentPipeline::class, Widgets\LeaveWaiting::class, Widgets\NetProfit::class,
+        Widgets\IncomeVsExpense::class, Widgets\TargetsByArea::class, Widgets\WorkOrderStatus::class, Widgets\LateWorkOrders::class,
+        Widgets\StockValue::class, Widgets\DeadstockValue::class, Widgets\WaitingDecision::class, Widgets\QuoteOfDay::class,
     ];
 
     /** @var ?array<string, array{widget: Widget, row: SysWidget}> */
@@ -50,7 +43,7 @@ final class WidgetCatalog
             /** @var Widget $widget */
             $widget = new $class;
             $row = $saved->get($widget->key()) ?? SysWidget::create(['widget_key' => $widget->key(), 'title' => $widget->title(), 'description' => $widget->description(),
-                'group_name' => $widget->group(), 'module_code' => $widget->module(), 'min_level' => $widget->minLevel(), 'default_size' => $widget->size(),
+                'group_name' => $widget->group(), 'dashboard_code' => $widget->dashboard(), 'module_code' => $widget->module(), 'min_level' => $widget->minLevel(), 'default_size' => $widget->size(),
                 'phrases' => implode(', ', $widget->phrases()), 'sort_order' => ($i + 1) * 10, 'activate' => true, 'created_by' => 'board', 'updated_by' => 'board']);
             if ($row->activate) {
                 $out[$widget->key()] = ['widget' => $widget, 'row' => $row];
@@ -71,11 +64,16 @@ final class WidgetCatalog
         if ($user->is_admin) {
             return true;
         }
+        // Angka gaji tidak ikut kelonggaran Laporan Manajemen: hanya yang berhak melihat nilai payroll.
+        if ($entry['widget']->needsPayroll() && ! $user->canViewPayrollAmounts()) {
+            return false;
+        }
         $module = $entry['row']->module_code;
 
         return (! $module || $user->canAccessModule($module) || $user->canAccessModule(self::MANAGEMENT_REPORTS))
             && $user->maxMgmtLevel() >= (int) $entry['row']->min_level
-            && (! $entry['widget']->needsSalesPrice() || $user->canViewSalesPrice());
+            && (! $entry['widget']->needsSalesPrice() || $user->canViewSalesPrice())
+            && (! $entry['widget']->needsPayroll() || $user->canViewPayrollAmounts());
     }
 
     /** @return array<string, array{widget: Widget, row: SysWidget}> */

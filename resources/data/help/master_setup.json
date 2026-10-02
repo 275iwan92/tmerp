@@ -788,27 +788,28 @@
     "module": "SETUP",
     "title": "Opening Board Widgets",
     "purpose": {
-      "en": "The catalog of widgets a user may put on the opening board. Open it to rename a widget, decide who may install it, or switch one off.",
-      "id": "Katalog widget yang boleh dipasang user di papan pembuka. Buka layar ini untuk mengganti judul widget, menentukan siapa yang boleh memasangnya, atau mematikannya."
+      "en": "The catalog of widgets of the opening dashboards. Open it to rename a widget, set the dashboard it belongs to, decide who may see it, or switch one off.",
+      "id": "Katalog widget dashboard pembuka. Buka layar ini untuk mengganti judul widget, menentukan dashboard asalnya, siapa yang boleh melihatnya, atau mematikannya."
     },
     "keywords": "widget, katalog widget, papan pembuka, opening board, opening screen, layar pembuka, dashboard, hak pasang widget, kata asisten",
     "steps": [
       {"en": "Each row is one widget. Its numbers are calculated by the program, so rows cannot be added here; a new widget is added by the developer.", "id": "Tiap baris adalah satu widget. Angkanya dihitung program, jadi baris tidak bisa ditambah di sini; widget baru ditambah developer."},
-      {"en": "Change Title, Description or Group to how it should read in the Add Widget window.", "id": "Ubah Title, Description, atau Group sesuai tampilan yang diinginkan di jendela Add Widget."},
+      {"en": "Change Title, Description, Dashboard or Group to how it should read in the Choose Widgets window.", "id": "Ubah Title, Description, Dashboard, atau Group sesuai tampilan yang diinginkan di jendela Choose Widgets."},
       {"en": "Set Module and Minimum level to decide who may install the widget.", "id": "Atur Module dan Minimum level untuk menentukan siapa yang boleh memasang widget."},
       {"en": "Fill Assistant words with the words a user may say to the assistant, separated by commas.", "id": "Isi Assistant words dengan kata yang mungkin diucapkan user ke asisten, dipisah koma."},
       {"en": "Click Save. Untick Active to take a widget off every board without deleting anyone's arrangement.", "id": "Klik Save. Hilangkan centang Active untuk menarik widget dari semua papan tanpa menghapus susunan siapa pun."}
     ],
     "fields": [
       {"label": "Key", "en": "The program name of the widget. It cannot be changed.", "id": "Nama program widget. Tidak bisa diubah."},
-      {"label": "Title", "en": "The name shown on the board and in the Add Widget window. Written in English; other languages come from the Translation Dictionary.", "id": "Nama yang tampil di papan dan di jendela Add Widget. Ditulis English; bahasa lain dari Translation Dictionary."},
+      {"label": "Title", "en": "The name shown on the board and in the Choose Widgets window. Written in English; other languages come from the Translation Dictionary.", "id": "Nama yang tampil di papan dan di jendela Choose Widgets. Ditulis English; bahasa lain dari Translation Dictionary."},
       {"label": "Description", "en": "One sentence that says what the widget shows.", "id": "Satu kalimat tentang apa yang ditampilkan widget."},
-      {"label": "Group", "en": "The heading the widget sits under in the Add Widget window, for example Sales or Finance.", "id": "Judul kelompok widget di jendela Add Widget, misalnya Sales atau Finance."},
+      {"label": "Dashboard", "en": "The area dashboard the widget belongs to. In Choose Widgets the widget is listed under this dashboard.", "id": "Dashboard bidang asal widget. Di Choose Widgets widget tampil di bawah dashboard ini."},
+      {"label": "Group", "en": "The heading used in Choose Widgets when the widget has no dashboard, for example Finance or Production.", "id": "Judul kelompok di Choose Widgets bila widget tidak punya dashboard, misalnya Finance atau Production."},
       {"label": "Module", "en": "The installer must be allowed to open this module, or Management Reports. Empty means everyone.", "id": "Pemasang harus boleh membuka modul ini, atau Laporan Manajemen. Kosong berarti semua orang."},
       {"label": "Minimum level", "en": "The lowest security level that may install the widget. 0 means the module right is enough.", "id": "Level security terendah yang boleh memasang widget. 0 berarti hak modul sudah cukup."},
       {"label": "Width (of 12)", "en": "The width a newly installed widget gets: 3 is a quarter of the board, 12 the full width.", "id": "Lebar widget saat baru dipasang: 3 adalah seperempat papan, 12 selebar papan."},
       {"label": "Assistant words", "en": "Words that make the assistant pick this widget, in any language, separated by commas.", "id": "Kata yang membuat asisten memilih widget ini, bahasa apa pun, dipisah koma."},
-      {"label": "Order", "en": "The order of the widget in the Add Widget window; a lower number comes first.", "id": "Urutan widget di jendela Add Widget; angka kecil lebih dulu."},
+      {"label": "Order", "en": "The order of the widget in the Choose Widgets window; a lower number comes first.", "id": "Urutan widget di jendela Choose Widgets; angka kecil lebih dulu."},
       {"label": "Active", "en": "An inactive widget is not shown on any board and cannot be installed.", "id": "Widget yang tidak aktif tidak tampil di papan mana pun dan tidak bisa dipasang."}
     ]
   },
@@ -818,19 +819,19 @@
     "module": "SETUP",
     "title": "Opening Board Templates",
     "purpose": {
-      "en": "The board a user starts with, per profile. Open it to change which widgets a new board shows, in which order and how wide.",
-      "id": "Papan awal user per profil. Buka layar ini untuk mengubah widget apa yang tampil di papan baru, urutannya, dan lebarnya."
+      "en": "The widgets of every dashboard: an area dashboard shows these rows as they are; the Overall rows are the board a user starts with.",
+      "id": "Widget tiap dashboard: dashboard bidang menampilkan baris ini apa adanya; baris Overall adalah papan awal user."
     },
     "keywords": "template papan, papan bawaan, susunan bawaan, board template, default board, reset to template, profil manajemen",
     "steps": [
-      {"en": "Each row is one widget in the template of a profile.", "id": "Tiap baris adalah satu widget di template sebuah profil."},
-      {"en": "Add a row: choose the Profile and the Widget, then fill Order and Width.", "id": "Tambah baris: pilih Profile dan Widget, lalu isi Order dan Width."},
-      {"en": "Click Save. The template is used when a board is opened for the first time and when its owner clicks Reset to Template.", "id": "Klik Save. Template dipakai saat papan pertama kali dibuka dan saat pemiliknya klik Reset to Template."},
-      {"en": "Boards that their owner already arranged do not change.", "id": "Papan yang sudah diatur pemiliknya tidak ikut berubah."}
+      {"en": "Each row is one widget on one dashboard.", "id": "Tiap baris adalah satu widget di satu dashboard."},
+      {"en": "Add a row: choose the Dashboard and the Widget, then fill Order and Width.", "id": "Tambah baris: pilih Dashboard dan Widget, lalu isi Order dan Width."},
+      {"en": "Click Save. An area dashboard (Sales, Purchasing and so on) shows the change the next time it is opened.", "id": "Klik Save. Dashboard bidang (Sales, Purchasing, dan seterusnya) menampilkan perubahan saat dibuka berikutnya."},
+      {"en": "The Overall rows are used when a board is opened for the first time and on Reset to Template; boards already arranged by their owner do not change.", "id": "Baris Overall dipakai saat papan pertama kali dibuka dan saat Reset to Template; papan yang sudah diatur pemiliknya tidak berubah."}
     ],
     "fields": [
-      {"label": "Profile", "en": "The group of positions that share this template. For now there is one: Management.", "id": "Kelompok jabatan yang memakai template ini. Saat ini baru satu: Management."},
-      {"label": "Widget", "en": "Picked from Opening Board Widgets. A widget can be in a profile only once.", "id": "Dipilih dari Opening Board Widgets. Satu widget hanya sekali dalam satu profil."},
+      {"label": "Dashboard", "en": "Picked from Opening Dashboards: Overall or one of the area dashboards.", "id": "Dipilih dari Opening Dashboards: Overall atau salah satu dashboard bidang."},
+      {"label": "Widget", "en": "Picked from Opening Board Widgets. A widget can be on a dashboard only once.", "id": "Dipilih dari Opening Board Widgets. Satu widget hanya sekali dalam satu dashboard."},
       {"label": "Order", "en": "Position on the board; a lower number comes first.", "id": "Posisi di papan; angka kecil lebih dulu."},
       {"label": "Width (of 12)", "en": "3 is a quarter of the board, 4 a third, 6 half, 8 two thirds, 12 the full width.", "id": "3 adalah seperempat papan, 4 sepertiga, 6 setengah, 8 dua pertiga, 12 selebar papan."},
       {"label": "Active", "en": "An inactive row is left out when a board is made from the template.", "id": "Baris yang tidak aktif tidak ikut saat papan dibuat dari template."}
@@ -881,6 +882,32 @@
       {"label": "Quote", "en": "The text shown on the board, at most 500 characters.", "id": "Teks yang tampil di papan, paling banyak 500 huruf."},
       {"label": "Author", "en": "Who said it. May be left empty.", "id": "Siapa yang mengucapkannya. Boleh kosong."},
       {"label": "Active", "en": "An inactive row shows a dash on its day.", "id": "Baris yang tidak aktif menampilkan tanda strip pada harinya."}
+    ]
+  },
+  {
+    "key": "setup-dashboards",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Opening Dashboards",
+    "purpose": {
+      "en": "The dashboards of the opening screen: Overall, which every owner arranges, and the area dashboards such as Sales, Purchasing, AR & AP, Cashflow, Payroll and Human Resource.",
+      "id": "Dashboard layar pembuka: Overall, yang disusun tiap pemiliknya, dan dashboard bidang seperti Sales, Purchasing, AR & AP, Cashflow, Payroll, dan Human Resource."
+    },
+    "keywords": "dashboard, dasbor, dashboard bidang, overall, layar pembuka, opening dashboard, tab dashboard",
+    "steps": [
+      {"en": "Each row is one dashboard, shown as a tab above the board in the order of the Order column.", "id": "Tiap baris adalah satu dashboard, tampil sebagai tab di atas papan menurut kolom Order."},
+      {"en": "Change Title or Icon, or set the Module a user must be allowed to open to see the dashboard.", "id": "Ubah Title atau Icon, atau atur Module yang harus boleh dibuka user agar bisa melihat dashboard itu."},
+      {"en": "To add a dashboard, add a row with a new Code, then fill its widgets in Opening Board Templates.", "id": "Untuk menambah dashboard, tambah baris dengan Code baru, lalu isi widgetnya di Opening Board Templates."},
+      {"en": "Click Save. Untick Active to hide an area dashboard; Overall cannot be switched off.", "id": "Klik Save. Hilangkan centang Active untuk menyembunyikan dashboard bidang; Overall tidak bisa dimatikan."}
+    ],
+    "fields": [
+      {"label": "Code", "en": "The program name of the dashboard, capital letters. It cannot be changed after saving.", "id": "Nama program dashboard, huruf besar. Tidak bisa diganti sesudah disimpan."},
+      {"label": "Title", "en": "The name on the tab. Written in English; other languages come from the Translation Dictionary.", "id": "Nama di tab. Ditulis English; bahasa lain dari Translation Dictionary."},
+      {"label": "Icon", "en": "Font Awesome icon name, for example fa-solid fa-users.", "id": "Nama ikon Font Awesome, misalnya fa-solid fa-users."},
+      {"label": "Module", "en": "The user must be allowed to open this module, or Management Reports. Empty means everyone who has a board.", "id": "User harus boleh membuka modul ini, atau Laporan Manajemen. Kosong berarti semua yang punya papan."},
+      {"label": "Minimum level", "en": "The lowest security level that may open the dashboard. 0 means the module right is enough.", "id": "Level security terendah yang boleh membuka dashboard. 0 berarti hak modul sudah cukup."},
+      {"label": "Order", "en": "Position of the tab; a lower number comes first.", "id": "Posisi tab; angka kecil lebih dulu."},
+      {"label": "Active", "en": "An inactive dashboard is not shown to anyone.", "id": "Dashboard yang tidak aktif tidak tampil untuk siapa pun."}
     ]
   }
 ]

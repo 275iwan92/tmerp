@@ -60,6 +60,11 @@ final class OverdueReceivables extends Widget
         return ['piutang jatuh tempo', 'piutang lewat jatuh tempo', 'tagihan telat', 'overdue receivables', 'overdue invoices'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'AR_AP';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         $late = $n->receivables()->where('days_overdue', '>', 0);

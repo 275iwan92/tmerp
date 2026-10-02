@@ -69,11 +69,11 @@ class OpeningBoardTest extends TestCase
 
     public function test_first_open_copies_the_template(): void
     {
-        $template = SysBoardTemplate::query()->where('profile_code', Board::MANAGEMENT)->where('activate', true)->orderBy('sort_order')->get();
+        $template = SysBoardTemplate::query()->where('profile_code', Board::OVERALL)->where('activate', true)->orderBy('sort_order')->get();
         $active = array_keys(app(WidgetCatalog::class)->all());
         $expected = $template->pluck('widget_key')->filter(fn ($k) => in_array($k, $active, true))->values()->all();
 
-        $this->assertNotEmpty($expected, 'Template MANAGEMENT kosong.');
+        $this->assertNotEmpty($expected, 'Template OVERALL kosong.');
         $this->assertSame($expected, $this->keys($this->admin));
         $this->assertSame($template->firstWhere('widget_key', $expected[0])->size, Board::layout($this->admin)->first()->size);
         // Dibuka lagi: tidak disalin ulang.
@@ -110,6 +110,13 @@ class OpeningBoardTest extends TestCase
         $this->assertSame($start, $this->keys($this->admin));
         $this->assertSame('This widget is not on your board.', Board::apply($this->admin, 'remove', $free));
         $this->assertSame('Unknown board action.', Board::apply($this->admin, 'explode', $free));
+
+        // Seret (move): widget terakhir ke depan widget pertama, lalu ke ujung papan (tanpa tujuan).
+        $last = $start[count($start) - 1];
+        $this->assertNull(Board::apply($this->admin, 'move', $last, $start[0]));
+        $this->assertSame([$last, ...array_slice($start, 0, -1)], $this->keys($this->admin));
+        $this->assertNull(Board::apply($this->admin, 'move', $last, null));
+        $this->assertSame($start, $this->keys($this->admin));
 
         Board::apply($this->admin, 'remove', $start[0]);
         $this->assertNull(Board::apply($this->admin, 'reset', null));
@@ -203,6 +210,77 @@ class OpeningBoardTest extends TestCase
         $this->assertStringContainsString('data-wb-period="yearly"', Board::html($this->admin));
     }
 
+    public function test_every_widget_builds_for_every_period(): void
+    {
+        $catalog = app(WidgetCatalog::class)->all();
+        $this->assertGreaterThanOrEqual(30, count($catalog), 'Katalog widget kurang dari 30.');
+        foreach (array_keys(Numbers::PERIODS) as $period) {
+            $n = Numbers::make($period);
+            foreach ($catalog as $key => $entry) {
+                $out = $entry['widget']->build($n, $this->admin);
+                $this->assertIsArray($out['data'] ?? null, "Widget {$key} ({$period}) tidak mengembalikan data.");
+                $this->assertContains($entry['widget']->type(), ['kpi', 'chart', 'progress', 'ranking', 'list', 'quote'], $key);
+            }
+        }
+    }
+
+    public function test_money_numbers_are_consistent_with_each_other(): void
+    {
+        $n = Numbers::make('yearly');
+        // Saldo kas = semua kas masuk dikurangi semua kas keluar sampai hari ini (pindah buku antar akun kas saling menghapus).
+        $all = $n->cashFlow(CarbonImmutable::parse('1990-01-01'), $n->now);
+        $this->assertEqualsWithDelta(array_sum(array_column($n->cashBalances(), 'balance')), $all['in'] - $all['out'], 0.01);
+        // Laba rugi setahun = jumlah laba rugi per bulan tahun itu.
+        $year = $n->profitLoss($n->from(), $n->to());
+        $months = Numbers::make('monthly');
+        $income = 0.0;
+        $expense = 0.0;
+        for ($m = $n->from(); $m->lessThanOrEqualTo($n->to()); $m = $m->addMonthNoOverflow()) {
+            $pl = $months->profitLoss($m, $m->endOfMonth());
+            $income += $pl['income'];
+            $expense += $pl['expense'];
+        }
+        $this->assertEqualsWithDelta($year['income'], $income, 0.01);
+        $this->assertEqualsWithDelta($year['expense'], $expense, 0.01);
+        // Hutang lewat jatuh tempo + belum jatuh tempo = seluruh sisa hutang.
+        $ap = $n->payables();
+        $this->assertEqualsWithDelta((float) $ap->sum('outstanding'), (float) $ap->where('days_overdue', '>', 0)->sum('outstanding') + (float) $ap->where('days_overdue', '<=', 0)->sum('outstanding'), 0.01);
+    }
+
+    public function test_area_dashboards_show_their_template_and_overall_is_arranged_by_the_owner(): void
+    {
+        $codes = array_column(Board::dashboards($this->admin), 'code');
+        $this->assertSame(Board::OVERALL, $codes[0]);
+        foreach (['SALES', 'PURCHASING', 'AR_AP', 'CASHFLOW', 'PAYROLL', 'HR'] as $code) {
+            $this->assertContains($code, $codes);
+        }
+        $this->assertSame(Board::OVERALL, Board::dashboard($this->admin));
+        $overall = Board::props($this->admin);
+        $this->assertNotEmpty($overall['catalog'], 'Overall harus membawa daftar centang.');
+
+        $this->assertNull(Board::apply($this->admin, 'dashboard', 'SALES'));
+        $this->assertSame('SALES', Board::dashboard($this->admin));
+        $sales = Board::props($this->admin);
+        $template = SysBoardTemplate::query()->where('profile_code', 'SALES')->where('activate', true)->orderBy('sort_order')->pluck('widget_key')->all();
+        $this->assertSame($template, array_column($sales['widgets'], 'key'));
+        $this->assertSame([], $sales['catalog'], 'Dashboard bidang tidak punya daftar centang.');
+        $html = Board::html($this->admin);
+        $this->assertStringNotContainsString('data-wb-toggle', $html);
+        $this->assertStringContainsString('data-wb-dash="SALES"', $html);
+
+        // Susunan Overall tidak berubah karena membuka dashboard lain.
+        $this->assertSame(array_column($overall['widgets'], 'key'), $this->keys($this->admin));
+        $this->assertSame('This dashboard is not available for your account.', Board::apply($this->admin, 'dashboard', 'NOPE'));
+        $this->assertNull(Board::apply($this->admin, 'dashboard', Board::OVERALL));
+        $this->assertStringContainsString('data-wb-toggle', Board::html($this->admin));
+
+        // Tanpa hak modul: hanya Overall; widget gaji tidak boleh dipasang walau lewat daftar centang.
+        $staff = $this->user(self::STAFF_ID, false);
+        $this->assertSame([Board::OVERALL], array_column(Board::dashboards($staff), 'code'));
+        $this->assertFalse(app(WidgetCatalog::class)->allowed($staff, 'payroll_cost'));
+        $this->assertSame('This widget is not available for your account.', Board::apply($staff, 'add', 'payroll_cost'));
+    }
+
     public function test_board_renders_every_widget_of_the_layout(): void
     {
         $props = Board::props($this->admin);
@@ -234,6 +312,13 @@ class OpeningBoardTest extends TestCase
         $list = $command->answer($asker, 'widget apa saja');
         $this->assertNull($list->refresh);
         $this->assertNotEmpty($list->rows);
+
+        // "buka dashboard sales" = ganti dashboard; perintah widget sesudahnya tetap bekerja pada papan Overall.
+        $open = $command->answer($asker, 'buka dashboard sales');
+        $this->assertSame('board', $open->refresh);
+        $this->assertSame('SALES', Board::dashboard($this->admin));
+        $command->answer($asker, 'buka dashboard overall');
+        $this->assertSame(Board::OVERALL, Board::dashboard($this->admin));
 
         // Jabatan tanpa papan: ditolak, tidak ada yang tertulis.
         $denied = $command->answer(new ErpAsker($this->user(self::STAFF_ID, false)), 'pasang widget kata harian');

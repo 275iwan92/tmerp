@@ -52,6 +52,11 @@ final class ReceivablesAging extends Widget
         return ['umur piutang', 'aging piutang', 'piutang per umur', 'receivables aging', 'ar aging'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'AR_AP';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         $rows = $n->receivables();

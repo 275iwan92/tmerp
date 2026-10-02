@@ -51,6 +51,11 @@ final class OrdersByStatus extends Widget
         return ['status order', 'order per status', 'customer order per status', 'orders by status', 'order status'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'SALES';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         $by = $n->orders($n->from(), $n->to())->countBy('doc_status');

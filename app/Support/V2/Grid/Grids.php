@@ -104,6 +104,7 @@ final class Grids
         Setup\HelpCenterReport::class,
         Setup\AssistantQuestionLookup::class,
         Setup\AssistantLogReport::class,
+        Setup\DashboardLookup::class,
         Setup\WidgetLookup::class,
         Setup\BoardTemplateLookup::class,
         Setup\KpiTargetLookup::class,

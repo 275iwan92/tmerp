@@ -59,6 +59,11 @@ final class OnTimeDelivery extends Widget
         return ['pengiriman tepat waktu', 'kirim tepat waktu', 'ketepatan kirim', 'on time delivery', 'on-time delivery', 'otd'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'SALES';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         [$prevFrom, $prevTo] = $n->range(1);

@@ -393,6 +393,18 @@
       Confirmed / Closed (yang dibandingkan target); baris di bawahnya merinci Draft dan yang menunggu approval. Berlaku untuk
       setiap widget berisi nilai / jumlah order.
     - Data dummy / legacy di papan mengikuti setelan Setup → Dummy & Legacy Data, sama dengan layar lain.
+    - **Dashboard Overall + dashboard per bidang** (user 2026-10-02): "kerjakan widget sebanyak mungkin ... direksi tinggal
+      pilih tickmark widget mana saja yang mau terlihat di dashboard secara overall"; "dashboard untuk sales, purchasing, AR AP,
+      cashflow, payroll, human resource sudah disediakan templatenya"; "kumpulan widget yang ada di purchasing, sales dll inilah
+      yang bisa dipilih untuk masuk ke dashboard overall".
+      - **Overall** = satu-satunya dashboard yang disusun pemiliknya: Choose Widgets = daftar centang, dikelompokkan menurut
+        dashboard bidang asal widget. **Dashboard bidang** = template (Setup → Opening Board Templates), hanya dibaca.
+      - Daftar dashboard = data (Setup → Opening Dashboards). Widget gaji hanya untuk yang berhak melihat nilai payroll.
+    - **Seperti layar Android** (user 2026-10-02: "user can add some widgets and easily to add widget"): ubin **+ Add widget**
+      di ujung papan, tekan dan tahan widget = mode atur, seret untuk memindah, kotak cari di daftar widget.
+    - **Referensi wajib dicari dulu** (user 2026-10-02: "FIND and BUILD IT references from another ERP or another software
+      for offset printing or ERP popular"): daftar widget disusun dari dashboard Business Central, SAP, NetSuite, Odoo, ERPNext,
+      Zoho, PrintVis, Accurate / Jurnal — `docs/md_for_systems/openingboard_references.md` (termasuk yang tidak terkonfirmasi).
     - Objek DevLib: `x-dl::widget-board` (contoh di devlib.test → Opening Dashboard). Definisi tiap angka + cara mencoba:
       `docs/md_for_systems/openingboard_review.md`. **Terpasang di ddt dan tm2** (user 2026-10-02: "pasang saja di tmerp");
       asisten di tm2 belum dipasang, jadi perintah widget lewat asisten baru jalan di mockup.test.
@@ -531,3 +543,4 @@
 | 2026-10-02 | C.18: klik logo atau nama aplikasi di kepala Layer Menu = semua tab ditutup dan opening screen tampil; posisi menu tetap; isian belum di-Save -> satu pertanyaan dulu. Objek DevLib `x-dl::layer-menu` prop `home` + `Shell::goHome`. |
 | 2026-10-02 | C.33 + E.3: **opening screen = papan widget** — top management dulu (yang lain masih template), katalog widget + susunan per user + target KPI sebagai data, widget dipasang / dilepas lewat Customize atau lewat asisten; dibangun di ddt, review `openingboard_review.md`. |
 | 2026-10-02 | C.33: papan widget **dipasang di tm2**; pilihan periode Harian – Tahunan (tersimpan per user, target bulanan dijumlah); order value merinci Draft di samping Confirmed; angka papan ikut setelan Dummy & Legacy Data. |
+| 2026-10-02 | C.33: 49 widget, dashboard **Overall** (daftar centang) + enam dashboard bidang (template): Sales, Purchasing, AR & AP, Cashflow, Payroll, Human Resource; ubin tambah, tekan-tahan, seret; daftar widget disusun dari referensi ERP lain (`openingboard_references.md`). ddt + tm2. |

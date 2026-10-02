@@ -55,6 +55,11 @@ final class SalesPipeline extends Widget
         return ['pipeline penjualan', 'corong penjualan', 'funnel penjualan', 'sales pipeline', 'sales funnel'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'SALES';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         $p = $n->pipeline($n->from(), $n->to());
