@@ -504,7 +504,7 @@ bentuknya, misal huruf L; gudang Telasih A5, A6, A10 berbentuk kotak dan punya 2
 Layar v2: `warehouse-map`, `stock-transfer`, `wh-buildings`, `wh-zones`, `wh-bins`, `inv-rpt-location`,
 `label-location`, `label-item`, `inv-label-history`, `scan-track`; cetakan `stock-transfer`.
 Objek DevLib: `x-dl::wh-map`, `x-dl::label`, `x-dl::label-sheet`, `x-dl::scan`.
-Menu, Help, dan data contoh: mockup.test (ddt) saja. Tabel dan view: ddt dan tm2.
+Menu, Help, tabel dan view: ddt dan tm2 (menu + Help tm2 dipasang 2026-10-03, migration `2026_10_03_000010`). Data contoh (stok, palet, transfer): mockup.test saja. Gedung A10 / A5 / A6 di tm2: `WarehouseBuildingSeeder` (tanpa stok).
 
 ## 14. Putaran 2 (2026-10-02): kapasitas luas x tinggi, palet berlabel, kedaluwarsa, approval transfer
 
@@ -618,4 +618,14 @@ Engine Catalog: Warehouse Stock, Stock Transfer Posting, Pallet Labels. Test: `P
 - Master `shelf_life_days` baru terisi untuk sedikit item, jadi tanggal kedaluwarsa umumnya diketik petugas.
 - Volume hanya bisa diperkirakan untuk lembaran (kertas); tinta, lem, barang jadi belum punya data ukuran.
 - Stage set dummy 1-12 tidak memuat stok gudang; sesudah memulihkan stage set, jalankan `UatWarehouseSeeder` lagi.
+
+### 14.8 Pemasangan di dua situs (2026-10-03)
+
+- Menu di semua database: migration `2026_10_03_000010_menu_inventory_warehouse_install` (memasang yang belum ada, tidak
+  mengubah yang sudah ada; `000202` / `000205` tetap khusus ddt).
+- Gedung nyata di tm2: `Database\Seeders\WarehouseBuildingSeeder` (A10, A5, A6 + area + bin dari denah perkiraan yang sama
+  dengan data contoh; tanpa stok; aman diulang).
+- Approval Stock Transfer: `Database\Seeders\StockTransferApprovalSeeder` (butuh kolom `flow_config.final_status`; di
+  tm2 belum ada, jadi dilewati dan Confirm langsung memindahkan stok).
+- Data contoh mockup.test: `UatWarehouseSeeder`; tersimpan di baseline Reset dan set "Mixed dummy" (2026-10-03).
 

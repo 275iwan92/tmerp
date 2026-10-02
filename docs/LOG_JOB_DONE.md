@@ -3801,3 +3801,15 @@ QR code ... warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BU
   dibatalkan (tidak meninggalkan data). Semua layar dirender dan dipotret (`docs/mockups/warehouse_app/`).
 - Ditemukan, belum diperbaiki: dokumen stok bertanggal mundur tidak mengubah saldo yang tampil (backlog 05.23).
 
+### 2026-10-03 — Inventory & Warehouse terpasang di tmerp.test; data contoh mockup.test disimpan
+
+- tm2: menu Inventory > Warehouse (Warehouse Map, Stock Transfer, Setup, Report), Label & QR Code (Location, Pallet, Item,
+  History), Scan Center (Track) lewat migration `2026_10_03_000010`; enam laporan stok (`000220`); Help 12 topik; gedung
+  A10 / A5 / A6 + 16 area + 217 bin (`WarehouseBuildingSeeder`, tanpa stok). Backlog 05.20 selesai.
+- Approval Stock Transfer di tm2 dilewati (Setting Approval v2 belum terpasang di sana); pemasangnya
+  `StockTransferApprovalSeeder` bisa dijalankan nanti (backlog 05.24).
+- ddt: tidak ada yang berubah selain baseline Reset baru (2026-10-03 00:42, yang lama dicadangkan di
+  `storage/app/backups/`) dan set "Mixed dummy" yang disimpan ulang dengan data gudang putaran 2.
+- Uji: 20 layar terbuka di tmerp.test; alur transfer + palet + label + tata letak dijalankan di tm2 dan ddt di dalam
+  transaksi yang dibatalkan; `PalletServiceTest` + `StockTransferServiceTest` lolos; tidak ada sisa di database.
+

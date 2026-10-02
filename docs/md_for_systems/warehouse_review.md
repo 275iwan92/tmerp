@@ -25,7 +25,7 @@
 | Buildings, Storage Areas, Bins (tambah / ubah sendiri) + Generate Bins + Edit Layout (seret area) | jalan |
 | Laporan **Stock by Location** | jalan |
 | Help 10 layar + terjemahan Indonesia | sudah dimuat (mockup.test) |
-| Menu di tmerp.test | **belum** — menunggu penilaian user (tabel dan view sudah terpasang di tm2) |
+| Menu, Help, dan gedung A10 / A5 / A6 di tmerp.test | **terpasang 2026-10-03** (bagian 10); tanpa stok / palet contoh |
 | **Putaran 2** (bagian 9): kapasitas luas x tinggi (m3) + kg, Print Pallet Label, label item / palet / lokasi yang berbeda dengan pita warna dan tag kedaluwarsa, panduan ukuran label, cetak label dari Penerimaan Barang, approval Stock Transfer (bawaan mati) | jalan di mockup.test |
 | Scan Transaction (kerja gudang lewat HP), putaway terarah, cycle count | **belum** (tahap berikut) |
 
@@ -122,7 +122,7 @@ Yang ikut berubah: jawaban asisten Deadstock, widget Deadstock Value, dan lapora
 | Titipan customer, subkon virtual, cycle count per bin | Tahap 2 rancangan |
 | Transfer dua langkah (dalam perjalanan) antar lokasi yang jauh | Bila ada gudang beda kota |
 | Stock In / Out / Adjustment v2 yang memilih bin dari peta | Layar v1 masih dipakai; bin baru sudah muncul di pilihan lokasinya |
-| Menu + Help + data di tmerp.test | Menunggu penilaian user |
+| ~~Menu + Help di tmerp.test~~ | **Terpasang 2026-10-03** (bagian 10) |
 | Denah nyata A5 / A6 / A10 dan gedung lain | Diisi officer di Buildings + Storage Areas (ukuran sekarang perkiraan) |
 
 ## 8. Pertanyaan untuk user
@@ -238,4 +238,30 @@ membawa palet) + 1 Draft. Stage set dummy 1-12 tidak memuat stok gudang: sesudah
 4. Label palet untuk **barang jadi** (hasil produksi) dibuat saat apa: saat hasil produksi masuk gudang?
 5. Approval transfer: siapa pemeriksanya (Kepala Gudang / Operational Manager), dan apakah perlu batas nilai?
 6. Masih terbuka dari Tahap 1: batas dead stock per kategori; gudang lama buatan sistem dinonaktifkan.
+
+## 10. Terpasang di mockup.test dan tmerp.test (2026-10-03)
+
+Perintah user: *"apply to mockup.test and tmerp.test, make sure all connected to table and database. After apply, don't
+forget data dummy on mockup.test."*
+
+| Hal | mockup.test (ddt) | tmerp.test (tm2) |
+|---|---|---|
+| Tabel, view, konstanta, kamus Indonesia | ada | ada |
+| Menu Inventory > Warehouse, Label & QR Code, Scan Center | ada | **dipasang 2026-10-03** |
+| Enam laporan stok semua kelas (Warehouse > Report) | ada | **dipasang 2026-10-03** |
+| Help 12 topik | ada | **dimuat 2026-10-03** |
+| Gedung A10, A5, A6 + area + bin (denah perkiraan) | ada (data contoh) | **dibuat 2026-10-03**: 16 area, 217 bin, **tanpa stok** |
+| Stok, palet, transfer contoh | ada (31 palet, 4 transfer) | tidak ada — diisi dari transaksi nyata |
+| Approval Stock Transfer (bawaan mati) + Approval Center | ada | **belum bisa**: Setting Approval belum terpasang di tmerp.test |
+
+- Di tmerp.test Confirm pada Stock Transfer langsung memindahkan stok. Begitu Setting Approval terpasang di sana, jalankan
+  `php artisan db:seed --class=StockTransferApprovalSeeder --force`; sesudah itu approval bisa dinyalakan dari layar.
+- Gedung di tmerp.test dibuat `php artisan db:seed --class=WarehouseBuildingSeeder --force` (aman diulang; gedung yang sudah
+  ada dilewati). Ukuran, tinggi, area, dan bin diubah lewat layar Buildings, Storage Areas, Bins, dan Atur Tata Letak.
+- Gudang lama buatan sistem (`WH-RAW-01`, `WH-FG-01`, `WH-MIX-01`, `WH-SCP-01`) masih aktif di kedua situs; stok yang ada
+  sekarang masih di sana (pertanyaan 8.5).
+- **Data contoh mockup.test** disimpan sebagai baseline Reset baru (2026-10-03 00:42) dan sebagai set "Mixed dummy";
+  baseline lama dicadangkan di `storage/app/backups/`. Set stage 1-12 tetap tanpa stok gudang.
+- Diuji di kedua situs dengan transaksi yang dibatalkan kembali: geser area, blokir bin, transfer (buat, Confirm, cetak,
+  Cancel), label palet (buat, label ulang), label item dan lokasi, lacak. Semua layar terbuka tanpa galat.
 

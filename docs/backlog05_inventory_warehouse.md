@@ -17,7 +17,7 @@ Stok 3 kelas (RM/SFG/FG), kartu stok, mutasi, dan tata letak gudang (struktur wh
 
 ---
 
-## TATA LETAK GUDANG — TAHAP 1 + PUTARAN 2 DIBANGUN 2026-10-02 (mockup.test), MENUNGGU PENILAIAN USER
+## TATA LETAK GUDANG — TAHAP 1 + PUTARAN 2 TERPASANG DI mockup.test DAN tmerp.test (2026-10-03), MENUNGGU PENILAIAN USER
 
 Rancangan: **[`warehouselayout_tier1.md`](warehouselayout_tier1.md)** (bagian 13 = yang dibangun). Dokumen review:
 **[`md_for_systems/warehouse_review.md`](md_for_systems/warehouse_review.md)** (bagian 9 = putaran 2). Yang sudah selesai dicatat di `LOG_JOB_DONE.md`.
@@ -38,9 +38,8 @@ Rancangan: **[`warehouselayout_tier1.md`](warehouselayout_tier1.md)** (bagian 13
 | 05.15 | Adjustment dengan approval v2 (A1–A2) | 1 | menunggu user |
 | 05.17 | Saldo berjalan kartu stok tidak konsisten di dummy LAMA (`php artisan data:audit --only=stock`): stok di `WH-RAW-01` / `UNKNOWN-LEGACY`. Stok contoh baru di gedung A10 / A5 / A6 sudah benar | — | hapus / pindahkan dummy lama setelah user setuju |
 | 05.19 | Kapasitas: volume hanya diperkirakan untuk lembaran kertas; tinta, lem, barang jadi, plat belum punya data ukuran / berat per item di master | 1 | **menunggu user** |
-| 05.20 | Menu + Help + gedung nyata di tmerp.test (tabel dan view sudah ada). Ikut dipasang saat itu: enam laporan stok semua kelas (migrasi `2026_10_02_000220` berjalan sendiri begitu grup `INV_WH_RPT` ada; jalankan ulang sesudah menu Warehouse dipasang) | — | menunggu penilaian user |
 | 05.21 | Stock In / Out / Adjustment v2 yang memilih bin dari peta (sekarang layar v1) | 2 | belum |
-| 05.24 | Approval Stock Transfer: pemeriksa dan batas nilai (fasilitas ada, bawaan mati); Setting Approval belum terpasang di tm2 | — | menunggu user |
+| 05.24 | Approval Stock Transfer: pemeriksa dan batas nilai (fasilitas ada, bawaan mati). **Di tmerp.test belum bisa diaktifkan**: Setting Approval v2 belum terpasang di tm2 (migration `2026_09_30_000006` .. `000010` belum dijalankan di sana, milik pekerjaan approval). Sesudah terpasang: `php artisan db:seed --class=StockTransferApprovalSeeder --force` | — | menunggu user |
 | 05.25 | Pilih palet per baris di form Stock Transfer (sekarang: palet ikut otomatis, atau lewat Move this Pallet) | 2 | belum |
 | 05.22 | Gudang lama buatan sistem (`WH-RAW-01`, `WH-FG-01`, `WH-MIX-01`, `WH-SCP-01`) dinonaktifkan setelah stoknya dipindah | — | menunggu user |
 | 05.23 | **Urutan posting kartu stok**: dokumen bertanggal lebih awal dari baris terakhir tidak sampai ke saldo (rincian di bawah) | 1 | **aturan diputuskan user 2026-10-02 (hitung ulang); belum dibangun** |

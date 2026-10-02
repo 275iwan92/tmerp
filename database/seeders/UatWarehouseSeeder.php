@@ -40,19 +40,20 @@ class UatWarehouseSeeder extends Seeder
     private const BY = 'uat_warehouse';
 
     // kode => [nama, panjang m, lebar m, lantai, [tinggi bersih lantai 1, lantai 2] m] -- semua PERKIRAAN.
-    private const BUILDINGS = [
+    // Denah yang sama dipakai WarehouseBuildingSeeder untuk gedung nyata di tmerp.test (tanpa stok).
+    public const BUILDINGS = [
         'A10' => ['Warehouse A10', 30, 20, 2, [7, 3.5]],
         'A5' => ['Warehouse A5', 24, 16, 2, [6, 3.2]],
         'A6' => ['Warehouse A6', 20, 12, 2, [5, 3]],
     ];
 
     // Tinggi tumpuk per area (m): tumpukan palet kertas, rak, barang jadi; area lain = STACK_DEFAULT.
-    private const STACK = ['PPR' => 1.6, 'PPR2' => 1.6, 'SHT' => 1.6, 'CSG' => 1.6, 'DSK' => 1.6, 'INK' => 2.4, 'TLG' => 2.0, 'FG' => 1.8, 'STR' => 1.8];
+    public const STACK = ['PPR' => 1.6, 'PPR2' => 1.6, 'SHT' => 1.6, 'CSG' => 1.6, 'DSK' => 1.6, 'INK' => 2.4, 'TLG' => 2.0, 'FG' => 1.8, 'STR' => 1.8];
 
-    private const STACK_DEFAULT = 1.5;
+    public const STACK_DEFAULT = 1.5;
 
     // gedung => [[lantai, kode, nama, jenis, cara simpan, kelas stok, x, y, w, h, [lajur/rak, slot/kolom, tingkat], kapasitas kg, kapasitas pallet]]
-    private const ZONES = [
+    public const ZONES = [
         'A10' => [
             [1, 'REJ', 'Reject / Waste', 'REJECT', 'AREA', 'ANY', 0.5, 0.5, 6, 3.5, null, 1000, null],
             [1, 'QC', 'QC Hold', 'QC_HOLD', 'AREA', 'RM', 0.5, 5, 6, 4, null, 4000, 4],

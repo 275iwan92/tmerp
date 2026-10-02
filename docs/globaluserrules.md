@@ -188,8 +188,9 @@
       kamu buat dulu tapi nanti bisa diubah oleh user atau officer warehouse". Ukuran gedung, letak area, dan bin awal =
       perkiraan agen, tidak menunggu sketsa atau foto; semuanya wajib tetap bisa diubah lewat layar (Buildings, Storage
       Areas, Bins, Atur Tata Letak di Warehouse Map).
-    - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**; menu `tm2sys` belum. Yang diputuskan agen
-      sendiri dan menunggu koreksi: `docs/md_for_systems/warehouse_review.md` bagian 4.
+    - Status: **terpasang di mockup.test dan tmerp.test** (user 2026-10-03: "apply to mockup.test and tmerp.test, make sure
+      all connected to table and database"); data contoh hanya di mockup.test; menunggu penilaian user. Yang diputuskan
+      agen sendiri dan menunggu koreksi: `docs/md_for_systems/warehouse_review.md` bagian 4 dan 9.4.
     - **Kapasitas = luas dan tinggi** (user 2026-10-02): tiap lantai (1, 2, 3) punya tinggi bersih; luas lantai x tinggi =
       volume. Bin: luas tapak x tinggi tumpuk. Kapasitas kg tetap dipakai; status bin memakai yang lebih penuh dari keduanya.
     - **Approval Stock Transfer**: untuk sementara di-skip, tetapi fasilitasnya ada dan bisa diaktifkan kapan saja
@@ -661,5 +662,6 @@
 | 2026-10-02 | A.22: **kapasitas gudang = luas dan tinggi** (tiap lantai 1-3: luas x tinggi bersih = volume; bin: tapak x tinggi tumpuk), kg tetap dipakai; yang lebih penuh dari keduanya menentukan status bin. |
 | 2026-10-02 | A.22: **approval Stock Transfer di-skip dulu, fasilitasnya ada** — modul `TF` di Setting Approval, bawaan tidak aktif, bisa diaktifkan kapan saja; saat aktif stok baru pindah sesudah approval terakhir. |
 | 2026-10-02 | A.22: **label wajib** — label palet dibuat setiap barang datang dan setiap isi satu palet habis dipakai (label ulang dengan qty sisa); label palet dan label item sengaja berbeda; setiap label punya QR code + barcode + tanggal tiba, pita warna sebagai penanda, kode palet dari supplier, dan tag kedaluwarsa (kertas, tinta); ukuran label dijelaskan di layar (60 x 40, 100 x 50, 100 x 150 mm; gulungan label atau A4); label palet dan label item bisa dicetak langsung dari Penerimaan Barang. Dibangun di ddt; tabel di ddt + tm2. |
+| 2026-10-03 | A.22: **dipasang di mockup.test dan tmerp.test** (user: "apply to mockup.test and tmerp.test, make sure all connected to table and database; don't forget data dummy on mockup.test") — menu Inventory > Warehouse / Label & QR Code / Scan Center, Help, dan gedung A10 / A5 / A6 (denah perkiraan, tanpa stok) di tm2; data contoh mockup.test disimpan sebagai baseline Reset baru dan set Mixed. Approval Stock Transfer di tmerp.test menunggu Setting Approval terpasang di sana. |
 | 2026-10-02 | B.15: set stage 8–12 dibangun (Posted to Production + Work Order belum dimulai, Delivery Order Draft, Delivery Order Confirmed, Customer Invoice Draft, Customer Invoice Confirmed menunggu pembayaran) — usulan agen, belum dikonfirmasi user; rantai PO di samping: stage 4 PO Draft, 5–7 menunggu approval level 1–3, 8+ Approved. Build sungguhan tanpa transaksi. |
 | 2026-10-02 | **A.23: laporan stok dan gudang** — set lengkap mengacu ERP populer (SAP, Odoo, Dynamics 365, Zahir, Accurate, Oracle NetSuite, ERPNext): Stock Card, Stock Recapitulation, Stock Summary, Stock Opname, Stock Loss & Gain (per bulan), Stock in Inspection, Stock by Location terkelompok per gedung; selisih stok masuk lewat stock opname. Grid Report mendapat periode (Period + Show) dan cetakan `x-dl::report`. Dibangun di ddt; review: `md_for_systems/inventoryreport_review.md`. |

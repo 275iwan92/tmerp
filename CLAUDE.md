@@ -537,7 +537,9 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
   `last_item_movement`). Bagian 13 = yang dibangun; review user: `md_for_systems/warehouse_review.md`.
   Bagian 14 (putaran 2): kapasitas = luas x tinggi (m3) + kg; palet berlabel = `inv_pallet` (TIDAK mengubah stok; selisih
   saldo dan label = pekerjaan label, `App\Services\Inventory\PalletService`); tiga label berbeda (lokasi / item / palet)
-  hanya lewat `App\Support\V2\Data\Labels`; approval transfer = modul flow `TF`, bawaan mati.
+  hanya lewat `App\Support\V2\Data\Labels`; approval transfer = modul flow `TF`, bawaan mati. Terpasang di ddt DAN tm2
+  (2026-10-03, bagian 14.8): menu lewat migration `2026_10_03_000010`, gedung nyata tm2 `WarehouseBuildingSeeder`, data
+  contoh hanya ddt (`UatWarehouseSeeder`); approval TF di tm2 menunggu Setting Approval (`StockTransferApprovalSeeder`).
 - `componentstandard.md` — **wajib dibaca sebelum menulis markup layar apa
   pun** (keputusan user 2026-09-23): komponen UI berlapis & object oriented —
   token `@theme` → primitive `app/View/Components/Ui/*` (`x-ui.button`,
