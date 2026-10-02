@@ -16,7 +16,7 @@ class ProcessGrid extends ProdGrid
 
     public function title(): string
     {
-        return 'Master Proses';
+        return t('Process Master');
     }
 
     protected function v1Route(): ?string

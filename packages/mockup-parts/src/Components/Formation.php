@@ -54,14 +54,14 @@ class Formation extends DevlibComponent
                 <div class="dl-fm__main">
                     <section class="dl-fm__sheet">
                         <div class="dl-fm__tools">
-                            <div class="dl-segment" data-fm-mode><button type="button" class="dl-segment__opt is-active" data-m="week">{{ t('Week summary') }}</button><button type="button" class="dl-segment__opt" data-m="day">{{ t('Per day') }}</button></div>
+                            <div class="dl-segment" data-fm-mode><button type="button" class="dl-segment__opt is-active" data-m="week">{{ t('Week summary') }}</button><button type="button" class="dl-segment__opt" data-m="day">{{ t('Day by day') }}</button></div>
                             <div class="dl-fm__days" data-fm-days></div>
                             <span class="dl-print__spacer"></span>
                             <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ t('Search name in formation…') }}" data-fm-search aria-label="{{ t('Search name') }}"></div>
                             <x-dl::button variant="secondary" size="sm" icon="fa-clone" :label="t('Copy last week')" data-fm-copy />
                             <x-dl::button preset="print" size="sm" data-fm-print />
                         </div>
-                        <div class="dl-fm__scroll"><table class="dl-fm__table"><thead><tr><th class="dl-fm__no">{{ t('No') }}</th><th>{{ t('Position') }}</th><th>{{ t('Working hours') }}</th><th data-fm-colhead>{{ t('On duty') }}</th><th></th></tr></thead><tbody data-fm-body></tbody></table></div>
+                        <div class="dl-fm__scroll"><table class="dl-fm__table"><thead><tr><th class="dl-fm__no">{{ t('No') }}</th><th>{{ t('Position') }}</th><th>{{ t('Work hours') }}</th><th data-fm-colhead>{{ t('On duty') }}</th><th></th></tr></thead><tbody data-fm-body></tbody></table></div>
                         <div class="dl-fm__legend" data-fm-legend></div>
                     </section>
                     <aside class="dl-fm__side" data-fm-side></aside>

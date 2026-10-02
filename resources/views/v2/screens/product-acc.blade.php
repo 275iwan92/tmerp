@@ -25,7 +25,7 @@
             ['key' => 'name', 'label' => 'Product', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'customer', 'label' => 'Customer'],
             ['key' => 'acc_digital', 'label' => 'ACC Digital', 'type' => 'badge', 'tones' => ['ADA' => 'success', 'BELUM' => 'warn']],
-            ['key' => 'status', 'label' => 'Status product', 'type' => 'badge', 'tones' => ['ACTIVE' => 'success', 'DRAFT' => 'neutral']],
+            ['key' => 'status', 'label' => 'Product status', 'type' => 'badge', 'tones' => ['ACTIVE' => 'success', 'DRAFT' => 'neutral']],
         ]"
         :stats="[['label' => t('All')], ['label' => t('No Digital ACC yet'), 'where' => ['acc_digital' => 'BELUM'], 'tone' => 'warn'], ['label' => t('Digital ACC done'), 'where' => ['acc_digital' => 'ADA'], 'tone' => 'success']]" />
 @else
@@ -47,13 +47,13 @@
         </div>
         @foreach ($doc['components'] as $c)
             <div class="mp-proof__art"><span>{{ preg_replace('/^Part\s+/i', '', $c['name']) }}</span>
-                @if ($c['artwork'])<img src="{{ $c['artwork'] }}" alt="Proof {{ $c['name'] }}">@else<div class="mp-partvis__empty">Belum ada artwork {{ $c['name'] }}.</div>@endif
+                @if ($c['artwork'])<img src="{{ $c['artwork'] }}" alt="Proof {{ $c['name'] }}">@else<div class="mp-partvis__empty">{{ str_replace(':name', $c['name'], t('No artwork for :name yet.')) }}</div>@endif
             </div>
         @endforeach
         <table class="mp-proof__block">
             <tr>
                 <td rowspan="4" class="mp-proof__logo"><b>{{ \App\Support\Branding\Brand::companyName() }}</b><br><small>{{ \App\Support\Branding\Brand::tagline() }}</small>
-                    <div class="mp-proof__warn"><b>Perhatian !!!</b><br>* Warna pada print out ini bukan standar untuk proses produksi, harap diperiksa kembali print out ini dan warna cetak terlampir. Kesalahan setelah di-ACC bukan menjadi tanggung jawab kami.<br>* Satuan ukuran dalam layout ini adalah milimeter (mm) kecuali disebutkan lain.</div></td>
+                    <div class="mp-proof__warn"><b>{{ t('Attention !!!') }}</b><br>{{ t('* The colours on this print out are not the standard for the production process; please re-check this print out and the attached print colours. Errors after ACC are not our responsibility.') }}<br>{{ t('* The unit of measure in this layout is millimetre (mm) unless stated otherwise.') }}</div></td>
                 <th>CUSTOMER</th><th>ITEM</th><th>Inner SIZE</th><th>APPROVED BY</th><th>APPROVED BY</th><th>INQUIRE &amp; APPROVED BY</th><th>NOTE</th>
             </tr>
             <tr><td rowspan="2" class="mp-proof__big">{{ $doc['customer'] }}</td><td rowspan="2" class="mp-proof__big">{{ $doc['name'] }}</td>
@@ -64,9 +64,9 @@
             <tr><td class="mp-proof__mono"><small>DATE</small> {{ optional($doc['design_date'])->format('d/m/Y') ?? '—' }}<br><small>DESIGN NUMBER</small> {{ $doc['design_no'] ?? '—' }}</td>
                 <td><small>PRINT COLOUR</small><br>@foreach ($inks as $k)<i class="mp-proof__sw" style="background:{{ $swatch[$k] ?? '#999' }}" title="{{ $k }}"></i>@endforeach {{ implode(' · ', $inks) ?: '—' }}</td>
                 <td class="mp-proof__big">{{ $doc['drawing_by'] ?? '—' }}</td></tr>
-            <tr><td colspan="4"></td><td class="mp-proof__cap">QA</td><td class="mp-proof__cap">PRACETAK</td><td class="mp-proof__cap">CUSTOMER</td><td></td></tr>
+            <tr><td colspan="4"></td><td class="mp-proof__cap">QA</td><td class="mp-proof__cap">{{ t('PREPRESS') }}</td><td class="mp-proof__cap">CUSTOMER</td><td></td></tr>
         </table>
-        <p class="mp-proof__red">ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD</p>
+        <p class="mp-proof__red">{{ t('ACC PROOF PRINT (DIGITAL + PRINTED) MUST BE ATTACHED TOGETHER WITH THE MASTER CARD') }}</p>
     </div>
 
     <x-dl::alert tone="info" message="Printed document. Customer ACC (date, approver, evidence) is recorded on the ProDev screen." />

@@ -1,4 +1,4 @@
-        <div class="dl-tabbar" data-dl-tabbar data-dl="tab MDI" data-dl-class="bagian Shell" data-dl-src="—"></div>
+        <div class="dl-tabbar" data-dl-tabbar data-dl="MDI tabs" data-dl-class="Shell part" data-dl-src="—"></div>
         <div class="dl-content" data-dl-content>
             <div class="dl-pane is-active" data-dl-home>
                 {{-- Slot "dashboard" (x-dl::dashboard) = opening screen per jabatan; tanpa slot = sambutan bawaan. --}}

@@ -225,7 +225,7 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
     #[Computed]
     public function willingItems(): array
     {
-        return CandidateFormOptions::WILLING_ITEMS;
+        return CandidateFormOptions::labels(CandidateFormOptions::WILLING_ITEMS);
     }
 
     #[Computed]

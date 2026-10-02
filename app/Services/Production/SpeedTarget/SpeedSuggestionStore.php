@@ -74,11 +74,11 @@ final class SpeedSuggestionStore
     public function accept(ProdSpeedSuggestion $s, ?float $value, string $user, ?string $note = null): void
     {
         if ($s->status !== 'PENDING') {
-            throw new InvalidArgumentException('Suggestion is no longer pending.');
+            throw new InvalidArgumentException(t('Suggestion is no longer pending.'));
         }
         $value ??= $s->suggested_speed;
         if ($value <= 0) {
-            throw new InvalidArgumentException('Speed must be greater than zero.');
+            throw new InvalidArgumentException(t('Speed must be greater than zero.'));
         }
 
         DB::connection('tm2mst')->transaction(function () use ($s, $value, $user, $note) {
@@ -100,7 +100,7 @@ final class SpeedSuggestionStore
     public function reject(ProdSpeedSuggestion $s, string $user, ?string $note = null): void
     {
         if ($s->status !== 'PENDING') {
-            throw new InvalidArgumentException('Suggestion is no longer pending.');
+            throw new InvalidArgumentException(t('Suggestion is no longer pending.'));
         }
         $s->update(['status' => 'REJECTED', 'decided_by' => $user, 'decided_at' => now(), 'decision_note' => $note, 'updated_by' => $user]);
     }

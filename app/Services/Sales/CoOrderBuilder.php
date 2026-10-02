@@ -191,14 +191,14 @@ class CoOrderBuilder
     {
         $order->loadMissing(['items.deliveries']);
         if ($order->doc_status !== 'DRAFT' || ! $order->isConfirmable()) {
-            return 'Belum bisa Confirm: tiap baris PRODUCT wajib punya Due Date'.($order->isInstant() ? ' dan Master Product' : '').'.';
+            return $order->isInstant() ? t('Cannot Confirm yet: every PRODUCT line must have a Due Date and a Master Product.') : t('Cannot Confirm yet: every PRODUCT line must have a Due Date.');
         }
         if ($order->itemsWithUnpickedQty()->isNotEmpty()) {
             return Dictionary::t('Pick one qty per product: delete the qty lines the customer did not choose, then Confirm.');
         }
         $flow = app(FlowEngineService::class);
         if (! $flow->activeConfig('CO')) {
-            return 'Alur approval Customer Order belum dikonfigurasi (flow_config CO).';
+            return t('The Customer Order approval flow is not configured yet (flow_config CO).');
         }
         DB::connection('tm2sdi')->transaction(function () use ($order, $flow) {
             $order->update(['doc_status' => 'SUBMITTED', 'updated_by' => Auth::user()->login]);
@@ -247,18 +247,18 @@ class CoOrderBuilder
     public static function cancelBlocker(CoOrder $order): ?string
     {
         if ($order->doc_status !== 'CONFIRMED') {
-            return 'Hanya Customer Order Confirmed yang bisa di-Cancel.';
+            return t('Only a Confirmed Customer Order can be cancelled.');
         }
         $deliveryIds = CoOrderDelivery::where('order_id', $order->id_order)->pluck('id_delivery');
         $wo = PrdWo::where('wo_status', '<>', 'CANCELLED')
             ->where(fn ($q) => $q->where('source_co_id', $order->id_order)->orWhereIn('source_delivery_id', $deliveryIds))->pluck('wo_no');
         if ($wo->isNotEmpty()) {
-            return 'Sudah ada Work Order: '.$wo->implode(', ').'. Cancel WO-nya dulu.';
+            return str_replace(':no', $wo->implode(', '), t('There is already a Work Order: :no. Cancel the WO first.'));
         }
         $do = DoLine::with('delivery:id_delivery,do_no')->whereIn('co_delivery_id', $deliveryIds)->where('status', '<>', 'CANCELLED')->get()
             ->pluck('delivery.do_no')->filter()->unique();
         if ($do->isNotEmpty()) {
-            return 'Sudah ada Delivery Order: '.$do->implode(', ').'. Cancel DO-nya dulu.';
+            return str_replace(':no', $do->implode(', '), t('There is already a Delivery Order: :no. Cancel the DO first.'));
         }
 
         return null;

@@ -114,11 +114,11 @@ class TranslationDictionaryLookup extends DbLookup
                 $ctx = trim((string) ($in['context'] ?? '')) ?: 'ui';
                 $src = trim((string) ($in['source_en'] ?? ''));
                 if ($src === '') {
-                    throw ValidationException::withMessages(['row' => 'Row '.($i + 1).': English (source) is required.']);
+                    throw ValidationException::withMessages(['row' => str_replace(':n', (string) ($i + 1), t('Row :n:')).' '.t('English (source) is required.')]);
                 }
                 $twin = SysDictionary::where('context', $ctx)->where('source_en', $src)->when($id, fn ($q) => $q->whereKeyNot($id))->first();
                 if ($twin && ! $id) {
-                    throw ValidationException::withMessages(['row' => 'Row '.($i + 1).": \"$src\" already exists in context \"$ctx\"."]);
+                    throw ValidationException::withMessages(['row' => str_replace(':n', (string) ($i + 1), t('Row :n:')).' '.str_replace([':src', ':ctx'], [$src, $ctx], t('":src" already exists in context ":ctx".'))]);
                 }
                 $d = $id ? SysDictionary::findOrFail($id) : new SysDictionary(['created_by' => $login]);
                 // English sumber diganti ke teks yang sudah ada: dua baris digabung, terjemahan yang belum ada di sana ikut pindah.
@@ -126,7 +126,7 @@ class TranslationDictionaryLookup extends DbLookup
                     Dictionary::rename($d->source_en, $src, $ctx);
                     $d = $twin->fresh();
                 } elseif ($twin) {
-                    throw ValidationException::withMessages(['row' => 'Row '.($i + 1).": \"$src\" already exists in context \"$ctx\"."]);
+                    throw ValidationException::withMessages(['row' => str_replace(':n', (string) ($i + 1), t('Row :n:')).' '.str_replace([':src', ':ctx'], [$src, $ctx], t('":src" already exists in context ":ctx".'))]);
                 }
                 $d->fill(['context' => $ctx, 'source_en' => $src, 'note' => ($in['note'] ?? '') === '' ? null : $in['note'],
                     'activate' => array_key_exists('activate', $in) ? filter_var($in['activate'], FILTER_VALIDATE_BOOLEAN) : true, 'updated_by' => $login])->save();

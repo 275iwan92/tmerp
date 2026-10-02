@@ -44,21 +44,21 @@ class ReverseCostingService
     public function reverse(IqpCosting $costing, string $actingLogin): IqpInquiry
     {
         if (! $costing->isInstant()) {
-            throw new \RuntimeException('Reverse cuma berlaku utk costing mode INSTANT.');
+            throw new \RuntimeException(t('Reverse only applies to INSTANT mode costing.'));
         }
 
         if (! $costing->customer_id) {
-            throw new \RuntimeException('Isi Customer dulu sebelum Reverse -- Inquiry butuh customer.');
+            throw new \RuntimeException(t('Fill in the Customer before Reverse -- the Inquiry needs a customer.'));
         }
 
         if (! $costing->product_name_draft) {
-            throw new \RuntimeException('Isi Nama Produk dulu sebelum Reverse.');
+            throw new \RuntimeException(t('Fill in the Product Name before Reverse.'));
         }
 
         $parts = $costing->parts()->get();
 
         if ($parts->isEmpty()) {
-            throw new \RuntimeException('Tambah minimal 1 part dulu sebelum Reverse -- tidak ada apa pun utk ditautkan ke Inquiry/ProDev.');
+            throw new \RuntimeException(t('Add at least 1 part before Reverse -- there is nothing to link to the Inquiry/ProDev.'));
         }
 
         $mst = DB::connection('tm2mst');

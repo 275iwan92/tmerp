@@ -66,7 +66,7 @@ class ShiftGrid extends MasterDataGrid
 
     protected function row(Model $m): array
     {
-        return ['photo' => null, 'name' => $m->shift_name, 'dept' => $m->department?->department_name ?? 'Semua departemen',
+        return ['photo' => null, 'name' => $m->shift_name, 'dept' => $m->department?->department_name ?? t('All departments'),
             'employees' => (int) ($this->employees[$m->getKey()] ?? 0)];
     }
 

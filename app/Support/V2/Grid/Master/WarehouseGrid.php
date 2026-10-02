@@ -16,7 +16,7 @@ class WarehouseGrid extends MasterDataGrid
 
     public function title(): string
     {
-        return 'Master Gudang';
+        return t('Warehouse Master');
     }
 
     protected function v1Route(): ?string

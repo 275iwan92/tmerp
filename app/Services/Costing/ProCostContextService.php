@@ -85,7 +85,7 @@ class ProCostContextService
             'branch' => $r->branch_code,
             'process' => $r->process_name,
             'machine' => $machines[$r->machine_id]->machine_name ?? null,
-            'subcon' => $r->subcon_supplier_id ? ($subcons[$r->subcon_supplier_id] ?? 'Subkon #'.$r->subcon_supplier_id) : null,
+            'subcon' => $r->subcon_supplier_id ? ($subcons[$r->subcon_supplier_id] ?? t('Subcon #').$r->subcon_supplier_id) : null,
             'target' => $r->target_qty_per_hour ?? ($machines[$r->machine_id]->max_speed_per_hour ?? null),
             'factor' => $r->qty_factor,
             'waste' => $r->waste_pct,

@@ -18,7 +18,7 @@ class MachineModelLookup extends DbLookup
 
     public function title(): string
     {
-        return 'Katalog Model Mesin';
+        return t('Machine Model Catalog');
     }
 
     public function module(): string

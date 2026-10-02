@@ -2,13 +2,13 @@
     <x-dl::layer-menu class="dl-shell__lm" id="shell" :items="$views() ? [] : $layerTree()" :views="$views()" :initial-view="$startView()" :title="$brand" :tagline="$tagline" :logo="$logo" search home :user="$user['name']" :role="$user['role'] ?? null" :login="$user['email'] ?? null" dock="[data-dl-lm-dock]" :actions="$actions()">
         <x-slot:chat><x-dl::chat compact :me="$chat['me'] ?? $user" :people="$chat['people'] ?? []" :convos="$chat['convos'] ?? []" :api="$chat['api'] ?? []" /></x-slot:chat>
         <x-slot:profile>
-            <section data-lm-page="theme" data-label="Tema" data-icon="fa-palette"><x-dl::theme-picker /></section>
-            <section data-lm-page="lang" data-label="Bahasa" data-icon="fa-globe"><x-dl::lang-switch /></section>
+            <section data-lm-page="theme" data-label="{{ \Devlib\Lang::text('Theme') }}" data-icon="fa-palette"><x-dl::theme-picker /></section>
+            <section data-lm-page="lang" data-label="{{ \Devlib\Lang::t('language') }}" data-icon="fa-globe"><x-dl::lang-switch /></section>
             @if (! empty($user['email_url']))
                 <section data-lm-page="email" data-label="E-mail" data-icon="fa-envelope">
-                    <p>{{ $user['email'] ?: 'Belum ada e-mail' }}</p>
-                    <x-dl::badge :label="! empty($user['email_verified']) ? 'Terverifikasi' : 'Belum terverifikasi'" :tone="! empty($user['email_verified']) ? 'success' : 'warn'" />
-                    <x-dl::action-bar><x-dl::button size="sm" icon="email" label="Kelola e-mail" :href="$user['email_url']" /></x-dl::action-bar>
+                    <p>{{ $user['email'] ?: \Devlib\Lang::text('No e-mail yet') }}</p>
+                    <x-dl::badge :label="\Devlib\Lang::text(! empty($user['email_verified']) ? 'Verified' : 'Not verified')" :tone="! empty($user['email_verified']) ? 'success' : 'warn'" />
+                    <x-dl::action-bar><x-dl::button size="sm" icon="email" :label="\Devlib\Lang::text('Manage e-mail')" :href="$user['email_url']" /></x-dl::action-bar>
                 </section>
             @endif
             {{ $profilePages ?? '' }}

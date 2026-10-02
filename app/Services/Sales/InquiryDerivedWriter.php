@@ -32,7 +32,7 @@ final class InquiryDerivedWriter
     {
         return IqpInquiry::find($product->source_inquiry_id)
             ?? IqpInquiry::where('product_id', $product->id_product)->whereIn('inquiry_type', ['NEW', 'REVISE'])->orderByDesc('id_inquiry')->first()
-            ?? throw ValidationException::withMessages(['product' => 'Product ini belum punya inquiry asal (belum lahir dari Quotation WIN).']);
+            ?? throw ValidationException::withMessages(['product' => t('This product has no source inquiry yet (it was not born from a WIN Quotation).')]);
     }
 
     public function recalc(ProdProduct $product, ?IqpInquiry $doc, array $in): IqpInquiry
@@ -54,7 +54,7 @@ final class InquiryDerivedWriter
     {
         $this->assertEditable($doc);
         if (! $in['scope']) {
-            throw ValidationException::withMessages(['revise_scope' => 'Scope revisi wajib dipilih minimal satu.']);
+            throw ValidationException::withMessages(['revise_scope' => t('Choose at least one revision scope.')]);
         }
 
         return DB::connection('tm2sdi')->transaction(function () use ($product, $doc, $in, $artworks) {
@@ -88,7 +88,7 @@ final class InquiryDerivedWriter
     {
         $this->assertEditable($doc);
         if (! $doc->tiers()->exists()) {
-            throw ValidationException::withMessages(['qty' => 'Qty order wajib diisi sebelum Confirm.']);
+            throw ValidationException::withMessages(['qty' => t('Order qty is required before Confirm.')]);
         }
         $doc->update(['stat_confirm_sales' => true, 'sub_state' => 'SUBMITTED', 'updated_by' => $this->login]);
     }
@@ -113,7 +113,7 @@ final class InquiryDerivedWriter
     private function assertEditable(?IqpInquiry $doc): void
     {
         if ($doc?->stat_confirm_sales) {
-            throw ValidationException::withMessages(['inquiry' => 'Dokumen sudah Confirm — tidak bisa diubah.']);
+            throw ValidationException::withMessages(['inquiry' => t('The document is already Confirmed — it cannot be changed.')]);
         }
     }
 

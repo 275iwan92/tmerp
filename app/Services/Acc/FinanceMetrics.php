@@ -118,7 +118,7 @@ class FinanceMetrics
         $out = [];
         foreach (FinTaxRegister::whereNotIn('status', ['FILED'])->whereNotNull('payment_due')->orderBy('payment_due')->limit(3)->get() as $r) {
             $days = (int) today()->diffInDays($r->payment_due, false);
-            $out[] = [$days < 0 ? '!' : '%', $days < 0 ? 're' : 'or', $r->description, $days < 0 ? str_replace(':n', (string) abs($days), t('Late :n days')) : t('Pay', 'action').' '.Fmt::date($r->payment_due), $days < 0 ? str_replace(':n', (string) abs($days), t(':nd late')) : $days.'d'];
+            $out[] = [$days < 0 ? '!' : '%', $days < 0 ? 're' : 'or', $r->description, $days < 0 ? str_replace(':n', (string) abs($days), t('Late :n days')) : t('Pay').' '.Fmt::date($r->payment_due), $days < 0 ? str_replace(':n', (string) abs($days), t(':nd late')) : $days.'d'];
         }
         if ($period = $this->close->currentPeriod()) {
             $tasks = $period->tasks;

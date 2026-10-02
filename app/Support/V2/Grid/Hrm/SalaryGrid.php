@@ -21,7 +21,7 @@ class SalaryGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Master Gaji & Pajak Pegawai';
+        return t('Employee Salary & Tax Master');
     }
 
     public function family(): string

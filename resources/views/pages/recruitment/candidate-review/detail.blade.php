@@ -235,7 +235,7 @@ new #[Title('Review Formulir Kandidat — TELASIH MAKMUR ERP')] class extends Co
     #[Computed]
     public function willingItems(): array
     {
-        return CandidateFormOptions::WILLING_ITEMS;
+        return CandidateFormOptions::labels(CandidateFormOptions::WILLING_ITEMS);
     }
 };
 ?>

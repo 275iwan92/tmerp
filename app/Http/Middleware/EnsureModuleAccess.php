@@ -22,7 +22,7 @@ class EnsureModuleAccess
 
         if (! $user->canAccessModule($moduleCode)) {
             $module = SecModule::query()->where('module_code', $moduleCode)->first();
-            abort(403, 'Anda tidak punya akses ke modul '.($module->module_name ?? $moduleCode).'.');
+            abort(403, str_replace(':module', $module->module_name ?? $moduleCode, t('You do not have access to the :module module.')));
         }
 
         return $next($request);

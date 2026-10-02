@@ -125,7 +125,7 @@ class MenuSetupLookup extends DbLookup
             foreach ($changed as $i => $in) {
                 $row = is_numeric($in['id'] ?? null) ? SysAppMenu::query()->find((int) $in['id']) : null;
                 if (! $row) {
-                    throw ValidationException::withMessages(['row' => 'Baris '.($i + 1).': New menu rows are added by migration, not here. Use Undo to remove the row.']);
+                    throw ValidationException::withMessages(['row' => str_replace(':n', (string) ($i + 1), t('Row :n:')).' '.t('New menu rows are added by migration, not here. Use Undo to remove the row.')]);
                 }
                 $v = Validator::make($in, [
                     'label' => ['required', 'string', 'max:100'], 'short_label' => ['nullable', 'string', 'max:20'],
@@ -133,10 +133,10 @@ class MenuSetupLookup extends DbLookup
                     'sort_order' => ['nullable', 'integer', 'between:0,99999'], 'activate' => ['boolean'],
                 ], ['icon.regex' => 'Icon must be a Font Awesome class, for example: fa-solid fa-truck.'], ['label' => 'Label', 'short_label' => 'Short Label', 'icon' => 'Icon', 'sort_order' => 'Order']);
                 if ($v->fails()) {
-                    throw ValidationException::withMessages(['row' => 'Baris '.($i + 1).': '.$v->errors()->first()]);
+                    throw ValidationException::withMessages(['row' => str_replace(':n', (string) ($i + 1), t('Row :n:')).' '.$v->errors()->first()]);
                 }
                 if (empty($in['activate']) && isset($own[$row->id])) {
-                    throw ValidationException::withMessages(['row' => 'Baris '.($i + 1).": \"{$row->label}\" holds this Menu Setup screen and cannot be switched off here."]);
+                    throw ValidationException::withMessages(['row' => str_replace(':n', (string) ($i + 1), t('Row :n:')).' '.str_replace(':label', (string) $row->label, t('":label" holds this Menu Setup screen and cannot be switched off here.'))]);
                 }
                 $row->forceFill([
                     'label' => trim((string) $in['label']), 'short_label' => ($in['short_label'] ?? '') === '' ? null : $in['short_label'],

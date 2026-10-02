@@ -138,7 +138,7 @@ final class TmDieline
             $pos = $off + strlen($whole);
         }
         if ($pos !== strlen($s) && trim(substr($s, $pos)) !== '') {
-            throw new \RuntimeException('sisa tak terparse: '.substr($s, $pos));
+            throw new \RuntimeException(t('Unparsed remainder:').' '.substr($s, $pos));
         }
 
         return $out;

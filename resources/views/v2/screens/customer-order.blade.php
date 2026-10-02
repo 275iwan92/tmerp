@@ -27,20 +27,20 @@
         :columns="[
             ['key' => 'no', 'label' => 'CO No. / Customer', 'type' => 'doc', 'party' => 'customer'],
             ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'mode', 'label' => 'Jalur', 'type' => 'badge', 'tones' => CustomerOrder::MODE_TONES],
+            ['key' => 'mode', 'label' => 'Path', 'type' => 'badge', 'tones' => CustomerOrder::MODE_TONES],
             ['key' => 'quotation', 'label' => 'Quotation'],
-            ['key' => 'po', 'label' => 'No. PO customer'],
+            ['key' => 'po', 'label' => 'Customer PO No.'],
             ['key' => 'due', 'label' => 'Nearest Due Date', 'type' => 'date'],
             ['key' => 'total', 'label' => t('Total due'), 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => CustomerOrder::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'spec', 'label' => 'Specification'],
-            ['key' => 'kind', 'label' => 'Line Type'],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'due', 'label' => 'Due Date', 'type' => 'date'],
+        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'spec', 'label' => t('Specification')],
+            ['key' => 'kind', 'label' => t('Line Type')],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'due', 'label' => t('Due Date'), 'type' => 'date'],
         ]]"
         :stats="[
             ['label' => t('All')],
@@ -49,7 +49,7 @@
             ['label' => 'Approved', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
             ['label' => 'Rejected / Cancelled', 'where' => ['status' => ['REJECTED', 'CANCELLED']], 'tone' => 'danger'],
         ]"
-        :filters="['mode' => 'Jalur', 'status' => 'Status']" />
+        :filters="['mode' => 'Path', 'status' => 'Status']" />
 @elseif (! $o)
     @php $quotes = CustomerOrder::quotationChoices(); @endphp
     <x-dl::card title="+ New Record — choose the Customer Order path" description="Two entry paths; the document & what follows (CPDEL, production) are the same.">
@@ -58,7 +58,7 @@
                 <input type="hidden" name="mode" value="INTEGRATED">
                 <x-dl::card title="INTEGRATED — from Quotation" description="Customer accepts the quotation. Lines & prices = quotation snapshot (1 Quotation = 1 CO).">
                     @if ($quotes)
-                        <x-dl::field.select name="quotation_id" label="Quotation terbit" required :options="collect($quotes)->mapWithKeys(fn ($q) => [$q['id'] => $q['no'].' · '.$q['customer'].' · '.$q['lines'].' baris · '.$rp($q['total'])])->all()" :source="Src::of('tm2sdi.quo_quotation (PUBLISHED, belum ada CO)')" />
+                        <x-dl::field.select name="quotation_id" label="Issued quotation" required :options="collect($quotes)->mapWithKeys(fn ($q) => [$q['id'] => $q['no'].' · '.$q['customer'].' · '.str_replace(':n', $q['lines'], t(':n lines')).' · '.$rp($q['total'])])->all()" :source="Src::of('tm2sdi.quo_quotation (PUBLISHED, no CO yet)')" />
                         <x-dl::action-bar><x-dl::button preset="save" :label="t('Create from Quotation')" /></x-dl::action-bar>
                     @else
                         <x-dl::empty-state title="No issued quotation that is not yet a CO" />
@@ -67,9 +67,9 @@
             </x-dl::action-form>
             <x-dl::action-form action="{{ route('v2.co.create') }}">
                 <input type="hidden" name="mode" value="INSTANT">
-                <x-dl::card title="INSTANT — tanpa Quotation" description="Direct order (repeat order / verbal). Product lines must come from the customer's Master Product.">
+                <x-dl::card title="INSTANT — without Quotation" description="Direct order (repeat order / verbal). Product lines must come from the customer's Master Product.">
                     <x-dl::field.select name="customer_id" label="Customer" required :options="CustomerOrder::customerOptions()" :source="Src::of('tm2mst.cust_customer')" />
-                    <x-dl::action-bar><x-dl::button preset="save" label="Buat Instant" /></x-dl::action-bar>
+                    <x-dl::action-bar><x-dl::button preset="save" :label="t('Create Instant')" /></x-dl::action-bar>
                 </x-dl::card>
             </x-dl::action-form>
         </div>
@@ -95,21 +95,21 @@
             'unit_price' => (float) $it->unit_price, 'discount_pct' => (float) $it->discount_pct, 'due_date' => $it->due_date?->toDateString() ?? '',
             'qty_minim' => (bool) $it->qty_minim,
             'editable' => $draft && $it->quotation_item_id === null,
-            'kind' => $it->line_kind === 'PRODUCT' ? 'Product' : 'Jasa', 'inquiry' => $it->inquiry?->inquiry_no ?? '—',
-            'source' => $it->quotation_item_id !== null ? 'Snapshot quotation (terkunci)' : 'Manual', 'spec_note' => $it->spec_note ?? '—',
-            'product_label' => $it->product_id ? ($it->product?->product_name ?? '#'.$it->product_id) : ($it->line_kind === 'PRODUCT' ? 'belum terkait' : '—'),
+            'kind' => $it->line_kind === 'PRODUCT' ? t('Product') : t('Service'), 'inquiry' => $it->inquiry?->inquiry_no ?? '—',
+            'source' => $it->quotation_item_id !== null ? t('Quotation snapshot (locked)') : t('Manual'), 'spec_note' => $it->spec_note ?? '—',
+            'product_label' => $it->product_id ? ($it->product?->product_name ?? '#'.$it->product_id) : ($it->line_kind === 'PRODUCT' ? t('not linked yet') : '—'),
         ])->values()->all();
-        $log = collect($c->historyTimeline())->map(fn ($r) => ['at' => $r['date'], 'by' => '', 'action' => $r['type'].(! empty($r['current']) ? ' (ini)' : ''), 'note' => $r['label']])->reverse()->values()->all();
+        $log = collect($c->historyTimeline())->map(fn ($r) => ['at' => $r['date'], 'by' => '', 'action' => $r['type'].(! empty($r['current']) ? ' '.t('(this)') : ''), 'note' => $r['label']])->reverse()->values()->all();
         // Approval CO (user 2026-09-30): F&A SPV (cek harga) -> Operational Manager; log keputusan flow_log di atas History.
         $appr = CustomerOrder::approvalState('CO', $o->id_order, (float) $totals['net_receivable']);
         $pending = CustomerOrder::pending($o);
         $log = array_merge(CustomerOrder::log($o), $log);
     @endphp
-    @if ($o->doc_status === 'CANCELLED')<x-dl::alert tone="danger" :message="'Cancelled oleh '.$o->updated_by.' — '.$o->cancel_reason" />@endif
-    @if ($o->doc_status === 'REJECTED')<x-dl::alert tone="danger" :message="'Rejected oleh '.$o->updated_by.' — '.$o->cancel_reason.'. Pakai Duplicate untuk membuat CO baru.'" />@endif
-    @if ($o->doc_status === 'SUBMITTED')<x-dl::alert tone="warn" :message="'Menunggu approval level '.$appr['at'].' dari '.$appr['levels'].': '.($appr['steps'][$appr['at'] - 1]['role'] ?? '—').'. Jadwal kirim (CPDEL) dibuat setelah approval terakhir.'" />@endif
-    @if ($draft && $missingDue->isNotEmpty())<x-dl::alert tone="warn" :message="'⚠ '.$missingDue->count().' baris Product belum ada Due Date (wajib sebelum Confirm).'" />@endif
-    @if ($draft && $missingProduct->isNotEmpty())<x-dl::alert tone="warn" :message="'⚠ '.$missingProduct->count().' baris belum terkait Master Product.'" />@endif
+    @if ($o->doc_status === 'CANCELLED')<x-dl::alert tone="danger" :message="raw(str_replace([':user', ':reason'], [$o->updated_by, $o->cancel_reason], t('Cancelled by :user — :reason')))" />@endif
+    @if ($o->doc_status === 'REJECTED')<x-dl::alert tone="danger" :message="raw(str_replace([':user', ':reason'], [$o->updated_by, $o->cancel_reason], t('Rejected by :user — :reason. Use Duplicate to create a new CO.')))" />@endif
+    @if ($o->doc_status === 'SUBMITTED')<x-dl::alert tone="warn" :message="raw(str_replace([':at', ':n', ':role'], [$appr['at'], $appr['levels'], $appr['steps'][$appr['at'] - 1]['role'] ?? '—'], t('Waiting for approval level :at of :n: :role. The delivery schedule (CPDEL) is created after the last approval.')))" />@endif
+    @if ($draft && $missingDue->isNotEmpty())<x-dl::alert tone="warn" :message="raw('⚠ '.str_replace(':n', $missingDue->count(), t(':n Product lines have no Due Date yet (required before Confirm).')))" />@endif
+    @if ($draft && $missingProduct->isNotEmpty())<x-dl::alert tone="warn" :message="raw('⚠ '.str_replace(':n', $missingProduct->count(), t(':n lines are not linked to a Master Product yet.')))" />@endif
 
     <x-dl::form id="co-form" :title="'Customer Order · '.raw($o->co_no)" :subtitle="raw(($o->customer?->customer_name ?? '—').' · '.$o->entry_mode)"
         panel="top" kind="document" :status="CustomerOrder::formStatus($o, $appr['held'])" :pipeline="true"
@@ -120,19 +120,19 @@
         :created-by="$o->created_by" :created-at="$o->created_at?->toDateTimeString()" :updated-by="$o->updated_by" :updated-at="$o->updated_at?->toDateTimeString()" :log="$log">
         <x-slot:special>
             <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('customer-order', $o->id_order)" target="_blank" />
-            @unless ($draft)<x-dl::button size="sm" variant="secondary" icon="fa-truck" label="Customer Plan Delivery" :href="route('v2.screen', 'cpdel')" />@endunless
+            @unless ($draft)<x-dl::button size="sm" variant="secondary" icon="fa-truck" :label="t('Customer Plan Delivery')" :href="route('v2.screen', 'cpdel')" />@endunless
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>No. CO</span><b>{{ $o->co_no }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>{{ t('CO No.') }}</span><b>{{ $o->co_no }}</b></div>
             <x-dl::field.date name="co_date" label="CO Date" :value="old('co_date', $o->co_date?->toDateString())" :source="Src::of('tm2sdi.co_order.co_date')" />
             <x-dl::field.display label="Customer" :value="($o->customer?->customer_name ?? '—').' ('.($o->customer?->customer_code ?? '—').')'" :source="Src::of('tm2mst.cust_customer')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>Net Receivable</span><b>{{ $money($totals['net_receivable']) }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>{{ t('Net Receivable') }}</span><b>{{ $money($totals['net_receivable']) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
-                <x-dl::field.display label="Ref. Quotation" :value="$o->quotation?->quotation_no ?? '— (Instant, tanpa Quotation)'" :source="Src::of('tm2sdi.co_order.quotation_id')" />
+                <x-dl::field.display label="Ref. Quotation" :value="$o->quotation?->quotation_no ?? '— ('.t('Instant, without Quotation').')'" :source="Src::of('tm2sdi.co_order.quotation_id')" />
                 <x-dl::field.text name="customer_po_no" label="Cust. PO No." :case-toggle="false" placeholder="PO/customer/..." :value="old('customer_po_no', $o->customer_po_no)" :source="Src::of('tm2sdi.co_order.customer_po_no')" />
-                <x-dl::field.display label="Order Type" :value="$c->orderType()" :source="Src::calc('jenis baris', 'tm2sdi.co_order_item.line_kind')" />
+                <x-dl::field.display label="Order Type" :value="$c->orderType()" :source="Src::calc('line type', 'tm2sdi.co_order_item.line_kind')" />
                 <x-dl::field.select name="sales_person_id" label="PIC Sales" placeholder="— choose —" :options="SalesPerson::where('activate', true)->orderBy('sales_name')->pluck('sales_name', 'id_sales_person')->all()" :value="old('sales_person_id', $o->sales_person_id)" :source="Src::of('tm2mst.sales_person')" />
             </x-dl::form.row>
         </x-slot:general>
@@ -181,7 +181,7 @@
                 @foreach ($cm['receipts'] as $rc)
                     <x-dl::button size="sm" variant="secondary" icon="fa-truck-ramp-box" :label="$rc['no']" :href="route('v2.screen', 'purchase-receive').'?id='.$rc['id']" />
                 @endforeach
-                <x-dl::button size="sm" variant="secondary" icon="fa-plus" label="+ Receive Customer Material" :href="route('v2.screen', 'purchase-receive').'?new=1&type=CUSTOMER&co='.$o->id_order" />
+                <x-dl::button size="sm" variant="secondary" icon="fa-plus" :label="t('+ Receive Customer Material')" :href="route('v2.screen', 'purchase-receive').'?new=1&type=CUSTOMER&co='.$o->id_order" />
             </x-dl::action-bar>
         </x-slot:material>
         <x-slot:billing>
@@ -239,27 +239,27 @@
                     ['key' => 'source', 'label' => t('Line Source'), 'type' => 'display', 'more' => true],
                     ['key' => 'inquiry', 'label' => 'Inquiry', 'type' => 'display', 'more' => true],
                     ['key' => 'product_label', 'label' => 'Master Product', 'type' => 'display', 'more' => true],
-                    ['key' => 'spec_note', 'label' => 'Spesifikasi', 'type' => 'display', 'more' => true],
+                    ['key' => 'spec_note', 'label' => 'Specification', 'type' => 'display', 'more' => true],
                 ]">
                 @if ($draft)
                     <x-slot:tools>
                         <x-dl::field.lookup name="product_id" lookup="product" :params="['customer_id' => $o->customer_id]" label="+ Product from Master Product" placeholder="Type at least 2 letters of the product name / code / design no...." :source="Src::of('tm2mst.prod_product')" />
-                        <x-dl::button size="sm" variant="secondary" label="+ Product" type="submit" name="action" value="add_product" formnovalidate />
-                        <x-dl::button size="sm" variant="secondary" label="+ Jasa" type="submit" name="action" value="add_service" formnovalidate />
+                        <x-dl::button size="sm" variant="secondary" :label="t('+ Product')" type="submit" name="action" value="add_product" formnovalidate />
+                        <x-dl::button size="sm" variant="secondary" :label="t('+ Service')" type="submit" name="action" value="add_service" formnovalidate />
                     </x-slot:tools>
                 @endif
             </x-dl::lines>
             <x-dl::doc-footer :tabs="['disc' => 'Discount', 'tax' => 'Tax', 'cost' => 'Other Costs']"
                 :words="\Devlib\Terbilang::words(round((float) $totals['net_receivable']), $cur, $cur === 'IDR' ? 'id' : 'en')"
                 :summary="array_values(array_filter([
-                    ['Details', $money($totals['item_subtotal'])],
-                    ['Discount', ($totals['discount_amount'] > 0 ? '− ' : '').$money($totals['discount_amount'])],
-                    ['Other Costs', $money($totals['external_cost'])],
+                    [t('Details'), $money($totals['item_subtotal'])],
+                    [t('Discount'), ($totals['discount_amount'] > 0 ? '− ' : '').$money($totals['discount_amount'])],
+                    [t('Other Costs'), $money($totals['external_cost'])],
                     ['DPP', $money($totals['dpp']), 'dpp'],
                     ['PPN '.\Devlib\Locale::number($totals['ppn_pct']).'%', $money($totals['ppn'])],
-                    ['Total Billing', $money($totals['total_billing'])],
-                    $totals['wht23'] > 0 ? ['PPh 23 '.\Devlib\Locale::number($totals['wht23_pct']).'% (jasa, dipotong)', '− '.$money($totals['wht23'])] : null,
-                    ['Net Receivable', $money($totals['net_receivable']), 'grand'],
+                    [t('Total Billing'), $money($totals['total_billing'])],
+                    $totals['wht23'] > 0 ? ['PPh 23 '.\Devlib\Locale::number($totals['wht23_pct']).'% ('.t('services, withheld').')', '− '.$money($totals['wht23'])] : null,
+                    [t('Net Receivable'), $money($totals['net_receivable']), 'grand'],
                 ]))">
                 <x-slot:disc>
                     <x-dl::form.row :cols="2">
@@ -270,16 +270,16 @@
                 <x-slot:tax>
                     <x-dl::form.row :cols="2">
                         <x-dl::field.select name="is_ppn" label="Tax" :options="['1' => 'PPN', '0' => 'Non PPN']" :value="$o->is_ppn ? '1' : '0'" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.is_ppn')" />
-                        <x-dl::field.display label="PPh 23 (service lines)" :value="\Devlib\Locale::number($totals['wht23_pct']).'% · dipotong customer'" :source="Src::of('CoOrder::totals()')" />
+                        <x-dl::field.display label="PPh 23 (service lines)" :value="\Devlib\Locale::number($totals['wht23_pct']).'% · '.t('withheld by customer')" :source="Src::of('CoOrder::totals()')" />
                     </x-dl::form.row>
                 </x-slot:tax>
                 <x-slot:cost>
                     @forelse ($o->externalCosts as $x)
                         <x-dl::form.row :cols="5">
-                            <x-dl::field.select :name="'costs['.$x->id_cost.'][category]'" label="Category" :options="['Trucking' => 'Trucking', 'Expedition' => 'Expedition', 'Lainnya' => 'Lainnya']" :value="$x->category" :disabled="! $draft" :source="Src::of('tm2sdi.co_order_external_cost.category')" />
+                            <x-dl::field.select :name="'costs['.$x->id_cost.'][category]'" label="Category" :options="['Trucking' => t('Trucking'), 'Expedition' => t('Expedition'), 'Lainnya' => t('Other')]" :value="$x->category" :disabled="! $draft" :source="Src::of('tm2sdi.co_order_external_cost.category')" />
                             <x-dl::field.text :name="'costs['.$x->id_cost.'][description]'" label="Description" :value="$x->description" :disabled="! $draft" :source="Src::of('tm2sdi.co_order_external_cost.description')" />
                             <x-dl::field.decimal :name="'costs['.$x->id_cost.'][nominal]'" label="Nominal" :value="rtrim(rtrim((string) $x->nominal, '0'), '.')" :disabled="! $draft" :source="Src::of('tm2sdi.co_order_external_cost.nominal')" />
-                            <x-dl::field.select :name="'costs['.$x->id_cost.'][tax_treatment]'" label="Tax Treatment" :options="['TAXABLE' => 'Taxable', 'REIMBURSEMENT' => 'Reimbursement']" :value="$x->tax_treatment" :disabled="! $draft" :source="Src::of('tm2sdi.co_order_external_cost.tax_treatment')" />
+                            <x-dl::field.select :name="'costs['.$x->id_cost.'][tax_treatment]'" label="Tax Treatment" :options="['TAXABLE' => t('Taxable'), 'REIMBURSEMENT' => t('Reimbursement')]" :value="$x->tax_treatment" :disabled="! $draft" :source="Src::of('tm2sdi.co_order_external_cost.tax_treatment')" />
                             @if ($draft)<x-dl::field.checkbox :name="'remove_cost['.$x->id_cost.']'" text="Delete on Save" />@endif
                         </x-dl::form.row>
                     @empty

@@ -103,7 +103,7 @@ final class MaterialPlanningEngine
 
     public function pick(RmBookingD $d, int $materialId): void
     {
-        abort_unless($this->material($materialId), 422, 'Item not found.');
+        abort_unless($this->material($materialId), 422, t('Item not found.'));
         $d->update(['material_id' => $materialId, 'note_detail' => 'PICK', 'update_by' => $this->login]);
         self::forget();
         $this->persist((int) $d->co_id);
@@ -600,7 +600,7 @@ final class MaterialPlanningEngine
     // Confirm = kunci (hard). Stok dibooking per lokasi (v_rm_available mengurangi per material + lokasi).
     public function confirm(RmBooking $b): void
     {
-        abort_if($b->stat_confirm, 422, 'Booking is already confirmed.');
+        abort_if($b->stat_confirm, 422, t('Booking is already confirmed.'));
         DB::connection('tm2inv')->transaction(function () use ($b) {
             foreach (RmBookingD::with('allocs')->where('booking_id', $b->booking_id)->get() as $d) {
                 $stock = (float) $d->allocs->where('source_type', 'STOCK')->sum('qty');

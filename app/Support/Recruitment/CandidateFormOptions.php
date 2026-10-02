@@ -10,33 +10,39 @@ namespace App\Support\Recruitment;
 // ubah salah satu harus otomatis berlaku ke yang lain).
 class CandidateFormOptions
 {
-    public const GENDER = ['LAKI_LAKI' => 'Laki-laki', 'PEREMPUAN' => 'Perempuan'];
+    // Nilai = label English (kunci = kode yang disimpan); tampil lewat labels() -> kamus t().
+    public const GENDER = ['LAKI_LAKI' => 'Male', 'PEREMPUAN' => 'Female'];
 
-    public const VEHICLE_TYPE = ['MOTOR' => 'Motor', 'MOBIL' => 'Mobil', 'TIDAK_ADA' => 'Tidak Ada'];
+    public const VEHICLE_TYPE = ['MOTOR' => 'Motorcycle', 'MOBIL' => 'Car', 'TIDAK_ADA' => 'No Vehicle'];
 
-    public const MARITAL_STATUS = ['LAJANG' => 'Lajang', 'MENIKAH' => 'Menikah', 'DUDA' => 'Duda', 'JANDA' => 'Janda'];
+    public const MARITAL_STATUS = ['LAJANG' => 'Single', 'MENIKAH' => 'Married', 'DUDA' => 'Widower/Divorced Man', 'JANDA' => 'Widow/Divorced Woman'];
 
     public const FAMILY_RELATION_EDITABLE = [
-        'SPOUSE' => 'Suami/Istri', 'CHILD' => 'Anak', 'SIBLING' => 'Saudara Kandung',
-        'FATHER_IN_LAW' => 'Mertua Ayah', 'MOTHER_IN_LAW' => 'Mertua Ibu',
+        'SPOUSE' => 'Husband/Wife', 'CHILD' => 'Child', 'SIBLING' => 'Sibling',
+        'FATHER_IN_LAW' => 'Father-in-law', 'MOTHER_IN_LAW' => 'Mother-in-law',
     ];
 
-    public const FAMILY_RELATION_ALL = ['FATHER' => 'Ayah', 'MOTHER' => 'Ibu'] + self::FAMILY_RELATION_EDITABLE;
+    public const FAMILY_RELATION_ALL = ['FATHER' => 'Father', 'MOTHER' => 'Mother'] + self::FAMILY_RELATION_EDITABLE;
 
-    public const SKILL_LEVEL = ['S' => 'Sedang', 'CB' => 'Cukup Baik', 'B' => 'Baik'];
+    public const SKILL_LEVEL = ['S' => 'Fair', 'CB' => 'Fairly Good', 'B' => 'Good'];
 
-    public const YES_NO = [1 => 'Ya', 0 => 'Tidak'];
+    public const YES_NO = [1 => 'Yes', 0 => 'No'];
 
-    public const FAMILY_HEALTH = [1 => 'Ya, baik-baik saja', 0 => 'Ada masalah'];
+    public const FAMILY_HEALTH = [1 => 'Yes, all fine', 0 => 'There are problems'];
 
     public const WILLING_ITEMS = [
-        'probation' => 'Mengikuti masa percobaan',
-        'training' => 'Mengikuti training sesuai ketentuan Perusahaan',
-        'overtime' => 'Bekerja lembur (termasuk Sabtu/Minggu/hari besar)',
-        'guarantee_docs' => 'Menyerahkan jaminan Ijazah/BPKB jika dibutuhkan',
-        'resign_notice' => 'Mengajukan permohonan tertulis 1 (satu) bulan sebelumnya apabila hendak mengundurkan diri',
-        'obey_rules' => 'Mematuhi segala peraturan perusahaan yang berlaku',
-        'resign_if_married_pregnant' => 'Bersedia mengundurkan diri jika menikah dengan rekan sekerja atau hamil sebelum masa kerja 1 (satu) tahun',
-        'relocation' => 'Bersedia setiap saat dipindah/ditugaskan ke bagian/cabang lain',
+        'probation' => 'Undergo a probation period',
+        'training' => 'Attend training according to Company rules',
+        'overtime' => 'Work overtime (including Saturday/Sunday/public holidays)',
+        'guarantee_docs' => 'Hand over a Diploma/BPKB as guarantee if required',
+        'resign_notice' => 'Submit a written request 1 (one) month in advance when intending to resign',
+        'obey_rules' => 'Comply with all applicable company regulations',
+        'resign_if_married_pregnant' => 'Willing to resign if marrying a coworker or becoming pregnant before 1 (one) year of service',
+        'relocation' => 'Willing to be transferred/assigned to another department/branch at any time',
     ];
+
+    public static function labels(array $options): array
+    {
+        return array_map('t', $options);
+    }
 }

@@ -201,7 +201,7 @@ class PvPostingService
         if (! $result['posted']) {
             $docService->cancel('RM', $docId, $login);
 
-            throw new \RuntimeException(($result['error'] ?? t('unknown')).' '.t('The goods have probably been used — use Purchase Return / Stock Adjustment.'));
+            throw new \RuntimeException(($result['error'] ?? t('unknown error')).' '.t('The goods have probably been used — use Purchase Return / Stock Adjustment.'));
         }
 
         return $docId;

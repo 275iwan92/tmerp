@@ -8,9 +8,9 @@
         <div class="dl-cal dl-cal--names"><div>Mg</div><div>Sn</div><div>Sl</div><div>Rb</div><div>Km</div><div>Jm</div><div>Sb</div></div>
         <div class="dl-cal" data-dl-cal-days></div>
         <div class="dl-pick__time">
-            <label>Jam <select data-dl-time-h>@for ($h = 0; $h < 24; $h++)<option>{{ str_pad((string) $h, 2, '0', STR_PAD_LEFT) }}</option>@endfor</select></label>
+            <label>{{ \Devlib\Lang::t('s_hour') }} <select data-dl-time-h>@for ($h = 0; $h < 24; $h++)<option>{{ str_pad((string) $h, 2, '0', STR_PAD_LEFT) }}</option>@endfor</select></label>
             <b>:</b>
-            <label>Menit <select data-dl-time-m>@for ($m = 0; $m < 60; $m += $minuteStep)<option>{{ str_pad((string) $m, 2, '0', STR_PAD_LEFT) }}</option>@endfor</select></label>
+            <label>{{ \Devlib\Lang::text('Minute') }} <select data-dl-time-m>@for ($m = 0; $m < 60; $m += $minuteStep)<option>{{ str_pad((string) $m, 2, '0', STR_PAD_LEFT) }}</option>@endfor</select></label>
         </div>
         <div class="dl-pick__preview" data-dl-dt-preview>Selected: -</div>
         <div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-dl-cal-clear>Clear</button><button type="button" class="dl-pick__pri" data-dl-dt-apply>Apply</button></div>

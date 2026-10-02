@@ -8,7 +8,7 @@
     @endif
     @if ($suffix)<span class="dl-field__affix dl-field__affix--end">{{ $suffix }}</span>@endif
     @if ($showCase())
-        <button type="button" class="dl-field__trigger dl-case" data-dl-case title="Ganti huruf: kecil / Kapital Tiap Kata / BESAR">aa</button>
+        <button type="button" class="dl-field__trigger dl-case" data-dl-case title="{{ \Devlib\Lang::text('Change case: lower / Title Case / UPPER') }}">aa</button>
     @endif
 </div>
 @if ($counter)<div class="dl-field__counter" data-dl-counter data-max="{{ $maxlength }}"></div>@endif

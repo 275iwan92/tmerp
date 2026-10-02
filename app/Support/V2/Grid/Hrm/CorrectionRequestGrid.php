@@ -17,7 +17,7 @@ class CorrectionRequestGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Koreksi Data Karyawan';
+        return t('Employee Data Corrections');
     }
 
     public function family(): string

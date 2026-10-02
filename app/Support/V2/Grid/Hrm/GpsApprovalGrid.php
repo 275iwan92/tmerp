@@ -18,7 +18,7 @@ class GpsApprovalGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Approval Lokasi GPS';
+        return t('GPS Location Approval');
     }
 
     public function family(): string

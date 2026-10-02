@@ -16,8 +16,8 @@
     @endphp
     @if ($revChanges->isNotEmpty())
         <x-dl::card title="Revision: what changed from the parent product" description="From Inquiry Revision (iqp_revise_change) — redo what ProDev marked.">
-            <x-dl::table :columns="['part' => 'Part', 'field' => 'Yang berubah', 'old' => 'Sebelum', 'new' => 'Sesudah', 'impact' => 'Diulang di']"
-                :rows="$revChanges->map(fn ($c) => ['part' => $c->part?->part_name ?? 'Dokumen', 'field' => $c->field_label, 'old' => $c->old_value ?? '—', 'new' => $c->new_value ?? '—', 'impact' => $c->impact])->all()"
+            <x-dl::table :columns="['part' => 'Part', 'field' => 'What changed', 'old' => 'Before', 'new' => 'After', 'impact' => 'Redone in']"
+                :rows="$revChanges->map(fn ($c) => ['part' => $c->part?->part_name ?? t('Document'), 'field' => $c->field_label, 'old' => $c->old_value ?? '—', 'new' => $c->new_value ?? '—', 'impact' => $c->impact])->all()"
                 source="{{ Src::of('tm2sdi.iqp_revise_change') }}" />
         </x-dl::card>
     @endif
@@ -50,13 +50,13 @@
 @else
     {{-- Pro-Dev > Manual (Mode #2): part tanpa Inquiry. Part dari Inquiry = grid Pro-Dev > New / Revise (rulebook A.20, C.28). --}}
     <x-dl::grid id="prodev-list" :rows="Prodev::parts()" actions="worklist" :active-key="null" :new-record="null" :open-url="route('v2.screen', 'prodev').'?part={id}'"
-        search="Search part or product name/code…" source="{{ Src::of('tm2mst.prod_part', 'tm2mst.prod_product', 'tm2mst.prod_layout_group', 'tm2sdi.iqp_part.prod_part_id (kosong = manual)') }}"
+        search="Search part or product name/code…" source="{{ Src::of('tm2mst.prod_part', 'tm2mst.prod_product', 'tm2mst.prod_layout_group', 'tm2sdi.iqp_part.prod_part_id (empty = manual)') }}"
         :columns="[
             ['key' => 'code', 'label' => 'Master Card / Customer', 'type' => 'doc', 'party' => 'customer', 'src' => Src::of('tm2mst.prod_part.mastercard_code', 'tm2mst.cust_customer.customer_name')],
             ['key' => 'part_name', 'label' => 'Part', 'src' => Src::of('tm2mst.prod_part.part_name')],
             ['key' => 'product', 'label' => 'Product', 'src' => Src::of('tm2mst.prod_product.product_name')],
             ['key' => 'updated', 'label' => 'Last Updated', 'type' => 'date', 'src' => Src::of('tm2mst.prod_part.updated_at')],
-            ['key' => 'status', 'label' => 'Status Layout', 'type' => 'badge', 'tones' => ['CONFIRMED' => 'success', 'DRAFT' => 'warn', 'BELUM MULAI' => 'neutral'], 'src' => Src::of('tm2mst.prod_layout_group.status').' (terbaru)'],
+            ['key' => 'status', 'label' => 'Status Layout', 'type' => 'badge', 'tones' => ['CONFIRMED' => 'success', 'DRAFT' => 'warn', 'BELUM MULAI' => 'neutral'], 'src' => Src::of('tm2mst.prod_layout_group.status').' (latest)'],
         ]"
         :stats="[
             ['label' => 'All'],

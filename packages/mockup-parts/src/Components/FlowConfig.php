@@ -32,7 +32,7 @@ class FlowConfig extends DevlibComponent
         return [
             ['key' => 'name', 'label' => 'Step Name', 'required' => true, 'width' => '220px'],
             ['key' => 'role', 'label' => 'Approver Role', 'type' => 'select', 'options' => $this->roles, 'required' => true, 'width' => '200px'],
-            ['key' => 'action', 'label' => 'Action', 'type' => 'select', 'options' => ['KNOW' => t('Acknowledge'), 'APPROVE' => t('Approve')], 'required' => true, 'width' => '140px'],
+            ['key' => 'action', 'label' => 'Action', 'type' => 'select', 'options' => ['KNOW' => t('Acknowledges'), 'APPROVE' => t('Approves')], 'required' => true, 'width' => '140px'],
             ['key' => 'min', 'label' => 'Active when value ≥ (Rp)', 'type' => 'money', 'width' => '170px'],
         ];
     }

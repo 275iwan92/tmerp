@@ -14,7 +14,7 @@ Route::prefix('v2/customer-invoice')->name('v2.customer-invoice.')->middleware('
     $open = fn (int $id) => redirect($home().'?id='.$id);
 
     Route::post('/create', function (Request $r) use ($home, $open) {
-        $d = $r->validate(['type' => ['required', 'in:INVOICE,DOWN_PAYMENT'], 'co_id' => ['required', 'integer']], [], ['co_id' => 'Customer Order']);
+        $d = $r->validate(['type' => ['required', 'in:INVOICE,DOWN_PAYMENT'], 'co_id' => ['required', 'integer']], [], ['co_id' => t('Customer Order')]);
         $picked = collect((array) $r->input('lines', []))->filter(fn ($row) => filter_var(((array) $row)['pick'] ?? false, FILTER_VALIDATE_BOOLEAN))->keys()->all();
         if ($d['type'] === 'INVOICE' && ! $picked) {
             return redirect($home().'?new=1&type=INVOICE&co_id='.$d['co_id'])->withErrors(['lines' => t('Choose at least one delivery note line to invoice.')]);
@@ -58,7 +58,7 @@ Route::prefix('v2/customer-invoice')->name('v2.customer-invoice.')->middleware('
 
     Route::post('/{id}/receipt', function (Request $r, int $id) use ($open) {
         $inv = CustomerInvoice::find($id) ?? abort(404);
-        $r->validate(['received_date' => ['required', 'date'], 'company_bank_id' => ['required', 'integer']], [], ['received_date' => 'Received Date', 'company_bank_id' => 'Received In']);
+        $r->validate(['received_date' => ['required', 'date'], 'company_bank_id' => ['required', 'integer']], [], ['received_date' => t('Received Date'), 'company_bank_id' => t('Received In')]);
         $err = CustomerInvoice::receive($inv, $r->all());
 
         return $err ? $open($id)->withErrors(['receipt' => t($err)]) : $open($id)->with('v2_flash', t('Down payment received. The receipt is ready to print.'));
@@ -67,7 +67,7 @@ Route::prefix('v2/customer-invoice')->name('v2.customer-invoice.')->middleware('
     // Pelunasan diterima (dialog Record Payment di form invoice): satu penerimaan untuk satu atau beberapa invoice customer itu.
     Route::post('/{id}/payment', function (Request $r, int $id) use ($open) {
         $inv = CustomerInvoice::find($id) ?? abort(404);
-        $r->validate(['received_date' => ['required', 'date'], 'company_bank_id' => ['required', 'integer']], [], ['received_date' => 'Received Date', 'company_bank_id' => 'Received In']);
+        $r->validate(['received_date' => ['required', 'date'], 'company_bank_id' => ['required', 'integer']], [], ['received_date' => t('Received Date'), 'company_bank_id' => t('Received In')]);
         $err = CustomerInvoice::pay($inv, $r->all());
 
         return $err ? $open($id)->withErrors(['payment' => $err]) : $open($id)->with('v2_flash', t('Payment received and allocated to the invoice.'));

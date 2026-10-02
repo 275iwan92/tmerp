@@ -75,7 +75,7 @@ class PrdWoOperation extends Model
     public function transitionTo(string $target): void
     {
         if (! $this->canTransitionTo($target)) {
-            throw new \DomainException("Transisi status Task tidak sah: {$this->task_status} -> {$target}");
+            throw new \DomainException(str_replace([':from', ':to'], [$this->task_status, $target], t('Invalid Task status transition: :from -> :to')));
         }
         $this->task_status = $target;
         $this->save();

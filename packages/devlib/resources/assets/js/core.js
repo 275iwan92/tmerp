@@ -346,9 +346,9 @@ window.Devlib = window.Devlib || {};
     print: ['Print', 'Print'], submit: ['Ajukan', 'Submit'], approve: ['Setujui', 'Approve'], reject: ['Tolak', 'Reject'], hold: ['Tahan', 'Hold']};
   // Label tombol preset ikut bahasa aktif (Back & Confirm & + New Record tetap).
   document.addEventListener('dl:lang', () => $$(document, '[data-dl-preset]').forEach(b => {
-    const t = PRESET_T[b.dataset.dlPreset]; if (!t) return;
+    const p = PRESET_T[b.dataset.dlPreset]; if (!p) return;
     const node = [...b.childNodes].reverse().find(n => n.nodeType === 3 && n.textContent.trim());
-    if (node) node.textContent = t[currentLang === 'en' ? 1 : 0];
+    if (node) node.textContent = currentLang === 'id' ? p[0] : currentLang === 'en' ? p[1] : t(p[1]);
   }));
 
 
@@ -417,7 +417,7 @@ window.Devlib = window.Devlib || {};
     if (e.defaultPrevented) return;
     const btn = e.submitter || e.target.querySelector('[type=submit]');
     if (!btn || btn.dataset.dlNoBusy !== undefined) return;
-    setTimeout(() => { if (e.defaultPrevented) return; btn.disabled = true; btn.classList.add('is-busy'); btn.dataset.dlLabel = btn.innerHTML; btn.innerHTML = '<span class="dl-spinner__ring dl-spinner__ring--inline"></span> ' + (currentLang === 'en' ? 'Processing…' : 'Memproses…'); }, 0);
+    setTimeout(() => { if (e.defaultPrevented) return; btn.disabled = true; btn.classList.add('is-busy'); btn.dataset.dlLabel = btn.innerHTML; btn.innerHTML = '<span class="dl-spinner__ring dl-spinner__ring--inline"></span> ' + T('processing'); }, 0);
   });
 
 
@@ -775,10 +775,11 @@ window.Devlib = window.Devlib || {};
       f_heading: 'Lupa password', f_sub_email: 'Masukkan email akun Anda. Kami kirim tautan untuk atur ulang password.', f_send: 'Kirim tautan reset', f_done_email: 'Jika email terdaftar, tautan reset sudah dikirim.', f_s1: 'Verifikasi', f_s2: 'Password baru', f_sub_q: 'Jawab 4 pertanyaan sesuai data akun Anda. Tanpa email.', f_birth: 'Tanggal lahir', f_phone: 'No. HP terdaftar', f_mother: 'Nama ibu kandung', f_next: 'Lanjut', f_sub_new: 'Data cocok. Buat password baru.', f_new: 'Password baru', f_save: 'Save', f_done_h: 'Password diperbarui', f_done_b: 'Silakan masuk memakai password baru.', f_wrong: 'Data tidak cocok dengan akun mana pun.', l_email: 'Email', l_login: 'Username'},
     en: {r_heading: 'Create account', r_sub: 'Create a new account to access the app.', r_approval: 'New accounts require admin approval. Group & permissions are set by the admin on approval.', r_type: 'Register as', r_name: 'Full name', r_email: 'Email', r_verify: 'Verify', r_user: 'Username (auto from email)', r_wa: 'Active WhatsApp number', r_send_otp: 'Send OTP', r_otp: 'OTP code from WhatsApp', r_pass: 'Password', r_conf: 'Confirm', r_submit: 'Submit registration', r_done_h: 'Registration submitted', r_done_b: 'Your account is awaiting admin approval. Once approved, you can sign in with this email and password.',
       nik: 'NIK (ID card no.)', nrp: 'Employee ID (NRP)', nik_bad: 'NIK must be 16 digits.', nik_ok: 'Valid NIK format.', email_bad: 'Invalid email format.', email_sent: 'Email verified.', otp_sent: 'OTP sent to WhatsApp.', wa_ok: 'WhatsApp verified.', wa_bad: 'Enter a WhatsApp number first.', otp_bad: 'OTP code is incomplete.', c_len: 'Min. 8 characters.', c_weak: 'Add letters & numbers.', c_ok: 'Strong password.', m_ok: 'Passwords match.', m_bad: 'Passwords do not match yet.', need_verify: 'Verify email and WhatsApp before submitting.', need_fill: 'Complete all required (*) fields.',
-      f_heading: 'Forgot password', f_sub_email: 'Enter your account email. We will send a reset link.', f_send: 'Send reset link', f_done_email: 'If the email is registered, a reset link has been sent.', f_s1: 'Verify', f_s2: 'New password', f_sub_q: 'Answer 4 questions matching your account. No email needed.', f_birth: 'Date of birth', f_phone: 'Registered phone', f_mother: "Mother's maiden name", f_next: 'Next', f_sub_new: 'Data matched. Create a new password.', f_new: 'New password', f_save: 'Save', f_done_h: 'Password updated', f_done_b: 'Please sign in with your new password.', f_wrong: 'The data does not match any account.', l_email: 'Email', l_login: 'Username'},
+      f_heading: 'Forgot password', f_sub_email: 'Enter your account email. We will send a reset link.', f_send: 'Send reset link', f_done_email: 'If the email is registered, a reset link has been sent.', f_s1: 'Verify', f_s2: 'New password', f_sub_q: 'Answer 4 questions matching your account. No email needed.', f_birth: 'Date of birth', f_phone: 'Registered phone', f_mother: "Mother's maiden name", f_next: 'Continue', f_sub_new: 'Data matched. Create a new password.', f_new: 'New password', f_save: 'Save', f_done_h: 'Password updated', f_done_b: 'Please sign in with your new password.', f_wrong: 'The data does not match any account.', l_email: 'Email', l_login: 'Username'},
   };
-  const at = k => AUTH_T[currentLang]?.[k] ?? AUTH_T.id[k] ?? k;
-  const authLang = root => { const f = () => $$(root, '[data-i18n]').forEach(x => { const t = AUTH_T[currentLang]?.[x.dataset.i18n]; if (t) x.textContent = t; }); document.addEventListener('dl:lang', f); f(); return f; };
+  // Bahasa selain id/en: teks English tabel ini lewat kamus aplikasi (t).
+  const at = k => AUTH_T[currentLang]?.[k] ?? (AUTH_T.en[k] != null ? t(AUTH_T.en[k]) : k);
+  const authLang = root => { const f = () => $$(root, '[data-i18n]').forEach(x => { const k = x.dataset.i18n; if (k in AUTH_T.en) x.textContent = at(k); }); document.addEventListener('dl:lang', f); f(); return f; };
   // Pesan di bawah field: ok -> hint hijau, bad -> error merah, '' -> kosong.
   const fieldMsg = (f, msg, ok) => { if (!f) return; const er = $(f, '[data-dl-field-error]'), h = $(f, '[data-dl-field-hint]'); f.classList.toggle('is-invalid', !!msg && !ok); f.classList.toggle('is-valid', !!msg && ok); if (er) er.textContent = ok ? '' : msg; if (h && ok) { h.dataset.orig ??= h.textContent; h.textContent = msg; } if (h && !msg && h.dataset.orig != null) h.textContent = h.dataset.orig; };
   const fld = (root, name) => $(root, `[data-dl-field="${name}"]`);
@@ -797,7 +798,7 @@ window.Devlib = window.Devlib || {};
 
 
   // Asal data kolom (grid/lines): {src: 'tm2sdi.iqp_inquiry.qty'} -> tooltip Mode Developer di header kolom.
-  const srcAttr = (c, kind = 'kolom') => c && c.src ? ` data-dl="${kind} ${esc(c.label || c.key)}" data-dl-class="kolom" data-dl-src="${esc(c.src)}"` : '';
+  const srcAttr = (c, kind = T('dev_column')) => c && c.src ? ` data-dl="${kind} ${esc(c.label || c.key)}" data-dl-class="${esc(T('dev_column'))}" data-dl-src="${esc(c.src)}"` : '';
   Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, dayOfYear, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, Tf, t, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, numStr, numIn, numFmt, NUM, MON_EN, dow2, DlDate, DlNumber, DlTime, DlDateTime, DlText, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
   Object.assign(Devlib, {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words}, {initDevMode});
 })();

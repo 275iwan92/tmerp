@@ -46,7 +46,7 @@ class Dieline extends DevlibComponent
                     <div class="dl-dieline__cap">{{ t('Dimensions (mm)') }}</div>
                     <div class="dl-dieline__dims" data-d-dims></div>
                     <div class="dl-dieline__flat">
-                        <div class="dl-dieline__cap">{{ t('Flat Size') }} <label class="dl-choice"><input type="checkbox" name="{{ $name }}[flat_manual]" value="1" data-d-manual> {{ t('Manual') }}</label></div>
+                        <div class="dl-dieline__cap">{{ t('Spread Size (Flat)') }} <label class="dl-choice"><input type="checkbox" name="{{ $name }}[flat_manual]" value="1" data-d-manual> {{ t('Manual') }}</label></div>
                         <div class="dl-dieline__flatrow">
                             <label>W <input type="text" inputmode="decimal" name="{{ $name }}[flat_w]" data-d-fw readonly></label>
                             <span>×</span>
@@ -57,7 +57,7 @@ class Dieline extends DevlibComponent
                 </div>
                 <div class="dl-dieline__stage">
                     <div class="dl-dieline__tools">
-                        <span class="dl-dieline__legend"><i class="is-cut"></i>{{ t('Cut') }} <i class="is-crease"></i>{{ t('Fold') }} <i class="is-bleed"></i>{{ t('Bleed') }} <i class="is-hole"></i>{{ t('Hole') }}</span>
+                        <span class="dl-dieline__legend"><i class="is-cut"></i>{{ t('Cut line') }} <i class="is-crease"></i>{{ t('Fold line') }} <i class="is-bleed"></i>{{ t('Bleed') }} <i class="is-hole"></i>{{ t('Hole') }}</span>
                         <span class="dl-print__spacer"></span>
                         <x-dl::icon-button icon="fa-magnifying-glass-minus" title="Zoom out" data-d-zoom="-1" /><b data-d-zoomval>100%</b><x-dl::icon-button icon="fa-magnifying-glass-plus" title="Zoom in" data-d-zoom="1" />
                         <x-dl::button variant="secondary" size="sm" icon="download" label="SVG" data-d-svg />

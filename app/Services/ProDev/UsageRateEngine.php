@@ -104,7 +104,7 @@ class UsageRateEngine
             'applied' => $applied,
             'sample_total' => $this->woCount($from),
             'from' => $from->toDateString(),
-            'note' => $out ? null : 'Belum ada data pemakaian nyata (keluar gudang per WO / output produksi) pada periode ini.',
+            'note' => $out ? null : t('No real usage data yet (warehouse issues per WO / production output) in this period.'),
         ];
     }
 

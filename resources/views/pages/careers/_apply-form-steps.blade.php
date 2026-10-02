@@ -47,10 +47,10 @@
             </div>
             <div class="grid two">
                 @if ($readonly)
-                    <x-form.display :label="t('Gender')">{{ CandidateFormOptions::GENDER[$gender] ?? '—' }}</x-form.display>
+                    <x-form.display :label="t('Gender')">{{ CandidateFormOptions::labels(CandidateFormOptions::GENDER)[$gender] ?? '—' }}</x-form.display>
                     <x-form.display :label="t('Religion')">{{ $religion }}</x-form.display>
                 @else
-                    <x-form.select wire:model="gender" :options="CandidateFormOptions::GENDER"><x-slot:label>{{ t('Gender') }} *</x-slot:label></x-form.select>
+                    <x-form.select wire:model="gender" :options="CandidateFormOptions::labels(CandidateFormOptions::GENDER)"><x-slot:label>{{ t('Gender') }} *</x-slot:label></x-form.select>
                     <x-form.input :label="t('Religion').' *'" wire:model="religion" />
                 @endif
             </div>
@@ -77,10 +77,10 @@
             @endif
             <div class="grid two">
                 @if ($readonly)
-                    <x-form.display :label="t('Vehicle Owned')">{{ CandidateFormOptions::VEHICLE_TYPE[$vehicle_type] ?? '—' }}</x-form.display>
+                    <x-form.display :label="t('Vehicle Owned')">{{ CandidateFormOptions::labels(CandidateFormOptions::VEHICLE_TYPE)[$vehicle_type] ?? '—' }}</x-form.display>
                     <x-form.display :label="t('Driving Licenses Held')">{{ implode(', ', $sim_types ?: []) ?: '—' }}</x-form.display>
                 @else
-                    <x-form.select wire:model="vehicle_type" :options="CandidateFormOptions::VEHICLE_TYPE" :placeholder="t('— select —')"><x-slot:label>{{ t('Vehicle Owned') }} *</x-slot:label></x-form.select>
+                    <x-form.select wire:model="vehicle_type" :options="CandidateFormOptions::labels(CandidateFormOptions::VEHICLE_TYPE)" :placeholder="t('— select —')"><x-slot:label>{{ t('Vehicle Owned') }} *</x-slot:label></x-form.select>
                     <div>
                         <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Driving Licenses Held') }}</label>
                         <div class="flex gap-3 pt-1.5">
@@ -99,10 +99,10 @@
         <h2 class="text-sm font-bold text-navy mb-3 pb-2 border-b border-[#eef1f5]">2. {{ t('Family Data') }}</h2>
         <div class="grid two mb-4">
             @if ($readonly)
-                <x-form.display :label="t('Marital Status')">{{ CandidateFormOptions::MARITAL_STATUS[$marital_status] ?? '—' }}</x-form.display>
+                <x-form.display :label="t('Marital Status')">{{ CandidateFormOptions::labels(CandidateFormOptions::MARITAL_STATUS)[$marital_status] ?? '—' }}</x-form.display>
                 <x-form.display :label="t('Marriage/Divorce Date')">{{ $marital_date }}</x-form.display>
             @else
-                <x-form.select wire:model="marital_status" :options="CandidateFormOptions::MARITAL_STATUS" :placeholder="t('— select —')"><x-slot:label>{{ t('Marital Status') }} *</x-slot:label></x-form.select>
+                <x-form.select wire:model="marital_status" :options="CandidateFormOptions::labels(CandidateFormOptions::MARITAL_STATUS)" :placeholder="t('— select —')"><x-slot:label>{{ t('Marital Status') }} *</x-slot:label></x-form.select>
                 <x-form.date-picker :label="t('Marriage/Divorce Date (required if not Single)')" wire:model="marital_date" />
             @endif
         </div>
@@ -126,12 +126,12 @@
                         <tr wire:key="fam-{{ $i }}" class="{{ in_array($f['relation_type'] ?? '', ['FATHER', 'MOTHER']) ? 'bg-[#fffaf0]' : '' }}">
                             <td class="px-2 py-1.5 font-bold text-navy">
                                 @if ($readonly)
-                                    {{ CandidateFormOptions::FAMILY_RELATION_ALL[$f['relation_type'] ?? ''] ?? ($f['relation_type'] ?? '—') }}
+                                    {{ CandidateFormOptions::labels(CandidateFormOptions::FAMILY_RELATION_ALL)[$f['relation_type'] ?? ''] ?? ($f['relation_type'] ?? '—') }}
                                 @elseif (in_array($f['relation_type'] ?? '', ['FATHER', 'MOTHER']))
                                     {{ $f['relation_type'] === 'FATHER' ? t('Father') : t('Mother') }}
                                     <input type="hidden" wire:model="family.{{ $i }}.relation_type">
                                 @else
-                                    <x-form.select wire:model="family.{{ $i }}.relation_type" :options="CandidateFormOptions::FAMILY_RELATION_EDITABLE" :placeholder="false" />
+                                    <x-form.select wire:model="family.{{ $i }}.relation_type" :options="CandidateFormOptions::labels(CandidateFormOptions::FAMILY_RELATION_EDITABLE)" :placeholder="false" />
                                 @endif
                             </td>
                             @if ($readonly)
@@ -525,16 +525,16 @@
                 <x-form.display :label="t('Illnesses suffered? For how long? Current condition?')">{{ $illness_history }}</x-form.display>
                 <x-form.display :label="t('Ever hospitalized? For what? Lasting effects now?')">{{ $hospitalized_history }}</x-form.display>
                 <div class="grid two">
-                    <x-form.display :label="t('Smoker?')">{{ CandidateFormOptions::YES_NO[(int) $is_smoker] ?? ($is_smoker === null ? '—' : ($is_smoker ? t('Yes') : t('No'))) }}</x-form.display>
-                    <x-form.display :label="t('Family in good health?')">{{ CandidateFormOptions::FAMILY_HEALTH[(int) $family_health_ok] ?? ($family_health_ok === null ? '—' : ($family_health_ok ? t('Yes, all fine') : t('There are problems'))) }}</x-form.display>
+                    <x-form.display :label="t('Smoker?')">{{ CandidateFormOptions::labels(CandidateFormOptions::YES_NO)[(int) $is_smoker] ?? ($is_smoker === null ? '—' : ($is_smoker ? t('Yes') : t('No'))) }}</x-form.display>
+                    <x-form.display :label="t('Family in good health?')">{{ CandidateFormOptions::labels(CandidateFormOptions::FAMILY_HEALTH)[(int) $family_health_ok] ?? ($family_health_ok === null ? '—' : ($family_health_ok ? t('Yes, all fine') : t('There are problems'))) }}</x-form.display>
                 </div>
                 <x-form.display :label="t('Permanent/severe physical impairment')">{{ $physical_disability }}</x-form.display>
             @else
                 <x-form.textarea rows="2" wire:model="illness_history"><x-slot:label>{{ t('What illnesses have you suffered? For how long? What is your current condition?') }} *</x-slot:label></x-form.textarea>
                 <x-form.textarea rows="2" wire:model="hospitalized_history"><x-slot:label>{{ t('Have you ever been hospitalized? For what? What lasting effects do you have now?') }} *</x-slot:label></x-form.textarea>
                 <div class="grid two">
-                    <x-form.select wire:model="is_smoker" :options="CandidateFormOptions::YES_NO" :placeholder="t('— select —')"><x-slot:label>{{ t('Do you smoke?') }} *</x-slot:label></x-form.select>
-                    <x-form.select wire:model="family_health_ok" :options="CandidateFormOptions::FAMILY_HEALTH" :placeholder="t('— select —')"><x-slot:label>{{ t('Is your family in good health?') }} *</x-slot:label></x-form.select>
+                    <x-form.select wire:model="is_smoker" :options="CandidateFormOptions::labels(CandidateFormOptions::YES_NO)" :placeholder="t('— select —')"><x-slot:label>{{ t('Do you smoke?') }} *</x-slot:label></x-form.select>
+                    <x-form.select wire:model="family_health_ok" :options="CandidateFormOptions::labels(CandidateFormOptions::FAMILY_HEALTH)" :placeholder="t('— select —')"><x-slot:label>{{ t('Is your family in good health?') }} *</x-slot:label></x-form.select>
                 </div>
                 <x-form.textarea rows="2" wire:model="physical_disability"><x-slot:label>{{ t('Do you have any permanent/severe physical impairment?') }} *</x-slot:label></x-form.textarea>
             @endif
@@ -556,13 +556,13 @@
                         <tr wire:key="lang-{{ $i }}">
                             @if ($readonly)
                                 <td class="px-2 py-1.5">{{ $l['language'] ?? '' }}</td>
-                                <td class="px-2 py-1.5">{{ CandidateFormOptions::SKILL_LEVEL[$l['written'] ?? ''] ?? '—' }}</td>
-                                <td class="px-2 py-1.5">{{ CandidateFormOptions::SKILL_LEVEL[$l['oral'] ?? ''] ?? '—' }}</td>
+                                <td class="px-2 py-1.5">{{ CandidateFormOptions::labels(CandidateFormOptions::SKILL_LEVEL)[$l['written'] ?? ''] ?? '—' }}</td>
+                                <td class="px-2 py-1.5">{{ CandidateFormOptions::labels(CandidateFormOptions::SKILL_LEVEL)[$l['oral'] ?? ''] ?? '—' }}</td>
                                 <td class="px-2 py-1.5">{{ $l['notes'] ?? '' }}</td>
                             @else
                                 <td class="px-2 py-1.5"><x-form.input wire:model="languageSkills.{{ $i }}.language" /></td>
-                                <td class="px-2 py-1.5"><x-form.select wire:model="languageSkills.{{ $i }}.written" :options="CandidateFormOptions::SKILL_LEVEL" placeholder="-" /></td>
-                                <td class="px-2 py-1.5"><x-form.select wire:model="languageSkills.{{ $i }}.oral" :options="CandidateFormOptions::SKILL_LEVEL" placeholder="-" /></td>
+                                <td class="px-2 py-1.5"><x-form.select wire:model="languageSkills.{{ $i }}.written" :options="CandidateFormOptions::labels(CandidateFormOptions::SKILL_LEVEL)" placeholder="-" /></td>
+                                <td class="px-2 py-1.5"><x-form.select wire:model="languageSkills.{{ $i }}.oral" :options="CandidateFormOptions::labels(CandidateFormOptions::SKILL_LEVEL)" placeholder="-" /></td>
                                 <td class="px-2 py-1.5"><x-form.input wire:model="languageSkills.{{ $i }}.notes" /></td>
                                 <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeRow('languageSkills', {{ $i }})" class="text-[#a3241f] text-xs">✕</button></td>
                             @endif
@@ -588,11 +588,11 @@
                         <tr wire:key="comp-{{ $i }}">
                             @if ($readonly)
                                 <td class="px-2 py-1.5">{{ $c['skill'] ?? '' }}</td>
-                                <td class="px-2 py-1.5">{{ CandidateFormOptions::SKILL_LEVEL[$c['level'] ?? ''] ?? '—' }}</td>
+                                <td class="px-2 py-1.5">{{ CandidateFormOptions::labels(CandidateFormOptions::SKILL_LEVEL)[$c['level'] ?? ''] ?? '—' }}</td>
                                 <td class="px-2 py-1.5">{{ $c['notes'] ?? '' }}</td>
                             @else
                                 <td class="px-2 py-1.5"><x-form.input wire:model="computerSkills.{{ $i }}.skill" :placeholder="t('e.g. Graphic Design')" /></td>
-                                <td class="px-2 py-1.5"><x-form.select wire:model="computerSkills.{{ $i }}.level" :options="CandidateFormOptions::SKILL_LEVEL" placeholder="-" /></td>
+                                <td class="px-2 py-1.5"><x-form.select wire:model="computerSkills.{{ $i }}.level" :options="CandidateFormOptions::labels(CandidateFormOptions::SKILL_LEVEL)" placeholder="-" /></td>
                                 <td class="px-2 py-1.5"><x-form.input wire:model="computerSkills.{{ $i }}.notes" /></td>
                                 <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeRow('computerSkills', {{ $i }})" class="text-[#a3241f] text-xs">✕</button></td>
                             @endif
