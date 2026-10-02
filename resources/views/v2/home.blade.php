@@ -7,6 +7,8 @@
             <section data-lm-page="help" data-label="Bantuan & dukungan" data-icon="fa-circle-question">
                 <p>Tekan <kbd>F1</kbd> di layar mana pun untuk membuka halaman ini.</p>
                 <x-dl::action-bar>
+                    {{-- Help per layar (sys_help_topic): untuk apa, cara pakai, arti tiap isian -- pintu utama bantuan (aturan E.1). --}}
+                    <x-dl::button variant="secondary" block icon="fa-life-ring" label="Help Center" data-dl-tab-url="{{ route('v2.screen', 'help-center') }}" data-dl-tab-code="G-HELP" data-dl-tab-label="Help Center" data-dl-tab-icon="fa-solid fa-life-ring" />
                     <x-dl::button variant="secondary" block icon="fa-book" label="Pedoman Aturan ERP" data-dl-tab-url="{{ route('v2.guide', 'aturan') }}" data-dl-tab-code="G-RULES" data-dl-tab-label="Pedoman Aturan ERP" data-dl-tab-icon="fa-solid fa-book" />
                     <x-dl::button variant="secondary" block icon="fa-book-open" label="Guide: Master Product & Revision" data-dl-tab-url="{{ route('v2.guide', 'product-master') }}" data-dl-tab-code="G-PRODUCT" data-dl-tab-label="Guide: Master Product & Revision" data-dl-tab-icon="fa-solid fa-book-open" />
                     {{-- Alur dokumen: sementara di sini, bukan grup menu "Flow" (user 2026-10-02, akan dipikirkan ulang). --}}

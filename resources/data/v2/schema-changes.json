@@ -1,5 +1,24 @@
 [
     {
+        "at": "2026-10-02 12:58:30",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_help_line",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_help_topic",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-10-02 11:33:39",
         "items": [
             {

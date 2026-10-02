@@ -1,7 +1,7 @@
 # Asisten AI — Tier 1 (rancangan, menunggu persetujuan user)
 
-> Status 2026-10-02: **Help sudah dibangun** (bagian 6). **Asisten (drawer chat, mesin jawab, angka manajemen) BELUM dibangun** —
-> menunggu persetujuan user atas perjalanan user (bagian 3), daftar pertanyaan (bagian 5), dan pertanyaan terbuka (bagian 9).
+> Status 2026-10-02: **Help sudah dibangun dan terpasang di ddt + tm2** (bagian 6). **Asisten (drawer chat, mesin jawab, angka
+> manajemen) BELUM dibangun** — user sedang me-review preview drawer dan aturan level (bagian 4.4); sisanya di bagian 9.
 > Mockup: `docs/mockups/ai_assistant_drawer.jpg`.
 
 ## 1. Tujuan
@@ -25,6 +25,9 @@ Asisten di dalam ERP yang **bekerja tanpa internet**, menjawab dari isi database
 | 7 | Daftar pertanyaan Direksi dibuatkan dulu (bagian 5); user menyusulkan tambahannya. |
 | 8 | Asisten harus **modular**: bisa dipindah ke aplikasi lain dan langsung menyesuaikan. |
 | 9 | Deploy di Ubuntu 24 ke atas. Bahasa lain selain PHP boleh bila perlu. |
+| 10 | Jawaban **Sales today** merinci: **Draft** sekian, **Confirmed** sekian, lalu **Total** sekian (CO Cancelled tidak dihitung). |
+| 11 | Riwayat percakapan disimpan **30 hari** untuk top management, **14 hari** untuk middle management, **7 hari** untuk level terbawah (user lebih dari 100, menghemat storage). |
+| 12 | Help dipasang juga ke `tm2` (tmerp.test) — sudah dijalankan 2026-10-02. |
 
 ## 3. Perjalanan user (untuk disetujui)
 
@@ -86,9 +89,18 @@ lewat HTTP (`/assistant/ask`).
 
 - Layar: hanya yang boleh dibuka user (aturan menu yang sudah ada: `AppMenu` + `canAccessModule`).
 - Help: terbuka untuk semua.
-- Angka: tiap metric punya **modul pemilik** dan **level minimum** (`sec_group.mgmt_level`, 1 staf … 5 Direksi). Keduanya harus
-  terpenuhi. Harga jual dan HPP mengikuti aturan A.8–A.9 (`docs/globaluserrules.md`).
-- Semua pertanyaan tercatat (siapa, kapan, dijawab apa) di log asisten.
+- Angka: **tiga kelompok** (usulan, menunggu OK user), dari `sec_group.mgmt_level` tertinggi milik user:
+
+  | Kelompok | `mgmt_level` | Grup saat ini | Angka yang dijawab | Riwayat chat |
+  |---|---|---|---|---|
+  | Top management | 4–5 | Direksi, Manager Operasional | semua angka semua bagian, termasuk kas / bank, piutang, hutang | 30 hari |
+  | Middle management | 2–3 | Manager per bagian, Supervisor, Officer | angka rupiah **bagiannya sendiri** (modul yang boleh dibukanya) | 14 hari |
+  | Level terbawah | 1 | Staf | **tanpa rupiah**: jumlah dokumen dan pekerjaannya sendiri | 7 hari |
+
+  Tetap berlaku di atas kelompok itu: HPP / margin hanya Costing + Direksi (A.8), harga jual sesuai A.9, gaji hanya petugas
+  payroll + Direksi. Satu metric boleh dikecualikan (lebih tertutup / lebih terbuka) lewat layar Setup > Assistant Questions.
+- Batas kelompok (level berapa = top / middle) dan lama simpan riwayat = konstanta kategori ASSISTANT, bukan hardcode.
+- Semua pertanyaan tercatat (siapa, kapan, dijawab apa) di log asisten; baris yang lewat masa simpan dihapus terjadwal.
 
 ### 4.5 Tabel baru (paket asisten; nama dan koneksi lewat config)
 
@@ -128,7 +140,7 @@ Definisi nomor 1 dan 8 sudah ditetapkan user. Yang lain **usulan**; kolom Data =
 | 19 | Kehadiran hari ini | presensi: hadir, tidak hadir, terlambat | 3 + akses HRM | perlu dicek |
 | 20 | Jumlah karyawan aktif per bagian | Master Employee | 3 + akses HRM | ada |
 
-## 6. Help (SUDAH DIBANGUN 2026-10-02, database dummy)
+## 6. Help (SUDAH DIBANGUN 2026-10-02, ddt + tm2)
 
 - Tabel `sys_help_topic` (satu layar / laporan / panduan: untuk apa + kata cari) dan `sys_help_line` (potongan pendek: langkah
   cara pakai **atau** penjelasan satu isian / kolom). Tiga hal yang diminta user tersimpan terpisah: Purpose, STEP, FIELD.
@@ -138,6 +150,8 @@ Definisi nomor 1 dan 8 sudah ditetapkan user. Yang lain **usulan**; kolom Data =
 - Layar: **Setup > Settings > Help Topics**, **Help Lines** (kolom English dan Indonesia berdampingan), dan **General Report >
   Help > Help Center** (dibaca semua user; baris dibuka = langkah + penjelasan isian).
 - `help:import` melaporkan layar di menu yang belum punya Help, supaya layar baru tidak lolos.
+- Pintu untuk semua user: halaman **F1 (Bantuan & dukungan) → Help Center**. Di `tm2sys` modul menu *General Report* belum ada,
+  jadi di tmerp.test Help Center dibuka lewat F1 saja (baris menunya ikut muncul begitu modul itu dipasang).
 
 ## 7. Pemasangan Ollama
 
@@ -163,7 +177,7 @@ ollama pull qwen2.5:3b
 
 | Tahap | Isi | Butuh model | Status |
 |---|---|---|---|
-| 0 | Help semua layar + layar inputnya + Help Center | tidak | dibangun (dummy) |
+| 0 | Help semua layar + layar inputnya + Help Center | tidak | dibangun (ddt + tm2) |
 | 1 | Paket asisten + drawer chat + cari layar + cari Help (kata kunci) + log | tidak | menunggu OK |
 | 2 | Katalog angka: no. 1 dan 8, lalu daftar bagian 5 bertahap, dengan test | tidak | menunggu OK |
 | 3 | Sambungan Ollama: memahami kalimat bebas, merangkai jawaban dari Help | ya | menunggu Ollama terpasang |
@@ -171,7 +185,7 @@ ollama pull qwen2.5:3b
 
 ## 9. Pertanyaan terbuka
 
-1. **Sales hari ini** menghitung CO **Draft** juga, atau hanya yang sudah **Confirmed**? (Usul: semua yang bukan Cancelled, dirinci Confirmed / Draft.)
-2. **Level per angka** di bagian 5 (kolom Level usul) — setuju, atau ada yang harus lebih tertutup / lebih terbuka?
-3. **tm2 (tmerp.test)**: tabel Help dan menunya baru dipasang di database dummy. Dipasang juga ke `tm2sys` sekarang?
-4. Riwayat percakapan disimpan **berapa lama**? (Usul: 90 hari, bisa diubah di Constants.)
+1. **Perjalanan user + drawer** (bagian 3, `docs/mockups/ai_assistant_drawer.jpg`): user sedang me-review.
+2. **Tiga kelompok level** (bagian 4.4): benarkah Manager per bagian (level 3) masuk *middle*, dan Manager Operasional (level 4)
+   masuk *top*? Middle hanya melihat angka bagiannya sendiri — setuju?
+3. Daftar pertanyaan bagian 5: user menyusulkan tambahannya.

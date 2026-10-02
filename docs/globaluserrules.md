@@ -351,8 +351,10 @@
    - **Siapa saja boleh bertanya, jawaban sesuai levelnya** (modul + `mgmt_level`; harga dan HPP ikut A.8–A.9).
    - Bentuk: **chat pribadi asisten dengan user yang bertanya, di drawer sendiri.**
    - **Modular**: paket terpisah yang tidak tahu tabel ERP; tiap aplikasi cukup menulis adaptor (penanya, menu, bantuan, angka).
-   - **Sales today** = nilai rupiah Customer Order yang masuk hari ini. **Deadstock** = stok tidak bergerak lebih dari 6 bulan,
-     dinilai harga beli rata-rata.
+   - **Sales today** = nilai rupiah Customer Order yang masuk hari ini, dijawab terinci: **Draft** sekian, **Confirmed** sekian,
+     **Total** sekian. **Deadstock** = stok tidak bergerak lebih dari 6 bulan, dinilai harga beli rata-rata.
+   - **Riwayat percakapan:** 30 hari untuk top management, 14 hari untuk middle management, 7 hari untuk level terbawah
+     (user lebih dari 100; menghemat storage). Angkanya konstanta, bukan hardcode.
 
 ---
 
@@ -413,6 +415,6 @@
 | 2026-10-02 | C.24 (koreksi user atas mockup tahap 3): yang dicetak **bukan "Tagihan Supplier" melainkan Tanda Terima Tagihan Supplier** (satu baris = satu invoice supplier yang diserahkan; bukan bukti bayar); dokumen barang masuk bernama **SPB, Surat Penerimaan Barang**; ditambah **Tanda Terima Uang Muka** (bukti untuk customer). Semua masih mockup, belum A. |
 | 2026-10-02 | **A.16 diganti:** semua jenis CO boleh di-Post to Production asal Confirmed + approved; costing published tidak disyaratkan; product tanpa Inquiry mendapat WO sederhana (tanpa routing / bahan). |
 | 2026-10-02 | C.29: kerapatan grid cukup per grid lewat tombol Density (tersimpan di browser); rencana setelan per user + pintu Configuration → Grid dibatalkan, bagian "Grid (segera)" di drawer Configuration menu lama dihapus. |
-| 2026-10-02 | **E.1: Help wajib untuk setiap layar input dan laporan** (untuk apa, cara pakai, penjelasan tiap isian) — 159 topik ditulis dari kode, layar Help Center + Setup → Help Topics / Help Lines (ddt; tm2 menunggu OK). **E.2: keputusan Asisten AI** (offline, modular, AI tidak menghitung, jawaban sesuai level, drawer chat pribadi); rancangan menunggu persetujuan. |
+| 2026-10-02 | **E.1: Help wajib untuk setiap layar input dan laporan** (untuk apa, cara pakai, penjelasan tiap isian) — 159 topik ditulis dari kode, layar Help Center + Setup → Help Topics / Help Lines (ddt + tm2, OK user 2026-10-02), pintu Help Center di halaman F1. **E.2: keputusan Asisten AI** (offline, modular, AI tidak menghitung, jawaban sesuai level, drawer chat pribadi); rancangan menunggu persetujuan. Sales today dirinci Draft / Confirmed / Total; riwayat chat 30 / 14 / 7 hari menurut level. |
 | 2026-10-02 | C.31: chat antar user ala WhatsApp di menu akun v2 — user terdaftar, online = sedang login (warna cerah), lampiran file sampai 20 MB, bunyi saat pesan masuk, belum ada voice. Menggantikan data contoh; ddt + tm2. |
 | 2026-10-02 | C.31: chat harus modular — bagian server dipindah ke paket `packages/chat`, layar tetap objek DevLib `x-dl::chat`; tmerp hanya menyambungkan user, setelan, dan kamus. |
