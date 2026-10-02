@@ -18,21 +18,6 @@ sendiri; warna lembut dengan garis tegas di bawah baris. Filter otomatis per per
 - Gambar hasil komponen asli: `docs/mockups/cpdel_row_colour.jpg`. **Belum:** dilihat user di browser. Kolom induk tampil
   jadi 9 (aturan C.28: 5-8) — menunggu keputusan user kolom mana yang disembunyikan.
 
-## 2026-10-02 -- CPDEL: baris berwarna menurut jatuh tempo (aturan C.32)
-
-Keputusan user setelah melihat pratinjau: Sabtu kerja, Minggu + hari besar (Holiday Calendar) libur; batas kuning bisa diubah
-sendiri; warna lembut dengan garis tegas di bawah baris. Filter otomatis per peran **belum diputuskan** (jangan dibangun).
-- **DevLib grid:** prop baru `row-tone="<kolom>"` (danger / tangerine / yellow / success / accent = warna lembut + garis bawah;
-  muted = huruf abu-abu) dan kolom badge `toneKey`; token `--dl-tangerine`, `--dl-yellow`; contoh di demo `grid-status`.
-- **Hari kerja:** `App\Support\WorkCalendar` (Office Hours + Holiday Calendar). `CpdelPromiseService::due()` menentukan
-  bucket, teks Due, dan warna; `Cpdel::rows()` mengurutkan yang belum dikirim dulu (slot paling awal di atas).
-- **Layar CPDEL:** kolom Due; filter kiri = waktu (Overdue, Today, Due soon, Next 7 days), kanan = janji; "Late" dilebur ke
-  Overdue; filter "Ship today" / "Slot time not set" yang dipasang pagi ini dilepas.
-- **Konstanta** `CPDEL_DUE_SOON_DAYS` = 2 (Settings → Constants) + kamus Indonesia: migrasi 000110, ddt + tm2 (`--path`).
-- Help topik `cpdel` (langkah + field Due) di-impor ulang hanya topik itu. Test `CpdelDueColourTest` (tanpa menulis database).
-- Gambar hasil komponen asli: `docs/mockups/cpdel_row_colour.jpg`. **Belum:** dilihat user di browser. Kolom induk tampil
-  jadi 9 (aturan C.28: 5-8) — menunggu keputusan user kolom mana yang disembunyikan.
-
 ## 2026-10-02 -- Tindak lanjut audit: PPN dari konstanta, 3 layar lookup baru, menu akun v2 tersambung database
 
 Urutan perbaikan disetujui user ("setuju selama itu yang terbaik dan tidak menjadikan problem baru"). Rincian + status tiap

@@ -333,20 +333,6 @@
       cara yang sama. **Filter otomatis per peran** (tiap orang langsung melihat baris yang menunggu tindakannya) **belum
       diputuskan** — user belum bisa menilainya karena selama ini masih manual; jangan dibangun dulu.
 
-32. **Baris grid berwarna menurut jatuh tempo, bukan kotak statistik — user 2026-10-02 (mulai dari CPDEL).**
-    User: filter jauh lebih penting daripada statistik; baris berwarna lebih baik daripada tujuh kotak.
-    - **Warna lembut + garis tegas di bawah baris.** Lewat tanggal = merah muda (garis merah), hari ini = oranye,
-      H-1 .. H-n = kuning, masih jauh = putih, sudah dikirim = huruf abu-abu. Selalu ada **kolom teks "Due"** (Late 3 days,
-      Today, D-1, 5 days left) supaya arti tidak bergantung pada warna saja.
-    - **Hitungan hari = hari kerja:** Sabtu dianggap kerja, **Minggu saja yang libur**, ditambah hari besar di Holiday
-      Calendar (`App\Support\WorkCalendar`, membaca Office Hours + Holiday Calendar).
-    - **Batas kuning bisa diubah user sendiri:** konstanta `CPDEL_DUE_SOON_DAYS` (awal 2) di Settings → Constants.
-    - Filter grid CPDEL: kiri = waktu (All, Overdue, Today, Due soon, Next 7 days), kanan = janji (Waiting for PPIC,
-      Need negotiation, Escalated, Aligned). Baris yang belum dikirim tampil lebih dulu, slot paling awal di atas.
-    - Objek DevLib: `x-dl::grid row-tone="<kolom>"` + kolom badge `toneKey` — grid lain yang punya jatuh tempo memakai
-      cara yang sama. **Filter otomatis per peran** (tiap orang langsung melihat baris yang menunggu tindakannya) **belum
-      diputuskan** — user belum bisa menilainya karena selama ini masih manual; jangan dibangun dulu.
-
 ## D. Cara kerja developer / agen
 
 1. **Peran:** system analyst, developer, dan database designer. Aktif menilai desain; audit integritas data
@@ -461,7 +447,6 @@
 | 2026-10-02 | C.31: chat antar user ala WhatsApp di menu akun v2 — user terdaftar, online = sedang login (warna cerah), lampiran file sampai 20 MB, bunyi saat pesan masuk, belum ada voice. Menggantikan data contoh; ddt + tm2. |
 | 2026-10-02 | C.31: chat harus modular — bagian server dipindah ke paket `packages/chat`, layar tetap objek DevLib `x-dl::chat`; tmerp hanya menyambungkan user, setelan, dan kamus. |
 | 2026-10-02 | C.31: chat seketika lewat Laravel Reverb (server terpisah `realtime/`) + tulisan "sedang mengetik…"; cara 5 detik tetap jadi cadangan bila server mati. |
-| 2026-10-02 | C.32: CPDEL tanpa tujuh kotak KPI; baris berwarna menurut jatuh tempo slot (warna lembut + garis tegas di bawah), kolom Due, hitungan hari kerja (Sabtu kerja, Minggu + hari besar libur), batas kuning = konstanta `CPDEL_DUE_SOON_DAYS`. Filter otomatis per peran belum diputuskan. |
 | 2026-10-02 | C.32: CPDEL tanpa tujuh kotak KPI; baris berwarna menurut jatuh tempo slot (warna lembut + garis tegas di bawah), kolom Due, hitungan hari kerja (Sabtu kerja, Minggu + hari besar libur), batas kuning = konstanta `CPDEL_DUE_SOON_DAYS`. Filter otomatis per peran belum diputuskan. |
 | 2026-10-02 | D.13: `docs/md_prompt_rel*`, `docs/legacy_scriptcase/`, `docs/ddl/`, `docs/database/` tidak diarsipkan — bahan diskusi user dan pagar pembanding sistem lama. D.14: perbaikan di zona beku ditunjukkan sebelum → sesudah dulu, dikerjakan setelah OK. |
 | 2026-10-02 | B.6 / B.7 (hasil audit `docs/audit_input_report_lookup_2026_10_02.md`, urutan disetujui user): tarif PPN + PPh 23 Customer Order dan PPN Quotation dibaca dari Settings → Constants, Non PPN = tanpa PPN; layar isi baru Sales Person, Payment Terms, Department; Edit profil, Change password, Notifikasi di menu akun v2 tersambung database. ddt + tm2. |
