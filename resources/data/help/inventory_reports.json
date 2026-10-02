@@ -1,0 +1,204 @@
+[
+  {
+    "key": "inv-rpt-card",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Stock Card",
+    "purpose": {
+      "en": "The stock card of every item for a period: opening balance, each movement by date and the running balance. Open it to trace how the stock of an item became what it is, or to print the card of one item.",
+      "id": "Kartu stok tiap item untuk satu periode: saldo awal, tiap pergerakan urut tanggal, dan saldo berjalan. Buka untuk menelusuri asal saldo sebuah item, atau mencetak kartu stok satu item."
+    },
+    "keywords": "stock card, kartu stok, kartu persediaan, mutasi stok, riwayat stok, movement, item ledger, saldo berjalan, semua stok, bahan baku, barang jadi, setengah jadi",
+    "steps": [
+      {"en": "Set Period (first and last date), then click Show. The report opens on the current month.", "id": "Isi Period (tanggal awal dan akhir), lalu klik Show. Laporan terbuka pada bulan berjalan."},
+      {"en": "For the card of one item, type its code or part of its name in Item and click Show.", "id": "Untuk kartu satu item, ketik kode atau sebagian namanya di Item lalu klik Show."},
+      {"en": "Read each group from top to bottom: the first row is the opening balance, the rows below are the movements by date.", "id": "Baca tiap kelompok dari atas ke bawah: baris pertama adalah saldo awal, baris di bawahnya pergerakan urut tanggal."},
+      {"en": "Click In, Out, Adjustment or Transfer above the table to see one kind of movement only.", "id": "Klik In, Out, Adjustment, atau Transfer di atas tabel untuk melihat satu jenis pergerakan saja."},
+      {"en": "Open Columns to show Lot No., Transfer, Balance in Location, Movement Value and Average Price.", "id": "Buka Columns untuk menampilkan Lot No., Transfer, Balance in Location, Movement Value, dan Average Price."},
+      {"en": "Click Print for the paper version: company header, the period, the same rows, totals and signature boxes.", "id": "Klik Print untuk versi kertas: kop perusahaan, periode, baris yang sama, total, dan kotak tanda tangan."}
+    ],
+    "fields": [
+      {"label": "Period", "en": "First and last date of the card. Opening balance = the balance just before the first date.", "id": "Tanggal awal dan akhir kartu. Saldo awal = saldo tepat sebelum tanggal awal."},
+      {"label": "Item", "en": "Optional. Code or part of the name; items that match are shown even when they did not move.", "id": "Tidak wajib. Kode atau sebagian nama; item yang cocok tetap tampil walau tidak bergerak."},
+      {"label": "Date", "en": "Date of the document. On the opening row: the first date of the period.", "id": "Tanggal dokumen. Pada baris saldo awal: tanggal awal periode."},
+      {"label": "Doc No.", "en": "Number of the stock document or stock transfer behind the movement.", "id": "Nomor dokumen stok atau stock transfer di balik pergerakan itu."},
+      {"label": "Movement", "en": "Opening, In, Out, Adjustment, Transfer in or Transfer out.", "id": "Opening, In, Out, Adjustment, Transfer in, atau Transfer out."},
+      {"label": "Warehouse", "en": "Warehouse of the movement.", "id": "Gudang tempat pergerakan."},
+      {"label": "Location", "en": "Bin of the movement.", "id": "Bin tempat pergerakan."},
+      {"label": "Reference", "en": "Number of the source document, for example the goods receipt.", "id": "Nomor dokumen sumber, misalnya penerimaan barang."},
+      {"label": "In", "en": "Quantity received. Stock transfers are not counted here.", "id": "Qty masuk. Stock transfer tidak dihitung di sini."},
+      {"label": "Out", "en": "Quantity issued. Stock transfers are not counted here.", "id": "Qty keluar. Stock transfer tidak dihitung di sini."},
+      {"label": "Adjustment", "en": "Quantity added or taken off by an adjustment or a physical count (can be negative).", "id": "Qty yang ditambah atau dikurangi oleh penyesuaian atau stock opname (bisa negatif)."},
+      {"label": "Transfer", "en": "Quantity moved to (+) or from (-) this bin by a stock transfer. Hidden at first.", "id": "Qty yang dipindah ke (+) atau dari (-) bin ini oleh stock transfer. Awalnya tersembunyi."},
+      {"label": "Balance", "en": "Stock of the item in all bins right after the movement.", "id": "Stok item di semua bin tepat sesudah pergerakan itu."},
+      {"label": "Balance in Location", "en": "Stock of the item in that bin right after the movement. Hidden at first.", "id": "Stok item di bin itu tepat sesudah pergerakan. Awalnya tersembunyi."},
+      {"label": "Movement Value", "en": "Value the movement added to or took from the stock, at the moving average price. Hidden at first.", "id": "Nilai yang ditambah atau dikurangi pergerakan itu, dengan harga rata-rata bergerak. Awalnya tersembunyi."},
+      {"label": "Group by: Item / Warehouse / Movement", "en": "Gather the rows under headings with subtotals. The report opens grouped by Item.", "id": "Mengelompokkan baris di bawah judul dengan subtotal. Laporan terbuka terkelompok per Item."}
+    ]
+  },
+  {
+    "key": "inv-rpt-recap",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Stock Recapitulation",
+    "purpose": {
+      "en": "One row per item for a period: opening balance, quantity in, out and adjusted, closing balance and its value. Open it for the month-end stock recap of all items.",
+      "id": "Satu baris per item untuk satu periode: saldo awal, qty masuk, keluar, dan penyesuaian, saldo akhir, serta nilainya. Buka untuk rekap stok akhir bulan semua item."
+    },
+    "keywords": "rekap stok, rekapitulasi stok, stock recapitulation, mutasi per barang, master stok, saldo awal, saldo akhir, stock balance, nilai persediaan, semua item, perputaran, turnover",
+    "steps": [
+      {"en": "Set Period (first and last date), then click Show. The report opens on the current month.", "id": "Isi Period (tanggal awal dan akhir), lalu klik Show. Laporan terbuka pada bulan berjalan."},
+      {"en": "Read Opening, In, Out, Adjustment and Closing on one row. Opening + In - Out + Adjustment = Closing.", "id": "Baca Opening, In, Out, Adjustment, dan Closing pada satu baris. Opening + In - Out + Adjustment = Closing."},
+      {"en": "Click With movement or No movement above the table. Negative shows items whose closing balance is below zero.", "id": "Klik With movement atau No movement di atas tabel. Negative menampilkan item yang saldo akhirnya di bawah nol."},
+      {"en": "Open Columns to show the value of each movement, Average Price and Turnover.", "id": "Buka Columns untuk menampilkan nilai tiap pergerakan, Average Price, dan Turnover."},
+      {"en": "To see the movements behind a row, open Stock Card with the same period and type the item code in Item.", "id": "Untuk melihat pergerakan di balik satu baris, buka Stock Card dengan periode yang sama dan ketik kode item di Item."},
+      {"en": "Click Print for the paper version: company header, the period, the same rows, totals and signature boxes.", "id": "Klik Print untuk versi kertas: kop perusahaan, periode, baris yang sama, total, dan kotak tanda tangan."}
+    ],
+    "fields": [
+      {"label": "Period", "en": "First and last date of the recap.", "id": "Tanggal awal dan akhir rekap."},
+      {"label": "Item", "en": "Item name with its code below.", "id": "Nama item dengan kodenya di bawah."},
+      {"label": "Class", "en": "Raw Material, Semi Finished Goods or Finished Goods.", "id": "Raw Material (bahan baku), Semi Finished Goods (setengah jadi), atau Finished Goods (barang jadi)."},
+      {"label": "Category", "en": "Category of the item in its master.", "id": "Kategori item di master-nya."},
+      {"label": "Opening", "en": "Stock in all bins just before the first date.", "id": "Stok di semua bin tepat sebelum tanggal awal."},
+      {"label": "In", "en": "Quantity received in the period. Stock transfers are not counted.", "id": "Qty masuk pada periode itu. Stock transfer tidak dihitung."},
+      {"label": "Out", "en": "Quantity issued in the period. Stock transfers are not counted.", "id": "Qty keluar pada periode itu. Stock transfer tidak dihitung."},
+      {"label": "Adjustment", "en": "Quantity added or taken off by adjustments and physical counts.", "id": "Qty yang ditambah atau dikurangi oleh penyesuaian dan stock opname."},
+      {"label": "Closing", "en": "Stock in all bins at the end of the last date.", "id": "Stok di semua bin pada akhir tanggal akhir."},
+      {"label": "Unit", "en": "Stock unit of the item.", "id": "Satuan stok item."},
+      {"label": "Closing Value", "en": "Value of the closing stock at the moving average price.", "id": "Nilai stok akhir dengan harga rata-rata bergerak."},
+      {"label": "Turnover", "en": "Value out divided by the average of opening and closing value. Hidden at first.", "id": "Nilai keluar dibagi rata-rata nilai awal dan nilai akhir. Awalnya tersembunyi."},
+      {"label": "Activity", "en": "With movement = the item had a movement in the period. No movement = only an opening balance.", "id": "With movement = item bergerak pada periode itu. No movement = hanya punya saldo awal."},
+      {"label": "Group by: Class / Category", "en": "Subtotals per stock class or per category. The report opens grouped by Class.", "id": "Subtotal per kelas stok atau per kategori. Laporan terbuka terkelompok per Class."}
+    ]
+  },
+  {
+    "key": "inv-rpt-summary",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Stock Summary",
+    "purpose": {
+      "en": "The value of all stock for a period, one row per stock class and item category: opening value, value in, value out, adjustment and closing value. Open it for the total stock value and where it sits.",
+      "id": "Nilai semua stok untuk satu periode, satu baris per kelas stok dan kategori item: nilai awal, nilai masuk, nilai keluar, penyesuaian, dan nilai akhir. Buka untuk total nilai stok dan letaknya."
+    },
+    "keywords": "stock summary, ringkasan stok, ringkasan persediaan, nilai persediaan, inventory valuation, total stok, nilai stok, per kategori, per kelas, summary all stocks",
+    "steps": [
+      {"en": "Set Period (first and last date), then click Show. The report opens on the current month.", "id": "Isi Period (tanggal awal dan akhir), lalu klik Show. Laporan terbuka pada bulan berjalan."},
+      {"en": "Read the rows under each class; the subtotal of the class and the grand total are below.", "id": "Baca baris di bawah tiap kelas; subtotal kelas dan total keseluruhan ada di bawahnya."},
+      {"en": "Share (%) shows how much of the total closing value a category holds.", "id": "Share (%) menunjukkan porsi sebuah kategori dari total nilai akhir."},
+      {"en": "For the items of a category, open Stock Recapitulation with the same period and filter by Category.", "id": "Untuk item di satu kategori, buka Stock Recapitulation dengan periode yang sama dan saring per Category."},
+      {"en": "Click Print for the paper version: company header, the period, the same rows, totals and signature boxes.", "id": "Klik Print untuk versi kertas: kop perusahaan, periode, baris yang sama, total, dan kotak tanda tangan."}
+    ],
+    "fields": [
+      {"label": "Period", "en": "First and last date of the summary.", "id": "Tanggal awal dan akhir ringkasan."},
+      {"label": "Class", "en": "Raw Material, Semi Finished Goods or Finished Goods.", "id": "Raw Material (bahan baku), Semi Finished Goods (setengah jadi), atau Finished Goods (barang jadi)."},
+      {"label": "Category", "en": "Item category from the item master.", "id": "Kategori item dari master item."},
+      {"label": "Items", "en": "Number of items that had stock or moved in the period.", "id": "Jumlah item yang punya stok atau bergerak pada periode itu."},
+      {"label": "Opening Value", "en": "Value of the stock just before the first date.", "id": "Nilai stok tepat sebelum tanggal awal."},
+      {"label": "In Value", "en": "Value received in the period.", "id": "Nilai yang masuk pada periode itu."},
+      {"label": "Out Value", "en": "Value issued in the period.", "id": "Nilai yang keluar pada periode itu."},
+      {"label": "Adjustment Value", "en": "Value added or taken off by adjustments and physical counts.", "id": "Nilai yang ditambah atau dikurangi oleh penyesuaian dan stock opname."},
+      {"label": "Closing Value", "en": "Value of the stock at the end of the last date.", "id": "Nilai stok pada akhir tanggal akhir."},
+      {"label": "Share (%)", "en": "Closing value of the row as a percentage of the total closing value.", "id": "Nilai akhir baris itu sebagai persen dari total nilai akhir."}
+    ]
+  },
+  {
+    "key": "inv-rpt-opname",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Stock Opname",
+    "purpose": {
+      "en": "The result of physical counts and stock adjustments in a period, one row per item: system quantity, counted quantity, difference and its value. Open it to check a count before it is approved or to print the result.",
+      "id": "Hasil stock opname dan penyesuaian stok pada satu periode, satu baris per item: qty sistem, qty fisik, selisih, dan nilainya. Buka untuk memeriksa hasil hitung sebelum disetujui atau mencetak hasilnya."
+    },
+    "keywords": "stock opname, opname, hitung fisik, physical count, stock take, selisih stok, selisih lebih, selisih kurang, penyesuaian stok, adjustment, berita acara opname, inspeksi stok",
+    "steps": [
+      {"en": "Set Period (first and last date), then click Show. The report opens on the current month.", "id": "Isi Period (tanggal awal dan akhir), lalu klik Show. Laporan terbuka pada bulan berjalan."},
+      {"en": "The report opens grouped by document. Read System Qty, Counted Qty and Difference on each row.", "id": "Laporan terbuka terkelompok per dokumen. Baca System Qty, Counted Qty, dan Difference pada tiap baris."},
+      {"en": "Click Loss or Gain above the table to see only the rows with a difference.", "id": "Klik Loss atau Gain di atas tabel untuk melihat baris yang berselisih saja."},
+      {"en": "Click Not posted yet to see counts that have not changed the stock: Draft or waiting for approval.", "id": "Klik Not posted yet untuk melihat hitungan yang belum mengubah stok: Draft atau menunggu approval."},
+      {"en": "The counts themselves are entered in Stock Adjustment & Physical Count of each stock class.", "id": "Hitungannya sendiri diisi di Stock Adjustment & Physical Count tiap kelas stok."},
+      {"en": "Click Print for the paper version: company header, the period, the same rows, totals and signature boxes.", "id": "Klik Print untuk versi kertas: kop perusahaan, periode, baris yang sama, total, dan kotak tanda tangan."}
+    ],
+    "fields": [
+      {"label": "Period", "en": "Document dates to include.", "id": "Tanggal dokumen yang diikutkan."},
+      {"label": "Date", "en": "Date of the count or adjustment document.", "id": "Tanggal dokumen hitung atau penyesuaian."},
+      {"label": "Doc No.", "en": "Number of the document. A document without a number yet shows as Draft.", "id": "Nomor dokumen. Dokumen yang belum bernomor tampil sebagai Draft."},
+      {"label": "Type", "en": "Physical count = a scheduled count. Adjustment = a single correction.", "id": "Physical count = hitung fisik terjadwal. Adjustment = koreksi satu kejadian."},
+      {"label": "Status", "en": "Document status. Only POSTED documents have changed the stock.", "id": "Status dokumen. Hanya dokumen POSTED yang sudah mengubah stok."},
+      {"label": "Item", "en": "Item name with its code below.", "id": "Nama item dengan kodenya di bawah."},
+      {"label": "Warehouse", "en": "Warehouse of the document.", "id": "Gudang dokumen itu."},
+      {"label": "Bin", "en": "Bin that was counted.", "id": "Bin yang dihitung."},
+      {"label": "System Qty", "en": "Stock according to the system when the row was taken.", "id": "Stok menurut sistem saat baris itu diambil."},
+      {"label": "Counted Qty", "en": "Quantity found in the physical count.", "id": "Qty hasil hitung fisik."},
+      {"label": "Difference", "en": "Counted minus system. Positive = gain, negative = loss.", "id": "Fisik dikurangi sistem. Positif = lebih, negatif = kurang."},
+      {"label": "Difference Value", "en": "Difference times the unit price of the row.", "id": "Selisih dikali harga satuan baris itu."},
+      {"label": "Result", "en": "Gain, Loss or Match.", "id": "Gain (lebih), Loss (kurang), atau Match (cocok)."},
+      {"label": "Reason", "en": "Reason code chosen on the document.", "id": "Kode alasan yang dipilih di dokumen."},
+      {"label": "Group by: Document / Warehouse / Item / Result", "en": "Subtotals per document, warehouse, item or result.", "id": "Subtotal per dokumen, gudang, item, atau hasil."}
+    ]
+  },
+  {
+    "key": "inv-rpt-loss-gain",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Stock Loss & Gain",
+    "purpose": {
+      "en": "Stock gained and lost per item per month, from posted physical counts and adjustments, in quantity and value. Open it to see how much stock was lost or found each month and on which items.",
+      "id": "Selisih lebih dan kurang stok per item per bulan, dari stock opname dan penyesuaian yang sudah Posted, dalam qty dan nilai. Buka untuk melihat berapa stok yang hilang atau ditemukan tiap bulan dan di item mana."
+    },
+    "keywords": "loss and gain, selisih stok, selisih lebih, selisih kurang, kehilangan stok, susut, shrinkage, stock opname, rekap bulanan, bulanan, penyesuaian, laba rugi stok",
+    "steps": [
+      {"en": "Set Period, then click Show. The report opens from the first day of the year until today.", "id": "Isi Period, lalu klik Show. Laporan terbuka dari hari pertama tahun ini sampai hari ini."},
+      {"en": "The report opens grouped by month, with the totals of each month below its rows.", "id": "Laporan terbuka terkelompok per bulan, dengan total tiap bulan di bawah barisnya."},
+      {"en": "Click Loss or Gain above the table to see only the items that lost or gained in a month.", "id": "Klik Loss atau Gain di atas tabel untuk melihat item yang kurang atau lebih saja pada satu bulan."},
+      {"en": "Group by Item to see one item across the months, or by Class or Category for totals.", "id": "Kelompokkan per Item untuk melihat satu item lintas bulan, atau per Class atau Category untuk total."},
+      {"en": "For the count documents behind a month, open Stock Opname with the dates of that month.", "id": "Untuk dokumen hitung di balik satu bulan, buka Stock Opname dengan tanggal bulan itu."},
+      {"en": "Click Print for the paper version: company header, the period, the same rows, totals and signature boxes.", "id": "Klik Print untuk versi kertas: kop perusahaan, periode, baris yang sama, total, dan kotak tanda tangan."}
+    ],
+    "fields": [
+      {"label": "Period", "en": "Dates of the posted adjustments to include.", "id": "Tanggal penyesuaian Posted yang diikutkan."},
+      {"label": "Month", "en": "Year and month of the adjustments on the row.", "id": "Tahun dan bulan penyesuaian pada baris itu."},
+      {"label": "Item", "en": "Item name with its code below.", "id": "Nama item dengan kodenya di bawah."},
+      {"label": "Class", "en": "Raw Material, Semi Finished Goods or Finished Goods.", "id": "Raw Material (bahan baku), Semi Finished Goods (setengah jadi), atau Finished Goods (barang jadi)."},
+      {"label": "Gain", "en": "Quantity added to the stock in that month.", "id": "Qty yang ditambahkan ke stok pada bulan itu."},
+      {"label": "Loss", "en": "Quantity taken off the stock in that month.", "id": "Qty yang dikurangi dari stok pada bulan itu."},
+      {"label": "Net", "en": "Gain minus Loss.", "id": "Gain dikurangi Loss."},
+      {"label": "Unit", "en": "Stock unit of the item.", "id": "Satuan stok item."},
+      {"label": "Gain Value", "en": "Gain quantity times the average price at that moment.", "id": "Qty Gain dikali harga rata-rata saat itu."},
+      {"label": "Loss Value", "en": "Loss quantity times the average price at that moment.", "id": "Qty Loss dikali harga rata-rata saat itu."},
+      {"label": "Net Value", "en": "Gain Value minus Loss Value.", "id": "Gain Value dikurangi Loss Value."},
+      {"label": "Result", "en": "Gain, Loss or Balanced, by the net value of the row.", "id": "Gain, Loss, atau Balanced, menurut nilai bersih baris itu."},
+      {"label": "Source", "en": "Physical count, Adjustment, or both. Hidden at first.", "id": "Physical count, Adjustment, atau keduanya. Awalnya tersembunyi."}
+    ]
+  },
+  {
+    "key": "inv-rpt-inspection",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Stock in Inspection",
+    "purpose": {
+      "en": "Goods that are in the warehouse now but cannot be used yet: waiting for quality inspection, rejected and not returned, in a QC Hold area or in a blocked bin. Open it to chase what is held up.",
+      "id": "Barang yang sekarang ada di gudang tetapi belum boleh dipakai: menunggu pemeriksaan QC, ditolak dan belum diretur, di area QC Hold, atau di bin yang diblokir. Buka untuk menindaklanjuti yang tertahan."
+    },
+    "keywords": "stock in inspection, stok inspeksi, stok qc, menunggu qc, quality inspection, karantina, quarantine, qc hold, barang ditolak, reject, retur, blocked stock, stok diblokir",
+    "steps": [
+      {"en": "Open the report; it shows the state of today, grouped by State.", "id": "Buka laporan; isinya keadaan hari ini, terkelompok per State."},
+      {"en": "Waiting for inspection: receipt lines that Quality Control has not judged yet. They are not stock yet.", "id": "Waiting for inspection: baris penerimaan yang belum dinilai Quality Control. Belum menjadi stok."},
+      {"en": "Rejected, to return: quantity rejected by Quality Control that has not been returned to the supplier.", "id": "Rejected, to return: qty yang ditolak Quality Control dan belum diretur ke supplier."},
+      {"en": "QC hold and Blocked bin: stock that sits in a QC Hold area or in a bin that is blocked.", "id": "QC hold dan Blocked bin: stok yang berada di area QC Hold atau di bin yang diblokir."},
+      {"en": "Sort by Days to see what has waited longest.", "id": "Urutkan menurut Days untuk melihat yang paling lama menunggu."},
+      {"en": "Click Print for the paper version: company header, the period, the same rows, totals and signature boxes.", "id": "Klik Print untuk versi kertas: kop perusahaan, periode, baris yang sama, total, dan kotak tanda tangan."}
+    ],
+    "fields": [
+      {"label": "State", "en": "Waiting for inspection, Rejected, to return, QC hold or Blocked bin.", "id": "Waiting for inspection, Rejected, to return, QC hold, atau Blocked bin."},
+      {"label": "Item", "en": "Item name with its code below.", "id": "Nama item dengan kodenya di bawah."},
+      {"label": "Receipt No. / Bin", "en": "Goods receipt number, or the bin code for stock that is held.", "id": "Nomor penerimaan barang, atau kode bin untuk stok yang ditahan."},
+      {"label": "Supplier / Warehouse", "en": "Supplier of the receipt, or the warehouse of the bin.", "id": "Supplier penerimaan itu, atau gudang tempat bin berada."},
+      {"label": "Since", "en": "Receipt date, inspection date, or the last movement of the item.", "id": "Tanggal penerimaan, tanggal pemeriksaan, atau pergerakan terakhir item."},
+      {"label": "Days", "en": "Days since that date.", "id": "Jumlah hari sejak tanggal itu."},
+      {"label": "Qty", "en": "Quantity waiting, rejected or held.", "id": "Qty yang menunggu, ditolak, atau ditahan."},
+      {"label": "Stock Value", "en": "Value of held stock at the moving average price. Empty for receipts: they are not stock yet.", "id": "Nilai stok yang ditahan dengan harga rata-rata bergerak. Kosong untuk penerimaan: belum menjadi stok."},
+      {"label": "Notes", "en": "Inspection note of the receipt line, or the reason the bin is blocked.", "id": "Catatan pemeriksaan baris penerimaan, atau alasan bin diblokir."}
+    ]
+  }
+]

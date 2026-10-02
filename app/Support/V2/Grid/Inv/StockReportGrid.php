@@ -6,6 +6,7 @@ use App\Models\Inventory\StockOnhand;
 use App\Models\Master\MatRaw;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
+use App\Services\Inventory\StockItemMeta;
 use App\Support\V2\Grid\DbGrid;
 use App\Support\V2\Src;
 
@@ -68,20 +69,12 @@ abstract class StockReportGrid extends DbGrid
     // Lintas-DB (tm2inv -> tm2mst): satu query master untuk semua item halaman ini.
     protected function loadItems(array $ids): void
     {
-        $ids = array_values(array_unique(array_filter($ids)));
-        $this->items = match ($this->category()) {
-            'RM' => MatRaw::query()->whereKey($ids)->get(['material_id', 'material_code', 'material_name', 'category1', 'min_stock'])
-                ->mapWithKeys(fn ($m) => [$m->material_id => ['code' => $m->material_code, 'name' => $m->material_name, 'group' => $m->category1 ?: 'No category', 'min' => $m->min_stock]])->all(),
-            'FG' => ProdProduct::query()->with('category')->whereKey($ids)->get()
-                ->mapWithKeys(fn ($p) => [$p->id_product => ['code' => $p->product_code, 'name' => $p->product_name, 'group' => $p->category?->category_name ?: 'No category', 'min' => $p->min_stock]])->all(),
-            default => ProdPart::query()->whereKey($ids)->get(['id_part', 'part_code', 'part_name', 'min_stock'])
-                ->mapWithKeys(fn ($p) => [$p->id_part => ['code' => $p->part_code, 'name' => $p->part_name, 'group' => 'Semi Finished Goods', 'min' => $p->min_stock]])->all(),
-        };
+        $this->items = StockItemMeta::load($this->category(), $ids);
     }
 
     protected function item(?int $id): array
     {
-        return $this->items[$id] ?? ['code' => $id ? '#'.$id : null, 'name' => '(item not found in master)', 'group' => 'No category', 'min' => null];
+        return $this->items[$id] ?? StockItemMeta::fallback($id);
     }
 
     // View lama bisa memuat tanggal kosong (0000-00-00) untuk saldo warisan: dianggap belum pernah bergerak.

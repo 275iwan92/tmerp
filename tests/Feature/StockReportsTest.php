@@ -1,0 +1,251 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Master\WhLoc;
+use App\Models\Master\WhWarehouse;
+use App\Models\Sys\SecUser;
+use App\Services\Inventory\StockLedger;
+use App\Support\V2\Grid\Grids;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
+
+// Laporan stok semua kelas (Inventory > Warehouse > Report): Stock Card, Stock Recapitulation, Stock Summary, Stock Opname,
+// Stock Loss & Gain, Stock in Inspection -- dan buku periodenya (App\Services\Inventory\StockLedger).
+// Menulis ke database sungguhan: satu item fiktif (id di luar jangkauan nyata) dengan dokumen bertanggal tahun 2099 di gedung
+// uji sendiri, dan MEMBERSIHKAN sendiri di tearDown(). Saldo item nyata tidak tersentuh.
+class StockReportsTest extends TestCase
+{
+    private const BY = 'test_stock_reports';
+
+    private const ITEM = 999999002;
+
+    private const KEY = 'RM|999999002';
+
+    private WhLoc $binA;
+
+    private WhLoc $binB;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->clean();
+        StockLedger::forget();
+        $wh = WhWarehouse::create(['warehouse_code' => 'ZZR-A', 'warehouse_name' => 'Test ZZR-A', 'warehouse_type' => 'MIX', 'activate' => true, 'created_by' => self::BY, 'updated_by' => self::BY]);
+        $bin = fn (string $code, bool $usable) => WhLoc::create(['warehouse_id' => $wh->id_warehouse, 'location_code' => $code, 'location_name' => $code, 'row_code' => $code, 'col_code' => '1',
+            'stack_code' => '1', 'is_usable' => $usable, 'activate' => true, 'block_reason' => $usable ? null : 'Test block', 'created_by' => self::BY, 'updated_by' => self::BY]);
+        $this->binA = $bin('ZZR-A-01', true);
+        $this->binB = $bin('ZZR-A-02', false);
+        $this->seedStock();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->clean();
+        foreach (['rm_stockcard' => 'create_by', 'rm_stock_d' => 'create_by', 'rm_stock' => 'create_by', 'inv_transfer_line' => 'created_by', 'inv_transfer' => 'created_by'] as $table => $column) {
+            $this->assertSame(0, $this->inv()->table($table)->where($column, self::BY)->count(), $table.' masih berisi baris uji.');
+        }
+        $this->assertSame(0, WhWarehouse::query()->where('created_by', self::BY)->count());
+        $this->assertSame(0, WhLoc::query()->where('created_by', self::BY)->count());
+        StockLedger::forget();
+        parent::tearDown();
+    }
+
+    private function inv()
+    {
+        return DB::connection('tm2inv');
+    }
+
+    private function clean(): void
+    {
+        foreach (['rm_stockcard', 'rm_stock_d', 'rm_stock'] as $table) {
+            $this->inv()->table($table)->where('create_by', self::BY)->delete();
+        }
+        $this->inv()->table('inv_transfer_line')->where('created_by', self::BY)->delete();
+        $this->inv()->table('inv_transfer')->where('created_by', self::BY)->delete();
+        WhLoc::query()->where('created_by', self::BY)->delete();
+        WhWarehouse::query()->where('created_by', self::BY)->delete();
+    }
+
+    // Satu baris kartu stok item uji. $q = [masuk, keluar, penyesuaian]; $after = [saldo, harga rata-rata] posisi itu sesudah baris ini.
+    private function card(string $date, string $type, WhLoc $bin, array $q, array $after, float $before, string $refName, int $refId): void
+    {
+        $this->inv()->table('rm_stockcard')->insert(['doc_date' => $date, 'material_id' => self::ITEM, 'doc_type' => $type, 'location_id' => $bin->location_id, 'warehouse_id' => $bin->warehouse_id,
+            'qty' => $q[0] - $q[1] + $q[2], 'uom_code' => 'KG', 'reference_name' => $refName, 'reference_detail_id' => $refId, 'qty_bb' => $before, 'qty_in' => $q[0], 'qty_out' => $q[1],
+            'qty_adj' => $q[2], 'qty_eb' => $after[0], 'avg_unitprice' => $after[1], 'value_eb' => $after[0] * $after[1], 'create_by' => self::BY, 'update_by' => self::BY]);
+    }
+
+    // Dokumen stok satu baris + (bila diposting) baris kartunya. Kembalian = id baris dokumen.
+    private function document(string $no, string $date, int $headType, string $cat, string $status, WhLoc $bin, array $line): int
+    {
+        $docId = $this->inv()->table('rm_stock')->insertGetId(['doc_no' => $no, 'doc_date' => $date, 'doc_type' => $headType, 'doc_cat' => $cat, 'warehouse_id' => $bin->warehouse_id,
+            'reason_code' => 'COUNT_ERROR', 'flow_status' => $status, 'stat_confirm' => $status === 'POSTED' ? 1 : 0, 'create_by' => self::BY, 'update_by' => self::BY]);
+
+        return $this->inv()->table('rm_stock_d')->insertGetId(['doc_id' => $docId, 'seq_no' => 1, 'material_id' => self::ITEM, 'location_id' => $bin->location_id, 'uom_code' => 'KG',
+            'create_by' => self::BY, 'update_by' => self::BY] + $line);
+    }
+
+    // Februari 2099: masuk 100 @ 50 (jadi saldo awal Maret). Maret 2099: masuk 50 @ 80, keluar 30, transfer 20 ke bin B (diblokir),
+    // stock opname -5 di bin A, penyesuaian +2 di bin B, dan satu stock opname yang masih Draft (belum mengubah stok).
+    private function seedStock(): void
+    {
+        $ref = 'tm2inv.rm_stock_d';
+        $a = $this->binA;
+        $b = $this->binB;
+        $this->card('2099-02-10 08:00:00', 'IN', $a, [100, 0, 0], [100, 50], 0, $ref, $this->document('ZZR-IN1', '2099-02-10 08:00:00', 1, 'STOCK', 'POSTED', $a, ['qty' => 100, 'unit_price' => 50]));
+        $this->card('2099-03-05 08:00:00', 'IN', $a, [50, 0, 0], [150, 60], 100, $ref, $this->document('ZZR-IN2', '2099-03-05 08:00:00', 1, 'STOCK', 'POSTED', $a, ['qty' => 50, 'unit_price' => 80]));
+        $this->card('2099-03-10 08:00:00', 'OUT', $a, [0, 30, 0], [120, 60], 150, $ref, $this->document('ZZR-OUT1', '2099-03-10 08:00:00', -1, 'STOCK', 'POSTED', $a, ['qty' => 30]));
+
+        $transferId = $this->inv()->table('inv_transfer')->insertGetId(['transfer_no' => 'ZZR-TF1', 'transfer_date' => '2099-03-12', 'from_warehouse_id' => $a->warehouse_id,
+            'to_warehouse_id' => $b->warehouse_id, 'stat_confirm' => 1, 'created_by' => self::BY, 'updated_by' => self::BY]);
+        $lineId = $this->inv()->table('inv_transfer_line')->insertGetId(['transfer_id' => $transferId, 'stock_class' => 'RM', 'item_id' => self::ITEM, 'from_location_id' => $a->location_id,
+            'to_location_id' => $b->location_id, 'qty' => 20, 'created_by' => self::BY, 'updated_by' => self::BY]);
+        $this->card('2099-03-12 08:00:00', 'TF', $a, [0, 20, 0], [100, 60], 120, 'tm2inv.inv_transfer_line:OUT', $lineId);
+        $this->card('2099-03-12 08:00:00', 'TF', $b, [20, 0, 0], [20, 60], 0, 'tm2inv.inv_transfer_line:IN', $lineId);
+
+        $this->card('2099-03-15 08:00:00', 'AD', $a, [0, 0, -5], [95, 60], 100, $ref,
+            $this->document('ZZR-OP1', '2099-03-15 08:00:00', 1, 'OP', 'POSTED', $a, ['qty' => -5, 'qty_system' => 100, 'qty_physical' => 95, 'unit_price' => 60]));
+        $this->card('2099-03-20 08:00:00', 'AD', $b, [0, 0, 2], [22, 60], 20, $ref,
+            $this->document('ZZR-AD1', '2099-03-20 08:00:00', 1, 'AD', 'POSTED', $b, ['qty' => 2, 'qty_system' => 20, 'qty_physical' => 22, 'unit_price' => 60]));
+        $this->document('ZZR-OP2', '2099-03-25 08:00:00', 1, 'OP', 'DRAFT', $a, ['qty' => 2, 'qty_system' => 95, 'qty_physical' => 97, 'unit_price' => 60]);
+    }
+
+    private function rows(string $slug, string $from = '2099-03-01', string $to = '2099-03-31', array $params = []): array
+    {
+        $grid = Grids::find($slug);
+        $this->assertNotNull($grid, $slug);
+
+        return $grid->between(CarbonImmutable::parse($from), CarbonImmutable::parse($to))->with($params)->rows();
+    }
+
+    private function find(array $rows, string $id): array
+    {
+        $row = collect($rows)->firstWhere('id', $id);
+        $this->assertNotNull($row, 'Baris '.$id.' tidak ada di laporan.');
+
+        return $row;
+    }
+
+    public function test_period_ledger_ties_opening_movements_and_closing(): void
+    {
+        $item = StockLedger::between(CarbonImmutable::parse('2099-03-01'), CarbonImmutable::parse('2099-03-31'))->items()[self::KEY];
+
+        $this->assertSame([100.0, 50.0, 30.0, -3.0, 0.0, 117.0], [$item['opening_qty'], $item['in'], $item['out'], $item['adj'], $item['transfer'], $item['closing_qty']]);
+        $this->assertEqualsWithDelta(5000.0, $item['opening_value'], 0.001);
+        $this->assertEqualsWithDelta(4000.0, $item['in_value'], 0.001);
+        $this->assertEqualsWithDelta(1800.0, $item['out_value'], 0.001);
+        $this->assertEqualsWithDelta(-180.0, $item['adj_value'], 0.001);
+        $this->assertEqualsWithDelta(0.0, $item['transfer_value'], 0.001);
+        $this->assertEqualsWithDelta(7020.0, $item['closing_value'], 0.001);
+        $this->assertSame(4, $item['moves'], 'A stock transfer is not a movement of the item.');
+
+        // Periode sesudahnya: saldo akhir Maret = saldo awal April, tanpa pergerakan.
+        $april = StockLedger::between(CarbonImmutable::parse('2099-04-01'), CarbonImmutable::parse('2099-04-30'))->items()[self::KEY];
+        $this->assertSame([117.0, 117.0, 0], [$april['opening_qty'], $april['closing_qty'], $april['moves']]);
+        $this->assertEqualsWithDelta(7020.0, $april['opening_value'], 0.001);
+    }
+
+    public function test_stock_card_has_an_opening_row_and_a_running_item_balance(): void
+    {
+        $rows = $this->rows('inv-rpt-card', params: ['item' => '#'.self::ITEM]);
+
+        $this->assertSame(['Opening', 'In', 'Out', 'Transfer out', 'Transfer in', 'Adjustment', 'Adjustment'], array_column($rows, 'move'));
+        $this->assertSame([100.0, 150.0, 120.0, 120.0, 120.0, 115.0, 117.0], array_column($rows, 'balance'));
+        $this->assertSame([0.0, 0.0, 0.0, -20.0, 20.0, 0.0, 0.0], array_column($rows, 'transfer'));
+        $this->assertSame('ZZR-TF1', $rows[3]['doc_no']);
+        $this->assertEqualsWithDelta(4000.0, $rows[1]['value'], 0.001);
+        $this->assertEqualsWithDelta(-300.0, $rows[5]['value'], 0.001);
+
+        // Tanpa saringan item: hanya item yang bergerak; April tidak memuat item uji, kecuali disaring namanya.
+        $this->assertNotEmpty(array_filter($this->rows('inv-rpt-card'), fn ($r) => $r['item_code'] === '#'.self::ITEM));
+        $this->assertSame([], array_filter($this->rows('inv-rpt-card', '2099-04-01', '2099-04-30'), fn ($r) => $r['item_code'] === '#'.self::ITEM));
+        $this->assertSame(['Opening'], array_column($this->rows('inv-rpt-card', '2099-04-01', '2099-04-30', ['item' => '#'.self::ITEM]), 'move'));
+    }
+
+    public function test_recapitulation_and_summary_agree(): void
+    {
+        $recap = $this->rows('inv-rpt-recap');
+        $row = $this->find($recap, self::KEY);
+        $this->assertSame([100.0, 50.0, 30.0, -3.0, 117.0, 'With movement', 'In stock'], [$row['opening'], $row['in'], $row['out'], $row['adj'], $row['closing'], $row['activity'], $row['stock']]);
+        $this->assertEqualsWithDelta(7020.0, $row['closing_value'], 0.001);
+        $this->assertEqualsWithDelta(60.0, $row['avg_price'], 0.001);
+        $this->assertEqualsWithDelta(round(1800 / ((5000 + 7020) / 2), 2), $row['turnover'], 0.001);
+
+        // Ringkasan = jumlah rekap: nilai awal + masuk - keluar + penyesuaian = nilai akhir di tiap baris, total sama dengan rekap.
+        $summary = $this->rows('inv-rpt-summary');
+        foreach ($summary as $s) {
+            $this->assertEqualsWithDelta($s['closing_value'], $s['opening_value'] + $s['in_value'] - $s['out_value'] + $s['adj_value'], 0.01, $s['id']);
+        }
+        foreach (['opening_value', 'in_value', 'out_value', 'adj_value', 'closing_value'] as $k) {
+            $this->assertEqualsWithDelta(array_sum(array_column($recap, $k)), array_sum(array_column($summary, $k)), 0.01, $k);
+        }
+        $this->assertSame(count($recap), (int) array_sum(array_column($summary, 'items')));
+        // Tahun 2099 hanya berisi dokumen uji ini.
+        $this->assertEqualsWithDelta(4000.0, array_sum(array_column($summary, 'in_value')), 0.01);
+        $this->assertEqualsWithDelta(100.0, array_sum(array_column($summary, 'share')), 0.6);
+    }
+
+    public function test_opname_lists_every_count_and_loss_gain_only_what_was_posted(): void
+    {
+        $opname = collect($this->rows('inv-rpt-opname'))->keyBy('doc_no');
+        $this->assertSame(['ZZR-AD1', 'ZZR-OP1', 'ZZR-OP2'], $opname->keys()->sort()->values()->all());
+        $this->assertSame(['Physical count', 'POSTED', 100.0, 95.0, -5.0, 'Loss', 'ZZR-A-01'],
+            array_map(fn (string $k) => $opname['ZZR-OP1'][$k], ['kind', 'status', 'system', 'physical', 'diff', 'result', 'bin']));
+        $this->assertEqualsWithDelta(-300.0, $opname['ZZR-OP1']['value'], 0.001);
+        $this->assertSame(['Adjustment', 'Gain'], [$opname['ZZR-AD1']['kind'], $opname['ZZR-AD1']['result']]);
+        $this->assertSame(['DRAFT', 'Gain'], [$opname['ZZR-OP2']['status'], $opname['ZZR-OP2']['result']]);
+
+        $rows = $this->rows('inv-rpt-loss-gain', '2099-01-01', '2099-12-31');
+        $this->assertCount(1, $rows, 'Tahun 2099 hanya berisi satu item uji di satu bulan.');
+        $row = $rows[0];
+        $this->assertStringStartsWith('2099-03', $row['month']);
+        $this->assertSame([2.0, 5.0, -3.0, 2, 'Loss'], [$row['gain'], $row['loss'], $row['net'], $row['documents'], $row['result']]);
+        $this->assertEqualsWithDelta(120.0, $row['gain_value'], 0.001);
+        $this->assertEqualsWithDelta(300.0, $row['loss_value'], 0.001);
+        $this->assertEqualsWithDelta(-180.0, $row['net_value'], 0.001);
+        $this->assertSame([], $this->rows('inv-rpt-loss-gain', '2099-04-01', '2099-12-31'));
+    }
+
+    public function test_inspection_lists_stock_in_a_blocked_bin(): void
+    {
+        $held = collect(Grids::find('inv-rpt-inspection')->rows())->firstWhere('reference', 'ZZR-A-02');
+
+        $this->assertNotNull($held, 'Stok di bin yang diblokir harus tampil.');
+        $this->assertSame(['Blocked bin', 22.0, 'Test block'], [$held['state'], $held['qty'], $held['note']]);
+        $this->assertEqualsWithDelta(1320.0, $held['value'], 0.001);
+        $this->assertNull(collect(Grids::find('inv-rpt-inspection')->rows())->firstWhere('reference', 'ZZR-A-01'), 'Bin yang bisa dipakai tidak ikut.');
+    }
+
+    public function test_period_comes_from_the_query_string_and_reports_open_and_print(): void
+    {
+        $grid = Grids::find('inv-rpt-recap');
+        $this->assertSame([now()->startOfMonth()->toDateString(), now()->toDateString()], array_map(fn ($d) => $d->toDateString(), $grid->period()));
+        request()->query->set('from', '2099-03-31');
+        request()->query->set('to', '2099-03-01');
+        $this->assertSame(['2099-03-01', '2099-03-31'], array_map(fn ($d) => $d->toDateString(), Grids::find('inv-rpt-recap')->period()), 'Tanggal terbalik ditukar.');
+        request()->query->set('from', 'not-a-date');
+        $this->assertSame(now()->startOfMonth()->toDateString(), Grids::find('inv-rpt-recap')->period()[0]->toDateString());
+        $this->assertNull(Grids::find('inv-rpt-inspection')->period());
+        $this->assertNull(Grids::find('inv-rm-rpt-card')->printUrlOf(), 'Laporan lama tidak berubah: tanpa periode, tanpa Print.');
+
+        $print = $this->rowsForPrint();
+        $this->assertSame(['Period', 'Rows'], array_keys($print['criteria']));
+        $this->assertNotContains('turnover', array_column($print['columns'], 'key'), 'Kolom tersembunyi tidak ikut dicetak.');
+        $this->assertSame('item_code', collect($print['columns'])->firstWhere('key', 'item')['sub']);
+
+        $this->actingAs(SecUser::query()->where('is_admin', 1)->firstOrFail());
+        $query = '?from=2099-03-01&to=2099-03-31';
+        foreach (['inv-rpt-card', 'inv-rpt-recap', 'inv-rpt-summary', 'inv-rpt-opname', 'inv-rpt-loss-gain', 'inv-rpt-inspection', 'inv-rpt-location'] as $slug) {
+            $this->get(route('v2.screen', $slug).$query)->assertOk();
+        }
+        $this->get(route('v2.screen', 'inv-rpt-opname').$query)->assertSee('ZZR-OP1');
+        $this->get(route('v2.report.print', 'inv-rpt-recap').$query)->assertOk()->assertSee('#'.self::ITEM);
+        $this->get(route('v2.report.print', 'inv-rm-rpt-card'))->assertNotFound();
+    }
+
+    private function rowsForPrint(): array
+    {
+        return Grids::find('inv-rpt-recap')->between(CarbonImmutable::parse('2099-03-01'), CarbonImmutable::parse('2099-03-31'))->printData();
+    }
+}

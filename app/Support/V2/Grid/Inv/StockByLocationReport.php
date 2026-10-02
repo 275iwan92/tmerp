@@ -71,6 +71,12 @@ class StockByLocationReport extends DbGrid
         return 'tone';
     }
 
+    // Dibuka langsung terkelompok per gedung (user 2026-10-02: "report items group by location warehouse"); Group mengganti ke area / bin / item.
+    public function groupBy(): ?string
+    {
+        return 'building';
+    }
+
     // Tidak dipakai (rows() dibaca dari WarehouseStock); hanya memenuhi kontrak induk.
     protected function query(): Builder
     {

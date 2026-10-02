@@ -8,6 +8,7 @@ use App\Services\Costing\ReverseCostingService;
 use App\Services\Flow\FlowEngineService;
 use App\Services\Imposition\ImpositionEngine;
 use App\Services\Inventory\PalletService;
+use App\Services\Inventory\StockLedger;
 use App\Services\Inventory\StockTransferService;
 use App\Services\Inventory\WarehouseStock;
 use App\Services\Payroll\PayrollEngineService;
@@ -527,6 +528,38 @@ final class EngineRegistry
                 'used' => ['Print Pallet Label', 'Goods Receipt (Pallet Labels button)', 'Print Item Label', 'Warehouse Map', 'Stock by Location', 'Track via QR/Barcode'],
                 'tests' => ['tests/Feature/PalletServiceTest.php'],
                 'docs' => ['docs/warehouselayout_tier1.md'],
+            ],
+            [
+                'key' => 'stock-ledger', 'name' => 'Stock Period Ledger', 'group' => 'Inventory', 'mode' => 'calc',
+                'purpose' => 'Works out the stock of a period for the reports: opening balance, movements and closing balance of every item, in quantity and value, for all stock classes.',
+                'class' => StockLedger::class,
+                'methods' => ['between', 'movements', 'positions', 'items'],
+                'notes' => [
+                    'between' => 'The ledger of one period (first and last date).',
+                    'movements' => 'Every stock card row of the period by date, with its value and the running balance of the item.',
+                    'positions' => 'One row per item and bin that had stock before the period or moved in it.',
+                    'items' => 'One row per item: all its bins added up.',
+                ],
+                'inputs' => [
+                    ['from', 'First date of the period.'],
+                    ['to', 'Last date of the period.'],
+                ],
+                'outputs' => [
+                    ['Opening and closing', 'Quantity and value just before the first date and at the end of the last date.'],
+                    ['In, out, adjustment', 'Quantity and value of the period, per kind of movement. Stock transfers are kept apart.'],
+                    ['Movement rows', 'Document, kind of movement, bin, quantity, value and the balance of the item after it.'],
+                ],
+                'steps' => [
+                    'Opening balance of an item in a bin = its last stock card row before the first date.',
+                    'Reads the stock card rows of the period in date order. In, Out and Adjustment come from the row; a stock transfer changes the bin, not the item.',
+                    'Value of a movement = value of the bin after the row minus its value before, so opening + in - out + adjustment always equals closing.',
+                    'Closing balance = the last row of the period, or the opening balance when nothing moved.',
+                ],
+                'reads' => ['tm2inv.rm_stockcard / sfg_stockcard / fg_stockcard', 'tm2inv.v_inv_movement'],
+                'writes' => [],
+                'used' => ['Stock Card', 'Stock Recapitulation', 'Stock Summary'],
+                'tests' => ['tests/Feature/StockReportsTest.php'],
+                'docs' => ['docs/md_for_systems/inventoryreport_review.md'],
             ],
             [
                 'key' => 'wo-generation', 'name' => 'Work Order Generation', 'group' => 'Production', 'mode' => 'auto',
