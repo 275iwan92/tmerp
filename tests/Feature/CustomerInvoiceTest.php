@@ -12,10 +12,12 @@ use App\Models\Master\CustCustomer;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderItem;
 use App\Models\Sdi\DoDelivery;
+use App\Models\Sdi\DoDeliveryPod;
 use App\Models\Sdi\DoLine;
 use App\Models\Sys\SecUser;
 use App\Services\Acc\ArApService;
 use App\Services\Acc\CustomerInvoiceService;
+use App\Services\Sales\DeliveryPromiseService;
 use App\Support\Docs\DocSeries;
 use App\Support\Finance\TaxRate;
 use App\Support\V2\Data\CustomerInvoice;
@@ -24,6 +26,7 @@ use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 // Customer Invoice + uang muka (App\Services\Acc\CustomerInvoiceService; ketentuan: customerinvoice_accounting.md).
@@ -73,6 +76,7 @@ class CustomerInvoiceTest extends TestCase
             FinVoucherLine::withoutGlobalScopes()->whereIn('voucher_id', $vouchers)->delete();
             FinVoucher::withoutGlobalScopes()->whereKey($vouchers)->delete();
             FinInvoice::withoutGlobalScopes()->whereKey($invoices)->delete();
+            DoDeliveryPod::query()->whereIn('delivery_id', $this->deliveries ?: [0])->delete();
             DoLine::query()->whereIn('delivery_id', $this->deliveries ?: [0])->delete();
             DoDelivery::query()->whereKey($this->deliveries)->delete();
             CoOrderItem::query()->whereIn('order_id', $this->orders ?: [0])->delete();
@@ -345,7 +349,88 @@ class CustomerInvoiceTest extends TestCase
             'pay' => [$inv->invoice_id => ['paid' => (string) round($left - 1000, 2)]]])->assertRedirect()->assertSessionHasNoErrors();
         $this->assertSame('PAID', $inv->refresh()->payment_status);
         $this->assertSame('closed', CustomerInvoice::formStatus($inv));
-        $this->get($home.'?id='.$inv->invoice_id)->assertOk()->assertDontSee('data-dl-open="invoice-payment"', false);
+        $this->get($home.'?id='.$inv->invoice_id)->assertOk()->assertDontSee('data-dl-open="invoice-payment"', false)
+            ->assertSee('Proof of Delivery · '.$doLine->delivery->do_no);
+
+        // Jejak: uang muka dan invoice terlihat di Customer Order (tab Billing), di buku uang muka, dan di laporan.
+        $this->get($home.'?id='.$dp->invoice_id)->assertOk()->assertSee($inv->invoice_number);
+        $this->get(route('v2.screen', 'customer-order').'?id='.$co->id_order)->assertOk()->assertSee($inv->invoice_number)->assertSee($dp->invoice_number);
+        foreach (['acc-to-invoice', 'acc-rpt-ar-aging'] as $slug) {
+            $this->get(route('v2.screen', $slug))->assertOk();
+        }
+        $this->get(route('v2.screen', 'acc-rpt-dp-ledger'))->assertOk()->assertSee(str_replace('/', '\/', $dp->invoice_number), false);
+    }
+
+    // User 2026-10-02: tagihan mengikuti yang divalidasi customer di Surat Jalan (retur / rusak di jalan tidak ditagih).
+    public function test_invoice_follows_what_the_customer_received_and_keeps_the_reason_for_a_difference(): void
+    {
+        if (! Schema::connection('tm2sdi')->hasColumn('do_line', 'receive_diff_reason')) {
+            $this->markTestSkipped('Kolom alasan selisih terima belum ada di database ini.');
+        }
+        $co = $this->order(false, [[100, null, 5000, false], [40, null, 2000, false]]);
+        $do = DoDelivery::query()->findOrFail($this->deliveries[0]);
+        [$a, $b] = $do->lines()->orderBy('line_no')->get()->all();
+        $this->assertTrue($this->svc->billable($co->id_order)->isEmpty(), 'A delivery note without proof of delivery cannot be invoiced.');
+        $this->assertSame('Waiting proof of delivery', $this->svc->deliveryChain($co->id_order)->first()['state']);
+        $arrival = ['arrived_at' => now()->format('Y-m-d H:i'), 'result' => 'PARTIAL', 'received_by' => 'Tester', 'miss_cause' => 'QUALITY'];
+
+        try {
+            DeliveryPromiseService::record($do, $arrival + ['received' => [$a->id_line => ['qty_received' => '90'], $b->id_line => ['qty_received' => '40']]], null, 'test');
+            $this->fail('Receiving less than shipped without a reason was accepted.');
+        } catch (ValidationException) {
+        }
+        $this->assertSame(0, DoDeliveryPod::query()->where('delivery_id', $do->id_delivery)->count(), 'A refused arrival leaves no record.');
+
+        DeliveryPromiseService::record($do, $arrival + ['received' => [$a->id_line => ['qty_received' => '90', 'reason' => 'DAMAGED', 'note' => '10 pcs wet'], $b->id_line => ['qty_received' => '40']]], null, 'test');
+        $this->assertEqualsWithDelta(90.0, (float) $a->refresh()->qty_received, 0.005);
+        $this->assertSame('DAMAGED', $a->receive_diff_reason);
+        $this->assertSame('10 pcs wet', $a->receive_note);
+        $this->assertNull($b->refresh()->receive_diff_reason, 'A fully received line has no reason.');
+
+        $inv = $this->svc->createInvoice($co, [], 'test');
+        $this->assertEqualsWithDelta(90 * 5000 + 40 * 2000, (float) $inv->total_amount, 0.005, 'Only what the customer received is invoiced.');
+        $rows = CustomerInvoice::deliveryRows($inv->load('lines'));
+        $this->assertCount(2, $rows);
+        $this->assertSame('Tester', $rows[0]['received_by']);
+        $this->assertNotSame('', $rows[0]['reason']);
+        $this->svc->confirm($inv, 'test');
+        $this->assertSame(['Fully invoiced'], $this->svc->deliveryChain($co->id_order)->pluck('state')->unique()->values()->all());
+    }
+
+    // User 2026-10-02: uang muka jelas dari Customer Order yang mana dan riwayatnya terlacak.
+    public function test_down_payment_history_of_an_order_is_traceable(): void
+    {
+        $co = $this->order(false, [[100, 100, 10000, false], [100, 100, 10000, false]]);
+        $dp = $this->svc->createDownPayment($co, 'test');
+        $this->svc->saveDraft($dp, ['dp_percent' => null, 'bill_amount' => 800000.0], 'test');
+        $this->svc->confirm($dp->refresh(), 'test');
+        $this->svc->receiveDownPayment($dp->refresh(), $this->today, $this->bank(false)->id_company_bank, 800000, null, 'test');
+
+        $lines = $this->svc->billable($co->id_order);
+        $first = $this->svc->createInvoice($co, [$lines[0]->id_line], 'test');
+        $this->svc->saveDraft($first, ['dp' => [$dp->invoice_id => ['apply' => 300000.0]]], 'test');
+        $this->svc->confirm($first->refresh(), 'test');
+
+        $ledger = $this->svc->downPaymentLedger($co->id_order);
+        $this->assertSame(['Down payment invoiced', 'Money received', 'Applied to invoice'], array_column($ledger['rows'], 'event'));
+        $this->assertSame($first->refresh()->invoice_number, $ledger['rows'][2]['doc_no']);
+        $this->assertEqualsWithDelta(800000.0, $ledger['billed'], 0.005);
+        $this->assertEqualsWithDelta(800000.0, $ledger['received'], 0.005);
+        $this->assertEqualsWithDelta(300000.0, $ledger['applied'], 0.005);
+        $this->assertEqualsWithDelta(500000.0, $ledger['balance'], 0.005);
+        $this->assertEqualsWithDelta(500000.0, CustomerInvoice::downPaymentUse($dp->refresh())['left'], 0.005);
+
+        $bill = $this->svc->orderBilling($co);
+        $this->assertEqualsWithDelta(2000000.0, $bill['order_value'], 0.005);
+        $this->assertEqualsWithDelta(1000000.0, $bill['invoiced'], 0.005);
+        $this->assertEqualsWithDelta(1000000.0, $bill['ready_value'], 0.005, 'The second delivery line is still to be invoiced.');
+        $this->assertEqualsWithDelta(700000.0, $bill['outstanding'], 0.005);
+
+        // Uang muka tanpa Customer Order ditolak saat Confirm.
+        $orphan = $this->svc->createDownPayment($co, 'test');
+        $orphan->forceFill(['co_id' => null])->save();
+        $this->assertNotEmpty(array_filter($this->svc->confirmErrors($orphan), fn ($e) => str_contains($e, 'Customer Order')));
+        $orphan->forceFill(['co_id' => $co->id_order])->save();
     }
 
     public function test_payment_can_cover_several_invoices_and_never_exceeds_what_is_left(): void

@@ -51,6 +51,11 @@ final class MaterialShortage extends Widget
         return ['kekurangan bahan', 'bahan kurang', 'material kurang', 'material shortage', 'short material'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'PURCHASING';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         $alert = MaterialPlanning::alerts();

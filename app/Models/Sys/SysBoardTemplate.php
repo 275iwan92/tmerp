@@ -4,11 +4,10 @@ namespace App\Models\Sys;
 
 use Illuminate\Database\Eloquent\Model;
 
-// Susunan bawaan papan per profil (MANAGEMENT): titik awal papan user dan tujuan Reset to Template.
+// Isi tiap dashboard (profile_code = sys_dashboard.dashboard_code): dashboard bidang tampil apa adanya; baris OVERALL = titik awal
+// papan user dan tujuan Reset to Template.
 class SysBoardTemplate extends Model
 {
-    public const PROFILES = ['MANAGEMENT' => 'Management (President Director, Director, General Manager)'];
-
     protected $connection = 'tm2sys';
 
     protected $table = 'sys_board_template';

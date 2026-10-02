@@ -94,7 +94,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
     // Papan widget: GET = HTML papan terbaru (dipanggil sesudah perintah asisten), POST = satu aksi Customize lalu HTML terbaru.
     Route::match(['get', 'post'], '/board', function (Request $r) {
         abort_unless(Board::profile(Auth::user()), 403);
-        if ($r->isMethod('post') && ($error = Board::apply(Auth::user(), (string) $r->input('action'), $r->input('key')))) {
+        if ($r->isMethod('post') && ($error = Board::apply(Auth::user(), (string) $r->input('action'), $r->input('key'), $r->input('to')))) {
             return response()->json(['message' => t($error)], 422);
         }
 
@@ -420,7 +420,10 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 $msg = 'Item master ditambahkan — isi qty & harga estimasi.';
             } elseif ($action === 'add_free') {
                 abort_unless(trim((string) $r->input('free_description')) !== '', 422, 'Isi uraian item bebas.');
-                PurchaseRequisition::addFree($pr->refresh(), (string) $r->input('free_description'), (string) $r->input('free_uom', ''));
+                $err = PurchaseRequisition::addFree($pr->refresh(), (string) $r->input('free_description'), (string) $r->input('free_uom', ''), $r->integer('free_account_id') ?: null);
+                if ($err) {
+                    return $open($id)->withErrors(['free' => $err]);
+                }
                 $msg = 'Item bebas ditambahkan.';
             } elseif ($action === 'confirm') {
                 $pr->refresh()->load('lines');

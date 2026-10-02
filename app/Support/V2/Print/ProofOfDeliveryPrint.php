@@ -58,7 +58,10 @@ final class ProofOfDeliveryPrint extends Document
             'contact' => implode(' · ', array_filter([$c?->contact_name, $c?->phone])),
             'party' => ['name' => $c?->customer_name ?? '', 'lines' => PrintDocs::address($do->ship_address_detail, $do->ship_address_label, $do->ship_postal_code)],
             'notes' => $pod?->notes ? [['Notes', $pod->notes]] : [],
-            'rows' => $do->lines->map(fn ($l) => ['name' => $l->item_description, 'qty' => (float) $l->qty_do, 'unit' => $l->qty_unit, 'co_no' => $l->order?->co_no])->all(),
+            // Sesudah hasil terima dicatat: qty diterima + alasan selisih / kondisi tercetak; sebelum itu kolomnya kosong untuk diisi tangan.
+            'rows' => $do->lines->map(fn ($l) => ['name' => $l->item_description, 'qty' => (float) $l->qty_do, 'unit' => $l->qty_unit, 'co_no' => $l->order?->co_no,
+                'received_qty' => $l->qty_received === null ? null : (float) $l->qty_received,
+                'remark' => implode(' · ', array_filter([$l->receive_diff_reason ? self::t(DeliveryPromiseService::DIFF_REASONS[$l->receive_diff_reason] ?? $l->receive_diff_reason) : null, $l->receive_note])) ?: null])->all(),
         ]);
     }
 }

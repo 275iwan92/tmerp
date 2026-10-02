@@ -28,6 +28,9 @@ final class DeliveryPromiseService
         'QUALITY' => ['Quality problem', 'Production'], 'CUSTOMER' => ['Customer side (changed plan, no one to receive)', 'Customer'],
         'OTHER' => ['Other', 'Other']];
 
+    // Mengapa customer menerima kurang dari yang dikirim (per baris Surat Jalan). Yang tidak diterima tidak ditagih.
+    public const DIFF_REASONS = ['DAMAGED' => 'Damaged in transit', 'RETURNED' => 'Returned by customer', 'SHORT' => 'Short shipped', 'OTHER' => 'Other'];
+
     // Slot yang dijanjikan ke customer untuk satu Surat Jalan = slot CPDEL paling awal dari baris yang ditarik ke DO ini
     // (tanggal + jam); tanpa tautan CPDEL = rencana kirim DO tanpa jam.
     public static function promise(DoDelivery $do): array
@@ -96,6 +99,12 @@ final class DeliveryPromiseService
         if (! $kept && empty($data['miss_cause'])) {
             throw ValidationException::withMessages(['miss_cause' => 'Promise missed: choose the cause.']);
         }
+        $received = self::receivedLines($do, $data['result'], (array) ($in['received'] ?? []));
+        foreach ($received as $row) {
+            if ($row['qty'] < (float) $row['line']->qty_do - 0.005 && ! $row['reason']) {
+                throw ValidationException::withMessages(['received' => 'Choose the Reason for Difference on every line the customer received less than what was shipped.']);
+            }
+        }
 
         $pod = DoDeliveryPod::create([
             'delivery_id' => $do->id_delivery, 'attempt_no' => (int) DoDeliveryPod::where('delivery_id', $do->id_delivery)->max('attempt_no') + 1,
@@ -110,19 +119,32 @@ final class DeliveryPromiseService
     }
 
     // Qty yang diterima customer per baris Surat Jalan = dasar tagih Customer Invoice (customerinvoice_accounting.md bagian 7).
-    // RECEIVED: semua baris = qty kirim. PARTIAL: isian per baris (kosong = qty kirim). Hasil lain tidak mengubah apa pun.
-    // Tidak pernah lebih dari qty kirim dan tidak pernah di bawah yang sudah ditagih. Kolomnya baru ada di database yang
-    // sudah menjalankan migrasi Customer Invoice; di database lain langkah ini dilewati.
+    // RECEIVED: semua baris = qty kirim. PARTIAL: isian per baris (kosong = qty kirim) + alasan selisih + catatan kondisi.
+    // Hasil lain tidak mengubah apa pun. Tidak pernah lebih dari qty kirim dan tidak pernah di bawah yang sudah ditagih.
+    // Kolomnya baru ada di database yang sudah menjalankan migrasi Customer Invoice; di database lain langkah ini dilewati.
+    /** @return array<int, array{line: DoLine, qty: float, reason: ?string, note: ?string}> */
+    public static function receivedLines(DoDelivery $do, string $result, array $received): array
+    {
+        if (! in_array($result, ['RECEIVED', 'PARTIAL'], true) || ! Schema::connection('tm2sdi')->hasColumn('do_line', 'receive_diff_reason')) {
+            return [];
+        }
+
+        return $do->lines()->get()->map(function (DoLine $l) use ($result, $received) {
+            $row = $received[$l->id_line] ?? null;
+            $typed = Locale::input(is_array($row) ? ($row['qty_received'] ?? null) : $row);
+            $qty = $result === 'PARTIAL' && $typed !== null && $typed !== '' ? (float) $typed : (float) $l->qty_do;
+            $qty = max((float) $l->qty_invoiced, min((float) $l->qty_do, max(0.0, $qty)));
+            $reason = is_array($row) ? (string) ($row['reason'] ?? '') : '';
+
+            return ['line' => $l, 'qty' => $qty, 'reason' => $qty < (float) $l->qty_do - 0.005 && isset(self::DIFF_REASONS[$reason]) ? $reason : null,
+                'note' => is_array($row) ? (mb_substr(trim((string) ($row['note'] ?? '')), 0, 150) ?: null) : null];
+        })->all();
+    }
+
     public static function applyReceived(DoDelivery $do, string $result, array $received, ?string $login): void
     {
-        if (! in_array($result, ['RECEIVED', 'PARTIAL'], true) || ! Schema::connection('tm2sdi')->hasColumn('do_line', 'qty_received')) {
-            return;
-        }
-        foreach ($do->lines()->get() as $l) {
-            $typed = $received[$l->id_line] ?? null;
-            $typed = Locale::input(is_array($typed) ? ($typed['qty_received'] ?? null) : $typed);
-            $qty = $result === 'PARTIAL' && $typed !== null && $typed !== '' ? (float) $typed : (float) $l->qty_do;
-            $l->update(['qty_received' => max((float) $l->qty_invoiced, min((float) $l->qty_do, max(0.0, $qty))), 'updated_by' => $login]);
+        foreach (self::receivedLines($do, $result, $received) as $row) {
+            $row['line']->update(['qty_received' => $row['qty'], 'receive_diff_reason' => $row['reason'], 'receive_note' => $row['note'], 'updated_by' => $login]);
         }
     }
 }

@@ -60,6 +60,11 @@ final class SalesRanking extends Widget
         return ['pencapaian sales', 'target per sales', 'peringkat sales', 'ranking sales', 'sales ranking', 'target per sales person'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'SALES';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         $by = $n->confirmed($n->from(), $n->to())->groupBy(fn ($o) => (int) $o->sales_person_id);

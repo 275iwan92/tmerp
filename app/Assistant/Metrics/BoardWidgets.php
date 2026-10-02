@@ -17,6 +17,7 @@ use Assistant\Reply;
 //   "lepas widget kata harian" / "remove widget quote of the day"      -> lepas
 //   "widget apa saja" / "list widgets"                                 -> daftar yang boleh dipasang
 //   "reset widget" / "kembalikan papan widget ke template"             -> Reset to Template
+//   "buka dashboard sales" / "open dashboard cashflow"                 -> ganti dashboard yang tampil
 final class BoardWidgets implements Command
 {
     private const REMOVE = ['lepas', 'lepaskan', 'hapus', 'cabut', 'buang', 'copot', 'remove', 'delete', 'uninstall', 'hide', 'sembunyikan'];
@@ -37,7 +38,7 @@ final class BoardWidgets implements Command
 
     public function phrases(): array
     {
-        return ['widget', 'widgets', 'papan widget', 'opening board'];
+        return ['widget', 'widgets', 'papan widget', 'opening board', 'dashboard', 'dasbor'];
     }
 
     public function module(): ?string
@@ -68,6 +69,19 @@ final class BoardWidgets implements Command
         $name = fn (string $key) => Assistant::text($catalog->all()[$key]['row']->title);
         $on = Board::layout($user)->pluck('widget_key')->all();
 
+        // Ganti dashboard: nama dashboard (English, terjemahannya, atau kodenya) disebut bersama kata "dashboard".
+        if ($has(['dashboard', 'dasbor'])) {
+            foreach (Board::dashboards($user) as $d) {
+                foreach ([$d['title'], Assistant::text($d['title']), str_replace('_', ' ', $d['code'])] as $name) {
+                    $need = array_values(array_filter(preg_split('/[^\p{L}\p{N}]+/u', mb_strtolower($name)) ?: []));
+                    if ($need && ! array_diff($need, $words)) {
+                        Board::apply($user, 'dashboard', $d['code']);
+
+                        return $this->done(Assistant::text($d['title']), Assistant::text('This dashboard is now shown on your opening screen.'));
+                    }
+                }
+            }
+        }
         if ($has(self::RESET)) {
             Board::apply($user, 'reset', null);
 

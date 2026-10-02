@@ -58,10 +58,11 @@
         $formStatus = PurchaseRequisition::formStatus($pr, $held);
         $draft = $pr->status === 'DRAFT';
         $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+        $accounts = PurchaseRequisition::accounts();
         $lines = $pr->lines->map(fn ($l) => [
             'pr_line_id' => $l->pr_line_id, 'i_description' => $l->i_description, 'i_qty' => (float) $l->i_qty, 'i_uom' => $l->i_uom,
             'i_est_price' => (float) $l->i_est_price, 'i_need_date' => $l->i_need_date?->toDateString() ?? '', 'i_notes' => $l->i_notes,
-            'code' => $l->c_item_code ?: '—', 'source' => $l->i_item_source === 'MASTER_ITEM' ? 'Master bahan' : 'Item bebas', 'stock' => $l->is_stock ? 'Stok' : 'Non-stok / jasa',
+            'i_coa_account_id' => $l->i_coa_account_id, 'code' => $l->c_item_code ?: '—', 'source' => $l->i_item_source === 'MASTER_ITEM' ? 'Master bahan' : 'Item bebas', 'stock' => $l->is_stock ? 'Stok' : 'Non-stok / jasa',
             'ordered' => \Devlib\Locale::decimal($l->c_qty_ordered, 2),
         ])->values()->all();
     @endphp
@@ -100,6 +101,7 @@
                     ['key' => 'i_est_price', 'label' => t('Est. Price'), 'type' => 'money', 'width' => '130px'],
                     ['key' => 'i_need_date', 'label' => t('Need Date'), 'type' => 'date', 'width' => '150px'],
                     ['key' => 'subtotal', 'label' => 'Est. Subtotal', 'type' => 'money', 'formula' => 'i_qty * i_est_price', 'sum' => true, 'width' => '140px'],
+                    ['key' => 'i_coa_account_id', 'label' => t('Account'), 'type' => 'select', 'options' => $accounts, 'required' => true, 'more' => true],
                     ['key' => 'code', 'label' => t('Item Code'), 'type' => 'display', 'more' => true],
                     ['key' => 'source', 'label' => 'Item Source', 'type' => 'display', 'more' => true],
                     ['key' => 'stock', 'label' => t('Type'), 'type' => 'display', 'more' => true],
@@ -112,6 +114,7 @@
                         <x-dl::button size="sm" variant="secondary" label="+ Item Master" type="submit" name="action" value="add_material" formnovalidate />
                         <x-dl::field.text name="free_description" label="+ Item bebas (uraian)" placeholder="Service / non-master goods..." />
                         <x-dl::field.text name="free_uom" label="Unit" :case-toggle="false" placeholder="PCS" />
+                        <x-dl::field.select name="free_account_id" label="Account" placeholder="— choose account —" :options="$accounts" :source="Src::of('tm2acc.fin_account')" />
                         <x-dl::button size="sm" variant="secondary" label="+ Item Bebas" type="submit" name="action" value="add_free" formnovalidate />
                     </x-slot:tools>
                 @endif

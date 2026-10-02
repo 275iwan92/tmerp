@@ -61,6 +61,11 @@ final class OrderValue extends Widget
         return ['omzet', 'omset', 'nilai order', 'penjualan bulan ini', 'omzet bulan ini', 'order value', 'revenue'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'SALES';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         [$prevFrom, $prevTo] = $n->range(1);

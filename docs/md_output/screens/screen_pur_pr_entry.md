@@ -44,8 +44,8 @@ Item bisa ditambahkan dari 2 sumber: **Item Master** (cascading kategori 5-level
 - `departments()`, `coaAccounts()` (dari `tm2acc.fin_account` where `is_postable=1`), `cat1Options()`..`cat5Options()`, `matchingMaterials()`, `itemSearchResults()` — semua computed sumber dropdown/picker
 - `setPick(int $level, ?string $value)` — set kategori level & reset level di bawahnya
 - `addMasterItem(int $materialId)` — tambah baris dari Item Master, ambil default COA dari `MatCategory` level-1 (`default_coa_account_id`), `is_stock` dari `stock_class !== 'SERVICE'`
-- `addFreeText()` — tambah baris FREE_TEXT
-- `updateLine(int $lineId, string $field, $value)` — update 1 field baris (whitelist), recalc subtotal
+- `addFreeText()` — tambah baris FREE_TEXT; wajib `freeAccountId` (akun `is_postable=1`, dipilih di tab Teks Bebas). Tanpa akun: baris tidak dibuat, pesan di `freeError` (kolom `pr_line.i_coa_account_id` NOT NULL). Layar v2 memanggil method yang sama lewat `App\Support\V2\Data\PurchaseRequisition::addFree()` (field `free_account_id`)
+- `updateLine(int $lineId, string $field, $value)` — update 1 field baris (whitelist), recalc subtotal. Kolom NOT NULL (`i_description`, `i_qty`, `i_uom`, `i_department_id`, `i_coa_account_id`) tidak bisa dikosongkan — nilai kosong diabaikan; akun harus `is_postable=1`
 - `removeLine(int $lineId)` — hapus baris (hanya saat DRAFT)
 - `updateHeader(string $field, $value)` — update 1 field header (whitelist)
 - `recalcTotal()` [protected] — sum `c_est_subtotal` semua baris → `PrRequisition.c_est_total`

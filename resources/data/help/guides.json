@@ -1133,22 +1133,22 @@
     "key": "guide-opening-board",
     "type": "GUIDE",
     "module": "GENERAL",
-    "title": "Opening Board and Widgets",
+    "title": "Opening Dashboards and Widgets",
     "purpose": {
-      "en": "Explains the opening screen of top management: a board of widgets its owner arranges, by hand with Customize or by asking the assistant.",
-      "id": "Menjelaskan layar pembuka top management: papan widget yang diatur pemiliknya sendiri, lewat Customize atau dengan meminta asisten."
+      "en": "Explains the opening screen of top management: the Overall dashboard that its owner fills with widgets, and the area dashboards that come as templates.",
+      "id": "Menjelaskan layar pembuka top management: dashboard Overall yang diisi pemiliknya dengan widget, dan dashboard bidang yang berupa template."
     },
-    "keywords": "papan pembuka, layar pembuka, opening board, opening screen, widget, pasang widget, lepas widget, customize, atur papan, dashboard, papan saya, my board, reset template",
+    "keywords": "papan pembuka, layar pembuka, opening board, opening screen, dashboard, overall, widget, pasang widget, lepas widget, choose widgets, pilih widget, customize, seret widget, periode, reset template",
     "steps": [
-      {"en": "After login the opening screen shows your board. The numbers are read from the database each time the screen is opened.", "id": "Sesudah login layar pembuka menampilkan papan Anda. Angkanya dibaca dari database setiap kali layar dibuka."},
-      {"en": "Choose the period beside the board title: Daily, Weekly, Monthly, Quarterly, Half-yearly or Yearly. The widgets recalculate for that period and the choice is remembered.", "id": "Pilih periode di sebelah judul papan: Harian, Mingguan, Bulanan, Kuartalan, Semesteran, atau Tahunan. Widget dihitung ulang untuk periode itu dan pilihannya diingat."},
+      {"en": "After login the opening screen shows your dashboards as tabs: Overall first, then Sales, Purchasing, AR & AP, Cashflow, Payroll and Human Resource as far as your account may see them.", "id": "Sesudah login layar pembuka menampilkan dashboard sebagai tab: Overall dulu, lalu Sales, Purchasing, AR & AP, Cashflow, Payroll, dan Human Resource sejauh akun Anda boleh melihatnya."},
+      {"en": "Click a tab to open that dashboard. An area dashboard is a template; only Overall can be arranged.", "id": "Klik tab untuk membuka dashboard itu. Dashboard bidang adalah template; hanya Overall yang bisa diatur."},
+      {"en": "Choose the period beside the title: Daily, Weekly, Monthly, Quarterly, Half-yearly or Yearly. The widgets recalculate and the choice is remembered.", "id": "Pilih periode di sebelah judul: Harian, Mingguan, Bulanan, Kuartalan, Semesteran, atau Tahunan. Widget dihitung ulang dan pilihannya diingat."},
+      {"en": "On Overall click Choose Widgets, or the Add widget tile at the end of the board. Tick a widget to show it, untick to take it off; use the search box to find one.", "id": "Di Overall klik Choose Widgets, atau ubin Add widget di ujung papan. Centang widget untuk menampilkannya, hilangkan centang untuk melepasnya; pakai kotak cari untuk menemukannya."},
+      {"en": "The widgets in the list are grouped by the area dashboard they come from.", "id": "Widget di daftar dikelompokkan menurut dashboard bidang asalnya."},
+      {"en": "Click Customize, or press and hold a widget, to arrange: drag a widget onto another to move it, or use the buttons to make it narrower or wider or to remove it. Click Done.", "id": "Klik Customize, atau tekan dan tahan sebuah widget, untuk mengatur: seret widget ke widget lain untuk memindahnya, atau pakai tombol untuk mempersempit, melebarkan, atau melepasnya. Klik Done."},
+      {"en": "Or ask the assistant: \"add widget Top Customers\", \"remove widget Quote of the Day\", \"list widgets\", \"open dashboard Sales\".", "id": "Atau minta asisten: \"pasang widget Customer Teratas\", \"lepas widget Kata Hari Ini\", \"widget apa saja\", \"buka dashboard Sales\"."},
       {"en": "Order Value shows Confirmed orders as the big number; the line below tells how much is still Draft or waiting for approval.", "id": "Order Value menampilkan order Confirmed sebagai angka besar; baris di bawahnya menyebut berapa yang masih Draft atau menunggu approval."},
-      {"en": "Click Customize. Each widget gets buttons to move it earlier or later, make it narrower or wider, or remove it.", "id": "Klik Customize. Tiap widget mendapat tombol untuk pindah lebih awal atau akhir, lebih sempit atau lebar, atau dilepas."},
-      {"en": "Click Add Widget to choose from the widgets your account may use, then click Add.", "id": "Klik Add Widget untuk memilih dari widget yang boleh dipakai akun Anda, lalu klik Add."},
-      {"en": "Click Done when the board looks right. Every change is saved at once.", "id": "Klik Done bila papan sudah sesuai. Setiap perubahan langsung tersimpan."},
-      {"en": "Or ask the assistant: \"add widget Top Customers\", \"remove widget Quote of the Day\", \"list widgets\".", "id": "Atau minta asisten: \"pasang widget Customer Teratas\", \"lepas widget Kata Hari Ini\", \"widget apa saja\"."},
-      {"en": "Reset to Template puts the board back to the template of your position.", "id": "Reset to Template mengembalikan papan ke template jabatan Anda."},
-      {"en": "Targets are filled per month in Setup > KPI Targets. Quarterly and longer periods add the months up; Daily and Weekly show no target.", "id": "Target diisi per bulan di Setup > KPI Targets. Periode kuartalan ke atas menjumlah bulan-bulannya; Harian dan Mingguan tanpa target."}
+      {"en": "Reset to Template puts Overall back to its starting set. Targets are filled per month in Setup > KPI Targets.", "id": "Reset to Template mengembalikan Overall ke susunan awalnya. Target diisi per bulan di Setup > KPI Targets."}
     ],
     "fields": []
   }

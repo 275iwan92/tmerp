@@ -50,6 +50,27 @@ dikonfirmasi dulu, dijawab "benar").
   klik di browser belum diuji Claude — diuji user.
 - Rulebook C.18 + changelog.
 
+## 2026-10-02 -- Opening Dashboards tahap 3: 49 widget, Overall dengan centang, enam dashboard bidang, gaya layar ponsel
+
+Perintah user: widget sebanyak mungkin (20 - 30), direksi memilih dengan tanda centang untuk dashboard Overall; dashboard
+Sales / Purchasing / AR AP / Cashflow / Payroll / Human Resource berupa template; widget dashboard bidang itulah yang bisa
+dicentang ke Overall; cari referensi dari ERP lain; menambah widget semudah layar Android.
+- **Referensi:** riset dashboard Business Central, SAP, NetSuite, Odoo, ERPNext, Zoho, PrintVis, Accurate / Jurnal ->
+  `docs/md_for_systems/openingboard_references.md` (padanan tiap widget, yang belum bisa dibangun dan kenapa, yang tidak
+  terkonfirmasi).
+- **33 widget baru** (total 49): Sales 5, Purchasing 4, AR & AP 5, Cashflow 4, Payroll 4, Human Resource 6, Finance 2,
+  Production 2, Inventory 1. Angka baru di `Numbers` (CPDEL, antrian harga, menang / kalah, quotation terbuka, komplain, PO,
+  PR, hutang, pembayaran, kas, laba rugi, payroll, pegawai, kehadiran, cuti, rekrutmen, Work Order, nilai stok). Kelas widget
+  baru cukup `meta()` + `build()`.
+- **Dashboard:** tabel `sys_dashboard` (layar Setup -> Opening Dashboards), `sys_widget.dashboard_code`,
+  `sys_user_board.dashboard_code`; template profil MANAGEMENT menjadi OVERALL; template enam dashboard bidang (migrasi `000163`).
+  Widget gaji hanya untuk yang berhak melihat nilai payroll.
+- **DevLib `x-dl::widget-board`:** tab dashboard, Choose Widgets = daftar centang per kelompok dengan kotak cari dan label
+  jenis, ubin + Add widget, tekan-tahan = mode atur, seret untuk memindah (aksi `move`), jendela pilihan tetap terbuka.
+- **Asisten:** `buka dashboard <nama>`.
+- **Dipasang di ddt dan tm2** (migrasi `000163` + `help:import`). Test `OpeningBoardTest` 12 test: tiap widget untuk tiap
+  periode, konsistensi kas dan laba rugi, dashboard bidang, hak, seret. Uji browser tanpa jendela di mockup.test: 0 error.
+
 ## 2026-10-02 -- Opening Board tahap 2: dipasang di tm2, periode Harian – Tahunan, rincian Draft / Confirmed
 
 Jawaban user atas review: "pasang saja di tmerp", "dijelaskan saja draft sekian dan confirmed sekian", "boleh dari daily
@@ -101,6 +122,33 @@ yang perlu diputuskan). Aturan: `docs/globaluserrules.md` C.33 + E.3.
   commit b3063eec (alamat shell `/menu` + `KeepScreensInShell`) -- keduanya menunggu keputusan user.
 - **Belum:** pemasangan di mockup.test / tmerp.test dengan data dari database, dan papan widget yang bisa diatur lewat
   asisten AI (permintaan user 2026-10-02) -- menunggu persetujuan rancangan.
+
+## 2026-10-02 -- Customer Invoice: bukti Surat Jalan + validasi customer, riwayat uang muka per CO, laporan piutang (ddt + tm2)
+
+Perintah user: "sarankan yang terbaik dan jalankan dulu" (belum cukup wawancara pemakai); yang pasti: tiap tagihan terkait
+Surat Jalan dan validasi customer atas yang terkirim (retur / rusak di jalan), uang muka jelas dari CO yang mana dan
+riwayatnya terlacak. Ketentuan: `customerinvoice_accounting.md` 7A, 7B; pedoman A.21.
+- **Proof of Delivery:** per baris qty diterima + **Reason for Difference** (Damaged in transit / Returned by customer /
+  Short shipped / Other, wajib bila diterima < dikirim) + catatan kondisi (`do_line.receive_diff_reason`, `receive_note`;
+  `DeliveryPromiseService::receivedLines`). Sesudah dicatat, baris terima tampil di layar dan tercetak di Proof of Delivery.
+- **Invoice:** tab **Delivery** (Surat Jalan, dikirim / diterima / selisih + alasan, penerima, jam tiba, foto), tombol
+  Open Customer Order, nomor uang muka di cetakan (Ref. Uang Muka). Confirm menolak invoice tanpa order / baris tanpa
+  Surat Jalan dan uang muka tanpa order.
+- **Uang muka:** `CustomerInvoiceService::downPaymentLedger` (ditagih → uang diterima → dipotong di invoice, saldo
+  berjalan) tampil di Down Payment Invoice (tab Down Payment History + Down Payment Left), Customer Order, dan laporan.
+- **Customer Order v2:** tab **Billing** hanya baca (`orderBilling`): angka order, rantai Surat Jalan → invoice, dokumen,
+  riwayat uang muka.
+- **Daftar / laporan baru:** To Invoice (`acc-to-invoice`, buka baris = buat invoice order itu), AR Aging
+  (`acc-rpt-ar-aging`, pengganti umur piutang layar lama), Down Payment Ledger (`acc-rpt-dp-ledger`).
+- **Akun bank per rekening:** 111210–111250 dibuat di `fin_account` dan dipasang ke lima rekening (ddt + tm2); tmerp.test
+  sekarang bisa menerima uang. Pilihan bawaan lain yang dijalankan: kode seri, tanggal invoice = Surat Jalan terakhir,
+  cetakan apa adanya.
+- **DevLib:** judul kolom `x-dl::table` berbentuk `['Label', 'num' => true]` ikut diterjemahkan (`DevlibComponent`).
+- **Migrasi `2026_10_02_000170`** (ddt + tm2, `--path`), Help 3 topik baru + 3 topik diperbarui, potret layar
+  `docs/mockups/customer_invoice_app/5..11`.
+- **Test:** `CustomerInvoiceTest` 10 test / 152 pemeriksaan, lulus di ddt dan tm2; sisa data test diperiksa: bersih.
+- **Belum (menunggu wawancara pemakai):** retur sesudah invoice (Credit Note), nasib barang yang tidak diterima, bentuk
+  validasi customer, uang muka tanpa order, PPh 23.
 
 ## 2026-10-02 -- Order to Cash dan Down Payment lama dihentikan; Customer Invoice menggantikan (ddt + tm2)
 
@@ -3564,3 +3612,18 @@ baru. Full suite: 103 test, 94 passed, 9 skipped (Firebase, tidak terkait), 0 ga
   `CRM_SLEEPING_DAYS`, `SIGN_CCR_*`; kategori konstanta `SALES`.
 - Data contoh ddt (migration `000132`), kamus Indonesia (`000133`, ddt + tm2), Help 4 layar, test `CrmTest` (5 test).
 - Pratinjau layar: `docs/mockups/crm/`. Belum: menu + Help di `tm2sys`, izin per grup, retur masuk stok, target Sales.
+
+## 2026-10-02 — Purchase Requisition: item teks bebas selalu gagal disimpan (akun wajib dipilih saat menambah)
+
+- **Bug**: `addFreeText()` di `pages/pur/pr/entry.blade.php` menyimpan `i_coa_account_id = NULL`, padahal kolom
+  `pr_line.i_coa_account_id` NOT NULL (ddtpur dan tm2pur sama) -> `SQLSTATE[23000] 1048 Column 'i_coa_account_id' cannot be null`.
+  Kena layar v1 dan v2 ("+ Item Bebas"), karena v2 memanggil komponen yang sama. Item Master tidak kena (20 kategori
+  level 1 semuanya punya akun default).
+- **Perbaikan tanpa ubah skema**: akun dipilih saat item bebas ditambahkan (lookup akun yang bisa diposting) — v1: pilihan
+  "Akun COA" di tab Teks Bebas; v2: pilihan "Account" di sebelah uraian + satuan, dan kolom Account di panel rincian
+  baris (bisa diganti selama Draft). Tanpa akun: baris tidak dibuat, muncul pesan.
+- `updateLine()`: nilai kosong untuk kolom NOT NULL (uraian, qty, satuan, departemen, akun) diabaikan — dulu memilih
+  "— pilih —" di kolom Departemen / Akun COA baris juga berakhir error 1048.
+- Submit tidak diberi pemeriksaan tambahan: kolom tetap NOT NULL, jadi baris tanpa akun tidak mungkin ada.
+- Test `PurchaseRequisitionFreeTextLineTest` (6 test, membersihkan PR buatannya sendiri). Dokumen: `procurement_tier2.md` A-1.2,
+  `screen_pur_pr_entry.md`.

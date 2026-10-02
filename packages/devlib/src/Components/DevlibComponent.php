@@ -77,7 +77,8 @@ abstract class DevlibComponent extends Component
                 $this->{$p} = array_map(fn ($c) => match (true) {
                     is_string($c) => $tr($c),
                     is_array($c) && isset($c['label']) => array_replace($c, ['label' => $tr($c['label'])]),
-                    is_array($c) && array_is_list($c) && $c => array_replace($c, [0 => $tr($c[0])] + (isset($c[1]) && $p === 'signatures' ? [1 => $tr($c[1])] : [])),
+                    // [0] = label, juga bila disertai opsi bernama (kolom tabel: ['Qty', 'num' => true]).
+                    is_array($c) && isset($c[0]) && is_string($c[0]) => array_replace($c, [0 => $tr($c[0])] + (isset($c[1]) && $p === 'signatures' ? [1 => $tr($c[1])] : [])),
                     default => $c,
                 }, $this->{$p});
             }

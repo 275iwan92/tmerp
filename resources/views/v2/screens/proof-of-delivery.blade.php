@@ -73,6 +73,14 @@
         </x-slot:strip>
         @if ($done)
             <x-dl::alert tone="info" message="Delivery finished. The result is locked as the KPI record." />
+            {{-- Yang divalidasi customer per baris = dasar tagih Customer Invoice (yang tidak diterima tidak ditagih). --}}
+            <x-dl::table :columns="['product' => 'Product', 'shipped' => ['Shipped', 'num' => true, 'raw' => true], 'received' => ['Received', 'num' => true, 'raw' => true],
+                    'diff' => ['Difference', 'num' => true, 'raw' => true], 'reason' => 'Reason for Difference', 'note' => 'Condition / Note', 'invoiced' => ['Already Invoiced', 'num' => true, 'raw' => true]]"
+                :rows="$do->lines->map(fn ($l) => ['product' => $l->item_description, 'shipped' => Locale::number($l->qty_do, 2), 'received' => $l->qty_received === null ? '—' : Locale::number($l->qty_received, 2),
+                    'diff' => $l->qty_received === null || (float) $l->qty_do - (float) $l->qty_received < 0.005 ? '' : Locale::number((float) $l->qty_do - (float) $l->qty_received, 2),
+                    'reason' => $l->receive_diff_reason ? t(Promise::DIFF_REASONS[$l->receive_diff_reason] ?? $l->receive_diff_reason) : '', 'note' => $l->receive_note ?? '',
+                    'invoiced' => Locale::number($l->qty_invoiced, 2)])->all()"
+                empty="Not received yet." source="{{ Src::of('tm2sdi.do_line.qty_received', 'receive_diff_reason', 'receive_note', 'qty_invoiced') }}" />
         @else
             <x-dl::form.row :cols="3">
                 <x-dl::field.date-time name="arrived_at" label="Arrived at customer" :value="old('arrived_at')" :source="Src::of('tm2sdi.do_delivery_pod.arrived_at')" />
@@ -87,11 +95,14 @@
             </x-dl::form.row>
             {{-- Qty diterima per baris = dasar tagih Customer Invoice. Received: semua baris = qty kirim; Partially received: isi per baris. --}}
             <x-dl::lines name="received" title="Received Quantity" key-field="id_line" :addable="false" :duplicable="false" :min-rows="$do->lines->count()"
-                :rows="$do->lines->map(fn ($l) => ['id_line' => $l->id_line, 'product' => $l->item_description, 'shipped' => Locale::number($l->qty_do, 2), 'unit' => $l->qty_unit, 'qty_received' => (float) ($l->qty_received ?? $l->qty_do)])->all()"
-                source="{{ Src::of('tm2sdi.do_line.qty_received') }}"
-                :columns="[['key' => 'product', 'label' => 'Product', 'type' => 'display'], ['key' => 'shipped', 'label' => 'Shipped', 'type' => 'display', 'width' => '120px'],
-                    ['key' => 'unit', 'label' => 'Unit', 'type' => 'display', 'width' => '80px'], ['key' => 'qty_received', 'label' => 'Received', 'type' => 'number', 'width' => '140px']]" />
-            <x-dl::alert tone="info" :message="t('Result Received: every line counts as fully received. Result Partially received: type the quantity the customer really received per line. The received quantity is what can be invoiced.')" />
+                :rows="$do->lines->map(fn ($l) => ['id_line' => $l->id_line, 'product' => $l->item_description, 'shipped' => Locale::number($l->qty_do, 2), 'unit' => $l->qty_unit,
+                    'qty_received' => (float) ($l->qty_received ?? $l->qty_do), 'reason' => $l->receive_diff_reason ?? '', 'note' => $l->receive_note ?? ''])->all()"
+                source="{{ Src::of('tm2sdi.do_line.qty_received', 'receive_diff_reason', 'receive_note') }}"
+                :columns="[['key' => 'product', 'label' => 'Product', 'type' => 'display'], ['key' => 'shipped', 'label' => 'Shipped', 'type' => 'display', 'width' => '110px'],
+                    ['key' => 'unit', 'label' => 'Unit', 'type' => 'display', 'width' => '70px'], ['key' => 'qty_received', 'label' => 'Received', 'type' => 'number', 'width' => '120px'],
+                    ['key' => 'reason', 'label' => 'Reason for Difference', 'type' => 'select', 'options' => ['' => '—'] + array_map(fn ($r) => t($r), Promise::DIFF_REASONS), 'width' => '200px'],
+                    ['key' => 'note', 'label' => 'Condition / Note', 'type' => 'text', 'width' => '220px']]" />
+            <x-dl::alert tone="info" :message="t('Result Received: every line counts as fully received. Partially received: type what the customer really received per line and why the rest was not received. Only the received quantity can be invoiced.')" />
         @endif
         <x-slot:detail>
             <x-dl::table :columns="['no' => '#', 'arrived' => 'Arrived', 'result' => 'Result', 'by' => 'Received by', 'kept' => 'Promise', 'cause' => 'Cause', 'photo' => 'Photo', 'rec' => 'Recorded by']"

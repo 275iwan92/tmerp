@@ -61,10 +61,10 @@ final class CustomerInvoicePrint extends Document
         $cust = CustCustomer::withoutGlobalScopes()->find($inv->partner_id);
         $t = app(CustomerInvoiceService::class)->totals($inv);
         $dps = FinDpAllocation::query()->with('dpInvoice')->where('final_invoice_id', $inv->invoice_id)->orderBy('allocation_id')->get()
-            ->map(fn (FinDpAllocation $a) => ['date' => $a->dpInvoice?->invoice_date?->toDateString(), 'amount' => round((float) $a->allocated_base + (float) $a->allocated_tax, 2)]);
+            ->map(fn (FinDpAllocation $a) => ['no' => $a->dpInvoice?->invoice_number, 'date' => $a->dpInvoice?->invoice_date?->toDateString(), 'amount' => round((float) $a->allocated_base + (float) $a->allocated_tax, 2)]);
         if ($inv->doc_status === 'DRAFT') {
             $plan = FinInvoice::withoutGlobalScopes()->whereKey(array_keys((array) $inv->dp_plan))->get()->keyBy('invoice_id');
-            $dps = collect((array) $inv->dp_plan)->map(fn ($amount, $dpId) => ['date' => $plan->get((int) $dpId)?->invoice_date?->toDateString(), 'amount' => (float) $amount])->values();
+            $dps = collect((array) $inv->dp_plan)->map(fn ($amount, $dpId) => ['no' => $plan->get((int) $dpId)?->invoice_number, 'date' => $plan->get((int) $dpId)?->invoice_date?->toDateString(), 'amount' => (float) $amount])->values();
         }
         $lines = [['Subtotal', $t['subtotal']]];
         if ($t['discount'] > 0) {
@@ -89,6 +89,10 @@ final class CustomerInvoicePrint extends Document
         }
         if ($inv->is_ppn) {
             $notes[] = ['Tax Invoice No.', $inv->tax_invoice_no ?: '—'];
+        }
+        // Uang muka yang dipotong disebut nomornya supaya terlacak ke tagihan uang muka dan Customer Order-nya.
+        if ($dps->isNotEmpty()) {
+            $notes[] = ['Down Payment Ref.', $dps->pluck('no')->filter()->implode(', ') ?: '—'];
         }
 
         $doc = new self([

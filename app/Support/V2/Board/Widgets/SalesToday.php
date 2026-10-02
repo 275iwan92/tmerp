@@ -65,6 +65,11 @@ final class SalesToday extends Widget
         return ['sales hari ini', 'penjualan hari ini', 'omzet hari ini', 'order hari ini', 'sales today', 'orders today'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'SALES';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         $day = $n->now->startOfDay();

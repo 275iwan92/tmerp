@@ -10,8 +10,13 @@
 > dan tmerp.test (2026-10-02); layar lama Order to Cash dan Down Payment dihentikan atas perintah user** — lihat
 > `customerinvoice_review.md`. Butir pajak (bagian 8) wajib dikonfirmasi konsultan pajak perusahaan sebelum dipakai
 > untuk transaksi nyata.
-> Belum dibangun: PPh 23 / biaya bank / kelebihan bayar di penerimaan (5.4), Credit Note (5.6), pengembalian uang muka (5.7), laporan (bagian 11),
-> pengingat tenggat Faktur Pajak, pemisahan hak per aksi (bagian 10), saldo awal (bagian 12).
+> **Tambahan 2026-10-02 (user: "setiap tagihan harus related dengan surat jalan pengiriman dan validasi dari customer
+> nilai yang terkirim, karena bisa ada retur dan rusak di jalan; uang muka jelas dari CO yang mana dan historinya
+> terlacak"):** bukti terima per baris Surat Jalan dengan alasan selisih (7A), buku uang muka per Customer Order (7B),
+> daftar To Invoice, AR Aging, Down Payment Ledger, tab Billing di Customer Order, satu akun bank per rekening (4).
+> Belum dibangun: PPh 23 / biaya bank / kelebihan bayar di penerimaan (5.4), Credit Note (5.6), pengembalian uang muka (5.7),
+> Statement of Account dan Invoice Register (bagian 11), pengingat tenggat Faktur Pajak, pemisahan hak per aksi (bagian 10),
+> saldo awal (bagian 12).
 
 ---
 
@@ -80,7 +85,7 @@ Kode `LJM` dan `UM-…` adalah usulan bawaan; boleh diganti di master seri sebel
 | Kode | Nama | Dipakai untuk |
 |---|---|---|
 | 111100 | Kas Operasional Pabrik | penerimaan tunai |
-| 1112xx | Bank (satu akun per rekening perusahaan) | penerimaan transfer |
+| 111210 – 111250 | Bank, **satu akun per rekening perusahaan** (lihat di bawah) | penerimaan transfer |
 | 112100 | Piutang Usaha - Customer Lokal | invoice |
 | 112200 | Piutang Usaha - Customer Ekspor | invoice customer ekspor |
 | 212100 | Hutang PPN Keluaran | PPN atas uang muka dan invoice |
@@ -89,9 +94,22 @@ Kode `LJM` dan `UM-…` adalah usulan bawaan; boleh diganti di master seri sebel
 | 421000 | Diskon Penjualan & Retur | Credit Note |
 | 812000 | Beban Administrasi Bank | potongan bank saat transfer masuk |
 
-Yang **belum ada** di daftar akun dan harus dibuat sebelum modul dipakai:
+**Akun bank per rekening** (dibuat 2026-10-02 atas perintah user "sarankan yang terbaik dan jalankan dulu"; di ddt dan tm2):
 
-- akun bank untuk tiap rekening perusahaan (sekarang hanya ada 111200 "Bank BCA - Rekening Utama");
+| Akun | Rekening | Identitas |
+|---|---|---|
+| 111210 | Bank MASPION - CV. Langgeng Jaya Makmur | PPN (bawaan) |
+| 111220 | Bank BNI - CV. Langgeng Jaya Makmur | PPN |
+| 111230 | Bank BCA - Puspita Dewi Widodo | Non PPN (bawaan) |
+| 111240 | Bank BCA - Carrij Soehendra | Non PPN |
+| 111250 | Bank MASPION - Carrij Soehendra | Non PPN |
+
+Alasan satu akun per rekening: saldo buku tiap rekening bisa dicocokkan dengan rekening korannya (rekonsiliasi bank),
+dan uang identitas PPN tidak tercampur dengan Non PPN. Akun 111200 lama tidak diubah dan tidak dipakai modul ini.
+Nama akun dan pemetaannya boleh diubah Finance di Master of Accounts dan Company Bank Accounts.
+
+Yang **belum ada** di daftar akun dan harus dibuat sebelum dipakai:
+
 - **PPh 23 Dibayar Dimuka** (aset), untuk PPh 23 yang dipotong customer;
 - akun selisih pembayaran kecil (pembulatan).
 
@@ -253,7 +271,7 @@ customer; uang muka tetap dipotong sebesar yang pernah diterima.
 ## 7. Dasar tagih, tanggal, dan pisah batas
 
 1. **Yang ditagih = qty yang diterima customer** menurut Surat Jalan yang sudah kembali (Proof of Delivery), dikurangi
-   yang sudah pernah ditagih. Aplikasi menolak menagih melebihi itu.
+   yang sudah pernah ditagih. Aplikasi menolak menagih melebihi itu. Rinciannya di 7A.
 2. **Baris Qty Minim** (harga borongan): nilai baris = harga yang disepakati, berapa pun qty-nya; ditagih satu
    kali, pada invoice pertama yang memuat baris itu.
 3. **Tanggal invoice** bawaan = tanggal Surat Jalan terakhir yang ditagih. Ini juga saat pendapatan diakui dan
@@ -263,6 +281,53 @@ customer; uang muka tetap dipotong sebesar yang pernah diterima.
 6. **Akhir bulan:** laporan *Unbilled Delivery* (sudah diterima customer, belum ditagih) dan *Invoiced Not
    Delivered* dipakai Accounting untuk pisah batas. Aplikasi tidak membuat jurnal akrual otomatis; bila
    diperlukan, Accounting membuatnya lewat Journal Entries berdasarkan laporan itu.
+
+---
+
+## 7A. Bukti di balik tiap tagihan (Surat Jalan + validasi customer)
+
+Ketentuan user 2026-10-02: **setiap tagihan harus berasal dari Surat Jalan pengiriman dan dari apa yang divalidasi
+customer**, karena barang bisa diretur atau rusak di jalan.
+
+| Aturan | Cara aplikasi menjaganya |
+|---|---|
+| Tidak ada invoice tanpa Surat Jalan | invoice hanya bisa dibuat dari baris Surat Jalan satu Customer Order; Confirm ditolak bila ada baris tanpa Surat Jalan |
+| Tidak ada tagihan sebelum customer menerima | baris Surat Jalan baru bisa ditagih sesudah **Proof of Delivery** dicatat (hasil Received atau Partially received) |
+| Yang ditagih = yang diterima | qty diterima diisi per baris di Proof of Delivery; qty tagih tidak bisa melebihi qty diterima dikurangi yang sudah ditagih |
+| Selisih harus beralasan | bila diterima < dikirim, **Reason for Difference** wajib: Damaged in transit, Returned by customer, Short shipped, Other; ditambah catatan kondisi |
+| Barang ditolak seluruhnya | hasil Rejected by customer / Customer closed: tidak ada qty diterima, tidak bisa ditagih, Surat Jalan terbuka untuk kiriman ulang |
+| Bukti tersimpan | nama penerima, jam tiba, foto Surat Jalan bertanda tangan; tampil di invoice (tab Delivery) dan di Customer Order (tab Billing) |
+
+Secara akuntansi: **pendapatan dan piutang diakui hanya atas barang yang diterima customer**. Barang yang rusak di
+jalan atau diretur saat serah terima tidak pernah menjadi piutang, sehingga tidak perlu jurnal koreksi.
+
+**Yang belum:** retur **sesudah** invoice di-Confirm (customer menemukan cacat kemudian). Ini memerlukan Credit Note
+(5.6) dan Nota Retur pajak untuk order PPN, dan terkait modul Complaint & Return (CRM). Sengaja belum dibangun karena
+cara perusahaan menyelesaikannya belum diketahui (kirim ganti barang, potong tagihan berikutnya, atau kembalikan uang)
+dan perlu wawancara pemakai. Sampai itu ada: invoice yang belum dibayar di-Cancel lalu dibuat ulang; invoice yang sudah
+dibayar dikoreksi Accounting lewat Journal Entries.
+
+**Nasib barang yang tidak diterima** (kembali ke gudang barang jadi, dikerjakan ulang, atau dimusnahkan) belum dicatat
+aplikasi; alasan selisih di Proof of Delivery menjadi dasar keputusannya.
+
+---
+
+## 7B. Jejak uang muka per Customer Order
+
+Ketentuan user 2026-10-02: **uang muka harus jelas dari Customer Order yang mana dan riwayatnya terlacak**.
+
+| Aturan | Cara aplikasi menjaganya |
+|---|---|
+| Uang muka selalu milik satu order | tagihan uang muka hanya bisa dibuat dari Customer Order; Confirm ditolak bila tanpa order |
+| Uang muka hanya memotong invoice order yang sama | usulan potongan di invoice hanya memuat uang muka order itu |
+| Tidak dipotong melebihi yang diterima | potongan dibatasi sisa uang muka (uang diterima dikurangi yang sudah dipotong) |
+| Riwayat lengkap | **buku uang muka** per order, urut tanggal: ditagih → uang diterima (nomor bukti bank) → dipotong di invoice (nomor invoice), dengan saldo berjalan |
+| Tampil di semua dokumen terkait | Down Payment Invoice (tab Down Payment History), Customer Order (tab Billing), laporan Down Payment Ledger, cetakan invoice (Ref. Uang Muka) |
+
+Saldo buku uang muka satu order = uang diterima yang belum dipotong. Angka di buku ini **termasuk PPN**: untuk order
+Non PPN saldonya sama dengan bagian order itu di akun 213200 Uang Muka Penjualan; untuk order PPN bagian harganya ada
+di 213200 dan bagian PPN-nya di 212100. Laporan Down Payment Ledger dipakai Accounting untuk mencocokkan saldo 213200
+per order (tagihan uang muka cara lama, yang dulu dijurnal sebagai piutang, dikecualikan dari pencocokan itu).
 
 ---
 
@@ -290,10 +355,13 @@ Semua butir di bawah perlu dikonfirmasi konsultan pajak perusahaan.
 - **Sisa tagihan invoice** = total invoice − uang muka yang dipotong − PPh 23 dipotong − yang sudah dibayar −
   credit note.
 - **Status tagih**: Open, Partially paid, Due this week, Overdue, Paid. Invoice lunas = Closed.
-- **Umur piutang** dihitung dari jatuh tempo, per customer, terpisah untuk identitas PPN dan Non PPN.
+- **Umur piutang** dihitung dari jatuh tempo, per customer; laporan **AR Aging** (Finance › Financial Reports) memuat
+  invoice Confirmed yang belum lunas dalam kolom Not Due, 1-30, 31-60, 61-90, Over 90 hari, dengan saringan identitas
+  PPN / Non PPN. Uang muka bukan piutang dan tidak ikut.
 - **Statement of Account** per customer: saldo awal, invoice, penerimaan, uang muka, saldo akhir — untuk
   konfirmasi piutang.
-- **Uang muka belum terpakai** per customer per order dilaporkan terpisah (bukan pengurang piutang di neraca).
+- **Uang muka belum terpakai** per customer per order dilaporkan terpisah (laporan **Down Payment Ledger**, bagian 7B;
+  bukan pengurang piutang di neraca).
 - **Cadangan dan penghapusan piutang**: tahap 1 belum otomatis. Umur piutang menjadi dasar Accounting; penghapusan
   dilakukan sebagai transaksi tersendiri dengan persetujuan.
 
@@ -317,8 +385,13 @@ Semua butir di bawah perlu dikonfirmasi konsultan pajak perusahaan.
 
 ## 11. Laporan
 
-AR Aging · Statement of Account · Unbilled Delivery · Invoiced Not Delivered · Down Payment Outstanding ·
-Invoice Register per seri (dasar PPN Keluaran dan pemeriksaan nomor) · Faktur Pajak belum bernomor.
+| Laporan | Status |
+|---|---|
+| **To Invoice** (Unbilled Delivery): order dengan Surat Jalan belum habis ditagih — siap ditagih / menunggu bukti terima | ada (Finance › Transaction Flows) |
+| **AR Aging** | ada (Finance › Financial Reports) |
+| **Down Payment Ledger** (Down Payment Outstanding + riwayat) | ada (Finance › Financial Reports) |
+| Tab **Billing** di Customer Order | ada (hanya baca) |
+| Statement of Account · Invoiced Not Delivered · Invoice Register per seri · Faktur Pajak belum bernomor | belum |
 
 ---
 
@@ -340,6 +413,8 @@ mengisi sisa serta uang muka yang belum terpakai, lalu saldo awal dijurnal sekal
 | 2026-10-02 | **C.** Tagihan uang muka tanpa jurnal sampai uangnya diterima — menggantikan butir LOCKED "jurnal piutang saat tagihan DP terbit" di `downpayment_tier1-4.md`. User meminta seluruh urusan keuangan dan akuntansi didokumentasikan jelas (dokumen ini). |
 | 2026-10-02 | **D.** Lima rekening bank sistem lama boleh disalin ke master rekening perusahaan; bawaan PPN = Maspion CV. Langgeng Jaya Makmur, Non PPN = BCA Puspita Dewi Widodo. |
 | 2026-10-02 | **E.** Qty Minim di Customer Order v2 dihitung sebagai harga borongan (untuk saat ini). |
+| 2026-10-02 | **Tagihan mengikuti Surat Jalan dan validasi customer; uang muka terlacak per order** ("setiap tagihan harus related dengan surat jalan pengiriman dan validasi dari customer nilai yang terkirim, karena bisa ada retur dan rusak di jalan; uang muka jelas dari CO yang mana dan historinya terlacak") — bagian 7A dan 7B. |
+| 2026-10-02 | **"Sarankan yang terbaik dan jalankan dulu"** (user belum cukup mewawancarai pemakai): dijalankan dengan pilihan bawaan — satu akun bank per rekening (111210–111250); kode seri `LJM`, `UM-TM`, `UM-LJM` dipakai; tanggal invoice bawaan = tanggal Surat Jalan terakhir; cetakan tetap seperti sekarang sampai dikoreksi. Semuanya bisa diubah sesudah wawancara pemakai. |
 | 2026-10-02 | **Layar lama dihentikan** ("yang lama dihapus saja, gantikan dengan yang baru"): Order to Cash dan Down Payment lama diarsipkan; Customer Invoice satu-satunya pintu untuk invoice, uang muka, dan penerimaan uang dari customer. Akibat akuntansi: tidak ada lagi jalur yang menjurnal piutang saat tagihan uang muka terbit, dan tidak ada lagi invoice penjualan tanpa Surat Jalan. |
 
 ## 14. Yang perlu dikonfirmasi pihak luar
@@ -348,4 +423,5 @@ mengisi sisa serta uang muka yang belum terpakai, lalu saldo awal dijurnal sekal
   transaksi Faktur Pajak.
 - Akuntan / KAP: standar yang dipakai (SAK EP atau SAK EMKM), kebijakan cadangan piutang, perlu tidaknya jurnal
   akrual untuk barang terkirim yang belum ditagih di akhir periode.
-- Finance: akun bank per rekening (bagian 4) dan saldo awal (bagian 12).
+- Finance: nama dan kode akun bank per rekening (bagian 4, sudah dibuat dengan usulan bawaan), cara menyelesaikan retur
+  sesudah invoice (7A), dan saldo awal (bagian 12).

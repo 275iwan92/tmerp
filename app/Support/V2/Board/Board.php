@@ -8,6 +8,7 @@ use App\Models\Master\SopDocument;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysBoardTemplate;
 use App\Models\Sys\SysConstant;
+use App\Models\Sys\SysDashboard;
 use App\Models\Sys\SysUserBoard;
 use App\Models\Sys\SysUserWidget;
 use App\Support\V2\Data\ApprovalCenter;
@@ -28,12 +29,15 @@ final class Board
 {
     public const MANAGEMENT = 'MANAGEMENT';
 
-    public const ACTIONS = ['add', 'remove', 'left', 'right', 'wider', 'narrower', 'reset', 'period'];
+    // Dashboard yang disusun pemiliknya (tanda centang + Customize); dashboard lain = template bidang, hanya dibaca.
+    public const OVERALL = SysDashboard::OVERALL;
+
+    public const ACTIONS = ['add', 'remove', 'left', 'right', 'move', 'wider', 'narrower', 'reset', 'period', 'dashboard'];
 
     // Database yang belum menjalankan migrasi papan (tm2* sebelum disetujui user): layar pembuka lama, halaman tidak gagal.
     public static function ready(): bool
     {
-        return Schema::connection('tm2sys')->hasTable('sys_user_widget');
+        return Schema::connection('tm2sys')->hasTable('sys_dashboard');
     }
 
     public static function profile(SecUser $user): ?string
@@ -58,7 +62,7 @@ final class Board
         DB::connection('tm2sys')->transaction(function () use ($user, $profile, $catalog) {
             SysUserWidget::query()->where('user_id', $user->id_user)->delete();
             $n = 0;
-            foreach (SysBoardTemplate::query()->where('profile_code', $profile)->where('activate', true)->orderBy('sort_order')->get() as $t) {
+            foreach (self::template(self::OVERALL) as $t) {
                 if ($catalog->allowed($user, $t->widget_key)) {
                     SysUserWidget::create(['user_id' => $user->id_user, 'widget_key' => $t->widget_key, 'sort_order' => ++$n * 10, 'size' => $t->size,
                         'created_by' => $user->login, 'updated_by' => $user->login]);
@@ -68,14 +72,59 @@ final class Board
         });
     }
 
+    /** @return Collection<int, SysBoardTemplate> baris template aktif satu dashboard, urut */
+    private static function template(string $dashboard): Collection
+    {
+        return SysBoardTemplate::query()->where('profile_code', $dashboard)->where('activate', true)->orderBy('sort_order')->orderBy('id_board_template')->get();
+    }
+
+    /** @return array<int, array{code: string, title: string, icon: ?string}> dashboard yang boleh dibuka user ini, urut */
+    public static function dashboards(SecUser $user): array
+    {
+        $catalog = app(WidgetCatalog::class);
+        $templates = SysBoardTemplate::query()->where('activate', true)->get(['profile_code', 'widget_key'])->groupBy('profile_code');
+        $level = $user->is_admin ? PHP_INT_MAX : $user->maxMgmtLevel();
+
+        return SysDashboard::query()->where('activate', true)->orderBy('sort_order')->orderBy('id_dashboard')->get()
+            ->filter(function (SysDashboard $d) use ($user, $catalog, $templates, $level) {
+                if ($d->dashboard_code === self::OVERALL) {
+                    return true;
+                }
+                $module = ! $d->module_code || $user->is_admin || $user->canAccessModule($d->module_code) || $user->canAccessModule('MGMT');
+
+                // Dashboard bidang tampil bila user berhak atas bidangnya DAN ada widget templatenya yang boleh ia lihat.
+                return $module && $level >= (int) $d->min_level
+                    && ($templates->get($d->dashboard_code) ?? collect())->contains(fn ($t) => $catalog->allowed($user, $t->widget_key));
+            })
+            ->map(fn (SysDashboard $d) => ['code' => $d->dashboard_code, 'title' => $d->title, 'icon' => $d->icon])->values()->all();
+    }
+
+    // Dashboard yang sedang dibuka user (tersimpan); yang tidak lagi boleh dibuka kembali ke Overall.
+    public static function dashboard(SecUser $user): string
+    {
+        $code = (string) SysUserBoard::query()->where('user_id', $user->id_user)->value('dashboard_code');
+
+        return in_array($code, array_column(self::dashboards($user), 'code'), true) ? $code : self::OVERALL;
+    }
+
     // Satu aksi papan. Kembalian = pesan salah (English, belum diterjemahkan) atau null bila berhasil.
-    public static function apply(SecUser $user, string $action, ?string $key): ?string
+    // $to = hanya untuk 'move': widget yang ditempati (yang dipindah masuk di depannya); kosong = ke ujung papan.
+    public static function apply(SecUser $user, string $action, ?string $key, ?string $to = null): ?string
     {
         if (! in_array($action, self::ACTIONS, true)) {
             return 'Unknown board action.';
         }
         if ($action === 'reset') {
             self::fromTemplate($user);
+
+            return null;
+        }
+        if ($action === 'dashboard') {
+            if (! in_array((string) $key, array_column(self::dashboards($user), 'code'), true)) {
+                return 'This dashboard is not available for your account.';
+            }
+            self::layout($user);
+            SysUserBoard::query()->where('user_id', $user->id_user)->update(['dashboard_code' => $key]);
 
             return null;
         }
@@ -107,7 +156,12 @@ final class Board
             return 'This widget is not on your board.';
         }
         $row = $layout[$i];
-        if ($action === 'remove') {
+        if ($action === 'move') {
+            $rest = $layout->reject(fn (SysUserWidget $w) => $w->widget_key === $key)->values();
+            $at = $to ? $rest->search(fn (SysUserWidget $w) => $w->widget_key === $to) : false;
+            $rest->splice($at === false ? $rest->count() : $at, 0, [$row]);
+            DB::connection('tm2sys')->transaction(fn () => $rest->values()->each(fn (SysUserWidget $w, int $n) => $w->update(['sort_order' => ($n + 1) * 10])));
+        } elseif ($action === 'remove') {
             $row->delete();
         } elseif ($action === 'wider' || $action === 'narrower') {
             $at = array_search((int) $row->size, WidgetBoard::SIZES, true);
@@ -140,7 +194,10 @@ final class Board
         $numbers = Numbers::make(self::period($user));
         $widgets = [];
         $on = [];
-        foreach (self::layout($user) as $slot) {
+        $layout = self::layout($user);
+        $dashboard = self::dashboard($user);
+        $overall = $dashboard === self::OVERALL;
+        foreach ($overall ? $layout : self::template($dashboard) as $slot) {
             $entry = $mine[$slot->widget_key] ?? null;
             if (! $entry) {
                 continue; // widget dimatikan di katalog atau haknya dicabut: tidak tampil, susunannya tetap tersimpan
@@ -157,8 +214,14 @@ final class Board
             }
         }
 
-        return ['widgets' => $widgets, 'catalog' => collect($mine)->map(fn ($entry, $key) => ['key' => $key, 'title' => $entry['row']->title,
-            'description' => $entry['row']->description, 'group' => $entry['row']->group_name, 'icon' => $entry['widget']->icon(), 'installed' => in_array($key, $on, true)])->values()->all()];
+        // Daftar centang (hanya Overall): dikelompokkan menurut dashboard asal widget; yang tanpa dashboard memakai kelompoknya.
+        $titles = SysDashboard::query()->orderBy('sort_order')->pluck('title', 'dashboard_code');
+        $order = array_flip($titles->keys()->all());
+        $choices = $overall ? collect($mine)->map(fn ($entry, $key) => ['key' => $key, 'title' => $entry['row']->title, 'description' => $entry['row']->description,
+            'group' => $titles[$entry['row']->dashboard_code] ?? $entry['row']->group_name, 'rank' => $order[$entry['row']->dashboard_code] ?? 999,
+            'icon' => $entry['widget']->icon(), 'type' => $entry['widget']->type(), 'installed' => in_array($key, $on, true)])->sortBy('rank', SORT_REGULAR)->values()->all() : [];
+
+        return ['widgets' => $widgets, 'catalog' => $choices];
     }
 
     /** @return array<string, mixed> isi x-dl::dashboard: salam, jam, cuaca, Job Description / SOP jabatan, lalu papan widget */
@@ -210,8 +273,13 @@ final class Board
     /** @return array<string, mixed> bagian papan saja: susunan + katalog + alamat aksi */
     private static function board(SecUser $user): array
     {
-        return ['profile' => Str::lower(self::MANAGEMENT), 'kpi_title' => 'My Board', 'board_url' => route('v2.board'),
+        $dashboards = self::dashboards($user);
+        $dashboard = self::dashboard($user);
+
+        return ['profile' => Str::lower(self::MANAGEMENT), 'board_url' => route('v2.board'),
+            'kpi_title' => $dashboard === self::OVERALL ? 'My Board' : (collect($dashboards)->firstWhere('code', $dashboard)['title'] ?? 'My Board'),
             'board_periods' => Numbers::PERIODS, 'board_period' => self::period($user),
+            'board_dashboards' => $dashboards, 'board_dashboard' => $dashboard, 'board_editable' => $dashboard === self::OVERALL,
             'board_source' => 'sys_widget + sys_user_widget ('.config('database.connections.tm2sys.database').')'] + self::props($user);
     }
 

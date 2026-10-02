@@ -118,7 +118,7 @@
         :approval-levels="$appr['levels']" :approval-at="$appr['at'] ?: ($o->doc_status === 'SUBMITTED' ? 1 : $appr['levels'])" :can-approve="(bool) $pending"
         :action="route('v2.co.save', $o->id_order)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
         :hide="array_merge(['print', 'email'], $o->isInstant() ? [] : ['delete'])"
-        :tabs="['general' => 'General', 'finance' => 'Finance', 'delivery' => 'Delivery', 'material' => 'Customer Material', 'notes' => 'Notes']"
+        :tabs="['general' => 'General', 'finance' => 'Finance', 'delivery' => 'Delivery', 'material' => 'Customer Material'] + ($draft ? [] : ['billing' => 'Billing']) + ['notes' => 'Notes']"
         :created-by="$o->created_by" :created-at="$o->created_at?->toDateTimeString()" :updated-by="$o->updated_by" :updated-at="$o->updated_at?->toDateTimeString()" :log="$log">
         <x-slot:special>
             <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('customer-order', $o->id_order)" target="_blank" />
@@ -186,6 +186,34 @@
                 <x-dl::button size="sm" variant="secondary" icon="fa-plus" label="+ Receive Customer Material" :href="route('v2.screen', 'purchase-receive').'?new=1&type=CUSTOMER&co='.$o->id_order" />
             </x-dl::action-bar>
         </x-slot:material>
+        <x-slot:billing>
+            {{-- Penagihan order ini, hanya baca (user 2026-10-02): tiap invoice berasal dari Surat Jalan yang divalidasi customer, dan
+                 uang muka terlacak per order -- ditagih, diterima, dipotong di invoice mana, sisanya. Data = Customer Invoice (Finance). --}}
+            @unless ($draft)
+                @php $bill = \App\Support\V2\Data\CustomerInvoice::orderBilling($o); @endphp
+                <x-dl::alert tone="info" :message="t('Read only. Invoices and money are recorded in Finance > Customer Invoice.')" />
+                <x-dl::table :columns="['label' => 'Summary', 'value' => ['Amount', 'num' => true, 'raw' => true]]" :rows="$bill['summary']"
+                    source="{{ Src::calc('order value, delivery notes, invoices and down payments of this order', 'tm2acc.fin_invoice', 'tm2sdi.do_line') }}" />
+                <x-dl::divider label="Delivery Notes and Invoices" />
+                <x-dl::table :columns="['dn' => 'Delivery Note', 'date' => 'Delivery Date', 'product' => 'Product', 'shipped' => ['Shipped', 'num' => true, 'raw' => true],
+                        'received' => ['Received', 'num' => true, 'raw' => true], 'diff' => ['Difference', 'num' => true, 'raw' => true], 'reason' => 'Reason for Difference',
+                        'invoiced' => ['Qty Invoiced', 'num' => true, 'raw' => true], 'to_invoice' => ['To Invoice', 'num' => true, 'raw' => true], 'invoices' => 'Invoice No.', 'state' => 'Status']"
+                    :rows="$bill['chain']" empty="No delivery note for this order yet." source="{{ Src::of('tm2sdi.do_line', 'tm2sdi.do_delivery_pod', 'tm2acc.fin_invoice_line') }}" />
+                <x-dl::divider label="Invoices and Down Payments" />
+                <x-dl::table :columns="['no' => 'Document No.', 'kind' => 'Type', 'date' => 'Date', 'due' => 'Due Date', 'total' => ['Total', 'num' => true, 'raw' => true],
+                        'paid' => ['Paid', 'num' => true, 'raw' => true], 'outstanding' => ['Outstanding', 'num' => true, 'raw' => true], 'state' => 'Status']"
+                    :rows="$bill['documents']" empty="No invoice for this order yet." source="{{ Src::of('tm2acc.fin_invoice') }}" />
+                <x-dl::action-bar>
+                    @foreach ($bill['documents'] as $doc)
+                        <x-dl::button size="sm" variant="secondary" icon="fa-file-invoice-dollar" :label="raw($doc['no'])" :href="route('v2.screen', 'customer-invoice').'?id='.$doc['id']" />
+                    @endforeach
+                </x-dl::action-bar>
+                <x-dl::divider label="Down Payment History" />
+                <x-dl::table :columns="['date' => 'Date', 'event' => 'Event', 'dp_no' => 'Down Payment No.', 'doc_no' => 'Document No.', 'billed' => ['Billed', 'num' => true, 'raw' => true],
+                        'in' => ['Money In', 'num' => true, 'raw' => true], 'out' => ['Deducted', 'num' => true, 'raw' => true], 'balance' => ['Balance', 'num' => true, 'raw' => true]]"
+                    :rows="$bill['ledger']" empty="No down payment for this order." source="{{ Src::of('tm2acc.fin_invoice (CUSTOMER_DP)', 'tm2acc.fin_voucher', 'tm2acc.fin_dp_allocation') }}" />
+            @endunless
+        </x-slot:billing>
         <x-slot:notes>
             <x-dl::field.text name="notes" label="Internal notes (Ops / PPIC)" multiline placeholder="Internal notes for Ops/PPIC..." :value="old('notes', $o->notes)" :source="Src::of('tm2sdi.co_order.notes')" />
         </x-slot:notes>

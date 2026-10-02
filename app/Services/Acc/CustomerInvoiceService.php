@@ -13,6 +13,7 @@ use App\Models\Master\FinPaymentTerm;
 use App\Models\Master\ProdPart;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderItem;
+use App\Models\Sdi\DoDeliveryPod;
 use App\Models\Sdi\DoLine;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpPart;
@@ -330,6 +331,9 @@ class CustomerInvoiceService
             $errors[] = 'Choose the bank account the customer transfers to.';
         }
         if ($inv->invoice_type === self::DOWN_PAYMENT) {
+            if (! $inv->co_id) {
+                $errors[] = 'A down payment must belong to a Customer Order.';
+            }
             if ((float) $inv->total_amount <= 0) {
                 $errors[] = 'The bill amount must be more than zero.';
             }
@@ -344,6 +348,9 @@ class CustomerInvoiceService
         $inv->load('lines');
         if ($inv->lines->isEmpty()) {
             $errors[] = 'Add at least one delivery note line.';
+        }
+        if (! $inv->co_id || $inv->lines->contains(fn (FinInvoiceLine $l) => ! $l->do_line_id)) {
+            $errors[] = 'An invoice must come from delivery note lines of one Customer Order.';
         }
         $live = DoLine::query()->whereKey($inv->lines->pluck('do_line_id')->filter()->all())->get()->keyBy('id_line');
         foreach ($inv->lines as $l) {
@@ -588,6 +595,91 @@ class CustomerInvoiceService
         $this->fail(! ($bankAccount = $bank->glAccountId()), 'This bank account has no ledger account yet (Finance > Company Bank Accounts).');
 
         return $this->arap->settle('RECEIPT', $bankAccount, $date, $allocations, $user, $note);
+    }
+
+    // ---------------------------------------------------------------- jejak: Surat Jalan -> customer terima -> invoice; uang muka -> invoice
+
+    /**
+     * Semua baris Surat Jalan customer satu order beserta bukti terimanya dan invoice yang menagihnya (user 2026-10-02:
+     * tiap tagihan harus berasal dari Surat Jalan yang divalidasi customer). Per baris: line, pod (kedatangan terakhir),
+     * invoices (nomor invoice / Draft yang masih berlaku), state.
+     */
+    public function deliveryChain(int $coId, ?array $doLineIds = null): Collection
+    {
+        $lines = DoLine::query()->with(['delivery', 'orderItem'])->when($doLineIds !== null, fn ($q) => $q->whereKey($doLineIds), fn ($q) => $q->where('co_order_id', $coId))
+            ->whereHas('delivery', fn ($q) => $q->where('do_type', '<>', 'SUBCON')->whereNotIn('status', ['DRAFT', 'CANCELLED']))
+            ->orderBy('delivery_id')->orderBy('line_no')->get();
+        $pods = DoDeliveryPod::query()->whereIn('delivery_id', $lines->pluck('delivery_id')->unique())->orderBy('attempt_no')->get()->groupBy('delivery_id');
+        $billed = FinInvoiceLine::query()->with(['invoice' => fn ($q) => $q->withoutGlobalScopes()])->whereIn('do_line_id', $lines->modelKeys())->get()
+            ->filter(fn (FinInvoiceLine $l) => $l->invoice && $l->invoice->doc_status !== 'CANCELLED')->groupBy('do_line_id');
+
+        return $lines->map(fn (DoLine $l) => ['line' => $l, 'pod' => $pods->get($l->delivery_id)?->last(),
+            'invoices' => ($billed->get($l->id_line) ?? collect())->map(fn (FinInvoiceLine $b) => $b->invoice->invoice_number ?: 'Draft #'.$b->invoice_id)->unique()->values()->all(),
+            'state' => match (true) {
+                $l->qty_received === null => 'Waiting proof of delivery',
+                $this->remaining($l) <= 0 => 'Fully invoiced',
+                (float) $l->qty_invoiced > 0 => 'Partly invoiced',
+                default => 'Ready to invoice',
+            }]);
+    }
+
+    /** Nilai barang (sebelum diskon dokumen dan pajak) sejumlah $qty pada satu baris Surat Jalan; baris borongan = harganya. */
+    public function goodsValue(DoLine $l, float $qty): float
+    {
+        return $qty <= 0 ? 0.0 : round($l->orderItem?->qty_minim ? (float) $l->unit_price : $qty * (float) $l->unit_price, 2);
+    }
+
+    /**
+     * Buku uang muka satu Customer Order, urut tanggal: ditagih -> uang diterima -> dipotong di invoice, dengan saldo
+     * berjalan (uang diterima yang belum dipotong). rows[] = date, event, dp_no, doc_no, invoice_id, billed, in, out, balance.
+     */
+    public function downPaymentLedger(int $coId): array
+    {
+        $dps = FinInvoice::withoutGlobalScopes()->where('invoice_type', self::DOWN_PAYMENT)->where('co_id', $coId)->where('doc_status', 'POSTED')
+            ->orderBy('invoice_date')->orderBy('invoice_id')->get()->keyBy('invoice_id');
+        $ids = $dps->keys()->all();
+        $row = fn (FinInvoice $dp, ?string $date, int $order, string $event, ?string $doc, int $open, float $billed, float $in, float $out) => [
+            'date' => $date, 'order' => $order, 'event' => $event, 'dp_id' => $dp->invoice_id, 'dp_no' => $dp->invoice_number, 'doc_no' => $doc, 'invoice_id' => $open,
+            'billed' => round($billed, 2), 'in' => round($in, 2), 'out' => round($out, 2)];
+        $rows = $dps->map(fn (FinInvoice $dp) => $row($dp, $dp->invoice_date?->toDateString(), 1, 'Down payment invoiced', $dp->invoice_number, $dp->invoice_id, (float) $dp->total_amount, 0, 0))->values()->all();
+        // Uang diterima: bukti bank masuk Record Receipt (cara baru) + alokasi pembayaran (tagihan uang muka cara lama).
+        foreach (FinVoucher::withoutGlobalScopes()->with('lines')->where('source_type', 'CUSTOMER_DP_PAYMENT')->whereIn('source_id', $ids)->where('stat_cancel', 0)->get() as $v) {
+            $rows[] = $row($dps[$v->source_id], substr((string) $v->entry_date, 0, 10), 2, 'Money received', $v->voucher_number, (int) $v->source_id, 0, (float) $v->lines->sum('debit'), 0);
+        }
+        foreach (FinPaymentAlloc::query()->with('voucher')->whereIn('invoice_id', $ids)->get() as $a) {
+            $rows[] = $row($dps[$a->invoice_id], substr((string) $a->alloc_date, 0, 10), 2, 'Money received', $a->voucher?->voucher_number, (int) $a->invoice_id, 0, (float) $a->amount, 0);
+        }
+        foreach (FinDpAllocation::query()->with(['finalInvoice' => fn ($q) => $q->withoutGlobalScopes()])->whereIn('dp_invoice_id', $ids)->get() as $a) {
+            $rows[] = $row($dps[$a->dp_invoice_id], $a->allocation_date?->toDateString(), 3, 'Applied to invoice', $a->finalInvoice?->invoice_number, (int) $a->final_invoice_id, 0, 0,
+                (float) $a->allocated_base + (float) $a->allocated_tax);
+        }
+        usort($rows, fn ($a, $b) => [$a['date'], $a['order'], $a['dp_id']] <=> [$b['date'], $b['order'], $b['dp_id']]);
+        $balance = 0.0;
+        foreach ($rows as &$r) {
+            $r['balance'] = $balance = round($balance + $r['in'] - $r['out'], 2);
+        }
+        unset($r);
+
+        return ['rows' => $rows, 'billed' => round(array_sum(array_column($rows, 'billed')), 2), 'received' => round(array_sum(array_column($rows, 'in')), 2),
+            'applied' => round(array_sum(array_column($rows, 'out')), 2), 'balance' => $balance];
+    }
+
+    /** Ringkasan penagihan satu order: rantai Surat Jalan, dokumen (invoice + uang muka), buku uang muka, dan angka-angkanya. */
+    public function orderBilling(CoOrder $co): array
+    {
+        $chain = $this->deliveryChain($co->id_order);
+        $docs = FinInvoice::withoutGlobalScopes()->whereIn('invoice_type', [self::INVOICE, self::DOWN_PAYMENT])->where('co_id', $co->id_order)->orderBy('invoice_date')->orderBy('invoice_id')->get();
+        $invoices = $docs->where('invoice_type', self::INVOICE)->where('doc_status', 'POSTED');
+        $dp = $this->downPaymentLedger($co->id_order);
+        $co->loadMissing(['items', 'externalCosts']);
+
+        return ['chain' => $chain, 'documents' => $docs, 'dp' => $dp,
+            'order_value' => round((float) $co->totals()['total_billing'], 2),
+            'waiting_value' => round($chain->where('state', 'Waiting proof of delivery')->sum(fn ($r) => $this->goodsValue($r['line'], (float) $r['line']->qty_do)), 2),
+            'ready_value' => round($chain->whereIn('state', ['Ready to invoice', 'Partly invoiced'])->sum(fn ($r) => $this->goodsValue($r['line'], $this->remaining($r['line']))), 2),
+            'invoiced' => round((float) $invoices->sum('total_amount'), 2),
+            'paid' => round((float) $invoices->sum(fn (FinInvoice $i) => (float) $i->paid_amount - (float) $i->dp_applied_amount), 2),
+            'outstanding' => round((float) $invoices->sum(fn (FinInvoice $i) => $i->outstanding()), 2)];
     }
 
     // ---------------------------------------------------------------- bantu

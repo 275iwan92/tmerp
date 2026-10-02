@@ -7,6 +7,7 @@ use App\Models\Pur\PrRequisition;
 use App\Services\Flow\FlowEngineService;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 // Purchase Requisition v2 = aturan & tulis data komponen v1 pages::pur.pr.entry (updateHeader / updateLine / addMasterItem /
@@ -17,7 +18,7 @@ final class PurchaseRequisition
 
     public const HEADER = ['i_doc_date', 'i_department_id', 'i_need_date', 'i_notes'];
 
-    public const LINE = ['i_description', 'i_qty', 'i_uom', 'i_est_price', 'i_need_date', 'i_notes'];
+    public const LINE = ['i_description', 'i_qty', 'i_uom', 'i_est_price', 'i_need_date', 'i_notes', 'i_coa_account_id'];
 
     public const STATUS_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'APPROVED' => 'success', 'PARTIALLY_ORDERED' => 'info',
         'FULLY_ORDERED' => 'success', 'CLOSED' => 'neutral', 'REJECTED' => 'danger', 'REVISION_NEEDED' => 'danger', 'CANCELLED' => 'danger'];
@@ -46,6 +47,13 @@ final class PurchaseRequisition
     public static function departments(): array
     {
         return OrgDepartment::where('activate', true)->orderBy('department_name')->pluck('department_name', 'department_id')->all();
+    }
+
+    // Akun yang bisa diposting -- daftar yang sama dengan coaAccounts komponen v1 (baris PR bisa beban maupun aset).
+    public static function accounts(): array
+    {
+        return DB::connection('tm2acc')->table('fin_account')->where('is_postable', 1)->orderBy('account_code')
+            ->get(['account_id', 'account_code', 'account_name'])->mapWithKeys(fn ($a) => [$a->account_id => $a->account_code.' · '.$a->account_name])->all();
     }
 
     public static function create(int $departmentId): PrRequisition
@@ -93,12 +101,16 @@ final class PurchaseRequisition
         self::component($pr->pr_id)->addMasterItem($materialId);
     }
 
-    public static function addFree(PrRequisition $pr, string $description, string $uom): void
+    // Balasan = pesan bila ditolak (akun belum dipilih / bukan akun yang bisa diposting); kosong = baris tersimpan.
+    public static function addFree(PrRequisition $pr, string $description, string $uom, ?int $accountId): string
     {
         $c = self::component($pr->pr_id);
         $c->freeDescription = $description;
         $c->freeUom = $uom;
+        $c->freeAccountId = (string) $accountId;
         $c->addFreeText();
+
+        return $c->freeError;
     }
 
     // Confirm = Submit v1: nomor dokumen lahir + masuk antrian approval flow engine. Balasan = pesan bila flow belum dikonfigurasi.
