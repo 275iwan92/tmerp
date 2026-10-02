@@ -68,14 +68,14 @@ class ArApService
     {
         $customer = CustCustomer::withoutGlobalScopes()->findOrFail($data['customer_id']);
         $subtotal = round((float) $data['subtotal'], 2);
-        abort_if($subtotal <= 0, 422, 'Nilai faktur harus lebih dari nol.');
+        abort_if($subtotal <= 0, 422, t('The invoice amount must be more than zero.'));
         $tax = ! empty($data['ppn']) ? round($subtotal * $this->taxRate('PPN_OUT'), 2) : 0.0;
 
         // Kontrol duplikat (blueprint validasi §2): customer + nilai + tanggal sama.
         $dupe = FinInvoice::withoutGlobalScopes()->where('invoice_type', 'CUSTOMER_INVOICE')
             ->where('partner_id', $customer->id_customer)->where('invoice_date', $data['invoice_date'])
             ->where('total_amount', $subtotal + $tax)->where('doc_status', '<>', 'CANCELLED')->first();
-        abort_if((bool) $dupe, 422, 'Faktur serupa sudah ada: '.$dupe?->invoice_number.' (kontrol duplikat).');
+        abort_if((bool) $dupe, 422, str_replace(':no', (string) $dupe?->invoice_number, t('A similar invoice already exists: :no (duplicate control).')));
 
         $invoice = FinInvoice::create([
             'invoice_number' => $this->nextInvoiceNumber('CUSTOMER_INVOICE', $data['invoice_date']),
@@ -96,7 +96,7 @@ class ArApService
 
     public function postCustomerInvoice(FinInvoice $invoice, string $user): FinInvoice
     {
-        abort_unless($invoice->doc_status !== 'POSTED', 422, 'Faktur ini sudah diposting.');
+        abort_unless($invoice->doc_status !== 'POSTED', 422, t('This invoice has already been posted.'));
         $customer = CustCustomer::withoutGlobalScopes()->findOrFail($invoice->partner_id);
 
         $lines = [[
@@ -134,14 +134,14 @@ class ArApService
     {
         $supplier = SupSupplier::withoutGlobalScopes()->findOrFail($data['supplier_id']);
         $subtotal = round((float) $data['subtotal'], 2);
-        abort_if($subtotal <= 0, 422, 'Nilai tagihan harus lebih dari nol.');
+        abort_if($subtotal <= 0, 422, t('The bill amount must be more than zero.'));
         $tax = ! empty($data['ppn']) ? round($subtotal * $this->taxRate('PPN_IN'), 2) : 0.0;
         $pph = ! empty($data['pph_code']) ? round($subtotal * $this->taxRate($data['pph_code']), 2) : 0.0;
 
         $dupe = FinInvoice::withoutGlobalScopes()->where('invoice_type', 'SUPPLIER_BILL')
             ->where('partner_id', $supplier->id_supplier)->where('partner_ref', $data['partner_ref'] ?? null)
             ->where('doc_status', '<>', 'CANCELLED')->first();
-        abort_if((bool) $dupe && ! empty($data['partner_ref']), 422, 'Tagihan dgn no. vendor yang sama sudah dicatat: '.$dupe?->invoice_number.'.');
+        abort_if((bool) $dupe && ! empty($data['partner_ref']), 422, str_replace(':no', (string) $dupe?->invoice_number, t('A bill with the same vendor no. is already recorded: :no.')));
 
         $invoice = FinInvoice::create([
             'invoice_number' => $this->nextInvoiceNumber('SUPPLIER_BILL', $data['invoice_date']),
@@ -163,7 +163,7 @@ class ArApService
 
     public function postVendorBill(FinInvoice $invoice, string $user): FinInvoice
     {
-        abort_unless($invoice->doc_status !== 'POSTED', 422, 'Tagihan ini sudah diposting.');
+        abort_unless($invoice->doc_status !== 'POSTED', 422, t('This bill has already been posted.'));
         $supplier = SupSupplier::withoutGlobalScopes()->findOrFail($invoice->partner_id);
 
         $lines = [['account_id' => $invoice->revenue_account_id ?: $this->accountId('211900'), 'debit' => $invoice->subtotal, 'narration' => $invoice->description ?: 'Tagihan supplier']];
@@ -197,15 +197,15 @@ class ArApService
      */
     public function settle(string $mode, int $bankAccountId, string $date, array $allocations, string $user, string $note = ''): FinVoucher
     {
-        abort_if(empty($allocations), 422, 'Belum ada faktur yang dialokasikan.');
+        abort_if(empty($allocations), 422, t('No invoice has been allocated yet.'));
         $this->guard->assertOpen($date);
         $invoices = FinInvoice::withoutGlobalScopes()->whereIn('invoice_id', array_keys($allocations))->get()->keyBy('invoice_id');
         $total = 0.0;
         foreach ($allocations as $invoiceId => $amount) {
-            $inv = $invoices[$invoiceId] ?? abort(404, 'Faktur tidak ditemukan.');
+            $inv = $invoices[$invoiceId] ?? abort(404, t('Invoice not found.'));
             $amount = round((float) $amount, 2);
-            abort_if($amount <= 0, 422, 'Nilai alokasi harus lebih dari nol.');
-            abort_if($amount > $inv->outstanding() + 0.01, 422, "Alokasi ke {$inv->invoice_number} melebihi sisa tagihan (".number_format($inv->outstanding(), 2).').');
+            abort_if($amount <= 0, 422, t('The allocation amount must be more than zero.'));
+            abort_if($amount > $inv->outstanding() + 0.01, 422, str_replace([':no', ':left'], [$inv->invoice_number, number_format($inv->outstanding(), 2)], t('The allocation to :no exceeds the outstanding amount (:left).')));
             $total += $amount;
         }
 

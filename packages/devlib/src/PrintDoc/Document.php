@@ -91,6 +91,8 @@ abstract class Document
 
     private static array $labels = [];
 
+    private static ?Closure $translator = null;
+
     // $data: number, date, status, party [name, code?, lines[]], rows [[name, sub?, sub2?, qty?, unit?, cls?, <kolom>..]],
     //        notes [[label, teks]], ppn / pph / disc (persen), printedBy (nama orang yang login), + nilai tiap key di $refs / $side.
     public function __construct(public array $data = [])
@@ -128,13 +130,23 @@ abstract class Document
         self::$labels = array_merge(self::$labels, $id);
     }
 
-    // Label cetak: bahasa Indonesia dari kamus cetak (Labels + tambahan aplikasi); selain itu kamus aplikasi.
+    // Kamus cetak milik aplikasi (tmerp: sys_dictionary konteks 'print'): fn(English, bahasa) => terjemahan | null.
+    public static function translateUsing(?Closure $fn): void
+    {
+        self::$translator = $fn;
+    }
+
+    // Label cetak: kamus cetak aplikasi (semua bahasa) -> kamus cetak bawaan (Labels, Indonesia) -> kamus aplikasi umum.
     public static function t(?string $en): string
     {
         if ($en === null || trim($en) === '') {
             return (string) $en;
         }
-        if (Locale::lang() === 'id') {
+        $lang = Locale::lang();
+        if ($lang !== 'en' && self::$translator && ($text = (self::$translator)($en, $lang)) !== null) {
+            return $text;
+        }
+        if ($lang === 'id') {
             $id = self::$labels[$en] ?? Labels::ID[$en] ?? null;
             if ($id !== null) {
                 return $id;

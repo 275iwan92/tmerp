@@ -44,7 +44,7 @@ final class PurchaseQuotation
         $prs = PrRequisition::whereIn('pr_id', $pqs->pluck('i_pr_id')->filter()->unique())->pluck('doc_no', 'pr_id');
 
         return $pqs->map(fn ($q) => ['id' => $q->pq_id, 'no' => $q->doc_no ?: '(draft #'.$q->pq_id.')',
-            'supplier' => $sup[$q->i_supplier_id] ?? (($q->i_supplier_text ?: '—').' (belum cocok)'), 'pr' => $prs[$q->i_pr_id] ?? '—',
+            'supplier' => $sup[$q->i_supplier_id] ?? (($q->i_supplier_text ?: '—').' '.t('(not matched)')), 'pr' => $prs[$q->i_pr_id] ?? '—',
             'date' => $q->i_doc_date?->toDateString(), 'valid' => $q->i_quotation_valid_until?->toDateString(), 'file' => $q->source_name ?? '—',
             'read' => self::READ_LABELS[$q->extract_status] ?? '—', 'lines' => $q->lines->count(), 'total' => (float) $q->c_total_idr, 'status' => $q->status,
             // Baris anak grid (Expand): nama item selalu tampil, tanpa harga.
@@ -56,7 +56,7 @@ final class PurchaseQuotation
     public static function prOptions(): array
     {
         return PrRequisition::whereIn('status', ['APPROVED', 'PARTIALLY_ORDERED'])->where('stat_cancel', false)->orderByDesc('pr_id')->limit(100)
-            ->get()->mapWithKeys(fn ($p) => [$p->pr_id => $p->doc_no.' · '.$p->lines()->count().' baris'])->all();
+            ->get()->mapWithKeys(fn ($p) => [$p->pr_id => $p->doc_no.' · '.str_replace(':n', (string) $p->lines()->count(), t(':n lines'))])->all();
     }
 
     public static function currencies(): array
@@ -135,7 +135,7 @@ final class PurchaseQuotation
 
     public static function save(PqQuotation $pq, array $in): void
     {
-        abort_unless($pq->status === 'DRAFT', 422, 'PQ sudah di-Confirm, tidak bisa diubah.');
+        abort_unless($pq->status === 'DRAFT', 422, t('The PQ is already Confirmed and cannot be changed.'));
         $login = Auth::user()->login;
         foreach (self::HEADER as $f) {
             if (array_key_exists($f, $in)) {
@@ -192,10 +192,10 @@ final class PurchaseQuotation
         $pq->load('lines');
         $err = [];
         if (! $pq->i_supplier_id) {
-            $err[] = 'Pilih supplier dari master (tertulis di file: "'.($pq->i_supplier_text ?: '—').'").';
+            $err[] = str_replace(':name', $pq->i_supplier_text ?: '—', t('Choose the supplier from the master (written in the file: ":name").'));
         }
         if ($pq->lines->isEmpty()) {
-            $err[] = 'Belum ada baris harga.';
+            $err[] = t('There are no price lines yet.');
         }
         foreach ($pq->lines as $l) {
             if ((float) $l->i_qty <= 0 || (float) $l->i_price_fx <= 0) {
@@ -222,13 +222,13 @@ final class PurchaseQuotation
     public static function cancel(PqQuotation $pq, string $reason): ?string
     {
         if ($pq->status !== 'CONFIRMED') {
-            return 'Hanya PQ Confirmed yang bisa di-Cancel.';
+            return t('Only a Confirmed PQ can be Cancelled.');
         }
         if (mb_strlen(trim($reason)) < 10) {
-            return 'Alasan pembatalan wajib diisi, minimal 10 karakter.';
+            return t('A cancellation reason is required, at least 10 characters.');
         }
         if (self::orderedLineIds($pq)) {
-            return 'Sebagian baris PQ ini sudah jadi PO — batalkan PO-nya dulu.';
+            return t('Some lines of this PQ are already on a PO — cancel the PO first.');
         }
         $pq->update(['status' => 'CANCELLED', 'cancel_reason' => trim($reason), 'updated_by' => Auth::user()->login]);
 
@@ -237,7 +237,7 @@ final class PurchaseQuotation
 
     public static function delete(PqQuotation $pq): void
     {
-        abort_unless($pq->status === 'DRAFT', 422, 'Hanya PQ Draft yang bisa dihapus.');
+        abort_unless($pq->status === 'DRAFT', 422, t('Only a Draft PQ can be deleted.'));
         DB::connection('tm2pur')->transaction(function () use ($pq) {
             $pq->lines()->delete();
             $pq->delete();
@@ -294,7 +294,7 @@ final class PurchaseQuotation
     public static function createPo(array $pqLineIds): array
     {
         $lines = PqLine::with('quotation')->whereIn('pq_line_id', array_map('intval', $pqLineIds))->get();
-        abort_if($lines->isEmpty(), 422, 'Pilih minimal 1 baris penawaran.');
+        abort_if($lines->isEmpty(), 422, t('Choose at least 1 quotation line.'));
         $done = PoLine::whereIn('pq_line_id', $lines->pluck('pq_line_id'))->pluck('pq_line_id')->flip();
         $login = Auth::user()->login;
 

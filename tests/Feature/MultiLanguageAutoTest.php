@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Sys\SysDictionary;
 use App\Support\Localization\Dictionary;
 use App\Support\V2\Grid\Setup\TranslationDictionaryLookup;
+use App\Support\V2\Print\PrintDocs;
 use Devlib\Lang;
 use Devlib\Locale;
+use Devlib\PrintDoc\Document;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -39,7 +41,7 @@ class MultiLanguageAutoTest extends TestCase
     private function cleanup(): void
     {
         DB::connection('tm2sys')->table('sys_dictionary')->where('context', self::CTX)
-            ->orWhere(fn ($q) => $q->where('context', 'ui')->where('source_en', 'like', 'Zq %'))->delete();  // baris _lang ikut (cascade)
+            ->orWhere(fn ($q) => $q->whereIn('context', ['ui', 'print'])->where('source_en', 'like', 'Zq %'))->delete();  // baris _lang ikut (cascade)
     }
 
     private function entry(string $en, string $id, string $ctx = 'ui'): void
@@ -160,6 +162,17 @@ class MultiLanguageAutoTest extends TestCase
         $this->assertSame('zq dibatalkan', Dictionary::t('zq cancelled', self::CTX, 'id'));
         $this->assertSame('Zq Dibatalkan', Dictionary::t('Zq cancelled', self::CTX, 'id'));
         $this->assertSame('ZQ CANCELLED', Dictionary::t('ZQ CANCELLED', self::CTX, 'en'));
+    }
+
+    // Istilah cetak = kamus konteks 'print' (dulu array PHP): Document::t() memakai kamus itu di semua bahasa selain English.
+    public function test_print_terms_come_from_print_context(): void
+    {
+        $this->entry('Zq Received by', 'Zq Diterima oleh', 'print');
+        PrintDocs::boot();
+
+        config(['devlib.lang' => 'id']);
+        $this->assertSame('Zq Diterima oleh', Document::t('Zq Received by'));
+        $this->assertNull(Dictionary::find('Zq Received by', 'print', 'en'));
     }
 
     // English sumber diganti: terjemahan ikut; teks tujuan sudah ada -> digabung, terjemahan tujuan menang.

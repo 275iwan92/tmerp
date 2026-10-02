@@ -560,7 +560,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
             'scope' => ['required', 'array', 'min:1'],
             'revise_reason' => ['required', 'string', 'max:255'],
             'design_number' => ['nullable', 'string', 'max:30'],
-        ], [], ['scope' => 'Scope revisi', 'revise_reason' => 'Alasan revisi']);
+        ], [], ['scope' => t('Revision scope'), 'revise_reason' => t('Revision reason')]);
 
         DB::connection('tm2sdi')->transaction(function () use ($subState) {
             if ($this->inquiry) {
@@ -642,7 +642,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
         }
 
         $this->persist('DRAFT');
-        $this->flash = 'Tersimpan sebagai '.$this->inquiry->inquiry_no.' (DRAFT).';
+        $this->flash = str_replace(':no', $this->inquiry->inquiry_no, t('Saved as :no (DRAFT).'));
     }
 
     public function submitToCosting(): void
@@ -655,17 +655,17 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
 
         $this->inquiry->update(['stat_confirm_sales' => true, 'updated_by' => Auth::user()->login]);
         $this->readOnly = true;
-        $this->flash = 'Inkuiri '.$this->inquiry->inquiry_no.' dikirim ke Costing — status SUBMITTED, form terkunci.';
+        $this->flash = str_replace(':no', $this->inquiry->inquiry_no, t('Inquiry :no sent to Costing — status SUBMITTED, form locked.'));
     }
 };
 ?>
 
 <div>
     <header class="app-header">
-        <b>✏️ Ubah Spesifikasi</b>
+        <b>✏️ {{ t('Revise Specification') }}</b>
         <span class="pill revise">REVISE</span>
-        <span class="sub">{{ $inquiry?->inquiry_no ?: 'belum tersimpan' }} · {{ $inquiry?->sub_state ?? 'DRAFT' }} · v{{ ($source->revision_no ?? 0) + ($inquiry ? 0 : 1) }}</span>
-        <a class="back" href="{{ route('inquiry.hub') }}">← Menu Utama</a>
+        <span class="sub">{{ $inquiry?->inquiry_no ?: t('not saved yet') }} · {{ $inquiry?->sub_state ?? 'DRAFT' }} · v{{ ($source->revision_no ?? 0) + ($inquiry ? 0 : 1) }}</span>
+        <a class="back" href="{{ route('inquiry.hub') }}">← {{ t('Main Menu') }}</a>
     </header>
 
     <div class="wrap">
@@ -675,167 +675,167 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
         @endif
 
         @if ($readOnly)
-            <div class="note o">🔒 Inkuiri ini sudah dikirim ke Costing — dibuka lihat-saja, tidak bisa diedit.</div>
+            <div class="note o">🔒 {{ t('This inquiry has been sent to Costing — opened view-only, cannot be edited.') }}</div>
         @endif
 
         <div class="card">
-            <h3>1️⃣ Produk Asal &amp; Jejak Relasi</h3>
+            <h3>1️⃣ {{ t('Source Product & Relation Trace') }}</h3>
             <div class="body">
                 <div class="trace">
-                    <span class="node"><b>Inkuiri asal:</b> {{ $source->inquiry_no }} (v{{ $source->revision_no }})</span>
+                    <span class="node"><b>{{ t('Source inquiry') }}:</b> {{ $source->inquiry_no }} (v{{ $source->revision_no }})</span>
                     <span class="ar">→</span>
-                    <span class="node co"><b>Versi baru:</b> {{ $inquiry?->inquiry_no ?? '(belum tersimpan)' }} (v{{ $source->revision_no + 1 }})</span>
+                    <span class="node co"><b>{{ t('New version') }}:</b> {{ $inquiry?->inquiry_no ?? t('(not saved yet)') }} (v{{ $source->revision_no + 1 }})</span>
                 </div>
-                <div class="note b">🔗 REVISE membuat <b>versi baru</b>. Dokumen hilir (quotation/CO) yang sudah pakai versi lama tetap memakai snapshotnya — tak terpengaruh. Versi lama akan ditandai <b>CANCELLED · SUPERSEDED</b> begitu versi baru ini disimpan.</div>
+                <div class="note b">🔗 {{ t('REVISE creates a') }} <b>{{ t('new version') }}</b>. {{ t('Downstream documents (quotation/CO) already using the old version keep their snapshot — unaffected. The old version will be marked') }} <b>CANCELLED · SUPERSEDED</b> {{ t('as soon as this new version is saved.') }}</div>
                 <div class="grid three">
-                    <x-form.input :legacy="true" label="Customer" readonly
+                    <x-form.input :legacy="true" :label="t('Customer')" readonly
                         :value="$source->is_prospect ? $source->prospect_name : ($source->customer?->customer_name ?? '—')" />
-                    <x-form.input :legacy="true" label="Produk" readonly :value="$source->product_draft_name" />
-                    <x-form.input :legacy="true" label="Versi baru" readonly :value="'v'.($source->revision_no + 1)" />
+                    <x-form.input :legacy="true" :label="t('Product')" readonly :value="$source->product_draft_name" />
+                    <x-form.input :legacy="true" :label="t('New version')" readonly :value="'v'.($source->revision_no + 1)" />
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <h3>2️⃣ Scope Revisi <span style="font-weight:400;color:#8a94a6;font-size:11px;margin-left:auto">pilih yang berubah (boleh &gt;1)</span></h3>
+            <h3>2️⃣ {{ t('Revision Scope') }} <span style="font-weight:400;color:#8a94a6;font-size:11px;margin-left:auto">{{ t('pick what changed (more than 1 allowed)') }}</span></h3>
             <div class="body">
-                <div class="note o">Scope menentukan <b>apa yang wajib diproses ulang</b>. Pilih manual — sistem tak menebak, agar tak memicu proof/imposisi mahal yang tak perlu.</div>
+                <div class="note o">{{ t('Scope determines') }} <b>{{ t('what must be reprocessed') }}</b>. {{ t('Pick manually — the system does not guess, so it does not trigger unnecessary expensive proof/imposition.') }}</div>
                 @error('scope') <div class="note" style="background:#fdecea;border:1px solid #f5b7b1;color:#943126">{{ $message }}</div> @enderror
                 <div class="scope">
                     <label class="scopeopt {{ in_array('MATERIAL', $scope, true) ? 'on' : '' }}" wire:click="toggleScope('MATERIAL')">
                         <input type="checkbox" @checked(in_array('MATERIAL', $scope, true)) @if($readOnly) disabled @endif>
-                        <span class="tx"><b>🧱 Material</b><span>Bahan/gramasi berubah. → costing ulang.</span></span>
+                        <span class="tx"><b>🧱 {{ t('Material') }}</b><span>{{ t('Material/grammage changed. → re-costing.') }}</span></span>
                     </label>
                     <label class="scopeopt {{ in_array('DIMENSION', $scope, true) ? 'on' : '' }}" wire:click="toggleScope('DIMENSION')">
                         <input type="checkbox" @checked(in_array('DIMENSION', $scope, true)) @if($readOnly) disabled @endif>
-                        <span class="tx"><b>📐 Dimensi</b><span>Ukuran P×L×T berubah. → imposisi ulang + costing.</span></span>
+                        <span class="tx"><b>📐 {{ t('Dimension') }}</b><span>{{ t('L×W×H size changed. → re-imposition + costing.') }}</span></span>
                     </label>
                     <label class="scopeopt {{ in_array('ARTWORK', $scope, true) ? 'on' : '' }}" wire:click="toggleScope('ARTWORK')">
                         <input type="checkbox" @checked(in_array('ARTWORK', $scope, true)) @if($readOnly) disabled @endif>
-                        <span class="tx"><b>🎨 Artwork</b><span>Desain berubah. → proof warna ulang.</span></span>
+                        <span class="tx"><b>🎨 {{ t('Artwork') }}</b><span>{{ t('Design changed. → color re-proof.') }}</span></span>
                     </label>
                     <label class="scopeopt {{ in_array('COLOR', $scope, true) ? 'on' : '' }}" wire:click="toggleScope('COLOR')">
                         <input type="checkbox" @checked(in_array('COLOR', $scope, true)) @if($readOnly) disabled @endif>
-                        <span class="tx"><b>🖌️ Warna</b><span>Tinta/plate berubah. → costing ulang.</span></span>
+                        <span class="tx"><b>🖌️ {{ t('Color') }}</b><span>{{ t('Ink/plate changed. → re-costing.') }}</span></span>
                     </label>
                     <label class="scopeopt {{ in_array('PROCESS', $scope, true) ? 'on' : '' }}" wire:click="toggleScope('PROCESS')">
                         <input type="checkbox" @checked(in_array('PROCESS', $scope, true)) @if($readOnly) disabled @endif>
-                        <span class="tx"><b>⚙️ Proses</b><span>Urutan/finishing berubah. → costing ulang.</span></span>
+                        <span class="tx"><b>⚙️ {{ t('Process') }}</b><span>{{ t('Sequence/finishing changed. → re-costing.') }}</span></span>
                     </label>
                 </div>
-                <x-form.input legacy label="Alasan Revisi *" wire:model="revise_reason" placeholder="mis. Tambah logo Halal Indonesia (spot ink) — permintaan customer" :disabled="$readOnly" name="revise_reason" />
+                <x-form.input legacy :label="t('Revision Reason *')" wire:model="revise_reason" :placeholder="t('e.g. Add Halal Indonesia logo (spot ink) — customer request')" :disabled="$readOnly" name="revise_reason" />
             </div>
         </div>
 
         <div class="card">
-            <h3>3️⃣ Konsekuensi (otomatis dari scope)</h3>
+            <h3>3️⃣ {{ t('Consequences (automatic from scope)') }}</h3>
             <div class="body">
                 <div class="matrix">
-                    <div class="mh">Yang wajib diproses ulang</div>
-                    <div class="mrow"><span class="lb">📐 Imposisi ulang</span><span class="flag {{ $this->triggers['imposisi'] ? 'on' : 'off' }}">{{ $this->triggers['imposisi'] ? 'YA' : 'TIDAK' }}</span><span class="why">{{ $this->triggers['imposisi'] ? 'ukuran berubah → up/plano dihitung ulang' : 'dieline & ukuran tetap → layout reuse' }}</span></div>
-                    <div class="mrow"><span class="lb">🎨 Proof warna ulang</span><span class="flag {{ $this->triggers['proof'] ? 'on' : 'off' }}">{{ $this->triggers['proof'] ? 'YA' : 'TIDAK' }}</span><span class="why">{{ $this->triggers['proof'] ? 'artwork berubah → verifikasi visual' : 'artwork tetap' }}</span></div>
-                    <div class="mrow"><span class="lb">💰 Costing / HPP ulang</span><span class="flag {{ $this->triggers['costing'] ? 'on' : 'off' }}">{{ $this->triggers['costing'] ? 'YA' : 'TIDAK' }}</span><span class="why">{{ $this->triggers['costing'] ? 'material/plate/proses berubah → biaya berubah' : 'tak ada perubahan biaya' }}</span></div>
-                    <div class="mrow"><span class="lb">📅 Due-date reset</span><span class="flag {{ $this->triggers['due'] ? 'on' : 'off' }}">{{ $this->triggers['due'] ? 'YA' : 'TIDAK' }}</span><span class="why">14 hari kerja dari approval proof baru</span></div>
+                    <div class="mh">{{ t('Must be reprocessed') }}</div>
+                    <div class="mrow"><span class="lb">📐 {{ t('Re-imposition') }}</span><span class="flag {{ $this->triggers['imposisi'] ? 'on' : 'off' }}">{{ $this->triggers['imposisi'] ? t('YES') : t('NO') }}</span><span class="why">{{ $this->triggers['imposisi'] ? t('size changed → up/plano recalculated') : t('dieline & size unchanged → layout reused') }}</span></div>
+                    <div class="mrow"><span class="lb">🎨 {{ t('Color re-proof') }}</span><span class="flag {{ $this->triggers['proof'] ? 'on' : 'off' }}">{{ $this->triggers['proof'] ? t('YES') : t('NO') }}</span><span class="why">{{ $this->triggers['proof'] ? t('artwork changed → visual verification') : t('artwork unchanged') }}</span></div>
+                    <div class="mrow"><span class="lb">💰 {{ t('Re-costing / COGS') }}</span><span class="flag {{ $this->triggers['costing'] ? 'on' : 'off' }}">{{ $this->triggers['costing'] ? t('YES') : t('NO') }}</span><span class="why">{{ $this->triggers['costing'] ? t('material/plate/process changed → cost changes') : t('no cost change') }}</span></div>
+                    <div class="mrow"><span class="lb">📅 {{ t('Due-date reset') }}</span><span class="flag {{ $this->triggers['due'] ? 'on' : 'off' }}">{{ $this->triggers['due'] ? t('YES') : t('NO') }}</span><span class="why">{{ t('14 working days from the new proof approval') }}</span></div>
                 </div>
             </div>
         </div>
 
         @if (in_array('ARTWORK', $scope, true))
             <div class="eb">
-                <div class="t">🎨 Artwork — Identitas Desain Baru</div>
-                <x-form.input legacy label="No. Design / Proof" wire:model="design_number" placeholder="mis. DS003480" :disabled="$readOnly" />
+                <div class="t">🎨 {{ t('Artwork — New Design Identity') }}</div>
+                <x-form.input legacy :label="t('Design / Proof No.')" wire:model="design_number" :placeholder="t('e.g. DS003480')" :disabled="$readOnly" />
 
                 @foreach ($parts as $i => $part)
-                    <div class="sec-title">{{ $part['part_name'] ?: 'Part '.($i + 1) }}</div>
+                    <div class="sec-title">{{ $part['part_name'] ?: t('Part').' '.($i + 1) }}</div>
                     <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px" x-data="{ zoomOld: false, zoomNew: false }">
                         @if ($part['source_artwork_path'] ?? null)
                             <div style="width:150px">
-                                <div class="hint" style="margin-bottom:4px">Artwork Lama (v{{ $source->revision_no }})</div>
+                                <div class="hint" style="margin-bottom:4px">{{ t('Old Artwork') }} (v{{ $source->revision_no }})</div>
                                 <img src="{{ asset('storage/'.$part['source_artwork_path']) }}" @click="zoomOld = true"
-                                     style="width:150px;height:150px;object-fit:cover;border-radius:6px;border:1px solid #c7cfda;cursor:zoom-in" alt="artwork lama">
+                                     style="width:150px;height:150px;object-fit:cover;border-radius:6px;border:1px solid #c7cfda;cursor:zoom-in" alt="{{ t('old artwork') }}">
                                 <div x-show="zoomOld" x-cloak @click.self="zoomOld = false" @keydown.escape.window="zoomOld = false"
                                      style="position:fixed;inset:0;z-index:250;background:rgba(15,22,45,.72);display:flex;align-items:center;justify-content:center;padding:24px">
-                                    <img src="{{ asset('storage/'.$part['source_artwork_path']) }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="artwork lama ukuran penuh">
+                                    <img src="{{ asset('storage/'.$part['source_artwork_path']) }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="{{ t('old artwork full size') }}">
                                 </div>
                             </div>
                         @endif
 
                         <div style="width:150px">
-                            <div class="hint" style="margin-bottom:4px">Artwork Baru</div>
+                            <div class="hint" style="margin-bottom:4px">{{ t('New Artwork') }}</div>
                             @php($newPreviewUrl = isset($artworkUploads[$i]) ? $artworkUploads[$i]->temporaryUrl() : (($part['artwork_path'] ?? null) ? asset('storage/'.$part['artwork_path']) : null))
                             @if ($newPreviewUrl)
                                 <img src="{{ $newPreviewUrl }}" @click="zoomNew = true"
-                                     style="width:150px;height:150px;object-fit:cover;border-radius:6px;border:2px solid #22a06b;cursor:zoom-in" alt="artwork baru">
+                                     style="width:150px;height:150px;object-fit:cover;border-radius:6px;border:2px solid #22a06b;cursor:zoom-in" alt="{{ t('new artwork') }}">
                                 <div x-show="zoomNew" x-cloak @click.self="zoomNew = false" @keydown.escape.window="zoomNew = false"
                                      style="position:fixed;inset:0;z-index:250;background:rgba(15,22,45,.72);display:flex;align-items:center;justify-content:center;padding:24px">
-                                    <img src="{{ $newPreviewUrl }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="artwork baru ukuran penuh">
+                                    <img src="{{ $newPreviewUrl }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="{{ t('new artwork full size') }}">
                                 </div>
                                 @unless($readOnly)
-                                    <button type="button" class="btn d xs" wire:click="removeArtwork({{ $i }})" style="margin-top:4px;width:150px">✕ hapus</button>
+                                    <button type="button" class="btn d xs" wire:click="removeArtwork({{ $i }})" style="margin-top:4px;width:150px">✕ {{ t('remove') }}</button>
                                 @endunless
                                 @if ($part['artwork_color_suggestion'] ?? null)
                                     @php($sc = $part['artwork_color_suggestion'])
-                                    <div class="hint" style="margin-top:4px">💡 Saran warna: <b>{{ $sc['code'] }}</b> ({{ $sc['distinct_colors'] }} warna{{ $sc['is_grayscale'] ? ', B/W' : '' }})</div>
+                                    <div class="hint" style="margin-top:4px">💡 {{ t('Color suggestion') }}: <b>{{ $sc['code'] }}</b> ({{ $sc['distinct_colors'] }} {{ t('colors') }}{{ $sc['is_grayscale'] ? ', B/W' : '' }})</div>
                                 @endif
                             @elseif(! $readOnly)
                                 <input type="file" x-ref="artworkInput{{ $i }}" wire:model="artworkUploads.{{ $i }}" accept=".jpg,.jpeg,.png" style="display:none">
-                                <button type="button" class="btn g xs" style="width:150px" @click="$refs['artworkInput{{ $i }}'].click()">📎 Upload Artwork Baru</button>
-                                <div wire:loading wire:target="artworkUploads.{{ $i }}" class="hint" style="color:#1560a8">⏳ mengunggah…</div>
+                                <button type="button" class="btn g xs" style="width:150px" @click="$refs['artworkInput{{ $i }}'].click()">📎 {{ t('Upload New Artwork') }}</button>
+                                <div wire:loading wire:target="artworkUploads.{{ $i }}" class="hint" style="color:#1560a8">⏳ {{ t('uploading…') }}</div>
                                 @error('artworkUploads.'.$i) <div style="font-size:10px;color:#c0392b">{{ $message }}</div> @enderror
                             @else
-                                <div class="hint">Belum ada artwork baru.</div>
+                                <div class="hint">{{ t('No new artwork yet.') }}</div>
                             @endif
                         </div>
                     </div>
                 @endforeach
 
-                <div class="note b" style="margin-top:10px">Artwork baru akan melalui proof ulang (modul Proof/Prove) sebelum quotation — di luar layar ini.</div>
+                <div class="note b" style="margin-top:10px">{{ t('The new artwork will go through re-proof (Proof/Prove module) before quotation — outside this screen.') }}</div>
             </div>
         @endif
 
         @if (in_array('COLOR', $scope, true))
             <div class="eb">
-                <div class="t">🖌️ Warna — Konfigurasi Cetak per Part</div>
+                <div class="t">🖌️ {{ t('Color — Print Configuration per Part') }}</div>
                 @foreach ($parts as $i => $part)
                     <div class="grid two" style="margin-bottom:8px">
-                        <x-form.input legacy label="{{ $part['part_name'] ?: 'Part '.($i + 1) }} — Warna (mis. 4/4)" wire:model="parts.{{ $i }}.cfg_color" :disabled="$readOnly" />
-                        <x-form.input legacy label="Catatan tinta/plate" wire:model="parts.{{ $i }}.cfg_ink" placeholder="mis. +1 spot Pantone 348C" :disabled="$readOnly" />
+                        <x-form.input legacy :label="($part['part_name'] ?: t('Part').' '.($i + 1)).' — '.t('Color (e.g. 4/4)')" wire:model="parts.{{ $i }}.cfg_color" :disabled="$readOnly" />
+                        <x-form.input legacy :label="t('Ink/plate note')" wire:model="parts.{{ $i }}.cfg_ink" :placeholder="t('e.g. +1 spot Pantone 348C')" :disabled="$readOnly" />
                     </div>
                 @endforeach
-                <div class="hppimpact">⚠️ Penambahan spot/plate menaikkan HPP walau ukuran &amp; bahan tetap — dihitung ulang oleh Costing.</div>
+                <div class="hppimpact">⚠️ {{ t('Adding spot/plate raises COGS even if size & material stay the same — recalculated by Costing.') }}</div>
             </div>
         @endif
 
         @if (in_array('DIMENSION', $scope, true))
             <div class="eb">
-                <div class="t">📐 Dimensi — Ukuran Baru</div>
+                <div class="t">📐 {{ t('Dimension — New Size') }}</div>
                 @foreach ($parts as $i => $part)
-                    <div class="sec-title">{{ $part['part_name'] ?: 'Part '.($i + 1) }}</div>
+                    <div class="sec-title">{{ $part['part_name'] ?: t('Part').' '.($i + 1) }}</div>
                     <div class="grid three" style="margin-bottom:10px">
                         @forelse ($this->dimParams($part['type_code']) as $param)
                             <x-form.input legacy label="{{ $param['label'] }} {{ $param['uom'] ? '('.$param['uom'].')' : '' }}" wire:model="parts.{{ $i }}.dims.{{ $param['key'] }}" :disabled="$readOnly" />
                         @empty
-                            <x-form.input legacy label="Panjang (cm)" type="number" step="0.01" wire:model="parts.{{ $i }}.flat_w" :disabled="$readOnly" />
-                            <x-form.input legacy label="Lebar (cm)" type="number" step="0.01" wire:model="parts.{{ $i }}.flat_h" :disabled="$readOnly" />
+                            <x-form.input legacy :label="t('Length (cm)')" type="number" step="0.01" wire:model="parts.{{ $i }}.flat_w" :disabled="$readOnly" />
+                            <x-form.input legacy :label="t('Width (cm)')" type="number" step="0.01" wire:model="parts.{{ $i }}.flat_h" :disabled="$readOnly" />
                         @endforelse
                     </div>
                 @endforeach
-                <div class="note o">Ukuran berubah → up per plano bisa berubah → imposisi WAJIB diulang (di luar layar ini).</div>
+                <div class="note o">{{ t('Size changed → ups per plano may change → imposition MUST be redone (outside this screen).') }}</div>
             </div>
         @endif
 
         @if (in_array('MATERIAL', $scope, true))
             <div class="eb">
-                <div class="t">🧱 Material — Substitusi</div>
+                <div class="t">🧱 {{ t('Material — Substitution') }}</div>
                 @foreach ($parts as $i => $part)
-                    <div class="sec-title">{{ $part['part_name'] ?: 'Part '.($i + 1) }}</div>
+                    <div class="sec-title">{{ $part['part_name'] ?: t('Part').' '.($i + 1) }}</div>
                     @foreach ($part['materials'] as $j => $mat)
                         <div class="inkrow" style="grid-template-columns:1fr 90px 90px 30px" wire:key="rvmat-{{ $i }}-{{ $j }}">
                             <div class="ac-wrap">
                                 @if ($mat['rawmat_id'])
                                     <input type="text" value="{{ $mat['display_name'] }}" readonly>
                                 @else
-                                    <input type="text" wire:model.live.debounce.300ms="parts.{{ $i }}.materials.{{ $j }}.query" placeholder="Cari bahan…" @if($readOnly) disabled @endif>
+                                    <input type="text" wire:model.live.debounce.300ms="parts.{{ $i }}.materials.{{ $j }}.query" placeholder="{{ t('Search material…') }}" @if($readOnly) disabled @endif>
                                     @if (! empty($mat['query']) && mb_strlen($mat['query']) >= 2)
                                         <div class="ac-box on">
                                             @forelse ($this->materialResults($i, $j) as $opt)
@@ -843,51 +843,51 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
                                                     <b>{{ $opt->material_name }}</b> <span class="cd">{{ $opt->material_code }}</span>
                                                 </div>
                                             @empty
-                                                <div class="ac-none">Tak ada bahan cocok.</div>
+                                                <div class="ac-none">{{ t('No matching material.') }}</div>
                                             @endforelse
                                         </div>
                                     @endif
                                 @endif
                             </div>
-                            <input type="number" step="0.0001" wire:model="parts.{{ $i }}.materials.{{ $j }}.gram_weight" placeholder="gramasi" @if($readOnly) disabled @endif>
-                            <input type="text" value="{{ $mat['rawmat_id'] ? 'terpilih' : '—' }}" readonly>
+                            <input type="number" step="0.0001" wire:model="parts.{{ $i }}.materials.{{ $j }}.gram_weight" placeholder="{{ t('grammage') }}" @if($readOnly) disabled @endif>
+                            <input type="text" value="{{ $mat['rawmat_id'] ? t('selected') : '—' }}" readonly>
                             <button type="button" class="btn d xs" wire:click="removeMaterialRow({{ $i }}, {{ $j }})" @if($readOnly) disabled @endif>✕</button>
                         </div>
                     @endforeach
-                    <button type="button" class="addln" wire:click="addMaterialRow({{ $i }})" @if($readOnly) disabled @endif>+ baris bahan</button>
+                    <button type="button" class="addln" wire:click="addMaterialRow({{ $i }})" @if($readOnly) disabled @endif>+ {{ t('material row') }}</button>
                 @endforeach
-                <div class="note b" style="margin-top:10px">Gramasi/bahan naik → harga bahan berubah → costing ulang. Imposisi tetap (ukuran sama) kecuali scope Dimensi juga dipilih.</div>
+                <div class="note b" style="margin-top:10px">{{ t('Higher grammage/material → material price changes → re-costing. Imposition stays (same size) unless the Dimension scope is also selected.') }}</div>
             </div>
         @endif
 
         @if (in_array('PROCESS', $scope, true))
             <div class="eb">
-                <div class="t">⚙️ Finishing (routing dihitung ulang di ProDev)</div>
+                <div class="t">⚙️ {{ t('Finishing (routing recalculated in ProDev)') }}</div>
                 @foreach ($parts as $i => $part)
-                    <div class="sec-title">{{ $part['part_name'] ?: 'Part '.($i + 1) }}</div>
+                    <div class="sec-title">{{ $part['part_name'] ?: t('Part').' '.($i + 1) }}</div>
                     @foreach ($part['finishings'] as $k => $fin)
                         <div class="inkrow" style="grid-template-columns:1fr 1fr 30px" wire:key="rvfin-{{ $i }}-{{ $k }}">
                             <select wire:model="parts.{{ $i }}.finishings.{{ $k }}.finishing_type_id" x-data x-effect="$el.value = @js((string) $fin['finishing_type_id'])" @if($readOnly) disabled @endif>
-                                <option value="">— pilih jenis finishing —</option>
+                                <option value="">— {{ t('choose finishing type') }} —</option>
                                 @foreach ($this->finishingTypeOptions as $ft)
                                     <option value="{{ $ft->id_finishing_type }}">{{ $ft->finishing_name }}</option>
                                 @endforeach
                             </select>
-                            <input type="text" maxlength="60" wire:model="parts.{{ $i }}.finishings.{{ $k }}.attribute" placeholder="atribut, mis. Gold Puyeh" @if($readOnly) disabled @endif>
+                            <input type="text" maxlength="60" wire:model="parts.{{ $i }}.finishings.{{ $k }}.attribute" placeholder="{{ t('attribute, e.g. Gold Puyeh') }}" @if($readOnly) disabled @endif>
                             <button type="button" class="btn d xs" wire:click="removeProcessRow({{ $i }}, {{ $k }})" @if($readOnly) disabled @endif>✕</button>
                         </div>
                     @endforeach
-                    <button type="button" class="addln" wire:click="addProcessRow({{ $i }})" @if($readOnly) disabled @endif>+ finishing</button>
+                    <button type="button" class="addln" wire:click="addProcessRow({{ $i }})" @if($readOnly) disabled @endif>+ {{ t('finishing') }}</button>
                 @endforeach
-                <div class="note b" style="margin-top:10px">Urutan/finishing berubah → waktu &amp; biaya proses berubah → costing ulang.</div>
+                <div class="note b" style="margin-top:10px">{{ t('Sequence/finishing changed → process time & cost change → re-costing.') }}</div>
             </div>
         @endif
 
     </div>
 
     <div class="actionbar">
-        <button type="button" class="btn g" wire:click="saveDraft" @if($readOnly) disabled @endif wire:loading.attr="disabled">💾 Simpan Draft</button>
-        <span style="font-size:11px;color:#8a94a6;margin-left:6px">Scope: <b>{{ $scope ? implode(', ', $scope) : '(belum ada)' }}</b> · Doc <b>{{ $inquiry?->inquiry_no ?? '(draft baru)' }}</b></span>
-        <button type="button" class="btn s" style="margin-left:auto" wire:click="submitToCosting" @if($readOnly) disabled @endif wire:loading.attr="disabled">➜ Submit ke Costing (v{{ $source->revision_no + 1 }})</button>
+        <button type="button" class="btn g" wire:click="saveDraft" @if($readOnly) disabled @endif wire:loading.attr="disabled">💾 {{ t('Save Draft') }}</button>
+        <span style="font-size:11px;color:#8a94a6;margin-left:6px">{{ t('Scope') }}: <b>{{ $scope ? implode(', ', $scope) : t('(none yet)') }}</b> · {{ t('Doc') }} <b>{{ $inquiry?->inquiry_no ?? t('(new draft)') }}</b></span>
+        <button type="button" class="btn s" style="margin-left:auto" wire:click="submitToCosting" @if($readOnly) disabled @endif wire:loading.attr="disabled">➜ {{ t('Submit to Costing') }} (v{{ $source->revision_no + 1 }})</button>
     </div>
 </div>

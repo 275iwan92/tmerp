@@ -55,6 +55,12 @@ final class Dictionary
 
     // Kunci kamus tidak peka huruf besar/kecil (collation utf8mb4_unicode_ci: 'WAITING' dan 'Waiting' satu baris), lookup PHP
     // peka -> tanpa padanan persis dicari tanpa beda huruf, lalu bentuk hurufnya ikut sumber: 'CANCELLED' -> 'DIBATALKAN'.
+    // Terjemahan bila ada di kamus (tanpa jatuh ke English, tanpa mencatat teks baru) -- mis. kamus cetak konteks 'print'.
+    public static function find(string $en, string $context, string $lang): ?string
+    {
+        return $lang === 'en' ? null : self::lookup($en, $context, $lang);
+    }
+
     private static function lookup(string $en, string $context, string $lang): ?string
     {
         $map = self::context($context, $lang);

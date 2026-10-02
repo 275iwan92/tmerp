@@ -17,11 +17,14 @@ class MultiLanguageRatchetTest extends TestCase
     // Layar v1 (user 2026-10-02: v1 ikut dikonversi): teks Indonesia mentah per modul. Konversi satu modul ke English + t()
     // (terjemahan Indonesianya diisi lewat migration Dictionary::seed) -> angka modul itu turun -> turunkan di sini.
     private const BASELINE_V1 = [
-        // 2026-10-02 awal (total 5067).
+        // 2026-10-02 awal v1 = 5067; cakupan diperluas (v2, mail, support, services, models). Hanya boleh turun.
         'app' => 2,
-        'components' => 74,
+        'components' => 0,
+        'emails' => 3,
         'layouts' => 4,
         'livewire' => 2,
+        'mail' => 5,
+        'models' => 118,
         'pages' => 0,
         'pages/auth' => 2,
         'pages/careers' => 3,
@@ -30,12 +33,12 @@ class MultiLanguageRatchetTest extends TestCase
         'pages/finance' => 5,
         'pages/help' => 2,
         'pages/hrm' => 90,
-        'pages/inquiry' => 644,
+        'pages/inquiry' => 156,
         'pages/inventory' => 0,
         'pages/lookup' => 0,
         'pages/master' => 28,
         'pages/notification' => 0,
-        'pages/production' => 983,
+        'pages/production' => 39,
         'pages/pur' => 2,
         'pages/quotation' => 0,
         'pages/recruitment' => 13,
@@ -44,6 +47,9 @@ class MultiLanguageRatchetTest extends TestCase
         'pages/security' => 3,
         'pages/self-service' => 53,
         'pages/setup' => 5,
+        'services' => 343,
+        'support' => 364,
+        'v2' => 274,
     ];
 
     private const BASELINE = [
@@ -130,20 +136,26 @@ class MultiLanguageRatchetTest extends TestCase
         $this->assertSame([], $missing, 'Kunci T() tanpa pasangan di Devlib\Lang.');
     }
 
-    // Grup = pages/<modul> | components | livewire | layouts | app (app/Livewire + app/View).
+    // Grup = pages/<modul> | components | livewire | layouts | v2 | mail | emails (views) | app (app/Livewire + app/View) |
+    // support (app/Support kecuali kamus itu sendiri) | services | models. Output konsol (app/Console) & Filament (dipensiunkan) tidak dihitung.
     /** @return array<string, int> */
     public static function v1Counts(): array
     {
         $out = array_fill_keys(array_keys(self::BASELINE_V1), 0);
         $views = resource_path('views').'/';
-        $files = (new Finder)->files()->in([$views.'pages', $views.'components', $views.'livewire', $views.'layouts', app_path('Livewire'), app_path('View')])->name('*.php');
+        $files = (new Finder)->files()->in([$views.'pages', $views.'components', $views.'livewire', $views.'layouts', $views.'v2', $views.'mail',
+            $views.'emails', app_path('Livewire'), app_path('View'), app_path('Support'), app_path('Services'), app_path('Models')])
+            ->exclude('Localization')->name('*.php');
+        $app = str_replace('\\', '/', app_path()).'/';
         foreach ($files as $f) {
             $path = str_replace('\\', '/', $f->getPathname());
             if (str_starts_with($path, str_replace('\\', '/', $views))) {
                 $rel = explode('/', substr($path, strlen($views)));
                 $group = $rel[0] === 'pages' && count($rel) > 2 ? 'pages/'.$rel[1] : $rel[0];
             } else {
-                $group = 'app';
+                $group = match (explode('/', substr($path, strlen($app)))[0]) {
+                    'Support' => 'support', 'Services' => 'services', 'Models' => 'models', default => 'app',
+                };
             }
             $out[$group] = ($out[$group] ?? 0) + count(self::v1Texts($f->getContents()));
         }

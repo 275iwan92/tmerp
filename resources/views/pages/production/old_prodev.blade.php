@@ -108,7 +108,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         return match ($this->activeLayoutGroup?->status) {
             'CONFIRMED' => 'CONFIRMED',
             'DRAFT' => 'DRAFT',
-            default => 'BELUM MULAI',
+            default => 'NOT STARTED',
         };
     }
 
@@ -239,28 +239,28 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                 // alih-alih tombol mati. view=1 + from_part = wajib supaya
                 // form.blade.php tahu ini cross-nav (readOnly paksa) & tahu
                 // jalan balik ke Development/Master Card part ini.
-                'label' => '1. Inquiry',
+                'label' => '1. '.t('Inquiry'),
                 'url' => $inquiryId
                     ? route('inquiry.form', ['id' => $inquiryId, 'view' => 1])
                     : route('inquiry.form', ['view' => 1, 'from_part' => $this->partId]),
             ],
             'development' => [
-                'label' => '2. Development',
+                'label' => '2. '.t('Development'),
                 'url' => route('production.old-prodev', ['part' => $this->partId]),
             ],
             'costing' => [
-                'label' => '3. Costing',
+                'label' => '3. '.t('Costing'),
                 'url' => $inquiryId ? route('inquiry.costing', ['inquiry' => $inquiryId, 'view' => 1]) : null,
-                'reason' => 'Part ini Mode #2 (manual/standalone) -- belum ada Inquiry utk dihitung Costing-nya.',
+                'reason' => t('This part is Mode #2 (manual/standalone) -- no Inquiry yet to calculate its Costing.'),
             ],
             'mastercard' => [
-                'label' => 'Master Card',
+                'label' => t('Master Card'),
                 'url' => route('production.old-prodev.print', ['part' => $this->partId]),
             ],
             'analytics' => [
-                'label' => 'Analytics',
+                'label' => t('Analytics'),
                 'url' => null,
-                'reason' => 'Modul Analytics belum dibangun.',
+                'reason' => t('The Analytics module has not been built yet.'),
             ],
         ];
     }
@@ -556,7 +556,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
         unset($this->gapMm, $this->gripperMm, $this->marginMm);
         $this->editingMachineSpecs = false;
-        session()->flash('success', 'Machine Specifications tersimpan — berlaku untuk semua job ProDev, tidak cuma job ini.');
+        session()->flash('success', t('Machine Specifications saved — applies to all ProDev jobs, not just this job.'));
     }
 
     public function updateField(string $field, $value): void
@@ -609,7 +609,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $bodyH = (float) ($part->cm_length ?? 0) * 10;
 
         if ($bodyW <= 0 || $bodyH <= 0) {
-            session()->flash('error', 'Isi dimensi badan part (cm_width/cm_length) dulu sebelum jalankan Engine.');
+            session()->flash('error', t('Fill in the part body dimensions (cm_width/cm_length) first before running the Engine.'));
 
             return;
         }
@@ -660,7 +660,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $bodyH = (float) ($part->cm_length ?? 0) * 10;
 
         if ($bodyW <= 0 || $bodyH <= 0) {
-            session()->flash('error', 'Isi dimensi badan part (cm_width/cm_length) dulu sebelum jalankan Engine.');
+            session()->flash('error', t('Fill in the part body dimensions (cm_width/cm_length) first before running the Engine.'));
 
             return;
         }
@@ -713,7 +713,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $bodyH = (float) ($part->cm_length ?? 0) * 10;
 
         if ($bodyW <= 0 || $bodyH <= 0) {
-            session()->flash('error', 'Isi dimensi badan part (cm_width/cm_length) dulu sebelum jalankan Engine.');
+            session()->flash('error', t('Fill in the part body dimensions (cm_width/cm_length) first before running the Engine.'));
 
             return;
         }
@@ -828,7 +828,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $plano = MatPlanoSize::find($this->selectedPlanoId);
 
         if (! $partA || ! $partB || ! $plano) {
-            session()->flash('error', 'Pilih part pasangan (produk yang sama) dulu sebelum jalankan Tool #10.');
+            session()->flash('error', t('Choose the paired part (same product) first before running Tool #10.'));
 
             return;
         }
@@ -839,7 +839,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $bodyHB = (float) ($partB->cm_length ?? 0) * 10;
 
         if ($bodyWA <= 0 || $bodyHA <= 0 || $bodyWB <= 0 || $bodyHB <= 0) {
-            session()->flash('error', 'Isi dimensi badan KEDUA part (cm_width/cm_length) dulu sebelum jalankan Tool #10.');
+            session()->flash('error', t('Fill in the body dimensions of BOTH parts (cm_width/cm_length) first before running Tool #10.'));
 
             return;
         }
@@ -952,7 +952,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $usedByCosting = \App\Models\Sdi\IqpCostingPart::where('prod_layout_group_id', $group->id_layout_group)->exists();
 
         if ($usedByCosting) {
-            session()->flash('error', 'Layout ini SUDAH ditarik Costing (Ambil Data) -- buka kunci akan bikin HPP yang sudah dihitung jadi basi tanpa peringatan. Koordinasi dgn Costing dulu, atau jalankan Engine lagi (otomatis bikin layout BARU, bukan timpa yang lama).');
+            session()->flash('error', t('This layout has ALREADY been pulled by Costing (Pull Data) -- unlocking would make the calculated COGS stale without warning.').' '.t('Coordinate with Costing first, or run the Engine again (it automatically creates a NEW layout, not overwriting the old one).'));
 
             return;
         }
@@ -1076,9 +1076,9 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     <div class="bg-[var(--pd-surface)] border-b border-[var(--pd-border)] px-5 py-2 flex items-center gap-3.5">
         @if ($this->part)
             <span class="text-xs text-[var(--pd-ink)] font-semibold">{{ $this->part->displayMastercardCode() }} · {{ $this->part->part_name }}</span>
-            <span class="text-[10.5px] font-bold px-2.5 py-1 rounded-full {{ $this->layoutStatusBadgeClass() }}">{{ $this->layoutStatusLabel() }}</span>
+            <span class="text-[10.5px] font-bold px-2.5 py-1 rounded-full {{ $this->layoutStatusBadgeClass() }}">{{ t($this->layoutStatusLabel()) }}</span>
             <a href="{{ route('production.old-prodev.print', ['part' => $this->partId]) }}" target="_blank"
-                class="ml-auto bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨️ Cetak Master Card</a>
+                class="ml-auto bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨️ {{ t('Print Master Card') }}</a>
         @endif
     </div>
 
@@ -1104,7 +1104,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             @if ($this->originInquiryParts->isNotEmpty())
                 <div class="bg-[var(--pd-info-bg)] border border-[var(--pd-info-border)] rounded-md overflow-hidden">
                     <h3 class="text-xs text-[var(--pd-info-ink)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-info-bg-strong)] border-b border-[var(--pd-info-border)]">
-                        📥 Referensi Inquiry Asal (read-only, sudah CONFIRMED)
+                        📥 {{ t('Source Inquiry Reference (read-only, already CONFIRMED)') }}
                     </h3>
                     <div class="p-3.5 flex flex-col gap-2.5">
                         @foreach ($this->originInquiryParts as $oi)
@@ -1117,9 +1117,9 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                     @foreach ($oi['dims'] as $d)
                                         <span>{{ $d['label'] }}: <b>{{ $d['value'] }}{{ $d['uom'] ? ' '.$d['uom'] : '' }}</b></span>
                                     @endforeach
-                                    @if ($oi['flat_w'])<span>Flat W: <b>{{ $oi['flat_w'] }}mm</b></span>@endif
-                                    @if ($oi['flat_h'])<span>Flat H: <b>{{ $oi['flat_h'] }}mm</b></span>@endif
-                                    @if ($oi['qty_per_sku'])<span>Qty/Set: <b>{{ $oi['qty_per_sku'] }}</b></span>@endif
+                                    @if ($oi['flat_w'])<span>{{ t('Flat W') }}: <b>{{ $oi['flat_w'] }}mm</b></span>@endif
+                                    @if ($oi['flat_h'])<span>{{ t('Flat H') }}: <b>{{ $oi['flat_h'] }}mm</b></span>@endif
+                                    @if ($oi['qty_per_sku'])<span>{{ t('Qty/Set') }}: <b>{{ $oi['qty_per_sku'] }}</b></span>@endif
                                 </div>
                             </div>
                         @endforeach
@@ -1129,38 +1129,38 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
             {{-- ============ SPESIFIKASI TEKNIS ============ --}}
             <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
-                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">📋 Spesifikasi Teknis (Master Card)</h3>
+                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">📋 {{ t('Technical Specification (Master Card)') }}</h3>
                 <div class="p-3.5 grid three gap-2.5">
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Kode Item</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Item Code') }}</label>
                         <input type="text" value="{{ $this->part->mastercard_code }}" placeholder="{{ $this->part->displayMastercardCode() }}"
                             wire:change="updateField('mastercard_code', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Kode Pisau (Die Code)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Knife Code (Die Code)') }}</label>
                         <input type="text" value="{{ $this->part->die_code }}" wire:change="updateField('die_code', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Bentuk Sambungan (Join Type)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Joint Form (Join Type)') }}</label>
                         <input type="text" value="{{ $this->part->joint_type }}" wire:change="updateField('joint_type', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
 
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Ukuran Pisau W x H (cm)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Knife Size W x H (cm)') }}</label>
                         <div class="flex gap-1.5">
                             <input type="number" step="0.1" value="{{ $this->part->die_w_cm }}" wire:change="updateField('die_w_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                             <input type="number" step="0.1" value="{{ $this->part->die_h_cm }}" wire:change="updateField('die_h_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Ukuran Bahan Mentah W x H (cm)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Raw Material Size W x H (cm)') }}</label>
                         <div class="flex gap-1.5">
                             <input type="number" step="0.1" value="{{ $this->part->sheet_raw_w_cm }}" wire:change="updateField('sheet_raw_w_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                             <input type="number" step="0.1" value="{{ $this->part->sheet_raw_h_cm }}" wire:change="updateField('sheet_raw_h_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Ukuran Cetak P x L (cm)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Print Size L x W (cm)') }}</label>
                         <div class="flex gap-1.5">
                             <input type="number" step="0.1" value="{{ $this->part->printsize_p }}" wire:change="updateField('printsize_p', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                             <input type="number" step="0.1" value="{{ $this->part->printsize_l }}" wire:change="updateField('printsize_l', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
@@ -1168,35 +1168,35 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                     </div>
 
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Dimensi Badan (Body) P x L (cm) — dasar Engine</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Body Dimensions L x W (cm) — Engine basis') }}</label>
                         <div class="flex gap-1.5">
                             <input type="number" step="0.1" value="{{ $this->part->cm_length }}" wire:change="updateField('cm_length', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                             <input type="number" step="0.1" value="{{ $this->part->cm_width }}" wire:change="updateField('cm_width', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Pack Qty (pcs/pack)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Pack Qty (pcs/pack)') }}</label>
                         <input type="number" value="{{ $this->part->pack_qty }}" wire:change="updateField('pack_qty', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5"></div>
 
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Warna Unit 1-4 Sisi Pertama (pisah koma)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Unit Colors 1-4 First Side (comma separated)') }}</label>
                         <input type="text" value="{{ implode(', ', $this->part->color_set_1 ?? []) }}" placeholder="Black, Cyan, Magenta, Yellow"
                             wire:change="updateColorSet('color_set_1', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Warna Unit 1-4 Sisi Kedua (pisah koma)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Unit Colors 1-4 Second Side (comma separated)') }}</label>
                         <input type="text" value="{{ implode(', ', $this->part->color_set_2 ?? []) }}"
                             wire:change="updateColorSet('color_set_2', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5"></div>
                 </div>
 
-                <h4 class="text-[11px] text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-1.5 bg-[var(--pd-surface-alt)] border-y border-[var(--pd-border)]">🔖 Lidah / Flap (Engine §4.3a)</h4>
+                <h4 class="text-[11px] text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-1.5 bg-[var(--pd-surface-alt)] border-y border-[var(--pd-border)]">🔖 {{ t('Tongue / Flap (Engine §4.3a)') }}</h4>
                 <div class="p-3.5 grid three gap-2.5">
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Sisi Lidah</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Flap Side') }}</label>
                         <select wire:change="updateField('flap_side', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                             @foreach (['TOP', 'BOTTOM', 'LEFT', 'RIGHT'] as $side)
                                 <option value="{{ $side }}" @selected($this->part->flap_side === $side)>{{ $side }}</option>
@@ -1204,24 +1204,24 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         </select>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Panjang Lidah Saat Ini (mm)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Current Flap Length (mm)') }}</label>
                         <input type="number" step="0.1" value="{{ $this->part->flap_length_mm }}" wire:change="updateField('flap_length_mm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5"></div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Rentang Valid Min-Max (mm)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Valid Range Min-Max (mm)') }}</label>
                         <div class="flex gap-1.5">
-                            <input type="number" step="0.1" value="{{ $this->part->flap_min_mm }}" placeholder="default {{ number_format(\App\Models\Sys\SysConstant::number('PRODEV_FLAP_MIN_MM', 20), 0) }}"
+                            <input type="number" step="0.1" value="{{ $this->part->flap_min_mm }}" placeholder="{{ t('default') }} {{ number_format(\App\Models\Sys\SysConstant::number('PRODEV_FLAP_MIN_MM', 20), 0) }}"
                                 wire:change="updateField('flap_min_mm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                             <input type="number" step="0.1" value="{{ $this->part->flap_max_mm }}" wire:change="updateField('flap_max_mm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Lebar Lidah (mm, Tingkat 2)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Flap Width (mm, Level 2)') }}</label>
                         <input type="number" step="0.1" value="{{ $this->part->flap_width_mm }}" wire:change="updateField('flap_width_mm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[11px] text-muted font-semibold">Offset Lidah (mm, Tingkat 2)</label>
+                        <label class="text-[11px] text-muted font-semibold">{{ t('Flap Offset (mm, Level 2)') }}</label>
                         <input type="number" step="0.1" value="{{ $this->part->flap_offset_mm }}" wire:change="updateField('flap_offset_mm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                 </div>
@@ -1238,75 +1238,75 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                 {{-- ---- KIRI: Nesting Strategy + Machine Specs + Stock Specs ---- --}}
                 <div class="w-full lg:w-[280px] shrink-0 flex flex-col gap-3.5">
                     <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
-                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">⚡ Nesting Strategy</h3>
+                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">⚡ {{ t('Nesting Strategy') }}</h3>
                         <div class="p-2.5 flex flex-col gap-1.5">
-                            <button type="button" wire:click="runEngineTingkat1" title="Standard Step-and-Repeat -- grid orthogonal tanpa rotasi/interlock (Tingkat 1)"
+                            <button type="button" wire:click="runEngineTingkat1" title="{{ t('Standard Step-and-Repeat -- orthogonal grid without rotation/interlock (Level 1)') }}"
                                 class="text-left px-2.5 py-2 rounded-md border cursor-pointer {{ $this->activeNestingMethod() === 'standard' ? 'border-accent bg-[var(--pd-info-bg)]' : 'border-[var(--pd-border)] bg-[var(--pd-surface)] hover:bg-[var(--pd-surface-alt)]' }}">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[11.5px] font-bold text-[var(--pd-ink-strong)]">Standard Step-and-Repeat</span>
-                                    @if ($this->activeNestingMethod() === 'standard')<span class="text-[9px] font-bold text-accent">AKTIF</span>@endif
+                                    <span class="text-[11.5px] font-bold text-[var(--pd-ink-strong)]">{{ t('Standard Step-and-Repeat') }}</span>
+                                    @if ($this->activeNestingMethod() === 'standard')<span class="text-[9px] font-bold text-accent">{{ t('ACTIVE') }}</span>@endif
                                 </div>
-                                <div class="text-[10.5px] text-muted mt-0.5 leading-snug">Matrix bounding-box orthogonal, tanpa rotasi/interlock. Baseline.</div>
+                                <div class="text-[10.5px] text-muted mt-0.5 leading-snug">{{ t('Orthogonal bounding-box matrix, without rotation/interlock. Baseline.') }}</div>
                             </button>
-                            <button type="button" wire:click="runEngineTingkat2" title="AI Interlocking -- sweep interlock 180°, geser lidah supaya saling mengunci (Tingkat 2)"
+                            <button type="button" wire:click="runEngineTingkat2" title="{{ t('AI Interlocking -- 180° interlock sweep, shift the flaps so they lock into each other (Level 2)') }}"
                                 class="text-left px-2.5 py-2 rounded-md border cursor-pointer {{ $this->activeNestingMethod() === 'interlock' ? 'border-accent bg-[var(--pd-info-bg)]' : 'border-[var(--pd-border)] bg-[var(--pd-surface)] hover:bg-[var(--pd-surface-alt)]' }}">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[11.5px] font-bold text-[var(--pd-ink-strong)]">AI Interlocking</span>
-                                    @if ($this->activeNestingMethod() === 'interlock')<span class="text-[9px] font-bold text-accent">AKTIF</span>@endif
+                                    <span class="text-[11.5px] font-bold text-[var(--pd-ink-strong)]">{{ t('AI Interlocking') }}</span>
+                                    @if ($this->activeNestingMethod() === 'interlock')<span class="text-[9px] font-bold text-accent">{{ t('ACTIVE') }}</span>@endif
                                 </div>
-                                <div class="text-[10.5px] text-muted mt-0.5 leading-snug">Interlock 180°, kunci lidah ke kontur negatif tetangga. Perkiraan hemat {{ number_format(\App\Models\Sys\SysConstant::number('PRODEV_INTERLOCK_SAVING_MIN_PCT', 12), 0) }}–{{ number_format(\App\Models\Sys\SysConstant::number('PRODEV_INTERLOCK_SAVING_MAX_PCT', 22), 0) }}%.</div>
+                                <div class="text-[10.5px] text-muted mt-0.5 leading-snug">{{ t('180° interlock, lock the flap into the neighbour\'s negative contour.') }} {{ t('Estimated saving') }} {{ number_format(\App\Models\Sys\SysConstant::number('PRODEV_INTERLOCK_SAVING_MIN_PCT', 12), 0) }}–{{ number_format(\App\Models\Sys\SysConstant::number('PRODEV_INTERLOCK_SAVING_MAX_PCT', 22), 0) }}%.</div>
                             </button>
-                            <div class="text-left px-2.5 py-2 rounded-md border border-[var(--pd-border)] opacity-50" title="Segera hadir -- pola brick-offset belum ada di ImpositionEngine">
+                            <div class="text-left px-2.5 py-2 rounded-md border border-[var(--pd-border)] opacity-50" title="{{ t('Coming soon -- the brick-offset pattern is not in ImpositionEngine yet') }}">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[11.5px] font-bold text-[var(--pd-ink-strong)]">Staggered Brick Offset</span>
-                                    <span class="text-[9px] font-bold text-muted">SEGERA HADIR</span>
+                                    <span class="text-[11.5px] font-bold text-[var(--pd-ink-strong)]">{{ t('Staggered Brick Offset') }}</span>
+                                    <span class="text-[9px] font-bold text-muted">{{ t('COMING SOON') }}</span>
                                 </div>
-                                <div class="text-[10.5px] text-muted mt-0.5 leading-snug">Pola geser bata per-baris utk kontur asimetris. Belum diimplementasi.</div>
+                                <div class="text-[10.5px] text-muted mt-0.5 leading-snug">{{ t('Per-row brick shift pattern for asymmetric contours. Not implemented yet.') }}</div>
                             </div>
-                            <button type="button" wire:click="runEngineBestSheet" title="Tool #2 -- coba SEMUA plano aktif, ranking lintas-plano by biaya"
-                                class="text-left px-2.5 py-1.5 rounded-md text-[10.5px] font-semibold text-accent hover:bg-[var(--pd-surface-alt)] cursor-pointer mt-0.5">🔍 Cari Plano Termurah (semua ukuran)</button>
+                            <button type="button" wire:click="runEngineBestSheet" title="{{ t('Tool #2 -- try ALL active planos, cross-plano ranking by cost') }}"
+                                class="text-left px-2.5 py-1.5 rounded-md text-[10.5px] font-semibold text-accent hover:bg-[var(--pd-surface-alt)] cursor-pointer mt-0.5">🔍 {{ t('Find Cheapest Plano (all sizes)') }}</button>
                         </div>
                     </div>
 
                     <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
                         <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)] flex items-center justify-between">
-                            <span>🖨️ Machine Specifications</span>
+                            <span>🖨️ {{ t('Machine Specifications') }}</span>
                             @if ($this->canEditMachineSpecs() && ! $editingMachineSpecs)
-                                <button type="button" wire:click="startEditMachineSpecs" class="text-[10px] font-bold text-accent normal-case cursor-pointer">✎ Edit</button>
+                                <button type="button" wire:click="startEditMachineSpecs" class="text-[10px] font-bold text-accent normal-case cursor-pointer">✎ {{ t('Edit') }}</button>
                             @endif
                         </h3>
                         <div class="p-3 flex flex-col gap-1.5 text-[11.5px]">
                             @if ($editingMachineSpecs)
                                 <div class="flex flex-col gap-0.5">
-                                    <label class="text-[10.5px] text-muted font-semibold">Gap Antar-Unit (mm)</label>
+                                    <label class="text-[10.5px] text-muted font-semibold">{{ t('Gap Between Units (mm)') }}</label>
                                     <input type="number" step="0.1" min="0" wire:model="editGapMm" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] rounded text-[12.5px]">
                                 </div>
                                 <div class="flex flex-col gap-0.5">
-                                    <label class="text-[10.5px] text-muted font-semibold">Gripper Margin (mm)</label>
+                                    <label class="text-[10.5px] text-muted font-semibold">{{ t('Gripper Margin (mm)') }}</label>
                                     <input type="number" step="0.1" min="0" wire:model="editGripperMm" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] rounded text-[12.5px]">
                                 </div>
                                 <div class="flex flex-col gap-0.5">
-                                    <label class="text-[10.5px] text-muted font-semibold">Margin Tepi Plano (mm)</label>
+                                    <label class="text-[10.5px] text-muted font-semibold">{{ t('Plano Edge Margin (mm)') }}</label>
                                     <input type="number" step="0.1" min="0" wire:model="editMarginMm" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] rounded text-[12.5px]">
                                 </div>
                                 @error('gap')<div class="text-[10.5px] text-red-600">{{ $message }}</div>@enderror
                                 @error('gripper')<div class="text-[10.5px] text-red-600">{{ $message }}</div>@enderror
                                 @error('margin')<div class="text-[10.5px] text-red-600">{{ $message }}</div>@enderror
                                 <div class="flex gap-1.5 mt-1">
-                                    <button type="button" wire:click="saveMachineSpecs" class="flex-1 px-2 py-1.5 rounded bg-accent text-white text-[11px] font-bold cursor-pointer">Simpan</button>
-                                    <button type="button" wire:click="cancelEditMachineSpecs" class="flex-1 px-2 py-1.5 rounded border border-[var(--pd-border)] text-[var(--pd-ink-strong)] text-[11px] font-bold cursor-pointer">Batal</button>
+                                    <button type="button" wire:click="saveMachineSpecs" class="flex-1 px-2 py-1.5 rounded bg-accent text-white text-[11px] font-bold cursor-pointer">{{ t('Save') }}</button>
+                                    <button type="button" wire:click="cancelEditMachineSpecs" class="flex-1 px-2 py-1.5 rounded border border-[var(--pd-border)] text-[var(--pd-ink-strong)] text-[11px] font-bold cursor-pointer">{{ t('Cancel') }}</button>
                                 </div>
-                                <div class="text-[10px] text-muted mt-1 leading-snug">⚠️ Mengubah nilai di sini mengubah default GLOBAL (sys_constant PRODEV_*) — berlaku utk SEMUA job ProDev, bukan cuma job ini.</div>
+                                <div class="text-[10px] text-muted mt-1 leading-snug">⚠️ {{ t('Changing the values here changes the GLOBAL default (sys_constant PRODEV_*) — applies to ALL ProDev jobs, not just this job.') }}</div>
                             @else
-                                <div class="flex items-center justify-between"><span class="text-muted">Gap Antar-Unit</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->gapMm(), 1) }} mm</b></div>
-                                <div class="flex items-center justify-between"><span class="text-muted">Gripper Margin</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->gripperMm(), 1) }} mm</b></div>
-                                <div class="flex items-center justify-between"><span class="text-muted">Margin Tepi Plano</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->marginMm(), 1) }} mm</b></div>
+                                <div class="flex items-center justify-between"><span class="text-muted">{{ t('Gap Between Units') }}</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->gapMm(), 1) }} mm</b></div>
+                                <div class="flex items-center justify-between"><span class="text-muted">{{ t('Gripper Margin') }}</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->gripperMm(), 1) }} mm</b></div>
+                                <div class="flex items-center justify-between"><span class="text-muted">{{ t('Plano Edge Margin') }}</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->marginMm(), 1) }} mm</b></div>
                                 <div class="text-[10px] text-muted mt-1 leading-snug">
-                                    Parameter fisik mesin cetak sheetfed, dipakai semua kalkulasi Engine di panel ini (sys_constant PRODEV_*).
+                                    {{ t('Physical parameters of the sheetfed printing machine, used by all Engine calculations in this panel (sys_constant PRODEV_*).') }}
                                     @if ($this->canEditMachineSpecs())
-                                        Berlaku global (semua job) -- klik "Edit" di atas, atau lewat layar Configuration.
+                                        {{ t('Applies globally (all jobs) -- click "Edit" above, or via the Configuration screen.') }}
                                     @else
-                                        Admin bisa adjust dari layar Configuration.
+                                        {{ t('Admins can adjust it from the Configuration screen.') }}
                                     @endif
                                 </div>
                             @endif
@@ -1314,10 +1314,10 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                     </div>
 
                     <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
-                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">📦 Stock Specifications</h3>
+                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">📦 {{ t('Stock Specifications') }}</h3>
                         <div class="p-3 flex flex-col gap-2">
                             <div class="flex flex-col gap-0.5">
-                                <label class="text-[10.5px] text-muted font-semibold">Ukuran Plano (Sheet Size)</label>
+                                <label class="text-[10.5px] text-muted font-semibold">{{ t('Plano Size (Sheet Size)') }}</label>
                                 <select wire:model="selectedPlanoId" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[12.5px]">
                                     @foreach ($this->planoSizes as $p)
                                         <option value="{{ $p->id_plano_size }}">{{ $p->plano_name }}</option>
@@ -1325,7 +1325,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                 </select>
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label class="text-[10.5px] text-muted font-semibold">Ukuran Bahan Mentah W × H (cm)</label>
+                                <label class="text-[10.5px] text-muted font-semibold">{{ t('Raw Material Size W × H (cm)') }}</label>
                                 <div class="flex gap-1.5">
                                     <input type="number" step="0.1" value="{{ $this->part->sheet_raw_w_cm }}" wire:change="updateField('sheet_raw_w_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[12.5px] w-1/2">
                                     <input type="number" step="0.1" value="{{ $this->part->sheet_raw_h_cm }}" wire:change="updateField('sheet_raw_h_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[12.5px] w-1/2">
@@ -1333,7 +1333,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                             </div>
                             @if ($this->planoWasteAreaCm2() !== null)
                                 <div class="flex items-center justify-between text-[11px] pt-1 border-t border-[var(--pd-border)]">
-                                    <span class="text-muted">Sisa Bahan / Lembar</span>
+                                    <span class="text-muted">{{ t('Material Leftover / Sheet') }}</span>
                                     <b class="text-[var(--pd-ink-strong)]">{{ number_format($this->planoWasteAreaCm2(), 0) }} cm²</b>
                                 </div>
                             @endif
@@ -1346,9 +1346,9 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                     <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
                         <div class="flex items-center justify-between px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">
                             <div class="flex items-center gap-1">
-                                <button type="button" @click="tab = 'sheet'" :class="tab === 'sheet' ? 'bg-accent text-white' : 'text-muted hover:bg-[var(--pd-surface)]'" class="px-2.5 py-1 rounded text-[10.5px] font-bold cursor-pointer">2D Sheet</button>
-                                <button type="button" @click="tab = 'oneup'" :class="tab === 'oneup' ? 'bg-accent text-white' : 'text-muted hover:bg-[var(--pd-surface)]'" class="px-2.5 py-1 rounded text-[10.5px] font-bold cursor-pointer">1-Up Dieline</button>
-                                <button type="button" disabled title="Segera hadir -- render 3D mockup belum ada mesinnya" class="px-2.5 py-1 rounded text-[10.5px] font-bold text-muted opacity-50 cursor-not-allowed">3D Mockup</button>
+                                <button type="button" @click="tab = 'sheet'" :class="tab === 'sheet' ? 'bg-accent text-white' : 'text-muted hover:bg-[var(--pd-surface)]'" class="px-2.5 py-1 rounded text-[10.5px] font-bold cursor-pointer">{{ t('2D Sheet') }}</button>
+                                <button type="button" @click="tab = 'oneup'" :class="tab === 'oneup' ? 'bg-accent text-white' : 'text-muted hover:bg-[var(--pd-surface)]'" class="px-2.5 py-1 rounded text-[10.5px] font-bold cursor-pointer">{{ t('1-Up Dieline') }}</button>
+                                <button type="button" disabled title="{{ t('Coming soon -- the 3D mockup render has no engine yet') }}" class="px-2.5 py-1 rounded text-[10.5px] font-bold text-muted opacity-50 cursor-not-allowed">{{ t('3D Mockup') }}</button>
                             </div>
                             <div class="flex items-center gap-1.5" x-show="tab === 'sheet'">
                                 <button type="button" @click="zoom = Math.max(40, zoom - 20)" class="w-6 h-6 rounded border border-[var(--pd-border)] text-[var(--pd-ink)] text-xs cursor-pointer">−</button>
@@ -1359,18 +1359,18 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
                         <div class="p-3.5" x-show="tab === 'sheet'">
                             @if (count($sweepCandidates) > 0)
-                                <div class="text-[11px] text-muted mb-2">Top {{ count($sweepCandidates) }} hasil (ranking UP terbanyak, lalu efisiensi tertinggi) — pilih salah satu:</div>
+                                <div class="text-[11px] text-muted mb-2">{{ str_replace(':n', count($sweepCandidates), t('Top :n results (ranked by most UPs, then highest efficiency) — choose one:')) }}</div>
                                 <div class="flex gap-2.5 flex-wrap">
                                     @foreach ($sweepCandidates as $i => $c)
                                         <div class="border {{ $i === 0 ? 'border-[#22a06b]' : 'border-[var(--pd-border)]' }} rounded-md p-2.5 w-[280px]">
                                             <div class="flex items-center justify-between mb-1.5">
                                                 <span class="text-[11px] font-bold text-[var(--pd-ink-strong)]">
                                                     @isset($c['plano_name']){{ $c['plano_name'] }} · @endisset
-                                                    Lidah {{ $c['flap_length_mm'] }}mm
-                                                    @isset($c['shift_offset_mm'])· Shift {{ $c['shift_offset_mm'] }}mm @endisset
+                                                    {{ t('Flap') }} {{ $c['flap_length_mm'] }}mm
+                                                    @isset($c['shift_offset_mm'])· {{ t('Shift') }} {{ $c['shift_offset_mm'] }}mm @endisset
                                                     · {{ $c['method'] }}
                                                 </span>
-                                                @if ($i === 0) <span class="text-[9.5px] bg-[#eaf7ee] text-[#0e8a4f] px-1.5 py-0.5 rounded font-bold">TERBAIK</span> @endif
+                                                @if ($i === 0) <span class="text-[9.5px] bg-[#eaf7ee] text-[#0e8a4f] px-1.5 py-0.5 rounded font-bold">{{ t('BEST') }}</span> @endif
                                             </div>
                                             <div class="bg-[#fbfcfd] border border-[var(--pd-border)] rounded flex items-center justify-center" style="height:180px">
                                                 <div class="relative bg-white border-2 border-navy" style="width:{{ $c['boxW'] }}px;height:{{ $c['boxH'] }}px">
@@ -1381,10 +1381,10 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                                 </div>
                                             </div>
                                             <div class="flex items-center justify-between mt-1.5 text-[11px]">
-                                                <span><b>{{ $c['up'] }}</b> up · {{ number_format($c['efficiency_pct'], 0) }}% efisien
-                                                    @isset($c['gross_sheets'])· {{ $c['gross_sheets'] }} lembar dibutuhkan @endisset
+                                                <span><b>{{ $c['up'] }}</b> up · {{ number_format($c['efficiency_pct'], 0) }}% {{ t('efficient') }}
+                                                    @isset($c['gross_sheets'])· {{ $c['gross_sheets'] }} {{ t('sheets needed') }} @endisset
                                                 </span>
-                                                <button type="button" wire:click="pickCandidate({{ $i }})" class="text-[11px] font-bold text-accent cursor-pointer">Pilih →</button>
+                                                <button type="button" wire:click="pickCandidate({{ $i }})" class="text-[11px] font-bold text-accent cursor-pointer">{{ t('Pick') }} →</button>
                                             </div>
                                         </div>
                                     @endforeach
@@ -1392,9 +1392,9 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                             @elseif ($this->activeLayoutCells())
                                 @php $__al = $this->activeLayoutCells(); @endphp
                                 <div class="flex items-center gap-3 mb-2 text-[10.5px]">
-                                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showCut"> <span class="text-muted">Cut Knife</span></label>
-                                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showCrease"> <span class="text-muted">Crease</span></label>
-                                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showGripper"> <span class="text-muted">Gripper</span></label>
+                                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showCut"> <span class="text-muted">{{ t('Cut Knife') }}</span></label>
+                                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showCrease"> <span class="text-muted">{{ t('Crease') }}</span></label>
+                                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showGripper"> <span class="text-muted">{{ t('Gripper') }}</span></label>
                                 </div>
                                 <div class="bg-[#fbfcfd] border border-[var(--pd-border)] rounded overflow-auto p-4 flex items-center justify-center" style="min-height:340px">
                                     <div class="relative bg-white border-2 border-navy origin-center" :style="`width:{{ $__al['boxW'] }}px;height:{{ $__al['boxH'] }}px;transform:scale(${zoom / 100})`">
@@ -1408,10 +1408,10 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                         @endforeach
                                     </div>
                                 </div>
-                                <div class="text-[11px] text-muted mt-2">🔵 Cut Knife (biru) · 🔴 Crease (merah putus-putus) · 🟡 Gripper margin (kuning, area tak-tercetak).</div>
+                                <div class="text-[11px] text-muted mt-2">🔵 {{ t('Cut Knife (blue)') }} · 🔴 {{ t('Crease (red dashed)') }} · 🟡 {{ t('Gripper margin (yellow, unprinted area).') }}</div>
                             @else
                                 <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[var(--pd-info-bg)] border border-[var(--pd-info-border)] text-[var(--pd-info-ink)]">
-                                    Belum ada layout tersimpan. Pilih strategi nesting di kiri, lalu klik salah satu kartu utk jalankan Engine.
+                                    {{ t('No layout saved yet. Choose a nesting strategy on the left, then click one of the cards to run the Engine.') }}
                                 </div>
                             @endif
                         </div>
@@ -1428,13 +1428,13 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                             style="{{ $__isVert
                                                 ? ($__du['side'] === 'LEFT' ? "left:{$__du['flap_px']}px;border-left-width:1.5px" : "right:{$__du['flap_px']}px;border-right-width:1.5px")
                                                 : ($__du['side'] === 'TOP' ? "top:{$__du['flap_px']}px;border-top-width:1.5px" : "bottom:{$__du['flap_px']}px;border-bottom-width:1.5px") }}"></div>
-                                        <div class="absolute inset-0 flex items-center justify-center text-[10.5px] text-muted font-semibold">Badan {{ $__du['body_w_mm'] }} × {{ $__du['body_h_mm'] }} mm</div>
+                                        <div class="absolute inset-0 flex items-center justify-center text-[10.5px] text-muted font-semibold">{{ t('Part body') }} {{ $__du['body_w_mm'] }} × {{ $__du['body_h_mm'] }} mm</div>
                                     </div>
                                 </div>
-                                <div class="text-[11px] text-muted mt-2">Lidah ({{ $__du['side'] }}): <b class="text-[var(--pd-ink-strong)]">{{ $__du['flap_mm'] }}mm</b> · Flat total: <b class="text-[var(--pd-ink-strong)]">{{ $__du['flat_w_mm'] }} × {{ $__du['flat_h_mm'] }} mm</b></div>
+                                <div class="text-[11px] text-muted mt-2">{{ t('Flap') }} ({{ $__du['side'] }}): <b class="text-[var(--pd-ink-strong)]">{{ $__du['flap_mm'] }}mm</b> · {{ t('Flat total') }}: <b class="text-[var(--pd-ink-strong)]">{{ $__du['flat_w_mm'] }} × {{ $__du['flat_h_mm'] }} mm</b></div>
                             @else
                                 <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[var(--pd-info-bg)] border border-[var(--pd-info-border)] text-[var(--pd-info-ink)]">
-                                    Isi dimensi badan (cm_length/cm_width) di atas dulu.
+                                    {{ t('Fill in the body dimensions (cm_length/cm_width) above first.') }}
                                 </div>
                             @endif
                         </div>
@@ -1445,7 +1445,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                 <div class="w-full lg:w-[270px] shrink-0 flex flex-col gap-3.5">
                     <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
                         <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)] flex items-center justify-between">
-                            <span>📊 Efficiency Metrics</span>
+                            <span>📊 {{ t('Efficiency Metrics') }}</span>
                             @if ($this->activeLayoutGroup)
                                 <span class="text-[9.5px] font-bold {{ $this->activeLayoutGroup->status === 'CONFIRMED' ? 'text-[#0e8a4f]' : 'text-[#8a5a00]' }}">{{ $this->activeLayoutGroup->status }}</span>
                             @endif
@@ -1454,53 +1454,53 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                             @if ($this->activeLayoutGroup)
                                 <div class="[display:grid] [grid-template-columns:1fr_1fr] gap-2.5">
                                     <div class="bg-[var(--pd-surface-alt)] rounded-md p-2.5">
-                                        <div class="text-[9px] text-muted uppercase font-bold">UPS / Mata</div>
+                                        <div class="text-[9px] text-muted uppercase font-bold">{{ t('UPS / Eyes') }}</div>
                                         <div class="text-xl font-black text-[var(--pd-ink-strong)]">{{ $this->activeLayoutGroup->up_count }}</div>
-                                        <div class="text-[9px] text-muted">per Plano</div>
+                                        <div class="text-[9px] text-muted">{{ t('per Plano') }}</div>
                                     </div>
                                     <div class="bg-[var(--pd-surface-alt)] rounded-md p-2.5">
-                                        <div class="text-[9px] text-muted uppercase font-bold">Sheet Yield</div>
+                                        <div class="text-[9px] text-muted uppercase font-bold">{{ t('Sheet Yield') }}</div>
                                         <div class="text-xl font-black text-[#0e8a4f]">{{ number_format($this->activeLayoutGroup->efficiency_pct, 1) }}%</div>
-                                        <div class="text-[9px] text-muted">Efisiensi Area</div>
+                                        <div class="text-[9px] text-muted">{{ t('Area Efficiency') }}</div>
                                     </div>
                                 </div>
 
                                 @if ($this->wasteReductionVsStandard())
                                     @php $__wr = $this->wasteReductionVsStandard(); @endphp
                                     <div class="rounded-md p-2.5 {{ $__wr['is_improvement'] ? 'bg-[#0f2a1e] text-[#5fe3a0]' : 'bg-[var(--pd-surface-alt)] text-[var(--pd-ink)]' }}">
-                                        <div class="text-[9px] uppercase font-bold opacity-80">AI Waste Reduction</div>
+                                        <div class="text-[9px] uppercase font-bold opacity-80">{{ t('AI Waste Reduction') }}</div>
                                         <div class="text-lg font-black">{{ $__wr['delta_pct'] > 0 ? '+' : '' }}{{ $__wr['delta_pct'] }}%</div>
                                         <div class="text-[9.5px] opacity-80 leading-snug">
                                             @if ($__wr['is_improvement'])
-                                                Dibanding grid standar ({{ $__wr['baseline_waste_pct'] }}% waste), strategi aktif hemat waste jadi {{ $__wr['active_waste_pct'] }}%.
+                                                {{ str_replace([':base', ':active'], [$__wr['baseline_waste_pct'], $__wr['active_waste_pct']], t('Compared with the standard grid (:base% waste), the active strategy saves waste down to :active%.')) }}
                                             @else
-                                                Sama dengan/di atas baseline grid standar ({{ $__wr['baseline_waste_pct'] }}% waste).
+                                                {{ str_replace(':base', $__wr['baseline_waste_pct'], t('Equal to/above the standard grid baseline (:base% waste).')) }}
                                             @endif
                                         </div>
                                     </div>
                                 @endif
 
                                 <div class="flex flex-col gap-1.5 text-[11px] pt-1 border-t border-[var(--pd-border)]">
-                                    <div class="flex items-center justify-between"><span class="text-muted">Pisau Pond</span><b class="text-[var(--pd-ink-strong)]">{{ $this->part->die_w_cm ?? '—' }} × {{ $this->part->die_h_cm ?? '—' }} cm</b></div>
-                                    <div class="flex items-center justify-between"><span class="text-muted">Plano Press Sheet</span><b class="text-[var(--pd-ink-strong)]">{{ $this->activeLayoutGroup->plano_w_mm / 10 }} × {{ $this->activeLayoutGroup->plano_h_mm / 10 }} cm</b></div>
-                                    <div class="flex items-center justify-between"><span class="text-muted">Metode</span><b class="text-[var(--pd-ink-strong)]">{{ $this->activeLayoutGroup->method }}</b></div>
+                                    <div class="flex items-center justify-between"><span class="text-muted">{{ t('Die-cut Knife') }}</span><b class="text-[var(--pd-ink-strong)]">{{ $this->part->die_w_cm ?? '—' }} × {{ $this->part->die_h_cm ?? '—' }} cm</b></div>
+                                    <div class="flex items-center justify-between"><span class="text-muted">{{ t('Plano Press Sheet') }}</span><b class="text-[var(--pd-ink-strong)]">{{ $this->activeLayoutGroup->plano_w_mm / 10 }} × {{ $this->activeLayoutGroup->plano_h_mm / 10 }} cm</b></div>
+                                    <div class="flex items-center justify-between"><span class="text-muted">{{ t('Method') }}</span><b class="text-[var(--pd-ink-strong)]">{{ $this->activeLayoutGroup->method }}</b></div>
                                     @if ($this->activeLayoutGroup->die_rule_meter)
-                                        <div class="flex items-center justify-between"><span class="text-muted">Meter Lari Pisau</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->activeLayoutGroup->die_rule_meter, 2) }} m</b></div>
+                                        <div class="flex items-center justify-between"><span class="text-muted">{{ t('Knife Running Meter') }}</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->activeLayoutGroup->die_rule_meter, 2) }} m</b></div>
                                     @endif
                                 </div>
 
                                 @if ($this->activeLayoutGroup->status === 'CONFIRMED')
-                                    <button type="button" wire:click="unlockLayout" class="px-3 py-1.5 rounded text-[11px] font-bold bg-[var(--pd-surface-alt)] border border-[var(--pd-border)] text-[var(--pd-ink-strong)] cursor-pointer">🔓 Buka Kunci</button>
+                                    <button type="button" wire:click="unlockLayout" class="px-3 py-1.5 rounded text-[11px] font-bold bg-[var(--pd-surface-alt)] border border-[var(--pd-border)] text-[var(--pd-ink-strong)] cursor-pointer">🔓 {{ t('Unlock') }}</button>
                                 @else
-                                    <button type="button" wire:click="confirmLayout" class="px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer">✓ Konfirmasi Layout</button>
+                                    <button type="button" wire:click="confirmLayout" class="px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer">✓ {{ t('Confirm Layout') }}</button>
                                 @endif
 
                                 @php $__costingOriginId = $this->originInquiryParts->first()['inquiry_id'] ?? null; @endphp
                                 <a href="{{ $__costingOriginId ? route('inquiry.costing', ['inquiry' => $__costingOriginId]) : route('inquiry.costing.list') }}" wire:navigate
-                                    class="text-center px-3 py-1.5 rounded text-[11px] font-bold bg-accent text-white no-underline hover:brightness-110">Hitung Product Costing →</a>
+                                    class="text-center px-3 py-1.5 rounded text-[11px] font-bold bg-accent text-white no-underline hover:brightness-110">{{ t('Calculate Product Costing') }} →</a>
                             @else
                                 <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[var(--pd-info-bg)] border border-[var(--pd-info-border)] text-[var(--pd-info-ink)]">
-                                    Belum ada layout tersimpan. Isi dimensi badan (cm_length/cm_width) &amp; rentang lidah di kartu Spesifikasi Teknis, lalu jalankan Nesting Strategy di kiri.
+                                    {{ t('No layout saved yet. Fill in the body dimensions (cm_length/cm_width) & flap range in the Technical Specification card, then run the Nesting Strategy on the left.') }}
                                 </div>
                             @endif
                         </div>
@@ -1511,45 +1511,45 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             {{-- ============ TOOL #10: INTRA-PRODUCT PART COMBINER ============ --}}
             <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
                 <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">
-                    🧩 Tool #10 — Gabung Part dalam Produk Sama
+                    🧩 {{ t('Tool #10 — Combine Parts in the Same Product') }}
                 </h3>
                 <div class="p-3.5">
                     @if ($this->combinableParts->isEmpty())
-                        <div class="text-[11.5px] text-muted">Produk ini cuma punya 1 part terdaftar — tidak ada pasangan utk digabung.</div>
+                        <div class="text-[11.5px] text-muted">{{ t('This product only has 1 registered part — no pair to combine.') }}</div>
                     @else
                         <div class="flex items-end gap-2.5 mb-3">
                             <div class="flex flex-col gap-0.5">
-                                <label class="text-[11px] text-muted font-semibold">Gabung dengan part</label>
+                                <label class="text-[11px] text-muted font-semibold">{{ t('Combine with part') }}</label>
                                 <select wire:model="combineWithPartId" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] min-w-[220px]">
-                                    <option value="">— pilih part pasangan —</option>
+                                    <option value="">— {{ t('choose paired part') }} —</option>
                                     @foreach ($this->combinableParts as $cp)
                                         <option value="{{ $cp->id_part }}">{{ $cp->part_name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <button type="button" wire:click="runToolCombine" @disabled(! $combineWithPartId)
-                                class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#0e8a6b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">▶ Bandingkan Gabung vs Pisah</button>
+                                class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#0e8a6b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">▶ {{ t('Compare Combined vs Separate') }}</button>
                         </div>
 
                         @if ($combineResult)
                             @if ($combineResult['recommend'] === 'NONE')
                                 <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[#fdecea] border border-[#f3c4bd] text-[#9a3324]">
-                                    Kedua part tidak muat digabung sama sekali di plano {{ $this->planoSizes->firstWhere('id_plano_size', $selectedPlanoId)?->plano_name }} (dicoba 2 orientasi). Coba plano lain di dropdown Engine Imposition di atas.
+                                    {{ str_replace(':plano', $this->planoSizes->firstWhere('id_plano_size', $selectedPlanoId)?->plano_name, t('The two parts cannot be combined at all on plano :plano (2 orientations tried). Try another plano in the Imposition Engine dropdown above.')) }}
                                 </div>
                             @else
                                 <div class="text-[11.5px] px-2.5 py-2.5 rounded-md leading-relaxed {{ $combineResult['recommend'] === 'COMBINED' ? 'bg-[#f0f7f4] border border-[#c3e6d1] text-[#0e5c38]' : 'bg-[#fff8ec] border border-[#f0dcae] text-[#8a5a00]' }}">
                                     <div class="font-bold mb-1">
-                                        Rekomendasi: {{ $combineResult['recommend'] === 'COMBINED' ? '✓ GABUNG' : '✕ PISAH (tetap sendiri²)' }}
+                                        {{ t('Recommendation') }}: {{ $combineResult['recommend'] === 'COMBINED' ? '✓ '.t('COMBINE') : '✕ '.t('SEPARATE (each on its own)') }}
                                         @if ($combineResult['recommend'] === 'COMBINED')
-                                            — hemat {{ $combineResult['saving_pct'] }}% luas dibanding cetak terpisah
+                                            — {{ str_replace(':pct', $combineResult['saving_pct'], t('saves :pct% area compared with printing separately')) }}
                                         @endif
                                     </div>
                                     @if ($combineResult['combined'])
-                                        <div>Split di X={{ $combineResult['combined']['split_x_mm'] }}mm: <b>{{ $combineResult['part_a_name'] }}</b> {{ $combineResult['combined']['up_a'] }} up, <b>{{ $combineResult['part_b_name'] }}</b> {{ $combineResult['combined']['up_b'] }} up ({{ $combineResult['combined']['sets_per_sheet'] }} set produk jadi/lembar).</div>
+                                        <div>{{ t('Split at') }} X={{ $combineResult['combined']['split_x_mm'] }}mm: <b>{{ $combineResult['part_a_name'] }}</b> {{ $combineResult['combined']['up_a'] }} up, <b>{{ $combineResult['part_b_name'] }}</b> {{ $combineResult['combined']['up_b'] }} up ({{ $combineResult['combined']['sets_per_sheet'] }} {{ t('finished product sets/sheet') }}).</div>
                                     @endif
-                                    <div class="text-[10.5px] opacity-80 mt-1">Pisah: {{ $combineResult['part_a_name'] }} {{ $combineResult['separate']['up_a'] }} up solo, {{ $combineResult['part_b_name'] }} {{ $combineResult['separate']['up_b'] }} up solo (masing² plano sendiri).</div>
+                                    <div class="text-[10.5px] opacity-80 mt-1">{{ t('Separate') }}: {{ $combineResult['part_a_name'] }} {{ $combineResult['separate']['up_a'] }} up solo, {{ $combineResult['part_b_name'] }} {{ $combineResult['separate']['up_b'] }} up solo ({{ t('each on its own plano') }}).</div>
                                     @if ($combineResult['recommend'] === 'COMBINED')
-                                        <button type="button" wire:click="confirmCombine" class="mt-2 px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer">✓ Terapkan — Buat Layout Gabungan</button>
+                                        <button type="button" wire:click="confirmCombine" class="mt-2 px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer">✓ {{ t('Apply — Create Combined Layout') }}</button>
                                     @endif
                                 </div>
                             @endif
@@ -1560,15 +1560,15 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
             {{-- ============ ROUTING (URUTAN PROSES) ============ --}}
             <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
-                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">🔀 Urutan Proses (Routing)</h3>
+                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">🔀 {{ t('Process Sequence (Routing)') }}</h3>
                 <div class="p-3.5">
                     <table class="w-full text-xs mb-2.5">
                         <thead>
                             <tr>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Seq</th>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Proses</th>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Mesin</th>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Catatan</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">{{ t('Seq') }}</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">{{ t('Process') }}</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">{{ t('Machine') }}</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">{{ t('Notes') }}</th>
                                 <th class="border-b border-[var(--pd-border)]"></th>
                             </tr>
                         </thead>
@@ -1580,42 +1580,42 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                     <td class="px-2 py-1.5 border-b border-[var(--pd-border)]">{{ $pp->machine?->machine_name ?? '—' }}</td>
                                     <td class="px-2 py-1.5 border-b border-[var(--pd-border)] text-muted">{{ $pp->note }}</td>
                                     <td class="px-2 py-1.5 border-b border-[var(--pd-border)] text-right">
-                                        <button type="button" wire:click="removeProcess({{ $pp->id_part_process }})" class="text-[11px] text-[#c0392b] cursor-pointer">hapus</button>
+                                        <button type="button" wire:click="removeProcess({{ $pp->id_part_process }})" class="text-[11px] text-[#c0392b] cursor-pointer">{{ t('remove') }}</button>
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="px-2 py-3 text-center text-muted">Belum ada routing.</td></tr>
+                                <tr><td colspan="5" class="px-2 py-3 text-center text-muted">{{ t('No routing yet.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                     <div class="flex items-end gap-2 flex-wrap">
                         <select wire:model="newProcessId" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
-                            <option value="">— Proses —</option>
+                            <option value="">— {{ t('Process') }} —</option>
                             @foreach ($this->processOptions as $po)
                                 <option value="{{ $po->id_process }}">{{ $po->process_name }}</option>
                             @endforeach
                         </select>
                         <select wire:model="newMachineId" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
-                            <option value="">— Mesin (opsional) —</option>
+                            <option value="">— {{ t('Machine (optional)') }} —</option>
                             @foreach ($this->machineOptions as $mo)
                                 <option value="{{ $mo->machine_id }}">{{ $mo->machine_name }}</option>
                             @endforeach
                         </select>
-                        <input type="text" wire:model="newProcessNotes" placeholder="Catatan (opsional)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] flex-1 min-w-[140px]">
-                        <button type="button" wire:click="addProcess" class="px-3 py-1.5 rounded text-[11px] font-bold bg-navy text-white cursor-pointer">+ Tambah</button>
+                        <input type="text" wire:model="newProcessNotes" placeholder="{{ t('Notes (optional)') }}" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] flex-1 min-w-[140px]">
+                        <button type="button" wire:click="addProcess" class="px-3 py-1.5 rounded text-[11px] font-bold bg-navy text-white cursor-pointer">+ {{ t('Add') }}</button>
                     </div>
                 </div>
             </div>
 
             {{-- ============ FINISHING ============ --}}
             <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
-                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">✨ Finishing</h3>
+                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">✨ {{ t('Finishing') }}</h3>
                 <div class="p-3.5">
                     <table class="w-full text-xs mb-2.5">
                         <thead>
                             <tr>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Jenis</th>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Catatan</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">{{ t('Type') }}</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">{{ t('Notes') }}</th>
                                 <th class="border-b border-[var(--pd-border)]"></th>
                             </tr>
                         </thead>
@@ -1625,58 +1625,58 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                     <td class="px-2 py-1.5 border-b border-[var(--pd-border)] font-semibold">{{ $f->finishingType?->finishing_name }}</td>
                                     <td class="px-2 py-1.5 border-b border-[var(--pd-border)] text-muted">{{ $f->notes }}</td>
                                     <td class="px-2 py-1.5 border-b border-[var(--pd-border)] text-right">
-                                        <button type="button" wire:click="removeFinishing({{ $f->id_part_finishing }})" class="text-[11px] text-[#c0392b] cursor-pointer">hapus</button>
+                                        <button type="button" wire:click="removeFinishing({{ $f->id_part_finishing }})" class="text-[11px] text-[#c0392b] cursor-pointer">{{ t('remove') }}</button>
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="3" class="px-2 py-3 text-center text-muted">Belum ada finishing.</td></tr>
+                                <tr><td colspan="3" class="px-2 py-3 text-center text-muted">{{ t('No finishing yet.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                     <div class="flex items-end gap-2 flex-wrap">
                         <select wire:model="newFinishingTypeId" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
-                            <option value="">— Jenis Finishing —</option>
+                            <option value="">— {{ t('Finishing Type') }} —</option>
                             @foreach ($this->finishingOptions as $fo)
                                 <option value="{{ $fo->id_finishing_type }}">{{ $fo->finishing_name }}</option>
                             @endforeach
                         </select>
-                        <input type="text" wire:model="newFinishingNotes" placeholder="mis. Gold Puyeh (opsional)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] flex-1 min-w-[140px]">
-                        <button type="button" wire:click="addFinishing" class="px-3 py-1.5 rounded text-[11px] font-bold bg-navy text-white cursor-pointer">+ Tambah</button>
+                        <input type="text" wire:model="newFinishingNotes" placeholder="{{ t('e.g. Gold Puyeh (optional)') }}" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] flex-1 min-w-[140px]">
+                        <button type="button" wire:click="addFinishing" class="px-3 py-1.5 rounded text-[11px] font-bold bg-navy text-white cursor-pointer">+ {{ t('Add') }}</button>
                     </div>
                 </div>
             </div>
 
             {{-- ============ ATTACHMENT ============ --}}
             <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
-                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">📎 Referensi (JPEG wajib utk preview, PDF/AI opsional)</h3>
+                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">📎 {{ t('Reference (JPEG required for preview, PDF/AI optional)') }}</h3>
                 <div class="p-3.5">
                     <div class="flex gap-2.5 flex-wrap mb-3">
                         @forelse ($this->part->attachments as $att)
                             <div class="border border-[var(--pd-border)] rounded-md p-2 w-[140px]" wire:key="att-{{ $att->id_attachment }}">
                                 @if ($att->file_type === 'JPEG')
-                                    <img src="{{ asset('storage/'.$att->file_path) }}" class="w-full h-[90px] object-cover rounded mb-1.5" alt="preview">
+                                    <img src="{{ asset('storage/'.$att->file_path) }}" class="w-full h-[90px] object-cover rounded mb-1.5" alt="{{ t('preview') }}">
                                 @else
                                     <div class="w-full h-[90px] bg-[var(--pd-surface-alt)] rounded mb-1.5 flex items-center justify-center text-2xl">📄</div>
                                 @endif
                                 <div class="text-[10px] font-bold text-[var(--pd-ink-strong)] truncate">{{ $att->original_filename }}</div>
                                 <div class="flex items-center justify-between mt-1">
                                     <span class="text-[9px] bg-[#eef1f5] px-1.5 py-0.5 rounded font-bold">{{ $att->file_type }}</span>
-                                    <button type="button" wire:click="deleteAttachment({{ $att->id_attachment }})" class="text-[10px] text-[#c0392b] cursor-pointer">hapus</button>
+                                    <button type="button" wire:click="deleteAttachment({{ $att->id_attachment }})" class="text-[10px] text-[#c0392b] cursor-pointer">{{ t('remove') }}</button>
                                 </div>
                             </div>
                         @empty
-                            <span class="text-xs text-muted">Belum ada file.</span>
+                            <span class="text-xs text-muted">{{ t('No files yet.') }}</span>
                         @endforelse
                     </div>
                     <div class="flex items-end gap-2 flex-wrap">
                         <select wire:model="newAttachmentType" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
-                            <option value="JPEG">JPEG (preview)</option>
+                            <option value="JPEG">{{ t('JPEG (preview)') }}</option>
                             <option value="PDF">PDF</option>
                             <option value="AI">AI</option>
                         </select>
                         <input type="file" wire:model="newAttachmentFile" class="text-[13px]">
-                        <button type="button" wire:click="uploadAttachment" class="px-3 py-1.5 rounded text-[11px] font-bold bg-navy text-white cursor-pointer">↑ Upload</button>
-                        <span class="text-[10.5px] text-muted">maks {{ $this->uploadMaxMb }}MB</span>
+                        <button type="button" wire:click="uploadAttachment" class="px-3 py-1.5 rounded text-[11px] font-bold bg-navy text-white cursor-pointer">↑ {{ t('Upload') }}</button>
+                        <span class="text-[10.5px] text-muted">{{ t('max') }} {{ $this->uploadMaxMb }}MB</span>
                     </div>
                     @error('newAttachmentFile') <div class="text-[11px] text-[#c0392b] mt-1.5">{{ $message }}</div> @enderror
                 </div>

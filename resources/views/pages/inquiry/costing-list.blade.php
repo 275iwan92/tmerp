@@ -114,12 +114,12 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Perlu Costing', 'value' => $this->statTotal, 'tone' => 'total'],
-            'not_started' => ['label' => 'Belum Dimulai', 'value' => $this->statNotStarted, 'tone' => 'warn',
+            'total' => ['label' => t('Total Needing Costing'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'not_started' => ['label' => t('Not Started'), 'value' => $this->statNotStarted, 'tone' => 'warn',
                 'filter' => fn ($c) => $c->whereNull('costing')],
-            'pending_approval' => ['label' => 'Menunggu Approval Direksi', 'value' => $this->statPendingApproval, 'tone' => 'extra',
+            'pending_approval' => ['label' => t('Awaiting Directors Approval'), 'value' => $this->statPendingApproval, 'tone' => 'extra',
                 'filter' => fn ($c) => $c->filter(fn ($i) => $i->costing?->doc_status === 'PENDING_APPROVAL')],
-            'published' => ['label' => 'Published', 'value' => $this->statPublished, 'tone' => 'active', 'subtitle' => 'DEKLASIFIKASI KE SALES',
+            'published' => ['label' => t('Published'), 'value' => $this->statPublished, 'tone' => 'active', 'subtitle' => t('DECLASSIFIED TO SALES'),
                 'filter' => fn ($c) => $c->filter(fn ($i) => $i->costing?->doc_status === 'PUBLISHED')],
         ];
     }
@@ -129,7 +129,7 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fef6e7] border border-[#f5e0b3] text-[#8a4b00]">
-            🔒 Layar ini khusus role Costing/Direksi — angka HPP &amp; margin tidak boleh bocor ke Sisi B (Sales) sebelum <b>doc_status = PUBLISHED</b> (approve Direksi).
+            🔒 {{ t('This screen is for the Costing/Directors role only — COGS & margin figures must not leak to Side B (Sales) before') }} <b>doc_status = PUBLISHED</b> ({{ t('Directors approval') }}).
         </div>
 
         <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
@@ -138,15 +138,15 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. inkuiri / nama produk…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search inquiry no. / product name…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:tools>
                     <div class="flex items-center gap-1 pr-2.5 mr-1 border-r border-[#e2e7ee] shrink-0">
-                        <a href="{{ route('inquiry.costing.list') }}" wire:navigate title="Costing yang terhubung ke Inquiry Product"
-                            class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-[#2c3e69] text-white">🔗 Integrated</a>
-                        <a href="{{ route('inquiry.costing.instant.list') }}" wire:navigate title="Kalkulator HPP standalone, tanpa Inquiry"
-                            class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-white border border-[#d7dbe2]">🧮 Instant</a>
+                        <a href="{{ route('inquiry.costing.list') }}" wire:navigate title="{{ t('Costing linked to Inquiry Product') }}"
+                            class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-[#2c3e69] text-white">🔗 {{ t('Integrated') }}</a>
+                        <a href="{{ route('inquiry.costing.instant.list') }}" wire:navigate title="{{ t('Standalone COGS calculator, without Inquiry') }}"
+                            class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-white border border-[#d7dbe2]">🧮 {{ t('Instant') }}</a>
                     </div>
                 </x-slot:tools>
             </x-grid.toolbar>
@@ -155,17 +155,17 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Inkuiri</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">Produk</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">Tipe</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">Status Inquiry</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Status Costing</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Inquiry') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">{{ t('Product') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">{{ t('Type') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">{{ t('Inquiry Status') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Costing Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->visibleInquiries as $row)
-                            <tr wire:key="cost-{{ $row->id_inquiry }}" wire:dblclick="open({{ $row->id_inquiry }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka Costing">
+                            <tr wire:key="cost-{{ $row->id_inquiry }}" wire:dblclick="open({{ $row->id_inquiry }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open Costing') }}">
                                 @php($custName = $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—'))
                                 <x-grid.identity-cell :id="$row->id_inquiry" :name="$custName" :code="$row->inquiry_no ?: '—'" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $row->product_draft_name ?: '—' }}</td>
@@ -176,14 +176,14 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($row->sub_state) }}">{{ $row->sub_state }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->docStatusBadgeClass($row->costing?->doc_status) }}">{{ $row->costing?->doc_status ?? 'Belum dimulai' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->docStatusBadgeClass($row->costing?->doc_status) }}">{{ $row->costing?->doc_status ?? t('Not started') }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka Costing" action="open({{ $row->id_inquiry }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" :title="t('Open Costing')" action="open({{ $row->id_inquiry }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Tidak ada inkuiri yang perlu costing." />
+                            <x-grid.empty-row :colspan="6" :message="t('No inquiries need costing.')" />
                         @endforelse
                     </tbody>
                 </table>

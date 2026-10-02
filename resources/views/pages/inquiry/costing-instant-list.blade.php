@@ -102,12 +102,12 @@ new #[Title('Product Costing (Instant) — TELASIH MAKMUR ERP')] class extends C
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Instant', 'value' => $this->statTotal, 'tone' => 'total'],
-            'draft' => ['label' => 'Draft', 'value' => $this->statDraft, 'tone' => 'warn',
+            'total' => ['label' => t('Total Instant'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => t('Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
                 'filter' => fn ($c) => $c->where('doc_status', 'DRAFT')],
-            'calculated' => ['label' => 'Sudah Dihitung', 'value' => $this->statCalculated, 'tone' => 'extra',
+            'calculated' => ['label' => t('Calculated'), 'value' => $this->statCalculated, 'tone' => 'extra',
                 'filter' => fn ($c) => $c->where('doc_status', 'CALCULATED')],
-            'reversed' => ['label' => 'Sudah Direverse', 'value' => $this->statReversed, 'tone' => 'active', 'subtitle' => 'JADI MODE INTEGRATED',
+            'reversed' => ['label' => t('Reversed'), 'value' => $this->statReversed, 'tone' => 'active', 'subtitle' => t('NOW INTEGRATED MODE'),
                 'filter' => fn ($c) => $c->whereNotNull('reversed_at')],
         ];
     }
@@ -117,7 +117,7 @@ new #[Title('Product Costing (Instant) — TELASIH MAKMUR ERP')] class extends C
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#eef3fb] border border-[#c3d8f5] text-[#1560a8]">
-            🧮 Mode Instant — kalkulator HPP standalone, tanpa Inquiry Product. Sudah pasti angkanya cocok? Pakai <b>Reverse</b> di dalam layar untuk bikin Inquiry+ProDev otomatis dan pindah ke mode Integrated.
+            🧮 {{ t('Instant Mode — standalone COGS calculator, without Inquiry Product. Sure the numbers are right? Use') }} <b>{{ t('Reverse') }}</b> {{ t('inside the screen to create Inquiry+ProDev automatically and switch to Integrated mode.') }}
         </div>
 
         <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
@@ -126,15 +126,15 @@ new #[Title('Product Costing (Instant) — TELASIH MAKMUR ERP')] class extends C
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. dokumen / nama produk…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search document no. / product name…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:tools>
                     <div class="flex items-center gap-1 pr-2.5 mr-1 border-r border-[#e2e7ee] shrink-0">
-                        <a href="{{ route('inquiry.costing.list') }}" wire:navigate title="Costing yang terhubung ke Inquiry Product"
-                            class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-white border border-[#d7dbe2]">🔗 Integrated</a>
-                        <a href="{{ route('inquiry.costing.instant.list') }}" wire:navigate title="Kalkulator HPP standalone, tanpa Inquiry"
-                            class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-[#2c3e69] text-white">🧮 Instant</a>
+                        <a href="{{ route('inquiry.costing.list') }}" wire:navigate title="{{ t('Costing linked to Inquiry Product') }}"
+                            class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-white border border-[#d7dbe2]">🔗 {{ t('Integrated') }}</a>
+                        <a href="{{ route('inquiry.costing.instant.list') }}" wire:navigate title="{{ t('Standalone COGS calculator, without Inquiry') }}"
+                            class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-[#2c3e69] text-white">🧮 {{ t('Instant') }}</a>
                     </div>
                 </x-slot:tools>
                 <x-slot:newRecord>
@@ -147,17 +147,17 @@ new #[Title('Product Costing (Instant) — TELASIH MAKMUR ERP')] class extends C
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Dokumen</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">Produk</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Status</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Reverse?</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Document') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">{{ t('Product') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Status') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Reverse?') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->visibleRows as $row)
-                            <tr wire:key="cost-instant-{{ $row->id_costing }}" wire:dblclick="open({{ $row->id_costing }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
-                                <x-grid.identity-cell :id="$row->id_costing" :name="$row->customer?->customer_name ?? '—'" :code="$row->doc_no ?: 'Draft #'.$row->id_costing" />
+                            <tr wire:key="cost-instant-{{ $row->id_costing }}" wire:dblclick="open({{ $row->id_costing }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
+                                <x-grid.identity-cell :id="$row->id_costing" :name="$row->customer?->customer_name ?? '—'" :code="$row->doc_no ?: t('Draft').' #'.$row->id_costing" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $row->product_name_draft ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->docStatusBadgeClass($row->doc_status) }}">{{ $row->doc_status }}</span>
@@ -170,11 +170,11 @@ new #[Title('Product Costing (Instant) — TELASIH MAKMUR ERP')] class extends C
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="open({{ $row->id_costing }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" :title="t('Open')" action="open({{ $row->id_costing }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="5" message="Belum ada kalkulasi Instant. Klik &quot;+ New Record&quot; untuk mulai." />
+                            <x-grid.empty-row :colspan="5" :message="t('No Instant calculations yet. Click &quot;+ New Record&quot; to start.')" />
                         @endforelse
                     </tbody>
                 </table>

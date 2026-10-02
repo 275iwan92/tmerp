@@ -34,7 +34,7 @@ class RoutingTemplateService
 
         if ($rows->isEmpty()) {
             return ['ok' => false, 'blocks' => [], 'warnings' => [],
-                'notes' => ['Routing masih kosong — belum ada langkah untuk diperiksa.']];
+                'notes' => [t('Routing is still empty — no steps to check yet.')]];
         }
 
         $names = ProdProcess::whereIn('id_process', $rows->pluck('process_id')->unique())
@@ -87,11 +87,11 @@ class RoutingTemplateService
                 }
 
                 $message = match ($rule->rule_type) {
-                    'MUST_FOLLOW' => "{$selfName} ditempatkan SEBELUM {$relName}, padahal harus sesudahnya.",
-                    'MUST_PRECEDE' => "{$selfName} ditempatkan SESUDAH {$relName}, padahal harus sebelumnya.",
-                    'FORBIDDEN_AFTER' => "{$selfName} tidak boleh dijalankan sesudah {$relName}.",
-                    'REQUIRES' => "{$selfName} mewajibkan {$relName} ada di routing, tapi belum ada.",
-                    default => "{$selfName}: aturan urutan tidak terpenuhi.",
+                    'MUST_FOLLOW' => str_replace([':self', ':rel'], [$selfName, $relName], t(':self is placed BEFORE :rel, but it must come after it.')),
+                    'MUST_PRECEDE' => str_replace([':self', ':rel'], [$selfName, $relName], t(':self is placed AFTER :rel, but it must come before it.')),
+                    'FORBIDDEN_AFTER' => str_replace([':self', ':rel'], [$selfName, $relName], t(':self must not run after :rel.')),
+                    'REQUIRES' => str_replace([':self', ':rel'], [$selfName, $relName], t(':self requires :rel in the routing, but it is not there yet.')),
+                    default => str_replace(':self', $selfName, t(':self: sequence rule not met.')),
                 };
 
                 $entry = [
@@ -118,8 +118,8 @@ class RoutingTemplateService
                         'process' => $process->process_name,
                         'related' => null,
                         'rule' => 'NO_MACHINE',
-                        'message' => "{$process->process_name} belum punya mesin pelaksana — langkah ini tidak bisa dijadwalkan.",
-                        'reason' => 'Pasangkan mesin di Master Proses tab "Mesin Pelaksana".',
+                        'message' => str_replace(':process', $process->process_name, t(':process has no executing machine yet — this step cannot be scheduled.')),
+                        'reason' => t('Pair a machine in Master Process tab "Executing Machines".'),
                     ];
                 }
             }
@@ -132,8 +132,8 @@ class RoutingTemplateService
                 $prev = array_search($stages[$i - 1], $order, true);
                 $curr = array_search($stages[$i], $order, true);
                 if ($prev !== false && $curr !== false && $curr < $prev) {
-                    $notes[] = "Cabang {$branch}: tahap kembali dari ".ProdProcess::STAGES[$stages[$i - 1]]
-                        .' ke '.ProdProcess::STAGES[$stages[$i]].' — sah untuk sebagian produk, pastikan memang disengaja.';
+                    $notes[] = str_replace([':branch', ':from', ':to'], [$branch, t(ProdProcess::STAGES[$stages[$i - 1]]), t(ProdProcess::STAGES[$stages[$i]])],
+                        t('Branch :branch: stage goes back from :from to :to — valid for some products, make sure it is intended.'));
                     break;
                 }
             }
@@ -153,7 +153,7 @@ class RoutingTemplateService
 
         return $template
             ? $this->validate($template->steps)
-            : ['ok' => false, 'blocks' => [], 'warnings' => [], 'notes' => ['Template tidak ditemukan.']];
+            : ['ok' => false, 'blocks' => [], 'warnings' => [], 'notes' => [t('Template not found.')]];
     }
 
     // Ubah template jadi langkah siap-pakai untuk BOP: tiap langkah dilengkapi
@@ -184,9 +184,9 @@ class RoutingTemplateService
             if ($step->preferred_machine_id && ! $preferred) {
                 $blocked = $options->firstWhere(fn ($o) => $o['machine']->machine_id === $step->preferred_machine_id);
                 $fallbackReason = $blocked
-                    ? 'Mesin pilihan template ('.$blocked['machine']->machine_code.') tidak memenuhi syarat: '
-                        .implode('; ', $blocked['reasons'])
-                    : 'Mesin pilihan template tidak lagi terdaftar bisa mengerjakan proses ini.';
+                    ? str_replace([':code', ':reasons'], [$blocked['machine']->machine_code, implode('; ', $blocked['reasons'])],
+                        t('Template machine (:code) does not qualify: :reasons'))
+                    : t('The template machine is no longer registered as able to run this process.');
             }
 
             $chosen = $preferred ?? $eligible->first();

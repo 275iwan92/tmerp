@@ -34,7 +34,7 @@ class MachineOeeService
         $machine = ProdMachine::find($machineId);
 
         if (! $machine) {
-            return $this->emptyResult('Mesin tidak ditemukan.');
+            return $this->emptyResult(t('Machine not found.'));
         }
 
         $plannedMinutes = $this->plannedMinutes($machine, $from, $to);
@@ -170,7 +170,7 @@ class MachineOeeService
     private function availability(?int $plannedMinutes, int $unplannedDowntime): array
     {
         if (! $plannedMinutes) {
-            return $this->factor(null, 'Kalender mesin belum diisi (shift/hari & jam/shift) — jam tersedia tidak diketahui.');
+            return $this->factor(null, t('Machine calendar not filled in yet (shifts/day & hours/shift) — available hours unknown.'));
         }
 
         return $this->factor(
@@ -182,35 +182,35 @@ class MachineOeeService
     private function performance(ProdMachine $m, array $production): array
     {
         if (! $m->speed_target_per_hour) {
-            return $this->factor(null, 'Target kecepatan aktual mesin belum diisi — acuan Performance tidak ada.');
+            return $this->factor(null, t('Actual machine speed target not filled in yet — no Performance reference.'));
         }
 
         if ($production['run_minutes'] <= 0) {
-            return $this->factor(null, 'Belum ada operasi WO selesai di mesin ini pada periode tsb.');
+            return $this->factor(null, t('No completed WO operations on this machine in this period yet.'));
         }
 
         if ($production['qty_good'] === null) {
-            return $this->factor(null, 'Output per operasi belum dicatat operator (prd_wo_operation_output kosong).');
+            return $this->factor(null, t('Output per operation not recorded by the operator yet (prd_wo_operation_output is empty).'));
         }
 
         $theoretical = $production['run_minutes'] / 60 * $m->speed_target_per_hour;
 
         return $this->factor(
             $theoretical > 0 ? round(min(100, $production['qty_good'] / $theoretical * 100), 1) : null,
-            $theoretical > 0 ? null : 'Kapasitas teoretis nol.'
+            $theoretical > 0 ? null : t('Theoretical capacity is zero.')
         );
     }
 
     private function quality(array $production): array
     {
         if ($production['qty_good'] === null) {
-            return $this->factor(null, 'Output bagus belum dicatat — Quality tidak bisa dihitung dari qty rencana.');
+            return $this->factor(null, t('Good output not recorded yet — Quality cannot be calculated from the planned qty.'));
         }
 
         $total = $production['qty_good'] + $production['spoilage_qty'] + $production['waste_qty'];
 
         if ($total <= 0) {
-            return $this->factor(null, 'Total produksi nol pada periode tsb.');
+            return $this->factor(null, t('Total production is zero in this period.'));
         }
 
         return $this->factor(round($production['qty_good'] / $total * 100, 1), null);
@@ -255,7 +255,7 @@ class MachineOeeService
 
         if ($breakdowns->isEmpty()) {
             return ['failures' => 0, 'mttr_hours' => null, 'mtbf_hours' => null,
-                'reason' => 'Belum ada kejadian breakdown tercatat pada periode ini.'];
+                'reason' => t('No breakdowns recorded in this period yet.')];
         }
 
         $repairMinutes = (int) $breakdowns->sum('duration_minutes');

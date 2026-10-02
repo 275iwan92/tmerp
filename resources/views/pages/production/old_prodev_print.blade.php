@@ -105,26 +105,26 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
             'inquiry' => [
                 // SELALU ada url (user 2026-09-04) -- lihat catatan sama di
                 // production/prodev.blade.php::wizardSteps().
-                'label' => '1. Inquiry',
+                'label' => '1. '.t('Inquiry'),
                 'url' => $origin
                     ? route('inquiry.form', ['id' => $origin, 'view' => 1])
                     : route('inquiry.form', ['view' => 1, 'from_part' => $this->partId]),
             ],
             'development' => [
-                'label' => '2. Development',
+                'label' => '2. '.t('Development'),
                 'url' => route('production.old-prodev', ['part' => $this->partId]),
             ],
             'costing' => [
-                'label' => '3. Costing',
+                'label' => '3. '.t('Costing'),
                 'url' => $origin ? route('inquiry.costing', ['inquiry' => $origin, 'view' => 1]) : null,
                 'reason' => t('This part is Mode #2 (manual/standalone) -- no Inquiry yet to calculate its Costing.'),
             ],
             'mastercard' => [
-                'label' => 'Master Card',
+                'label' => t('Master Card'),
                 'url' => route('production.old-prodev.print', ['part' => $this->partId]),
             ],
             'analytics' => [
-                'label' => 'Analytics',
+                'label' => t('Analytics'),
                 'url' => null,
                 'reason' => t('The Analytics module has not been built yet.'),
             ],
@@ -177,7 +177,7 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
     </x-slot:toolbar>
 
     <x-print.sheet>
-        <x-print.header :company="$this->company" doc-title="MASTER CARD / KARTU INDUK" :doc-no="$this->part->displayMastercardCode()">
+        <x-print.header :company="$this->company" :doc-title="t('MASTER CARD')" :doc-no="$this->part->displayMastercardCode()">
             <x-slot:meta>
                 {{ t('Design No.:') }} <span class="ref">{{ $this->part->product?->design_no ?? '—' }}</span>
                 · {{ t('Printed') }} {{ now()->format('d/m/Y H:i') }}

@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Support\V2\Print;
+use App\Support\Localization\Dictionary;
+use Illuminate\Database\Migrations\Migration;
 
-// Istilah cetakan dokumen dalam bahasa Indonesia (teks English di kelas cetak => Indonesia), persis seperti format yang
-// disetujui user 2026-10-01 (docs/mockups/print_doc). Istilah baku semua dokumen ada di Devlib\PrintDoc\Labels.
-final class Labels
+// Istilah cetak dokumen (dulu array hardcode App\Support\V2\Print\Labels::ID) pindah ke kamus sys_dictionary konteks 'print',
+// supaya bisa diubah di Setup > Translation Dictionary dan diterjemahkan ke bahasa lain (user 2026-10-02: tanpa hardcode).
+// Format persis cetakan yang disetujui user 2026-10-01 (docs/mockups/print_doc). Isian penerjemah tidak ditimpa.
+return new class extends Migration
 {
-    public const ID = [
+    private const ID = [
         // Customer Invoice / Tagihan Uang Muka (customerinvoice_accounting.md)
         'Customer Invoice' => 'Customer Invoice',
         'Faktur Tagihan' => 'Faktur Tagihan',
@@ -313,4 +315,11 @@ final class Labels
         'All rejected' => 'Ditolak semua',
         'Partly accepted' => 'Diterima sebagian',
     ];
-}
+
+    public function up(): void
+    {
+        Dictionary::seed(self::ID, 'print');
+    }
+
+    public function down(): void {}
+};

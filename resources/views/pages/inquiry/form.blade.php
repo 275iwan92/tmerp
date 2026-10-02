@@ -203,17 +203,17 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             }
 
             return [
-                'inquiry' => ['label' => '1. Inquiry', 'url' => null, 'reason' => 'Sedang di sini -- part ini Mode #2 (manual), tidak ada Inquiry.'],
+                'inquiry' => ['label' => '1. '.t('Inquiry'), 'url' => null, 'reason' => t('You are here -- this part is Mode #2 (manual), there is no Inquiry.')],
                 'development' => [
-                    'label' => '2. Development',
+                    'label' => '2. '.t('Development'),
                     'url' => $this->fromPart ? route('production.prodev', ['part' => $this->fromPart]) : null,
                 ],
-                'costing' => ['label' => '3. Costing', 'url' => null, 'reason' => 'Part ini Mode #2 (manual) -- tidak ada Inquiry utk dihitung Costing-nya.'],
+                'costing' => ['label' => '3. '.t('Costing'), 'url' => null, 'reason' => t('This part is Mode #2 (manual) -- there is no Inquiry to calculate Costing for.')],
                 'mastercard' => [
-                    'label' => 'Master Card',
+                    'label' => t('Master Card'),
                     'url' => $this->fromPart ? route('production.old-prodev.print', ['part' => $this->fromPart]) : null,
                 ],
-                'analytics' => ['label' => 'Analytics', 'url' => null, 'reason' => 'Modul Analytics belum dibangun.'],
+                'analytics' => ['label' => t('Analytics'), 'url' => null, 'reason' => t('The Analytics module has not been built yet.')],
             ];
         }
 
@@ -223,27 +223,27 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
         return [
             'inquiry' => [
-                'label' => '1. Inquiry',
+                'label' => '1. '.t('Inquiry'),
                 'url' => route('inquiry.form', ['id' => $this->inquiry->id_inquiry]),
             ],
             'development' => [
-                'label' => '2. Development',
+                'label' => '2. '.t('Development'),
                 'url' => $prodPartId ? route('production.prodev', ['part' => $prodPartId]) : null,
-                'reason' => 'Belum ada part yang dikirim ke ProDev (tombol "Kirim ke ProDev" di baris part, perlu Confirm dulu).',
+                'reason' => t('No part has been sent to ProDev yet (the "Send to ProDev" button on the part row, needs Confirm first).'),
             ],
             'costing' => [
-                'label' => '3. Costing',
+                'label' => '3. '.t('Costing'),
                 'url' => route('inquiry.costing', ['inquiry' => $this->inquiry->id_inquiry, 'view' => 1]),
             ],
             'mastercard' => [
-                'label' => 'Master Card',
+                'label' => t('Master Card'),
                 'url' => $prodPartId ? route('production.old-prodev.print', ['part' => $prodPartId]) : null,
-                'reason' => 'Belum ada part yang dikirim ke ProDev.',
+                'reason' => t('No part has been sent to ProDev yet.'),
             ],
             'analytics' => [
-                'label' => 'Analytics',
+                'label' => t('Analytics'),
                 'url' => null,
-                'reason' => 'Modul Analytics belum dibangun.',
+                'reason' => t('The Analytics module has not been built yet.'),
             ],
         ];
     }
@@ -607,11 +607,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'newCustEmail' => ['nullable', 'email', 'max:150'],
             'newCustAddress' => ['nullable', 'string'],
         ], [], [
-            'newCustName' => 'Nama Customer',
-            'newCustType' => 'Tipe Customer',
-            'newCustPhone' => 'No. Telp',
-            'newCustEmail' => 'Email',
-            'newCustAddress' => 'Alamat',
+            'newCustName' => t('Customer Name'),
+            'newCustType' => t('Customer Type'),
+            'newCustPhone' => t('Phone No.'),
+            'newCustEmail' => t('Email'),
+            'newCustAddress' => t('Address'),
         ]);
 
         // Field wajib Customer Master di luar yg diisi di popup (approval_status/
@@ -640,7 +640,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
         $this->selectCustomer($customer->id_customer);
         $this->showNewCustomerModal = false;
-        $this->flash = "Customer baru \"{$customer->customer_name}\" ({$customer->customer_code}) dibuat -- status DRAFT, perlu direview Finance/Credit di Master Customer sebelum transaksi penuh.";
+        $this->flash = str_replace([':name', ':code'], [$customer->customer_name, $customer->customer_code], t('New customer ":name" (:code) created -- status DRAFT, needs Finance/Credit review in Master Customer before full transactions.'));
     }
 
     protected function generateQuickCustomerCode(): string
@@ -1012,7 +1012,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
     public function materialSlotLabel(int $slot): string
     {
-        return $slot === 0 ? 'Paper' : 'Sheet / SF';
+        return $slot === 0 ? t('Paper') : t('Sheet / SF');
     }
 
     public function materialJenisOptions(int $slot): array
@@ -1115,16 +1115,16 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     protected function partRoleOptions(): array
     {
         return [
-            'body' => ['label' => 'Body', 'icon' => '📦', 'desc' => 'Bagian struktural utama'],
-            'lid' => ['label' => 'Lid', 'icon' => '🔝', 'desc' => 'Tutup terpisah'],
-            'base' => ['label' => 'Base', 'icon' => '⬇️', 'desc' => 'Alas terpisah'],
-            'sleeve' => ['label' => 'Sleeve', 'icon' => '🧦', 'desc' => 'Selongsong luar'],
-            'tray' => ['label' => 'Tray', 'icon' => '🍱', 'desc' => 'Baki dalam'],
-            'insert' => ['label' => 'Insert', 'icon' => '🧩', 'desc' => 'Fitment/pengganjal dalam'],
-            'divider' => ['label' => 'Divider', 'icon' => '🗂️', 'desc' => 'Sekat antar-kompartemen'],
-            'left' => ['label' => 'Left', 'icon' => '◀️', 'desc' => 'Sisi kiri'],
-            'right' => ['label' => 'Right', 'icon' => '▶️', 'desc' => 'Sisi kanan'],
-            'monoform' => ['label' => 'MonoForm', 'icon' => '1️⃣', 'desc' => 'Bukan container, 1 lembar (poster/label/hang tag) — istilah dari "Mono Carton"'],
+            'body' => ['label' => 'Body', 'icon' => '📦', 'desc' => 'Main structural part'],
+            'lid' => ['label' => 'Lid', 'icon' => '🔝', 'desc' => 'Separate lid'],
+            'base' => ['label' => 'Base', 'icon' => '⬇️', 'desc' => 'Separate base'],
+            'sleeve' => ['label' => 'Sleeve', 'icon' => '🧦', 'desc' => 'Outer sleeve'],
+            'tray' => ['label' => 'Tray', 'icon' => '🍱', 'desc' => 'Inner tray'],
+            'insert' => ['label' => 'Insert', 'icon' => '🧩', 'desc' => 'Inner fitment/insert'],
+            'divider' => ['label' => 'Divider', 'icon' => '🗂️', 'desc' => 'Partition between compartments'],
+            'left' => ['label' => 'Left', 'icon' => '◀️', 'desc' => 'Left side'],
+            'right' => ['label' => 'Right', 'icon' => '▶️', 'desc' => 'Right side'],
+            'monoform' => ['label' => 'MonoForm', 'icon' => '1️⃣', 'desc' => 'Not a container, 1 sheet (poster/label/hang tag) — term from "Mono Carton"'],
         ];
     }
 
@@ -1233,7 +1233,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         }
 
         return [
-            'labels' => $missing->pluck('label')->implode(' + '),
+            'labels' => $missing->pluck('label')->map(fn ($l) => t($l))->implode(' + '),
             'roles' => $missing->pluck('role')->values()->all(),
             'total' => count($template),
         ];
@@ -2082,21 +2082,21 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     protected function assertTierInvariant(): void
     {
         if (count($this->tiers) === 0) {
-            throw ValidationException::withMessages(['tiers' => 'Minimal 1 baris tier qty diperlukan.']);
+            throw ValidationException::withMessages(['tiers' => t('At least 1 qty tier row is required.')]);
         }
 
         $primaryCount = collect($this->tiers)->where('is_primary', true)->count();
 
         if ($primaryCount !== 1) {
             throw ValidationException::withMessages([
-                'tiers' => 'Harus tepat 1 tier UTAMA (saat ini: '.$primaryCount.').',
+                'tiers' => str_replace(':n', $primaryCount, t('There must be exactly 1 PRIMARY tier (currently: :n).')),
             ]);
         }
 
         foreach ($this->tiers as $i => $tier) {
             if ($tier['qty'] === '' || ! is_numeric($tier['qty']) || (float) $tier['qty'] <= 0) {
                 throw ValidationException::withMessages([
-                    'tiers' => 'Qty tier baris '.($i + 1).' wajib diisi angka lebih besar dari 0.',
+                    'tiers' => str_replace(':row', $i + 1, t('Tier qty on row :row must be a number greater than 0.')),
                 ]);
             }
         }
@@ -2377,7 +2377,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
         $this->persist();
 
-        $this->flash = 'Tersimpan sebagai '.$this->inquiry_no.' ('.$this->sub_state.').';
+        $this->flash = str_replace([':no', ':state'], [$this->inquiry_no, $this->sub_state], t('Saved as :no (:state).'));
     }
 
     public function confirm(): void
@@ -2397,7 +2397,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->stat_confirm = true;
         $this->readOnly = true;
         $this->sub_state = 'SUBMITTED';
-        $this->flash = 'Inkuiri '.$this->inquiry_no.' dikonfirmasi — status SUBMITTED, form terkunci.';
+        $this->flash = str_replace(':no', $this->inquiry_no, t('Inquiry :no confirmed — status SUBMITTED, form locked.'));
     }
 
     // Mode #1 -- link Inquiry(BARU) -> ProDev yg SEBELUMNYA TIDAK ADA SAMA
@@ -2412,13 +2412,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $row = $this->parts[$index] ?? null;
 
         if (! $row || ! $row['id']) {
-            $this->flash = 'Simpan inquiry dulu (tombol Simpan) sebelum kirim part ke ProDev.';
+            $this->flash = t('Save the inquiry first (Save button) before sending the part to ProDev.');
 
             return;
         }
 
         if (! $this->stat_confirm) {
-            $this->flash = 'Confirm inquiry ini dulu sebelum kirim ke ProDev (spec harus FIX).';
+            $this->flash = t('Confirm this inquiry first before sending to ProDev (spec must be FINAL).');
 
             return;
         }
@@ -2512,7 +2512,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->stat_cancel = true;
         $this->sub_state = 'CANCELLED';
         $this->showCancelForm = false;
-        $this->flash = 'Inkuiri '.$this->inquiry_no.' dibatalkan.';
+        $this->flash = str_replace(':no', $this->inquiry_no, t('Inquiry :no cancelled.'));
     }
 
     public function openLostForm(): void
@@ -2545,7 +2545,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
         $this->sub_state = 'LOST';
         $this->showLostForm = false;
-        $this->flash = 'Inkuiri '.$this->inquiry_no.' ditandai kalah (LOST).';
+        $this->flash = str_replace(':no', $this->inquiry_no, t('Inquiry :no marked as lost (LOST).'));
     }
 };
 ?>
@@ -2661,25 +2661,25 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 app.css, dipakai persis utk kasus 5-field-1-baris spt ini). --}}
                 <div class="grid five">
                     <div class="f">
-                        <label>No. Inkuiri</label>
+                        <label>{{ t('Inquiry No.') }}</label>
                         <div style="padding:6px 0;font-size:12.5px;font-weight:700;color:{{ $inquiry_no ? '#1c2440' : '#9aa3b5' }}">
-                            {{ $inquiry_no ?: 'Otomatis saat disimpan' }}
+                            {{ $inquiry_no ?: t('Automatic on save') }}
                         </div>
                     </div>
-                    <x-form.date-picker legacy label="Tanggal" wire:model="inquiry_date" :disabled="$readOnly" name="inquiry_date" />
+                    <x-form.date-picker legacy :label="t('Date')" wire:model="inquiry_date" :disabled="$readOnly" name="inquiry_date" />
                     <x-form.date-picker legacy wire:model="deadline_quotation" :disabled="$readOnly" name="deadline_quotation">
-                        <x-slot:label>Tgl Kebutuhan Pelanggan</x-slot:label>
+                        <x-slot:label>{{ t('Customer Required Date') }}</x-slot:label>
                     </x-form.date-picker>
                     <div class="f">
-                        <label>PIC Sales</label>
+                        <label>{{ t('Sales PIC') }}</label>
                         <div style="display:flex;gap:6px;align-items:center">
                             <input type="text" value="{{ $pic_sales }}" readonly style="flex:1">
                             @unless($readOnly)
-                                <button type="button" class="btn g xs" wire:click="openSalesPicker" title="Ubah PIC Sales">✎</button>
+                                <button type="button" class="btn g xs" wire:click="openSalesPicker" title="{{ t('Change Sales PIC') }}">✎</button>
                             @endunless
                         </div>
                     </div>
-                    <x-form.select legacy label="Sumber" wire:model="source" x-data x-effect="$el.value = @js($source)" :disabled="$readOnly" :placeholder="false"
+                    <x-form.select legacy :label="t('Source')" wire:model="source" x-data x-effect="$el.value = @js($source)" :disabled="$readOnly" :placeholder="false"
                         :selected="$source" :options="['EMAIL' => 'EMAIL', 'WA' => 'WA', 'PHONE' => 'PHONE', 'VISIT' => 'VISIT', 'MARKETPLACE' => 'MARKETPLACE']" />
                 </div>
 
@@ -2692,14 +2692,14 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     ada di properti/kolom DB (backward-compat baca inquiry lama yg masih
                     is_prospect=true) tapi tidak lagi bisa di-set true dari layar ini. --}}
                     @if ($is_prospect)
-                        <x-form.input legacy label="Nama Calon Customer (data lama)" wire:model="prospect_name" placeholder="Nama prospek…" :disabled="$readOnly" name="prospect_name" />
+                        <x-form.input legacy :label="t('Prospective Customer Name (old data)')" wire:model="prospect_name" :placeholder="t('Prospect name…')" :disabled="$readOnly" name="prospect_name" />
                     @elseif ($customer_id)
                         <div class="f">
-                            <label>Customer</label>
+                            <label>{{ t('Customer') }}</label>
                             <div style="display:flex;gap:6px;align-items:center">
                                 <input type="text" value="{{ $customer_name }}" readonly class="cust-ok">
                                 @unless($readOnly)
-                                    <button type="button" class="btn g xs" wire:click="clearCustomer">Ganti</button>
+                                    <button type="button" class="btn g xs" wire:click="clearCustomer">{{ t('Switch') }}</button>
                                 @endunless
                             </div>
                         </div>
@@ -2710,15 +2710,15 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         instan; isi list (customerResults) tetap dari Livewire, termasuk saat
                         query kosong (browse) maupun diketik (filter). --}}
                         <div class="f ac-wrap" x-data="{ open: false }" @click.outside="open = false">
-                            <label>Customer</label>
+                            <label>{{ t('Customer') }}</label>
                             <input type="text" wire:model.live.debounce.300ms="custQuery" autocomplete="off"
                                    @focus="open = true" @click="open = true"
-                                   placeholder="Ketik utk cari, atau scroll pilih…" @if($readOnly) disabled @endif>
+                                   placeholder="{{ t('Type to search, or scroll to pick…') }}" @if($readOnly) disabled @endif>
                             @error('customer_id') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
                             <div class="ac-box" :class="open ? 'on' : ''">
                                 @unless($readOnly)
                                     <div class="ac-i" style="color:#1560a8;font-weight:700" wire:click="openNewCustomerModal" @click="open = false">
-                                        ＋ Buat Customer Baru{{ mb_strlen($custQuery) >= 2 ? ': "'.$custQuery.'"' : '' }}
+                                        ＋ {{ t('Create New Customer') }}{{ mb_strlen($custQuery) >= 2 ? ': "'.$custQuery.'"' : '' }}
                                     </div>
                                 @endunless
                                 @forelse ($this->customerResults as $c)
@@ -2727,7 +2727,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                         <span class="cd">{{ $c->customer_code }}</span>
                                     </div>
                                 @empty
-                                    <div class="ac-none">Tidak ditemukan.</div>
+                                    <div class="ac-none">{{ t('Not found.') }}</div>
                                 @endforelse
                             </div>
                         </div>
@@ -2736,9 +2736,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     {{-- Nama Produk autogrow: mulai 1 baris, tinggi nambah sendiri kalau
                     isinya melebihi lebar kotak (bukan <input> krn <input> tidak pernah
                     bisa wrap/tambah tinggi -- keterbatasan HTML, bukan pilihan desain). --}}
-                    @php $productDraftHint = 'Nama sementara selama quotation. Karakter khusus (/@#%"\';) tidak diperbolehkan.'; @endphp
-                    <x-form.textarea legacy autogrow label="Nama Produk (draft)" wire:model="product_draft_name" maxlength="150"
-                        placeholder="mis. Box Kosmetik Serum 30ml" :disabled="$readOnly" name="product_draft_name"
+                    @php $productDraftHint = t('Temporary name during quotation. Special characters (/@#%"\';) are not allowed.'); @endphp
+                    <x-form.textarea legacy autogrow :label="t('Product Name (draft)')" wire:model="product_draft_name" maxlength="150"
+                        :placeholder="t('e.g. Cosmetic Box Serum 30ml')" :disabled="$readOnly" name="product_draft_name"
                         :hint="$productDraftHint" />
 
                     {{-- Kategori Produk Pasar (permintaan user 2026-09-04: "pindah ke atas,
@@ -2747,14 +2747,14 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     Lid (kalau relevan) langsung terisi. Cuma starting point, bisa diedit
                     manual per part sesudahnya -- lihat applyProductCategory(). --}}
                     <div class="f">
-                        <label>Kategori Produk <span class="hint" style="font-weight:400">(opsional, isi cepat Part 1)</span></label>
+                        <label>{{ t('Product Category') }} <span class="hint" style="font-weight:400">({{ t('optional, quick-fill Part 1') }})</span></label>
                         <select wire:change="applyProductCategory($event.target.value)" @if($readOnly) disabled @endif>
-                            <option value="">— pilih kategori pasar —</option>
+                            <option value="">— {{ t('choose market category') }} —</option>
                             @foreach ($this->productCategoryMap() as $catCode => $cat)
                                 <option value="{{ $catCode }}">{{ $cat['label'] }}</option>
                             @endforeach
                         </select>
-                        <div class="hint">Isi cepat Tipe Produk &amp; part umum — tetap bisa diedit manual di bawah.</div>
+                        <div class="hint">{{ t('Quick-fill Product Type & common parts — still editable manually below.') }}</div>
                     </div>
                 </div>
 
@@ -2766,25 +2766,25 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 jalan pintas ke field yg sama ini. --}}
                 <div class="grid" style="margin-top:10px">
                     <div class="f col2">
-                        <label>Tipe Produk <span class="hint" style="font-weight:400">(berlaku utk semua Part)</span></label>
+                        <label>{{ t('Product Type') }} <span class="hint" style="font-weight:400">({{ t('applies to all Parts') }})</span></label>
                         <select wire:change="setSharedProductType($event.target.value)"
                                 x-data x-effect="$el.value = @js($parts[0]['type_code'] ?? '')"
                                 @if($readOnly) disabled @endif>
-                            <option value="">— pilih tipe produk —</option>
+                            <option value="">— {{ t('choose product type') }} —</option>
                             @foreach ($this->productTypeOptions as $code => $t)
                                 <option value="{{ $code }}">{{ $t['name'] }}</option>
                             @endforeach
                         </select>
-                        <div class="hint">Kategori Produk di atas cuma jalan pintas — bisa juga pilih langsung di sini.</div>
+                        <div class="hint">{{ t('The Product Category above is only a shortcut — you can also choose directly here.') }}</div>
                     </div>
                     @php($headerPartTpl = $this->partTemplateSuggestion(0))
                     @if ($headerPartTpl)
                         <div class="f col2">
                             <label>&nbsp;</label>
                             <div class="note b" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0">
-                                <span>🧩 Tipe ini biasanya {{ $headerPartTpl['total'] }} part: <b>{{ $headerPartTpl['labels'] }}</b>.</span>
+                                <span>🧩 {{ str_replace(':n', $headerPartTpl['total'], t('This type usually has :n parts:')) }} <b>{{ $headerPartTpl['labels'] }}</b>.</span>
                                 @unless($readOnly)
-                                    <button type="button" class="btn g xs" wire:click="applyPartTemplate(0)">Tambahkan Otomatis</button>
+                                    <button type="button" class="btn g xs" wire:click="applyPartTemplate(0)">{{ t('Add Automatically') }}</button>
                                 @endunless
                             </div>
                         </div>
@@ -2801,16 +2801,16 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 konsisten sama toggle/radio lain di file ini, jaga2 morph-sync spt
                 memory feedback_livewire_select_morph_bug. --}}
                 <div class="grid two" style="margin-top:10px">
-                    <x-form.textarea legacy autogrow label="Catatan Sales" wire:model="sales_note" placeholder="opsional" :disabled="$readOnly" />
+                    <x-form.textarea legacy autogrow :label="t('Sales Note')" wire:model="sales_note" :placeholder="t('optional')" :disabled="$readOnly" />
                     <div class="f">
-                        <label>Sumber Bahan</label>
+                        <label>{{ t('Material Source') }}</label>
                         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:7px 0">
                             <input type="checkbox" @checked($material_source === 'CUSTOMER')
                                    wire:click="setMaterialSource('{{ $material_source === 'CUSTOMER' ? 'OWN' : 'CUSTOMER' }}')"
                                    @if($readOnly) disabled @endif>
-                            <span style="font-size:12.5px;color:#233">Customer bawa bahan baku sendiri</span>
+                            <span style="font-size:12.5px;color:#233">{{ t('Customer brings own raw material') }}</span>
                         </label>
-                        <div class="hint">{{ $material_source === 'OWN' ? 'Tidak dicentang → bahan dari perusahaan, order bersifat PRODUCT.' : 'Dicentang → bahan dari customer, order bersifat JASA (cuma ongkos cetak/finishing).' }}</div>
+                        <div class="hint">{{ $material_source === 'OWN' ? t('Unchecked → material from the company, order is PRODUCT.') : t('Checked → material from the customer, order is SERVICE (printing/finishing cost only).') }}</div>
                     </div>
                 </div>
                 {{-- Skema PPN & PPh23 disembunyikan dari layar Inquiry (permintaan user
@@ -2822,13 +2822,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
                 @if ($material_source === 'CUSTOMER')
                     <div style="margin-top:6px">
-                        <div class="sec-title">Spesifikasi Bahan Customer <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#8a94a6">(wajib bila bahan dari customer)</span></div>
+                        <div class="sec-title">{{ t('Customer Material Specification') }} <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#8a94a6">({{ t('required if material comes from the customer') }})</span></div>
                         <div class="grid two">
-                            <x-form.input legacy col2 label="Deskripsi bahan customer *" wire:model="cust_material_spec"
-                                placeholder="mis. Art Carton 260gsm, 65×100cm, brand APP, 50 rim" :disabled="$readOnly" name="cust_material_spec" />
-                            <x-form.date-picker legacy label="ETA bahan tiba" wire:model="cust_material_eta" :disabled="$readOnly" />
+                            <x-form.input legacy col2 :label="t('Customer material description *')" wire:model="cust_material_spec"
+                                :placeholder="t('e.g. Art Carton 260gsm, 65×100cm, brand APP, 50 reams')" :disabled="$readOnly" name="cust_material_spec" />
+                            <x-form.date-picker legacy :label="t('Material arrival ETA')" wire:model="cust_material_eta" :disabled="$readOnly" />
                         </div>
-                        <div class="note b" style="margin-top:6px">Bahan customer → HPP material = 0; masuk via Receiving non-costed (consignment). Handling &amp; spoilage dihitung Costing.</div>
+                        <div class="note b" style="margin-top:6px">{{ t('Customer material → material COGS = 0; received via non-costed Receiving (consignment). Handling & spoilage are calculated by Costing.') }}</div>
                     </div>
                 @endif
             </div>
@@ -2840,11 +2840,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                  wire:click.self="closeSalesPicker">
                 <div style="background:#fff;border-radius:12px;width:100%;max-width:420px;max-height:70vh;display:flex;flex-direction:column;overflow:hidden">
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e3e7f0">
-                        <b style="font-size:14px;color:#2c3e69">Pilih PIC Sales</b>
+                        <b style="font-size:14px;color:#2c3e69">{{ t('Choose Sales PIC') }}</b>
                         <button type="button" wire:click="closeSalesPicker" style="border:none;background:none;font-size:18px;cursor:pointer;line-height:1">✕</button>
                     </div>
                     <div style="padding:12px 18px 0">
-                        <input type="text" wire:model.live.debounce.300ms="salesQuery" placeholder="Cari nama sales…" autocomplete="off">
+                        <input type="text" wire:model.live.debounce.300ms="salesQuery" placeholder="{{ t('Search sales name…') }}" autocomplete="off">
                     </div>
                     <div style="overflow-y:auto;padding:10px 18px 18px">
                         @forelse ($this->salesPersonResults as $sp)
@@ -2855,7 +2855,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                 <span style="font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0;{{ $sp->sales_type === 'INTERNAL' ? 'background:#eaf7ee;color:#1f8a4c' : 'background:#fff4e5;color:#8a4b00' }}">{{ $sp->sales_type }}</span>
                             </div>
                         @empty
-                            <div class="hint">Tidak ada hasil.</div>
+                            <div class="hint">{{ t('No results.') }}</div>
                         @endforelse
                     </div>
                 </div>
@@ -2868,32 +2868,32 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                  wire:click.self="closeNewCustomerModal">
                 <div style="background:#fff;border-radius:12px;width:100%;max-width:460px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e3e7f0">
-                        <b style="font-size:14px;color:#2c3e69">Buat Customer Baru</b>
+                        <b style="font-size:14px;color:#2c3e69">{{ t('Create New Customer') }}</b>
                         <button type="button" wire:click="closeNewCustomerModal" style="border:none;background:none;font-size:18px;cursor:pointer;line-height:1">✕</button>
                     </div>
                     <div style="padding:16px 18px;overflow-y:auto">
-                        <div class="note b" style="margin-bottom:10px">Customer dibuat status <b>DRAFT</b> — Finance/Credit tetap perlu review lengkap di Master Customer sebelum bisa transaksi penuh.</div>
+                        <div class="note b" style="margin-bottom:10px">{{ t('The customer is created with status') }} <b>DRAFT</b> — {{ t('Finance/Credit still needs a full review in Master Customer before full transactions are allowed.') }}</div>
                         <div class="grid" style="grid-template-columns:1fr">
-                            <x-form.input legacy label="Nama Customer *" wire:model="newCustName" placeholder="Nama perusahaan/customer" name="newCustName" />
-                            <x-form.toggle-group legacy label="Tipe">
-                                <x-form.toggle-option legacy :active="$newCustType === 'local'" style="flex:1" wire:click="setNewCustType('local')">Lokal</x-form.toggle-option>
-                                <x-form.toggle-option legacy :active="$newCustType === 'import'" style="flex:1" wire:click="setNewCustType('import')">Import</x-form.toggle-option>
+                            <x-form.input legacy :label="t('Customer Name *')" wire:model="newCustName" :placeholder="t('Company/customer name')" name="newCustName" />
+                            <x-form.toggle-group legacy :label="t('Type')">
+                                <x-form.toggle-option legacy :active="$newCustType === 'local'" style="flex:1" wire:click="setNewCustType('local')">{{ t('Local') }}</x-form.toggle-option>
+                                <x-form.toggle-option legacy :active="$newCustType === 'import'" style="flex:1" wire:click="setNewCustType('import')">{{ t('Import') }}</x-form.toggle-option>
                             </x-form.toggle-group>
-                            <x-form.input legacy label="No. Telp" wire:model="newCustPhone" placeholder="0812xxxxxxxx" name="newCustPhone" />
-                            <x-form.input legacy label="Email" wire:model="newCustEmail" placeholder="opsional" name="newCustEmail" />
-                            <x-form.textarea legacy label="Alamat" wire:model="newCustAddress" rows="2" placeholder="opsional" />
+                            <x-form.input legacy :label="t('Phone No.')" wire:model="newCustPhone" placeholder="0812xxxxxxxx" name="newCustPhone" />
+                            <x-form.input legacy :label="t('Email')" wire:model="newCustEmail" :placeholder="t('optional')" name="newCustEmail" />
+                            <x-form.textarea legacy :label="t('Address')" wire:model="newCustAddress" rows="2" :placeholder="t('optional')" />
                         </div>
                     </div>
                     <div style="display:flex;gap:8px;justify-content:flex-end;padding:12px 18px;border-top:1px solid #e3e7f0;background:#f9fafb">
-                        <button type="button" class="btn g" wire:click="closeNewCustomerModal">Batal</button>
-                        <button type="button" class="btn p" wire:click="saveNewCustomer">Simpan &amp; Pakai</button>
+                        <button type="button" class="btn g" wire:click="closeNewCustomerModal">{{ t('Cancel') }}</button>
+                        <button type="button" class="btn p" wire:click="saveNewCustomer">{{ t('Save & Use') }}</button>
                     </div>
                 </div>
             </div>
         @endif
 
         <div class="card">
-            <h3>Qty Order Berjenjang <span style="font-weight:400;color:#889">(Costing hitung HPP per tier — tepat 1 UTAMA)</span></h3>
+            <h3>{{ t('Tiered Order Qty') }} <span style="font-weight:400;color:#889">({{ t('Costing calculates COGS per tier — exactly 1 PRIMARY') }})</span></h3>
             <div class="body">
                 @error('tiers')
                     <div class="note o">{{ $message }}</div>
@@ -2907,9 +2907,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     <table>
                         <thead>
                             <tr>
-                                <th style="width:36px">Seq</th>
-                                <th style="width:140px">Qty (pcs)</th>
-                                <th style="width:90px">Utama</th>
+                                <th style="width:36px">{{ t('Seq') }}</th>
+                                <th style="width:140px">{{ t('Qty (pcs)') }}</th>
+                                <th style="width:90px">{{ t('Primary') }}</th>
                                 <th style="width:34px"></th>
                             </tr>
                         </thead>
@@ -2919,12 +2919,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     <td>{{ $i + 1 }}</td>
                                     <td>
                                         <input type="number" step="1" min="0" max="999999999" wire:model.blur="tiers.{{ $i }}.qty"
-                                               placeholder="mis. 10000" @if($readOnly) disabled @endif>
+                                               placeholder="{{ t('e.g. 10000') }}" @if($readOnly) disabled @endif>
                                     </td>
                                     <td style="text-align:center">
                                         <button type="button" class="btn xs {{ $tier['is_primary'] ? 'p' : 'g' }}" style="white-space:nowrap"
                                                 wire:click="setPrimaryTier({{ $i }})" @if($readOnly) disabled @endif>
-                                            {{ $tier['is_primary'] ? '✓ Utama' : 'Pilih' }}
+                                            {{ $tier['is_primary'] ? '✓ '.t('Primary') : t('Pick') }}
                                         </button>
                                     </td>
                                     <td>
@@ -2937,18 +2937,18 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     </table>
                 </div>
                 <button type="button" class="btn g" style="margin-top:8px" wire:click="addTier" @if($readOnly) disabled @endif>
-                    ＋ Tambah Tier
+                    ＋ {{ t('Add Tier') }}
                 </button>
             </div>
         </div>
 
         <div class="card">
-            <h3>Part &amp; Dieline <span style="font-weight:400;color:#889">(dimensi produk &amp; preview dieline live)</span></h3>
+            <h3>{{ t('Part & Dieline') }} <span style="font-weight:400;color:#889">({{ t('product dimensions & live dieline preview') }})</span></h3>
             <div class="body">
                 @foreach ($parts as $i => $part)
                     <div class="partcard" wire:key="part-{{ $part['id'] ?? 'new-'.$i }}">
                         <div class="parthd">
-                            <span class="pnm">{{ $part['part_name'] !== '' ? $part['part_name'] : 'Part '.($i + 1) }}</span>
+                            <span class="pnm">{{ $part['part_name'] !== '' ? $part['part_name'] : t('Part').' '.($i + 1) }}</span>
                             {{-- Mode #1 -- kirim part ini ke ProDev (CLAUDE.md §4 VITAL, link yg
                             sebelumnya tidak ada). WAJIB Inquiry sudah CONFIRMED (stat_confirm),
                             bukan cuma tersimpan -- selaras "Confirm Inquiry = spec sudah FIX, boleh
@@ -2956,65 +2956,65 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                             ProDev yg cuma nampilin Inquiry CONFIRMED (user 2026-09-03, biar tidak
                             kirim spec yg masih bisa berubah). --}}
                             @if ($part['id'] && $stat_confirm)
-                                <button type="button" class="btn xs" style="margin-left:auto" wire:click="sendToProDev({{ $i }})">🏭 Kirim ke ProDev</button>
+                                <button type="button" class="btn xs" style="margin-left:auto" wire:click="sendToProDev({{ $i }})">🏭 {{ t('Send to ProDev') }}</button>
                             @endif
                             @if (count($parts) > 1)
-                                <button type="button" class="btn d xs" @if(! $part['id']) style="margin-left:auto" @endif wire:click="removePart({{ $i }})" @if($readOnly) disabled @endif>✕ hapus part</button>
+                                <button type="button" class="btn d xs" @if(! $part['id']) style="margin-left:auto" @endif wire:click="removePart({{ $i }})" @if($readOnly) disabled @endif>✕ {{ t('remove part') }}</button>
                             @endif
                         </div>
                         <div class="partbody">
                             <div class="grid" style="margin-bottom:8px">
                                 <div class="f">
-                                    <label>Nama Part</label>
+                                    <label>{{ t('Part Name') }}</label>
                                     <div style="display:flex;gap:6px;align-items:center">
-                                        <x-form.input :legacy="'flex-1 min-w-0'" wire:model.blur="parts.{{ $i }}.part_name" placeholder="mis. Body" :disabled="$readOnly" />
+                                        <x-form.input :legacy="'flex-1 min-w-0'" wire:model.blur="parts.{{ $i }}.part_name" :placeholder="t('e.g. Body')" :disabled="$readOnly" />
                                         @unless($readOnly)
-                                            <button type="button" wire:click="openRolePicker({{ $i }})" title="Pilih peran part (nama terisi otomatis)"
+                                            <button type="button" wire:click="openRolePicker({{ $i }})" title="{{ t('Choose part role (name filled automatically)') }}"
                                                 style="flex-shrink:0;width:34px;height:34px;border:1px solid #c7cfda;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px">🏷️</button>
                                         @endunless
                                     </div>
                                 </div>
                                 <div class="f">
-                                    <label>Tipe Part</label>
+                                    <label>{{ t('Part Type') }}</label>
                                     <select wire:model="parts.{{ $i }}.part_type" x-data x-effect="$el.value = @js($part['part_type'])" @if($readOnly) disabled @endif>
                                         @foreach ([['DC', 'Paper'], ['DC+SHEET', 'Paper + Sheet'], ['DC+SF', 'Paper + SF'], ['SHEET', 'Sheet'], ['KRAFT', 'Kraft']] as [$code, $label])
-                                            <option value="{{ $code }}">{{ $label }}</option>
+                                            <option value="{{ $code }}">{{ t($label) }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="f">
-                                    <label>Qty per Set</label>
+                                    <label>{{ t('Qty per Set') }}</label>
                                     <input type="number" min="0" step="0.01" wire:model.blur="parts.{{ $i }}.qty_per_sku" @if($readOnly) disabled @endif>
                                 </div>
                                 <div class="f">
-                                    <label>Isi per Pack (pcs)</label>
-                                    <input type="number" min="1" step="1" wire:model.blur="parts.{{ $i }}.pack_qty" placeholder="mis. 400" @if($readOnly) disabled @endif>
+                                    <label>{{ t('Qty per Pack (pcs)') }}</label>
+                                    <input type="number" min="1" step="1" wire:model.blur="parts.{{ $i }}.pack_qty" placeholder="{{ t('e.g. 400') }}" @if($readOnly) disabled @endif>
                                 </div>
                                 <div class="f" x-data="{ zoom: false }">
-                                    <label>Artwork / Desain</label>
+                                    <label>{{ t('Artwork / Design') }}</label>
                                     @php($artworkPreviewUrl = isset($artworkUploads[$i]) ? $artworkUploads[$i]->temporaryUrl() : ($part['artwork_path'] ? asset('storage/'.$part['artwork_path']) : null))
                                     @if ($artworkPreviewUrl)
                                         <div style="display:flex;gap:6px;align-items:center">
-                                            <img src="{{ $artworkPreviewUrl }}" @click="zoom = true" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid #c7cfda;flex-shrink:0;cursor:zoom-in" alt="artwork">
+                                            <img src="{{ $artworkPreviewUrl }}" @click="zoom = true" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid #c7cfda;flex-shrink:0;cursor:zoom-in" alt="{{ t('artwork') }}">
                                             <div style="flex:1;min-width:0">
                                                 <div style="font-size:10.5px;font-weight:600;color:#334;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ $part['artwork_original_filename'] }}">{{ $part['artwork_original_filename'] }}</div>
                                                 @unless($readOnly)
-                                                    <button type="button" class="btn d xs" wire:click="removeArtwork({{ $i }})" style="margin-top:2px">✕ hapus</button>
+                                                    <button type="button" class="btn d xs" wire:click="removeArtwork({{ $i }})" style="margin-top:2px">✕ {{ t('remove') }}</button>
                                                 @endunless
                                             </div>
                                         </div>
                                         <div x-show="zoom" x-cloak @click.self="zoom = false" @keydown.escape.window="zoom = false"
                                              style="position:fixed;inset:0;z-index:250;background:rgba(15,22,45,.72);display:flex;align-items:center;justify-content:center;padding:24px">
-                                            <img src="{{ $artworkPreviewUrl }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="artwork ukuran penuh">
+                                            <img src="{{ $artworkPreviewUrl }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="{{ t('full-size artwork') }}">
                                         </div>
                                     @elseif(! $readOnly)
                                         <input type="file" x-ref="artworkInput{{ $i }}" wire:model="artworkUploads.{{ $i }}" accept=".jpg,.jpeg,.png" style="display:none">
                                         <button type="button" class="btn g" style="display:inline-flex;align-items:center;gap:6px;width:fit-content"
                                                 @click="$refs['artworkInput{{ $i }}'].click()">
-                                            📎 Upload Artwork
+                                            📎 {{ t('Upload Artwork') }}
                                         </button>
-                                        <div wire:loading wire:target="artworkUploads.{{ $i }}" class="hint" style="color:#1560a8">⏳ mengunggah &amp; menganalisis…</div>
-                                        <div wire:loading.remove wire:target="artworkUploads.{{ $i }}" class="hint">JPG/PNG, maks {{ $this->artworkMaxMb }}MB — preview &amp; saran otomatis langsung jalan</div>
+                                        <div wire:loading wire:target="artworkUploads.{{ $i }}" class="hint" style="color:#1560a8">⏳ {{ t('uploading & analyzing…') }}</div>
+                                        <div wire:loading.remove wire:target="artworkUploads.{{ $i }}" class="hint">{{ str_replace(':mb', $this->artworkMaxMb, t('JPG/PNG, max :mbMB — preview & automatic suggestions run immediately')) }}</div>
                                         @error('artworkUploads.'.$i) <div style="font-size:10px;color:#c0392b">{{ $message }}</div> @enderror
                                     @endif
                                 </div>
@@ -3031,7 +3031,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     "tipe produk harusnya di luar part") -- berlaku utk semua Part, bukan
                                     per-part lagi. Kemampuan render dieline (TMDieline) TIDAK disentuh, ini
                                     murni relokasi alur pemilihan (klarifikasi eksplisit user). --}}
-                                    <div class="note o" style="flex:1">📋 Pilih <b>Tipe Produk</b> dulu di bagian atas (dekat Kategori Produk) sebelum mengisi part ini.</div>
+                                    <div class="note o" style="flex:1">📋 {{ t('Pick') }} <b>{{ t('Product Type') }}</b> {{ t('first at the top (near Product Category) before filling in this part.') }}</div>
                                 @elseif (empty($part['part_role']) && ! $part['id'])
                                     {{-- Diecut baru aktif setelah Peran Part dipilih (permintaan user:
                                     "diecut baru jalan ketika part dipilih spt body atau lid"). Gerbang
@@ -3047,14 +3047,14 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     cabang ini praktis cuma kejadian utk tipe multi-part (Box with
                                     Lid/Round Box/Shallow Box) yg belum ditentukan bagiannya. --}}
                                     <div class="note b" style="flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                                        <span>🏷️ Pilih <b>Peran Part</b> ini dulu (ikon 🏷️ di sebelah Nama Part) — dimensi &amp; preview dieline aktif setelah peran ditentukan.</span>
+                                        <span>🏷️ {{ t('Pick') }} <b>{{ t('Part Role') }}</b> {{ t('for this first (🏷️ icon next to Part Name) — dimensions & dieline preview activate once the role is set.') }}</span>
                                         @unless($readOnly)
-                                            <button type="button" class="btn g xs" wire:click="openRolePicker({{ $i }})">Pilih Peran Part</button>
+                                            <button type="button" class="btn g xs" wire:click="openRolePicker({{ $i }})">{{ t('Choose Part Role') }}</button>
                                         @endunless
                                     </div>
                                 @else
                                 <div style="flex:1">
-                                    <div class="sec-title">Dimensi</div>
+                                    <div class="sec-title">{{ t('Dimension') }}</div>
                                     <div class="grid">
                                         @forelse ($selectedType['params'] ?? [] as $param)
                                             <div class="f">
@@ -3073,93 +3073,93 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                 @endif
                                             </div>
                                         @empty
-                                            <div class="hint" style="grid-column:span 4">Pilih tipe produk dulu.</div>
+                                            <div class="hint" style="grid-column:span 4">{{ t('Choose a product type first.') }}</div>
                                         @endforelse
                                     </div>
                                     @if ($selectedType && empty($selectedType['spec']))
-                                        <div class="nospec">⚠️ Tipe ini belum punya <code>dieline_spec</code>. Isi Flat manual.</div>
+                                        <div class="nospec">⚠️ {!! str_replace(':code', '<code>dieline_spec</code>', e(t('This type has no :code yet. Fill in Flat manually.'))) !!}</div>
                                     @endif
 
-                                    <div class="sec-title">Bentangan (Flat) — dipakai Costing</div>
+                                    <div class="sec-title">{{ t('Spread (Flat) — used by Costing') }}</div>
                                     @if ($part['suggestions']['size'] ?? null)
                                         @php($sugSize = $part['suggestions']['size'])
                                         <div class="note o" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                                            <span>📐 Ukuran terbaca dari metadata DPI artwork ({{ $sugSize['dpi_x'] }}×{{ $sugSize['dpi_y'] }} dpi): <b>{{ $sugSize['width_mm'] }} × {{ $sugSize['height_mm'] }} mm</b> — asumsi ini bentangan/flat yg dicetak, bukan dimensi luar box.
+                                            <span>📐 {{ t('Size read from the artwork DPI metadata') }} ({{ $sugSize['dpi_x'] }}×{{ $sugSize['dpi_y'] }} dpi): <b>{{ $sugSize['width_mm'] }} × {{ $sugSize['height_mm'] }} mm</b> — {{ t('assumes this is the printed spread/flat, not the outer box dimensions.') }}
                                             @if ($sugSize['dpi_x'] == 72 || $sugSize['dpi_x'] == 96)
-                                                ⚠️ {{ $sugSize['dpi_x'] }} dpi biasanya cuma default layar/software, BUKAN skala cetak asli — kemungkinan besar tidak akurat, jangan langsung dipakai.
+                                                ⚠️ {{ $sugSize['dpi_x'] }} {{ t('dpi is usually just a screen/software default, NOT the real print scale — most likely inaccurate, do not use it directly.') }}
                                             @else
-                                                Tetap cek ulang manual sebelum konfirmasi ke customer.
+                                                {{ t('Still double-check manually before confirming to the customer.') }}
                                             @endif
                                             </span>
                                             @unless($readOnly)
-                                                <button type="button" class="btn g xs" @click="applyArtworkSize({{ $sugSize['width_mm'] }}, {{ $sugSize['height_mm'] }})">Pakai ke Flat W/H</button>
+                                                <button type="button" class="btn g xs" @click="applyArtworkSize({{ $sugSize['width_mm'] }}, {{ $sugSize['height_mm'] }})">{{ t('Use for Flat W/H') }}</button>
                                             @endunless
                                         </div>
                                     @endif
                                     <div class="grid">
                                         <div class="f">
-                                            <label>Flat Width (mm)</label>
+                                            <label>{{ t('Flat Width (mm)') }}</label>
                                             <input type="number" step="0.01" wire:model="parts.{{ $i }}.flat_w" x-ref="fw"
                                                    :readonly="!flatManual" x-on:input="onFlatManualInput()" @if($readOnly) disabled @endif>
                                         </div>
                                         <div class="f">
-                                            <label>Flat Height (mm)</label>
+                                            <label>{{ t('Flat Height (mm)') }}</label>
                                             <input type="number" step="0.01" wire:model="parts.{{ $i }}.flat_h" x-ref="fh"
                                                    :readonly="!flatManual" x-on:input="onFlatManualInput()" @if($readOnly) disabled @endif>
                                         </div>
                                         <div class="f">
-                                            <label>Flat Area (mm²)</label>
+                                            <label>{{ t('Flat Area (mm²)') }}</label>
                                             <input type="text" wire:model="parts.{{ $i }}.flat_area" x-ref="fa" readonly>
                                         </div>
                                         <div class="f">
-                                            <label>Manual?</label>
+                                            <label>{{ t('Manual?') }}</label>
                                             <div style="display:flex;gap:6px">
-                                                <button type="button" class="btn xs" :class="!flatManual ? 'p' : 'g'" style="flex:1" @click="toggleManual(false)" @if($readOnly) disabled @endif>Auto</button>
-                                                <button type="button" class="btn xs" :class="flatManual ? 'p' : 'g'" style="flex:1" @click="toggleManual(true)" @if($readOnly) disabled @endif>Manual</button>
+                                                <button type="button" class="btn xs" :class="!flatManual ? 'p' : 'g'" style="flex:1" @click="toggleManual(false)" @if($readOnly) disabled @endif>{{ t('Auto') }}</button>
+                                                <button type="button" class="btn xs" :class="flatManual ? 'p' : 'g'" style="flex:1" @click="toggleManual(true)" @if($readOnly) disabled @endif>{{ t('Manual') }}</button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="sec-title">Bahan (Material)</div>
+                                    <div class="sec-title">{{ t('Material (Material)') }}</div>
                                     @if (($part['suggestions']['material'] ?? null) && empty($part['materials'][0]['category_id'] ?? null))
                                         @php($sugMat = $part['suggestions']['material'])
                                         <div class="note b" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                                            <span>💡 Saran bahan dari histori: <b>{{ $sugMat['rawmat_name'] }}</b> (dipakai {{ $sugMat['pct'] }}% Inquiry Tipe Produk ini sebelumnya)</span>
+                                            <span>💡 {{ t('Material suggestion from history') }}: <b>{{ $sugMat['rawmat_name'] }}</b> ({{ str_replace(':pct', $sugMat['pct'], t('used in :pct% of previous Inquiries of this Product Type')) }})</span>
                                             @unless($readOnly)
-                                                <button type="button" class="btn g xs" wire:click="applySuggestedMaterial({{ $i }}, {{ $sugMat['category_id'] }})">Pakai</button>
+                                                <button type="button" class="btn g xs" wire:click="applySuggestedMaterial({{ $i }}, {{ $sugMat['category_id'] }})">{{ t('Use') }}</button>
                                             @endunless
                                         </div>
                                     @endif
-                                    <div class="hint" style="margin-bottom:6px">Sales pilih Jenis &amp; Gramatur/Spec saja — brand &amp; ukuran plano ditentukan Purchasing/ProDev kemudian.</div>
+                                    <div class="hint" style="margin-bottom:6px">{{ t('Sales only chooses Kind & Grammage/Spec — brand & plano size are set later by Purchasing/ProDev.') }}</div>
                                     @foreach ($part['materials'] as $j => $mat)
                                         <div wire:key="mat-{{ $i }}-{{ $j }}" style="margin-bottom:10px">
                                             <div class="grid">
                                                 <div class="f">
-                                                    <label>Bahan #{{ $j + 1 }} — {{ $this->materialSlotLabel($j) }}</label>
+                                                    <label>{{ t('Material') }} #{{ $j + 1 }} — {{ $this->materialSlotLabel($j) }}</label>
                                                     <select wire:change="setMaterialJenis({{ $i }}, {{ $j }}, $event.target.value)"
                                                             x-data x-effect="$el.value = @js((string) ($mat['jenis_id'] ?? ''))" @if($readOnly) disabled @endif>
-                                                        <option value="">— pilih Jenis —</option>
+                                                        <option value="">— {{ t('choose Kind') }} —</option>
                                                         @foreach ($this->materialJenisOptions($j) as $catId => $name)
                                                             <option value="{{ $catId }}">{{ $name }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
                                                 <div class="f">
-                                                    <label>Gramatur / Spec <span class="hint" style="font-weight:400">(opsional)</span></label>
+                                                    <label>{{ t('Grammage / Spec') }} <span class="hint" style="font-weight:400">({{ t('optional') }})</span></label>
                                                     <select wire:change="setMaterialGramatur({{ $i }}, {{ $j }}, $event.target.value)"
                                                             x-data x-effect="$el.value = @js((string) ($mat['gramatur_id'] ?? ''))"
                                                             @if($readOnly || ! $mat['jenis_id']) disabled @endif>
-                                                        <option value="">— semua —</option>
+                                                        <option value="">— {{ t('all') }} —</option>
                                                         @foreach ($this->materialGramaturOptions($i, $j) as $catId => $name)
                                                             <option value="{{ $catId }}">{{ $name }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
                                                 <div class="f" style="max-width:100px">
-                                                    <label>Utama</label>
+                                                    <label>{{ t('Primary') }}</label>
                                                     <button type="button" class="btn xs {{ $mat['is_primary'] ? 'p' : 'g' }}" style="width:100%"
                                                             wire:click="setMaterialPrimary({{ $i }}, {{ $j }})" @if($readOnly) disabled @endif>
-                                                        {{ $mat['is_primary'] ? '✓ Utama' : '—' }}
+                                                        {{ $mat['is_primary'] ? '✓ '.t('Primary') : '—' }}
                                                     </button>
                                                 </div>
                                             </div>
@@ -3169,28 +3169,28 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                         </div>
                                     @endforeach
 
-                                    <div class="sec-title">Cetak / Warna</div>
+                                    <div class="sec-title">{{ t('Print / Color') }}</div>
                                     @if ($part['suggestions']['color'] ?? null)
                                         @php($sugColor = $part['suggestions']['color'])
                                         <div class="note b" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                                            <span>💡 Saran notasi warna dari analisis artwork: <b>{{ $sugColor['code'] }}</b> ({{ $sugColor['distinct_colors'] }} warna terdeteksi{{ $sugColor['is_grayscale'] ? ', hitam-putih' : '' }}) — perkiraan kasar, cek ulang sebelum dipakai.</span>
+                                            <span>💡 {{ t('Color notation suggestion from artwork analysis') }}: <b>{{ $sugColor['code'] }}</b> ({{ $sugColor['distinct_colors'] }} {{ t('colors detected') }}{{ $sugColor['is_grayscale'] ? ', '.t('black-and-white') : '' }}) — {{ t('rough estimate, double-check before use.') }}</span>
                                             @unless($readOnly)
-                                                <button type="button" class="btn g xs" wire:click="applySuggestedColor({{ $i }}, '{{ $sugColor['code'] }}')">Pakai</button>
+                                                <button type="button" class="btn g xs" wire:click="applySuggestedColor({{ $i }}, '{{ $sugColor['code'] }}')">{{ t('Use') }}</button>
                                             @endunless
                                         </div>
                                     @endif
                                     @if ($part['suggestions']['finishing'] ?? null)
                                         @php($sugFin = $part['suggestions']['finishing'])
                                         <div class="note y" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                                            <span>📋 Saran finishing dari histori: <b>{{ $sugFin['process_name'] }}</b> (dipakai {{ $sugFin['pct'] }}% Inquiry Tipe Produk ini sebelumnya).</span>
+                                            <span>📋 {{ t('Finishing suggestion from history') }}: <b>{{ $sugFin['process_name'] }}</b> ({{ str_replace(':pct', $sugFin['pct'], t('used in :pct% of previous Inquiries of this Product Type')) }}).</span>
                                             @unless($readOnly)
-                                                <button type="button" class="btn g xs" wire:click="applySuggestedFinishing({{ $i }}, {{ (int) $sugFin['finishing_type_id'] }})">Tambah ke Finishing</button>
+                                                <button type="button" class="btn g xs" wire:click="applySuggestedFinishing({{ $i }}, {{ (int) $sugFin['finishing_type_id'] }})">{{ t('Add to Finishing') }}</button>
                                             @endunless
                                         </div>
                                     @endif
                                     <div class="grid">
                                         <div class="f">
-                                            <label>Notasi Warna</label>
+                                            <label>{{ t('Color Notation') }}</label>
                                             <select wire:model="parts.{{ $i }}.cfg_color" x-data x-effect="$el.value = @js($part['cfg_color'])" @if($readOnly) disabled @endif>
                                                 @foreach (range(1, 6) as $front)
                                                     @foreach (range(0, 6) as $back)
@@ -3199,25 +3199,25 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                     @endforeach
                                                 @endforeach
                                             </select>
-                                            <div class="hint">Format sisiA/sisiB (1/0 s.d. 6/6)</div>
+                                            <div class="hint">{{ t('Format sideA/sideB (1/0 to 6/6)') }}</div>
                                         </div>
                                         <div class="f col3">
-                                            <label>Turunan (otomatis)</label>
+                                            <label>{{ t('Derived (automatic)') }}</label>
                                             @php($cb = $this->colorBreakdown($part['cfg_color']))
                                             <div class="derived">
                                                 @if ($cb)
-                                                    <span>front: <b>{{ $cb['front'] }}</b></span>
-                                                    <span>back: <b>{{ $cb['back'] }}</b></span>
-                                                    <span>total: <b>{{ $cb['total'] }}</b></span>
-                                                    <span>side: <b>{{ $cb['side'] }}</b></span>
+                                                    <span>{{ t('front', 'print_side') }}: <b>{{ $cb['front'] }}</b></span>
+                                                    <span>{{ t('back', 'print_side') }}: <b>{{ $cb['back'] }}</b></span>
+                                                    <span>{{ t('total', 'print_side') }}: <b>{{ $cb['total'] }}</b></span>
+                                                    <span>{{ t('side', 'print_side') }}: <b>{{ $cb['side'] }}</b></span>
                                                 @else
                                                     <span class="hint">&nbsp;</span>
                                                 @endif
                                             </div>
                                         </div>
-                                        <x-form.input :legacy="true" :col2="true" label="Catatan Warna (Pantone)"
+                                        <x-form.input :legacy="true" :col2="true" :label="t('Color Note (Pantone)')"
                                             wire:model.blur="parts.{{ $i }}.cfg_ink"
-                                            placeholder="mis. Pantone 485 C" :disabled="$readOnly" />
+                                            :placeholder="t('e.g. Pantone 485 C')" :disabled="$readOnly" />
                                     </div>
 
                                     {{-- Finishing Tambahan (permintaan user 2026-09-04: "master detail bisa
@@ -3226,14 +3226,14 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     ref_finishing_type (master yg sama dipakai ProDev). Mengisi gap yg
                                     sebelumnya dicatat di readonly-summary.blade.php ("form Inquiry BARU
                                     belum punya UI proses/finishing"). --}}
-                                    <div class="sec-title">Finishing Tambahan</div>
-                                    <div class="hint" style="margin-bottom:6px">Opsional — proses dekoratif tambahan (hot print, UV spot, emboss, laminating, dll), boleh lebih dari satu.</div>
+                                    <div class="sec-title">{{ t('Additional Finishing') }}</div>
+                                    <div class="hint" style="margin-bottom:6px">{{ t('Optional — additional decorative processes (hot print, UV spot, emboss, laminating, etc.), more than one allowed.') }}</div>
                                     <table>
                                         <thead>
                                             <tr>
                                                 <th style="width:32px">#</th>
-                                                <th>Jenis Finishing</th>
-                                                <th>Atribut / Varian</th>
+                                                <th>{{ t('Finishing Type') }}</th>
+                                                <th>{{ t('Attribute / Variant') }}</th>
                                                 <th style="width:36px"></th>
                                             </tr>
                                         </thead>
@@ -3244,7 +3244,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                     <td>
                                                         <select wire:model="parts.{{ $i }}.finishings.{{ $j }}.finishing_type_id"
                                                                 x-data x-effect="$el.value = @js((string) $fin['finishing_type_id'])" @if($readOnly) disabled @endif>
-                                                            <option value="">— pilih jenis finishing —</option>
+                                                            <option value="">— {{ t('choose finishing type') }} —</option>
                                                             @foreach ($this->finishingTypeOptions as $ft)
                                                                 <option value="{{ $ft->id_finishing_type }}">{{ $ft->finishing_name }}</option>
                                                             @endforeach
@@ -3252,28 +3252,28 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                     </td>
                                                     <td>
                                                         <input type="text" maxlength="60" wire:model.blur="parts.{{ $i }}.finishings.{{ $j }}.attribute"
-                                                               placeholder="mis. Gold Puyeh, area logo" @if($readOnly) disabled @endif>
+                                                               placeholder="{{ t('e.g. Gold Puyeh, logo area') }}" @if($readOnly) disabled @endif>
                                                     </td>
                                                     <td>
                                                         <button type="button" class="btn d xs" wire:click="removeFinishingRow({{ $i }}, {{ $j }})" @if($readOnly) disabled @endif>✕</button>
                                                     </td>
                                                 </tr>
                                             @empty
-                                                <tr><td colspan="4" style="text-align:center;color:#8a94a6;font-size:11.5px">Belum ada finishing tambahan.</td></tr>
+                                                <tr><td colspan="4" style="text-align:center;color:#8a94a6;font-size:11.5px">{{ t('No additional finishing yet.') }}</td></tr>
                                             @endforelse
                                         </tbody>
                                     </table>
                                     @unless($readOnly)
                                         <button type="button" class="btn g xs" style="margin-top:6px" wire:click="addFinishingRow({{ $i }})">
-                                            ＋ Tambah Finishing
+                                            ＋ {{ t('Add Finishing') }}
                                         </button>
                                     @endunless
                                 </div>
 
                                 <div style="width:360px;flex-shrink:0">
-                                    <label style="font-size:11px;color:#667;font-weight:600">Preview Dieline (live)</label>
+                                    <label style="font-size:11px;color:#667;font-weight:600">{{ t('Dieline Preview (live)') }}</label>
                                     <div class="dcut" x-ref="preview"></div>
-                                    <div class="legend">🔴 potong &nbsp; 🟢 lipat &nbsp; ⚪ overflow &nbsp; 🔵 lubang/jilid</div>
+                                    <div class="legend">🔴 {{ t('cut') }} &nbsp; 🟢 {{ t('fold') }} &nbsp; ⚪ {{ t('overflow') }} &nbsp; 🔵 {{ t('hole/binding') }}</div>
                                 </div>
                                 @endif
                             </div>
@@ -3282,7 +3282,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 @endforeach
 
                 <button type="button" class="btn g" wire:click="addPart" @if($readOnly) disabled @endif>
-                    ＋ Tambah Part
+                    ＋ {{ t('Add Part') }}
                 </button>
             </div>
         </div>
@@ -3299,8 +3299,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 <div style="background:#fff;border-radius:12px;width:100%;max-width:620px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e3e7f0">
                         <div>
-                            <b style="font-size:14px;color:#2c3e69">Pilih Peran Part</b>
-                            <div class="hint" style="margin:2px 0 0">Nama part terisi otomatis: nama-produk-{peran}</div>
+                            <b style="font-size:14px;color:#2c3e69">{{ t('Choose Part Role') }}</b>
+                            <div class="hint" style="margin:2px 0 0">{{ t('Part name is filled automatically: product-name-{role}') }}</div>
                         </div>
                         <button type="button" wire:click="closeRolePicker" style="background:none;border:none;font-size:20px;cursor:pointer;color:#8a94a6;line-height:1">&times;</button>
                     </div>
@@ -3309,8 +3309,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                             <button type="button" wire:click="selectPartRole('{{ $roleKey }}')"
                                 style="border:2px solid #e3e7f0;border-radius:8px;padding:12px 8px;cursor:pointer;background:#fff;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center">
                                 <span style="font-size:40px;line-height:1">{{ $role['icon'] }}</span>
-                                <span style="font-size:12.5px;color:#2c3e69;font-weight:700">{{ $role['label'] }}</span>
-                                <span style="font-size:10px;color:#8a94a6;line-height:1.3">{{ $role['desc'] }}</span>
+                                <span style="font-size:12.5px;color:#2c3e69;font-weight:700">{{ t($role['label']) }}</span>
+                                <span style="font-size:10px;color:#8a94a6;line-height:1.3">{{ t($role['desc']) }}</span>
                             </button>
                         @endforeach
                     </div>
@@ -3319,23 +3319,22 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         @endif
 
         <div class="card">
-            <h3>Status Tooling <span style="font-weight:400;color:#889">(plat/pisau/film — cek aus saat repeat order)</span></h3>
+            <h3>{{ t('Tooling Status') }} <span style="font-weight:400;color:#889">({{ t('plate/die/film — check wear on repeat orders') }})</span></h3>
             <div class="body">
                 <div class="note b" style="margin-bottom:10px">
-                    🔧 Tooling baru (plat cetak, pisau/matras, film) → biaya masuk sebagai line terpisah. Master aset
-                    tooling (cek otomatis aus) menyusul di iterasi berikutnya — isi manual dulu.
+                    🔧 {{ t('New tooling (printing plate, die/matrix, film) → cost goes in as a separate line. The tooling asset master (automatic wear check) will follow in a later iteration — fill in manually for now.') }}
                 </div>
                 @if (empty($toolings))
-                    <div class="hint">Belum ada baris tooling.</div>
+                    <div class="hint">{{ t('No tooling rows yet.') }}</div>
                 @else
                     <table>
                         <thead>
                             <tr>
-                                <th style="width:140px">Jenis</th>
-                                <th style="width:150px">Status</th>
-                                <th style="width:110px">Biaya Baru?</th>
-                                <th style="width:140px">Biaya (Rp)</th>
-                                <th>Catatan</th>
+                                <th style="width:140px">{{ t('Type') }}</th>
+                                <th style="width:150px">{{ t('Status') }}</th>
+                                <th style="width:110px">{{ t('New Cost?') }}</th>
+                                <th style="width:140px">{{ t('Cost (Rp)') }}</th>
+                                <th>{{ t('Notes') }}</th>
                                 <th style="width:36px"></th>
                             </tr>
                         </thead>
@@ -3344,22 +3343,22 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                 <tr wire:key="tool-{{ $t['id'] ?? 'new-'.$i }}">
                                     <td>
                                         <select wire:model="toolings.{{ $i }}.tooling_kind" x-data x-effect="$el.value = @js($t['tooling_kind'])" @if($readOnly) disabled @endif>
-                                            @foreach (['PLATE' => 'Plat cetak', 'PISAU' => 'Pisau/matras', 'MATRAS' => 'Matras', 'FILM' => 'Film'] as $code => $label)
-                                                <option value="{{ $code }}">{{ $label }}</option>
+                                            @foreach (['PLATE' => 'Printing plate', 'PISAU' => 'Die/matrix', 'MATRAS' => 'Matrix', 'FILM' => 'Film'] as $code => $label)
+                                                <option value="{{ $code }}">{{ t($label) }}</option>
                                             @endforeach
                                         </select>
                                     </td>
                                     <td>
                                         <select wire:model="toolings.{{ $i }}.tooling_status" x-data x-effect="$el.value = @js($t['tooling_status'])" @if($readOnly) disabled @endif>
-                                            @foreach (['ADA' => 'Ada', 'ADA_WARNING' => 'Ada (warning)', 'AUS' => 'Aus', 'TIDAK_ADA' => 'Tidak ada'] as $code => $label)
-                                                <option value="{{ $code }}">{{ $label }}</option>
+                                            @foreach (['ADA' => 'Exists', 'ADA_WARNING' => 'Available (warning)', 'AUS' => 'Worn out', 'TIDAK_ADA' => 'Not available'] as $code => $label)
+                                                <option value="{{ $code }}">{{ t($label) }}</option>
                                             @endforeach
                                         </select>
                                     </td>
                                     <td style="text-align:center">
                                         <button type="button" class="btn xs {{ $t['is_new_charge'] ? 'p' : 'g' }}"
                                                 wire:click="setToolingNewCharge({{ $i }}, {{ $t['is_new_charge'] ? 'false' : 'true' }})" @if($readOnly) disabled @endif>
-                                            {{ $t['is_new_charge'] ? 'Ya' : 'Tidak' }}
+                                            {{ $t['is_new_charge'] ? t('Yes') : t('No') }}
                                         </button>
                                     </td>
                                     <td>
@@ -3367,7 +3366,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                @if(! $t['is_new_charge']) readonly @endif @if($readOnly) disabled @endif>
                                     </td>
                                     <td>
-                                        <input type="text" wire:model.blur="toolings.{{ $i }}.remark" placeholder="opsional" @if($readOnly) disabled @endif>
+                                        <input type="text" wire:model.blur="toolings.{{ $i }}.remark" placeholder="{{ t('optional') }}" @if($readOnly) disabled @endif>
                                     </td>
                                     <td>
                                         <button type="button" class="btn d xs" wire:click="removeTooling({{ $i }})" @if($readOnly) disabled @endif>✕</button>
@@ -3378,7 +3377,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     </table>
                 @endif
                 <button type="button" class="btn g xs" style="margin-top:6px" wire:click="addTooling" @if($readOnly) disabled @endif>
-                    ＋ Tambah Tooling
+                    ＋ {{ t('Add Tooling') }}
                 </button>
             </div>
         </div>
@@ -3390,22 +3389,21 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         yg dipakai Quotation/CO nanti. Nilainya tetap NULL default spt biasa. --}}
 
         <div class="card">
-            <h3>Biaya Eksternal / Pihak Ketiga <span style="font-weight:400;color:#889">(bila sudah ditentukan sejak awal)</span></h3>
+            <h3>{{ t('External / Third-Party Costs') }} <span style="font-weight:400;color:#889">({{ t('if already set from the start') }})</span></h3>
             <div class="body">
                 <div class="note b" style="margin-bottom:10px">
-                    🚚 Biaya pihak ketiga yang sudah pasti (trucking, ekspedisi, jasa luar) dicatat sejak inkuiri →
-                    mengalir ke quotation &amp; CO.
+                    🚚 {{ t('Confirmed third-party costs (trucking, freight forwarder, outside service) are recorded from the inquiry → flow to the quotation & CO.') }}
                 </div>
                 @if (empty($externalCosts))
-                    <div class="hint">Belum ada baris biaya eksternal.</div>
+                    <div class="hint">{{ t('No external cost rows yet.') }}</div>
                 @else
                     <table>
                         <thead>
                             <tr>
-                                <th>Deskripsi</th>
-                                <th style="width:140px">Jenis</th>
-                                <th style="width:140px">Jumlah (Rp)</th>
-                                <th style="width:170px">Perlakuan Pajak</th>
+                                <th>{{ t('Description') }}</th>
+                                <th style="width:140px">{{ t('Type') }}</th>
+                                <th style="width:140px">{{ t('Amount (Rp)') }}</th>
+                                <th style="width:170px">{{ t('Tax Treatment') }}</th>
                                 <th style="width:36px"></th>
                             </tr>
                         </thead>
@@ -3414,12 +3412,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                 <tr wire:key="ext-{{ $c['id'] ?? 'new-'.$i }}">
                                     <td>
                                         <input type="text" wire:model.blur="externalCosts.{{ $i }}.description"
-                                               placeholder="mis. trucking ke gudang customer" @if($readOnly) disabled @endif>
+                                               placeholder="{{ t('e.g. trucking to customer warehouse') }}" @if($readOnly) disabled @endif>
                                     </td>
                                     <td>
                                         <select wire:model="externalCosts.{{ $i }}.cost_kind" x-data x-effect="$el.value = @js($c['cost_kind'])" @if($readOnly) disabled @endif>
-                                            @foreach (['TRUCKING' => 'Trucking', 'EKSPEDISI' => 'Ekspedisi', 'JASA_LUAR' => 'Jasa Luar', 'LAINNYA' => 'Lainnya'] as $code => $label)
-                                                <option value="{{ $code }}">{{ $label }}</option>
+                                            @foreach (['TRUCKING' => 'Trucking', 'EKSPEDISI' => 'Freight Forwarder', 'JASA_LUAR' => 'Outside Service', 'LAINNYA' => 'Others'] as $code => $label)
+                                                <option value="{{ $code }}">{{ t($label) }}</option>
                                             @endforeach
                                         </select>
                                     </td>
@@ -3428,8 +3426,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     </td>
                                     <td>
                                         <select wire:model="externalCosts.{{ $i }}.tax_treatment" x-data x-effect="$el.value = @js($c['tax_treatment'])" @if($readOnly) disabled @endif>
-                                            <option value="TAXABLE">Taxable (masuk DPP)</option>
-                                            <option value="REIMBURSEMENT">Reimbursement</option>
+                                            <option value="TAXABLE">{{ t('Taxable (in tax base)') }}</option>
+                                            <option value="REIMBURSEMENT">{{ t('Reimbursement') }}</option>
                                         </select>
                                     </td>
                                     <td>
@@ -3441,7 +3439,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     </table>
                 @endif
                 <button type="button" class="btn g xs" style="margin-top:6px" wire:click="addExternalCost" @if($readOnly) disabled @endif>
-                    ＋ Tambah Biaya
+                    ＋ {{ t('Add Cost') }}
                 </button>
             </div>
         </div>

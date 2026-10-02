@@ -102,16 +102,16 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total Perlu Imposisi" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Selesai" :value="$this->statDone" subtitle="SEMUA PART TERKONFIRMASI" />
-            <x-grid.stat-box tone="warn" label="Belum Selesai" :value="$this->statPending" />
+            <x-grid.stat-box tone="total" :label="t('Total Needing Imposition')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" :label="t('Done')" :value="$this->statDone" :subtitle="t('ALL PARTS CONFIRMED')" />
+            <x-grid.stat-box tone="warn" :label="t('Not Done')" :value="$this->statPending" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. inkuiri / nama produk…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search inquiry no. / product name…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
             </x-grid.toolbar>
@@ -120,17 +120,17 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Inkuiri</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">Produk</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">Tipe</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">Status</th>
-                            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Progres Part</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Inquiry') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">{{ t('Product') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">{{ t('Type') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">{{ t('Status') }}</th>
+                            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Part Progress') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->inquiries as $row)
-                            <tr wire:key="imp-{{ $row->id_inquiry }}" wire:dblclick="open({{ $row->id_inquiry }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka Imposition">
+                            <tr wire:key="imp-{{ $row->id_inquiry }}" wire:dblclick="open({{ $row->id_inquiry }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open Imposition') }}">
                                 @php($custName = $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—'))
                                 <x-grid.identity-cell :id="$row->id_inquiry" :name="$custName" :code="$row->inquiry_no ?: '—'" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $row->product_draft_name ?: '—' }}</td>
@@ -144,11 +144,11 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->isImpositionDone($row) ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#eaf2ff] text-[#1d4ed8]' }}">{{ $this->impositionProgress($row) }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka Imposition" action="open({{ $row->id_inquiry }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" :title="t('Open Imposition')" action="open({{ $row->id_inquiry }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Tidak ada inkuiri yang perlu imposisi." />
+                            <x-grid.empty-row :colspan="6" :message="t('No inquiries need imposition.')" />
                         @endforelse
                     </tbody>
                 </table>

@@ -115,13 +115,13 @@ class MachineCapabilityService
         $reasons = [];
 
         if (! $m->activate) {
-            $reasons[] = 'Mesin nonaktif di master';
+            $reasons[] = t('Machine inactive in master');
         } elseif (in_array($m->machine_status, ProdMachine::STATUSES_BLOCKING, true)) {
-            $reasons[] = 'Status mesin: '.$m->statusLabel();
+            $reasons[] = str_replace(':status', $m->statusLabel(), t('Machine status: :status'));
         }
 
         if (! $m->is_process_machine) {
-            $reasons[] = 'Bukan mesin proses (alat penunjang)';
+            $reasons[] = t('Not a process machine (support tool)');
         }
 
         // Envelope pasangan mengalahkan envelope mesin bila diisi.
@@ -138,11 +138,11 @@ class MachineCapabilityService
             $fits = fn ($l, $w) => (! $maxLen || $l <= $maxLen) && (! $maxWid || $w <= $maxWid);
 
             if ($maxLen && $maxWid && ! $fits($len, $wid) && ! $fits($wid, $len)) {
-                $reasons[] = sprintf('Lembar %dx%d mm melebihi batas mesin %dx%d mm', $len, $wid, $maxLen, $maxWid);
+                $reasons[] = sprintf(t('Sheet %dx%d mm exceeds the machine limit %dx%d mm'), $len, $wid, $maxLen, $maxWid);
             }
 
             if ($minLen && $minWid && (min($len, $wid) < min($minLen, $minWid))) {
-                $reasons[] = sprintf('Lembar lebih kecil dari minimum mesin %dx%d mm', $minLen, $minWid);
+                $reasons[] = sprintf(t('Sheet smaller than the machine minimum %dx%d mm'), $minLen, $minWid);
             }
         }
 
@@ -151,10 +151,10 @@ class MachineCapabilityService
         $gsmMax = $cap->gsm_max ?: $m->gsm_max;
 
         if ($gsm && $gsmMin && $gsm < $gsmMin) {
-            $reasons[] = "Gramatur {$gsm} di bawah minimum {$gsmMin} gsm";
+            $reasons[] = str_replace([':gsm', ':min'], [$gsm, $gsmMin], t('Grammage :gsm is below the minimum :min gsm'));
         }
         if ($gsm && $gsmMax && $gsm > $gsmMax) {
-            $reasons[] = "Gramatur {$gsm} di atas maksimum {$gsmMax} gsm";
+            $reasons[] = str_replace([':gsm', ':max'], [$gsm, $gsmMax], t('Grammage :gsm is above the maximum :max gsm'));
         }
 
         return $reasons;
@@ -190,29 +190,29 @@ class MachineCapabilityService
         $name = ProdProcess::find($processId)?->process_name;
 
         return array_filter([
-            'Kapabilitas mesin' => DB::connection('tm2mst')->table('prod_process_machine')
+            t('Machine capability') => DB::connection('tm2mst')->table('prod_process_machine')
                 ->where('process_id', $processId)->count(),
-            'Routing Master Produk (prod_part_process)' => DB::connection('tm2mst')->table('prod_part_process')
+            t('Master Product routing (prod_part_process)') => DB::connection('tm2mst')->table('prod_part_process')
                 ->where('process_id', $processId)->count(),
-            'Target rate per produk' => DB::connection('tm2mst')->table('prod_part_process_machine_rate')
+            t('Target rate per product') => DB::connection('tm2mst')->table('prod_part_process_machine_rate')
                 ->where('process_id', $processId)->count(),
-            'BOP Inquiry (iqp_part_process)' => $this->safeCount('tm2sdi', 'iqp_part_process', fn ($q) => $q->where('process_id', $processId)),
-            'Operasi Work Order' => $name ? $this->safeCount('tm2prd', 'prd_wo_operation', fn ($q) => $q->where('process_name', $name)) : 0,
+            t('BOP Inquiry (iqp_part_process)') => $this->safeCount('tm2sdi', 'iqp_part_process', fn ($q) => $q->where('process_id', $processId)),
+            t('Work Order operations') => $name ? $this->safeCount('tm2prd', 'prd_wo_operation', fn ($q) => $q->where('process_name', $name)) : 0,
         ]);
     }
 
     public function whereUsedMachine(int $machineId): array
     {
         return array_filter([
-            'Kapabilitas proses' => DB::connection('tm2mst')->table('prod_process_machine')
+            t('Process capability') => DB::connection('tm2mst')->table('prod_process_machine')
                 ->where('machine_id', $machineId)->count(),
-            'Work Center HR' => DB::connection('tm2mst')->table('emp_work_center')
+            t('Work Center HR') => DB::connection('tm2mst')->table('emp_work_center')
                 ->where('machine_id', $machineId)->count(),
-            'Routing Master Produk (prod_part_process)' => DB::connection('tm2mst')->table('prod_part_process')
+            t('Master Product routing (prod_part_process)') => DB::connection('tm2mst')->table('prod_part_process')
                 ->where('machine_id', $machineId)->count(),
-            'Target rate per produk' => DB::connection('tm2mst')->table('prod_part_process_machine_rate')
+            t('Target rate per product') => DB::connection('tm2mst')->table('prod_part_process_machine_rate')
                 ->where('machine_id', $machineId)->count(),
-            'Operasi Work Order' => $this->safeCount('tm2prd', 'prd_wo_operation', fn ($q) => $q->where('machine_id', $machineId)),
+            t('Work Order operations') => $this->safeCount('tm2prd', 'prd_wo_operation', fn ($q) => $q->where('machine_id', $machineId)),
         ]);
     }
 
