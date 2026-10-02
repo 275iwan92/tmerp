@@ -5,7 +5,7 @@
     use App\Support\V2\Data\ApprovalCenter;
     use App\Support\V2\Src;
 
-    $title = collect(ApprovalCenter::SCREENS[$screen])->map(fn ($m) => ApprovalCenter::MODULES[$m]['title'])->implode(' & ');
+    $title = collect(ApprovalCenter::SCREENS[$screen])->map(fn ($m) => t(ApprovalCenter::MODULES[$m]['title']))->implode(' & ');
 @endphp
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif

@@ -6,10 +6,10 @@ use Carbon\CarbonImmutable;
 use Devlib\Lang;
 use Devlib\Locale;
 
-// Kalender setahun (12 bulan sekaligus) untuk hari libur / hari kerja: marked dates diwarnai per tone,
+// Kalender setahun (12 bulan sekaligus) untuk hari libur / hari kerja: tanggal bertanda diwarnai per tone,
 // hari non-kerja (offDays, 0 = Minggu) bertulisan merah seperti kalender dinding. Render server, tanpa JS.
 // marks: ['YYYY-MM-DD' => ['label' => .., 'tone' => danger|warn|info|success|neutral, 'url' => ?]]
-// legend: [tone => label]. Klik marked dates = url tanda itu; tanggal kosong = newUrl ({date} diganti tanggal).
+// legend: [tone => label]. Klik tanggal bertanda = url tanda itu; tanggal kosong = newUrl ({date} diganti tanggal).
 class YearCalendar extends DevlibComponent
 {
     public function __construct(

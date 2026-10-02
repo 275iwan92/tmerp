@@ -4,7 +4,7 @@ namespace Devlib\Components;
 
 // Opening screen setelah login (Beranda): salam + jam + cuaca, tombol Job Description & SOP jabatan,
 // KPI per periode, target vs pencapaian, aktivitas, fokus & agenda, kata motivasi harian.
-// Satu komponen untuk SEMUA jabatan: isi dari $board (dashboard profile per position; jabatan tanpa
+// Satu komponen untuk SEMUA jabatan: isi dari $board (profil dashboard per jabatan; jabatan tanpa
 // profil khusus = profil "general"). Mekanisme sama, hanya bidang KPI/aktivitasnya yang beda.
 //
 // $board = [

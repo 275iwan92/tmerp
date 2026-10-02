@@ -24,7 +24,7 @@ class MultiLanguageRatchetTest extends TestCase
         'layouts' => 4,
         'livewire' => 2,
         'mail' => 1,
-        'models' => 87,
+        'models' => 86,
         'pages' => 0,
         'pages/auth' => 2,
         'pages/careers' => 3,
@@ -47,9 +47,9 @@ class MultiLanguageRatchetTest extends TestCase
         'pages/security' => 3,
         'pages/self-service' => 53,
         'pages/setup' => 5,
-        'services' => 163,
-        'support' => 217,
-        'v2' => 38,
+        'services' => 160,
+        'support' => 216,
+        'v2' => 11,
     ];
 
     private const BASELINE = [

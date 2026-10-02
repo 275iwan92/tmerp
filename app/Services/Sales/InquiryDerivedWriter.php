@@ -20,7 +20,8 @@ use Illuminate\Validation\ValidationException;
 // sebelum -> sesudah di iqp_revise_change supaya ProDev & ProCost tahu apa yang wajib diulang.
 final class InquiryDerivedWriter
 {
-    public const SCOPES = ['ARTWORK' => 'Artwork', 'COLOR' => 'Warna', 'DIMENSION' => 'Dimensi', 'MATERIAL' => 'Bahan', 'PROCESS' => 'Proses / Finishing', 'JOIN' => 'Struktur / Sambungan'];
+    // Disimpan = kode (kunci, iqp_inquiry.revise_scope); label English, diterjemahkan t() di tempat tampil.
+    public const SCOPES = ['ARTWORK' => 'Artwork', 'COLOR' => 'Color', 'DIMENSION' => 'Dimension', 'MATERIAL' => 'Material', 'PROCESS' => 'Process / Finishing', 'JOIN' => 'Structure / Joining'];
 
     // Diulang di mana bila scope berubah (dipakai tabel perbedaan).
     public const IMPACT = ['ARTWORK' => 'Proof / ACC Digital · ProCost', 'COLOR' => 'ProDev · ProCost', 'DIMENSION' => 'ProDev (imposisi, pisau) · ProCost',

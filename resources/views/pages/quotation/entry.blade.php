@@ -492,19 +492,14 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
         unset($this->activities);
     }
 
-    // QuoActivity::TYPES/RESULTS (model, dipakai juga layar v2) masih berlabel Indonesia: layar ini menampilkan English + t().
-    private const ACT_TYPE_EN = ['CALL' => 'Phone call', 'VISIT' => 'Visit', 'WHATSAPP' => 'WhatsApp', 'EMAIL' => 'Email', 'MEETING' => 'Meeting', 'OTHER' => 'Other'];
-
-    private const ACT_RESULT_EN = ['POSITIVE' => 'Positive', 'NEUTRAL' => 'Neutral', 'NEGATIVE' => 'Negative', 'NO_ANSWER' => 'No answer'];
-
     private function actTypeLabel(string $code): string
     {
-        return t(self::ACT_TYPE_EN[$code] ?? $code);
+        return QuoActivity::typeLabel($code);
     }
 
     private function actResultLabel(string $code): string
     {
-        return t(self::ACT_RESULT_EN[$code] ?? $code);
+        return QuoActivity::resultLabel($code);
     }
 
     // "1 CO = 1 Quotation" (keputusan user 2026-08-20) -- lihat App\Services\Sales\CoOrderBuilder.

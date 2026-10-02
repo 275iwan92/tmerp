@@ -64,7 +64,7 @@ class Ribbon extends DevlibComponent
 
         if ($hasMenu && ! empty($it['split'])) {
             return '<div class="dl-rb__split is-'.$size.'"><button type="button" class="'.$cls.'" data-rb-key="'.$key.'" title="'.$title.'"'.$tip.'>'.$icon.($size === 'lg' ? '' : $label).'</button>'
-                .'<button type="button" class="dl-rb__arrow" data-rb-drop aria-label="'.e($it['label']).' — pilihan">'.($size === 'lg' ? $label : '').'<i class="fa-solid fa-caret-down"></i></button>'.$this->menu($it['menu']).'</div>';
+                .'<button type="button" class="dl-rb__arrow" data-rb-drop aria-label="'.e($it['label']).' — '.e(\Devlib\Lang::text('options')).'">'.($size === 'lg' ? $label : '').'<i class="fa-solid fa-caret-down"></i></button>'.$this->menu($it['menu']).'</div>';
         }
         if ($hasMenu) {
             return '<div class="dl-rb__drop"><button type="button" class="'.$cls.'" data-rb-drop title="'.$title.'"'.$tip.'>'.$icon.$label.'<i class="fa-solid fa-caret-down dl-rb__caret"></i></button>'.$this->menu($it['menu']).'</div>';

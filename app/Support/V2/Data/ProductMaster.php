@@ -73,7 +73,7 @@ final class ProductMaster
             'tree' => self::tree($parts, null),
             'components' => $parts->where('part_kind', 'COMPONENT')->map(fn ($x) => self::part($x))->values()->all(),
             'accs' => $p->accs->map(fn (ProdProductAcc $a) => ['type' => $a->acc_type, 'at' => \Devlib\Locale::dt($a->acc_at), 'by' => $a->approved_by,
-                'channel' => ProdProductAcc::CHANNELS[$a->channel] ?? $a->channel, 'note' => $a->note,
+                'channel' => ProdProductAcc::channelOptions()[$a->channel] ?? $a->channel, 'note' => $a->note,
                 'evidence' => $a->evidence_path ? asset('storage/'.$a->evidence_path) : null, 'evidence_name' => $a->evidence_filename])->all(),
         ];
     }

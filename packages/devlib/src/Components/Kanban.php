@@ -30,7 +30,7 @@ class Kanban extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'kartu kanban';
+        return $this->source ?? 'kanban cards';
     }
 
     public function render()

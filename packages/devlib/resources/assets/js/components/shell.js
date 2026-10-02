@@ -313,7 +313,7 @@
       const it = this.findItem(code); if (!it) return;
       if (this.openTabs.has(code)) { this.activate(code); this.toGrid(code, it.url); return; }
       const tab = document.createElement('div'); tab.className = 'dl-tab'; tab.dataset.code = code;
-      tab.innerHTML = `<span><i class="${esc(it.icon || typeIcon(it.type))}"></i></span><span class="tlbl">${esc(it.label)}</span><button type="button" class="tx" title="Tutup">×</button>`;
+      tab.innerHTML = `<span><i class="${esc(it.icon || typeIcon(it.type))}"></i></span><span class="tlbl">${esc(it.label)}</span><button type="button" class="tx" title="${esc(T('close'))}">×</button>`;
       tab.addEventListener('click', ev => { if (ev.target.classList.contains('tx')) { ev.stopPropagation(); this.closeTab(code); } else this.activate(code); });
       this.tabbar.appendChild(tab);
       const pane = document.createElement('div'); pane.className = 'dl-pane is-framed';

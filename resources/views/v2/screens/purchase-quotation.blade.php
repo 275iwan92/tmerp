@@ -45,7 +45,7 @@
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'valid', 'label' => 'Valid Until', 'type' => 'date'],
             ['key' => 'file', 'label' => 'File'],
-            ['key' => 'read', 'label' => 'Reading Result', 'type' => 'badge', 'tones' => PurchaseQuotation::READ_TONES],
+            ['key' => 'read', 'label' => 'Reading Result', 'type' => 'badge', 'tones' => PurchaseQuotation::readTones()],
             ['key' => 'total', 'label' => 'Total (IDR)', 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseQuotation::STATUS_TONES],
         ]"
@@ -56,7 +56,7 @@
             ['key' => 'lead', 'label' => t('Lead Time (days)'), 'type' => 'number'],
             ['key' => 'note', 'label' => t('Notes')],
         ]]"
-        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Needs check', 'where' => ['status' => 'DRAFT', 'read' => ['Perlu cek', 'Isi manual', 'Gagal dibaca']], 'tone' => 'warn'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Closed (ordered)', 'where' => ['status' => 'CLOSED'], 'tone' => 'info']]"
+        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Needs check', 'where' => ['status' => 'DRAFT', 'read' => [PurchaseQuotation::readLabel('CHECK'), PurchaseQuotation::readLabel('MANUAL'), PurchaseQuotation::readLabel('FAILED')]], 'tone' => 'warn'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Closed (ordered)', 'where' => ['status' => 'CLOSED'], 'tone' => 'info']]"
         :filters="['supplier' => 'Supplier', 'pr' => 'Reference PR', 'status' => 'Status']" />
     <x-dl::action-form method="get" action="{{ $home }}">
         <x-dl::card title="Compare quotations per PR" description="Choose a PR that has Confirmed PQs from several suppliers, then pick the winner per line.">
@@ -100,7 +100,7 @@
         ])->values()->all();
     @endphp
     @if ($draft && in_array($pq->extract_status, ['CHECK', 'MANUAL', 'FAILED'], true))
-        <x-dl::alert tone="warn" :message="(PurchaseQuotation::READ_LABELS[$pq->extract_status] ?? '').': '.raw($pq->extract_note ?: t('lines marked ⚠ are not a sure match — choose the PR line / Material Master item, check qty, unit and price, then Confirm.'))" />
+        <x-dl::alert tone="warn" :message="raw(PurchaseQuotation::readLabel($pq->extract_status, '')).': '.raw($pq->extract_note ?: t('lines marked ⚠ are not a sure match — choose the PR line / Material Master item, check qty, unit and price, then Confirm.'))" />
     @endif
     <x-dl::form id="pq-form" :title="'Purchase Quotation · '.raw($pq->doc_no ?: 'Draft #'.$pq->pq_id)" :subtitle="raw((PurchaseOrder::suppliers([$pq->i_supplier_id])[$pq->i_supplier_id] ?? ($pq->i_supplier_text ?: t('supplier not chosen yet'))).' · '.$pq->status)"
         panel="top" kind="document" :status="PurchaseQuotation::formStatus($pq)"
@@ -132,7 +132,7 @@
                 <x-dl::field.select name="i_currency_id" label="Currency" :options="PurchaseQuotation::currencies()" :value="$pq->i_currency_id" :source="Src::of('tm2mst.fin_currency')" />
                 <x-dl::field.decimal name="i_fx_rate" label="Rate to IDR" :value="(float) $pq->i_fx_rate" :source="Src::of('tm2pur.pq_quotation.i_fx_rate')" />
                 <x-dl::field.number name="i_lead_time_day" label="Lead Time (days)" :value="$pq->i_lead_time_day" :source="Src::of('tm2pur.pq_quotation.i_lead_time_day')" />
-                <x-dl::field.display label="Reading Result" :value="(PurchaseQuotation::READ_LABELS[$pq->extract_status] ?? '—').($pq->extract_note ? ' · '.$pq->extract_note : '')" :source="Src::of('tm2pur.pq_quotation.extract_status', 'extract_note')" />
+                <x-dl::field.display label="Reading Result" :value="PurchaseQuotation::readLabel($pq->extract_status).($pq->extract_note ? ' · '.$pq->extract_note : '')" :source="Src::of('tm2pur.pq_quotation.extract_status', 'extract_note')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:file>

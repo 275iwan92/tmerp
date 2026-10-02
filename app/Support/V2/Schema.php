@@ -178,12 +178,17 @@ final class Schema
         return $rows;
     }
 
+    // Kode 'kind' di schema-changes.json (ditulis schema:dictionary, data lama tetap Indonesia) -> teks tampil English + kamus.
+    private const CHANGE_KINDS = ['tabel baru' => 'New table', 'kolom baru' => 'New column', 'tabel dihapus' => 'Table dropped',
+        'kolom dihapus' => 'Column dropped', 'tipe berubah' => 'Type changed'];
+
     public static function changes(): array
     {
         $f = resource_path('data/v2/schema-changes.json');
         $rows = [];
         foreach (is_file($f) ? json_decode(file_get_contents($f), true) : [] as $batch) {
             foreach ($batch['items'] as $i => $it) {
+                $it['kind'] = t(self::CHANGE_KINDS[$it['kind']] ?? $it['kind'], 'badge');
                 $rows[] = $it + ['id' => $batch['at'].'#'.$i, 'at' => $batch['at']];
             }
         }

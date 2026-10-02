@@ -26,7 +26,7 @@
                 <p class="dl-note">{!! t('<b>Non-standard name</b> = violates the column names locked in CLAUDE.md §3.') !!} {!! t('<b>Synonym</b> = different name, same meaning.') !!} {!! t('<b>Type differs</b> = same name but the type/precision is not uniform.') !!} {!! t('<b>Same name</b> = the same column in many tables (check whether the same data is stored twice).') !!} {{ t('PK, FK, standard audit columns & the legacy DB tm2old are not counted. Open a row to see where it is.') }}</p>
                 <x-dl::grid id="dd-dup" :rows="$duplicates" row-key="id" :active-key="null" actions="none" :new-record="false" :per-page="50" search="Search column name..."
                     :filters="['flag' => 'Indication']"
-                    :columns="[['key' => 'flag', 'label' => 'Indication', 'type' => 'badge', 'tones' => ['Nama tidak baku' => 'danger', 'Sinonim' => 'violet', 'Tipe beda' => 'warn', 'Nama sama' => 'neutral']], ['key' => 'name', 'label' => t('Column (normalised)')], ['key' => 'count', 'label' => t('Amount'), 'type' => 'number'], ['key' => 'names', 'label' => t('Names used')], ['key' => 'types', 'label' => t('Types used')]]"
+                    :columns="[['key' => 'flag', 'label' => 'Indication', 'type' => 'badge', 'tones' => [t('Non-standard name') => 'danger', t('Synonym') => 'violet', t('Different type') => 'warn', t('Same name') => 'neutral']], ['key' => 'name', 'label' => t('Column (normalised)')], ['key' => 'count', 'label' => t('Amount'), 'type' => 'number'], ['key' => 'names', 'label' => t('Names used')], ['key' => 'types', 'label' => t('Types used')]]"
                     :detail="['key' => 'where', 'title' => t('Found in'), 'columns' => [['key' => 'at', 'label' => t('Database.Table')], ['key' => 'col', 'label' => t('Columns')], ['key' => 'type', 'label' => t('Type')]]]"
                     source="analysis App\Support\V2\Schema::duplicates()" />
             </x-slot:dup>
@@ -46,7 +46,7 @@
             <x-slot:changes>
                 @if ($changes)
                     <x-dl::grid id="dd-changes" :rows="$changes" row-key="id" :active-key="null" actions="none" :new-record="false" search="Search..." :filters="['kind' => 'Modification', 'db' => 'Database']"
-                        :columns="[['key' => 'at', 'label' => 'Timestamp'], ['key' => 'kind', 'label' => 'Modification', 'type' => 'badge', 'tones' => ['tabel baru' => 'success', 'kolom baru' => 'success', 'tabel dihapus' => 'danger', 'kolom dihapus' => 'danger', 'tipe berubah' => 'warn']], ['key' => 'db', 'label' => 'Database'], ['key' => 'table', 'label' => 'Table'], ['key' => 'column', 'label' => t('Columns')], ['key' => 'detail', 'label' => 'Detail']]"
+                        :columns="[['key' => 'at', 'label' => 'Timestamp'], ['key' => 'kind', 'label' => 'Modification', 'type' => 'badge', 'tones' => [t('New table', 'badge') => 'success', t('New column', 'badge') => 'success', t('Table dropped', 'badge') => 'danger', t('Column dropped', 'badge') => 'danger', t('Type changed', 'badge') => 'warn']], ['key' => 'db', 'label' => 'Database'], ['key' => 'table', 'label' => 'Table'], ['key' => 'column', 'label' => t('Columns')], ['key' => 'detail', 'label' => 'Detail']]"
                         source="resources/data/schema-changes.json" />
                 @else
                     <x-dl::empty-state title="No changes recorded yet" message="History starts filling when the database structure changes (migrate / rollback)." icon="fa-clock-rotate-left" />

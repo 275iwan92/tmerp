@@ -24,10 +24,10 @@
             ['key' => 'photo', 'label' => 'Artwork', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Product', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'customer', 'label' => 'Customer'],
-            ['key' => 'acc_digital', 'label' => 'ACC Digital', 'type' => 'badge', 'tones' => ['ADA' => 'success', 'BELUM' => 'warn']],
+            ['key' => 'acc_digital', 'label' => 'ACC Digital', 'type' => 'badge', 'tones' => [t('ON FILE', 'badge') => 'success', t('NOT YET', 'badge') => 'warn']],
             ['key' => 'status', 'label' => 'Product status', 'type' => 'badge', 'tones' => ['ACTIVE' => 'success', 'DRAFT' => 'neutral']],
         ]"
-        :stats="[['label' => t('All')], ['label' => t('No Digital ACC yet'), 'where' => ['acc_digital' => 'BELUM'], 'tone' => 'warn'], ['label' => t('Digital ACC done'), 'where' => ['acc_digital' => 'ADA'], 'tone' => 'success']]" />
+        :stats="[['label' => t('All')], ['label' => t('No Digital ACC yet'), 'where' => ['acc_digital' => t('NOT YET', 'badge')], 'tone' => 'warn'], ['label' => t('Digital ACC done'), 'where' => ['acc_digital' => t('ON FILE', 'badge')], 'tone' => 'success']]" />
 @else
     <x-dl::action-bar>
         <x-dl::button variant="secondary" icon="back" label="Back" href="javascript:history.back()" />

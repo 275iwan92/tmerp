@@ -1210,6 +1210,7 @@
           : (+parseFloat(v).toFixed(4)).toLocaleString('id-ID', { maximumFractionDigits: 4 });
       const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       const tx = s => esc(_t(s));   // teks kamus di dalam HTML
+      const txf = (s, r) => { let x = tx(s); Object.keys(r).forEach(k => { x = x.split(':' + k).join(r[k]); }); return x; };   // isian r = HTML jadi
       const notes = list => list && list.length
           ? '<ul class="io-warns">' + list.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '';
       const opts = (list, val, blank) => (blank !== undefined ? '<option value="">' + esc(blank) + '</option>' : '')
@@ -1254,12 +1255,12 @@
               + ' <b style="margin-left:10px">' + tx('Qty / pack:') + '</b> ' + esc(sp.inputs.packQty || '—') + '</div>';
 
           if (ed) {
-              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>#</th><th>' + tx('Process') + '</th><th>' + tx('Label in routing') + '</th><th>' + tx('Machine') + '</th>'
+              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>#</th><th>' + tx('Process') + '</th><th>' + tx('Label in Routing') + '</th><th>' + tx('Machine') + '</th>'
                   + '<th>' + tx('Target / hour') + '</th><th>' + tx('Waste %') + '</th><th>' + tx('Tolerance %') + '</th><th>' + tx('Subcon to') + '</th><th></th></tr>'
                   + raw.map((r, i) => '<tr><td>' + (i + 1) + '</td>'
-                      + '<td><select' + field('bop', i, 'process_id', '') + '>' + opts(LK.processes, r.process_id, '— ' + _t('process') + ' —') + '</select></td>'
+                      + '<td><select' + field('bop', i, 'process_id', '') + '>' + opts(LK.processes, r.process_id, '— ' + _t('Process') + ' —') + '</select></td>'
                       + '<td><input' + field('bop', i, 'label', r.label) + '></td>'
-                      + '<td><select' + field('bop', i, 'machine_id', '') + '>' + opts(LK.machines, r.machine_id, '— ' + _t('no machine') + ' —') + '</select></td>'
+                      + '<td><select' + field('bop', i, 'machine_id', '') + '>' + opts(LK.machines, r.machine_id, '— ' + _t('No machine') + ' —') + '</select></td>'
                       + '<td><input type="number" min="0" step="1"' + field('bop', i, 'target_qty_per_hour', r.target_qty_per_hour) + '></td>'
                       + '<td><input type="number" min="0" max="100" step="0.1"' + field('bop', i, 'waste_pct', r.waste_pct) + '></td>'
                       + '<td><input type="number" min="0" max="100" step="0.1"' + field('bop', i, 'tolerance_pct', r.tolerance_pct) + '></td>'
@@ -1267,14 +1268,14 @@
                       + '<td class="io-nowrap"><button type="button" class="io-ibtn" data-act="up" data-sec="bop" data-i="' + i + '" title="' + tx('Move up') + '">▲</button>'
                       + '<button type="button" class="io-ibtn" data-act="down" data-sec="bop" data-i="' + i + '" title="' + tx('Move down') + '">▼</button>'
                       + '<button type="button" class="io-ibtn bad" data-act="del" data-sec="bop" data-i="' + i + '" title="' + tx('Delete') + '">✕</button></td></tr>').join('')
-                  + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bop">＋ ' + tx('Add step') + '</button>';
+                  + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bop">＋ ' + tx('Add Step') + '</button>';
           } else if (rows.length) {
               h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>#</th><th>' + tx('Work Sequence') + '</th><th>' + tx('Machine') + '</th><th>' + tx('Default target') + '</th>'
-                  + '<th>' + tx('Qty in') + '</th><th>' + tx('Waste') + '</th><th>' + tx('Tolerance') + '</th><th>' + tx('Est. hours') + '</th><th>' + tx('Subcon') + '</th></tr>'
+                  + '<th>' + tx('Qty in') + '</th><th>' + tx('Waste') + '</th><th>' + tx('Tolerance %') + '</th><th>' + tx('Est. hours') + '</th><th>' + tx('Subcon') + '</th></tr>'
                   + rows.map((r, i) => '<tr><td>' + (i + 1) + '</td><td><b>' + esc(r.label) + '</b>'
                       + (r.note ? '<div class="io-sub">' + esc(r.note) + '</div>' : '') + '</td>'
                       + '<td>' + esc(r.machine || '—') + '</td>'
-                      + '<td>' + (r.target_qty_per_hour ? fmtAngka(r.target_qty_per_hour) + ' ' + esc(r.uom || '') + '/' + tx('hour')
+                      + '<td>' + (r.target_qty_per_hour ? fmtAngka(r.target_qty_per_hour) + ' ' + esc(r.uom || '') + tx('/hour')
                           + '<div class="io-sub">' + esc(r.target_source || '') + '</div>' : '<span class="io-sub">' + tx('none yet') + '</span>') + '</td>'
                       + '<td>' + qty(r, r.qty_in) + '</td>'
                       + '<td>' + fmtAngka(r.waste_pct ?? 0) + '%<div class="io-sub">' + qty(r, r.qty_waste) + '</div></td>'
@@ -1317,7 +1318,7 @@
               + ' <b style="margin-left:10px">' + tx('Print sheets needed:') + '</b> ' + (sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' ' + tx('sheets (including BOP waste & tolerance)') : '—') + '</div>';
 
           if (ed) {
-              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>' + tx('Role') + '</th><th>' + tx('Material') + '</th><th>' + tx('Grammage') + '</th><th>' + tx('Len. (cm)') + '</th><th>' + tx('Wid. (cm)') + '</th>'
+              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>' + tx('BOM role') + '</th><th>' + tx('Material') + '</th><th>' + tx('Grammage') + '</th><th>' + tx('Len. (cm)') + '</th><th>' + tx('Wid. (cm)') + '</th>'
                   + '<th>' + tx('Qty / sheet') + '</th><th>' + tx('Unit') + '</th><th>' + tx('Requirement') + '</th><th></th></tr>'
                   + raw.map((r, i) => {
                       const c = rows[i] || {};
@@ -1334,13 +1335,13 @@
                   }).join('')
                   + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bom">＋ ' + tx('Add material') + '</button>';
           } else if (rows.length) {
-              h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>' + tx('Role') + '</th><th>' + tx('Material') + '</th><th>' + tx('Brand') + '</th><th>' + tx('Specification') + '</th><th>' + tx('Per print sheet') + '</th>'
+              h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>' + tx('BOM role') + '</th><th>' + tx('Material') + '</th><th>' + tx('Brand') + '</th><th>' + tx('Specification') + '</th><th>' + tx('Per print sheet') + '</th>'
                   + '<th>' + tx('Qty required') + '</th><th>' + tx('Available stock (warehouse)') + '</th><th>' + tx('Status') + '</th><th></th></tr>'
                   + rows.map((r, i) => {
                       const spec = [r.gsm ? fmtAngka(r.gsm) + ' gsm' : '', r.size_p ? fmtAngka(r.size_p) + (r.size_l ? ' × ' + fmtAngka(r.size_l) : '') + ' cm' : ''].filter(Boolean).join(' · ');
                       const need = r.qty_need !== null ? fmtAngka(r.qty_need) + ' ' + esc(r.basis === 'PLANO' ? _t('plano sheets') : (r.uom || ''))
                           + (r.qty_need_stock_uom !== null && r.stock_uom && r.stock_uom !== r.uom ? '<div class="io-sub">= ' + fmtAngka(r.qty_need_stock_uom) + ' ' + esc(r.stock_uom) + '</div>' : '')
-                          : '<span class="io-sub">' + (r.name === 'None' ? '—' : 'belum bisa dihitung') + '</span>';
+                          : '<span class="io-sub">' + (r.name === 'None' ? '—' : tx('cannot be calculated yet')) + '</span>';
                       return '<tr><td>' + esc(r.role) + '</td><td><b>' + esc(r.name || '—') + '</b>'
                           + (r.note ? '<div class="io-sub">' + esc(r.note) + '</div>' : '') + '</td>'
                           + '<td>' + esc(r.brand || '—') + '</td>'
@@ -1349,23 +1350,23 @@
                           + '<td>' + need + '</td>'
                           + '<td>' + (r.material_id ? fmtAngka(r.stock_available ?? 0) + ' ' + esc(r.stock_uom || '') : '—') + '</td>'
                           + '<td>' + (r.stock_status ? '<span class="io-stat ' + (STATUS_CLS[r.stock_status] || 'mute') + '">' + esc(r.stock_status) + '</span>'
-                              + (r.shortage ? '<div class="io-sub">kurang ' + fmtAngka(r.shortage) + ' ' + esc(r.stock_uom || '') + '</div>' : '') : '—') + '</td>'
+                              + (r.shortage ? '<div class="io-sub">' + tx('short') + ' ' + fmtAngka(r.shortage) + ' ' + esc(r.stock_uom || '') + '</div>' : '') : '—') + '</td>'
                           + '<td>' + (r.material_id && ['KURANG', 'TIDAK ADA'].includes(r.stock_status) && (r.shortage > 0 || r.qty_need > 0)
-                              ? '<button type="button" class="io-mbtn warn" data-act="pr" data-i="' + i + '">＋ Buat PR</button>' : '') + '</td></tr>';
+                              ? '<button type="button" class="io-mbtn warn" data-act="pr" data-i="' + i + '">＋ ' + tx('Create PR') + '</button>' : '') + '</td></tr>';
                   }).join('')
                   + '</table></div>';
           } else {
-              h += '<div class="io-empty">Belum ada bahan.</div>';
+              h += '<div class="io-empty">' + tx('No materials yet.') + '</div>';
           }
 
           return h + notes(sp.warnings.bom);
       }
 
       function ddHtml(dd) {
-          if (dd.busy) return '<div class="io-dd"><div class="io-sub">Mencari…</div></div>';
-          if (!dd.items.length) return '<div class="io-dd"><div class="io-sub">Tidak ada bahan cocok.</div></div>';
+          if (dd.busy) return '<div class="io-dd"><div class="io-sub">' + tx('Searching…') + '</div></div>';
+          if (!dd.items.length) return '<div class="io-dd"><div class="io-sub">' + tx('No matching material.') + '</div></div>';
           return '<div class="io-dd">' + dd.items.map((m, k) => '<button type="button" data-act="pick-mat" data-k="' + k + '">'
-              + '<b>' + esc(m.name) + '</b><span>' + esc(m.code) + ' · ' + esc(m.category || '') + ' · stok ' + fmtAngka(m.stock) + ' ' + esc(m.uom || '') + '</span></button>').join('') + '</div>';
+              + '<b>' + esc(m.name) + '</b><span>' + esc(m.code) + ' · ' + esc(m.category || '') + ' · ' + tx('stock') + ' ' + fmtAngka(m.stock) + ' ' + esc(m.uom || '') + '</span></button>').join('') + '</div>';
       }
 
       // Warna khusus (user 2026-10-01): 4 slot tetap -- Unit 5..8 pass pertama -- yang diisi officer langsung di
@@ -1380,45 +1381,45 @@
           const tr = SPOT_UNITS.map((u, n) => {
               const r = spotOf(src, u) || {}, c = spotOf(rows, u) || {};
               const at = f => ' data-spot="' + u + '" data-f="' + f + '"';
-              return '<tr><td class="io-nowrap">Special ' + (n + 1) + '</td><td class="io-nowrap">Unit ' + u + '</td>'
-                  + '<td><input list="io-inknames" placeholder="e.g. PANTONE 485 C"' + at('ink_name') + ' value="' + esc(r.ink_name || '') + '"></td>'
+              return '<tr><td class="io-nowrap">' + tx('Special') + ' ' + (n + 1) + '</td><td class="io-nowrap">' + tx('Print Unit') + ' ' + u + '</td>'
+                  + '<td><input list="io-inknames" placeholder="' + tx('e.g. Pantone 485 C') + '"' + at('ink_name') + ' value="' + esc(r.ink_name || '') + '"></td>'
                   + '<td><input type="color"' + at('color_hex') + ' value="' + esc(r.color_hex || '#888888') + '"></td>'
                   + '<td><input type="number" min="0" max="100" step="0.1"' + at('coverage_pct') + ' value="' + esc(r.coverage_pct ?? '') + '"></td>'
                   + '<td class="io-nowrap">' + (c.coverage_cm2 !== undefined && c.coverage_cm2 !== null ? fmtAngka(c.coverage_cm2) + ' cm²' : '—') + '</td>'
                   + '<td class="io-nowrap">' + (c.coverage_cm2_sheet !== undefined && c.coverage_cm2_sheet !== null ? fmtAngka(c.coverage_cm2_sheet) + ' cm²' : '—') + '</td></tr>';
           }).join('');
-          return '<div class="io-subh">Special colours — filled in by the officer</div>'
-              + '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>Slot</th><th>Unit</th><th>Ink name</th><th>Colour</th><th>Coverage %</th><th>Area / pcs</th><th>Area / sheet</th></tr>' + tr + '</table></div>'
-              + '<div class="io-note-s">Empty slots are not saved. A filled slot is saved with Save; clear the ink name to remove it.</div>';
+          return '<div class="io-subh">' + tx('Special colours — filled in by the officer') + '</div>'
+              + '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>' + tx('Slot') + '</th><th>' + tx('Print Unit') + '</th><th>' + tx('Ink name') + '</th><th>' + tx('Colour') + '</th><th>' + tx('Coverage %') + '</th><th>' + tx('Area / pcs') + '</th><th>' + tx('Area / sheet') + '</th></tr>' + tr + '</table></div>'
+              + '<div class="io-note-s">' + tx('Empty slots are not saved. A filled slot is saved with Save; clear the ink name to remove it.') + '</div>';
       }
 
       function inkHtml(p, sp) {
           const rows = rowsOf(p, 'inks'), ed = p.editing.inks, raw = p.edit.inks || [];
-          const art = p.artBusy ? '<div class="io-empty">Menganalisa warna artwork…</div>'
-              : p.artError ? '<div class="io-notice bad">Analisa artwork gagal: ' + esc(p.artError) + '</div>' : '';
+          const art = p.artBusy ? '<div class="io-empty">' + tx('Analyzing artwork colors…') + '</div>'
+              : p.artError ? '<div class="io-notice bad">' + tx('Artwork analysis failed:') + ' ' + esc(p.artError) + '</div>' : '';
           let h = tools(p, 'inks')
-              + '<div class="io-inputs"><b>Notasi warna:</b> ' + esc(sp.inputs.color || '—')
-              + (artSource(p) ? ' <button type="button" class="io-mbtn" data-act="reanalyze" style="margin-left:10px">↻ Analisa ulang artwork</button>' : '') + '</div>'
+              + '<div class="io-inputs"><b>' + tx('Color notation:') + '</b> ' + esc(sp.inputs.color || '—')
+              + (artSource(p) ? ' <button type="button" class="io-mbtn" data-act="reanalyze" style="margin-left:10px">↻ ' + tx('Re-analyze artwork') + '</button>' : '') + '</div>'
               + '<datalist id="io-inknames">' + LK.inks.map(n => '<option value="' + esc(n) + '">').join('') + '</datalist>';
 
           if (ed) {
-              const units = [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ id: n, name: 'Unit ' + n }));
-              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>Pass</th><th>Jenis</th><th>Unit</th><th>Tinta</th><th>Warna</th><th>Tutupan %</th><th>Luas / pcs</th><th></th></tr>'
+              const units = [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ id: n, name: _t('Print Unit') + ' ' + n }));
+              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>Pass</th><th>' + tx('Type') + '</th><th>' + tx('Print Unit') + '</th><th>' + tx('Ink') + '</th><th>' + tx('Color') + '</th><th>' + tx('Coverage %') + '</th><th>' + tx('Area / pcs') + '</th><th></th></tr>'
                   + raw.map((r, i) => {
                       const c = rows[i] || {};
-                      return '<tr><td><select' + field('inks', i, 'pass_seq', '') + '>' + opts([{ id: 1, name: 'Warna Pertama' }, { id: 2, name: 'Warna Kedua' }], r.pass_seq) + '</select></td>'
+                      return '<tr><td><select' + field('inks', i, 'pass_seq', '') + '>' + opts([{ id: 1, name: _t('First Color') }, { id: 2, name: _t('Second Color') }], r.pass_seq) + '</select></td>'
                           + '<td><select' + field('inks', i, 'pass_label', '') + '>' + optsTxt(['CS', 'SPOT'], r.pass_label) + '</select></td>'
                           + '<td><select' + field('inks', i, 'unit_no', '') + '>' + opts(units, r.unit_no) + '</select></td>'
                           + '<td><input list="io-inknames"' + field('inks', i, 'ink_name', r.ink_name) + '></td>'
                           + '<td><input type="color"' + field('inks', i, 'color_hex', r.color_hex || '#888888') + '></td>'
                           + '<td><input type="number" min="0" max="100" step="0.1"' + field('inks', i, 'coverage_pct', r.coverage_pct) + '></td>'
                           + '<td>' + (c.coverage_cm2 !== undefined && c.coverage_cm2 !== null ? fmtAngka(c.coverage_cm2) + ' cm²' : '—') + '</td>'
-                          + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="inks" data-i="' + i + '" title="Hapus">✕</button></td></tr>';
+                          + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="inks" data-i="' + i + '" title="' + tx('Delete') + '">✕</button></td></tr>';
                   }).join('')
-                  + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="inks">＋ Tambah tinta</button>';
+                  + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="inks">＋ ' + tx('Add ink') + '</button>';
           } else if (rows.length) {
-              h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>Pass</th><th>Unit</th><th>Tinta</th><th>Tutupan</th><th>Luas / pcs</th><th>Luas / lembar</th></tr>'
-                  + rows.filter(r => !isSpot(r)).map(r => '<tr><td>' + (+r.pass_seq === 1 ? 'Warna Pertama' : 'Warna Kedua') + ': ' + esc(r.pass_label) + '</td><td>Unit ' + r.unit_no + '</td><td>'
+              h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>Pass</th><th>' + tx('Print Unit') + '</th><th>' + tx('Ink') + '</th><th>' + tx('Coverage') + '</th><th>' + tx('Area / pcs') + '</th><th>' + tx('Area / sheet') + '</th></tr>'
+                  + rows.filter(r => !isSpot(r)).map(r => '<tr><td>' + (+r.pass_seq === 1 ? tx('First Color') : tx('Second Color')) + ': ' + esc(r.pass_label) + '</td><td>' + tx('Print Unit') + ' ' + r.unit_no + '</td><td>'
                       + '<i class="io-sw" style="background:' + esc(r.color_hex || '#888') + '"></i><b>' + esc(r.ink_name) + '</b></td><td>'
                       + (r.coverage_pct !== null ? fmtAngka(r.coverage_pct) + '%' : '—') + '</td><td>'
                       + (r.coverage_cm2 !== null ? fmtAngka(r.coverage_cm2) + ' cm²' : '—') + '</td><td>'
@@ -1429,7 +1430,7 @@
 
           return h + art
               + (sp.colors.length
-                  ? '<div class="io-subh">Warna di artwork (luas per pcs)</div><div class="io-colors">'
+                  ? '<div class="io-subh">' + tx('Colors in the artwork (area per pcs)') + '</div><div class="io-colors">'
                     + sp.colors.map(c => '<span class="io-colorchip"><i class="io-sw" style="background:' + esc(c.hex || '#888') + '"></i>'
                         + esc(c.name) + ' <b>' + (c.cm2 !== null ? fmtAngka(c.cm2) + ' cm²' : fmtAngka(c.pct) + '%') + '</b></span>').join('') + '</div>'
                   : '')
@@ -1439,7 +1440,7 @@
       function renderSpecSections() {
           const p = S.p, sp = p.spec;
           specInit(p);
-          const tunggu = '<div class="io-empty">' + (p.partId ? 'Menghitung dari data Inquiry…' : 'Job demo — engine butuh part nyata.') + '</div>';
+          const tunggu = '<div class="io-empty">' + (p.partId ? tx('Calculating from Inquiry data…') : tx('Demo job — the engine needs a real part.')) + '</div>';
 
           // Pertahankan fokus kursor saat tabel edit digambar ulang.
           const a = document.activeElement, keep = a && a.dataset && a.dataset.f
@@ -1512,7 +1513,7 @@
                   case 'reset':
                       p.edit[k] = null; p.editing[k] = false; p.editSrc[k] = null;
                       if (p.saved && p.saved[k] && !p.reset.includes(k)) p.reset.push(k);
-                      p.flash[k] = { ok: true, text: 'Dikembalikan ke hasil engine — tersimpan saat Save.' };
+                      p.flash[k] = { ok: true, text: _t('Returned to the engine result — saved on Save.') };
                       specSoon();
                       break;
                   case 'add':
@@ -1546,7 +1547,7 @@
                       const byStock = r.shortage !== null && r.shortage > 0;
                       const res = (await w.call('createPurchase', p.partId, r.material_id,
                           byStock ? r.shortage : r.qty_need, byStock ? r.stock_uom : r.uom).catch(() => null))
-                          || { ok: false, message: 'Server tidak merespons, coba lagi.' };
+                          || { ok: false, message: _t('The server is not responding, try again.') };
                       p.flash.bom = { ok: res.ok, text: res.message, url: res.url };
                       break;
                   }
@@ -1560,14 +1561,14 @@
                       const r = rowsOf(p, 'bop')[p.subconAt], w = wire();
                       const sup = +document.getElementById('io-sc-sup').value;
                       if (!r || !w) return;
-                      if (!sup) { p.flash.bop = { ok: false, text: 'Pilih supplier subkon dulu.' }; break; }
+                      if (!sup) { p.flash.bop = { ok: false, text: _t('Choose the subcon supplier first.') }; break; }
                       b.disabled = true;
                       const res = await w.call('subcontract', p.partId,
                           { process_id: r.process_id, label: r.label, qty_in: r.qty_in, uom: r.uom },
                           sup, +document.getElementById('io-sc-co').value || null,
                           document.getElementById('io-sc-date').value || null,
                           +document.getElementById('io-sc-cost').value || null).catch(() => null)
-                          || { ok: false, message: 'Server tidak merespons, coba lagi.' };
+                          || { ok: false, message: _t('The server is not responding, try again.') };
                       p.flash.bop = { ok: res.ok, text: res.message, url: res.prUrl };
                       if (res.ok) { p.subconAt = null; specKey = ''; specSoon(); }
                       break;
@@ -1834,54 +1835,54 @@
           return ''
               + '<div class="io-mc-head">'
               + '<div><div class="brand">Telasih Makmur <i>offset printing &amp; packaging</i></div>'
-              + '<h2>MASTER CARD / KARTU INDUK</h2></div>'
-              + '<div class="item">Kode Item: ' + esc(p.itemCode || p.design || '—') + '</div></div>'
+              + '<h2>' + tx('MASTER CARD') + '</h2></div>'
+              + '<div class="item">' + tx('Item Code:') + ' ' + esc(p.itemCode || p.design || '—') + '</div></div>'
 
               + '<div class="io-mc-body"><div>'
               + '<table class="io-mc-tbl">'
-              + '<tr><th>No. Desain</th><td class="mono">' + esc(p.designNo || '—') + '</td>'
-              + '<th style="width:18%">Nama Barang</th><td><b>' + esc(p.productName || p.name) + '</b></td>'
-              + '<th style="width:12%">Tanggal</th><td class="mono">' + esc(p.today || '') + '</td></tr>'
+              + '<tr><th>' + tx('Design No.') + '</th><td class="mono">' + esc(p.designNo || '—') + '</td>'
+              + '<th style="width:18%">' + tx('Goods Name') + '</th><td><b>' + esc(p.productName || p.name) + '</b></td>'
+              + '<th style="width:12%">' + tx('Date') + '</th><td class="mono">' + esc(p.today || '') + '</td></tr>'
               + '</table>'
               + '<table class="io-mc-tbl">'
-              + mcRow('Nama Pelanggan', '<b>' + esc(p.customer) + '</b>')
-              + '<tr><th>Dimensi P</th><td class="mono">' + fmtAngka(p.fl) + ' cm</td>'
-              + '<th>Dimensi L</th><td class="mono">' + fmtAngka(p.fw) + ' cm</td>'
-              + '<th>Dimensi T</th><td class="mono">' + fmtAngka(p.fh) + ' cm</td></tr>'
-              + '<tr><th>Kode Pisau</th><td colspan="3"><b>' + esc(k.code) + '</b></td>'
-              + '<th>Ukuran Pisau</th><td class="mono">' + k.size + '</td></tr>'
-              + '<tr><th>Material</th><td colspan="3"><b>' + esc(kertas.name || '—') + '</b>'
+              + mcRow(_t('Name of Customer'), '<b>' + esc(p.customer) + '</b>')
+              + '<tr><th>' + tx('Dimension L') + '</th><td class="mono">' + fmtAngka(p.fl) + ' cm</td>'
+              + '<th>' + tx('Dimension W') + '</th><td class="mono">' + fmtAngka(p.fw) + ' cm</td>'
+              + '<th>' + tx('Dimension H') + '</th><td class="mono">' + fmtAngka(p.fh) + ' cm</td></tr>'
+              + '<tr><th>' + tx('Knife Code') + '</th><td colspan="3"><b>' + esc(k.code) + '</b></td>'
+              + '<th>' + tx('Knife Size') + '</th><td class="mono">' + k.size + '</td></tr>'
+              + '<tr><th>' + tx('Material') + '</th><td colspan="3"><b>' + esc(kertas.name || '—') + '</b>'
               + (kertas.brand ? ' <span style="color:#555">(' + esc(kertas.brand) + ')</span>' : '') + '</td>'
-              + '<th>Kualitas</th><td class="mono">' + (kertas.gsm ? fmtAngka(kertas.gsm) + ' gsm' : '—') + '</td></tr>'
-              + '<tr><th>Ukuran Bahan</th><td colspan="3" class="mono">' + cetak + ' (' + (GRAIN_LABEL[p.grain] || '—') + ')</td>'
-              + '<th>Ukuran Cetak</th><td class="mono">' + cetak + '</td></tr>'
-              + mcRow('Jenis Finishing', esc(finishing))
-              + mcRow('Struktur / Joint', esc(p.structure || '—'))
+              + '<th>' + tx('Quality') + '</th><td class="mono">' + (kertas.gsm ? fmtAngka(kertas.gsm) + ' gsm' : '—') + '</td></tr>'
+              + '<tr><th>' + tx('Material Size') + '</th><td colspan="3" class="mono">' + cetak + ' (' + (GRAIN_LABEL[p.grain] || '—') + ')</td>'
+              + '<th>' + tx('Printing Size') + '</th><td class="mono">' + cetak + '</td></tr>'
+              + mcRow(_t('Finishing Type'), esc(finishing))
+              + mcRow(_t('Structure / Joint'), esc(p.structure || '—'))
               + '</table>'
 
               + '<div class="io-mc-sub"><div>'
-              + '<div class="io-mc-cap">Warna Pertama: CS' + (S.m ? ' (' + esc(S.m[0]) + ')' : '') + '</div>'
+              + '<div class="io-mc-cap">' + tx('First Color') + ': CS' + (S.m ? ' (' + esc(S.m[0]) + ')' : '') + '</div>'
               + '<table class="io-mc-tbl">'
               + (pass1.length
-                  ? pass1.map(r => '<tr><th style="width:34%">Unit ' + r.unit_no + '</th><td><b>' + esc(r.ink_name) + '</b>'
+                  ? pass1.map(r => '<tr><th style="width:34%">' + tx('Print Unit') + ' ' + r.unit_no + '</th><td><b>' + esc(r.ink_name) + '</b>'
                       + (r.coverage_pct !== null && r.coverage_pct !== undefined ? ' <span style="color:#555">' + fmtAngka(r.coverage_pct) + '% · ' + fmtAngka(r.coverage_cm2) + ' cm²</span>' : '')
                       + '</td></tr>').join('')
-                  : '<tr><td colspan="2" style="text-align:center;color:#777">Susunan tinta belum ada</td></tr>')
-              + '<tr><th>Isi / Lembar</th><td class="mono"><b>' + k.up + ' UP</b></td></tr>'
+                  : '<tr><td colspan="2" style="text-align:center;color:#777">' + tx('No ink arrangement yet') + '</td></tr>')
+              + '<tr><th>' + tx('Ups / Sheet') + '</th><td class="mono"><b>' + k.up + ' UP</b></td></tr>'
               + '</table>'
               // Mesin plong tidak diulang di sini -- sudah tertulis di Routing.
               + '<table class="io-mc-tbl" style="margin-top:5px">'
-              + mcRow('Dieline / blank', fmtAngka(p.l) + ' × ' + fmtAngka(p.w) + ' cm · gap ' + fmtAngka(S.g) + ' cm', true)
-              + mcRow('Plano', esc(S.pl[0]) + ' · ' + cut(S.pl).n + ' lembar / plano', true)
-              + mcRow('Efisiensi material', ($('yAll') ? $('yAll').textContent : '—'))
+              + mcRow(_t('Dieline / blank'), fmtAngka(p.l) + ' × ' + fmtAngka(p.w) + ' cm · ' + tx('gap') + ' ' + fmtAngka(S.g) + ' cm', true)
+              + mcRow(_t('Plano'), esc(S.pl[0]) + ' · ' + cut(S.pl).n + ' ' + tx('sheets / plano'), true)
+              + mcRow(_t('Material efficiency'), ($('yAll') ? $('yAll').textContent : '—'))
               + '</table></div><div>'
-              + '<div class="io-mc-cap">Urutan Pekerjaan (Routing)</div>'
+              + '<div class="io-mc-cap">' + tx('Work Sequence (Routing)') + '</div>'
               + '<table class="io-mc-tbl">'
               + Array.from({ length: ROUTING_ROWS }, (_, i) => {
                   const r = bop[i];
                   return '<tr><th style="width:22px;text-align:center">' + (i + 1) + '</th><td>'
                       + (r ? esc(mcStepName(r))
-                          + (r.subcon_supplier ? ' <span style="color:#b45309">· subkon ' + esc(r.subcon_supplier) + '</span>' : '')
+                          + (r.subcon_supplier ? ' <span style="color:#b45309">· ' + tx('Subcon') + ' ' + esc(r.subcon_supplier) + '</span>' : '')
                         : '&nbsp;')
                       + '</td></tr>';
               }).join('')
@@ -1890,10 +1891,10 @@
               // bawah layout -- tidak ada lagi baris selebar halaman yang
               // menyisakan ruang kosong di tengah (permintaan user 2026-09-18).
               + '<div class="io-mc-extra"><table class="io-mc-tbl">'
-              + mcRow('Qty order', sp && sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—', true)
-              + mcRow('Lembar cetak', sp && sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' lbr' : '—', true)
-              + mcRow('Isi / pack', sp && sp.inputs.packQty ? sp.inputs.packQty + ' pcs' : '—', true)
-              + mcRow('No. Inquiry', esc(p.reg || '—'), true)
+              + mcRow(_t('Qty order'), sp && sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—', true)
+              + mcRow(_t('Print sheets'), sp && sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' ' + tx('sht') : '—', true)
+              + mcRow(_t('Qty / pack'), sp && sp.inputs.packQty ? sp.inputs.packQty + ' pcs' : '—', true)
+              + mcRow(_t('Inquiry No.'), esc(p.reg || '—'), true)
               + '</table><table class="io-mc-tbl">'
               + bom.slice(0, 6).map(mcBomRow).join('')
               + '</table><table class="io-mc-tbl">'
@@ -1902,28 +1903,28 @@
               + '</div>'
 
               + '<div><div class="io-mc-layout">'
-              + '<div class="ttl">LAYOUT LEMBAR CETAK — ' + k.up + ' UP</div>'
+              + '<div class="ttl">' + tx('PRINT SHEET LAYOUT') + ' — ' + k.up + ' UP</div>'
               + svg + '</div>'
-              + '<div class="io-mc-note">* ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD</div>'
+              + '<div class="io-mc-note">* ' + tx('PROOF PRINT APPROVAL (DIGITAL + PRINT) MUST BE ATTACHED WITH THE MASTER CARD') + '</div>'
               + '<div class="io-mc-sign">'
-              + ['Mengetahui (Desainer)|Product Development', 'Marketing / Sales|Sales Officer',
-                 'PPIC / QA|Quality Control', 'Plant Manager|Kepala Pabrik']
+              + ['Acknowledged by (Designer)|Product Development', 'Marketing / Sales|Sales Officer',
+                 'PPIC / QA|Quality Control', 'Plant Manager|Factory Head']
                   .map(x => { const [who, role] = x.split('|');
-                      return '<div><div class="who">' + who + '</div><div class="line">' + role + '</div></div>'; }).join('')
+                      return '<div><div class="who">' + tx(who) + '</div><div class="line">' + tx(role) + '</div></div>'; }).join('')
               + '</div>'
               + '</div></div>'
 
-              + (p.confirmed ? '' : '<div class="io-mc-stamp"><span>NOT CONFIRMED</span></div>');
+              + (p.confirmed ? '' : '<div class="io-mc-stamp"><span>' + tx('NOT CONFIRMED') + '</span></div>');
       }
 
       function openMasterCard() {
-          if (!ok()) { msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum cetak Master Card.', 'bad'); return; }
+          if (!ok()) { msg(_t('The canvas is still outside the machine limits — fix it first before printing the Master Card.'), 'bad'); return; }
           $('mcSheet').innerHTML = masterCardHtml();
           // Blok gelap diturunkan SETELAH masuk DOM: warna yang diwarisi dari
           // grup induk hanya terbaca lewat getComputedStyle.
           $('mcSheet').querySelectorAll('.io-mc-layout svg *').forEach(mcLighten);
           const st = $('mcState');
-          st.textContent = S.p.confirmed ? 'CONFIRMED' : 'BELUM CONFIRM';
+          st.textContent = S.p.confirmed ? _t('CONFIRMED') : _t('NOT CONFIRMED YET');
           st.className = 'io-mc-state' + (S.p.confirmed ? ' ok' : '');
           $('mcModal').classList.add('open');
       }
@@ -1945,8 +1946,8 @@
           }
 
           $('jobcount').textContent = banyak
-              ? products.length + ' SAMPEL DEMO'
-              : (S.p.design || 'JOB TERPILIH');
+              ? products.length + ' ' + _t('DEMO SAMPLES')
+              : (S.p.design || _t('SELECTED JOB'));
       }
 
       // Auto Up  -> tampilkan angka HASIL, sembunyikan kotak isian.
@@ -1955,18 +1956,18 @@
           $('autoResult').style.display = S.auto ? '' : 'none';
           $('manualGroup').style.display = S.auto ? 'none' : '';
           $('modeText').textContent = S.auto
-              ? 'Aktif: pakai up maksimum yang muat di canvas'
-              : 'Nonaktif: tentukan sendiri jumlah up yang dikejar';
+              ? _t('Active: use the maximum ups that fit the canvas')
+              : _t('Inactive: set the target number of ups yourself');
       }
 
       function artworkLabel() {
           $('artName').textContent = S.p.artworkName
-              || (S.p.artworkUrl ? 'Artwork tersimpan di Inquiry Part' : (S.p.canUpload
-                  ? 'Belum ada artwork — klik Upload artwork'
-                  : 'Job Mode #2 / demo: tidak terhubung ke Inquiry Part'));
+              || (S.p.artworkUrl ? _t('Artwork saved in the Inquiry Part') : (S.p.canUpload
+                  ? _t('No artwork yet — click Upload artwork')
+                  : _t('Mode #2 / demo job: not linked to an Inquiry Part')));
           $('dieName').textContent = S.p.dieline
-              ? 'Dieline dari spesifikasi Tipe Produk (dieline_spec)'
-              : 'Tipe produk ini belum punya definisi dieline';
+              ? _t('Dieline from the Product Type specification (dieline_spec)')
+              : _t('This product type has no dieline definition yet');
       }
 
       function bind() {
@@ -2012,7 +2013,7 @@
           $('calcPlano').onclick = () => {
               const info = pickBestPlano();
               update(false);
-              $('planoNote').innerHTML += '<br><b>Calculate Plano: ' + esc(info) + '.</b>';
+              $('planoNote').innerHTML += '<br><b>' + tx('Calculate Plano') + ': ' + esc(info) + '.</b>';
           };
           $('custom').onclick = () => {
               const l = +$('cpl').value, w = +$('cpw').value;
@@ -2039,7 +2040,7 @@
           $('artFile').onclick = e => {
               e.preventDefault();
               if (!S.p.canUpload) {
-                  msg('Job ini tidak terhubung ke Inquiry Part (Mode #2 / demo) — artwork belum bisa disimpan.', 'bad');
+                  msg(_t('This job is not linked to an Inquiry Part (Mode #2 / demo) — the artwork cannot be saved yet.'), 'bad');
                   return;
               }
               document.getElementById('io-artFileReal').click();
@@ -2058,7 +2059,7 @@
           });
           $('dieFile').onchange = e => {
               // Dieline terpisah belum punya tempat simpan -- lihat catatan diskusi.
-              $('dieName').textContent = (e.target.files[0] && e.target.files[0].name + ' (belum disimpan)') || 'Dieline struktural bawaan job aktif';
+              $('dieName').textContent = (e.target.files[0] && e.target.files[0].name + ' (' + _t('not saved yet') + ')') || _t('Default structural dieline of the active job');
           };
       }
 
@@ -2066,10 +2067,10 @@
           S.conv = mode;
           $('pcsMode').classList.toggle('active', mode === 'pcs');
           $('planoMode').classList.toggle('active', mode === 'plano');
-          $('inputLabel').textContent = mode === 'pcs' ? 'Qty order (pcs)' : 'Available plano stock (sheets)';
+          $('inputLabel').textContent = mode === 'pcs' ? _t('Qty order (pcs)') : _t('Available plano stock (sheets)');
           $('inputHint').textContent = mode === 'pcs'
-              ? 'Masukkan jumlah produk yang harus diproduksi'
-              : 'Masukkan jumlah lembar plano yang tersedia';
+              ? _t('Enter the number of products to produce')
+              : _t('Enter the number of available plano sheets');
           $('converterInput').value = mode === 'pcs' ? 100 : 10;
           update(false);
       }
@@ -2097,7 +2098,7 @@
           return [Math.min(S.m[1], die[0]), Math.min(S.m[2], die[1])];
       }
       function unlimited() { return bedLimits()[0] >= NOLIM; }
-      function limTxt() { const [bl, bw] = bedLimits(); return bl >= NOLIM ? 'tanpa batas meja' : bl + ' × ' + bw + ' cm'; }
+      function limTxt() { const [bl, bw] = bedLimits(); return bl >= NOLIM ? _t('no bed limit') : bl + ' × ' + bw + ' cm'; }
 
       function ok() {
           const [bl, bw] = bedLimits();
@@ -2108,9 +2109,9 @@
       // nama mesinnya, bukan cuma angka.
       function bedOwner() {
           const [bl, bw] = bedLimits();
-          if (S.limit === 'DIECUT') return S.d ? S.d[0] + ' (plong)' : S.m[0];
+          if (S.limit === 'DIECUT') return S.d ? S.d[0] + ' (' + _t('die-cut') + ')' : S.m[0];
           return (S.limit === 'BOTH' && dieBed() && (bl < S.m[1] || bw < S.m[2]))
-              ? S.d[0] + ' (plong)'
+              ? S.d[0] + ' (' + _t('die-cut') + ')'
               : S.m[0];
       }
 
@@ -2133,12 +2134,12 @@
           const box = $('limitNote'), [bl, bw] = bedLimits(), die = dieBed(), c1 = customCanvas(1);
           const fits = (L, W) => (L <= bl && W <= bw) || (W <= bl && L <= bw);
           let cls = 'info', html;
-          if (S.limit === 'CUSTOM') html = 'Canvas = dieline × up + gap + margin &amp; gripper. No bed limit. Default 1 up; raise it in <b>1. Jumlah Up</b>.';
-          else if (S.limit === 'DIECUT' && !die) { cls = 'bad'; html = 'The bed size of <b>' + esc(S.d ? S.d[0] : 'die-cut machine') + '</b> is not filled in Master Machine yet, so there is no limit. Fill it in first for this choice to work.'; }
-          else html = 'Limit: <b>' + esc(bedOwner()) + '</b> ' + bl + ' × ' + bw + ' cm' + (S.limit === 'BOTH' && !die ? ' (die-cut bed size not filled in yet: press bed only)' : '') + '.';
+          if (S.limit === 'CUSTOM') html = txf('Canvas = dieline × up + gap + margin & gripper. No bed limit. Default 1 up; raise it in :step.', { step: '<b>' + tx('1. Number of Ups') + '</b>' });
+          else if (S.limit === 'DIECUT' && !die) { cls = 'bad'; html = txf('The bed size of :machine is not filled in Master Machine yet, so there is no limit. Fill it in first for this choice to work.', { machine: '<b>' + esc(S.d ? S.d[0] : _t('die-cut machine')) + '</b>' }); }
+          else html = tx('Limit:') + ' <b>' + esc(bedOwner()) + '</b> ' + bl + ' × ' + bw + ' cm' + (S.limit === 'BOTH' && !die ? ' (' + tx('die-cut bed size not filled in yet: press bed only') + ')' : '') + '.';
           if (!unlimited() && !fits(c1.L, c1.W)) {
               cls = 'bad';
-              html = 'Dieline 1 up needs <b>' + c1.L + ' × ' + c1.W + ' cm</b>, larger than ' + esc(bedOwner()) + ' (' + bl + ' × ' + bw + ' cm). Consider splitting the part left / right (<b>Double Join</b>) in Inquiry / Master Product, or go back to Custom.';
+              html = txf('Dieline 1 up needs :size, larger than :bed (:bl × :bw cm). Consider splitting the part left / right (:dj) in Inquiry / Master Product, or go back to Custom.', { size: '<b>' + c1.L + ' × ' + c1.W + ' cm</b>', bed: esc(bedOwner()), bl, bw, dj: '<b>Double Join</b>' });
           }
           box.className = 'io-notice ' + cls; box.innerHTML = html;
       }
@@ -2341,15 +2342,15 @@
 
           // Plano Configuration ikut canvas baru. Plano custom (diketik
           // officer sendiri) tidak ditimpa.
-          const planoInfo = planos.includes(S.pl) ? pickBestPlano() : 'plano custom ' + S.pl[0] + ' tidak diubah';
+          const planoInfo = planos.includes(S.pl) ? pickBestPlano() : _tf('custom plano :p unchanged', { p: S.pl[0] });
 
           const use = (S.objs.length * S.p.l * S.p.w / (L * W) * 100).toFixed(1);
           $('suggestNote').textContent = (rl > L || rw > W)
-              ? 'Susunan ' + S.objs.length + ' object butuh ' + rl + ' × ' + rw + ' cm — melebihi meja ' + bedOwner() + ' (' + bl + ' × ' + bw + ' cm). Canvas dipotong ke ' + L + ' × ' + W + ' cm, object di luar batas ditandai merah.'
-              : 'Canvas dipaskan ke susunan: ' + S.objs.length + ' object dirapatkan, gap ' + S.g + ' cm antar-object & keliling = ' + L + ' × ' + W + ' cm · pemakaian area ' + use + '%'
+              ? _tf('An arrangement of :n objects needs :rl × :rw cm — exceeds the table of :bed (:bl × :bw cm). Canvas cut to :cl × :cw cm, objects outside the limit are marked red.', { n: S.objs.length, rl, rw, bed: bedOwner(), bl, bw, cl: L, cw: W })
+              : _tf('Canvas fitted to the arrangement: :n objects tightened, gap :g cm between objects & around the edge = :cl × :cw cm · area usage :use%', { n: S.objs.length, g: S.g, cl: L, cw: W, use })
                 + ' · ' + planoInfo + ' (' + cut(S.pl).n + ' canvas/plano).';
           update(false);
-          msg('Suggestion: canvas ' + L + ' × ' + W + ' cm · ' + planoInfo + '.', 'ok');
+          msg(_t('Suggestion') + ': canvas ' + L + ' × ' + W + ' cm · ' + planoInfo + '.', 'ok');
           checkManualOverlap();
       }
 
@@ -2371,8 +2372,8 @@
           cen.forEach(r => { r.o.w *= k; r.o.h *= k; r.o.x = nx + r.cx * n - r.o.w / 2; r.o.y = ny + r.cy * n - r.o.h / 2; });
           S.sc0 = n; S.sx0 = nx; S.sy0 = ny;
           $('suggestNote').textContent = (rl > L || rw > W)
-              ? 'Susunan custom butuh ' + rl + ' × ' + rw + ' cm — melebihi meja ' + bedOwner() + ' (' + limTxt() + '). Canvas dipotong ke ' + L + ' × ' + W + ' cm, object di luar batas ditandai merah.'
-              : 'Custom nesting: bounding box ' + S.objs.length + ' object + bleed ' + m + ' cm/sisi = ' + L + ' × ' + W + ' cm · pemakaian area ' + use + '%.';
+              ? _tf('The custom arrangement needs :rl × :rw cm — exceeds the table of :bed (:lim). Canvas cut to :cl × :cw cm, objects outside the limit are marked red.', { rl, rw, bed: bedOwner(), lim: limTxt(), cl: L, cw: W })
+              : _tf('Custom nesting: bounding box :n objects + bleed :m cm/side = :cl × :cw cm · area usage :use%.', { n: S.objs.length, m, cl: L, cw: W, use });
           update(false);
       }
 
@@ -2390,8 +2391,8 @@
                   S.L = c.L; S.W = c.W; $('sl').value = S.L; $('sw').value = S.W;
               }
               $('suggestNote').textContent = S.auto
-                  ? 'Auto Up tanpa batas meja: jumlah up terbanyak di canvas yang diketik.'
-                  : 'Custom: canvas ' + S.L + ' × ' + S.W + ' cm mengikuti dieline untuk ' + S.manualUp + ' up (termasuk gap, margin & gripper).';
+                  ? _t('Auto Up without a bed limit: the most ups on the typed canvas.')
+                  : _tf('Custom: canvas :l × :w cm follows the dieline for :n up (including gap, margin & gripper).', { l: S.L, w: S.W, n: S.manualUp });
               update(true);
               return;
           }
@@ -2406,27 +2407,26 @@
           }
           if (!bestC) {
               update(true);
-              msg('Target ' + target + ' up tidak muat: butuh canvas melebihi meja ' + bedOwner()
-                  + ' (maks ' + m[0] + ' × ' + m[1] + ' cm).', 'bad');
+              msg(_tf('Target :t up does not fit: needs a canvas larger than the table of :bed (max :ml × :mw cm).', { t: target, bed: bedOwner(), ml: m[0], mw: m[1] }), 'bad');
               return;
           }
           S.L = +bestC.L.toFixed(1); S.W = +bestC.W.toFixed(1);
           $('sl').value = S.L; $('sw').value = S.W; S.objs = [];
           $('suggestNote').textContent = S.auto
-              ? 'Auto Up: canvas disarankan dari history job, packing efficiency, dan machine bed.'
-              : 'Manual ' + target + '-up: canvas minimum yang dapat memuat jumlah object tersebut adalah ' + S.L + ' × ' + S.W + ' cm.';
+              ? _t('Auto Up: canvas suggested from job history, packing efficiency, and machine bed.')
+              : _tf('Manual :t-up: the minimum canvas that can fit that number of objects is :l × :w cm.', { t: target, l: S.L, w: S.W });
           update(true);
       }
 
       function update(reset) {
           metrics();
-          $('machineInfo').innerHTML = '<b>' + S.m[0] + '</b><br>Maximum printable bed: <b>' + S.m[1] + ' × ' + S.m[2] + ' cm</b>'
-              + (S.m[3] ? '<br><span class="io-warntxt">⚠ max_paper_size belum diisi di Master Mesin — angka di atas asumsi.</span>' : '');
+          $('machineInfo').innerHTML = '<b>' + S.m[0] + '</b><br>' + tx('Maximum printable bed:') + ' <b>' + S.m[1] + ' × ' + S.m[2] + ' cm</b>'
+              + (S.m[3] ? '<br><span class="io-warntxt">⚠ ' + tx('max_paper_size is not filled in Master Machine yet — the figures above are assumptions.') + '</span>' : '');
           $('diecutInfo').innerHTML = !S.d
-              ? '<span class="io-warntxt">⚠ Belum ada mesin plong aktif di Master Mesin.</span>'
+              ? '<span class="io-warntxt">⚠ ' + tx('No active die-cut machine in Master Machine yet.') + '</span>'
               : '<b>' + S.d[0] + '</b><br>' + (S.d[1] && S.d[2]
-                  ? 'Maksimum meja plong: <b>' + S.d[1] + ' × ' + S.d[2] + ' cm</b>'
-                  : '<span class="io-warntxt">⚠ Ukuran meja belum diisi di Master Mesin — batas plong belum bisa ditegakkan, canvas baru dibatasi bed mesin cetak saja.</span>');
+                  ? tx('Maximum die-cut table:') + ' <b>' + S.d[1] + ' × ' + S.d[2] + ' cm</b>'
+                  : '<span class="io-warntxt">⚠ ' + tx('The table size is not filled in Master Machine yet — the die-cut limit cannot be enforced, the canvas is only limited by the printing machine bed.') + '</span>');
           if (reset) S.objs = [];
           limitNote();
           render();
@@ -2436,18 +2436,18 @@
       function metrics() {
           const p = S.p;
           $('metrics').innerHTML =
-              '<div class="io-metric"><span>Finished L × W × H</span><b>' + p.fl + ' × ' + p.fw + ' × ' + p.fh + ' cm</b></div>' +
-              '<div class="io-metric"><span>Dieline / blank</span><b>' + p.l + ' × ' + p.w + ' cm</b></div>' +
-              '<div class="io-metric"><span>Blank area</span><b>' + (p.l * p.w).toFixed(1) + ' cm²</b></div>' +
-              '<div class="io-metric"><span>Bleed / Gap</span><b>' + p.bleed + ' / ' + p.gap + ' cm</b></div>';
+              '<div class="io-metric"><span>' + tx('Finished L × W × H') + '</span><b>' + p.fl + ' × ' + p.fw + ' × ' + p.fh + ' cm</b></div>' +
+              '<div class="io-metric"><span>' + tx('Dieline / blank') + '</span><b>' + p.l + ' × ' + p.w + ' cm</b></div>' +
+              '<div class="io-metric"><span>' + tx('Blank area') + '</span><b>' + (p.l * p.w).toFixed(1) + ' cm²</b></div>' +
+              '<div class="io-metric"><span>' + tx('Bleed / Gap') + '</span><b>' + p.bleed + ' / ' + p.gap + ' cm</b></div>';
           $('spec').innerHTML = '<table>' +
-              '<tr><td>Customer</td><td>' + p.customer + '</td></tr>' +
-              '<tr><td>Design No.</td><td>' + p.design + '</td></tr>' +
-              '<tr><td>Category</td><td>' + p.category + '</td></tr>' +
-              '<tr><td>Structure</td><td>' + p.structure + '</td></tr>' +
-              '<tr><td>Material</td><td>' + p.material + '</td></tr>' +
-              '<tr><td>Artwork</td><td>' + p.art + '</td></tr>' +
-              '<tr><td>Reg / Note</td><td>' + p.reg + '</td></tr></table>';
+              '<tr><td>' + tx('Customer') + '</td><td>' + p.customer + '</td></tr>' +
+              '<tr><td>' + tx('Design No.') + '</td><td>' + p.design + '</td></tr>' +
+              '<tr><td>' + tx('Category') + '</td><td>' + p.category + '</td></tr>' +
+              '<tr><td>' + tx('Structure') + '</td><td>' + p.structure + '</td></tr>' +
+              '<tr><td>' + tx('Material') + '</td><td>' + p.material + '</td></tr>' +
+              '<tr><td>' + tx('Artwork') + '</td><td>' + p.art + '</td></tr>' +
+              '<tr><td>' + tx('Reg / Note') + '</td><td>' + p.reg + '</td></tr></table>';
       }
 
       function render() {
@@ -2455,19 +2455,19 @@
               const [bl, bw] = bedLimits();
               const pembatas = bedOwner();
               $('arts').innerHTML = ''; $('grainG').innerHTML = '';
-              $('sheetLabel').textContent = 'CANVAS ' + S.L + ' × ' + S.W + ' cm — DI LUAR BATAS MESIN';
+              $('sheetLabel').textContent = _tf('CANVAS :l × :w cm — OUTSIDE THE MACHINE LIMIT', { l: S.L, w: S.W });
               if (!(S.L > 0 && S.W > 0)) {
-                  $('sheetLabel').textContent = 'CANVAS belum diisi';
+                  $('sheetLabel').textContent = _t('CANVAS not filled in yet');
                   $('warning').classList.remove('show');
-                  msg('Isi Length dan Width canvas (lebih besar dari 0).', 'bad');
-                  $('status').textContent = 'Validation failed';
+                  msg(_t('Fill in the canvas Length and Width (greater than 0).'), 'bad');
+                  $('status').textContent = _t('Validation failed');
                   return;
               }
-              $('warning').innerHTML = '⚠ Canvas ' + S.L + ' × ' + S.W + ' cm melebihi meja ' + pembatas +
-                  '<br>Maksimum ' + bl + ' × ' + bw + ' cm — ' + S.objs.length + ' object disembunyikan';
+              $('warning').innerHTML = '⚠ ' + txf('Canvas :l × :w cm exceeds the table of :bed', { l: S.L, w: S.W, bed: esc(pembatas) }) +
+                  '<br>' + txf('Maximum :bl × :bw cm — :n objects hidden', { bl, bw, n: S.objs.length });
               $('warning').classList.add('show');
-              msg('Invalid: canvas tidak boleh melebihi ' + bl + ' × ' + bw + ' cm (batas ' + pembatas + ').', 'bad');
-              $('status').textContent = 'Validation failed';
+              msg(_tf('Invalid: the canvas must not exceed :bl × :bw cm (limit of :bed).', { bl, bw, bed: pembatas }), 'bad');
+              $('status').textContent = _t('Validation failed');
               return;
           }
           const [uw, uh] = usableVB();
@@ -2483,7 +2483,7 @@
           [['sheet', 'x', x], ['sheet', 'y', y], ['sheet', 'width', w], ['sheet', 'height', h],
            ['safeRect', 'x', x + 4], ['safeRect', 'y', y + 4], ['safeRect', 'width', w - 8], ['safeRect', 'height', h - 8]]
               .forEach(a => $(a[0]).setAttribute(a[1], a[2]));
-          $('sheetLabel').textContent = 'CANVAS / PRINT SHEET: ' + S.L + ' × ' + S.W + ' cm';
+          $('sheetLabel').textContent = _t('CANVAS / PRINT SHEET:') + ' ' + S.L + ' × ' + S.W + ' cm';
           $('grainG').innerHTML = grain(x, y, w, h);
           if (!S.objs.length) createObjects(x, y, sc);
           arts(x, y, w, h);
@@ -2496,11 +2496,11 @@
               $('autoResultValue').textContent = S.objs.length + ' up';
               $('autoResultNote').textContent = S.autoNestInfo
                   ? S.autoNestInfo
-                  : 'Grid otomatis dari ukuran canvas & bentuk blank. Tekan ✦ Auto Nesting untuk coba susunan interlock.';
+                  : _t('Automatic grid from the canvas size & blank shape. Press ✦ Auto Nesting to try an interlocking arrangement.');
           }
-          msg('Valid canvas. Drag setiap object secara independen untuk manual nesting berdasarkan bentuk dieline.', 'ok');
-          $('status').textContent = S.p.category + ' · ' + S.objs.length + ' object(s) · ' +
-              (S.auto ? 'Auto Up' : 'Manual Up') + ' · ' + (S.selected ? 'selected: ' + S.selected.toUpperCase() : 'no selection');
+          msg(_t('Valid canvas. Drag each object independently for manual nesting based on the dieline shape.'), 'ok');
+          $('status').textContent = S.p.category + ' · ' + S.objs.length + ' ' + _t('object(s)') + ' · ' +
+              (S.auto ? _t('Auto Up') : _t('Manual Up')) + ' · ' + (S.selected ? _t('selected:') + ' ' + S.selected.toUpperCase() : _t('no selection'));
       }
 
       function grain(x, y, w, h) {
@@ -2508,9 +2508,9 @@
           if (d === 'none') return '';
           return d === 'L'
               ? '<line class="io-grain" x1="' + (x + 16) + '" y1="' + (y + h - 18) + '" x2="' + (x + 16) + '" y2="' + (y + 18) + '"/>' +
-                '<text class="io-graintext" x="' + (x + 23) + '" y="' + (y + 30) + '">GRAIN · DIELINE LENGTH</text>'
+                '<text class="io-graintext" x="' + (x + 23) + '" y="' + (y + 30) + '">' + tx('GRAIN · DIELINE LENGTH') + '</text>'
               : '<line class="io-grain" x1="' + (x + 18) + '" y1="' + (y + 16) + '" x2="' + (x + w - 18) + '" y2="' + (y + 16) + '"/>' +
-                '<text class="io-graintext" x="' + (x + 32) + '" y="' + (y + 30) + '">GRAIN · DIELINE WIDTH</text>';
+                '<text class="io-graintext" x="' + (x + 32) + '" y="' + (y + 30) + '">' + tx('GRAIN · DIELINE WIDTH') + '</text>';
       }
 
       // Target up yang tidak tercapai HARUS diberitahukan (user 2026-09-17:
@@ -2725,7 +2725,7 @@
               el.addEventListener('pointerdown', start);
               g.appendChild(el);
           });
-          $('warning').innerHTML = '⚠ Artwork melewati batas canvas / print sheet';
+          $('warning').innerHTML = '⚠ ' + tx('Artwork exceeds the canvas / print sheet boundary');
           $('warning').classList.toggle('show', S.objs.some(isOut));
       }
 
@@ -2765,7 +2765,7 @@
       }
       function transform(k, v) {
           const o = S.objs.find(x => x.id === S.selected);
-          if (!o) { msg('Pilih artwork object pada canvas terlebih dahulu.', 'info'); return; }
+          if (!o) { msg(_t('Select an artwork object on the canvas first.'), 'info'); return; }
           if (k === 'r') o.r = (o.r + v) % 360;
           else if (v === 'x') o.fx *= -1;
           else o.fy *= -1;
@@ -2787,7 +2787,7 @@
           $('yPlano').textContent = pu.toFixed(1) + '%';
           $('yAll').textContent = all.toFixed(1) + '%';
           $('barFill').style.width = Math.max(0, Math.min(100, all)) + '%';
-          $('barTxt').textContent = 'Material terpakai ' + all.toFixed(1) + '% · terbuang ' + (100 - all).toFixed(1) + '%';
+          $('barTxt').textContent = _tf('Material used :u% · wasted :w%', { u: all.toFixed(1), w: (100 - all).toFixed(1) });
 
           const sc = S.sc0 || Math.min(usableVB()[0] / S.L, usableVB()[1] / S.W), sx = S.sx0, sy = S.sy0, sw = S.L * sc, sh = S.W * sc,
               b = S.objs.map(obox), rot = S.objs.filter(o => o.r % 360 !== 0).length,
@@ -2806,37 +2806,35 @@
           const kurang = S.upShort;
           $('impoMode').className = 'io-notice ' + (bentrok || out || kurang ? 'bad' : S.touched ? 'ok' : 'info');
           $('impoMode').innerHTML = (S.touched
-              ? '<b>' + (S.autoNestInfo ? 'AUTO NESTING — ' + S.autoNestInfo : 'CUSTOM IMPOSITION — nesting manual') + '</b><br>Susunan: ' + rot + ' object rotate, ' + mir + ' mirror' + (out ? ' · <b>' + out + ' di luar canvas (tidak terhitung sah)</b>' : '') + '.'
-              : '<b>AUTO GRID IMPOSITION</b><br>Susunan otomatis ' + g.c + ' kolom × ' + g.r + ' baris' + (g.rot ? ' (blank dirotate 90°)' : '')
-                + ' · mode ' + (S.auto ? 'Auto Up' : 'Manual Up') + (out ? ' · <b>' + out + ' object di luar canvas — geser manual</b>' : '') + '.')
-              + (bentrok ? '<br><b>⚠ GARIS POTONG BERTABRAKAN</b> — ' + S.overlapPx + ' mm² blank saling makan, susunan ini tidak bisa dicetak. Angka yield di bawah ikut tidak sah.' : '')
+              ? '<b>' + (S.autoNestInfo ? 'AUTO NESTING — ' + S.autoNestInfo : tx('CUSTOM IMPOSITION — manual nesting')) + '</b><br>' + txf('Arrangement: :r objects rotated, :m mirrored', { r: rot, m: mir }) + (out ? ' · <b>' + txf(':n outside the canvas (not counted as valid)', { n: out }) + '</b>' : '') + '.'
+              : '<b>' + tx('AUTO GRID IMPOSITION') + '</b><br>' + txf('Automatic arrangement :c columns × :r rows', { c: g.c, r: g.r }) + (g.rot ? ' (' + tx('blank rotated 90°') + ')' : '')
+                + ' · ' + tx('mode') + ' ' + (S.auto ? tx('Auto Up') : tx('Manual Up')) + (out ? ' · <b>' + txf(':n objects outside the canvas — move them manually', { n: out }) + '</b>' : '') + '.')
+              + (bentrok ? '<br><b>⚠ ' + tx('CUT LINES COLLIDE') + '</b> — ' + txf(':a mm² of blank overlaps, this arrangement cannot be printed. The yield figures below are also invalid.', { a: S.overlapPx }) : '')
               + (kurang
                   ? (kurang.target > kurang.maxMesin
-                      ? '<br><b>⚠ TARGET ' + kurang.target + ' UP TIDAK MUAT DI MESIN</b> — blank ' + S.p.l + ' × ' + S.p.w
-                        + ' cm sebanyak itu melebihi meja ' + bedOwner() + '. Canvas terbesar yang diizinkan ('
-                        + limTxt() + ') hanya memuat ' + kurang.maxMesin + ' up.'
-                      : '<br><b>⚠ TARGET ' + kurang.target + ' UP BELUM MUAT DI CANVAS INI</b> — canvas ' + S.L + ' × ' + S.W
-                        + ' cm baru memuat ' + kurang.dapat + ' up, sisanya ditempatkan DI LUAR canvas (tandai merah) untuk digeser manual. '
-                        + 'Bisa juga diputar/di-mirror, perbesar canvas (' + (unlimited() ? 'tanpa batas meja' : 'meja ' + bedOwner() + ' masih mengizinkan sampai ' + limTxt())
-                        + '), atau tekan ✦ Suggestion.')
+                      ? '<br><b>⚠ ' + txf('TARGET :t UP DOES NOT FIT THE MACHINE', { t: kurang.target }) + '</b> — '
+                        + txf('that many :bl × :bw cm blanks exceed the table of :bed. The largest allowed canvas (:lim) only fits :max up.', { bl: S.p.l, bw: S.p.w, bed: bedOwner(), lim: limTxt(), max: kurang.maxMesin })
+                      : '<br><b>⚠ ' + txf('TARGET :t UP DOES NOT FIT THIS CANVAS YET', { t: kurang.target }) + '</b> — '
+                        + txf('canvas :l × :w cm only fits :got up, the rest is placed OUTSIDE the canvas (marked red) to be moved manually.', { l: S.L, w: S.W, got: kurang.dapat }) + ' '
+                        + txf('You can also rotate/mirror, enlarge the canvas (:room), or press ✦ Suggestion.', { room: unlimited() ? tx('no bed limit') : txf('the table of :bed still allows up to :lim', { bed: bedOwner(), lim: limTxt() }) }))
                   : '');
 
           $('impoDetail').innerHTML = '<table>' +
-              '<tr><td>Object di canvas</td><td>' + up + ' up</td></tr>' +
-              '<tr><td>Bounding box susunan</td><td>' + bl + ' × ' + bw + ' cm</td></tr>' +
-              '<tr><td>Area blank total</td><td>' + (up * A).toFixed(0) + ' cm²</td></tr>' +
-              '<tr><td>Area canvas</td><td>' + ac.toFixed(0) + ' cm²</td></tr>' +
-              '<tr><td>Sisa canvas kosong</td><td>' + (ac - up * A).toFixed(0) + ' cm² (' + (100 - cu).toFixed(1) + '%)</td></tr>' +
-              '<tr><td>Canvas / plano</td><td>' + c.n + ' lembar</td></tr>' +
-              '<tr><td>Trim plano terbuang</td><td>' + (ap - c.n * ac).toFixed(0) + ' cm²</td></tr>' +
-              '<tr><td>Hasil / plano</td><td>' + (c.n * up) + ' pcs</td></tr></table>';
+              '<tr><td>' + tx('Objects on canvas') + '</td><td>' + up + ' up</td></tr>' +
+              '<tr><td>' + tx('Arrangement bounding box') + '</td><td>' + bl + ' × ' + bw + ' cm</td></tr>' +
+              '<tr><td>' + tx('Total blank area') + '</td><td>' + (up * A).toFixed(0) + ' cm²</td></tr>' +
+              '<tr><td>' + tx('Canvas area') + '</td><td>' + ac.toFixed(0) + ' cm²</td></tr>' +
+              '<tr><td>' + tx('Empty canvas left') + '</td><td>' + (ac - up * A).toFixed(0) + ' cm² (' + (100 - cu).toFixed(1) + '%)</td></tr>' +
+              '<tr><td>' + tx('Canvas / plano') + '</td><td>' + c.n + ' ' + tx('sheet(s)') + '</td></tr>' +
+              '<tr><td>' + tx('Wasted plano trim') + '</td><td>' + (ap - c.n * ac).toFixed(0) + ' cm²</td></tr>' +
+              '<tr><td>' + tx('Output / plano') + '</td><td>' + (c.n * up) + ' pcs</td></tr></table>';
 
           const rows = planos.map(q => ({ q, c: cut(q) })).filter(x => x.c.n).sort((a, b2) => b2.c.util - a.c.util || b2.c.n - a.c.n);
           $('planoTable').innerHTML = rows.length
-              ? '<table class="rank"><tr><th>Plano</th><th>Cvs</th><th>Yield</th><th>Overall</th><th>Pcs</th></tr>' +
+              ? '<table class="rank"><tr><th>' + tx('Plano') + '</th><th>' + tx('Cvs') + '</th><th>' + tx('Yield') + '</th><th>' + tx('Overall') + '</th><th>' + tx('Pcs') + '</th></tr>' +
                 rows.map(r => '<tr class="' + (r.q[0] === S.pl[0] ? 'best' : '') + '"><td>' + r.q[0].replace(' cm', '') + '</td><td>' + r.c.n + '</td><td>' + (r.c.util * 100).toFixed(1) + '%</td><td>' + (cu * r.c.util).toFixed(1) + '%</td><td>' + (r.c.n * up) + '</td></tr>').join('') +
                 '</table>'
-              : '<table><tr><td>Tidak ada plano standar yang muat canvas ' + S.L + ' × ' + S.W + ' cm</td></tr></table>';
+              : '<table><tr><td>' + txf('No standard plano fits canvas :l × :w cm', { l: S.L, w: S.W }) + '</td></tr></table>';
       }
 
       function calculator() {
@@ -2847,8 +2845,8 @@
               // masih menunjukkan pembagian canvas SEBELUMNYA.
               const bi = bestPlanoIndex();
               $('planoNote').className = 'io-notice bad';
-              $('planoNote').innerHTML = 'Plano ' + esc(S.pl[0]) + ' tidak muat canvas ' + S.L + ' × ' + S.W + ' cm.'
-                  + (bi >= 0 ? ' Pilih <b>' + planos[bi][0] + '</b> (' + (cut(planos[bi]).util * 100).toFixed(1) + '% sheet yield) atau tekan ✦ Suggestion.' : '');
+              $('planoNote').innerHTML = esc(_tf('Plano :p does not fit the canvas :l × :w cm.', { p: S.pl[0], l: S.L, w: S.W }))
+                  + (bi >= 0 ? ' ' + tx('Choose') + ' <b>' + planos[bi][0] + '</b> (' + (cut(planos[bi]).util * 100).toFixed(1) + '% ' + tx('sheet yield') + ') ' + tx('or press ✦ Suggestion.') : '');
               $('mUp').textContent = up; $('mYield').textContent = 0; $('mPerPlano').textContent = 0; $('mWaste').textContent = '—';
               $('resultValue').textContent = '—';
               drawPlano(S.pl, c);
@@ -2860,18 +2858,18 @@
           }
           const bi = bestPlanoIndex(), bp = { p: planos[bi], c: cut(planos[bi]) };
           $('planoNote').className = 'io-notice ok';
-          $('planoNote').innerHTML = 'Recommended: <b>' + bp.p[0] + '</b> gives ' + bp.c.n + ' canvas(es) / plano (' +
-              (bp.c.util * 100).toFixed(1) + '% sheet yield, bahan per pcs paling hemat). ' + (S.pl[0] === bp.p[0] ? 'Selected.' : 'Manual plano selection active.');
+          $('planoNote').innerHTML = tx('Recommended:') + ' <b>' + bp.p[0] + '</b> ' + txf('gives :n canvas(es) / plano', { n: bp.c.n }) + ' (' +
+              (bp.c.util * 100).toFixed(1) + '% ' + tx('sheet yield, most economical material per pcs') + '). ' + (S.pl[0] === bp.p[0] ? tx('Selected.') : tx('Manual plano selection active.'));
           const perPlano = c.n * up, waste = (100 - c.util * 100).toFixed(1) + '%';
           $('mUp').textContent = up; $('mYield').textContent = c.n;
           $('mPerPlano').textContent = perPlano; $('mWaste').textContent = waste;
           if (S.conv === 'pcs') {
               const print = Math.ceil(val / up), need = Math.ceil(print / c.n);
-              $('resultCaption').textContent = 'Plano required';
+              $('resultCaption').textContent = _t('Plano required');
               $('resultValue').textContent = need;
-              $('resultUnit').textContent = 'sheets';
+              $('resultUnit').textContent = _t('sheets');
           } else {
-              $('resultCaption').textContent = 'Production capacity';
+              $('resultCaption').textContent = _t('Production capacity');
               $('resultValue').textContent = val * perPlano;
               $('resultUnit').textContent = 'pcs';
           }
@@ -2899,7 +2897,7 @@
                   + t(cx + cw / 2, cy + ch / 2 - 4, 'CANVAS ' + (r * cols + col + 1), 'font-size="9" font-weight="700" fill="#063049"')
                   + t(cx + cw / 2, cy + ch / 2 + 8, fmtAngka(cl) + ' × ' + fmtAngka(cwid), 'font-size="8" fill="#063049"');
           }
-          if (!c.n) s = t(x + W / 2, y + H / 2, 'Canvas ' + fmtAngka(S.L) + ' × ' + fmtAngka(S.W) + ' cm tidak muat', 'font-size="10" font-weight="700" fill="#c0392b"');
+          if (!c.n) s = t(x + W / 2, y + H / 2, esc(_tf('Canvas :l × :w cm does not fit', { l: fmtAngka(S.L), w: fmtAngka(S.W) })), 'font-size="10" font-weight="700" fill="#c0392b"');
           const trim = p[1] * p[2] - c.n * S.L * S.W;
           $('cut').innerHTML = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" width="100%" style="max-width:' + VW + 'px">'
               + '<defs><pattern id="io-trimHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
@@ -2907,8 +2905,8 @@
               + '<rect x="' + x + '" y="' + y + '" width="' + W + '" height="' + H + '" fill="url(#io-trimHatch)" stroke="#8fa8b6"/>' + s
               + t(x + W / 2, y - 4, fmtAngka(p[1]) + ' cm', 'font-size="9" fill="#abc6d5"')
               + '<text x="' + (x - 4) + '" y="' + (y + H / 2) + '" text-anchor="middle" font-size="9" fill="#abc6d5" transform="rotate(-90 ' + (x - 4) + ' ' + (y + H / 2) + ')">' + fmtAngka(p[2]) + ' cm</text>'
-              + t(VW / 2, VH - 22, p[0] + ' → ' + c.n + ' canvas (' + cols + ' × ' + rows + (c.rot ? ', canvas diputar' : '') + ')', 'font-size="10" font-weight="700" fill="#dbeaf3"')
-              + t(VW / 2, VH - 8, 'Sheet yield ' + (c.util * 100).toFixed(1) + '% · trim terbuang ' + Math.max(0, trim).toFixed(0) + ' cm² (arsir)', 'font-size="9" fill="#abc6d5"')
+              + t(VW / 2, VH - 22, p[0] + ' → ' + c.n + ' canvas (' + cols + ' × ' + rows + (c.rot ? ', ' + tx('canvas rotated') : '') + ')', 'font-size="10" font-weight="700" fill="#dbeaf3"')
+              + t(VW / 2, VH - 8, esc(_tf('Sheet yield :y% · wasted trim :a cm² (hatched)', { y: (c.util * 100).toFixed(1), a: Math.max(0, trim).toFixed(0) })), 'font-size="9" fill="#abc6d5"')
               + '</svg>';
       }
 

@@ -56,11 +56,11 @@
             ['key' => 'part_name', 'label' => 'Part', 'src' => Src::of('tm2mst.prod_part.part_name')],
             ['key' => 'product', 'label' => 'Product', 'src' => Src::of('tm2mst.prod_product.product_name')],
             ['key' => 'updated', 'label' => 'Last Updated', 'type' => 'date', 'src' => Src::of('tm2mst.prod_part.updated_at')],
-            ['key' => 'status', 'label' => 'Status Layout', 'type' => 'badge', 'tones' => ['CONFIRMED' => 'success', 'DRAFT' => 'warn', 'BELUM MULAI' => 'neutral'], 'src' => Src::of('tm2mst.prod_layout_group.status').' (latest)'],
+            ['key' => 'status', 'label' => 'Status Layout', 'type' => 'badge', 'tones' => ['CONFIRMED' => 'success', 'DRAFT' => 'warn', t('NOT STARTED', 'badge') => 'neutral'], 'src' => Src::of('tm2mst.prod_layout_group.status').' (latest)'],
         ]"
         :stats="[
             ['label' => 'All'],
-            ['label' => t('Not Confirmed'), 'where' => ['status' => ['DRAFT', 'BELUM MULAI']], 'tone' => 'warn'],
+            ['label' => t('Not Confirmed'), 'where' => ['status' => ['DRAFT', t('NOT STARTED', 'badge')]], 'tone' => 'warn'],
             ['label' => t('Confirmed'), 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
         ]"
         :filters="['customer' => 'Customer', 'status' => 'Status Layout']"

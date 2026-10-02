@@ -80,7 +80,7 @@ final class AppMenu
     {
         $v2 = str_starts_with((string) $i->target, 'v2:') || str_starts_with((string) $i->target, '/');
         [$badge, $tone] = $v2 ? ($i->status_code === 'LOCKED' ? self::APPROVED : self::REVIEW)
-            : (isset($routes[$i->code]) ? ['v1', null] : ['Belum', 'todo']);
+            : (isset($routes[$i->code]) ? ['v1', null] : [t('Not yet'), 'todo']);
 
         return ['code' => $i->code, 'label' => self::label($i), 'icon' => $i->icon ?: null, 'type' => $i->object_type ?: 'form',
             'url' => route('v2.item', $i->code), 'badge' => $badge, 'badgeTone' => $tone];

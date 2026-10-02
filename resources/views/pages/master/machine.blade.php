@@ -441,7 +441,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
     {
         return \App\Models\Master\ProdMachineModel::where('activate', true)->orderBy('machine_type')->orderBy('work_length_mm')->get()
             ->mapWithKeys(fn ($m) => [$m->id_machine_model => $m->model_code.($m->alias_codes ? ' ('.$m->alias_codes.')' : '').' · '
-                .($m->work_length_mm ? $m->work_length_mm.'×'.$m->work_width_mm.' mm' : '').' · '.(\App\Models\Master\ProdMachineModel::DRIVES[$m->drive] ?? $m->drive)])->all();
+                .($m->work_length_mm ? $m->work_length_mm.'×'.$m->work_width_mm.' mm' : '').' · '.(\App\Models\Master\ProdMachineModel::driveOptions()[$m->drive] ?? $m->drive)])->all();
     }
 
     // Pilih model = spek umum model diisikan ke form (engine suggests, officer confirms: tetap bisa diubah sebelum Save).

@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @include('partials.js-text')
         @include('partials.theme-vars')
         @include('partials.brand-font')
         @include('partials.pwa-head')

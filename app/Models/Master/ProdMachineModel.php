@@ -14,7 +14,13 @@ class ProdMachineModel extends Model
 
     protected $primaryKey = 'id_machine_model';
 
-    public const DRIVES = ['MANUAL' => 'Manual', 'AUTO' => 'Otomatis'];
+    // Disimpan = kode (kunci); label English, tampil lewat driveOptions() (kamus t()).
+    public const DRIVES = ['MANUAL' => 'Manual', 'AUTO' => 'Automatic'];
+
+    public static function driveOptions(): array
+    {
+        return array_map('t', self::DRIVES);
+    }
 
     protected $fillable = [
         'model_code', 'alias_codes', 'machine_type', 'drive', 'maker_hint', 'work_length_mm', 'work_width_mm',

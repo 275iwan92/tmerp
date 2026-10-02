@@ -41,7 +41,7 @@
             ['key' => 'dims', 'label' => 'Dimensions (L×W×H)'],
             ['key' => 'type', 'label' => 'Product Type'],
             ['key' => 'knife', 'label' => 'Knife / UP'],
-            ['key' => 'svg', 'label' => 'SVG Dieline', 'type' => 'badge', 'tones' => ['Ada' => 'success', 'Belum' => 'danger']],
+            ['key' => 'svg', 'label' => 'SVG Dieline', 'type' => 'badge', 'tones' => [t('On file', 'badge') => 'success', t('Not yet', 'badge') => 'danger']],
             ['key' => 'source', 'label' => 'Source'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => MasterCardCollection::TONES],
             ['key' => 'updated', 'label' => t('Changed'), 'type' => 'date', 'visible' => false],

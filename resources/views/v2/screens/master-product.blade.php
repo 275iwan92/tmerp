@@ -39,7 +39,7 @@
             ['key' => 'parts', 'label' => 'Part', 'type' => 'number'],
             ['key' => 'join', 'label' => 'Join'],
             ['key' => 'revision', 'label' => 'Branch'],
-            ['key' => 'acc_digital', 'label' => 'ACC Digital', 'type' => 'badge', 'tones' => ['ADA' => 'success', 'BELUM' => 'warn']],
+            ['key' => 'acc_digital', 'label' => 'ACC Digital', 'type' => 'badge', 'tones' => [t('ON FILE', 'badge') => 'success', t('NOT YET', 'badge') => 'warn']],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['ACTIVE' => 'success', 'DRAFT' => 'neutral']],
             ['key' => 'updated', 'label' => t('Changed'), 'type' => 'date', 'visible' => false],
         ]"
@@ -47,7 +47,7 @@
             ['label' => t('All Products')],
             ['label' => 'Official (Quotation WIN)', 'where' => ['status' => 'ACTIVE'], 'tone' => 'success'],
             ['label' => 'Draft (ProDev)', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],
-            ['label' => t('No Digital ACC yet'), 'where' => ['acc_digital' => 'BELUM', 'status' => 'ACTIVE'], 'tone' => 'warn'],
+            ['label' => t('No Digital ACC yet'), 'where' => ['acc_digital' => t('NOT YET', 'badge'), 'status' => 'ACTIVE'], 'tone' => 'warn'],
         ]"
         :filters="['customer' => 'Customer', 'join' => 'Join', 'status' => 'Status']" />
     <p class="mp-hint">{{ t('Products are born automatically when a Quotation is WON (CO created) — not created manually. Double-click a row to open.') }}</p>

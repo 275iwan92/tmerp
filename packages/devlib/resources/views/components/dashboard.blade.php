@@ -109,7 +109,7 @@
                             @endforeach
                         </div>
                         <table class="dl-table dl-dash__mx">
-                            <thead><tr><th>{{ $act['segment_label'] ?? 'Sasaran' }}</th>@foreach ($act['types'] as $ty)<th class="num">{{ $ty['label'] }}</th>@endforeach<th class="num">Total</th></tr></thead>
+                            <thead><tr><th>{{ $act['segment_label'] ?? \Devlib\Lang::text('Segment') }}</th>@foreach ($act['types'] as $ty)<th class="num">{{ $ty['label'] }}</th>@endforeach<th class="num">Total</th></tr></thead>
                             <tbody>
                                 @foreach ($act['segments'] as $sg)
                                     @php($row = $a['matrix'][$sg['key']] ?? [])
@@ -158,7 +158,7 @@
                     @if ($rk)
                         <x-dl::card :title="$rk['title']" :description="$rk['caption'] ?? null" icon="fa-ranking-star">
                             <div class="dl-dash__scroll"><table class="dl-table dl-dash__rk">
-                                <thead><tr><th>{{ $rk['name_label'] ?? 'Nama' }}</th><th class="num">Target</th><th class="num">Pencapaian</th><th>%</th></tr></thead>
+                                <thead><tr><th>{{ $rk['name_label'] ?? \Devlib\Lang::text('Name') }}</th><th class="num">Target</th><th class="num">{{ \Devlib\Lang::text('Achievement') }}</th><th>%</th></tr></thead>
                                 <tbody>
                                     @foreach ($rk['rows'] as $r)
                                         @php($pct = $r['target'] ? $r['actual'] / $r['target'] * 100 : 0)
@@ -219,7 +219,7 @@
     @if (! empty($d['quotes']))
         <div class="dl-dash__quote">
             <x-dl::quote :quotes="$d['quotes']" order="day" />
-            <div class="dl-dash__doy"><b data-dash-doy>—</b><small>dari {{ count($d['quotes']) >= 366 ? 365 : count($d['quotes']) }}</small></div>
+            <div class="dl-dash__doy"><b data-dash-doy>—</b><small>{{ \Devlib\Lang::text('of') }} {{ count($d['quotes']) >= 366 ? 365 : count($d['quotes']) }}</small></div>
         </div>
     @endif
 

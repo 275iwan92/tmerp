@@ -75,7 +75,7 @@
                 <x-dl::field.text name="revise_reason" label="Revision reason" required :value="old('revise_reason', $inq?->revise_reason)" placeholder="e.g. change the long-side artwork — customer request" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_reason')" />
                 <x-dl::field.text name="design_number" label="New Design No." :value="old('design_number', $inq?->design_number ?? $doc['design_no'])" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.design_number')" />
             </x-dl::form.row>
-            <div data-rv-scope><x-dl::field.checkboxes name="revise_scope" label="Revision scope (more than one allowed) — only the selected blocks can be changed" :options="InquiryDerivedWriter::SCOPES" :value="$scope" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_scope')" /></div>
+            <div data-rv-scope><x-dl::field.checkboxes name="revise_scope" label="Revision scope (more than one allowed) — only the selected blocks can be changed" :options="array_map('t', InquiryDerivedWriter::SCOPES)" :value="$scope" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_scope')" /></div>
         </x-dl::card>
 
         <x-dl::card title="Revision differences (before → after)" description="Recorded automatically on Save; also shown on the ProDev and ProCost screens so they know what must be redone.">

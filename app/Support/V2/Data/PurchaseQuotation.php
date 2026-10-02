@@ -33,9 +33,26 @@ final class PurchaseQuotation
 
     public const STATUS_TONES = ['DRAFT' => 'neutral', 'CONFIRMED' => 'success', 'CLOSED' => 'info', 'CANCELLED' => 'danger'];
 
-    public const READ_LABELS = ['READ' => 'Siap dipilih', 'CHECK' => 'Perlu cek', 'MANUAL' => 'Isi manual', 'FAILED' => 'Gagal dibaca'];
+    // Label tampil hasil baca file (English, diterjemahkan lewat readLabel() / readTones() konteks 'badge').
+    public const READ_LABELS = ['READ' => 'Ready to pick', 'CHECK' => 'Needs check', 'MANUAL' => 'Manual entry', 'FAILED' => 'Read failed'];
 
-    public const READ_TONES = ['Siap dipilih' => 'success', 'Perlu cek' => 'warn', 'Isi manual' => 'warn', 'Gagal dibaca' => 'danger'];
+    public const READ_TONES = ['READ' => 'success', 'CHECK' => 'warn', 'MANUAL' => 'warn', 'FAILED' => 'danger'];
+
+    public static function readLabel(?string $status, string $none = '—'): string
+    {
+        return isset(self::READ_LABELS[$status]) ? t(self::READ_LABELS[$status], 'badge') : $none;
+    }
+
+    // Tones grid dikunci dengan teks tampil (sudah diterjemahkan), sama seperti nilai kolom 'read' di rows().
+    public static function readTones(): array
+    {
+        $tones = [];
+        foreach (self::READ_TONES as $code => $tone) {
+            $tones[self::readLabel($code)] = $tone;
+        }
+
+        return $tones;
+    }
 
     public static function rows(): array
     {
@@ -46,7 +63,7 @@ final class PurchaseQuotation
         return $pqs->map(fn ($q) => ['id' => $q->pq_id, 'no' => $q->doc_no ?: '(draft #'.$q->pq_id.')',
             'supplier' => $sup[$q->i_supplier_id] ?? (($q->i_supplier_text ?: '—').' '.t('(not matched)')), 'pr' => $prs[$q->i_pr_id] ?? '—',
             'date' => $q->i_doc_date?->toDateString(), 'valid' => $q->i_quotation_valid_until?->toDateString(), 'file' => $q->source_name ?? '—',
-            'read' => self::READ_LABELS[$q->extract_status] ?? '—', 'lines' => $q->lines->count(), 'total' => (float) $q->c_total_idr, 'status' => $q->status,
+            'read' => self::readLabel($q->extract_status), 'lines' => $q->lines->count(), 'total' => (float) $q->c_total_idr, 'status' => $q->status,
             // Baris anak grid (Expand): nama item selalu tampil, tanpa harga.
             'items' => $q->lines->map(fn ($l) => ['name' => $l->i_description ?: $l->i_source_text, 'qty' => (float) $l->i_qty, 'unit' => $l->i_uom,
                 'lead' => $l->i_lead_time_day, 'note' => $l->i_notes])->all()])->all();

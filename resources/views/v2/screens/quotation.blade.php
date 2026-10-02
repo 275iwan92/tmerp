@@ -196,8 +196,8 @@
 
     <x-dl::card title="Follow-up customer" description="Phone / visit / WhatsApp / email notes until the customer decides.">
         <x-dl::table :columns="['date' => 'Date', 'type' => 'Kind', 'contact' => 'Contact', 'result' => 'Result', 'notes' => 'Notes', 'next' => 'Next action', 'by' => 'Recorded by']"
-            :rows="$q->activities->map(fn ($a) => ['date' => \Devlib\Locale::d($a->activity_date), 'type' => implode(' ', QuoActivity::TYPES[$a->activity_type] ?? [$a->activity_type]),
-                'contact' => $a->contact_person ?? '—', 'result' => QuoActivity::RESULTS[$a->result] ?? '—', 'notes' => $a->notes ?? '—',
+            :rows="$q->activities->map(fn ($a) => ['date' => \Devlib\Locale::d($a->activity_date), 'type' => trim((QuoActivity::TYPES[$a->activity_type][0] ?? '').' '.QuoActivity::typeLabel($a->activity_type)),
+                'contact' => $a->contact_person ?? '—', 'result' => $a->result ? QuoActivity::resultLabel($a->result) : '—', 'notes' => $a->notes ?? '—',
                 'next' => trim((\Devlib\Locale::d($a->next_action_date) ?? '').' '.($a->next_action ?? '')) ?: '—', 'by' => $a->created_by])->all()"
             empty="No follow-up yet." source="{{ Src::of('tm2sdi.quo_activity') }}" />
         @if (in_array($status, ['DRAFT', 'PUBLISHED'], true))
@@ -230,12 +230,12 @@
     <x-dl::modal id="quotation-activity" title="Add follow-up" icon="plus">
         <x-dl::action-form action="{{ route('v2.quotation.activity', $q->id_quotation) }}">
             <x-dl::form.row cols="2">
-                <x-dl::field.select name="act[activity_type]" label="Type" required :options="collect(QuoActivity::TYPES)->map(fn ($t) => implode(' ', $t))->all()" value="CALL" />
+                <x-dl::field.select name="act[activity_type]" label="Type" required :options="QuoActivity::typeOptions()" value="CALL" />
                 <x-dl::field.date name="act[activity_date]" label="Date" required :value="now()->toDateString()" />
             </x-dl::form.row>
             <x-dl::form.row cols="2">
                 <x-dl::field.select name="act[contact_person]" label="Contact" :options="$c->contactOptions()" :value="$q->attn_contact" />
-                <x-dl::field.select name="act[result]" label="Result" :options="QuoActivity::RESULTS" />
+                <x-dl::field.select name="act[result]" label="Result" :options="QuoActivity::resultOptions()" />
             </x-dl::form.row>
             <x-dl::field.text name="act[notes]" label="Notes" multiline />
             <x-dl::form.row cols="2">

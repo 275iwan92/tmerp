@@ -166,11 +166,13 @@ var svg = function(spec,dims){
   var M=Math.max(24,(W+H)/16);
   return '<svg width="100%" height="100%" viewBox="'+nf(-M)+' '+nf(-M)+' '+nf(W+2*M)+' '+nf(H+2*M)+'" xmlns="http://www.w3.org/2000/svg">'+body+'</svg>';
 }
+// Teks placeholder ditulis English; terjemahan bahasa tampilan dari window.TM_T (partials/js-text.blade.php).
+var tt = function(en){ return (root.TM_T && root.TM_T[en]) || en; };
 var render = function(el,spec,dims){
   if(!el)return;
-  if(!spec){el.innerHTML=placeholder('Tipe ini belum punya<br>spesifikasi dieline');return;}
+  if(!spec){el.innerHTML=placeholder(tt('This type has no<br>dieline specification yet'));return;}
   var s=svg(spec,dims);
-  el.innerHTML=s||placeholder('Pilih ukuran / isi dimensi<br>untuk melihat dieline');
+  el.innerHTML=s||placeholder(tt('Choose a size / enter the dimensions<br>to see the dieline'));
 }
 root.TMDieline={render:render,svg:svg,flat:flat,eval:evalExpr,scope:buildScope,STROKE:STROKE};
 })(typeof window!=='undefined'?window:this);
