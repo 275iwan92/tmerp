@@ -36,6 +36,7 @@
             "App\\": "app/",
             "MockupParts\\": "packages/mockup-parts/src/",
             "Chat\\": "packages/chat/src/",
+            "Assistant\\": "packages/assistant/src/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

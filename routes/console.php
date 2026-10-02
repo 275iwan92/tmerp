@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Schema;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -24,4 +25,9 @@ Schedule::command('maintenance:generate-pm')->dailyAt('06:00')->withoutOverlappi
 // Material Planning: lepas booking CO yang batal + hitung ulang usulan booking CO CONFIRMED yang belum dikunci (tiap malam).
 // Lingkungan yang belum punya skema Material Planning (tm2* sebelum disetujui user) dilewati.
 Schedule::command('planning:run')->dailyAt('01:30')->withoutOverlapping()
-    ->when(fn () => \Illuminate\Support\Facades\Schema::connection('tm2inv')->hasColumn('rm_booking', 'co_id'));
+    ->when(fn () => Schema::connection('tm2inv')->hasColumn('rm_booking', 'co_id'));
+
+// Asisten AI: riwayat percakapan yang lewat masa simpan per level (30 / 14 / 7 hari, Settings > Constants) dibuang tiap malam.
+// Lingkungan yang belum punya tabel asisten dilewati.
+Schedule::command('assistant:prune')->dailyAt('02:30')->withoutOverlapping()
+    ->when(fn () => Schema::connection('tm2sys')->hasTable('sys_assistant_message'));

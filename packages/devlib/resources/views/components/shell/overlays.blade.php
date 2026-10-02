@@ -8,14 +8,23 @@
     </aside>
     @endif
 
-    <aside class="dl-drawer" data-dl-drawer="ai" data-dl="drawer asisten AI" data-dl-class="bagian Shell" data-dl-src="registry menu (pratinjau)">
-        <div class="dl-dr-head"><i class="fa-solid fa-wand-magic-sparkles dl-dr-ico dl-dr-ico--ai"></i><span class="dl-dr-title">Asisten AI</span><span class="dl-dr-note">pratinjau</span><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
+    {{-- Asisten: prop assistant terisi = chat pribadi user dengan asisten aplikasi (jawaban dari server); kosong = pratinjau. --}}
+    @php $assistantLive = ! empty($assistant['api']['ask']); @endphp
+    <aside class="dl-drawer" data-dl-drawer="ai" data-dl="drawer asisten AI" data-dl-class="bagian Shell" data-dl-src="{{ $assistantLive ? 'sys_assistant_message + sys_assistant_metric, sys_help_topic, sys_app_menu' : 'registry menu (pratinjau)' }}"
+        @if ($assistantLive) data-dl-assistant="{{ json_encode($assistant) }}" @endif>
+        <div class="dl-dr-head"><i class="fa-solid fa-wand-magic-sparkles dl-dr-ico dl-dr-ico--ai"></i><span class="dl-dr-title">Asisten AI</span>@unless ($assistantLive)<span class="dl-dr-note">pratinjau</span>@endunless<button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
         <div class="dl-ai" data-dl-ai-body>
+            @if ($assistantLive)
+            <div class="dl-ai__intro">{{ $assistant['hello'] ?? '' }}
+                @if (! empty($assistant['chips']))<div class="dl-ai__chips">@foreach ($assistant['chips'] as $chip)<button type="button" class="dl-ai__chip" data-dl-ai="{{ $chip }}">{{ $chip }}</button>@endforeach</div>@endif
+            </div>
+            @else
             <div class="dl-ai__intro">Tanya dengan bahasa biasa — mis. <b>“buka login”</b> atau <b>“grid”</b>, saya bantu bukakan di tab. Versi ini masih pratinjau.
                 <div class="dl-ai__chips"><button type="button" class="dl-ai__chip" data-dl-ai="login">login</button><button type="button" class="dl-ai__chip" data-dl-ai="kanban">kanban</button><button type="button" class="dl-ai__chip" data-dl-ai="grid">grid</button></div>
             </div>
+            @endif
         </div>
-        <div class="dl-ai__in"><input data-dl-ai-input placeholder="Ketik permintaan…"><button type="button" data-dl-ai-send><i class="fa-solid fa-arrow-up"></i></button></div>
+        <div class="dl-ai__in"><div class="dl-ai__box"><input data-dl-ai-input maxlength="500" placeholder="{{ $assistant['placeholder'] ?? 'Ketik permintaan…' }}" aria-label="{{ \Devlib\Lang::text('Message') }}"><button type="button" class="dl-field__trigger dl-case" data-dl-ai-case title="{{ \Devlib\Lang::text('Change case: lower / Title Case / UPPER') }}">aa</button></div><button type="button" data-dl-ai-send aria-label="{{ \Devlib\Lang::text('Send') }}"><i class="fa-solid fa-arrow-up"></i></button></div>
     </aside>
 
     <aside class="dl-drawer" data-dl-drawer="notif" data-dl="drawer notifikasi" data-dl-class="bagian Shell" data-dl-src="sys_notifications (rencana)">

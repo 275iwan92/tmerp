@@ -99,6 +99,8 @@ final class Grids
         Setup\HelpTopicLookup::class,
         Setup\HelpLineLookup::class,
         Setup\HelpCenterReport::class,
+        Setup\AssistantQuestionLookup::class,
+        Setup\AssistantLogReport::class,
         Inv\RmStockInGrid::class,
         Inv\RmStockOutGrid::class,
         Inv\RmStockReturnGrid::class,

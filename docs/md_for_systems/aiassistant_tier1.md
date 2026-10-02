@@ -1,8 +1,9 @@
-# Asisten AI — Tier 1 (rancangan, menunggu persetujuan user)
+# Asisten AI — Tier 1
 
-> Status 2026-10-02: **Help sudah dibangun dan terpasang di ddt + tm2** (bagian 6). **Asisten (drawer chat, mesin jawab, angka
-> manajemen) BELUM dibangun** — user sedang me-review preview drawer dan aturan level (bagian 4.4); sisanya di bagian 9.
-> Mockup: `docs/mockups/ai_assistant_drawer.jpg`.
+> Status 2026-10-02: **Help terpasang di ddt + tm2** (bagian 6). **Asisten tahap 1–2 DIBANGUN di database dummy (mockup.test)**:
+> paket `packages/assistant`, drawer chat, cari layar, bantuan dari Help, angka Sales today + Deadstock, penjaga pertanyaan
+> gaji, log, masa simpan riwayat. **Belum**: `tm2` (menunggu user selesai menguji di mockup.test), sambungan Ollama belum
+> diuji (Ollama belum terpasang), 17 angka lain di bagian 5. Mockup: `docs/mockups/ai_assistant_drawer.jpg`.
 
 ## 1. Tujuan
 
@@ -28,6 +29,9 @@ Asisten di dalam ERP yang **bekerja tanpa internet**, menjawab dari isi database
 | 10 | Jawaban **Sales today** merinci: **Draft** sekian, **Confirmed** sekian, lalu **Total** sekian (CO Cancelled tidak dihitung). |
 | 11 | Riwayat percakapan disimpan **30 hari** untuk top management, **14 hari** untuk middle management, **7 hari** untuk level terbawah (user lebih dari 100, menghemat storage). |
 | 12 | Help dipasang juga ke `tm2` (tmerp.test) — sudah dijalankan 2026-10-02. |
+| 13 | **Level memakai user security yang sudah ada** (grup + `mgmt_level` + hak modul), bukan pembagian baru. |
+| 14 | Perjalanan user + drawer disetujui; user menguji setelah masuk mockup.test. |
+| 15 | **Pertanyaan gaji hanya untuk General Manager dan Direksi.** Gaji sendiri dilihat user di profilnya (asisten menunjuk ke sana). |
 
 ## 3. Perjalanan user (untuk disetujui)
 
@@ -85,22 +89,24 @@ lewat HTTP (`/assistant/ask`).
 - Internet hanya dibutuhkan sekali untuk mengunduh model; sesudah itu mandiri.
 - Laptop pengembangan (i5-10310U, 16 GB, tanpa GPU): hanya kuat model kecil. Waktu jawab **belum diukur**.
 
-### 4.4 Level (keputusan 4)
+### 4.4 Level = user security (keputusan 13)
 
-- Layar: hanya yang boleh dibuka user (aturan menu yang sudah ada: `AppMenu` + `canAccessModule`).
-- Help: terbuka untuk semua.
-- Angka: **tiga kelompok** (usulan, menunggu OK user), dari `sec_group.mgmt_level` tertinggi milik user:
+Asisten tidak punya aturan hak sendiri. Semua "boleh / tidak" ditanyakan ke user security (`App\Assistant\ErpAsker`):
 
-  | Kelompok | `mgmt_level` | Grup saat ini | Angka yang dijawab | Riwayat chat |
-  |---|---|---|---|---|
-  | Top management | 4–5 | Direksi, Manager Operasional | semua angka semua bagian, termasuk kas / bank, piutang, hutang | 30 hari |
-  | Middle management | 2–3 | Manager per bagian, Supervisor, Officer | angka rupiah **bagiannya sendiri** (modul yang boleh dibukanya) | 14 hari |
-  | Level terbawah | 1 | Staf | **tanpa rupiah**: jumlah dokumen dan pekerjaannya sendiri | 7 hari |
+- **Layar**: hanya yang ada di Menu v2 user itu (`AppMenu::modules`, aturan yang sama dengan menu).
+- **Help**: terbuka untuk semua.
+- **Angka**: tiap pertanyaan punya **modul pemilik**; penanya wajib boleh membuka modul itu (`SecUser::canAccessModule` = izin
+  grup + `sec_module.min_mgmt_level`). User yang boleh membuka **Laporan Manajemen** (modul `MGMT`: Direksi, General Manager)
+  boleh menanyakan angka semua bagian. Tiap pertanyaan juga bisa diberi **Minimum level** (`mgmt_level`) di Setup >
+  Assistant Questions; 0 = hak modul sudah cukup.
+- **Rupiah penjualan** mengikuti `SecUser::canViewSalesPrice()` (aturan A.9); yang tidak berhak mendapat jumlah dokumen saja.
+- **Gaji** (keputusan 15): di bawah `ASSISTANT_SALARY_MIN_LEVEL` (4 = General Manager) asisten menolak dan menunjuk ke profil
+  user. Menanyakan letak / cara pakai layar payroll tetap dijawab pencarian layar biasa sesuai menu user.
+- **Riwayat chat** (keputusan 11): `mgmt_level` >= 4 disimpan 30 hari, 2–3 = 14 hari, 1 = 7 hari; batas dan harinya konstanta
+  kategori Assistant. Dibuang terjadwal tiap malam (`assistant:prune`).
+- Semua pertanyaan tercatat (siapa, level, dijawab apa) di Setup > Assistant Log.
 
-  Tetap berlaku di atas kelompok itu: HPP / margin hanya Costing + Direksi (A.8), harga jual sesuai A.9, gaji hanya petugas
-  payroll + Direksi. Satu metric boleh dikecualikan (lebih tertutup / lebih terbuka) lewat layar Setup > Assistant Questions.
-- Batas kelompok (level berapa = top / middle) dan lama simpan riwayat = konstanta kategori ASSISTANT, bukan hardcode.
-- Semua pertanyaan tercatat (siapa, kapan, dijawab apa) di log asisten; baris yang lewat masa simpan dihapus terjadwal.
+Level saat ini (`sec_group`): Direksi 5 · Manager Operasional 4 · Manager per bagian 3 · Supervisor / Officer 2 · Staf 1.
 
 ### 4.5 Tabel baru (paket asisten; nama dan koneksi lewat config)
 
@@ -178,14 +184,30 @@ ollama pull qwen2.5:3b
 | Tahap | Isi | Butuh model | Status |
 |---|---|---|---|
 | 0 | Help semua layar + layar inputnya + Help Center | tidak | dibangun (ddt + tm2) |
-| 1 | Paket asisten + drawer chat + cari layar + cari Help (kata kunci) + log | tidak | menunggu OK |
-| 2 | Katalog angka: no. 1 dan 8, lalu daftar bagian 5 bertahap, dengan test | tidak | menunggu OK |
-| 3 | Sambungan Ollama: memahami kalimat bebas, merangkai jawaban dari Help | ya | menunggu Ollama terpasang |
+| 1 | Paket asisten + drawer chat + cari layar + cari Help (kata kunci) + log | tidak | dibangun (ddt), belum dicoba di browser |
+| 2 | Katalog angka: no. 1 dan 8 + penjaga gaji; daftar bagian 5 lainnya bertahap | tidak | no. 1, 8, gaji dibangun (ddt) |
+| 3 | Sambungan Ollama: model memilih dari calon terdekat saat kata kunci tidak yakin | ya | kode ada, **belum diuji** (Ollama belum terpasang; `ASSISTANT_MODEL_ENABLED` = 0) |
 | 4 | Ukur kecepatan di server Ubuntu, pilih model | ya | nanti |
 
-## 9. Pertanyaan terbuka
+## 9. Yang masih terbuka
 
-1. **Perjalanan user + drawer** (bagian 3, `docs/mockups/ai_assistant_drawer.jpg`): user sedang me-review.
-2. **Tiga kelompok level** (bagian 4.4): benarkah Manager per bagian (level 3) masuk *middle*, dan Manager Operasional (level 4)
-   masuk *top*? Middle hanya melihat angka bagiannya sendiri — setuju?
-3. Daftar pertanyaan bagian 5: user menyusulkan tambahannya.
+1. **Nilai stok kosong**: sebagian besar baris kartu stok di data sekarang tidak punya nilai (harga rata-rata kosong), jadi rupiah
+   deadstock terlalu rendah. Asisten menyebutnya terang-terangan ("n dari m item tidak punya nilai stok"), tetapi angkanya baru
+   benar setelah nilai stok terisi.
+2. **Gaji sendiri di profil user**: halaman profil belum menampilkan gaji. Jawaban asisten sudah menunjuk ke sana (keputusan 15),
+   jadi halamannya perlu dibangun.
+3. **Angka gaji untuk GM / Direksi**: belum ada (definisinya belum ditetapkan); untuk sekarang asisten menunjuk ke layar payroll.
+4. **Sales today di data dummy = 0** bila belum ada Customer Order bertanggal hari ini.
+5. **tm2**: paket asisten dipasang ke tmerp.test setelah user selesai menguji di mockup.test.
+6. Daftar pertanyaan bagian 5: 17 lainnya belum dibangun; user menyusulkan tambahannya.
+7. Ollama: pasang, nyalakan `ASSISTANT_MODEL_ENABLED`, lalu ukur kecepatan.
+
+## 10. Letak kode
+
+| Bagian | Letak |
+|---|---|
+| Paket (mesin, kontrak, riwayat, katalog, Ollama, API) | `packages/assistant/` (+ `README.md` cara pindah ke aplikasi lain) |
+| Adaptor ERP | `app/Assistant/` (`ErpAsker`, `ErpNavigator`, `ErpKnowledge`, `Metrics/*`), `App\Providers\AssistantHostProvider`, `config/assistant.php` |
+| Drawer | DevLib `x-dl::shell` / `x-dl::layer-shell` prop `assistant` (`shell/overlays.blade.php`, `shell.js`) |
+| Layar setup | `setup-assistant-questions`, `setup-assistant-log` (Setup > Settings), konstanta kategori Assistant |
+| Test | `tests/Feature/AssistantEngineTest.php` (mesin dengan adaptor tiruan) |

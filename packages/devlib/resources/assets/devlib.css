@@ -484,6 +484,27 @@ textarea.dl-input{resize:none;min-height:28px;line-height:1.3;overflow:hidden;di
 .dl-ai__msg{max-width:88%;padding:10px 13px;border-radius:12px;font-size:calc(13.5px * var(--dl-font-scale));line-height:1.45}
 .dl-ai__msg--me{background:var(--dl-accent);color:var(--dl-white);align-self:flex-end;border-bottom-right-radius:4px}
 .dl-ai__msg--bot{background:var(--dl-violet-msg);color:var(--dl-ink-strong);align-self:flex-start;border-bottom-left-radius:4px}
+/* Asisten (jawaban dari server): kartu jawaban + jempol; kotak tanya dengan badge huruf. */
+.dl-ai__box{flex:1;min-width:0;display:flex;align-items:center;border:1.5px solid var(--dl-border);border-radius:20px;padding-right:4px;background:var(--dl-surface)}
+.dl-ai__in .dl-ai__box input{border:none;border-radius:20px;background:none;color:var(--dl-f-ink)}
+.dl-ai__in .dl-ai__box .dl-case{background:none;color:var(--dl-f-muted);width:auto;height:auto;border-radius:0}
+.dl-ai__wait{color:var(--dl-violet-ink)}
+.dl-ai__card{align-self:flex-start;max-width:94%;background:var(--dl-violet-msg);color:var(--dl-ink-strong);border-radius:12px;border-bottom-left-radius:4px;padding:11px 13px;font-size:calc(13px * var(--dl-font-scale));line-height:1.45}
+.dl-ai__card h5{margin:0 0 2px;font-size:calc(12px * var(--dl-font-scale));font-weight:700;color:var(--dl-violet-ink)}
+.dl-ai__card.is-denied h5{color:var(--dl-amber-2)}
+.dl-ai__card ol{margin:4px 0 0;padding-left:18px}
+.dl-ai__card ol li{margin-bottom:3px}
+.dl-ai__big{font-size:calc(21px * var(--dl-font-scale));font-weight:800;letter-spacing:-.01em}
+.dl-ai__rows{margin:6px 0 2px;border-top:1px solid var(--dl-violet-line)}
+.dl-ai__rows > div{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--dl-violet-line)}
+.dl-ai__rows b{font-variant-numeric:tabular-nums;text-align:right;font-weight:700}
+.dl-ai__rows span + b:empty{display:none}
+.dl-ai__note{margin-top:6px;font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted)}
+.dl-ai__acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.dl-ai__acts .dl-btn{white-space:normal;text-align:left}
+.dl-ai__fb{align-self:flex-start;display:flex;gap:4px;margin:-5px 0 0 4px}
+.dl-ai__fb button{border:none;background:none;color:var(--dl-muted);cursor:pointer;padding:2px 5px;font-size:calc(12px * var(--dl-font-scale))}
+.dl-ai__fb button.is-on{color:var(--dl-violet)}
 .dl-notif__bar{padding:8px 12px;text-align:right;border-bottom:1px solid var(--dl-border)}
 .dl-notif__bar a{font-size:calc(12px * var(--dl-font-scale));color:var(--dl-accent);cursor:pointer;font-weight:600}
 .dl-notif__list{flex:1;overflow-y:auto;padding:6px}

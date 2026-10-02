@@ -348,12 +348,14 @@
      **General Report → Help → Help Center**. Isi awal: `resources/data/help/*.json` → `php artisan help:import`
      (melaporkan layar di menu yang belum punya Help). **Layar baru tanpa Help = belum selesai.**
    - Help ditulis dari apa yang benar-benar ada di kode layar, bukan dari rencana.
-2. **Asisten AI (2026-10-02, rancangan `docs/md_for_systems/aiassistant_tier1.md`; belum dibangun):**
+2. **Asisten AI (2026-10-02, `docs/md_for_systems/aiassistant_tier1.md`; tahap 1–2 dibangun di ddt):**
    - **Bekerja tanpa internet** (model lokal lewat Ollama; deploy Ubuntu 24 ke atas). Lambat tidak masalah; diukur setelah jalan.
    - Tugas: mencari menu / layar, bantuan cara pakai (dari Help), dan menjawab angka untuk manajemen.
    - **AI tidak menghitung dan tidak menulis SQL.** Angka dihitung kelas program yang teruji (satu pertanyaan terdaftar = satu
      kelas); cara pakai dikutip dari Help; AI hanya memahami kalimat dan merangkai jawabannya. Tidak tahu = bilang tidak tahu.
-   - **Siapa saja boleh bertanya, jawaban sesuai levelnya** (modul + `mgmt_level`; harga dan HPP ikut A.8–A.9).
+   - **Siapa saja boleh bertanya, jawaban sesuai levelnya — acuannya level di user security yang sudah ada** (grup,
+     `mgmt_level`, hak modul; harga dan HPP ikut A.8–A.9). Yang boleh membuka Laporan Manajemen boleh bertanya angka semua bagian.
+   - **Pertanyaan gaji hanya untuk General Manager dan Direksi.** Gaji sendiri dilihat user di profilnya.
    - Bentuk: **chat pribadi asisten dengan user yang bertanya, di drawer sendiri.**
    - **Modular**: paket terpisah yang tidak tahu tabel ERP; tiap aplikasi cukup menulis adaptor (penanya, menu, bantuan, angka).
    - **Sales today** = nilai rupiah Customer Order yang masuk hari ini, dijawab terinci: **Draft** sekian, **Confirmed** sekian,
@@ -421,6 +423,7 @@
 | 2026-10-02 | **A.16 diganti:** semua jenis CO boleh di-Post to Production asal Confirmed + approved; costing published tidak disyaratkan; product tanpa Inquiry mendapat WO sederhana (tanpa routing / bahan). |
 | 2026-10-02 | C.29: kerapatan grid cukup per grid lewat tombol Density (tersimpan di browser); rencana setelan per user + pintu Configuration → Grid dibatalkan, bagian "Grid (segera)" di drawer Configuration menu lama dihapus. |
 | 2026-10-02 | **E.1: Help wajib untuk setiap layar input dan laporan** (untuk apa, cara pakai, penjelasan tiap isian) — 159 topik ditulis dari kode, layar Help Center + Setup → Help Topics / Help Lines (ddt + tm2, OK user 2026-10-02), pintu Help Center di halaman F1. **E.2: keputusan Asisten AI** (offline, modular, AI tidak menghitung, jawaban sesuai level, drawer chat pribadi); rancangan menunggu persetujuan. Sales today dirinci Draft / Confirmed / Total; riwayat chat 30 / 14 / 7 hari menurut level. |
+| 2026-10-02 | E.2: Asisten AI dibangun di ddt (paket `packages/assistant`, drawer chat, cari layar, bantuan dari Help, Sales today, Deadstock, penjaga gaji, log); level = user security yang sudah ada; pertanyaan gaji hanya GM + Direksi. tm2 menunggu user selesai menguji di mockup.test. |
 | 2026-10-02 | C.31: chat antar user ala WhatsApp di menu akun v2 — user terdaftar, online = sedang login (warna cerah), lampiran file sampai 20 MB, bunyi saat pesan masuk, belum ada voice. Menggantikan data contoh; ddt + tm2. |
 | 2026-10-02 | C.31: chat harus modular — bagian server dipindah ke paket `packages/chat`, layar tetap objek DevLib `x-dl::chat`; tmerp hanya menyambungkan user, setelan, dan kamus. |
 | 2026-10-02 | C.31: chat seketika lewat Laravel Reverb (server terpisah `realtime/`) + tulisan "sedang mengetik…"; cara 5 detik tetap jadi cadangan bila server mati. |

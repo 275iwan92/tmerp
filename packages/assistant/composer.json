@@ -1,0 +1,24 @@
+{
+    "name": "telasih/assistant",
+    "description": "Asisten aplikasi yang bekerja tanpa internet: mencari layar, menjawab cara pakai dari Help, dan menjawab angka lewat kelas metric. Bagian server; layarnya drawer DevLib (x-dl::shell prop assistant).",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^13.0",
+        "illuminate/database": "^13.0",
+        "illuminate/http": "^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Assistant\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Assistant\\AssistantServiceProvider"
+            ]
+        }
+    }
+}

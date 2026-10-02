@@ -38,6 +38,11 @@ class Shell extends DevlibComponent
         public ?string $helpUrl = null,
         // Halaman profil Layer Menu yang dibuka saat mulai (mis. kembali ke Tiket Bantuan sesudah kirim tiket).
         public ?string $profilePage = null,
+        // Asisten (laci "Asisten AI"): ['api' => ['ask', 'feedback', 'csrf'], 'hello', 'chips' => [contoh pertanyaan],
+        // 'history' => [['id', 'q', 'reply', 'feedback']], 'placeholder', 'thinking', 'failed']. Kosong = pratinjau tanpa server
+        // (mencocokkan kata dengan nama menu). Bentuk 'reply' dan jawaban api.ask {id, reply}: kind, title, text, big,
+        // rows [[label, nilai]], steps [..], note, actions [{label, url, code, icon} | {label, topic} | {label, page}].
+        public array $assistant = [],
     ) {}
 
     public function tag(): string

@@ -1,7 +1,7 @@
 /* DevLib · Shell */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, typeIcon, HOME, setDevMode, toast, T, Tf} = Devlib.h;
+  const {$, $$, esc, typeIcon, HOME, setDevMode, toast, T, Tf, CASES, CASE_LABEL, applyCase} = Devlib.h;
 
   // Kerangka aplikasi = kerangka kerja (tab MDI, konten, laci, modal, palet Ctrl+K, asisten AI) + navigasi.
   // Shell = navigasi Classic (mega menu + sidebar + top bar). Turunan menimpa initNav() & markActiveLeaf().
@@ -88,6 +88,71 @@
       $(this.el, '[data-dl-ai-send]').addEventListener('click', () => { this.askAi(this.aiIn.value); this.aiIn.value = ''; });
       this.aiIn.addEventListener('keydown', e => { if (e.key === 'Enter') { this.askAi(this.aiIn.value); this.aiIn.value = ''; } });
       this.aiBody.addEventListener('click', e => { const c = e.target.closest('[data-dl-ai]'); if (c) this.askAi(c.dataset.dlAi); });
+      this.initAssistant();
+    }
+
+    /* ---------------- asisten (prop assistant: jawaban dari server) ---------------- */
+    initAssistant() {
+      const dr = $(this.el, '[data-dl-drawer="ai"]');
+      try { this.ai = JSON.parse(dr.dataset.dlAssistant || 'null'); } catch (e) { this.ai = null; }
+      const cb = $(dr, '[data-dl-ai-case]'); this.aiCase = 0;
+      cb?.addEventListener('click', () => { this.aiCase = (this.aiCase + 1) % 3; cb.textContent = CASE_LABEL[CASES[this.aiCase]]; this.aiIn.value = applyCase(this.aiIn.value, CASES[this.aiCase]); this.aiIn.focus(); });
+      this.aiIn.addEventListener('input', () => { if (!this.aiCase) return; const p = this.aiIn.selectionStart; this.aiIn.value = applyCase(this.aiIn.value, CASES[this.aiCase]); try { this.aiIn.setSelectionRange(p, p); } catch (e) {} });
+      if (!this.ai?.api) return;
+      (this.ai.history || []).forEach(m => { this.addAi('me', m.q); this.addReply(m.reply, m.id, m.feedback); });
+      this.aiBody.addEventListener('click', e => {
+        const open = e.target.closest('[data-dl-ai-open]'), topic = e.target.closest('[data-dl-ai-topic]'), page = e.target.closest('[data-dl-ai-page]'), fb = e.target.closest('[data-dl-ai-fb]');
+        if (open) { const d = open.dataset; this.findItem(d.dlAiOpen) ? this.openTab(d.dlAiOpen) : this.openUrlTab(d.dlAiOpen, d.label, d.url, d.icon || undefined); this.closeDrawers(); }
+        else if (topic) this.askAi(topic.dataset.label, topic.dataset.dlAiTopic);
+        else if (page) { this.closeDrawers(); this.openPage?.(page.dataset.dlAiPage); }
+        else if (fb) this.sendFeedback(fb);
+      });
+    }
+
+    aiPost(url, body) {
+      return fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': this.ai.api.csrf}, body: JSON.stringify(body)})
+        .then(r => r.ok ? r.json() : Promise.reject(r.status));
+    }
+
+    askServer(q, topic) {
+      this.addAi('me', q);
+      const wait = document.createElement('div'); wait.className = 'dl-ai__msg dl-ai__msg--bot dl-ai__wait'; wait.innerHTML = `<i class="fa-solid fa-ellipsis fa-fade"></i> ${esc(this.ai.thinking || '')}`;
+      this.aiBody.appendChild(wait); this.aiBody.scrollTop = this.aiBody.scrollHeight;
+      this.aiPost(this.ai.api.ask, {q, topic: topic || null})
+        .then(res => { wait.remove(); this.addReply(res.reply, res.id, null); })
+        .catch(() => { wait.remove(); this.addAi('bot', this.ai.failed || ''); });
+    }
+
+    // Satu jawaban = kartu (judul, angka besar, teks, langkah, rincian, catatan, tombol) + jempol naik / turun.
+    addReply(r, id, feedback) {
+      if (!r) return;
+      const act = a => a.url ? `<button type="button" class="dl-btn dl-btn--sm dl-btn--primary" data-dl-ai-open="${esc(a.code || a.url)}" data-url="${esc(a.url)}" data-label="${esc(a.label)}" data-icon="${esc(a.icon || '')}"><i class="fa-solid fa-up-right-from-square"></i> ${esc(a.label)}</button>`
+        : a.topic ? `<button type="button" class="dl-btn dl-btn--sm dl-btn--secondary" data-dl-ai-topic="${esc(a.topic)}" data-label="${esc(a.label)}"><i class="fa-solid fa-circle-question"></i> ${esc(a.label)}</button>`
+        : `<button type="button" class="dl-btn dl-btn--sm dl-btn--secondary" data-dl-ai-page="${esc(a.page)}"><i class="fa-solid fa-ticket"></i> ${esc(a.label)}</button>`;
+      const card = document.createElement('div'); card.className = 'dl-ai__card is-' + String(r.kind || '').toLowerCase();
+      card.innerHTML = `<h5>${r.kind === 'DENIED' ? '<i class="fa-solid fa-lock"></i> ' : ''}${esc(r.title || '')}</h5>`
+        + (r.big ? `<div class="dl-ai__big">${esc(r.big)}</div>` : '')
+        + (r.text ? `<div>${esc(r.text)}</div>` : '')
+        + (r.steps?.length ? `<ol>${r.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : '')
+        + (r.rows?.length ? `<div class="dl-ai__rows">${r.rows.map(x => `<div><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join('')}</div>` : '')
+        + (r.note ? `<div class="dl-ai__note">${esc(r.note)}</div>` : '')
+        + (r.actions?.length ? `<div class="dl-ai__acts">${r.actions.map(act).join('')}</div>` : '');
+      this.aiBody.appendChild(card);
+      if (id) {
+        const fb = document.createElement('div'); fb.className = 'dl-ai__fb'; fb.dataset.id = id;
+        fb.innerHTML = [[1, 'thumbs-up'], [-1, 'thumbs-down']].map(([v, ic]) => `<button type="button" data-dl-ai-fb="${v}" class="${feedback === v ? 'is-on' : ''}" aria-label="${v > 0 ? 'Good answer' : 'Bad answer'}"><i class="fa-${feedback === v ? 'solid' : 'regular'} fa-${ic}"></i></button>`).join('');
+        this.aiBody.appendChild(fb);
+      }
+      this.aiBody.scrollTop = this.aiBody.scrollHeight;
+    }
+
+    // Klik jempol yang sudah menyala = dicabut.
+    sendFeedback(btn) {
+      const box = btn.closest('.dl-ai__fb'), value = btn.classList.contains('is-on') ? 0 : Number(btn.dataset.dlAiFb);
+      this.aiPost(this.ai.api.feedback, {id: Number(box.dataset.id), value}).then(() => $$(box, 'button').forEach(b => {
+        const on = value !== 0 && Number(b.dataset.dlAiFb) === value; b.classList.toggle('is-on', on);
+        b.firstElementChild.className = `fa-${on ? 'solid' : 'regular'} fa-thumbs-${Number(b.dataset.dlAiFb) > 0 ? 'up' : 'down'}`;
+      })).catch(() => {});
     }
 
     // Aksi akun yang sama untuk menu avatar (Classic) maupun roda gigi (Layer Menu).
@@ -164,6 +229,9 @@
       if (!url) { toast('Bantuan & dukungan — segera.'); return; }
       this.openUrlTab('HELP', 'Bantuan & dukungan', url, 'fa-solid fa-circle-question');
     }
+
+    // Halaman profil bernama (mis. tiket bantuan): Shell Classic tidak punya halaman profil -> Bantuan. LayerShell menimpa.
+    openPage(k) { this.command('help'); }
 
     // Halaman di luar menu (pedoman, bantuan) dibuka sebagai tab kerja biasa.
     openUrlTab(code, label, url, icon = 'fa-solid fa-book') {
@@ -287,8 +355,10 @@
     closeDrawers() { $$(this.el, '.dl-drawer.is-on').forEach(d => d.classList.remove('is-on')); this.backdrop.classList.remove('is-on'); }
     addAi(role, txt) { const d = document.createElement('div'); d.className = 'dl-ai__msg dl-ai__msg--' + role; d.textContent = txt; this.aiBody.appendChild(d); this.aiBody.scrollTop = this.aiBody.scrollHeight; }
 
-    askAi(q) {
-      q = q.trim(); if (!q) return; this.addAi('me', q);
+    askAi(q, topic) {
+      q = q.trim(); if (!q) return;
+      if (this.ai?.api) return this.askServer(q, topic);
+      this.addAi('me', q);
       const toks = q.toLowerCase().split(/\s+/).filter(t => t.length > 2);
       const hit = this.items.find(o => { const h = (o.label + ' ' + o.mod).toLowerCase(); return toks.some(t => h.includes(t)); });
       if (hit) { this.addAi('bot', Tf('sh_ai_open', {label: hit.label})); setTimeout(() => { this.openTab(hit.code); this.closeDrawers(); }, 650); }

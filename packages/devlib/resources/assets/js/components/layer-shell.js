@@ -20,6 +20,8 @@
     // Bantuan = halaman profil "help" bila ada (Back kembali ke Profile), selain itu tab Bantuan Shell.
     hasPage(k) { return !!this.lm.dlComponent?.page(k); }
 
+    openPage(k) { this.hasPage(k) ? this.lm.dlComponent.openProfile(k) : this.command('help'); }
+
     // Chat tinggal di Layer Menu (tukar / dok kanan), bukan laci Shell.
     command(a) {
       if (a === 'chat') this.lm.dlComponent.openChat();
