@@ -1,0 +1,24 @@
+{
+    "name": "telasih/chat",
+    "description": "Chat antar user ala WhatsApp (satu lawan satu): pesan, lampiran file, tanda online, centang dibaca. Bagian server; layarnya objek DevLib x-dl::chat.",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^13.0",
+        "illuminate/database": "^13.0",
+        "illuminate/http": "^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Chat\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Chat\\ChatServiceProvider"
+            ]
+        }
+    }
+}

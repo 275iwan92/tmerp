@@ -14,7 +14,7 @@ namespace Devlib\Components;
 //   ]],
 // ]
 // ITEM = ['code', 'label', 'url', 'type' => form|grid|report, 'icon'?, 'badge'?, 'badgeTone'?]
-// $chat = ['me', 'people', 'convos'] -> drawer Chat (x-dl::chat, versi ringkas).
+// $chat = ['me', 'people', 'convos', 'api'] -> Chat (x-dl::chat, versi ringkas); 'api' kosong = pratinjau tanpa server.
 // $open = code item yang dibuka sebagai tab saat mulai (bila tidak ada tab yang dipulihkan dari sesi browser).
 // Turunan: LayerShell (x-dl::layer-shell) = kerangka yang sama, navigasi Layer Menu tanpa top bar.
 // Layar pemakai memanggil <x-dynamic-component :component="Shell::preferred()"> supaya pilihan menu user ikut.

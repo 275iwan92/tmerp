@@ -3,6 +3,32 @@
 
 ---
 
+## 2026-10-02 -- Chat antar user ala WhatsApp (menu akun v2), tersambung ke database
+
+Perintah user: chat cara kerja seperti WhatsApp; orangnya = user terdaftar; online = yang login, warna cerah; lampiran file
+dibatasi 20 MB dulu; bisa bunyi, belum voice. Rulebook **C.31**. Menutup temuan audit 2026-10-02 B.1 #3 (chat = data contoh
+`DemoData::chat()`, pesan hanya hidup di JS) dan backlog 09 §16 ("New Chat" ala WhatsApp, 2026-09-09).
+- **Modular (perintah user di tengah pekerjaan: "harus modular, bisa saya ambil buat app yang berbeda"):** bagian server =
+  paket berdiri sendiri **`packages/chat`** (`Chat\ChatServiceProvider`: rute `chat.*`, migrasi tabel, `ChatService`,
+  `ChatController`, `ReadOnlySession`, model, `config/chat.php`); paket tidak mengenal `sec_user`, `sys_constant`, maupun
+  kamus. Yang khas tmerp hanya `App\Services\Chat\UserDirectory` (siapa usernya), `config/chat.php`, dan tiga baris kait di
+  `AppServiceProvider`. Cara memasang di aplikasi lain: `packages/chat/README.md`.
+- **Database (ddtsys + tm2sys; di tm2 dengan `--path`):** migrasi paket `2026_10_02_000060_chat_attachments_presence` —
+  `sys_chat_messages` + `attachment_path / _name / _mime / _size`; `sys_chat_conversations.pair_key` (UNIQUE, satu percakapan
+  per pasangan user); `sys_chat_participants.last_read_message_id`; tabel baru `sys_user_presence` (denyut login). Migrasi
+  tmerp `2026_10_02_000062_chat_constants` — kategori **CHAT**: `CHAT_ATTACHMENT_MAX_MB` 20, `CHAT_POLL_SECONDS` 5,
+  `CHAT_ONLINE_TIMEOUT_SECONDS` 90.
+- **Cara kerja:** layar bertanya ke `poll` tiap 5 detik (sekaligus denyut online); `poll` + `upload` tidak menulis sesi
+  (flash layar lain tidak tertimpa dan sesi tetap bisa kedaluwarsa); event `Logout` -> langsung tidak online.
+  `composer.json` + `bootstrap/providers.php` bertambah satu baris (checkout lain: `composer dump-autoload`).
+- **DevLib:** `x-dl::chat` dapat prop `api` (kosong = pratinjau katalog seperti dulu). Baru: lampiran file apa saja (kartu
+  unduh, gambar tampil langsung, garis kemajuan), kirim berpotong 1 MB (batas upload PHP di Herd masih 2 MB), avatar cerah /
+  abu-abu, centang dari server, "Pesan sebelumnya", bunyi, pemberitahuan. Teks JS pindah ke `T('ch_*')`.
+- **Tidak dibuat:** data dummy chat (pesan atas nama orang lain akan menyesatkan), grup, voice. Panel chat menu lama (v1,
+  Livewire `UserPanels`) tidak diubah; tabelnya sama.
+- Diuji: `tests/Feature/ChatTest.php` (4 tes: kirim -> poll -> belum dibaca -> dibaca, lampiran berpotong + hak buka,
+  hanya user terdaftar, sign out) + render headless komponen dengan server tiruan. Belum diuji di browser dengan dua login.
+
 ## 2026-10-02 -- Logo perusahaan di kop cetakan + logo & nama aplikasi di menu v2
 
 Perintah user: logo TM (`docs/attachments/Asset 3@4x.png`, `Asset 4@4x.png`) masuk database; logo & nama aplikasi **jangan

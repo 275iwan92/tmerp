@@ -3,10 +3,19 @@
 namespace App\Providers;
 
 use App\Models\Sys\SysConstant;
+use App\Services\Chat\UserDirectory;
+use App\Services\Sales\InquiryStage;
 use App\Support\DataOrigin\DataOriginScope;
+use App\Support\Filesystem\WindowsSafeFilesystem;
+use App\Support\Localization\Dictionary;
 use App\Support\V2\Lookups;
+use Chat\Chat;
+use Chat\Contracts\Directory;
+use Devlib\Lang;
+use Devlib\Locale;
 use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -22,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         require_once app_path('Support/Localization/helpers.php');  // t() -- teks tampilan lewat kamus
         // Herd di Windows: kompilasi view paralel bisa gagal rename (Access is denied) -> lihat kelasnya.
         if (PHP_OS_FAMILY === 'Windows') {
-            $this->app->singleton('files', fn () => new \App\Support\Filesystem\WindowsSafeFilesystem);
+            $this->app->singleton('files', fn () => new WindowsSafeFilesystem);
         }
     }
 
@@ -36,10 +45,10 @@ class AppServiceProvider extends ServiceProvider
         Lookups::register();
 
         // Aturan tampil per bahasa (angka, bulan) + terjemahan label DevLib dari kamus DB (LOCKED user 2026-10-01).
-        \Devlib\Locale::languagesUsing(fn () => \App\Support\Localization\Dictionary::languages());
-        \Devlib\Lang::translateUsing(fn (string $en, string $lang) => \App\Support\Localization\Dictionary::t($en, 'ui', $lang));
-        \Devlib\Lang::dictUsing(fn (string $lang) => \App\Support\Localization\Dictionary::uiMap($lang));
-        \Illuminate\Support\Facades\Blade::directive('t', fn ($e) => "<?php echo e(t($e)); ?>");
+        Locale::languagesUsing(fn () => Dictionary::languages());
+        Lang::translateUsing(fn (string $en, string $lang) => Dictionary::t($en, 'ui', $lang));
+        Lang::dictUsing(fn (string $lang) => Dictionary::uiMap($lang));
+        Blade::directive('t', fn ($e) => "<?php echo e(t($e)); ?>");
 
         // Setting admin sembunyikan data DUMMY/LEGACY hanya berlaku di request
         // web -- migration, job, dan tinker selalu melihat semua data.
@@ -50,7 +59,13 @@ class AppServiceProvider extends ServiceProvider
         $this->applyTimezone();
 
         // Tanda tahap Inquiry (ProDev selesai / costing published) mengikuti sumbernya di layar mana pun.
-        \App\Services\Sales\InquiryStage::listen();
+        InquiryStage::listen();
+
+        // Paket chat (packages/chat): usernya = sec_user terdaftar, angka setelan dari Settings > Constants kategori Chat
+        // (attachment_max_mb -> CHAT_ATTACHMENT_MAX_MB, dst), teks galat lewat kamus.
+        $this->app->bind(Directory::class, UserDirectory::class);
+        Chat::settingsUsing(fn (string $key, float $default) => SysConstant::number('CHAT_'.strtoupper($key), $default));
+        Chat::translateUsing(fn (string $en) => t($en));
 
         // Struktur DB berubah (migrate / rollback) -> Data Dictionary layar v2 ikut diperbarui.
         Event::listen(MigrationsEnded::class, fn () => Artisan::call('schema:dictionary'));

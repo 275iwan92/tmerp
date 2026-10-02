@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Support\Localization\Dictionary;
+use Devlib\Lang;
 use Symfony\Component\Finder\Finder;
 use Tests\TestCase;
 
@@ -18,7 +19,7 @@ class MultiLanguageRatchetTest extends TestCase
         'number_format_id' => 0,
         'format_d_M_Y' => 0,
         'js_locale_id' => 0,
-        'js_id_text' => 44,      // sisa = separuh Indonesia tabel dua bahasa di core.js (LOGIN_T, AUTH_T, PRESET_T, kata bilangan) + 5 bukan teks layar (hash '#kode', atribut dev 'kolom', label hari data chat, salah tangkap di grid.js). 42 -> 44 hanya karena daftar kata penjaga diperluas 2026-10-02. Teks baru: T('kunci') + pasangan Devlib\Lang
+        'js_id_text' => 43,      // sisa = separuh Indonesia tabel dua bahasa di core.js (LOGIN_T, AUTH_T, PRESET_T, kata bilangan) + 4 bukan teks layar (hash '#kode', atribut dev 'kolom', salah tangkap di grid.js). 42 -> 44 hanya karena daftar kata penjaga diperluas 2026-10-02; 44 -> 43: teks chat.js pindah ke T('ch_*'). Teks baru: T('kunci') + pasangan Devlib\Lang
     ];
 
     /** @return array<string, int> */
@@ -53,7 +54,7 @@ class MultiLanguageRatchetTest extends TestCase
     // Setiap T('kunci') / Tf('kunci') di JS DevLib wajib punya pasangan [ID, EN] di Devlib\Lang (kalau tidak, kunci mentah tampil).
     public function test_every_js_translation_key_exists(): void
     {
-        $keys = array_keys(\Devlib\Lang::all());
+        $keys = array_keys(Lang::all());
         $missing = [];
         foreach ((new Finder)->files()->in(base_path('packages/devlib/resources/assets/js'))->name('*.js') as $f) {
             preg_match_all("/\\bTf?\\('([a-z][\\w.]*)'/", $f->getContents(), $m);

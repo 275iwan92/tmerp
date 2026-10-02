@@ -5,6 +5,7 @@ use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\PlanningServiceProvider;
 use App\Providers\RecruitmentServiceProvider;
 use App\Providers\SchedulingServiceProvider;
+use Chat\ChatServiceProvider;
 use MockupParts\MockupPartsServiceProvider;
 
 return [
@@ -14,4 +15,5 @@ return [
     RecruitmentServiceProvider::class,
     PlanningServiceProvider::class,
     MockupPartsServiceProvider::class,
+    ChatServiceProvider::class,
 ];

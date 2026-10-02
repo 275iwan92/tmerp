@@ -300,6 +300,20 @@
       `branding/`), dibaca `App\Support\Branding\CompanyLogo`, diganti di **Settings > Identifikasi > Identitas Perusahaan**
       (versi hitam-putih dibuat otomatis dari versi warna). Logo aplikasi tetap `APP_LOGO_PATH` (kosong = lencana gradasi).
 
+31. **Chat antar user ala WhatsApp — user 2026-10-02.** Menu akun (roda gigi) → **Chat**; objek DevLib `x-dl::chat`.
+    - **Yang bisa di-chat = user yang sudah terdaftar** (`sec_user` aktif + disetujui), satu lawan satu. Belum ada grup.
+    - **Online = sedang login.** Orang online tampil **berwarna cerah** (avatar warna penuh + cincin dan titik hijau) di daftar
+      "Sedang login"; yang tidak login **abu-abu** dengan "terakhir dilihat ...", dicari lewat tombol **+**. Sign out = langsung
+      tidak online; browser ditutup tanpa sign out = tidak online setelah `CHAT_ONLINE_TIMEOUT_SECONDS` (90 detik).
+    - **Lampiran file apa saja, paling besar `CHAT_ATTACHMENT_MAX_MB` (20 MB dulu).** Gambar tampil langsung, file lain jadi
+      kartu unduh. File disimpan di disk privat dan hanya bisa dibuka dua orang di percakapannya.
+    - **Chat berbunyi** saat pesan masuk (dua nada pendek) + pemberitahuan bila panel chat sedang tertutup. **Belum ada voice.**
+    - Centang: satu = terkirim, dua abu = diterima layar lawan, dua biru = dibaca. Pesan baru dicek tiap `CHAT_POLL_SECONDS`
+      (5 detik). Ketiga angka itu = `sys_constant` kategori **Chat**, diubah di Settings → Constants.
+    - **Modular (user 2026-10-02):** chat = paket berdiri sendiri `packages/chat` (server) + objek DevLib `x-dl::chat` (layar),
+      supaya bisa diambil untuk aplikasi lain. Paket tidak boleh bergantung pada tabel / kelas tmerp; yang khas aplikasi masuk
+      lewat `config/chat.php`, `Chat\Contracts\Directory`, dan kait `Chat\Chat`. Petunjuk pasang: `packages/chat/README.md`.
+
 ## D. Cara kerja developer / agen
 
 1. **Peran:** system analyst, developer, dan database designer. Aktif menilai desain; audit integritas data
@@ -400,3 +414,5 @@
 | 2026-10-02 | **A.16 diganti:** semua jenis CO boleh di-Post to Production asal Confirmed + approved; costing published tidak disyaratkan; product tanpa Inquiry mendapat WO sederhana (tanpa routing / bahan). |
 | 2026-10-02 | C.29: kerapatan grid cukup per grid lewat tombol Density (tersimpan di browser); rencana setelan per user + pintu Configuration → Grid dibatalkan, bagian "Grid (segera)" di drawer Configuration menu lama dihapus. |
 | 2026-10-02 | **E.1: Help wajib untuk setiap layar input dan laporan** (untuk apa, cara pakai, penjelasan tiap isian) — 159 topik ditulis dari kode, layar Help Center + Setup → Help Topics / Help Lines (ddt; tm2 menunggu OK). **E.2: keputusan Asisten AI** (offline, modular, AI tidak menghitung, jawaban sesuai level, drawer chat pribadi); rancangan menunggu persetujuan. |
+| 2026-10-02 | C.31: chat antar user ala WhatsApp di menu akun v2 — user terdaftar, online = sedang login (warna cerah), lampiran file sampai 20 MB, bunyi saat pesan masuk, belum ada voice. Menggantikan data contoh; ddt + tm2. |
+| 2026-10-02 | C.31: chat harus modular — bagian server dipindah ke paket `packages/chat`, layar tetap objek DevLib `x-dl::chat`; tmerp hanya menyambungkan user, setelan, dan kamus. |

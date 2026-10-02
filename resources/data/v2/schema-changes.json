@@ -1,5 +1,59 @@
 [
     {
+        "at": "2026-10-02 11:33:39",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_chat_conversations",
+                "column": "pair_key",
+                "detail": "varchar(50)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_chat_messages",
+                "column": "attachment_path",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_chat_messages",
+                "column": "attachment_name",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_chat_messages",
+                "column": "attachment_mime",
+                "detail": "varchar(120)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_chat_messages",
+                "column": "attachment_size",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_chat_participants",
+                "column": "last_read_message_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_user_presence",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-10-01 23:01:18",
         "items": [
             {
