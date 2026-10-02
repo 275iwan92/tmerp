@@ -50,20 +50,10 @@ final class Cpdel
             'moved' => $d->original_date && $d->ship_date && ! $d->original_date->equalTo($d->ship_date),
             'production' => $d->posted_at ? t('Posted').' · '.($wo->get($d->id_delivery)?->pluck('wo_status')->join(', ') ?: 'WO') : '—',
             'state' => Promise::state($d),
+            // Saringan baris filter grid (pengganti kotak KPI): hanya baris yang belum dikirim.
+            'today' => (int) ($d->status === 'PLANNED' && $d->ship_date?->isToday()),
+            'no_time' => (int) ($d->status === 'PLANNED' && ! $d->ship_time),
         ])->all();
-    }
-
-    // Papan Operational Manager: hitungan per status + beban kirim 14 hari ke depan.
-    public static function monitor(): array
-    {
-        $rows = self::query()->where('status', 'PLANNED')->get();
-        $states = $rows->map(fn ($d) => Promise::state($d))->countBy()->all();
-        $today = now()->startOfDay();
-
-        return ['states' => $states, 'today' => $rows->filter(fn ($d) => $d->ship_date?->isSameDay($today))->count(),
-            'week' => $rows->filter(fn ($d) => $d->ship_date && $d->ship_date->between($today, $today->copy()->addDays(6)))->count(),
-            'no_time' => $rows->whereNull('ship_time')->count(),
-            'moved' => $rows->filter(fn ($d) => $d->original_date && $d->ship_date && ! $d->original_date->equalTo($d->ship_date))->count()];
     }
 
     // Post to Production (aturan A.3): WO lahir dari baris ini, lalu baris boleh ditarik ke DO / Surat Jalan.

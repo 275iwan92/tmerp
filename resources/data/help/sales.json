@@ -283,8 +283,8 @@
         "keywords": "cpdel, plan delivery, customer plan delivery, jadwal kirim, jadwal pengiriman, slot, split, join, gabung, post to production, ppic, janji kirim",
         "steps": [
             {
-                "en": "Rows appear by themselves when a CO is Confirmed (one row per Product line at its Due Date). Use the status boxes and the Promise filter to find rows that need action.",
-                "id": "Baris muncul otomatis saat CO Confirmed (satu baris per baris Product pada Due Date-nya). Pakai kotak status dan filter Promise untuk mencari baris yang perlu tindakan."
+                "en": "Rows appear by themselves when a CO is Confirmed (one row per Product line at its Due Date). Use the filter row above the grid (status, Ship today, Slot time not set) to find rows that need action.",
+                "id": "Baris muncul otomatis saat CO Confirmed (satu baris per baris Product pada Due Date-nya). Pakai baris filter di atas grid (status, Ship today, Slot time not set) untuk mencari baris yang perlu tindakan."
             },
             {
                 "en": "Open a row. PPIC commits the Ready date and Ready time in Production promise (PPIC) and Save. If it is later than the slot, choose a Reason.",

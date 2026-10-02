@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-10-02 -- CPDEL: tujuh kotak KPI di atas grid dilepas
+
+Perintah user: "tujuh kotak di atas itu diganti dengan yang lebih sederhana, atau dihilangkan juga boleh" (sejalan aturan C.21).
+- `resources/views/v2/screens/cpdel.blade.php`: blok `dl-kpis` (7 kotak) dihapus. Empat hitungan status sudah ada di baris
+  filter grid; **Ship today** dan **Slot time not set** pindah ke baris filter yang sama (sisi kanan, `tabs`).
+- `App\Support\V2\Data\Cpdel::rows()` menambah penanda `today` / `no_time` (hanya baris belum dikirim); `monitor()` dihapus (tak terpakai).
+- Persen "Delivery promise kept" tidak lagi di CPDEL; tetap ada di layar Proof of Delivery.
+- Help topik `cpdel` (langkah 1) disesuaikan, di-impor ulang hanya topik itu di ddtsys + tm2sys.
+- Diperiksa: render layar di ddt + tm2 tanpa kotak, hitungan filter cocok dengan data. **Belum:** dilihat user di browser.
+
 ## 2026-10-02 -- Chat seketika: Laravel Reverb + "sedang mengetik…"
 
 Perintah user: "jalankan dengan reverb, bisa seketika dan bisa ada tulisan sedang mengetik, beban server hampir nol".

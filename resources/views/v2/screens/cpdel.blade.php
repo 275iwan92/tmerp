@@ -10,9 +10,7 @@
     use App\Services\Sales\CpdelPromiseService as Promise;
     use App\Services\Sales\DeliveryPromiseService;
     use App\Support\V2\Data\Cpdel;
-    use App\Support\V2\Data\ProofOfDelivery;
     use App\Support\V2\Src;
-    use Carbon\CarbonImmutable;
     use Devlib\Locale;
 
     $home = route('v2.screen', 'cpdel');
@@ -28,21 +26,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
 @if (! $d)
-    @php
-        $m = Cpdel::monitor();
-        $kpi = ProofOfDelivery::kpi(CarbonImmutable::today());
-    @endphp
-    <div class="dl-kpis">
-        <x-dl::kpi label="Waiting for PPIC" :value="$m['states']['WAITING_PPIC'] ?? 0" icon="fa-industry" tone="accent" hint="Production has not committed a ready time" />
-        <x-dl::kpi label="Need negotiation" :value="$m['states']['NEED_NEGOTIATION'] ?? 0" good-when="down" icon="fa-comments" tone="warn" hint="Ready later than the customer slot" />
-        <x-dl::kpi label="Escalated" :value="$m['states']['ESCALATED'] ?? 0" good-when="down" icon="fa-user-tie" tone="danger" hint="Customer rejected; Operational Manager decides" />
-        <x-dl::kpi label="Late" :value="$m['states']['LATE'] ?? 0" good-when="down" icon="fa-triangle-exclamation" tone="danger" hint="Slot date passed, not shipped" />
-        <x-dl::kpi label="Ship today" :value="$m['today']" icon="fa-truck" tone="accent" :hint="$m['week'].' '.t('in the next 7 days')" />
-        <x-dl::kpi label="Slot time not set" :value="$m['no_time']" good-when="down" icon="fa-clock" tone="warn" hint="Agree the exact time with the customer" />
-        <x-dl::kpi label="Delivery promise kept (this month)" :value="$kpi['pct'] ?? 0" format="percent" :target="100" icon="fa-handshake" tone="success"
-            :hint="$kpi['kept'].' / '.$kpi['total'].' · '.t('Proof of Delivery')" />
-    </div>
-    <br>
+    {{-- Tanpa kotak KPI (user 2026-10-02, aturan C.21): hitungan status + "Ship today" / "Slot time not set" = satu baris filter grid.
+         Persen janji kirim ditepati tetap di layar Proof of Delivery. --}}
     <x-dl::grid id="cpdel-list" :rows="Cpdel::rows()" search="Search CO no., customer, product..." actions="worklist" :active-key="null" :new-record="null"
         :open-url="$home.'?id={id}'" group-by="co"
         source="{{ Src::of('tm2sdi.co_order_delivery', 'tm2sdi.co_order (CONFIRMED)', 'tm2prd.prd_wo.source_delivery_id') }}"
@@ -73,6 +58,11 @@
             ['label' => 'Escalated', 'where' => ['state' => 'ESCALATED'], 'tone' => 'danger'],
             ['label' => 'Late', 'where' => ['state' => 'LATE'], 'tone' => 'danger'],
             ['label' => 'Aligned', 'where' => ['state' => 'ALIGNED'], 'tone' => 'success'],
+        ]"
+        :tabs="[
+            ['label' => 'All'],
+            ['label' => 'Ship today', 'where' => ['today' => 1], 'tone' => 'accent'],
+            ['label' => 'Slot time not set', 'where' => ['no_time' => 1], 'tone' => 'warn'],
         ]"
         :filters="['customer' => 'Customer', 'state' => 'Promise']" />
 @else
