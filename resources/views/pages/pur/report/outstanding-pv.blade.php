@@ -76,26 +76,26 @@ new #[Title('Outstanding PV — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1200px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="2">
-            <x-grid.stat-box tone="total" label="PV Outstanding (belum diserahkan)" :value="$this->statCount" />
-            <x-grid.stat-box tone="warn" label="Menunggu &gt; 3 Hari" :value="$this->statOver3Days" />
+            <x-grid.stat-box tone="total" :label="t('Outstanding PVs (not handed over)')" :value="$this->statCount" />
+            <x-grid.stat-box tone="warn" :label="t('Waiting > 3 Days')" :value="$this->statOver3Days" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar class="flex-wrap">
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. PV…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search PV no.…') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
-                    <label class="text-[10.5px] text-muted font-semibold">Dari</label>
+                    <label class="text-[10.5px] text-muted font-semibold">{{ t('From') }}</label>
                     <x-form.date-picker wire:model.live="dateFrom" class="w-[130px]" />
-                    <label class="text-[10.5px] text-muted font-semibold">s/d</label>
+                    <label class="text-[10.5px] text-muted font-semibold">{{ t('until') }}</label>
                     <x-form.date-picker wire:model.live="dateTo" class="w-[130px]" />
                 </div>
                 @if ($search !== '' || $dateFrom !== '' || $dateTo !== '')
                     <x-slot:tools>
-                        <button type="button" wire:click="resetFilter" class="shrink-0 text-[11px] font-semibold text-muted hover:text-navy underline">Reset filter</button>
+                        <button type="button" wire:click="resetFilter" class="shrink-0 text-[11px] font-semibold text-muted hover:text-navy underline">{{ t('Reset filter') }}</button>
                     </x-slot:tools>
                 @endif
             </x-grid.toolbar>
@@ -104,12 +104,12 @@ new #[Title('Outstanding PV — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Supplier / No. PV</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tgl Terima</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Gudang</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Ref. PO</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Menunggu</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[160px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Supplier / PV No.') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Received Date') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Warehouse') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('PO Ref.') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Waiting') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[160px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -119,14 +119,14 @@ new #[Title('Outstanding PV — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->pv->i_doc_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->pv->i_warehouse_code }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-muted">{{ $r->pv->c_po_doc_list ?? '—' }}</td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right {{ $r->daysWaiting > 3 ? 'text-[#c0392b] font-bold' : '' }}">{{ $r->daysWaiting }} hari</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right {{ $r->daysWaiting > 3 ? 'text-[#c0392b] font-bold' : '' }}">{{ str_replace(':n', $r->daysWaiting, t(':n days')) }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right">
-                                    <button type="button" wire:click="markHandedOver({{ $r->pv->pv_id }})" wire:confirm="Tandai PV {{ $r->pv->doc_no }} sudah diserahkan ke departemen peminta?"
-                                        class="text-[11px] font-bold text-[#0e8a4f] cursor-pointer">✓ Sudah Diserahkan</button>
+                                    <button type="button" wire:click="markHandedOver({{ $r->pv->pv_id }})" wire:confirm="{{ str_replace(':doc', $r->pv->doc_no, t('Mark PV :doc as handed over to the requesting department?')) }}"
+                                        class="text-[11px] font-bold text-[#0e8a4f] cursor-pointer">✓ {{ t('Handed Over') }}</button>
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Tidak ada PV outstanding pada rentang/filter ini." />
+                            <x-grid.empty-row :colspan="6" message="{{ t('No outstanding PVs in this range/filter.') }}" />
                         @endforelse
                     </tbody>
                 </table>

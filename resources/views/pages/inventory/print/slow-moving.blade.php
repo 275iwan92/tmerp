@@ -26,9 +26,9 @@ use Livewire\Component;
 new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Component
 {
     public const CATEGORY_LABELS = [
-        'RM' => 'Bahan Baku & Bahan Pembantu',
-        'SFG' => 'Barang Setengah Jadi',
-        'FG' => 'Barang Jadi',
+        'RM' => 'Raw & Supporting Materials',
+        'SFG' => 'Semi-Finished Goods',
+        'FG' => 'Finished Goods',
     ];
 
     public const VIEW_MAP = [
@@ -129,13 +129,13 @@ new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Co
     {
         return match ($this->category) {
             'SFG' => ProdPart::whereIn('id_part', $ids)->get()->keyBy('id_part')->map(fn ($p) => [
-                'code' => $p->part_code, 'name' => $p->part_name, 'group' => 'Barang Setengah Jadi',
+                'code' => $p->part_code, 'name' => $p->part_name, 'group' => t('Semi-Finished Goods'),
             ])->all(),
             'FG' => ProdProduct::with('category')->whereIn('id_product', $ids)->get()->keyBy('id_product')->map(fn ($p) => [
-                'code' => $p->product_code, 'name' => $p->product_name, 'group' => $p->category?->category_name ?: 'Tanpa Kategori',
+                'code' => $p->product_code, 'name' => $p->product_name, 'group' => $p->category?->category_name ?: t('No category'),
             ])->all(),
             default => MatRaw::whereIn('material_id', $ids)->get()->keyBy('material_id')->map(fn ($m) => [
-                'code' => $m->material_code, 'name' => $m->material_name, 'group' => $m->category1 ?: 'Tanpa Kategori',
+                'code' => $m->material_code, 'name' => $m->material_name, 'group' => $m->category1 ?: t('No category'),
             ])->all(),
         };
     }
@@ -176,8 +176,8 @@ new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Co
             return (object) [
                 'item_id' => $r->item_id,
                 'item_code' => $m['code'] ?? "#{$r->item_id}",
-                'item_name' => $m['name'] ?? '(item tidak ditemukan di master)',
-                'group' => $m['group'] ?? 'Tanpa Kategori',
+                'item_name' => $m['name'] ?? t('(item not found in the master)'),
+                'group' => $m['group'] ?? t('No category'),
                 'uom' => $r->uom_code,
                 'warehouse_names' => $r->warehouse_names,
                 'qty_onhand' => (float) $r->qty_onhand,
@@ -215,9 +215,9 @@ new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Co
 ?>
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50 no-print">
-        <b class="text-[15px]">🐢 Laporan Slow Moving Item</b>
-        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ self::CATEGORY_LABELS[$category] }}</span>
-        <x-back-button :fallback="route('menu')" title="Kembali ke Menu Utama" class="ml-auto" />
+        <b class="text-[15px]">🐢 {{ t('Slow Moving Item Report') }}</b>
+        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ t(self::CATEGORY_LABELS[$category]) }}</span>
+        <x-back-button :fallback="route('menu')" :title="t('Back to Main Menu')" class="ml-auto" />
     </header>
 
     {{-- ============ FILTER (tidak ikut cetak) ============ --}}
@@ -225,34 +225,34 @@ new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Co
         <div class="bg-white border border-[#d7dbe2] rounded-lg shadow-sm p-4">
             <div class="flex flex-wrap items-end gap-3">
                 <div class="flex flex-col gap-1 shrink-0">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Ambang Tak Bergerak</label>
+                    <label class="text-[10px] text-muted uppercase font-semibold">{{ t('Idle Threshold') }}</label>
                     <div class="flex items-center gap-1">
                         @foreach (self::THRESHOLDS as $m)
                             <button type="button" wire:click="setThreshold({{ $m }})"
                                 class="px-3 py-1.5 rounded-full text-xs font-semibold border cursor-pointer {{ $thresholdMonths === $m ? 'bg-navy text-white border-navy' : 'bg-white text-navy border-[#d7dbe2] hover:bg-[#eef1f6]' }}">
-                                {{ $m }} Bulan
+                                {{ str_replace(':n', $m, t(':n Months')) }}
                             </button>
                         @endforeach
                     </div>
                 </div>
                 <div class="flex flex-col gap-1 shrink-0">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Gudang</label>
+                    <label class="text-[10px] text-muted uppercase font-semibold">{{ t('Warehouse') }}</label>
                     <select wire:model.live="warehouseId" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        <option value="">Semua Gudang</option>
+                        <option value="">{{ t('All Warehouses') }}</option>
                         @foreach ($this->warehouses as $w)
                             <option value="{{ $w->id_warehouse }}">{{ $w->warehouse_code }} — {{ $w->warehouse_name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="flex flex-col gap-1 shrink-0" style="min-width:220px">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Cari Item</label>
+                    <label class="text-[10px] text-muted uppercase font-semibold">{{ t('Search Item') }}</label>
                     <div class="flex items-center gap-1.5">
                         <span class="text-sm">🔍</span>
-                        <div class="flex-1"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="quickSearch" placeholder="Kode / nama item..." /></div>
+                        <div class="flex-1"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="quickSearch" placeholder="{{ t('Item code / name...') }}" /></div>
                     </div>
                 </div>
                 <span class="flex-1"></span>
-                <button type="button" wire:click="printReport" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer shrink-0">🖨️ Cetak</button>
+                <button type="button" wire:click="printReport" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer shrink-0">🖨️ {{ t('Print') }}</button>
             </div>
         </div>
     </div>
@@ -264,25 +264,25 @@ new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Co
                 <div class="text-[8.5pt] text-muted">Offset · Digital · Indostry Packaging</div>
             </div>
             <div class="text-right">
-                <div class="text-[14pt] font-bold text-navy uppercase">Laporan Slow Moving Item</div>
-                <div class="text-[8.5pt] text-muted mt-1">Dicetak {{ now()->translatedFormat('d/m/Y H:i') }} oleh {{ Auth::user()->name }}</div>
+                <div class="text-[14pt] font-bold text-navy uppercase">{{ t('Slow Moving Item Report') }}</div>
+                <div class="text-[8.5pt] text-muted mt-1">{{ str_replace([':date', ':user'], [now()->translatedFormat('d/m/Y H:i'), Auth::user()->name], t('Printed :date by :user')) }}</div>
             </div>
         </div>
 
         <div class="border border-[#c8ccd4] rounded-md p-2.5 bg-[#fbfcfe] mb-3 flex gap-8 flex-wrap">
-            <div><div class="text-[7.5pt] text-muted uppercase">Kelas Stok</div><div class="text-[10pt] font-bold text-navy">{{ self::CATEGORY_LABELS[$category] }}</div></div>
-            <div><div class="text-[7.5pt] text-muted uppercase">Ambang</div><div class="text-[10pt] font-bold text-navy">Tak bergerak &gt; {{ $thresholdMonths }} bulan</div></div>
-            <div><div class="text-[7.5pt] text-muted uppercase">Per Tanggal</div><div class="text-[10pt] font-bold text-navy">{{ now()->translatedFormat('d F Y') }}</div></div>
-            <div><div class="text-[7.5pt] text-muted uppercase">Gudang</div><div class="text-[10pt] font-bold text-navy">{{ $warehouseId ? $this->warehouses->firstWhere('id_warehouse', $warehouseId)?->warehouse_name : 'Semua Gudang' }}</div></div>
+            <div><div class="text-[7.5pt] text-muted uppercase">{{ t('Stock Class') }}</div><div class="text-[10pt] font-bold text-navy">{{ t(self::CATEGORY_LABELS[$category]) }}</div></div>
+            <div><div class="text-[7.5pt] text-muted uppercase">{{ t('Threshold') }}</div><div class="text-[10pt] font-bold text-navy">{{ str_replace(':n', $thresholdMonths, t('Not moved > :n months')) }}</div></div>
+            <div><div class="text-[7.5pt] text-muted uppercase">{{ t('As of Date') }}</div><div class="text-[10pt] font-bold text-navy">{{ now()->translatedFormat('d F Y') }}</div></div>
+            <div><div class="text-[7.5pt] text-muted uppercase">{{ t('Warehouse') }}</div><div class="text-[10pt] font-bold text-navy">{{ $warehouseId ? $this->warehouses->firstWhere('id_warehouse', $warehouseId)?->warehouse_name : t('All Warehouses') }}</div></div>
             @if (trim($quickSearch) !== '')
-                <div class="no-print"><div class="text-[7.5pt] text-muted uppercase">Filter Pencarian</div><div class="text-[10pt] font-bold text-accent">"{{ $quickSearch }}"</div></div>
+                <div class="no-print"><div class="text-[7.5pt] text-muted uppercase">{{ t('Search Filter') }}</div><div class="text-[10pt] font-bold text-accent">"{{ $quickSearch }}"</div></div>
             @endif
         </div>
 
         <div class="grid three mb-3">
-            <div class="rounded-lg p-2.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#a3453f]">Item Slow Moving</p><p class="text-lg font-extrabold text-[#c0392b] mt-0.5">{{ $this->report['itemCount'] }}</p></div>
-            <div class="rounded-lg p-2.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3] text-center"><p class="text-[9.5px] font-bold uppercase text-[#8a6d00]">Total Qty Tertahan</p><p class="text-lg font-extrabold text-[#b45309] mt-0.5">{{ number_format($this->report['totals']['qty'], 2) }}</p></div>
-            <div class="rounded-lg p-2.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#a3453f]">Nilai Tertahan</p><p class="text-lg font-extrabold text-[#c0392b] mt-0.5">Rp {{ number_format($this->report['totals']['value'], 0, ',', '.') }}</p></div>
+            <div class="rounded-lg p-2.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#a3453f]">{{ t('Slow Moving Items') }}</p><p class="text-lg font-extrabold text-[#c0392b] mt-0.5">{{ $this->report['itemCount'] }}</p></div>
+            <div class="rounded-lg p-2.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3] text-center"><p class="text-[9.5px] font-bold uppercase text-[#8a6d00]">{{ t('Total Idle Qty') }}</p><p class="text-lg font-extrabold text-[#b45309] mt-0.5">{{ number_format($this->report['totals']['qty'], 2) }}</p></div>
+            <div class="rounded-lg p-2.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#a3453f]">{{ t('Idle Value') }}</p><p class="text-lg font-extrabold text-[#c0392b] mt-0.5">Rp {{ number_format($this->report['totals']['value'], 0, ',', '.') }}</p></div>
         </div>
 
         <div class="rounded-lg border border-[#c8ccd4] overflow-hidden">
@@ -290,15 +290,15 @@ new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Co
                 <thead>
                     <tr class="bg-navy text-white">
                         <th class="w-[26px] px-1 py-1.5 border border-navy no-print"></th>
-                        <th class="text-center px-1.5 py-1.5 border border-navy">No.</th>
-                        <th class="text-left px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('item_code')" title="Urutkan">Kode Item <span class="opacity-80">{{ $this->sortIcon('item_code') }}</span></th>
-                        <th class="text-left px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('item_name')" title="Urutkan">Nama Item <span class="opacity-80">{{ $this->sortIcon('item_name') }}</span></th>
-                        <th class="text-left px-1.5 py-1.5 border border-navy">Gudang</th>
-                        <th class="text-center px-1.5 py-1.5 border border-navy">UOM</th>
-                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_onhand')" title="Urutkan">On Hand <span class="opacity-80">{{ $this->sortIcon('qty_onhand') }}</span></th>
-                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('value_onhand')" title="Urutkan">Nilai <span class="opacity-80">{{ $this->sortIcon('value_onhand') }}</span></th>
-                        <th class="text-center px-1.5 py-1.5 border border-navy">Mutasi Terakhir</th>
-                        <th class="text-center px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('idle_days')" title="Urutkan">Diam Sejak <span class="opacity-80">{{ $this->sortIcon('idle_days') }}</span></th>
+                        <th class="text-center px-1.5 py-1.5 border border-navy">{{ t('No.') }}</th>
+                        <th class="text-left px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('item_code')" title="{{ t('Sort') }}">{{ t('Item Code') }} <span class="opacity-80">{{ $this->sortIcon('item_code') }}</span></th>
+                        <th class="text-left px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('item_name')" title="{{ t('Sort') }}">{{ t('Item Name') }} <span class="opacity-80">{{ $this->sortIcon('item_name') }}</span></th>
+                        <th class="text-left px-1.5 py-1.5 border border-navy">{{ t('Warehouse') }}</th>
+                        <th class="text-center px-1.5 py-1.5 border border-navy">{{ t('UOM') }}</th>
+                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_onhand')" title="{{ t('Sort') }}">{{ t('On Hand') }} <span class="opacity-80">{{ $this->sortIcon('qty_onhand') }}</span></th>
+                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('value_onhand')" title="{{ t('Sort') }}">{{ t('Value') }} <span class="opacity-80">{{ $this->sortIcon('value_onhand') }}</span></th>
+                        <th class="text-center px-1.5 py-1.5 border border-navy">{{ t('Last Stock Movement') }}</th>
+                        <th class="text-center px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('idle_days')" title="{{ t('Sort') }}">{{ t('Idle Since') }} <span class="opacity-80">{{ $this->sortIcon('idle_days') }}</span></th>
                     </tr>
                 </thead>
                 @forelse ($this->report['groups'] as $groupName => $items)
@@ -306,7 +306,7 @@ new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Co
                     <tbody wire:key="group-{{ Str::slug($groupName) }}">
                         <tr class="bg-[#eef1f6] cursor-pointer hover:bg-[#e5e9f1]" wire:click="toggleGroup('{{ $groupName }}')">
                             <td class="px-1 py-1.5 text-center no-print"><span class="text-navy font-bold">{{ $isCollapsed ? '▸' : '▾' }}</span></td>
-                            <td colspan="9" class="px-1.5 py-1.5 font-bold text-navy uppercase text-[8pt]">{{ $groupName }} · {{ $items->count() }} item</td>
+                            <td colspan="9" class="px-1.5 py-1.5 font-bold text-navy uppercase text-[8pt]">{{ $groupName }} · {{ str_replace(':n', $items->count(), t(':n item(s)')) }}</td>
                         </tr>
                         @if (! $isCollapsed)
                             @foreach ($items as $i => $row)
@@ -322,9 +322,9 @@ new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Co
                                     <td class="px-1.5 py-1 border border-[#eef1f5] text-center">{{ $row->last_movement ? \Carbon\Carbon::parse($row->last_movement)->format('d/m/Y') : '—' }}</td>
                                     <td class="px-1.5 py-1 border border-[#eef1f5] text-center">
                                         @if ($row->idle_days === null)
-                                            <span class="text-[7.5pt] font-bold px-1.5 py-0.5 rounded-full bg-[#fdecec] text-[#a3241f]">BELUM PERNAH BERGERAK</span>
+                                            <span class="text-[7.5pt] font-bold px-1.5 py-0.5 rounded-full bg-[#fdecec] text-[#a3241f]">{{ mb_strtoupper(t('Never moved')) }}</span>
                                         @else
-                                            <span class="text-[7.5pt] font-bold px-1.5 py-0.5 rounded-full {{ $row->idle_days > 365 ? 'bg-[#fdecec] text-[#a3241f]' : 'bg-[#fef6e7] text-[#8a6d00]' }}">{{ number_format($row->idle_days) }} HARI</span>
+                                            <span class="text-[7.5pt] font-bold px-1.5 py-0.5 rounded-full {{ $row->idle_days > 365 ? 'bg-[#fdecec] text-[#a3241f]' : 'bg-[#fef6e7] text-[#8a6d00]' }}">{{ str_replace(':n', number_format($row->idle_days), t(':n DAYS')) }}</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -333,7 +333,7 @@ new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Co
                     </tbody>
                 @empty
                     <tbody>
-                        <tr><td colspan="10" class="text-center py-8 text-muted">Tidak ada item slow moving pada ambang {{ $thresholdMonths }} bulan ini — semua item punya stok bergerak dalam periode wajar. 🎉</td></tr>
+                        <tr><td colspan="10" class="text-center py-8 text-muted">{{ str_replace(':n', $thresholdMonths, t('No slow moving items at this :n month threshold — all items have stock moving within a reasonable period.')) }} 🎉</td></tr>
                     </tbody>
                 @endforelse
             </table>

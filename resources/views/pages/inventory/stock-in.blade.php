@@ -219,7 +219,7 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
             'lines.*.qty' => ['required', 'numeric', 'gt:0'],
             'lines.*.location_id' => ['required', 'integer'],
         ], [], [
-            'warehouse_id' => 'Gudang', 'doc_date' => 'Tanggal Dokumen', 'doc_cat' => 'Kategori Dokumen',
+            'warehouse_id' => t('Warehouse'), 'doc_date' => t('Document Date'), 'doc_cat' => t('Document Category'),
         ]);
 
         $itemKey = match ($this->category) { 'SFG' => 'parts_id', 'FG' => 'product_id', default => 'material_id' };
@@ -246,7 +246,7 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
 
         $this->doc_no = $docNo;
         unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', "Draft {$docNo} tersimpan.");
+        session()->flash('flash', str_replace(':doc', $docNo, t('Draft :doc saved.')));
         $this->panel = 'grid';
     }
 
@@ -267,7 +267,7 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
-        session()->flash('flash', 'Dokumen berhasil di-posting ke Kartu Stok.');
+        session()->flash('flash', t('Document posted to the Stock Card successfully.'));
         if ($this->panel === 'form') {
             $this->openEdit($id);
         }
@@ -280,7 +280,7 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
         }
         $svc->cancel($this->category, $this->editingId, Auth::user()->login);
         unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', 'Dokumen dibatalkan.');
+        session()->flash('flash', t('Document cancelled.'));
         $this->panel = 'grid';
     }
 

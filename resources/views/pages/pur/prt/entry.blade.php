@@ -487,7 +487,7 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('Disposition & Follow-up') }}</h3>
             <div class="grid">
-                <x-form.input label="{{ t('Communication Method') }}" value="{{ $this->prt->comm_method }}" :disabled="$readOnly" placeholder="Email / Telp / WA" wire:change="updateHeader('comm_method', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.input label="{{ t('Communication Method') }}" value="{{ $this->prt->comm_method }}" :disabled="$readOnly" placeholder="{{ t('Email / Phone / WA') }}" wire:change="updateHeader('comm_method', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <x-form.input label="{{ t('Supplier PIC') }}" value="{{ $this->prt->supplier_pic }}" :disabled="$readOnly" wire:change="updateHeader('supplier_pic', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <x-form.date-picker label="{{ t('Physical Ship Date') }}" value="{{ $this->prt->physical_return_date?->format('Y-m-d') }}" :disabled="$readOnly" wire:change="updateHeader('physical_return_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <x-form.input label="{{ t('Expedition') }}" value="{{ $this->prt->expedition }}" :disabled="$readOnly" wire:change="updateHeader('expedition', $event.target.value)" class="disabled:bg-[#f8fafc]" />

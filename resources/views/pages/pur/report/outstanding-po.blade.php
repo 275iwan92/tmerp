@@ -109,27 +109,27 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="PO Outstanding" :value="$this->statCount" />
-            <x-grid.stat-box tone="extra" label="Baris Outstanding" :value="$this->statLines" />
-            <x-grid.stat-box tone="warn" label="Nilai Outstanding" :value="number_format($this->statValue, 0, ',', '.')" />
+            <x-grid.stat-box tone="total" :label="t('Outstanding POs')" :value="$this->statCount" />
+            <x-grid.stat-box tone="extra" :label="t('Outstanding Lines')" :value="$this->statLines" />
+            <x-grid.stat-box tone="warn" :label="t('Outstanding Value')" :value="number_format($this->statValue, 0, ',', '.')" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar class="flex-wrap">
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. PO / supplier…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search PO no. / supplier…') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
-                    <label class="text-[10.5px] text-muted font-semibold">Dari</label>
+                    <label class="text-[10.5px] text-muted font-semibold">{{ t('From') }}</label>
                     <x-form.date-picker wire:model.live="dateFrom" class="w-[130px]" />
-                    <label class="text-[10.5px] text-muted font-semibold">s/d</label>
+                    <label class="text-[10.5px] text-muted font-semibold">{{ t('until') }}</label>
                     <x-form.date-picker wire:model.live="dateTo" class="w-[130px]" />
                 </div>
                 @if ($search !== '' || $dateFrom !== '' || $dateTo !== '')
                     <x-slot:tools>
-                        <button type="button" wire:click="resetFilter" class="shrink-0 text-[11px] font-semibold text-muted hover:text-navy underline">Reset filter</button>
+                        <button type="button" wire:click="resetFilter" class="shrink-0 text-[11px] font-semibold text-muted hover:text-navy underline">{{ t('Reset filter') }}</button>
                     </x-slot:tools>
                 @endif
             </x-grid.toolbar>
@@ -138,18 +138,18 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Supplier / No. PO</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal PO</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tgl Kirim</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Baris Outstanding</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Nilai Outstanding</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Supplier / PO No.') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('PO Date') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Delivery Date') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ t('Outstanding Lines') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Outstanding Value') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->rows as $r)
-                            <tr wire:key="opo-{{ $r->po->po_id }}" wire:dblclick="openPo({{ $r->po->po_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                            <tr wire:key="opo-{{ $r->po->po_id }}" wire:dblclick="openPo({{ $r->po->po_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                 <x-grid.identity-cell :id="$r->po->po_id" :name="$this->supplierNames[$r->po->i_supplier_id] ?? '—'" :code="$r->po->doc_no" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->po->i_doc_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->po->i_delivery_date?->translatedFormat('d M Y') ?? '—' }}</td>
@@ -159,11 +159,11 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->po->status === 'PARTIALLY_RECEIVED' ? 'bg-[#fff5e0] text-[#8a5a00]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $r->po->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="openPo({{ $r->po->po_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ t('Open') }}" action="openPo({{ $r->po->po_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="7" message="Tidak ada PO outstanding pada rentang/filter ini." />
+                            <x-grid.empty-row :colspan="7" message="{{ t('No outstanding POs in this range/filter.') }}" />
                         @endforelse
                     </tbody>
                 </table>

@@ -204,7 +204,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
     public function pullFullScope(): void
     {
         if (! $this->warehouse_id) {
-            $this->addError('full_scope', 'Pilih gudang dulu sebelum menarik seluruh item.');
+            $this->addError('full_scope', t('Select a warehouse first before pulling all items.'));
 
             return;
         }
@@ -330,10 +330,10 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.location_id' => ['required', 'integer'],
             'lines.*.qty_physical' => ['required', 'numeric', 'min:0'],
-        ], [], ['warehouse_id' => 'Gudang', 'doc_date' => 'Tanggal Dokumen', 'reason_code' => 'Alasan']);
+        ], [], ['warehouse_id' => t('Warehouse'), 'doc_date' => t('Document Date'), 'reason_code' => t('Reason')]);
 
         if ($this->doc_kind === 'OP' && (trim($this->opn_officer) === '' || $this->opn_start === '' || $this->opn_stop === '' || trim($this->opn_witness) === '')) {
-            $this->addError('opn_officer', 'Petugas, waktu mulai/selesai, dan saksi wajib diisi utk Stock Opname.');
+            $this->addError('opn_officer', t('Officer, start/end time, and witness are required for Stock Opname.'));
 
             return;
         }
@@ -367,7 +367,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
 
         $this->doc_no = $docNo;
         unset($this->documents, $this->statTotal, $this->statPending, $this->statPosted);
-        session()->flash('flash', "Draft {$docNo} tersimpan.");
+        session()->flash('flash', str_replace(':doc', $docNo, t('Draft :doc saved.')));
         $this->panel = 'grid';
     }
 
@@ -394,9 +394,9 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
         $result = $flow->submit($this->doc_kind, $this->editingId, 'SUBMITTED', $amount);
 
         if ($result === null) {
-            session()->flash('error', "Tidak ada konfigurasi approval aktif untuk modul {$this->doc_kind}. Dokumen tersimpan sebagai SUBMITTED tapi belum masuk antrian approval siapapun — hubungi Admin.");
+            session()->flash('error', str_replace(':module', $this->doc_kind, t('No active approval configuration for the :module module. The document was saved as SUBMITTED but is not in anyone\'s approval queue — contact Admin.')));
         } else {
-            session()->flash('flash', 'Diajukan utk approval.');
+            session()->flash('flash', t('Submitted for approval.'));
         }
 
         $this->openEdit($this->editingId);
@@ -440,11 +440,11 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
             if (! $post['posted']) {
                 session()->flash('error', $post['error']);
             } else {
-                session()->flash('flash', 'Disetujui & diposting ke Kartu Stok.');
+                session()->flash('flash', t('Approved & posted to the Stock Card.'));
             }
         } else {
             $this->headerModel()::whereKey($this->editingId)->update(['flow_status' => $result['status'], 'update_by' => Auth::user()->login]);
-            session()->flash('flash', 'Disetujui, diteruskan ke level approval berikutnya.');
+            session()->flash('flash', t('Approved, forwarded to the next approval level.'));
         }
 
         $this->approvalNote = '';
@@ -461,7 +461,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
         }
 
         if (mb_strlen(trim($this->approvalNote)) < 10) {
-            $this->approvalError = 'Alasan penolakan wajib diisi, minimal 10 karakter.';
+            $this->approvalError = t('Rejection reason is required, minimum 10 characters.');
 
             return;
         }
@@ -483,7 +483,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
         }
         $svc->cancel($this->category, $this->editingId, Auth::user()->login);
         unset($this->documents, $this->statTotal, $this->statPending, $this->statPosted);
-        session()->flash('flash', 'Dokumen dibatalkan.');
+        session()->flash('flash', t('Document cancelled.'));
         $this->panel = 'grid';
     }
 

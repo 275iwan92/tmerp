@@ -18,7 +18,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
         $doc = PrRequisition::findOrFail($pr);
 
         if (in_array($doc->status, ['DRAFT', 'SUBMITTED'], true)) {
-            session()->flash('error', 'PR ini belum di-approve — approve dulu sebelum bisa dicetak.');
+            session()->flash('error', t('This PR is not approved yet — approve it before it can be printed.'));
             $this->redirect(route('pur.pr.entry', ['pr' => $pr]));
 
             return;
@@ -43,39 +43,39 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
 
 <x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->pr->doc_no }} · {{ $this->pr->status }}">
     <x-slot:toolbar>
-        <a href="{{ route('pur.pr.entry', ['pr' => $this->prId]) }}" class="sc" data-back>← Kembali ke PR</a>
+        <a href="{{ route('pur.pr.entry', ['pr' => $this->prId]) }}" class="sc" data-back>← {{ t('Back to PR') }}</a>
     </x-slot:toolbar>
 
     <x-print.sheet>
-        <x-print.header :company="$this->company" doc-title="PURCHASE REQUISITION" :doc-no="$this->pr->doc_no">
+        <x-print.header :company="$this->company" :doc-title="t('PURCHASE REQUISITION')" :doc-no="$this->pr->doc_no">
             <x-slot:meta>
-                Tanggal: {{ $this->pr->i_doc_date?->translatedFormat('d F Y') }}
-                · Dibutuhkan: <span class="ref">{{ $this->pr->i_need_date?->translatedFormat('d F Y') ?? '—' }}</span>
+                {{ t('Date') }}: {{ $this->pr->i_doc_date?->translatedFormat('d F Y') }}
+                · {{ t('Needed') }}: <span class="ref">{{ $this->pr->i_need_date?->translatedFormat('d F Y') ?? '—' }}</span>
             </x-slot:meta>
         </x-print.header>
 
         <x-print.parties columns="1fr 1fr">
-            <x-print.party label="DEPARTEMEN PEMINTA">
+            <x-print.party :label="mb_strtoupper(t('Requesting Department'))">
                 <div class="nm">{{ $this->pr->department?->department_name ?? '—' }}</div>
-                <div class="dt">Diajukan oleh: <b>{{ $this->pr->created_by ?? '—' }}</b></div>
+                <div class="dt">{{ t('Submitted by') }}: <b>{{ $this->pr->created_by ?? '—' }}</b></div>
             </x-print.party>
-            <x-print.party label="SUMBER">
+            <x-print.party :label="mb_strtoupper(t('Source'))">
                 <div class="dt">
-                    Asal: <b>{{ $this->pr->i_source ?? 'Manual' }}</b><br>
-                    Estimasi Total: <b>Rp {{ number_format($this->pr->c_est_total, 0, ',', '.') }}</b>
+                    {{ t('Origin') }}: <b>{{ $this->pr->i_source ?? t('Manual') }}</b><br>
+                    {{ t('Total Estimate') }}: <b>Rp {{ number_format($this->pr->c_est_total, 0, ',', '.') }}</b>
                 </div>
             </x-print.party>
         </x-print.parties>
 
-        <x-print.section number="1" title="Rincian Permintaan">
+        <x-print.section number="1" :title="t('Request Details')">
             <table class="items">
                 <thead>
                     <tr>
-                        <th style="width:6%">No.</th>
-                        <th class="desc">Deskripsi</th>
-                        <th class="num" style="width:13%">Qty</th>
-                        <th class="num" style="width:15%">Est. Harga</th>
-                        <th class="num" style="width:16%">Est. Subtotal</th>
+                        <th style="width:6%">{{ t('No.') }}</th>
+                        <th class="desc">{{ t('Item Description') }}</th>
+                        <th class="num" style="width:13%">{{ t('Qty') }}</th>
+                        <th class="num" style="width:15%">{{ t('Est. Price') }}</th>
+                        <th class="num" style="width:16%">{{ t('Est. Subtotal') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,7 +85,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                             <td class="desc">
                                 <div class="nm">{{ $line->i_description }}</div>
                                 @if ($line->c_item_code)
-                                    <div class="sp">Kode: {{ $line->c_item_code }}</div>
+                                    <div class="sp">{{ t('Code') }}: {{ $line->c_item_code }}</div>
                                 @endif
                                 @if ($line->i_notes)
                                     <div class="sp">{{ $line->i_notes }}</div>
@@ -102,7 +102,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
             @if ($this->pr->i_notes)
                 <div class="totwrap" style="grid-template-columns:1fr">
                     <div class="tot-note">
-                        <h5>CATATAN</h5>
+                        <h5>{{ mb_strtoupper(t('Notes')) }}</h5>
                         {{ $this->pr->i_notes }}
                     </div>
                 </div>
@@ -110,15 +110,15 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
         </x-print.section>
 
         <x-print.signatures>
-            <x-print.signature company="Diajukan oleh" role="{{ $this->pr->department?->department_name ?? 'Departemen' }}"
-                name="{{ $this->pr->created_by ?? '—' }}" sub="Requester" />
+            <x-print.signature :company="t('Submitted by')" role="{{ $this->pr->department?->department_name ?? t('Department') }}"
+                name="{{ $this->pr->created_by ?? '—' }}" :sub="t('Requester')" />
             <x-print.signature company="{{ \App\Support\Branding\Brand::companyName() }}"
-                role="Approval" name="( ................................. )" sub="Kepala Purchasing/Direksi" />
+                :role="t('Approval')" name="( ................................. )" :sub="t('Head of Purchasing/Directors')" />
         </x-print.signatures>
 
-        <x-print.footer page="Halaman 1 dari 1">
+        <x-print.footer page="{{ t('Page 1 of 1') }}">
             {{ $this->pr->doc_no }} · {{ $this->pr->department?->department_name }} ·
-            dicetak {{ now()->format('d/m/Y H:i') }} · dokumen sah terbit sistem TMERP
+            {{ str_replace(':date', now()->format('d/m/Y H:i'), t('printed :date')) }} · {{ t('official document issued by the TMERP system') }}
         </x-print.footer>
     </x-print.sheet>
 </x-print.document>

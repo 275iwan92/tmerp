@@ -161,7 +161,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                                 <x-grid.identity-cell :id="$pr->pr_id" :name="$pr->department?->department_name ?? '—'" :code="$pr->doc_no ?: t('(draft)')" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $pr->i_doc_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $pr->i_source === 'MRP' ? 'bg-[#eef3fb] text-[#2f6fed]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $pr->i_source === 'MRP' ? 'MRP AUTO' : 'MANUAL' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $pr->i_source === 'MRP' ? 'bg-[#eef3fb] text-[#2f6fed]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $pr->i_source === 'MRP' ? t('MRP AUTO') : mb_strtoupper(t('Manual')) }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $pr->i_need_date?->translatedFormat('d M Y') ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format((float) $pr->c_est_total, 0, ',', '.') }}</td>

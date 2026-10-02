@@ -37,7 +37,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
 
     private const DOC_PREFIX = 'RTN';
 
-    public const CATEGORY_LABELS = ['RM' => 'Bahan Baku', 'SFG' => 'Barang Setengah Jadi'];
+    public const CATEGORY_LABELS = ['RM' => 'Raw Materials', 'SFG' => 'Semi-Finished Goods'];
 
     private const HEADER_MODEL = ['RM' => RmStock::class, 'SFG' => SfgStock::class];
 
@@ -78,7 +78,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
     public function mount(string $category): void
     {
         $category = strtoupper($category);
-        abort_unless(array_key_exists($category, self::CATEGORY_LABELS), 404, 'Return from Production cuma berlaku utk kelas Bahan Baku (RM) atau Barang Setengah Jadi (SFG).');
+        abort_unless(array_key_exists($category, self::CATEGORY_LABELS), 404, t('Return from Production only applies to the Raw Materials (RM) or Semi-Finished Goods (SFG) class.'));
         $this->category = $category;
     }
 
@@ -279,17 +279,17 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
             'lines.*.qty' => ['required', 'numeric', 'gt:0'],
             'lines.*.location_id' => ['required', 'integer'],
         ], [], [
-            'sourceDocId' => 'Ref. Stock Out', 'goodWarehouseId' => 'Gudang Tujuan (bahan layak)', 'doc_date' => 'Tanggal Dokumen',
+            'sourceDocId' => t('Stock Out Ref.'), 'goodWarehouseId' => t('Target Warehouse (usable goods)'), 'doc_date' => t('Document Date'),
         ]);
 
         foreach ($this->lines as $l) {
             if ((float) $l['qty'] > $l['qty_returnable'] + 0.0001) {
-                $this->addError('lines', "Qty retur {$l['name']} melebihi sisa yang boleh diretur ({$l['qty_returnable']}).");
+                $this->addError('lines', str_replace([':item', ':qty'], [$l['name'], $l['qty_returnable']], t('Return qty for :item exceeds the returnable remainder (:qty).')));
 
                 return;
             }
             if ($l['return_condition'] === 'SCRAP' && trim($l['note_detail']) === '') {
-                $this->addError('lines', "Keterangan wajib diisi utk baris afkir/SCRAP ({$l['name']}).");
+                $this->addError('lines', str_replace(':item', $l['name'], t('Description is required for scrap/SCRAP lines (:item).')));
 
                 return;
             }
@@ -333,7 +333,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
 
         $this->doc_no = $docNo;
         unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', "Draft {$docNo} tersimpan.");
+        session()->flash('flash', str_replace(':doc', $docNo, t('Draft :doc saved.')));
         $this->panel = 'grid';
     }
 
@@ -368,7 +368,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                 ->update(['qty_returned' => DB::raw('COALESCE(qty_returned, 0) + ('.(float) $line->qty.')')]);
         }
 
-        session()->flash('flash', 'Retur berhasil diposting & Kartu Stok ter-update.');
+        session()->flash('flash', t('Return posted successfully & Stock Card updated.'));
         if ($this->panel === 'form') {
             $this->openEdit($id);
         }
@@ -381,7 +381,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
         }
         $svc->cancel($this->category, $this->editingId, Auth::user()->login);
         unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', 'Dokumen dibatalkan.');
+        session()->flash('flash', t('Document cancelled.'));
         $this->panel = 'grid';
     }
 
@@ -408,10 +408,10 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Dokumen', 'value' => $this->statTotal, 'tone' => 'total'],
-            'draft' => ['label' => 'Draft', 'value' => $this->statDraft, 'tone' => 'warn',
+            'total' => ['label' => t('Total Documents'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => t('Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
                 'filter' => fn ($c) => $c->where('flow_status', 'DRAFT')],
-            'posted' => ['label' => 'Sudah Diterima', 'value' => $this->statPosted, 'tone' => 'active',
+            'posted' => ['label' => t('Received'), 'value' => $this->statPosted, 'tone' => 'active',
                 'filter' => fn ($c) => $c->where('flow_status', 'POSTED')],
         ];
     }
@@ -431,7 +431,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                 <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. dokumen / no. Stock Out…"
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search document no. / Stock Out no.…') }}"
                             class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
                     <x-slot:newRecord>
@@ -444,21 +444,21 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Dokumen</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Ref. Stock Out</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Status</th>
-                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Document') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Date') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Stock Out Ref.') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Status') }}</th>
+                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->visibleDocuments as $d)
-                                <tr wire:key="doc-{{ $d->doc_id }}" wire:dblclick="openEdit({{ $d->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                                <tr wire:key="doc-{{ $d->doc_id }}" wire:dblclick="openEdit({{ $d->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
                                             <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($d->doc_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($d->doc_no ?: 'DOC') }}</div>
                                             <div>
-                                                <div class="font-semibold text-[13px] font-mono">{{ $d->doc_no ?: '(draft)' }}</div>
+                                                <div class="font-semibold text-[13px] font-mono">{{ $d->doc_no ?: t('(draft)') }}</div>
                                                 <div class="text-[11px] text-muted">{{ $d->notes ?: '—' }}</div>
                                             </div>
                                         </div>
@@ -469,14 +469,14 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($d->flow_status) }}">{{ $d->flow_status }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="openEdit({{ $d->doc_id }})" />
+                                        <x-grid.action-icon icon="fa-up-right-from-square" title="{{ t('Open') }}" action="openEdit({{ $d->doc_id }})" />
                                         @if ($d->flow_status === 'DRAFT')
-                                            <x-grid.action-icon icon="fa-check" title="Konfirmasi & Posting" action="postNow(null, {{ $d->doc_id }})" variant="success" confirm="Konfirmasi &amp; Posting {{ $d->doc_no }}? Barang akan masuk Kartu Stok." />
+                                            <x-grid.action-icon icon="fa-check" :title="t('Confirm & Post')" action="postNow(null, {{ $d->doc_id }})" variant="success" :confirm="str_replace(':doc', $d->doc_no, t('Confirm & Post :doc? Goods will enter the Stock Card.'))" />
                                         @endif
                                     </td>
                                 </tr>
                             @empty
-                                <x-grid.empty-row :colspan="5" message="Belum ada dokumen Return from Production." />
+                                <x-grid.empty-row :colspan="5" message="{{ t('No Return from Production documents yet.') }}" />
                             @endforelse
                         </tbody>
                     </table>
@@ -486,12 +486,12 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
             {{-- ============ FORM ============ --}}
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                    <span>{{ $editingId ? 'Edit Return · '.$doc_no : 'Return from Production Baru' }}</span>
-                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ self::CATEGORY_LABELS[$category] }}</span>
+                    <span>{{ $editingId ? t('Edit Return ·').' '.$doc_no : t('New Return from Production') }}</span>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ t(self::CATEGORY_LABELS[$category]) }}</span>
                     @if ($editingId)
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($flow_status) }}">{{ $flow_status }}</span>
                     @endif
-                    <button type="button" wire:click="backToGrid" data-dirty-guard title="Kembali ke Daftar"
+                    <button type="button" wire:click="backToGrid" data-dirty-guard title="{{ t('Back to List') }}"
                         class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full cursor-pointer hover:brightness-110">
                         <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
                         <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
@@ -500,50 +500,50 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
 
                 <div class="p-4 flex flex-col gap-3">
                     @if ($readOnly)
-                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">🔒 Dokumen sudah {{ $flow_status === 'POSTED' ? 'diterima/diposting' : 'dibatalkan' }} — lihat-saja, tidak bisa diedit.</div>
+                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">🔒 {{ $flow_status === 'POSTED' ? t('Document is already received/posted — view-only, cannot be edited.') : t('Document is already cancelled — view-only, cannot be edited.') }}</div>
                     @endif
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide">Header</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Header') }}</div>
                     <div class="flex gap-2.5 flex-wrap items-end">
                         <div class="flex-1 min-w-[160px]">
-                            <x-form.input label="No. Dokumen" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="!font-mono" />
+                            <x-form.input :label="t('Document No.')" value="{{ $doc_no ?: t('(automatic on save)') }}" disabled class="!font-mono" />
                         </div>
                         <div class="flex-1 min-w-[140px]">
-                            <x-form.date-picker label="Tanggal Dokumen *" wire:model="doc_date" :disabled="$readOnly" name="doc_date" />
+                            <x-form.date-picker :label="t('Document Date *')" wire:model="doc_date" :disabled="$readOnly" name="doc_date" />
                         </div>
                         <div class="flex-1 min-w-[220px] flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Ref. Stock Out *</label>
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Stock Out Ref. *') }}</label>
                             @if (! $readOnly && ! $editingId)
-                                <button type="button" wire:click="openPicker" class="px-2.5 py-2 border border-dashed border-accent rounded-md text-[13px] text-accent font-semibold text-left">{{ $sourceDocNo ?: '🔍 Pilih dokumen Stock Out…' }}</button>
+                                <button type="button" wire:click="openPicker" class="px-2.5 py-2 border border-dashed border-accent rounded-md text-[13px] text-accent font-semibold text-left">{{ $sourceDocNo ?: '🔍 '.t('Select a Stock Out document…') }}</button>
                             @else
                                 <x-form.input value="{{ $sourceDocNo }}" disabled class="font-mono" />
                             @endif
                             @error('sourceDocId') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
                         </div>
                         <div class="flex-1 min-w-[200px]">
-                            <x-form.select label="Gudang Tujuan (bahan layak) *" wire:model="goodWarehouseId" :disabled="$readOnly" name="goodWarehouseId"
+                            <x-form.select :label="t('Target Warehouse (usable goods) *')" wire:model="goodWarehouseId" :disabled="$readOnly" name="goodWarehouseId"
                                 :options="$this->warehouses->mapWithKeys(fn ($w) => [$w->id_warehouse => $w->warehouse_code.' — '.$w->warehouse_name])->all()" />
                         </div>
                         <div class="flex-1 min-w-[160px]">
-                            <x-form.input label="Proses Asal" wire:model="process_code" :disabled="$readOnly" />
+                            <x-form.input :label="t('Origin Process')" wire:model="process_code" :disabled="$readOnly" />
                         </div>
                     </div>
-                    <x-form.textarea label="Catatan" wire:model="notes" :disabled="$readOnly" rows="2" />
+                    <x-form.textarea :label="t('Notes')" wire:model="notes" :disabled="$readOnly" rows="2" />
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Baris Item (Retur)</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ t('Item Lines (Return)') }}</div>
                     @error('lines') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
 
                     <div class="overflow-x-auto border border-[#eef1f5] rounded-md">
                         <table class="w-full text-[12.5px] border-collapse">
                             <thead>
                                 <tr class="bg-[#fafbfd]">
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">Item</th>
-                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[90px]">Dikeluarkan</th>
-                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[90px]">Sisa Boleh</th>
-                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">Qty Retur *</th>
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">Kondisi *</th>
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[180px]">Lokasi Tujuan *</th>
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">Keterangan</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">{{ t('Item') }}</th>
+                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[90px]">{{ t('Qty Issued') }}</th>
+                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[90px]">{{ t('Returnable') }}</th>
+                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">{{ t('Return Qty *') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">{{ t('Condition *') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[180px]">{{ t('Target Location *') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">{{ t('Description') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -555,17 +555,17 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                                         <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.qty" :disabled="$readOnly" class="!py-1 text-right" /></td>
                                         <td class="px-2 py-1.5">
                                             <x-form.select wire:model="lines.{{ $i }}.return_condition" :disabled="$readOnly" class="!py-1" :placeholder="false"
-                                                :options="['GOOD' => 'GOOD (Layak)', 'SCRAP' => 'SCRAP (Afkir)']" />
+                                                :options="['GOOD' => t('GOOD (Usable)'), 'SCRAP' => t('SCRAP (Rejected)')]" />
                                         </td>
                                         <td class="px-2 py-1.5">
                                             <x-form.select wire:model="lines.{{ $i }}.location_id" :disabled="$readOnly" class="!py-1"
                                                 :selected="$line['location_id']"
                                                 :options="(($line['return_condition'] === 'SCRAP') ? $this->scrapLocations : $this->goodLocations)->pluck('location_code', 'location_id')->all()" />
                                         </td>
-                                        <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.note_detail" :disabled="$readOnly" placeholder="{{ $line['return_condition'] === 'SCRAP' ? 'wajib utk afkir' : 'opsional' }}" class="!py-1" /></td>
+                                        <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.note_detail" :disabled="$readOnly" placeholder="{{ $line['return_condition'] === 'SCRAP' ? t('required for scrap') : t('optional') }}" class="!py-1" /></td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="7" class="text-center py-6 text-muted text-xs">Pilih Ref. Stock Out di atas utk menarik baris yang bisa diretur.</td></tr>
+                                    <tr><td colspan="7" class="text-center py-6 text-muted text-xs">{{ t('Select a Stock Out Ref. above to pull the returnable lines.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -574,11 +574,11 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                     @if (! $readOnly)
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                             @if ($editingId)
-                                <button type="button" wire:click="cancelDoc" wire:confirm="Batalkan dokumen ini?" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#fdecec] text-[#c0392b] cursor-pointer">Batalkan</button>
+                                <button type="button" wire:click="cancelDoc" wire:confirm="{{ t('Cancel this document?') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#fdecec] text-[#c0392b] cursor-pointer">{{ t('Cancel') }}</button>
                             @endif
-                            <button type="button" wire:click="saveDraft" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">💾 Simpan Draft</button>
+                            <button type="button" wire:click="saveDraft" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">💾 {{ t('Save Draft') }}</button>
                             @if ($editingId)
-                                <button type="button" wire:click="postNow" wire:confirm="Konfirmasi &amp; Posting {{ $doc_no }}? Barang akan masuk Kartu Stok, tidak bisa diedit lagi." class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">✓ Konfirmasi &amp; Posting</button>
+                                <button type="button" wire:click="postNow" wire:confirm="{{ str_replace(':doc', $doc_no, t('Confirm & Post :doc? Goods will enter the Stock Card and can no longer be edited.')) }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">✓ {{ t('Confirm & Post') }}</button>
                             @endif
                         </div>
                     @endif
@@ -591,16 +591,16 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" wire:click.self="closePicker">
             <div class="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] flex flex-col shadow-xl">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-[#eef1f5]">
-                    <h3 class="text-sm font-bold text-navy">Pilih Dokumen Stock Out</h3>
+                    <h3 class="text-sm font-bold text-navy">{{ t('Select Stock Out Document') }}</h3>
                     <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
                 <div class="flex-1 overflow-y-auto">
                     <table class="w-full text-xs border-collapse">
                         <thead>
                             <tr class="bg-[#f4f5f8]">
-                                <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold">No. Dokumen</th>
-                                <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold">Tanggal</th>
-                                <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold">Sisa Bisa Diretur</th>
+                                <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold">{{ t('Document No.') }}</th>
+                                <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold">{{ t('Date') }}</th>
+                                <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold">{{ t('Returnable Remainder') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -611,7 +611,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                                     <td class="px-3 py-2 text-right">{{ rtrim(rtrim(number_format($d->lines->sum(fn ($l) => (float) $l->qty - (float) ($l->qty_returned ?? 0)), 2, ',', '.'), '0'), ',') }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="3" class="text-center py-8 text-muted">Tidak ada Stock Out yang masih bisa diretur.</td></tr>
+                                <tr><td colspan="3" class="text-center py-8 text-muted">{{ t('No Stock Out left that can still be returned.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>

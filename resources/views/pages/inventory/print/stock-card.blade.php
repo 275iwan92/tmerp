@@ -34,9 +34,9 @@ use Livewire\Component;
 new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
 {
     public const CATEGORY_LABELS = [
-        'RM' => 'Bahan Baku & Bahan Pembantu',
-        'SFG' => 'Barang Setengah Jadi',
-        'FG' => 'Barang Jadi',
+        'RM' => 'Raw & Supporting Materials',
+        'SFG' => 'Semi-Finished Goods',
+        'FG' => 'Finished Goods',
     ];
 
     public string $category = 'RM';
@@ -174,9 +174,9 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
 ?>
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50 no-print">
-        <b class="text-[15px]">🧾 Kartu Stok</b>
-        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ self::CATEGORY_LABELS[$category] }}</span>
-        <x-back-button :fallback="route('menu')" title="Kembali ke Menu Utama" class="ml-auto" />
+        <b class="text-[15px]">🧾 {{ t('Stock Card') }}</b>
+        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ t(self::CATEGORY_LABELS[$category]) }}</span>
+        <x-back-button :fallback="route('menu')" :title="t('Back to Main Menu')" class="ml-auto" />
     </header>
 
     {{-- ============ FILTER (tidak ikut cetak) ============ --}}
@@ -184,8 +184,8 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
         <div class="bg-white border border-[#d7dbe2] rounded-lg shadow-sm p-4">
             <div class="flex flex-wrap items-end gap-3">
                 <div class="flex flex-col gap-1 relative" style="min-width:260px">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Item (wajib)</label>
-                    <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="materialSearch" placeholder="🔍 Cari kode / nama item..." />
+                    <label class="text-[10px] text-muted uppercase font-semibold">{{ t('Item (required)') }}</label>
+                    <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="materialSearch" placeholder="🔍 {{ t('Search item code / name...') }}" />
                     @if ($this->materialResults->isNotEmpty())
                         <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                             @foreach ($this->materialResults as $m)
@@ -199,16 +199,16 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
                         <div class="text-[11px] text-navy font-semibold mt-1">{{ $this->material['code'] }} — {{ $this->material['name'] }}</div>
                     @endif
                 </div>
-                <x-form.date-picker label="Dari Tanggal" wire:model.live="dateFrom" />
-                <x-form.date-picker label="Sampai Tanggal" wire:model.live="dateTo" />
-                <button type="button" onclick="window.print()" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer" @disabled(! $materialId)>🖨️ Cetak</button>
+                <x-form.date-picker :label="t('From Date')" wire:model.live="dateFrom" />
+                <x-form.date-picker :label="t('To Date')" wire:model.live="dateTo" />
+                <button type="button" onclick="window.print()" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer" @disabled(! $materialId)>🖨️ {{ t('Print') }}</button>
             </div>
         </div>
     </div>
 
     @if (! $materialId)
         <div class="max-w-[900px] mx-auto px-4 no-print">
-            <p class="text-center text-muted text-sm py-12">Pilih item dulu untuk menampilkan kartu stok.</p>
+            <p class="text-center text-muted text-sm py-12">{{ t('Select an item first to show the stock card.') }}</p>
         </div>
     @else
         <div class="sheet mx-auto my-4 bg-white border border-[#d7dbe2] rounded-lg shadow-sm" style="width:210mm;min-height:150mm;padding:12mm;font-size:10.5px">
@@ -218,21 +218,21 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
                     <div class="text-[8.5pt] text-muted">Offset · Digital · Indostry Packaging</div>
                 </div>
                 <div class="text-right">
-                    <div class="text-[15pt] font-bold text-navy uppercase">Kartu Stok</div>
-                    <div class="text-[9pt] text-muted mt-1">Dicetak {{ now()->translatedFormat('d/m/Y H:i') }} oleh {{ Auth::user()->name }}</div>
+                    <div class="text-[15pt] font-bold text-navy uppercase">{{ t('Stock Card') }}</div>
+                    <div class="text-[9pt] text-muted mt-1">{{ str_replace([':date', ':user'], [now()->translatedFormat('d/m/Y H:i'), Auth::user()->name], t('Printed :date by :user')) }}</div>
                 </div>
             </div>
 
             <div class="border border-[#c8ccd4] rounded-md p-3 bg-[#fbfcfe] mb-3">
                 <div class="flex gap-6 flex-wrap">
-                    <div><div class="text-[8pt] text-muted uppercase">Kelas Stok</div><div class="text-[10.5pt] font-bold text-navy">{{ self::CATEGORY_LABELS[$category] }}</div></div>
-                    <div><div class="text-[8pt] text-muted uppercase">Kode Item</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material['code'] }}</div></div>
-                    <div class="flex-1 min-w-[200px]"><div class="text-[8pt] text-muted uppercase">Nama Item</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material['name'] }}</div></div>
-                    <div><div class="text-[8pt] text-muted uppercase">UOM Stok</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material['uom'] }}</div></div>
+                    <div><div class="text-[8pt] text-muted uppercase">{{ t('Stock Class') }}</div><div class="text-[10.5pt] font-bold text-navy">{{ t(self::CATEGORY_LABELS[$category]) }}</div></div>
+                    <div><div class="text-[8pt] text-muted uppercase">{{ t('Item Code') }}</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material['code'] }}</div></div>
+                    <div class="flex-1 min-w-[200px]"><div class="text-[8pt] text-muted uppercase">{{ t('Item Name') }}</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material['name'] }}</div></div>
+                    <div><div class="text-[8pt] text-muted uppercase">{{ t('Stock UOM') }}</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material['uom'] }}</div></div>
                 </div>
                 <div class="flex gap-6 flex-wrap mt-2">
-                    <div><div class="text-[8pt] text-muted uppercase">Lokasi</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->locationName ?? 'Semua Lokasi' }}</div></div>
-                    <div><div class="text-[8pt] text-muted uppercase">Periode</div><div class="text-[10.5pt] font-bold text-navy">{{ \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') }} — {{ \Carbon\Carbon::parse($dateTo)->format('d/m/Y') }}</div></div>
+                    <div><div class="text-[8pt] text-muted uppercase">{{ t('Location') }}</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->locationName ?? t('All Locations') }}</div></div>
+                    <div><div class="text-[8pt] text-muted uppercase">{{ t('Period') }}</div><div class="text-[10.5pt] font-bold text-navy">{{ \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') }} — {{ \Carbon\Carbon::parse($dateTo)->format('d/m/Y') }}</div></div>
                 </div>
             </div>
 
@@ -240,20 +240,20 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full text-[9pt] border-collapse">
                     <thead>
                         <tr class="bg-navy text-white">
-                            <th class="text-left px-1.5 py-1.5 border border-navy">Tanggal</th>
-                            <th class="text-left px-1.5 py-1.5 border border-navy">No. Dokumen</th>
-                            <th class="text-center px-1.5 py-1.5 border border-navy">Tipe</th>
-                            <th class="text-left px-1.5 py-1.5 border border-navy">Referensi</th>
-                            <th class="text-left px-1.5 py-1.5 border border-navy">Lot</th>
-                            <th class="text-right px-1.5 py-1.5 border border-navy">Masuk</th>
-                            <th class="text-right px-1.5 py-1.5 border border-navy">Keluar</th>
-                            <th class="text-right px-1.5 py-1.5 border border-navy">Penyesuaian</th>
-                            <th class="text-right px-1.5 py-1.5 border border-navy">Saldo</th>
+                            <th class="text-left px-1.5 py-1.5 border border-navy">{{ t('Date') }}</th>
+                            <th class="text-left px-1.5 py-1.5 border border-navy">{{ t('Document No.') }}</th>
+                            <th class="text-center px-1.5 py-1.5 border border-navy">{{ t('Type') }}</th>
+                            <th class="text-left px-1.5 py-1.5 border border-navy">{{ t('Reference') }}</th>
+                            <th class="text-left px-1.5 py-1.5 border border-navy">{{ t('Lot') }}</th>
+                            <th class="text-right px-1.5 py-1.5 border border-navy">{{ t('In') }}</th>
+                            <th class="text-right px-1.5 py-1.5 border border-navy">{{ t('Out') }}</th>
+                            <th class="text-right px-1.5 py-1.5 border border-navy">{{ t('Adjustments') }}</th>
+                            <th class="text-right px-1.5 py-1.5 border border-navy">{{ t('Balance') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr class="bg-[#fff3d6] font-semibold">
-                            <td class="px-1.5 py-1 border border-[#e9ecf1]" colspan="8">— Saldo Awal per {{ \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') }} —</td>
+                            <td class="px-1.5 py-1 border border-[#e9ecf1]" colspan="8">— {{ str_replace(':date', \Carbon\Carbon::parse($dateFrom)->format('d/m/Y'), t('Opening Balance as of :date')) }} —</td>
                             <td class="px-1.5 py-1 border border-[#e9ecf1] text-right">{{ number_format($this->ledger['openingBalance'], 4) }}</td>
                         </tr>
                         @forelse ($this->ledger['rows'] as $i => $r)
@@ -272,12 +272,12 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-1.5 py-1 border border-[#eef1f5] text-right font-semibold">{{ number_format($r->qty_eb, 4) }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="9" class="text-center py-6 text-muted">Tidak ada pergerakan pada periode ini.</td></tr>
+                            <tr><td colspan="9" class="text-center py-6 text-muted">{{ t('No movement in this period.') }}</td></tr>
                         @endforelse
                     </tbody>
                     <tfoot>
                         <tr class="bg-[#f4f6fa] font-bold">
-                            <td class="px-1.5 py-1.5 border border-[#c8ccd4]" colspan="5">Total pergerakan periode · {{ $this->ledger['rows']->count() }} transaksi</td>
+                            <td class="px-1.5 py-1.5 border border-[#c8ccd4]" colspan="5">{{ str_replace(':n', $this->ledger['rows']->count(), t('Total period movement · :n transactions')) }}</td>
                             <td class="px-1.5 py-1.5 border border-[#c8ccd4] text-right">{{ number_format($this->totals['in'], 4) }}</td>
                             <td class="px-1.5 py-1.5 border border-[#c8ccd4] text-right">{{ number_format($this->totals['out'], 4) }}</td>
                             <td class="px-1.5 py-1.5 border border-[#c8ccd4] text-right">{{ number_format($this->totals['adj'], 4) }}</td>
@@ -288,10 +288,10 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
             </div>
 
             <div class="grid mt-4">
-                <div class="rounded-lg p-2.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb] text-center"><p class="text-[9.5px] font-bold uppercase text-[#3b5b99]">Saldo Awal</p><p class="text-lg font-extrabold text-[#1d4ed8] mt-0.5">{{ number_format($this->ledger['openingBalance'], 2) }}</p></div>
-                <div class="rounded-lg p-2.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#2f7a52]">Total Masuk</p><p class="text-lg font-extrabold text-[#16a34a] mt-0.5">+{{ number_format($this->totals['in'], 2) }}</p></div>
-                <div class="rounded-lg p-2.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#a3453f]">Total Keluar</p><p class="text-lg font-extrabold text-[#c0392b] mt-0.5">−{{ number_format($this->totals['out'], 2) }}</p></div>
-                <div class="rounded-lg p-2.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb] text-center"><p class="text-[9.5px] font-bold uppercase text-[#3b5b99]">Saldo Akhir</p><p class="text-lg font-extrabold text-[#1d4ed8] mt-0.5">{{ number_format($this->totals['closing'], 2) }}</p></div>
+                <div class="rounded-lg p-2.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb] text-center"><p class="text-[9.5px] font-bold uppercase text-[#3b5b99]">{{ t('Opening') }}</p><p class="text-lg font-extrabold text-[#1d4ed8] mt-0.5">{{ number_format($this->ledger['openingBalance'], 2) }}</p></div>
+                <div class="rounded-lg p-2.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#2f7a52]">{{ t('Total In') }}</p><p class="text-lg font-extrabold text-[#16a34a] mt-0.5">+{{ number_format($this->totals['in'], 2) }}</p></div>
+                <div class="rounded-lg p-2.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#a3453f]">{{ t('Total Out') }}</p><p class="text-lg font-extrabold text-[#c0392b] mt-0.5">−{{ number_format($this->totals['out'], 2) }}</p></div>
+                <div class="rounded-lg p-2.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb] text-center"><p class="text-[9.5px] font-bold uppercase text-[#3b5b99]">{{ t('Closing') }}</p><p class="text-lg font-extrabold text-[#1d4ed8] mt-0.5">{{ number_format($this->totals['closing'], 2) }}</p></div>
             </div>
         </div>
     @endif

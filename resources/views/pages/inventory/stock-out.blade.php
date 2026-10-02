@@ -74,7 +74,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
         $category = strtoupper($category);
         // fg_out_bukan_milik_modul: FG keluar cuma lewat Delivery Order (Dispatch,
         // belum dibangun) -- lihat catatan panjang di atas kelas ini.
-        abort_unless(array_key_exists($category, self::CATEGORY_LABELS), 404, 'Stock Out cuma berlaku utk kelas Bahan Baku (RM) atau Barang Setengah Jadi (SFG).');
+        abort_unless(array_key_exists($category, self::CATEGORY_LABELS), 404, t('Stock Out only applies to the Raw Materials (RM) or Semi-Finished Goods (SFG) class.'));
         $this->category = $category;
     }
 
@@ -227,7 +227,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
             'lines.*.qty' => ['required', 'numeric', 'gt:0'],
             'lines.*.location_id' => ['required', 'integer'],
         ], [], [
-            'warehouse_id' => 'Gudang', 'doc_date' => 'Tanggal Dokumen', 'issued_to_dept' => 'Diserahkan kepada (departemen)',
+            'warehouse_id' => t('Warehouse'), 'doc_date' => t('Document Date'), 'issued_to_dept' => t('Issued to (department)'),
         ]);
 
         $docNo = $this->editingId ? $this->doc_no : $svc->nextDocNo($this->category, self::DOC_PREFIX);
@@ -256,7 +256,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
 
         $this->doc_no = $docNo;
         unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', "Draft {$docNo} tersimpan.");
+        session()->flash('flash', str_replace(':doc', $docNo, t('Draft :doc saved.')));
         $this->panel = 'grid';
     }
 
@@ -277,7 +277,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
-        session()->flash('flash', 'Barang berhasil dikeluarkan & Kartu Stok ter-update.');
+        session()->flash('flash', t('Goods issued successfully & Stock Card updated.'));
         if ($result['journal_warning'] ?? null) {
             session()->flash('journal_warning', $result['journal_warning']);
         }
@@ -293,7 +293,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
         }
         $svc->cancel($this->category, $this->editingId, Auth::user()->login);
         unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', 'Dokumen dibatalkan.');
+        session()->flash('flash', t('Document cancelled.'));
         $this->panel = 'grid';
     }
 

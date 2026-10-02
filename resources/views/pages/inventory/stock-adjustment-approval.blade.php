@@ -16,7 +16,7 @@ use Livewire\Component;
 // menggabung modul AD + OP (1 "Persetujuan" per kelas stok mencakup kedua jenis).
 new #[Title('Persetujuan Adjustment & Opname — TELASIH MAKMUR ERP')] class extends Component
 {
-    public const CATEGORY_LABELS = ['RM' => 'Bahan Baku & Bahan Pembantu', 'SFG' => 'Barang Setengah Jadi', 'FG' => 'Barang Jadi'];
+    public const CATEGORY_LABELS = ['RM' => 'Raw & Supporting Materials', 'SFG' => 'Semi-Finished Goods', 'FG' => 'Finished Goods'];
 
     private const HEADER_MODEL = ['RM' => RmStock::class, 'FG' => FgStock::class, 'SFG' => SfgStock::class];
 
@@ -95,19 +95,19 @@ new #[Title('Persetujuan Adjustment & Opname — TELASIH MAKMUR ERP')] class ext
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="2">
-            <x-grid.stat-box tone="total" label="Total di Antrian Saya" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="Nilai Absolut Total" :value="number_format($this->statValue, 0, ',', '.')" />
+            <x-grid.stat-box tone="total" :label="t('Total in My Queue')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" :label="t('Total Absolute Value')" :value="number_format($this->statValue, 0, ',', '.')" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. dokumen / alasan…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search document no. / reason…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:tools>
-                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#eef1f5] text-[#4b5568]">{{ self::CATEGORY_LABELS[$category] }}</span>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#eef1f5] text-[#4b5568]">{{ t(self::CATEGORY_LABELS[$category]) }}</span>
                 </x-slot:tools>
             </x-grid.toolbar>
 
@@ -115,32 +115,32 @@ new #[Title('Persetujuan Adjustment & Opname — TELASIH MAKMUR ERP')] class ext
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Dokumen</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Jenis</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Diajukan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Posisi Approval</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Nilai Absolut</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Document') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Type') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ t('Submitted') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ t('Approval Position') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Absolute Value') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->rows as $r)
-                            <tr wire:key="adjq-{{ $r->doc->doc_id }}" wire:dblclick="openDoc({{ $r->doc->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                            <tr wire:key="adjq-{{ $r->doc->doc_id }}" wire:dblclick="openDoc({{ $r->doc->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                 <x-grid.identity-cell :id="$r->doc->doc_id" :name="$r->doc->doc_no" :code="$r->doc->reason_code ?: '—'" />
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->doc->doc_cat === 'OP' ? 'Opname' : 'Adjustment' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->doc->doc_cat === 'OP' ? t('Opname') : t('Adjustment') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->pending->acted_at?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-[10.5px]">{{ $r->pending->pending_label ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format((float) $r->pending->amount_snapshot, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fff5e0] text-[#8a5a00]">MENUNGGU</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fff5e0] text-[#8a5a00]">{{ mb_strtoupper(t('Waiting')) }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="openDoc({{ $r->doc->doc_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ t('Open') }}" action="openDoc({{ $r->doc->doc_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="7" message="Tidak ada dokumen menunggu approval Anda saat ini." />
+                            <x-grid.empty-row :colspan="7" message="{{ t('No documents awaiting your approval right now.') }}" />
                         @endforelse
                     </tbody>
                 </table>

@@ -304,7 +304,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                         @foreach ($this->pv->lines as $line)
                             <tr wire:key="pvline-{{ $line->pv_line_id }}" class="{{ $line->is_tol_exceeded && ! $line->tol_override_by ? 'bg-[#fff8ec]' : '' }}">
                                 <td class="px-2 py-2 text-muted">{{ $line->line_no }}</td>
-                                <td class="px-2 py-2 text-[10px] font-mono text-[#5b21b6]">{{ $line->c_po_doc_no }}<br>baris {{ $line->c_po_line_no }}</td>
+                                <td class="px-2 py-2 text-[10px] font-mono text-[#5b21b6]">{{ $line->c_po_doc_no }}<br>{{ t('line') }} {{ $line->c_po_line_no }}</td>
                                 <td class="px-2 py-2">
                                     <span class="font-mono text-[10px] text-muted">{{ $line->c_item_code }}</span><br>{{ $line->i_description }}
                                     @if ($line->is_tol_exceeded)
@@ -375,7 +375,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                     @if ($this->pv->status === 'DRAFT')
                         <button type="button" wire:click="delete" wire:confirm="{{ t('Delete this draft receipt?') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ t('Delete') }}</button>
                     @endif
-                    <button type="button" wire:click="post" @disabled(! empty($this->blockers)) wire:confirm="{{ t('POST to stock? The related PO will be recalculated.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md disabled:opacity-40">📦 POST</button>
+                    <button type="button" wire:click="post" @disabled(! empty($this->blockers)) wire:confirm="{{ t('POST to stock? The related PO will be recalculated.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md disabled:opacity-40">📦 {{ t('POST') }}</button>
                 </div>
             </div>
         @endif
