@@ -70,6 +70,86 @@ punya induk level-3 yang cocok di dump asli — bukan bug migrasi, data
 legacy memang begitu. Dibiarkan sebagai baris yatim yang inert (tak
 direferensikan `m_raw_material` manapun).
 
+## 5. PEDOMAN: Material Category = pembentuk KODE ITEM (user 2026-10-03, LOCKED)
+
+> User: *"Material category ini pembentuk KODE ITEM. IMPORTANT !!!!"* — disampaikan untuk ke-7 kalinya, dengan
+> acuan `docs/ddl/doc_rmprefix1.sql`. **Baca bagian ini sebelum menyentuh Material Category, Raw Material, kode item,
+> atau dropdown kategori di PR / PO.** Aturan singkatnya: `docs/globaluserrules.md` B.16.
+
+### 5.1 Sumber: `docs/ddl/doc_rmprefix1.sql`
+
+Dump `tmmst` (server TM 188). Lima tabel, **tiap baris membawa seluruh rantai di atasnya** (nama + prefix):
+
+| Tabel | Kolom nama | Kolom prefix | Unik | Baris |
+|---|---|---|---|---|
+| `doc_rmprefix1` | `category1` | `prefix1` (1 karakter) | `prefix1` | 18 |
+| `doc_rmprefix2` | `category1..2` | `prefix1..2` (1 karakter) | `prefix1+2` | 75 |
+| `doc_rmprefix3` | `category1..3` | `prefix1..3` (1 karakter) | `prefix1+2+3` | 103 |
+| `doc_rmprefix4` | `category1..4` | `prefix1..3` + `prefix4` (sampai 3) | tidak ada | 200 |
+| `doc_rmprefix5` | `category1..5` | `prefix1..4` + `prefix5` (sampai 3) | `prefix1..5` | 157 |
+
+Sekarang semuanya ada di satu tabel `tm2mst.mat_category` (bagian 2): `category_name` = nama, `prefix_char` = prefix,
+`parent_id` = baris tingkat di atasnya.
+
+### 5.2 Kode item = gabungan prefix
+
+`material_code` = `prefix1` + `prefix2` + `prefix3` + `prefix4` + `prefix5`, tanpa pemisah.
+
+| Rantai | Prefix | Kode item |
+|---|---|---|
+| Paper › Art carton › 210gr › 65 X 100 CM › GOLDEN | P · C · C · 02 · 002 | `PCC02002` |
+| Paper › Duplex › 250gr › 105 X 102 CM › DAYASA | P · D · A · 01 · 001 | `PDA01001` |
+| Paper › HVS › 58 GR › 65 x 100 CM › RAINBOW | P · 4 · 4 · 5 · 4 | `P4454` |
+| Ink › OFFSET › HN › AMBRI › AOK RED SAR | I · O · H · 3 · 1 | `IOH31` |
+
+Panjang kode tidak tetap (5 sampai 8 karakter) karena prefix 4 dan 5 boleh 1 sampai 3 karakter.
+
+### 5.3 Arti tiap tingkat berbeda per kategori
+
+| Category 1 | Category 2 | Category 3 | Category 4 | Category 5 |
+|---|---|---|---|---|
+| Paper (P) | jenis: Art carton, Duplex, Ivory, Kraft, HVS | gramatur: 210gr | ukuran lembar: 65 X 100 CM | merek: GOLDEN, DAYASA, IKA DP |
+| Sheet (S) | flute: SHBF, SHEF, SFEF, BCF, DF | substance: K150/M150/K200 | ukuran mm: 520 X 780 | (belum ada) |
+| Ink (I) | kelompok: OFFSET | seri: HN, DGM, RAPIDA, HAEMA | nama / nomor: AMBRI, 11077, IMPRESS | warna: CYAN, BLACK |
+| Glue (G) | OFFSET | PF | 7300 | (belum ada) |
+| CTP Plate (T) | BLANKET | CITO | ukuran: 0.5 X 1.2 | MATRIX |
+
+Karena itu label layar **Category 1 … Category 5**, bukan "gramatur / ukuran / merek".
+
+### 5.4 Layar: dropdown yang saling terkait
+
+Pilih Category 1 → Category 2 hanya berisi anak Category 1 itu → … → Category 5, dan kode item tersusun selagi memilih.
+Menambah entri di tingkat N = pilih dulu tingkat 1 sampai N-1 lewat dropdown, lalu isi nama + prefix tingkat N.
+Daftar rata dengan kolom Level + Parent (grid v2 `MatCategoryGrid`, 2026-10-02) **salah** dan harus diganti.
+
+### 5.5 Yang bukan acuan
+
+`tm2old` (ScriptCase V1) hanya punya 2 tingkat klasifikasi di `mst_item`: `mst_item_material_cat` (10 baris) →
+`mst_item_material_type` (25 baris). Itu **bukan** pembentuk kode (kode item V1 = nama item) dan tidak menggantikan
+rantai 5 tingkat.
+
+### 5.6 Keadaan kode item sekarang di `mat_raw` (dicek 2026-10-03 di `ddtmst`, 11.401 item)
+
+- Kode mengikuti rantai prefix lengkap: ±100 item (`PCC…`, `PDA…`, `PKA…`, `PRA…`, `PY…`, `IOH…`).
+- Kode sementara hasil impor, hanya punya Category 1: ±5.800 item berpola huruf + `Z` + 5 angka (`PZ00001`, `XZ00002`,
+  `IZ…`, `GZ…`, `TZ…`, `LZ…`). Hurufnya tidak selalu sama dengan prefix Category 1 (Others = `X` padahal prefix `O`,
+  Lamination = `L` padahal prefix `F`).
+- Kode = nama item lama, tanpa kategori: ±5.400 item.
+- `mat_raw.prefix5_id` belum pernah diisi.
+
+Merapikan kode item lama ke rantai 5 tingkat = keputusan user (data lama tidak 100% benar; tanya dulu).
+
+### 5.7 Kejanggalan di data asal (jangan diperbaiki diam-diam)
+
+- Nama dengan spasi di ujung: `BLANKET `, `CITO `, `60 GR `, `BUSA `.
+- Tingkat kembar beda tulisan di Ivory: `210gr` (G) dan `210 GR` (2); `230gr` (H) dan `230 GR` (3).
+- `doc_rmprefix2` id 26, 27: `category1` = `Chemical` (tidak ada di tingkat 1; yang ada `Chemical Liquid`, prefix `Q`).
+- `doc_rmprefix2` id 66 `BOTTCHER PRO AR`: `prefix2` kosong.
+- `doc_rmprefix4` id 107: nama `Duplex › 250gr › 104 X 66 CM` tetapi prefix `P·R·A·13` (= Art Papper › 85gr).
+- `doc_rmprefix4` id 158 `Ink › DGM › 11581 › ZETLA BROWN`: tidak punya induk tingkat 3.
+- `doc_rmprefix5` Kraft: `category5` kosong tetapi `prefix5` terisi (merek belum diketahui, nomor sudah dipakai).
+- Dua baris `R3` di bawah Plastik (prefix `3` dan `4`).
+
 ## 4. Kalau mau tambah kategori baru
 
 Lewat layar **Master Kategori Bahan Baku** (`/master/mat-category`), bukan

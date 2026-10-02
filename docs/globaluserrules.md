@@ -308,6 +308,23 @@
       Angkanya contoh, bukan hasil kerja petugas.
     - Draft yang tidak bisa menempuh alur (tanpa customer, part tanpa ukuran bentangan, tanpa pilihan qty) tidak ikut set
       stage; tetap ada di set `mixed`. Build memakan ±10 menit dan dijalankan lewat perintah, bukan tombol.
+16. **[LOCKED 2026-10-03, sudah disampaikan user 7 kali — JANGAN ditanyakan lagi] Material Category = PEMBENTUK KODE
+    ITEM.** Kata user: *"Material category ini pembentuk KODE ITEM. IMPORTANT !!!!"*. Acuan yang wajib dipahami:
+    `docs/ddl/doc_rmprefix1.sql` (5 tabel `doc_rmprefix1..5`), sekarang satu tabel `mat_category` (level 1–5).
+    - **Rantai 5 tingkat:** Category 1 → Category 2 → Category 3 → Category 4 → Category 5. Setiap tingkat punya nama
+      **dan** kode prefix. **Kode item = prefix1 + prefix2 + prefix3 + prefix4 + prefix5** (prefix 1–3 satu karakter,
+      prefix 4–5 sampai tiga karakter). Contoh nyata: Paper › Art carton › 210gr › 65 X 100 CM › GOLDEN =
+      `P`+`C`+`C`+`02`+`002` = **`PCC02002`**; Ink › OFFSET › HN › AMBRI › AOK RED SAR = **`IOH31`**.
+    - **Layar = dropdown yang saling terkait** (seperti yang lama): pilih Category 1, lalu Category 2 hanya berisi anak
+      Category 1 itu, dan seterusnya sampai Category 5; kode item tersusun dan tampil selagi memilih. Daftar rata dengan
+      kolom Level + Parent **salah**. Berlaku di master Material Category, form Raw Material, dan PR.
+    - **Arti tiap tingkat berbeda per kategori** — jangan diberi label tetap "gramatur / ukuran / merek". Paper: jenis ›
+      gramatur › ukuran lembar › merek. Sheet: flute (SHBF, SHEF, SFEF, BCF, DF) › substance (K150/M150/K200) › ukuran.
+      Ink: kelompok (OFFSET) › seri (HN, DGM, RAPIDA, HAEMA) › nama / nomor › warna. Label layar = Category 1 … Category 5.
+    - Satu baris kategori adalah sumber NAMA dan sumber KODE sekaligus — tidak boleh dipecah.
+    - Kategori dan Type 2 tingkat di `tm2old` (`mst_item_material_cat` / `mst_item_material_type`) adalah klasifikasi
+      sistem ScriptCase lama dan **bukan** pembentuk kode; jangan dipakai untuk menggantikan rantai 5 tingkat.
+    - Rinci (struktur tabel, kejanggalan data, pola kode yang ada sekarang): `md_for_systems/matcategory_delta.md` §5.
 
 ## C. Tampilan (UI/UX)
 
@@ -692,3 +709,4 @@
 | 2026-10-02 | **A.23: laporan stok dan gudang** — set lengkap mengacu ERP populer (SAP, Odoo, Dynamics 365, Zahir, Accurate, Oracle NetSuite, ERPNext): Stock Card, Stock Recapitulation, Stock Summary, Stock Opname, Stock Loss & Gain (per bulan), Stock in Inspection, Stock by Location terkelompok per gedung; selisih stok masuk lewat stock opname. Grid Report mendapat periode (Period + Show) dan cetakan `x-dl::report`. Dibangun di ddt; review: `md_for_systems/inventoryreport_review.md`. |
 | 2026-10-03 | **A.24: kartu stok** — dokumen bertanggal mundur disisipkan dan baris sesudahnya dihitung ulang (pilihan (a) user); dokumen bertanggal di periode inventory tertutup ditolak, koreksi lewat Stock Adjustment; belum Confirm boleh dibetulkan, sudah Confirm dikoreksi lewat adjustment; dummy kartu stok yang salah dihapus dan dibangun ulang. Kode sama untuk mockup.test dan tmerp.test. Belum diputuskan: jurnal koreksi untuk baris Stock Out yang harganya berubah (sekarang peringatan). |
 | 2026-10-03 | A.23: laporan stok semua kelas dipasang juga di tmerp.test (menu, Help, kamus); tiap laporan diperiksa tersambung ke tabel di kedua database; sidebar menu lama menampilkan grup di dalam grup sebagai grup sendiri ("Warehouse › Report"). Data dummy laporan (`UatStockReportSeeder`) hanya di mockup.test, tanpa dokumen di periode akuntansi tertutup. |
+| 2026-10-03 | **B.16: Material Category = pembentuk KODE ITEM** (user: "Material category ini pembentuk KODE ITEM. IMPORTANT !!!!", disampaikan untuk ke-7 kalinya; acuan `docs/ddl/doc_rmprefix1.sql`). Rantai 5 tingkat, kode item = gabungan prefix tiap tingkat (`PCC02002`), layar = dropdown yang saling terkait seperti yang lama; daftar rata Level + Parent di v2 salah. Arti tiap tingkat berbeda per kategori, label layar Category 1 … 5. Rinci: `md_for_systems/matcategory_delta.md` §5. |
