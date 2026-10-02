@@ -398,25 +398,30 @@ PrintDoc.register(class PettyCash extends PrintDoc {
 // ===== Tahap 3 (user 2026-10-02: "yang belum didesain saja"). Dokumen transaksional yang belum punya cetakan sama sekali.
 // Isi mengikuti field layar / tabel aplikasi; belum ada form kertas acuan. Menunggu review user; belum A. =====
 
-// Gudang (Bahan Baku / Barang Jadi / Setengah Jadi memakai format yang sama; Kategori di blok atas). Tanpa harga.
-// Nama dokumen barang masuk = SPB, Surat Penerimaan Barang (user 2026-10-02).
-PrintDoc.register(class StockIn extends PrintDoc {
-    static title = 'SURAT PENERIMAAN BARANG';
-    static subtitle = 'SPB &middot; Stock In';
+// Barang masuk TIDAK punya cetakan sendiri (user 2026-10-02): yang diterima = yang masuk gudang, cukup satu dokumen, yaitu
+// SPB (kelas GoodsReceipt). Yang diperlukan adalah QC Inspection untuk barang yang masuk.
+PrintDoc.register(class QcInspection extends PrintDoc {
+    static title = 'QC INSPECTION';
+    static subtitle = 'Pemeriksaan Barang Masuk &middot; Internal';
     static numberLabel = 'No SPB';
     static refs = [
-        {key: 'category', label: 'Kategori'},
+        {key: 'po_no', label: 'No PO'},
+        {key: 'supplier_dn', label: 'No SJ Pengirim'},
         {key: 'warehouse', label: 'Gudang'},
-        {key: 'source', label: 'Sumber'},
-        {key: 'ref_no', label: 'Referensi'},
+        {key: 'checked_at', label: 'Waktu Periksa'},
+        {key: 'decision', label: 'Keputusan'},
     ];
-    static partyLabel = 'Diterima dari';
-    static nb = '<b>NB:</b>&nbsp;JUMLAH = jumlah yang masuk stok. Dokumen gudang, tanpa harga.';
-    static extra = [{key: 'code', label: 'KODE', width: 20}, {key: 'lot_no', label: 'LOT / ROLL', width: 22}, {key: 'location', label: 'LOKASI', width: 18}, {key: 'remark', label: 'KETERANGAN', width: 24}];
-    static receivers = [['Penyerah', 'Pengirim / Produksi']];
+    static partyLabel = 'Supplier';
+    static side = {key: 'contact', label: 'Telp / UP'};
+    static nb = '<b>NB:</b>&nbsp;JUMLAH = jumlah datang. Barang DITOLAK tidak masuk stok dan dikembalikan lewat Retur Pembelian.';
+    static extra = [{key: 'qty_check', label: 'CEK JML', width: 14}, {key: 'quality', label: 'MUTU', width: 15}, {key: 'accepted', label: 'DITERIMA', width: 17, type: 'money'},
+        {key: 'rejected', label: 'DITOLAK', width: 16, type: 'money'}, {key: 'qc_note', label: 'CATATAN QC', width: 22, wrap: true}];
+    static internalLabels = ['Gudang', 'Purchasing', 'QC'];
+    static internal = ['Mengetahui', 'Menyetujui', 'Pemeriksa'];
 });
 
-PrintDoc.register(class StockOut extends PrintDoc.registry.StockIn {
+// Gudang (Bahan Baku / Barang Jadi / Setengah Jadi memakai format yang sama; Kategori di blok atas). Tanpa harga.
+PrintDoc.register(class StockOut extends PrintDoc {
     static title = 'BUKTI BARANG KELUAR';
     static subtitle = 'Stock Out &middot; Internal';
     static numberLabel = 'No Dokumen';
@@ -429,13 +434,13 @@ PrintDoc.register(class StockOut extends PrintDoc.registry.StockIn {
     ];
     static partyLabel = 'Diserahkan ke';
     static nb = '<b>NB:</b>&nbsp;JUMLAH = jumlah yang keluar dari stok. Sisa pemakaian dikembalikan lewat Retur dari Produksi.';
+    static extra = [{key: 'code', label: 'KODE', width: 20}, {key: 'lot_no', label: 'LOT / ROLL', width: 22}, {key: 'location', label: 'LOKASI', width: 18}, {key: 'remark', label: 'KETERANGAN', width: 24}];
     static receivers = [['Penerima', 'Produksi']];
 });
 
-PrintDoc.register(class StockReturn extends PrintDoc.registry.StockIn {
+PrintDoc.register(class StockReturn extends PrintDoc.registry.StockOut {
     static title = 'RETUR DARI PRODUKSI';
     static subtitle = 'Return from Production &middot; Internal';
-    static numberLabel = 'No Dokumen';
     static refs = [
         {key: 'category', label: 'Kategori'},
         {key: 'warehouse', label: 'Gudang'},
@@ -534,7 +539,7 @@ PrintDoc.register(class JournalVoucher extends PrintDoc {
 // Tanda terima tagihan supplier (tukar faktur). Koreksi user 2026-10-02: yang dicetak bukan "Tagihan Supplier" melainkan
 // tanda terimanya. Satu baris = satu invoice supplier yang diserahkan; lembar ini dibawa pulang supplier sebagai bukti.
 PrintDoc.register(class SupplierInvoiceReceipt extends PrintDoc {
-    static title = 'TANDA TERIMA TAGIHAN';
+    static title = 'TANDA TERIMA TAGIHAN SUPPLIER';   // huruf judul dikecilkan di printdoc.css supaya muat di samping kop PPN
     static subtitle = 'Supplier Invoice Receipt';
     static numberLabel = 'No Tanda Terima';
     static refs = [

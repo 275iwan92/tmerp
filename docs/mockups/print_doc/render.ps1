@@ -23,7 +23,7 @@ $jobs = @(
     @('quotation_a5', 'Quotation', '', 1210), @('delivery_order_a5', 'DeliveryOrder', '', 1210), @('proof_of_delivery_a5', 'ProofOfDelivery', '', 1210),
     @('purchase_quotation_a5', 'PurchaseQuotation', '', 1210), @('goods_receipt_a5', 'GoodsReceipt', '', 1210), @('material_booking_a5', 'MaterialBooking', '', 1210),
     @('maintenance_request_a5', 'MaintenanceRequest', '', 1210), @('maintenance_wo_a5', 'MaintenanceWorkOrder', '', 1210), @('petty_cash_a5', 'PettyCash', '', 1210),
-    @('stock_in_a5', 'StockIn', '', 1210), @('stock_out_a5', 'StockOut', '', 1210), @('stock_return_a5', 'StockReturn', '', 1210), @('stock_adjustment_a5', 'StockAdjustment', '', 1210),
+    @('qc_inspection_a5', 'QcInspection', '', 1210), @('stock_out_a5', 'StockOut', '', 1210), @('stock_return_a5', 'StockReturn', '', 1210), @('stock_adjustment_a5', 'StockAdjustment', '', 1210),
     @('purchase_return_a5', 'PurchaseReturn', '', 1210), @('work_order_a5', 'WorkOrder', '', 1210), @('journal_voucher_a5', 'JournalVoucher', '', 1210),
     @('supplier_invoice_receipt_a5', 'SupplierInvoiceReceipt', '', 1210), @('down_payment_a5', 'DownPaymentInvoice', '', 1210), @('down_payment_receipt_a5', 'DownPaymentReceipt', '', 1210), @('leave_request_a5', 'LeaveRequest', '', 1210),
     @('manpower_requisition_a5', 'ManpowerRequisition', '', 1210))

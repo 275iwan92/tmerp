@@ -240,11 +240,11 @@ Object.assign(SAMPLES, {
 // ===== Tahap 3: data contoh (angka dan nama adalah contoh) =====
 const MJU = {name: 'PT MAKMUR JAYA USAHA', lines: ['Surabaya']}, MJU_UP = 'Bp. Anton (Sales)';
 Object.assign(SAMPLES, {
-    StockIn: {
-        data: {...PRINTED, number: 'SPB2600031', date: '2026-10-08', status: 'POSTED', category: 'Bahan Baku', warehouse: 'GD-BB · Gudang Bahan Baku', source: 'Pembelian', ref_no: 'PO26000001976',
-            createdBy: 'Yuna', party: MJU,
-            rows: [{name: 'DC 310 IKA DA GR 79 x 109 CM', qty: 22, unit: 'RIM', code: 'PZ00083', lot_no: 'R8-2610', location: 'A-01-02'},
-                {name: 'IVORY 300 79 X 109', qty: 40, unit: 'RIM', code: 'PYJ31', lot_no: 'R8-2611', location: 'A-01-03'}]},
+    QcInspection: {
+        data: {...PRINTED, number: 'SPB2600031', date: '2026-10-08', status: 'QC DONE', po_no: 'PO26000001976', supplier_dn: 'SJ-MJU-0871', warehouse: 'GD-BB · Gudang Bahan Baku', checked_at: '08-Okt-2026 10:40',
+            decision: 'Diterima sebagian', contact: MJU_UP, createdBy: 'Yuna', party: MJU,
+            rows: [{name: 'DC 310 IKA DA GR 79 x 109 CM', sub: 'Lot R8-2610', qty: 22, unit: 'RIM', qty_check: 'OK', quality: 'Sebagian', accepted: 21, rejected: 1, qc_note: 'Sobek di sisi luar'},
+                {name: 'IVORY 300 79 X 109', sub: 'Lot R8-2611', qty: 40, unit: 'RIM', qty_check: 'OK', quality: 'Lulus', accepted: 40, rejected: 0}]},
         more: [],
     },
     StockOut: {
