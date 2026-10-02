@@ -6,6 +6,7 @@ use App\Models\Master\WhZone;
 use App\Services\Inventory\BinGenerator;
 use App\Services\Inventory\PalletService;
 use App\Support\V2\Data\Labels;
+use App\Support\V2\Data\Pallets;
 use App\Support\V2\Data\StockTransfer;
 use Devlib\Locale;
 use Illuminate\Http\Request;
@@ -157,38 +158,64 @@ Route::prefix('v2/warehouse')->name('v2.wh.')->middleware('module:INV')->group(f
     Route::post('/pallet/create', function (Request $r) use ($sheet, $login) {
         $d = $r->validate(['position' => ['required', 'string', 'max:60'], 'lines' => ['required', 'array', 'min:1', 'max:60'], 'arrived_at' => ['nullable', 'date', 'before_or_equal:today'],
             'ref_doc_no' => ['nullable', 'string', 'max:50'], 'notes' => ['nullable', 'string', 'max:255'], 'size' => ['required', 'in:sm,md,lg'], 'paper' => ['nullable', 'in:roll,a4'],
-            'rid' => ['nullable', 'integer'], 'back' => ['nullable', 'string', 'max:40']], [], ['position' => 'Stock', 'lines' => 'Pallets', 'arrived_at' => 'Arrival date']);
+            'rid' => ['nullable', 'integer'], 'back' => ['nullable', 'string', 'max:40'], 'unit_kind' => ['nullable', 'in:PALLET,PACK']], [], ['position' => 'Stock', 'lines' => 'Pallets', 'arrived_at' => 'Arrival date']);
         $remove = (array) $r->input('remove', []);
         $rows = collect($d['lines'])->reject(fn ($row, $k) => isset($remove[$k]))->map(fn ($row) => ['qty' => (float) (Locale::input($row['qty'] ?? 0) ?? 0),
             'supplier_pallet_code' => $row['supplier_pallet_code'] ?? null, 'lot_no' => $row['lot_no'] ?? null, 'expiry_date' => $row['expiry_date'] ?? null])->values()->all();
         try {
-            $pallets = PalletService::create($d['position'], $rows, ['arrived_at' => $d['arrived_at'] ?? null, 'ref_doc_no' => $d['ref_doc_no'] ?? null, 'notes' => $d['notes'] ?? null], $login());
+            $pallets = PalletService::create($d['position'], $rows, ['arrived_at' => $d['arrived_at'] ?? null, 'ref_doc_no' => $d['ref_doc_no'] ?? null, 'notes' => $d['notes'] ?? null, 'unit_kind' => $d['unit_kind'] ?? null], $login());
         } catch (RuntimeException $e) {
             return back()->withErrors(['pallet' => $e->getMessage()])->withInput();
         }
         $keys = $pallets->pluck('id_pallet')->map(fn ($id) => (string) $id)->all();
         Labels::log('pallet', $keys, 1, $d['size']);
 
-        return $sheet('pallet', $keys, $d['size'], 1, $d['paper'] ?? 'a4', $d['back'] ?? 'label-pallet', isset($d['rid']) ? (int) $d['rid'] : null);
+        // Pak sisa memakai label kecil (100 x 50 mm), bukan label palet.
+        $size = $d['size'] === 'lg' && $pallets->every(fn (InvPallet $p) => $p->isPack()) ? 'md' : $d['size'];
+
+        return $sheet('pallet', $keys, $size, 1, $d['paper'] ?? 'a4', $d['back'] ?? 'label-pallet', isset($d['rid']) ? (int) $d['rid'] : null);
     })->name('pallet.create');
 
-    // Label ulang: qty sisa menggantikan qty lama (0 = palet ditutup, tanpa label).
+    // Label ulang: qty sisa menggantikan qty lama (0 = palet ditutup, tanpa label). Sisa (user 2026-10-03): di bawah batas
+    // sisa satuan itu menjadi pak; bila sisa ditaruh di tumpukan lain (to_location_id), Stock Transfer dibuat dan di-Confirm
+    // (bin berubah = harus lewat dokumen), dan pak itu menjadi paling atas di bin tujuan.
     Route::post('/pallet/relabel', function (Request $r) use ($sheet, $login) {
         $d = $r->validate(['pallet_id' => ['required', 'integer'], 'remaining' => ['required'], 'note' => ['nullable', 'string', 'max:255'], 'size' => ['nullable', 'in:sm,md,lg'],
-            'paper' => ['nullable', 'in:roll,a4']], [], ['pallet_id' => 'Pallet', 'remaining' => 'Remaining quantity']);
+            'paper' => ['nullable', 'in:roll,a4'], 'unit_kind' => ['nullable', 'in:PALLET,PACK'], 'to_location_id' => ['nullable', 'integer']], [], ['pallet_id' => 'Pallet', 'remaining' => 'Remaining quantity']);
         $pallet = InvPallet::query()->findOrFail((int) $d['pallet_id']);
         try {
-            PalletService::relabel($pallet, (float) (Locale::input($d['remaining']) ?? -1), $login(), $d['note'] ?? null);
+            PalletService::relabel($pallet, (float) (Locale::input($d['remaining']) ?? -1), $login(), $d['note'] ?? null, $d['unit_kind'] ?? null);
         } catch (RuntimeException $e) {
             return back()->withErrors(['pallet' => $e->getMessage()])->withInput();
         }
         if (! $pallet->isActive()) {
             return back()->with('v2_flash', str_replace(':no', $pallet->pallet_no, t('Pallet :no is empty and closed.')));
         }
-        Labels::log('pallet', [(string) $pallet->id_pallet], 1, $d['size'] ?? 'lg');
+        $moved = null;
+        $to = (int) ($d['to_location_id'] ?? 0);
+        if ($to && $to !== (int) $pallet->location_id) {
+            $moved = Pallets::moveTo($pallet, WhLoc::query()->findOrFail($to));
+            $pallet->refresh();
+        }
+        $size = $pallet->isPack() && ($d['size'] ?? 'lg') === 'lg' ? 'md' : ($d['size'] ?? 'lg');
+        Labels::log('pallet', [(string) $pallet->id_pallet], 1, $size);
+        $response = $sheet('pallet', [(string) $pallet->id_pallet], $size, 1, $d['paper'] ?? 'a4', 'label-pallet');
 
-        return $sheet('pallet', [(string) $pallet->id_pallet], $d['size'] ?? 'lg', 1, $d['paper'] ?? 'a4', 'label-pallet');
+        return $moved ? $response->with($moved['ok'] ? 'v2_flash' : 'v2_error', $moved['message']) : $response;
     })->name('pallet.relabel');
+
+    // Tukar urutan tumpukan (naik / turun satu) dari panel bin di peta: tanpa dokumen stok, bin dan jumlah tidak berubah.
+    Route::post('/pallet/{id}/restack/{dir}', function (int $id, string $dir) use ($map, $login) {
+        $pallet = InvPallet::query()->findOrFail($id);
+        try {
+            PalletService::restack($pallet, $dir, $login());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+        $bin = WhLoc::query()->with('zone')->find($pallet->location_id);
+
+        return response()->json(['redirect' => $map($bin?->warehouse_id, ['floor' => $bin?->zone?->floor_no, 'bin' => $pallet->location_id])]);
+    })->whereNumber('id')->whereIn('dir', ['up', 'down'])->name('pallet.restack');
 
     Route::post('/pallet/{id}/transfer', function (int $id) use ($open) {
         $pallet = InvPallet::query()->where('status', 'ACTIVE')->findOrFail($id);

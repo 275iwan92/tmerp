@@ -29,7 +29,7 @@ class WhZone extends Model
 
     protected $guarded = ['id_zone'];
 
-    protected $casts = ['activate' => 'boolean', 'floor_no' => 'integer', 'map_x' => 'float', 'map_y' => 'float', 'map_w' => 'float', 'map_h' => 'float', 'stack_height_m' => 'float'];
+    protected $casts = ['activate' => 'boolean', 'floor_no' => 'integer', 'map_x' => 'float', 'map_y' => 'float', 'map_w' => 'float', 'map_h' => 'float', 'stack_height_m' => 'float', 'max_stack' => 'integer'];
 
     public function areaM2(): float
     {

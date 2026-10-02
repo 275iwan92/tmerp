@@ -171,6 +171,34 @@ final class WarehouseStock
         return strtoupper($uom) === 'RIM' ? $qty * 500 : $qty;
     }
 
+    // Jumlah lembar bila satuannya memang lembaran (LBR / SHEET / RIM); null = satuan lain (kg, pcs, ...), tidak bisa dinilai sebagai sisa rim.
+    public static function sheetCount(float $qty, string $uom): ?float
+    {
+        $uom = strtoupper(trim($uom));
+
+        return in_array($uom, ['RIM', 'REAM'], true) ? $qty * 500 : (in_array($uom, ['LBR', 'LEMBAR', 'SHEET', 'SHEETS', 'SHT'], true) ? $qty : null);
+    }
+
+    // Batas sisa (lembar): satuan berlabel berisi lembaran sebanyak ini atau kurang = sisa (user 2026-10-03: "tersisa 1 atau 2 rim").
+    public static function remnantSheets(): float
+    {
+        return max(0.0, SysConstant::number('WH_REMNANT_MAX_SHEETS', 1000));
+    }
+
+    // Perkiraan tinggi satu satuan di tumpukan (m): lembar x tebal, + palet kayu bila satuannya palet. null = tidak bisa diperkirakan.
+    public static function unitHeightM(float $qty, string $uom, ?MatRaw $material, string $name, bool $onPallet): ?float
+    {
+        $s = self::sheet($material, $name);
+        if (! $s) {
+            return null;
+        }
+        // Lembaran yang stoknya dalam kg: jumlah lembar dari berat.
+        $sheets = in_array(strtoupper($uom), ['KG', 'KGS', 'KILOGRAM'], true) ? $qty * 10000000 / ($s[0] * $s[1] * $s[2]) : self::sheets($qty, $uom);
+        $thicknessMm = (float) ($material?->mm_thickness ?? 0) ?: $s[0] * max(0.5, SysConstant::number('WH_PAPER_BULK_CM3_PER_G', 1.3)) / 1000;
+
+        return round($sheets * $thicknessMm / 1000 + ($onPallet ? max(0.0, SysConstant::number('WH_PALLET_BASE_CM', 15)) / 100 : 0), 3);
+    }
+
     // Perkiraan berat satu posisi (kg); null = tidak bisa diperkirakan (kapasitas bin itu hanya dihitung dari yang diketahui).
     public static function weightKg(float $qty, string $uom, ?MatRaw $material, string $name): ?float
     {
@@ -210,7 +238,7 @@ final class WarehouseStock
         foreach ($bins as $b) {
             $zone = $zones->get($b->zone_id);
             if (! $zone) {
-                $out[$b->location_id] = ['area_m2' => null, 'height_m' => null, 'volume_m3' => null];
+                $out[$b->location_id] = ['area_m2' => null, 'height_m' => null, 'volume_m3' => null, 'max_stack' => null];
 
                 continue;
             }
@@ -220,7 +248,62 @@ final class WarehouseStock
             $area = round($zone->areaM2() / $positions, 2);
             $height = $zone->stack_height_m ?: $buildings->get($zone->warehouse_id)?->floorHeight($zone->floor_no);
             $binHeight = $height ? round($height / $levels, 2) : null;
-            $out[$b->location_id] = ['area_m2' => $area, 'height_m' => $binHeight, 'volume_m3' => $binHeight ? round($area * $binHeight, 2) : null];
+            $out[$b->location_id] = ['area_m2' => $area, 'height_m' => $binHeight, 'volume_m3' => $binHeight ? round($area * $binHeight, 2) : null,
+                'max_stack' => $zone->storage_mode === 'FLOOR' ? ((int) $zone->max_stack ?: null) : null];
+        }
+
+        return $out;
+    }
+
+    // Tumpukan tiap bin (user 2026-10-03: "selain posisi X dan Y juga ada stack"; "tumpukan tidak jelas, butuh di monitor"):
+    // satuan berlabel (palet / pak) urut dari ATAS ke bawah, nomor 1 = paling bawah. Tanda tiap satuan:
+    //   remnant = pak (sisa rim / dus / kaleng lepas); old = sisa yang tibanya lebih lama dari batas dead stock;
+    //   buried  = satuan yang harus dipakai lebih dulu untuk item itu (sisa dulu, lalu kedaluwarsa paling awal, lalu tiba
+    //             paling lama -- dibanding SEMUA satuan aktif item itu di bin mana pun) dan ada PALET LAIN di atasnya.
+    //             Palet kembarannya (item, tanggal tiba dan kedaluwarsa sama) di atasnya tidak dihitung: sama saja mana yang dipakai.
+    /** @param  Collection<int, Collection<int, InvPallet>>  $pallets  palet aktif per location_id
+     *  @return array<int, list<array<string, mixed>>> kunci = location_id */
+    public static function stacks(Collection $pallets): array
+    {
+        $all = $pallets->flatten(1);
+        if ($all->isEmpty()) {
+            return [];
+        }
+        $itemKey = fn (InvPallet $p) => $p->stock_class.':'.$p->item_id.':'.(int) $p->part_id;
+        $order = fn (InvPallet $p) => [$p->unit_kind === 'PACK' ? 0 : 1, $p->expiry_date?->toDateString() ?? '9999-12-31', $p->arrived_at?->toDateString() ?? '9999-12-31', (int) $p->id_pallet];
+        // Satuan "pakai dulu" per item: dibanding semua satuan aktif item itu, bukan hanya yang di bin-bin ini.
+        $first = [];
+        $rivals = InvPallet::query()->where('status', 'ACTIVE')->whereIn('item_id', $all->pluck('item_id')->unique()->all())->get();
+        foreach ($rivals as $p) {
+            $k = $itemKey($p);
+            if (! isset($first[$k]) || $order($p) < $order($first[$k])) {
+                $first[$k] = $p;
+            }
+        }
+        $materials = MatRaw::withoutGlobalScopes()->whereKey($all->where('stock_class', 'RM')->pluck('item_id')->unique()->all())
+            ->get(['material_id', 'category1', 'gram_weight', 'cm_length', 'cm_width', 'mm_thickness'])->keyBy('material_id');
+        $cutoff = now()->subMonths(self::deadMonths())->toDateString();
+        $soon = self::expirySoonDays();
+        $out = [];
+        foreach ($pallets as $locationId => $group) {
+            // Tanpa nomor (data lama) = dianggap di atas yang bernomor, urut tiba.
+            $units = $group->sortBy(fn (InvPallet $p) => [$p->stack_no === null ? 1 : 0, (int) $p->stack_no, $p->arrived_at?->toDateString() ?? '', (int) $p->id_pallet])->values();
+            $n = $units->count();
+            $rows = [];
+            foreach ($units as $i => $p) {
+                $above = $units->slice($i + 1);
+                $arrived = $p->arrived_at?->toDateString();
+                $pack = $p->unit_kind === 'PACK';
+                $rows[] = ['id' => (int) $p->id_pallet, 'no' => $i + 1, 'of' => $n, 'kind' => $pack ? 'PACK' : 'PALLET', 'pallet_no' => $p->pallet_no, 'key' => $p->positionKey(),
+                    'code' => $p->item_code, 'name' => $p->item_name, 'qty' => (float) $p->qty, 'uom' => (string) $p->uom_code, 'lot' => $p->lot_no, 'arrived' => $arrived,
+                    'age_days' => $arrived ? (int) now()->startOfDay()->diffInDays($arrived, true) : null, 'expiry' => $p->expiry_date?->toDateString(), 'expiry_state' => $p->expiryState($soon),
+                    'remnant' => $pack, 'old' => $pack && $arrived !== null && $arrived < $cutoff,
+                    'buried' => ($first[$itemKey($p)]->id_pallet ?? null) === $p->id_pallet
+                        && $above->contains(fn (InvPallet $x) => $x->unit_kind !== 'PACK' && ! ($itemKey($x) === $itemKey($p) && array_slice($order($x), 0, 3) === array_slice($order($p), 0, 3)))
+                        ? $above->count() : 0,
+                    'height_m' => $p->stock_class === 'RM' ? self::unitHeightM((float) $p->qty, (string) $p->uom_code, $materials->get($p->item_id), (string) $p->item_name, ! $pack) : null];
+            }
+            $out[$locationId] = array_reverse($rows);
         }
 
         return $out;
@@ -237,9 +320,11 @@ final class WarehouseStock
         $pallets = InvPallet::query()->where('status', 'ACTIVE')->whereIn('location_id', $ids ?: [0])->get()->groupBy('location_id');
         $soon = self::expirySoonDays();
         $full = self::fullPct();
+        $stacks = self::stacks($pallets);
         $out = [];
         foreach ($bins as $bin) {
             $binPallets = $pallets->get($bin->location_id, collect());
+            $stack = $stacks[$bin->location_id] ?? [];
             $items = $positions->get($bin->location_id, collect())->sortBy('code')->values()->map(function (array $i) use ($binPallets, $soon) {
                 $mine = $binPallets->filter(fn (InvPallet $p) => $p->positionKey() === $i['key']);
                 $expiry = $mine->pluck('expiry_date')->filter()->min();
@@ -256,11 +341,21 @@ final class WarehouseStock
             $pctM3 = $g['volume_m3'] > 0 ? round($usedM3 / $g['volume_m3'] * 100, 1) : null;
             $pct = max($pctKg ?? -1, $pctM3 ?? -1);
             $pct = $pct < 0 ? null : $pct;
+            $units = collect($stack);
+            $palletCount = $units->where('kind', 'PALLET')->count();
+            $stackHeight = round((float) $units->whereNotNull('height_m')->sum('height_m'), 2);
             $out[$bin->location_id] = [
+                'stack' => $stack, 'unit_count' => $units->count(), 'pack_count' => $units->count() - $palletCount,
+                'stack_height_m' => $stackHeight, 'stack_unknown' => $units->whereNull('height_m')->count(),
+                'stack_pct' => $g['height_m'] > 0 && $stackHeight > 0 ? round($stackHeight / $g['height_m'] * 100, 1) : null,
+                'max_stack' => $g['max_stack'], 'over_stack' => $g['max_stack'] !== null && $palletCount > $g['max_stack'],
+                'remnant' => $units->contains('remnant', true), 'old_remnant' => $units->contains('old', true), 'buried' => $units->contains(fn (array $u) => $u['buried'] > 0),
+                // Stok di bin yang belum ada di label: letaknya dalam tumpukan belum diketahui.
+                'unrecorded' => $items->contains(fn (array $i) => $i['qty'] - $i['pallet_qty'] > 0.00005),
                 'items' => $items->all(), 'used_kg' => $usedKg, 'capacity_kg' => $capKg, 'pct_kg' => $pctKg,
                 'used_m3' => $usedM3, 'capacity_m3' => $g['volume_m3'], 'pct_m3' => $pctM3, 'area_m2' => $g['area_m2'], 'height_m' => $g['height_m'],
                 'pct' => $pct, 'unknown_weight' => $items->whereNull('weight_kg')->count(), 'unknown_volume' => $items->whereNull('volume_m3')->count(),
-                'dead' => $items->contains('dead', true), 'pallet_count' => $binPallets->count(),
+                'dead' => $items->contains('dead', true), 'pallet_count' => $palletCount,
                 'expiry_state' => $items->contains('expiry_state', 'EXPIRED') ? 'EXPIRED' : ($items->contains('expiry_state', 'SOON') ? 'SOON' : null),
                 'status' => match (true) {
                     ! $bin->is_usable => 'BLOCKED',

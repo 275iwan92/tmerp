@@ -5,6 +5,7 @@ namespace App\Support\V2\Data;
 use App\Models\Master\WhLoc;
 use App\Models\Master\WhWarehouse;
 use App\Models\Master\WhZone;
+use App\Services\Inventory\PalletService;
 use App\Services\Inventory\WarehouseStock;
 use Devlib\Locale;
 use Illuminate\Support\Collection;
@@ -147,10 +148,30 @@ final class Warehouse
             $s['capacity_kg'] || $s['used_kg'] > 0 ? ['label' => t('Weight'), 'value' => self::capacityText($s['used_kg'], $s['capacity_kg']), 'pct' => $s['pct_kg']] : null,
             $s['capacity_m3'] ? ['label' => t('Volume'), 'value' => self::volumeText($s['used_m3'], $s['capacity_m3']), 'pct' => $s['pct_m3']] : null,
             $size ? ['label' => t('Floor area × height'), 'value' => $size, 'pct' => null] : null,
-            $b->capacity_pallet || $s['pallet_count'] ? ['label' => t('Pallets'), 'value' => $s['pallet_count'].($b->capacity_pallet ? ' / '.$b->capacity_pallet : ''), 'pct' => null] : null,
+            $s['unit_count'] ? ['label' => t('Stack'), 'value' => self::stackText($s), 'pct' => null] : null,
+            $s['stack_height_m'] > 0 ? ['label' => t('Stack height'), 'value' => Locale::decimal($s['stack_height_m'], 2).($s['height_m'] ? ' / '.Locale::decimal($s['height_m'], 2) : '').' m', 'pct' => $s['stack_pct']] : null,
         ]));
+        $buried = collect($s['stack'])->max('buried');
+        $notes = array_merge($notes, array_filter([
+            $buried ? str_replace(':n', (string) $buried, t('The unit that should be used first is under :n other unit(s). Move those first.')) : null,
+            $s['over_stack'] ? str_replace([':n', ':max'], [(string) $s['pallet_count'], (string) $s['max_stack']], t(':n pallets are stacked here; this area allows :max.')) : null,
+            $s['unrecorded'] && $s['unit_count'] ? t('Some stock in this bin has no label yet, so its place in the stack is not known.') : null,
+        ]));
+        $deadKeys = collect($s['items'])->where('dead', true)->pluck('key')->flip();
 
         return [
+            'count' => $s['unit_count'], 'remnant' => $s['remnant'], 'buried' => $s['buried'],
+            'stack' => array_map(fn (array $u) => ['id' => $u['id'], 'no' => $u['no'], 'kind' => strtolower($u['kind']), 'name' => $u['name'],
+                'sub' => implode(' · ', array_filter([$u['kind'] === 'PALLET' ? $u['pallet_no'] : null, Locale::decimal($u['qty'], 2).' '.$u['uom'], $u['arrived'] ? t('Arrived').' '.Locale::d($u['arrived']) : null])),
+                'tone' => $deadKeys->has($u['key']) || $u['old'] || $u['expiry_state'] === 'EXPIRED' ? 'danger' : null, 'up' => $u['no'] < $u['of'], 'down' => $u['no'] > 1,
+                'tags' => array_values(array_filter([
+                    ['label' => t(PalletService::KINDS[$u['kind']]), 'tone' => $u['kind'] === 'PALLET' ? 'info' : null],
+                    $u['old'] ? ['label' => t('Old remnant').' '.$u['age_days'].' '.t('days'), 'tone' => 'danger'] : ($u['remnant'] ? ['label' => t('Remnant'), 'tone' => 'violet'] : null),
+                    $deadKeys->has($u['key']) && ! $u['old'] ? ['label' => t('Dead stock'), 'tone' => 'danger'] : null,
+                    $u['buried'] ? ['label' => t('Buried').' · '.$u['buried'].' '.t('above'), 'tone' => 'orange'] : null,
+                    $u['expiry_state'] === 'EXPIRED' ? ['label' => t('Expired').' '.Locale::d($u['expiry']), 'tone' => 'danger'] : null,
+                    $u['expiry_state'] === 'SOON' ? ['label' => t('Expires').' '.Locale::d($u['expiry']), 'tone' => 'warn'] : null,
+                ]))], $s['stack']),
             'code' => $b->location_code, 'title' => trim(($z ? $z->zone_name.' · ' : '').t('Floor').' '.($z->floor_no ?? 1)),
             'level' => $z?->storage_mode === 'RACK' ? t('Level').' '.$b->stack_code : null, 'status' => $s['status'], 'dead' => $s['dead'],
             'capacity' => self::capacityText($s['used_kg'], $s['capacity_kg']), 'pct' => $s['pct'], 'caps' => $caps, 'capacityLabel' => self::capacityLabel($b),
@@ -162,9 +183,19 @@ final class Warehouse
                     $i['expiry_state'] === 'EXPIRED' ? ['label' => t('Expired').' '.Locale::d($i['expiry']), 'tone' => 'danger'] : null,
                     $i['expiry_state'] === 'SOON' ? ['label' => t('Expires').' '.Locale::d($i['expiry']), 'tone' => 'warn'] : null,
                     $i['expiry_state'] === null && $i['expiry'] ? ['label' => t('Expiry').' '.Locale::d($i['expiry']), 'tone' => null] : null,
-                    $i['pallet_count'] ? ['label' => $i['pallet_count'].' '.t('pallets'), 'tone' => null] : null,
+                    $i['pallet_count'] ? ['label' => $i['pallet_count'].' '.t($i['pallet_count'] === 1 ? 'unit' : 'units'), 'tone' => null] : null,
                 ]))], $s['items']),
         ];
+    }
+
+    // "3 units · 2 pallets / max 3": semua satuan berlabel di bin itu, dan berapa di antaranya palet.
+    public static function stackText(array $s): string
+    {
+        return implode(' · ', array_filter([
+            $s['unit_count'].' '.t($s['unit_count'] === 1 ? 'unit' : 'units'),
+            $s['pallet_count'] ? $s['pallet_count'].' '.t($s['pallet_count'] === 1 ? 'pallet' : 'pallets').($s['max_stack'] ? ' / '.t('Max').' '.$s['max_stack'] : '') : null,
+            $s['pack_count'] && $s['pallet_count'] ? $s['pack_count'].' '.t($s['pack_count'] === 1 ? 'pack' : 'packs') : null,
+        ]));
     }
 
     public static function capacityText(float $used, ?float $capacity): ?string

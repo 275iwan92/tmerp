@@ -631,7 +631,7 @@ Engine Catalog: Warehouse Stock, Stock Transfer Posting, Pallet Labels. Test: `P
 
 ---
 
-## 15. Analisa 2026-10-03: tumpukan (stack) dan sisa 1 - 2 rim — MENUNGGU KEPUTUSAN USER, belum ada kode
+## 15. Tumpukan (stack) dan sisa 1 - 2 rim (2026-10-03) — analisa 15.1 - 15.6, DIBANGUN: 15.7
 
 Perintah user 2026-10-03: *"Lokasi penempatan barang selain posisi X dan Y juga ada stack, terutama untuk barang yang
 tersisa 1 atau 2 rim. Analisa lagi dalam penyimpanan di gudang. IMPORTANT !!!"*
@@ -737,9 +737,84 @@ Tambahan dari mockup: saringan peta **Remnant** dan **Buried**; angka jumlah sat
 berumur lebih dari batas dead stock, dihitung per satuan; label sisa (100 x 50 mm) memuat lokasi + nomor tumpukan + nomor
 palet asal; memindahkan sisa ke tumpukan sisa saat label ulang membuat Stock Transfer (bin berubah).
 
+### 15.7 Dibangun 2026-10-03 (user: "selesaikan main jobs, mapping warehouse with X, Y, stack. FIX IT NOW")
+
+Terpasang di mockup.test dan tmerp.test (tabel, menu, kamus, Help). Data contoh hanya mockup.test. Ink Mixing (bagian 16)
+ditunda atas perintah user.
+
+**Skema** (migration `2026_10_03_000020_warehouse_stack_remnant`, `000021` = kamus tambahan):
+
+| Tabel | Kolom | Arti |
+|---|---|---|
+| `tm2inv.inv_pallet` | `stack_no` | nomor tumpukan satuan itu di bin-nya, 1 = paling bawah; kosong = satuan sudah ditutup |
+| `tm2inv.inv_pallet` | `unit_kind` | `PALLET` (palet penuh / terbuka) atau `PACK` (pak lepas: sisa rim, dus, kaleng) |
+| `tm2mst.wh_zone` | `max_stack` | paling banyak berapa palet ditumpuk di satu tapak; kosong = tidak dibatasi, hanya dipantau |
+| `sys_constant` | `WH_REMNANT_MAX_SHEETS` (1000) | lembaran sebanyak ini atau kurang = sisa |
+| `sys_constant` | `WH_PALLET_BASE_CM` (15) | tinggi palet kayu, ditambahkan ke tinggi tiap palet di tumpukan |
+
+Satuan yang sudah ada diberi nomor saat migration: tertua di bawah. `inv_pallet_log` mendapat aksi `RESTACK`.
+Tabel stok, kartu stok dan `wh_loc` tidak berubah.
+
+**Alamat barang = X - Y - Stack:**
+
+| Area | X - Y | Stack |
+|---|---|---|
+| Rak | rak - kolom | tingkat rak = bin sendiri (tidak berubah) |
+| Lantai | lajur - slot | `inv_pallet.stack_no` di bin itu |
+| Area terbuka | satu bin | `inv_pallet.stack_no` di bin itu |
+
+**Aturan yang berlaku** (`App\Services\Inventory\PalletService` menjaga nomor, `WarehouseStock::stacks` membacanya):
+
+1. Satuan baru (label kedatangan) = paling atas, berurutan sesuai urutan dibuat.
+2. Satuan yang habis (label ulang 0) atau pindah keluar: yang di atasnya turun; nomor selalu 1..n tanpa lubang.
+3. Satuan yang datang lewat Stock Transfer = paling atas di bin tujuan; Cancel mengembalikannya ke atas tumpukan bin asal.
+4. Petugas menukar urutan dengan panah di panel bin (Warehouse Map): tanpa dokumen stok, tercatat di riwayat satuan.
+5. **Sisa (PACK)**: otomatis bila satuannya lembaran (LBR / RIM, 1 rim = 500 lembar) dan isinya sama dengan atau di bawah
+   batas sisa; untuk satuan lain (kg, pcs) petugas memilih sendiri. Pak tidak dihitung sebagai palet; tetap dihitung berat
+   dan volumenya. Pak yang sudah PACK tetap PACK saat dilabel ulang.
+6. **Sisa lama (Old remnant)** = pak yang tibanya lebih lama dari batas dead stock (`ASSISTANT_DEADSTOCK_MONTHS`), dihitung
+   per satuan, bukan per item.
+7. **Tertimbun (Buried)** = satuan yang harus dipakai lebih dulu untuk item itu (sisa dulu, lalu kedaluwarsa paling awal,
+   lalu tiba paling lama; dibanding semua satuan aktif item itu di bin mana pun) dan ada palet lain di atasnya. Palet
+   kembarannya (item, tanggal tiba dan kedaluwarsa sama) tidak dihitung. Pak di atasnya tidak dihitung menimbun.
+8. **Tinggi tumpukan** = jumlah tinggi satuan (lembar x tebal; palet ditambah tinggi palet kayu) dibanding tinggi tumpuk
+   bin. Yang tidak bisa diperkirakan (bukan lembaran) tidak dihitung.
+9. **Batas tumpuk area** (`max_stack`) kosong = hanya dipantau; diisi = bin dengan palet lebih banyak ditandai.
+10. Stok di bin yang belum berlabel = **Stack not recorded**: letaknya dalam tumpukan belum diketahui (pekerjaan label).
+11. Sisa yang ditaruh di tumpukan lain saat label ulang ("Now in bin"): Stock Transfer dibuat dan di-Confirm (bin berubah
+    harus lewat dokumen); pak itu menjadi paling atas di sana. Bila approval Stock Transfer aktif, pindahnya menunggu approval.
+
+**Layar:**
+
+| Layar | Yang baru |
+|---|---|
+| Warehouse Map | angka jumlah satuan di tiap kotak bin; titik ungu (sisa) dan oranye (tertimbun); saringan legenda Remnant dan Buried; panel bin: baris Stack dan Stack height, daftar tumpukan dari atas ke bawah dengan panah tukar urutan; tombol Stack Monitor |
+| **Stack Monitor** (baru, Inventory > Warehouse) | satu baris per satuan, terkelompok per bin: letak (n / jumlah), jenis, item, qty, tiba, umur, tinggi tumpukan, tanda; saringan Buried / Near height limit / Over height limit / Remnant / Old remnant / Stack not recorded; Open = Print Pallet Label untuk satuan itu |
+| Print Pallet Label | jenis satuan (Automatic / Pallet / Pack) saat label kedatangan dan label ulang; "Now in bin" saat label ulang; kolom Stack No. dan Kind |
+| Label | alamat = bin + nomor tumpukan; pak sisa berjudul Pack, bertag Remnant, dan memakai label 100 x 50 mm |
+| Storage Areas | kolom Max. Stacked Pallets |
+| Track via QR/Barcode | nomor tumpukan dan jenis satuan; riwayat Restacked |
+
+DevLib: `x-dl::wh-map` mendapat `stack`, `count`, `remnant`, `buried` per bin dan prop `restack-url` (demo di devlib.test).
+Kode: `WarehouseStock` (`stacks`, `unitHeightM`, `sheetCount`, `remnantSheets`), `PalletService` (`restack`, `compact`,
+`kindFor`), `Pallets::moveTo`, `StackMonitorReport`, route `v2.wh.pallet.restack`. Test: `PalletServiceTest` (6 test baru).
+Data contoh: `UatWarehouseStackSeeder` (tumpukan sisa enam pak di `A10-PPR-L06-05`, sisa lama di atas dua palet dead stock
+di `A10-PPR-L03-01`, palet tertua tertimbun di `A10-PPR-L04-02`); tinggi tumpuk area kertas contoh menjadi 3,2 m.
+Gambar layar asli: `mockups/warehouse_app/24` - `27`.
+
+**Yang diputuskan agen (mohon dikoreksi bila salah):**
+
+| # | Keputusan | Alasan |
+|---|---|---|
+| 1 | Nomor tumpukan menempel di label satuan, bukan di bin | tumpukan lantai bergeser tiap palet bawah diambil; bin per tingkat akan cepat tidak cocok dengan lantai |
+| 2 | Pak yang menindih tidak dihitung "tertimbun" | pak sisa ringan dan mudah diangkat; yang menghalangi pengambilan adalah palet |
+| 3 | Sisa otomatis hanya untuk satuan lembar / rim | bahan dalam kg atau pcs tidak punya ukuran "1 - 2 rim"; petugas memilih sendiri |
+| 4 | Tinggi tumpuk area kertas di tmerp.test tetap 1,6 m (perkiraan lama) | master di tmerp.test hanya diubah user; officer mengubahnya di Storage Areas |
+| 5 | Sistem belum menyarankan "pakai sisa dulu" di Stock Out / booking bahan | urutan pakai sudah dihitung (dasar tanda Buried); menampilkannya di dokumen keluar = pekerjaan Stock Out v2 (backlog 05.21) |
+
 ---
 
-## 16. Analisa 2026-10-03: tinta khusus hasil campuran hilang dari stok — KONSEP, menunggu jawaban user
+## 16. Analisa 2026-10-03: tinta khusus hasil campuran hilang dari stok — KONSEP, DITUNDA user 2026-10-03 ("soal ink dibahas nanti")
 
 User 2026-10-03: *"Tinta yang sering di mix dengan tinta lain untuk mendapatkan tinta warna khusus, tetapi tinta khusus
 sering loss tidak terpantau dalam stock."*

@@ -1,5 +1,7 @@
 {{-- Warehouse Map v2 (user 2026-10-02: "warehouse mapping") lewat App\Support\V2\Data\Warehouse: pilih gedung -> denah per
      lantai (garis luar gedung, area, bin) -> klik bin = isi, kapasitas, label QR, tombol Transfer / Label / Block.
+     Tumpukan (user 2026-10-03: "selain posisi X dan Y juga ada stack"): angka di kotak bin = jumlah satuan ditumpuk; panel bin
+     menggambar tumpukan dari atas ke bawah (1 = paling bawah) dengan tombol tukar urutan; saringan Remnant dan Buried.
      Merah = bin yang memuat dead stock. Edit Layout = geser / ubah ukuran area. Generate Bins = pembuat bin per area.
      Gedung, area, dan bin ditambah / diubah di layar Buildings, Storage Areas, Bins (tombol di kanan atas). --}}
 @php
@@ -32,6 +34,7 @@
             <x-dl::button variant="secondary" icon="fa-building" label="Buildings" :href="route('v2.screen', 'wh-buildings')" />
             <x-dl::button variant="secondary" icon="fa-vector-square" label="Storage Areas" :href="route('v2.screen', 'wh-zones')" />
             <x-dl::button variant="secondary" icon="fa-table-cells" label="Bins" :href="route('v2.screen', 'wh-bins')" />
+            <x-dl::button variant="secondary" icon="fa-layer-group" label="Stack Monitor" :href="route('v2.screen', 'stack-monitor')" />
             @if ($zones->isNotEmpty())<x-dl::button variant="secondary" icon="fa-wand-magic-sparkles" label="Generate Bins" data-dl-open="wh-generate" />@endif
         </x-dl::action-bar>
     </x-dl::action-form>
@@ -43,7 +46,7 @@
     @else
         <x-dl::wh-map id="wh-map-{{ $wh->id_warehouse }}" :title="raw($wh->warehouse_code.' · '.$wh->warehouse_name)" :width="$map['width']" :height="$map['height']" :outline="$map['outline']"
             :floors="$map['floors']" :bins="$map['bins']" :floor="request()->integer('floor') ?: null" :selected="request()->integer('bin') ?: null"
-            :save-url="route('v2.wh.zone-move')" source="{{ Src::of('tm2mst.wh_warehouse', 'tm2mst.wh_zone', 'tm2mst.wh_loc', 'tm2inv.v_rm_onhand', 'tm2inv.v_sfg_onhand', 'tm2inv.v_fg_onhand') }}"
+            :save-url="route('v2.wh.zone-move')" :restack-url="str_replace(['987654321', '/restack/up'], ['{id}', '/restack/{dir}'], route('v2.wh.pallet.restack', ['id' => 987654321, 'dir' => 'up']))" source="{{ Src::of('tm2mst.wh_warehouse', 'tm2mst.wh_zone', 'tm2mst.wh_loc', 'tm2inv.v_rm_onhand', 'tm2inv.v_sfg_onhand', 'tm2inv.v_fg_onhand', 'tm2inv.inv_pallet (stack_no, unit_kind)') }}"
             :actions="[
                 ['label' => t('Transfer'), 'icon' => 'fa-right-left', 'tone' => 'primary', 'when' => 'stock', 'post' => true, 'url' => $url('v2.wh.bin.transfer')],
                 ['label' => t('Label'), 'icon' => 'fa-qrcode', 'url' => $url('v2.wh.bin.label')],

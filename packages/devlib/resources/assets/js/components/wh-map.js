@@ -40,7 +40,8 @@
       const active = !!(this.q || this.only);
       $$(this.el, '[data-wm-cell]').forEach(c => {
         const okQ = !this.q || c.dataset.find.includes(this.q);
-        const okS = !this.only || (this.only === 'DEAD' ? c.dataset.dead === '1' : this.only === 'EXPIRY' ? c.dataset.expiry === '1' : (c.dataset.status === this.only && c.dataset.dead !== '1'));
+        const flag = {DEAD: 'dead', EXPIRY: 'expiry', REMNANT: 'remnant', BURIED: 'buried'}[this.only];
+        const okS = !this.only || (flag ? c.dataset[flag] === '1' : (c.dataset.status === this.only && c.dataset.dead !== '1'));
         const ok = okQ && okS;
         c.classList.toggle('is-dim', !ok); c.classList.toggle('is-hit', ok && active);
         if (ok && active) { hit++; firstFloor ??= c.closest('[data-wm-svg]').dataset.wmSvg; }
@@ -76,6 +77,17 @@
         const idle = i.dead ? `<span class="dl-badge dl-badge--danger dl-badge--pill">${esc(t.dead)}</span><small>${esc(i.idle || '')}</small>` : esc(i.idle || '');
         return `<tr class="${i.dead ? 'is-dead' : ''}"><td><b>${esc(i.name || '')}</b><small>${esc(i.code || '')}${i.lot ? ' · ' + esc(i.lot) : ''}</small>${tags(i) ? `<small>${tags(i)}</small>` : ''}</td><td class="num">${esc(i.qty || '')}</td><td>${idle}</td></tr>`;
       }).join('');
+      // Tumpukan tampak samping: satuan paling atas di baris pertama, nomor 1 = paling bawah; palet digambar dengan alas kayu.
+      const swap = (u, dir, ok) => ok && this.cfg.restackUrl
+        ? `<button type="button" class="dl-whmap__swap" title="${esc(t[dir] || '')}" data-wm-post="${esc(String(this.cfg.restackUrl).replace('{id}', encodeURIComponent(u.id)).replace('{dir}', dir))}"><i class="fa-solid fa-arrow-${dir}"></i></button>`
+        : '';
+      const stack = (b.stack || []).length
+        ? `<div class="dl-whmap__stack"><small>${esc(t.stack || '')}</small>` + b.stack.map(u =>
+          `<div class="dl-whmap__unit dl-whmap__unit--${esc(u.kind || 'pallet')} ${u.tone === 'danger' ? 'is-dead' : ''}"><b class="dl-whmap__uno">${esc(u.no)}</b>`
+          + `<div class="dl-whmap__ubody"><b>${esc(u.name || '')}</b><small>${esc(u.sub || '')}</small>${tags(u) ? `<small>${tags(u)}</small>` : ''}</div>`
+          + `<span class="dl-whmap__uacts">${swap(u, 'up', u.up)}${swap(u, 'down', u.down)}</span></div>`
+          + (u.kind === 'pallet' ? '<i class="dl-whmap__wood"></i>' : '')).join('') + '<i class="dl-whmap__ground"></i></div>'
+        : '';
       const table = rows
         ? `<table class="dl-whmap__items"><thead><tr><th>${esc(t.item)}</th><th class="num">${esc(t.qty)}</th><th>${esc(t.idle)}</th></tr></thead><tbody>${rows}</tbody></table>`
         : `<p class="dl-whmap__hint">${esc(t.nostock)}</p>`;
@@ -93,7 +105,7 @@
         ? `<div class="dl-whmap__qr"><span data-dl-qrcode data-text="${esc(b.qr)}" data-size="92"></span><div><small>${esc(t.label)}</small><b>${esc(b.code || '')}</b>${b.capacityLabel ? `<span>${esc(b.capacityLabel)}</span>` : ''}</div></div>`
         : '';
       this.panel.innerHTML = `<div class="dl-whmap__phead"><div><small>${esc(t.bin)}</small><b>${esc(b.code || '')}</b><span>${esc(b.title || '')}</span></div><span class="dl-badge dl-badge--pill dl-whmap__st dl-whmap__st--${st.toLowerCase()}">${esc(stText)}</span></div>`
-        + levels + cap + (b.note ? `<p class="dl-whmap__note">${esc(b.note)}</p>` : '') + qr + table + (acts ? `<div class="dl-whmap__acts">${acts}</div>` : '');
+        + levels + cap + (b.note ? `<p class="dl-whmap__note">${esc(b.note)}</p>` : '') + stack + qr + table + (acts ? `<div class="dl-whmap__acts">${acts}</div>` : '');
       Devlib.mountOne('Qrcode', this.panel);
       this.emit('dl:whmap-select', {id, code: b.code});
     }

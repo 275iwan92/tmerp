@@ -8,7 +8,7 @@
       "en": "The floor plan of one warehouse building: its storage areas and bins, per floor. Open it to see where stock is, how full each bin is by weight and by volume, and which bins hold dead or expired stock.",
       "id": "Denah satu gedung gudang: area penyimpanan dan bin-nya, per lantai. Buka untuk melihat stok ada di mana, seberapa penuh tiap bin menurut berat dan volume, dan bin mana yang berisi dead stock atau stok kedaluwarsa."
     },
-    "keywords": "warehouse map, peta gudang, denah gudang, mapping, layout, bin, lokasi, rak, lantai, floor, dead stock, stok mati, kapasitas, capacity, gedung, a5, a6, a10, volume, m3, luas, tinggi, tinggi gedung, kapasitas lantai, kedaluwarsa, expired, expiry",
+    "keywords": "warehouse map, peta gudang, denah gudang, mapping, layout, bin, lokasi, rak, lantai, floor, dead stock, stok mati, kapasitas, capacity, gedung, volume, m3, kedaluwarsa, expired, expiry, stack, tumpukan, sisa, remnant, tertimbun",
     "steps": [
       {"en": "Choose the Building and click Show. A building with more than one floor has a tab per floor.", "id": "Pilih Building lalu klik Show. Gedung yang punya lebih dari satu lantai punya tab per lantai."},
       {"en": "Read the colours: white = empty, blue = in use, yellow = full, orange = over capacity, hatched = blocked, red = holds dead stock.", "id": "Baca warnanya: putih = kosong, biru = terisi, kuning = penuh, oranye = lebih dari kapasitas, berarsir = diblokir, merah = berisi dead stock."},
@@ -18,7 +18,10 @@
       {"en": "Edit Layout: drag a storage area to move it, or drag its corner to resize it. The new position is saved at once.", "id": "Edit Layout: seret area penyimpanan untuk memindahkannya, atau seret sudutnya untuk mengubah ukurannya. Posisi baru langsung tersimpan."},
       {"en": "Generate Bins: choose a storage area, the lanes and slots (or racks, columns and levels) and the capacity per bin, then Generate.", "id": "Generate Bins: pilih area penyimpanan, lajur dan slot (atau rak, kolom, dan tingkat) serta kapasitas per bin, lalu Generate."},
       {"en": "A yellow dot on a bin means it holds stock that is expired or expires soon. Click Expired / expires soon above the map to see only those bins.", "id": "Titik kuning di bin berarti berisi stok yang kedaluwarsa atau segera kedaluwarsa. Klik Expired / expires soon di atas peta untuk melihat bin itu saja."},
-      {"en": "Read the Capacity per Floor table under the map: floor area, clear height and room volume of each floor, how much of it is storage area, and how much is in use (m3 and kg).", "id": "Baca tabel Capacity per Floor di bawah peta: luas lantai, tinggi bersih dan volume ruang tiap lantai, berapa yang menjadi area penyimpanan, dan berapa yang terpakai (m3 dan kg)."}
+      {"en": "Read the Capacity per Floor table under the map: floor area, clear height and room volume of each floor, how much of it is storage area, and how much is in use (m3 and kg).", "id": "Baca tabel Capacity per Floor di bawah peta: luas lantai, tinggi bersih dan volume ruang tiap lantai, berapa yang menjadi area penyimpanan, dan berapa yang terpakai (m3 dan kg)."},
+      {"en": "The small number in a bin is how many labelled pallets and packs are stacked there. A violet dot = it holds a remnant, an orange dot = the unit to use first is buried.", "id": "Angka kecil di bin = jumlah palet dan pak berlabel yang ditumpuk di sana. Titik ungu = berisi sisa, titik oranye = satuan yang harus dipakai dulu tertimbun."},
+      {"en": "In the bin panel, Stack shows the units from the top down; number 1 is the bottom. Use the arrows to swap a unit with the one above or below when the pile was rearranged.", "id": "Di panel bin, Stack menampilkan satuan dari atas ke bawah; nomor 1 paling bawah. Pakai panah untuk menukar satuan dengan yang di atas atau di bawahnya bila tumpukan diubah."},
+      {"en": "Click Remnant or Buried above the map to see only those bins. Stack Monitor lists every stack in one table.", "id": "Klik Remnant atau Buried di atas peta untuk melihat bin itu saja. Stack Monitor mendaftar semua tumpukan dalam satu tabel."}
     ],
     "fields": [
       {"label": "Building", "en": "The warehouse building to show. Buildings are added in Buildings.", "id": "Gedung gudang yang ditampilkan. Gedung ditambah di Buildings."},
@@ -33,7 +36,11 @@
       {"label": "Capacity per bin (kg)", "en": "Weight capacity given to every new bin. It can be changed per bin in Bins.", "id": "Kapasitas berat untuk tiap bin baru. Bisa diubah per bin di Bins."},
       {"label": "Pallets per bin", "en": "How many pallets fit in every new bin. Printed on the bin label.", "id": "Jumlah pallet yang muat di tiap bin baru. Tercetak di label bin."},
       {"label": "Weight / Volume / Floor area × height", "en": "In the bin panel. Weight = stock weight against the kg capacity of the bin. Volume = estimated stock volume against the bin volume. Floor area x height = size of the bin: its storage area divided by its positions, times the stacking height.", "id": "Di panel bin. Weight = berat stok terhadap kapasitas kg bin. Volume = perkiraan volume stok terhadap volume bin. Floor area x height = ukuran bin: luas area penyimpanannya dibagi jumlah posisinya, dikali tinggi tumpuk."},
-      {"label": "Capacity per Floor", "en": "One row per floor. The clear height of a floor is filled in Buildings; the stacking height of an area in Storage Areas. A floor without a height has no volume.", "id": "Satu baris per lantai. Tinggi bersih lantai diisi di Buildings; tinggi tumpuk area di Storage Areas. Lantai tanpa tinggi tidak punya volume."}
+      {"label": "Capacity per Floor", "en": "One row per floor. The clear height of a floor is filled in Buildings; the stacking height of an area in Storage Areas. A floor without a height has no volume.", "id": "Satu baris per lantai. Tinggi bersih lantai diisi di Buildings; tinggi tumpuk area di Storage Areas. Lantai tanpa tinggi tidak punya volume."},
+      {"label": "Stack", "en": "How many labelled units are in the bin and how many of them are pallets. A remnant pack is not counted as a pallet.", "id": "Berapa satuan berlabel di bin dan berapa di antaranya palet. Pak sisa tidak dihitung sebagai palet."},
+      {"label": "Stack height", "en": "Estimated height of the pile (sheets x thickness, plus the wooden pallet) against the stacking height of the bin.", "id": "Perkiraan tinggi tumpukan (lembar x tebal, ditambah palet kayu) dibanding tinggi tumpuk bin."},
+      {"label": "Buried", "en": "The unit that should be used first (a remnant, else the earliest expiry, else the oldest arrival) has another pallet on top of it.", "id": "Satuan yang seharusnya dipakai lebih dulu (sisa, lalu kedaluwarsa paling awal, lalu tiba paling lama) ditindih palet lain."},
+      {"label": "Remnant", "en": "A pack: loose reams, boxes or cans left after use. Old remnant = it arrived longer ago than the dead stock limit.", "id": "Pak: rim, dus, atau kaleng lepas sisa pemakaian. Old remnant = tibanya lebih lama dari batas dead stock."}
     ]
   },
   {
@@ -85,6 +92,39 @@
       {"en": "Approve moves the stock when you are the last level. Reject stops the transfer; no stock moves. Hold keeps it in your list. Reject and Hold need a reason.", "id": "Approve memindahkan stok bila Anda level terakhir. Reject menghentikan transfer; tidak ada stok yang pindah. Hold menahannya di daftar Anda. Reject dan Hold wajib alasan."}
     ],
     "fields": []
+  },
+  {
+    "key": "stack-monitor",
+    "type": "REPORT",
+    "module": "INV",
+    "title": "Stack Monitor",
+    "purpose": {
+      "en": "Every labelled pallet and pack with its place in the stack of its bin. Open it to see what lies on what, which remnants are old, and where the unit to use first is buried.",
+      "id": "Semua palet dan pak berlabel dengan letaknya dalam tumpukan bin-nya. Buka untuk melihat apa menindih apa, sisa mana yang sudah lama, dan di mana satuan yang harus dipakai dulu tertimbun."
+    },
+    "keywords": "stack monitor, tumpukan, tumpuk, stack, sisa, remnant, sisa rim, rim, tertimbun, buried, tinggi tumpukan, palet, pak, kertas, ambri, sheet, x y stack, posisi barang",
+    "steps": [
+      {"en": "The table opens grouped by bin. Stack 3 / 3 is the top of three units; 1 / 3 is the bottom.", "id": "Tabel terbuka terkelompok per bin. Stack 3 / 3 = paling atas dari tiga satuan; 1 / 3 = paling bawah."},
+      {"en": "Click Buried, Remnant, Old remnant, Near height limit or Stack not recorded above the table to see only those rows.", "id": "Klik Buried, Remnant, Old remnant, Near height limit, atau Stack not recorded di atas tabel untuk melihat baris itu saja."},
+      {"en": "Stack not recorded = stock in a bin without a label, so its place in the stack is unknown. Open the row to make its label.", "id": "Stack not recorded = stok di bin tanpa label, jadi letaknya dalam tumpukan belum diketahui. Buka barisnya untuk membuat labelnya."},
+      {"en": "Open on a row goes to Print Pallet Label for that unit: relabel it, move a remnant to another pile, or print the label again.", "id": "Open di sebuah baris membuka Print Pallet Label untuk satuan itu: label ulang, pindahkan sisa ke tumpukan lain, atau cetak ulang labelnya."},
+      {"en": "To change the order of a stack, open the bin on Warehouse Map and use the arrows in the Stack list.", "id": "Untuk mengubah urutan tumpukan, buka bin-nya di Warehouse Map dan pakai panah di daftar Stack."}
+    ],
+    "fields": [
+      {"label": "Bin", "en": "The bin (lane and slot, or rack and level) where the unit is.", "id": "Bin (lajur dan slot, atau rak dan tingkat) tempat satuan itu berada."},
+      {"label": "Stack", "en": "Place in the stack / number of units in the bin. 1 is the bottom.", "id": "Letak dalam tumpukan / jumlah satuan di bin. 1 paling bawah."},
+      {"label": "Kind", "en": "Pallet, Pack (a remnant), or not labelled.", "id": "Pallet, Pack (sisa), atau belum berlabel."},
+      {"label": "Pallet / Pack No.", "en": "The number on the label of the unit.", "id": "Nomor di label satuan itu."},
+      {"label": "Item", "en": "Item name with its code below.", "id": "Nama item dengan kodenya di bawah."},
+      {"label": "Qty", "en": "Quantity on the label now.", "id": "Qty di label sekarang."},
+      {"label": "Arrived", "en": "The date the unit arrived.", "id": "Tanggal satuan itu tiba."},
+      {"label": "Age (days)", "en": "Days since the unit arrived.", "id": "Jumlah hari sejak satuan itu tiba."},
+      {"label": "Height in Bin", "en": "Estimated height of the whole stack against the stacking height of the bin.", "id": "Perkiraan tinggi seluruh tumpukan dibanding tinggi tumpuk bin."},
+      {"label": "Stack Height", "en": "OK, Near height limit, Over height limit, or Over stack limit (more pallets than the area allows).", "id": "OK, Near height limit, Over height limit, atau Over stack limit (palet lebih banyak dari yang diizinkan area)."},
+      {"label": "Remnant", "en": "Remnant = a pack left after use. Old remnant = it arrived longer ago than the dead stock limit.", "id": "Remnant = pak sisa pemakaian. Old remnant = tibanya lebih lama dari batas dead stock."},
+      {"label": "Buried", "en": "The unit to use first has another pallet on top of it. Units Above tells how many must be moved.", "id": "Satuan yang harus dipakai dulu ditindih palet lain. Units Above = berapa yang harus dipindah dulu."},
+      {"label": "Record", "en": "Recorded = the unit has a label. Stack not recorded = stock without a label.", "id": "Recorded = satuan itu berlabel. Stack not recorded = stok tanpa label."}
+    ]
   },
   {
     "key": "wh-buildings",
@@ -149,7 +189,8 @@
       {"label": "Depth (m)", "en": "Size of the area from top to bottom. Y plus Depth must stay inside the building.", "id": "Ukuran area dari atas ke bawah. Y ditambah Depth harus tetap di dalam gedung."},
       {"label": "Order", "en": "Order of the area in lists, smallest first.", "id": "Urutan area di daftar, yang terkecil lebih dulu."},
       {"label": "Active", "en": "Untick to take the area off the map. Its bins and stock records stay.", "id": "Hilangkan centang untuk melepas area dari peta. Bin dan catatan stoknya tetap ada."},
-      {"label": "Stack Height (m)", "en": "How high goods may be stacked in this area. Empty = the clear height of that floor. Area x stack height is the storage volume, shared by the bins of the area.", "id": "Setinggi apa barang boleh ditumpuk di area ini. Kosong = tinggi bersih lantainya. Luas x tinggi tumpuk = volume simpan, dibagi ke bin-bin area itu."}
+      {"label": "Stack Height (m)", "en": "How high goods may be stacked in this area. Empty = the clear height of that floor. Area x stack height is the storage volume, shared by the bins of the area.", "id": "Setinggi apa barang boleh ditumpuk di area ini. Kosong = tinggi bersih lantainya. Luas x tinggi tumpuk = volume simpan, dibagi ke bin-bin area itu."},
+      {"label": "Max. Stacked Pallets", "en": "How many pallets may be stacked on one floor position. Empty = no limit: the stack is only monitored.", "id": "Berapa palet boleh ditumpuk di satu tapak lantai. Kosong = tanpa batas: tumpukan hanya dipantau."}
     ]
   },
   {
@@ -250,14 +291,16 @@
       "en": "Give every pallet its own label: pallet number, item, quantity, arrival date, the pallet code of the supplier, lot, expiry date, a QR code and a barcode. A label is made at every arrival and again every time stock is used from the pallet.",
       "id": "Memberi tiap palet labelnya sendiri: nomor palet, item, qty, tanggal tiba, kode palet dari supplier, lot, tanggal kedaluwarsa, QR code, dan barcode. Label dibuat setiap barang datang dan dibuat lagi setiap isi palet dipakai."
     },
-    "keywords": "label palet, pallet label, palet, pallet, kedatangan, penerimaan barang, label ulang, relabel, sisa palet, kode palet supplier, kedaluwarsa, expired, expiry, tanggal tiba, qr code, barcode, ukuran label, cetak label",
+    "keywords": "label palet, pallet label, palet, pallet, kedatangan, penerimaan barang, label ulang, relabel, sisa palet, kode palet supplier, kedaluwarsa, expired, expiry, tanggal tiba, qr code, barcode, ukuran label, cetak label, sisa, remnant, rim, stack",
     "steps": [
       {"en": "At a goods receipt: open the posted receipt and click Pallet Labels. Or open this screen from the menu and choose the Building.", "id": "Saat penerimaan barang: buka penerimaan yang sudah diposting lalu klik Pallet Labels. Atau buka layar ini dari menu dan pilih Building."},
       {"en": "Read the work list. Arrival label = goods came in and have no pallet label yet. Relabel after use = stock was taken and a pallet label still shows the old quantity.", "id": "Baca daftar pekerjaan. Arrival label = barang datang dan belum punya label palet. Relabel after use = stok sudah diambil dan label palet masih menunjukkan qty lama."},
       {"en": "Open a row. For an arrival: one line = one pallet. Type the quantity on each pallet, the pallet code printed on the supplier label, the lot and the expiry date; use + Pallet to split. Click Create & Print.", "id": "Buka satu baris. Untuk kedatangan: satu baris = satu palet. Ketik qty tiap palet, kode palet yang tercetak di label supplier, lot, dan tanggal kedaluwarsa; pakai + Pallet untuk memecah. Klik Create & Print."},
       {"en": "After using stock from a pallet: choose the pallet under Relabel after Use, type what is left and click Relabel & Print. Zero closes the pallet.", "id": "Sesudah memakai stok dari satu palet: pilih paletnya di Relabel after Use, ketik sisanya, lalu klik Relabel & Print. Nol menutup palet."},
       {"en": "A damaged or lost label: tick the pallet under Print Again and click Print. The quantity does not change.", "id": "Label rusak atau hilang: centang paletnya di Print Again lalu klik Print. Qty tidak berubah."},
-      {"en": "The label sheet opens. Choose Label Roll or A4 Sheet, then Print. Stick the label on the pallet before it is put away.", "id": "Lembar label terbuka. Pilih Label Roll atau A4 Sheet, lalu Print. Tempel label di palet sebelum disimpan."}
+      {"en": "The label sheet opens. Choose Label Roll or A4 Sheet, then Print. Stick the label on the pallet before it is put away.", "id": "Lembar label terbuka. Pilih Label Roll atau A4 Sheet, lalu Print. Tempel label di palet sebelum disimpan."},
+      {"en": "Unit kind: Automatic makes a remnant pack when sheets are at or below the remnant limit. Choose Pallet or Pack yourself for goods counted in kg or pieces.", "id": "Unit kind: Automatic membuat pak sisa bila lembaran sama dengan atau di bawah batas sisa. Pilih Pallet atau Pack sendiri untuk barang yang dihitung dalam kg atau pcs."},
+      {"en": "Relabel after Use: if the remnant was put on another pile, choose that bin in Now in bin. A Stock Transfer is made and confirmed, and the pack goes on top of that pile.", "id": "Relabel after Use: bila sisa ditaruh di tumpukan lain, pilih bin-nya di Now in bin. Stock Transfer dibuat dan di-Confirm, dan pak itu menjadi paling atas di tumpukan itu."}
     ],
     "fields": [
       {"label": "Qty on the Pallet", "en": "What is on that pallet. All new pallets together may not be more than what is in the bin without a label.", "id": "Isi palet itu. Jumlah semua palet baru tidak boleh lebih dari isi bin yang belum berlabel."},
@@ -266,7 +309,10 @@
       {"label": "Arrival date", "en": "The date the goods arrived. It stays on the label after a relabel. The colour band of the label shows the arrival month.", "id": "Tanggal barang tiba. Tetap sama di label sesudah dilabel ulang. Pita warna label menunjukkan bulan tiba."},
       {"label": "Label size", "en": "60 x 40 mm (small packs), 100 x 50 mm (bins and stacks) or 100 x 150 mm (pallets). The guide under the form shows what each size is for and how many fit on an A4 sheet.", "id": "60 x 40 mm (kemasan kecil), 100 x 50 mm (bin dan tumpukan), atau 100 x 150 mm (palet). Panduan di bawah form menjelaskan guna tiap ukuran dan berapa yang muat di satu lembar A4."},
       {"label": "Print On", "en": "Label roll = a label printer, one label per page. A4 sheet = an office printer, the labels are cut along their borders.", "id": "Label roll = printer label, satu label satu halaman. A4 sheet = printer kantor, label dipotong mengikuti garis tepinya."},
-      {"label": "Remaining quantity", "en": "What is left on the pallet after use. It may not be more than the quantity at arrival.", "id": "Sisa isi palet sesudah dipakai. Tidak boleh lebih dari qty saat tiba."}
+      {"label": "Remaining quantity", "en": "What is left on the pallet after use. It may not be more than the quantity at arrival.", "id": "Sisa isi palet sesudah dipakai. Tidak boleh lebih dari qty saat tiba."},
+      {"label": "Stack No.", "en": "Place of the unit in the stack of its bin; 1 is the bottom. New units go on top; when a unit leaves, the ones above move down.", "id": "Letak satuan dalam tumpukan bin-nya; 1 paling bawah. Satuan baru menjadi paling atas; saat satu satuan keluar, yang di atasnya turun."},
+      {"label": "Kind", "en": "Pallet = a full or opened pallet. Remnant = a pack of loose reams, boxes or cans; it gets the small label with its bin and stack number.", "id": "Pallet = palet penuh atau terbuka. Remnant = pak rim, dus, atau kaleng lepas; mendapat label kecil berisi bin dan nomor tumpukannya."},
+      {"label": "Now in bin", "en": "Where the remnant is after use. Stays in the same bin, or another bin: then the stock is moved there with a Stock Transfer.", "id": "Tempat sisa itu sesudah dipakai. Tetap di bin yang sama, atau bin lain: stoknya dipindah ke sana dengan Stock Transfer."}
     ]
   },
   {

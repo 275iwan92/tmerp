@@ -16,10 +16,17 @@ namespace Devlib\Components;
 //               'caps' => [['label' => 'Weight', 'value' => '1,935 / 3,200 kg', 'pct' => 60.5|null, 'note' => teks kecil], ...]
 //                         beberapa baris kapasitas (berat, volume, luas tapak); bila diisi menggantikan 'capacity' + 'pct',
 //               'expiry' => bool (ada isi yang kedaluwarsa / segera kedaluwarsa -> titik kuning + saringan legenda),
+//               'stack' => [['id', 'no' => nomor tumpukan (1 = paling bawah), 'kind' => pallet|pack, 'name', 'sub' => teks kecil,
+//                            'tone' => danger|null, 'up' => bool, 'down' => bool (boleh ditukar ke atas / bawah),
+//                            'tags' => [['label', 'tone' => danger|warn|info|violet|orange|null], ...]], ...]
+//                          satuan yang ditumpuk di bin itu, urut dari ATAS ke bawah -> digambar tampak samping di panel,
+//               'count' => jumlah satuan ditumpuk (angka kecil di kotak bin), 'remnant' => bool (ada sisa -> titik ungu +
+//                          saringan legenda), 'buried' => bool (yang harus dipakai dulu tertimbun -> titik oranye + saringan),
 //               'items' => [['code', 'name', 'qty' => teks, 'idle' => teks, 'dead' => bool,
 //                            'tags' => [['label' => teks, 'tone' => danger|warn|null], ...]], ...]], ...]
 // $actions = [['label', 'icon', 'url' => '...{id}...', 'tone' => primary|secondary|danger, 'when' => stock|usable|blocked|null], ...]
 //             tombol di panel bin; {id} / {code} diganti milik bin terpilih; 'post' => true = dikirim POST (dengan konfirmasi 'confirm').
+// $restackUrl = alamat POST untuk menukar urutan tumpukan: '{id}' = id satuan, '{dir}' = up | down (null = tanpa tombol tukar).
 // $saveUrl = alamat POST {zone, x, y, w, h} saat area digeser / diubah ukurannya di mode Edit Layout (null = peta hanya-baca).
 // Warna: kosong = putih, terisi = biru, penuh = kuning, lebih dari kapasitas = oranye, diblokir = arsir, DEAD STOCK = merah
 // (merah menang atas warna isi). Event: dl:whmap-select {id, code}.
@@ -46,6 +53,7 @@ class WhMap extends DevlibComponent
         public string $search = 'Search bin, item, lot...',
         public string $empty = 'Click a bin on the map to see what is inside.',
         public ?string $saveUrl = null,
+        public ?string $restackUrl = null,
         public ?string $source = null,
     ) {
         $this->floor ??= $this->floors[0]['no'] ?? 1;
@@ -92,8 +100,13 @@ class WhMap extends DevlibComponent
 
     public function cellExpiry(array $cell): bool
     {
+        return $this->cellHas($cell, 'expiry');
+    }
+
+    public function cellHas(array $cell, string $flag): bool
+    {
         foreach ($cell['bins'] ?? [] as $id) {
-            if (! empty($this->bins[$id]['expiry'])) {
+            if (! empty($this->bins[$id][$flag])) {
                 return true;
             }
         }
@@ -101,14 +114,22 @@ class WhMap extends DevlibComponent
         return false;
     }
 
+    // Jumlah satuan yang ditumpuk di satu sel (semua bin di sel itu).
+    public function cellCount(array $cell): int
+    {
+        return (int) array_sum(array_map(fn ($id) => (int) ($this->bins[$id]['count'] ?? 0), $cell['bins'] ?? []));
+    }
+
     // Jumlah per status + dead stock + kedaluwarsa untuk baris ringkasan di atas peta.
     public function counts(): array
     {
-        $c = array_fill_keys(array_keys(self::STATUS), 0) + ['DEAD' => 0, 'EXPIRY' => 0];
+        $c = array_fill_keys(array_keys(self::STATUS), 0) + ['DEAD' => 0, 'EXPIRY' => 0, 'REMNANT' => 0, 'BURIED' => 0];
         foreach ($this->bins as $b) {
             $c[$b['status'] ?? 'EMPTY']++;
             $c['DEAD'] += empty($b['dead']) ? 0 : 1;
             $c['EXPIRY'] += empty($b['expiry']) ? 0 : 1;
+            $c['REMNANT'] += empty($b['remnant']) ? 0 : 1;
+            $c['BURIED'] += empty($b['buried']) ? 0 : 1;
         }
 
         return $c;
@@ -122,7 +143,7 @@ class WhMap extends DevlibComponent
     public function config(): array
     {
         return ['id' => $this->id, 'bins' => (object) $this->bins, 'actions' => $this->actions, 'selected' => $this->selected, 'floor' => $this->floor,
-            'saveUrl' => $this->saveUrl, 'csrf' => $this->saveUrl || $this->actions ? csrf_token() : null, 'scale' => self::SCALE, 'status' => self::STATUS, 'empty' => $this->empty];
+            'saveUrl' => $this->saveUrl, 'restackUrl' => $this->restackUrl, 'csrf' => $this->saveUrl || $this->actions || $this->restackUrl ? csrf_token() : null, 'scale' => self::SCALE, 'status' => self::STATUS, 'empty' => $this->empty];
     }
 
     public function render()

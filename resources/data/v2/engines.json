@@ -1447,7 +1447,7 @@
     {
         "class": "App\\Services\\Sales\\CoOrderBuilder",
         "file": "app/Services/Sales/CoOrderBuilder.php",
-        "lines": 293,
+        "lines": 295,
         "entries": [
             {
                 "method": "submit",
@@ -1963,7 +1963,7 @@
     {
         "class": "App\\Services\\Inventory\\WarehouseStock",
         "file": "app/Services/Inventory/WarehouseStock.php",
-        "lines": 285,
+        "lines": 380,
         "entries": [
             {
                 "method": "positions",
@@ -1994,7 +1994,20 @@
                     }
                 ],
                 "returns": "array",
-                "note": "Per bin: its items, weight and volume in use, percent of capacity, status, pallets, and whether it holds dead or expired stock."
+                "note": "Per bin: its items, weight and volume in use, percent of capacity, status, pallets, the stack, and whether it holds dead, expired, remnant or buried stock."
+            },
+            {
+                "method": "stacks",
+                "static": true,
+                "params": [
+                    {
+                        "name": "pallets",
+                        "type": "Collection",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Per bin: its labelled pallets and packs from the top down, each with its stack number, age, estimated height and the marks remnant, old remnant and buried."
             },
             {
                 "method": "binGeometry",
@@ -2007,7 +2020,7 @@
                     }
                 ],
                 "returns": "array",
-                "note": "Per bin: floor area, stacking height and volume, taken from the storage area and the building."
+                "note": "Per bin: floor area, stacking height, volume and the stack limit, taken from the storage area and the building."
             },
             {
                 "method": "weightKg",
@@ -2066,6 +2079,64 @@
                 "note": "Estimated volume of a quantity of sheets; empty when it cannot be estimated."
             },
             {
+                "method": "unitHeightM",
+                "static": true,
+                "params": [
+                    {
+                        "name": "qty",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "uom",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "material",
+                        "type": "?MatRaw",
+                        "default": null
+                    },
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "onPallet",
+                        "type": "bool",
+                        "default": null
+                    }
+                ],
+                "returns": "?float",
+                "note": "Estimated height of one pallet or pack in a stack; empty when it cannot be estimated."
+            },
+            {
+                "method": "sheetCount",
+                "static": true,
+                "params": [
+                    {
+                        "name": "qty",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "uom",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?float",
+                "note": "Number of sheets of a quantity when the unit is sheets or reams; empty for other units."
+            },
+            {
+                "method": "remnantSheets",
+                "static": true,
+                "params": [],
+                "returns": "float",
+                "note": "From how many sheets or fewer a labelled unit counts as a remnant."
+            },
+            {
                 "method": "deadMonths",
                 "static": true,
                 "params": [],
@@ -2104,9 +2175,17 @@
             [
                 "bins",
                 "The bin rows with their capacity, storage area and usable flag."
+            ],
+            [
+                "pallets",
+                "The active labelled pallets and packs, grouped per bin."
             ]
         ],
         "outputs": [
+            [
+                "Stack",
+                "Per bin the units from the top down: stack number (1 = bottom), pallet or pack, quantity, age, estimated height, and the marks remnant, old remnant and buried."
+            ],
             [
                 "Stock positions",
                 "Class, item, bin, quantity, unit, value, estimated weight and volume, arrival date, last movement, idle days, dead flag."
@@ -2128,7 +2207,11 @@
             "Bin size: floor area = area of the storage area divided by its positions; height = stacking height of the area (or the clear height of the floor) divided by the rack levels; volume = area x height.",
             "Weight: unit KG = the quantity; sheets with grammage and size = sheets x gsm x length x width. Volume: sheets x length x width x thickness (thickness from the master, or grammage x the paper bulk constant). Anything else is unknown and left out of the capacity.",
             "How full a bin is = the higher of the weight percent and the volume percent.",
-            "Expiry of a bin comes from its pallet labels: Expired, or Expires soon within the number of days in the constant."
+            "Expiry of a bin comes from its pallet labels: Expired, or Expires soon within the number of days in the constant.",
+            "Stack: on a rack the level is the bin. On the floor every labelled unit has a stack number in its bin, 1 = bottom. A pack is a remnant; an old remnant arrived longer ago than the dead stock limit.",
+            "Buried = the unit to use first for its item (a remnant first, then the earliest expiry, then the oldest arrival, compared with every unit of the item in any bin) has another pallet on top of it. A twin pallet of the same arrival does not count.",
+            "Stack height = the sum of the unit heights (sheets x thickness, plus the wooden pallet) against the stacking height of the bin. A bin with more pallets than the stack limit of its area is marked; an empty limit only monitors.",
+            "Stock in a bin that is not on a label has no known place in the stack and is reported as Stack not recorded."
         ],
         "reads": [
             "tm2inv.v_rm_onhand",
@@ -2145,12 +2228,13 @@
         ],
         "writes": [],
         "settings": [
-            "Settings > Constants: ASSISTANT_DEADSTOCK_MONTHS, WH_BIN_FULL_PCT, WH_PAPER_BULK_CM3_PER_G, WH_EXPIRY_SOON_DAYS",
+            "Settings > Constants: ASSISTANT_DEADSTOCK_MONTHS, WH_BIN_FULL_PCT, WH_PAPER_BULK_CM3_PER_G, WH_EXPIRY_SOON_DAYS, WH_REMNANT_MAX_SHEETS, WH_PALLET_BASE_CM",
             "Inventory > Warehouse > Buildings: clear height per floor",
-            "Inventory > Warehouse > Storage Areas: stack height"
+            "Inventory > Warehouse > Storage Areas: stack height, max. stacked pallets"
         ],
         "used": [
             "Warehouse Map",
+            "Stack Monitor",
             "Stock Transfer",
             "Stock by Location",
             "Print Location Label",
@@ -2444,7 +2528,7 @@
             ],
             [
                 "Pallet moves",
-                "Labelled pallets follow the stock to the destination bin."
+                "Labelled pallets and packs follow the stock to the destination bin and go on top of the stack there."
             ],
             [
                 "Error text",
@@ -2496,7 +2580,7 @@
     {
         "class": "App\\Services\\Inventory\\PalletService",
         "file": "app/Services/Inventory/PalletService.php",
-        "lines": 235,
+        "lines": 314,
         "entries": [
             {
                 "method": "worklist",
@@ -2562,10 +2646,74 @@
                         "name": "note",
                         "type": "?string",
                         "default": "null"
+                    },
+                    {
+                        "name": "kind",
+                        "type": "?string",
+                        "default": "null"
                     }
                 ],
                 "returns": "InvPallet",
-                "note": "Replaces the quantity of a pallet with what is left after use; zero closes the pallet."
+                "note": "Replaces the quantity of a pallet with what is left after use; zero closes the pallet and the units above it move down. A small remainder becomes a remnant pack."
+            },
+            {
+                "method": "restack",
+                "static": true,
+                "params": [
+                    {
+                        "name": "pallet",
+                        "type": "InvPallet",
+                        "default": null
+                    },
+                    {
+                        "name": "dir",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "InvPallet",
+                "note": "Swaps a unit with the one above or below it in the stack of its bin. No stock document: the bin and the quantity do not change."
+            },
+            {
+                "method": "compact",
+                "static": true,
+                "params": [
+                    {
+                        "name": "locationId",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "void",
+                "note": "Renumbers the stack of one bin to 1, 2, 3 without gaps, keeping the order."
+            },
+            {
+                "method": "kindFor",
+                "static": true,
+                "params": [
+                    {
+                        "name": "asked",
+                        "type": "?string",
+                        "default": null
+                    },
+                    {
+                        "name": "qty",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "uom",
+                        "type": "?string",
+                        "default": null
+                    }
+                ],
+                "returns": "string",
+                "note": "Pallet or pack: what the officer chose, otherwise a pack when sheet goods are at or below the remnant limit."
             },
             {
                 "method": "printed",
@@ -2673,7 +2821,15 @@
             ],
             [
                 "common",
-                "Arrival date, receipt number and a note for all new pallets."
+                "Arrival date, receipt number, a note and the unit kind (pallet, pack or automatic) for all new pallets."
+            ],
+            [
+                "dir",
+                "up or down: where the unit goes in the stack."
+            ],
+            [
+                "kind",
+                "Pallet or pack; empty = decided from the remnant limit."
             ],
             [
                 "pallet",
@@ -2695,7 +2851,7 @@
             ],
             [
                 "Pallets",
-                "Pallet number PL + year + running number, with its history: created, relabelled, moved, closed."
+                "Pallet number PL + year + running number, its kind (pallet or pack), its stack number in the bin, and its history: created, relabelled, moved, restacked, closed."
             ],
             [
                 "Error text",
@@ -2707,7 +2863,9 @@
             "Per item and bin compares the stock on hand with the total quantity on active pallet labels.",
             "More stock than labels = goods arrived without a pallet label. Less stock than labels = stock was used and a label still shows the old quantity.",
             "New pallets may not add up to more than the unlabelled quantity. The expiry date is proposed from the arrival date and the shelf life of the item; the officer may change it.",
-            "The engine only shows the difference; the officer decides which pallet holds how much."
+            "The engine only shows the difference; the officer decides which pallet holds how much.",
+            "Stack number: 1 = bottom. New units go on top in the order they are made; a unit that arrives by stock transfer goes on top in the destination bin; when a unit is used up or leaves, the units above it move down.",
+            "Remnant: a unit of sheet goods (unit LBR or RIM, 1 ream = 500 sheets) at or below WH_REMNANT_MAX_SHEETS becomes a pack; the officer may also choose pallet or pack. A pack is not counted as a pallet."
         ],
         "reads": [
             "tm2inv.inv_pallet",
@@ -2722,11 +2880,12 @@
             "tm2inv.inv_pallet_log"
         ],
         "settings": [
-            "Settings > Constants: WH_EXPIRY_SOON_DAYS",
+            "Settings > Constants: WH_EXPIRY_SOON_DAYS, WH_REMNANT_MAX_SHEETS",
             "Master Raw Material: shelf life (days)"
         ],
         "used": [
             "Print Pallet Label",
+            "Stack Monitor",
             "Goods Receipt (Pallet Labels button)",
             "Print Item Label",
             "Warehouse Map",
@@ -2743,7 +2902,7 @@
     {
         "class": "App\\Services\\Inventory\\StockLedger",
         "file": "app/Services/Inventory/StockLedger.php",
-        "lines": 192,
+        "lines": 194,
         "entries": [
             {
                 "method": "between",

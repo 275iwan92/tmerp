@@ -3,6 +3,27 @@
 
 ---
 
+## 2026-10-03 -- Gudang: lokasi barang = X, Y dan stack; sisa 1 - 2 rim; Stack Monitor
+
+User: "Lokasi penempatan barang selain posisi X dan Y juga ada stack, terutama untuk barang yang tersisa 1 atau 2 rim" ...
+"tumpukan tidak jelas, oleh sebab itu butuh di monitor" ... "selesaikan main jobs, mapping warehouse with X, Y, stack. FIX IT NOW".
+Rancangan + aturan: `docs/warehouselayout_tier1.md` bagian 15 (15.7). Review user: `docs/md_for_systems/warehouse_review.md` bagian 11.
+
+- **Temuan:** tumpukan hanya tercatat untuk rak (tingkat rak = bin); 147 bin lantai berhenti di X dan Y; palet hanya tahu
+  bin-nya; sisa rim tercatat sebagai "palet"; dead stock per item tidak menangkap sisa lama.
+- **Skema** (ddt + tm2): `inv_pallet.stack_no` (1 = paling bawah) + `unit_kind` (PALLET / PACK), `wh_zone.max_stack`,
+  konstanta `WH_REMNANT_MAX_SHEETS` + `WH_PALLET_BASE_CM`, menu Inventory > Warehouse > Stack Monitor, kamus.
+- **Aturan:** nomor dijaga `PalletService` (baru = paling atas, habis / pindah = yang di atas turun, transfer = paling atas
+  di tujuan, tukar urutan tanpa dokumen stok); sisa = pak (otomatis untuk lembaran di bawah batas); tanda Remnant, Old
+  remnant, Buried, tinggi tumpukan, batas tumpuk area, Stack not recorded (`WarehouseStock::stacks`).
+- **Layar:** Warehouse Map (angka satuan per bin, titik + saringan Remnant / Buried, tumpukan di panel bin dengan panah),
+  Stack Monitor (baru), Print Pallet Label (jenis satuan, "Now in bin" = sisa pindah lewat Stock Transfer), label (bin +
+  nomor tumpukan), Storage Areas (Max. Stacked Pallets), Track via QR/Barcode. DevLib `x-dl::wh-map` + demo.
+- **Data contoh** (mockup.test): `UatWarehouseStackSeeder`. **Test:** `PalletServiceTest` 6 test baru. Help 13 topik gudang
+  diimpor ulang di dua situs; Engine Catalog diperbarui.
+- **Ditunda user:** Ink Mixing (backlog 05.39). **Sisa:** saran pakai sisa dulu di Stock Out (05.40), tinggi tumpuk area
+  kertas di tmerp.test (05.41).
+
 ## 2026-10-03 -- Sapuan multi-bahasa: bahasa ikut akun, semua teks v2 lewat kamus, kamus tanpa teks kosong
 
 User: "Make sure multi language sudah jalan dengan sempurna" ... "make sure multi language ready on mockup.test and tmerp.test,

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 // kode palet dari supplier, tanggal datang, kedaluwarsa, qty saat datang dan sisa sekarang, bin sekarang.
 // Saldo stok tetap di kartu stok (per item per bin); palet = satuan fisik berlabel di dalam saldo itu. Selisih antara
 // saldo dan jumlah qty palet di satu bin = pekerjaan label (App\Services\Inventory\PalletService::gaps).
+// unit_kind = PALLET | PACK (sisa); stack_no = nomor tumpukan di bin itu, 1 = paling bawah (user 2026-10-03), dijaga PalletService.
 class InvPallet extends Model
 {
     protected $connection = 'tm2inv';
@@ -19,11 +20,17 @@ class InvPallet extends Model
 
     protected $guarded = ['id_pallet'];
 
-    protected $casts = ['qty_initial' => 'float', 'qty' => 'float', 'arrived_at' => 'date', 'expiry_date' => 'date', 'last_label_at' => 'datetime', 'label_count' => 'integer'];
+    protected $casts = ['qty_initial' => 'float', 'qty' => 'float', 'arrived_at' => 'date', 'expiry_date' => 'date', 'last_label_at' => 'datetime', 'label_count' => 'integer', 'stack_no' => 'integer'];
 
     public function logs(): HasMany
     {
         return $this->hasMany(InvPalletLog::class, 'pallet_id', 'id_pallet')->orderByDesc('id_pallet_log');
+    }
+
+    // Pak lepas (sisa rim / dus / kaleng), bukan palet penuh: tidak dihitung sebagai palet, tetap dihitung berat dan volumenya.
+    public function isPack(): bool
+    {
+        return $this->unit_kind === 'PACK';
     }
 
     public function isActive(): bool

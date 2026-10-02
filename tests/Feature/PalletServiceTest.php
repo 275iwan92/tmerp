@@ -221,7 +221,7 @@ class PalletServiceTest extends TestCase
     public function test_bin_capacity_comes_from_floor_area_and_height(): void
     {
         $g = WarehouseStock::binGeometry(collect([$this->src]))[$this->src->location_id];
-        $this->assertSame(['area_m2' => 10.0, 'height_m' => 2.0, 'volume_m3' => 20.0], $g);
+        $this->assertSame(['area_m2' => 10.0, 'height_m' => 2.0, 'volume_m3' => 20.0, 'max_stack' => null], $g);
 
         // Tanpa tinggi tumpuk di area: tinggi bersih lantai gedung (lantai 1 = 6 m).
         $this->zone->update(['stack_height_m' => null]);
@@ -234,6 +234,115 @@ class PalletServiceTest extends TestCase
         $this->assertSame(210.0, WarehouseStock::weightKg(1000, 'LBR', $paper, 'TEST'));
         $this->assertSame(0.28, WarehouseStock::volumeM3(1000, 'LBR', $paper, 'TEST'));
         $this->assertNull(WarehouseStock::volumeM3(100, 'KG', null, 'INK'));
+    }
+
+    // ---------------------------------------------------------------- Tumpukan (user 2026-10-03: X, Y dan stack)
+
+    private function stackOf(WhLoc $bin): array
+    {
+        return InvPallet::query()->where('created_by', self::BY)->where('status', 'ACTIVE')->where('location_id', $bin->location_id)->orderBy('stack_no')->pluck('stack_no', 'id_pallet')->all();
+    }
+
+    public function test_units_are_numbered_from_the_bottom_and_move_down_when_one_below_is_used_up(): void
+    {
+        [$a, $b, $c] = $this->pallets([50, 30, 10])->all();
+        $this->assertSame([$a->id_pallet => 1, $b->id_pallet => 2, $c->id_pallet => 3], $this->stackOf($this->src), 'New units go on top, in the order they were made.');
+
+        PalletService::relabel($b, 0, self::BY);
+        $this->assertNull($b->refresh()->stack_no);
+        $this->assertSame([$a->id_pallet => 1, $c->id_pallet => 2], $this->stackOf($this->src), 'The unit above the one that was used up moves down.');
+
+        $d = $this->pallets([40])->first();
+        $this->assertSame(3, $d->stack_no, 'A new unit goes on top of the stack that is there.');
+    }
+
+    public function test_restack_swaps_a_unit_with_its_neighbour(): void
+    {
+        [$a, $b] = $this->pallets([60, 40])->all();
+
+        PalletService::restack($a, 'up', self::BY);
+        $this->assertSame([$b->id_pallet => 1, $a->id_pallet => 2], $this->stackOf($this->src));
+        $this->assertSame('1 > 2', InvPalletLog::query()->where('pallet_id', $a->id_pallet)->where('action', 'RESTACK')->value('note'));
+        $this->assertSame(100.0, $this->row()['qty'], 'Restacking never changes the stock.');
+
+        $this->expectException(RuntimeException::class);
+        PalletService::restack($a->refresh(), 'up', self::BY);
+    }
+
+    public function test_a_unit_that_moves_goes_on_top_of_the_stack_in_the_other_bin(): void
+    {
+        [$a, $b, $c] = $this->pallets([50, 30, 20])->all();
+        $svc = new StockTransferService;
+
+        $t = $this->transfer(30, $b->id_pallet);
+        $this->assertNull($svc->confirm($t, self::BY));
+        $this->assertSame([$b->id_pallet => 1], $this->stackOf($this->dst));
+        $this->assertSame([$a->id_pallet => 1, $c->id_pallet => 2], $this->stackOf($this->src), 'The source stack closes the gap.');
+
+        $this->assertNull($svc->cancel($t, 'Wrong bin', self::BY));
+        $this->assertSame([$a->id_pallet => 1, $c->id_pallet => 2, $b->id_pallet => 3], $this->stackOf($this->src), 'Back in the source bin the unit is on top.');
+    }
+
+    public function test_sheet_goods_at_or_below_the_remnant_limit_become_a_pack(): void
+    {
+        $limit = WarehouseStock::remnantSheets();
+        $this->assertSame('PACK', PalletService::kindFor(null, $limit, 'LBR'));
+        $this->assertSame('PALLET', PalletService::kindFor(null, $limit + 1, 'LBR'));
+        $this->assertSame('PACK', PalletService::kindFor(null, $limit / 500, 'RIM'), 'One ream = 500 sheets.');
+        $this->assertSame('PALLET', PalletService::kindFor(null, 5, 'KG'), 'Other units are a remnant only when the officer says so.');
+        $this->assertSame('PACK', PalletService::kindFor('PACK', 5, 'KG'));
+        $this->assertSame('PALLET', PalletService::kindFor('PALLET', 1, 'LBR'));
+
+        // Sisa lama = pak yang tibanya lebih lama dari batas dead stock; tidak dihitung sebagai palet.
+        $old = now()->subMonths(WarehouseStock::deadMonths() + 2)->toDateString();
+        $pack = PalletService::create($this->key, [['qty' => 5]], ['arrived_at' => $old, 'unit_kind' => 'PACK'], self::BY)->first();
+        $pallet = $this->pallets([60])->first();
+        $this->assertTrue($pack->isPack());
+
+        $s = WarehouseStock::binSummaries(collect([$this->src]))[$this->src->location_id];
+        $this->assertSame(2, $s['unit_count']);
+        $this->assertSame(1, $s['pallet_count']);
+        $this->assertSame(1, $s['pack_count']);
+        $this->assertTrue($s['remnant']);
+        $this->assertTrue($s['old_remnant']);
+        $this->assertTrue($s['unrecorded'], '35 of the 100 in the bin has no label yet.');
+        $this->assertSame([$pallet->id_pallet, $pack->id_pallet], array_column($s['stack'], 'id'), 'The stack is listed from the top.');
+
+        // Label ulang palet menjadi pak sisa atas pilihan petugas.
+        PalletService::relabel($pallet, 3, self::BY, null, 'PACK');
+        $this->assertTrue($pallet->refresh()->isPack());
+    }
+
+    public function test_the_unit_to_use_first_is_buried_when_a_pallet_sits_on_it(): void
+    {
+        $oldest = PalletService::create($this->key, [['qty' => 60]], ['arrived_at' => now()->subDays(300)->toDateString()], self::BY)->first();
+        $newer = PalletService::create($this->key, [['qty' => 40]], ['arrived_at' => now()->subDays(5)->toDateString()], self::BY)->first();
+
+        $s = WarehouseStock::binSummaries(collect([$this->src]))[$this->src->location_id];
+        $this->assertTrue($s['buried']);
+        $this->assertSame([$newer->id_pallet => 0, $oldest->id_pallet => 1], array_column($s['stack'], 'buried', 'id'), 'One unit lies on the pallet to use first.');
+
+        PalletService::restack($oldest, 'up', self::BY);
+        $this->assertFalse(WarehouseStock::binSummaries(collect([$this->src]))[$this->src->location_id]['buried']);
+    }
+
+    public function test_stack_height_and_the_stack_limit_of_the_area(): void
+    {
+        // 1.000 lembar tebal 0,4 mm = 0,40 m; palet kayu menambah WH_PALLET_BASE_CM.
+        $paper = new MatRaw(['gram_weight' => 300, 'cm_length' => 100, 'cm_width' => 70, 'mm_thickness' => 0.4]);
+        $base = WarehouseStock::unitHeightM(0, 'LBR', $paper, 'TEST', true);
+        $this->assertSame(0.4, WarehouseStock::unitHeightM(1000, 'LBR', $paper, 'TEST', false));
+        $this->assertSame(round(0.4 + $base, 3), WarehouseStock::unitHeightM(1000, 'LBR', $paper, 'TEST', true));
+        $this->assertSame(0.4, WarehouseStock::unitHeightM(210, 'KG', $paper, 'TEST', false), '210 kg of this paper = 1,000 sheets.');
+        $this->assertNull(WarehouseStock::unitHeightM(100, 'KG', null, 'INK', true));
+
+        // Batas tumpuk area kosong = hanya dipantau; diisi = bin dengan palet lebih banyak ditandai.
+        $this->pallets([40, 30, 30]);
+        $summary = fn () => WarehouseStock::binSummaries(collect([$this->src]))[$this->src->location_id];
+        $this->assertFalse($summary()['over_stack']);
+        $this->zone->update(['max_stack' => 2]);
+        $this->assertTrue($summary()['over_stack']);
+        $this->assertSame(2, $summary()['max_stack']);
     }
 
     public function test_with_approval_switched_on_the_stock_moves_only_after_the_last_approval(): void

@@ -92,21 +92,23 @@ final class Labels
     {
         $state = $p->expiryState(WarehouseStock::expirySoonDays());
         $arrived = $p->arrived_at?->toDateString();
+        // Alamat lengkap = bin (X - Y) + nomor tumpukan (user 2026-10-03); 1 = paling bawah.
+        $where = $binCode ? $binCode.($p->isActive() && $p->stack_no ? ' · '.t('Stack').' '.$p->stack_no : '') : null;
 
         return [
-            'kind' => 'pallet', 'title' => 'Pallet', 'color' => Label::monthColor($arrived), 'mark' => self::monthMark($arrived),
+            'kind' => 'pallet', 'title' => $p->isPack() ? 'Pack' : 'Pallet', 'color' => Label::monthColor($arrived), 'mark' => self::monthMark($arrived),
             'code' => $p->pallet_no, 'name' => $p->item_code.' · '.$p->item_name, 'highlight' => Locale::decimal($p->qty, 2).' '.$p->uom_code,
             'lines' => array_values(array_filter([
                 ['label' => 'Arrived', 'value' => $arrived ? (string) Locale::d($arrived) : '—'],
                 ['label' => 'Supplier pallet', 'value' => $p->supplier_pallet_code ?: '—'],
                 $p->lot_no ? ['label' => 'Lot', 'value' => $p->lot_no] : null,
                 $p->ref_doc_no ? ['label' => 'Receipt', 'value' => $p->ref_doc_no] : null,
-                $binCode ? ['label' => 'Bin', 'value' => $binCode] : null,
+                $where ? ['label' => 'Bin', 'value' => $where] : null,
                 $p->expiry_date ? ['label' => 'Expiry', 'value' => (string) Locale::d($p->expiry_date)] : null,
                 (float) $p->qty !== (float) $p->qty_initial ? ['label' => 'At arrival', 'value' => Locale::decimal($p->qty_initial, 2).' '.$p->uom_code] : null,
                 ['label' => 'Label no.', 'value' => (string) max(1, (int) $p->label_count)],
             ])),
-            'tags' => array_values(array_filter([$p->isActive() ? null : ['label' => 'Closed', 'tone' => 'danger'], self::expiryTag($state)])),
+            'tags' => array_values(array_filter([$p->isActive() ? null : ['label' => 'Closed', 'tone' => 'danger'], $p->isPack() ? ['label' => 'Remnant', 'tone' => null] : null, self::expiryTag($state)])),
             'qr' => Warehouse::trackUrl('PLT', $p->pallet_no), 'barcode' => $p->pallet_no,
             'tone' => $state === 'EXPIRED' ? 'danger' : null, 'footer' => t('After every use: print a new label with the remaining quantity.'),
         ];
@@ -120,7 +122,9 @@ final class Labels
             return $label;
         }
         if (($label['kind'] ?? null) === 'pallet') {
-            $label['lines'] = array_values(array_filter($label['lines'], fn (array $l) => in_array($l['label'], ['Arrived', 'Supplier pallet', 'Expiry'], true)));
+            // Label kecil: pak sisa harus bisa dicari -> bin + nomor tumpukan ikut; palet penuh -> kode palet supplier.
+            $keep = ($label['title'] ?? null) === 'Pack' ? ['Bin', 'Arrived', 'Expiry'] : ['Arrived', 'Supplier pallet', 'Expiry'];
+            $label['lines'] = array_values(array_filter($label['lines'], fn (array $l) => in_array($l['label'], $keep, true)));
             $label['footer'] = null;
         }
         if ($size === 'sm') {

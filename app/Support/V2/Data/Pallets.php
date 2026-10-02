@@ -20,7 +20,10 @@ final class Pallets
 
     private const NEED_TONES = ['NEW' => 'warn', 'RELABEL' => 'tangerine', 'DONE' => 'success'];
 
-    public const ACTIONS = ['CREATED' => 'Arrival label', 'RELABEL' => 'Relabelled', 'MOVED' => 'Moved', 'CLOSED' => 'Closed'];
+    public const ACTIONS = ['CREATED' => 'Arrival label', 'RELABEL' => 'Relabelled', 'MOVED' => 'Moved', 'CLOSED' => 'Closed', 'RESTACK' => 'Restacked'];
+
+    // Pilihan jenis satuan di form label (kosong = otomatis dari batas sisa).
+    public const KIND_OPTIONS = ['' => 'Automatic (remnant when at or below the limit)', 'PALLET' => 'Pallet (full or opened)', 'PACK' => 'Pack (remnant: reams, boxes, cans)'];
 
     public const EXPIRY = ['EXPIRED' => 'Expired', 'SOON' => 'Expires soon', 'OK' => 'OK', 'NONE' => 'No expiry date'];
 
@@ -106,6 +109,37 @@ final class Pallets
         return [['qty' => $qty, 'supplier_pallet_code' => '', 'lot_no' => $lot ?? '', 'expiry_date' => PalletService::suggestedExpiry($position, $arrived)]];
     }
 
+    /** @return array<string, string> pilihan jenis satuan, teks dalam bahasa layar */
+    public static function kindOptions(): array
+    {
+        return array_map(fn (string $label) => t($label), self::KIND_OPTIONS);
+    }
+
+    public static function kind(InvPallet $p): string
+    {
+        return t($p->isPack() ? 'Remnant' : 'Pallet');
+    }
+
+    // Sisa yang ditaruh di tumpukan lain: bin berubah, jadi lewat Stock Transfer (dibuat lalu di-Confirm); satuan itu menjadi
+    // paling atas di bin tujuan. Gagal (stok tidak cukup, bin diblokir, approval aktif menolak) = draft dihapus, label tetap.
+    /** @return array{ok: bool, message: string} */
+    public static function moveTo(InvPallet $pallet, WhLoc $bin): array
+    {
+        $t = StockTransfer::createFromPallet($pallet);
+        $t->lines()->update(['to_location_id' => $bin->location_id]);
+        $t->forceFill(['to_warehouse_id' => $bin->warehouse_id, 'reason' => 'CONSOLIDATE', 'notes' => t('Remnant after use: moved to the remnant pile.')])->save();
+        $error = StockTransfer::act($t->refresh(), 'confirm');
+        if ($error) {
+            $t->delete();
+
+            return ['ok' => false, 'message' => str_replace([':bin', ':error'], [$bin->location_code, $error], t('Relabelled. The move to :bin could not be done: :error'))];
+        }
+        // Approval Stock Transfer aktif: stok dan satuan baru pindah sesudah persetujuan terakhir.
+        $text = $t->refresh()->status() === 'SUBMITTED' ? 'Relabelled. The move to :bin waits for approval (Stock Transfer :no).' : 'Relabelled and moved to :bin (Stock Transfer :no).';
+
+        return ['ok' => true, 'message' => str_replace([':bin', ':no'], [$bin->location_code, (string) $t->transfer_no], t($text))];
+    }
+
     // Baris grid palet.
     /** @param  Collection<int, InvPallet>  $pallets */
     public static function rows(Collection $pallets, string $home): array
@@ -117,6 +151,7 @@ final class Pallets
             $code = $p->expiry_date ? ($p->expiryState($soon) ?? 'OK') : 'NONE';
 
             return ['id' => $p->id_pallet, 'open_url' => $home.'?pallet='.$p->id_pallet, 'no' => $p->pallet_no, 'item' => $p->item_name, 'code' => $p->item_code,
+                'kind' => self::kind($p), 'stack' => $p->stack_no,
                 'bin' => $bins[$p->location_id] ?? '—', 'qty' => $p->qty, 'initial' => $p->qty_initial, 'unit' => $p->uom_code, 'arrived' => $p->arrived_at?->toDateString(),
                 'supplier_code' => $p->supplier_pallet_code, 'lot' => $p->lot_no, 'receipt' => $p->ref_doc_no, 'expiry' => $p->expiry_date?->toDateString(), 'expiry_state' => self::expiry($code),
                 'labels' => $p->label_count, 'status' => $p->isActive() ? 'Active' : 'Closed', 'tone' => ['EXPIRED' => 'danger', 'SOON' => 'yellow'][$code] ?? null];
@@ -132,7 +167,7 @@ final class Pallets
     /** @return array<int, string> id palet => "PL2600012 | 6,000 LBR | datang 02-Okt-2026" */
     public static function options(Collection $pallets): array
     {
-        return $pallets->mapWithKeys(fn (InvPallet $p) => [$p->id_pallet => $p->pallet_no.' | '.Locale::decimal($p->qty, 2).' '.$p->uom_code.' | '.Locale::d($p->arrived_at)
+        return $pallets->mapWithKeys(fn (InvPallet $p) => [$p->id_pallet => $p->pallet_no.' | '.($p->stack_no ? t('Stack').' '.$p->stack_no.' | ' : '').Locale::decimal($p->qty, 2).' '.$p->uom_code.' | '.Locale::d($p->arrived_at)
             .($p->supplier_pallet_code ? ' | '.$p->supplier_pallet_code : '')])->all();
     }
 

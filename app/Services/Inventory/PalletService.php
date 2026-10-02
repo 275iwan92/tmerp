@@ -22,9 +22,68 @@ use RuntimeException;
 //   saldo < jumlah qty palet  -> isinya sudah dipakai, label palet belum diganti (need = RELABEL)
 // Engine menghitung selisihnya; petugas yang menentukan palet mana berisi berapa (engine suggests, officer confirms).
 // Palet tidak pernah mengubah stok.
+// Tumpukan (user 2026-10-03: "selain posisi X dan Y juga ada stack"): tiap satuan punya stack_no di bin-nya, 1 = paling
+// bawah. Service ini yang menjaganya: satuan baru / yang datang lewat transfer = paling atas; satuan yang habis atau pindah
+// keluar = yang di atasnya turun; petugas boleh menukar urutan (restack). Tanpa dokumen stok: bin dan jumlah tidak berubah.
+// Sisa (unit_kind PACK): lembaran yang tinggal WH_REMNANT_MAX_SHEETS lembar atau kurang, atau yang dipilih petugas.
 final class PalletService
 {
     private const EPS = 0.00005;
+
+    public const KINDS = ['PALLET' => 'Pallet', 'PACK' => 'Pack'];
+
+    // Jenis satuan: pilihan petugas (PALLET / PACK), atau otomatis = PACK bila lembaran tinggal sebanyak batas sisa atau kurang.
+    public static function kindFor(?string $asked, float $qty, ?string $uom): string
+    {
+        if (isset(self::KINDS[(string) $asked])) {
+            return $asked;
+        }
+        $sheets = WarehouseStock::sheetCount($qty, (string) $uom);
+
+        return $sheets !== null && $sheets <= WarehouseStock::remnantSheets() + self::EPS ? 'PACK' : 'PALLET';
+    }
+
+    // Nomor tumpukan tertinggi yang terpakai di satu bin (0 = bin tanpa satuan berlabel).
+    private static function top(int $locationId): int
+    {
+        return (int) InvPallet::query()->where('status', 'ACTIVE')->where('location_id', $locationId)->max('stack_no');
+    }
+
+    // Rapikan nomor tumpukan satu bin menjadi 1..n tanpa lubang (urutan yang ada dipertahankan; tanpa nomor = paling atas).
+    public static function compact(int $locationId): void
+    {
+        $units = InvPallet::query()->where('status', 'ACTIVE')->where('location_id', $locationId)->lockForUpdate()
+            ->orderByRaw('stack_no IS NULL')->orderBy('stack_no')->orderBy('arrived_at')->orderBy('id_pallet')->get();
+        foreach ($units as $i => $u) {
+            if ((int) $u->stack_no !== $i + 1) {
+                $u->forceFill(['stack_no' => $i + 1])->save();
+            }
+        }
+    }
+
+    // Tukar satuan dengan tetangganya di tumpukan: $dir = up (naik satu) | down (turun satu).
+    public static function restack(InvPallet $pallet, string $dir, string $login): InvPallet
+    {
+        if (! $pallet->isActive()) {
+            throw new RuntimeException(self::msg('Pallet :no is already closed.', ['no' => $pallet->pallet_no]));
+        }
+
+        return DB::connection('tm2inv')->transaction(function () use ($pallet, $dir, $login) {
+            self::compact((int) $pallet->location_id);
+            $pallet->refresh();
+            $from = (int) $pallet->stack_no;
+            $to = $dir === 'up' ? $from + 1 : $from - 1;
+            $other = InvPallet::query()->where('status', 'ACTIVE')->where('location_id', $pallet->location_id)->where('stack_no', $to)->lockForUpdate()->first();
+            if (! $other) {
+                throw new RuntimeException(self::msg($dir === 'up' ? 'This unit is already at the top.' : 'This unit is already at the bottom.'));
+            }
+            $other->forceFill(['stack_no' => $from, 'updated_by' => $login])->save();
+            $pallet->forceFill(['stack_no' => $to, 'updated_by' => $login])->save();
+            self::log($pallet, 'RESTACK', (float) $pallet->qty, (float) $pallet->qty, (int) $pallet->location_id, (int) $pallet->location_id, null, $from.' > '.$to, $login);
+
+            return $pallet;
+        });
+    }
 
     private static function msg(string $text, array $values = []): string
     {
@@ -71,7 +130,8 @@ final class PalletService
     }
 
     // Label kedatangan: palet baru untuk barang yang belum berlabel di satu posisi stok.
-    // $rows = [['qty', 'supplier_pallet_code', 'lot_no', 'expiry_date'], ...]; $common = ['arrived_at', 'ref_doc_no', 'notes'].
+    // $rows = [['qty', 'supplier_pallet_code', 'lot_no', 'expiry_date'], ...]; $common = ['arrived_at', 'ref_doc_no', 'notes',
+    // 'unit_kind' => PALLET | PACK | kosong = otomatis]. Satuan baru ditaruh di atas tumpukan bin itu, berurutan.
     /** @return Collection<int, InvPallet> */
     public static function create(string $positionKey, array $rows, array $common, string $login): Collection
     {
@@ -92,8 +152,11 @@ final class PalletService
 
         return DB::connection('tm2inv')->transaction(function () use ($rows, $p, $common, $arrived, $login) {
             $out = collect();
+            self::compact((int) $p['location_id']);
+            $top = self::top((int) $p['location_id']);
             foreach ($rows as $r) {
                 $pallet = InvPallet::create([
+                    'unit_kind' => self::kindFor($common['unit_kind'] ?? null, (float) $r['qty'], $p['uom']), 'stack_no' => ++$top,
                     'pallet_no' => InvPallet::nextNo(), 'stock_class' => $p['class'], 'item_id' => $p['item_id'], 'part_id' => $p['part_id'],
                     'item_code' => mb_substr((string) $p['code'], 0, 60), 'item_name' => mb_substr((string) $p['name'], 0, 255),
                     'lot_no' => self::text($r['lot_no'] ?? null, 100), 'supplier_pallet_code' => self::text($r['supplier_pallet_code'] ?? null, 60),
@@ -111,8 +174,9 @@ final class PalletService
         });
     }
 
-    // Label baru setelah isi palet dipakai: qty sisa menggantikan qty lama; sisa 0 = palet ditutup.
-    public static function relabel(InvPallet $pallet, float $remaining, string $login, ?string $note = null): InvPallet
+    // Label baru setelah isi palet dipakai: qty sisa menggantikan qty lama; sisa 0 = palet ditutup (yang di atasnya turun).
+    // $kind = PALLET | PACK | null (otomatis: lembaran tinggal sebanyak batas sisa atau kurang menjadi PACK; PACK tetap PACK).
+    public static function relabel(InvPallet $pallet, float $remaining, string $login, ?string $note = null, ?string $kind = null): InvPallet
     {
         if (! $pallet->isActive()) {
             throw new RuntimeException(self::msg('Pallet :no is already closed.', ['no' => $pallet->pallet_no]));
@@ -121,12 +185,16 @@ final class PalletService
             throw new RuntimeException(self::msg('Pallet :no: the remaining quantity must be between 0 and :max.', ['no' => $pallet->pallet_no, 'max' => Locale::decimal($pallet->qty_initial, 4)]));
         }
 
-        return DB::connection('tm2inv')->transaction(function () use ($pallet, $remaining, $login, $note) {
+        return DB::connection('tm2inv')->transaction(function () use ($pallet, $remaining, $login, $note, $kind) {
             $before = (float) $pallet->qty;
             $closed = $remaining <= self::EPS;
+            $newKind = $kind === null && $pallet->isPack() ? 'PACK' : self::kindFor($kind, $remaining, $pallet->uom_code);
             $pallet->forceFill(['qty' => $closed ? 0 : $remaining, 'status' => $closed ? 'CLOSED' : 'ACTIVE', 'updated_by' => $login]
-                + ($closed ? [] : ['label_count' => $pallet->label_count + 1, 'last_label_at' => now()]))->save();
+                + ($closed ? ['stack_no' => null] : ['unit_kind' => $newKind, 'label_count' => $pallet->label_count + 1, 'last_label_at' => now()]))->save();
             self::log($pallet, $closed ? 'CLOSED' : 'RELABEL', $before, $closed ? 0 : $remaining, null, null, null, $note, $login);
+            if ($closed) {
+                self::compact((int) $pallet->location_id);
+            }
 
             return $pallet;
         });
@@ -150,11 +218,22 @@ final class PalletService
             $here = InvPallet::query()->where('status', 'ACTIVE')->where('stock_class', $l->stock_class)->where('item_id', $l->item_id)
                 ->where('location_id', $l->from_location_id)->when($l->stock_class === 'FG', fn ($q) => $l->part_id ? $q->where('part_id', $l->part_id) : $q->whereNull('part_id'))
                 ->orderBy('arrived_at')->orderBy('id_pallet')->lockForUpdate()->get();
-            foreach (self::palletsToMove($l, $here, $stock) as $pallet) {
-                $pallet->forceFill(['location_id' => $l->to_location_id, 'updated_by' => $login])->save();
-                self::log($pallet, 'MOVED', (float) $pallet->qty, (float) $pallet->qty, (int) $l->from_location_id, (int) $l->to_location_id, $t->transfer_no, null, $login);
+            // Urutan tumpukan asal dipertahankan: yang paling bawah pindah lebih dulu, lalu ditaruh di atas tumpukan bin tujuan.
+            $moving = self::palletsToMove($l, $here, $stock)->sortBy(fn (InvPallet $p) => [$p->stack_no === null ? 1 : 0, (int) $p->stack_no, (int) $p->id_pallet]);
+            foreach ($moving as $pallet) {
+                self::move($pallet, (int) $l->from_location_id, (int) $l->to_location_id, $t->transfer_no, null, $login);
+            }
+            if ($moving->isNotEmpty()) {
+                self::compact((int) $l->from_location_id);
             }
         }
+    }
+
+    // Satu satuan pindah bin: menjadi paling atas di bin tujuan.
+    private static function move(InvPallet $pallet, int $from, int $to, ?string $ref, ?string $note, string $login): void
+    {
+        $pallet->forceFill(['location_id' => $to, 'stack_no' => self::top($to) + 1, 'updated_by' => $login])->save();
+        self::log($pallet, 'MOVED', (float) $pallet->qty, (float) $pallet->qty, $from, $to, $ref, $note, $login);
     }
 
     /** @param  Collection<int, InvPallet>  $here */
@@ -189,8 +268,8 @@ final class PalletService
         foreach ($logs as $log) {
             $pallet = InvPallet::query()->lockForUpdate()->find($log->pallet_id);
             if ($pallet && $pallet->isActive() && (int) $pallet->location_id === (int) $log->to_location_id) {
-                $pallet->forceFill(['location_id' => $log->from_location_id, 'updated_by' => $login])->save();
-                self::log($pallet, 'MOVED', (float) $pallet->qty, (float) $pallet->qty, (int) $log->to_location_id, (int) $log->from_location_id, $t->transfer_no, 'Transfer cancelled', $login);
+                self::move($pallet, (int) $log->to_location_id, (int) $log->from_location_id, $t->transfer_no, 'Transfer cancelled', $login);
+                self::compact((int) $log->to_location_id);
             }
         }
     }

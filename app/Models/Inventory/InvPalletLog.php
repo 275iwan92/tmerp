@@ -5,7 +5,7 @@ namespace App\Models\Inventory;
 use Illuminate\Database\Eloquent\Model;
 
 // Riwayat satu palet: CREATED (label kedatangan), RELABEL (label baru setelah isinya dipakai), MOVED (ikut Stock
-// Transfer), CLOSED (habis).
+// Transfer), CLOSED (habis), RESTACK (urutan tumpukan ditukar; note = "nomor lama > nomor baru").
 class InvPalletLog extends Model
 {
     public const UPDATED_AT = null;

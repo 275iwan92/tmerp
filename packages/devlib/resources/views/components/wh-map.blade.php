@@ -9,7 +9,7 @@
     $cfg['status'] = array_map(fn ($s) => Lang::text($s), WhMap::STATUS);
     $cfg['text'] = array_map(fn ($s) => Lang::text($s), ['bin' => 'Bin', 'capacity' => 'Capacity', 'item' => 'Item', 'qty' => 'Qty', 'idle' => 'Idle', 'dead' => 'Dead stock',
         'level' => 'Level', 'nostock' => 'No stock in this bin.', 'saved' => 'Layout saved.', 'failed' => 'Could not save the layout.', 'nomatch' => 'No bin matches the search.',
-        'matches' => 'bins match', 'label' => 'Label']);
+        'matches' => 'bins match', 'label' => 'Label', 'stack' => 'Stack — top to bottom', 'up' => 'Move up', 'down' => 'Move down']);
     $pad = 1.5;   // meter kosong di sekeliling gedung (tempat tulisan ukuran)
     $vb = (-$pad * $S).' '.(-$pad * $S).' '.(($width + 2 * $pad) * $S).' '.(($height + 2 * $pad) * $S);
     $hatch = 'dl-whmap-hatch-'.$id;
@@ -37,6 +37,8 @@
         @endforeach
         <button type="button" data-wm-only="DEAD"><i class="dl-whmap__swatch dl-whmap__swatch--dead"></i>{{ Lang::text('Dead stock') }} <b>{{ $counts['DEAD'] }}</b></button>
         @if ($counts['EXPIRY'])<button type="button" data-wm-only="EXPIRY"><i class="dl-whmap__swatch dl-whmap__swatch--expiry"></i>{{ Lang::text('Expired / expires soon') }} <b>{{ $counts['EXPIRY'] }}</b></button>@endif
+        @if ($counts['REMNANT'])<button type="button" data-wm-only="REMNANT"><i class="dl-whmap__swatch dl-whmap__swatch--remnant"></i>{{ Lang::text('Remnant') }} <b>{{ $counts['REMNANT'] }}</b></button>@endif
+        @if ($counts['BURIED'])<button type="button" data-wm-only="BURIED"><i class="dl-whmap__swatch dl-whmap__swatch--buried"></i>{{ Lang::text('Buried') }} <b>{{ $counts['BURIED'] }}</b></button>@endif
     </div>
     <div class="dl-whmap__body">
         <div class="dl-whmap__canvas">
@@ -63,17 +65,21 @@
                                     $st = $cellStatus($c);
                                     $dead = $cellDead($c);
                                     $exp = $cellExpiry($c);
+                                    $rem = $cellHas($c, 'remnant');
+                                    $bur = $cellHas($c, 'buried');
+                                    $units = $cellCount($c);
+                                    $dots = array_keys(array_filter(['dead' => $dead, 'exp' => $exp, 'bur' => $bur, 'rem' => $rem]));
                                     $cw = $c['w'] * $S;
                                     $ch = $c['h'] * $S;
                                     $find = strtolower(implode(' ', array_map(fn ($b) => ($bins[$b]['code'] ?? '').' '.implode(' ', array_map(fn ($i) => ($i['code'] ?? '').' '.($i['name'] ?? '').' '.($i['lot'] ?? ''), $bins[$b]['items'] ?? [])), $c['bins'] ?? [])));
                                     $fs = max(1.6, min(3.2, $cw / max(strlen((string) $c['label']), 1) * 1.5, $ch * 0.42));
                                 @endphp
-                                <g class="dl-whmap__cell dl-whmap__cell--{{ strtolower($st) }} {{ $dead ? 'is-dead' : '' }}" data-wm-cell="{{ implode(',', $c['bins'] ?? []) }}" data-status="{{ $st }}" data-dead="{{ $dead ? 1 : 0 }}" data-expiry="{{ $exp ? 1 : 0 }}" data-find="{{ $find }}" transform="translate({{ ($c['x'] - $z['x']) * $S }} {{ ($c['y'] - $z['y']) * $S }})" tabindex="0">
+                                <g class="dl-whmap__cell dl-whmap__cell--{{ strtolower($st) }} {{ $dead ? 'is-dead' : '' }}" data-wm-cell="{{ implode(',', $c['bins'] ?? []) }}" data-status="{{ $st }}" data-dead="{{ $dead ? 1 : 0 }}" data-expiry="{{ $exp ? 1 : 0 }}" data-remnant="{{ $rem ? 1 : 0 }}" data-buried="{{ $bur ? 1 : 0 }}" data-find="{{ $find }}" transform="translate({{ ($c['x'] - $z['x']) * $S }} {{ ($c['y'] - $z['y']) * $S }})" tabindex="0">
                                     <rect width="{{ $cw }}" height="{{ $ch }}" rx="1" @if ($st === 'BLOCKED' && ! $dead) style="fill:url(#{{ $hatch }}-{{ $f['no'] }})" @endif/>
                                     <text x="{{ $cw / 2 }}" y="{{ $ch / 2 + $fs * 0.36 }}" text-anchor="middle" style="font-size:{{ round($fs, 2) }}px">{{ $c['label'] }}</text>
                                     @if (count($c['bins'] ?? []) > 1)<text class="dl-whmap__lv" x="{{ $cw - 0.8 }}" y="2.6" text-anchor="end">×{{ count($c['bins']) }}</text>@endif
-                                    @if ($dead)<circle class="dl-whmap__deaddot" cx="2" cy="2" r="1.1"/>@endif
-                                    @if ($exp)<circle class="dl-whmap__expdot" cx="{{ $dead ? 4.8 : 2 }}" cy="2" r="1.1"/>@endif
+                                    @foreach ($dots as $n => $dot)<circle class="dl-whmap__{{ $dot }}dot" cx="{{ 2 + $n * 2.8 }}" cy="2" r="1.1"/>@endforeach
+                                    @if ($units)<text class="dl-whmap__n" x="{{ $cw - 0.8 }}" y="{{ $ch - 0.9 }}" text-anchor="end">{{ $units }}</text>@endif
                                 </g>
                             @endforeach
                             @if ($saveUrl)<rect class="dl-whmap__grip" data-wm-grip x="{{ $z['w'] * $S - 3 }}" y="{{ $z['h'] * $S - 3 }}" width="3" height="3"/>@endif

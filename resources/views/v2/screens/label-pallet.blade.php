@@ -4,7 +4,9 @@
      Alur: pilih gedung (atau datang dari form Penerimaan Barang: ?receipt=) -> DAFTAR PEKERJAAN LABEL = posisi stok yang
      label paletnya belum cocok dengan saldo (Arrival label = barang datang belum berlabel; Relabel after use = isinya
      sudah dipakai) -> buka satu baris -> isi palet (qty, kode palet supplier, lot, kedaluwarsa) -> Create & Print;
-     atau Relabel (qty sisa; 0 = palet ditutup); atau cetak ulang. Palet tidak mengubah stok. --}}
+     atau Relabel (qty sisa; 0 = palet ditutup); atau cetak ulang. Palet tidak mengubah stok.
+     Sisa (user 2026-10-03): jenis satuan Pallet / Pack (otomatis Pack bila lembaran di bawah batas sisa); saat label ulang
+     sisa boleh langsung dipindah ke tumpukan lain ("Now in bin") = Stock Transfer dibuat dan di-Confirm. --}}
 @php
     use App\Support\V2\Data\Labels;
     use App\Support\V2\Data\Pallets;
@@ -12,14 +14,19 @@
     use App\Support\V2\Src;
     use App\Models\Inventory\InvPallet;
     use App\Models\Master\WhLoc;
+    use App\Services\Inventory\WarehouseStock;
     use Devlib\Components\Label;
     use Devlib\Components\LabelSheet;
     use Devlib\Locale;
 
     $home = route('v2.screen', 'label-pallet');
     $pv = Pallets::receipt(request()->integer('receipt') ?: null);
-    $picked = request()->integer('pallet') ? InvPallet::query()->find(request()->integer('pallet')) : null;
-    $pos = $picked ? Pallets::position($picked->positionKey()) : (request('pos') ? Pallets::position((string) request('pos')) : null);
+    // ?unit= dari Stack Monitor: angka = id palet / pak, selain itu kunci posisi stok yang belum berlabel.
+    $unit = (string) request('unit', '');
+    $palletId = request()->integer('pallet') ?: (ctype_digit($unit) ? (int) $unit : 0);
+    $posKey = (string) request('pos', ctype_digit($unit) ? '' : $unit);
+    $picked = $palletId ? InvPallet::query()->find($palletId) : null;
+    $pos = $picked ? Pallets::position($picked->positionKey()) : ($posKey !== '' ? Pallets::position($posKey) : null);
     $posBin = $pos ? WhLoc::query()->find($pos['location_id']) : null;
     $wh = Warehouse::current($posBin?->warehouse_id ?: (request()->integer('wh') ?: null));
     $todo = $wh || $pv ? Pallets::todo($home, $wh?->id_warehouse, $pv) : [];
@@ -90,7 +97,11 @@
                             ['key' => 'lot_no', 'label' => 'Lot No.', 'type' => 'text', 'width' => '180px'],
                             ['key' => 'expiry_date', 'label' => 'Expiry Date', 'type' => 'date', 'width' => '170px'],
                         ]" />
-                    <x-dl::field.text name="notes" label="Notes" :source="Src::of('tm2inv.inv_pallet.notes')" />
+                    <x-dl::form.row :cols="2">
+                        <x-dl::field.select name="unit_kind" label="Kind of the new units" :options="Pallets::kindOptions()" value="" :source="Src::of('tm2inv.inv_pallet.unit_kind')"
+                            hint="Stack 1 is the bottom. A new unit goes on top; when a unit leaves, the ones above move down by themselves." />
+                        <x-dl::field.text name="notes" label="Notes" :source="Src::of('tm2inv.inv_pallet.notes')" />
+                    </x-dl::form.row>
                     <x-dl::action-bar>
                         <x-dl::button icon="print" label="Create & Print" type="submit" />
                     </x-dl::action-bar>
@@ -105,7 +116,9 @@
                 <x-dl::grid id="pallets-of-position" mode="report" row-tone="tone" :per-page="50" search="Search pallet no., lot, supplier code..." source="{{ Src::of('tm2inv.inv_pallet') }}"
                     :rows="Pallets::rows($pallets, $home)"
                     :columns="[
-                        ['key' => 'no', 'label' => 'Pallet No.'],
+                        ['key' => 'no', 'label' => 'Pallet / Pack No.'],
+                        ['key' => 'stack', 'label' => 'Stack No.', 'type' => 'number'],
+                        ['key' => 'kind', 'label' => 'Kind'],
                         ['key' => 'qty', 'label' => 'Qty Now', 'type' => 'number', 'sum' => true],
                         ['key' => 'initial', 'label' => 'Qty at Arrival', 'type' => 'number'],
                         ['key' => 'unit', 'label' => 'Unit'],
@@ -119,10 +132,15 @@
             </x-dl::card>
             <x-dl::form.row :cols="2">
                 <x-dl::action-form action="{{ route('v2.wh.pallet.relabel') }}">
-                    <x-dl::card title="Relabel after Use" icon="fa-rotate" description="Choose the pallet that was opened and type what is left on it. A new label is printed with the same pallet number and arrival date; 0 closes the pallet.">
+                    <x-dl::card title="Relabel after Use" icon="fa-rotate" description="Type what is left on the pallet that was opened. At or below the remnant limit it becomes a remnant pack. If the remnant was put on another pile, choose that bin: a Stock Transfer is made and the pack goes on top.">
                         <x-dl::form.row :cols="2">
                             <x-dl::field.select name="pallet_id" label="Pallet" required :options="Pallets::options($pallets)" :value="($picked ?? $pallets->first())->id_pallet" :source="Src::of('tm2inv.inv_pallet')" />
                             <x-dl::field.decimal name="remaining" label="Remaining quantity" required :value="$picked || $pallets->count() === 1 ? ($picked ?? $pallets->first())->qty : null" :source="Src::of('tm2inv.inv_pallet.qty')" />
+                        </x-dl::form.row>
+                        <x-dl::form.row :cols="2">
+                            <x-dl::field.select name="unit_kind" label="Unit kind" :options="Pallets::kindOptions()" value="" :source="Src::of('tm2inv.inv_pallet.unit_kind')"
+                                :hint="raw(str_replace(':limit', Locale::number(WarehouseStock::remnantSheets()), t('Remnant limit: :limit sheets (Settings, Constants).')))" />
+                            <x-dl::field.select name="to_location_id" label="Now in bin" :options="['' => t('Stays in the same bin')] + Labels::binOptions((int) ($posBin?->warehouse_id ?? 0))" value="" :source="Src::of('tm2mst.wh_loc')" />
                         </x-dl::form.row>
                         <x-dl::form.row :cols="3">
                             <x-dl::field.text name="note" label="Note" placeholder="e.g. taken for a work order" :source="Src::of('tm2inv.inv_pallet_log.note')" />
@@ -183,6 +201,8 @@
                     :columns="[
                         ['key' => 'no', 'label' => 'Pallet No. / Item', 'type' => 'doc', 'party' => 'item'],
                         ['key' => 'bin', 'label' => 'Bin'],
+                        ['key' => 'stack', 'label' => 'Stack No.', 'type' => 'number'],
+                        ['key' => 'kind', 'label' => 'Kind'],
                         ['key' => 'qty', 'label' => 'Qty Now', 'type' => 'number'],
                         ['key' => 'unit', 'label' => 'Unit'],
                         ['key' => 'arrived', 'label' => 'Arrived', 'type' => 'date'],
@@ -193,7 +213,7 @@
                     ]"
                     :stats="[['label' => 'All'], ['label' => 'Expired', 'where' => ['expiry_state' => Pallets::expiry('EXPIRED')], 'tone' => 'danger'], ['label' => 'Expires soon', 'where' => ['expiry_state' => Pallets::expiry('SOON')], 'tone' => 'warn'],
                         ['label' => 'No expiry date', 'where' => ['expiry_state' => Pallets::expiry('NONE')], 'tone' => 'neutral']]"
-                    :filters="['bin' => 'Bin', 'expiry_state' => 'Expiry']" />
+                    :filters="['bin' => 'Bin', 'kind' => 'Kind', 'expiry_state' => 'Expiry']" />
             @endif
         </x-dl::card>
     @endunless

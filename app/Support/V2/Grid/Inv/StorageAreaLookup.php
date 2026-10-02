@@ -76,6 +76,8 @@ class StorageAreaLookup extends DbLookup
             ['key' => 'map_h', 'label' => 'Depth (m)', 'type' => 'number', 'decimals' => 2, 'width' => '100px'],
             // Setinggi apa barang boleh ditumpuk di area ini; kosong = tinggi bersih lantainya. Luas x tinggi tumpuk = volume simpan.
             ['key' => 'stack_height_m', 'label' => 'Stack Height (m)', 'type' => 'number', 'decimals' => 2, 'width' => '140px'],
+            // Berapa palet boleh ditumpuk di satu tapak lantai; kosong = tidak dibatasi, tumpukan hanya dipantau (Stack Monitor).
+            ['key' => 'max_stack', 'label' => 'Max. Stacked Pallets', 'type' => 'number', 'decimals' => 0, 'width' => '160px'],
             ['key' => 'sort_order', 'label' => 'Order', 'type' => 'number', 'decimals' => 0, 'width' => '80px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '80px'],
         ];
@@ -99,7 +101,7 @@ class StorageAreaLookup extends DbLookup
             // Paling panjang 6 huruf: kode area menjadi bagian kode bin dan kolom wh_loc.row_code (10 huruf).
             'zone_code' => ['string', 'max:6', 'regex:/^[A-Z0-9]+$/'], 'zone_name' => ['string', 'max:100'], 'zone_type' => [Rule::in(array_keys(WhZone::TYPES))],
             'storage_mode' => [Rule::in(array_keys(WhZone::MODES))], 'stock_class' => [Rule::in(array_keys(WhZone::STOCK_CLASSES))],
-            'map_x' => ['min:0'], 'map_y' => ['min:0'], 'map_w' => ['min:1'], 'map_h' => ['min:1'], 'stack_height_m' => ['min:0', 'max:50'],
+            'map_x' => ['min:0'], 'map_y' => ['min:0'], 'map_w' => ['min:1'], 'map_h' => ['min:1'], 'stack_height_m' => ['min:0', 'max:50'], 'max_stack' => ['nullable', 'integer', 'min:0', 'max:20'],
             'sort_order' => ['integer', 'min:0', 'max:65535']];
     }
 

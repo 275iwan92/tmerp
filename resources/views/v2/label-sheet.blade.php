@@ -4,6 +4,8 @@
 @extends('v2.layout', ['title' => t('Labels'), 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">
+        @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+        @if (session('v2_error'))<x-dl::alert tone="danger" :message="raw(session('v2_error'))" />@endif
         @if (! $labels)
             <x-dl::empty-state title="Nothing to print" message="The chosen bins, stock or pallets were not found." icon="fa-qrcode">
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$back" />

@@ -137,6 +137,7 @@ final class Grids
         Inv\StorageAreaLookup::class,
         Inv\BinLookup::class,
         Inv\StockByLocationReport::class,
+        Inv\StackMonitorReport::class,
         Inv\StockCardAllReport::class,
         Inv\StockSummaryReport::class,
         Inv\StockRecapReport::class,

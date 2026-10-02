@@ -31,7 +31,7 @@
         $pallet = $res['pallet'];
         $bin = $res['bin'];
     @endphp
-    <x-dl::card :title="'Pallet · '.raw($pallet->pallet_no)" icon="fa-pallet" :description="raw($pallet->item_code.' · '.$pallet->item_name)">
+    <x-dl::card :title="($pallet->isPack() ? 'Pack' : 'Pallet').' · '.raw($pallet->pallet_no)" icon="fa-pallet" :description="raw($pallet->item_code.' · '.$pallet->item_name)">
         <x-slot:actions>
             @if ($pallet->isActive())
                 <x-dl::action-form action="{{ route('v2.wh.pallet.transfer', $pallet->id_pallet) }}">
@@ -45,6 +45,7 @@
             @include('v2.partials.label', ['l' => $res['label'], 'size' => 'md'])
             <x-dl::form.col>
                 <x-dl::field.display label="Bin" :value="$bin?->location_code ?? '—'" :source="Src::of('tm2inv.inv_pallet.location_id')" />
+                <x-dl::field.display label="Stack No." :value="$pallet->isActive() && $pallet->stack_no ? $pallet->stack_no.' · '.t($pallet->isPack() ? 'Remnant' : 'Pallet') : '—'" :source="Src::of('tm2inv.inv_pallet.stack_no', 'tm2inv.inv_pallet.unit_kind')" />
                 <x-dl::field.display label="Quantity now / at arrival" :value="Locale::decimal($pallet->qty, 2).' / '.Locale::decimal($pallet->qty_initial, 2).' '.$pallet->uom_code" :source="Src::of('tm2inv.inv_pallet.qty')" />
                 <x-dl::field.display label="Supplier Pallet Code" :value="$pallet->supplier_pallet_code ?: '—'" :source="Src::of('tm2inv.inv_pallet.supplier_pallet_code')" />
                 <x-dl::field.display label="Expiry Date" :value="$pallet->expiry_date ? Locale::d($pallet->expiry_date) : '—'" :source="Src::of('tm2inv.inv_pallet.expiry_date')" />
@@ -54,7 +55,7 @@
             :rows="Pallets::history($pallet)"
             :columns="[
                 ['key' => 'at', 'label' => 'When', 'type' => 'date'],
-                ['key' => 'action', 'label' => 'What', 'type' => 'badge', 'tones' => array_combine(array_map(fn (string $a) => t($a), Pallets::ACTIONS), ['success', 'warn', 'info', 'neutral'])],
+                ['key' => 'action', 'label' => 'What', 'type' => 'badge', 'tones' => array_combine(array_map(fn (string $a) => t($a), Pallets::ACTIONS), ['success', 'warn', 'info', 'neutral', 'violet'])],
                 ['key' => 'before', 'label' => 'Qty Before', 'type' => 'number'],
                 ['key' => 'after', 'label' => 'Qty After', 'type' => 'number'],
                 ['key' => 'from', 'label' => 'From Bin'],

@@ -48,7 +48,8 @@ class UatWarehouseSeeder extends Seeder
     ];
 
     // Tinggi tumpuk per area (m): tumpukan palet kertas, rak, barang jadi; area lain = STACK_DEFAULT.
-    public const STACK = ['PPR' => 1.6, 'PPR2' => 1.6, 'SHT' => 1.6, 'CSG' => 1.6, 'DSK' => 1.6, 'INK' => 2.4, 'TLG' => 2.0, 'FG' => 1.8, 'STR' => 1.8];
+    // Area kertas / sheet = dua palet bertumpuk (satu palet kertas penuh kira-kira 1,5 m); lantai 2 dibatasi tinggi bersihnya.
+    public const STACK = ['PPR' => 3.2, 'PPR2' => 3.2, 'SHT' => 3.2, 'CSG' => 3.2, 'DSK' => 3.0, 'INK' => 2.4, 'TLG' => 2.0, 'FG' => 1.8, 'STR' => 1.8];
 
     public const STACK_DEFAULT = 1.5;
 
@@ -129,11 +130,14 @@ class UatWarehouseSeeder extends Seeder
         if (! str_starts_with(DB::connection('tm2mst')->getDatabaseName(), 'ddt') || ! str_starts_with(DB::connection('tm2inv')->getDatabaseName(), 'ddt')) {
             throw new RuntimeException('UatWarehouseSeeder only runs on the dummy database (ddt*): add --env=mockup.');
         }
+        // Dummy tumpukan / sisa rim menempel di bin gedung ini: dihapus dulu, dibuat lagi sesudah gedungnya ada.
+        UatWarehouseStackSeeder::clean();
         $this->clean();
         $bins = $this->layout();
         $this->stock($bins);
         $this->pallets($bins);
         $this->transfers($bins);
+        $this->call(UatWarehouseStackSeeder::class);
     }
 
     // Hapus dummy seeder ini (urutan: transfer -> dokumen stok + kartunya -> bin -> area -> gedung) dan kembalikan cur_stock.

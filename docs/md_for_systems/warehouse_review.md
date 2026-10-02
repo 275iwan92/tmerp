@@ -265,3 +265,56 @@ forget data dummy on mockup.test."*
 - Diuji di kedua situs dengan transaksi yang dibatalkan kembali: geser area, blokir bin, transfer (buat, Confirm, cetak,
   Cancel), label palet (buat, label ulang), label item dan lokasi, lacak. Semua layar terbuka tanpa galat.
 
+---
+
+## 11. Putaran 3 (2026-10-03): lokasi = X, Y dan stack; sisa 1 - 2 rim
+
+Perintah user: "Lokasi penempatan barang selain posisi X dan Y juga ada stack, terutama untuk barang yang tersisa 1 atau 2
+rim" lalu "mapping warehouse with X, Y, stack. FIX IT NOW". Rancangan dan aturan lengkap: `warehouselayout_tier1.md`
+bagian 15 (15.7 = yang dibangun). Terpasang di mockup.test dan tmerp.test; data contoh hanya mockup.test.
+
+### 11.1 Yang ditambahkan
+
+| Hal | Di mana | Gambar (`mockups/warehouse_app/`) |
+|---|---|---|
+| Nomor tumpukan tiap palet / pak (1 = paling bawah), jumlah satuan di kotak bin, tumpukan tampak samping dengan panah tukar urutan | Inventory > Warehouse > Warehouse Map | `24` |
+| Tumpukan sisa: banyak pak dari item berbeda di satu tapak; sisa lama berwarna merah | Warehouse Map | `25` |
+| Layar pemantau semua tumpukan | Inventory > Warehouse > **Stack Monitor** | `26` |
+| Jenis satuan Pallet / Pack, sisa otomatis di bawah batas, "Now in bin" saat label ulang | Label & QR Code > Print Pallet Label | `27` |
+| Alamat di label = bin + nomor tumpukan; label sisa 100 x 50 mm | label palet / pak | — |
+| Batas tumpuk per area (boleh kosong) | Inventory > Warehouse > Storage Areas | — |
+
+### 11.2 Cara mencoba (mockup.test)
+
+1. Inventory > Warehouse > **Warehouse Map**, gedung A10. Angka kecil di kotak bin = jumlah satuan yang ditumpuk.
+2. Klik `L03-01`: panel menampilkan Stack 3 units · 2 pallets · 1 pack, tinggi tumpukan, dan daftar dari atas ke bawah
+   (pak sisa lama di atas dua palet dead stock). Klik panah untuk menukar urutan.
+3. Klik **Remnant** di atas peta lalu bin `L06-05`: tumpukan sisa enam pak (kertas, ambri, sheet), dua di antaranya sisa lama.
+4. Klik **Buried** lalu bin `L04-02`: palet tertua berada di bawah palet baru; panel menyebut berapa yang harus dipindah.
+5. Inventory > Warehouse > **Stack Monitor**: klik Buried, Remnant, Old remnant, Stack not recorded. Open pada satu baris
+   membuka Print Pallet Label untuk satuan itu.
+6. Di Print Pallet Label, bagian Relabel after Use: ketik sisa 300, biarkan Unit kind Automatic, pilih Now in bin
+   `A10-PPR-L06-05`, lalu Relabel & Print. Hasil: palet menjadi pak sisa, Stock Transfer dibuat dan di-Confirm, pak itu
+   menjadi nomor paling atas di tumpukan sisa, label kecil tercetak dengan bin + nomor tumpukan.
+7. Inventory > Warehouse > Storage Areas: isi Max. Stacked Pallets untuk satu area, lalu lihat Stack Monitor.
+
+### 11.3 Yang saya putuskan sendiri (mohon dikoreksi bila salah)
+
+Lihat tabel di `warehouselayout_tier1.md` bagian 15.7. Yang paling perlu penilaian user:
+
+| # | Keputusan |
+|---|---|
+| 1 | "Tertimbun" hanya dihitung bila yang menindih adalah palet (bukan pak sisa). |
+| 2 | Sisa otomatis hanya untuk satuan lembar / rim; untuk kg dan pcs petugas memilih sendiri. |
+| 3 | Di tmerp.test tinggi tumpuk area kertas masih perkiraan lama 1,6 m; officer mengubahnya di Storage Areas. |
+
+### 11.4 Catatan data contoh
+
+Banyak palet contoh berstatus **Over height limit**: isi palet contoh besar (mis. 5.000 lembar ivory 300 g = sekitar 2,1 m
+per palet), jadi dua palet bertumpuk melebihi tinggi tumpuk 3,2 m. Itu hitungan yang benar atas data contoh, bukan cacat;
+pada data nyata hasilnya mengikuti qty per palet dan tinggi tumpuk yang diisi officer.
+
+### 11.5 Belum dibangun
+
+- Saran "pakai sisa dulu" di dokumen Stock Out / booking bahan (urutannya sudah dihitung; tampilannya ikut Stock Out v2).
+- Ink Mixing (tinta khusus hasil campuran): ditunda user, konsep di `warehouselayout_tier1.md` bagian 16.
