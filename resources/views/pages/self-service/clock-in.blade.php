@@ -94,9 +94,9 @@ new #[Layout('layouts::app')] #[Title('Absen GPS — TELASIH MAKMUR ERP')] class
 
         if ($this->isInRadius) {
             $this->writeAttendanceFromGps($log);
-            $this->resultMessage = 'Presensi tersimpan — dalam radius kantor.';
+            $this->resultMessage = t('Attendance saved — within the office radius.');
         } else {
-            $this->resultMessage = 'Lokasi di luar radius kantor — pengajuan dikirim ke HR untuk approval, presensi belum tercatat sampai disetujui.';
+            $this->resultMessage = t('Location outside the office radius — the request was sent to HR for approval, attendance is not recorded until approved.');
         }
 
         unset($this->todayLogs);
@@ -121,22 +121,22 @@ new #[Layout('layouts::app')] #[Title('Absen GPS — TELASIH MAKMUR ERP')] class
 <div class="max-w-[420px] mx-auto my-6 px-4">
     @if (! $employeeId)
         <div class="bg-white border border-[#d7dbe2] rounded-xl p-6 text-center text-sm text-muted">
-            Akun ini belum ditautkan ke data karyawan — hubungi HR untuk mengaktifkan presensi mobile.
+            {{ t('This account is not linked to employee data yet — contact HR to enable mobile attendance.') }}
         </div>
     @else
         <div class="bg-[#16140f] text-[#f3ecdc] rounded-3xl p-5 shadow-xl" x-data="gpsClockIn()">
             <div class="flex items-center justify-between border-b border-[#332d20] pb-3 mb-4">
                 <div>
-                    <div class="text-[10px] font-bold uppercase tracking-widest text-[#f0812c]">ESS Mobile Presensi</div>
-                    <div class="text-base font-bold">Absen GPS Geofencing</div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-[#f0812c]">{{ t('ESS Mobile Attendance') }}</div>
+                    <div class="text-base font-bold">{{ t('GPS Geofencing Clock-in') }}</div>
                 </div>
             </div>
 
             <div class="bg-[#1f1c15] border border-[#332d20] rounded-2xl p-4 mb-4">
-                <div class="text-[10px] uppercase tracking-wide text-[#a89d86] mb-1">Jarak ke Lokasi Kerja</div>
+                <div class="text-[10px] uppercase tracking-wide text-[#a89d86] mb-1">{{ t('Distance to Work Location') }}</div>
 
                 <template x-if="!checked && !error">
-                    <div class="text-xs text-[#a89d86]">Menunggu izin lokasi GPS…</div>
+                    <div class="text-xs text-[#a89d86]">{{ t('Waiting for GPS location permission…') }}</div>
                 </template>
 
                 <template x-if="error">
@@ -144,17 +144,17 @@ new #[Layout('layouts::app')] #[Title('Absen GPS — TELASIH MAKMUR ERP')] class
                 </template>
 
                 @if ($locationChecked)
-                    <div class="font-mono text-2xl font-semibold">{{ $distanceMeters }}<span class="text-xs text-[#a89d86] ml-1">meter</span></div>
+                    <div class="font-mono text-2xl font-semibold">{{ $distanceMeters }}<span class="text-xs text-[#a89d86] ml-1">{{ t('meters') }}</span></div>
                     <div class="h-2 rounded bg-[#332d20] mt-2 overflow-hidden">
                         <div class="h-full {{ $isInRadius ? 'bg-[#3fcf8e]' : 'bg-[#f0812c]' }}" style="width: {{ min(100, ($distanceMeters / 200) * 100) }}%"></div>
                     </div>
                     <div class="inline-flex items-center gap-1.5 mt-2 text-[11px] font-semibold px-2.5 py-1 rounded-full {{ $isInRadius ? 'bg-[#163425] text-[#3fcf8e]' : 'bg-[#3a1f1c] text-[#ef6a5b]' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-                        {{ $isInRadius ? 'Dalam radius kantor' : 'Di luar radius kantor' }}
+                        {{ $isInRadius ? t('Within the office radius') : t('Outside the office radius') }}
                     </div>
                 @endif
 
-                <button type="button" @click="checkLocation()" class="w-full mt-3 text-[11px] text-[#a89d86] underline">↻ Cek ulang lokasi GPS</button>
+                <button type="button" @click="checkLocation()" class="w-full mt-3 text-[11px] text-[#a89d86] underline">↻ {{ t('Recheck GPS location') }}</button>
             </div>
 
             @if ($resultMessage)
@@ -163,21 +163,21 @@ new #[Layout('layouts::app')] #[Title('Absen GPS — TELASIH MAKMUR ERP')] class
 
             <div class="grid grid-cols-2 gap-2 mb-4">
                 <button type="button" wire:click="clockIn('IN')" @if(!$locationChecked) disabled @endif
-                    class="py-3.5 rounded-2xl font-bold text-sm {{ $locationChecked ? 'bg-[#f0812c] text-[#100f0c]' : 'bg-[#332d20] text-[#746a58]' }}">Absen Masuk</button>
+                    class="py-3.5 rounded-2xl font-bold text-sm {{ $locationChecked ? 'bg-[#f0812c] text-[#100f0c]' : 'bg-[#332d20] text-[#746a58]' }}">{{ t('Record Clock In') }}</button>
                 <button type="button" wire:click="clockIn('OUT')" @if(!$locationChecked) disabled @endif
-                    class="py-3.5 rounded-2xl font-bold text-sm border border-[#332d20] {{ $locationChecked ? 'text-[#f3ecdc]' : 'text-[#746a58]' }}">Absen Pulang</button>
+                    class="py-3.5 rounded-2xl font-bold text-sm border border-[#332d20] {{ $locationChecked ? 'text-[#f3ecdc]' : 'text-[#746a58]' }}">{{ t('Record Clock Out') }}</button>
             </div>
 
-            <div class="text-[10px] uppercase tracking-wide text-[#a89d86] mb-2">Riwayat Hari Ini</div>
+            <div class="text-[10px] uppercase tracking-wide text-[#a89d86] mb-2">{{ t('Today\'s History') }}</div>
             <div class="flex flex-col gap-1.5">
                 @forelse ($this->todayLogs as $log)
                     <div class="flex justify-between text-xs bg-[#1f1c15] border border-[#332d20] rounded-lg px-3 py-2">
-                        <span>{{ $log->clock_type === 'IN' ? 'Masuk' : 'Pulang' }}</span>
+                        <span>{{ $log->clock_type === 'IN' ? t('Clock In') : t('Clock Out') }}</span>
                         <span class="font-mono">{{ $log->created_at->format('H:i:s') }}</span>
                         <span class="text-[10px] px-2 py-0.5 rounded-full {{ $log->hr_approval_status === 'PENDING' ? 'bg-[#3a1f1c] text-[#ef6a5b]' : 'bg-[#163425] text-[#3fcf8e]' }}">{{ $log->hr_approval_status }}</span>
                     </div>
                 @empty
-                    <div class="text-xs text-[#746a58] text-center py-2">Belum ada presensi hari ini.</div>
+                    <div class="text-xs text-[#746a58] text-center py-2">{{ t('No attendance today yet.') }}</div>
                 @endforelse
             </div>
         </div>
@@ -192,7 +192,7 @@ new #[Layout('layouts::app')] #[Title('Absen GPS — TELASIH MAKMUR ERP')] class
                 checkLocation() {
                     this.error = null;
                     if (!navigator.geolocation) {
-                        this.error = 'Perangkat tidak mendukung GPS.';
+                        this.error = @js(t('This device does not support GPS.'));
                         this.$wire.reportLocationError(this.error);
                         return;
                     }
@@ -203,7 +203,7 @@ new #[Layout('layouts::app')] #[Title('Absen GPS — TELASIH MAKMUR ERP')] class
                         },
                         (err) => {
                             this.checked = false;
-                            this.error = 'Izin lokasi ditolak atau gagal membaca GPS.';
+                            this.error = @js(t('Location permission denied or GPS could not be read.'));
                             this.$wire.reportLocationError(this.error);
                         },
                         { enableHighAccuracy: true, timeout: 10000 }

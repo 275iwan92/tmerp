@@ -95,14 +95,14 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
             'updated_by' => Auth::user()->login,
         ]);
 
-        $this->dispatch('app-alert', type: 'success', message: 'Identitas perusahaan tersimpan.');
+        $this->dispatch('app-alert', type: 'success', message: t('Company identity saved.'));
     }
 
     public function removeCompanyLogo(string $variant): void
     {
         abort_unless(in_array($variant, ['color', 'inverse'], true), 404);
         CompanyLogo::remove($variant, Auth::user()->login);
-        $this->dispatch('app-alert', type: 'info', message: 'Logo perusahaan dihapus.');
+        $this->dispatch('app-alert', type: 'info', message: t('Company logo removed.'));
     }
 
     public function fontPresetOptions(): array
@@ -133,7 +133,7 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
             $this->logo = null;
         }
 
-        $this->dispatch('app-alert', type: 'success', message: 'Identitas aplikasi tersimpan.');
+        $this->dispatch('app-alert', type: 'success', message: t('Application identity saved.'));
     }
 
     public function removeLogo(): void
@@ -143,7 +143,7 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
         }
         $this->setConstant('APP_LOGO_PATH', null);
         $this->currentLogoPath = null;
-        $this->dispatch('app-alert', type: 'info', message: 'Logo dihapus, kembali ke badge teks.');
+        $this->dispatch('app-alert', type: 'info', message: t('Logo removed, back to the text badge.'));
     }
 
     protected function setConstant(string $key, ?string $value): void
@@ -160,18 +160,18 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
     <div class="max-w-[1100px] mx-auto my-5 px-4">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Identitas Aplikasi</div>
-            <p class="text-[11px] text-muted mb-4">Nama, tagline, logo & font aplikasi — dipakai di menu, topbar, dan halaman login. Bukan nama / logo perusahaan (itu di kartu Identitas Perusahaan di bawah, untuk kop dokumen cetak).</p>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Application Identity') }}</div>
+            <p class="text-[11px] text-muted mb-4">{{ t('Application name, tagline, logo & font — used in the menu, topbar and login page.') }} {{ t('Not the company name / logo (that is in the Company Identity card below, for the printed document letterhead).') }}</p>
 
             <form wire:submit="saveBranding" class="flex flex-col gap-3.5">
                 <div class="grid two gap-3.5">
-                    <x-form.input label="APP NAME *" wire:model="appName" name="appName" placeholder="mis. ERP TM" />
-                    <x-form.input label="Tagline" wire:model="appTagline" name="appTagline" placeholder="mis. packaging solution" />
+                    <x-form.input :label="t('APP NAME').' *'" wire:model="appName" name="appName" :placeholder="t('e.g. ERP TM')" />
+                    <x-form.input :label="t('Tagline')" wire:model="appTagline" name="appTagline" :placeholder="t('e.g. packaging solution')" />
                 </div>
 
                 <div class="grid two gap-3.5 items-end">
                     <div>
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Font Aplikasi</label>
+                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Application Font') }}</label>
                         <select wire:model="appFontKey" class="w-full px-2 py-1.5 border border-[#c7cfda] rounded text-xs">
                             @foreach ($this->fontPresetOptions() as $key => $label)
                                 <option value="{{ $key }}">{{ $label }}</option>
@@ -180,17 +180,17 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
                     </div>
 
                     <div>
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Logo Aplikasi</label>
+                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Application Logo') }}</label>
                         <div class="flex items-center gap-3">
                             @if ($currentLogoPath)
-                                <img src="{{ asset('storage/'.$currentLogoPath) }}" alt="Logo" class="w-10 h-10 rounded-md object-contain border border-[#e2e8f0] bg-[#f8fafc]">
+                                <img src="{{ asset('storage/'.$currentLogoPath) }}" alt="{{ t('Logo') }}" class="w-10 h-10 rounded-md object-contain border border-[#e2e8f0] bg-[#f8fafc]">
                             @else
-                                <div class="w-10 h-10 rounded-md border border-dashed border-[#c7cfda] flex items-center justify-center text-[10px] text-muted">Tanpa Logo</div>
+                                <div class="w-10 h-10 rounded-md border border-dashed border-[#c7cfda] flex items-center justify-center text-[10px] text-muted">{{ t('No Logo') }}</div>
                             @endif
                             <input type="file" wire:model="logo" accept="image/*" class="text-[11px]">
                             @if ($currentLogoPath)
-                                <button type="button" wire:click="removeLogo" wire:confirm="Hapus logo, kembali ke badge teks?"
-                                    class="text-[10.5px] font-semibold text-red-600 cursor-pointer">Hapus</button>
+                                <button type="button" wire:click="removeLogo" wire:confirm="{{ t('Remove the logo and go back to the text badge?') }}"
+                                    class="text-[10.5px] font-semibold text-red-600 cursor-pointer">{{ t('Remove') }}</button>
                             @endif
                         </div>
                         @error('logo') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
@@ -198,50 +198,50 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 <div>
-                    <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">💾 Simpan Identitas Aplikasi</button>
+                    <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">💾 {{ t('Save Application Identity') }}</button>
                 </div>
             </form>
         </div>
 
         <x-ui.card variant="panel" size="none" class="mt-4 p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Identitas Perusahaan</div>
-            <p class="text-[11px] text-muted mb-4">Dipakai di seluruh aplikasi dan kop semua dokumen cetak. Nama Terdaftar + NPWP hanya muncul saat dokumen ber-PPN dicetak dengan pilihan "PPN".</p>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Company Identity') }}</div>
+            <p class="text-[11px] text-muted mb-4">{{ t('Used throughout the application and on the letterhead of every printed document.') }} {{ t('Registered Name + NPWP only appear when a VAT document is printed with the "PPN" option.') }}</p>
 
             <form wire:submit="saveCompany" class="flex flex-col gap-3.5">
                 <div class="grid two gap-3.5">
-                    <x-form.input label="Nama Perusahaan *" wire:model="companyName" name="companyName" placeholder="mis. Telasih Makmur" hint="Default di aplikasi & cetakan (Non PPN)" />
-                    <x-form.input label="Nama Terdaftar (Badan Hukum) *" wire:model="companyLegalName" name="companyLegalName" placeholder="mis. CV. Langgeng Jaya Makmur" hint="Kop cetakan dokumen PPN" />
+                    <x-form.input :label="t('Company Name').' *'" wire:model="companyName" name="companyName" :placeholder="t('e.g. Telasih Makmur')" :hint="t('Default in the application & printouts (Non VAT)')" />
+                    <x-form.input :label="t('Registered Name (Legal Entity)').' *'" wire:model="companyLegalName" name="companyLegalName" :placeholder="t('e.g. CV. Langgeng Jaya Makmur')" :hint="t('Letterhead of VAT document printouts')" />
                 </div>
                 <div class="grid two gap-3.5">
-                    <x-form.input label="NPWP" wire:model="companyNpwp" name="companyNpwp" :case-toggle="false" placeholder="mis. 01.234.567.8-901.000" hint="Tercetak a.n. Nama Terdaftar pada dokumen PPN" />
-                    <x-form.input label="Telepon" wire:model="companyPhone" name="companyPhone" :case-toggle="false" placeholder="mis. (031) 1234567" />
+                    <x-form.input :label="t('NPWP')" wire:model="companyNpwp" name="companyNpwp" :case-toggle="false" :placeholder="t('e.g. 01.234.567.8-901.000')" :hint="t('Printed under the Registered Name on VAT documents')" />
+                    <x-form.input :label="t('Phone')" wire:model="companyPhone" name="companyPhone" :case-toggle="false" :placeholder="t('e.g. (031) 1234567')" />
                 </div>
                 <div class="grid two gap-3.5">
-                    <x-form.textarea label="Alamat" wire:model="companyAddress" name="companyAddress" autogrow placeholder="Alamat lengkap untuk kop dokumen" />
-                    <x-form.input label="Email" type="email" wire:model="companyEmail" name="companyEmail" placeholder="mis. info@perusahaan.co.id" />
+                    <x-form.textarea :label="t('Address')" wire:model="companyAddress" name="companyAddress" autogrow :placeholder="t('Full address for the document letterhead')" />
+                    <x-form.input :label="t('Email')" type="email" wire:model="companyEmail" name="companyEmail" :placeholder="t('e.g. info@company.co.id')" />
                 </div>
                 {{-- Logo perusahaan: kop cetakan (warna -> cetak warna, hitam-putih dibuat otomatis -> cetak hitam-putih). Bukan logo aplikasi. --}}
                 <div class="grid two gap-3.5">
                     <div class="flex flex-col gap-2">
-                        <x-form.file-dropzone label="Logo Perusahaan (latar terang)" wire:model="companyLogo" name="companyLogo" accept="image/*"
-                            hint="Dipakai di kop semua cetakan. Versi hitam-putih dibuat otomatis untuk cetakan hitam-putih. PNG latar transparan/putih, maks 2 MB." />
+                        <x-form.file-dropzone :label="t('Company Logo (light background)')" wire:model="companyLogo" name="companyLogo" accept="image/*"
+                            :hint="t('Used on the letterhead of every printout. A black-and-white version is made automatically for black-and-white printouts.').' '.t('PNG with transparent/white background, max 2 MB.')" />
                         @error('companyLogo') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
                         @if (CompanyLogo::url())
                             <div class="flex items-center gap-3 flex-wrap">
-                                <img src="{{ CompanyLogo::url() }}" alt="Logo perusahaan" class="h-8 max-w-full rounded border border-field-border bg-white p-1">
-                                <img src="{{ CompanyLogo::url('bw') }}" alt="Logo perusahaan hitam-putih" class="h-8 max-w-full rounded border border-field-border bg-white p-1">
-                                <x-ui.button variant="link" size="xs" wire:click="removeCompanyLogo('color')" wire:confirm="Hapus logo perusahaan? Kop cetakan kembali ke nama teks.">Hapus</x-ui.button>
+                                <img src="{{ CompanyLogo::url() }}" alt="{{ t('Company logo') }}" class="h-8 max-w-full rounded border border-field-border bg-white p-1">
+                                <img src="{{ CompanyLogo::url('bw') }}" alt="{{ t('Company logo black-and-white') }}" class="h-8 max-w-full rounded border border-field-border bg-white p-1">
+                                <x-ui.button variant="link" size="xs" wire:click="removeCompanyLogo('color')" wire:confirm="{{ t('Remove the company logo? The printout letterhead goes back to the text name.') }}">{{ t('Remove') }}</x-ui.button>
                             </div>
                         @endif
                     </div>
                     <div class="flex flex-col gap-2">
-                        <x-form.file-dropzone label="Logo Perusahaan (latar gelap)" wire:model="companyLogoInverse" name="companyLogoInverse" accept="image/*"
-                            hint="Versi tulisan putih, untuk dipasang di atas latar gelap. PNG latar transparan, maks 2 MB." />
+                        <x-form.file-dropzone :label="t('Company Logo (dark background)')" wire:model="companyLogoInverse" name="companyLogoInverse" accept="image/*"
+                            :hint="t('White-lettering version, for placing on a dark background. PNG with transparent background, max 2 MB.')" />
                         @error('companyLogoInverse') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
                         @if (CompanyLogo::url('inverse'))
                             <div class="flex items-center gap-3 flex-wrap">
-                                <img src="{{ CompanyLogo::url('inverse') }}" alt="Logo perusahaan tulisan putih" class="h-8 max-w-full rounded bg-navy p-1">
-                                <x-ui.button variant="link" size="xs" wire:click="removeCompanyLogo('inverse')" wire:confirm="Hapus logo perusahaan versi latar gelap?">Hapus</x-ui.button>
+                                <img src="{{ CompanyLogo::url('inverse') }}" alt="{{ t('Company logo white lettering') }}" class="h-8 max-w-full rounded bg-navy p-1">
+                                <x-ui.button variant="link" size="xs" wire:click="removeCompanyLogo('inverse')" wire:confirm="{{ t('Remove the dark-background version of the company logo?') }}">{{ t('Remove') }}</x-ui.button>
                             </div>
                         @endif
                     </div>

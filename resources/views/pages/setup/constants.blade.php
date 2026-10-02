@@ -32,12 +32,12 @@ new #[Title('Constants — TELASIH MAKMUR ERP')] class extends Component
             // opt yg sama) -- ikut kontrak yg sudah dipakai Currency/UOM apa
             // adanya, jadi opsinya kode kategori polos (BRANDING/FINANCE/dst),
             // bukan label ramah "Identitas Aplikasi".
-            'category_code' => ['label' => 'Kategori', 'type' => 'select', 'options' => SysConstantCategory::query()->orderBy('sort_order')->pluck('code')->all()],
-            'constant_key' => ['label' => 'Key', 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
-            'constant_text' => ['label' => 'Nilai Teks', 'type' => 'text'],
-            'constant_number' => ['label' => 'Nilai Angka', 'type' => 'number'],
-            'description' => ['label' => 'Keterangan', 'type' => 'text'],
-            'activate' => ['label' => 'Aktif', 'type' => 'boolean'],
+            'category_code' => ['label' => t('Category'), 'type' => 'select', 'options' => SysConstantCategory::query()->orderBy('sort_order')->pluck('code')->all()],
+            'constant_key' => ['label' => t('Key'), 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
+            'constant_text' => ['label' => t('Text Value'), 'type' => 'text'],
+            'constant_number' => ['label' => t('Number Value'), 'type' => 'number'],
+            'description' => ['label' => t('Description'), 'type' => 'text'],
+            'activate' => ['label' => t('Active'), 'type' => 'boolean'],
         ];
     }
 
@@ -102,8 +102,8 @@ new #[Title('Constants — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1100px] mx-auto my-5 px-4">
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Constants</div>
-            <p class="text-[11px] text-muted mb-4">Semua baris <code>sys_constant</code> — kolom Kategori bisa diurutkan/diisi ulang untuk mengelompokkan tampilan.</p>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Constants') }}</div>
+            <p class="text-[11px] text-muted mb-4">{{ t('All rows of') }} <code>sys_constant</code> — {{ t('the Category column can be sorted/refilled to group the display.') }}</p>
             <x-grid.spreadsheet-table
                 grid-key="{{ $this->spreadsheetKey() }}"
                 :columns="$this->spreadsheetColumns()"

@@ -125,15 +125,15 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
 <div class="max-w-[1300px] mx-auto my-5 px-4">
     <div class="grid three mb-3.5">
         <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-            <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Open</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">{{ t('Open') }}</p>
             <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->stats['open'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">In progress</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">{{ t('In progress') }}</p>
             <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->stats['in_progress'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-            <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Done / closed</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">{{ t('Done / closed') }}</p>
             <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->stats['done'] }}</p>
         </div>
     </div>
@@ -141,14 +141,14 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
     <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-md px-2.5 py-2 overflow-x-auto mb-3">
         <div class="flex items-center gap-1.5 shrink-0">
             <span class="text-sm">🔍</span>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search ticket no. or description…" class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search ticket no. or description…') }}" class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
         </div>
         <select wire:model.live="statusFilter" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-            <option value="">All statuses</option>
-            <option value="OPEN">Open</option>
-            <option value="IN_PROGRESS">In progress</option>
-            <option value="DONE">Done</option>
-            <option value="CLOSED">Closed</option>
+            <option value="">{{ t('All statuses') }}</option>
+            <option value="OPEN">{{ t('Open') }}</option>
+            <option value="IN_PROGRESS">{{ t('In progress') }}</option>
+            <option value="DONE">{{ t('Done') }}</option>
+            <option value="CLOSED">{{ t('Closed') }}</option>
         </select>
     </div>
 
@@ -156,17 +156,17 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
         <table class="w-full text-xs">
             <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5] bg-[#f4f6fa]">
                 <tr>
-                    <th class="text-left px-3 py-2">Ticket</th>
-                    <th class="text-left px-3 py-2">Reported by</th>
-                    <th class="text-left px-3 py-2">Screen</th>
-                    <th class="text-left px-3 py-2">Description</th>
-                    <th class="text-left px-3 py-2">Status</th>
-                    <th class="px-3 py-2 text-right w-[70px]">Action</th>
+                    <th class="text-left px-3 py-2">{{ t('Ticket') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Reported by') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Screen') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Description') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Status') }}</th>
+                    <th class="px-3 py-2 text-right w-[70px]">{{ t('Action') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-[#eef1f5]">
                 @forelse ($this->rows as $t)
-                    <tr wire:key="ticket-{{ $t->id_ticket }}" wire:dblclick="open({{ $t->id_ticket }})" class="cursor-pointer hover:bg-[#f8fafc]" title="Double-click to open">
+                    <tr wire:key="ticket-{{ $t->id_ticket }}" wire:dblclick="open({{ $t->id_ticket }})" class="cursor-pointer hover:bg-[#f8fafc]" title="{{ t('Double-click to open') }}">
                         <td class="px-3 py-2 font-mono font-semibold">{{ $t->ticket_no }}</td>
                         <td class="px-3 py-2">{{ $t->creator->name ?? '—' }}</td>
                         <td class="px-3 py-2 text-muted">{{ Str::limit($t->screen_context ?? '', 30) ?: '—' }}</td>
@@ -180,11 +180,11 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
                             } }}">{{ str_replace('_', ' ', $t->status) }}</span>
                         </td>
                         <td class="px-3 py-2 text-right">
-                            <button type="button" wire:click.stop="open({{ $t->id_ticket }})" title="Open" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                            <button type="button" wire:click.stop="open({{ $t->id_ticket }})" title="{{ t('Open') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="px-3 py-6 text-center text-muted text-xs">No tickets yet.</td></tr>
+                    <tr><td colspan="6" class="px-3 py-6 text-center text-muted text-xs">{{ t('No tickets yet.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -233,17 +233,17 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
                 @endif
 
                 <div class="flex gap-2 mt-3">
-                    <textarea wire:model="newReply" rows="2" placeholder="Tulis balasan ke pelapor…" class="flex-1 border border-[#d7dbe2] rounded-md px-2.5 py-1.5 text-[12px] resize-none"></textarea>
-                    <button type="button" wire:click="addReply" wire:loading.attr="disabled" class="self-end bg-navy text-white text-xs font-bold px-3 py-2 rounded-md shrink-0">Kirim</button>
+                    <textarea wire:model="newReply" rows="2" placeholder="{{ t('Write a reply to the reporter…') }}" class="flex-1 border border-[#d7dbe2] rounded-md px-2.5 py-1.5 text-[12px] resize-none"></textarea>
+                    <button type="button" wire:click="addReply" wire:loading.attr="disabled" class="self-end bg-navy text-white text-xs font-bold px-3 py-2 rounded-md shrink-0">{{ t('Send') }}</button>
                 </div>
 
-                <x-form.textarea wire:model="resolution_note" rows="2" class="mt-3" placeholder="What was fixed / why closed…"><x-slot:label>Resolution note</x-slot:label></x-form.textarea>
+                <x-form.textarea wire:model="resolution_note" rows="2" class="mt-3" placeholder="{{ t('What was fixed / why closed…') }}"><x-slot:label>{{ t('Resolution note') }}</x-slot:label></x-form.textarea>
 
                 <div class="flex flex-wrap justify-end gap-2 mt-4">
-                    <button type="button" wire:click="$set('selectedId', null)" class="border border-[#d7dbe2] text-xs font-bold px-3 py-2 rounded-md">Close</button>
-                    <button type="button" wire:click="setStatus('IN_PROGRESS')" class="bg-[#fff5e0] text-[#8a5a00] text-xs font-bold px-3 py-2 rounded-md">In progress</button>
-                    <button type="button" wire:click="setStatus('CLOSED')" class="bg-[#eef1f5] text-[#4b5568] text-xs font-bold px-3 py-2 rounded-md">Not a bug (close)</button>
-                    <button type="button" wire:click="setStatus('DONE')" class="bg-[#1f8a4c] text-white text-xs font-bold px-3 py-2 rounded-md">Mark done</button>
+                    <button type="button" wire:click="$set('selectedId', null)" class="border border-[#d7dbe2] text-xs font-bold px-3 py-2 rounded-md">{{ t('Close') }}</button>
+                    <button type="button" wire:click="setStatus('IN_PROGRESS')" class="bg-[#fff5e0] text-[#8a5a00] text-xs font-bold px-3 py-2 rounded-md">{{ t('In progress') }}</button>
+                    <button type="button" wire:click="setStatus('CLOSED')" class="bg-[#eef1f5] text-[#4b5568] text-xs font-bold px-3 py-2 rounded-md">{{ t('Not a bug (close)') }}</button>
+                    <button type="button" wire:click="setStatus('DONE')" class="bg-[#1f8a4c] text-white text-xs font-bold px-3 py-2 rounded-md">{{ t('Mark done') }}</button>
                 </div>
             </div>
         </div>

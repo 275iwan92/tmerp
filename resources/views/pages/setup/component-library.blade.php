@@ -165,11 +165,36 @@ new #[Title('DevLib UI UX')] class extends Component
         $this->calMiniMonth = (int) $today->month;
 
         $this->calEvents = [
-            ['id' => 1, 'title' => '1 pending task', 'start' => $today->format('Y-m-d').'T09:00', 'end' => $today->format('Y-m-d').'T17:00', 'colorClass' => 'amber', 'desc' => 'Selesaikan laporan Q3.'],
-            ['id' => 2, 'title' => 'Ulang Tahun Sarah', 'start' => $today->copy()->addDay()->format('Y-m-d').'T00:00', 'end' => $today->copy()->addDay()->format('Y-m-d').'T23:59', 'colorClass' => 'red', 'desc' => 'Beli kado dan kue.'],
-            ['id' => 3, 'title' => 'Design Review', 'start' => $today->copy()->addDays(7)->format('Y-m-d').'T10:00', 'end' => $today->copy()->addDays(7)->format('Y-m-d').'T12:00', 'colorClass' => 'green', 'desc' => 'Mockup approval.'],
-            ['id' => 4, 'title' => 'Cuti panjang', 'start' => $today->copy()->addDays(10)->format('Y-m-d').'T08:00', 'end' => $today->copy()->addDays(11)->format('Y-m-d').'T18:00', 'colorClass' => 'green', 'desc' => 'Liburan ke Bali.', 'span' => 2],
+            ['id' => 1, 'title' => t('1 pending task'), 'start' => $today->format('Y-m-d').'T09:00', 'end' => $today->format('Y-m-d').'T17:00', 'colorClass' => 'amber', 'desc' => t('Finish the Q3 report.')],
+            ['id' => 2, 'title' => t('Sarah\'s Birthday'), 'start' => $today->copy()->addDay()->format('Y-m-d').'T00:00', 'end' => $today->copy()->addDay()->format('Y-m-d').'T23:59', 'colorClass' => 'red', 'desc' => t('Buy a present and a cake.')],
+            ['id' => 3, 'title' => t('Design Review'), 'start' => $today->copy()->addDays(7)->format('Y-m-d').'T10:00', 'end' => $today->copy()->addDays(7)->format('Y-m-d').'T12:00', 'colorClass' => 'green', 'desc' => t('Mockup approval.')],
+            ['id' => 4, 'title' => t('Long leave'), 'start' => $today->copy()->addDays(10)->format('Y-m-d').'T08:00', 'end' => $today->copy()->addDays(11)->format('Y-m-d').'T18:00', 'colorClass' => 'green', 'desc' => t('Holiday in Bali.'), 'span' => 2],
         ];
+
+        // Data demo di properti ditulis English; diterjemahkan sekali saat mount (bahasa tampilan user).
+        foreach ($this->demoKanbanColumns as &$col) {
+            $col['label'] = t($col['label']);
+        }
+        foreach ($this->demoKanbanCards as &$card) {
+            $card['desc'] = t($card['desc']);
+            $card['checklistTitle'] = $card['checklistTitle'] === null ? null : t($card['checklistTitle']);
+            foreach ($card['tags'] as &$tag) {
+                $tag['label'] = t($tag['label']);
+            }
+            foreach ($card['checklist'] as &$item) {
+                $item['text'] = t($item['text']);
+            }
+            foreach ($card['comments'] as &$comment) {
+                $comment['text'] = t($comment['text']);
+                $comment['at'] = t($comment['at']);
+            }
+            unset($tag, $item, $comment);
+        }
+        foreach ($this->demoGanttBlocks as &$block) {
+            $block['title'] = t($block['category']).' — '.$block['order'];
+            $block['category'] = t($block['category']);
+        }
+        unset($col, $card, $block);
 
         // Due date demo relatif ke "sekarang" (bukan tanggal statis) -- salah
         // satu sengaja di masa lalu supaya status overdue kelihatan di kartu.
@@ -186,7 +211,7 @@ new #[Title('DevLib UI UX')] class extends Component
 
     public function demoSave(string $context = 'Form'): void
     {
-        $this->dispatch('app-alert', type: 'success', message: "{$context}: aksi demo dijalankan (tidak menulis ke DB).");
+        $this->dispatch('app-alert', type: 'success', message: $context.': '.t('demo action run (does not write to DB).'));
     }
 
     public function locationOptions(): array
@@ -206,20 +231,20 @@ new #[Title('DevLib UI UX')] class extends Component
     public function languageOptions(): array
     {
         return [
-            ['value' => 'id', 'label' => '🇮🇩 Bahasa Indonesia'],
-            ['value' => 'en', 'label' => '🇬🇧 Bahasa Inggris'],
-            ['value' => 'zh', 'label' => '🇨🇳 Bahasa Mandarin'],
-            ['value' => 'ja', 'label' => '🇯🇵 Bahasa Jepang'],
-            ['value' => 'ar', 'label' => '🇸🇦 Bahasa Arab'],
+            ['value' => 'id', 'label' => '🇮🇩 '.t('Indonesian language')],
+            ['value' => 'en', 'label' => '🇬🇧 '.t('English language')],
+            ['value' => 'zh', 'label' => '🇨🇳 '.t('Mandarin language')],
+            ['value' => 'ja', 'label' => '🇯🇵 '.t('Japanese language')],
+            ['value' => 'ar', 'label' => '🇸🇦 '.t('Arabic language')],
         ];
     }
 
     public function splitButtonActions(): array
     {
         return [
-            ['label' => 'Save', 'icon' => '💾', 'wireClick' => "demoSave('Save')"],
-            ['label' => 'Download', 'icon' => '📥', 'wireClick' => "demoSave('Download')"],
-            ['label' => 'Export', 'icon' => '📤', 'wireClick' => "demoSave('Export')"],
+            ['label' => t('Save'), 'icon' => '💾', 'wireClick' => "demoSave('Save')"],
+            ['label' => t('Download'), 'icon' => '📥', 'wireClick' => "demoSave('Download')"],
+            ['label' => t('Export'), 'icon' => '📤', 'wireClick' => "demoSave('Export')"],
         ];
     }
 
@@ -228,10 +253,10 @@ new #[Title('DevLib UI UX')] class extends Component
         $ym = now()->format('Y-m');
 
         return [
-            "{$ym}-08" => [['title' => '1 pending task', 'colorClass' => 'amber']],
-            "{$ym}-09" => [['title' => 'Ulang Tahun Sarah', 'colorClass' => 'red']],
-            "{$ym}-15" => [['title' => 'Design Review', 'colorClass' => 'green']],
-            "{$ym}-18" => [['title' => 'Cuti panjang (H1)', 'colorClass' => 'green'], ['title' => 'Serah terima shift', 'colorClass' => 'amber']],
+            "{$ym}-08" => [['title' => t('1 pending task'), 'colorClass' => 'amber']],
+            "{$ym}-09" => [['title' => t('Sarah\'s Birthday'), 'colorClass' => 'red']],
+            "{$ym}-15" => [['title' => t('Design Review'), 'colorClass' => 'green']],
+            "{$ym}-18" => [['title' => t('Long leave (D1)'), 'colorClass' => 'green'], ['title' => t('Shift handover'), 'colorClass' => 'amber']],
         ];
     }
 
@@ -314,7 +339,7 @@ new #[Title('DevLib UI UX')] class extends Component
         $newId = ((int) (collect($this->calEvents)->max('id') ?? 0)) + 1;
         $this->calEvents[] = [
             'id' => $newId,
-            'title' => 'Event Baru',
+            'title' => t('New Event'),
             'start' => $this->calCurrentDate.'T09:00',
             'end' => $this->calCurrentDate.'T10:00',
             'colorClass' => 'green',
@@ -332,7 +357,7 @@ new #[Title('DevLib UI UX')] class extends Component
     {
         foreach ($this->calEvents as &$e) {
             if ($e['id'] === $this->calEditingId) {
-                $e['title'] = $this->calEditTitle !== '' ? $this->calEditTitle : 'Tanpa judul';
+                $e['title'] = $this->calEditTitle !== '' ? $this->calEditTitle : t('Untitled');
                 $e['start'] = $this->calEditStart ?: $e['start'];
                 $e['end'] = $this->calEditEnd ?: $e['end'];
                 $e['desc'] = $this->calEditDesc;
@@ -393,7 +418,7 @@ new #[Title('DevLib UI UX')] class extends Component
 
     protected function calMonthNames(): array
     {
-        return ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        return array_map('t', ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']);
     }
 
     public function calTitle(): string
@@ -413,7 +438,7 @@ new #[Title('DevLib UI UX')] class extends Component
 
     public function calSelectedDateLabel(): string
     {
-        $names = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        $names = array_map('t', ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
         $d = Carbon::parse($this->calCurrentDate);
 
         return $names[$d->dayOfWeek].', '.$d->day.' '.$this->calMonthNames()[$d->month - 1];
@@ -474,7 +499,7 @@ new #[Title('DevLib UI UX')] class extends Component
 
     public function calWeekDays(): array
     {
-        $dayLabels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+        $dayLabels = array_map('t', ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
         $anchor = Carbon::parse($this->calCurrentDate);
 
         if ($this->calView === 'day') {
@@ -581,13 +606,13 @@ new #[Title('DevLib UI UX')] class extends Component
         $rows = $this->demoGridSearched();
 
         return [
-            'active' => ['label' => 'Customer Aktif', 'value' => $rows->where('active', true)->count(), 'tone' => 'active',
+            'active' => ['label' => t('Active Customers'), 'value' => $rows->where('active', true)->count(), 'tone' => 'active',
                 'filter' => fn ($c) => $c->where('active', true)],
-            'inactive' => ['label' => 'Customer Non Aktif', 'value' => $rows->where('active', false)->count(), 'tone' => 'critical',
+            'inactive' => ['label' => t('Inactive Customers'), 'value' => $rows->where('active', false)->count(), 'tone' => 'critical',
                 'filter' => fn ($c) => $c->where('active', false)],
-            'credit' => ['label' => 'Termin Kredit', 'value' => $rows->where('active', true)->where('term', 'CREDIT')->count(), 'tone' => 'warn',
+            'credit' => ['label' => t('Credit Terms'), 'value' => $rows->where('active', true)->where('term', 'CREDIT')->count(), 'tone' => 'warn',
                 'filter' => fn ($c) => $c->where('active', true)->where('term', 'CREDIT')],
-            'cash' => ['label' => 'Termin Tunai', 'value' => $rows->where('active', true)->where('term', 'CASH')->count(), 'tone' => 'total',
+            'cash' => ['label' => t('Cash Terms'), 'value' => $rows->where('active', true)->where('term', 'CASH')->count(), 'tone' => 'total',
                 'filter' => fn ($c) => $c->where('active', true)->where('term', 'CASH')],
         ];
     }
@@ -644,7 +669,7 @@ new #[Title('DevLib UI UX')] class extends Component
 
     public function graphicsBarConfig(): array
     {
-        $labels = ['Kotak Karton', 'Kemasan Fleksibel', 'Label Cetak', 'Kemasan Rigid'];
+        $labels = array_map('t', ['Carton Box', 'Flexible Packaging', 'Printed Label', 'Rigid Packaging']);
         $palette = $this->graphicsCategoricalPalette();
 
         return [
@@ -652,7 +677,7 @@ new #[Title('DevLib UI UX')] class extends Component
             'data' => [
                 'labels' => $labels,
                 'datasets' => [[
-                    'label' => 'Volume Produksi (unit)',
+                    'label' => t('Production Volume (units)'),
                     'data' => [18200, 12400, 9600, 6100],
                     'backgroundColor' => array_slice($palette, 0, count($labels)),
                     'borderRadius' => 6,
@@ -676,7 +701,7 @@ new #[Title('DevLib UI UX')] class extends Component
             'data' => [
                 'labels' => $months,
                 'datasets' => [[
-                    'label' => 'Omzet (Rp juta)',
+                    'label' => t('Revenue (Rp million)'),
                     'data' => [820, 910, 875, 960, 1040, 1120],
                     'borderColor' => '#2563eb',
                     'backgroundColor' => 'rgba(37, 99, 235, 0.12)',
@@ -704,9 +729,9 @@ new #[Title('DevLib UI UX')] class extends Component
     // meng-override docs/kanbanboardstandard.md §1 (dulu bilang tunggu
     // kanban ke-3) -- lihat kanbanboardstandard.md utk pola dasarnya.
     public array $demoKanbanColumns = [
-        ['key' => 'BARU', 'label' => 'Baru'],
-        ['key' => 'PROSES', 'label' => 'Diproses'],
-        ['key' => 'SELESAI', 'label' => 'Selesai'],
+        ['key' => 'BARU', 'label' => 'New'],
+        ['key' => 'PROSES', 'label' => 'In Process'],
+        ['key' => 'SELESAI', 'label' => 'Done'],
     ];
 
     public string $kanbanView = 'board';
@@ -736,21 +761,21 @@ new #[Title('DevLib UI UX')] class extends Component
         [
             'id' => 1, 'columnKey' => 'BARU', 'order' => 0,
             'title' => 'Order #1001 — PT Sinar Jaya',
-            'desc' => 'Konfirmasi desain kemasan & jadwal produksi awal sebelum masuk antrean produksi.',
-            'tags' => [['label' => 'desain', 'color' => 'blue'], ['label' => 'urgent', 'color' => 'orange']],
+            'desc' => 'Confirm the packaging design & initial production schedule before entering the production queue.',
+            'tags' => [['label' => 'design', 'color' => 'blue'], ['label' => 'urgent', 'color' => 'orange']],
             'priority' => 'high', 'dueDate' => null, 'assignee' => 'Johannes Iwan',
-            'checklistTitle' => 'Persiapan Desain', 'checklist' => [
-                ['id' => 1, 'text' => 'Kirim proof ke customer', 'done' => true],
-                ['id' => 2, 'text' => 'Approval warna dari Direksi', 'done' => false],
+            'checklistTitle' => 'Design Preparation', 'checklist' => [
+                ['id' => 1, 'text' => 'Send the proof to the customer', 'done' => true],
+                ['id' => 2, 'text' => 'Color approval from the Directors', 'done' => false],
             ],
             'comments' => [
-                ['author' => 'Johannes Iwan', 'initials' => 'JI', 'text' => 'Menunggu approval customer.', 'at' => '2 hari lalu'],
+                ['author' => 'Johannes Iwan', 'initials' => 'JI', 'text' => 'Waiting for customer approval.', 'at' => '2 days ago'],
             ],
         ],
         [
             'id' => 2, 'columnKey' => 'BARU', 'order' => 1,
             'title' => 'Order #1002 — CV Makmur Abadi',
-            'desc' => 'Evaluasi ketersediaan bahan baku kraft utk kuantitas order.',
+            'desc' => 'Evaluate kraft raw material availability for the order quantity.',
             'tags' => [['label' => 'material', 'color' => 'purple']],
             'priority' => 'medium', 'dueDate' => null, 'assignee' => 'Rina',
             'checklistTitle' => null, 'checklist' => [], 'comments' => [],
@@ -758,16 +783,16 @@ new #[Title('DevLib UI UX')] class extends Component
         [
             'id' => 3, 'columnKey' => 'PROSES', 'order' => 0,
             'title' => 'Order #1003 — Toko Abadi Jaya',
-            'desc' => 'Proses cetak berjalan di Mesin A, target selesai akhir minggu.',
-            'tags' => [['label' => 'produksi', 'color' => 'green']],
+            'desc' => 'Printing is running on Machine A, target to finish by the end of the week.',
+            'tags' => [['label' => 'production', 'color' => 'green']],
             'priority' => 'medium', 'dueDate' => null, 'assignee' => 'Johannes Iwan',
             'checklistTitle' => null, 'checklist' => [], 'comments' => [],
         ],
         [
             'id' => 4, 'columnKey' => 'SELESAI', 'order' => 0,
             'title' => 'Order #1004 — PT Cipta Karya',
-            'desc' => 'Selesai produksi, menunggu jadwal pengiriman.',
-            'tags' => [['label' => 'siap-kirim', 'color' => 'blue']],
+            'desc' => 'Production finished, waiting for the delivery schedule.',
+            'tags' => [['label' => 'ready-to-ship', 'color' => 'blue']],
             'priority' => 'low', 'dueDate' => null, 'assignee' => 'Rina',
             'checklistTitle' => null, 'checklist' => [], 'comments' => [],
         ],
@@ -962,7 +987,7 @@ new #[Title('DevLib UI UX')] class extends Component
 
         foreach ($this->demoKanbanCards as &$card) {
             if ($card['id'] === $cardId) {
-                $card['comments'][] = ['author' => 'Johannes Iwan', 'initials' => 'JI', 'text' => $text, 'at' => 'Baru saja'];
+                $card['comments'][] = ['author' => 'Johannes Iwan', 'initials' => 'JI', 'text' => $text, 'at' => t('Just now')];
                 break;
             }
         }
@@ -974,21 +999,21 @@ new #[Title('DevLib UI UX')] class extends Component
     // jam/durasi mentah -> posisi pixel, komponennya sendiri tidak tahu
     // apa itu "mesin"/"proses" (aturan §2 dokumen itu).
     public array $demoGanttBlocks = [
-        ['id' => 1, 'resource' => 'm1', 'title' => 'Cetak — Order #1001', 'category' => 'Cetak', 'start' => 8.0, 'duration' => 3.0, 'progress' => 60],
-        ['id' => 2, 'resource' => 'm1', 'title' => 'Laminasi — Order #1001', 'category' => 'Laminasi', 'start' => 11.0, 'duration' => 2.0, 'progress' => 15],
-        ['id' => 3, 'resource' => 'm2', 'title' => 'Cetak — Order #1002', 'category' => 'Cetak', 'start' => 9.0, 'duration' => 4.0, 'progress' => 80],
+        ['id' => 1, 'resource' => 'm1', 'order' => 'Order #1001', 'title' => '', 'category' => 'Print', 'start' => 8.0, 'duration' => 3.0, 'progress' => 60],
+        ['id' => 2, 'resource' => 'm1', 'order' => 'Order #1001', 'title' => '', 'category' => 'Lamination', 'start' => 11.0, 'duration' => 2.0, 'progress' => 15],
+        ['id' => 3, 'resource' => 'm2', 'order' => 'Order #1002', 'title' => '', 'category' => 'Print', 'start' => 9.0, 'duration' => 4.0, 'progress' => 80],
     ];
 
     protected function demoGanttResourceLabels(): array
     {
-        return ['m1' => 'Mesin A', 'm2' => 'Mesin B'];
+        return ['m1' => t('Machine A'), 'm2' => t('Machine B')];
     }
 
     public function demoGanttRows(): array
     {
         $timelineStart = 8;
         $pxPerHour = 70;
-        $categoryColors = ['Cetak' => ['#bfdbfe', '#1e3a8a'], 'Laminasi' => ['#fde68a', '#78350f'], 'Plong' => ['#bbf7d0', '#14532d']];
+        $categoryColors = [t('Print') => ['#bfdbfe', '#1e3a8a'], t('Lamination') => ['#fde68a', '#78350f'], t('Die Cut') => ['#bbf7d0', '#14532d']];
 
         $rows = [];
         foreach ($this->demoGanttResourceLabels() as $key => $label) {
@@ -1003,7 +1028,7 @@ new #[Title('DevLib UI UX')] class extends Component
                         'title' => $b['title'],
                         'subtitle' => $b['category'],
                         'timeLabel' => sprintf('%02d:00–%02d:00', (int) $b['start'], (int) ($b['start'] + $b['duration'])),
-                        'statusLabel' => 'Berjalan',
+                        'statusLabel' => t('Running'),
                         'left' => ($b['start'] - $timelineStart) * $pxPerHour,
                         'width' => $b['duration'] * $pxPerHour,
                         'progress' => $b['progress'],
@@ -1064,14 +1089,14 @@ new #[Title('DevLib UI UX')] class extends Component
     supaya tidak macet setiap kali ada morph Livewire dari tab manapun. --}}
     <div class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-[#e2e8f0] px-4 py-3 flex items-center justify-between gap-3 flex-wrap shadow-sm">
         <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
-            <span class="text-muted text-[10.5px] font-semibold pl-2.5 pr-1">Mode Tampilan:</span>
+            <span class="text-muted text-[10.5px] font-semibold pl-2.5 pr-1">{{ t('Display Mode:') }}</span>
             @foreach (['laptop' => '🖥️ Laptop', 'tablet' => '📱 Tablet', 'mobile' => '📱 Smartphone'] as $dk => $dl)
                 <x-ui.button variant="chip" size="xs" :active="$device === $dk" wire:click="setDevice('{{ $dk }}')" wire:key="dev-{{ $dk }}">{{ $dl }}</x-ui.button>
             @endforeach
         </div>
         <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
-            @foreach (['base' => 'Dasar', 'grid' => 'Grid', 'forms' => 'Form', 'calendar' => 'Calendar', 'kanban' => 'Kanban', 'gantt' => 'Gantt Chart', 'graphics' => 'Graphics'] as $tk => $tl)
-                <x-ui.button variant="chip" size="sm" :active="$mainTab === $tk" wire:click="setMainTab('{{ $tk }}')" wire:key="mt-{{ $tk }}">{{ $tl }}</x-ui.button>
+            @foreach (['base' => 'Base', 'grid' => 'Grid', 'forms' => 'Form', 'calendar' => 'Calendar', 'kanban' => 'Kanban', 'gantt' => 'Gantt Chart', 'graphics' => 'Graphics'] as $tk => $tl)
+                <x-ui.button variant="chip" size="sm" :active="$mainTab === $tk" wire:click="setMainTab('{{ $tk }}')" wire:key="mt-{{ $tk }}">{{ t($tl) }}</x-ui.button>
             @endforeach
         </div>
     </div>
@@ -1108,12 +1133,12 @@ new #[Title('DevLib UI UX')] class extends Component
         class induk lewat uiCatalog()/uiTokens() -- JANGAN menulis variant manual di sini. --}}
         @php $ui = $this->uiCatalog(); @endphp
         <div class="flex flex-col gap-5 {{ $mainTab === 'base' ? '' : 'hidden' }}">
-            <x-ui.card variant="panel" size="md" title="Dasar — token & primitive x-ui.*">
-                <x-slot:intro>Semua komponen lain (form, grid, layar) disusun dari bahan di tab ini. Ubah induknya (<code>app/View/Components/Ui/*</code> atau token <code>@theme</code> di <code>app.css</code>) dan seluruh aplikasi ikut — daftar di bawah juga ikut sendiri karena dibaca langsung dari class induk. Standar: <code>docs/componentstandard.md</code>.</x-slot:intro>
+            <x-ui.card variant="panel" size="md" :title="t('Base').' — token & primitive x-ui.*'">
+                <x-slot:intro>{{ t('All other components (form, grid, screen) are built from the materials in this tab. Change the parent') }} (<code>app/View/Components/Ui/*</code> {{ t('or token') }} <code>@theme</code> {{ t('in') }} <code>app.css</code>) {{ t('and the whole application follows — the list below also follows by itself because it is read directly from the parent class.') }} {{ t('Standard:') }} <code>docs/componentstandard.md</code>.</x-slot:intro>
             </x-ui.card>
 
-            <x-ui.card title="Layer 0 — Token warna (--color-*)">
-                <x-slot:intro>Satu-satunya tempat nilai warna. Dipakai sebagai class Tailwind: <code>bg-&lt;token&gt;</code>, <code>text-&lt;token&gt;</code>, <code>border-&lt;token&gt;</code>. Hex literal di layar dilarang.</x-slot:intro>
+            <x-ui.card :title="t('Layer 0 — Color tokens').' (--color-*)'">
+                <x-slot:intro>{{ t('The only place for color values. Used as Tailwind classes:') }} <code>bg-&lt;token&gt;</code>, <code>text-&lt;token&gt;</code>, <code>border-&lt;token&gt;</code>. {{ t('Hex literals on screens are forbidden.') }}</x-slot:intro>
                 <div class="flex flex-wrap gap-2">
                     @foreach ($this->uiTokens() as $tok)
                         <div class="flex items-center gap-1.5 border border-line-soft rounded px-2 py-1 bg-surface" wire:key="tok-{{ $tok }}">
@@ -1125,7 +1150,7 @@ new #[Title('DevLib UI UX')] class extends Component
             </x-ui.card>
 
             <x-ui.card title="x-ui.button — variant">
-                <x-slot:intro>Ubah warna/bentuk di <code>Button::variants()</code>. <code>x-ui.icon-button</code> mewarisi semua variant ini.</x-slot:intro>
+                <x-slot:intro>{{ t('Change color/shape in') }} <code>Button::variants()</code>. <code>x-ui.icon-button</code> {{ t('inherits all these variants.') }}</x-slot:intro>
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach ($ui['buttonVariants'] as $v)
                         <div class="flex flex-col items-center gap-1" wire:key="bv-{{ $v }}">
@@ -1134,7 +1159,7 @@ new #[Title('DevLib UI UX')] class extends Component
                         </div>
                     @endforeach
                 </div>
-                <p class="text-[10px] font-bold text-accent uppercase mt-4 mb-2">Size</p>
+                <p class="text-[10px] font-bold text-accent uppercase mt-4 mb-2">{{ t('Size') }}</p>
                 <div class="flex flex-wrap items-end gap-2">
                     @foreach ($ui['buttonSizes'] as $sz)
                         <div class="flex flex-col items-center gap-1" wire:key="bs-{{ $sz }}">
@@ -1143,7 +1168,7 @@ new #[Title('DevLib UI UX')] class extends Component
                         </div>
                     @endforeach
                 </div>
-                <p class="text-[10px] font-bold text-accent uppercase mt-4 mb-2">Preset — label baku terkunci (CLAUDE.md §3)</p>
+                <p class="text-[10px] font-bold text-accent uppercase mt-4 mb-2">{{ t('Preset — locked standard labels') }} (CLAUDE.md §3)</p>
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach ($ui['presets'] as $pr)
                         <div class="flex flex-col items-center gap-1" wire:key="bp-{{ $pr }}">
@@ -1152,7 +1177,7 @@ new #[Title('DevLib UI UX')] class extends Component
                         </div>
                     @endforeach
                 </div>
-                <p class="text-[10px] font-bold text-accent uppercase mt-4 mb-2">x-ui.icon-button (turunan Button)</p>
+                <p class="text-[10px] font-bold text-accent uppercase mt-4 mb-2">x-ui.icon-button ({{ t('derived from Button') }})</p>
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach (['action', 'action-danger', 'action-success', 'primary', 'ghost'] as $v)
                         <x-ui.icon-button :icon="$v === 'action-danger' ? 'fa-ban' : ($v === 'action-success' ? 'fa-circle-check' : 'fa-pen')" :variant="$v" :title="$v" wire:key="ib-{{ $v }}" />
@@ -1160,8 +1185,8 @@ new #[Title('DevLib UI UX')] class extends Component
                 </div>
             </x-ui.card>
 
-            <x-ui.card title="x-ui.badge / x-ui.badge-button — tone (palet Tone)">
-                <x-slot:intro>Ubah palet di <code>Tone::SOFT</code>; badge, badge-button, badge di tab, dan progress ikut.</x-slot:intro>
+            <x-ui.card :title="'x-ui.badge / x-ui.badge-button — tone ('.t('Tone palette').')'">
+                <x-slot:intro>{{ t('Change the palette in') }} <code>Tone::SOFT</code>; {{ t('badge, badge-button, badges in tabs and progress follow.') }}</x-slot:intro>
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach ($ui['tones'] as $t)
                         <x-ui.badge :tone="$t" wire:key="bt-{{ $t }}">{{ $t }}</x-ui.badge>
@@ -1175,7 +1200,7 @@ new #[Title('DevLib UI UX')] class extends Component
                 <div class="flex flex-wrap items-center gap-2 mt-2">
                     <x-ui.badge tone="code" size="md" mono>OFF-02</x-ui.badge>
                     <x-ui.badge tone="success" icon="fa-diagram-project">3</x-ui.badge>
-                    <x-ui.badge-button tone="highlight" wire:click="demoSave('Badge Button')">★ Utama</x-ui.badge-button>
+                    <x-ui.badge-button tone="highlight" wire:click="demoSave('Badge Button')">★ {{ t('Primary') }}</x-ui.badge-button>
                     <x-ui.badge :tone="\App\View\Components\Ui\Tone::forScore(85)" mono>85%</x-ui.badge>
                     <x-ui.badge :tone="\App\View\Components\Ui\Tone::forScore(60)" mono>60%</x-ui.badge>
                     <x-ui.badge :tone="\App\View\Components\Ui\Tone::forScore(20)" mono>20%</x-ui.badge>
@@ -1194,41 +1219,41 @@ new #[Title('DevLib UI UX')] class extends Component
                 <x-ui.card title="x-ui.progress & x-ui.metric">
                     <div class="flex flex-col gap-2">
                         <x-ui.progress :value="82" tone="success" />
-                        <x-ui.progress :value="61" tone="warn" :marker="75" marker-title="Target" />
+                        <x-ui.progress :value="61" tone="warn" :marker="75" :marker-title="t('Target')" />
                         <x-ui.progress :value="28" tone="danger" />
                     </div>
                     <div class="[display:grid] grid-cols-2 gap-2 mt-3">
-                        <x-ui.metric label="MTTR aktual">1,5 jam</x-ui.metric>
-                        <x-ui.metric label="OEE" size="lg" tone="success" hint="Target 80%">84,2%</x-ui.metric>
+                        <x-ui.metric :label="t('Actual MTTR')">1,5 {{ t('hours') }}</x-ui.metric>
+                        <x-ui.metric :label="t('OEE')" size="lg" tone="success" :hint="t('Target').' 80%'">84,2%</x-ui.metric>
                     </div>
                 </x-ui.card>
             </div>
 
             <x-ui.card title="x-ui.tabs, x-ui.table, x-ui.modal, x-ui.action-bar, x-ui.panel-header">
-                <x-ui.panel-header title="Edit Mesin : OFF-02"><x-slot:aside>2 proses bisa dijalankan</x-slot:aside></x-ui.panel-header>
+                <x-ui.panel-header :title="t('Edit Machine').' : OFF-02'"><x-slot:aside>{{ str_replace(':n', 2, t(':n processes can be run')) }}</x-slot:aside></x-ui.panel-header>
                 <div class="border border-t-0 border-line rounded-b-md">
-                    <x-ui.tabs model="demoUiTab" :active="$demoUiTab" :tabs="['satu' => '1. Identitas', 'dua' => '2. Spesifikasi', 'tiga' => '3. Proses']"
+                    <x-ui.tabs model="demoUiTab" :active="$demoUiTab" :tabs="['satu' => '1. '.t('Identity'), 'dua' => '2. '.t('Specification'), 'tiga' => '3. '.t('Process')]"
                         :badges="['tiga' => ['text' => 2, 'tone' => 'success']]" />
                     <form wire:submit="demoSave('Form x-ui')" class="p-5">
                         <x-ui.table size="sm" framed>
-                            <thead><tr><th>Proses</th><th>Kapasitas</th><th class="text-right">Aksi</th></tr></thead>
+                            <thead><tr><th>{{ t('Process') }}</th><th>{{ t('Capacity') }}</th><th class="text-right">{{ t('Action') }}</th></tr></thead>
                             <tbody>
-                                <tr><td>CETAK — tab aktif: {{ $demoUiTab }}</td><td class="font-mono">8.000</td><td class="text-right"><x-grid.action-icon icon="fa-sliders" title="Atur" action="demoSave('Atur')" /></td></tr>
-                                <tr><td>QC CETAK</td><td class="font-mono">8.000</td><td class="text-right"><x-grid.action-icon :active="true" title="Nonaktifkan" action="demoSave('Toggle')" /></td></tr>
+                                <tr><td>{{ t('PRINT — active tab:') }} {{ $demoUiTab }}</td><td class="font-mono">8.000</td><td class="text-right"><x-grid.action-icon icon="fa-sliders" :title="t('Configure')" action="demoSave('Configure')" /></td></tr>
+                                <tr><td>{{ t('PRINT QC') }}</td><td class="font-mono">8.000</td><td class="text-right"><x-grid.action-icon :active="true" :title="t('Deactivate')" action="demoSave('Toggle')" /></td></tr>
                             </tbody>
                         </x-ui.table>
                         <x-ui.action-bar>
                             <x-ui.button preset="save" />
                             <x-ui.button preset="cancel" wire:click="$set('demoModalOpen', false)" />
-                            <x-ui.button variant="outline" class="ml-auto" wire:click="$set('demoModalOpen', true)">Buka x-ui.modal</x-ui.button>
+                            <x-ui.button variant="outline" class="ml-auto" wire:click="$set('demoModalOpen', true)">{{ t('Open') }} x-ui.modal</x-ui.button>
                         </x-ui.action-bar>
                     </form>
                 </div>
             </x-ui.card>
 
             @if ($demoModalOpen)
-                <x-ui.modal title="Contoh x-ui.modal" close="$set('demoModalOpen', false)" size="sm">
-                    <div class="p-4 text-[12px] text-ink-soft">Tampil/tidaknya diatur <code>@@if</code> di layar (state Livewire). Klik di luar kotak atau ✕ untuk menutup.</div>
+                <x-ui.modal :title="t('Example').' x-ui.modal'" close="$set('demoModalOpen', false)" size="sm">
+                    <div class="p-4 text-[12px] text-ink-soft">{{ t('Whether it shows is controlled by') }} <code>@@if</code> {{ t('on the screen (Livewire state). Click outside the box or ✕ to close.') }}</div>
                     <x-slot:footer>
                         <x-ui.button preset="close" variant="neutral" wire:click="$set('demoModalOpen', false)" />
                     </x-slot:footer>
@@ -1248,12 +1273,12 @@ new #[Title('DevLib UI UX')] class extends Component
                 <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
-                        <x-form.input wire:model.live.debounce.300ms="demoGridSearch" placeholder="Cari nama/kode..." :case-toggle="false" class="w-56 shrink-0" />
+                        <x-form.input wire:model.live.debounce.300ms="demoGridSearch" :placeholder="t('Search name/code...')" :case-toggle="false" class="w-56 shrink-0" />
                     </div>
                     <x-slot:tools>
                         <div class="flex items-center gap-1 shrink-0">
-                            <x-ui.button variant="chip" size="xs" :active="$demoGridView === 'list'" wire:click="setDemoGridView('list')" title="Tampilan Daftar">☰ List</x-ui.button>
-                            <x-ui.button variant="chip" size="xs" :active="$demoGridView === 'card'" wire:click="setDemoGridView('card')" title="Tampilan Kartu">▦ Card</x-ui.button>
+                            <x-ui.button variant="chip" size="xs" :active="$demoGridView === 'list'" wire:click="setDemoGridView('list')" :title="t('List View')">☰ {{ t('List') }}</x-ui.button>
+                            <x-ui.button variant="chip" size="xs" :active="$demoGridView === 'card'" wire:click="setDemoGridView('card')" :title="t('Card View')">▦ {{ t('Card') }}</x-ui.button>
                         </div>
                     </x-slot:tools>
                     <x-slot:newRecord>
@@ -1264,8 +1289,8 @@ new #[Title('DevLib UI UX')] class extends Component
                 @if ($demoGridView === 'card')
                     <div class="[display:grid] grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-3.5">
                         @forelse ($gridPaginator as $row)
-                            <div wire:key="demo-grid-card-{{ $row['id'] }}" wire:dblclick="demoSave('Grid Buka')"
-                                class="cursor-pointer bg-surface border border-line-soft rounded-xl p-3 hover:shadow-md hover:border-accent transition-shadow" title="Klik 2x untuk buka detail">
+                            <div wire:key="demo-grid-card-{{ $row['id'] }}" wire:dblclick="demoSave('Grid Open')"
+                                class="cursor-pointer bg-surface border border-line-soft rounded-xl p-3 hover:shadow-md hover:border-accent transition-shadow" title="{{ t('Double-click to open details') }}">
                                 <div class="flex items-center gap-2">
                                     <div class="w-9 h-9 rounded-full bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($row['id']) }} text-white text-xs font-bold flex items-center justify-center">{{ \App\Support\Grid\Avatar::initials($row['name']) }}</div>
                                     <div class="min-w-0">
@@ -1274,12 +1299,12 @@ new #[Title('DevLib UI UX')] class extends Component
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 mt-2">
-                                    <x-ui.badge :tone="$row['active'] ? 'success' : 'muted'" pill>{{ $row['active'] ? 'Aktif' : 'Nonaktif' }}</x-ui.badge>
-                                    <x-ui.badge :tone="$row['term'] === 'CASH' ? 'info' : 'warn'">{{ $row['term'] === 'CASH' ? 'Tunai' : 'Kredit' }}</x-ui.badge>
+                                    <x-ui.badge :tone="$row['active'] ? 'success' : 'muted'" pill>{{ $row['active'] ? t('Active') : t('Inactive') }}</x-ui.badge>
+                                    <x-ui.badge :tone="$row['term'] === 'CASH' ? 'info' : 'warn'">{{ $row['term'] === 'CASH' ? t('Cash') : t('Credit') }}</x-ui.badge>
                                 </div>
                             </div>
                         @empty
-                            <div class="col-span-full text-center text-muted py-6">Tidak ada data.</div>
+                            <div class="col-span-full text-center text-muted py-6">{{ t('No data.') }}</div>
                         @endforelse
                     </div>
                 @else
@@ -1287,25 +1312,25 @@ new #[Title('DevLib UI UX')] class extends Component
                         <x-ui.table sticky hover>
                             <thead>
                                 <tr>
-                                    <th>Identitas</th>
-                                    <th class="w-[120px]">Kota</th>
-                                    <th class="w-[100px]">Termin</th>
-                                    <th class="w-[140px] text-right">Saldo</th>
-                                    <th class="w-[100px]">Status</th>
-                                    <th class="w-[100px] text-right">Aksi</th>
+                                    <th>{{ t('Identity') }}</th>
+                                    <th class="w-[120px]">{{ t('City') }}</th>
+                                    <th class="w-[100px]">{{ t('Payment Terms') }}</th>
+                                    <th class="w-[140px] text-right">{{ t('Balance') }}</th>
+                                    <th class="w-[100px]">{{ t('Status') }}</th>
+                                    <th class="w-[100px] text-right">{{ t('Action') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($gridPaginator as $row)
-                                    <tr wire:key="demo-grid-row-{{ $row['id'] }}" wire:dblclick="demoSave('Grid Buka')" class="cursor-pointer" title="Klik 2x untuk buka detail">
+                                    <tr wire:key="demo-grid-row-{{ $row['id'] }}" wire:dblclick="demoSave('Grid Open')" class="cursor-pointer" title="{{ t('Double-click to open details') }}">
                                         <x-grid.identity-cell :id="$row['id']" :name="$row['name']" :code="$row['code']" />
                                         <td>{{ $row['city'] }}</td>
-                                        <td><x-ui.badge :tone="$row['term'] === 'CASH' ? 'info' : 'warn'">{{ $row['term'] === 'CASH' ? 'Tunai' : 'Kredit' }}</x-ui.badge></td>
+                                        <td><x-ui.badge :tone="$row['term'] === 'CASH' ? 'info' : 'warn'">{{ $row['term'] === 'CASH' ? t('Cash') : t('Credit') }}</x-ui.badge></td>
                                         <td class="text-right font-mono">Rp {{ number_format($row['balance'], 0, ',', '.') }}</td>
-                                        <td><x-ui.badge :tone="$row['active'] ? 'success' : 'muted'" pill>{{ $row['active'] ? 'AKTIF' : 'NONAKTIF' }}</x-ui.badge></td>
+                                        <td><x-ui.badge :tone="$row['active'] ? 'success' : 'muted'" pill>{{ $row['active'] ? t('ACTIVE') : t('INACTIVE') }}</x-ui.badge></td>
                                         <td class="text-right whitespace-nowrap">
-                                            <x-grid.action-icon icon="fa-pen" title="Edit" action="demoSave('Grid Edit')" />
-                                            <x-grid.action-icon :active="$row['active']" :title="$row['active'] ? 'Nonaktifkan' : 'Aktifkan'" action="demoSave('Grid Toggle Aktif')" />
+                                            <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="demoSave('Grid Edit')" />
+                                            <x-grid.action-icon :active="$row['active']" :title="$row['active'] ? t('Deactivate') : t('Activate')" action="demoSave('Grid Toggle Active')" />
                                         </td>
                                     </tr>
                                 @empty
@@ -1332,102 +1357,102 @@ new #[Title('DevLib UI UX')] class extends Component
 
         <!-- A. Teks & Password -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Input Teks & Password</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Text & Password Input') }}</div>
             {{-- x-form.case-toggle-input (baru, auto-height + tombol ganti huruf kecil/Kapital/BESAR) · x-form.password-input (baru, mata show/hide). --}}
             <div class="grid two gap-3.5">
-                <x-form.case-toggle-input label="Nama Lengkap" wire:model="demoName" placeholder="Masukkan nama..." />
-                <x-form.password-input label="Password" wire:model="demoPassword" placeholder="Password..." />
+                <x-form.case-toggle-input :label="t('Full Name')" wire:model="demoName" :placeholder="t('Enter a name...')" />
+                <x-form.password-input :label="t('Password')" wire:model="demoPassword" :placeholder="t('Password...')" />
             </div>
         </div>
 
         <!-- B. Pilihan: Radio / Checkbox / Switch -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Pilihan (Radio / Checkbox / Switch)</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Choices') }} (Radio / Checkbox / Switch)</div>
             {{-- x-form.radio-group, x-form.checkbox (sudah ada, dipakai berjajar), x-form.switch — semua baru kecuali checkbox. --}}
             <div class="grid three gap-3.5">
-                <x-form.radio-group label="Jenis Kelamin" name="demoGender" wire:model="demoGender" :options="['Pria' => 'Pria', 'Wanita' => 'Wanita']" :selected="$demoGender" />
+                <x-form.radio-group :label="t('Gender')" name="demoGender" wire:model="demoGender" :options="['Pria' => t('Male'), 'Wanita' => t('Female')]" :selected="$demoGender" />
                 <div class="flex flex-col gap-1">
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Hobi / Minat</label>
+                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Hobbies / Interests') }}</label>
                     <div class="flex items-center gap-3 h-7 flex-wrap">
-                        @foreach (['Membaca', 'Olahraga', 'Traveling', 'Coding'] as $hobby)
-                            <x-form.checkbox wire:model="demoHobbies" value="{{ $hobby }}">{{ $hobby }}</x-form.checkbox>
+                        @foreach (['Membaca' => 'Reading', 'Olahraga' => 'Sports', 'Traveling' => 'Traveling', 'Coding' => 'Coding'] as $hobby => $hobbyLabel)
+                            <x-form.checkbox wire:model="demoHobbies" value="{{ $hobby }}">{{ t($hobbyLabel) }}</x-form.checkbox>
                         @endforeach
                     </div>
                 </div>
-                <x-form.switch label="Status Akun" :checked="$demoActive" wire:model="demoActive" onLabel="Active" offLabel="Non-Active" />
+                <x-form.switch :label="t('Account Status')" :checked="$demoActive" wire:model="demoActive" :onLabel="t('Active')" :offLabel="t('Non-Active')" />
             </div>
         </div>
 
         <!-- C. Dropdown Pintar -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Dropdown Pintar (Searchable / Multi-Select)</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Smart Dropdown') }} (Searchable / Multi-Select)</div>
             {{-- x-form.searchable-select · x-form.multi-select — keduanya baru. --}}
             <div class="grid two gap-3.5">
-                <x-form.searchable-select label="Lokasi Domisili" wire:model="demoLocation" :options="$this->locationOptions()" placeholder="Pilih atau ketik lokasi..." />
-                <x-form.multi-select label="Kemampuan Bahasa" wire:model="demoLanguages" :options="$this->languageOptions()" :selected="['id', 'en']" placeholder="Pilih bahasa..." />
+                <x-form.searchable-select :label="t('Home Location')" wire:model="demoLocation" :options="$this->locationOptions()" :placeholder="t('Select or type a location...')" />
+                <x-form.multi-select :label="t('Language Skills')" wire:model="demoLanguages" :options="$this->languageOptions()" :selected="['id', 'en']" :placeholder="t('Select languages...')" />
             </div>
         </div>
 
         <!-- D. Angka & Warna -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Angka, Rentang & Warna</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Numbers, Ranges & Colors') }}</div>
             {{-- x-form.number-stepper · x-form.range-slider · x-form.color-picker · x-form.decimal-input (baru, auto-format N desimal saat blur + unit suffix) — semua baru. --}}
             <div class="grid three gap-3.5">
-                <x-form.number-stepper label="Jumlah Anak" wire:model="demoChildren" :min="0" :value="0" />
-                <x-form.range-slider label="Pengeluaran Bulanan" wire:model="demoExpense" :min="0" :max="100000000" :step="1000000" :value="15000000" format="currency" />
-                <x-form.color-picker label="Warna Favorit" wire:model="demoColor" :value="$demoColor" />
-                <x-form.decimal-input label="Berat Badan" wire:model="demoWeight" unit="kg" :decimals="2" />
+                <x-form.number-stepper :label="t('Number of Children')" wire:model="demoChildren" :min="0" :value="0" />
+                <x-form.range-slider :label="t('Monthly Expenses')" wire:model="demoExpense" :min="0" :max="100000000" :step="1000000" :value="15000000" format="currency" />
+                <x-form.color-picker :label="t('Favorite Color')" wire:model="demoColor" :value="$demoColor" />
+                <x-form.decimal-input :label="t('Body Weight')" wire:model="demoWeight" unit="kg" :decimals="2" />
             </div>
         </div>
 
         <!-- E. Format Khusus -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Format Khusus (Masking & Prefix)</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Special Formats') }} (Masking & Prefix)</div>
             {{-- x-form.masked-input · x-form.phone-input · x-form.currency-input — semua baru. --}}
             <div class="grid three gap-3.5">
-                <x-form.masked-input label="No. KTP" wire:model="demoNik" :segments="[6, 6, 4]" separator="." hint="Format 6.6.4 digit" />
-                <x-form.phone-input label="No. HP" wire:model="demoPhone" />
-                <x-form.currency-input label="Valuasi Investasi" wire:model="demoValuation" />
+                <x-form.masked-input :label="t('ID Card No.')" wire:model="demoNik" :segments="[6, 6, 4]" separator="." :hint="t('Format 6.6.4 digits')" />
+                <x-form.phone-input :label="t('Mobile No.')" wire:model="demoPhone" />
+                <x-form.currency-input :label="t('Investment Valuation')" wire:model="demoValuation" />
             </div>
         </div>
 
         <!-- F. Tanggal -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Tanggal</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Date') }}</div>
             {{-- x-form.date-picker (sudah ada, mode date/datetime) · x-form.date-range (baru, 2 tanggal + kalkulator durasi otomatis). Kalender penuh (bulan/minggu/hari, drag-drop event) ada di tab Calendar. --}}
             <div class="grid two gap-3.5 mb-3.5">
-                <x-form.date-picker label="Tanggal Lahir" name="demoBirthDate" mode="date" />
-                <x-form.date-picker label="Jadwal Meeting" name="demoMeetingAt" mode="datetime" />
+                <x-form.date-picker :label="t('Date of Birth')" name="demoBirthDate" mode="date" />
+                <x-form.date-picker :label="t('Meeting Schedule')" name="demoMeetingAt" mode="datetime" />
             </div>
-            <x-form.date-range label="Masa Kerja (Awal s.d. Akhir)" start-name="demoWorkStart" end-name="demoWorkEnd" start-label="Mulai" end-label="Selesai" />
+            <x-form.date-range :label="t('Length of Service (Start to End)')" start-name="demoWorkStart" end-name="demoWorkEnd" :start-label="t('Start')" :end-label="t('End')" />
         </div>
 
         <!-- G. Verifikasi & Rating -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Verifikasi & Rating</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Verification & Rating') }}</div>
             {{-- x-form.otp-input · x-form.star-rating — semua baru. --}}
             <div class="grid two gap-3.5">
-                <x-form.otp-input label="OTP Code (6 Digit)" wire:model="demoOtp" :length="6" />
-                <x-form.star-rating label="Rating Pengalaman" wire:model="demoRating" :max="5" />
+                <x-form.otp-input :label="t('OTP Code (6 Digit)')" wire:model="demoOtp" :length="6" />
+                <x-form.star-rating :label="t('Experience Rating')" wire:model="demoRating" :max="5" />
             </div>
         </div>
 
         <!-- H. Upload File -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Upload File (Drag & Drop)</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Upload File (Drag & Drop)') }}</div>
             {{-- x-form.file-dropzone — baru, native Livewire WithFileUploads (bukan simulasi). --}}
-            <x-form.file-dropzone label="Upload Dokumen" wire:model="demoFile" accept="image/*,.pdf" :current-name="$demoFileName" />
+            <x-form.file-dropzone :label="t('Upload Document')" wire:model="demoFile" accept="image/*,.pdf" :current-name="$demoFileName" />
         </div>
 
         <!-- I. Aksi & Tombol -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Aksi & Status</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Actions & Status') }}</div>
             {{-- x-form.split-button (baru) · x-form.badge (sudah ada, ditampilkan lagi sbg referensi tone)
             · tombol "Back" = komponen x-back-button (2026-09-18): kembali ke layar SEBELUMNYA,
             tanya simpan kalau form berubah; route grid dipakai hanya sbg fallback. --}}
             <div class="flex items-center gap-4 flex-wrap">
                 <div class="w-[180px]">
-                    <x-form.split-button label="Save" icon="💾" wire:click="demoSave('Split Button')" :actions="$this->splitButtonActions()" />
+                    <x-form.split-button :label="t('Save')" icon="💾" wire:click="demoSave('Split Button')" :actions="$this->splitButtonActions()" />
                 </div>
                 <x-form.badge tone="default">DRAFT</x-form.badge>
                 <x-form.badge tone="info">SUBMITTED</x-form.badge>
@@ -1440,18 +1465,18 @@ new #[Title('DevLib UI UX')] class extends Component
 
         <!-- J. QR Code -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5" x-data="tmQrDemo()">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">QR Code Generator</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('QR Code Generator') }}</div>
             {{-- Generate QR code 100% lokal di browser (npm qrcode) — TIDAK kirim data ke API pihak ketiga, beda dari mockup asli yang pakai CDN qrcodejs (sama-sama client-side, tapi ini bebas dependency eksternal saat runtime). --}}
             <button type="button" @click="generate('Demo QR — ' + new Date().toISOString())"
-                class="px-4 py-2 rounded-md text-xs font-semibold bg-[#059669] text-white cursor-pointer">📱 Generate QR Code Demo</button>
+                class="px-4 py-2 rounded-md text-xs font-semibold bg-[#059669] text-white cursor-pointer">📱 {{ t('Generate QR Code Demo') }}</button>
 
             <div x-show="open" x-cloak x-transition class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="open = false">
                 <div class="bg-white rounded-xl p-5 w-[280px] flex flex-col items-center gap-3">
-                    <div class="text-sm font-bold text-navy">QR Code Demo</div>
+                    <div class="text-sm font-bold text-navy">{{ t('QR Code Demo') }}</div>
                     <canvas x-ref="canvas" class="border border-[#e2e8f0] rounded-lg"></canvas>
                     <div class="flex gap-2 w-full">
-                        <button type="button" @click="download()" class="flex-1 py-1.5 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Download PNG</button>
-                        <button type="button" @click="open = false" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-[#eef1f5] text-[#4b5568] cursor-pointer">Tutup</button>
+                        <button type="button" @click="download()" class="flex-1 py-1.5 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Download PNG') }}</button>
+                        <button type="button" @click="open = false" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-[#eef1f5] text-[#4b5568] cursor-pointer">{{ t('Close') }}</button>
                     </div>
                 </div>
             </div>
@@ -1464,7 +1489,7 @@ new #[Title('DevLib UI UX')] class extends Component
         <div class="flex flex-col gap-5">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Event Calendar</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Event Calendar') }}</div>
             {{-- Replika docs/mockups/mockup_UIUX_calendar.html — navbar penuh (judul+Today+panah+judul bulan+switch Day/Week/Month) di atas 3 panel (mini-kalender+cari kiri, grid tengah, Today's Events+edit kanan), drag-drop event antar tanggal (hover cuma highlight sel tujuan, tag jadi transparan saat ditarik — persis mockup), event multi-hari melebar di baris all-day view Week (persis mockup — bukan di Month, mockup asli juga begitu). Server = sumber kebenaran (sama filosofi Kanban). Tema warna ikut terang halaman ini (mockup asli dark). Kalender ringan tanpa semua ini: x-form.mini-calendar. --}}
         </div>
 
@@ -1493,15 +1518,15 @@ new #[Title('DevLib UI UX')] class extends Component
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="flex items-center justify-between mb-1">
-                <div class="text-sm font-bold text-navy uppercase tracking-wide">Kanban Board</div>
+                <div class="text-sm font-bold text-navy uppercase tracking-wide">{{ t('Kanban Board') }}</div>
                 {{-- Toggle Board/Tabular SENGAJA server-side ($kanbanView, bukan Alpine
                 x-data lokal) -- konsisten dgn fix $mainTab: sibling wire:click di dalam
                 tab ini (mis. drop kartu) memicu morph Livewire penuh, yang terbukti
                 memutus reaktivitas x-show utk elemen TAK terkait (root cause bug
                 Day/Week/Month sebelumnya). --}}
                 <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
-                    <button type="button" wire:click="kanbanSetView('board')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ $kanbanView === 'board' ? 'bg-navy text-white' : 'text-muted hover:text-navy' }}">Board</button>
-                    <button type="button" wire:click="kanbanSetView('tabular')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ $kanbanView === 'tabular' ? 'bg-navy text-white' : 'text-muted hover:text-navy' }}">Tabular</button>
+                    <button type="button" wire:click="kanbanSetView('board')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ $kanbanView === 'board' ? 'bg-navy text-white' : 'text-muted hover:text-navy' }}">{{ t('Board') }}</button>
+                    <button type="button" wire:click="kanbanSetView('tabular')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ $kanbanView === 'tabular' ? 'bg-navy text-white' : 'text-muted hover:text-navy' }}">{{ t('Tabular') }}</button>
                 </div>
             </div>
             {{-- Replika docs/mockups/mockup_UIUX_kanban.html — komponen reusable
@@ -1518,22 +1543,22 @@ new #[Title('DevLib UI UX')] class extends Component
             @php
                 $kanbanRows = collect($this->demoKanbanBoardColumns())->flatMap(fn ($col) => collect($col['cards'])->map(fn ($card) => [...$card, 'columnLabel' => $col['label']]));
                 $kanbanPrioTones = ['high' => 'bg-[#fdecec] text-[#c0392b]', 'medium' => 'bg-[#fef6e7] text-[#b45309]', 'low' => 'bg-[#eef1f5] text-[#4b5568]'];
-                $kanbanPrioLabels = ['high' => 'High', 'medium' => 'Medium', 'low' => 'Low'];
+                $kanbanPrioLabels = ['high' => t('High'), 'medium' => t('Medium'), 'low' => t('Low')];
             @endphp
             <x-grid.stat-row :count="3">
-                <x-grid.stat-box tone="total" label="Total Kartu" :value="$kanbanRows->count()" />
-                <x-grid.stat-box tone="warn" label="Prioritas Tinggi" :value="$kanbanRows->where('priority', 'high')->count()" />
-                <x-grid.stat-box tone="critical" label="Jatuh Tempo Lewat" :value="$kanbanRows->filter(fn ($c) => $c['dueDate'] && \Illuminate\Support\Carbon::parse($c['dueDate'])->isPast())->count()" />
+                <x-grid.stat-box tone="total" :label="t('Total Cards')" :value="$kanbanRows->count()" />
+                <x-grid.stat-box tone="warn" :label="t('High Priority')" :value="$kanbanRows->where('priority', 'high')->count()" />
+                <x-grid.stat-box tone="critical" :label="t('Past Due')" :value="$kanbanRows->filter(fn ($c) => $c['dueDate'] && \Illuminate\Support\Carbon::parse($c['dueDate'])->isPast())->count()" />
             </x-grid.stat-row>
             <x-grid.table-shell>
                 <table class="w-full text-[12px]">
                     <thead>
                         <tr>
-                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Kartu</th>
-                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Kolom</th>
-                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Prioritas</th>
-                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Jatuh Tempo</th>
-                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Assignee</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">{{ t('Card') }}</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">{{ t('Column') }}</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">{{ t('Priority') }}</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">{{ t('Due Date') }}</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">{{ t('Assignee') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1570,16 +1595,16 @@ new #[Title('DevLib UI UX')] class extends Component
         <div class="flex flex-col gap-5">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Gantt Chart</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Gantt Chart') }}</div>
             {{-- Komponen reusable "x-gantt.board" yang SUDAH ADA (docs/ganttboardstandard.md, dipakai Scheduling Board Production) — geser blok utk pindah jam mulai, tarik tepi kanan utk ubah durasi, klik utk popover detail, dobel-klik utk pindah mesin/kategori. --}}
             <x-gantt.board
                 :rows="$this->demoGanttRows()"
-                resource-header-label="Mesin"
+                :resource-header-label="t('Machine')"
                 :timeline-start="8" :timeline-end="18" :px-per-hour="70"
-                :resource-options="[['value' => 'm1', 'label' => 'Mesin A'], ['value' => 'm2', 'label' => 'Mesin B']]"
-                :label-options="['Cetak', 'Laminasi', 'Plong']"
-                label-field-name="Proses"
-                empty-message="Tidak ada data demo."
+                :resource-options="[['value' => 'm1', 'label' => t('Machine A')], ['value' => 'm2', 'label' => t('Machine B')]]"
+                :label-options="[t('Print'), t('Lamination'), t('Die Cut')]"
+                :label-field-name="t('Process')"
+                :empty-message="t('No demo data.')"
             />
         </div>
 
@@ -1590,7 +1615,7 @@ new #[Title('DevLib UI UX')] class extends Component
         <div class="flex flex-col gap-5 {{ $mainTab === 'graphics' ? '' : 'hidden' }}">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Graphics</div>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Graphics') }}</div>
             {{-- 3 varian dasar chart via Chart.js (docs/reportstandard.md), skill
             dataviz: hue kategorikal urutan tetap, 1 hue utk seri garis tunggal,
             legend+tooltip bawaan, tanpa dual-axis. Chart.js CDN dimuat SEKALI di
@@ -1602,14 +1627,14 @@ new #[Title('DevLib UI UX')] class extends Component
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-                <div class="text-[12.5px] font-bold text-navy uppercase tracking-wide mb-3">Pie — Distribusi Kartu per Kolom Kanban</div>
+                <div class="text-[12.5px] font-bold text-navy uppercase tracking-wide mb-3">{{ t('Pie — Card Distribution per Kanban Column') }}</div>
                 <div wire:key="chart-pie" wire:ignore class="h-[260px]" x-data="tmChart({{ Js::from($this->graphicsPieConfig()) }})" x-init="init()">
                     <canvas x-ref="canvas"></canvas>
                 </div>
                 <details class="mt-3">
-                    <summary class="text-[11px] text-muted cursor-pointer select-none">Lihat sebagai tabel</summary>
+                    <summary class="text-[11px] text-muted cursor-pointer select-none">{{ t('View as table') }}</summary>
                     <table class="w-full text-[11.5px] mt-2">
-                        <thead><tr><th class="text-left py-1 text-muted font-semibold">Kolom</th><th class="text-right py-1 text-muted font-semibold">Jumlah Kartu</th></tr></thead>
+                        <thead><tr><th class="text-left py-1 text-muted font-semibold">{{ t('Column') }}</th><th class="text-right py-1 text-muted font-semibold">{{ t('Number of Cards') }}</th></tr></thead>
                         <tbody>
                             @foreach ($this->demoKanbanColumns as $col)
                                 <tr class="border-t border-[#eef1f5]"><td class="py-1">{{ $col['label'] }}</td><td class="py-1 text-right">{{ count($this->demoKanbanCardsForColumn($col['key'])) }}</td></tr>
@@ -1620,15 +1645,15 @@ new #[Title('DevLib UI UX')] class extends Component
             </div>
 
             <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-                <div class="text-[12.5px] font-bold text-navy uppercase tracking-wide mb-3">Batang — Volume Produksi per Kategori</div>
+                <div class="text-[12.5px] font-bold text-navy uppercase tracking-wide mb-3">{{ t('Bar — Production Volume per Category') }}</div>
                 @php $barConfig = $this->graphicsBarConfig(); @endphp
                 <div wire:key="chart-bar" wire:ignore class="h-[260px]" x-data="tmChart({{ Js::from($barConfig) }})" x-init="init()">
                     <canvas x-ref="canvas"></canvas>
                 </div>
                 <details class="mt-3">
-                    <summary class="text-[11px] text-muted cursor-pointer select-none">Lihat sebagai tabel</summary>
+                    <summary class="text-[11px] text-muted cursor-pointer select-none">{{ t('View as table') }}</summary>
                     <table class="w-full text-[11.5px] mt-2">
-                        <thead><tr><th class="text-left py-1 text-muted font-semibold">Kategori</th><th class="text-right py-1 text-muted font-semibold">Volume (unit)</th></tr></thead>
+                        <thead><tr><th class="text-left py-1 text-muted font-semibold">{{ t('Category') }}</th><th class="text-right py-1 text-muted font-semibold">{{ t('Volume (units)') }}</th></tr></thead>
                         <tbody>
                             @foreach ($barConfig['data']['labels'] as $i => $label)
                                 <tr class="border-t border-[#eef1f5]"><td class="py-1">{{ $label }}</td><td class="py-1 text-right">{{ number_format($barConfig['data']['datasets'][0]['data'][$i], 0, ',', '.') }}</td></tr>
@@ -1639,13 +1664,13 @@ new #[Title('DevLib UI UX')] class extends Component
             </div>
 
             <div class="bg-white border border-[#e2e8f0] rounded-xl p-5 lg:col-span-2">
-                <div class="text-[12.5px] font-bold text-navy uppercase tracking-wide mb-3">Garis — Tren Omzet 6 Bulan Terakhir</div>
+                <div class="text-[12.5px] font-bold text-navy uppercase tracking-wide mb-3">{{ t('Line — Revenue Trend Last 6 Months') }}</div>
                 @php $lineConfig = $this->graphicsLineConfig(); @endphp
                 <div wire:key="chart-line" wire:ignore class="h-[260px]" x-data="tmChart({{ Js::from($lineConfig) }})" x-init="init()">
                     <canvas x-ref="canvas"></canvas>
                 </div>
                 <details class="mt-3">
-                    <summary class="text-[11px] text-muted cursor-pointer select-none">Lihat sebagai tabel</summary>
+                    <summary class="text-[11px] text-muted cursor-pointer select-none">{{ t('View as table') }}</summary>
                     <table class="w-full text-[11.5px] mt-2">
                         <thead><tr>
                             @foreach ($lineConfig['data']['labels'] as $label)
