@@ -5,7 +5,8 @@ namespace Devlib\Components;
 use Devlib\Terbilang;
 
 // Dokumen cetak (nota_co_mockup, nota_pv_spb, printnotastandard). Layar cukup deklarasi isi dokumen.
-// company / companyPpn: ['name','tagline','address','contact','npwp','initials'] -- Non PPN vs PPN (kop berganti, keputusan user 2026-09-23).
+// company / companyPpn: ['name','tagline','address','contact','npwp','initials','logo','logoBw'] -- Non PPN vs PPN (kop berganti, keputusan user 2026-09-23).
+//   logo (url) diisi = gambar logo menggantikan kotak inisial + nama + tagline; logoBw = versi hitam-putih, tampil saat Hemat Tinta.
 // parties: [label => nilai | [baris..]] (2 kolom).  columns: [['key','label','type' => text|number|money,
 //   'price' => true (hilang saat "Tanpa Harga"), 'sub' => kolom baris kecil kedua, 'group' => judul header atas, 'width']]
 // totals: ['of' => kolom, 'discount' => angka, 'ppn' => 11, 'extra' => [[label, angka]], 'net' => 'Net Diterima']

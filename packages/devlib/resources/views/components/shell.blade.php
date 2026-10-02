@@ -1,7 +1,7 @@
 <div class="dl-shell" {!! $dl() !!} data-dl-modules="{{ json_encode($modules) }}" data-dl-user="{{ json_encode($user) }}" data-dl-developer="{{ $developer ? '1' : '0' }}" data-dl-open="{{ $open }}" data-dl-help="{{ $helpUrl }}">
     <aside class="dl-side" data-dl="sidebar kontekstual" data-dl-class="bagian Shell" data-dl-src="{{ $menuSource }} (grup + item modul aktif)">
         <div class="dl-side__head">
-            <span class="dl-logo-badge dl-logo-badge--sm"></span>
+            <span class="dl-logo-badge dl-logo-badge--sm">@if ($logo)<img src="{{ $logo }}" alt="{{ $brand }}">@endif</span>
             <span class="dl-side__logo"><b>{{ $brand }}</b><br><span>{{ $tagline }}</span></span>
             <button type="button" class="dl-side__collapse" data-dl-act="mini" title="Ciutkan sidebar (mini)">⊟</button>
         </div>

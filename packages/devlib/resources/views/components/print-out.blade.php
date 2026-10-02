@@ -26,8 +26,8 @@
         <header class="dl-print__kop">
             @foreach (['0' => $company, '1' => $companyPpn ?: $company] as $isPpn => $c)
                 <div class="dl-print__co" data-p-kop="{{ $isPpn }}">
-                    <span class="dl-print__logo">{{ $c['initials'] ?? mb_substr($c['name'] ?? 'TM', 0, 2) }}</span>
-                    <div><b>{{ $c['name'] ?? '' }}</b>@if (! empty($c['tagline']))<small>{{ $c['tagline'] }}</small>@endif
+                    @if (empty($c['logo']))<span class="dl-print__logo">{{ $c['initials'] ?? mb_substr($c['name'] ?? 'TM', 0, 2) }}</span>@endif
+                    <div>@if (! empty($c['logo']))<img class="dl-print__brand" src="{{ $c['logo'] }}" alt="{{ $c['name'] ?? '' }}"><img class="dl-print__brand is-bw" src="{{ $c['logoBw'] ?? $c['logo'] }}" alt="{{ $c['name'] ?? '' }}">@else<b>{{ $c['name'] ?? '' }}</b>@if (! empty($c['tagline']))<small>{{ $c['tagline'] }}</small>@endif @endif
                         @if (! empty($c['address']))<span>{{ $c['address'] }}</span>@endif @if (! empty($c['contact']))<span>{{ $c['contact'] }}</span>@endif
                         @if ($isPpn === '1' && ! empty($c['npwp']))<span class="dl-print__npwp">NPWP {{ $c['npwp'] }}</span>@endif</div>
                 </div>

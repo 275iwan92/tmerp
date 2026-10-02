@@ -25,6 +25,8 @@ class Shell extends DevlibComponent
         public array $user = ['name' => 'User', 'email' => '', 'role' => ''],
         public string $brand = 'TELASIH MAKMUR',
         public string $tagline = 'packaging solution',
+        // Url gambar logo APLIKASI; kosong = lencana gradasi bawaan. Bukan logo perusahaan (itu untuk kop cetakan).
+        public ?string $logo = null,
         public string $logoutAction = '',
         public string $menuSource = 'sys_app_menu',
         public bool $developer = false,

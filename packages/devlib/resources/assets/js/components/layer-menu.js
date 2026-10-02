@@ -258,6 +258,7 @@
       const mode = {chat: 'Chat', profile: 'Profile'}[show];
       if (this.mini && show !== 'menu') this.setPeek(true);
       const m = this.$('[data-lm-mode]'); m.hidden = !mode; m.textContent = mode || '';
+      const tag = this.$('[data-lm-tag]'); if (tag) tag.hidden = !!mode;
       if (this.dockHost) this.dockHost.classList.toggle('is-on', chat && dock);
       this.badges();
       this.emit('dl:layer-menu-panel', {...this.st});

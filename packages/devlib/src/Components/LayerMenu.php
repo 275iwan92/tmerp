@@ -7,7 +7,10 @@ use Devlib\Icon;
 // Menu panel kiri berlapis (layer 1 modul -> layer 2 menu -> layer 3 sub -> layer 4 ...), SEMUA di panel yang sama:
 // klik cabang = panel bergeser ke layer berikutnya, Back = naik satu layer. Tiap layer punya judul (tanpa breadcrumb:
 // breadcrumb hanya di layar), angka = jumlah layar di bawah cabang. Kedalaman bebas.
-// Kepala panel: baris 1 logo + nama aplikasi (title), baris 2 ikon (tukar view | cari | kecilkan menu).
+// Kepala panel: baris 1 logo aplikasi + nama aplikasi (title) + tagline, baris 2 ikon (tukar view | cari | kecilkan menu).
+//   logo    = url gambar logo APLIKASI; kosong = lencana gradasi bawaan (sama dengan x-dl::shell / x-dl::brand).
+//             Logo perusahaan TIDAK dipasang di sini (user 2026-10-02): itu untuk kop cetakan.
+//   tagline = baris kecil di bawah nama; berganti jadi "Chat" / "Profile" selama laci itu terbuka.
 //   search      = tampilkan ikon cari -> event dl:layer-menu-action {key:'palette'}
 //   collapsible = ikon kecilkan menu: panel jadi satu lajur ikon (diingat per browser). Saat mini, klik cabang /
 //                 Back / avatar = menu lengkap melayang di atas layar, menutup setelah layar dipilih atau klik di luar.
@@ -30,7 +33,8 @@ class LayerMenu extends DevlibComponent
     public function __construct(
         public array $items = [],
         public string $title = 'Telasih Makmur',
-        public string $logo = 'TM',
+        public ?string $logo = null,
+        public ?string $tagline = null,
         public string $id = 'layer',
         public ?string $active = null,
         public ?string $user = null,
@@ -93,8 +97,8 @@ class LayerMenu extends DevlibComponent
         return <<<'BLADE'
             <aside {{ $attributes->class('dl-lm') }} {!! $dl() !!} data-dl-layer-menu data-id="{{ $id }}" data-active="{{ $active }}" data-counts="{{ $counts ? 1 : 0 }}" data-root="{{ $rootCaption }}" data-dock="{{ $dock }}" data-tree="{{ $views ? '[]' : json_encode($tree()) }}" data-views="{{ json_encode($viewData()) }}" data-view="{{ $initialView }}">
                 <div class="dl-lm__head">
-                    <span class="dl-lm__logo">{{ $logo }}</span>
-                    <span class="dl-lm__brand"><b>{{ $title }}</b><small data-lm-mode hidden></small></span>
+                    <span class="dl-logo-badge dl-logo-badge--sm">@if ($logo)<img src="{{ $logo }}" alt="{{ $title }}">@endif</span>
+                    <span class="dl-lm__brand"><b>{{ $title }}</b>@if ($tagline)<small class="dl-lm__tag" data-lm-tag>{{ $tagline }}</small>@endif<small data-lm-mode hidden></small></span>
                 </div>
                 <div class="dl-lm__bar">
                     <span class="dl-lm__views" data-lm-views role="group" aria-label="{{ \Devlib\Lang::text('Choose a menu') }}" hidden></span>

@@ -290,6 +290,15 @@
     diatur lewat tombol **Density** di toolbar tiap grid dan tersimpan di browser untuk grid itu. **Tidak ada** setelan kerapatan
     per user di database, **tidak ada** pintu kedua di menu Profile / drawer Configuration, dan Grid Pre-Entry tetap tanpa tombol
     Density. Menggantikan rencana 2026-09-22 (satu setelan per user + pintu Configuration → Grid).
+30. **Logo aplikasi ≠ logo perusahaan — user 2026-10-02.**
+    - **Logo aplikasi (lencana gradasi) + nama aplikasi "ERP TM" + tagline tidak diubah** dan tidak diganti logo perusahaan.
+      Dipasang di menu tmerp.test **dan** mockup.test (kepala Layer Menu v2: lencana, nama, tagline).
+    - **Logo perusahaan (TM "Percetakan TELASIH MAKMUR") dipakai di cetakan.** Cetakan versi **hitam-putih** memakai logo
+      **hitam-putih**; cetakan versi **warna** memakai logo **warna berlatar putih** (hemat tinta). Versi tulisan putih hanya
+      untuk latar gelap. Kop PPN (CV. Langgeng Jaya Makmur) tetap nama teks + NPWP, tanpa logo Telasih Makmur.
+    - Tempatnya: `sys_constant` `COMPANY_LOGO_PATH` / `COMPANY_LOGO_BW_PATH` / `COMPANY_LOGO_INVERSE_PATH` (file di disk public
+      `branding/`), dibaca `App\Support\Branding\CompanyLogo`, diganti di **Settings > Identifikasi > Identitas Perusahaan**
+      (versi hitam-putih dibuat otomatis dari versi warna). Logo aplikasi tetap `APP_LOGO_PATH` (kosong = lencana gradasi).
 
 ## D. Cara kerja developer / agen
 
@@ -342,6 +351,7 @@
 | 2026-10-01 | C.23: panel dieline — tombol Standard Sizes dihapus (dropdown saja), 3D di samping gambar & bisa diputar, Dimensions 2 baris berkelompok di bawah gambar. |
 | 2026-10-01 | **Inquiry Product v2 = A (Approved) oleh user** — lencana menu hijau (`sys_app_menu.status_code = LOCKED`, baris `SALES_INQ`, ddtsys). Layar ini **tidak diubah lagi** kecuali user sendiri yang meminta. |
 | 2026-10-02 | C.3: grid Inquiry Product = `x-dl::grid` biasa (komponen turunan InquiryWorklist dibuang); alamat buka per baris (`open-url="{open_url}"`) dan `new-modal` jadi fitur Grid DevLib. |
+| 2026-10-02 | C.30: logo & nama aplikasi tidak diubah (dipasang juga di menu mockup.test); logo perusahaan TM di kop cetakan — hitam-putih untuk cetakan hitam-putih, warna berlatar putih untuk cetakan warna. |
 | 2026-10-01 | C.24: cetakan dokumen A5 landscape (1-5 baris) / A4 portrait (lebih dari 5 baris), satu generator, posisi sama, huruf mudah dibaca; mockup di `docs/mockups/print_doc/`. |
 | 2026-10-01 | C.24: cetakan tanpa "Jumlah baris"; kaki dokumen = "Dicetak pada tanggal jam oleh nama orang" saja (tanpa nama aplikasi, login, nomor dokumen, ukuran kertas). Surat Jalan dan dokumen lain tanpa nilai uang: tanpa total. Surat Jalan + kolom Berat (kg) dan Ikat. Customer Order 2 format cetak: dengan harga / tanpa harga. |
 | 2026-10-01 | C.24: urutan tanda tangan semua cetakan = pihak luar, Menyetujui, Mengetahui, Pembuat (kiri ke kanan, ketentuan tetap); Pembuat = user yang login; penanda tangan lain = konstanta per dokumen (skema menunggu OK). Kop Telasih Makmur = alamat Langgeng Jaya Makmur, tanpa NPWP. PR Produksi (No CO + nama product) / Non Produksi. |

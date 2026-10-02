@@ -3,6 +3,21 @@
 
 ---
 
+## 2026-10-02 -- Logo perusahaan di kop cetakan + logo & nama aplikasi di menu v2
+
+Perintah user: logo TM (`docs/attachments/Asset 3@4x.png`, `Asset 4@4x.png`) masuk database; logo & nama aplikasi **jangan
+diubah** dan dipasang juga di mockup.test; cetakan memakai logo perusahaan (hitam-putih untuk versi BW, warna berlatar putih
+untuk versi warna). Rulebook **C.30**.
+- **Database (ddtsys + tm2sys):** `sys_constant` `COMPANY_LOGO_PATH`, `COMPANY_LOGO_BW_PATH`, `COMPANY_LOGO_INVERSE_PATH`
+  (BRANDING / COMPANY) lewat migrasi `2026_10_02_000061_company_logo_constants` (di tm2 dijalankan dengan `--path`, migrasi
+  tertunda lain tidak ikut). File turunan lebar 1600 px di `resources/branding/` -> disk public `branding/`.
+  `APP_LOGO_PATH` tetap kosong (lencana gradasi), `APP_NAME` / `APP_TAGLINE` tidak disentuh.
+- **Kode:** `App\Support\Branding\CompanyLogo` (baca / simpan / hapus, versi hitam-putih dibuat otomatis). Kop
+  `x-dl::print-doc` (logo hitam-putih), `x-dl::print-out` / report (warna, Hemat Tinta -> hitam-putih), `x-print.header` v1.
+  Kop PPN tidak berubah. Kepala `x-dl::layer-menu` = lencana logo aplikasi + nama + tagline (prop `logo`, `tagline`).
+- **Input:** Settings > Identifikasi > Identitas Perusahaan — unggah logo latar terang + latar gelap, tombol Hapus.
+- Diperiksa lewat render headless (menu, DO Non PPN, CO PPN, laporan warna + hemat tinta). `npm run build` dijalankan.
+
 ## 2026-10-02 -- Audit input / grid / lookup + arsip dokumen yang tidak relevan
 
 Perintah user: cek (1) input tersambung ke database, (2) grid & laporan dari database, (3) lookup punya layar input,

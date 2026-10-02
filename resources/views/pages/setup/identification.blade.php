@@ -2,6 +2,7 @@
 
 use App\Models\Master\OrgCompany;
 use App\Models\Sys\SysConstant;
+use App\Support\Branding\CompanyLogo;
 use App\Support\Branding\FontPresets;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -42,6 +43,11 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
 
     public string $companyEmail = '';
 
+    // Logo PERUSAHAAN (kop cetakan) -- terpisah dari logo aplikasi di atas (App\Support\Branding\CompanyLogo).
+    public $companyLogo = null;
+
+    public $companyLogoInverse = null;
+
     public function mount(): void
     {
         $this->appName = SysConstant::text('APP_NAME', 'ERP TM');
@@ -67,7 +73,16 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
             'companyAddress' => ['nullable', 'string', 'max:500'],
             'companyPhone' => ['nullable', 'string', 'max:50'],
             'companyEmail' => ['nullable', 'email', 'max:100'],
+            'companyLogo' => ['nullable', 'image', 'max:2048'],
+            'companyLogoInverse' => ['nullable', 'image', 'max:2048'],
         ]);
+
+        foreach (['color' => 'companyLogo', 'inverse' => 'companyLogoInverse'] as $variant => $prop) {
+            if ($this->{$prop}) {
+                CompanyLogo::store($variant, $this->{$prop}->getRealPath(), $this->{$prop}->extension(), Auth::user()->login);
+                $this->{$prop} = null;
+            }
+        }
 
         $this->setConstant('COMPANY_NAME', trim($this->companyName));
         $this->setConstant('COMPANY_LEGAL_NAME', trim($this->companyLegalName));
@@ -81,6 +96,13 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
         ]);
 
         $this->dispatch('app-alert', type: 'success', message: 'Identitas perusahaan tersimpan.');
+    }
+
+    public function removeCompanyLogo(string $variant): void
+    {
+        abort_unless(in_array($variant, ['color', 'inverse'], true), 404);
+        CompanyLogo::remove($variant, Auth::user()->login);
+        $this->dispatch('app-alert', type: 'info', message: 'Logo perusahaan dihapus.');
     }
 
     public function fontPresetOptions(): array
@@ -139,7 +161,7 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Identitas Aplikasi</div>
-            <p class="text-[11px] text-muted mb-4">Nama, tagline, logo & font aplikasi — dipakai di topbar, halaman login, dan panel Filament /admin. Bukan nama company (itu tetap di Master Organization untuk struktur HR & kop dokumen cetak).</p>
+            <p class="text-[11px] text-muted mb-4">Nama, tagline, logo & font aplikasi — dipakai di menu, topbar, dan halaman login. Bukan nama / logo perusahaan (itu di kartu Identitas Perusahaan di bawah, untuk kop dokumen cetak).</p>
 
             <form wire:submit="saveBranding" class="flex flex-col gap-3.5">
                 <div class="grid two gap-3.5">
@@ -197,6 +219,32 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
                 <div class="grid two gap-3.5">
                     <x-form.textarea label="Alamat" wire:model="companyAddress" name="companyAddress" autogrow placeholder="Alamat lengkap untuk kop dokumen" />
                     <x-form.input label="Email" type="email" wire:model="companyEmail" name="companyEmail" placeholder="mis. info@perusahaan.co.id" />
+                </div>
+                {{-- Logo perusahaan: kop cetakan (warna -> cetak warna, hitam-putih dibuat otomatis -> cetak hitam-putih). Bukan logo aplikasi. --}}
+                <div class="grid two gap-3.5">
+                    <div class="flex flex-col gap-2">
+                        <x-form.file-dropzone label="Logo Perusahaan (latar terang)" wire:model="companyLogo" name="companyLogo" accept="image/*"
+                            hint="Dipakai di kop semua cetakan. Versi hitam-putih dibuat otomatis untuk cetakan hitam-putih. PNG latar transparan/putih, maks 2 MB." />
+                        @error('companyLogo') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
+                        @if (CompanyLogo::url())
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <img src="{{ CompanyLogo::url() }}" alt="Logo perusahaan" class="h-8 max-w-full rounded border border-field-border bg-white p-1">
+                                <img src="{{ CompanyLogo::url('bw') }}" alt="Logo perusahaan hitam-putih" class="h-8 max-w-full rounded border border-field-border bg-white p-1">
+                                <x-ui.button variant="link" size="xs" wire:click="removeCompanyLogo('color')" wire:confirm="Hapus logo perusahaan? Kop cetakan kembali ke nama teks.">Hapus</x-ui.button>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <x-form.file-dropzone label="Logo Perusahaan (latar gelap)" wire:model="companyLogoInverse" name="companyLogoInverse" accept="image/*"
+                            hint="Versi tulisan putih, untuk dipasang di atas latar gelap. PNG latar transparan, maks 2 MB." />
+                        @error('companyLogoInverse') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
+                        @if (CompanyLogo::url('inverse'))
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <img src="{{ CompanyLogo::url('inverse') }}" alt="Logo perusahaan tulisan putih" class="h-8 max-w-full rounded bg-navy p-1">
+                                <x-ui.button variant="link" size="xs" wire:click="removeCompanyLogo('inverse')" wire:confirm="Hapus logo perusahaan versi latar gelap?">Hapus</x-ui.button>
+                            </div>
+                        @endif
+                    </div>
                 </div>
                 <x-ui.action-bar variant="inline">
                     <x-ui.button preset="save" />

@@ -104,7 +104,8 @@ abstract class Document
         return $rows;
     }
 
-    // Kop perusahaan diambil aplikasi pemakai: fn (bool $ppn) => ['name', 'initials', 'lines' => [..], 'npwp' => ?string].
+    // Kop perusahaan diambil aplikasi pemakai: fn (bool $ppn) => ['name', 'initials', 'lines' => [..], 'npwp' => ?string, 'logo' => ?url].
+    // 'logo' diisi = gambar logo (sudah memuat nama perusahaan) menggantikan kotak inisial + nama.
     public static function companyUsing(?Closure $fn): void
     {
         self::$companyResolver = $fn;
@@ -147,7 +148,7 @@ abstract class Document
     {
         $c = self::$companyResolver ? (self::$companyResolver)($this->isPpn()) : [];
 
-        return $c + ['name' => '', 'initials' => '', 'lines' => [], 'npwp' => null];
+        return $c + ['name' => '', 'initials' => '', 'lines' => [], 'npwp' => null, 'logo' => null];
     }
 
     public function rows(): array

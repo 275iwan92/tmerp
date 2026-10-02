@@ -73,6 +73,7 @@
               display:flex;align-items:center;justify-content:center;font-weight:700;
               font-size:14pt;letter-spacing:-1px;flex:0 0 auto}
         .print-doc .print-kop .kop-l{display:flex;gap:10px;align-items:center}
+        .print-doc .print-kop .co-logo{display:block;height:30px;width:auto}
         .print-doc .print-kop .co-name{font-size:13pt;font-weight:700;letter-spacing:-.3px;line-height:1.1;color:var(--print-accent)}
         .print-doc .print-kop .co-addr{font-size:7.2pt;color:var(--print-muted);line-height:1.4;margin-top:2px}
         .print-doc .print-kop .kop-r{text-align:right}

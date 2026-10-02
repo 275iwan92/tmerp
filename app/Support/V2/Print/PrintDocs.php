@@ -6,6 +6,7 @@ use App\Models\Master\OrgCompany;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysConstant;
 use App\Support\Branding\Brand;
+use App\Support\Branding\CompanyLogo;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use Devlib\PrintDoc\Document;
 use Illuminate\Database\QueryException;
@@ -75,15 +76,18 @@ final class PrintDocs
 
     // Kop: dokumen Non PPN = Telasih Makmur tanpa NPWP; dokumen PPN = badan hukum + NPWP (user 2026-09-23 / 2026-10-01).
     // Alamat sama untuk keduanya (tm2mst.org_company), diisi di Settings > Identification.
+    // Logo perusahaan (user 2026-10-02) hanya di kop Telasih Makmur: gambarnya sudah memuat nama, jadi menggantikan kotak
+    // inisial + nama + tagline. Lembar dokumen ini hitam-putih -> logo versi hitam-putih. Kop PPN (badan hukum) tetap teks.
     public static function company(bool $ppn): array
     {
         $c = OrgCompany::where('company_code', 'TM')->first();
         $name = $ppn ? Brand::companyLegalName() : Brand::companyName();
+        $logo = $ppn ? null : CompanyLogo::url('bw');
         $words = preg_split('/[\s.]+/', trim(preg_replace('/^(CV|PT)\.?\s*/i', '', $name)), -1, PREG_SPLIT_NO_EMPTY);
         $contact = implode(' · ', array_filter([$c?->phone ? Document::t('Phone').' '.$c->phone : null, $c?->email]));
 
-        return ['name' => $name, 'initials' => mb_strtoupper(implode('', array_map(fn ($w) => mb_substr($w, 0, 1), $words))),
-            'lines' => array_values(array_filter([$ppn ? null : Brand::tagline(), $c?->address, $contact])), 'npwp' => $ppn ? $c?->npwp_number : null];
+        return ['name' => $name, 'initials' => mb_strtoupper(implode('', array_map(fn ($w) => mb_substr($w, 0, 1), $words))), 'logo' => $logo,
+            'lines' => array_values(array_filter([$ppn || $logo ? null : Brand::tagline(), $c?->address, $contact])), 'npwp' => $ppn ? $c?->npwp_number : null];
     }
 
     // Penanda tangan per dokumen = konstanta (user 2026-10-01): SIGN_<KODE>_APPROVER / SIGN_<KODE>_ACKNOWLEDGER; kosong = garis kosong.

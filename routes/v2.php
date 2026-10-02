@@ -667,7 +667,8 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return view('v2.print-receipt', ['pv' => $pv, 'supplier' => $supplier, 'parties' => $parties, 'columns' => $columns, 'rows' => $rows,
                 'title' => $sub ? 'Subcon Return Receipt' : 'Goods Receipt Note', 'subtitle' => $sub ? 'Penerimaan dari Subkon' : 'Surat Penerimaan Barang (SPB)',
-                'company' => ['name' => Brand::companyName(), 'tagline' => Brand::tagline(), 'initials' => mb_strtoupper(mb_substr(Brand::companyName(), 0, 2))],
+                'company' => ['name' => Brand::companyName(), 'tagline' => Brand::tagline(), 'initials' => mb_strtoupper(mb_substr(Brand::companyName(), 0, 2)),
+                    'logo' => \App\Support\Branding\CompanyLogo::url(), 'logoBw' => \App\Support\Branding\CompanyLogo::url('bw')],
                 'signatures' => $sub ? [['Handed Over By', 'Subcontractor / Driver'], ['Received By', 'Production / PPIC'], ['Checked By', 'Quality Control']]
                     : [['Handed Over By', 'Supplier / Driver'], ['Received By', 'Warehouse'], ['Checked By', 'Quality Control']]]);
         })->whereNumber('id')->name('print');
@@ -682,7 +683,8 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 'pv' => $pv, 'customer' => $mst->table('cust_customer')->where('id_customer', $pv->i_customer_id)->first(),
                 'coNo' => DB::connection('tm2sdi')->table('co_order')->where('id_order', $pv->i_co_id)->value('co_no'),
                 'warehouse' => $pv->i_warehouse_code ? $pv->i_warehouse_code.' · '.$mst->table('wh_warehouse')->where('warehouse_code', $pv->i_warehouse_code)->value('warehouse_name') : null,
-                'company' => ['name' => Brand::companyName(), 'tagline' => Brand::tagline(), 'initials' => mb_strtoupper(mb_substr(Brand::companyName(), 0, 2))],
+                'company' => ['name' => Brand::companyName(), 'tagline' => Brand::tagline(), 'initials' => mb_strtoupper(mb_substr(Brand::companyName(), 0, 2)),
+                    'logo' => \App\Support\Branding\CompanyLogo::url(), 'logoBw' => \App\Support\Branding\CompanyLogo::url('bw')],
                 'rows' => $pv->lines->map(fn ($l) => ['co_item' => isset($items[$l->i_co_line_id]) ? '#'.$items[$l->i_co_line_id]->line_seq.' '.$items[$l->i_co_line_id]->description : '—',
                     'name' => $l->i_description, 'code' => $mat[$l->item_id] ?? '', 'qty' => (float) $l->i_qty_purchase, 'uom' => $l->i_uom_purchase, 'lot' => $l->i_lot_no ?: ''])->all(),
             ]);

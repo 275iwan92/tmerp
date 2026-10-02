@@ -1573,6 +1573,9 @@ form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:v
 .dl-print__co{display:flex;gap:10px;align-items:flex-start}
 .dl-print__co[hidden]{display:none}
 .dl-print__logo{width:40px;height:40px;border-radius:8px;background:var(--dl-pr-brand);color:var(--dl-pr-paper);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none;text-transform:uppercase}
+.dl-print__brand{display:block;height:26px;width:auto;margin-bottom:3px}
+.dl-print__brand.is-bw,.dl-print.is-bw .dl-print__brand:not(.is-bw){display:none}
+.dl-print.is-bw .dl-print__brand.is-bw{display:block}
 .dl-print__co b{display:block;font-size:14px;color:var(--dl-pr-brand)}
 .dl-print__co > div small,.dl-print__co > div span{display:block;color:var(--dl-pr-muted);font-size:9.5px}
 .dl-print__npwp{color:var(--dl-pr-brand)!important;font-weight:700}
@@ -2405,8 +2408,8 @@ html.dl-locked body{overflow:hidden}
 .dl-lm__head{display:flex;align-items:center;gap:10px;padding:12px 12px 8px 14px}
 .dl-lm__bar{display:flex;align-items:center;gap:4px;padding:0 10px 10px 14px;border-bottom:1px solid var(--dl-side-hover)}
 .dl-lm__gap{flex:1}
-.dl-lm__logo{width:32px;height:32px;border-radius:var(--dl-radius);background:var(--dl-accent);color:var(--dl-white);display:grid;place-items:center;font-size:calc(12px * var(--dl-font-scale));font-weight:800;flex:none}
 .dl-lm__brand{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;line-height:1.25}
+.dl-lm__brand .dl-lm__tag{font-size:calc(10px * var(--dl-font-scale));letter-spacing:2px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dl-lm__brand b{color:var(--dl-white);font-size:calc(15px * var(--dl-font-scale));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dl-lm__brand small{font-size:calc(11px * var(--dl-font-scale));color:var(--dl-side-muted)}
 .dl-lm__brand small[hidden]{display:none}
@@ -2609,6 +2612,7 @@ a.dl-ycal__d:hover{background:var(--dl-hover);outline:1px solid var(--dl-accent)
 .dl-pdoc__kop{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4mm;height:14.5mm;padding-bottom:1.5mm;border-bottom:.8mm solid #8c8c8c}
 .dl-pdoc__co{display:flex;gap:2.5mm;align-items:center}
 .dl-pdoc__logo{width:11mm;height:11mm;border-radius:1.6mm;background:#222;color:#fff;font-weight:700;font-size:10pt;display:flex;align-items:center;justify-content:center;flex:none}
+.dl-pdoc__brand{display:block;height:5.6mm;width:auto;margin-bottom:.7mm}
 .dl-pdoc__co b{display:block;font-size:10.5pt;font-weight:700;letter-spacing:.02em;white-space:nowrap;text-transform:uppercase}
 .dl-pdoc__co small{display:block;font-size:6.6pt;color:#333;white-space:nowrap;line-height:1.2}
 .dl-pdoc__kop h1{font-size:15pt;font-weight:700;letter-spacing:.06em;text-align:center;line-height:1;white-space:nowrap;text-transform:uppercase;color:#111}

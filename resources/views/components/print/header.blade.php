@@ -8,11 +8,23 @@
      + NPWP; pilihannya state Alpine ppnKop milik x-print.document. --}}
 @props(['company' => null, 'docTitle', 'docNo', 'ppn' => false])
 @php($legalName = \App\Support\Branding\Brand::companyLegalName())
+{{-- Logo perusahaan (user 2026-10-02, App\Support\Branding\CompanyLogo): gambarnya sudah memuat nama, jadi menggantikan
+     kotak inisial + nama pada kop Telasih Makmur. Kop "PPN" (badan hukum) tetap kotak inisial + nama terdaftar. --}}
+@php($logoUrl = \App\Support\Branding\CompanyLogo::url())
 <div class="print-kop">
     <div class="kop-l">
-        <div class="logo">{{ strtoupper(substr($company?->company_code ?? 'TM', 0, 2)) }}</div>
+        @if (! $logoUrl)
+            <div class="logo">{{ strtoupper(substr($company?->company_code ?? 'TM', 0, 2)) }}</div>
+        @elseif ($ppn)
+            <div class="logo" x-show="ppnKop" x-cloak>{{ strtoupper(substr($company?->company_code ?? 'TM', 0, 2)) }}</div>
+        @endif
         <div>
-            <div class="co-name"><x-print.company-name :ppn="$ppn" /></div>
+            @if (! $logoUrl)
+                <div class="co-name"><x-print.company-name :ppn="$ppn" /></div>
+            @else
+                <img class="co-logo" src="{{ $logoUrl }}" alt="{{ \App\Support\Branding\Brand::companyName() }}" @if ($ppn) x-show="! ppnKop" @endif>
+                @if ($ppn)<div class="co-name" x-show="ppnKop" x-cloak>{{ $legalName }}</div>@endif
+            @endif
             <div class="co-addr">
                 {!! nl2br(e($company?->address ?? '—')) !!}
                 @if ($company?->phone) <br>Telp {{ $company->phone }} @endif

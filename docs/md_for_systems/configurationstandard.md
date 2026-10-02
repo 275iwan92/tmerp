@@ -154,6 +154,19 @@ multi-company) tetap di `tm2mst.org_company`, **tidak disentuh** oleh
 Configuration. APP_NAME murni identitas produk/aplikasi (contoh: "ERP TM"),
 tampil di topbar shell lama, halaman login, dan brand Filament `/admin`.
 
+**Logo aplikasi vs logo perusahaan (keputusan user 2026-10-02, rulebook C.30):**
+logo aplikasi = `APP_LOGO_PATH` (kosong = lencana gradasi bawaan) dan **tidak
+diganti logo perusahaan**; tampil bersama APP_NAME + APP_TAGLINE di menu (v1
+topbar, v2 kepala Layer Menu) dan halaman login. Logo perusahaan = tiga konstanta
+grup COMPANY: `COMPANY_LOGO_PATH` (warna, latar terang -> cetakan warna),
+`COMPANY_LOGO_BW_PATH` (hitam-putih, dibuat otomatis dari versi warna -> cetakan
+hitam-putih), `COMPANY_LOGO_INVERSE_PATH` (tulisan putih, latar gelap). Dibaca
+`App\Support\Branding\CompanyLogo`, diunggah di kartu Identitas Perusahaan.
+Di kop cetakan gambar logo menggantikan kotak inisial + nama (+ tagline); kop
+PPN tetap nama terdaftar + NPWP tanpa logo. Pemakai: `x-dl::print-doc`
+(lembar hitam-putih -> logo hitam-putih), `x-dl::print-out` / `x-dl::report`
+(warna; Hemat Tinta -> hitam-putih), `x-print.header` (v1).
+
 **Nama perusahaan vs nama terdaftar (keputusan user 2026-09-23, MENGGANTIKAN
 aturan lama "kop dokumen selalu nama legal"):** dua konstanta `sys_constant`
 kategori BRANDING, grup COMPANY -- `COMPANY_NAME` = "Telasih Makmur" dan
