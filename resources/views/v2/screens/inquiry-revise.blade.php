@@ -90,7 +90,7 @@
                 $n = 'parts['.$p['seq'].']';
                 $master = collect($doc['components'])->firstWhere('name', $p['name']) ?? ['id' => $p['id'], 'name' => $p['name'], 'artwork' => $p['artwork'], 'artwork_inner' => $p['artwork_inner'], 'has_spec' => false, 'type_code' => null, 'dims' => $p['dims']];
             @endphp
-            <x-dl::card :title="$p['name']" :description="$p['kind'] === 'ASSEMBLY' ? 'Rakitan' : 'Komponen'">
+            <x-dl::card :title="raw($p['name'])" :description="$p['kind'] === 'ASSEMBLY' ? 'Rakitan' : 'Komponen'">
                 @if ($p['kind'] === 'ASSEMBLY')
                     <fieldset class="mp-rv" data-rv-block="JOIN" @disabled($locked || ! $on('JOIN'))>
                         <legend>Struktur / Sambungan</legend>
@@ -120,7 +120,7 @@
                             <fieldset class="mp-rv" data-rv-block="MATERIAL" @disabled($locked || ! $on('MATERIAL'))>
                                 <legend>Bahan</legend>
                                 @foreach ($p['materials'] as $m)
-                                    <x-dl::field.select :name="$n.'[materials]['.$m['seq'].']'" :label="'Bahan #'.$m['seq']" :options="$matOptions" :value="$m['category_id']" :hint="$m['category_id'] ? null : 'Data lama: '.$m['label']" :source="Src::of('tm2sdi.iqp_part_material.category_id')" />
+                                    <x-dl::field.select :name="$n.'[materials]['.$m['seq'].']'" :label="'Bahan #'.$m['seq']" :options="$matOptions" :value="$m['category_id']" :hint="$m['category_id'] ? null : 'Data lama: '.raw($m['label'])" :source="Src::of('tm2sdi.iqp_part_material.category_id')" />
                                 @endforeach
                             </fieldset>
                             <fieldset class="mp-rv" data-rv-block="COLOR" @disabled($locked || ! $on('COLOR'))>

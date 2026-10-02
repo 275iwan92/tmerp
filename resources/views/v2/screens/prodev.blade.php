@@ -42,7 +42,7 @@
         </x-slot:dieline>
     </x-dl::tabs>
     @if ($accDoc)
-        <x-dl::card :title="'ACC customer — '.$accDoc['name']" description="Record E-mail ACC / Digital ACC (from the CTP plate print sample) / Shape Sample. Its printed document: Digital ACC / Digital Proof.">
+        <x-dl::card :title="'ACC customer — '.raw($accDoc['name'])" description="Record E-mail ACC / Digital ACC (from the CTP plate print sample) / Shape Sample. Its printed document: Digital ACC / Digital Proof.">
             <x-dl::action-bar><x-dl::button variant="secondary" icon="print" label="Print ACC / Proof Digital" :href="route('v2.screen', 'product-acc').'?id='.$accDoc['id']" /></x-dl::action-bar>
             @include('v2.partials.product-acc-forms', ['doc' => $accDoc])
         </x-dl::card>
