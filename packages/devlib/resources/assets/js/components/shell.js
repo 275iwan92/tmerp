@@ -36,13 +36,14 @@
     // Tab terbuka bertahan saat halaman dimuat ulang (mis. menukar Menu Classic <-> Layer Menu). Per tab browser.
     saveTabs() { try { sessionStorage.setItem('dl-shell-tabs', JSON.stringify({open: [...this.openTabs.keys()], active: this.activeTab})); } catch (e) {} }
 
-    // data-dl-open (dari ?open=, mis. pendaratan Direksi -> MGMT_EXEC) HARUS menang atas tab
+    // data-dl-open-tab (dari ?open=, mis. pendaratan Direksi -> MGMT_EXEC) HARUS menang atas tab
     // yang dipulihkan dari sesi sebelumnya (tab lain browser tab yang sama) -- kalau tidak,
     // login berikutnya bisa "nyangkut" di tab lama alih-alih mendarat ke layar yang dimaksud.
     // ?open= dibuang dari address bar setelah dipakai supaya reload BERIKUTNYA (tanpa niat
-    // "buka ini") tidak terus memaksa balik ke tab yang sama.
+    // "buka ini") tidak terus memaksa balik ke tab yang sama. Namanya BUKAN data-dl-open: itu milik
+    // pustaka modal (core.js), yang menelan setiap klik di bawah elemen ber-atribut itu.
     restoreTabs(s) {
-      const want = this.el.dataset.dlOpen;
+      const want = this.el.dataset.dlOpenTab;
       if (want) { const u = new URL(location.href); u.searchParams.delete('open'); history.replaceState(null, '', u.pathname + u.search + u.hash); }
       if (!s?.open?.length) { if (want) this.openTab(want); return; }
       s.open.forEach(c => this.openTab(c));
