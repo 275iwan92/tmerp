@@ -130,12 +130,10 @@ final class MenuRoutes
             'PROD_CARD' => route('production.prodev'),
             'PROD_LAYOUT' => route('production.prodev'),
             'ACC_COA' => route('finance.coa'),
-            'FIN_DP' => route('finance.dp-invoice'),
             'FIN_CASH' => route('finance.cash-bank'),
             // Accounting Process Engine (mockup blueprint, 2026-09-19)
             'FIN_ENGINE' => route('finance.engine'),
             'FIN_DASH' => route('finance.dashboard'),
-            'FIN_AR' => route('finance.receivables'),
             'FIN_AP' => route('finance.payables'),
             'FIN_BANK' => route('finance.bank'),
             'ACC_JRN' => route('finance.journals'),

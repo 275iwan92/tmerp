@@ -305,237 +305,6 @@
     ]
   },
   {
-    "key": "acc-dp-invoice",
-    "type": "INPUT",
-    "module": "FINACC",
-    "title": "Down Payment",
-    "purpose": {
-      "en": "Issue a down payment (DP) invoice to a customer, record that the customer paid it, and later apply the unused DP against the final invoice. Open it when a customer must pay an advance before production starts.",
-      "id": "Menerbitkan tagihan uang muka (DP) ke customer, mencatat bahwa customer sudah membayar, lalu memotongkan sisa DP ke invoice akhir. Buka saat customer harus membayar uang muka sebelum produksi dimulai."
-    },
-    "keywords": "dp, down payment, uang muka, tagihan dp, invoice dp, customer, so, co, kontrak, alokasi dp, sisa dp, potong dp, ppn, faktur dp, wo gate",
-    "steps": [
-      {
-        "en": "Open Down Payment. The list shows each DP invoice with its status and DP Not Yet Applied. Click + New Record to issue a new one.",
-        "id": "Buka Down Payment. Daftar menampilkan tiap invoice DP beserta status dan DP Not Yet Applied. Klik + New Record untuk menerbitkan yang baru."
-      },
-      {
-        "en": "Pick the Customer, enter the CO/SO reference and the Nilai Kontrak (Nilai SO).",
-        "id": "Pilih Customer, isi No. Referensi CO/SO dan Nilai Kontrak (Nilai SO)."
-      },
-      {
-        "en": "Choose Metode Penagihan DP: a percentage of the contract value or a fixed amount, then enter the percentage or the amount.",
-        "id": "Pilih Metode Penagihan DP: persentase dari nilai kontrak atau nominal tetap, lalu isi persentase atau nominalnya."
-      },
-      {
-        "en": "Set Tanggal Faktur DP and Tanggal Jatuh Tempo DP, and an optional print note. Check Subtotal DP, PPN and TOTAL TAGIHAN DP in the box.",
-        "id": "Atur Tanggal Faktur DP dan Tanggal Jatuh Tempo DP, serta catatan cetak bila perlu. Periksa Subtotal DP, PPN, dan TOTAL TAGIHAN DP di kotak hitungan."
-      },
-      {
-        "en": "Click Terbitkan & Kirim DP Invoice. The invoice is posted at once with its journal; a closed accounting period is refused. Print it from the list.",
-        "id": "Klik Terbitkan & Kirim DP Invoice. Invoice langsung diposting beserta jurnalnya; periode akuntansi yang sudah ditutup ditolak. Cetak dari daftar."
-      },
-      {
-        "en": "When the customer pays, use Catat Pembayaran on that DP row and confirm. The invoice becomes PAID and the Work Order gate message appears.",
-        "id": "Saat customer membayar, pakai Catat Pembayaran pada baris DP itu dan konfirmasi. Invoice menjadi PAID dan muncul pesan WO Gate terbuka."
-      },
-      {
-        "en": "When the final invoice exists, use Alokasikan on the paid DP, pick the Invoice Final Tujuan and enter Potong Pokok and Potong PPN.",
-        "id": "Bila invoice akhir sudah ada, pakai Alokasikan pada DP yang lunas, pilih Invoice Final Tujuan, lalu isi Potong Pokok dan Potong PPN."
-      }
-    ],
-    "fields": [
-      {
-        "label": "Customer",
-        "en": "Pick the customer from the active customers. A customer with VAT-exempt status (bonded zone) gets no 11% VAT. Required.",
-        "id": "Pilih customer dari customer yang aktif. Customer berstatus bebas PPN (kawasan berikat) tidak dikenai PPN 11%. Wajib diisi."
-      },
-      {
-        "label": "No. Referensi CO/SO",
-        "en": "Optional free text with the customer order or sales order number, for example SO-2026-0899. Not linked to the order record; kept as a reference on the journal.",
-        "id": "Teks bebas opsional berisi nomor customer order atau sales order, misalnya SO-2026-0899. Tidak terhubung ke data order; disimpan sebagai referensi di jurnal."
-      },
-      {
-        "label": "Nilai Kontrak (Nilai SO)",
-        "en": "The total contract or order value the DP is based on, in Rupiah. Must be above zero. Required.",
-        "id": "Total nilai kontrak atau order yang menjadi dasar DP, dalam Rupiah. Harus lebih dari nol. Wajib diisi."
-      },
-      {
-        "label": "Metode Penagihan DP",
-        "en": "Persentase dari Nilai Kontrak, or Nominal Tetap. It decides whether you fill a percentage or an amount below.",
-        "id": "Persentase dari Nilai Kontrak, atau Nominal Tetap. Menentukan apakah di bawah Anda mengisi persentase atau nominal."
-      },
-      {
-        "label": "Persentase DP (%)",
-        "en": "Shown for the percentage method. Between 0.01 and 100. The DP subtotal is the contract value times this percentage.",
-        "id": "Tampil untuk metode persentase. Antara 0,01 dan 100. Subtotal DP adalah nilai kontrak dikali persentase ini."
-      },
-      {
-        "label": "Nominal DP (Rp)",
-        "en": "Shown for the fixed method. The DP amount before VAT, in Rupiah, at least 0.01.",
-        "id": "Tampil untuk metode nominal tetap. Nilai DP sebelum PPN, dalam Rupiah, minimal 0,01."
-      },
-      {
-        "label": "Akun Kewajiban UM",
-        "en": "Read-only. The liability account that holds the customer advance (213200 Uang Muka Penjualan dari Pelanggan).",
-        "id": "Hanya baca. Akun kewajiban yang menampung uang muka customer (213200 Uang Muka Penjualan dari Pelanggan)."
-      },
-      {
-        "label": "Tanggal Faktur DP",
-        "en": "The invoice date, which is also the posting date. It must fall in an open accounting period.",
-        "id": "Tanggal faktur, sekaligus tanggal posting. Harus jatuh di periode akuntansi yang masih terbuka."
-      },
-      {
-        "label": "Tanggal Jatuh Tempo DP",
-        "en": "The date the customer should pay by. Default is 7 days after the invoice date; it cannot be before the invoice date.",
-        "id": "Tanggal batas pembayaran customer. Bawaan 7 hari setelah tanggal faktur; tidak boleh sebelum tanggal faktur."
-      },
-      {
-        "label": "Catatan / Instruksi Cetak Pada Faktur",
-        "en": "Optional note, up to 255 characters, that goes into the journal description for this invoice.",
-        "id": "Catatan opsional, maksimal 255 karakter, yang masuk ke keterangan jurnal invoice ini."
-      },
-      {
-        "label": "Invoice Final Tujuan",
-        "en": "In the allocation window: pick the customer's open final invoice that the DP is applied to. The list shows each invoice with its remaining balance.",
-        "id": "Di jendela alokasi: pilih invoice akhir customer yang masih terbuka sebagai tujuan pemotongan DP. Daftar menampilkan sisa tagihan tiap invoice."
-      },
-      {
-        "label": "Potong Pokok (Rp)",
-        "en": "In the allocation window: the base amount of the DP applied. Base plus VAT cannot exceed the DP still available or the open balance of the final invoice.",
-        "id": "Di jendela alokasi: nilai pokok DP yang dipotongkan. Pokok ditambah PPN tidak boleh melebihi sisa DP atau sisa tagihan invoice akhir."
-      },
-      {
-        "label": "Potong PPN (Rp)",
-        "en": "In the allocation window: the VAT part of the DP applied, zero or more.",
-        "id": "Di jendela alokasi: bagian PPN dari DP yang dipotongkan, nol atau lebih."
-      },
-      {
-        "label": "DP Not Yet Applied",
-        "en": "List column, read-only: the part of the DP not yet applied to a final invoice. When it reaches zero the row shows Habis Terpakai.",
-        "id": "Kolom daftar, hanya baca: bagian DP yang belum dipotongkan ke invoice akhir. Bila sudah nol, baris menampilkan Habis Terpakai."
-      }
-    ]
-  },
-  {
-    "key": "acc-receivables",
-    "type": "INPUT",
-    "module": "FINACC",
-    "title": "Order to Cash",
-    "purpose": {
-      "en": "Customer invoices and the money received for them. Open it to issue an invoice to a customer, post it, record the customer payment against it, and see which invoices are open or overdue.",
-      "id": "Invoice customer dan uang yang diterima untuk invoice itu. Buka untuk menerbitkan invoice ke customer, memostingnya, mencatat pembayaran customer, dan melihat invoice mana yang masih terbuka atau jatuh tempo."
-    },
-    "keywords": "piutang, receivable, ar, invoice, faktur, penjualan, customer invoice, tagihan, o2c, order to cash, penerimaan, pembayaran customer, jatuh tempo, overdue, ppn keluaran, e-faktur, aging",
-    "steps": [
-      {
-        "en": "Open Order to Cash. Use the search box, the Customer and Status filters, or the stat boxes (Draft, Open, Overdue, Paid) to find invoices.",
-        "id": "Buka Order to Cash. Pakai kotak cari, filter Customer dan Status, atau kotak statistik (Draft, Open, Overdue, Paid) untuk menemukan invoice."
-      },
-      {
-        "en": "Click + New Record. Search and pick the Customer, then fill Description, Invoice date, Due date, Revenue account and the Net amount (IDR).",
-        "id": "Klik + New Record. Cari dan pilih Customer, lalu isi Description, Invoice date, Due date, Revenue account, dan Net amount (IDR)."
-      },
-      {
-        "en": "Tick Tax code if PPN applies, optionally pick the Customer order and enter the e-Faktur number.",
-        "id": "Centang Tax code bila dikenai PPN, pilih Customer order bila ada, dan isi nomor e-Faktur."
-      },
-      {
-        "en": "Click Save to keep a Draft, or Approve & Post to post it to the ledger straight away.",
-        "id": "Klik Save untuk menyimpan Draft, atau Approve & Post untuk langsung memostingnya ke buku besar."
-      },
-      {
-        "en": "To record a payment, open a posted invoice and click Receive Payment. Set the Receipt date, Deposit to and a note, and type the amount to allocate to each open invoice.",
-        "id": "Untuk mencatat pembayaran, buka invoice yang sudah diposting lalu klik Receive Payment. Atur Receipt date, Deposit to, dan catatan, lalu isi nilai yang dialokasikan ke tiap invoice terbuka."
-      },
-      {
-        "en": "Click Post Receipt. The invoice becomes Partially paid or Paid. An allocation larger than the open balance is refused.",
-        "id": "Klik Post Receipt. Invoice menjadi Partially paid atau Paid. Alokasi yang melebihi sisa tagihan ditolak."
-      },
-      {
-        "en": "A Draft invoice that is not needed can be cancelled with Cancel draft on the older register page. A posted invoice is corrected with a credit note or reversing journal, not cancelled.",
-        "id": "Invoice Draft yang tidak diperlukan bisa dibatalkan dengan Cancel draft di halaman register lama. Invoice yang sudah diposting dikoreksi dengan nota kredit atau jurnal pembalik, bukan dibatalkan."
-      }
-    ],
-    "fields": [
-      {
-        "label": "Customer",
-        "en": "Type at least 2 letters of the name or code and pick the customer from the active customers. Picking one also sets the Due date from the customer's payment term. Required.",
-        "id": "Ketik minimal 2 huruf nama atau kode lalu pilih customer dari customer yang aktif. Memilih customer juga mengisi Due date sesuai syarat bayar customer. Wajib diisi."
-      },
-      {
-        "label": "Description",
-        "en": "What the invoice is for, up to 255 characters, for example Folding box 5,000 pcs - Sept delivery. Required.",
-        "id": "Untuk apa invoice ini, maksimal 255 karakter, misalnya Folding box 5.000 pcs - pengiriman September. Wajib diisi."
-      },
-      {
-        "label": "Invoice date",
-        "en": "The invoice and posting date. It must fall in an open accounting period.",
-        "id": "Tanggal invoice sekaligus tanggal posting. Harus jatuh di periode akuntansi yang masih terbuka."
-      },
-      {
-        "label": "Due date",
-        "en": "The date payment is due. Cannot be before the Invoice date. Overdue status and aging are counted from it.",
-        "id": "Tanggal jatuh tempo pembayaran. Tidak boleh sebelum Invoice date. Status Overdue dan umur piutang dihitung dari tanggal ini."
-      },
-      {
-        "label": "Revenue account",
-        "en": "The revenue account credited by the invoice, picked from postable revenue accounts (codes starting 4). Required.",
-        "id": "Akun pendapatan yang dikredit oleh invoice, dipilih dari akun pendapatan yang bisa diposting (kode berawalan 4). Wajib diisi."
-      },
-      {
-        "label": "Customer order (optional)",
-        "en": "Optional link to one of the 50 most recent customer orders. Shown in the Customer Order column.",
-        "id": "Tautan opsional ke salah satu dari 50 customer order terbaru. Tampil di kolom Customer Order."
-      },
-      {
-        "label": "Net amount (IDR)",
-        "en": "The invoice amount before VAT, in Rupiah, at least 1. Required.",
-        "id": "Nilai invoice sebelum PPN, dalam Rupiah, minimal 1. Wajib diisi."
-      },
-      {
-        "label": "Tax code",
-        "en": "Tick to add Output PPN (PPN Keluaran). The PPN amount and the total are calculated from the Net amount and shown as you type. Untick for an invoice without VAT.",
-        "id": "Centang untuk menambah PPN Keluaran. Nilai PPN dan total dihitung dari Net amount dan tampil saat Anda mengetik. Hilangkan centang untuk invoice tanpa PPN."
-      },
-      {
-        "label": "No. Faktur Pajak (e-Faktur)",
-        "en": "Optional tax invoice number, for example 010.000-26.00000001. Shown when the invoice is opened.",
-        "id": "Nomor faktur pajak, opsional, misalnya 010.000-26.00000001. Tampil saat invoice dibuka."
-      },
-      {
-        "label": "Receipt date",
-        "en": "In the Receive Payment window: the date the money was received. Required.",
-        "id": "Di jendela Receive Payment: tanggal uang diterima. Wajib diisi."
-      },
-      {
-        "label": "Deposit to",
-        "en": "In the Receive Payment window: the cash or bank account the money went into. Required.",
-        "id": "Di jendela Receive Payment: akun kas atau bank tempat uang masuk. Wajib diisi."
-      },
-      {
-        "label": "Note / bank reference",
-        "en": "In the Receive Payment window: optional bank or receipt reference, for example RCV-009818.",
-        "id": "Di jendela Receive Payment: referensi bank atau tanda terima, opsional, misalnya RCV-009818."
-      },
-      {
-        "label": "Allocate",
-        "en": "In the Receive Payment window: the amount applied to each open invoice of the customer. The chosen invoice starts with its full balance. Posting is Dr Bank / Cr Receivable.",
-        "id": "Di jendela Receive Payment: nilai yang dialokasikan ke tiap invoice terbuka milik customer. Invoice yang dipilih terisi sebesar sisanya. Jurnalnya Dr Bank / Cr Piutang."
-      },
-      {
-        "label": "Status",
-        "en": "List column, read-only: Draft, Open, Partially paid, Due this week, Overdue, Paid or Cancelled. Calculated from the document, payment and due date. Days Overdue is a hidden column.",
-        "id": "Kolom daftar, hanya baca: Draft, Open, Partially paid, Due this week, Overdue, Paid, atau Cancelled. Dihitung dari dokumen, pembayaran, dan jatuh tempo. Days Overdue adalah kolom tersembunyi."
-      },
-      {
-        "label": "Outstanding",
-        "en": "List column, read-only: the unpaid balance of a posted invoice. Zero for an invoice that is not yet posted.",
-        "id": "Kolom daftar, hanya baca: sisa belum dibayar pada invoice yang sudah diposting. Nol untuk invoice yang belum diposting."
-      }
-    ]
-  },
-  {
     "key": "acc-payables",
     "type": "INPUT",
     "module": "FINACC",
@@ -1126,10 +895,10 @@
     "module": "FINACC",
     "title": "Customer Invoice",
     "purpose": {
-      "en": "Bills to customers and their down payments in one list. Open it to invoice goods the customer has received, to bill a down payment for an order, to record that a down payment was received, and to see what is still unpaid.",
-      "id": "Tagihan ke customer dan uang mukanya dalam satu daftar. Buka layar ini untuk menagih barang yang sudah diterima customer, menagih uang muka sebuah order, mencatat uang muka yang sudah diterima, dan melihat tagihan yang belum lunas."
+      "en": "Bills to customers, their down payments and the money received for them, in one list. Open it to invoice goods the customer has received, to bill a down payment, to record a payment, and to see what is still unpaid.",
+      "id": "Tagihan ke customer, uang mukanya, dan uang yang diterima, dalam satu daftar. Buka layar ini untuk menagih barang yang sudah diterima customer, menagih uang muka, mencatat pembayaran, dan melihat tagihan yang belum lunas."
     },
-    "keywords": "customer invoice, invoice, faktur tagihan, tagihan customer, faktur, piutang, uang muka, down payment, dp, tagihan uang muka, tanda terima uang muka, order to cash, ar, sisa tagihan, faktur pajak, surat jalan",
+    "keywords": "customer invoice, invoice, faktur tagihan, tagihan customer, faktur, piutang, uang muka, down payment, dp, tagihan uang muka, tanda terima uang muka, order to cash, ar, sisa tagihan, pelunasan, pembayaran customer, terima pembayaran",
     "steps": [
       {
         "en": "Before invoicing, record the Proof of Delivery of the delivery note. Only lines the customer has received can be invoiced.",
@@ -1162,6 +931,10 @@
       {
         "en": "When the down payment money arrives, open the document, click Record Receipt, fill the date, bank account and amount, then Confirm Receipt. Print Receipt gives the receipt for the customer.",
         "id": "Saat uang muka masuk, buka dokumennya, klik Record Receipt, isi tanggal, rekening, dan nilainya, lalu Confirm Receipt. Print Receipt mencetak tanda terima untuk customer."
+      },
+      {
+        "en": "When the customer pays an invoice, open it and click Record Payment. Fill the date and bank account, type Paid Now on the invoices that are paid, then Confirm Payment. A fully paid invoice becomes Closed.",
+        "id": "Saat customer membayar invoice, buka invoicenya dan klik Record Payment. Isi tanggal dan rekening, ketik Paid Now pada invoice yang dibayar, lalu Confirm Payment. Invoice yang lunas menjadi Closed."
       }
     ],
     "fields": [
@@ -1264,6 +1037,16 @@
         "label": "Received In",
         "en": "Record Receipt: the company bank account that received the money. It needs a ledger account in Company Bank Accounts.",
         "id": "Record Receipt: rekening perusahaan yang menerima uang. Rekening harus punya akun buku besar di Company Bank Accounts."
+      },
+      {
+        "label": "Paid Now",
+        "en": "Record Payment: the amount paid on each open invoice of this customer. It cannot be more than Outstanding. Leave empty on invoices not paid by this receipt.",
+        "id": "Record Payment: nilai yang dibayar untuk tiap invoice terbuka customer ini. Tidak boleh lebih dari Outstanding. Kosongkan pada invoice yang tidak dibayar lewat penerimaan ini."
+      },
+      {
+        "label": "Note",
+        "en": "Record Payment: short text for the bank receipt voucher, for example the transfer reference.",
+        "id": "Record Payment: teks singkat untuk bukti bank masuk, misalnya referensi transfer."
       }
     ]
   },

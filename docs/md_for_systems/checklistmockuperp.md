@@ -257,7 +257,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 > Finance & Accounting penuh **dibuka**, bukan pengecualian liar. COA yang sudah live memang
 > scoped-in resmi; Modul 6 di atas sudah diperbarui mengikuti keputusan ini.
 - ✅ [G] Chart of Account — *master_coa_mockup.html* → `finance.coa`
-- ✅ [F] DP Invoice — *mockup_down_payment.html* → `finance.dp-invoice` (Event 1/2/4 teruji, lihat memory `project_dp_invoice_status`)
+- ✅ [F] Customer Invoice + Down Payment — *customer_invoice_v2.jpg* → layar v2 `customer-invoice` (2026-10-02; menggantikan `finance.dp-invoice` dan `finance.receivables` yang diarsipkan, lihat `customerinvoice_review.md`)
 - ✅ [F] Cash & Bank Journal (BKM/BKK/BBM/BBK) — `finance.voucher` (2026-08-22, alur Draft→Post manual, lihat memory `project_cash_bank_journal`)
 - ✅ Auto-jurnal posting (PV & Stock Out RM/SFG) — `JournalPostingService` (2026-08-22, lihat memory `project_auto_journal_accounting`). Delivery/Invoice auto-jurnal masih ditunda (butuh Costing V2 snapshot + DO)
 - ⬜ [G] AP Aging, Trial Balance, Financial Dashboard — belum digarap

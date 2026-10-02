@@ -19,6 +19,31 @@
 - **Belum:** pemasangan di mockup.test / tmerp.test dengan data dari database, dan papan widget yang bisa diatur lewat
   asisten AI (permintaan user 2026-10-02) -- menunggu persetujuan rancangan.
 
+## 2026-10-02 -- Order to Cash dan Down Payment lama dihentikan; Customer Invoice menggantikan (ddt + tm2)
+
+Perintah user sesudah review: "yang lama dihapus saja, gantikan dengan yang baru. yang lama disudahi saja".
+- **Record Payment** di form Customer Invoice (pengganti "terima pembayaran" Order to Cash): satu penerimaan untuk satu
+  atau beberapa invoice terbuka customer yang sama, sebagian atau penuh. `CustomerInvoiceService::openInvoices` +
+  `receivePayment` (memeriksa customer, identitas, sisa, rekening + akun buku besar, lalu `ArApService::settle`), rute
+  `v2.customer-invoice.payment`. Invoice lunas = Closed; Cancel ditolak sesudah ada pembayaran.
+- **Diarsipkan** ke `C:\Users\iwanp\tmerp_unused\` (MANIFEST): `pages/finance/receivables.blade.php`,
+  `pages/finance/dp-invoice.blade.php`, `Grid/Acc/ReceivableGrid.php`, `DownPaymentGrid.php`,
+  `Print/SalesInvoicePrint.php`, `screen_finance_dp_invoice.md`, `mockup_down_payment.html`, `sales_invoice_a5.jpg`.
+  Rute `finance.receivables` / `finance.dp-invoice`, entri `MenuRoutes` `FIN_AR` / `FIN_DP`, dan jenis cetak
+  `sales-invoice` dihapus; Tanda Terima Uang Muka (`dp-receipt`) kembali ke layar Customer Invoice.
+- **Migrasi `2026_10_02_000143`** (ddt + tm2): hapus baris menu `FIN_AR` dan `FIN_DP`, Customer Invoice menempati
+  urutannya, hapus topik Help `acc-receivables` / `acc-dp-invoice`, terjemahan dialog Record Payment.
+- **tm2 dipasang**: migrasi `000140`, `000141`, `000143` dijalankan satu per satu dengan `--path` (24 migrasi lain yang
+  tertunda di tm2 tidak disentuh); Help `finance.json` + `master_setup.json` dimuat. Salinan baris menu dan Help yang
+  dihapus: `tmerp_unused/database/retired_order_to_cash_rows_tm2_2026_10_02.json`. Lima rekening perusahaan di tm2
+  tanpa akun buku besar -- penerimaan uang ditolak sampai Finance mengisinya.
+- **Perbaikan ikut:** angka bulat di kotak isian form invoice terpotong nolnya (2.000.000 tampil 2); invoice lama tanpa
+  baris Surat Jalan tampil dan tercetak sebagai satu nilai; ringkasan invoice Confirmed memakai nilai tersimpan.
+- **Test:** `CustomerInvoiceTest` 8 test / 118 pemeriksaan di ddt (di tm2 5 test dilewati karena rekening belum punya
+  akun buku besar); `UiRatchetTest` baseline turun (tombol 976 -> 952, warna 5653 -> 5609, modal 70 -> 68, tabel
+  247 -> 243); `MainMenuShellSmokeTest` daftar Settings disesuaikan. Sisa data test diperiksa ke database: bersih.
+- **Belum ada gantinya:** tabel umur piutang (AR Aging) dan invoice penjualan tanpa Surat Jalan.
+
 ## 2026-10-02 -- Customer Invoice + uang muka, Tahap 1 (dibangun di ddt, menunggu review user)
 
 Perintah user sesudah melihat mockup: "jalankan dulu lalu buatkan dokumentasinya buat saya review". Dokumen review:

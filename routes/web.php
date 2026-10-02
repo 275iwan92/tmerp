@@ -217,13 +217,11 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         Route::middleware('module:FINACC')->group(function () {
             Route::livewire('/finance/coa', 'pages::finance.coa')->name('finance.coa');
-            Route::livewire('/finance/dp-invoice', 'pages::finance.dp-invoice')->name('finance.dp-invoice');
             Route::livewire('/finance/cash-bank', 'pages::finance.cash-bank')->name('finance.cash-bank');
 
             // Accounting Process Engine (mockup MODULE_accounting-*-blueprint.html, 2026-09-19)
             Route::livewire('/finance/engine', 'pages::finance.engine')->name('finance.engine');
             Route::livewire('/finance/dashboard', 'pages::finance.dashboard')->name('finance.dashboard');
-            Route::livewire('/finance/receivables', 'pages::finance.receivables')->name('finance.receivables');
             Route::livewire('/finance/payables', 'pages::finance.payables')->name('finance.payables');
             Route::livewire('/finance/bank', 'pages::finance.bank')->name('finance.bank');
             Route::livewire('/finance/journals', 'pages::finance.journals')->name('finance.journals');

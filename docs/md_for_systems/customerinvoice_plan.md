@@ -1,7 +1,9 @@
 # CUSTOMER INVOICE + ACCOUNTS RECEIVABLE — RENCANA MODUL
 
-> Status: **arah dan lima keputusan A–E DISETUJUI user 2026-10-02** (bagian 8). **Tahap 1 sudah dibangun di database
-> dummy (mockup.test) dan menunggu review user: `customerinvoice_review.md`.** Tahap 2 dan 3 belum.
+> Status: **arah dan lima keputusan A–E DISETUJUI user 2026-10-02** (bagian 8). **Tahap 1 + penerimaan pelunasan
+> (Record Payment) sudah terpasang di mockup.test DAN tmerp.test; layar lama Order to Cash dan Down Payment
+> diarsipkan atas perintah user 2026-10-02** ("yang lama dihapus saja, gantikan dengan yang baru"). Ringkasan untuk
+> review: `customerinvoice_review.md`. Sisa Tahap 2 dan Tahap 3 belum.
 > Ketentuan keuangan dan akuntansi (jurnal, nomor, pajak, pengendalian): **`customerinvoice_accounting.md`**.
 > Analisa (penomoran, detail baris, software pasar, aturan Indonesia): bagian 9.
 > Acuan lapangan: `docs/attachments/` — `print out tagihan customer invoice.jpeg`,
@@ -192,7 +194,9 @@ Delivery; tab Billing di Customer Order.
 **Tahap 3 — pengendalian.** Credit Note; batas kredit customer saat Confirm CO; pengingat jatuh tempo
 (e-mail); ekspor e-Faktur; saldo awal piutang dan pindah ke `tm2acc`.
 
-Layar v1 (`finance.receivables`, `finance.dp-invoice`) dibiarkan sampai v2 lolos QC, lalu diarsipkan.
+Layar lama (`finance.receivables`, `finance.dp-invoice`, grid v2 `acc-receivables` / `acc-dp-invoice`, cetakan
+`sales-invoice`) **sudah diarsipkan 2026-10-02** ke `C:Usersiwanp	merp_unused` atas perintah user; penggantinya
+layar `customer-invoice` (invoice, uang muka, Record Receipt, Record Payment).
 
 ---
 

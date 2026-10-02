@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-// Induk daftar tagihan (tm2acc.fin_invoice): piutang customer, uang muka customer, tagihan supplier. Satu turunan = satu
-// invoice_type. Status = gabungan status dokumen + pembayaran + jatuh tempo, aturan yang sama dengan layar v1.
+// Induk daftar tagihan (tm2acc.fin_invoice). Satu turunan = satu invoice_type; sekarang hanya tagihan supplier (PayableGrid) --
+// tagihan dan uang muka customer pindah ke layar Customer Invoice (2026-10-02).
+// Status = gabungan status dokumen + pembayaran + jatuh tempo, aturan yang sama dengan layar v1.
 abstract class InvoiceGrid extends AccGrid
 {
     protected const STATUS_TONES = ['Draft' => 'neutral', 'Pending approval' => 'warn', 'Open' => 'info', 'Partially paid' => 'info', 'Due this week' => 'warn',
@@ -26,17 +27,6 @@ abstract class InvoiceGrid extends AccGrid
     abstract protected function partnerNames(array $ids): array;
 
     abstract protected function partnerLabel(): string;
-
-    // Tagihan ke customer punya cetakan (sales-invoice); tagihan supplier tidak dicetak dari sini.
-    protected function printable(): bool
-    {
-        return false;
-    }
-
-    public function actionUrls(): array
-    {
-        return $this->printable() ? ['print' => $this->printUrl('sales-invoice')] : [];
-    }
 
     public function family(): string
     {
@@ -74,12 +64,10 @@ abstract class InvoiceGrid extends AccGrid
             ['key' => 'co_no', 'label' => 'Customer Order', 'visible' => false],
             ['key' => 'tax', 'label' => 'VAT', 'type' => 'money', 'visible' => false],
             ['key' => 'total', 'label' => 'Total', 'type' => 'money'],
-            // Dengan tombol Print, Paid disembunyikan supaya baris induk tetap paling banyak 8 kolom (rulebook C.28).
-            ['key' => 'paid', 'label' => 'Paid', 'type' => 'money', 'visible' => ! $this->printable()],
+            ['key' => 'paid', 'label' => 'Paid', 'type' => 'money'],
             ['key' => 'outstanding', 'label' => 'Outstanding', 'type' => 'money'],
             ['key' => 'days_overdue', 'label' => 'Days Overdue', 'type' => 'number', 'visible' => false],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::STATUS_TONES],
-            ...($this->printable() ? [$this->printColumn()] : []),
         ];
     }
 

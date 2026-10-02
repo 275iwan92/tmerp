@@ -10,6 +10,11 @@ Dokumen ini merangkum alur kerja 3 layar Finance & Accounting yang sudah dibangu
 
 ## Tahap -> Layar -> Aktor
 
+> **Perubahan 2026-10-02:** baris 2b–2d di bawah menggambarkan layar Down Payment lama (`finance.dp-invoice`) yang
+> **sudah diarsipkan**. Uang muka sekarang dikerjakan di layar **Customer Invoice** (`v2:customer-invoice`): tagihan
+> uang muka = permintaan bayar tanpa jurnal, jurnal lahir saat uang diterima (Record Receipt), dan potongan ke invoice
+> terjadi saat invoice di-Confirm. Ketentuan yang berlaku: `customerinvoice_accounting.md`.
+
 | Tahap | Layar | Route | Aktor | Keterangan |
 |---|---|---|---|---|
 | 1. Setup struktur akun | Master Chart of Accounts | `finance.coa` | Staf Finance/Accounting | Definisikan akun header (kelompok) & akun postable (bisa dijurnal), tipe (ASSET/LIABILITY/dst), saldo normal, flag rekonsiliasi (AR/AP), default cost center, skema pajak. Prasyarat bagi 2 layar berikutnya — Kas & Bank dan DP Invoice sama-sama melakukan lookup `FinAccount::where('account_code', ...)`. |

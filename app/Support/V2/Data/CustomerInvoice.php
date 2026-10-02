@@ -257,6 +257,23 @@ final class CustomerInvoice
             (int) ($in['company_bank_id'] ?? 0), (float) (self::num($in['amount'] ?? null) ?? 0), mb_substr(trim((string) ($in['tax_invoice_no'] ?? '')), 0, 50) ?: null, Auth::user()->login));
     }
 
+    /** Invoice terbuka customer ini (identitas pajak yang sama) untuk dialog Record Payment; invoice yang sedang dibuka terisi sisanya. */
+    public static function openInvoiceRows(FinInvoice $i): array
+    {
+        return self::service()->openInvoices((int) $i->partner_id, (bool) $i->is_ppn)->map(fn (FinInvoice $o) => ['invoice_id' => $o->invoice_id, 'no' => $o->invoice_number,
+            'date' => Locale::d($o->invoice_date), 'due' => Locale::d($o->due_date), 'outstanding' => Locale::number($o->outstanding(), 2),
+            'paid' => $o->invoice_id === $i->invoice_id ? $o->outstanding() : null])->values()->all();
+    }
+
+    /** Pelunasan diterima (dialog Record Payment): pay [id invoice => [paid]] -> pesan salah, null = berhasil. */
+    public static function pay(FinInvoice $i, array $in): ?string
+    {
+        $alloc = collect((array) ($in['pay'] ?? []))->map(fn ($row) => (float) (self::num(((array) $row)['paid'] ?? null) ?? 0))->all();
+
+        return self::guard(fn () => self::service()->receivePayment((int) $i->partner_id, trim((string) ($in['received_date'] ?? '')) ?: now()->toDateString(),
+            (int) ($in['company_bank_id'] ?? 0), $alloc, Auth::user()->login, mb_substr(trim((string) ($in['note'] ?? '')), 0, 100)));
+    }
+
     private static function guard(callable $do): ?string
     {
         try {

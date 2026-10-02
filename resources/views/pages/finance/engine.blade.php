@@ -115,7 +115,7 @@ new #[Title('Accounting Process Engine — TELASIH MAKMUR ERP')] class extends C
         <x-ledger.panel title="Module Integration Map" subtitle="Where business activity becomes accounting data.">
             <div class="lg-list">
                 <x-ledger.row icon="⇧" tone="bl" title="Order to Cash" text="Invoice → AR → receipt allocation → bank → revenue and PPN posting">
-                    <a class="lg-link" href="{{ route('finance.receivables') }}">Open</a>
+                    <a class="lg-link" href="{{ route('v2.screen', 'customer-invoice') }}">Open</a>
                 </x-ledger.row>
                 <x-ledger.row icon="⇩" tone="bl" title="Procure to Pay" text="Purchase receive → GR/IR → bill → AP → payment, input PPN & PPh 23">
                     <a class="lg-link" href="{{ route('finance.payables') }}">Open</a>

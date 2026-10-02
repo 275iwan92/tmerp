@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Acc\FinCompanyBank;
 use App\Models\Acc\FinDpAllocation;
 use App\Models\Acc\FinInvoice;
+use App\Models\Acc\FinPaymentAlloc;
 use App\Models\Acc\FinVoucher;
 use App\Models\Acc\FinVoucherLine;
 use App\Models\Master\CustCustomer;
@@ -17,6 +18,7 @@ use App\Services\Acc\ArApService;
 use App\Services\Acc\CustomerInvoiceService;
 use App\Support\Docs\DocSeries;
 use App\Support\Finance\TaxRate;
+use App\Support\V2\Data\CustomerInvoice;
 use App\Support\V2\Print\PrintDocs;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -62,8 +64,9 @@ class CustomerInvoiceTest extends TestCase
         if ($this->firstInvoice || $this->orders) {
             $invoices = FinInvoice::withoutGlobalScopes()->where('invoice_id', '>', $this->firstInvoice)->whereIn('co_id', $this->orders ?: [0])->pluck('invoice_id');
             FinDpAllocation::query()->whereIn('final_invoice_id', $invoices)->orWhereIn('dp_invoice_id', $invoices)->delete();
+            FinPaymentAlloc::query()->whereIn('invoice_id', $invoices)->delete();
             $vouchers = FinVoucher::withoutGlobalScopes()->where('voucher_id', '>', $this->firstVoucher)
-                ->where(fn ($q) => $q->whereIn('source_type', ['CUSTOMER_INVOICE', 'CUSTOMER_DP_PAYMENT'])->whereIn('source_id', $invoices))->pluck('voucher_id');
+                ->where(fn ($q) => $q->whereIn('source_type', ['CUSTOMER_INVOICE', 'CUSTOMER_DP_PAYMENT', 'AR_RECEIPT'])->whereIn('source_id', $invoices))->pluck('voucher_id');
             $vouchers = $vouchers->merge(FinVoucher::withoutGlobalScopes()->where('source_type', 'REVERSAL')->whereIn('source_id', $vouchers)->pluck('voucher_id'));
             FinInvoice::withoutGlobalScopes()->whereKey($invoices)->update(['voucher_id' => null]);
             FinVoucher::withoutGlobalScopes()->whereKey($vouchers)->update(['reversal_of_id' => null, 'reversed_by_id' => null]);
@@ -113,7 +116,13 @@ class CustomerInvoiceTest extends TestCase
 
     private function bank(bool $ppn): FinCompanyBank
     {
-        return FinCompanyBank::query()->where('activate', 1)->orderByDesc('is_default')->get()->first(fn (FinCompanyBank $b) => $b->usableFor($ppn) && $b->glAccountId());
+        $bank = FinCompanyBank::query()->where('activate', 1)->orderByDesc('is_default')->get()->first(fn (FinCompanyBank $b) => $b->usableFor($ppn) && $b->glAccountId());
+        if (! $bank) {
+            // Database nyata: akun buku besar per rekening diisi Finance di layar Company Bank Accounts; test tidak mengisinya.
+            $this->markTestSkipped('Belum ada rekening perusahaan dengan akun buku besar di database ini.');
+        }
+
+        return $bank;
     }
 
     private function balanced(FinVoucher $v): void
@@ -292,7 +301,9 @@ class CustomerInvoiceTest extends TestCase
         // Uang muka: buat -> Save (30%) -> Confirm -> Record Receipt.
         $this->post(route('v2.customer-invoice.create'), ['type' => 'DOWN_PAYMENT', 'co_id' => $co->id_order])->assertRedirect();
         $dp = FinInvoice::withoutGlobalScopes()->where('co_id', $co->id_order)->where('invoice_type', CustomerInvoiceService::DOWN_PAYMENT)->firstOrFail();
-        $this->get($home.'?id='.$dp->invoice_id)->assertOk()->assertSee('Draft #'.$dp->invoice_id);
+        // Nilai bulat di kotak isian tidak boleh terpotong nolnya (50% dari 2.775.000 = 1.387.500).
+        $page = $this->get($home.'?id='.$dp->invoice_id)->assertOk()->assertSee('Draft #'.$dp->invoice_id);
+        $this->assertMatchesRegularExpression('/name="bill_amount"[^>]*value="1[.,]387[.,]500/', $page->getContent());
         $this->post(route('v2.customer-invoice.save', $dp->invoice_id), ['action' => 'confirm', 'invoice_date' => $this->today, 'dp_percent' => '30', 'payment_term_code' => 'NET30',
             'company_bank_id' => $dp->company_bank_id])->assertRedirect()->assertSessionHasNoErrors();
         $dp->refresh();
@@ -323,10 +334,46 @@ class CustomerInvoiceTest extends TestCase
         // Baris grid dikirim sebagai JSON: garis miring pada nomor tertulis "\/".
         $this->get($home)->assertOk()->assertSee(str_replace('/', '\/', $inv->invoice_number), false);
 
-        $this->post(route('v2.customer-invoice.save', $inv->invoice_id), ['action' => 'cancel', '_reason' => ''])->assertSessionHasErrors('cancel');
-        $this->post(route('v2.customer-invoice.save', $inv->invoice_id), ['action' => 'cancel', '_reason' => 'Test cancel'])->assertSessionHasNoErrors();
-        $this->assertSame('CANCELLED', $inv->refresh()->doc_status);
-        $this->get($home.'?id='.$inv->invoice_id)->assertOk();
+        // Pelunasan lewat dialog Record Payment: sebagian dulu, lalu sisanya -> Closed; sesudah ada pembayaran Cancel ditolak.
+        $this->get($home.'?id='.$inv->invoice_id)->assertOk()->assertSee('Record Payment');
+        $left = $inv->outstanding();
+        $this->post(route('v2.customer-invoice.payment', $inv->invoice_id), ['received_date' => $this->today, 'company_bank_id' => $this->bank(true)->id_company_bank,
+            'pay' => [$inv->invoice_id => ['paid' => '1000']]])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('PARTIAL', $inv->refresh()->payment_status);
+        $this->post(route('v2.customer-invoice.save', $inv->invoice_id), ['action' => 'cancel', '_reason' => 'Test cancel'])->assertSessionHasErrors('cancel');
+        $this->post(route('v2.customer-invoice.payment', $inv->invoice_id), ['received_date' => $this->today, 'company_bank_id' => $this->bank(true)->id_company_bank,
+            'pay' => [$inv->invoice_id => ['paid' => (string) round($left - 1000, 2)]]])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('PAID', $inv->refresh()->payment_status);
+        $this->assertSame('closed', CustomerInvoice::formStatus($inv));
+        $this->get($home.'?id='.$inv->invoice_id)->assertOk()->assertDontSee('data-dl-open="invoice-payment"', false);
+    }
+
+    public function test_payment_can_cover_several_invoices_and_never_exceeds_what_is_left(): void
+    {
+        $co = $this->order(false, [[100, 100, 10000, false], [50, 50, 4000, false]]);
+        $lines = $this->svc->billable($co->id_order);
+        $a = $this->svc->createInvoice($co, [$lines[0]->id_line], 'test');
+        $b = $this->svc->createInvoice($co, [$lines[1]->id_line], 'test');
+        $this->svc->confirm($a, 'test');
+        $this->svc->confirm($b, 'test');
+        $customer = (int) $co->customer_id;
+        $bank = $this->bank(false)->id_company_bank;
+
+        try {
+            $this->svc->receivePayment($customer, $this->today, $bank, [$a->invoice_id => 1000001.0], 'test');
+            $this->fail('A payment above the invoice balance was accepted.');
+        } catch (DomainException) {
+        }
+        $voucher = $this->svc->receivePayment($customer, $this->today, $bank, [$a->invoice_id => 1000000.0, $b->invoice_id => 50000.0], 'test', 'Transfer');
+        $this->balanced($voucher);
+        $this->assertEqualsWithDelta(1050000.0, (float) $voucher->lines->sum('debit'), 0.005);
+        $this->assertSame('PAID', $a->refresh()->payment_status);
+        $this->assertSame('PARTIAL', $b->refresh()->payment_status);
+        $this->assertEqualsWithDelta(150000.0, $b->outstanding(), 0.005);
+        $this->assertCount(1, $this->svc->openInvoices($customer, false)->whereIn('invoice_id', [$a->invoice_id, $b->invoice_id]));
+
+        $this->expectException(DomainException::class);
+        $this->svc->cancel($a, 'Paid invoice', 'test');
     }
 
     public function test_draft_can_be_deleted_and_a_received_down_payment_cannot_be_cancelled(): void

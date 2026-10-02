@@ -203,12 +203,21 @@ class CustomerInvoiceService
             return ['subtotal' => round((float) $inv->subtotal, 2), 'discount' => 0.0, 'charge' => 0.0, 'dpp' => round((float) $inv->subtotal, 2), 'tax' => round((float) $inv->tax_amount, 2),
                 'total' => $total, 'dp' => 0.0, 'balance' => round($total - (float) $inv->paid_amount, 2)];
         }
-        $sub = round((float) $inv->lines->sum('line_total'), 2);
-        $discount = round($sub * (float) $inv->discount_pct / 100, 2);
         $charge = round((float) $inv->charge_amount, 2);
-        $dpp = round($sub - $discount + $charge, 2);
-        $tax = $inv->is_ppn ? round($dpp * (float) $inv->tax_rate / 100, 2) : 0.0;
-        $total = round($dpp + $tax, 2);
+        if ($inv->doc_status === 'DRAFT') {
+            $sub = round((float) $inv->lines->sum('line_total'), 2);
+            $discount = round($sub * (float) $inv->discount_pct / 100, 2);
+            $dpp = round($sub - $discount + $charge, 2);
+            $tax = $inv->is_ppn ? round($dpp * (float) $inv->tax_rate / 100, 2) : 0.0;
+            $total = round($dpp + $tax, 2);
+        } else {
+            // Sesudah Confirm angka tidak dihitung ulang: yang berlaku = yang tersimpan (juga untuk invoice lama tanpa baris).
+            $sub = round((float) $inv->subtotal, 2);
+            $discount = round((float) $inv->discount_amount, 2);
+            $dpp = round($sub - $discount + $charge, 2);
+            $tax = round((float) $inv->tax_amount, 2);
+            $total = round((float) $inv->total_amount, 2);
+        }
         $dp = $inv->doc_status === 'DRAFT' ? round(array_sum(array_map('floatval', (array) $inv->dp_plan)), 2) : round((float) $inv->dp_applied_amount, 2);
         $cash = $inv->doc_status === 'DRAFT' ? 0.0 : round((float) $inv->paid_amount - (float) $inv->dp_applied_amount, 2);
 
@@ -546,6 +555,39 @@ class CustomerInvoiceService
 
             return $voucher;
         });
+    }
+
+    // ---------------------------------------------------------------- pelunasan diterima
+
+    /** Invoice Confirmed satu customer (identitas pajak yang sama) yang masih punya sisa tagihan, urut jatuh tempo. */
+    public function openInvoices(int $customerId, bool $ppn): Collection
+    {
+        return FinInvoice::withoutGlobalScopes()->where('invoice_type', self::INVOICE)->where('partner_id', $customerId)->where('doc_status', 'POSTED')
+            ->where('payment_status', '<>', 'PAID')->where('is_ppn', $ppn)->orderBy('due_date')->orderBy('invoice_id')->get();
+    }
+
+    /**
+     * Pelunasan diterima: satu penerimaan boleh melunasi beberapa invoice customer yang sama, boleh sebagian.
+     * $allocations: [id invoice => nilai]. Bukti bank / kas masuk + jurnal Bank pada Piutang lewat ArApService::settle
+     * (alokasi tidak boleh melebihi sisa invoice).
+     */
+    public function receivePayment(int $customerId, string $date, int $bankId, array $allocations, string $user, string $note = ''): FinVoucher
+    {
+        $allocations = array_filter(array_map(fn ($v) => round((float) $v, 2), $allocations), fn ($v) => $v > 0);
+        $this->fail(! $allocations, 'Fill in the amount paid on at least one invoice.');
+        $invoices = FinInvoice::withoutGlobalScopes()->whereKey(array_keys($allocations))->get();
+        $this->fail($invoices->count() !== count($allocations) || $invoices->contains(fn (FinInvoice $i) => $i->invoice_type !== self::INVOICE || $i->doc_status !== 'POSTED'
+            || (int) $i->partner_id !== $customerId), 'Only Confirmed invoices of this customer can receive a payment.');
+        $this->fail($invoices->pluck('is_ppn')->unique()->count() > 1, 'One receipt cannot mix invoices of the two tax identities.');
+        foreach ($invoices as $i) {
+            $this->fail($allocations[$i->invoice_id] > $i->outstanding() + 0.005, "The amount for {$i->invoice_number} is more than what is left to pay.");
+        }
+        $bank = FinCompanyBank::query()->where('activate', 1)->find($bankId);
+        $this->fail(! $bank, 'Choose the bank account that received the money.');
+        $this->fail(! $bank->usableFor((bool) $invoices->first()->is_ppn), 'This bank account is not for this tax identity.');
+        $this->fail(! ($bankAccount = $bank->glAccountId()), 'This bank account has no ledger account yet (Finance > Company Bank Accounts).');
+
+        return $this->arap->settle('RECEIPT', $bankAccount, $date, $allocations, $user, $note);
     }
 
     // ---------------------------------------------------------------- bantu

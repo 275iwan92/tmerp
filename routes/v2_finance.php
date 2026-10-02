@@ -63,4 +63,13 @@ Route::prefix('v2/customer-invoice')->name('v2.customer-invoice.')->middleware('
 
         return $err ? $open($id)->withErrors(['receipt' => t($err)]) : $open($id)->with('v2_flash', t('Down payment received. The receipt is ready to print.'));
     })->whereNumber('id')->name('receipt');
+
+    // Pelunasan diterima (dialog Record Payment di form invoice): satu penerimaan untuk satu atau beberapa invoice customer itu.
+    Route::post('/{id}/payment', function (Request $r, int $id) use ($open) {
+        $inv = CustomerInvoice::find($id) ?? abort(404);
+        $r->validate(['received_date' => ['required', 'date'], 'company_bank_id' => ['required', 'integer']], [], ['received_date' => 'Received Date', 'company_bank_id' => 'Received In']);
+        $err = CustomerInvoice::pay($inv, $r->all());
+
+        return $err ? $open($id)->withErrors(['payment' => $err]) : $open($id)->with('v2_flash', t('Payment received and allocated to the invoice.'));
+    })->whereNumber('id')->name('payment');
 });

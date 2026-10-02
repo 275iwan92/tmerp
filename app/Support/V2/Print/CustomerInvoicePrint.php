@@ -99,8 +99,11 @@ final class CustomerInvoicePrint extends Document
             'payment_term' => FinPaymentTerm::query()->where('payment_term_code', (string) $inv->payment_term_code)->value('term_label') ?: $inv->payment_term_code,
             'due' => $inv->due_date?->toDateString(), 'note' => $inv->notes, 'tax_id' => $cust?->tax_code, 'notes' => $notes,
             'party' => ['name' => $inv->bill_to_name ?: ($cust?->customer_name ?? ''), 'lines' => PrintDocs::address($inv->bill_to_address ?: $cust?->default_address)],
-            'rows' => $inv->lines->map(fn ($l) => ['name' => $l->description, 'qty' => (float) $l->qty_invoiced, 'unit' => $l->qty_unit, 'cfg' => $l->color_config,
-                'type' => $l->order_type, 'dn' => $l->delivery_no, 'price' => (float) $l->unit_price, 'subtotal' => (float) $l->line_total])->all(),
+            // Invoice lama tanpa baris (dibuat sebelum ada baris Surat Jalan): satu baris = uraian tagihan dengan nilai DPP-nya.
+            'rows' => $inv->lines->isEmpty()
+                ? [['name' => $inv->description ?: self::t('Customer Invoice'), 'price' => $t['subtotal'], 'subtotal' => $t['subtotal']]]
+                : $inv->lines->map(fn ($l) => ['name' => $l->description, 'qty' => (float) $l->qty_invoiced, 'unit' => $l->qty_unit, 'cfg' => $l->color_config,
+                    'type' => $l->order_type, 'dn' => $l->delivery_no, 'price' => (float) $l->unit_price, 'subtotal' => (float) $l->line_total])->all(),
         ]);
         $doc->nb = $inv->companyBank ? self::t('Please transfer the payment to').' '.$inv->companyBank->printLabel() : '';
 

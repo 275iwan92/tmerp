@@ -10,7 +10,7 @@ use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\DB;
 
 // Engine jurnal generik -- generalisasi dari pola yang sebelumnya cuma hidup
-// inline di resources/views/pages/finance/dp-invoice.blade.php (accountId()/
+// inline di layar Down Payment v1 (diarsipkan 2026-10-02; accountId()/
 // nextVoucherNumber()/FinVoucher::create()+FinVoucherLine::create() manual per
 // event). Dibuat 2026-08-22 supaya Purchase Receive & Stock Out (dan modul
 // lain nanti -- Delivery/Invoice, fase berikutnya) tidak menduplikasi pola

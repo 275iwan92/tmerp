@@ -14,6 +14,8 @@
     $inv = request('id') ? CustomerInvoice::find((int) request('id')) : null;
     abort_if(request('id') && ! $inv, 404);
     $num = fn ($v, int $d = 2) => Locale::number($v, $d);
+    // Angka mentah untuk kotak isian: 2000000 -> "2000000", 268358.83 -> "268358.83", 50.00 -> "50" (titik desimal, tanpa pemisah ribuan).
+    $plain = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
 @endphp
 
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
@@ -120,8 +122,9 @@
         $coNo = $inv->co_id ? \App\Models\Sdi\CoOrder::query()->whereKey($inv->co_id)->value('co_no') : null;
         $identity = $inv->is_ppn ? \App\Support\Branding\Brand::companyLegalName().' (PPN)' : \App\Support\Branding\Brand::companyName().' (Non PPN)';
         $legacy = ! $isDp && $inv->lines->isEmpty();
-        $printType = $isDp ? 'dp-invoice' : ($legacy ? 'sales-invoice' : 'customer-invoice');
+        $printType = $isDp ? 'dp-invoice' : 'customer-invoice';
         $canReceive = $isDp && $inv->doc_status === 'POSTED' && $inv->payment_status !== 'PAID';
+        $canPay = ! $isDp && $inv->doc_status === 'POSTED' && $inv->payment_status !== 'PAID';
         $journal = CustomerInvoice::journalRows($inv);
         $payments = CustomerInvoice::paymentRows($inv);
         $dpRows = $isDp ? [] : CustomerInvoice::downPaymentRows($inv);
@@ -139,6 +142,9 @@
             @if ($canReceive)
                 <x-dl::button size="sm" variant="success" icon="fa-money-bill-wave" label="Record Receipt" data-dl-open="dp-receipt" />
             @endif
+            @if ($canPay)
+                <x-dl::button size="sm" variant="success" icon="fa-money-bill-wave" label="Record Payment" data-dl-open="invoice-payment" />
+            @endif
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('Invoice No.')</span><b>{{ $inv->invoice_number ?: t('(on Confirm)') }}</b></div>
@@ -150,7 +156,7 @@
 
         <x-slot:general>
             @if ($legacy)
-                <x-dl::alert tone="info" :message="t('This invoice was made on the old Order to Cash screen: it has one amount and no delivery note lines.')" />
+                <x-dl::alert tone="info" :message="t('This invoice was made before delivery note lines existed: it has one amount and no lines.')" />
             @endif
             @if ($inv->doc_status === 'CANCELLED')
                 <x-dl::field.display label="Cancel Reason" :value="$inv->cancel_reason ?? '—'" :source="Src::of('tm2acc.fin_invoice.cancel_reason')" />
@@ -172,16 +178,16 @@
                 <x-dl::form.row :cols="4">
                     <x-dl::field.display label="Total Order Amount" :value="$num($inv->order_amount)" :source="Src::of('tm2acc.fin_invoice.order_amount')" />
                     <x-dl::field.display label="Billed Before" :value="$num(CustomerInvoice::billedBefore($inv))" :source="Src::calc('other confirmed down payment invoices of this order', 'tm2acc.fin_invoice.total_amount')" />
-                    <x-dl::field.decimal name="dp_percent" label="Percent of Order" unit="%" :value="$inv->dp_percent !== null ? rtrim(rtrim((string) $inv->dp_percent, '0'), '.') : ''" :disabled="! $draft"
+                    <x-dl::field.decimal name="dp_percent" label="Percent of Order" unit="%" :value="$inv->dp_percent !== null ? $plain($inv->dp_percent) : ''" :disabled="! $draft"
                         :hint="t('Leave empty to type the amount yourself.')" :source="Src::of('tm2acc.fin_invoice.dp_percent')" />
-                    <x-dl::field.decimal name="bill_amount" label="Bill Amount" :value="rtrim(rtrim((string) round((float) $inv->total_amount, 2), '0'), '.')" :disabled="! $draft"
+                    <x-dl::field.decimal name="bill_amount" label="Bill Amount" :value="$plain($inv->total_amount)" :disabled="! $draft"
                         :hint="t('Used when Percent is empty. Includes VAT on a VAT order.')" :source="Src::of('tm2acc.fin_invoice.total_amount')" />
                 </x-dl::form.row>
                 <x-dl::field.text name="description" label="Description" :value="$inv->description" :readonly="! $draft" :source="Src::of('tm2acc.fin_invoice.description')" />
                 <x-dl::alert tone="info" :message="t('A down payment invoice posts no journal and is not a receivable. The journal is made when the money is received (Record Receipt).')" />
             @else
                 <x-dl::form.row :cols="4">
-                    <x-dl::field.decimal name="charge_amount" label="Other Charges" :value="rtrim(rtrim((string) round((float) $inv->charge_amount, 2), '0'), '.')" :disabled="! $draft"
+                    <x-dl::field.decimal name="charge_amount" label="Other Charges" :value="$plain($inv->charge_amount)" :disabled="! $draft"
                         :hint="t('Freight or other cost billed to the customer; part of the tax base.')" :source="Src::of('tm2acc.fin_invoice.charge_amount')" />
                     <x-dl::field.text name="charge_note" label="Other Charges Note" :value="$inv->charge_note" :readonly="! $draft" :source="Src::of('tm2acc.fin_invoice.charge_note')" />
                 </x-dl::form.row>
@@ -273,7 +279,7 @@
                 @csrf
                 <x-dl::form.row :cols="2">
                     <x-dl::field.date name="received_date" label="Received Date" required :value="now()->toDateString()" :source="Src::of('tm2acc.fin_voucher.entry_date')" />
-                    <x-dl::field.decimal name="amount" label="Amount Received" required :value="rtrim(rtrim((string) round((float) $inv->total_amount - (float) $inv->paid_amount, 2), '0'), '.')" :source="Src::of('tm2acc.fin_invoice.paid_amount')" />
+                    <x-dl::field.decimal name="amount" label="Amount Received" required :value="$plain((float) $inv->total_amount - (float) $inv->paid_amount)" :source="Src::of('tm2acc.fin_invoice.paid_amount')" />
                 </x-dl::form.row>
                 <x-dl::form.row :cols="2">
                     <x-dl::field.select name="company_bank_id" label="Received In" required :options="CustomerInvoice::bankOptions($inv)" :value="$inv->company_bank_id" :source="Src::of('tm2acc.fin_company_bank')" />
@@ -286,6 +292,34 @@
                 <x-dl::action-bar>
                     <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
                     <x-dl::button preset="save" variant="success" label="Confirm Receipt" />
+                </x-dl::action-bar>
+            </form>
+        </x-dl::modal>
+    @endif
+
+    @if ($canPay)
+        @php $openRows = CustomerInvoice::openInvoiceRows($inv); @endphp
+        <x-dl::modal id="invoice-payment" title="Record Payment" icon="fa-money-bill-wave" size="lg">
+            <form method="post" action="{{ route('v2.customer-invoice.payment', $inv->invoice_id) }}">
+                @csrf
+                <x-dl::form.row :cols="3">
+                    <x-dl::field.date name="received_date" label="Received Date" required :value="now()->toDateString()" :source="Src::of('tm2acc.fin_voucher.entry_date')" />
+                    <x-dl::field.select name="company_bank_id" label="Received In" required :options="CustomerInvoice::bankOptions($inv)" :value="$inv->company_bank_id" :source="Src::of('tm2acc.fin_company_bank')" />
+                    <x-dl::field.text name="note" label="Note" :source="Src::of('tm2acc.fin_voucher.description')" />
+                </x-dl::form.row>
+                <x-dl::lines name="pay" title="Open Invoices of This Customer" key-field="invoice_id" :addable="false" :duplicable="false" :min-rows="count($openRows)" :rows="$openRows"
+                    source="{{ Src::of('tm2acc.fin_invoice', 'tm2acc.fin_payment_alloc') }}"
+                    :columns="[
+                        ['key' => 'no', 'label' => 'Invoice No.', 'type' => 'display'],
+                        ['key' => 'date', 'label' => 'Date', 'type' => 'display', 'width' => '120px'],
+                        ['key' => 'due', 'label' => 'Due Date', 'type' => 'display', 'width' => '120px'],
+                        ['key' => 'outstanding', 'label' => 'Outstanding', 'type' => 'display', 'width' => '160px'],
+                        ['key' => 'paid', 'label' => 'Paid Now', 'type' => 'money', 'width' => '170px'],
+                    ]" />
+                <x-dl::alert tone="info" :message="t('One receipt may pay several invoices of this customer, in part or in full. Confirm Payment makes the bank receipt voucher and the journal: Bank to Receivable.')" />
+                <x-dl::action-bar>
+                    <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
+                    <x-dl::button preset="save" variant="success" label="Confirm Payment" />
                 </x-dl::action-bar>
             </form>
         </x-dl::modal>

@@ -112,7 +112,7 @@ description: Index master seluruh dokumen /docs — layar, flow modul, database/
 |---|---|
 | `screen_finance_coa.md` | Master Chart of Accounts — grid tree berjenjang. |
 | `screen_finance_cash_bank.md` | Jurnal Kas & Bank (BKM/BKK/BBM/BBK), Draft->Post. |
-| `screen_finance_dp_invoice.md` | Tagihan Uang Muka customer — terbitkan, catat bayar, alokasi ke invoice final. |
+| (diarsipkan 2026-10-02) `screen_finance_dp_invoice.md` | Layar Down Payment lama disudahi; penggantinya layar v2 Customer Invoice — `md_for_systems/customerinvoice_review.md`, `customerinvoice_accounting.md`. |
 
 ### 1.9 HRM (5)
 | File | Deskripsi |

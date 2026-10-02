@@ -38,12 +38,11 @@ final class PrintDocs
         'maintenance-wo' => [MaintenanceWoPrint::class, 'maintenance-wo', 'MWO'],
         'petty-cash' => [PettyCashPrint::class, 'petty-cash', 'PC'],
         'subcon-delivery-note' => [SubconDeliveryNotePrint::class, 'subcon-delivery-note', 'SDN'],
-        'sales-invoice' => [SalesInvoicePrint::class, 'acc-receivables', 'INV'],
         'customer-invoice' => [CustomerInvoicePrint::class, 'customer-invoice', 'INV'],
         'dp-invoice' => [DownPaymentInvoicePrint::class, 'customer-invoice', 'INV'],
         'payment-voucher' => [PaymentVoucherPrint::class, 'acc-cash-bank', 'PVC'],
         'supplier-invoice-receipt' => [SupplierInvoiceReceiptPrint::class, 'supplier-invoice-receipt', 'SIR'],
-        'dp-receipt' => [DownPaymentReceiptPrint::class, 'acc-dp-invoice', 'DPR'],
+        'dp-receipt' => [DownPaymentReceiptPrint::class, 'customer-invoice', 'DPR'],
         'qc-inspection' => [QcInspectionPrint::class, 'purchase-receive', 'QCI'],
         'customer-complaint' => [CustomerComplaintPrint::class, 'crm-complaint', 'CCR'],
     ];
@@ -51,11 +50,11 @@ final class PrintDocs
     // Dokumen yang dicetak dari sumber yang sama (id sama): halaman cetak menampilkan tombol pindah di antara keduanya.
     private const PAIRS = [
         ['goods-receipt' => 'Goods Receipt', 'qc-inspection' => 'QC Inspection'],
-        ['sales-invoice' => 'Invoice', 'dp-receipt' => 'Receipt'],
+        ['dp-invoice' => 'Invoice', 'dp-receipt' => 'Receipt'],
     ];
 
     // Dokumen yang tombol Back-nya kembali ke daftar (id cetak bukan id form layarnya).
-    public const BACK_TO_LIST = ['cpdel', 'petty-cash', 'sales-invoice', 'payment-voucher', 'dp-receipt'];
+    public const BACK_TO_LIST = ['cpdel', 'petty-cash', 'payment-voucher'];
 
     private static bool $booted = false;
 

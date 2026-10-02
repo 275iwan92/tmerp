@@ -64,8 +64,6 @@ final class Grids
         Acc\GeneralLedgerReport::class,
         Acc\TrialBalanceReport::class,
         Acc\CashBankGrid::class,
-        Acc\DownPaymentGrid::class,
-        Acc\ReceivableGrid::class,
         Acc\PayableGrid::class,
         Acc\CompanyBankLookup::class,
         Acc\FixedAssetGrid::class,

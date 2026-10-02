@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Sys\SecUser;
 use App\Support\Branding\Brand;
+use App\View\Components\Ui\Button;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class MainMenuShellSmokeTest extends TestCase
@@ -76,7 +78,7 @@ class MainMenuShellSmokeTest extends TestCase
         // tak ada di response.
         $this->get('/setup/component-library')->assertOk()->assertSee('DevLib UI UX');
 
-        $component = \Livewire\Livewire::test('pages::main-menu');
+        $component = Livewire::test('pages::main-menu');
         $tree = collect($component->instance()->menuTree());
         $setup = $tree->firstWhere('code', 'SETUP');
         $settingsGroup = collect($setup['children'])->firstWhere('code', 'SET_GRP_SETTINGS');
@@ -92,7 +94,7 @@ class MainMenuShellSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $c = \Livewire\Livewire::test('pages::setup.component-library');
+        $c = Livewire::test('pages::setup.component-library');
         $c->assertOk()->assertSee('Event Calendar');
 
         foreach (['month', 'day', 'week'] as $view) {
@@ -130,7 +132,7 @@ class MainMenuShellSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $component = \Livewire\Livewire::test('pages::main-menu');
+        $component = Livewire::test('pages::main-menu');
         $tree = collect($component->instance()->menuTree());
 
         $setup = $tree->firstWhere('code', 'SETUP');
@@ -145,7 +147,7 @@ class MainMenuShellSmokeTest extends TestCase
         $this->assertSame('group', $securityGroup['menuType']);
 
         $this->assertSame(
-            ['Identifikasi', 'Language', 'Localization', 'Constants', 'Constant Categories', 'Translation Dictionary', 'Dummy & Legacy Data', 'Menu Setup', 'DevLib UI UX'],
+            ['Identifikasi', 'Language', 'Localization', 'Document Number Series', 'Constants', 'Constant Categories', 'Translation Dictionary', 'Dummy & Legacy Data', 'Menu Setup', 'Help Topics', 'Help Lines', 'DevLib UI UX'],
             collect($settingsGroup['children'])->pluck('label')->all()
         );
         $this->assertSame(
@@ -175,13 +177,13 @@ class MainMenuShellSmokeTest extends TestCase
         $originalLang = $admin->lang_code;
 
         try {
-            $component = \Livewire\Livewire::test('pages::main-menu');
+            $component = Livewire::test('pages::main-menu');
             $component->call('setLang', 'en');
 
             $admin->refresh();
             $this->assertSame('en', $admin->lang_code);
 
-            $component2 = \Livewire\Livewire::test('pages::main-menu');
+            $component2 = Livewire::test('pages::main-menu');
             $component2->assertSee('Theme');
             $component2->assertSee('Log out');
 
@@ -201,8 +203,8 @@ class MainMenuShellSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $c = \Livewire\Livewire::test('pages::setup.component-library');
-        $this->assertSame('base', \Livewire\Livewire::test('pages::setup.component-library')->get('mainTab'), 'Tab Dasar (x-ui) = tab pembuka.');
+        $c = Livewire::test('pages::setup.component-library');
+        $this->assertSame('base', Livewire::test('pages::setup.component-library')->get('mainTab'), 'Tab Dasar (x-ui) = tab pembuka.');
         foreach (['base', 'grid', 'forms', 'calendar', 'kanban', 'gantt', 'graphics'] as $tab) {
             $c->call('setMainTab', $tab);
             $this->assertSame($tab, $c->get('mainTab'));
@@ -220,7 +222,7 @@ class MainMenuShellSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $c = \Livewire\Livewire::test('pages::setup.component-library');
+        $c = Livewire::test('pages::setup.component-library');
         $c->assertOk()->assertSee('Kanban Board');
 
         // Pindah kartu #1 dari BARU ke PROSES, taruk di index 0.
@@ -270,7 +272,7 @@ class MainMenuShellSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $c = \Livewire\Livewire::test('pages::setup.component-library');
+        $c = Livewire::test('pages::setup.component-library');
         $c->assertOk()->assertSee('Customer Demo 1');
 
         $c->set('demoGridSearch', 'Demo 3');
@@ -290,7 +292,7 @@ class MainMenuShellSmokeTest extends TestCase
     {
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
 
-        $c = \Livewire\Livewire::test('pages::setup.component-library');
+        $c = Livewire::test('pages::setup.component-library');
         $boxesBefore = collect($c->instance()->statBoxes())->pluck('value', 'label')->all();
         $this->assertCount(4, $boxesBefore);
 
@@ -307,7 +309,7 @@ class MainMenuShellSmokeTest extends TestCase
         $this->assertSame('card', $c->get('demoGridView'));
 
         $cat = $c->instance()->uiCatalog();
-        $this->assertSame((new \App\View\Components\Ui\Button)->variantKeys(), $cat['buttonVariants']);
+        $this->assertSame((new Button)->variantKeys(), $cat['buttonVariants']);
         $this->assertContains('accent', $c->instance()->uiTokens());
         $c->assertSee('preset="save"', false);
     }
@@ -320,7 +322,7 @@ class MainMenuShellSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $c = \Livewire\Livewire::test('pages::setup.component-library');
+        $c = Livewire::test('pages::setup.component-library');
 
         $pie = $c->instance()->graphicsPieConfig();
         $this->assertSame('pie', $pie['type']);

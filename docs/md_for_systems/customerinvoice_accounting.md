@@ -6,10 +6,11 @@
 >
 > Dasar: keputusan user 2026-10-02 (bagian 13), analisa data lama dan aturan di
 > `customerinvoice_plan.md` bagian 9. Rancangan layar dan tabel ada di `customerinvoice_plan.md`.
-> **Status: ketentuan disetujui user. Tahap 1 (menagih + uang muka) sudah dibangun di database dummy (mockup.test)
-> 2026-10-02 dan menunggu review user** — lihat `customerinvoice_review.md`. Butir pajak (bagian 8) wajib
-> dikonfirmasi konsultan pajak perusahaan sebelum dipakai di tmerp.test.
-> Belum dibangun: penerimaan pelunasan (5.4), Credit Note (5.6), pengembalian uang muka (5.7), laporan (bagian 11),
+> **Status: ketentuan disetujui user. Menagih, uang muka, dan penerimaan pelunasan sudah terpasang di mockup.test
+> dan tmerp.test (2026-10-02); layar lama Order to Cash dan Down Payment dihentikan atas perintah user** — lihat
+> `customerinvoice_review.md`. Butir pajak (bagian 8) wajib dikonfirmasi konsultan pajak perusahaan sebelum dipakai
+> untuk transaksi nyata.
+> Belum dibangun: PPh 23 / biaya bank / kelebihan bayar di penerimaan (5.4), Credit Note (5.6), pengembalian uang muka (5.7), laporan (bagian 11),
 > pengingat tenggat Faktur Pajak, pemisahan hak per aksi (bagian 10), saldo awal (bagian 12).
 
 ---
@@ -160,6 +161,16 @@ Faktur Pajak "Pelunasan" memuat sisa (di contoh: PPN 550.000) dan merujuk nomor 
 ### 5.4 Pelunasan diterima
 
 Satu penerimaan boleh melunasi beberapa invoice, boleh sebagian.
+
+**Yang sudah berjalan (Record Payment di form invoice, 2026-10-02):** satu penerimaan = satu bukti bank masuk
+(`fin_voucher` sumber `AR_RECEIPT`) dengan jurnal **Dr Bank (akun rekening yang dipilih) / Cr 112100 Piutang Usaha**,
+dan satu baris alokasi per invoice (`fin_payment_alloc`). Dijaga: invoice harus Confirmed, milik customer yang sama
+dan identitas (PPN / Non PPN) yang sama dengan rekeningnya; nilai per invoice tidak boleh melebihi sisanya; tanggal
+harus di periode buku terbuka; rekening harus punya akun buku besar. Invoice lunas = Closed. Invoice yang sudah
+menerima pembayaran tidak bisa di-Cancel.
+
+**Yang belum (sisa Tahap 2):** baris PPh 23, biaya administrasi bank, dan kelebihan bayar pada tabel di bawah.
+Sampai itu ada, penerimaan dicatat sebesar uang yang masuk; selisihnya tetap terbuka sebagai sisa piutang.
 
 | Akun | Debit | Kredit |
 |---|---:|---:|
@@ -329,6 +340,7 @@ mengisi sisa serta uang muka yang belum terpakai, lalu saldo awal dijurnal sekal
 | 2026-10-02 | **C.** Tagihan uang muka tanpa jurnal sampai uangnya diterima — menggantikan butir LOCKED "jurnal piutang saat tagihan DP terbit" di `downpayment_tier1-4.md`. User meminta seluruh urusan keuangan dan akuntansi didokumentasikan jelas (dokumen ini). |
 | 2026-10-02 | **D.** Lima rekening bank sistem lama boleh disalin ke master rekening perusahaan; bawaan PPN = Maspion CV. Langgeng Jaya Makmur, Non PPN = BCA Puspita Dewi Widodo. |
 | 2026-10-02 | **E.** Qty Minim di Customer Order v2 dihitung sebagai harga borongan (untuk saat ini). |
+| 2026-10-02 | **Layar lama dihentikan** ("yang lama dihapus saja, gantikan dengan yang baru"): Order to Cash dan Down Payment lama diarsipkan; Customer Invoice satu-satunya pintu untuk invoice, uang muka, dan penerimaan uang dari customer. Akibat akuntansi: tidak ada lagi jalur yang menjurnal piutang saat tagihan uang muka terbit, dan tidak ada lagi invoice penjualan tanpa Surat Jalan. |
 
 ## 14. Yang perlu dikonfirmasi pihak luar
 

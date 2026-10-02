@@ -18,10 +18,10 @@ Status: **DIBANGUN 2026-09-19/21, menunggu QC user.** Delta ini melengkapi
 |---|---|---|
 | Control Center > Process Engine | `finance.engine` | kartu volume dokumen/approval/close, alur posting kanonik, peta integrasi modul, **Workflow Rules** (fin_approval_rule) |
 | Control Center > Dashboard | `finance.dashboard` | kas/AR/AP/laba, tren arus kas 12 bulan, Compliance Center, Action Center |
-| Transaction Flows > Order to Cash | `finance.receivables` | faktur penjualan (buat/posting/terima/alokasi), AR aging, alur O2C |
+| Transaction Flows > Customer Invoice | `v2:customer-invoice` | **mengganti Order to Cash (`finance.receivables`, diarsipkan 2026-10-02)**: invoice dari Surat Jalan, tagihan uang muka, Record Receipt, Record Payment — lihat `customerinvoice_review.md` |
 | Transaction Flows > Procure to Pay | `finance.payables` | tagihan vendor (3-way match PV), approval by nominal, payment run, PPN masukan & PPh 23 |
 | Transaction Flows > Bank & Reconciliation | `finance.bank` | mutasi buku vs rekening koran, import CSV, auto-match, jurnal penyesuaian, rekonsiliasi |
-| Transaction Flows > Cashier / Down Payment | `finance.cash-bank`, `finance.dp-invoice` | layar lama, tetap dipakai (hanya relabel menu) |
+| Transaction Flows > Cashier | `finance.cash-bank` | layar lama, tetap dipakai (hanya relabel menu). Down Payment (`finance.dp-invoice`) diarsipkan 2026-10-02, masuk ke Customer Invoice |
 | Accounting > Master of Accounts | `finance.coa` | layar lama (tidak diubah, lihat §6) |
 | Accounting > Journal Entries | `finance.journals` | Draft → Submitted → Approved → Posted → Reversed, template recurring, auto-reversal akrual |
 | Accounting > General Ledger | `finance.ledger` | register baris jurnal POSTED per periode + saldo berjalan per akun |

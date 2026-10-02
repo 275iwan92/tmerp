@@ -13,12 +13,15 @@ General Ledger, Account Receivable, Account Payable, kas & bank, pajak, dan Acco
 
 - **Customer Invoice + Accounts Receivable (satu modul)** — arah dan keputusan A–E disetujui user 2026-10-02.
   Rencana: `md_for_systems/customerinvoice_plan.md`; ketentuan keuangan dan akuntansi:
-  `md_for_systems/customerinvoice_accounting.md`. **Tahap 1 (menagih + uang muka) dibangun 2026-10-02 di ddt dan
-  menunggu review user** (`md_for_systems/customerinvoice_review.md`, `LOG_JOB_DONE.md`). Yang terbuka:
-  - **Review user** atas Tahap 1 (6 butir di `customerinvoice_review.md` bagian 10) + koreksi format cetak.
-  - **tmerp.test**: migrasi 000140 + 000141 belum dijalankan; Finance mengisi akun buku besar tiap rekening.
-  - **Tahap 2** piutang: Customer Receipt v2 (banyak invoice, sebagian, PPh 23, selisih, kelebihan bayar), daftar
-    To Invoice, AR Aging, Statement of Account, Unbilled Delivery, tab Billing di Customer Order.
+  `md_for_systems/customerinvoice_accounting.md`. **Menagih, uang muka, dan Record Payment terpasang 2026-10-02 di
+  ddt dan tm2; layar lama Order to Cash + Down Payment diarsipkan atas perintah user**
+  (`md_for_systems/customerinvoice_review.md`, `LOG_JOB_DONE.md`). Yang terbuka:
+  - **Review user** (butir di `customerinvoice_review.md` bagian 10) + koreksi format cetak.
+  - **tmerp.test**: Finance mengisi akun buku besar tiap rekening di Company Bank Accounts (sebelum itu penerimaan
+    uang ditolak).
+  - **Sisa Tahap 2** piutang: PPh 23 / biaya bank / selisih / kelebihan bayar di penerimaan, daftar To Invoice,
+    **AR Aging (fungsi layar lama yang belum ada gantinya)**, Statement of Account, Unbilled Delivery, tab Billing
+    di Customer Order.
   - **Tahap 3**: Credit Note, pengembalian uang muka, batas kredit, e-Faktur, saldo awal piutang.
   - Sisa kecil Tahap 1: hak per aksi, akun pendapatan per kategori product, biaya lain dari biaya eksternal CO,
     pesan salah Confirm berbahasa Indonesia, e-mail invoice, akun PPh 23 Dibayar Dimuka.

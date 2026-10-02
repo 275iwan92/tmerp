@@ -1,8 +1,10 @@
-# CUSTOMER INVOICE + UANG MUKA — DOKUMEN REVIEW TAHAP 1
+# CUSTOMER INVOICE + UANG MUKA — DOKUMEN REVIEW
 
 > Untuk direview user. Tanggal: 2026-10-02.
-> Yang dibangun: **Tahap 1 (menagih)** dari `customerinvoice_plan.md`, **hanya di database dummy (mockup.test)**.
-> tmerp.test belum disentuh: tabel, menu, dan datanya belum ada di sana (bagian 9).
+> Yang dibangun: **Tahap 1 (menagih)** dari `customerinvoice_plan.md` **+ penerimaan pelunasan (Record Payment)**.
+> **Perubahan 2026-10-02 (perintah user: "yang lama dihapus saja, gantikan dengan yang baru"):** layar lama
+> **Order to Cash** dan **Down Payment** sudah dihentikan dan diarsipkan; Customer Invoice menggantikan keduanya,
+> terpasang di **mockup.test dan tmerp.test** (bagian 9).
 > Ketentuan keuangan dan akuntansinya: `customerinvoice_accounting.md`.
 
 ---
@@ -19,8 +21,10 @@
 | Master Company Bank Accounts dan Document Number Series | jalan |
 | Qty diterima customer di Proof of Delivery | jalan |
 | Help tiga layar baru + terjemahan Indonesia | sudah dimuat |
-| Test otomatis | 7 test, 102 pemeriksaan, lulus di database dummy |
-| Penerimaan pelunasan invoice (Customer Receipt v2), AR Aging, Statement of Account | **belum** — Tahap 2 |
+| Penerimaan pelunasan (**Record Payment**): satu penerimaan untuk satu atau beberapa invoice, sebagian atau penuh | jalan |
+| Layar lama Order to Cash + Down Payment | **dihentikan dan diarsipkan** (bagian 9) |
+| Test otomatis | 8 test, 118 pemeriksaan, lulus di database dummy |
+| PPh 23 / selisih / kelebihan bayar di penerimaan, daftar To Invoice, AR Aging, Statement of Account | **belum** — sisa Tahap 2 |
 | Credit Note, pengembalian uang muka, batas kredit, e-Faktur, saldo awal | **belum** — Tahap 3 |
 
 ---
@@ -57,7 +61,15 @@ uang muka 30% yang sudah dibayar (INV-DP-2026-10-0001).
    ditagih › **Create**.
 3. Di Draft, kurangi Qty Ditagih bila menagih sebagian › Save › Confirm.
 
-**D. Master**
+**D. Menerima pelunasan**
+
+1. Buka invoice yang sudah Confirmed › **Record Payment**.
+2. Isi tanggal dan rekening. Daftar memuat semua invoice terbuka customer itu (identitas yang sama); ketik
+   **Paid Now** pada invoice yang dibayar — boleh sebagian, boleh beberapa invoice sekaligus.
+3. **Confirm Payment**. Bukti bank masuk terbentuk (Dr Bank / Cr Piutang), tab Payments terisi, invoice yang lunas
+   berstatus **Closed**. Invoice yang sudah menerima pembayaran tidak bisa di-Cancel.
+
+**E. Master**
 
 - Finance › Transaction Flows › **Company Bank Accounts**: lima rekening dari sistem lama.
 - Setup › Settings › **Document Number Series**: empat seri (`INV_TM`, `INV_LJM`, `DP_TM`, `DP_LJM`).
@@ -100,8 +112,9 @@ uang muka 30% yang sudah dibayar (INV-DP-2026-10-0001).
 | Uang muka dipotong otomatis | diusulkan saat Draft dibuat; boleh dikurangi; tidak bisa melebihi sisa uang mukanya |
 | Sesudah Confirm tidak berubah | Save dan Delete ditolak; hanya Cancel dengan alasan |
 | Cancel dibatasi | ditolak bila sudah ada pembayaran atau periode buku sudah ditutup |
+| Pelunasan tidak melebihi sisa | Paid Now > Outstanding ditolak; invoice customer lain atau identitas lain ditolak |
 | Uang muka yang sudah diterima tidak bisa di-Cancel | ditolak (pengembalian uang muka = Tahap 3) |
-| Periode buku | Confirm, Cancel, dan Record Receipt ditolak pada tanggal di periode tertutup |
+| Periode buku | Confirm, Cancel, Record Receipt, dan Record Payment ditolak pada tanggal di periode tertutup |
 | Rekening sesuai identitas | rekening PPN tidak bisa dipilih di dokumen Non PPN, dan sebaliknya |
 
 ---
@@ -130,25 +143,28 @@ untuk order PPN). Rincian dan contoh lain: `customerinvoice_accounting.md` bagia
 | 2 | tombol **To Invoice** di daftar | belum ada; order yang bisa ditagih tampil di + New Record | daftar kerja terpisah = Tahap 2 |
 | 3 | panel kanan Amount / Journal / Faktur Pajak | Ringkasan di bawah baris; Journal dan Pajak jadi tab | mengikuti bentuk form baku DevLib |
 | 4 | centang baris Surat Jalan | tombol Ya / Tidak per baris | objek baris DevLib tidak punya kotak centang |
-| 5 | Customer Receipt (bagian 5 mockup) | belum dibangun | Tahap 2 |
+| 5 | Customer Receipt (bagian 5 mockup): layar tersendiri | dialog **Record Payment** di form invoice | cukup untuk mengganti layar lama; layar tersendiri dengan PPh 23 / selisih = sisa Tahap 2 |
 | 6 | ikon cetak di tiap baris daftar | cetak dari form | menyusul bila diinginkan |
 | 7 | rekening di cetakan: tebal | huruf biasa | objek cetak mencetak kalimat pembuka dengan huruf biasa |
 
 ---
 
-## 7. Batasan Tahap 1 yang perlu diketahui
+## 7. Batasan yang perlu diketahui
 
-1. **Pelunasan invoice** masih dicatat di layar lama **Order to Cash** (tombol terima pembayaran). Invoice baru muncul
-   di sana karena memakai tabel yang sama. Customer Receipt v2 = Tahap 2.
-2. **Menu Down Payment lama dimatikan** di mockup.test. Layar itu menjurnal piutang saat tagihan uang muka terbit
-   (cara lama) dan akan bertentangan dengan keputusan C.
+1. **Pelunasan invoice** dicatat lewat **Record Payment** di form invoice. Yang belum: PPh 23 dipotong customer,
+   selisih bayar, kelebihan bayar, dan uang yang belum tahu untuk invoice mana (sisa Tahap 2).
+2. **Layar lama dihentikan**: Order to Cash dan Down Payment (v1 dan grid v2-nya) serta cetakan `sales-invoice`
+   diarsipkan ke `C:\Users\iwanp\tmerp_unused\`; baris menunya dihapus. Yang ikut hilang dari layar lama dan
+   **belum** ada gantinya: tabel umur piutang (AR Aging) dan pembuatan invoice tanpa Surat Jalan.
 3. **Hak akses** masih per modul (Finance & Accounting). Pemisahan hak buat / Confirm / terima uang / Cancel per orang
    belum ada.
 4. **Akun pendapatan** semua baris = 411000. Pemetaan per kategori product belum.
 5. **Biaya lain** (ongkos kirim) diketik di invoice; belum mengambil dari biaya eksternal Customer Order.
 6. **Akun bank**: di database dummy kelima rekening sementara menunjuk akun 111200 supaya alurnya bisa dicoba. Di
-   tmerp.test kolom itu dikosongkan dan penerimaan uang ditolak sampai Finance mengisi akun tiap rekening.
-7. **PPh 23**, selisih bayar, dan kelebihan bayar: Tahap 2 (bersama Customer Receipt).
+   tmerp.test kolom itu **kosong**: Record Receipt dan Record Payment ditolak sampai Finance mengisi akun tiap rekening
+   di Company Bank Accounts.
+7. **Invoice lama** (36 baris dummy sebelum modul ini) tidak punya baris Surat Jalan: tampil dan tercetak sebagai satu
+   nilai, bisa menerima Record Payment.
 8. **Pesan salah saat Confirm** (yang memuat nomor baris) masih bahasa Inggris.
 9. **Draft tidak memesan baris**: dua Draft bisa memuat baris Surat Jalan yang sama; yang kedua ditolak saat Confirm.
 10. **E-mail** invoice dari form belum diaktifkan (tombol disembunyikan).
@@ -158,7 +174,7 @@ untuk order PPN). Rincian dan contoh lain: `customerinvoice_accounting.md` bagia
 
 ## 8. Yang dibuat dan diubah
 
-**Tabel (database dummy):**
+**Tabel (ddt dan tm2):**
 `tm2sys.sys_doc_series`, `sys_doc_series_counter` · `tm2acc.fin_company_bank`, `fin_invoice_line` · 21 kolom baru di
 `tm2acc.fin_invoice` (nomor boleh kosong selama Draft) · `tm2sdi.do_line.qty_received` · view `v1_fin_ar_aging`
 sekarang hanya memuat invoice Confirmed.
@@ -175,44 +191,46 @@ sekarang hanya memuat invoice Confirmed.
 | Cetakan | `app/Support/V2/Print/CustomerInvoicePrint.php`, `DownPaymentInvoicePrint.php` |
 | Proof of Delivery | `app/Services/Sales/DeliveryPromiseService.php`, `resources/views/v2/screens/proof-of-delivery.blade.php` |
 | Objek DevLib | cetakan: kalimat pembuka berisi data (`nbRaw`); tabel: kolom angka yang sudah diformat (`raw`) |
-| Migrasi | `2026_10_02_000140` (tabel, seri, rekening, konstanta, menu) · `000141` (terjemahan, menu Down Payment lama mati) · `000142` (contoh data, hanya dummy) |
-| Help | `resources/data/help/finance.json` (2 topik), `master_setup.json` (1 topik) |
+| Migrasi | `2026_10_02_000140` (tabel, seri, rekening, konstanta, menu) · `000141` (terjemahan, menu Down Payment lama mati) · `000142` (contoh data, hanya dummy) · `000143` (hapus menu dan Help layar lama, terjemahan Record Payment) |
+| Help | `resources/data/help/finance.json` (2 topik; topik layar lama dihapus), `master_setup.json` (1 topik) |
+| Diarsipkan | `pages/finance/receivables.blade.php`, `pages/finance/dp-invoice.blade.php`, `Grid/Acc/ReceivableGrid.php`, `DownPaymentGrid.php`, `Print/SalesInvoicePrint.php`, `screen_finance_dp_invoice.md`, `mockup_down_payment.html`, `sales_invoice_a5.jpg` → `C:\Users\iwanp\tmerp_unused\` (MANIFEST) |
 | Test | `tests/Feature/CustomerInvoiceTest.php` |
 
-**Test** (`CustomerInvoiceTest`, dijalankan terhadap database dummy; di database yang belum punya tabelnya test
-dilewati): format nomor · invoice Non PPN dengan uang muka + Cancel + nomor tidak dipakai ulang · uang muka PPN
+**Test** (`CustomerInvoiceTest`; di tm2 test yang menerima uang dilewati selama rekening belum punya akun buku
+besar): format nomor · invoice Non PPN dengan uang muka + Cancel + nomor tidak dipakai ulang · uang muka PPN
 (pisah harga dan PPN, reklas di invoice) · tagih sebagian dan tolak qty lebih · baris borongan · hapus Draft dan tolak
-Cancel uang muka yang sudah diterima · alur lengkap lewat layar (buat, simpan, Confirm, terima uang, cetak, Cancel).
+Cancel uang muka yang sudah diterima · alur lengkap lewat layar (buat, simpan, Confirm, terima uang, cetak, Record Payment sebagian lalu lunas, Cancel
+ditolak sesudah ada pembayaran) · satu penerimaan untuk dua invoice dan tolak nilai di atas sisa.
 Semua data buatan test dihapus dan penghitung nomor dikembalikan; sudah diperiksa ke database.
 
 ---
 
-## 9. Menerapkan ke tmerp.test (belum dilakukan)
+## 9. Keadaan kedua situs (2026-10-02)
 
-Dilakukan setelah user selesai mereview dan butir pajak dikonfirmasi:
+| Hal | mockup.test (ddt) | tmerp.test (tm2) |
+|---|---|---|
+| Migrasi `000140`, `000141`, `000143` | terpasang | terpasang (dijalankan satu per satu dengan `--path`) |
+| Menu Customer Invoice, Company Bank Accounts, Document Number Series | ada | ada |
+| Menu Order to Cash, Down Payment | dihapus | dihapus (salinan barisnya: `tmerp_unused/database/retired_order_to_cash_rows_tm2_2026_10_02.json`) |
+| Empat seri nomor, dua konstanta | ada | ada |
+| Lima rekening perusahaan | ada, akun buku besar sementara 111200 | ada, **akun buku besar kosong** |
+| Help | dimuat | dimuat |
+| Contoh data (`Draft #367`) | ada | tidak ada (migrasi `000142` hanya untuk dummy) |
+| Invoice lama | 36 | 36 |
 
-```bash
-php artisan migrate --path=database/migrations/2026_10_02_000140_customer_invoice_module.php
-```
-
-```bash
-php artisan migrate --path=database/migrations/2026_10_02_000141_dictionary_customer_invoice.php
-```
-
-```bash
-php artisan help:import --file=finance.json
-```
-
-Sesudah itu: Finance mengisi **Ledger Account** tiap rekening di Company Bank Accounts (akun bank per rekening harus
-dibuat dulu di Master of Accounts), dan memeriksa kode seri di Document Number Series.
+**Yang harus dilakukan Finance di tmerp.test sebelum menerima uang:** membuat akun bank per rekening di Master of
+Accounts, lalu mengisi **Ledger Account** tiap rekening di Company Bank Accounts. Sebelum itu Record Receipt dan Record
+Payment ditolak dengan pesan yang menyebut rekeningnya.
 
 ---
 
 ## 10. Yang perlu diputuskan saat review
 
 1. **Kode seri**: `LJM`, `UM-TM`, `UM-LJM` — dipakai, atau diganti?
-2. **Menu Down Payment lama** dimatikan dan **Order to Cash** lama tetap ada sampai Tahap 2 — setuju?
+2. ~~Menu Down Payment lama dan Order to Cash~~ — **diputuskan user 2026-10-02: dihapus, diganti yang baru.**
 3. **Tanggal invoice** bawaan = tanggal Surat Jalan terakhir — setuju, atau tanggal hari dibuat?
 4. **Format cetak** Customer Invoice dan Down Payment Invoice: koreksi apa sebelum ditandai A?
 5. **Penanda tangan** di cetakan invoice (sistem lama tanpa tanda tangan): tetap empat kolom, atau dikurangi?
-6. Lanjut **Tahap 2** (Customer Receipt, To Invoice, AR Aging, Statement of Account, tab Billing di Customer Order)?
+6. Lanjut **sisa Tahap 2** (PPh 23 / selisih / kelebihan bayar di penerimaan, To Invoice, AR Aging, Statement of
+   Account, tab Billing di Customer Order)? AR Aging adalah satu-satunya fungsi layar lama yang belum ada gantinya.
+7. **Akun bank per rekening** di tmerp.test: lima akun baru di bawah 1112xx, atau satu akun 111200 untuk semua?
