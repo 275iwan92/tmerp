@@ -211,10 +211,12 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
         }
 
         $itemKey = $this->itemKey();
+        // Baris TERAKHIR tiap posisi = urut (doc_date, doc_id), sama dengan view v_*_onhand -- bukan doc_id terbesar:
+        // dokumen bertanggal mundur disisipkan di tengah kartu, jadi nomor terbesar belum tentu baris terakhir.
         $latestIds = $this->cardModel()::where('warehouse_id', $this->warehouse_id)
-            ->selectRaw("{$itemKey}, location_id, MAX(doc_id) as max_id")
+            ->selectRaw("{$itemKey}, location_id, MAX(CONCAT(DATE_FORMAT(doc_date, '%Y%m%d%H%i%s'), LPAD(doc_id, 12, '0'))) as mx")
             ->groupBy($itemKey, 'location_id')
-            ->pluck('max_id');
+            ->pluck('mx')->map(fn ($mx) => (int) substr((string) $mx, 14));
 
         $rows = $this->cardModel()::whereIn('doc_id', $latestIds)->where('qty_eb', '!=', 0)->get();
 
@@ -441,7 +443,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
             if (! $post['posted']) {
                 session()->flash('error', $post['error']);
             } else {
-                session()->flash('flash', 'Disetujui & diposting ke Kartu Stok.');
+                session()->flash('flash', 'Disetujui & diposting ke Kartu Stok.'.(isset($post['stock_warning']) ? ' '.$post['stock_warning'] : ''));
             }
         } else {
             $this->headerModel()::whereKey($this->editingId)->update(['flow_status' => $result['status'], 'update_by' => Auth::user()->login]);

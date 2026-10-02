@@ -9,6 +9,7 @@ use App\Services\Flow\FlowEngineService;
 use App\Services\Imposition\ImpositionEngine;
 use App\Services\Inventory\PalletService;
 use App\Services\Inventory\StockLedger;
+use App\Services\Inventory\StockPostingService;
 use App\Services\Inventory\StockTransferService;
 use App\Services\Inventory\WarehouseStock;
 use App\Services\Payroll\PayrollEngineService;
@@ -443,6 +444,41 @@ final class EngineRegistry
                 'used' => ['Warehouse Map', 'Stock Transfer', 'Stock by Location', 'Print Location Label', 'Print Item Label', 'Print Pallet Label', 'Track via QR/Barcode'],
                 'tests' => ['tests/Feature/StockTransferServiceTest.php', 'tests/Feature/PalletServiceTest.php'],
                 'docs' => ['docs/warehouselayout_tier1.md'],
+            ],
+            [
+                'key' => 'stock-posting', 'name' => 'Stock Document Posting (stock card order)', 'group' => 'Inventory', 'mode' => 'flow',
+                'purpose' => 'Writes a stock document (Stock In, Out, Return, Adjustment, goods receipt and its reversal) to the stock card in document-date order and keeps every later balance right.',
+                'class' => StockPostingService::class,
+                'methods' => ['postDocument'],
+                'notes' => [
+                    'postDocument' => 'Posts one stock document. Refused as a whole when a balance would go below zero or the date is in a closed inventory period.',
+                ],
+                'inputs' => [
+                    ['category', 'Stock class: RM, SFG or FG.'],
+                    ['docId', 'The stock document (header with its lines: item, bin, quantity, unit price).'],
+                    ['actingUser', 'Who posts.'],
+                ],
+                'outputs' => [
+                    ['Stock card rows', 'One row per document line, placed by document date; all later rows of that item in that bin are recalculated.'],
+                    ['posted / error', 'True when it worked; otherwise the reason, and nothing is written.'],
+                    ['journal_warning', 'Usage journal lines that could not be made because an account is missing.'],
+                    ['revaluation / stock_warning', 'How many later stock-out rows got another average price and by how much their value changed; their journals are not changed.'],
+                ],
+                'steps' => [
+                    'Refuses a document that was posted or cancelled before, and a document dated in a closed inventory period (the correction is a Stock Adjustment dated in an open period).',
+                    'Per line inserts a stock card row at its place: after every row with the same or an earlier date, before rows dated later.',
+                    'Recalculates that row and all later rows of the item in that bin: opening balance, closing balance, moving average price, value (StockCardChain).',
+                    'A receipt changes the average price (weighted with the stock before it); stock out, adjustment and transfer rows carry the average price of the row before.',
+                    'When the average price of a transfer-out row changes, the value that moved is corrected in the destination bin and that bin is recalculated too.',
+                    'When the new row or a later row would go below zero the whole document is refused (adjustments and physical counts are exempt, as before).',
+                    'Marks the document Posted, updates the item total on the master, then makes the usage journal for real stock-out lines.',
+                    'A posted document is never changed; a mistake is corrected with a Stock Adjustment.',
+                ],
+                'reads' => ['tm2inv.rm_stock / sfg_stock / fg_stock (+ lines)', 'tm2inv.rm_stockcard / sfg_stockcard / fg_stockcard', 'tm2inv.inv_period'],
+                'writes' => ['tm2inv.rm_stockcard / sfg_stockcard / fg_stockcard', 'tm2inv.rm_stock / sfg_stock / fg_stock', 'tm2mst.mat_raw / prod_part / prod_product (cur_stock)', 'tm2acc.fin_voucher (usage journal)'],
+                'used' => ['Stock In', 'Stock Out', 'Stock Return', 'Stock Adjustment & Physical Count', 'Purchase Receive (post and cancel)'],
+                'tests' => ['tests/Feature/StockPostingOrderTest.php', 'tests/Feature/PvStockIntegrationTest.php'],
+                'docs' => ['docs/md_for_systems/inventory_tier2.md'],
             ],
             [
                 'key' => 'stock-transfer', 'name' => 'Stock Transfer Posting', 'group' => 'Inventory', 'mode' => 'flow',
