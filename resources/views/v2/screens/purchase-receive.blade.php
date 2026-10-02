@@ -18,8 +18,8 @@
     abort_if(request('id') && ! $pv, 404);
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $pv && ! request('new'))
     <x-dl::grid id="pv-list" :rows="PurchaseReceive::rows()" search="Search receipt no., supplier, PO no...." actions="worklist" :active-key="null"
@@ -29,20 +29,20 @@
             ['key' => 'type', 'label' => 'Receipt Type', 'type' => 'badge', 'tones' => PurchaseReceive::TYPE_TONES],
             ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
             ['key' => 'warehouse', 'label' => t('Warehouse')],
-            ['key' => 'po', 'label' => 'No. PO'],
+            ['key' => 'po', 'label' => 'PO No.'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseReceive::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
-            ['key' => 'code', 'label' => 'Code'],
-            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
-            ['key' => 'po', 'label' => 'PO No.'],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'accepted', 'label' => 'Accepted', 'type' => 'number'],
-            ['key' => 'rejected', 'label' => 'Rejected', 'type' => 'number'],
+        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
+            ['key' => 'code', 'label' => t('Code')],
+            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
+            ['key' => 'po', 'label' => t('PO No.')],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'accepted', 'label' => t('Accepted'), 'type' => 'number'],
+            ['key' => 'rejected', 'label' => t('Rejected'), 'type' => 'number'],
         ]]"
         :stats="[['label' => t('All')], ['label' => 'Draft / QC', 'where' => ['status' => ['DRAFT', 'QC_PENDING']], 'tone' => 'warn'], ['label' => 'Posted', 'where' => ['status' => 'POSTED'], 'tone' => 'success'], ['label' => 'From Customer', 'where' => ['type' => 'From Customer'], 'tone' => 'info'], ['label' => 'From Subcon', 'where' => ['type' => 'From Subcon'], 'tone' => 'warn']]"
-        :filters="['supplier' => 'Supplier', 'warehouse' => 'Gudang', 'status' => 'Status']" />
+        :filters="['supplier' => 'Supplier', 'warehouse' => 'Warehouse', 'status' => 'Status']" />
 @elseif (! $pv)
     @php $kind = request('type', 'PO'); @endphp
     <x-dl::action-bar>
@@ -108,7 +108,7 @@
                     <x-dl::field.select name="warehouse" label="Receiving Warehouse" required :options="PurchaseReceive::warehouses()" :source="Src::of('tm2mst.wh_warehouse')" />
                 </x-dl::form.row>
                 <x-dl::field.checkboxes name="po_line_ids" label="Arriving PO lines" required :options="PurchaseReceive::openLineOptions($sid)" :source="Src::of('tm2pur.po_line (sisa > 0)')" />
-                <x-dl::action-bar><x-dl::button preset="save" label="Buat Penerimaan" /></x-dl::action-bar>
+                <x-dl::action-bar><x-dl::button preset="save" label="Create Receipt" /></x-dl::action-bar>
             </x-dl::action-form>
         @endif
     </x-dl::card>
@@ -141,7 +141,7 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>No.</span><b>{{ $pv->doc_no ?: t('(on Post)') }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>@t('No.')</span><b>{{ $pv->doc_no ?: t('(on Post)') }}</b></div>
             <x-dl::field.date name="i_doc_date" label="Received Date" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />
             <x-dl::field.display :label="$isCust ? 'Customer' : 'Subcontractor'" :value="$party" :source="Src::of($isCust ? 'tm2mst.cust_customer' : 'tm2mst.sup_supplier')" />
             <x-dl::field.display :label="$isCust ? 'Customer Order' : 'Subcon PO'" :value="$isCust ? $co : ($pv->c_po_doc_list ?: '—')" :source="Src::of($isCust ? 'tm2pur.pv_receipt.i_co_id' : 'tm2pur.pv_receipt.c_po_doc_list')" />
@@ -162,7 +162,7 @@
             @endunless
         </x-slot:general>
         <x-slot:notes>
-            <x-dl::field.text name="i_notes" label="Receipt Notes" multiline :value="$pv->i_notes" :source="Src::of('tm2pur.pv_receipt.i_notes')" />
+            <x-dl::field.text name="i_notes" label="Receipt notes" multiline :value="$pv->i_notes" :source="Src::of('tm2pur.pv_receipt.i_notes')" />
             @if ($pv->status === 'CANCELLED')
                 <x-dl::field.display label="Cancelled" :value="$pv->cancelled_by.' · '.\Devlib\Locale::dt($pv->cancelled_at).' — '.$pv->cancel_reason" :source="Src::of('tm2pur.pv_receipt.cancel_reason')" />
             @endif
@@ -189,7 +189,7 @@
                     <x-dl::field.decimal name="short_qty" label="Short Qty" required :source="Src::of('tm2pur.pv_line.c_qty_short')" />
                     <x-dl::field.text name="short_note" label="Found At / Remark" required placeholder="e.g. counted at gluing: 50 pcs missing" :source="Src::of('tm2pur.pv_line.i_short_note')" />
                 </x-dl::form.row>
-                <x-dl::action-bar><x-dl::button variant="danger" icon="fa-triangle-exclamation" label="Record Shortage" type="submit" onclick="return confirm('Record this shortage? Received qty, PO and journal will be corrected.')" /></x-dl::action-bar>
+                <x-dl::action-bar><x-dl::button variant="danger" icon="fa-triangle-exclamation" label="Record Shortage" type="submit" :onclick="'return confirm('.json_encode(t('Record this shortage? Received qty, PO and journal will be corrected.')).')'" /></x-dl::action-bar>
             </x-dl::card>
         </x-dl::action-form>
     @endif
@@ -207,14 +207,14 @@
             'i_qty_purchase' => (float) $l->i_qty_purchase, 'i_uom_purchase' => $l->i_uom_purchase, 'i_qty_stock' => (float) $l->i_qty_stock, 'i_uom_stock' => $l->i_uom_stock,
             'qc_qty' => $l->qc_qty_status === 'DONE' ? 'DONE' : '', 'qc_quality_status' => $l->qc_quality_status ?: 'PENDING',
             'c_qty_accepted' => (float) $l->c_qty_accepted, 'c_qty_rejected' => (float) $l->c_qty_rejected,
-            'variance' => $trim($l->c_qty_variance_pct).'% (toleransi '.$trim($l->c_tol_pct).'%)'.($l->is_tol_exceeded ? ($l->tol_override_by ? ' · override '.$l->tol_override_by : ' · MELAMPAUI') : ''),
+            'variance' => $trim($l->c_qty_variance_pct).'% ('.t('tolerance').' '.$trim($l->c_tol_pct).'%)'.($l->is_tol_exceeded ? ($l->tol_override_by ? ' · '.t('override').' '.$l->tol_override_by : ' · '.t('EXCEEDED')) : ''),
             'tol_override_reason' => $l->tol_override_reason ?? '', 'i_lot_no' => $l->i_lot_no, 'i_location_code' => $l->i_location_code,
             'value' => $money($l->c_line_value), 'code' => $l->c_item_code ?: '—',
         ])->values()->all();
     @endphp
-    @if ($blockers)<x-dl::alert tone="warn" :message="'Belum bisa Confirm (Post): '.implode(' ', $blockers)" />@endif
+    @if ($blockers)<x-dl::alert tone="warn" :message="'Cannot Confirm (Post) yet: '.raw(implode(' ', $blockers))" />@endif
 
-    <x-dl::form id="pv-form" :title="'Penerimaan Barang · '.raw($pv->label())" :subtitle="raw(($sup->supplier_name ?? '—').' · '.$pv->status)"
+    <x-dl::form id="pv-form" :title="'Goods Receipt · '.raw($pv->label())" :subtitle="raw(($sup->supplier_name ?? '—').' · '.$pv->status)"
         panel="top" kind="document" :status="PurchaseReceive::formStatus($pv)" :pipeline="true"
         :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $pv->status === 'DRAFT' ? [] : ['delete'])"
         :tabs="['general' => 'General', 'supplier' => 'Supplier', 'notes' => 'Notes']"
@@ -230,31 +230,31 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>No. SPB</span><b>{{ $pv->doc_no ?: t('(on Post)') }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>@t('SPB No.')</span><b>{{ $pv->doc_no ?: t('(on Post)') }}</b></div>
             <x-dl::field.date name="i_doc_date" label="Receipt Date" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />
             <x-dl::field.display label="Receiving Warehouse" :value="$pv->i_warehouse_code" :source="Src::of('tm2pur.pv_receipt.i_warehouse_code')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>Nilai Diterima</span><b>{{ $money($value) }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>@t('Received Value')</span><b>{{ $money($value) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
                 <x-dl::field.text name="i_supplier_do_no" label="Supplier Delivery Note No." :case-toggle="false" :value="$pv->i_supplier_do_no" :source="Src::of('tm2pur.pv_receipt.i_supplier_do_no')" />
-                <x-dl::field.text name="i_vehicle_no" label="No. Kendaraan" :case-toggle="false" :value="$pv->i_vehicle_no" :source="Src::of('tm2pur.pv_receipt.i_vehicle_no')" />
+                <x-dl::field.text name="i_vehicle_no" label="Vehicle No." :case-toggle="false" :value="$pv->i_vehicle_no" :source="Src::of('tm2pur.pv_receipt.i_vehicle_no')" />
                 <x-dl::field.display label="PO" :value="$pv->c_po_doc_list ?: '—'" :source="Src::of('tm2pur.pv_receipt.c_po_doc_list')" />
-                <x-dl::field.display label="Diposting" :value="$pv->posted_at ? \Devlib\Locale::dt($pv->posted_at).' · '.$pv->posted_by : '—'" :source="Src::of('tm2pur.pv_receipt.posted_at')" />
+                <x-dl::field.display label="Posted" :value="$pv->posted_at ? \Devlib\Locale::dt($pv->posted_at).' · '.$pv->posted_by : '—'" :source="Src::of('tm2pur.pv_receipt.posted_at')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:supplier>
             <x-dl::form.row :cols="4">
                 <x-dl::field.display label="Supplier" :value="$sup->supplier_name ?? '—'" />
                 <x-dl::field.display label="Contact Person" :value="$sup->contact_name ?? '—'" />
-                <x-dl::field.display label="Telepon" :value="$sup->phone ?? '—'" />
-                <x-dl::field.display label="Alamat" :value="$sup->default_address ?? '—'" />
+                <x-dl::field.display label="Phone" :value="$sup->phone ?? '—'" />
+                <x-dl::field.display label="Address" :value="$sup->default_address ?? '—'" />
             </x-dl::form.row>
         </x-slot:supplier>
         <x-slot:notes>
             <x-dl::field.text name="i_notes" label="Receipt notes" multiline :value="$pv->i_notes" :source="Src::of('tm2pur.pv_receipt.i_notes')" />
             @if ($pv->status === 'CANCELLED')
-                <x-dl::field.display label="Dibatalkan" :value="$pv->cancelled_by.' · '.\Devlib\Locale::dt($pv->cancelled_at).' — '.$pv->cancel_reason" :source="Src::of('tm2pur.pv_receipt.cancel_reason', 'cancelled_by', 'cancelled_at', 'rm_stock_rev_doc_id')" />
+                <x-dl::field.display label="Cancelled" :value="$pv->cancelled_by.' · '.\Devlib\Locale::dt($pv->cancelled_at).' — '.$pv->cancel_reason" :source="Src::of('tm2pur.pv_receipt.cancel_reason', 'cancelled_by', 'cancelled_at', 'rm_stock_rev_doc_id')" />
             @endif
         </x-slot:notes>
         <x-slot:detail>
@@ -263,17 +263,17 @@
                 :columns="[
                     ['key' => 'i_description', 'label' => 'Item', 'type' => 'display', 'width' => '260px'],
                     ['key' => 'po', 'label' => 'PO', 'type' => 'display', 'width' => '130px'],
-                    ['key' => 'i_qty_purchase', 'label' => 'Qty Beli', 'type' => 'number', 'sum' => true, 'width' => '100px'],
-                    ['key' => 'i_uom_purchase', 'label' => 'Sat. Beli', 'type' => 'display', 'width' => '70px'],
-                    ['key' => 'i_qty_stock', 'label' => 'Qty Stok', 'type' => 'number', 'width' => '100px'],
-                    ['key' => 'i_uom_stock', 'label' => 'Sat. Stok', 'type' => 'display', 'width' => '70px'],
-                    ['key' => 'qc_qty', 'label' => 'QC Qty', 'type' => 'select', 'options' => ['DONE' => 'Selesai'], 'width' => '100px'],
-                    ['key' => 'qc_quality_status', 'label' => 'QC Kualitas', 'type' => 'select', 'options' => ['PENDING' => 'Pending', 'PASS' => 'Pass', 'FAIL' => 'Fail', 'PARTIAL' => 'Partial'], 'width' => '110px'],
+                    ['key' => 'i_qty_purchase', 'label' => 'Purchase Qty', 'type' => 'number', 'sum' => true, 'width' => '100px'],
+                    ['key' => 'i_uom_purchase', 'label' => 'Purchase UoM', 'type' => 'display', 'width' => '70px'],
+                    ['key' => 'i_qty_stock', 'label' => 'Stock Qty', 'type' => 'number', 'width' => '100px'],
+                    ['key' => 'i_uom_stock', 'label' => 'Stock UoM', 'type' => 'display', 'width' => '70px'],
+                    ['key' => 'qc_qty', 'label' => 'QC Qty', 'type' => 'select', 'options' => ['DONE' => t('Done')], 'width' => '100px'],
+                    ['key' => 'qc_quality_status', 'label' => 'QC Quality', 'type' => 'select', 'options' => ['PENDING' => t('Pending'), 'PASS' => t('Pass'), 'FAIL' => t('Fail'), 'PARTIAL' => t('Partial')], 'width' => '110px'],
                     ['key' => 'c_qty_accepted', 'label' => t('Qty Received (Partial)'), 'type' => 'number', 'more' => true],
                     ['key' => 'c_qty_rejected', 'label' => t('Qty Rejected (Partial)'), 'type' => 'number', 'more' => true],
-                    ['key' => 'variance', 'label' => 'Selisih vs PO', 'type' => 'display', 'more' => true],
+                    ['key' => 'variance', 'label' => 'Variance vs PO', 'type' => 'display', 'more' => true],
                     ['key' => 'tol_override_reason', 'label' => 'Tolerance Override Reason', 'more' => true],
-                    ['key' => 'i_lot_no', 'label' => 'No. Lot', 'more' => true],
+                    ['key' => 'i_lot_no', 'label' => 'Lot No.', 'more' => true],
                     ['key' => 'i_location_code', 'label' => 'Rack Location', 'more' => true],
                     ['key' => 'value', 'label' => t('Received Value'), 'type' => 'display', 'more' => true],
                     ['key' => 'code', 'label' => t('Item Code'), 'type' => 'display', 'more' => true],
@@ -289,7 +289,7 @@
                 @endif
             </x-dl::lines>
             <x-dl::doc-footer :words="\Devlib\Terbilang::words(round($value), 'IDR', 'id')"
-                :summary="[['Baris', (string) $pv->lines->count()], ['Nilai Diterima', $money($value), 'grand']]" />
+                :summary="[[t('Lines'), (string) $pv->lines->count()], [t('Received Value'), $money($value), 'grand']]" />
         </x-slot:detail>
     </x-dl::form>
 @endif

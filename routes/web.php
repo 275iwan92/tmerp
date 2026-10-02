@@ -37,7 +37,7 @@ Route::get('/pwa-icon/{size}.png', fn (int $size) => response()->file(PwaIcon::f
 Route::get('/d/{token}', function (string $token) {
     $share = SysDocShare::where('token', $token)->first();
     abort_if(! $share, 404);
-    abort_if($share->isExpired(), 410, 'Link dokumen ini sudah kedaluwarsa.');
+    abort_if($share->isExpired(), 410, t('This document link has expired.'));
     $share->timestamps = false;
     $share->increment('view_count', 1, ['last_viewed_at' => now()]);
     $nonce = Str::random(24);

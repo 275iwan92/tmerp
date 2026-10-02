@@ -61,7 +61,7 @@ class CustomerReceivingHoursLookup extends DbLookup
         return [
             ['key' => 'customer_id', 'label' => 'Customer (empty = default)', 'type' => 'select', 'width' => '280px',
                 'options' => CustCustomer::query()->where('activate', true)->orderBy('customer_name')->pluck('customer_name', 'id_customer')->all()],
-            ['key' => 'day_of_week', 'label' => 'Day', 'type' => 'select', 'required' => true, 'options' => self::DAYS, 'width' => '120px'],
+            ['key' => 'day_of_week', 'label' => 'Day', 'type' => 'select', 'required' => true, 'options' => array_map('t', self::DAYS), 'width' => '120px'],
             ['key' => 'is_open', 'label' => 'Open', 'type' => 'check', 'width' => '80px'],
             ['key' => 'open_time', 'label' => 'Open', 'type' => 'time', 'width' => '100px'],
             ['key' => 'close_time', 'label' => 'Close', 'type' => 'time', 'width' => '100px'],
@@ -99,7 +99,7 @@ class CustomerReceivingHoursLookup extends DbLookup
                 ->when(($in['customer_id'] ?? '') === '' || $in['customer_id'] === null, fn ($q) => $q->whereNull('customer_id'), fn ($q) => $q->where('customer_id', $in['customer_id']))
                 ->exists();
             if ($dup) {
-                throw ValidationException::withMessages(['row' => 'Row '.($i + 1).': this customer already has hours for '.(self::DAYS[$in['day_of_week'] ?? 0] ?? 'that day').'.']);
+                throw ValidationException::withMessages(['row' => tf('Row :n: this customer already has hours for :day.', ['n' => $i + 1, 'day' => t(self::DAYS[$in['day_of_week'] ?? 0] ?? 'that day')])]);
             }
             $seen[$key] = true;
         }

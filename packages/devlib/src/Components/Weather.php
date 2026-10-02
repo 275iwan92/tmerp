@@ -24,7 +24,7 @@ class Weather extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <div {{ $attributes->class('dl-weather') }} {!! $dl() !!} data-dl-weather data-lat="{{ $lat }}" data-lon="{{ $lon }}"><span class="dl-weather__icon" data-dl-weather-icon>⛅</span><div><div class="dl-weather__temp" data-dl-weather-temp>--°C</div><div class="dl-weather__desc"><span data-dl-weather-desc>memuat cuaca…</span> · {{ $city }}</div></div></div>
+            <div {{ $attributes->class('dl-weather') }} {!! $dl() !!} data-dl-weather data-lat="{{ $lat }}" data-lon="{{ $lon }}"><span class="dl-weather__icon" data-dl-weather-icon>⛅</span><div><div class="dl-weather__temp" data-dl-weather-temp>--°C</div><div class="dl-weather__desc"><span data-dl-weather-desc>{{ \Devlib\Lang::text('loading weather…') }}</span> · {{ $city }}</div></div></div>
             BLADE;
     }
 }

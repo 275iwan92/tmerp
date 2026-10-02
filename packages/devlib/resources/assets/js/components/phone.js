@@ -36,7 +36,7 @@
     }
 
     kindName(c, r) {
-      return this.C[c].mobile.includes(r) ? 'seluler' : 'rumah/kantor';
+      return T(this.C[c].mobile.includes(r) ? 'ph_kind_mobile' : 'ph_kind_landline');
     }
 
     upd() {

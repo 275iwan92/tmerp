@@ -78,6 +78,6 @@ class BoardTemplateLookup extends DbLookup
         $twice = SysBoardTemplate::query()->where('profile_code', $in['profile_code'] ?? null)->where('widget_key', $in['widget_key'] ?? null)
             ->when($id, fn (Builder $q) => $q->whereKeyNot($id))->exists();
 
-        return $twice ? 'This widget is already in the template of that dashboard.' : null;
+        return $twice ? t('This widget is already in the template of that dashboard.') : null;
     }
 }

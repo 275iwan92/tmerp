@@ -91,7 +91,7 @@ class JournalGrid extends AccGrid
     {
         return [
             // Nomor terbit saat jurnal disimpan; baris lama tanpa nomor ditandai id-nya supaya persegi dokumen tidak kosong.
-            'voucher_no' => $m->voucher_number ?: 'JV-'.$m->voucher_id, 'kind' => self::KINDS[$m->journal_kind] ?? 'Journal',
+            'voucher_no' => $m->voucher_number ?: 'JV-'.$m->voucher_id, 'kind' => t(self::KINDS[$m->journal_kind] ?? 'Journal'),
             'date' => $m->entry_date?->toDateString(), 'description' => $m->description, 'reference' => $m->reference_no, 'amount' => $m->totalAmount(),
             'created_by' => $this->people[$m->created_by] ?? $m->created_by, 'auto_reverse' => $m->auto_reverse_date?->toDateString(),
             'status' => $m->status === 'POSTED' && $m->reversed_by_id ? 'Reversed' : (self::STATUSES[$m->status] ?? $m->status),

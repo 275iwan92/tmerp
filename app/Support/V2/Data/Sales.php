@@ -256,7 +256,7 @@ final class Sales
                 'customer' => $i->is_prospect ? $i->prospect_name : ($i->customer?->customer_name ?? '—'),
                 'customer_id' => $i->customer_id,
                 'is_prospect' => (bool) $i->is_prospect,
-                'product_draft_name' => $i->product_draft_name ?: '(tanpa nama produk)',
+                'product_draft_name' => $i->product_draft_name ?: t('(no product name)'),
                 'part_type' => $i->parts->first()?->dieline_spec['type_code'] ?? $i->parts->first()?->part_type ?? '—',
                 'qty' => (float) ($i->tiers->first()?->qty ?? 0),
                 'sub_state' => $i->sub_state,
@@ -289,12 +289,12 @@ final class Sales
                     $d = $p->dieline_spec['dims'] ?? [];
                     $n = fn ($v) => rtrim(rtrim(number_format((float) $v, 1, '.', ''), '0'), '.');
 
-                    return ['part' => $p->part_name, 'kind' => $p->part_kind === 'ASSEMBLY' ? 'Assembly' : ($p->part_type ?: '—'),
+                    return ['part' => $p->part_name, 'kind' => $p->part_kind === 'ASSEMBLY' ? t('Assembly') : ($p->part_type ?: '—'),
                         'type' => $p->dieline_spec['type_code'] ?? '—',
                         'size' => isset($d['product_length']) ? $n($d['product_length']).' × '.$n($d['product_width'] ?? 0).' × '.$n($d['product_height'] ?? 0) : '—',
                         'flat' => $p->flat_w ? $n($p->flat_w).' × '.$n($p->flat_h) : '—',
                         'color' => $p->cfg_color ?: '—',
-                        'prodev' => $p->part_kind === 'ASSEMBLY' ? '—' : (['NOT_STARTED' => 'Not started', 'DRAFT' => 'Draft', 'CONFIRMED' => 'Confirmed'][$partStatus[$p->id_part]->status ?? 'NOT_STARTED'])];
+                        'prodev' => $p->part_kind === 'ASSEMBLY' ? '—' : (['NOT_STARTED' => t('Not started'), 'DRAFT' => 'Draft', 'CONFIRMED' => 'Confirmed'][$partStatus[$p->id_part]->status ?? 'NOT_STARTED'])];
                 })->all(),
             ];
         })->all();

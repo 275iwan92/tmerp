@@ -154,7 +154,9 @@ class AccountingEngineTest extends TestCase
         $v = $this->draftJournal($period->start_date->toDateString());
         $svc->postDraft($v, self::USER);
 
-        $this->expectExceptionMessageMatches('/pembalik/');
+        // Pesan lewat kamus (bahasa tampilan): yang diuji = kelas exception + bagian pesan yang tidak diterjemahkan.
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('DRAFT');
         $svc->saveDraft($v->refresh(), ['description' => 'diubah'], [
             ['account_id' => $this->acct('616000'), 'debit' => 1],
             ['account_id' => $this->acct('213100'), 'credit' => 1],
@@ -187,7 +189,8 @@ class AccountingEngineTest extends TestCase
         $this->assertSame('CUSTOMER', $lines->firstWhere('partner_type', 'CUSTOMER')?->partner_type, 'baris akun recon wajib punya partner');
 
         // Alokasi tidak boleh melebihi sisa.
-        $this->expectExceptionMessageMatches('/melebihi sisa/');
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+        $this->expectExceptionMessage($invoice->invoice_number);
         $svc->settle('RECEIPT', $this->acct('111200'), $period->start_date->toDateString(),
             [$invoice->invoice_id => 200_000_000], self::USER);
     }
@@ -284,7 +287,8 @@ class AccountingEngineTest extends TestCase
         FinPeriodLog::create(['period_id' => $period->period_id, 'from_status' => 'OPEN', 'to_status' => 'CLOSED',
             'reason' => 'Test closed', 'changed_by' => self::USER, 'changed_at' => now()]);
 
-        $this->expectExceptionMessageMatches('/tidak ada cara mengubahnya/i');
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('CLOSED');
         $guard->changeStatus($period->refresh(), 'OPEN', 'Coba buka lagi', self::USER);
     }
 
@@ -302,7 +306,8 @@ class AccountingEngineTest extends TestCase
         $first = $svc->createCustomerInvoice($data, self::USER);
         $this->createdVoucherIds[] = $first->voucher_id;
 
-        $this->expectExceptionMessageMatches('/duplikat/');
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+        $this->expectExceptionMessage($first->invoice_number);
         $svc->createCustomerInvoice($data, self::USER);
     }
 

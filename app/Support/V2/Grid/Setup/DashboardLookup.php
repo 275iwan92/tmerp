@@ -90,6 +90,6 @@ class DashboardLookup extends DbLookup
         $code = $id ? SysDashboard::query()->whereKey($id)->value('dashboard_code') : ($in['dashboard_code'] ?? null);
         $active = filter_var($in['activate'] ?? true, FILTER_VALIDATE_BOOLEAN);
 
-        return $code === SysDashboard::OVERALL && ! $active ? 'The Overall dashboard cannot be switched off.' : null;
+        return $code === SysDashboard::OVERALL && ! $active ? t('The Overall dashboard cannot be switched off.') : null;
     }
 }

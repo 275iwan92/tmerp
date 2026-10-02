@@ -31,7 +31,7 @@ final class Maintenance
     public static function machines(): array
     {
         return ProdMachine::where('activate', true)->orderBy('machine_code')->get(['machine_id', 'machine_code', 'machine_name', 'is_process_machine'])
-            ->mapWithKeys(fn ($m) => [$m->machine_id => $m->machine_code.' · '.$m->machine_name.($m->is_process_machine ? '' : ' (Support)')])->all();
+            ->mapWithKeys(fn ($m) => [$m->machine_id => $m->machine_code.' · '.$m->machine_name.($m->is_process_machine ? '' : ' ('.t('Support').')')])->all();
     }
 
     private static function machineMap(iterable $ids): array
@@ -93,12 +93,12 @@ final class Maintenance
 
             return [
                 'id' => $w->id_wo, 'no' => $w->doc_no ?: '(draft #'.$w->id_wo.')', 'desc' => $w->description,
-                'machine' => $m ? $m->machine_code.' · '.$m->machine_name : '#'.$w->machine_id, 'support' => $m && ! $m->is_process_machine ? 'Support' : 'Production',
+                'machine' => $m ? $m->machine_code.' · '.$m->machine_name : '#'.$w->machine_id, 'support' => $m && ! $m->is_process_machine ? t('Support') : t('Production'),
                 'type' => MntWo::TYPES[$w->wo_type] ?? $w->wo_type, 'priority' => $w->priority, 'work' => self::workLabel($w),
                 'planned' => $w->planned_start?->toDateString(), 'planned_at' => self::stamp($w->planned_start),
                 'technician' => $w->assigned_to ? ($emp[$w->assigned_to] ?? '#'.$w->assigned_to) : '—',
-                'downtime' => $mins === null ? '—' : intdiv($mins, 60).' h '.($mins % 60).' m'.($dt->end_at ? '' : ' ●'),
-                'source' => $w->request_id ? ($src[$w->request_id] ?? 'Request') : ($w->plan_id ? ($plans[$w->plan_id] ?? 'Plan') : 'Manual'),
+                'downtime' => $mins === null ? '—' : tf(':h h :m m', ['h' => intdiv($mins, 60), 'm' => $mins % 60]).($dt->end_at ? '' : ' ●'),
+                'source' => $w->request_id ? ($src[$w->request_id] ?? t('Request')) : ($w->plan_id ? ($plans[$w->plan_id] ?? t('Plan')) : t('Manual')),
                 'cost' => $w->totalCost(), 'open' => $open ? 'Open' : 'Finished',
                 'items' => $w->parts->map(fn ($p) => ['code' => $mats[$p->material_id]->material_code ?? null, 'name' => $mats[$p->material_id]->material_name ?? '#'.$p->material_id,
                     'plan' => (float) $p->qty_plan, 'used' => $p->qty_used === null ? null : (float) $p->qty_used, 'unit' => $p->uom_code])->values()->all(),
@@ -123,9 +123,9 @@ final class Maintenance
     public static function tasks(MntWo $wo): array
     {
         return $wo->tasks->map(fn ($t) => [
-            'id_wo_task' => $t->id_wo_task, 'seq_no' => $t->seq_no, 'task_text' => $t->task_text, 'kind' => ucfirst(strtolower($t->task_kind)),
+            'id_wo_task' => $t->id_wo_task, 'seq_no' => $t->seq_no, 'task_text' => $t->task_text, 'kind' => t(ucfirst(strtolower($t->task_kind))),
             'range' => $t->task_kind === 'MEASURE' ? trim(Locale::decimal($t->min_value, 2).' – '.Locale::decimal($t->max_value, 2).' '.$t->measure_uom) : '—',
-            'required' => $t->is_required ? 'Required' : '—', 'result' => $t->result ?? '', 'measured_value' => $t->measured_value, 'note' => $t->note,
+            'required' => $t->is_required ? t('Required') : '—', 'result' => $t->result ?? '', 'measured_value' => $t->measured_value, 'note' => $t->note,
             'done' => $t->done_at ? $t->done_by.' · '.self::stamp($t->done_at) : '—', 'editable' => ! $t->is_required,
         ])->values()->all();
     }
@@ -142,7 +142,7 @@ final class Maintenance
             return ['id_wo_part' => $p->id_wo_part, 'item' => $m ? $m->material_code.' · '.$m->material_name : '#'.$p->material_id,
                 'qty_plan' => $p->qty_plan, 'qty_used' => $p->qty_used, 'uom' => $p->uom_code ?: '—', 'stock' => Locale::decimal($stock, 2),
                 'unit_cost' => self::money((float) $p->unit_cost), 'amount' => self::money($need * (float) $p->unit_cost),
-                'source' => $p->pr_line_id ? 'PR line #'.$p->pr_line_id : ($stock >= $need ? 'Stock' : 'Short '.Locale::decimal($need - $stock, 2))];
+                'source' => $p->pr_line_id ? tf('PR line #:n', ['n' => $p->pr_line_id]) : ($stock >= $need ? t('Stock') : tf('Short :qty', ['qty' => Locale::decimal($need - $stock, 2)]))];
         })->values()->all();
     }
 
@@ -163,7 +163,7 @@ final class Maintenance
         $mins = $dt ? (int) $dt->start_at->diffInMinutes($dt->end_at ?? now(), true) : null;
 
         return ['status' => $m?->statusLabel() ?? '—', 'status_code' => $m?->machine_status, 'support' => $m && ! $m->is_process_machine,
-            'downtime' => $mins === null ? null : intdiv($mins, 60).' h '.($mins % 60).' m'.($dt->end_at ? '' : ' (running)'),
+            'downtime' => $mins === null ? null : tf(':h h :m m', ['h' => intdiv($mins, 60), 'm' => $mins % 60]).($dt->end_at ? '' : ' '.t('(running)')),
             'downtime_id' => $dt?->downtime_id, 'rel' => MaintenanceService::reliability((int) $wo->machine_id, 90)];
     }
 
@@ -203,22 +203,22 @@ final class Maintenance
         return $plans->map(fn (MntPlan $p) => [
             'id' => $p->id_plan, 'code' => $p->plan_code, 'name' => $p->plan_name,
             'machine' => ($m = $mach[$p->machine_id] ?? null) ? $m->machine_code.' · '.$m->machine_name : '#'.$p->machine_id,
-            'type' => MntPlan::TYPES[$p->wo_type] ?? $p->wo_type, 'trigger' => self::triggerText($p), 'mode' => ucfirst(strtolower($p->schedule_mode)),
+            'type' => MntPlan::TYPES[$p->wo_type] ?? $p->wo_type, 'trigger' => self::triggerText($p), 'mode' => t(ucfirst(strtolower($p->schedule_mode))),
             'last' => $p->last_done_date?->toDateString(), 'next' => $p->next_due_date?->toDateString(),
             'due' => $p->next_due_date && $p->next_due_date->lt($today) ? 'Overdue' : ($p->next_due_date && $p->next_due_date->lte($today->copy()->addDays((int) $p->lead_days)) ? 'Due' : 'OK'),
             'tasks' => $p->tasks->count(), 'active' => (bool) $p->activate,
             // Baris anak grid (Expand): daftar tugas plan.
             'items' => $p->tasks->map(fn ($t) => ['seq' => $t->seq_no, 'task' => $t->task_text, 'kind' => $t->task_kind, 'uom' => $t->measure_uom,
-                'min' => $t->min_value, 'max' => $t->max_value, 'required' => $t->is_required ? 'Yes' : 'No'])->values()->all(),
+                'min' => $t->min_value, 'max' => $t->max_value, 'required' => $t->is_required ? t('Yes') : t('No')])->values()->all(),
         ])->all();
     }
 
     public static function triggerText(MntPlan $p): string
     {
-        $t = $p->usesTime() ? 'every '.$p->interval_value.' '.strtolower(MntPlan::UNITS[$p->interval_unit] ?? $p->interval_unit).($p->interval_value > 1 ? 's' : '') : null;
-        $m = $p->usesMeter() ? 'every '.Locale::number((float) $p->meter_interval, 0).' '.strtolower(MntPlan::METERS[$p->meter_type] ?? '') : null;
+        $t = $p->usesTime() ? tf('every :n :unit', ['n' => $p->interval_value, 'unit' => t(strtolower(MntPlan::UNITS[$p->interval_unit] ?? $p->interval_unit).($p->interval_value > 1 ? 's' : ''))]) : null;
+        $m = $p->usesMeter() ? tf('every :n :unit', ['n' => Locale::number((float) $p->meter_interval, 0), 'unit' => t(strtolower(MntPlan::METERS[$p->meter_type] ?? ''))]) : null;
 
-        return implode(' OR ', array_filter([$t, $m])) ?: '—';
+        return implode(' '.t('OR').' ', array_filter([$t, $m])) ?: '—';
     }
 
     // Kotak "Next due" form plan: tanggal & meter berikut + WO berikutnya (yang lebih dulu).

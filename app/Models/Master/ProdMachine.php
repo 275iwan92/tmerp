@@ -19,22 +19,22 @@ class ProdMachine extends Model
     // perusahaan). Mesin BREAKDOWN tetap activate=1 supaya histori routing/WO
     // dan matriks kapabilitasnya utuh.
     public const STATUSES = [
-        'READY' => 'Siap (Ready)',
-        'RUNNING' => 'Sedang Jalan',
+        'READY' => 'Ready to Run',
+        'RUNNING' => 'Running',
         'SETUP' => 'Make-ready / Setup',
-        'MAINTENANCE' => 'Perawatan Terjadwal',
-        'BREAKDOWN' => 'Rusak / Breakdown',
-        'IDLE' => 'Idle (Tanpa Order)',
-        'RETIRED' => 'Dipensiunkan / Dijual',
+        'MAINTENANCE' => 'Scheduled Maintenance',
+        'BREAKDOWN' => 'Machine Breakdown',
+        'IDLE' => 'Idle (No Order)',
+        'RETIRED' => 'Retired / Sold',
     ];
 
     // Status yang membuat mesin tidak bisa menerima jadwal baru.
     public const STATUSES_BLOCKING = ['MAINTENANCE', 'BREAKDOWN', 'RETIRED'];
 
     public const CRITICALITY = [
-        'A' => 'A — Berhenti = produksi stop',
-        'B' => 'B — Berhenti = order tertunda',
-        'C' => 'C — Ada penggantinya',
+        'A' => 'A — A stop halts production',
+        'B' => 'B — A stop delays orders',
+        'C' => 'C — Has a substitute',
     ];
 
     protected $fillable = [
@@ -181,7 +181,7 @@ class ProdMachine extends Model
 
     public function statusLabel(): string
     {
-        return self::STATUSES[$this->machine_status] ?? $this->machine_status ?? '—';
+        return isset(self::STATUSES[$this->machine_status]) ? t(self::STATUSES[$this->machine_status]) : ($this->machine_status ?? '—');
     }
 
     public function isSchedulable(): bool

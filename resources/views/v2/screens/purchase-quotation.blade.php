@@ -18,8 +18,8 @@
     $compare = request('compare') ? PurchaseQuotation::compare((int) request('compare')) : null;
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if ($compare)
     {{-- Bandingkan: baris PR x supplier (PQ Confirmed), pilih pemenang per baris -> Buat PO. --}}
@@ -29,7 +29,7 @@
                 :columns="collect($compare['suppliers'])->mapWithKeys(fn ($s) => [$s['pq_id'] => ['label' => raw($s['name']), 'sub' => $s['no'].' · '.($s['term'] ?: t('terms').' —').' · '.t('until').' '.$s['valid']]])->all()"
                 :rows="collect($compare['rows'])->map(fn ($r) => ['key' => $r['pr_line_id'], 'label' => $r['label'], 'sub' => $r['qty'], 'default' => $r['cheapest'], 'locked' => $r['done'] ? t('Already ordered') : null,
                     'cells' => collect($r['cells'])->map(fn ($c) => ['value' => $c['pq_line_id'], 'text' => \Devlib\Locale::number($c['price'], 0).' / '.$c['uom'],
-                        'sub' => $c['lead'] ? 'lead '.$c['lead'].' '.t('days') : null, 'disabled' => $c['ordered'] ? t('Already ordered (PO)') : (! $c['same_uom'] ? t('Unit differs from the PR') : null)])->all()])->all()" />
+                        'sub' => $c['lead'] ? t('lead').' '.$c['lead'].' '.t('days') : null, 'disabled' => $c['ordered'] ? t('Already ordered (PO)') : (! $c['same_uom'] ? t('Unit differs from the PR') : null)])->all()])->all()" />
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="url()->previous() !== url()->current() ? url()->previous() : $home" />
                 <x-dl::button preset="save" label="Create PO" :onclick="'return confirm('.json_encode(t('Create a Draft PO for the selected lines?')).')'" />
@@ -45,18 +45,18 @@
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'valid', 'label' => 'Valid Until', 'type' => 'date'],
             ['key' => 'file', 'label' => 'File'],
-            ['key' => 'read', 'label' => 'Reading Result', 'type' => 'badge', 'tones' => PurchaseQuotation::READ_TONES],
+            ['key' => 'read', 'label' => 'Reading Result', 'type' => 'badge', 'tones' => collect(PurchaseQuotation::READ_TONES)->mapWithKeys(fn ($tone, $label) => [t($label) => $tone])->all()],
             ['key' => 'total', 'label' => 'Total (IDR)', 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseQuotation::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
-            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'lead', 'label' => 'Lead Time (days)', 'type' => 'number'],
-            ['key' => 'note', 'label' => 'Notes'],
+        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
+            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'lead', 'label' => t('Lead Time (days)'), 'type' => 'number'],
+            ['key' => 'note', 'label' => t('Notes')],
         ]]"
-        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Needs check', 'where' => ['status' => 'DRAFT', 'read' => ['Perlu cek', 'Isi manual', 'Gagal dibaca']], 'tone' => 'warn'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Closed (ordered)', 'where' => ['status' => 'CLOSED'], 'tone' => 'info']]"
+        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Needs check', 'where' => ['status' => 'DRAFT', 'read' => [t('Needs check'), t('Fill in by hand'), t('Could not be read')]], 'tone' => 'warn'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Closed (ordered)', 'where' => ['status' => 'CLOSED'], 'tone' => 'info']]"
         :filters="['supplier' => 'Supplier', 'pr' => 'Reference PR', 'status' => 'Status']" />
     <x-dl::action-form method="get" action="{{ $home }}">
         <x-dl::card title="Compare quotations per PR" description="Choose a PR that has Confirmed PQs from several suppliers, then pick the winner per line.">
@@ -119,7 +119,7 @@
             <div class="dl-strip__kv dl-strip__doc"><span>@t('PQ No.')</span><b>{{ $pq->doc_no ?: t('(on Confirm)') }}</b></div>
             <x-dl::field.select name="i_supplier_id" label="Supplier" required placeholder="— choose supplier —" :options="PurchaseOrder::suppliers()" :value="$pq->i_supplier_id" :source="Src::of('tm2mst.sup_supplier')" />
             <x-dl::field.date name="i_doc_date" label="Quotation Date" :value="$pq->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pq_quotation.i_doc_date')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>Total (IDR)</span><b>{{ $money($pq->c_total_idr) }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>@t('Total (IDR)')</span><b>{{ $money($pq->c_total_idr) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
@@ -132,7 +132,7 @@
                 <x-dl::field.select name="i_currency_id" label="Currency" :options="PurchaseQuotation::currencies()" :value="$pq->i_currency_id" :source="Src::of('tm2mst.fin_currency')" />
                 <x-dl::field.decimal name="i_fx_rate" label="Rate to IDR" :value="(float) $pq->i_fx_rate" :source="Src::of('tm2pur.pq_quotation.i_fx_rate')" />
                 <x-dl::field.number name="i_lead_time_day" label="Lead Time (days)" :value="$pq->i_lead_time_day" :source="Src::of('tm2pur.pq_quotation.i_lead_time_day')" />
-                <x-dl::field.display label="Reading Result" :value="(PurchaseQuotation::READ_LABELS[$pq->extract_status] ?? '—').($pq->extract_note ? ' · '.$pq->extract_note : '')" :source="Src::of('tm2pur.pq_quotation.extract_status', 'extract_note')" />
+                <x-dl::field.display label="Reading Result" :value="(isset(PurchaseQuotation::READ_LABELS[$pq->extract_status]) ? t(PurchaseQuotation::READ_LABELS[$pq->extract_status]) : '—').($pq->extract_note ? ' · '.$pq->extract_note : '')" :source="Src::of('tm2pur.pq_quotation.extract_status', 'extract_note')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:file>

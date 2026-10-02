@@ -53,7 +53,7 @@ class DeliveryDelayReasonsLookup extends DbLookup
         return [
             ['key' => 'reason_code', 'label' => 'Code', 'required' => true, 'unique' => true, 'case' => 'uppercase', 'width' => '190px'],
             ['key' => 'reason_name', 'label' => 'Reason (English)', 'required' => true, 'width' => '320px'],
-            ['key' => 'department', 'label' => 'Responsible department', 'type' => 'select', 'required' => true, 'options' => self::DEPARTMENTS, 'width' => '200px'],
+            ['key' => 'department', 'label' => 'Responsible department', 'type' => 'select', 'required' => true, 'options' => array_map('t', self::DEPARTMENTS), 'width' => '200px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '90px'],
         ];
     }

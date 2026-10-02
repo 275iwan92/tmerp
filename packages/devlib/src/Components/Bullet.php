@@ -42,7 +42,7 @@ class Bullet extends DevlibComponent
         return <<<'BLADE'
             <div {{ $attributes->class('dl-bullet') }} {!! $dl() !!}>
                 <div class="dl-bullet__label"><b>{{ $label }}</b>@if ($sub)<small>{{ $sub }}</small>@endif</div>
-                <div class="dl-bullet__track" title="Nilai {{ $show($value) }} · target {{ $show($target) }}">
+                <div class="dl-bullet__track" title="{{ \Devlib\Lang::text('Value') }} {{ $show($value) }} · target {{ $show($target) }}">
                     @foreach (array_reverse($ranges) as $i => $r)<span class="dl-bullet__range is-r{{ count($ranges) - $i }}" style="width:{{ $pct($r) }}%"></span>@endforeach
                     <span class="dl-bullet__bar {{ $value >= $target ? 'is-good' : 'is-bad' }}" style="width:{{ $pct($value) }}%"></span>
                     <span class="dl-bullet__target" style="left:{{ $pct($target) }}%"></span>

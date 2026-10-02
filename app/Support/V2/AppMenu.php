@@ -50,13 +50,13 @@ final class AppMenu
         }
 
         if (self::user($user)['developer']) {
-            $modules[] = ['code' => 'DEV', 'short' => 'DEV', 'label' => 'Developer', 'icon' => 'fa-solid fa-code', 'children' => [
-                ...($user->is_admin ? [['label' => 'Setting', 'items' => [['code' => 'V2-mail', 'label' => 'Setting E-mail (SMTP)', 'icon' => 'fa-solid fa-envelope', 'url' => route('v2.settings.mail'), 'type' => 'form']]]] : []),
-                ['label' => 'Database', 'items' => [['code' => 'V2-dictionary', 'label' => 'Data Dictionary', 'icon' => 'fa-solid fa-database', 'url' => route('v2.dictionary'), 'type' => 'report'],
+            $modules[] = ['code' => 'DEV', 'short' => 'DEV', 'label' => t('Developer'), 'icon' => 'fa-solid fa-code', 'children' => [
+                ...($user->is_admin ? [['label' => t('Setting'), 'items' => [['code' => 'V2-mail', 'label' => t('E-mail Setting (SMTP)'), 'icon' => 'fa-solid fa-envelope', 'url' => route('v2.settings.mail'), 'type' => 'form']]]] : []),
+                ['label' => t('Database'), 'items' => [['code' => 'V2-dictionary', 'label' => t('Data Dictionary'), 'icon' => 'fa-solid fa-database', 'url' => route('v2.dictionary'), 'type' => 'report'],
                     // Hanya di situs dummy (database ddt*): baseline & reset data UAT.
-                    ...(str_starts_with(DB::connection('tm2sdi')->getDatabaseName(), 'ddt') ? [['code' => 'V2-dummy', 'label' => 'Data Dummy (Reset)', 'icon' => 'fa-solid fa-rotate-left', 'url' => route('v2.dummy.index'), 'type' => 'report']] : [])]],
+                    ...(str_starts_with(DB::connection('tm2sdi')->getDatabaseName(), 'ddt') ? [['code' => 'V2-dummy', 'label' => t('Dummy Data (Reset)'), 'icon' => 'fa-solid fa-rotate-left', 'url' => route('v2.dummy.index'), 'type' => 'report']] : [])]],
                 // Daftar engine: input, output, cara kerja (App\Support\Engines\EngineRegistry; sama dengan devlib.test > Engines).
-                ['label' => 'Engines', 'items' => [['code' => 'V2-engines', 'label' => 'Engine Catalog', 'icon' => 'fa-solid fa-gears', 'url' => route('v2.engines'), 'type' => 'report']]],
+                ['label' => t('Engines'), 'items' => [['code' => 'V2-engines', 'label' => t('Engine Catalog'), 'icon' => 'fa-solid fa-gears', 'url' => route('v2.engines'), 'type' => 'report']]],
             ]];
         }
 
@@ -81,7 +81,7 @@ final class AppMenu
     {
         $v2 = str_starts_with((string) $i->target, 'v2:') || str_starts_with((string) $i->target, '/');
         [$badge, $tone] = $v2 ? ($i->status_code === 'LOCKED' ? self::APPROVED : self::REVIEW)
-            : (isset($routes[$i->code]) ? ['v1', null] : ['Belum', 'todo']);
+            : (isset($routes[$i->code]) ? ['v1', null] : ['To Do', 'todo']);
 
         return ['code' => $i->code, 'label' => self::label($i), 'icon' => $i->icon ?: null, 'type' => $i->object_type ?: 'form',
             'url' => route('v2.item', $i->code), 'badge' => $badge, 'badgeTone' => $tone];
@@ -89,7 +89,13 @@ final class AppMenu
 
     private static function label(SysAppMenu $n): string
     {
-        return $n->trans_key ? Translator::t($n->trans_key, $n->label) : $n->label;
+        // Label menu ditulis English di sys_app_menu dan diterjemahkan kamus saat tampil (LOCKED 2026-10-01). Kunci
+        // Translator v1 (trans_key) masih dihormati bila punya terjemahan sendiri.
+        if ($n->trans_key && ($v = Translator::t($n->trans_key, $n->label)) !== $n->label) {
+            return $v;
+        }
+
+        return t($n->label);
     }
 
     // URL tujuan satu item: layar v2 (target v2:slug), layar v1, atau null (belum ada layar).

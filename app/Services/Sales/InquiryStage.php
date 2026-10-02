@@ -73,7 +73,7 @@ final class InquiryStage
     public static function openInProdev(IqpInquiry $inquiry, string $login): ?int
     {
         abort_unless($inquiry->stat_confirm_sales && ! $inquiry->stat_cancel && in_array($inquiry->inquiry_type, self::PRODEV_TYPES, true), 422,
-            'Only a New / Revise inquiry confirmed by Sales can be opened in Pro-Dev.');
+            t('Only a New / Revise inquiry confirmed by Sales can be opened in Pro-Dev.'));
         $writer = new InquiryWriter($login);
         $parts = IqpPart::where('inquiry_id', $inquiry->id_inquiry)->where(fn ($q) => $q->whereNull('part_kind')->orWhere('part_kind', '<>', 'ASSEMBLY'))
             ->orderBy('part_seq')->get();

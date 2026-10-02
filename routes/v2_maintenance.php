@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 // Keputusan (Accept/Reject request, Confirm/Back to Draft/Close WO, simpan plan) = hak approve modul MAINT.
 Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->group(function () {
     $svc = fn () => new MaintenanceService(Auth::user()->login);
-    $head = fn () => abort_unless(MaintenanceService::canDecide(Auth::user()), 403, 'Only the Head of Maintenance (approve right on the Maintenance module).');
+    $head = fn () => abort_unless(MaintenanceService::canDecide(Auth::user()), 403, t('Only the Head of Maintenance (approve right on the Maintenance module).'));
     $wo = fn (int $id) => route('v2.screen', 'maintenance-wo').'?id='.$id;
     $req = fn (int $id) => route('v2.screen', 'maintenance-request').'?id='.$id;
     $plan = fn (int $id) => route('v2.screen', 'maintenance-plan').'?id='.$id;
@@ -27,7 +27,7 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
         $d = $r->validate([
             'machine_id' => ['required', 'integer', 'exists:tm2mst.prod_machine,machine_id'], 'request_kind' => ['required', 'in:'.implode(',', array_keys(MntRequest::KINDS))],
             'symptom' => ['required', 'string', 'max:2000'], 'stopped_at' => ['nullable', 'date'], 'reported_by' => ['nullable', 'integer'],
-        ], [], ['machine_id' => 'Machine', 'symptom' => 'What happened', 'request_kind' => 'Kind']);
+        ], [], ['machine_id' => t('Machine'), 'symptom' => t('What Happened'), 'request_kind' => t('Kind')]);
         $m = $svc()->createRequest($d + ['machine_stopped' => $r->boolean('machine_stopped')]);
         $back = $r->input('back') === 'my-work' ? route('v2.screen', 'maintenance-my-work') : ($m->wo_id ? $wo($m->wo_id) : $req($m->id_request));
 
@@ -52,7 +52,7 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
 
             return redirect($req($id))->with('v2_flash', "{$m->doc_no} rejected.");
         }
-        abort_unless($m->status === 'OPEN', 422, 'This request has already been decided.');
+        abort_unless($m->status === 'OPEN', 422, t('This request has already been decided.'));
         $d = $r->validate(['request_kind' => ['required', 'in:'.implode(',', array_keys(MntRequest::KINDS))], 'priority' => ['required', 'in:P1,P2,P3,P4'],
             'symptom' => ['required', 'string', 'max:2000']]);
         $m->update($d + ['updated_by' => Auth::user()->login]);
@@ -63,7 +63,7 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
     // ------------------------------------------------------------ Work Order
     Route::post('/wo/create', function (Request $r) use ($svc, $wo) {
         $d = $r->validate(['machine_id' => ['required', 'integer', 'exists:tm2mst.prod_machine,machine_id'], 'wo_type' => ['required', 'in:'.implode(',', array_keys(MntWo::TYPES))],
-            'description' => ['required', 'string', 'max:255']], [], ['machine_id' => 'Machine', 'description' => 'Description']);
+            'description' => ['required', 'string', 'max:255']], [], ['machine_id' => t('Machine'), 'description' => t('Description')]);
         $w = $svc()->createWo($d);
 
         return redirect($wo($w->id_wo))->with('v2_flash', 'Draft WO created — complete it, then Confirm.');
@@ -118,12 +118,12 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
                 $msg = 'Task added.';
                 break;
             case 'add_part':
-                abort_unless($r->filled('material_id'), 422, 'Choose a spare part from the material master.');
+                abort_unless($r->filled('material_id'), 422, t('Choose a spare part from the material master.'));
                 $s->addPart($w, $r->integer('material_id'), max(0.001, (float) $r->input('new_part_qty', 1)));
                 $msg = 'Spare part added.';
                 break;
             case 'add_labor':
-                abort_unless($r->filled('labor_employee_id'), 422, 'Choose a technician.');
+                abort_unless($r->filled('labor_employee_id'), 422, t('Choose a technician.'));
                 $s->addLabor($w, $r->integer('labor_employee_id'), $r->integer('labor_minutes'), $r->input('labor_date') ?: null);
                 $msg = 'Labor added.';
                 break;
@@ -172,7 +172,7 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
             'schedule_mode' => ['required', 'in:FLOATING,FIXED'], 'lead_days' => ['nullable', 'integer', 'min:0', 'max:60'], 'est_minutes' => ['nullable', 'integer', 'min:0'],
             'last_done_date' => ['nullable', 'date'], 'last_done_meter' => ['nullable', 'numeric', 'min:0'], 'next_due_date' => ['nullable', 'date'],
             'certificate_valid_until' => ['nullable', 'date'], 'notes' => ['nullable', 'string', 'max:2000'],
-        ], [], ['plan_code' => 'Plan code', 'plan_name' => 'Plan name', 'machine_id' => 'Machine', 'interval_value' => 'Every', 'meter_interval' => 'Or every (meter)']);
+        ], [], ['plan_code' => t('Plan code'), 'plan_name' => t('Plan name'), 'machine_id' => t('Machine'), 'interval_value' => t('Every'), 'meter_interval' => t('Or every (meter)')]);
         $login = Auth::user()->login;
         $d['needs_machine_stop'] = $r->boolean('needs_machine_stop');
         $d['lead_days'] = (int) ($d['lead_days'] ?? 3);

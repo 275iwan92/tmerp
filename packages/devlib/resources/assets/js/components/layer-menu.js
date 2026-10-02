@@ -1,7 +1,7 @@
 /* DevLib · LayerMenu */
 (function (Devlib) {
   'use strict';
-  const {esc, toast, confirmBox} = Devlib.h;
+  const {esc, toast, confirmBox, T, Tf} = Devlib.h;
   const BACK = '<button type="button" class="dl-lm__back" data-lm-back title="Back"><i class="fa-solid fa-arrow-left"></i><span>Back</span></button>';
   /* ============ LAYER MENU (panel kiri berlapis: modul -> menu -> sub -> ...) + Chat & Profile ============ */
   class LayerMenu extends Devlib.Component {
@@ -189,7 +189,7 @@
       this.setPeek(false);
       const detail = {key: n.key, label: n.label, url: n.url || null, path: [...this.path.map(p => p.label), n.label]};
       if (!this.emit('dl:layer-menu', detail, true)) { e.preventDefault(); return; }
-      if (!n.url || n.url === '#') toast(`Buka: ${detail.path.join(' › ')} (pratinjau)`);
+      if (!n.url || n.url === '#') toast(Tf('open_preview', {x: detail.path.join(' › ')}));
     }
 
     /* ---------------- roda gigi, Chat & Profile ---------------- */
@@ -215,7 +215,7 @@
       this.$('[data-lm-dockbtn]').addEventListener('click', () => this.setDock(true));
       if (this.chatEl) {
         // Tombol tutup ditempel di bilah judul chat (bukan bilah kedua) supaya chat tidak dobel judul.
-        this.chatEl.querySelector('.dl-wa__bar').insertAdjacentHTML('beforeend', '<button type="button" class="dl-wa__ib" data-lm-chatx title="Tutup chat" aria-label="Tutup chat"><i class="fa-solid fa-xmark"></i></button>');
+        this.chatEl.querySelector('.dl-wa__bar').insertAdjacentHTML('beforeend', '<button type="button" class="dl-wa__ib" data-lm-chatx title="' + esc(T('lm_close_chat')) + '" aria-label="' + esc(T('lm_close_chat')) + '"><i class="fa-solid fa-xmark"></i></button>');
         this.chatEl.addEventListener('click', e => { if (e.target.closest('[data-lm-chatx]')) this.closeChat(); });
         this.unread = this.chatEl.dlChat?.unread || 0;
         this.chatEl.addEventListener('dl:chat-unread', e => { this.unread = e.detail.count; this.badges(); });
@@ -258,7 +258,7 @@
       this.profOv?.classList.toggle('is-on', show === 'profile');
       [...this.track.children].forEach((p, i) => { p.inert = show !== 'menu' || i !== this.path.length; });
       this.$('[data-lm-swap]').hidden = this.$('[data-lm-dockbtn]').hidden = !(chat && !dock);
-      this.$('[data-lm-swap]').title = show === 'chat' ? 'Tampilkan menu' : 'Tampilkan chat';
+      this.$('[data-lm-swap]').title = T(show === 'chat' ? 'lm_show_menu' : 'lm_show_chat');
       const mode = {chat: 'Chat', profile: 'Profile'}[show];
       if (this.mini && show !== 'menu') this.setPeek(true);
       const m = this.$('[data-lm-mode]'); m.hidden = !mode; m.textContent = mode || '';
@@ -293,8 +293,8 @@
           this.dockHost = document.querySelector(this.el.dataset.dock || '') || document.body.appendChild(Object.assign(document.createElement('aside'), {className: 'dl-lm-dock is-fixed'}));
           // Bilah dok milik LayerMenu: tetap terlihat walau percakapan sedang terbuka (bilah daftar chat tersembunyi).
           this.dockHost.insertAdjacentHTML('afterbegin', '<div class="dl-lm-dock__bar"><i class="fa-solid fa-comment-dots"></i><b>Chat</b>'
-            + '<button type="button" class="dl-lm__ib" data-lm-undock title="Kembalikan ke panel kiri" aria-label="Kembalikan chat ke panel kiri"><i class="fa-solid fa-table-columns"></i></button>'
-            + '<button type="button" class="dl-lm__ib" data-lm-dockx title="Tutup chat" aria-label="Tutup chat"><i class="fa-solid fa-xmark"></i></button></div>');
+            + '<button type="button" class="dl-lm__ib" data-lm-undock title="' + esc(T('lm_undock')) + '" aria-label="' + esc(T('lm_undock_chat')) + '"><i class="fa-solid fa-table-columns"></i></button>'
+            + '<button type="button" class="dl-lm__ib" data-lm-dockx title="' + esc(T('lm_close_chat')) + '" aria-label="' + esc(T('lm_close_chat')) + '"><i class="fa-solid fa-xmark"></i></button></div>');
           this.dockHost.addEventListener('click', e => { if (e.target.closest('[data-lm-undock]')) this.setDock(false); else if (e.target.closest('[data-lm-dockx]')) this.closeChat(); });
         }
         this.dockHost.appendChild(this.chatEl);
@@ -335,7 +335,7 @@
       const k = btn.dataset.lmAct;
       if (this.page(k)) return this.openProfile(k);
       if (btn.dataset.confirm && !await confirmBox({title: btn.dataset.label, message: btn.dataset.confirm, tone: btn.classList.contains('is-danger') ? 'danger' : 'warn', ok: btn.dataset.label})) return;
-      if (this.emit('dl:layer-menu-action', {key: k}, true)) toast(`${btn.dataset.label} (pratinjau)`);
+      if (this.emit('dl:layer-menu-action', {key: k}, true)) toast(`${btn.dataset.label} (${T('preview')})`);
     }
   }
   Devlib.define("LayerMenu", LayerMenu);

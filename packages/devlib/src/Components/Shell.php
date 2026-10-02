@@ -9,7 +9,7 @@ namespace Devlib\Components;
 //
 // $modules = [
 //   ['code' => 'SALES', 'short' => 'SLS' (opsional: tampil di bilah atas, nama lengkap di tooltip), 'label' => 'Sales', 'icon' => 'fa-solid fa-…', 'children' => [
-//       ['label' => 'Transaksi', 'items' => [ITEM, …]],   // grup
+//       ['label' => 'Transactions', 'items' => [ITEM, …]],   // grup
 //       ITEM,                                              // item langsung
 //   ]],
 // ]

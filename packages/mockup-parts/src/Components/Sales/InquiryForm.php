@@ -14,10 +14,10 @@ class InquiryForm extends DevlibComponent
 {
     // Peran Part (sama dengan partRoleOptions() tmerp).
     public const ROLES = [
-        'body' => ['Body', '📦', 'Bagian struktural utama'], 'lid' => ['Lid', '🔝', 'Tutup terpisah'], 'base' => ['Base', '⬇️', 'Alas terpisah'],
-        'sleeve' => ['Sleeve', '🧦', 'Selongsong luar'], 'tray' => ['Tray', '🍱', 'Baki dalam'], 'insert' => ['Insert', '🧩', 'Fitment/pengganjal dalam'],
-        'divider' => ['Divider', '🗂️', 'Sekat antar-kompartemen'], 'left' => ['Left', '◀️', 'Sisi kiri'], 'right' => ['Right', '▶️', 'Sisi kanan'],
-        'monoform' => ['MonoForm', '1️⃣', 'Bukan container, 1 lembar (poster/label/hang tag) — istilah dari "Mono Carton"'],
+        'body' => ['Body', '📦', 'Main structural part'], 'lid' => ['Lid', '🔝', 'Separate lid'], 'base' => ['Base', '⬇️', 'Separate base'],
+        'sleeve' => ['Sleeve', '🧦', 'Outer sleeve'], 'tray' => ['Tray', '🍱', 'Inner tray'], 'insert' => ['Insert', '🧩', 'Inner fitment/padding'],
+        'divider' => ['Divider', '🗂️', 'Partition between compartments'], 'left' => ['Left', '◀️', 'Left side'], 'right' => ['Right', '▶️', 'Right side'],
+        'monoform' => ['MonoForm', '1️⃣', 'Not a container, 1 sheet (poster/label/hang tag) — term from "Mono Carton"'],
     ];
 
     // Tipe yang wajib memilih Peran Part + templatnya (partTemplateMap() ∩ prod_type.has_multi_part di tmerp).
@@ -66,17 +66,17 @@ class InquiryForm extends DevlibComponent
 
                 <x-dl::alert tone="success" data-inq-flash />
                 @if ($readonly)
-                    <x-dl::alert tone="warn">🔒 Inkuiri ini sudah dikonfirmasi (status <b>{{ $d['sub_state'] }}</b>) — dibuka lihat-saja, tidak bisa diedit.</x-dl::alert>
+                    <x-dl::alert tone="warn">🔒 {!! strtr(e(\Devlib\Lang::text('This inquiry is already confirmed (status :status) — opened view-only, it cannot be edited.')), [':status' => '<b>'.e($d['sub_state']).'</b>']) !!}</x-dl::alert>
                 @else
-                    <x-dl::alert tone="warn" data-inq-officer>👤 <b>Sales Officer</b> — isi header, tier qty, part &amp; dieline, tooling, diskon, dan biaya eksternal di bawah. Costing (HPP) &amp; estimasi kecepatan akan menyusul di iterasi berikutnya.</x-dl::alert>
+                    <x-dl::alert tone="warn" data-inq-officer>👤 <b>Sales Officer</b> — {{ \Devlib\Lang::text('fill in the header, qty tiers, part & dieline, tooling, discount and external costs below.') }} {{ \Devlib\Lang::text('Costing (COGS) & the speed estimate will follow in the next iteration.') }}</x-dl::alert>
                 @endif
 
                 <x-dl::card class="mp-inq__main">
                     <div class="mp-toolbar">
                         <x-dl::button preset="save" type="button" data-inq-save />
                         <x-dl::button preset="confirm" data-inq-confirm :hidden="$d['stat_confirm_sales']" />
-                        <x-dl::button variant="danger" icon="✖" label="Batalkan" data-dl-open="inq-cancel" data-inq-keep data-inq-when="cancel" :hidden="! ($d['stat_confirm_sales'] && ! $d['stat_cancel'])" />
-                        <x-dl::button variant="danger" icon="❌" label="Tandai Kalah" data-dl-open="inq-lost" data-inq-keep data-inq-when="lost"
+                        <x-dl::button variant="danger" icon="✖" label="Cancel" data-dl-open="inq-cancel" data-inq-keep data-inq-when="cancel" :hidden="! ($d['stat_confirm_sales'] && ! $d['stat_cancel'])" />
+                        <x-dl::button variant="danger" icon="❌" label="Mark Lost" data-dl-open="inq-lost" data-inq-keep data-inq-when="lost"
                             :hidden="! ($d['stat_confirm_sales'] && ! in_array($d['sub_state'], ['CANCELLED', 'CONVERTED', 'LOST'], true))" />
                         {{-- Duplicate ke customer lain (user 2026-10-01: pindah dari baris grid); modal dup-modal dipasang layar. --}}
                         <x-dl::button variant="secondary" icon="copy" label="Duplicate" type="button" data-dl-open="dup-modal" data-inq-keep data-inq-saved-only :hidden="! $d['id']" />
@@ -91,17 +91,17 @@ class InquiryForm extends DevlibComponent
 
                 {{ $slot }}
 
-                <x-dl::modal id="inq-role" title="Pilih Peran Part" icon="fa-tag" size="lg">
-                    <p class="mp-hint">Nama part terisi otomatis: nama-produk-{peran}</p>
+                <x-dl::modal id="inq-role" title="Choose Part Role" icon="fa-tag" size="lg">
+                    <p class="mp-hint">{{ \Devlib\Lang::text('The part name is filled in automatically: product-name-{role}') }}</p>
                     <div class="mp-roles">
                         @foreach ($roles() as $key => [$label, $icon, $desc])
-                            <button type="button" class="mp-role" data-inq-role-pick="{{ $key }}"><span class="mp-role__icon">{{ $icon }}</span><b>{{ $label }}</b><small>{{ $desc }}</small></button>
+                            <button type="button" class="mp-role" data-inq-role-pick="{{ $key }}"><span class="mp-role__icon">{{ $icon }}</span><b>{{ $label }}</b><small>{{ \Devlib\Lang::text($desc) }}</small></button>
                         @endforeach
                     </div>
                 </x-dl::modal>
 
-                @foreach (['inq-cancel' => ['Batalkan Inkuiri', 'cancel_reason', 'Alasan Pembatalan', 'Wajib diisi — tercatat di riwayat', 'Ya, batalkan inkuiri'],
-                           'inq-lost' => ['Tandai Kalah', 'lost_reason', 'Alasan Kalah', 'mis. Harga kompetitor lebih rendah, customer batal order — wajib diisi, tercatat di riwayat & laporan win-rate', 'Ya, tandai kalah']] as $id => [$mt, $field, $fl, $ph, $ok])
+                @foreach (['inq-cancel' => ['Cancel Inquiry', 'cancel_reason', 'Cancellation Reason', 'Required — recorded in the history', 'Yes, cancel the inquiry'],
+                           'inq-lost' => ['Mark Lost', 'lost_reason', 'Lost Reason', 'e.g. Competitor price is lower, customer cancelled the order — required, recorded in the history & the win-rate report', 'Yes, mark as lost']] as $id => [$mt, $field, $fl, $ph, $ok])
                     <x-dl::modal :id="$id" :title="$mt" icon="warning">
                         <x-dl::field.text :name="$field" :label="$fl" :placeholder="$ph" multiline required data-inq-keep :source="\MockupParts\Src::of('tm2sdi.iqp_inquiry.cancel_reason')" />
                         <x-slot:footer>
@@ -111,13 +111,13 @@ class InquiryForm extends DevlibComponent
                     </x-dl::modal>
                 @endforeach
 
-                <x-dl::modal id="inq-newcust" title="Buat Customer Baru" icon="add">
-                    <x-dl::alert tone="info">Customer dibuat status <b>DRAFT</b> — Finance/Credit tetap perlu review lengkap di Master Customer sebelum bisa transaksi penuh.</x-dl::alert>
-                    <x-dl::field.text name="new_customer_name" label="Nama Customer" placeholder="Nama perusahaan/customer" required :source="\MockupParts\Src::of('tm2mst.cust_customer.customer_name')" />
-                    <x-dl::field.toggle-group name="new_customer_type" label="Tipe" :options="['local' => 'Lokal', 'import' => 'Import']" value="local" :source="\MockupParts\Src::of('tm2mst.cust_customer.customer_type')" />
-                    <x-dl::field.text name="new_customer_phone" label="No. Telp" placeholder="0812xxxxxxxx" :source="\MockupParts\Src::of('tm2mst.cust_customer.phone')" />
-                    <x-dl::field.text name="new_customer_email" label="Email" placeholder="opsional" :case-toggle="false" :source="\MockupParts\Src::of('tm2mst.cust_customer.email')" />
-                    <x-dl::field.text name="new_customer_address" label="Alamat" placeholder="opsional" multiline :source="\MockupParts\Src::of('tm2mst.cust_customer.default_address')" />
+                <x-dl::modal id="inq-newcust" title="Create New Customer" icon="add">
+                    <x-dl::alert tone="info">{!! \Devlib\Lang::text('The customer is created with status <b>DRAFT</b> — Finance/Credit still needs to do a full review in Master Customer before full transactions are possible.') !!}</x-dl::alert>
+                    <x-dl::field.text name="new_customer_name" label="Customer Name" placeholder="Company/customer name" required :source="\MockupParts\Src::of('tm2mst.cust_customer.customer_name')" />
+                    <x-dl::field.toggle-group name="new_customer_type" label="Customer Type" :options="['local' => \Devlib\Lang::text('Local'), 'import' => \Devlib\Lang::text('Import')]" value="local" :source="\MockupParts\Src::of('tm2mst.cust_customer.customer_type')" />
+                    <x-dl::field.text name="new_customer_phone" label="Phone No." placeholder="0812xxxxxxxx" :source="\MockupParts\Src::of('tm2mst.cust_customer.phone')" />
+                    <x-dl::field.text name="new_customer_email" label="Email" placeholder="optional" :case-toggle="false" :source="\MockupParts\Src::of('tm2mst.cust_customer.email')" />
+                    <x-dl::field.text name="new_customer_address" label="Address" placeholder="optional" multiline :source="\MockupParts\Src::of('tm2mst.cust_customer.default_address')" />
                     <x-slot:footer>
                         <x-dl::button preset="cancel" data-dl-close-modal />
                         <x-dl::button preset="save" type="button" data-inq-newcust-save />

@@ -16,7 +16,7 @@ class ScrapTypeGrid extends ProdGrid
 
     public function title(): string
     {
-        return 'Kelola Tipe Scrap';
+        return t('Scrap Types');
     }
 
     protected function v1Route(): ?string

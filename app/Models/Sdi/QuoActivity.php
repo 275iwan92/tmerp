@@ -7,18 +7,18 @@ namespace App\Models\Sdi;
 class QuoActivity extends CrmActivity
 {
     public const TYPES = [
-        'CALL' => ['📞', 'Telepon'],
-        'VISIT' => ['🚗', 'Kunjungan'],
+        'CALL' => ['📞', 'Call'],
+        'VISIT' => ['🚗', 'Visit'],
         'WHATSAPP' => ['💬', 'WhatsApp'],
         'EMAIL' => ['✉️', 'Email'],
         'MEETING' => ['🤝', 'Meeting'],
-        'OTHER' => ['📝', 'Lainnya'],
+        'OTHER' => ['📝', 'Other'],
     ];
 
     public const RESULTS = [
-        'POSITIVE' => 'Positif',
-        'NEUTRAL' => 'Netral',
-        'NEGATIVE' => 'Negatif',
-        'NO_ANSWER' => 'Tidak terhubung',
+        'POSITIVE' => 'Positive',
+        'NEUTRAL' => 'Neutral',
+        'NEGATIVE' => 'Negative',
+        'NO_ANSWER' => 'No answer',
     ];
 }

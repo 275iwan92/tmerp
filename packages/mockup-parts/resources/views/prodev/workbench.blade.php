@@ -21,7 +21,7 @@
             ];
         @endphp
         <div class="dl-form__panel">
-            <div class="dl-form__heading"><div class="dl-form__title">Imposition Plano Optimizer</div><small id="io-jobcount"></small></div>
+            <div class="dl-form__heading"><div class="dl-form__title">{{ t('Imposition Plano Optimizer') }}</div><small id="io-jobcount"></small></div>
             <x-dl::badge label="Draft" tone="neutral" id="io-docState" />
             <span class="io-status" id="io-status"></span>
             <span class="dl-print__spacer"></span>
@@ -41,10 +41,10 @@
             dipertahankan, jadi logika JS di bawah tidak berubah. -->
             <div class="io-acc" id="io-acc">
                 <section class="io-sec" data-sec="impo">
-                    <button type="button" class="io-sec-head"><span>Imposition &amp; Nesting</span></button>
+                    <button type="button" class="io-sec-head"><span>{{ t('Imposition & Nesting') }}</span></button>
                     <div class="io-sec-body">
                         <div class="io-group">
-                            <h2>Job</h2>
+                            <h2>{{ t('Job') }}</h2>
                             <!-- Job sudah pasti sejak dipilih di grid (user 2026-09-16),
                             jadi ini identitas, BUKAN dropdown. -->
                             <div id="io-jobFixed" class="io-jobfix"></div>
@@ -52,12 +52,12 @@
                             <div id="io-metrics" class="io-metric-grid"></div>
                         </div>
                         <div class="io-group">
-                            <h2>1. Jumlah Up</h2>
+                            <h2>{{ t('1. Number of Ups') }}</h2>
                             <div class="io-auto-box">
                                 <div class="io-toggle-row">
                                     <div>
-                                        <b>Auto Up</b>
-                                        <div class="io-note" id="io-modeText">Aktif: gunakan up maksimum yang memungkinkan</div>
+                                        <b>{{ t('Auto Up') }}</b>
+                                        <div class="io-note" id="io-modeText">{{ t('Active: use the maximum number of ups that fits') }}</div>
                                     </div>
                                     <label class="io-toggle"><input id="io-autoUp" type="checkbox" checked><span class="io-slider"></span></label>
                                 </div>
@@ -66,116 +66,116 @@
                                 Blok ini ada di dalam blok verbatim: komentar Blade tidak diproses
                                 dan akan bocor jadi teks -- WAJIB komentar HTML. -->
                                 <div id="io-autoResult" class="io-auto-result">
-                                    <span>Hasil optimasi</span><b id="io-autoResultValue">—</b>
-                                    <div class="io-note" id="io-autoResultNote">Susunan dihitung dari ukuran canvas &amp; bentuk dieline.</div>
+                                    <span>{{ t('Optimization result') }}</span><b id="io-autoResultValue">—</b>
+                                    <div class="io-note" id="io-autoResultNote">{{ t('The arrangement is calculated from the canvas size & the dieline shape.') }}</div>
                                 </div>
                                 <div id="io-manualGroup" style="display:none">
-                                    <label>Target up (manual)</label>
+                                    <label>{{ t('Target up (manual)') }}</label>
                                     <input id="io-manualUp" type="number" min="1">
-                                    <p class="io-note">Canvas akan dicarikan ukuran terkecil yang memuat jumlah ini.</p>
+                                    <p class="io-note">{{ t('The smallest canvas size that fits this number will be searched.') }}</p>
                                 </div>
                             </div>
-                            <h2 style="margin-top:14px">2. Gap</h2>
-                            <label>Jarak antar artwork / dieline (cm)</label>
+                            <h2 style="margin-top:14px">{{ t('2. Gap') }}</h2>
+                            <label>{{ t('Distance between artwork / dieline (cm)') }}</label>
                             <input id="io-gap" type="number" min="0" step=".05" value=".3">
                         </div>
                         <div class="io-group">
-                            <h2>3. Lembar Cetak / Canvas</h2>
+                            <h2>{{ t('3. Print Sheet / Canvas') }}</h2>
                             <!-- Batas canvas pilihan officer (user 2026-10-01): Custom = ikut dieline tanpa batas meja (bawaan part
                             baru); selain itu batas meja cetak, meja pond, atau terkecil dari keduanya (aturan 16-Sep). v2 saja. -->
-                            <label>Canvas limit</label>
+                            <label>{{ t('Canvas limit') }}</label>
                             <select id="io-limit">
-                                <option value="CUSTOM">Custom (follow dieline)</option>
-                                <option value="PRESS">Press bed</option>
-                                <option value="DIECUT">Die-cut bed (Pond)</option>
-                                <option value="BOTH">Press + Die-cut (smallest of both)</option>
+                                <option value="CUSTOM">{{ t('Custom (follow dieline)') }}</option>
+                                <option value="PRESS">{{ t('Press bed') }}</option>
+                                <option value="DIECUT">{{ t('Die-cut bed (Pond)') }}</option>
+                                <option value="BOTH">{{ t('Press + Die-cut (smallest of both)') }}</option>
                             </select>
                             <div id="io-limitNote" class="io-notice info"></div>
                             <div class="io-row">
-                                <div><label>Length (cm)</label><input id="io-sl" type="number" min="1" step=".1"></div>
-                                <div><label>Width (cm)</label><input id="io-sw" type="number" min="1" step=".1"></div>
+                                <div><label>{{ t('Length (cm)') }}</label><input id="io-sl" type="number" min="1" step=".1"></div>
+                                <div><label>{{ t('Width (cm)') }}</label><input id="io-sw" type="number" min="1" step=".1"></div>
                             </div>
-                            <button id="io-suggest" class="io-btn green" style="width:100%;margin-top:9px" title="Mengubah ukuran canvas DAN plano">✦ Suggestion</button>
+                            <button id="io-suggest" class="io-btn green" style="width:100%;margin-top:9px" title="{{ t('Changes the canvas size AND the plano') }}">✦ Suggestion</button>
                             <p id="io-suggestNote" class="io-note"></p>
-                            <label>Grain direction</label>
+                            <label>{{ t('Grain direction') }}</label>
                             <select id="io-grain">
-                                <option value="L">Along dieline length</option>
-                                <option value="W">Along dieline width</option>
-                                <option value="none">No grain constraint</option>
+                                <option value="L">{{ t('Along dieline length') }}</option>
+                                <option value="W">{{ t('Along dieline width') }}</option>
+                                <option value="none">{{ t('No grain constraint') }}</option>
                             </select>
                         </div>
                         <div class="io-group">
-                            <h2>Data Kalkulasi</h2>
+                            <h2>{{ t('Calculation Data') }}</h2>
                             <div class="io-mini-grid" style="margin-top:0">
-                                <div class="io-mini"><span>Canvas utilization</span><b id="io-yCanvas">—</b></div>
-                                <div class="io-mini"><span>Canvas waste</span><b id="io-yCanvasW">—</b></div>
-                                <div class="io-mini"><span>Plano sheet yield</span><b id="io-yPlano">—</b></div>
-                                <div class="io-mini"><span>Overall efficiency</span><b id="io-yAll">—</b></div>
+                                <div class="io-mini"><span>{{ t('Canvas utilization') }}</span><b id="io-yCanvas">—</b></div>
+                                <div class="io-mini"><span>{{ t('Canvas waste') }}</span><b id="io-yCanvasW">—</b></div>
+                                <div class="io-mini"><span>{{ t('Plano sheet yield') }}</span><b id="io-yPlano">—</b></div>
+                                <div class="io-mini"><span>{{ t('Overall efficiency') }}</span><b id="io-yAll">—</b></div>
                             </div>
                             <div class="io-bar"><i id="io-barFill"></i><span id="io-barTxt"></span></div>
                             <div id="io-impoDetail" class="io-spec"></div>
                         </div>
                         <div class="io-group">
-                            <h2>Spesifikasi &amp; Artwork</h2>
+                            <h2>{{ t('Specification & Artwork') }}</h2>
                             <div id="io-spec" class="io-spec" style="margin-top:0"></div>
-                            <label>Artwork asset</label>
-                            <label class="io-upload">Upload artwork<input id="io-artFile" type="file" accept="image/*,.pdf,.ai,.svg"></label>
-                            <div id="io-artName" class="io-file">Artwork bawaan job aktif</div>
-                            <label>Separate dieline</label>
-                            <label class="io-upload">Upload dieline<input id="io-dieFile" type="file" accept="image/*,.pdf,.ai,.svg,.dxf"></label>
-                            <div id="io-dieName" class="io-file">Dieline struktural bawaan job aktif</div>
+                            <label>{{ t('Artwork asset') }}</label>
+                            <label class="io-upload">{{ t('Upload artwork') }}<input id="io-artFile" type="file" accept="image/*,.pdf,.ai,.svg"></label>
+                            <div id="io-artName" class="io-file">{{ t('Default artwork of the active job') }}</div>
+                            <label>{{ t('Separate dieline') }}</label>
+                            <label class="io-upload">{{ t('Upload dieline') }}<input id="io-dieFile" type="file" accept="image/*,.pdf,.ai,.svg,.dxf"></label>
+                            <div id="io-dieName" class="io-file">{{ t('Default structural dieline of the active job') }}</div>
                         </div>
                     </div>
                 </section>
 
                 <section class="io-sec" data-sec="plano">
-                    <button type="button" class="io-sec-head"><span>Plano Configuration</span></button>
+                    <button type="button" class="io-sec-head"><span>{{ t('Plano Configuration') }}</span></button>
                     <div class="io-sec-body">
                         <div class="io-group">
-                            <h2>Mesin</h2>
-                            <label>Printing machine</label>
+                            <h2>{{ t('Machine') }}</h2>
+                            <label>{{ t('Printing machine') }}</label>
                             <select id="io-machine"></select>
                             <div id="io-machineInfo" class="io-notice info"></div>
-                            <label>Mesin plong / ponds</label>
+                            <label>{{ t('Die-cut machine (plong / pond)') }}</label>
                             <select id="io-diecut"></select>
                             <div id="io-diecutInfo" class="io-notice info"></div>
                         </div>
                         <div class="io-group">
-                            <h2>Plano Optimization</h2>
-                            <label>Market plano size</label>
+                            <h2>{{ t('Plano Optimization') }}</h2>
+                            <label>{{ t('Market plano size') }}</label>
                             <select id="io-plano"></select>
-                            <button id="io-calcPlano" class="io-btn green" style="width:100%;margin-top:8px" title="Pilih plano paling hemat untuk ukuran canvas sekarang">⟳ Calculate Plano</button>
+                            <button id="io-calcPlano" class="io-btn green" style="width:100%;margin-top:8px" title="{{ t('Choose the most economical plano for the current canvas size') }}">⟳ Calculate Plano</button>
                             <div class="io-row">
-                                <div><label>Custom L</label><input id="io-cpl" type="number" step=".1" placeholder="cm"></div>
-                                <div><label>Custom W</label><input id="io-cpw" type="number" step=".1" placeholder="cm"></div>
+                                <div><label>{{ t('Custom L') }}</label><input id="io-cpl" type="number" step=".1" placeholder="cm"></div>
+                                <div><label>{{ t('Custom W') }}</label><input id="io-cpw" type="number" step=".1" placeholder="cm"></div>
                             </div>
                             <button id="io-custom" class="io-btn" style="width:100%;margin-top:8px">Use custom plano</button>
                             <div id="io-planoNote" class="io-notice info"></div>
                             <div id="io-cut" class="io-cut"></div>
                         </div>
                         <div class="io-group">
-                            <h2>Ranking Plano</h2>
+                            <h2>{{ t('Plano Ranking') }}</h2>
                             <div id="io-planoTable" class="io-spec" style="margin-top:0"></div>
                         </div>
                         <div class="io-group">
-                            <h2>PCS ↔ PLANO Calculator</h2>
+                            <h2>{{ t('PCS ↔ PLANO Calculator') }}</h2>
                             <div class="io-mode-switch">
                                 <button id="io-pcsMode" class="active">PCS → PLANO</button>
                                 <button id="io-planoMode">PLANO → PCS</button>
                             </div>
                             <div class="io-compact">
-                                <b id="io-inputLabel">Qty order (pcs)</b>
-                                <label for="io-converterInput" class="io-note" id="io-inputHint">Masukkan jumlah produk yang harus diproduksi</label>
+                                <b id="io-inputLabel">{{ t('Qty order (pcs)') }}</b>
+                                <label for="io-converterInput" class="io-note" id="io-inputHint">{{ t('Enter the number of products that must be produced') }}</label>
                                 <input id="io-converterInput" type="number" min="0" value="100">
                                 <div class="io-result">
-                                    <div class="caption" id="io-resultCaption">Plano required</div>
-                                    <b id="io-resultValue">—</b> <small id="io-resultUnit">sheets</small>
+                                    <div class="caption" id="io-resultCaption">{{ t('Plano required') }}</div>
+                                    <b id="io-resultValue">—</b> <small id="io-resultUnit">{{ t('sheets') }}</small>
                                 </div>
                                 <div class="io-mini-grid">
-                                    <div class="io-mini"><span>Active up</span><b id="io-mUp">—</b></div>
-                                    <div class="io-mini"><span>Yield / plano</span><b id="io-mYield">—</b></div>
-                                    <div class="io-mini"><span>Products / plano</span><b id="io-mPerPlano">—</b></div>
-                                    <div class="io-mini"><span>Waste / plano</span><b id="io-mWaste">—</b></div>
+                                    <div class="io-mini"><span>{{ t('Active up') }}</span><b id="io-mUp">—</b></div>
+                                    <div class="io-mini"><span>{{ t('Yield / plano') }}</span><b id="io-mYield">—</b></div>
+                                    <div class="io-mini"><span>{{ t('Products / plano') }}</span><b id="io-mPerPlano">—</b></div>
+                                    <div class="io-mini"><span>{{ t('Waste / plano') }}</span><b id="io-mWaste">—</b></div>
                                 </div>
                             </div>
                         </div>
@@ -183,17 +183,17 @@
                 </section>
 
                 <section class="io-sec" data-sec="bom">
-                    <button type="button" class="io-sec-head"><span>Bill of Material</span><em class="io-sec-count" id="io-cnt-bom"></em></button>
+                    <button type="button" class="io-sec-head"><span>{{ t('Bill of Material') }}</span><em class="io-sec-count" id="io-cnt-bom"></em></button>
                     <div class="io-sec-body io-sec-body--single"><div id="io-bom"></div></div>
                 </section>
 
                 <section class="io-sec" data-sec="ink">
-                    <button type="button" class="io-sec-head"><span>Ink Configuration</span><em class="io-sec-count" id="io-cnt-ink"></em></button>
+                    <button type="button" class="io-sec-head"><span>{{ t('Ink Configuration') }}</span><em class="io-sec-count" id="io-cnt-ink"></em></button>
                     <div class="io-sec-body io-sec-body--single"><div id="io-ink"></div></div>
                 </section>
 
                 <section class="io-sec" data-sec="bop">
-                    <button type="button" class="io-sec-head"><span>Bill of Process</span><em class="io-sec-count" id="io-cnt-bop"></em></button>
+                    <button type="button" class="io-sec-head"><span>{{ t('Bill of Process') }}</span><em class="io-sec-count" id="io-cnt-bop"></em></button>
                     <div class="io-sec-body io-sec-body--single"><div id="io-bop"></div></div>
                 </section>
             </div>
@@ -216,10 +216,10 @@
                 peringatan tidak boleh ikut tersembunyi saat bagiannya ditutup. -->
                 <div id="io-impoMode" class="io-notice info" style="margin:0 0 9px"></div>
                 <div class="io-stage">
-                    <div class="io-rulerx">CANVAS / PRINT SHEET RULER — cm</div>
+                    <div class="io-rulerx">{{ t('CANVAS / PRINT SHEET RULER — cm') }}</div>
                     <div class="io-rulery"></div>
                     <div id="io-sheetLabel" class="io-sheetlabel"></div>
-                    <div id="io-warning" class="io-warn">⚠ Artwork melewati batas canvas / print sheet</div>
+                    <div id="io-warning" class="io-warn">⚠ {{ t('The artwork goes beyond the canvas / print sheet boundary') }}</div>
                     <div class="io-viewport" id="io-viewport">
                         <div id="io-wrap" class="io-wrap">
                             <svg id="io-svg" width="650" height="500" viewBox="0 0 650 500">
@@ -237,19 +237,19 @@
                     </div>
                 </div>
                 <div class="io-legend">
-                    <span><i class="io-dot" style="background:#c7f1ff;border:1px solid #056c90"></i>Artwork surface</span>
-                    <span><i class="io-dot" style="background:#fc2458"></i>Die-cut / trim line</span>
-                    <span><i class="io-dot" style="background:#27a560"></i>Fold / crease line</span>
-                    <span><i class="io-dot" style="background:#9c6b12"></i>Grain</span>
-                    <span><i class="io-dot" style="background:#7732e2"></i>Selected object</span>
+                    <span><i class="io-dot" style="background:#c7f1ff;border:1px solid #056c90"></i>{{ t('Artwork surface') }}</span>
+                    <span><i class="io-dot" style="background:#fc2458"></i>{{ t('Die-cut / trim line') }}</span>
+                    <span><i class="io-dot" style="background:#27a560"></i>{{ t('Fold / crease line') }}</span>
+                    <span><i class="io-dot" style="background:#9c6b12"></i>{{ t('Grain') }}</span>
+                    <span><i class="io-dot" style="background:#7732e2"></i>{{ t('Selected object') }}</span>
                 </div>
                 <div class="io-instructions">
-                    <b>Manual nesting:</b> pilih lalu drag artwork/dieline satu per satu. Gunakan Rotate dan Mirror untuk
-                    mensimulasikan susunan berlawanan serta mengisi ruang kosong sesuai bentuk dieline. Setelah susunan
-                    diatur, tombol <b>✦ Suggestion</b> tidak me-reset layout — susunan dirapatkan sesuai gap (antar-object
-                    &amp; keliling), lalu ukuran canvas dan plano dipilih ulang. Tekan <b>Reset layout</b> bila ingin kembali ke grid otomatis.
+                    {!! t('<b>Manual nesting:</b> select and drag the artwork/dieline one by one.') !!}
+                    {{ t('Use Rotate and Mirror to simulate opposing arrangements and to fill empty space according to the dieline shape.') }}
+                    {!! t('Once the arrangement is set, the <b>✦ Suggestion</b> button does not reset the layout — the arrangement is tightened to the gap (between objects & around the edge), then the canvas size and the plano are chosen again.') !!}
+                    {!! t('Press <b>Reset layout</b> to go back to the automatic grid.') !!}
                 </div>
-                <div id="io-valid" class="io-notice info">Set a valid canvas size.</div>
+                <div id="io-valid" class="io-notice info">{{ t('Set a valid canvas size.') }}</div>
             </main>
         </div>
     </div>
@@ -261,13 +261,13 @@
     layout belum di-Confirm. -->
     <div class="io-mc-modal" id="io-mcModal" role="dialog" aria-modal="true" aria-label="Master Card">
         <div class="io-mc-bar">
-            <b>Preview Master Card</b>
+            <b>{{ t('Preview Master Card') }}</b>
             <span id="io-mcState" class="io-mc-state"></span>
             <span style="flex:1"></span>
             <button class="io-btn" id="io-mcPrint">🖨 Print (A4 landscape)</button>
             {{-- Email Master Card: lembar pratinjau ini jadi dokumennya (menu cetak doc-share disembunyikan: cetak = tombol di kiri). --}}
             <x-dl::doc-share id="io-mcShare" target=".io-mc-sheet" type="prodev-mastercard" :doc-id="$cfg['partId'] ?? null" :number="$cfg['docNo'] ?? null" title="Master Card" orientation="landscape" size="sm" />
-            <button class="io-btn warn" id="io-mcClose">✕ Tutup</button>
+            <button class="io-btn warn" id="io-mcClose">✕ Close</button>
         </div>
         <div class="io-mc-scroll">
             <div class="io-mc-sheet"><div class="io-mc-pad" id="io-mcSheet"></div></div>

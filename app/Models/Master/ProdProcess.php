@@ -36,11 +36,11 @@ class ProdProcess extends Model
     ];
 
     public const OUTPUT_UOM = [
-        'LEMBAR' => 'Lembar (Plano/Cetak)',
-        'PCS' => 'Pcs (Satuan Jadi)',
-        'METER' => 'Meter Lari',
+        'LEMBAR' => 'Sheet (Plano / Print)',
+        'PCS' => 'Pcs (Finished Unit)',
+        'METER' => 'Running Meter',
         'KG' => 'Kilogram',
-        'JAM' => 'Jam Kerja',
+        'JAM' => 'Working Hour',
     ];
 
     protected $fillable = [

@@ -17,7 +17,7 @@ class LeaveRequestGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Approval Cuti/Sakit/Izin';
+        return t('Leave / Sick / Permit Approval');
     }
 
     public function family(): string

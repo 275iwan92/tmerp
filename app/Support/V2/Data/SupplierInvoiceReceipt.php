@@ -29,7 +29,7 @@ final class SupplierInvoiceReceipt
         return FinInvoiceReceipt::query()->with(['supplier', 'lines'])->orderByDesc('id_invoice_receipt')->limit(500)->get()->map(fn (FinInvoiceReceipt $r) => [
             'id' => $r->id_invoice_receipt, 'no' => $r->receipt_no ?: 'DRAFT-'.$r->id_invoice_receipt, 'supplier' => $r->supplier?->supplier_name,
             'date' => $r->receipt_date?->toDateString(), 'planned' => $r->planned_payment_date?->toDateString(), 'handed_by' => $r->handed_by,
-            'method' => FinInvoiceReceipt::METHODS[$r->payment_method] ?? null, 'total' => $r->total(), 'status' => $r->status(),
+            'method' => isset(FinInvoiceReceipt::METHODS[$r->payment_method]) ? t(FinInvoiceReceipt::METHODS[$r->payment_method]) : null, 'total' => $r->total(), 'status' => $r->status(),
             'items' => $r->lines->map(fn (FinInvoiceReceiptLine $l) => ['invoice' => $l->supplier_invoice_no, 'invoice_date' => $l->invoice_date?->toDateString(),
                 'po' => $l->po_no, 'tax' => $l->tax_invoice_no, 'amount' => (float) $l->amount])->values()->all(),
         ])->all();
@@ -70,7 +70,7 @@ final class SupplierInvoiceReceipt
     // Header + baris (tambah / ubah / hapus). Baris baru tanpa tagihan dan tanpa nomor invoice dilewati.
     public static function save(FinInvoiceReceipt $r, array $in): void
     {
-        abort_unless($r->status() === 'DRAFT', 422, 'This receipt is already Confirmed and cannot be changed.');
+        abort_unless($r->status() === 'DRAFT', 422, t('This receipt is already Confirmed and cannot be changed.'));
         $login = Auth::user()->login;
         $text = fn (string $k, int $max) => mb_substr(trim((string) ($in[$k] ?? '')), 0, $max) ?: null;
         $r->fill([
@@ -148,20 +148,20 @@ final class SupplierInvoiceReceipt
         $login = Auth::user()->login;
         if ($action === 'confirm') {
             if ($r->status() !== 'DRAFT') {
-                return 'Only a Draft can be confirmed.';
+                return t('Only a Draft can be confirmed.');
             }
             if ($errors = self::confirmErrors($r)) {
-                return implode(' ', $errors);
+                return implode(' ', array_map(fn (string $e) => t($e), $errors));
             }
             DB::connection('tm2acc')->transaction(fn () => $r->forceFill(['receipt_no' => FinInvoiceReceipt::nextNo(), 'stat_confirm' => true, 'updated_by' => $login])->save());
 
             return null;
         }
         if ($r->status() !== 'CONFIRMED') {
-            return 'Only a Confirmed receipt can be cancelled.';
+            return t('Only a Confirmed receipt can be cancelled.');
         }
         if (trim($reason) === '') {
-            return 'Fill in the reason for cancelling.';
+            return t('Fill in the reason for cancelling.');
         }
         $r->forceFill(['stat_cancel' => true, 'cancel_reason' => mb_substr(trim($reason), 0, 255), 'updated_by' => $login])->save();
 
@@ -171,7 +171,7 @@ final class SupplierInvoiceReceipt
     // Delete = hapus permanen, hanya Draft (rulebook C.6); baris ikut terhapus (FK cascade).
     public static function delete(FinInvoiceReceipt $r): void
     {
-        abort_unless($r->status() === 'DRAFT', 422, 'Only a Draft can be deleted.');
+        abort_unless($r->status() === 'DRAFT', 422, t('Only a Draft can be deleted.'));
         $r->delete();
     }
 

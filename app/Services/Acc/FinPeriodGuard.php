@@ -27,10 +27,10 @@ class FinPeriodGuard
         $period = $this->periodFor($d);
 
         if (! $period) {
-            throw new \DomainException("Tidak ada periode GL untuk tanggal {$d}. Generate tahun fiskal dulu di Period Closing.");
+            throw new \DomainException(tf('There is no GL period for the date :date. Generate the fiscal year first in Period Closing.', ['date' => $d]));
         }
         if ($period->status !== 'OPEN') {
-            throw new \DomainException("Periode {$period->period_name} berstatus {$period->status}. Posting ditolak.");
+            throw new \DomainException(tf('Period :period has status :status. Posting is refused.', ['period' => $period->period_name, 'status' => $period->status]));
         }
     }
 
@@ -39,7 +39,7 @@ class FinPeriodGuard
     {
         $blockers = [];
         if ($period->status === 'CLOSED') {
-            return ['Periode sudah CLOSED — tidak ada cara mengubahnya lagi.'];
+            return [t('The period is already CLOSED — there is no way to change it anymore.')];
         }
 
         // Gate lintas-modul (§1.4): inv_period bulan sama wajib CLOSED dulu.
@@ -49,7 +49,7 @@ class FinPeriodGuard
             $code = sprintf('%04d%02d', $period->fiscal_year, $period->period_no);
             $inv = DB::connection('tm2inv')->table('inv_period')->where('i_period_code', $code)->value('i_status');
             if ($inv !== 'CLOSED') {
-                $blockers[] = "Inventory periode {$period->period_name} belum CLOSED (status: ".($inv ?? 'TIDAK ADA').'). Tutup Inventory dulu sebelum GL.';
+                $blockers[] = tf('Inventory period :period is not CLOSED yet (status: :status). Close Inventory first, before GL.', ['period' => $period->period_name, 'status' => $inv ?? t('DOES NOT EXIST')]);
             }
         }
 
@@ -57,12 +57,12 @@ class FinPeriodGuard
             ->whereBetween('entry_date', [$period->start_date->toDateString(), $period->end_date->toDateString()])
             ->pluck('voucher_number');
         if ($drafts->isNotEmpty()) {
-            $blockers[] = 'Masih ada '.$drafts->count().' voucher belum POSTED: '.$drafts->take(5)->implode(', ').($drafts->count() > 5 ? ', …' : '');
+            $blockers[] = tf('There are still :n vouchers not POSTED yet: :list', ['n' => $drafts->count(), 'list' => $drafts->take(5)->implode(', ').($drafts->count() > 5 ? ', …' : '')]);
         }
 
         $open = $period->tasks()->where('status', '<>', 'COMPLETE')->count();
         if ($open > 0) {
-            $blockers[] = "{$open} item checklist tutup buku belum Complete.";
+            $blockers[] = tf(':n closing checklist items are not Complete yet.', ['n' => $open]);
         }
 
         return $blockers;
@@ -71,10 +71,10 @@ class FinPeriodGuard
     public function changeStatus(FinPeriod $period, string $newStatus, string $reason, string $user): void
     {
         if (trim($reason) === '') {
-            throw new \DomainException('Alasan perubahan status wajib diisi.');
+            throw new \DomainException(t('The reason for the status change is required.'));
         }
         if ($period->status === 'CLOSED') {
-            throw new \DomainException('Periode sudah CLOSED — tidak ada cara mengubahnya lagi.');
+            throw new \DomainException(t('The period is already CLOSED — there is no way to change it anymore.'));
         }
         if ($newStatus === 'CLOSED' && ($blockers = $this->closeBlockers($period))) {
             throw new \DomainException(implode(' ', $blockers));

@@ -86,7 +86,7 @@ final class MaintenanceService
 
     public function acceptRequest(MntRequest $req, ?int $technicianId, ?string $plannedStart, string $note = ''): MntWo
     {
-        $this->guard($req->status === 'OPEN', 'This request has already been decided.');
+        $this->guard($req->status === 'OPEN', t('This request has already been decided.'));
 
         return DB::connection('tm2prd')->transaction(function () use ($req, $technicianId, $plannedStart, $note) {
             $wo = MntWo::create([
@@ -107,8 +107,8 @@ final class MaintenanceService
 
     public function rejectRequest(MntRequest $req, string $reason): void
     {
-        $this->guard($req->status === 'OPEN', 'This request has already been decided.');
-        $this->guard(trim($reason) !== '', 'Enter a reason to Reject.');
+        $this->guard($req->status === 'OPEN', t('This request has already been decided.'));
+        $this->guard(trim($reason) !== '', t('Enter a reason to Reject.'));
         DB::connection('tm2prd')->transaction(function () use ($req, $reason) {
             if ($req->downtime_id) {
                 $this->closeDowntime($req->downtime_id, 'Request rejected: '.$reason);
@@ -137,7 +137,7 @@ final class MaintenanceService
     public function saveWo(MntWo $wo, array $in): void
     {
         $draft = $wo->docStatus() === 'DRAFT';
-        $this->guard($draft || $wo->isWorking(), 'This WO is locked (Scheduled/Done/Closed/Cancelled).');
+        $this->guard($draft || $wo->isWorking(), t('This WO is locked (Scheduled/Done/Closed/Cancelled).'));
         $header = $draft
             ? ['wo_type', 'machine_id', 'priority', 'description', 'needs_machine_stop', 'planned_start', 'planned_end', 'est_minutes', 'assigned_to', 'vendor_id', 'component_code', 'problem_code', 'cause_code', 'action_code', 'findings', 'cost_vendor']
             : ['assigned_to', 'vendor_id', 'component_code', 'problem_code', 'cause_code', 'action_code', 'findings', 'cost_vendor', 'meter_at_done'];
@@ -191,7 +191,7 @@ final class MaintenanceService
 
     public function addTask(MntWo $wo, string $text): void
     {
-        $this->guard(trim($text) !== '', 'Enter the task description.');
+        $this->guard(trim($text) !== '', t('Enter the task description.'));
         $wo->tasks()->create(['seq_no' => (int) $wo->tasks()->max('seq_no') + 1, 'task_text' => trim($text), 'task_kind' => 'INSPECT',
             'is_required' => false, 'created_by' => $this->login, 'updated_by' => $this->login]);
     }
@@ -206,7 +206,7 @@ final class MaintenanceService
 
     public function addLabor(MntWo $wo, int $employeeId, int $minutes, ?string $date = null): void
     {
-        $this->guard($minutes > 0, 'Enter the working minutes.');
+        $this->guard($minutes > 0, t('Enter the working minutes.'));
         $wo->labor()->create(['employee_id' => $employeeId, 'work_date' => $date ?: now()->toDateString(), 'minutes' => $minutes,
             'rate_snapshot' => SysConstant::number('MNT_LABOR_RATE_HOUR', 0), 'created_by' => $this->login, 'updated_by' => $this->login]);
         $this->recost($wo);
@@ -222,15 +222,15 @@ final class MaintenanceService
     // Confirm = nomor MWO lahir, masuk jadwal teknisi (Scheduled).
     public function confirm(MntWo $wo): void
     {
-        $this->guard($wo->docStatus() === 'DRAFT', 'Only a Draft WO can be confirmed.');
-        $this->guard((bool) $wo->machine_id && trim((string) $wo->description) !== '', 'A WO needs a machine and a description.');
+        $this->guard($wo->docStatus() === 'DRAFT', t('Only a Draft WO can be confirmed.'));
+        $this->guard((bool) $wo->machine_id && trim((string) $wo->description) !== '', t('A WO needs a machine and a description.'));
         $wo->update(['doc_no' => $wo->doc_no ?: $this->docNo('MWO', MntWo::class), 'stat_confirm' => true, 'work_status' => 'SCHEDULED', 'updated_by' => $this->login]);
         MntLog::add('WO', $wo->id_wo, 'Confirmed');
     }
 
     public function backToDraft(MntWo $wo): void
     {
-        $this->guard($wo->docStatus() === 'OPEN' && $wo->work_status === 'SCHEDULED', 'Back to Draft is only for a Scheduled WO that has not started.');
+        $this->guard($wo->docStatus() === 'OPEN' && $wo->work_status === 'SCHEDULED', t('Back to Draft is only for a Scheduled WO that has not started.'));
         $wo->update(['stat_confirm' => false, 'work_status' => 'DRAFT', 'updated_by' => $this->login]);
         MntLog::add('WO', $wo->id_wo, 'Back to Draft');
     }
@@ -238,7 +238,7 @@ final class MaintenanceService
     // Start: mesin berhenti -> downtime dibuka (atau lanjut yang dibuka saat laporan) + status mesin MAINTENANCE / BREAKDOWN.
     public function start(MntWo $wo): void
     {
-        $this->guard($wo->docStatus() === 'OPEN' && $wo->work_status === 'SCHEDULED', 'Start is only for a Scheduled WO.');
+        $this->guard($wo->docStatus() === 'OPEN' && $wo->work_status === 'SCHEDULED', t('Start is only for a Scheduled WO.'));
         DB::connection('tm2prd')->transaction(function () use ($wo) {
             $data = ['work_status' => 'IN_PROGRESS', 'actual_start' => now(), 'updated_by' => $this->login];
             if ($wo->needs_machine_stop) {
@@ -256,14 +256,14 @@ final class MaintenanceService
 
     public function hold(MntWo $wo, string $note = ''): void
     {
-        $this->guard($wo->docStatus() === 'OPEN' && $wo->work_status === 'IN_PROGRESS', 'Hold is only possible while In Progress.');
+        $this->guard($wo->docStatus() === 'OPEN' && $wo->work_status === 'IN_PROGRESS', t('Hold is only possible while In Progress.'));
         $wo->update(['work_status' => 'WAITING_PART', 'updated_by' => $this->login]);
         MntLog::add('WO', $wo->id_wo, 'Hold', $note ?: 'Waiting part');
     }
 
     public function resume(MntWo $wo): void
     {
-        $this->guard($wo->docStatus() === 'OPEN' && $wo->work_status === 'WAITING_PART', 'Resume is only possible while Waiting Part.');
+        $this->guard($wo->docStatus() === 'OPEN' && $wo->work_status === 'WAITING_PART', t('Resume is only possible while Waiting Part.'));
         $wo->update(['work_status' => 'IN_PROGRESS', 'updated_by' => $this->login]);
         MntLog::add('WO', $wo->id_wo, 'Resumed');
     }
@@ -271,9 +271,9 @@ final class MaintenanceService
     // Done: checklist wajib terisi, downtime ditutup, mesin READY lagi. Biaya & plan dikunci saat Close oleh kepala maintenance.
     public function done(MntWo $wo): void
     {
-        $this->guard($wo->isWorking(), 'Done is only for a WO in progress.');
+        $this->guard($wo->isWorking(), t('Done is only for a WO in progress.'));
         $open = $wo->tasks()->where('is_required', true)->whereNull('result')->count();
-        $this->guard($open === 0, "Cannot finish yet: {$open} required checklist task(s) have no result.");
+        $this->guard($open === 0, tf('Cannot finish yet: :n required checklist task(s) have no result.', ['n' => $open]));
         DB::connection('tm2prd')->transaction(function () use ($wo) {
             if ($wo->downtime_id) {
                 $this->closeDowntime($wo->downtime_id, trim(($wo->action_code ? $wo->action_code.': ' : '').(string) $wo->findings) ?: $wo->description, $wo);
@@ -290,7 +290,7 @@ final class MaintenanceService
     // Close (kepala maintenance): biaya final, plan maju ke jatuh tempo berikutnya, cache kolom mesin diperbarui.
     public function close(MntWo $wo): void
     {
-        $this->guard($wo->docStatus() === 'OPEN' && $wo->work_status === 'DONE', 'Close is only for a Done WO.');
+        $this->guard($wo->docStatus() === 'OPEN' && $wo->work_status === 'DONE', t('Close is only for a Done WO.'));
         DB::connection('tm2prd')->transaction(function () use ($wo) {
             $this->recost($wo);
             $wo->update(['stat_close' => true, 'closed_by' => $this->login, 'closed_at' => now(), 'updated_by' => $this->login]);
@@ -307,8 +307,8 @@ final class MaintenanceService
 
     public function cancel(MntWo $wo, string $reason): void
     {
-        $this->guard(in_array($wo->docStatus(), ['OPEN'], true) && $wo->work_status !== 'DONE', 'Cancel is only for a Confirmed WO that is not Done.');
-        $this->guard(trim($reason) !== '', 'Enter a reason to Cancel.');
+        $this->guard(in_array($wo->docStatus(), ['OPEN'], true) && $wo->work_status !== 'DONE', t('Cancel is only for a Confirmed WO that is not Done.'));
+        $this->guard(trim($reason) !== '', t('Enter a reason to Cancel.'));
         DB::connection('tm2prd')->transaction(function () use ($wo, $reason) {
             if ($wo->downtime_id) {
                 $this->closeDowntime($wo->downtime_id, 'WO cancelled: '.$reason);
@@ -323,8 +323,8 @@ final class MaintenanceService
 
     public function deleteDraft(MntWo $wo): void
     {
-        $this->guard($wo->docStatus() === 'DRAFT', 'Only a Draft WO can be deleted.');
-        $this->guard(! $wo->request_id, 'A WO created from a Request cannot be deleted; use Cancel.');
+        $this->guard($wo->docStatus() === 'DRAFT', t('Only a Draft WO can be deleted.'));
+        $this->guard(! $wo->request_id, t('A WO created from a Request cannot be deleted; use Cancel.'));
         $wo->delete();
     }
 

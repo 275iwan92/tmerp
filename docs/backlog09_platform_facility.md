@@ -112,6 +112,14 @@ Teks bawaan JS grid/lines/sheet/form -> `T()` / `Tf()` + pasangan Lang (dijaga t
       keputusan: pesan flash dianggap teks jadi (`raw()` di semua alert flash) atau diterjemahkan di tempat pesan dibuat.
    e. Engine Catalog (`App\Support\Engines\EngineRegistry`) hanya English; terjemahan Indonesia belum ada.
 
+7. **Sapuan multi-bahasa 2026-10-03 (SELESAI, lihat LOG_JOB_DONE dan `md_for_systems/multilanguage_status.md`):** butir 1c, 2
+   (label layar; nota v1 tidak), 6a-6d selesai. **Sisa terbuka, semuanya menunggu keputusan user** (rincian di dokumen status §4):
+   a. teks yang ditulis service ke database (uraian jurnal, catatan kartu stok, catatan PR / PO otomatis, `field_label` revisi);
+   b. data master Indonesia (satuan, kategori, nama akun, tipe scrap, label parameter dieline, deskripsi konstanta);
+   c. pesan dan label engine beku (CostingEngine, SpecEngine, UsageRateEngine, ReverseCostingService);
+   d. nilai yang sekaligus kode tersimpan (PRINT_LABELS approval, sumber Inquiry, peran BOM, 'Tunai', 'Lainnya');
+   e. Engine Catalog masih English saja (butir 6e lama); nama isian validasi tanpa nama dari layar; layar v1 yang dibuka dari grid v2.
+
 ### Gap desain lama (format angka sudah diputuskan di atas)
 - ~~**Format angka tidak ikut bahasa**~~ (diputuskan 2026-10-01, lihat atas): `number_format()` di ratusan titik
   panggil HARDCODE format Indonesia terlepas `lang_code`. Pertanyaan yang

@@ -21,7 +21,7 @@ class PayslipGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Cetak & Kirim Slip Gaji';
+        return t('Print & Send Payslips');
     }
 
     public function family(): string
@@ -91,7 +91,7 @@ class PayslipGrid extends HrmGrid
         $run = $m->run;
 
         return [
-            'period' => $run ? $run->period_type.' '.substr((string) $run->period_start, 0, 10).' s/d '.substr((string) $run->period_end, 0, 10) : null,
+            'period' => $run ? $run->period_type.' '.tf(':from to :to', ['from' => substr((string) $run->period_start, 0, 10), 'to' => substr((string) $run->period_end, 0, 10)]) : null,
             'name' => $e?->full_name, 'code' => $e?->employee_code, 'dept' => $e?->position?->department?->department_name,
             'net' => (float) $m->total_gaji_bersih, 'printed' => t($m->print_flag ? 'Printed' : 'Not printed'), 'wa' => t($m->wa_flag ? 'Sent' : 'Not sent'),
             'anomaly' => $m->has_anomaly ? t('Yes') : null,

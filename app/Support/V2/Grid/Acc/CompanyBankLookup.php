@@ -55,7 +55,7 @@ class CompanyBankLookup extends DbLookup
             ['key' => 'bank_name', 'label' => 'Bank', 'required' => true, 'width' => '160px'],
             ['key' => 'account_no', 'label' => 'Account No.', 'required' => true, 'width' => '180px'],
             ['key' => 'account_holder', 'label' => 'Account Holder', 'required' => true, 'width' => '280px'],
-            ['key' => 'tax_identity', 'label' => 'Tax Identity', 'type' => 'select', 'options' => FinCompanyBank::IDENTITIES, 'required' => true, 'width' => '140px'],
+            ['key' => 'tax_identity', 'label' => 'Tax Identity', 'type' => 'select', 'options' => array_map('t', FinCompanyBank::IDENTITIES), 'required' => true, 'width' => '140px'],
             ['key' => 'is_default', 'label' => 'Default', 'type' => 'check', 'width' => '90px'],
             ['key' => 'gl_account_code', 'label' => 'Ledger Account', 'width' => '150px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '80px'],
@@ -72,7 +72,7 @@ class CompanyBankLookup extends DbLookup
     {
         $code = trim((string) ($in['gl_account_code'] ?? ''));
         if ($code !== '' && ! FinAccount::withoutGlobalScopes()->where('account_code', $code)->where('is_postable', 1)->exists()) {
-            return "Ledger Account {$code} is not a postable account in Master of Accounts.";
+            return tf('Ledger Account :code is not a postable account in Master of Accounts.', ['code' => $code]);
         }
 
         return null;

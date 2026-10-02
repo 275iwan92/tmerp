@@ -46,7 +46,7 @@ class UomUnitLookup extends MasterDataLookup
             ['key' => 'uom_code', 'label' => 'Code', 'required' => true, 'unique' => true, 'lockSaved' => true, 'case' => 'uppercase', 'width' => '130px'],
             ['key' => 'uom_name', 'label' => 'Unit Name', 'required' => true, 'width' => '280px'],
             // Wajib saat barisnya disimpan (rules), bukan 'required' di layar: satuan lama tanpa dimensi akan memblokir Save baris lain.
-            ['key' => 'dimension', 'label' => 'Dimension', 'type' => 'select', 'options' => self::DIMENSIONS, 'width' => '150px'],
+            ['key' => 'dimension', 'label' => 'Dimension', 'type' => 'select', 'options' => array_map('t', self::DIMENSIONS), 'width' => '150px'],
             ['key' => 'is_base', 'label' => 'Base', 'type' => 'check', 'width' => '80px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '80px'],
         ];
@@ -64,7 +64,7 @@ class UomUnitLookup extends MasterDataLookup
 
     protected function check(array $in, ?int $id): ?string
     {
-        return ($in['dimension'] ?? null) === 'SPEC' && ! empty($in['is_base']) ? 'Dimension Specification cannot have a base unit.' : null;
+        return ($in['dimension'] ?? null) === 'SPEC' && ! empty($in['is_base']) ? t('Dimension Specification cannot have a base unit.') : null;
     }
 
     protected function saved(Model $row): void

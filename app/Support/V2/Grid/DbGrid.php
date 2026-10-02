@@ -61,7 +61,7 @@ abstract class DbGrid
         return match ($this->family()) {
             self::MASTER => 'Master',
             self::REPORT => 'Report',
-            default => 'Transaksi',
+            default => t('Transaction'),
         };
     }
 
@@ -353,7 +353,7 @@ abstract class DbGrid
             'filters' => $this->filters(),
             'groups' => $this->groups(),
             'groupBy' => $this->groupBy(),
-            'detail' => $this->detail(),
+            'detail' => $this->detailTexts(),
             'rowTone' => $this->rowTone(),
             'search' => $this->search(),
             'mode' => $this->family() === self::REPORT ? 'report' : 'entry',
@@ -369,6 +369,20 @@ abstract class DbGrid
             'toggleUrl' => $this->family() === self::MASTER ? str_replace('__ID__', '{id}', route('v2.grid.toggle', [$this->slug(), '__ID__'])) : null,
             'source' => $this->sourceText(),
         ];
+    }
+
+    // x-dl::grid tidak menerjemahkan prop detail: judul & label kolom tabel anak diterjemahkan di sini (turunan cukup menulis English).
+    private function detailTexts(): array
+    {
+        $d = $this->detail();
+        if (isset($d['title'])) {
+            $d['title'] = t($d['title']);
+        }
+        if (isset($d['columns'])) {
+            $d['columns'] = array_map(fn (array $c) => isset($c['label']) ? array_replace($c, ['label' => t($c['label'])]) : $c, $d['columns']);
+        }
+
+        return $d;
     }
 
     protected function sourceText(): string

@@ -17,8 +17,8 @@
     $head = MaintenanceService::canDecide(auth()->user());
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $plan && ! request('new'))
     <x-dl::grid id="mnt-plan-list" :rows="Maintenance::planRows()" search="Search plan, machine..." actions="worklist" :active-key="null"
@@ -33,14 +33,14 @@
             ['key' => 'next', 'label' => 'Next Due', 'type' => 'date'],
             ['key' => 'due', 'label' => 'Due', 'type' => 'badge', 'tones' => ['Overdue' => 'danger', 'Due' => 'warn', 'OK' => 'success']],
         ]"
-        :detail="['key' => 'items', 'title' => 'Tasks', 'columns' => [
-            ['key' => 'seq', 'label' => 'No.', 'type' => 'number'],
-            ['key' => 'task', 'label' => 'Task', 'strong' => true],
-            ['key' => 'kind', 'label' => 'Kind'],
-            ['key' => 'uom', 'label' => 'Unit'],
-            ['key' => 'min', 'label' => 'Min', 'type' => 'number'],
-            ['key' => 'max', 'label' => 'Max', 'type' => 'number'],
-            ['key' => 'required', 'label' => 'Required'],
+        :detail="['key' => 'items', 'title' => t('Tasks'), 'columns' => [
+            ['key' => 'seq', 'label' => t('No.'), 'type' => 'number'],
+            ['key' => 'task', 'label' => t('Task'), 'strong' => true],
+            ['key' => 'kind', 'label' => t('Kind')],
+            ['key' => 'uom', 'label' => t('Unit')],
+            ['key' => 'min', 'label' => t('Min'), 'type' => 'number'],
+            ['key' => 'max', 'label' => t('Max'), 'type' => 'number'],
+            ['key' => 'required', 'label' => t('Required')],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Overdue', 'where' => ['due' => 'Overdue'], 'tone' => 'danger'], ['label' => 'Due soon', 'where' => ['due' => 'Due'], 'tone' => 'warn'], ['label' => 'Inspection', 'where' => ['type' => 'Inspection'], 'tone' => 'success']]"
         :filters="['machine' => 'Machine', 'type' => 'WO Type', 'due' => 'Due']" />
@@ -53,7 +53,7 @@
         $cmp = $plan ? Maintenance::compliance($plan) : null;
         $num = fn ($v) => $v === null ? '—' : Locale::number((float) $v, 0);
     @endphp
-    <x-dl::form id="mnt-plan-form" :title="'Preventive Plan · '.raw($p->plan_code ?: 'New')" :subtitle="$new ? null : raw(Maintenance::machines()[$p->machine_id] ?? null)"
+    <x-dl::form id="mnt-plan-form" :title="'Preventive Plan · '.($p->plan_code ? raw($p->plan_code) : 'New')" :subtitle="$new ? null : raw(Maintenance::machines()[$p->machine_id] ?? null)"
         panel="top" kind="master" :status="$new ? 'new' : ($p->activate ? 'active' : 'inactive')" :can-input="$head" :log="$plan ? MntLog::forDoc('PLAN', $plan->id_plan) : []"
         :action="route('v2.mnt.plan.save')" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hidden="$plan ? ['id' => $plan->id_plan] : []"
         :tabs="['general' => 'General', 'trigger' => 'Trigger', 'notes' => 'Notes']"
@@ -64,11 +64,11 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>Plan</span><b>{{ $p->plan_code ?: '(new)' }}</b></div>
-            <div class="dl-strip__kv"><span>Last done</span><b>{{ $p->last_done_date ? Locale::date($p->last_done_date) : '—' }}{{ $p->last_done_meter !== null ? ' · '.$num($p->last_done_meter) : '' }}</b></div>
-            <div class="dl-strip__kv"><span>By time</span><b>{{ $p->next_due_date ? Locale::date($p->next_due_date) : '—' }}</b></div>
-            <div class="dl-strip__kv"><span>By meter</span><b>{{ $due && $due['next_meter'] !== null ? $num($due['next_meter']).' (now '.$num($due['current_meter']).')' : '—' }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>PM compliance (12 m)</span><b>{{ $cmp && $cmp['pct'] !== null ? $cmp['pct'].'% · '.$cmp['on_time'].' on time / '.$cmp['late'].' late' : '—' }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>@t('Plan')</span><b>{{ $p->plan_code ?: t('(new)') }}</b></div>
+            <div class="dl-strip__kv"><span>@t('Last done')</span><b>{{ $p->last_done_date ? Locale::date($p->last_done_date) : '—' }}{{ $p->last_done_meter !== null ? ' · '.$num($p->last_done_meter) : '' }}</b></div>
+            <div class="dl-strip__kv"><span>@t('By time')</span><b>{{ $p->next_due_date ? Locale::date($p->next_due_date) : '—' }}</b></div>
+            <div class="dl-strip__kv"><span>@t('By meter')</span><b>{{ $due && $due['next_meter'] !== null ? $num($due['next_meter']).' ('.t('now').' '.$num($due['current_meter']).')' : '—' }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>@t('PM compliance (12 m)')</span><b>{{ $cmp && $cmp['pct'] !== null ? $cmp['pct'].'% · '.$cmp['on_time'].' '.t('on time').' / '.$cmp['late'].' '.t('late') : '—' }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">
@@ -77,21 +77,21 @@
                 <x-dl::field.select name="machine_id" label="Machine" required :options="Maintenance::machines()" :value="$p->machine_id" :source="Src::of('tm2mst.prod_machine')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="4">
-                <x-dl::field.select name="wo_type" label="WO Type" required :options="MntPlan::TYPES" :value="$p->wo_type" :source="Src::of('tm2prd.mnt_plan.wo_type')" />
+                <x-dl::field.select name="wo_type" label="WO Type" required :options="array_map('t', MntPlan::TYPES)" :value="$p->wo_type" :source="Src::of('tm2prd.mnt_plan.wo_type')" />
                 <x-dl::field.number name="est_minutes" label="Est. Duration (minutes)" :value="$p->est_minutes" :source="Src::of('tm2prd.mnt_plan.est_minutes')" />
-                <x-dl::field.toggle name="needs_machine_stop" label="Machine Stop" on-label="Yes — blocks Scheduling Board" off-label="No" :value="$p->needs_machine_stop" :source="Src::of('tm2prd.mnt_plan.needs_machine_stop')" />
+                <x-dl::field.toggle name="needs_machine_stop" label="Machine Stop" :on-label="t('Yes — blocks Scheduling Board')" :off-label="t('No')" :value="$p->needs_machine_stop" :source="Src::of('tm2prd.mnt_plan.needs_machine_stop')" />
                 <x-dl::field.date name="certificate_valid_until" label="Certificate valid until (inspection)" :value="$p->certificate_valid_until?->toDateString()" :source="Src::of('tm2prd.mnt_plan.certificate_valid_until')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:trigger>
             <x-dl::form.row :cols="4">
-                <x-dl::field.select name="trigger_mode" label="Trigger" required :options="MntPlan::TRIGGERS" :value="$p->trigger_mode" :source="Src::of('tm2prd.mnt_plan.trigger_mode')" />
+                <x-dl::field.select name="trigger_mode" label="Trigger" required :options="array_map('t', MntPlan::TRIGGERS)" :value="$p->trigger_mode" :source="Src::of('tm2prd.mnt_plan.trigger_mode')" />
                 <x-dl::field.number name="interval_value" label="Every" :min="1" :value="$p->interval_value" :source="Src::of('tm2prd.mnt_plan.interval_value')" />
-                <x-dl::field.select name="interval_unit" label="Unit" :options="['' => '—'] + MntPlan::UNITS" :value="$p->interval_unit" :source="Src::of('tm2prd.mnt_plan.interval_unit')" />
-                <x-dl::field.select name="schedule_mode" label="Schedule Mode" required :options="MntPlan::MODES" :value="$p->schedule_mode" :source="Src::of('tm2prd.mnt_plan.schedule_mode')" />
+                <x-dl::field.select name="interval_unit" label="Unit" :options="['' => '—'] + array_map('t', MntPlan::UNITS)" :value="$p->interval_unit" :source="Src::of('tm2prd.mnt_plan.interval_unit')" />
+                <x-dl::field.select name="schedule_mode" label="Schedule Mode" required :options="array_map('t', MntPlan::MODES)" :value="$p->schedule_mode" :source="Src::of('tm2prd.mnt_plan.schedule_mode')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="4">
-                <x-dl::field.select name="meter_type" label="Meter" :options="['' => '—'] + MntPlan::METERS" :value="$p->meter_type" :source="Src::of('tm2prd.mnt_plan.meter_type')" />
+                <x-dl::field.select name="meter_type" label="Meter" :options="['' => '—'] + array_map('t', MntPlan::METERS)" :value="$p->meter_type" :source="Src::of('tm2prd.mnt_plan.meter_type')" />
                 <x-dl::field.number name="meter_interval" label="Or every (meter)" :value="$p->meter_interval" :source="Src::of('tm2prd.mnt_plan.meter_interval')" />
                 <x-dl::field.number name="lead_days" label="Create WO before due (days)" :value="$p->lead_days" :source="Src::of('tm2prd.mnt_plan.lead_days')" />
                 <x-dl::field.date name="next_due_date" label="Next due (Fixed: first date)" :value="$p->next_due_date?->toDateString()" :source="Src::of('tm2prd.mnt_plan.next_due_date')" />
@@ -113,7 +113,7 @@
                             :columns="[
                                 ['key' => 'seq_no', 'label' => '#', 'type' => 'display', 'width' => '50px'],
                                 ['key' => 'task_text', 'label' => 'Task', 'required' => true, 'width' => '360px'],
-                                ['key' => 'task_kind', 'label' => 'Kind', 'type' => 'select', 'options' => MntPlanTask::KINDS, 'width' => '120px'],
+                                ['key' => 'task_kind', 'label' => 'Kind', 'type' => 'select', 'options' => array_map('t', MntPlanTask::KINDS), 'width' => '120px'],
                                 ['key' => 'measure_uom', 'label' => 'Measure UoM', 'width' => '100px'],
                                 ['key' => 'min_value', 'label' => 'Min', 'type' => 'number', 'width' => '90px'],
                                 ['key' => 'max_value', 'label' => 'Max', 'type' => 'number', 'width' => '90px'],
@@ -122,7 +122,7 @@
                             @if ($head)
                                 <x-slot:tools>
                                     <x-dl::field.text name="new_task" label="+ Task" placeholder="Task description..." />
-                                    <x-dl::field.select name="new_task_kind" label="Kind" :options="MntPlanTask::KINDS" value="INSPECT" />
+                                    <x-dl::field.select name="new_task_kind" label="Kind" :options="array_map('t', MntPlanTask::KINDS)" value="INSPECT" />
                                     <x-dl::button size="sm" variant="secondary" label="+ Task" type="submit" name="action" value="add_task" formnovalidate />
                                 </x-slot:tools>
                             @endif

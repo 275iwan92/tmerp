@@ -16,8 +16,8 @@
     $labels = fn (array $list) => array_map(fn ($l) => t($l), $list);
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $a && ! request('new') && ! $from)
     <x-dl::grid id="crm-activity-list" :rows="CrmActivities::rows()" search="Search customer, contact, notes, next action..." actions="worklist" :active-key="null"

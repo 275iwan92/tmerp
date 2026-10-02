@@ -9,7 +9,7 @@
       this.url = `https://api.open-meteo.com/v1/forecast?latitude=${this.el.dataset.lat}&longitude=${this.el.dataset.lon}&current=temperature_2m,weather_code&timezone=auto`;
       this.w = null;
       fetch(this.url).then(r => r.json()).then(j => { this.w = {temp: j.current.temperature_2m, code: j.current.weather_code}; this.paint(); })
-        .catch(() => { $(this.el, '[data-dl-weather-desc]').textContent = Devlib.lang === 'id' ? 'cuaca tak tersedia' : 'weather unavailable'; });
+        .catch(() => { $(this.el, '[data-dl-weather-desc]').textContent = Devlib.h.T('wx_unavailable'); });
       document.addEventListener('dl:lang', this.paint);
     }
 

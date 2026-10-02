@@ -12,7 +12,7 @@
             @if ($filters && ! $isReport())
                 <div class="dl-pop2" data-g-pop>
                     <x-dl::button variant="secondary" size="sm" icon="filter" label="Filters" data-g-toggle="filters"><span class="dl-grid__badge" data-g-filter-count hidden>0</span></x-dl::button>
-                    <div class="dl-pop2__panel" data-g-panel="filters"><div class="dl-pop2__title">Filters</div><div data-g-filter-fields></div><x-dl::button variant="link" label="Reset filter" data-g-filter-reset /></div>
+                    <div class="dl-pop2__panel" data-g-panel="filters"><div class="dl-pop2__title">{{ \Devlib\Lang::text('Filters') }}</div><div data-g-filter-fields></div><x-dl::button variant="link" label="Reset filter" data-g-filter-reset /></div>
                 </div>
             @endif
             <div class="dl-pop2" data-g-pop>
@@ -31,7 +31,7 @@
                 <x-dl::button variant="secondary" size="sm" icon="density" :label="\Devlib\Lang::t('g_density')" data-g-toggle="density" />
                 <div class="dl-pop2__panel" data-g-panel="density">
                     <div class="dl-pop2__title">{{ \Devlib\Lang::t('g_density') }}</div>
-                    <div class="dl-segment" data-g-density><button type="button" class="dl-segment__opt" data-value="compact">{{ \Devlib\Lang::t('g_compact') }}</button><button type="button" class="dl-segment__opt" data-value="normal">Normal</button><button type="button" class="dl-segment__opt" data-value="comfortable">{{ \Devlib\Lang::t('g_comfortable') }}</button></div>
+                    <div class="dl-segment" data-g-density><button type="button" class="dl-segment__opt" data-value="compact">{{ \Devlib\Lang::t('g_compact') }}</button><button type="button" class="dl-segment__opt" data-value="normal">{{ \Devlib\Lang::text('Normal') }}</button><button type="button" class="dl-segment__opt" data-value="comfortable">{{ \Devlib\Lang::t('g_comfortable') }}</button></div>
                     <div class="dl-pop2__title">{{ \Devlib\Lang::t('g_lines_per_cell') }}</div>
                     <div class="dl-row"><div class="dl-segment" data-g-lines><button type="button" class="dl-segment__opt" data-value="auto">{{ \Devlib\Lang::t('g_auto') }}</button><button type="button" class="dl-segment__opt" data-value="fixed">{{ \Devlib\Lang::t('g_fixed') }}</button></div><input type="number" min="1" max="5" value="1" class="dl-pager__goto" data-g-lines-n aria-label="{{ \Devlib\Lang::text('Number of rows') }}"></div>
                     <x-dl::button variant="link" :label="\Devlib\Lang::text('Restore defaults')" data-g-density-reset />

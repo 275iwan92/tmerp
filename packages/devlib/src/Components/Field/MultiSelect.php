@@ -7,8 +7,8 @@ class MultiSelect extends Field
 {
     public function __construct(
         public array $options = [],
-        public string $emptyText = 'Pilih (0 Terpilih)',
-        public string $noun = 'Terpilih',
+        public string $emptyText = 'Choose (0 Selected)',
+        public string $noun = 'Selected',
         string $name = '',
         string $label = '',
         ?string $tooltip = null,

@@ -57,11 +57,11 @@
         if (x.closest('[data-k-new-save]')) {
           const f = x.closest('.dl-kcol__foot'), t = $(f, '[data-k-new-title]').value.trim(), d = $(f, '[data-k-new-due]').value;
           if (!t) { $(f, '[data-k-new-title]').focus(); return; }
-          const card = {id: 'n' + (++this.seq), col: x.closest('[data-k-col]').dataset.kCol, title: t, due: d ? d.replace('T', ' ') : '', assignee: this.me, tags: [], checklist: [], comments: [], activity: [{by: this.me, at: `${fmt.date()} ${fmt.time()}`, text: 'membuat kartu ini'}]};
+          const card = {id: 'n' + (++this.seq), col: x.closest('[data-k-col]').dataset.kCol, title: t, due: d ? d.replace('T', ' ') : '', assignee: this.me, tags: [], checklist: [], comments: [], activity: [{by: this.me, at: `${fmt.date()} ${fmt.time()}`, text: T('k_act_created')}]};
           this.cards.push(card); this.render(); this._emit('create', card, null, card.col);
           const cf = $(this.el, `[data-k-col="${card.col}"] [data-k-add]`); cf.click(); return;
         }
-        if (x.closest('[data-k-addcol]')) { const key = 'c' + (++this.seq); this.cols.push({key, label: 'Kolom baru', tone: 'neutral'}); this.render(); const t = $(this.el, `[data-k-col="${key}"] [data-k-rename]`); t.focus(); document.getSelection().selectAllChildren(t); this._emit('column', null, null, key); }
+        if (x.closest('[data-k-addcol]')) { const key = 'c' + (++this.seq); this.cols.push({key, label: T('k_new_col'), tone: 'neutral'}); this.render(); const t = $(this.el, `[data-k-col="${key}"] [data-k-rename]`); t.focus(); document.getSelection().selectAllChildren(t); this._emit('column', null, null, key); }
       });
       this.el.addEventListener('dblclick', e => { const c = e.target.closest('[data-k-card]'); if (c && !e.target.closest('[data-k-move]')) this.openCard(this.cardById(c.dataset.kCard)); });
       this.el.addEventListener('keydown', e => {
@@ -106,7 +106,7 @@
 
     cardHtml(c) {
       const ck = c.checklist || [], done = ck.filter(i => i.done).length, d = this.due(c), late = d && d < new Date() && !this.colOf(c.col)?.done;
-      return `<div class="dl-kcard" draggable="true" data-k-card="${esc(c.id)}" tabindex="0" title="Klik 2x untuk membuka detail">
+      return `<div class="dl-kcard" draggable="true" data-k-card="${esc(c.id)}" tabindex="0" title="${esc(T('k_dbl_open'))}">
         ${(c.tags || []).length ? `<div class="dl-kcard__tags">${c.tags.map(t => `<span class="dl-badge dl-badge--${esc(t.tone || 'accent')}">${esc(t.label || t)}</span>`).join('')}</div>` : ''}
         <div class="dl-kcard__title">${esc(c.title)}</div>
         ${c.desc ? `<div class="dl-kcard__desc">${esc(c.desc)}</div>` : ''}
@@ -125,11 +125,11 @@
       this.board.innerHTML = this.cols.map(col => {
         const list = this.cards.filter(c => c.col === col.key), shown = list.filter(this.visible), over = col.limit && list.length > col.limit;
         return `<section class="dl-kcol dl-kcol--${esc(col.tone || 'accent')} ${over ? 'is-over' : ''}" data-k-col="${esc(col.key)}">
-          <header class="dl-kcol__head"><span class="dl-kcol__title" contenteditable="true" spellcheck="false" data-k-rename title="Klik untuk ganti nama">${esc(col.label)}</span>
-            <span class="dl-kcol__count" title="${col.limit ? 'Batas WIP ' + col.limit : ''}">${list.length}${col.limit ? ' / ' + col.limit : ''}</span></header>
-          <div class="dl-kcol__body" data-k-drop>${shown.map(this.cardHtml).join('') || '<div class="dl-kcol__empty">Tidak ada kartu</div>'}</div>
+          <header class="dl-kcol__head"><span class="dl-kcol__title" contenteditable="true" spellcheck="false" data-k-rename title="${esc(T('k_rename'))}">${esc(col.label)}</span>
+            <span class="dl-kcol__count" title="${col.limit ? esc(Tf('k_wip_limit', {n: col.limit})) : ''}">${list.length}${col.limit ? ' / ' + col.limit : ''}</span></header>
+          <div class="dl-kcol__body" data-k-drop>${shown.map(this.cardHtml).join('') || '<div class="dl-kcol__empty">' + esc(T('k_no_cards')) + '</div>'}</div>
           ${this.canAddCard ? `<footer class="dl-kcol__foot"><button type="button" class="dl-kcol__add" data-k-add><i class="fa-solid fa-plus"></i> ${esc(T('k_add_card'))}</button>
-            <div class="dl-kcol__composer" hidden><textarea rows="2" placeholder="Judul kartu..." data-k-new-title></textarea><input type="datetime-local" data-k-new-due title="Tenggat">
+            <div class="dl-kcol__composer" hidden><textarea rows="2" placeholder="${esc(T('k_card_title_ph'))}" data-k-new-title></textarea><input type="datetime-local" data-k-new-due title="${esc(T('k_due'))}">
             <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-k-new-save>Save</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-k-new-cancel>Cancel</button></div></div></footer>` : ''}
         </section>`;
       }).join('') + (this.canAddCol ? '<button type="button" class="dl-kanban__addcol" data-k-addcol><i class="fa-solid fa-plus"></i> ' + esc(T('k_add_col')) + '</button>' : '');
@@ -180,10 +180,10 @@
         checklist: () => `<span class="dl-kpop__lbl">${esc(T('k_checklist_title'))}</span><input class="dl-kmodal__in" data-m-cktitle value="Checklist">
           <button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-ckcreate>${esc(T('k_add'))}</button>`,
         members: () => `<div class="dl-kpop__list">${members.map(m => `<label class="dl-kpop__row"><input type="checkbox" data-m-member="${esc(m)}" ${card.members.includes(m) ? 'checked' : ''}><span class="dl-kcard__av">${esc(this.ini(m))}</span>${esc(m)}</label>`).join('')}</div>`,
-        priority: () => `<div class="dl-kpop__list">${['High', 'Medium', 'Low', ''].map(p => `<button type="button" class="dl-kpop__opt ${p === (card.priority || '') ? 'is-active' : ''}" data-m-prio="${p}">${p ? `<span class="dl-kcard__prio is-${p.toLowerCase()}">${p}</span>` : 'Tanpa prioritas'}</button>`).join('')}</div>`,
+        priority: () => `<div class="dl-kpop__list">${['High', 'Medium', 'Low', ''].map(p => `<button type="button" class="dl-kpop__opt ${p === (card.priority || '') ? 'is-active' : ''}" data-m-prio="${p}">${p ? `<span class="dl-kcard__prio is-${p.toLowerCase()}">${p}</span>` : esc(T('k_no_priority'))}</button>`).join('')}</div>`,
         move: () => `<div class="dl-kpop__list">${this.cols.map(c => `<button type="button" class="dl-kpop__opt ${c.key === card.col ? 'is-active' : ''}" data-m-to="${esc(c.key)}" ${c.key === card.col || !this.allowed(card.col, c.key) ? 'disabled' : ''}>${esc(c.label)}</button>`).join('')}</div>`,
       };
-      const TITLES = {labels: 'Labels', dates: 'Dates', checklist: 'Checklist', members: 'Members', priority: T('k_priority'), move: T('k_move_to')};
+      const TITLES = {labels: T('k_labels'), dates: T('k_dates'), checklist: 'Checklist', members: T('k_members'), priority: T('k_priority'), move: T('k_move_to')};
       const actionBtn = (k, icon) => `<div class="dl-kmodal__ag"><button type="button" class="dl-kmodal__abtn ${pop === k ? 'is-on' : ''}" data-m-pop="${k}"><i class="fa-solid ${icon}"></i> ${TITLES[k]}</button>${pop === k ? `<div class="dl-kpop"><div class="dl-kpop__head">${TITLES[k]}<button type="button" data-m-popclose>&times;</button></div>${popHtml[k]()}</div>` : ''}</div>`;
       const draw = () => {
         const ck = card.checklist || [], done = ck.filter(i => i.done).length, pct = ck.length ? Math.round(done / ck.length * 100) : 0, d = this.due(card);
@@ -194,9 +194,9 @@
             <div class="dl-kmodal__main">
               <div class="dl-kmodal__actions">${actionBtn('labels', 'fa-tag')}${actionBtn('dates', 'fa-clock')}${actionBtn('checklist', 'fa-square-check')}${actionBtn('members', 'fa-user')}${actionBtn('priority', 'fa-flag')}${actionBtn('move', 'fa-arrow-right-arrow-left')}</div>
               ${(card.tags || []).length || card.members.length || d || card.priority ? `<div class="dl-kmodal__meta">
-                ${card.members.length ? `<div><span>Members</span><div class="dl-row">${card.members.map(m => `<span class="dl-kcard__av" title="${esc(m)}">${esc(this.ini(m))}</span>`).join('')}</div></div>` : ''}
-                ${(card.tags || []).length ? `<div><span>Labels</span><div class="dl-row">${card.tags.map(t => `<span class="dl-badge dl-badge--${esc(t.tone || 'accent')}">${esc(t.label || t)}</span>`).join('')}</div></div>` : ''}
-                ${d ? `<div><span>Tenggat</span><b class="${d < new Date() ? 'dl-kcard__due is-late' : ''}">${esc(this.dueTxt(card))}</b></div>` : ''}
+                ${card.members.length ? `<div><span>${esc(T('k_members'))}</span><div class="dl-row">${card.members.map(m => `<span class="dl-kcard__av" title="${esc(m)}">${esc(this.ini(m))}</span>`).join('')}</div></div>` : ''}
+                ${(card.tags || []).length ? `<div><span>${esc(T('k_labels'))}</span><div class="dl-row">${card.tags.map(t => `<span class="dl-badge dl-badge--${esc(t.tone || 'accent')}">${esc(t.label || t)}</span>`).join('')}</div></div>` : ''}
+                ${d ? `<div><span>${esc(T('k_due'))}</span><b class="${d < new Date() ? 'dl-kcard__due is-late' : ''}">${esc(this.dueTxt(card))}</b></div>` : ''}
                 ${card.priority ? `<div><span>${esc(T('k_priority'))}</span><span class="dl-kcard__prio is-${esc(card.priority.toLowerCase())}">${esc(card.priority)}</span></div>` : ''}
               </div>` : ''}
               <p class="dl-kmodal__cap"><i class="fa-solid fa-align-left"></i> ${esc(T('k_description'))}</p>
@@ -227,10 +227,10 @@
         if (x === ov || x.closest('[data-m-close]')) return close();
         const pb = x.closest('[data-m-pop]'); if (pb) { pop = pop === pb.dataset.mPop ? null : pb.dataset.mPop; labelQ = ''; return redraw(pop === 'labels' ? '[data-m-labelq]' : null); }
         if (x.closest('[data-m-popclose]') || (pop && !x.closest('.dl-kpop'))) { pop = null; redraw(); if (!x.closest('[data-m-descedit],[data-m-ckopen]')) return; }
-        if (x.closest('[data-m-labelnew]')) { (card.tags = card.tags || []).push({label: labelQ, tone: this.toneOf(labelQ)}); this.log(card, `menambah label ${labelQ}`); labelQ = ''; return redraw('[data-m-labelq]'); }
-        if (x.closest('[data-m-duesave]')) { card.due = $(ov, '[data-m-due]').value.replace('T', ' '); this.log(card, card.due ? `mengatur tenggat ${this.dueTxt(card)}` : 'menghapus tenggat'); pop = null; return redraw(); }
-        if (x.closest('[data-m-dueclear]')) { card.due = ''; this.log(card, 'menghapus tenggat'); pop = null; return redraw(); }
-        if (x.closest('[data-m-ckcreate]')) { card.checklistTitle = $(ov, '[data-m-cktitle]').value.trim() || 'Checklist'; card.checklist = card.checklist || []; pop = null; addItem = true; this.log(card, `menambah checklist ${card.checklistTitle}`); return redraw('[data-m-cknew]'); }
+        if (x.closest('[data-m-labelnew]')) { (card.tags = card.tags || []).push({label: labelQ, tone: this.toneOf(labelQ)}); this.log(card, Tf('k_act_label', {label: labelQ})); labelQ = ''; return redraw('[data-m-labelq]'); }
+        if (x.closest('[data-m-duesave]')) { card.due = $(ov, '[data-m-due]').value.replace('T', ' '); this.log(card, card.due ? Tf('k_act_due', {due: this.dueTxt(card)}) : T('k_act_due_clear')); pop = null; return redraw(); }
+        if (x.closest('[data-m-dueclear]')) { card.due = ''; this.log(card, T('k_act_due_clear')); pop = null; return redraw(); }
+        if (x.closest('[data-m-ckcreate]')) { card.checklistTitle = $(ov, '[data-m-cktitle]').value.trim() || 'Checklist'; card.checklist = card.checklist || []; pop = null; addItem = true; this.log(card, Tf('k_act_checklist', {title: card.checklistTitle})); return redraw('[data-m-cknew]'); }
         const pr = x.closest('[data-m-prio]'); if (pr) { card.priority = pr.dataset.mPrio; pop = null; return redraw(); }
         const to = x.closest('[data-m-to]'); if (to) { pop = null; keepTitle(); if (this.move(card, to.dataset.mTo)) draw(); return; }
         if (x.closest('[data-m-descedit]')) { editDesc = true; return redraw('[data-m-desc]'); }
@@ -248,7 +248,7 @@
         const t = e.target;
         if (t.matches('[data-m-ck]')) { card.checklist[+t.dataset.mCk].done = t.checked; redraw(); }
         if (t.matches('[data-m-label]')) { const l = t.dataset.mLabel; card.tags = card.tags || []; if (t.checked) card.tags.push(this.allLabels().find(x => x.label === l)); else card.tags = card.tags.filter(x => (x.label || x) !== l); redraw(); }
-        if (t.matches('[data-m-member]')) { const m = t.dataset.mMember; card.members = t.checked ? [...card.members, m] : card.members.filter(x => x !== m); card.assignee = card.members[0] || ''; this.log(card, `${t.checked ? 'menambah' : 'melepas'} anggota ${m}`); redraw(); }
+        if (t.matches('[data-m-member]')) { const m = t.dataset.mMember; card.members = t.checked ? [...card.members, m] : card.members.filter(x => x !== m); card.assignee = card.members[0] || ''; this.log(card, Tf(t.checked ? 'k_act_member_add' : 'k_act_member_del', {name: m})); redraw(); }
       });
       ov.addEventListener('keydown', e => {
         const t = e.target;

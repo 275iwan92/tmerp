@@ -727,7 +727,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                         <div class="flex flex-wrap gap-1 mb-2">
                             @foreach (\App\Models\Sdi\QuoActivity::TYPES as $code => $t)
                                 @if ($n = $this->activities->where('activity_type', $code)->count())
-                                    <x-ui.badge tone="info" size="xs" pill>{{ $t[0] }} {{ $t[1] }} ×{{ $n }}</x-ui.badge>
+                                    <x-ui.badge tone="info" size="xs" pill>{{ $t[0] }} {{ t($t[1]) }} ×{{ $n }}</x-ui.badge>
                                 @endif
                             @endforeach
                         </div>
@@ -735,10 +735,10 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                             @forelse ($this->activities as $a)
                                 <div wire:key="act-{{ $a->id_activity }}" class="border-l-2 border-accent pl-2.5 text-[11.5px]">
                                     <div class="flex items-center gap-1.5">
-                                        <b>{{ \App\Models\Sdi\QuoActivity::TYPES[$a->activity_type][0] ?? '' }} {{ \App\Models\Sdi\QuoActivity::TYPES[$a->activity_type][1] ?? $a->activity_type }}</b>
+                                        <b>{{ \App\Models\Sdi\QuoActivity::TYPES[$a->activity_type][0] ?? '' }} {{ isset(\App\Models\Sdi\QuoActivity::TYPES[$a->activity_type]) ? t(\App\Models\Sdi\QuoActivity::TYPES[$a->activity_type][1]) : $a->activity_type }}</b>
                                         <span class="text-muted">{{ $a->activity_date?->format('d M Y') }}</span>
                                         @if ($a->result)
-                                            <x-ui.badge :tone="match ($a->result) { 'POSITIVE' => 'success', 'NEGATIVE' => 'danger', default => 'muted' }" size="xs" pill>{{ \App\Models\Sdi\QuoActivity::RESULTS[$a->result] ?? $a->result }}</x-ui.badge>
+                                            <x-ui.badge :tone="match ($a->result) { 'POSITIVE' => 'success', 'NEGATIVE' => 'danger', default => 'muted' }" size="xs" pill>{{ isset(\App\Models\Sdi\QuoActivity::RESULTS[$a->result]) ? t(\App\Models\Sdi\QuoActivity::RESULTS[$a->result]) : $a->result }}</x-ui.badge>
                                         @endif
                                         @if ($a->created_by === auth()->user()->login)
                                             <x-ui.icon-button icon="fa-trash" size="xs" class="ml-auto" wire:click="deleteActivity({{ $a->id_activity }})" wire:confirm="Hapus catatan follow-up ini?" />
@@ -795,7 +795,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
             <div class="p-4 flex flex-col gap-3">
                 <x-form.toggle-group label="Jenis *">
                     @foreach (\App\Models\Sdi\QuoActivity::TYPES as $code => $t)
-                        <x-form.toggle-option :active="($act['activity_type'] ?? '') === $code" wire:click="setActType('{{ $code }}')">{{ $t[0] }} {{ $t[1] }}</x-form.toggle-option>
+                        <x-form.toggle-option :active="($act['activity_type'] ?? '') === $code" wire:click="setActType('{{ $code }}')">{{ $t[0] }} {{ t($t[1]) }}</x-form.toggle-option>
                     @endforeach
                 </x-form.toggle-group>
                 <div class="flex flex-col sm:flex-row gap-3">
@@ -804,7 +804,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                 </div>
                 <x-form.toggle-group label="Hasil">
                     @foreach (\App\Models\Sdi\QuoActivity::RESULTS as $code => $label)
-                        <x-form.toggle-option :active="($act['result'] ?? '') === $code" wire:click="setActResult('{{ $code }}')">{{ $label }}</x-form.toggle-option>
+                        <x-form.toggle-option :active="($act['result'] ?? '') === $code" wire:click="setActResult('{{ $code }}')">{{ t($label) }}</x-form.toggle-option>
                     @endforeach
                 </x-form.toggle-group>
                 <x-form.textarea label="Catatan" rows="3" wire:model="act.notes" placeholder="Apa yang dibicarakan, respon customer..." />

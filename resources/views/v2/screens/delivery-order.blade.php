@@ -11,8 +11,8 @@
     abort_if(request('id') && ! $do, 404);
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $do && ! request('new'))
     <x-dl::grid id="do-list" :rows="DeliveryOrder::rows()" search="Search DO no., customer, address..." actions="worklist" :active-key="null"
@@ -22,14 +22,14 @@
             ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
             ['key' => 'ship', 'label' => t('Planned Shipment'), 'type' => 'date'],
             ['key' => 'shipped', 'label' => t('Shipped'), 'type' => 'date'],
-            ['key' => 'address', 'label' => 'Tujuan'],
+            ['key' => 'address', 'label' => 'Destination'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => DeliveryOrder::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'co', 'label' => 'CO No.'],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
+        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'co', 'label' => t('CO No.')],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
         ]]"
         :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Shipped', 'where' => ['status' => 'SHIPPED'], 'tone' => 'info']]"
         :filters="['customer' => 'Customer', 'status' => 'Status']" />
@@ -39,7 +39,7 @@
             <x-dl::field.select name="customer_id" label="Customer" required :options="DeliveryOrder::customerOptions()" :source="Src::of('tm2mst.cust_customer')" />
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
-                <x-dl::button preset="save" label="Buat DO" />
+                <x-dl::button preset="save" label="Create DO" />
             </x-dl::action-bar>
         </x-dl::card>
     </x-dl::action-form>
@@ -53,7 +53,7 @@
         $lines = $do->lines->map(fn ($l) => [
             'id_line' => $l->id_line, 'item_description' => $l->item_description, 'qty_do' => (float) $l->qty_do, 'qty_unit' => $l->qty_unit,
             'unit_price' => (float) $l->unit_price, 'co' => '#'.$l->co_order_id.' · item '.$l->co_order_item_id,
-            'price_note' => $l->price_overridden ? 'Diubah dari '.$money($l->original_unit_price) : 'Harga CO', 'invoiced' => \Devlib\Locale::decimal($l->qty_invoiced, 2),
+            'price_note' => $l->price_overridden ? tf('Changed from :price', ['price' => $money($l->original_unit_price)]) : t('CO price'), 'invoiced' => \Devlib\Locale::decimal($l->qty_invoiced, 2),
         ])->values()->all();
     @endphp
     <x-dl::form id="do-form" :title="'Delivery Order · '.raw($do->do_no ?: 'Draft #'.$do->id_delivery)" :subtitle="raw(($do->customer?->customer_name ?? '—').' · '.$do->status)"
@@ -66,19 +66,19 @@
                 <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('delivery-order', $do->id_delivery)" target="_blank" />
                 <x-dl::button size="sm" variant="secondary" icon="print" :label="t('Delivery Note')" :href="route('v2.screen', 'delivery-notes').'?id='.$do->id_delivery" />
             @endif
-            @if ($do->status === 'CONFIRMED')<x-dl::button size="sm" variant="success" icon="fa-truck" :label="t('Shipped')" type="submit" name="action" value="ship" formnovalidate onclick="return confirm('Tandai barang sudah dikirim?')" />@endif
+            @if ($do->status === 'CONFIRMED')<x-dl::button size="sm" variant="success" icon="fa-truck" :label="t('Shipped')" type="submit" name="action" value="ship" formnovalidate :onclick="'return confirm('.json_encode(t('Mark the goods as shipped?')).')'" />@endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>No. DO</span><b>{{ $do->do_no ?: '(saat Confirm)' }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>@t('DO No.')</span><b>{{ $do->do_no ?: t('(on Confirm)') }}</b></div>
             <x-dl::field.date name="do_date" label="DO Date" :value="$do->do_date?->toDateString()" :source="Src::of('tm2sdi.do_delivery.do_date')" />
             <x-dl::field.display label="Customer" :value="($do->customer?->customer_name ?? '—').' ('.($do->customer?->customer_code ?? '—').')'" :source="Src::of('tm2mst.cust_customer')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>Nilai Kirim</span><b data-l-val="lines:grand">{{ $money($value) }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>@t('Shipment Value')</span><b data-l-val="lines:grand">{{ $money($value) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
                 <x-dl::field.display label="DO Type" :value="($do->do_type ?? 'CUSTOMER').($do->subcon_process ? ' · '.$do->subcon_process : '')" :source="Src::of('tm2sdi.do_delivery.do_type')" />
-                <x-dl::field.display label="Tax" :value="$do->is_ppn ? 'PPN (ikut CO)' : 'Non PPN'" :source="Src::of('tm2sdi.do_delivery.is_ppn')" />
-                <x-dl::field.display label="Price changes" :value="$do->price_change_flag ? 'Ada ('.($do->price_change_approval_status ?? 'pending').')' : 'Tidak'" :source="Src::of('tm2sdi.do_delivery.price_change_flag')" />
+                <x-dl::field.display label="Tax" :value="$do->is_ppn ? t('VAT (follows the CO)') : t('Non VAT')" :source="Src::of('tm2sdi.do_delivery.is_ppn')" />
+                <x-dl::field.display label="Price changes" :value="$do->price_change_flag ? t('Yes').' ('.($do->price_change_approval_status ?? 'pending').')' : t('No')" :source="Src::of('tm2sdi.do_delivery.price_change_flag')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:delivery>
@@ -87,7 +87,7 @@
                 <x-dl::field.display label="Actual Delivery Date" :value="\Devlib\Locale::d($do->actual_ship_date) ?? '—'" :source="Src::of('tm2sdi.do_delivery.actual_ship_date')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="3">
-                <x-dl::field.lookup name="ship_area" lookup="geo_area" label="Wilayah Tujuan" placeholder="Search village / district / city / postcode..." :value="$area" :source="Src::of('tm2sdi.do_delivery.ship_area_id', 'ship_area_level', 'ship_address_label')" />
+                <x-dl::field.lookup name="ship_area" lookup="geo_area" label="Destination Area" placeholder="Search village / district / city / postcode..." :value="$area" :source="Src::of('tm2sdi.do_delivery.ship_area_id', 'ship_area_level', 'ship_address_label')" />
                 <x-dl::field.text name="ship_address_detail" label="Address Details (street, no., RT/RW, landmark)" :value="$do->ship_address_detail" :source="Src::of('tm2sdi.do_delivery.ship_address_detail')" />
                 <x-dl::field.display label="Postcode" :value="$do->ship_postal_code ?? '—'" :source="Src::of('tm2sdi.do_delivery.ship_postal_code')" />
             </x-dl::form.row>
@@ -115,7 +115,7 @@
                             <x-dl::field.multi-select name="co_delivery_ids" label="+ Pull from CO delivery schedule" :options="$opts" :source="Src::of('tm2sdi.v_co_delivery_outstanding')" />
                             <x-dl::button size="sm" variant="secondary" :label="t('+ Pull Lines')" type="submit" name="action" value="pull" formnovalidate />
                         @else
-                            <x-dl::badge tone="info" icon="fa-industry" label="Only schedule lines that are Posted to Production (Customer Plan Delivery) can be pulled" />
+                            <x-dl::badge tone="info" icon="fa-industry" :label="t('Only schedule lines that are Posted to Production (Customer Plan Delivery) can be pulled')" />
                         @endif
                     </x-slot:tools>
                 @endif

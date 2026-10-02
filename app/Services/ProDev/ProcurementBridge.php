@@ -44,14 +44,14 @@ class ProcurementBridge
         $material = MatRaw::find($materialId);
 
         if (! $material || $qty <= 0) {
-            return ['ok' => false, 'message' => 'Bahan atau qty kekurangan tidak valid.'];
+            return ['ok' => false, 'message' => t('The material or the shortage qty is not valid.')];
         }
 
         $category = MatCategory::level(1)->where('category_name', $material->category1)->first();
         $coa = $category?->default_coa_account_id ?: $material->cogs_account_id;
 
         if (! $coa) {
-            return ['ok' => false, 'message' => "Akun COA untuk {$material->material_name} belum ada (kategori bahan / akun HPP item). Lengkapi di Master Bahan dulu."];
+            return ['ok' => false, 'message' => tf('There is no COA account for :name yet (material category / COGS account of the item). Complete it in Material Master first.', ['name' => $material->material_name])];
         }
 
         return DB::connection('tm2pur')->transaction(function () use ($part, $iqp, $material, $category, $qty, $coa, $login, $uom) {
@@ -105,7 +105,8 @@ class ProcurementBridge
 
             return [
                 'ok' => true,
-                'message' => "{$material->material_name} ".rtrim(rtrim(number_format($qty, 4, '.', ''), '0'), '.')." {$uom} masuk PR draft #{$pr->pr_id}.",
+                'message' => tf(':name :qty :uom added to draft PR #:id.', ['name' => $material->material_name,
+                    'qty' => rtrim(rtrim(number_format($qty, 4, '.', ''), '0'), '.'), 'uom' => $uom, 'id' => $pr->pr_id]),
                 'url' => route('pur.pr.entry', ['pr' => $pr->pr_id]),
             ];
         });
@@ -140,14 +141,14 @@ class ProcurementBridge
         $supplier = DB::connection('tm2mst')->table('sup_supplier')->where('id_supplier', $supplierId)->where('activate', 1)->first();
 
         if (! $supplier) {
-            return ['ok' => false, 'message' => 'Pilih supplier subkon yang aktif.'];
+            return ['ok' => false, 'message' => t('Choose an active subcontract supplier.')];
         }
 
         $row = DB::connection('tm2sdi')->table('iqp_part_process')
             ->where('part_id', $iqp->id_part)->where('process_id', $step['process_id'] ?? 0)->first();
 
         if (! $row) {
-            return ['ok' => false, 'message' => 'Simpan layout dulu (tombol Save) supaya langkah ini tercatat di Inquiry, lalu klik Subkon lagi.'];
+            return ['ok' => false, 'message' => t('Save the layout first (Save button) so this step is recorded in the Inquiry, then click Subcontract again.')];
         }
 
         $coItem = $coItemId
@@ -155,7 +156,7 @@ class ProcurementBridge
             : null;
 
         if ($coItemId && ! $coItem) {
-            return ['ok' => false, 'message' => 'CO yang dipilih bukan milik Inquiry ini.'];
+            return ['ok' => false, 'message' => t('The chosen CO does not belong to this Inquiry.')];
         }
 
         $label = (string) ($step['label'] ?? 'Proses subkon');
@@ -168,7 +169,7 @@ class ProcurementBridge
 
         DB::connection('tm2pur')->transaction(function () use (&$prId, &$messages, $label, $qty, $uom, $what, $supplier, $needDate, $estCost, $login) {
             if ($prId) {
-                $messages[] = 'PR subkon sudah ada (#'.$prId.').';
+                $messages[] = tf('The subcontract PR already exists (#:id).', ['id' => $prId]);
 
                 return;
             }
@@ -210,7 +211,7 @@ class ProcurementBridge
             $pr->save();
 
             $prId = $pr->pr_id;
-            $messages[] = "PR subkon draft #{$pr->pr_id} dibuat.";
+            $messages[] = tf('Subcontract PR draft #:id created.', ['id' => $pr->pr_id]);
         });
 
         if (! $doId && $coItem) {
@@ -253,11 +254,11 @@ class ProcurementBridge
             });
 
             $doId = $do->id_delivery;
-            $messages[] = "Surat jalan subkon draft #{$do->id_delivery} dibuat (CO terhubung).";
+            $messages[] = tf('Subcontract Delivery Note draft #:id created (CO linked).', ['id' => $do->id_delivery]);
         } elseif (! $doId) {
-            $messages[] = 'Surat jalan subkon menunggu CO — klik Subkon lagi setelah CO untuk Inquiry ini terbit.';
+            $messages[] = t('The Subcontract Delivery Note waits for the CO — click Subcontract again after the CO for this Inquiry is issued.');
         } else {
-            $messages[] = 'Surat jalan subkon sudah ada (#'.$doId.').';
+            $messages[] = tf('The Subcontract Delivery Note already exists (#:id).', ['id' => $doId]);
         }
 
         DB::connection('tm2sdi')->table('iqp_part_process')->where('id_part_process', $row->id_part_process)->update([

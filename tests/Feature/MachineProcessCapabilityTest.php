@@ -172,7 +172,8 @@ class MachineProcessCapabilityTest extends TestCase
 
         $this->assertCount(1, $rows);
         $this->assertFalse($rows[0]['eligible']);
-        $this->assertStringContainsString('melebihi batas mesin', $rows[0]['reasons'][0]);
+        // Teks alasan ikut bahasa tampilan (kamus) -> yang diuji = ukuran lembar yang ditolak.
+        $this->assertStringContainsString('1200x900', $rows[0]['reasons'][0]);
     }
 
     public function test_lembar_boleh_diputar_sembilan_puluh_derajat(): void
@@ -197,7 +198,7 @@ class MachineProcessCapabilityTest extends TestCase
             ->machinesForProcess($this->process->id_process, ['gsm' => 600]);
 
         $this->assertFalse($rows[0]['eligible']);
-        $this->assertStringContainsString('di atas maksimum', $rows[0]['reasons'][0]);
+        $this->assertStringContainsString('600', $rows[0]['reasons'][0]);
     }
 
     public function test_mesin_rusak_tidak_layak_dijadwalkan_tapi_pasangannya_tetap_ada(): void
@@ -396,7 +397,7 @@ class MachineProcessCapabilityTest extends TestCase
         );
 
         $this->assertNotNull($expanded[0]['fallback_reason']);
-        $this->assertStringContainsString('tidak memenuhi syarat', $expanded[0]['fallback_reason']);
+        $this->assertStringContainsString('('.$this->machine->machine_code.')', $expanded[0]['fallback_reason']);
     }
 
     public function test_oee_null_selama_ketiga_faktor_belum_terukur(): void

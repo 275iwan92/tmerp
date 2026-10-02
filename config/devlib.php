@@ -43,6 +43,9 @@ return [
     'dictionary_register_url' => '/v2/dictionary/register',
     'dictionary_autoregister' => env('DICTIONARY_AUTOREGISTER', true),
 
+    // Pilihan bahasa user (x-dl::lang-switch): disimpan ke akunnya lewat URL ini (tmerp: sec_user.lang_code), lalu halaman dimuat ulang.
+    'lang_url' => '/v2/lang',
+
     // Data contoh untuk halaman komponen (di tmerp nanti dari Lookup/tabel master).
     'demo' => [
         'locations' => [

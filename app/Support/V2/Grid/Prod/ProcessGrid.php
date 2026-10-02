@@ -16,7 +16,7 @@ class ProcessGrid extends ProdGrid
 
     public function title(): string
     {
-        return 'Master Proses';
+        return t('Master Process');
     }
 
     protected function v1Route(): ?string
@@ -46,7 +46,7 @@ class ProcessGrid extends ProdGrid
             ['key' => 'name', 'label' => 'Process', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'stage', 'label' => 'Stage'],
             ['key' => 'dept', 'label' => 'Department'],
-            ['key' => 'where', 'label' => 'Performed By', 'type' => 'badge', 'tones' => ['In-house' => 'success', t('Subcontract') => 'warn']],
+            ['key' => 'where', 'label' => 'Performed By', 'type' => 'badge', 'tones' => [t('In-house') => 'success', t('Subcontract') => 'warn']],
             ['key' => 'manual', 'label' => 'Manual', 'type' => 'badge', 'tones' => [t('Yes') => 'info']],
             ['key' => 'speed', 'label' => 'Default Speed/Hour', 'type' => 'number'],
             ['key' => 'machines', 'label' => 'Machines', 'type' => 'link', 'format' => 'number'],
@@ -57,7 +57,7 @@ class ProcessGrid extends ProdGrid
     {
         return [
             'photo' => null, 'name' => $m->process_name, 'code' => $m->process_code, 'stage' => $m->process_stage ?? $m->stage,
-            'dept' => $m->department?->department_name, 'where' => $m->inhouse === false || $m->inhouse === 0 ? t('Subcontract') : 'In-house',
+            'dept' => $m->department?->department_name, 'where' => $m->inhouse === false || $m->inhouse === 0 ? t('Subcontract') : t('In-house'),
             'manual' => $m->is_manual ? t('Yes') : null, 'speed' => $m->default_speed_per_hour ? (float) $m->default_speed_per_hour : null,
             'machines' => (int) $m->machines_count,
         ];

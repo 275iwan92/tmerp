@@ -33,7 +33,7 @@ class PartVisual extends DevlibComponent
 
     public function sides(): array
     {
-        return array_filter(['out' => $this->part['artwork'] ?? null ? 'Sisi Luar' : null, 'in' => $this->part['artwork_inner'] ?? null ? 'Sisi Dalam' : null]);
+        return array_filter(['out' => $this->part['artwork'] ?? null ? 'Outer Side' : null, 'in' => $this->part['artwork_inner'] ?? null ? 'Inner Side' : null]);
     }
 
     public function render()
@@ -44,11 +44,11 @@ class PartVisual extends DevlibComponent
                     <x-mp::dieline-v3 :data-artwork="$part['artwork']" :data-artwork-inner="$part['artwork_inner']" :types="$types" :type="$part['type_code']" :dims="$part['dims']" :name="'pv'.$part['id']" :picker="false" :height="$height" />
                 @elseif ($sides())
                     <x-dl::tabs :tabs="$sides()">
-                        <x-slot:out><img class="mp-partvis__img" src="{{ $part['artwork'] }}" alt="Dieline {{ $part['name'] }} sisi luar"></x-slot:out>
-                        <x-slot:in><img class="mp-partvis__img" src="{{ $part['artwork_inner'] }}" alt="Dieline {{ $part['name'] }} sisi dalam"></x-slot:in>
+                        <x-slot:out><img class="mp-partvis__img" src="{{ $part['artwork'] }}" alt="{{ strtr(\Devlib\Lang::text('Dieline :name outer side'), [':name' => $part['name']]) }}"></x-slot:out>
+                        <x-slot:in><img class="mp-partvis__img" src="{{ $part['artwork_inner'] }}" alt="{{ strtr(\Devlib\Lang::text('Dieline :name inner side'), [':name' => $part['name']]) }}"></x-slot:in>
                     </x-dl::tabs>
                 @else
-                    <div class="mp-partvis__empty">Belum ada dieline / artwork untuk {{ $part['name'] }}.</div>
+                    <div class="mp-partvis__empty">{{ strtr(\Devlib\Lang::text('No dieline / artwork yet for :name.'), [':name' => $part['name']]) }}</div>
                 @endif
             </div>
             BLADE;

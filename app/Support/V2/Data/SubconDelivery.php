@@ -82,7 +82,7 @@ final class SubconDelivery
     // Header + baris (tambah / ubah / hapus). Baris baru tanpa nama barang dilewati.
     public static function save(DoDelivery $do, array $in): void
     {
-        abort_unless($do->isSubcon() && $do->status === 'DRAFT', 422, 'This delivery note is already Confirmed and cannot be changed.');
+        abort_unless($do->isSubcon() && $do->status === 'DRAFT', 422, t('This delivery note is already Confirmed and cannot be changed.'));
         $login = Auth::user()->login;
         if (array_key_exists('supplier_id', $in) && (int) $in['supplier_id'] && (int) $in['supplier_id'] !== (int) $do->supplier_id) {
             $s = SupSupplier::query()->findOrFail((int) $in['supplier_id']);
@@ -167,7 +167,7 @@ final class SubconDelivery
         $svc = app(DispatchService::class);
         $login = Auth::user()->login;
         if ($action === 'confirm' && ($errors = self::confirmErrors($do))) {
-            return implode(' ', $errors);
+            return implode(' ', array_map(fn (string $e) => t($e), $errors));
         }
         $result = $action === 'confirm' ? $svc->confirm($do, $login) : $svc->cancel($do, $reason, $login);
 
@@ -177,7 +177,7 @@ final class SubconDelivery
     // Delete = hapus permanen, hanya Draft (rulebook C.6).
     public static function delete(DoDelivery $do): void
     {
-        abort_unless($do->isSubcon() && $do->status === 'DRAFT', 422, 'Only a Draft can be deleted.');
+        abort_unless($do->isSubcon() && $do->status === 'DRAFT', 422, t('Only a Draft can be deleted.'));
         DB::connection('tm2sdi')->transaction(function () use ($do) {
             $do->lines()->delete();
             $do->delete();

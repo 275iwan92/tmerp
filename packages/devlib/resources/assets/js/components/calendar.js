@@ -113,7 +113,7 @@
     mini() {
       const box = $(this.el, '[data-c-mini]'); if (!box) return;
       const first = new Date(this.sel.getFullYear(), this.sel.getMonth(), 1), start = this.weekStartOf(first), today = this.nowW();
-      box.innerHTML = `<div class="dl-cal2__minihead"><b>${this.MON[this.sel.getMonth()]} ${this.sel.getFullYear()}</b><span><button type="button" data-c-mini="-1" aria-label="Bulan sebelumnya">‹</button><button type="button" data-c-mini="1" aria-label="Bulan berikutnya">›</button></span></div>
+      box.innerHTML = `<div class="dl-cal2__minihead"><b>${this.MON[this.sel.getMonth()]} ${this.sel.getFullYear()}</b><span><button type="button" data-c-mini="-1" aria-label="${esc(T('c_prev_month'))}">‹</button><button type="button" data-c-mini="1" aria-label="${esc(T('c_next_month'))}">›</button></span></div>
         <div class="dl-cal2__minigrid">${[0, 1, 2, 3, 4, 5, 6].map(i => `<span class="is-dow">${this.DAY[(i + this.ws) % 7][0]}</span>`).join('')}${Array.from({length: 42}, (_, i) => { const d = this.addD(start, i); return `<button type="button" data-c-go="${this.ymd(d)}" class="${d.getMonth() !== this.sel.getMonth() ? 'is-out' : ''} ${this.same(d, today) ? 'is-today' : ''} ${this.same(d, this.cur) ? 'is-sel' : ''} ${this.onDay(d).length ? 'has-ev' : ''}">${d.getDate()}</button>`; }).join('')}</div>`;
     }
 
@@ -129,7 +129,7 @@
       const first = new Date(this.cur.getFullYear(), this.cur.getMonth(), 1), start = this.weekStartOf(first), today = this.nowW();
       this.main.innerHTML = `<div class="dl-cal2__month"><div class="dl-cal2__dows">${[0, 1, 2, 3, 4, 5, 6].map(i => `<span>${this.DAY[(i + this.ws) % 7]}</span>`).join('')}</div><div class="dl-cal2__mgrid">${Array.from({length: 42}, (_, i) => {
         const d = this.addD(start, i), list = this.onDay(d);
-        return `<div class="dl-cal2__cell ${d.getMonth() !== this.cur.getMonth() ? 'is-out' : ''} ${this.same(d, today) ? 'is-today' : ''} ${this.same(d, this.sel) ? 'is-sel' : ''}" data-c-day="${this.ymd(d)}" data-c-drop="${this.ymd(d)}"><span class="dl-cal2__num">${d.getDate()}</span>${list.slice(0, 3).map(this.chip).join('')}${list.length > 3 ? `<button type="button" class="dl-cal2__more" data-c-go="${this.ymd(d)}" data-c-toview="day">+${list.length - 3} lagi</button>` : ''}</div>`;
+        return `<div class="dl-cal2__cell ${d.getMonth() !== this.cur.getMonth() ? 'is-out' : ''} ${this.same(d, today) ? 'is-today' : ''} ${this.same(d, this.sel) ? 'is-sel' : ''}" data-c-day="${this.ymd(d)}" data-c-drop="${this.ymd(d)}"><span class="dl-cal2__num">${d.getDate()}</span>${list.slice(0, 3).map(this.chip).join('')}${list.length > 3 ? `<button type="button" class="dl-cal2__more" data-c-go="${this.ymd(d)}" data-c-toview="day">${esc(Tf('c_more', {n: list.length - 3}))}</button>` : ''}</div>`;
       }).join('')}</div></div>`;
     }
 
@@ -150,7 +150,7 @@
       };
       this.main.innerHTML = `<div class="dl-cal2__time" style="--dl-cal-cols:${days.length}">
         <div class="dl-cal2__thead"><span class="dl-cal2__tz">WIB</span>${days.map(d => `<button type="button" class="dl-cal2__dh ${this.same(d, today) ? 'is-today' : ''}" data-c-go="${this.ymd(d)}" data-c-toview="day"><small>${this.DAY[d.getDay()]}</small><b>${d.getDate()}</b></button>`).join('')}</div>
-        <div class="dl-cal2__allday"><span class="dl-cal2__tz">Sepanjang<br>hari</span>${days.map(d => `<div data-c-drop="${this.ymd(d)}" data-c-allday data-c-day="${this.ymd(d)}">${this.onDay(d).filter(e => e.allDay || !this.same(e.s, e.e)).map(this.chip).join('')}</div>`).join('')}</div>
+        <div class="dl-cal2__allday"><span class="dl-cal2__tz">${T('c_all_day_br')}</span>${days.map(d => `<div data-c-drop="${this.ymd(d)}" data-c-allday data-c-day="${this.ymd(d)}">${this.onDay(d).filter(e => e.allDay || !this.same(e.s, e.e)).map(this.chip).join('')}</div>`).join('')}</div>
         <div class="dl-cal2__scroll" data-c-scroll><div class="dl-cal2__grid" style="height:${24 * this.HPX}px">
           <div class="dl-cal2__hours">${Array.from({length: 24}, (_, h) => `<span style="top:${h * this.HPX}px">${h ? this.pad(h) + '.00' : ''}</span>`).join('')}</div>
           ${days.map(d => `<div class="dl-cal2__col ${this.same(d, today) ? 'is-today' : ''}" data-c-col="${this.ymd(d)}" data-c-drop="${this.ymd(d)}">${lanes(d).map(e => { const top = (e.s.getHours() + e.s.getMinutes() / 60) * this.HPX, hgt = Math.max(this.HPX / 2, (e.e - e.s) / 3600000 * this.HPX); return `<div class="dl-cal2__blk dl-cal2--${esc(e.tone)} ${this.match(e) ? '' : 'is-dim'}" draggable="true" data-c-ev="${esc(e.id)}" style="top:${top}px;height:${hgt - 2}px;left:calc(${e._c} * 100% / ${e._n});width:calc(100% / ${e._n} - 4px)"><b>${esc(e.title)}</b><small>${esc(this.when(e))}</small></div>`; }).join('')}
@@ -164,8 +164,8 @@
       const t = this.nowW(), item = e => `<div class="dl-cal2__item dl-cal2--${esc(e.tone)}" data-c-ev="${esc(e.id)}"><b>${esc(e.title)}</b><small><i class="fa-regular fa-clock"></i> ${esc(this.when(e))}</small>${e.desc ? `<p>${esc(e.desc)}</p>` : ''}</div>`;
       tl.innerHTML = `<p class="dl-cal2__cap"><span class="dl-cal2__dot"></span>${esc(T('c_today_events'))}</p>${this.onDay(t).map(item).join('') || '<p class="dl-cal2__none">' + esc(T('c_no_events_today')) + '</p>'}`;
       const list = this.onDay(this.sel);
-      dl.innerHTML = `<h3 class="dl-cal2__selh">${this.DAYL[this.sel.getDay()]}, ${this.sel.getDate()} ${this.MON[this.sel.getMonth()]}</h3><small class="dl-cal2__selc">${list.length} acara</small>${list.map(item).join('') || '<p class="dl-cal2__none">Klik 2x slot kosong untuk membuat acara.</p>'}`;
-      const f = $(this.el, '[data-c-found]'); if (f) f.innerHTML = this.q ? `<p class="dl-cal2__cap">${this.events.filter(this.match).length} ditemukan</p>` + this.events.filter(this.match).slice(0, 8).map(e => `<button type="button" class="dl-cal2__hit" data-c-go="${this.ymd(e.s)}"><b>${esc(e.title)}</b><small>${e.s.getDate()} ${this.MON[e.s.getMonth()].slice(0, 3)} · ${esc(this.when(e))}</small></button>`).join('') : '';
+      dl.innerHTML = `<h3 class="dl-cal2__selh">${this.DAYL[this.sel.getDay()]}, ${this.sel.getDate()} ${this.MON[this.sel.getMonth()]}</h3><small class="dl-cal2__selc">${esc(Tf('c_n_events', {n: list.length}))}</small>${list.map(item).join('') || '<p class="dl-cal2__none">' + esc(T('c_dbl_hint')) + '</p>'}`;
+      const f = $(this.el, '[data-c-found]'); if (f) f.innerHTML = this.q ? `<p class="dl-cal2__cap">${esc(Tf('c_found', {n: this.events.filter(this.match).length}))}</p>` + this.events.filter(this.match).slice(0, 8).map(e => `<button type="button" class="dl-cal2__hit" data-c-go="${this.ymd(e.s)}"><b>${esc(e.title)}</b><small>${e.s.getDate()} ${this.MON[e.s.getMonth()].slice(0, 3)} · ${esc(this.when(e))}</small></button>`).join('') : '';
     }
 
     render() {
@@ -185,12 +185,12 @@
       const draw = () => {
         ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="dialog" aria-modal="true"><div class="dl-modal__head"><h3>${esc(T(isNew ? 'c_new_event' : 'c_edit_event'))}</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div>
         <div class="dl-modal__body dl-gantt__edit">
-          <label><span>Judul *</span><input data-e-title value="${esc(e.title || '')}" placeholder="Judul acara"></label>
+          <label><span>${esc(T('c_title'))} *</span><input data-e-title value="${esc(e.title || '')}" placeholder="${esc(T('c_title_ph'))}"></label>
           <label class="dl-choice"><input type="checkbox" data-e-allday ${e.allDay ? 'checked' : ''}> ${esc(T('c_all_day'))}</label>
-          <label><span>Mulai</span><input type="${e.allDay ? 'date' : 'datetime-local'}" data-e-start value="${v(e.s)}"></label>
-          <label><span>Selesai</span><input type="${e.allDay ? 'date' : 'datetime-local'}" data-e-end value="${v(e.e)}"></label>
-          <div><span class="dl-kpop__lbl">Warna</span><div class="dl-cal2__tones">${this.TONES.map(t => `<button type="button" class="dl-cal2--${t} ${t === e.tone ? 'is-on' : ''}" data-e-tone="${t}" aria-label="${t}"></button>`).join('')}</div></div>
-          <label><span>Deskripsi</span><textarea rows="3" data-e-desc>${esc(e.desc || '')}</textarea></label>
+          <label><span>${esc(T('c_start'))}</span><input type="${e.allDay ? 'date' : 'datetime-local'}" data-e-start value="${v(e.s)}"></label>
+          <label><span>${esc(T('c_end'))}</span><input type="${e.allDay ? 'date' : 'datetime-local'}" data-e-end value="${v(e.e)}"></label>
+          <div><span class="dl-kpop__lbl">${esc(T('c_colour'))}</span><div class="dl-cal2__tones">${this.TONES.map(t => `<button type="button" class="dl-cal2--${t} ${t === e.tone ? 'is-on' : ''}" data-e-tone="${t}" aria-label="${t}"></button>`).join('')}</div></div>
+          <label><span>${esc(T('k_description'))}</span><textarea rows="3" data-e-desc>${esc(e.desc || '')}</textarea></label>
           <p class="dl-lines__err" data-e-err></p>
         </div>
         <div class="dl-modal__foot">${isNew ? '' : '<button type="button" class="dl-btn dl-btn--danger dl-btn--md" data-e-del><i class="fa-solid fa-trash-can"></i> Delete</button><span class="dl-kcard__spacer"></span>'}<button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-x>Cancel</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-e-save><i class="fa-solid fa-floppy-disk"></i> Save</button></div></div>`;
@@ -205,7 +205,7 @@
           read(); const err = !e.title ? T('c_title_required') : e.e < e.s ? T('c_end_before_start') : '';
           if (err) { $(ov, '[data-e-err]').textContent = err; return; }
           if (isNew) this.events.push(e);
-          ov.remove(); this.sel = new Date(e.s); this.render(); this._emit(isNew ? 'create' : 'update', e); toast(`Acara "${e.title}" ${isNew ? 'dibuat' : 'disimpan'}.`, 'success');
+          ov.remove(); this.sel = new Date(e.s); this.render(); this._emit(isNew ? 'create' : 'update', e); toast(Tf(isNew ? 'c_created' : 'c_saved', {title: e.title}), 'success');
         }
         if (x.closest('[data-e-del]')) confirmBox({message: Tf('c_delete_event', {title: e.title}), tone: 'danger'}).then(ok => { if (!ok) return; this.events.splice(this.events.indexOf(e), 1); ov.remove(); this.render(); this._emit('delete', e); });
       });

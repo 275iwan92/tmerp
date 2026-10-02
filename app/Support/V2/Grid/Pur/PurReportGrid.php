@@ -36,9 +36,9 @@ abstract class PurReportGrid extends DbGrid
         $days = (int) now()->startOfDay()->diffInDays($date, true);
 
         return match (true) {
-            $days <= 7 => '0-7 days',
-            $days <= 30 => '8-30 days',
-            default => '> 30 days',
+            $days <= 7 => t('0-7 days'),
+            $days <= 30 => t('8-30 days'),
+            default => t('> 30 days'),
         };
     }
 }

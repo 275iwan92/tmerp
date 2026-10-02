@@ -26,7 +26,7 @@ final class ProofOfDelivery
 
             return ['id' => $d->id_delivery, 'no' => $d->do_no, 'customer' => $cust[$d->customer_id] ?? '—',
                 'promise' => ($d->scheduled_ship_date ?? $d->do_date)?->toDateString(), 'arrived' => Locale::dt($last?->arrived_at),
-                'result' => $last ? DeliveryPromiseService::RESULTS[$last->result] ?? $last->result : null,
+                'result' => $last ? t(DeliveryPromiseService::RESULTS[$last->result] ?? $last->result) : null,
                 'address' => $d->ship_address_label, 'items' => DeliveryOrder::lineRows($d), 'state' => self::state($last)];
         })->all();
     }

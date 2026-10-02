@@ -12,8 +12,8 @@
     abort_if(request('id') && ! $do, 404);
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $do && ! request('new'))
     <x-dl::grid id="subcon-dn-list" :rows="SubconDelivery::rows()" search="Search note no., subcontractor, process, CO..." actions="worklist" :active-key="null"
@@ -27,11 +27,11 @@
             ['key' => 'ship', 'label' => 'Planned Shipment', 'type' => 'date'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => SubconDelivery::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
-            ['key' => 'item', 'label' => 'Item Name', 'strong' => true],
-            ['key' => 'co', 'label' => 'CO No.'],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
+        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
+            ['key' => 'item', 'label' => t('Item Name'), 'strong' => true],
+            ['key' => 'co', 'label' => t('CO No.')],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]"
         :filters="['supplier' => 'Subcontractor', 'process' => 'Process', 'status' => 'Status']" />

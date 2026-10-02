@@ -126,12 +126,12 @@ class PdrEngine
         $errors = [];
 
         if ($newFinish->lte($newStart)) {
-            $errors[] = 'Waktu selesai harus setelah waktu mulai.';
+            $errors[] = t('The finish time must be after the start time.');
         }
 
         $minMinutes = config('production_scheduling.min_task_duration_minutes', 30);
         if ($newStart->diffInMinutes($newFinish, true) < $minMinutes) {
-            $errors[] = "Durasi task minimal {$minMinutes} menit.";
+            $errors[] = tf('The task duration is at least :n minutes.', ['n' => $minMinutes]);
         }
 
         if (! empty($proposedCrewIds)) {
@@ -142,13 +142,13 @@ class PdrEngine
 
             $conflicts = $this->crewChecker->conflictingEmployees($probe, $proposedCrewIds);
             if (! empty($conflicts)) {
-                $errors[] = 'Operator bentrok dengan task lain di window waktu ini (employee_id: '.
-                    implode(', ', $conflicts).').';
+                $errors[] = tf('The operator clashes with another task in this time window (employee_id: :ids).',
+                    ['ids' => implode(', ', $conflicts)]);
             }
         }
 
         if ($task->task_status === 'QC_HOLD') {
-            $errors[] = 'Task berstatus QC_HOLD terkunci sampai QA memutuskan (Tier4 §6).';
+            $errors[] = t('A task with status QC_HOLD is locked until QA decides (Tier4 §6).');
         }
 
         return $errors;

@@ -7,7 +7,7 @@ namespace Devlib\Components;
 // Blok diklik -> buka url (atau event dl:flow {key} bila tanpa url). Legenda status tampil di bawah.
 class Flow extends DevlibComponent
 {
-    public const STATUS = ['done' => ['Sudah', 'success'], 'review' => ['Review', 'info'], 'todo' => ['Belum', 'neutral'], 'locked' => ['Terkunci', 'warn']];
+    public const STATUS = ['done' => ['Done', 'success'], 'review' => ['Review', 'info'], 'todo' => ['To Do', 'neutral'], 'locked' => ['Locked', 'warn']];
 
     public function __construct(
         public array $steps = [],

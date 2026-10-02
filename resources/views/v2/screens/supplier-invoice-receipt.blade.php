@@ -13,8 +13,8 @@
     abort_if(request('id') && ! $doc, 404);
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $doc && ! request('new'))
     <x-dl::grid id="supplier-invoice-receipt-list" :rows="SupplierInvoiceReceipt::rows()" search="Search receipt no., supplier, invoice no..." actions="worklist" :active-key="null"
@@ -28,12 +28,12 @@
             ['key' => 'total', 'label' => 'Total', 'type' => 'money'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => SupplierInvoiceReceipt::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Invoice', 'columns' => [
-            ['key' => 'invoice', 'label' => 'Supplier Invoice No.', 'strong' => true],
-            ['key' => 'invoice_date', 'label' => 'Invoice Date', 'type' => 'date'],
-            ['key' => 'po', 'label' => 'PO No.'],
-            ['key' => 'tax', 'label' => 'Tax Invoice No.'],
-            ['key' => 'amount', 'label' => 'Amount', 'type' => 'money'],
+        :detail="['key' => 'items', 'title' => t('Invoice'), 'columns' => [
+            ['key' => 'invoice', 'label' => t('Supplier Invoice No.'), 'strong' => true],
+            ['key' => 'invoice_date', 'label' => t('Invoice Date'), 'type' => 'date'],
+            ['key' => 'po', 'label' => t('PO No.')],
+            ['key' => 'tax', 'label' => t('Tax Invoice No.')],
+            ['key' => 'amount', 'label' => t('Amount'), 'type' => 'money'],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]"
         :filters="['supplier' => 'Supplier', 'status' => 'Status']" />
@@ -73,7 +73,7 @@
                 <x-dl::field.text name="handed_by" label="Handed Over By" :value="$doc->handed_by" :readonly="! $draft" placeholder="Name of the supplier's person" :source="Src::of('tm2acc.fin_invoice_receipt.handed_by')" />
                 <x-dl::field.text name="payment_term" label="Payment Term" :value="$doc->payment_term" :readonly="! $draft" :source="Src::of('tm2acc.fin_invoice_receipt.payment_term')" />
                 <x-dl::field.date name="planned_payment_date" label="Planned Payment" :value="$doc->planned_payment_date?->toDateString()" :readonly="! $draft" :source="Src::of('tm2acc.fin_invoice_receipt.planned_payment_date')" />
-                <x-dl::field.select name="payment_method" label="Payment Method" :options="FinInvoiceReceipt::METHODS" :value="$doc->payment_method" :disabled="! $draft" :source="Src::of('tm2acc.fin_invoice_receipt.payment_method')" />
+                <x-dl::field.select name="payment_method" label="Payment Method" :options="array_map('t', FinInvoiceReceipt::METHODS)" :value="$doc->payment_method" :disabled="! $draft" :source="Src::of('tm2acc.fin_invoice_receipt.payment_method')" />
             </x-dl::form.row>
             @if ($doc->stat_cancel)
                 <x-dl::field.display label="Cancel Reason" :value="$doc->cancel_reason ?? '—'" :source="Src::of('tm2acc.fin_invoice_receipt.cancel_reason')" />

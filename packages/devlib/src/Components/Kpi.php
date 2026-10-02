@@ -74,11 +74,11 @@ class Kpi extends DevlibComponent
         return <<<'BLADE'
             <div {{ $attributes->class(['dl-kpi', 'dl-kpi--'.$tone]) }} {!! $dl() !!}>
                 <div class="dl-kpi__top"><span class="dl-kpi__icon"><i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i></span><span class="dl-kpi__label">{{ $label }}</span>
-                    @if ($delta())<span class="dl-kpi__delta {{ $delta()['good'] ? 'is-good' : 'is-bad' }}" title="vs periode lalu: {{ $show($previous) }}">{{ $delta()['up'] ? '▲' : '▼' }} {{ \Devlib\Locale::number(abs($delta()['pct']), 1) }}%</span>@endif</div>
+                    @if ($delta())<span class="dl-kpi__delta {{ $delta()['good'] ? 'is-good' : 'is-bad' }}" title="{{ \Devlib\Lang::text('vs last period') }}: {{ $show($previous) }}">{{ $delta()['up'] ? '▲' : '▼' }} {{ \Devlib\Locale::number(abs($delta()['pct']), 1) }}%</span>@endif</div>
                 <div class="dl-kpi__row"><b class="dl-kpi__value">{{ $show($value) }}</b>
                     @if ($sparkPath())<svg class="dl-kpi__spark {{ $delta() && ! $delta()['good'] ? 'is-bad' : '' }}" viewBox="0 0 120 36" preserveAspectRatio="none"><polyline points="{{ $sparkPath() }}"/></svg>@endif</div>
                 @if ($target)
-                    <div class="dl-kpi__target"><span style="width:{{ $targetPct() }}%"></span></div><small class="dl-kpi__hint">{{ \Devlib\Locale::number($targetPct()) }}% dari target {{ $show($target) }}</small>
+                    <div class="dl-kpi__target"><span style="width:{{ $targetPct() }}%"></span></div><small class="dl-kpi__hint">{{ \Devlib\Locale::number($targetPct()) }}% {{ \Devlib\Lang::text('of target') }} {{ $show($target) }}</small>
                 @elseif ($hint)
                     <small class="dl-kpi__hint">{{ $hint }}</small>
                 @endif

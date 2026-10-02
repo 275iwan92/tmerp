@@ -47,7 +47,7 @@ final class PettyCash
         $pos = PoOrder::with('lines')->whereIn('po_id', $txs->pluck('po_id')->filter()->unique())->get()->keyBy('po_id');
 
         return $txs->map(fn ($t) => ['id' => $t->id_petty_tx, 'items' => $pos->has($t->po_id) ? PurchaseOrder::lineRows($pos[$t->po_id]) : [],
-            'no' => $t->tx_no, 'type' => FinPettyCashTx::TYPES[$t->tx_type] ?? $t->tx_type, 'date' => $t->tx_date?->toDateString(), 'po' => $t->po_no ?: '—',
+            'no' => $t->tx_no, 'type' => t(FinPettyCashTx::TYPES[$t->tx_type] ?? $t->tx_type), 'date' => $t->tx_date?->toDateString(), 'po' => $t->po_no ?: '—',
             'who' => $t->receiver_name ?: '—', 'in' => $t->cash_effect > 0 ? (float) $t->cash_effect : null, 'out' => $t->cash_effect < 0 ? -(float) $t->cash_effect : null,
             'voucher' => $vouchers[$t->voucher_id] ?? '—', 'note' => $t->notes ?: '—', 'status' => $t->status === 'POSTED' ? 'Posted' : 'Cancelled'])->all();
     }

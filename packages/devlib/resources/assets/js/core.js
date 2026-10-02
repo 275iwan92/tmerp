@@ -73,7 +73,7 @@ window.Devlib = window.Devlib || {};
     let ov = document.querySelector('.dl-qr');
     if (!ov) {
       ov = document.createElement('div'); ov.className = 'dl-mov dl-qr';
-      ov.innerHTML = '<div class="dl-modal" style="max-width:300px"><div class="dl-modal__head"><h3>Form QR Code Data</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div><div class="dl-modal__body" style="display:flex;justify-content:center"><div data-qr></div></div><div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-x>' + esc(T('close')) + '</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-qr-dl>Download PNG</button></div></div>';
+      ov.innerHTML = '<div class="dl-modal" style="max-width:300px"><div class="dl-modal__head"><h3>' + esc(T('qr_title')) + '</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div><div class="dl-modal__body" style="display:flex;justify-content:center"><div data-qr></div></div><div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-x>' + esc(T('close')) + '</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-qr-dl>Download PNG</button></div></div>';
       document.body.appendChild(ov);
       ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-x]')) ov.classList.remove('is-on'); });
       ov.querySelector('[data-dl-qr-dl]').addEventListener('click', () => { const img = ov.querySelector('[data-qr] img, [data-qr] canvas'); if (!img) return; const a = document.createElement('a'); a.href = img.src || img.toDataURL(); a.download = 'form-qrcode.png'; a.click(); });
@@ -307,7 +307,7 @@ window.Devlib = window.Devlib || {};
   }
   function initDevMode() {
     box = document.createElement('div'); box.className = 'dl-dev-box'; box.setAttribute('aria-live', 'polite');
-    box.innerHTML = '<div class="dl-dev-box__head"><b>Mode Developer</b><span>F10 = mati</span></div><div class="dl-dev-box__body" data-dev-body></div><div class="dl-dev-box__foot" data-dev-pct></div>';
+    box.innerHTML = '<div class="dl-dev-box__head"><b>' + esc(T('dev_mode')) + '</b><span>' + esc(T('dev_f10_off')) + '</span></div><div class="dl-dev-box__body" data-dev-body></div><div class="dl-dev-box__foot" data-dev-pct></div>';
     document.body.appendChild(box);
     document.addEventListener('mousemove', e => {
       if (!devOn()) return;
@@ -365,7 +365,7 @@ window.Devlib = window.Devlib || {};
     if (!host) { host = document.createElement('div'); host.className = 'dl-toasts'; host.setAttribute('aria-live', 'polite'); document.body.appendChild(host); }
     const icon = {success: 'fa-circle-check', danger: 'fa-circle-xmark', warn: 'fa-triangle-exclamation', info: 'fa-circle-info'}[tone] || 'fa-circle-info';
     const t = document.createElement('div'); t.className = 'dl-toast2 dl-toast2--' + tone;
-    t.innerHTML = `<i class="fa-solid ${icon}"></i><div>${title ? `<b>${esc(title)}</b>` : ''}<span>${esc(msg)}</span></div><button type="button" aria-label="Tutup">&times;</button>`;
+    t.innerHTML = `<i class="fa-solid ${icon}"></i><div>${title ? `<b>${esc(title)}</b>` : ''}<span>${esc(msg)}</span></div><button type="button" aria-label="${esc(T('close'))}">&times;</button>`;
     const bye = () => { t.classList.add('is-out'); setTimeout(() => t.remove(), 250); };
     $(t, 'button').addEventListener('click', bye);
     host.appendChild(t); setTimeout(bye, tone === 'danger' ? 7000 : 3500);
@@ -417,7 +417,7 @@ window.Devlib = window.Devlib || {};
     if (e.defaultPrevented) return;
     const btn = e.submitter || e.target.querySelector('[type=submit]');
     if (!btn || btn.dataset.dlNoBusy !== undefined) return;
-    setTimeout(() => { if (e.defaultPrevented) return; btn.disabled = true; btn.classList.add('is-busy'); btn.dataset.dlLabel = btn.innerHTML; btn.innerHTML = '<span class="dl-spinner__ring dl-spinner__ring--inline"></span> ' + (currentLang === 'en' ? 'Processing…' : 'Memproses…'); }, 0);
+    setTimeout(() => { if (e.defaultPrevented) return; btn.disabled = true; btn.classList.add('is-busy'); btn.dataset.dlLabel = btn.innerHTML; btn.innerHTML = '<span class="dl-spinner__ring dl-spinner__ring--inline"></span> ' + esc(T('processing')); }, 0);
   });
 
 
@@ -629,7 +629,7 @@ window.Devlib = window.Devlib || {};
     const sel = el.closest('[data-dl-select]');
     if (sel) { const it = $(sel, `.dl-dd__item[data-value="${CSS.escape(s)}"]`); $(sel, '[data-dl-dd-text]').textContent = it ? it.textContent : sel.dataset.empty; return; }
     const lk = el.closest('[data-dl-lookup]');
-    if (lk) { const r = JSON.parse(lk.dataset.rows || '[]').find(x => String(x[lk.dataset.key]) === s); $(lk, '[data-dl-dd-text]').textContent = r ? r[lk.dataset.label] : 'Pilih...'; return; }
+    if (lk) { const r = JSON.parse(lk.dataset.rows || '[]').find(x => String(x[lk.dataset.key]) === s); $(lk, '[data-dl-dd-text]').textContent = r ? r[lk.dataset.label] : T('f_choose'); return; }
     const dt = el.closest('[data-dl-date]');
     if (dt) { $(dt, '[data-dl-date-text]').value = DlDate.of(s)?.display() ?? ''; return; }
     const pb = el.closest('[data-dl-phonebox]');

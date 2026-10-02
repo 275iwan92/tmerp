@@ -1,7 +1,7 @@
 {{-- Tanda Terima Bahan Customer (user 2026-10-01): cetak penerimaan jenis CUSTOMER dari SPB v2 (pv_receipt).
      Objek DevLib x-dl::print-out (kop + pihak + tabel + tanda tangan) + x-dl::doc-share (PDF / JPEG / online + QR / Email).
      Dokumen gudang: tanpa harga. Label English (diterjemahkan lewat sys_dictionary / bahasa cetak). --}}
-@extends('v2.layout', ['title' => 'Customer Material Receipt '.$pv->doc_no, 'bodyClass' => 'dl-page-body'])
+@extends('v2.layout', ['title' => t('Customer Material Receipt').' '.$pv->doc_no, 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">
         <x-dl::action-bar>
@@ -9,7 +9,7 @@
             <x-dl::doc-share target="#cm-print" type="customer-material" :doc-id="$pv->pv_id" :number="$pv->doc_no" title="Customer Material Receipt" :email-to="$customer->email ?? null" />
         </x-dl::action-bar>
         <div id="cm-print">
-            <x-dl::print-out title="Customer Material Receipt" subtitle="Tanda Terima Bahan Customer" :number="$pv->doc_no" :date="$pv->i_doc_date?->toDateString()"
+            <x-dl::print-out title="Customer Material Receipt" subtitle="Receipt of Customer-Owned Material" :number="$pv->doc_no" :date="$pv->i_doc_date?->toDateString()"
                 :status="$pv->status" :company="$company" :printed-by="auth()->user()->login" :prices="false" :source="\App\Support\V2\Src::of('tm2pur.pv_receipt (CUSTOMER)', 'tm2pur.pv_line')"
                 :parties="array_filter([
                     'Customer' => [$customer->customer_name ?? '—', $customer->default_address ?? ''],

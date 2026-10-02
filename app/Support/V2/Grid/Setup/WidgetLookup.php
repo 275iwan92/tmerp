@@ -97,6 +97,6 @@ class WidgetLookup extends DbLookup
         $key = $id ? SysWidget::query()->whereKey($id)->value('widget_key') : ($in['widget_key'] ?? null);
         $known = array_map(fn (string $class) => (new $class)->key(), WidgetCatalog::CLASSES);
 
-        return in_array($key, $known, true) ? null : 'This Key has no program class. Ask the developer to add the widget first.';
+        return in_array($key, $known, true) ? null : t('This Key has no program class. Ask the developer to add the widget first.');
     }
 }

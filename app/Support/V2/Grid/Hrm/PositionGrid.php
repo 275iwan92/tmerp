@@ -22,7 +22,7 @@ class PositionGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Master Posisi';
+        return t('Master Position');
     }
 
     public function family(): string

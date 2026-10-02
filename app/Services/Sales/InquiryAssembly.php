@@ -34,10 +34,10 @@ final class InquiryAssembly
 
     public function create(IqpInquiry $inq, string $name, int $joinTypeId, array $childIds, float $qty = 1): IqpPart
     {
-        abort_if($inq->stat_confirm_sales, 422, 'Inquiry sudah Confirm — struktur rakitan terkunci.');
+        abort_if($inq->stat_confirm_sales, 422, t('The Inquiry is already confirmed — the assembly structure is locked.'));
         $children = $inq->parts()->whereIn('id_part', array_map('intval', $childIds))->whereNull('parent_part_id')->get();
         if ($children->count() < 2) {
-            throw new InvalidArgumentException('Rakitan butuh minimal 2 part (komponen atau rakitan lain) yang belum masuk rakitan mana pun.');
+            throw new InvalidArgumentException(t('An assembly needs at least 2 parts (components or other assemblies) that are not in any assembly yet.'));
         }
         MatJoinType::findOrFail($joinTypeId);
 
@@ -54,7 +54,7 @@ final class InquiryAssembly
     // Bongkar rakitan: anaknya kembali berdiri sendiri (tidak ikut terhapus).
     public function remove(IqpInquiry $inq, int $assemblyId): void
     {
-        abort_if($inq->stat_confirm_sales, 422, 'Inquiry sudah Confirm — struktur rakitan terkunci.');
+        abort_if($inq->stat_confirm_sales, 422, t('The Inquiry is already confirmed — the assembly structure is locked.'));
         $a = $inq->parts()->where('part_kind', 'ASSEMBLY')->findOrFail($assemblyId);
         DB::connection('tm2sdi')->transaction(function () use ($a) {
             IqpPart::where('parent_part_id', $a->id_part)->update(['parent_part_id' => $a->parent_part_id, 'updated_by' => $this->login]);

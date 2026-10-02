@@ -59,7 +59,7 @@
       const steps = d.steps || [], at = steps.findIndex(s => s.status === 'current'), lv = this.level(d);
       const lines = d.lines || [], keys = Object.keys(this.cols);
       $(this.el, '[data-a-body]').innerHTML = `
-        <div class="dl-appr__title"><div><h3>${esc(d.no)} — ${esc(d.title || '')}${d.url ? ` <a class="dl-appr__open" href="${esc(d.url)}" title="${esc(T('a_open_doc'))}"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}</h3><p>${esc(T('a_submitted_by'))}: ${esc(d.submitted_by || '')}${d.party ? ' · ' + esc(d.party) : ''}</p></div>${lv.at ? `<div class="dl-appr__level"><span class="dl-badge dl-badge--pill dl-badge--warn">Approval Level ${lv.at} of ${lv.n} — ${esc(steps[at].role)}</span><span class="dl-appr__meter" title="${lv.n} level approval">${lv.steps.map((s, i) => `<i class="is-${esc(s.status)}" title="Level ${i + 1} · ${esc(s.role)}"></i>`).join('')}</span></div>` : ''}</div>
+        <div class="dl-appr__title"><div><h3>${esc(d.no)} — ${esc(d.title || '')}${d.url ? ` <a class="dl-appr__open" href="${esc(d.url)}" title="${esc(T('a_open_doc'))}"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}</h3><p>${esc(T('a_submitted_by'))}: ${esc(d.submitted_by || '')}${d.party ? ' · ' + esc(d.party) : ''}</p></div>${lv.at ? `<div class="dl-appr__level"><span class="dl-badge dl-badge--pill dl-badge--warn">Approval Level ${lv.at} of ${lv.n} — ${esc(steps[at].role)}</span><span class="dl-appr__meter" title="${esc(Tf('a_n_levels', {n: lv.n}))}">${lv.steps.map((s, i) => `<i class="is-${esc(s.status)}" title="Level ${i + 1} · ${esc(s.role)}"></i>`).join('')}</span></div>` : ''}</div>
         ${d.held ? `<div class="dl-appr__held"><i class="fa-solid fa-pause"></i><div><b>${esc(T('a_held_temp'))}</b><small>${esc(T('a_by'))} ${esc(d.held.by)} · ${esc(d.held.at)}${d.held.note ? ` — “${esc(d.held.note)}”` : ''}</small><small>${esc(T('a_still_decide'))}</small></div></div>` : ''}
         <div class="dl-appr__summary">${Object.entries(d.summary || {}).map(([k, v]) => `<div><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join('')}</div>
         ${lines.length ? `<table class="dl-appr__lines"><thead><tr>${keys.map(k => `<th class="${k.endsWith(':money') ? 'num' : ''}">${esc(this.cols[k])}</th>`).join('')}</tr></thead><tbody>${lines.map(r => `<tr>${keys.map(k => `<td class="${k.endsWith(':money') ? 'num' : ''}">${this.cell(k, r[k.replace(':money', '')])}</td>`).join('')}</tr>`).join('')}</tbody></table>` : ''}
@@ -89,11 +89,11 @@
         const log = {id: d.id, no: d.no, action, status, by: this.me, at: now, level: lv.at, levels: lv.n, role: step ? step.role : '', note: n};
         (d.history = d.history || []).push({action: status, by: this.me, at: now, note: n});
         this.log.unshift(log); this.logs();
-        if (action === 'hold') { d.held = {by: this.me, at: now, note: n}; toast(`${d.no} ditahan.`, 'warn'); this.detail(); this.list(); }
+        if (action === 'hold') { d.held = {by: this.me, at: now, note: n}; toast(Tf('a_done_hold', {no: d.no}), 'warn'); this.detail(); this.list(); }
         else {
           if (step) Object.assign(step, {status: action === 'approve' ? 'done' : 'rejected', by: this.me, at: now});
           d.decided = action;
-          toast(`${d.no} ${action === 'approve' ? 'disetujui' : 'ditolak'}.`, action === 'approve' ? 'success' : 'danger');
+          toast(Tf(action === 'approve' ? 'a_done_approve' : 'a_done_reject', {no: d.no}), action === 'approve' ? 'success' : 'danger');
           const next = this.pending()[0]; this.cur = next ? next.id : null; this.list(); this.detail();
         }
         this.el.dispatchEvent(new CustomEvent('dl:approval', {bubbles: true, detail: log}));

@@ -36,16 +36,16 @@ class Calendar extends DevlibComponent
             <div {{ $attributes->class(['dl-cal2', 'no-side' => ! $sidebar]) }} {!! $dl() !!} data-dl-calendar data-events="{{ json_encode($events) }}" data-view="{{ $display }}" data-date="{{ $date }}" data-week-start="{{ $weekStart }}" data-scroll="{{ $scrollHour }}">
                 <div class="dl-cal2__top">
                     <x-dl::button variant="secondary" size="sm" :label="\Devlib\Lang::text('Today')" data-c-today />
-                    <x-dl::icon-button icon="prev" title="Sebelumnya" data-c-prev />
-                    <x-dl::icon-button icon="next" title="Berikutnya" data-c-next />
+                    <x-dl::icon-button icon="prev" title="Previous" data-c-prev />
+                    <x-dl::icon-button icon="next" title="Next" data-c-next />
                     <b class="dl-cal2__title" data-c-title></b>
                     <span class="dl-cal2__spacer"></span>
-                    <div class="dl-segment" data-c-views><button type="button" class="dl-segment__opt" data-value="day">Hari</button><button type="button" class="dl-segment__opt" data-value="week">Minggu</button><button type="button" class="dl-segment__opt" data-value="month">Bulan</button></div>
+                    <div class="dl-segment" data-c-views><button type="button" class="dl-segment__opt" data-value="day">{{ \Devlib\Lang::text('Day') }}</button><button type="button" class="dl-segment__opt" data-value="week">{{ \Devlib\Lang::text('Week') }}</button><button type="button" class="dl-segment__opt" data-value="month">{{ \Devlib\Lang::text('Month') }}</button></div>
                 </div>
                 <div class="dl-cal2__body">
                     @if ($sidebar)
                         <aside class="dl-cal2__left">
-                            <x-dl::button preset="new" label="Buat Acara" block data-c-create />
+                            <x-dl::button preset="new" label="Create Event" block data-c-create />
                             <div class="dl-cal2__mini" data-c-mini></div>
                             <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search events...') }}" data-c-search aria-label="{{ \Devlib\Lang::text('Search events') }}"></div>
                             <div class="dl-cal2__found" data-c-found></div>

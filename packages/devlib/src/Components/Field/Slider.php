@@ -77,7 +77,8 @@ class Slider extends Field
 
     public static function compact(int|float $v): string
     {
-        foreach ([[1e12, ' T'], [1e9, ' M'], [1e6, ' jt'], [1e3, ' rb']] as [$d, $s]) {
+        // Singkatan ikut bahasa tampilan (sama dengan chNum di core.js): id T / M / jt / rb, selain itu T / B / M / K.
+        foreach (\Devlib\Locale::lang() === 'id' ? [[1e12, ' T'], [1e9, ' M'], [1e6, ' jt'], [1e3, ' rb']] : [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'K']] as [$d, $s]) {
             if (abs($v) >= $d) {
                 return \Devlib\Locale::decimal($v / $d, 1).$s;
             }

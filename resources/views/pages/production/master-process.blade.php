@@ -676,7 +676,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                         <p class="text-[11px] text-muted mb-3">Angka di sini adalah <strong>nilai default</strong> proses. Kalau satu mesin punya angka berbeda, isi override-nya di tab <strong>Mesin Pelaksana</strong> — jangan ubah angka default ini.</p>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3">
-                            <x-form.select label="Satuan Hasil (UoM)" name="output_uom" wire:model="output_uom" :placeholder="false" :options="\App\Models\Master\ProdProcess::OUTPUT_UOM" />
+                            <x-form.select label="Satuan Hasil (UoM)" name="output_uom" wire:model="output_uom" :placeholder="false" :options="array_map('t', \App\Models\Master\ProdProcess::OUTPUT_UOM)" />
                             <x-form.input label="Setup Time / Make-ready (menit)" type="number" name="default_setup_minutes" wire:model="default_setup_minutes" placeholder="mis. 45" />
                         </div>
 

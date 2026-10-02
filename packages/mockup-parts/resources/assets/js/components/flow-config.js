@@ -17,9 +17,9 @@
         if (!e.target.closest('[data-fc-save]')) return;
         const flows = {}; let bad = 0;
         $$(this.el, '[data-fc-doc]').forEach(p => { const l = $(p, '[data-dl-lines]'); bad += l.dlLines.validate(); flows[p.dataset.fcDoc] = l.dlLines.rows; });
-        if (bad) return toast(`${bad} isian wajib di alur approval belum diisi.`, 'danger');
+        if (bad) return toast(Devlib.h.t(':n required fields in the approval flow are not filled in yet.').replace(':n', bad), 'danger');
         this.el.dispatchEvent(new CustomEvent('dl:flowcfg-save', {bubbles: true, detail: {flows}}));
-        toast('Konfigurasi alur approval disimpan.', 'success');
+        toast(Devlib.h.t('Approval flow configuration saved.'), 'success');
       });
     }
 
@@ -30,9 +30,9 @@
     sim(panel) {
       const lines = $(panel, '[data-dl-lines]'); if (!lines || !lines.dlLines) return;
       const v = this.num($(panel, '[data-fc-value]').value), rows = lines.dlLines.rows;
-      const act = {KNOW: 'Mengetahui', APPROVE: 'Menyetujui'};
-      $(panel, '[data-fc-path]').innerHTML = `<li class="is-done"><span class="dl-appr__dot"><i class="fa-solid fa-check"></i></span><b>Pembuat mengajukan</b><small>Langkah 0 · selalu</small></li>`
-        + rows.map((r, i) => { const on = !+r.min || v >= +r.min; return `<li class="${on ? 'is-current' : 'is-skip'}"><span class="dl-appr__dot">${on ? i + 1 : ''}</span><b>${esc(r.name || 'Langkah ' + (i + 1))} — ${esc(act[r.action] || '')}</b><small>${esc(this.roles[r.role] || r.role || '—')} · ${+r.min ? (on ? `aktif: nilai ≥ Rp ${(+r.min).toLocaleString('id-ID')}` : `dilewati: nilai < Rp ${(+r.min).toLocaleString('id-ID')}`) : 'selalu aktif'}</small></li>`; }).join('');
+      const act = {KNOW: Devlib.h.t('To acknowledge'), APPROVE: Devlib.h.t('To approve')};
+      $(panel, '[data-fc-path]').innerHTML = `<li class="is-done"><span class="dl-appr__dot"><i class="fa-solid fa-check"></i></span><b>${Devlib.h.t('The creator submits')}</b><small>${Devlib.h.t('Step 0 · always')}</small></li>`
+        + rows.map((r, i) => { const on = !+r.min || v >= +r.min; return `<li class="${on ? 'is-current' : 'is-skip'}"><span class="dl-appr__dot">${on ? i + 1 : ''}</span><b>${esc(r.name || Devlib.h.t('Step') + ' ' + (i + 1))} — ${esc(act[r.action] || '')}</b><small>${esc(this.roles[r.role] || r.role || '—')} · ${+r.min ? (on ? Devlib.h.t('active: value ≥ Rp :min').replace(':min', (+r.min).toLocaleString('id-ID')) : Devlib.h.t('skipped: value < Rp :min').replace(':min', (+r.min).toLocaleString('id-ID'))) : Devlib.h.t('always active')}</small></li>`; }).join('');
     }
   }
   Devlib.define("FlowConfig", FlowConfig);

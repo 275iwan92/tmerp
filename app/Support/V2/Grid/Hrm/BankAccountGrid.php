@@ -21,7 +21,7 @@ class BankAccountGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Master Karyawan & Rekening Bank';
+        return t('Master Employee & Bank Account');
     }
 
     public function family(): string

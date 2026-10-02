@@ -22,7 +22,7 @@ class TokenTable extends DevlibComponent
     {
         return <<<'BLADE'
             <table {{ $attributes->class(['dl-tokens', 'dl-tokens--'.$kind]) }} {!! $dl() !!}>
-                <thead><tr><th>Token</th><th>Nilai terkini</th><th>Contoh</th><th>Dipakai untuk</th></tr></thead>
+                <thead><tr><th>Token</th><th>{{ \Devlib\Lang::text('Current value') }}</th><th>{{ \Devlib\Lang::text('Example') }}</th><th>{{ \Devlib\Lang::text('Used for') }}</th></tr></thead>
                 <tbody>
                     @foreach ($tokens as $name => $use)
                         <tr data-token="{{ $name }}">

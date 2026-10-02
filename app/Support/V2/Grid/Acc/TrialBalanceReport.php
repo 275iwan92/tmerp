@@ -91,7 +91,7 @@ class TrialBalanceReport extends AccGrid
 
         return [
             'account' => $m->account_name, 'account_code' => $m->account_code, 'class' => $this->accountClass($m->account_type),
-            'normal' => $m->normal_balance === 'DEBIT' ? 'Debit' : 'Credit', 'debit' => $net > 0 ? $net : 0.0, 'credit' => $net < 0 ? -$net : 0.0,
+            'normal' => $m->normal_balance === 'DEBIT' ? t('Debit') : t('Credit'), 'debit' => $net > 0 ? $net : 0.0, 'credit' => $net < 0 ? -$net : 0.0,
             'state' => abs($net) > 0.004 ? 'Has balance' : 'Zero', 'active' => (bool) $m->activate,
         ];
     }

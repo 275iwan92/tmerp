@@ -29,7 +29,7 @@ class ThemeBoot extends DevlibComponent
     {
         return <<<'BLADE'
             <style data-dl-themes>{!! $css() !!}</style>
-            <script>window.DL_LANG = @json(\Devlib\Lang::all()); window.DL_LANG_ACTIVE = @json(\Devlib\Locale::lang()); window.DL_NUM = @json(\Devlib\Locale::jsSpec()); window.DL_DICT = @json((object) \Devlib\Lang::jsDict()); window.DL_DICT_URL = @json(config('devlib.dictionary_register_url')); window.DL_CSRF = @json(csrf_token());</script>
+            <script>window.DL_LANG = @json(\Devlib\Lang::all()); window.DL_LANG_ACTIVE = @json(\Devlib\Locale::lang()); window.DL_NUM = @json(\Devlib\Locale::jsSpec()); window.DL_DICT = @json((object) \Devlib\Lang::jsDict()); window.DL_DICT_URL = @json(config('devlib.dictionary_register_url')); window.DL_LANG_URL = @json(config('devlib.lang_url')); window.DL_CSRF = @json(csrf_token());</script>
             <script>(function(d){var g=function(k,v){try{return localStorage.getItem(k)||v}catch(e){return v}};var q=(location.search+location.hash).match(/theme=([a-z_]+)/);d.dataset.dlTheme=q?q[1]:g('dl-theme',@json($fallback()));d.dataset.dlDensity=g('dl-density','normal');d.style.setProperty('--dl-font-scale',g('dl-font-scale','1'));})(document.documentElement);</script>
             BLADE;
     }

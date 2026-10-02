@@ -50,11 +50,11 @@ class HelpTopicLookup extends HelpLookup
 
     public function columns(): array
     {
-        $modules = SecModule::query()->orderBy('sort_order')->pluck('module_name', 'module_code')->all() + [SecUser::PUBLIC_MODULE => 'General (everyone)'];
+        $modules = SecModule::query()->orderBy('sort_order')->pluck('module_name', 'module_code')->all() + [SecUser::PUBLIC_MODULE => t('General (everyone)')];
 
         return [
             ['key' => 'topic_key', 'label' => 'Key', 'required' => true, 'unique' => true, 'lockSaved' => true, 'width' => '210px'],
-            ['key' => 'topic_type', 'label' => 'Type', 'type' => 'select', 'options' => SysHelpTopic::TYPES, 'required' => true, 'width' => '130px'],
+            ['key' => 'topic_type', 'label' => 'Type', 'type' => 'select', 'options' => array_map('t', SysHelpTopic::TYPES), 'required' => true, 'width' => '130px'],
             ['key' => 'module_code', 'label' => 'Module', 'type' => 'select', 'options' => $modules, 'width' => '170px'],
             ['key' => 'title', 'label' => 'Title', 'required' => true, 'width' => '250px'],
             ['key' => 'purpose', 'label' => 'Purpose (English)', 'required' => true, 'width' => '420px'],

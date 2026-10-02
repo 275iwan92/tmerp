@@ -89,9 +89,9 @@ abstract class DbLookup extends DbGrid
                     ($c['type'] ?? 'text') === 'check' ? 'boolean' : null,
                     ! empty($c['unique']) ? Rule::unique($model->getConnectionName().'.'.$model->getTable(), $c['key'])->ignore($id, $model->getKeyName()) : null,
                 ]))])->all();
-                $v = Validator::make($in, array_merge_recursive($rules, $this->rules()), [], $cols->pluck('label', 'key')->all());
+                $v = Validator::make($in, array_merge_recursive($rules, $this->rules()), [], $cols->mapWithKeys(fn ($c) => [$c['key'] => t($c['label'])])->all());
                 if ($error = $v->fails() ? $v->errors()->first() : $this->check($in, $id)) {
-                    throw ValidationException::withMessages(['row' => 'Baris '.($i + 1).': '.$error]);
+                    throw ValidationException::withMessages(['row' => tf('Row :n: :error', ['n' => $i + 1, 'error' => $error])]);
                 }
                 // lockSaved = kolom kode yang sudah dirujuk data lain: hanya bisa diisi di baris baru (layar mengunci selnya,
                 // server tetap mengabaikan kiriman untuk baris yang sudah tersimpan).

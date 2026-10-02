@@ -22,8 +22,8 @@
       this.el.addEventListener('click', e => {
         const x = e.target;
         const f = x.closest('[data-o-fold]'); if (f) { const id = f.closest('[data-o-node]').dataset.oNode; this.collapsed.has(id) ? this.collapsed.delete(id) : this.collapsed.add(id); return this.render(); }
-        if (x.closest('[data-o-undo]')) { const u = this.undo.pop(); if (u) { this.byId(u[0]).parent = u[1]; this.render(); toast('Perubahan terakhir dibatalkan.'); } return; }
-        if (x.closest('[data-o-save]')) { this.el.dispatchEvent(new CustomEvent('dl:orgchart-save', {bubbles: true, detail: {nodes: this.nodes.map(n => ({id: n.id, parent: n.parent ?? null}))}})); toast(`Struktur disimpan (${this.undo.length} perubahan).`, 'success'); this.undo.length = 0; return this.render(); }
+        if (x.closest('[data-o-undo]')) { const u = this.undo.pop(); if (u) { this.byId(u[0]).parent = u[1]; this.render(); toast(T('oc_undone')); } return; }
+        if (x.closest('[data-o-save]')) { this.el.dispatchEvent(new CustomEvent('dl:orgchart-save', {bubbles: true, detail: {nodes: this.nodes.map(n => ({id: n.id, parent: n.parent ?? null}))}})); toast(Tf('oc_saved', {n: this.undo.length}), 'success'); this.undo.length = 0; return this.render(); }
         const z = x.closest('[data-o-zoom]');
         if (z) { const k = +z.dataset.oZoom; if (k) this.zoom = Math.min(1.6, Math.max(0.4, Math.round((this.zoom + k * 0.1) * 10) / 10)); else { this.tree.style.transform = 'scale(1)'; this.zoom = Math.max(0.4, Math.min(1, this.canvas.clientWidth / this.tree.scrollWidth)); } return this.render(); }
         if (x.closest('[data-o-html]')) {
@@ -76,10 +76,10 @@
     card(n) {
       const P = this.ppl(n), c = this.kids(n.id);
       return `<div class="dl-org__card ${P.length ? '' : 'is-vacant'} ${this.hit(n) ? 'is-hit' : ''}" data-o-node="${esc(n.id)}" ${this.edit ? 'data-o-drop' : ''}>
-        ${this.edit ? `<span class="dl-org__grip" draggable="true" data-o-grip title="Tarik ke atasan baru"><i class="fa-solid fa-grip-vertical"></i></span>` : ''}
+        ${this.edit ? `<span class="dl-org__grip" draggable="true" data-o-grip title="${esc(T('oc_drag'))}"><i class="fa-solid fa-grip-vertical"></i></span>` : ''}
         <div class="dl-org__who">${P.length ? `<span class="dl-org__avs">${P.slice(0, 3).map(p => `<span class="dl-org__av" style="--h:${this.hue(p.name)}" title="${esc(p.name)}">${this.av(p)}</span>`).join('')}</span>` : '<span class="dl-org__av is-empty"><i class="fa-solid fa-user-plus"></i></span>'}
-          <span class="dl-org__txt"><b>${P.length ? esc(P.map(p => p.name).slice(0, 2).join(', ')) + (P.length > 2 ? ` +${P.length - 2}` : '') : 'Lowong'}</b><small>${esc(n.title)}</small>${n.dept ? `<em>${esc(n.dept)}</em>` : ''}</span></div>
-        ${c.length ? `<button type="button" class="dl-org__fold" data-o-fold title="${this.collapsed.has(String(n.id)) ? 'Buka' : 'Lipat'} cabang">${this.collapsed.has(String(n.id)) ? `+${c.length}` : '−'}</button>` : ''}
+          <span class="dl-org__txt"><b>${P.length ? esc(P.map(p => p.name).slice(0, 2).join(', ')) + (P.length > 2 ? ` +${P.length - 2}` : '') : esc(T('oc_vacant'))}</b><small>${esc(n.title)}</small>${n.dept ? `<em>${esc(n.dept)}</em>` : ''}</span></div>
+        ${c.length ? `<button type="button" class="dl-org__fold" data-o-fold title="${esc(T(this.collapsed.has(String(n.id)) ? 'oc_expand' : 'oc_collapse'))}">${this.collapsed.has(String(n.id)) ? `+${c.length}` : '−'}</button>` : ''}
       </div>`;
     }
 

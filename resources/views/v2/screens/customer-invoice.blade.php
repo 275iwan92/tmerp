@@ -18,8 +18,8 @@
     $plain = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $inv && ! request('new'))
     <x-dl::grid id="customer-invoice-list" :rows="CustomerInvoice::rows()" search="Search invoice no., customer, order no..." actions="worklist" :active-key="null" row-tone="tone"
@@ -35,14 +35,14 @@
             ['key' => 'outstanding', 'label' => 'Outstanding', 'type' => 'money'],
             ['key' => 'state', 'label' => 'Status', 'type' => 'badge', 'tones' => CustomerInvoice::STATE_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'dn', 'label' => 'Delivery Note'],
-            ['key' => 'received', 'label' => 'Qty Received', 'type' => 'number'],
-            ['key' => 'invoiced', 'label' => 'Qty Invoiced', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'price', 'label' => 'Price', 'type' => 'money'],
-            ['key' => 'amount', 'label' => 'Amount', 'type' => 'money'],
+        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'dn', 'label' => t('Delivery Note')],
+            ['key' => 'received', 'label' => t('Qty Received'), 'type' => 'number'],
+            ['key' => 'invoiced', 'label' => t('Qty Invoiced'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'price', 'label' => t('Price'), 'type' => 'money'],
+            ['key' => 'amount', 'label' => t('Amount'), 'type' => 'money'],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['state' => 'Draft'], 'tone' => 'neutral'],
             ['label' => 'Open', 'where' => ['state' => ['Open', 'Partially paid', 'Due this week']], 'tone' => 'info'],
@@ -119,7 +119,7 @@
         $t = $svc->totals($inv);
         $customer = \App\Models\Master\CustCustomer::withoutGlobalScopes()->find($inv->partner_id);
         $coNo = $inv->co_id ? \App\Models\Sdi\CoOrder::query()->whereKey($inv->co_id)->value('co_no') : null;
-        $identity = $inv->is_ppn ? \App\Support\Branding\Brand::companyLegalName().' (PPN)' : \App\Support\Branding\Brand::companyName().' (Non PPN)';
+        $identity = $inv->is_ppn ? \App\Support\Branding\Brand::companyLegalName().' ('.t('VAT').')' : \App\Support\Branding\Brand::companyName().' ('.t('Non VAT').')';
         $legacy = ! $isDp && $inv->lines->isEmpty();
         $printType = $isDp ? 'dp-invoice' : 'customer-invoice';
         $canReceive = $isDp && $inv->doc_status === 'POSTED' && $inv->payment_status !== 'PAID';

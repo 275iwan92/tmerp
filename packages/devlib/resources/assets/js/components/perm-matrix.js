@@ -46,7 +46,7 @@
 
     draw() {
       const g = this.gSel.value;
-      $(this.el, '[data-pm-body]').innerHTML = this.shown().map(o => { const v = this.get(this.work, g, o.key), ch = v !== this.get(this.saved, g, o.key); return `<tr class="${ch ? 'is-dirty' : ''}"><td>${esc(o.name)}</td><td><span class="dl-perm__pill is-${esc(String(o.type).toLowerCase())}">${esc(o.type)}</span></td><td>${esc(o.module)}</td><td><select data-pm-obj="${esc(o.key)}" aria-label="Hak akses ${esc(o.name)}" class="is-l${v}">${this.LV.map((l, i) => `<option value="${i}" ${i === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></td></tr>`; }).join('') || '<tr><td colspan="4" class="dl-perm__none">Tidak ada objek.</td></tr>';
+      $(this.el, '[data-pm-body]').innerHTML = this.shown().map(o => { const v = this.get(this.work, g, o.key), ch = v !== this.get(this.saved, g, o.key); return `<tr class="${ch ? 'is-dirty' : ''}"><td>${esc(o.name)}</td><td><span class="dl-perm__pill is-${esc(String(o.type).toLowerCase())}">${esc(o.type)}</span></td><td>${esc(o.module)}</td><td><select data-pm-obj="${esc(o.key)}" aria-label="${esc(T('pmx_access'))} ${esc(o.name)}" class="is-l${v}">${this.LV.map((l, i) => `<option value="${i}" ${i === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></td></tr>`; }).join('') || '<tr><td colspan="4" class="dl-perm__none">' + esc(T('pmx_none')) + '</td></tr>';
       const n = this.dirtyCount(); $(this.el, '[data-pm-dirty]').textContent = n ? Tf('pmx_dirty', {n}) : T('pmx_clean');
       this.el.classList.toggle('is-dirty', n > 0);
     }

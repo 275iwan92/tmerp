@@ -259,6 +259,13 @@ transaksi = `iqp_costing`, ikut inquiry).
   kartu, hint, pesan): `:title="'Customer Order · '.raw($o->co_no)" :subtitle="raw($customer.' · '.$status)"`. Labelnya tetap
   English dan tetap diterjemahkan komponen; nilainya tidak diterjemahkan dan **tidak tercatat di kamus** (tanpa `raw()` tiap
   dokumen yang dibuka menambah satu baris `sys_dictionary`). Kalimat yang sudah jadi lewat `t()` + `str_replace` = `raw()` seluruhnya.
+- **Bahasa ikut AKUN, pesan diterjemahkan di tempat dibuat (sapuan 2026-10-03):** bahasa tampilan = `sec_user.lang_code`
+  (`Devlib\Locale::langUsing`; cookie hanya untuk tamu / login), memilih bendera menyimpan ke akun (`POST /v2/lang`) lalu memuat
+  ulang. Pesan flash / error / abort / JSON / pesan service: `t('English.')` atau `tf('Quotation :no created.', ['no' => $x])`,
+  dan layar menampilkannya sebagai teks jadi (`raw(session('v2_flash'))`, `raw($errors->first())`). Label menu `sys_app_menu`
+  English + kamus (`AppMenu::label`). Tombol / badge / status selalu English, tanpa pasangan kamus. Pesan validasi: `lang/id`.
+  Paket (`packages/*`): PHP `\Devlib\Lang::text('English')`, JS `Devlib.h.t('English')`; DevLib sendiri: pasangan di `Devlib\Lang::DICT`.
+  Status, sisa keputusan dan cara menambah bahasa ke-3: `docs/md_for_systems/multilanguage_status.md`; alat uji: `tools/multilanguage/`.
 - Data lama yang masih Indonesia di DB = utang yang dikonversi bertahap (audit & rencana:
   `docs/multilanguage_design.md`); data REAL (mesin/proses/pegawai) & zona beku §6B dikonversi hanya atas izin user.
 

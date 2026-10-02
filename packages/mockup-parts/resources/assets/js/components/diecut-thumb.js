@@ -6,7 +6,7 @@
     init() {
       const spec = JSON.parse(this.el.dataset.spec || 'null');
       if (!spec || !spec.elements || !window.TMDieline) return;
-      try { this.el.innerHTML = window.TMDieline.svg(spec, JSON.parse(this.el.dataset.dims || '{}')); } catch (e) { this.el.textContent = 'Gagal memuat.'; }
+      try { this.el.innerHTML = window.TMDieline.svg(spec, JSON.parse(this.el.dataset.dims || '{}')); } catch (e) { this.el.textContent = Devlib.h.t('Failed to load.'); }
     }
   }
   Devlib.define('DiecutThumb', DiecutThumb);

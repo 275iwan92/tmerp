@@ -1,7 +1,7 @@
 /* DevLib · Ribbon */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast} = Devlib.h;
+  const {$, $$, esc, toast, T} = Devlib.h;
   /* ============================ RIBBON (Excel) ============================ */
   class Ribbon extends Devlib.Component {
     static selector = "[data-dl-ribbon]";
@@ -36,7 +36,7 @@
         if (!q) { box.hidden = true; return; }
         const hits = $$(this.el, '[data-rb-panel] [data-rb-key]').map(b => { const p = this.panelOf(b), g = b.closest('.dl-rb__group'); return {key: b.dataset.rbKey, label: this.labelOf(b), path: `${$(this.el, `[data-rb-tab="${p.dataset.rbPanel}"]`).textContent} › ${g ? $(g, '.dl-rb__glabel').textContent : ''}`}; })
           .filter((h, i, a) => h.label.toLowerCase().includes(q) && a.findIndex(z => z.key === h.key) === i).slice(0, 8);
-        box.innerHTML = hits.map(h => `<button type="button" data-rb-run="${esc(h.key)}"><b>${esc(h.label)}</b><small>${esc(h.path)}</small></button>`).join('') || '<p>Tidak ada perintah.</p>';
+        box.innerHTML = hits.map(h => `<button type="button" data-rb-run="${esc(h.key)}"><b>${esc(h.label)}</b><small>${esc(h.path)}</small></button>`).join('') || '<p>' + esc(T('rb_none')) + '</p>';
         box.hidden = false;
       });
       this.tipOn = false;
@@ -86,7 +86,7 @@
       }
       this.closeMenus(); this.el.classList.remove('is-float'); this.tips(false);
       const ev = new CustomEvent('dl:ribbon', {bubbles: true, cancelable: true, detail: {key: b.dataset.rbKey, label: this.labelOf(b), on}});
-      if (this.el.dispatchEvent(ev)) toast(`${this.labelOf(b)}${on == null ? '' : on ? ' — aktif' : ' — mati'} (pratinjau)`);
+      if (this.el.dispatchEvent(ev)) toast(`${this.labelOf(b)}${on == null ? '' : ' — ' + T(on ? 'rb_on' : 'rb_off')} (${T('preview')})`);
     }
 
     tips(on) {

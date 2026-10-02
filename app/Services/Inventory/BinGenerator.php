@@ -53,7 +53,7 @@ final class BinGenerator
     public static function generate(WhZone $zone, array $o, string $login): array
     {
         $plan = self::plan($zone, $o);
-        abort_if(count($plan) > self::MAX_BINS, 422, 'Too many bins in one run.');
+        abort_if(count($plan) > self::MAX_BINS, 422, t('Too many bins in one run.'));
         $new = array_values(array_filter($plan, fn (array $r) => ! $r['exists']));
         DB::connection('tm2mst')->transaction(function () use ($new, $login) {
             foreach ($new as $r) {

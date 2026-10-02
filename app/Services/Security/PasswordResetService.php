@@ -47,7 +47,7 @@ class PasswordResetService
     public function changeByUser(SecUser $user, string $new): void
     {
         if ($user->default_password && hash_equals($user->default_password, $new)) {
-            throw new \InvalidArgumentException('Password baru tidak boleh sama dengan password default.');
+            throw new \InvalidArgumentException(t('The new password cannot be the same as the default password.'));
         }
 
         $user->pswd = Hash::make($new);

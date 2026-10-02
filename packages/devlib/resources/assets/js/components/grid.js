@@ -53,15 +53,15 @@
         const gr = x.closest('[data-g-grp]'); if (gr) { const g = gr.dataset.gGrp; this.st.collapsed = this.st.collapsed.includes(g) ? this.st.collapsed.filter(v => v !== g) : [...this.st.collapsed, g]; return this.drawBody(); }
         const vw = x.closest('[data-g-view] .dl-segment__opt'); if (vw) { this.st.view = vw.dataset.value; this.qq('[data-g-view] .dl-segment__opt').forEach(b => b.classList.toggle('is-active', b === vw)); return this.drawBody(); }
         const im = x.closest('[data-g-img]'); if (im) { const ov = document.createElement('div'); ov.className = 'dl-mov is-on dl-grid__lightbox'; ov.innerHTML = `<img src="${esc(im.dataset.gImg)}" alt=""><button type="button" class="dl-modal__x">&times;</button>`; ov.addEventListener('click', () => ov.remove()); document.body.appendChild(ov); return; }
-        const gl = x.closest('[data-g-link]'); if (gl && gl.getAttribute('href') === '#') { e.preventDefault(); const id = gl.closest('tr').dataset.id; if (this._emit('dl:grid-link', {id, key: gl.dataset.gLink})) toast(`${gl.closest('td') && this.cols.find(c => c.key === gl.dataset.gLink)?.label}: ${id} (pratinjau)`); return; }
-        const ga = x.closest('[data-g-action]'); if (ga) { const id = ga.closest('tr').dataset.id; if (this._emit('dl:grid-action', {id, action: ga.dataset.gAction})) toast(`${ga.textContent}: ${this.rows.find(v => String(v[this.cfg.rowKey]) === id)?.name || id} (pratinjau)`); return; }
+        const gl = x.closest('[data-g-link]'); if (gl && gl.getAttribute('href') === '#') { e.preventDefault(); const id = gl.closest('tr').dataset.id; if (this._emit('dl:grid-link', {id, key: gl.dataset.gLink})) toast(`${gl.closest('td') && this.cols.find(c => c.key === gl.dataset.gLink)?.label}: ${id} (${T('preview')})`); return; }
+        const ga = x.closest('[data-g-action]'); if (ga) { const id = ga.closest('tr').dataset.id; if (this._emit('dl:grid-action', {id, action: ga.dataset.gAction})) toast(`${ga.textContent}: ${this.rows.find(v => String(v[this.cfg.rowKey]) === id)?.name || id} (${T('preview')})`); return; }
         if (x.closest('[data-g-qa-add]')) return this.quickAdd();
         const ex = x.closest('[data-g-exp]'); if (ex) { const id = ex.closest('tr').dataset.id; this.st.open = this.st.open.includes(id) ? this.st.open.filter(v => v !== id) : [...this.st.open, id]; return this.drawBody(); }
         if (x.closest('[data-g-select-all]')) { this.filtered().forEach(r => this.sel.add(String(r[this.cfg.rowKey]))); this.drawBody(); return this.drawBulk(); }
         if (x.closest('[data-g-select-none]')) { this.sel.clear(); this.drawBody(); return this.drawBulk(); }
         const ba = x.closest('[data-g-bulk-action]'); if (ba) { toast(`${ba.textContent.trim()}: ${Tf('g_rows_preview', {n: fmt.number(this.sel.size)})}`, 'success'); this.el.dispatchEvent(new CustomEvent('dl:grid-bulk', {bubbles: true, detail: {action: ba.dataset.gBulkAction, ids: [...this.sel]}})); return; }
-        const act = x.closest('[data-g-act]'); if (act) { const r = this.rows.find(v => String(v[this.cfg.rowKey]) === act.dataset.id); if (act.dataset.gAct === 'toggle' && this.cfg.activeKey && this.cfg.toggleUrl) { this.saveToggle(r, act.dataset.id); } else if (act.dataset.gAct === 'toggle' && this.cfg.activeKey) { r[this.cfg.activeKey] = !r[this.cfg.activeKey]; toast((r[this.cfg.activeKey] ? 'Diaktifkan: ' : 'Dinonaktifkan: ') + (r.name || act.dataset.id), 'success'); this.redraw(); } else if (this._emit('dl:grid-open', {id: act.dataset.id, action: act.dataset.gAct})) toast(`${act.title.split(' (')[0]}: ${r.name || r[this.cfg.rowKey]} (pratinjau)`); return; }
-        if (x.closest('[data-g-new]')) { if (this._emit('dl:grid-new', {})) toast('+ New Record (pratinjau)'); return; }
+        const act = x.closest('[data-g-act]'); if (act) { const r = this.rows.find(v => String(v[this.cfg.rowKey]) === act.dataset.id); if (act.dataset.gAct === 'toggle' && this.cfg.activeKey && this.cfg.toggleUrl) { this.saveToggle(r, act.dataset.id); } else if (act.dataset.gAct === 'toggle' && this.cfg.activeKey) { r[this.cfg.activeKey] = !r[this.cfg.activeKey]; toast(T(r[this.cfg.activeKey] ? 'g_activated' : 'g_deactivated') + ': ' + (r.name || act.dataset.id), 'success'); this.redraw(); } else if (this._emit('dl:grid-open', {id: act.dataset.id, action: act.dataset.gAct})) toast(`${act.title.split(' (')[0]}: ${r.name || r[this.cfg.rowKey]} (${T('preview')})`); return; }
+        if (x.closest('[data-g-new]')) { if (this._emit('dl:grid-new', {})) toast(`+ New Record (${T('preview')})`); return; }
         if (x.closest('[data-g-export]')) return this.exportCsv();
         if (x.closest('[data-g-fopen]')) return this.openFilter();
         if (x.closest('[data-g-fclose]') || x.matches('[data-g-fmodal]')) return this.closeFilter();
@@ -109,7 +109,7 @@
     saveToggle(r, id) {
       fetch(this.cfg.toggleUrl.replace('{id}', encodeURIComponent(id)), {method: 'POST', credentials: 'same-origin', headers: {'X-CSRF-TOKEN': this.cfg.csrf || '', 'Accept': 'application/json'}})
         .then(res => res.ok ? res.json() : Promise.reject(res))
-        .then(j => { r[this.cfg.activeKey] = !!j.active; toast((j.active ? 'Diaktifkan: ' : 'Dinonaktifkan: ') + (r.name || id), 'success'); this.redraw(); })
+        .then(j => { r[this.cfg.activeKey] = !!j.active; toast(T(j.active ? 'g_activated' : 'g_deactivated') + ': ' + (r.name || id), 'success'); this.redraw(); })
         .catch(() => toast(T('g_toggle_failed'), 'danger'));
     }
 
@@ -160,7 +160,7 @@
     // Pop-up Filter (Grid for Reporting): pilihan tetap (filters) + kriteria per kolom; berlaku setelah Terapkan.
     openFilter() {
       const sel = Object.entries(this.cfg.filters).map(([k, label]) => { const opts = [...new Set(this.rows.map(r => String(this.val(r, k))))].sort(); return `<label class="dl-pop2__field"><span>${esc(label)}</span><select data-gf-sel="${esc(k)}"><option value="">${esc(T('g_all'))}</option>${opts.map(o => `<option ${this.st.filters[k] === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></label>`; }).join('');
-      const cols = this.cols.filter(c => !['image', 'toggle', 'spark', 'button', 'steps', 'progress', 'rating'].includes(c.type)).map(c => { const num = ['number', 'money'].includes(c.type); return `<label class="dl-pop2__field"><span>${esc(c.label)}</span><input type="search" data-gf-col="${esc(c.key)}" value="${esc(this.st.colf[c.key] || '')}" placeholder="${num ? 'mis. >1000, <=5, =12' : 'mengandung...'}"></label>`; }).join('');
+      const cols = this.cols.filter(c => !['image', 'toggle', 'spark', 'button', 'steps', 'progress', 'rating'].includes(c.type)).map(c => { const num = ['number', 'money'].includes(c.type); return `<label class="dl-pop2__field"><span>${esc(c.label)}</span><input type="search" data-gf-col="${esc(c.key)}" value="${esc(this.st.colf[c.key] || '')}" placeholder="${esc(T(num ? 'g_ph_number' : 'g_ph_contains'))}"></label>`; }).join('');
       this.q('[data-g-fform]').innerHTML = (sel ? `<div class="dl-pop2__title">${esc(T('g_selection'))}</div><div class="dl-grid__fgrid">${sel}</div>` : '') + `<div class="dl-pop2__title">${esc(T('g_per_column'))}</div><div class="dl-grid__fgrid">${cols}</div>`;
       this.q('[data-g-fmodal]').classList.add('is-on');
       const first = this.q('[data-g-fform] select, [data-g-fform] input'); if (first) first.focus();
@@ -225,7 +225,7 @@
         + vis.map(c => {
           const on = this.st.sort === c.key, arrow = on ? (this.st.dir > 0 ? 'fa-arrow-up-short-wide' : 'fa-arrow-down-wide-short') : 'fa-sort';
           return `<th class="${['number', 'money', 'link'].includes(c.type) ? 'num' : ''} ${c.sortable ? 'is-sortable' : ''} ${on ? 'is-sorted' : ''}" data-key="${esc(c.key)}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.sortable ? ` <i class="fa-solid ${arrow}"></i>` : ''}</th>`;
-        }).join('') + (this.actLast() ? '<th class="dl-grid__act">Aksi</th>' : '') + '</tr>';
+        }).join('') + (this.actLast() ? '<th class="dl-grid__act">' + esc(T('g_actions')) + '</th>' : '') + '</tr>';
     }
 
     cell(c, r) {
@@ -248,7 +248,7 @@
         case 'date': return `<td class="dl-grid__date">${esc(this.fmtCell(c, v))}</td>`;
         // Nilai dari transaksi (Grid Master, user 2026-09-30): hanya-baca, klik = buka transaksi baris ini (url {id}).
         case 'link': { const u = c.url ? c.url.replace('{id}', encodeURIComponent(r[this.cfg.rowKey])) : '#'; return `<td class="num"><a class="dl-grid__link" href="${esc(u)}" data-g-link="${esc(c.key)}" title="${esc(T('g_open_tx'))}">${esc(this.fmtCell(c, v))} <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>`; }
-        case 'image': return `<td class="dl-grid__imgcell">${v ? `<button type="button" class="dl-grid__thumb" data-g-img="${esc(v)}" title="Perbesar"><img src="${esc(v)}" alt="" loading="lazy"></button>` : (c.fallback ? `<span class="dl-grid__noimg dl-grid__noimg--ini">${esc(String(this.val(r, c.fallback) || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase())}</span>` : '<span class="dl-grid__noimg"><i class="fa-regular fa-image"></i></span>')}</td>`;
+        case 'image': return `<td class="dl-grid__imgcell">${v ? `<button type="button" class="dl-grid__thumb" data-g-img="${esc(v)}" title="${esc(T('g_enlarge'))}"><img src="${esc(v)}" alt="" loading="lazy"></button>` : (c.fallback ? `<span class="dl-grid__noimg dl-grid__noimg--ini">${esc(String(this.val(r, c.fallback) || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase())}</span>` : '<span class="dl-grid__noimg"><i class="fa-regular fa-image"></i></span>')}</td>`;
         case 'progress': { const n = Math.max(0, Math.min(100, +v || 0)), t = n >= 100 ? 'success' : n >= 60 ? 'accent' : n >= 30 ? 'warn' : 'danger'; return `<td><span class="dl-grid__prog dl-chart--${t}"><span style="width:${n}%"></span></span><small class="dl-grid__progv">${n}%</small></td>`; }
         case 'steps': { const at = (c.steps || []).indexOf(v); return `<td><span class="dl-grid__steps" title="${esc(v)}">${(c.steps || []).map((s2, i) => `<i class="${i < at ? 'is-done' : i === at ? 'is-now' : ''}" title="${esc(s2)}"></i>`).join('')}</span><small class="dl-grid__stepv">${esc(v)}</small></td>`; }
         case 'toggle': return `<td><label class="dl-switch dl-switch--sm"><input type="checkbox" data-g-cell="${esc(c.key)}" ${v ? 'checked' : ''}><span class="dl-switch__slider"></span></label></td>`;
@@ -265,14 +265,14 @@
       // Tanpa Confirm/Approve di grid (user 2026-09-30): Confirm hanya di dalam form dokumen.
       if (this.cfg.actions === 'worklist') return `<td class="dl-grid__act"><button type="button" class="dl-iconbtn" data-g-act="open" data-id="${id}" title="${esc(T('g_open_hint'))}"><i class="fa-solid fa-up-right-from-square"></i></button></td>`;
       const on = !!r[this.cfg.activeKey];
-      return `<td class="dl-grid__act"><button type="button" class="dl-iconbtn" data-g-act="edit" data-id="${id}" title="${esc(T('g_edit_hint'))}"><i class="fa-solid fa-pen"></i></button><button type="button" class="dl-iconbtn dl-iconbtn--${on ? 'danger' : 'success'}" data-g-act="toggle" data-id="${id}" title="${on ? 'Nonaktifkan' : 'Aktifkan'}" data-dl-confirm="${on ? 'Nonaktifkan' : 'Aktifkan'} data ini?"><i class="fa-solid ${on ? 'fa-ban' : 'fa-circle-check'}"></i></button></td>`;
+      return `<td class="dl-grid__act"><button type="button" class="dl-iconbtn" data-g-act="edit" data-id="${id}" title="${esc(T('g_edit_hint'))}"><i class="fa-solid fa-pen"></i></button><button type="button" class="dl-iconbtn dl-iconbtn--${on ? 'danger' : 'success'}" data-g-act="toggle" data-id="${id}" title="${esc(T(on ? 'g_deactivate' : 'g_activate'))}" data-dl-confirm="${esc(T(on ? 'g_ask_deactivate' : 'g_ask_activate'))}"><i class="fa-solid ${on ? 'fa-ban' : 'fa-circle-check'}"></i></button></td>`;
     }
 
     rowHtml(r, idx) {
       const id = String(r[this.cfg.rowKey]), open = this.st.open.includes(id), span = this.span();
       // rowTone: nama kolom baris yang membawa tone (danger/tangerine/yellow/success/accent = warna lembut + garis bawah; muted = abu-abu).
       const tone = this.cfg.rowTone ? r[this.cfg.rowTone] : null;
-      let h = `<tr class="dl-grid__row ${this.sel.has(id) ? 'is-selected' : ''} ${this.cfg.activeKey && r[this.cfg.activeKey] === false ? 'is-inactive' : ''} ${tone ? `dl-grid__row--${esc(tone)}${tone === 'muted' ? '' : ' is-toned'}` : ''}" data-id="${esc(id)}" data-idx="${idx}" title="Klik 2x untuk membuka">`
+      let h = `<tr class="dl-grid__row ${this.sel.has(id) ? 'is-selected' : ''} ${this.cfg.activeKey && r[this.cfg.activeKey] === false ? 'is-inactive' : ''} ${tone ? `dl-grid__row--${esc(tone)}${tone === 'muted' ? '' : ' is-toned'}` : ''}" data-id="${esc(id)}" data-idx="${idx}" title="${esc(T('g_dbl_open'))}">`
         + (this.actFirst() ? this.actionsCell(r) : '')
         + (this.chk ? `<td class="dl-grid__chk"><input type="checkbox" ${this.sel.has(id) ? 'checked' : ''} aria-label="${esc(T('g_select_row'))}"></td>` : '')
         + (this.hasExp ? `<td class="dl-grid__exp"><button type="button" class="dl-grid__chev ${open ? 'is-open' : ''}" data-g-exp aria-label="${esc(T('g_open_detail'))}"><i class="fa-solid fa-chevron-right"></i></button></td>` : '')
@@ -302,13 +302,13 @@
       this.q('[data-g-body]').innerHTML = html;
       if (this.cfg.quickAdd.length) {
         const qa = this.cfg.quickAdd.map(k => this.cols.find(c => c.key === k) || {key: k, label: k});
-        this.q('[data-g-body]').insertAdjacentHTML('afterbegin', `<tr class="dl-grid__quick"><td class="dl-grid__chk"><i class="fa-solid fa-plus"></i></td><td colspan="${span - 1}"><div class="dl-grid__qa">${qa.map(c => `<input type="text" data-g-qa="${esc(c.key)}" placeholder="${esc(c.label)}${['number', 'money'].includes(c.type) ? ' (angka)' : ''}" aria-label="${esc(c.label)}">`).join('')}<button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-g-qa-add>${esc(T('g_add'))}</button><small>${esc(T('g_enter_add'))}</small></div></td></tr>`);
+        this.q('[data-g-body]').insertAdjacentHTML('afterbegin', `<tr class="dl-grid__quick"><td class="dl-grid__chk"><i class="fa-solid fa-plus"></i></td><td colspan="${span - 1}"><div class="dl-grid__qa">${qa.map(c => `<input type="text" data-g-qa="${esc(c.key)}" placeholder="${esc(c.label)}${['number', 'money'].includes(c.type) ? ' (' + esc(T('g_number')) + ')' : ''}" aria-label="${esc(c.label)}">`).join('')}<button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-g-qa-add>${esc(T('g_add'))}</button><small>${esc(T('g_enter_add'))}</small></div></td></tr>`);
       }
       const cardsOn = this.cfg.cards && this.st.view === 'cards';
       this.q('[data-g-cards]').hidden = !cardsOn; this.q('.dl-grid__wrap').hidden = !!cardsOn;
       if (cardsOn) { const C = this.cfg.cards; this.q('[data-g-cards]').innerHTML = page.map(r => `<article class="dl-grid__card" data-id="${esc(r[this.cfg.rowKey])}"><div class="dl-grid__cardimg">${r[C.image] ? `<img src="${esc(r[C.image])}" alt="" loading="lazy">` : '<i class="fa-regular fa-image"></i>'}${C.badge && r[C.badge] ? `<span class="dl-badge dl-badge--pill dl-badge--${esc((C.tones || {})[r[C.badge]] || 'neutral')}">${esc(r[C.badge])}</span>` : ''}</div><div class="dl-grid__cardbody"><b>${esc(r[C.title])}</b><small>${esc(r[C.sub] ?? '')}</small>${(C.meta || []).map(k => { const c = this.cols.find(x => x.key === k) || {key: k}; return `<span><em>${esc(c.label || k)}</em>${esc(this.fmtCell(c, r[k] ?? ''))}</span>`; }).join('')}</div></article>`).join('') || '<div class="dl-empty"><b class="dl-empty__title">' + esc(T('g_no_match')) + '</b></div>'; }
       const cnt = this.q('[data-g-count]'); if (cnt) cnt.textContent = Tf('g_matched', {n: fmt.number(total), total: fmt.number(this.rows.length)});
-      this.q('[data-g-foot]').innerHTML = sums.length && page.length ? '<tr>' + (this.actFirst() ? '<td></td>' : '') + (this.chk ? '<td class="dl-grid__chk"></td>' : '') + (this.hasExp ? '<td></td>' : '') + this.shown().map((c, i) => c.sum ? `<td class="num"><b>${esc(this.fmtCell(c, list.reduce((t, r) => t + (+this.val(r, c.key) || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>Total (semua hasil)</b>' : ''}</td>`).join('') + (this.actLast() ? '<td></td>' : '') + '</tr>' : '';
+      this.q('[data-g-foot]').innerHTML = sums.length && page.length ? '<tr>' + (this.actFirst() ? '<td></td>' : '') + (this.chk ? '<td class="dl-grid__chk"></td>' : '') + (this.hasExp ? '<td></td>' : '') + this.shown().map((c, i) => c.sum ? `<td class="num"><b>${esc(this.fmtCell(c, list.reduce((t, r) => t + (+this.val(r, c.key) || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>' + esc(T('g_total_all')) + '</b>' : ''}</td>`).join('') + (this.actLast() ? '<td></td>' : '') + '</tr>' : '';
       this.drawPager(total, pages);
       const all = this.q('[data-g-all]'); if (all) { const ids = page.map(r => String(r[this.cfg.rowKey])); all.checked = ids.length > 0 && ids.every(i => this.sel.has(i)); all.indeterminate = !all.checked && ids.some(i => this.sel.has(i)); }
     }
@@ -316,7 +316,7 @@
     drawPager(total, pages) {
       const from = total ? (this.st.page - 1) * this.st.perPage + 1 : 0, to = Math.min(total, this.st.page * this.st.perPage), start = Math.max(1, Math.min(this.st.page - 2, pages - 4));
       let nums = ''; for (let p = start; p <= Math.min(pages, start + 4); p++) nums += `<button type="button" class="${p === this.st.page ? 'is-active' : ''}" data-p="${p}">${p}</button>`;
-      this.q('[data-g-pager]').innerHTML = `<div class="dl-pager"><div class="dl-pager__left">Go to <input type="number" min="1" max="${pages}" value="${this.st.page}" class="dl-pager__goto" data-g-goto> View ${this.cfg.pageSizes.map(n => `<button type="button" class="dl-pager__size ${n === this.st.perPage ? 'is-active' : ''}" data-pp="${n}">${n}</button>`).join('')}</div>`
+      this.q('[data-g-pager]').innerHTML = `<div class="dl-pager"><div class="dl-pager__left">${esc(T('g_goto'))} <input type="number" min="1" max="${pages}" value="${this.st.page}" class="dl-pager__goto" data-g-goto> ${esc(T('g_view'))} ${this.cfg.pageSizes.map(n => `<button type="button" class="dl-pager__size ${n === this.st.perPage ? 'is-active' : ''}" data-pp="${n}">${n}</button>`).join('')}</div>`
         + `<div class="dl-pager__nav"><button type="button" data-p="1" ${this.st.page <= 1 ? 'disabled' : ''} title="${esc(T('g_first'))}">⏮</button><button type="button" data-p="${this.st.page - 1}" ${this.st.page <= 1 ? 'disabled' : ''} title="${esc(T('g_prev'))}">◀</button>${nums}<button type="button" data-p="${this.st.page + 1}" ${this.st.page >= pages ? 'disabled' : ''} title="${esc(T('g_next'))}">▶</button><button type="button" data-p="${pages}" ${this.st.page >= pages ? 'disabled' : ''} title="${esc(T('g_last'))}">⏭</button></div>`
         + `<div class="dl-pager__info">${esc(Tf('g_range', {from: fmt.number(from), to: fmt.number(to), total: fmt.number(total)}))}</div></div>`;
     }

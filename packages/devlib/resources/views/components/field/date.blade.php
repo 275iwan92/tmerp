@@ -5,7 +5,7 @@
     <div class="dl-pick__panel" data-dl-dd-panel>
         <div class="dl-pick__head">{{ \Devlib\Lang::t('pick_date') }}</div>
         <div class="dl-pick__nav"><button type="button" data-dl-cal-prev>&lt;</button><span data-dl-cal-title></span><button type="button" data-dl-cal-next>&gt;</button></div>
-        <div class="dl-cal dl-cal--names"><div>Mg</div><div>Sn</div><div>Sl</div><div>Rb</div><div>Km</div><div>Jm</div><div>Sb</div></div>
+        <div class="dl-cal dl-cal--names">@for ($i = 0; $i < 7; $i++)<div>{{ \Carbon\CarbonImmutable::create(2000, 1, 2 + $i)->locale(\Devlib\Locale::lang())->isoFormat('dd') }}</div>@endfor</div>
         <div class="dl-cal" data-dl-cal-days></div>
         <div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-dl-cal-clear>Clear</button><button type="button" class="dl-pick__pri" data-dl-cal-today>{{ \Devlib\Lang::t('today') }}</button></div>
     </div>

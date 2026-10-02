@@ -32,7 +32,7 @@
         if (act === 'new' && e.target.closest('a[href]')) return;
         if (act === 'undo') return this.undo();
         if (act && act !== 'save') return this.act(act);
-        if (e.target.closest('[data-f-cancel]') && this.snapshot) { fillForm(this.el, this.snapshot, false); this.snapshot = null; this.setView(true); toast('Perubahan dibatalkan.'); }
+        if (e.target.closest('[data-f-cancel]') && this.snapshot) { fillForm(this.el, this.snapshot, false); this.snapshot = null; this.setView(true); toast(T('f_changes_discarded')); }
       });
       this.extra = this.el.querySelector('[data-dl-form-extra]');
       if (!this.extra) return;
@@ -60,7 +60,7 @@
         if (!ok) return;
         fillForm(this.el, this.saved, false);
         $$(this.el, '.dl-field.is-invalid').forEach(f => f.classList.remove('is-invalid')); $$(this.el, '.dl-tabs__err').forEach(x => x.remove());
-        dirtyForms.delete(this.el); this.el.classList.remove('is-dirty'); toast('Perubahan dibatalkan.');
+        dirtyForms.delete(this.el); this.el.classList.remove('is-dirty'); toast(T('f_changes_discarded'));
       });
     }
 
@@ -72,7 +72,7 @@
       const go = why => {
         this.el.dispatchEvent(new CustomEvent('dl:form-action', {bubbles: true, detail: {action: a}}));
         // Print/Email tidak mengubah dokumen -> tidak kirim form (layar menangkap dl:form-action, mis. buka x-dl::doc-share).
-        if (!this.el.getAttribute('action') || a === 'print' || a === 'email') return toast(`Aksi: ${a} (pratinjau)`, 'success');
+        if (!this.el.getAttribute('action') || a === 'print' || a === 'email') return toast(Tf('f_action_preview2', {a}), 'success');
         const af = this.el.dataset.actionField || '_action';
         let h = $(this.el, `input[type=hidden][name="${af}"]`); if (!h) { h = document.createElement('input'); h.type = 'hidden'; h.name = af; this.el.appendChild(h); }
         h.value = a;

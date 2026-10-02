@@ -91,7 +91,8 @@ class CompanyNamePpnPrintTest extends TestCase
         $result = app(DispatchService::class)->pullLines($this->do, [$ppnDelivery, $nonDelivery], 'test');
 
         $this->assertFalse($result['ok']);
-        $this->assertStringContainsString('tidak boleh dicampur', $result['message']);
+        // Pesan lewat kamus (bahasa tampilan): yang diuji = bagian yang tidak diterjemahkan (no. CO + status pajaknya).
+        $this->assertStringContainsString('CO-TEST-PPN-B Non PPN', $result['message']);
         $this->assertTrue($this->do->fresh()->is_ppn, 'Baris pertama (CO PPN) menentukan flag DO.');
         $this->assertSame(1, DoLine::where('delivery_id', $this->do->id_delivery)->count(), 'CO Non PPN ditolak.');
 

@@ -9,7 +9,7 @@ class Table extends DevlibComponent
     public function __construct(
         public array $columns = [],
         public array $rows = [],
-        public string $empty = 'Belum ada data.',
+        public string $empty = 'No data yet.',
         public bool $striped = true,
         public array $totals = [],
         public ?string $source = null,

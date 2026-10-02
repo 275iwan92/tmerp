@@ -1,7 +1,7 @@
 /* DevLib · Upload */
 (function (Devlib) {
   'use strict';
-  const {$, esc} = Devlib.h;
+  const {$, esc, T} = Devlib.h;
 
   class Upload extends Devlib.Component {
     static selector = "[data-dl-upload]";
@@ -27,7 +27,7 @@
       this.files.forEach((f, i) => {
         const row = document.createElement('div'); row.className = 'dl-upload__file';
         const isImg = this.preview && f.type.startsWith('image/');
-        row.innerHTML = (isImg ? '<img class="dl-upload__thumb" alt="">' : '<span>📄</span>') + `<span class="dl-upload__name">${esc(f.name)}</span><small>${Math.max(1, Math.round(f.size / 1024))} KB</small><button type="button" data-i="${i}" title="Hapus">✕</button>`;
+        row.innerHTML = (isImg ? '<img class="dl-upload__thumb" alt="">' : '<span>📄</span>') + `<span class="dl-upload__name">${esc(f.name)}</span><small>${Math.max(1, Math.round(f.size / 1024))} KB</small><button type="button" data-i="${i}" title="${esc(T('up_remove'))}">✕</button>`;
         if (isImg) { const img = $(row, 'img'); img.src = URL.createObjectURL(f); img.onload = () => URL.revokeObjectURL(img.src); }
         this.list.appendChild(row);
       });

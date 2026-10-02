@@ -58,7 +58,7 @@ final class WorkCalendar
             'holiday_date' => ['required', 'date', Rule::unique(SysHoliday::class, 'holiday_date')->ignore($h?->id_holiday, 'id_holiday')],
             'holiday_name' => ['required', 'string', 'max:150'],
             'holiday_type' => ['required', Rule::in(array_keys(self::TYPES))],
-        ], [], ['holiday_date' => 'Date', 'holiday_name' => 'Holiday Name', 'holiday_type' => 'Type'])->validate();
+        ], [], ['holiday_date' => t('Date'), 'holiday_name' => t('Holiday Name'), 'holiday_type' => t('Type')])->validate();
         $login = auth()->user()?->login;
         $h ??= new SysHoliday(['activate' => true, 'created_by' => $login]);
         $h->fill($data + ['updated_by' => $login])->save();

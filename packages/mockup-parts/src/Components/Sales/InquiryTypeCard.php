@@ -11,9 +11,9 @@ class InquiryTypeCard extends DevlibComponent
 {
     // jenis => [ikon, judul, penjelasan, perlu, alur]
     public const TYPES = [
-        'NEW' => ['✨', 'Produk Baru', 'Belum pernah dibuat. Sales menentukan tipe produk, dimensi, bahan, dan finishing dari nol.', 'tipe produk + dimensi + bahan', 'Sales → Design → Costing'],
-        'RECALC' => ['🔁', 'Hitung Ulang Harga', 'Produk & layout sudah ada, tidak ada yang berubah. Hanya perlu harga baru.', 'pilih produk existing + qty', 'Sales → Costing (lewati Design)'],
-        'REVISE' => ['✏️', 'Ubah Spesifikasi', 'Produk sudah ada tapi ada yang berubah: dimensi, bahan, warna, atau finishing.', 'pilih produk existing + apa yang berubah', 'Sales → Design → Costing'],
+        'NEW' => ['✨', 'New Product', 'Never made before. Sales defines the product type, dimensions, material and finishing from scratch.', 'product type + dimensions + material', 'Sales → Design → Costing'],
+        'RECALC' => ['🔁', 'Recalculate Price', 'The product & layout already exist, nothing changes. Only a new price is needed.', 'choose an existing product + qty', 'Sales → Costing (skip Design)'],
+        'REVISE' => ['✏️', 'Change Specification', 'The product already exists but something changes: dimensions, material, colour or finishing.', 'choose an existing product + what changes', 'Sales → Design → Costing'],
     ];
 
     public function __construct(
@@ -44,15 +44,15 @@ class InquiryTypeCard extends DevlibComponent
             <div {{ $attributes->class(['mp-typecard', 'mp-typecard--'.strtolower($type)]) }} {!! $dl() !!}>
                 <div class="mp-typecard__emoji">{{ $emoji }}</div>
                 <x-dl::badge :label="$type" :tone="['NEW' => 'info', 'RECALC' => 'accent', 'REVISE' => 'warn'][$type]" />
-                <h4>{{ $title }}</h4>
-                <p>{{ $desc }}</p>
-                <div class="mp-typecard__req">Perlu: <b>{{ $need }}</b><br>Alur: {{ $flow }}</div>
+                <h4>{{ \Devlib\Lang::text($title) }}</h4>
+                <p>{{ \Devlib\Lang::text($desc) }}</p>
+                <div class="mp-typecard__req">{{ \Devlib\Lang::text('Needs:') }} <b>{{ \Devlib\Lang::text($need) }}</b><br>{{ \Devlib\Lang::text('Flow:') }} {{ \Devlib\Lang::text($flow) }}</div>
                 <x-dl::action-bar align="stretch">
-                    <x-dl::button variant="secondary" icon="📂" label="Pilih data tersimpan" data-inq-tab="{{ $type }}" />
+                    <x-dl::button variant="secondary" icon="📂" label="Open saved data" data-inq-tab="{{ $type }}" />
                     @if ($picker)
-                        <x-dl::button icon="＋" label="Buat data baru" data-dl-open="{{ $picker }}" />
+                        <x-dl::button icon="＋" label="Create new data" data-dl-open="{{ $picker }}" />
                     @else
-                        <x-dl::button icon="＋" label="Buat data baru" :href="$newUrl" />
+                        <x-dl::button icon="＋" label="Create new data" :href="$newUrl" />
                     @endif
                 </x-dl::action-bar>
             </div>

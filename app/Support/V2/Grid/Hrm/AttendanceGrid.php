@@ -21,7 +21,7 @@ class AttendanceGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Presensi';
+        return t('Daily Attendance');
     }
 
     public function family(): string

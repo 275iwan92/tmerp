@@ -7,8 +7,8 @@
     $partId = request('part') ? Prodev::resolve((string) request('part')) : null;
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if ($partId)
     @php
@@ -16,8 +16,8 @@
     @endphp
     @if ($revChanges->isNotEmpty())
         <x-dl::card title="Revision: what changed from the parent product" description="From Inquiry Revision (iqp_revise_change) — redo what ProDev marked.">
-            <x-dl::table :columns="['part' => 'Part', 'field' => 'Yang berubah', 'old' => 'Sebelum', 'new' => 'Sesudah', 'impact' => 'Diulang di']"
-                :rows="$revChanges->map(fn ($c) => ['part' => $c->part?->part_name ?? 'Dokumen', 'field' => $c->field_label, 'old' => $c->old_value ?? '—', 'new' => $c->new_value ?? '—', 'impact' => $c->impact])->all()"
+            <x-dl::table :columns="['part' => 'Part', 'field' => 'What changed', 'old' => 'Before', 'new' => 'After', 'impact' => 'Redone in']"
+                :rows="$revChanges->map(fn ($c) => ['part' => $c->part?->part_name ?? t('Document'), 'field' => $c->field_label, 'old' => $c->old_value ?? '—', 'new' => $c->new_value ?? '—', 'impact' => $c->impact])->all()"
                 source="{{ Src::of('tm2sdi.iqp_revise_change') }}" />
         </x-dl::card>
     @endif
@@ -42,7 +42,7 @@
         </x-slot:dieline>
     </x-dl::tabs>
     @if ($accDoc)
-        <x-dl::card :title="'ACC customer — '.raw($accDoc['name'])" description="Record E-mail ACC / Digital ACC (from the CTP plate print sample) / Shape Sample. Its printed document: Digital ACC / Digital Proof.">
+        <x-dl::card :title="'Customer ACC — '.raw($accDoc['name'])" description="Record E-mail ACC / Digital ACC (from the CTP plate print sample) / Shape Sample. Its printed document: Digital ACC / Digital Proof.">
             <x-dl::action-bar><x-dl::button variant="secondary" icon="print" label="Print ACC / Proof Digital" :href="route('v2.screen', 'product-acc').'?id='.$accDoc['id']" /></x-dl::action-bar>
             @include('v2.partials.product-acc-forms', ['doc' => $accDoc])
         </x-dl::card>
@@ -56,19 +56,19 @@
             ['key' => 'part_name', 'label' => 'Part', 'src' => Src::of('tm2mst.prod_part.part_name')],
             ['key' => 'product', 'label' => 'Product', 'src' => Src::of('tm2mst.prod_product.product_name')],
             ['key' => 'updated', 'label' => 'Last Updated', 'type' => 'date', 'src' => Src::of('tm2mst.prod_part.updated_at')],
-            ['key' => 'status', 'label' => 'Status Layout', 'type' => 'badge', 'tones' => ['CONFIRMED' => 'success', 'DRAFT' => 'warn', 'BELUM MULAI' => 'neutral'], 'src' => Src::of('tm2mst.prod_layout_group.status').' (terbaru)'],
+            ['key' => 'status', 'label' => 'Layout Status', 'type' => 'badge', 'tones' => ['CONFIRMED' => 'success', 'DRAFT' => 'warn', t('NOT STARTED') => 'neutral'], 'src' => Src::of('tm2mst.prod_layout_group.status').' (terbaru)'],
         ]"
         :stats="[
             ['label' => 'All'],
-            ['label' => t('Not Confirmed'), 'where' => ['status' => ['DRAFT', 'BELUM MULAI']], 'tone' => 'warn'],
+            ['label' => t('Not Confirmed'), 'where' => ['status' => ['DRAFT', t('NOT STARTED')]], 'tone' => 'warn'],
             ['label' => t('Confirmed'), 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
         ]"
-        :filters="['customer' => 'Customer', 'status' => 'Status Layout']"
-        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'part', 'label' => 'Part'],
-            ['key' => 'code', 'label' => 'Part Code'],
-            ['key' => 'size', 'label' => 'Size (cm)'],
-            ['key' => 'status', 'label' => 'Layout'],
+        :filters="['customer' => 'Customer', 'status' => 'Layout Status']"
+        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'part', 'label' => t('Part')],
+            ['key' => 'code', 'label' => t('Part Code')],
+            ['key' => 'size', 'label' => t('Size (cm)')],
+            ['key' => 'status', 'label' => t('Layout')],
         ]]" />
 @endif

@@ -23,7 +23,7 @@ class DisciplineGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Kedisiplinan Harian';
+        return t('Daily Discipline');
     }
 
     public function group(): string

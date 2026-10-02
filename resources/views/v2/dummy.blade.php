@@ -1,27 +1,27 @@
-@extends('v2.layout', ['title' => 'Data Dummy', 'bodyClass' => 'dl-page-body'])
+@extends('v2.layout', ['title' => t('Dummy Data'), 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">
         @if (session('v2_flash'))
-            <x-dl::alert tone="success" :message="session('v2_flash')" />
+            <x-dl::alert tone="success" :message="raw(session('v2_flash'))" />
         @endif
         @if (session('v2_error'))
-            <x-dl::alert tone="danger" :message="session('v2_error')" />
+            <x-dl::alert tone="danger" :message="raw(session('v2_error'))" />
         @endif
         @if ($errors->any())
-            <x-dl::alert tone="danger" :message="$errors->first()" />
+            <x-dl::alert tone="danger" :message="raw($errors->first())" />
         @endif
 
         {{-- Set per stage (user 2026-10-02): stage 1 = belum ada yang di-Confirm / diproses, stage 2 = maju satu langkah, dst.
              Tiap set = dump .sql data saja (App\Console\Commands\DdtStage); Restore mengganti isi data dummy dengan set itu. --}}
         <x-dl::card title="Dummy data sets by stage" icon="fa-layer-group"
-            description="Each set is the dummy data frozen at one step of the workflow: in stage 1 nothing is confirmed or processed yet, each next stage is one step further. Restore replaces the business dummy data with that set, so every step can be tested again from a known starting point. Accounts, menus and security (ddtsys) are not touched.">
+            :description="raw(t('Each set is the dummy data frozen at one step of the workflow: in stage 1 nothing is confirmed or processed yet, each next stage is one step further.').' '.t('Restore replaces the business dummy data with that set, so every step can be tested again from a known starting point.').' '.t('Accounts, menus and security (ddtsys) are not touched.'))">
             @forelse ($stages as $s)
                 <x-dl::card :title="raw($s['label'])" :description="raw($s['note'])" icon="fa-database">
                     <div class="dl-grid__stats">
                         <x-dl::stat-box label="Set" :value="raw($s['key'])" />
                         <x-dl::stat-box label="Saved" :value="\Devlib\Locale::dt($s['created_at'])" />
                         <x-dl::stat-box label="By" :value="raw($s['by'])" />
-                        <x-dl::stat-box label="Made by" :value="($s['built'] ?? false) ? 'Stage builder' : 'Saved by hand'" />
+                        <x-dl::stat-box label="Made by" :value="($s['built'] ?? false) ? t('Stage builder') : t('Saved by hand')" />
                     </div>
                     @if ($s['blocked'])
                         <x-dl::alert tone="danger" message="This set can no longer be restored: it holds columns or tables that were removed from the database after it was saved. Build the stage sets again." />
@@ -29,11 +29,11 @@
                     <x-dl::action-bar>
                         <x-dl::action-form action="{{ route('v2.dummy.stage.do', [$s['key'], 'restore']) }}">
                             <x-dl::button type="submit" variant="primary" icon="fa-rotate-left" label="Restore" :disabled="$s['blocked']"
-                                data-dl-confirm="The business dummy data is replaced by this set. Everything entered since the last save is lost. Continue?" />
+                                data-dl-confirm="{{ t('The business dummy data is replaced by this set. Everything entered since the last save is lost. Continue?') }}" />
                         </x-dl::action-form>
                         <x-dl::action-form action="{{ route('v2.dummy.stage.do', [$s['key'], 'delete']) }}">
                             <x-dl::button type="submit" variant="secondary" icon="fa-trash" label="Delete"
-                                data-dl-confirm="This set is deleted from the server. The dummy data in use is not changed. Continue?" data-dl-confirm-tone="warn" />
+                                data-dl-confirm="{{ t('This set is deleted from the server. The dummy data in use is not changed. Continue?') }}" data-dl-confirm-tone="warn" />
                         </x-dl::action-form>
                     </x-dl::action-bar>
                 </x-dl::card>
@@ -57,7 +57,7 @@
             </x-dl::card>
         </x-dl::card>
 
-        <x-dl::card title="Data Dummy (UAT) — baseline & reset" icon="fa-rotate-left"
+        <x-dl::card title="Dummy Data (UAT) — baseline & reset" icon="fa-rotate-left"
             description="Baseline = a copy of the dummy data considered correct. Reset restores every business dummy database exactly to the baseline. Accounts, menus and security (ddtsys) are not reset.">
             @if ($manifest)
                 <div class="dl-grid__stats">
@@ -72,17 +72,17 @@
             @endif
 
             @if ($drift)
-                <x-dl::alert tone="danger" message="Reset is blocked: the database structure changed after this baseline was saved. A reset would put the old table definitions back while the migrations stay marked as run, so screens that use the new columns would fail. Save the current dummy data as the new baseline first." />
+                <x-dl::alert tone="danger" :message="raw(t('Reset is blocked: the database structure changed after this baseline was saved.').' '.t('A reset would put the old table definitions back while the migrations stay marked as run, so screens that use the new columns would fail.').' '.t('Save the current dummy data as the new baseline first.'))" />
             @endif
 
             <x-dl::action-bar>
                 <x-dl::action-form action="{{ route('v2.dummy.reset') }}">
-                    <x-dl::button type="submit" variant="danger" icon="fa-rotate-left" label="Reset data dummy" :disabled="! $manifest || $drift"
-                        data-dl-confirm="Semua perubahan pada data dummy sejak baseline akan hilang dan dikembalikan ke baseline. Lanjutkan?" />
+                    <x-dl::button type="submit" variant="danger" icon="fa-rotate-left" label="Reset dummy data" :disabled="! $manifest || $drift"
+                        data-dl-confirm="{{ t('Every change to the dummy data since the baseline will be lost and restored to the baseline. Continue?') }}" />
                 </x-dl::action-form>
                 <x-dl::action-form action="{{ route('v2.dummy.save') }}">
-                    <x-dl::button type="submit" variant="secondary" icon="fa-floppy-disk" label="Jadikan kondisi sekarang baseline"
-                        data-dl-confirm="Baseline lama ditimpa dengan kondisi data dummy sekarang. Lanjutkan?" data-dl-confirm-tone="warn" />
+                    <x-dl::button type="submit" variant="secondary" icon="fa-floppy-disk" label="Save current state as baseline"
+                        data-dl-confirm="{{ t('The old baseline is overwritten with the current dummy data. Continue?') }}" data-dl-confirm-tone="warn" />
                 </x-dl::action-form>
             </x-dl::action-bar>
         </x-dl::card>

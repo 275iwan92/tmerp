@@ -47,3 +47,6 @@ Thumbs.db
 
 # Hasil tools/render-as.php (pratinjau halaman sebagai pengguna)
 /public/_t.html
+
+# hasil uji render multi-bahasa (tools/multilanguage)
+/tools/multilanguage/probe/

@@ -98,12 +98,12 @@ class JournalPostingService
     public function saveDraft(?FinVoucher $voucher, array $header, array $lines, string $actingUser): FinVoucher
     {
         if ($voucher && $voucher->status !== 'DRAFT') {
-            throw new \DomainException('Hanya voucher DRAFT yang bisa diubah. Voucher posted dikoreksi lewat jurnal pembalik.');
+            throw new \DomainException(t('Only a DRAFT voucher can be changed. A posted voucher is corrected with a reversing journal.'));
         }
         $lines = $this->cleanLines($lines);
         foreach ($lines as $l) {
             if ((float) ($l['debit'] ?? 0) > 0 && (float) ($l['credit'] ?? 0) > 0) {
-                throw new \DomainException('Satu baris tidak boleh berisi debit dan kredit sekaligus.');
+                throw new \DomainException(t('One line cannot contain both a debit and a credit.'));
             }
         }
 
@@ -127,7 +127,7 @@ class JournalPostingService
     public function submit(FinVoucher $voucher, string $actingUser): void
     {
         $voucher->load('lines');
-        abort_unless($voucher->status === 'DRAFT', 422, 'Hanya DRAFT yang bisa diajukan.');
+        abort_unless($voucher->status === 'DRAFT', 422, t('Only a DRAFT can be submitted.'));
         $this->assertBalanced($voucher->lines->map(fn ($l) => ['debit' => $l->debit, 'credit' => $l->credit])->all());
 
         if (! $this->requiresApproval('JOURNAL', $voucher->totalAmount())) {
@@ -140,21 +140,21 @@ class JournalPostingService
 
     public function approve(FinVoucher $voucher, SecUser $user): void
     {
-        abort_unless($voucher->status === 'SUBMITTED', 422, 'Voucher tidak sedang menunggu persetujuan.');
+        abort_unless($voucher->status === 'SUBMITTED', 422, t('The voucher is not waiting for approval.'));
         $voucher->load('lines');
         $rule = $this->ruleFor('JOURNAL', $voucher->totalAmount());
         if (! $this->canApprove($user, $rule?->approver_group)) {
-            throw new \DomainException('Anda tidak berwenang menyetujui jurnal ini (approver: '.($rule?->approver_group ?? 'FINACC approve').').');
+            throw new \DomainException(tf('You are not authorized to approve this journal (approver: :approver).', ['approver' => $rule?->approver_group ?? 'FINACC approve']));
         }
         if (($rule?->segregation_of_duties ?? true) && ! $user->is_admin && in_array($user->login, [$voucher->created_by, $voucher->submitted_by], true)) {
-            throw new \DomainException('Pemisahan tugas: pembuat/pengaju jurnal tidak boleh menyetujui jurnalnya sendiri.');
+            throw new \DomainException(t('Segregation of duties: the creator/submitter of a journal cannot approve their own journal.'));
         }
         $voucher->update(['status' => 'APPROVED', 'approved_by' => $user->login, 'approved_at' => now(), 'updated_by' => $user->login]);
     }
 
     public function reject(FinVoucher $voucher, string $actingUser): void
     {
-        abort_unless(in_array($voucher->status, ['SUBMITTED', 'APPROVED'], true), 422, 'Voucher ini tidak bisa dikembalikan.');
+        abort_unless(in_array($voucher->status, ['SUBMITTED', 'APPROVED'], true), 422, t('This voucher cannot be returned.'));
         $voucher->update(['status' => 'DRAFT', 'submitted_by' => null, 'submitted_at' => null, 'approved_by' => null, 'approved_at' => null, 'updated_by' => $actingUser]);
     }
 
@@ -166,13 +166,13 @@ class JournalPostingService
     {
         $voucher->load('lines');
         $allowed = $requireApproval ? ['APPROVED'] : ['DRAFT', 'APPROVED'];
-        abort_unless(in_array($voucher->status, $allowed, true), 422, $requireApproval ? 'Jurnal harus disetujui (APPROVED) sebelum diposting.' : 'Voucher ini bukan DRAFT, tidak bisa diposting lagi.');
-        abort_if($voucher->lines->isEmpty(), 422, 'Belum ada baris jurnal.');
+        abort_unless(in_array($voucher->status, $allowed, true), 422, $requireApproval ? t('The journal must be approved (APPROVED) before it is posted.') : t('This voucher is not a DRAFT, it cannot be posted again.'));
+        abort_if($voucher->lines->isEmpty(), 422, t('There are no journal lines yet.'));
 
         $totalDebit = round((float) $voucher->lines->sum('debit'), 2);
         $totalCredit = round((float) $voucher->lines->sum('credit'), 2);
-        abort_if(abs($totalDebit - $totalCredit) > 0.01, 422, "Jurnal tidak balance (Debit {$totalDebit} != Kredit {$totalCredit}).");
-        abort_if($totalDebit <= 0, 422, 'Jurnal tidak boleh nol.');
+        abort_if(abs($totalDebit - $totalCredit) > 0.01, 422, tf('The journal is not balanced (Debit :debit != Credit :credit).', ['debit' => $totalDebit, 'credit' => $totalCredit]));
+        abort_if($totalDebit <= 0, 422, t('The journal cannot be zero.'));
         $this->guard->assertOpen($voucher->entry_date);
 
         $voucher->update([
@@ -188,8 +188,8 @@ class JournalPostingService
     public function reverse(FinVoucher $voucher, string $date, string $actingUser, string $reason = ''): FinVoucher
     {
         $voucher->load('lines', 'journal');
-        abort_unless($voucher->status === 'POSTED', 422, 'Hanya voucher POSTED yang bisa dibalik.');
-        abort_if($voucher->reversed_by_id, 422, 'Voucher ini sudah pernah dibalik.');
+        abort_unless($voucher->status === 'POSTED', 422, t('Only a POSTED voucher can be reversed.'));
+        abort_if($voucher->reversed_by_id, 422, t('This voucher has already been reversed.'));
 
         $lines = $voucher->lines->map(fn ($l) => [
             'account_id' => $l->account_id, 'debit' => $l->credit, 'credit' => $l->debit,
@@ -259,10 +259,10 @@ class JournalPostingService
 
     private function assertBalanced(array $lines): void
     {
-        abort_if(empty($lines), 422, 'JournalPostingService: tidak ada baris jurnal bernilai (semua nol atau kosong).');
+        abort_if(empty($lines), 422, t('JournalPostingService: there is no journal line with a value (all zero or empty).'));
         $totalDebit = round(array_sum(array_map(fn ($l) => (float) ($l['debit'] ?? 0), $lines)), 2);
         $totalCredit = round(array_sum(array_map(fn ($l) => (float) ($l['credit'] ?? 0), $lines)), 2);
-        abort_if(abs($totalDebit - $totalCredit) > 0.01, 422, "JournalPostingService: jurnal tidak balance (Debit {$totalDebit} != Kredit {$totalCredit}).");
+        abort_if(abs($totalDebit - $totalCredit) > 0.01, 422, tf('JournalPostingService: the journal is not balanced (Debit :debit != Credit :credit).', ['debit' => $totalDebit, 'credit' => $totalCredit]));
     }
 
     private function writeLines(FinVoucher $voucher, array $lines): void

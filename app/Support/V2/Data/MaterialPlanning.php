@@ -59,7 +59,7 @@ final class MaterialPlanning
     public static function lineRows(int $coId): array
     {
         return collect(self::engine()->linesForCo($coId))->values()->map(fn ($l, $i) => ['id' => $i + 1, 'product' => $l['product'], 'part' => $l['part'] ?? '—',
-            'role' => $l['role'], 'material' => $l['material'].(! empty($l['picked']) ? ' (picked)' : ''), 'need' => $l['need_date'], 'qty' => (float) $l['qty'],
+            'role' => $l['role'], 'material' => $l['material'].(! empty($l['picked']) ? ' ('.t('picked').')' : ''), 'need' => $l['need_date'], 'qty' => (float) $l['qty'],
             'uom' => $l['uom'], 'covered' => self::allocText($l['alloc']), 'short' => (float) ($l['short'] ?? 0), 'status' => self::COVER[$l['status']] ?? $l['status'],
             'calc' => $l['note']])->all();
     }
@@ -67,7 +67,7 @@ final class MaterialPlanning
     public static function allocText(array $alloc): string
     {
         return collect($alloc)->map(fn ($a) => Locale::number((float) $a['qty'], 0).' '.match ($a['type']) {
-            'STOCK' => 'stock', 'FG' => 'FG stock', default => $a['no'].($a['date'] ? ' ('.Locale::d($a['date']).($a['late'] ? ', late' : '').')' : ''),
+            'STOCK' => t('stock'), 'FG' => t('FG stock'), default => $a['no'].($a['date'] ? ' ('.Locale::d($a['date']).($a['late'] ? ', '.t('late') : '').')' : ''),
         })->implode(' + ') ?: '—';
     }
 
@@ -77,7 +77,7 @@ final class MaterialPlanning
         $suppliers = DB::connection('tm2mst')->table('sup_supplier')->pluck('supplier_name', 'id_supplier');
 
         return collect(self::engine()->plan()['materials'])->values()->map(fn ($m) => ['id' => $m['material_id'] ?: 0, 'material' => $m['material'],
-            'code' => $m['code'] ?? 'no item yet', 'role' => $m['role'], 'uom' => $m['uom'], 'need' => $m['need'], 'stock' => $m['stock'],
+            'code' => $m['code'] ?? t('no item yet'), 'role' => $m['role'], 'uom' => $m['uom'], 'need' => $m['need'], 'stock' => $m['stock'],
             'incoming' => $m['incoming'], 'short' => $m['short'], 'first_need' => $m['first_need'], 'order_by' => $m['order_by'], 'lead' => $m['lead_days'],
             'status' => self::COVER[$m['status']] ?? $m['status'], 'orders' => implode(', ', $m['orders']), 'supplier' => $suppliers[$m['supplier_id']] ?? '—'])->all();
     }
@@ -95,7 +95,7 @@ final class MaterialPlanning
             }
         }
         $bal = (float) DB::connection('tm2inv')->table('v_rm_available')->where('material_id', $materialId)->where('is_usable', 1)->sum('qty_available');
-        $rows = [['id' => 0, 'date' => CarbonImmutable::today()->toDateString(), 'what' => 'Available stock today', 'in' => $bal, 'out' => 0.0, 'balance' => $bal]];
+        $rows = [['id' => 0, 'date' => CarbonImmutable::today()->toDateString(), 'what' => t('Available stock today'), 'in' => $bal, 'out' => 0.0, 'balance' => $bal]];
         foreach (collect($events)->sortBy([['date', 'asc'], ['out', 'asc']])->values() as $i => $e) {
             $bal += $e['in'] - $e['out'];
             $rows[] = ['id' => $i + 1] + $e + ['balance' => $bal];
@@ -110,7 +110,7 @@ final class MaterialPlanning
         $engine = self::engine();
         $plan = $engine->plan();
         $mats = collect($plan['materials'])->whereNotNull('material_id')->whereIn('material_id', array_map('intval', $materialIds))->where('short', '>', 0);
-        abort_if($mats->isEmpty(), 422, 'No short material with an item was selected.');
+        abort_if($mats->isEmpty(), 422, t('No short material with an item was selected.'));
         $dept = DB::connection('tm2mst')->table('org_department')->where('department_name', 'PPIC')->value('department_id')
             ?? DB::connection('tm2mst')->table('org_department')->where('activate', 1)->value('department_id');
         $lines = collect($plan['lines']);

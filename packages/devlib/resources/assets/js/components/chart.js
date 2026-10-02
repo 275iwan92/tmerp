@@ -1,7 +1,7 @@
 /* DevLib · Chart */
 (function (Devlib) {
   'use strict';
-  const {$, esc, CH_TONES, chNum, niceMax} = Devlib.h;
+  const {$, esc, CH_TONES, chNum, niceMax, T, Tf} = Devlib.h;
 
   class Chart extends Devlib.Component {
     static selector = "[data-dl-chart]";
@@ -113,7 +113,7 @@
       return vals.map((v, i) => {
         const w0 = fw * v / max, w1 = fw * (vals[i + 1] ?? v * 0.85) / max, y0 = 8 + i * h, ym = y0 + (h - 4) / 2 + 4;
         return `<text x="${L - 6}" y="${ym}" class="dl-chart__ax" text-anchor="end">${this.esc2(this.labels[i])}</text>`
-          + `<path d="M${cx - w0 / 2},${y0} L${cx + w0 / 2},${y0} L${cx + w1 / 2},${y0 + h - 4} L${cx - w1 / 2},${y0 + h - 4} Z" class="dl-chart--${CH_TONES[i % CH_TONES.length]} dl-chart__slice" data-tip="${this.esc2(this.labels[i])}|${i ? (v / vals[i - 1] * 100).toFixed(1) + '% dari tahap sebelumnya' : 'tahap awal'}|${v}"/>`
+          + `<path d="M${cx - w0 / 2},${y0} L${cx + w0 / 2},${y0} L${cx + w1 / 2},${y0 + h - 4} L${cx - w1 / 2},${y0 + h - 4} Z" class="dl-chart--${CH_TONES[i % CH_TONES.length]} dl-chart__slice" data-tip="${this.esc2(this.labels[i])}|${this.esc2(i ? Tf('cht_of_prev', {p: (v / vals[i - 1] * 100).toFixed(1)}) : T('cht_first'))}|${v}"/>`
           + (Math.min(w0, w1) > 44 ? `<text x="${cx}" y="${ym}" class="dl-chart__pct" text-anchor="middle">${this.esc2(chNum(v, this.fmt2))}</text>` : `<text x="${cx + Math.max(w0, w1) / 2 + 6}" y="${ym}" class="dl-chart__val">${this.esc2(chNum(v, this.fmt2))}</text>`)
           + `<text x="${this.W - 4}" y="${ym}" class="dl-chart__ax" text-anchor="end">${(v / (vals[0] || 1) * 100).toFixed(0)}%</text>`;
       }).join('');
@@ -144,7 +144,7 @@
       this.W = Math.max(280, Math.round(this.plot.clientWidth || 640)); this.H = Math.max(180, Math.round(this.plot.clientHeight || 300));
       this.P.l = this.type === 'hbar' || this.type === 'heatmap' ? 56 : Math.min(64, Math.max(44, this.W * 0.08));
       const body = this.type === 'hbar' ? this.hbar() : this.type === 'pie' || this.type === 'donut' ? this.pie() : this.type === 'funnel' ? this.funnel() : this.type === 'heatmap' ? this.heatmap() : this.type === 'radar' ? this.radar() : this.cartesian();
-      this.plot.innerHTML = `<svg viewBox="0 0 ${this.W} ${this.H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${this.esc2($(this.el, '.dl-chart__head b')?.textContent || 'Grafik')}">${body}</svg>`;
+      this.plot.innerHTML = `<svg viewBox="0 0 ${this.W} ${this.H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${this.esc2($(this.el, '.dl-chart__head b')?.textContent || T('cht_chart'))}">${body}</svg>`;
       const lg = $(this.el, '[data-ch-legend]');
       if (lg) lg.innerHTML = this.pieLike || this.type === 'heatmap' ? '' : this.series.map((s, i) => `<button type="button" class="dl-chart__li ${s.on ? '' : 'is-off'}" data-ch-series="${i}"><i class="dl-chart--${s.tone}"></i>${this.esc2(s.name)}</button>`).join('');
     }

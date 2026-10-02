@@ -56,7 +56,7 @@ class PayrollEngineService
         );
 
         if (! in_array($run->run_status, ['DRAFT', 'CALCULATED'], true)) {
-            throw new \RuntimeException("Payroll run sudah {$run->run_status} -- presensi terkunci, tidak bisa dihitung ulang.");
+            throw new \RuntimeException(tf('The payroll run is already :status -- attendance is locked, it cannot be recalculated.', ['status' => $run->run_status]));
         }
 
         // Preload sekali per run -- rule matrix kecil (belasan status x 6
@@ -85,7 +85,7 @@ class PayrollEngineService
     public function verify(PyrPayrollRun $run, string $method, ?array $sampleEmployeeIds, string $verifiedBy): void
     {
         if ($run->run_status !== 'CALCULATED') {
-            throw new \RuntimeException('Payroll run harus CALCULATED dulu sebelum diverifikasi.');
+            throw new \RuntimeException(t('The payroll run must be CALCULATED first before it is verified.'));
         }
 
         $run->update([
@@ -103,12 +103,12 @@ class PayrollEngineService
     public function confirm(PyrPayrollRun $run, string $confirmedBy): void
     {
         if ($run->run_status !== 'VERIFIED') {
-            throw new \RuntimeException('Payroll run harus VERIFIED dulu sebelum dikonfirmasi.');
+            throw new \RuntimeException(t('The payroll run must be VERIFIED first before it is confirmed.'));
         }
 
         $anomalyCount = $run->payslips()->where('has_anomaly', true)->count();
         if ($anomalyCount > 0) {
-            throw new \RuntimeException("Masih ada {$anomalyCount} payslip anomali (lihat pyr_payslip.anomaly_note) -- selesaikan dulu sebelum konfirmasi.");
+            throw new \RuntimeException(tf('There are still :n anomaly payslips (see pyr_payslip.anomaly_note) -- resolve them first before confirming.', ['n' => $anomalyCount]));
         }
 
         $run->update(['run_status' => 'CONFIRMED', 'confirmed_by' => $confirmedBy, 'confirmed_at' => now()]);
@@ -119,7 +119,7 @@ class PayrollEngineService
     public function markPaid(PyrPayrollRun $run, string $paidBy): void
     {
         if ($run->run_status !== 'CONFIRMED') {
-            throw new \RuntimeException('Payroll run harus CONFIRMED dulu sebelum dibayar.');
+            throw new \RuntimeException(t('The payroll run must be CONFIRMED first before it is paid.'));
         }
 
         $run->update(['run_status' => 'PAID', 'paid_by' => $paidBy, 'paid_at' => now()]);
@@ -138,7 +138,7 @@ class PayrollEngineService
     public function close(PyrPayrollRun $run, string $closedBy): PyrPayrollRun
     {
         if ($run->run_status !== 'PAID') {
-            throw new \RuntimeException('Payroll run harus PAID dulu sebelum ditutup.');
+            throw new \RuntimeException(t('The payroll run must be PAID first before it is closed.'));
         }
 
         $nextRun = PyrPayrollRun::firstOrCreate(

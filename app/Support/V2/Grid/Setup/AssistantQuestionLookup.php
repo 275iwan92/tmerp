@@ -79,6 +79,6 @@ class AssistantQuestionLookup extends DbLookup
         $key = $id ? SysAssistantMetric::query()->whereKey($id)->value('metric_key') : ($in['metric_key'] ?? null);
         $known = array_map(fn ($class) => app($class)->key(), config('assistant.metrics', []));
 
-        return in_array($key, $known, true) ? null : 'This Key has no program class. Ask the developer to add the question first.';
+        return in_array($key, $known, true) ? null : t('This Key has no program class. Ask the developer to add the question first.');
     }
 }

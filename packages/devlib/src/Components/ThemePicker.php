@@ -43,10 +43,10 @@ class ThemePicker extends DevlibComponent
                         @endforeach
                     @endforeach
                 </div>
-                <div class="dl-themepick__row"><b>Density</b>
-                    @foreach (['compact' => 'Rapat', 'normal' => 'Normal', 'comfortable' => 'Longgar'] as $k => $l)<button type="button" class="dl-chipbtn" data-density="{{ $k }}">{{ $l }}</button>@endforeach
+                <div class="dl-themepick__row"><b>{{ \Devlib\Lang::text('Density') }}</b>
+                    @foreach (['compact' => 'Compact', 'normal' => 'Normal', 'comfortable' => 'Comfortable'] as $k => $l)<button type="button" class="dl-chipbtn" data-density="{{ $k }}">{{ \Devlib\Lang::text($l) }}</button>@endforeach
                 </div>
-                <div class="dl-themepick__row"><b>Ukuran huruf</b>
+                <div class="dl-themepick__row"><b>{{ \Devlib\Lang::text('Font size') }}</b>
                     @foreach (['0.9' => '90%', '1' => '100%', '1.1' => '110%', '1.2' => '120%'] as $k => $l)<button type="button" class="dl-chipbtn" data-scale="{{ $k }}">{{ $l }}</button>@endforeach
                 </div>
             </div>

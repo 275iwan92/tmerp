@@ -13,7 +13,7 @@ class ForgotBox extends DevlibComponent
         public string $mode = 'email',
         public string $action = '',
         public string $loginUrl = '#',
-        public string $question = 'Nama hewan peliharaan pertama Anda?',
+        public string $question = 'What was the name of your first pet?',
     ) {}
 
     public function tag(): string

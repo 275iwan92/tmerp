@@ -11,7 +11,7 @@ class Wizard extends DevlibComponent
         public string $title = '',
         public ?string $action = null,
         public bool $review = true,
-        public string $finishLabel = 'Selesai',
+        public string $finishLabel = 'Finish',
     ) {}
 
     public function tag(): string
@@ -33,9 +33,9 @@ class Wizard extends DevlibComponent
                     @endif
                 </div>
                 <div class="dl-wizard__foot">
-                    <x-dl::button variant="secondary" icon="prev" label="Sebelumnya" data-w-prev />
+                    <x-dl::button variant="secondary" icon="prev" label="Previous" data-w-prev />
                     <span class="dl-wizard__pos" data-w-pos></span>
-                    <x-dl::button icon="next" label="Berikutnya" data-w-next />
+                    <x-dl::button icon="next" label="Next" data-w-next />
                     <x-dl::button preset="submit" :label="$finishLabel" type="submit" data-w-finish />
                 </div>
             </form>

@@ -69,7 +69,7 @@ class SopGrid extends HrmGrid
     protected function row(Model $m): array
     {
         return [
-            'name' => $m->title, 'code' => $m->sop_code, 'type' => SopDocument::TYPES[$m->doc_type] ?? 'SOP', 'dept' => $m->department?->department_name ?? 'Semua departemen',
+            'name' => $m->title, 'code' => $m->sop_code, 'type' => SopDocument::TYPES[$m->doc_type] ?? 'SOP', 'dept' => $m->department?->department_name ?? t('All departments'),
             'revision' => $m->revision, 'effective' => $m->effective_date ? substr((string) $m->effective_date, 0, 10) : null,
         ];
     }

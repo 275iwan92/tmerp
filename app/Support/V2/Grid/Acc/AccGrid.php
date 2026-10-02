@@ -22,6 +22,6 @@ abstract class AccGrid extends DbGrid
 
     protected function accountClass(?string $type): ?string
     {
-        return self::ACCOUNT_CLASSES[$type] ?? $type;
+        return isset(self::ACCOUNT_CLASSES[$type]) ? t(self::ACCOUNT_CLASSES[$type]) : $type;
     }
 }

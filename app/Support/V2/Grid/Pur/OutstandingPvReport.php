@@ -77,9 +77,9 @@ class OutstandingPvReport extends PurReportGrid
     {
         return [
             ['label' => 'All'],
-            ['label' => '0-7 days', 'where' => ['age' => '0-7 days'], 'tone' => 'info'],
-            ['label' => '8-30 days', 'where' => ['age' => '8-30 days'], 'tone' => 'warn'],
-            ['label' => '> 30 days', 'where' => ['age' => '> 30 days'], 'tone' => 'danger'],
+            ['label' => '0-7 days', 'where' => ['age' => t('0-7 days')], 'tone' => 'info'],
+            ['label' => '8-30 days', 'where' => ['age' => t('8-30 days')], 'tone' => 'warn'],
+            ['label' => '> 30 days', 'where' => ['age' => t('> 30 days')], 'tone' => 'danger'],
         ];
     }
 

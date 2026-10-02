@@ -20,11 +20,11 @@ class Approval extends DevlibComponent
     public function __construct(
         public array $docs = [],
         public array $lineColumns = [],
-        public string $title = 'Menunggu Approval Saya',
-        public string $approveLabel = 'Setujui',
-        public ?string $holdLabel = 'Tahan',
-        public string $rejectLabel = 'Tolak',
-        public string $me = 'Saya',
+        public string $title = 'Waiting for My Approval',
+        public string $approveLabel = 'Approve',
+        public ?string $holdLabel = 'Hold',
+        public string $rejectLabel = 'Reject',
+        public string $me = 'Me',
         public ?string $source = null,
         public ?string $action = null,
         public array $log = [],
@@ -43,13 +43,13 @@ class Approval extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <div {{ $attributes->class('dl-appr') }} {!! $dl() !!} data-dl-approval data-docs="{{ json_encode($docs) }}" data-cols="{{ json_encode($lineColumns) }}" data-me="{{ $me }}" data-log="{{ json_encode($log) }}">
+            <div {{ $attributes->class('dl-appr') }} {!! $dl() !!} data-dl-approval data-docs="{{ json_encode($docs) }}" data-cols="{{ json_encode($lineColumns) }}" data-me="{{ $me === 'Me' ? \Devlib\Lang::text('Me') : $me }}" data-log="{{ json_encode($log) }}">
                 @if ($action)<form method="post" action="{{ $action }}" data-a-form hidden>@csrf<input type="hidden" name="id"><input type="hidden" name="action"><input type="hidden" name="_reason"></form>@endif
                 <div class="dl-appr__head"><h2>{{ $title }}</h2><span class="dl-badge dl-badge--pill dl-badge--warn" data-a-count></span></div>
                 <div class="dl-appr__grid">
                     <div class="dl-appr__side">
                         <div class="dl-appr__list" data-a-list></div>
-                        <div class="dl-appr__log" data-a-log hidden><p class="dl-appr__cap">Log Keputusan</p><ul data-a-logrows></ul></div>
+                        <div class="dl-appr__log" data-a-log hidden><p class="dl-appr__cap">{{ \Devlib\Lang::text('Decision Log') }}</p><ul data-a-logrows></ul></div>
                     </div>
                     <div class="dl-appr__detail" data-a-detail>
                         <div data-a-body></div>

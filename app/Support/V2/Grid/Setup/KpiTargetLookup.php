@@ -59,10 +59,10 @@ class KpiTargetLookup extends DbLookup
 
     public function columns(): array
     {
-        $people = [self::COMPANY => 'Company'] + SalesPerson::query()->orderBy('sales_name')->pluck('sales_name', 'id_sales_person')->all();
+        $people = [self::COMPANY => t('Company')] + SalesPerson::query()->orderBy('sales_name')->pluck('sales_name', 'id_sales_person')->all();
 
         return [
-            ['key' => 'target_key', 'label' => 'Target', 'type' => 'select', 'options' => SysKpiTarget::KEYS, 'required' => true, 'width' => '330px'],
+            ['key' => 'target_key', 'label' => 'Target', 'type' => 'select', 'options' => array_map('t', SysKpiTarget::KEYS), 'required' => true, 'width' => '330px'],
             ['key' => 'period_month', 'label' => 'Month', 'type' => 'date', 'required' => true, 'width' => '140px'],
             ['key' => 'sales_person_id', 'label' => 'Sales Person', 'type' => 'select', 'options' => $people, 'required' => true, 'width' => '240px'],
             ['key' => 'target_value', 'label' => 'Target Value', 'type' => 'number', 'decimals' => 2, 'required' => true, 'width' => '170px'],
@@ -100,14 +100,14 @@ class KpiTargetLookup extends DbLookup
     {
         $person = (int) ($in['sales_person_id'] ?? self::COMPANY);
         if ($person !== self::COMPANY && ($in['target_key'] ?? '') !== 'REVENUE') {
-            return 'A personal target is only used for Order value. Choose Company for the other targets.';
+            return t('A personal target is only used for Order value. Choose Company for the other targets.');
         }
         if ($person !== self::COMPANY && ! SalesPerson::query()->whereKey($person)->exists()) {
-            return 'This sales person is not in Master Sales Person.';
+            return t('This sales person is not in Master Sales Person.');
         }
         $twice = SysKpiTarget::query()->where('target_key', $in['target_key'] ?? null)->whereDate('period_month', $in['period_month'] ?? null)
             ->where('sales_person_id', $person)->when($id, fn (Builder $q) => $q->whereKeyNot($id))->exists();
 
-        return $twice ? 'This target already exists for that month.' : null;
+        return $twice ? t('This target already exists for that month.') : null;
     }
 }

@@ -57,7 +57,7 @@ class HelpLineLookup extends HelpLookup
         return [
             ['key' => 'help_topic_id', 'label' => 'Topic', 'type' => 'select', 'options' => SysHelpTopic::query()->orderBy('title')->pluck('title', 'id_help_topic')->all(),
                 'required' => true, 'width' => '240px'],
-            ['key' => 'line_type', 'label' => 'Kind', 'type' => 'select', 'options' => SysHelpLine::TYPES, 'required' => true, 'width' => '160px'],
+            ['key' => 'line_type', 'label' => 'Kind', 'type' => 'select', 'options' => array_map('t', SysHelpLine::TYPES), 'required' => true, 'width' => '160px'],
             ['key' => 'field_label', 'label' => 'Field', 'width' => '190px'],
             ['key' => 'body', 'label' => 'Text (English)', 'required' => true, 'width' => '460px'],
             ...$this->langColumns('460px'),
@@ -75,6 +75,6 @@ class HelpLineLookup extends HelpLookup
     protected function check(array $in, ?int $id): ?string
     {
         return ($in['line_type'] ?? null) === SysHelpLine::FIELD && trim((string) ($in['field_label'] ?? '')) === ''
-            ? 'A field explanation needs the Field label.' : null;
+            ? t('A field explanation needs the Field label.') : null;
     }
 }

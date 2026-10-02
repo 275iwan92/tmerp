@@ -15,6 +15,22 @@ if (! function_exists('t')) {
     }
 }
 
+if (! function_exists('tf')) {
+    // Kalimat yang memuat NILAI (pesan flash, pesan error, hint): teks English ber-:kunci diterjemahkan dulu, baru nilainya
+    // diisikan -- kamus hanya mengenal kalimatnya, bukan nomor dokumen / nama.
+    //   tf('Quotation :no created (DRAFT).', ['no' => $q->quotation_no])
+    // Hasilnya teks jadi: di prop teks komponen x-dl::* bungkus raw() (pesan flash dibungkus di layar yang menampilkannya).
+    function tf(string $en, array $values = [], string $context = 'ui'): string
+    {
+        $map = [];
+        foreach ($values as $key => $value) {
+            $map[':'.$key] = (string) $value;
+        }
+
+        return strtr(Dictionary::t($en, $context), $map);
+    }
+}
+
 if (! function_exists('raw')) {
     // NILAI DATA di dalam prop teks komponen x-dl::* (no. dokumen, nama customer, angka, tanggal): tidak diterjemahkan dan
     // tidak tercatat di kamus; label di sekitarnya tetap English dan tetap diterjemahkan komponen.

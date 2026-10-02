@@ -43,7 +43,7 @@ class WoGenerationService
     public function generateFromDelivery(CoOrderDelivery $delivery): Collection
     {
         if (PrdWo::where('source_delivery_id', $delivery->id_delivery)->exists()) {
-            throw new \RuntimeException("Delivery #{$delivery->id_delivery} sudah pernah generate WO -- tidak boleh dobel.");
+            throw new \RuntimeException(tf('Delivery #:id has already generated a WO -- it must not be done twice.', ['id' => $delivery->id_delivery]));
         }
 
         $delivery->loadMissing(['item.inquiry.parts.processes', 'item.inquiry.parts.materials']);
@@ -57,7 +57,7 @@ class WoGenerationService
 
         // Satu-satunya syarat (user 2026-10-02): CO sudah Confirmed dan approved.
         if ($delivery->order?->doc_status !== 'CONFIRMED') {
-            throw new \RuntimeException("CO delivery #{$delivery->id_delivery} belum Confirmed / approved -- WO belum boleh dibuat.");
+            throw new \RuntimeException(tf('The CO of delivery #:id is not Confirmed / approved yet -- the WO cannot be created yet.', ['id' => $delivery->id_delivery]));
         }
 
         // Tanpa Inquiry / part (CO direct untuk product yang belum pernah lewat Inquiry): WO sederhana.
@@ -181,7 +181,7 @@ class WoGenerationService
     {
         $productId = $delivery->item?->product_id ?: $inquiry?->product_id;
         if (! $productId) {
-            throw new \RuntimeException("Delivery #{$delivery->id_delivery}: baris CO belum punya Master Product -- pilih product di baris CO dulu.");
+            throw new \RuntimeException(tf('Delivery #:id: the CO line has no Master Product yet -- choose the product on the CO line first.', ['id' => $delivery->id_delivery]));
         }
 
         return PrdWo::create([

@@ -84,7 +84,7 @@ class OutstandingPrReport extends PurReportGrid
             ['label' => 'All'],
             ['label' => 'Not ordered yet', 'where' => ['status' => 'APPROVED'], 'tone' => 'info'],
             ['label' => 'Partially ordered', 'where' => ['status' => 'PARTIALLY_ORDERED'], 'tone' => 'warn'],
-            ['label' => 'Older than 30 days', 'where' => ['age' => '> 30 days'], 'tone' => 'danger'],
+            ['label' => 'Older than 30 days', 'where' => ['age' => t('> 30 days')], 'tone' => 'danger'],
         ];
     }
 

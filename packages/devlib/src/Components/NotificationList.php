@@ -7,7 +7,7 @@ class NotificationList extends DevlibComponent
 {
     public function __construct(
         public array $items = [],
-        public string $title = 'Semua Notifikasi',
+        public string $title = 'All Notifications',
         public bool $markAll = true,
     ) {}
 
@@ -21,8 +21,8 @@ class NotificationList extends DevlibComponent
         return <<<'BLADE'
             @php $unread = count(array_filter($items, fn ($n) => ! ($n['read'] ?? false))); @endphp
             <div {{ $attributes->class('dl-notif') }} {!! $dl() !!} data-dl-notif>
-                <div class="dl-notif__head"><b>{{ $title }}</b>@if ($unread)<span class="dl-notif__count" data-dl-notif-count>{{ $unread }} belum dibaca</span>@endif
-                    @if ($markAll && $unread)<button type="button" class="dl-notif__all" data-dl-notif-all>Tandai semua dibaca</button>@endif</div>
+                <div class="dl-notif__head"><b>{{ $title }}</b>@if ($unread)<span class="dl-notif__count" data-dl-notif-count>{{ str_replace('{n}', (string) $unread, \Devlib\Lang::t('n_unread')) }}</span>@endif
+                    @if ($markAll && $unread)<button type="button" class="dl-notif__all" data-dl-notif-all>{{ \Devlib\Lang::text('Mark all read') }}</button>@endif</div>
                 @forelse ($items as $n)
                     <div class="dl-notif__item {{ ($n['read'] ?? false) ? '' : 'is-unread' }}" data-dl-notif-item>
                         <span class="dl-notif__icon dl-notif__icon--{{ $n['tone'] ?? 'accent' }}"><i class="fa-solid {{ \Devlib\Icon::fa($n['icon'] ?? 'notification') }}"></i></span>

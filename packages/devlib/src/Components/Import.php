@@ -45,15 +45,15 @@ class Import extends DevlibComponent
     {
         return <<<'BLADE'
             <div {{ $attributes->class('dl-import') }} {!! $dl() !!} data-dl-import data-config="{{ json_encode($config()) }}">
-                <div class="dl-import__head"><b>{{ $title }}</b><ol class="dl-import__steps" data-i-steps><li>Upload</li><li>Cocokkan kolom</li><li>Pratinjau & import</li></ol></div>
+                <div class="dl-import__head"><b>{{ $title }}</b><ol class="dl-import__steps" data-i-steps><li>Upload</li><li>{{ \Devlib\Lang::text('Match columns') }}</li><li>{{ \Devlib\Lang::text('Preview & import') }}</li></ol></div>
                 <div data-i-step="1">
-                    <label class="dl-import__drop" data-i-drop><i class="fa-solid fa-file-csv"></i><b>Tarik file CSV ke sini</b><span>atau klik untuk memilih · pemisah koma / titik koma / tab, baris pertama = judul kolom</span><input type="file" accept=".csv,.txt,.tsv,text/csv" data-i-file hidden></label>
-                    <div class="dl-row"><x-dl::button variant="secondary" size="sm" icon="download" label="Unduh template CSV" data-i-template /><span class="dl-import__hint">Excel: simpan sebagai CSV (UTF-8) dulu.</span></div>
+                    <label class="dl-import__drop" data-i-drop><i class="fa-solid fa-file-csv"></i><b>{{ \Devlib\Lang::text('Drag a CSV file here') }}</b><span>{{ \Devlib\Lang::text('or click to choose · comma / semicolon / tab delimiter, first row = column headings') }}</span><input type="file" accept=".csv,.txt,.tsv,text/csv" data-i-file hidden></label>
+                    <div class="dl-row"><x-dl::button variant="secondary" size="sm" icon="download" label="Download CSV template" data-i-template /><span class="dl-import__hint">{{ \Devlib\Lang::text('Excel: save as CSV (UTF-8) first.') }}</span></div>
                 </div>
                 <div data-i-step="2" hidden><p class="dl-import__hint" data-i-fileinfo></p><div class="dl-import__map" data-i-map></div>
-                    <div class="dl-import__foot"><x-dl::button variant="secondary" size="sm" icon="prev" label="Ganti file" data-i-back="1" /><span class="dl-print__spacer"></span><x-dl::button icon="next" label="Pratinjau" data-i-preview /></div></div>
-                <div data-i-step="3" hidden><div class="dl-import__stats" data-i-stats></div><label class="dl-choice"><input type="checkbox" data-i-onlybad> Hanya tampilkan baris bermasalah</label><div class="dl-import__wrap"><table class="dl-import__table" data-i-table></table></div>
-                    <div class="dl-import__foot"><x-dl::button variant="secondary" size="sm" icon="prev" label="Cocokkan ulang" data-i-back="2" /><x-dl::button variant="secondary" size="sm" icon="download" :label="\Devlib\Lang::text('Download failed rows')" data-i-failed /><span class="dl-print__spacer"></span><x-dl::button preset="submit" label="Import" data-i-go /></div></div>
+                    <div class="dl-import__foot"><x-dl::button variant="secondary" size="sm" icon="prev" label="Change file" data-i-back="1" /><span class="dl-print__spacer"></span><x-dl::button icon="next" label="Preview" data-i-preview /></div></div>
+                <div data-i-step="3" hidden><div class="dl-import__stats" data-i-stats></div><label class="dl-choice"><input type="checkbox" data-i-onlybad> {{ \Devlib\Lang::text('Show only rows with problems') }}</label><div class="dl-import__wrap"><table class="dl-import__table" data-i-table></table></div>
+                    <div class="dl-import__foot"><x-dl::button variant="secondary" size="sm" icon="prev" label="Match again" data-i-back="2" /><x-dl::button variant="secondary" size="sm" icon="download" :label="\Devlib\Lang::text('Download failed rows')" data-i-failed /><span class="dl-print__spacer"></span><x-dl::button preset="submit" label="Import" data-i-go /></div></div>
             </div>
             BLADE;
     }

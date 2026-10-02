@@ -3,8 +3,8 @@
     @if ($range)<input type="hidden" name="{{ $nameTo ?: $name.'_to' }}" data-dl-slider-b>@endif
     <div class="dl-slider__track">
         <div class="dl-slider__rail"><div class="dl-slider__fill"></div></div>
-        <input id="{{ $uid }}" type="range" class="dl-slider__input" min="{{ $min }}" max="{{ $max }}" step="{{ $step }}" value="{{ $fromValue() }}" aria-label="{{ $label }}{{ $range ? ' (dari)' : '' }}" @disabled($disabled || $readonly)>
-        @if ($range)<input type="range" class="dl-slider__input" min="{{ $min }}" max="{{ $max }}" step="{{ $step }}" value="{{ $toValue() }}" aria-label="{{ $label }} (sampai)" @disabled($disabled || $readonly)>@endif
+        <input id="{{ $uid }}" type="range" class="dl-slider__input" min="{{ $min }}" max="{{ $max }}" step="{{ $step }}" value="{{ $fromValue() }}" aria-label="{{ $label }}{{ $range ? ' '.\Devlib\Lang::text('(from)') : '' }}" @disabled($disabled || $readonly)>
+        @if ($range)<input type="range" class="dl-slider__input" min="{{ $min }}" max="{{ $max }}" step="{{ $step }}" value="{{ $toValue() }}" aria-label="{{ $label }} {{ \Devlib\Lang::text('(to)') }}" @disabled($disabled || $readonly)>@endif
     </div>
     @if ($tickList())
         <div class="dl-slider__ticks">@foreach ($tickList() as [$pos, $lbl])<span style="--p:{{ $pos }}">{{ $lbl }}</span>@endforeach</div>

@@ -64,9 +64,9 @@
 
     drawMap() {
       $(this.el, '[data-i-fileinfo]').textContent = Tf('i_file_info', {name: this.file.name, rows: this.file.body.length, cols: this.file.head.length, delim: this.file.delim === '\t' ? 'tab' : this.file.delim});
-      $(this.el, '[data-i-map]').innerHTML = this.cols.map(c => `<label class="dl-import__mrow ${this.map[c.key] < 0 && c.required ? 'is-bad' : ''}"><span><b>${esc(c.label)}</b>${c.required ? ' <span class="dl-field__req">*</span>' : ''}<small>${esc({text: 'teks', number: 'angka', date: 'tanggal', lookup: 'pilihan master'}[c.type] || c.type)}</small></span><i class="fa-solid fa-arrow-left"></i>
-        <select data-i-col="${esc(c.key)}"><option value="-1">— tidak diimpor —</option>${this.file.head.map((h, i) => `<option value="${i}" ${this.map[c.key] === i ? 'selected' : ''}>${esc(h)}</option>`).join('')}</select>
-        <small class="dl-import__sample">${this.map[c.key] >= 0 ? 'contoh: ' + esc(this.file.body[0][this.map[c.key]] ?? '') : ''}</small></label>`).join('');
+      $(this.el, '[data-i-map]').innerHTML = this.cols.map(c => `<label class="dl-import__mrow ${this.map[c.key] < 0 && c.required ? 'is-bad' : ''}"><span><b>${esc(c.label)}</b>${c.required ? ' <span class="dl-field__req">*</span>' : ''}<small>${esc({text: T('i_type_text'), number: T('i_type_number'), date: T('i_type_date'), lookup: T('i_type_lookup')}[c.type] || c.type)}</small></span><i class="fa-solid fa-arrow-left"></i>
+        <select data-i-col="${esc(c.key)}"><option value="-1">${esc(T('i_not_imported'))}</option>${this.file.head.map((h, i) => `<option value="${i}" ${this.map[c.key] === i ? 'selected' : ''}>${esc(h)}</option>`).join('')}</select>
+        <small class="dl-import__sample">${this.map[c.key] >= 0 ? esc(T('i_sample')) + ': ' + esc(this.file.body[0][this.map[c.key]] ?? '') : ''}</small></label>`).join('');
     }
 
     validate() {

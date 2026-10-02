@@ -56,7 +56,7 @@ class SalesPersonLookup extends MasterDataLookup
     {
         return [
             ['key' => 'sales_name', 'label' => 'Sales Name', 'required' => true, 'unique' => true, 'lockSaved' => true, 'width' => '280px'],
-            ['key' => 'sales_type', 'label' => 'Type', 'type' => 'select', 'options' => self::TYPES, 'required' => true, 'width' => '130px'],
+            ['key' => 'sales_type', 'label' => 'Type', 'type' => 'select', 'options' => array_map('t', self::TYPES), 'required' => true, 'width' => '130px'],
             ['key' => 'employee_id', 'label' => 'Employee', 'type' => 'select', 'options' => $this->employees(), 'width' => '320px'],
             ['key' => 'phone', 'label' => 'Phone', 'width' => '180px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '80px'],
@@ -80,6 +80,6 @@ class SalesPersonLookup extends MasterDataLookup
 
     protected function check(array $in, ?int $id): ?string
     {
-        return ($in['sales_type'] ?? null) === 'EXTERNAL' && ! empty($in['employee_id']) ? 'An external sales person cannot be linked to an employee.' : null;
+        return ($in['sales_type'] ?? null) === 'EXTERNAL' && ! empty($in['employee_id']) ? t('An external sales person cannot be linked to an employee.') : null;
     }
 }

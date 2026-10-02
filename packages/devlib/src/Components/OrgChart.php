@@ -12,7 +12,7 @@ class OrgChart extends DevlibComponent
     public function __construct(
         public array $nodes = [],
         public bool $editable = true,
-        public string $title = 'Struktur Organisasi',
+        public string $title = 'Organization Structure',
         public ?string $source = null,
     ) {}
 
@@ -35,9 +35,9 @@ class OrgChart extends DevlibComponent
                         <x-dl::button variant="secondary" size="sm" icon="undo" label="Undo" data-o-undo />
                         <x-dl::button preset="save" size="sm" data-o-save />
                     @endif
-                    <x-dl::button variant="secondary" size="sm" icon="download" label="Unduh HTML" data-o-html />
-                    <span class="dl-org__zoom"><x-dl::icon-button icon="fa-magnifying-glass-minus" title="Perkecil" data-o-zoom="-1" /><b data-o-zoomval>100%</b><x-dl::icon-button icon="fa-magnifying-glass-plus" title="Perbesar" data-o-zoom="1" /><x-dl::button variant="ghost" size="sm" label="Pas" data-o-zoom="0" /></span>
-                    @if ($editable)<span class="dl-org__tip"><i class="fa-solid fa-circle-info"></i> Tarik ikon titik-titik di kiri kartu ke kartu atasan lain untuk memindahkan struktur bawahan.</span>@endif
+                    <x-dl::button variant="secondary" size="sm" icon="download" label="Download HTML" data-o-html />
+                    <span class="dl-org__zoom"><x-dl::icon-button icon="fa-magnifying-glass-minus" title="Zoom out" data-o-zoom="-1" /><b data-o-zoomval>100%</b><x-dl::icon-button icon="fa-magnifying-glass-plus" title="Zoom in" data-o-zoom="1" /><x-dl::button variant="ghost" size="sm" label="Fit" data-o-zoom="0" /></span>
+                    @if ($editable)<span class="dl-org__tip"><i class="fa-solid fa-circle-info"></i> {{ \Devlib\Lang::text('Drag the dotted icon on the left of a card onto another superior card to move its subordinates.') }}</span>@endif
                     <span class="dl-org__spacer"></span>
                     <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search employee / position...') }}" data-o-search aria-label="{{ \Devlib\Lang::text('Search employee') }}"></div>
                 </div>

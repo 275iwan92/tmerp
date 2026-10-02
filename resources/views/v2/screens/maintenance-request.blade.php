@@ -16,8 +16,8 @@
     $head = MaintenanceService::canDecide(auth()->user());
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $req && ! request('new'))
     <x-dl::grid id="mnt-req-list" :rows="Maintenance::requestRows()" search="Search request, machine, symptom..." actions="worklist" :active-key="null"
@@ -41,11 +41,11 @@
         <x-dl::card title="Report Problem — Maintenance Request" description="Machine, what happened, and whether it stopped. Priority is set automatically; a stopped machine (P1) becomes a Work Order at once.">
             <x-dl::form.row :cols="3">
                 <x-dl::field.select name="machine_id" label="Machine" required :options="Maintenance::machines()" :value="request('machine')" :source="Src::of('tm2mst.prod_machine')" />
-                <x-dl::field.select name="request_kind" label="Kind" required :options="MntRequest::KINDS" value="BREAKDOWN" :source="Src::of('tm2prd.mnt_request.request_kind')" />
+                <x-dl::field.select name="request_kind" label="Kind" required :options="array_map('t', MntRequest::KINDS)" value="BREAKDOWN" :source="Src::of('tm2prd.mnt_request.request_kind')" />
                 <x-dl::field.lookup name="reported_by" lookup="employee" label="Reported by" :value="auth()->user()->employee_id" :source="Src::of('tm2mst.emp_employee')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="3">
-                <x-dl::field.toggle name="machine_stopped" label="Machine stopped?" on-label="Yes, stopped" off-label="No, still running" :value="false" :source="Src::of('tm2prd.mnt_request.machine_stopped')" />
+                <x-dl::field.toggle name="machine_stopped" label="Machine stopped?" :on-label="t('Yes, stopped')" :off-label="t('No, still running')" :value="false" :source="Src::of('tm2prd.mnt_request.machine_stopped')" />
                 <x-dl::field.date-time name="stopped_at" label="Stopped at" :value="now()->format('Y-m-d H:i')" :source="Src::of('tm2prd.mnt_request.stopped_at')" />
             </x-dl::form.row>
             <x-dl::field.text name="symptom" label="What happened" required multiline :source="Src::of('tm2prd.mnt_request.symptom')" />
@@ -76,17 +76,17 @@
             @endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>Request</span><b>{{ $req->doc_no }}</b></div>
-            <div class="dl-strip__kv"><span>Reported</span><b>{{ Maintenance::stamp($req->request_date) }}</b></div>
-            <div class="dl-strip__kv"><span>Reported by</span><b>{{ $req->reported_by ? Maintenance::employeeName($req->reported_by) : $req->created_by }}</b></div>
-            <div class="dl-strip__kv"><span>Machine</span><b>{{ $req->machine_stopped ? 'Stopped since '.Maintenance::stamp($req->stopped_at) : 'Still running' }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>Priority</span><b>{{ MntWo::PRIORITIES[$req->priority] ?? $req->priority }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>@t('Request')</span><b>{{ $req->doc_no }}</b></div>
+            <div class="dl-strip__kv"><span>@t('Reported')</span><b>{{ Maintenance::stamp($req->request_date) }}</b></div>
+            <div class="dl-strip__kv"><span>@t('Reported by')</span><b>{{ $req->reported_by ? Maintenance::employeeName($req->reported_by) : $req->created_by }}</b></div>
+            <div class="dl-strip__kv"><span>@t('Machine')</span><b>{{ $req->machine_stopped ? t('Stopped since').' '.Maintenance::stamp($req->stopped_at) : t('Still running') }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>@t('Priority')</span><b>{{ t(MntWo::PRIORITIES[$req->priority] ?? $req->priority) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">
                 <x-dl::field.display label="Machine" :value="$machines[$req->machine_id] ?? '#'.$req->machine_id" :source="Src::of('tm2mst.prod_machine')" />
-                <x-dl::field.select name="request_kind" label="Kind" required :options="MntRequest::KINDS" :value="$req->request_kind" :source="Src::of('tm2prd.mnt_request.request_kind')" />
-                <x-dl::field.select name="priority" label="Priority" required :options="MntWo::PRIORITIES" :value="$req->priority" :source="Src::of('tm2prd.mnt_request.priority')" />
+                <x-dl::field.select name="request_kind" label="Kind" required :options="array_map('t', MntRequest::KINDS)" :value="$req->request_kind" :source="Src::of('tm2prd.mnt_request.request_kind')" />
+                <x-dl::field.select name="priority" label="Priority" required :options="array_map('t', MntWo::PRIORITIES)" :value="$req->priority" :source="Src::of('tm2prd.mnt_request.priority')" />
             </x-dl::form.row>
             <x-dl::field.text name="symptom" label="What happened" required multiline :value="$req->symptom" :source="Src::of('tm2prd.mnt_request.symptom')" />
         </x-slot:general>

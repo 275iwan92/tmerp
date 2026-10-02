@@ -58,12 +58,12 @@
           const q = this.p.search.value.trim(), r = {[this.el.dataset.key]: 'new:' + q, [label]: q};
           this.rows.push(r);
           const tr = document.createElement('tr'); tr.className = 'dl-dd__item'; tr.dataset.i = this.rows.length - 1;
-          tr.innerHTML = $$(this.el, 'thead th').map((th, i) => `<td>${i === 0 ? '(baru)' : ''}</td>`).join('');
+          tr.innerHTML = $$(this.el, 'thead th').map((th, i) => `<td>${i === 0 ? '(' + esc(T('lu_new')) + ')' : ''}</td>`).join('');
           tr.children[Math.min(1, tr.children.length - 1)].textContent = q;
           $(this.el, '[data-dl-dd-list]').appendChild(tr);
           $(this.el, '[data-dl-value]').value = r[this.el.dataset.key]; $(this.el, '[data-dl-dd-text]').textContent = q; btn.hidden = true; this.p.close();
           this.el.dispatchEvent(new CustomEvent('dl:lookup-create', {bubbles: true, detail: {text: q}}));
-          toast('Ditambahkan: ' + q);
+          toast(T('lu_added') + ': ' + q);
         });
       }
     }

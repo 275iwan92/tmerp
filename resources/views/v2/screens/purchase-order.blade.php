@@ -12,8 +12,8 @@
     abort_if(request('id') && ! $po, 404);
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $po && ! request('new'))
     <x-dl::grid id="po-list" :rows="PurchaseOrder::rows()" search="Search PO no., supplier..." actions="worklist" :active-key="null"
@@ -25,31 +25,31 @@
             ['key' => 'total', 'label' => 'Grand Total', 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseOrder::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
-            ['key' => 'code', 'label' => 'Code'],
-            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'received', 'label' => 'Received', 'type' => 'number'],
-            ['key' => 'outstanding', 'label' => 'Outstanding', 'type' => 'number'],
-            ['key' => 'status', 'label' => 'Line Status'],
+        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
+            ['key' => 'code', 'label' => t('Code')],
+            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'received', 'label' => t('Received'), 'type' => 'number'],
+            ['key' => 'outstanding', 'label' => t('Remaining'), 'type' => 'number'],
+            ['key' => 'status', 'label' => t('Line Status')],
         ]]"
         :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved / Sent', 'where' => ['status' => ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED']], 'tone' => 'success']]"
         :filters="['supplier' => 'Supplier', 'status' => 'Status']" />
 @elseif (! $po)
     <x-dl::action-form action="{{ route('v2.po.create') }}">
-        <x-dl::card title="+ New Record — Purchase Order" description="Regular PO: choose the supplier (its open draft PO is reused). Cash PO: paid from Petty Cash, max. Rp {{ \Devlib\Locale::number(PurchaseOrder::maxCash(), 0) }}, approved by the Finance Director.">
+        <x-dl::card title="+ New Record — Purchase Order" :description="raw(tf('Regular PO: choose the supplier (its open draft PO is reused). Cash PO: paid from Petty Cash, max. Rp :max, approved by the Finance Director.', ['max' => \Devlib\Locale::number(PurchaseOrder::maxCash(), 0)]))">
             <x-dl::form.row :cols="2">
-                <x-dl::field.select name="po_kind" label="PO Kind" required :options="['NORMAL' => 'Regular PO (credit / terms)', 'CASH' => 'Cash PO (Petty Cash)']" :value="request('kind', 'NORMAL')" :source="Src::of('tm2pur.po_order.i_procure_type')" />
+                <x-dl::field.select name="po_kind" label="PO Kind" required :options="['NORMAL' => t('Regular PO (credit / terms)'), 'CASH' => t('Cash PO (Petty Cash)')]" :value="request('kind', 'NORMAL')" :source="Src::of('tm2pur.po_order.i_procure_type')" />
                 <x-dl::field.select name="supplier_id" label="Supplier" required :options="PurchaseOrder::suppliers()" :value="request('kind') === 'CASH' ? PurchaseOrder::cashSupplierId() : null" hint="Cash PO to a retail shop: choose TOKO KONTAN and type the shop name below." :source="Src::of('tm2mst.sup_supplier')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="2">
-                <x-dl::field.select name="cash_mode" label="Cash PO Mode" :options="PurchaseOrder::CASH_MODES" value="ADVANCE" :source="Src::of('tm2pur.po_order.i_cash_mode')" />
+                <x-dl::field.select name="cash_mode" label="Cash PO Mode" :options="array_map('t', PurchaseOrder::CASH_MODES)" value="ADVANCE" :source="Src::of('tm2pur.po_order.i_cash_mode')" />
                 <x-dl::field.text name="shop_name" label="Shop Name (Cash PO)" placeholder="e.g. Toko Maju Jaya" :source="Src::of('tm2pur.po_order.i_shop_name')" />
             </x-dl::form.row>
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
-                <x-dl::button preset="save" label="Buat PO" />
+                <x-dl::button preset="save" label="Create PO" />
             </x-dl::action-bar>
         </x-dl::card>
     </x-dl::action-form>
@@ -73,7 +73,7 @@
         $lines = $po->lines->map(fn ($l) => [
             'po_line_id' => $l->po_line_id, 'i_description' => $l->i_description, 'i_qty' => (float) $l->i_qty, 'i_uom' => $l->i_uom,
             'i_price' => (float) $l->i_price, 'i_disc_pct' => (float) $l->i_disc_pct,
-            'code' => $l->c_item_code ?: '—', 'account' => $l->i_coa_account_id ? ($expense[$l->i_coa_account_id] ?? '#'.$l->i_coa_account_id) : '—', 'class' => $l->i_line_class === 'SERVICE' ? 'Jasa (kena PPh 23)' : 'Barang', 'stock' => $l->is_stock ? 'Stok' : 'Non-stok',
+            'code' => $l->c_item_code ?: '—', 'account' => $l->i_coa_account_id ? ($expense[$l->i_coa_account_id] ?? '#'.$l->i_coa_account_id) : '—', 'class' => $l->i_line_class === 'SERVICE' ? t('Service (subject to PPh 23)') : t('Goods'), 'stock' => $l->is_stock ? t('Stock') : t('Non-stock'),
             'pq' => $pqNo[$l->pq_line_id] ?? '—', 'received' => $trim($l->c_qty_received).' '.$l->i_uom, 'outstanding' => $trim($l->c_qty_outstanding).' '.$l->i_uom, 'tol' => $trim($l->c_tol_pct).'%',
         ])->values()->all();
     @endphp
@@ -86,28 +86,28 @@
         <x-slot:special>
             @unless (in_array($po->status, ['DRAFT', 'SUBMITTED'], true))<x-dl::button size="sm" preset="print" label="Print" :href="\App\Support\V2\Print\PrintDocs::url('purchase-order', $po->po_id)" target="_blank" />@endunless
             @if ($pettyStep)<x-dl::button size="sm" variant="success" icon="fa-wallet" :label="\App\Support\V2\Data\PettyCash::STEP_LABELS[$pettyStep]" :href="route('v2.screen', 'petty-cash').'?po='.$po->po_id" />@endif
-            @if ($po->status === 'APPROVED' && ! $cash)<x-dl::button size="sm" variant="success" icon="fa-paper-plane" :label="t('Send to Supplier')" type="submit" name="action" value="send" formnovalidate onclick="return confirm('Tandai PO ini sudah dikirim ke supplier?')" />@endif
+            @if ($po->status === 'APPROVED' && ! $cash)<x-dl::button size="sm" variant="success" icon="fa-paper-plane" :label="t('Send to Supplier')" type="submit" name="action" value="send" formnovalidate :onclick="'return confirm('.json_encode(t('Mark this PO as sent to the supplier?')).')'" />@endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>No. PO</span><b>{{ $po->doc_no ?: '(saat Confirm)' }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>@t('PO No.')</span><b>{{ $po->doc_no ?: t('(on Confirm)') }}</b></div>
             <x-dl::field.date name="i_doc_date" label="PO Date" :value="$po->i_doc_date?->toDateString()" :source="Src::of('tm2pur.po_order.i_doc_date')" />
             <x-dl::field.display label="Supplier" :value="($sup->supplier_name ?? '—').' ('.($sup->supplier_code ?? '—').')'" :source="Src::of('tm2mst.sup_supplier')" />
-            <div class="dl-strip__kv dl-strip__grand"><span>Net Payable</span><b>{{ $money($po->c_net_payable) }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>@t('Net Payable')</span><b>{{ $money($po->c_net_payable) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
-                <x-dl::field.select name="i_po_type" label="PO Type" :options="['LOCAL' => 'Local', 'IMPORT' => 'Import']" :value="$po->i_po_type" :source="Src::of('tm2pur.po_order.i_po_type')" />
+                <x-dl::field.select name="i_po_type" label="PO Type" :options="['LOCAL' => t('Local'), 'IMPORT' => t('Import')]" :value="$po->i_po_type" :source="Src::of('tm2pur.po_order.i_po_type')" />
                 @if ($cash)
-                    <x-dl::field.display label="Procurement Type" value="Cash (Petty Cash)" :source="Src::of('tm2pur.po_order.i_procure_type = CASH')" />
+                    <x-dl::field.display label="Procurement Type" :value="t('Cash (Petty Cash)')" :source="Src::of('tm2pur.po_order.i_procure_type = CASH')" />
                 @else
-                    <x-dl::field.select name="i_procure_type" label="Procurement Type" :options="['REPEAT' => 'Repeat (rutin)', 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" :value="$po->i_procure_type" :source="Src::of('tm2pur.po_order.i_procure_type')" />
+                    <x-dl::field.select name="i_procure_type" label="Procurement Type" :options="['REPEAT' => t('Repeat (routine)'), 'ONE_TIME' => t('One-Time'), 'CAPEX' => t('Capex')]" :value="$po->i_procure_type" :source="Src::of('tm2pur.po_order.i_procure_type')" />
                 @endif
                 <x-dl::field.display label="Revision no." :value="(string) ($po->revision_no ?? 0)" :source="Src::of('tm2pur.po_order.revision_no')" />
                 <x-dl::field.display label="Sent to supplier" :value="\Devlib\Locale::dt($po->sent_at) ?? '—'" :source="Src::of('tm2pur.po_order.sent_at')" />
             </x-dl::form.row>
             @if ($cash)
                 <x-dl::form.row :cols="4">
-                    <x-dl::field.select name="i_cash_mode" label="Cash PO Mode" required :options="PurchaseOrder::CASH_MODES" :value="$po->i_cash_mode" :source="Src::of('tm2pur.po_order.i_cash_mode')" />
+                    <x-dl::field.select name="i_cash_mode" label="Cash PO Mode" required :options="array_map('t', PurchaseOrder::CASH_MODES)" :value="$po->i_cash_mode" :source="Src::of('tm2pur.po_order.i_cash_mode')" />
                     <x-dl::field.select name="i_petty_cash_id" label="Petty Cash" required :options="PurchaseOrder::pettyCashOptions()" :value="$po->i_petty_cash_id" :source="Src::of('tm2acc.fin_petty_cash')" />
                     <x-dl::field.text name="i_shop_name" label="Shop Name" :value="$po->i_shop_name" :source="Src::of('tm2pur.po_order.i_shop_name')" />
                     <x-dl::field.display label="Cash PO Limit" :value="'Rp '.\Devlib\Locale::number(PurchaseOrder::maxCash(), 0).' (Constants PO_CASH_MAX)'" :source="Src::of('tm2sys.sys_constant.PO_CASH_MAX')" />
@@ -116,16 +116,16 @@
         </x-slot:general>
         <x-slot:supplier>
             <x-dl::form.row :cols="4">
-                <x-dl::field.display label="Alamat" :value="$sup->default_address ?? '—'" :source="Src::of('tm2mst.sup_supplier.default_address')" />
+                <x-dl::field.display label="Address" :value="$sup->default_address ?? '—'" :source="Src::of('tm2mst.sup_supplier.default_address')" />
                 <x-dl::field.display label="Contact Person" :value="$sup->contact_name ?? '—'" :source="Src::of('tm2mst.sup_supplier.contact_name')" />
-                <x-dl::field.display label="Telepon" :value="$sup->phone ?? '—'" :source="Src::of('tm2mst.sup_supplier.phone')" />
+                <x-dl::field.display label="Phone" :value="$sup->phone ?? '—'" :source="Src::of('tm2mst.sup_supplier.phone')" />
                 <x-dl::field.display label="Email" :value="$sup->email ?? '—'" :source="Src::of('tm2mst.sup_supplier.email')" />
             </x-dl::form.row>
         </x-slot:supplier>
         <x-slot:finance>
             <x-dl::form.row :cols="4">
-                <x-dl::field.text name="i_payment_term" label="Payment Terms" :case-toggle="false" placeholder="mis. Net 30" :value="$po->i_payment_term" :source="Src::of('tm2pur.po_order.i_payment_term')" />
-                <x-dl::field.display label="Rate (Kurs)" :value="$trim($po->i_fx_rate ?? 1)" :source="Src::of('tm2pur.po_order.i_fx_rate')" />
+                <x-dl::field.text name="i_payment_term" label="Payment Terms" :case-toggle="false" placeholder="e.g. Net 30" :value="$po->i_payment_term" :source="Src::of('tm2pur.po_order.i_payment_term')" />
+                <x-dl::field.display label="Exchange Rate" :value="$trim($po->i_fx_rate ?? 1)" :source="Src::of('tm2pur.po_order.i_fx_rate')" />
             </x-dl::form.row>
         </x-slot:finance>
         <x-slot:delivery>
@@ -151,8 +151,8 @@
                     ['key' => 'account', 'label' => 'Expense Account (non-stock)', 'type' => 'display', 'more' => true],
                     ['key' => 'pq', 'label' => t('Price from PQ'), 'type' => 'display', 'more' => true],
                     ['key' => 'class', 'label' => t('Type'), 'type' => 'display', 'more' => true],
-                    ['key' => 'stock', 'label' => 'Stok', 'type' => 'display', 'more' => true],
-                    ['key' => 'tol', 'label' => 'Toleransi', 'type' => 'display', 'more' => true],
+                    ['key' => 'stock', 'label' => 'Stock', 'type' => 'display', 'more' => true],
+                    ['key' => 'tol', 'label' => 'Tolerance', 'type' => 'display', 'more' => true],
                     ['key' => 'received', 'label' => t('Received'), 'type' => 'display', 'more' => true],
                     ['key' => 'outstanding', 'label' => t('Remaining'), 'type' => 'display', 'more' => true],
                 ]">
@@ -177,11 +177,11 @@
             <x-dl::doc-footer
                 :words="\Devlib\Terbilang::words(round((float) $po->c_net_payable), 'IDR', 'id')"
                 :summary="array_values(array_filter([
-                    ['DPP', $money($po->c_dpp), 'dpp'],
-                    ['PPN', $money($po->c_ppn)],
-                    ['Grand Total', $money($po->c_grand_total)],
-                    (float) $po->c_pph > 0 ? ['PPh 23 (jasa, dipotong)', '− '.$money($po->c_pph)] : null,
-                    ['Net Payable', $money($po->c_net_payable), 'grand'],
+                    [t('Tax Base (DPP)'), $money($po->c_dpp), 'dpp'],
+                    [t('VAT'), $money($po->c_ppn)],
+                    [t('Grand Total'), $money($po->c_grand_total)],
+                    (float) $po->c_pph > 0 ? [t('PPh 23 (service, withheld)'), '− '.$money($po->c_pph)] : null,
+                    [t('Net Payable'), $money($po->c_net_payable), 'grand'],
                 ]))" />
         </x-slot:detail>
     </x-dl::form>

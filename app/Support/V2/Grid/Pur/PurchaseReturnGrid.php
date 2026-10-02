@@ -116,8 +116,8 @@ class PurchaseReturnGrid extends DbGrid
         return [
             // Nomor baru terbit saat Confirm; draft ditandai dengan id-nya supaya persegi dokumen tidak kosong.
             'doc_no' => $m->doc_no ?: 'DRAFT-'.$m->prt_id, 'supplier' => $this->suppliers[$m->i_supplier_id] ?? null,
-            'doc_date' => $m->i_doc_date?->toDateString(), 'source' => self::SOURCES[$m->i_source] ?? $m->i_source,
-            'disposition' => self::DISPOSITIONS[$m->i_disposition] ?? $m->i_disposition, 'pv_no' => $this->receipts[$m->pv_id] ?? null,
+            'doc_date' => $m->i_doc_date?->toDateString(), 'source' => isset(self::SOURCES[$m->i_source]) ? t(self::SOURCES[$m->i_source]) : $m->i_source,
+            'disposition' => isset(self::DISPOSITIONS[$m->i_disposition]) ? t(self::DISPOSITIONS[$m->i_disposition]) : $m->i_disposition, 'pv_no' => $this->receipts[$m->pv_id] ?? null,
             'po_no' => $this->orders[$m->po_id] ?? null, 'reason' => $m->i_reason, 'credit' => (float) $m->c_credit_value,
             'returned' => $m->physical_return_date?->toDateString(), 'status' => $m->status ?: 'DRAFT',
             'items' => $m->lines->map(fn (PrtLine $l) => ['code' => $l->c_item_code, 'name' => $l->i_description, 'qty' => (float) $l->i_qty,

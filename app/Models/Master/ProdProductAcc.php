@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProdProductAcc extends Model
 {
     // Kolom master card: ACC E-mail (desain lewat e-mail), ACC Digital (sample cetak plat CTP), Box Polos (sample bentuk sheet).
-    public const TYPES = ['EMAIL' => 'ACC E-mail (desain)', 'DIGITAL' => 'ACC Digital Artwork', 'SAMPLE' => 'ACC Sample Bentuk (box polos)'];
+    public const TYPES = ['EMAIL' => 'E-mail ACC (design)', 'DIGITAL' => 'Digital Artwork ACC', 'SAMPLE' => 'Shape Sample ACC (plain box)'];
 
-    public const CHANNELS = ['WA' => 'WhatsApp', 'EMAIL' => 'E-mail', 'LANGSUNG' => 'Langsung'];
+    public const CHANNELS = ['WA' => 'WhatsApp', 'EMAIL' => 'E-mail', 'LANGSUNG' => 'In Person'];
 
     protected $connection = 'tm2mst';
 

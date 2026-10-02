@@ -43,7 +43,7 @@ class StockDocumentService
         return DB::connection('tm2inv')->transaction(function () use ($headerClass, $docId, $headerData, $lines, $actingUser) {
             if ($docId) {
                 $header = $headerClass::findOrFail($docId);
-                abort_if($header->stat_confirm, 422, 'Dokumen sudah diposting, tidak bisa diubah.');
+                abort_if($header->stat_confirm, 422, t('The document is already posted, it cannot be changed.'));
                 $header->update([...$headerData, 'update_by' => $actingUser]);
                 $header->lines()->delete();
             } else {
@@ -62,7 +62,7 @@ class StockDocumentService
     {
         $headerClass = self::CATEGORY_HEADER[$category];
         $header = $headerClass::findOrFail($docId);
-        abort_if($header->stat_confirm, 422, 'Dokumen sudah diposting, tidak bisa dibatalkan -- koreksi lewat Stock Adjustment.');
+        abort_if($header->stat_confirm, 422, t('The document is already posted, it cannot be cancelled -- correct it with a Stock Adjustment.'));
 
         $header->update(['stat_cancel' => true, 'flow_status' => 'CANCELLED', 'update_by' => $actingUser]);
     }

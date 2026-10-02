@@ -20,13 +20,13 @@ class ProdMachineDowntime extends Model
     // Availability, stop tak terencana menghukum. SETUP diperlakukan
     // terencana karena sudah masuk hitungan setup_minutes di master.
     public const KINDS = [
-        'PLANNED_MAINT' => ['label' => 'Perawatan Terjadwal', 'planned' => true],
+        'PLANNED_MAINT' => ['label' => 'Scheduled Maintenance', 'planned' => true],
         'SETUP' => ['label' => 'Make-ready / Setup', 'planned' => true],
-        'BREAKDOWN' => ['label' => 'Rusak / Breakdown', 'planned' => false],
-        'WAITING_MATERIAL' => ['label' => 'Tunggu Bahan', 'planned' => false],
-        'WAITING_CREW' => ['label' => 'Tunggu Kru', 'planned' => false],
-        'POWER' => ['label' => 'Gangguan Listrik', 'planned' => false],
-        'OTHER' => ['label' => 'Lain-lain', 'planned' => false],
+        'BREAKDOWN' => ['label' => 'Machine Breakdown', 'planned' => false],
+        'WAITING_MATERIAL' => ['label' => 'Waiting for Material', 'planned' => false],
+        'WAITING_CREW' => ['label' => 'Waiting for Crew', 'planned' => false],
+        'POWER' => ['label' => 'Power Failure', 'planned' => false],
+        'OTHER' => ['label' => 'Other Cause', 'planned' => false],
     ];
 
     protected $fillable = [
@@ -70,7 +70,7 @@ class ProdMachineDowntime extends Model
 
     public function kindLabel(): string
     {
-        return self::KINDS[$this->downtime_kind]['label'] ?? $this->downtime_kind;
+        return isset(self::KINDS[$this->downtime_kind]) ? t(self::KINDS[$this->downtime_kind]['label']) : $this->downtime_kind;
     }
 
     public function isOpen(): bool

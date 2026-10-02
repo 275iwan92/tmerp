@@ -34,13 +34,13 @@ class ProductTree extends DevlibComponent
     {
         return <<<'BLADE'
             <div {{ $attributes->class('mp-pm') }} {!! $dl() !!}>
-                <x-dl::card title="Struktur product (BOM)">
+                <x-dl::card title="Product structure (BOM)">
                     <ul class="mp-ptree mp-ptree--root">
                         <li><button type="button" class="mp-ptree__n {{ $active ? '' : 'is-on' }}" data-pm-node="product"><span class="mp-ptree__ic">P</span><span>{{ $product }}<small>Product</small></span></button>
                             @include('mp::sales.product-tree-nodes', ['nodes' => $tree, 'active' => $active])
                         </li>
                     </ul>
-                    <p class="mp-hint">Rakitan bisa bertingkat. Klik node untuk melihat dieline, bahan, BOM, dan BOP-nya.</p>
+                    <p class="mp-hint">{{ \Devlib\Lang::text('Assemblies can be nested.') }} {{ \Devlib\Lang::text('Click a node to see its dieline, material, BOM and BOP.') }}</p>
                 </x-dl::card>
                 <div>{{ $slot }}</div>
             </div>

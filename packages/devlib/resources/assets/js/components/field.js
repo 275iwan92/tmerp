@@ -158,7 +158,7 @@
         if (t0) { hh.value = t0.slice(0, 2); const m = Math.round(+t0.slice(3, 5) / +mm.options[1].value) * +mm.options[1].value; mm.value = pad(m % 60); }
         const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
         const label = (ds, h, m) => `${DlDateTime.of(`${ds} ${h}:${m}`)?.display() ?? ''} ${tz}`;  // objek tanggal+jam DevLib
-        const preview = () => { prev.textContent = 'Selected: ' + (sel ? label(sel, hh.value, mm.value) : '-'); };
+        const preview = () => { prev.textContent = T('fd_selected') + ': ' + (sel ? label(sel, hh.value, mm.value) : '-'); };
         const draw = () => {
           title.textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
           const first = new Date(view.getFullYear(), view.getMonth(), 1).getDay(), total = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();

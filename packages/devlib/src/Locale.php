@@ -23,6 +23,8 @@ final class Locale
 
     private static ?array $langs = null;
 
+    private static ?Closure $userLang = null;
+
     // $fn(): array<code, ['name','intl','dec','grp','months'?]> -- dipanggil sekali per proses (lalu disimpan).
     public static function languagesUsing(?Closure $fn): void
     {
@@ -48,12 +50,21 @@ final class Locale
         return $s + ['months' => self::MONTHS_EN, 'dec' => '.', 'grp' => ',', 'intl' => 'en-US'];
     }
 
+    // $fn(): ?string -- bahasa milik user yang sedang login (tmerp: sec_user.lang_code). Pilihan bahasa ikut AKUN, bukan
+    // perangkat: tanpa ini user yang pindah komputer (atau dua user di satu komputer) mendapat bahasa cookie orang lain.
+    public static function langUsing(?Closure $fn): void
+    {
+        self::$userLang = $fn;
+    }
+
     // Bahasa tampilan aktif. ?print_lang=xx (menu Print "Bahasa cetak") berlaku HANYA untuk permintaan itu,
-    // lalu cookie pilihan user (x-dl::lang-switch), lalu bawaan aplikasi.
+    // lalu bahasa akun user yang login (langUsing), lalu cookie perangkat (tamu / halaman login, x-dl::lang-switch),
+    // lalu bawaan aplikasi.
     public static function lang(): string
     {
         $req = request();
-        foreach ([$req?->query('print_lang'), $req?->cookie('dl_lang') ?? ($_COOKIE['dl_lang'] ?? null)] as $v) {
+        $user = self::$userLang ? (self::$userLang)() : null;
+        foreach ([$req?->query('print_lang'), $user, $req?->cookie('dl_lang') ?? ($_COOKIE['dl_lang'] ?? null)] as $v) {
             if (is_string($v) && isset(self::languages()[$v])) {
                 return $v;
             }

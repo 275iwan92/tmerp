@@ -97,7 +97,7 @@ class ConstantsLookup extends DbLookup
         // Sama dengan v1: zona waktu aplikasi harus nama zona yang sah, kalau tidak semua jam di layar ikut salah.
         $key = $id ? SysConstant::query()->whereKey($id)->value('constant_key') : ($in['constant_key'] ?? null);
         if ($key === 'APP_TIMEZONE' && ! in_array((string) ($in['constant_text'] ?? ''), timezone_identifiers_list(), true)) {
-            return 'APP_TIMEZONE needs a valid time zone name in Text Value, for example Asia/Jakarta.';
+            return t('APP_TIMEZONE needs a valid time zone name in Text Value, for example Asia/Jakarta.');
         }
 
         return null;

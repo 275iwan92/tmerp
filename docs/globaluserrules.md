@@ -229,6 +229,15 @@
    tanggal yang tampil di judul form, kartu, hint atau pesan tidak boleh tercatat di kamus. Layar tetap menulis label
    English; nilai datanya dibungkus `raw()` — `'Customer Order · '.raw($o->co_no)` — sehingga komponen menerjemahkan
    labelnya saja.
+   **Sapuan multi-bahasa (2026-10-03, perintah user "make sure multi language sudah jalan dengan sempurna"):**
+   - **Bahasa ikut AKUN** (`sec_user.lang_code`), bukan cookie komputer: memilih bendera menyimpan ke akun lalu halaman
+     dimuat ulang; daftar bendera = `sys_languages` yang aktif. Tamu / halaman login memakai cookie.
+   - **Pesan diterjemahkan di tempat pesan dibuat** (flash, error, abort, JSON, pesan service): `t('English.')` atau
+     `tf('Quotation :no created.', ['no' => $x])`; layar menampilkannya sebagai teks jadi (`raw(session('v2_flash'))`).
+   - **Label menu** (`sys_app_menu.label`) ditulis English dan diterjemahkan kamus saat tampil.
+   - **Tombol, badge, dan status dokumen selalu English** (tidak masuk kamus).
+   - Teks yang ditulis service KE DATABASE (uraian jurnal, catatan kartu stok, nama default) dan data master yang
+     isinya masih Indonesia TIDAK diubah tanpa keputusan user (daftar: `docs/md_for_systems/multilanguage_status.md`).
 4. **Nama kolom:** `activate` (bukan `is_active`); status dokumen `stat_confirm` / `stat_cancel` / `stat_close` + `cancel_reason`.
 5. **[LOCKED] Fase:** mockup.test memakai database dummy `ddt*`; tmerp.test memakai `tm2*`. **Jangan menulis ke
    `tm2*` saat kerja UAT/mockup.**
@@ -686,3 +695,4 @@
 | 2026-10-02 | B.15: set stage 8–12 dibangun (Posted to Production + Work Order belum dimulai, Delivery Order Draft, Delivery Order Confirmed, Customer Invoice Draft, Customer Invoice Confirmed menunggu pembayaran) — usulan agen, belum dikonfirmasi user; rantai PO di samping: stage 4 PO Draft, 5–7 menunggu approval level 1–3, 8+ Approved. Build sungguhan tanpa transaksi. |
 | 2026-10-02 | **A.23: laporan stok dan gudang** — set lengkap mengacu ERP populer (SAP, Odoo, Dynamics 365, Zahir, Accurate, Oracle NetSuite, ERPNext): Stock Card, Stock Recapitulation, Stock Summary, Stock Opname, Stock Loss & Gain (per bulan), Stock in Inspection, Stock by Location terkelompok per gedung; selisih stok masuk lewat stock opname. Grid Report mendapat periode (Period + Show) dan cetakan `x-dl::report`. Dibangun di ddt; review: `md_for_systems/inventoryreport_review.md`. |
 | 2026-10-03 | **B.16: Material Category = pembentuk KODE ITEM** (user: "Material category ini pembentuk KODE ITEM. IMPORTANT !!!!", disampaikan untuk ke-7 kalinya; acuan `docs/ddl/doc_rmprefix1.sql`). Rantai 5 tingkat, kode item = gabungan prefix tiap tingkat (`PCC02002`), layar = dropdown yang saling terkait seperti yang lama; daftar rata Level + Parent di v2 salah. Arti tiap tingkat berbeda per kategori, label layar Category 1 … 5. Rinci: `md_for_systems/matcategory_delta.md` §5. |
+| 2026-10-03 | B.3: sapuan multi-bahasa — sekitar 3.000 teks layar v2, pesan, objek DevLib, mockup-parts dan service kini English di kode + pasangan Indonesia di kamus (ddt + tm2); bahasa ikut akun user; pesan validasi Indonesia (`lang/id`); label menu English + kamus; penjaga `MultiLanguageRatchetTest` memakai kosakata 2.100 kata; status dan sisa keputusan di `docs/md_for_systems/multilanguage_status.md`. |

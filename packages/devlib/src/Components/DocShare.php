@@ -5,7 +5,7 @@ namespace Devlib\Components;
 use Devlib\Theme;
 
 // Print + Email untuk SETIAP form/dokumen (user 2026-09-29). Layar cukup menaruh 1 tag dan menunjuk area dokumennya:
-//   <x-dl::doc-share target="#recalc-doc" type="inquiry-recalc" :doc-id="$id" :number="$no" title="Inquiry Rekalkulasi" :email-to="$emailCustomer" />
+//   <x-dl::doc-share target="#recalc-doc" type="inquiry-recalc" :doc-id="$id" :number="$no" title="Inquiry Recalc" :email-to="$emailCustomer" />
 // Print ▾ : PDF (unduh), JPEG (unduh), HTML online (link + QR, dibuka tanpa login), Printer (dialog cetak browser).
 // Email   : To/CC/BCC/Subjek/Pesan + pilihan isi: link online, dokumen (gambar) di isi e-mail, lampiran PDF.
 //           Alamat bisa dipilih dari kontak: kotak "Find contact" mencari di daftar :contacts (statis, [['name','email','group']])
@@ -26,7 +26,7 @@ class DocShare extends DevlibComponent
         public string $type = 'doc',
         public int|string|null $docId = null,
         public ?string $number = null,
-        public string $title = 'Dokumen',
+        public string $title = 'Document',
         public ?string $emailTo = null,
         public ?string $subject = null,
         public ?string $message = null,

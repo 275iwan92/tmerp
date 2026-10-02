@@ -133,7 +133,7 @@ final class CpdelPromiseService
         self::assertOpen($d);
         $v = validator($in, ['ready_date' => ['required', 'date'], 'ready_time' => ['required', 'date_format:H:i'],
             'reason_code' => ['nullable', Rule::exists(CoDelayReason::class, 'reason_code')], 'note' => ['nullable', 'string', 'max:500']],
-            [], ['ready_date' => 'Ready date', 'ready_time' => 'Ready time', 'reason_code' => 'Reason'])->validate();
+            [], ['ready_date' => t('Ready date'), 'ready_time' => t('Ready time'), 'reason_code' => t('Reason')])->validate();
         $ready = CarbonImmutable::parse($v['ready_date'].' '.$v['ready_time']);
         $slot = self::slot($d);
         if ($slot && $ready->gt($slot) && empty($v['reason_code'])) {
@@ -152,8 +152,8 @@ final class CpdelPromiseService
         $v = validator($in, ['ship_date' => ['required', 'date'], 'ship_time' => ['required', 'date_format:H:i'], 'split_qty' => ['nullable', 'numeric', 'gt:0'],
             'channel' => ['required', Rule::in(array_keys(self::CHANNELS))], 'customer_contact' => ['required', 'string', 'max:100'],
             'reason_code' => ['nullable', Rule::exists(CoDelayReason::class, 'reason_code')], 'note' => ['nullable', 'string', 'max:500']],
-            [], ['ship_date' => 'Slot date', 'ship_time' => 'Slot time', 'split_qty' => 'Split qty', 'channel' => 'Channel',
-                'customer_contact' => 'Customer contact', 'reason_code' => 'Reason'])->validate();
+            [], ['ship_date' => t('Slot date'), 'ship_time' => t('Slot time'), 'split_qty' => t('Split qty'), 'channel' => t('Channel'),
+                'customer_contact' => t('Customer contact'), 'reason_code' => t('Reason')])->validate();
         if ($problems = self::slotProblems($d->order?->customer_id, $v['ship_date'], $v['ship_time'])) {
             throw ValidationException::withMessages(['ship_date' => implode(' ', $problems)]);
         }
@@ -204,7 +204,7 @@ final class CpdelPromiseService
     {
         self::assertOpen($d);
         $v = validator($in, ['channel' => ['required', Rule::in(array_keys(self::CHANNELS))], 'customer_contact' => ['required', 'string', 'max:100'],
-            'note' => ['required', 'string', 'max:500']], [], ['channel' => 'Channel', 'customer_contact' => 'Customer contact', 'note' => 'What the customer said'])->validate();
+            'note' => ['required', 'string', 'max:500']], [], ['channel' => t('Channel'), 'customer_contact' => t('Customer contact'), 'note' => t('What the customer said')])->validate();
         DB::connection('tm2sdi')->transaction(function () use ($d, $v, $login) {
             $d->update(['escalated_at' => now(), 'updated_by' => $login]);
             self::log($d, 'CUSTOMER_REJECTED', 'SALES', $login, $v);
@@ -216,7 +216,7 @@ final class CpdelPromiseService
     {
         self::assertOpen($d);
         $v = validator($in, ['decision' => ['required', Rule::in(array_keys(self::DECISIONS))], 'note' => ['required', 'string', 'max:500']],
-            [], ['decision' => 'Decision', 'note' => 'Instruction'])->validate();
+            [], ['decision' => t('Decision'), 'note' => t('Instruction')])->validate();
         DB::connection('tm2sdi')->transaction(function () use ($d, $v, $login) {
             $d->update(['escalated_at' => null, 'ready_at' => $v['decision'] === 'NEW_OFFER' ? $d->ready_at : null, 'updated_by' => $login]);
             self::log($d, 'OPS_DECISION', 'OPS', $login, $v);

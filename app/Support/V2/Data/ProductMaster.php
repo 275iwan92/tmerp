@@ -46,8 +46,8 @@ final class ProductMaster
             'id' => $p->id_product, 'photo' => isset($art[$p->id_product]) ? asset('storage/'.$art[$p->id_product]) : null,
             'name' => $p->product_name, 'code' => $p->design_no ?: $p->product_code, 'customer' => $p->customer?->customer_name ?? '—',
             'parts' => $p->parts_count, 'join' => $join[$p->id_product] ?? '—', 'status' => $p->card_status ?: 'DRAFT',
-            'revision' => $p->revision_no ? 'Rev.'.$p->revision_no : 'Induk',
-            'acc_digital' => ($acc[$p->id_product] ?? collect())->contains('acc_type', 'DIGITAL') ? 'ADA' : 'BELUM',
+            'revision' => $p->revision_no ? 'Rev.'.$p->revision_no : t('Parent'),
+            'acc_digital' => ($acc[$p->id_product] ?? collect())->contains('acc_type', 'DIGITAL') ? t('AVAILABLE') : t('NOT YET'),
             'active' => (bool) $p->activate, 'updated' => $p->updated_at?->toDateString(),
         ])->all();
     }
@@ -73,7 +73,7 @@ final class ProductMaster
             'tree' => self::tree($parts, null),
             'components' => $parts->where('part_kind', 'COMPONENT')->map(fn ($x) => self::part($x))->values()->all(),
             'accs' => $p->accs->map(fn (ProdProductAcc $a) => ['type' => $a->acc_type, 'at' => \Devlib\Locale::dt($a->acc_at), 'by' => $a->approved_by,
-                'channel' => ProdProductAcc::CHANNELS[$a->channel] ?? $a->channel, 'note' => $a->note,
+                'channel' => isset(ProdProductAcc::CHANNELS[$a->channel]) ? t(ProdProductAcc::CHANNELS[$a->channel]) : $a->channel, 'note' => $a->note,
                 'evidence' => $a->evidence_path ? asset('storage/'.$a->evidence_path) : null, 'evidence_name' => $a->evidence_filename])->all(),
         ];
     }

@@ -14,7 +14,7 @@
             <div class="dl-segment" data-p-prices><button type="button" class="dl-segment__opt" data-value="1">{{ \Devlib\Lang::t('pr_with_price') }}</button><button type="button" class="dl-segment__opt" data-value="0">{{ \Devlib\Lang::t('pr_without_price') }}</button></div>
         @endif
         @if ($companyPpn)
-            <div class="dl-segment" data-p-ppn><button type="button" class="dl-segment__opt" data-value="0">Non PPN</button><button type="button" class="dl-segment__opt" data-value="1">PPN</button></div>
+            <div class="dl-segment" data-p-ppn><button type="button" class="dl-segment__opt" data-value="0">{{ \Devlib\Lang::text('Non VAT') }}</button><button type="button" class="dl-segment__opt" data-value="1">{{ \Devlib\Lang::text('VAT') }}</button></div>
         @endif
         <x-dl::button variant="secondary" size="sm" icon="ink-saver" :label="\Devlib\Lang::t('pr_ink')" data-p-bw />
         <x-dl::button preset="print" size="sm" data-p-print />

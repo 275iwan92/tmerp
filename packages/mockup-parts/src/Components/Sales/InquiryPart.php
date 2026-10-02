@@ -98,68 +98,68 @@ class InquiryPart extends DevlibComponent
                 <header class="mp-part__head">
                     <b data-inq-part-title>{{ $p['part_name'] !== '' ? $p['part_name'] : 'Part' }}</b>
                     <span class="mp-grow"></span>
-                    @if ($p['sent'])<x-dl::badge label="sudah di ProDev" tone="success" />@endif
-                    <x-dl::button size="sm" variant="danger" icon="✕" label="hapus part" data-inq-remove />
+                    @if ($p['sent'])<x-dl::badge label="In ProDev" tone="success" />@endif
+                    <x-dl::button size="sm" variant="danger" icon="✕" label="Delete part" data-inq-remove />
                 </header>
                 <div class="mp-part__body">
                     <x-dl::form.row cols="5">
                         <div class="mp-part__name">
-                            <x-dl::field.text :name="$n('part_name')" label="Nama Part" placeholder="mis. Body" :value="$p['part_name']" :source="$src('part_name')" data-inq-name />
-                            <x-dl::icon-button icon="fa-tag" title="Pilih peran part (nama terisi otomatis)" data-inq-role-open />
+                            <x-dl::field.text :name="$n('part_name')" label="Part Name" placeholder="e.g. Body" :value="$p['part_name']" :source="$src('part_name')" data-inq-name />
+                            <x-dl::icon-button icon="fa-tag" title="Choose the part role (the name is filled in automatically)" data-inq-role-open />
                             <input type="hidden" name="{{ $n('part_role') }}" value="{{ $p['part_role'] }}" data-inq-role>
                             <input type="hidden" name="{{ $n('id') }}" value="{{ $p['id'] }}" data-inq-part-id>
                         </div>
-                        <x-dl::field.select :name="$n('part_type')" label="Tipe Part" :options="$partTypes()" :value="$p['part_type']" :placeholder="null" :source="$src('part_type')" />
+                        <x-dl::field.select :name="$n('part_type')" label="Part Type" :options="$partTypes()" :value="$p['part_type']" :placeholder="null" :source="$src('part_type')" />
                         <x-dl::field.decimal :name="$n('qty_per_sku')" label="Qty per Set" :value="$p['qty_per_sku']" :source="$src('qty_per_sku')" />
-                        <x-dl::field.number :name="$n('pack_qty')" label="Isi per Pack (pcs)" placeholder="mis. 400" :min="1" :value="$p['pack_qty']" :source="$src('pack_qty')" />
+                        <x-dl::field.number :name="$n('pack_qty')" label="Qty per Pack (pcs)" placeholder="e.g. 400" :min="1" :value="$p['pack_qty']" :source="$src('pack_qty')" />
                         {{-- data-inq-keep: artwork sering datang belakangan dari customer -> tetap bisa diunggah setelah Confirm (keputusan user 2026-09-28). --}}
                         <div class="mp-part__art">
-                            <x-dl::field.upload :name="$n('artwork')" label="Artwork / Desain (luar)" accept=".jpg,.jpeg,.png" data-inq-keep data-inq-artwork
+                            <x-dl::field.upload :name="$n('artwork')" label="Artwork / Design (outer)" accept=".jpg,.jpeg,.png" data-inq-keep data-inq-artwork
                                 :value="$p['artwork_url'] ? ['url' => $p['artwork_url'], 'name' => $p['artwork_name']] : null"
                                 :source="\MockupParts\Src::of('tm2sdi.iqp_part.artwork_path', 'tm2sdi.iqp_part.artwork_original_filename', 'tm2sdi.iqp_part.artwork_colors')" />
                             {{-- Sisi dalam (cetak 2 sisi, mis. mailer box) — tampil di tab "Sisi Dalam" pratinjau dieline (tidak di 3D). --}}
-                            <x-dl::field.upload :name="$n('artwork_inner')" label="Artwork Sisi Dalam (opsional)" accept=".jpg,.jpeg,.png" data-inq-keep data-inq-artwork-inner
+                            <x-dl::field.upload :name="$n('artwork_inner')" label="Inner Side Artwork (optional)" accept=".jpg,.jpeg,.png" data-inq-keep data-inq-artwork-inner
                                 :value="$p['artwork_inner_url'] ? ['url' => $p['artwork_inner_url'], 'name' => $p['artwork_inner_name']] : null"
                                 :source="\MockupParts\Src::of('tm2sdi.iqp_part.artwork_inner_path', 'tm2sdi.iqp_part.artwork_inner_original_filename')" />
                         </div>
                     </x-dl::form.row>
 
-                    <x-dl::alert tone="warn" data-inq-gate="type">📋 Pilih <b>Tipe Produk</b> dulu di bagian atas (dekat Kategori Produk) sebelum mengisi part ini.</x-dl::alert>
-                    <x-dl::alert tone="info" data-inq-gate="role">🏷️ Pilih <b>Peran Part</b> ini dulu (ikon 🏷️ di sebelah Nama Part) — dimensi &amp; preview dieline aktif setelah peran ditentukan.
-                        <x-dl::button size="sm" variant="secondary" label="Pilih Peran Part" data-inq-role-open /></x-dl::alert>
+                    <x-dl::alert tone="warn" data-inq-gate="type">📋 {!! \Devlib\Lang::text('Choose the <b>Product Type</b> first at the top (next to Product Category) before filling in this part.') !!}</x-dl::alert>
+                    <x-dl::alert tone="info" data-inq-gate="role">🏷️ {!! \Devlib\Lang::text('Choose the <b>Part Role</b> of this part first (the 🏷️ icon next to Part Name) — dimensions & the dieline preview become active once the role is set.') !!}
+                        <x-dl::button size="sm" variant="secondary" label="Choose Part Role" data-inq-role-open /></x-dl::alert>
 
                     <div class="mp-part__main" data-inq-body>
                         @foreach ($p['suggestions'] as $sug)
-                            <x-dl::alert :tone="$sug['tone'] ?? 'info'">{{ $sug['text'] }}<x-dl::button size="sm" variant="secondary" :label="$sug['action'] ?? 'Pakai'" data-inq-suggest="{{ $sug['apply'] ?? '' }}" /></x-dl::alert>
+                            <x-dl::alert :tone="$sug['tone'] ?? 'info'">{{ $sug['text'] }}<x-dl::button size="sm" variant="secondary" :label="$sug['action'] ?? 'Apply'" data-inq-suggest="{{ $sug['apply'] ?? '' }}" /></x-dl::alert>
                         @endforeach
                         <p class="mp-hint" data-inq-dieline-name hidden></p>
                         <x-mp::dieline-v3 :data-artwork="$p['artwork_url']" :data-artwork-inner="$p['artwork_inner_url']" :types="$types" :type="$typeCode ?: array_key_first($types)" :dims="$p['dims']" :name="$n('dieline')" :picker="false" height="400px"
                             :source="\MockupParts\Src::of('tm2mst.prod_type.dieline_spec', 'tm2sdi.iqp_part.dieline_spec', 'tm2sdi.iqp_part.flat_w', 'tm2sdi.iqp_part.flat_h', 'tm2sdi.iqp_part.flat_area')" />
 
-                        <x-dl::divider label="Bahan (Material)" />
-                        <p class="mp-hint">Pilih Jenis &amp; Gramatur saja — merek &amp; ukuran plano ditentukan Purchasing/ProDev.</p>
+                        <x-dl::divider label="Materials" />
+                        <p class="mp-hint">{{ \Devlib\Lang::text('Choose only the Type & Grammage — the brand & plano size are decided by Purchasing/ProDev.') }}</p>
                         <div data-inq-mats data-seq="{{ count($rows()) }}">
                             @foreach ($rows() as $m => $row)
                                 <x-mp::sales.inquiry-material :name="$n('materials')" :index="(string) $m" :row="$row" :chains="$materialChains" :fixed="$m < 2" />
                             @endforeach
                         </div>
                         <template data-inq-mat-tpl><x-mp::sales.inquiry-material :name="$n('materials')" index="__M__" :chains="$materialChains" /></template>
-                        <div><x-dl::button size="sm" variant="secondary" label="+ Tambah Bahan" title="Mis. Paper 2 lapis atau Sheet 2 lapis" data-inq-mat-add /></div>
+                        <div><x-dl::button size="sm" variant="secondary" label="+ Add Material" :title="\Devlib\Lang::text('E.g. 2-layer Paper or 2-layer Sheet')" data-inq-mat-add /></div>
 
-                        <x-dl::divider label="Cetak / Warna" />
+                        <x-dl::divider label="Print / Colour" />
                         <x-dl::form.row cols="3">
-                            <x-dl::field.select :name="$n('cfg_color')" label="Notasi Warna" :options="$colors()" :value="$p['cfg_color']" :placeholder="null" hint="Format sisiA/sisiB (1/0 s.d. 6/6)" :source="$src('cfg_color')" data-inq-color />
-                            <x-dl::field.display label="Turunan (otomatis)" :value="$cb ? 'front: '.$cb['front'].' · back: '.$cb['back'].' · total: '.$cb['total'].' · side: '.$cb['side'] : ''"
+                            <x-dl::field.select :name="$n('cfg_color')" label="Colour Notation" :options="$colors()" :value="$p['cfg_color']" :placeholder="null" hint="Format sideA/sideB (1/0 to 6/6)" :source="$src('cfg_color')" data-inq-color />
+                            <x-dl::field.display label="Derived (automatic)" :value="$cb ? 'front: '.$cb['front'].' · back: '.$cb['back'].' · total: '.$cb['total'].' · side: '.$cb['side'] : ''"
                                 :source="\MockupParts\Src::of('tm2sdi.iqp_part.cfg_color').' (dihitung dari Notasi Warna)'" data-inq-derived />
-                            <x-dl::field.text :name="$n('cfg_ink')" label="Catatan Warna (Pantone)" placeholder="mis. Pantone 485 C" :value="$p['cfg_ink']" :source="$src('cfg_ink')" />
+                            <x-dl::field.text :name="$n('cfg_ink')" label="Colour Note (Pantone)" placeholder="e.g. Pantone 485 C" :value="$p['cfg_ink']" :source="$src('cfg_ink')" />
                         </x-dl::form.row>
 
-                        <x-dl::divider label="Finishing Tambahan" />
-                        <p class="mp-hint">Opsional — proses dekoratif tambahan (hot print, UV spot, emboss, laminating, dll), boleh lebih dari satu.</p>
-                        <x-dl::lines :name="$n('finishings')" title="Finishing" add-label="+ Tambah Finishing" :min-rows="0" :rows="$p['finishings']" :source="\MockupParts\Src::of('tm2sdi.iqp_part_finishing')"
+                        <x-dl::divider label="Additional Finishing" />
+                        <p class="mp-hint">{{ \Devlib\Lang::text('Optional — additional decorative processes (hot print, UV spot, emboss, laminating, etc.), more than one is allowed.') }}</p>
+                        <x-dl::lines :name="$n('finishings')" title="Finishing" add-label="+ Add Finishing" :min-rows="0" :rows="$p['finishings']" :source="\MockupParts\Src::of('tm2sdi.iqp_part_finishing')"
                             :columns="[
-                                ['key' => 'finishing_type_id', 'label' => 'Jenis Finishing', 'type' => 'select', 'options' => $finishingTypes, 'required' => true, 'src' => \MockupParts\Src::of('tm2sdi.iqp_part_finishing.finishing_type_id', 'tm2mst.ref_finishing_type.finishing_name')],
-                                ['key' => 'attribute', 'label' => 'Atribut / Varian', 'placeholder' => 'mis. Gold Puyeh, area logo', 'src' => \MockupParts\Src::of('tm2sdi.iqp_part_finishing.attribute')],
+                                ['key' => 'finishing_type_id', 'label' => 'Finishing Type', 'type' => 'select', 'options' => $finishingTypes, 'required' => true, 'src' => \MockupParts\Src::of('tm2sdi.iqp_part_finishing.finishing_type_id', 'tm2mst.ref_finishing_type.finishing_name')],
+                                ['key' => 'attribute', 'label' => 'Attribute / Variant', 'placeholder' => \Devlib\Lang::text('e.g. Gold Puyeh, logo area'), 'src' => \MockupParts\Src::of('tm2sdi.iqp_part_finishing.attribute')],
                             ]" />
                     </div>
                 </div>

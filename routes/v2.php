@@ -106,14 +106,14 @@ Route::prefix('v2')->name('v2.')->group(function () {
     // Tiket Bantuan dari halaman profil (menu akun / F1) -> tm2sys.sys_support_ticket, dijawab tim developer di Setup > Support Tickets.
     Route::post('/support/ticket', function (Request $r) {
         $v = Validator::make($r->all(), ['description' => ['required', 'string', 'max:5000'], 'screen_context' => ['nullable', 'string', 'max:150']],
-            [], ['description' => 'Uraian masalah']);
+            [], ['description' => t('Problem description')]);
         if ($v->fails()) {
             return redirect()->route('v2.home')->withErrors($v)->withInput()->with('v2_profile_page', 'ticket');
         }
         $d = $v->validated();
         $t = SysSupportTicket::create($d + ['ticket_no' => SysSupportTicket::nextNo(), 'created_by_user_id' => Auth::id(), 'status' => 'OPEN']);
 
-        return redirect()->route('v2.home')->with(['v2_profile_page' => 'ticket', 'v2_flash' => "Tiket {$t->ticket_no} terkirim ke tim support."]);
+        return redirect()->route('v2.home')->with(['v2_profile_page' => 'ticket', 'v2_flash' => tf('Ticket :no sent to the support team.', ['no' => $t->ticket_no])]);
     })->name('support.ticket');
 
     Route::post('/logout', function (Request $r) {
@@ -194,12 +194,12 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $data = $r->validate([
             'source_id' => ['required', 'integer', 'exists:tm2sdi.iqp_inquiry,id_inquiry'],
             'customer_id' => ['required', 'integer', 'exists:tm2mst.cust_customer,id_customer'],
-        ], [], ['customer_id' => 'Customer tujuan']);
+        ], [], ['customer_id' => t('Target customer')]);
         $source = IqpInquiry::findOrFail($data['source_id']);
         $new = InquiryDuplicator::duplicate($source, (int) $data['customer_id'], Auth::user()->login);
 
         return redirect()->route('v2.screen', 'inquiry')
-            ->with('v2_flash', "Duplikat dibuat: {$new->inquiry_no} (Produk Baru, DRAFT) dari {$source->inquiry_no}.");
+            ->with('v2_flash', tf('Duplicate created: :new (New Product, DRAFT) from :source.', ['new' => $new->inquiry_no, 'source' => $source->inquiry_no]));
     })->name('inquiry.duplicate');
 
     // Inquiry Baru v2 -> database situs (ddt* di mockup.test, tm2* live). Logika = App\Services\Sales\InquiryWriter (salinan persist*() v1).
@@ -215,7 +215,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::post('/save', function (Request $r) use ($writer) {
             abort_unless(Auth::user()->canAccessModule('SALES'), 403);
             $old = $r->filled('id') ? IqpInquiry::findOrFail((int) $r->input('id')) : null;
-            $r->validate(InquiryPayload::rules(), [], ['customer_id' => 'Customer', 'type_code' => 'Tipe Produk', 'product_draft_name' => 'Nama Produk']);
+            $r->validate(InquiryPayload::rules(), [], ['customer_id' => t('Customer'), 'type_code' => t('Product Type'), 'product_draft_name' => t('Product name')]);
             $img = ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:'.(int) (SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10) * 1024)];
             $r->validate(['parts.*.artwork' => $img, 'parts.*.artwork_inner' => $img]);
             $inq = $writer()->save(InquiryPayload::from($r, $old), $old, InquiryPayload::artworks($r));
@@ -225,15 +225,16 @@ Route::prefix('v2')->name('v2.')->group(function () {
             }
 
             return response()->json(['id' => $inq->id_inquiry, 'url' => route('v2.screen', 'inquiry-new').'?id='.$inq->id_inquiry,
-                'message' => $confirm ? "Inkuiri {$inq->inquiry_no} dikonfirmasi — form terkunci, sekarang ada di Pro-Dev › New." : "Tersimpan sebagai {$inq->inquiry_no} ({$inq->refresh()->sub_state})."]);
+                'message' => $confirm ? tf('Inquiry :no confirmed — the form is locked, it is now in Pro-Dev › New.', ['no' => $inq->inquiry_no])
+                    : tf('Saved as :no (:state).', ['no' => $inq->inquiry_no, 'state' => $inq->refresh()->sub_state])]);
         })->name('save');
 
         Route::post('/{id}/end', function (Request $r, int $id) use ($writer, $doc) {
             $inq = $doc($id);
-            $data = $r->validate(['state' => ['required', 'in:CANCELLED,LOST'], 'reason' => ['required', 'string', 'max:255']], [], ['reason' => 'Alasan']);
+            $data = $r->validate(['state' => ['required', 'in:CANCELLED,LOST'], 'reason' => ['required', 'string', 'max:255']], [], ['reason' => t('Reason')]);
             $data['state'] === 'CANCELLED' ? $writer()->cancel($inq, $data['reason']) : $writer()->markLost($inq, $data['reason']);
 
-            return response()->json(['message' => $data['state'] === 'CANCELLED' ? "Inkuiri {$inq->inquiry_no} dibatalkan." : "Inkuiri {$inq->inquiry_no} ditandai kalah (LOST)."]);
+            return response()->json(['message' => $data['state'] === 'CANCELLED' ? tf('Inquiry :no cancelled.', ['no' => $inq->inquiry_no]) : tf('Inquiry :no marked as lost (LOST).', ['no' => $inq->inquiry_no])]);
         })->name('end');
 
         // Artwork boleh diganti setelah Confirm (user 2026-09-28): langsung tersimpan tanpa tombol Simpan.
@@ -244,18 +245,18 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $inner = $r->boolean('inner');
             $writer()->storeArtwork($part, $r->file('artwork'), $inner);
 
-            return response()->json(['message' => 'Artwork '.($inner ? 'sisi dalam ' : '')."{$part->part_name} tersimpan."]);
+            return response()->json(['message' => $inner ? tf('Inner side artwork of :part saved.', ['part' => $part->part_name]) : tf('Artwork of :part saved.', ['part' => $part->part_name])]);
         })->name('artwork');
 
         // Quick-add customer dari Inquiry (status DRAFT, review Finance/Credit tetap wajib).
         Route::post('/customer', function (Request $r) use ($writer) {
             abort_unless(Auth::user()->canAccessModule('SALES'), 403);
             $d = $r->validate(['name' => ['required', 'string', 'max:200'], 'type' => ['required', 'in:local,import'], 'phone' => ['nullable', 'string', 'max:50'],
-                'email' => ['nullable', 'email', 'max:150'], 'address' => ['nullable', 'string']], [], ['name' => 'Nama Customer']);
+                'email' => ['nullable', 'email', 'max:150'], 'address' => ['nullable', 'string']], [], ['name' => t('Customer Name')]);
             $c = $writer()->quickCustomer($d + ['phone' => null, 'email' => null, 'address' => null]);
 
             return response()->json(['id' => $c->id_customer, 'label' => $c->customer_name, 'code' => $c->customer_code,
-                'message' => "Customer baru \"{$c->customer_name}\" ({$c->customer_code}) dibuat — status DRAFT."]);
+                'message' => tf('New customer ":name" (:code) created — status DRAFT.', ['name' => $c->customer_name, 'code' => $c->customer_code])]);
         })->name('customer');
     });
 
@@ -267,29 +268,29 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return ProdProduct::findOrFail($id);
         };
         Route::post('/name', function (Request $r, int $id) use ($product) {
-            $d = $r->validate(['product_name' => ['required', 'string', 'max:200']], [], ['product_name' => 'Nama product']);
+            $d = $r->validate(['product_name' => ['required', 'string', 'max:200']], [], ['product_name' => t('Product name')]);
             $product($id)->update($d + ['updated_by' => Auth::user()->login]);
 
-            return back()->with('v2_flash', 'Nama product tersimpan.');
+            return back()->with('v2_flash', t('Product name saved.'));
         })->name('name');
         Route::post('/proof', function (Request $r, int $id) use ($product) {
-            $d = $r->validate(['drawing_by' => ['nullable', 'string', 'max:100'], 'design_date' => ['nullable', 'date']], [], ['drawing_by' => 'Drawing by']);
+            $d = $r->validate(['drawing_by' => ['nullable', 'string', 'max:100'], 'design_date' => ['nullable', 'date']], [], ['drawing_by' => t('Drawing by')]);
             $product($id)->update($d + ['updated_by' => Auth::user()->login]);
 
-            return back()->with('v2_flash', 'Isian Proof Digital tersimpan.');
+            return back()->with('v2_flash', t('Digital Proof fields saved.'));
         })->name('proof');
         Route::post('/acc', function (Request $r, int $id) use ($product) {
             $p = $product($id);
             $d = $r->validate(['acc_type' => ['required', 'in:'.implode(',', array_keys(ProdProductAcc::TYPES))], 'acc_at' => ['required', 'date'],
                 'approved_by' => ['required', 'string', 'max:100'], 'channel' => ['required', 'in:'.implode(',', array_keys(ProdProductAcc::CHANNELS))],
                 'note' => ['nullable', 'string', 'max:500'], 'evidence' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240']],
-                [], ['acc_at' => 'Tanggal & jam ACC', 'approved_by' => 'Di-ACC oleh', 'channel' => 'Saluran', 'evidence' => 'Bukti']);
+                [], ['acc_at' => t('ACC date & time'), 'approved_by' => t('ACC given by'), 'channel' => t('Channel'), 'evidence' => t('Evidence')]);
             $file = $r->file('evidence');
             ProdProductAcc::create(collect($d)->except('evidence')->all() + ['product_id' => $p->id_product,
                 'evidence_path' => $file?->store("product/{$p->id_product}/acc", 'public'), 'evidence_filename' => $file?->getClientOriginalName(),
                 'created_by' => Auth::user()->login, 'updated_by' => Auth::user()->login]);
 
-            return back()->with('v2_flash', ProdProductAcc::TYPES[$d['acc_type']].' tercatat.');
+            return back()->with('v2_flash', tf(':type recorded.', ['type' => t(ProdProductAcc::TYPES[$d['acc_type']])]));
         })->name('acc');
     });
 
@@ -299,19 +300,19 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::post('/', function (Request $r, int $id) use ($back) {
             $d = $r->validate(['assembly_name' => ['required', 'string', 'max:100'], 'join_type_id' => ['required', 'integer'],
                 'children' => ['required', 'array', 'min:2'], 'qty_in_parent' => ['nullable', 'numeric', 'min:0.0001']],
-                ['children.min' => 'Pilih minimal 2 part.'], ['assembly_name' => 'Nama rakitan', 'join_type_id' => 'Jenis sambungan', 'children' => 'Part']);
+                ['children.min' => t('Choose at least 2 parts.')], ['assembly_name' => t('Assembly name'), 'join_type_id' => t('Join type'), 'children' => t('Part')]);
             try {
                 (new InquiryAssembly(Auth::user()->login))->create(IqpInquiry::findOrFail($id), $d['assembly_name'], (int) $d['join_type_id'], $d['children'], (float) ($d['qty_in_parent'] ?? 1) ?: 1);
             } catch (InvalidArgumentException $e) {
                 return $back($id)->withErrors(['children' => $e->getMessage()]);
             }
 
-            return $back($id)->with('v2_flash', 'Rakitan "'.$d['assembly_name'].'" dibuat.');
+            return $back($id)->with('v2_flash', tf('Assembly ":name" created.', ['name' => $d['assembly_name']]));
         })->name('store');
         Route::post('/{part}/delete', function (int $id, int $part) use ($back) {
             (new InquiryAssembly(Auth::user()->login))->remove(IqpInquiry::findOrFail($id), $part);
 
-            return $back($id)->with('v2_flash', 'Rakitan dibongkar; part-nya kembali berdiri sendiri.');
+            return $back($id)->with('v2_flash', t('Assembly taken apart; its parts stand alone again.'));
         })->whereNumber('part')->name('delete');
     });
 
@@ -319,14 +320,14 @@ Route::prefix('v2')->name('v2.')->group(function () {
     Route::prefix('quotation')->name('quotation.')->middleware('module:SALES')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'quotation').'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
-            $d = $r->validate(['inquiry_ids' => ['required', 'array', 'min:1'], 'inquiry_ids.*' => ['integer']], [], ['inquiry_ids' => 'Inquiry']);
+            $d = $r->validate(['inquiry_ids' => ['required', 'array', 'min:1'], 'inquiry_ids.*' => ['integer']], [], ['inquiry_ids' => t('Inquiry')]);
             try {
                 $q = Quotation::create($d['inquiry_ids']);
             } catch (InvalidArgumentException $e) {
                 return back()->withErrors(['inquiry_ids' => $e->getMessage()]);
             }
 
-            return $open($q->id_quotation)->with('v2_flash', "Quotation {$q->quotation_no} dibuat (DRAFT).");
+            return $open($q->id_quotation)->with('v2_flash', tf('Quotation :no created (DRAFT).', ['no' => $q->quotation_no]));
         })->name('create');
 
         Route::prefix('{id}')->whereNumber('id')->group(function () use ($open) {
@@ -336,66 +337,66 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 if ($r->input('action') === 'delete') {
                     Quotation::delete($q);
 
-                    return redirect(route('v2.screen', 'quotation'))->with('v2_flash', "Draft {$q->quotation_no} dihapus.");
+                    return redirect(route('v2.screen', 'quotation'))->with('v2_flash', tf('Draft :no deleted.', ['no' => $q->quotation_no]));
                 }
                 $r->validate(['issued_date' => ['required', 'date'], 'valid_until' => ['nullable', 'date'], 'deadline_date' => ['nullable', 'date'],
                     'items' => ['array'], 'items.*.description' => ['nullable', 'string', 'max:500'], 'items.*.qty_unit' => ['nullable', 'string', 'max:20']],
-                    [], ['issued_date' => 'Tanggal dokumen']);
+                    [], ['issued_date' => t('Document date')]);
                 Quotation::save($q, $r->only(Quotation::HEADER), $r->has('cc_present') ? (array) $r->input('cc', []) : null,
                     (array) $r->input('items', []), array_keys((array) $r->input('remove', [])));
                 $q->refresh();
                 if ($r->input('action') === 'add_line') {
                     Quotation::addLine($q);
 
-                    return $open($id)->with('v2_flash', 'Baris bebas ditambahkan — isi uraian, qty, dan harga lalu Simpan.');
+                    return $open($id)->with('v2_flash', t('Free line added — fill in the description, qty and price, then Save.'));
                 }
                 if ($r->input('action') === 'confirm') {
                     Quotation::confirm($q);
 
-                    return $open($id)->with('v2_flash', "Quotation {$q->quotation_no} di-Confirm (terbit). Kirim ke customer lewat Print / Email.");
+                    return $open($id)->with('v2_flash', tf('Quotation :no confirmed (issued). Send it to the customer through Print / Email.', ['no' => $q->quotation_no]));
                 }
 
-                return $open($id)->with('v2_flash', 'Quotation tersimpan.');
+                return $open($id)->with('v2_flash', t('Quotation saved.'));
             })->name('save');
             Route::post('/add-inquiry', function (Request $r, int $id) use ($open) {
-                $d = $r->validate(['inquiry_ids' => ['required', 'array', 'min:1']], [], ['inquiry_ids' => 'Inquiry']);
+                $d = $r->validate(['inquiry_ids' => ['required', 'array', 'min:1']], [], ['inquiry_ids' => t('Inquiry')]);
                 Quotation::addInquiries(QuoQuotation::findOrFail($id), $d['inquiry_ids']);
 
-                return $open($id)->with('v2_flash', 'Inquiry ditambahkan ke quotation.');
+                return $open($id)->with('v2_flash', t('Inquiry added to the quotation.'));
             })->name('add-inquiry');
             Route::post('/delete', function (int $id) {
                 $q = QuoQuotation::findOrFail($id);
                 Quotation::delete($q);
 
-                return redirect(route('v2.screen', 'quotation'))->with('v2_flash', "Draft {$q->quotation_no} dihapus.");
+                return redirect(route('v2.screen', 'quotation'))->with('v2_flash', tf('Draft :no deleted.', ['no' => $q->quotation_no]));
             })->name('delete');
             Route::post('/cancel', function (Request $r, int $id) use ($open) {
-                $d = $r->validate(['cancel_reason' => ['required', 'string', 'max:255']], [], ['cancel_reason' => 'Alasan batal']);
+                $d = $r->validate(['cancel_reason' => ['required', 'string', 'max:255']], [], ['cancel_reason' => t('Cancel reason')]);
                 Quotation::cancel(QuoQuotation::findOrFail($id), $d['cancel_reason']);
 
-                return $open($id)->with('v2_flash', 'Quotation dibatalkan; inquiry-nya bisa ditawarkan lagi.');
+                return $open($id)->with('v2_flash', t('Quotation cancelled; its inquiries can be quoted again.'));
             })->name('cancel');
             Route::post('/lost', function (Request $r, int $id) use ($open) {
-                $d = $r->validate(['lost_reason' => ['required', 'string', 'max:255']], [], ['lost_reason' => 'Alasan kalah']);
+                $d = $r->validate(['lost_reason' => ['required', 'string', 'max:255']], [], ['lost_reason' => t('Lost Reason')]);
                 Quotation::lost(QuoQuotation::with('items.inquiry')->findOrFail($id), $d['lost_reason']);
 
-                return $open($id)->with('v2_flash', 'Quotation ditutup LOST.');
+                return $open($id)->with('v2_flash', t('Quotation closed as LOST.'));
             })->name('lost');
             Route::post('/win', function (int $id) {
                 $order = Quotation::win(QuoQuotation::with('items.inquiry')->findOrFail($id));
 
-                return $order ? redirect(route('v2.screen', 'customer-order').'?id='.$order)->with('v2_flash', 'WIN — Customer Order dibuat dari quotation ini.')
-                    : back()->withErrors(['win' => 'Customer Order tidak bisa dibuat dari quotation ini.']);
+                return $order ? redirect(route('v2.screen', 'customer-order').'?id='.$order)->with('v2_flash', t('WIN — Customer Order created from this quotation.'))
+                    : back()->withErrors(['win' => t('A Customer Order cannot be created from this quotation.')]);
             })->name('win');
             Route::post('/activity', function (Request $r, int $id) use ($open) {
                 Quotation::addActivity(QuoQuotation::findOrFail($id), (array) $r->input('act', []));
 
-                return $open($id)->with('v2_flash', 'Follow-up tercatat.');
+                return $open($id)->with('v2_flash', t('Follow-up recorded.'));
             })->name('activity');
             Route::post('/activity/{aid}/delete', function (int $id, int $aid) use ($open) {
                 Quotation::deleteActivity(QuoQuotation::findOrFail($id), $aid);
 
-                return $open($id)->with('v2_flash', 'Follow-up dihapus.');
+                return $open($id)->with('v2_flash', t('Follow-up deleted.'));
             })->whereNumber('aid')->name('activity.delete');
         });
     });
@@ -405,10 +406,10 @@ Route::prefix('v2')->name('v2.')->group(function () {
     Route::prefix('pr')->name('pr.')->middleware('module:PROC')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'purchase-requisition').'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
-            $d = $r->validate(['department_id' => ['required', 'integer']], [], ['department_id' => 'Departemen']);
+            $d = $r->validate(['department_id' => ['required', 'integer']], [], ['department_id' => t('Department')]);
             $pr = PurchaseRequisition::create((int) $d['department_id']);
 
-            return $open($pr->pr_id)->with('v2_flash', 'PR draft dibuat — tambahkan item lalu Confirm (ajukan).');
+            return $open($pr->pr_id)->with('v2_flash', t('PR draft created — add items, then Confirm (submit).'));
         })->name('create');
         Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
             $pr = PrRequisition::findOrFail($id);
@@ -416,34 +417,34 @@ Route::prefix('v2')->name('v2.')->group(function () {
             if (in_array($action, ['approve', 'reject', 'hold'], true)) {
                 $err = PurchaseRequisition::decide($pr, $action, (string) $r->input('_reason', ''));
 
-                return $err ? $open($id)->withErrors(['approval' => $err]) : $open($id)->with('v2_flash', 'Keputusan approval tersimpan ('.ucfirst($action).').');
+                return $err ? $open($id)->withErrors(['approval' => $err]) : $open($id)->with('v2_flash', tf('Approval decision saved (:action).', ['action' => ucfirst($action)]));
             }
             if ($action === 'delete') {
                 PurchaseRequisition::delete($pr);
 
-                return redirect(route('v2.screen', 'purchase-requisition'))->with('v2_flash', 'Draft PR dihapus.');
+                return redirect(route('v2.screen', 'purchase-requisition'))->with('v2_flash', t('Draft PR deleted.'));
             }
             $r->validate(['i_doc_date' => ['nullable', 'date'], 'i_need_date' => ['nullable', 'date'], 'lines.*.i_need_date' => ['nullable', 'date']]);
             PurchaseRequisition::save($pr, $r->all());
-            $msg = 'PR tersimpan.';
+            $msg = t('PR saved.');
             if ($action === 'add_material') {
-                abort_unless($r->filled('material_id'), 422, 'Pilih item dari master.');
+                abort_unless($r->filled('material_id'), 422, t('Choose an item from the master.'));
                 PurchaseRequisition::addMaterial($pr->refresh(), (int) $r->input('material_id'));
-                $msg = 'Item master ditambahkan — isi qty & harga estimasi.';
+                $msg = t('Master item added — fill in the qty & estimated price.');
             } elseif ($action === 'add_free') {
-                abort_unless(trim((string) $r->input('free_description')) !== '', 422, 'Isi uraian item bebas.');
+                abort_unless(trim((string) $r->input('free_description')) !== '', 422, t('Fill in the free item description.'));
                 $err = PurchaseRequisition::addFree($pr->refresh(), (string) $r->input('free_description'), (string) $r->input('free_uom', ''), $r->integer('free_account_id') ?: null);
                 if ($err) {
                     return $open($id)->withErrors(['free' => $err]);
                 }
-                $msg = 'Item bebas ditambahkan.';
+                $msg = t('Free item added.');
             } elseif ($action === 'confirm') {
                 $pr->refresh()->load('lines');
                 if ($pr->lines->isEmpty() || ! $pr->i_department_id) {
-                    return $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: PR wajib punya departemen dan minimal 1 item.']);
+                    return $open($id)->withErrors(['confirm' => t('Cannot Confirm yet: the PR needs a department and at least 1 item.')]);
                 }
                 $blocked = PurchaseRequisition::submit($pr);
-                $msg = $blocked ?: 'PR di-Confirm (diajukan) — menunggu approval.';
+                $msg = $blocked ?: t('PR confirmed (submitted) — waiting for approval.');
             }
 
             return $open($id)->with('v2_flash', $msg);
@@ -457,7 +458,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $open = fn (int $id) => redirect($home().'?id='.$id);
         Route::post('/upload', function (Request $r) use ($home, $open) {
             $r->validate(['pr_id' => ['nullable', 'integer'], 'files' => ['required', 'array', 'min:1', 'max:10'], 'files.*' => ['file', 'max:20480']],
-                [], ['files' => 'File penawaran', 'files.*' => 'File penawaran']);
+                [], ['files' => t('Quotation File'), 'files.*' => t('Quotation File')]);
             $made = [];
             $errors = [];
             foreach ($r->file('files') as $f) {
@@ -468,9 +469,9 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 }
             }
             if (count($made) === 1 && ! $errors) {
-                return $open($made[0]->pq_id)->with('v2_flash', 'File terbaca menjadi PQ Draft — cek baris kuning, lalu Confirm.');
+                return $open($made[0]->pq_id)->with('v2_flash', t('File read into a PQ Draft — check the yellow rows, then Confirm.'));
             }
-            $back = redirect($home())->with('v2_flash', count($made).' file menjadi PQ Draft — buka satu per satu untuk dicek.');
+            $back = redirect($home())->with('v2_flash', tf(':n file(s) became PQ Drafts — open them one by one to check.', ['n' => count($made)]));
 
             return $errors ? $back->withErrors(['files' => implode(' ', $errors)]) : $back;
         })->name('upload');
@@ -480,22 +481,22 @@ Route::prefix('v2')->name('v2.')->group(function () {
             if ($action === 'delete') {
                 PurchaseQuotation::delete($pq);
 
-                return redirect($home())->with('v2_flash', 'Draft PQ dihapus.');
+                return redirect($home())->with('v2_flash', t('Draft PQ deleted.'));
             }
             if ($action === 'cancel') {
                 $err = PurchaseQuotation::cancel($pq, (string) $r->input('_reason', ''));
 
-                return $err ? $open($id)->withErrors(['cancel' => $err]) : $open($id)->with('v2_flash', 'PQ dibatalkan.');
+                return $err ? $open($id)->withErrors(['cancel' => $err]) : $open($id)->with('v2_flash', t('PQ cancelled.'));
             }
             $r->validate(['i_doc_date' => ['nullable', 'date'], 'i_quotation_valid_until' => ['nullable', 'date'], 'i_fx_rate' => ['nullable', 'numeric', 'min:0']]);
             PurchaseQuotation::save($pq, $r->all());
             if ($action === 'confirm') {
                 $err = PurchaseQuotation::confirm($pq->refresh());
 
-                return $err ? $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: '.implode(' ', $err)]) : $open($id)->with('v2_flash', "PQ {$pq->doc_no} di-Confirm — siap dibandingkan & dijadikan PO.");
+                return $err ? $open($id)->withErrors(['confirm' => tf('Cannot Confirm yet: :errors', ['errors' => implode(' ', $err)])]) : $open($id)->with('v2_flash', tf('PQ :no confirmed — ready to be compared & turned into a PO.', ['no' => $pq->doc_no]));
             }
 
-            return $open($id)->with('v2_flash', 'PQ tersimpan.');
+            return $open($id)->with('v2_flash', t('PQ saved.'));
         })->whereNumber('id')->name('save');
         // Buat PO dari baris PQ terpilih (layar Bandingkan atau tombol di form PQ).
         Route::post('/po', function (Request $r) {
@@ -508,14 +509,14 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $first = array_key_first($pos);
 
             return redirect(route('v2.screen', 'purchase-order').(count($pos) === 1 ? '?id='.$first : ''))
-                ->with('v2_flash', 'Baris penawaran masuk ke '.implode(', ', $pos).' — lanjutkan di Purchase Order.');
+                ->with('v2_flash', tf('Quotation lines went into :po — continue in Purchase Order.', ['po' => implode(', ', $pos)]));
         })->name('po');
     });
 
     // Kas Kecil v2 (App\Services\Acc\PettyCashService): kasbon / pertanggungjawaban / reimburse PO Kontan, isi ulang, setting.
     Route::prefix('petty')->name('petty.')->middleware('module:FINACC')->group(function () {
         $home = fn () => route('v2.screen', 'petty-cash');
-        $fund = fn () => PettyCash::fund() ?? abort(404, 'Belum ada Kas Kecil aktif.');
+        $fund = fn () => PettyCash::fund() ?? abort(404, t('There is no active Petty Cash yet.'));
         $run = function (callable $fn, string $ok) use ($home) {
             try {
                 $tx = $fn();
@@ -526,26 +527,26 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return redirect($home())->with('v2_flash', str_replace(':no', $tx->tx_no, $ok));
         };
         Route::post('/advance/{po}', function (Request $r, int $po) use ($run) {
-            $d = $r->validate(['amount' => ['required'], 'receiver_name' => ['required', 'string', 'max:100']], [], ['amount' => 'Nilai kasbon', 'receiver_name' => 'Penerima uang']);
+            $d = $r->validate(['amount' => ['required'], 'receiver_name' => ['required', 'string', 'max:100']], [], ['amount' => t('Cash advance amount'), 'receiver_name' => t('Money receiver')]);
 
             return $run(fn () => PettyCashService::advance(PoOrder::findOrFail($po), (float) Locale::input($d['amount']), $d['receiver_name'], Auth::user()->login),
-                'Kasbon :no tercatat — uang diserahkan, jurnal Uang Muka / Kas Kecil terposting.');
+                t('Cash advance :no recorded — money handed over, the Advance / Petty Cash journal is posted.'));
         })->whereNumber('po')->name('advance');
         Route::post('/settle/{po}', function (Request $r, int $po) use ($run) {
             $r->validate(['nota' => ['required', 'array'], 'nota_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'], 'receiver_name' => ['nullable', 'string', 'max:100']],
-                [], ['nota' => 'Nilai nota', 'nota_file' => 'Foto nota']);
+                [], ['nota' => t('Receipt amount'), 'nota_file' => t('Receipt photo')]);
             $nota = collect((array) $r->input('nota'))->map(fn ($v) => (float) Locale::input($v))->all();
             $path = $r->file('nota_file')?->store('petty/'.now()->format('Ym'), 'public');
 
             return $run(fn () => PettyCashService::settle(PoOrder::findOrFail($po), $nota, $path, Auth::user()->login, (string) $r->input('receiver_name', '')),
-                ':no tercatat — harga PO diganti nilai nota, PO siap dicatat di Penerimaan Barang (SPB).');
+                t(':no recorded — the PO price was replaced by the receipt amount, the PO is ready to be recorded in Goods Receipt (SPB).'));
         })->whereNumber('po')->name('settle');
         Route::post('/topup', function (Request $r) use ($run, $fund) {
             $d = $r->validate(['amount' => ['required'], 'bank_account_id' => ['required', 'integer'], 'tx_date' => ['required', 'date'], 'notes' => ['nullable', 'string', 'max:255']],
-                [], ['amount' => 'Nilai isi ulang', 'bank_account_id' => 'Akun bank', 'tx_date' => 'Tanggal']);
+                [], ['amount' => t('Top-up amount'), 'bank_account_id' => t('Bank account'), 'tx_date' => t('Date')]);
 
             return $run(fn () => PettyCashService::topup($fund(), (float) Locale::input($d['amount']), (int) $d['bank_account_id'], $d['tx_date'], Auth::user()->login, (string) ($d['notes'] ?? '')),
-                'Isi ulang :no tercatat — jurnal Kas Kecil / Bank terposting.');
+                t('Top-up :no recorded — the Petty Cash / Bank journal is posted.'));
         })->name('topup');
         Route::post('/tx/{id}/cancel', function (Request $r, int $id) use ($home) {
             try {
@@ -555,15 +556,15 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 return back()->withInput()->withErrors(['cancel' => $e->getMessage()]);
             }
 
-            return redirect($home())->with('v2_flash', "Transaksi {$tx->tx_no} dibatalkan — jurnalnya dibalik.");
+            return redirect($home())->with('v2_flash', tf('Transaction :no cancelled — its journal is reversed.', ['no' => $tx->tx_no]));
         })->whereNumber('id')->name('cancel');
         Route::post('/setup', function (Request $r) use ($home, $fund) {
             $d = $r->validate(['petty_name' => ['required', 'string', 'max:100'], 'custodian_user_id' => ['required', 'integer'], 'imprest_amount' => ['nullable']],
-                [], ['petty_name' => 'Nama kas kecil', 'custodian_user_id' => 'Pemegang kas']);
+                [], ['petty_name' => t('Petty Cash Name'), 'custodian_user_id' => t('Custodian')]);
             $fund()->update(['petty_name' => $d['petty_name'], 'custodian_user_id' => (int) $d['custodian_user_id'],
                 'imprest_amount' => filled($d['imprest_amount'] ?? null) ? (float) Locale::input($d['imprest_amount']) : null, 'updated_by' => Auth::user()->login]);
 
-            return redirect($home())->with('v2_flash', 'Setting kas kecil tersimpan.');
+            return redirect($home())->with('v2_flash', t('Petty cash setting saved.'));
         })->name('setup');
     });
 
@@ -573,15 +574,15 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'purchase-order').'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
             $d = $r->validate(['supplier_id' => ['required', 'integer'], 'po_kind' => ['nullable', 'in:NORMAL,CASH'], 'cash_mode' => ['nullable', 'in:ADVANCE,REIMBURSE'],
-                'shop_name' => ['nullable', 'string', 'max:150']], [], ['supplier_id' => 'Supplier']);
+                'shop_name' => ['nullable', 'string', 'max:150']], [], ['supplier_id' => t('Supplier')]);
             if (($d['po_kind'] ?? 'NORMAL') === 'CASH') {
                 $po = PurchaseOrder::createCash((int) $d['supplier_id'], $d['cash_mode'] ?? 'ADVANCE', $d['shop_name'] ?? null);
 
-                return $open($po->po_id)->with('v2_flash', 'Draft PO Kontan siap — tambah item (Master Bahan / uraian bebas) atau tarik dari PR, isi qty & harga perkiraan.');
+                return $open($po->po_id)->with('v2_flash', t('Cash PO draft is ready — add items (Material Master / free description) or pull from a PR, fill in the qty & estimated price.'));
             }
             $po = PurchaseOrder::create((int) $d['supplier_id']);
 
-            return $open($po->po_id)->with('v2_flash', 'Draft PO siap — tarik baris dari PR yang sudah approved.');
+            return $open($po->po_id)->with('v2_flash', t('PO draft is ready — pull lines from an approved PR.'));
         })->name('create');
         Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
             $po = PoOrder::findOrFail($id);
@@ -589,43 +590,43 @@ Route::prefix('v2')->name('v2.')->group(function () {
             if (in_array($action, ['approve', 'reject', 'hold'], true)) {
                 $err = PurchaseOrder::decide($po, $action, (string) $r->input('_reason', ''));
 
-                return $err ? $open($id)->withErrors(['approval' => $err]) : $open($id)->with('v2_flash', 'Keputusan approval tersimpan ('.ucfirst($action).').');
+                return $err ? $open($id)->withErrors(['approval' => $err]) : $open($id)->with('v2_flash', tf('Approval decision saved (:action).', ['action' => ucfirst($action)]));
             }
             if ($action === 'send') {
                 PurchaseOrder::send($po);
 
-                return $open($id)->with('v2_flash', 'PO ditandai sudah dikirim ke supplier (SENT) — siap diterima di Penerimaan Barang.');
+                return $open($id)->with('v2_flash', t('PO marked as sent to the supplier (SENT) — ready to be received in Goods Receipt.'));
             }
             if ($action === 'delete') {
                 PurchaseOrder::delete($po);
 
-                return redirect(route('v2.screen', 'purchase-order'))->with('v2_flash', 'Draft PO dihapus; alokasi PR dilepas lagi.');
+                return redirect(route('v2.screen', 'purchase-order'))->with('v2_flash', t('Draft PO deleted; the PR allocation is released again.'));
             }
             $r->validate(['i_doc_date' => ['nullable', 'date'], 'i_delivery_date' => ['nullable', 'date']]);
             PurchaseOrder::save($po, $r->all());
-            $msg = 'PO tersimpan.';
+            $msg = t('PO saved.');
             if ($action === 'add_material') {
-                abort_unless($r->filled('material_id'), 422, 'Pilih item dari Master Bahan.');
+                abort_unless($r->filled('material_id'), 422, t('Choose an item from the Material Master.'));
                 PurchaseOrder::addMaterial($po->refresh(), (int) $r->input('material_id'));
-                $msg = 'Item ditambahkan — isi qty & harga perkiraan.';
+                $msg = t('Item added — fill in the qty & estimated price.');
             } elseif ($action === 'add_free') {
-                abort_unless(trim((string) $r->input('free_description')) !== '', 422, 'Isi uraian item.');
+                abort_unless(trim((string) $r->input('free_description')) !== '', 422, t('Fill in the item description.'));
                 PurchaseOrder::addFree($po->refresh(), (string) $r->input('free_description'), (string) $r->input('free_uom', ''), $r->filled('free_account_id') ? (int) $r->input('free_account_id') : null);
-                $msg = 'Item bebas ditambahkan.';
+                $msg = t('Free item added.');
             } elseif ($action === 'add_alloc') {
-                abort_unless($r->filled('alloc_id'), 422, 'Pilih baris PR.');
+                abort_unless($r->filled('alloc_id'), 422, t('Choose a PR line.'));
                 PurchaseOrder::addAllocation($po->refresh(), (int) $r->input('alloc_id'));
-                $msg = 'Baris PR ditarik ke PO — isi harga & diskon.';
+                $msg = t('PR line pulled into the PO — fill in the price & discount.');
             } elseif ($action === 'confirm') {
                 $po->refresh()->load('lines');
                 if ($po->lines->isEmpty()) {
-                    return $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: PO wajib punya minimal 1 baris.']);
+                    return $open($id)->withErrors(['confirm' => t('Cannot Confirm yet: the PO needs at least 1 line.')]);
                 }
                 $blocked = PurchaseOrder::submit($po);
                 if ($po->refresh()->status === 'DRAFT') {
-                    return $open($id)->withErrors(['confirm' => $blocked ?: 'Belum bisa Confirm.']);
+                    return $open($id)->withErrors(['confirm' => $blocked ?: t('Cannot Confirm yet.')]);
                 }
-                $msg = $blocked ?: ($po->isCash() ? 'PO Kontan di-Confirm — menunggu approval Direktur F&A.' : 'PO di-Confirm (diajukan) — menunggu approval.');
+                $msg = $blocked ?: ($po->isCash() ? t('Cash PO confirmed — waiting for the approval of the F&A Director.') : t('PO confirmed (submitted) — waiting for approval.'));
             }
 
             return $open($id)->with('v2_flash', $msg);
@@ -638,36 +639,36 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'purchase-receive').'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
             $d = $r->validate(['supplier_id' => ['required', 'integer'], 'warehouse' => ['required', 'string'], 'po_line_ids' => ['required', 'array', 'min:1']],
-                [], ['supplier_id' => 'Supplier', 'warehouse' => 'Gudang', 'po_line_ids' => 'Baris PO']);
+                [], ['supplier_id' => t('Supplier'), 'warehouse' => t('Warehouse'), 'po_line_ids' => t('PO lines')]);
             try {
                 $pv = PurchaseReceive::create((int) $d['supplier_id'], $d['warehouse'], $d['po_line_ids']);
             } catch (InvalidArgumentException $e) {
                 return back()->withErrors(['po_line_ids' => $e->getMessage()]);
             }
 
-            return $open($pv->pv_id)->with('v2_flash', "Penerimaan {$pv->label()} dibuat — isi qty diterima, QC qty & kualitas, lalu Confirm (Post).");
+            return $open($pv->pv_id)->with('v2_flash', tf('Goods receipt :no created — fill in the received qty, QC qty & quality, then Confirm (Post).', ['no' => $pv->label()]));
         })->name('create');
         // Bahan dari customer (wajib No. CO) & barang kembali dari subkon (SpecialReceiptService).
         Route::post('/create-customer', function (Request $r) use ($open) {
-            $d = $r->validate(['co_id' => ['required', 'integer'], 'warehouse' => ['nullable', 'string']], [], ['co_id' => 'No. CO']);
+            $d = $r->validate(['co_id' => ['required', 'integer'], 'warehouse' => ['nullable', 'string']], [], ['co_id' => t('CO No.')]);
             try {
                 $pv = SpecialReceiptService::createCustomer((int) $d['co_id'], $d['warehouse'] ?? null, Auth::user()->login);
             } catch (InvalidArgumentException $e) {
                 return back()->withErrors(['co_id' => $e->getMessage()]);
             }
 
-            return $open($pv->pv_id)->with('v2_flash', "Penerimaan bahan customer {$pv->label()} dibuat — cek uraian & qty per baris, lalu Confirm.");
+            return $open($pv->pv_id)->with('v2_flash', tf('Customer material receipt :no created — check the description & qty per line, then Confirm.', ['no' => $pv->label()]));
         })->name('create-customer');
         Route::post('/create-subcon', function (Request $r) use ($open) {
             $d = $r->validate(['supplier_id' => ['required', 'integer'], 'po_line_ids' => ['required', 'array', 'min:1'], 'do_id' => ['nullable', 'integer']],
-                [], ['supplier_id' => 'Subkon', 'po_line_ids' => 'Baris PO Subkon']);
+                [], ['supplier_id' => t('Subcontractor'), 'po_line_ids' => t('Subcon PO lines')]);
             try {
                 $pv = SpecialReceiptService::createSubcon((int) $d['supplier_id'], $d['po_line_ids'], $d['do_id'] ?? null, Auth::user()->login);
             } catch (InvalidArgumentException $e) {
                 return back()->withErrors(['po_line_ids' => $e->getMessage()]);
             }
 
-            return $open($pv->pv_id)->with('v2_flash', "Penerimaan dari subkon {$pv->label()} dibuat — isi qty kembali & proses berikutnya, lalu Confirm.");
+            return $open($pv->pv_id)->with('v2_flash', tf('Receipt from subcon :no created — fill in the returned qty & next process, then Confirm.', ['no' => $pv->label()]));
         })->name('create-subcon');
         // Cetak SPB jenis PO & Subkon (x-dl::print-out + doc-share); jenis Customer punya cetak sendiri (print-customer).
         Route::get('/{id}/print', function (int $id) {
@@ -703,7 +704,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 'ok' => $num($l->c_qty_accepted), 'reject' => (float) $l->c_qty_rejected ?: '', 'lot' => $l->i_lot_no ?: ''])->all();
 
             return view('v2.print-receipt', ['pv' => $pv, 'supplier' => $supplier, 'parties' => $parties, 'columns' => $columns, 'rows' => $rows,
-                'title' => $sub ? 'Subcon Return Receipt' : 'Goods Receipt Note', 'subtitle' => $sub ? 'Penerimaan dari Subkon' : 'Surat Penerimaan Barang (SPB)',
+                'title' => $sub ? 'Subcon Return Receipt' : 'Goods Receipt Note', 'subtitle' => $sub ? 'Receipt from Subcontractor' : 'Goods Receipt Note (SPB)',
                 'company' => ['name' => Brand::companyName(), 'tagline' => Brand::tagline(), 'initials' => mb_strtoupper(mb_substr(Brand::companyName(), 0, 2)),
                     'logo' => CompanyLogo::url(), 'logoBw' => CompanyLogo::url('bw')],
                 'signatures' => $sub ? [['Handed Over By', 'Subcontractor / Driver'], ['Received By', 'Production / PPIC'], ['Checked By', 'Quality Control']]
@@ -728,14 +729,14 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->whereNumber('id')->name('print-customer');
         Route::post('/{id}/short', function (Request $r, int $id) use ($open) {
             $d = $r->validate(['pv_line_id' => ['required', 'integer'], 'short_qty' => ['required'], 'short_note' => ['required', 'string', 'max:200']],
-                [], ['pv_line_id' => 'Baris', 'short_qty' => 'Qty kurang', 'short_note' => 'Keterangan']);
+                [], ['pv_line_id' => t('Line'), 'short_qty' => t('Short Qty'), 'short_note' => t('Remark')]);
             try {
                 SpecialReceiptService::reportShortage(PvReceipt::findOrFail($id), (int) $d['pv_line_id'], (float) Locale::input($d['short_qty']), $d['short_note'], Auth::user()->login);
             } catch (InvalidArgumentException $e) {
                 return $open($id)->withErrors(['short' => $e->getMessage()]);
             }
 
-            return $open($id)->with('v2_flash', 'Kekurangan tercatat — qty diterima, PO Subkon, dan jurnal dikoreksi.');
+            return $open($id)->with('v2_flash', t('Shortage recorded — the received qty, Subcon PO and journal are corrected.'));
         })->whereNumber('id')->name('short');
         Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
             $pv = PvReceipt::findOrFail($id);
@@ -748,7 +749,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
             if ($action === 'delete') {
                 PurchaseReceive::delete($pv);
 
-                return redirect(route('v2.screen', 'purchase-receive'))->with('v2_flash', "{$pv->label()} dihapus.");
+                return redirect(route('v2.screen', 'purchase-receive'))->with('v2_flash', tf(':no deleted.', ['no' => $pv->label()]));
             }
             $r->validate(['i_doc_date' => ['nullable', 'date']]);
             if ($pv->i_receipt_type !== 'PO') {
@@ -756,22 +757,22 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 if ($action === 'confirm') {
                     $err = SpecialReceiptService::post($pv->refresh(), Auth::user()->login);
 
-                    return $err ? $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: '.implode(' ', $err)])
-                        : $open($id)->with('v2_flash', $pv->i_receipt_type === 'SUBCON' ? 'Penerimaan subkon di-Confirm — PO Subkon & jurnal jasa terupdate.' : 'Penerimaan bahan customer di-Confirm.');
+                    return $err ? $open($id)->withErrors(['confirm' => tf('Cannot Confirm yet: :errors', ['errors' => implode(' ', $err)])])
+                        : $open($id)->with('v2_flash', $pv->i_receipt_type === 'SUBCON' ? t('Subcon receipt confirmed — the Subcon PO & service journal are updated.') : t('Customer material receipt confirmed.'));
                 }
 
-                return $open($id)->with('v2_flash', 'Penerimaan tersimpan.');
+                return $open($id)->with('v2_flash', t('Goods receipt saved.'));
             }
             PurchaseReceive::save($pv, $r->all());
-            $msg = 'Penerimaan tersimpan.';
+            $msg = t('Goods receipt saved.');
             if ($action === 'add_lines') {
-                abort_unless($r->filled('po_line_ids'), 422, 'Pilih baris PO.');
+                abort_unless($r->filled('po_line_ids'), 422, t('Choose PO lines.'));
                 PurchaseReceive::addLines($pv->refresh(), (array) $r->input('po_line_ids'));
-                $msg = 'Baris PO ditambahkan.';
+                $msg = t('PO lines added.');
             } elseif ($action === 'confirm') {
                 [$ok, $m] = PurchaseReceive::post($pv);
                 if (! $ok) {
-                    return $open($id)->withErrors(['confirm' => 'Belum bisa Confirm (Post): '.$m]);
+                    return $open($id)->withErrors(['confirm' => tf('Cannot Confirm (Post) yet: :error', ['error' => $m])]);
                 }
                 $msg = $m;
             }
@@ -785,10 +786,10 @@ Route::prefix('v2')->name('v2.')->group(function () {
     Route::prefix('do')->name('do.')->middleware('module:SALES')->group(function () {
         $open = fn (int $id, string $slug = 'delivery-order') => redirect(route('v2.screen', $slug).'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
-            $d = $r->validate(['customer_id' => ['required', 'integer']], [], ['customer_id' => 'Customer']);
+            $d = $r->validate(['customer_id' => ['required', 'integer']], [], ['customer_id' => t('Customer')]);
             $do = DeliveryOrder::create((int) $d['customer_id']);
 
-            return $open($do->id_delivery)->with('v2_flash', 'Draft DO dibuat — tarik baris dari jadwal kirim Customer Order.');
+            return $open($do->id_delivery)->with('v2_flash', t('DO draft created — pull lines from the Customer Order delivery schedule.'));
         })->name('create');
         Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
             $do = DoDelivery::findOrFail($id);
@@ -803,17 +804,17 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 }
                 [$ok, $m] = DeliveryOrder::act($do->refresh(), $action, (string) $r->input('_reason', ''));
 
-                return $ok ? $open($id, $slug)->with('v2_flash', ['confirm' => 'DO di-Confirm — Surat Jalan siap dicetak.', 'ship' => 'Barang sudah dikirim (SHIPPED).', 'cancel' => 'DO dibatalkan.'][$action])
+                return $ok ? $open($id, $slug)->with('v2_flash', ['confirm' => t('DO confirmed — the Delivery Note is ready to print.'), 'ship' => t('Goods have been shipped (SHIPPED).'), 'cancel' => t('DO cancelled.')][$action])
                     : $open($id, $slug)->withErrors(['action' => $m]);
             }
             $r->validate(['do_date' => ['nullable', 'date'], 'scheduled_ship_date' => ['nullable', 'date']]);
             $err = DeliveryOrder::save($do, $r->all());
             if ($action === 'pull') {
-                abort_unless($r->filled('co_delivery_ids'), 422, 'Pilih jadwal kirim CO.');
+                abort_unless($r->filled('co_delivery_ids'), 422, t('Choose a CO delivery schedule.'));
                 $err = DeliveryOrder::pull($do->refresh(), (array) $r->input('co_delivery_ids')) ?: $err;
             }
 
-            return $err ? $open($id, $slug)->withErrors(['save' => $err]) : $open($id, $slug)->with('v2_flash', $action === 'pull' ? 'Baris ditarik dari jadwal kirim CO.' : 'DO tersimpan.');
+            return $err ? $open($id, $slug)->withErrors(['save' => $err]) : $open($id, $slug)->with('v2_flash', $action === 'pull' ? t('Lines pulled from the CO delivery schedule.') : t('DO saved.'));
         })->whereNumber('id')->name('save');
     });
 
@@ -822,7 +823,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $home = fn () => route('v2.screen', 'subcon-delivery-note');
         $open = fn (int $id) => redirect($home().'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
-            $d = $r->validate(['supplier_id' => ['required', 'integer'], 'subcon_process' => ['required', 'string', 'max:80']], [], ['supplier_id' => 'Subcontractor', 'subcon_process' => 'Subcontract Process']);
+            $d = $r->validate(['supplier_id' => ['required', 'integer'], 'subcon_process' => ['required', 'string', 'max:80']], [], ['supplier_id' => t('Subcontractor'), 'subcon_process' => t('Subcontract Process')]);
             $do = SubconDelivery::create((int) $d['supplier_id'], $d['subcon_process']);
 
             return $open($do->id_delivery)->with('v2_flash', t('Draft created. Add the items, then Confirm.'));
@@ -857,7 +858,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $home = fn () => route('v2.screen', 'supplier-invoice-receipt');
         $open = fn (int $id) => redirect($home().'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
-            $d = $r->validate(['supplier_id' => ['required', 'integer']], [], ['supplier_id' => 'Supplier']);
+            $d = $r->validate(['supplier_id' => ['required', 'integer']], [], ['supplier_id' => t('Supplier')]);
 
             return $open(SupplierInvoiceReceipt::create((int) $d['supplier_id'])->id_invoice_receipt)->with('v2_flash', t('Draft created. Add the invoices, then Confirm.'));
         })->name('create');
@@ -925,7 +926,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $open = fn (int $id) => redirect($home().'?id='.$id);
         Route::post('/complaint/create', function (Request $r) use ($guard, $open) {
             $guard('crm-complaint');
-            $d = $r->validate(['customer_id' => ['required', 'integer', 'exists:tm2mst.cust_customer,id_customer'], 'complaint_type' => ['required', 'string']], [], ['customer_id' => 'Customer']);
+            $d = $r->validate(['customer_id' => ['required', 'integer', 'exists:tm2mst.cust_customer,id_customer'], 'complaint_type' => ['required', 'string']], [], ['customer_id' => t('Customer')]);
 
             return $open(CrmComplaints::create((int) $d['customer_id'], $d['complaint_type'])->id_complaint)->with('v2_flash', t('Draft created. Describe the complaint and add the products, then Confirm.'));
         })->name('complaint.create');
@@ -973,11 +974,11 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'customer-order').'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
             $d = $r->validate(['mode' => ['required', 'in:INTEGRATED,INSTANT'], 'quotation_id' => ['required_if:mode,INTEGRATED', 'nullable', 'integer'],
-                'customer_id' => ['required_if:mode,INSTANT', 'nullable', 'integer']], [], ['quotation_id' => 'Quotation', 'customer_id' => 'Customer']);
+                'customer_id' => ['required_if:mode,INSTANT', 'nullable', 'integer']], [], ['quotation_id' => t('Quotation'), 'customer_id' => t('Customer')]);
             $o = $d['mode'] === 'INTEGRATED' ? CustomerOrder::createIntegrated((int) $d['quotation_id']) : CustomerOrder::createInstant((int) $d['customer_id']);
 
-            return $o ? $open($o->id_order)->with('v2_flash', "Customer Order {$o->co_no} ({$o->entry_mode}) siap diisi.")
-                : back()->withErrors(['quotation_id' => 'Quotation ini tidak bisa menjadi Customer Order (belum terbit / LOST).']);
+            return $o ? $open($o->id_order)->with('v2_flash', tf('Customer Order :no (:mode) is ready to be filled in.', ['no' => $o->co_no, 'mode' => $o->entry_mode]))
+                : back()->withErrors(['quotation_id' => t('This quotation cannot become a Customer Order (not issued yet / LOST).')]);
         })->name('create');
         Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
             $o = CoOrder::findOrFail($id);
@@ -985,41 +986,41 @@ Route::prefix('v2')->name('v2.')->group(function () {
             if ($r->input('action') === 'delete') {
                 CustomerOrder::delete($o);
 
-                return redirect(route('v2.screen', 'customer-order'))->with('v2_flash', "Draft {$o->co_no} dihapus.");
+                return redirect(route('v2.screen', 'customer-order'))->with('v2_flash', tf('Draft :no deleted.', ['no' => $o->co_no]));
             }
             if (in_array($r->input('action'), ['approve', 'reject', 'hold'], true)) {
                 $err = CustomerOrder::decide($o, (string) $r->input('action'), (string) $r->input('_reason', ''));
 
-                return $err ? $open($id)->withErrors(['approval' => $err]) : $open($id)->with('v2_flash', 'Keputusan approval tersimpan ('.ucfirst((string) $r->input('action')).').');
+                return $err ? $open($id)->withErrors(['approval' => $err]) : $open($id)->with('v2_flash', tf('Approval decision saved (:action).', ['action' => ucfirst((string) $r->input('action'))]));
             }
             if ($r->input('action') === 'duplicate') {
                 $new = CustomerOrder::duplicate($o);
 
-                return $open($new->id_order)->with('v2_flash', "Salinan {$o->co_no} dibuat sebagai CO INSTANT {$new->co_no} (Draft) — perbaiki lalu Confirm lagi.");
+                return $open($new->id_order)->with('v2_flash', tf('Copy of :source created as CO INSTANT :new (Draft) — correct it, then Confirm again.', ['source' => $o->co_no, 'new' => $new->co_no]));
             }
             if ($r->input('action') === 'cancel') {
                 $err = CustomerOrder::cancel($o, (string) $r->input('_reason', ''));
 
-                return $err ? $open($id)->withErrors(['cancel' => $err]) : $open($id)->with('v2_flash', "Customer Order {$o->co_no} CANCELLED — jadwal kirimnya ikut dibatalkan.");
+                return $err ? $open($id)->withErrors(['cancel' => $err]) : $open($id)->with('v2_flash', tf('Customer Order :no CANCELLED — its delivery schedule is cancelled too.', ['no' => $o->co_no]));
             }
             $r->validate(['co_date' => ['nullable', 'date'], 'items.*.due_date' => ['nullable', 'date'], 'deliveries.*.ship_date' => ['nullable', 'date'],
-                'product_id' => ['nullable', 'integer']], [], ['co_date' => 'CO Date']);
+                'product_id' => ['nullable', 'integer']], [], ['co_date' => t('CO Date')]);
             CustomerOrder::save($o, $r->all());
             $action = (string) $r->input('action', 'save');
-            $msg = 'Customer Order tersimpan.';
+            $msg = t('Customer Order saved.');
             if ($action === 'add_product') {
-                abort_unless($r->filled('product_id'), 422, 'Pilih Master Product.');
+                abort_unless($r->filled('product_id'), 422, t('Choose a Master Product.'));
                 CustomerOrder::addProduct($o, (int) $r->input('product_id'));
-                $msg = 'Baris product ditambahkan — isi qty & due date.';
+                $msg = t('Product line added — fill in the qty & due date.');
             } elseif ($action === 'add_service') {
                 CustomerOrder::addService($o);
-                $msg = 'Baris jasa ditambahkan.';
+                $msg = t('Service line added.');
             } elseif ($action === 'add_cost') {
                 CustomerOrder::addCost($o);
-                $msg = 'Biaya luar ditambahkan.';
+                $msg = t('External cost added.');
             } elseif (str_starts_with($action, 'add_delivery_')) {
                 CustomerOrder::addDelivery($o, (int) substr($action, 13));
-                $msg = 'Jadwal kirim ditambahkan.';
+                $msg = t('Delivery schedule added.');
             } elseif (str_starts_with($action, 'pick_qty_')) {
                 // Customer memilih SATU qty per product; pilihan qty lain dari quotation dibuang dari CO (aturan user 2026-10-01).
                 CustomerOrder::pickQty($o, (int) substr($action, 9));
@@ -1029,7 +1030,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 if ($err = CustomerOrder::confirm($o)) {
                     return $open($id)->withErrors(['confirm' => $err]);
                 }
-                $msg = "Customer Order {$o->co_no} diajukan — menunggu approval F&A SPV lalu Operational Manager. Jadwal kirim (CPDEL) dibuat setelah approval terakhir.";
+                $msg = tf('Customer Order :no submitted — waiting for approval by the F&A SPV, then the Operational Manager. The delivery schedule (CPDEL) is created after the last approval.', ['no' => $o->co_no]);
             }
 
             return $open($id)->with('v2_flash', $msg);
@@ -1038,7 +1039,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $o = CoOrder::findOrFail($id);
             CustomerOrder::delete($o);
 
-            return redirect(route('v2.screen', 'customer-order'))->with('v2_flash', "Draft {$o->co_no} dihapus.");
+            return redirect(route('v2.screen', 'customer-order'))->with('v2_flash', tf('Draft :no deleted.', ['no' => $o->co_no]));
         })->whereNumber('id')->name('delete');
     });
 
@@ -1051,7 +1052,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $err = ApprovalCenter::decide($module, (int) $id, $d['action'], (string) ($d['_reason'] ?? ''));
         $back = redirect(route('v2.screen', 'approval-'.$screen));
 
-        return $err ? $back->withErrors(['approval' => $err]) : $back->with('v2_flash', ['approve' => 'Disetujui', 'reject' => 'Ditolak', 'hold' => 'Ditahan'][$d['action']].' — tercatat di log.');
+        return $err ? $back->withErrors(['approval' => $err]) : $back->with('v2_flash', ['approve' => t('Approved — recorded in the log.'), 'reject' => t('Rejected — recorded in the log.'), 'hold' => t('On hold — recorded in the log.')][$d['action']]);
     })->whereIn('screen', array_keys(ApprovalCenter::SCREENS))->name('approval.decide');
 
     // Setting Approval + Officer Pengganti (PLT) -- App\Support\V2\Data\ApprovalSetting (tm2mst.flow_config*, flow_position_acting).
@@ -1059,10 +1060,10 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'approval-setting').'?id='.$id);
         Route::post('/approval-setting/create', function (Request $r) use ($open) {
             $d = $r->validate(['module_code' => ['required', 'string', 'max:50'], 'notes' => ['nullable', 'string', 'max:200'], 'final_status' => ['nullable', 'string', 'max:30']],
-                [], ['module_code' => 'Kode Dokumen']);
+                [], ['module_code' => t('Document Code')]);
             $c = ApprovalSetting::create($d['module_code'], (string) ($d['notes'] ?? ''), (string) ($d['final_status'] ?? ''));
 
-            return $open($c->flow_config_id)->with('v2_flash', "Setting approval {$c->module_code} dibuat — tambahkan Level lalu Save.");
+            return $open($c->flow_config_id)->with('v2_flash', tf('Approval setting :code created — add the Levels, then Save.', ['code' => $c->module_code]));
         })->name('approval-setting.create');
         Route::post('/approval-setting/{id}', function (Request $r, int $id) use ($open) {
             $c = FlowConfig::findOrFail($id);
@@ -1070,16 +1071,17 @@ Route::prefix('v2')->name('v2.')->group(function () {
             if (in_array($action, ['activate', 'deactivate'], true)) {
                 ApprovalSetting::setActive($c, $action === 'activate');
 
-                return $open($id)->with('v2_flash', 'Setting approval '.$c->module_code.' '.($action === 'activate' ? 'diaktifkan.' : 'dinonaktifkan (dokumen baru tidak masuk approval).'));
+                return $open($id)->with('v2_flash', $action === 'activate' ? tf('Approval setting :code activated.', ['code' => $c->module_code])
+                    : tf('Approval setting :code deactivated (new documents do not go to approval).', ['code' => $c->module_code]));
             }
             ApprovalSetting::save($c, $r->all());
 
-            return $open($id)->with('v2_flash', 'Setting approval '.$c->module_code.' tersimpan.');
+            return $open($id)->with('v2_flash', tf('Approval setting :code saved.', ['code' => $c->module_code]));
         })->whereNumber('id')->name('approval-setting.save');
         Route::post('/approval-acting', function (Request $r) {
             ApprovalSetting::saveActing($r->all());
 
-            return redirect(route('v2.screen', 'approval-acting'))->with('v2_flash', 'Daftar officer pengganti (PLT) tersimpan.');
+            return redirect(route('v2.screen', 'approval-acting'))->with('v2_flash', t('Acting officer list (PLT) saved.'));
         })->name('approval-acting.save');
     });
 
@@ -1164,7 +1166,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return $part
             ? redirect(route('v2.screen', 'prodev').'?part='.$part.'&inquiry='.$inq->id_inquiry)
-            : redirect()->route('v2.screen', 'prodev-'.strtolower($inq->inquiry_type))->withErrors(['part' => "Inquiry {$inq->inquiry_no} has no part yet."]);
+            : redirect()->route('v2.screen', 'prodev-'.strtolower($inq->inquiry_type))->withErrors(['part' => tf('Inquiry :no has no part yet.', ['no' => $inq->inquiry_no])]);
     })->whereNumber('inquiry')->middleware('module:PROD')->name('prodev.open');
 
     // ProDev workbench: panggilan server = method komponen v1 pages::production.prodev (App\Support\V2\Data\Prodev).
@@ -1187,7 +1189,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::post('/dieline', function (Request $r, int $part) {
             abort_unless(Prodev::dieline($part), 404);
             $img = ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:'.(int) (SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10) * 1024)];
-            $r->validate(['dieline.dims' => ['required', 'array'], 'artwork' => $img, 'artwork_inner' => $img], [], ['dieline.dims' => 'Dimensions']);
+            $r->validate(['dieline.dims' => ['required', 'array'], 'artwork' => $img, 'artwork_inner' => $img], [], ['dieline.dims' => t('Dimensions')]);
             $error = (new PartDieline(Auth::user()->login))->save(ProdPart::findOrFail($part), InquiryPayload::dieline($r->input('dieline')), $r->file('artwork'), $r->file('artwork_inner'));
             $back = redirect(route('v2.screen', 'prodev').'?part='.$part);
 
@@ -1207,23 +1209,23 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $doc = $r->filled('id') ? IqpInquiry::where('inquiry_type', strtoupper($type))->findOrFail((int) $r->input('id')) : null;
             $product = ProdProduct::findOrFail((int) $r->input('product_id'));
             if ($type === 'recalc') {
-                $d = $r->validate(['qty' => ['required', 'numeric', 'min:1'], 'deadline_quotation' => ['nullable', 'date']], [], ['qty' => 'Qty order']);
+                $d = $r->validate(['qty' => ['required', 'numeric', 'min:1'], 'deadline_quotation' => ['nullable', 'date']], [], ['qty' => t('Order qty')]);
                 $doc = $writer()->recalc($product, $doc, $d + ['deadline_quotation' => null]);
             } else {
                 $d = $r->validate(['revise_scope' => ['required', 'array', 'min:1'], 'revise_scope.*' => ['in:'.implode(',', array_keys(InquiryDerivedWriter::SCOPES))],
                     'revise_reason' => ['required', 'string', 'max:255'], 'design_number' => ['nullable', 'string', 'max:30'],
                     'parts.*.artwork' => ['nullable', 'image', 'max:10240'], 'parts.*.artwork_inner' => ['nullable', 'image', 'max:10240']],
-                    [], ['revise_scope' => 'Scope revisi', 'revise_reason' => 'Alasan revisi']);
+                    [], ['revise_scope' => t('Revision scope'), 'revise_reason' => t('Revision reason')]);
                 $doc = $writer()->revise($product, $doc, ['scope' => $d['revise_scope'], 'reason' => $d['revise_reason'], 'design_number' => $d['design_number'] ?? null,
                     'parts' => $r->input('parts', [])], InquiryDerivedWriter::artworks($r->file('parts', [])));
             }
             if ($r->input('action') === 'confirm') {
                 $writer()->confirm($doc);
 
-                return $open($doc)->with('v2_flash', "Inkuiri {$doc->inquiry_no} di-Confirm — dikirim ke ProDev → ProCost, form terkunci.");
+                return $open($doc)->with('v2_flash', tf('Inquiry :no confirmed — sent to ProDev → ProCost, the form is locked.', ['no' => $doc->inquiry_no]));
             }
 
-            return $open($doc)->with('v2_flash', "Tersimpan sebagai {$doc->inquiry_no} (DRAFT).");
+            return $open($doc)->with('v2_flash', tf('Saved as :no (DRAFT).', ['no' => $doc->inquiry_no]));
         })->whereIn('type', ['recalc', 'revise'])->name('save');
 
         Route::post('/{id}/delete', function (int $id) use ($guard, $writer) {
@@ -1231,16 +1233,16 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $doc = IqpInquiry::whereIn('inquiry_type', ['RECALC', 'REVISE'])->findOrFail($id);
             $writer()->delete($doc);
 
-            return redirect(route('v2.screen', $doc->inquiry_type === 'RECALC' ? 'inquiry-recalc' : 'inquiry-revise'))->with('v2_flash', "Draft {$doc->inquiry_no} dihapus.");
+            return redirect(route('v2.screen', $doc->inquiry_type === 'RECALC' ? 'inquiry-recalc' : 'inquiry-revise'))->with('v2_flash', tf('Draft :no deleted.', ['no' => $doc->inquiry_no]));
         })->whereNumber('id')->name('delete');
 
         Route::post('/{id}/cancel', function (Request $r, int $id) use ($guard, $open) {
             $guard();
             $doc = IqpInquiry::whereIn('inquiry_type', ['RECALC', 'REVISE'])->findOrFail($id);
-            $d = $r->validate(['cancel_reason' => ['required', 'string', 'max:255']], [], ['cancel_reason' => 'Alasan batal']);
+            $d = $r->validate(['cancel_reason' => ['required', 'string', 'max:255']], [], ['cancel_reason' => t('Cancel reason')]);
             (new InquiryWriter(Auth::user()->login))->cancel($doc, $d['cancel_reason']);
 
-            return $open($doc)->with('v2_flash', "Inkuiri {$doc->inquiry_no} dibatalkan.");
+            return $open($doc)->with('v2_flash', tf('Inquiry :no cancelled.', ['no' => $doc->inquiry_no]));
         })->whereNumber('id')->name('cancel');
     });
 
@@ -1270,6 +1272,16 @@ Route::prefix('v2')->name('v2.')->group(function () {
             if (MailSettings::current()->require_verified && ! MailSettings::verified(Auth::user())) {
                 return response()->json(['message' => t('Your e-mail is not verified yet. Open Profile > E-mail to verify it first:').' '.route('v2.account.email')], 422);
             }
+    // Pilihan bahasa (x-dl::lang-switch, config devlib.lang_url): disimpan ke akun user, bukan hanya cookie perangkat,
+    // supaya bahasanya ikut ke komputer lain. Daftar bahasa yang sah = sys_languages yang aktif (Devlib\Locale::languages).
+    Route::post('/lang', function (Request $r) {
+        $lang = (string) $r->input('lang');
+        abort_unless(isset(Locale::languages()[$lang]), 422);
+        Auth::user()->forceFill(['lang_code' => $lang])->save();
+
+        return response()->noContent();
+    })->name('lang');
+
             $list = fn ($k) => DocShareService::addresses($r->input($k));
             $r->merge(['to_list' => $list('to'), 'cc_list' => $list('cc'), 'bcc_list' => $list('bcc')]);
             $r->validate(['to_list' => ['required', 'array', 'min:1'], 'to_list.*' => ['email'], 'cc_list.*' => ['email'], 'bcc_list.*' => ['email'],
@@ -1292,7 +1304,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::get('/', fn () => view('v2.account-email'))->name('');
         Route::post('/send', function () {
             $u = Auth::user();
-            abort_unless($u->email && filter_var($u->email, FILTER_VALIDATE_EMAIL), 422, 'E-mail belum diisi / tidak valid.');
+            abort_unless($u->email && filter_var($u->email, FILTER_VALIDATE_EMAIL), 422, t('E-mail is not filled in / not valid.'));
             MailSettings::apply();
             $url = URL::temporarySignedRoute('v2.account.email.verify', now()->addDay(), ['id' => $u->id_user, 'hash' => sha1(strtolower($u->email))]);
             try {
@@ -1300,17 +1312,17 @@ Route::prefix('v2')->name('v2.')->group(function () {
             } catch (Throwable $e) {
                 MailSettings::notifyFailure($u->login, $u->email, mb_substr($e->getMessage(), 0, 300));
 
-                return back()->withErrors(['email' => 'Link verifikasi gagal dikirim: '.mb_substr($e->getMessage(), 0, 200)]);
+                return back()->withErrors(['email' => tf('The verification link could not be sent: :error', ['error' => mb_substr($e->getMessage(), 0, 200)])]);
             }
 
-            return back()->with('v2_flash', 'Link verifikasi dikirim ke '.$u->email.'. Buka e-mail itu dan klik tombolnya (berlaku 24 jam).');
+            return back()->with('v2_flash', tf('Verification link sent to :email. Open that e-mail and click its button (valid for 24 hours).', ['email' => $u->email]));
         })->name('.send');
         Route::get('/verify/{id}/{hash}', function (int $id, string $hash) {
             $u = Auth::user();
-            abort_unless($u->id_user === $id && hash_equals(sha1(strtolower((string) $u->email)), $hash), 403, 'Link ini untuk akun / alamat lain.');
+            abort_unless($u->id_user === $id && hash_equals(sha1(strtolower((string) $u->email)), $hash), 403, t('This link is for another account / address.'));
             $u->forceFill(['email_verified' => true, 'email_verified_at' => now()])->save();
 
-            return redirect(route('v2.account.email'))->with('v2_flash', 'E-mail '.$u->email.' terverifikasi.');
+            return redirect(route('v2.account.email'))->with('v2_flash', tf('E-mail :email verified.', ['email' => $u->email]));
         })->middleware('signed')->name('.verify');
     });
     Route::prefix('settings/mail')->name('settings.mail')->group(function () {
@@ -1324,7 +1336,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $d = $r->validate(['mailer' => ['required', 'in:env,smtp,log'], 'host' => ['nullable', 'required_if:mailer,smtp', 'string', 'max:150'],
                 'port' => ['nullable', 'integer', 'between:1,65535'], 'encryption' => ['nullable', 'in:tls,ssl'], 'username' => ['nullable', 'string', 'max:150'],
                 'password' => ['nullable', 'string', 'max:500'], 'from_address' => ['nullable', 'email', 'max:150'], 'from_name' => ['nullable', 'string', 'max:150']],
-                [], ['host' => 'SMTP host', 'from_address' => 'Alamat pengirim']);
+                [], ['host' => t('SMTP host'), 'from_address' => t('Sender address')]);
             $s = SysMailSetting::query()->first() ?? new SysMailSetting(['created_by' => Auth::user()->login]);
             $s->fill(collect($d)->except('password')->all() + ['from_user' => $r->boolean('from_user'), 'require_verified' => $r->boolean('require_verified'),
                 'updated_by' => Auth::user()->login]);
@@ -1333,18 +1345,18 @@ Route::prefix('v2')->name('v2.')->group(function () {
             }
             $s->save();
             if ($r->input('action') !== 'test') {
-                return back()->with('v2_flash', 'Setting e-mail tersimpan.');
+                return back()->with('v2_flash', t('E-mail setting saved.'));
             }
             $u = Auth::user();
-            abort_unless($u->email, 422, 'Isi e-mail akun Anda dulu (Security) untuk uji kirim.');
+            abort_unless($u->email, 422, t('Fill in the e-mail of your account first (Security) to send a test.'));
             MailSettings::apply();
             try {
-                Mail::raw('E-mail uji dari '.config('app.name').' — setting e-mail berfungsi.', fn ($m) => $m->to($u->email)->subject('E-mail uji'));
+                Mail::raw(tf('Test e-mail from :app — the e-mail setting works.', ['app' => config('app.name')]), fn ($m) => $m->to($u->email)->subject(t('Test e-mail')));
             } catch (Throwable $e) {
-                return back()->withErrors(['mail' => 'Tersimpan, tapi e-mail uji gagal: '.mb_substr($e->getMessage(), 0, 300)]);
+                return back()->withErrors(['mail' => tf('Saved, but the test e-mail failed: :error', ['error' => mb_substr($e->getMessage(), 0, 300)])]);
             }
 
-            return back()->with('v2_flash', 'Tersimpan; e-mail uji dikirim ke '.$u->email.' (mode: '.$s->mailer.').');
+            return back()->with('v2_flash', tf('Saved; test e-mail sent to :email (mode: :mode).', ['email' => $u->email, 'mode' => $s->mailer]));
         })->name('.save');
     });
 
@@ -1402,8 +1414,8 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 // Set per stage (DdtStage): 'blocked' = set menyebut kolom / tabel yang sudah dihapus -> harus dibangun ulang.
                 'stages' => array_map(fn ($m) => $m + ['blocked' => (bool) DdtStage::blocking($m)], DdtStage::sets())]);
         })->name('index');
-        Route::post('/reset', fn () => $run('restore', 'Reset selesai.'))->name('reset');
-        Route::post('/save', fn () => $run('save', 'Baseline disimpan.'))->name('save');
+        Route::post('/reset', fn () => $run('restore', t('Reset finished.')))->name('reset');
+        Route::post('/save', fn () => $run('save', t('Baseline saved.')))->name('save');
 
         // Set data dummy per stage (user 2026-10-02): tiap set punya tombol Restore sendiri.
         $stage = function (array $args, string $ok) use ($guard) {
@@ -1420,7 +1432,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         };
         Route::post('/stage/save', function (Request $r) use ($stage) {
             $d = $r->validate(['key' => ['required', 'regex:/^[a-z0-9][a-z0-9-]{0,39}$/'], 'label' => ['nullable', 'string', 'max:80'], 'note' => ['nullable', 'string', 'max:200']],
-                ['key.regex' => 'Set name: lowercase letters, digits and minus only, e.g. my-test-1.'], ['key' => 'Set name']);
+                ['key.regex' => t('Set name: lowercase letters, digits and minus only, e.g. my-test-1.')], ['key' => t('Set name')]);
 
             return $stage(['action' => 'save', 'key' => $d['key']] + array_filter(['--label' => $d['label'] ?? null, '--note' => $d['note'] ?? null]), '');
         })->name('stage.save');

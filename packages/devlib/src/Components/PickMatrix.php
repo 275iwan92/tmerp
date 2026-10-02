@@ -15,7 +15,7 @@ class PickMatrix extends DevlibComponent
         public string $name = 'pick',
         public array $columns = [],
         public array $rows = [],
-        public string $empty = 'Belum ada penawaran untuk dibandingkan.',
+        public string $empty = 'There are no quotations to compare yet.',
         public string $unit = 'PO',
         public ?string $source = null,
     ) {}
@@ -44,7 +44,7 @@ class PickMatrix extends DevlibComponent
                     <div class="dl-pick__empty">{{ $empty }}</div>
                 @else
                     <div class="dl-table-wrap"><table class="dl-table dl-pick__table">
-                        <thead><tr><th>Kebutuhan</th>@foreach ($columns as $c)<th class="num">{{ $c['label'] ?? '' }}@if (! empty($c['sub']))<small>{{ $c['sub'] }}</small>@endif</th>@endforeach<th class="num">Lewati</th></tr></thead>
+                        <thead><tr><th>{{ \Devlib\Lang::text('Requirement') }}</th>@foreach ($columns as $c)<th class="num">{{ $c['label'] ?? '' }}@if (! empty($c['sub']))<small>{{ $c['sub'] }}</small>@endif</th>@endforeach<th class="num">{{ \Devlib\Lang::text('Skip') }}</th></tr></thead>
                         <tbody>
                             @foreach ($matrix() as $r)
                                 <tr @class(['is-locked' => ! empty($r['locked'])])>

@@ -39,7 +39,7 @@ class MaintenanceCodeLookup extends DbLookup
     public function columns(): array
     {
         return [
-            ['key' => 'code_type', 'label' => 'Type', 'type' => 'select', 'options' => MntCode::TYPES, 'required' => true, 'width' => '120px'],
+            ['key' => 'code_type', 'label' => 'Type', 'type' => 'select', 'options' => array_map('t', MntCode::TYPES), 'required' => true, 'width' => '120px'],
             ['key' => 'code', 'label' => 'Code', 'required' => true, 'case' => 'uppercase', 'width' => '150px'],
             ['key' => 'name', 'label' => 'Name', 'required' => true, 'width' => '260px'],
             ['key' => 'machine_type', 'label' => 'Machine Type (blank = all)', 'width' => '180px'],

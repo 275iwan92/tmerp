@@ -56,7 +56,7 @@
     @else
     {{-- 2. Pilihan periode --}}
     <div class="dl-dash__bar">
-        <h2>{{ $d['kpi_title'] ?? 'KPI Saya' }}</h2>
+        <h2>{{ $d['kpi_title'] ?? \Devlib\Lang::text('My KPIs') }}</h2>
         <div class="dl-dash__seg" role="tablist">
             @foreach ($periods as $key => $label)
                 <button type="button" class="{{ $key === $period() ? 'is-active' : '' }}" data-dash-period="{{ $key }}">{{ $label }}</button>
@@ -81,7 +81,7 @@
                     <div class="dl-dash__trend">
                         <x-dl::chart type="combo" :title="$t['title']" :subtitle="$t['caption'] ?? null" :format="$t['format'] ?? 'number'" height="400px"
                             :labels="$t['labels']" :source="$t['source'] ?? null" :series="[
-                                ['name' => 'Pencapaian', 'data' => $t['actual'], 'type' => 'bar', 'tone' => 'accent'],
+                                ['name' => \Devlib\Lang::text('Actual'), 'data' => $t['actual'], 'type' => 'bar', 'tone' => 'accent'],
                                 ['name' => 'Target', 'data' => $t['target'], 'type' => 'line', 'tone' => 'danger'],
                             ]" />
                         @if (! empty($t['summary']))
@@ -109,7 +109,7 @@
                             @endforeach
                         </div>
                         <table class="dl-table dl-dash__mx">
-                            <thead><tr><th>{{ $act['segment_label'] ?? 'Sasaran' }}</th>@foreach ($act['types'] as $ty)<th class="num">{{ $ty['label'] }}</th>@endforeach<th class="num">Total</th></tr></thead>
+                            <thead><tr><th>{{ $act['segment_label'] ?? \Devlib\Lang::text('Target group') }}</th>@foreach ($act['types'] as $ty)<th class="num">{{ $ty['label'] }}</th>@endforeach<th class="num">Total</th></tr></thead>
                             <tbody>
                                 @foreach ($act['segments'] as $sg)
                                     @php($row = $a['matrix'][$sg['key']] ?? [])
@@ -138,7 +138,7 @@
                                 <span class="dl-dash__tgicon dl-dash--{{ $r['tone'] ?? 'accent' }}"><i class="fa-solid {{ \Devlib\Icon::fa($r['icon'] ?? 'fa-bullseye') }}"></i></span>
                                 <div class="dl-dash__tgbody">
                                     <div class="dl-dash__tghead"><b>{{ $r['label'] }}</b><x-dl::badge :tone="$tone" :label="\Devlib\Locale::percent($pct, 0)" /></div>
-                                    <small>{{ \Devlib\Components\Dashboard::fmt($r['actual'], $r['format'] ?? 'number') }} dari target {{ \Devlib\Components\Dashboard::fmt($r['target'], $r['format'] ?? 'number') }}@if (! empty($r['sub'])) · {{ $r['sub'] }}@endif</small>
+                                    <small>{{ \Devlib\Components\Dashboard::fmt($r['actual'], $r['format'] ?? 'number') }} {{ \Devlib\Lang::text('of target') }} {{ \Devlib\Components\Dashboard::fmt($r['target'], $r['format'] ?? 'number') }}@if (! empty($r['sub'])) · {{ $r['sub'] }}@endif</small>
                                     <x-dl::progress :value="min(100, $pct)" :tone="$tone" />
                                 </div>
                             </div>
@@ -153,12 +153,12 @@
                 <div class="dl-dash__row dl-dash__row--half">
                     @if ($pl)
                         <x-dl::chart type="funnel" :title="$pl['title']" :subtitle="$pl['caption'] ?? null" :format="$pl['format'] ?? 'number'" height="260px"
-                            :labels="$pl['labels']" :series="[['name' => $pl['series'] ?? 'Nilai', 'data' => $pl['values']]]" :source="$pl['source'] ?? null" />
+                            :labels="$pl['labels']" :series="[['name' => $pl['series'] ?? \Devlib\Lang::text('Value'), 'data' => $pl['values']]]" :source="$pl['source'] ?? null" />
                     @endif
                     @if ($rk)
                         <x-dl::card :title="$rk['title']" :description="$rk['caption'] ?? null" icon="fa-ranking-star">
                             <div class="dl-dash__scroll"><table class="dl-table dl-dash__rk">
-                                <thead><tr><th>{{ $rk['name_label'] ?? 'Nama' }}</th><th class="num">Target</th><th class="num">Pencapaian</th><th>%</th></tr></thead>
+                                <thead><tr><th>{{ $rk['name_label'] ?? \Devlib\Lang::text('Name') }}</th><th class="num">Target</th><th class="num">{{ \Devlib\Lang::text('Actual') }}</th><th>%</th></tr></thead>
                                 <tbody>
                                     @foreach ($rk['rows'] as $r)
                                         @php($pct = $r['target'] ? $r['actual'] / $r['target'] * 100 : 0)
@@ -201,7 +201,7 @@
                 </x-dl::card>
             @endif
             @if (! empty($d['agenda']))
-                <x-dl::card title="Today's Agenda" :description="\Devlib\Lang::raw(count($d['agenda']).' kegiatan')" icon="fa-calendar-day" class="dl-dash__agenda">
+                <x-dl::card title="Today's Agenda" :description="\Devlib\Lang::raw(count($d['agenda'])).' activities'" icon="fa-calendar-day" class="dl-dash__agenda">
                     <ol class="dl-dash__ag">
                         @foreach ($d['agenda'] as $g)
                             <li class="{{ ($g['done'] ?? false) ? 'is-done' : '' }} dl-dash--{{ $g['tone'] ?? 'accent' }}">
@@ -219,7 +219,7 @@
     @if (! empty($d['quotes']))
         <div class="dl-dash__quote">
             <x-dl::quote :quotes="$d['quotes']" order="day" />
-            <div class="dl-dash__doy"><b data-dash-doy>—</b><small>dari {{ count($d['quotes']) >= 366 ? 365 : count($d['quotes']) }}</small></div>
+            <div class="dl-dash__doy"><b data-dash-doy>—</b><small>{{ \Devlib\Lang::text('of') }} {{ count($d['quotes']) >= 366 ? 365 : count($d['quotes']) }}</small></div>
         </div>
     @endif
 
@@ -229,14 +229,14 @@
     @if (! empty($d['jobdesc']))
         <x-dl::modal :id="$id.'-jd'" :title="'Job Description · '.\Devlib\Lang::raw($d['jobdesc']['title'] ?? '')" icon="fa-briefcase" size="lg">
             <div class="dl-dash__doc">{!! $d['jobdesc']['html'] !!}</div>
-            <x-slot:footer><small class="dl-dash__upd">Diperbarui {{ $d['jobdesc']['updated'] ?? '-' }}</small><x-dl::button preset="close" data-dl-close-modal /></x-slot:footer>
+            <x-slot:footer><small class="dl-dash__upd">{{ \Devlib\Lang::text('Last updated') }} {{ $d['jobdesc']['updated'] ?? '-' }}</small><x-dl::button preset="close" data-dl-close-modal /></x-slot:footer>
         </x-dl::modal>
     @endif
     @if (! empty($d['sops']))
         <x-dl::modal :id="$id.'-sop'" :title="'SOP · '.\Devlib\Lang::raw($u['position'] ?? '')" icon="fa-book-open" size="lg">
             @foreach ($d['sops'] as $i => $s)
                 <x-dl::accordion :title="\Devlib\Lang::raw($s['code'].' · '.$s['title'])" :badge="'Rev. '.$s['revision']" :open="$i === 0" icon="fa-file-lines">
-                    <div class="dl-dash__doc"><p class="dl-dash__upd">Berlaku sejak {{ $s['effective'] }}</p>{!! $s['html'] !!}</div>
+                    <div class="dl-dash__doc"><p class="dl-dash__upd">{{ \Devlib\Lang::text('Effective from') }} {{ $s['effective'] }}</p>{!! $s['html'] !!}</div>
                 </x-dl::accordion>
             @endforeach
             <x-slot:footer><x-dl::button preset="close" data-dl-close-modal /></x-slot:footer>

@@ -86,7 +86,7 @@ class HelpCenterReport extends DbGrid
 
         return [
             'title' => $m->title, 'type' => SysHelpTopic::TYPES[$m->topic_type] ?? $m->topic_type,
-            'module' => $this->modules[$m->module_code] ?? 'General', 'purpose' => $help($m->purpose), 'keywords' => $m->keywords,
+            'module' => $this->modules[$m->module_code] ?? t('General'), 'purpose' => $help($m->purpose), 'keywords' => $m->keywords,
             'lines' => $m->lines->map(fn (SysHelpLine $l) => [
                 'kind' => $l->line_type === SysHelpLine::STEP ? Dictionary::t('How to use') : Dictionary::t('Field'),
                 'field' => $l->line_type === SysHelpLine::STEP ? (string) ($m->lines->where('line_type', SysHelpLine::STEP)->values()->search($l) + 1) : Dictionary::t($l->field_label),

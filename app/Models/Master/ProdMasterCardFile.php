@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProdMasterCardFile extends Model
 {
-    public const KINDS = ['SOURCE' => 'File Excel', 'PHOTO' => 'Foto kartu', 'PROOF' => 'Proof', 'CUT_PLAN' => 'Rencana potong', 'ARTWORK' => 'Artwork part'];
+    public const KINDS = ['SOURCE' => 'Excel File', 'PHOTO' => 'Card Photo', 'PROOF' => 'Proof', 'CUT_PLAN' => 'Cutting Plan', 'ARTWORK' => 'Part Artwork'];
 
     protected $connection = 'tm2mst';
 

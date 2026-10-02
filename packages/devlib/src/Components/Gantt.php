@@ -22,8 +22,8 @@ class Gantt extends DevlibComponent
         public float $idleHours = 2,
         public int $unscheduled = 0,
         public bool $simulation = true,
-        public ?string $submitLabel = 'Submit ke Master Schedule',
-        public string $resourceLabel = 'Mesin / Crew',
+        public ?string $submitLabel = 'Submit to Master Schedule',
+        public string $resourceLabel = 'Machine / Crew',
         public ?string $source = null,
     ) {}
 
@@ -40,7 +40,7 @@ class Gantt extends DevlibComponent
     public function config(): array
     {
         return ['rows' => $this->rows, 'tasks' => $this->tasks, 'categories' => (object) $this->categories, 'start' => $this->start, 'end' => $this->end,
-            'px' => $this->pxPerHour, 'snap' => $this->snap, 'idle' => $this->idleHours, 'unscheduled' => $this->unscheduled, 'resourceLabel' => $this->resourceLabel];
+            'px' => $this->pxPerHour, 'snap' => $this->snap, 'idle' => $this->idleHours, 'unscheduled' => $this->unscheduled, 'resourceLabel' => \Devlib\Lang::text($this->resourceLabel)];
     }
 
     public function render()
@@ -48,10 +48,10 @@ class Gantt extends DevlibComponent
         return <<<'BLADE'
             <div {{ $attributes->class('dl-gantt') }} {!! $dl() !!} data-dl-gantt data-config="{{ json_encode($config()) }}" data-mode="{{ $simulation ? 'sim' : 'live' }}">
                 <div class="dl-gantt__bar">
-                    <div class="dl-segment" data-g2-mode><button type="button" class="dl-segment__opt {{ $simulation ? 'is-active' : '' }}" data-value="sim">● Simulasi</button><button type="button" class="dl-segment__opt {{ $simulation ? '' : 'is-active' }}" data-value="live">○ Live</button></div>
+                    <div class="dl-segment" data-g2-mode><button type="button" class="dl-segment__opt {{ $simulation ? 'is-active' : '' }}" data-value="sim">● {{ \Devlib\Lang::text('Simulation') }}</button><button type="button" class="dl-segment__opt {{ $simulation ? '' : 'is-active' }}" data-value="live">○ Live</button></div>
                     <span class="dl-gantt__spacer"></span>
-                    <x-dl::field.select name="gantt_resource" :options="['' => 'Semua Resource'] + collect($rows)->pluck('label', 'key')->all()" placeholder="All Resources" />
-                    <x-dl::field.select name="gantt_process" :options="['' => 'Semua Proses'] + collect($categories)->map(fn ($c) => $c['label'])->all()" placeholder="All Processes" />
+                    <x-dl::field.select name="gantt_resource" :options="['' => \Devlib\Lang::text('All Resources')] + collect($rows)->pluck('label', 'key')->all()" placeholder="All Resources" />
+                    <x-dl::field.select name="gantt_process" :options="['' => \Devlib\Lang::text('All Processes')] + collect($categories)->map(fn ($c) => $c['label'])->all()" placeholder="All Processes" />
                     {{ $actions ?? '' }}
                     @if ($submitLabel)<x-dl::button preset="submit" :label="$submitLabel" data-g2-submit />@endif
                 </div>
@@ -59,7 +59,7 @@ class Gantt extends DevlibComponent
                 <div class="dl-gantt__legend" data-g2-legend></div>
                 <div class="dl-grid__chips" data-g2-chips hidden></div>
                 <div class="dl-gantt__wrap"><div class="dl-gantt__board" data-g2-board></div></div>
-                <p class="dl-gantt__help">Drag blok = ubah waktu mulai · tarik tepi kanan = ubah durasi · klik = detail singkat · klik 2x = ubah resource/proses. <span data-g2-modehelp></span></p>
+                <p class="dl-gantt__help">{{ \Devlib\Lang::text('Drag a block = change the start time · drag the right edge = change the duration · click = short details · double-click = change the resource/process.') }} <span data-g2-modehelp></span></p>
             </div>
             BLADE;
     }

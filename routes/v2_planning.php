@@ -26,13 +26,13 @@ Route::prefix('v2/planning')->name('v2.planning.')->middleware('module:PROD')->g
         $b = RmBooking::where('co_id', $co)->where('stat_cancel', 0)->first();
         $msg = match ($r->input('action')) {
             'confirm' => (function () use ($engine, $b) {
-                abort_unless($b, 422, 'Recalculate first.');
+                abort_unless($b, 422, t('Recalculate first.'));
                 $engine->confirm($b);
 
                 return 'Booking confirmed: stock is locked for this order.';
             })(),
             'unlock' => (function () use ($engine, $b) {
-                abort_unless($b?->stat_confirm, 422, 'Booking is not confirmed.');
+                abort_unless($b?->stat_confirm, 422, t('Booking is not confirmed.'));
                 $engine->unlock($b);
 
                 return 'Booking is back to Draft and recalculated.';
@@ -45,9 +45,9 @@ Route::prefix('v2/planning')->name('v2.planning.')->middleware('module:PROD')->g
     })->name('booking');
 
     Route::post('/pick/{co}', function (Request $r, int $co) use ($booking) {
-        $d = $r->validate(['line_id' => ['required', 'integer'], 'material_id' => ['required', 'integer', 'exists:tm2mst.mat_raw,material_id']], [], ['material_id' => 'Stock Item', 'line_id' => 'Line']);
+        $d = $r->validate(['line_id' => ['required', 'integer'], 'material_id' => ['required', 'integer', 'exists:tm2mst.mat_raw,material_id']], [], ['material_id' => t('Stock Item'), 'line_id' => t('Line')]);
         $line = RmBookingD::where('booking_detail_id', $d['line_id'])->where('co_id', $co)->firstOrFail();
-        abort_if(RmBooking::whereKey($line->booking_id)->value('stat_confirm'), 422, 'Booking is confirmed; use Back to Draft first.');
+        abort_if(RmBooking::whereKey($line->booking_id)->value('stat_confirm'), 422, t('Booking is confirmed; use Back to Draft first.'));
         MaterialPlanning::engine()->pick($line, (int) $d['material_id']);
         MaterialPlanning::changed();
 
@@ -55,7 +55,7 @@ Route::prefix('v2/planning')->name('v2.planning.')->middleware('module:PROD')->g
     })->name('pick');
 
     Route::post('/create-pr', function (Request $r) {
-        $d = $r->validate(['material_ids' => ['required', 'array', 'min:1'], 'material_ids.*' => ['integer']], [], ['material_ids' => 'Short materials']);
+        $d = $r->validate(['material_ids' => ['required', 'array', 'min:1'], 'material_ids.*' => ['integer']], [], ['material_ids' => t('Short materials')]);
         $made = MaterialPlanning::createPr($d['material_ids']);
 
         return redirect(route('v2.screen', 'purchase-requisition').'?id='.$made[0]->pr_id)

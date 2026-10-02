@@ -27,7 +27,7 @@ final class PettyCashService
     public static function account(string $code): int
     {
         return (int) (DB::connection('tm2acc')->table('fin_account')->where('account_code', $code)->value('account_id')
-            ?? throw new InvalidArgumentException("Akun COA {$code} belum ada."));
+            ?? throw new InvalidArgumentException(tf('COA account :code does not exist yet.', ['code' => $code])));
     }
 
     public static function advanceOf(PoOrder $po): ?FinPettyCashTx
@@ -56,14 +56,14 @@ final class PettyCashService
     public static function advance(PoOrder $po, float $amount, string $receiver, string $login): FinPettyCashTx
     {
         if (self::nextStep($po) !== 'ADVANCE') {
-            throw new InvalidArgumentException('PO ini tidak sedang menunggu kasbon (harus PO Kontan mode Kasbon, Approved, belum diambil).');
+            throw new InvalidArgumentException(t('This PO is not waiting for a cash advance (it must be a Cash PO in Cash Advance mode, Approved, not yet taken).'));
         }
         $petty = self::fund($po);
         if ($amount <= 0) {
-            throw new InvalidArgumentException('Nilai kasbon harus > 0.');
+            throw new InvalidArgumentException(t('The cash advance amount must be > 0.'));
         }
         if ($amount > $petty->balance()) {
-            throw new InvalidArgumentException('Saldo kas kecil tidak cukup (saldo Rp '.number_format($petty->balance(), 0, ',', '.').') — isi ulang dulu.');
+            throw new InvalidArgumentException(tf('The petty cash balance is not enough (balance Rp :balance) — top up first.', ['balance' => number_format($petty->balance(), 0, ',', '.')]));
         }
 
         return self::record($petty, $po, 'ADVANCE', -$amount, ['advance_amount' => $amount, 'receiver_name' => $receiver], $login, "Kasbon PO Kontan {$po->doc_no}", [
@@ -77,7 +77,7 @@ final class PettyCashService
     {
         $step = self::nextStep($po);
         if (! in_array($step, ['SETTLE', 'REIMBURSE'], true)) {
-            throw new InvalidArgumentException('PO ini tidak sedang menunggu pertanggungjawaban / reimburse.');
+            throw new InvalidArgumentException(t('This PO is not waiting for a settlement / reimbursement.'));
         }
         $petty = self::fund($po);
         $po->load('lines');
@@ -86,7 +86,7 @@ final class PettyCashService
         foreach ($po->lines as $line) {
             $value = round((float) ($nota[$line->po_line_id] ?? 0), 2);
             if ($value <= 0) {
-                throw new InvalidArgumentException("Isi nilai nota baris {$line->line_no} ({$line->i_description}).");
+                throw new InvalidArgumentException(tf('Fill in the receipt amount of line :line (:item).', ['line' => $line->line_no, 'item' => $line->i_description]));
             }
             $accountId = self::debitAccount($line);
             $debits[$accountId] = ($debits[$accountId] ?? 0) + $value;
@@ -96,7 +96,7 @@ final class PettyCashService
         $advance = $step === 'SETTLE' ? (float) self::advanceOf($po)->advance_amount : 0.0;
         $cashEffect = $step === 'SETTLE' ? $advance - $actual : -$actual;
         if ($cashEffect < 0 && -$cashEffect > $petty->balance()) {
-            throw new InvalidArgumentException('Saldo kas kecil tidak cukup untuk membayar Rp '.number_format(-$cashEffect, 0, ',', '.').' — isi ulang dulu.');
+            throw new InvalidArgumentException(tf('The petty cash balance is not enough to pay Rp :amount — top up first.', ['amount' => number_format(-$cashEffect, 0, ',', '.')]));
         }
 
         $lines = [];
@@ -134,7 +134,7 @@ final class PettyCashService
     public static function topup(FinPettyCash $petty, float $amount, int $bankAccountId, string $date, string $login, string $notes = ''): FinPettyCashTx
     {
         if ($amount <= 0) {
-            throw new InvalidArgumentException('Nilai isi ulang harus > 0.');
+            throw new InvalidArgumentException(t('The top-up amount must be > 0.'));
         }
 
         return self::record($petty, null, 'TOPUP', $amount, ['counter_account_id' => $bankAccountId, 'notes' => $notes ?: null, 'tx_date' => $date], $login,
@@ -150,24 +150,24 @@ final class PettyCashService
     public static function cancel(FinPettyCashTx $tx, string $reason, string $login): void
     {
         if ($tx->status !== 'POSTED') {
-            throw new InvalidArgumentException('Transaksi ini sudah dibatalkan.');
+            throw new InvalidArgumentException(t('This transaction is already cancelled.'));
         }
         if (mb_strlen(trim($reason)) < 10) {
-            throw new InvalidArgumentException('Alasan pembatalan wajib diisi, minimal 10 karakter.');
+            throw new InvalidArgumentException(t('The cancellation reason is required, at least 10 characters.'));
         }
         $petty = $tx->pettyCash;
         if ((float) $tx->cash_effect > 0 && $petty->balance() - (float) $tx->cash_effect < -0.001) {
-            throw new InvalidArgumentException('Saldo kas kecil tidak cukup untuk membatalkan transaksi ini (uangnya sudah terpakai).');
+            throw new InvalidArgumentException(t('The petty cash balance is not enough to cancel this transaction (the money has been used).'));
         }
         $po = $tx->po_id ? PoOrder::find($tx->po_id) : null;
         if ($tx->tx_type === 'ADVANCE' && $po && self::settlementOf($po)) {
-            throw new InvalidArgumentException('Kasbon ini sudah dipertanggungjawabkan — batalkan pertanggungjawabannya dulu.');
+            throw new InvalidArgumentException(t('This cash advance has already been settled — cancel its settlement first.'));
         }
         if (in_array($tx->tx_type, ['SETTLE', 'REIMBURSE'], true) && $po) {
             $received = DB::connection('tm2pur')->table('pv_line')->join('pv_receipt', 'pv_receipt.pv_id', '=', 'pv_line.pv_id')
                 ->where('pv_line.c_po_id', $po->po_id)->where('pv_receipt.status', 'POSTED')->value('pv_receipt.doc_no');
             if ($received) {
-                throw new InvalidArgumentException("Barang PO ini sudah dicatat di {$received} — batalkan SPB itu dulu.");
+                throw new InvalidArgumentException(tf('The goods of this PO are already recorded in :no — cancel that SPB first.', ['no' => $received]));
             }
         }
 
@@ -194,17 +194,17 @@ final class PettyCashService
             if ($grIr) {
                 return (int) $grIr;
             }
-            throw new InvalidArgumentException("Item baris {$line->line_no} belum punya akun GR/IR (Master Bahan / Kategori).");
+            throw new InvalidArgumentException(tf('The item on line :line has no GR/IR account yet (Material Master / Category).', ['line' => $line->line_no]));
         }
         if ($line->i_coa_account_id) {
             return (int) $line->i_coa_account_id;
         }
-        throw new InvalidArgumentException("Baris {$line->line_no} ({$line->i_description}) non-stok: pilih akun biayanya di PO.");
+        throw new InvalidArgumentException(tf('Line :line (:item) is non-stock: choose its expense account on the PO.', ['line' => $line->line_no, 'item' => $line->i_description]));
     }
 
     private static function fund(PoOrder $po): FinPettyCash
     {
-        return FinPettyCash::find($po->i_petty_cash_id) ?? throw new InvalidArgumentException('PO Kontan belum memilih kas kecil.');
+        return FinPettyCash::find($po->i_petty_cash_id) ?? throw new InvalidArgumentException(t('The Cash PO has not chosen a petty cash fund yet.'));
     }
 
     private static function record(FinPettyCash $petty, ?PoOrder $po, string $type, float $cashEffect, array $extra, string $login, string $description, array $journal): FinPettyCashTx

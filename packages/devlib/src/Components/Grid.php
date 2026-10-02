@@ -2,6 +2,8 @@
 
 namespace Devlib\Components;
 
+use Devlib\Lang;
+
 // Grid induk (griduistandard + perilaku tabel Filament/PowerGrid yang dipilih user).
 // Layar cukup MENDEKLARASIKAN; semua perilaku ada di sini + devlib.js (initGrid):
 //   cari semua kolom tampil, sort (panah selalu tampil), Filters + chip, Tab, kotak
@@ -64,7 +66,7 @@ class Grid extends DevlibComponent
         public array $cards = [],
         public array $quickAdd = [],
         public ?string $groupBy = null,
-        public string $search = 'Cari...',
+        public string $search = 'Search...',
         public ?string $source = null,
         public ?string $openUrl = null,
         public ?string $newUrl = null,
@@ -80,6 +82,25 @@ class Grid extends DevlibComponent
             $this->quickAdd = [];
         }
         $this->perPage ??= $this->isReport() ? 100 : 25;
+    }
+
+    // Prop detail (tabel anak) bukan daftar rata, jadi tidak tercakup TEXT_LISTS: judul + label kolomnya diterjemahkan di sini,
+    // sama seperti columns (layar menulis English). {kolom} di judul tetap diisi grid.js dari baris induk.
+    private bool $detailTranslated = false;
+
+    protected function translateTexts(): void
+    {
+        parent::translateTexts();
+        if ($this->detailTranslated || ! $this->detail) {
+            return;
+        }
+        $this->detailTranslated = true;
+        if (is_string($this->detail['title'] ?? null)) {
+            $this->detail['title'] = Lang::text($this->detail['title']);
+        }
+        if (is_array($this->detail['columns'] ?? null)) {
+            $this->detail['columns'] = array_map(fn ($c) => is_array($c) && is_string($c['label'] ?? null) ? array_replace($c, ['label' => Lang::text($c['label'])]) : $c, $this->detail['columns']);
+        }
     }
 
     public function isReport(): bool

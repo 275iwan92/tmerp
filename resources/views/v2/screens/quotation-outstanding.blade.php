@@ -9,14 +9,14 @@
     :columns="[
         ['key' => 'customer', 'label' => 'Customer', 'type' => 'identity', 'code' => 'no', 'avatar' => false],
         ['key' => 'sales', 'label' => 'Sales PIC'],
-        ['key' => 'date', 'label' => 'Terbit', 'type' => 'date'],
+        ['key' => 'date', 'label' => 'Issued', 'type' => 'date'],
         ['key' => 'age', 'label' => t('Age (days)'), 'type' => 'number'],
         ['key' => 'valid', 'label' => 'Valid Until', 'type' => 'date'],
-        ['key' => 'expired', 'label' => 'Validity', 'type' => 'badge', 'tones' => ['BERLAKU' => 'success', 'KEDALUWARSA' => 'danger']],
+        ['key' => 'expired', 'label' => 'Validity', 'type' => 'badge', 'tones' => [t('VALID') => 'success', t('EXPIRED') => 'danger']],
         ['key' => 'total', 'label' => 'Grand total', 'type' => 'money', 'sum' => true],
         ['key' => 'followups', 'label' => 'Follow-up', 'type' => 'number'],
-        ['key' => 'last_followup', 'label' => 'Follow-up terakhir', 'type' => 'date'],
-        ['key' => 'next', 'label' => 'Tindak lanjut berikut', 'type' => 'date'],
+        ['key' => 'last_followup', 'label' => 'Last follow-up', 'type' => 'date'],
+        ['key' => 'next', 'label' => 'Upcoming follow-up', 'type' => 'date'],
     ]"
-    :stats="[['label' => t('All open')], ['label' => 'Kedaluwarsa', 'where' => ['expired' => 'KEDALUWARSA'], 'tone' => 'danger'], ['label' => t('Not followed up'), 'where' => ['followups' => 0], 'tone' => 'warn']]"
-    :filters="['sales' => 'Sales PIC', 'customer' => 'Customer', 'expired' => 'Masa berlaku']" />
+    :stats="[['label' => t('All open')], ['label' => 'Expired', 'where' => ['expired' => t('EXPIRED')], 'tone' => 'danger'], ['label' => t('Not followed up'), 'where' => ['followups' => 0], 'tone' => 'warn']]"
+    :filters="['sales' => 'Sales PIC', 'customer' => 'Customer', 'expired' => 'Validity']" />

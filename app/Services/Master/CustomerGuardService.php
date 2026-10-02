@@ -19,12 +19,12 @@ class CustomerGuardService
 
         $productCount = ProdProduct::where('customer_id', $customerId)->count();
         if ($productCount > 0) {
-            $reasons[] = "{$productCount} produk";
+            $reasons[] = tf(':n products', ['n' => $productCount]);
         }
 
         $inquiryCount = IqpInquiry::where('customer_id', $customerId)->count();
         if ($inquiryCount > 0) {
-            $reasons[] = "{$inquiryCount} inquiry";
+            $reasons[] = tf(':n inquiries', ['n' => $inquiryCount]);
         }
 
         return $reasons;

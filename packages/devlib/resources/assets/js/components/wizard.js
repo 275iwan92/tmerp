@@ -10,7 +10,7 @@
       this.bar = $(this.el, '[data-w-steps]');
       this.at = 0;
       this.reached = 0;
-      this.bar.innerHTML = this.steps.map((s, i) => `<li data-w-go="${i}"><span class="dl-wizard__num">${s.dataset.icon ? `<i class="fa-solid ${esc(s.dataset.icon)}"></i>` : i + 1}</span><span class="dl-wizard__lbl"><small>Langkah ${i + 1}</small>${esc(s.dataset.title)}</span></li>`).join('');
+      this.bar.innerHTML = this.steps.map((s, i) => `<li data-w-go="${i}"><span class="dl-wizard__num">${s.dataset.icon ? `<i class="fa-solid ${esc(s.dataset.icon)}"></i>` : i + 1}</span><span class="dl-wizard__lbl"><small>${esc(Tf('w_step', {n: i + 1}))}</small>${esc(s.dataset.title)}</span></li>`).join('');
       this.el.addEventListener('input', this.clearOk, true);this.el.addEventListener('change', this.clearOk, true);
       this.el.addEventListener('click', e => {
         if (e.target.closest('[data-w-next]')) { if (this.check(this.at)) this.go(this.at + 1); return; }

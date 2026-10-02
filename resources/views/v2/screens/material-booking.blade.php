@@ -16,11 +16,11 @@
     abort_if(request('id') && ! $co, 404);
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $co)
-    <x-dl::alert tone="info" :message="str_replace(':n', Locale::number((float) \App\Models\Sys\SysConstant::number('BOOKING_NEED_WORKDAYS', 3), 0), t('Material needs are shown from the moment a Customer Order is entered. Stock is reserved only after the order is Confirmed and the booking is confirmed (locked) here. Material must be ready by the due date, or at the latest :n working days after the CO date.'))" />
+    <x-dl::alert tone="info" :message="raw(t('Material needs are shown from the moment a Customer Order is entered. Stock is reserved only after the order is Confirmed and the booking is confirmed (locked) here.').' '.tf('Material must be ready by the due date, or at the latest :n working days after the CO date.', ['n' => Locale::number((float) \App\Models\Sys\SysConstant::number('BOOKING_NEED_WORKDAYS', 3), 0)]))" />
     <x-dl::action-bar>
         <x-dl::action-form action="{{ route('v2.planning.run-all') }}"><x-dl::button type="submit" variant="secondary" icon="fa-rotate" :label="t('Recalculate All')" /></x-dl::action-form>
         <x-dl::button variant="secondary" icon="fa-chart-gantt" :label="t('Material Planning (MRP)')" :href="route('v2.screen', 'material-planning')" />
@@ -102,7 +102,7 @@
         <x-dl::action-form action="{{ route('v2.planning.pick', $co->id_order) }}">
             <x-dl::card :title="t('Pick Item')" icon="fa-hand-pointer" :description="t('Master Product only has the specification for these lines. Choose the stock item to book; the choice is kept on this booking (Master Product is not changed).')">
                 <x-dl::form.row cols="2">
-                    <x-dl::field.select name="line_id" label="Line" required :options="$pickable->mapWithKeys(fn ($d) => [$d->booking_detail_id => $d->seq_no.' · '.$d->material_role.' · '.($d->spec_text ?: 'no specification').' · '.Locale::number((float) $d->qty_need, 2).' '.$d->uom_code])->all()"
+                    <x-dl::field.select name="line_id" label="Line" required :options="$pickable->mapWithKeys(fn ($d) => [$d->booking_detail_id => $d->seq_no.' · '.$d->material_role.' · '.($d->spec_text ?: t('no specification')).' · '.Locale::number((float) $d->qty_need, 2).' '.$d->uom_code])->all()"
                         :source="Src::of('tm2inv.rm_booking_d (line_status = NEED_ITEM)')" />
                     <x-dl::field.lookup name="material_id" lookup="material" label="Stock Item" required placeholder="Type at least 2 letters of the item name / code..." :source="Src::of('tm2mst.mat_raw')" />
                 </x-dl::form.row>

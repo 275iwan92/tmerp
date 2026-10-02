@@ -3,6 +3,34 @@
 
 ---
 
+## 2026-10-03 -- Sapuan multi-bahasa: bahasa ikut akun, semua teks v2 lewat kamus, kamus tanpa teks kosong
+
+User: "Make sure multi language sudah jalan dengan sempurna" ... "make sure multi language ready on mockup.test and tmerp.test,
+make sure connect to database and tables". Rincian + sisa keputusan: `docs/md_for_systems/multilanguage_status.md`.
+
+- **Temuan:** uji render 366 layar v2 dua bahasa (alat baru `tools/multilanguage/`) — mode English masih menampilkan teks
+  Indonesia dari sekitar 1.600 baris kode, bahasa mengikuti cookie komputer (bukan akun), memilih bendera tidak memuat ulang
+  halaman, pesan validasi selalu English, label menu tidak diterjemahkan, kamus punya 243 (ddt) / 22 (tm2) teks kosong.
+- **Bahasa ikut akun:** `Locale::langUsing` -> `sec_user.lang_code`; `x-dl::lang-switch` dari `sys_languages`, simpan lewat
+  `POST /v2/lang` lalu muat ulang (bertanya bila ada tab belum di-Save); locale Laravel disamakan.
+- **Pesan:** helper `tf()`; flash / error / abort / JSON di `routes/v2*.php`, kelas Data dan service diterjemahkan di tempat
+  dibuat, layar menampilkan teks jadi (`raw()`). `lang/en` + `lang/id` untuk pesan validasi.
+- **Teks:** layar v2, `app/Support/V2`, DevLib (333 entri `Devlib\Lang`), mockup-parts PHP + JS, service -> English di kode;
+  3.026 pasangan English => teks Indonesia lama (`database/data/dictionary_ui_2026_10_02_sweep.json`). Zona beku: teks saja.
+- **Menu:** 54 label `sys_app_menu` Indonesia -> English + kamus; `AppMenu::label()` dan breadcrumb lewat kamus.
+- **Kamus:** ddt dan tm2 kini 0 teks `ui` / `help` tanpa terjemahan Indonesia; 274 baris basi dihapus (termasuk `Tujuan`,
+  `ERP TM`, `TELASIH MAKMUR`); teks hasil terjemahan DevLib tidak lagi tercatat sebagai sumber baru.
+- **Penjaga:** `Dictionary::looksIndonesian()` + `indonesian_words.php` (2.100 kata); ratchet `id_label` 0,
+  `data_in_text_prop` 0, `js_id_text` 65 (tabel dua bahasa `core.js`). Test baru `LanguageAccountTest` (6).
+- **Model:** peta label mesin / downtime / ACC / master card / follow-up -> English, layar v1-nya memakai `t()`.
+- **Diarsipkan:** `app/Support/V2/DemoData.php` (tidak dirujuk) -> `tmerp_unused`.
+- **Migrasi** `2026_10_02_000300` .. `000305` jalan di tm2sys dan ddtsys (`--path`). Koneksi dan tabel bahasa kedua situs dicek
+  (`tools/multilanguage/db_check.php`).
+- **Bukti:** snapshot sebelum / sesudah 361 layar: mode English kehilangan 455 teks Indonesia tanpa teks Indonesia baru dari
+  kode; mode Indonesia tidak berubah kecuali tombol / badge / status (selalu English) dan label yang dulu English kini Indonesia.
+
+---
+
 ## 2026-10-02 -- Laporan stok semua kelas: Stock Card, Recapitulation, Summary, Opname, Loss & Gain, Stock in Inspection
 
 User: "build all reports related with inventory movement, stock card and other reports" ... "stockcard, summary all stocks,

@@ -125,18 +125,18 @@ class MenuSetupLookup extends DbLookup
             foreach ($changed as $i => $in) {
                 $row = is_numeric($in['id'] ?? null) ? SysAppMenu::query()->find((int) $in['id']) : null;
                 if (! $row) {
-                    throw ValidationException::withMessages(['row' => 'Baris '.($i + 1).': New menu rows are added by migration, not here. Use Undo to remove the row.']);
+                    throw ValidationException::withMessages(['row' => tf('Row :n: :error', ['n' => $i + 1, 'error' => t('New menu rows are added by migration, not here. Use Undo to remove the row.')])]);
                 }
                 $v = Validator::make($in, [
                     'label' => ['required', 'string', 'max:100'], 'short_label' => ['nullable', 'string', 'max:20'],
                     'icon' => ['nullable', 'string', 'max:50', 'regex:/^fa-(solid|regular|brands) fa-[a-z0-9-]+$/'],
                     'sort_order' => ['nullable', 'integer', 'between:0,99999'], 'activate' => ['boolean'],
-                ], ['icon.regex' => 'Icon must be a Font Awesome class, for example: fa-solid fa-truck.'], ['label' => 'Label', 'short_label' => 'Short Label', 'icon' => 'Icon', 'sort_order' => 'Order']);
+                ], ['icon.regex' => t('Icon must be a Font Awesome class, for example: fa-solid fa-truck.')], ['label' => t('Label'), 'short_label' => t('Short Label'), 'icon' => t('Icon'), 'sort_order' => t('Order')]);
                 if ($v->fails()) {
-                    throw ValidationException::withMessages(['row' => 'Baris '.($i + 1).': '.$v->errors()->first()]);
+                    throw ValidationException::withMessages(['row' => tf('Row :n: :error', ['n' => $i + 1, 'error' => $v->errors()->first()])]);
                 }
                 if (empty($in['activate']) && isset($own[$row->id])) {
-                    throw ValidationException::withMessages(['row' => 'Baris '.($i + 1).": \"{$row->label}\" holds this Menu Setup screen and cannot be switched off here."]);
+                    throw ValidationException::withMessages(['row' => tf('Row :n: ":label" holds this Menu Setup screen and cannot be switched off here.', ['n' => $i + 1, 'label' => $row->label])]);
                 }
                 $row->forceFill([
                     'label' => trim((string) $in['label']), 'short_label' => ($in['short_label'] ?? '') === '' ? null : $in['short_label'],

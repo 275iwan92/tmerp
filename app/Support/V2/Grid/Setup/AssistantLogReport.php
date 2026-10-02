@@ -74,7 +74,7 @@ class AssistantLogReport extends DbGrid
                 -1 => 'Thumbs down',
                 default => null,
             },
-            'model' => $m->model_used ? 'Yes' : 'No', 'ms' => (int) $m->duration_ms,
+            'model' => $m->model_used ? t('Yes') : t('No'), 'ms' => (int) $m->duration_ms,
         ];
     }
 

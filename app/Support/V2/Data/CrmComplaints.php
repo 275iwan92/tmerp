@@ -82,7 +82,7 @@ final class CrmComplaints
 
             return;
         }
-        abort_unless($c->status() === 'DRAFT', 422, 'This complaint is closed and cannot be changed.');
+        abort_unless($c->status() === 'DRAFT', 422, t('This complaint is closed and cannot be changed.'));
         $contacts = self::contactOptions($c);
         $contactId = isset($contacts[(int) ($in['contact_id'] ?? 0)]) ? (int) $in['contact_id'] : null;
         $orders = self::orderOptions($c);
@@ -197,7 +197,7 @@ final class CrmComplaints
     // Delete = hapus permanen, hanya Draft (rulebook C.6); baris ikut terhapus (FK cascade).
     public static function delete(CrmComplaint $c): void
     {
-        abort_unless($c->status() === 'DRAFT', 422, 'Only a Draft can be deleted.');
+        abort_unless($c->status() === 'DRAFT', 422, t('Only a Draft can be deleted.'));
         $c->delete();
     }
 
@@ -214,9 +214,9 @@ final class CrmComplaints
         return array_values(array_filter([
             $c->stat_cancel ? ['at' => $c->updated_at?->toDateTimeString(), 'by' => $name($c->updated_by), 'action' => 'Cancelled', 'note' => $c->cancel_reason] : null,
             $c->stat_close ? ['at' => $c->closed_at?->toDateTimeString(), 'by' => $name($c->closed_by), 'action' => 'Closed', 'note' => $c->resolution_note] : null,
-            $c->review?->stat_confirm ? ['at' => $c->review->reviewed_at?->toDateTimeString(), 'by' => $name($c->review->reviewed_by), 'action' => 'QA answered', 'note' => null] : null,
+            $c->review?->stat_confirm ? ['at' => $c->review->reviewed_at?->toDateTimeString(), 'by' => $name($c->review->reviewed_by), 'action' => t('QA answered'), 'note' => null] : null,
             $c->stat_confirm ? ['at' => $c->confirmed_at?->toDateTimeString(), 'by' => $name($c->confirmed_by), 'action' => 'Confirmed', 'note' => null] : null,
-            ['at' => $c->created_at?->toDateTimeString(), 'by' => $name($c->created_by), 'action' => 'Created', 'note' => null],
+            ['at' => $c->created_at?->toDateTimeString(), 'by' => $name($c->created_by), 'action' => t('Created'), 'note' => null],
         ]));
     }
 

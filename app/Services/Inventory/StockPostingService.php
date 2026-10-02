@@ -70,10 +70,10 @@ class StockPostingService
             $header = $map['header']::with('lines')->lockForUpdate()->findOrFail($docId);
 
             if ($header->stat_confirm) {
-                return ['posted' => false, 'error' => 'Dokumen sudah pernah di-posting sebelumnya.'];
+                return ['posted' => false, 'error' => t('The document has already been posted before.')];
             }
             if ($header->stat_cancel) {
-                return ['posted' => false, 'error' => 'Dokumen sudah dibatalkan, tidak bisa diposting.'];
+                return ['posted' => false, 'error' => t('The document is already cancelled, it cannot be posted.')];
             }
 
             $cat = $this->normalizeDocCat($header->doc_cat);
@@ -116,7 +116,7 @@ class StockPostingService
                 $qtyEb = $qtyBb + $qtyFinal;
 
                 if ($qtyEb < 0 && ! in_array($cat, ['AD', 'OP'], true)) {
-                    return ['posted' => false, 'error' => "Saldo item #{$itemId} di lokasi #{$locationId} akan negatif ({$qtyEb}) -- posting dibatalkan."];
+                    return ['posted' => false, 'error' => tf('The balance of item #:item at location #:location would become negative (:qty) -- posting is cancelled.', ['item' => $itemId, 'location' => $locationId, 'qty' => $qtyEb])];
                 }
 
                 $docType = match (true) {
@@ -262,7 +262,7 @@ class StockPostingService
         }
 
         return $unmapped > 0
-            ? "{$unmapped} baris belum punya akun HPP/Persediaan (item maupun kategori) -- jurnal pemakaian belum lengkap untuk baris tsb."
+            ? tf(':n lines have no COGS/Inventory account yet (item or category) -- the usage journal is not complete for those lines.', ['n' => $unmapped])
             : null;
     }
 

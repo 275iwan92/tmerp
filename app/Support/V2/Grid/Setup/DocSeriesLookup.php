@@ -54,7 +54,7 @@ class DocSeriesLookup extends DbLookup
             ['key' => 'series_code', 'label' => 'Code', 'required' => true, 'unique' => true, 'lockSaved' => true, 'case' => 'uppercase', 'width' => '140px'],
             ['key' => 'series_name', 'label' => 'Series Name', 'required' => true, 'width' => '380px'],
             ['key' => 'number_format', 'label' => 'Number Format', 'required' => true, 'width' => '260px'],
-            ['key' => 'reset_period', 'label' => 'Restart', 'type' => 'select', 'options' => SysDocSeries::RESETS, 'required' => true, 'width' => '150px'],
+            ['key' => 'reset_period', 'label' => 'Restart', 'type' => 'select', 'options' => array_map('t', SysDocSeries::RESETS), 'required' => true, 'width' => '150px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '80px'],
         ];
     }
@@ -82,8 +82,8 @@ class DocSeriesLookup extends DbLookup
         $month = str_contains($format, '{ROMAN}') || str_contains($format, '{MM}');
 
         return match ($in['reset_period'] ?? '') {
-            'MONTH' => $year && $month ? null : 'A format that restarts every month must contain the month ({ROMAN} or {MM}) and the year ({YY} or {YYYY}).',
-            'YEAR' => $year ? null : 'A format that restarts every year must contain the year ({YY} or {YYYY}).',
+            'MONTH' => $year && $month ? null : t('A format that restarts every month must contain the month ({ROMAN} or {MM}) and the year ({YY} or {YYYY}).'),
+            'YEAR' => $year ? null : t('A format that restarts every year must contain the year ({YY} or {YYYY}).'),
             default => null,
         };
     }

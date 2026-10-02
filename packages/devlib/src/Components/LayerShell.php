@@ -60,7 +60,7 @@ class LayerShell extends Shell
         $this->modules = $saved;
 
         return [
-            ['key' => 'ops', 'label' => 'Operasional', 'icon' => 'fa-table-cells-large', 'items' => $opsTree],
+            ['key' => 'ops', 'label' => Lang::text('Operational'), 'icon' => 'fa-table-cells-large', 'items' => $opsTree],
             ['key' => 'mgmt', 'label' => $rep[0]['label'], 'icon' => 'fa-chart-line', 'items' => $repTree],
         ];
     }
@@ -77,14 +77,14 @@ class LayerShell extends Shell
     public function actions(): array
     {
         return array_values(array_filter([
-            ['key' => 'notif', 'label' => 'Notifikasi', 'icon' => 'notification'],
-            ['key' => 'ai', 'label' => 'Asisten AI', 'icon' => 'ai'],
-            ['key' => 'edit', 'label' => 'Edit profil', 'icon' => 'fa-user-pen'],
+            ['key' => 'notif', 'label' => Lang::text('Notifications'), 'icon' => 'notification'],
+            ['key' => 'ai', 'label' => Lang::text('AI Assistant'), 'icon' => 'ai'],
+            ['key' => 'edit', 'label' => Lang::text('Edit profile'), 'icon' => 'fa-user-pen'],
             ['key' => 'pass', 'label' => Lang::text('Change password'), 'icon' => 'password'],
-            ['key' => 'help', 'label' => 'Bantuan & dukungan', 'icon' => 'help'],
-            $this->developer ? ['key' => 'devmode', 'label' => 'Mode Developer', 'icon' => 'fa-bug'] : null,
-            $this->classic ? ['key' => 'menu-classic', 'label' => 'Menu Classic', 'icon' => 'fa-table-columns'] : null,
-            ['key' => 'logout', 'label' => Lang::text('Sign out'), 'icon' => 'logout', 'tone' => 'danger', 'confirm' => 'Keluar dari aplikasi?'],
+            ['key' => 'help', 'label' => Lang::text('Help & support'), 'icon' => 'help'],
+            $this->developer ? ['key' => 'devmode', 'label' => Lang::text('Developer Mode'), 'icon' => 'fa-bug'] : null,
+            $this->classic ? ['key' => 'menu-classic', 'label' => Lang::text('Classic Menu'), 'icon' => 'fa-table-columns'] : null,
+            ['key' => 'logout', 'label' => Lang::text('Sign out'), 'icon' => 'logout', 'tone' => 'danger', 'confirm' => Lang::text('Sign out of the application?')],
         ]));
     }
 

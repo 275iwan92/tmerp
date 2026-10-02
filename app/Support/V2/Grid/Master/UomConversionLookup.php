@@ -64,13 +64,13 @@ class UomConversionLookup extends MasterDataLookup
     {
         $dim = UomUnit::query()->whereIn('uom_code', [$in['uom_src'], $in['uom_dst']])->pluck('dimension', 'uom_code');
         if ($dim->count() < 2) {
-            return 'Unit not found.';
+            return t('Unit not found.');
         }
         if ($dim[$in['uom_src']] !== $dim[$in['uom_dst']]) {
-            return "Different dimensions ({$in['uom_src']} and {$in['uom_dst']}): the conversion is not valid.";
+            return tf('Different dimensions (:a and :b): the conversion is not valid.', ['a' => $in['uom_src'], 'b' => $in['uom_dst']]);
         }
         $twin = UomConversion::query()->where('uom_src', $in['uom_src'])->where('uom_dst', $in['uom_dst'])->when($id, fn ($q) => $q->whereKeyNot($id))->exists();
 
-        return $twin ? "The pair {$in['uom_src']} to {$in['uom_dst']} already exists. Edit that row." : null;
+        return $twin ? tf('The pair :a to :b already exists. Edit that row.', ['a' => $in['uom_src'], 'b' => $in['uom_dst']]) : null;
     }
 }

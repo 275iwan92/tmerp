@@ -19,7 +19,7 @@ class DeviceFrame extends DevlibComponent
         return <<<'BLADE'
             <div {{ $attributes->class('dl-device') }} {!! $dl() !!} data-dl-device>
                 <div class="dl-device__bar">
-                    <span class="dl-device__title">Mode Tampilan:</span>
+                    <span class="dl-device__title">{{ \Devlib\Lang::text('Display Mode') }}:</span>
                     <button type="button" class="dl-device__btn {{ $mode === 'laptop' ? 'is-active' : '' }}" data-mode="laptop"><span>🖥️</span> Laptop / Desktop (Full)</button>
                     <button type="button" class="dl-device__btn {{ $mode === 'tablet' ? 'is-active' : '' }}" data-mode="tablet"><span>📱</span> Tablet (768px)</button>
                     <button type="button" class="dl-device__btn {{ $mode === 'mobile' ? 'is-active' : '' }}" data-mode="mobile"><span>📱</span> Smartphone (390px)</button>

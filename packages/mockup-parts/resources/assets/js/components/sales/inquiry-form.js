@@ -5,7 +5,7 @@
   'use strict';
   const {$, $$, esc, toast, confirmBox, openLayer, closeLayer, setField, setOptions, fieldErr} = Devlib.h;
   const InquiryDoc = Devlib.classes.InquiryDoc;
-  const CUSTOM = '__CUSTOM__', CUSTOM_DETAIL = '➕ Custom (belum ada di daftar)', CUSTOM_SIZE = '✎ Ukuran custom (isi dimensi di part)';
+  const CUSTOM = '__CUSTOM__', CUSTOM_DETAIL = Devlib.h.t('➕ Custom (not in the list yet)'), CUSTOM_SIZE = Devlib.h.t('✎ Custom size (fill in the dimensions in the part)');
 
   class InquiryForm extends InquiryDoc {
     static selector = '[data-mp-inquiry]';
@@ -48,13 +48,13 @@
       const res = await fetch(url, {method: 'POST', body, headers: {'X-CSRF-TOKEN': this.cfg.urls.csrf, Accept: 'application/json'}});
       const json = await res.json().catch(() => ({}));
       if (res.ok && !res.redirected && json.message) return json;
-      if (res.redirected) { toast('Sesi berakhir — muat ulang halaman lalu login lagi. Data BELUM tersimpan.', 'danger'); throw new Error('redirected'); }
+      if (res.redirected) { toast(Devlib.h.t('The session has ended — reload the page and log in again. The data is NOT saved yet.'), 'danger'); throw new Error('redirected'); }
       if (res.status === 422 && json.errors) {
         Object.entries(json.errors).forEach(([k, msg]) => { const el = this.input(k); if (el) fieldErr(el, msg[0]); });
         const first = Object.values(json.errors)[0][0];
         toast(first, 'danger'); this.flash(first, 'danger');
       } else {
-        toast(json.message || `Gagal menyimpan (HTTP ${res.status}).`, 'danger');
+        toast(json.message || Devlib.h.t('Failed to save (HTTP :status).').replace(':status', res.status), 'danger');
       }
       throw new Error('request failed');
     }
@@ -126,7 +126,7 @@
       if (x.closest('[data-inq-mat-add]')) return this.addMaterial(part);
       if (x.closest('[data-inq-mat-del]')) return x.closest('[data-inq-mat]').remove();
       if (x.closest('[data-inq-template]')) return this.applyTemplate();
-      if (x.closest('[data-inq-remove]')) return confirmBox({message: 'Hapus part ini?', tone: 'danger'}).then(ok => { if (ok) { part.remove(); this.removable(); this.template(); } });
+      if (x.closest('[data-inq-remove]')) return confirmBox({message: Devlib.h.t('Delete this part?'), tone: 'danger'}).then(ok => { if (ok) { part.remove(); this.removable(); this.template(); } });
       if (x.closest('[data-inq-role-open]')) { this.rolePart = part; return openLayer('inq-role'); }
       const pick = x.closest('[data-inq-role-pick]');
       if (pick && this.rolePart) { this.applyRole(this.rolePart, pick.dataset.inqRolePick); closeLayer(pick.closest('.dl-mov')); this.template(); return; }
@@ -270,7 +270,7 @@
       const tpl = this.cfg.templates[this.type], have = this.parts().map(p => p.dataset.role).filter(Boolean);
       const missing = tpl ? tpl.filter(r => !have.includes(r)) : [];
       box.classList.toggle('is-show', missing.length > 0);
-      if (missing.length) $(box, '[data-inq-template-text]').innerHTML = `🧩 Tipe ini biasanya ${tpl.length} part: <b>${esc(missing.map(r => this.cfg.roles[r]).join(' + '))}</b>.`;
+      if (missing.length) $(box, '[data-inq-template-text]').innerHTML = `${Devlib.h.t('🧩 This type usually has :n parts:').replace(':n', tpl.length)} <b>${esc(missing.map(r => this.cfg.roles[r]).join(' + '))}</b>.`;
     }
 
     applyTemplate() {
@@ -297,7 +297,7 @@
 
     derived(p, code) {
       const m = /^(\d+)\/(\d+)$/.exec(code || ''), box = $(p, '[data-inq-derived] .dl-display');
-      box.textContent = m ? `front: ${m[1]} · back: ${m[2]} · total: ${+m[1] + +m[2]} · side: ${+m[2] > 0 ? '2SIDE' : '1SIDE'}` : '—';
+      box.textContent = m ? Devlib.h.t('front: :f · back: :b · total: :n · side: :s').replace(':f', m[1]).replace(':b', m[2]).replace(':n', +m[1] + +m[2]).replace(':s', +m[2] > 0 ? '2SIDE' : '1SIDE') : '—';
     }
 
     // Sumber Bahan: dicentang = bahan customer -> order JASA, wajib isi spesifikasi bahan customer.
@@ -305,7 +305,7 @@
       const c = this.input('material_source'), on = !!(c && c.checked), blk = $(this.el, '[data-inq-custmat]');
       if (blk) blk.hidden = !on;
       const hint = c && $(c.closest('.dl-field'), '.dl-field__hint');
-      if (hint) hint.textContent = on ? 'Dicentang → bahan dari customer, order bersifat JASA (cuma ongkos cetak/finishing).' : 'Tidak dicentang → bahan dari perusahaan, order bersifat PRODUCT.';
+      if (hint) hint.textContent = on ? Devlib.h.t('Ticked → material from the customer, the order is JASA (printing/finishing cost only).') : Devlib.h.t('Unticked → material from the company, the order is PRODUCT.');
     }
 
     err(name, msg) { const el = this.input(name); if (el) fieldErr(el, msg); return msg ? 1 : 0; }
@@ -314,25 +314,25 @@
     validate() {
       let bad = 0;
       const name = this.value('product_draft_name'), date = this.value('inquiry_date'), dl = this.value('deadline_quotation');
-      bad += this.err('inquiry_date', date ? '' : 'Tanggal wajib diisi.');
-      bad += this.err('source', this.value('source') ? '' : 'Sumber wajib dipilih.');
-      bad += this.err('customer_id', this.value('customer_id') ? '' : 'Customer wajib dipilih.');
-      bad += this.err('product_draft_name', !name ? 'Nama Produk wajib diisi.' : /[/@#%"']/.test(name) ? 'Karakter khusus (/@#%"\') tidak diperbolehkan.' : '');
-      bad += this.err('deadline_quotation', dl && date && dl < date ? 'Tgl Kebutuhan Pelanggan tidak boleh sebelum Tanggal.' : '');
+      bad += this.err('inquiry_date', date ? '' : Devlib.h.t('Date is required.'));
+      bad += this.err('source', this.value('source') ? '' : Devlib.h.t('Source must be selected.'));
+      bad += this.err('customer_id', this.value('customer_id') ? '' : Devlib.h.t('Customer must be selected.'));
+      bad += this.err('product_draft_name', !name ? Devlib.h.t('Product Name is required.') : /[/@#%"']/.test(name) ? Devlib.h.t('Special characters (/@#%"\') are not allowed.') : '');
+      bad += this.err('deadline_quotation', dl && date && dl < date ? Devlib.h.t('Customer Need Date must not be before Date.') : '');
       // Kategori Produk wajib sampai Ukuran (dieline muncul); Custom = nama produk + Tipe Produk wajib.
       // Kategori/Detail/Ukuran hanya pemandu isian (tidak disimpan) -> wajib saat membuat, tidak ditagih lagi di dokumen tersimpan.
       const guide = !this.doc.id;
-      bad += this.err('product_group', !guide || this.value('product_group') ? '' : 'Kategori Produk wajib dipilih (pilih Custom bila belum ada).');
-      bad += this.err('product_detail', !guide || this.value('product_detail') ? '' : 'Detail Kategori wajib dipilih.');
-      bad += this.err('market_size', !guide || this.value('market_size') ? '' : 'Ukuran Pasaran wajib dipilih.');
-      bad += this.err('product_detail_custom', this.value('product_detail') === CUSTOM && !this.value('product_detail_custom') ? 'Nama produk custom wajib diisi.' : '');
-      bad += this.err('type_code', this.value('type_code') ? '' : 'Tipe Produk (dieline) wajib dipilih.');
-      bad += this.err('cust_material_spec', this.input('material_source')?.checked && !this.value('cust_material_spec') ? 'Wajib diisi bila bahan dari customer.' : '');
+      bad += this.err('product_group', !guide || this.value('product_group') ? '' : Devlib.h.t('Product Category must be selected (choose Custom if it does not exist yet).'));
+      bad += this.err('product_detail', !guide || this.value('product_detail') ? '' : Devlib.h.t('Category Detail must be selected.'));
+      bad += this.err('market_size', !guide || this.value('market_size') ? '' : Devlib.h.t('Standard Size must be selected.'));
+      bad += this.err('product_detail_custom', this.value('product_detail') === CUSTOM && !this.value('product_detail_custom') ? Devlib.h.t('Custom product name is required.') : '');
+      bad += this.err('type_code', this.value('type_code') ? '' : Devlib.h.t('Product Type (dieline) must be selected.'));
+      bad += this.err('cust_material_spec', this.input('material_source')?.checked && !this.value('cust_material_spec') ? Devlib.h.t('Required when the material is from the customer.') : '');
       const tl = $(this.el, '[data-dl-lines][data-name="tiers"]'), tiers = tl && tl.dlLines ? tl.dlLines.rows : [];
       const prim = tiers.filter(t => t.is_primary).length, zero = tiers.findIndex(t => !(+String(t.qty).replace(/\./g, '') > 0));
-      const tmsg = !tiers.length ? 'Minimal 1 baris tier qty diperlukan.' : prim !== 1 ? `Harus tepat 1 tier UTAMA (saat ini: ${prim}).` : zero >= 0 ? `Qty tier baris ${zero + 1} wajib diisi angka lebih besar dari 0.` : '';
+      const tmsg = !tiers.length ? Devlib.h.t('At least 1 qty tier row is required.') : prim !== 1 ? Devlib.h.t('There must be exactly 1 PRIMARY tier (currently: :n).').replace(':n', prim) : zero >= 0 ? Devlib.h.t('The tier qty in row :n must be a number greater than 0.').replace(':n', zero + 1) : '';
       const ta = $(this.el, '[data-inq-tier-err]'); ta.textContent = tmsg; ta.classList.toggle('is-show', !!tmsg); bad += tmsg ? 1 : 0;
-      if (bad) { $(this.el, '.dl-field.is-invalid, [data-inq-tier-err].is-show')?.scrollIntoView({behavior: 'smooth', block: 'center'}); toast(`${bad} isian belum benar.`, 'danger'); }
+      if (bad) { $(this.el, '.dl-field.is-invalid, [data-inq-tier-err].is-show')?.scrollIntoView({behavior: 'smooth', block: 'center'}); toast(Devlib.h.t(':n fields are not correct yet.').replace(':n', bad), 'danger'); }
       return !bad;
     }
 
@@ -375,7 +375,7 @@
 
     end(state, modal) {
       const f = state === 'CANCELLED' ? 'cancel_reason' : 'lost_reason', inp = $(modal, `[name="${f}"]`);
-      if (!inp.value.trim()) return fieldErr(inp, 'Wajib diisi — tercatat di riwayat.');
+      if (!inp.value.trim()) return fieldErr(inp, Devlib.h.t('Required — recorded in the history.'));
       fieldErr(inp, '');
       const fd = new FormData(); fd.append('state', state); fd.append('reason', inp.value.trim());
       this.call(this.url('end'), fd).then(j => { closeLayer(modal); this.reload(j); }).catch(() => {});
@@ -384,7 +384,7 @@
     // Customer baru langsung tersimpan ke master (DRAFT) lalu dipakai di lookup Customer.
     newCustomer(modal) {
       const inp = $(modal, '[name="new_customer_name"]'), val = n => ($(modal, `[name="${n}"]`)?.value || '').trim();
-      if (!inp.value.trim()) return fieldErr(inp, 'Nama Customer wajib diisi.');
+      if (!inp.value.trim()) return fieldErr(inp, Devlib.h.t('Customer Name is required.'));
       fieldErr(inp, '');
       const fd = new FormData();
       fd.append('name', inp.value.trim()); fd.append('type', val('new_customer_type') || 'local');

@@ -71,8 +71,8 @@ class RuleLibraryGrid extends ProdGrid
     protected function row(Model $m): array
     {
         return [
-            'name' => $m->rule_name, 'type' => $m->rule_type, 'machine' => $m->machine?->machine_name ?? 'All machines',
-            'process' => $m->applies_to_process ?: 'All processes', 'condition' => trim($m->condition_field.' '.$m->condition_operator),
+            'name' => $m->rule_name, 'type' => $m->rule_type, 'machine' => $m->machine?->machine_name ?? t('All machines'),
+            'process' => $m->applies_to_process ?: t('All processes'), 'condition' => trim($m->condition_field.' '.$m->condition_operator),
             'from' => $m->effective_from?->toDateString(), 'to' => $m->effective_to?->toDateString(), 'status' => $m->rule_status,
         ];
     }

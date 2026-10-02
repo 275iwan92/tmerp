@@ -19,7 +19,7 @@
     ];
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
 
 @if (! $c)
     <x-dl::grid id="crm-customer-list" mode="report" :rows="Crm::rows()" search="Search customer, code, group, industry..." :open-url="$home.'?id={id}'" row-tone="row_tone"

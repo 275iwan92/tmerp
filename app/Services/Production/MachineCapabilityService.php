@@ -115,13 +115,13 @@ class MachineCapabilityService
         $reasons = [];
 
         if (! $m->activate) {
-            $reasons[] = 'Mesin nonaktif di master';
+            $reasons[] = t('Machine is inactive in the master');
         } elseif (in_array($m->machine_status, ProdMachine::STATUSES_BLOCKING, true)) {
-            $reasons[] = 'Status mesin: '.$m->statusLabel();
+            $reasons[] = tf('Machine status: :status', ['status' => $m->statusLabel()]);
         }
 
         if (! $m->is_process_machine) {
-            $reasons[] = 'Bukan mesin proses (alat penunjang)';
+            $reasons[] = t('Not a process machine (supporting equipment)');
         }
 
         // Envelope pasangan mengalahkan envelope mesin bila diisi.
@@ -138,11 +138,11 @@ class MachineCapabilityService
             $fits = fn ($l, $w) => (! $maxLen || $l <= $maxLen) && (! $maxWid || $w <= $maxWid);
 
             if ($maxLen && $maxWid && ! $fits($len, $wid) && ! $fits($wid, $len)) {
-                $reasons[] = sprintf('Lembar %dx%d mm melebihi batas mesin %dx%d mm', $len, $wid, $maxLen, $maxWid);
+                $reasons[] = tf('Sheet :sheet mm exceeds the machine limit :max mm', ['sheet' => sprintf('%dx%d', $len, $wid), 'max' => sprintf('%dx%d', $maxLen, $maxWid)]);
             }
 
             if ($minLen && $minWid && (min($len, $wid) < min($minLen, $minWid))) {
-                $reasons[] = sprintf('Lembar lebih kecil dari minimum mesin %dx%d mm', $minLen, $minWid);
+                $reasons[] = tf('Sheet is smaller than the machine minimum :min mm', ['min' => sprintf('%dx%d', $minLen, $minWid)]);
             }
         }
 
@@ -151,10 +151,10 @@ class MachineCapabilityService
         $gsmMax = $cap->gsm_max ?: $m->gsm_max;
 
         if ($gsm && $gsmMin && $gsm < $gsmMin) {
-            $reasons[] = "Gramatur {$gsm} di bawah minimum {$gsmMin} gsm";
+            $reasons[] = tf('Grammage :gsm is below the minimum :min gsm', ['gsm' => $gsm, 'min' => $gsmMin]);
         }
         if ($gsm && $gsmMax && $gsm > $gsmMax) {
-            $reasons[] = "Gramatur {$gsm} di atas maksimum {$gsmMax} gsm";
+            $reasons[] = tf('Grammage :gsm is above the maximum :max gsm', ['gsm' => $gsm, 'max' => $gsmMax]);
         }
 
         return $reasons;

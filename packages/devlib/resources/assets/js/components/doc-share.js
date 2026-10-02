@@ -102,7 +102,7 @@
         const t0 = Date.now(), sel = `[data-dl-docshare][data-type="${CSS.escape(this.cfg.type)}"]`;
         const tick = () => {
           try { const el = f.contentDocument && f.contentDocument.querySelector(sel); if (el && el.dlDocShare) return ok(el.dlDocShare); } catch (e) { return bad(e); }
-          if (Date.now() - t0 > 20000) { f.remove(); return bad(new Error('Print page (' + this.lang + ') did not load')); }
+          if (Date.now() - t0 > 20000) { f.remove(); return bad(new Error(Tf('ds_twin_failed', {lang: this.lang}))); }
           setTimeout(tick, 150);
         };
         tick();

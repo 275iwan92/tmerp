@@ -33,9 +33,9 @@ final class SpecialReceiptService
 
     public static function createCustomer(int $coId, ?string $warehouse, string $login): PvReceipt
     {
-        $co = DB::connection('tm2sdi')->table('co_order')->where('id_order', $coId)->first() ?? throw new InvalidArgumentException('CO tidak ditemukan.');
+        $co = DB::connection('tm2sdi')->table('co_order')->where('id_order', $coId)->first() ?? throw new InvalidArgumentException(t('CO not found.'));
         if ($co->stat_cancel) {
-            throw new InvalidArgumentException("CO {$co->co_no} sudah dibatalkan.");
+            throw new InvalidArgumentException(tf('CO :no is already cancelled.', ['no' => $co->co_no]));
         }
         $items = DB::connection('tm2sdi')->table('co_order_item as i')->leftJoin('iqp_inquiry as q', 'q.id_inquiry', '=', 'i.inquiry_id')
             ->where('i.order_id', $coId)->orderBy('i.line_seq')->get(['i.id_item', 'i.description', 'q.material_source', 'q.cust_material_spec']);
@@ -59,7 +59,7 @@ final class SpecialReceiptService
     {
         $lines = self::openSubconLines($supplierId)->whereIn('po_line_id', array_map('intval', $poLineIds));
         if ($lines->isEmpty()) {
-            throw new InvalidArgumentException('Pilih minimal 1 baris PO Subkon yang masih terbuka.');
+            throw new InvalidArgumentException(t('Choose at least 1 Subcon PO line that is still open.'));
         }
 
         return DB::connection('tm2pur')->transaction(function () use ($supplierId, $lines, $doId, $login) {
@@ -79,7 +79,7 @@ final class SpecialReceiptService
 
     public static function save(PvReceipt $pv, array $in, string $login): void
     {
-        abort_unless($pv->status === 'DRAFT', 422, 'Penerimaan sudah Confirm, tidak bisa diubah.');
+        abort_unless($pv->status === 'DRAFT', 422, t('The receipt is already Confirmed, it cannot be changed.'));
         foreach (['i_doc_date', 'i_supplier_do_no', 'i_vehicle_no', 'i_notes', 'i_warehouse_code'] as $f) {
             if (array_key_exists($f, $in)) {
                 $pv->{$f} = trim((string) $in[$f]) === '' ? null : trim((string) $in[$f]);
@@ -123,20 +123,20 @@ final class SpecialReceiptService
     {
         $pv->load('lines');
         if ($pv->status !== 'DRAFT') {
-            return ['Penerimaan tidak berstatus Draft.'];
+            return [t('The receipt does not have status Draft.')];
         }
         $err = [];
         if ($pv->lines->isEmpty()) {
-            $err[] = 'Belum ada baris.';
+            $err[] = t('No rows yet.');
         }
         foreach ($pv->lines as $l) {
             if ((float) $l->i_qty_purchase <= 0) {
-                $err[] = "Baris {$l->line_no}: isi qty diterima.";
+                $err[] = tf('Line :line: fill in the received qty.', ['line' => $l->line_no]);
             }
             if ($pv->i_receipt_type === 'SUBCON' && $l->po_line_id) {
                 $po = PoLine::find($l->po_line_id);
                 if ($po && (float) $l->i_qty_purchase > (float) $po->i_qty - (float) $po->c_qty_received + 0.0001) {
-                    $err[] = "Baris {$l->line_no}: qty melebihi sisa PO Subkon (".Locale::decimal((float) $po->i_qty - (float) $po->c_qty_received, 2).').';
+                    $err[] = tf('Line :line: the qty exceeds what is left of the Subcon PO (:qty).', ['line' => $l->line_no, 'qty' => Locale::decimal((float) $po->i_qty - (float) $po->c_qty_received, 2)]);
                 }
             }
         }
@@ -161,14 +161,14 @@ final class SpecialReceiptService
     public static function reportShortage(PvReceipt $pv, int $lineId, float $qty, string $note, string $login): void
     {
         if ($pv->i_receipt_type !== 'SUBCON' || $pv->status !== 'POSTED') {
-            throw new InvalidArgumentException('Koreksi kekurangan hanya untuk penerimaan subkon yang sudah Confirm.');
+            throw new InvalidArgumentException(t('A shortage correction is only for a subcon receipt that is already Confirmed.'));
         }
         $line = $pv->lines()->findOrFail($lineId);
         if ($qty <= 0 || $qty > (float) $line->i_qty_purchase) {
-            throw new InvalidArgumentException('Qty kurang harus > 0 dan tidak melebihi qty diterima ('.Locale::decimal($line->i_qty_purchase, 2).').');
+            throw new InvalidArgumentException(tf('The short qty must be > 0 and not more than the received qty (:qty).', ['qty' => Locale::decimal($line->i_qty_purchase, 2)]));
         }
         if (mb_strlen(trim($note)) < 5) {
-            throw new InvalidArgumentException('Isi keterangan kekurangan (ketahuan di proses mana).');
+            throw new InvalidArgumentException(t('Fill in the shortage note (in which process it was found).'));
         }
         DB::connection('tm2pur')->transaction(function () use ($line, $qty, $note, $login) {
             $line->update(['i_qty_purchase' => (float) $line->i_qty_purchase - $qty, 'c_qty_accepted' => (float) $line->i_qty_purchase - $qty,

@@ -38,11 +38,11 @@ class DocFooter extends DevlibComponent
                             @foreach ($tabs as $k => $t)<div class="dl-tabs__panel {{ $loop->first ? 'is-active' : '' }}" data-panel="{{ $k }}">{{ ${$k} ?? '' }}</div>@endforeach
                         </div>
                     @endif
-                    @if ($showWords())<div class="dl-lines__words"><span>Terbilang</span><i>{{ $words }}</i></div>@endif
+                    @if ($showWords())<div class="dl-lines__words"><span>{{ \Devlib\Lang::text('Amount in words') }}</span><i>{{ $words }}</i></div>@endif
                 </div>
                 @if ($summary)
                     <div class="dl-lines__totals">
-                        <div class="dl-lines__sumh">Summary</div>
+                        <div class="dl-lines__sumh">{{ \Devlib\Lang::text('Summary') }}</div>
                         @foreach ($summary as $row)
                             <div class="{{ ($row[2] ?? null) === 'grand' ? 'dl-lines__grand' : (($row[2] ?? null) === 'dpp' ? 'dl-lines__dpp' : '') }}"><span>{{ $row[0] }}</span><b>{{ $row[1] }}</b></div>
                         @endforeach

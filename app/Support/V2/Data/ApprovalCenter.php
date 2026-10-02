@@ -30,7 +30,7 @@ final class ApprovalCenter
     public const MODULES = [
         'PR' => ['title' => 'Purchase Requisition', 'screen' => 'purchase-requisition', 'menu' => 'PROC'],
         'PO' => ['title' => 'Purchase Order', 'screen' => 'purchase-order', 'menu' => 'PROC'],
-        'POC' => ['title' => 'PO Kontan', 'screen' => 'purchase-order', 'menu' => 'PROC'],
+        'POC' => ['title' => 'Cash PO', 'screen' => 'purchase-order', 'menu' => 'PROC'],
         'CO' => ['title' => 'Customer Order', 'screen' => 'customer-order', 'menu' => 'SALES'],
         'AD' => ['title' => 'Stock Adjustment', 'screen' => null, 'menu' => 'INV'],
         'OP' => ['title' => 'Stock Opname', 'screen' => null, 'menu' => 'INV'],
@@ -47,14 +47,14 @@ final class ApprovalCenter
 
     public static function lineColumns(string $screen): array
     {
-        return match (self::SCREENS[$screen][0]) {
-            'AD' => ['description' => 'Item', 'unit' => 'Satuan', 'system' => 'Qty Sistem', 'physical' => 'Qty Fisik', 'diff' => 'Selisih', 'price:money' => 'Harga/Unit', 'subtotal:money' => 'Nilai Selisih'],
-            'PRT' => ['description' => 'Item', 'qty' => 'Qty Retur', 'unit' => 'Satuan', 'price:money' => 'Harga/Unit', 'subtotal:money' => 'Nilai'],
+        return array_map(fn (string $label) => t($label), match (self::SCREENS[$screen][0]) {
+            'AD' => ['description' => 'Item', 'unit' => 'Unit', 'system' => 'System Qty', 'physical' => 'Counted Qty', 'diff' => 'Difference', 'price:money' => 'Price/Unit', 'subtotal:money' => 'Difference Value'],
+            'PRT' => ['description' => 'Item', 'qty' => 'Return Qty', 'unit' => 'Unit', 'price:money' => 'Price/Unit', 'subtotal:money' => 'Value'],
             'TF' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Unit', 'from' => 'From Bin', 'to' => 'To Bin', 'check' => 'Check'],
-            'CO' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Satuan', 'price:money' => 'Harga/Unit', 'disc' => 'Disc %', 'subtotal:money' => 'Subtotal', 'source' => 'Sumber Harga'],
-            'PO' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Satuan', 'price:money' => 'Harga/Unit', 'disc' => 'Disc %', 'subtotal:money' => 'Subtotal'],
-            default => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Satuan', 'price:money' => 'Harga Est.', 'subtotal:money' => 'Subtotal', 'need' => 'Tgl Butuh'],
-        };
+            'CO' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Unit', 'price:money' => 'Price/Unit', 'disc' => 'Disc %', 'subtotal:money' => 'Subtotal', 'source' => 'Price Source'],
+            'PO' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Unit', 'price:money' => 'Price/Unit', 'disc' => 'Disc %', 'subtotal:money' => 'Subtotal'],
+            default => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Unit', 'price:money' => 'Est. Price', 'subtotal:money' => 'Subtotal', 'need' => 'Need Date'],
+        });
     }
 
     // Dokumen yang menunggu keputusan user login, format x-dl::approval.
@@ -101,7 +101,7 @@ final class ApprovalCenter
                 $pr = PrRequisition::with(['lines' => fn ($q) => $q->orderBy('line_no'), 'department'])->where('status', 'SUBMITTED')->find($id);
 
                 return $pr ? ['no' => $pr->doc_no ?: 'PR #'.$id, 'party' => $pr->department?->department_name, 'date' => $pr->i_doc_date?->toDateString(), 'amount' => (float) $pr->c_est_total,
-                    'summary' => ['Departemen' => $pr->department?->department_name ?? '—', 'Tgl Butuh' => $date($pr->i_need_date), 'Est. Total' => $rp($pr->c_est_total), 'Jumlah Item' => $pr->lines->count()],
+                    'summary' => [t('Department') => $pr->department?->department_name ?? '—', t('Need Date') => $date($pr->i_need_date), t('Est. Total') => $rp($pr->c_est_total), t('Items') => $pr->lines->count()],
                     'lines' => $pr->lines->map(fn ($l) => ['description' => $l->i_description, 'qty' => $num($l->i_qty), 'unit' => $l->i_uom, 'price' => (float) $l->i_est_price,
                         'subtotal' => (float) $l->i_qty * (float) $l->i_est_price, 'need' => $date($l->i_need_date)])->all(), 'note' => $pr->i_notes] : null;
             })(),
@@ -110,7 +110,7 @@ final class ApprovalCenter
                 $sup = $po ? (PurchaseOrder::suppliers([$po->i_supplier_id])[$po->i_supplier_id] ?? '—') : null;
 
                 return $po ? ['no' => $po->doc_no ?: 'PO #'.$id, 'party' => $sup, 'date' => $po->i_doc_date?->toDateString(), 'amount' => (float) $po->c_grand_total,
-                    'summary' => ['Supplier' => $sup, 'Grand Total' => $rp($po->c_grand_total), 'Termin' => $po->i_payment_term ?: '—', 'Tgl Kirim' => $date($po->i_delivery_date), 'Jumlah Item' => $po->lines->count()],
+                    'summary' => [t('Supplier') => $sup, t('Grand Total') => $rp($po->c_grand_total), t('Payment Term') => $po->i_payment_term ?: '—', t('Ship Date') => $date($po->i_delivery_date), t('Items') => $po->lines->count()],
                     'lines' => $po->lines->map(fn ($l) => ['description' => $l->i_description, 'qty' => $num($l->i_qty), 'unit' => $l->i_uom, 'price' => (float) $l->i_price,
                         'disc' => $num($l->i_disc_pct), 'subtotal' => (float) $l->c_line_net])->all(), 'note' => $po->i_notes] : null;
             })(),
@@ -129,8 +129,8 @@ final class ApprovalCenter
 
                 return ['no' => $doc->doc_no ?: $module.' #'.$id, 'party' => $cat.' · '.($module === 'OP' ? 'Opname' : 'Adjustment'), 'date' => $doc->doc_date?->toDateString(),
                     'amount' => $value,
-                    'summary' => ['Kategori' => $cat, 'Alasan' => $doc->reason_code ?: '—', 'Nilai Selisih (absolut)' => $rp($value), 'Tanggal' => $date($doc->doc_date),
-                        'Jumlah Item' => $lines->count()] + ($module === 'OP' ? ['Petugas' => $doc->opn_officer ?: '—', 'Saksi' => $doc->opn_witness ?: '—'] : []),
+                    'summary' => [t('Category') => $cat, t('Reason') => $doc->reason_code ?: '—', t('Difference Value (absolute)') => $rp($value), t('Date') => $date($doc->doc_date),
+                        t('Items') => $lines->count()] + ($module === 'OP' ? [t('Count Officer') => $doc->opn_officer ?: '—', t('Witness') => $doc->opn_witness ?: '—'] : []),
                     'lines' => $lines->all(), 'note' => $doc->notes, 'v1' => route('inv.stock-adj.index', ['category' => $cat, 'doc' => $id])];
             })(),
             'PRT' => (function () use ($id, $num, $rp) {
@@ -138,7 +138,7 @@ final class ApprovalCenter
                 $sup = $r ? (PurchaseOrder::suppliers([$r->i_supplier_id])[$r->i_supplier_id] ?? '—') : null;
 
                 return $r ? ['no' => $r->doc_no ?: 'PRT #'.$id, 'party' => $sup, 'date' => $r->i_doc_date?->toDateString(), 'amount' => (float) $r->c_credit_value,
-                    'summary' => ['Supplier' => $sup, 'Nilai Retur' => $rp($r->c_credit_value), 'Disposisi' => $r->i_disposition ?: '—', 'Alasan' => $r->i_reason ?: '—', 'Jumlah Item' => $r->lines->count()],
+                    'summary' => [t('Supplier') => $sup, t('Return Value') => $rp($r->c_credit_value), t('Disposition') => $r->i_disposition ?: '—', t('Reason') => $r->i_reason ?: '—', t('Items') => $r->lines->count()],
                     'lines' => $r->lines->map(fn ($l) => ['description' => $l->i_description, 'qty' => $num($l->i_qty), 'unit' => $l->i_uom, 'price' => (float) $l->c_unit_price,
                         'subtotal' => (float) $l->c_line_value])->all(), 'note' => $r->i_reason, 'v1' => route('pur.prt.entry', $id)] : null;
             })(),
@@ -168,11 +168,11 @@ final class ApprovalCenter
                 // Tugas F&A SPV = memastikan harga tidak salah input; CO direct (INSTANT) semua harga diketik manual dan boleh dibuat
                 // sebelum harga ada (pengecualian yang sering terjadi, tidak diblokir) -> baris tanpa harga ditandai.
                 return ['no' => $o->co_no, 'party' => $o->customer?->customer_name, 'date' => $o->co_date?->toDateString(), 'amount' => (float) $t['net_receivable'],
-                    'summary' => ['Customer' => $o->customer?->customer_name ?? '—', 'Jalur' => $o->isInstant() ? 'Direct (INSTANT) — harga input manual' : 'Dari Quotation (INTEGRATED)',
-                        'Net Receivable' => $rp($t['net_receivable']), 'Termin' => $o->payment_term ?: '—', 'Jumlah Item' => $o->items->count()]
-                        + ($noPrice ? ['⚠ Tanpa harga' => $noPrice.' baris'] : []),
+                    'summary' => [t('Customer') => $o->customer?->customer_name ?? '—', t('Entry Mode') => $o->isInstant() ? t('Direct (INSTANT) — prices entered by hand') : t('From Quotation (INTEGRATED)'),
+                        t('Net Receivable') => $rp($t['net_receivable']), t('Payment Term') => $o->payment_term ?: '—', t('Items') => $o->items->count()]
+                        + ($noPrice ? [t('⚠ No price') => tf(':n lines', ['n' => $noPrice])] : []),
                     'lines' => $o->items->map(fn ($l) => ['description' => $l->description, 'qty' => $num($l->qty), 'unit' => $l->qty_unit, 'price' => (float) $l->unit_price,
-                        'disc' => $num($l->discount_pct), 'subtotal' => (float) $l->subtotal, 'source' => (float) $l->unit_price <= 0 ? '⚠ Belum ada harga' : ($l->quotation_item_id !== null ? 'Quotation (terkunci)' : 'Input manual')])->all(),
+                        'disc' => $num($l->discount_pct), 'subtotal' => (float) $l->subtotal, 'source' => (float) $l->unit_price <= 0 ? t('⚠ No price yet') : ($l->quotation_item_id !== null ? t('Quotation (locked)') : t('Manual input'))])->all(),
                     'note' => $o->notes, 'direct' => $o->isInstant()];
             })(),
         };
@@ -182,11 +182,11 @@ final class ApprovalCenter
         $state = self::approvalState($module, $id, $amount);
         $history = FlowLog::where('module_code', $module)->where('doc_id', $id)->orderBy('flow_log_id')->get()
             ->map(fn ($l) => ['action' => $l->action, 'by' => $l->created_by, 'at' => Locale::dt($l->acted_at), 'note' => $l->notes, 'plt' => (bool) $l->is_acting])->all();
-        $steps = array_merge([['role' => 'Pembuat', 'by' => $state['submitted_by'], 'at' => $state['submitted_at'], 'status' => 'done', 'submitter' => true]], $state['steps']);
+        $steps = array_merge([['role' => t('Creator'), 'by' => $state['submitted_by'], 'at' => $state['submitted_at'], 'status' => 'done', 'submitter' => true]], $state['steps']);
 
         $screen = self::MODULES[$module]['screen'];
 
-        return $base + ['id' => $module.':'.$id, 'title' => self::MODULES[$module]['title'], 'submitted_by' => $state['submitted_by'] ?? '—', 'steps' => $steps,
+        return $base + ['id' => $module.':'.$id, 'title' => t(self::MODULES[$module]['title']), 'submitted_by' => $state['submitted_by'] ?? '—', 'steps' => $steps,
             'history' => $history, 'held' => $state['held'] ? ['by' => collect($history)->last()['by'] ?? '', 'at' => collect($history)->last()['at'] ?? '', 'note' => collect($history)->last()['note'] ?? ''] : false,
             'url' => $screen ? route('v2.screen', $screen).'?id='.$id : ($base['v1'] ?? null)];
     }
@@ -196,7 +196,7 @@ final class ApprovalCenter
     {
         abort_unless(in_array($action, ['approve', 'reject', 'hold'], true), 422);
         if ($action !== 'approve' && trim($note) === '') {
-            return 'Alasan wajib diisi.';
+            return t('A reason is required.');
         }
 
         return match ($module) {
@@ -215,7 +215,7 @@ final class ApprovalCenter
         [$cat] = self::stockDoc($module, $id) ?? [null];
         $pending = self::pendingFor($module, $id);
         if (! $cat || ! $pending) {
-            return 'Dokumen ini tidak sedang menunggu approval Anda.';
+            return t('This document is not waiting for your approval.');
         }
         if ($action === 'hold') {
             app(FlowEngineService::class)->hold($module, $id, $pending->flow_step_id, $note, (float) $pending->amount_snapshot);

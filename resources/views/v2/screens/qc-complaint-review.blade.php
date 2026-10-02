@@ -14,8 +14,8 @@
     $labels = fn (array $list) => array_map(fn ($l) => t($l), $list);
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $doc)
     <x-dl::grid id="qc-complaint-review-list" :rows="CrmComplaints::reviewRows()" search="Search complaint no., customer, product..." actions="worklist" :active-key="null" :new-record="null"
@@ -31,12 +31,12 @@
             ['key' => 'reviewed_at', 'label' => 'Answered', 'type' => 'date'],
             ['key' => 'qa_state', 'label' => 'QA', 'type' => 'badge', 'tones' => ['TO_REVIEW' => 'warn', 'ANSWERED' => 'success']],
         ]"
-        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'qty', 'label' => 'Qty Complained', 'type' => 'number'],
-            ['key' => 'returned', 'label' => 'Qty Returned', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'defect', 'label' => 'Problem'],
+        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'qty', 'label' => t('Qty Complained'), 'type' => 'number'],
+            ['key' => 'returned', 'label' => t('Qty Returned'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'defect', 'label' => t('Problem')],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'To review', 'where' => ['qa_state' => 'TO_REVIEW'], 'tone' => 'warn', 'default' => true], ['label' => 'Answered', 'where' => ['qa_state' => 'ANSWERED'], 'tone' => 'success']]"
         :filters="['customer' => 'Customer', 'category' => 'Category']" />

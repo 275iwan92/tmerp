@@ -106,10 +106,10 @@ class TranslationDictionaryLookup extends DbLookup
                 $ctx = trim((string) ($in['context'] ?? '')) ?: 'ui';
                 $src = trim((string) ($in['source_en'] ?? ''));
                 if ($src === '') {
-                    throw ValidationException::withMessages(['row' => 'Row '.($i + 1).': English (source) is required.']);
+                    throw ValidationException::withMessages(['row' => tf('Row :n: English (source) is required.', ['n' => $i + 1])]);
                 }
                 if (SysDictionary::where('context', $ctx)->where('source_en', $src)->when($id, fn ($q) => $q->whereKeyNot($id))->exists()) {
-                    throw ValidationException::withMessages(['row' => 'Row '.($i + 1).": \"$src\" already exists in context \"$ctx\"."]);
+                    throw ValidationException::withMessages(['row' => tf('Row :n: ":src" already exists in context ":ctx".', ['n' => $i + 1, 'src' => $src, 'ctx' => $ctx])]);
                 }
                 $d = $id ? SysDictionary::findOrFail($id) : new SysDictionary(['created_by' => $login]);
                 $d->fill(['context' => $ctx, 'source_en' => $src, 'note' => ($in['note'] ?? '') === '' ? null : $in['note'],

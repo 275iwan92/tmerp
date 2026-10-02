@@ -57,7 +57,7 @@ class UsageStandardLookup extends DbLookup
             ['key' => 'usage_code', 'label' => 'Code', 'required' => true, 'unique' => true, 'case' => 'uppercase', 'width' => '150px'],
             ['key' => 'usage_name', 'label' => 'Name', 'required' => true, 'width' => '200px'],
             ['key' => 'material_role', 'label' => 'Kind', 'type' => 'select', 'options' => self::ROLES, 'required' => true, 'width' => '110px'],
-            ['key' => 'basis', 'label' => 'Basis', 'type' => 'select', 'options' => self::BASIS, 'required' => true, 'width' => '190px'],
+            ['key' => 'basis', 'label' => 'Basis', 'type' => 'select', 'options' => array_map('t', self::BASIS), 'required' => true, 'width' => '190px'],
             ['key' => 'qty_per_basis', 'label' => 'Qty per Basis', 'type' => 'number', 'required' => true, 'decimals' => 4, 'width' => '120px'],
             ['key' => 'uom', 'label' => 'UoM', 'required' => true, 'case' => 'uppercase', 'width' => '80px'],
             ['key' => 'trigger_keyword', 'label' => 'Trigger Words (comma)', 'width' => '200px'],

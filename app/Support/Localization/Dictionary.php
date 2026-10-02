@@ -38,6 +38,17 @@ final class Dictionary
 
     private static array $pending = [];
 
+    private static bool $recordInConsole = false;
+
+    private static ?array $idWords = null;
+
+    // Uji render semua layar dari console (bukan browser): teks English yang belum dikenal ikut dicatat, sama seperti
+    // saat layar dibuka user, supaya daftar "belum diterjemahkan" lengkap sebelum user membuka layarnya.
+    public static function recordInConsole(bool $on = true): void
+    {
+        self::$recordInConsole = $on;
+    }
+
     public static function t(?string $en, string $context = 'ui', ?string $lang = null): string
     {
         if ($en === null || trim($en) === '') {
@@ -104,10 +115,13 @@ final class Dictionary
         return $out;
     }
 
+    // Kata Indonesia = ID_WORDS (kata umum, termasuk yang juga ada di teks English seperti 'di' / 'ini' tidak dipakai)
+    // + indonesian_words.php (kosakata yang diturunkan dari isi kamus, 2026-10-03).
     public static function looksIndonesian(string $s): bool
     {
+        self::$idWords ??= array_fill_keys(self::ID_WORDS, true) + array_fill_keys(require __DIR__.'/indonesian_words.php', true);
         foreach (preg_split('/[^\p{L}]+/u', mb_strtolower($s), -1, PREG_SPLIT_NO_EMPTY) as $w) {
-            if (in_array($w, self::ID_WORDS, true)) {
+            if (isset(self::$idWords[$w])) {
                 return true;
             }
         }
@@ -129,6 +143,10 @@ final class Dictionary
         $lang = Locale::lang();
         if ($lang === 'en') {
             return false;
+        }
+        // Terjemahan milik kamus DevLib sendiri ('Tema', 'Setujui'): teks jadi yang dikirim lagi ke prop teks komponen.
+        if (Lang::isTranslation($text, $lang)) {
+            return true;
         }
 
         return isset((self::$cache['v'][$lang][$context] ??= array_flip(self::context($context, $lang)))[$text]);
@@ -185,8 +203,9 @@ final class Dictionary
         if ($en === '' || mb_strlen($en) > 255 || ! preg_match('/\p{L}/u', $en) || Lang::hasRaw($en) || self::looksIndonesian($en) || self::looksLikeData($en)) {
             return;
         }
-        // Tidak mencatat dari console/test (kecuali register() eksplisit) supaya test tidak mengotori kamus.
-        if (! $force && (app()->runningInConsole() || ! config('devlib.dictionary_autoregister', true))) {
+        // Tidak mencatat dari console/test (kecuali register() eksplisit, atau uji render layar yang memintanya lewat
+        // recordInConsole()) supaya test tidak mengotori kamus.
+        if (! $force && ((app()->runningInConsole() && ! self::$recordInConsole) || ! config('devlib.dictionary_autoregister', true))) {
             return;
         }
         if (isset(self::$pending[$context][$en]) || isset(self::sources($context)[$en]) || self::isTranslation($en, $context)) {

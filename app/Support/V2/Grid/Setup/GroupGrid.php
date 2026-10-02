@@ -83,7 +83,7 @@ class GroupGrid extends DbGrid
     protected function row(Model $m): array
     {
         return [
-            'name' => $m->group_name, 'code' => $m->group_code, 'level' => $m->mgmt_level, 'level_name' => self::LEVELS[$m->mgmt_level] ?? null,
+            'name' => $m->group_name, 'code' => $m->group_code, 'level' => $m->mgmt_level, 'level_name' => isset(self::LEVELS[$m->mgmt_level]) ? t(self::LEVELS[$m->mgmt_level]) : null,
             'members' => (int) $m->users_count, 'filled' => $m->users_count > 0 ? 'Has members' : 'Empty',
         ];
     }

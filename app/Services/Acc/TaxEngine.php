@@ -98,7 +98,7 @@ class TaxEngine
     // Bayar: jurnal pelunasan hutang pajak ke bank (PPN: saling hapus Keluaran-Masukan).
     public function pay(FinTaxRegister $reg, string $date, string $ntpn, int $bankAccountId, string $user): void
     {
-        abort_if(in_array($reg->status, ['PAID', 'FILED'], true), 422, 'Pajak ini sudah dibayar.');
+        abort_if(in_array($reg->status, ['PAID', 'FILED'], true), 422, t('This tax is already paid.'));
         $acc = fn ($c) => (int) FinAccount::withoutGlobalScopes()->where('account_code', $c)->value('account_id');
         $amount = round((float) $reg->payable_amount, 2);
         if ($reg->tax_code === 'PPN_OUT') {
@@ -122,7 +122,7 @@ class TaxEngine
 
     public function file(FinTaxRegister $reg, string $ref, string $user): void
     {
-        abort_unless($reg->status === 'PAID' || (float) $reg->payable_amount <= 0, 422, 'Setor pajak dulu sebelum lapor (kecuali nihil/lebih bayar).');
+        abort_unless($reg->status === 'PAID' || (float) $reg->payable_amount <= 0, 422, t('Pay the tax first before filing (except nil/overpaid).'));
         $reg->update(['status' => 'FILED', 'filing_ref' => $ref, 'filed_at' => now(), 'updated_by' => $user]);
     }
 
@@ -174,10 +174,10 @@ class TaxEngine
         $cit = FinTaxRegister::where('tax_code', 'PPH_BADAN')->where('fiscal_year', $year)->first();
 
         return [
-            ['Output VAT reconciliation', abs($invTax - $glOut) < 1 ? 'Sales invoices and GL output VAT aligned' : 'Invoice Rp '.number_format($invTax, 0, ',', '.').' vs GL Rp '.number_format($glOut, 0, ',', '.'), abs($invTax - $glOut) < 1 ? 'Matched' : 'Review'],
-            ['Input VAT reconciliation', $unvalidated ? "{$unvalidated} supplier tax invoices not validated" : 'All supplier tax invoices validated', $unvalidated ? 'Review' : 'Matched'],
-            ['PPh 21 payroll reconciliation', abs($payroll - $pph21Reg) < 1 ? 'Payroll tax liability agrees to payroll' : 'Payroll Rp '.number_format($payroll, 0, ',', '.').' vs register Rp '.number_format($pph21Reg, 0, ',', '.'), abs($payroll - $pph21Reg) < 1 ? 'Matched' : 'Review'],
-            ['Fiscal adjustment workpaper', $cit ? 'PPh Badan provision booked; fiscal corrections pending review' : 'CIT provision not yet calculated', $cit ? 'Draft' : 'Review'],
+            [t('Output VAT reconciliation'), abs($invTax - $glOut) < 1 ? t('Sales invoices and GL output VAT aligned') : tf('Invoice Rp :invoice vs GL Rp :gl', ['invoice' => number_format($invTax, 0, ',', '.'), 'gl' => number_format($glOut, 0, ',', '.')]), abs($invTax - $glOut) < 1 ? 'Matched' : 'Review'],
+            [t('Input VAT reconciliation'), $unvalidated ? tf(':n supplier tax invoices not validated', ['n' => $unvalidated]) : t('All supplier tax invoices validated'), $unvalidated ? 'Review' : 'Matched'],
+            [t('PPh 21 payroll reconciliation'), abs($payroll - $pph21Reg) < 1 ? t('Payroll tax liability agrees to payroll') : tf('Payroll Rp :payroll vs register Rp :register', ['payroll' => number_format($payroll, 0, ',', '.'), 'register' => number_format($pph21Reg, 0, ',', '.')]), abs($payroll - $pph21Reg) < 1 ? 'Matched' : 'Review'],
+            [t('Fiscal adjustment workpaper'), $cit ? t('PPh Badan provision booked; fiscal corrections pending review') : t('CIT provision not yet calculated'), $cit ? 'Draft' : 'Review'],
         ];
     }
 }

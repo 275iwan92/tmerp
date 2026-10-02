@@ -64,7 +64,7 @@ class Ribbon extends DevlibComponent
 
         if ($hasMenu && ! empty($it['split'])) {
             return '<div class="dl-rb__split is-'.$size.'"><button type="button" class="'.$cls.'" data-rb-key="'.$key.'" title="'.$title.'"'.$tip.'>'.$icon.($size === 'lg' ? '' : $label).'</button>'
-                .'<button type="button" class="dl-rb__arrow" data-rb-drop aria-label="'.e($it['label']).' — pilihan">'.($size === 'lg' ? $label : '').'<i class="fa-solid fa-caret-down"></i></button>'.$this->menu($it['menu']).'</div>';
+                .'<button type="button" class="dl-rb__arrow" data-rb-drop aria-label="'.e($it['label'].' — '.\Devlib\Lang::text('options')).'">'.($size === 'lg' ? $label : '').'<i class="fa-solid fa-caret-down"></i></button>'.$this->menu($it['menu']).'</div>';
         }
         if ($hasMenu) {
             return '<div class="dl-rb__drop"><button type="button" class="'.$cls.'" data-rb-drop title="'.$title.'"'.$tip.'>'.$icon.$label.'<i class="fa-solid fa-caret-down dl-rb__caret"></i></button>'.$this->menu($it['menu']).'</div>';
@@ -120,7 +120,7 @@ class Ribbon extends DevlibComponent
                         <button type="button" role="tab" class="dl-rb__tab {{ ($active ?? $tabs[0]['key']) === $t['key'] ? 'is-active' : '' }}" data-rb-tab="{{ $t['key'] }}" data-rb-tip="{{ $t['tip'] ?? strtoupper(mb_substr($t['label'], 0, 1)) }}">{{ $t['label'] }}</button>
                     @endforeach
                     <span class="dl-print__spacer"></span>
-                    <button type="button" class="dl-rb__pin" data-rb-pin title="Ciutkan / sematkan ribbon (Ctrl+F1)" aria-label="Ciutkan ribbon"><i class="fa-solid fa-chevron-up"></i></button>
+                    <button type="button" class="dl-rb__pin" data-rb-pin title="{{ \Devlib\Lang::text('Collapse / pin the ribbon (Ctrl+F1)') }}" aria-label="{{ \Devlib\Lang::text('Collapse ribbon') }}"><i class="fa-solid fa-chevron-up"></i></button>
                 </div>
                 <div class="dl-rb__body" data-rb-body>
                     @foreach ($tabs as $t)
@@ -133,7 +133,7 @@ class Ribbon extends DevlibComponent
                 </div>
                 @if ($file)
                     <div class="dl-rb__stage" data-rb-stage hidden>
-                        <nav class="dl-rb__stagenav"><button type="button" data-rb-stagex><i class="fa-solid fa-circle-arrow-left"></i> Kembali</button>
+                        <nav class="dl-rb__stagenav"><button type="button" data-rb-stagex><i class="fa-solid fa-circle-arrow-left"></i> {{ \Devlib\Lang::text('Back') }}</button>
                             @foreach ($file as $f)<button type="button" data-rb-key="{{ $f['key'] ?? $f['label'] }}">{!! $icon($f['icon'] ?? null) !!} {{ $f['label'] }}</button>@endforeach
                         </nav>
                         <div class="dl-rb__stagebody">{{ $slot }}</div>

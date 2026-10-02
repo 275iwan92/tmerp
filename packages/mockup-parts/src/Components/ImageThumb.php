@@ -10,7 +10,7 @@ class ImageThumb extends DevlibComponent
     public function __construct(
         public string $label = 'Artwork',
         public ?string $src = null,
-        public string $empty = 'Tak ada',
+        public string $empty = 'No image',
         public bool $highlight = false,
         public ?string $source = null,
     ) {}

@@ -180,7 +180,7 @@
       this.aiBody.appendChild(card);
       if (id) {
         const fb = document.createElement('div'); fb.className = 'dl-ai__fb'; fb.dataset.id = id;
-        fb.innerHTML = [[1, 'thumbs-up'], [-1, 'thumbs-down']].map(([v, ic]) => `<button type="button" data-dl-ai-fb="${v}" class="${feedback === v ? 'is-on' : ''}" aria-label="${v > 0 ? 'Good answer' : 'Bad answer'}"><i class="fa-${feedback === v ? 'solid' : 'regular'} fa-${ic}"></i></button>`).join('');
+        fb.innerHTML = [[1, 'thumbs-up'], [-1, 'thumbs-down']].map(([v, ic]) => `<button type="button" data-dl-ai-fb="${v}" class="${feedback === v ? 'is-on' : ''}" aria-label="${esc(T(v > 0 ? 'sh_ai_good' : 'sh_ai_bad'))}"><i class="fa-${feedback === v ? 'solid' : 'regular'} fa-${ic}"></i></button>`).join('');
         this.aiBody.appendChild(fb);
       }
       this.aiBody.scrollTop = this.aiBody.scrollHeight;
@@ -249,7 +249,7 @@
       this.userMenu.addEventListener('click', e => {
         e.stopPropagation();
         const fl = e.target.closest('[data-dl-lang]');
-        if (fl) { $$(this.userMenu, '.dl-um-flag').forEach(x => x.classList.remove('is-active')); fl.classList.add('is-active'); toast('Bahasa: ' + (fl.dataset.dlLang === 'id' ? 'Indonesia' : 'English')); return; }
+        if (fl) { $$(this.userMenu, '.dl-um-flag').forEach(x => x.classList.remove('is-active')); fl.classList.add('is-active'); toast(T('language') + ': ' + (fl.dataset.dlLang === 'id' ? 'Indonesia' : 'English')); return; }
         const b = e.target.closest('[data-dl-um]'); if (!b) return;
         if (b.dataset.dlUm !== 'devmode') this.userMenu.classList.remove('is-open');
         this.command(b.dataset.dlUm);
@@ -267,8 +267,8 @@
     // Bantuan = tab biasa (bukan item menu): didaftarkan sekali sebagai item HELP lalu dibuka seperti menu.
     openHelp() {
       const url = this.el.dataset.dlHelp;
-      if (!url) { toast('Bantuan & dukungan — segera.'); return; }
-      this.openUrlTab('HELP', 'Bantuan & dukungan', url, 'fa-solid fa-circle-question');
+      if (!url) { toast(T('sh_help_soon')); return; }
+      this.openUrlTab('HELP', T('sh_help'), url, 'fa-solid fa-circle-question');
     }
 
     // Halaman profil bernama (mis. tiket bantuan): Shell Classic tidak punya halaman profil -> Bantuan. LayerShell menimpa.
@@ -313,7 +313,7 @@
       const it = this.findItem(code); if (!it) return;
       if (this.openTabs.has(code)) { this.activate(code); this.toGrid(code, it.url); return; }
       const tab = document.createElement('div'); tab.className = 'dl-tab'; tab.dataset.code = code;
-      tab.innerHTML = `<span><i class="${esc(it.icon || typeIcon(it.type))}"></i></span><span class="tlbl">${esc(it.label)}</span><button type="button" class="tx" title="Tutup">×</button>`;
+      tab.innerHTML = `<span><i class="${esc(it.icon || typeIcon(it.type))}"></i></span><span class="tlbl">${esc(it.label)}</span><button type="button" class="tx" title="${esc(T('close'))}">×</button>`;
       tab.addEventListener('click', ev => { if (ev.target.classList.contains('tx')) { ev.stopPropagation(); this.closeTab(code); } else this.activate(code); });
       this.tabbar.appendChild(tab);
       const pane = document.createElement('div'); pane.className = 'dl-pane is-framed';

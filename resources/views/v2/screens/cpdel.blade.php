@@ -22,8 +22,8 @@
         'LATE' => 'Late', 'SHIPPED' => 'Shipped'];
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $d)
     {{-- Tanpa kotak KPI (user 2026-10-02, aturan C.22 + C.32): baris berwarna menurut jatuh tempo slot (hari kerja) + kolom Due;
@@ -44,13 +44,13 @@
             ['key' => 'production', 'label' => 'Production'],
             ['key' => 'state', 'label' => 'Promise', 'type' => 'badge', 'tones' => Promise::STATES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'spec', 'label' => 'Specification'],
-            ['key' => 'order_qty', 'label' => 'Order Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'ship_qty', 'label' => 'This Shipment', 'type' => 'number'],
-            ['key' => 'due', 'label' => 'Due Date', 'type' => 'date'],
+        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'spec', 'label' => t('Specification')],
+            ['key' => 'order_qty', 'label' => t('Order Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'ship_qty', 'label' => t('This Shipment'), 'type' => 'number'],
+            ['key' => 'due', 'label' => t('Due Date'), 'type' => 'date'],
         ]]"
         :stats="[
             ['label' => 'All'],
@@ -113,7 +113,7 @@
             <x-dl::field.display label="Production" :value="$posted ? Locale::dt($d->posted_at).' · '.$d->posted_by : t('not posted')" :source="Src::of('tm2sdi.co_order_delivery.posted_at')" />
         </x-dl::form.row>
         <x-dl::alert :tone="in_array($state, ['LATE', 'ESCALATED'], true) ? 'danger' : ($state === 'ALIGNED' || $state === 'SHIPPED' ? 'success' : 'warn')" :message="$next" />
-        @foreach ($problems as $p)<x-dl::alert tone="warn" :message="$p" />@endforeach
+        @foreach ($problems as $p)<x-dl::alert tone="warn" :message="raw($p)" />@endforeach
     </x-dl::card>
 
     @if ($planned && Promise::canPlan($user))
@@ -145,7 +145,7 @@
                     <x-dl::field.select name="reason_code" label="Reason" :options="['' => '—'] + Promise::reasons()" :value="old('reason_code')" hint="Required when an agreed slot changes or the shipment is split" :source="Src::of('tm2sdi.co_delay_reason')" />
                 </x-dl::form.row>
                 <x-dl::form.row cols="3">
-                    <x-dl::field.select name="channel" label="Agreed via" required :options="Promise::CHANNELS" :value="old('channel', 'WHATSAPP')" :source="Src::of('tm2sdi.co_delivery_negotiation.channel')" />
+                    <x-dl::field.select name="channel" label="Agreed via" required :options="array_map(fn ($l) => t($l), Promise::CHANNELS)" :value="old('channel', 'WHATSAPP')" :source="Src::of('tm2sdi.co_delivery_negotiation.channel')" />
                     <x-dl::field.text name="customer_contact" label="Customer contact (who agreed)" required :value="old('customer_contact', $d->order?->customer?->contact_name)" :source="Src::of('tm2sdi.co_delivery_negotiation.customer_contact')" />
                     <x-dl::field.text name="note" label="Note" :value="old('note')" :source="Src::of('tm2sdi.co_delivery_negotiation.note')" />
                 </x-dl::form.row>
@@ -157,7 +157,7 @@
             <x-dl::action-form action="{{ route('v2.cpdel.reject', $d->id_delivery) }}">
                 <x-dl::card title="Customer refused" icon="fa-circle-exclamation" description="The customer does not accept a new slot or split. This escalates the line to the Operational Manager.">
                     <x-dl::form.row cols="3">
-                        <x-dl::field.select name="channel" label="Via" required :options="Promise::CHANNELS" value="WHATSAPP" />
+                        <x-dl::field.select name="channel" label="Via" required :options="array_map(fn ($l) => t($l), Promise::CHANNELS)" value="WHATSAPP" />
                         <x-dl::field.text name="customer_contact" label="Customer contact" required :value="$d->order?->customer?->contact_name" />
                         <x-dl::field.text name="note" label="What the customer said" required />
                     </x-dl::form.row>
@@ -172,7 +172,7 @@
             <x-dl::action-form action="{{ route('v2.cpdel.decide', $d->id_delivery) }}">
                 <x-dl::card title="Decision (Operational Manager)" icon="fa-user-tie" description="Production must then commit a new ready time that meets the slot.">
                     <x-dl::form.row cols="2">
-                        <x-dl::field.select name="decision" label="Decision" required :options="Promise::DECISIONS" />
+                        <x-dl::field.select name="decision" label="Decision" required :options="array_map(fn ($l) => t($l), Promise::DECISIONS)" />
                         <x-dl::field.text name="note" label="Instruction" required />
                     </x-dl::form.row>
                     <x-dl::action-bar><x-dl::button preset="save" /></x-dl::action-bar>
@@ -185,7 +185,7 @@
 
     @if ($planned && ! $posted)
         <x-dl::action-form action="{{ route('v2.cpdel.post', $d->id_delivery) }}">
-            <x-dl::card title="Post to Production" icon="fa-industry" description="Creates the Work Order for this line. After posting, the line can be pulled into a Delivery Order / Delivery Note right away (quick jobs of about {{ Locale::number((float) SysConstant::number('QUICK_JOB_MINUTES', 30), 0) }} minutes). Production output must still be entered afterwards: it is the KPI basis for all departments.">
+            <x-dl::card title="Post to Production" icon="fa-industry" :description="raw(t('Creates the Work Order for this line.').' '.tf('After posting, the line can be pulled into a Delivery Order / Delivery Note right away (quick jobs of about :n minutes).', ['n' => Locale::number((float) SysConstant::number('QUICK_JOB_MINUTES', 30), 0)]).' '.t('Production output must still be entered afterwards: it is the KPI basis for all departments.'))">
                 <x-dl::action-bar><x-dl::button type="submit" icon="fa-industry" label="Post to Production" /></x-dl::action-bar>
             </x-dl::card>
         </x-dl::action-form>
@@ -208,7 +208,7 @@
             :rows="$d->negotiations->map(fn ($n) => ['at' => Locale::dt($n->created_at), 'who' => $n->created_by.' ('.$n->actor_role.')', 'event' => t(ucfirst(strtolower(str_replace('_', ' ', $n->event)))),
                 'change' => $n->event === 'READY_COMMITTED' ? t('ready').' '.Locale::dt($n->ready_at) : ($n->new_date ? (Locale::d($n->old_date) ?? '—').' '.substr((string) $n->old_time, 0, 5).' → '.Locale::d($n->new_date).' '.substr((string) $n->new_time, 0, 5).($n->new_qty !== null && (float) $n->new_qty !== (float) $n->old_qty ? ' · '.$num($n->new_qty).' '.$unit : '') : ($n->decision ? t(Promise::DECISIONS[$n->decision] ?? $n->decision) : '—')),
                 'reason' => $n->reason_code ? (Promise::reasons()[$n->reason_code] ?? $n->reason_code) : '—',
-                'via' => $n->channel ? (Promise::CHANNELS[$n->channel] ?? $n->channel).($n->customer_contact ? ' · '.$n->customer_contact : '') : '—', 'note' => $n->note ?? '—'])->all()"
+                'via' => $n->channel ? t(Promise::CHANNELS[$n->channel] ?? $n->channel).($n->customer_contact ? ' · '.$n->customer_contact : '') : '—', 'note' => $n->note ?? '—'])->all()"
             empty="No changes yet: the line is still at its original promise." source="{{ Src::of('tm2sdi.co_delivery_negotiation') }}" />
     </x-dl::card>
 

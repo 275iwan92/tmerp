@@ -25,7 +25,7 @@ class RosterFormationService
     // unit lain >= 1000. Unit formasi selalu tampil walau kosong (baris "Kosong").
     public const FORMASI_SORT_LIMIT = 1000;
 
-    private const DAY_SHORT = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+    private const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     /** @return Carbon[] Senin..Minggu */
     public function dates(Carbon $weekStart): array
@@ -150,13 +150,13 @@ class RosterFormationService
     {
         $idx = array_map(fn ($d) => array_search($d, $dates, true), $mine);
         if (count($idx) === 1) {
-            return self::DAY_SHORT[$idx[0]].' saja';
+            return tf(':day only', ['day' => t(self::DAY_SHORT[$idx[0]])]);
         }
         if ($idx === range($idx[0], end($idx))) {
-            return self::DAY_SHORT[$idx[0]].'–'.self::DAY_SHORT[end($idx)];
+            return t(self::DAY_SHORT[$idx[0]]).'–'.t(self::DAY_SHORT[end($idx)]);
         }
 
-        return implode(', ', array_map(fn ($i) => self::DAY_SHORT[$i], $idx));
+        return implode(', ', array_map(fn ($i) => t(self::DAY_SHORT[$i]), $idx));
     }
 
     /** @return array{today:int, shifts: array<int, array{shift: EmpShift, count:int}>, borongan:int, empty: string[], unscheduled:int} */
@@ -266,7 +266,7 @@ class RosterFormationService
     {
         $range = fn (Carbon $s) => [$s->toDateString(), $s->copy()->addDays(6)->toDateString()];
         if (EmpShiftRoster::where('schedule_id', $scheduleId)->whereBetween('roster_date', $range($to))->exists()) {
-            throw new \RuntimeException('Minggu tujuan sudah berisi jadwal.');
+            throw new \RuntimeException(t('The target week already contains a schedule.'));
         }
 
         $shiftDays = (int) $from->diffInDays($to, false);

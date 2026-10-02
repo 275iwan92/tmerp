@@ -19,7 +19,7 @@ class RawMaterialGrid extends MasterDataGrid
 
     public function title(): string
     {
-        return 'Master Bahan Baku';
+        return t('Master Raw Material');
     }
 
     protected function v1Route(): ?string

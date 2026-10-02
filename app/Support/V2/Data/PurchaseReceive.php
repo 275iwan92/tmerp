@@ -89,7 +89,7 @@ final class PurchaseReceive
     public static function subconLineOptions(int $supplierId): array
     {
         return SpecialReceiptService::openSubconLines($supplierId)->mapWithKeys(fn ($l) => [$l->po_line_id => $l->order->doc_no.' #'.$l->line_no.' · '.$l->i_description
-            .' · open '.Locale::decimal((float) $l->i_qty - (float) $l->c_qty_received, 2).' '.$l->i_uom])->all();
+            .' · '.tf('open :qty', ['qty' => Locale::decimal((float) $l->i_qty - (float) $l->c_qty_received, 2).' '.$l->i_uom])])->all();
     }
 
     // Surat Jalan Subkon (DO jenis SUBCON) ke subkon ini -- rujukan opsional.
@@ -105,13 +105,13 @@ final class PurchaseReceive
         $w = PvBuilderService::supplierWorklist();
         $names = PurchaseOrder::suppliers($w->pluck('i_supplier_id')->all());
 
-        return $w->mapWithKeys(fn ($r) => [$r->i_supplier_id => ($names[$r->i_supplier_id] ?? '#'.$r->i_supplier_id).' · '.$r->open_po_count.' PO, '.$r->open_line_count.' baris terbuka'])->all();
+        return $w->mapWithKeys(fn ($r) => [$r->i_supplier_id => ($names[$r->i_supplier_id] ?? '#'.$r->i_supplier_id).' · '.tf(':po PO, :lines open lines', ['po' => $r->open_po_count, 'lines' => $r->open_line_count])])->all();
     }
 
     public static function openLineOptions(int $supplierId): array
     {
         return PvBuilderService::openLinesForSupplier($supplierId)->mapWithKeys(fn ($l) => [$l->po_line_id => ($l->order->doc_no ?? 'PO').' #'.$l->line_no.' · '.$l->i_description
-            .' · sisa '.Locale::decimal($l->i_qty - (float) $l->c_qty_received, 2).' '.$l->i_uom])->all();
+            .' · '.tf('remaining :qty', ['qty' => Locale::decimal($l->i_qty - (float) $l->c_qty_received, 2).' '.$l->i_uom])])->all();
     }
 
     public static function warehouses(): array
@@ -133,7 +133,7 @@ final class PurchaseReceive
     // Header + baris (qty, lot, lokasi) + QC per baris dari satu form.
     public static function save(PvReceipt $pv, array $in): void
     {
-        abort_unless(in_array($pv->status, ['DRAFT', 'QC_PENDING'], true), 422, 'Penerimaan sudah diposting, tidak bisa diubah.');
+        abort_unless(in_array($pv->status, ['DRAFT', 'QC_PENDING'], true), 422, t('The receipt is already posted and cannot be changed.'));
         $c = self::component($pv->pv_id);
         foreach (self::HEADER as $f) {
             if (array_key_exists($f, $in) && self::changed(self::str($in[$f]), $pv->{$f})) {
@@ -180,7 +180,7 @@ final class PurchaseReceive
     {
         $r = PvPostingService::post($pv->refresh()->load('lines'));
 
-        return [$r['ok'], $r['ok'] ? trim('Penerimaan diposting — stok masuk. '.($r['journal_warning'] ?? '')) : $r['message']];
+        return [$r['ok'], $r['ok'] ? trim(t('Receipt posted — stock is in.').' '.($r['journal_warning'] ?? '')) : $r['message']];
     }
 
     // Cancel = pembalik SPB POSTED (PvPostingService::cancel): stok keluar lagi, PO dihitung ulang, jurnal dibalik.
@@ -188,12 +188,12 @@ final class PurchaseReceive
     {
         $r = PvPostingService::cancel($pv->refresh()->load('lines'), $reason);
 
-        return [$r['ok'], $r['ok'] ? trim('Penerimaan dibatalkan — stok dikeluarkan lagi, PO dihitung ulang. '.($r['journal_warning'] ?? '')) : $r['message']];
+        return [$r['ok'], $r['ok'] ? trim(t('Receipt cancelled — stock taken out again, PO recalculated.').' '.($r['journal_warning'] ?? '')) : $r['message']];
     }
 
     public static function delete(PvReceipt $pv): void
     {
-        abort_unless($pv->status === 'DRAFT', 422, 'Hanya penerimaan DRAFT yang bisa dihapus.');
+        abort_unless($pv->status === 'DRAFT', 422, t('Only a DRAFT receipt can be deleted.'));
         $pv->delete();
     }
 

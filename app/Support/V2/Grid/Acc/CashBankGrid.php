@@ -87,7 +87,7 @@ class CashBankGrid extends AccGrid
     {
         return [
             'voucher_no' => $m->voucher_number ?: 'VCH-'.$m->voucher_id, 'partner' => $m->partner_name, 'date' => $m->entry_date?->toDateString(),
-            'type' => self::TYPES[$m->voucher_type] ?? $m->voucher_type, 'account' => $m->mainAccount ? $m->mainAccount->account_code.' '.$m->mainAccount->account_name : null,
+            'type' => isset(self::TYPES[$m->voucher_type]) ? t(self::TYPES[$m->voucher_type]) : $m->voucher_type, 'account' => $m->mainAccount ? $m->mainAccount->account_code.' '.$m->mainAccount->account_name : null,
             'description' => $m->description, 'reference' => $m->reference_no, 'amount' => $m->totalAmount(),
             'status' => $m->stat_cancel ? 'Cancelled' : (self::STATUSES[$m->status] ?? $m->status),
             'items' => $m->lines->map(fn (FinVoucherLine $l) => ['code' => $l->account?->account_code, 'account' => $l->account?->account_name,

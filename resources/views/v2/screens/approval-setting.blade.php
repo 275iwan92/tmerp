@@ -11,8 +11,8 @@
     abort_if(request('id') && ! $cfg, 404);
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $cfg && ! request('new'))
     <x-dl::grid id="approval-setting-list" :rows="ApprovalSetting::rows()" search="Search module, position..." actions="worklist" :active-key="null"
@@ -22,9 +22,9 @@
             ['key' => 'levels', 'label' => t('Number of Levels'), 'type' => 'number'],
             ['key' => 'approvers', 'label' => t('Approver per Level (position)')],
             ['key' => 'final', 'label' => t('Final Status')],
-            ['key' => 'active', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Aktif' => 'success', 'Nonaktif' => 'neutral']],
+            ['key' => 'active', 'label' => 'Status', 'type' => 'badge', 'tones' => [t('Active') => 'success', t('Inactive') => 'neutral']],
         ]"
-        :stats="[['label' => t('All')], ['label' => t('Active'), 'where' => ['active' => 'Aktif'], 'tone' => 'success'], ['label' => t('Inactive'), 'where' => ['active' => 'Nonaktif'], 'tone' => 'neutral']]" />
+        :stats="[['label' => t('All')], ['label' => t('Active'), 'where' => ['active' => t('Active')], 'tone' => 'success'], ['label' => t('Inactive'), 'where' => ['active' => t('Inactive')], 'tone' => 'neutral']]" />
 @elseif (! $cfg)
     <x-dl::action-form action="{{ route('v2.approval-setting.create') }}">
         <x-dl::card title="+ New Record — Setting Approval" description="The document code (e.g. PR, PO, CO) must match the code used by its document screen.">
@@ -50,15 +50,15 @@
         :tabs="['general' => 'General']"
         :created-by="$cfg->created_by" :created-at="$cfg->created_at?->toDateTimeString()" :updated-by="$cfg->updated_by" :updated-at="$cfg->updated_at?->toDateTimeString()">
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>Kode</span><b>{{ $cfg->module_code }}</b></div>
-            <div class="dl-strip__kv"><span>Dokumen</span><b>{{ $name }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>Jumlah Level</span><b>{{ count($levels) }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>@t('Code')</span><b>{{ $cfg->module_code }}</b></div>
+            <div class="dl-strip__kv"><span>@t('Document')</span><b>{{ $name }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>@t('Number of Levels')</span><b>{{ count($levels) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">
                 <x-dl::field.text name="notes" label="Description" :value="$cfg->notes" :source="Src::of('tm2mst.flow_config.notes')" />
                 <x-dl::field.text name="final_status" label="Document status after the last level" :case-toggle="false" :value="$cfg->final_status" :source="Src::of('tm2mst.flow_config.final_status')" />
-                <x-dl::field.display label="Status when rejected" :value="($cfg->reject_status ?? 'REJECTED').' (final)'" :source="Src::of('tm2mst.flow_config.reject_status')" />
+                <x-dl::field.display label="Status when rejected" :value="($cfg->reject_status ?? 'REJECTED').' '.t('(final)')" :source="Src::of('tm2mst.flow_config.reject_status')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:detail>

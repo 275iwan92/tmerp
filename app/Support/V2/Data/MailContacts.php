@@ -32,7 +32,7 @@ class MailContacts
             ->where(fn ($w) => $w->where('customer_name', 'like', $like)->orWhere('email', 'like', $like))
             ->orderBy('customer_name')->limit(self::PER_SOURCE)->get(['id_customer', 'customer_name', 'email']);
         foreach ($customers as $c) {
-            $rows[] = ['name' => $c->customer_name, 'email' => $c->email, 'group' => 'Customer'];
+            $rows[] = ['name' => $c->customer_name, 'email' => $c->email, 'group' => t('Customer')];
         }
 
         // Kontak: cocok di nama kontak / e-mail, atau milik customer yang namanya cocok (dua query, bukan join lintas-model).
@@ -42,14 +42,14 @@ class MailContacts
             ->orderBy('contact_name')->limit(self::PER_SOURCE)->get(['customer_id', 'contact_name', 'email']);
         $names = CustCustomer::query()->whereIn('id_customer', $contacts->pluck('customer_id')->unique())->pluck('customer_name', 'id_customer');
         foreach ($contacts as $c) {
-            $rows[] = ['name' => $c->contact_name, 'email' => $c->email, 'group' => (string) ($names[$c->customer_id] ?? 'Customer')];
+            $rows[] = ['name' => $c->contact_name, 'email' => $c->email, 'group' => (string) ($names[$c->customer_id] ?? t('Customer'))];
         }
 
         $suppliers = $hasMail(SupSupplier::query())->where('activate', 1)
             ->where(fn ($w) => $w->where('supplier_name', 'like', $like)->orWhere('email', 'like', $like))
             ->orderBy('supplier_name')->limit(self::PER_SOURCE)->get(['id_supplier', 'supplier_name', 'email']);
         foreach ($suppliers as $s) {
-            $rows[] = ['name' => $s->supplier_name, 'email' => $s->email, 'group' => 'Supplier'];
+            $rows[] = ['name' => $s->supplier_name, 'email' => $s->email, 'group' => t('Supplier')];
         }
 
         $supplierIds = SupSupplier::query()->where('supplier_name', 'like', $like)->limit(50)->pluck('id_supplier');
@@ -58,14 +58,14 @@ class MailContacts
             ->orderBy('contact_name')->limit(self::PER_SOURCE)->get(['supplier_id', 'contact_name', 'email']);
         $names = SupSupplier::query()->whereIn('id_supplier', $contacts->pluck('supplier_id')->unique())->pluck('supplier_name', 'id_supplier');
         foreach ($contacts as $c) {
-            $rows[] = ['name' => $c->contact_name, 'email' => $c->email, 'group' => (string) ($names[$c->supplier_id] ?? 'Supplier')];
+            $rows[] = ['name' => $c->contact_name, 'email' => $c->email, 'group' => (string) ($names[$c->supplier_id] ?? t('Supplier'))];
         }
 
         $users = $hasMail(SecUser::query())->where('activate', 1)
             ->where(fn ($w) => $w->where('name', 'like', $like)->orWhere('login', 'like', $like)->orWhere('email', 'like', $like))
             ->orderBy('name')->limit(self::PER_SOURCE)->get(['login', 'name', 'email']);
         foreach ($users as $u) {
-            $rows[] = ['name' => $u->name ?: $u->login, 'email' => $u->email, 'group' => 'User'];
+            $rows[] = ['name' => $u->name ?: $u->login, 'email' => $u->email, 'group' => t('User')];
         }
 
         // Satu alamat sekali saja (yang pertama ditemukan menang), dibatasi supaya daftar tetap ringkas.

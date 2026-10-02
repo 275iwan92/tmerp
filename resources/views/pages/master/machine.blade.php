@@ -893,7 +893,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                     <div @if ($activeTab !== 'identity') style="display:none" @endif>
                         <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-3">
                             <x-form.input label="Kode Asset / Mesin *" name="machine_code" wire:model="machine_code" placeholder="mis. OFF-01" hint="Prefix jenis + nomor urut" />
-                            <x-form.select label="Kondisi Status" name="machine_status" wire:model="machine_status" :placeholder="false" :options="\App\Models\Master\ProdMachine::STATUSES" />
+                            <x-form.select label="Kondisi Status" name="machine_status" wire:model="machine_status" :placeholder="false" :options="array_map('t', \App\Models\Master\ProdMachine::STATUSES)" />
                             <x-form.select label="Status Master" wire:model="machine_activate" :placeholder="false" :options="['1' => 'Aktif (dimiliki)', '0' => 'Nonaktif (dilepas)']" />
                         </div>
                         <p class="text-[11px] text-muted mt-1.5">Dua status sengaja dipisah: <strong>Kondisi</strong> berubah harian (rusak/perawatan), <strong>Status Master</strong> hanya saat mesin benar-benar dilepas. Mesin rusak tetap aktif di master supaya histori routing & WO-nya utuh.</p>
@@ -924,7 +924,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                         </div>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                            <x-form.select label="Tingkat Kritis" name="criticality" wire:model="criticality" :options="\App\Models\Master\ProdMachine::CRITICALITY" placeholder="— belum dinilai —" />
+                            <x-form.select label="Tingkat Kritis" name="criticality" wire:model="criticality" :options="array_map('t', \App\Models\Master\ProdMachine::CRITICALITY)" placeholder="— belum dinilai —" />
                             <x-form.input label="Kode Plant / Pabrik" name="plant_code" wire:model="plant_code" placeholder="mis. P1" />
                             <x-form.input label="Letak di Lantai Produksi" name="location_note" wire:model="location_note" placeholder="mis. Blok B, dekat gudang plate" />
                         </div>
@@ -1130,7 +1130,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                                 <x-slot:intro>Terencana atau tidak <strong>ditentukan otomatis dari jenisnya</strong>, bukan dipilih operator — kalau bisa dipilih, Availability gampang dipoles.</x-slot:intro>
                                 <div class="[display:grid] grid-cols-1 md:grid-cols-5 gap-2.5 items-end">
                                     <x-form.select label="Jenis" name="dtKind" wire:model="dtKind" :placeholder="false"
-                                        :options="collect(\App\Models\Master\ProdMachineDowntime::KINDS)->map(fn ($k) => $k['label'])->all()" />
+                                        :options="collect(\App\Models\Master\ProdMachineDowntime::KINDS)->map(fn ($k) => t($k['label']))->all()" />
                                     <x-form.date-picker label="Mulai" name="dtStart" wire:model="dtStart" mode="datetime" />
                                     <x-form.date-picker label="Selesai" name="dtEnd" wire:model="dtEnd" mode="datetime" hint="Kosongkan bila masih berlangsung" />
                                     <x-form.input label="Penyebab" name="dtCause" wire:model="dtCause" placeholder="mis. roller tinta macet" />

@@ -24,7 +24,7 @@
           this.tops().forEach(t => t.classList.toggle('is-current', t.contains(k)));
           this.close(); this.el.classList.remove('is-mobile');
           const label = k.textContent.trim();
-          if (this.el.dispatchEvent(new CustomEvent('dl:menu', {bubbles: true, cancelable: true, detail: {key: k.dataset.mmKey, label}}))) toast(`Buka: ${label} (pratinjau)`);
+          if (this.el.dispatchEvent(new CustomEvent('dl:menu', {bubbles: true, cancelable: true, detail: {key: k.dataset.mmKey, label}}))) toast(Devlib.h.Tf('open_preview', {x: label}));
         }
       });
       this.el.addEventListener('keydown', e => {

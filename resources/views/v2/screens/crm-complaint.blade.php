@@ -19,8 +19,8 @@
     $labels = fn (array $list) => array_map(fn ($l) => t($l), $list);
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $doc && ! request('new'))
     <x-dl::grid id="crm-complaint-list" :rows="CrmComplaints::rows()" search="Search complaint no., customer, product..." actions="worklist" :active-key="null"
@@ -37,12 +37,12 @@
             ['key' => 'resolution', 'label' => 'Resolution'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => CrmComplaints::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'qty', 'label' => 'Qty Complained', 'type' => 'number'],
-            ['key' => 'returned', 'label' => 'Qty Returned', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'defect', 'label' => 'Problem'],
+        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'qty', 'label' => t('Qty Complained'), 'type' => 'number'],
+            ['key' => 'returned', 'label' => t('Qty Returned'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'defect', 'label' => t('Problem')],
         ]]"
         :stats="[
             ['label' => 'All'],

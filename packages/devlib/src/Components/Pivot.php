@@ -43,11 +43,11 @@ class Pivot extends DevlibComponent
             <div {{ $attributes->class('dl-pivot') }} {!! $dl() !!} data-dl-pivot data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
                 <div class="dl-pivot__bar">
                     @if ($title)<b class="dl-pivot__title">{{ $title }}</b>@endif
-                    <label><span>Baris</span><select data-p-row="0"></select></label>
-                    <label><span>Sub-baris</span><select data-p-row="1"><option value="">—</option></select></label>
-                    <label><span>Kolom</span><select data-p-col><option value="">—</option></select></label>
-                    <label><span>Nilai</span><select data-p-val></select></label>
-                    <div class="dl-segment" data-p-agg><button type="button" class="dl-segment__opt" data-value="sum">Jumlah</button><button type="button" class="dl-segment__opt" data-value="count">Hitung</button><button type="button" class="dl-segment__opt" data-value="avg">Rata²</button><button type="button" class="dl-segment__opt" data-value="min">Min</button><button type="button" class="dl-segment__opt" data-value="max">Maks</button></div>
+                    <label><span>{{ \Devlib\Lang::text('Row') }}</span><select data-p-row="0"></select></label>
+                    <label><span>{{ \Devlib\Lang::text('Sub-row') }}</span><select data-p-row="1"><option value="">—</option></select></label>
+                    <label><span>{{ \Devlib\Lang::text('Column') }}</span><select data-p-col><option value="">—</option></select></label>
+                    <label><span>{{ \Devlib\Lang::text('Value') }}</span><select data-p-val></select></label>
+                    <div class="dl-segment" data-p-agg><button type="button" class="dl-segment__opt" data-value="sum">{{ \Devlib\Lang::text('Sum') }}</button><button type="button" class="dl-segment__opt" data-value="count">{{ \Devlib\Lang::text('Row count') }}</button><button type="button" class="dl-segment__opt" data-value="avg">{{ \Devlib\Lang::text('Avg') }}</button><button type="button" class="dl-segment__opt" data-value="min">Min</button><button type="button" class="dl-segment__opt" data-value="max">{{ \Devlib\Lang::text('Max') }}</button></div>
                     <label class="dl-choice"><input type="checkbox" data-p-pct> % total</label>
                     <label class="dl-choice"><input type="checkbox" data-p-heat checked> Heatmap</label>
                     <x-dl::button variant="secondary" size="sm" icon="export" label="Export" data-p-export />

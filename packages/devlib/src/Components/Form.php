@@ -60,7 +60,7 @@ class Form extends DevlibComponent
 
     public function panelTabs(): array
     {
-        return ($this->tabs ?: ['main' => 'Data']) + ['audit' => ['History', 'fa-clock-rotate-left']];
+        return ($this->tabs ?: ['main' => 'Data']) + ['audit' => [\Devlib\Lang::text('History'), 'fa-clock-rotate-left']];
     }
 
     // dd-Mmm-yyyy HH:mm, sama dgn tanggal grid.
@@ -228,7 +228,7 @@ class Form extends DevlibComponent
                                     </div>
                                     @if ($log)
                                         <div class="dl-form__logwrap"><table class="dl-form__log">
-                                            <thead><tr><th>Date &amp; time</th><th>By</th><th>Action</th><th>Note</th></tr></thead>
+                                            <thead><tr><th>{{ \Devlib\Lang::text('Date & time') }}</th><th>{{ \Devlib\Lang::text('By') }}</th><th>{{ \Devlib\Lang::text('Action') }}</th><th>{{ \Devlib\Lang::text('Note') }}</th></tr></thead>
                                             <tbody>@foreach ($log as $e)<tr><td>{{ $stamp($e['at'] ?? null) }}</td><td>{{ $e['by'] ?? '' }}</td><td><span class="dl-form__logact dl-form__logact--{{ strtolower(str_replace(' ', '-', $e['action'] ?? '')) }}">{{ $e['action'] ?? '' }}</span></td><td>{{ $e['note'] ?? '' }}</td></tr>@endforeach</tbody>
                                         </table></div>
                                     @endif

@@ -10,7 +10,7 @@ class Drilldown extends DevlibComponent
     public function __construct(
         public string $link = '',
         public string $labelKey = 'name',
-        public string $title = 'Ringkasan',
+        public string $title = 'Summary',
     ) {}
 
     public function tag(): string

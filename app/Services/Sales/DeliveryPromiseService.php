@@ -65,11 +65,11 @@ final class DeliveryPromiseService
     public static function receivingText(?CustReceivingHour $h): string
     {
         if (! $h || ! $h->is_open) {
-            return 'Closed';
+            return t('Closed that day');
         }
         $t = fn ($v) => substr((string) $v, 0, 5);
 
-        return $t($h->open_time).'-'.$t($h->close_time).($h->break_start ? ' (break '.$t($h->break_start).'-'.$t($h->break_end).')' : '');
+        return $t($h->open_time).'-'.$t($h->close_time).($h->break_start ? ' ('.t('break').' '.$t($h->break_start).'-'.$t($h->break_end).')' : '');
     }
 
     public static function withinHours(?CustReceivingHour $h, CarbonImmutable $at): bool
@@ -91,18 +91,18 @@ final class DeliveryPromiseService
             'received_by' => ['nullable', 'string', 'max:100', 'required_if:result,RECEIVED,PARTIAL'],
             'miss_cause' => ['nullable', Rule::in(array_keys(self::CAUSES))],
             'notes' => ['nullable', 'string', 'max:500'],
-        ], [], ['arrived_at' => 'Arrived at', 'result' => 'Result', 'received_by' => 'Received by', 'miss_cause' => 'Cause'])->validate();
+        ], [], ['arrived_at' => t('Arrived at'), 'result' => t('Result'), 'received_by' => t('Received by'), 'miss_cause' => t('Cause')])->validate();
 
         $promise = self::promise($do);
         $arrived = empty($data['arrived_at']) ? null : CarbonImmutable::parse($data['arrived_at']);
         $kept = self::kept($data['result'], $arrived, $promise['date'], $promise['time']);
         if (! $kept && empty($data['miss_cause'])) {
-            throw ValidationException::withMessages(['miss_cause' => 'Promise missed: choose the cause.']);
+            throw ValidationException::withMessages(['miss_cause' => t('Promise missed: choose the cause.')]);
         }
         $received = self::receivedLines($do, $data['result'], (array) ($in['received'] ?? []));
         foreach ($received as $row) {
             if ($row['qty'] < (float) $row['line']->qty_do - 0.005 && ! $row['reason']) {
-                throw ValidationException::withMessages(['received' => 'Choose the Reason for Difference on every line the customer received less than what was shipped.']);
+                throw ValidationException::withMessages(['received' => t('Choose the Reason for Difference on every line the customer received less than what was shipped.')]);
             }
         }
 

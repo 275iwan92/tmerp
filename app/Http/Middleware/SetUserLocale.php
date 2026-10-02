@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Devlib\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,9 +26,9 @@ class SetUserLocale
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
-
-        App::setLocale($user?->lang_code ?: 'id');
+        // Satu sumber bahasa untuk Laravel (pesan validasi lang/, Carbon) dan DevLib (label, angka, tanggal):
+        // bahasa akun user, cookie perangkat untuk tamu, ?print_lang untuk cetakan (Devlib\Locale::lang).
+        App::setLocale(Locale::lang());
 
         return $next($request);
     }

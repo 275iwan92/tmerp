@@ -55,7 +55,7 @@ class DateSlider extends Slider
 
     public function tickList(): array
     {
-        $names = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        $names = array_values(\Devlib\Locale::spec()['months']);
         $d = new DateTimeImmutable($this->from);
         $end = new DateTimeImmutable($this->until);
         $out = [[0, $names[(int) $d->format('n') - 1].' '.$d->format('Y')]];

@@ -16,6 +16,7 @@ use Devlib\Lang;
 use Devlib\Locale;
 use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
@@ -49,6 +50,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Aturan tampil per bahasa (angka, bulan) + terjemahan label DevLib dari kamus DB (LOCKED user 2026-10-01).
         Locale::languagesUsing(fn () => Dictionary::languages());
+        // Bahasa tampilan ikut AKUN (sec_user.lang_code), bukan cookie perangkat; tamu / halaman login memakai cookie.
+        Locale::langUsing(fn () => Auth::user()?->lang_code);
         Lang::translateUsing(fn (string $en, string $lang) => Dictionary::t($en, 'ui', $lang));
         Lang::dictUsing(fn (string $lang) => Dictionary::uiMap($lang));
         Blade::directive('t', fn ($e) => "<?php echo e(t($e)); ?>");
