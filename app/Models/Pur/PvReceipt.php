@@ -35,9 +35,13 @@ class PvReceipt extends Model
         return $this->hasMany(PvLine::class, 'pv_id', 'pv_id')->orderBy('line_no');
     }
 
-    public static function nextDocNo(): string
+    // Seri nomor per jenis penerimaan (user 2026-10-02): SPB hanya untuk penerimaan dari supplier, supaya urutan nomor SPB
+    // bisa diperiksa accounting terhadap tagihan supplier; bahan baku dari customer dan barang dari subkon punya seri sendiri.
+    public const NUMBER_PREFIX = ['PO' => 'SPB', 'CUSTOMER' => 'PBC', 'SUBCON' => 'PBS'];
+
+    public static function nextDocNo(string $type = 'PO'): string
     {
-        $prefix = 'SPB'.now()->format('y');
+        $prefix = (self::NUMBER_PREFIX[$type] ?? self::NUMBER_PREFIX['PO']).now()->format('y');
 
         $last = static::where('doc_no', 'like', "{$prefix}%")
             ->lockForUpdate()

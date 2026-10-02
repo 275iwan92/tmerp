@@ -197,10 +197,23 @@ Object.assign(SAMPLES, {
         more: [],
     },
     GoodsReceipt: {
-        data: {...PRINTED, number: 'SPB2600031', date: '2026-10-08', status: 'POSTED', receipt_type: 'Dari Supplier', po_no: 'PO26000001976', supplier_dn: 'SJ-0925/MJU', vehicle: 'L 9123 UX', warehouse: 'Gudang Bahan Baku',
+        data: {...PRINTED, number: 'SPB2600031', date: '2026-10-08', status: 'POSTED', po_no: 'PO26000001976', supplier_dn: 'SJ-0925/MJU', vehicle: 'L 9123 UX', warehouse: 'Gudang Bahan Baku',
             createdBy: 'Yuna', party: {name: 'PT MAKMUR JAYA USAHA', lines: []},
             notes: [['Catatan', '1 rim sobek di sisi luar, ditolak dan dibawa kembali oleh pengirim.']],
             rows: [{name: 'DC 310 IKA DA GR 79 x 109 CM', qty: 23, unit: 'RIM', accepted: 22, rejected: 1, lot_no: 'R8-2610', remark: '1 rim sobek'}]},
+        more: [],
+    },
+    CustomerMaterialReceipt: {
+        data: {...PRINTED, number: 'PBC2600003', date: '2026-10-06', status: 'POSTED', co_no: 'CO2600029', supplier_dn: 'SJ-RUDI-014', vehicle: 'N 8841 AB', warehouse: 'Gudang Bahan Baku',
+            contact: 'PAK RUDI · +62 812-3567-289', createdBy: 'Yuna', party: {name: 'PAK RUDI LAWANG', lines: ['Jl. Argopuro no. 24', 'Lawang']},
+            rows: [{name: 'Duplex 310 gr 65 x 100 cm (bahan customer)', sub: 'Folding Box Kosmetik Duplex', qty: 70, unit: 'LBR', accepted: 70, lot_no: 'CUST-1006'}]},
+        more: [],
+    },
+    SubconGoodsReceipt: {
+        data: {...PRINTED, number: 'PBS2600002', date: '2026-10-07', status: 'POSTED', po_no: 'PO2600008', our_dn: 'DO/26/00041', supplier_dn: 'SJ-CG-0331', vehicle: 'N 9027 CD', warehouse: 'Gudang Setengah Jadi',
+            createdBy: 'Yuna', party: {name: 'CENTRAL GRAFIK', lines: ['Malang']},
+            notes: [['Catatan', '10 lembar kurang, disusulkan subkon paling lambat 09-Okt-2026.']],
+            rows: [{name: 'Laminasi Doff - printed body sheets', sub: 'CO2600029', qty: 490, unit: 'LBR', accepted: 490, remark: 'Kurang 10 lbr'}]},
         more: [],
     },
     MaterialBooking: {

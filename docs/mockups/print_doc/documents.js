@@ -296,8 +296,9 @@ PrintDoc.register(class GoodsReceipt extends PrintDoc {
     static title = 'SURAT PENERIMAAN BARANG';   // nama dokumen = SPB, Surat Penerimaan Barang (user 2026-10-02)
     static subtitle = 'SPB &middot; Goods Receipt';
     static numberLabel = 'No SPB';
+    // Tanpa field "Jenis" (user 2026-10-02): SPB hanya untuk penerimaan dari supplier, nomornya urut untuk pemeriksaan
+    // tagihan supplier oleh accounting. Bahan dari customer dan barang dari subkon = judul dan seri nomor sendiri (di bawah).
     static refs = [
-        {key: 'receipt_type', label: 'Jenis'},
         {key: 'po_no', label: 'No PO'},
         {key: 'supplier_dn', label: 'No SJ Pengirim'},
         {key: 'vehicle', label: 'No Kendaraan'},
@@ -309,6 +310,39 @@ PrintDoc.register(class GoodsReceipt extends PrintDoc {
     static extra = [{key: 'accepted', label: 'DITERIMA', width: 19, type: 'money'}, {key: 'rejected', label: 'DITOLAK', width: 19, type: 'money'}, {key: 'lot_no', label: 'LOT / ROLL', width: 21},
         {key: 'remark', label: 'KETERANGAN', width: 25}];
     static receivers = [['Pengirim', 'Supplier / Ekspedisi']];
+});
+
+// Bahan baku milik customer untuk satu Customer Order: judul dan seri nomor sendiri (PBC), bukan SPB.
+PrintDoc.register(class CustomerMaterialReceipt extends PrintDoc.registry.GoodsReceipt {
+    static approved = null;
+    static title = 'PENERIMAAN BAHAN BAKU CUSTOMER';
+    static subtitle = 'PBC &middot; Customer Material Receipt';
+    static numberLabel = 'No Penerimaan';
+    static refs = [
+        {key: 'co_no', label: 'No CO'},
+        {key: 'supplier_dn', label: 'No SJ Pengirim'},
+        {key: 'vehicle', label: 'No Kendaraan'},
+        {key: 'warehouse', label: 'Gudang'},
+    ];
+    static nb = '<b>NB:</b>&nbsp;Bahan milik customer, hanya untuk Customer Order di atas. Bukan stok perusahaan.';
+    static receivers = [['Pengirim', 'Customer / Ekspedisi']];
+});
+
+// Barang kembali dari subkon: judul dan seri nomor sendiri (PBS), bukan SPB.
+PrintDoc.register(class SubconGoodsReceipt extends PrintDoc.registry.GoodsReceipt {
+    static approved = null;
+    static title = 'PENERIMAAN BARANG DARI SUBKON';
+    static subtitle = 'PBS &middot; Goods Receipt from Subcon';
+    static numberLabel = 'No Penerimaan';
+    static refs = [
+        {key: 'po_no', label: 'No PO'},
+        {key: 'our_dn', label: 'No SJ Subkon'},
+        {key: 'supplier_dn', label: 'No SJ Pengirim'},
+        {key: 'vehicle', label: 'No Kendaraan'},
+        {key: 'warehouse', label: 'Gudang'},
+    ];
+    static nb = '<b>NB:</b>&nbsp;JUMLAH = jumlah yang kembali dari subkon. Kekurangan diselesaikan dengan subkon.';
+    static receivers = [['Pengirim', 'Subkon / Ekspedisi']];
 });
 
 // Layar v2: material-booking. Kebutuhan bahan satu Customer Order.

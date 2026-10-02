@@ -108,4 +108,4 @@ table.items{width:100%;border-collapse:collapse;border-top:.5mm solid #222;borde
 .legend p i{position:absolute;left:0;top:.4mm;width:4.2mm;height:4.2mm;border-radius:50%;background:#e11d2e;color:#fff;font:700 6.8pt Tahoma,sans-serif;
     display:flex;align-items:center;justify-content:center}
 /* Judul panjang: huruf lebih kecil supaya muat di samping kop (user 2026-10-02) */
-.doc-SupplierInvoiceReceipt .kop h1{font-size:12pt;letter-spacing:.04em}
+.doc-SupplierInvoiceReceipt .kop h1,.doc-CustomerMaterialReceipt .kop h1,.doc-SubconGoodsReceipt .kop h1{font-size:12pt;letter-spacing:.04em}

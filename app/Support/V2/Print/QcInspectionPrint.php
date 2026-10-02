@@ -26,7 +26,7 @@ final class QcInspectionPrint extends Document
     public string $numberLabel = 'SPB No.';
 
     public array $refs = [
-        ['key' => 'ref_no', 'label' => 'PO / CO No.'],
+        ['key' => 'ref_no', 'label' => 'PO No.'],
         ['key' => 'sender_dn', 'label' => 'Sender Delivery Note No.'],
         ['key' => 'warehouse', 'label' => 'Warehouse'],
         ['key' => 'checked_at', 'label' => 'Inspected At'],
@@ -65,7 +65,7 @@ final class QcInspectionPrint extends Document
         $accepted = (float) $lines->sum('c_qty_accepted');
         $decision = ! $done ? 'Inspection not finished' : ($rejected <= 0 ? 'All accepted' : ($accepted <= 0 ? 'All rejected' : 'Partly accepted'));
 
-        return new self([
+        $doc = new self([
             'number' => $pv->doc_no ?: 'Draft #'.$pv->pv_id, 'date' => $pv->i_doc_date?->toDateString(), 'status' => $done ? 'QC DONE' : 'QC PENDING',
             'printedBy' => $opt['printedBy'] ?? null, 'ref_no' => $ref, 'sender_dn' => $pv->i_supplier_do_no, 'warehouse' => $warehouse,
             'checked_at' => ($at = $lines->max('qc_at')) ? Locale::dt($at) : null, 'decision' => self::t($decision),
@@ -79,5 +79,10 @@ final class QcInspectionPrint extends Document
                 'accepted' => $l->c_qty_accepted !== null ? (float) $l->c_qty_accepted : null, 'rejected' => (float) $l->c_qty_rejected,
                 'qc_note' => $l->qc_note])->all(),
         ]);
+        // Nomor dan rujukan mengikuti jenis penerimaan (SPB / bahan baku customer / barang dari subkon).
+        $doc->numberLabel = GoodsReceiptPrint::numberLabelFor($pv->i_receipt_type);
+        $doc->refs[0]['label'] = GoodsReceiptPrint::referenceLabelFor($pv->i_receipt_type);
+
+        return $doc;
     }
 }

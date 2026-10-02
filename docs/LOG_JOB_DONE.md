@@ -20,6 +20,19 @@ saran + "semua didokumentasi jelas urusan keuangan dan akuntansi", D ok, E "untu
   Qty Minim di `ddtsdi` maupun `tm2sdi`, jadi tidak ada data yang berubah.
 - **Belum:** modulnya sendiri (Tahap 0 mockup menunggu OK user, lalu Tahap 1–3; backlog07).
 
+## 2026-10-02 -- Penerimaan: tiga judul dan tiga seri nomor (SPB / PBC / PBS)
+
+User: field "Jenis" di SPB tidak perlu; penerimaan dari customer dan dari subkon diberi judul dan penomoran sendiri, karena SPB
+akan dipakai accounting untuk memeriksa tagihan supplier dan nomornya harus urut.
+- `PvReceipt::nextDocNo($type)` + `NUMBER_PREFIX`: PO = `SPB`, CUSTOMER = `PBC`, SUBCON = `PBS` (`SpecialReceiptService`
+  memakai serinya sendiri). Tidak ada dokumen lama yang perlu dinomori ulang (ddt dan tm2: semua penerimaan berjenis PO).
+- Cetakan `goods-receipt`: judul per jenis -- Surat Penerimaan Barang / Penerimaan Bahan Baku Customer / Penerimaan Barang
+  dari Subkon; tanpa field Jenis; rujukan No PO atau No CO; subkon menampilkan No SJ Subkon. QC Inspection ikut label nomornya.
+- Mockup: `GoodsReceipt` tanpa Jenis + `CustomerMaterialReceipt`, `SubconGoodsReceipt`; hasil aplikasi di
+  `docs/mockups/print_doc/app/` (dokumen PBC / PBS dirender di dalam transaksi lalu rollback, tidak ada baris tertinggal).
+- Test `GoodsReceiptNumberSeriesTest` (hanya membaca). **Catatan untuk user:** nomor lahir saat Draft dibuat, jadi Draft
+  yang dihapus masih meninggalkan nomor loncat -- belum diubah, menunggu keputusan user.
+
 ## 2026-10-02 -- Tanda Terima Tagihan Supplier (entry baru v2) + cetakan Tanda Terima Uang Muka dan QC Inspection
 
 Perintah user setelah melihat mockup cetakan tahap 3: "bukan tagihan supplier tapi tanda terima tagihan supplier", "tanda
