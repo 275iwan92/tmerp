@@ -20,10 +20,12 @@ class MultiLanguageRatchetTest extends TestCase
         // 2026-10-02 awal v1 = 5067; cakupan diperluas (v2, mail, support, services, models). Hanya boleh turun.
         'app' => 2,
         'components' => 0,
+        'devlib' => 1,
         'emails' => 0,
         'layouts' => 4,
         'livewire' => 2,
         'mail' => 1,
+        'mockup-parts' => 9,
         'models' => 86,
         'pages' => 0,
         'pages/auth' => 1,
@@ -47,6 +49,7 @@ class MultiLanguageRatchetTest extends TestCase
         'pages/security' => 3,
         'pages/self-service' => 52,
         'pages/setup' => 5,
+        'routes' => 10,
         'services' => 160,
         'support' => 216,
         'v2' => 11,
@@ -137,19 +140,25 @@ class MultiLanguageRatchetTest extends TestCase
     }
 
     // Grup = pages/<modul> | components | livewire | layouts | v2 | mail | emails (views) | app (app/Livewire + app/View) |
-    // support (app/Support kecuali kamus itu sendiri) | services | models. Output konsol (app/Console) & Filament (dipensiunkan) tidak dihitung.
+    // support (app/Support kecuali kamus itu sendiri) | services | models | routes | mockup-parts | devlib (komponen PHP & view; JS = js_id_text).
+    // Output konsol (app/Console) & Filament (dipensiunkan) tidak dihitung.
     /** @return array<string, int> */
     public static function v1Counts(): array
     {
         $out = array_fill_keys(array_keys(self::BASELINE_V1), 0);
         $views = resource_path('views').'/';
         $files = (new Finder)->files()->in([$views.'pages', $views.'components', $views.'livewire', $views.'layouts', $views.'v2', $views.'mail',
-            $views.'emails', app_path('Livewire'), app_path('View'), app_path('Support'), app_path('Services'), app_path('Models')])
+            $views.'emails', app_path('Livewire'), app_path('View'), app_path('Support'), app_path('Services'), app_path('Models'), base_path('routes'),
+            base_path('packages/mockup-parts/src'), base_path('packages/mockup-parts/resources/views'), base_path('packages/devlib/src/Components'),
+            base_path('packages/devlib/resources/views')])
             ->exclude('Localization')->name('*.php');
         $app = str_replace('\\', '/', app_path()).'/';
+        $base = str_replace('\\', '/', base_path()).'/';
         foreach ($files as $f) {
             $path = str_replace('\\', '/', $f->getPathname());
-            if (str_starts_with($path, str_replace('\\', '/', $views))) {
+            if (preg_match('#^'.preg_quote($base, '#').'(routes|packages/(mockup-parts|devlib))/#', $path, $m)) {
+                $group = $m[2] ?? '' ?: $m[1];
+            } elseif (str_starts_with($path, str_replace('\\', '/', $views))) {
                 $rel = explode('/', substr($path, strlen($views)));
                 $group = $rel[0] === 'pages' && count($rel) > 2 ? 'pages/'.$rel[1] : $rel[0];
             } else {

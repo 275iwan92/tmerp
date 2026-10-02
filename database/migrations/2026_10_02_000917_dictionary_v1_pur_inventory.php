@@ -173,10 +173,16 @@ return new class extends Migration
         'Issued by' => 'Diterbitkan oleh',
     ];
 
+    // Status stok keluar: 'Issued' di konteks ui = Terbit (dokumen CRM).
+    private const STOCK = [
+        'Issued' => 'Sudah Diserahkan',
+    ];
+
     public function up(): void
     {
         Dictionary::seed(self::ID);
         Dictionary::seed(self::PRINT, 'print');
+        Dictionary::seed(self::STOCK, 'stock');
     }
 
     public function down(): void {}

@@ -324,7 +324,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
             'total' => ['label' => t('Total Documents'), 'value' => $this->statTotal, 'tone' => 'total'],
             'draft' => ['label' => t('Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
                 'filter' => fn ($c) => $c->where('flow_status', 'DRAFT')],
-            'posted' => ['label' => t('Issued'), 'value' => $this->statPosted, 'tone' => 'active',
+            'posted' => ['label' => t('Issued', 'stock'), 'value' => $this->statPosted, 'tone' => 'active',
                 'filter' => fn ($c) => $c->where('flow_status', 'POSTED')],
         ];
     }

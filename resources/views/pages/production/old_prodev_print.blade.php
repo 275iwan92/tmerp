@@ -180,7 +180,7 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
         <x-print.header :company="$this->company" :doc-title="t('MASTER CARD')" :doc-no="$this->part->displayMastercardCode()">
             <x-slot:meta>
                 {{ t('Design No.:') }} <span class="ref">{{ $this->part->product?->design_no ?? '—' }}</span>
-                · {{ t('Printed') }} {{ now()->format('d/m/Y H:i') }}
+                · {{ t('Printed on') }} {{ now()->format('d/m/Y H:i') }}
             </x-slot:meta>
         </x-print.header>
 
