@@ -195,6 +195,11 @@
     atau membingungkan harus DIHAPUS dan diganti yang baru. Setelah memperbaiki dummy, simpan ulang baseline `ddt`.
     **Aturan main tetap (2026-10-01):** dummy yang SALAH (saldo tidak konsisten, minus, relasi rusak, isi tidak
     masuk akal) selalu DIHAPUS dan diganti dummy baru yang benar — tidak perlu tanya dulu, cukup dilaporkan.
+    **Baseline dan migration (2026-10-02):** setiap migration yang dijalankan di `ddt*` wajib diikuti simpan ulang
+    baseline. Reset data dummy **menolak** selama struktur `ddt*` berbeda dari baseline (kolom / tabel baru atau hilang;
+    daftarnya tampil di Developer → Data Dummy, atau `php artisan ddt:baseline check --env=mockup`), karena Reset
+    memasang definisi tabel lama sementara migration tetap tercatat sudah jalan. Tabel yang dibuat setelah baseline
+    tidak pernah disentuh Reset (barisnya tetap). Baseline lama dicadangkan dulu ke `tmerp_backup` sebelum ditimpa.
 13. **Payroll wajib terenkripsi** at-rest (desain diputuskan terpisah).
 14. **Master hanya diubah user, bukan sistem (2026-10-01).** Data master tidak berubah sampai ada override dari user; yang
     berubah oleh sistem hanya data transaksi. Nilai default boleh diperbarui oleh analisa terbaru sistem, dan tetap bisa
@@ -566,3 +571,4 @@
 | 2026-10-02 | C.33: papan widget **dipasang di tm2**; pilihan periode Harian – Tahunan (tersimpan per user, target bulanan dijumlah); order value merinci Draft di samping Confirmed; angka papan ikut setelan Dummy & Legacy Data. |
 | 2026-10-02 | D.15: semua layar v2 = turunan objek DevLib; objek baru `x-dl::action-form` untuk form kecil (48 form dikonversi), penjaga `DevlibOnlyRatchetTest`. D.16: Engine Catalog — 20 engine terdaftar di `EngineRegistry` dengan input, output dan cara kerja; tampil di devlib.test > Engines dan menu Developer > Engines; `php artisan engine:catalog`. |
 | 2026-10-02 | C.33: 49 widget, dashboard **Overall** (daftar centang) + enam dashboard bidang (template): Sales, Purchasing, AR & AP, Cashflow, Payroll, Human Resource; ubin tambah, tekan-tahan, seret; daftar widget disusun dari referensi ERP lain (`openingboard_references.md`). ddt + tm2. |
+| 2026-10-02 | B.12: **Reset data dummy menolak bila struktur `ddt*` berubah sejak baseline** (penjaga drift; daftar tampil di Developer → Data Dummy, `ddt:baseline check`, paksa `--allow-drift`); setiap migration di `ddt*` diikuti simpan ulang baseline; tabel yang dibuat setelah baseline tidak disentuh Reset; baseline lama dicadangkan sebelum ditimpa. Baseline baru disimpan 19:33:33. |

@@ -16,10 +16,13 @@ jalan -> layar gagal "Unknown column". Terukur pada baseline 2026-10-02 14:29:41
   dulu. Paksa: `--allow-drift`. Aksi baru `php artisan ddt:baseline check --env=mockup` (baca saja).
 - Layar Developer -> Data Dummy (Reset): kartu "Structure changes since the baseline", tombol Reset mati selama ada drift.
   Reset yang ditolak kini tampil sebagai pesan gagal (sebelumnya tertulis "Reset selesai").
-- Tabel yang dibuat setelah baseline: **dibiarkan apa adanya** (perilaku lama, tertulis di layar) -- menunggu keputusan user
-  apakah sebaiknya dikosongkan.
+- Tabel yang dibuat setelah baseline: **dibiarkan apa adanya** (perilaku lama, tertulis di layar). Diputuskan atas mandat user
+  ("do it with your best"): mengosongkannya akan ikut menghapus baris bawaan migration (mis. rekening `fin_company_bank`).
 - Test `tests/Unit/DdtBaselineDriftTest.php` (5 test, teks contoh; tidak menyentuh database).
-- Belum dijalankan: `ddt:baseline save` -- baseline sekarang masih yang 14:29:41, jadi Reset terkunci sampai user menyimpan baseline baru.
+- **Baseline baru disimpan 2026-10-02 19:33:33** atas OK user (baseline lama 14:29:41 dicadangkan ke
+  `C:\Users\iwanp\tmerp_backup\ddt-baseline_2026-10-02_1429`). Isi yang ikut dibekukan sejak baseline lama, semuanya data
+  yang sengaja dibuat: 5 akun bank + 5 `fin_company_bank` (seed migration), 1 invoice + 1 POD dummy `uat`, 6 PR
+  `uat_approval`, 6 dokumen SOP. `ddt:baseline check` = tidak ada drift, Reset tidak terkunci lagi.
 
 ---
 
