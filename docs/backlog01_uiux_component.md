@@ -64,5 +64,10 @@ dibuang di server lewat `restrictedKeys()` + `SecUser::canViewSalesPrice()`.
 - Migration `2026_09_30_000011` (field pengiriman CO) baru jalan di ddt*.
 
 ### UI-03 — Grid compact (kerapatan + baris per sel)  🟡
+**Keputusan user 2026-10-02 (menggantikan sebagian keputusan 2026-09-22 di bawah):** (1) setelan cukup seperti yang terpasang --
+per grid, tersimpan di browser lewat tombol Kerapatan di toolbar grid; kolom `sec_user.grid_density` / `grid_lines` TIDAK dibangun.
+(2) Grid Pre-Entry tetap tanpa tombol Kerapatan. (3) Pintu kedua di menu Profile: MENUNGGU user melihat preview
+`docs/mockups/ui03_grid_door_preview.png` (A = tanpa pintu, B = halaman "Grid" di Profile v2 sebagai bawaan semua grid di browser).
+Catatan: tulisan "segera" hanya ada di drawer Configuration menu lama (v1); menu v2 tidak punya.
 Keputusan lengkap (2026-09-22): Rapat/Normal/Longgar + Otomatis/Tetap N; **satu setelan untuk semua grid, per USER** (kolom `sec_user.grid_density`, `sec_user.grid_lines`), **tanpa** deteksi resolusi otomatis. Dua pintu: drawer Configuration → Grid, dan panel cepat di toolbar grid. Gotcha: `line-clamp` jangan di `<td>` langsung. Mockup: `docs/mockups/grid_kerapatan_baris.jpg`.
 
