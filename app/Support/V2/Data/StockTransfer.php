@@ -2,13 +2,16 @@
 
 namespace App\Support\V2\Data;
 
+use App\Models\Inventory\InvPallet;
 use App\Models\Inventory\InvTransfer;
 use App\Models\Inventory\InvTransferLine;
 use App\Models\Master\MatRaw;
 use App\Models\Master\WhLoc;
 use App\Models\Master\WhWarehouse;
+use App\Services\Flow\FlowEngineService;
 use App\Services\Inventory\StockTransferService;
 use App\Services\Inventory\WarehouseStock;
+use App\Support\V2\Data\Concerns\FlowDocument;
 use Devlib\Locale;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -19,9 +22,13 @@ use Illuminate\Support\Facades\DB;
 // siap dicetak) -> Cancel wajib alasan (stok kembali). Posting kartu stok = App\Services\Inventory\StockTransferService.
 // Tiap baris menampilkan label kapasitas bin tujuan dan tanda DEAD STOCK; lebih dari kapasitas = peringatan, bukan larangan
 // (engine menyarankan, petugas memutuskan).
+// Approval = modul flow 'TF' (Setup > Setting Approval), bawaan TIDAK aktif: Confirm langsung memindahkan stok. Aktif:
+// Confirm = diajukan (SUBMITTED), stok pindah saat level terakhir Approve; Reject = berhenti (Duplicate untuk mengulang).
 final class StockTransfer
 {
-    public const STATUS_TONES = ['DRAFT' => 'neutral', 'CONFIRMED' => 'success', 'CANCELLED' => 'danger'];
+    use FlowDocument;
+
+    public const STATUS_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'REJECTED' => 'danger', 'CONFIRMED' => 'success', 'CANCELLED' => 'danger'];
 
     public static function find(int $id): ?InvTransfer
     {
@@ -70,6 +77,39 @@ final class StockTransfer
         });
     }
 
+    // Dari label palet (lacak): draft berisi satu palet utuh; bin tujuan dipilih di form.
+    public static function createFromPallet(InvPallet $pallet): InvTransfer
+    {
+        $login = Auth::user()->login;
+        $bin = WhLoc::query()->findOrFail($pallet->location_id);
+
+        return DB::connection('tm2inv')->transaction(function () use ($pallet, $bin, $login) {
+            $t = self::create((int) $bin->warehouse_id, (int) $bin->warehouse_id);
+            InvTransferLine::create(['transfer_id' => $t->id_transfer, 'line_no' => 1, 'stock_class' => $pallet->stock_class, 'item_id' => $pallet->item_id, 'part_id' => $pallet->part_id,
+                'item_code' => $pallet->item_code, 'item_name' => $pallet->item_name, 'from_location_id' => $pallet->location_id, 'uom_code' => $pallet->uom_code,
+                'lot_no' => $pallet->lot_no, 'qty' => $pallet->qty, 'pallet_id' => $pallet->id_pallet, 'created_by' => $login, 'updated_by' => $login]);
+
+            return $t;
+        });
+    }
+
+    // Duplicate (dokumen Rejected / Cancelled): Draft baru berisi salinan baris, tanpa nomor.
+    public static function duplicate(InvTransfer $t): InvTransfer
+    {
+        $login = Auth::user()->login;
+
+        return DB::connection('tm2inv')->transaction(function () use ($t, $login) {
+            $copy = InvTransfer::create(['transfer_date' => now()->toDateString(), 'from_warehouse_id' => $t->from_warehouse_id, 'to_warehouse_id' => $t->to_warehouse_id,
+                'reason' => $t->reason, 'carried_by' => $t->carried_by, 'notes' => $t->notes, 'created_by' => $login, 'updated_by' => $login]);
+            foreach ($t->lines as $l) {
+                InvTransferLine::create(['transfer_id' => $copy->id_transfer, 'created_by' => $login, 'updated_by' => $login]
+                    + $l->only(['line_no', 'stock_class', 'item_id', 'part_id', 'item_code', 'item_name', 'from_location_id', 'to_location_id', 'lot_no', 'qty', 'uom_code', 'pallet_id']));
+            }
+
+            return $copy;
+        });
+    }
+
     private static function lineData(array $p): array
     {
         return ['stock_class' => $p['class'], 'item_id' => $p['item_id'], 'part_id' => $p['part_id'], 'item_code' => mb_substr((string) $p['code'], 0, 60),
@@ -102,11 +142,13 @@ final class StockTransfer
     {
         $positions ??= self::positions($t);
 
-        return $t->lines->map(function (InvTransferLine $l) use ($positions) {
+        $pallets = InvPallet::query()->whereKey($t->lines->pluck('pallet_id')->filter()->all())->pluck('pallet_no', 'id_pallet');
+
+        return $t->lines->map(function (InvTransferLine $l) use ($positions, $pallets) {
             $p = $positions->get($l->positionKey());
 
             return ['id_transfer_line' => $l->id_transfer_line, 'position' => $l->positionKey(), 'to_location_id' => $l->to_location_id, 'qty' => $l->qty,
-                'unit' => $l->uom_code, 'onhand' => $p ? Locale::decimal($p['qty'], 2) : '—', 'lot_no' => $l->lot_no];
+                'unit' => $l->uom_code, 'onhand' => $p ? Locale::decimal($p['qty'], 2) : '—', 'lot_no' => $l->lot_no, 'pallet' => $pallets[$l->pallet_id] ?? '—'];
         })->values()->all();
     }
 
@@ -151,7 +193,12 @@ final class StockTransfer
                 }
                 $dest = (int) ($row['to_location_id'] ?? 0);
                 $line->fill(['to_location_id' => $toBins->has($dest) ? $dest : null, 'qty' => max(0, (float) (Locale::input($row['qty'] ?? 0) ?? 0)),
-                    'lot_no' => mb_substr(trim((string) ($row['lot_no'] ?? '')), 0, 100) ?: null, 'updated_by' => $login])->save();
+                    'lot_no' => mb_substr(trim((string) ($row['lot_no'] ?? '')), 0, 100) ?: null, 'updated_by' => $login]);
+                // Baris yang lahir dari satu palet tetap menunjuk palet itu selama posisi dan qty-nya tidak diubah.
+                if ($line->pallet_id && ($line->isDirty('qty') || $line->isDirty('from_location_id') || $line->isDirty('item_id'))) {
+                    $line->pallet_id = null;
+                }
+                $line->save();
             }
         });
     }
@@ -170,28 +217,36 @@ final class StockTransfer
         $positions ??= self::positions($t);
         $bins = WhLoc::query()->with('zone')->whereKey($t->lines->pluck('from_location_id')->merge($t->lines->pluck('to_location_id'))->filter()->unique()->all())->get()->keyBy('location_id');
         $sum = WarehouseStock::binSummaries($bins->values());
-        $draft = $t->status() === 'DRAFT';
+        // "Belum pindah" (Draft, menunggu approval, ditolak): tujuan dihitung dengan baris ini; sesudah Confirm: isi sekarang.
+        $draft = ! $t->stat_confirm;
         $materials = MatRaw::withoutGlobalScopes()->whereKey($t->lines->where('stock_class', 'RM')->pluck('item_id')->unique()->all())
-            ->get(['material_id', 'category1', 'gram_weight', 'cm_length', 'cm_width'])->keyBy('material_id');
+            ->get(['material_id', 'category1', 'gram_weight', 'cm_length', 'cm_width', 'mm_thickness'])->keyBy('material_id');
         $incoming = [];
+        $incomingM3 = [];
         $out = [];
         foreach ($t->lines as $l) {
             $p = $positions->get($l->positionKey());
             $to = $bins->get($l->to_location_id);
             // Perkiraan berat baris (null = tidak diketahui); dihitung dari master supaya tetap ada sesudah posisi asal habis.
-            $kg = WarehouseStock::weightKg($l->qty, (string) $l->uom_code, $l->stock_class === 'RM' ? $materials->get($l->item_id) : null, (string) $l->item_name);
+            $material = $l->stock_class === 'RM' ? $materials->get($l->item_id) : null;
+            $kg = WarehouseStock::weightKg($l->qty, (string) $l->uom_code, $material, (string) $l->item_name);
+            $m3 = WarehouseStock::volumeM3($l->qty, (string) $l->uom_code, $material, (string) $l->item_name);
             $after = null;
+            $afterM3 = null;
             $over = false;
             if ($to) {
                 $s = $sum[$to->location_id];
                 // Draft: isi tujuan sekarang + baris-baris sebelumnya ke bin yang sama + baris ini. Sesudah Confirm: isi sekarang.
                 $incoming[$to->location_id] = ($incoming[$to->location_id] ?? 0) + ($draft ? (float) $kg : 0);
+                $incomingM3[$to->location_id] = ($incomingM3[$to->location_id] ?? 0) + ($draft ? (float) $m3 : 0);
                 $used = $s['used_kg'] + $incoming[$to->location_id];
+                $usedM3 = $s['used_m3'] + $incomingM3[$to->location_id];
                 $after = Warehouse::capacityText($used, $s['capacity_kg']);
-                $over = $s['capacity_kg'] !== null && $used > $s['capacity_kg'];
+                $afterM3 = Warehouse::volumeText($usedM3, $s['capacity_m3']);
+                $over = ($s['capacity_kg'] !== null && $used > $s['capacity_kg']) || ($s['capacity_m3'] !== null && $usedM3 > $s['capacity_m3']);
             }
             $out[] = ['line' => $l->line_no, 'item' => $l->item_name, 'code' => $l->item_code, 'qty' => $l->qty, 'unit' => $l->uom_code,
-                'weight' => $kg, 'from' => $bins->get($l->from_location_id)?->location_code, 'to' => $to?->location_code, 'after' => $after,
+                'weight' => $kg, 'volume' => $m3, 'from' => $bins->get($l->from_location_id)?->location_code, 'to' => $to?->location_code, 'after' => $after, 'after_m3' => $afterM3,
                 'flag' => match (true) {
                     ($draft ? ($p['dead'] ?? false) : $l->was_dead_stock) => 'Dead stock',
                     $over => 'Over capacity',
@@ -223,8 +278,63 @@ final class StockTransfer
         return $action === 'confirm' ? $svc->confirm($t, Auth::user()->login) : $svc->cancel($t, $reason, Auth::user()->login);
     }
 
-    public static function formStatus(InvTransfer $t): string
+    // ---------------------------------------------------------------- approval (modul flow TF)
+
+    public static function approvalActive(): bool
     {
-        return strtolower($t->status());
+        return (bool) app(FlowEngineService::class)->activeConfig(StockTransferService::FLOW);
+    }
+
+    // Keadaan approval satu dokumen untuk form: level, level yang menunggu, apakah user ini pemeriksanya, log.
+    // 'at' = level yang sedang menunggu; sesudah selesai = jumlah persetujuan + 1 (untuk bar tahapan form).
+    /** @return array{used: bool, levels: int, at: int, held: bool, pending: ?object, log: array} */
+    public static function approval(InvTransfer $t): array
+    {
+        $used = $t->flow_status !== null;
+        $state = $used ? self::approvalState(StockTransferService::FLOW, (int) $t->id_transfer, 0) : ['levels' => 0, 'at' => 0, 'held' => false];
+
+        $log = $used ? self::flowLog(StockTransferService::FLOW, (int) $t->id_transfer) : [];
+
+        return ['used' => $used, 'levels' => (int) $state['levels'], 'at' => (int) $state['at'] ?: collect($log)->where('action', 'Approved')->count() + 1, 'held' => (bool) $state['held'],
+            'pending' => $t->status() === 'SUBMITTED' ? self::pendingFor(StockTransferService::FLOW, (int) $t->id_transfer) : null, 'log' => $log];
+    }
+
+    // Keputusan pemeriksa level berjalan: approve | reject | hold. Kembalian = pesan salah ('' = berhasil).
+    // Approve terakhir = stok pindah; stok diperiksa DULU supaya persetujuan tidak tercatat untuk dokumen yang tidak bisa dipindah.
+    public static function decide(InvTransfer $t, string $action, string $note): string
+    {
+        $pending = $t->status() === 'SUBMITTED' ? self::pendingFor(StockTransferService::FLOW, (int) $t->id_transfer) : null;
+        if (! $pending) {
+            return t('This document is not waiting for your approval.');
+        }
+        $flow = app(FlowEngineService::class);
+        $login = Auth::user()->login;
+        $amount = (float) $pending->amount_snapshot;
+        $svc = new StockTransferService;
+        if ($action === 'hold') {
+            $flow->hold(StockTransferService::FLOW, (int) $t->id_transfer, (int) $pending->flow_step_id, $note, $amount);
+
+            return '';
+        }
+        if ($action === 'reject') {
+            $flow->reject(StockTransferService::FLOW, (int) $t->id_transfer, (int) $pending->flow_step_id, $note, $amount);
+            $t->forceFill(['flow_status' => 'REJECTED', 'updated_by' => $login])->save();
+
+            return '';
+        }
+        if ($errors = $svc->confirmErrors($t)) {
+            return implode(' ', $errors);
+        }
+        $res = $flow->approve(StockTransferService::FLOW, (int) $t->id_transfer, (int) $pending->flow_step_id, $amount);
+
+        return $res['final'] ? (string) $svc->post($t, $login, true) : '';
+    }
+
+    public static function formStatus(InvTransfer $t, bool $held = false): string
+    {
+        return match ($t->status()) {
+            'SUBMITTED' => $held ? 'hold' : 'approval', 'REJECTED' => 'rejected',
+            'CONFIRMED' => $t->flow_status === 'APPROVED' ? 'approved' : 'confirmed', 'CANCELLED' => 'cancelled', default => 'draft',
+        };
     }
 }

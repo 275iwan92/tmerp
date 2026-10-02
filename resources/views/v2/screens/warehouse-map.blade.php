@@ -50,6 +50,32 @@
                 ['label' => t('Block'), 'icon' => 'fa-ban', 'tone' => 'danger', 'when' => 'usable', 'post' => true, 'reason' => true, 'confirm' => t('Block this bin? It can no longer receive stock until it is unblocked.'), 'url' => $url('v2.wh.bin.block')],
                 ['label' => t('Unblock'), 'icon' => 'fa-circle-check', 'when' => 'blocked', 'post' => true, 'url' => $url('v2.wh.bin.unblock')],
             ]" />
+        <x-dl::card title="Capacity per Floor" icon="fa-ruler-combined" description="Floor area and clear height give the room volume. Storage volume = area of the storage areas x their stacking height. In use = estimated volume and weight of the stock (paper: sheets x size x thickness).">
+            <x-slot:actions>
+                <x-dl::button size="sm" variant="secondary" icon="fa-building" label="Building Size & Height" :href="route('v2.screen', 'wh-buildings')" />
+                <x-dl::button size="sm" variant="secondary" icon="fa-vector-square" label="Stacking Height per Area" :href="route('v2.screen', 'wh-zones')" />
+            </x-slot:actions>
+            <x-dl::grid id="wh-capacity-{{ $wh->id_warehouse }}" mode="report" :per-page="10" search="Search..." source="{{ Src::of('tm2mst.wh_warehouse (length, width, height per floor)', 'tm2mst.wh_zone (size, stack height)', 'tm2mst.wh_loc.capacity_kg') }}"
+                :rows="$map['capacity']"
+                :columns="[
+                    ['key' => 'floor', 'label' => 'Floor'],
+                    ['key' => 'area', 'label' => 'Floor Area (m²)', 'type' => 'number', 'sum' => true],
+                    ['key' => 'height', 'label' => 'Clear Height (m)', 'type' => 'number'],
+                    ['key' => 'room', 'label' => 'Room Volume (m³)', 'type' => 'number', 'sum' => true],
+                    ['key' => 'storage', 'label' => 'Storage Areas (m²)', 'type' => 'number', 'sum' => true],
+                    ['key' => 'storage_pct', 'label' => 'Storage % of Floor', 'type' => 'number'],
+                    ['key' => 'cap_m3', 'label' => 'Storage Volume (m³)', 'type' => 'number', 'sum' => true],
+                    ['key' => 'used_m3', 'label' => 'In Use (m³)', 'type' => 'number', 'sum' => true],
+                    ['key' => 'pct_m3', 'label' => 'Volume Used %', 'type' => 'progress'],
+                    ['key' => 'cap_kg', 'label' => 'Capacity (kg)', 'type' => 'number', 'sum' => true],
+                    ['key' => 'used_kg', 'label' => 'In Use (kg)', 'type' => 'number', 'sum' => true],
+                    ['key' => 'pct_kg', 'label' => 'Weight Used %', 'type' => 'progress'],
+                    ['key' => 'bins', 'label' => 'Bins', 'type' => 'number', 'sum' => true],
+                ]" />
+            @if (collect($map['capacity'])->contains(fn (array $f) => $f['height'] === null))
+                <x-dl::alert tone="warn" message="A floor without a clear height has no volume. Fill in the height of every floor in Buildings (and the stacking height per area in Storage Areas if it is lower than the ceiling)." />
+            @endif
+        </x-dl::card>
         <x-dl::alert tone="info" :message="raw(str_replace([':area', ':floors', ':bins', ':used', ':cap', ':months'],
             [Locale::number($map['totals']['area']), (string) $wh->floors(), Locale::number($map['totals']['bins']), Locale::number($map['totals']['used_kg']), Locale::number($map['totals']['capacity_kg']), (string) WarehouseStock::deadMonths()],
             t('Floor area :area m2 on :floors floor(s), :bins bins, :used of :cap kg in use. Red = dead stock: the item has not moved for more than :months months (moving it to another bin does not count).')))" />

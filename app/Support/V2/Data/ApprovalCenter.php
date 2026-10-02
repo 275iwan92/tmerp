@@ -3,6 +3,7 @@
 namespace App\Support\V2\Data;
 
 use App\Models\Inventory\FgStock;
+use App\Models\Inventory\InvTransfer;
 use App\Models\Inventory\RmStock;
 use App\Models\Inventory\SfgStock;
 use App\Models\Master\FlowLog;
@@ -12,6 +13,7 @@ use App\Models\Pur\PrtReturn;
 use App\Models\Sdi\CoOrder;
 use App\Services\Flow\FlowEngineService;
 use App\Services\Inventory\StockPostingService;
+use App\Services\Inventory\StockTransferService;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
@@ -33,11 +35,12 @@ final class ApprovalCenter
         'AD' => ['title' => 'Stock Adjustment', 'screen' => null, 'menu' => 'INV'],
         'OP' => ['title' => 'Stock Opname', 'screen' => null, 'menu' => 'INV'],
         'PRT' => ['title' => 'Purchase Return', 'screen' => null, 'menu' => 'PROC'],
+        'TF' => ['title' => 'Stock Transfer', 'screen' => 'stock-transfer', 'menu' => 'INV'],
     ];
 
     // Layar Approval Center v2 (slug approval-<key>) => modul yang tampil bersama + hak modul menu.
     public const SCREENS = [
-        'pr' => ['PR'], 'po' => ['PO', 'POC'], 'co' => ['CO'], 'stock' => ['AD', 'OP'], 'prt' => ['PRT'],
+        'pr' => ['PR'], 'po' => ['PO', 'POC'], 'co' => ['CO'], 'stock' => ['AD', 'OP'], 'prt' => ['PRT'], 'tf' => ['TF'],
     ];
 
     private const STOCK_MODELS = ['RM' => RmStock::class, 'FG' => FgStock::class, 'SFG' => SfgStock::class];
@@ -47,6 +50,7 @@ final class ApprovalCenter
         return match (self::SCREENS[$screen][0]) {
             'AD' => ['description' => 'Item', 'unit' => 'Satuan', 'system' => 'Qty Sistem', 'physical' => 'Qty Fisik', 'diff' => 'Selisih', 'price:money' => 'Harga/Unit', 'subtotal:money' => 'Nilai Selisih'],
             'PRT' => ['description' => 'Item', 'qty' => 'Qty Retur', 'unit' => 'Satuan', 'price:money' => 'Harga/Unit', 'subtotal:money' => 'Nilai'],
+            'TF' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Unit', 'from' => 'From Bin', 'to' => 'To Bin', 'check' => 'Check'],
             'CO' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Satuan', 'price:money' => 'Harga/Unit', 'disc' => 'Disc %', 'subtotal:money' => 'Subtotal', 'source' => 'Sumber Harga'],
             'PO' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Satuan', 'price:money' => 'Harga/Unit', 'disc' => 'Disc %', 'subtotal:money' => 'Subtotal'],
             default => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Satuan', 'price:money' => 'Harga Est.', 'subtotal:money' => 'Subtotal', 'need' => 'Tgl Butuh'],
@@ -138,6 +142,21 @@ final class ApprovalCenter
                     'lines' => $r->lines->map(fn ($l) => ['description' => $l->i_description, 'qty' => $num($l->i_qty), 'unit' => $l->i_uom, 'price' => (float) $l->c_unit_price,
                         'subtotal' => (float) $l->c_line_value])->all(), 'note' => $r->i_reason, 'v1' => route('pur.prt.entry', $id)] : null;
             })(),
+            'TF' => (function () use ($id, $num, $rp) {
+                $t = StockTransfer::find($id);
+                if (! $t || $t->status() !== 'SUBMITTED') {
+                    return null;
+                }
+                $checks = StockTransfer::checks($t);
+                $route = ($t->fromWarehouse?->warehouse_code ?? '?').' → '.($t->toWarehouse?->warehouse_code ?? '?');
+
+                return ['no' => $t->label(), 'party' => $route, 'date' => $t->transfer_date?->toDateString(), 'amount' => $amount = (new StockTransferService)->value($t),
+                    'summary' => [t('Route') => $route, t('Reason') => t(InvTransfer::REASONS[$t->reason] ?? '—'), t('Stock value') => $rp($amount), t('Carried By') => $t->carried_by ?: '—',
+                        t('Lines') => $t->lines->count()],
+                    'lines' => array_map(fn (array $c) => ['description' => $c['code'].' · '.$c['item'], 'qty' => $num($c['qty']), 'unit' => $c['unit'], 'from' => $c['from'], 'to' => $c['to'] ?? '—',
+                        'check' => t($c['flag'])], $checks),
+                    'note' => $t->notes];
+            })(),
             'CO' => (function () use ($id, $num, $rp) {
                 $o = CoOrder::with(['items', 'customer'])->where('doc_status', 'SUBMITTED')->find($id);
                 if (! $o) {
@@ -186,6 +205,7 @@ final class ApprovalCenter
             'CO' => CustomerOrder::decide(CoOrder::findOrFail($id), $action, $note),
             'AD', 'OP' => self::decideStock($module, $id, $action, $note),
             'PRT' => self::decideReturn($id, $action, $note),
+            'TF' => StockTransfer::decide(StockTransfer::find($id) ?? abort(404), $action, $note),
         };
     }
 
@@ -240,6 +260,7 @@ final class ApprovalCenter
                 'PO', 'POC' => PoOrder::whereKey($l->doc_id)->value('doc_no'),
                 'CO' => CoOrder::whereKey($l->doc_id)->value('co_no'),
                 'PRT' => PrtReturn::whereKey($l->doc_id)->value('doc_no'),
+                'TF' => InvTransfer::whereKey($l->doc_id)->value('transfer_no'),
                 default => collect(self::STOCK_MODELS)->map(fn ($model) => $model::where('doc_cat', $m)->whereKey($l->doc_id)->value('doc_no'))->filter()->first(),
             };
 

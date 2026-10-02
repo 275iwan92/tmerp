@@ -105,10 +105,12 @@ final class Screens
                 ['label' => 'Warehouse', 'items' => [
                     $it('warehouse-map', ['Warehouse Map', 'fa-solid fa-map-location-dot', 'v2 baru: docs/warehouselayout_tier1.md (tm2mst.wh_warehouse + wh_zone + wh_loc)', 'warehouse_layout_v2.jpg', true]),
                     $it('stock-transfer', ['Stock Transfer', 'fa-solid fa-right-left', 'v2 baru: tm2inv.inv_transfer + inv_transfer_line (pindah stok antar bin / gudang)', null]),
+                    $it('approval-tf', ['Stock Transfer Approval Center', 'fa-solid fa-stamp', 'v2 baru: flow engine modul TF (bawaan tidak aktif, Setup > Setting Approval)', null]),
                 ]],
                 ['label' => 'Label & QR Code', 'items' => [
                     $it('label-location', ['Print Location Label (QR)', 'fa-solid fa-location-dot', 'v2 baru: label bin (kode, kapasitas, QR + barcode), tm2inv.inv_label_print', null, true]),
-                    $it('label-item', ['Print Item Label (QR)', 'fa-solid fa-tag', 'v2 baru: label posisi stok (item, bin, qty, QR + barcode)', null, true]),
+                    $it('label-pallet', ['Print Pallet Label (QR)', 'fa-solid fa-pallet', 'v2 baru: tm2inv.inv_pallet + inv_pallet_log (label kedatangan, label ulang sesudah dipakai, kode palet supplier, kedaluwarsa)', null, true]),
+                    $it('label-item', ['Print Item Label (QR)', 'fa-solid fa-tag', 'v2 baru: label posisi stok (item, bin, qty, tanggal datang, QR + barcode)', null, true]),
                     $it('scan-track', ['Track via QR/Barcode', 'fa-solid fa-magnifying-glass-location', 'v2 baru: lacak bin / item / transfer dari kode hasil pindai', null, true]),
                 ]],
                 ['label' => 'Stock Adjustment', 'items' => [

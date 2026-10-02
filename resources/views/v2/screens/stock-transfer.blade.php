@@ -2,7 +2,9 @@
      GRID transfer -> + New Record = pilih gudang asal + tujuan -> DRAFT: baris = posisi stok asal (item di satu bin) + bin
      tujuan + qty -> Confirm (stok pindah di kartu stok, nomor lahir, siap dicetak) -> Cancel wajib alasan (stok kembali).
      Di bawah baris: pemeriksaan per baris (kapasitas bin tujuan sesudah pindah, DEAD STOCK merah) dan label tiap bin
-     (kode, kapasitas, QR + barcode). Lebih dari kapasitas = peringatan, bukan larangan. Tanpa jurnal (nilai & pemilik sama). --}}
+     (kode, kapasitas, QR + barcode). Lebih dari kapasitas = peringatan, bukan larangan. Tanpa jurnal (nilai & pemilik sama).
+     Approval (Setup > Setting Approval, modul TF) bawaan TIDAK aktif; bila diaktifkan Confirm = diajukan dan stok baru
+     pindah saat level terakhir Approve (tombol Approve / Reject / Hold muncul untuk pemeriksa level berjalan). --}}
 @php
     use App\Models\Inventory\InvTransfer;
     use App\Support\V2\Data\StockTransfer;
@@ -41,7 +43,9 @@
             ['key' => 'from_bin', 'label' => 'From Bin'],
             ['key' => 'to_bin', 'label' => 'To Bin'],
         ]]"
-        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]"
+        :stats="array_values(array_filter([['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],
+            StockTransfer::approvalActive() ? ['label' => 'Waiting for approval', 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'] : null,
+            ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]))"
         :tabs="[['label' => 'All'], ['label' => 'Dead stock', 'where' => ['dead' => 'Dead stock']]]"
         :filters="['from' => 'From Warehouse', 'to' => 'To Warehouse', 'reason' => 'Reason', 'status' => 'Status']" />
 @elseif (! $doc)
@@ -61,6 +65,8 @@
 @else
     @php
         $draft = $doc->status() === 'DRAFT';
+        $appr = StockTransfer::approval($doc);
+        $formStatus = StockTransfer::formStatus($doc, $appr['held']);
         $positions = StockTransfer::positions($doc);
         $checks = StockTransfer::checks($doc, $positions);
         $labels = StockTransfer::binLabels($doc);
@@ -69,12 +75,13 @@
         $route = ($doc->fromWarehouse?->warehouse_code ?? '?').' → '.($doc->toWarehouse?->warehouse_code ?? '?');
     @endphp
     <x-dl::form id="stock-transfer-form" :title="'Stock Transfer · '.raw($doc->label())" :subtitle="raw($route.' · '.$doc->status())"
-        panel="top" kind="document" :status="StockTransfer::formStatus($doc)"
-        :action="route('v2.wh.transfer.save', $doc->id_transfer)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
+        panel="top" kind="document" :status="$formStatus" :pipeline="$appr['used']" :approval-levels="$appr['used'] ? max(1, $appr['levels']) : 0" :approval-at="$appr['at']"
+        :can-approve="(bool) $appr['pending']" :log="$appr['log']"
+        :action="route('v2.wh.transfer.save', $doc->id_transfer)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['email', 'print']"
         :tabs="['general' => 'General', 'notes' => 'Notes']"
         :created-by="$doc->created_by" :created-at="$doc->created_at?->toDateTimeString()" :updated-by="$doc->updated_by" :updated-at="$doc->updated_at?->toDateTimeString()">
         <x-slot:special>
-            @unless ($draft)<x-dl::button size="sm" preset="print" label="Print" :href="PrintDocs::url('stock-transfer', $doc->id_transfer)" target="_blank" />@endunless
+            @if ($doc->stat_confirm)<x-dl::button size="sm" preset="print" label="Print" :href="PrintDocs::url('stock-transfer', $doc->id_transfer)" target="_blank" />@endif
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('Transfer No.')</span><b>{{ $doc->transfer_no ?: t('(on Confirm)') }}</b></div>
@@ -108,16 +115,23 @@
                     ['key' => 'qty', 'label' => 'Qty to Move', 'type' => 'number', 'required' => true, 'width' => '130px'],
                     ['key' => 'unit', 'label' => 'Unit', 'type' => 'display', 'width' => '70px'],
                     ['key' => 'lot_no', 'label' => 'Lot No.', 'type' => 'text', 'width' => '140px'],
+                    ['key' => 'pallet', 'label' => 'Pallet', 'type' => 'display', 'more' => true],
                 ]" />
             @if ($draft)
-                <x-dl::alert tone="info" message="Pick the item in its source bin, the destination bin and the quantity, then Save: the check below shows the destination capacity after the move. Confirm moves the stock." />
+                <x-dl::alert tone="info" :message="StockTransfer::approvalActive()
+                    ? 'Pick the item in its source bin, the destination bin and the quantity, then Save: the check below shows the destination capacity after the move. Confirm sends the transfer for approval; the stock moves after the last approval.'
+                    : 'Pick the item in its source bin, the destination bin and the quantity, then Save: the check below shows the destination capacity after the move. Confirm moves the stock.'" />
+            @elseif ($doc->status() === 'SUBMITTED')
+                <x-dl::alert tone="warn" message="Waiting for approval: the stock has not moved yet. It moves when the last level approves." />
+            @elseif ($doc->status() === 'REJECTED')
+                <x-dl::alert tone="danger" message="Rejected: no stock moved. Use Duplicate to make a new Draft with the same lines." />
             @endif
         </x-slot:detail>
     </x-dl::form>
 
     @if ($checks)
         @if ($dead)<x-dl::alert tone="danger" :message="raw(str_replace(':n', (string) $dead, t(':n line(s) carry DEAD STOCK: the item has not moved for months. Moving it does not make it alive again.')))" />@endif
-        @if ($over && $draft)<x-dl::alert tone="warn" :message="raw(str_replace(':n', (string) $over, t(':n line(s) bring the destination bin over its capacity. You may still Confirm; consider another bin.')))" />@endif
+        @if ($over && ! $doc->stat_confirm && ! $doc->stat_cancel)<x-dl::alert tone="warn" :message="raw(str_replace(':n', (string) $over, t(':n line(s) bring the destination bin over its capacity. You may still Confirm; consider another bin.')))" />@endif
         <x-dl::card title="Bins & Capacity" icon="fa-weight-hanging" description="One row per line: where it comes from, where it goes, and how full the destination bin is after the move.">
             <x-dl::grid id="stock-transfer-check-{{ $doc->id_transfer }}" mode="report" row-tone="tone" :per-page="50" search="Search item, bin..."
                 source="{{ Src::of('tm2inv.inv_transfer_line', 'tm2mst.wh_loc', 'tm2inv.v_rm_onhand') }}"
@@ -128,9 +142,11 @@
                     ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
                     ['key' => 'unit', 'label' => 'Unit'],
                     ['key' => 'weight', 'label' => 'Weight (kg)', 'type' => 'number'],
+                    ['key' => 'volume', 'label' => 'Volume (m³)', 'type' => 'number'],
                     ['key' => 'from', 'label' => 'From Bin'],
                     ['key' => 'to', 'label' => 'To Bin'],
-                    ['key' => 'after', 'label' => $draft ? 'Destination After Move' : 'Destination Now'],
+                    ['key' => 'after', 'label' => $doc->stat_confirm ? 'Destination Weight Now' : 'Destination Weight After Move'],
+                    ['key' => 'after_m3', 'label' => $doc->stat_confirm ? 'Destination Volume Now' : 'Destination Volume After Move'],
                     ['key' => 'flag', 'label' => 'Check', 'type' => 'badge', 'toneKey' => 'flag_tone'],
                 ]" />
         </x-dl::card>
@@ -144,7 +160,7 @@
             </x-slot:actions>
             <x-dl::form.row :cols="3">
                 @foreach ($labels as $l)
-                    <x-dl::label :code="$l['code']" :title="$l['role']" :name="$l['name']" :lines="$l['lines']" :qr="$l['qr']" :barcode="$l['barcode']" :tone="$l['tone']" :footer="$l['footer']" />
+                    @include('v2.partials.label', ['l' => $l, 'title' => $l['role'], 'size' => 'md'])
                 @endforeach
             </x-dl::form.row>
         </x-dl::card>

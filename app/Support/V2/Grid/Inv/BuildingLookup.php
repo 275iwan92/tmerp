@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 // Inventory > Warehouse > Buildings (tm2mst.wh_warehouse): satu baris = satu GEDUNG gudang (user 2026-10-02: A5, A6, A10 dan
 // gedung lain; perusahaan lain cukup menambah baris). Ukuran dalam meter, bentuk kotak / huruf L / garis luar sendiri,
 // 1-3 lantai -- dari sini Warehouse Map digambar. Area dan bin gedung itu diisi di Storage Areas dan Bins.
+// Tinggi bersih tiap lantai (user 2026-10-02: kapasitas dalam luasan DAN tinggi gedung, lantai 1, 2, 3) -> volume ruang.
 class BuildingLookup extends DbLookup
 {
     public function slug(): string
@@ -62,6 +63,10 @@ class BuildingLookup extends DbLookup
             ['key' => 'length_m', 'label' => 'Length (m)', 'type' => 'number', 'decimals' => 2, 'width' => '110px'],
             ['key' => 'width_m', 'label' => 'Width (m)', 'type' => 'number', 'decimals' => 2, 'width' => '110px'],
             ['key' => 'floor_count', 'label' => 'Floors', 'type' => 'select', 'options' => [1 => '1', 2 => '2', 3 => '3'], 'required' => true, 'width' => '90px'],
+            // Tinggi bersih (lantai sampai balok terendah): luas lantai x tinggi = volume ruang lantai itu.
+            ['key' => 'height_f1_m', 'label' => 'Clear Height Floor 1 (m)', 'type' => 'number', 'decimals' => 2, 'width' => '180px'],
+            ['key' => 'height_f2_m', 'label' => 'Clear Height Floor 2 (m)', 'type' => 'number', 'decimals' => 2, 'width' => '180px'],
+            ['key' => 'height_f3_m', 'label' => 'Clear Height Floor 3 (m)', 'type' => 'number', 'decimals' => 2, 'width' => '180px'],
             ['key' => 'shape', 'label' => 'Shape', 'type' => 'select', 'options' => WhWarehouse::SHAPES, 'required' => true, 'width' => '150px'],
             ['key' => 'notch_length_m', 'label' => 'Cut-out Length (m)', 'type' => 'number', 'decimals' => 2, 'width' => '150px'],
             ['key' => 'notch_width_m', 'label' => 'Cut-out Width (m)', 'type' => 'number', 'decimals' => 2, 'width' => '150px'],
@@ -87,6 +92,7 @@ class BuildingLookup extends DbLookup
         return ['warehouse_code' => ['string', 'max:20', 'regex:/^[A-Z0-9_\-]+$/'], 'warehouse_name' => ['string', 'max:100'],
             'warehouse_type' => [Rule::in(['MIX', 'RM', 'SFG', 'FG', 'WASTE', 'TRANSIT'])], 'length_m' => ['min:1', 'max:2000'], 'width_m' => ['min:1', 'max:2000'],
             'floor_count' => ['integer', 'min:1', 'max:'.WhWarehouse::MAX_FLOORS], 'shape' => [Rule::in(array_keys(WhWarehouse::SHAPES))],
+            'height_f1_m' => ['min:0', 'max:50'], 'height_f2_m' => ['min:0', 'max:50'], 'height_f3_m' => ['min:0', 'max:50'],
             'notch_length_m' => ['min:0'], 'notch_width_m' => ['min:0'], 'notch_corner' => [Rule::in(array_keys(WhWarehouse::CORNERS))],
             'outline' => ['nullable', 'string', 'max:500'], 'address' => ['nullable', 'string', 'max:255']];
     }

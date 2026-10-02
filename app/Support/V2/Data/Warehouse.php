@@ -68,9 +68,38 @@ final class Warehouse
         $all = collect($sum);
 
         return ['width' => $width, 'height' => $height, 'outline' => $w->outlinePoints(), 'floors' => $floors, 'bins' => $out,
-            'unassigned' => $bins->whereNull('zone_id')->count(),
+            'unassigned' => $bins->whereNull('zone_id')->count(), 'capacity' => self::floorCapacity($w, $zones, $bins, $sum),
             'totals' => ['bins' => $bins->count(), 'used_kg' => (float) $all->sum('used_kg'), 'capacity_kg' => (float) $all->sum('capacity_kg'),
-                'dead_bins' => $all->where('dead', true)->count(), 'area' => $w->floorArea() * $w->floors()]];
+                'used_m3' => (float) $all->sum('used_m3'), 'capacity_m3' => (float) $all->sum('capacity_m3'),
+                'dead_bins' => $all->where('dead', true)->count(), 'expiry_bins' => $all->whereNotNull('expiry_state')->count(), 'area' => $w->floorArea() * $w->floors()]];
+    }
+
+    // Kapasitas per lantai (user 2026-10-02: "kapasitas dalam luasan dan tinggi gedung, termasuk lantai 1, 2 dan 3"):
+    // luas lantai, tinggi, volume ruang; luas area penyimpanan dan berapa persen lantai; volume simpan (luas area x
+    // tinggi tumpuk); isi sekarang (m3 dan kg). Tinggi kosong = volume lantai itu tidak dihitung.
+    /** @return list<array<string, mixed>> */
+    private static function floorCapacity(WhWarehouse $w, Collection $zones, Collection $bins, array $sum): array
+    {
+        $rows = [];
+        for ($n = 1; $n <= $w->floors(); $n++) {
+            $fz = $zones->where('floor_no', $n);
+            $fb = $bins->whereIn('zone_id', $fz->pluck('id_zone')->all());
+            $s = collect($sum)->only($fb->pluck('location_id')->all());
+            $area = $w->floorArea();
+            $height = $w->floorHeight($n);
+            $storage = (float) $fz->sum(fn (WhZone $z) => $z->areaM2());
+            $capM3 = (float) $s->sum('capacity_m3');
+            $usedM3 = (float) $s->sum('used_m3');
+            $capKg = (float) $s->sum('capacity_kg');
+            $usedKg = (float) $s->sum('used_kg');
+            $rows[] = ['id' => $n, 'floor' => t('Floor').' '.$n, 'area' => $area, 'height' => $height, 'room' => $height ? round($area * $height, 1) : null,
+                'storage' => round($storage, 1), 'storage_pct' => $area > 0 ? round($storage / $area * 100, 1) : null, 'areas' => $fz->count(), 'bins' => $fb->count(),
+                'cap_m3' => $capM3 ? round($capM3, 1) : null, 'used_m3' => round($usedM3, 2), 'pct_m3' => $capM3 > 0 ? round($usedM3 / $capM3 * 100, 1) : null,
+                'cap_kg' => $capKg ?: null, 'used_kg' => round($usedKg), 'pct_kg' => $capKg > 0 ? round($usedKg / $capKg * 100, 1) : null,
+                'in_use' => $s->filter(fn (array $b) => $b['items'] !== [])->count()];
+        }
+
+        return $rows;
     }
 
     // Sel di denah untuk satu area. Kembalian: [['x', 'y', 'w', 'h', 'label', 'bins' => [location_id..]], ...] (meter, mutlak).
@@ -111,21 +140,41 @@ final class Warehouse
         $notes = array_filter([
             $b->is_usable ? null : ($b->block_reason ?: t('Blocked')),
             $s['unknown_weight'] ? str_replace(':n', (string) $s['unknown_weight'], t(':n items have no weight data and are not counted in the capacity.')) : null,
+            $s['unknown_volume'] && $s['capacity_m3'] ? str_replace(':n', (string) $s['unknown_volume'], t(':n items have no size data and are not counted in the volume.')) : null,
         ]);
+        $size = $s['area_m2'] ? Locale::decimal($s['area_m2'], 2).' m²'.($s['height_m'] ? ' × '.Locale::decimal($s['height_m'], 2).' m' : '') : null;
+        $caps = array_values(array_filter([
+            $s['capacity_kg'] || $s['used_kg'] > 0 ? ['label' => t('Weight'), 'value' => self::capacityText($s['used_kg'], $s['capacity_kg']), 'pct' => $s['pct_kg']] : null,
+            $s['capacity_m3'] ? ['label' => t('Volume'), 'value' => self::volumeText($s['used_m3'], $s['capacity_m3']), 'pct' => $s['pct_m3']] : null,
+            $size ? ['label' => t('Floor area × height'), 'value' => $size, 'pct' => null] : null,
+            $b->capacity_pallet || $s['pallet_count'] ? ['label' => t('Pallets'), 'value' => $s['pallet_count'].($b->capacity_pallet ? ' / '.$b->capacity_pallet : ''), 'pct' => null] : null,
+        ]));
 
         return [
             'code' => $b->location_code, 'title' => trim(($z ? $z->zone_name.' · ' : '').t('Floor').' '.($z->floor_no ?? 1)),
             'level' => $z?->storage_mode === 'RACK' ? t('Level').' '.$b->stack_code : null, 'status' => $s['status'], 'dead' => $s['dead'],
-            'capacity' => self::capacityText($s['used_kg'], $s['capacity_kg']), 'pct' => $s['pct'], 'capacityLabel' => self::capacityLabel($b),
+            'capacity' => self::capacityText($s['used_kg'], $s['capacity_kg']), 'pct' => $s['pct'], 'caps' => $caps, 'capacityLabel' => self::capacityLabel($b),
+            'expiry' => (bool) $s['expiry_state'],
             'note' => $notes ? implode(' ', $notes) : null, 'qr' => self::trackUrl('LOC', $b->location_code),
             'items' => array_map(fn (array $i) => ['code' => $i['code'], 'name' => $i['name'], 'qty' => Locale::decimal($i['qty'], 2).' '.$i['uom'],
-                'idle' => self::idleText($i['idle_days']), 'dead' => $i['dead']], $s['items']),
+                'idle' => self::idleText($i['idle_days']), 'dead' => $i['dead'], 'tags' => array_values(array_filter([
+                    $i['arrived'] ? ['label' => t('Arrived').' '.Locale::d($i['arrived']), 'tone' => null] : null,
+                    $i['expiry_state'] === 'EXPIRED' ? ['label' => t('Expired').' '.Locale::d($i['expiry']), 'tone' => 'danger'] : null,
+                    $i['expiry_state'] === 'SOON' ? ['label' => t('Expires').' '.Locale::d($i['expiry']), 'tone' => 'warn'] : null,
+                    $i['expiry_state'] === null && $i['expiry'] ? ['label' => t('Expiry').' '.Locale::d($i['expiry']), 'tone' => null] : null,
+                    $i['pallet_count'] ? ['label' => $i['pallet_count'].' '.t('pallets'), 'tone' => null] : null,
+                ]))], $s['items']),
         ];
     }
 
     public static function capacityText(float $used, ?float $capacity): ?string
     {
         return $capacity ? Locale::number($used).' / '.Locale::number($capacity).' kg' : ($used > 0 ? Locale::number($used).' kg' : null);
+    }
+
+    public static function volumeText(float $used, ?float $capacity): ?string
+    {
+        return $capacity ? Locale::decimal($used, 2).' / '.Locale::decimal($capacity, 2).' m³' : ($used > 0 ? Locale::decimal($used, 2).' m³' : null);
     }
 
     // Teks kapasitas di label bin: "Max 3,000 kg · 4 pallets".
@@ -153,8 +202,9 @@ final class Warehouse
         return $bins->mapWithKeys(function (WhLoc $b) use ($sum) {
             $s = $sum[$b->location_id];
             $free = $s['capacity_kg'] ? str_replace([':free', ':cap'], [Locale::number(max(0, $s['capacity_kg'] - $s['used_kg'])), Locale::number($s['capacity_kg'])], t('free :free kg of :cap')) : t('no capacity set');
+            $room = $s['capacity_m3'] ? ' · '.str_replace(':free', Locale::decimal(max(0, $s['capacity_m3'] - $s['used_m3']), 2), t('free :free m³')) : '';
 
-            return [$b->location_id => $b->location_code.' · '.$free.($s['status'] === 'EMPTY' ? ' · '.t('empty') : '')];
+            return [$b->location_id => $b->location_code.' · '.$free.$room.($s['status'] === 'EMPTY' ? ' · '.t('empty') : '')];
         })->all();
     }
 }

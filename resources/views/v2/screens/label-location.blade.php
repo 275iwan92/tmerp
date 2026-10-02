@@ -7,6 +7,7 @@
     use App\Support\V2\Data\Warehouse;
     use App\Support\V2\Src;
     use Devlib\Components\Label;
+    use Devlib\Components\LabelSheet;
 
     $home = route('v2.screen', 'label-location');
     $wh = Warehouse::current(request()->integer('wh') ?: null);
@@ -22,7 +23,7 @@
 @if (! $wh)
     <x-dl::empty-state title="No warehouse yet" message="Add a building and its bins first." icon="fa-warehouse" />
 @else
-    <x-dl::card title="Print Location Label" icon="fa-qrcode" description="A label for every bin: its code, storage area, capacity, a QR code for the phone camera and a barcode for the scanner.">
+    <x-dl::card title="Print Location Label" icon="fa-qrcode" description="A label for every bin: its code, storage area, capacity (weight, volume, floor area), a QR code for the phone camera and a barcode for the scanner. The colour band shows the kind of storage area.">
         <x-dl::action-form method="get" action="{{ $home }}">
             <x-dl::form.row :cols="3">
                 <x-dl::field.select name="wh" label="Building" :options="Warehouse::options()" :value="$wh->id_warehouse" :source="Src::of('tm2mst.wh_warehouse')" />
@@ -33,9 +34,10 @@
         </x-dl::action-form>
         <x-dl::action-form action="{{ route('v2.wh.labels.print') }}">
             <input type="hidden" name="type" value="location">
-            <x-dl::form.row :cols="3">
+            <x-dl::form.row :cols="4">
                 <x-dl::field.multi-select name="keys" label="Bins" required :options="Labels::binOptions($wh->id_warehouse)" :value="$picked" empty-text="Choose (0 selected)" noun="selected" :source="Src::of('tm2mst.wh_loc')" />
                 <x-dl::field.select name="size" label="Label size" required :options="Label::SIZES" value="md" />
+                <x-dl::field.select name="paper" label="Print On" required :options="array_map(fn (string $p) => t($p), LabelSheet::PAPERS)" value="a4" />
                 <x-dl::field.number name="copies" label="Copies per label" :value="1" />
             </x-dl::form.row>
             <x-dl::action-bar>
@@ -43,5 +45,6 @@
                 <x-dl::button icon="print" label="Print" type="submit" />
             </x-dl::action-bar>
         </x-dl::action-form>
+        <x-dl::label-guide size="md" :colors="Labels::colorLegend('location')" />
     </x-dl::card>
 @endif

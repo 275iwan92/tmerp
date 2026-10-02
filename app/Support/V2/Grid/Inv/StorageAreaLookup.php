@@ -74,6 +74,8 @@ class StorageAreaLookup extends DbLookup
             ['key' => 'map_y', 'label' => 'Y (m)', 'type' => 'number', 'decimals' => 2, 'width' => '90px'],
             ['key' => 'map_w', 'label' => 'Width (m)', 'type' => 'number', 'decimals' => 2, 'width' => '100px'],
             ['key' => 'map_h', 'label' => 'Depth (m)', 'type' => 'number', 'decimals' => 2, 'width' => '100px'],
+            // Setinggi apa barang boleh ditumpuk di area ini; kosong = tinggi bersih lantainya. Luas x tinggi tumpuk = volume simpan.
+            ['key' => 'stack_height_m', 'label' => 'Stack Height (m)', 'type' => 'number', 'decimals' => 2, 'width' => '140px'],
             ['key' => 'sort_order', 'label' => 'Order', 'type' => 'number', 'decimals' => 0, 'width' => '80px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '80px'],
         ];
@@ -97,7 +99,8 @@ class StorageAreaLookup extends DbLookup
             // Paling panjang 6 huruf: kode area menjadi bagian kode bin dan kolom wh_loc.row_code (10 huruf).
             'zone_code' => ['string', 'max:6', 'regex:/^[A-Z0-9]+$/'], 'zone_name' => ['string', 'max:100'], 'zone_type' => [Rule::in(array_keys(WhZone::TYPES))],
             'storage_mode' => [Rule::in(array_keys(WhZone::MODES))], 'stock_class' => [Rule::in(array_keys(WhZone::STOCK_CLASSES))],
-            'map_x' => ['min:0'], 'map_y' => ['min:0'], 'map_w' => ['min:1'], 'map_h' => ['min:1'], 'sort_order' => ['integer', 'min:0', 'max:65535']];
+            'map_x' => ['min:0'], 'map_y' => ['min:0'], 'map_w' => ['min:1'], 'map_h' => ['min:1'], 'stack_height_m' => ['min:0', 'max:50'],
+            'sort_order' => ['integer', 'min:0', 'max:65535']];
     }
 
     protected function check(array $in, ?int $id): ?string
@@ -114,6 +117,10 @@ class StorageAreaLookup extends DbLookup
         }
         if ((int) $in['floor_no'] > $wh->floors()) {
             return 'That building does not have this floor. Raise Floors in Buildings first.';
+        }
+        $ceiling = $wh->floorHeight((int) $in['floor_no']);
+        if ($ceiling && (float) ($in['stack_height_m'] ?? 0) > $ceiling + 0.001) {
+            return 'The stack height is higher than the clear height of that floor.';
         }
         [$maxX, $maxY] = $wh->extent();
         if ($maxX > 0 && ((float) $in['map_x'] + (float) $in['map_w'] > $maxX + 0.001 || (float) $in['map_y'] + (float) $in['map_h'] > $maxY + 0.001)) {

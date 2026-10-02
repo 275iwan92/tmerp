@@ -5,10 +5,10 @@
     "module": "INV",
     "title": "Warehouse Map",
     "purpose": {
-      "en": "The floor plan of one warehouse building: its storage areas and bins, per floor. Open it to see where stock is, how full each bin is and which bins hold dead stock.",
-      "id": "Denah satu gedung gudang: area penyimpanan dan bin-nya, per lantai. Buka untuk melihat stok ada di mana, seberapa penuh tiap bin, dan bin mana yang berisi dead stock."
+      "en": "The floor plan of one warehouse building: its storage areas and bins, per floor. Open it to see where stock is, how full each bin is by weight and by volume, and which bins hold dead or expired stock.",
+      "id": "Denah satu gedung gudang: area penyimpanan dan bin-nya, per lantai. Buka untuk melihat stok ada di mana, seberapa penuh tiap bin menurut berat dan volume, dan bin mana yang berisi dead stock atau stok kedaluwarsa."
     },
-    "keywords": "warehouse map, peta gudang, denah gudang, mapping, layout, bin, lokasi, rak, lantai, floor, dead stock, stok mati, kapasitas, capacity, gedung, a5, a6, a10",
+    "keywords": "warehouse map, peta gudang, denah gudang, mapping, layout, bin, lokasi, rak, lantai, floor, dead stock, stok mati, kapasitas, capacity, gedung, a5, a6, a10, volume, m3, luas, tinggi, tinggi gedung, kapasitas lantai, kedaluwarsa, expired, expiry",
     "steps": [
       {"en": "Choose the Building and click Show. A building with more than one floor has a tab per floor.", "id": "Pilih Building lalu klik Show. Gedung yang punya lebih dari satu lantai punya tab per lantai."},
       {"en": "Read the colours: white = empty, blue = in use, yellow = full, orange = over capacity, hatched = blocked, red = holds dead stock.", "id": "Baca warnanya: putih = kosong, biru = terisi, kuning = penuh, oranye = lebih dari kapasitas, berarsir = diblokir, merah = berisi dead stock."},
@@ -16,7 +16,9 @@
       {"en": "Type in the search box to highlight the bins that hold an item, a lot or match a bin code. Click a colour in the legend to see only those bins.", "id": "Ketik di kotak cari untuk menyorot bin yang berisi item, lot, atau cocok dengan kode bin. Klik warna di legenda untuk melihat bin itu saja."},
       {"en": "Transfer makes a draft Stock Transfer with everything in the bin. Label prints the bin label. Block stops a bin from receiving stock and asks for the reason.", "id": "Transfer membuat draft Stock Transfer berisi semua isi bin. Label mencetak label bin. Block menghentikan bin menerima stok dan meminta alasannya."},
       {"en": "Edit Layout: drag a storage area to move it, or drag its corner to resize it. The new position is saved at once.", "id": "Edit Layout: seret area penyimpanan untuk memindahkannya, atau seret sudutnya untuk mengubah ukurannya. Posisi baru langsung tersimpan."},
-      {"en": "Generate Bins: choose a storage area, the lanes and slots (or racks, columns and levels) and the capacity per bin, then Generate.", "id": "Generate Bins: pilih area penyimpanan, lajur dan slot (atau rak, kolom, dan tingkat) serta kapasitas per bin, lalu Generate."}
+      {"en": "Generate Bins: choose a storage area, the lanes and slots (or racks, columns and levels) and the capacity per bin, then Generate.", "id": "Generate Bins: pilih area penyimpanan, lajur dan slot (atau rak, kolom, dan tingkat) serta kapasitas per bin, lalu Generate."},
+      {"en": "A yellow dot on a bin means it holds stock that is expired or expires soon. Click Expired / expires soon above the map to see only those bins.", "id": "Titik kuning di bin berarti berisi stok yang kedaluwarsa atau segera kedaluwarsa. Klik Expired / expires soon di atas peta untuk melihat bin itu saja."},
+      {"en": "Read the Capacity per Floor table under the map: floor area, clear height and room volume of each floor, how much of it is storage area, and how much is in use (m3 and kg).", "id": "Baca tabel Capacity per Floor di bawah peta: luas lantai, tinggi bersih dan volume ruang tiap lantai, berapa yang menjadi area penyimpanan, dan berapa yang terpakai (m3 dan kg)."}
     ],
     "fields": [
       {"label": "Building", "en": "The warehouse building to show. Buildings are added in Buildings.", "id": "Gedung gudang yang ditampilkan. Gedung ditambah di Buildings."},
@@ -29,7 +31,9 @@
       {"label": "Slot / column to", "en": "Last slot or column.", "id": "Slot atau kolom terakhir."},
       {"label": "Levels (rack)", "en": "How many levels each rack column has. Used for a rack area only.", "id": "Jumlah tingkat tiap kolom rak. Hanya dipakai untuk area rak."},
       {"label": "Capacity per bin (kg)", "en": "Weight capacity given to every new bin. It can be changed per bin in Bins.", "id": "Kapasitas berat untuk tiap bin baru. Bisa diubah per bin di Bins."},
-      {"label": "Pallets per bin", "en": "How many pallets fit in every new bin. Printed on the bin label.", "id": "Jumlah pallet yang muat di tiap bin baru. Tercetak di label bin."}
+      {"label": "Pallets per bin", "en": "How many pallets fit in every new bin. Printed on the bin label.", "id": "Jumlah pallet yang muat di tiap bin baru. Tercetak di label bin."},
+      {"label": "Weight / Volume / Floor area × height", "en": "In the bin panel. Weight = stock weight against the kg capacity of the bin. Volume = estimated stock volume against the bin volume. Floor area x height = size of the bin: its storage area divided by its positions, times the stacking height.", "id": "Di panel bin. Weight = berat stok terhadap kapasitas kg bin. Volume = perkiraan volume stok terhadap volume bin. Floor area x height = ukuran bin: luas area penyimpanannya dibagi jumlah posisinya, dikali tinggi tumpuk."},
+      {"label": "Capacity per Floor", "en": "One row per floor. The clear height of a floor is filled in Buildings; the stacking height of an area in Storage Areas. A floor without a height has no volume.", "id": "Satu baris per lantai. Tinggi bersih lantai diisi di Buildings; tinggi tumpuk area di Storage Areas. Lantai tanpa tinggi tidak punya volume."}
     ]
   },
   {
@@ -41,14 +45,16 @@
       "en": "Move stock from one bin to another, in the same warehouse or to another warehouse. Open it whenever goods change place, so the stock card and the Warehouse Map stay right.",
       "id": "Memindahkan stok dari satu bin ke bin lain, di gudang yang sama atau ke gudang lain. Buka setiap kali barang berpindah tempat, supaya kartu stok dan Warehouse Map tetap benar."
     },
-    "keywords": "stock transfer, transfer stok, pindah stok, mutasi, pindah gudang, pindah bin, moving item, antar gudang, tf, dead stock",
+    "keywords": "stock transfer, transfer stok, pindah stok, mutasi, pindah gudang, pindah bin, moving item, antar gudang, tf, dead stock, approval transfer, persetujuan, palet, pallet, volume",
     "steps": [
       {"en": "Click + New Record, choose From warehouse and To warehouse, then Create. The same warehouse on both sides means a move between bins.", "id": "Klik + New Record, pilih From warehouse dan To warehouse, lalu Create. Gudang yang sama di kedua sisi berarti pindah antar bin."},
       {"en": "Click + Item. Pick the item in its source bin, the destination bin and the quantity to move. Repeat for every item.", "id": "Klik + Item. Pilih item di bin asalnya, bin tujuan, dan qty yang dipindah. Ulangi untuk tiap item."},
       {"en": "Click Save. Bins & Capacity shows per line how full the destination bin is after the move and marks dead stock in red.", "id": "Klik Save. Bins & Capacity menampilkan per baris seberapa penuh bin tujuan sesudah pindah dan menandai dead stock dengan merah."},
       {"en": "Click Confirm. The stock moves on the stock card, the transfer gets its number and can be printed. Nothing can be changed after that.", "id": "Klik Confirm. Stok pindah di kartu stok, transfer mendapat nomornya dan bisa dicetak. Sesudah itu tidak ada yang bisa diubah."},
       {"en": "To undo a confirmed transfer click Cancel and give the reason. The stock goes back to the source bins if it is still in the destination bins.", "id": "Untuk membatalkan transfer yang sudah Confirm klik Cancel dan isi alasannya. Stok kembali ke bin asal bila masih ada di bin tujuan."},
-      {"en": "Bin Labels shows the capacity label of every bin on the transfer with its QR code and barcode. Print Labels prints them.", "id": "Bin Labels menampilkan label kapasitas tiap bin di transfer ini beserta QR code dan barcode-nya. Print Labels mencetaknya."}
+      {"en": "Bin Labels shows the capacity label of every bin on the transfer with its QR code and barcode. Print Labels prints them.", "id": "Bin Labels menampilkan label kapasitas tiap bin di transfer ini beserta QR code dan barcode-nya. Print Labels mencetaknya."},
+      {"en": "Labelled pallets follow the stock: a transfer that empties a bin moves all its pallets; a part of the stock moves the oldest pallets when their quantities add up exactly. Otherwise the pallets stay and Print Pallet Label shows what to relabel.", "id": "Palet berlabel ikut pindah: transfer yang mengosongkan bin memindahkan semua paletnya; sebagian stok memindahkan palet tertua bila jumlahnya persis sama. Kalau tidak, palet tetap di tempat dan Print Pallet Label menunjukkan yang perlu dilabel ulang."},
+      {"en": "Approval is switched off by default: Confirm moves the stock at once. When it is switched on in Setup > Setting Approval (module TF), Confirm sends the transfer for approval and the stock moves only after the last approval.", "id": "Approval bawaannya mati: Confirm langsung memindahkan stok. Bila dinyalakan di Setup > Setting Approval (modul TF), Confirm mengajukan transfer untuk approval dan stok baru pindah sesudah approval terakhir."}
     ],
     "fields": [
       {"label": "From warehouse", "en": "The building the stock leaves. It cannot be changed after the draft is created.", "id": "Gedung asal stok. Tidak bisa diubah setelah draft dibuat."},
@@ -64,6 +70,23 @@
     ]
   },
   {
+    "key": "approval-tf",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Stock Transfer Approval Center",
+    "purpose": {
+      "en": "The stock transfers that wait for your approval. This approval is switched off by default; while it is off, Confirm on a transfer moves the stock at once and nothing arrives here.",
+      "id": "Stock transfer yang menunggu approval Anda. Approval ini bawaannya mati; selama mati, Confirm di transfer langsung memindahkan stok dan tidak ada yang masuk ke sini."
+    },
+    "keywords": "approval transfer, persetujuan transfer, stock transfer approval, pindah stok, setuju, tolak, hold, setting approval, tf",
+    "steps": [
+      {"en": "To switch it on: Setup > Setting Approval, open module TF, set the position that approves, then Activate. Deactivate switches it off again.", "id": "Untuk menyalakan: Setup > Setting Approval, buka modul TF, isi jabatan yang menyetujui, lalu Activate. Deactivate mematikannya lagi."},
+      {"en": "Open a transfer in the list to see its route, lines and the capacity check of the destination bins.", "id": "Buka satu transfer di daftar untuk melihat rute, baris, dan pemeriksaan kapasitas bin tujuannya."},
+      {"en": "Approve moves the stock when you are the last level. Reject stops the transfer; no stock moves. Hold keeps it in your list. Reject and Hold need a reason.", "id": "Approve memindahkan stok bila Anda level terakhir. Reject menghentikan transfer; tidak ada stok yang pindah. Hold menahannya di daftar Anda. Reject dan Hold wajib alasan."}
+    ],
+    "fields": []
+  },
+  {
     "key": "wh-buildings",
     "type": "INPUT",
     "module": "INV",
@@ -72,7 +95,7 @@
       "en": "The list of warehouse buildings with their size, shape and number of floors. Open it to add a building or to correct its measurements; the Warehouse Map is drawn from it.",
       "id": "Daftar gedung gudang beserta ukuran, bentuk, dan jumlah lantainya. Buka untuk menambah gedung atau membetulkan ukurannya; Warehouse Map digambar dari sini."
     },
-    "keywords": "building, gedung, gudang, warehouse, ukuran gudang, bentuk gudang, huruf l, l shape, lantai, floor, a5, a6, a10, tambah gudang",
+    "keywords": "building, gedung, gudang, warehouse, ukuran gudang, bentuk gudang, huruf l, l shape, lantai, floor, a5, a6, a10, tambah gudang, tinggi gedung, tinggi lantai, clear height, volume",
     "steps": [
       {"en": "To add a building, add a row and type its Code and Building Name.", "id": "Untuk menambah gedung, tambah baris lalu ketik Code dan Building Name-nya."},
       {"en": "Fill Length and Width in metres and choose the number of Floors.", "id": "Isi Length dan Width dalam meter dan pilih jumlah Floors."},
@@ -92,7 +115,8 @@
       {"label": "Cut-out Corner", "en": "L shape only: which corner is missing.", "id": "Hanya huruf L: sudut mana yang hilang."},
       {"label": "Custom Outline (m)", "en": "Custom shape only: the corner points in metres, clockwise from the top left, like 0,0; 30,0; 30,12; 0,12.", "id": "Hanya bentuk sendiri: titik-titik sudut dalam meter, searah jarum jam dari kiri atas, seperti 0,0; 30,0; 30,12; 0,12."},
       {"label": "Address", "en": "Address of the building. Printed on the Stock Transfer when it is the destination.", "id": "Alamat gedung. Tercetak di Stock Transfer bila gedung itu tujuannya."},
-      {"label": "Active", "en": "Untick to stop using the building. It disappears from the choices; its stock records stay.", "id": "Hilangkan centang untuk berhenti memakai gedung. Gedung hilang dari pilihan; catatan stoknya tetap ada."}
+      {"label": "Active", "en": "Untick to stop using the building. It disappears from the choices; its stock records stay.", "id": "Hilangkan centang untuk berhenti memakai gedung. Gedung hilang dari pilihan; catatan stoknya tetap ada."},
+      {"label": "Clear Height Floor 1 / 2 / 3 (m)", "en": "Height of each floor from the floor to the lowest beam, in metres. Floor area x height is the room volume of that floor. An estimate is fine; the warehouse officer corrects it later.", "id": "Tinggi tiap lantai dari lantai sampai balok terendah, dalam meter. Luas lantai x tinggi = volume ruang lantai itu. Perkiraan dulu tidak apa-apa; petugas gudang memperbaikinya nanti."}
     ]
   },
   {
@@ -104,7 +128,7 @@
       "en": "The storage areas inside each building and floor, such as Receiving, Plano Paper or Finished Goods. Open it to add an area or change its use, size and place on the map.",
       "id": "Area penyimpanan di tiap gedung dan lantai, seperti Receiving, Plano Paper, atau Finished Goods. Buka untuk menambah area atau mengubah kegunaan, ukuran, dan letaknya di peta."
     },
-    "keywords": "storage area, area penyimpanan, zona, zone, area gudang, receiving, staging, shipping, rak, lantai, tambah area",
+    "keywords": "storage area, area penyimpanan, zona, zone, area gudang, receiving, staging, shipping, rak, lantai, tambah area, tinggi tumpuk, stack height, volume",
     "steps": [
       {"en": "Add a row, choose the Building and the Floor, and type the Code and Area Name.", "id": "Tambah baris, pilih Building dan Floor, lalu ketik Code dan Area Name."},
       {"en": "Choose Use, How Stored and Stock Class.", "id": "Pilih Use, How Stored, dan Stock Class."},
@@ -124,7 +148,8 @@
       {"label": "Width (m)", "en": "Size of the area from left to right. X plus Width must stay inside the building.", "id": "Ukuran area dari kiri ke kanan. X ditambah Width harus tetap di dalam gedung."},
       {"label": "Depth (m)", "en": "Size of the area from top to bottom. Y plus Depth must stay inside the building.", "id": "Ukuran area dari atas ke bawah. Y ditambah Depth harus tetap di dalam gedung."},
       {"label": "Order", "en": "Order of the area in lists, smallest first.", "id": "Urutan area di daftar, yang terkecil lebih dulu."},
-      {"label": "Active", "en": "Untick to take the area off the map. Its bins and stock records stay.", "id": "Hilangkan centang untuk melepas area dari peta. Bin dan catatan stoknya tetap ada."}
+      {"label": "Active", "en": "Untick to take the area off the map. Its bins and stock records stay.", "id": "Hilangkan centang untuk melepas area dari peta. Bin dan catatan stoknya tetap ada."},
+      {"label": "Stack Height (m)", "en": "How high goods may be stacked in this area. Empty = the clear height of that floor. Area x stack height is the storage volume, shared by the bins of the area.", "id": "Setinggi apa barang boleh ditumpuk di area ini. Kosong = tinggi bersih lantainya. Luas x tinggi tumpuk = volume simpan, dibagi ke bin-bin area itu."}
     ]
   },
   {
@@ -168,7 +193,7 @@
       "en": "All stock on hand now, one row per item and bin, in every building. Open it to find where an item is kept or to list the dead stock.",
       "id": "Semua stok yang ada sekarang, satu baris per item per bin, di semua gedung. Buka untuk mencari tempat sebuah item disimpan atau mendaftar dead stock."
     },
-    "keywords": "stock by location, stok per lokasi, stok per bin, posisi stok, dead stock, stok mati, cari barang, di mana barang, gudang, area",
+    "keywords": "stock by location, stok per lokasi, stok per bin, posisi stok, dead stock, stok mati, cari barang, di mana barang, gudang, area, volume, kedaluwarsa, expired, tanggal tiba",
     "steps": [
       {"en": "Type an item code, an item name or a bin code in the search box.", "id": "Ketik kode item, nama item, atau kode bin di kotak cari."},
       {"en": "Click Dead stock above the table to see only the red rows.", "id": "Klik Dead stock di atas tabel untuk melihat baris merah saja."},
@@ -185,7 +210,10 @@
       {"label": "Stock Value", "en": "Value of the stock in that bin at the moving average price.", "id": "Nilai stok di bin itu dengan harga rata-rata bergerak."},
       {"label": "Last Movement", "en": "Date of the last movement of the item in any bin. Stock transfers are not counted.", "id": "Tanggal pergerakan terakhir item di bin mana pun. Stock transfer tidak dihitung."},
       {"label": "Idle (days)", "en": "Days since the last movement.", "id": "Jumlah hari sejak pergerakan terakhir."},
-      {"label": "Stock", "en": "OK, Dead stock (idle longer than the limit, or never moved) or Blocked bin.", "id": "OK, Dead stock (diam lebih lama dari batas, atau tidak pernah bergerak), atau Blocked bin."}
+      {"label": "Stock", "en": "OK, Dead stock (idle longer than the limit, or never moved) or Blocked bin.", "id": "OK, Dead stock (diam lebih lama dari batas, atau tidak pernah bergerak), atau Blocked bin."},
+      {"label": "Volume (m³)", "en": "Estimated volume of the stock (paper: sheets x size x thickness). Empty when it cannot be estimated.", "id": "Perkiraan volume stok (kertas: lembar x ukuran x tebal). Kosong bila tidak bisa diperkirakan."},
+      {"label": "Arrived", "en": "The date the goods came into that bin.", "id": "Tanggal barang masuk ke bin itu."},
+      {"label": "Expiry Date", "en": "The earliest expiry date among the pallet labels of that stock. Expired rows are red, Expires soon rows yellow.", "id": "Tanggal kedaluwarsa paling awal dari label palet stok itu. Baris Expired merah, Expires soon kuning."}
     ]
   },
   {
@@ -194,8 +222,8 @@
     "module": "INV",
     "title": "Print Location Label (QR)",
     "purpose": {
-      "en": "Print the labels that are stuck on the bins: bin code, storage area, capacity, a QR code and a barcode. Open it after bins are made or when a label is damaged.",
-      "id": "Mencetak label yang ditempel di bin: kode bin, area penyimpanan, kapasitas, QR code, dan barcode. Buka setelah bin dibuat atau saat label rusak."
+      "en": "Print a label for every bin: its code, storage area, capacity (weight, volume, floor area), a QR code and a barcode. The colour band shows the kind of storage area.",
+      "id": "Mencetak label untuk tiap bin: kode, area penyimpanan, kapasitas (berat, volume, luas tapak), QR code, dan barcode. Pita warna menunjukkan jenis area penyimpanan."
     },
     "keywords": "label lokasi, location label, label bin, label rak, qr code, barcode, cetak label, capacity label, label kapasitas",
     "steps": [
@@ -208,8 +236,37 @@
       {"label": "Building", "en": "The building whose bins are listed.", "id": "Gedung yang bin-nya ditampilkan."},
       {"label": "Storage area (ticks all its bins)", "en": "Optional. Choosing an area ticks all its bins at once.", "id": "Boleh kosong. Memilih area mencentang semua bin-nya sekaligus."},
       {"label": "Bins", "en": "The bins that get a label.", "id": "Bin yang dicetak labelnya."},
-      {"label": "Label size", "en": "60 x 35 mm, 100 x 50 mm or 100 x 150 mm.", "id": "60 x 35 mm, 100 x 50 mm, atau 100 x 150 mm."},
-      {"label": "Copies per label", "en": "How many times each label is printed, 1 to 20.", "id": "Berapa kali tiap label dicetak, 1 sampai 20."}
+      {"label": "Label size", "en": "60 x 40 mm (small packs), 100 x 50 mm (bins and stacks) or 100 x 150 mm (pallets). The guide under the form shows what each size is for and how many fit on an A4 sheet.", "id": "60 x 40 mm (kemasan kecil), 100 x 50 mm (bin dan tumpukan), atau 100 x 150 mm (palet). Panduan di bawah form menjelaskan guna tiap ukuran dan berapa yang muat di satu lembar A4."},
+      {"label": "Copies per label", "en": "How many times each label is printed, 1 to 20.", "id": "Berapa kali tiap label dicetak, 1 sampai 20."},
+      {"label": "Print On", "en": "Label roll = a label printer, one label per page. A4 sheet = an office printer, the labels are cut along their borders.", "id": "Label roll = printer label, satu label satu halaman. A4 sheet = printer kantor, label dipotong mengikuti garis tepinya."}
+    ]
+  },
+  {
+    "key": "label-pallet",
+    "type": "INPUT",
+    "module": "INV",
+    "title": "Print Pallet Label (QR)",
+    "purpose": {
+      "en": "Give every pallet its own label: pallet number, item, quantity, arrival date, the pallet code of the supplier, lot, expiry date, a QR code and a barcode. A label is made at every arrival and again every time stock is used from the pallet.",
+      "id": "Memberi tiap palet labelnya sendiri: nomor palet, item, qty, tanggal tiba, kode palet dari supplier, lot, tanggal kedaluwarsa, QR code, dan barcode. Label dibuat setiap barang datang dan dibuat lagi setiap isi palet dipakai."
+    },
+    "keywords": "label palet, pallet label, palet, pallet, kedatangan, penerimaan barang, label ulang, relabel, sisa palet, kode palet supplier, kedaluwarsa, expired, expiry, tanggal tiba, qr code, barcode, ukuran label, cetak label",
+    "steps": [
+      {"en": "At a goods receipt: open the posted receipt and click Pallet Labels. Or open this screen from the menu and choose the Building.", "id": "Saat penerimaan barang: buka penerimaan yang sudah diposting lalu klik Pallet Labels. Atau buka layar ini dari menu dan pilih Building."},
+      {"en": "Read the work list. Arrival label = goods came in and have no pallet label yet. Relabel after use = stock was taken and a pallet label still shows the old quantity.", "id": "Baca daftar pekerjaan. Arrival label = barang datang dan belum punya label palet. Relabel after use = stok sudah diambil dan label palet masih menunjukkan qty lama."},
+      {"en": "Open a row. For an arrival: one line = one pallet. Type the quantity on each pallet, the pallet code printed on the supplier label, the lot and the expiry date; use + Pallet to split. Click Create & Print.", "id": "Buka satu baris. Untuk kedatangan: satu baris = satu palet. Ketik qty tiap palet, kode palet yang tercetak di label supplier, lot, dan tanggal kedaluwarsa; pakai + Pallet untuk memecah. Klik Create & Print."},
+      {"en": "After using stock from a pallet: choose the pallet under Relabel after Use, type what is left and click Relabel & Print. Zero closes the pallet.", "id": "Sesudah memakai stok dari satu palet: pilih paletnya di Relabel after Use, ketik sisanya, lalu klik Relabel & Print. Nol menutup palet."},
+      {"en": "A damaged or lost label: tick the pallet under Print Again and click Print. The quantity does not change.", "id": "Label rusak atau hilang: centang paletnya di Print Again lalu klik Print. Qty tidak berubah."},
+      {"en": "The label sheet opens. Choose Label Roll or A4 Sheet, then Print. Stick the label on the pallet before it is put away.", "id": "Lembar label terbuka. Pilih Label Roll atau A4 Sheet, lalu Print. Tempel label di palet sebelum disimpan."}
+    ],
+    "fields": [
+      {"label": "Qty on the Pallet", "en": "What is on that pallet. All new pallets together may not be more than what is in the bin without a label.", "id": "Isi palet itu. Jumlah semua palet baru tidak boleh lebih dari isi bin yang belum berlabel."},
+      {"label": "Supplier Pallet Code", "en": "The pallet code printed on the label of the supplier. It is printed on our label too, so a pallet can be traced back to the supplier.", "id": "Kode palet yang tercetak di label supplier. Ikut dicetak di label kita, supaya palet bisa dilacak balik ke supplier."},
+      {"label": "Expiry Date", "en": "Paper and ink expire. The date is proposed from the arrival date and the shelf life of the item (master Raw Material); change it to the date on the supplier label. Expired pallets get a red tag, pallets that expire soon a yellow tag.", "id": "Kertas dan tinta punya tanggal kedaluwarsa. Tanggal diusulkan dari tanggal tiba dan umur simpan item (master Raw Material); ganti dengan tanggal di label supplier. Palet kedaluwarsa bertanda merah, yang segera kedaluwarsa bertanda kuning."},
+      {"label": "Arrival date", "en": "The date the goods arrived. It stays on the label after a relabel. The colour band of the label shows the arrival month.", "id": "Tanggal barang tiba. Tetap sama di label sesudah dilabel ulang. Pita warna label menunjukkan bulan tiba."},
+      {"label": "Label size", "en": "60 x 40 mm (small packs), 100 x 50 mm (bins and stacks) or 100 x 150 mm (pallets). The guide under the form shows what each size is for and how many fit on an A4 sheet.", "id": "60 x 40 mm (kemasan kecil), 100 x 50 mm (bin dan tumpukan), atau 100 x 150 mm (palet). Panduan di bawah form menjelaskan guna tiap ukuran dan berapa yang muat di satu lembar A4."},
+      {"label": "Print On", "en": "Label roll = a label printer, one label per page. A4 sheet = an office printer, the labels are cut along their borders.", "id": "Label roll = printer label, satu label satu halaman. A4 sheet = printer kantor, label dipotong mengikuti garis tepinya."},
+      {"label": "Remaining quantity", "en": "What is left on the pallet after use. It may not be more than the quantity at arrival.", "id": "Sisa isi palet sesudah dipakai. Tidak boleh lebih dari qty saat tiba."}
     ]
   },
   {
@@ -218,11 +275,12 @@
     "module": "INV",
     "title": "Print Item Label (QR)",
     "purpose": {
-      "en": "Print labels for stock that is in a bin now: item code and name, quantity, bin, last movement, a QR code and a barcode. Dead stock gets a red stripe.",
-      "id": "Mencetak label untuk stok yang sekarang ada di bin: kode dan nama item, qty, bin, pergerakan terakhir, QR code, dan barcode. Dead stock diberi pita merah."
+      "en": "Print labels for stock that is in a bin now: item, quantity, bin, arrival date, lot and expiry date, a QR code and a barcode. The colour band shows the stock class; a red stripe means dead stock or expired. Not the same as the pallet label.",
+      "id": "Mencetak label untuk stok yang sekarang ada di bin: item, qty, bin, tanggal tiba, lot dan tanggal kedaluwarsa, QR code, dan barcode. Pita warna menunjukkan kelas stok; garis merah = dead stock atau kedaluwarsa. Berbeda dari label palet."
     },
-    "keywords": "label item, item label, label barang, label stok, qr code, barcode, cetak label, dead stock",
+    "keywords": "label item, item label, label barang, label stok, qr code, barcode, cetak label, dead stock, penerimaan barang, goods receipt, tanggal tiba, kedaluwarsa, ukuran label",
     "steps": [
+      {"en": "At a goods receipt: open the posted receipt and click Item Labels. The items of that receipt are already ticked.", "id": "Saat penerimaan barang: buka penerimaan yang sudah diposting lalu klik Item Labels. Item penerimaan itu sudah tercentang."},
       {"en": "Choose the Building and click Show.", "id": "Pilih Building lalu klik Show."},
       {"en": "Tick the stock to label. Each choice is one item in one bin with its quantity on hand.", "id": "Centang stok yang diberi label. Tiap pilihan adalah satu item di satu bin beserta qty yang ada."},
       {"en": "Choose the Label size and the Copies per label, then click Print.", "id": "Pilih Label size dan Copies per label, lalu klik Print."},
@@ -231,8 +289,9 @@
     "fields": [
       {"label": "Building", "en": "The building whose stock is listed.", "id": "Gedung yang stoknya ditampilkan."},
       {"label": "Stock (item | bin | on hand)", "en": "Stock positions of that building. DEAD STOCK is written behind the ones that are dead.", "id": "Posisi stok gedung itu. DEAD STOCK tertulis di belakang yang sudah mati."},
-      {"label": "Label size", "en": "60 x 35 mm, 100 x 50 mm or 100 x 150 mm.", "id": "60 x 35 mm, 100 x 50 mm, atau 100 x 150 mm."},
-      {"label": "Copies per label", "en": "How many times each label is printed, 1 to 20.", "id": "Berapa kali tiap label dicetak, 1 sampai 20."}
+      {"label": "Label size", "en": "60 x 40 mm (small packs), 100 x 50 mm (bins and stacks) or 100 x 150 mm (pallets). The guide under the form shows what each size is for and how many fit on an A4 sheet.", "id": "60 x 40 mm (kemasan kecil), 100 x 50 mm (bin dan tumpukan), atau 100 x 150 mm (palet). Panduan di bawah form menjelaskan guna tiap ukuran dan berapa yang muat di satu lembar A4."},
+      {"label": "Copies per label", "en": "How many times each label is printed, 1 to 20.", "id": "Berapa kali tiap label dicetak, 1 sampai 20."},
+      {"label": "Print On", "en": "Label roll = a label printer, one label per page. A4 sheet = an office printer, the labels are cut along their borders.", "id": "Label roll = printer label, satu label satu halaman. A4 sheet = printer kantor, label dipotong mengikuti garis tepinya."}
     ]
   },
   {
@@ -269,13 +328,14 @@
       "en": "Scan a label or type a code to see at once what it is: the content of a bin, where an item is kept, or a stock transfer.",
       "id": "Pindai label atau ketik kode untuk langsung melihat isinya: isi sebuah bin, tempat sebuah item disimpan, atau sebuah stock transfer."
     },
-    "keywords": "scan, pindai, qr code, barcode, lacak, track, cari bin, cari barang, scanner, kamera, hp",
+    "keywords": "scan, pindai, qr code, barcode, lacak, track, cari bin, cari barang, scanner, kamera, hp, palet, pallet, nomor palet, kedaluwarsa",
     "steps": [
       {"en": "Click in the box and scan the label with the scanner, or type the code and press Enter.", "id": "Klik di kotak lalu pindai label dengan scanner, atau ketik kodenya dan tekan Enter."},
       {"en": "On a phone that opens the page over https, the camera button scans a QR code or a barcode.", "id": "Di HP yang membuka halaman lewat https, tombol kamera memindai QR code atau barcode."},
       {"en": "A bin code shows the bin label, its capacity and the items inside. Show on Map opens the Warehouse Map on that bin.", "id": "Kode bin menampilkan label bin, kapasitasnya, dan item di dalamnya. Show on Map membuka Warehouse Map di bin itu."},
       {"en": "An item code shows every bin that holds the item and its 15 latest movements.", "id": "Kode item menampilkan semua bin yang berisi item itu dan 15 pergerakan terakhirnya."},
-      {"en": "A transfer number shows a button that opens the Stock Transfer.", "id": "Nomor transfer menampilkan tombol yang membuka Stock Transfer-nya."}
+      {"en": "A transfer number shows a button that opens the Stock Transfer.", "id": "Nomor transfer menampilkan tombol yang membuka Stock Transfer-nya."},
+      {"en": "Scan a pallet label to see the pallet: item, quantity now and at arrival, supplier pallet code, expiry date, its bin and its history. Move this Pallet makes a transfer for it; Relabel / Print opens Print Pallet Label.", "id": "Pindai label palet untuk melihat paletnya: item, qty sekarang dan saat tiba, kode palet supplier, tanggal kedaluwarsa, bin-nya dan riwayatnya. Move this Pallet membuat transfer untuk palet itu; Relabel / Print membuka Print Pallet Label."}
     ],
     "fields": [
       {"label": "Scan or type a code, then Enter", "en": "A bin code, an item code, a transfer number, or the content of a QR code from a label.", "id": "Kode bin, kode item, nomor transfer, atau isi QR code dari label."}

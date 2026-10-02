@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
 final class ApprovalSetting
 {
     public const MODULE_NAMES = ['PR' => 'Purchase Requisition', 'PO' => 'Purchase Order', 'POC' => 'PO Kontan', 'CO' => 'Customer Order', 'AD' => 'Stock Adjustment',
-        'OP' => 'Stock Opname', 'PRT' => 'Purchase Return', 'IN' => 'Stock In', 'OUT' => 'Stock Out', 'RTP' => 'Return from Production'];
+        'OP' => 'Stock Opname', 'PRT' => 'Purchase Return', 'IN' => 'Stock In', 'OUT' => 'Stock Out', 'RTP' => 'Return from Production', 'TF' => 'Stock Transfer'];
 
     public const PRINT_LABELS = ['Diperiksa' => 'Diperiksa', 'Menyetujui' => 'Menyetujui', 'Mengetahui' => 'Mengetahui'];
 

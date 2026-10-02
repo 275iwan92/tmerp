@@ -60,7 +60,7 @@ class LabelHistoryReport extends DbGrid
     {
         return [
             ['key' => 'printed_at', 'label' => 'Printed At', 'type' => 'datetime'],
-            ['key' => 'type', 'label' => 'Label', 'type' => 'badge', 'tones' => ['Location' => 'info', 'Item' => 'accent']],
+            ['key' => 'type', 'label' => 'Label', 'type' => 'badge', 'tones' => ['Location' => 'info', 'Item' => 'accent', 'Pallet' => 'success']],
             ['key' => 'code', 'label' => 'Code'],
             ['key' => 'name', 'label' => 'Name'],
             ['key' => 'qty', 'label' => 'Qty on Label', 'type' => 'number'],

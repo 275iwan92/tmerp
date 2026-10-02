@@ -221,6 +221,11 @@
         :created-by="$pv->created_by" :created-at="$pv->created_at?->toDateTimeString()" :updated-by="$pv->updated_by" :updated-at="$pv->updated_at?->toDateTimeString()">
         @if ($pv->status === 'POSTED')
             <x-slot:special>
+                {{-- Label wajib dibuat saat barang datang (user 2026-10-02): label palet + label item langsung dari penerimaan ini. --}}
+                @if ($pv->rm_stock_doc_id)
+                    <x-dl::button size="sm" variant="secondary" icon="fa-pallet" label="Pallet Labels" :href="route('v2.screen', 'label-pallet').'?receipt='.$pv->pv_id" />
+                    <x-dl::button size="sm" variant="secondary" icon="fa-tag" label="Item Labels" :href="route('v2.screen', 'label-item').'?receipt='.$pv->pv_id" />
+                @endif
                 <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('goods-receipt', $pv->pv_id)" target="_blank" />
             </x-slot:special>
         @endif
