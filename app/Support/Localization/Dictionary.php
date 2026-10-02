@@ -53,8 +53,8 @@ final class Dictionary
         return $lang === 'en' ? $en : (self::lookup($en, $context, $lang) ?? $en);
     }
 
-    // Kunci kamus tidak peka huruf besar/kecil (collation utf8mb4_unicode_ci: 'WAITING' dan 'Waiting' satu baris), lookup PHP
-    // peka -> tanpa padanan persis dicari tanpa beda huruf, lalu bentuk hurufnya ikut sumber: 'CANCELLED' -> 'DIBATALKAN'.
+    // Padanan persis dulu (source_en utf8mb4_bin, peka huruf). Tidak ada -> baris yang sama tanpa beda huruf, bentuk hurufnya
+    // ikut sumber: 'CANCELLED' / 'cancelled' memakai terjemahan 'Cancelled' -> 'DIBATALKAN' / 'dibatalkan', tanpa baris kamus baru.
     // Terjemahan bila ada di kamus (tanpa jatuh ke English, tanpa mencatat teks baru) -- mis. kamus cetak konteks 'print'.
     public static function find(string $en, string $context, string $lang): ?string
     {
@@ -105,7 +105,7 @@ final class Dictionary
             self::db()->table('sys_dictionary')->where('context', $context)->pluck('source_en')->all(), true));
     }
 
-    // Sama seperti sources(), tanpa beda huruf besar/kecil (database menganggap 'WAITING' = 'Waiting').
+    // Sama seperti sources(), tanpa beda huruf besar/kecil: varian huruf dari teks yang sudah ada tidak dicatat sebagai baris baru.
     private static function foldedSources(string $context): array
     {
         return self::$cache['fs'][$context] ??= self::foldKeys(self::sources($context));
