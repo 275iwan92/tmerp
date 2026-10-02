@@ -9,7 +9,7 @@ namespace App\Support\V2;
 final class Src
 {
     public const DB = ['tm2mst' => 'Master', 'tm2sdi' => 'Sales', 'tm2pur' => 'Procurement', 'tm2inv' => 'Inventory', 'tm2prd' => 'Production',
-        'tm2acc' => 'Finance', 'tm2hrm' => 'HRM', 'tm2hrr' => 'Recruitment', 'tm2pyr' => 'Payroll', 'tm2sys' => 'Sistem', 'tm2old' => 'Legacy', 'tm2crp' => 'Portal'];
+        'tm2acc' => 'Finance', 'tm2hrm' => 'HRM', 'tm2hrr' => 'Recruitment', 'tm2pyr' => 'Payroll', 'tm2sys' => 'System', 'tm2old' => 'Legacy', 'tm2crp' => 'Portal'];
 
     private static array $missing = [];
 
@@ -21,7 +21,7 @@ final class Src
     // Nilai hitungan/tampilan saja (tidak disimpan): sebutkan asalnya.
     public static function calc(string $how, string ...$refs): string
     {
-        return 'dihitung: '.$how.($refs ? ' ← '.self::of(...$refs) : '');
+        return t('calculated').': '.$how.($refs ? ' ← '.self::of(...$refs) : '');
     }
 
     public static function missing(): array
@@ -32,12 +32,12 @@ final class Src
     private static function one(string $ref): string
     {
         [$db, $table, $col] = array_pad(explode('.', $ref, 3), 3, null);
-        $head = $db.' ('.(self::DB[$db] ?? '?').') › '.$table.($col ? ' › '.$col : '');
+        $head = $db.' ('.(isset(self::DB[$db]) ? t(self::DB[$db]) : '?').') › '.$table.($col ? ' › '.$col : '');
         $info = Schema::find($ref);
         if (! $info) {
             self::$missing[$ref] = true;
 
-            return '⚠ BELUM ADA DI DB: '.$head;
+            return '⚠ '.t('NOT IN THE DB YET:').' '.$head;
         }
         if ($col === null) {
             return $head;

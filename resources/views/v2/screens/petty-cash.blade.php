@@ -26,7 +26,7 @@
 
 <x-dl::card :title="raw($fund->petty_name.' · '.$fund->petty_code)" :description="'Custodian: '.raw(PettyCash::custodianName($fund)).' · account 111400 Petty Cash · cash PO limit '.raw($rp(PurchaseOrder::maxCash()).' (Constants PO_CASH_MAX)')">
     <div class="dl-grid__stats">
-        <x-dl::stat-box label="Imprest Limit" :value="$rp($sum['imprest'])" :sub="$sum['imprest'] === null ? 'not set — open Setting' : null" />
+        <x-dl::stat-box label="Imprest Limit" :value="$rp($sum['imprest'])" :sub="$sum['imprest'] === null ? t('not set — open Setting') : null" />
         <x-dl::stat-box label="Cash on Hand" :value="$rp($sum['balance'])" tone="success" />
         <x-dl::stat-box label="Open Cash Advances" :value="$rp($sum['open'])" tone="warn" />
         <x-dl::stat-box label="To Top Up" :value="$rp($sum['refill'])" tone="info" />
@@ -50,7 +50,7 @@
         <x-dl::form.row :cols="4">
             <x-dl::field.display label="Advance" :value="$rp($tx->advance_amount)" :source="Src::of('tm2acc.fin_petty_cash_tx.advance_amount')" />
             <x-dl::field.display label="Receipt Amount" :value="$rp($tx->actual_amount)" :source="Src::of('tm2acc.fin_petty_cash_tx.actual_amount')" />
-            <x-dl::field.display label="Journal" :value="PettyCash::voucherNo($tx->voucher_id).($tx->reversal_voucher_id ? ' · reversed by '.PettyCash::voucherNo($tx->reversal_voucher_id) : '')" :source="Src::of('tm2acc.fin_voucher')" />
+            <x-dl::field.display label="Journal" :value="PettyCash::voucherNo($tx->voucher_id).($tx->reversal_voucher_id ? ' · '.str_replace(':no', PettyCash::voucherNo($tx->reversal_voucher_id), t('reversed by :no')) : '')" :source="Src::of('tm2acc.fin_voucher')" />
             <x-dl::field.display label="Notes" :value="$tx->notes ?: '—'" :source="Src::of('tm2acc.fin_petty_cash_tx.notes')" />
         </x-dl::form.row>
         @if ($tx->attachment_path)
@@ -67,7 +67,7 @@
                 <x-dl::field.text name="cancel_reason" label="Cancel Reason" required :value="old('cancel_reason')" placeholder="min. 10 characters" :source="Src::of('tm2acc.fin_petty_cash_tx.cancel_reason')" />
                 <x-dl::action-bar>
                     <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
-                    <x-dl::button variant="danger" icon="fa-ban" label="Cancel Transaction" type="submit" onclick="return confirm('Cancel this petty cash transaction and reverse its journal?')" />
+                    <x-dl::button variant="danger" icon="fa-ban" label="Cancel Transaction" type="submit" onclick="return confirm({{ \Illuminate\Support\Js::from(t('Cancel this petty cash transaction and reverse its journal?')) }})" />
                 </x-dl::action-bar>
             </x-dl::card>
         </x-dl::action-form>
@@ -92,7 +92,7 @@
                 </x-dl::form.row>
                 <x-dl::action-bar>
                     <x-dl::button variant="secondary" icon="back" label="Back" :href="$back" />
-                    <x-dl::button preset="save" label="Give Advance" onclick="return confirm('Give this cash advance from petty cash?')" />
+                    <x-dl::button preset="save" label="Give Advance" onclick="return confirm({{ \Illuminate\Support\Js::from(t('Give this cash advance from petty cash?')) }})" />
                 </x-dl::action-bar>
             </x-dl::card>
         </x-dl::action-form>
@@ -111,7 +111,7 @@
                 </x-dl::form.row>
                 <x-dl::action-bar>
                     <x-dl::button variant="secondary" icon="back" label="Back" :href="$back" />
-                    <x-dl::button preset="save" :label="$step === 'SETTLE' ? 'Post Settlement' : 'Pay Reimburse'" onclick="return confirm('Post this receipt to petty cash?')" />
+                    <x-dl::button preset="save" :label="$step === 'SETTLE' ? 'Post Settlement' : 'Pay Reimburse'" onclick="return confirm({{ \Illuminate\Support\Js::from(t('Post this receipt to petty cash?')) }})" />
                 </x-dl::action-bar>
             </x-dl::card>
         </x-dl::action-form>
@@ -158,11 +158,11 @@
                 ['key' => 'step', 'label' => 'Next Step', 'type' => 'badge', 'tones' => PettyCash::STEP_TONES],
                 ['key' => 'by', 'label' => 'Created By'],
             ]"
-        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
-            ['key' => 'code', 'label' => 'Code'],
-            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
+        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
+            ['key' => 'code', 'label' => t('Code')],
+            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
         ]]" />
     @endif
     <x-dl::grid id="petty-tx" :rows="PettyCash::rows($fund)" search="Search transaction, PO, receiver..." actions="worklist" :active-key="null" :open-url="$home.'?tx={id}'" source="{{ Src::of('tm2acc.fin_petty_cash_tx', 'tm2acc.fin_voucher') }}"
@@ -177,11 +177,11 @@
             ['key' => 'note', 'label' => 'Notes', 'visible' => false],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Posted' => 'success', 'Cancelled' => 'danger']],
         ]"
-        :detail="['key' => 'items', 'title' => 'Item (Cash PO)', 'columns' => [
-            ['key' => 'code', 'label' => 'Code'],
-            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
+        :detail="['key' => 'items', 'title' => t('Item (Cash PO)'), 'columns' => [
+            ['key' => 'code', 'label' => t('Code')],
+            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Cash Advance', 'where' => ['type' => 'Cash Advance'], 'tone' => 'warn'], ['label' => 'Settlement / Reimburse', 'where' => ['type' => ['Settlement', 'Reimburse']], 'tone' => 'info'], ['label' => 'Top Up', 'where' => ['type' => 'Top Up'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'Cancelled'], 'tone' => 'danger']]"
         :filters="['type' => 'Transaction']" />

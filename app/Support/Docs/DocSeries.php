@@ -20,7 +20,7 @@ final class DocSeries
         $db = DB::connection($connection);
         $series = $db->table(DbName::table('tm2sys.sys_doc_series'))->where('series_code', $code)->where('activate', 1)->first();
         if (! $series) {
-            throw new DomainException("Document number series {$code} is missing or inactive (Setup > Document Number Series).");
+            throw new DomainException(str_replace(':code', $code, t('Document number series :code is missing or inactive (Setup > Document Number Series).')));
         }
         $d = CarbonImmutable::parse($date);
         $period = match ($series->reset_period) {

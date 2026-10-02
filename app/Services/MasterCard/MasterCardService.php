@@ -53,7 +53,7 @@ final class MasterCardService
 
             return $this->fromData(['product_name' => $name, 'part_label' => preg_match('/\s([AB])$/', $name, $m) ? $m[1] : null, 'images' => []], 'PHOTO', $origin, $file);
         }
-        throw ValidationException::withMessages(['files' => "{$file->getClientOriginalName()}: format tidak didukung (Excel .xlsx atau foto .jpg/.png)."]);
+        throw ValidationException::withMessages(['files' => str_replace(':name', $file->getClientOriginalName(), t(':name: unsupported format (Excel .xlsx or photo .jpg/.png).'))]);
     }
 
     public function fromData(array $d, string $kind, string $origin = 'LIVE', ?UploadedFile $source = null): ProdMasterCard
@@ -148,7 +148,7 @@ final class MasterCardService
 
     public function save(ProdMasterCard $card, array $in, array $artworks = []): ProdMasterCard
     {
-        abort_if($card->converted(), 422, 'Kartu sudah dikonversi — tidak bisa diubah.');
+        abort_if($card->converted(), 422, t('The card has already been converted — it cannot be changed.'));
         $num = fn ($v) => $v === null || $v === '' ? null : (float) str_replace(',', '.', (string) $v);
         $card->fill([
             'card_code' => $in['card_code'] ?? null, 'design_no' => $in['design_no'] ?? null, 'product_name' => $in['product_name'] ?? null,
@@ -190,7 +190,7 @@ final class MasterCardService
 
     public function delete(ProdMasterCard $card): void
     {
-        abort_if($card->converted(), 422, 'Kartu sudah dikonversi — tidak bisa dihapus.');
+        abort_if($card->converted(), 422, t('The card has already been converted — it cannot be deleted.'));
         Storage::disk(self::DISK)->deleteDirectory("master-card/{$card->id_master_card}");
         $card->delete();
     }
@@ -199,22 +199,22 @@ final class MasterCardService
     public function missing(ProdMasterCard $card, string $target = 'product'): array
     {
         $m = [];
-        foreach (['product_name' => 'Nama Barang', 'customer_id' => 'Customer (master)', 'type_code' => 'Tipe Produk (dieline)',
-            'dim_l' => 'Panjang (P)', 'dim_w' => 'Lebar (L)', 'dim_h' => 'Tinggi (T)'] as $f => $label) {
+        foreach (['product_name' => 'Goods Name', 'customer_id' => 'Customer (master)', 'type_code' => 'Product Type (dieline)',
+            'dim_l' => 'Length (L)', 'dim_w' => 'Width (W)', 'dim_h' => 'Height (H)'] as $f => $label) {
             if (! $card->$f) {
-                $m[$f] = $label;
+                $m[$f] = t($label);
             }
         }
         if ($target === 'product' && ! $card->design_no) {
-            $m['design_no'] = 'No. Desain';
+            $m['design_no'] = t('Design No.');
         }
         foreach ($card->materials_json ?? [] as $i => $mat) {
             if (empty($mat['category_id'])) {
-                $m['materials.'.$i] = 'Bahan #'.($i + 1).' (kategori master)';
+                $m['materials.'.$i] = str_replace(':n', $i + 1, t('Material #:n (master category)'));
             }
         }
         if (! $card->materials_json) {
-            $m['materials'] = 'Bahan (minimal 1)';
+            $m['materials'] = t('Material (at least 1)');
         }
 
         return $m;
@@ -248,7 +248,7 @@ final class MasterCardService
     {
         $this->applyDialog($card, $in, 'product');
         if ($card->status === 'PRODUCT') {
-            throw ValidationException::withMessages(['dialog' => 'Produk ini sudah ada di Master Product (no. desain / kode item sama) — kartu ditautkan, tidak dibuat dobel.']);
+            throw ValidationException::withMessages(['dialog' => t('This product already exists in Master Product (same design no. / item code) — the card is linked, not duplicated.')]);
         }
 
         return DB::connection('tm2sdi')->transaction(function () use ($card) {
@@ -273,7 +273,7 @@ final class MasterCardService
     public function makeInquiry(ProdMasterCard $card, array $in): array
     {
         if ($product = $this->group($card)->pluck('product_id')->filter()->first() ?? $card->product_id) {
-            return ['url' => route('v2.screen', 'inquiry-recalc').'?product='.$product, 'message' => 'Produk sudah ada di Master Product — lanjut sebagai Inquiry Rekalkulasi.'];
+            return ['url' => route('v2.screen', 'inquiry-recalc').'?product='.$product, 'message' => t('The product already exists in Master Product — continue as a Recalculation Inquiry.')];
         }
         $this->applyDialog($card, $in, 'inquiry');
         $inq = DB::connection('tm2sdi')->transaction(function () use ($card, $in) {
@@ -286,7 +286,7 @@ final class MasterCardService
             return $inq;
         });
 
-        return ['url' => route('v2.screen', 'inquiry-new').'?id='.$inq->id_inquiry, 'message' => "Inquiry {$inq->inquiry_no} (DRAFT) dibuat dari master card — lengkapi lalu Confirm."];
+        return ['url' => route('v2.screen', 'inquiry-new').'?id='.$inq->id_inquiry, 'message' => str_replace(':no', $inq->inquiry_no, t('Inquiry :no (DRAFT) created from the master card — complete it, then Confirm.'))];
     }
 
     private function applyDialog(ProdMasterCard $card, array $in, string $target): void
@@ -295,7 +295,7 @@ final class MasterCardService
         if ($target === 'inquiry') {
             $rules += ['qty' => 'required|numeric|min:1', 'deadline' => 'required|date', 'pic_sales' => 'required|string|max:60'];
         }
-        validator($in, $rules, [], ['qty' => 'Qty order', 'deadline' => 'Deadline quotation', 'pic_sales' => 'PIC Sales'])->validate();
+        validator($in, $rules, [], ['qty' => t('Order qty'), 'deadline' => t('Quotation deadline'), 'pic_sales' => t('PIC Sales')])->validate();
         $card->fill(array_filter(['design_no' => $in['design_no'] ?? null, 'customer_id' => $in['customer_id'] ?? null], fn ($v) => $v !== null && $v !== ''));
         if (! empty($in['type_code']) && $in['type_code'] !== $card->type_code) {
             $card->type_code = $in['type_code'];
@@ -307,7 +307,8 @@ final class MasterCardService
         $this->refresh($card);
         foreach ($this->group($card) as $c) {
             if ($miss = $this->missing($c, $target)) {
-                throw ValidationException::withMessages(['dialog' => 'Masih kosong'.($c->is($card) ? '' : ' di kartu part '.$c->part_label).': '.implode(', ', $miss).'.']);
+                throw ValidationException::withMessages(['dialog' => $c->is($card) ? str_replace(':fields', implode(', ', $miss), t('Still empty: :fields.'))
+                    : str_replace([':part', ':fields'], [$c->part_label, implode(', ', $miss)], t('Still empty on part card :part: :fields.'))]);
             }
         }
     }

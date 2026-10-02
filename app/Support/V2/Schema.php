@@ -65,7 +65,7 @@ final class Schema
         foreach (self::databases() as $db) {
             foreach (self::all()[$db] as $table => $t) {
                 foreach ($t['columns'] as $c => [$type, $null, $key, $comment]) {
-                    $rows[] = ['id' => "$db.$table.$c", 'db' => $db, 'table' => $table, 'col' => $c, 'type' => $type, 'null' => $null ? 'ya' : '',
+                    $rows[] = ['id' => "$db.$table.$c", 'db' => $db, 'table' => $table, 'col' => $c, 'type' => $type, 'null' => $null ? t('yes') : '',
                         'key' => $key, 'fk' => $t['fk'][$c] ?? '', 'comment' => $comment, 'kind' => $t['type']];
                 }
             }
@@ -82,7 +82,7 @@ final class Schema
             foreach (self::all()[$db] as $name => $t) {
                 $cols = [];
                 foreach ($t['columns'] as $c => [$type, $null, $key, $comment]) {
-                    $cols[] = ['col' => $c, 'type' => $type, 'null' => $null ? 'ya' : '', 'key' => $key, 'fk' => $t['fk'][$c] ?? '', 'comment' => $comment];
+                    $cols[] = ['col' => $c, 'type' => $type, 'null' => $null ? t('yes') : '', 'key' => $key, 'fk' => $t['fk'][$c] ?? '', 'comment' => $comment];
                 }
                 $rows[] = ['id' => $db.'.'.$name, 'db' => $db, 'table' => $name, 'kind' => $t['type'], 'n' => count($cols), 'nfk' => count($t['fk']), 'comment' => $t['comment'], 'cols' => $cols];
             }
@@ -136,14 +136,14 @@ final class Schema
             $names = array_values(array_unique(array_column($list, 'col')));
             $types = array_values(array_unique(array_column($list, 'type')));
             $rows[] = ['id' => $n, 'name' => $n, 'count' => count($list), 'names' => implode(', ', $names), 'types' => implode(', ', $types),
-                'flag' => count($names) > 1 ? 'Sinonim' : (count($types) > 1 ? 'Tipe beda' : 'Nama sama'),
+                'flag' => t(count($names) > 1 ? 'Synonym' : (count($types) > 1 ? 'Different type' : 'Same name')),
                 'where' => array_map(fn ($x) => $x + ['at' => $x['db'].'.'.$x['table']], $list)];
         }
         foreach ($nonstd as $n => $list) {
             $rows[] = ['id' => 'x:'.$n, 'name' => $n, 'count' => count($list), 'names' => explode(' -> ', $n)[0], 'types' => implode(', ', array_unique(array_column($list, 'type'))),
-                'flag' => 'Nama tidak baku', 'where' => array_map(fn ($x) => $x + ['at' => $x['db'].'.'.$x['table']], $list)];
+                'flag' => t('Non-standard name'), 'where' => array_map(fn ($x) => $x + ['at' => $x['db'].'.'.$x['table']], $list)];
         }
-        $rank = ['Nama tidak baku' => 3, 'Sinonim' => 2, 'Tipe beda' => 1, 'Nama sama' => 0];
+        $rank = [t('Non-standard name') => 3, t('Synonym') => 2, t('Different type') => 1, t('Same name') => 0];
         usort($rows, fn ($a, $b) => [$rank[$b['flag']], $b['count']] <=> [$rank[$a['flag']], $a['count']]);
 
         return $rows;
@@ -169,7 +169,7 @@ final class Schema
                     $ref = array_values(array_intersect([$m[1].'_id', 'id_'.$m[1]], $cols));
                     // Kode/nama milik tabelnya sendiri (samping PK-nya) bukan salinan.
                     if ($ref && ($t['columns'][$ref[0]][2] ?? '') !== 'PRI') {
-                        $rows[] = ['id' => "$db.$table.$c", 'db' => $db, 'table' => $table, 'col' => $c, 'ref' => $ref[0], 'fk' => $t['fk'][$ref[0]] ?? '(logis / lintas DB)'];
+                        $rows[] = ['id' => "$db.$table.$c", 'db' => $db, 'table' => $table, 'col' => $c, 'ref' => $ref[0], 'fk' => $t['fk'][$ref[0]] ?? t('(logical / cross-DB)')];
                     }
                 }
             }

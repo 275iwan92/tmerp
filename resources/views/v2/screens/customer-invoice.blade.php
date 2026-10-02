@@ -35,14 +35,14 @@
             ['key' => 'outstanding', 'label' => 'Outstanding', 'type' => 'money'],
             ['key' => 'state', 'label' => 'Status', 'type' => 'badge', 'tones' => CustomerInvoice::STATE_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'dn', 'label' => 'Delivery Note'],
-            ['key' => 'received', 'label' => 'Qty Received', 'type' => 'number'],
-            ['key' => 'invoiced', 'label' => 'Qty Invoiced', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'price', 'label' => 'Price', 'type' => 'money'],
-            ['key' => 'amount', 'label' => 'Amount', 'type' => 'money'],
+        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'dn', 'label' => t('Delivery Note')],
+            ['key' => 'received', 'label' => t('Qty Received'), 'type' => 'number'],
+            ['key' => 'invoiced', 'label' => t('Qty Invoiced'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'price', 'label' => t('Price'), 'type' => 'money'],
+            ['key' => 'amount', 'label' => t('Amount'), 'type' => 'money'],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['state' => 'Draft'], 'tone' => 'neutral'],
             ['label' => 'Open', 'where' => ['state' => ['Open', 'Partially paid', 'Due this week']], 'tone' => 'info'],

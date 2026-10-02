@@ -11,7 +11,7 @@ final class Screens
     private static function shared(): array
     {
         return [
-            'master-product' => ['Master Product', 'fa-solid fa-box', 'docs/flow_product_master.md (baru, v2)', null],
+            'master-product' => ['Master Product', 'fa-solid fa-box', 'docs/flow_product_master.md (new, v2)', null],
             'product-acc' => ['ACC Digital / Proof Digital', 'fa-solid fa-stamp', 'docs/flow_product_master.md §5', null],
             'master-raw' => ['Raw Material Master', 'fa-solid fa-layer-group', 'master/raw-material/index.blade.php', 'mockup_master_rawmaterial.html'],
             'master-customer' => ['Master Customer', 'fa-solid fa-building', 'master/customer.blade.php', 'mockup_master_customer.html'],
@@ -36,33 +36,33 @@ final class Screens
                     $it('inquiry-revise', ['Revise Inquiry', 'fa-solid fa-file-pen', 'inquiry/revise.blade.php', 'inquiry_revise_v2.html']),
                     $it('inquiry-recalc', ['Recalculate Inquiry', 'fa-solid fa-calculator', 'inquiry/recalc.blade.php', 'inquiry_recalc_v2.html']),
                     $it('prodev'),
-                    $it('master-card-collection', ['Master Card Collection', 'fa-solid fa-id-card', 'v2 baru: upload master card lama (Excel/foto) -> Master Product / Inquiry', 'master_card_collection_v2.jpg']),
-                    $it('sales-price', ['Prices from Pro-Cost (tiers & prices)', 'fa-solid fa-tags', 'inquiry/costing.blade.php (hanya tier & harga terpublish)', null]),
+                    $it('master-card-collection', ['Master Card Collection', 'fa-solid fa-id-card', 'v2 new: upload old master cards (Excel/photo) -> Master Product / Inquiry', 'master_card_collection_v2.jpg']),
+                    $it('sales-price', ['Prices from Pro-Cost (tiers & prices)', 'fa-solid fa-tags', 'inquiry/costing.blade.php (published tiers & prices only)', null]),
                     $it('quotation', ['Quotation', 'fa-solid fa-file-signature', 'quotation/entry.blade.php + list', 'mockup_sales_quotation_entry.html']),
                     $it('nota-inquiry', ['Inquiry Note', 'fa-solid fa-receipt', 'inquiry/nota.blade.php', 'nota_inquiry_mockup.html']),
                 ]],
                 ['label' => 'Order', 'items' => [
                     $it('customer-order', ['Customer Order', 'fa-solid fa-bag-shopping', 'co/entry.blade.php + list', 'mockup_co_entry.html']),
                     $it('cpdel', ['Customer Plan Delivery', 'fa-solid fa-truck-ramp-box', 'co/delivery-plan.blade.php', 'co_delivery_plan_mockup.html']),
-                    $it('approval-co', ['CO Approval Center', 'fa-solid fa-stamp', 'v2 baru: DevLib Form Approval + flow engine CO (F&A SPV -> Operational Manager)', null]),
+                    $it('approval-co', ['CO Approval Center', 'fa-solid fa-stamp', 'v2 new: DevLib Form Approval + CO flow engine (F&A SPV -> Operational Manager)', null]),
                 ]],
                 ['label' => 'Delivery', 'items' => [
                     $it('delivery-order', ['Delivery Order', 'fa-solid fa-truck', 'dispatch/do/entry.blade.php + list', null]),
                     $it('delivery-notes', ['Delivery Notes', 'fa-solid fa-file-lines', 'dispatch/do/print-surat-jalan.blade.php', null]),
-                    $it('proof-of-delivery', ['Proof of Delivery', 'fa-solid fa-clipboard-check', 'v2 baru: tm2sdi.do_delivery_pod (KPI janji kirim)', null]),
-                    $it('subcon-delivery-note', ['Subcontract Delivery Note', 'fa-solid fa-dolly', 'v2 baru: tm2sdi.do_delivery do_type SUBCON (backlog02 19.1)', null]),
+                    $it('proof-of-delivery', ['Proof of Delivery', 'fa-solid fa-clipboard-check', 'v2 new: tm2sdi.do_delivery_pod (delivery promise KPI)', null]),
+                    $it('subcon-delivery-note', ['Subcontract Delivery Note', 'fa-solid fa-dolly', 'v2 new: tm2sdi.do_delivery do_type SUBCON (backlog02 19.1)', null]),
                 ]],
                 ['label' => 'CRM', 'items' => [
-                    $it('crm-customer', ['Customer 360', 'fa-solid fa-address-card', 'v2 baru: ringkasan satu customer (docs/md_for_systems/sales_tier1.md)', null]),
-                    $it('crm-activity', ['Activities & Follow-up', 'fa-solid fa-phone-volume', 'v2 baru: tm2sdi.crm_activity (perluasan quo_activity)', null]),
-                    $it('crm-complaint', ['Complaint & Return', 'fa-solid fa-triangle-exclamation', 'v2 baru: tm2sdi.crm_complaint + crm_complaint_item', null]),
+                    $it('crm-customer', ['Customer 360', 'fa-solid fa-address-card', 'v2 new: one-customer summary (docs/md_for_systems/sales_tier1.md)', null]),
+                    $it('crm-activity', ['Activities & Follow-up', 'fa-solid fa-phone-volume', 'v2 new: tm2sdi.crm_activity (extends quo_activity)', null]),
+                    $it('crm-complaint', ['Complaint & Return', 'fa-solid fa-triangle-exclamation', 'v2 new: tm2sdi.crm_complaint + crm_complaint_item', null]),
                 ]],
                 ['label' => 'Master', 'items' => [$it('master-product'), $it('product-acc'), $it('master-raw'), $it('master-customer'), $it('master-card')]],
                 ['label' => 'Lookup', 'items' => [$it('master-matcat'), $it('master-uom'), $it('master-currency')]],
                 ['label' => 'Reports', 'items' => [
                     $it('win-rate', ['Win-Rate Sales', 'fa-solid fa-trophy', 'sales/win-rate.blade.php', null]),
-                    $it('quotation-outstanding', ['Open Quotations', 'fa-solid fa-hourglass-half', 'v2 baru: quo_quotation PUBLISHED belum WIN/LOST', null]),
-                    $it('quotation-followup', ['Follow-up Quotation', 'fa-solid fa-phone', 'v2 baru: quo_activity', null]),
+                    $it('quotation-outstanding', ['Open Quotations', 'fa-solid fa-hourglass-half', 'v2 new: quo_quotation PUBLISHED not yet WIN/LOST', null]),
+                    $it('quotation-followup', ['Follow-up Quotation', 'fa-solid fa-phone', 'v2 new: quo_activity', null]),
                 ]],
                 ['label' => 'Flow', 'items' => [self::flowItem('SALES', 'Sales Flow: Inquiry → CPDEL')]],
             ]],
@@ -72,7 +72,7 @@ final class Screens
                     $it('approval-pr', ['PR Approval Center', 'fa-solid fa-stamp', 'pur/pr/approval.blade.php', 'mockup_pr_approval_center.html']),
                 ]],
                 ['label' => 'Order', 'items' => [
-                    $it('purchase-quotation', ['Purchase Quotation (PQ)', 'fa-solid fa-file-import', 'pur/pq/index + entry.blade.php (v2: upload file penawaran)', null]),
+                    $it('purchase-quotation', ['Purchase Quotation (PQ)', 'fa-solid fa-file-import', 'pur/pq/index + entry.blade.php (v2: upload the quotation file)', null]),
                     $it('purchase-order', ['Purchase Order (PO)', 'fa-solid fa-file-invoice-dollar', 'pur/po/index + entry.blade.php', null]),
                     $it('approval-po', ['PO Approval Center', 'fa-solid fa-stamp', 'pur/po/approval.blade.php', 'mockup_po_approval_center.html']),
                 ]],
@@ -94,11 +94,11 @@ final class Screens
             ]],
             ['code' => 'FINACC', 'short' => 'FIN', 'label' => 'Finance', 'icon' => 'fa-solid fa-coins', 'groups' => [
                 ['label' => 'Cash & Bank', 'items' => [
-                    $it('petty-cash', ['Petty Cash', 'fa-solid fa-wallet', 'v2 baru: tm2acc.fin_petty_cash + fin_petty_cash_tx (PO Kontan)', null]),
+                    $it('petty-cash', ['Petty Cash', 'fa-solid fa-wallet', 'v2 new: tm2acc.fin_petty_cash + fin_petty_cash_tx (Cash PO)', null]),
                 ]],
                 ['label' => 'Transaction Flows', 'items' => [
-                    $it('customer-invoice', ['Customer Invoice', 'fa-solid fa-file-invoice-dollar', 'v2 baru: tm2acc.fin_invoice + fin_invoice_line (invoice dari Surat Jalan + tagihan uang muka)', 'customer_invoice_v2.jpg']),
-                    $it('supplier-invoice-receipt', ['Supplier Invoice Receipt', 'fa-solid fa-file-circle-check', 'v2 baru: tm2acc.fin_invoice_receipt + fin_invoice_receipt_line (tanda terima tagihan supplier)', null]),
+                    $it('customer-invoice', ['Customer Invoice', 'fa-solid fa-file-invoice-dollar', 'v2 new: tm2acc.fin_invoice + fin_invoice_line (invoice from the Delivery Note + down payment invoice)', 'customer_invoice_v2.jpg']),
+                    $it('supplier-invoice-receipt', ['Supplier Invoice Receipt', 'fa-solid fa-file-circle-check', 'v2 new: tm2acc.fin_invoice_receipt + fin_invoice_receipt_line (supplier invoice receipt)', null]),
                 ]],
             ]],
             ['code' => 'INV', 'short' => 'INV', 'label' => 'Inventory', 'icon' => 'fa-solid fa-warehouse', 'groups' => [
@@ -108,23 +108,23 @@ final class Screens
             ]],
             ['code' => 'PROD', 'short' => 'PP', 'label' => 'Production', 'icon' => 'fa-solid fa-industry', 'groups' => [
                 ['label' => 'Quality', 'items' => [
-                    $it('qc-complaint-review', ['Complaint Review (QA)', 'fa-solid fa-magnifying-glass-chart', 'v2 baru: tm2prd.qc_complaint_review (jawaban QA atas tm2sdi.crm_complaint)', null]),
+                    $it('qc-complaint-review', ['Complaint Review (QA)', 'fa-solid fa-magnifying-glass-chart', 'v2 new: tm2prd.qc_complaint_review (QA answer to tm2sdi.crm_complaint)', null]),
                 ]],
             ]],
             ['code' => 'MAINT', 'short' => 'MT', 'label' => 'Maintenance', 'icon' => 'fa-solid fa-screwdriver-wrench', 'groups' => [
                 ['label' => 'Work', 'items' => [
-                    $it('maintenance-request', ['Maintenance Request', 'fa-solid fa-triangle-exclamation', 'v2 baru: docs/maintenance_tier1.md §3 (tm2prd.mnt_request)', 'maintenance_v2.jpg']),
-                    $it('maintenance-wo', ['Maintenance Work Order', 'fa-solid fa-screwdriver-wrench', 'v2 baru: docs/maintenance_tier1.md §3-§5 (tm2prd.mnt_wo)', 'maintenance_v2.jpg']),
-                    $it('maintenance-my-work', ['My Work (technician)', 'fa-solid fa-user-gear', 'v2 baru: docs/maintenance_tier1.md §6', 'maintenance_v2.jpg']),
+                    $it('maintenance-request', ['Maintenance Request', 'fa-solid fa-triangle-exclamation', 'v2 new: docs/maintenance_tier1.md §3 (tm2prd.mnt_request)', 'maintenance_v2.jpg']),
+                    $it('maintenance-wo', ['Maintenance Work Order', 'fa-solid fa-screwdriver-wrench', 'v2 new: docs/maintenance_tier1.md §3-§5 (tm2prd.mnt_wo)', 'maintenance_v2.jpg']),
+                    $it('maintenance-my-work', ['My Work (technician)', 'fa-solid fa-user-gear', 'v2 new: docs/maintenance_tier1.md §6', 'maintenance_v2.jpg']),
                 ]],
                 ['label' => 'Planning', 'items' => [
-                    $it('maintenance-plan', ['Preventive Plan', 'fa-solid fa-calendar-check', 'v2 baru: docs/maintenance_tier1.md §4 (tm2prd.mnt_plan)', 'maintenance_v2.jpg']),
+                    $it('maintenance-plan', ['Preventive Plan', 'fa-solid fa-calendar-check', 'v2 new: docs/maintenance_tier1.md §4 (tm2prd.mnt_plan)', 'maintenance_v2.jpg']),
                 ]],
             ]],
             ['code' => 'SETUP', 'short' => 'SET', 'label' => 'Setup', 'icon' => 'fa-solid fa-gear', 'groups' => [
                 ['label' => 'Settings', 'items' => [
-                    $it('approval-setting', ['Setting Approval', 'fa-solid fa-list-ol', 'v2 baru: tm2mst.flow_config + flow_config_step (pengganti m_authorize)', null]),
-                    $it('approval-acting', ['Acting Officer (PLT)', 'fa-solid fa-user-clock', 'v2 baru: tm2mst.flow_position_acting', null]),
+                    $it('approval-setting', ['Setting Approval', 'fa-solid fa-list-ol', 'v2 new: tm2mst.flow_config + flow_config_step (replaces m_authorize)', null]),
+                    $it('approval-acting', ['Acting Officer (PLT)', 'fa-solid fa-user-clock', 'v2 new: tm2mst.flow_position_acting', null]),
                 ]],
             ]],
             // Khusus developer: tidak tampil untuk akun biasa.

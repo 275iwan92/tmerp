@@ -1,7 +1,7 @@
 /* DevLib · Chart */
 (function (Devlib) {
   'use strict';
-  const {$, esc, CH_TONES, chNum, niceMax} = Devlib.h;
+  const {$, esc, CH_TONES, chNum, niceMax, T} = Devlib.h;
 
   class Chart extends Devlib.Component {
     static selector = "[data-dl-chart]";
@@ -113,7 +113,7 @@
       return vals.map((v, i) => {
         const w0 = fw * v / max, w1 = fw * (vals[i + 1] ?? v * 0.85) / max, y0 = 8 + i * h, ym = y0 + (h - 4) / 2 + 4;
         return `<text x="${L - 6}" y="${ym}" class="dl-chart__ax" text-anchor="end">${this.esc2(this.labels[i])}</text>`
-          + `<path d="M${cx - w0 / 2},${y0} L${cx + w0 / 2},${y0} L${cx + w1 / 2},${y0 + h - 4} L${cx - w1 / 2},${y0 + h - 4} Z" class="dl-chart--${CH_TONES[i % CH_TONES.length]} dl-chart__slice" data-tip="${this.esc2(this.labels[i])}|${i ? (v / vals[i - 1] * 100).toFixed(1) + '% dari tahap sebelumnya' : 'tahap awal'}|${v}"/>`
+          + `<path d="M${cx - w0 / 2},${y0} L${cx + w0 / 2},${y0} L${cx + w1 / 2},${y0 + h - 4} L${cx - w1 / 2},${y0 + h - 4} Z" class="dl-chart--${CH_TONES[i % CH_TONES.length]} dl-chart__slice" data-tip="${this.esc2(this.labels[i])}|${i ? (v / vals[i - 1] * 100).toFixed(1) + '% ' + T('ch_of_prev') : T('ch_first_stage')}|${v}"/>`
           + (Math.min(w0, w1) > 44 ? `<text x="${cx}" y="${ym}" class="dl-chart__pct" text-anchor="middle">${this.esc2(chNum(v, this.fmt2))}</text>` : `<text x="${cx + Math.max(w0, w1) / 2 + 6}" y="${ym}" class="dl-chart__val">${this.esc2(chNum(v, this.fmt2))}</text>`)
           + `<text x="${this.W - 4}" y="${ym}" class="dl-chart__ax" text-anchor="end">${(v / (vals[0] || 1) * 100).toFixed(0)}%</text>`;
       }).join('');

@@ -249,7 +249,7 @@
       this.userMenu.addEventListener('click', e => {
         e.stopPropagation();
         const fl = e.target.closest('[data-dl-lang]');
-        if (fl) { $$(this.userMenu, '.dl-um-flag').forEach(x => x.classList.remove('is-active')); fl.classList.add('is-active'); toast('Bahasa: ' + (fl.dataset.dlLang === 'id' ? 'Indonesia' : 'English')); return; }
+        if (fl) { $$(this.userMenu, '.dl-um-flag').forEach(x => x.classList.remove('is-active')); fl.classList.add('is-active'); toast(T('language') + ': ' + (fl.dataset.dlLang === 'id' ? 'Indonesia' : 'English')); return; }
         const b = e.target.closest('[data-dl-um]'); if (!b) return;
         if (b.dataset.dlUm !== 'devmode') this.userMenu.classList.remove('is-open');
         this.command(b.dataset.dlUm);
@@ -267,8 +267,8 @@
     // Bantuan = tab biasa (bukan item menu): didaftarkan sekali sebagai item HELP lalu dibuka seperti menu.
     openHelp() {
       const url = this.el.dataset.dlHelp;
-      if (!url) { toast('Bantuan & dukungan — segera.'); return; }
-      this.openUrlTab('HELP', 'Bantuan & dukungan', url, 'fa-solid fa-circle-question');
+      if (!url) { toast(T('sh_help_soon')); return; }
+      this.openUrlTab('HELP', T('sh_help'), url, 'fa-solid fa-circle-question');
     }
 
     // Halaman profil bernama (mis. tiket bantuan): Shell Classic tidak punya halaman profil -> Bantuan. LayerShell menimpa.

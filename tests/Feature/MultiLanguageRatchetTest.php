@@ -47,8 +47,8 @@ class MultiLanguageRatchetTest extends TestCase
         'pages/security' => 3,
         'pages/self-service' => 53,
         'pages/setup' => 5,
-        'services' => 178,
-        'support' => 248,
+        'services' => 163,
+        'support' => 217,
         'v2' => 38,
     ];
 

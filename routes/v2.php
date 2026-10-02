@@ -719,7 +719,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->whereNumber('id')->name('print-customer');
         Route::post('/{id}/short', function (Request $r, int $id) use ($open) {
             $d = $r->validate(['pv_line_id' => ['required', 'integer'], 'short_qty' => ['required'], 'short_note' => ['required', 'string', 'max:200']],
-                [], ['pv_line_id' => t('Line'), 'short_qty' => t('Qty short'), 'short_note' => t('Description')]);
+                [], ['pv_line_id' => t('Line'), 'short_qty' => t('Qty short'), 'short_note' => t('Remarks')]);
             try {
                 SpecialReceiptService::reportShortage(PvReceipt::findOrFail($id), (int) $d['pv_line_id'], (float) Locale::input($d['short_qty']), $d['short_note'], Auth::user()->login);
             } catch (InvalidArgumentException $e) {

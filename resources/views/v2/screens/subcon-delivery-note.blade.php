@@ -27,11 +27,11 @@
             ['key' => 'ship', 'label' => 'Planned Shipment', 'type' => 'date'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => SubconDelivery::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
-            ['key' => 'item', 'label' => 'Item Name', 'strong' => true],
-            ['key' => 'co', 'label' => 'CO No.'],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
+        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
+            ['key' => 'item', 'label' => t('Item Name'), 'strong' => true],
+            ['key' => 'co', 'label' => t('CO No.')],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]"
         :filters="['supplier' => 'Subcontractor', 'process' => 'Process', 'status' => 'Status']" />

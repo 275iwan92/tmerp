@@ -42,7 +42,7 @@
       this.cur = id == null ? null : g.rows.find(r => String(r[g.cfg.rowKey]) === String(id));
       fillForm(this.form, this.cur || {}, true);
       $(this.form, '[data-m-heading]').textContent = this.cur ? `Edit ${this.d.title} · ${this.cur[this.d.nameKey] ?? ''}` : Tf('m_new_title', {title: this.d.title});
-      $(this.form, '[data-m-sub]').textContent = this.cur ? (this.d.codeKey ? this.cur[this.d.codeKey] ?? '' : '') : 'Belum disimpan';
+      $(this.form, '[data-m-sub]').textContent = this.cur ? (this.d.codeKey ? this.cur[this.d.codeKey] ?? '' : '') : T('m_unsaved');
       const pipe = $(this.form, '[data-m-pipe]');
       if (pipe) { const steps = $$(pipe, '[data-step]'), at = this.cur ? steps.findIndex(s => s.dataset.step === String(this.cur[this.d.pipelineKey])) : 0; steps.forEach((s, i) => { s.classList.toggle('is-done', i < at); s.classList.toggle('is-active', i === at); }); }
       this.show(true);

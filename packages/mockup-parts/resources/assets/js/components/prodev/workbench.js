@@ -7,6 +7,7 @@
      uploadArtwork(): upload artwork job aktif (tmerp: Livewire WithFileUploads) */
 (function (Devlib) {
   'use strict';
+  const _t = Devlib.h.t;   // kamus aplikasi (tulis English)
 
   class ProdevWorkbench extends Devlib.Component {
     static selector = '[data-mp-prodev]';
@@ -41,8 +42,8 @@
           const q = String(args[0] || '').toLowerCase();
           return (this.data.materials || []).filter(m => (m.material_name + ' ' + m.material_code).toLowerCase().includes(q)).slice(0, 20);
         }
-        case 'createPurchase': return {ok: true, message: 'PR contoh dibuat (mockup, tanpa database).', pr: 'PR-DEMO-' + Date.now().toString().slice(-4)};
-        case 'subcontract': return {ok: true, message: 'Subkon contoh dicatat (mockup, tanpa database).', pr: 'PR-DEMO-' + Date.now().toString().slice(-4), do: 'DO-DEMO'};
+        case 'createPurchase': return {ok: true, message: _t('Sample PR created (mockup, no database).'), pr: 'PR-DEMO-' + Date.now().toString().slice(-4)};
+        case 'subcontract': return {ok: true, message: _t('Sample subcontract recorded (mockup, no database).'), pr: 'PR-DEMO-' + Date.now().toString().slice(-4), do: 'DO-DEMO'};
         default: return null;
       }
     }
@@ -53,7 +54,7 @@
         headers: {'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': this.data.csrf},
         body: JSON.stringify({method, args})});
       const res = await r.json().catch(() => null);
-      if (!r.ok) return {ok: false, message: (res && res.message) || ('Server error ' + r.status)};
+      if (!r.ok) return {ok: false, message: (res && res.message) || (_t('Server error') + ' ' + r.status)};
       return res;
     }
 
@@ -65,7 +66,7 @@
         const r = await fetch(this.data.uploadUrl, {method: 'POST', body: f, credentials: 'same-origin',
           headers: {Accept: 'application/json', 'X-CSRF-TOKEN': this.data.csrf}});
         const res = await r.json().catch(() => null);
-        if (!r.ok || !res || !res.ok) { alert((res && res.message) || ('Upload gagal (' + r.status + ')')); return; }
+        if (!r.ok || !res || !res.ok) { alert((res && res.message) || (_t('Upload failed') + ' (' + r.status + ')')); return; }
         window.dispatchEvent(new CustomEvent('prodev-artwork-updated', {detail: res}));
         return;
       }
@@ -118,7 +119,7 @@
           // Alasan spesifik dari server (mis. part belum punya dimensi dieline)
           // lebih berguna daripada pesan umum -- jangan biarkan layar diam.
           box.textContent = DATA.jobIssue
-              || 'Data master belum lengkap: butuh minimal 1 part berdimensi, 1 mesin cetak, dan 1 ukuran plano aktif.';
+              || _t('Master data is incomplete: needs at least 1 part with dimensions, 1 printing machine and 1 active plano size.');
           return;
       }
 
@@ -215,20 +216,20 @@
       async function persist(confirm) {
           const w = wire();
 
-          if (!w) { msg('Komponen belum siap, coba lagi sebentar.', 'bad'); return; }
-          if (!S.p.partId) { msg('Job demo tidak bisa disimpan — pilih job nyata dari daftar Part.', 'bad'); return; }
-          if (!ok()) { msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum simpan.', 'bad'); return; }
+          if (!w) { msg(_t('The component is not ready yet, try again in a moment.'), 'bad'); return; }
+          if (!S.p.partId) { msg(_t('A demo job cannot be saved — choose a real job from the Part list.'), 'bad'); return; }
+          if (!ok()) { msg(_t('The canvas is still outside the machine limits — fix it before saving.'), 'bad'); return; }
 
           const btn = confirm ? $('confirm') : $('save');
           const label = btn.innerHTML;   // tombol DevLib berisi ikon + label
           btn.disabled = true;
-          btn.textContent = confirm ? 'Menyimpan & confirm…' : 'Menyimpan…';
+          btn.textContent = confirm ? _t('Saving & confirming…') : _t('Saving…');
 
           try {
               const res = await w.call('saveLayout', gatherState(), confirm);
 
               if (!res || !res.ok) {
-                  msg((res && res.message) || 'Gagal menyimpan layout.', 'bad');
+                  msg((res && res.message) || _t('Failed to save the layout.'), 'bad');
                   return;
               }
 
@@ -243,23 +244,23 @@
               savedState[S.p.partId] = stateKey();
 
               if (!confirm) {
-                  msg('Layout tersimpan sebagai DRAFT (' + res.mastercardCode + ', ' + res.knifeCode + ')'
-                      + (res.hasInquiry ? ' — master + snapshot Inquiry, termasuk BOM/Ink/BOP.' : ' — master saja, job ini tidak punya Inquiry asal.')
-                      + (res.specSkipped && res.specSkipped.length ? ' Tidak ditimpa: ' + res.specSkipped.join('; ') + '.' : ''),
+                  msg(_t('Layout saved as DRAFT') + ' (' + res.mastercardCode + ', ' + res.knifeCode + ')'
+                      + ' — ' + (res.hasInquiry ? _t('master + Inquiry snapshot, including BOM/Ink/BOP.') : _t('master only, this job has no source Inquiry.'))
+                      + (res.specSkipped && res.specSkipped.length ? ' ' + _t('Not overwritten:') + ' ' + res.specSkipped.join('; ') + '.' : ''),
                       res.specSkipped && res.specSkipped.length ? 'info' : 'ok');
                   return;
               }
 
               if (res.costingUrl) {
-                  msg('Layout CONFIRMED (' + res.mastercardCode + ') — membuka Product Costing…', 'ok');
+                  msg(_t('Layout CONFIRMED') + ' (' + res.mastercardCode + ') — ' + _t('opening Product Costing…'), 'ok');
                   window.location.href = res.costingUrl;
                   return;
               }
 
-              msg('Layout CONFIRMED (' + res.mastercardCode + '). Job ini Mode #2 (tanpa Inquiry), '
-                  + 'jadi belum ada layar Product Costing yang bisa dituju.', 'ok');
+              msg(_t('Layout CONFIRMED') + ' (' + res.mastercardCode + '). '
+                  + _t('This job is Mode #2 (no Inquiry), so there is no Product Costing screen to go to yet.'), 'ok');
           } catch (e) {
-              msg('Gagal menyimpan: ' + (e && e.message ? e.message : e), 'bad');
+              msg(_t('Failed to save:') + ' ' + (e && e.message ? e.message : e), 'bad');
           } finally {
               btn.disabled = false;
               btn.innerHTML = label;
@@ -714,14 +715,14 @@
 
           for (const b of [0, 90]) {
               const M0 = rotMask(base, b), M1 = rotMask(base, (b + 180) % 360);
-              const tag = b ? ' · rotate 90°' : '';
-              cfgs.push({ kind: 'plain', M0, M1, r: b, s: 0, label: 'Grid standar' + tag });
+              const tag = b ? ' · ' + _t('rotate 90°') : '';
+              cfgs.push({ kind: 'plain', M0, M1, r: b, s: 0, label: _t('Standard grid') + tag });
 
               const stepX = Math.max(1, Math.round(M0.w / 16)), stepY = Math.max(1, Math.round(M0.h / 16));
               for (let sx = 0; sx < M0.w; sx += stepX)
-                  cfgs.push({ kind: 'row', M0, M1, r: b, s: sx, label: 'Interlock antar-baris (180°)' + (sx ? ' geser ' + Math.round(sx / M0.w * 100) + '%' : '') + tag });
+                  cfgs.push({ kind: 'row', M0, M1, r: b, s: sx, label: _t('Interlock between rows (180°)') + (sx ? ' ' + _t('shifted') + ' ' + Math.round(sx / M0.w * 100) + '%' : '') + tag });
               for (let sy = 0; sy < M0.h; sy += stepY)
-                  cfgs.push({ kind: 'col', M0, M1, r: b, s: sy, label: 'Interlock antar-kolom (180°)' + (sy ? ' geser ' + Math.round(sy / M0.h * 100) + '%' : '') + tag });
+                  cfgs.push({ kind: 'col', M0, M1, r: b, s: sy, label: _t('Interlock between columns (180°)') + (sy ? ' ' + _t('shifted') + ' ' + Math.round(sy / M0.h * 100) + '%' : '') + tag });
           }
 
           return cfgs;
@@ -783,7 +784,7 @@
       // memang tidak menyimpan harga).
       async function optimizeSheet() {
           const btn = $('suggest'), label = btn.textContent;
-          btn.disabled = true; btn.textContent = 'Menghitung…';
+          btn.disabled = true; btn.textContent = _t('Calculating…');
 
           try {
               const base = await maskFor(S.p);
@@ -837,7 +838,7 @@
                   }
               }
 
-              if (!best) { msg('Tidak ada kombinasi canvas/plano yang muat di mesin ini.', 'bad'); return; }
+              if (!best) { msg(_t('No canvas/plano combination fits this machine.'), 'bad'); return; }
 
               const sebelum = hasilPerPlano();
 
@@ -855,13 +856,13 @@
               if (win) applyPlacements(win.placements, win.label, marg, grip);
 
               const sesudah = hasilPerPlano();
-              $('suggestNote').textContent = 'Canvas ' + S.L + ' × ' + S.W + ' cm (plano dibagi ' + best.nc + ' × ' + best.nr + ')'
+              $('suggestNote').textContent = 'Canvas ' + S.L + ' × ' + S.W + ' cm (' + _t('plano divided') + ' ' + best.nc + ' × ' + best.nr + ')'
                   + ' · plano ' + S.pl[0] + ' · ' + (win ? win.up : best.up) + ' up/canvas.';
-              msg('Optimasi bahan: ' + S.pl[0] + ', canvas ' + S.L + ' × ' + S.W + ' cm, ' + (win ? win.label : best.label)
-                  + ' → ' + sesudah + ' pcs/plano (' + best.perPc.toFixed(1) + ' cm² bahan per pcs)'
-                  + (sebelum && sesudah > sebelum ? ' · sebelumnya ' + sebelum + ' pcs/plano' : ''), 'ok');
+              msg(_t('Material optimization:') + ' ' + S.pl[0] + ', canvas ' + S.L + ' × ' + S.W + ' cm, ' + (win ? win.label : best.label)
+                  + ' → ' + sesudah + ' pcs/plano (' + best.perPc.toFixed(1) + ' ' + _t('cm² material per pcs') + ')'
+                  + (sebelum && sesudah > sebelum ? ' · ' + _t('previously') + ' ' + sebelum + ' pcs/plano' : ''), 'ok');
           } catch (e) {
-              msg('Optimasi gagal: ' + (e && e.message ? e.message : e), 'bad');
+              msg(_t('Optimization failed:') + ' ' + (e && e.message ? e.message : e), 'bad');
           } finally {
               btn.disabled = false; btn.textContent = label;
           }
@@ -884,9 +885,9 @@
       // hemat, dropdown memang tidak berubah dan officer mengira tidak jalan.
       function pickBestPlano() {
           const lama = S.pl[0], i = bestPlanoIndex();
-          if (i < 0) return 'tidak ada plano standar yang muat canvas ' + S.L + ' × ' + S.W + ' cm';
+          if (i < 0) return _t('no standard plano fits canvas') + ' ' + S.L + ' × ' + S.W + ' cm';
           S.pl = planos[i]; $('plano').value = String(i);
-          return lama === S.pl[0] ? 'plano tetap ' + S.pl[0] + ' (sudah paling hemat)' : 'plano diganti ' + lama + ' → ' + S.pl[0];
+          return lama === S.pl[0] ? _t('plano unchanged') + ' ' + S.pl[0] + ' (' + _t('already the most economical') + ')' : _t('plano changed') + ' ' + lama + ' → ' + S.pl[0];
       }
 
       function hasilPerPlano() {
@@ -911,12 +912,12 @@
 
       async function autoNest(silent) {
           if (!ok()) {
-              if (!silent) msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum auto nesting.', 'bad');
+              if (!silent) msg(_t('The canvas is still outside the machine limits — fix it before auto nesting.'), 'bad');
               return;
           }
 
           const btn = $('autoNest'), label = btn.textContent;
-          btn.disabled = true; btn.textContent = 'Menghitung…';
+          btn.disabled = true; btn.textContent = _t('Calculating…');
 
           try {
               const base = await maskFor(S.p);
@@ -924,20 +925,20 @@
               const best = bestLattice(patternConfigs(base), Math.round(S.L * 10), Math.round(S.W * 10), gap, true);
 
               if (!best) {
-                  if (!silent) msg('Auto nesting tidak menemukan susunan yang muat di canvas ini.', 'bad');
+                  if (!silent) msg(_t('Auto nesting found no layout that fits this canvas.'), 'bad');
                   return;
               }
 
               applyPlacements(best.placements, best.label);
 
               const gain = best.plainBest ? Math.round((best.up - best.plainBest) / best.plainBest * 100) : 0;
-              msg('Auto nesting: ' + best.label + ' → ' + best.up + ' up'
-                  + (gain > 0 ? ' (+' + gain + '% vs grid standar, ' + (best.up - best.plainBest) + ' up lebih banyak)'
-                      : ' (grid standar sudah paling padat untuk bentuk ini)')
-                  + (best.ditolak ? ' · ' + best.ditolak + ' pola ditolak krn masih bertabrakan' : '')
-                  + (base.shaped ? '' : ' · tipe ini belum punya dieline, dihitung sebagai kotak polos'), 'ok');
+              msg(_t('Auto nesting:') + ' ' + best.label + ' → ' + best.up + ' up'
+                  + (gain > 0 ? ' (+' + gain + '% ' + _t('vs standard grid') + ', ' + (best.up - best.plainBest) + ' ' + _t('more ups') + ')'
+                      : ' (' + _t('the standard grid is already the densest for this shape') + ')')
+                  + (best.ditolak ? ' · ' + best.ditolak + ' ' + _t('patterns rejected because they still collide') : '')
+                  + (base.shaped ? '' : ' · ' + _t('this type has no dieline yet, calculated as a plain box')), 'ok');
           } catch (e) {
-              if (!silent) msg('Auto nesting gagal: ' + (e && e.message ? e.message : e), 'bad');
+              if (!silent) msg(_t('Auto nesting failed:') + ' ' + (e && e.message ? e.message : e), 'bad');
           } finally {
               btn.disabled = false; btn.textContent = label;
           }

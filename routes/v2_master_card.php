@@ -28,7 +28,7 @@ Route::prefix('v2/master-card')->name('v2.mcard.')->middleware('module:SALES')->
     // + New Record: kartu manual (mis. dari foto) -> baris baru lalu disimpan seperti Save biasa.
     Route::post('/new', function (Request $r) use ($svc, $home) {
         $r->validate(['product_name' => 'required|string|max:200', 'card_date' => 'nullable|date', 'customer_id' => 'nullable|integer|exists:tm2mst.cust_customer,id_customer',
-            'type_code' => 'nullable|exists:tm2mst.prod_type,type_code', 'artwork.*' => 'nullable|image|mimes:jpg,jpeg,png|max:20480'], [], ['product_name' => t('Item Name')]);
+            'type_code' => 'nullable|exists:tm2mst.prod_type,type_code', 'artwork.*' => 'nullable|image|mimes:jpg,jpeg,png|max:20480'], [], ['product_name' => t('Goods Name')]);
         $card = $svc()->fromData(['product_name' => $r->input('product_name')], 'MANUAL');
         $svc()->save($card, $r->except(['_token', '_action', 'artwork']), $r->file('artwork', []));
 
