@@ -9,12 +9,21 @@ use App\Models\Master\AttDailyStatus;
 use App\Models\Master\CustCustomer;
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\EmpLeaveRequest;
+use App\Models\Master\OrgPosition;
+use App\Models\Master\ProdMachine;
+use App\Models\Master\ProdMachineDowntime;
 use App\Models\Master\SalesPerson;
+use App\Models\Master\SopDocument;
 use App\Models\Master\SupSupplier;
 use App\Models\Master\SysHoliday;
 use App\Models\Prd\PrdWo;
+use App\Models\Prd\PrdWoOperation;
+use App\Models\Prd\PrdWoOperationOutput;
+use App\Models\Prd\QcComplaintReview;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrRequisition;
+use App\Models\Pur\PvLine;
+use App\Models\Pur\PvReceipt;
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
 use App\Models\Sdi\CoOrder;
@@ -615,6 +624,206 @@ final class Numbers
 
             return $out;
         });
+    }
+
+    // ---- Produksi: target vs hasil, kapasitas mesin, downtime -----------------------------------------------------------
+
+    /** @return Collection<int, object{operation_id: int, machine_id: ?int, qty: float, start: ?string, finish: ?string, status: string, open: bool}> operasi Work Order yang tidak batal, sejak tanggal itu (atau belum berjadwal) */
+    private function operations(CarbonImmutable $since): Collection
+    {
+        return $this->once('ops:'.$since->toDateString(), function () use ($since) {
+            $done = PrdWo::query()->whereIn('wo_status', ['COMPLETED', 'CANCELLED'])->pluck('wo_id')->flip();
+
+            return PrdWoOperation::query()->whereIn('wo_id', PrdWo::query()->where('wo_status', '<>', 'CANCELLED')->select('wo_id'))
+                ->where(fn ($q) => $q->whereNull('target_finish')->orWhere('target_finish', '>=', $since->toDateTimeString()))
+                ->get(['operation_id', 'wo_id', 'machine_id', 'qty', 'target_start', 'target_finish', 'task_status'])
+                ->map(fn (PrdWoOperation $o) => (object) ['operation_id' => (int) $o->operation_id, 'machine_id' => $o->machine_id, 'qty' => (float) $o->qty,
+                    'start' => $o->target_start ? (string) $o->target_start : null, 'finish' => $o->target_finish ? (string) $o->target_finish : null,
+                    'status' => (string) $o->task_status, 'open' => ! $done->has($o->wo_id)]);
+        });
+    }
+
+    // Tanggal paling awal yang mungkin diminta papan untuk periode ini (periode grafik paling lama atau periode lalu).
+    private function earliest(): CarbonImmutable
+    {
+        return min($this->buckets()[0]['from'], $this->range(1)[0]);
+    }
+
+    /** @return array{target: float, result: float, operations: int, outputs: int} target = qty operasi yang dijadwalkan selesai di rentang itu; result = qty baik yang dicatat di rentang itu */
+    public function production(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        $since = min($this->earliest(), $from);
+        $ops = $this->operations($since)->filter(fn ($o) => $o->finish && substr($o->finish, 0, 10) >= $from->toDateString() && substr($o->finish, 0, 10) <= $to->toDateString());
+        $outputs = $this->once('outputs:'.$since->toDateString(), fn () => PrdWoOperationOutput::query()->where('recorded_at', '>=', $since->toDateTimeString())
+            ->get(['output_id', 'qty_good', 'recorded_at'])->map(fn ($o) => (object) ['date' => substr((string) $o->recorded_at, 0, 10), 'qty' => (float) $o->qty_good]))
+            ->filter(fn ($o) => $o->date >= $from->toDateString() && $o->date <= $to->toDateString());
+
+        return ['target' => (float) $ops->sum('qty'), 'result' => (float) $outputs->sum('qty'), 'operations' => $ops->count(), 'outputs' => $outputs->count()];
+    }
+
+    // Hari kerja di rentang itu: bukan hari libur mingguan (jam kantor) dan bukan hari libur kalender.
+    public function workDays(CarbonImmutable $from, CarbonImmutable $to): int
+    {
+        return $this->once('workdays:'.$from->toDateString().':'.$to->toDateString(), function () use ($from, $to) {
+            $off = WorkCalendar::offDays();
+            $holidays = SysHoliday::query()->whereBetween('holiday_date', [$from->toDateString(), $to->toDateString()])->pluck('holiday_date')
+                ->map(fn ($d) => substr((string) $d, 0, 10))->flip();
+            $n = 0;
+            for ($d = $from->startOfDay(); $d->lessThanOrEqualTo($to); $d = $d->addDay()) {
+                $n += in_array($d->dayOfWeek, $off, true) || $holidays->has($d->toDateString()) ? 0 : 1;
+            }
+
+            return $n;
+        });
+    }
+
+    /**
+     * Kapasitas vs beban mesin proses di rentang itu. available = jam per shift x shift per hari x hari kerja (master mesin);
+     * null bila jam / shift mesinnya belum diisi. planned = jam operasi Work Order terjadwal di mesin itu yang jatuh di rentang itu.
+     *
+     * @return array<int, array{code: string, name: string, available: ?float, planned: float}> terurut dari beban tertinggi
+     */
+    public function capacity(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return $this->once('capacity:'.$from->toDateString().':'.$to->toDateString(), function () use ($from, $to) {
+            $days = $this->workDays($from, $to);
+            $start = $from->startOfDay();
+            $end = $to->startOfDay()->addDay();
+            $planned = [];
+            foreach ($this->operations(min($this->earliest(), $from)) as $o) {
+                if (! $o->machine_id || ! $o->start || ! $o->finish) {
+                    continue;
+                }
+                $a = max(CarbonImmutable::parse($o->start), $start);
+                $b = min(CarbonImmutable::parse($o->finish), $end);
+                if ($b->greaterThan($a)) {
+                    $planned[$o->machine_id] = ($planned[$o->machine_id] ?? 0) + $a->diffInMinutes($b) / 60;
+                }
+            }
+
+            return ProdMachine::query()->where('activate', true)->where('is_process_machine', true)->orderBy('machine_code')
+                ->get(['machine_id', 'machine_code', 'machine_name', 'hours_per_shift', 'shifts_per_day'])
+                ->map(fn (ProdMachine $m) => ['code' => (string) $m->machine_code, 'name' => (string) $m->machine_name,
+                    'available' => $m->hours_per_shift && $m->shifts_per_day ? (float) $m->hours_per_shift * (int) $m->shifts_per_day * $days : null,
+                    'planned' => round((float) ($planned[$m->machine_id] ?? 0), 2)])
+                ->sortByDesc(fn (array $m) => [$m['available'] ? $m['planned'] / $m['available'] : ($m['planned'] > 0 ? INF : -1), $m['planned']])->values()->all();
+        });
+    }
+
+    /** @return array{planned: float, unplanned: float, events: int, open: int} jam mesin berhenti yang mulai di rentang itu; yang belum selesai dihitung sampai sekarang (open = jumlahnya) */
+    public function downtime(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return $this->once('downtime:'.$from->toDateString().':'.$to->toDateString(), function () use ($from, $to) {
+            $rows = ProdMachineDowntime::query()->whereBetween('start_at', [$from->startOfDay()->toDateTimeString(), $to->endOfDay()->toDateTimeString()])
+                ->get(['is_planned', 'start_at', 'end_at', 'duration_minutes']);
+            $until = min($this->now, $to->endOfDay());
+            $minutes = fn (ProdMachineDowntime $r) => $r->duration_minutes !== null ? (float) $r->duration_minutes
+                : max(0, CarbonImmutable::parse($r->start_at)->diffInMinutes($r->end_at ? CarbonImmutable::parse($r->end_at) : $until, false));
+
+            return ['planned' => (float) $rows->where('is_planned', 1)->sum($minutes) / 60, 'unplanned' => (float) $rows->where('is_planned', 0)->sum($minutes) / 60,
+                'events' => $rows->count(), 'open' => $rows->whereNull('end_at')->count()];
+        });
+    }
+
+    /** @return array<string, int> jumlah operasi per status, hanya Work Order yang belum selesai */
+    public function operationStatus(): array
+    {
+        return $this->operations(CarbonImmutable::parse('1990-01-01'))->where('open', true)->countBy('status')->all();
+    }
+
+    // ---- Mutu: QC penerimaan, QC produksi, komplain ------------------------------------------------------------------
+
+    /** @return array{pass: int, fail: int, waiting: int} baris penerimaan barang: diperiksa di rentang itu (lulus / tidak) dan yang masih menunggu QC */
+    public function incomingQc(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return $this->once('iqc:'.$from->toDateString().':'.$to->toDateString(), function () use ($from, $to) {
+            $done = PvLine::query()->whereBetween('qc_at', [$from->startOfDay()->toDateTimeString(), $to->endOfDay()->toDateTimeString()])
+                ->whereNotNull('qc_quality_status')->where('qc_quality_status', '<>', '')->selectRaw('qc_quality_status AS st, COUNT(*) AS n')->groupBy('qc_quality_status')->pluck('n', 'st');
+            $waiting = PvLine::query()->whereIn('pv_id', PvReceipt::query()->where('status', 'QC_PENDING')->select('pv_id'))
+                ->where(fn ($q) => $q->whereNull('qc_quality_status')->orWhere('qc_quality_status', ''))->count();
+
+            return ['pass' => (int) ($done['PASS'] ?? 0), 'fail' => (int) $done->except('PASS')->sum(), 'waiting' => $waiting];
+        });
+    }
+
+    /** @return Collection<int, CrmComplaint> komplain yang perlu jawaban QA dan belum punya review yang di-Confirm */
+    public function qaWaiting(): Collection
+    {
+        return $this->once('qa_waiting', function () {
+            if (! Schema::connection('tm2sdi')->hasTable('crm_complaint')) {
+                return collect();
+            }
+            // Review ada di tm2prd, komplain di tm2sdi: dua query, dicocokkan di PHP.
+            $reviewed = Schema::connection('tm2prd')->hasTable('qc_complaint_review')
+                ? QcComplaintReview::query()->where('stat_confirm', true)->pluck('complaint_id')->flip() : collect();
+
+            return CrmComplaint::query()->where('needs_qa', true)->where('stat_cancel', false)->where('stat_close', false)->orderBy('complaint_date')->get()
+                ->reject(fn (CrmComplaint $c) => $reviewed->has($c->id_complaint))->values();
+        });
+    }
+
+    /** @return array<string, int> kategori => jumlah komplain bertanggal di rentang itu (tidak batal) */
+    public function complaintsByCategory(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return $this->once('complaint_cat:'.$from->toDateString().':'.$to->toDateString(), fn () => Schema::connection('tm2sdi')->hasTable('crm_complaint')
+            ? CrmComplaint::query()->whereBetween('complaint_date', [$from->toDateString(), $to->toDateString()])->where('stat_cancel', false)
+                ->selectRaw('category, COUNT(*) AS n')->groupBy('category')->pluck('n', 'category')->map(fn ($n) => (int) $n)->all() : []);
+    }
+
+    // ---- Gudang -------------------------------------------------------------------------------------------------------
+
+    /** @return array<string, float> nama gudang => nilai stok on hand yang bisa dipakai (semua kelas), terbesar dulu */
+    public function stockByWarehouse(): array
+    {
+        return $this->once('stock_wh', function () {
+            $out = [];
+            foreach (array_keys(StockOnhand::ITEM_KEYS) as $class) {
+                foreach (StockOnhand::of($class)->where('is_usable', true)->groupBy('warehouse_name')->selectRaw('warehouse_name AS name, SUM(value_onhand) AS value')->get() as $r) {
+                    $out[(string) ($r->name ?? '—')] = ($out[(string) ($r->name ?? '—')] ?? 0) + (float) $r->value;
+                }
+            }
+            arsort($out);
+
+            return $out;
+        });
+    }
+
+    /** @return array{in: int, out: int, adjust: int, return: int} jumlah dokumen stok bertanggal di rentang itu, menurut arah (semua kelas stok) */
+    public function stockDocuments(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return $this->once('stock_docs:'.$from->toDateString().':'.$to->toDateString(), function () use ($from, $to) {
+            $rows = DB::connection('tm2inv')->table('v_inv_movement')->whereBetween('doc_date', [$from->startOfDay()->toDateTimeString(), $to->endOfDay()->toDateTimeString()])
+                ->distinct()->get(['stock_class', 'doc_id', 'doc_type', 'doc_cat']);
+            $is = fn (callable $f) => $rows->filter($f)->count();
+
+            return ['in' => $is(fn ($r) => (int) $r->doc_type === 1 && $r->doc_cat !== 'RETURN' && ! in_array($r->doc_cat, ['AD', 'OP'], true)),
+                'out' => $is(fn ($r) => (int) $r->doc_type === -1 && ! in_array($r->doc_cat, ['AD', 'OP', 'RETURN'], true)),
+                'adjust' => $is(fn ($r) => in_array($r->doc_cat, ['AD', 'OP'], true)), 'return' => $is(fn ($r) => $r->doc_cat === 'RETURN')];
+        });
+    }
+
+    /** @return Collection<int, PvReceipt> penerimaan barang yang menunggu QC, atau sudah diposting tetapi belum diserahkan */
+    public function receiptsWaiting(): Collection
+    {
+        return $this->once('receipts_waiting', fn () => PvReceipt::query()->where(fn ($q) => $q->where('status', 'QC_PENDING')
+            ->orWhere(fn ($w) => $w->where('status', 'POSTED')->where('is_handed_over', false)))->orderBy('i_doc_date')->get(['pv_id', 'doc_no', 'i_doc_date', 'i_supplier_id', 'status', 'is_handed_over']));
+    }
+
+    // ---- Dokumen kerja: Job Description, SOP, Work Instruction ----------------------------------------------------------
+
+    /** @return Collection<int, SopDocument> dokumen aktif satu jenis (SOP | WI), yang paling baru berlaku di atas */
+    public function documents(string $type): Collection
+    {
+        return $this->once('docs:'.$type, fn () => Schema::connection('tm2mst')->hasColumn('sop_document', 'doc_type')
+            ? SopDocument::query()->with('department')->where('activate', true)->where('doc_type', $type)->orderByDesc('effective_date')->orderBy('title')->get()
+            : ($type === 'SOP' ? SopDocument::query()->with('department')->where('activate', true)->orderBy('title')->get() : collect()));
+    }
+
+    /** @return array{positions: int, filled: int} jabatan aktif dan yang Job Description-nya sudah diisi */
+    public function jobDescriptionCoverage(): array
+    {
+        return $this->once('jd', fn () => ['positions' => OrgPosition::query()->where('activate', true)->count(),
+            'filled' => OrgPosition::query()->where('activate', true)->whereNotNull('job_description')->whereRaw("TRIM(job_description) <> ''")->count()]);
     }
 
     // Hari kerja tersisa bulan ini sesudah hari ini: bukan hari libur mingguan (jam kantor) dan bukan hari libur kalender.

@@ -24,7 +24,8 @@ final class WidgetCatalog
         Widgets\TopExpenses::class, Widgets\PayrollCost::class, Widgets\PayrollRunStatus::class, Widgets\PayrollBreakdown::class,
         Widgets\PayrollTrend::class, Widgets\Headcount::class, Widgets\HeadcountByGender::class, Widgets\AttendanceSummary::class,
         Widgets\HeadcountByDepartment::class, Widgets\RecruitmentPipeline::class, Widgets\LeaveWaiting::class, Widgets\NetProfit::class,
-        Widgets\IncomeVsExpense::class, Widgets\TargetsByArea::class, Widgets\WorkOrderStatus::class, Widgets\LateWorkOrders::class,
+        Widgets\IncomeVsExpense::class, Widgets\ProductionOutput::class, Widgets\CapacityUtilization::class, Widgets\MachineDowntime::class, Widgets\ProductionTrend::class, Widgets\MachineLoad::class, Widgets\OperationsByStatus::class, Widgets\IncomingQcWaiting::class, Widgets\IncomingPassRate::class, Widgets\ProductionQc::class, Widgets\ComplaintsByCategory::class, Widgets\QaReviewWaiting::class, Widgets\StockByWarehouse::class, Widgets\StockDocuments::class, Widgets\ReceiptsWaiting::class, Widgets\MyJobDescription::class, Widgets\JobDescriptionCoverage::class, Widgets\SopDocuments::class, Widgets\WorkInstructions::class,
+        Widgets\TargetsByArea::class, Widgets\WorkOrderStatus::class, Widgets\LateWorkOrders::class,
         Widgets\StockValue::class, Widgets\DeadstockValue::class, Widgets\WaitingDecision::class, Widgets\QuoteOfDay::class,
     ];
 

@@ -140,23 +140,24 @@
     "key": "hrm-sop",
     "type": "INPUT",
     "module": "HRM",
-    "title": "SOP",
+    "title": "SOP & Work Instruction",
     "purpose": {
-      "en": "The register of SOP documents. HR Officers add and edit them; everyone else can only read. Employees read the active SOPs in Self-Service.",
-      "id": "Daftar dokumen SOP. HR Officer menambah dan mengubahnya; yang lain hanya bisa membaca. Karyawan membaca SOP aktif di Self-Service."
+      "en": "The register of SOP and Work Instruction documents. HR Officers add and edit them; everyone else can only read. Employees read the active documents in Self-Service, and the opening dashboard Work Instruction / JD / SOP lists them.",
+      "id": "Daftar dokumen SOP dan Instruksi Kerja. HR Officer menambah dan mengubahnya; yang lain hanya bisa membaca. Karyawan membaca dokumen aktif di Self-Service, dan dashboard pembuka Work Instruction / JD / SOP menampilkannya."
     },
-    "keywords": "sop, standard operating procedure, prosedur, dokumen sop, nomor dokumen, revisi sop, aturan kerja",
+    "keywords": "sop, standard operating procedure, prosedur, dokumen sop, nomor dokumen, revisi sop, aturan kerja, work instruction, instruksi kerja, wi, petunjuk kerja, jenis dokumen",
     "steps": [
-      {"en": "Search by SOP code or title, or filter by Department.", "id": "Cari berdasarkan kode atau judul SOP, atau saring berdasarkan Department."},
+      {"en": "Search by document code or title, or filter by Document Type (SOP or Work Instruction) and Department.", "id": "Cari berdasarkan kode atau judul dokumen, atau saring berdasarkan Document Type (SOP atau Work Instruction) dan Department."},
       {"en": "Open a row. If you are not an HR Officer you see the SOP read-only and there is nothing to save.", "id": "Buka satu baris. Bila Anda bukan HR Officer, SOP tampil hanya-baca dan tidak ada yang bisa disimpan."},
-      {"en": "HR Officer: click + New Record, fill Nomor Dokumen and Judul SOP, and add Tujuan and Isi SOP.", "id": "HR Officer: klik + New Record, isi Nomor Dokumen dan Judul SOP, lalu tambahkan Tujuan dan Isi SOP."},
+      {"en": "HR Officer: click + New Record, fill Nomor Dokumen, pick the Document Type, fill Judul SOP, and add Tujuan and Isi SOP.", "id": "HR Officer: klik + New Record, isi Nomor Dokumen, pilih Document Type, isi Judul SOP, lalu tambahkan Tujuan dan Isi SOP."},
       {"en": "Set Revisi, Berlaku Sejak and Cakupan Departemen, then click Simpan.", "id": "Atur Revisi, Berlaku Sejak dan Cakupan Departemen, lalu klik Simpan."},
       {"en": "To stop showing an old SOP, untick Aktif or use the activate toggle in the grid.", "id": "Agar SOP lama tidak ditampilkan lagi, hilangkan centang Aktif atau pakai tombol aktif di grid."}
     ],
     "fields": [
       {"label": "Nomor Dokumen", "en": "Unique SOP document number, typed, for example 001/SOP/TM/V/2026. Required.", "id": "Nomor dokumen SOP yang unik, diketik, misalnya 001/SOP/TM/V/2026. Wajib diisi."},
       {"label": "Revisi", "en": "Revision number of the document, starting at 0. Required.", "id": "Nomor revisi dokumen, mulai dari 0. Wajib diisi."},
-      {"label": "Judul SOP", "en": "Title of the SOP. Required.", "id": "Judul SOP. Wajib diisi."},
+      {"label": "Document Type", "en": "SOP for a procedure across steps or departments; Work Instruction for how to do one job at one machine or station. Picked, required. It decides in which list the document appears on the opening dashboard.", "id": "SOP untuk prosedur lintas langkah atau departemen; Work Instruction untuk cara mengerjakan satu pekerjaan di satu mesin atau pos. Dipilih, wajib. Menentukan di daftar mana dokumen tampil di dashboard pembuka."},
+      {"label": "Judul SOP", "en": "Title of the document. Required.", "id": "Judul dokumen. Wajib diisi."},
       {"label": "Berlaku Sejak", "en": "Effective date of this revision, optional.", "id": "Tanggal berlaku revisi ini, boleh dikosongkan."},
       {"label": "Cakupan Departemen", "en": "Department the SOP applies to. Leave on All Departments when it applies to everyone.", "id": "Departemen yang memakai SOP ini. Biarkan Semua Departemen bila berlaku untuk semua."},
       {"label": "Tujuan", "en": "Purpose of the SOP, free text, optional.", "id": "Tujuan SOP, teks bebas, boleh dikosongkan."},

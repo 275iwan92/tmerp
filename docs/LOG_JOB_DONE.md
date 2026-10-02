@@ -3,6 +3,38 @@
 
 ---
 
+## 2026-10-02 -- Opening Dashboards tahap 4: Production, Quality, Inventory, WI / JD / SOP; asisten AI dipasang di tm2
+
+User: "pasang saja nanti juga bisa disempurnakan" (asisten di tmerp) dan "perlu ada production, quality control and quality
+assurance, inventory and warehousing, payroll, human resource, Work Instruction, job description, SOP. On production, target vs
+result, capacity planning".
+
+- **Asisten AI di tm2:** migrasi `packages/assistant/.../2026_10_02_000080` + `2026_10_02_000081` dijalankan di database live
+  (tabel `sys_assistant_message`, `sys_assistant_metric`, 2 menu, 11 konstanta). Perbaikan mesin asisten: perintah
+  (`Assistant\Contracts\Command`, mis. "buka dashboard sales") tetap dijalankan walau kalimatnya memakai kata "buka" /
+  "tampilkan"; kalimat "cara ..." tetap mencari bantuan.
+- **Empat dashboard baru** (migrasi `2026_10_02_000164`, ddt + tm2): Production, Quality Control & Assurance, Inventory &
+  Warehousing, Work Instruction / JD / SOP. Urutan tab: Overall, Sales, Purchasing, Production, Quality, Inventory, AR & AP,
+  Cashflow, Payroll, Human Resource, Dokumen. Total 11 dashboard, **67 widget** (18 baru).
+- **Production:** target vs hasil (KPI + grafik per periode; target = qty operasi Work Order terjadwal selesai, hasil = qty
+  baik yang dicatat), Capacity Load dan Machine Load (jam terjadwal vs jam tersedia = jam per shift x shift per hari x hari
+  kerja dari Master Mesin; mesin tanpa jam = "No capacity set", tidak dikarang), Operations by Status, Unplanned Downtime
+  (yang masih berhenti dihitung sampai sekarang).
+- **Quality:** Incoming QC Waiting, Incoming QC Pass Rate, Production QC, Complaints by Category, Waiting for QA Review.
+- **Inventory:** Stock Value by Warehouse, Stock Documents, Goods Receipts in Progress (+ Stock Value, Deadstock Value pindah ke sini).
+- **Dokumen kerja:** My Job Description (jenis widget DevLib baru `text`), Job Descriptions Filled, SOP, Work Instructions.
+  Tab ini tanpa syarat modul (dokumen kerja untuk semua); kelengkapan JD hanya untuk yang boleh membuka HRM.
+- **Work Instruction:** kolom baru `tm2mst.sop_document.doc_type` (SOP | WI); form SOP mendapat pilihan Document Type, grid v2
+  kolom + saringan Document Type, menu `HRM_SOP` menjadi "SOP & Work Instruction". 3 SOP + 3 WI contoh hanya di ddt.
+- Angka baru di `App\Support\V2\Board\Numbers` (production, workDays, capacity, downtime, operationStatus, incomingQc, qaWaiting,
+  complaintsByCategory, stockByWarehouse, stockDocuments, receiptsWaiting, documents, jobDescriptionCoverage).
+- Test `OpeningBoardTest` 14 test (ddt + tm2), sisa data uji dicek 0 di kedua database. Dokumen: `openingboard_review.md`,
+  `openingboard_references.md`, pedoman C.33, Help (panduan + SOP & Work Instruction), gambar `docs/mockups/opening_board_app/11`–`14`.
+- Belum: jam per shift 45 mesin di tm2 (data nyata, menunggu user), target produksi dari manajemen, WI bergambar / lampiran,
+  baseline ddt belum disimpan ulang (kolom `doc_type`).
+- Catatan: `NoHardcodedDatabaseNameTest` gagal karena `app/Support/Engines/EngineRegistry.php` (commit 8dca1e44, sesi lain) —
+  bukan dari pekerjaan ini; sudah diusulkan sebagai tugas terpisah.
+
 ## 2026-10-02 -- Reset data dummy: penjaga drift struktur (baseline vs ddt* sekarang)
 
 Masalah: `ddt:baseline restore` memasang ulang `CREATE TABLE` dari dump, sedangkan tabel `migrations` ada di `ddtsys` yang tidak

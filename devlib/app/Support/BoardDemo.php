@@ -61,6 +61,9 @@ class BoardDemo
                 'data' => ['rows' => [['title' => 'Ivory 310 gsm 79 x 109', 'sub' => 'needed 05-Okt-2026 · CO2600021', 'value' => '35.700 SHEET', 'tone' => 'danger'],
                     ['title' => 'Lamination film', 'sub' => 'needed 16-Des-2025 · CO2600027', 'value' => '84.294 M2', 'tone' => 'danger'],
                     ['title' => 'Duplex 250 gsm 100 x 65', 'sub' => 'needed 16-Des-2025 · CO2600024', 'value' => '5.250 SHEET', 'tone' => 'warn']]]],
+            ['key' => 'jobdesc', 'title' => 'My Job Description', 'caption' => 'General Manager', 'group' => 'General', 'type' => 'text', 'size' => 6, 'icon' => 'fa-briefcase',
+                'description' => 'Long text shown as written, line breaks kept.',
+                'data' => ['text' => "1. Lead the daily operation of the plant.\n2. Approve purchase orders and customer order changes.\n3. Review the weekly production and delivery report.", 'empty' => 'Nothing to show']],
             ['key' => 'quote', 'title' => 'Quote of the Day', 'group' => 'General', 'type' => 'quote', 'size' => 12, 'icon' => 'fa-quote-left',
                 'description' => 'One line per day of the year.', 'data' => ['text' => 'Kesaktian sebuah tim ada pada kekompakannya.', 'author' => '', 'day' => now()->dayOfYear, 'days' => 365]],
         ])->keyBy('key')->all();

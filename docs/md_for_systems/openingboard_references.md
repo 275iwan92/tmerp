@@ -46,16 +46,22 @@ halaman sumbernya. Nomor `[n]` = sumber di bagian akhir.
 | HR | Ringkasan kehadiran | Frappe HR [30] | Attendance |
 | HR | Cuti menunggu | Zoho People [35], Frappe HR [30] | Leave Requests Waiting |
 | HR | Pipeline rekrutmen | Odoo [15] | Recruitment Pipeline |
-| Produksi | Work order per status | ERPNext [16], Business Central [10] | Work Orders by Status |
+| Produksi | Work order per status | ERPNext [16], Business Central [10] | Work Orders by Status, Operations by Status |
+| Produksi | Hasil produksi vs rencana | ERPNext [16], Odoo [14] | Production: Target vs Result, Production per Period |
+| Produksi | Beban work centre / mesin vs kapasitas | Business Central [8][9], Odoo [14] | Capacity Load, Machine Load |
+| Produksi | Downtime mesin | ERPNext [16], Odoo [14] | Unplanned Downtime |
+| Mutu | Pemeriksaan penerimaan, tingkat lulus | Odoo [14], Business Central [7] | Incoming QC Waiting, Incoming QC Pass Rate, Production QC |
+| Mutu | Komplain per kategori, menunggu jawaban | PrintVis [24] | Complaints by Category, Waiting for QA Review |
 | Produksi | Job terlambat / jatuh hari ini | PrintPLANR [27] | Late Work Orders |
-| Stok | Nilai persediaan, stok rendah | Business Central [7], PrintPLANR [27] | Stock Value, Material Shortage, Deadstock Value |
+| Stok | Nilai persediaan, stok rendah | Business Central [7], PrintPLANR [27] | Stock Value, Stock Value by Warehouse, Material Shortage, Deadstock Value |
+| Stok | Penerimaan / pengeluaran berjalan | Business Central [7], Odoo [12] | Stock Documents, Goods Receipts in Progress |
 
 ## Ada di referensi, BELUM kita bangun (dan kenapa)
 
 | Widget referensi | Terlihat di | Yang kurang |
 |---|---|---|
 | Estimasi vs biaya nyata per job | Business Central [10], PrintVis [26] | Biaya nyata per Work Order belum dicatat; HPP juga rahasia (Costing + Direksi) |
-| OEE, utilisasi mesin, scrap %, downtime | Odoo [14], Business Central [8][9], ERPNext [16] | Data hasil produksi dan breakdown masih sangat sedikit |
+| OEE, scrap % | Odoo [14], Business Central [8][9], ERPNext [16] | Beban mesin dan downtime sudah ada (2026-10-02); OEE butuh jam jalan nyata dan scrap per operasi yang masih sangat sedikit dicatat |
 | DSO / DPO (hari rata-rata tagih / bayar) | Business Central [1][3], SAP [21] | Perlu definisi yang disepakati (basis penjualan kredit, periode) |
 | Proyeksi arus kas | Business Central [11] | Perlu aturan: order dan PO mana yang ikut diproyeksikan |
 | Barang diterima belum ditagih supplier | Business Central [6] | Kaitan penerimaan barang dengan invoice supplier belum lengkap |

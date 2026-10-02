@@ -14,7 +14,7 @@ final class LateWorkOrders extends Widget
     protected function meta(): array
     {
         return [
-            'key' => 'late_work_orders', 'title' => 'Late Work Orders', 'type' => 'list', 'group' => 'Production', 'module' => 'PROD',
+            'key' => 'late_work_orders', 'title' => 'Late Work Orders', 'type' => 'list', 'dashboard' => 'PRODUCTION', 'module' => 'PROD',
             'description' => 'Work Orders that are past their due date and not completed yet, longest overdue first.',
             'icon' => 'fa-triangle-exclamation', 'tone' => 'danger', 'phrases' => ['wo terlambat', 'work order terlambat', 'produksi terlambat', 'late work orders', 'late jobs'],
         ];

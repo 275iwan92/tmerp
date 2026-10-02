@@ -118,6 +118,13 @@
                             @else
                                 <x-dl::empty-state title="No data in this period" icon="fa-ranking-star" />
                             @endif
+                        @elseif ($w['type'] === 'text')
+                            {{-- Teks panjang apa adanya (mis. Job Description): baris baru dipertahankan, tidak diterjemahkan. --}}
+                            @if (trim((string) ($data['text'] ?? '')) !== '')
+                                <div class="dl-wb__text">{{ $data['text'] }}</div>
+                            @else
+                                <x-dl::empty-state :title="$data['empty'] ?? 'Nothing to show'" icon="fa-file-lines" />
+                            @endif
                         @else
                             @forelse ($data['rows'] ?? [] as $r)
                                 <div class="dl-wb__row">
@@ -159,7 +166,7 @@
                             <input type="checkbox" data-wb-toggle="{{ $c['key'] }}" @checked($c['installed'])>
                             <span class="dl-wb__caticon"><i class="{{ str_contains($c['icon'] ?? '', ' ') ? $c['icon'] : 'fa-solid '.\Devlib\Icon::fa($c['icon'] ?? 'fa-chart-simple') }}"></i></span>
                             <span class="dl-wb__cattext"><b>{{ Lang::text($c['title']) }}</b><small>{{ Lang::text($c['description'] ?? '') }}</small></span>
-                            @if (! empty($c['type']))<span class="dl-wb__cattype">{{ ['kpi' => 'KPI', 'chart' => 'Chart', 'progress' => 'Target', 'ranking' => 'Ranking', 'list' => 'List', 'quote' => 'Text'][$c['type']] ?? $c['type'] }}</span>@endif
+                            @if (! empty($c['type']))<span class="dl-wb__cattype">{{ ['kpi' => 'KPI', 'chart' => 'Chart', 'progress' => 'Target', 'ranking' => 'Ranking', 'list' => 'List', 'quote' => 'Text', 'text' => 'Text'][$c['type']] ?? $c['type'] }}</span>@endif
                         </label>
                     @endforeach
                 </div>

@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Assistant\ErpAsker;
 use App\Assistant\Metrics\BoardWidgets;
+use App\Models\Master\ProdMachine;
+use App\Models\Master\SopDocument;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysBoardTemplate;
 use App\Models\Sys\SysKpiTarget;
@@ -13,6 +15,7 @@ use App\Support\V2\Board\Board;
 use App\Support\V2\Board\Numbers;
 use App\Support\V2\Board\WidgetCatalog;
 use App\Support\V2\Board\Widgets\OrderValue;
+use Assistant\AssistantService;
 use Assistant\MetricCatalog;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -219,7 +222,7 @@ class OpeningBoardTest extends TestCase
             foreach ($catalog as $key => $entry) {
                 $out = $entry['widget']->build($n, $this->admin);
                 $this->assertIsArray($out['data'] ?? null, "Widget {$key} ({$period}) tidak mengembalikan data.");
-                $this->assertContains($entry['widget']->type(), ['kpi', 'chart', 'progress', 'ranking', 'list', 'quote'], $key);
+                $this->assertContains($entry['widget']->type(), ['kpi', 'chart', 'progress', 'ranking', 'list', 'quote', 'text'], $key);
             }
         }
     }
@@ -247,11 +250,73 @@ class OpeningBoardTest extends TestCase
         $this->assertEqualsWithDelta((float) $ap->sum('outstanding'), (float) $ap->where('days_overdue', '>', 0)->sum('outstanding') + (float) $ap->where('days_overdue', '<=', 0)->sum('outstanding'), 0.01);
     }
 
+    public function test_production_quality_and_stock_numbers_are_consistent(): void
+    {
+        $n = Numbers::make('yearly');
+        // Target vs hasil setahun = jumlah per bulan tahun itu.
+        $year = $n->production($n->from(), $n->to());
+        $target = 0.0;
+        $result = 0.0;
+        for ($m = $n->from(); $m->lessThanOrEqualTo($n->to()); $m = $m->addMonthNoOverflow()) {
+            $p = $n->production($m, $m->endOfMonth());
+            $target += $p['target'];
+            $result += $p['result'];
+        }
+        $this->assertEqualsWithDelta($year['target'], $target, 0.01);
+        $this->assertEqualsWithDelta($year['result'], $result, 0.01);
+
+        // Hari kerja: satu minggu penuh tidak lebih dari 7 hari dan tidak negatif; setahun = jumlah per bulan.
+        $week = $n->workDays(CarbonImmutable::parse('2026-10-05'), CarbonImmutable::parse('2026-10-11'));
+        $this->assertGreaterThan(0, $week);
+        $this->assertLessThanOrEqual(7, $week);
+        $days = 0;
+        for ($m = $n->from(); $m->lessThanOrEqualTo($n->to()); $m = $m->addMonthNoOverflow()) {
+            $days += $n->workDays($m, $m->endOfMonth());
+        }
+        $this->assertSame($n->workDays($n->from(), $n->to()), $days);
+
+        // Kapasitas: jam tersedia = jam per shift x shift per hari x hari kerja; mesin tanpa jam per shift = null (bukan nol).
+        $month = Numbers::make('monthly');
+        $workDays = $month->workDays($month->from(), $month->to());
+        $machines = ProdMachine::query()->where('activate', true)->where('is_process_machine', true)->get()->keyBy('machine_code');
+        $capacity = $month->capacity($month->from(), $month->to());
+        $this->assertCount($machines->count(), $capacity);
+        foreach ($capacity as $c) {
+            $m = $machines[$c['code']];
+            $expected = $m->hours_per_shift && $m->shifts_per_day ? (float) $m->hours_per_shift * (int) $m->shifts_per_day * $workDays : null;
+            $this->assertSame($expected, $c['available'], 'Jam tersedia mesin '.$c['code']);
+            $this->assertGreaterThanOrEqual(0, $c['planned']);
+        }
+
+        // Nilai stok per gudang = nilai stok per kelas (dua cara menjumlah stok yang sama).
+        $this->assertEqualsWithDelta(array_sum($n->stockValue()), array_sum($n->stockByWarehouse()), 0.01);
+        // Downtime setahun mencakup downtime bulan ini.
+        $this->assertGreaterThanOrEqual($month->downtime($month->from(), $month->to())['events'], $n->downtime($n->from(), $n->to())['events']);
+        // SOP + Work Instruction = semua dokumen aktif di register.
+        $this->assertSame(SopDocument::query()->where('activate', true)->count(), $n->documents('SOP')->count() + $n->documents('WI')->count());
+        $jd = $n->jobDescriptionCoverage();
+        $this->assertLessThanOrEqual($jd['positions'], $jd['filled']);
+    }
+
+    public function test_documents_dashboard_shows_the_job_description_as_text(): void
+    {
+        $this->assertNull(Board::apply($this->admin, 'dashboard', 'DOCS'));
+        $props = Board::props($this->admin);
+        $jd = collect($props['widgets'])->firstWhere('key', 'my_job_description');
+        $this->assertNotNull($jd, 'Template DOCS harus memuat my_job_description.');
+        $this->assertSame('text', $jd['type']);
+        $this->assertArrayHasKey('text', $jd['data']);
+        // User uji tidak terhubung ke pegawai / jabatan: teks kosong + penjelasan, bukan error.
+        $this->assertSame('', $jd['data']['text']);
+        $this->assertStringContainsString('data-key="my_job_description"', Board::html($this->admin));
+        $this->assertStringContainsString('data-key="work_instructions"', Board::html($this->admin));
+    }
+
     public function test_area_dashboards_show_their_template_and_overall_is_arranged_by_the_owner(): void
     {
         $codes = array_column(Board::dashboards($this->admin), 'code');
         $this->assertSame(Board::OVERALL, $codes[0]);
-        foreach (['SALES', 'PURCHASING', 'AR_AP', 'CASHFLOW', 'PAYROLL', 'HR'] as $code) {
+        foreach (['SALES', 'PURCHASING', 'PRODUCTION', 'QUALITY', 'INVENTORY', 'AR_AP', 'CASHFLOW', 'PAYROLL', 'HR', 'DOCS'] as $code) {
             $this->assertContains($code, $codes);
         }
         $this->assertSame(Board::OVERALL, Board::dashboard($this->admin));
@@ -274,9 +339,12 @@ class OpeningBoardTest extends TestCase
         $this->assertNull(Board::apply($this->admin, 'dashboard', Board::OVERALL));
         $this->assertStringContainsString('data-wb-toggle', Board::html($this->admin));
 
-        // Tanpa hak modul: hanya Overall; widget gaji tidak boleh dipasang walau lewat daftar centang.
+        // Tanpa hak modul: hanya Overall dan dashboard dokumen kerja (Job Description, SOP, Work Instruction = untuk semua orang);
+        // widget gaji tidak boleh dipasang walau lewat daftar centang.
         $staff = $this->user(self::STAFF_ID, false);
-        $this->assertSame([Board::OVERALL], array_column(Board::dashboards($staff), 'code'));
+        $this->assertSame([Board::OVERALL, 'DOCS'], array_column(Board::dashboards($staff), 'code'));
+        $this->assertTrue(app(WidgetCatalog::class)->allowed($staff, 'my_job_description'));
+        $this->assertFalse(app(WidgetCatalog::class)->allowed($staff, 'jd_coverage'), 'Kelengkapan Job Description hanya untuk yang boleh membuka HRM.');
         $this->assertFalse(app(WidgetCatalog::class)->allowed($staff, 'payroll_cost'));
         $this->assertSame('This widget is not available for your account.', Board::apply($staff, 'add', 'payroll_cost'));
     }
@@ -334,5 +402,14 @@ class OpeningBoardTest extends TestCase
         $catalog = app(MetricCatalog::class);
         $this->assertSame('board_widgets', $catalog->match('lepas widget sales today')['key'] ?? null);
         $this->assertSame('sales_today', $catalog->match('sales today')['key'] ?? null);
+
+        // Lewat mesin asisten: "buka ..." biasanya mencari layar, tetapi perintah papan tetap dijalankan.
+        $service = app(AssistantService::class);
+        $reply = $service->ask($this->admin, 'buka dashboard sales')['reply'];
+        $this->assertSame('board', $reply['refresh'] ?? null);
+        $this->assertSame('SALES', Board::dashboard($this->admin));
+        // "cara ..." tetap mencari bantuan, bukan menjalankan perintah.
+        $how = $service->ask($this->admin, 'bagaimana cara pasang widget')['reply'];
+        $this->assertArrayNotHasKey('refresh', $how);
     }
 }

@@ -60,6 +60,11 @@ final class DeadstockValue extends Widget
         return ['deadstock', 'dead stock', 'stok mati', 'stok tidak bergerak', 'nilai deadstock', 'deadstock value'];
     }
 
+    public function dashboard(): ?string
+    {
+        return 'INVENTORY';
+    }
+
     public function build(Numbers $n, SecUser $user): array
     {
         $totals = collect(DeadstockMetric::totals());

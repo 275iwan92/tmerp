@@ -33,6 +33,8 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
 
     public string $sop_code = '';
 
+    public string $doc_type = 'SOP'; // SOP | WI (Work Instruction)
+
     public string $title = '';
 
     public string $revision = '0';
@@ -96,6 +98,7 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
         $this->resetErrorBag();
         $this->reset(['editingId', 'sop_code', 'title', 'effective_date', 'department_id', 'purpose', 'content']);
         $this->revision = '0';
+        $this->doc_type = 'SOP';
         $this->sop_activate = true;
         $this->panel = 'form';
     }
@@ -107,6 +110,7 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
         $doc = SopDocument::findOrFail($id);
         $this->editingId = $doc->sop_id;
         $this->sop_code = $doc->sop_code;
+        $this->doc_type = $doc->doc_type ?: 'SOP';
         $this->title = $doc->title;
         $this->revision = $doc->revision;
         $this->effective_date = (string) ($doc->effective_date?->format('Y-m-d') ?? '');
@@ -132,6 +136,7 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
 
         $data = $this->validate([
             'sop_code' => ['required', 'string', 'max:50', 'unique:tm2mst.sop_document,sop_code,'.($this->editingId ?: 'NULL').',sop_id'],
+            'doc_type' => ['required', 'in:'.implode(',', array_keys(SopDocument::TYPES))],
             'title' => ['required', 'string', 'max:200'],
             'revision' => ['required', 'string', 'max:10'],
             'effective_date' => ['nullable', 'date'],
@@ -143,6 +148,7 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
 
         $payload = [
             'sop_code' => $data['sop_code'],
+            'doc_type' => $data['doc_type'],
             'title' => $data['title'],
             'revision' => $data['revision'],
             'effective_date' => $data['effective_date'] ?: null,
@@ -228,7 +234,7 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
                             <tr wire:key="sop-{{ $doc->sop_id }}" wire:dblclick="open({{ $doc->sop_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="font-semibold text-[13px]">{{ $doc->title }}</div>
-                                    <div class="text-[11px] text-muted font-mono">{{ $doc->sop_code }}</div>
+                                    <div class="text-[11px] text-muted font-mono">{{ \App\Models\Master\SopDocument::TYPES[$doc->doc_type] ?? 'SOP' }} · {{ $doc->sop_code }}</div>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $doc->department?->department_name ?: 'Semua Departemen' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-[#667]">Rev {{ $doc->revision }}{{ $doc->effective_date ? ' · '.$doc->effective_date->format('d/m/Y') : '' }}</td>
@@ -263,7 +269,10 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
                     <x-form.input label="Nomor Dokumen *" name="sop_code" wire:model="sop_code" placeholder="mis. 001/SOP/TM/V/2026" />
                     <x-form.input label="Revisi" name="revision" wire:model="revision" />
                 </div>
-                <x-form.input label="Judul SOP *" name="title" wire:model="title" />
+                <div class="grid two gap-2.5">
+                    <x-form.select label="Document Type *" name="doc_type" wire:model="doc_type" :options="\App\Models\Master\SopDocument::TYPES" :selected="$doc_type" />
+                    <x-form.input label="Judul SOP *" name="title" wire:model="title" />
+                </div>
                 <div class="grid two gap-2.5">
                     <x-form.date-picker label="Berlaku Sejak" name="effective_date" wire:model="effective_date" />
                     <x-form.select label="Cakupan Departemen" name="department_id" wire:model="department_id"
@@ -286,7 +295,7 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
         @if ($panel === 'view')
             <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
                 <div class="text-sm font-bold">{{ $title }}</div>
-                <span class="text-[10.5px] font-mono opacity-75">{{ $sop_code }} · Rev {{ $revision }}</span>
+                <span class="text-[10.5px] font-mono opacity-75">{{ \App\Models\Master\SopDocument::TYPES[$doc_type] ?? 'SOP' }} · {{ $sop_code }} · Rev {{ $revision }}</span>
             </div>
             <div class="bg-white border border-t-0 border-[#d7dbe2] p-5 rounded-b-md flex flex-col gap-3">
                 <div class="text-[11px] text-muted flex gap-4 flex-wrap">

@@ -11,8 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 // semua departemen. Versi pertama -- lihat docs/sop_module_blueprint_reference.md
 // utk materi mentah yang lebih detail (workflow steps/QC rules/dst) yang
 // belum diproses ke skema ini.
+// doc_type (user 2026-10-02): register yang sama memuat SOP dan Work Instruction; yang membedakan hanya jenisnya.
 class SopDocument extends Model
 {
+    public const TYPES = ['SOP' => 'SOP', 'WI' => 'Work Instruction'];
+
     protected $connection = 'tm2mst';
 
     protected $table = 'sop_document';
@@ -21,6 +24,7 @@ class SopDocument extends Model
 
     protected $fillable = [
         'sop_code',
+        'doc_type',
         'title',
         'revision',
         'effective_date',

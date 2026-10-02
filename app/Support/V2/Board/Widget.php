@@ -11,7 +11,7 @@ use Devlib\Components\Dashboard;
 abstract class Widget
 {
     // Cara ringkas menulis identitas widget: satu array (kunci di bawah); kelas boleh juga menimpa method-nya satu per satu.
-    //   key, title, description, type (kpi | chart | progress | ranking | list | quote), group, dashboard, icon, tone, size,
+    //   key, title, description, type (kpi | chart | progress | ranking | list | quote | text), group, dashboard, icon, tone, size,
     //   module, min_level, price (bool), payroll (bool), phrases
     /** @return array<string, mixed> */
     protected function meta(): array
@@ -34,7 +34,7 @@ abstract class Widget
         return (string) $this->meta()['description'];
     }
 
-    // kpi | chart | progress | ranking | list | quote (lihat Devlib\Components\WidgetBoard)
+    // kpi | chart | progress | ranking | list | quote | text (lihat Devlib\Components\WidgetBoard)
     public function type(): string
     {
         return (string) $this->meta()['type'];

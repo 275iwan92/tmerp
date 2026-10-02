@@ -7,7 +7,7 @@ use App\Models\Master\SopDocument;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-// SOP (v1: pages::hrm.sop-documents).
+// SOP dan Work Instruction, satu register (v1: pages::hrm.sop-documents).
 class SopGrid extends HrmGrid
 {
     public function slug(): string
@@ -17,7 +17,7 @@ class SopGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'SOP';
+        return 'SOP & Work Instruction';
     }
 
     public function family(): string
@@ -47,7 +47,7 @@ class SopGrid extends HrmGrid
 
     public function search(): string
     {
-        return 'Search title, SOP code...';
+        return 'Search title, document code...';
     }
 
     protected function query(): Builder
@@ -58,7 +58,8 @@ class SopGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'SOP Document', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Document', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'type', 'label' => 'Document Type'],
             ['key' => 'dept', 'label' => 'Department Scope'],
             ['key' => 'revision', 'label' => 'Revision'],
             ['key' => 'effective', 'label' => 'Effective', 'type' => 'date'],
@@ -68,13 +69,13 @@ class SopGrid extends HrmGrid
     protected function row(Model $m): array
     {
         return [
-            'name' => $m->title, 'code' => $m->sop_code, 'dept' => $m->department?->department_name ?? 'Semua departemen',
+            'name' => $m->title, 'code' => $m->sop_code, 'type' => SopDocument::TYPES[$m->doc_type] ?? 'SOP', 'dept' => $m->department?->department_name ?? 'Semua departemen',
             'revision' => $m->revision, 'effective' => $m->effective_date ? substr((string) $m->effective_date, 0, 10) : null,
         ];
     }
 
     public function filters(): array
     {
-        return ['dept' => 'Department'];
+        return ['type' => 'Document Type', 'dept' => 'Department'];
     }
 }

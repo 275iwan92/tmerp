@@ -17,6 +17,7 @@ namespace Devlib\Components;
 //   'type' => 'ranking',  'data' => ['name_label', 'format', 'rows' => [['name', 'sub', 'target', 'actual']]]
 //   'type' => 'list',     'data' => ['rows' => [['title', 'sub', 'value', 'tone']], 'empty' => 'teks bila kosong']
 //   'type' => 'quote',    'data' => ['text', 'author', 'day', 'days']
+//   'type' => 'text',     'data' => ['text' => 'teks panjang, baris baru dipertahankan', 'empty' => 'teks bila kosong']
 // ], ...]
 // $catalog = [['key', 'title', 'description', 'group', 'icon', 'installed' => bool], ...]   // semua widget yang boleh dipasang user ini
 // $periods = ['daily' => 'Daily', ...] + $period = kunci yang aktif: tombol periode di kepala papan (aksi 'period', key = kunci);

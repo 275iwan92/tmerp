@@ -12,7 +12,7 @@ final class WorkOrderStatus extends Widget
     protected function meta(): array
     {
         return [
-            'key' => 'work_order_status', 'title' => 'Work Orders by Status', 'type' => 'chart', 'group' => 'Production', 'module' => 'PROD',
+            'key' => 'work_order_status', 'title' => 'Work Orders by Status', 'type' => 'chart', 'dashboard' => 'PRODUCTION', 'module' => 'PROD',
             'description' => 'Work Orders by status: Draft, Simulated, Scheduled, In progress, On hold, Completed.',
             'icon' => 'fa-gears', 'phrases' => ['status wo', 'work order per status', 'status produksi', 'work orders by status', 'wo status'],
         ];

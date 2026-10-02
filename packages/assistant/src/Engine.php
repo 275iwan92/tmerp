@@ -39,7 +39,11 @@ final class Engine
 
         // "Buka laporan sales" / "cara ..." = mencari layar atau bantuan, bukan meminta angkanya.
         $wantsScreen = ($cues['how'] || $cues['where']) && ! $cues['number'];
-        if (! $wantsScreen && ($metric = $this->metrics->match($question))) {
+        $metric = $this->metrics->match($question);
+        // Perintah (Contracts\Command, mis. "buka dashboard sales") tetap dijalankan walau kalimatnya memakai kata "buka" /
+        // "tampilkan"; kalimat "cara ..." tetap mencari bantuan.
+        $command = $metric && $metric['metric'] instanceof Contracts\Command && ! $cues['how'];
+        if ($metric && (! $wantsScreen || $command)) {
             return $this->number($asker, $metric, $question);
         }
         if (! $query) {

@@ -13,7 +13,7 @@ final class StockValue extends Widget
     protected function meta(): array
     {
         return [
-            'key' => 'stock_value', 'title' => 'Stock Value', 'type' => 'chart', 'group' => 'Inventory', 'module' => 'INV',
+            'key' => 'stock_value', 'title' => 'Stock Value', 'type' => 'chart', 'dashboard' => 'INVENTORY', 'module' => 'INV',
             'description' => 'Value of usable stock on hand: raw material, semi finished goods and finished goods.',
             'icon' => 'fa-boxes-stacked', 'tone' => 'teal', 'phrases' => ['nilai stok', 'nilai persediaan', 'stok', 'stock value', 'inventory value'],
         ];
