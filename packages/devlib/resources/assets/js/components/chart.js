@@ -144,7 +144,7 @@
       this.W = Math.max(280, Math.round(this.plot.clientWidth || 640)); this.H = Math.max(180, Math.round(this.plot.clientHeight || 300));
       this.P.l = this.type === 'hbar' || this.type === 'heatmap' ? 56 : Math.min(64, Math.max(44, this.W * 0.08));
       const body = this.type === 'hbar' ? this.hbar() : this.type === 'pie' || this.type === 'donut' ? this.pie() : this.type === 'funnel' ? this.funnel() : this.type === 'heatmap' ? this.heatmap() : this.type === 'radar' ? this.radar() : this.cartesian();
-      this.plot.innerHTML = `<svg viewBox="0 0 ${this.W} ${this.H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${this.esc2($(this.el, '.dl-chart__head b')?.textContent || 'Grafik')}">${body}</svg>`;
+      this.plot.innerHTML = `<svg viewBox="0 0 ${this.W} ${this.H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${this.esc2($(this.el, '.dl-chart__head b')?.textContent || T('ch_chart'))}">${body}</svg>`;
       const lg = $(this.el, '[data-ch-legend]');
       if (lg) lg.innerHTML = this.pieLike || this.type === 'heatmap' ? '' : this.series.map((s, i) => `<button type="button" class="dl-chart__li ${s.on ? '' : 'is-off'}" data-ch-series="${i}"><i class="dl-chart--${s.tone}"></i>${this.esc2(s.name)}</button>`).join('');
     }

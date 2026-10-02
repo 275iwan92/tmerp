@@ -629,7 +629,7 @@ window.Devlib = window.Devlib || {};
     const sel = el.closest('[data-dl-select]');
     if (sel) { const it = $(sel, `.dl-dd__item[data-value="${CSS.escape(s)}"]`); $(sel, '[data-dl-dd-text]').textContent = it ? it.textContent : sel.dataset.empty; return; }
     const lk = el.closest('[data-dl-lookup]');
-    if (lk) { const r = JSON.parse(lk.dataset.rows || '[]').find(x => String(x[lk.dataset.key]) === s); $(lk, '[data-dl-dd-text]').textContent = r ? r[lk.dataset.label] : 'Pilih...'; return; }
+    if (lk) { const r = JSON.parse(lk.dataset.rows || '[]').find(x => String(x[lk.dataset.key]) === s); $(lk, '[data-dl-dd-text]').textContent = r ? r[lk.dataset.label] : T('fsel_choose'); return; }
     const dt = el.closest('[data-dl-date]');
     if (dt) { $(dt, '[data-dl-date-text]').value = DlDate.of(s)?.display() ?? ''; return; }
     const pb = el.closest('[data-dl-phonebox]');

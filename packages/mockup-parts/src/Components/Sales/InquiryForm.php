@@ -76,7 +76,7 @@ class InquiryForm extends DevlibComponent
                         <x-dl::button preset="save" type="button" data-inq-save />
                         <x-dl::button preset="confirm" data-inq-confirm :hidden="$d['stat_confirm_sales']" />
                         <x-dl::button variant="danger" icon="✖" :label="t('Cancel', 'action')" data-dl-open="inq-cancel" data-inq-keep data-inq-when="cancel" :hidden="! ($d['stat_confirm_sales'] && ! $d['stat_cancel'])" />
-                        <x-dl::button variant="danger" icon="❌" :label="t('Mark Lost')" data-dl-open="inq-lost" data-inq-keep data-inq-when="lost"
+                        <x-dl::button variant="danger" icon="❌" :label="t('Mark Inquiry Lost')" data-dl-open="inq-lost" data-inq-keep data-inq-when="lost"
                             :hidden="! ($d['stat_confirm_sales'] && ! in_array($d['sub_state'], ['CANCELLED', 'CONVERTED', 'LOST'], true))" />
                         {{-- Duplicate ke customer lain (user 2026-10-01: pindah dari baris grid); modal dup-modal dipasang layar. --}}
                         <x-dl::button variant="secondary" icon="copy" label="Duplicate" type="button" data-dl-open="dup-modal" data-inq-keep data-inq-saved-only :hidden="! $d['id']" />
@@ -101,7 +101,7 @@ class InquiryForm extends DevlibComponent
                 </x-dl::modal>
 
                 @foreach (['inq-cancel' => ['Cancel Inquiry', 'cancel_reason', 'Cancellation Reason', 'Required — recorded in the history', 'Yes, cancel the inquiry'],
-                           'inq-lost' => ['Mark Lost', 'lost_reason', 'Lost Reason', 'e.g. Lower competitor price, customer cancelled the order — required, recorded in the history & win-rate report', 'Yes, mark as lost']] as $id => [$mt, $field, $fl, $ph, $ok])
+                           'inq-lost' => ['Mark Inquiry Lost', 'lost_reason', 'Lost Reason', 'e.g. Lower competitor price, customer cancelled the order — required, recorded in the history & win-rate report', 'Yes, mark as lost']] as $id => [$mt, $field, $fl, $ph, $ok])
                     <x-dl::modal :id="$id" :title="$mt" icon="warning">
                         <x-dl::field.text :name="$field" :label="$fl" :placeholder="$ph" multiline required data-inq-keep :source="\MockupParts\Src::of('tm2sdi.iqp_inquiry.cancel_reason')" />
                         <x-slot:footer>

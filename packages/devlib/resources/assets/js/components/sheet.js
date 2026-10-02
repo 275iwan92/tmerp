@@ -136,7 +136,7 @@
         const show = () => { $(p, '[data-e]').textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') || '0'; const v = calc(); $(p, '[data-r]').textContent = v == null ? (ex ? '–' : '') : '= ' + fmt.num(v, col.decimals ?? 10); };
         const key = k => {
           if (k === 'C') ex = ''; else if (k === '⌫') ex = ex.slice(0, -1);
-          else if (k === '=') { const v = calc(); if (v == null) return toast('Rumus belum lengkap / bagi nol.', 'danger'); return pick(col.decimals != null ? Math.round(v * 10 ** col.decimals) / 10 ** col.decimals : v); }
+          else if (k === '=') { const v = calc(); if (v == null) return toast(T('s_calc_bad'), 'danger'); return pick(col.decimals != null ? Math.round(v * 10 ** col.decimals) / 10 ** col.decimals : v); }
           else if ('+-*/'.includes(k)) ex = /[-+*/]$/.test(ex) && k !== '-' ? ex.slice(0, -1) + k : ex + k;
           else if (k === NUM.dec) { const seg = ex.split(/[-+*/]/).pop(); if (!seg.includes(NUM.dec)) ex += (seg ? '' : '0') + NUM.dec; }
           else ex += k;

@@ -30,7 +30,7 @@
           g.rows.unshift(this.cur);
         } else Object.assign(this.cur, data);
         g.redraw();
-        toast(`${this.d.title} ${this.cur[this.d.nameKey] ?? ''} ${isNew ? 'ditambahkan' : 'disimpan'}.`, 'success');
+        toast(Tf(isNew ? 'm_added' : 'm_saved', {x: `${this.d.title} ${this.cur[this.d.nameKey] ?? ''}`}), 'success');
         this.el.dispatchEvent(new CustomEvent('dl:master-save', {bubbles: true, detail: {record: this.cur, isNew}}));
         this.show(false);
       });

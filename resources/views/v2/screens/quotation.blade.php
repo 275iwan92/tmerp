@@ -108,7 +108,7 @@
         $lines = $q->items->map(fn ($it) => [
             'id_item' => $it->id_item, 'description' => $it->description, 'qty' => (float) $it->qty, 'qty_unit' => $it->qty_unit,
             'unit_price' => (float) $it->unit_price, 'discount_pct' => (float) $it->discount_pct,
-            'source' => $it->inquiry ? $it->inquiry->inquiry_no.' · '.($it->source_type === 'INQUIRY_TOOLING' ? t('tooling (one-time cost)') : t('qty tier')) : t('Free line'),
+            'source' => $it->inquiry ? $it->inquiry->inquiry_no.' · '.($it->source_type === 'INQUIRY_TOOLING' ? t('tooling (one-time cost)') : t('quantity tier')) : t('Free line'),
         ])->values()->all();
     @endphp
     @if ($status === 'LOST')<x-dl::alert tone="danger" :message="'LOST — '.raw($lostReason ?: t('no reason'))" />@endif

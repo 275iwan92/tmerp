@@ -13,7 +13,7 @@ final class Screens
         return [
             'master-product' => ['Master Product', 'fa-solid fa-box', 'docs/flow_product_master.md (new, v2)', null],
             'product-acc' => ['ACC Digital / Proof Digital', 'fa-solid fa-stamp', 'docs/flow_product_master.md §5', null],
-            'master-raw' => ['Raw Material Master', 'fa-solid fa-layer-group', 'master/raw-material/index.blade.php', 'mockup_master_rawmaterial.html'],
+            'master-raw' => ['Raw Material Master Data', 'fa-solid fa-layer-group', 'master/raw-material/index.blade.php', 'mockup_master_rawmaterial.html'],
             'master-customer' => ['Master Customer', 'fa-solid fa-building', 'master/customer.blade.php', 'mockup_master_customer.html'],
             'master-matcat' => ['Raw Material Category', 'fa-solid fa-sitemap', 'master/mat-category.blade.php', null],
             'master-uom' => ['Unit (UoM)', 'fa-solid fa-ruler', 'master/uom.blade.php', 'mockup_master_uom_v4.html'],

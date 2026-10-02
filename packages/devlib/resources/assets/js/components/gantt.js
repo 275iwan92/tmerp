@@ -150,7 +150,7 @@
       this.stats();
       const chips = [...(this.fRes ? [['res', 'Resource: ' + this.rows.find(r => r.key === this.fRes).label]] : []), ...(this.fProc ? [['proc', T('gt_process') + ': ' + this.catOf({process: this.fProc}).label]] : [])];
       const cb = $(this.el, '[data-g2-chips]'); cb.hidden = !chips.length;
-      cb.innerHTML = chips.map(([k, l]) => `<span class="dl-tags__chip">${esc(l)}<button type="button" data-g2-chip="${k}">&times;</button></span>`).join('') + (chips.length ? '<button type="button" class="dl-btn dl-btn--link" data-g2-chip="all">Reset semua filter</button>' : '');
+      cb.innerHTML = chips.map(([k, l]) => `<span class="dl-tags__chip">${esc(l)}<button type="button" data-g2-chip="${k}">&times;</button></span>`).join('') + (chips.length ? `<button type="button" class="dl-btn dl-btn--link" data-g2-chip="all">${esc(T('gt_reset_filters'))}</button>` : '');
       const sb = $(this.el, '[data-g2-submit]'); if (sb) { sb.disabled = !this.changed.size || this.live(); sb.dataset.count = this.changed.size; }
       $(this.el, '[data-g2-modehelp]').textContent = this.live() ? T('gt_mode_live') : Tf('gt_mode_sim', {n: this.changed.size});
     }

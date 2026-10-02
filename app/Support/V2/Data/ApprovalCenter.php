@@ -50,7 +50,7 @@ final class ApprovalCenter
             'PRT' => ['description' => 'Item', 'qty' => 'Return Qty', 'unit' => 'Unit', 'price:money' => 'Price/Unit', 'subtotal:money' => 'Value'],
             'CO' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Unit', 'price:money' => 'Price/Unit', 'disc' => 'Disc %', 'subtotal:money' => 'Subtotal', 'source' => 'Price Source'],
             'PO' => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Unit', 'price:money' => 'Price/Unit', 'disc' => 'Disc %', 'subtotal:money' => 'Subtotal'],
-            default => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Unit', 'price:money' => 'Est. Price', 'subtotal:money' => 'Subtotal', 'need' => 'Need Date'],
+            default => ['description' => 'Item', 'qty' => 'Qty', 'unit' => 'Unit', 'price:money' => 'Estimated Price', 'subtotal:money' => 'Subtotal', 'need' => 'Need Date'],
         });
     }
 

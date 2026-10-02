@@ -33,7 +33,7 @@ final class MasterCardCollection
                 'knife' => $c->knife_w ? $mm($c->knife_w).' × '.$mm($c->knife_h).' · '.($c->up_text ?? '?').($check ? ($check['ok'] ? ' ✓' : ' ≠') : '') : '?',
                 'source' => ($kind = ['XLSX' => 'Excel', 'PHOTO' => 'Photo', 'MANUAL' => 'Manual'][$c->source_kind] ?? null) ? t($kind) : $c->source_kind,
                 'status' => ProdMasterCard::STATUS[$c->status] ?? $c->status,
-                'svg' => $c->dieline_svg ? t('On file') : t('Not yet'),
+                'svg' => $c->dieline_svg ? t('On file', 'badge') : t('Not yet', 'badge'),
                 'updated' => $c->updated_at?->toDateString(),
             ];
         })->all();

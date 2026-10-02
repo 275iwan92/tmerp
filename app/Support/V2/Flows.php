@@ -19,7 +19,7 @@ final class Flows
         return match ($module) {
             'SALES' => ['title' => t('Sales flow: from Inquiry to delivery'), 'steps' => [
                 $s('inquiry', 'Inquiry Product', 'Sales', '3 document types: NEW (from scratch), REVISE (spec changed), RECALC (material price only)',
-                    array_filter([$b('inquiry-new', 'New'), $b('inquiry-revise', 'Revise'), $b('inquiry-recalc', 'Recalculate')])),
+                    array_filter([$b('inquiry-new', 'New'), $b('inquiry-revise', 'Revise'), $b('inquiry-recalc', 'Recalc')])),
                 $s('prodev', null, 'Sales · Production', 'A NEW inquiry is sent to ProDev: find the most economical physical layout -> prod_layout_group CONFIRMED'),
                 $s('sales-price', 'Pro-Cost: tiers & prices', 'Product Costing', 'COGS is calculated in the Product Costing module (confidential); Sales only sees tiers & prices after they are published'),
                 $s('quotation', null, 'Sales', 'Choose priced InqProds of the same customer; price/qty/discount are filled in automatically and may be changed before publishing'),

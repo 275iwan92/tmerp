@@ -19,7 +19,7 @@ return new class extends Migration
         'Return Qty' => 'Qty Retur',
         'Value' => 'Nilai',
         'Price Source' => 'Sumber Harga',
-        'Est. Price' => 'Harga Est.',
+        'Estimated Price' => 'Harga Est.',
         'Need Date' => 'Tgl Butuh',
         'Department' => 'Departemen',
         'Item Count' => 'Jumlah Item',
@@ -111,15 +111,7 @@ return new class extends Migration
         'The PR is already submitted and cannot be changed.' => 'PR sudah diajukan, tidak bisa diubah.',
         'Only a DRAFT PR can be deleted.' => 'Hanya PR DRAFT yang bisa dihapus.',
         'The module code is empty or already has a setting.' => 'Kode modul kosong atau sudah punya setting.',
-        // Nilai badge yang dicocokkan tones/where layar v2 (tampilan id = teks lama)
         'Active' => 'Aktif',
-        'PAST DUE' => 'LEWAT',
-        'TODAY' => 'HARI INI',
-        'LATER' => 'NANTI',
-        'EXPIRED' => 'KEDALUWARSA',
-        'VALID' => 'BERLAKU',
-        'ON FILE' => 'ADA',
-        'NOT STARTED' => 'BELUM MULAI',
         'Receipt cancelled — stock taken out again, PO recalculated.' => 'Penerimaan dibatalkan — stok dikeluarkan lagi, PO dihitung ulang.',
         // Grid: judul layar (breadcrumb) + isi sel
         'Machine Model Catalog' => 'Katalog Model Mesin',
@@ -133,7 +125,7 @@ return new class extends Migration
         'Print & Send Payslips' => 'Cetak & Kirim Slip Gaji',
         'Employee Data Corrections' => 'Koreksi Data Karyawan',
         'Warehouse Master' => 'Master Gudang',
-        'Raw Material Master' => 'Master Bahan Baku',
+        'Raw Material Master Data' => 'Master Bahan Baku',
         'Raw Material Category Master' => 'Master Kategori Bahan Baku',
         'GPS Location Approval' => 'Approval Lokasi GPS',
         'Leave/Sick/Permit Approval' => 'Approval Cuti/Sakit/Izin',
@@ -149,7 +141,7 @@ return new class extends Migration
         'Recalculate Inquiry' => 'Inquiry Rekalkulasi',
         'Prices from Pro-Cost (tiers & prices)' => 'Harga dari Pro-Cost (tier & harga)',
         'Inquiry Note' => 'Nota Inquiry',
-        'Delivery Notes' => 'Delivery Notes (Surat Jalan)',
+        'Delivery Notes' => 'Surat Jalan',
         'Reports' => 'Laporan',
         'Open Quotations' => 'Quotation Terbuka',
         'Flow' => 'Alur',
@@ -157,12 +149,12 @@ return new class extends Migration
         'Goods Receipt (SPB)' => 'Penerimaan Barang (SPB)',
         'Costing Flow: ProDev → ProCost → Publish' => 'Alur Costing: ProDev → ProCost → Publish',
         'Cash & Bank' => 'Kas & Bank',
-        'Petty Cash' => 'Kas Kecil (Petty Cash)',
+        'Petty Cash' => 'Kas Kecil',
         'Acting Officer (PLT)' => 'Officer Pengganti (PLT)',
         // Flows (blok alur Sales / Costing)
         '3 document types: NEW (from scratch), REVISE (spec changed), RECALC (material price only)' => '3 jenis dokumen: BARU (dari nol), REVISI (spec berubah), REKALKULASI (harga bahan saja)',
         'Revise' => 'Revisi',
-        'Recalculate' => 'Rekalkulasi',
+        'Recalc' => 'Rekalkulasi',
         'A NEW inquiry is sent to ProDev: find the most economical physical layout -> prod_layout_group CONFIRMED' => 'Inquiry BARU dikirim ke ProDev: cari layout fisik paling hemat -> prod_layout_group CONFIRMED',
         'Pro-Cost: tiers & prices' => 'Pro-Cost: tier & harga',
         'COGS is calculated in the Product Costing module (confidential); Sales only sees tiers & prices after they are published' => 'HPP dihitung di modul Product Costing (rahasia); Sales hanya melihat tier & harga setelah dipublish',
@@ -184,30 +176,46 @@ return new class extends Migration
         'Used by Sales Quotation' => 'Dipakai Sales Quotation',
         'Only costing with published_flag = true can be pulled' => 'Hanya costing published_flag = true yang bisa ditarik',
         // Lookups (judul kolom daftar pilihan)
-        'Customer Name' => 'Nama Customer',
         'Code' => 'Kode',
         'Sales Name' => 'Nama Sales',
-        'Type' => 'Jenis',
         'Material Name' => 'Nama Bahan',
         'Design No.' => 'No. Desain',
         'Item Name' => 'Nama Item',
-        'Area' => 'Wilayah',
+        'Region' => 'Wilayah',
         'Postal Code' => 'Kode Pos',
         // Schema (Data Dictionary developer)
+        'yes' => 'ya',
         'Synonym' => 'Sinonim',
         'Different type' => 'Tipe beda',
         'Same name' => 'Nama sama',
         'Non-standard name' => 'Nama tidak baku',
         '(logical / cross-DB)' => '(logis / lintas DB)',
         // Src (tooltip asal data, Mode Developer)
-        'calculated' => 'dihitung',
+        'computed' => 'dihitung',
         'NOT IN THE DB YET:' => 'BELUM ADA DI DB:',
         'System' => 'Sistem',
+    ];
+
+    // Konteks 'badge': nilai badge yang dicocokkan tones / where layar v2 dengan teks tampilnya (t('X', 'badge')). Konteks
+    // sendiri supaya tidak bentrok dengan kunci 'ui' yang sama tetapi terjemahannya lain (Not started = Belum dimulai,
+    // Expired = Kadaluarsa, Overdue = Lewat tanggal): tampilan bahasa id harus persis teks lama.
+    private const BADGE = [
+        'PAST DUE' => 'LEWAT',
+        'TODAY' => 'HARI INI',
+        'LATER' => 'NANTI',
+        'EXPIRED' => 'KEDALUWARSA',
+        'VALID' => 'BERLAKU',
+        'ON FILE' => 'ADA',
+        'NOT YET' => 'BELUM',
+        'On file' => 'Ada',
+        'NOT STARTED' => 'BELUM MULAI',
+        'Not yet' => 'Belum',
     ];
 
     public function up(): void
     {
         Dictionary::seed(self::ID);
+        Dictionary::seed(self::BADGE, 'badge');
     }
 
     public function down(): void {}

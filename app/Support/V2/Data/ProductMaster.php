@@ -47,7 +47,7 @@ final class ProductMaster
             'name' => $p->product_name, 'code' => $p->design_no ?: $p->product_code, 'customer' => $p->customer?->customer_name ?? '—',
             'parts' => $p->parts_count, 'join' => $join[$p->id_product] ?? '—', 'status' => $p->card_status ?: 'DRAFT',
             'revision' => $p->revision_no ? 'Rev.'.$p->revision_no : t('Parent'),
-            'acc_digital' => ($acc[$p->id_product] ?? collect())->contains('acc_type', 'DIGITAL') ? t('ON FILE') : t('NOT YET'),
+            'acc_digital' => ($acc[$p->id_product] ?? collect())->contains('acc_type', 'DIGITAL') ? t('ON FILE', 'badge') : t('NOT YET', 'badge'),
             'active' => (bool) $p->activate, 'updated' => $p->updated_at?->toDateString(),
         ])->all();
     }

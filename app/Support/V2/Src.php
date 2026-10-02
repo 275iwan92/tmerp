@@ -21,7 +21,7 @@ final class Src
     // Nilai hitungan/tampilan saja (tidak disimpan): sebutkan asalnya.
     public static function calc(string $how, string ...$refs): string
     {
-        return t('calculated').': '.$how.($refs ? ' ← '.self::of(...$refs) : '');
+        return t('computed').': '.$how.($refs ? ' ← '.self::of(...$refs) : '');
     }
 
     public static function missing(): array

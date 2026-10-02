@@ -1122,7 +1122,7 @@
                   if (url) URL.revokeObjectURL(url);
                   try { resolve(cx.getImageData(0, 0, W, H)); } catch (e) { reject(e); }
               };
-              img.onerror = () => { if (url) URL.revokeObjectURL(url); reject(new Error('artwork tidak bisa dibaca')); };
+              img.onerror = () => { if (url) URL.revokeObjectURL(url); reject(new Error(_t('artwork cannot be read'))); };
               if (p.artworkUrl) { img.src = p.artworkUrl; return; }
               // Garis potong/lipat bukan tinta -- disembunyikan saat dianalisa.
               const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">'
@@ -1208,6 +1208,7 @@
       const fmtAngka = v => (v === null || v === undefined || v === '') ? '—'
           : (+parseFloat(v).toFixed(4)).toLocaleString('id-ID', { maximumFractionDigits: 4 });
       const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      const tx = s => esc(_t(s));   // teks kamus di dalam HTML
       const notes = list => list && list.length
           ? '<ul class="io-warns">' + list.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '';
       const opts = (list, val, blank) => (blank !== undefined ? '<option value="">' + esc(blank) + '</option>' : '')
@@ -1229,51 +1230,51 @@
 
       function tools(p, k) {
           const src = p.edit[k]
-              ? (p.editSrc[k] === 'MANUAL' && !p.edit[k].__touched ? '<span class="io-src warn">DATA MANUAL TERSIMPAN</span>' : '<span class="io-src warn">OVERRIDE OFFICER</span>')
-              : '<span class="io-src">HASIL ENGINE</span>';
+              ? (p.editSrc[k] === 'MANUAL' && !p.edit[k].__touched ? '<span class="io-src warn">' + tx('SAVED MANUAL DATA') + '</span>' : '<span class="io-src warn">' + tx('OFFICER OVERRIDE') + '</span>')
+              : '<span class="io-src">' + tx('ENGINE RESULT') + '</span>';
           const fl = p.flash[k];
           return '<div class="io-sectools">' + src
-              + '<span class="io-note-s">tersimpan ke master &amp; Inquiry saat Save</span>'
+              + '<span class="io-note-s">' + tx('saved to master & Inquiry on Save') + '</span>'
               + '<span class="io-grow"></span>'
-              + (p.edit[k] ? '<button type="button" class="io-mbtn" data-act="reset" data-sec="' + k + '">↺ Kembali ke hasil engine</button>' : '')
+              + (p.edit[k] ? '<button type="button" class="io-mbtn" data-act="reset" data-sec="' + k + '">↺ ' + tx('Back to engine result') + '</button>' : '')
               + '<button type="button" class="io-mbtn ' + (p.editing[k] ? 'on' : '') + '" data-act="edit" data-sec="' + k + '">'
-              + (p.editing[k] ? '✓ Selesai edit' : '✎ Edit') + '</button></div>'
+              + (p.editing[k] ? '✓ ' + tx('Finish editing') : '✎ ' + tx('Edit')) + '</button></div>'
               + (fl ? '<div class="io-notice ' + (fl.ok ? 'ok' : 'bad') + '">' + esc(fl.text)
-                  + (fl.url ? ' <a href="' + esc(fl.url) + '" target="_blank" rel="noopener">Buka dokumen ↗</a>' : '') + '</div>' : '');
+                  + (fl.url ? ' <a href="' + esc(fl.url) + '" target="_blank" rel="noopener">' + tx('Open document') + ' ↗</a>' : '') + '</div>' : '');
       }
 
       function bopHtml(p, sp) {
           const rows = rowsOf(p, 'bop'), ed = p.editing.bop, raw = p.edit.bop || [];
           const qty = (r, v) => v === null || v === undefined ? '—' : fmtAngka(v) + ' ' + esc(r.uom || '');
           let h = tools(p, 'bop')
-              + '<div class="io-inputs"><b>Finishing dari Inquiry:</b> '
+              + '<div class="io-inputs"><b>' + tx('Finishing from Inquiry:') + '</b> '
               + (sp.inputs.finishings.length ? sp.inputs.finishings.map(f => '<span class="io-chip">' + esc(f) + '</span>').join(' ') : '—')
-              + ' <b style="margin-left:10px">Qty order:</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
-              + ' <b style="margin-left:10px">Isi / pack:</b> ' + esc(sp.inputs.packQty || '—') + '</div>';
+              + ' <b style="margin-left:10px">' + tx('Qty order:') + '</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
+              + ' <b style="margin-left:10px">' + tx('Qty / pack:') + '</b> ' + esc(sp.inputs.packQty || '—') + '</div>';
 
           if (ed) {
-              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>#</th><th>Proses</th><th>Label di routing</th><th>Mesin</th>'
-                  + '<th>Target / jam</th><th>Waste %</th><th>Toleransi %</th><th>Subkon ke</th><th></th></tr>'
+              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>#</th><th>' + tx('Process') + '</th><th>' + tx('Label in Routing') + '</th><th>' + tx('Machine') + '</th>'
+                  + '<th>' + tx('Target / hour') + '</th><th>' + tx('Waste %') + '</th><th>' + tx('Tolerance %') + '</th><th>' + tx('Subcontract to') + '</th><th></th></tr>'
                   + raw.map((r, i) => '<tr><td>' + (i + 1) + '</td>'
-                      + '<td><select' + field('bop', i, 'process_id', '') + '>' + opts(LK.processes, r.process_id, '— proses —') + '</select></td>'
+                      + '<td><select' + field('bop', i, 'process_id', '') + '>' + opts(LK.processes, r.process_id, _t('— process —')) + '</select></td>'
                       + '<td><input' + field('bop', i, 'label', r.label) + '></td>'
-                      + '<td><select' + field('bop', i, 'machine_id', '') + '>' + opts(LK.machines, r.machine_id, '— tanpa mesin —') + '</select></td>'
+                      + '<td><select' + field('bop', i, 'machine_id', '') + '>' + opts(LK.machines, r.machine_id, _t('— no machine —')) + '</select></td>'
                       + '<td><input type="number" min="0" step="1"' + field('bop', i, 'target_qty_per_hour', r.target_qty_per_hour) + '></td>'
                       + '<td><input type="number" min="0" max="100" step="0.1"' + field('bop', i, 'waste_pct', r.waste_pct) + '></td>'
                       + '<td><input type="number" min="0" max="100" step="0.1"' + field('bop', i, 'tolerance_pct', r.tolerance_pct) + '></td>'
-                      + '<td><select' + field('bop', i, 'subcon_supplier_id', '') + '>' + opts(LK.subcons, r.subcon_supplier_id, '— in-house —') + '</select></td>'
-                      + '<td class="io-nowrap"><button type="button" class="io-ibtn" data-act="up" data-sec="bop" data-i="' + i + '" title="Naik">▲</button>'
-                      + '<button type="button" class="io-ibtn" data-act="down" data-sec="bop" data-i="' + i + '" title="Turun">▼</button>'
-                      + '<button type="button" class="io-ibtn bad" data-act="del" data-sec="bop" data-i="' + i + '" title="Hapus">✕</button></td></tr>').join('')
-                  + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bop">＋ Tambah langkah</button>';
+                      + '<td><select' + field('bop', i, 'subcon_supplier_id', '') + '>' + opts(LK.subcons, r.subcon_supplier_id, _t('— in-house —')) + '</select></td>'
+                      + '<td class="io-nowrap"><button type="button" class="io-ibtn" data-act="up" data-sec="bop" data-i="' + i + '" title="' + tx('Move up') + '">▲</button>'
+                      + '<button type="button" class="io-ibtn" data-act="down" data-sec="bop" data-i="' + i + '" title="' + tx('Move down') + '">▼</button>'
+                      + '<button type="button" class="io-ibtn bad" data-act="del" data-sec="bop" data-i="' + i + '" title="' + tx('Remove') + '">✕</button></td></tr>').join('')
+                  + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bop">＋ ' + tx('Add Step') + '</button>';
           } else if (rows.length) {
-              h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>#</th><th>Urutan Pekerjaan</th><th>Mesin</th><th>Target default</th>'
-                  + '<th>Qty masuk</th><th>Waste</th><th>Toleransi</th><th>Est. jam</th><th>Subkon</th></tr>'
+              h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>#</th><th>' + tx('Work Sequence') + '</th><th>' + tx('Machine') + '</th><th>' + tx('Default target') + '</th>'
+                  + '<th>' + tx('Qty in') + '</th><th>' + tx('Waste') + '</th><th>' + tx('Tolerance %') + '</th><th>' + tx('Est. hours') + '</th><th>' + tx('Subcontract') + '</th></tr>'
                   + rows.map((r, i) => '<tr><td>' + (i + 1) + '</td><td><b>' + esc(r.label) + '</b>'
                       + (r.note ? '<div class="io-sub">' + esc(r.note) + '</div>' : '') + '</td>'
                       + '<td>' + esc(r.machine || '—') + '</td>'
-                      + '<td>' + (r.target_qty_per_hour ? fmtAngka(r.target_qty_per_hour) + ' ' + esc(r.uom || '') + '/jam'
-                          + '<div class="io-sub">' + esc(r.target_source || '') + '</div>' : '<span class="io-sub">belum ada</span>') + '</td>'
+                      + '<td>' + (r.target_qty_per_hour ? fmtAngka(r.target_qty_per_hour) + ' ' + esc(r.uom || '') + tx('/hour')
+                          + '<div class="io-sub">' + esc(r.target_source || '') + '</div>' : '<span class="io-sub">' + tx('none yet') + '</span>') + '</td>'
                       + '<td>' + qty(r, r.qty_in) + '</td>'
                       + '<td>' + fmtAngka(r.waste_pct ?? 0) + '%<div class="io-sub">' + qty(r, r.qty_waste) + '</div></td>'
                       + '<td>' + fmtAngka(r.tolerance_pct ?? 0) + '%<div class="io-sub">' + qty(r, r.qty_tolerance) + '</div></td>'
@@ -1282,11 +1283,11 @@
                           ? (r.subcon_supplier ? '<div class="io-sub">' + esc(r.subcon_supplier) + '</div>' : '')
                             + (r.subcon_pr ? '<div class="io-sub">' + esc(r.subcon_pr) + '</div>' : '')
                             + (r.subcon_do ? '<div class="io-sub">' + esc(r.subcon_do) + '</div>' : '')
-                            + '<button type="button" class="io-mbtn warn" data-act="subcon" data-i="' + i + '">⇄ Subkon</button>'
-                          : '<span class="io-sub">in-house</span>') + '</td></tr>').join('')
+                            + '<button type="button" class="io-mbtn warn" data-act="subcon" data-i="' + i + '">⇄ ' + tx('Subcontract') + '</button>'
+                          : '<span class="io-sub">' + tx('in-house') + '</span>') + '</td></tr>').join('')
                   + '</table></div>';
           } else {
-              h += '<div class="io-empty">Tidak ada langkah proses.</div>';
+              h += '<div class="io-empty">' + tx('No process steps.') + '</div>';
           }
 
           if (!ed && p.subconAt !== null && rows[p.subconAt]) h += subconDialog(p, rows[p.subconAt]);
@@ -1296,31 +1297,31 @@
 
       function subconDialog(p, r) {
           const co = p.coOptions || [];
-          return '<div class="io-dialog"><b>Subkon: ' + esc(r.label) + '</b>'
-              + '<div class="io-sub">Qty dikirim: ' + fmtAngka(r.qty_in) + ' ' + esc(r.uom || '') + ' · PR subkon dibuat DRAFT (lewat approval PR).</div>'
+          return '<div class="io-dialog"><b>' + tx('Subcontract:') + ' ' + esc(r.label) + '</b>'
+              + '<div class="io-sub">' + tx('Qty sent:') + ' ' + fmtAngka(r.qty_in) + ' ' + esc(r.uom || '') + ' · ' + tx('Subcontract PR is created as DRAFT (through PR approval).') + '</div>'
               + '<div class="io-row3">'
-              + '<label>Supplier subkon<select id="io-sc-sup">' + opts(LK.subcons, r.subcon_supplier_id, '— pilih supplier —') + '</select></label>'
-              + '<label>CO (wajib untuk surat jalan)<select id="io-sc-co">' + opts(co.map(c => ({ id: c.id, name: c.label })), '', co.length ? '— pilih CO —' : '— belum ada CO untuk Inquiry ini —') + '</select></label>'
-              + '<label>Tanggal kirim<input type="date" id="io-sc-date"></label>'
-              + '<label>Estimasi biaya (Rp)<input type="number" min="0" id="io-sc-cost"></label>'
-              + '</div><div class="io-sub">Tanpa CO: PR subkon tetap dibuat, surat jalan menyusul setelah CO terbit (klik Subkon lagi).</div>'
-              + '<div style="margin-top:8px"><button type="button" class="io-mbtn on" data-act="subcon-go">Proses Subkon</button> '
-              + '<button type="button" class="io-mbtn" data-act="subcon-cancel">Batal</button></div></div>';
+              + '<label>' + tx('Subcontract supplier') + '<select id="io-sc-sup">' + opts(LK.subcons, r.subcon_supplier_id, _t('— choose supplier —')) + '</select></label>'
+              + '<label>' + tx('CO (required for the delivery note)') + '<select id="io-sc-co">' + opts(co.map(c => ({ id: c.id, name: c.label })), '', co.length ? _t('— choose CO —') : _t('— no CO for this Inquiry yet —')) + '</select></label>'
+              + '<label>' + tx('Ship date') + '<input type="date" id="io-sc-date"></label>'
+              + '<label>' + tx('Estimated cost (Rp)') + '<input type="number" min="0" id="io-sc-cost"></label>'
+              + '</div><div class="io-sub">' + tx('Without a CO: the subcontract PR is still created, the delivery note follows once the CO is issued (click Subcontract again).') + '</div>'
+              + '<div style="margin-top:8px"><button type="button" class="io-mbtn on" data-act="subcon-go">' + tx('Process Subcontract') + '</button> '
+              + '<button type="button" class="io-mbtn" data-act="subcon-cancel">' + tx('Cancel') + '</button></div></div>';
       }
 
       function bomHtml(p, sp) {
           const rows = rowsOf(p, 'bom'), ed = p.editing.bom, raw = p.edit.bom || [];
           let h = tools(p, 'bom')
-              + '<div class="io-inputs"><b>Qty order:</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
-              + ' <b style="margin-left:10px">Lembar cetak dibutuhkan:</b> ' + (sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' lembar (termasuk waste & toleransi BOP)' : '—') + '</div>';
+              + '<div class="io-inputs"><b>' + tx('Qty order:') + '</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
+              + ' <b style="margin-left:10px">' + tx('Print sheets needed:') + '</b> ' + (sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' ' + tx('sheets (including waste & BOP tolerance)') : '—') + '</div>';
 
           if (ed) {
-              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>Peran</th><th>Bahan</th><th>Gramatur</th><th>P (cm)</th><th>L (cm)</th>'
-                  + '<th>Qty / lembar</th><th>Satuan</th><th>Kebutuhan</th><th></th></tr>'
+              h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>' + tx('BOM role') + '</th><th>' + tx('Material') + '</th><th>' + tx('Grammage') + '</th><th>' + tx('L (cm)') + '</th><th>' + tx('W (cm)') + '</th>'
+                  + '<th>' + tx('Qty / sheet') + '</th><th>' + tx('Unit') + '</th><th>' + tx('Requirement') + '</th><th></th></tr>'
                   + raw.map((r, i) => {
                       const c = rows[i] || {};
                       return '<tr><td><select' + field('bom', i, 'role', '') + '>' + optsTxt(LK.roles, r.role) + '</select></td>'
-                          + '<td class="io-rel"><input placeholder="ketik nama / kode bahan…"' + field('bom', i, 'search', r.name) + ' autocomplete="off">'
+                          + '<td class="io-rel"><input placeholder="' + tx('type material name / code…') + '"' + field('bom', i, 'search', r.name) + ' autocomplete="off">'
                           + (p.dd && p.dd.i === i ? ddHtml(p.dd) : '') + '</td>'
                           + '<td><input type="number" min="0"' + field('bom', i, 'gsm', r.gsm) + '></td>'
                           + '<td><input type="number" min="0" step="0.1"' + field('bom', i, 'size_p', r.size_p) + '></td>'
@@ -1328,15 +1329,15 @@
                           + '<td><input type="number" min="0" step="any"' + field('bom', i, 'qty_per_sheet', r.qty_per_sheet) + '></td>'
                           + '<td><select' + field('bom', i, 'uom', '') + '>' + optsTxt(LK.uoms, r.uom) + '</select></td>'
                           + '<td>' + (c.qty_need !== undefined && c.qty_need !== null ? fmtAngka(c.qty_need) + ' ' + esc(c.uom || '') : '—') + '</td>'
-                          + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="bom" data-i="' + i + '" title="Hapus">✕</button></td></tr>';
+                          + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="bom" data-i="' + i + '" title="' + tx('Remove') + '">✕</button></td></tr>';
                   }).join('')
-                  + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bom">＋ Tambah bahan</button>';
+                  + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bom">＋ ' + tx('Add material') + '</button>';
           } else if (rows.length) {
-              h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>Peran</th><th>Bahan</th><th>Merek</th><th>Spesifikasi</th><th>Per lembar cetak</th>'
-                  + '<th>Qty kebutuhan</th><th>Stok tersedia (gudang)</th><th>Status</th><th></th></tr>'
+              h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>' + tx('BOM role') + '</th><th>' + tx('Material') + '</th><th>' + tx('Brand') + '</th><th>' + tx('Specification') + '</th><th>' + tx('Per print sheet') + '</th>'
+                  + '<th>' + tx('Qty required') + '</th><th>' + tx('Available stock (warehouse)') + '</th><th>' + tx('Status') + '</th><th></th></tr>'
                   + rows.map((r, i) => {
                       const spec = [r.gsm ? fmtAngka(r.gsm) + ' gsm' : '', r.size_p ? fmtAngka(r.size_p) + (r.size_l ? ' × ' + fmtAngka(r.size_l) : '') + ' cm' : ''].filter(Boolean).join(' · ');
-                      const need = r.qty_need !== null ? fmtAngka(r.qty_need) + ' ' + esc(r.basis === 'PLANO' ? 'lembar plano' : (r.uom || ''))
+                      const need = r.qty_need !== null ? fmtAngka(r.qty_need) + ' ' + esc(r.basis === 'PLANO' ? _t('plano sheets') : (r.uom || ''))
                           + (r.qty_need_stock_uom !== null && r.stock_uom && r.stock_uom !== r.uom ? '<div class="io-sub">= ' + fmtAngka(r.qty_need_stock_uom) + ' ' + esc(r.stock_uom) + '</div>' : '')
                           : '<span class="io-sub">' + (r.name === 'None' ? '—' : 'belum bisa dihitung') + '</span>';
                       return '<tr><td>' + esc(r.role) + '</td><td><b>' + esc(r.name || '—') + '</b>'

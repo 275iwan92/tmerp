@@ -45,7 +45,7 @@ final class Lookups
 
         // Wilayah kirim = v_geo_full_address (5 level, sama dengan AddressPicker v1). Nilai = "LEVEL:id".
         Lookup::define('geo_area', ['key' => 'area', 'label' => 'full_label', 'source' => 'tm2mst.v_geo_full_address',
-            'columns' => ['full_label' => 'Area', 'postal_code' => 'Postal Code'], 'fill' => ['ship_postal_code' => 'postal_code'],
+            'columns' => ['full_label' => 'Region', 'postal_code' => 'Postal Code'], 'fill' => ['ship_postal_code' => 'postal_code'],
             'search' => fn (string $q) => DB::connection('tm2mst')->table('v_geo_full_address')
                 ->select('id_village', 'id_district', 'id_city', 'full_label', 'postal_code')
                 ->where(fn ($w) => $w->where('full_label', 'like', "%{$q}%")->orWhere('postal_code', 'like', "{$q}%"))
