@@ -2,19 +2,29 @@
 
 namespace App\Support\Dummy;
 
+use App\Models\Acc\FinInvoice;
 use App\Models\Master\FlowLog;
+use App\Models\Pur\PoOrder;
+use App\Models\Pur\PrLineAlloc;
 use App\Models\Pur\PrRequisition;
 use App\Models\Sdi\CoOrder;
+use App\Models\Sdi\CoOrderDelivery;
+use App\Models\Sdi\DoDelivery;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SecUser;
 use App\Services\Flow\FlowEngineService;
+use App\Services\Sales\DeliveryPromiseService;
 use App\Services\Sales\InquiryStage;
 use App\Services\Sales\InquiryWriter;
 use App\Support\V2\Data\ApprovalCenter;
+use App\Support\V2\Data\Cpdel;
+use App\Support\V2\Data\CustomerInvoice;
 use App\Support\V2\Data\CustomerOrder;
+use App\Support\V2\Data\DeliveryOrder;
 use App\Support\V2\Data\Prodev;
+use App\Support\V2\Data\PurchaseOrder;
 use App\Support\V2\Data\Quotation;
 use Database\Seeders\Concerns\PricedDummyChain;
 use Database\Seeders\UatPrApprovalSeeder;
@@ -22,6 +32,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use PDOException;
 use RuntimeException;
 
 // Membangun set data dummy per stage lewat ATURAN APLIKASI (bukan mengetik baris ke tabel): stage N = stage N-1 yang
@@ -43,13 +54,23 @@ final class StageBuilder
         3 => ['Stage 3 — in Pro-Cost, not confirmed',
             'Inquiry New: every part confirmed by Pro-Dev (layout, BOM, ink, process), waiting on the Pro-Cost desk; no costing yet. Purchase Requisition: approved, waiting for a Purchase Order.'],
         4 => ['Stage 4 — Quotation Draft',
-            'Costing published by Pro-Cost for every inquiry; one Quotation per inquiry, still Draft (not confirmed, not sent). Purchase Requisition: approved.'],
+            'Costing published by Pro-Cost for every inquiry; one Quotation per inquiry, still Draft (not confirmed, not sent). Purchase Order: Draft, one per approved requisition, not submitted.'],
         5 => ['Stage 5 — Customer Order Draft',
-            'Quotations published and won; each has a Customer Order in Draft (qty not chosen, no due date) and a Master Product. Purchase Requisition: approved.'],
+            'Quotations published and won; each has a Customer Order in Draft (qty not chosen, no due date) and a Master Product. Purchase Order: submitted, waiting for approval level 1 (Product Costing).'],
         6 => ['Stage 6 — Customer Order waiting for approval',
-            'Customer Orders confirmed by Sales (one qty chosen, due date set), waiting for approval level 1 (F&A SPV). Purchase Requisition: approved.'],
+            'Customer Orders confirmed by Sales (one qty chosen, due date set), waiting for approval level 1 (F&A SPV). Purchase Order: waiting for approval level 2 (Operational Manager).'],
         7 => ['Stage 7 — CPDEL Draft',
-            'Customer Orders approved (Confirmed); their Customer Plan Delivery lines are Planned and not posted to Production. No work order or delivery yet. Purchase Requisition: approved.'],
+            'Customer Orders approved (Confirmed); their Customer Plan Delivery lines are Planned and not posted to Production. No work order or delivery yet. Purchase Order: waiting for approval level 3 (President Director).'],
+        8 => ['Stage 8 — Posted to Production, Work Orders not started',
+            'Every Customer Plan Delivery line is posted to Production; its Work Orders exist and none has started. Purchase Order: approved, not sent to the supplier, nothing received.'],
+        9 => ['Stage 9 — Delivery Order Draft',
+            'One Delivery Order per Customer Order with its delivery line pulled in, still Draft. No production output was entered (delivery shortcut). Purchase Order: approved.'],
+        10 => ['Stage 10 — Delivery Order Confirmed, waiting for proof of delivery',
+            'Delivery Orders confirmed (delivery note issued); the customer receipt is not recorded yet, so nothing can be invoiced. Purchase Order: approved.'],
+        11 => ['Stage 11 — Customer Invoice Draft',
+            'Proof of delivery recorded (customer received everything, promise kept); one Customer Invoice per order, still Draft. Purchase Order: approved.'],
+        12 => ['Stage 12 — Customer Invoice Confirmed, waiting for payment',
+            'Customer Invoices confirmed and posted; no payment received yet. Purchase Order: approved.'],
     ];
 
     // Tanggal kirim CO dummy: hari kerja ke-14 dihitung kasar sebagai +21 hari kalender dari hari build.
@@ -88,7 +109,7 @@ final class StageBuilder
 
     private const CONNECTIONS = ['tm2mst', 'tm2sdi', 'tm2pur', 'tm2inv', 'tm2prd', 'tm2acc'];
 
-    /** @var list<array{PrRequisition, SecUser}> */
+    /** @var list<array{PrRequisition, SecUser, string}> [PR, pengaju, kategori supplier] */
     private array $requisitions = [];
 
     /** @var list<string> */
@@ -121,17 +142,30 @@ final class StageBuilder
             $this->originTables[$conn] = array_column($db->select("SELECT TABLE_NAME t FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND COLUMN_NAME IN ('data_origin', 'created_at')
                 GROUP BY TABLE_NAME HAVING COUNT(*) = 2", [$db->getDatabaseName()]), 't');
         }
-        $this->begin();
+        // Build sungguhan TANPA transaksi: tiap database punya koneksi sendiri, dan aturan yang menulis lintas database
+        // (mis. Confirm invoice lewat koneksi keuangan mengubah do_line penjualan) harus melihat data yang sudah
+        // tersimpan. Gagal di tengah jalan ditangani pemanggil (isi sebelum build dikembalikan). Dry run memakai
+        // transaksi supaya bisa dibatalkan, jadi stage yang butuh data lintas-koneksi tidak bisa diuji kering:
+        // berhenti di sana dengan keterangan.
+        $dry = $save === null;
+        if ($dry) {
+            $this->begin();
+        }
         try {
             foreach (array_keys(self::STAGES) as $n) {
-                $this->{'stage'.$n}();
+                try {
+                    $this->{'stage'.$n}();
+                } catch (PDOException $e) {
+                    if ($dry && str_contains($e->getMessage(), 'Lock wait timeout')) {
+                        $this->out->warn("Stage $n cannot be dry-run (it writes across databases and needs the stage before it committed). It only runs in a real build.");
+                        break;
+                    }
+                    throw $e;
+                }
                 $this->markDummy();
                 $this->report($n);
                 if ($save) {
-                    // mysqldump hanya melihat data yang sudah di-commit.
-                    $this->commit();
                     $save(sprintf('stage-%02d', $n), ...self::STAGES[$n]);
-                    $this->begin();
                 }
             }
         } finally {
@@ -224,6 +258,8 @@ final class StageBuilder
         foreach ($this->requisitions as [$pr, $requester]) {
             $seeder->submit($pr->refresh(), $requester);
         }
+        // Model yang sama dipakai lagi di stage 4 (nomor dokumen untuk pesan).
+        array_walk($this->requisitions, fn ($r) => $r[0]->refresh());
         Auth::setUser(SecUser::findOrFail(1));
     }
 
@@ -267,10 +303,25 @@ final class StageBuilder
         foreach ($ids as $id) {
             Quotation::create([(int) $id]);
         }
+
+        // PO Draft: satu PO per PR, ke supplier pertama (urut nama) dari kategori supplier di rencana PR; dua PR dengan
+        // kategori sama mendapat supplier berbeda. Baris PO = alokasi PR yang disetujui (harga = estimasi PR).
+        Auth::setUser(SecUser::findOrFail(1));
+        $used = [];
+        foreach ($this->requisitions as [$pr, , $category]) {
+            $supplier = DB::connection('tm2mst')->table('sup_supplier')->where('category', $category)->where('activate', 1)->where('is_blacklisted', 0)
+                ->whereNotIn('id_supplier', $used)->orderBy('supplier_name')->value('id_supplier')
+                ?? throw new RuntimeException("No active supplier in category {$category} for {$pr->doc_no}.");
+            $used[] = $supplier;
+            $po = PurchaseOrder::create((int) $supplier);
+            foreach (PrLineAlloc::whereIn('pr_line_id', $pr->lines()->pluck('pr_line_id'))->orderBy('alloc_id')->pluck('alloc_id') as $alloc) {
+                PurchaseOrder::addAllocation($po, (int) $alloc);
+            }
+        }
         Auth::setUser(SecUser::findOrFail(1));
     }
 
-    // Stage 5: Quotation Confirm (terbit) -> WIN -> CO Draft + Master Product.
+    // Stage 5: Quotation Confirm (terbit) -> WIN -> CO Draft + Master Product. PO diajukan (menunggu approval level 1).
     private function stage5(): void
     {
         Auth::setUser($this->user('yuna'));
@@ -278,7 +329,22 @@ final class StageBuilder
             Quotation::confirm(QuoQuotation::findOrFail($id));
             Quotation::win(QuoQuotation::with('items.inquiry')->findOrFail($id)) ?? throw new RuntimeException("WIN of quotation {$id} did not create a Customer Order.");
         }
+
         Auth::setUser(SecUser::findOrFail(1));
+        foreach (PoOrder::where('status', 'DRAFT')->orderBy('po_id')->get() as $po) {
+            if ($blocked = PurchaseOrder::submit($po)) {
+                throw new RuntimeException("Submit PO #{$po->po_id}: {$blocked}");
+            }
+        }
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Satu level approval PO (dipanggil di stage 6, 7, 8: level 1, 2, 3).
+    private function approvePurchaseOrders(): void
+    {
+        foreach (['PO', 'POC'] as $module) {
+            $this->approve($module, fn (int $id) => PurchaseOrder::decide(PoOrder::findOrFail($id), 'approve', ''));
+        }
     }
 
     // Stage 6: Sales memilih satu qty per product, mengisi due date, Confirm -> menunggu approval level 1.
@@ -297,6 +363,7 @@ final class StageBuilder
                 throw new RuntimeException("Confirm {$co->co_no}: {$error}");
             }
         }
+        $this->approvePurchaseOrders();
         Auth::setUser(SecUser::findOrFail(1));
     }
 
@@ -308,6 +375,84 @@ final class StageBuilder
         }
         if ($left = CoOrder::where('doc_status', '<>', 'CONFIRMED')->pluck('co_no')->all()) {
             throw new RuntimeException('Customer Orders not Confirmed after approval: '.implode(', ', $left));
+        }
+        $this->approvePurchaseOrders();
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Stage 8: Post to Production -> Work Order lahir (belum dimulai). PO: level approval terakhir.
+    private function stage8(): void
+    {
+        Auth::setUser($this->user('yuna'));
+        foreach (CoOrderDelivery::whereNull('posted_at')->orderBy('id_delivery')->pluck('id_delivery') as $id) {
+            if ($error = Cpdel::post((int) $id)) {
+                throw new RuntimeException("Post to Production of CPDEL line {$id}: {$error}");
+            }
+        }
+        $this->approvePurchaseOrders();
+        if ($left = PoOrder::where('status', '<>', 'APPROVED')->pluck('doc_no')->all()) {
+            throw new RuntimeException('Purchase Orders not Approved after three approval levels: '.implode(', ', $left));
+        }
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Stage 9: Delivery Order Draft per CO (jalan pintas kirim tanpa input hasil produksi, aturan A.3).
+    private function stage9(): void
+    {
+        Auth::setUser($this->user('yuna'));
+        foreach (CoOrder::orderBy('id_order')->get() as $co) {
+            $do = DeliveryOrder::create((int) $co->customer_id);
+            if ($error = DeliveryOrder::pull($do, CoOrderDelivery::where('order_id', $co->id_order)->pluck('id_delivery')->all())) {
+                throw new RuntimeException("Delivery Order for {$co->co_no}: {$error}");
+            }
+            if (! $do->lines()->exists()) {
+                throw new RuntimeException("Delivery Order for {$co->co_no}: no line was pulled.");
+            }
+        }
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Stage 10: Delivery Order Confirm (Surat Jalan terbit).
+    private function stage10(): void
+    {
+        Auth::setUser($this->user('yuna'));
+        foreach (DoDelivery::where('status', 'DRAFT')->orderBy('id_delivery')->get() as $do) {
+            [$ok, $message] = DeliveryOrder::act($do, 'confirm');
+            if (! $ok) {
+                throw new RuntimeException("Confirm Delivery Order #{$do->id_delivery}: {$message}");
+            }
+        }
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Stage 11: bukti terima (customer menerima semua, tiba pada tanggal janji) -> Customer Invoice Draft per CO.
+    private function stage11(): void
+    {
+        $sales = $this->user('yuna');
+        Auth::setUser($sales);
+        foreach (DoDelivery::where('status', 'CONFIRMED')->orderBy('id_delivery')->get() as $do) {
+            DeliveryPromiseService::record($do, ['arrived_at' => DeliveryPromiseService::promise($do)['date'].' 09:00', 'result' => 'RECEIVED',
+                'received_by' => 'Customer warehouse', 'miss_cause' => 'OTHER'], null, $sales->login);
+        }
+
+        Auth::setUser($this->user('mia'));
+        foreach (array_keys(CustomerInvoice::orderOptions('INVOICE')) as $coId) {
+            CustomerInvoice::create('INVOICE', (int) $coId, CustomerInvoice::service()->billable((int) $coId)->pluck('id_line')->all());
+        }
+        if (FinInvoice::count() !== CoOrder::count()) {
+            throw new RuntimeException('Customer Invoice Draft: '.FinInvoice::count().' invoices for '.CoOrder::count().' orders.');
+        }
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Stage 12: Customer Invoice Confirm (jurnal piutang terposting), belum dibayar.
+    private function stage12(): void
+    {
+        Auth::setUser($this->user('mia'));
+        foreach (FinInvoice::orderBy('invoice_id')->get() as $invoice) {
+            if ($error = CustomerInvoice::act($invoice, 'confirm')) {
+                throw new RuntimeException("Confirm invoice #{$invoice->invoice_id}: {$error}");
+            }
         }
         Auth::setUser(SecUser::findOrFail(1));
     }
@@ -464,10 +609,14 @@ final class StageBuilder
             ->map(fn ($v, $k) => "$k: $v")->implode(', '));
         $by = fn (string $table, string $column) => $sdi->table($table)->selectRaw("$column k, COUNT(*) n")->groupBy('k')->pluck('n', 'k')->map(fn ($v, $k) => "$k: $v")->implode(', ') ?: 'none';
         $this->out->line('  Quotation: '.$by('quo_quotation', 'doc_status').' | Customer Order: '.$by('co_order', 'doc_status').' | CPDEL lines: '.$sdi->table('co_order_delivery')->count()
-            .' | Master Product ACTIVE: '.DB::connection('tm2mst')->table('prod_product')->where('card_status', 'ACTIVE')->count());
+            .' (posted '.$sdi->table('co_order_delivery')->whereNotNull('posted_at')->count().') | Master Product ACTIVE: '.DB::connection('tm2mst')->table('prod_product')->where('card_status', 'ACTIVE')->count());
+        $count = fn (string $conn, string $table, string $column) => DB::connection($conn)->table($table)->selectRaw("$column k, COUNT(*) n")->groupBy('k')->pluck('n', 'k')
+            ->map(fn ($v, $k) => "$k: $v")->implode(', ') ?: 'none';
+        $this->out->line('  Purchase Order: '.$count('tm2pur', 'po_order', 'status').' | Work Order: '.$count('tm2prd', 'prd_wo', 'wo_status').' | Delivery Order: '.$count('tm2sdi', 'do_delivery', 'status')
+            .' | Proof of delivery: '.$sdi->table('do_delivery_pod')->count().' | Customer Invoice: '.$count('tm2acc', 'fin_invoice', "CONCAT(doc_status, ' ', payment_status)"));
         $flow = app(FlowEngineService::class);
         $users = SecUser::where('activate', true)->get();
-        foreach (['PR', 'CO'] as $module) {
+        foreach (['PR', 'CO', 'PO'] as $module) {
             $this->out->line("  $module waiting per approver: ".($users->map(fn ($u) => [$u->login, $flow->pendingForUser($module, $u->getKey())->count()])
                 ->filter(fn ($r) => $r[1])->map(fn ($r) => "$r[0]: $r[1]")->implode(', ') ?: 'none'));
         }
@@ -483,13 +632,6 @@ final class StageBuilder
     {
         foreach (self::CONNECTIONS as $c) {
             DB::connection($c)->beginTransaction();
-        }
-    }
-
-    private function commit(): void
-    {
-        foreach (self::CONNECTIONS as $c) {
-            DB::connection($c)->commit();
         }
     }
 

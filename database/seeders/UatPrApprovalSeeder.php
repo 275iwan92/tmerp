@@ -28,21 +28,21 @@ class UatPrApprovalSeeder extends Seeder
 {
     private const BY = 'uat_approval';
 
-    // [departemen, login pengaju, tgl butuh (+hari), catatan, baris]. Baris master = [kode bahan, qty, harga estimasi];
+    // [departemen, login pengaju, tgl butuh (+hari), catatan, baris, kategori supplier (sup_supplier.category) untuk PO-nya]. Baris master = [kode bahan, qty, harga estimasi];
     // baris teks bebas = [null, qty, harga estimasi, uraian, satuan, kode akun beban] (pr_line.i_coa_account_id wajib isi).
     private const PLAN = [
         ['Cetak', 'toni', 7, 'Paper and ink for next week print run (3 customer orders).',
-            [['PYJ31', 50, 1185000], ['IOH12', 15, 150000]]],
+            [['PYJ31', 50, 1185000], ['IOH12', 15, 150000]], 'KERTAS'],
         ['Gudang', 'mahmud', 10, 'Stock replenishment: duplex and HVS below minimum stock.',
-            [['PZ00083', 30, 905000], ['P4454', 10, 455000]]],
+            [['PZ00083', 30, 905000], ['P4454', 10, 455000]], 'KERTAS'],
         ['Folder Glue', 'firdianzah', 5, 'Glue for folder gluer line, stock left for 3 days.',
-            [['GZ00726', 50, 100000]]],
+            [['GZ00726', 50, 100000]], 'CHEMICALS'],
         ['Umum', 'imam', 14, 'Office maintenance, routine.',
-            [[null, 4, 350000, 'Air conditioner service, office area', 'Unit', '619000'], [null, 6, 275000, 'Fire extinguisher refill 6 kg', 'Unit', '619000']]],
+            [[null, 4, 350000, 'Air conditioner service, office area', 'Unit', '619000'], [null, 6, 275000, 'Fire extinguisher refill 6 kg', 'Unit', '619000']], 'JASA'],
         ['Plong + DieCut', 'wahyu', 4, 'Die cutting consumables, urgent: current rule is worn out.',
-            [[null, 2, 1850000, 'Die cutting rule 2 pt', 'Box', '517000'], [null, 10, 165000, 'Creasing matrix 0.4 x 1.3 mm', 'Roll', '517000']]],
+            [[null, 2, 1850000, 'Die cutting rule 2 pt', 'Box', '517000'], [null, 10, 165000, 'Creasing matrix 0.4 x 1.3 mm', 'Roll', '517000']], 'PEMBUATAN PISAU'],
         ['Sales and Marketing', 'yuna', 6, 'Sample delivery and exhibition material.',
-            [[null, 1, 750000, 'Product sample courier to Jakarta', 'Lot', '614000'], [null, 2, 450000, 'Exhibition banner print 60 x 160 cm', 'PCS', '614000']]],
+            [[null, 1, 750000, 'Product sample courier to Jakarta', 'Lot', '614000'], [null, 2, 450000, 'Exhibition banner print 60 x 160 cm', 'PCS', '614000']], 'DIGITAL PRINTING'],
     ];
 
     public function run(): void
@@ -53,21 +53,21 @@ class UatPrApprovalSeeder extends Seeder
         }
 
         $kept = $this->reset();
-        $made = array_map(fn ($d) => $this->submit(...$d), $this->drafts());
+        $made = array_map(fn ($d) => $this->submit($d[0], $d[1]), $this->drafts());
 
         $this->command?->info(count($made).' PR menunggu approval di '.$pur->getDatabaseName().': '.implode(', ', $made)
             .($kept ? ' (dipertahankan karena sudah ditarik ke PO: '.implode(', ', $kept).')' : '').'.');
     }
 
     // PR DRAFT (belum diajukan, belum bernomor) sesuai PLAN. Dipakai juga oleh pembangun set stage (stage 1 = Draft).
-    /** @return list<array{PrRequisition, SecUser}> [PR, pengaju] */
+    /** @return list<array{PrRequisition, SecUser, string}> [PR, pengaju, kategori supplier] */
     public function drafts(): array
     {
         $pur = DB::connection('tm2pur');
         $fallback = SecUser::findOrFail(1);
         $made = [];
 
-        foreach (self::PLAN as [$deptName, $login, $needDays, $notes, $lines]) {
+        foreach (self::PLAN as [$deptName, $login, $needDays, $notes, $lines, $supplierCategory]) {
             $dept = OrgDepartment::where('department_name', $deptName)->value('department_id')
                 ?? throw new RuntimeException("Departemen {$deptName} tidak ada di master.");
 
@@ -85,7 +85,7 @@ class UatPrApprovalSeeder extends Seeder
             $pr->save();
             $pur->table('pr_requisition')->where('pr_id', $pr->pr_id)->update(['data_origin' => 'DUMMY']);
             $pur->table('pr_line')->where('pr_id', $pr->pr_id)->update(['data_origin' => 'DUMMY']);
-            $made[] = [$pr, SecUser::where('login', $login)->first() ?? $fallback];
+            $made[] = [$pr, SecUser::where('login', $login)->first() ?? $fallback, $supplierCategory];
         }
 
         return $made;

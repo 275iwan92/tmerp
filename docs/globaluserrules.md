@@ -244,14 +244,21 @@
       dummy campur semua status (untuk dashboard & laporan), disimpan terpisah.
     - **Urutan stage (user 2026-10-02):** 1 Inquiry New belum Confirm · 2 di Pro-Dev belum Confirm · 3 di Pro-Cost belum
       Confirm · 4 Quotation Draft · 5 Customer Order Draft · 6 Customer Order menunggu approval (level 1, F&A SPV) ·
-      7 CPDEL Draft (CO Confirmed, baris Planned belum di-Post). Purchase Requisition: 1 Draft · 2 menunggu approval ·
-      3 dan seterusnya Approved (PO belum dibuat). Stage berikutnya ditambah per alur di `StageBuilder::STAGES`.
+      7 CPDEL Draft (CO Confirmed, baris Planned belum di-Post) · 8 Posted to Production, Work Order belum dimulai ·
+      9 Delivery Order Draft · 10 Delivery Order Confirmed, menunggu bukti terima · 11 Customer Invoice Draft (bukti
+      terima sudah dicatat) · 12 Customer Invoice Confirmed, menunggu pembayaran. Stage 1–7 dari user; 8–12 usulan
+      agen yang belum dikonfirmasi user. Pembelian berjalan di samping: 1 PR Draft · 2 PR menunggu approval · 3 PR
+      Approved · 4 PO Draft · 5 PO menunggu approval level 1 (Product Costing) · 6 level 2 (Operational Manager) ·
+      7 level 3 (Presiden Direktur) · 8 dan seterusnya PO Approved (belum dikirim ke supplier, belum ada penerimaan).
+      Stage berikutnya ditambah per alur di `StageBuilder::STAGES`.
+    - Build sungguhan berjalan tanpa transaksi (aturan yang menulis lintas database harus melihat data tersimpan);
+      `--dry-run` memakai transaksi yang dibatalkan dan berhenti di stage pertama yang menulis lintas database.
     - **Yang dibuat skrip di zona beku (hanya di dalam set stage):** Pro-Dev Confirm memakai susunan grid sederhana
       (blank tidak diputar, plano yang muat di meja cetak) lewat method yang sama dengan tombol Confirm, jadi BOM / tinta /
       proses tetap hasil SpecEngine; Pro-Cost memakai mode manual + CostingEngine (sama dengan dummy rantai order).
       Angkanya contoh, bukan hasil kerja petugas.
     - Draft yang tidak bisa menempuh alur (tanpa customer, part tanpa ukuran bentangan, tanpa pilihan qty) tidak ikut set
-      stage; tetap ada di set `mixed`. Build memakan ±6 menit dan dijalankan lewat perintah, bukan tombol.
+      stage; tetap ada di set `mixed`. Build memakan ±10 menit dan dijalankan lewat perintah, bukan tombol.
 
 ## C. Tampilan (UI/UX)
 
@@ -625,3 +632,4 @@
 | 2026-10-02 | B.15: urutan stage dari user — 4 Quotation Draft, 5 Customer Order Draft, 6 Customer Order menunggu approval, 7 CPDEL Draft; set stage 1–7 dibangun (31 inquiry menempuh seluruh alur; Pro-Dev = susunan grid contoh lewat tombol Confirm yang sama, Pro-Cost = mode manual + CostingEngine). Draft tanpa customer / ukuran bentangan / pilihan qty tidak ikut set stage. |
 | 2026-10-02 | **A.22: Inventory & Warehouse** — gudang = gedung (A5, A6, A10 + gedung lain; ukuran perkiraan, disesuaikan officer; bentuk bebas mis. huruf L; 1-3 lantai), area dan bin bisa ditambah user, Stock Transfer dengan label kapasitas + QR / barcode, dead stock merah (transfer bukan pergerakan), fasilitas label + lacak QR. Dibangun di ddt: Warehouse Map, Stock Transfer, Buildings / Storage Areas / Bins, Stock by Location, Print Location / Item Label, Track via QR/Barcode. Review: `md_for_systems/warehouse_review.md`. |
 | 2026-10-02 | A.22: denah gudang sementara dibuat agen (ukuran dan letak perkiraan, tanpa menunggu sketsa / foto) dan harus tetap bisa diubah user atau officer warehouse lewat layar. |
+| 2026-10-02 | B.15: set stage 8–12 dibangun (Posted to Production + Work Order belum dimulai, Delivery Order Draft, Delivery Order Confirmed, Customer Invoice Draft, Customer Invoice Confirmed menunggu pembayaran) — usulan agen, belum dikonfirmasi user; rantai PO di samping: stage 4 PO Draft, 5–7 menunggu approval level 1–3, 8+ Approved. Build sungguhan tanpa transaksi. |
