@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 // Slow Moving Item (v1: pages::inventory.print.slow-moving): item yang MASIH ada stoknya di lokasi yang bisa dipakai tetapi
 // pergerakan terakhirnya 3 bulan atau lebih (ambang v1: 3 / 6 / 9 / 12 bulan = saringan di atas grid). Item tanpa tanggal
 // pergerakan (saldo warisan) selalu ikut: justru itu yang paling perlu diperhatikan.
+// Pergerakan = last_item_movement (Stock Transfer antar bin / gudang tidak dihitung sebagai gerak).
 abstract class SlowMovingReport extends StockReportGrid
 {
     private const MONTHS = 3;
@@ -35,9 +36,9 @@ abstract class SlowMovingReport extends StockReportGrid
         $key = $this->itemKey();
 
         return StockOnhand::of($this->category())->where('is_usable', true)->groupBy($key)
-            ->selectRaw("{$key} AS row_id, {$key}, SUM(qty_onhand) AS qty_onhand, SUM(value_onhand) AS value_onhand, MAX(last_movement) AS last_movement, "
+            ->selectRaw("{$key} AS row_id, {$key}, SUM(qty_onhand) AS qty_onhand, SUM(value_onhand) AS value_onhand, MAX(last_item_movement) AS last_movement, "
                 ."MAX(uom_code) AS uom_code, GROUP_CONCAT(DISTINCT warehouse_name ORDER BY warehouse_name SEPARATOR ', ') AS warehouses")
-            ->havingRaw('SUM(qty_onhand) > 0 AND MAX(last_movement) < ?', [now()->subMonths(self::MONTHS)->toDateString()])
+            ->havingRaw('SUM(qty_onhand) > 0 AND MAX(last_item_movement) < ?', [now()->subMonths(self::MONTHS)->toDateString()])
             ->orderBy('last_movement');
     }
 

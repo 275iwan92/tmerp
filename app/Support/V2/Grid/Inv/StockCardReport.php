@@ -46,7 +46,7 @@ abstract class StockCardReport extends StockReportGrid
         return [
             ['key' => 'doc_date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'doc_no', 'label' => 'Doc No.'],
-            ['key' => 'move', 'label' => 'Movement', 'type' => 'badge', 'tones' => ['In' => 'success', 'Out' => 'danger', 'Adjustment' => 'warn', 'Opening' => 'neutral']],
+            ['key' => 'move', 'label' => 'Movement', 'type' => 'badge', 'tones' => ['In' => 'success', 'Out' => 'danger', 'Adjustment' => 'warn', 'Opening' => 'neutral', 'Transfer in' => 'info', 'Transfer out' => 'info']],
             ['key' => 'doc_cat', 'label' => 'Category', 'visible' => false],
             ['key' => 'item', 'label' => 'Item', 'type' => 'identity', 'code' => 'item_code', 'avatar' => false],
             ['key' => 'warehouse', 'label' => 'Warehouse'],
@@ -71,6 +71,8 @@ abstract class StockCardReport extends StockReportGrid
         return [
             'doc_date' => $m->doc_date?->toDateString(), 'doc_no' => $m->doc_no, 'doc_cat' => $m->doc_cat,
             'move' => match (true) {
+                // Stock Transfer (doc_type TF): pindah bin / gudang, bukan penerimaan atau pemakaian.
+                $m->doc_type === 'TF' => $in > 0 ? 'Transfer in' : 'Transfer out',
                 $adj != 0.0 => 'Adjustment',
                 $in > 0 => 'In',
                 $out > 0 => 'Out',
@@ -89,6 +91,7 @@ abstract class StockCardReport extends StockReportGrid
             ['label' => 'In', 'where' => ['move' => 'In'], 'tone' => 'success'],
             ['label' => 'Out', 'where' => ['move' => 'Out'], 'tone' => 'danger'],
             ['label' => 'Adjustment', 'where' => ['move' => 'Adjustment'], 'tone' => 'warn'],
+            ['label' => 'Transfer', 'where' => ['move' => ['Transfer in', 'Transfer out']], 'tone' => 'info'],
         ];
     }
 

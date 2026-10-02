@@ -14,6 +14,8 @@ use Devlib\Locale;
 // Sumber = view saldo stok (v_rm / v_fg / v_sfg_onhand): value_onhand = nilai saldo kartu stok (harga rata-rata bergerak).
 // Satu item dihitung sekali dari pergerakan TERAKHIRNYA di lokasi mana pun yang bisa dipakai; item yang masih ada stoknya
 // tetapi tidak punya tanggal pergerakan (saldo warisan) IKUT -- berbeda dari laporan Slow Moving Item yang membuangnya.
+// Pergerakan = kolom last_item_movement view saldo: Stock Transfer (pindah bin / gudang) TIDAK dihitung sebagai gerak,
+// jadi stok mati tidak "hidup lagi" karena dipindah (sama dengan Warehouse Map, App\Services\Inventory\WarehouseStock).
 final class DeadstockValue implements Metric
 {
     private const CLASSES = ['RM' => ['Raw Material', 'INV_SLOW_RM'], 'SFG' => ['Semi Finished Goods', 'INV_SLOW_SFG'], 'FG' => ['Finished Goods', 'INV_SLOW_FG']];
@@ -62,7 +64,7 @@ final class DeadstockValue implements Metric
         foreach (array_keys(self::CLASSES) as $class) {
             $key = StockOnhand::ITEM_KEYS[$class];
             $dead = StockOnhand::of($class)->where('is_usable', true)->groupBy($key)
-                ->selectRaw("{$key} AS row_id, SUM(qty_onhand) AS qty, SUM(value_onhand) AS value, MAX(last_movement) AS moved")
+                ->selectRaw("{$key} AS row_id, SUM(qty_onhand) AS qty, SUM(value_onhand) AS value, MAX(last_item_movement) AS moved")
                 ->havingRaw('SUM(qty_onhand) > 0')->get()
                 ->filter(function ($r) use ($cutoff) {
                     $moved = substr((string) $r->moved, 0, 10);

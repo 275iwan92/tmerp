@@ -42,6 +42,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 - Data khusus UAT (akun di halaman login, lewati pertanyaan keamanan) HANYA di `.env.mockup` (`config/uat.php`) — **jangan** di konstanta/DB.
 - Mode Developer = F10, hanya Administrator / grup `DEVELOPER`.
 - Serah terima antar-agen (Jo/Iwan): memori `project_handoff_*` terbaru di MEMORY.md ("START HERE").
+- **Multi language (2026-10-02):** serah terima & langkah pertama di `docs/multilanguage_design.md` §0.3 (PR 275iwan92/tmerp#8).
 
 - **Test memakai MySQL lokal sungguhan**, bukan SQLite in-memory walau `phpunit.xml` menyebut sqlite: test menulis ke database `tm2*` dan **membersihkan sendiri** di `tearDown()` (hapus manual per tabel, lihat `tests/Feature/CostingEngineTest.php`). Tidak ada `RefreshDatabase`. Test baru yang menyisipkan data wajib cleanup sendiri, lalu verifikasi ke DB (jangan percaya skripnya saja).
 - `CareersPortalTest` di-skip (bukan gagal) bila Firebase Emulator tidak menyala — itu baseline normal.
@@ -54,7 +55,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 - **Logika bisnis di `app/Services/*`** (bukan di komponen): `Costing/CostingEngine`, `Imposition/ImpositionEngine`, `Sales/{QuotationBuilder,CoOrderBuilder}`, `Scheduling/*`, `Payroll/*`, `Recruitment/*`, `Migration/*` (ETL `tm*`→`tm2*`), dst. Rumus = sumber kebenaran di kode + test regresi (bukan dokumen).
 - **Daftar ENGINE** (user 2026-10-02): `App\Support\Engines\EngineRegistry` = kegunaan, input, output, cara kerja tiap engine (tanda tangan method dibaca dari kode). Tampil di devlib.test → Engines dan menu Developer → Engines (`x-dl::engine-catalog`). Engine baru / tanda tangan berubah: daftarkan di sana lalu `php artisan engine:catalog` (dijaga `EngineCatalogTest`). Rumus ProCost tidak ditulis di sana.
 - **Layar v2 = turunan objek DevLib** (`x-dl::*`, `x-mp::*`): tanpa HTML mentah; form kecil = `x-dl::action-form`. Dijaga `DevlibOnlyRatchetTest`.
-- **Grid**: trait `app/Livewire/Concerns/HasCustomizableGrid` (kontrak `gridKey/gridColumnDefs/gridDefaultColumns/gridBaseQuery/columnValue`); komponen reusable di `resources/views/components/{grid,form,print,gantt,kanban,...}`. Teks UI lewat `App\Support\Localization\Translator::t(key, fallback)`.
+- **Grid**: trait `app/Livewire/Concerns/HasCustomizableGrid` (kontrak `gridKey/gridColumnDefs/gridDefaultColumns/gridBaseQuery/columnValue`); komponen reusable di `resources/views/components/{grid,form,print,gantt,kanban,...}`. Teks UI ditulis English lewat `t('English')` / `@t()` (kamus `sys_dictionary`, `App\Support\Localization\Dictionary`; `Translator::t` lama sudah dipensiunkan, lihat §3 Bahasa).
 - Scheduler (`routes/console.php`): `recruitment:sync-portal` tiap 2 menit, `prodev:usage-rates` bulanan.
 - `DataOriginScope` (web-only) menyembunyikan data DUMMY/LEGACY sesuai setting admin; console/tinker/test melihat semua.
 
@@ -535,6 +536,12 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
   ACC Digital wajib, due date CO +14 hari kerja adjustable. Tampil di Menu v2 →
   Sales → Alur → Pedoman (`/v2/pedoman/product-master`) — update dokumen ini tiap
   ada keputusan alur baru.
+- `warehouselayout_tier1.md` (di `docs/`) — **wajib dibaca sebelum menyentuh gudang, bin, peta gudang, Stock Transfer,
+  label / QR, atau hitungan dead stock** (user 2026-10-02, `docs/globaluserrules.md` A.22): gudang = GEDUNG nyata
+  (`wh_warehouse`: ukuran meter, bentuk, 1-3 lantai) → area (`wh_zone`) → bin (`wh_loc`); pindah stok hanya lewat
+  `App\Services\Inventory\StockTransferService` (`inv_transfer`, kartu stok `doc_type` TF); isi bin / kapasitas / dead
+  stock hanya dari `App\Services\Inventory\WarehouseStock` (transfer TIDAK dihitung sebagai pergerakan: kolom view
+  `last_item_movement`). Bagian 13 = yang dibangun; review user: `md_for_systems/warehouse_review.md`.
 - `componentstandard.md` — **wajib dibaca sebelum menulis markup layar apa
   pun** (keputusan user 2026-09-23): komponen UI berlapis & object oriented —
   token `@theme` → primitive `app/View/Components/Ui/*` (`x-ui.button`,

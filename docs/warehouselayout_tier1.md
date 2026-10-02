@@ -1,6 +1,10 @@
 # Tata Letak Gudang (Warehouse Layout) — Desain Tier 1
 
-> **Status: DESAIN, menunggu persetujuan user** (disusun 2026-10-01 atas instruksi
+> **Status 2026-10-02: Tahap 1 DIBANGUN di mockup.test atas perintah user** ("ya saya tunggu warehouse mapping ...
+> BUILD") — peta gudang, Stock Transfer, label QR / barcode, lacak, dead stock merah. Yang dibangun dan yang berbeda dari
+> rancangan ini: **bagian 13**. Dokumen review user: `md_for_systems/warehouse_review.md`. Bagian 1–12 = rancangan asli.
+>
+> **Status awal: DESAIN, menunggu persetujuan user** (disusun 2026-10-01 atas instruksi
 > user *"Tata letak gudang harus dikerjakan. Bantu designkan sistemnya, refer ke ERP
 > terkenal"*). Belum ada kode. Mockup: `docs/mockups/warehouse_layout_v2.jpg`
 > (desktop) dan `docs/mockups/warehouse_layout_mobile_v2.jpg` (HP staf gudang).
@@ -442,3 +446,62 @@ rak, area kirim) + perkiraan ukuran; rak dan lajur dibuat lewat generator bin.
 
 Mockup `mockups/warehouse_layout_v2.jpg` diperbarui 2026-10-02: label English, satu baris
 filter teks (tanpa kotak statistik) sesuai aturan C.21.
+
+---
+
+## 13. Yang dibangun 2026-10-02 (Tahap 1) dan bedanya dari rancangan
+
+Perintah user 2026-10-02, berurutan: (1) "ya saya tunggu warehouse mapping, lalu input moving item antar warehouse dan
+disana akan tertera capacity label dan barcode or QR code; warna merah untuk DEAD stock; Facility for QR Code, Labelling,
+BUILD TOO"; (2) "gedung itu pasti terpisah, A5, A6, A10 dan masih gedung yang lain"; (3) "pastikan bisa ditambah area
+storage"; (4) "semua gedung bisa di-define, untuk saat ini buat saja menurut estimasi kamu misal 30 x 20 meter, nanti
+di-adjust oleh officer"; (5) "bila diimplementasi ke perusahaan lain gudang harus bisa ditambahkan dengan mudah dan
+bentuknya, misal huruf L; gudang Telasih A5, A6, A10 berbentuk kotak dan punya 2 lantai; bisa 2 - 3 lantai".
+
+### 13.1 Jawaban atas keputusan terbuka
+
+| # | Hasil |
+|---|---|
+| G1, G2 | Gudang = gedung nyata (A10, A5, A6, + gedung lain yang ditambah user). Kelas stok dan fungsi = area (`wh_zone`). |
+| K1 | (a): Gedung -> Area -> Bin; `wh_loc` tetap = bin. |
+| K2 | Tahap 1 = pencatatan posisi + pindah dengan dokumen (dibangun). Tahap 2 (terarah) belum. |
+| K6 | Transfer tanpa jurnal (dijalankan; menunggu koreksi user / Finance). |
+| K9 | Ukuran gedung = perkiraan agen (A10 30 x 20, A5 24 x 16, A6 20 x 12 m; 2 lantai), disesuaikan officer di Buildings. |
+| M1, M2 | Belum ada lapis Site dan belum ada transfer dua langkah: gedung berdekatan, transfer satu langkah. |
+| K3, K4, K5, K7, K8, K10, K11 | Belum dibangun (Tahap 2). Zona TOOLING dan CONSIGN sudah bisa dibuat sebagai area. |
+
+### 13.2 Skema yang terpasang (berbeda dari bagian 4)
+
+- `wh_warehouse` + `length_m`, `width_m`, `floor_count` (1-3), `shape` (RECT / L / CUSTOM), `notch_length_m`,
+  `notch_width_m`, `notch_corner` (NE / NW / SE / SW), `outline` (titik "x,y; x,y" untuk CUSTOM), `address`.
+  Bukan `map_cols / map_rows`: denah memakai **meter**, bukan sel.
+- `wh_zone`: seperti 4.1, + `floor_no`; `map_x / y / w / h` dalam meter (desimal). Tanpa `allow_mixed_*`,
+  `single_owner_bin`, `count_freq_days`, `color` (warna dari jenis area) — ditambah saat aturannya dibangun.
+- `wh_loc` + `zone_id`, `capacity_pallet`, `map_x`, `map_y` (kosong = disusun otomatis di dalam area), `block_reason`.
+  `row_code` memuat kode area (`PPR-L03`) karena unik per gudang + row / col / stack; kode area paling panjang 6 huruf.
+- **Transfer = tabel sendiri** `tm2inv.inv_transfer` + `inv_transfer_line` (bukan `doc_cat TF` di `rm/sfg/fg_stock`):
+  satu dokumen untuk semua kelas stok. Kartu stok: dua baris per baris transfer, `doc_type` TF,
+  `reference_name` `tm2inv.inv_transfer_line:OUT` / `:IN` (Cancel: `:CANCEL_OUT` / `:CANCEL_IN`). Nomor `TFyy#####`.
+- `tm2inv.inv_label_print`: riwayat cetak label.
+- View `v_*_onhand` + `last_item_movement` (pergerakan terakhir item tanpa transfer); `v_inv_movement` membawa nomor transfer.
+
+### 13.3 Aturan yang berlaku
+
+1. **Dead stock** = `last_item_movement` lebih lama dari `ASSISTANT_DEADSTOCK_MONTHS` bulan atau kosong; dihitung per item
+   di lokasi mana pun; **transfer tidak dihitung sebagai gerak**. Dipakai peta, transfer, label, laporan, asisten, widget.
+2. **Status bin**: BLOCKED (`is_usable = 0`), EMPTY, IN_USE, FULL (>= 90% kapasitas kg), OVER (> 100%). Merah (dead)
+   menang atas warna isi.
+3. **Berat** diperkirakan (kg): satuan KG = qty; kertas = qty x gsm x panjang x lebar / 10^7 (kolom master, atau dibaca
+   dari nama item); RIM = 500 lembar; selain itu tidak diketahui dan tidak dihitung dalam kapasitas.
+4. **Transfer**: Draft -> Confirmed (stok pindah, nomor lahir) -> Cancelled (stok kembali, alasan wajib, hanya bila
+   stoknya masih di bin tujuan). Ditolak bila qty melebihi saldo bin asal, bin tujuan diblokir / bukan milik gudang
+   tujuan / sama dengan bin asal. Lebih dari kapasitas = peringatan. Nilai pindah dengan harga rata-rata bin asal;
+   `cur_stock` item tidak berubah; tanpa jurnal.
+5. **Letak bin di peta**: lajur / rak ke kanan, slot / kolom ke bawah, tingkat rak = satu sel berisi beberapa bin.
+
+### 13.4 Layar dan objek
+
+Layar v2: `warehouse-map`, `stock-transfer`, `wh-buildings`, `wh-zones`, `wh-bins`, `inv-rpt-location`,
+`label-location`, `label-item`, `inv-label-history`, `scan-track`; cetakan `stock-transfer`.
+Objek DevLib: `x-dl::wh-map`, `x-dl::label`, `x-dl::label-sheet`, `x-dl::scan`.
+Menu, Help, dan data contoh: mockup.test (ddt) saja. Tabel dan view: ddt dan tm2.

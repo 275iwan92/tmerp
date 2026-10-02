@@ -104,6 +104,12 @@ abstract class DbGrid
         return [];
     }
 
+    // Baris berwarna (rowTone x-dl::grid): nama kolom di row() yang membawa tone (danger, tangerine, ...). null = baris biasa.
+    public function rowTone(): ?string
+    {
+        return null;
+    }
+
     // Tombol di baris (kolom type button, mis. Print): aksi => alamat berpola {id}, dibuka di tab baru oleh layar grid generik.
     public function actionUrls(): array
     {
@@ -221,6 +227,7 @@ abstract class DbGrid
             'groups' => $this->groups(),
             'groupBy' => $this->groupBy(),
             'detail' => $this->detail(),
+            'rowTone' => $this->rowTone(),
             'search' => $this->search(),
             'mode' => $this->family() === self::REPORT ? 'report' : 'entry',
             'actions' => match ($this->family()) {

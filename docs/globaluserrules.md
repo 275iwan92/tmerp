@@ -169,6 +169,28 @@
     - Peta lengkap + yang masih terbuka (tempat Delivery, izin per grup, retur masuk stok, target Sales): `docs/md_for_systems/sales_tier1.md`.
     - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**; menu `tm2sys` belum diubah.
 
+22. **[2026-10-02] Inventory & Warehouse: gudang = gedung, area, bin; pindah stok lewat Stock Transfer; dead stock merah.**
+    Kata user: *"ya saya tunggu warehouse mapping, lalu input moving item antar warehouse dan disana akan tertera capacity
+    label dan barcode or QR code. Disana akan muncul warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BUILD TOO."*
+    - **Gudang = gedung nyata.** "Gedung itu pasti terpisah, A5, A6, A10 dan masih gedung yang lain." Semua gedung bisa
+      didefinisikan user sendiri (Inventory > Warehouse > Setup > Buildings); ukuran awal = perkiraan (mis. 30 x 20 m),
+      "nanti di-adjust oleh officer".
+    - **Bentuk dan lantai:** software harus bisa dipakai perusahaan lain — gedung mudah ditambah dan bentuknya bisa selain
+      kotak (contoh huruf L, dengan ukurannya). Gedung Telasih A5 / A6 / A10 berbentuk kotak dan punya 2 lantai; sistem
+      harus bisa **2 sampai 3 lantai**.
+    - **Area penyimpanan harus bisa ditambah** oleh user ("pastikan bisa ditambah area storage"), begitu juga bin.
+    - **Pindah barang antar bin / antar gudang = dokumen Stock Transfer**; di sana tertera label kapasitas bin dan
+      barcode / QR code-nya.
+    - **Dead stock tampil MERAH** (peta, transfer, laporan, label). Arti dead stock = E.2 (stok tidak bergerak lebih dari
+      batas bulan di Settings > Constants); **memindahkan stok tidak dihitung sebagai pergerakan**.
+    - **Fasilitas QR code + label wajib ada**: label lokasi (bin) dan label item, QR + barcode, lacak lewat pindai.
+    - **Denah sementara dibuat agen, tetap bisa diubah (user 2026-10-02):** "untuk ukuran dan foto untuk sementara denahnya
+      kamu buat dulu tapi nanti bisa diubah oleh user atau officer warehouse". Ukuran gedung, letak area, dan bin awal =
+      perkiraan agen, tidak menunggu sketsa atau foto; semuanya wajib tetap bisa diubah lewat layar (Buildings, Storage
+      Areas, Bins, Atur Tata Letak di Warehouse Map).
+    - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**; menu `tm2sys` belum. Yang diputuskan agen
+      sendiri dan menunggu koreksi: `docs/md_for_systems/warehouse_review.md` bagian 4.
+
 ## B. Database & data
 
 1. **[LOCKED] Database-per-modul** (`tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`,
@@ -211,6 +233,39 @@
 14. **Master hanya diubah user, bukan sistem (2026-10-01).** Data master tidak berubah sampai ada override dari user; yang
     berubah oleh sistem hanya data transaksi. Nilai default boleh diperbarui oleh analisa terbaru sistem, dan tetap bisa
     di-override user. Contoh: Pick Item di Material Booking disimpan di booking, bukan di Master Product.
+15. **Data dummy disusun per STAGE (2026-10-02).** Stage 1 = semua dokumen seolah belum di-Confirm, belum di-approve dan
+    belum diproses; stage 2 = set yang sama sudah maju satu langkah dan menunggu langkah berikutnya; stage 3 dan
+    seterusnya, sepanjang alurnya. Contoh user: stage 1 Inquiry New belum di-Confirm, stage 2 sudah di Pro-Dev belum
+    di-Confirm, stage 3 di Pro-Cost belum di-Confirm. Tujuannya memastikan alur dan perilaku aplikasi benar: tiap langkah
+    bisa diuji berulang dari titik awal yang pasti.
+    - Tiap stage = satu set dump `.sql` (data saja) dengan tombol **Restore** sendiri di Developer → Data Dummy, untuk
+      administrator. Perintahnya `php artisan ddt:stage list|save|restore|delete|build --env=mockup`
+      (`App\Console\Commands\DdtStage`), file di `storage/app/ddt-stages/<set>/` (tidak masuk git).
+    - Set dibangun `ddt:stage build` (`App\Support\Dummy\StageBuilder`) lewat ATURAN APLIKASI yang sama dengan tombol di
+      layar (Confirm, Submit, Approve), bukan mengetik baris ke tabel. Aturan yang gagal saat memajukan stage = bug alur.
+    - Stage 1 = titik nol: semua dokumen transaksi operasional (quotation, CO, CPDEL, WO, DO, invoice + voucher-nya, PO,
+      penerimaan, dokumen & kartu stok, booking) tidak ada; yang ada hanya dokumen langkah pertama tiap alur. Master,
+      data legacy, HR / payroll / rekrutmen, maintenance, aset dan voucher di luar penjualan / pembelian tetap.
+    - Restore mengganti seluruh isi database dummy bisnis dengan set itu (master ikut kembali ke isi set); `ddtsys`
+      (akun, hak akses, menu) tidak ikut. Kolom yang ditambah migration setelah set disimpan tetap ada. Set `mixed` =
+      dummy campur semua status (untuk dashboard & laporan), disimpan terpisah.
+    - **Urutan stage (user 2026-10-02):** 1 Inquiry New belum Confirm · 2 di Pro-Dev belum Confirm · 3 di Pro-Cost belum
+      Confirm · 4 Quotation Draft · 5 Customer Order Draft · 6 Customer Order menunggu approval (level 1, F&A SPV) ·
+      7 CPDEL Draft (CO Confirmed, baris Planned belum di-Post) · 8 Posted to Production, Work Order belum dimulai ·
+      9 Delivery Order Draft · 10 Delivery Order Confirmed, menunggu bukti terima · 11 Customer Invoice Draft (bukti
+      terima sudah dicatat) · 12 Customer Invoice Confirmed, menunggu pembayaran. Stage 1–7 dari user; 8–12 usulan
+      agen yang belum dikonfirmasi user. Pembelian berjalan di samping: 1 PR Draft · 2 PR menunggu approval · 3 PR
+      Approved · 4 PO Draft · 5 PO menunggu approval level 1 (Product Costing) · 6 level 2 (Operational Manager) ·
+      7 level 3 (Presiden Direktur) · 8 dan seterusnya PO Approved (belum dikirim ke supplier, belum ada penerimaan).
+      Stage berikutnya ditambah per alur di `StageBuilder::STAGES`.
+    - Build sungguhan berjalan tanpa transaksi (aturan yang menulis lintas database harus melihat data tersimpan);
+      `--dry-run` memakai transaksi yang dibatalkan dan berhenti di stage pertama yang menulis lintas database.
+    - **Yang dibuat skrip di zona beku (hanya di dalam set stage):** Pro-Dev Confirm memakai susunan grid sederhana
+      (blank tidak diputar, plano yang muat di meja cetak) lewat method yang sama dengan tombol Confirm, jadi BOM / tinta /
+      proses tetap hasil SpecEngine; Pro-Cost memakai mode manual + CostingEngine (sama dengan dummy rantai order).
+      Angkanya contoh, bukan hasil kerja petugas.
+    - Draft yang tidak bisa menempuh alur (tanpa customer, part tanpa ukuran bentangan, tanpa pilihan qty) tidak ikut set
+      stage; tetap ada di set `mixed`. Build memakan ±10 menit dan dijalankan lewat perintah, bukan tombol.
 
 ## C. Tampilan (UI/UX)
 
@@ -580,4 +635,9 @@
 | 2026-10-02 | C.33 + E.3: user "pasang saja nanti juga bisa disempurnakan" -> **asisten AI dipasang di tm2**. User "perlu ada production, quality control and quality assurance, inventory and warehousing, payroll, human resource, Work Instruction, job description, SOP; on production, target vs result, capacity planning" -> dashboard **Production** (target vs hasil, beban kapasitas mesin, downtime), **Quality Control & Assurance**, **Inventory & Warehousing**, **Work Instruction / JD / SOP**; 67 widget, 11 dashboard. **Work Instruction** = jenis dokumen (`doc_type` SOP / WI) di register SOP. Jam tersedia mesin = jam per shift x shift per hari x hari kerja (Master Mesin) — tidak pernah dikarang; mesin tanpa jam tampil "No capacity set". ddt + tm2. |
 | 2026-10-02 | C.33: 49 widget, dashboard **Overall** (daftar centang) + enam dashboard bidang (template): Sales, Purchasing, AR & AP, Cashflow, Payroll, Human Resource; ubin tambah, tekan-tahan, seret; daftar widget disusun dari referensi ERP lain (`openingboard_references.md`). ddt + tm2. |
 | 2026-10-02 | B.12: **Reset data dummy menolak bila struktur `ddt*` berubah sejak baseline** (penjaga drift; daftar tampil di Developer → Data Dummy, `ddt:baseline check`, paksa `--allow-drift`); setiap migration di `ddt*` diikuti simpan ulang baseline; tabel yang dibuat setelah baseline tidak disentuh Reset; baseline lama dicadangkan sebelum ditimpa. Baseline baru disimpan 19:33:33. |
+| 2026-10-02 | B.15: **data dummy per stage** — stage 1 = belum ada yang di-Confirm / di-approve / diproses, stage berikutnya maju satu langkah; tiap stage = set dump `.sql` dengan tombol Restore sendiri di Developer → Data Dummy (`ddt:stage`), dibangun lewat aturan aplikasi (`StageBuilder`). Terbangun: stage 1 (Inquiry New Draft, PR Draft), stage 2 (Inquiry Confirmed menunggu Pro-Dev, PR menunggu approval); set `mixed` = dummy campur. |
+| 2026-10-02 | B.15: urutan stage dari user — 4 Quotation Draft, 5 Customer Order Draft, 6 Customer Order menunggu approval, 7 CPDEL Draft; set stage 1–7 dibangun (31 inquiry menempuh seluruh alur; Pro-Dev = susunan grid contoh lewat tombol Confirm yang sama, Pro-Cost = mode manual + CostingEngine). Draft tanpa customer / ukuran bentangan / pilihan qty tidak ikut set stage. |
+| 2026-10-02 | **A.22: Inventory & Warehouse** — gudang = gedung (A5, A6, A10 + gedung lain; ukuran perkiraan, disesuaikan officer; bentuk bebas mis. huruf L; 1-3 lantai), area dan bin bisa ditambah user, Stock Transfer dengan label kapasitas + QR / barcode, dead stock merah (transfer bukan pergerakan), fasilitas label + lacak QR. Dibangun di ddt: Warehouse Map, Stock Transfer, Buildings / Storage Areas / Bins, Stock by Location, Print Location / Item Label, Track via QR/Barcode. Review: `md_for_systems/warehouse_review.md`. |
+| 2026-10-02 | A.22: denah gudang sementara dibuat agen (ukuran dan letak perkiraan, tanpa menunggu sketsa / foto) dan harus tetap bisa diubah user atau officer warehouse lewat layar. |
+| 2026-10-02 | B.15: set stage 8–12 dibangun (Posted to Production + Work Order belum dimulai, Delivery Order Draft, Delivery Order Confirmed, Customer Invoice Draft, Customer Invoice Confirmed menunggu pembayaran) — usulan agen, belum dikonfirmasi user; rantai PO di samping: stage 4 PO Draft, 5–7 menunggu approval level 1–3, 8+ Approved. Build sungguhan tanpa transaksi. |
 | 2026-10-02 | B.3: **satu kamus untuk v1 & v2, tanpa teks hardcode** (user: "copy how it work from SCRIPTCASE ... label ataupun text itu berupa variable yang mengarah pada database dictionary ... walaupun bahasa di tambah tidak merubah lagi di setiap module"; "ya di convert pakai cara terbaru agar no hardcode") — variabel = teks English (`t('...')`), kamus kunci v1 `sys_translations` dilebur ke `sys_dictionary`, layar v1 dikonversi per modul (zona beku: izin teks saja; portal kandidat ikut), alat penerjemah: kolom Untranslated + ganti teks English tanpa kehilangan terjemahan. |

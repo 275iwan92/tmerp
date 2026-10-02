@@ -41,6 +41,9 @@
                 <x-dl::alert tone="warn" message="No set yet. Build the stage sets, or save the current dummy data as a set below." />
             @endforelse
 
+            {{-- Build memakan ~6 menit (lebih lama dari batas waktu satu permintaan web) -> lewat perintah, bukan tombol. --}}
+            <x-dl::alert tone="info" :message="raw(t('The stage sets are built again, after master data changed, with the command:').' php artisan ddt:stage build --env=mockup')" />
+
             <x-dl::card title="Save the current dummy data as a set" icon="fa-floppy-disk"
                 description="Freezes the dummy data as it is now under a name of your own. Saving under an existing name replaces that set.">
                 <x-dl::action-form action="{{ route('v2.dummy.stage.save') }}">

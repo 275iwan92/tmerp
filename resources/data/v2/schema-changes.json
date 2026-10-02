@@ -1,5 +1,544 @@
 [
     {
+        "at": "2026-10-02 20:01:57",
+        "items": [
+            {
+                "kind": "tipe berubah",
+                "db": "tm2inv",
+                "table": "v_fg_onhand",
+                "column": "location_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2inv",
+                "table": "v_fg_onhand",
+                "column": "last_movement",
+                "detail": "datetime -> datetime null"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "v_fg_onhand",
+                "column": "last_item_movement",
+                "detail": "datetime"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2inv",
+                "table": "v_rm_available",
+                "column": "location_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2inv",
+                "table": "v_rm_onhand",
+                "column": "location_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2inv",
+                "table": "v_rm_onhand",
+                "column": "last_movement",
+                "detail": "datetime -> datetime null"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "v_rm_onhand",
+                "column": "last_item_movement",
+                "detail": "datetime"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2inv",
+                "table": "v_sfg_onhand",
+                "column": "location_id",
+                "detail": "bigint unsigned -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2inv",
+                "table": "v_sfg_onhand",
+                "column": "last_movement",
+                "detail": "datetime -> datetime null"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "v_sfg_onhand",
+                "column": "last_item_movement",
+                "detail": "datetime"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_label_print",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_transfer",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "inv_transfer_line",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_loc",
+                "column": "zone_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_loc",
+                "column": "capacity_pallet",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_loc",
+                "column": "map_x",
+                "detail": "decimal(7,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_loc",
+                "column": "map_y",
+                "detail": "decimal(7,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_loc",
+                "column": "block_reason",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "length_m",
+                "detail": "decimal(7,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "width_m",
+                "detail": "decimal(7,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "floor_count",
+                "detail": "tinyint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "shape",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "notch_length_m",
+                "detail": "decimal(7,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "notch_width_m",
+                "detail": "decimal(7,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "notch_corner",
+                "detail": "varchar(2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "outline",
+                "detail": "varchar(500)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_warehouse",
+                "column": "address",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "wh_zone",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-02 19:29:02",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "sop_document",
+                "column": "doc_type",
+                "detail": "varchar(10)"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-02 19:14:31",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_assistant_message",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_assistant_metric",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-02 18:35:58",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "do_line",
+                "column": "receive_diff_reason",
+                "detail": "varchar(20)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "do_line",
+                "column": "receive_note",
+                "detail": "varchar(150)"
+            }
+        ]
+    },
+    {
+        "at": "2026-10-02 18:35:07",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_user_board",
+                "column": "dashboard_code",
+                "detail": "varchar(30)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_widget",
+                "column": "dashboard_code",
+                "detail": "varchar(30)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_dashboard",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-02 17:05:06",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_board_template",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_daily_quote",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_kpi_target",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_user_board",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_user_widget",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_widget",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-02 16:23:41",
+        "items": [
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "invoice_number",
+                "detail": "varchar(50) -> varchar(50) null"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "is_ppn",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "tax_rate",
+                "detail": "decimal(5,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "payment_term_code",
+                "detail": "varchar(50)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "customer_po_no",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "bill_to_name",
+                "detail": "varchar(200)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "bill_to_address",
+                "detail": "text"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "company_bank_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "discount_pct",
+                "detail": "decimal(5,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "discount_amount",
+                "detail": "decimal(18,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "charge_amount",
+                "detail": "decimal(18,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "charge_note",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "dp_applied_amount",
+                "detail": "decimal(18,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "dp_plan",
+                "detail": "json"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "order_amount",
+                "detail": "decimal(18,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "dp_percent",
+                "detail": "decimal(5,2)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "notes",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "confirmed_by",
+                "detail": "varchar(50)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "confirmed_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "cancel_reason",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "cancelled_by",
+                "detail": "varchar(50)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "cancelled_at",
+                "detail": "datetime"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "v1_fin_ap_aging",
+                "column": "invoice_number",
+                "detail": "varchar(50) -> varchar(50) null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "v1_fin_ar_aging",
+                "column": "invoice_number",
+                "detail": "varchar(50) -> varchar(50) null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "v1_fin_dp_outstanding",
+                "column": "invoice_number",
+                "detail": "varchar(50) -> varchar(50) null"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2acc",
+                "table": "fin_company_bank",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2acc",
+                "table": "fin_invoice_line",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "do_line",
+                "column": "qty_received",
+                "detail": "decimal(14,2)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_doc_series",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_doc_series_counter",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-10-02 14:02:04",
         "items": [
             {

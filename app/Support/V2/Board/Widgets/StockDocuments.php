@@ -7,6 +7,7 @@ use App\Support\V2\Board\Numbers;
 use App\Support\V2\Board\Widget;
 
 // Dokumen stok bertanggal pada periode itu menurut arah: masuk, keluar, penyesuaian / opname, retur.
+// Saldo awal dan Stock Transfer tidak dihitung (pindah bin bukan penerimaan dan bukan pengeluaran).
 final class StockDocuments extends Widget
 {
     protected function meta(): array

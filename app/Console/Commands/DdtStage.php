@@ -40,6 +40,12 @@ class DdtStage extends DdtBaseline
         return self::root().'/'.$key;
     }
 
+    // Gudang file upload bersama semua set (bukan set: tidak punya manifest).
+    public static function pool(): string
+    {
+        return self::root().'/_files';
+    }
+
     public static function validKey(string $key): bool
     {
         // Awalan "_" = set buatan sistem (mis. _before-build).
@@ -168,7 +174,7 @@ class DdtStage extends DdtBaseline
     {
         $tmp = self::path($key).'.tmp';
         File::deleteDirectory($tmp);
-        File::ensureDirectoryExists($tmp.'/files');
+        File::ensureDirectoryExists($tmp);
 
         $schema = $checksums = [];
         foreach ($dbs as $d) {
@@ -178,14 +184,19 @@ class DdtStage extends DdtBaseline
             $schema[$d] = self::liveSchema($d);
             $checksums[$d] = self::checksums($d, array_keys($schema[$d]));
         }
+        // File upload yang dirujuk (artwork dll., ~150 MB) hampir sama di semua set -> satu gudang bersama, bukan salinan per set.
         $files = $this->referencedFiles($dbs);
         foreach ($files as $path) {
-            File::ensureDirectoryExists(dirname("$tmp/files/$path"));
-            File::copy(Storage::disk('public')->path($path), "$tmp/files/$path");
+            $source = Storage::disk('public')->path($path);
+            $pooled = self::pool().'/'.$path;
+            if (! is_file($pooled) || filesize($pooled) !== filesize($source)) {
+                File::ensureDirectoryExists(dirname($pooled));
+                File::copy($source, $pooled);
+            }
         }
         file_put_contents("$tmp/manifest.json", json_encode(['key' => $key, 'label' => $label, 'note' => $note, 'built' => $built,
             'created_at' => now()->toDateTimeString(), 'by' => auth()->user()?->login ?? get_current_user(), 'databases' => $dbs,
-            'files' => count($files), 'schema' => $schema, 'checksums' => $checksums]));
+            'files' => count($files), 'file_list' => $files, 'schema' => $schema, 'checksums' => $checksums]));
 
         File::deleteDirectory(self::path($key));
         File::moveDirectory($tmp, self::path($key));
@@ -235,10 +246,10 @@ class DdtStage extends DdtBaseline
 
         $n = 0;
         $disk = Storage::disk('public');
-        foreach (File::allFiles(self::path($key).'/files') as $f) {
-            $path = str_replace('\\', '/', $f->getRelativePathname());
-            if (! $disk->exists($path) || $disk->size($path) !== $f->getSize()) {
-                $disk->put($path, file_get_contents($f->getPathname()));
+        foreach ($m['file_list'] ?? [] as $path) {
+            $pooled = self::pool().'/'.$path;
+            if (is_file($pooled) && (! $disk->exists($path) || $disk->size($path) !== filesize($pooled))) {
+                $disk->put($path, file_get_contents($pooled));
                 $n++;
             }
         }
@@ -279,7 +290,10 @@ class DdtStage extends DdtBaseline
         try {
             $builder->run(fn (string $key, string $label, string $note) => $this->saveStage($dbs, $key, $label, $note, true));
         } finally {
-            $this->restoreStage($dbs, '_before-build');
+            // Tetap tersimpan bila pengembalian gagal: itulah satu-satunya salinan isi sebelum build.
+            if ($this->restoreStage($dbs, '_before-build') === self::SUCCESS) {
+                File::deleteDirectory(self::path('_before-build'));
+            }
         }
 
         return self::SUCCESS;

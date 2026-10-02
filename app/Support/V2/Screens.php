@@ -102,6 +102,15 @@ final class Screens
                 ]],
             ]],
             ['code' => 'INV', 'short' => 'INV', 'label' => 'Inventory', 'icon' => 'fa-solid fa-warehouse', 'groups' => [
+                ['label' => 'Warehouse', 'items' => [
+                    $it('warehouse-map', ['Warehouse Map', 'fa-solid fa-map-location-dot', 'new v2: docs/warehouselayout_tier1.md (tm2mst.wh_warehouse + wh_zone + wh_loc)', 'warehouse_layout_v2.jpg', true]),
+                    $it('stock-transfer', ['Stock Transfer', 'fa-solid fa-right-left', 'new v2: tm2inv.inv_transfer + inv_transfer_line (stock moves between bins / warehouses)', null]),
+                ]],
+                ['label' => 'Label & QR Code', 'items' => [
+                    $it('label-location', ['Print Location Label (QR)', 'fa-solid fa-location-dot', 'new v2: bin label (code, capacity, QR + barcode), tm2inv.inv_label_print', null, true]),
+                    $it('label-item', ['Print Item Label (QR)', 'fa-solid fa-tag', 'new v2: stock position label (item, bin, qty, QR + barcode)', null, true]),
+                    $it('scan-track', ['Track via QR/Barcode', 'fa-solid fa-magnifying-glass-location', 'new v2: track bin / item / transfer from a scanned code', null, true]),
+                ]],
                 ['label' => 'Stock Adjustment', 'items' => [
                     $it('approval-stock', ['Adjustment & Opname Approval Center', 'fa-solid fa-stamp', 'inventory/stock-adjustment-approval.blade.php', null]),
                 ]],
@@ -138,11 +147,12 @@ final class Screens
 
     private static function item(string $slug, array $def): array
     {
-        [$label, $icon, $ref, $mockup] = $def;
+        // $filters = true: layar memakai query GET sebagai saringan (gedung, lantai, kode), bukan penanda form baru.
+        [$label, $icon, $ref, $mockup, $filters] = array_pad($def, 5, false);
         $status = is_file(resource_path("views/v2/screens/{$slug}.blade.php")) ? 'review' : 'todo';
 
         return ['code' => 'S-'.$slug, 'slug' => $slug, 'label' => t($label), 'icon' => $icon, 'ref' => $ref, 'mockup' => $mockup, 'status' => $status,
-            'url' => route('v2.screen', $slug), 'type' => 'form', 'badge' => $status === 'review' ? 'R' : t('Not yet'), 'badgeTone' => $status === 'review' ? 'partial' : 'todo'];
+            'url' => route('v2.screen', $slug), 'type' => 'form', 'badge' => $status === 'review' ? 'R' : t('Not yet'), 'badgeTone' => $status === 'review' ? 'partial' : 'todo', 'filters' => (bool) $filters];
     }
 
     private static function flowItem(string $module, string $label): array

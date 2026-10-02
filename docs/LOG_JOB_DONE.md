@@ -56,6 +56,12 @@ result, capacity planning".
   `openingboard_references.md`, pedoman C.33, Help (panduan + SOP & Work Instruction), gambar `docs/mockups/opening_board_app/11`–`14`.
 - Belum: jam per shift 45 mesin di tm2 (data nyata, menunggu user), target produksi dari manajemen, WI bergambar / lampiran.
 - Baseline dummy 2026-10-02 19:33:33 sudah memuat kolom `doc_type` dan dokumen contoh (`ddt:baseline check` = tanpa perubahan).
+- **Job Description General Manager** (user, melihat widget kosong: "build for me"): migrasi `2026_10_02_000165` mengisi
+  `org_position.job_description` jabatan `GENERALMANAGER` di ddt + tm2, **hanya bila masih kosong** (teks HR tidak ditimpa),
+  `job_description_updated_by = 'claude (draft)'`. Isi disusun dari bagan pimpinan 2026-09-28 (atasan Presiden Direktur, bawahan
+  Operational Manager; Finance & Accounting dan Product Costing di luar jabatan ini) — **draf, menunggu koreksi user**; diubah di
+  Human Resources → Master Posisi. Baseline dummy disimpan ulang 19:49:49. Di tm2 widget masih "akun belum terhubung ke jabatan"
+  karena `sec_user` johiwan belum ditautkan ke pegawai di database live (menunggu izin user).
 
 ## 2026-10-02 -- Reset data dummy: penjaga drift struktur (baseline vs ddt* sekarang)
 
@@ -3724,3 +3730,35 @@ baru. Full suite: 103 test, 94 passed, 9 skipped (Firebase, tidak terkait), 0 ga
 - Submit tidak diberi pemeriksaan tambahan: kolom tetap NOT NULL, jadi baris tanpa akun tidak mungkin ada.
 - Test `PurchaseRequisitionFreeTextLineTest` (6 test, membersihkan PR buatannya sendiri). Dokumen: `procurement_tier2.md` A-1.2,
   `screen_pur_pr_entry.md`.
+
+## 2026-10-02 — Inventory & Warehouse: peta gudang, Stock Transfer, label QR / barcode, dead stock merah (mockup.test)
+
+Perintah user: "ya saya tunggu warehouse mapping, lalu input moving item antar warehouse ... capacity label dan barcode or
+QR code ... warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BUILD TOO". Rancangan + yang dibangun:
+`docs/warehouselayout_tier1.md` bagian 13. Dokumen review user: `docs/md_for_systems/warehouse_review.md`. Tangkapan layar:
+`docs/mockups/warehouse_app/`.
+
+- **Gudang = gedung nyata** (user: A5, A6, A10 terpisah, masih ada gedung lain): `wh_warehouse` + ukuran meter, bentuk
+  (kotak / huruf L / garis luar sendiri), 1-3 lantai. **Area** = tabel baru `wh_zone`; **bin** = `wh_loc` + area,
+  kapasitas pallet, posisi, alasan blokir. Layar isi: Buildings, Storage Areas, Bins (Grid Lookup) + Generate Bins.
+- **Warehouse Map** (`warehouse-map`, objek DevLib baru `x-dl::wh-map`): denah per lantai, bin berwarna menurut isi,
+  **dead stock merah**, panel isi bin (kapasitas, QR, item), cari, saring, Edit Layout (seret / ubah ukuran area),
+  tombol Transfer / Label / Block.
+- **Stock Transfer** (`stock-transfer`): tabel baru `inv_transfer` + `inv_transfer_line`, posting
+  `StockTransferService` (dua baris kartu stok per baris, `doc_type` TF, tanpa jurnal, Cancel = pindah balik), nomor
+  `TFyy#####`, pemeriksaan kapasitas bin tujuan, label bin (QR + barcode) di form, cetakan `stock-transfer` (belum A).
+- **Label & lacak**: Print Location Label, Print Item Label, lembar cetak (`x-dl::label`, `x-dl::label-sheet`), Label
+  Print History (`inv_label_print`), Track via QR/Barcode (`x-dl::scan`: scanner atau kamera HP).
+- **Dead stock satu definisi**: view `v_*_onhand` + `last_item_movement` (transfer tidak dihitung sebagai gerak); dipakai
+  peta, transfer, laporan Stock by Location, jawaban asisten Deadstock, widget Deadstock Value, laporan Slow Moving Item.
+  `v_inv_movement` membawa nomor transfer; Stock Card menandai Transfer in / Transfer out.
+- Perbaikan DevLib: baris `x-dl::lines` yang read-only menampilkan teks pilihan (dulu kuncinya); `DbGrid::rowTone()`.
+- Migration `2026_10_02_000200` (tabel) + `000201` (view): ddt + tm2. `000202` (menu Inventory > Warehouse, Label & QR Code,
+  Scan Center): ddt saja. `000203` (kamus Indonesia): ddt + tm2. Help 10 layar (`resources/data/help/warehouse.json`): ddt.
+- Data contoh ddt: `UatWarehouseSeeder` (A10 30 x 20 m, A5 24 x 16 m, A6 20 x 12 m, 2 lantai; 16 area, 217 bin; stok lewat
+  Stock In sungguhan; 3 transfer). Ukuran gedung = perkiraan, disesuaikan officer.
+- Test `StockTransferServiceTest` (6 test, membersihkan sendiri, dicek ke DB). Engine Catalog: Warehouse Stock, Stock
+  Transfer Posting. Uji layar: render tanpa login + Chrome headless (klik bin, cari, saring, lantai, seret area) dan
+  rute simpan (label, blokir, buat bin, transfer simpan / Confirm / cetak / Cancel).
+- Belum: Print Pallet Label, Scan Transaction, putaway terarah, FEFO, titipan customer, subkon, cycle count, menu di
+  tm2sys, denah nyata tiap gedung (lihat `backlog05_inventory_warehouse.md`).
