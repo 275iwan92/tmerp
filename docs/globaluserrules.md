@@ -184,6 +184,10 @@
     - **Dead stock tampil MERAH** (peta, transfer, laporan, label). Arti dead stock = E.2 (stok tidak bergerak lebih dari
       batas bulan di Settings > Constants); **memindahkan stok tidak dihitung sebagai pergerakan**.
     - **Fasilitas QR code + label wajib ada**: label lokasi (bin) dan label item, QR + barcode, lacak lewat pindai.
+    - **Denah sementara dibuat agen, tetap bisa diubah (user 2026-10-02):** "untuk ukuran dan foto untuk sementara denahnya
+      kamu buat dulu tapi nanti bisa diubah oleh user atau officer warehouse". Ukuran gedung, letak area, dan bin awal =
+      perkiraan agen, tidak menunggu sketsa atau foto; semuanya wajib tetap bisa diubah lewat layar (Buildings, Storage
+      Areas, Bins, Atur Tata Letak di Warehouse Map).
     - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**; menu `tm2sys` belum. Yang diputuskan agen
       sendiri dan menunggu koreksi: `docs/md_for_systems/warehouse_review.md` bagian 4.
 
@@ -620,3 +624,4 @@
 | 2026-10-02 | B.15: **data dummy per stage** — stage 1 = belum ada yang di-Confirm / di-approve / diproses, stage berikutnya maju satu langkah; tiap stage = set dump `.sql` dengan tombol Restore sendiri di Developer → Data Dummy (`ddt:stage`), dibangun lewat aturan aplikasi (`StageBuilder`). Terbangun: stage 1 (Inquiry New Draft, PR Draft), stage 2 (Inquiry Confirmed menunggu Pro-Dev, PR menunggu approval); set `mixed` = dummy campur. |
 | 2026-10-02 | B.15: urutan stage dari user — 4 Quotation Draft, 5 Customer Order Draft, 6 Customer Order menunggu approval, 7 CPDEL Draft; set stage 1–7 dibangun (31 inquiry menempuh seluruh alur; Pro-Dev = susunan grid contoh lewat tombol Confirm yang sama, Pro-Cost = mode manual + CostingEngine). Draft tanpa customer / ukuran bentangan / pilihan qty tidak ikut set stage. |
 | 2026-10-02 | **A.22: Inventory & Warehouse** — gudang = gedung (A5, A6, A10 + gedung lain; ukuran perkiraan, disesuaikan officer; bentuk bebas mis. huruf L; 1-3 lantai), area dan bin bisa ditambah user, Stock Transfer dengan label kapasitas + QR / barcode, dead stock merah (transfer bukan pergerakan), fasilitas label + lacak QR. Dibangun di ddt: Warehouse Map, Stock Transfer, Buildings / Storage Areas / Bins, Stock by Location, Print Location / Item Label, Track via QR/Barcode. Review: `md_for_systems/warehouse_review.md`. |
+| 2026-10-02 | A.22: denah gudang sementara dibuat agen (ukuran dan letak perkiraan, tanpa menunggu sketsa / foto) dan harus tetap bisa diubah user atau officer warehouse lewat layar. |

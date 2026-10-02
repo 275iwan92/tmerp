@@ -56,7 +56,7 @@ History), **Inventory > Scan Center** (Track via QR/Barcode).
 |---|---|
 | G1 | A5, A6, A10 = gedung terpisah, dan masih ada gedung lain. Jadi **gudang = gedung**; gedung lain ditambah di Buildings. |
 | G2 | Fungsi dan kelas stok (Receiving, Paper, Ink, Finished Goods, ...) = **area di dalam gedung**. |
-| — | Ukuran gedung diisi perkiraan dulu; officer menyesuaikan di Buildings. |
+| — | Ukuran gedung dan denah diisi perkiraan agen dulu (tanpa menunggu sketsa / foto); user atau officer warehouse mengubahnya nanti lewat layar. |
 | — | Area penyimpanan harus bisa ditambah sendiri. |
 | — | Bentuk gedung bebas (contoh huruf L) supaya software bisa dipakai perusahaan lain; gedung Telasih kotak. |
 | — | Gedung 2 lantai; sistem harus bisa sampai 3 lantai. |
@@ -125,8 +125,9 @@ Yang ikut berubah: jawaban asisten Deadstock, widget Deadstock Value, dan lapora
 
 ## 8. Pertanyaan untuk user
 
-1. Ukuran dan isi tiap gedung yang sebenarnya (A5, A6, A10, dan gedung lain): boleh saya isi dari sketsa / foto, atau
-   officer mengisi sendiri di Buildings dan Storage Areas?
+1. ~~Ukuran dan isi tiap gedung yang sebenarnya~~ **Dijawab user 2026-10-02:** denah sementara dibuat agen dulu, nanti diubah
+   user / officer warehouse (Buildings, Storage Areas, Bins, Atur Tata Letak). Gedung lain di luar A5 / A6 / A10 ditambah
+   user di Buildings saat namanya sudah ada.
 2. Kapasitas bin: tetap dalam kg (perlu berat per item di master), atau cukup jumlah pallet?
 3. Batas dead stock tetap 6 bulan untuk semua jenis barang, atau berbeda per kategori (kertas, tinta, barang jadi)?
 4. Transfer perlu approval (mis. Kepala Gudang) atau cukup Confirm oleh petugas seperti sekarang?

@@ -32,7 +32,7 @@ Rancangan: **[`warehouselayout_tier1.md`](warehouselayout_tier1.md)** (bagian 13
 | 05.9 | Subkon: gudang virtual, 1 bin per supplier (terkait backlog04 Receiving dari Subkon) | 2 | menunggu K5 |
 | 05.10 | Cycle count per area / bin (reuse doc OP + scope) | 2 | belum |
 | 05.11 | Bin Utilization + peringatan kapasitas | 3 | — |
-| 05.12 | Denah nyata A5 / A6 / A10 + gedung lain: ukuran dan area yang sebenarnya (sekarang perkiraan) | — | **menunggu user / officer** |
+| 05.12 | Denah nyata A5 / A6 / A10 + gedung lain: user 2026-10-02 = denah sementara buatan agen dipakai dulu, officer warehouse mengubahnya lewat layar (Buildings, Storage Areas, Bins, Atur Tata Letak). Gedung lain ditambah user di Buildings | — | di tangan officer; bukan pekerjaan agen lagi |
 | 05.13 | Lapis Site + transfer dua langkah (dalam perjalanan) | 2 | hanya bila ada gudang beda kota |
 | 05.14 | Stock Card simple + extended, Item per Lokasi, Master Stock, Stock On Hand (preview 2026-10-01) | 1 | menunggu OK |
 | 05.15 | Adjustment dengan approval v2 (A1–A2) | 1 | menunggu user |
