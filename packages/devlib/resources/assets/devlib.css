@@ -2693,6 +2693,20 @@ a.dl-ycal__d:hover{background:var(--dl-hover);outline:1px solid var(--dl-accent)
 .dl-ycal__d--neutral{background:var(--dl-surface-alt);color:var(--dl-muted)!important}
 .dl-ycal__d--off{background:transparent;color:var(--dl-danger)!important;border:1px solid var(--dl-danger-line)}
 
+/* ---- x-dl::code-chain: dropdown saling terkait yang menyusun kode (Material Category -> kode item). Tiap kolom = satu tingkat:
+   dropdown, potongan kode (prefix) tingkat itu, tombol Add; baris bawah = kode jadi. */
+.dl-chain{border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);background:var(--dl-surface);padding:14px}
+.dl-chain__cols{display:grid;grid-template-columns:repeat(var(--dl-chain-n,5),minmax(0,1fr));gap:10px}
+.dl-chain__col{display:flex;flex-direction:column;gap:6px;min-width:0}
+.dl-chain__seg{min-height:26px;display:flex;align-items:center;justify-content:center;border:1px solid var(--dl-f-line);border-radius:var(--dl-radius-sm);background:var(--dl-surface-alt);font-family:var(--dl-font-mono);font-size:calc(13px * var(--dl-font-scale));font-weight:600;color:var(--dl-ink-strong);letter-spacing:.5px}
+.dl-chain__add{justify-content:center;text-decoration:none}
+.dl-chain__add.is-disabled{opacity:.45;pointer-events:none;cursor:not-allowed}
+.dl-chain__code{display:flex;align-items:baseline;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--dl-border)}
+.dl-chain__codelabel{font-size:calc(12px * var(--dl-font-scale));font-weight:600;color:var(--dl-f-label)}
+.dl-chain__code b{font-family:var(--dl-font-mono);font-size:calc(22px * var(--dl-font-scale));font-weight:600;letter-spacing:1px;color:var(--dl-ink-strong)}
+.dl-chain__code small{margin-left:auto;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-muted)}
+@media (max-width:900px){.dl-chain__cols{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}
+
 /* ---- x-dl::print-doc: cetakan dokumen transaksi (Devlib\PrintDoc\Document). A5 landscape (1-5 baris) / A4 portrait.
    Lebar keduanya 210 mm, jadi tata letak identik; semua blok punya posisi dan tinggi tetap. Kertas selalu terang:
    warna di sini sengaja literal (tidak ikut tema layar). Huruf Tahoma regular; tebal hanya judul, nomor, pihak, total. */

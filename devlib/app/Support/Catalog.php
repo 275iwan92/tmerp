@@ -178,7 +178,7 @@ final class Catalog
                     'p6-indicators' => $page('Dashboard Indicators', 'fa-solid fa-gauge-high', ['indicators' => ['KPI, gauge, progress ring, bullet, traffic light', $c('Kpi', 'Gauge', 'ProgressRing', 'Bullet', 'TrafficLight')]]),
                     'p6-codes' => $page('QR & Barcode', 'fa-solid fa-qrcode', ['codes' => ['QR & Barcode (Code128, EAN-13)', $c('Qr', 'Barcode')]]),
                     'p6-warehouse' => $page('Warehouse Map & Labels', 'fa-solid fa-warehouse', [
-                        'wh-map' => ['Warehouse map (building outline in metres: rectangle / L shape / any shape, floors, storage areas, bins, dead stock in red, expiry mark, bin panel with weight / volume / floor area)', $c('WhMap', 'Qr')],
+                        'wh-map' => ['Warehouse map (building outline in metres: rectangle / L shape / any shape, floors, storage areas, bins, dead stock in red, expiry mark, bin panel with weight / volume / floor area, stack view from the top down with swap buttons, remnant and buried marks)', $c('WhMap', 'Qr')],
                         'wh-labels' => ['Location, item and pallet labels (colour band, QR + barcode, expiry tags, three real sizes), size and printing guide, label sheet (label roll or A4), scan field', $c('Label', 'LabelGuide', 'LabelSheet', 'Scan', 'Qr', 'Barcode')],
                     ]),
                 ]],
@@ -239,7 +239,7 @@ final class Catalog
                 'field-key-value' => ['Key Value', $f('KeyValue')], 'field-rich-text' => ['Rich Text', $f('RichText')], 'input-theme' => ['Input · Themes', $f('Text')],
             ]],
             'p2-choices' => ['Choices & Lookup', 'fa-solid fa-list-check', [
-                'field-lookup' => ['Lookup', $f('Lookup')], 'field-select' => ['Select', $f('Select')], 'field-multi-select' => ['Multi Select', $f('MultiSelect')],
+                'field-lookup' => ['Lookup', $f('Lookup')], 'field-select' => ['Select', $f('Select')], 'code-chain' => ['Code Chain (linked dropdowns that build a code)', $c('CodeChain')], 'field-multi-select' => ['Multi Select', $f('MultiSelect')],
                 'field-radio' => ['Radio', $f('Radio')], 'field-checkboxes' => ['Checkboxes', $f('Checkboxes')], 'field-checkbox' => ['Checkbox', $f('Checkbox')],
                 'field-toggle' => ['Toggle', $f('Toggle')], 'field-toggle-group' => ['Toggle Group', $f('ToggleGroup')], 'field-rating' => ['Rating (half · read-only)', $f('Rating')],
                 'field-color' => ['Color', $f('Color')], 'field-slider' => ['Slider (range · vertical)', $f('Slider')], 'field-otp' => ['OTP', $f('Otp')],

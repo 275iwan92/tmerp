@@ -208,8 +208,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/master/raw-material/create', 'pages::master.raw-material.entry')->name('master.raw-material.create');
             Route::livewire('/master/raw-material/{material}/edit', 'pages::master.raw-material.entry')->name('master.raw-material.edit');
 
-            Route::livewire('/master/mat-category', 'pages::master.mat-category')->name('master.mat-category');
-
             Route::livewire('/master/warehouse', 'pages::master.warehouse.index')->name('master.warehouse.list');
             Route::livewire('/master/warehouse/create', 'pages::master.warehouse.entry')->name('master.warehouse.create');
             Route::livewire('/master/warehouse/{warehouse}/edit', 'pages::master.warehouse.entry')->name('master.warehouse.edit');

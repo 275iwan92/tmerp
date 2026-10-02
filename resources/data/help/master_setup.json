@@ -253,28 +253,30 @@
     "module": "MDATA",
     "title": "Raw Material Category",
     "purpose": {
-      "en": "The five-level category tree that builds the name and code of every raw material item. Open it to add a category or switch one off.",
-      "id": "Pohon kategori lima level yang membentuk nama dan kode setiap item bahan baku. Buka untuk menambah kategori atau menonaktifkannya."
+      "en": "The five linked category levels that build the item code of every raw material: item code = prefix 1 + 2 + 3 + 4 + 5. Open it to add an entry to a chain, rename one, or switch one off.",
+      "id": "Lima tingkat kategori yang saling terkait dan membentuk kode item setiap bahan baku: kode item = prefix 1 + 2 + 3 + 4 + 5. Buka untuk menambah entri pada satu rantai, mengganti nama, atau menonaktifkannya."
     },
-    "keywords": "kategori bahan baku, material category, prefix, hirarki item, level kategori, kelas stok, kode item, akun default kategori",
+    "keywords": "kategori bahan baku, material category, prefix, kode item, item code, pembentuk kode, rantai kategori, category 1, category 5, dropdown terkait, kelas stok, akun default kategori",
     "steps": [
-      {"en": "Open Raw Material Category and search by category name or parent, or filter by Level and Stock Class.", "id": "Buka Raw Material Category dan cari berdasarkan nama kategori atau induk, atau saring dengan Level dan Stock Class."},
-      {"en": "Click + New Record, or open a row, to get the form. Pick the Level first.", "id": "Klik + New Record, atau buka satu baris, untuk membuka form. Pilih Level terlebih dahulu."},
-      {"en": "For level 2 to 5 pick the parent from the level above.", "id": "Untuk level 2 sampai 5 pilih induk dari level di atasnya."},
-      {"en": "Type the category name and the prefix, then fill the default accounts when the category is level 1.", "id": "Ketik nama kategori dan prefix, lalu isi akun default bila kategorinya level 1."},
-      {"en": "Click Simpan. Level and parent are locked afterwards: to fix a wrong placement, create a new row and switch the old one off.", "id": "Klik Simpan. Level dan induk terkunci sesudahnya: untuk memperbaiki salah tempat, buat baris baru dan nonaktifkan yang lama."}
+      {"en": "Pick Category 1. Category 2 then lists only the entries under it; go on to Category 5. The box under each dropdown shows its prefix and Item Code shows the code built so far.", "id": "Pilih Category 1. Category 2 lalu hanya berisi entri di bawahnya; lanjutkan sampai Category 5. Kotak di bawah tiap dropdown menampilkan prefix-nya dan Item Code menampilkan kode yang sudah tersusun."},
+      {"en": "The form of the entry you picked opens below. Change the name or the note and click Save.", "id": "Form entri yang dipilih terbuka di bawahnya. Ubah nama atau catatan lalu klik Save."},
+      {"en": "To add an entry, first pick the levels above it, then click Add under the level you want. Type the name and the prefix and click Save.", "id": "Untuk menambah entri, pilih dulu tingkat di atasnya, lalu klik Add di bawah tingkat yang diinginkan. Ketik nama dan prefix lalu klik Save."},
+      {"en": "The list at the bottom shows the entries under your pick with the item code each one builds. Double-click a row to open it.", "id": "Daftar di bawah menampilkan entri di bawah pilihan Anda beserta kode item yang dibentuknya. Klik dua kali satu baris untuk membukanya."},
+      {"en": "Click Print for the whole chain list on paper.", "id": "Klik Print untuk mencetak daftar seluruh rantai."},
+      {"en": "The position of an entry is locked after saving. To fix a wrong placement, add a new entry in the right place and deactivate the old one.", "id": "Posisi entri terkunci setelah disimpan. Untuk memperbaiki salah tempat, tambah entri baru di tempat yang benar dan nonaktifkan yang lama."}
     ],
     "fields": [
-      {"label": "Level *", "en": "Level 1 to 5 of the hierarchy (Kategori, Jenis, Gramatur/Spec, Ukuran, Merek). Locked after the row is saved.", "id": "Level 1 sampai 5 hirarki (Kategori, Jenis, Gramatur/Spec, Ukuran, Merek). Terkunci setelah baris disimpan."},
-      {"label": "Induk (Level n) *", "en": "Parent category from the level above. Required for level 2 to 5 and locked after saving.", "id": "Kategori induk dari level di atasnya. Wajib untuk level 2 sampai 5 dan terkunci setelah disimpan."},
-      {"label": "Nama Kategori *", "en": "Category name, up to 100 characters, for example Art Carton.", "id": "Nama kategori, maksimal 100 karakter, misalnya Art Carton."},
-      {"label": "Kode Prefix *", "en": "Up to 3 characters, saved in capitals. It becomes a part of the item code. It must be unique under the same parent.", "id": "Maksimal 3 karakter, disimpan huruf besar. Menjadi bagian dari kode item. Harus unik di bawah induk yang sama."},
-      {"label": "Catatan", "en": "Optional note.", "id": "Catatan, opsional."},
-      {"label": "Aktif", "en": "Untick to switch the category off. Inactive categories are not offered when creating items.", "id": "Hilangkan centang untuk menonaktifkan kategori. Kategori nonaktif tidak ditawarkan saat membuat item."},
-      {"label": "Kelas Stok", "en": "Level 1 only: RAW, INDIRECT or SERVICE.", "id": "Khusus level 1: RAW, INDIRECT atau SERVICE."},
-      {"label": "Akun HPP / Beban", "en": "Level 1 only: default cost account used when an item of the category has none of its own.", "id": "Khusus level 1: akun biaya bawaan bila item dalam kategori tidak punya akun sendiri."},
-      {"label": "Akun Aset Persediaan", "en": "Level 1 only: default inventory asset account for the category.", "id": "Khusus level 1: akun aset persediaan bawaan untuk kategori."},
-      {"label": "Akun Kliring GR/IR", "en": "Level 1 only: default goods received not invoiced clearing account.", "id": "Khusus level 1: akun kliring barang diterima belum ditagih bawaan."}
+      {"label": "Category 1 … Category 5", "en": "The linked dropdowns. What a level means depends on Category 1: for Paper it is type, grammage, sheet size, brand; for Sheet it is flute, substance, size; for Ink it is group, series, name, colour.", "id": "Dropdown yang saling terkait. Arti tiap tingkat tergantung Category 1: untuk Paper yaitu jenis, gramatur, ukuran lembar, merek; untuk Sheet yaitu flute, substance, ukuran; untuk Ink yaitu kelompok, seri, nama, warna."},
+      {"label": "Item Code", "en": "The prefixes joined along the chain, for example Paper, Art carton, 210gr, 65 X 100 CM, GOLDEN = P + C + C + 02 + 002 = PCC02002.", "id": "Gabungan prefix sepanjang rantai, misalnya Paper, Art carton, 210gr, 65 X 100 CM, GOLDEN = P + C + C + 02 + 002 = PCC02002."},
+      {"label": "Under", "en": "The chain above this entry. Locked after saving.", "id": "Rantai di atas entri ini. Terkunci setelah disimpan."},
+      {"label": "Name *", "en": "Up to 100 characters. Two entries under the same parent cannot have the same name. Renaming also renames the category on the materials that use it.", "id": "Maksimal 100 karakter. Dua entri di bawah induk yang sama tidak boleh bernama sama. Mengganti nama ikut mengganti nama kategori pada bahan yang memakainya."},
+      {"label": "Prefix *", "en": "The piece of the item code this entry adds: 1 character for Category 1 to 3, 1 to 3 characters for Category 4 and 5, letters or digits. It must be unique under the same parent and is locked once entries below it or materials use it.", "id": "Potongan kode item yang ditambahkan entri ini: 1 karakter untuk Category 1 sampai 3, 1 sampai 3 karakter untuk Category 4 dan 5, huruf atau angka. Harus unik di bawah induk yang sama dan terkunci begitu dipakai entri di bawahnya atau bahan."},
+      {"label": "Stock Class", "en": "Category 1 only: RAW, INDIRECT or SERVICE.", "id": "Khusus Category 1: RAW, INDIRECT atau SERVICE."},
+      {"label": "COGS / Expense Account", "en": "Category 1 only: default cost account used when a material of the category has none of its own.", "id": "Khusus Category 1: akun biaya bawaan bila bahan dalam kategori tidak punya akun sendiri."},
+      {"label": "Stock Asset Account", "en": "Category 1 only: default inventory asset account for the category.", "id": "Khusus Category 1: akun aset persediaan bawaan untuk kategori."},
+      {"label": "GR/IR Clearing Account", "en": "Category 1 only: default goods received not invoiced clearing account.", "id": "Khusus Category 1: akun kliring barang diterima belum ditagih bawaan."},
+      {"label": "Entries Below / Materials Using It", "en": "How many entries sit directly under this one and how many materials follow this chain.", "id": "Jumlah entri tepat di bawah entri ini dan jumlah bahan yang mengikuti rantai ini."},
+      {"label": "Deactivate / Activate", "en": "An inactive entry is no longer offered when creating materials. An entry cannot be activated while the one above it is inactive.", "id": "Entri nonaktif tidak lagi ditawarkan saat membuat bahan. Entri tidak bisa diaktifkan selama entri di atasnya nonaktif."}
     ]
   },
   {

@@ -5,6 +5,7 @@ use App\Console\Commands\DdtStage;
 use App\Mail\EmailVerifyMail;
 use App\Models\Acc\FinPettyCashTx;
 use App\Models\Master\FlowConfig;
+use App\Models\Master\MatCategory;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
@@ -26,6 +27,7 @@ use App\Models\Sys\SysSupportTicket;
 use App\Providers\AssistantHostProvider;
 use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
+use App\Services\Master\MaterialCategoryService;
 use App\Services\ProDev\PartDieline;
 use App\Services\Pur\SpecialReceiptService;
 use App\Services\Sales\CpdelPromiseService;
@@ -1100,6 +1102,23 @@ Route::prefix('v2')->name('v2.')->group(function () {
             ->with('v2_flash', Dictionary::t('Holiday saved.'));
     })->name('holiday.save');
 
+    // Material Category v2 = pembentuk kode item (App\Services\Master\MaterialCategoryService): save / activate / deactivate satu
+    // baris rantai Category 1 -> 5. Aturan rantai (posisi terkunci, prefix unik, kode tidak bentrok) ada di service.
+    Route::post('/material-category/save', function (Request $r, MaterialCategoryService $svc) {
+        abort_unless(Auth::user()->canAccessModule('MDATA'), 403);
+        $node = $r->filled('id') ? MatCategory::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        $open = fn (MatCategory $n) => redirect(route('v2.screen', 'md-matcat').'?id='.$n->id_category);
+        if ($node && in_array($action, ['activate', 'deactivate'], true)) {
+            $svc->setActive($node, $action === 'activate', Auth::user()->login);
+
+            return $open($node)->with('v2_flash', $action === 'activate' ? tf(':name activated.', ['name' => $node->category_name]) : tf(':name deactivated.', ['name' => $node->category_name]));
+        }
+        $saved = $svc->save($node, $r->all(), Auth::user()->login);
+
+        return $open($saved)->with('v2_flash', tf(':name saved — item code :code.', ['name' => $saved->category_name, 'code' => $svc->code($saved->id_category)]));
+    })->name('matcat.save');
+
     // Proof of Delivery v2: satu kedatangan di customer (jam tiba + hasil terima) = satu catatan KPI janji kirim.
     Route::post('/pod/{id}', function (Request $r, int $id) {
         abort_unless(Auth::user()->canAccessModule('SALES'), 403);
@@ -1253,6 +1272,16 @@ Route::prefix('v2')->name('v2.')->group(function () {
         return response()->json(['added' => Dictionary::register($texts)]);
     })->name('dictionary.register');
 
+    // Pilihan bahasa (x-dl::lang-switch, config devlib.lang_url): disimpan ke akun user, bukan hanya cookie perangkat,
+    // supaya bahasanya ikut ke komputer lain. Daftar bahasa yang sah = sys_languages yang aktif (Devlib\Locale::languages).
+    Route::post('/lang', function (Request $r) {
+        $lang = (string) $r->input('lang');
+        abort_unless(isset(Locale::languages()[$lang]), 422);
+        Auth::user()->forceFill(['lang_code' => $lang])->save();
+
+        return response()->noContent();
+    })->name('lang');
+
     // Dialog Email x-dl::doc-share: cari alamat dari kontak customer, kontak supplier dan user (config devlib.mail_contacts_url).
     Route::get('mail-contacts', fn (Request $r) => response()->json(['rows' => MailContacts::search((string) $r->query('q', ''))]))
         ->name('mail-contacts');
@@ -1272,16 +1301,6 @@ Route::prefix('v2')->name('v2.')->group(function () {
             if (MailSettings::current()->require_verified && ! MailSettings::verified(Auth::user())) {
                 return response()->json(['message' => t('Your e-mail is not verified yet. Open Profile > E-mail to verify it first:').' '.route('v2.account.email')], 422);
             }
-    // Pilihan bahasa (x-dl::lang-switch, config devlib.lang_url): disimpan ke akun user, bukan hanya cookie perangkat,
-    // supaya bahasanya ikut ke komputer lain. Daftar bahasa yang sah = sys_languages yang aktif (Devlib\Locale::languages).
-    Route::post('/lang', function (Request $r) {
-        $lang = (string) $r->input('lang');
-        abort_unless(isset(Locale::languages()[$lang]), 422);
-        Auth::user()->forceFill(['lang_code' => $lang])->save();
-
-        return response()->noContent();
-    })->name('lang');
-
             $list = fn ($k) => DocShareService::addresses($r->input($k));
             $r->merge(['to_list' => $list('to'), 'cc_list' => $list('cc'), 'bcc_list' => $list('bcc')]);
             $r->validate(['to_list' => ['required', 'array', 'min:1'], 'to_list.*' => ['email'], 'cc_list.*' => ['email'], 'bcc_list.*' => ['email'],

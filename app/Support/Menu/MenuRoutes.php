@@ -48,7 +48,7 @@ final class MenuRoutes
             'PRE_MD_CUST' => route('master.customer'),
             'PRE_MD_PROD' => route('master.produk'),
             'PRE_MD_RAW' => route('master.raw-material.list'),
-            'PRE_MD_MATCAT' => route('master.mat-category'),
+            'PRE_MD_MATCAT' => route('v2.screen', 'md-matcat'),
             'PRE_MD_PROCESS' => route('production.master-process'),
             'PRE_MD_MACHINE' => route('master.machine'),
             // Halaman yang hanya ada di v2: menu v1 (top bar) membukanya apa adanya supaya barisnya bukan link mati.
@@ -98,7 +98,8 @@ final class MenuRoutes
             'MD_SUPP' => route('master.supplier'),
             'MD_SUPCAT' => route('master.supplier-category'),
             'MD_RAW' => route('master.raw-material.list'),
-            'MD_MATCAT' => route('master.mat-category'),
+            // Material Category = pembentuk kode item: satu layar di kedua situs (v2, dropdown saling terkait).
+            'MD_MATCAT' => route('v2.screen', 'md-matcat'),
             'MD_WH' => route('master.warehouse.list'),
             'MD_UOM' => route('master.uom'),
             // Konversi Satuan: di v1 panel di dalam Master Satuan; baris menunya sendiri hanya punya layar v2 (Grid Lookup).
@@ -118,7 +119,7 @@ final class MenuRoutes
             'INV_WH_RPT_LG' => route('v2.screen', 'inv-rpt-loss-gain'),
             'INV_WH_RPT_QC' => route('v2.screen', 'inv-rpt-inspection'),
             'INV_REF_RAW' => route('master.raw-material.list'),
-            'INV_REF_MATCAT' => route('master.mat-category'),
+            'INV_REF_MATCAT' => route('v2.screen', 'md-matcat'),
             'INV_REF_PROD' => route('master.produk'),
             'INV_REF_WH' => route('master.warehouse.list'),
             'MD_MACHINE' => route('master.machine'),

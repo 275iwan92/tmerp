@@ -235,6 +235,12 @@ final class Lang
         'n_all_read' => ['Semua notifikasi ditandai dibaca.', 'All notifications marked as read.'],
         'n_unread' => ['{n} belum dibaca', '{n} unread'],
         'pm_none_picked' => ['Belum ada baris yang dipilih.', 'No line is picked yet.'],
+        // x-dl::code-chain (dropdown saling terkait yang menyusun kode)
+        'cc_pick_first' => ['Pilih :level dulu', 'Pick :level first'],
+        'cc_level_of' => ['Tingkat :n dari :of', 'Level :n of :of'],
+        'cc_complete' => ['Lengkap', 'Complete'],
+        'cc_inactive' => ['nonaktif', 'inactive'],
+        'cc_code' => ['Kode', 'Code'],
         // Teks JS kanban / import / gantt (dulu Indonesia mentah), dipindah 2026-10-02.
         'k_move_to' => ['Pindah ke', 'Move to'],
         'k_move_tip' => ['Pindah ke... (tanpa drag)', 'Move to... (without dragging)'],

@@ -15,7 +15,7 @@ final class Screens
             'product-acc' => ['ACC Digital / Proof Digital', 'fa-solid fa-stamp', 'docs/flow_product_master.md §5', null],
             'master-raw' => ['Master Raw Material', 'fa-solid fa-layer-group', 'master/raw-material/index.blade.php', 'mockup_master_rawmaterial.html'],
             'master-customer' => ['Master Customer', 'fa-solid fa-building', 'master/customer.blade.php', 'mockup_master_customer.html'],
-            'master-matcat' => ['Raw Material Categories', 'fa-solid fa-sitemap', 'master/mat-category.blade.php', null],
+            'master-matcat' => ['Raw Material Categories', 'fa-solid fa-sitemap', 'v2: md-matcat (App\Support\V2\Grid\Master\MatCategoryGrid)', null],
             'master-uom' => ['Units of Measure', 'fa-solid fa-ruler', 'master/uom.blade.php', 'mockup_master_uom_v4.html'],
             'master-currency' => ['Currencies & Exchange Rates', 'fa-solid fa-coins', 'master/currency.blade.php', null],
             'master-card' => ['Master Card', 'fa-solid fa-id-card', 'production/prodev.blade.php (Master Card)', 'mockup_mastercard_ver2.jpg'],
