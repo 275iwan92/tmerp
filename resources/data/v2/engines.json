@@ -1961,6 +1961,291 @@
         ]
     },
     {
+        "class": "App\\Services\\Inventory\\WarehouseStock",
+        "file": "app/Services/Inventory/WarehouseStock.php",
+        "lines": 161,
+        "entries": [
+            {
+                "method": "positions",
+                "static": true,
+                "params": [
+                    {
+                        "name": "locationIds",
+                        "type": "?array",
+                        "default": "null"
+                    },
+                    {
+                        "name": "itemFilter",
+                        "type": "?array",
+                        "default": "null"
+                    }
+                ],
+                "returns": "Collection",
+                "note": "Every item that has stock in a bin now, with its last real movement and the dead stock flag."
+            },
+            {
+                "method": "binSummaries",
+                "static": true,
+                "params": [
+                    {
+                        "name": "bins",
+                        "type": "Collection",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Per bin: its items, weight in use, percent of capacity, status and whether it holds dead stock."
+            },
+            {
+                "method": "weightKg",
+                "static": true,
+                "params": [
+                    {
+                        "name": "qty",
+                        "type": "float",
+                        "default": null
+                    },
+                    {
+                        "name": "uom",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "material",
+                        "type": "?MatRaw",
+                        "default": null
+                    },
+                    {
+                        "name": "name",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?float",
+                "note": "Estimated weight of a quantity; empty when it cannot be estimated."
+            },
+            {
+                "method": "deadMonths",
+                "static": true,
+                "params": [],
+                "returns": "int",
+                "note": "The dead stock limit in months."
+            }
+        ],
+        "key": "warehouse-stock",
+        "name": "Warehouse Stock (bins, capacity, dead stock)",
+        "group": "Inventory",
+        "mode": "calc",
+        "purpose": "Tells what is in every bin, how full the bin is and which stock is dead. One source for the Warehouse Map, transfers, labels and tracking.",
+        "inputs": [
+            [
+                "locationIds",
+                "The bins to read; empty = every bin."
+            ],
+            [
+                "itemFilter",
+                "Only these items, per stock class (used when tracking one item)."
+            ],
+            [
+                "bins",
+                "The bin rows with their capacity and usable flag."
+            ]
+        ],
+        "outputs": [
+            [
+                "Stock positions",
+                "Class, item, bin, quantity, unit, value, estimated weight, last movement, idle days, dead flag."
+            ],
+            [
+                "Bin status",
+                "EMPTY, IN_USE, FULL (90% of the weight capacity or more), OVER (above capacity) or BLOCKED."
+            ]
+        ],
+        "steps": [
+            "Reads the stock balance views of raw material, semi finished and finished goods: the last stock card row per item and bin.",
+            "Last movement = the latest stock card row of the item in any bin that is not a stock transfer, so moving stock never resets it.",
+            "Dead stock = that movement is older than the limit, or the item never moved. The same rule as the assistant answer and the Deadstock widget.",
+            "Weight: unit KG = the quantity; sheets with grammage and size = quantity x gsm x length x width; anything else is unknown and left out of the capacity."
+        ],
+        "reads": [
+            "tm2inv.v_rm_onhand",
+            "tm2inv.v_sfg_onhand",
+            "tm2inv.v_fg_onhand",
+            "tm2mst.wh_loc",
+            "tm2mst.mat_raw",
+            "tm2mst.prod_part",
+            "tm2mst.prod_product"
+        ],
+        "writes": [],
+        "settings": [
+            "Settings > Constants: ASSISTANT_DEADSTOCK_MONTHS"
+        ],
+        "used": [
+            "Warehouse Map",
+            "Stock Transfer",
+            "Stock by Location",
+            "Print Location Label",
+            "Print Item Label",
+            "Track via QR/Barcode"
+        ],
+        "tests": [
+            "tests/Feature/StockTransferServiceTest.php"
+        ],
+        "docs": [
+            "docs/warehouselayout_tier1.md"
+        ]
+    },
+    {
+        "class": "App\\Services\\Inventory\\StockTransferService",
+        "file": "app/Services/Inventory/StockTransferService.php",
+        "lines": 192,
+        "entries": [
+            {
+                "method": "confirmErrors",
+                "static": false,
+                "params": [
+                    {
+                        "name": "t",
+                        "type": "InvTransfer",
+                        "default": null
+                    }
+                ],
+                "returns": "array",
+                "note": "Why the transfer cannot be confirmed yet; empty = it can."
+            },
+            {
+                "method": "confirm",
+                "static": false,
+                "params": [
+                    {
+                        "name": "transfer",
+                        "type": "InvTransfer",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?string",
+                "note": "Moves the stock and gives the document its number."
+            },
+            {
+                "method": "cancel",
+                "static": false,
+                "params": [
+                    {
+                        "name": "transfer",
+                        "type": "InvTransfer",
+                        "default": null
+                    },
+                    {
+                        "name": "reason",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "login",
+                        "type": "string",
+                        "default": null
+                    }
+                ],
+                "returns": "?string",
+                "note": "Moves the stock back to the source bins; needs a reason."
+            },
+            {
+                "method": "balance",
+                "static": false,
+                "params": [
+                    {
+                        "name": "class",
+                        "type": "string",
+                        "default": null
+                    },
+                    {
+                        "name": "itemId",
+                        "type": "int",
+                        "default": null
+                    },
+                    {
+                        "name": "partId",
+                        "type": "?int",
+                        "default": null
+                    },
+                    {
+                        "name": "locationId",
+                        "type": "int",
+                        "default": null
+                    }
+                ],
+                "returns": "float",
+                "note": "Stock of one item in one bin right now."
+            }
+        ],
+        "key": "stock-transfer",
+        "name": "Stock Transfer Posting",
+        "group": "Inventory",
+        "mode": "flow",
+        "purpose": "Moves stock from one bin to another, in the same warehouse or between warehouses, and can take the move back.",
+        "inputs": [
+            [
+                "transfer",
+                "The transfer document with its lines: item, source bin, destination bin, quantity."
+            ],
+            [
+                "login",
+                "Who confirms or cancels."
+            ],
+            [
+                "reason",
+                "Why the transfer is cancelled."
+            ]
+        ],
+        "outputs": [
+            [
+                "Stock card rows",
+                "Two rows per line: out of the source bin and into the destination bin, both marked TF."
+            ],
+            [
+                "Transfer number",
+                "TF + year + running number, issued at Confirm."
+            ],
+            [
+                "Error text",
+                "Empty when it worked; otherwise the reason, and nothing is written."
+            ]
+        ],
+        "steps": [
+            "Checks every line: quantity, destination bin in the destination warehouse, bin not blocked, enough stock in the source bin (lines from the same bin are added up).",
+            "Per line writes the row out of the source bin and the row into the destination bin; the value moves with the average price of the source bin.",
+            "The destination bin gets a weighted average price. The total stock of the item does not change and no journal is made.",
+            "Notes on the line whether the item was dead stock at that moment.",
+            "Cancel writes the same two rows the other way round; it stops when the stock is no longer in the destination bin."
+        ],
+        "reads": [
+            "tm2inv.inv_transfer",
+            "tm2inv.inv_transfer_line",
+            "tm2inv.rm_stockcard / sfg_stockcard / fg_stockcard",
+            "tm2mst.wh_loc"
+        ],
+        "writes": [
+            "tm2inv.rm_stockcard / sfg_stockcard / fg_stockcard",
+            "tm2inv.inv_transfer",
+            "tm2inv.inv_transfer_line"
+        ],
+        "used": [
+            "Stock Transfer",
+            "Warehouse Map (Transfer button)"
+        ],
+        "tests": [
+            "tests/Feature/StockTransferServiceTest.php"
+        ],
+        "docs": [
+            "docs/warehouselayout_tier1.md"
+        ]
+    },
+    {
         "class": "App\\Services\\Scheduling\\WoGenerationService",
         "file": "app/Services/Scheduling/WoGenerationService.php",
         "lines": 216,
@@ -3072,7 +3357,7 @@
     {
         "class": "Assistant\\Engine",
         "file": "packages/assistant/src/Engine.php",
-        "lines": 232,
+        "lines": 236,
         "entries": [
             {
                 "method": "ask",

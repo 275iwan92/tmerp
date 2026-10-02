@@ -13,6 +13,7 @@ class NoHardcodedDatabaseNameTest extends TestCase
     // Berkas yang sengaja menyebut tm2* sebagai DATA/label, bukan SQL (alasan ditulis).
     private const ALLOWED = [
         'app/Services/Inventory/StockPostingService.php' => 'reference_name = label tersimpan di data, bukan nama database',
+        'app/Services/Inventory/StockTransferService.php' => 'reference_name = label tersimpan di data (kartu stok transfer), bukan nama database',
         'app/Services/Hrm/EmployeeMergeService.php' => 'REFERENCES diterjemahkan lewat DbName::table()',
         'app/Console/Commands/DdtCopy.php' => 'alat salin tm2* -> ddt*',
         'app/Console/Commands/DdtCopySys.php' => 'alat salin tm2sys -> ddtsys',

@@ -7,6 +7,8 @@ use App\Services\Costing\CostingEngine;
 use App\Services\Costing\ReverseCostingService;
 use App\Services\Flow\FlowEngineService;
 use App\Services\Imposition\ImpositionEngine;
+use App\Services\Inventory\StockTransferService;
+use App\Services\Inventory\WarehouseStock;
 use App\Services\Payroll\PayrollEngineService;
 use App\Services\Planning\MaterialPlanningEngine;
 use App\Services\ProDev\SpecEngine;
@@ -396,6 +398,73 @@ final class EngineRegistry
                 'settings' => ['Settings > Constants: BOOKING_NEED_WORKDAYS'],
                 'used' => ['Material Planning', 'Material Booking', 'Opening screen alert', 'Scheduled command planning:run (daily)'],
                 'docs' => ['docs/materialbooking_tier1.md §6-§8'],
+            ],
+            [
+                'key' => 'warehouse-stock', 'name' => 'Warehouse Stock (bins, capacity, dead stock)', 'group' => 'Inventory', 'mode' => 'calc',
+                'purpose' => 'Tells what is in every bin, how full the bin is and which stock is dead. One source for the Warehouse Map, transfers, labels and tracking.',
+                'class' => WarehouseStock::class,
+                'methods' => ['positions', 'binSummaries', 'weightKg', 'deadMonths'],
+                'notes' => [
+                    'positions' => 'Every item that has stock in a bin now, with its last real movement and the dead stock flag.',
+                    'binSummaries' => 'Per bin: its items, weight in use, percent of capacity, status and whether it holds dead stock.',
+                    'weightKg' => 'Estimated weight of a quantity; empty when it cannot be estimated.',
+                    'deadMonths' => 'The dead stock limit in months.',
+                ],
+                'inputs' => [
+                    ['locationIds', 'The bins to read; empty = every bin.'],
+                    ['itemFilter', 'Only these items, per stock class (used when tracking one item).'],
+                    ['bins', 'The bin rows with their capacity and usable flag.'],
+                ],
+                'outputs' => [
+                    ['Stock positions', 'Class, item, bin, quantity, unit, value, estimated weight, last movement, idle days, dead flag.'],
+                    ['Bin status', 'EMPTY, IN_USE, FULL (90% of the weight capacity or more), OVER (above capacity) or BLOCKED.'],
+                ],
+                'steps' => [
+                    'Reads the stock balance views of raw material, semi finished and finished goods: the last stock card row per item and bin.',
+                    'Last movement = the latest stock card row of the item in any bin that is not a stock transfer, so moving stock never resets it.',
+                    'Dead stock = that movement is older than the limit, or the item never moved. The same rule as the assistant answer and the Deadstock widget.',
+                    'Weight: unit KG = the quantity; sheets with grammage and size = quantity x gsm x length x width; anything else is unknown and left out of the capacity.',
+                ],
+                'reads' => ['tm2inv.v_rm_onhand', 'tm2inv.v_sfg_onhand', 'tm2inv.v_fg_onhand', 'tm2mst.wh_loc', 'tm2mst.mat_raw', 'tm2mst.prod_part', 'tm2mst.prod_product'],
+                'writes' => [],
+                'settings' => ['Settings > Constants: ASSISTANT_DEADSTOCK_MONTHS'],
+                'used' => ['Warehouse Map', 'Stock Transfer', 'Stock by Location', 'Print Location Label', 'Print Item Label', 'Track via QR/Barcode'],
+                'tests' => ['tests/Feature/StockTransferServiceTest.php'],
+                'docs' => ['docs/warehouselayout_tier1.md'],
+            ],
+            [
+                'key' => 'stock-transfer', 'name' => 'Stock Transfer Posting', 'group' => 'Inventory', 'mode' => 'flow',
+                'purpose' => 'Moves stock from one bin to another, in the same warehouse or between warehouses, and can take the move back.',
+                'class' => StockTransferService::class,
+                'methods' => ['confirmErrors', 'confirm', 'cancel', 'balance'],
+                'notes' => [
+                    'confirmErrors' => 'Why the transfer cannot be confirmed yet; empty = it can.',
+                    'confirm' => 'Moves the stock and gives the document its number.',
+                    'cancel' => 'Moves the stock back to the source bins; needs a reason.',
+                    'balance' => 'Stock of one item in one bin right now.',
+                ],
+                'inputs' => [
+                    ['transfer', 'The transfer document with its lines: item, source bin, destination bin, quantity.'],
+                    ['login', 'Who confirms or cancels.'],
+                    ['reason', 'Why the transfer is cancelled.'],
+                ],
+                'outputs' => [
+                    ['Stock card rows', 'Two rows per line: out of the source bin and into the destination bin, both marked TF.'],
+                    ['Transfer number', 'TF + year + running number, issued at Confirm.'],
+                    ['Error text', 'Empty when it worked; otherwise the reason, and nothing is written.'],
+                ],
+                'steps' => [
+                    'Checks every line: quantity, destination bin in the destination warehouse, bin not blocked, enough stock in the source bin (lines from the same bin are added up).',
+                    'Per line writes the row out of the source bin and the row into the destination bin; the value moves with the average price of the source bin.',
+                    'The destination bin gets a weighted average price. The total stock of the item does not change and no journal is made.',
+                    'Notes on the line whether the item was dead stock at that moment.',
+                    'Cancel writes the same two rows the other way round; it stops when the stock is no longer in the destination bin.',
+                ],
+                'reads' => ['tm2inv.inv_transfer', 'tm2inv.inv_transfer_line', 'tm2inv.rm_stockcard / sfg_stockcard / fg_stockcard', 'tm2mst.wh_loc'],
+                'writes' => ['tm2inv.rm_stockcard / sfg_stockcard / fg_stockcard', 'tm2inv.inv_transfer', 'tm2inv.inv_transfer_line'],
+                'used' => ['Stock Transfer', 'Warehouse Map (Transfer button)'],
+                'tests' => ['tests/Feature/StockTransferServiceTest.php'],
+                'docs' => ['docs/warehouselayout_tier1.md'],
             ],
             [
                 'key' => 'wo-generation', 'name' => 'Work Order Generation', 'group' => 'Production', 'mode' => 'auto',
