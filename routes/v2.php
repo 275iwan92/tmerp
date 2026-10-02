@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\DdtBaseline;
+use App\Console\Commands\DdtStage;
 use App\Mail\EmailVerifyMail;
 use App\Models\Acc\FinPettyCashTx;
 use App\Models\Master\FlowConfig;
@@ -36,6 +37,7 @@ use App\Services\Sales\InquiryStage;
 use App\Services\Sales\InquiryWriter;
 use App\Support\Branding\Brand;
 use App\Support\Branding\CompanyLogo;
+use App\Support\Engines\EngineRegistry;
 use App\Support\Localization\Dictionary;
 use App\Support\Mail\MailSettings;
 use App\Support\V2\AppMenu;
@@ -1359,7 +1361,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
     Route::get('/engines', function () {
         abort_unless(AppMenu::user(Auth::user())['developer'], 403);
 
-        return view('v2.engines', ['engines' => \App\Support\Engines\EngineRegistry::catalog()]);
+        return view('v2.engines', ['engines' => EngineRegistry::catalog()]);
     })->name('engines');
 
     // Data dummy: baseline & reset (user 2026-09-28). Developer saja; ddt:baseline menolak bila bukan database ddt*.
@@ -1386,10 +1388,34 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return view('v2.dummy', ['manifest' => $manifest, 'drift' => array_map(fn ($r) => [
                 'db' => $r['db'], 'table' => $r['table'], 'change' => t(DdtBaseline::DRIFT[$r['kind']][0]),
                 'columns' => implode(', ', $r['columns']), 'effect' => t(DdtBaseline::DRIFT[$r['kind']][1]),
-            ], $manifest ? DdtBaseline::drift() : [])]);
+            ], $manifest ? DdtBaseline::drift() : []),
+                // Set per stage (DdtStage): 'blocked' = set menyebut kolom / tabel yang sudah dihapus -> harus dibangun ulang.
+                'stages' => array_map(fn ($m) => $m + ['blocked' => (bool) DdtStage::blocking($m)], DdtStage::sets())]);
         })->name('index');
         Route::post('/reset', fn () => $run('restore', 'Reset selesai.'))->name('reset');
         Route::post('/save', fn () => $run('save', 'Baseline disimpan.'))->name('save');
+
+        // Set data dummy per stage (user 2026-10-02): tiap set punya tombol Restore sendiri.
+        $stage = function (array $args, string $ok) use ($guard) {
+            $guard();
+            set_time_limit(0);
+            try {
+                $code = Artisan::call('ddt:stage', $args + ['--force' => true]);
+            } catch (Throwable $e) {
+                return back()->with('v2_error', raw($e->getMessage()));
+            }
+            $last = trim(collect(explode("\n", Artisan::output()))->filter(fn ($l) => trim($l) !== '')->last() ?? '');
+
+            return $code === 0 ? back()->with('v2_flash', raw($ok.' '.$last)) : back()->with('v2_error', raw($last));
+        };
+        Route::post('/stage/save', function (Request $r) use ($stage) {
+            $d = $r->validate(['key' => ['required', 'regex:/^[a-z0-9][a-z0-9-]{0,39}$/'], 'label' => ['nullable', 'string', 'max:80'], 'note' => ['nullable', 'string', 'max:200']],
+                ['key.regex' => 'Set name: lowercase letters, digits and minus only, e.g. my-test-1.'], ['key' => 'Set name']);
+
+            return $stage(['action' => 'save', 'key' => $d['key']] + array_filter(['--label' => $d['label'] ?? null, '--note' => $d['note'] ?? null]), '');
+        })->name('stage.save');
+        Route::post('/stage/{key}/{action}', fn (string $key, string $action) => $stage(['action' => $action, 'key' => $key], ''))
+            ->where('key', '_?[a-z0-9][a-z0-9-]{0,39}')->whereIn('action', ['restore', 'delete'])->name('stage.do');
     });
 
     // Mockup HTML/gambar asli (docs/mockups), dibuka dari kartu info layar.

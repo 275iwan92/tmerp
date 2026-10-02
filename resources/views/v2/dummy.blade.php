@@ -7,6 +7,52 @@
         @if (session('v2_error'))
             <x-dl::alert tone="danger" :message="session('v2_error')" />
         @endif
+        @if ($errors->any())
+            <x-dl::alert tone="danger" :message="$errors->first()" />
+        @endif
+
+        {{-- Set per stage (user 2026-10-02): stage 1 = belum ada yang di-Confirm / diproses, stage 2 = maju satu langkah, dst.
+             Tiap set = dump .sql data saja (App\Console\Commands\DdtStage); Restore mengganti isi data dummy dengan set itu. --}}
+        <x-dl::card title="Dummy data sets by stage" icon="fa-layer-group"
+            description="Each set is the dummy data frozen at one step of the workflow: in stage 1 nothing is confirmed or processed yet, each next stage is one step further. Restore replaces the business dummy data with that set, so every step can be tested again from a known starting point. Accounts, menus and security (ddtsys) are not touched.">
+            @forelse ($stages as $s)
+                <x-dl::card :title="raw($s['label'])" :description="raw($s['note'])" icon="fa-database">
+                    <div class="dl-grid__stats">
+                        <x-dl::stat-box label="Set" :value="raw($s['key'])" />
+                        <x-dl::stat-box label="Saved" :value="\Devlib\Locale::dt($s['created_at'])" />
+                        <x-dl::stat-box label="By" :value="raw($s['by'])" />
+                        <x-dl::stat-box label="Made by" :value="($s['built'] ?? false) ? 'Stage builder' : 'Saved by hand'" />
+                    </div>
+                    @if ($s['blocked'])
+                        <x-dl::alert tone="danger" message="This set can no longer be restored: it holds columns or tables that were removed from the database after it was saved. Build the stage sets again." />
+                    @endif
+                    <x-dl::action-bar>
+                        <x-dl::action-form action="{{ route('v2.dummy.stage.do', [$s['key'], 'restore']) }}">
+                            <x-dl::button type="submit" variant="primary" icon="fa-rotate-left" label="Restore" :disabled="$s['blocked']"
+                                data-dl-confirm="The business dummy data is replaced by this set. Everything entered since the last save is lost. Continue?" />
+                        </x-dl::action-form>
+                        <x-dl::action-form action="{{ route('v2.dummy.stage.do', [$s['key'], 'delete']) }}">
+                            <x-dl::button type="submit" variant="secondary" icon="fa-trash" label="Delete"
+                                data-dl-confirm="This set is deleted from the server. The dummy data in use is not changed. Continue?" data-dl-confirm-tone="warn" />
+                        </x-dl::action-form>
+                    </x-dl::action-bar>
+                </x-dl::card>
+            @empty
+                <x-dl::alert tone="warn" message="No set yet. Build the stage sets, or save the current dummy data as a set below." />
+            @endforelse
+
+            <x-dl::card title="Save the current dummy data as a set" icon="fa-floppy-disk"
+                description="Freezes the dummy data as it is now under a name of your own. Saving under an existing name replaces that set.">
+                <x-dl::action-form action="{{ route('v2.dummy.stage.save') }}">
+                    <x-dl::field.text name="key" label="Set name" :case-toggle="false" required :value="old('key')" placeholder="my-test-1" hint="Lowercase letters, digits and minus." />
+                    <x-dl::field.text name="label" label="Title" :value="old('label')" placeholder="CO waiting for approval" />
+                    <x-dl::field.text name="note" label="What it holds" :value="old('note')" />
+                    <x-dl::action-bar>
+                        <x-dl::button type="submit" variant="secondary" icon="fa-floppy-disk" label="Save" />
+                    </x-dl::action-bar>
+                </x-dl::action-form>
+            </x-dl::card>
+        </x-dl::card>
 
         <x-dl::card title="Data Dummy (UAT) — baseline & reset" icon="fa-rotate-left"
             description="Baseline = a copy of the dummy data considered correct. Reset restores every business dummy database exactly to the baseline. Accounts, menus and security (ddtsys) are not reset.">

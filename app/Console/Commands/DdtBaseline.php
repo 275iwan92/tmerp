@@ -149,7 +149,7 @@ class DdtBaseline extends Command
     }
 
     // Pengaman: semua koneksi bisnis harus menunjuk database dummy ddt* (situs mockup).
-    private function databases(): array
+    protected function databases(): array
     {
         $dbs = array_map(fn ($s) => DB::connection("tm2$s")->getDatabaseName(), DdtCopy::SUFFIXES);
         foreach ($dbs as $d) {
@@ -251,7 +251,7 @@ class DdtBaseline extends Command
     }
 
     // Nilai kolom bernama *path* di ddt* yang benar-benar ada di disk public (artwork, lampiran, foto).
-    private function referencedFiles(array $dbs): array
+    protected function referencedFiles(array $dbs): array
     {
         $db = DB::connection('tm2mst');
         $in = implode(',', array_fill(0, count($dbs), '?'));
@@ -265,14 +265,14 @@ class DdtBaseline extends Command
             ->filter(fn ($p) => ! str_contains($p, '..') && $disk->exists($p))->unique()->values()->all();
     }
 
-    private function conn(): array
+    protected function conn(): array
     {
         $c = config('database.connections.tm2mst');
 
         return ['--host='.$c['host'], '--port='.$c['port'], '--user='.$c['username']];
     }
 
-    private function bin(string $name): string
+    protected function bin(string $name): string
     {
         $dir = env('MYSQL_BIN_DIR', 'C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin');
         $exe = rtrim($dir, '\\/').DIRECTORY_SEPARATOR.$name.(PHP_OS_FAMILY === 'Windows' ? '.exe' : '');
@@ -281,7 +281,7 @@ class DdtBaseline extends Command
     }
 
     // Kata sandi lewat MYSQL_PWD (tidak tampil di daftar proses / argumen).
-    private function exec(array $cmd, $input = null): void
+    protected function exec(array $cmd, $input = null): void
     {
         $p = new Process($cmd, null, ['MYSQL_PWD' => config('database.connections.tm2mst.password')], $input, null);
         $p->run();
