@@ -1,0 +1,1094 @@
+[
+  {
+    "key": "prod-work-order",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Work Order / Production Output",
+    "purpose": {
+      "en": "Shows every production Work Order (WO), creates new WOs from confirmed Plan Deliveries, and is where the routing is set and the production output is recorded. Open it daily to follow jobs and to enter what each process produced.",
+      "id": "Menampilkan semua Work Order (WO) produksi, membuat WO baru dari Plan Delivery yang sudah Confirmed, dan menjadi tempat mengatur urutan proses serta mencatat hasil produksi. Buka tiap hari untuk memantau pekerjaan dan mengisi hasil tiap proses."
+    },
+    "keywords": "wo, work order, spk, perintah kerja, production output, hasil produksi, catat output, bop, bom, master card, kartu induk, reject, waste, hot job, plan delivery, cpdel",
+    "steps": [
+      {
+        "en": "Open Work Order. Use the boxes (Planning, In Progress, On Hold, Completed) or the Status and Hot Job filters, and search by WO number, product or CO.",
+        "id": "Buka Work Order. Pakai kotak status (Planning, In Progress, On Hold, Completed) atau filter Status dan Hot Job, lalu cari berdasarkan nomor WO, produk atau CO."
+      },
+      {
+        "en": "To create WOs click + New Record. A list of Plan Deliveries (Planned, Customer Order Confirmed, no WO yet) appears. Pick one and confirm to generate its WO(s); BOM and BOP are copied from the Inquiry.",
+        "id": "Untuk membuat WO klik + New Record. Muncul daftar Plan Delivery (status Planned, Customer Order Confirmed, belum punya WO). Pilih satu lalu konfirmasi; WO dibuat dan BOM serta BOP diambil dari Inquiry."
+      },
+      {
+        "en": "Double-click a WO to open WO Detail. It has three tabs: Master Card, Bill of Process (the steps) and Bill of Material (the materials).",
+        "id": "Klik dua kali sebuah WO untuk membuka WO Detail. Ada tiga tab: Master Card, Bill of Process (urutan proses) dan Bill of Material (bahan)."
+      },
+      {
+        "en": "While the WO is Draft or Simulated, edit the Bill of Process: add or remove process rows, choose machine or manual, operator, estimated start and end, target speed, spoilage and waste. After that the steps are locked.",
+        "id": "Selama WO masih Draft atau Simulated, ubah Bill of Process: tambah atau hapus baris proses, pilih mesin atau manual, operator, estimasi mulai dan selesai, target kecepatan, spoilage dan waste. Setelah itu urutan dikunci."
+      },
+      {
+        "en": "When a process is Running or Done, click the Catat Output icon on its row, enter Qty Baik and any Reject or Waste lines, then Simpan. You may record several times (for example per shift); the totals add up.",
+        "id": "Saat proses berstatus Running atau Done, klik ikon Catat Output di barisnya, isi Qty Baik dan baris Reject atau Waste bila ada, lalu Simpan. Boleh dicatat berkali-kali (misalnya per shift); angkanya dijumlahkan."
+      },
+      {
+        "en": "A process in QC_HOLD is passed or rejected by QA only (a reject needs a reason of at least 5 characters). A rejected process can be sent back for rework.",
+        "id": "Proses berstatus QC_HOLD hanya bisa diluluskan atau ditolak oleh QA (penolakan wajib beralasan, minimal 5 karakter). Proses yang ditolak bisa dikembalikan untuk rework."
+      },
+      {
+        "en": "If a running machine breaks down, use the Lapor Breakdown icon, then move the job to another machine or send it to a subcontractor (the subcontract PO needs an operations manager or above).",
+        "id": "Bila mesin yang sedang jalan rusak, pakai ikon Lapor Breakdown, lalu pindahkan pekerjaan ke mesin lain atau kirim ke subkontrak (PO subkontrak butuh Manager Operasional ke atas)."
+      },
+      {
+        "en": "Always record the output, even if the goods were shipped through the quick-job shortcut. Missing output is listed in the report Shipped Without Production Output.",
+        "id": "Hasil produksi wajib selalu dicatat, juga bila barang sudah dikirim lewat jalan pintas pekerjaan cepat. Output yang belum dicatat muncul di laporan Shipped Without Production Output."
+      }
+    ],
+    "fields": [
+      {"label": "Sumber Plan Delivery", "en": "The Plan Delivery (CO line and ship date) this WO was generated from. Use Pilih Plan Delivery Lain to generate WOs from another delivery.", "id": "Plan Delivery (baris CO dan tanggal kirim) asal WO ini. Pakai Pilih Plan Delivery Lain untuk membuat WO dari pengiriman lain."},
+      {"label": "Due Date", "en": "Delivery due date taken from the Customer Order. Shown for information.", "id": "Tanggal jatuh tempo kirim dari Customer Order. Hanya ditampilkan sebagai informasi."},
+      {"label": "Priority", "en": "Choose NORMAL, URGENT or SUPER_URGENT. Saved immediately when clicked.", "id": "Pilih NORMAL, URGENT atau SUPER_URGENT. Langsung tersimpan saat diklik."},
+      {"label": "Nama Produk", "en": "Product of this WO, filled from the Customer Order and Master Product. Not typed.", "id": "Produk pada WO ini, terisi dari Customer Order dan Master Product. Tidak diketik."},
+      {"label": "Customer", "en": "Customer of the source Customer Order. Filled by the system.", "id": "Customer dari Customer Order asal. Diisi sistem."},
+      {"label": "Qty Order", "en": "Quantity to produce for this WO, copied from the delivery line.", "id": "Jumlah yang harus diproduksi pada WO ini, disalin dari baris pengiriman."},
+      {"label": "Ukuran Cetak", "en": "Print size from the Master Card of the product. Shows not filled yet when the master card is empty.", "id": "Ukuran cetak dari Master Card produk. Tertulis belum diisi bila master card masih kosong."},
+      {"label": "Jenis Finishing", "en": "Finishing type from the Master Card, for information.", "id": "Jenis finishing dari Master Card, sebagai informasi."},
+      {"label": "Bentuk Sambungan", "en": "Joint or gluing form from the Master Card, for information.", "id": "Bentuk sambungan atau lem dari Master Card, sebagai informasi."},
+      {"label": "Isi Satu Cetakan", "en": "Number of products per print sheet (UP) from the Master Card.", "id": "Jumlah produk per lembar cetak (UP) dari Master Card."},
+      {"label": "Pack Qty", "en": "Quantity per pack from the Master Card.", "id": "Jumlah per pack dari Master Card."},
+      {"label": "Urutan Pekerjaan", "en": "Work sequence text from the Master Card.", "id": "Teks urutan pekerjaan dari Master Card."},
+      {"label": "Warna Cetak", "en": "First and second side colours from the Master Card. The sign-off boxes show who has approved the master card.", "id": "Warna sisi pertama dan kedua dari Master Card. Kotak tanda tangan menunjukkan siapa yang sudah menyetujui master card."},
+      {"label": "Proses & Mesin", "en": "Process name and machine for each step. Choose Mesin or Manual (manual has no machine). Editable only while the WO is Draft or Simulated.", "id": "Nama proses dan mesin tiap langkah. Pilih Mesin atau Manual (manual tanpa mesin). Hanya bisa diubah selama WO Draft atau Simulated."},
+      {"label": "Operator", "en": "Employee who runs the step. Pick from the employee list.", "id": "Pegawai yang mengerjakan langkah ini. Pilih dari daftar pegawai."},
+      {"label": "Est. Mulai", "en": "Estimated start date and time of the step. Normally set from the Scheduling Board.", "id": "Estimasi tanggal dan jam mulai langkah. Biasanya diatur dari Scheduling Board."},
+      {"label": "Est. Selesai", "en": "Estimated finish date and time of the step.", "id": "Estimasi tanggal dan jam selesai langkah."},
+      {"label": "Target Kecepatan", "en": "Target speed of the step. The default comes from the process and machine rate; use the refresh icon to take the default again, or type your own.", "id": "Target kecepatan langkah. Nilai awal dari rate proses dan mesin; pakai ikon refresh untuk mengambil default lagi, atau ketik sendiri."},
+      {"label": "Spoilage", "en": "Planned spoilage quantity and unit for the step.", "id": "Jumlah dan satuan spoilage yang direncanakan untuk langkah ini."},
+      {"label": "Waste", "en": "Planned waste quantity and unit for the step.", "id": "Jumlah dan satuan waste yang direncanakan untuk langkah ini."},
+      {"label": "Status", "en": "Step status: PENDING, ASSIGNED, RUNNING, DONE, QC_HOLD, QC_PASSED, QC_REJECTED, BREAKDOWN or SUBCONTRACT. Shows good quantity against target after output is recorded.", "id": "Status langkah: PENDING, ASSIGNED, RUNNING, DONE, QC_HOLD, QC_PASSED, QC_REJECTED, BREAKDOWN atau SUBCONTRACT. Menampilkan jumlah baik terhadap target setelah output dicatat."},
+      {"label": "Qty Baik", "en": "Good quantity produced in this entry (output recording). At least this or one reject or waste line is required.", "id": "Jumlah hasil baik pada catatan ini (catat output). Wajib isi ini atau minimal satu baris reject atau waste."},
+      {"label": "Reject (opsional, boleh lebih dari 1 tipe)", "en": "Defective finished goods. Add a line per type: pick the scrap type and enter the quantity. Types come from Kelola Tipe Scrap.", "id": "Barang jadi yang cacat. Tambah satu baris per tipe: pilih tipe scrap dan isi jumlahnya. Tipe berasal dari Kelola Tipe Scrap."},
+      {"label": "Waste/Scrap (opsional, boleh lebih dari 1 tipe)", "en": "Material or process waste. Same way as reject: one line per scrap type with its quantity.", "id": "Bahan atau proses yang terbuang. Caranya sama dengan reject: satu baris per tipe scrap beserta jumlahnya."},
+      {"label": "Shift (opsional)", "en": "Free text such as Shift 1, to tell which shift produced this entry.", "id": "Teks bebas seperti Shift 1, untuk menandai shift yang menghasilkan catatan ini."},
+      {"label": "Catatan (opsional)", "en": "Free note for this output entry.", "id": "Catatan bebas untuk catatan output ini."},
+      {"label": "Alasan Penolakan", "en": "Reason when QA rejects a process (at least 5 characters). The same label is used when rejecting a material substitution.", "id": "Alasan saat QA menolak sebuah proses (minimal 5 karakter). Label yang sama dipakai saat menolak substitusi bahan."},
+      {"label": "Estimasi Downtime (menit)", "en": "Estimated minutes the machine is down, entered when reporting a breakdown. Default 60.", "id": "Perkiraan menit mesin berhenti, diisi saat melapor breakdown. Bawaan 60."},
+      {"label": "Mesin Alternatif", "en": "Machine to move the job to after a breakdown. Only machines that can run the process are offered.", "id": "Mesin tujuan pemindahan pekerjaan setelah breakdown. Hanya mesin yang mampu mengerjakan proses itu yang muncul."},
+      {"label": "Vendor Subkontrak", "en": "Supplier that will do the step. Type at least 2 letters and pick from the supplier master. Also enter the dates out and back.", "id": "Supplier yang akan mengerjakan langkah ini. Ketik minimal 2 huruf lalu pilih dari master supplier. Isi juga tanggal kirim dan tanggal kembali."},
+      {"label": "Estimasi Biaya (Rp)", "en": "Estimated subcontract cost in rupiah, used for the subcontract Purchase Order.", "id": "Perkiraan biaya subkontrak dalam rupiah, dipakai untuk Purchase Order subkontrak."},
+      {"label": "Material & Spesifikasi", "en": "Materials of the part copied from the Inquiry. Quantity needed is the WO quantity divided by the UP of the confirmed layout.", "id": "Bahan part yang disalin dari Inquiry. Qty kebutuhan adalah qty WO dibagi UP dari layout yang sudah Confirmed."},
+      {"label": "Qty Kebutuhan", "en": "Quantity of this material needed for the WO, calculated by the system.", "id": "Jumlah bahan ini yang dibutuhkan untuk WO, dihitung sistem."},
+      {"label": "Qty Tersedia (Gudang)", "en": "Quantity available in the warehouse right now, read live from inventory.", "id": "Jumlah yang tersedia di gudang saat ini, dibaca langsung dari inventory."},
+      {"label": "Qty Harus Dibeli", "en": "Shortage: needed minus available, never below zero.", "id": "Kekurangan: kebutuhan dikurangi stok tersedia, tidak pernah di bawah nol."},
+      {"label": "Bahan Pengganti", "en": "Substitute material for a BOM line. Type at least 2 letters of the name or code. The change is a proposal and needs approval from an operations manager or above.", "id": "Bahan pengganti untuk satu baris BOM. Ketik minimal 2 huruf nama atau kode. Perubahan berupa usulan dan perlu persetujuan Manager Operasional ke atas."},
+      {"label": "Panjang (mm)", "en": "Length of the substitute sheet in millimetres. The preview recalculates UP, sheets needed and cost difference.", "id": "Panjang lembar bahan pengganti dalam milimeter. Pratinjau menghitung ulang UP, jumlah lembar dan selisih biaya."},
+      {"label": "Lebar (mm)", "en": "Width of the substitute sheet in millimetres.", "id": "Lebar lembar bahan pengganti dalam milimeter."},
+      {"label": "Alasan Substitusi", "en": "Why the material is replaced. Kept in the history of the BOM line.", "id": "Alasan bahan diganti. Disimpan di riwayat baris BOM."}
+    ]
+  },
+  {
+    "key": "material-booking",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Material Booking",
+    "purpose": {
+      "en": "Shows the material need of every active Customer Order (and forecast) and whether stock, PO or PR covers it. Open it to recalculate, pick missing stock items and confirm (lock) the stock reserved for an order.",
+      "id": "Menampilkan kebutuhan bahan setiap Customer Order aktif (dan forecast) dan apakah stok, PO atau PR sudah menutupinya. Buka untuk menghitung ulang, memilih item stok yang belum ada, dan Confirm (mengunci) stok untuk sebuah order."
+    },
+    "keywords": "material booking, booking bahan, reservasi stok, kebutuhan bahan, mrp, coverage, short, need item, recalculate, pick item, confirm booking, co",
+    "steps": [
+      {
+        "en": "Open Material Booking. Each row is a Customer Order. Use the boxes (Short, Need item, Late, To confirm, Confirmed) or filters Customer, CO Status and Booking.",
+        "id": "Buka Material Booking. Tiap baris adalah satu Customer Order. Pakai kotak (Short, Need item, Late, To confirm, Confirmed) atau filter Customer, CO Status dan Booking."
+      },
+      {
+        "en": "Click Recalculate All to refresh the proposals of all Confirmed Customer Orders whose booking is not locked yet.",
+        "id": "Klik Recalculate All untuk memperbarui usulan semua Customer Order Confirmed yang bookingnya belum dikunci."
+      },
+      {
+        "en": "Double-click a CO. A Draft CO only shows a preview; stock is reserved only after the CO is Confirmed. Click Recalculate to save the booking proposal.",
+        "id": "Klik dua kali sebuah CO. CO yang masih Draft hanya menampilkan pratinjau; stok baru dipesan setelah CO Confirmed. Klik Recalculate untuk menyimpan usulan booking."
+      },
+      {
+        "en": "Read the lines: material, qty needed, what covers it and the calculation. Lines with Need item only have a specification, so use the Pick Item card below.",
+        "id": "Baca barisnya: bahan, qty dibutuhkan, penutupnya dan perhitungannya. Baris Need item baru punya spesifikasi, jadi pakai kartu Pick Item di bawahnya."
+      },
+      {
+        "en": "In Pick Item choose the Line and the Stock Item, then click Pick Item. The choice stays on this booking; Master Product is not changed.",
+        "id": "Di Pick Item pilih Line dan Stock Item, lalu klik Pick Item. Pilihan tersimpan di booking ini; Master Product tidak berubah."
+      },
+      {
+        "en": "Click Confirm to lock the available stock for this order. Uncovered lines can still be confirmed; order the rest through Material Planning.",
+        "id": "Klik Confirm untuk mengunci stok yang tersedia bagi order ini. Baris yang belum tertutup tetap boleh di-Confirm; sisanya dipesan lewat Material Planning."
+      },
+      {
+        "en": "If the CO changes after confirmation a warning appears. Click Back to Draft, which recalculates, then Confirm again.",
+        "id": "Bila CO berubah setelah dikonfirmasi, muncul peringatan. Klik Back to Draft (hitung ulang otomatis), lalu Confirm lagi."
+      }
+    ],
+    "fields": [
+      {"label": "Customer", "en": "Customer of the Customer Order. Shown for information.", "id": "Customer dari Customer Order. Hanya ditampilkan."},
+      {"label": "CO Date", "en": "Date the Customer Order was entered. The material is needed by the due date, or at the latest the number of working days in constant BOOKING_NEED_WORKDAYS after this date.", "id": "Tanggal Customer Order dibuat. Bahan dibutuhkan pada tanggal jatuh tempo, atau paling lambat sejumlah hari kerja (konstanta BOOKING_NEED_WORKDAYS) setelah tanggal ini."},
+      {"label": "Last Calculated", "en": "When the proposal was last calculated by the system.", "id": "Waktu terakhir usulan dihitung oleh sistem."},
+      {"label": "Confirmed By", "en": "User and time that locked the booking. Empty while the booking is Draft.", "id": "User dan waktu yang mengunci booking. Kosong selama booking masih Draft."},
+      {"label": "CO No. / Customer", "en": "Grid column: Customer Order number and customer. Double-click to open the booking.", "id": "Kolom grid: nomor Customer Order dan customer. Klik dua kali untuk membuka booking."},
+      {"label": "CO Status", "en": "Grid column: Draft, Submitted, Confirmed or Forecast (expected order from Demand Forecast).", "id": "Kolom grid: Draft, Submitted, Confirmed atau Forecast (order perkiraan dari Demand Forecast)."},
+      {"label": "Material Needed By", "en": "Grid column: date the material must be ready.", "id": "Kolom grid: tanggal bahan harus sudah siap."},
+      {"label": "Lines Not Covered", "en": "Grid column: number of material lines that are short, have no item chosen or lack a layout.", "id": "Kolom grid: jumlah baris bahan yang kurang, belum dipilih itemnya, atau belum punya layout."},
+      {"label": "Coverage", "en": "Result per order or line: Covered by stock, Booked, Waiting PO/PR, Late, Short, Need item or Need layout.", "id": "Hasil per order atau baris: Covered by stock, Booked, Waiting PO/PR, Late, Short, Need item atau Need layout."},
+      {"label": "Booking No.", "en": "Grid column: booking number, created when the booking is first calculated.", "id": "Kolom grid: nomor booking, dibuat saat booking pertama kali dihitung."},
+      {"label": "Booking", "en": "Grid column: NOT BOOKED, DRAFT, CONFIRMED (locked) or FORECAST.", "id": "Kolom grid: NOT BOOKED, DRAFT, CONFIRMED (terkunci) atau FORECAST."},
+      {"label": "Note", "en": "Shows CO changed when the order was changed after the booking was confirmed.", "id": "Menampilkan CO changed bila order berubah setelah booking dikonfirmasi."},
+      {"label": "Line", "en": "In Pick Item: the booking line that still has no stock item (status Need item).", "id": "Di Pick Item: baris booking yang belum punya item stok (status Need item)."},
+      {"label": "Stock Item", "en": "In Pick Item: the raw material to book. Type at least 2 letters of the name or code and pick from Master Raw Material.", "id": "Di Pick Item: bahan baku yang akan dibooking. Ketik minimal 2 huruf nama atau kode lalu pilih dari Master Raw Material."}
+    ]
+  },
+  {
+    "key": "material-planning",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Material Planning (MRP)",
+    "purpose": {
+      "en": "Shows one row per material: how much is needed by all orders and forecast, how much stock and open PO or PR cover, the shortage and the latest order date. Open it to decide what to buy and to create Purchase Requisitions.",
+      "id": "Menampilkan satu baris per bahan: berapa kebutuhan semua order dan forecast, berapa yang ditutup stok serta PO atau PR terbuka, kekurangannya dan tanggal pesan paling lambat. Buka untuk memutuskan apa yang dibeli dan membuat Purchase Requisition."
+    },
+    "keywords": "mrp, material planning, perencanaan bahan, kebutuhan bahan, kekurangan, short, order by, create pr, purchase requisition, lead time, proyeksi saldo",
+    "steps": [
+      {
+        "en": "Open Material Planning. Use the boxes (Short, Need item, Late, Waiting PO/PR, Covered) or filters Kind, Coverage and Suggested Supplier.",
+        "id": "Buka Material Planning. Pakai kotak (Short, Need item, Late, Waiting PO/PR, Covered) atau filter Kind, Coverage dan Suggested Supplier."
+      },
+      {
+        "en": "Click Recalculate All if orders or stock changed. If a warning says some needs have no stock item, pick the item first in Material Booking.",
+        "id": "Klik Recalculate All bila order atau stok berubah. Jika ada peringatan kebutuhan tanpa item stok, pilih itemnya dulu di Material Booking."
+      },
+      {
+        "en": "Read Short and Order By (latest). Order By is the first needed date minus the purchase lead time of the item or its category.",
+        "id": "Baca kolom Short dan Order By (latest). Order By adalah tanggal pertama dibutuhkan dikurangi lead time pembelian item atau kategorinya."
+      },
+      {
+        "en": "Double-click a material to see its projected balance by date: stock, PO, PR and orders in and out.",
+        "id": "Klik dua kali sebuah bahan untuk melihat proyeksi saldonya per tanggal: stok, PO, PR serta pesanan masuk dan keluar."
+      },
+      {
+        "en": "In Create Purchase Requisition tick the short materials to order and click Create PR. One Draft PR is made per suggested supplier and opened in Procurement.",
+        "id": "Di Create Purchase Requisition centang bahan yang kurang lalu klik Create PR. Dibuat satu PR Draft per supplier usulan dan dibuka di Procurement."
+      },
+      {
+        "en": "Use the buttons at the top to go to Demand Forecast, Material Usage Standard and Purchase Lead Time when the numbers need correcting.",
+        "id": "Pakai tombol di atas untuk menuju Demand Forecast, Material Usage Standard dan Purchase Lead Time bila angkanya perlu dikoreksi."
+      }
+    ],
+    "fields": [
+      {"label": "Material", "en": "Grid column: material name and code.", "id": "Kolom grid: nama dan kode bahan."},
+      {"label": "Kind", "en": "Grid column: kind of material, such as paper, ink, varnish, coating, film or glue.", "id": "Kolom grid: jenis bahan, misalnya kertas, tinta, vernis, coating, film atau lem."},
+      {"label": "Needed", "en": "Grid column: total quantity needed by all orders and forecast.", "id": "Kolom grid: total kebutuhan semua order dan forecast."},
+      {"label": "From Stock", "en": "Grid column: quantity covered by available stock.", "id": "Kolom grid: jumlah yang ditutup stok tersedia."},
+      {"label": "From PO / PR", "en": "Grid column: quantity covered by open Purchase Orders and Requisitions.", "id": "Kolom grid: jumlah yang ditutup Purchase Order dan Requisition yang masih terbuka."},
+      {"label": "Short", "en": "Grid column: quantity still not covered. Only short materials with a stock item can be ordered.", "id": "Kolom grid: jumlah yang belum tertutup. Hanya bahan kurang yang sudah punya item stok yang bisa dipesan."},
+      {"label": "UoM", "en": "Grid column: unit of measure of the quantities.", "id": "Kolom grid: satuan dari jumlah-jumlah tersebut."},
+      {"label": "First Needed", "en": "Grid column: earliest date the material is needed.", "id": "Kolom grid: tanggal paling awal bahan dibutuhkan."},
+      {"label": "Order By (latest)", "en": "Grid column: latest date to place the order so goods arrive in time.", "id": "Kolom grid: tanggal paling lambat memesan agar barang datang tepat waktu."},
+      {"label": "Lead (days)", "en": "Grid column: purchase lead time in working days used for the calculation.", "id": "Kolom grid: lead time pembelian dalam hari kerja yang dipakai dalam hitungan."},
+      {"label": "Coverage", "en": "Grid column: Covered by stock, Booked, Waiting PO/PR, Late, Short, Need item or Need layout.", "id": "Kolom grid: Covered by stock, Booked, Waiting PO/PR, Late, Short, Need item atau Need layout."},
+      {"label": "Suggested Supplier", "en": "Grid column: supplier proposed for the purchase. Requisitions are grouped by this supplier.", "id": "Kolom grid: supplier yang diusulkan untuk pembelian. Requisition dikelompokkan menurut supplier ini."},
+      {"label": "For Orders", "en": "Grid column: the order numbers that need this material.", "id": "Kolom grid: nomor order yang membutuhkan bahan ini."},
+      {"label": "Short materials", "en": "In Create Purchase Requisition: tick the materials to order. All short materials start ticked. Quantity is rounded up to the purchase unit.", "id": "Di Create Purchase Requisition: centang bahan yang akan dipesan. Semua bahan kurang tercentang di awal. Jumlah dibulatkan ke atas ke satuan beli."}
+    ]
+  },
+  {
+    "key": "demand-forecast",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Demand Forecast (MPS)",
+    "purpose": {
+      "en": "Lets planners enter expected orders per customer, product and month, so Material Planning can order material before the real Customer Order arrives. A forecast never reserves stock.",
+      "id": "Tempat perencana mengisi perkiraan order per customer, produk dan bulan, agar Material Planning bisa memesan bahan sebelum Customer Order sungguhan datang. Forecast tidak pernah memesan stok."
+    },
+    "keywords": "demand forecast, mps, forecast, perkiraan order, rencana produksi, master production schedule, prediksi pesanan",
+    "steps": [
+      {
+        "en": "Open Demand Forecast. The sheet lists the existing forecast rows.",
+        "id": "Buka Demand Forecast. Lembar ini menampilkan baris forecast yang sudah ada."
+      },
+      {
+        "en": "Add a row, then choose the Customer and the Product. The product list holds products already ordered or already forecast.",
+        "id": "Tambah baris, lalu pilih Customer dan Product. Daftar produk berisi produk yang pernah dipesan atau sudah ada di forecast."
+      },
+      {
+        "en": "Enter the Month (first day) and the Forecast Qty. Any date you type is saved as the first day of that month.",
+        "id": "Isi Month (first day) dan Forecast Qty. Tanggal apa pun yang diketik disimpan sebagai tanggal 1 bulan itu."
+      },
+      {
+        "en": "Click Save. All changed rows are saved together or none at all. Material Planning is refreshed after saving.",
+        "id": "Klik Save. Semua baris yang berubah disimpan bersama atau tidak sama sekali. Material Planning ikut diperbarui setelah disimpan."
+      },
+      {
+        "en": "Untick Active to stop using a forecast row. Rows are not deleted.",
+        "id": "Hilangkan centang Active untuk berhenti memakai sebuah baris forecast. Baris tidak dihapus."
+      }
+    ],
+    "fields": [
+      {"label": "Customer", "en": "Customer expected to order. Pick from active customers. Required.", "id": "Customer yang diperkirakan memesan. Pilih dari customer aktif. Wajib."},
+      {"label": "Product", "en": "Product expected to be ordered. Required. A Customer Order for the same customer, product and month uses up the forecast.", "id": "Produk yang diperkirakan dipesan. Wajib. Customer Order untuk customer, produk dan bulan yang sama akan memakai habis forecast."},
+      {"label": "Month (first day)", "en": "Month of the expected order. Always stored as the first day of the month; one row per customer, product and month. Required.", "id": "Bulan order yang diperkirakan. Selalu disimpan sebagai tanggal 1; satu baris per customer, produk dan bulan. Wajib."},
+      {"label": "Forecast Qty", "en": "Expected quantity, a whole number greater than zero. Only the part not yet covered by real orders is planned.", "id": "Perkiraan jumlah, bilangan bulat lebih dari nol. Hanya bagian yang belum tertutup order sungguhan yang direncanakan."},
+      {"label": "Notes", "en": "Free note about the forecast, optional.", "id": "Catatan bebas tentang forecast, boleh kosong."},
+      {"label": "Active", "en": "Tick for forecasts that should still be planned. Untick to ignore the row.", "id": "Centang untuk forecast yang masih direncanakan. Hilangkan centang untuk mengabaikan baris."}
+    ]
+  },
+  {
+    "key": "prod-rule-library",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Rule Library",
+    "purpose": {
+      "en": "Keeps the scheduling rules: Batching (group tasks of the same kind) and Sequencing (smooth the local order of tasks). Open it to add a rule or to activate or deactivate one.",
+      "id": "Menyimpan aturan penjadwalan: Batching (menggabung tugas sejenis) dan Sequencing (merapikan urutan tugas). Buka untuk menambah aturan atau mengaktifkan dan menonaktifkan aturan."
+    },
+    "keywords": "rule library, aturan penjadwalan, batching, sequencing, constraint, rule, scheduling rule, aktifkan rule",
+    "steps": [
+      {
+        "en": "Open Rule Library. Use the boxes (Active, Draft) or filters Type, Machine and Status.",
+        "id": "Buka Rule Library. Pakai kotak (Active, Draft) atau filter Type, Machine dan Status."
+      },
+      {
+        "en": "Click + New Record and choose the Tipe (Batching or Sequencing), then enter the Nama Rule.",
+        "id": "Klik + New Record dan pilih Tipe (Batching atau Sequencing), lalu isi Nama Rule."
+      },
+      {
+        "en": "Optionally limit the rule to one Mesin or one Proses, then fill Field Kondisi and Operator.",
+        "id": "Bila perlu batasi aturan untuk satu Mesin atau satu Proses, lalu isi Field Kondisi dan Operator."
+      },
+      {
+        "en": "Click Simpan sebagai Draft. A new rule is always saved as Draft and does not affect scheduling yet.",
+        "id": "Klik Simpan sebagai Draft. Aturan baru selalu tersimpan sebagai Draft dan belum memengaruhi penjadwalan."
+      },
+      {
+        "en": "To use a rule click Aktifkan on its row; to stop it click Nonaktifkan. Only a production manager or above may do this.",
+        "id": "Untuk memakai aturan klik Aktifkan di barisnya; untuk menghentikan klik Nonaktifkan. Hanya Manager Produksi ke atas yang boleh."
+      }
+    ],
+    "fields": [
+      {"label": "Tipe", "en": "Batching (merge tasks that are alike) or Sequencing (sort tasks).", "id": "Batching (menggabung tugas yang mirip) atau Sequencing (mengurutkan tugas)."},
+      {"label": "Nama Rule", "en": "Short name of the rule, for example Gabung dieline sama. Required, up to 100 characters.", "id": "Nama singkat aturan, misalnya Gabung dieline sama. Wajib, maksimal 100 karakter."},
+      {"label": "Mesin (opsional)", "en": "Limits the rule to one machine. Only active machines of the offset division are offered. Empty means all machines.", "id": "Membatasi aturan untuk satu mesin. Hanya mesin aktif divisi offset yang muncul. Kosong berarti semua mesin."},
+      {"label": "Proses (opsional)", "en": "Limits the rule to one process, picked from Master Proses. Empty means all processes.", "id": "Membatasi aturan untuk satu proses, dipilih dari Master Proses. Kosong berarti semua proses."},
+      {"label": "Field Kondisi", "en": "Name of the task field the rule looks at, for example dieline_ref. Required, up to 50 characters.", "id": "Nama field tugas yang dilihat aturan, misalnya dieline_ref. Wajib, maksimal 50 karakter."},
+      {"label": "Operator", "en": "Sama Dengan (for batching), Urut Naik or Urut Turun (for sequencing).", "id": "Sama Dengan (untuk batching), Urut Naik atau Urut Turun (untuk sequencing)."},
+      {"label": "Effective From", "en": "Grid column: date the rule became effective, filled when the rule is activated.", "id": "Kolom grid: tanggal aturan mulai berlaku, terisi saat aturan diaktifkan."},
+      {"label": "Status", "en": "Grid column: DRAFT, ACTIVE or INACTIVE.", "id": "Kolom grid: DRAFT, ACTIVE atau INACTIVE."}
+    ]
+  },
+  {
+    "key": "prod-machine",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Master Mesin / Machine Master",
+    "purpose": {
+      "en": "The register of all machines and support equipment with their specification, capacity, cost, maintenance data and the processes each can run. Open it to add a machine or to complete a missing specification. This is real factory data.",
+      "id": "Daftar semua mesin dan alat penunjang beserta spesifikasi, kapasitas, biaya, data perawatan dan proses yang bisa dijalankan. Buka untuk menambah mesin atau melengkapi spesifikasi yang kosong. Ini data nyata pabrik."
+    },
+    "keywords": "master mesin, machine master, mesin, machine, asset mesin, spesifikasi mesin, kapasitas mesin, oee, kecepatan mesin, ukuran lembar, plano, mesin cetak, mesin pond",
+    "steps": [
+      {
+        "en": "Open Master Mesin. Use the boxes (Active, No spec yet, Supporting, Inactive) or filters Type, Role and Brand / Model to find machines.",
+        "id": "Buka Master Mesin. Pakai kotak (Active, No spec yet, Supporting, Inactive) atau filter Type, Role dan Brand / Model untuk mencari mesin."
+      },
+      {
+        "en": "Click + New Record, or double-click a machine to edit it. The form has six tabs.",
+        "id": "Klik + New Record, atau klik dua kali sebuah mesin untuk mengubahnya. Formulir punya enam tab."
+      },
+      {
+        "en": "Tab 1 Identitas Mesin: enter the code, name, type and status. Pick the Model di Pasar to fill the usual specification, and change it if your machine differs.",
+        "id": "Tab 1 Identitas Mesin: isi kode, nama, tipe dan status. Pilih Model di Pasar untuk mengisi spesifikasi umumnya, lalu ubah bila mesin Anda berbeda."
+      },
+      {
+        "en": "Tabs 2 to 4: enter sheet sizes in millimetres, speed and crew, and cost and asset data. Do not invent a specification; leave it empty if unknown.",
+        "id": "Tab 2 sampai 4: isi ukuran lembar dalam milimeter, kecepatan dan kru, serta data biaya dan aset. Jangan mengarang spesifikasi; biarkan kosong bila belum diketahui."
+      },
+      {
+        "en": "Click Save. After the first save, tab 5 Perawatan & OEE (service schedule and downtime log) and tab 6 Proses become usable.",
+        "id": "Klik Save. Setelah simpan pertama, tab 5 Perawatan & OEE (jadwal servis dan catatan downtime) dan tab 6 Proses bisa dipakai."
+      },
+      {
+        "en": "In tab 6 Proses add every process the machine can run, mark one as Utama (main) and adjust the pair settings. Every production machine needs at least one process.",
+        "id": "Di tab 6 Proses tambahkan semua proses yang bisa dijalankan mesin, tandai satu sebagai Utama dan atur parameter khusus pasangannya. Setiap mesin produksi wajib punya minimal satu proses."
+      },
+      {
+        "en": "Use the active toggle on the grid to release a machine you no longer own. Check the Where-used box first.",
+        "id": "Pakai tombol aktif di grid untuk melepas mesin yang sudah tidak dimiliki. Periksa dulu kotak Where-used."
+      }
+    ],
+    "fields": [
+      {"label": "Kode Asset / Mesin", "en": "Unique machine code such as OFF-01 (type prefix plus running number). Required, up to 20 characters.", "id": "Kode mesin unik seperti OFF-01 (awalan jenis plus nomor urut). Wajib, maksimal 20 karakter."},
+      {"label": "Kondisi Status", "en": "Current condition: Ready, Running, Setup, Maintenance, Breakdown, Idle or Retired. Maintenance, Breakdown and Retired block new scheduling.", "id": "Kondisi saat ini: Ready, Running, Setup, Maintenance, Breakdown, Idle atau Retired. Maintenance, Breakdown dan Retired menolak jadwal baru."},
+      {"label": "Status Master", "en": "Aktif (owned) or Nonaktif (released). Inactive machines disappear from pickers.", "id": "Aktif (dimiliki) atau Nonaktif (dilepas). Mesin nonaktif hilang dari daftar pilihan."},
+      {"label": "Nama & Model Mesin", "en": "Full machine name with model, for example Heidelberg Speedmaster CD 102. Required, up to 100 characters.", "id": "Nama lengkap mesin beserta modelnya, misalnya Heidelberg Speedmaster CD 102. Wajib, maksimal 100 karakter."},
+      {"label": "Nama Panggilan (sehari-hari)", "en": "Nickname used on the floor, for example Plong 2. Optional.", "id": "Nama panggilan sehari-hari di lantai produksi, misalnya Plong 2. Boleh kosong."},
+      {"label": "Model di Pasar (katalog)", "en": "Pick from Katalog Model Mesin. Choosing a model fills the general specification, which you may change.", "id": "Pilih dari Katalog Model Mesin. Memilih model mengisi spesifikasi umum, yang boleh Anda ubah."},
+      {"label": "Klasifikasi Tipe", "en": "Machine type from the fixed list. Required.", "id": "Tipe mesin dari daftar tetap. Wajib."},
+      {"label": "Merk / Produsen", "en": "Brand or manufacturer, for example Heidelberg.", "id": "Merk atau produsen, misalnya Heidelberg."},
+      {"label": "Divisi Produksi", "en": "Production division of the machine, picked from the organisation master.", "id": "Divisi produksi tempat mesin berada, dipilih dari master organisasi."},
+      {"label": "Departemen Pengelola", "en": "Department that manages the machine.", "id": "Departemen yang mengelola mesin."},
+      {"label": "Tahun Pembuatan/Install", "en": "Year the machine was made or installed.", "id": "Tahun mesin dibuat atau dipasang."},
+      {"label": "Tanggal Datang", "en": "Arrival date. Leave empty if only the year is known.", "id": "Tanggal mesin datang. Kosongkan bila hanya tahunnya yang diketahui."},
+      {"label": "Nomor Seri", "en": "Serial number of the machine.", "id": "Nomor seri mesin."},
+      {"label": "Tingkat Kritis", "en": "A (stop means production stops), B (stop delays orders) or C (has a replacement). Used to set the priority of a maintenance request.", "id": "A (berhenti berarti produksi stop), B (berhenti menunda order) atau C (ada penggantinya). Dipakai menentukan prioritas permintaan maintenance."},
+      {"label": "Kode Plant / Pabrik", "en": "Plant code such as P1.", "id": "Kode plant atau pabrik, misalnya P1."},
+      {"label": "Letak di Lantai Produksi", "en": "Where the machine stands, for example Blok B near the plate store.", "id": "Letak mesin di lantai produksi, misalnya Blok B dekat gudang plate."},
+      {"label": "Mesin proses produksi", "en": "Tick for production machines. Untick for support equipment such as a compressor or forklift: they are not offered in routing and need no process.", "id": "Centang untuk mesin produksi. Hilangkan centang untuk alat penunjang seperti kompresor atau forklift: tidak muncul di routing dan tidak perlu proses."},
+      {"label": "Catatan", "en": "Free note about the machine.", "id": "Catatan bebas tentang mesin."},
+      {"label": "Panjang Maks (mm)", "en": "Maximum sheet length in mm. Used by the imposition engine and to check if a plano fits.", "id": "Panjang lembar maksimum dalam mm. Dipakai engine imposisi dan untuk memeriksa apakah plano muat."},
+      {"label": "Lebar Maks (mm)", "en": "Maximum sheet width in mm.", "id": "Lebar lembar maksimum dalam mm."},
+      {"label": "Panjang Min (mm)", "en": "Minimum sheet length in mm.", "id": "Panjang lembar minimum dalam mm."},
+      {"label": "Lebar Min (mm)", "en": "Minimum sheet width in mm.", "id": "Lebar lembar minimum dalam mm."},
+      {"label": "Gramatur Min (gsm)", "en": "Lightest paper weight the machine can run.", "id": "Gramatur kertas paling ringan yang bisa dijalankan mesin."},
+      {"label": "Gramatur Maks (gsm)", "en": "Heaviest paper weight the machine can run.", "id": "Gramatur kertas paling berat yang bisa dijalankan mesin."},
+      {"label": "Ukuran Ringkas (teks)", "en": "Short size text such as 103x72, for display only.", "id": "Teks ukuran ringkas seperti 103x72, hanya untuk tampilan."},
+      {"label": "Panjang Area Cetak (mm)", "en": "Effective print area length, smaller than the sheet because of the gripper edge.", "id": "Panjang area cetak efektif, lebih kecil dari lembar karena sisi jepit (gripper)."},
+      {"label": "Lebar Area Cetak (mm)", "en": "Effective print area width.", "id": "Lebar area cetak efektif."},
+      {"label": "Gripper Margin (mm)", "en": "Gripper margin that cannot be printed, for example 10 mm.", "id": "Margin jepit yang tidak bisa dicetak, misalnya 10 mm."},
+      {"label": "Perfecting", "en": "Tick if the machine prints both sides in one pass. Affects passes and time in scheduling.", "id": "Centang bila mesin mencetak bolak-balik dalam satu lintasan. Memengaruhi jumlah lintasan dan waktu di penjadwalan."},
+      {"label": "Jumlah Unit Warna", "en": "Number of colour units. Empty or 0 for finishing machines.", "id": "Jumlah unit warna. Kosong atau 0 untuk mesin finishing."},
+      {"label": "Maks Warna per Lintasan", "en": "Maximum colours per pass.", "id": "Jumlah warna maksimum per lintasan."},
+      {"label": "Sistem Pengering", "en": "Drying system of the machine, picked from the list.", "id": "Sistem pengering mesin, dipilih dari daftar."},
+      {"label": "Ukuran Plate", "en": "Plate size, for example 790x1030 mm.", "id": "Ukuran plate, misalnya 790x1030 mm."},
+      {"label": "Jenis Bahan yang Bisa Dijalankan", "en": "Substrates the machine can run, separated by commas, for example ART, DUPLEX, KRAFT.", "id": "Jenis bahan yang bisa dijalankan mesin, dipisah koma, misalnya ART, DUPLEX, KRAFT."},
+      {"label": "Kecepatan Maks Produsen (SPH)", "en": "Maximum speed from the manufacturer, in sheets per hour.", "id": "Kecepatan maksimum dari produsen, dalam lembar per jam."},
+      {"label": "Target Kecepatan Aktual (SPH)", "en": "Realistic target speed in sheets per hour.", "id": "Target kecepatan yang realistis dalam lembar per jam."},
+      {"label": "Kapasitas per Shift (teks)", "en": "Capacity per shift as free text.", "id": "Kapasitas per shift sebagai teks bebas."},
+      {"label": "Shift / Hari", "en": "Number of shifts per day.", "id": "Jumlah shift per hari."},
+      {"label": "Jam / Shift", "en": "Hours per shift, for example 8.", "id": "Jam kerja per shift, misalnya 8."},
+      {"label": "Target OEE (%)", "en": "Target overall equipment effectiveness in percent.", "id": "Target efektivitas mesin keseluruhan (OEE) dalam persen."},
+      {"label": "MTBF Standar (jam)", "en": "Standard mean time between failures in hours, from the machine manual.", "id": "Standar rata-rata jam antar kerusakan (MTBF), dari manual mesin."},
+      {"label": "Operator (orang)", "en": "Minimum number of operators.", "id": "Jumlah operator minimum."},
+      {"label": "Pembantu (orang)", "en": "Minimum number of helpers. The total minimum crew is shown automatically.", "id": "Jumlah pembantu minimum. Total kru minimum ditampilkan otomatis."},
+      {"label": "Tarif Mesin / Jam (IDR)", "en": "Machine rate per hour, used by the estimator for costing. Visible only to users allowed to see costs.", "id": "Tarif mesin per jam, dipakai estimator untuk HPP. Hanya terlihat oleh user yang berhak melihat biaya."},
+      {"label": "Konsumsi Daya (kW)", "en": "Power consumption in kW.", "id": "Konsumsi daya dalam kW."},
+      {"label": "Cost Center / Kode GL", "en": "Cost centre or GL code of the machine, for example CT-001.", "id": "Cost center atau kode GL mesin, misalnya CT-001."},
+      {"label": "Nilai Perolehan (IDR)", "en": "Acquisition value of the asset.", "id": "Nilai perolehan aset."},
+      {"label": "Umur Ekonomis (tahun)", "en": "Useful life in years.", "id": "Umur ekonomis dalam tahun."},
+      {"label": "Garansi Sampai", "en": "Warranty end date.", "id": "Tanggal garansi berakhir."},
+      {"label": "Interval (jam jalan)", "en": "Preventive service interval in running hours (tab 5, after the first save).", "id": "Interval servis preventif dalam jam jalan (tab 5, setelah simpan pertama)."},
+      {"label": "Interval (hari)", "en": "Preventive service interval in days.", "id": "Interval servis preventif dalam hari."},
+      {"label": "Perawatan Terakhir", "en": "Date of the last service.", "id": "Tanggal servis terakhir."},
+      {"label": "Perawatan Berikutnya", "en": "Date of the next service.", "id": "Tanggal servis berikutnya."},
+      {"label": "Total Jam Jalan", "en": "Total running hours so far.", "id": "Total jam jalan sampai sekarang."},
+      {"label": "Total Impresi", "en": "Total impressions printed so far.", "id": "Total impresi yang sudah dicetak sampai sekarang."},
+      {"label": "Vendor Servis", "en": "Service vendor of the machine.", "id": "Vendor servis mesin."},
+      {"label": "Jenis", "en": "Kind of a downtime record (tab 5): for example planned maintenance, setup or breakdown.", "id": "Jenis catatan downtime (tab 5): misalnya perawatan terencana, setup atau breakdown."},
+      {"label": "Mulai", "en": "Start date and time of the machine stop.", "id": "Tanggal dan jam mesin mulai berhenti."},
+      {"label": "Selesai", "en": "End of the stop. Leave empty while the stop is still going on. Use + Tambah Catatan to save the record.", "id": "Akhir waktu berhenti. Kosongkan bila masih berlangsung. Pakai + Tambah Catatan untuk menyimpan."},
+      {"label": "Penyebab", "en": "Cause of the stop, for example roller tinta macet.", "id": "Penyebab mesin berhenti, misalnya roller tinta macet."},
+      {"label": "Tambah proses yang bisa dijalankan", "en": "Tab 6: pick a process from Master Proses. Then set Kapasitas / jam, Setup (menit), Waste (%), Insheet tetap, Tarif / jam, Kru and Gramatur min or maks for this pair; empty uses the process default.", "id": "Tab 6: pilih proses dari Master Proses. Lalu atur Kapasitas / jam, Setup (menit), Waste (%), Insheet tetap, Tarif / jam, Kru dan Gramatur min atau maks untuk pasangan ini; kosong memakai default proses."}
+    ]
+  },
+  {
+    "key": "prod-machine-model",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Katalog Model Mesin / Machine Model Catalogue",
+    "purpose": {
+      "en": "A catalogue of machine models on the market with their usual specification. Master Mesin picks one model to pre-fill its specification. Open it to add or correct a model.",
+      "id": "Katalog model mesin di pasar beserta spesifikasi umumnya. Master Mesin memilih satu model untuk mengisi spesifikasinya otomatis. Buka untuk menambah atau mengoreksi model."
+    },
+    "keywords": "katalog model mesin, machine model, model mesin, spesifikasi model, katalog mesin, pond, ukuran kerja",
+    "steps": [
+      {
+        "en": "Open Katalog Model Mesin. The list is a sheet where you type directly in the cells.",
+        "id": "Buka Katalog Model Mesin. Daftarnya berupa lembar yang diisi langsung di sel."
+      },
+      {
+        "en": "Add a row and fill Model, Machine Type and Drive (required). Fill the sizes and speed you know from the maker; leave unknown values empty.",
+        "id": "Tambah baris dan isi Model, Machine Type dan Drive (wajib). Isi ukuran dan kecepatan yang Anda ketahui dari pabrikan; biarkan kosong yang belum diketahui."
+      },
+      {
+        "en": "Edit any existing cell the same way. Model code must be unique.",
+        "id": "Ubah sel yang sudah ada dengan cara yang sama. Kode Model harus unik."
+      },
+      {
+        "en": "Click Save. All changed rows are saved together; an error names the row.",
+        "id": "Klik Save. Semua baris yang berubah disimpan bersama; bila ada kesalahan, pesan menyebut nomor barisnya."
+      },
+      {
+        "en": "Untick Active for a model you no longer offer in Master Mesin.",
+        "id": "Hilangkan centang Active untuk model yang tidak ingin ditawarkan lagi di Master Mesin."
+      }
+    ],
+    "fields": [
+      {"label": "Model", "en": "Model code, unique, saved in capital letters. Required.", "id": "Kode model, unik, disimpan dengan huruf kapital. Wajib."},
+      {"label": "Alias", "en": "Other names the same model is known by.", "id": "Nama lain yang dikenal untuk model yang sama."},
+      {"label": "Machine Type", "en": "Type of machine, for example offset or die cutter. Required.", "id": "Tipe mesin, misalnya offset atau pond. Wajib."},
+      {"label": "Drive", "en": "Manual or Otomatis (automatic). Required.", "id": "Manual atau Otomatis. Wajib."},
+      {"label": "Working Size L (mm)", "en": "Working length in millimetres.", "id": "Panjang kerja dalam milimeter."},
+      {"label": "Working Size W (mm)", "en": "Working width in millimetres.", "id": "Lebar kerja dalam milimeter."},
+      {"label": "Max Cut L", "en": "Maximum cutting length in mm.", "id": "Panjang potong maksimum dalam mm."},
+      {"label": "Max Cut W", "en": "Maximum cutting width in mm.", "id": "Lebar potong maksimum dalam mm."},
+      {"label": "Speed / Hour", "en": "Speed of the model per hour.", "id": "Kecepatan model per jam."},
+      {"label": "Max Knife (m)", "en": "Maximum knife (cutting rule) length in metres.", "id": "Panjang pisau (rule) maksimum dalam meter."},
+      {"label": "Motor (kW)", "en": "Motor power in kW.", "id": "Daya motor dalam kW."},
+      {"label": "Weight (kg)", "en": "Machine weight in kg.", "id": "Berat mesin dalam kg."},
+      {"label": "Pressure (ton)", "en": "Cutting pressure in tons.", "id": "Tekanan potong dalam ton."},
+      {"label": "Manufacturer", "en": "Manufacturer of the model, as a hint.", "id": "Produsen model, sebagai petunjuk."},
+      {"label": "Active", "en": "Tick for models that may be picked in Master Mesin.", "id": "Centang untuk model yang boleh dipilih di Master Mesin."}
+    ]
+  },
+  {
+    "key": "prod-process",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Master Proses / Process Master",
+    "purpose": {
+      "en": "The list of production processes (print, die cut, laminate and so on) with their default speed, setup, waste, cost basis, tooling needs and the machines that can run them. Routing, ProDev and costing read it.",
+      "id": "Daftar proses produksi (cetak, pond, laminasi dan seterusnya) beserta kecepatan, setup, waste, basis ongkos, kebutuhan tooling dan mesin pelaksananya. Dibaca oleh routing, ProDev dan costing."
+    },
+    "keywords": "master proses, process master, proses produksi, process, routing, kapasitas standar, setup, waste, tooling, subkontrak, in-house, mesin pelaksana",
+    "steps": [
+      {
+        "en": "Open Master Proses. Filter by Stage, Department or Performed By (in-house or subcontract).",
+        "id": "Buka Master Proses. Filter menurut Stage, Department atau Performed By (in-house atau subkontrak)."
+      },
+      {
+        "en": "Click + New Record or double-click a process. Tab 1 Info Utama: code, name, stage, department and whether it is in-house, manual or needs a QC gate.",
+        "id": "Klik + New Record atau klik dua kali sebuah proses. Tab 1 Info Utama: kode, nama, tahap, departemen, serta apakah in-house, manual atau wajib QC gate."
+      },
+      {
+        "en": "Tab 2 Parameter & Kapasitas: output unit, setup time, standard speed and crew, waste and tolerance. Tab 3 Ongkos & Tooling: cost basis and rate, and tooling needs.",
+        "id": "Tab 2 Parameter & Kapasitas: satuan hasil, waktu setup, kecepatan dan kru standar, waste dan toleransi. Tab 3 Ongkos & Tooling: basis dan tarif ongkos, serta kebutuhan tooling."
+      },
+      {
+        "en": "Click Save. Then in tab 4 Mesin Pelaksana add the machines that can run this process and mark the main one.",
+        "id": "Klik Save. Lalu di tab 4 Mesin Pelaksana tambahkan mesin yang bisa mengerjakan proses ini dan tandai yang utama."
+      },
+      {
+        "en": "Use the active toggle on the grid to switch a process off. Check Where-used first, because other modules refer to it.",
+        "id": "Pakai tombol aktif di grid untuk menonaktifkan proses. Periksa Where-used dulu karena modul lain merujuknya."
+      }
+    ],
+    "fields": [
+      {"label": "Kode Proses", "en": "Short unique code such as CE, PLG, LAM; letters or digits, up to 10 characters. Used on work orders and routing.", "id": "Kode singkat unik seperti CE, PLG, LAM; huruf atau angka, maksimal 10 karakter. Dipakai di SPK dan routing."},
+      {"label": "Status Aktif", "en": "Aktif or Nonaktif.", "id": "Aktif atau Nonaktif."},
+      {"label": "Nama Proses", "en": "Name of the process, for example Cetak Offset 4 Warna. Required and unique.", "id": "Nama proses, misalnya Cetak Offset 4 Warna. Wajib dan unik."},
+      {"label": "Tahap Produksi", "en": "Stage: Pra-Cetak, Cetak, Pasca-Cetak, Finishing, Packing, Quality Control or Logistik.", "id": "Tahap: Pra-Cetak, Cetak, Pasca-Cetak, Finishing, Packing, Quality Control atau Logistik."},
+      {"label": "Departemen Terkait", "en": "Department responsible for the process.", "id": "Departemen yang bertanggung jawab atas proses."},
+      {"label": "Urutan Routing", "en": "Suggested order in the BOP, such as 10, 20, 30.", "id": "Usulan urutan di BOP, misalnya 10, 20, 30."},
+      {"label": "Warna Gantt", "en": "Colour that tells the process apart on the schedule board.", "id": "Warna pembeda proses di papan jadwal."},
+      {"label": "Sertifikasi Kru", "en": "Skill code the crew needs, for example OP-OFFSET.", "id": "Kode keahlian yang dibutuhkan kru, misalnya OP-OFFSET."},
+      {"label": "Dikerjakan sendiri (in-house)", "en": "Tick if the process is done in the factory. Untick for subcontract; then Lead Time Subkon (hari) appears.", "id": "Centang bila proses dikerjakan sendiri di pabrik. Hilangkan untuk subkontrak; lalu muncul Lead Time Subkon (hari)."},
+      {"label": "Proses tangan — tanpa mesin", "en": "Tick for hand work that uses no machine.", "id": "Centang untuk pekerjaan tangan tanpa mesin."},
+      {"label": "Wajib lewat QC gate", "en": "Tick if work orders must pass a QC gate after this process.", "id": "Centang bila work order wajib lewat QC gate setelah proses ini."},
+      {"label": "Lead Time Subkon (hari)", "en": "Days a subcontractor needs for this process.", "id": "Jumlah hari yang dibutuhkan subkontraktor untuk proses ini."},
+      {"label": "Keterangan", "en": "How the work is done, material requirements, common mistakes.", "id": "Cara kerja, syarat bahan, hal yang sering salah."},
+      {"label": "Proses bottleneck", "en": "Tick for the process that limits capacity. It is scheduled first.", "id": "Centang untuk proses penentu kapasitas. Dijadwalkan lebih dulu."},
+      {"label": "Boleh paralel antar-mesin", "en": "Tick if one WO may be split over several machines at once.", "id": "Centang bila satu WO boleh dipecah ke beberapa mesin sekaligus."},
+      {"label": "Satuan Hasil (UoM)", "en": "Unit of the output: Lembar, Pcs, Meter, Kg or Jam.", "id": "Satuan hasil: Lembar, Pcs, Meter, Kg atau Jam."},
+      {"label": "Setup Time / Make-ready (menit)", "en": "Default setup time in minutes.", "id": "Waktu setup atau make-ready bawaan dalam menit."},
+      {"label": "Kapasitas Standar (per jam)", "en": "Default speed per hour, in the output unit above.", "id": "Kecepatan bawaan per jam, dalam satuan hasil di atas."},
+      {"label": "Jumlah Kru Standar / Shift", "en": "Standard crew per shift.", "id": "Jumlah kru standar per shift."},
+      {"label": "Waste Berjalan (%)", "en": "Running waste in percent.", "id": "Waste saat berjalan dalam persen."},
+      {"label": "Insheet Tetap (qty)", "en": "Fixed extra sheets always used to start the job.", "id": "Jumlah lembar tambahan tetap yang selalu terpakai di awal pekerjaan."},
+      {"label": "Toleransi Kirim (%)", "en": "Delivery tolerance in percent.", "id": "Toleransi pengiriman dalam persen."},
+      {"label": "Lot Minimum", "en": "Minimum lot quantity.", "id": "Jumlah lot minimum."},
+      {"label": "Lot Maksimum", "en": "Maximum lot quantity.", "id": "Jumlah lot maksimum."},
+      {"label": "Basis Ongkos", "en": "Per Jam, Per 1.000 Unit, Per Pcs, Per Meter or Borongan. A rate without a basis is not saved.", "id": "Per Jam, Per 1.000 Unit, Per Pcs, Per Meter atau Borongan. Tarif tanpa basis tidak disimpan."},
+      {"label": "Tarif Standar (IDR)", "en": "Standard rate in rupiah per cost basis. Visible only to users allowed to see costs.", "id": "Tarif standar dalam rupiah per basis ongkos. Hanya terlihat oleh user yang berhak melihat biaya."},
+      {"label": "Butuh Plate (CTP)", "en": "Tick if the process needs a plate. ProDev shows the tooling cost.", "id": "Centang bila proses butuh plate. ProDev menampilkan biaya tooling."},
+      {"label": "Butuh Pisau / Plong", "en": "Tick if the process needs a cutting die.", "id": "Centang bila proses butuh pisau atau plong."},
+      {"label": "Butuh tooling lain (mould/cliche/film)", "en": "Tick for other tooling such as mould, cliche or film.", "id": "Centang untuk tooling lain seperti mould, cliche atau film."},
+      {"label": "Tambah mesin pelaksana", "en": "Tab 4: pick a machine that can run this process. Set the pair values (speed, setup, waste, rate, crew, gsm range, note); empty uses the process default.", "id": "Tab 4: pilih mesin yang bisa mengerjakan proses ini. Atur nilai pasangannya (kecepatan, setup, waste, tarif, kru, rentang gsm, catatan); kosong memakai default proses."}
+    ]
+  },
+  {
+    "key": "prod-routing",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Master Routing Template",
+    "purpose": {
+      "en": "Stores ready-made production routes (ordered process steps with suggested machines) per product type, so a new product starts from a standard route. Open it to create or adjust a template.",
+      "id": "Menyimpan rute produksi siap pakai (urutan langkah proses dengan usulan mesin) per tipe produk, sehingga produk baru mulai dari rute standar. Buka untuk membuat atau mengubah template."
+    },
+    "keywords": "routing template, template routing, rute produksi, urutan proses, langkah produksi, bop template, master routing",
+    "steps": [
+      {
+        "en": "Open Master Routing Template. Filter by Product Type, or search by code and name.",
+        "id": "Buka Master Routing Template. Filter menurut Product Type, atau cari berdasarkan kode dan nama."
+      },
+      {
+        "en": "Click + New Record or double-click a template. Fill the code, name, optional product type, material hint and description, then save.",
+        "id": "Klik + New Record atau klik dua kali sebuah template. Isi kode, nama, tipe produk (boleh kosong), acuan bahan dan keterangan, lalu simpan."
+      },
+      {
+        "en": "In Urutan Langkah Produksi pick a Proses, optionally a Usulan Mesin, a Cabang and Opsional, then click add. Steps get numbers in tens so you can insert later.",
+        "id": "Di Urutan Langkah Produksi pilih Proses, bila perlu Usulan Mesin, Cabang dan Opsional, lalu klik tambah. Langkah bernomor kelipatan 10 agar mudah disisipkan nanti."
+      },
+      {
+        "en": "Edit a step to change Nomor Urut, Faktor Qty or Catatan, then click Simpan. A check tells you if the order breaks a precedence rule or a process has no machine.",
+        "id": "Ubah sebuah langkah untuk mengganti Nomor Urut, Faktor Qty atau Catatan, lalu klik Simpan. Ada pemeriksaan bila urutan melanggar aturan precedence atau proses belum punya mesin."
+      },
+      {
+        "en": "Use the active toggle on the grid to switch a template off.",
+        "id": "Pakai tombol aktif di grid untuk menonaktifkan template."
+      }
+    ],
+    "fields": [
+      {"label": "Kode Template", "en": "Unique template code such as BOX-DPX-4C. Required.", "id": "Kode template unik seperti BOX-DPX-4C. Wajib."},
+      {"label": "Tipe Produk (kode)", "en": "Product type code the template is for. Empty means all types.", "id": "Kode tipe produk tujuan template. Kosong berarti semua tipe."},
+      {"label": "Status Aktif", "en": "Aktif or Nonaktif.", "id": "Aktif atau Nonaktif."},
+      {"label": "Nama Template", "en": "Descriptive name, for example Box Duplex Full Color + Laminasi. Required.", "id": "Nama deskriptif, misalnya Box Duplex Full Color + Laminasi. Wajib."},
+      {"label": "Acuan Bahan", "en": "Material the route is meant for, for example DUPLEX 350gsm.", "id": "Bahan yang menjadi acuan rute, misalnya DUPLEX 350gsm."},
+      {"label": "Keterangan", "en": "Free description of the template.", "id": "Keterangan bebas tentang template."},
+      {"label": "Proses", "en": "Process of the step, picked from Master Proses.", "id": "Proses untuk langkah ini, dipilih dari Master Proses."},
+      {"label": "Usulan Mesin", "en": "Suggested machine. Only machines registered as able to run the chosen process are listed.", "id": "Usulan mesin. Hanya mesin yang terdaftar mampu mengerjakan proses terpilih yang muncul."},
+      {"label": "Cabang", "en": "Branch of the route, such as MAIN, BODY or LID. Steps are grouped by branch.", "id": "Cabang rute, seperti MAIN, BODY atau LID. Langkah dikelompokkan menurut cabang."},
+      {"label": "Opsional", "en": "Tick if the step is not always needed.", "id": "Centang bila langkah tidak selalu diperlukan."},
+      {"label": "Nomor Urut", "en": "Order number of the step; multiples of 10, use 15 or 25 to insert.", "id": "Nomor urut langkah; kelipatan 10, pakai 15 atau 25 untuk menyisipkan."},
+      {"label": "Faktor Qty", "en": "Quantity factor of the step; 0.5 means the sheet is split in half.", "id": "Faktor jumlah langkah; 0.5 berarti plano dibelah dua."},
+      {"label": "Catatan", "en": "Note on the step.", "id": "Catatan untuk langkah ini."}
+    ]
+  },
+  {
+    "key": "prod-crew",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Master Crew",
+    "purpose": {
+      "en": "The list of production crew members and the process each normally works on. Work orders and the schedule use it to assign people. Open it to add a crew member or set the default process.",
+      "id": "Daftar kru produksi dan proses yang biasa dikerjakan masing-masing. Dipakai work order dan jadwal untuk menugaskan orang. Buka untuk menambah kru atau mengatur proses default."
+    },
+    "keywords": "master crew, kru, crew produksi, operator, anggota kru, proses default",
+    "steps": [
+      {
+        "en": "Open Master Crew. Filter by Default Process or search by crew name.",
+        "id": "Buka Master Crew. Filter menurut Default Process atau cari nama kru."
+      },
+      {
+        "en": "Click + New Record or double-click a crew member.",
+        "id": "Klik + New Record atau klik dua kali seorang kru."
+      },
+      {
+        "en": "Enter the Nama Crew and pick the Proses Default from Master Proses.",
+        "id": "Isi Nama Crew dan pilih Proses Default dari Master Proses."
+      },
+      {
+        "en": "Click Simpan. Use the active toggle on the grid to switch a crew member off.",
+        "id": "Klik Simpan. Pakai tombol aktif di grid untuk menonaktifkan seorang kru."
+      }
+    ],
+    "fields": [
+      {"label": "Nama Crew", "en": "Name of the crew member. Required, up to 150 characters.", "id": "Nama anggota kru. Wajib, maksimal 150 karakter."},
+      {"label": "Proses Default", "en": "Process the crew member normally works on, picked from Master Proses. Crew without a process show in the box Proses Belum Ter-link.", "id": "Proses yang biasa dikerjakan kru, dipilih dari Master Proses. Kru tanpa proses muncul di kotak Proses Belum Ter-link."},
+      {"label": "Kode Karyawan Lama (jejak migrasi)", "en": "Old employee code kept from the data migration. Read only.", "id": "Kode karyawan lama dari migrasi data. Hanya baca."},
+      {"label": "Catatan", "en": "Free note, for example the old process label when it could not be matched.", "id": "Catatan bebas, misalnya label proses lama yang tidak bisa dicocokkan."},
+      {"label": "Aktif", "en": "Tick for crew members who still work.", "id": "Centang untuk kru yang masih bekerja."}
+    ]
+  },
+  {
+    "key": "prod-bop-rule",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "BOP Rule Setting",
+    "purpose": {
+      "en": "Holds the rules the ProDev engine uses to build the Bill of Process: standard steps, finishing inserts and the materials that go with each step. Only an administrator can change it; everyone else can read it.",
+      "id": "Menyimpan aturan yang dipakai engine ProDev untuk menyusun Bill of Process: langkah standar, sisipan finishing dan bahan yang menyertai tiap langkah. Hanya admin yang bisa mengubah; yang lain hanya membaca."
+    },
+    "keywords": "bop rule, aturan bop, bill of process, aturan proses, langkah standar, sisipan finishing, grup gabung, takaran bahan, usulan data nyata, prodev",
+    "steps": [
+      {
+        "en": "Open BOP Rule Setting. Filter by Scope, Finishing, Process or Material Role. Rules are ordered by the Step number.",
+        "id": "Buka BOP Rule Setting. Filter menurut Scope, Finishing, Process atau Material Role. Aturan diurutkan menurut nomor Step."
+      },
+      {
+        "en": "Click + New Record (admin only). Choose Jenis Aturan: Langkah Standar or Sisipan Finishing.",
+        "id": "Klik + New Record (khusus admin). Pilih Jenis Aturan: Langkah Standar atau Sisipan Finishing."
+      },
+      {
+        "en": "Fill the order (Urut), the process, the label and the merge group, then the material part: pattern, selection rule, BOM line name, usage basis and rate.",
+        "id": "Isi urutan (Urut), proses, label dan grup gabung, lalu bagian bahan: pola, cara pilih bahan, nama baris BOM, dasar pemakaian dan takaran."
+      },
+      {
+        "en": "Click Simpan. Use the arrows on a row to move it up or down, and the toggle to switch it off. New rules apply to new jobs only.",
+        "id": "Klik Simpan. Pakai tanda panah di baris untuk menaikkan atau menurunkan urutan, dan tombol aktif untuk menonaktifkan. Aturan baru hanya berlaku untuk job baru."
+      },
+      {
+        "en": "Click Usulan dari Data Nyata to calculate suggested usage rates and waste from work orders finished in the last 3 months, then apply a suggestion on its row.",
+        "id": "Klik Usulan dari Data Nyata untuk menghitung usulan takaran dan waste dari WO selesai 3 bulan terakhir, lalu terapkan usulan di barisnya."
+      }
+    ],
+    "fields": [
+      {"label": "Jenis Aturan", "en": "Langkah Standar (used when its condition is met) or Sisipan Finishing (inserted when that finishing is chosen in the Inquiry). Required.", "id": "Langkah Standar (dipakai bila kondisinya terpenuhi) atau Sisipan Finishing (disisipkan bila finishing itu dipilih di Inquiry). Wajib."},
+      {"label": "Finishing", "en": "For Sisipan Finishing: the finishing type that triggers the rule. Required for that scope.", "id": "Untuk Sisipan Finishing: jenis finishing yang memicu aturan. Wajib untuk jenis ini."},
+      {"label": "Kondisi", "en": "For standard steps: always used, or only when the plano differs from the sheet, the material has layers, or glue is needed.", "id": "Untuk langkah standar: selalu dipakai, atau hanya bila plano beda ukuran, bahan berlapis, atau perlu lem."},
+      {"label": "Khusus Tipe Part", "en": "Limit the rule to a part type (DC, DC+SHEET, DC+SF, SHEET, KRAFT). Empty means all part types.", "id": "Batasi aturan untuk tipe part tertentu (DC, DC+SHEET, DC+SF, SHEET, KRAFT). Kosong berarti semua tipe part."},
+      {"label": "Urut", "en": "Order number of the step in the Bill of Process. Required.", "id": "Nomor urut langkah di Bill of Process. Wajib."},
+      {"label": "Proses (kosong = aturan bahan saja)", "en": "Process of the step from Master Proses. Leave empty for a material-only rule.", "id": "Proses langkah ini dari Master Proses. Kosongkan untuk aturan khusus bahan."},
+      {"label": "Mesin Otomatis", "en": "Let ProDev pick the machine: the chosen print machine or the chosen die-cut machine. Empty means no machine.", "id": "Biarkan ProDev memilih mesin: mesin cetak pilihan atau mesin pond pilihan. Kosong berarti tanpa mesin."},
+      {"label": "Label di Routing", "en": "Text shown in the routing. Tokens {machine}, {attr}, {roll} and {pack} are replaced automatically.", "id": "Teks yang tampil di routing. Token {machine}, {attr}, {roll} dan {pack} diganti otomatis."},
+      {"label": "Waste default (%)", "en": "Default waste percentage of the step.", "id": "Persentase waste bawaan langkah."},
+      {"label": "Toleransi default (%)", "en": "Default tolerance percentage.", "id": "Persentase toleransi bawaan."},
+      {"label": "Grup Gabung", "en": "Neighbouring steps with the same group are shown as one row, for example PLONG. Empty means not merged.", "id": "Langkah bersebelahan dengan grup sama ditampilkan sebagai satu baris, misalnya PLONG. Kosong berarti tidak digabung."},
+      {"label": "Teks Sambungan saat Digabung", "en": "Text added when merged, for example + Emboss.", "id": "Teks tambahan saat digabung, misalnya + Emboss."},
+      {"label": "Pola Bahan (mat_raw, pisahkan dgn |)", "en": "Pattern of material names or codes in the raw material master, separated by |, for example PLASTIKLAMDOFF%.", "id": "Pola nama atau kode bahan di master raw material, dipisah |, misalnya PLASTIKLAMDOFF%."},
+      {"label": "Cara Pilih Bahan", "en": "How the material is chosen: smallest roll wide enough, best name match, best stock match, or ink by name.", "id": "Cara memilih bahan: roll terkecil yang cukup lebar, nama paling cocok, stok terbanyak, atau tinta menurut nama."},
+      {"label": "Nama Baris BOM", "en": "Name of the Bill of Material line, for example LEM LAMINASI.", "id": "Nama baris Bill of Material, misalnya LEM LAMINASI."},
+      {"label": "Dasar Pemakaian", "en": "What the usage rate is based on, such as metres per sheet, grams per m2 or per piece or per pack.", "id": "Dasar takaran pemakaian, misalnya meter per lembar, gram per m2, per pcs atau per pack."},
+      {"label": "Takaran", "en": "Usage rate according to the chosen basis. Rate Source shows MANUAL or AUTO (applied automatically each month).", "id": "Takaran pemakaian menurut dasar yang dipilih. Rate Source menunjukkan MANUAL atau AUTO (diterapkan otomatis tiap bulan)."},
+      {"label": "Catatan", "en": "Free note on the rule.", "id": "Catatan bebas tentang aturan."},
+      {"label": "Aktif", "en": "Tick for rules that ProDev should use.", "id": "Centang untuk aturan yang harus dipakai ProDev."}
+    ]
+  },
+  {
+    "key": "prod-scrap",
+    "type": "INPUT",
+    "module": "PROD",
+    "title": "Kelola Tipe Scrap / Scrap Types",
+    "purpose": {
+      "en": "The list of reject and waste types offered when recording production output. Open it to add a new defect or waste type when the list is not complete.",
+      "id": "Daftar tipe reject dan waste yang muncul saat mencatat hasil produksi. Buka untuk menambah tipe cacat atau waste baru bila daftar belum lengkap."
+    },
+    "keywords": "tipe scrap, scrap type, reject, waste, cacat, jenis reject, jenis waste, kelola scrap",
+    "steps": [
+      {
+        "en": "Open Kelola Tipe Scrap. Filter by Category or search by code and name.",
+        "id": "Buka Kelola Tipe Scrap. Filter menurut Category atau cari kode dan nama."
+      },
+      {
+        "en": "Click + New Record and choose the Kategori: Reject or Waste.",
+        "id": "Klik + New Record dan pilih Kategori: Reject atau Waste."
+      },
+      {
+        "en": "Enter the Kode and the Nama Tipe, then click Simpan.",
+        "id": "Isi Kode dan Nama Tipe, lalu klik Simpan."
+      },
+      {
+        "en": "Use the active toggle on a row to hide a type that is no longer used.",
+        "id": "Pakai tombol aktif di baris untuk menyembunyikan tipe yang tidak dipakai lagi."
+      }
+    ],
+    "fields": [
+      {"label": "Kategori", "en": "Reject (defective finished goods) or Waste (material or process thrown away). Decides which list it appears in when recording output.", "id": "Reject (barang jadi cacat) atau Waste (bahan atau proses terbuang). Menentukan di daftar mana tipe ini muncul saat catat output."},
+      {"label": "Kode", "en": "Unique code, for example COLOR_OFF. Required, up to 30 characters.", "id": "Kode unik, misalnya COLOR_OFF. Wajib, maksimal 30 karakter."},
+      {"label": "Nama Tipe", "en": "Name shown when recording output, for example Warna Tidak Sesuai. Required, up to 100 characters.", "id": "Nama yang tampil saat catat output, misalnya Warna Tidak Sesuai. Wajib, maksimal 100 karakter."}
+    ]
+  },
+  {
+    "key": "usage-standard",
+    "type": "INPUT",
+    "module": "MDATA",
+    "title": "Material Usage Standard",
+    "purpose": {
+      "en": "Sets how much ink, varnish, coating, film and glue a job uses, so Material Planning can compute those materials (paper is computed from the layout). Open it to correct the starting values.",
+      "id": "Menetapkan berapa banyak tinta, vernis, coating, film dan lem yang dipakai sebuah job, agar Material Planning bisa menghitung bahan itu (kertas dihitung dari layout). Buka untuk mengoreksi nilai awal."
+    },
+    "keywords": "material usage standard, standar pemakaian bahan, pemakaian tinta, vernis, coating, film, lem, takaran, usage standard, trigger word",
+    "steps": [
+      {
+        "en": "Open Material Usage Standard. The list is a sheet where you type in the cells.",
+        "id": "Buka Material Usage Standard. Daftarnya berupa lembar yang diisi langsung di sel."
+      },
+      {
+        "en": "Add a row and fill Code, Name, Kind, Basis, Qty per Basis and UoM (all required).",
+        "id": "Tambah baris dan isi Code, Name, Kind, Basis, Qty per Basis dan UoM (semuanya wajib)."
+      },
+      {
+        "en": "For anything other than ink, enter Trigger Words: the standard is used when one of the words appears in the part processes or finishing.",
+        "id": "Untuk selain tinta, isi Trigger Words: standar dipakai bila salah satu kata muncul di proses atau finishing part."
+      },
+      {
+        "en": "Click Save. All changed rows are saved together, and Material Planning is refreshed. The starting values are general, so correct them to your real usage.",
+        "id": "Klik Save. Semua baris yang berubah disimpan bersama dan Material Planning diperbarui. Nilai awal masih umum, jadi koreksi sesuai pemakaian nyata."
+      }
+    ],
+    "fields": [
+      {"label": "Code", "en": "Unique code, saved in capital letters. Required.", "id": "Kode unik, disimpan dengan huruf kapital. Wajib."},
+      {"label": "Name", "en": "Name of the standard. Required.", "id": "Nama standar. Wajib."},
+      {"label": "Kind", "en": "INK, VARNISH, COATING, FILM or GLUE. Required.", "id": "INK, VARNISH, COATING, FILM atau GLUE. Wajib."},
+      {"label": "Basis", "en": "What the quantity is per: per m2 at 100% coverage, per m2 of sheet, per 1000 pcs or per sheet. Required.", "id": "Satuan dasar jumlahnya: per m2 pada cakupan 100%, per m2 lembar, per 1000 pcs atau per lembar. Wajib."},
+      {"label": "Qty per Basis", "en": "Quantity used per basis, greater than zero (4 decimals). Required.", "id": "Jumlah pemakaian per dasar, lebih dari nol (4 desimal). Wajib."},
+      {"label": "UoM", "en": "Unit of measure of the quantity, saved in capital letters. Required.", "id": "Satuan dari jumlah, disimpan dengan huruf kapital. Wajib."},
+      {"label": "Trigger Words (comma)", "en": "Words, separated by commas, that switch this standard on when found in processes or finishing.", "id": "Kata-kata, dipisah koma, yang mengaktifkan standar ini bila ditemukan di proses atau finishing."},
+      {"label": "Default Item (ID)", "en": "Optional ID of a raw material from Master Raw Material to use as the stock item. Must exist.", "id": "ID bahan baku dari Master Raw Material untuk dipakai sebagai item stok, boleh kosong. Harus ada di master."},
+      {"label": "Notes", "en": "Free note.", "id": "Catatan bebas."},
+      {"label": "Active", "en": "Tick for standards that Material Planning should use.", "id": "Centang untuk standar yang dipakai Material Planning."}
+    ]
+  },
+  {
+    "key": "purchase-lead-time",
+    "type": "INPUT",
+    "module": "MDATA",
+    "title": "Purchase Lead Time",
+    "purpose": {
+      "en": "Sets the purchase lead time in working days per material category, used to work out the latest order date in Material Planning. Open it to set or change the days of a category.",
+      "id": "Menetapkan lead time pembelian dalam hari kerja per kategori bahan, dipakai untuk menghitung tanggal pesan paling lambat di Material Planning. Buka untuk mengatur atau mengubah hari sebuah kategori."
+    },
+    "keywords": "purchase lead time, lead time pembelian, lead time, hari kerja, kategori bahan, tanggal pesan, waktu tunggu pembelian",
+    "steps": [
+      {
+        "en": "Open Purchase Lead Time. The list shows the top two levels of the material categories.",
+        "id": "Buka Purchase Lead Time. Daftar menampilkan dua tingkat teratas kategori bahan."
+      },
+      {
+        "en": "Type the number of working days in Lead Time (working days) on the category row. Use 0 to 365.",
+        "id": "Ketik jumlah hari kerja di kolom Lead Time (working days) pada baris kategori. Boleh 0 sampai 365."
+      },
+      {
+        "en": "Leave a category empty to let it follow its parent category, then the constant PURCHASE_LEAD_DAYS_DEFAULT in Constants.",
+        "id": "Kosongkan sebuah kategori agar mengikuti kategori induknya, lalu konstanta PURCHASE_LEAD_DAYS_DEFAULT di Constants."
+      },
+      {
+        "en": "Click Save. New categories are not added here; add them in Master Material Category. A single item can override the days in Master Raw Material.",
+        "id": "Klik Save. Kategori baru tidak ditambah di sini; tambahkan di Master Material Category. Satu item bisa menimpa hari ini di Master Raw Material."
+      }
+    ],
+    "fields": [
+      {"label": "Category", "en": "Material category name. Read only.", "id": "Nama kategori bahan. Hanya baca."},
+      {"label": "Level", "en": "Level of the category in the tree (1 or 2). Read only.", "id": "Tingkat kategori di pohon kategori (1 atau 2). Hanya baca."},
+      {"label": "Stock Class", "en": "Stock class of the category. Read only.", "id": "Kelas stok kategori. Hanya baca."},
+      {"label": "Lead Time (working days)", "en": "Working days from ordering to goods received, a whole number from 0 to 365. Empty follows the parent category.", "id": "Hari kerja dari pemesanan sampai barang diterima, bilangan bulat 0 sampai 365. Kosong mengikuti kategori induk."}
+    ]
+  },
+  {
+    "key": "prod-no-output",
+    "type": "REPORT",
+    "module": "PROD",
+    "title": "Shipped Without Production Output",
+    "purpose": {
+      "en": "Lists goods already on a Confirmed or Shipped Delivery Order, from a delivery posted to production, whose Work Order has no production output yet. Check it so the output is entered, because it is the KPI basis of all departments.",
+      "id": "Menampilkan barang yang sudah masuk Delivery Order Confirmed atau Shipped, dari pengiriman yang sudah di-Post ke produksi, tetapi Work Order-nya belum punya catatan hasil produksi. Periksa agar hasil produksi diisi, karena jadi dasar KPI semua departemen."
+    },
+    "keywords": "shipped without production output, kirim tanpa output, output produksi belum dicatat, jalan pintas, quick job, delivery order, do, kpi, laporan",
+    "steps": [
+      {
+        "en": "Open the report. Each row is a delivery order line that was shipped or confirmed but has no recorded output.",
+        "id": "Buka laporan. Tiap baris adalah baris delivery order yang sudah dikirim atau dikonfirmasi tetapi belum punya output tercatat."
+      },
+      {
+        "en": "Use the search box or the filters Customer and DO status to narrow the list.",
+        "id": "Pakai kotak cari atau filter Customer dan DO status untuk mempersempit daftar."
+      },
+      {
+        "en": "Use the Columns button to show the CO column. The total of Qty shipped is summed at the bottom.",
+        "id": "Pakai tombol Columns untuk menampilkan kolom CO. Total Qty shipped dijumlahkan di bagian bawah."
+      },
+      {
+        "en": "Note the Work Order number, open it in Work Order and record the output with Catat Output. The row leaves this report once output exists.",
+        "id": "Catat nomor Work Order, buka di Work Order dan isi hasilnya dengan Catat Output. Baris hilang dari laporan ini setelah output tercatat."
+      }
+    ],
+    "fields": [
+      {"label": "DO", "en": "Delivery order number (with its CO number as sub text).", "id": "Nomor delivery order (dengan nomor CO di bawahnya)."},
+      {"label": "Customer", "en": "Customer of the delivery order. Also a filter.", "id": "Customer pada delivery order. Juga tersedia sebagai filter."},
+      {"label": "Product", "en": "Item description of the delivery line.", "id": "Deskripsi item pada baris pengiriman."},
+      {"label": "Qty shipped", "en": "Quantity on the delivery order line. The column is summed.", "id": "Jumlah pada baris delivery order. Kolom ini dijumlahkan."},
+      {"label": "DO date", "en": "Date of the delivery order.", "id": "Tanggal delivery order."},
+      {"label": "DO status", "en": "CONFIRMED or SHIPPED. Also a filter.", "id": "CONFIRMED atau SHIPPED. Juga tersedia sebagai filter."},
+      {"label": "Work Order", "en": "Work order number(s) generated from the delivery, or a dash if none.", "id": "Nomor Work Order yang dibuat dari pengiriman, atau tanda strip bila tidak ada."},
+      {"label": "Posted to Production", "en": "Date the delivery plan was posted to production.", "id": "Tanggal rencana pengiriman di-Post ke produksi."},
+      {"label": "CO", "en": "Customer Order number. Hidden at first; show it with Columns.", "id": "Nomor Customer Order. Tersembunyi di awal; tampilkan lewat Columns."}
+    ]
+  },
+  {
+    "key": "maintenance-request",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Maintenance Request",
+    "purpose": {
+      "en": "Anyone can report a machine problem here in about 30 seconds. The priority is set automatically. A stopped machine (P1) becomes a Maintenance Work Order at once; others wait for the Head of Maintenance to Accept or Reject.",
+      "id": "Siapa saja bisa melaporkan masalah mesin di sini dalam sekitar 30 detik. Prioritas diatur otomatis. Mesin berhenti (P1) langsung menjadi Maintenance Work Order; yang lain menunggu Kepala Maintenance untuk Accept atau Reject."
+    },
+    "keywords": "maintenance request, permintaan maintenance, lapor kerusakan, mesin rusak, breakdown, lapor masalah, mesin berhenti, perbaikan, mr",
+    "steps": [
+      {
+        "en": "Open Maintenance Request. The grid shows requests; the boxes filter Open, Machine stopped, Accepted and Rejected.",
+        "id": "Buka Maintenance Request. Grid menampilkan permintaan; kotak menyaring Open, Machine stopped, Accepted dan Rejected."
+      },
+      {
+        "en": "Click + New Record. Pick the Machine and the Kind, check Reported by, and say whether the Machine stopped.",
+        "id": "Klik + New Record. Pilih Machine dan Kind, periksa Reported by, dan tentukan apakah mesin berhenti (Machine stopped)."
+      },
+      {
+        "en": "If the machine stopped, check Stopped at. Describe the problem in What happened, then click Save.",
+        "id": "Bila mesin berhenti, periksa Stopped at. Jelaskan masalahnya di What happened, lalu klik Save."
+      },
+      {
+        "en": "A stopped machine (P1) is turned into a Work Order immediately and the downtime starts. Other requests stay Open until the Head of Maintenance decides.",
+        "id": "Mesin berhenti (P1) langsung dijadikan Work Order dan downtime dimulai. Permintaan lain tetap Open sampai Kepala Maintenance memutuskan."
+      },
+      {
+        "en": "Head of Maintenance: open the request, go to the Decision tab, pick a technician and planned start, then click Accept. A Scheduled WO is created.",
+        "id": "Kepala Maintenance: buka permintaan, masuk tab Decision, pilih teknisi dan rencana mulai, lalu klik Accept. Dibuat WO berstatus Scheduled."
+      },
+      {
+        "en": "Or click Reject and give a reason. Rejecting closes the downtime that was opened by the report. A decided request can no longer be changed.",
+        "id": "Atau klik Reject dan isi alasan. Penolakan menutup downtime yang dibuka oleh laporan. Permintaan yang sudah diputuskan tidak bisa diubah lagi."
+      }
+    ],
+    "fields": [
+      {"label": "Machine", "en": "The machine with the problem, picked from the machine master. Required.", "id": "Mesin yang bermasalah, dipilih dari master mesin. Wajib."},
+      {"label": "Kind", "en": "Breakdown, Corrective, Safety or Improvement. Required. It helps set the priority.", "id": "Breakdown, Corrective, Safety atau Improvement. Wajib. Membantu menentukan prioritas."},
+      {"label": "Reported by", "en": "Employee who reports. Defaults to the logged-in user.", "id": "Pegawai yang melapor. Bawaannya user yang sedang login."},
+      {"label": "Machine stopped?", "en": "Yes, stopped, or No, still running. Stopped starts the downtime now and gives priority P1 (P2 when the machine criticality is C).", "id": "Yes, stopped atau No, still running. Berhenti langsung memulai downtime dan prioritas P1 (P2 bila kritikalitas mesin C)."},
+      {"label": "Stopped at", "en": "Date and time the machine stopped. Defaults to now.", "id": "Tanggal dan jam mesin berhenti. Bawaannya sekarang."},
+      {"label": "What happened", "en": "Description of the symptom. Required, up to 2000 characters.", "id": "Uraian gejala masalah. Wajib, maksimal 2000 karakter."},
+      {"label": "Priority", "en": "P1 Emergency, P2 High (24 h), P3 Normal (1 week), P4 Low. Suggested by the system; may be changed while the request is Open.", "id": "P1 Emergency, P2 High (24 jam), P3 Normal (1 minggu), P4 Low. Diusulkan sistem; boleh diubah selama permintaan masih Open."},
+      {"label": "Technician (for Accept)", "en": "Technician who will do the job, used when accepting. Optional.", "id": "Teknisi yang akan mengerjakan, dipakai saat Accept. Boleh kosong."},
+      {"label": "Planned start (for Accept)", "en": "Planned start of the Work Order, used when accepting. Defaults to one hour from now.", "id": "Rencana mulai Work Order, dipakai saat Accept. Bawaannya satu jam dari sekarang."},
+      {"label": "Reject reason", "en": "Asked when rejecting. Required; shown afterwards on the Decision tab.", "id": "Ditanyakan saat Reject. Wajib; ditampilkan kemudian di tab Decision."}
+    ]
+  },
+  {
+    "key": "maintenance-wo",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Maintenance Work Order",
+    "purpose": {
+      "en": "The maintenance job card: who repairs or services which machine, the checklist, spare parts, labour and cost. Open it to follow all maintenance jobs and to run one from Draft through Confirm, Start, Done and Close.",
+      "id": "Kartu pekerjaan maintenance: siapa memperbaiki atau merawat mesin mana, checklist, suku cadang, tenaga kerja dan biaya. Buka untuk memantau semua pekerjaan maintenance dan menjalankannya dari Draft sampai Confirm, Start, Done dan Close."
+    },
+    "keywords": "maintenance work order, mwo, wo maintenance, perawatan mesin, perbaikan, preventive, breakdown, corrective, inspection, suku cadang, downtime, generate pm",
+    "steps": [
+      {
+        "en": "Open Maintenance Work Order. The boxes show All Open, Breakdown, In Progress, Waiting Part, PM Overdue and Done This Month.",
+        "id": "Buka Maintenance Work Order. Kotak menampilkan All Open, Breakdown, In Progress, Waiting Part, PM Overdue dan Done This Month."
+      },
+      {
+        "en": "Click + New Record for a manual WO: pick Machine, WO Type and Description, then Save. Breakdowns come from Maintenance Request and routine care from Preventive Plan.",
+        "id": "Klik + New Record untuk WO manual: pilih Machine, WO Type dan Description, lalu Save. Breakdown datang dari Maintenance Request dan perawatan rutin dari Preventive Plan."
+      },
+      {
+        "en": "The Head of Maintenance can click Generate PM to create Draft WOs for all plans that are due.",
+        "id": "Kepala Maintenance bisa klik Generate PM untuk membuat WO Draft dari semua plan yang sudah jatuh tempo."
+      },
+      {
+        "en": "In the Draft WO fill the General, Failure and Schedule tabs. Add checklist tasks, spare parts and labour at the bottom with the + buttons.",
+        "id": "Di WO Draft isi tab General, Failure dan Schedule. Tambah tugas checklist, suku cadang dan tenaga kerja di bagian bawah dengan tombol +."
+      },
+      {
+        "en": "The Head of Maintenance clicks Confirm. The MWO number is created and the WO becomes Scheduled. Back to Draft is possible until it starts.",
+        "id": "Kepala Maintenance klik Confirm. Nomor MWO dibuat dan WO menjadi Scheduled. Back to Draft masih bisa sampai pekerjaan dimulai."
+      },
+      {
+        "en": "The technician clicks Start (downtime and machine status are recorded), Hold when waiting for a part, Resume, and Done. Done needs every required checklist task to have a result.",
+        "id": "Teknisi klik Start (downtime dan status mesin dicatat), Hold saat menunggu suku cadang, Resume, lalu Done. Done butuh semua tugas checklist wajib sudah punya hasil."
+      },
+      {
+        "en": "Done closes the downtime and sets the machine Ready. The Head of Maintenance then clicks Close to make the cost final; a preventive plan moves to its next due date.",
+        "id": "Done menutup downtime dan membuat mesin Ready. Kepala Maintenance lalu klik Close agar biaya final; plan preventif maju ke jatuh tempo berikutnya."
+      },
+      {
+        "en": "A Confirmed WO that is not Done can be Cancelled with a reason. A Draft WO that does not come from a request can be deleted.",
+        "id": "WO Confirmed yang belum Done bisa di-Cancel dengan alasan. WO Draft yang bukan berasal dari request bisa dihapus."
+      }
+    ],
+    "fields": [
+      {"label": "Machine", "en": "Machine to maintain. Required; locked after the WO leaves Draft.", "id": "Mesin yang dirawat. Wajib; terkunci setelah WO keluar dari Draft."},
+      {"label": "WO Type", "en": "Preventive, Breakdown, Corrective or Inspection. Required; locked after Draft.", "id": "Preventive, Breakdown, Corrective atau Inspection. Wajib; terkunci setelah Draft."},
+      {"label": "Priority", "en": "P1 Emergency, P2 High, P3 Normal or P4 Low. Locked after Draft.", "id": "P1 Emergency, P2 High, P3 Normal atau P4 Low. Terkunci setelah Draft."},
+      {"label": "Component", "en": "Component code of the machine part involved, from Maintenance Codes.", "id": "Kode komponen bagian mesin yang terkait, dari Maintenance Codes."},
+      {"label": "Description", "en": "What the job is. Required, up to 255 characters; locked after Draft.", "id": "Isi pekerjaan. Wajib, maksimal 255 karakter; terkunci setelah Draft."},
+      {"label": "Technician", "en": "Employee assigned to the job. Type a name and pick. Also used by My Work.", "id": "Pegawai yang ditugaskan. Ketik nama lalu pilih. Dipakai juga oleh My Work."},
+      {"label": "Machine Stop", "en": "Yes records downtime when the job starts and blocks the machine on the Scheduling Board. No keeps the machine running.", "id": "Yes mencatat downtime saat pekerjaan mulai dan memblokir mesin di Scheduling Board. No membiarkan mesin tetap jalan."},
+      {"label": "Machine Status", "en": "Current status of the machine. Shown only.", "id": "Status mesin saat ini. Hanya ditampilkan."},
+      {"label": "Problem", "en": "Failure tab: what went wrong, from Maintenance Codes.", "id": "Tab Failure: apa yang rusak, dari Maintenance Codes."},
+      {"label": "Cause", "en": "Failure tab: the cause, from Maintenance Codes.", "id": "Tab Failure: penyebabnya, dari Maintenance Codes."},
+      {"label": "Action", "en": "Failure tab: the action taken, from Maintenance Codes.", "id": "Tab Failure: tindakan yang dilakukan, dari Maintenance Codes."},
+      {"label": "Findings", "en": "Free text about what the technician found.", "id": "Teks bebas tentang temuan teknisi."},
+      {"label": "Vendor Service Cost (IDR)", "en": "Cost of an outside service in rupiah, part of the total cost.", "id": "Biaya jasa pihak luar dalam rupiah, bagian dari total biaya."},
+      {"label": "Meter at Done (counter)", "en": "Meter reading when the job is done. Used to schedule the next preventive service by meter.", "id": "Pembacaan meter saat pekerjaan selesai. Dipakai untuk menjadwalkan servis preventif berikutnya berdasarkan meter."},
+      {"label": "Planned Start", "en": "Planned start date and time. Locked after Draft.", "id": "Rencana tanggal dan jam mulai. Terkunci setelah Draft."},
+      {"label": "Planned End", "en": "Planned end date and time. Locked after Draft.", "id": "Rencana tanggal dan jam selesai. Terkunci setelah Draft."},
+      {"label": "Est. Duration (minutes)", "en": "Estimated duration in minutes. Locked after Draft.", "id": "Perkiraan durasi dalam menit. Terkunci setelah Draft."},
+      {"label": "Actual Start → End", "en": "Real start and end, filled by Start and Done. Shown only.", "id": "Mulai dan selesai sebenarnya, terisi oleh Start dan Done. Hanya ditampilkan."},
+      {"label": "Task", "en": "Checklist: task text. Add extra tasks with + Task. Tasks from a plan are copied here.", "id": "Checklist: teks tugas. Tambah tugas dengan + Task. Tugas dari plan disalin ke sini."},
+      {"label": "Result", "en": "Checklist result: OK, Not OK or N/A. Required tasks need a result before Done.", "id": "Hasil checklist: OK, Not OK atau N/A. Tugas wajib harus punya hasil sebelum Done."},
+      {"label": "Measured", "en": "Measured value for measuring tasks, compared with the Min and Max range.", "id": "Nilai ukur untuk tugas pengukuran, dibandingkan dengan rentang Min dan Max."},
+      {"label": "Note", "en": "Free note on a checklist task or on a labour line.", "id": "Catatan bebas pada tugas checklist atau baris tenaga kerja."},
+      {"label": "+ Spare part", "en": "Spare parts tab: type 2 or more letters of the code or name of a raw material and pick it, set the Qty, then click + Part. Plan, Used, stock and cost are shown per line.", "id": "Tab Spare Parts: ketik 2 huruf atau lebih kode atau nama bahan baku lalu pilih, isi Qty, lalu klik + Part. Plan, Used, stok dan biaya tampil per baris."},
+      {"label": "+ Technician", "en": "Labour tab: pick the technician, enter Minutes and Date, then click + Labor. The cost uses the labour rate per hour in Constants.", "id": "Tab Labor: pilih teknisi, isi Minutes dan Date, lalu klik + Labor. Biaya memakai tarif tenaga kerja per jam di Constants."}
+    ]
+  },
+  {
+    "key": "maintenance-my-work",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "My Work",
+    "purpose": {
+      "en": "A phone-friendly list of the open Maintenance Work Orders of the logged-in technician, with Start, Hold, Resume and Done buttons on each card. Open it on the shop floor to run your jobs.",
+      "id": "Daftar Maintenance Work Order terbuka milik teknisi yang login, ramah HP, dengan tombol Start, Hold, Resume dan Done di tiap kartu. Buka di lantai produksi untuk menjalankan pekerjaan Anda."
+    },
+    "keywords": "my work, pekerjaan saya, tugas teknisi, teknisi, start, hold, resume, done, kartu kerja, maintenance hp, report problem",
+    "steps": [
+      {
+        "en": "Open My Work. You see the Confirmed WOs assigned to you that are not Cancelled or Closed. The head of maintenance and admin see all open WOs.",
+        "id": "Buka My Work. Anda melihat WO Confirmed yang ditugaskan ke Anda dan belum Cancelled atau Closed. Kepala maintenance dan admin melihat semua WO terbuka."
+      },
+      {
+        "en": "On a Scheduled card click Start when you begin. Downtime and machine status are recorded.",
+        "id": "Di kartu berstatus Scheduled klik Start saat mulai bekerja. Downtime dan status mesin dicatat."
+      },
+      {
+        "en": "While In Progress click Hold if you wait for a spare part, or Done when finished. A card on Waiting Part has Resume.",
+        "id": "Saat In Progress klik Hold bila menunggu suku cadang, atau Done bila selesai. Kartu Waiting Part punya tombol Resume."
+      },
+      {
+        "en": "Click Open to fill the checklist and spare parts in the full Work Order. Done needs all required checklist tasks to have a result.",
+        "id": "Klik Open untuk mengisi checklist dan suku cadang di Work Order lengkap. Done butuh semua tugas checklist wajib sudah punya hasil."
+      },
+      {
+        "en": "Click Report Problem to open a new Maintenance Request.",
+        "id": "Klik Report Problem untuk membuka Maintenance Request baru."
+      }
+    ],
+    "fields": [
+      {"label": "Report Problem", "en": "Button that opens a new Maintenance Request.", "id": "Tombol yang membuka Maintenance Request baru."},
+      {"label": "Start", "en": "Starts a Scheduled WO. Records actual start, downtime and machine status.", "id": "Memulai WO Scheduled. Mencatat mulai aktual, downtime dan status mesin."},
+      {"label": "Hold", "en": "Puts an In Progress WO on Waiting Part.", "id": "Mengubah WO In Progress menjadi Waiting Part."},
+      {"label": "Resume", "en": "Continues a WO that is Waiting Part.", "id": "Melanjutkan WO yang berstatus Waiting Part."},
+      {"label": "Done", "en": "Finishes the work. Required checklist tasks must have a result; downtime is closed and the machine is Ready again.", "id": "Menyelesaikan pekerjaan. Tugas checklist wajib harus punya hasil; downtime ditutup dan mesin kembali Ready."},
+      {"label": "Open", "en": "Opens the full Maintenance Work Order of the card.", "id": "Membuka Maintenance Work Order lengkap dari kartu."}
+    ]
+  },
+  {
+    "key": "maintenance-plan",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Preventive Plan",
+    "purpose": {
+      "en": "A template for routine maintenance or inspection per machine: when it is due (by time and or by meter), the checklist and the standard spare parts. Due plans create Draft Work Orders automatically every day at 06:00. Only the Head of Maintenance edits.",
+      "id": "Template perawatan rutin atau inspeksi per mesin: kapan jatuh tempo (berdasarkan waktu dan atau meter), checklist dan suku cadang standar. Plan yang jatuh tempo membuat WO Draft otomatis tiap hari pukul 06:00. Hanya Kepala Maintenance yang mengubah."
+    },
+    "keywords": "preventive plan, rencana preventif, pm, jadwal perawatan, preventive maintenance, inspeksi, k3, checklist, interval, fixed, floating, generate wo",
+    "steps": [
+      {
+        "en": "Open Preventive Plan. The grid shows each plan with Last Done, Next Due and Due (Overdue, Due, OK). Expand a row to see its tasks.",
+        "id": "Buka Preventive Plan. Grid menampilkan tiap plan dengan Last Done, Next Due dan Due (Overdue, Due, OK). Buka baris untuk melihat tugasnya."
+      },
+      {
+        "en": "Head of Maintenance: click + New Record. On the General tab enter the plan code, name, machine, WO type and estimated duration.",
+        "id": "Kepala Maintenance: klik + New Record. Di tab General isi kode plan, nama, mesin, tipe WO dan perkiraan durasi."
+      },
+      {
+        "en": "On the Trigger tab choose by Time, Meter or Time OR Meter, the interval, Floating or Fixed, and how many days before due the WO is created.",
+        "id": "Di tab Trigger pilih Time, Meter atau Time OR Meter, intervalnya, Floating atau Fixed, serta berapa hari sebelum jatuh tempo WO dibuat."
+      },
+      {
+        "en": "Click Save. Then add the checklist tasks and the standard spare parts at the bottom.",
+        "id": "Klik Save. Lalu tambahkan tugas checklist dan suku cadang standar di bagian bawah."
+      },
+      {
+        "en": "Click Generate WO to create a Draft Work Order from the plan right away (not when the plan already has an open WO). Closing that WO moves the plan to its next due date.",
+        "id": "Klik Generate WO untuk langsung membuat Work Order Draft dari plan (tidak bisa bila plan sudah punya WO terbuka). Menutup WO itu memajukan plan ke jatuh tempo berikutnya."
+      }
+    ],
+    "fields": [
+      {"label": "Plan Code", "en": "Unique code such as PM-OFF01-01. Required.", "id": "Kode unik seperti PM-OFF01-01. Wajib."},
+      {"label": "Plan Name", "en": "Name of the plan; becomes the description of the generated WO. Required.", "id": "Nama plan; menjadi deskripsi WO yang dibuat. Wajib."},
+      {"label": "Machine", "en": "Machine the plan is for. Required.", "id": "Mesin tujuan plan. Wajib."},
+      {"label": "WO Type", "en": "Preventive or Inspection. Required.", "id": "Preventive atau Inspection. Wajib."},
+      {"label": "Est. Duration (minutes)", "en": "Estimated duration; sets the planned end of the generated WO.", "id": "Perkiraan durasi; menentukan rencana selesai WO yang dibuat."},
+      {"label": "Machine Stop", "en": "Yes if the machine must stop; the WO then blocks the machine on the Scheduling Board.", "id": "Yes bila mesin harus berhenti; WO lalu memblokir mesin di Scheduling Board."},
+      {"label": "Certificate valid until (inspection)", "en": "Validity end date of an inspection certificate, for example a safety inspection.", "id": "Tanggal berakhir masa berlaku sertifikat inspeksi, misalnya inspeksi K3."},
+      {"label": "Trigger", "en": "Time, Meter or Time OR Meter (first). Required.", "id": "Time, Meter atau Time OR Meter (first). Wajib."},
+      {"label": "Every", "en": "Interval number, at least 1. Required unless the trigger is Meter.", "id": "Angka interval, minimal 1. Wajib kecuali pemicu Meter."},
+      {"label": "Unit", "en": "Day, Week, Month or Year. Required unless the trigger is Meter.", "id": "Day, Week, Month atau Year. Wajib kecuali pemicu Meter."},
+      {"label": "Schedule Mode", "en": "Floating counts from the last completion; Fixed follows exact calendar dates, for example safety inspections. Required.", "id": "Floating dihitung dari selesai terakhir; Fixed mengikuti tanggal kalender pasti, misalnya inspeksi K3. Wajib."},
+      {"label": "Meter", "en": "Run hours or Impressions. Required unless the trigger is Time.", "id": "Run hours atau Impressions. Wajib kecuali pemicu Time."},
+      {"label": "Or every (meter)", "en": "Meter interval, for example every 500 run hours. Required unless the trigger is Time.", "id": "Interval meter, misalnya tiap 500 jam jalan. Wajib kecuali pemicu Time."},
+      {"label": "Create WO before due (days)", "en": "How many days before the due date the Draft WO is created, 0 to 60. Default 3.", "id": "Berapa hari sebelum jatuh tempo WO Draft dibuat, 0 sampai 60. Bawaan 3."},
+      {"label": "Next due (Fixed: first date)", "en": "Next due date. The system calculates it; only for Fixed plans can you type the first date.", "id": "Tanggal jatuh tempo berikutnya. Dihitung sistem; hanya untuk plan Fixed Anda boleh mengetik tanggal pertama."},
+      {"label": "Last done", "en": "Date the maintenance was last done.", "id": "Tanggal perawatan terakhir dilakukan."},
+      {"label": "Meter at last done", "en": "Meter reading at the last maintenance.", "id": "Pembacaan meter saat perawatan terakhir."},
+      {"label": "Notes", "en": "Free note on the plan.", "id": "Catatan bebas tentang plan."},
+      {"label": "+ Task", "en": "Tasks tab: type a task, choose its Kind (Inspect, Clean, Lubricate, Adjust, Replace, Measure) and click + Task. Edit text, Measure UoM, Min, Max and Required in the table.", "id": "Tab Tasks: ketik tugas, pilih Kind (Inspect, Clean, Lubricate, Adjust, Replace, Measure) lalu klik + Task. Ubah teks, Measure UoM, Min, Max dan Required di tabel."},
+      {"label": "+ Spare part", "en": "Spare Parts tab: pick a raw material (2+ letters), set Qty and click + Part. The parts are copied to each generated WO.", "id": "Tab Spare Parts: pilih bahan baku (2+ huruf), isi Qty lalu klik + Part. Suku cadang disalin ke setiap WO yang dibuat."}
+    ]
+  },
+  {
+    "key": "maintenance-codes",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Maintenance Codes",
+    "purpose": {
+      "en": "The catalogue of Component, Problem, Cause and Action codes used on the Failure tab of a Maintenance Work Order and in breakdown analysis. Open it to add or correct a code.",
+      "id": "Katalog kode Component, Problem, Cause dan Action yang dipakai di tab Failure Maintenance Work Order dan analisis kerusakan. Buka untuk menambah atau mengoreksi kode."
+    },
+    "keywords": "maintenance codes, kode maintenance, kode kerusakan, component, problem, cause, action, katalog kerusakan, pareto",
+    "steps": [
+      {
+        "en": "Open Maintenance Codes. The list is a sheet where you type in the cells.",
+        "id": "Buka Maintenance Codes. Daftarnya berupa lembar yang diisi langsung di sel."
+      },
+      {
+        "en": "Add a row: choose the Type, then enter the Code and the Name (all required).",
+        "id": "Tambah baris: pilih Type, lalu isi Code dan Name (semuanya wajib)."
+      },
+      {
+        "en": "Fill Machine Type if the code only applies to one machine type; leave it empty for all machines. Use Sort to set the order in lists.",
+        "id": "Isi Machine Type bila kode hanya berlaku untuk satu tipe mesin; kosongkan untuk semua mesin. Pakai Sort untuk mengatur urutan di daftar."
+      },
+      {
+        "en": "Click Save. Untick Active for a code that should no longer be offered.",
+        "id": "Klik Save. Hilangkan centang Active untuk kode yang tidak boleh ditawarkan lagi."
+      }
+    ],
+    "fields": [
+      {"label": "Type", "en": "Component, Problem, Cause or Action. Required.", "id": "Component, Problem, Cause atau Action. Wajib."},
+      {"label": "Code", "en": "Short code, saved in capital letters. Required.", "id": "Kode singkat, disimpan dengan huruf kapital. Wajib."},
+      {"label": "Name", "en": "Name shown in the lists of the Work Order, in English; other languages come from the dictionary. Required.", "id": "Nama yang tampil di daftar Work Order, dalam bahasa Inggris; bahasa lain dari kamus. Wajib."},
+      {"label": "Machine Type (blank = all)", "en": "Machine type the code is limited to. Blank means all machine types.", "id": "Tipe mesin yang dibatasi untuk kode ini. Kosong berarti semua tipe mesin."},
+      {"label": "Sort", "en": "Number that sets the order in the dropdown lists.", "id": "Angka yang menentukan urutan di daftar pilihan."},
+      {"label": "Active", "en": "Tick for codes that can be picked in a Work Order.", "id": "Centang untuk kode yang boleh dipilih di Work Order."}
+    ]
+  },
+  {
+    "key": "maintenance-wo-report",
+    "type": "REPORT",
+    "module": "MAINT",
+    "title": "Maintenance WO Report",
+    "purpose": {
+      "en": "One row per Confirmed Maintenance Work Order with type, machine, working hours, downtime and cost. Group it by machine, month, type or problem to see where breakdowns and costs come from.",
+      "id": "Satu baris per Maintenance Work Order Confirmed dengan tipe, mesin, jam kerja, downtime dan biaya. Kelompokkan menurut mesin, bulan, tipe atau problem untuk melihat sumber kerusakan dan biaya."
+    },
+    "keywords": "maintenance wo report, laporan maintenance, pareto kerusakan, biaya maintenance, downtime, breakdown per mesin, jam kerja teknisi, laporan perawatan",
+    "steps": [
+      {
+        "en": "Open the report. Use the boxes All, Breakdown, Preventive and Closed, or the filters Machine, Type, Problem, Technician and Month.",
+        "id": "Buka laporan. Pakai kotak All, Breakdown, Preventive dan Closed, atau filter Machine, Type, Problem, Technician dan Month."
+      },
+      {
+        "en": "Choose a grouping (Machine, Month, Type, Problem or Technician) to get subtotals of hours and cost per group.",
+        "id": "Pilih pengelompokan (Machine, Month, Type, Problem atau Technician) untuk mendapat subtotal jam dan biaya per kelompok."
+      },
+      {
+        "en": "Use the Columns button to show Cause, Action, Findings and the cost split (Spare Parts, Labor, Vendor).",
+        "id": "Pakai tombol Columns untuk menampilkan Cause, Action, Findings dan rincian biaya (Spare Parts, Labor, Vendor)."
+      },
+      {
+        "en": "Double-click a row to open the Maintenance Work Order.",
+        "id": "Klik dua kali sebuah baris untuk membuka Maintenance Work Order."
+      }
+    ],
+    "fields": [
+      {"label": "WO", "en": "Column: Maintenance Work Order number.", "id": "Kolom: nomor Maintenance Work Order."},
+      {"label": "Planned", "en": "Column: planned start date.", "id": "Kolom: tanggal rencana mulai."},
+      {"label": "Month", "en": "Hidden column and grouping: month of the planned start (year-month).", "id": "Kolom tersembunyi dan pengelompokan: bulan rencana mulai (tahun-bulan)."},
+      {"label": "Machine", "en": "Column, filter and grouping: machine code and name.", "id": "Kolom, filter dan pengelompokan: kode dan nama mesin."},
+      {"label": "Machine Type", "en": "Hidden column: type of the machine.", "id": "Kolom tersembunyi: tipe mesin."},
+      {"label": "Type", "en": "Column, filter and grouping: Preventive, Breakdown, Corrective or Inspection.", "id": "Kolom, filter dan pengelompokan: Preventive, Breakdown, Corrective atau Inspection."},
+      {"label": "Priority", "en": "Column: P1 to P4.", "id": "Kolom: P1 sampai P4."},
+      {"label": "Status", "en": "Column: work status of the WO such as Scheduled, In Progress, Waiting Part, Done or Closed.", "id": "Kolom: status pekerjaan WO seperti Scheduled, In Progress, Waiting Part, Done atau Closed."},
+      {"label": "Technician", "en": "Column, filter and grouping: assigned technician.", "id": "Kolom, filter dan pengelompokan: teknisi yang ditugaskan."},
+      {"label": "Description", "en": "Hidden column: description of the WO.", "id": "Kolom tersembunyi: deskripsi WO."},
+      {"label": "Component", "en": "Hidden column: component code name.", "id": "Kolom tersembunyi: nama kode komponen."},
+      {"label": "Problem", "en": "Column, filter and grouping: problem code name. Basis for the breakdown Pareto.", "id": "Kolom, filter dan pengelompokan: nama kode problem. Dasar Pareto kerusakan."},
+      {"label": "Cause", "en": "Hidden column: cause code name.", "id": "Kolom tersembunyi: nama kode penyebab."},
+      {"label": "Action", "en": "Hidden column: action code name.", "id": "Kolom tersembunyi: nama kode tindakan."},
+      {"label": "Findings", "en": "Hidden column: technician findings.", "id": "Kolom tersembunyi: temuan teknisi."},
+      {"label": "Work (h)", "en": "Column: hours between actual start and end. Summed.", "id": "Kolom: jam antara mulai dan selesai aktual. Dijumlahkan."},
+      {"label": "Downtime (h)", "en": "Column: hours the machine was stopped. Summed.", "id": "Kolom: jam mesin berhenti. Dijumlahkan."},
+      {"label": "Spare Parts", "en": "Hidden column: spare part cost. Summed.", "id": "Kolom tersembunyi: biaya suku cadang. Dijumlahkan."},
+      {"label": "Labor", "en": "Hidden column: labour cost. Summed.", "id": "Kolom tersembunyi: biaya tenaga kerja. Dijumlahkan."},
+      {"label": "Vendor", "en": "Hidden column: outside service cost. Summed.", "id": "Kolom tersembunyi: biaya jasa pihak luar. Dijumlahkan."},
+      {"label": "Total Cost", "en": "Column: total of spare parts, labour and vendor cost. Summed.", "id": "Kolom: total biaya suku cadang, tenaga kerja dan vendor. Dijumlahkan."}
+    ]
+  }
+]

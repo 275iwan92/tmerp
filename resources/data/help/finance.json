@@ -1,0 +1,1123 @@
+[
+  {
+    "key": "acc-coa",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Master of Accounts",
+    "purpose": {
+      "en": "The chart of accounts (COA). Open it to add a new general ledger account, change an existing one, or switch one on or off. Every journal, voucher and invoice posts to an account listed here.",
+      "id": "Daftar akun (COA). Buka layar ini untuk menambah akun buku besar baru, mengubah akun yang ada, atau mengaktifkan dan menonaktifkannya. Semua jurnal, voucher, dan invoice diposting ke akun yang ada di sini."
+    },
+    "keywords": "coa, chart of accounts, account, gl account, kode akun, daftar akun, akun, bagan akun, master akun, rekening, cost center, normal balance, saldo normal, postable",
+    "steps": [
+      {
+        "en": "Open Master of Accounts. Type a code or name in the search box to find an account, or use the Type, Level and Postable filters.",
+        "id": "Buka Master of Accounts. Ketik kode atau nama di kotak cari untuk menemukan akun, atau pakai filter Type, Level, dan Postable."
+      },
+      {
+        "en": "Click + New Record to add an account. To change one, open its row.",
+        "id": "Klik + New Record untuk menambah akun. Untuk mengubah akun, buka barisnya."
+      },
+      {
+        "en": "Pick the Parent Account (leave empty for a top-level account), then fill Account Code, Account Name, Type and Normal Balance.",
+        "id": "Pilih Parent Account (kosongkan bila akun paling atas), lalu isi Account Code, Account Name, Type, dan Normal Balance."
+      },
+      {
+        "en": "Set the optional Default Cost Center and Tax Scheme. Tick the checkboxes that apply: reconciliation account, can be journaled directly, and Active.",
+        "id": "Isi Default Cost Center dan Tax Scheme bila perlu. Centang kotak yang sesuai: akun rekonsiliasi, bisa dijurnal langsung, dan Active."
+      },
+      {
+        "en": "Click Save. The new account is numbered by the system and appears in the list in code order.",
+        "id": "Klik Save. Akun baru diberi nomor oleh sistem dan tampil di daftar urut menurut kode."
+      },
+      {
+        "en": "To switch an account off (or on again), use the activate toggle on its row and confirm. Header accounts cannot be edited or toggled here.",
+        "id": "Untuk menonaktifkan akun (atau mengaktifkannya lagi), pakai tombol aktif/nonaktif pada barisnya lalu konfirmasi. Akun header tidak bisa diedit atau diubah statusnya di sini."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Parent Account",
+        "en": "Pick the group (header) account this account sits under. Leave empty for a top-level account. An account cannot be its own parent. The Level column in the list follows from this.",
+        "id": "Pilih akun grup (header) tempat akun ini berada. Kosongkan bila akun paling atas. Akun tidak boleh menjadi parent dirinya sendiri. Kolom Level di daftar mengikuti pilihan ini."
+      },
+      {
+        "label": "Account Code",
+        "en": "The GL code, up to 20 characters, for example 115100. Typed by you and must be unique. The internal account number is created by the system.",
+        "id": "Kode akun buku besar, maksimal 20 karakter, misalnya 115100. Diketik sendiri dan harus unik. Nomor internal akun dibuat otomatis oleh sistem."
+      },
+      {
+        "label": "Account Name",
+        "en": "The name shown on journals, ledgers and reports, up to 150 characters, for example Warehouse Petty Cash.",
+        "id": "Nama akun yang tampil di jurnal, buku besar, dan laporan, maksimal 150 karakter, misalnya Kas Kecil Gudang."
+      },
+      {
+        "label": "Type",
+        "en": "The account class: Asset, Liability, Equity, Revenue, COGS, Expense, Other income or Other expense. Reports group balances by this class.",
+        "id": "Kelas akun: Asset, Liability, Equity, Revenue, COGS, Expense, Other income, atau Other expense. Laporan mengelompokkan saldo menurut kelas ini."
+      },
+      {
+        "label": "Normal Balance",
+        "en": "DEBIT or CREDIT: the side on which the account normally increases. Assets and expenses are normally debit; liabilities, equity and revenue are normally credit.",
+        "id": "DEBIT atau CREDIT: sisi tempat saldo akun normalnya bertambah. Aset dan beban biasanya debit; kewajiban, ekuitas, dan pendapatan biasanya kredit."
+      },
+      {
+        "label": "Default Cost Center",
+        "en": "Optional. Pick the cost center proposed for this account, from the active cost centers. Shown in the Default Cost Center column.",
+        "id": "Opsional. Pilih cost center yang diusulkan untuk akun ini, dari cost center yang aktif. Tampil di kolom Default Cost Center."
+      },
+      {
+        "label": "Tax Scheme",
+        "en": "Optional reference code such as PPN_IN, PPN_OUT, PPH22 or PPH23, up to 20 characters. It holds no rate; the percentage is read from the tax scheme master when a voucher is posted.",
+        "id": "Kode acuan opsional seperti PPN_IN, PPN_OUT, PPH22, atau PPH23, maksimal 20 karakter. Tidak menyimpan tarif; persentasenya dibaca dari master skema pajak saat voucher diposting."
+      },
+      {
+        "label": "Reconciliation account (requires a partner on every journal line - AR/AP)",
+        "en": "Tick for control accounts of receivables or payables. Every journal line on such an account must name a partner. These accounts are refused in manual journals.",
+        "id": "Centang untuk akun kontrol piutang atau hutang. Setiap baris jurnal pada akun ini wajib menyebut partner. Akun ini ditolak di jurnal manual."
+      },
+      {
+        "label": "Can be journaled directly",
+        "en": "Tick for accounts that receive postings (Postable = Yes). Untick for header or group accounts, which only sum their children and are shown as Header in the list.",
+        "id": "Centang untuk akun yang menerima posting (Postable = Yes). Hilangkan centang untuk akun header atau grup, yang hanya menjumlah akun di bawahnya dan tampil sebagai Header di daftar."
+      },
+      {
+        "label": "Active",
+        "en": "Untick to stop using the account without deleting it. Inactive accounts are marked in the list.",
+        "id": "Hilangkan centang untuk berhenti memakai akun tanpa menghapusnya. Akun nonaktif diberi tanda di daftar."
+      }
+    ]
+  },
+  {
+    "key": "acc-journal",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Journal Entries",
+    "purpose": {
+      "en": "Create and process manual journals made by Accounting: manual, accrual, recurring, adjustment and opening balance. Open it to prepare a journal, send it for approval, post it to the General Ledger, or reverse a posted one.",
+      "id": "Membuat dan memproses jurnal manual dari bagian Accounting: manual, akrual, berulang, penyesuaian, dan saldo awal. Buka untuk menyiapkan jurnal, mengajukan persetujuan, memposting ke General Ledger, atau membalik jurnal yang sudah diposting."
+    },
+    "keywords": "jurnal, journal, jurnal umum, jurnal manual, accrual, akrual, adjustment, penyesuaian, recurring, opening balance, saldo awal, reversing, jurnal pembalik, debit, kredit, gl, general ledger, posting",
+    "steps": [
+      {
+        "en": "Open Journal Entries and click + New Record. Fill Description, Journal type, Transaction date and, if you have one, the Reference number.",
+        "id": "Buka Journal Entries lalu klik + New Record. Isi Description, Journal type, Transaction date, dan Reference number bila ada."
+      },
+      {
+        "en": "Fill the lines: pick the Account, enter an amount in Debit or Credit (not both on one line), and optionally a Cost center and Narration. Add more lines as needed.",
+        "id": "Isi baris jurnal: pilih Account, isi Debit atau Credit (jangan keduanya pada satu baris), dan bila perlu Cost center serta Narration. Tambah baris sesuai kebutuhan."
+      },
+      {
+        "en": "Check the totals under the lines. The journal can only be saved when Debit equals Credit and is not zero; the tag then shows Balanced.",
+        "id": "Cek total di bawah baris. Jurnal hanya bisa disimpan bila Debit sama dengan Credit dan tidak nol; tanda akan berubah menjadi Balanced."
+      },
+      {
+        "en": "Click Save to keep it as Draft, or Submit for Approval to save it and send it to the approver (status Pending approval).",
+        "id": "Klik Save untuk menyimpan sebagai Draft, atau Submit for Approval untuk menyimpan sekaligus mengirim ke penyetuju (status Pending approval)."
+      },
+      {
+        "en": "The approver opens the journal and clicks Approve, or Return to Draft to send it back. A person who prepared the journal cannot approve it when segregation of duties applies.",
+        "id": "Penyetuju membuka jurnal lalu klik Approve, atau Return to Draft untuk mengembalikan. Pembuat jurnal tidak boleh menyetujui jurnalnya sendiri bila aturan pemisahan tugas berlaku."
+      },
+      {
+        "en": "Click Post to GL on an Approved journal. It becomes Posted and appears in General Ledger and Trial Balance. Posting into a closed period is refused.",
+        "id": "Klik Post to GL pada jurnal yang Approved. Statusnya menjadi Posted dan muncul di General Ledger dan Trial Balance. Posting ke periode yang sudah ditutup ditolak."
+      },
+      {
+        "en": "A Posted journal is never edited. To correct it, click Reverse, enter the Reversal date and Reason, and click Post Reversal; then enter a corrected journal.",
+        "id": "Jurnal yang sudah Posted tidak pernah diedit. Untuk mengoreksi, klik Reverse, isi Reversal date dan Reason, lalu klik Post Reversal; setelah itu buat jurnal pengganti yang benar."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Description",
+        "en": "What the journal is for, up to 255 characters, for example Office utilities accrual. Required.",
+        "id": "Tujuan jurnal, maksimal 255 karakter, misalnya Akrual listrik kantor. Wajib diisi."
+      },
+      {
+        "label": "Journal type",
+        "en": "Manual Journal, Accrual Journal, Recurring Journal, Adjustment Journal or Opening Balance. Reversing Journal and Year-end Closing are created by the system, not chosen here.",
+        "id": "Manual Journal, Accrual Journal, Recurring Journal, Adjustment Journal, atau Opening Balance. Reversing Journal dan Year-end Closing dibuat oleh sistem, tidak dipilih di sini."
+      },
+      {
+        "label": "Transaction date",
+        "en": "The date of the journal. It sets the accounting period it posts to.",
+        "id": "Tanggal jurnal. Tanggal ini menentukan periode akuntansi tempat jurnal diposting."
+      },
+      {
+        "label": "Reference number",
+        "en": "Optional supporting document number, for example REF-2026-0001. Shown in the Reference column and in General Ledger.",
+        "id": "Nomor dokumen pendukung, opsional, misalnya REF-2026-0001. Tampil di kolom Reference dan di General Ledger."
+      },
+      {
+        "label": "Auto-reverse date",
+        "en": "Only for Accrual Journal. The date the system posts the reversing journal by itself. It must be after the Transaction date.",
+        "id": "Hanya untuk Accrual Journal. Tanggal sistem memposting jurnal pembalik secara otomatis. Harus setelah Transaction date."
+      },
+      {
+        "label": "Account",
+        "en": "Pick a postable account from the chart of accounts. Receivable, payable and advance control accounts are refused; those go through Order to Cash and Procure to Pay.",
+        "id": "Pilih akun yang bisa diposting dari daftar akun. Akun kontrol piutang, hutang, dan uang muka ditolak; itu lewat Order to Cash dan Procure to Pay."
+      },
+      {
+        "label": "Debit",
+        "en": "Amount on the debit side of this line, in Rupiah. Leave empty when the line is a credit.",
+        "id": "Nilai sisi debit baris ini, dalam Rupiah. Kosongkan bila baris ini kredit."
+      },
+      {
+        "label": "Credit",
+        "en": "Amount on the credit side of this line, in Rupiah. Leave empty when the line is a debit. Total Credit must equal total Debit.",
+        "id": "Nilai sisi kredit baris ini, dalam Rupiah. Kosongkan bila baris ini debit. Total Credit harus sama dengan total Debit."
+      },
+      {
+        "label": "Cost center",
+        "en": "Optional. The cost center this line belongs to, from the active cost centers.",
+        "id": "Opsional. Cost center tempat baris ini dibebankan, dari cost center yang aktif."
+      },
+      {
+        "label": "Narration",
+        "en": "Optional note for this line. It is shown in the journal lines and in General Ledger.",
+        "id": "Catatan opsional untuk baris ini. Tampil di rincian jurnal dan di General Ledger."
+      },
+      {
+        "label": "Reversal date",
+        "en": "In the Reverse window: the date of the reversing journal. Debit and credit are swapped in full into a new Posted journal; the original stays as the audit trail.",
+        "id": "Di jendela Reverse: tanggal jurnal pembalik. Debit dan kredit dibalik penuh ke jurnal baru berstatus Posted; jurnal asal tetap ada sebagai jejak audit."
+      },
+      {
+        "label": "Reason",
+        "en": "In the Reverse window: why the journal is reversed, up to 120 characters, for example wrong cost center. Required.",
+        "id": "Di jendela Reverse: alasan jurnal dibalik, maksimal 120 karakter, misalnya salah cost center. Wajib diisi."
+      }
+    ]
+  },
+  {
+    "key": "acc-cash-bank",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Cashier (Cash & Bank)",
+    "purpose": {
+      "en": "Record cash and bank vouchers: cash receipt (BKM), cash payment (BKK), bank receipt (BBM) and bank payment (BBK). Open it to enter a voucher as Draft, then post it to the ledger.",
+      "id": "Mencatat bukti kas dan bank: bukti kas masuk (BKM), kas keluar (BKK), bank masuk (BBM), dan bank keluar (BBK). Buka untuk mengisi voucher sebagai Draft, lalu memostingnya ke buku besar."
+    },
+    "keywords": "kas, bank, cash, voucher, bkm, bkk, bbm, bbk, bukti kas masuk, bukti kas keluar, bukti bank, cashier, kasir, penerimaan, pembayaran, giro, cek, ppn, pph, e-faktur, bukti potong",
+    "steps": [
+      {
+        "en": "Open Cashier (Cash & Bank) and click + New Record.",
+        "id": "Buka Cashier (Cash & Bank) lalu klik + New Record."
+      },
+      {
+        "en": "Choose the Transaction Type, the Posting Date and the Main Cash/Bank Account, then the Partner / Recipient and the Reference / Check No. / Giro.",
+        "id": "Pilih Transaction Type, Posting Date, dan Main Cash/Bank Account, lalu isi Partner / Recipient dan Reference / Check No. / Giro."
+      },
+      {
+        "en": "In Journal Detail, the first line is filled with the main account. Add the other side: pick the Account, a Description and the amount, using Add Journal Line for more lines.",
+        "id": "Di Journal Detail, baris pertama otomatis berisi akun utama. Isi sisi lawannya: pilih Account, Description, dan nilainya, pakai Add Journal Line untuk baris tambahan."
+      },
+      {
+        "en": "If the voucher has VAT or withholding tax, open the Tax Information tab and fill it in.",
+        "id": "Bila voucher memuat PPN atau pemotongan PPh, buka tab Tax Information lalu isi."
+      },
+      {
+        "en": "Click Save Draft. The system gives the voucher a number in the form type/year/month/sequence, for example BKM/2026/10/001.",
+        "id": "Klik Save Draft. Sistem memberi nomor voucher dengan pola jenis/tahun/bulan/urut, misalnya BKM/2026/10/001."
+      },
+      {
+        "en": "Check that Total Debit equals Total Credit (Variance is zero), then click Post Journal and confirm. A posted voucher can no longer be edited.",
+        "id": "Pastikan Total Debit sama dengan Total Credit (Variance nol), lalu klik Post Journal dan konfirmasi. Voucher yang sudah diposting tidak bisa diedit lagi."
+      },
+      {
+        "en": "To drop a Draft you no longer need, open it and click Cancel and confirm; its status becomes Cancelled.",
+        "id": "Untuk membuang Draft yang tidak dipakai, buka draft itu lalu klik Cancel dan konfirmasi; statusnya menjadi Cancelled."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Document No.",
+        "en": "Filled by the system when you save. Cannot be typed.",
+        "id": "Diisi otomatis oleh sistem saat disimpan. Tidak bisa diketik."
+      },
+      {
+        "label": "Transaction Type",
+        "en": "Cash Receipt Voucher (BKM), Cash Payment Voucher (BKK), Bank Receipt Voucher (BBM) or Bank Payment Voucher (BBK). It decides the journal book (cash or bank) and the direction of the first line.",
+        "id": "Cash Receipt Voucher (BKM), Cash Payment Voucher (BKK), Bank Receipt Voucher (BBM), atau Bank Payment Voucher (BBK). Menentukan buku jurnal (kas atau bank) dan arah baris pertama."
+      },
+      {
+        "label": "Posting Date",
+        "en": "The accounting date of the voucher. It sets the period it posts to. Required.",
+        "id": "Tanggal pembukuan voucher. Menentukan periode tempat voucher diposting. Wajib diisi."
+      },
+      {
+        "label": "Main Cash/Bank Account",
+        "en": "The cash or bank account the money moves through, chosen from the cash and bank accounts (codes starting 111). Required. Shown in the Cash / Bank Account column.",
+        "id": "Akun kas atau bank tempat uang keluar atau masuk, dipilih dari akun kas dan bank (kode berawalan 111). Wajib diisi. Tampil di kolom Cash / Bank Account."
+      },
+      {
+        "label": "Partner / Recipient",
+        "en": "Typed name of the company or person paying or receiving the money. Shown under the voucher number in the list.",
+        "id": "Nama perusahaan atau orang yang membayar atau menerima uang, diketik sendiri. Tampil di bawah nomor voucher pada daftar."
+      },
+      {
+        "label": "Reference / Check No. / Giro",
+        "en": "Optional reference such as a cheque or giro number.",
+        "id": "Referensi opsional seperti nomor cek atau giro."
+      },
+      {
+        "label": "Account Code & Name (COA)",
+        "en": "On each journal line, pick a postable account from the chart of accounts. At least one line with an account and an amount is required.",
+        "id": "Pada tiap baris jurnal, pilih akun yang bisa diposting dari daftar akun. Minimal satu baris dengan akun dan nilai wajib ada."
+      },
+      {
+        "label": "Description",
+        "en": "Optional note for the journal line.",
+        "id": "Catatan opsional untuk baris jurnal."
+      },
+      {
+        "label": "Debit (IDR)",
+        "en": "Debit amount of the line, in Rupiah. For a receipt (BKM, BBM) the main account line is on the debit side.",
+        "id": "Nilai debit baris, dalam Rupiah. Untuk penerimaan (BKM, BBM), baris akun utama ada di sisi debit."
+      },
+      {
+        "label": "Credit (IDR)",
+        "en": "Credit amount of the line, in Rupiah. For a payment (BKK, BBK) the main account line is on the credit side. Total Credit must equal Total Debit before posting.",
+        "id": "Nilai kredit baris, dalam Rupiah. Untuk pembayaran (BKK, BBK), baris akun utama ada di sisi kredit. Total Credit harus sama dengan Total Debit sebelum diposting."
+      },
+      {
+        "label": "VAT Treatment",
+        "en": "Non-VAT, Input VAT 11% or Output VAT 11%. Tax Information tab.",
+        "id": "Non-VAT, Input VAT 11%, atau Output VAT 11%. Ada di tab Tax Information."
+      },
+      {
+        "label": "Tax Invoice Number (e-Faktur)",
+        "en": "The e-Faktur tax invoice number when VAT applies, for example 010.003-25.00000000.",
+        "id": "Nomor faktur pajak e-Faktur bila ada PPN, misalnya 010.003-25.00000000."
+      },
+      {
+        "label": "Withholding Tax Type",
+        "en": "No Withholding Tax, Income Tax Art. 23 (2% - Services), Art. 4(2) (10% - Rent/Building) or Art. 21 (Non-Employee).",
+        "id": "No Withholding Tax, Income Tax Art. 23 (2% - Services), Art. 4(2) (10% - Rent/Building), atau Art. 21 (Non-Employee)."
+      },
+      {
+        "label": "Withholding Tax Slip Number",
+        "en": "The withholding tax slip (bukti potong) number, for example BP-2025-0001928.",
+        "id": "Nomor bukti potong PPh, misalnya BP-2025-0001928."
+      }
+    ]
+  },
+  {
+    "key": "acc-dp-invoice",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Down Payment",
+    "purpose": {
+      "en": "Issue a down payment (DP) invoice to a customer, record that the customer paid it, and later apply the unused DP against the final invoice. Open it when a customer must pay an advance before production starts.",
+      "id": "Menerbitkan tagihan uang muka (DP) ke customer, mencatat bahwa customer sudah membayar, lalu memotongkan sisa DP ke invoice akhir. Buka saat customer harus membayar uang muka sebelum produksi dimulai."
+    },
+    "keywords": "dp, down payment, uang muka, tagihan dp, invoice dp, customer, so, co, kontrak, alokasi dp, sisa dp, potong dp, ppn, faktur dp, wo gate",
+    "steps": [
+      {
+        "en": "Open Down Payment. The list shows each DP invoice with its status and DP Not Yet Applied. Click + New Record to issue a new one.",
+        "id": "Buka Down Payment. Daftar menampilkan tiap invoice DP beserta status dan DP Not Yet Applied. Klik + New Record untuk menerbitkan yang baru."
+      },
+      {
+        "en": "Pick the Customer, enter the CO/SO reference and the Nilai Kontrak (Nilai SO).",
+        "id": "Pilih Customer, isi No. Referensi CO/SO dan Nilai Kontrak (Nilai SO)."
+      },
+      {
+        "en": "Choose Metode Penagihan DP: a percentage of the contract value or a fixed amount, then enter the percentage or the amount.",
+        "id": "Pilih Metode Penagihan DP: persentase dari nilai kontrak atau nominal tetap, lalu isi persentase atau nominalnya."
+      },
+      {
+        "en": "Set Tanggal Faktur DP and Tanggal Jatuh Tempo DP, and an optional print note. Check Subtotal DP, PPN and TOTAL TAGIHAN DP in the box.",
+        "id": "Atur Tanggal Faktur DP dan Tanggal Jatuh Tempo DP, serta catatan cetak bila perlu. Periksa Subtotal DP, PPN, dan TOTAL TAGIHAN DP di kotak hitungan."
+      },
+      {
+        "en": "Click Terbitkan & Kirim DP Invoice. The invoice is posted at once with its journal; a closed accounting period is refused. Print it from the list.",
+        "id": "Klik Terbitkan & Kirim DP Invoice. Invoice langsung diposting beserta jurnalnya; periode akuntansi yang sudah ditutup ditolak. Cetak dari daftar."
+      },
+      {
+        "en": "When the customer pays, use Catat Pembayaran on that DP row and confirm. The invoice becomes PAID and the Work Order gate message appears.",
+        "id": "Saat customer membayar, pakai Catat Pembayaran pada baris DP itu dan konfirmasi. Invoice menjadi PAID dan muncul pesan WO Gate terbuka."
+      },
+      {
+        "en": "When the final invoice exists, use Alokasikan on the paid DP, pick the Invoice Final Tujuan and enter Potong Pokok and Potong PPN.",
+        "id": "Bila invoice akhir sudah ada, pakai Alokasikan pada DP yang lunas, pilih Invoice Final Tujuan, lalu isi Potong Pokok dan Potong PPN."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Customer",
+        "en": "Pick the customer from the active customers. A customer with VAT-exempt status (bonded zone) gets no 11% VAT. Required.",
+        "id": "Pilih customer dari customer yang aktif. Customer berstatus bebas PPN (kawasan berikat) tidak dikenai PPN 11%. Wajib diisi."
+      },
+      {
+        "label": "No. Referensi CO/SO",
+        "en": "Optional free text with the customer order or sales order number, for example SO-2026-0899. Not linked to the order record; kept as a reference on the journal.",
+        "id": "Teks bebas opsional berisi nomor customer order atau sales order, misalnya SO-2026-0899. Tidak terhubung ke data order; disimpan sebagai referensi di jurnal."
+      },
+      {
+        "label": "Nilai Kontrak (Nilai SO)",
+        "en": "The total contract or order value the DP is based on, in Rupiah. Must be above zero. Required.",
+        "id": "Total nilai kontrak atau order yang menjadi dasar DP, dalam Rupiah. Harus lebih dari nol. Wajib diisi."
+      },
+      {
+        "label": "Metode Penagihan DP",
+        "en": "Persentase dari Nilai Kontrak, or Nominal Tetap. It decides whether you fill a percentage or an amount below.",
+        "id": "Persentase dari Nilai Kontrak, atau Nominal Tetap. Menentukan apakah di bawah Anda mengisi persentase atau nominal."
+      },
+      {
+        "label": "Persentase DP (%)",
+        "en": "Shown for the percentage method. Between 0.01 and 100. The DP subtotal is the contract value times this percentage.",
+        "id": "Tampil untuk metode persentase. Antara 0,01 dan 100. Subtotal DP adalah nilai kontrak dikali persentase ini."
+      },
+      {
+        "label": "Nominal DP (Rp)",
+        "en": "Shown for the fixed method. The DP amount before VAT, in Rupiah, at least 0.01.",
+        "id": "Tampil untuk metode nominal tetap. Nilai DP sebelum PPN, dalam Rupiah, minimal 0,01."
+      },
+      {
+        "label": "Akun Kewajiban UM",
+        "en": "Read-only. The liability account that holds the customer advance (213200 Uang Muka Penjualan dari Pelanggan).",
+        "id": "Hanya baca. Akun kewajiban yang menampung uang muka customer (213200 Uang Muka Penjualan dari Pelanggan)."
+      },
+      {
+        "label": "Tanggal Faktur DP",
+        "en": "The invoice date, which is also the posting date. It must fall in an open accounting period.",
+        "id": "Tanggal faktur, sekaligus tanggal posting. Harus jatuh di periode akuntansi yang masih terbuka."
+      },
+      {
+        "label": "Tanggal Jatuh Tempo DP",
+        "en": "The date the customer should pay by. Default is 7 days after the invoice date; it cannot be before the invoice date.",
+        "id": "Tanggal batas pembayaran customer. Bawaan 7 hari setelah tanggal faktur; tidak boleh sebelum tanggal faktur."
+      },
+      {
+        "label": "Catatan / Instruksi Cetak Pada Faktur",
+        "en": "Optional note, up to 255 characters, that goes into the journal description for this invoice.",
+        "id": "Catatan opsional, maksimal 255 karakter, yang masuk ke keterangan jurnal invoice ini."
+      },
+      {
+        "label": "Invoice Final Tujuan",
+        "en": "In the allocation window: pick the customer's open final invoice that the DP is applied to. The list shows each invoice with its remaining balance.",
+        "id": "Di jendela alokasi: pilih invoice akhir customer yang masih terbuka sebagai tujuan pemotongan DP. Daftar menampilkan sisa tagihan tiap invoice."
+      },
+      {
+        "label": "Potong Pokok (Rp)",
+        "en": "In the allocation window: the base amount of the DP applied. Base plus VAT cannot exceed the DP still available or the open balance of the final invoice.",
+        "id": "Di jendela alokasi: nilai pokok DP yang dipotongkan. Pokok ditambah PPN tidak boleh melebihi sisa DP atau sisa tagihan invoice akhir."
+      },
+      {
+        "label": "Potong PPN (Rp)",
+        "en": "In the allocation window: the VAT part of the DP applied, zero or more.",
+        "id": "Di jendela alokasi: bagian PPN dari DP yang dipotongkan, nol atau lebih."
+      },
+      {
+        "label": "DP Not Yet Applied",
+        "en": "List column, read-only: the part of the DP not yet applied to a final invoice. When it reaches zero the row shows Habis Terpakai.",
+        "id": "Kolom daftar, hanya baca: bagian DP yang belum dipotongkan ke invoice akhir. Bila sudah nol, baris menampilkan Habis Terpakai."
+      }
+    ]
+  },
+  {
+    "key": "acc-receivables",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Order to Cash",
+    "purpose": {
+      "en": "Customer invoices and the money received for them. Open it to issue an invoice to a customer, post it, record the customer payment against it, and see which invoices are open or overdue.",
+      "id": "Invoice customer dan uang yang diterima untuk invoice itu. Buka untuk menerbitkan invoice ke customer, memostingnya, mencatat pembayaran customer, dan melihat invoice mana yang masih terbuka atau jatuh tempo."
+    },
+    "keywords": "piutang, receivable, ar, invoice, faktur, penjualan, customer invoice, tagihan, o2c, order to cash, penerimaan, pembayaran customer, jatuh tempo, overdue, ppn keluaran, e-faktur, aging",
+    "steps": [
+      {
+        "en": "Open Order to Cash. Use the search box, the Customer and Status filters, or the stat boxes (Draft, Open, Overdue, Paid) to find invoices.",
+        "id": "Buka Order to Cash. Pakai kotak cari, filter Customer dan Status, atau kotak statistik (Draft, Open, Overdue, Paid) untuk menemukan invoice."
+      },
+      {
+        "en": "Click + New Record. Search and pick the Customer, then fill Description, Invoice date, Due date, Revenue account and the Net amount (IDR).",
+        "id": "Klik + New Record. Cari dan pilih Customer, lalu isi Description, Invoice date, Due date, Revenue account, dan Net amount (IDR)."
+      },
+      {
+        "en": "Tick Tax code if PPN applies, optionally pick the Customer order and enter the e-Faktur number.",
+        "id": "Centang Tax code bila dikenai PPN, pilih Customer order bila ada, dan isi nomor e-Faktur."
+      },
+      {
+        "en": "Click Save to keep a Draft, or Approve & Post to post it to the ledger straight away.",
+        "id": "Klik Save untuk menyimpan Draft, atau Approve & Post untuk langsung memostingnya ke buku besar."
+      },
+      {
+        "en": "To record a payment, open a posted invoice and click Receive Payment. Set the Receipt date, Deposit to and a note, and type the amount to allocate to each open invoice.",
+        "id": "Untuk mencatat pembayaran, buka invoice yang sudah diposting lalu klik Receive Payment. Atur Receipt date, Deposit to, dan catatan, lalu isi nilai yang dialokasikan ke tiap invoice terbuka."
+      },
+      {
+        "en": "Click Post Receipt. The invoice becomes Partially paid or Paid. An allocation larger than the open balance is refused.",
+        "id": "Klik Post Receipt. Invoice menjadi Partially paid atau Paid. Alokasi yang melebihi sisa tagihan ditolak."
+      },
+      {
+        "en": "A Draft invoice that is not needed can be cancelled with Cancel draft on the older register page. A posted invoice is corrected with a credit note or reversing journal, not cancelled.",
+        "id": "Invoice Draft yang tidak diperlukan bisa dibatalkan dengan Cancel draft di halaman register lama. Invoice yang sudah diposting dikoreksi dengan nota kredit atau jurnal pembalik, bukan dibatalkan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Customer",
+        "en": "Type at least 2 letters of the name or code and pick the customer from the active customers. Picking one also sets the Due date from the customer's payment term. Required.",
+        "id": "Ketik minimal 2 huruf nama atau kode lalu pilih customer dari customer yang aktif. Memilih customer juga mengisi Due date sesuai syarat bayar customer. Wajib diisi."
+      },
+      {
+        "label": "Description",
+        "en": "What the invoice is for, up to 255 characters, for example Folding box 5,000 pcs - Sept delivery. Required.",
+        "id": "Untuk apa invoice ini, maksimal 255 karakter, misalnya Folding box 5.000 pcs - pengiriman September. Wajib diisi."
+      },
+      {
+        "label": "Invoice date",
+        "en": "The invoice and posting date. It must fall in an open accounting period.",
+        "id": "Tanggal invoice sekaligus tanggal posting. Harus jatuh di periode akuntansi yang masih terbuka."
+      },
+      {
+        "label": "Due date",
+        "en": "The date payment is due. Cannot be before the Invoice date. Overdue status and aging are counted from it.",
+        "id": "Tanggal jatuh tempo pembayaran. Tidak boleh sebelum Invoice date. Status Overdue dan umur piutang dihitung dari tanggal ini."
+      },
+      {
+        "label": "Revenue account",
+        "en": "The revenue account credited by the invoice, picked from postable revenue accounts (codes starting 4). Required.",
+        "id": "Akun pendapatan yang dikredit oleh invoice, dipilih dari akun pendapatan yang bisa diposting (kode berawalan 4). Wajib diisi."
+      },
+      {
+        "label": "Customer order (optional)",
+        "en": "Optional link to one of the 50 most recent customer orders. Shown in the Customer Order column.",
+        "id": "Tautan opsional ke salah satu dari 50 customer order terbaru. Tampil di kolom Customer Order."
+      },
+      {
+        "label": "Net amount (IDR)",
+        "en": "The invoice amount before VAT, in Rupiah, at least 1. Required.",
+        "id": "Nilai invoice sebelum PPN, dalam Rupiah, minimal 1. Wajib diisi."
+      },
+      {
+        "label": "Tax code",
+        "en": "Tick to add Output PPN (PPN Keluaran). The PPN amount and the total are calculated from the Net amount and shown as you type. Untick for an invoice without VAT.",
+        "id": "Centang untuk menambah PPN Keluaran. Nilai PPN dan total dihitung dari Net amount dan tampil saat Anda mengetik. Hilangkan centang untuk invoice tanpa PPN."
+      },
+      {
+        "label": "No. Faktur Pajak (e-Faktur)",
+        "en": "Optional tax invoice number, for example 010.000-26.00000001. Shown when the invoice is opened.",
+        "id": "Nomor faktur pajak, opsional, misalnya 010.000-26.00000001. Tampil saat invoice dibuka."
+      },
+      {
+        "label": "Receipt date",
+        "en": "In the Receive Payment window: the date the money was received. Required.",
+        "id": "Di jendela Receive Payment: tanggal uang diterima. Wajib diisi."
+      },
+      {
+        "label": "Deposit to",
+        "en": "In the Receive Payment window: the cash or bank account the money went into. Required.",
+        "id": "Di jendela Receive Payment: akun kas atau bank tempat uang masuk. Wajib diisi."
+      },
+      {
+        "label": "Note / bank reference",
+        "en": "In the Receive Payment window: optional bank or receipt reference, for example RCV-009818.",
+        "id": "Di jendela Receive Payment: referensi bank atau tanda terima, opsional, misalnya RCV-009818."
+      },
+      {
+        "label": "Allocate",
+        "en": "In the Receive Payment window: the amount applied to each open invoice of the customer. The chosen invoice starts with its full balance. Posting is Dr Bank / Cr Receivable.",
+        "id": "Di jendela Receive Payment: nilai yang dialokasikan ke tiap invoice terbuka milik customer. Invoice yang dipilih terisi sebesar sisanya. Jurnalnya Dr Bank / Cr Piutang."
+      },
+      {
+        "label": "Status",
+        "en": "List column, read-only: Draft, Open, Partially paid, Due this week, Overdue, Paid or Cancelled. Calculated from the document, payment and due date. Days Overdue is a hidden column.",
+        "id": "Kolom daftar, hanya baca: Draft, Open, Partially paid, Due this week, Overdue, Paid, atau Cancelled. Dihitung dari dokumen, pembayaran, dan jatuh tempo. Days Overdue adalah kolom tersembunyi."
+      },
+      {
+        "label": "Outstanding",
+        "en": "List column, read-only: the unpaid balance of a posted invoice. Zero for an invoice that is not yet posted.",
+        "id": "Kolom daftar, hanya baca: sisa belum dibayar pada invoice yang sudah diposting. Nol untuk invoice yang belum diposting."
+      }
+    ]
+  },
+  {
+    "key": "acc-payables",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Procure to Pay",
+    "purpose": {
+      "en": "Supplier bills and their payment. Open it to record a bill received from a supplier, approve and post it, pay it, and check input VAT and withholding tax.",
+      "id": "Tagihan supplier dan pembayarannya. Buka untuk mencatat tagihan dari supplier, menyetujui dan memostingnya, membayarnya, serta memeriksa PPN masukan dan pemotongan PPh."
+    },
+    "keywords": "hutang, payable, ap, tagihan supplier, vendor bill, bill, invoice supplier, bayar, pembayaran supplier, p2p, procure to pay, ppn masukan, pph 23, pph 22, faktur pajak, gr/ir, spb, jatuh tempo",
+    "steps": [
+      {
+        "en": "Open Procure to Pay. Search, filter by Supplier or Status, or use the stat boxes (Draft, Open, Overdue, Paid) to find bills.",
+        "id": "Buka Procure to Pay. Cari, saring menurut Supplier atau Status, atau pakai kotak statistik (Draft, Open, Overdue, Paid) untuk menemukan tagihan."
+      },
+      {
+        "en": "Click + New Record. Search and pick the Vendor, enter the Vendor bill number, and pick the Goods receipt (PV) if the bill is for received goods.",
+        "id": "Klik + New Record. Cari dan pilih Vendor, isi Vendor bill number, dan pilih Goods receipt (PV) bila tagihan untuk barang yang sudah diterima."
+      },
+      {
+        "en": "Fill Description, Bill date, Due date, the Debit account and the Net amount (IDR). Choose the Withholding tax and tick Tax code for Input PPN when they apply.",
+        "id": "Isi Description, Bill date, Due date, Debit account, dan Net amount (IDR). Pilih Withholding tax dan centang Tax code untuk PPN Masukan bila berlaku."
+      },
+      {
+        "en": "Click Save for a Draft, or Approve & Post. A bill at or above the approval limit goes to Pending approval instead of posting.",
+        "id": "Klik Save untuk Draft, atau Approve & Post. Tagihan yang mencapai batas persetujuan masuk ke Pending approval dan belum diposting."
+      },
+      {
+        "en": "An authorized approver opens the bill and clicks Approve & Post. The person who recorded the bill cannot approve it when segregation of duties applies.",
+        "id": "Penyetuju yang berwenang membuka tagihan lalu klik Approve & Post. Pencatat tagihan tidak boleh menyetujui tagihannya sendiri bila aturan pemisahan tugas berlaku."
+      },
+      {
+        "en": "To pay, open a posted bill and click Pay Bill. Set the Payment date, Pay from and a note, type the amount to pay per bill, then click Post Payment.",
+        "id": "Untuk membayar, buka tagihan yang sudah diposting lalu klik Pay Bill. Atur Payment date, Pay from, dan catatan, isi nilai bayar per tagihan, lalu klik Post Payment."
+      },
+      {
+        "en": "Input VAT shows a warning mark until the tax invoice is validated; use Validate tax invoice in the row menu of the older register page.",
+        "id": "PPN masukan diberi tanda peringatan sampai faktur pajak divalidasi; pakai Validate tax invoice di menu baris pada halaman register lama."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Vendor",
+        "en": "Type at least 2 letters of the supplier name or code and pick from active suppliers. A subcontract supplier proposes PPh 23, and the Due date follows the supplier's payment term. Required.",
+        "id": "Ketik minimal 2 huruf nama atau kode supplier lalu pilih dari supplier aktif. Supplier subkontrak mengusulkan PPh 23, dan Due date mengikuti syarat bayar supplier. Wajib diisi."
+      },
+      {
+        "label": "Vendor bill number",
+        "en": "The invoice number printed on the supplier's bill, up to 50 characters. Required. Shown in the list instead of the internal number.",
+        "id": "Nomor invoice yang tercetak di tagihan supplier, maksimal 50 karakter. Wajib diisi. Tampil di daftar menggantikan nomor internal."
+      },
+      {
+        "label": "Goods receipt (PV)",
+        "en": "Optional. Pick a goods receipt of this supplier so the bill clears GR/IR (three-way match with the PO). Leave empty for services or expenses.",
+        "id": "Opsional. Pilih penerimaan barang supplier ini agar tagihan melunasi GR/IR (pencocokan tiga arah dengan PO). Kosongkan untuk jasa atau biaya."
+      },
+      {
+        "label": "Description",
+        "en": "What the bill is for, up to 255 characters, for example Kertas Ivory 310 gsm - Sept. Required.",
+        "id": "Untuk apa tagihan ini, maksimal 255 karakter, misalnya Kertas Ivory 310 gsm - September. Wajib diisi."
+      },
+      {
+        "label": "Bill date",
+        "en": "The bill and posting date. It must fall in an open accounting period.",
+        "id": "Tanggal tagihan sekaligus tanggal posting. Harus jatuh di periode akuntansi yang masih terbuka."
+      },
+      {
+        "label": "Due date",
+        "en": "The date payment is due. Cannot be before the Bill date. Due this week and Overdue are counted from it.",
+        "id": "Tanggal jatuh tempo pembayaran. Tidak boleh sebelum Bill date. Status Due this week dan Overdue dihitung dari tanggal ini."
+      },
+      {
+        "label": "Debit account",
+        "en": "The account debited by the bill: GR/IR Clearing 211900 (default) for received goods, or an inventory, asset or expense account. Required.",
+        "id": "Akun yang didebit oleh tagihan: GR/IR Clearing 211900 (bawaan) untuk barang yang sudah diterima, atau akun persediaan, aset, atau biaya. Wajib diisi."
+      },
+      {
+        "label": "Net amount (IDR)",
+        "en": "The bill amount before VAT, in Rupiah, at least 1. Required.",
+        "id": "Nilai tagihan sebelum PPN, dalam Rupiah, minimal 1. Wajib diisi."
+      },
+      {
+        "label": "Withholding tax",
+        "en": "None, PPh 23 (services, 2%) or PPh 22 (1.5%). The withheld amount is kept as a payable and shown in the bill amounts.",
+        "id": "None, PPh 23 (jasa, 2%), atau PPh 22 (1,5%). Nilai yang dipotong dicatat sebagai hutang pajak dan tampil di nilai tagihan."
+      },
+      {
+        "label": "Tax code",
+        "en": "Tick to add Input PPN (PPN Masukan); the amount is shown as you type. Untick for a bill without VAT.",
+        "id": "Centang untuk menambah PPN Masukan; nilainya tampil saat Anda mengetik. Hilangkan centang untuk tagihan tanpa PPN."
+      },
+      {
+        "label": "No. Faktur Pajak (e-Faktur)",
+        "en": "The supplier's tax invoice number. Leave empty when it has not been received yet.",
+        "id": "Nomor faktur pajak dari supplier. Kosongkan bila belum diterima."
+      },
+      {
+        "label": "Payment date",
+        "en": "In the Payment Run window: the date of the payment. Required.",
+        "id": "Di jendela Payment Run: tanggal pembayaran. Wajib diisi."
+      },
+      {
+        "label": "Pay from",
+        "en": "In the Payment Run window: the cash or bank account the payment is taken from. Required.",
+        "id": "Di jendela Payment Run: akun kas atau bank sumber pembayaran. Wajib diisi."
+      },
+      {
+        "label": "Note / transfer reference",
+        "en": "In the Payment Run window: optional transfer reference, for example TRF-009821.",
+        "id": "Di jendela Payment Run: referensi transfer, opsional, misalnya TRF-009821."
+      },
+      {
+        "label": "Pay",
+        "en": "In the Payment Run window: the amount paid to each open bill of the supplier. The chosen bill starts with its full balance. Posting is Dr Payable / Cr Bank.",
+        "id": "Di jendela Payment Run: nilai yang dibayarkan ke tiap tagihan terbuka milik supplier. Tagihan yang dipilih terisi sebesar sisanya. Jurnalnya Dr Hutang / Cr Bank."
+      },
+      {
+        "label": "Status",
+        "en": "List column, read-only: Draft, Pending approval, Open, Partially paid, Due this week, Overdue, Paid or Cancelled.",
+        "id": "Kolom daftar, hanya baca: Draft, Pending approval, Open, Partially paid, Due this week, Overdue, Paid, atau Cancelled."
+      }
+    ]
+  },
+  {
+    "key": "acc-fixed-asset",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Fixed Assets",
+    "purpose": {
+      "en": "The register of fixed assets such as machines and vehicles, with their depreciation. Open it to register a new asset, capitalize it, run monthly depreciation, view the depreciation schedule, or dispose of an asset.",
+      "id": "Daftar aset tetap seperti mesin dan kendaraan, beserta penyusutannya. Buka untuk mendaftarkan aset baru, mengkapitalisasinya, menjalankan penyusutan bulanan, melihat jadwal penyusutan, atau melepas aset."
+    },
+    "keywords": "aset tetap, fixed asset, asset, penyusutan, depreciation, kapitalisasi, capitalize, mesin, kendaraan, nilai buku, net book value, nbv, garis lurus, saldo menurun, pelepasan, dispose, jual aset",
+    "steps": [
+      {
+        "en": "Open Fixed Assets. Filter by Category or Status, or use the stat boxes (Draft, Active, Fully depreciated, Disposed).",
+        "id": "Buka Fixed Assets. Saring menurut Category atau Status, atau pakai kotak statistik (Draft, Active, Fully depreciated, Disposed)."
+      },
+      {
+        "en": "Click + New Record. Fill the Asset name, pick the Category (it proposes the Useful life and Method), then the dates, cost and residual value.",
+        "id": "Klik + New Record. Isi Asset name, pilih Category (otomatis mengusulkan Useful life dan Method), lalu tanggal, harga perolehan, dan nilai sisa."
+      },
+      {
+        "en": "Pick the Capitalization credit account, optionally a Cost center, Location and Source document.",
+        "id": "Pilih Capitalization credit account, dan bila perlu Cost center, Location, dan Source document."
+      },
+      {
+        "en": "Click Save to keep a Draft, or Save & Capitalize to book the asset (Dr asset / Cr the credit account) and start its depreciation schedule.",
+        "id": "Klik Save untuk menyimpan Draft, atau Save & Capitalize untuk membukukan aset (Dr aset / Cr akun lawan) dan memulai jadwal penyusutan."
+      },
+      {
+        "en": "A Draft asset can be edited and capitalized later from its row. Open an asset to see its monthly schedule: charge, accumulated and book value.",
+        "id": "Aset Draft bisa diedit dan dikapitalisasi kemudian dari barisnya. Buka aset untuk melihat jadwal bulanannya: beban, akumulasi, dan nilai buku."
+      },
+      {
+        "en": "Each month, on the older asset page choose the period, click Run Depreciation, check the preview and click Post Depreciation Journal.",
+        "id": "Tiap bulan, di halaman aset lama pilih periode, klik Run Depreciation, periksa pratinjau, lalu klik Post Depreciation Journal."
+      },
+      {
+        "en": "To sell or write off an Active asset, open it and click Dispose; enter the Disposal date, Proceeds and where the money goes, then Post Disposal.",
+        "id": "Untuk menjual atau menghapus aset Active, buka aset lalu klik Dispose; isi Disposal date, Proceeds, dan akun penerima uang, lalu Post Disposal."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Asset name",
+        "en": "Name of the asset, up to 150 characters, for example Mesin Cetak Offset Komori 4 warna. Required.",
+        "id": "Nama aset, maksimal 150 karakter, misalnya Mesin Cetak Offset Komori 4 warna. Wajib diisi."
+      },
+      {
+        "label": "Category",
+        "en": "The asset category from the active fixed asset categories. It sets the default Useful life and Method, the expense account for depreciation and the tax group. Required.",
+        "id": "Kategori aset dari kategori aset tetap yang aktif. Menentukan Useful life dan Method bawaan, akun beban penyusutan, serta kelompok pajak. Wajib diisi."
+      },
+      {
+        "label": "Cost center",
+        "en": "Optional. The cost center that carries the depreciation of this asset.",
+        "id": "Opsional. Cost center yang menanggung penyusutan aset ini."
+      },
+      {
+        "label": "Acquisition date",
+        "en": "The date the asset was bought. The first review date is set one year after it. Required.",
+        "id": "Tanggal aset dibeli. Tanggal tinjau pertama diatur satu tahun sesudahnya. Wajib diisi."
+      },
+      {
+        "label": "Depreciation start",
+        "en": "The first month depreciation is charged, normally the start of the acquisition month. Required.",
+        "id": "Bulan pertama penyusutan dibebankan, biasanya awal bulan perolehan. Wajib diisi."
+      },
+      {
+        "label": "Acquisition cost (IDR)",
+        "en": "The purchase cost in Rupiah, at least 1. It is the starting point of the book value. Required.",
+        "id": "Harga perolehan dalam Rupiah, minimal 1. Menjadi titik awal nilai buku. Wajib diisi."
+      },
+      {
+        "label": "Residual value (IDR)",
+        "en": "The value expected at the end of life, in Rupiah. Must be lower than the cost. Default 0.",
+        "id": "Nilai yang diperkirakan tersisa di akhir umur aset, dalam Rupiah. Harus lebih kecil dari harga perolehan. Bawaan 0."
+      },
+      {
+        "label": "Useful life (months)",
+        "en": "How many months the asset is depreciated, from 1 to 600. Proposed by the category; you can change it.",
+        "id": "Berapa bulan aset disusutkan, dari 1 sampai 600. Diusulkan oleh kategori; boleh diubah."
+      },
+      {
+        "label": "Method",
+        "en": "Straight line (equal charge each month) or Double declining balance. A hint shows the approximate first-month charge.",
+        "id": "Garis lurus (beban sama tiap bulan) atau Saldo menurun ganda. Ada petunjuk perkiraan beban bulan pertama."
+      },
+      {
+        "label": "Location",
+        "en": "Optional free text for where the asset is, for example Pabrik - Ruang Cetak. Shown as the Location column.",
+        "id": "Teks bebas opsional untuk lokasi aset, misalnya Pabrik - Ruang Cetak. Tampil di kolom Location."
+      },
+      {
+        "label": "Source document",
+        "en": "Optional reference of the document the purchase came from, for example a supplier bill number or contract.",
+        "id": "Referensi opsional dokumen asal pembelian, misalnya nomor tagihan supplier atau kontrak."
+      },
+      {
+        "label": "Capitalization credit account",
+        "en": "The account credited when the asset is capitalized: a cash or bank account, a payable, or GR/IR Clearing when the goods are already received. Required.",
+        "id": "Akun yang dikredit saat aset dikapitalisasi: akun kas atau bank, hutang, atau GR/IR Clearing bila barang sudah diterima. Wajib diisi."
+      },
+      {
+        "label": "Disposal date",
+        "en": "In the Dispose window: the date the asset is sold or written off. Required.",
+        "id": "Di jendela Dispose: tanggal aset dijual atau dihapus. Wajib diisi."
+      },
+      {
+        "label": "Proceeds (IDR)",
+        "en": "In the Dispose window: the money received for the asset, in Rupiah. Enter 0 for a write-off. The difference to book value goes to other gain or loss.",
+        "id": "Di jendela Dispose: uang yang diterima dari aset, dalam Rupiah. Isi 0 bila hanya dihapus. Selisih terhadap nilai buku masuk ke laba atau rugi lain-lain."
+      },
+      {
+        "label": "Proceeds to",
+        "en": "In the Dispose window: the cash or bank account that receives the proceeds. Required.",
+        "id": "Di jendela Dispose: akun kas atau bank yang menerima hasil penjualan. Wajib diisi."
+      },
+      {
+        "label": "Net Book Value",
+        "en": "List column, read-only: cost minus accumulated depreciation. Accumulated and the Status (Draft, Active, Fully depreciated, Disposed) are also read-only columns.",
+        "id": "Kolom daftar, hanya baca: harga perolehan dikurangi akumulasi penyusutan. Accumulated dan Status (Draft, Active, Fully depreciated, Disposed) juga kolom hanya baca."
+      }
+    ]
+  },
+  {
+    "key": "acc-amortization",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Amortization",
+    "purpose": {
+      "en": "Schedules that spread a prepaid expense, an intangible asset or a leasehold improvement over several months. Open it to create a schedule, run the monthly amortization, and see how much is still unamortized.",
+      "id": "Jadwal yang membagi beban dibayar di muka, aset tak berwujud, atau renovasi bangunan sewa ke beberapa bulan. Buka untuk membuat jadwal, menjalankan amortisasi bulanan, dan melihat sisa yang belum diamortisasi."
+    },
+    "keywords": "amortisasi, amortization, prabayar, prepaid, biaya dibayar di muka, asuransi, sewa dibayar dimuka, aset tak berwujud, intangible, leasehold, lisensi, jadwal amortisasi, polis",
+    "steps": [
+      {
+        "en": "Open Amortization. Filter by Category or Status, or use the stat boxes. Open a row to see its month-by-month schedule.",
+        "id": "Buka Amortization. Saring menurut Category atau Status, atau pakai kotak statistik. Buka baris untuk melihat jadwalnya bulan demi bulan."
+      },
+      {
+        "en": "Click + New Record. Fill the Schedule name, pick the Category and the Period (months); the category proposes the period.",
+        "id": "Klik + New Record. Isi Schedule name, pilih Category dan Period (months); kategori mengusulkan lama periode."
+      },
+      {
+        "en": "Set the Document date, the Amortization start, the Amount (IDR) and a Reference such as a policy or contract number.",
+        "id": "Atur Document date, Amortization start, Amount (IDR), dan Reference seperti nomor polis atau kontrak."
+      },
+      {
+        "en": "Pick Paid from / payable to, then click Save. The schedule is booked at once (Dr prepaid or intangible account / Cr the account you picked) and becomes Active.",
+        "id": "Pilih Paid from / payable to, lalu klik Save. Jadwal langsung dibukukan (Dr akun prabayar atau tak berwujud / Cr akun yang dipilih) dan menjadi Active."
+      },
+      {
+        "en": "Each month, on the older amortization page choose the period, preview the run, and click Post Amortization Journal.",
+        "id": "Tiap bulan, di halaman amortisasi lama pilih periode, lihat pratinjau, lalu klik Post Amortization Journal."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Schedule name",
+        "en": "Name of the schedule, up to 150 characters, for example Asuransi Kendaraan 2026 or Lisensi ERP. Required.",
+        "id": "Nama jadwal, maksimal 150 karakter, misalnya Asuransi Kendaraan 2026 atau Lisensi ERP. Wajib diisi."
+      },
+      {
+        "label": "Category",
+        "en": "Prepaid, intangible or leasehold category from the active categories. It decides the accounts used and the default period. Required.",
+        "id": "Kategori prabayar, tak berwujud, atau leasehold dari kategori yang aktif. Menentukan akun yang dipakai dan periode bawaan. Wajib diisi."
+      },
+      {
+        "label": "Period (months)",
+        "en": "Number of months to spread the amount over, from 1 to 600. The monthly expense is the amount divided by this number (straight line, no residual value).",
+        "id": "Jumlah bulan untuk membagi nilai, dari 1 sampai 600. Beban bulanan adalah nilai dibagi angka ini (garis lurus, tanpa nilai sisa)."
+      },
+      {
+        "label": "Document date",
+        "en": "The date of the invoice, policy or contract. Required.",
+        "id": "Tanggal invoice, polis, atau kontrak. Wajib diisi."
+      },
+      {
+        "label": "Amortization start",
+        "en": "The first month the expense is charged, normally the start of the month. Required.",
+        "id": "Bulan pertama beban dibebankan, biasanya awal bulan. Wajib diisi."
+      },
+      {
+        "label": "Amount (IDR)",
+        "en": "The total amount to amortize, in Rupiah, at least 1. A hint shows the monthly expense. Required.",
+        "id": "Total nilai yang diamortisasi, dalam Rupiah, minimal 1. Ada petunjuk beban bulanan. Wajib diisi."
+      },
+      {
+        "label": "Reference",
+        "en": "Optional reference such as a policy number, for example Polis 2026-0011. Shown in the Source Document column.",
+        "id": "Referensi opsional seperti nomor polis, misalnya Polis 2026-0011. Tampil di kolom Source Document."
+      },
+      {
+        "label": "Paid from / payable to",
+        "en": "The account credited when the schedule is booked: a cash or bank account, or a payable. Default is bank 111200. Required.",
+        "id": "Akun yang dikredit saat jadwal dibukukan: akun kas atau bank, atau hutang. Bawaan bank 111200. Wajib diisi."
+      },
+      {
+        "label": "Net Book Value",
+        "en": "List column, read-only: the amount not yet amortized. Accumulated and the Status (Draft, Active, Fully depreciated, Disposed) are also read-only columns.",
+        "id": "Kolom daftar, hanya baca: nilai yang belum diamortisasi. Accumulated dan Status (Draft, Active, Fully depreciated, Disposed) juga kolom hanya baca."
+      }
+    ]
+  },
+  {
+    "key": "petty-cash",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "Kas Kecil (Petty Cash)",
+    "purpose": {
+      "en": "The petty cash fund for small cash purchases. Open it to give a cash advance for an approved Cash PO, settle it with the receipts, reimburse a purchase made first, top up the fund from the bank, or cancel a wrong entry.",
+      "id": "Dana kas kecil untuk belanja tunai kecil. Buka untuk memberi kasbon bagi PO Kontan yang sudah disetujui, mempertanggungjawabkannya dengan nota, mengganti belanja yang dibayar dulu, mengisi ulang dari bank, atau membatalkan input yang salah."
+    },
+    "keywords": "kas kecil, petty cash, kasbon, cash advance, po kontan, cash po, nota, settlement, pertanggungjawaban, reimburse, isi ulang, top up, imprest, plafon, pemegang kas, custodian, belanja tunai",
+    "steps": [
+      {
+        "en": "Open Kas Kecil (Petty Cash). The boxes show Imprest Limit, Cash on Hand, Open Cash Advances and To Top Up. The upper list holds approved Cash POs waiting for a next step; the lower list is the history.",
+        "id": "Buka Kas Kecil (Petty Cash). Kotak di atas menampilkan Imprest Limit, Cash on Hand, Open Cash Advances, dan To Top Up. Daftar atas berisi PO Kontan yang sudah disetujui dan menunggu langkah berikut; daftar bawah adalah riwayat."
+      },
+      {
+        "en": "Open a waiting Cash PO. If its Next Step is Give Advance, enter the Advance Amount and Given To, then click Give Advance and confirm. Cash leaves the fund.",
+        "id": "Buka PO Kontan yang menunggu. Bila Next Step-nya Give Advance, isi Advance Amount dan Given To, lalu klik Give Advance dan konfirmasi. Uang keluar dari dana kas kecil."
+      },
+      {
+        "en": "After shopping, open the same Cash PO (Next Step Settlement), enter the Receipt amount for every line, attach the Receipt Photo / Scan, and click Post Settlement.",
+        "id": "Setelah belanja, buka PO Kontan yang sama (Next Step Settlement), isi nilai nota tiap baris, lampirkan Receipt Photo / Scan, lalu klik Post Settlement."
+      },
+      {
+        "en": "For a Cash PO bought first with the buyer's own money (Next Step Reimburse), enter the receipt amounts, Paid To and the photo, then click Pay Reimburse.",
+        "id": "Untuk PO Kontan yang dibeli dulu dengan uang pembeli (Next Step Reimburse), isi nilai nota, Paid To, dan foto, lalu klik Pay Reimburse."
+      },
+      {
+        "en": "To refill the fund, click Top Up. The suggested amount is limit minus cash on hand minus open advances. Pick the From Account and Date, then click Top Up.",
+        "id": "Untuk mengisi ulang dana, klik Top Up. Nilai usulan adalah plafon dikurangi kas di tangan dan kasbon terbuka. Pilih From Account dan Date, lalu klik Top Up."
+      },
+      {
+        "en": "To change the fund name, custodian or limit, click Setting and Save. To undo a wrong entry, open it from the history, type a Cancel Reason and click Cancel Transaction.",
+        "id": "Untuk mengubah nama dana, pemegang kas, atau plafon, klik Setting lalu Save. Untuk membatalkan input yang salah, buka dari riwayat, isi Cancel Reason, lalu klik Cancel Transaction."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Advance Amount",
+        "en": "Cash Advance form: the money handed to the buyer, in Rupiah. Proposed as the PO total. Must be above zero and not more than the Cash on Hand.",
+        "id": "Form Cash Advance: uang yang diserahkan ke pembeli, dalam Rupiah. Diusulkan sebesar total PO. Harus di atas nol dan tidak melebihi Cash on Hand."
+      },
+      {
+        "label": "Given To",
+        "en": "Cash Advance form: the name of the buyer who receives the money. Required, up to 100 characters.",
+        "id": "Form Cash Advance: nama pembeli yang menerima uang. Wajib diisi, maksimal 100 karakter."
+      },
+      {
+        "label": "Receipt",
+        "en": "Settlement and Reimburse form: one amount per PO line, taken from the shop receipt, in Rupiah. Each must be above zero. The PO price is replaced by it; change or shortfall is worked out automatically.",
+        "id": "Form Settlement dan Reimburse: satu nilai per baris PO, diambil dari nota toko, dalam Rupiah. Tiap nilai harus di atas nol. Harga PO diganti nilai ini; kembalian atau kurang bayar dihitung otomatis."
+      },
+      {
+        "label": "Paid To",
+        "en": "Reimburse form only: the name of the buyer who is paid back. Required, up to 100 characters.",
+        "id": "Hanya form Reimburse: nama pembeli yang diganti uangnya. Wajib diisi, maksimal 100 karakter."
+      },
+      {
+        "label": "Receipt Photo / Scan",
+        "en": "Optional upload of the receipt (jpg, jpeg, png or pdf, up to 10 MB). Kept with the transaction and shown as a Receipt Photo button.",
+        "id": "Unggah nota (jpg, jpeg, png, atau pdf, maksimal 10 MB), opsional. Disimpan bersama transaksi dan tampil sebagai tombol Receipt Photo."
+      },
+      {
+        "label": "Top Up Amount",
+        "en": "Top Up form: the money moved from the bank into petty cash, in Rupiah. Must be above zero.",
+        "id": "Form Top Up: uang yang dipindah dari bank ke kas kecil, dalam Rupiah. Harus di atas nol."
+      },
+      {
+        "label": "From Account",
+        "en": "Top Up form: the bank or cash account the money comes from. Required.",
+        "id": "Form Top Up: akun bank atau kas sumber uang. Wajib diisi."
+      },
+      {
+        "label": "Date",
+        "en": "Top Up form: the date of the top up. Required. Default is today.",
+        "id": "Form Top Up: tanggal isi ulang. Wajib diisi. Bawaan hari ini."
+      },
+      {
+        "label": "Notes",
+        "en": "Top Up form: optional note, up to 255 characters.",
+        "id": "Form Top Up: catatan opsional, maksimal 255 karakter."
+      },
+      {
+        "label": "Petty Cash Name",
+        "en": "Setting form: the name of the fund, up to 100 characters. Required.",
+        "id": "Form Setting: nama dana kas kecil, maksimal 100 karakter. Wajib diisi."
+      },
+      {
+        "label": "Custodian",
+        "en": "Setting form: the active user who holds the cash. Required. Shown at the top of the screen.",
+        "id": "Form Setting: pengguna aktif yang memegang uang kas. Wajib diisi. Tampil di bagian atas layar."
+      },
+      {
+        "label": "Imprest Limit",
+        "en": "Setting form: the fixed amount the fund is kept at. Top Up refills up to this limit. Optional; while empty the screen shows not set.",
+        "id": "Form Setting: jumlah tetap yang dijaga di dana kas kecil. Top Up mengisi ulang sampai batas ini. Opsional; bila kosong layar menampilkan not set."
+      },
+      {
+        "label": "Cancel Reason",
+        "en": "Cancel Transaction form: why the entry was wrong, at least 10 characters. The journal is reversed and the transaction stays as Cancelled. A step that was followed by a later step must be cancelled from the later step first.",
+        "id": "Form Cancel Transaction: alasan input salah, minimal 10 karakter. Jurnal dibalik dan transaksi tetap ada dengan status Cancelled. Langkah yang sudah diikuti langkah berikutnya harus dibatalkan dari langkah berikutnya dulu."
+      },
+      {
+        "label": "Cash on Hand",
+        "en": "Read-only box: the current cash balance of the fund. Imprest Limit, Open Cash Advances (advances not yet settled) and To Top Up are the other read-only boxes.",
+        "id": "Kotak hanya baca: saldo kas dana saat ini. Imprest Limit, Open Cash Advances (kasbon yang belum dipertanggungjawabkan), dan To Top Up adalah kotak hanya baca lainnya."
+      }
+    ]
+  },
+  {
+    "key": "acc-rpt-ledger",
+    "type": "REPORT",
+    "module": "FINACC",
+    "title": "General Ledger",
+    "purpose": {
+      "en": "Every posted journal line, newest first. Open it to trace how an account moved, see which journal made a posting, or check one month. The balance of each account is in Trial Balance.",
+      "id": "Semua baris jurnal yang sudah diposting, terbaru di atas. Buka untuk menelusuri pergerakan sebuah akun, melihat jurnal mana yang membuat suatu posting, atau memeriksa satu bulan. Saldo tiap akun ada di Trial Balance."
+    },
+    "keywords": "buku besar, general ledger, gl, ledger, jurnal, posting, mutasi akun, kartu akun, debit, kredit, periode, laporan akuntansi",
+    "steps": [
+      {
+        "en": "Open General Ledger. Only journals that are Posted and not cancelled are listed.",
+        "id": "Buka General Ledger. Hanya jurnal yang Posted dan tidak dibatalkan yang ditampilkan."
+      },
+      {
+        "en": "Type a journal number, account or description in the search box to narrow the list.",
+        "id": "Ketik nomor jurnal, akun, atau keterangan di kotak cari untuk mempersempit daftar."
+      },
+      {
+        "en": "Use the Period, Account Class and Account filters, for example Period 2026-10 for one month.",
+        "id": "Pakai filter Period, Account Class, dan Account, misalnya Period 2026-10 untuk satu bulan."
+      },
+      {
+        "en": "Group by Account to read one account with its debit and credit subtotal. You can also group by Period, Journal No. or Account Class.",
+        "id": "Kelompokkan menurut Account untuk membaca satu akun beserta subtotal debit dan kreditnya. Bisa juga dikelompokkan menurut Period, Journal No., atau Account Class."
+      },
+      {
+        "en": "Use the column chooser to show hidden columns such as Partner, Reference and Account Class. The totals of Debit and Credit are summed at the bottom.",
+        "id": "Pakai pemilih kolom untuk menampilkan kolom tersembunyi seperti Partner, Reference, dan Account Class. Total Debit dan Credit dijumlahkan di bagian bawah."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Date",
+        "en": "Column: the journal's entry date. Rows are sorted by it, newest first.",
+        "id": "Kolom: tanggal jurnal. Baris diurutkan menurut tanggal ini, terbaru di atas."
+      },
+      {
+        "label": "Period",
+        "en": "Column, filter and grouping: the year and month of the journal, for example 2026-10. Use it to look at one month.",
+        "id": "Kolom, filter, dan pengelompokan: tahun dan bulan jurnal, misalnya 2026-10. Dipakai untuk melihat satu bulan."
+      },
+      {
+        "label": "Journal No.",
+        "en": "Column and grouping: the number of the journal or voucher the line belongs to. Group by it to see all lines of one journal together.",
+        "id": "Kolom dan pengelompokan: nomor jurnal atau voucher tempat baris ini berada. Kelompokkan untuk melihat semua baris satu jurnal bersama."
+      },
+      {
+        "label": "Account",
+        "en": "Column, filter and grouping: the account name with its code. Group by it to read one account with its subtotals.",
+        "id": "Kolom, filter, dan pengelompokan: nama akun beserta kodenya. Kelompokkan untuk membaca satu akun dengan subtotalnya."
+      },
+      {
+        "label": "Account Class",
+        "en": "Hidden column, filter and grouping: Asset, Liability, Equity, Revenue, Cost of sales, Expense, Other income or Other expense.",
+        "id": "Kolom tersembunyi, filter, dan pengelompokan: Asset, Liability, Equity, Revenue, Cost of sales, Expense, Other income, atau Other expense."
+      },
+      {
+        "label": "Description",
+        "en": "Column: the line's narration, or the journal description when the line has none.",
+        "id": "Kolom: keterangan baris, atau keterangan jurnal bila baris tidak punya."
+      },
+      {
+        "label": "Partner",
+        "en": "Hidden column: the party named on the voucher, for example the payee of a cash voucher.",
+        "id": "Kolom tersembunyi: pihak yang tercantum di voucher, misalnya penerima pada voucher kas."
+      },
+      {
+        "label": "Reference",
+        "en": "Hidden column: the reference number typed on the journal or voucher.",
+        "id": "Kolom tersembunyi: nomor referensi yang diketik di jurnal atau voucher."
+      },
+      {
+        "label": "Debit",
+        "en": "Column: the debit amount of the line. Summed at the bottom and in each group.",
+        "id": "Kolom: nilai debit baris. Dijumlahkan di bagian bawah dan di tiap kelompok."
+      },
+      {
+        "label": "Credit",
+        "en": "Column: the credit amount of the line. Summed at the bottom and in each group.",
+        "id": "Kolom: nilai kredit baris. Dijumlahkan di bagian bawah dan di tiap kelompok."
+      }
+    ]
+  },
+  {
+    "key": "acc-rpt-trial-balance",
+    "type": "REPORT",
+    "module": "FINACC",
+    "title": "Trial Balance",
+    "purpose": {
+      "en": "The balance of every postable account as of today, built from posted journals. Open it to check that total debit equals total credit before closing, or to see which accounts carry a balance.",
+      "id": "Saldo semua akun yang bisa diposting per hari ini, dihitung dari jurnal yang sudah diposting. Buka untuk memastikan total debit sama dengan total kredit sebelum tutup buku, atau untuk melihat akun mana yang bersaldo."
+    },
+    "keywords": "neraca saldo, trial balance, saldo akun, tb, debit kredit, saldo, tutup buku, closing, laporan keuangan, balance",
+    "steps": [
+      {
+        "en": "Open Trial Balance. Each postable account is listed with its balance as of today.",
+        "id": "Buka Trial Balance. Tiap akun yang bisa diposting ditampilkan beserta saldonya per hari ini."
+      },
+      {
+        "en": "Use the stat boxes All, Has balance and Zero, or the Account Class and Balance filters, to narrow the list.",
+        "id": "Pakai kotak statistik All, Has balance, dan Zero, atau filter Account Class dan Balance, untuk mempersempit daftar."
+      },
+      {
+        "en": "Group by Account Class to see a subtotal per class.",
+        "id": "Kelompokkan menurut Account Class untuk melihat subtotal tiap kelas."
+      },
+      {
+        "en": "Check the totals at the bottom: total Debit and total Credit must be equal.",
+        "id": "Periksa total di bagian bawah: total Debit dan total Credit harus sama."
+      },
+      {
+        "en": "To see the journal lines behind a balance, open General Ledger and filter or group by that account.",
+        "id": "Untuk melihat baris jurnal di balik suatu saldo, buka General Ledger lalu saring atau kelompokkan menurut akun itu."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Account",
+        "en": "Column: the account name with its code. Inactive accounts appear only when they still have a balance.",
+        "id": "Kolom: nama akun beserta kodenya. Akun nonaktif hanya tampil bila masih punya saldo."
+      },
+      {
+        "label": "Account Class",
+        "en": "Column, filter and grouping: Asset, Liability, Equity, Revenue, Cost of sales, Expense, Other income or Other expense.",
+        "id": "Kolom, filter, dan pengelompokan: Asset, Liability, Equity, Revenue, Cost of sales, Expense, Other income, atau Other expense."
+      },
+      {
+        "label": "Normal Balance",
+        "en": "Hidden column: Debit or Credit, the side on which the account normally increases, as set in Master of Accounts.",
+        "id": "Kolom tersembunyi: Debit atau Credit, sisi tempat akun normalnya bertambah, sesuai pengaturan di Master of Accounts."
+      },
+      {
+        "label": "Debit",
+        "en": "Column: the account balance when its net balance is on the debit side, otherwise 0. Summed at the bottom.",
+        "id": "Kolom: saldo akun bila saldo bersihnya di sisi debit, selain itu 0. Dijumlahkan di bagian bawah."
+      },
+      {
+        "label": "Credit",
+        "en": "Column: the account balance when its net balance is on the credit side, otherwise 0. Summed at the bottom.",
+        "id": "Kolom: saldo akun bila saldo bersihnya di sisi kredit, selain itu 0. Dijumlahkan di bagian bawah."
+      },
+      {
+        "label": "Balance",
+        "en": "Column and filter: Has balance or Zero. Tells at a glance whether the account has any balance today.",
+        "id": "Kolom dan filter: Has balance atau Zero. Menunjukkan sekilas apakah akun punya saldo hari ini."
+      }
+    ]
+  }
+]

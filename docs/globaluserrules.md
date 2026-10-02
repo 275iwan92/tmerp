@@ -320,6 +320,26 @@
 11. **Jangan pernah mengetik password** ke browser; jangan memakai data `employee_id=1` untuk uji.
 12. **MRP/MPS sengaja ditinggalkan** (arsip `arsip/mrp-mps-2026-08-30`); akan dirancang ulang meniru ProDev/Inquiry.
 
+## E. Help & Asisten AI
+
+1. **Setiap layar input dan laporan wajib punya Help (2026-10-02)**, tiga hal terpisah: **untuk apa** layar / laporan itu
+   (Purpose), **cara pakainya** (langkah berurutan), dan **penjelasan tiap isian / kolom**. Tabel `sys_help_topic` +
+   `sys_help_line`; tiap teks paling panjang 255 karakter, English di tabel, bahasa lain lewat kamus konteks `help` (B.3).
+   - Dirawat di **Setup → Help Topics / Help Lines** (kolom English dan Indonesia berdampingan); dibaca semua user di
+     **General Report → Help → Help Center**. Isi awal: `resources/data/help/*.json` → `php artisan help:import`
+     (melaporkan layar di menu yang belum punya Help). **Layar baru tanpa Help = belum selesai.**
+   - Help ditulis dari apa yang benar-benar ada di kode layar, bukan dari rencana.
+2. **Asisten AI (2026-10-02, rancangan `docs/md_for_systems/aiassistant_tier1.md`; belum dibangun):**
+   - **Bekerja tanpa internet** (model lokal lewat Ollama; deploy Ubuntu 24 ke atas). Lambat tidak masalah; diukur setelah jalan.
+   - Tugas: mencari menu / layar, bantuan cara pakai (dari Help), dan menjawab angka untuk manajemen.
+   - **AI tidak menghitung dan tidak menulis SQL.** Angka dihitung kelas program yang teruji (satu pertanyaan terdaftar = satu
+     kelas); cara pakai dikutip dari Help; AI hanya memahami kalimat dan merangkai jawabannya. Tidak tahu = bilang tidak tahu.
+   - **Siapa saja boleh bertanya, jawaban sesuai levelnya** (modul + `mgmt_level`; harga dan HPP ikut A.8–A.9).
+   - Bentuk: **chat pribadi asisten dengan user yang bertanya, di drawer sendiri.**
+   - **Modular**: paket terpisah yang tidak tahu tabel ERP; tiap aplikasi cukup menulis adaptor (penanya, menu, bantuan, angka).
+   - **Sales today** = nilai rupiah Customer Order yang masuk hari ini. **Deadstock** = stok tidak bergerak lebih dari 6 bulan,
+     dinilai harga beli rata-rata.
+
 ---
 
 ## Changelog
@@ -379,3 +399,4 @@
 | 2026-10-02 | C.24 (koreksi user atas mockup tahap 3): yang dicetak **bukan "Tagihan Supplier" melainkan Tanda Terima Tagihan Supplier** (satu baris = satu invoice supplier yang diserahkan; bukan bukti bayar); dokumen barang masuk bernama **SPB, Surat Penerimaan Barang**; ditambah **Tanda Terima Uang Muka** (bukti untuk customer). Semua masih mockup, belum A. |
 | 2026-10-02 | **A.16 diganti:** semua jenis CO boleh di-Post to Production asal Confirmed + approved; costing published tidak disyaratkan; product tanpa Inquiry mendapat WO sederhana (tanpa routing / bahan). |
 | 2026-10-02 | C.29: kerapatan grid cukup per grid lewat tombol Density (tersimpan di browser); rencana setelan per user + pintu Configuration → Grid dibatalkan, bagian "Grid (segera)" di drawer Configuration menu lama dihapus. |
+| 2026-10-02 | **E.1: Help wajib untuk setiap layar input dan laporan** (untuk apa, cara pakai, penjelasan tiap isian) — 159 topik ditulis dari kode, layar Help Center + Setup → Help Topics / Help Lines (ddt; tm2 menunggu OK). **E.2: keputusan Asisten AI** (offline, modular, AI tidak menghitung, jawaban sesuai level, drawer chat pribadi); rancangan menunggu persetujuan. |

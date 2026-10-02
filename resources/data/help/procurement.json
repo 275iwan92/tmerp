@@ -1,0 +1,1458 @@
+[
+  {
+    "key": "purchase-requisition",
+    "type": "INPUT",
+    "module": "PROC",
+    "title": "Purchase Requisition (PR)",
+    "purpose": {
+      "en": "Create and track purchase requests from a department. Open it when a department needs goods or services to be bought; after Confirm the PR goes to approval and, once approved, Purchasing turns its lines into POs.",
+      "id": "Membuat dan memantau permintaan pembelian dari sebuah departemen. Buka saat departemen butuh barang atau jasa dibeli; setelah Confirm, PR masuk approval dan setelah disetujui barisnya dijadikan PO oleh Purchasing."
+    },
+    "keywords": "pr, purchase requisition, requisition, permintaan pembelian, permintaan barang, pembelian, minta beli, purchase request, approval pr, procurement",
+    "steps": [
+      {
+        "en": "Click + New Record, choose the requesting Department and click Buat PR. A Draft PR is created; its number is only issued on Confirm.",
+        "id": "Klik + New Record, pilih Department yang meminta, lalu klik Buat PR. PR berstatus Draft dibuat; nomornya baru terbit saat Confirm."
+      },
+      {
+        "en": "Fill PR Date, Required Date and Notes / justification, and adjust the Department if needed.",
+        "id": "Isi PR Date, Required Date dan Notes / justification, ubah Department kalau perlu."
+      },
+      {
+        "en": "Add items: pick one in + Item from Material Master and click + Item Master, or type a description and Unit and click + Item Bebas for services or goods not in the master.",
+        "id": "Tambah item: pilih di + Item from Material Master lalu klik + Item Master, atau ketik uraian dan Unit lalu klik + Item Bebas untuk jasa atau barang yang belum ada di master."
+      },
+      {
+        "en": "In the Details lines enter Qty, Unit, Est. Price and Need Date for each item; Est. Subtotal and Est. Total are calculated for you. Remove lines you do not need.",
+        "id": "Di baris Details isi Qty, Unit, Est. Price dan Need Date tiap item; Est. Subtotal dan Est. Total dihitung otomatis. Hapus baris yang tidak diperlukan."
+      },
+      {
+        "en": "Click Save to keep the draft. Click Confirm to submit: the PR number is issued and the PR waits for approval. A PR needs a department and at least one item.",
+        "id": "Klik Save untuk menyimpan draft. Klik Confirm untuk mengajukan: nomor PR terbit dan PR menunggu approval. PR wajib punya departemen dan minimal satu item."
+      },
+      {
+        "en": "Follow the status in the grid. The approver decides in PR Approval Center or on this form. After Approved, the PR becomes Closed automatically when all lines are on a PO. Print is available after approval.",
+        "id": "Pantau status di grid. Approver memutuskan di PR Approval Center atau di form ini. Setelah Approved, PR otomatis Closed saat semua barisnya sudah jadi PO. Print tersedia setelah approval."
+      },
+      {
+        "en": "A Draft PR can be deleted with Delete. A submitted PR can no longer be edited.",
+        "id": "PR Draft bisa dihapus dengan Delete. PR yang sudah diajukan tidak bisa diubah lagi."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Department",
+        "en": "The requesting department, picked from the department master. Required. Chosen when the PR is created and can be changed while the PR is Draft.",
+        "id": "Departemen yang meminta, dipilih dari master departemen. Wajib. Dipilih saat PR dibuat dan bisa diubah selama PR masih Draft."
+      },
+      {
+        "label": "PR Date",
+        "en": "Date of the request. Filled with today's date when the PR is created; you may change it while Draft.",
+        "id": "Tanggal permintaan. Terisi tanggal hari ini saat PR dibuat; bisa diubah selama Draft."
+      },
+      {
+        "label": "Required Date",
+        "en": "The date the goods or services are needed for the whole PR. Each line also has its own Need Date.",
+        "id": "Tanggal barang atau jasa dibutuhkan untuk seluruh PR. Tiap baris juga punya Need Date sendiri."
+      },
+      {
+        "label": "Source",
+        "en": "Shows where the PR came from (MANUAL when created on this screen). Filled by the system, read only.",
+        "id": "Menunjukkan asal PR (MANUAL jika dibuat di layar ini). Diisi sistem, hanya dibaca."
+      },
+      {
+        "label": "Revision no.",
+        "en": "Revision counter of the PR, filled by the system. Read only.",
+        "id": "Nomor revisi PR, diisi sistem. Hanya dibaca."
+      },
+      {
+        "label": "Notes / justification",
+        "en": "Free text reason for the request. Approvers see it with the PR.",
+        "id": "Alasan permintaan dalam teks bebas. Dilihat approver bersama PR."
+      },
+      {
+        "label": "Est. Total",
+        "en": "Total estimated value of all lines (Qty x Est. Price), calculated automatically. Used by the approval path to decide how many approval levels are needed.",
+        "id": "Total nilai perkiraan semua baris (Qty x Est. Price), dihitung otomatis. Dipakai alur approval untuk menentukan jumlah level approval."
+      },
+      {
+        "label": "+ Item from Material Master",
+        "en": "Search the material master by item code or name (type at least 2 letters), then click + Item Master to add it as a line with its code and unit.",
+        "id": "Cari di master bahan dengan kode atau nama item (minimal 2 huruf), lalu klik + Item Master untuk menambahkannya sebagai baris lengkap dengan kode dan satuannya."
+      },
+      {
+        "label": "+ Item bebas (uraian)",
+        "en": "Type the description of a service or of goods that are not in the master, then click + Item Bebas to add a free-text line.",
+        "id": "Ketik uraian jasa atau barang yang belum ada di master, lalu klik + Item Bebas untuk menambah baris teks bebas."
+      },
+      {
+        "label": "Unit",
+        "en": "Unit of the free item to add (for example PCS). Used together with + Item Bebas.",
+        "id": "Satuan item bebas yang ditambahkan (misalnya PCS). Dipakai bersama + Item Bebas."
+      },
+      {
+        "label": "Item",
+        "en": "Line description of the item or service. Required. Taken from the master item or typed for a free item.",
+        "id": "Uraian item atau jasa pada baris. Wajib. Diambil dari item master atau diketik untuk item bebas."
+      },
+      {
+        "label": "Qty",
+        "en": "Quantity requested for the line. Required.",
+        "id": "Jumlah yang diminta pada baris. Wajib."
+      },
+      {
+        "label": "Est. Price",
+        "en": "Estimated unit price. It is only an estimate for the approver; the real price is set on the PO.",
+        "id": "Perkiraan harga satuan. Hanya perkiraan untuk approver; harga sebenarnya ditetapkan di PO."
+      },
+      {
+        "label": "Need Date",
+        "en": "Date this line is needed.",
+        "id": "Tanggal baris ini dibutuhkan."
+      },
+      {
+        "label": "Est. Subtotal",
+        "en": "Qty x Est. Price for the line, calculated automatically.",
+        "id": "Qty x Est. Price pada baris, dihitung otomatis."
+      },
+      {
+        "label": "Item Code",
+        "en": "Material code of the line (shown under More). Filled from the master item, empty for free items.",
+        "id": "Kode bahan pada baris (tampil di More). Terisi dari item master, kosong untuk item bebas."
+      },
+      {
+        "label": "Item Source",
+        "en": "Shows whether the line is a master item (Master bahan) or a free item (Item bebas). Read only.",
+        "id": "Menunjukkan apakah baris itu item master (Master bahan) atau item bebas (Item bebas). Hanya dibaca."
+      },
+      {
+        "label": "Type",
+        "en": "Shows whether the line is a stock item (Stok) or non-stock goods or service (Non-stok / jasa). Read only.",
+        "id": "Menunjukkan apakah baris itu barang stok (Stok) atau barang non-stok / jasa (Non-stok / jasa). Hanya dibaca."
+      },
+      {
+        "label": "Qty already on PO",
+        "en": "How much of the line has already been put on Purchase Orders. Filled by the system as POs are made. Read only.",
+        "id": "Berapa banyak dari baris ini yang sudah masuk Purchase Order. Diisi sistem saat PO dibuat. Hanya dibaca."
+      },
+      {
+        "label": "Line Notes",
+        "en": "Optional note for one line, for example the required specification.",
+        "id": "Catatan opsional untuk satu baris, misalnya spesifikasi yang diminta."
+      },
+      {
+        "label": "Status",
+        "en": "PR status in the grid: Draft, SUBMITTED (waiting for approval), APPROVED, PARTIALLY_ORDERED, FULLY_ORDERED, CLOSED, REJECTED, REVISION_NEEDED or CANCELLED. Set by the system.",
+        "id": "Status PR di grid: Draft, SUBMITTED (menunggu approval), APPROVED, PARTIALLY_ORDERED, FULLY_ORDERED, CLOSED, REJECTED, REVISION_NEEDED atau CANCELLED. Diatur sistem."
+      }
+    ]
+  },
+  {
+    "key": "approval-pr",
+    "type": "INPUT",
+    "module": "PROC",
+    "title": "PR Approval Center",
+    "purpose": {
+      "en": "Lists the Purchase Requisitions waiting for your decision. Open it when you are an approver in the PR approval path and need to Approve, Reject or Hold requests.",
+      "id": "Menampilkan Purchase Requisition yang menunggu keputusan Anda. Buka saat Anda approver di alur approval PR dan perlu menyetujui (Setujui), menolak (Tolak) atau menahan (Tahan) permintaan."
+    },
+    "keywords": "approval pr, pr approval center, setujui pr, persetujuan pr, approve requisition, tolak, tahan, hold, approver, antrian approval",
+    "steps": [
+      {
+        "en": "Open the screen. The list shows only PRs whose current approval level is assigned to you (or to you as acting officer, PLT).",
+        "id": "Buka layar ini. Daftar hanya berisi PR yang level approval-nya sedang menunggu Anda (atau Anda sebagai officer pengganti, PLT)."
+      },
+      {
+        "en": "Click a PR in the list to read its summary, lines, approval flow and history. Use the arrow link next to the title to open the full PR.",
+        "id": "Klik sebuah PR di daftar untuk membaca ringkasan, baris, alur approval dan riwayatnya. Pakai tautan panah di samping judul untuk membuka PR lengkap."
+      },
+      {
+        "en": "Click Setujui to approve. The PR moves to the next approval level, or becomes Approved if yours was the last level.",
+        "id": "Klik Setujui untuk menyetujui. PR lanjut ke level approval berikutnya, atau menjadi Approved bila Anda level terakhir."
+      },
+      {
+        "en": "Click Tolak to reject. A reason is required and asked in a confirmation dialog. Rejecting is final.",
+        "id": "Klik Tolak untuk menolak. Alasan wajib diisi dan diminta di dialog konfirmasi. Penolakan bersifat final."
+      },
+      {
+        "en": "Click Tahan to hold the PR when you need more information. A reason is required. The PR stays in your list and can later only be approved or rejected.",
+        "id": "Klik Tahan untuk menahan PR saat butuh informasi tambahan. Alasan wajib diisi. PR tetap di daftar Anda dan nanti hanya bisa disetujui atau ditolak."
+      },
+      {
+        "en": "Check Log Keputusan to see your own recent decisions with time, level and reason.",
+        "id": "Lihat Log Keputusan untuk melihat keputusan Anda sebelumnya lengkap dengan waktu, level dan alasan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Departemen",
+        "en": "Requesting department of the PR, shown in the summary. Read only.",
+        "id": "Departemen peminta PR, tampil di ringkasan. Hanya dibaca."
+      },
+      {
+        "label": "Tgl Butuh",
+        "en": "Required date of the PR from the form. Read only.",
+        "id": "Tanggal dibutuhkan PR dari form. Hanya dibaca."
+      },
+      {
+        "label": "Est. Total",
+        "en": "Estimated total value of the PR. It decides the approval path and number of levels. Read only.",
+        "id": "Total nilai perkiraan PR. Menentukan alur dan jumlah level approval. Hanya dibaca."
+      },
+      {
+        "label": "Jumlah Item",
+        "en": "Number of lines in the PR. Read only.",
+        "id": "Jumlah baris di PR. Hanya dibaca."
+      },
+      {
+        "label": "Item",
+        "en": "Line table of the PR: Item, Qty, Satuan, Harga Est., Subtotal and Tgl Butuh, so you can judge what is being requested. Read only.",
+        "id": "Tabel baris PR: Item, Qty, Satuan, Harga Est., Subtotal dan Tgl Butuh, agar Anda bisa menilai apa yang diminta. Hanya dibaca."
+      },
+      {
+        "label": "Alur approval",
+        "en": "Shows the creator and each approval level with who decided and when, and which level is waiting. A PLT badge marks an acting officer.",
+        "id": "Menampilkan pembuat dan tiap level approval beserta siapa yang memutuskan dan kapan, serta level mana yang menunggu. Lencana PLT menandai officer pengganti."
+      },
+      {
+        "label": "Alasan (Tolak / Tahan)",
+        "en": "Reason typed in the confirmation dialog when you click Tolak or Tahan. It is mandatory and saved in the document history and in your Log Keputusan.",
+        "id": "Alasan yang diketik di dialog konfirmasi saat klik Tolak atau Tahan. Wajib diisi dan tersimpan di riwayat dokumen dan Log Keputusan Anda."
+      }
+    ]
+  },
+  {
+    "key": "purchase-quotation",
+    "type": "INPUT",
+    "module": "PROC",
+    "title": "Purchase Quotation",
+    "purpose": {
+      "en": "Record supplier price offers without typing them: upload the quotation files received by e-mail, check what the system read, Confirm, compare suppliers per PR and create POs. Open it when quotations arrive.",
+      "id": "Mencatat penawaran harga supplier tanpa mengetik: unggah file penawaran dari email, cek hasil bacaan sistem, Confirm, bandingkan supplier per PR lalu buat PO. Buka saat penawaran masuk."
+    },
+    "keywords": "pq, purchase quotation, quotation supplier, penawaran supplier, penawaran harga, bandingkan harga, compare, upload penawaran, survei harga, rfq",
+    "steps": [
+      {
+        "en": "Click + New Record, optionally pick the Reference PR, choose one or more quotation files (PDF, Excel, CSV, JPG, PNG; max 10 files of 20 MB) and click Upload & Read.",
+        "id": "Klik + New Record, pilih Reference PR bila ada (opsional), pilih satu atau beberapa file penawaran (PDF, Excel, CSV, JPG, PNG; maks 10 file, 20 MB) lalu klik Upload & Read."
+      },
+      {
+        "en": "Each file becomes one Draft PQ, read and matched to supplier, PR lines and the material master. Excel and CSV are read automatically; PDF and photos need the AI reader, otherwise the PQ is empty and filled by hand.",
+        "id": "Tiap file menjadi satu PQ Draft yang sudah dibaca dan dicocokkan ke supplier, baris PR dan master bahan. Excel dan CSV dibaca otomatis; PDF dan foto butuh pembaca AI, jika tidak PQ kosong dan diisi manual."
+      },
+      {
+        "en": "Open the PQ. Check the lines marked with a warning sign in Match: choose the PR Line or Material Master Item, and check Qty, Unit and Price. Set Supplier, Quotation Date and Valid Until.",
+        "id": "Buka PQ. Cek baris bertanda peringatan di kolom Match: pilih PR Line atau Material Master Item, lalu cek Qty, Unit dan Price. Atur Supplier, Quotation Date dan Valid Until."
+      },
+      {
+        "en": "Use the Quotation File tab to look at the original file while checking. Click Save to keep changes.",
+        "id": "Pakai tab Quotation File untuk melihat file aslinya saat mengecek. Klik Save untuk menyimpan perubahan."
+      },
+      {
+        "en": "Click Confirm. The PQ number is issued. Confirm needs a supplier from the master, at least one line, Qty and Price above 0, and each line linked to a PR line or a master item.",
+        "id": "Klik Confirm. Nomor PQ terbit. Confirm butuh supplier dari master, minimal satu baris, Qty dan Price di atas 0, dan tiap baris terhubung ke baris PR atau item master."
+      },
+      {
+        "en": "To compare, choose a PR in Compare quotations per PR (or click Compare on a PQ), tick the winning supplier per line (cheapest is ticked by default) and click Create PO.",
+        "id": "Untuk membandingkan, pilih PR di Compare quotations per PR (atau klik Compare di PQ), centang supplier pemenang per baris (termurah tercentang otomatis) lalu klik Create PO."
+      },
+      {
+        "en": "Create PO makes one Draft PO per supplier. A PQ becomes Closed when all its lines are on POs. A Confirmed PQ can be cancelled with a reason of at least 10 characters if none of its lines is on a PO.",
+        "id": "Create PO membuat satu PO Draft per supplier. PQ menjadi Closed saat semua barisnya sudah jadi PO. PQ Confirmed bisa di-Cancel dengan alasan minimal 10 karakter bila belum ada barisnya yang jadi PO."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Reference PR (optional)",
+        "en": "The approved PR this offer answers. Leave empty for a price survey without a PR. Only approved or partly ordered PRs are listed.",
+        "id": "PR yang disetujui yang dijawab penawaran ini. Kosongkan untuk survei harga tanpa PR. Hanya PR Approved atau sebagian sudah dipesan yang muncul."
+      },
+      {
+        "label": "Quotation files (PDF, Excel, CSV, JPG, PNG — max. 10 files, 20 MB each)",
+        "en": "Upload the quotation exactly as received from the supplier. One file creates one Draft PQ. Required.",
+        "id": "Unggah penawaran persis seperti yang diterima dari supplier. Satu file menghasilkan satu PQ Draft. Wajib."
+      },
+      {
+        "label": "Supplier",
+        "en": "The supplier of the offer, picked from the supplier master. Pre-filled when the system recognises the name in the file; required before Confirm.",
+        "id": "Supplier pemberi penawaran, dipilih dari master supplier. Terisi otomatis bila nama di file dikenali sistem; wajib sebelum Confirm."
+      },
+      {
+        "label": "Quotation Date",
+        "en": "Date written on the quotation. Taken from the file, otherwise today's date.",
+        "id": "Tanggal yang tertulis di penawaran. Diambil dari file, kalau tidak ada diisi tanggal hari ini."
+      },
+      {
+        "label": "Supplier in the file",
+        "en": "The supplier name exactly as read from the file, to help you choose the right master supplier. Read only.",
+        "id": "Nama supplier persis seperti terbaca di file, membantu Anda memilih supplier master yang tepat. Hanya dibaca."
+      },
+      {
+        "label": "Reference PR",
+        "en": "The PR chosen at upload, or a note that there is no PR. Read only.",
+        "id": "PR yang dipilih saat upload, atau keterangan bahwa tidak ada PR. Hanya dibaca."
+      },
+      {
+        "label": "Valid Until",
+        "en": "Last date the offer is valid. Required. Taken from the file; if the file has none it is set to 14 days after the quotation date.",
+        "id": "Tanggal terakhir penawaran berlaku. Wajib. Diambil dari file; bila tidak ada, diisi 14 hari setelah tanggal penawaran."
+      },
+      {
+        "label": "Payment Terms",
+        "en": "Payment terms offered by the supplier, for example 30 days. Copied to the PO later.",
+        "id": "Termin pembayaran dari supplier, misalnya 30 hari. Nanti disalin ke PO."
+      },
+      {
+        "label": "Currency",
+        "en": "Currency of the prices, picked from the currency master. Defaults to the currency read from the file or IDR.",
+        "id": "Mata uang harga, dipilih dari master mata uang. Default dari file atau IDR."
+      },
+      {
+        "label": "Rate to IDR",
+        "en": "Exchange rate to rupiah, used to show Total (IDR) and to compare suppliers on the same basis. Use 1 for IDR.",
+        "id": "Kurs ke rupiah, dipakai untuk menampilkan Total (IDR) dan membandingkan supplier dengan dasar yang sama. Isi 1 untuk IDR."
+      },
+      {
+        "label": "Lead Time (days)",
+        "en": "Delivery lead time in days for the whole offer. A line can have its own Lead time (days). Shown in the comparison.",
+        "id": "Lama pengiriman dalam hari untuk seluruh penawaran. Satu baris bisa punya Lead time (days) sendiri. Tampil di perbandingan."
+      },
+      {
+        "label": "Reading Result",
+        "en": "How well the system read the file: Siap dipilih, Perlu cek, Isi manual or Gagal dibaca, with a note. Filled by the system, read only.",
+        "id": "Seberapa baik sistem membaca file: Siap dipilih, Perlu cek, Isi manual atau Gagal dibaca, beserta catatan. Diisi sistem, hanya dibaca."
+      },
+      {
+        "label": "Notes",
+        "en": "Free notes about the offer.",
+        "id": "Catatan bebas tentang penawaran."
+      },
+      {
+        "label": "Text in the file",
+        "en": "The original text of the line as read from the file, so you can compare it with the matched item. Read only.",
+        "id": "Teks asli baris seperti terbaca dari file, untuk dibandingkan dengan item yang dicocokkan. Hanya dibaca."
+      },
+      {
+        "label": "Match",
+        "en": "How sure the system is that the line matches the PR line or master item, in percent. A warning sign means check it yourself.",
+        "id": "Seberapa yakin sistem bahwa baris cocok dengan baris PR atau item master, dalam persen. Tanda peringatan berarti harus Anda cek sendiri."
+      },
+      {
+        "label": "PR Line",
+        "en": "The PR line this price answers. Shown when a Reference PR is set. Needed (or a master item) before Confirm.",
+        "id": "Baris PR yang dijawab harga ini. Muncul bila Reference PR diisi. Wajib (atau pilih item master) sebelum Confirm."
+      },
+      {
+        "label": "Material Master Item",
+        "en": "The material master item for the line, found by typing its code or name. Needed (or a PR line) before Confirm.",
+        "id": "Item master bahan untuk baris ini, dicari dengan mengetik kode atau namanya. Wajib (atau pilih baris PR) sebelum Confirm."
+      },
+      {
+        "label": "Qty",
+        "en": "Quoted quantity. Required and above 0.",
+        "id": "Jumlah yang ditawarkan. Wajib dan di atas 0."
+      },
+      {
+        "label": "Unit",
+        "en": "Unit of the quote. It must be the same as the PR unit before a PO can be made from a PR line.",
+        "id": "Satuan penawaran. Harus sama dengan satuan PR sebelum PO bisa dibuat dari baris PR."
+      },
+      {
+        "label": "Price",
+        "en": "Unit price in the quote currency. Required and above 0.",
+        "id": "Harga satuan dalam mata uang penawaran. Wajib dan di atas 0."
+      },
+      {
+        "label": "Subtotal",
+        "en": "Qty x Price of the line, calculated automatically.",
+        "id": "Qty x Price baris, dihitung otomatis."
+      },
+      {
+        "label": "Description (for the PO)",
+        "en": "Item description that will be copied to the PO line. Required.",
+        "id": "Uraian item yang akan disalin ke baris PO. Wajib."
+      },
+      {
+        "label": "Lead time (days)",
+        "en": "Lead time for this line only, shown in the comparison. If empty the header Lead Time (days) is used.",
+        "id": "Lama pengiriman khusus baris ini, tampil di perbandingan. Bila kosong dipakai Lead Time (days) di header."
+      },
+      {
+        "label": "Ordered (PO)",
+        "en": "The PO number if the line is already on a PO. Read only.",
+        "id": "Nomor PO bila baris sudah jadi PO. Hanya dibaca."
+      },
+      {
+        "label": "PR",
+        "en": "In Compare quotations per PR: the PR whose Confirmed quotations you want to compare. Required.",
+        "id": "Di Compare quotations per PR: PR yang penawaran Confirmed-nya ingin dibandingkan. Wajib."
+      },
+      {
+        "label": "Status",
+        "en": "PQ status in the grid: Draft, CONFIRMED, CLOSED (all lines ordered) or CANCELLED. Needs check counts Draft PQs that are not fully read.",
+        "id": "Status PQ di grid: Draft, CONFIRMED, CLOSED (semua baris sudah dipesan) atau CANCELLED. Needs check menghitung PQ Draft yang belum terbaca sempurna."
+      }
+    ]
+  },
+  {
+    "key": "purchase-order",
+    "type": "INPUT",
+    "module": "PROC",
+    "title": "Purchase Order",
+    "purpose": {
+      "en": "Create purchase orders to suppliers, including Cash PO paid from Petty Cash. Open it to turn approved PR lines or quotations into orders, get approval, send the PO and follow what has been received.",
+      "id": "Membuat purchase order ke supplier, termasuk PO Kontan yang dibayar dari Kas Kecil. Buka untuk mengubah baris PR atau penawaran yang disetujui menjadi pesanan, meminta approval, mengirim PO dan memantau penerimaan."
+    },
+    "keywords": "po, purchase order, pesanan pembelian, order supplier, po kontan, cash po, petty cash, kas kecil, kirim ke supplier, send to supplier, pembelian",
+    "steps": [
+      {
+        "en": "Click + New Record. Choose PO Kind: Regular PO (credit / terms) or Cash PO (Petty Cash), choose the Supplier and click Buat PO. For a Regular PO the supplier's open draft PO is reused.",
+        "id": "Klik + New Record. Pilih PO Kind: Regular PO (kredit / termin) atau Cash PO (Kas Kecil), pilih Supplier lalu klik Buat PO. Untuk PO biasa, draft PO supplier yang masih terbuka dipakai lagi."
+      },
+      {
+        "en": "Add lines: pick an approved PR line in + Pull lines from approved PR and click + Pull PR Lines. A Cash PO can also add master items or free non-stock items.",
+        "id": "Tambah baris: pilih baris PR yang disetujui di + Pull lines from approved PR lalu klik + Pull PR Lines. PO Kontan juga bisa menambah item master atau item bebas non-stok."
+      },
+      {
+        "en": "Enter Price and Disc % per line. Fill PO Type, Procurement Type, Payment Terms, Delivery Date, Ship To and Notes for the supplier. DPP, PPN, Grand Total and Net Payable are calculated.",
+        "id": "Isi Price dan Disc % tiap baris. Isi PO Type, Procurement Type, Payment Terms, Delivery Date, Ship To dan Notes for the supplier. DPP, PPN, Grand Total dan Net Payable dihitung otomatis."
+      },
+      {
+        "en": "Click Save, then Confirm. The PO number is issued and the PO waits for approval. A PO needs at least one line.",
+        "id": "Klik Save, lalu Confirm. Nomor PO terbit dan PO menunggu approval. PO wajib punya minimal satu baris."
+      },
+      {
+        "en": "The approver decides in PO Approval Center or on this form (Approve, Reject, Hold). Print appears once the PO is no longer Draft or waiting.",
+        "id": "Approver memutuskan di PO Approval Center atau di form ini (Approve, Reject, Hold). Print muncul setelah PO tidak lagi Draft atau menunggu approval."
+      },
+      {
+        "en": "After approval click Send to Supplier to mark the PO as sent (SENT). Goods are then received in Purchase Receive / SPB; the PO becomes partly or fully received automatically.",
+        "id": "Setelah disetujui klik Send to Supplier untuk menandai PO sudah dikirim (SENT). Barang lalu diterima di Purchase Receive / SPB; PO otomatis berubah jadi diterima sebagian atau seluruhnya."
+      },
+      {
+        "en": "For a Cash PO, use the Petty Cash step button on the PO to continue with the cash advance or settlement. Cash PO value must not exceed the limit shown in Cash PO Limit.",
+        "id": "Untuk PO Kontan, pakai tombol langkah Petty Cash di PO untuk lanjut ke kasbon atau pertanggungjawaban. Nilai PO Kontan tidak boleh melebihi batas di Cash PO Limit."
+      }
+    ],
+    "fields": [
+      {
+        "label": "PO Kind",
+        "en": "Regular PO (credit / terms) or Cash PO (Petty Cash). A Cash PO is paid from Petty Cash, has a maximum value and is approved by the Finance Director.",
+        "id": "Regular PO (kredit / termin) atau Cash PO (Kas Kecil). PO Kontan dibayar dari Kas Kecil, punya nilai maksimal dan disetujui Direktur Keuangan."
+      },
+      {
+        "label": "Supplier",
+        "en": "Supplier of the order, picked from the supplier master. For a Cash PO to a retail shop choose TOKO KONTAN and type the shop name.",
+        "id": "Supplier pesanan, dipilih dari master supplier. Untuk PO Kontan ke toko eceran pilih TOKO KONTAN lalu ketik nama tokonya."
+      },
+      {
+        "label": "Cash PO Mode",
+        "en": "Cash advance first then settle with receipt (ADVANCE), or buy first and be reimbursed from Petty Cash (REIMBURSE). Required on a Cash PO.",
+        "id": "Kasbon dulu lalu pertanggungjawaban dengan nota (ADVANCE), atau beli dulu lalu diganti dari Kas Kecil (REIMBURSE). Wajib pada PO Kontan."
+      },
+      {
+        "label": "Shop Name (Cash PO)",
+        "en": "Name of the retail shop where the Cash PO purchase is made, for example Toko Maju Jaya. It is saved as Shop Name on the PO.",
+        "id": "Nama toko eceran tempat pembelian PO Kontan, misalnya Toko Maju Jaya. Tersimpan sebagai Shop Name di PO."
+      },
+      {
+        "label": "PO Date",
+        "en": "Date of the PO.",
+        "id": "Tanggal PO."
+      },
+      {
+        "label": "PO Type",
+        "en": "Local or Import.",
+        "id": "Local atau Import."
+      },
+      {
+        "label": "Procurement Type",
+        "en": "Repeat (rutin), One-Time or Capex. On a Cash PO it is fixed as Cash (Petty Cash).",
+        "id": "Repeat (rutin), One-Time atau Capex. Pada PO Kontan otomatis Cash (Petty Cash)."
+      },
+      {
+        "label": "Revision no.",
+        "en": "Revision counter of the PO, filled by the system. Read only.",
+        "id": "Nomor revisi PO, diisi sistem. Hanya dibaca."
+      },
+      {
+        "label": "Sent to supplier",
+        "en": "Date and time the PO was marked as sent. Filled when you click Send to Supplier. Read only.",
+        "id": "Tanggal dan jam PO ditandai terkirim. Terisi saat klik Send to Supplier. Hanya dibaca."
+      },
+      {
+        "label": "Petty Cash",
+        "en": "The petty cash fund that pays this Cash PO, picked from active petty cash funds. Required on a Cash PO.",
+        "id": "Dana kas kecil yang membayar PO Kontan ini, dipilih dari kas kecil aktif. Wajib pada PO Kontan."
+      },
+      {
+        "label": "Shop Name",
+        "en": "Name of the shop for a Cash PO.",
+        "id": "Nama toko untuk PO Kontan."
+      },
+      {
+        "label": "Cash PO Limit",
+        "en": "Maximum value of a Cash PO, taken from the constant PO_CASH_MAX. Above it you must use a regular PO. Read only.",
+        "id": "Nilai maksimal PO Kontan, diambil dari konstanta PO_CASH_MAX. Di atas itu harus pakai PO biasa. Hanya dibaca."
+      },
+      {
+        "label": "Alamat",
+        "en": "Supplier address from the supplier master (Supplier tab). Read only.",
+        "id": "Alamat supplier dari master supplier (tab Supplier). Hanya dibaca."
+      },
+      {
+        "label": "Contact Person",
+        "en": "Supplier contact name from the supplier master. Read only.",
+        "id": "Nama kontak supplier dari master supplier. Hanya dibaca."
+      },
+      {
+        "label": "Telepon",
+        "en": "Supplier phone from the supplier master. Read only.",
+        "id": "Telepon supplier dari master supplier. Hanya dibaca."
+      },
+      {
+        "label": "Email",
+        "en": "Supplier e-mail from the supplier master. Read only.",
+        "id": "Email supplier dari master supplier. Hanya dibaca."
+      },
+      {
+        "label": "Payment Terms",
+        "en": "Payment terms agreed with the supplier, for example Net 30 (Finance tab).",
+        "id": "Termin pembayaran yang disepakati dengan supplier, misalnya Net 30 (tab Finance)."
+      },
+      {
+        "label": "Rate (Kurs)",
+        "en": "Exchange rate used on the PO. Read only.",
+        "id": "Kurs yang dipakai di PO. Hanya dibaca."
+      },
+      {
+        "label": "Delivery Date",
+        "en": "Date the supplier should deliver (Delivery tab). Outstanding PO uses it to flag late deliveries.",
+        "id": "Tanggal supplier harus mengirim (tab Delivery). Outstanding PO memakainya untuk menandai pengiriman terlambat."
+      },
+      {
+        "label": "Ship To",
+        "en": "Delivery address or destination written on the PO.",
+        "id": "Alamat atau tujuan pengiriman yang tertulis di PO."
+      },
+      {
+        "label": "Notes for the supplier",
+        "en": "Free text note shown to the supplier on the PO.",
+        "id": "Catatan bebas untuk supplier yang tampil di PO."
+      },
+      {
+        "label": "+ Pull lines from approved PR",
+        "en": "Pick an approved PR line that is not yet on a PO and click + Pull PR Lines to add it to this PO. Then enter the price and discount.",
+        "id": "Pilih baris PR yang sudah disetujui dan belum jadi PO, lalu klik + Pull PR Lines untuk memasukkannya ke PO ini. Setelah itu isi harga dan diskon."
+      },
+      {
+        "label": "+ Item from Raw Material Master",
+        "en": "Cash PO only: find a raw material by code or name (2 or more letters) and click + Master Item to add it.",
+        "id": "Hanya PO Kontan: cari bahan baku dengan kode atau nama (2 huruf atau lebih) lalu klik + Master Item untuk menambahkan."
+      },
+      {
+        "label": "+ Free Item (non-stock)",
+        "en": "Cash PO only: description of a non-stock item, for example office printer ink. Add it with + Free Item together with UoM and Expense Account.",
+        "id": "Hanya PO Kontan: uraian item non-stok, misalnya tinta printer kantor. Tambahkan dengan + Free Item bersama UoM dan Expense Account."
+      },
+      {
+        "label": "UoM",
+        "en": "Unit of the free item (for example PCS) when adding it with + Free Item.",
+        "id": "Satuan item bebas (misalnya PCS) saat menambah dengan + Free Item."
+      },
+      {
+        "label": "Expense Account",
+        "en": "Cash PO only: the expense account for a free non-stock item. Every non-stock line needs one before Confirm.",
+        "id": "Hanya PO Kontan: akun biaya untuk item bebas non-stok. Tiap baris non-stok wajib punya akun ini sebelum Confirm."
+      },
+      {
+        "label": "Item",
+        "en": "Item description of the line, copied from the PR, quotation or master. Read only.",
+        "id": "Uraian item pada baris, disalin dari PR, penawaran atau master. Hanya dibaca."
+      },
+      {
+        "label": "Qty",
+        "en": "Ordered quantity. Taken from the PR line; it can be changed only on a Cash PO.",
+        "id": "Jumlah yang dipesan. Diambil dari baris PR; hanya bisa diubah pada PO Kontan."
+      },
+      {
+        "label": "Price",
+        "en": "Unit price. Filled from the quotation when the PO came from a PQ, otherwise typed by you while the PO is Draft.",
+        "id": "Harga satuan. Terisi dari penawaran bila PO berasal dari PQ, selain itu diketik Anda selama PO masih Draft."
+      },
+      {
+        "label": "Disc %",
+        "en": "Discount percent for the line.",
+        "id": "Persen diskon pada baris."
+      },
+      {
+        "label": "Subtotal",
+        "en": "Qty x Price less the discount, calculated automatically.",
+        "id": "Qty x Price dikurangi diskon, dihitung otomatis."
+      },
+      {
+        "label": "Expense Account (non-stock)",
+        "en": "Expense account of a non-stock line, shown under More. Read only.",
+        "id": "Akun biaya baris non-stok, tampil di More. Hanya dibaca."
+      },
+      {
+        "label": "Price from PQ",
+        "en": "Number of the Purchase Quotation the line price came from. Read only.",
+        "id": "Nomor Purchase Quotation asal harga baris. Hanya dibaca."
+      },
+      {
+        "label": "Received",
+        "en": "Quantity already received through Purchase Receive. Filled by the system. Read only.",
+        "id": "Jumlah yang sudah diterima lewat Purchase Receive. Diisi sistem. Hanya dibaca."
+      },
+      {
+        "label": "Remaining",
+        "en": "Quantity still to be received. Filled by the system. Read only.",
+        "id": "Jumlah yang masih harus diterima. Diisi sistem. Hanya dibaca."
+      },
+      {
+        "label": "Status",
+        "en": "PO status in the grid: Draft, SUBMITTED (waiting for approval), APPROVED, SENT, PARTIALLY_RECEIVED, RECEIVED, CLOSED, REJECTED or CANCELLED. Set by the system.",
+        "id": "Status PO di grid: Draft, SUBMITTED (menunggu approval), APPROVED, SENT, PARTIALLY_RECEIVED, RECEIVED, CLOSED, REJECTED atau CANCELLED. Diatur sistem."
+      }
+    ]
+  },
+  {
+    "key": "approval-po",
+    "type": "INPUT",
+    "module": "PROC",
+    "title": "PO Approval Center",
+    "purpose": {
+      "en": "Lists the Purchase Orders and Cash POs waiting for your decision. Open it when you are an approver in the PO approval path and need to Approve, Reject or Hold orders.",
+      "id": "Menampilkan Purchase Order dan PO Kontan yang menunggu keputusan Anda. Buka saat Anda approver di alur approval PO dan perlu menyetujui (Setujui), menolak (Tolak) atau menahan (Tahan) pesanan."
+    },
+    "keywords": "approval po, po approval center, setujui po, persetujuan po, approve purchase order, po kontan, cash po approval, tolak, tahan, hold, approver",
+    "steps": [
+      {
+        "en": "Open the screen. The list shows regular POs and Cash POs whose current approval level is assigned to you (or to you as acting officer, PLT).",
+        "id": "Buka layar ini. Daftar berisi PO biasa dan PO Kontan yang level approval-nya sedang menunggu Anda (atau Anda sebagai officer pengganti, PLT)."
+      },
+      {
+        "en": "Click a PO to read its summary, lines, approval levels and history. Use the arrow link next to the title to open the full PO.",
+        "id": "Klik sebuah PO untuk membaca ringkasan, baris, level approval dan riwayatnya. Pakai tautan panah di samping judul untuk membuka PO lengkap."
+      },
+      {
+        "en": "Click Setujui to approve. The PO moves to the next level, or becomes Approved when yours is the last level. The number of levels depends on the PO value.",
+        "id": "Klik Setujui untuk menyetujui. PO lanjut ke level berikutnya, atau menjadi Approved bila Anda level terakhir. Jumlah level bergantung pada nilai PO."
+      },
+      {
+        "en": "Click Tolak to reject. A reason is required and asked in a confirmation dialog. Rejecting is final.",
+        "id": "Klik Tolak untuk menolak. Alasan wajib diisi dan diminta di dialog konfirmasi. Penolakan bersifat final."
+      },
+      {
+        "en": "Click Tahan to hold the PO and ask for more information. A reason is required. The PO stays in your list and can later only be approved or rejected.",
+        "id": "Klik Tahan untuk menahan PO dan meminta informasi tambahan. Alasan wajib diisi. PO tetap di daftar Anda dan nanti hanya bisa disetujui atau ditolak."
+      },
+      {
+        "en": "Check Log Keputusan for your own recent decisions with time, level and reason.",
+        "id": "Lihat Log Keputusan untuk keputusan Anda sebelumnya lengkap dengan waktu, level dan alasan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Supplier",
+        "en": "Supplier of the PO, shown in the summary. Read only.",
+        "id": "Supplier PO, tampil di ringkasan. Hanya dibaca."
+      },
+      {
+        "label": "Grand Total",
+        "en": "Total value of the PO including tax. It decides the approval path and number of levels. Read only.",
+        "id": "Total nilai PO termasuk pajak. Menentukan alur dan jumlah level approval. Hanya dibaca."
+      },
+      {
+        "label": "Termin",
+        "en": "Payment terms of the PO. Read only.",
+        "id": "Termin pembayaran PO. Hanya dibaca."
+      },
+      {
+        "label": "Tgl Kirim",
+        "en": "Delivery date of the PO. Read only.",
+        "id": "Tanggal kirim PO. Hanya dibaca."
+      },
+      {
+        "label": "Jumlah Item",
+        "en": "Number of lines in the PO. Read only.",
+        "id": "Jumlah baris di PO. Hanya dibaca."
+      },
+      {
+        "label": "Item",
+        "en": "Line table: Item, Qty, Satuan, Harga/Unit, Disc % and Subtotal, so you can check what is ordered and at what price. Read only.",
+        "id": "Tabel baris: Item, Qty, Satuan, Harga/Unit, Disc % dan Subtotal, agar Anda bisa mengecek apa yang dipesan dan berapa harganya. Hanya dibaca."
+      },
+      {
+        "label": "Alur approval",
+        "en": "Shows the creator and each approval level with who decided and when, and which level is waiting. A PLT badge marks an acting officer.",
+        "id": "Menampilkan pembuat dan tiap level approval beserta siapa yang memutuskan dan kapan, serta level mana yang menunggu. Lencana PLT menandai officer pengganti."
+      },
+      {
+        "label": "Alasan (Tolak / Tahan)",
+        "en": "Reason typed in the confirmation dialog when you click Tolak or Tahan. Mandatory; saved in the document history and your Log Keputusan.",
+        "id": "Alasan yang diketik di dialog konfirmasi saat klik Tolak atau Tahan. Wajib; tersimpan di riwayat dokumen dan Log Keputusan Anda."
+      }
+    ]
+  },
+  {
+    "key": "purchase-receive",
+    "type": "INPUT",
+    "module": "PROC",
+    "title": "Purchase Receive / SPB",
+    "purpose": {
+      "en": "Record goods that arrive: from a supplier PO, material brought by a customer, or goods returning from a subcontractor. Open it when a delivery arrives; Confirm posts stock and the purchase journal and updates the PO.",
+      "id": "Mencatat barang yang datang: dari PO supplier, bahan bawaan customer, atau barang kembali dari subkon. Buka saat ada kiriman tiba; Confirm memposting stok dan jurnal pembelian serta memperbarui PO."
+    },
+    "keywords": "spb, pv, penerimaan barang, surat penerimaan barang, goods receipt, receive, terima barang, bahan customer, subkon, subcon, qc penerimaan, shortage",
+    "steps": [
+      {
+        "en": "Click + New Record and choose the type: From PO, From Customer or From Subcon.",
+        "id": "Klik + New Record lalu pilih jenisnya: From PO, From Customer atau From Subcon."
+      },
+      {
+        "en": "From PO: choose the Supplier and click Next: choose PO lines, then choose the Receiving Warehouse and tick the Arriving PO lines and click Buat Penerimaan. Only suppliers with sent POs appear.",
+        "id": "From PO: pilih Supplier lalu klik Next: choose PO lines, lalu pilih Receiving Warehouse dan centang Arriving PO lines kemudian klik Buat Penerimaan. Hanya supplier yang punya PO terkirim yang muncul."
+      },
+      {
+        "en": "From Customer: choose the Customer Order (required) and optionally where it is Stored At, then click Create Receipt. From Subcon: choose the Subcontractor, then the Subcon PO lines coming back and click Create Receipt.",
+        "id": "From Customer: pilih Customer Order (wajib) dan tempat simpan (Stored At, opsional), lalu klik Create Receipt. From Subcon: pilih Subcontractor, lalu baris Subcon PO yang kembali dan klik Create Receipt."
+      },
+      {
+        "en": "On the receipt enter the Supplier Delivery Note No. and vehicle number, then per line the received quantity, lot and location. For a PO receipt also set QC Qty to Selesai and QC Kualitas to Pass, Fail or Partial.",
+        "id": "Di penerimaan isi nomor surat jalan supplier dan nomor kendaraan, lalu per baris isi qty diterima, lot dan lokasi. Untuk penerimaan PO, set juga QC Qty ke Selesai dan QC Kualitas ke Pass, Fail atau Partial."
+      },
+      {
+        "en": "If a quantity is outside the PO tolerance, give a Tolerance Override Reason. For Partial quality, fill Qty Received (Partial) and Qty Rejected (Partial).",
+        "id": "Bila qty di luar toleransi PO, isi Tolerance Override Reason. Untuk kualitas Partial, isi Qty Received (Partial) dan Qty Rejected (Partial)."
+      },
+      {
+        "en": "Click Save, then Confirm (Post). A PO receipt cannot be posted while a line lacks QC Qty or QC Kualitas, or exceeds tolerance without override; the warning shows what is missing.",
+        "id": "Klik Save, lalu Confirm (Post). Penerimaan PO tidak bisa diposting selama ada baris yang belum QC Qty atau QC Kualitas, atau melebihi toleransi tanpa override; peringatan menunjukkan yang kurang."
+      },
+      {
+        "en": "A posted receipt can be reversed with Cancel (reason required) and a Draft can be deleted. For a posted Subcon receipt, use Report Shortage to correct a shortage found later.",
+        "id": "Penerimaan yang sudah diposting bisa dibatalkan dengan Cancel (alasan wajib) dan Draft bisa dihapus. Untuk penerimaan Subcon yang sudah diposting, pakai Report Shortage bila kekurangan baru ketahuan belakangan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Supplier",
+        "en": "Step 1 of a PO receipt: the supplier whose POs are SENT or partly received. Required.",
+        "id": "Langkah 1 penerimaan PO: supplier yang POnya berstatus SENT atau sebagian diterima. Wajib."
+      },
+      {
+        "label": "Receiving Warehouse",
+        "en": "Warehouse that receives the goods, from the warehouse master. Required when creating a PO receipt.",
+        "id": "Gudang penerima barang, dari master gudang. Wajib saat membuat penerimaan PO."
+      },
+      {
+        "label": "Arriving PO lines",
+        "en": "Tick the PO lines that arrive now. Only lines with remaining quantity are listed. Required.",
+        "id": "Centang baris PO yang datang sekarang. Hanya baris yang masih punya sisa qty yang tampil. Wajib."
+      },
+      {
+        "label": "Customer Order",
+        "en": "From Customer: the Customer Order the customer material is for. Mandatory. The material is not company stock, so no stock value and no journal.",
+        "id": "From Customer: Customer Order tujuan bahan dari customer. Wajib. Bahan ini bukan stok perusahaan, jadi tanpa nilai stok dan tanpa jurnal."
+      },
+      {
+        "label": "Stored At (optional)",
+        "en": "From Customer: warehouse where the customer material is kept. Optional.",
+        "id": "From Customer: gudang tempat bahan customer disimpan. Opsional."
+      },
+      {
+        "label": "Subcontractor",
+        "en": "From Subcon: the subcontractor returning goods, who has sent Subcon POs. Required.",
+        "id": "From Subcon: subkon yang mengembalikan barang dan punya PO Subkon terkirim. Wajib."
+      },
+      {
+        "label": "Subcon Delivery Note (optional)",
+        "en": "From Subcon: our own delivery note that sent the goods to the subcontractor. Optional.",
+        "id": "From Subcon: surat jalan kita yang mengirim barang ke subkon. Opsional."
+      },
+      {
+        "label": "Subcon PO lines coming back",
+        "en": "From Subcon: tick the open Subcon PO lines whose goods come back. Required.",
+        "id": "From Subcon: centang baris PO Subkon yang masih terbuka dan barangnya kembali. Wajib."
+      },
+      {
+        "label": "Receipt Date",
+        "en": "Date goods were received. Also called Received Date on customer and subcon receipts.",
+        "id": "Tanggal barang diterima. Pada penerimaan customer dan subkon bernama Received Date."
+      },
+      {
+        "label": "Supplier Delivery Note No.",
+        "en": "Number of the delivery note brought by the supplier (Customer or Subcon delivery note number on those types).",
+        "id": "Nomor surat jalan yang dibawa supplier (nomor surat jalan customer atau subkon untuk jenis tersebut)."
+      },
+      {
+        "label": "No. Kendaraan",
+        "en": "Vehicle plate number of the delivery (Vehicle No. on customer and subcon receipts).",
+        "id": "Nomor polisi kendaraan pengantar (Vehicle No. pada penerimaan customer dan subkon)."
+      },
+      {
+        "label": "PO",
+        "en": "PO numbers on this receipt. Filled by the system from the chosen lines. Read only.",
+        "id": "Nomor PO di penerimaan ini. Diisi sistem dari baris yang dipilih. Hanya dibaca."
+      },
+      {
+        "label": "Diposting",
+        "en": "Date, time and user of posting (Posted on customer and subcon receipts). Filled on Confirm. Read only.",
+        "id": "Tanggal, jam dan user saat diposting (Posted pada penerimaan customer dan subkon). Terisi saat Confirm. Hanya dibaca."
+      },
+      {
+        "label": "Receipt notes",
+        "en": "Free notes about the receipt (Receipt Notes on customer and subcon receipts).",
+        "id": "Catatan bebas tentang penerimaan (Receipt Notes pada penerimaan customer dan subkon)."
+      },
+      {
+        "label": "Journal",
+        "en": "Subcon receipts only: the accounting vouchers created when posting. Read only.",
+        "id": "Hanya penerimaan Subcon: voucher akuntansi yang dibuat saat posting. Hanya dibaca."
+      },
+      {
+        "label": "Qty Beli",
+        "en": "Received quantity in the purchase unit (Sat. Beli).",
+        "id": "Jumlah diterima dalam satuan beli (Sat. Beli)."
+      },
+      {
+        "label": "Qty Stok",
+        "en": "Received quantity in the stock unit (Sat. Stok), used for the stock entry.",
+        "id": "Jumlah diterima dalam satuan stok (Sat. Stok), dipakai untuk catatan stok."
+      },
+      {
+        "label": "QC Qty",
+        "en": "Set to Selesai once the counted quantity has been checked. Required before Confirm on a PO receipt.",
+        "id": "Set ke Selesai setelah jumlah yang dihitung dicek. Wajib sebelum Confirm pada penerimaan PO."
+      },
+      {
+        "label": "QC Kualitas",
+        "en": "Quality result: Pending, Pass, Fail or Partial. Pending blocks Confirm.",
+        "id": "Hasil kualitas: Pending, Pass, Fail atau Partial. Pending menghalangi Confirm."
+      },
+      {
+        "label": "Qty Received (Partial)",
+        "en": "For Partial quality: the quantity accepted.",
+        "id": "Untuk kualitas Partial: jumlah yang diterima baik."
+      },
+      {
+        "label": "Qty Rejected (Partial)",
+        "en": "For Partial quality: the quantity rejected. Rejected quantity can later be returned in Purchase Return.",
+        "id": "Untuk kualitas Partial: jumlah yang ditolak. Jumlah ditolak nanti bisa diretur di Purchase Return."
+      },
+      {
+        "label": "Selisih vs PO",
+        "en": "Difference between received and PO quantity in percent and the allowed tolerance. Shows MELAMPAUI when out of tolerance. Read only.",
+        "id": "Selisih jumlah diterima dengan PO dalam persen beserta toleransi yang diizinkan. Tampil MELAMPAUI bila di luar toleransi. Hanya dibaca."
+      },
+      {
+        "label": "Tolerance Override Reason",
+        "en": "Reason for accepting a quantity outside the PO tolerance. Needed to allow Confirm in that case.",
+        "id": "Alasan menerima jumlah di luar toleransi PO. Dibutuhkan agar Confirm bisa dilakukan dalam kasus itu."
+      },
+      {
+        "label": "No. Lot",
+        "en": "Lot or roll number of the received goods (Lot / Roll No. on customer receipts).",
+        "id": "Nomor lot atau roll barang yang diterima (Lot / Roll No. pada penerimaan customer)."
+      },
+      {
+        "label": "Rack Location",
+        "en": "Warehouse rack location where the goods are put away.",
+        "id": "Lokasi rak gudang tempat barang disimpan."
+      },
+      {
+        "label": "CO Item",
+        "en": "Customer receipts: the Customer Order item the material is for.",
+        "id": "Penerimaan customer: item Customer Order yang memakai bahan ini."
+      },
+      {
+        "label": "Material (as delivered)",
+        "en": "Customer receipts: description of the material exactly as delivered. Required.",
+        "id": "Penerimaan customer: uraian bahan persis seperti yang dikirim. Wajib."
+      },
+      {
+        "label": "Master Material (if any)",
+        "en": "Customer receipts: link to a material in the master if one exists.",
+        "id": "Penerimaan customer: tautan ke bahan di master bila ada."
+      },
+      {
+        "label": "Qty Received",
+        "en": "Customer and subcon receipts: quantity received. Required.",
+        "id": "Penerimaan customer dan subkon: jumlah diterima. Wajib."
+      },
+      {
+        "label": "Sent To (next process)",
+        "en": "Subcon receipts: the process the returning goods go to next.",
+        "id": "Penerimaan subkon: proses tujuan berikutnya barang yang kembali."
+      },
+      {
+        "label": "Our Delivery Note (to subcon)",
+        "en": "Subcon receipts: our delivery note that sent the goods out. Read only.",
+        "id": "Penerimaan subkon: surat jalan kita yang mengirim barang keluar. Hanya dibaca."
+      },
+      {
+        "label": "Shortage found later",
+        "en": "Subcon receipts: quantity and note of a shortage recorded after posting. Read only.",
+        "id": "Penerimaan subkon: jumlah dan catatan kekurangan yang dicatat setelah posting. Hanya dibaca."
+      },
+      {
+        "label": "+ Other PO lines from this supplier",
+        "en": "Draft PO receipts: pick more open PO lines of the same supplier and click + Add PO Line to add them.",
+        "id": "Penerimaan PO Draft: pilih baris PO terbuka lain milik supplier yang sama lalu klik + Add PO Line untuk menambahkannya."
+      },
+      {
+        "label": "Line",
+        "en": "Report Shortage: the receipt line where the shortage was found. Required.",
+        "id": "Report Shortage: baris penerimaan tempat kekurangan ditemukan. Wajib."
+      },
+      {
+        "label": "Short Qty",
+        "en": "Report Shortage: missing quantity. It lowers the received quantity; the Subcon PO and journal are corrected. Required.",
+        "id": "Report Shortage: jumlah yang kurang. Mengurangi qty diterima; PO Subkon dan jurnal dikoreksi. Wajib."
+      },
+      {
+        "label": "Found At / Remark",
+        "en": "Report Shortage: where and how the shortage was found, for example counted at gluing. Required.",
+        "id": "Report Shortage: di mana dan bagaimana kekurangan ditemukan, misalnya dihitung di bagian lem. Wajib."
+      },
+      {
+        "label": "Status",
+        "en": "Receipt status in the grid: DRAFT, QC_PENDING, POSTED or CANCELLED. Set by the system.",
+        "id": "Status penerimaan di grid: DRAFT, QC_PENDING, POSTED atau CANCELLED. Diatur sistem."
+      }
+    ]
+  },
+  {
+    "key": "purchase-return",
+    "type": "INPUT",
+    "module": "PROC",
+    "title": "Purchase Return",
+    "purpose": {
+      "en": "Return goods to a supplier, either items rejected by QC at receiving or goods already in stock that turned out to be a problem. Open it to record the return, get approval and follow the credit note or replacement.",
+      "id": "Mengembalikan barang ke supplier, baik barang yang ditolak QC saat penerimaan maupun barang di gudang yang bermasalah belakangan. Buka untuk mencatat retur, meminta approval dan memantau credit note atau barang pengganti."
+    },
+    "keywords": "retur, return, purchase return, retur pembelian, nota retur, retur supplier, barang reject, credit note, ganti barang, qc reject, prt",
+    "steps": [
+      {
+        "en": "Click + New Record and choose the source: Dari PV (QC Reject) for goods rejected at receiving, or Dari Stok for goods already in stock.",
+        "id": "Klik + New Record lalu pilih sumbernya: Dari PV (QC Reject) untuk barang yang ditolak saat penerimaan, atau Dari Stok untuk barang yang sudah di gudang."
+      },
+      {
+        "en": "Dari PV: click a receipt (PV) that has rejected quantity. Dari Stok: type at least 2 letters of the supplier name or code and click the supplier. A Draft return is created and opened.",
+        "id": "Dari PV: klik penerimaan (PV) yang punya qty reject. Dari Stok: ketik minimal 2 huruf nama atau kode supplier lalu klik supplier. Retur Draft dibuat dan dibuka."
+      },
+      {
+        "en": "Add lines: from a PV, click Tambah beside a rejected line; from stock, search an item by code or name and click it. Then set Lot, Qty Retur and, for stock items, the price.",
+        "id": "Tambah baris: dari PV, klik Tambah di samping baris reject; dari stok, cari item dengan kode atau nama lalu klik. Lalu isi Lot, Qty Retur dan, untuk item stok, harganya."
+      },
+      {
+        "en": "Fill the return date, Disposisi (Credit Note or Ganti Barang) and Alasan Utama, then the follow-up details if known.",
+        "id": "Isi tanggal retur, Disposisi (Credit Note atau Ganti Barang) dan Alasan Utama, lalu rincian follow-up bila sudah ada."
+      },
+      {
+        "en": "Click Ajukan Persetujuan. The return number is issued and the return goes to approval. It needs at least one line, a reason and a disposition. A Draft can be cancelled with a reason of at least 10 characters.",
+        "id": "Klik Ajukan Persetujuan. Nomor retur terbit dan retur masuk approval. Wajib ada minimal satu baris, alasan dan disposisi. Draft bisa dibatalkan dengan alasan minimal 10 karakter."
+      },
+      {
+        "en": "The approver decides on this form or in Purchase Return Approval Center. When the status is CONFIRMED, click Tandai Selesai once the replacement goods or credit note have been received.",
+        "id": "Approver memutuskan di form ini atau di Purchase Return Approval Center. Saat status CONFIRMED, klik Tandai Selesai setelah barang pengganti atau credit note diterima."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Supplier",
+        "en": "Supplier receiving the return. Taken from the PV or the supplier you picked. Read only.",
+        "id": "Supplier penerima retur. Diambil dari PV atau supplier yang dipilih. Hanya dibaca."
+      },
+      {
+        "label": "Tanggal Retur",
+        "en": "Date of the return. Defaults to today and can be changed while Draft.",
+        "id": "Tanggal retur. Default hari ini dan bisa diubah selama Draft."
+      },
+      {
+        "label": "Ref. PV",
+        "en": "The goods receipt (PV) the rejected items come from. Only for returns made from a PV. Read only.",
+        "id": "Penerimaan barang (PV) asal barang yang ditolak. Hanya untuk retur dari PV. Hanya dibaca."
+      },
+      {
+        "label": "QC Inspector",
+        "en": "Name of the QC inspector who rejected the goods. Only for returns made from a PV.",
+        "id": "Nama inspektur QC yang menolak barang. Hanya untuk retur dari PV."
+      },
+      {
+        "label": "Disposisi *",
+        "en": "How the return is settled: Credit Note (value credited by the supplier) or Ganti Barang (replacement goods). Required.",
+        "id": "Cara penyelesaian retur: Credit Note (nilai dikreditkan supplier) atau Ganti Barang (barang pengganti). Wajib."
+      },
+      {
+        "label": "Batas Waktu Pengganti",
+        "en": "Deadline for the supplier to deliver the replacement. Shown only when Disposisi is Ganti Barang.",
+        "id": "Batas waktu supplier mengirim barang pengganti. Tampil hanya bila Disposisi adalah Ganti Barang."
+      },
+      {
+        "label": "Alasan Utama *",
+        "en": "Main reason for the return. Required before submitting.",
+        "id": "Alasan utama retur. Wajib sebelum diajukan."
+      },
+      {
+        "label": "Lot",
+        "en": "Lot number of the returned goods on the line.",
+        "id": "Nomor lot barang yang diretur pada baris."
+      },
+      {
+        "label": "Qty Retur",
+        "en": "Quantity returned. For lines from a PV it starts at the quantity rejected and not yet returned.",
+        "id": "Jumlah yang diretur. Untuk baris dari PV, dimulai dari qty reject yang belum diretur."
+      },
+      {
+        "label": "Harga",
+        "en": "Unit price. Taken from the receipt for PV lines; editable for items taken from stock (starts from the last unit price).",
+        "id": "Harga satuan. Diambil dari penerimaan untuk baris dari PV; bisa diubah untuk item dari stok (mulai dari harga satuan terakhir)."
+      },
+      {
+        "label": "Nilai Retur",
+        "en": "Qty Retur x Harga per line; the total is the credit value. Calculated automatically.",
+        "id": "Qty Retur x Harga per baris; totalnya adalah nilai kredit. Dihitung otomatis."
+      },
+      {
+        "label": "Metode Komunikasi",
+        "en": "How the supplier was informed, for example Email, Telp or WA.",
+        "id": "Cara supplier diberi tahu, misalnya Email, Telp atau WA."
+      },
+      {
+        "label": "PIC Supplier",
+        "en": "Contact person at the supplier handling the return.",
+        "id": "Penanggung jawab di supplier yang menangani retur."
+      },
+      {
+        "label": "Tgl Kirim Fisik",
+        "en": "Date the goods were physically sent back to the supplier.",
+        "id": "Tanggal barang dikirim fisik kembali ke supplier."
+      },
+      {
+        "label": "Ekspedisi",
+        "en": "Courier or transport used to send the goods back.",
+        "id": "Ekspedisi atau pengangkut yang dipakai mengirim barang kembali."
+      },
+      {
+        "label": "No. CN Supplier",
+        "en": "Credit note number issued by the supplier. Shown only when Disposisi is Credit Note.",
+        "id": "Nomor credit note dari supplier. Tampil hanya bila Disposisi adalah Credit Note."
+      },
+      {
+        "label": "Tgl CN Diterima",
+        "en": "Date the credit note was received. Shown only when Disposisi is Credit Note.",
+        "id": "Tanggal credit note diterima. Tampil hanya bila Disposisi adalah Credit Note."
+      },
+      {
+        "label": "Catatan / Kronologi",
+        "en": "Free notes or the chronology of the problem and follow-up.",
+        "id": "Catatan bebas atau kronologi masalah dan tindak lanjutnya."
+      },
+      {
+        "label": "Alasan pembatalan",
+        "en": "Reason typed when cancelling a Draft return. At least 10 characters.",
+        "id": "Alasan yang diketik saat membatalkan retur Draft. Minimal 10 karakter."
+      },
+      {
+        "label": "Catatan",
+        "en": "Note for the approval decision. Required for Tolak and for Minta Info (hold); Tolak needs at least 10 characters.",
+        "id": "Catatan untuk keputusan approval. Wajib untuk Tolak dan Minta Info (tahan); Tolak minimal 10 karakter."
+      },
+      {
+        "label": "Status",
+        "en": "Return status in the grid: DRAFT, SUBMITTED (waiting for approval), CONFIRMED, COMPLETED or CANCELLED. Set by the system.",
+        "id": "Status retur di grid: DRAFT, SUBMITTED (menunggu approval), CONFIRMED, COMPLETED atau CANCELLED. Diatur sistem."
+      }
+    ]
+  },
+  {
+    "key": "approval-prt",
+    "type": "INPUT",
+    "module": "PROC",
+    "title": "Purchase Return Approval Center",
+    "purpose": {
+      "en": "Lists the Purchase Returns waiting for your decision. Open it when you are an approver for returns to suppliers and need to Approve, Reject or Hold them.",
+      "id": "Menampilkan Purchase Return yang menunggu keputusan Anda. Buka saat Anda approver retur ke supplier dan perlu menyetujui (Setujui), menolak (Tolak) atau menahan (Tahan) retur."
+    },
+    "keywords": "approval retur, purchase return approval, setujui retur, persetujuan retur, approve return, retur supplier, tolak, tahan, hold, prt",
+    "steps": [
+      {
+        "en": "Open the screen. The list shows returns whose current approval level is assigned to you (or to you as acting officer, PLT).",
+        "id": "Buka layar ini. Daftar berisi retur yang level approval-nya sedang menunggu Anda (atau Anda sebagai officer pengganti, PLT)."
+      },
+      {
+        "en": "Click a return to read the summary, lines, approval flow and history. Use the arrow link next to the title to open the full return form.",
+        "id": "Klik sebuah retur untuk membaca ringkasan, baris, alur approval dan riwayatnya. Pakai tautan panah di samping judul untuk membuka form retur lengkap."
+      },
+      {
+        "en": "Click Setujui to approve. The return moves to the next level or becomes CONFIRMED when yours is the last level.",
+        "id": "Klik Setujui untuk menyetujui. Retur lanjut ke level berikutnya atau menjadi CONFIRMED bila Anda level terakhir."
+      },
+      {
+        "en": "Click Tolak to reject. A reason is required (at least 10 characters for a return) and asked in a confirmation dialog.",
+        "id": "Klik Tolak untuk menolak. Alasan wajib diisi (minimal 10 karakter untuk retur) dan diminta di dialog konfirmasi."
+      },
+      {
+        "en": "Click Tahan to hold the return and ask for more information. A reason is required. The return stays in your list.",
+        "id": "Klik Tahan untuk menahan retur dan meminta informasi tambahan. Alasan wajib diisi. Retur tetap di daftar Anda."
+      },
+      {
+        "en": "Check Log Keputusan for your own recent decisions with time, level and reason.",
+        "id": "Lihat Log Keputusan untuk keputusan Anda sebelumnya lengkap dengan waktu, level dan alasan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Supplier",
+        "en": "Supplier receiving the return, shown in the summary. Read only.",
+        "id": "Supplier penerima retur, tampil di ringkasan. Hanya dibaca."
+      },
+      {
+        "label": "Nilai Retur",
+        "en": "Total credit value of the return. It decides the approval path. Read only.",
+        "id": "Total nilai kredit retur. Menentukan alur approval. Hanya dibaca."
+      },
+      {
+        "label": "Disposisi",
+        "en": "How the return is settled: Credit Note or Replacement. Read only.",
+        "id": "Cara penyelesaian retur: Credit Note atau Replacement. Hanya dibaca."
+      },
+      {
+        "label": "Alasan",
+        "en": "Main reason of the return written by the requester. Read only.",
+        "id": "Alasan utama retur yang ditulis pembuat. Hanya dibaca."
+      },
+      {
+        "label": "Jumlah Item",
+        "en": "Number of lines in the return. Read only.",
+        "id": "Jumlah baris di retur. Hanya dibaca."
+      },
+      {
+        "label": "Item",
+        "en": "Line table: Item, Qty Retur, Satuan, Harga/Unit and Nilai. Read only.",
+        "id": "Tabel baris: Item, Qty Retur, Satuan, Harga/Unit dan Nilai. Hanya dibaca."
+      },
+      {
+        "label": "Alur approval",
+        "en": "Shows the creator and each approval level with who decided and when, and which level is waiting. A PLT badge marks an acting officer.",
+        "id": "Menampilkan pembuat dan tiap level approval beserta siapa yang memutuskan dan kapan, serta level mana yang menunggu. Lencana PLT menandai officer pengganti."
+      },
+      {
+        "label": "Alasan (Tolak / Tahan)",
+        "en": "Reason typed in the confirmation dialog when you click Tolak or Tahan. Mandatory; saved in the document history and your Log Keputusan.",
+        "id": "Alasan yang diketik di dialog konfirmasi saat klik Tolak atau Tahan. Wajib; tersimpan di riwayat dokumen dan Log Keputusan Anda."
+      }
+    ]
+  },
+  {
+    "key": "pur-rpt-outstanding-pr",
+    "type": "REPORT",
+    "module": "PROC",
+    "title": "Outstanding PR",
+    "purpose": {
+      "en": "Shows approved PR lines that are not fully ordered yet, with the remaining quantity and value. Open it to see what Purchasing still has to turn into POs and which requests are getting old.",
+      "id": "Menampilkan baris PR yang sudah disetujui tetapi belum habis dipesan, lengkap dengan sisa qty dan nilainya. Buka untuk melihat apa yang masih harus dijadikan PO oleh Purchasing dan permintaan mana yang sudah lama."
+    },
+    "keywords": "outstanding pr, pr belum jadi po, sisa pr, pr outstanding, requisition outstanding, laporan pr, pr belum diproses, aging pr, umur pr",
+    "steps": [
+      {
+        "en": "Open the report. It lists one row per PR line that is APPROVED or PARTIALLY_ORDERED, not cancelled, with quantity still remaining.",
+        "id": "Buka laporan. Isinya satu baris per baris PR yang APPROVED atau PARTIALLY_ORDERED, tidak dibatalkan, dan masih punya sisa qty."
+      },
+      {
+        "en": "Click a box above the grid (Not ordered yet, Partially ordered, Older than 30 days) to filter quickly.",
+        "id": "Klik kotak di atas grid (Not ordered yet, Partially ordered, Older than 30 days) untuk menyaring dengan cepat."
+      },
+      {
+        "en": "Use the search box for PR number, item or department, and the Department, Age and PR Status filters.",
+        "id": "Pakai kotak pencarian untuk nomor PR, item atau departemen, serta filter Department, Age dan PR Status."
+      },
+      {
+        "en": "Group by PR No, Department or Age to get subtotals of Qty, Ordered, Remaining and Est. Value.",
+        "id": "Kelompokkan menurut PR No, Department atau Age untuk mendapat subtotal Qty, Ordered, Remaining dan Est. Value."
+      }
+    ],
+    "fields": [
+      {
+        "label": "PR No",
+        "en": "Number of the requisition the line belongs to.",
+        "id": "Nomor requisition tempat baris ini berada."
+      },
+      {
+        "label": "Date",
+        "en": "PR date.",
+        "id": "Tanggal PR."
+      },
+      {
+        "label": "Department",
+        "en": "Requesting department.",
+        "id": "Departemen peminta."
+      },
+      {
+        "label": "Item",
+        "en": "Item description with its item code.",
+        "id": "Uraian item beserta kodenya."
+      },
+      {
+        "label": "Need Date",
+        "en": "Date the line is needed.",
+        "id": "Tanggal baris ini dibutuhkan."
+      },
+      {
+        "label": "UoM",
+        "en": "Unit of measure of the line.",
+        "id": "Satuan baris."
+      },
+      {
+        "label": "Qty",
+        "en": "Quantity requested. Subtotalled when grouped.",
+        "id": "Jumlah yang diminta. Disubtotal saat dikelompokkan."
+      },
+      {
+        "label": "Ordered",
+        "en": "Quantity already put on POs.",
+        "id": "Jumlah yang sudah masuk PO."
+      },
+      {
+        "label": "Remaining",
+        "en": "Qty minus Ordered, the quantity still to be ordered.",
+        "id": "Qty dikurangi Ordered, jumlah yang masih harus dipesan."
+      },
+      {
+        "label": "Est. Value",
+        "en": "Remaining quantity x the estimated price of the line.",
+        "id": "Sisa qty x harga perkiraan baris."
+      },
+      {
+        "label": "Age",
+        "en": "How old the PR is, counted from the PR date: 0-7 days, 8-30 days or > 30 days.",
+        "id": "Umur PR sejak tanggal PR: 0-7 days, 8-30 days atau > 30 days."
+      },
+      {
+        "label": "PR Status",
+        "en": "APPROVED (nothing ordered yet) or PARTIALLY_ORDERED.",
+        "id": "APPROVED (belum ada yang dipesan) atau PARTIALLY_ORDERED."
+      },
+      {
+        "label": "Filter: Department",
+        "en": "Show only the lines of one department.",
+        "id": "Tampilkan hanya baris satu departemen."
+      },
+      {
+        "label": "Filter: Age",
+        "en": "Show only one age bucket.",
+        "id": "Tampilkan hanya satu kelompok umur."
+      },
+      {
+        "label": "Filter: PR Status",
+        "en": "Show only APPROVED or only PARTIALLY_ORDERED lines.",
+        "id": "Tampilkan hanya baris APPROVED atau hanya PARTIALLY_ORDERED."
+      },
+      {
+        "label": "Group by PR No / Department / Age",
+        "en": "Group rows by PR number, department or age bucket, with subtotals per group.",
+        "id": "Kelompokkan baris menurut nomor PR, departemen atau umur, dengan subtotal tiap kelompok."
+      }
+    ]
+  },
+  {
+    "key": "pur-rpt-outstanding-po",
+    "type": "REPORT",
+    "module": "PROC",
+    "title": "Outstanding PO",
+    "purpose": {
+      "en": "Shows PO lines that were sent to suppliers but whose goods have not fully arrived, with the remaining quantity, value and late deliveries. Open it to chase suppliers.",
+      "id": "Menampilkan baris PO yang sudah dikirim ke supplier tetapi barangnya belum datang seluruhnya, lengkap dengan sisa qty, nilai dan pengiriman yang terlambat. Buka untuk menagih supplier."
+    },
+    "keywords": "outstanding po, po belum datang, sisa po, po outstanding, barang belum diterima, pengiriman terlambat, late delivery, laporan po, tagih supplier",
+    "steps": [
+      {
+        "en": "Open the report. It lists one row per receivable PO line of POs that are SENT or PARTIALLY_RECEIVED, not cancelled, with quantity still to receive.",
+        "id": "Buka laporan. Isinya satu baris per baris PO yang bisa diterima, dari PO berstatus SENT atau PARTIALLY_RECEIVED, tidak dibatalkan, dan masih ada sisa qty."
+      },
+      {
+        "en": "Click a box above the grid (Waiting, Partially received, Late) to filter quickly.",
+        "id": "Klik kotak di atas grid (Waiting, Partially received, Late) untuk menyaring dengan cepat."
+      },
+      {
+        "en": "Use the search box for PO number, supplier or item, and the Supplier, Late and PO Status filters.",
+        "id": "Pakai kotak pencarian untuk nomor PO, supplier atau item, serta filter Supplier, Late dan PO Status."
+      },
+      {
+        "en": "Group by PO No or Supplier to get subtotals of Qty, Received, Remaining and Outstanding Value.",
+        "id": "Kelompokkan menurut PO No atau Supplier untuk mendapat subtotal Qty, Received, Remaining dan Outstanding Value."
+      }
+    ],
+    "fields": [
+      {
+        "label": "PO No",
+        "en": "Number of the PO the line belongs to.",
+        "id": "Nomor PO tempat baris ini berada."
+      },
+      {
+        "label": "Date",
+        "en": "PO date.",
+        "id": "Tanggal PO."
+      },
+      {
+        "label": "Supplier",
+        "en": "Supplier of the PO.",
+        "id": "Supplier PO."
+      },
+      {
+        "label": "Item",
+        "en": "Item description with its item code.",
+        "id": "Uraian item beserta kodenya."
+      },
+      {
+        "label": "Delivery Date",
+        "en": "Promised delivery date of the PO.",
+        "id": "Tanggal kirim yang dijanjikan di PO."
+      },
+      {
+        "label": "UoM",
+        "en": "Unit of measure of the line.",
+        "id": "Satuan baris."
+      },
+      {
+        "label": "Qty",
+        "en": "Quantity ordered. Subtotalled when grouped.",
+        "id": "Jumlah yang dipesan. Disubtotal saat dikelompokkan."
+      },
+      {
+        "label": "Received",
+        "en": "Quantity already received in Purchase Receive.",
+        "id": "Jumlah yang sudah diterima di Purchase Receive."
+      },
+      {
+        "label": "Remaining",
+        "en": "Qty minus Received, the quantity still expected.",
+        "id": "Qty dikurangi Received, jumlah yang masih ditunggu."
+      },
+      {
+        "label": "Outstanding Value",
+        "en": "Value of the remaining quantity: the share of the line net amount that is still not received.",
+        "id": "Nilai sisa qty: bagian dari nilai bersih baris yang belum diterima."
+      },
+      {
+        "label": "Late",
+        "en": "Marked Late when the Delivery Date has passed and goods are still outstanding.",
+        "id": "Bertanda Late bila Delivery Date sudah lewat dan barang masih belum datang."
+      },
+      {
+        "label": "PO Status",
+        "en": "SENT (nothing received yet) or PARTIALLY_RECEIVED.",
+        "id": "SENT (belum ada yang diterima) atau PARTIALLY_RECEIVED."
+      },
+      {
+        "label": "Filter: Supplier",
+        "en": "Show only the lines of one supplier.",
+        "id": "Tampilkan hanya baris satu supplier."
+      },
+      {
+        "label": "Filter: Late",
+        "en": "Show only the late lines.",
+        "id": "Tampilkan hanya baris yang terlambat."
+      },
+      {
+        "label": "Filter: PO Status",
+        "en": "Show only SENT or only PARTIALLY_RECEIVED lines.",
+        "id": "Tampilkan hanya baris SENT atau hanya PARTIALLY_RECEIVED."
+      },
+      {
+        "label": "Group by PO No / Supplier",
+        "en": "Group rows by PO number or supplier, with subtotals per group.",
+        "id": "Kelompokkan baris menurut nomor PO atau supplier, dengan subtotal tiap kelompok."
+      }
+    ]
+  },
+  {
+    "key": "pur-rpt-outstanding-pv",
+    "type": "REPORT",
+    "module": "PROC",
+    "title": "Outstanding PV",
+    "purpose": {
+      "en": "Shows posted goods receipts (SPB / PV) whose paperwork has not been handed over to Finance yet, with how many days they have been waiting. Open it to chase missing documents before invoices are processed.",
+      "id": "Menampilkan penerimaan barang (SPB / PV) yang sudah diposting tetapi dokumennya belum diserahkan ke Finance, lengkap dengan lama menunggu. Buka untuk menagih dokumen yang belum lengkap sebelum faktur diproses."
+    },
+    "keywords": "outstanding pv, spb belum diserahkan, dokumen belum diserahkan finance, pv outstanding, penerimaan barang belum serah terima, handover finance, laporan spb, aging spb",
+    "steps": [
+      {
+        "en": "Open the report. It lists one row per POSTED receipt that is not yet marked as handed over to Finance, oldest first.",
+        "id": "Buka laporan. Isinya satu baris per penerimaan POSTED yang belum ditandai diserahkan ke Finance, dari yang paling lama."
+      },
+      {
+        "en": "Click a box above the grid (0-7 days, 8-30 days, > 30 days) to see only one waiting-time group.",
+        "id": "Klik kotak di atas grid (0-7 days, 8-30 days, > 30 days) untuk melihat satu kelompok lama menunggu saja."
+      },
+      {
+        "en": "Use the search box for PV number, supplier or PO, and the Supplier, Receipt Type and Age filters.",
+        "id": "Pakai kotak pencarian untuk nomor PV, supplier atau PO, serta filter Supplier, Receipt Type dan Age."
+      },
+      {
+        "en": "A receipt leaves this report once it is marked as handed over to Finance. The report itself is read only.",
+        "id": "Penerimaan keluar dari laporan ini setelah ditandai sudah diserahkan ke Finance. Laporan ini sendiri hanya untuk dibaca."
+      }
+    ],
+    "fields": [
+      {
+        "label": "PV No",
+        "en": "Number of the goods receipt (SPB).",
+        "id": "Nomor penerimaan barang (SPB)."
+      },
+      {
+        "label": "Date",
+        "en": "Receipt date.",
+        "id": "Tanggal penerimaan."
+      },
+      {
+        "label": "Receipt Type",
+        "en": "Where the receipt came from: PO, or the special types for customer material and subcontract returns.",
+        "id": "Asal penerimaan: PO, atau jenis khusus untuk bahan customer dan barang kembali dari subkon."
+      },
+      {
+        "label": "Supplier",
+        "en": "Supplier (or subcontractor) of the receipt.",
+        "id": "Supplier (atau subkon) pada penerimaan."
+      },
+      {
+        "label": "PO",
+        "en": "PO numbers the receipt belongs to.",
+        "id": "Nomor PO yang terkait dengan penerimaan."
+      },
+      {
+        "label": "Supplier DO",
+        "en": "Delivery note number from the supplier written on the receipt.",
+        "id": "Nomor surat jalan dari supplier yang tercatat di penerimaan."
+      },
+      {
+        "label": "Days Waiting",
+        "en": "Number of days since the receipt date.",
+        "id": "Jumlah hari sejak tanggal penerimaan."
+      },
+      {
+        "label": "Age",
+        "en": "Waiting-time group: 0-7 days, 8-30 days or > 30 days.",
+        "id": "Kelompok lama menunggu: 0-7 days, 8-30 days atau > 30 days."
+      },
+      {
+        "label": "Filter: Supplier",
+        "en": "Show only the receipts of one supplier.",
+        "id": "Tampilkan hanya penerimaan satu supplier."
+      },
+      {
+        "label": "Filter: Receipt Type",
+        "en": "Show only one receipt type.",
+        "id": "Tampilkan hanya satu jenis penerimaan."
+      },
+      {
+        "label": "Filter: Age",
+        "en": "Show only one waiting-time group.",
+        "id": "Tampilkan hanya satu kelompok lama menunggu."
+      }
+    ]
+  }
+]

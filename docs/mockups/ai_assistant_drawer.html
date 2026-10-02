@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Asisten AI - drawer (mockup)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="../../packages/devlib/resources/assets/devlib.css">
+<style>
+    body{margin:0;background:var(--dl-surface-alt);font-family:var(--dl-font);color:var(--dl-ink)}
+    .wrap{display:flex;gap:26px;padding:22px 26px;align-items:flex-start}
+    .col{width:400px;flex:none}
+    .cap{font-weight:800;color:var(--dl-ink-strong);margin:0 0 8px;font-size:15px}
+    .cap small{display:block;font-weight:500;color:var(--dl-muted);font-size:12px;margin-top:2px}
+    /* drawer yang sama dengan .dl-drawer DevLib, hanya ditaruh diam di halaman supaya tiga keadaan terlihat berdampingan */
+    .dr{position:relative;width:400px;height:800px;background:var(--dl-surface);box-shadow:0 8px 30px rgba(15,22,45,.16);display:flex;flex-direction:column;border-radius:4px;overflow:hidden}
+    .dl-ai{gap:9px}
+    .dl-ai__msg{font-size:13px}
+    .card{align-self:flex-start;max-width:92%;background:var(--dl-violet-msg);border-radius:12px;border-bottom-left-radius:4px;padding:11px 13px;font-size:13px;line-height:1.45;color:var(--dl-ink-strong)}
+    .card h5{margin:0 0 2px;font-size:12px;font-weight:700;color:var(--dl-violet-ink)}
+    .big{font-size:22px;font-weight:800;letter-spacing:-.01em}
+    .def{margin-top:6px;font-size:11.5px;color:var(--dl-muted)}
+    .rows{margin:6px 0 2px;border-top:1px solid var(--dl-violet-line)}
+    .rows div{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px solid var(--dl-violet-line)}
+    .rows b{font-variant-numeric:tabular-nums}
+    .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+    .fb{align-self:flex-start;display:flex;gap:10px;color:var(--dl-muted);font-size:12px;margin:-3px 0 2px 6px}
+    .src{align-self:flex-start;font-size:11px;color:var(--dl-muted);margin:-4px 0 0 6px}
+    ol{margin:4px 0 0;padding-left:18px}
+    ol li{margin-bottom:3px}
+    .inbox{flex:1;display:flex;align-items:center;gap:4px;border:1px solid var(--dl-border);border-radius:20px;padding:3px 6px 3px 12px;background:var(--dl-surface)}
+    .inbox span{flex:1;color:var(--dl-muted);font-size:13px}
+    .inbox em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--dl-muted);border:1px solid var(--dl-border);border-radius:5px;padding:1px 5px}
+    .foot{display:flex;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid var(--dl-border)}
+    .foot button{width:38px;height:38px;border-radius:50%;border:none;background:var(--dl-violet);color:#fff;flex:none}
+    .typing{align-self:flex-start;background:var(--dl-violet-msg);border-radius:12px;padding:9px 13px;color:var(--dl-violet-ink);font-size:12.5px}
+    .legend{width:400px;margin-top:10px;font-size:12px;color:var(--dl-muted);line-height:1.5}
+    .legend b{color:var(--dl-ink-strong)}
+    .status{font-size:11px;color:var(--dl-green);margin-left:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+    <!-- 1. Direksi: angka -->
+    <div class="col">
+        <p class="cap">1. Direksi bertanya angka<small>Login: Direksi (level 5). Angka dihitung program, bukan AI.</small></p>
+        <div class="dr">
+            <div class="dl-dr-head"><i class="fa-solid fa-wand-magic-sparkles dl-dr-ico dl-dr-ico--ai"></i><span class="dl-dr-title">Asisten AI</span><span class="status"><i class="fa-solid fa-circle" style="font-size:7px"></i> lokal, tanpa internet</span><button type="button" class="dl-dr-x"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="dl-ai">
+                <div class="dl-ai__intro">Selamat siang, Bu Puspita. Tanyakan dengan bahasa biasa: angka hari ini, letak sebuah layar, atau cara memakai layar.
+                    <div class="dl-ai__chips"><button class="dl-ai__chip">Sales hari ini</button><button class="dl-ai__chip">Nilai deadstock</button><button class="dl-ai__chip">Order belum terkirim</button><button class="dl-ai__chip">Menunggu approval saya</button></div>
+                </div>
+                <div class="dl-ai__msg dl-ai__msg--me">berapa sales hari ini?</div>
+                <div class="card">
+                    <h5>Sales hari ini · 02-Okt-2026</h5>
+                    <div class="big">Rp 184.750.000</div>
+                    <div class="rows">
+                        <div><span>Customer Order masuk</span><b>6 dokumen</b></div>
+                        <div><span>Sudah Confirmed</span><b>Rp 151.200.000</b></div>
+                        <div><span>Masih Draft</span><b>Rp 33.550.000</b></div>
+                    </div>
+                    <div class="def">Dihitung dari Customer Order bertanggal hari ini, tidak termasuk yang Cancelled. Data pukul 14:05.</div>
+                    <div class="acts"><span class="dl-btn dl-btn--sm dl-btn--primary"><i class="fa-solid fa-up-right-from-square"></i> Open Customer Order Summary</span></div>
+                </div>
+                <div class="fb"><i class="fa-regular fa-thumbs-up"></i><i class="fa-regular fa-thumbs-down"></i></div>
+                <div class="dl-ai__msg dl-ai__msg--me">nilai deadstock sekarang?</div>
+                <div class="card">
+                    <h5>Deadstock · tidak bergerak lebih dari 6 bulan</h5>
+                    <div class="big">Rp 412.380.000</div>
+                    <div class="rows">
+                        <div><span>Raw Material · 37 item</span><b>Rp 268.900.000</b></div>
+                        <div><span>Semi Finished Goods · 4 item</span><b>Rp 21.480.000</b></div>
+                        <div><span>Finished Goods · 11 item</span><b>Rp 122.000.000</b></div>
+                    </div>
+                    <div class="def">Stok yang masih ada dan pergerakan terakhirnya sebelum 02-Apr-2026, dinilai dengan harga beli rata-rata.</div>
+                    <div class="acts"><span class="dl-btn dl-btn--sm dl-btn--primary"><i class="fa-solid fa-up-right-from-square"></i> Open Slow Moving Item</span></div>
+                </div>
+                <div class="fb"><i class="fa-regular fa-thumbs-up"></i><i class="fa-regular fa-thumbs-down"></i></div>
+            </div>
+            <div class="foot"><div class="inbox"><span>Tulis pertanyaan…</span><em>aa</em></div><button><i class="fa-solid fa-arrow-up"></i></button></div>
+        </div>
+    </div>
+
+    <!-- 2. Staf: cari layar + bantuan -->
+    <div class="col">
+        <p class="cap">2. Staf mencari layar dan cara pakai<small>Login: staf Sales (level 1). Jawaban diambil dari menu dan Help.</small></p>
+        <div class="dr">
+            <div class="dl-dr-head"><i class="fa-solid fa-wand-magic-sparkles dl-dr-ico dl-dr-ico--ai"></i><span class="dl-dr-title">Asisten AI</span><span class="status"><i class="fa-solid fa-circle" style="font-size:7px"></i> lokal, tanpa internet</span><button type="button" class="dl-dr-x"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="dl-ai">
+                <div class="dl-ai__msg dl-ai__msg--me">surat jalan subkon dimana ya</div>
+                <div class="card">
+                    <h5>Layar ditemukan</h5>
+                    <b>Subcontract Delivery Note</b><br>Sales › Delivery
+                    <div class="def">Surat jalan untuk barang yang dikirim ke subkon (vendor luar) dan kembali lagi.</div>
+                    <div class="acts"><span class="dl-btn dl-btn--sm dl-btn--primary"><i class="fa-solid fa-up-right-from-square"></i> Open Subcontract Delivery Note</span><span class="dl-btn dl-btn--sm dl-btn--secondary"><i class="fa-solid fa-circle-question"></i> Cara pakai</span></div>
+                </div>
+                <div class="fb"><i class="fa-regular fa-thumbs-up"></i><i class="fa-regular fa-thumbs-down"></i></div>
+                <div class="dl-ai__msg dl-ai__msg--me">cara bikin customer order tanpa quotation</div>
+                <div class="card">
+                    <h5>Cara pakai · Customer Order</h5>
+                    <ol>
+                        <li>Buka Customer Order, klik <b>+ New Record</b>.</li>
+                        <li>Pilih jalur <b>INSTANT</b>, pilih Customer.</li>
+                        <li>Tambah baris, pilih product dari Master Product, isi Qty dan Due Date.</li>
+                        <li>Klik <b>Save</b>, lalu <b>Confirm</b> untuk mengajukan approval.</li>
+                    </ol>
+                    <div class="acts"><span class="dl-btn dl-btn--sm dl-btn--primary"><i class="fa-solid fa-up-right-from-square"></i> Open Customer Order</span><span class="dl-btn dl-btn--sm dl-btn--secondary"><i class="fa-solid fa-book-open"></i> Open Help</span></div>
+                </div>
+                <div class="src">Sumber: Help Center › Customer Order</div>
+                <div class="fb"><i class="fa-regular fa-thumbs-up"></i><i class="fa-regular fa-thumbs-down"></i></div>
+                <div class="dl-ai__msg dl-ai__msg--me">due date itu diisi apa?</div>
+                <div class="typing"><i class="fa-solid fa-ellipsis fa-fade"></i> sedang mencari di Help…</div>
+            </div>
+            <div class="foot"><div class="inbox"><span>Tulis pertanyaan…</span><em>aa</em></div><button><i class="fa-solid fa-arrow-up"></i></button></div>
+        </div>
+    </div>
+
+    <!-- 3. Batas level + tidak tahu -->
+    <div class="col">
+        <p class="cap">3. Di luar hak, atau asisten tidak tahu<small>Login: staf Sales (level 1). Asisten tidak pernah menebak angka.</small></p>
+        <div class="dr">
+            <div class="dl-dr-head"><i class="fa-solid fa-wand-magic-sparkles dl-dr-ico dl-dr-ico--ai"></i><span class="dl-dr-title">Asisten AI</span><span class="status"><i class="fa-solid fa-circle" style="font-size:7px"></i> lokal, tanpa internet</span><button type="button" class="dl-dr-x"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="dl-ai">
+                <div class="dl-ai__msg dl-ai__msg--me">nilai deadstock berapa</div>
+                <div class="card">
+                    <h5><i class="fa-solid fa-lock"></i> Tidak tersedia untuk akun Anda</h5>
+                    Nilai deadstock hanya untuk level Manager ke atas dengan akses Inventory.
+                    <div class="def">Bila Anda memerlukannya, minta ke atasan Anda.</div>
+                </div>
+                <div class="fb"><i class="fa-regular fa-thumbs-up"></i><i class="fa-regular fa-thumbs-down"></i></div>
+                <div class="dl-ai__msg dl-ai__msg--me">kenapa mesin SM74 sering macet?</div>
+                <div class="card">
+                    <h5>Saya belum punya jawabannya</h5>
+                    Pertanyaan ini tidak ada di Help maupun di daftar angka yang saya kenal. Saya tidak akan menebak.
+                    <div class="def">Pertanyaan Anda dicatat supaya tim bisa menambahkan jawabannya.</div>
+                    <div class="acts"><span class="dl-btn dl-btn--sm dl-btn--secondary"><i class="fa-solid fa-ticket"></i> Kirim sebagai Tiket Bantuan</span><span class="dl-btn dl-btn--sm dl-btn--secondary"><i class="fa-solid fa-up-right-from-square"></i> Open Maintenance WO Report</span></div>
+                </div>
+                <div class="fb"><i class="fa-regular fa-thumbs-up"></i><i class="fa-regular fa-thumbs-down"></i></div>
+                <div class="dl-ai__msg dl-ai__msg--me">sales hari ini</div>
+                <div class="card">
+                    <h5>Sales hari ini · 02-Okt-2026</h5>
+                    <div class="big">6 Customer Order</div>
+                    <div class="def">Akun Anda melihat jumlah dokumen. Nilai rupiah hanya untuk Sales Supervisor ke atas.</div>
+                    <div class="acts"><span class="dl-btn dl-btn--sm dl-btn--primary"><i class="fa-solid fa-up-right-from-square"></i> Open Customer Order Summary</span></div>
+                </div>
+            </div>
+            <div class="foot"><div class="inbox"><span>Tulis pertanyaan…</span><em>aa</em></div><button><i class="fa-solid fa-arrow-up"></i></button></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

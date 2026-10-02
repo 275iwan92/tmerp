@@ -1,0 +1,82 @@
+[
+  {
+    "key": "help-center",
+    "type": "REPORT",
+    "module": "GENERAL",
+    "title": "Help Center",
+    "purpose": {
+      "en": "Read what every screen and report is for, how to use it step by step, and what each field means. Open it when you are not sure how a screen works.",
+      "id": "Membaca kegunaan tiap layar dan laporan, cara pakainya langkah demi langkah, dan arti tiap isian. Buka saat Anda ragu cara kerja sebuah layar."
+    },
+    "keywords": "help, help center, bantuan, pusat bantuan, panduan, cara pakai, petunjuk, manual, arti isian, penjelasan",
+    "steps": [
+      {"en": "Type the screen name, or what you want to do, in the search box.", "id": "Ketik nama layar, atau apa yang ingin Anda kerjakan, di kotak cari."},
+      {"en": "Use the filter row to show only General guide, Input screen or Report.", "id": "Pakai baris filter untuk menampilkan hanya General guide, Input screen, atau Report."},
+      {"en": "Open the row to read the steps of how to use the screen, followed by the explanation of every field.", "id": "Buka barisnya untuk membaca langkah cara pakai layar itu, lalu penjelasan tiap isian."},
+      {"en": "Group by Module to see all help of one module together.", "id": "Kelompokkan per Module untuk melihat semua bantuan satu modul sekaligus."}
+    ],
+    "fields": [
+      {"label": "Screen", "en": "Name of the screen, report or general guide, as written in the menu.", "id": "Nama layar, laporan, atau panduan umum, seperti tertulis di menu."},
+      {"label": "Type", "en": "General guide = applies to every screen; Input screen = data is entered there; Report = read only.", "id": "General guide = berlaku untuk semua layar; Input screen = tempat mengisi data; Report = hanya dibaca."},
+      {"label": "Module", "en": "Module that owns the screen. Use it as a filter or as the group.", "id": "Modul pemilik layar. Bisa dipakai sebagai filter atau grup."},
+      {"label": "What it is for", "en": "One or two sentences on what the screen is used for and when to open it.", "id": "Satu atau dua kalimat tentang kegunaan layar dan kapan membukanya."},
+      {"label": "Keywords", "en": "Search words of the topic. Hidden by default; switch it on with the Columns button.", "id": "Kata cari topik. Tersembunyi; nyalakan lewat tombol Columns."}
+    ]
+  },
+  {
+    "key": "setup-help-topics",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Help Topics",
+    "purpose": {
+      "en": "Maintain the list of help topics: one row per screen, report or general guide, with what it is for and its search words. The Help Center and the AI assistant read it.",
+      "id": "Merawat daftar topik bantuan: satu baris per layar, laporan, atau panduan umum, berisi kegunaan dan kata carinya. Dibaca Help Center dan asisten AI."
+    },
+    "keywords": "help topics, topik bantuan, isi help, tambah bantuan, edit bantuan, kata cari, keywords, setup help",
+    "steps": [
+      {"en": "Find the topic with the search box, or click Row to add a new one.", "id": "Cari topiknya lewat kotak cari, atau klik Row untuk menambah yang baru."},
+      {"en": "Click a cell and type. Fill Key, Type, Title and Purpose (English); add the Indonesian text in the column next to it.", "id": "Klik sel lalu ketik. Isi Key, Type, Title, dan Purpose (English); teks Indonesianya di kolom sebelahnya."},
+      {"en": "Click Save. All changed rows are saved together; a row with a mistake is marked and nothing is saved until it is fixed.", "id": "Klik Save. Semua baris yang berubah disimpan bersama; baris yang salah ditandai dan tidak ada yang tersimpan sampai diperbaiki."},
+      {"en": "Open Help Lines to write the steps and the field explanations of the topic.", "id": "Buka Help Lines untuk menulis langkah dan penjelasan isian topik itu."},
+      {"en": "To retire a topic, clear its Active check and Save. It disappears from the Help Center.", "id": "Untuk menghentikan sebuah topik, hapus centang Active lalu Save. Topik hilang dari Help Center."}
+    ],
+    "fields": [
+      {"label": "Key", "en": "Address of the screen as in Menu Setup, without v2: (for example customer-order); guide-... for a general guide. Lowercase letters, digits and dashes. Cannot be changed after Save.", "id": "Alamat layar seperti di Menu Setup, tanpa v2: (mis. customer-order); guide-... untuk panduan umum. Huruf kecil, angka, dan tanda hubung. Tidak bisa diubah setelah Save."},
+      {"label": "Type", "en": "Input screen, Report, or General guide.", "id": "Input screen, Report, atau General guide."},
+      {"label": "Module", "en": "Module that owns the screen, picked from the module list.", "id": "Modul pemilik layar, dipilih dari daftar modul."},
+      {"label": "Title", "en": "Screen name in English, as written in the menu. At most 150 characters.", "id": "Nama layar dalam English, seperti di menu. Paling panjang 150 karakter."},
+      {"label": "Purpose (English)", "en": "What the screen is for and when to open it, in English. At most 255 characters.", "id": "Untuk apa layar itu dan kapan dibuka, dalam English. Paling panjang 255 karakter."},
+      {"label": "Indonesian", "en": "The same purpose in Indonesian. Empty = shown in English.", "id": "Kegunaan yang sama dalam bahasa Indonesia. Kosong = tampil English."},
+      {"label": "Keywords", "en": "Words people type when they look for this screen, English and Indonesian, separated by commas.", "id": "Kata yang diketik orang saat mencari layar ini, English dan Indonesia, dipisah koma."},
+      {"label": "Order", "en": "Number that sets the position of the topic inside its module; smaller comes first.", "id": "Angka urutan topik di dalam modulnya; yang kecil lebih dulu."},
+      {"label": "Active", "en": "Checked = shown in the Help Center and used by the assistant.", "id": "Dicentang = tampil di Help Center dan dipakai asisten."}
+    ]
+  },
+  {
+    "key": "setup-help-lines",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Help Lines",
+    "purpose": {
+      "en": "Maintain the content of each help topic in short texts: the steps of how to use the screen and the explanation of every field or report column.",
+      "id": "Merawat isi tiap topik bantuan dalam teks pendek: langkah cara pakai layar dan penjelasan tiap isian atau kolom laporan."
+    },
+    "keywords": "help lines, isi bantuan, langkah cara pakai, penjelasan isian, penjelasan kolom, edit help, terjemahan help",
+    "steps": [
+      {"en": "Type the topic name in the search box to see only its lines.", "id": "Ketik nama topik di kotak cari untuk melihat barisnya saja."},
+      {"en": "Click Row to add a line, pick the Topic and the Kind.", "id": "Klik Row untuk menambah baris, pilih Topic dan Kind."},
+      {"en": "For a field explanation, type the Field label exactly as written on the screen.", "id": "Untuk penjelasan isian, ketik label Field persis seperti di layar."},
+      {"en": "Write the text in English and its Indonesian version in the next column. One action or one fact per line.", "id": "Tulis teksnya dalam English dan versi Indonesianya di kolom sebelahnya. Satu tindakan atau satu fakta per baris."},
+      {"en": "Set Order to place the line inside the topic, then click Save.", "id": "Isi Order untuk menempatkan baris di dalam topik, lalu klik Save."}
+    ],
+    "fields": [
+      {"label": "Topic", "en": "The help topic this line belongs to, picked from Help Topics.", "id": "Topik bantuan pemilik baris ini, dipilih dari Help Topics."},
+      {"label": "Kind", "en": "How to use (step) = one step, shown in order; Field explanation = what one field or column means.", "id": "How to use (step) = satu langkah, tampil berurutan; Field explanation = arti satu isian atau kolom."},
+      {"label": "Field", "en": "Label of the field or column exactly as on the screen. Required for a field explanation, empty for a step.", "id": "Label isian atau kolom persis seperti di layar. Wajib untuk penjelasan isian, kosong untuk langkah."},
+      {"label": "Text (English)", "en": "The step or explanation in English, at most 255 characters.", "id": "Langkah atau penjelasan dalam English, paling panjang 255 karakter."},
+      {"label": "Indonesian", "en": "The same text in Indonesian. Empty = shown in English.", "id": "Teks yang sama dalam bahasa Indonesia. Kosong = tampil English."},
+      {"label": "Order", "en": "Sequence of the line inside its topic; smaller comes first.", "id": "Urutan baris di dalam topiknya; yang kecil lebih dulu."},
+      {"label": "Active", "en": "Checked = shown in the Help Center and used by the assistant.", "id": "Dicentang = tampil di Help Center dan dipakai asisten."}
+    ]
+  }
+]

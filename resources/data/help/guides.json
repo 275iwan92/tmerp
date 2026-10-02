@@ -1,0 +1,1132 @@
+[
+  {
+    "key": "guide-find-screen",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Finding and Opening a Screen",
+    "purpose": {
+      "en": "Explains how to find a screen with the left menu, the search icon or Ctrl+K, and how every opened screen stays available as a tab.",
+      "id": "Menjelaskan cara menemukan layar lewat menu kiri, ikon cari atau Ctrl+K, dan bagaimana setiap layar yang dibuka tetap tersedia sebagai tab."
+    },
+    "keywords": "cara cari menu, cari layar, buka layar, menu kiri, layer menu, modul, ctrl k, pencarian cepat, tab, laporan manajemen, menu kecil, mini menu, kembali, back, find screen, search menu, navigation, navigasi, operasional",
+    "steps": [
+      {
+        "en": "The left panel is the Layer Menu. Its first layer lists the modules you may use. Click a module to go down one layer.",
+        "id": "Panel kiri adalah Layer Menu. Layer pertamanya berisi modul yang boleh Anda pakai. Klik sebuah modul untuk turun satu layer."
+      },
+      {
+        "en": "Click a branch to go down another layer. The number on a branch is how many screens are below it. Click Back at the top of the panel to go up one layer.",
+        "id": "Klik sebuah cabang untuk turun satu layer lagi. Angka pada cabang adalah jumlah layar di bawahnya. Klik Back di atas panel untuk naik satu layer."
+      },
+      {
+        "en": "Click a screen name (a line without an arrow) to open it. The screen opens as a tab in the work area and its name is highlighted in the menu.",
+        "id": "Klik nama layar (baris tanpa panah) untuk membukanya. Layar terbuka sebagai tab di area kerja dan namanya disorot di menu."
+      },
+      {
+        "en": "To search by name, click the magnifier icon in the menu or press Ctrl+K. Type part of the screen or module name, choose with the arrow keys and press Enter. Esc closes the search.",
+        "id": "Untuk mencari lewat nama, klik ikon kaca pembesar di menu atau tekan Ctrl+K. Ketik sebagian nama layar atau modul, pilih dengan tombol panah lalu tekan Enter. Esc menutup pencarian."
+      },
+      {
+        "en": "If you may see both operational screens and management reports, two small icons at the top of the menu switch between the Operational view and the Management Report view.",
+        "id": "Bila Anda boleh melihat layar operasional dan laporan manajemen, dua ikon kecil di atas menu berpindah antara tampilan Operasional dan tampilan Laporan Manajemen."
+      },
+      {
+        "en": "Every opened screen stays as a tab. Click a tab to return to it and click the x on the tab to close it. Open tabs are kept when you change module or reload the page in the same browser tab.",
+        "id": "Setiap layar yang dibuka tetap menjadi tab. Klik tab untuk kembali ke layar itu dan klik x pada tab untuk menutupnya. Tab yang terbuka tetap ada saat Anda ganti modul atau memuat ulang halaman di tab browser yang sama."
+      },
+      {
+        "en": "Clicking the menu name of a screen that is already open brings it back to its grid. If a form there has unsaved changes you are asked Save, Undo or Cancel first.",
+        "id": "Mengklik nama menu layar yang sudah terbuka membawanya kembali ke grid. Bila ada form dengan perubahan yang belum disimpan, Anda ditanya dulu: Save, Undo atau Cancel."
+      },
+      {
+        "en": "At the top of a screen, the line Module > Group > Screen shows where you are. Click the module or the group name to open the left menu at that branch.",
+        "id": "Di atas layar, baris Modul > Grup > Layar menunjukkan posisi Anda. Klik nama modul atau grup untuk membuka menu kiri di cabang itu."
+      },
+      {
+        "en": "The Minimize menu icon shrinks the menu to one column of icons. Clicking a branch, Back or your name then shows the full menu over the screen until you pick a screen or click outside. This is remembered in this browser.",
+        "id": "Ikon Minimize menu mengecilkan menu menjadi satu lajur ikon. Mengklik cabang, Back atau nama Anda lalu menampilkan menu lengkap di atas layar sampai Anda memilih layar atau klik di luar. Pilihan ini diingat di browser ini."
+      },
+      {
+        "en": "A small badge after a menu name: A means approved screen, R means built and waiting for review, v1 means it still opens the old screen, Belum means there is no screen yet.",
+        "id": "Lencana kecil di belakang nama menu: A berarti layar sudah disetujui, R berarti sudah dibangun dan menunggu review, v1 berarti masih membuka layar lama, Belum berarti belum ada layarnya."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Back",
+        "en": "Goes up one layer in the left menu. Esc or the Left arrow key does the same while the cursor is in the menu.",
+        "id": "Naik satu layer di menu kiri. Tombol Esc atau panah kiri melakukan hal yang sama saat kursor ada di menu."
+      },
+      {
+        "label": "Search (Ctrl K)",
+        "en": "The magnifier icon opens the quick search of all screens you may open. Type, pick a row, press Enter.",
+        "id": "Ikon kaca pembesar membuka pencarian cepat semua layar yang boleh Anda buka. Ketik, pilih baris, tekan Enter."
+      },
+      {
+        "label": "Minimize menu",
+        "en": "Makes the left menu one narrow column of icons. The same icon is named Expand menu when the menu is small.",
+        "id": "Membuat menu kiri menjadi satu lajur ikon yang sempit. Ikon yang sama bernama Expand menu saat menu sedang kecil."
+      },
+      {
+        "label": "Operasional",
+        "en": "Menu view with the operational modules. The other icon opens the Management Report view.",
+        "id": "Tampilan menu berisi modul operasional. Ikon yang lain membuka tampilan Laporan Manajemen."
+      },
+      {
+        "label": "Tab",
+        "en": "One tab per opened screen. Click it to show the screen, click x to close it.",
+        "id": "Satu tab untuk setiap layar yang dibuka. Klik untuk menampilkan layar, klik x untuk menutupnya."
+      }
+    ]
+  },
+  {
+    "key": "guide-input-screen",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "How an Input Screen Works",
+    "purpose": {
+      "en": "Every screen where data is entered starts with a grid of existing records. You create or open a record in a form, fill it, Save it, and Confirm it when it is final.",
+      "id": "Setiap layar tempat data diinput diawali grid berisi data yang sudah ada. Anda membuat atau membuka data di form, mengisi, Save, lalu Confirm bila sudah final."
+    },
+    "keywords": "cara input data, input, isi form, tambah data, new record, simpan, save, confirm, edit, ubah data, buka dokumen, grid dan form, buat dokumen baru, draft",
+    "steps": [
+      {
+        "en": "Open the screen from the menu. You first see a grid: the list of records already entered, with a search box and filters.",
+        "id": "Buka layar dari menu. Anda lebih dulu melihat grid: daftar data yang sudah diinput, lengkap dengan kotak cari dan filter."
+      },
+      {
+        "en": "To enter something new, click + New Record in the grid toolbar. The form opens empty.",
+        "id": "Untuk menginput data baru, klik + New Record di toolbar grid. Form terbuka dalam keadaan kosong."
+      },
+      {
+        "en": "Fill the fields. Where a field offers a list (lookup or dropdown) pick the value from it instead of typing. Item lines of a document are in the table in the middle of the form.",
+        "id": "Isi field. Bila field menyediakan daftar (lookup atau dropdown), pilih nilainya dari daftar itu, jangan diketik. Baris item dokumen ada di tabel di tengah form."
+      },
+      {
+        "en": "Click Save (or press Ctrl+S). The record is stored as Draft. Required fields that are empty are marked, and the tab that holds them shows the number of problems.",
+        "id": "Klik Save (atau tekan Ctrl+S). Data tersimpan sebagai Draft. Field wajib yang kosong ditandai, dan tab yang memuatnya menampilkan jumlah masalah."
+      },
+      {
+        "en": "A Draft can be changed and saved again as often as needed. To change an existing record, double-click its row in the grid or click its Open or Edit icon. Edit opens the same form as New.",
+        "id": "Draft boleh diubah dan di-Save lagi berkali-kali. Untuk mengubah data yang sudah ada, klik dua kali barisnya di grid atau klik ikon Open atau Edit. Edit membuka form yang sama dengan New."
+      },
+      {
+        "en": "When the document is complete click Confirm and answer the question. After Confirm the fields are locked and the document goes to approval if the document type needs it.",
+        "id": "Bila dokumen sudah lengkap klik Confirm dan jawab pertanyaannya. Setelah Confirm isi dikunci dan dokumen masuk approval bila jenis dokumennya memerlukannya."
+      },
+      {
+        "en": "After Confirm you can Print or Email the document. See the guide on printing and e-mail.",
+        "id": "Setelah Confirm Anda bisa Print atau Email dokumen. Lihat panduan cetak dan e-mail."
+      },
+      {
+        "en": "The History tab of the form shows who created and last changed the document and a log of Saved, Confirmed, Cancelled and similar actions.",
+        "id": "Tab History pada form menampilkan siapa yang membuat dan terakhir mengubah dokumen serta log aksi seperti Saved, Confirmed, Cancelled dan sejenisnya."
+      },
+      {
+        "en": "Click Back in the form panel to return to the grid. If you changed something and did not save, a question appears first.",
+        "id": "Klik Back di panel form untuk kembali ke grid. Bila ada perubahan yang belum disimpan, muncul pertanyaan lebih dulu."
+      }
+    ],
+    "fields": [
+      {
+        "label": "+ New Record",
+        "en": "In the grid toolbar. Opens an empty form to create a new record.",
+        "id": "Ada di toolbar grid. Membuka form kosong untuk membuat data baru."
+      },
+      {
+        "label": "Save",
+        "en": "Stores the record as Draft after checking the required fields. Shortcut Ctrl+S.",
+        "id": "Menyimpan data sebagai Draft setelah mengecek field wajib. Pintasan Ctrl+S."
+      },
+      {
+        "label": "Confirm",
+        "en": "Makes the Draft final: it is checked, locked, and sent to approval when needed.",
+        "id": "Membuat Draft menjadi final: dicek, dikunci, dan dikirim ke approval bila perlu."
+      },
+      {
+        "label": "Back",
+        "en": "Returns to the previous screen, normally the grid.",
+        "id": "Kembali ke layar sebelumnya, biasanya grid."
+      },
+      {
+        "label": "History",
+        "en": "Read-only tab with created by and at, last updated by and at, and the action log of the document.",
+        "id": "Tab hanya-baca berisi dibuat oleh dan kapan, terakhir diubah oleh dan kapan, serta log aksi dokumen."
+      }
+    ]
+  },
+  {
+    "key": "guide-document-buttons",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Document Buttons and Statuses",
+    "purpose": {
+      "en": "Explains what each button of a document form does, when it is available, and what the statuses Draft, Confirmed, Cancelled and Closed mean.",
+      "id": "Menjelaskan fungsi tiap tombol form dokumen, kapan tombol itu tersedia, dan arti status Draft, Confirmed, Cancelled dan Closed."
+    },
+    "keywords": "tombol dokumen, new, save, undo, delete, confirm, cancel, batalkan dokumen, duplicate, back to draft, back, status draft, confirmed, cancelled, closed, hapus, simpan, konfirmasi, alasan batal, perubahan belum disimpan",
+    "steps": [
+      {
+        "en": "Look at the status badge next to the title: Draft, Confirmed, Cancelled or Closed. The buttons you see depend on this status.",
+        "id": "Lihat lencana status di samping judul: Draft, Confirmed, Cancelled atau Closed. Tombol yang tampil bergantung pada status ini."
+      },
+      {
+        "en": "A record that was never saved shows only Undo and Save.",
+        "id": "Data yang belum pernah disimpan hanya menampilkan Undo dan Save."
+      },
+      {
+        "en": "Draft shows Delete, New, Undo, Confirm and Save. The fields can be changed.",
+        "id": "Draft menampilkan Delete, New, Undo, Confirm dan Save. Isi field masih bisa diubah."
+      },
+      {
+        "en": "Confirmed shows Cancel, New, Email and Print, plus Back to Draft for users who are allowed. The fields are locked.",
+        "id": "Confirmed menampilkan Cancel, New, Email dan Print, ditambah Back to Draft bagi pengguna yang berhak. Isi field dikunci."
+      },
+      {
+        "en": "Cancelled shows New, Duplicate and Print. Closed shows New and Print. Closed is set by the system when the document is passed on to the next module, for example a requisition turned into an order.",
+        "id": "Cancelled menampilkan New, Duplicate dan Print. Closed menampilkan New dan Print. Closed diberikan sistem saat dokumen diteruskan ke modul berikutnya, misalnya permintaan yang dijadikan order."
+      },
+      {
+        "en": "Delete, Confirm, Cancel and Back to Draft first ask you to confirm. Cancel and Back to Draft also require a reason, which is written in the History tab.",
+        "id": "Delete, Confirm, Cancel dan Back to Draft lebih dulu meminta persetujuan Anda. Cancel dan Back to Draft juga wajib diisi alasan, yang dicatat di tab History."
+      },
+      {
+        "en": "When you leave a form with unsaved changes (Back, a menu name or a link) a window asks: Save stores and leaves, Undo leaves without saving, Cancel stays on the form.",
+        "id": "Saat Anda meninggalkan form yang berubah (Back, nama menu atau tautan) muncul jendela: Save menyimpan lalu pergi, Undo pergi tanpa menyimpan, Cancel tetap di form."
+      },
+      {
+        "en": "Shortcuts: Ctrl+S is Save and Alt+N is New. Press the ? key outside a text box to see all shortcuts.",
+        "id": "Pintasan: Ctrl+S untuk Save dan Alt+N untuk New. Tekan tombol ? di luar kotak teks untuk melihat semua pintasan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "New",
+        "en": "Opens an empty form for a new record of the same kind.",
+        "id": "Membuka form kosong untuk data baru sejenis."
+      },
+      {
+        "label": "Save",
+        "en": "Stores the form after checking required fields. Shortcut Ctrl+S.",
+        "id": "Menyimpan form setelah mengecek field wajib. Pintasan Ctrl+S."
+      },
+      {
+        "label": "Undo",
+        "en": "Throws away changes you have not saved and puts back the values from when the form was opened. Asks first. If nothing changed it says there is nothing to undo.",
+        "id": "Membuang perubahan yang belum disimpan dan mengembalikan isi seperti saat form dibuka. Bertanya dulu. Bila tidak ada perubahan, muncul pesan tidak ada yang di-Undo."
+      },
+      {
+        "label": "Delete",
+        "en": "Draft only. Removes the record for good after you confirm. This cannot be undone.",
+        "id": "Hanya untuk Draft. Menghapus data secara permanen setelah Anda setuju. Tidak bisa dikembalikan."
+      },
+      {
+        "label": "Confirm",
+        "en": "Draft only. Checks required fields, locks the document and sends it to approval when the document type has approval.",
+        "id": "Hanya untuk Draft. Mengecek field wajib, mengunci dokumen dan mengirimnya ke approval bila jenis dokumennya memakai approval."
+      },
+      {
+        "label": "Cancel",
+        "en": "After Confirm. Cancels the document; a reason is required. The status becomes Cancelled. While the document waits for approval only its creator can cancel it.",
+        "id": "Setelah Confirm. Membatalkan dokumen; alasan wajib diisi. Status menjadi Cancelled. Saat menunggu approval hanya pembuatnya yang bisa membatalkan."
+      },
+      {
+        "label": "Duplicate",
+        "en": "On a Cancelled or Rejected document. Makes a new Draft with a copy of the content, without a number, so you do not retype it.",
+        "id": "Pada dokumen Cancelled atau Rejected. Membuat Draft baru berisi salinan isi, tanpa nomor, supaya tidak perlu mengetik ulang."
+      },
+      {
+        "label": "Back to Draft",
+        "en": "Only for users with the right (manager level and above). Reopens a Confirmed document for editing; a reason is required and it must be Confirmed again. Not available once approval started.",
+        "id": "Hanya untuk pengguna yang berhak (level manager ke atas). Membuka lagi dokumen Confirmed untuk diubah; alasan wajib dan harus di-Confirm ulang. Tidak tersedia setelah approval berjalan."
+      },
+      {
+        "label": "Back",
+        "en": "Returns to the previous screen. Asks Save, Undo or Cancel when there are unsaved changes.",
+        "id": "Kembali ke layar sebelumnya. Menanyakan Save, Undo atau Cancel bila ada perubahan yang belum disimpan."
+      },
+      {
+        "label": "Draft",
+        "en": "Status: the document is being prepared and can still be changed or deleted.",
+        "id": "Status: dokumen sedang disiapkan dan masih bisa diubah atau dihapus."
+      },
+      {
+        "label": "Confirmed",
+        "en": "Status: the document is final and locked. It can only be cancelled or, with the right, sent back to Draft.",
+        "id": "Status: dokumen sudah final dan terkunci. Hanya bisa dibatalkan atau, bila berhak, dikembalikan ke Draft."
+      },
+      {
+        "label": "Cancelled",
+        "en": "Status: the document was cancelled with a reason. It stays for reference and can be copied with Duplicate.",
+        "id": "Status: dokumen dibatalkan dengan alasan. Tetap tersimpan sebagai arsip dan bisa disalin dengan Duplicate."
+      },
+      {
+        "label": "Closed",
+        "en": "Status: the document is finished, for example passed on to the next module. It is read-only.",
+        "id": "Status: dokumen sudah selesai, misalnya sudah diteruskan ke modul berikutnya. Hanya bisa dibaca."
+      }
+    ]
+  },
+  {
+    "key": "guide-grid",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Using a Grid",
+    "purpose": {
+      "en": "Explains how to search, filter, sort, choose columns, expand rows, open a record and page through a grid list.",
+      "id": "Menjelaskan cara mencari, memfilter, mengurutkan, memilih kolom, membuka baris detail, membuka data, dan berpindah halaman di daftar grid."
+    },
+    "keywords": "grid, daftar, cari, search, filter, urutkan, sort, kolom, columns, density, kerapatan, expand, buka baris, klik dua kali, double click, halaman, paging, export, csv, status, jenis, tabel",
+    "steps": [
+      {
+        "en": "Type in the search box to find rows. It looks in the columns that are shown, including document number and party name, and the list updates a moment after you stop typing.",
+        "id": "Ketik di kotak cari untuk menemukan baris. Pencarian memeriksa kolom yang tampil, termasuk nomor dokumen dan nama pihak, dan daftar diperbarui sesaat setelah Anda berhenti mengetik."
+      },
+      {
+        "en": "The filter row above the table shows statuses on the left and types on the right, each with a count. Click one to filter. Click the active type again to remove it. All shows everything.",
+        "id": "Baris filter di atas tabel menampilkan status di kiri dan jenis di kanan, masing-masing dengan jumlah. Klik salah satu untuk memfilter. Klik lagi jenis yang aktif untuk melepasnya. All menampilkan semua."
+      },
+      {
+        "en": "To sort, click a column title: the first click sorts ascending, the second descending, the third removes the sorting.",
+        "id": "Untuk mengurutkan, klik judul kolom: klik pertama naik, klik kedua turun, klik ketiga melepas urutan."
+      },
+      {
+        "en": "If the grid has a Filters button, pick values there. Each active filter, status and search shows as a small tag; click its x to remove it, or Clear all.",
+        "id": "Bila grid punya tombol Filters, pilih nilainya di sana. Setiap filter, status dan pencarian yang aktif tampil sebagai tag kecil; klik x untuk melepasnya, atau Clear all."
+      },
+      {
+        "en": "Click Columns to show or hide columns. At least one column stays visible. Columns, sorting, filters and rows per page are remembered in this browser for this grid.",
+        "id": "Klik Columns untuk menampilkan atau menyembunyikan kolom. Minimal satu kolom tetap tampil. Kolom, urutan, filter dan jumlah baris per halaman diingat di browser ini untuk grid tersebut."
+      },
+      {
+        "en": "In a transaction grid the first column is a coloured box with the document number on top and the party below. Click the arrow at the left of a row to expand it and see its item table. Click again to close.",
+        "id": "Di grid transaksi kolom pertama adalah kotak berwarna berisi nomor dokumen di atas dan nama pihak di bawah. Klik panah di kiri baris untuk membuka tabel itemnya. Klik lagi untuk menutup."
+      },
+      {
+        "en": "To open a record, double-click its row or click the Open icon (Edit icon on master data). The form opens.",
+        "id": "Untuk membuka data, klik dua kali barisnya atau klik ikon Open (ikon Edit pada data master). Form akan terbuka."
+      },
+      {
+        "en": "Use the bar under the table to go to a page: first, previous, page numbers, next, last, or type a page in Go to. View sets the rows per page. On the right it shows which rows you see out of the total.",
+        "id": "Gunakan bar di bawah tabel untuk pindah halaman: pertama, sebelumnya, nomor halaman, berikutnya, terakhir, atau ketik halaman di Go to. View mengatur jumlah baris per halaman. Di kanan tampil baris yang terlihat dari total."
+      },
+      {
+        "en": "Export downloads a CSV file of the visible columns and the rows left after your filters. Choose the columns first.",
+        "id": "Export mengunduh file CSV berisi kolom yang tampil dan baris yang tersisa setelah filter. Pilih kolomnya lebih dulu."
+      },
+      {
+        "en": "Report grids also have a Density button: Compact, Normal or Comfortable row height, and the number of lines per cell. Restore defaults resets it. It is remembered for that grid.",
+        "id": "Grid laporan juga punya tombol Density: tinggi baris Compact, Normal atau Comfortable, dan jumlah baris per sel. Restore defaults mengembalikan ke awal. Pilihan diingat untuk grid itu."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Search",
+        "en": "Search box. Finds text in the visible columns.",
+        "id": "Kotak cari. Mencari teks di kolom yang tampil."
+      },
+      {
+        "label": "All",
+        "en": "Status filter with a count. Other statuses are listed beside it. Click one to show only those rows.",
+        "id": "Filter status dengan jumlah. Status lain tampil di sebelahnya. Klik salah satu untuk menampilkan baris itu saja."
+      },
+      {
+        "label": "Filters",
+        "en": "Only on grids that offer it. Opens a list of fields to pick values from. Reset filter clears them.",
+        "id": "Hanya ada di grid yang menyediakannya. Membuka daftar field untuk memilih nilai. Reset filter menghapusnya."
+      },
+      {
+        "label": "Columns",
+        "en": "Tick the columns to show. Some columns are hidden at first and can be switched on here.",
+        "id": "Centang kolom yang ingin ditampilkan. Sebagian kolom awalnya tersembunyi dan bisa dinyalakan di sini."
+      },
+      {
+        "label": "Density",
+        "en": "Row height and lines per cell. Shown on report grids only.",
+        "id": "Tinggi baris dan jumlah baris per sel. Hanya tampil di grid laporan."
+      },
+      {
+        "label": "Export",
+        "en": "Downloads the visible columns and the filtered rows as a CSV file.",
+        "id": "Mengunduh kolom yang tampil dan baris hasil filter sebagai file CSV."
+      },
+      {
+        "label": "Open",
+        "en": "Icon on a transaction row. Opens the document. Double-clicking the row does the same.",
+        "id": "Ikon pada baris transaksi. Membuka dokumen. Klik dua kali baris melakukan hal yang sama."
+      },
+      {
+        "label": "Expand",
+        "en": "The arrow at the left of a row. Shows the item table of that row, always with the item or product name.",
+        "id": "Panah di kiri baris. Menampilkan tabel item baris itu, yang selalu memuat nama item atau product."
+      },
+      {
+        "label": "View",
+        "en": "Rows per page: 10, 25, 50 or 100. On report grids: 50, 100, 250 or 500.",
+        "id": "Jumlah baris per halaman: 10, 25, 50 atau 100. Pada grid laporan: 50, 100, 250 atau 500."
+      }
+    ]
+  },
+  {
+    "key": "guide-master-grid",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Master Data Grids",
+    "purpose": {
+      "en": "Explains master data lists such as customers, items or machines: how to edit a record and how to deactivate or activate it instead of deleting it.",
+      "id": "Menjelaskan daftar data master seperti customer, item atau mesin: cara mengubah data dan cara menonaktifkan atau mengaktifkannya, bukan menghapus."
+    },
+    "keywords": "master, data master, aktif, nonaktif, active, inactive, deactivate, activate, edit, hapus, kenapa tidak bisa dihapus, nonaktifkan data, aktifkan kembali, daftar master, new record",
+    "steps": [
+      {
+        "en": "Open the master screen. The filter row shows All, Active and Inactive with counts. Search, sort and Columns work as in any grid.",
+        "id": "Buka layar master. Baris filter menampilkan All, Active dan Inactive beserta jumlahnya. Cari, urutkan dan Columns bekerja seperti di grid lain."
+      },
+      {
+        "en": "To add a record click + New Record in the toolbar.",
+        "id": "Untuk menambah data klik + New Record di toolbar."
+      },
+      {
+        "en": "To change a record click the pencil (Edit) icon at the start of the row, or double-click the row.",
+        "id": "Untuk mengubah data klik ikon pensil (Edit) di awal baris, atau klik dua kali barisnya."
+      },
+      {
+        "en": "To stop using a record click the circle-with-slash icon on its row and confirm. The record becomes inactive and no longer appears in the pick lists of other screens.",
+        "id": "Untuk berhenti memakai suatu data klik ikon lingkaran bergaris di barisnya lalu setujui. Data menjadi nonaktif dan tidak muncul lagi di daftar pilihan layar lain."
+      },
+      {
+        "en": "To use it again click the tick icon on the inactive row and confirm. Choose Inactive in the filter row to see only inactive records.",
+        "id": "Untuk memakainya lagi klik ikon centang pada baris nonaktif lalu setujui. Pilih Inactive di baris filter untuk melihat data nonaktif saja."
+      },
+      {
+        "en": "Records are not deleted because documents and other data already refer to them. Deactivating keeps the history intact and only stops new use.",
+        "id": "Data tidak dihapus karena dokumen dan data lain sudah merujuk padanya. Menonaktifkan menjaga riwayat tetap utuh dan hanya menghentikan pemakaian baru."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Active",
+        "en": "Status filter: records in use. They can be picked on other screens.",
+        "id": "Filter status: data yang sedang dipakai. Bisa dipilih di layar lain."
+      },
+      {
+        "label": "Inactive",
+        "en": "Status filter: records no longer used. They stay in the list but are dimmed and cannot be picked on other screens.",
+        "id": "Filter status: data yang tidak dipakai lagi. Tetap ada di daftar tetapi tampak redup dan tidak bisa dipilih di layar lain."
+      },
+      {
+        "label": "Edit",
+        "en": "Pencil icon at the start of the row. Opens the record for changes.",
+        "id": "Ikon pensil di awal baris. Membuka data untuk diubah."
+      },
+      {
+        "label": "Deactivate",
+        "en": "Icon on an active row (also a button in the master form). Asks to confirm, then makes the record inactive.",
+        "id": "Ikon pada baris aktif (juga tombol di form master). Meminta persetujuan, lalu menjadikan data nonaktif."
+      },
+      {
+        "label": "Activate",
+        "en": "Icon on an inactive row (also a button in the master form). Asks to confirm, then makes the record active again.",
+        "id": "Ikon pada baris nonaktif (juga tombol di form master). Meminta persetujuan, lalu mengaktifkan data kembali."
+      },
+      {
+        "label": "+ New Record",
+        "en": "Opens an empty form to add a master record.",
+        "id": "Membuka form kosong untuk menambah data master."
+      }
+    ]
+  },
+  {
+    "key": "guide-lookup-grid",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Small Lookup Lists Typed in Cells",
+    "purpose": {
+      "en": "Explains short helper lists (for example reasons or codes) that you edit directly in the cells like a spreadsheet and save in one go.",
+      "id": "Menjelaskan daftar bantu pendek (misalnya alasan atau kode) yang diubah langsung di sel seperti spreadsheet dan disimpan sekaligus."
+    },
+    "keywords": "lookup, daftar bantu, tambah baris, row, paste dari excel, tempel excel, undo, save, kolom wajib, kode kembar, unik, aktif, active, spreadsheet, isi langsung di sel, daftar kecil",
+    "steps": [
+      {
+        "en": "Open the lookup screen. The list is a sheet: click a cell to select it and just start typing to replace its value.",
+        "id": "Buka layar lookup. Daftarnya berupa lembar kerja: klik sel untuk memilihnya lalu langsung ketik untuk mengganti nilainya."
+      },
+      {
+        "en": "Enter, F2 or a double-click edits the cell, Esc cancels the edit, Tab and the arrow keys move between cells. Dates can be typed as 10-10-26 and become dd-Mmm-yyyy.",
+        "id": "Enter, F2 atau klik dua kali mengedit sel, Esc membatalkan edit, Tab dan tombol panah berpindah antar sel. Tanggal boleh diketik 10-10-26 dan menjadi dd-Mmm-yyyy."
+      },
+      {
+        "en": "Click Row to add an empty row at the bottom and fill it. A new row is marked until it is saved.",
+        "id": "Klik Row untuk menambah baris kosong di bawah lalu isi. Baris baru diberi tanda sampai disimpan."
+      },
+      {
+        "en": "To paste from Excel select the first target cell and press Ctrl+V. Rows are added when needed. Ctrl+C copies the selected cells. Dragging the small square at the corner of the selection fills the cells below.",
+        "id": "Untuk menempel dari Excel pilih sel tujuan pertama lalu tekan Ctrl+V. Baris ditambah bila perlu. Ctrl+C menyalin sel terpilih. Menarik kotak kecil di pojok seleksi mengisi sel di bawahnya."
+      },
+      {
+        "en": "Changed cells are marked and a note shows how many changes are not saved. Empty required cells, duplicates in a unique column and wrong numbers are marked and block Save.",
+        "id": "Sel yang berubah ditandai dan catatan menunjukkan jumlah perubahan yang belum disimpan. Sel wajib yang kosong, nilai kembar di kolom unik dan angka yang salah ditandai dan menahan Save."
+      },
+      {
+        "en": "Click Save to store all changed rows at once. Either all are saved or none; an error tells which row is wrong and your changes stay on the screen.",
+        "id": "Klik Save untuk menyimpan semua baris yang berubah sekaligus. Semuanya tersimpan atau tidak sama sekali; pesan error menyebut baris yang salah dan perubahan Anda tetap di layar."
+      },
+      {
+        "en": "Click Undo to throw away every unsaved change. It asks first and is available only when something changed.",
+        "id": "Klik Undo untuk membuang semua perubahan yang belum disimpan. Undo bertanya dulu dan hanya aktif bila ada perubahan."
+      },
+      {
+        "en": "Key columns such as Code are locked on rows that are already saved, because other data uses them. You can type a code only on a new row.",
+        "id": "Kolom kunci seperti Code terkunci pada baris yang sudah tersimpan, karena data lain memakainya. Kode hanya bisa diketik pada baris baru."
+      },
+      {
+        "en": "There is no Delete. To stop using a row, untick its Active check. The search box filters the rows by any column.",
+        "id": "Tidak ada Delete. Untuk berhenti memakai sebuah baris, hilangkan centang Active-nya. Kotak cari menyaring baris berdasarkan kolom apa pun."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Row",
+        "en": "Adds an empty row at the bottom of the list.",
+        "id": "Menambah baris kosong di bagian bawah daftar."
+      },
+      {
+        "label": "Undo",
+        "en": "Discards all unsaved changes after asking. Disabled when nothing changed.",
+        "id": "Membuang semua perubahan yang belum disimpan setelah bertanya. Nonaktif bila tidak ada perubahan."
+      },
+      {
+        "label": "Save",
+        "en": "Saves all changed rows in one go and reloads the list from the database.",
+        "id": "Menyimpan semua baris yang berubah sekaligus dan memuat ulang daftar dari database."
+      },
+      {
+        "label": "Search",
+        "en": "Shows only the rows that contain the typed text in any column.",
+        "id": "Hanya menampilkan baris yang memuat teks yang diketik di kolom mana pun."
+      },
+      {
+        "label": "Active",
+        "en": "Check column. Ticked means the row can be picked on other screens. Untick instead of deleting.",
+        "id": "Kolom centang. Bercentang berarti baris bisa dipilih di layar lain. Hilangkan centang sebagai pengganti hapus."
+      },
+      {
+        "label": "Code",
+        "en": "Example of a key column: required, must not repeat, and locked once the row is saved.",
+        "id": "Contoh kolom kunci: wajib diisi, tidak boleh kembar, dan terkunci setelah baris disimpan."
+      }
+    ]
+  },
+  {
+    "key": "guide-report",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Using a Report",
+    "purpose": {
+      "en": "Explains report grids: filtering, grouping with subtotals, choosing columns, the totals row and exporting the result.",
+      "id": "Menjelaskan grid laporan: memfilter, mengelompokkan dengan subtotal, memilih kolom, baris total dan mengekspor hasilnya."
+    },
+    "keywords": "laporan, report, filter laporan, group by, kelompokkan, subtotal, total, kolom, columns, export, csv, excel, density, cari data, saring, laporan manajemen, rekap",
+    "steps": [
+      {
+        "en": "Open the report from the Report group of a module, or from the Management Report view of the left menu. Read the note above the table when there is one; it explains what the rows mean.",
+        "id": "Buka laporan dari grup Report sebuah modul, atau dari tampilan Laporan Manajemen di menu kiri. Baca catatan di atas tabel bila ada; isinya menjelaskan arti barisnya."
+      },
+      {
+        "en": "Type in the search box to find rows in the visible columns. A line shows how many rows match out of the total.",
+        "id": "Ketik di kotak cari untuk menemukan baris di kolom yang tampil. Satu baris teks menunjukkan jumlah baris yang cocok dari total."
+      },
+      {
+        "en": "Click Filter. Selection holds fixed choices when the report has them. Per column: text finds rows that contain it; for numbers you can type > 1000, < 5, >= 5, <= 5 or = 12. Click Apply. Reset clears everything.",
+        "id": "Klik Filter. Selection berisi pilihan tetap bila laporan punya. Per column: teks mencari baris yang memuatnya; untuk angka boleh ketik >1000, <5, >=5, <=5 atau =12. Klik Apply. Reset menghapus semuanya."
+      },
+      {
+        "en": "A number on the Filter button and small tags under the toolbar show the active filters. Click the x of a tag to remove it.",
+        "id": "Angka pada tombol Filter dan tag kecil di bawah toolbar menunjukkan filter yang aktif. Klik x pada tag untuk melepasnya."
+      },
+      {
+        "en": "Click Group and choose a column in Group by to read the report in blocks. Each block header shows the value, the number of rows and the subtotal of the totalled columns for the rows on the page. Click a header to fold it.",
+        "id": "Klik Group dan pilih kolom di Group by untuk membaca laporan per blok. Judul tiap blok menampilkan nilainya, jumlah baris dan subtotal kolom yang dijumlahkan untuk baris di halaman itu. Klik judul untuk melipatnya."
+      },
+      {
+        "en": "Click Columns to show or hide columns. Click a column title to sort; the second click reverses the order.",
+        "id": "Klik Columns untuk menampilkan atau menyembunyikan kolom. Klik judul kolom untuk mengurutkan; klik kedua membalik urutan."
+      },
+      {
+        "en": "At the bottom the Total row adds up the number columns that are totalled, for all rows left after your filters, not only the page you see.",
+        "id": "Di bawah, baris Total menjumlahkan kolom angka yang dijumlahkan, untuk semua baris sisa filter, bukan hanya halaman yang tampil."
+      },
+      {
+        "en": "Use View to choose 50, 100, 250 or 500 rows per page, and the page buttons to move through the result.",
+        "id": "Gunakan View untuk memilih 50, 100, 250 atau 500 baris per halaman, dan tombol halaman untuk berpindah di hasil."
+      },
+      {
+        "en": "Export downloads a CSV file with the visible columns and the filtered rows, which Excel can open. Choose the columns with Columns first.",
+        "id": "Export mengunduh file CSV berisi kolom yang tampil dan baris hasil filter, yang bisa dibuka di Excel. Pilih kolom dengan Columns lebih dulu."
+      },
+      {
+        "en": "Density sets the row height (Compact, Normal, Comfortable) and the lines per cell. The settings are remembered for that report in this browser.",
+        "id": "Density mengatur tinggi baris (Compact, Normal, Comfortable) dan jumlah baris per sel. Pengaturan diingat untuk laporan itu di browser ini."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Filter",
+        "en": "Opens the filter window with Selection and Per column fields. Buttons: Reset, Cancel, Apply.",
+        "id": "Membuka jendela filter berisi Selection dan isian Per column. Tombol: Reset, Cancel, Apply."
+      },
+      {
+        "label": "Group",
+        "en": "Pick a column in Group by, or No group. Shown only on reports that offer grouping.",
+        "id": "Pilih kolom di Group by, atau No group. Hanya tampil pada laporan yang menyediakan pengelompokan."
+      },
+      {
+        "label": "Columns",
+        "en": "Show or hide columns. The export follows what is shown.",
+        "id": "Menampilkan atau menyembunyikan kolom. Hasil export mengikuti yang tampil."
+      },
+      {
+        "label": "Density",
+        "en": "Row height and lines per cell. Restore defaults resets them.",
+        "id": "Tinggi baris dan jumlah baris per sel. Restore defaults mengembalikannya."
+      },
+      {
+        "label": "Export",
+        "en": "Downloads the visible columns and the filtered rows as CSV.",
+        "id": "Mengunduh kolom yang tampil dan baris hasil filter sebagai CSV."
+      },
+      {
+        "label": "Total",
+        "en": "Last row of the table. Sums the number columns that are totalled for all filtered rows.",
+        "id": "Baris terakhir tabel. Menjumlahkan kolom angka yang dijumlahkan untuk semua baris hasil filter."
+      }
+    ]
+  },
+  {
+    "key": "guide-print-email",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Printing and E-mailing a Document",
+    "purpose": {
+      "en": "Explains how to print a document, save it as PDF or JPEG, share it by online link and QR code, and send it by e-mail.",
+      "id": "Menjelaskan cara mencetak dokumen, menyimpannya sebagai PDF atau JPEG, membagikannya lewat link online dan kode QR, serta mengirimnya lewat e-mail."
+    },
+    "keywords": "cetak, print, pdf, jpeg, gambar, a5, a4, kertas, qr code, link online, kirim email, email dokumen, bahasa cetak, printer, surat jalan, cetak dokumen, kirim ke customer, lampiran",
+    "steps": [
+      {
+        "en": "Save and Confirm the document first. Only the saved data is printed, so unsaved changes are not included.",
+        "id": "Save dan Confirm dokumen lebih dulu. Yang dicetak hanya data yang tersimpan, jadi perubahan yang belum disimpan tidak ikut."
+      },
+      {
+        "en": "Click Print in the form. The printout opens in a new tab. The paper is chosen by itself: A5 landscape for 1 to 5 lines, A4 portrait for more than 5 lines.",
+        "id": "Klik Print di form. Cetakan terbuka di tab baru. Kertas dipilih otomatis: A5 landscape untuk 1 sampai 5 baris, A4 portrait untuk lebih dari 5 baris."
+      },
+      {
+        "en": "A Customer Order can be printed With Price or Without Price. Users who may not see prices only get the version without price.",
+        "id": "Customer Order bisa dicetak With Price atau Without Price. Pengguna yang tidak boleh melihat harga hanya mendapat versi tanpa harga."
+      },
+      {
+        "en": "On the print page open the Print menu (the button with the small arrow) and choose PDF or JPEG to download the file with a QR code, or Printer to open the browser print dialog.",
+        "id": "Di halaman cetak buka menu Print (tombol dengan panah kecil) lalu pilih PDF atau JPEG untuk mengunduh file dengan kode QR, atau Printer untuk membuka dialog cetak browser."
+      },
+      {
+        "en": "Choose HTML online to get a link and a QR code of a copy of the document as it is now. Anyone with the link can open it without logging in. Use Copy link or Open.",
+        "id": "Pilih HTML online untuk mendapat link dan kode QR salinan dokumen saat ini. Siapa pun yang punya link bisa membukanya tanpa login. Gunakan Copy link atau Open."
+      },
+      {
+        "en": "The link may have an expiry date if the administrator set one. The copy does not change when the document changes later.",
+        "id": "Link bisa punya batas waktu bila administrator menetapkannya. Salinan tidak berubah walau dokumen diubah kemudian."
+      },
+      {
+        "en": "Print language in the menu sets the language of labels, numbers and dates on the printout. It is separate from the language of your screen.",
+        "id": "Print language di menu menentukan bahasa label, angka dan tanggal pada cetakan. Pengaturannya terpisah dari bahasa layar Anda."
+      },
+      {
+        "en": "Click Email. Fill To (several addresses separated by commas), CC and BCC, Subject and Message. Find contact searches customers, suppliers and users; click a contact to add it to the box you used last.",
+        "id": "Klik Email. Isi To (beberapa alamat dipisah koma), CC dan BCC, Subject dan Message. Find contact mencari customer, supplier dan pengguna; klik kontak untuk menambahkannya ke kotak yang terakhir dipakai."
+      },
+      {
+        "en": "Tick what to send: online document link (QR), the document as an image in the e-mail, and Attach PDF. Click Send.",
+        "id": "Centang yang ingin dikirim: link dokumen online (QR), dokumen sebagai gambar di isi e-mail, dan Lampirkan PDF. Klik Send."
+      },
+      {
+        "en": "If the administrator requires it, your own e-mail address must be verified before you can send. Verify it under your account menu, Profile, E-mail.",
+        "id": "Bila diwajibkan administrator, alamat e-mail Anda sendiri harus terverifikasi sebelum bisa mengirim. Verifikasi di menu akun, Profile, E-mail."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Print",
+        "en": "In the form: opens the printout. On the print page: a menu with PDF, JPEG, HTML online and Printer.",
+        "id": "Di form: membuka cetakan. Di halaman cetak: menu berisi PDF, JPEG, HTML online dan Printer."
+      },
+      {
+        "label": "PDF",
+        "en": "Downloads the document as a PDF file with a QR code.",
+        "id": "Mengunduh dokumen sebagai file PDF dengan kode QR."
+      },
+      {
+        "label": "JPEG",
+        "en": "Downloads the document as an image with a QR code.",
+        "id": "Mengunduh dokumen sebagai gambar dengan kode QR."
+      },
+      {
+        "label": "HTML online",
+        "en": "Makes a copy on the server and shows its link and QR code for handover. No login needed to open it.",
+        "id": "Membuat salinan di server dan menampilkan link serta kode QR untuk serah terima. Membukanya tidak perlu login."
+      },
+      {
+        "label": "Printer",
+        "en": "Opens the browser print dialog.",
+        "id": "Membuka dialog cetak browser."
+      },
+      {
+        "label": "Print language",
+        "en": "Choose the language of the printout from the buttons in the Print menu or in the e-mail window.",
+        "id": "Pilih bahasa cetakan dari tombol di menu Print atau di jendela e-mail."
+      },
+      {
+        "label": "Email",
+        "en": "Opens the e-mail window to send the document with To, CC, BCC, Subject and Message.",
+        "id": "Membuka jendela e-mail untuk mengirim dokumen dengan To, CC, BCC, Subject dan Message."
+      },
+      {
+        "label": "Back",
+        "en": "On the print page: returns to the document or the grid.",
+        "id": "Di halaman cetak: kembali ke dokumen atau grid."
+      }
+    ]
+  },
+  {
+    "key": "guide-approval",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Approval Screens",
+    "purpose": {
+      "en": "Explains how an approver reviews documents waiting for approval and decides with Approve, Reject or Hold.",
+      "id": "Menjelaskan cara approver memeriksa dokumen yang menunggu approval dan memutuskan dengan Approve, Reject atau Hold."
+    },
+    "keywords": "approval, persetujuan, approve, setujui, reject, tolak, hold, tahan, level, menunggu approval, pengganti, plt, keputusan, log keputusan, riwayat dokumen, atasan, setuju dokumen",
+    "steps": [
+      {
+        "en": "Open the approval screen. On the left is the list of documents waiting for you, with how many are waiting. Click a document to see it.",
+        "id": "Buka layar approval. Di kiri ada daftar dokumen yang menunggu Anda, beserta jumlahnya. Klik sebuah dokumen untuk melihatnya."
+      },
+      {
+        "en": "The document is read-only: a summary, the item lines, the Approval Flow with Level 1, 2 and so on and who is next (an acting officer is marked PLT), and the Document History. Use the open link to see the full document.",
+        "id": "Dokumen hanya bisa dibaca: ringkasan, baris item, Approval Flow dengan Level 1, 2 dan seterusnya serta siapa berikutnya (officer pengganti ditandai PLT), dan Document History. Pakai tautan buka untuk melihat dokumen lengkap."
+      },
+      {
+        "en": "Decide with Reject, Hold or Approve. In Indonesian they are called Tolak, Tahan and Setujui. A window asks you to confirm.",
+        "id": "Putuskan dengan Reject, Hold atau Approve. Dalam bahasa Indonesia namanya Tolak, Tahan dan Setujui. Sebuah jendela meminta Anda menyetujui."
+      },
+      {
+        "en": "Approve passes the document to the next level, or approves it when you are the last level. It is final and cannot be undone. No reason is needed.",
+        "id": "Approve meneruskan dokumen ke level berikutnya, atau menyetujuinya bila Anda level terakhir. Keputusan ini final dan tidak bisa dibatalkan. Alasan tidak diperlukan."
+      },
+      {
+        "en": "Reject sends the document back to its creator. It is final and needs a reason. The creator can make the document again with Duplicate.",
+        "id": "Reject mengembalikan dokumen ke pembuatnya. Keputusan ini final dan wajib diisi alasan. Pembuat bisa membuat dokumen lagi dengan Duplicate."
+      },
+      {
+        "en": "Hold is temporary and needs a reason. The document stays in the list marked as held, the Hold button disappears, and later you still decide Approve or Reject.",
+        "id": "Hold bersifat sementara dan wajib diisi alasan. Dokumen tetap di daftar dengan tanda ditahan, tombol Hold hilang, dan nanti Anda tetap memutuskan Approve atau Reject."
+      },
+      {
+        "en": "Every decision is recorded with who, when, level and reason. You see it in the Document History and in the Decision Log (Log Keputusan) on the left.",
+        "id": "Setiap keputusan dicatat dengan siapa, kapan, level dan alasan. Anda melihatnya di Document History dan di Log Keputusan di sebelah kiri."
+      },
+      {
+        "en": "Only the approver of the current level can decide. The creator can only Cancel their own document from its form. Approvers cannot edit the document.",
+        "id": "Hanya approver di level yang sedang berjalan yang bisa memutuskan. Pembuat hanya bisa Cancel dokumennya sendiri dari form. Approver tidak bisa mengubah isi dokumen."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Approve",
+        "en": "Final approval at your level. Shown as Setujui in Indonesian. No reason needed.",
+        "id": "Persetujuan final di level Anda. Pada bahasa Indonesia tampil sebagai Setujui. Alasan tidak diperlukan."
+      },
+      {
+        "label": "Reject",
+        "en": "Final refusal, back to the creator. Shown as Tolak in Indonesian. Reason required.",
+        "id": "Penolakan final, kembali ke pembuat. Pada bahasa Indonesia tampil sebagai Tolak. Alasan wajib."
+      },
+      {
+        "label": "Hold",
+        "en": "Temporary hold. Shown as Tahan in Indonesian. Reason required. Decide Approve or Reject later.",
+        "id": "Penahanan sementara. Pada bahasa Indonesia tampil sebagai Tahan. Alasan wajib. Putuskan Approve atau Reject nanti."
+      },
+      {
+        "label": "Waiting Approval 1",
+        "en": "Status of a document waiting at that approval level. Other statuses: Hold L1, Approved and Rejected.",
+        "id": "Status dokumen yang menunggu di level approval itu. Status lain: Hold L1, Approved dan Rejected."
+      },
+      {
+        "label": "Approval Flow",
+        "en": "Shows the levels, who decided, and who is next. PLT marks an acting officer.",
+        "id": "Menampilkan level, siapa yang sudah memutuskan, dan siapa berikutnya. PLT menandai officer pengganti."
+      },
+      {
+        "label": "Document History",
+        "en": "Read-only list of submitted, approved, rejected and held actions with who, when and note.",
+        "id": "Daftar hanya-baca aksi diajukan, disetujui, ditolak dan ditahan beserta siapa, kapan dan catatan."
+      }
+    ]
+  },
+  {
+    "key": "guide-text-number-date",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Typing in Fields: Text, Numbers and Dates",
+    "purpose": {
+      "en": "Explains the aa / Aa / AA case button, picking values from lookups instead of typing, the number format of your language, and the date format and date picker.",
+      "id": "Menjelaskan tombol huruf aa / Aa / AA, memilih nilai dari lookup alih-alih mengetik, format angka sesuai bahasa, serta format tanggal dan pemilih tanggal."
+    },
+    "keywords": "isi field, ketik, huruf besar, huruf kecil, kapital, aa, Aa, AA, lookup, pilih dari daftar, angka, desimal, koma, titik, tanggal, kalender, format tanggal, dd-mmm-yyyy, wajib diisi, number format",
+    "steps": [
+      {
+        "en": "Text fields have a small aa button at the right. Click it to switch: aa (as typed), Aa (each word starts with a capital), AA (all capitals). The text changes as you type. This helps on phones and tablets.",
+        "id": "Field teks punya tombol kecil aa di kanan. Klik untuk berganti: aa (seperti diketik), Aa (tiap kata berawal huruf besar), AA (semua huruf besar). Teks berubah saat Anda mengetik. Berguna di HP dan tablet."
+      },
+      {
+        "en": "The button is not shown on read-only fields, or on e-mail, number, web address and phone fields.",
+        "id": "Tombol ini tidak tampil pada field hanya-baca, atau pada field e-mail, angka, alamat web dan telepon."
+      },
+      {
+        "en": "When a value already exists in a master (customer, item, unit and so on), the field is a lookup or dropdown. Click it, search inside the list, and pick the row. Do not type it by hand.",
+        "id": "Bila sebuah nilai sudah ada di master (customer, item, satuan dan sebagainya), field-nya berupa lookup atau dropdown. Klik, cari di dalam daftar, lalu pilih barisnya. Jangan diketik manual."
+      },
+      {
+        "en": "Picking a row in some lookups also fills other fields by itself, for example the customer name fills address details. Some lookups let you add a missing value.",
+        "id": "Memilih baris di sebagian lookup juga mengisi field lain secara otomatis, misalnya memilih customer mengisi data alamatnya. Sebagian lookup memungkinkan menambah nilai yang belum ada."
+      },
+      {
+        "en": "Numbers are typed in the format of your language: 1.234,56 in Indonesian and 1,234.56 in English. The system stores the plain number. Money fields have a currency selector.",
+        "id": "Angka diketik dengan format bahasa Anda: 1.234,56 untuk Indonesia dan 1,234.56 untuk Inggris. Sistem menyimpan angka polos. Field uang punya pilihan mata uang."
+      },
+      {
+        "en": "Dates are shown as dd-Mmm-yyyy, for example 10-Oct-2026 in English and 10-Okt-2026 in Indonesian. Click the calendar button to pick a day; Today and Clear are in the picker.",
+        "id": "Tanggal tampil sebagai dd-Mmm-yyyy, misalnya 10-Oct-2026 dalam bahasa Inggris dan 10-Okt-2026 dalam bahasa Indonesia. Klik tombol kalender untuk memilih hari; Today dan Clear ada di pemilih."
+      },
+      {
+        "en": "You may also type the date: 10-10-26, 10 okt or 2026-10-10, then press Enter or leave the field. It turns into the standard format. A date that cannot be read is marked and the old value stays.",
+        "id": "Tanggal juga boleh diketik: 10-10-26, 10 okt atau 2026-10-10, lalu tekan Enter atau pindah dari field. Tanggal berubah ke format baku. Tanggal yang tidak terbaca ditandai dan nilai lama tetap."
+      },
+      {
+        "en": "Required fields are marked. When you Save or Confirm, empty required fields are highlighted and the first one is shown.",
+        "id": "Field wajib diberi tanda. Saat Save atau Confirm, field wajib yang kosong disorot dan yang pertama langsung ditampilkan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "aa",
+        "en": "Case button at the right of text fields. Each click: aa, then Aa, then AA, then back to aa.",
+        "id": "Tombol huruf di kanan field teks. Tiap klik: aa, lalu Aa, lalu AA, lalu kembali ke aa."
+      },
+      {
+        "label": "Lookup",
+        "en": "Field with a magnifier. Opens a searchable table of master records to pick from.",
+        "id": "Field dengan kaca pembesar. Membuka tabel data master yang bisa dicari untuk dipilih."
+      },
+      {
+        "label": "dd-Mmm-yyyy",
+        "en": "Date field. Type a date or click the calendar button. Today fills the current date and Clear empties it.",
+        "id": "Field tanggal. Ketik tanggal atau klik tombol kalender. Today mengisi tanggal hari ini dan Clear mengosongkannya."
+      },
+      {
+        "label": "Money",
+        "en": "Amount field with a currency selector. Some forms also show the amount in words.",
+        "id": "Field nominal dengan pilihan mata uang. Sebagian form juga menampilkan nominal dalam huruf."
+      }
+    ]
+  },
+  {
+    "key": "guide-language-theme",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Changing Language and Theme",
+    "purpose": {
+      "en": "Explains how to change the screen language and the colour theme from your account menu, and that only the display changes, not the stored data.",
+      "id": "Menjelaskan cara mengganti bahasa layar dan tema warna dari menu akun, dan bahwa yang berubah hanya tampilan, bukan data yang tersimpan."
+    },
+    "keywords": "ganti bahasa, bahasa, language, indonesia, inggris, english, tema, theme, warna, gelap, dark, terang, ukuran huruf, font, tampilan, menu akun, profile, profil, density",
+    "steps": [
+      {
+        "en": "Click the gear icon next to your name at the bottom of the left menu and choose Profile.",
+        "id": "Klik ikon roda gigi di samping nama Anda di bagian bawah menu kiri lalu pilih Profile."
+      },
+      {
+        "en": "Choose Bahasa and click a flag: Bahasa Indonesia or English. The choice is remembered in this browser.",
+        "id": "Pilih Bahasa lalu klik salah satu bendera: Bahasa Indonesia atau English. Pilihan diingat di browser ini."
+      },
+      {
+        "en": "Labels, messages, number format (1.234,56 or 1,234.56) and month names in dates follow the language. Some texts change only after you open a screen again.",
+        "id": "Label, pesan, format angka (1.234,56 atau 1,234.56) dan nama bulan pada tanggal mengikuti bahasa. Sebagian teks baru berubah setelah Anda membuka layar lagi."
+      },
+      {
+        "en": "Choose Tema and click one of the colour squares. There are four looks (Pastel, Cerah, Dark, Hitam) in three colours (Biru, Hijau, Merah). The theme is remembered in this browser.",
+        "id": "Pilih Tema lalu klik salah satu kotak warna. Ada empat tampilan (Pastel, Cerah, Dark, Hitam) dalam tiga warna (Biru, Hijau, Merah). Tema diingat di browser ini."
+      },
+      {
+        "en": "The same page lets you choose Density (Rapat, Normal, Longgar) and the font size (90%, 100%, 110%, 120%).",
+        "id": "Halaman yang sama memungkinkan Anda memilih Density (Rapat, Normal, Longgar) dan ukuran huruf (90%, 100%, 110%, 120%)."
+      },
+      {
+        "en": "Only the display changes. The data in the database is stored in English and plain numbers, so records look the same to everyone and are not changed by your choice.",
+        "id": "Yang berubah hanya tampilan. Data di database disimpan dalam bahasa Inggris dan angka polos, jadi data tetap sama bagi semua orang dan tidak berubah oleh pilihan Anda."
+      },
+      {
+        "en": "A printout can use another language than your screen. Choose it with Print language in the Print menu.",
+        "id": "Cetakan bisa memakai bahasa yang berbeda dari layar Anda. Pilih dengan Print language di menu Print."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Bahasa",
+        "en": "Profile page with flags to choose the display language.",
+        "id": "Halaman Profile berisi bendera untuk memilih bahasa tampilan."
+      },
+      {
+        "label": "Tema",
+        "en": "Profile page with 12 colour squares (4 looks x 3 colours), Density and font size.",
+        "id": "Halaman Profile berisi 12 kotak warna (4 tampilan x 3 warna), Density dan ukuran huruf."
+      },
+      {
+        "label": "Ukuran huruf",
+        "en": "Font size of the screens: 90%, 100%, 110% or 120%.",
+        "id": "Ukuran huruf layar: 90%, 100%, 110% atau 120%."
+      },
+      {
+        "label": "Print language",
+        "en": "In the Print menu. Sets the language of one printout, separate from the screen language.",
+        "id": "Ada di menu Print. Menentukan bahasa satu cetakan, terpisah dari bahasa layar."
+      }
+    ]
+  },
+  {
+    "key": "guide-chat",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Chat Between Users",
+    "purpose": {
+      "en": "Explains how to chat one-to-one with other users of the system, send files, and read the delivery marks.",
+      "id": "Menjelaskan cara chat satu lawan satu dengan pengguna lain di sistem, mengirim file, dan membaca tanda terkirim."
+    },
+    "keywords": "chat, obrolan, pesan, kirim pesan, kirim file, lampiran, online, sedang login, terakhir dilihat, centang, dibaca, notifikasi pesan, bunyi, wa, whatsapp, ngobrol, teman kerja",
+    "steps": [
+      {
+        "en": "Click the gear icon next to your name and choose Chat. The chat opens in the left panel over the menu. A badge with a number shows unread messages.",
+        "id": "Klik ikon roda gigi di samping nama Anda lalu pilih Chat. Chat terbuka di panel kiri di atas menu. Lencana angka menunjukkan pesan yang belum dibaca."
+      },
+      {
+        "en": "The list shows who is signed in right now, with bright avatars and a green dot, and below it your other conversations in grey. Use the Search name box to find someone.",
+        "id": "Daftar menampilkan siapa yang sedang login, dengan avatar cerah dan titik hijau, dan di bawahnya percakapan lain dalam warna abu-abu. Gunakan kotak Search name untuk mencari orang."
+      },
+      {
+        "en": "To write to someone who is not signed in, click the + button. The Not signed in list shows each person with Last seen. Click a name to start.",
+        "id": "Untuk menulis ke orang yang tidak sedang login, klik tombol +. Daftar Not signed in menampilkan tiap orang dengan Last seen. Klik nama untuk mulai."
+      },
+      {
+        "en": "Open a conversation, type your message and press Enter or click Send. The aa button changes the letter case like in other fields. Earlier messages load with a button above the messages.",
+        "id": "Buka percakapan, ketik pesan lalu tekan Enter atau klik Send. Tombol aa mengubah huruf seperti di field lain. Pesan lama dimuat lewat tombol di atas pesan."
+      },
+      {
+        "en": "To send a file click Attach file and pick any file. You may add a caption. The largest file is 20 MB unless the administrator changed it. Pictures show directly; other files are a card you click to download.",
+        "id": "Untuk mengirim file klik Attach file dan pilih file apa saja. Anda boleh menambah keterangan. File terbesar 20 MB kecuali diubah administrator. Gambar tampil langsung; file lain berupa kartu yang diklik untuk mengunduh."
+      },
+      {
+        "en": "Marks on your messages: one check is sent, two grey checks mean received by the other screen, two blue checks mean read. A clock means still sending and a red mark means failed.",
+        "id": "Tanda pada pesan Anda: satu centang berarti terkirim, dua centang abu-abu berarti sudah diterima layar lawan, dua centang biru berarti dibaca. Jam berarti masih dikirim dan tanda merah berarti gagal."
+      },
+      {
+        "en": "A new message plays two short tones and, when the chat is closed, shows a notice. New messages are fetched about every 5 seconds.",
+        "id": "Pesan baru membunyikan dua nada pendek dan, bila chat sedang tertutup, menampilkan pemberitahuan. Pesan baru diambil kira-kira tiap 5 detik."
+      },
+      {
+        "en": "While chat is open, the swap icon switches between menu and chat, the columns icon moves chat to the right side of the screen, and the x closes it.",
+        "id": "Saat chat terbuka, ikon tukar berganti antara menu dan chat, ikon kolom memindahkan chat ke sisi kanan layar, dan x menutupnya."
+      },
+      {
+        "en": "Only registered, active and approved users appear, one person at a time. There are no groups and no voice. You are online while signed in; Sign out makes you offline at once, closing the browser without signing out after about 90 seconds.",
+        "id": "Hanya pengguna yang terdaftar, aktif dan disetujui yang tampil, satu orang satu percakapan. Tidak ada grup dan tidak ada suara. Anda online selama login; Sign out langsung membuat offline, menutup browser tanpa Sign out sekitar 90 detik."
+      }
+    ],
+    "fields": [
+      {
+        "label": "New chat",
+        "en": "The + button. Lists users who are not signed in so you can write to them too.",
+        "id": "Tombol +. Menampilkan pengguna yang tidak sedang login supaya bisa ditulisi juga."
+      },
+      {
+        "label": "Search name",
+        "en": "Filters the chat list by name or job title.",
+        "id": "Menyaring daftar chat berdasarkan nama atau jabatan."
+      },
+      {
+        "label": "Attach file",
+        "en": "Paperclip. Picks a file to send. Larger than the allowed size is refused.",
+        "id": "Klip kertas. Memilih file untuk dikirim. File yang melebihi ukuran yang diizinkan ditolak."
+      },
+      {
+        "label": "Send",
+        "en": "Sends the message and the chosen file. Enter does the same.",
+        "id": "Mengirim pesan dan file yang dipilih. Enter melakukan hal yang sama."
+      },
+      {
+        "label": "Swap menu and chat",
+        "en": "Switches the left panel between the menu and the chat while chat is open.",
+        "id": "Berganti antara menu dan chat di panel kiri saat chat terbuka."
+      },
+      {
+        "label": "Move chat to the right",
+        "en": "Docks the chat on the right side of the screen and keeps the menu on the left.",
+        "id": "Memasang chat di sisi kanan layar dan menjaga menu tetap di kiri."
+      }
+    ]
+  },
+  {
+    "key": "guide-help-ticket",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Help and Support Tickets",
+    "purpose": {
+      "en": "Explains the F1 Help and Support page, the rule book and flow pages, and how to send a Support Ticket and read the reply.",
+      "id": "Menjelaskan halaman Bantuan dan dukungan (F1), pedoman aturan dan halaman alur, serta cara mengirim Tiket Bantuan dan membaca balasannya."
+    },
+    "keywords": "bantuan, help, f1, dukungan, support, tiket, ticket, tiket bantuan, lapor masalah, bug, error, pedoman, aturan, rule book, alur, flow, hubungi support, balasan, kirim tiket",
+    "steps": [
+      {
+        "en": "Press F1 on any screen, or click the gear icon next to your name and choose Bantuan & dukungan. The page opens in the left panel as part of Profile.",
+        "id": "Tekan F1 di layar mana pun, atau klik ikon roda gigi di samping nama Anda lalu pilih Bantuan & dukungan. Halaman terbuka di panel kiri sebagai bagian Profile."
+      },
+      {
+        "en": "Pedoman Aturan ERP opens the rule book of the application as a tab. Guide: Master Product & Revision explains the product master flow.",
+        "id": "Pedoman Aturan ERP membuka buku aturan aplikasi sebagai tab. Guide: Master Product & Revision menjelaskan alur master product."
+      },
+      {
+        "en": "Sales Flow and Costing Flow open flow pages as tabs: blocks of screens in order. Point at a block to see its short rule and click it to open that screen.",
+        "id": "Sales Flow dan Costing Flow membuka halaman alur sebagai tab: blok-blok layar berurutan. Arahkan mouse ke blok untuk melihat aturan singkatnya dan klik untuk membuka layarnya."
+      },
+      {
+        "en": "Click Back at the top of the panel to return to Profile.",
+        "id": "Klik Back di atas panel untuk kembali ke Profile."
+      },
+      {
+        "en": "To report a problem click Tiket Bantuan. In Screen / menu write where it happened, for example Customer Order. In Problem description (required) write what happened and what you expected.",
+        "id": "Untuk melaporkan masalah klik Tiket Bantuan. Di Screen / menu tulis di mana kejadiannya, misalnya Customer Order. Di Problem description (wajib) tulis apa yang terjadi dan apa yang Anda harapkan."
+      },
+      {
+        "en": "Click Send ticket. The ticket gets a number and the status Open, and a message says it was sent to the support team.",
+        "id": "Klik Send ticket. Tiket mendapat nomor dan status Open, dan muncul pesan bahwa tiket terkirim ke tim support."
+      },
+      {
+        "en": "Under Tiket saya you see your latest 20 tickets with number, date, status (Open, In progress, Done or Closed), your text, the last reply of the support team and the resolution note.",
+        "id": "Di bawah Tiket saya Anda melihat 20 tiket terakhir dengan nomor, tanggal, status (Open, In progress, Done atau Closed), teks Anda, balasan terakhir tim support dan catatan penyelesaian."
+      },
+      {
+        "en": "Press the ? key outside a text box on any screen to see the list of keyboard shortcuts.",
+        "id": "Tekan tombol ? di luar kotak teks pada layar mana pun untuk melihat daftar pintasan keyboard."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Pedoman Aturan ERP",
+        "en": "Opens the rule book as a tab.",
+        "id": "Membuka buku aturan sebagai tab."
+      },
+      {
+        "label": "Tiket Bantuan",
+        "en": "Opens the ticket form and the list of your tickets.",
+        "id": "Membuka form tiket dan daftar tiket Anda."
+      },
+      {
+        "label": "Screen / menu",
+        "en": "Optional. The screen or menu where the problem happened.",
+        "id": "Boleh dikosongkan. Layar atau menu tempat masalah terjadi."
+      },
+      {
+        "label": "Problem description",
+        "en": "Required. What happened and what you expected. At most 5000 characters.",
+        "id": "Wajib. Apa yang terjadi dan apa yang Anda harapkan. Paling banyak 5000 karakter."
+      },
+      {
+        "label": "Send ticket",
+        "en": "Sends the ticket to the support team and adds it to Tiket saya with the status Open.",
+        "id": "Mengirim tiket ke tim support dan menambahkannya ke Tiket saya dengan status Open."
+      }
+    ]
+  },
+  {
+    "key": "guide-account",
+    "type": "GUIDE",
+    "module": "GENERAL",
+    "title": "Your Account Menu",
+    "purpose": {
+      "en": "Explains the account menu behind the gear icon: profile pages, e-mail verification, password help and signing out.",
+      "id": "Menjelaskan menu akun di balik ikon roda gigi: halaman profil, verifikasi e-mail, bantuan password dan keluar dari aplikasi."
+    },
+    "keywords": "akun, profil, profile, edit profil, ganti password, ubah password, lupa password, verifikasi email, e-mail, keluar, logout, sign out, roda gigi, menu akun, kata sandi, password default",
+    "steps": [
+      {
+        "en": "Click the gear icon next to your name at the bottom of the left menu. A small menu rises with Chat, Profile and other entries including Bantuan & dukungan and Sign out.",
+        "id": "Klik ikon roda gigi di samping nama Anda di bagian bawah menu kiri. Muncul menu kecil berisi Chat, Profile dan entri lain termasuk Bantuan & dukungan dan Sign out."
+      },
+      {
+        "en": "Profile shows your name and login. From it you open the pages Tema, Bahasa, E-mail and Bantuan & dukungan. Back returns to the Profile list.",
+        "id": "Profile menampilkan nama dan login Anda. Dari situ Anda membuka halaman Tema, Bahasa, E-mail dan Bantuan & dukungan. Back kembali ke daftar Profile."
+      },
+      {
+        "en": "The E-mail page shows your address and whether it is Terverifikasi or Belum terverifikasi. Click Kelola e-mail to open E-mail Saya with the details.",
+        "id": "Halaman E-mail menampilkan alamat Anda dan apakah Terverifikasi atau Belum terverifikasi. Klik Kelola e-mail untuk membuka E-mail Saya berisi rinciannya."
+      },
+      {
+        "en": "If your address is filled and not verified, click Send verification link. Open the e-mail you receive within 24 hours and click its button. Verification can be required before you may e-mail documents.",
+        "id": "Bila alamat sudah terisi tetapi belum terverifikasi, klik Send verification link. Buka e-mail yang Anda terima dalam 24 jam lalu klik tombolnya. Verifikasi bisa diwajibkan sebelum Anda boleh mengirim dokumen lewat e-mail."
+      },
+      {
+        "en": "You cannot change the address yourself. The administrator fills or changes it in Security. If it is empty, ask the administrator.",
+        "id": "Alamat tidak bisa Anda ubah sendiri. Administrator mengisi atau mengubahnya di Security. Bila masih kosong, minta administrator."
+      },
+      {
+        "en": "Edit profil and Change password open a form that is only a preview for now: Save just closes it and nothing is stored. Ask the administrator to change your name or password.",
+        "id": "Edit profil dan Change password membuka form yang untuk sementara hanya pratinjau: Save hanya menutupnya dan tidak ada yang tersimpan. Minta administrator mengubah nama atau password Anda."
+      },
+      {
+        "en": "If you forgot your password, use Lupa password? on the login page. You give your username or e-mail, birth date, mother's name, registered phone and a security answer. A default password must be replaced at once by one of at least 8 characters.",
+        "id": "Bila lupa password, pakai Lupa password? di halaman login. Anda mengisi username atau e-mail, tanggal lahir, nama ibu, nomor HP terdaftar dan jawaban pertanyaan keamanan. Password default harus segera diganti password baru minimal 8 karakter."
+      },
+      {
+        "en": "To leave, click Sign out in the account menu and confirm. You return to the login page and show as offline in chat.",
+        "id": "Untuk keluar, klik Sign out di menu akun lalu setujui. Anda kembali ke halaman login dan tampil offline di chat."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Profile",
+        "en": "Account menu entry. Opens the pages Tema, Bahasa, E-mail and Bantuan & dukungan.",
+        "id": "Entri menu akun. Membuka halaman Tema, Bahasa, E-mail dan Bantuan & dukungan."
+      },
+      {
+        "label": "Kelola e-mail",
+        "en": "On the E-mail page. Opens E-mail Saya with your address and verification status.",
+        "id": "Di halaman E-mail. Membuka E-mail Saya berisi alamat dan status verifikasi Anda."
+      },
+      {
+        "label": "Send verification link",
+        "en": "Sends a link to your own address. The link works for 24 hours and marks the address as verified.",
+        "id": "Mengirim link ke alamat Anda sendiri. Link berlaku 24 jam dan menandai alamat sebagai terverifikasi."
+      },
+      {
+        "label": "Change password",
+        "en": "Account menu entry. At the moment a preview form that does not store a new password.",
+        "id": "Entri menu akun. Saat ini berupa form pratinjau yang belum menyimpan password baru."
+      },
+      {
+        "label": "Sign out",
+        "en": "Account menu entry. After you confirm, you are logged out and sent to the login page.",
+        "id": "Entri menu akun. Setelah Anda setuju, Anda keluar dan dibawa ke halaman login."
+      }
+    ]
+  }
+]

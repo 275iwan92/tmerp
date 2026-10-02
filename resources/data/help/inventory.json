@@ -1,0 +1,2441 @@
+[
+    {
+        "key": "inv-rm-stock-in",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Stock In - Raw Material",
+        "purpose": {
+            "en": "Record Raw Material goods coming into a warehouse (regular receipt or opening balance) and post them to the Stock Card. Open it when goods arrive or to load an opening balance. Receipts auto-posted from supplier receiving also show here (Source PV).",
+            "id": "Mencatat Bahan Baku yang masuk ke gudang (penerimaan biasa atau saldo awal) lalu memostingnya ke Kartu Stok. Buka saat barang datang atau memuat saldo awal. Penerimaan yang diposting otomatis dari penerimaan supplier juga tampil (Sumber PV)."
+        },
+        "keywords": "stock in, barang masuk, penerimaan, saldo awal, opening balance, bb, in, Raw Material, Bahan Baku, bahan baku, raw material, rm",
+        "steps": [
+            {
+                "en": "The list shows Stock In documents of Raw Material. Use the search box (document no, reference, notes), the Draft / Waiting / Posted tabs or the column filters to find one.",
+                "id": "Daftar menampilkan dokumen Stock In Bahan Baku. Pakai kotak cari (no dokumen, referensi, catatan), tab Draft / Waiting / Posted atau filter kolom untuk mencarinya."
+            },
+            {
+                "en": "Click + New Record to open an empty document. To change an existing draft, double-click its row or click Open.",
+                "id": "Klik + New Record untuk membuka dokumen kosong. Untuk mengubah draft yang ada, klik 2x barisnya atau klik Open."
+            },
+            {
+                "en": "Fill Document Date, Document Category and Warehouse. Pick the Warehouse before the lines: the Location list of each line shows only usable locations of that warehouse.",
+                "id": "Isi Document Date, Document Category dan Warehouse. Pilih Warehouse sebelum baris item: daftar Location tiap baris hanya berisi lokasi yang bisa dipakai di gudang itu."
+            },
+            {
+                "en": "Type at least 2 characters of the code or name in the item search box and click the result to add a line (the raw material comes from the Raw Material master). Repeat for every item.",
+                "id": "Ketik minimal 2 huruf kode atau nama di kotak cari item lalu klik hasilnya untuk menambah baris (bahan baku diambil dari master bahan baku). Ulangi untuk tiap item."
+            },
+            {
+                "en": "On each line choose Location, enter Qty and, if needed, Lot/Batch and Unit Price. UoM is filled from the item and cannot be typed.",
+                "id": "Di tiap baris pilih Location, isi Qty dan bila perlu Lot/Batch dan Unit Price. UoM terisi dari item dan tidak bisa diketik."
+            },
+            {
+                "en": "Click Save Draft. The system gives the document its number. You can still edit the draft; Cancel cancels it.",
+                "id": "Klik Save Draft. Sistem memberi nomor dokumen. Draft masih bisa diubah; Cancel membatalkannya."
+            },
+            {
+                "en": "Open the draft and click Confirm & Post (or the check icon in the list). The goods are added to the Stock Card and the document becomes read-only; fix mistakes later with a Stock Adjustment.",
+                "id": "Buka draft lalu klik Confirm & Post (atau ikon centang di daftar). Barang masuk ke Kartu Stok dan dokumen jadi hanya-baca; kesalahan dikoreksi lewat Stock Adjustment."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Document No.",
+                "en": "Filled by the system when the draft is first saved. Not typed.",
+                "id": "Diisi sistem saat draft pertama disimpan. Tidak diketik."
+            },
+            {
+                "label": "Document Date *",
+                "en": "Date the goods are received. Required. Starts as today.",
+                "id": "Tanggal barang diterima. Wajib. Awalnya hari ini."
+            },
+            {
+                "label": "Document Category *",
+                "en": "STOCK (regular receipt) for normal incoming goods, BB (opening balance) to load the starting stock of an item. Required.",
+                "id": "STOCK (masuk biasa) untuk barang masuk normal, BB (saldo awal) untuk memuat stok awal item. Wajib."
+            },
+            {
+                "label": "Warehouse *",
+                "en": "Receiving warehouse, picked from active warehouses in Warehouse & Location. Required. It decides which locations the lines can use.",
+                "id": "Gudang penerima, dipilih dari gudang aktif di Warehouse & Location. Wajib. Menentukan lokasi yang bisa dipakai baris."
+            },
+            {
+                "label": "Received by",
+                "en": "Shows the logged-in user. Display only.",
+                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+            },
+            {
+                "label": "Notes",
+                "en": "Free text, for example delivery note number or remark. Shown under the document number in the list.",
+                "id": "Teks bebas, misalnya nomor surat jalan atau catatan. Tampil di bawah nomor dokumen pada daftar."
+            },
+            {
+                "label": "Search item code / name to add…",
+                "en": "Search box to add a line. Type 2 or more characters; only active items of the Raw Material master are found (max 15 results).",
+                "id": "Kotak cari untuk menambah baris. Ketik 2 huruf atau lebih; hanya item aktif dari master bahan baku yang ditemukan (maks 15 hasil)."
+            },
+            {
+                "label": "Lot/Batch",
+                "en": "Optional lot or batch number of the received goods. Kept on the Stock Card.",
+                "id": "Nomor lot atau batch barang yang diterima (opsional). Tersimpan di Kartu Stok."
+            },
+            {
+                "label": "Location *",
+                "en": "Storage location (bin) in the chosen warehouse where the goods are put. Required for every line.",
+                "id": "Lokasi simpan (bin) di gudang terpilih tempat barang ditaruh. Wajib di setiap baris."
+            },
+            {
+                "label": "Qty *",
+                "en": "Quantity received, must be more than zero. Required.",
+                "id": "Jumlah yang diterima, harus lebih dari nol. Wajib."
+            },
+            {
+                "label": "UoM",
+                "en": "Stock unit of the item, filled automatically.",
+                "id": "Satuan stok item, terisi otomatis."
+            },
+            {
+                "label": "Unit Price",
+                "en": "Price per unit of the received goods (default 0). Used to value the stock and its average price.",
+                "id": "Harga per satuan barang yang diterima (default 0). Dipakai untuk menilai stok dan harga rata-ratanya."
+            }
+        ]
+    },
+    {
+        "key": "inv-rm-stock-out",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Stock Out - Raw Material",
+        "purpose": {
+            "en": "Record Raw Material issued out of a warehouse to a department or process (for example to production) and post it to the Stock Card. Open it when goods are handed over from the warehouse.",
+            "id": "Mencatat Bahan Baku yang dikeluarkan dari gudang ke departemen atau proses (misalnya ke produksi) lalu memostingnya ke Kartu Stok. Buka saat barang diserahkan dari gudang."
+        },
+        "keywords": "stock out, barang keluar, pengeluaran, issue, serah terima, ke produksi, out, Raw Material, Bahan Baku, bahan baku, raw material, rm",
+        "steps": [
+            {
+                "en": "The list shows Stock Out documents of this stock class. Search by document no or notes, or use the Draft / Waiting / Posted tabs and column filters.",
+                "id": "Daftar menampilkan dokumen Stock Out kelas stok ini. Cari dengan no dokumen atau catatan, atau pakai tab Draft / Waiting / Posted dan filter kolom."
+            },
+            {
+                "en": "Click + New Record (or double-click a draft to edit it).",
+                "id": "Klik + New Record (atau klik 2x draft untuk mengubahnya)."
+            },
+            {
+                "en": "Fill Document Date, Source Warehouse and Issued To (Dept.). Target Process is optional text. Pick the warehouse first so the line locations can be chosen.",
+                "id": "Isi Document Date, Source Warehouse dan Issued To (Dept.). Target Process teks opsional. Pilih gudang dulu agar lokasi baris bisa dipilih."
+            },
+            {
+                "en": "Search the raw material by code or name (2 or more characters) and click the result to add a line; repeat for each item.",
+                "id": "Cari bahan baku dengan kode atau nama (2 huruf atau lebih) lalu klik hasilnya untuk menambah baris; ulangi untuk tiap item."
+            },
+            {
+                "en": "For each line choose Source Location and enter Qty Out and, if needed, Lot/Batch.",
+                "id": "Di tiap baris pilih Source Location dan isi Qty Out, serta Lot/Batch bila perlu."
+            },
+            {
+                "en": "Click Save Draft, then open the draft and click Confirm & Post (or the check icon in the list). The goods leave the Stock Card and the document becomes read-only.",
+                "id": "Klik Save Draft, lalu buka draft dan klik Confirm & Post (atau ikon centang di daftar). Barang keluar dari Kartu Stok dan dokumen jadi hanya-baca."
+            },
+            {
+                "en": "If the item has no cost/inventory account, a notice tells you which master to complete. Wrong document? Cancel a draft, or correct a posted one with Stock Adjustment.",
+                "id": "Bila item belum punya akun HPP/persediaan, muncul peringatan master mana yang harus dilengkapi. Salah dokumen? Cancel draft, atau koreksi yang sudah posting lewat Stock Adjustment."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Document No.",
+                "en": "Filled by the system when the draft is first saved.",
+                "id": "Diisi sistem saat draft pertama disimpan."
+            },
+            {
+                "label": "Document Date *",
+                "en": "Date the goods are issued. Required. Starts as today.",
+                "id": "Tanggal barang dikeluarkan. Wajib. Awalnya hari ini."
+            },
+            {
+                "label": "Source Warehouse *",
+                "en": "Warehouse the goods are taken from, picked from active warehouses. Required.",
+                "id": "Gudang asal barang, dipilih dari gudang aktif. Wajib."
+            },
+            {
+                "label": "Issued To (Dept.) *",
+                "en": "Department that receives the goods, picked from the department master. Required.",
+                "id": "Departemen penerima barang, dipilih dari master departemen. Wajib."
+            },
+            {
+                "label": "Target Process",
+                "en": "Free text for the process the goods go to, for example Offset Printing or Lamination. Optional.",
+                "id": "Teks bebas untuk proses tujuan barang, misalnya Cetak Offset atau Laminasi. Opsional."
+            },
+            {
+                "label": "Issued by",
+                "en": "Shows the logged-in user. Display only.",
+                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+            },
+            {
+                "label": "Notes",
+                "en": "Free text remark, shown under the document number in the list.",
+                "id": "Catatan bebas, tampil di bawah nomor dokumen pada daftar."
+            },
+            {
+                "label": "Search code / name of raw material to add…",
+                "en": "Search box to add a line. Type 2 or more characters; only active items of the Raw Material master are found.",
+                "id": "Kotak cari untuk menambah baris. Ketik 2 huruf atau lebih; hanya item aktif dari master bahan baku yang ditemukan."
+            },
+            {
+                "label": "Lot/Batch",
+                "en": "Optional lot or batch number of the goods taken.",
+                "id": "Nomor lot atau batch barang yang diambil (opsional)."
+            },
+            {
+                "label": "Source Location *",
+                "en": "Storage location (bin) the goods are taken from, limited to usable locations of the source warehouse. Required.",
+                "id": "Lokasi simpan (bin) asal barang, terbatas pada lokasi yang bisa dipakai di gudang sumber. Wajib."
+            },
+            {
+                "label": "Qty Out *",
+                "en": "Quantity issued, must be more than zero. Required.",
+                "id": "Jumlah yang dikeluarkan, harus lebih dari nol. Wajib."
+            },
+            {
+                "label": "UoM",
+                "en": "Stock unit of the item, filled automatically.",
+                "id": "Satuan stok item, terisi otomatis."
+            }
+        ]
+    },
+    {
+        "key": "inv-rm-stock-return",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Return from Production - Raw Material",
+        "purpose": {
+            "en": "Bring Raw Material back to the warehouse after production did not use it, either in good condition or as scrap. A return always refers to a posted Stock Out and can never be more than what is left of it.",
+            "id": "Mengembalikan Bahan Baku ke gudang setelah produksi tidak memakainya, dalam kondisi layak atau afkir. Retur selalu mengacu ke Stock Out yang sudah posting dan tidak boleh melebihi sisanya."
+        },
+        "keywords": "return from production, retur produksi, retur, kembali ke gudang, afkir, scrap, sisa bahan, Raw Material, Bahan Baku, bahan baku, raw material, rm",
+        "steps": [
+            {
+                "en": "The list shows return documents of this stock class. Search by document no or Stock Out no, or use the Draft / Waiting / Posted tabs and column filters.",
+                "id": "Daftar menampilkan dokumen retur kelas stok ini. Cari dengan no dokumen atau no Stock Out, atau pakai tab Draft / Waiting / Posted dan filter kolom."
+            },
+            {
+                "en": "Click + New Record. Fill Tanggal Dokumen and click the dashed Ref. Stock Out box to open the list of Stock Out documents that can still be returned.",
+                "id": "Klik + New Record. Isi Tanggal Dokumen lalu klik kotak putus-putus Ref. Stock Out untuk membuka daftar Stock Out yang masih bisa diretur."
+            },
+            {
+                "en": "Click a Stock Out. Its lines are copied in with Dikeluarkan and Sisa Boleh (what may still be returned). Choose Gudang Tujuan (bahan layak).",
+                "id": "Klik satu Stock Out. Baris-barisnya disalin lengkap dengan Dikeluarkan dan Sisa Boleh (yang masih boleh diretur). Pilih Gudang Tujuan (bahan layak)."
+            },
+            {
+                "en": "On each line enter Qty Retur, choose Kondisi (GOOD or SCRAP) and Lokasi Tujuan. Lines you do not return must not stay with a quantity.",
+                "id": "Di tiap baris isi Qty Retur, pilih Kondisi (GOOD atau SCRAP) dan Lokasi Tujuan. Baris yang tidak diretur jangan dibiarkan berisi jumlah."
+            },
+            {
+                "en": "For SCRAP lines Keterangan is required. Click Save Draft, then open the draft and click Confirm & Post.",
+                "id": "Untuk baris SCRAP, Keterangan wajib diisi. Klik Save Draft, lalu buka draft dan klik Confirm & Post."
+            },
+            {
+                "en": "After posting the goods are added back to the Stock Card and the returned quantity is counted on the Stock Out. The document is read-only; Cancel works only on a draft.",
+                "id": "Setelah posting barang masuk lagi ke Kartu Stok dan jumlah retur tercatat di Stock Out. Dokumen jadi hanya-baca; Cancel hanya untuk draft."
+            }
+        ],
+        "fields": [
+            {
+                "label": "No. Dokumen",
+                "en": "Filled by the system when the draft is first saved.",
+                "id": "Diisi sistem saat draft pertama disimpan."
+            },
+            {
+                "label": "Tanggal Dokumen *",
+                "en": "Date of the return. Required. Starts as today.",
+                "id": "Tanggal retur. Wajib. Awalnya hari ini."
+            },
+            {
+                "label": "Ref. Stock Out *",
+                "en": "The posted, not cancelled Stock Out being returned, picked from the list of Stock Outs with a remaining returnable quantity. Fixed once saved. Required.",
+                "id": "Stock Out yang sudah posting dan tidak dibatalkan yang diretur, dipilih dari daftar Stock Out yang masih punya sisa retur. Tidak bisa diganti setelah disimpan. Wajib."
+            },
+            {
+                "label": "Gudang Tujuan (bahan layak) *",
+                "en": "Warehouse that receives the returned goods. Good-condition lines can only use its usable locations. Required.",
+                "id": "Gudang penerima barang retur. Baris kondisi layak hanya bisa memakai lokasi yang bisa dipakai di gudang ini. Wajib."
+            },
+            {
+                "label": "Proses Asal",
+                "en": "Process the goods came back from. Filled from the Stock Out, can be changed. Optional.",
+                "id": "Proses asal barang kembali. Terisi dari Stock Out, bisa diubah. Opsional."
+            },
+            {
+                "label": "Catatan",
+                "en": "Free text remark.",
+                "id": "Catatan bebas."
+            },
+            {
+                "label": "Item",
+                "en": "Item of the line, copied from the Stock Out.",
+                "id": "Item baris, disalin dari Stock Out."
+            },
+            {
+                "label": "Dikeluarkan",
+                "en": "Quantity issued on the Stock Out line.",
+                "id": "Jumlah yang dikeluarkan pada baris Stock Out."
+            },
+            {
+                "label": "Sisa Boleh",
+                "en": "Quantity that may still be returned (issued minus earlier returns). Qty Retur cannot go above it.",
+                "id": "Jumlah yang masih boleh diretur (dikeluarkan dikurangi retur sebelumnya). Qty Retur tidak boleh melebihinya."
+            },
+            {
+                "label": "Qty Retur *",
+                "en": "Quantity coming back, more than zero and not above Sisa Boleh. Required. The row turns red when too high.",
+                "id": "Jumlah yang kembali, lebih dari nol dan tidak lebih dari Sisa Boleh. Wajib. Baris menjadi merah bila kelebihan."
+            },
+            {
+                "label": "Kondisi *",
+                "en": "GOOD (Layak) goes back to a usable location. SCRAP (Afkir) goes to a location that is not usable, for example a waste bin.",
+                "id": "GOOD (Layak) kembali ke lokasi yang bisa dipakai. SCRAP (Afkir) ke lokasi yang tidak bisa dipakai, misalnya bin waste."
+            },
+            {
+                "label": "Lokasi Tujuan *",
+                "en": "Location that receives the goods. The list changes with Kondisi. Required.",
+                "id": "Lokasi penerima barang. Daftarnya berubah sesuai Kondisi. Wajib."
+            },
+            {
+                "label": "Keterangan",
+                "en": "Reason for the line. Required for SCRAP lines, optional for GOOD.",
+                "id": "Alasan untuk baris. Wajib untuk baris SCRAP, opsional untuk GOOD."
+            }
+        ]
+    },
+    {
+        "key": "inv-rm-stock-adj",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Stock Adjustment & Physical Count - Raw Material",
+        "purpose": {
+            "en": "Correct the system balance of Raw Material to the real quantity: a single Adjustment, or a scheduled Stock Opname (physical count). It always needs approval; the stock only changes when the last approver approves.",
+            "id": "Mengoreksi saldo sistem Bahan Baku agar sama dengan jumlah sebenarnya: Adjustment tunggal atau Stock Opname (hitung fisik) terjadwal. Selalu perlu persetujuan; stok baru berubah setelah approver terakhir menyetujui."
+        },
+        "keywords": "stock adjustment, opname, stock opname, hitung fisik, koreksi stok, selisih stok, penyesuaian stok, adj, op, ad, Raw Material, Bahan Baku",
+        "steps": [
+            {
+                "en": "The list shows Adjustment and Opname documents of this stock class with their status. Search by document no or notes, or use the status tabs and filters.",
+                "id": "Daftar menampilkan dokumen Adjustment dan Opname kelas stok ini beserta statusnya. Cari dengan no dokumen atau catatan, atau pakai tab status dan filter."
+            },
+            {
+                "en": "Click + New Record. Choose Kind (Adjustment or Stock Opname), Document Date, Warehouse and Reason. For Stock Opname also fill the Opname Block: officer, count start and end, witness.",
+                "id": "Klik + New Record. Pilih Kind (Adjustment atau Stock Opname), Document Date, Warehouse dan Reason. Untuk Stock Opname isi juga Blok Opname: petugas, mulai dan selesai hitung, saksi."
+            },
+            {
+                "en": "Add lines: search the raw material (2 or more characters) and click it. For a full count tick Full Scope and click Pull All Items With Balance to load every item that has stock in the warehouse.",
+                "id": "Tambah baris: cari bahan baku (2 huruf atau lebih) lalu klik. Untuk hitung penuh centang Full Scope dan klik Pull All Items With Balance untuk memuat semua item yang punya stok di gudang."
+            },
+            {
+                "en": "On each line choose Location: System Balance and the price are loaded from the last Stock Card entry. Type the counted quantity in Physical Count; Variance and Variance Value are calculated.",
+                "id": "Di tiap baris pilih Location: System Balance dan harga dimuat dari catatan terakhir Kartu Stok. Ketik jumlah hasil hitung di Physical Count; Variance dan Variance Value dihitung otomatis."
+            },
+            {
+                "en": "Click Save Draft. When the lines are final, click Submit for Approval. The lines are locked while approval runs.",
+                "id": "Klik Save Draft. Setelah baris final, klik Submit for Approval. Baris terkunci selama proses persetujuan."
+            },
+            {
+                "en": "Approvers decide in Adjustment Approval. When the last level approves, the document is posted to the Stock Card. If rejected, the status becomes REVISION_NEEDED: fix it and submit again.",
+                "id": "Approver memutuskan di Adjustment Approval. Saat level terakhir menyetujui, dokumen diposting ke Kartu Stok. Bila ditolak, status menjadi REVISION_NEEDED: perbaiki lalu ajukan lagi."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Document No.",
+                "en": "Filled by the system when the draft is first saved (ADJ for Adjustment, OPN for Opname).",
+                "id": "Diisi sistem saat draft pertama disimpan (ADJ untuk Adjustment, OPN untuk Opname)."
+            },
+            {
+                "label": "Document Date *",
+                "en": "Date of the correction or count. Required. Starts as today.",
+                "id": "Tanggal koreksi atau hitung. Wajib. Awalnya hari ini."
+            },
+            {
+                "label": "Kind *",
+                "en": "Adjustment (single correction) or Stock Opname (scheduled physical count). Cannot be changed after the first save.",
+                "id": "Adjustment (koreksi tunggal) atau Stock Opname (hitung fisik terjadwal). Tidak bisa diubah setelah disimpan pertama kali."
+            },
+            {
+                "label": "Warehouse *",
+                "en": "Warehouse being corrected or counted. Required.",
+                "id": "Gudang yang dikoreksi atau dihitung. Wajib."
+            },
+            {
+                "label": "Reason *",
+                "en": "Why the balance differs: previous counting/input error, damaged, lost, found (more than recorded), expired or other. Required.",
+                "id": "Mengapa saldo berbeda: salah hitung/input sebelumnya, rusak, hilang, ditemukan (lebih dari catatan), kadaluarsa atau lainnya. Wajib."
+            },
+            {
+                "label": "Submitted by",
+                "en": "Shows the logged-in user. Display only.",
+                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+            },
+            {
+                "label": "Opname Officer *",
+                "en": "Name of the person who counts. Required for Stock Opname only.",
+                "id": "Nama petugas yang menghitung. Wajib hanya untuk Stock Opname."
+            },
+            {
+                "label": "Count Start *",
+                "en": "Date and time the count started. Required for Stock Opname.",
+                "id": "Tanggal dan jam hitung mulai. Wajib untuk Stock Opname."
+            },
+            {
+                "label": "Count End *",
+                "en": "Date and time the count finished. Required for Stock Opname.",
+                "id": "Tanggal dan jam hitung selesai. Wajib untuk Stock Opname."
+            },
+            {
+                "label": "Witness *",
+                "en": "Name of the person who witnesses the count. Required for Stock Opname.",
+                "id": "Nama saksi hitung. Wajib untuk Stock Opname."
+            },
+            {
+                "label": "Full Scope (all items with balance)",
+                "en": "Tick when every item in the warehouse is counted; it shows the button Pull All Items With Balance that loads all items with a balance. Stock Opname only.",
+                "id": "Centang bila semua item di gudang dihitung; muncul tombol Pull All Items With Balance yang memuat semua item bersaldo. Hanya Stock Opname."
+            },
+            {
+                "label": "Notes / Chronology",
+                "en": "Free text: what happened and how the difference was found.",
+                "id": "Teks bebas: apa yang terjadi dan bagaimana selisih ditemukan."
+            },
+            {
+                "label": "Location *",
+                "en": "Location of the counted stock. Choosing it loads System Balance and the price for that item and location. Required.",
+                "id": "Lokasi stok yang dihitung. Memilihnya memuat System Balance dan harga item di lokasi itu. Wajib."
+            },
+            {
+                "label": "System Balance",
+                "en": "Quantity the system says is there (from the last Stock Card entry). Display only.",
+                "id": "Jumlah menurut sistem (dari catatan terakhir Kartu Stok). Hanya tampilan."
+            },
+            {
+                "label": "Physical Count *",
+                "en": "The real quantity counted, zero or more. Type the counted total, not the difference. Required.",
+                "id": "Jumlah nyata hasil hitung, nol atau lebih. Ketik total hasil hitung, bukan selisihnya. Wajib."
+            },
+            {
+                "label": "Variance",
+                "en": "Physical Count minus System Balance, calculated. Plus means more than recorded, minus means less.",
+                "id": "Physical Count dikurangi System Balance, dihitung otomatis. Plus berarti lebih dari catatan, minus berarti kurang."
+            },
+            {
+                "label": "Variance Value",
+                "en": "Absolute value of the variance times the unit price, calculated. The total decides how many approval levels are needed.",
+                "id": "Nilai mutlak selisih dikali harga satuan, dihitung otomatis. Totalnya menentukan jumlah level persetujuan."
+            },
+            {
+                "label": "Line Reason",
+                "en": "Remark per line; the screen marks it required when there is a variance. It is a reminder on the screen and is not saved with the document.",
+                "id": "Catatan per baris; layar menandainya wajib bila ada selisih. Hanya pengingat di layar dan tidak disimpan bersama dokumen."
+            },
+            {
+                "label": "Rejection Reason",
+                "en": "Shown to the approver only: required when rejecting, at least 10 characters.",
+                "id": "Hanya untuk approver: wajib saat menolak, minimal 10 karakter."
+            }
+        ]
+    },
+    {
+        "key": "inv-rm-rpt-balance",
+        "type": "REPORT",
+        "module": "INV",
+        "title": "Stock Balance - Raw Material",
+        "purpose": {
+            "en": "Shows how much Raw Material is on hand now, one row per item and location, with this month's opening, in, out and adjustment. Open it to check stock, value and items below minimum.",
+            "id": "Menampilkan jumlah Bahan Baku yang ada sekarang, satu baris per item dan lokasi, beserta awal, masuk, keluar dan penyesuaian bulan ini. Buka untuk cek stok, nilai dan item di bawah minimum."
+        },
+        "keywords": "stock balance, saldo stok, stok, on hand, persediaan, master stock, minimum stock, stok minimum, nilai stok, laporan stok, Raw Material, Bahan Baku",
+        "steps": [
+            {
+                "en": "Open the report; it lists all stock now. Type in the search box (item code or name) to find an item.",
+                "id": "Buka laporan; isinya semua stok saat ini. Ketik di kotak cari (kode atau nama item) untuk menemukan item."
+            },
+            {
+                "en": "Click a tab (Below minimum, Empty, Not usable) to see only those rows, or All to see everything.",
+                "id": "Klik tab (Below minimum, Empty, Not usable) untuk melihat baris tertentu saja, atau All untuk semuanya."
+            },
+            {
+                "en": "Use the filters Category, Warehouse, Location and Stock to narrow the list.",
+                "id": "Pakai filter Category, Warehouse, Location dan Stock untuk mempersempit daftar."
+            },
+            {
+                "en": "Group by Category, Warehouse or Item to get subtotals. Number and value columns show totals.",
+                "id": "Kelompokkan menurut Category, Warehouse atau Item untuk mendapat subtotal. Kolom jumlah dan nilai menampilkan total."
+            },
+            {
+                "en": "Use the column chooser to show Minimum Stock and Idle (days), which are hidden at first. Open the Stock Card report to see the movements behind a balance.",
+                "id": "Pakai pemilih kolom untuk menampilkan Minimum Stock dan Idle (days) yang awalnya tersembunyi. Buka laporan Stock Card untuk melihat mutasi di balik saldo."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Item",
+                "en": "Item name with its code.",
+                "id": "Nama item beserta kodenya."
+            },
+            {
+                "label": "Category",
+                "en": "Group of the item: the category of the raw material.",
+                "id": "Kelompok item: kategori bahan baku."
+            },
+            {
+                "label": "Warehouse",
+                "en": "Warehouse holding the stock.",
+                "id": "Gudang tempat stok berada."
+            },
+            {
+                "label": "Location",
+                "en": "Storage location (bin) in that warehouse.",
+                "id": "Lokasi simpan (bin) di gudang itu."
+            },
+            {
+                "label": "Opening",
+                "en": "Quantity at the start of the current month. If the item had no movement this month it equals On Hand.",
+                "id": "Jumlah di awal bulan berjalan. Bila item tidak bergerak bulan ini, nilainya sama dengan On Hand."
+            },
+            {
+                "label": "In",
+                "en": "Total received this month.",
+                "id": "Total masuk bulan ini."
+            },
+            {
+                "label": "Out",
+                "en": "Total issued this month.",
+                "id": "Total keluar bulan ini."
+            },
+            {
+                "label": "Adjustment",
+                "en": "Total of adjustments and opname corrections this month (can be negative).",
+                "id": "Total penyesuaian dan koreksi opname bulan ini (bisa negatif)."
+            },
+            {
+                "label": "On Hand",
+                "en": "Quantity in the warehouse now.",
+                "id": "Jumlah di gudang sekarang."
+            },
+            {
+                "label": "Unit",
+                "en": "Stock unit.",
+                "id": "Satuan stok."
+            },
+            {
+                "label": "Minimum Stock",
+                "en": "Minimum stock set on the item master. Hidden at first.",
+                "id": "Stok minimum yang diatur di master item. Awalnya tersembunyi."
+            },
+            {
+                "label": "Stock Value",
+                "en": "Value of the stock in that row.",
+                "id": "Nilai stok pada baris itu."
+            },
+            {
+                "label": "Last Movement",
+                "en": "Date of the latest movement of that item in that location.",
+                "id": "Tanggal mutasi terakhir item di lokasi itu."
+            },
+            {
+                "label": "Idle (days)",
+                "en": "Days since the last movement. Hidden at first.",
+                "id": "Jumlah hari sejak mutasi terakhir. Awalnya tersembunyi."
+            },
+            {
+                "label": "Stock",
+                "en": "Status: OK, Below minimum (usable stock of the item is under its minimum), Empty, or Not usable (location cannot be used, e.g. waste).",
+                "id": "Status: OK, Below minimum (stok bisa pakai item di bawah minimum), Empty, atau Not usable (lokasi tidak bisa dipakai, mis. waste)."
+            },
+            {
+                "label": "Filter: Category / Warehouse / Location / Stock",
+                "en": "Narrow the rows by item group, warehouse, location or stock status.",
+                "id": "Mempersempit baris menurut kelompok item, gudang, lokasi atau status stok."
+            },
+            {
+                "label": "Group by: Category / Warehouse / Item",
+                "en": "Gather the rows under headings with subtotals.",
+                "id": "Mengelompokkan baris di bawah judul dengan subtotal."
+            }
+        ]
+    },
+    {
+        "key": "inv-rm-rpt-card",
+        "type": "REPORT",
+        "module": "INV",
+        "title": "Stock Card - Raw Material",
+        "purpose": {
+            "en": "Lists every stock movement of Raw Material, newest first: what came in, went out or was adjusted, in which document and location, and the balance after it. Open it to trace why a balance is what it is.",
+            "id": "Menampilkan setiap mutasi stok Bahan Baku, terbaru di atas: apa yang masuk, keluar atau disesuaikan, di dokumen dan lokasi mana, serta saldo sesudahnya. Buka untuk menelusuri asal sebuah saldo."
+        },
+        "keywords": "stock card, kartu stok, mutasi stok, riwayat stok, movement, history stok, kartu persediaan, laporan stok, Raw Material, Bahan Baku",
+        "steps": [
+            {
+                "en": "Open the report; all movements are listed, newest first.",
+                "id": "Buka laporan; semua mutasi tampil, terbaru di atas."
+            },
+            {
+                "en": "To read the card of one item, type its code or name (or a document or reference number) in the search box, or group by Item.",
+                "id": "Untuk membaca kartu satu item, ketik kode atau namanya (atau no dokumen atau referensi) di kotak cari, atau kelompokkan menurut Item."
+            },
+            {
+                "en": "Click a tab (In, Out, Adjustment) to see only that kind of movement.",
+                "id": "Klik tab (In, Out, Adjustment) untuk melihat satu jenis mutasi saja."
+            },
+            {
+                "en": "Use the filters Movement, Category, Warehouse and Location, or group by Warehouse or Movement.",
+                "id": "Pakai filter Movement, Category, Warehouse dan Location, atau kelompokkan menurut Warehouse atau Movement."
+            },
+            {
+                "en": "Read Opening, the movement and Balance on the same row. The In, Out and Adjustment columns show totals for the rows on screen.",
+                "id": "Baca Opening, mutasi dan Balance pada baris yang sama. Kolom In, Out dan Adjustment menampilkan total baris di layar."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Date",
+                "en": "Date of the document.",
+                "id": "Tanggal dokumen."
+            },
+            {
+                "label": "Doc No.",
+                "en": "Number of the stock document that caused the movement.",
+                "id": "Nomor dokumen stok yang menyebabkan mutasi."
+            },
+            {
+                "label": "Movement",
+                "en": "Kind of movement: In, Out, Adjustment or Opening.",
+                "id": "Jenis mutasi: In, Out, Adjustment atau Opening."
+            },
+            {
+                "label": "Category",
+                "en": "Document category code (for example STOCK, BB, AD, OP, RETURN). Hidden at first.",
+                "id": "Kode kategori dokumen (misalnya STOCK, BB, AD, OP, RETURN). Awalnya tersembunyi."
+            },
+            {
+                "label": "Item",
+                "en": "Item name with its code.",
+                "id": "Nama item beserta kodenya."
+            },
+            {
+                "label": "Warehouse",
+                "en": "Warehouse of the movement.",
+                "id": "Gudang tempat mutasi."
+            },
+            {
+                "label": "Location",
+                "en": "Storage location (bin).",
+                "id": "Lokasi simpan (bin)."
+            },
+            {
+                "label": "Lot No.",
+                "en": "Lot or batch number. Hidden at first.",
+                "id": "Nomor lot atau batch. Awalnya tersembunyi."
+            },
+            {
+                "label": "Reference",
+                "en": "Number of the source document, for example the receiving or the Stock Out it came from.",
+                "id": "Nomor dokumen sumber, misalnya penerimaan atau Stock Out asalnya."
+            },
+            {
+                "label": "Opening",
+                "en": "Balance of that item in that location just before the movement.",
+                "id": "Saldo item di lokasi itu tepat sebelum mutasi."
+            },
+            {
+                "label": "In",
+                "en": "Quantity received.",
+                "id": "Jumlah masuk."
+            },
+            {
+                "label": "Out",
+                "en": "Quantity issued.",
+                "id": "Jumlah keluar."
+            },
+            {
+                "label": "Adjustment",
+                "en": "Quantity added or removed by an adjustment (can be negative).",
+                "id": "Jumlah yang ditambah atau dikurangi oleh penyesuaian (bisa negatif)."
+            },
+            {
+                "label": "Balance",
+                "en": "Balance of that item in that location right after the movement.",
+                "id": "Saldo item di lokasi itu sesudah mutasi."
+            },
+            {
+                "label": "Unit",
+                "en": "Stock unit.",
+                "id": "Satuan stok."
+            },
+            {
+                "label": "Filter: Movement / Category / Warehouse / Location",
+                "en": "Narrow the rows by kind of movement, document category, warehouse or location.",
+                "id": "Mempersempit baris menurut jenis mutasi, kategori dokumen, gudang atau lokasi."
+            },
+            {
+                "label": "Group by: Item / Warehouse / Movement",
+                "en": "Gather the rows under headings. Group by Item to read one item as a card.",
+                "id": "Mengelompokkan baris di bawah judul. Kelompokkan menurut Item untuk membaca satu item sebagai kartu."
+            }
+        ]
+    },
+    {
+        "key": "inv-rm-rpt-slow",
+        "type": "REPORT",
+        "module": "INV",
+        "title": "Slow Moving Item - Raw Material",
+        "purpose": {
+            "en": "Lists Raw Material items that still have usable stock but have not moved for 3 months or more, so you can decide to use, sell or write them off. Open it during stock review.",
+            "id": "Menampilkan item Bahan Baku yang masih punya stok bisa pakai tetapi tidak bergerak 3 bulan atau lebih, agar bisa diputuskan dipakai, dijual atau dihapus. Buka saat evaluasi stok."
+        },
+        "keywords": "slow moving, slow moving item, stok mati, barang tidak bergerak, dead stock, stok lama, idle, tidak laku, laporan stok, Raw Material, Bahan Baku",
+        "steps": [
+            {
+                "en": "Open the report; items with no movement for 3 months or more are listed, longest idle first.",
+                "id": "Buka laporan; item yang tidak bergerak 3 bulan atau lebih tampil, yang paling lama diam di atas."
+            },
+            {
+                "en": "Click a tab (3-6 months, 6-9 months, 9-12 months, Over 12 months, Never moved) to see one age band.",
+                "id": "Klik tab (3-6 months, 6-9 months, 9-12 months, Over 12 months, Never moved) untuk melihat satu rentang usia."
+            },
+            {
+                "en": "Use the search box (item code or name), the filters Category and Idle, or group by Category or Idle.",
+                "id": "Pakai kotak cari (kode atau nama item), filter Category dan Idle, atau kelompokkan menurut Category atau Idle."
+            },
+            {
+                "en": "Check On Hand, Stock Value and Last Movement, then follow up with the warehouse or purchasing. The totals show how much value is tied up.",
+                "id": "Cek On Hand, Stock Value dan Last Movement, lalu tindak lanjuti bersama gudang atau pembelian. Total menunjukkan nilai yang tertahan."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Item",
+                "en": "Item name with its code. Each item appears once, even when it is in several locations.",
+                "id": "Nama item beserta kodenya. Tiap item tampil sekali, walau ada di beberapa lokasi."
+            },
+            {
+                "label": "Category",
+                "en": "Group of the item: the category of the raw material.",
+                "id": "Kelompok item: kategori bahan baku."
+            },
+            {
+                "label": "Warehouse",
+                "en": "All warehouses where the item has usable stock.",
+                "id": "Semua gudang tempat item punya stok bisa pakai."
+            },
+            {
+                "label": "On Hand",
+                "en": "Total usable quantity of the item.",
+                "id": "Total jumlah item yang bisa dipakai."
+            },
+            {
+                "label": "Unit",
+                "en": "Stock unit.",
+                "id": "Satuan stok."
+            },
+            {
+                "label": "Stock Value",
+                "en": "Value of that stock.",
+                "id": "Nilai stok itu."
+            },
+            {
+                "label": "Last Movement",
+                "en": "Date of the latest movement of the item in any location. Empty for old balances without a date.",
+                "id": "Tanggal mutasi terakhir item di lokasi mana pun. Kosong untuk saldo lama tanpa tanggal."
+            },
+            {
+                "label": "Idle (days)",
+                "en": "Days since the last movement.",
+                "id": "Jumlah hari sejak mutasi terakhir."
+            },
+            {
+                "label": "Idle",
+                "en": "Age band: 3-6 months, 6-9 months, 9-12 months, Over 12 months, or Never moved (old balance without a movement date).",
+                "id": "Rentang usia: 3-6 months, 6-9 months, 9-12 months, Over 12 months, atau Never moved (saldo lama tanpa tanggal mutasi)."
+            },
+            {
+                "label": "Filter: Category / Idle",
+                "en": "Narrow the rows by item group or age band.",
+                "id": "Mempersempit baris menurut kelompok item atau rentang usia."
+            },
+            {
+                "label": "Group by: Category / Idle",
+                "en": "Gather the rows under headings with subtotals.",
+                "id": "Mengelompokkan baris di bawah judul dengan subtotal."
+            }
+        ]
+    },
+    {
+        "key": "inv-fg-stock-in",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Stock In - Finished Goods",
+        "purpose": {
+            "en": "Record Finished Goods goods coming into a warehouse (regular receipt or opening balance) and post them to the Stock Card. Open it when goods arrive or to load an opening balance. Documents here are entered by hand (Source MANUAL).",
+            "id": "Mencatat Barang Jadi yang masuk ke gudang (penerimaan biasa atau saldo awal) lalu memostingnya ke Kartu Stok. Buka saat barang datang atau memuat saldo awal. Dokumen di sini diinput manual (Sumber MANUAL)."
+        },
+        "keywords": "stock in, barang masuk, penerimaan, saldo awal, opening balance, bb, in, Finished Goods, Barang Jadi, barang jadi, finished goods, fg",
+        "steps": [
+            {
+                "en": "The list shows Stock In documents of Finished Goods. Use the search box (document no, reference, notes), the Draft / Waiting / Posted tabs or the column filters to find one.",
+                "id": "Daftar menampilkan dokumen Stock In Barang Jadi. Pakai kotak cari (no dokumen, referensi, catatan), tab Draft / Waiting / Posted atau filter kolom untuk mencarinya."
+            },
+            {
+                "en": "Click + New Record to open an empty document. To change an existing draft, double-click its row or click Open.",
+                "id": "Klik + New Record untuk membuka dokumen kosong. Untuk mengubah draft yang ada, klik 2x barisnya atau klik Open."
+            },
+            {
+                "en": "Fill Document Date, Document Category and Warehouse. Pick the Warehouse before the lines: the Location list of each line shows only usable locations of that warehouse.",
+                "id": "Isi Document Date, Document Category dan Warehouse. Pilih Warehouse sebelum baris item: daftar Location tiap baris hanya berisi lokasi yang bisa dipakai di gudang itu."
+            },
+            {
+                "en": "Type at least 2 characters of the code or name in the item search box and click the result to add a line (the product comes from the Master Product). Repeat for every item.",
+                "id": "Ketik minimal 2 huruf kode atau nama di kotak cari item lalu klik hasilnya untuk menambah baris (produk diambil dari Master Product). Ulangi untuk tiap item."
+            },
+            {
+                "en": "On each line choose Location, enter Qty and, if needed, Lot/Batch and Unit Price. UoM is filled from the item and cannot be typed.",
+                "id": "Di tiap baris pilih Location, isi Qty dan bila perlu Lot/Batch dan Unit Price. UoM terisi dari item dan tidak bisa diketik."
+            },
+            {
+                "en": "Click Save Draft. The system gives the document its number. You can still edit the draft; Cancel cancels it.",
+                "id": "Klik Save Draft. Sistem memberi nomor dokumen. Draft masih bisa diubah; Cancel membatalkannya."
+            },
+            {
+                "en": "Open the draft and click Confirm & Post (or the check icon in the list). The goods are added to the Stock Card and the document becomes read-only; fix mistakes later with a Stock Adjustment.",
+                "id": "Buka draft lalu klik Confirm & Post (atau ikon centang di daftar). Barang masuk ke Kartu Stok dan dokumen jadi hanya-baca; kesalahan dikoreksi lewat Stock Adjustment."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Document No.",
+                "en": "Filled by the system when the draft is first saved. Not typed.",
+                "id": "Diisi sistem saat draft pertama disimpan. Tidak diketik."
+            },
+            {
+                "label": "Document Date *",
+                "en": "Date the goods are received. Required. Starts as today.",
+                "id": "Tanggal barang diterima. Wajib. Awalnya hari ini."
+            },
+            {
+                "label": "Document Category *",
+                "en": "STOCK (regular receipt) for normal incoming goods, BB (opening balance) to load the starting stock of an item. Required.",
+                "id": "STOCK (masuk biasa) untuk barang masuk normal, BB (saldo awal) untuk memuat stok awal item. Wajib."
+            },
+            {
+                "label": "Warehouse *",
+                "en": "Receiving warehouse, picked from active warehouses in Warehouse & Location. Required. It decides which locations the lines can use.",
+                "id": "Gudang penerima, dipilih dari gudang aktif di Warehouse & Location. Wajib. Menentukan lokasi yang bisa dipakai baris."
+            },
+            {
+                "label": "Received by",
+                "en": "Shows the logged-in user. Display only.",
+                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+            },
+            {
+                "label": "Notes",
+                "en": "Free text, for example delivery note number or remark. Shown under the document number in the list.",
+                "id": "Teks bebas, misalnya nomor surat jalan atau catatan. Tampil di bawah nomor dokumen pada daftar."
+            },
+            {
+                "label": "Search item code / name to add…",
+                "en": "Search box to add a line. Type 2 or more characters; only active items of the Master Product are found (max 15 results).",
+                "id": "Kotak cari untuk menambah baris. Ketik 2 huruf atau lebih; hanya item aktif dari Master Product yang ditemukan (maks 15 hasil)."
+            },
+            {
+                "label": "Lot/Batch",
+                "en": "Optional lot or batch number of the received goods. Kept on the Stock Card.",
+                "id": "Nomor lot atau batch barang yang diterima (opsional). Tersimpan di Kartu Stok."
+            },
+            {
+                "label": "Location *",
+                "en": "Storage location (bin) in the chosen warehouse where the goods are put. Required for every line.",
+                "id": "Lokasi simpan (bin) di gudang terpilih tempat barang ditaruh. Wajib di setiap baris."
+            },
+            {
+                "label": "Qty *",
+                "en": "Quantity received, must be more than zero. Required.",
+                "id": "Jumlah yang diterima, harus lebih dari nol. Wajib."
+            },
+            {
+                "label": "UoM",
+                "en": "Stock unit of the item, filled automatically.",
+                "id": "Satuan stok item, terisi otomatis."
+            },
+            {
+                "label": "Unit Price",
+                "en": "Price per unit of the received goods (default 0). Used to value the stock and its average price.",
+                "id": "Harga per satuan barang yang diterima (default 0). Dipakai untuk menilai stok dan harga rata-ratanya."
+            }
+        ]
+    },
+    {
+        "key": "inv-fg-stock-out",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Stock Out - Finished Goods",
+        "purpose": {
+            "en": "View-only list of Finished Goods issue documents. Finished goods leave the warehouse through a Delivery Order, so this screen has no New Record or Open; use it to look up issues already recorded.",
+            "id": "Daftar dokumen pengeluaran Barang Jadi yang hanya bisa dilihat. Barang jadi keluar lewat Delivery Order, jadi layar ini tidak punya New Record atau Open; pakai untuk mencari pengeluaran yang sudah tercatat."
+        },
+        "keywords": "stock out, barang keluar, pengeluaran, barang jadi, finished goods, fg, delivery order, do, pengiriman",
+        "steps": [
+            {
+                "en": "Type in the search box (document no, reference, notes) or use the Draft / Waiting / Posted tabs and column filters to narrow the list.",
+                "id": "Ketik di kotak cari (no dokumen, referensi, catatan) atau pakai tab Draft / Waiting / Posted dan filter kolom untuk mempersempit daftar."
+            },
+            {
+                "en": "Expand a row to see its item lines: Code, Item Name, Qty, Unit and Lot No.",
+                "id": "Buka baris untuk melihat baris item: Code, Item Name, Qty, Unit dan Lot No."
+            },
+            {
+                "en": "To send finished goods to a customer, create a Delivery Order in the Delivery menu instead; it is not entered here.",
+                "id": "Untuk mengirim barang jadi ke customer, buat Delivery Order di menu Delivery; tidak diinput di sini."
+            },
+            {
+                "en": "To correct a finished goods balance, use Stock Adjustment & Physical Count - Finished Goods.",
+                "id": "Untuk mengoreksi saldo barang jadi, pakai Stock Adjustment & Physical Count - Finished Goods."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Doc No. / Warehouse",
+                "en": "Document number with the warehouse it was issued from.",
+                "id": "Nomor dokumen beserta gudang asal pengeluaran."
+            },
+            {
+                "label": "Date",
+                "en": "Document date.",
+                "id": "Tanggal dokumen."
+            },
+            {
+                "label": "Category",
+                "en": "Document category code of the document.",
+                "id": "Kode kategori dokumen."
+            },
+            {
+                "label": "Source",
+                "en": "Where the document came from (MANUAL when typed by hand, otherwise the type of the source document).",
+                "id": "Asal dokumen (MANUAL bila diketik, selain itu jenis dokumen sumbernya)."
+            },
+            {
+                "label": "Reference",
+                "en": "Number of the source document, if any.",
+                "id": "Nomor dokumen sumber, bila ada."
+            },
+            {
+                "label": "Notes",
+                "en": "Remark written on the document.",
+                "id": "Catatan pada dokumen."
+            },
+            {
+                "label": "Status",
+                "en": "Document status: Draft, waiting (Submitted / Confirmed / Approved), Posted or Cancelled.",
+                "id": "Status dokumen: Draft, menunggu (Submitted / Confirmed / Approved), Posted atau Cancelled."
+            }
+        ]
+    },
+    {
+        "key": "inv-fg-stock-return",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Return from Production - Finished Goods",
+        "purpose": {
+            "en": "View-only list of Finished Goods return documents. Finished goods never leave through Stock Out, so there is nothing to return from production; this screen has no New Record or Open.",
+            "id": "Daftar dokumen retur Barang Jadi yang hanya bisa dilihat. Barang jadi tidak pernah keluar lewat Stock Out, jadi tidak ada yang diretur dari produksi; layar ini tidak punya New Record atau Open."
+        },
+        "keywords": "return from production, retur produksi, retur, barang jadi, finished goods, fg, kembali ke gudang",
+        "steps": [
+            {
+                "en": "Type in the search box or use the Draft / Waiting / Posted tabs and column filters to find a document.",
+                "id": "Ketik di kotak cari atau pakai tab Draft / Waiting / Posted dan filter kolom untuk mencari dokumen."
+            },
+            {
+                "en": "Expand a row to see its item lines: Code, Item Name, Qty, Unit and Lot No.",
+                "id": "Buka baris untuk melihat baris item: Code, Item Name, Qty, Unit dan Lot No."
+            },
+            {
+                "en": "To bring back raw material or semi finished goods, use Return from Production in those stock menus.",
+                "id": "Untuk mengembalikan bahan baku atau barang setengah jadi, pakai Return from Production di menu stok tersebut."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Doc No. / Warehouse",
+                "en": "Document number with the warehouse that received the goods.",
+                "id": "Nomor dokumen beserta gudang penerima barang."
+            },
+            {
+                "label": "Date",
+                "en": "Document date.",
+                "id": "Tanggal dokumen."
+            },
+            {
+                "label": "Category",
+                "en": "Document category code (RETURN).",
+                "id": "Kode kategori dokumen (RETURN)."
+            },
+            {
+                "label": "Source",
+                "en": "Type of the source document, or MANUAL.",
+                "id": "Jenis dokumen sumber, atau MANUAL."
+            },
+            {
+                "label": "Reference",
+                "en": "Number of the Stock Out the return refers to.",
+                "id": "Nomor Stock Out yang diretur."
+            },
+            {
+                "label": "Notes",
+                "en": "Remark written on the document.",
+                "id": "Catatan pada dokumen."
+            },
+            {
+                "label": "Status",
+                "en": "Document status: Draft, waiting, Posted or Cancelled.",
+                "id": "Status dokumen: Draft, menunggu, Posted atau Cancelled."
+            }
+        ]
+    },
+    {
+        "key": "inv-fg-stock-adj",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Stock Adjustment & Physical Count - Finished Goods",
+        "purpose": {
+            "en": "Correct the system balance of Finished Goods to the real quantity: a single Adjustment, or a scheduled Stock Opname (physical count). It always needs approval; the stock only changes when the last approver approves.",
+            "id": "Mengoreksi saldo sistem Barang Jadi agar sama dengan jumlah sebenarnya: Adjustment tunggal atau Stock Opname (hitung fisik) terjadwal. Selalu perlu persetujuan; stok baru berubah setelah approver terakhir menyetujui."
+        },
+        "keywords": "stock adjustment, opname, stock opname, hitung fisik, koreksi stok, selisih stok, penyesuaian stok, adj, op, ad, Finished Goods, Barang Jadi",
+        "steps": [
+            {
+                "en": "The list shows Adjustment and Opname documents of this stock class with their status. Search by document no or notes, or use the status tabs and filters.",
+                "id": "Daftar menampilkan dokumen Adjustment dan Opname kelas stok ini beserta statusnya. Cari dengan no dokumen atau catatan, atau pakai tab status dan filter."
+            },
+            {
+                "en": "Click + New Record. Choose Kind (Adjustment or Stock Opname), Document Date, Warehouse and Reason. For Stock Opname also fill the Opname Block: officer, count start and end, witness.",
+                "id": "Klik + New Record. Pilih Kind (Adjustment atau Stock Opname), Document Date, Warehouse dan Reason. Untuk Stock Opname isi juga Blok Opname: petugas, mulai dan selesai hitung, saksi."
+            },
+            {
+                "en": "Add lines: search the product (2 or more characters) and click it. For a full count tick Full Scope and click Pull All Items With Balance to load every item that has stock in the warehouse.",
+                "id": "Tambah baris: cari produk (2 huruf atau lebih) lalu klik. Untuk hitung penuh centang Full Scope dan klik Pull All Items With Balance untuk memuat semua item yang punya stok di gudang."
+            },
+            {
+                "en": "On each line choose Location: System Balance and the price are loaded from the last Stock Card entry. Type the counted quantity in Physical Count; Variance and Variance Value are calculated.",
+                "id": "Di tiap baris pilih Location: System Balance dan harga dimuat dari catatan terakhir Kartu Stok. Ketik jumlah hasil hitung di Physical Count; Variance dan Variance Value dihitung otomatis."
+            },
+            {
+                "en": "Click Save Draft. When the lines are final, click Submit for Approval. The lines are locked while approval runs.",
+                "id": "Klik Save Draft. Setelah baris final, klik Submit for Approval. Baris terkunci selama proses persetujuan."
+            },
+            {
+                "en": "Approvers decide in Adjustment Approval. When the last level approves, the document is posted to the Stock Card. If rejected, the status becomes REVISION_NEEDED: fix it and submit again.",
+                "id": "Approver memutuskan di Adjustment Approval. Saat level terakhir menyetujui, dokumen diposting ke Kartu Stok. Bila ditolak, status menjadi REVISION_NEEDED: perbaiki lalu ajukan lagi."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Document No.",
+                "en": "Filled by the system when the draft is first saved (ADJ for Adjustment, OPN for Opname).",
+                "id": "Diisi sistem saat draft pertama disimpan (ADJ untuk Adjustment, OPN untuk Opname)."
+            },
+            {
+                "label": "Document Date *",
+                "en": "Date of the correction or count. Required. Starts as today.",
+                "id": "Tanggal koreksi atau hitung. Wajib. Awalnya hari ini."
+            },
+            {
+                "label": "Kind *",
+                "en": "Adjustment (single correction) or Stock Opname (scheduled physical count). Cannot be changed after the first save.",
+                "id": "Adjustment (koreksi tunggal) atau Stock Opname (hitung fisik terjadwal). Tidak bisa diubah setelah disimpan pertama kali."
+            },
+            {
+                "label": "Warehouse *",
+                "en": "Warehouse being corrected or counted. Required.",
+                "id": "Gudang yang dikoreksi atau dihitung. Wajib."
+            },
+            {
+                "label": "Reason *",
+                "en": "Why the balance differs: previous counting/input error, damaged, lost, found (more than recorded), expired or other. Required.",
+                "id": "Mengapa saldo berbeda: salah hitung/input sebelumnya, rusak, hilang, ditemukan (lebih dari catatan), kadaluarsa atau lainnya. Wajib."
+            },
+            {
+                "label": "Submitted by",
+                "en": "Shows the logged-in user. Display only.",
+                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+            },
+            {
+                "label": "Opname Officer *",
+                "en": "Name of the person who counts. Required for Stock Opname only.",
+                "id": "Nama petugas yang menghitung. Wajib hanya untuk Stock Opname."
+            },
+            {
+                "label": "Count Start *",
+                "en": "Date and time the count started. Required for Stock Opname.",
+                "id": "Tanggal dan jam hitung mulai. Wajib untuk Stock Opname."
+            },
+            {
+                "label": "Count End *",
+                "en": "Date and time the count finished. Required for Stock Opname.",
+                "id": "Tanggal dan jam hitung selesai. Wajib untuk Stock Opname."
+            },
+            {
+                "label": "Witness *",
+                "en": "Name of the person who witnesses the count. Required for Stock Opname.",
+                "id": "Nama saksi hitung. Wajib untuk Stock Opname."
+            },
+            {
+                "label": "Full Scope (all items with balance)",
+                "en": "Tick when every item in the warehouse is counted; it shows the button Pull All Items With Balance that loads all items with a balance. Stock Opname only.",
+                "id": "Centang bila semua item di gudang dihitung; muncul tombol Pull All Items With Balance yang memuat semua item bersaldo. Hanya Stock Opname."
+            },
+            {
+                "label": "Notes / Chronology",
+                "en": "Free text: what happened and how the difference was found.",
+                "id": "Teks bebas: apa yang terjadi dan bagaimana selisih ditemukan."
+            },
+            {
+                "label": "Location *",
+                "en": "Location of the counted stock. Choosing it loads System Balance and the price for that item and location. Required.",
+                "id": "Lokasi stok yang dihitung. Memilihnya memuat System Balance dan harga item di lokasi itu. Wajib."
+            },
+            {
+                "label": "System Balance",
+                "en": "Quantity the system says is there (from the last Stock Card entry). Display only.",
+                "id": "Jumlah menurut sistem (dari catatan terakhir Kartu Stok). Hanya tampilan."
+            },
+            {
+                "label": "Physical Count *",
+                "en": "The real quantity counted, zero or more. Type the counted total, not the difference. Required.",
+                "id": "Jumlah nyata hasil hitung, nol atau lebih. Ketik total hasil hitung, bukan selisihnya. Wajib."
+            },
+            {
+                "label": "Variance",
+                "en": "Physical Count minus System Balance, calculated. Plus means more than recorded, minus means less.",
+                "id": "Physical Count dikurangi System Balance, dihitung otomatis. Plus berarti lebih dari catatan, minus berarti kurang."
+            },
+            {
+                "label": "Variance Value",
+                "en": "Absolute value of the variance times the unit price, calculated. The total decides how many approval levels are needed.",
+                "id": "Nilai mutlak selisih dikali harga satuan, dihitung otomatis. Totalnya menentukan jumlah level persetujuan."
+            },
+            {
+                "label": "Line Reason",
+                "en": "Remark per line; the screen marks it required when there is a variance. It is a reminder on the screen and is not saved with the document.",
+                "id": "Catatan per baris; layar menandainya wajib bila ada selisih. Hanya pengingat di layar dan tidak disimpan bersama dokumen."
+            },
+            {
+                "label": "Rejection Reason",
+                "en": "Shown to the approver only: required when rejecting, at least 10 characters.",
+                "id": "Hanya untuk approver: wajib saat menolak, minimal 10 karakter."
+            }
+        ]
+    },
+    {
+        "key": "inv-fg-rpt-balance",
+        "type": "REPORT",
+        "module": "INV",
+        "title": "Stock Balance - Finished Goods",
+        "purpose": {
+            "en": "Shows how much Finished Goods is on hand now, one row per item and location, with this month's opening, in, out and adjustment. Open it to check stock, value and items below minimum.",
+            "id": "Menampilkan jumlah Barang Jadi yang ada sekarang, satu baris per item dan lokasi, beserta awal, masuk, keluar dan penyesuaian bulan ini. Buka untuk cek stok, nilai dan item di bawah minimum."
+        },
+        "keywords": "stock balance, saldo stok, stok, on hand, persediaan, master stock, minimum stock, stok minimum, nilai stok, laporan stok, Finished Goods, Barang Jadi",
+        "steps": [
+            {
+                "en": "Open the report; it lists all stock now. Type in the search box (item code or name) to find an item.",
+                "id": "Buka laporan; isinya semua stok saat ini. Ketik di kotak cari (kode atau nama item) untuk menemukan item."
+            },
+            {
+                "en": "Click a tab (Below minimum, Empty, Not usable) to see only those rows, or All to see everything.",
+                "id": "Klik tab (Below minimum, Empty, Not usable) untuk melihat baris tertentu saja, atau All untuk semuanya."
+            },
+            {
+                "en": "Use the filters Category, Warehouse, Location and Stock to narrow the list.",
+                "id": "Pakai filter Category, Warehouse, Location dan Stock untuk mempersempit daftar."
+            },
+            {
+                "en": "Group by Category, Warehouse or Item to get subtotals. Number and value columns show totals.",
+                "id": "Kelompokkan menurut Category, Warehouse atau Item untuk mendapat subtotal. Kolom jumlah dan nilai menampilkan total."
+            },
+            {
+                "en": "Use the column chooser to show Minimum Stock and Idle (days), which are hidden at first. Open the Stock Card report to see the movements behind a balance.",
+                "id": "Pakai pemilih kolom untuk menampilkan Minimum Stock dan Idle (days) yang awalnya tersembunyi. Buka laporan Stock Card untuk melihat mutasi di balik saldo."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Item",
+                "en": "Item name with its code.",
+                "id": "Nama item beserta kodenya."
+            },
+            {
+                "label": "Category",
+                "en": "Group of the item: the product category.",
+                "id": "Kelompok item: kategori produk."
+            },
+            {
+                "label": "Warehouse",
+                "en": "Warehouse holding the stock.",
+                "id": "Gudang tempat stok berada."
+            },
+            {
+                "label": "Location",
+                "en": "Storage location (bin) in that warehouse.",
+                "id": "Lokasi simpan (bin) di gudang itu."
+            },
+            {
+                "label": "Opening",
+                "en": "Quantity at the start of the current month. If the item had no movement this month it equals On Hand.",
+                "id": "Jumlah di awal bulan berjalan. Bila item tidak bergerak bulan ini, nilainya sama dengan On Hand."
+            },
+            {
+                "label": "In",
+                "en": "Total received this month.",
+                "id": "Total masuk bulan ini."
+            },
+            {
+                "label": "Out",
+                "en": "Total issued this month.",
+                "id": "Total keluar bulan ini."
+            },
+            {
+                "label": "Adjustment",
+                "en": "Total of adjustments and opname corrections this month (can be negative).",
+                "id": "Total penyesuaian dan koreksi opname bulan ini (bisa negatif)."
+            },
+            {
+                "label": "On Hand",
+                "en": "Quantity in the warehouse now.",
+                "id": "Jumlah di gudang sekarang."
+            },
+            {
+                "label": "Unit",
+                "en": "Stock unit.",
+                "id": "Satuan stok."
+            },
+            {
+                "label": "Minimum Stock",
+                "en": "Minimum stock set on the item master. Hidden at first.",
+                "id": "Stok minimum yang diatur di master item. Awalnya tersembunyi."
+            },
+            {
+                "label": "Stock Value",
+                "en": "Value of the stock in that row.",
+                "id": "Nilai stok pada baris itu."
+            },
+            {
+                "label": "Last Movement",
+                "en": "Date of the latest movement of that item in that location.",
+                "id": "Tanggal mutasi terakhir item di lokasi itu."
+            },
+            {
+                "label": "Idle (days)",
+                "en": "Days since the last movement. Hidden at first.",
+                "id": "Jumlah hari sejak mutasi terakhir. Awalnya tersembunyi."
+            },
+            {
+                "label": "Stock",
+                "en": "Status: OK, Below minimum (usable stock of the item is under its minimum), Empty, or Not usable (location cannot be used, e.g. waste).",
+                "id": "Status: OK, Below minimum (stok bisa pakai item di bawah minimum), Empty, atau Not usable (lokasi tidak bisa dipakai, mis. waste)."
+            },
+            {
+                "label": "Filter: Category / Warehouse / Location / Stock",
+                "en": "Narrow the rows by item group, warehouse, location or stock status.",
+                "id": "Mempersempit baris menurut kelompok item, gudang, lokasi atau status stok."
+            },
+            {
+                "label": "Group by: Category / Warehouse / Item",
+                "en": "Gather the rows under headings with subtotals.",
+                "id": "Mengelompokkan baris di bawah judul dengan subtotal."
+            }
+        ]
+    },
+    {
+        "key": "inv-fg-rpt-card",
+        "type": "REPORT",
+        "module": "INV",
+        "title": "Stock Card - Finished Goods",
+        "purpose": {
+            "en": "Lists every stock movement of Finished Goods, newest first: what came in, went out or was adjusted, in which document and location, and the balance after it. Open it to trace why a balance is what it is.",
+            "id": "Menampilkan setiap mutasi stok Barang Jadi, terbaru di atas: apa yang masuk, keluar atau disesuaikan, di dokumen dan lokasi mana, serta saldo sesudahnya. Buka untuk menelusuri asal sebuah saldo."
+        },
+        "keywords": "stock card, kartu stok, mutasi stok, riwayat stok, movement, history stok, kartu persediaan, laporan stok, Finished Goods, Barang Jadi",
+        "steps": [
+            {
+                "en": "Open the report; all movements are listed, newest first.",
+                "id": "Buka laporan; semua mutasi tampil, terbaru di atas."
+            },
+            {
+                "en": "To read the card of one item, type its code or name (or a document or reference number) in the search box, or group by Item.",
+                "id": "Untuk membaca kartu satu item, ketik kode atau namanya (atau no dokumen atau referensi) di kotak cari, atau kelompokkan menurut Item."
+            },
+            {
+                "en": "Click a tab (In, Out, Adjustment) to see only that kind of movement.",
+                "id": "Klik tab (In, Out, Adjustment) untuk melihat satu jenis mutasi saja."
+            },
+            {
+                "en": "Use the filters Movement, Category, Warehouse and Location, or group by Warehouse or Movement.",
+                "id": "Pakai filter Movement, Category, Warehouse dan Location, atau kelompokkan menurut Warehouse atau Movement."
+            },
+            {
+                "en": "Read Opening, the movement and Balance on the same row. The In, Out and Adjustment columns show totals for the rows on screen.",
+                "id": "Baca Opening, mutasi dan Balance pada baris yang sama. Kolom In, Out dan Adjustment menampilkan total baris di layar."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Date",
+                "en": "Date of the document.",
+                "id": "Tanggal dokumen."
+            },
+            {
+                "label": "Doc No.",
+                "en": "Number of the stock document that caused the movement.",
+                "id": "Nomor dokumen stok yang menyebabkan mutasi."
+            },
+            {
+                "label": "Movement",
+                "en": "Kind of movement: In, Out, Adjustment or Opening.",
+                "id": "Jenis mutasi: In, Out, Adjustment atau Opening."
+            },
+            {
+                "label": "Category",
+                "en": "Document category code (for example STOCK, BB, AD, OP, RETURN). Hidden at first.",
+                "id": "Kode kategori dokumen (misalnya STOCK, BB, AD, OP, RETURN). Awalnya tersembunyi."
+            },
+            {
+                "label": "Item",
+                "en": "Item name with its code.",
+                "id": "Nama item beserta kodenya."
+            },
+            {
+                "label": "Warehouse",
+                "en": "Warehouse of the movement.",
+                "id": "Gudang tempat mutasi."
+            },
+            {
+                "label": "Location",
+                "en": "Storage location (bin).",
+                "id": "Lokasi simpan (bin)."
+            },
+            {
+                "label": "Lot No.",
+                "en": "Lot or batch number. Hidden at first.",
+                "id": "Nomor lot atau batch. Awalnya tersembunyi."
+            },
+            {
+                "label": "Reference",
+                "en": "Number of the source document, for example the receiving or the Stock Out it came from.",
+                "id": "Nomor dokumen sumber, misalnya penerimaan atau Stock Out asalnya."
+            },
+            {
+                "label": "Opening",
+                "en": "Balance of that item in that location just before the movement.",
+                "id": "Saldo item di lokasi itu tepat sebelum mutasi."
+            },
+            {
+                "label": "In",
+                "en": "Quantity received.",
+                "id": "Jumlah masuk."
+            },
+            {
+                "label": "Out",
+                "en": "Quantity issued.",
+                "id": "Jumlah keluar."
+            },
+            {
+                "label": "Adjustment",
+                "en": "Quantity added or removed by an adjustment (can be negative).",
+                "id": "Jumlah yang ditambah atau dikurangi oleh penyesuaian (bisa negatif)."
+            },
+            {
+                "label": "Balance",
+                "en": "Balance of that item in that location right after the movement.",
+                "id": "Saldo item di lokasi itu sesudah mutasi."
+            },
+            {
+                "label": "Unit",
+                "en": "Stock unit.",
+                "id": "Satuan stok."
+            },
+            {
+                "label": "Filter: Movement / Category / Warehouse / Location",
+                "en": "Narrow the rows by kind of movement, document category, warehouse or location.",
+                "id": "Mempersempit baris menurut jenis mutasi, kategori dokumen, gudang atau lokasi."
+            },
+            {
+                "label": "Group by: Item / Warehouse / Movement",
+                "en": "Gather the rows under headings. Group by Item to read one item as a card.",
+                "id": "Mengelompokkan baris di bawah judul. Kelompokkan menurut Item untuk membaca satu item sebagai kartu."
+            }
+        ]
+    },
+    {
+        "key": "inv-fg-rpt-slow",
+        "type": "REPORT",
+        "module": "INV",
+        "title": "Slow Moving Item - Finished Goods",
+        "purpose": {
+            "en": "Lists Finished Goods items that still have usable stock but have not moved for 3 months or more, so you can decide to use, sell or write them off. Open it during stock review.",
+            "id": "Menampilkan item Barang Jadi yang masih punya stok bisa pakai tetapi tidak bergerak 3 bulan atau lebih, agar bisa diputuskan dipakai, dijual atau dihapus. Buka saat evaluasi stok."
+        },
+        "keywords": "slow moving, slow moving item, stok mati, barang tidak bergerak, dead stock, stok lama, idle, tidak laku, laporan stok, Finished Goods, Barang Jadi",
+        "steps": [
+            {
+                "en": "Open the report; items with no movement for 3 months or more are listed, longest idle first.",
+                "id": "Buka laporan; item yang tidak bergerak 3 bulan atau lebih tampil, yang paling lama diam di atas."
+            },
+            {
+                "en": "Click a tab (3-6 months, 6-9 months, 9-12 months, Over 12 months, Never moved) to see one age band.",
+                "id": "Klik tab (3-6 months, 6-9 months, 9-12 months, Over 12 months, Never moved) untuk melihat satu rentang usia."
+            },
+            {
+                "en": "Use the search box (item code or name), the filters Category and Idle, or group by Category or Idle.",
+                "id": "Pakai kotak cari (kode atau nama item), filter Category dan Idle, atau kelompokkan menurut Category atau Idle."
+            },
+            {
+                "en": "Check On Hand, Stock Value and Last Movement, then follow up with the warehouse or purchasing. The totals show how much value is tied up.",
+                "id": "Cek On Hand, Stock Value dan Last Movement, lalu tindak lanjuti bersama gudang atau pembelian. Total menunjukkan nilai yang tertahan."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Item",
+                "en": "Item name with its code. Each item appears once, even when it is in several locations.",
+                "id": "Nama item beserta kodenya. Tiap item tampil sekali, walau ada di beberapa lokasi."
+            },
+            {
+                "label": "Category",
+                "en": "Group of the item: the product category.",
+                "id": "Kelompok item: kategori produk."
+            },
+            {
+                "label": "Warehouse",
+                "en": "All warehouses where the item has usable stock.",
+                "id": "Semua gudang tempat item punya stok bisa pakai."
+            },
+            {
+                "label": "On Hand",
+                "en": "Total usable quantity of the item.",
+                "id": "Total jumlah item yang bisa dipakai."
+            },
+            {
+                "label": "Unit",
+                "en": "Stock unit.",
+                "id": "Satuan stok."
+            },
+            {
+                "label": "Stock Value",
+                "en": "Value of that stock.",
+                "id": "Nilai stok itu."
+            },
+            {
+                "label": "Last Movement",
+                "en": "Date of the latest movement of the item in any location. Empty for old balances without a date.",
+                "id": "Tanggal mutasi terakhir item di lokasi mana pun. Kosong untuk saldo lama tanpa tanggal."
+            },
+            {
+                "label": "Idle (days)",
+                "en": "Days since the last movement.",
+                "id": "Jumlah hari sejak mutasi terakhir."
+            },
+            {
+                "label": "Idle",
+                "en": "Age band: 3-6 months, 6-9 months, 9-12 months, Over 12 months, or Never moved (old balance without a movement date).",
+                "id": "Rentang usia: 3-6 months, 6-9 months, 9-12 months, Over 12 months, atau Never moved (saldo lama tanpa tanggal mutasi)."
+            },
+            {
+                "label": "Filter: Category / Idle",
+                "en": "Narrow the rows by item group or age band.",
+                "id": "Mempersempit baris menurut kelompok item atau rentang usia."
+            },
+            {
+                "label": "Group by: Category / Idle",
+                "en": "Gather the rows under headings with subtotals.",
+                "id": "Mengelompokkan baris di bawah judul dengan subtotal."
+            }
+        ]
+    },
+    {
+        "key": "inv-sfg-stock-in",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Stock In - Semi Finished Goods",
+        "purpose": {
+            "en": "Record Semi Finished Goods goods coming into a warehouse (regular receipt or opening balance) and post them to the Stock Card. Open it when goods arrive or to load an opening balance. Documents here are entered by hand (Source MANUAL).",
+            "id": "Mencatat Barang Setengah Jadi yang masuk ke gudang (penerimaan biasa atau saldo awal) lalu memostingnya ke Kartu Stok. Buka saat barang datang atau memuat saldo awal. Dokumen di sini diinput manual (Sumber MANUAL)."
+        },
+        "keywords": "stock in, barang masuk, penerimaan, saldo awal, opening balance, bb, in, Semi Finished Goods, Barang Setengah Jadi, setengah jadi, semi finished goods, sfg, wip",
+        "steps": [
+            {
+                "en": "The list shows Stock In documents of Semi Finished Goods. Use the search box (document no, reference, notes), the Draft / Waiting / Posted tabs or the column filters to find one.",
+                "id": "Daftar menampilkan dokumen Stock In Barang Setengah Jadi. Pakai kotak cari (no dokumen, referensi, catatan), tab Draft / Waiting / Posted atau filter kolom untuk mencarinya."
+            },
+            {
+                "en": "Click + New Record to open an empty document. To change an existing draft, double-click its row or click Open.",
+                "id": "Klik + New Record untuk membuka dokumen kosong. Untuk mengubah draft yang ada, klik 2x barisnya atau klik Open."
+            },
+            {
+                "en": "Fill Document Date, Document Category and Warehouse. Pick the Warehouse before the lines: the Location list of each line shows only usable locations of that warehouse.",
+                "id": "Isi Document Date, Document Category dan Warehouse. Pilih Warehouse sebelum baris item: daftar Location tiap baris hanya berisi lokasi yang bisa dipakai di gudang itu."
+            },
+            {
+                "en": "Type at least 2 characters of the code or name in the item search box and click the result to add a line (the part comes from the Master Card). Repeat for every item.",
+                "id": "Ketik minimal 2 huruf kode atau nama di kotak cari item lalu klik hasilnya untuk menambah baris (part diambil dari Master Card). Ulangi untuk tiap item."
+            },
+            {
+                "en": "On each line choose Location, enter Qty and, if needed, Lot/Batch and Unit Price. UoM is filled from the item and cannot be typed.",
+                "id": "Di tiap baris pilih Location, isi Qty dan bila perlu Lot/Batch dan Unit Price. UoM terisi dari item dan tidak bisa diketik."
+            },
+            {
+                "en": "Click Save Draft. The system gives the document its number. You can still edit the draft; Cancel cancels it.",
+                "id": "Klik Save Draft. Sistem memberi nomor dokumen. Draft masih bisa diubah; Cancel membatalkannya."
+            },
+            {
+                "en": "Open the draft and click Confirm & Post (or the check icon in the list). The goods are added to the Stock Card and the document becomes read-only; fix mistakes later with a Stock Adjustment.",
+                "id": "Buka draft lalu klik Confirm & Post (atau ikon centang di daftar). Barang masuk ke Kartu Stok dan dokumen jadi hanya-baca; kesalahan dikoreksi lewat Stock Adjustment."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Document No.",
+                "en": "Filled by the system when the draft is first saved. Not typed.",
+                "id": "Diisi sistem saat draft pertama disimpan. Tidak diketik."
+            },
+            {
+                "label": "Document Date *",
+                "en": "Date the goods are received. Required. Starts as today.",
+                "id": "Tanggal barang diterima. Wajib. Awalnya hari ini."
+            },
+            {
+                "label": "Document Category *",
+                "en": "STOCK (regular receipt) for normal incoming goods, BB (opening balance) to load the starting stock of an item. Required.",
+                "id": "STOCK (masuk biasa) untuk barang masuk normal, BB (saldo awal) untuk memuat stok awal item. Wajib."
+            },
+            {
+                "label": "Warehouse *",
+                "en": "Receiving warehouse, picked from active warehouses in Warehouse & Location. Required. It decides which locations the lines can use.",
+                "id": "Gudang penerima, dipilih dari gudang aktif di Warehouse & Location. Wajib. Menentukan lokasi yang bisa dipakai baris."
+            },
+            {
+                "label": "Received by",
+                "en": "Shows the logged-in user. Display only.",
+                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+            },
+            {
+                "label": "Notes",
+                "en": "Free text, for example delivery note number or remark. Shown under the document number in the list.",
+                "id": "Teks bebas, misalnya nomor surat jalan atau catatan. Tampil di bawah nomor dokumen pada daftar."
+            },
+            {
+                "label": "Search item code / name to add…",
+                "en": "Search box to add a line. Type 2 or more characters; only active items of the Master Card are found (max 15 results).",
+                "id": "Kotak cari untuk menambah baris. Ketik 2 huruf atau lebih; hanya item aktif dari Master Card yang ditemukan (maks 15 hasil)."
+            },
+            {
+                "label": "Lot/Batch",
+                "en": "Optional lot or batch number of the received goods. Kept on the Stock Card.",
+                "id": "Nomor lot atau batch barang yang diterima (opsional). Tersimpan di Kartu Stok."
+            },
+            {
+                "label": "Location *",
+                "en": "Storage location (bin) in the chosen warehouse where the goods are put. Required for every line.",
+                "id": "Lokasi simpan (bin) di gudang terpilih tempat barang ditaruh. Wajib di setiap baris."
+            },
+            {
+                "label": "Qty *",
+                "en": "Quantity received, must be more than zero. Required.",
+                "id": "Jumlah yang diterima, harus lebih dari nol. Wajib."
+            },
+            {
+                "label": "UoM",
+                "en": "Stock unit of the item, filled automatically.",
+                "id": "Satuan stok item, terisi otomatis."
+            },
+            {
+                "label": "Unit Price",
+                "en": "Price per unit of the received goods (default 0). Used to value the stock and its average price.",
+                "id": "Harga per satuan barang yang diterima (default 0). Dipakai untuk menilai stok dan harga rata-ratanya."
+            }
+        ]
+    },
+    {
+        "key": "inv-sfg-stock-out",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Stock Out - Semi Finished Goods",
+        "purpose": {
+            "en": "Record Semi Finished Goods issued out of a warehouse to a department or process (for example to production) and post it to the Stock Card. Open it when goods are handed over from the warehouse.",
+            "id": "Mencatat Barang Setengah Jadi yang dikeluarkan dari gudang ke departemen atau proses (misalnya ke produksi) lalu memostingnya ke Kartu Stok. Buka saat barang diserahkan dari gudang."
+        },
+        "keywords": "stock out, barang keluar, pengeluaran, issue, serah terima, ke produksi, out, Semi Finished Goods, Barang Setengah Jadi, setengah jadi, semi finished goods, sfg, wip",
+        "steps": [
+            {
+                "en": "The list shows Stock Out documents of this stock class. Search by document no or notes, or use the Draft / Waiting / Posted tabs and column filters.",
+                "id": "Daftar menampilkan dokumen Stock Out kelas stok ini. Cari dengan no dokumen atau catatan, atau pakai tab Draft / Waiting / Posted dan filter kolom."
+            },
+            {
+                "en": "Click + New Record (or double-click a draft to edit it).",
+                "id": "Klik + New Record (atau klik 2x draft untuk mengubahnya)."
+            },
+            {
+                "en": "Fill Document Date, Source Warehouse and Issued To (Dept.). Target Process is optional text. Pick the warehouse first so the line locations can be chosen.",
+                "id": "Isi Document Date, Source Warehouse dan Issued To (Dept.). Target Process teks opsional. Pilih gudang dulu agar lokasi baris bisa dipilih."
+            },
+            {
+                "en": "Search the part by code or name (2 or more characters) and click the result to add a line; repeat for each item.",
+                "id": "Cari part dengan kode atau nama (2 huruf atau lebih) lalu klik hasilnya untuk menambah baris; ulangi untuk tiap item."
+            },
+            {
+                "en": "For each line choose Source Location and enter Qty Out and, if needed, Lot/Batch.",
+                "id": "Di tiap baris pilih Source Location dan isi Qty Out, serta Lot/Batch bila perlu."
+            },
+            {
+                "en": "Click Save Draft, then open the draft and click Confirm & Post (or the check icon in the list). The goods leave the Stock Card and the document becomes read-only.",
+                "id": "Klik Save Draft, lalu buka draft dan klik Confirm & Post (atau ikon centang di daftar). Barang keluar dari Kartu Stok dan dokumen jadi hanya-baca."
+            },
+            {
+                "en": "If the item has no cost/inventory account, a notice tells you which master to complete. Wrong document? Cancel a draft, or correct a posted one with Stock Adjustment.",
+                "id": "Bila item belum punya akun HPP/persediaan, muncul peringatan master mana yang harus dilengkapi. Salah dokumen? Cancel draft, atau koreksi yang sudah posting lewat Stock Adjustment."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Document No.",
+                "en": "Filled by the system when the draft is first saved.",
+                "id": "Diisi sistem saat draft pertama disimpan."
+            },
+            {
+                "label": "Document Date *",
+                "en": "Date the goods are issued. Required. Starts as today.",
+                "id": "Tanggal barang dikeluarkan. Wajib. Awalnya hari ini."
+            },
+            {
+                "label": "Source Warehouse *",
+                "en": "Warehouse the goods are taken from, picked from active warehouses. Required.",
+                "id": "Gudang asal barang, dipilih dari gudang aktif. Wajib."
+            },
+            {
+                "label": "Issued To (Dept.) *",
+                "en": "Department that receives the goods, picked from the department master. Required.",
+                "id": "Departemen penerima barang, dipilih dari master departemen. Wajib."
+            },
+            {
+                "label": "Target Process",
+                "en": "Free text for the process the goods go to, for example Offset Printing or Lamination. Optional.",
+                "id": "Teks bebas untuk proses tujuan barang, misalnya Cetak Offset atau Laminasi. Opsional."
+            },
+            {
+                "label": "Issued by",
+                "en": "Shows the logged-in user. Display only.",
+                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+            },
+            {
+                "label": "Notes",
+                "en": "Free text remark, shown under the document number in the list.",
+                "id": "Catatan bebas, tampil di bawah nomor dokumen pada daftar."
+            },
+            {
+                "label": "Search code / name of part to add…",
+                "en": "Search box to add a line. Type 2 or more characters; only active items of the Master Card are found.",
+                "id": "Kotak cari untuk menambah baris. Ketik 2 huruf atau lebih; hanya item aktif dari Master Card yang ditemukan."
+            },
+            {
+                "label": "Lot/Batch",
+                "en": "Optional lot or batch number of the goods taken.",
+                "id": "Nomor lot atau batch barang yang diambil (opsional)."
+            },
+            {
+                "label": "Source Location *",
+                "en": "Storage location (bin) the goods are taken from, limited to usable locations of the source warehouse. Required.",
+                "id": "Lokasi simpan (bin) asal barang, terbatas pada lokasi yang bisa dipakai di gudang sumber. Wajib."
+            },
+            {
+                "label": "Qty Out *",
+                "en": "Quantity issued, must be more than zero. Required.",
+                "id": "Jumlah yang dikeluarkan, harus lebih dari nol. Wajib."
+            },
+            {
+                "label": "UoM",
+                "en": "Stock unit of the item, filled automatically.",
+                "id": "Satuan stok item, terisi otomatis."
+            }
+        ]
+    },
+    {
+        "key": "inv-sfg-stock-return",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Return from Production - Semi Finished Goods",
+        "purpose": {
+            "en": "Bring Semi Finished Goods back to the warehouse after production did not use it, either in good condition or as scrap. A return always refers to a posted Stock Out and can never be more than what is left of it.",
+            "id": "Mengembalikan Barang Setengah Jadi ke gudang setelah produksi tidak memakainya, dalam kondisi layak atau afkir. Retur selalu mengacu ke Stock Out yang sudah posting dan tidak boleh melebihi sisanya."
+        },
+        "keywords": "return from production, retur produksi, retur, kembali ke gudang, afkir, scrap, sisa bahan, Semi Finished Goods, Barang Setengah Jadi, setengah jadi, semi finished goods, sfg, wip",
+        "steps": [
+            {
+                "en": "The list shows return documents of this stock class. Search by document no or Stock Out no, or use the Draft / Waiting / Posted tabs and column filters.",
+                "id": "Daftar menampilkan dokumen retur kelas stok ini. Cari dengan no dokumen atau no Stock Out, atau pakai tab Draft / Waiting / Posted dan filter kolom."
+            },
+            {
+                "en": "Click + New Record. Fill Tanggal Dokumen and click the dashed Ref. Stock Out box to open the list of Stock Out documents that can still be returned.",
+                "id": "Klik + New Record. Isi Tanggal Dokumen lalu klik kotak putus-putus Ref. Stock Out untuk membuka daftar Stock Out yang masih bisa diretur."
+            },
+            {
+                "en": "Click a Stock Out. Its lines are copied in with Dikeluarkan and Sisa Boleh (what may still be returned). Choose Gudang Tujuan (bahan layak).",
+                "id": "Klik satu Stock Out. Baris-barisnya disalin lengkap dengan Dikeluarkan dan Sisa Boleh (yang masih boleh diretur). Pilih Gudang Tujuan (bahan layak)."
+            },
+            {
+                "en": "On each line enter Qty Retur, choose Kondisi (GOOD or SCRAP) and Lokasi Tujuan. Lines you do not return must not stay with a quantity.",
+                "id": "Di tiap baris isi Qty Retur, pilih Kondisi (GOOD atau SCRAP) dan Lokasi Tujuan. Baris yang tidak diretur jangan dibiarkan berisi jumlah."
+            },
+            {
+                "en": "For SCRAP lines Keterangan is required. Click Save Draft, then open the draft and click Confirm & Post.",
+                "id": "Untuk baris SCRAP, Keterangan wajib diisi. Klik Save Draft, lalu buka draft dan klik Confirm & Post."
+            },
+            {
+                "en": "After posting the goods are added back to the Stock Card and the returned quantity is counted on the Stock Out. The document is read-only; Cancel works only on a draft.",
+                "id": "Setelah posting barang masuk lagi ke Kartu Stok dan jumlah retur tercatat di Stock Out. Dokumen jadi hanya-baca; Cancel hanya untuk draft."
+            }
+        ],
+        "fields": [
+            {
+                "label": "No. Dokumen",
+                "en": "Filled by the system when the draft is first saved.",
+                "id": "Diisi sistem saat draft pertama disimpan."
+            },
+            {
+                "label": "Tanggal Dokumen *",
+                "en": "Date of the return. Required. Starts as today.",
+                "id": "Tanggal retur. Wajib. Awalnya hari ini."
+            },
+            {
+                "label": "Ref. Stock Out *",
+                "en": "The posted, not cancelled Stock Out being returned, picked from the list of Stock Outs with a remaining returnable quantity. Fixed once saved. Required.",
+                "id": "Stock Out yang sudah posting dan tidak dibatalkan yang diretur, dipilih dari daftar Stock Out yang masih punya sisa retur. Tidak bisa diganti setelah disimpan. Wajib."
+            },
+            {
+                "label": "Gudang Tujuan (bahan layak) *",
+                "en": "Warehouse that receives the returned goods. Good-condition lines can only use its usable locations. Required.",
+                "id": "Gudang penerima barang retur. Baris kondisi layak hanya bisa memakai lokasi yang bisa dipakai di gudang ini. Wajib."
+            },
+            {
+                "label": "Proses Asal",
+                "en": "Process the goods came back from. Filled from the Stock Out, can be changed. Optional.",
+                "id": "Proses asal barang kembali. Terisi dari Stock Out, bisa diubah. Opsional."
+            },
+            {
+                "label": "Catatan",
+                "en": "Free text remark.",
+                "id": "Catatan bebas."
+            },
+            {
+                "label": "Item",
+                "en": "Item of the line, copied from the Stock Out.",
+                "id": "Item baris, disalin dari Stock Out."
+            },
+            {
+                "label": "Dikeluarkan",
+                "en": "Quantity issued on the Stock Out line.",
+                "id": "Jumlah yang dikeluarkan pada baris Stock Out."
+            },
+            {
+                "label": "Sisa Boleh",
+                "en": "Quantity that may still be returned (issued minus earlier returns). Qty Retur cannot go above it.",
+                "id": "Jumlah yang masih boleh diretur (dikeluarkan dikurangi retur sebelumnya). Qty Retur tidak boleh melebihinya."
+            },
+            {
+                "label": "Qty Retur *",
+                "en": "Quantity coming back, more than zero and not above Sisa Boleh. Required. The row turns red when too high.",
+                "id": "Jumlah yang kembali, lebih dari nol dan tidak lebih dari Sisa Boleh. Wajib. Baris menjadi merah bila kelebihan."
+            },
+            {
+                "label": "Kondisi *",
+                "en": "GOOD (Layak) goes back to a usable location. SCRAP (Afkir) goes to a location that is not usable, for example a waste bin.",
+                "id": "GOOD (Layak) kembali ke lokasi yang bisa dipakai. SCRAP (Afkir) ke lokasi yang tidak bisa dipakai, misalnya bin waste."
+            },
+            {
+                "label": "Lokasi Tujuan *",
+                "en": "Location that receives the goods. The list changes with Kondisi. Required.",
+                "id": "Lokasi penerima barang. Daftarnya berubah sesuai Kondisi. Wajib."
+            },
+            {
+                "label": "Keterangan",
+                "en": "Reason for the line. Required for SCRAP lines, optional for GOOD.",
+                "id": "Alasan untuk baris. Wajib untuk baris SCRAP, opsional untuk GOOD."
+            }
+        ]
+    },
+    {
+        "key": "inv-sfg-stock-adj",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Stock Adjustment & Physical Count - Semi Finished Goods",
+        "purpose": {
+            "en": "Correct the system balance of Semi Finished Goods to the real quantity: a single Adjustment, or a scheduled Stock Opname (physical count). It always needs approval; the stock only changes when the last approver approves.",
+            "id": "Mengoreksi saldo sistem Barang Setengah Jadi agar sama dengan jumlah sebenarnya: Adjustment tunggal atau Stock Opname (hitung fisik) terjadwal. Selalu perlu persetujuan; stok baru berubah setelah approver terakhir menyetujui."
+        },
+        "keywords": "stock adjustment, opname, stock opname, hitung fisik, koreksi stok, selisih stok, penyesuaian stok, adj, op, ad, Semi Finished Goods, Barang Setengah Jadi",
+        "steps": [
+            {
+                "en": "The list shows Adjustment and Opname documents of this stock class with their status. Search by document no or notes, or use the status tabs and filters.",
+                "id": "Daftar menampilkan dokumen Adjustment dan Opname kelas stok ini beserta statusnya. Cari dengan no dokumen atau catatan, atau pakai tab status dan filter."
+            },
+            {
+                "en": "Click + New Record. Choose Kind (Adjustment or Stock Opname), Document Date, Warehouse and Reason. For Stock Opname also fill the Opname Block: officer, count start and end, witness.",
+                "id": "Klik + New Record. Pilih Kind (Adjustment atau Stock Opname), Document Date, Warehouse dan Reason. Untuk Stock Opname isi juga Blok Opname: petugas, mulai dan selesai hitung, saksi."
+            },
+            {
+                "en": "Add lines: search the part (2 or more characters) and click it. For a full count tick Full Scope and click Pull All Items With Balance to load every item that has stock in the warehouse.",
+                "id": "Tambah baris: cari part (2 huruf atau lebih) lalu klik. Untuk hitung penuh centang Full Scope dan klik Pull All Items With Balance untuk memuat semua item yang punya stok di gudang."
+            },
+            {
+                "en": "On each line choose Location: System Balance and the price are loaded from the last Stock Card entry. Type the counted quantity in Physical Count; Variance and Variance Value are calculated.",
+                "id": "Di tiap baris pilih Location: System Balance dan harga dimuat dari catatan terakhir Kartu Stok. Ketik jumlah hasil hitung di Physical Count; Variance dan Variance Value dihitung otomatis."
+            },
+            {
+                "en": "Click Save Draft. When the lines are final, click Submit for Approval. The lines are locked while approval runs.",
+                "id": "Klik Save Draft. Setelah baris final, klik Submit for Approval. Baris terkunci selama proses persetujuan."
+            },
+            {
+                "en": "Approvers decide in Adjustment Approval. When the last level approves, the document is posted to the Stock Card. If rejected, the status becomes REVISION_NEEDED: fix it and submit again.",
+                "id": "Approver memutuskan di Adjustment Approval. Saat level terakhir menyetujui, dokumen diposting ke Kartu Stok. Bila ditolak, status menjadi REVISION_NEEDED: perbaiki lalu ajukan lagi."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Document No.",
+                "en": "Filled by the system when the draft is first saved (ADJ for Adjustment, OPN for Opname).",
+                "id": "Diisi sistem saat draft pertama disimpan (ADJ untuk Adjustment, OPN untuk Opname)."
+            },
+            {
+                "label": "Document Date *",
+                "en": "Date of the correction or count. Required. Starts as today.",
+                "id": "Tanggal koreksi atau hitung. Wajib. Awalnya hari ini."
+            },
+            {
+                "label": "Kind *",
+                "en": "Adjustment (single correction) or Stock Opname (scheduled physical count). Cannot be changed after the first save.",
+                "id": "Adjustment (koreksi tunggal) atau Stock Opname (hitung fisik terjadwal). Tidak bisa diubah setelah disimpan pertama kali."
+            },
+            {
+                "label": "Warehouse *",
+                "en": "Warehouse being corrected or counted. Required.",
+                "id": "Gudang yang dikoreksi atau dihitung. Wajib."
+            },
+            {
+                "label": "Reason *",
+                "en": "Why the balance differs: previous counting/input error, damaged, lost, found (more than recorded), expired or other. Required.",
+                "id": "Mengapa saldo berbeda: salah hitung/input sebelumnya, rusak, hilang, ditemukan (lebih dari catatan), kadaluarsa atau lainnya. Wajib."
+            },
+            {
+                "label": "Submitted by",
+                "en": "Shows the logged-in user. Display only.",
+                "id": "Menampilkan user yang sedang login. Hanya tampilan."
+            },
+            {
+                "label": "Opname Officer *",
+                "en": "Name of the person who counts. Required for Stock Opname only.",
+                "id": "Nama petugas yang menghitung. Wajib hanya untuk Stock Opname."
+            },
+            {
+                "label": "Count Start *",
+                "en": "Date and time the count started. Required for Stock Opname.",
+                "id": "Tanggal dan jam hitung mulai. Wajib untuk Stock Opname."
+            },
+            {
+                "label": "Count End *",
+                "en": "Date and time the count finished. Required for Stock Opname.",
+                "id": "Tanggal dan jam hitung selesai. Wajib untuk Stock Opname."
+            },
+            {
+                "label": "Witness *",
+                "en": "Name of the person who witnesses the count. Required for Stock Opname.",
+                "id": "Nama saksi hitung. Wajib untuk Stock Opname."
+            },
+            {
+                "label": "Full Scope (all items with balance)",
+                "en": "Tick when every item in the warehouse is counted; it shows the button Pull All Items With Balance that loads all items with a balance. Stock Opname only.",
+                "id": "Centang bila semua item di gudang dihitung; muncul tombol Pull All Items With Balance yang memuat semua item bersaldo. Hanya Stock Opname."
+            },
+            {
+                "label": "Notes / Chronology",
+                "en": "Free text: what happened and how the difference was found.",
+                "id": "Teks bebas: apa yang terjadi dan bagaimana selisih ditemukan."
+            },
+            {
+                "label": "Location *",
+                "en": "Location of the counted stock. Choosing it loads System Balance and the price for that item and location. Required.",
+                "id": "Lokasi stok yang dihitung. Memilihnya memuat System Balance dan harga item di lokasi itu. Wajib."
+            },
+            {
+                "label": "System Balance",
+                "en": "Quantity the system says is there (from the last Stock Card entry). Display only.",
+                "id": "Jumlah menurut sistem (dari catatan terakhir Kartu Stok). Hanya tampilan."
+            },
+            {
+                "label": "Physical Count *",
+                "en": "The real quantity counted, zero or more. Type the counted total, not the difference. Required.",
+                "id": "Jumlah nyata hasil hitung, nol atau lebih. Ketik total hasil hitung, bukan selisihnya. Wajib."
+            },
+            {
+                "label": "Variance",
+                "en": "Physical Count minus System Balance, calculated. Plus means more than recorded, minus means less.",
+                "id": "Physical Count dikurangi System Balance, dihitung otomatis. Plus berarti lebih dari catatan, minus berarti kurang."
+            },
+            {
+                "label": "Variance Value",
+                "en": "Absolute value of the variance times the unit price, calculated. The total decides how many approval levels are needed.",
+                "id": "Nilai mutlak selisih dikali harga satuan, dihitung otomatis. Totalnya menentukan jumlah level persetujuan."
+            },
+            {
+                "label": "Line Reason",
+                "en": "Remark per line; the screen marks it required when there is a variance. It is a reminder on the screen and is not saved with the document.",
+                "id": "Catatan per baris; layar menandainya wajib bila ada selisih. Hanya pengingat di layar dan tidak disimpan bersama dokumen."
+            },
+            {
+                "label": "Rejection Reason",
+                "en": "Shown to the approver only: required when rejecting, at least 10 characters.",
+                "id": "Hanya untuk approver: wajib saat menolak, minimal 10 karakter."
+            }
+        ]
+    },
+    {
+        "key": "inv-sfg-rpt-balance",
+        "type": "REPORT",
+        "module": "INV",
+        "title": "Stock Balance - Semi Finished Goods",
+        "purpose": {
+            "en": "Shows how much Semi Finished Goods is on hand now, one row per item and location, with this month's opening, in, out and adjustment. Open it to check stock, value and items below minimum.",
+            "id": "Menampilkan jumlah Barang Setengah Jadi yang ada sekarang, satu baris per item dan lokasi, beserta awal, masuk, keluar dan penyesuaian bulan ini. Buka untuk cek stok, nilai dan item di bawah minimum."
+        },
+        "keywords": "stock balance, saldo stok, stok, on hand, persediaan, master stock, minimum stock, stok minimum, nilai stok, laporan stok, Semi Finished Goods, Barang Setengah Jadi",
+        "steps": [
+            {
+                "en": "Open the report; it lists all stock now. Type in the search box (item code or name) to find an item.",
+                "id": "Buka laporan; isinya semua stok saat ini. Ketik di kotak cari (kode atau nama item) untuk menemukan item."
+            },
+            {
+                "en": "Click a tab (Below minimum, Empty, Not usable) to see only those rows, or All to see everything.",
+                "id": "Klik tab (Below minimum, Empty, Not usable) untuk melihat baris tertentu saja, atau All untuk semuanya."
+            },
+            {
+                "en": "Use the filters Category, Warehouse, Location and Stock to narrow the list.",
+                "id": "Pakai filter Category, Warehouse, Location dan Stock untuk mempersempit daftar."
+            },
+            {
+                "en": "Group by Category, Warehouse or Item to get subtotals. Number and value columns show totals.",
+                "id": "Kelompokkan menurut Category, Warehouse atau Item untuk mendapat subtotal. Kolom jumlah dan nilai menampilkan total."
+            },
+            {
+                "en": "Use the column chooser to show Minimum Stock and Idle (days), which are hidden at first. Open the Stock Card report to see the movements behind a balance.",
+                "id": "Pakai pemilih kolom untuk menampilkan Minimum Stock dan Idle (days) yang awalnya tersembunyi. Buka laporan Stock Card untuk melihat mutasi di balik saldo."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Item",
+                "en": "Item name with its code.",
+                "id": "Nama item beserta kodenya."
+            },
+            {
+                "label": "Category",
+                "en": "Group of the item: the fixed group Semi Finished Goods.",
+                "id": "Kelompok item: grup tetap Semi Finished Goods."
+            },
+            {
+                "label": "Warehouse",
+                "en": "Warehouse holding the stock.",
+                "id": "Gudang tempat stok berada."
+            },
+            {
+                "label": "Location",
+                "en": "Storage location (bin) in that warehouse.",
+                "id": "Lokasi simpan (bin) di gudang itu."
+            },
+            {
+                "label": "Opening",
+                "en": "Quantity at the start of the current month. If the item had no movement this month it equals On Hand.",
+                "id": "Jumlah di awal bulan berjalan. Bila item tidak bergerak bulan ini, nilainya sama dengan On Hand."
+            },
+            {
+                "label": "In",
+                "en": "Total received this month.",
+                "id": "Total masuk bulan ini."
+            },
+            {
+                "label": "Out",
+                "en": "Total issued this month.",
+                "id": "Total keluar bulan ini."
+            },
+            {
+                "label": "Adjustment",
+                "en": "Total of adjustments and opname corrections this month (can be negative).",
+                "id": "Total penyesuaian dan koreksi opname bulan ini (bisa negatif)."
+            },
+            {
+                "label": "On Hand",
+                "en": "Quantity in the warehouse now.",
+                "id": "Jumlah di gudang sekarang."
+            },
+            {
+                "label": "Unit",
+                "en": "Stock unit.",
+                "id": "Satuan stok."
+            },
+            {
+                "label": "Minimum Stock",
+                "en": "Minimum stock set on the item master. Hidden at first.",
+                "id": "Stok minimum yang diatur di master item. Awalnya tersembunyi."
+            },
+            {
+                "label": "Stock Value",
+                "en": "Value of the stock in that row.",
+                "id": "Nilai stok pada baris itu."
+            },
+            {
+                "label": "Last Movement",
+                "en": "Date of the latest movement of that item in that location.",
+                "id": "Tanggal mutasi terakhir item di lokasi itu."
+            },
+            {
+                "label": "Idle (days)",
+                "en": "Days since the last movement. Hidden at first.",
+                "id": "Jumlah hari sejak mutasi terakhir. Awalnya tersembunyi."
+            },
+            {
+                "label": "Stock",
+                "en": "Status: OK, Below minimum (usable stock of the item is under its minimum), Empty, or Not usable (location cannot be used, e.g. waste).",
+                "id": "Status: OK, Below minimum (stok bisa pakai item di bawah minimum), Empty, atau Not usable (lokasi tidak bisa dipakai, mis. waste)."
+            },
+            {
+                "label": "Filter: Category / Warehouse / Location / Stock",
+                "en": "Narrow the rows by item group, warehouse, location or stock status.",
+                "id": "Mempersempit baris menurut kelompok item, gudang, lokasi atau status stok."
+            },
+            {
+                "label": "Group by: Category / Warehouse / Item",
+                "en": "Gather the rows under headings with subtotals.",
+                "id": "Mengelompokkan baris di bawah judul dengan subtotal."
+            }
+        ]
+    },
+    {
+        "key": "inv-sfg-rpt-card",
+        "type": "REPORT",
+        "module": "INV",
+        "title": "Stock Card - Semi Finished Goods",
+        "purpose": {
+            "en": "Lists every stock movement of Semi Finished Goods, newest first: what came in, went out or was adjusted, in which document and location, and the balance after it. Open it to trace why a balance is what it is.",
+            "id": "Menampilkan setiap mutasi stok Barang Setengah Jadi, terbaru di atas: apa yang masuk, keluar atau disesuaikan, di dokumen dan lokasi mana, serta saldo sesudahnya. Buka untuk menelusuri asal sebuah saldo."
+        },
+        "keywords": "stock card, kartu stok, mutasi stok, riwayat stok, movement, history stok, kartu persediaan, laporan stok, Semi Finished Goods, Barang Setengah Jadi",
+        "steps": [
+            {
+                "en": "Open the report; all movements are listed, newest first.",
+                "id": "Buka laporan; semua mutasi tampil, terbaru di atas."
+            },
+            {
+                "en": "To read the card of one item, type its code or name (or a document or reference number) in the search box, or group by Item.",
+                "id": "Untuk membaca kartu satu item, ketik kode atau namanya (atau no dokumen atau referensi) di kotak cari, atau kelompokkan menurut Item."
+            },
+            {
+                "en": "Click a tab (In, Out, Adjustment) to see only that kind of movement.",
+                "id": "Klik tab (In, Out, Adjustment) untuk melihat satu jenis mutasi saja."
+            },
+            {
+                "en": "Use the filters Movement, Category, Warehouse and Location, or group by Warehouse or Movement.",
+                "id": "Pakai filter Movement, Category, Warehouse dan Location, atau kelompokkan menurut Warehouse atau Movement."
+            },
+            {
+                "en": "Read Opening, the movement and Balance on the same row. The In, Out and Adjustment columns show totals for the rows on screen.",
+                "id": "Baca Opening, mutasi dan Balance pada baris yang sama. Kolom In, Out dan Adjustment menampilkan total baris di layar."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Date",
+                "en": "Date of the document.",
+                "id": "Tanggal dokumen."
+            },
+            {
+                "label": "Doc No.",
+                "en": "Number of the stock document that caused the movement.",
+                "id": "Nomor dokumen stok yang menyebabkan mutasi."
+            },
+            {
+                "label": "Movement",
+                "en": "Kind of movement: In, Out, Adjustment or Opening.",
+                "id": "Jenis mutasi: In, Out, Adjustment atau Opening."
+            },
+            {
+                "label": "Category",
+                "en": "Document category code (for example STOCK, BB, AD, OP, RETURN). Hidden at first.",
+                "id": "Kode kategori dokumen (misalnya STOCK, BB, AD, OP, RETURN). Awalnya tersembunyi."
+            },
+            {
+                "label": "Item",
+                "en": "Item name with its code.",
+                "id": "Nama item beserta kodenya."
+            },
+            {
+                "label": "Warehouse",
+                "en": "Warehouse of the movement.",
+                "id": "Gudang tempat mutasi."
+            },
+            {
+                "label": "Location",
+                "en": "Storage location (bin).",
+                "id": "Lokasi simpan (bin)."
+            },
+            {
+                "label": "Lot No.",
+                "en": "Lot or batch number. Hidden at first.",
+                "id": "Nomor lot atau batch. Awalnya tersembunyi."
+            },
+            {
+                "label": "Reference",
+                "en": "Number of the source document, for example the receiving or the Stock Out it came from.",
+                "id": "Nomor dokumen sumber, misalnya penerimaan atau Stock Out asalnya."
+            },
+            {
+                "label": "Opening",
+                "en": "Balance of that item in that location just before the movement.",
+                "id": "Saldo item di lokasi itu tepat sebelum mutasi."
+            },
+            {
+                "label": "In",
+                "en": "Quantity received.",
+                "id": "Jumlah masuk."
+            },
+            {
+                "label": "Out",
+                "en": "Quantity issued.",
+                "id": "Jumlah keluar."
+            },
+            {
+                "label": "Adjustment",
+                "en": "Quantity added or removed by an adjustment (can be negative).",
+                "id": "Jumlah yang ditambah atau dikurangi oleh penyesuaian (bisa negatif)."
+            },
+            {
+                "label": "Balance",
+                "en": "Balance of that item in that location right after the movement.",
+                "id": "Saldo item di lokasi itu sesudah mutasi."
+            },
+            {
+                "label": "Unit",
+                "en": "Stock unit.",
+                "id": "Satuan stok."
+            },
+            {
+                "label": "Filter: Movement / Category / Warehouse / Location",
+                "en": "Narrow the rows by kind of movement, document category, warehouse or location.",
+                "id": "Mempersempit baris menurut jenis mutasi, kategori dokumen, gudang atau lokasi."
+            },
+            {
+                "label": "Group by: Item / Warehouse / Movement",
+                "en": "Gather the rows under headings. Group by Item to read one item as a card.",
+                "id": "Mengelompokkan baris di bawah judul. Kelompokkan menurut Item untuk membaca satu item sebagai kartu."
+            }
+        ]
+    },
+    {
+        "key": "inv-sfg-rpt-slow",
+        "type": "REPORT",
+        "module": "INV",
+        "title": "Slow Moving Item - Semi Finished Goods",
+        "purpose": {
+            "en": "Lists Semi Finished Goods items that still have usable stock but have not moved for 3 months or more, so you can decide to use, sell or write them off. Open it during stock review.",
+            "id": "Menampilkan item Barang Setengah Jadi yang masih punya stok bisa pakai tetapi tidak bergerak 3 bulan atau lebih, agar bisa diputuskan dipakai, dijual atau dihapus. Buka saat evaluasi stok."
+        },
+        "keywords": "slow moving, slow moving item, stok mati, barang tidak bergerak, dead stock, stok lama, idle, tidak laku, laporan stok, Semi Finished Goods, Barang Setengah Jadi",
+        "steps": [
+            {
+                "en": "Open the report; items with no movement for 3 months or more are listed, longest idle first.",
+                "id": "Buka laporan; item yang tidak bergerak 3 bulan atau lebih tampil, yang paling lama diam di atas."
+            },
+            {
+                "en": "Click a tab (3-6 months, 6-9 months, 9-12 months, Over 12 months, Never moved) to see one age band.",
+                "id": "Klik tab (3-6 months, 6-9 months, 9-12 months, Over 12 months, Never moved) untuk melihat satu rentang usia."
+            },
+            {
+                "en": "Use the search box (item code or name), the filters Category and Idle, or group by Category or Idle.",
+                "id": "Pakai kotak cari (kode atau nama item), filter Category dan Idle, atau kelompokkan menurut Category atau Idle."
+            },
+            {
+                "en": "Check On Hand, Stock Value and Last Movement, then follow up with the warehouse or purchasing. The totals show how much value is tied up.",
+                "id": "Cek On Hand, Stock Value dan Last Movement, lalu tindak lanjuti bersama gudang atau pembelian. Total menunjukkan nilai yang tertahan."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Item",
+                "en": "Item name with its code. Each item appears once, even when it is in several locations.",
+                "id": "Nama item beserta kodenya. Tiap item tampil sekali, walau ada di beberapa lokasi."
+            },
+            {
+                "label": "Category",
+                "en": "Group of the item: the fixed group Semi Finished Goods.",
+                "id": "Kelompok item: grup tetap Semi Finished Goods."
+            },
+            {
+                "label": "Warehouse",
+                "en": "All warehouses where the item has usable stock.",
+                "id": "Semua gudang tempat item punya stok bisa pakai."
+            },
+            {
+                "label": "On Hand",
+                "en": "Total usable quantity of the item.",
+                "id": "Total jumlah item yang bisa dipakai."
+            },
+            {
+                "label": "Unit",
+                "en": "Stock unit.",
+                "id": "Satuan stok."
+            },
+            {
+                "label": "Stock Value",
+                "en": "Value of that stock.",
+                "id": "Nilai stok itu."
+            },
+            {
+                "label": "Last Movement",
+                "en": "Date of the latest movement of the item in any location. Empty for old balances without a date.",
+                "id": "Tanggal mutasi terakhir item di lokasi mana pun. Kosong untuk saldo lama tanpa tanggal."
+            },
+            {
+                "label": "Idle (days)",
+                "en": "Days since the last movement.",
+                "id": "Jumlah hari sejak mutasi terakhir."
+            },
+            {
+                "label": "Idle",
+                "en": "Age band: 3-6 months, 6-9 months, 9-12 months, Over 12 months, or Never moved (old balance without a movement date).",
+                "id": "Rentang usia: 3-6 months, 6-9 months, 9-12 months, Over 12 months, atau Never moved (saldo lama tanpa tanggal mutasi)."
+            },
+            {
+                "label": "Filter: Category / Idle",
+                "en": "Narrow the rows by item group or age band.",
+                "id": "Mempersempit baris menurut kelompok item atau rentang usia."
+            },
+            {
+                "label": "Group by: Category / Idle",
+                "en": "Gather the rows under headings with subtotals.",
+                "id": "Mengelompokkan baris di bawah judul dengan subtotal."
+            }
+        ]
+    },
+    {
+        "key": "approval-stock",
+        "type": "INPUT",
+        "module": "INV",
+        "title": "Adjustment Approval",
+        "purpose": {
+            "en": "Queue of Stock Adjustment and Stock Opname documents (all stock classes) waiting for your decision. Open it to approve, reject or hold them. The last approval posts the document to the Stock Card.",
+            "id": "Antrian dokumen Stock Adjustment dan Stock Opname (semua kelas stok) yang menunggu keputusan Anda. Buka untuk menyetujui, menolak atau menahan. Persetujuan terakhir memposting dokumen ke Kartu Stok."
+        },
+        "keywords": "adjustment approval, approval stok, persetujuan adjustment, persetujuan opname, approve, setujui, tolak, tahan, hold, reject, approval center, stock adjustment, opname",
+        "steps": [
+            {
+                "en": "Open the screen. It lists only documents waiting for you (your approval level or acting officer). The count shows how many are waiting.",
+                "id": "Buka layar. Isinya hanya dokumen yang menunggu Anda (level approval Anda atau sebagai pengganti/PLT). Angka menunjukkan jumlah yang menunggu."
+            },
+            {
+                "en": "Click a document. Read the summary, the item lines (system quantity, physical quantity, variance, value), the approval path (Level n of N) and the history. Open the document if you need the full form.",
+                "id": "Klik sebuah dokumen. Baca ringkasan, baris item (qty sistem, qty fisik, selisih, nilai), alur approval (Level n of N) dan riwayat. Buka dokumennya bila perlu form lengkap."
+            },
+            {
+                "en": "Click Setujui (Approve) to approve. If another level is still needed it moves on to that approver; at the last level the document is posted to the Stock Card.",
+                "id": "Klik Setujui (Approve) untuk menyetujui. Bila masih ada level lain, dokumen lanjut ke approver itu; di level terakhir dokumen diposting ke Kartu Stok."
+            },
+            {
+                "en": "Click Tolak (Reject) to send the document back to its creator. A reason is required (at least 10 characters). The document gets status REVISION_NEEDED.",
+                "id": "Klik Tolak (Reject) untuk mengembalikan dokumen ke pembuatnya. Alasan wajib diisi (minimal 10 karakter). Dokumen berstatus REVISION_NEEDED."
+            },
+            {
+                "en": "Click Tahan (Hold) to postpone the decision. A reason is required. Every decision is written to the log with who, when and why.",
+                "id": "Klik Tahan (Hold) untuk menunda keputusan. Alasan wajib diisi. Setiap keputusan dicatat di log: siapa, kapan dan mengapa."
+            },
+            {
+                "en": "Your own recent decisions are listed under Log Keputusan.",
+                "id": "Keputusan Anda sebelumnya tampil di Log Keputusan."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Kategori",
+                "en": "Stock class of the document (RM, FG or SFG).",
+                "id": "Kelas stok dokumen (RM, FG atau SFG)."
+            },
+            {
+                "label": "Alasan",
+                "en": "Reason code chosen by the creator of the document.",
+                "id": "Kode alasan yang dipilih pembuat dokumen."
+            },
+            {
+                "label": "Nilai Selisih (absolut)",
+                "en": "Total of all line variances taken as positive amounts. It decides which approval levels are needed.",
+                "id": "Total semua selisih baris dihitung sebagai angka positif. Menentukan level approval yang diperlukan."
+            },
+            {
+                "label": "Tanggal",
+                "en": "Document date.",
+                "id": "Tanggal dokumen."
+            },
+            {
+                "label": "Jumlah Item",
+                "en": "Number of item lines.",
+                "id": "Jumlah baris item."
+            },
+            {
+                "label": "Petugas",
+                "en": "Opname officer. Shown for Stock Opname only.",
+                "id": "Petugas opname. Hanya tampil untuk Stock Opname."
+            },
+            {
+                "label": "Saksi",
+                "en": "Opname witness. Shown for Stock Opname only.",
+                "id": "Saksi opname. Hanya tampil untuk Stock Opname."
+            },
+            {
+                "label": "Item",
+                "en": "Name of the counted item.",
+                "id": "Nama item yang dihitung."
+            },
+            {
+                "label": "Satuan",
+                "en": "Stock unit.",
+                "id": "Satuan stok."
+            },
+            {
+                "label": "Qty Sistem",
+                "en": "Quantity the system showed when the document was made.",
+                "id": "Jumlah menurut sistem saat dokumen dibuat."
+            },
+            {
+                "label": "Qty Fisik",
+                "en": "Quantity counted.",
+                "id": "Jumlah hasil hitung."
+            },
+            {
+                "label": "Selisih",
+                "en": "Qty Fisik minus Qty Sistem.",
+                "id": "Qty Fisik dikurangi Qty Sistem."
+            },
+            {
+                "label": "Harga/Unit",
+                "en": "Unit price used to value the variance.",
+                "id": "Harga satuan untuk menilai selisih."
+            },
+            {
+                "label": "Nilai Selisih",
+                "en": "Variance times unit price for the line.",
+                "id": "Selisih dikali harga satuan untuk baris itu."
+            },
+            {
+                "label": "Alasan keputusan",
+                "en": "Reason typed in the confirmation box when you reject or hold. Required for both, not for approve.",
+                "id": "Alasan yang diketik di kotak konfirmasi saat menolak atau menahan. Wajib untuk keduanya, tidak untuk menyetujui."
+            }
+        ]
+    },
+    {
+        "key": "md-warehouse",
+        "type": "INPUT",
+        "module": "MDATA",
+        "title": "Warehouse & Location",
+        "purpose": {
+            "en": "Master of warehouses and their storage locations (bins). Open it to add a warehouse, set its type, add bins or print rack labels. Every stock document uses these warehouses and locations.",
+            "id": "Master gudang beserta lokasi simpannya (bin). Buka untuk menambah gudang, mengatur tipenya, menambah bin atau mencetak label rak. Semua dokumen stok memakai gudang dan lokasi ini."
+        },
+        "keywords": "master gudang, warehouse, gudang, lokasi, bin, rak, storage bin, location, label rak, tipe gudang, waste, afkir, kode gudang",
+        "steps": [
+            {
+                "en": "The list shows each warehouse with its type and number of locations. Use the search box or the Type filter to find one.",
+                "id": "Daftar menampilkan tiap gudang beserta tipe dan jumlah lokasinya. Pakai kotak cari atau filter Type untuk menemukan gudang."
+            },
+            {
+                "en": "Click + New Record for a new warehouse, or click Edit on a row. Fill Kode Gudang, Nama Gudang and Tipe Gudang, keep Aktif ticked and click Simpan Gudang.",
+                "id": "Klik + New Record untuk gudang baru, atau klik Edit pada baris. Isi Kode Gudang, Nama Gudang dan Tipe Gudang, biarkan Aktif tercentang lalu klik Simpan Gudang."
+            },
+            {
+                "en": "After the first save the page reopens in edit mode. Now the locations section works.",
+                "id": "Setelah simpan pertama halaman terbuka dalam mode edit. Sekarang bagian lokasi bisa dipakai."
+            },
+            {
+                "en": "In the Lokasi / Storage Bin table type Row, Col and Stack (and Kapasitas if known) and click Tambah. The Bin Code is built by the system.",
+                "id": "Di tabel Lokasi / Storage Bin ketik Row, Col dan Stack (dan Kapasitas bila diketahui) lalu klik Tambah. Bin Code dibuat sistem."
+            },
+            {
+                "en": "Click Hapus on a bin to remove it, and Cetak Label Rak to print the rack labels of this warehouse.",
+                "id": "Klik Hapus pada bin untuk menghapusnya, dan Cetak Label Rak untuk mencetak label rak gudang ini."
+            },
+            {
+                "en": "To stop using a warehouse, switch it to inactive from the list (it no longer appears in stock documents).",
+                "id": "Untuk berhenti memakai gudang, nonaktifkan dari daftar (tidak muncul lagi di dokumen stok)."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Kode Gudang",
+                "en": "Unique short code of the warehouse, up to 20 characters, for example WH-RAW-01. Required. It is the start of every bin code.",
+                "id": "Kode singkat unik gudang, maksimal 20 karakter, misalnya WH-RAW-01. Wajib. Menjadi awalan setiap kode bin."
+            },
+            {
+                "label": "Nama Gudang",
+                "en": "Name of the warehouse, up to 100 characters. Required.",
+                "id": "Nama gudang, maksimal 100 karakter. Wajib."
+            },
+            {
+                "label": "Tipe Gudang",
+                "en": "RM (Bahan Baku), SFG (Semi Finished Goods), FG (Barang Jadi), MIX (Transit/Buffer), WASTE (Afkir / Waste) or TRANSIT. A WASTE warehouse makes bins that are not usable.",
+                "id": "RM (Bahan Baku), SFG (Semi Finished Goods), FG (Barang Jadi), MIX (Transit/Buffer), WASTE (Afkir / Waste) atau TRANSIT. Gudang WASTE membuat bin yang tidak bisa dipakai."
+            },
+            {
+                "label": "Aktif",
+                "en": "Active warehouses are offered in stock documents. Untick to hide the warehouse from them.",
+                "id": "Gudang aktif muncul di dokumen stok. Hilangkan centang untuk menyembunyikannya dari dokumen."
+            },
+            {
+                "label": "Row",
+                "en": "Row code of the bin, for example R01. Required to add a bin.",
+                "id": "Kode baris bin, misalnya R01. Wajib untuk menambah bin."
+            },
+            {
+                "label": "Col",
+                "en": "Column code of the bin, for example C01. Required to add a bin.",
+                "id": "Kode kolom bin, misalnya C01. Wajib untuk menambah bin."
+            },
+            {
+                "label": "Stack",
+                "en": "Stack (level) code of the bin, for example S01. Required to add a bin.",
+                "id": "Kode tumpukan (level) bin, misalnya S01. Wajib untuk menambah bin."
+            },
+            {
+                "label": "Bin Code",
+                "en": "Built by the system as warehouse code, Row, Col and Stack joined with dashes. A code that already exists is refused.",
+                "id": "Dibuat sistem dari kode gudang, Row, Col dan Stack digabung dengan tanda strip. Kode yang sudah ada ditolak."
+            },
+            {
+                "label": "Kapasitas (Kg)",
+                "en": "Optional capacity of the bin in kilograms.",
+                "id": "Kapasitas bin dalam kilogram (opsional)."
+            },
+            {
+                "label": "Type (list filter)",
+                "en": "Filter the list by warehouse type.",
+                "id": "Menyaring daftar menurut tipe gudang."
+            },
+            {
+                "label": "Location (list column)",
+                "en": "Number of bins of the warehouse, shown as a link.",
+                "id": "Jumlah bin gudang, tampil sebagai tautan."
+            }
+        ]
+    }
+]

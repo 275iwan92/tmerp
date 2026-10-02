@@ -1,0 +1,2293 @@
+[
+    {
+        "key": "customer-order",
+        "type": "INPUT",
+        "module": "SALES",
+        "title": "Customer Order",
+        "purpose": {
+            "en": "Create and follow customer orders (CO): the order a customer has confirmed, which drives delivery planning and production. Open it when a customer accepts a quotation or places an order directly.",
+            "id": "Membuat dan memantau Customer Order (CO): pesanan yang sudah pasti dari customer dan menjadi dasar jadwal kirim serta produksi. Buka saat customer menerima quotation atau memesan langsung."
+        },
+        "keywords": "co, customer order, sales order, order pelanggan, pesanan customer, po customer, instant, integrated, quotation win, due date, confirm, approval",
+        "steps": [
+            {
+                "en": "Click + New Record and choose the path: INTEGRATED (from an issued Quotation) or INSTANT (direct order without a Quotation).",
+                "id": "Klik + New Record lalu pilih jalur: INTEGRATED (dari Quotation yang sudah terbit) atau INSTANT (order langsung tanpa Quotation)."
+            },
+            {
+                "en": "INTEGRATED: pick the Quotation and click Create from Quotation; lines and prices are copied from the quotation (1 Quotation = 1 CO). INSTANT: pick the Customer and click Buat Instant.",
+                "id": "INTEGRATED: pilih Quotation lalu klik Create from Quotation; baris dan harga disalin dari quotation (1 Quotation = 1 CO). INSTANT: pilih Customer lalu klik Buat Instant."
+            },
+            {
+                "en": "Fill the header tabs: Cust. PO No. and PIC Sales (General), Payment Terms (Finance), shipment method, parties and address (Delivery).",
+                "id": "Isi tab header: Cust. PO No. dan PIC Sales (General), Payment Terms (Finance), metode kirim, pihak terkait dan alamat (Delivery)."
+            },
+            {
+                "en": "INSTANT: add product lines with + Product from Master Product, or + Jasa for a service line, then enter Qty, Price and Due Date. If the quotation offered several qty options, press Choose on the one the customer wants.",
+                "id": "INSTANT: tambah baris produk dengan + Product from Master Product, atau + Jasa untuk jasa, lalu isi Qty, Price dan Due Date. Bila quotation menawarkan beberapa qty, tekan Choose pada qty yang dipilih customer."
+            },
+            {
+                "en": "Every Product line must have a Due Date (INSTANT lines also need a Master Product). Check the delivery schedule per line, add Other Costs if needed, then click Save.",
+                "id": "Setiap baris Product wajib punya Due Date (baris INSTANT juga wajib punya Master Product). Cek jadwal kirim tiap baris, tambah Other Costs bila perlu, lalu klik Save."
+            },
+            {
+                "en": "Click Confirm: the CO is sent for approval (F&A SPV, then Operational Manager) and shows SUBMITTED. The delivery schedule (CPDEL) is made only after the last approval, when it becomes CONFIRMED.",
+                "id": "Klik Confirm: CO diajukan untuk approval (F&A SPV, lalu Operational Manager) dan berstatus SUBMITTED. Jadwal kirim (CPDEL) dibuat setelah approval terakhir, saat status menjadi CONFIRMED."
+            },
+            {
+                "en": "A Confirmed CO can be cancelled with Cancel and a reason, but not while a Work Order or Delivery Order exists for it. Cancel those first.",
+                "id": "CO yang sudah Confirmed bisa dibatalkan dengan Cancel disertai alasan, tapi tidak bisa bila sudah ada Work Order atau Delivery Order. Batalkan dulu dokumen itu."
+            },
+            {
+                "en": "A Rejected or Cancelled CO cannot be edited: click Duplicate to make a new INSTANT CO with the same lines, fix it and Confirm again. A Draft INSTANT CO can be removed with Delete.",
+                "id": "CO yang Rejected atau Cancelled tidak bisa diubah: klik Duplicate untuk membuat CO INSTANT baru dengan baris yang sama, perbaiki lalu Confirm lagi. CO INSTANT yang masih Draft bisa dihapus dengan Delete."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Quotation terbit",
+                "en": "New Record, INTEGRATED path: the issued Quotation that has no CO yet. Lines and prices come from it.",
+                "id": "New Record, jalur INTEGRATED: Quotation terbit yang belum punya CO. Baris dan harga diambil darinya."
+            },
+            {
+                "label": "Customer",
+                "en": "New Record, INSTANT path: the customer, picked from the customer master. Product lines can only come from this customer's Master Product.",
+                "id": "New Record, jalur INSTANT: customer dari master customer. Baris produk hanya bisa dari Master Product milik customer ini."
+            },
+            {
+                "label": "CO Date",
+                "en": "Date of the order. Filled with today at creation; change it if needed.",
+                "id": "Tanggal order. Terisi hari ini saat dibuat; ubah bila perlu."
+            },
+            {
+                "label": "Ref. Quotation",
+                "en": "Quotation this CO came from. Shows that there is no Quotation for an INSTANT CO. Display only.",
+                "id": "Quotation asal CO ini. Untuk CO INSTANT tertulis tanpa Quotation. Hanya tampilan."
+            },
+            {
+                "label": "Cust. PO No.",
+                "en": "The customer's own purchase order number, typed. Shown on the order list and the CO reports and used to find the order.",
+                "id": "Nomor PO dari customer, diketik. Tampil di daftar CO dan laporan CO, dipakai untuk mencari order."
+            },
+            {
+                "label": "Order Type",
+                "en": "Kind of lines in the order, worked out by the system. Display only.",
+                "id": "Jenis baris dalam order, dihitung sistem. Hanya tampilan."
+            },
+            {
+                "label": "PIC Sales",
+                "en": "The salesperson in charge, picked from the sales person master. Used as Sales By in the CO reports.",
+                "id": "Sales penanggung jawab, dipilih dari master sales person. Dipakai sebagai Sales By di laporan CO."
+            },
+            {
+                "label": "Currency",
+                "en": "Currency of the order, taken from the quotation or the customer. Display only.",
+                "id": "Mata uang order, diambil dari quotation atau customer. Hanya tampilan."
+            },
+            {
+                "label": "Payment Terms",
+                "en": "Payment term for this order, picked from the payment term master.",
+                "id": "Syarat pembayaran order ini, dipilih dari master payment term."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Deliver or Pickup. Can be changed while the CO is Draft.",
+                "id": "Deliver atau Pickup. Bisa diubah selama CO masih Draft."
+            },
+            {
+                "label": "Recipient (if different from the customer)",
+                "en": "Who receives the goods when it is not the customer itself. Search a customer. Draft only.",
+                "id": "Penerima barang bila bukan customer sendiri. Cari di master customer. Hanya saat Draft."
+            },
+            {
+                "label": "Shipper",
+                "en": "The party that sends the goods, searched from the customer master. Draft only.",
+                "id": "Pihak yang mengirim barang, dicari di master customer. Hanya saat Draft."
+            },
+            {
+                "label": "Forwarder",
+                "en": "The forwarding company, searched from the customer master. Draft only.",
+                "id": "Perusahaan ekspedisi/forwarder, dicari di master customer. Hanya saat Draft."
+            },
+            {
+                "label": "Shipment Location",
+                "en": "Delivery area: search a village, district, city or postcode. Fills the postcode automatically.",
+                "id": "Wilayah tujuan kirim: cari kelurahan, kecamatan, kota atau kode pos. Kode pos terisi otomatis."
+            },
+            {
+                "label": "Address Details (street, no., RT/RW, landmark)",
+                "en": "Street, number and landmark of the delivery address, typed.",
+                "id": "Jalan, nomor dan patokan alamat kirim, diketik."
+            },
+            {
+                "label": "Postcode",
+                "en": "Filled from the chosen Shipment Location. Display only.",
+                "id": "Terisi dari Shipment Location yang dipilih. Hanya tampilan."
+            },
+            {
+                "label": "Type",
+                "en": "Delivery schedule row of a Product line: FULL or PARTIAL. If left empty, one FULL row for the whole qty at the Due Date is created on Confirm.",
+                "id": "Baris jadwal kirim sebuah baris Product: FULL atau PARTIAL. Bila kosong, saat Confirm dibuat satu baris FULL berisi seluruh qty pada Due Date."
+            },
+            {
+                "label": "Ship Date",
+                "en": "Date of that delivery schedule row. Use + Delivery Schedule to add a row.",
+                "id": "Tanggal baris jadwal kirim itu. Pakai + Delivery Schedule untuk menambah baris."
+            },
+            {
+                "label": "Qty",
+                "en": "Quantity of that delivery schedule row (header of the schedule); lines in Details have their own Qty.",
+                "id": "Qty baris jadwal kirim itu; baris di Details punya kolom Qty sendiri."
+            },
+            {
+                "label": "Delete this schedule on Save",
+                "en": "Tick to remove that delivery schedule row when you click Save (Draft only).",
+                "id": "Centang untuk menghapus baris jadwal kirim itu saat Save (hanya Draft)."
+            },
+            {
+                "label": "Customer Material",
+                "en": "Tab listing customer-supplied material already received for this CO. + Receive Customer Material opens the goods receipt for it.",
+                "id": "Tab daftar bahan titipan customer yang sudah diterima untuk CO ini. + Receive Customer Material membuka penerimaan barangnya."
+            },
+            {
+                "label": "Internal notes (Ops / PPIC)",
+                "en": "Free notes for operations and PPIC. Not for the customer.",
+                "id": "Catatan bebas untuk Ops dan PPIC. Bukan untuk customer."
+            },
+            {
+                "label": "Product / Service",
+                "en": "Line name. Editable only on manual lines; lines copied from a quotation are locked.",
+                "id": "Nama baris. Hanya bisa diubah pada baris manual; baris salinan quotation terkunci."
+            },
+            {
+                "label": "Qty",
+                "en": "Ordered quantity of the line. Editable only on manual lines.",
+                "id": "Jumlah pesanan baris itu. Hanya bisa diubah pada baris manual."
+            },
+            {
+                "label": "Unit",
+                "en": "Unit of the quantity. Display only.",
+                "id": "Satuan qty. Hanya tampilan."
+            },
+            {
+                "label": "Price",
+                "en": "Unit selling price. Typed on manual lines; copied and locked on quotation lines. Only people allowed to see prices see it.",
+                "id": "Harga jual per satuan. Diketik pada baris manual; disalin dan terkunci pada baris quotation. Hanya terlihat oleh yang berhak melihat harga."
+            },
+            {
+                "label": "Disc %",
+                "en": "Line discount in percent. Display only.",
+                "id": "Diskon baris dalam persen. Hanya tampilan."
+            },
+            {
+                "label": "Due Date",
+                "en": "Date the product is due. Required on every Product line before Confirm; used for the default delivery schedule.",
+                "id": "Tanggal produk harus jadi. Wajib di tiap baris Product sebelum Confirm; dipakai untuk jadwal kirim bawaan."
+            },
+            {
+                "label": "Qty Minim",
+                "en": "Yes/No flag: the order was placed as a minimum quantity. Shown in the CO reports.",
+                "id": "Penanda Ya/Tidak: order masuk dengan qty minimum. Tampil di laporan CO."
+            },
+            {
+                "label": "Subtotal",
+                "en": "Qty x Price minus the line discount. Calculated by the system.",
+                "id": "Qty x Price dikurangi diskon baris. Dihitung sistem."
+            },
+            {
+                "label": "Type",
+                "en": "Product or Jasa (service). Under the More columns of Details.",
+                "id": "Product atau Jasa. Ada di kolom More pada Details."
+            },
+            {
+                "label": "Line Source",
+                "en": "Snapshot quotation (locked) or Manual. Under More.",
+                "id": "Snapshot quotation (terkunci) atau Manual. Ada di More."
+            },
+            {
+                "label": "Inquiry",
+                "en": "Inquiry number the line came from. Under More.",
+                "id": "Nomor inquiry asal baris. Ada di More."
+            },
+            {
+                "label": "Master Product",
+                "en": "Master Product linked to the line; Confirm needs it on INSTANT lines. Under More.",
+                "id": "Master Product yang terkait baris; Confirm membutuhkannya pada baris INSTANT. Ada di More."
+            },
+            {
+                "label": "Spesifikasi",
+                "en": "Specification note of the line. Under More.",
+                "id": "Catatan spesifikasi baris. Ada di More."
+            },
+            {
+                "label": "+ Product from Master Product",
+                "en": "Search the customer's Master Product (at least 2 letters of name, code or design no.) then click + Product to add the line.",
+                "id": "Cari Master Product milik customer (minimal 2 huruf nama, kode atau no. desain) lalu klik + Product untuk menambah baris."
+            },
+            {
+                "label": "Choose",
+                "en": "Shown when a quotation gave several qty options for one product: press Choose on the qty the customer ordered; the other options are removed from this CO.",
+                "id": "Muncul bila quotation memberi beberapa pilihan qty untuk satu produk: tekan Choose pada qty yang dipesan customer; pilihan lain dibuang dari CO ini."
+            },
+            {
+                "label": "Doc. Disc. (fixed from Inquiry)",
+                "en": "Document discount taken from the inquiry. Display only.",
+                "id": "Diskon dokumen dari inquiry. Hanya tampilan."
+            },
+            {
+                "label": "Disc. Qty",
+                "en": "Quantity discount in percent for the whole order. Draft only.",
+                "id": "Diskon qty dalam persen untuk seluruh order. Hanya saat Draft."
+            },
+            {
+                "label": "Tax",
+                "en": "PPN or Non PPN. Draft only. PPh 23 on service lines is calculated by the system and deducted by the customer.",
+                "id": "PPN atau Non PPN. Hanya saat Draft. PPh 23 pada baris jasa dihitung sistem dan dipotong customer."
+            },
+            {
+                "label": "Category",
+                "en": "Other Costs: Trucking, Expedition or Lainnya.",
+                "id": "Other Costs: Trucking, Expedition atau Lainnya."
+            },
+            {
+                "label": "Description",
+                "en": "Other Costs: what the cost is for, typed.",
+                "id": "Other Costs: biaya untuk apa, diketik."
+            },
+            {
+                "label": "Nominal",
+                "en": "Other Costs: the amount. Added to the order total.",
+                "id": "Other Costs: jumlah biaya. Ditambahkan ke total order."
+            },
+            {
+                "label": "Tax Treatment",
+                "en": "Other Costs: Taxable (included in the tax base) or Reimbursement (passed on without tax).",
+                "id": "Other Costs: Taxable (masuk dasar pajak) atau Reimbursement (diteruskan tanpa pajak)."
+            },
+            {
+                "label": "Net Receivable",
+                "en": "Final amount after discount, other costs, PPN and PPh 23. Calculated by the system; the footer also shows DPP, Total Billing and the amount in words.",
+                "id": "Jumlah akhir setelah diskon, biaya lain, PPN dan PPh 23. Dihitung sistem; footer juga menampilkan DPP, Total Billing dan terbilang."
+            }
+        ]
+    },
+    {
+        "key": "cpdel",
+        "type": "INPUT",
+        "module": "SALES",
+        "title": "Customer Plan Delivery",
+        "purpose": {
+            "en": "Delivery promise book for Confirmed customer orders: each row is one delivery with a customer slot (Sales) and a production ready time (PPIC) that must match. Open it to negotiate slots, split or join deliveries and Post to Production.",
+            "id": "Buku janji kirim untuk CO yang sudah Confirmed: tiap baris satu pengiriman dengan slot customer (Sales) dan waktu siap produksi (PPIC) yang harus cocok. Buka untuk negosiasi slot, Split atau Join kiriman, dan Post to Production."
+        },
+        "keywords": "cpdel, plan delivery, customer plan delivery, jadwal kirim, jadwal pengiriman, slot, split, join, gabung, post to production, ppic, janji kirim",
+        "steps": [
+            {
+                "en": "Rows appear by themselves when a CO is Confirmed (one row per Product line at its Due Date). Use the status boxes and the Promise filter to find rows that need action.",
+                "id": "Baris muncul otomatis saat CO Confirmed (satu baris per baris Product pada Due Date-nya). Pakai kotak status dan filter Promise untuk mencari baris yang perlu tindakan."
+            },
+            {
+                "en": "Open a row. PPIC commits the Ready date and Ready time in Production promise (PPIC) and Save. If it is later than the slot, choose a Reason.",
+                "id": "Buka sebuah baris. PPIC mengisi Ready date dan Ready time di Production promise (PPIC) lalu Save. Bila lebih lambat dari slot, pilih Reason."
+            },
+            {
+                "en": "If the goods are ready later than the slot, Sales agrees a new slot with the customer by WhatsApp or phone, then records it in Change the customer slot (Sales) and Save. Fill Split qty to send only part of the line at the new slot.",
+                "id": "Bila barang siap lebih lambat dari slot, Sales sepakat slot baru dengan customer lewat WhatsApp atau telepon, lalu mencatatnya di Change the customer slot (Sales) dan Save. Isi Split qty untuk mengirim sebagian qty di slot baru."
+            },
+            {
+                "en": "If the customer refuses a new slot, use Customer refused and click Escalate. The Operational Manager then chooses a Decision and an Instruction, and production commits a new ready time.",
+                "id": "Bila customer menolak slot baru, pakai Customer refused dan klik Escalate. Operational Manager lalu memilih Decision dan Instruction, dan produksi mengisi ulang waktu siap."
+            },
+            {
+                "en": "To combine lines of the same CO and product that are not yet posted, tick them under Join with and click Join; the result goes to the earliest date.",
+                "id": "Untuk menggabung baris CO dan produk yang sama yang belum di-post, centang di Join with lalu klik Join; hasilnya jatuh ke tanggal paling awal."
+            },
+            {
+                "en": "When the line is ready to go to production, click Post to Production. A Work Order is created. After posting, date and qty are locked (only the slot time can change) and the line can be pulled into a Delivery Order.",
+                "id": "Bila baris siap ke produksi, klik Post to Production. Work Order dibuat. Setelah di-post, tanggal dan qty terkunci (hanya jam slot yang bisa diubah) dan baris bisa ditarik ke Delivery Order."
+            },
+            {
+                "en": "Production output must still be entered after the goods are sent; it is the KPI basis for all departments. Every change is kept in the Negotiation log.",
+                "id": "Hasil produksi tetap wajib diinput walau barang sudah dikirim; itu dasar KPI semua departemen. Setiap perubahan tercatat di Negotiation log."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Original promise",
+                "en": "The first date promised to the customer. It never changes and is the KPI reference. Display only.",
+                "id": "Tanggal pertama yang dijanjikan ke customer. Tidak pernah berubah dan menjadi patokan KPI. Hanya tampilan."
+            },
+            {
+                "label": "Customer slot",
+                "en": "Date and time agreed with the customer for this delivery. Changed only through Change the customer slot (Sales).",
+                "id": "Tanggal dan jam yang disepakati dengan customer untuk kiriman ini. Diubah hanya lewat Change the customer slot (Sales)."
+            },
+            {
+                "label": "Production ready",
+                "en": "When production says the goods are ready to load, committed by PPIC. Shows not committed until then.",
+                "id": "Kapan produksi menyatakan barang siap dimuat, diisi PPIC. Tertulis not committed sebelum diisi."
+            },
+            {
+                "label": "Gap",
+                "en": "Days between the slot and the production ready time (days late or on time). Calculated by the system.",
+                "id": "Selisih hari antara slot dan waktu siap produksi (terlambat atau tepat waktu). Dihitung sistem."
+            },
+            {
+                "label": "Qty",
+                "en": "Quantity of this delivery against the order quantity. Display only.",
+                "id": "Qty kiriman ini dibanding qty order. Hanya tampilan."
+            },
+            {
+                "label": "Customer receives that day",
+                "en": "Customer's receiving hours on the slot date, from the customer master. Display only.",
+                "id": "Jam terima customer pada tanggal slot, dari master customer. Hanya tampilan."
+            },
+            {
+                "label": "Due date on the order",
+                "en": "Due Date of the CO line. Display only.",
+                "id": "Due Date pada baris CO. Hanya tampilan."
+            },
+            {
+                "label": "Production",
+                "en": "Shows when and by whom the line was posted to production, or not posted.",
+                "id": "Menunjukkan kapan dan oleh siapa baris di-post ke produksi, atau belum di-post."
+            },
+            {
+                "label": "Ready date",
+                "en": "PPIC: date the goods will be ready to load. Required. Suggested from the Work Order due date when there is one.",
+                "id": "PPIC: tanggal barang siap dimuat. Wajib. Disarankan dari tanggal jatuh tempo Work Order bila ada."
+            },
+            {
+                "label": "Ready time",
+                "en": "PPIC: time the goods will be ready. Required; 07:30 is suggested.",
+                "id": "PPIC: jam barang siap. Wajib; disarankan 07:30."
+            },
+            {
+                "label": "Reason if later than the slot",
+                "en": "PPIC: why the goods are ready after the slot, picked from the delay reason list. Required when it is later than the slot.",
+                "id": "PPIC: alasan barang siap setelah slot, dipilih dari daftar alasan keterlambatan. Wajib bila lebih lambat dari slot."
+            },
+            {
+                "label": "Note",
+                "en": "Free note saved in the Negotiation log.",
+                "id": "Catatan bebas yang tersimpan di Negotiation log."
+            },
+            {
+                "label": "Slot date",
+                "en": "Sales: new slot date. Read-only after the line is posted to production.",
+                "id": "Sales: tanggal slot baru. Tidak bisa diubah setelah baris di-post ke produksi."
+            },
+            {
+                "label": "Slot time",
+                "en": "Sales: new slot time. Must be inside Telasih office hours and the customer's receiving hours; warnings appear otherwise.",
+                "id": "Sales: jam slot baru. Harus dalam jam kantor Telasih dan jam terima customer; bila tidak, muncul peringatan."
+            },
+            {
+                "label": "Split qty (optional)",
+                "en": "Sales: quantity to send at the new slot; must be less than the line qty. Empty moves the whole line. Not available after posting.",
+                "id": "Sales: qty yang dikirim di slot baru; harus kurang dari qty baris. Kosong berarti seluruh baris dipindah. Tidak tersedia setelah di-post."
+            },
+            {
+                "label": "Reason",
+                "en": "Sales: why the slot changes or the shipment is split. Required when an agreed slot changes or the shipment is split.",
+                "id": "Sales: alasan slot berubah atau kiriman dipecah. Wajib bila slot yang sudah disepakati berubah atau kiriman dipecah."
+            },
+            {
+                "label": "Agreed via",
+                "en": "How it was agreed: WhatsApp, Phone call, Email or Meeting. Required.",
+                "id": "Disepakati lewat apa: WhatsApp, Phone call, Email atau Meeting. Wajib."
+            },
+            {
+                "label": "Customer contact (who agreed)",
+                "en": "Name of the customer person who agreed. Required; suggested from the customer's contact.",
+                "id": "Nama orang di customer yang menyetujui. Wajib; disarankan dari kontak customer."
+            },
+            {
+                "label": "Via",
+                "en": "Customer refused: the channel used to hear the refusal.",
+                "id": "Customer refused: lewat apa penolakan diterima."
+            },
+            {
+                "label": "Customer contact",
+                "en": "Customer refused: who at the customer refused. Required.",
+                "id": "Customer refused: siapa di customer yang menolak. Wajib."
+            },
+            {
+                "label": "What the customer said",
+                "en": "Customer refused: the customer's answer in short. Required; Escalate sends the line to the Operational Manager.",
+                "id": "Customer refused: jawaban customer secara singkat. Wajib; Escalate mengirim baris ke Operational Manager."
+            },
+            {
+                "label": "Decision",
+                "en": "Operational Manager: Overtime, Re-prioritize production, Subcontract or Make customer a new offer.",
+                "id": "Operational Manager: Overtime, Re-prioritize production, Subcontract atau Make customer a new offer."
+            },
+            {
+                "label": "Instruction",
+                "en": "Operational Manager: what production and sales must do. Required.",
+                "id": "Operational Manager: apa yang harus dilakukan produksi dan sales. Wajib."
+            },
+            {
+                "label": "Join with",
+                "en": "Other not-yet-posted lines of the same CO and product to combine with this one.",
+                "id": "Baris lain CO dan produk yang sama yang belum di-post untuk digabung dengan baris ini."
+            },
+            {
+                "label": "Promise",
+                "en": "Status of the row: Waiting for PPIC, Need negotiation, Escalated, Aligned, Late or Shipped.",
+                "id": "Status baris: Waiting for PPIC, Need negotiation, Escalated, Aligned, Late atau Shipped."
+            }
+        ]
+    },
+    {
+        "key": "approval-co",
+        "type": "INPUT",
+        "module": "SALES",
+        "title": "CO Approval Center",
+        "purpose": {
+            "en": "Queue of Customer Orders waiting for your decision. Open it to check a submitted CO and Approve, Hold or Reject it. Each approver sees only the orders waiting at their own level.",
+            "id": "Antrian Customer Order yang menunggu keputusan Anda. Buka untuk memeriksa CO yang diajukan lalu Setujui, Tahan atau Tolak. Tiap approver hanya melihat order yang menunggu di levelnya."
+        },
+        "keywords": "approval co, approval customer order, persetujuan co, setujui, tolak, tahan, hold, reject, f&a spv, operational manager, antrian approval",
+        "steps": [
+            {
+                "en": "Open the screen: the list shows the Customer Orders waiting for your approval. Click one to see its summary, lines and approval steps.",
+                "id": "Buka layar ini: daftar menampilkan Customer Order yang menunggu approval Anda. Klik salah satu untuk melihat ringkasan, baris dan tahap approval."
+            },
+            {
+                "en": "Check the lines. The first approver (F&A SPV) mainly checks that prices are not mistyped; lines without a price are flagged. Direct (INSTANT) orders have manually typed prices.",
+                "id": "Periksa baris-barisnya. Approver pertama (F&A SPV) terutama memastikan harga tidak salah input; baris tanpa harga ditandai. Order direct (INSTANT) harganya diketik manual."
+            },
+            {
+                "en": "Click Setujui to approve your level. After the last level the CO becomes CONFIRMED and its delivery schedule (CPDEL) is created.",
+                "id": "Klik Setujui untuk menyetujui level Anda. Setelah level terakhir, CO menjadi CONFIRMED dan jadwal kirimnya (CPDEL) dibuat."
+            },
+            {
+                "en": "Click Tolak to reject: a reason is required and the decision is final (the CO becomes REJECTED; the sales team can Duplicate it).",
+                "id": "Klik Tolak untuk menolak: alasan wajib diisi dan keputusan bersifat final (CO menjadi REJECTED; tim sales bisa Duplicate)."
+            },
+            {
+                "en": "Click Tahan to hold the document for now; a reason is required. Every decision is recorded with who, when and why in the Log Keputusan.",
+                "id": "Klik Tahan untuk menahan dokumen sementara; alasan wajib diisi. Setiap keputusan tercatat siapa, kapan dan mengapa di Log Keputusan."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Customer",
+                "en": "Customer of the order.",
+                "id": "Customer pemilik order."
+            },
+            {
+                "label": "Jalur",
+                "en": "Direct (INSTANT) with manually typed prices, or from Quotation (INTEGRATED).",
+                "id": "Direct (INSTANT) dengan harga diketik manual, atau dari Quotation (INTEGRATED)."
+            },
+            {
+                "label": "Net Receivable",
+                "en": "Amount of the order after discount, costs and taxes. Approval levels may depend on this amount.",
+                "id": "Jumlah order setelah diskon, biaya dan pajak. Level approval bisa bergantung pada jumlah ini."
+            },
+            {
+                "label": "Termin",
+                "en": "Payment term of the order.",
+                "id": "Syarat pembayaran order."
+            },
+            {
+                "label": "Jumlah Item",
+                "en": "Number of lines in the order.",
+                "id": "Jumlah baris dalam order."
+            },
+            {
+                "label": "Tanpa harga",
+                "en": "Warning shown when some lines have no price; the count of such lines.",
+                "id": "Peringatan bila ada baris tanpa harga; menunjukkan jumlah barisnya."
+            },
+            {
+                "label": "Item",
+                "en": "Line columns: Item, Qty, Satuan, Harga/Unit, Disc %, Subtotal.",
+                "id": "Kolom baris: Item, Qty, Satuan, Harga/Unit, Disc %, Subtotal."
+            },
+            {
+                "label": "Sumber Harga",
+                "en": "Where the price came from: Quotation (terkunci), Input manual, or Belum ada harga.",
+                "id": "Asal harga: Quotation (terkunci), Input manual, atau Belum ada harga."
+            },
+            {
+                "label": "Setujui",
+                "en": "Approves the current level. No reason needed.",
+                "id": "Menyetujui level berjalan. Tidak perlu alasan."
+            },
+            {
+                "label": "Tahan",
+                "en": "Holds the document for now. A reason is required.",
+                "id": "Menahan dokumen sementara. Alasan wajib."
+            },
+            {
+                "label": "Tolak",
+                "en": "Rejects the document finally. A reason is required.",
+                "id": "Menolak dokumen secara final. Alasan wajib."
+            },
+            {
+                "label": "Log Keputusan",
+                "en": "Your own recent decisions: document, decision, level, when and the reason.",
+                "id": "Keputusan Anda sebelumnya: dokumen, keputusan, level, kapan dan alasannya."
+            }
+        ]
+    },
+    {
+        "key": "delivery-order",
+        "type": "INPUT",
+        "module": "SALES",
+        "title": "Delivery Order",
+        "purpose": {
+            "en": "Prepare a delivery to a customer from planned delivery rows. Open it when goods are going out: pull the lines, Confirm to get the DO number, then mark Shipped when the truck has left.",
+            "id": "Menyiapkan pengiriman ke customer dari baris jadwal kirim. Buka saat barang akan keluar: tarik baris, Confirm untuk mendapat nomor DO, lalu tandai Shipped saat truk berangkat."
+        },
+        "keywords": "do, delivery order, surat jalan, pengiriman, kirim barang, shipped, dispatch, tarik baris, cpdel",
+        "steps": [
+            {
+                "en": "Click + New Record, pick the Customer and click Buat DO. A Draft DO is created.",
+                "id": "Klik + New Record, pilih Customer lalu klik Buat DO. DO berstatus Draft dibuat."
+            },
+            {
+                "en": "In Details choose rows in + Pull from CO delivery schedule and click + Pull Lines. Only delivery rows that were Posted to Production in Customer Plan Delivery can be pulled.",
+                "id": "Di Details pilih baris di + Pull from CO delivery schedule lalu klik + Pull Lines. Hanya baris jadwal kirim yang sudah di-Post to Production di Customer Plan Delivery yang bisa ditarik."
+            },
+            {
+                "en": "Adjust Ship Qty (it cannot exceed what is still available) and, if needed, the Price. Fill Planned Shipment and the destination under the Delivery tab, then Save.",
+                "id": "Atur Ship Qty (tidak boleh melebihi sisa yang tersedia) dan, bila perlu, Price. Isi Planned Shipment dan tujuan di tab Delivery, lalu Save."
+            },
+            {
+                "en": "Click Confirm: the DO number is created and the Delivery Note can be printed. The DO needs at least one line with a qty above 0 and its CO must still be Confirmed.",
+                "id": "Klik Confirm: nomor DO dibuat dan Surat Jalan bisa dicetak. DO butuh minimal satu baris dengan qty di atas 0 dan CO asalnya harus masih Confirmed."
+            },
+            {
+                "en": "When the goods have left, click Shipped. The DO becomes closed and the delivery row is marked shipped once its full qty has gone out.",
+                "id": "Saat barang sudah berangkat, klik Shipped. DO menjadi closed dan baris jadwal kirim ditandai terkirim setelah seluruh qty keluar."
+            },
+            {
+                "en": "A Draft or Confirmed DO can be cancelled with Cancel and a reason; the qty becomes available again. A Shipped DO cannot be cancelled.",
+                "id": "DO Draft atau Confirmed bisa dibatalkan dengan Cancel disertai alasan; qty tersedia lagi. DO yang sudah Shipped tidak bisa dibatalkan."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Customer",
+                "en": "New Record: the customer to deliver to, picked from the customer master.",
+                "id": "New Record: customer tujuan kirim, dipilih dari master customer."
+            },
+            {
+                "label": "DO Date",
+                "en": "Date of the DO; today by default. Editable while Draft.",
+                "id": "Tanggal DO; bawaan hari ini. Bisa diubah selama Draft."
+            },
+            {
+                "label": "DO Type",
+                "en": "CUSTOMER for normal deliveries (subcontract notes have their own screen). Display only.",
+                "id": "CUSTOMER untuk pengiriman biasa (surat jalan subkon punya layar sendiri). Hanya tampilan."
+            },
+            {
+                "label": "Tax",
+                "en": "PPN follows the CO, or Non PPN. Display only.",
+                "id": "PPN ikut CO, atau Non PPN. Hanya tampilan."
+            },
+            {
+                "label": "Price changes",
+                "en": "Shows whether a line price was changed from the CO price. Display only.",
+                "id": "Menunjukkan apakah harga baris diubah dari harga CO. Hanya tampilan."
+            },
+            {
+                "label": "Planned Shipment",
+                "en": "Planned date the goods leave. Typed or picked in the date field.",
+                "id": "Rencana tanggal barang berangkat. Diisi lewat kolom tanggal."
+            },
+            {
+                "label": "Actual Delivery Date",
+                "en": "Date filled by the system when you click Shipped. Display only.",
+                "id": "Tanggal yang diisi sistem saat Anda klik Shipped. Hanya tampilan."
+            },
+            {
+                "label": "Wilayah Tujuan",
+                "en": "Destination area: search village, district, city or postcode. Fills the postcode.",
+                "id": "Wilayah tujuan: cari kelurahan, kecamatan, kota atau kode pos. Kode pos terisi otomatis."
+            },
+            {
+                "label": "Address Details (street, no., RT/RW, landmark)",
+                "en": "Street, number and landmark of the destination, typed.",
+                "id": "Jalan, nomor dan patokan alamat tujuan, diketik."
+            },
+            {
+                "label": "Postcode",
+                "en": "Filled from the chosen area. Display only.",
+                "id": "Terisi dari wilayah yang dipilih. Hanya tampilan."
+            },
+            {
+                "label": "Notes",
+                "en": "Notes of the DO; holds the cancel reason after a cancel. Display only.",
+                "id": "Catatan DO; berisi alasan pembatalan setelah dibatalkan. Hanya tampilan."
+            },
+            {
+                "label": "+ Pull from CO delivery schedule",
+                "en": "Delivery rows of Confirmed COs of this customer that are posted to production and still have qty left.",
+                "id": "Baris jadwal kirim CO Confirmed milik customer ini yang sudah di-post ke produksi dan masih punya sisa qty."
+            },
+            {
+                "label": "Item",
+                "en": "Product of the line, copied from the CO. Display only.",
+                "id": "Produk baris, disalin dari CO. Hanya tampilan."
+            },
+            {
+                "label": "Ship Qty",
+                "en": "Quantity sent on this DO. Typed; must be above 0 and not above the qty still available.",
+                "id": "Qty yang dikirim di DO ini. Diketik; harus di atas 0 dan tidak melebihi sisa yang tersedia."
+            },
+            {
+                "label": "Price",
+                "en": "Unit price, taken from the CO. If you change it, the line is marked as changed and the DO shows Price changes.",
+                "id": "Harga satuan, diambil dari CO. Bila diubah, baris ditandai berubah dan DO menampilkan Price changes."
+            },
+            {
+                "label": "Subtotal",
+                "en": "Ship Qty x Price. Calculated by the system; the strip shows the total as Nilai Kirim.",
+                "id": "Ship Qty x Price. Dihitung sistem; ringkasan atas menampilkan totalnya sebagai Nilai Kirim."
+            },
+            {
+                "label": "Customer Order",
+                "en": "CO and item the line came from. Under More.",
+                "id": "CO dan item asal baris. Ada di More."
+            },
+            {
+                "label": "Price Source",
+                "en": "Harga CO, or the original price when changed. Under More.",
+                "id": "Harga CO, atau harga awal bila diubah. Ada di More."
+            },
+            {
+                "label": "Invoiced",
+                "en": "Quantity already invoiced. Under More.",
+                "id": "Qty yang sudah ditagihkan. Ada di More."
+            }
+        ]
+    },
+    {
+        "key": "delivery-notes",
+        "type": "INPUT",
+        "module": "SALES",
+        "title": "Delivery Notes",
+        "purpose": {
+            "en": "Delivery notes (Surat Jalan) are the Confirmed or Shipped Delivery Orders without prices, carried by the driver. Open it to print a delivery note or to mark the goods as Shipped.",
+            "id": "Delivery Notes (Surat Jalan) adalah Delivery Order yang sudah Confirmed atau Shipped tanpa harga, dibawa sopir. Buka untuk mencetak surat jalan atau menandai barang Shipped."
+        },
+        "keywords": "surat jalan, delivery note, dn, sj, cetak surat jalan, shipped, kirim, sopir, driver",
+        "steps": [
+            {
+                "en": "A delivery note exists as soon as a Delivery Order is Confirmed. There is no New Record here: create the Delivery Order first.",
+                "id": "Surat jalan ada begitu Delivery Order di-Confirm. Di sini tidak ada New Record: buat Delivery Order dulu."
+            },
+            {
+                "en": "Find the note in the list (Ready to ship = Confirmed, Shipped) and open it. It shows items and quantities only, no prices.",
+                "id": "Cari surat jalan di daftar (Ready to ship = Confirmed, Shipped) lalu buka. Isinya hanya barang dan qty, tanpa harga."
+            },
+            {
+                "en": "Click Print to print the delivery note for the driver.",
+                "id": "Klik Print untuk mencetak surat jalan bagi sopir."
+            },
+            {
+                "en": "When the goods have left, click Shipped and confirm. The Delivery Order becomes Shipped.",
+                "id": "Saat barang sudah berangkat, klik Shipped lalu konfirmasi. Delivery Order menjadi Shipped."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Customer",
+                "en": "Customer receiving the goods. Display only.",
+                "id": "Customer penerima barang. Hanya tampilan."
+            },
+            {
+                "label": "Tujuan",
+                "en": "Delivery address of the Delivery Order. Display only.",
+                "id": "Alamat tujuan dari Delivery Order. Hanya tampilan."
+            },
+            {
+                "label": "Total Qty",
+                "en": "Sum of the quantities on the note.",
+                "id": "Jumlah seluruh qty pada surat jalan."
+            },
+            {
+                "label": "DO Date",
+                "en": "Date of the Delivery Order.",
+                "id": "Tanggal Delivery Order."
+            },
+            {
+                "label": "Planned Shipment",
+                "en": "Planned departure date.",
+                "id": "Rencana tanggal berangkat."
+            },
+            {
+                "label": "Shipped",
+                "en": "Date the goods actually left; empty until Shipped.",
+                "id": "Tanggal barang benar-benar berangkat; kosong sebelum Shipped."
+            },
+            {
+                "label": "Postcode",
+                "en": "Postcode of the destination.",
+                "id": "Kode pos tujuan."
+            },
+            {
+                "label": "Item",
+                "en": "Goods sent. Under Goods Shipped.",
+                "id": "Barang yang dikirim. Ada di Goods Shipped."
+            },
+            {
+                "label": "Qty",
+                "en": "Quantity sent for the item.",
+                "id": "Qty barang yang dikirim."
+            },
+            {
+                "label": "Unit",
+                "en": "Unit of the quantity.",
+                "id": "Satuan qty."
+            },
+            {
+                "label": "Customer Order",
+                "en": "CO and item the goods belong to. Under More.",
+                "id": "CO dan item asal barang. Ada di More."
+            }
+        ]
+    },
+    {
+        "key": "proof-of-delivery",
+        "type": "INPUT",
+        "module": "SALES",
+        "title": "Proof of Delivery",
+        "purpose": {
+            "en": "Record each arrival at the customer (arrival time and result) for a Delivery Note. This is the KPI record of the delivery promise. Open it when the driver reports the result of a delivery.",
+            "id": "Mencatat setiap kedatangan di customer (jam tiba dan hasil terima) untuk sebuah surat jalan. Ini catatan KPI janji kirim. Buka saat sopir melaporkan hasil pengiriman."
+        },
+        "keywords": "pod, proof of delivery, bukti kirim, bukti terima, tanda terima, kedatangan, janji kirim, kpi pengiriman, terkirim tepat waktu",
+        "steps": [
+            {
+                "en": "Find the delivery note in the list (Waiting = nothing recorded yet) and open it. The top shows the promised date and the customer's receiving hours.",
+                "id": "Cari surat jalan di daftar (Waiting = belum ada catatan) lalu buka. Bagian atas menampilkan tanggal janji dan jam terima customer."
+            },
+            {
+                "en": "Enter Arrived at customer and the Result. Enter Received by (name) when the goods were received or partly received.",
+                "id": "Isi Arrived at customer dan Result. Isi Received by (name) bila barang diterima atau diterima sebagian."
+            },
+            {
+                "en": "If the promise was missed (late, not received, not shipped), choose the Cause. Attach a Photo of signed delivery note if you have one, then click Save.",
+                "id": "Bila janji meleset (terlambat, tidak diterima, tidak dikirim), pilih Cause. Lampirkan Photo of signed delivery note bila ada, lalu klik Save."
+            },
+            {
+                "en": "The promise is kept only when the result is Received, the truck arrived on the promised day and not after the slot time. Each Delivery Note counts once in the monthly KPI, by its first arrival.",
+                "id": "Janji dianggap tepat hanya bila hasilnya Received, truk tiba di hari janji dan tidak lewat jam slot. Tiap surat jalan dihitung sekali di KPI bulanan, menurut kedatangan pertamanya."
+            },
+            {
+                "en": "If the customer was closed or rejected the goods, the note stays open for another attempt (Retry). Received, Partially received or Not shipped locks the record.",
+                "id": "Bila customer tutup atau menolak barang, surat jalan tetap terbuka untuk percobaan berikutnya (Retry). Received, Partially received atau Not shipped mengunci catatan."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Arrived at customer",
+                "en": "Date and time the truck arrived at the customer. Required unless the result is Not shipped.",
+                "id": "Tanggal dan jam truk tiba di customer. Wajib kecuali hasilnya Not shipped."
+            },
+            {
+                "label": "Result",
+                "en": "Received, Partially received, Customer closed (not received), Rejected by customer or Not shipped.",
+                "id": "Received, Partially received, Customer closed (not received), Rejected by customer atau Not shipped."
+            },
+            {
+                "label": "Received by (name)",
+                "en": "Name of the person at the customer who received the goods. Required for Received and Partially received.",
+                "id": "Nama orang di customer yang menerima barang. Wajib untuk Received dan Partially received."
+            },
+            {
+                "label": "Cause if promise missed",
+                "en": "Why the promise was missed, such as truck late, production not ready, material late or quality. Required when the promise was missed; it assigns the miss to a department in the KPI.",
+                "id": "Mengapa janji meleset, misalnya truk terlambat, produksi belum siap, bahan terlambat atau kualitas. Wajib bila janji meleset; menentukan departemen penyebab di KPI."
+            },
+            {
+                "label": "Photo of signed delivery note",
+                "en": "Upload a photo or PDF of the signed delivery note (jpg, png, webp or pdf, up to 10 MB).",
+                "id": "Unggah foto atau PDF surat jalan yang sudah ditandatangani (jpg, png, webp atau pdf, maks 10 MB)."
+            },
+            {
+                "label": "Notes",
+                "en": "Free note about the delivery.",
+                "id": "Catatan bebas tentang pengiriman."
+            },
+            {
+                "label": "Promised",
+                "en": "Promised date and time of the delivery. Display only.",
+                "id": "Tanggal dan jam janji pengiriman. Hanya tampilan."
+            },
+            {
+                "label": "Customer receives",
+                "en": "Receiving hours of the customer on that day. Display only.",
+                "id": "Jam terima customer pada hari itu. Hanya tampilan."
+            },
+            {
+                "label": "Promise",
+                "en": "Waiting, Kept, Missed or Retry, based on the last recorded arrival.",
+                "id": "Waiting, Kept, Missed atau Retry, berdasarkan kedatangan terakhir yang dicatat."
+            }
+        ]
+    },
+    {
+        "key": "subcon-delivery-note",
+        "type": "INPUT",
+        "module": "SALES",
+        "title": "Subcontract Delivery Note",
+        "purpose": {
+            "en": "Delivery note for semi-finished goods sent to a subcontractor for one process (for example lamination), without prices. Open it when work is sent outside; the return of the goods is recorded in Procurement.",
+            "id": "Surat jalan untuk barang setengah jadi yang dikirim ke subkontraktor untuk satu proses (misalnya laminasi), tanpa harga. Buka saat pekerjaan dikirim keluar; barang kembali dicatat di Procurement."
+        },
+        "keywords": "subkon, subcon, subcontract, surat jalan subkon, subcontract delivery note, kirim subkon, laminasi, setengah jadi, vendor proses",
+        "steps": [
+            {
+                "en": "Click + New Record, pick the Subcontractor, type the Subcontract Process (for example Lamination) and click Create. A Draft note is made.",
+                "id": "Klik + New Record, pilih Subcontractor, ketik Subcontract Process (misalnya Lamination) lalu klik Create. Surat jalan Draft dibuat."
+            },
+            {
+                "en": "Optionally link the Purchase Requisition (subcontract) and set Planned Shipment and the Address.",
+                "id": "Bila perlu hubungkan Purchase Requisition (subcontract) dan isi Planned Shipment serta Address."
+            },
+            {
+                "en": "In Details click + Item for each item: choose the Customer Order Line, type the Item Sent (semi-finished), the Qty and the Unit.",
+                "id": "Di Details klik + Item untuk tiap barang: pilih Customer Order Line, ketik Item Sent (semi-finished), Qty dan Unit."
+            },
+            {
+                "en": "Click Save, then Confirm. Confirm needs a subcontractor, a process and at least one item, and every item must have its Customer Order line.",
+                "id": "Klik Save, lalu Confirm. Confirm butuh subkontraktor, proses dan minimal satu barang, dan setiap barang wajib punya baris Customer Order."
+            },
+            {
+                "en": "After Confirm the note number is created and you can click Print. A Draft can be removed with Delete; a Confirmed note can only be cancelled with Cancel and a reason.",
+                "id": "Setelah Confirm nomor surat jalan dibuat dan Anda bisa klik Print. Draft bisa dihapus dengan Delete; surat jalan Confirmed hanya bisa dibatalkan dengan Cancel disertai alasan."
+            }
+        ],
+        "fields": [
+            {
+                "label": "Subcontractor",
+                "en": "The supplier who does the process, picked from the supplier master. Changing it refills the ship-to address. Required.",
+                "id": "Supplier yang mengerjakan proses, dipilih dari master supplier. Mengganti supplier mengisi ulang alamat kirim. Wajib."
+            },
+            {
+                "label": "Subcontract Process",
+                "en": "The process the subcontractor does, typed (up to 80 letters). Required.",
+                "id": "Proses yang dikerjakan subkontraktor, diketik (maks 80 huruf). Wajib."
+            },
+            {
+                "label": "Date",
+                "en": "Date of the note; today by default.",
+                "id": "Tanggal surat jalan; bawaan hari ini."
+            },
+            {
+                "label": "Purchase Requisition (subcontract)",
+                "en": "Optional link to the subcontract PR that requested this work.",
+                "id": "Hubungan opsional ke PR subkon yang meminta pekerjaan ini."
+            },
+            {
+                "label": "Customer Order",
+                "en": "CO numbers of the items on the note. Display only.",
+                "id": "Nomor CO dari barang pada surat jalan. Hanya tampilan."
+            },
+            {
+                "label": "Planned Shipment",
+                "en": "Planned date the goods go to the subcontractor.",
+                "id": "Rencana tanggal barang dikirim ke subkontraktor."
+            },
+            {
+                "label": "Ship To",
+                "en": "Name of the subcontractor taken from the supplier. Display only.",
+                "id": "Nama subkontraktor dari data supplier. Hanya tampilan."
+            },
+            {
+                "label": "Address",
+                "en": "Delivery address, filled from the supplier and editable.",
+                "id": "Alamat kirim, terisi dari supplier dan bisa diubah."
+            },
+            {
+                "label": "Notes",
+                "en": "Free notes for the note.",
+                "id": "Catatan bebas untuk surat jalan."
+            },
+            {
+                "label": "Customer Order Line",
+                "en": "The CO product line the sent goods belong to, from Confirmed COs, so subcontract cost can be traced to the order. Required.",
+                "id": "Baris produk CO asal barang yang dikirim, dari CO Confirmed, supaya biaya subkon bisa dilacak ke order. Wajib."
+            },
+            {
+                "label": "Item Sent (semi-finished)",
+                "en": "Name of the semi-finished item sent. Required; a new row without a name is ignored.",
+                "id": "Nama barang setengah jadi yang dikirim. Wajib; baris baru tanpa nama diabaikan."
+            },
+            {
+                "label": "Qty",
+                "en": "Quantity sent. Required.",
+                "id": "Qty yang dikirim. Wajib."
+            },
+            {
+                "label": "Unit",
+                "en": "Unit of the quantity. Required.",
+                "id": "Satuan qty. Wajib."
+            }
+        ]
+    },
+    {
+        "key": "co-rpt-summary",
+        "type": "REPORT",
+        "module": "SALES",
+        "title": "Customer Order Summary",
+        "purpose": {
+            "en": "One row per customer order with its quantity, value, shipped quantity and progress. Open it to see how much of each order has gone out and what is still outstanding.",
+            "id": "Satu baris per customer order dengan qty, nilai, qty terkirim dan progresnya. Buka untuk melihat seberapa banyak tiap order sudah terkirim dan apa yang masih tersisa."
+        },
+        "keywords": "co summary, ringkasan co, ringkasan order, total sales, outstanding, order terkirim, progres kirim, laporan co",
+        "steps": [
+            {
+                "en": "Open the report. The status boxes above count the COs; click one to filter the list.",
+                "id": "Buka laporan. Kotak status di atas menghitung CO; klik salah satu untuk menyaring daftar."
+            },
+            {
+                "en": "Use Search for CO number, customer, PO number or product; Columns to show or hide columns; Export CSV to save the visible columns.",
+                "id": "Pakai Search untuk nomor CO, customer, nomor PO atau produk; Columns untuk menampilkan atau menyembunyikan kolom; Export CSV untuk menyimpan kolom yang tampil."
+            },
+            {
+                "en": "Use Group by to get subtotals per customer, month, status, sales or CO. Totals show Total Qty and Order Value (Total Sales).",
+                "id": "Pakai Group by untuk subtotal per customer, bulan, status, sales atau CO. Total menampilkan Total Qty dan Order Value (Total Sales)."
+            },
+            {
+                "en": "Turn on extra columns such as Remaining, Planned Shipment, Nearest Due Date or CO Mode through Columns.",
+                "id": "Nyalakan kolom tambahan seperti Remaining, Planned Shipment, Nearest Due Date atau CO Mode lewat Columns."
+            },
+            {
+                "en": "Order Value and Currency are removed for people who may not see selling prices.",
+                "id": "Order Value dan Currency dihilangkan bagi yang tidak boleh melihat harga jual."
+            }
+        ],
+        "fields": [
+            {
+                "label": "CO No.",
+                "en": "Customer order number.",
+                "id": "Nomor customer order."
+            },
+            {
+                "label": "CO Date",
+                "en": "Date of the CO.",
+                "id": "Tanggal CO."
+            },
+            {
+                "label": "Customer",
+                "en": "Customer of the CO.",
+                "id": "Customer pemilik CO."
+            },
+            {
+                "label": "Customer PO No.",
+                "en": "The customer's own PO number.",
+                "id": "Nomor PO dari customer."
+            },
+            {
+                "label": "Sales By",
+                "en": "Salesperson in charge (PIC Sales).",
+                "id": "Sales penanggung jawab (PIC Sales)."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Deliver or Pickup.",
+                "id": "Deliver atau Pickup."
+            },
+            {
+                "label": "Status",
+                "en": "DRAFT, SUBMITTED, CONFIRMED, CLOSED or CANCELLED.",
+                "id": "DRAFT, SUBMITTED, CONFIRMED, CLOSED atau CANCELLED."
+            },
+            {
+                "label": "Order Type",
+                "en": "NEW, RTP (repeat without change) or RDP (repeat with change), from the inquiry of the lines. Off by default.",
+                "id": "NEW, RTP (repeat tanpa perubahan) atau RDP (repeat dengan perubahan), dari inquiry baris-barisnya. Bawaan mati."
+            },
+            {
+                "label": "Item",
+                "en": "Number of lines in the CO.",
+                "id": "Jumlah baris dalam CO."
+            },
+            {
+                "label": "Total Qty",
+                "en": "Total ordered quantity of the CO; summed in the totals.",
+                "id": "Total qty pesanan CO; dijumlahkan di total."
+            },
+            {
+                "label": "Order Value",
+                "en": "Total value of the CO lines. Hidden from people who may not see selling prices.",
+                "id": "Total nilai baris CO. Disembunyikan dari yang tidak boleh melihat harga jual."
+            },
+            {
+                "label": "Shipped",
+                "en": "Quantity on Delivery Orders already marked Shipped.",
+                "id": "Qty pada Delivery Order yang sudah ditandai Shipped."
+            },
+            {
+                "label": "% Shipped",
+                "en": "Shipped quantity as a percentage of the ordered quantity.",
+                "id": "Qty terkirim sebagai persen dari qty pesanan."
+            },
+            {
+                "label": "Remaining",
+                "en": "Ordered quantity minus Shipped. Off by default.",
+                "id": "Qty pesanan dikurangi Shipped. Bawaan mati."
+            },
+            {
+                "label": "Planned Shipment",
+                "en": "Quantity already scheduled in Customer Plan Delivery. Off by default.",
+                "id": "Qty yang sudah dijadwalkan di Customer Plan Delivery. Bawaan mati."
+            },
+            {
+                "label": "Confirm",
+                "en": "Yes when the CO status is CONFIRMED, otherwise No. Off by default.",
+                "id": "Yes bila status CO CONFIRMED, selain itu No. Bawaan mati."
+            },
+            {
+                "label": "CO Mode",
+                "en": "INTEGRATED (from Quotation) or INSTANT (direct). Off by default.",
+                "id": "INTEGRATED (dari Quotation) atau INSTANT (langsung). Bawaan mati."
+            },
+            {
+                "label": "Currency",
+                "en": "Currency of the CO. Hidden from people who may not see prices. Off by default.",
+                "id": "Mata uang CO. Disembunyikan dari yang tidak boleh melihat harga. Bawaan mati."
+            },
+            {
+                "label": "Month",
+                "en": "Month of the CO date. Off by default.",
+                "id": "Bulan dari tanggal CO. Bawaan mati."
+            },
+            {
+                "label": "Nearest Due Date",
+                "en": "Earliest Due Date among the CO lines. Off by default.",
+                "id": "Due Date paling awal di antara baris CO. Bawaan mati."
+            },
+            {
+                "label": "Note",
+                "en": "Internal note of the CO. Off by default.",
+                "id": "Catatan internal CO. Bawaan mati."
+            },
+            {
+                "label": "Receiver",
+                "en": "Recipient party if different from the customer. Off by default.",
+                "id": "Pihak penerima bila berbeda dari customer. Bawaan mati."
+            },
+            {
+                "label": "Shipper",
+                "en": "Shipper party. Off by default.",
+                "id": "Pihak pengirim. Bawaan mati."
+            },
+            {
+                "label": "Forwarder",
+                "en": "Forwarder party. Off by default.",
+                "id": "Pihak forwarder. Bawaan mati."
+            },
+            {
+                "label": "All COs",
+                "en": "Box: every CO. Click a box to filter the list; click again to clear.",
+                "id": "Kotak: semua CO. Klik kotak untuk menyaring daftar; klik lagi untuk membatalkan."
+            },
+            {
+                "label": "Open & not cancelled",
+                "en": "Box: COs that are not Closed and not Cancelled.",
+                "id": "Kotak: CO yang belum Closed dan belum Cancelled."
+            },
+            {
+                "label": "Confirmed",
+                "en": "Box: COs with status CONFIRMED.",
+                "id": "Kotak: CO berstatus CONFIRMED."
+            },
+            {
+                "label": "Outstanding",
+                "en": "Box: Confirmed COs not yet fully shipped.",
+                "id": "Kotak: CO Confirmed yang belum terkirim seluruhnya."
+            },
+            {
+                "label": "Cancelled",
+                "en": "Box: cancelled COs.",
+                "id": "Kotak: CO yang dibatalkan."
+            },
+            {
+                "label": "Customer",
+                "en": "Filter by customer.",
+                "id": "Saring menurut customer."
+            },
+            {
+                "label": "Sales By",
+                "en": "Filter by salesperson.",
+                "id": "Saring menurut sales."
+            },
+            {
+                "label": "Order Type",
+                "en": "Filter by NEW, RTP or RDP.",
+                "id": "Saring menurut NEW, RTP atau RDP."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Filter by Deliver or Pickup.",
+                "id": "Saring menurut Deliver atau Pickup."
+            },
+            {
+                "label": "Confirm",
+                "en": "Filter by Yes or No.",
+                "id": "Saring menurut Yes atau No."
+            },
+            {
+                "label": "Status",
+                "en": "Filter by CO status.",
+                "id": "Saring menurut status CO."
+            },
+            {
+                "label": "Month",
+                "en": "Filter by month of the CO date.",
+                "id": "Saring menurut bulan tanggal CO."
+            },
+            {
+                "label": "Group by Customer",
+                "en": "Subtotals per customer.",
+                "id": "Subtotal per customer."
+            },
+            {
+                "label": "Group by Status",
+                "en": "Subtotals per status.",
+                "id": "Subtotal per status."
+            },
+            {
+                "label": "Group by Order Type",
+                "en": "Subtotals per order type.",
+                "id": "Subtotal per jenis order."
+            },
+            {
+                "label": "Group by Sales By",
+                "en": "Subtotals per salesperson.",
+                "id": "Subtotal per sales."
+            },
+            {
+                "label": "Group by Month",
+                "en": "Subtotals per month.",
+                "id": "Subtotal per bulan."
+            },
+            {
+                "label": "Group by CO No.",
+                "en": "Subtotals per CO.",
+                "id": "Subtotal per CO."
+            }
+        ]
+    },
+    {
+        "key": "gen-co-rpt-summary",
+        "type": "REPORT",
+        "module": "GENERAL",
+        "title": "Customer Order Summary",
+        "purpose": {
+            "en": "General Report version of the order summary, open to all staff and without prices. It lists only posted (Confirmed or Closed) customer orders. Open it to see the order progress.",
+            "id": "Versi General Report dari ringkasan order, terbuka untuk semua staf dan tanpa harga. Hanya memuat customer order yang sudah di-post (Confirmed atau Closed). Buka untuk melihat progres order."
+        },
+        "keywords": "general report, co summary, ringkasan co tanpa harga, laporan umum, order terkirim, outstanding, semua staf",
+        "steps": [
+            {
+                "en": "Open the report. Only posted COs appear and there are no price columns.",
+                "id": "Buka laporan. Hanya CO yang sudah di-post yang tampil dan tidak ada kolom harga."
+            },
+            {
+                "en": "Use Search for CO number, customer, PO number or product; Columns to show or hide columns; Export CSV to save the visible columns.",
+                "id": "Pakai Search untuk nomor CO, customer, nomor PO atau produk; Columns untuk menampilkan atau menyembunyikan kolom; Export CSV untuk menyimpan kolom yang tampil."
+            },
+            {
+                "en": "Use the boxes (All COs (posted), Outstanding, Closed) to filter, and Group by to get subtotals of Total Qty.",
+                "id": "Pakai kotak (All COs (posted), Outstanding, Closed) untuk menyaring, dan Group by untuk subtotal Total Qty."
+            },
+            {
+                "en": "Turn on extra columns such as Remaining or Nearest Due Date through Columns.",
+                "id": "Nyalakan kolom tambahan seperti Remaining atau Nearest Due Date lewat Columns."
+            }
+        ],
+        "fields": [
+            {
+                "label": "CO No.",
+                "en": "Customer order number.",
+                "id": "Nomor customer order."
+            },
+            {
+                "label": "CO Date",
+                "en": "Date of the CO.",
+                "id": "Tanggal CO."
+            },
+            {
+                "label": "Customer",
+                "en": "Customer of the CO.",
+                "id": "Customer pemilik CO."
+            },
+            {
+                "label": "Customer PO No.",
+                "en": "The customer's own PO number.",
+                "id": "Nomor PO dari customer."
+            },
+            {
+                "label": "Sales By",
+                "en": "Salesperson in charge (PIC Sales).",
+                "id": "Sales penanggung jawab (PIC Sales)."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Deliver or Pickup.",
+                "id": "Deliver atau Pickup."
+            },
+            {
+                "label": "Status",
+                "en": "DRAFT, SUBMITTED, CONFIRMED, CLOSED or CANCELLED.",
+                "id": "DRAFT, SUBMITTED, CONFIRMED, CLOSED atau CANCELLED."
+            },
+            {
+                "label": "Order Type",
+                "en": "NEW, RTP (repeat without change) or RDP (repeat with change), from the inquiry of the lines. Off by default.",
+                "id": "NEW, RTP (repeat tanpa perubahan) atau RDP (repeat dengan perubahan), dari inquiry baris-barisnya. Bawaan mati."
+            },
+            {
+                "label": "Item",
+                "en": "Number of lines in the CO.",
+                "id": "Jumlah baris dalam CO."
+            },
+            {
+                "label": "Total Qty",
+                "en": "Total ordered quantity of the CO; summed in the totals.",
+                "id": "Total qty pesanan CO; dijumlahkan di total."
+            },
+            {
+                "label": "Shipped",
+                "en": "Quantity on Delivery Orders already marked Shipped.",
+                "id": "Qty pada Delivery Order yang sudah ditandai Shipped."
+            },
+            {
+                "label": "% Shipped",
+                "en": "Shipped quantity as a percentage of the ordered quantity.",
+                "id": "Qty terkirim sebagai persen dari qty pesanan."
+            },
+            {
+                "label": "Remaining",
+                "en": "Ordered quantity minus Shipped. Off by default.",
+                "id": "Qty pesanan dikurangi Shipped. Bawaan mati."
+            },
+            {
+                "label": "Planned Shipment",
+                "en": "Quantity already scheduled in Customer Plan Delivery. Off by default.",
+                "id": "Qty yang sudah dijadwalkan di Customer Plan Delivery. Bawaan mati."
+            },
+            {
+                "label": "Confirm",
+                "en": "Yes when the CO status is CONFIRMED, otherwise No. Off by default.",
+                "id": "Yes bila status CO CONFIRMED, selain itu No. Bawaan mati."
+            },
+            {
+                "label": "CO Mode",
+                "en": "INTEGRATED (from Quotation) or INSTANT (direct). Off by default.",
+                "id": "INTEGRATED (dari Quotation) atau INSTANT (langsung). Bawaan mati."
+            },
+            {
+                "label": "Month",
+                "en": "Month of the CO date. Off by default.",
+                "id": "Bulan dari tanggal CO. Bawaan mati."
+            },
+            {
+                "label": "Nearest Due Date",
+                "en": "Earliest Due Date among the CO lines. Off by default.",
+                "id": "Due Date paling awal di antara baris CO. Bawaan mati."
+            },
+            {
+                "label": "Note",
+                "en": "Internal note of the CO. Off by default.",
+                "id": "Catatan internal CO. Bawaan mati."
+            },
+            {
+                "label": "Receiver",
+                "en": "Recipient party if different from the customer. Off by default.",
+                "id": "Pihak penerima bila berbeda dari customer. Bawaan mati."
+            },
+            {
+                "label": "Shipper",
+                "en": "Shipper party. Off by default.",
+                "id": "Pihak pengirim. Bawaan mati."
+            },
+            {
+                "label": "Forwarder",
+                "en": "Forwarder party. Off by default.",
+                "id": "Pihak forwarder. Bawaan mati."
+            },
+            {
+                "label": "All COs (posted)",
+                "en": "Box: every posted (Confirmed or Closed) CO.",
+                "id": "Kotak: semua CO yang sudah di-post (Confirmed atau Closed)."
+            },
+            {
+                "label": "Outstanding",
+                "en": "Box: posted COs not yet fully shipped.",
+                "id": "Kotak: CO ter-post yang belum terkirim seluruhnya."
+            },
+            {
+                "label": "Closed",
+                "en": "Box: Closed COs.",
+                "id": "Kotak: CO yang Closed."
+            },
+            {
+                "label": "Customer",
+                "en": "Filter by customer.",
+                "id": "Saring menurut customer."
+            },
+            {
+                "label": "Sales By",
+                "en": "Filter by salesperson.",
+                "id": "Saring menurut sales."
+            },
+            {
+                "label": "Order Type",
+                "en": "Filter by NEW, RTP or RDP.",
+                "id": "Saring menurut NEW, RTP atau RDP."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Filter by Deliver or Pickup.",
+                "id": "Saring menurut Deliver atau Pickup."
+            },
+            {
+                "label": "Confirm",
+                "en": "Filter by Yes or No.",
+                "id": "Saring menurut Yes atau No."
+            },
+            {
+                "label": "Status",
+                "en": "Filter by CO status.",
+                "id": "Saring menurut status CO."
+            },
+            {
+                "label": "Month",
+                "en": "Filter by month of the CO date.",
+                "id": "Saring menurut bulan tanggal CO."
+            },
+            {
+                "label": "Group by Customer",
+                "en": "Subtotals per customer.",
+                "id": "Subtotal per customer."
+            },
+            {
+                "label": "Group by Status",
+                "en": "Subtotals per status.",
+                "id": "Subtotal per status."
+            },
+            {
+                "label": "Group by Order Type",
+                "en": "Subtotals per order type.",
+                "id": "Subtotal per jenis order."
+            },
+            {
+                "label": "Group by Sales By",
+                "en": "Subtotals per salesperson.",
+                "id": "Subtotal per sales."
+            },
+            {
+                "label": "Group by Month",
+                "en": "Subtotals per month.",
+                "id": "Subtotal per bulan."
+            },
+            {
+                "label": "Group by CO No.",
+                "en": "Subtotals per CO.",
+                "id": "Subtotal per CO."
+            }
+        ]
+    },
+    {
+        "key": "co-rpt-order",
+        "type": "REPORT",
+        "module": "SALES",
+        "title": "Customer Order Report",
+        "purpose": {
+            "en": "One row per customer order line. A single flexible report for order lists: quantity only, with shipment progress, or with prices and total sales. Pick the columns you need.",
+            "id": "Satu baris per baris customer order. Satu laporan fleksibel untuk daftar order: hanya qty, dengan progres kirim, atau dengan harga dan total penjualan. Pilih kolom yang dibutuhkan."
+        },
+        "keywords": "co report, laporan co, laporan customer order, order qty only, order with price, total sales, outstanding order, open order, detail order",
+        "steps": [
+            {
+                "en": "Open the report. The boxes filter by status: all, open and not cancelled, confirmed, outstanding or cancelled.",
+                "id": "Buka laporan. Kotak menyaring menurut status: semua, open dan belum cancelled, confirmed, outstanding atau cancelled."
+            },
+            {
+                "en": "Use Search for CO number, customer, PO number or product; Columns to show or hide columns; Export CSV to save the visible columns.",
+                "id": "Pakai Search untuk nomor CO, customer, nomor PO atau produk; Columns untuk menampilkan atau menyembunyikan kolom; Export CSV untuk menyimpan kolom yang tampil."
+            },
+            {
+                "en": "For shipment progress turn on Planned Shipment, Shipped and Remaining in Columns.",
+                "id": "Untuk progres kirim nyalakan Planned Shipment, Shipped dan Remaining di Columns."
+            },
+            {
+                "en": "For sales value turn on Unit Price, Discount % and Subtotal and Group by Customer or Month; Qty and Subtotal are totalled (Total Sales). Prices are shown only to people allowed to see them.",
+                "id": "Untuk nilai penjualan nyalakan Unit Price, Discount % dan Subtotal lalu Group by Customer atau Month; Qty dan Subtotal dijumlahkan (Total Sales). Harga hanya tampil bagi yang berhak."
+            }
+        ],
+        "fields": [
+            {
+                "label": "CO No.",
+                "en": "Customer order number.",
+                "id": "Nomor customer order."
+            },
+            {
+                "label": "CO Date",
+                "en": "Date of the CO.",
+                "id": "Tanggal CO."
+            },
+            {
+                "label": "Customer",
+                "en": "Customer of the CO.",
+                "id": "Customer pemilik CO."
+            },
+            {
+                "label": "Customer PO No.",
+                "en": "The customer's own PO number.",
+                "id": "Nomor PO dari customer."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Deliver or Pickup.",
+                "id": "Deliver atau Pickup."
+            },
+            {
+                "label": "Confirm",
+                "en": "Yes when the CO status is CONFIRMED, otherwise No.",
+                "id": "Yes bila status CO CONFIRMED, selain itu No."
+            },
+            {
+                "label": "Note",
+                "en": "Internal note of the CO.",
+                "id": "Catatan internal CO."
+            },
+            {
+                "label": "Sales By",
+                "en": "Salesperson in charge (PIC Sales).",
+                "id": "Sales penanggung jawab (PIC Sales)."
+            },
+            {
+                "label": "Product",
+                "en": "Product name, with design number when it has one.",
+                "id": "Nama produk, beserta nomor desain bila ada."
+            },
+            {
+                "label": "Qty",
+                "en": "Ordered quantity of the line; summed in the totals.",
+                "id": "Qty pesanan baris itu; dijumlahkan di total."
+            },
+            {
+                "label": "Unit",
+                "en": "Unit of the quantity.",
+                "id": "Satuan qty."
+            },
+            {
+                "label": "Order Type",
+                "en": "NEW, RTP (repeat without change) or RDP (repeat with change), from the inquiry of the line. Empty for a direct order without inquiry.",
+                "id": "NEW, RTP (repeat tanpa perubahan) atau RDP (repeat dengan perubahan), dari inquiry baris. Kosong untuk order langsung tanpa inquiry."
+            },
+            {
+                "label": "Cfg Color",
+                "en": "Colour configuration of the product's parts.",
+                "id": "Konfigurasi warna part produk."
+            },
+            {
+                "label": "Qty Minim",
+                "en": "Yes when the line was ordered as a minimum quantity.",
+                "id": "Yes bila baris dipesan sebagai qty minimum."
+            },
+            {
+                "label": "Qty Limit Min",
+                "en": "Lowest accepted quantity of the line.",
+                "id": "Qty terendah yang diterima untuk baris."
+            },
+            {
+                "label": "Qty Limit Max",
+                "en": "Highest accepted quantity of the line.",
+                "id": "Qty tertinggi yang diterima untuk baris."
+            },
+            {
+                "label": "Due Date",
+                "en": "Due date of the line.",
+                "id": "Tanggal jatuh tempo baris."
+            },
+            {
+                "label": "Receiver",
+                "en": "Recipient party if different from the customer. Off by default.",
+                "id": "Pihak penerima bila berbeda dari customer. Bawaan mati."
+            },
+            {
+                "label": "Shipper",
+                "en": "Shipper party. Off by default.",
+                "id": "Pihak pengirim. Bawaan mati."
+            },
+            {
+                "label": "Forwarder",
+                "en": "Forwarder party. Off by default.",
+                "id": "Pihak forwarder. Bawaan mati."
+            },
+            {
+                "label": "Status",
+                "en": "CO status. Off by default.",
+                "id": "Status CO. Bawaan mati."
+            },
+            {
+                "label": "CO Mode",
+                "en": "INTEGRATED or INSTANT. Off by default.",
+                "id": "INTEGRATED atau INSTANT. Bawaan mati."
+            },
+            {
+                "label": "Month",
+                "en": "Month of the CO date. Off by default.",
+                "id": "Bulan dari tanggal CO. Bawaan mati."
+            },
+            {
+                "label": "Currency",
+                "en": "Currency of the CO. Hidden from people who may not see prices. Off by default.",
+                "id": "Mata uang CO. Disembunyikan dari yang tidak boleh melihat harga. Bawaan mati."
+            },
+            {
+                "label": "Unit Price",
+                "en": "Selling price per unit. Hidden from people who may not see prices. Off by default.",
+                "id": "Harga jual per satuan. Disembunyikan dari yang tidak boleh melihat harga. Bawaan mati."
+            },
+            {
+                "label": "Discount %",
+                "en": "Line discount in percent. Hidden from people who may not see prices. Off by default.",
+                "id": "Diskon baris dalam persen. Disembunyikan dari yang tidak boleh melihat harga. Bawaan mati."
+            },
+            {
+                "label": "Subtotal",
+                "en": "Line value after discount; summed in the totals. Hidden from people who may not see prices. Off by default.",
+                "id": "Nilai baris setelah diskon; dijumlahkan di total. Disembunyikan dari yang tidak boleh melihat harga. Bawaan mati."
+            },
+            {
+                "label": "Planned Shipment",
+                "en": "Quantity of the line already scheduled in Customer Plan Delivery. Off by default.",
+                "id": "Qty baris yang sudah dijadwalkan di Customer Plan Delivery. Bawaan mati."
+            },
+            {
+                "label": "Shipped",
+                "en": "Quantity of the line on Delivery Orders marked Shipped. Off by default.",
+                "id": "Qty baris pada Delivery Order yang ditandai Shipped. Bawaan mati."
+            },
+            {
+                "label": "Remaining",
+                "en": "Ordered quantity minus Shipped. Off by default.",
+                "id": "Qty pesanan dikurangi Shipped. Bawaan mati."
+            },
+            {
+                "label": "All COs",
+                "en": "Box: every CO. Click a box to filter the list; click again to clear.",
+                "id": "Kotak: semua CO. Klik kotak untuk menyaring daftar; klik lagi untuk membatalkan."
+            },
+            {
+                "label": "Open & not cancelled",
+                "en": "Box: COs that are not Closed and not Cancelled.",
+                "id": "Kotak: CO yang belum Closed dan belum Cancelled."
+            },
+            {
+                "label": "Confirmed",
+                "en": "Box: COs with status CONFIRMED.",
+                "id": "Kotak: CO berstatus CONFIRMED."
+            },
+            {
+                "label": "Outstanding",
+                "en": "Box: Confirmed COs not yet fully shipped.",
+                "id": "Kotak: CO Confirmed yang belum terkirim seluruhnya."
+            },
+            {
+                "label": "Cancelled",
+                "en": "Box: cancelled COs.",
+                "id": "Kotak: CO yang dibatalkan."
+            },
+            {
+                "label": "Customer",
+                "en": "Filter by customer.",
+                "id": "Saring menurut customer."
+            },
+            {
+                "label": "Sales By",
+                "en": "Filter by salesperson.",
+                "id": "Saring menurut sales."
+            },
+            {
+                "label": "Order Type",
+                "en": "Filter by NEW, RTP or RDP.",
+                "id": "Saring menurut NEW, RTP atau RDP."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Filter by Deliver or Pickup.",
+                "id": "Saring menurut Deliver atau Pickup."
+            },
+            {
+                "label": "Qty Minim",
+                "en": "Filter by Yes or No.",
+                "id": "Saring menurut Yes atau No."
+            },
+            {
+                "label": "Confirm",
+                "en": "Filter by Yes or No.",
+                "id": "Saring menurut Yes atau No."
+            },
+            {
+                "label": "Status",
+                "en": "Filter by CO status.",
+                "id": "Saring menurut status CO."
+            },
+            {
+                "label": "Month",
+                "en": "Filter by month of the CO date.",
+                "id": "Saring menurut bulan tanggal CO."
+            },
+            {
+                "label": "Group by Customer",
+                "en": "Subtotals per customer.",
+                "id": "Subtotal per customer."
+            },
+            {
+                "label": "Group by Status",
+                "en": "Subtotals per status.",
+                "id": "Subtotal per status."
+            },
+            {
+                "label": "Group by Order Type",
+                "en": "Subtotals per order type.",
+                "id": "Subtotal per jenis order."
+            },
+            {
+                "label": "Group by Sales By",
+                "en": "Subtotals per salesperson.",
+                "id": "Subtotal per sales."
+            },
+            {
+                "label": "Group by Month",
+                "en": "Subtotals per month.",
+                "id": "Subtotal per bulan."
+            },
+            {
+                "label": "Group by CO No.",
+                "en": "Subtotals per CO.",
+                "id": "Subtotal per CO."
+            }
+        ]
+    },
+    {
+        "key": "gen-co-rpt-order",
+        "type": "REPORT",
+        "module": "GENERAL",
+        "title": "Customer Order Report",
+        "purpose": {
+            "en": "General Report version of the order line report, open to all staff and without prices. Only posted (Confirmed or Closed) orders appear. Open it to see what has been ordered, due and shipped.",
+            "id": "Versi General Report dari laporan baris order, terbuka untuk semua staf dan tanpa harga. Hanya order yang sudah di-post (Confirmed atau Closed) yang tampil. Buka untuk melihat apa yang dipesan, jatuh tempo dan terkirim."
+        },
+        "keywords": "general report, co report, laporan co tanpa harga, laporan umum, order detail, outstanding, semua staf",
+        "steps": [
+            {
+                "en": "Open the report. Only posted COs appear and there are no price columns.",
+                "id": "Buka laporan. Hanya CO yang sudah di-post yang tampil dan tidak ada kolom harga."
+            },
+            {
+                "en": "Use Search for CO number, customer, PO number or product; Columns to show or hide columns; Export CSV to save the visible columns.",
+                "id": "Pakai Search untuk nomor CO, customer, nomor PO atau produk; Columns untuk menampilkan atau menyembunyikan kolom; Export CSV untuk menyimpan kolom yang tampil."
+            },
+            {
+                "en": "Use the boxes (All COs (posted), Outstanding, Closed) to filter.",
+                "id": "Pakai kotak (All COs (posted), Outstanding, Closed) untuk menyaring."
+            },
+            {
+                "en": "Turn on Planned Shipment, Shipped and Remaining in Columns to follow shipment progress, and Group by to get quantity subtotals.",
+                "id": "Nyalakan Planned Shipment, Shipped dan Remaining di Columns untuk memantau progres kirim, dan Group by untuk subtotal qty."
+            }
+        ],
+        "fields": [
+            {
+                "label": "CO No.",
+                "en": "Customer order number.",
+                "id": "Nomor customer order."
+            },
+            {
+                "label": "CO Date",
+                "en": "Date of the CO.",
+                "id": "Tanggal CO."
+            },
+            {
+                "label": "Customer",
+                "en": "Customer of the CO.",
+                "id": "Customer pemilik CO."
+            },
+            {
+                "label": "Customer PO No.",
+                "en": "The customer's own PO number.",
+                "id": "Nomor PO dari customer."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Deliver or Pickup.",
+                "id": "Deliver atau Pickup."
+            },
+            {
+                "label": "Confirm",
+                "en": "Yes when the CO status is CONFIRMED, otherwise No.",
+                "id": "Yes bila status CO CONFIRMED, selain itu No."
+            },
+            {
+                "label": "Note",
+                "en": "Internal note of the CO.",
+                "id": "Catatan internal CO."
+            },
+            {
+                "label": "Sales By",
+                "en": "Salesperson in charge (PIC Sales).",
+                "id": "Sales penanggung jawab (PIC Sales)."
+            },
+            {
+                "label": "Product",
+                "en": "Product name, with design number when it has one.",
+                "id": "Nama produk, beserta nomor desain bila ada."
+            },
+            {
+                "label": "Qty",
+                "en": "Ordered quantity of the line; summed in the totals.",
+                "id": "Qty pesanan baris itu; dijumlahkan di total."
+            },
+            {
+                "label": "Unit",
+                "en": "Unit of the quantity.",
+                "id": "Satuan qty."
+            },
+            {
+                "label": "Order Type",
+                "en": "NEW, RTP (repeat without change) or RDP (repeat with change), from the inquiry of the line. Empty for a direct order without inquiry.",
+                "id": "NEW, RTP (repeat tanpa perubahan) atau RDP (repeat dengan perubahan), dari inquiry baris. Kosong untuk order langsung tanpa inquiry."
+            },
+            {
+                "label": "Cfg Color",
+                "en": "Colour configuration of the product's parts.",
+                "id": "Konfigurasi warna part produk."
+            },
+            {
+                "label": "Qty Minim",
+                "en": "Yes when the line was ordered as a minimum quantity.",
+                "id": "Yes bila baris dipesan sebagai qty minimum."
+            },
+            {
+                "label": "Qty Limit Min",
+                "en": "Lowest accepted quantity of the line.",
+                "id": "Qty terendah yang diterima untuk baris."
+            },
+            {
+                "label": "Qty Limit Max",
+                "en": "Highest accepted quantity of the line.",
+                "id": "Qty tertinggi yang diterima untuk baris."
+            },
+            {
+                "label": "Due Date",
+                "en": "Due date of the line.",
+                "id": "Tanggal jatuh tempo baris."
+            },
+            {
+                "label": "Receiver",
+                "en": "Recipient party if different from the customer. Off by default.",
+                "id": "Pihak penerima bila berbeda dari customer. Bawaan mati."
+            },
+            {
+                "label": "Shipper",
+                "en": "Shipper party. Off by default.",
+                "id": "Pihak pengirim. Bawaan mati."
+            },
+            {
+                "label": "Forwarder",
+                "en": "Forwarder party. Off by default.",
+                "id": "Pihak forwarder. Bawaan mati."
+            },
+            {
+                "label": "Status",
+                "en": "CO status. Off by default.",
+                "id": "Status CO. Bawaan mati."
+            },
+            {
+                "label": "CO Mode",
+                "en": "INTEGRATED or INSTANT. Off by default.",
+                "id": "INTEGRATED atau INSTANT. Bawaan mati."
+            },
+            {
+                "label": "Month",
+                "en": "Month of the CO date. Off by default.",
+                "id": "Bulan dari tanggal CO. Bawaan mati."
+            },
+            {
+                "label": "Planned Shipment",
+                "en": "Quantity of the line already scheduled in Customer Plan Delivery. Off by default.",
+                "id": "Qty baris yang sudah dijadwalkan di Customer Plan Delivery. Bawaan mati."
+            },
+            {
+                "label": "Shipped",
+                "en": "Quantity of the line on Delivery Orders marked Shipped. Off by default.",
+                "id": "Qty baris pada Delivery Order yang ditandai Shipped. Bawaan mati."
+            },
+            {
+                "label": "Remaining",
+                "en": "Ordered quantity minus Shipped. Off by default.",
+                "id": "Qty pesanan dikurangi Shipped. Bawaan mati."
+            },
+            {
+                "label": "All COs (posted)",
+                "en": "Box: every posted (Confirmed or Closed) CO.",
+                "id": "Kotak: semua CO yang sudah di-post (Confirmed atau Closed)."
+            },
+            {
+                "label": "Outstanding",
+                "en": "Box: posted COs not yet fully shipped.",
+                "id": "Kotak: CO ter-post yang belum terkirim seluruhnya."
+            },
+            {
+                "label": "Closed",
+                "en": "Box: Closed COs.",
+                "id": "Kotak: CO yang Closed."
+            },
+            {
+                "label": "Customer",
+                "en": "Filter by customer.",
+                "id": "Saring menurut customer."
+            },
+            {
+                "label": "Sales By",
+                "en": "Filter by salesperson.",
+                "id": "Saring menurut sales."
+            },
+            {
+                "label": "Order Type",
+                "en": "Filter by NEW, RTP or RDP.",
+                "id": "Saring menurut NEW, RTP atau RDP."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Filter by Deliver or Pickup.",
+                "id": "Saring menurut Deliver atau Pickup."
+            },
+            {
+                "label": "Qty Minim",
+                "en": "Filter by Yes or No.",
+                "id": "Saring menurut Yes atau No."
+            },
+            {
+                "label": "Confirm",
+                "en": "Filter by Yes or No.",
+                "id": "Saring menurut Yes atau No."
+            },
+            {
+                "label": "Status",
+                "en": "Filter by CO status.",
+                "id": "Saring menurut status CO."
+            },
+            {
+                "label": "Month",
+                "en": "Filter by month of the CO date.",
+                "id": "Saring menurut bulan tanggal CO."
+            },
+            {
+                "label": "Group by Customer",
+                "en": "Subtotals per customer.",
+                "id": "Subtotal per customer."
+            },
+            {
+                "label": "Group by Status",
+                "en": "Subtotals per status.",
+                "id": "Subtotal per status."
+            },
+            {
+                "label": "Group by Order Type",
+                "en": "Subtotals per order type.",
+                "id": "Subtotal per jenis order."
+            },
+            {
+                "label": "Group by Sales By",
+                "en": "Subtotals per salesperson.",
+                "id": "Subtotal per sales."
+            },
+            {
+                "label": "Group by Month",
+                "en": "Subtotals per month.",
+                "id": "Subtotal per bulan."
+            },
+            {
+                "label": "Group by CO No.",
+                "en": "Subtotals per CO.",
+                "id": "Subtotal per CO."
+            }
+        ]
+    },
+    {
+        "key": "co-rpt-ship-det",
+        "type": "REPORT",
+        "module": "SALES",
+        "title": "Customer Order Shipment Detail",
+        "purpose": {
+            "en": "One row per delivery schedule of a customer order (cancelled COs are left out). Open it to see when, how much and by which method each order is to be shipped, and whether it was sent.",
+            "id": "Satu baris per jadwal kirim customer order (CO yang dibatalkan tidak ikut). Buka untuk melihat kapan, berapa dan dengan cara apa tiap order dikirim, serta apakah sudah terkirim."
+        },
+        "keywords": "shipment detail, detail pengiriman, jadwal kirim co, ship date, laporan kirim, co ship detail, rencana kirim, terkirim",
+        "steps": [
+            {
+                "en": "Open the report. Each row is one delivery schedule line with its Ship Date, Ship Qty and Send Status.",
+                "id": "Buka laporan. Tiap baris adalah satu baris jadwal kirim dengan Ship Date, Ship Qty dan Send Status."
+            },
+            {
+                "en": "Use Search for CO number, customer, PO number or product; Columns to show or hide columns; Export CSV to save the visible columns.",
+                "id": "Pakai Search untuk nomor CO, customer, nomor PO atau produk; Columns untuk menampilkan atau menyembunyikan kolom; Export CSV untuk menyimpan kolom yang tampil."
+            },
+            {
+                "en": "Filter by Customer, Send Status or Shipping Type, and Group by Customer, Ship Date, CO No. or Send Status; Ship Qty is totalled.",
+                "id": "Saring menurut Customer, Send Status atau Shipping Type, dan Group by Customer, Ship Date, CO No. atau Send Status; Ship Qty dijumlahkan."
+            },
+            {
+                "en": "Use Columns to add Sales By, Due Date, CO Status, Shipped and Remaining. Unit Price is shown only to people allowed to see prices.",
+                "id": "Pakai Columns untuk menambah Sales By, Due Date, CO Status, Shipped dan Remaining. Unit Price hanya tampil bagi yang berhak melihat harga."
+            }
+        ],
+        "fields": [
+            {
+                "label": "CO No.",
+                "en": "Customer order number.",
+                "id": "Nomor customer order."
+            },
+            {
+                "label": "CO Date",
+                "en": "Date of the CO.",
+                "id": "Tanggal CO."
+            },
+            {
+                "label": "Customer",
+                "en": "Customer of the CO.",
+                "id": "Customer pemilik CO."
+            },
+            {
+                "label": "Customer PO No.",
+                "en": "The customer's own PO number.",
+                "id": "Nomor PO dari customer."
+            },
+            {
+                "label": "Product",
+                "en": "Product name, with design number when it has one.",
+                "id": "Nama produk, beserta nomor desain bila ada."
+            },
+            {
+                "label": "Order Type",
+                "en": "NEW, RTP or RDP. Off by default.",
+                "id": "NEW, RTP atau RDP. Bawaan mati."
+            },
+            {
+                "label": "Cfg Color",
+                "en": "Colour configuration of the product's parts. Off by default.",
+                "id": "Konfigurasi warna part produk. Bawaan mati."
+            },
+            {
+                "label": "Qty Order",
+                "en": "Ordered quantity of the CO line.",
+                "id": "Qty pesanan baris CO."
+            },
+            {
+                "label": "Unit",
+                "en": "Unit of the quantity.",
+                "id": "Satuan qty."
+            },
+            {
+                "label": "Ship Date",
+                "en": "Date of this delivery schedule row (from Customer Plan Delivery).",
+                "id": "Tanggal baris jadwal kirim ini (dari Customer Plan Delivery)."
+            },
+            {
+                "label": "Ship Qty",
+                "en": "Quantity of this delivery row; summed in the totals.",
+                "id": "Qty baris kirim ini; dijumlahkan di total."
+            },
+            {
+                "label": "Shipping Type",
+                "en": "FULL or PARTIAL.",
+                "id": "FULL atau PARTIAL."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Deliver or Pickup.",
+                "id": "Deliver atau Pickup."
+            },
+            {
+                "label": "Receiver",
+                "en": "Recipient party if different from the customer. Off by default.",
+                "id": "Pihak penerima bila berbeda dari customer. Bawaan mati."
+            },
+            {
+                "label": "Shipper",
+                "en": "Shipper party. Off by default.",
+                "id": "Pihak pengirim. Bawaan mati."
+            },
+            {
+                "label": "Forwarder",
+                "en": "Forwarder party. Off by default.",
+                "id": "Pihak forwarder. Bawaan mati."
+            },
+            {
+                "label": "Send Status",
+                "en": "PLANNED (not sent yet) or SHIPPED.",
+                "id": "PLANNED (belum dikirim) atau SHIPPED."
+            },
+            {
+                "label": "Due Date",
+                "en": "Due date of the CO line. Off by default.",
+                "id": "Tanggal jatuh tempo baris CO. Bawaan mati."
+            },
+            {
+                "label": "Sales By",
+                "en": "Salesperson in charge. Off by default.",
+                "id": "Sales penanggung jawab. Bawaan mati."
+            },
+            {
+                "label": "CO Status",
+                "en": "Status of the CO. Off by default.",
+                "id": "Status CO. Bawaan mati."
+            },
+            {
+                "label": "Unit Price",
+                "en": "Selling price per unit. Hidden from people who may not see prices. Off by default.",
+                "id": "Harga jual per satuan. Disembunyikan dari yang tidak boleh melihat harga. Bawaan mati."
+            },
+            {
+                "label": "Shipped (items)",
+                "en": "Quantity of the whole CO line already shipped. Off by default.",
+                "id": "Qty seluruh baris CO yang sudah terkirim. Bawaan mati."
+            },
+            {
+                "label": "Remaining (items)",
+                "en": "Quantity of the whole CO line not yet shipped. Off by default.",
+                "id": "Qty seluruh baris CO yang belum terkirim. Bawaan mati."
+            },
+            {
+                "label": "Customer",
+                "en": "Filter by customer.",
+                "id": "Saring menurut customer."
+            },
+            {
+                "label": "Send Status",
+                "en": "Filter by PLANNED or SHIPPED.",
+                "id": "Saring menurut PLANNED atau SHIPPED."
+            },
+            {
+                "label": "Shipping Type",
+                "en": "Filter by FULL or PARTIAL.",
+                "id": "Saring menurut FULL atau PARTIAL."
+            },
+            {
+                "label": "Group by Customer",
+                "en": "Subtotals of Ship Qty per customer.",
+                "id": "Subtotal Ship Qty per customer."
+            },
+            {
+                "label": "Group by Ship Date",
+                "en": "Subtotals of Ship Qty per delivery date.",
+                "id": "Subtotal Ship Qty per tanggal kirim."
+            },
+            {
+                "label": "Group by CO No.",
+                "en": "Subtotals of Ship Qty per CO.",
+                "id": "Subtotal Ship Qty per CO."
+            },
+            {
+                "label": "Group by Send Status",
+                "en": "Subtotals of Ship Qty per send status.",
+                "id": "Subtotal Ship Qty per status kirim."
+            }
+        ]
+    },
+    {
+        "key": "gen-co-rpt-ship-det",
+        "type": "REPORT",
+        "module": "GENERAL",
+        "title": "Customer Order Shipment Detail",
+        "purpose": {
+            "en": "General Report version of the shipment detail, open to all staff and without prices. Only deliveries of posted (Confirmed or Closed) orders appear. Open it to see the delivery plan.",
+            "id": "Versi General Report dari detail pengiriman, terbuka untuk semua staf dan tanpa harga. Hanya jadwal kirim order yang sudah di-post (Confirmed atau Closed) yang tampil. Buka untuk melihat rencana kirim."
+        },
+        "keywords": "general report, shipment detail, rencana kirim, jadwal kirim tanpa harga, laporan umum, semua staf, ship date",
+        "steps": [
+            {
+                "en": "Open the report. Each row is one delivery schedule line; there are no price columns.",
+                "id": "Buka laporan. Tiap baris adalah satu baris jadwal kirim; tidak ada kolom harga."
+            },
+            {
+                "en": "Use Search for CO number, customer, PO number or product; Columns to show or hide columns; Export CSV to save the visible columns.",
+                "id": "Pakai Search untuk nomor CO, customer, nomor PO atau produk; Columns untuk menampilkan atau menyembunyikan kolom; Export CSV untuk menyimpan kolom yang tampil."
+            },
+            {
+                "en": "Filter by Customer, Send Status or Shipping Type, and Group by Customer, Ship Date, CO No. or Send Status.",
+                "id": "Saring menurut Customer, Send Status atau Shipping Type, dan Group by Customer, Ship Date, CO No. atau Send Status."
+            }
+        ],
+        "fields": [
+            {
+                "label": "CO No.",
+                "en": "Customer order number.",
+                "id": "Nomor customer order."
+            },
+            {
+                "label": "CO Date",
+                "en": "Date of the CO.",
+                "id": "Tanggal CO."
+            },
+            {
+                "label": "Customer",
+                "en": "Customer of the CO.",
+                "id": "Customer pemilik CO."
+            },
+            {
+                "label": "Customer PO No.",
+                "en": "The customer's own PO number.",
+                "id": "Nomor PO dari customer."
+            },
+            {
+                "label": "Product",
+                "en": "Product name, with design number when it has one.",
+                "id": "Nama produk, beserta nomor desain bila ada."
+            },
+            {
+                "label": "Order Type",
+                "en": "NEW, RTP or RDP. Off by default.",
+                "id": "NEW, RTP atau RDP. Bawaan mati."
+            },
+            {
+                "label": "Cfg Color",
+                "en": "Colour configuration of the product's parts. Off by default.",
+                "id": "Konfigurasi warna part produk. Bawaan mati."
+            },
+            {
+                "label": "Qty Order",
+                "en": "Ordered quantity of the CO line.",
+                "id": "Qty pesanan baris CO."
+            },
+            {
+                "label": "Unit",
+                "en": "Unit of the quantity.",
+                "id": "Satuan qty."
+            },
+            {
+                "label": "Ship Date",
+                "en": "Date of this delivery schedule row (from Customer Plan Delivery).",
+                "id": "Tanggal baris jadwal kirim ini (dari Customer Plan Delivery)."
+            },
+            {
+                "label": "Ship Qty",
+                "en": "Quantity of this delivery row; summed in the totals.",
+                "id": "Qty baris kirim ini; dijumlahkan di total."
+            },
+            {
+                "label": "Shipping Type",
+                "en": "FULL or PARTIAL.",
+                "id": "FULL atau PARTIAL."
+            },
+            {
+                "label": "Shipment Method",
+                "en": "Deliver or Pickup.",
+                "id": "Deliver atau Pickup."
+            },
+            {
+                "label": "Receiver",
+                "en": "Recipient party if different from the customer. Off by default.",
+                "id": "Pihak penerima bila berbeda dari customer. Bawaan mati."
+            },
+            {
+                "label": "Shipper",
+                "en": "Shipper party. Off by default.",
+                "id": "Pihak pengirim. Bawaan mati."
+            },
+            {
+                "label": "Forwarder",
+                "en": "Forwarder party. Off by default.",
+                "id": "Pihak forwarder. Bawaan mati."
+            },
+            {
+                "label": "Send Status",
+                "en": "PLANNED (not sent yet) or SHIPPED.",
+                "id": "PLANNED (belum dikirim) atau SHIPPED."
+            },
+            {
+                "label": "Due Date",
+                "en": "Due date of the CO line. Off by default.",
+                "id": "Tanggal jatuh tempo baris CO. Bawaan mati."
+            },
+            {
+                "label": "Sales By",
+                "en": "Salesperson in charge. Off by default.",
+                "id": "Sales penanggung jawab. Bawaan mati."
+            },
+            {
+                "label": "CO Status",
+                "en": "Status of the CO. Off by default.",
+                "id": "Status CO. Bawaan mati."
+            },
+            {
+                "label": "Shipped (items)",
+                "en": "Quantity of the whole CO line already shipped. Off by default.",
+                "id": "Qty seluruh baris CO yang sudah terkirim. Bawaan mati."
+            },
+            {
+                "label": "Remaining (items)",
+                "en": "Quantity of the whole CO line not yet shipped. Off by default.",
+                "id": "Qty seluruh baris CO yang belum terkirim. Bawaan mati."
+            },
+            {
+                "label": "All COs (posted)",
+                "en": "Box: every posted (Confirmed or Closed) CO.",
+                "id": "Kotak: semua CO yang sudah di-post (Confirmed atau Closed)."
+            },
+            {
+                "label": "Outstanding",
+                "en": "Box: posted COs not yet fully shipped.",
+                "id": "Kotak: CO ter-post yang belum terkirim seluruhnya."
+            },
+            {
+                "label": "Closed",
+                "en": "Box: Closed COs.",
+                "id": "Kotak: CO yang Closed."
+            },
+            {
+                "label": "Customer",
+                "en": "Filter by customer.",
+                "id": "Saring menurut customer."
+            },
+            {
+                "label": "Send Status",
+                "en": "Filter by PLANNED or SHIPPED.",
+                "id": "Saring menurut PLANNED atau SHIPPED."
+            },
+            {
+                "label": "Shipping Type",
+                "en": "Filter by FULL or PARTIAL.",
+                "id": "Saring menurut FULL atau PARTIAL."
+            },
+            {
+                "label": "Group by Customer",
+                "en": "Subtotals of Ship Qty per customer.",
+                "id": "Subtotal Ship Qty per customer."
+            },
+            {
+                "label": "Group by Ship Date",
+                "en": "Subtotals of Ship Qty per delivery date.",
+                "id": "Subtotal Ship Qty per tanggal kirim."
+            },
+            {
+                "label": "Group by CO No.",
+                "en": "Subtotals of Ship Qty per CO.",
+                "id": "Subtotal Ship Qty per CO."
+            },
+            {
+                "label": "Group by Send Status",
+                "en": "Subtotals of Ship Qty per send status.",
+                "id": "Subtotal Ship Qty per status kirim."
+            }
+        ]
+    }
+]
