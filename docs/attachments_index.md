@@ -58,6 +58,10 @@
 | `sample-3-stoicbox.jpg` | Mailer box "Stoic Box" cetak 2 sisi: kiri = luar (kuning), kanan = dalam (biru) | ✅ Dummy `IQ99FBX006` (MAILER 31x20x7 standar), dipotong jadi artwork luar + sisi dalam | `UatFoodBoxInquirySeeder` |
 | `sample-4-dowiqpispa.jpg` | Box kue R8 "Dowiq Pispa Bakery" — tercetak "R8 KRAFT 18 x 18 x 6,7 cm" (ukuran customer) | ✅ Dummy `IQ99FBX004` (menggantikan .webp lama) | `UatFoodBoxInquirySeeder` |
 | `sample-5-mbakida.jpg` | PPL "Warung Mbak Ida" — tercetak "PPL M 15,8 x 9 x 4,85 cm" | ✅ Dummy `IQ99FBX001` (menggantikan .webp lama); acuan uji artwork menempel di dieline | `UatFoodBoxInquirySeeder` |
+| `print out tagihan customer invoice.jpeg` | Cetakan "CUSTOMER INVOICE / FAKTUR TAGIHAN" sistem lama (Non PPN): nomor `275/TM/IX/2026`, baris product + Cfg + Tipe + No. Srt Jalan, potongan "DP TGL 15/09/2026", rekening transfer, terbilang | ✅ Acuan rencana (2026-10-02), belum dibangun | `md_for_systems/customerinvoice_plan.md` |
+| `screen untuk input tagihan customer invoice.jpeg` | Layar input Customer Invoice ScriptCase: kelompok Pesanan / Penagihan / Catatan, baris Qty Diterima Customer vs Qty Tagihan, Qty Minim, No SJ; DP diketik di kolom Keterangan Discount | ✅ Acuan rencana (2026-10-02), belum dibangun | `md_for_systems/customerinvoice_plan.md` |
+| `customer invoice uang muka.jpeg` | Cetakan tagihan uang muka: Grand Total 15.000.000, **Total Tagihan 7.500.000** (50%), rekening transfer | ✅ Acuan rencana (2026-10-02), belum dibangun | `md_for_systems/customerinvoice_plan.md` |
+| `screen untuk input uang muka.jpeg` | Layar "Update Customer Invoicing" (Pembayaran = UANG MUKA): Total Order Amount, Paid, Bill Amount, Balance, Bank Account; tab Amount / Details / Note and Bill To / Status | ✅ Acuan rencana (2026-10-02), belum dibangun | `md_for_systems/customerinvoice_plan.md` |
 
 ## Catatan tambahan
 
