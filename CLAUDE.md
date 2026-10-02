@@ -529,6 +529,12 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
   ACC Digital wajib, due date CO +14 hari kerja adjustable. Tampil di Menu v2 →
   Sales → Alur → Pedoman (`/v2/pedoman/product-master`) — update dokumen ini tiap
   ada keputusan alur baru.
+- `warehouselayout_tier1.md` (di `docs/`) — **wajib dibaca sebelum menyentuh gudang, bin, peta gudang, Stock Transfer,
+  label / QR, atau hitungan dead stock** (user 2026-10-02, `docs/globaluserrules.md` A.22): gudang = GEDUNG nyata
+  (`wh_warehouse`: ukuran meter, bentuk, 1-3 lantai) → area (`wh_zone`) → bin (`wh_loc`); pindah stok hanya lewat
+  `App\Services\Inventory\StockTransferService` (`inv_transfer`, kartu stok `doc_type` TF); isi bin / kapasitas / dead
+  stock hanya dari `App\Services\Inventory\WarehouseStock` (transfer TIDAK dihitung sebagai pergerakan: kolom view
+  `last_item_movement`). Bagian 13 = yang dibangun; review user: `md_for_systems/warehouse_review.md`.
 - `componentstandard.md` — **wajib dibaca sebelum menulis markup layar apa
   pun** (keputusan user 2026-09-23): komponen UI berlapis & object oriented —
   token `@theme` → primitive `app/View/Components/Ui/*` (`x-ui.button`,
