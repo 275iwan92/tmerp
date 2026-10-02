@@ -3,6 +3,26 @@
 
 ---
 
+## 2026-10-02 -- Reset data dummy: penjaga drift struktur (baseline vs ddt* sekarang)
+
+Masalah: `ddt:baseline restore` memasang ulang `CREATE TABLE` dari dump, sedangkan tabel `migrations` ada di `ddtsys` yang tidak
+ikut di-reset. Migration yang jalan setelah baseline disimpan -> Reset menghapus kolom barunya padahal migration tercatat sudah
+jalan -> layar gagal "Unknown column". Terukur pada baseline 2026-10-02 14:29:41: `ddtsdi.do_line` kehilangan 3 kolom,
+`ddtacc.fin_invoice` 21 kolom; `ddtacc.fin_company_bank` dan `fin_invoice_line` (tabel baru) tidak ikut di-reset.
+
+- `DdtBaseline::dumpSchema()` (baca blok `CREATE TABLE` dump), `diffSchema()`, `drift()`: daftar kolom baru / hilang dan tabel
+  baru / hilang sejak baseline. Hanya membaca (file dump + `information_schema`), 0,3 detik untuk dump 100 MB.
+- `restore` **menolak** selama ada drift (tidak ada yang diubah), menampilkan daftarnya dan meminta baseline baru disimpan
+  dulu. Paksa: `--allow-drift`. Aksi baru `php artisan ddt:baseline check --env=mockup` (baca saja).
+- Layar Developer -> Data Dummy (Reset): kartu "Structure changes since the baseline", tombol Reset mati selama ada drift.
+  Reset yang ditolak kini tampil sebagai pesan gagal (sebelumnya tertulis "Reset selesai").
+- Tabel yang dibuat setelah baseline: **dibiarkan apa adanya** (perilaku lama, tertulis di layar) -- menunggu keputusan user
+  apakah sebaiknya dikosongkan.
+- Test `tests/Unit/DdtBaselineDriftTest.php` (5 test, teks contoh; tidak menyentuh database).
+- Belum dijalankan: `ddt:baseline save` -- baseline sekarang masih yang 14:29:41, jadi Reset terkunci sampai user menyimpan baseline baru.
+
+---
+
 ## 2026-10-02 -- Engine Catalog + audit "semua layar turunan objek DevLib"
 
 User: "pastikan semua di mockup dan tmerp merupakan turunan dari object oriented di devlib dan pastikan ada list ENGINE

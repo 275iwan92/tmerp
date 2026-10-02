@@ -1369,17 +1369,24 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $guard();
             set_time_limit(0);
             try {
-                Artisan::call('ddt:baseline', ['action' => $action, '--force' => true]);
+                $code = Artisan::call('ddt:baseline', ['action' => $action, '--force' => true]);
             } catch (Throwable $e) {
                 return back()->with('v2_error', $e->getMessage());
             }
+            $last = trim(collect(explode("\n", Artisan::output()))->filter(fn ($l) => trim($l) !== '')->last() ?? '');
 
-            return back()->with('v2_flash', $ok.' '.trim(collect(explode("\n", Artisan::output()))->filter()->last()));
+            // Ditolak (mis. struktur berubah sejak baseline): perintah mengembalikan kode gagal, bukan exception.
+            return $code === 0 ? back()->with('v2_flash', $ok.' '.$last) : back()->with('v2_error', raw($last));
         };
         Route::get('/', function () use ($guard) {
             $guard();
+            $manifest = DdtBaseline::manifest();
 
-            return view('v2.dummy', ['manifest' => DdtBaseline::manifest()]);
+            // Drift = struktur ddt* sekarang vs baseline; selama ada, Reset ditolak (lihat DdtBaseline).
+            return view('v2.dummy', ['manifest' => $manifest, 'drift' => array_map(fn ($r) => [
+                'db' => $r['db'], 'table' => $r['table'], 'change' => t(DdtBaseline::DRIFT[$r['kind']][0]),
+                'columns' => implode(', ', $r['columns']), 'effect' => t(DdtBaseline::DRIFT[$r['kind']][1]),
+            ], $manifest ? DdtBaseline::drift() : [])]);
         })->name('index');
         Route::post('/reset', fn () => $run('restore', 'Reset selesai.'))->name('reset');
         Route::post('/save', fn () => $run('save', 'Baseline disimpan.'))->name('save');
