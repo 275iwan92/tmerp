@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Acc\FinPeriod;
 use App\Models\Acc\FinVoucher;
 use App\Models\Acc\FinVoucherLine;
 use App\Models\Inventory\RmStock;
@@ -21,6 +22,7 @@ use App\Services\Inventory\StockTransferService;
 use App\Services\Pur\PvBuilderService;
 use App\Support\V2\Data\PurchaseReceive;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -31,6 +33,8 @@ use Throwable;
 // yang diposting BERURUTAN TANGGAL lewat aturan aplikasi (StockDocumentService + StockPostingService) -- Stock In, Stock Out,
 // stock opname dan penyesuaian yang sudah Posted (selisih lebih / kurang di bulan berbeda), satu opname menunggu approval, satu
 // penyesuaian masih Draft, satu bin diblokir yang berisi stok, dan penerimaan barang yang menunggu QC / ditolak sebagian.
+// Tidak ada dokumen yang bertanggal di periode akuntansi yang sudah ditutup (aturan user 2026-10-02, backlog 05.23): bila
+// rentang 100 hari menyentuh periode tertutup, seluruh jadwal dirapatkan ke hari sesudah periode tertutup terakhir.
 // Laporan yang terisi: Stock Card, Stock Recapitulation, Stock Summary, Stock Opname, Stock Loss & Gain, Stock in Inspection.
 // Hanya ddt*; diulang = dummy ini dihapus lalu dibuat lagi. Jalankan SESUDAH UatWarehouseSeeder:
 //   php artisan db:seed --class=UatStockReportSeeder --env=mockup --force
@@ -49,7 +53,8 @@ class UatStockReportSeeder extends Seeder
     // Bin yang diblokir sesudah terisi: stoknya tampil di Stock in Inspection sebagai "Blocked bin".
     private const BLOCKED = ['A5-PPR-L05-01', 'Roof leak above this lane: stock on hold until checked'];
 
-    // [hari lalu, jenis, catatan, [posisi => angka]]. Diurutkan dan diposting dari yang paling lama.
+    // [hari lalu, jenis, catatan, [posisi => angka]]. Diurutkan dan diposting dari yang paling lama; "hari lalu" dirapatkan
+    // oleh scale() bila perlu, dan jam dokumen naik per urutan supaya dua dokumen di hari yang sama tetap berurutan di kartu.
     //   IN  : angka = [qty, harga satuan]      OUT : angka = qty keluar
     //   OP / AD (Posted), OP_WAIT (menunggu approval), AD_DRAFT : angka = selisih fisik - sistem (minus = kurang)
     private const EVENTS = [
@@ -141,9 +146,10 @@ class UatStockReportSeeder extends Seeder
         $dept = OrgDepartment::query()->orderBy('department_id')->value('department_id');
         $events = self::EVENTS;
         usort($events, fn ($a, $b) => $b[0] <=> $a[0]);
+        $scale = $this->scale();
 
-        foreach ($events as [$days, $kind, $note, $rows]) {
-            $date = now()->subDays($days)->startOfDay()->addHours(9);
+        foreach ($events as $n => [$days, $kind, $note, $rows]) {
+            $date = now()->subDays(max(1, (int) floor($days * $scale)))->startOfDay()->addHours(8)->addMinutes($n * 10);
             $warehouseId = $positions[array_key_first($rows)]['bin']->warehouse_id;
             $lines = [];
             foreach ($rows as $key => $figure) {
@@ -196,6 +202,20 @@ class UatStockReportSeeder extends Seeder
             }
         }
         DB::connection('tm2inv')->table('rm_stockcard')->where('create_by', self::BY)->update(['data_origin' => 'DUMMY']);
+    }
+
+    // 1 = jadwal apa adanya. Lebih kecil = jadwal dirapatkan supaya dokumen tertua jatuh sesudah periode akuntansi tertutup terakhir.
+    private function scale(): float
+    {
+        $oldest = max(array_column(self::EVENTS, 0));
+        $closedUntil = FinPeriod::withoutGlobalScopes()->where('is_adjustment', false)->where('status', '<>', 'OPEN')
+            ->where('end_date', '<', now()->toDateString())->max('end_date');
+        if (! $closedUntil) {
+            return 1.0;
+        }
+        $openDays = (int) Carbon::parse($closedUntil)->addDay()->startOfDay()->diffInDays(now()->startOfDay());
+
+        return $openDays > $oldest ? 1.0 : max(1, $openDays - 1) / $oldest;
     }
 
     private function blockBin(): void
