@@ -200,6 +200,7 @@
       else if (a === 'notif' || a === 'ai') this.openDrawer(a);
       else if (a === 'edit' || a === 'pass') $(this.el, `[data-dl-modal="${a}"]`).classList.add('is-on');
       else if (a === 'palette') this.openPalette();
+      else if (a === 'home') this.goHome();
       else if (a === 'devmode') setDevMode(!document.body.classList.contains('dl-dev'));
       else if (a === 'help') this.openHelp();
       else if (a === 'menu-layer' || a === 'menu-classic') this.switchMenu(a.slice(5));
@@ -351,6 +352,21 @@
       t.tab.remove(); t.pane.remove(); this.openTabs.delete(code);
       if (was) { const last = [...this.openTabs.keys()].pop(); last ? this.activate(last) : this.showHome(); }
       this.saveTabs();
+    }
+
+    // Tab yang form-nya sudah diubah tetapi belum di-Save (dirty-guard DevLib di dalam layar tab itu).
+    dirtyTabs() {
+      return [...this.openTabs.values()].filter(t => {
+        try { const w = t.pane.querySelector('iframe')?.contentWindow, h = w?.Devlib?.h; return !!h && [...h.dirtyForms].some(f => w.document.contains(f)); } catch (e) { return false; }
+      });
+    }
+
+    // Logo / nama aplikasi (user 2026-10-02): semua tab ditutup, opening screen tampil. Ada isian belum di-Save -> tanya sekali dulu.
+    goHome() {
+      const closeAll = () => { this.openTabs.forEach(t => { t.tab.remove(); t.pane.remove(); }); this.openTabs.clear(); this.showHome(); };
+      const n = this.dirtyTabs().length;
+      if (!n) { closeAll(); return; }
+      Devlib.confirm({title: T('sh_home_title'), message: Tf('sh_home_msg', {n}), ok: T('sh_home_ok')}).then(ok => { if (ok) closeAll(); });
     }
 
     showHome() {

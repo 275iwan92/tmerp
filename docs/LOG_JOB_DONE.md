@@ -3,6 +3,21 @@
 
 ---
 
+## 2026-10-02 -- Klik logo / nama aplikasi = opening screen, semua tab ditutup
+
+User: "jika saya click logo app atau nama app ERP TM maka opening screen akan muncul dan semua tab akan menutup" (alur
+dikonfirmasi dulu, dijawab "benar").
+- **Objek DevLib:** `x-dl::layer-menu` prop baru `home` — kepala panel (logo + nama aplikasi) menjadi tombol dan mengirim
+  event `dl:layer-menu-action {key:'home'}`. `x-dl::layer-shell` memasang prop itu; `Shell::goHome()` (`shell.js`) menutup
+  semua tab dan menampilkan opening screen. Posisi menu di kiri tidak berubah.
+- **Isian belum di-Save:** bila ada tab yang form-nya sudah diubah, muncul satu pertanyaan (Cancel / Close all tabs) sebelum
+  tab ditutup; tanpa itu langsung tertutup.
+- Tampilan tidak berubah (kursor tangan + garis fokus keyboard). Teks baru di `Devlib\Lang` (ID + EN). Tanpa `npm run build`:
+  berkas JS / CSS DevLib disajikan langsung.
+- Test: `V2ShellTest` (kepala panel bertanda `data-lm-home` di Shell, tidak di Layer Menu yang berdiri sendiri). Perilaku
+  klik di browser belum diuji Claude — diuji user.
+- Rulebook C.18 + changelog.
+
 ## 2026-10-02 -- Layar pembuka: popup tidak bisa ditutup + Opening Dashboard dikembalikan ke main
 
 - **Popup Material Shortage mengunci layar pembuka:** kerangka menu memakai `data-dl-open` (tab yang dibuka saat masuk),

@@ -14,6 +14,8 @@ use Devlib\Icon;
 //   search      = tampilkan ikon cari -> event dl:layer-menu-action {key:'palette'}
 //   collapsible = ikon kecilkan menu: panel jadi satu lajur ikon (diingat per browser). Saat mini, klik cabang /
 //                 Back / avatar = menu lengkap melayang di atas layar, menutup setelah layar dipilih atau klik di luar.
+//   home        = logo + nama aplikasi bisa diklik -> event dl:layer-menu-action {key:'home'} (user 2026-10-02). Di
+//                 x-dl::layer-shell: semua tab ditutup dan opening screen tampil (Shell::goHome); posisi menu tetap.
 // items: [['label','icon'?,'key'?,'url'?,'badge'?,'tone'?,'group'?,'items' => [ITEM..]]] — `group` = judul kelompok
 // di layer itu (item berurutan dengan group sama tampil di bawah satu judul). Tanpa `items` = layar akhir.
 // Klik layar akhir -> event dl:layer-menu {key,label,url,path} (cancelable). Posisi layer terakhir diingat per browser.
@@ -48,6 +50,7 @@ class LayerMenu extends DevlibComponent
         public ?string $initialView = null,
         public bool $search = false,
         public bool $collapsible = true,
+        public bool $home = false,
     ) {}
 
     public function tag(): string
@@ -96,7 +99,7 @@ class LayerMenu extends DevlibComponent
     {
         return <<<'BLADE'
             <aside {{ $attributes->class('dl-lm') }} {!! $dl() !!} data-dl-layer-menu data-id="{{ $id }}" data-active="{{ $active }}" data-counts="{{ $counts ? 1 : 0 }}" data-root="{{ $rootCaption }}" data-dock="{{ $dock }}" data-tree="{{ $views ? '[]' : json_encode($tree()) }}" data-views="{{ json_encode($viewData()) }}" data-view="{{ $initialView }}">
-                <div class="dl-lm__head">
+                <div class="dl-lm__head" @if ($home) data-lm-home role="button" tabindex="0" title="{{ \Devlib\Lang::text('Opening screen (closes all tabs)') }}" @endif>
                     <span class="dl-logo-badge dl-logo-badge--sm">@if ($logo)<img src="{{ $logo }}" alt="{{ $title }}">@endif</span>
                     <span class="dl-lm__brand"><b>{{ $title }}</b>@if ($tagline)<small class="dl-lm__tag" data-lm-tag>{{ $tagline }}</small>@endif<small data-lm-mode hidden></small></span>
                 </div>

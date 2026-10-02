@@ -33,6 +33,10 @@
       this.mini = this.peek = false;
       this.miniBtn = this.$('[data-lm-mini]');
       this.$('[data-lm-search]')?.addEventListener('click', () => this.emit('dl:layer-menu-action', {key: 'palette'}, true));
+      // Logo + nama aplikasi (prop home) = kembali ke opening screen; yang menutup tab adalah pemakai event (Shell::goHome).
+      const home = this.$('[data-lm-home]'), goHome = () => { this.setPeek(false); this.emit('dl:layer-menu-action', {key: 'home'}, true); };
+      home?.addEventListener('click', goHome);
+      home?.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goHome(); } });
       if (!this.miniBtn) return;
       this.miniBtn.addEventListener('click', () => this.setMini(!this.mini));
       // Klik di luar panel (layar di dalam iframe = jendela kehilangan fokus) menutup menu melayang.

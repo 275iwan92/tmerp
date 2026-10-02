@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Sys\SecUser;
+use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
 // Layar v2 (Menu v2 / objek DevLib) di dalam tmerp: semua halaman v2 terbuka tanpa error. Hanya membaca data.
@@ -18,7 +19,17 @@ class V2ShellTest extends TestCase
         $this->actingAs($this->admin())->get('/v2')
             ->assertOk()->assertSee('data-dl-layer-menu', false)->assertDontSee('class="dl-topbar"', false)->assertSee('Inquiry Product')
             // Pengalih ikon Operasional | Laporan Manajemen (pilihan A, user 2026-09-25).
-            ->assertSee('&quot;key&quot;:&quot;mgmt&quot;', false)->assertSee('data-lm-views', false);
+            ->assertSee('&quot;key&quot;:&quot;mgmt&quot;', false)->assertSee('data-lm-views', false)
+            // Logo + nama aplikasi = kembali ke opening screen, semua tab ditutup (user 2026-10-02).
+            ->assertSee('data-lm-home', false);
+    }
+
+    // Di luar Shell (x-dl::layer-menu berdiri sendiri) kepala panel tidak bisa diklik kecuali diminta lewat prop home.
+    public function test_layer_menu_head_is_a_home_button_only_when_asked(): void
+    {
+        $this->assertStringNotContainsString('data-lm-home', Blade::render('<x-dl::layer-menu :items="[]" title="Zq App" />'));
+        $html = Blade::render('<x-dl::layer-menu :items="[]" title="Zq App" home />');
+        $this->assertMatchesRegularExpression('/class="dl-lm__head"\s+data-lm-home role="button" tabindex="0" title="[^"]+"/', $html);
     }
 
     public function test_v2_screens_flows_and_dictionary_open(): void

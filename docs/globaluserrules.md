@@ -227,6 +227,8 @@
     Tidak ada garis penanda layer dan **tidak ada breadcrumb di panel kiri** (breadcrumb hanya di layar kanan).
     Ikon kecilkan menu = panel jadi **satu lajur ikon** (diingat per browser); saat mini, klik cabang/Back/avatar membuat
     menu lengkap melayang di atas layar dan menutup sendiri setelah layar dipilih atau klik di luar.
+    **Klik logo atau nama aplikasi (2026-10-02):** semua tab ditutup dan opening screen tampil; posisi menu di kiri tetap.
+    Bila ada isian yang belum di-Save di salah satu tab, ditanya sekali dulu (Cancel / Close all tabs).
 19. **Layar selebar panel kanan:** isi layar v2 tidak dibatasi lebar tengah; tepi kiri-kanan hanya 6px (±1,5 mm).
     Pengecualian: halaman Pedoman (teks bacaan).
 20. **Setiap item menu wajib punya ikon sendiri** yang menggambarkan isinya dan berbeda dari item lain di daftar yang sama
@@ -498,3 +500,4 @@
 | 2026-10-02 | B.3: kamus hanya berisi label, bukan data — nomor dokumen, nama customer / supplier / product, angka dan tanggal di judul form, kartu, hint dan pesan dibungkus `raw()` supaya tidak tercatat di Translation Dictionary; baris data yang sudah tercatat dihapus (migrasi `clean_dictionary_data_values`). |
 | 2026-10-02 | A.21: **Customer Invoice Tahap 1 dibangun di mockup.test** (user: "jalankan dulu lalu buatkan dokumentasinya buat saya review") — invoice dari Surat Jalan yang sudah diterima, tagihan uang muka + Record Receipt, potongan uang muka otomatis, nomor dari seri saat Confirm, jurnal otomatis, master Company Bank Accounts dan Document Number Series, qty diterima di Proof of Delivery. Menu Down Payment lama dimatikan di mockup.test. tmerp.test belum. Dokumen review: `docs/md_for_systems/customerinvoice_review.md`. |
 | 2026-10-02 | A.21: **layar lama dihentikan** (user: "yang lama dihapus saja, gantikan dengan yang baru. yang lama disudahi saja") — Order to Cash dan Down Payment lama diarsipkan, menunya dihapus; Customer Invoice satu-satunya pintu untuk invoice, uang muka, dan penerimaan uang customer (Record Payment: satu penerimaan untuk satu atau beberapa invoice). Terpasang di mockup.test dan tmerp.test. Belum ada gantinya: AR Aging. |
+| 2026-10-02 | C.18: klik logo atau nama aplikasi di kepala Layer Menu = semua tab ditutup dan opening screen tampil; posisi menu tetap; isian belum di-Save -> satu pertanyaan dulu. Objek DevLib `x-dl::layer-menu` prop `home` + `Shell::goHome`. |

@@ -2465,6 +2465,8 @@ html.dl-locked body{overflow:hidden}
 .dl-lm{position:relative;display:flex;flex-direction:column;width:var(--dl-side-w);flex:none;min-height:0;background:var(--dl-side);color:var(--dl-side-ink);border-radius:var(--dl-radius-lg);overflow:hidden;font-size:calc(13.5px * var(--dl-font-scale))}
 .dl-lm{--dl-lm-mini:56px}
 .dl-lm__head{display:flex;align-items:center;gap:10px;padding:12px 12px 8px 14px}
+.dl-lm__head[data-lm-home]{cursor:pointer}
+.dl-lm__head[data-lm-home]:focus-visible{outline:2px solid var(--dl-accent);outline-offset:-2px}
 .dl-lm__bar{display:flex;align-items:center;gap:4px;padding:0 10px 10px 14px;border-bottom:1px solid var(--dl-side-hover)}
 .dl-lm__gap{flex:1}
 .dl-lm__brand{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;line-height:1.25}
