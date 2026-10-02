@@ -53,13 +53,23 @@ class UatPrApprovalSeeder extends Seeder
         }
 
         $kept = $this->reset();
+        $made = array_map(fn ($d) => $this->submit(...$d), $this->drafts());
+
+        $this->command?->info(count($made).' PR menunggu approval di '.$pur->getDatabaseName().': '.implode(', ', $made)
+            .($kept ? ' (dipertahankan karena sudah ditarik ke PO: '.implode(', ', $kept).')' : '').'.');
+    }
+
+    // PR DRAFT (belum diajukan, belum bernomor) sesuai PLAN. Dipakai juga oleh pembangun set stage (stage 1 = Draft).
+    /** @return list<array{PrRequisition, SecUser}> [PR, pengaju] */
+    public function drafts(): array
+    {
+        $pur = DB::connection('tm2pur');
         $fallback = SecUser::findOrFail(1);
         $made = [];
 
         foreach (self::PLAN as [$deptName, $login, $needDays, $notes, $lines]) {
             $dept = OrgDepartment::where('department_name', $deptName)->value('department_id')
                 ?? throw new RuntimeException("Departemen {$deptName} tidak ada di master.");
-            Auth::setUser(SecUser::where('login', $login)->first() ?? $fallback);
 
             $pr = PrRequisition::create(['i_doc_date' => now()->toDateString(), 'i_source' => 'MANUAL', 'i_department_id' => $dept,
                 'i_need_date' => now()->addDays($needDays)->toDateString(), 'i_notes' => $notes, 'status' => 'DRAFT',
@@ -71,18 +81,26 @@ class UatPrApprovalSeeder extends Seeder
                 $line->recalcSubtotal();
                 $line->save();
             }
-
-            $blocked = PurchaseRequisition::submit($pr);
-            if ($blocked !== '') {
-                throw new RuntimeException($blocked);
-            }
+            $pr->recalcEstTotal();
+            $pr->save();
             $pur->table('pr_requisition')->where('pr_id', $pr->pr_id)->update(['data_origin' => 'DUMMY']);
             $pur->table('pr_line')->where('pr_id', $pr->pr_id)->update(['data_origin' => 'DUMMY']);
-            $made[] = $pr->fresh()->doc_no;
+            $made[] = [$pr, SecUser::where('login', $login)->first() ?? $fallback];
         }
 
-        $this->command?->info(count($made).' PR menunggu approval di '.$pur->getDatabaseName().': '.implode(', ', $made)
-            .($kept ? ' (dipertahankan karena sudah ditarik ke PO: '.implode(', ', $kept).')' : '').'.');
+        return $made;
+    }
+
+    // Confirm oleh pengaju lewat aturan layar: nomor dokumen lahir + masuk antrian approval. Balikan = nomor dokumen.
+    public function submit(PrRequisition $pr, SecUser $by): string
+    {
+        Auth::setUser($by);
+        $blocked = PurchaseRequisition::submit($pr);
+        if ($blocked !== '') {
+            throw new RuntimeException($blocked);
+        }
+
+        return $pr->fresh()->doc_no;
     }
 
     private function item(array $l): array

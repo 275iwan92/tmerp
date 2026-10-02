@@ -1414,6 +1414,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $stage(['action' => 'save', 'key' => $d['key']] + array_filter(['--label' => $d['label'] ?? null, '--note' => $d['note'] ?? null]), '');
         })->name('stage.save');
+        Route::post('/stage/build', fn () => $stage(['action' => 'build'], 'Stage sets built again from the current dummy data.'))->name('stage.build');
         Route::post('/stage/{key}/{action}', fn (string $key, string $action) => $stage(['action' => $action, 'key' => $key], ''))
             ->where('key', '_?[a-z0-9][a-z0-9-]{0,39}')->whereIn('action', ['restore', 'delete'])->name('stage.do');
     });

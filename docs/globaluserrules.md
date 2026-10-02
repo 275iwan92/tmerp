@@ -204,6 +204,24 @@
 14. **Master hanya diubah user, bukan sistem (2026-10-01).** Data master tidak berubah sampai ada override dari user; yang
     berubah oleh sistem hanya data transaksi. Nilai default boleh diperbarui oleh analisa terbaru sistem, dan tetap bisa
     di-override user. Contoh: Pick Item di Material Booking disimpan di booking, bukan di Master Product.
+15. **Data dummy disusun per STAGE (2026-10-02).** Stage 1 = semua dokumen seolah belum di-Confirm, belum di-approve dan
+    belum diproses; stage 2 = set yang sama sudah maju satu langkah dan menunggu langkah berikutnya; stage 3 dan
+    seterusnya, sepanjang alurnya. Contoh user: stage 1 Inquiry New belum di-Confirm, stage 2 sudah di Pro-Dev belum
+    di-Confirm, stage 3 di Pro-Cost belum di-Confirm. Tujuannya memastikan alur dan perilaku aplikasi benar: tiap langkah
+    bisa diuji berulang dari titik awal yang pasti.
+    - Tiap stage = satu set dump `.sql` (data saja) dengan tombol **Restore** sendiri di Developer → Data Dummy, untuk
+      administrator. Perintahnya `php artisan ddt:stage list|save|restore|delete|build --env=mockup`
+      (`App\Console\Commands\DdtStage`), file di `storage/app/ddt-stages/<set>/` (tidak masuk git).
+    - Set dibangun `ddt:stage build` (`App\Support\Dummy\StageBuilder`) lewat ATURAN APLIKASI yang sama dengan tombol di
+      layar (Confirm, Submit, Approve), bukan mengetik baris ke tabel. Aturan yang gagal saat memajukan stage = bug alur.
+    - Stage 1 = titik nol: semua dokumen transaksi operasional (quotation, CO, CPDEL, WO, DO, invoice + voucher-nya, PO,
+      penerimaan, dokumen & kartu stok, booking) tidak ada; yang ada hanya dokumen langkah pertama tiap alur. Master,
+      data legacy, HR / payroll / rekrutmen, maintenance, aset dan voucher di luar penjualan / pembelian tetap.
+    - Restore mengganti seluruh isi database dummy bisnis dengan set itu (master ikut kembali ke isi set); `ddtsys`
+      (akun, hak akses, menu) tidak ikut. Kolom yang ditambah migration setelah set disimpan tetap ada. Set `mixed` =
+      dummy campur semua status (untuk dashboard & laporan), disimpan terpisah.
+    - Yang sudah dibangun: stage 1 (Inquiry New Draft, PR Draft) dan stage 2 (Inquiry Confirmed menunggu Pro-Dev, PR
+      menunggu approval). Stage berikutnya ditambah per alur di `StageBuilder::STAGES`.
 
 ## C. Tampilan (UI/UX)
 
@@ -573,3 +591,4 @@
 | 2026-10-02 | C.33 + E.3: user "pasang saja nanti juga bisa disempurnakan" -> **asisten AI dipasang di tm2**. User "perlu ada production, quality control and quality assurance, inventory and warehousing, payroll, human resource, Work Instruction, job description, SOP; on production, target vs result, capacity planning" -> dashboard **Production** (target vs hasil, beban kapasitas mesin, downtime), **Quality Control & Assurance**, **Inventory & Warehousing**, **Work Instruction / JD / SOP**; 67 widget, 11 dashboard. **Work Instruction** = jenis dokumen (`doc_type` SOP / WI) di register SOP. Jam tersedia mesin = jam per shift x shift per hari x hari kerja (Master Mesin) — tidak pernah dikarang; mesin tanpa jam tampil "No capacity set". ddt + tm2. |
 | 2026-10-02 | C.33: 49 widget, dashboard **Overall** (daftar centang) + enam dashboard bidang (template): Sales, Purchasing, AR & AP, Cashflow, Payroll, Human Resource; ubin tambah, tekan-tahan, seret; daftar widget disusun dari referensi ERP lain (`openingboard_references.md`). ddt + tm2. |
 | 2026-10-02 | B.12: **Reset data dummy menolak bila struktur `ddt*` berubah sejak baseline** (penjaga drift; daftar tampil di Developer → Data Dummy, `ddt:baseline check`, paksa `--allow-drift`); setiap migration di `ddt*` diikuti simpan ulang baseline; tabel yang dibuat setelah baseline tidak disentuh Reset; baseline lama dicadangkan sebelum ditimpa. Baseline baru disimpan 19:33:33. |
+| 2026-10-02 | B.15: **data dummy per stage** — stage 1 = belum ada yang di-Confirm / di-approve / diproses, stage berikutnya maju satu langkah; tiap stage = set dump `.sql` dengan tombol Restore sendiri di Developer → Data Dummy (`ddt:stage`), dibangun lewat aturan aplikasi (`StageBuilder`). Terbangun: stage 1 (Inquiry New Draft, PR Draft), stage 2 (Inquiry Confirmed menunggu Pro-Dev, PR menunggu approval); set `mixed` = dummy campur. |
