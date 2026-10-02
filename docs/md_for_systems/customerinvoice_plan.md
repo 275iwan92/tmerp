@@ -1,6 +1,8 @@
 # CUSTOMER INVOICE + ACCOUNTS RECEIVABLE — RENCANA MODUL
 
 > Status: **RENCANA, menunggu OK user** (2026-10-02). Belum ada kode yang diubah.
+> Analisa lanjutan (penomoran, detail baris, software pasar, aturan Indonesia) di bagian 9; keputusan yang
+> tersisa di bagian 8.
 > Acuan lapangan: `docs/attachments/` — `print out tagihan customer invoice.jpeg`,
 > `screen untuk input tagihan customer invoice.jpeg`, `customer invoice uang muka.jpeg`,
 > `screen untuk input uang muka.jpeg`.
@@ -33,15 +35,14 @@ Tidak dibuat tabel baru yang menyaingi yang ada. `tm2acc.fin_invoice` + `ArApSer
 | Potongan DP | 283 invoice memotong DP lewat kolom **Diskon** dengan teks bebas "DP TGL 15/09/2026" | DP tidak terhubung ke dokumen DP mana pun |
 | Diskon persen sungguhan | 0 invoice | kolom Diskon praktis hanya dipakai untuk DP |
 | Tagihan DP (layar "Customer Invoicing") | 274 dokumen sejak Sep 2023, hanya ± 40 di 2026 | sebagian besar DP diterima **tanpa** dokumen DP |
-| CO ber-DP sejak 2025 (109 CO) | 30 punya invoice akhir **tanpa potongan DP tercatat**, 3 potongannya beda nilai, 10 belum ada invoice akhir | risiko tagih dobel / DP terlupa — perlu dicek Finance |
+| CO ber-DP sejak 2025 (109 CO) | Non PPN (82 CO): 69 dipotong, 4 tidak dipotong, 9 belum ada invoice akhir. PPN (27 CO): **tidak satu pun** invoice akhirnya menampilkan potongan DP | order PPN ditagih penuh di invoice akhir, DP tidak terlihat di dokumen (lihat bagian 9.3); 4 CO Non PPN perlu dicek Finance |
 | Pembayaran customer | `sdi_cinv_rcp` 0 baris, `remain_of_bill` kosong | sistem lama **tidak tahu siapa masih berhutang berapa** |
 | Invoice per CO | 88% satu invoice, sisanya 2 s.d. 10+ (kirim bertahap) | 1 invoice = 1 CO, banyak Surat Jalan |
-| Qty tagih ≠ qty diterima | 14% baris | qty tagih harus bisa beda dari qty kirim |
+| Qty tagih ≠ qty diterima | 14% baris | sebagian besar akibat cara kerja layar lama (menjumlah semua penerimaan CO, lalu dikurangi tangan pada invoice kedua) — lihat bagian 9.2 |
 | Satu baris menggabung beberapa Surat Jalan | 9% baris | baris cetak = per product, daftar No. SJ |
 | Syarat bayar | 30 hari 65% · Dimuka 12% · Kontan 9% · 45 hari 7% | jatuh tempo dihitung dari master syarat bayar |
 
-Catatan: angka "30 CO tanpa potongan DP" dicocokkan lewat teks "DP" di keterangan diskon; bisa saja dipotong
-dengan cara lain. Tetap layak diperiksa sebelum saldo awal piutang dimasukkan.
+Catatan: potongan DP dicocokkan lewat teks "DP" di keterangan diskon.
 
 ---
 
@@ -77,6 +78,9 @@ Jenis ketiga, **Credit Note** (retur / selisih harga sesudah invoice diposting),
 ---
 
 ## 4. Aturan bisnis
+
+> Diperbarui oleh analisa 9.7: dasar tagih = qty diterima (butir 2), nomor terbit saat Confirm dari seri
+> (butir 6), dan tagihan DP tanpa jurnal sampai dibayar (tabel jurnal; menunggu keputusan C).
 
 1. **Satu invoice = 1 customer, 1 CO, 1 status PPN, 1 mata uang.** Boleh memuat banyak Surat Jalan.
 2. **Baris invoice hanya dari baris Surat Jalan** yang sudah dikirim dan masih punya sisa
@@ -191,14 +195,186 @@ Layar v1 (`finance.receivables`, `finance.dp-invoice`) dibiarkan sampai v2 lolos
 
 ---
 
-## 8. Yang perlu diputuskan user
+## 8. Keputusan user
 
-1. **Nomor invoice.** Tetap format lama `275/TM/IX/2026` (urut per bulan) dan seri sendiri untuk DP, atau
-   format baru? Usul: tetap format lama, customer sudah mengenalnya.
-2. **Qty Minim** (kolom "Qty Minim: Ya / Tidak" di layar lama, 183 baris sejak 2025): aturan tagihnya apa?
-3. **Uang muka pada order PPN.** Apakah DP diterbitkan Faktur Pajak sendiri (PPN diakui saat DP), atau PPN
-   seluruhnya di invoice akhir?
-4. **Siapa yang membuat invoice.** Finance saja, atau admin Sales membuat draft dan Finance yang Confirm?
-5. **Rekening di cetakan.** Lima rekening lama boleh disalin ke master baru? Mana default PPN dan Non PPN?
-6. **Saldo awal piutang.** Sistem lama tidak mencatat pembayaran; daftar piutang terbuka saat pindah harus
-   datang dari catatan Finance (Excel). Siapa yang menyiapkan?
+Enam pertanyaan awal, sesudah data lama, kode ScriptCase, software di pasar, dan aturan Indonesia diperiksa
+(bagian 9):
+
+| # | Pertanyaan awal | Status |
+|---|---|---|
+| 1 | Format nomor invoice | **Terjawab sebagian** — format, reset, dan cara terbit jelas (9.1). Sisa: satu seri atau dua seri (keputusan A). |
+| 2 | Arti Qty Minim | **Terjawab** — harga borongan: nilai baris = harga, bukan qty × harga (9.2). |
+| 3 | PPN pada uang muka | **Praktik sekarang diketahui**, berbeda dari aturan pajak (9.3, 9.6). Keputusan B. |
+| 4 | Siapa membuat invoice | **Terjawab** — Finance: satu orang untuk invoice, satu orang untuk tagihan DP (9.4). |
+| 5 | Rekening di cetakan | **Terjawab** — polanya jelas (9.3). Sisa: izin menyalin data nyata (keputusan D). |
+| 6 | Saldo awal piutang | **Terjawab** — memang tidak ada datanya; diusulkan lembar kerja di aplikasi (9.7 butir 12). |
+
+Yang masih harus diputuskan user:
+
+- **A. Seri nomor.** Sekarang invoice PPN (kop CV. Langgeng Jaya Makmur) dan Non PPN (kop Telasih Makmur)
+  berbagi satu urutan `…/TM/…`. Usul: dua seri, satu per identitas, karena di semua software pembanding seri
+  nomor melekat pada badan usaha dan pembukuan PKP jadi punya urutan tanpa lompatan. Pilihan lain: tetap satu
+  seri seperti sekarang.
+- **B. PPN pada uang muka order PPN.** Aturan: Faktur Pajak dibuat saat uang muka diterima, invoice akhir
+  hanya memuat PPN sisanya. Praktik sekarang: PPN seluruhnya di invoice akhir. Usul: aplikasi mengikuti
+  aturan, dengan satu setelan untuk kembali ke cara lama bila konsultan pajak memutuskan lain.
+- **C. Tagihan DP tanpa jurnal sampai dibayar.** Mengubah butir LOCKED di `downpayment_tier1-4.md` (yang
+  sekarang menjurnal piutang saat tagihan DP terbit). Alasan di 9.7 butir 6.
+- **D. Lima rekening bank lama** disalin ke master rekening perusahaan (data nyata) dengan default: PPN =
+  Maspion CV. Langgeng Jaya Makmur, Non PPN = BCA Puspita Dewi Widodo.
+- **E. Qty Minim di Customer Order v2.** Sekarang v2 selalu menghitung qty × harga
+  (`CoOrderItem::recalcSubtotal`); sistem lama memakai harga borongan. Perlu disamakan supaya nilai CO =
+  nilai invoice.
+
+---
+
+## 9. Analisa lanjutan (2026-10-02)
+
+Sumber: `tm2old` (data s.d. 10-Sep-2026), kode `docs/legacy_scriptcase/tm/form_sdi_cinv*` dan
+`tm3/form_sdi_cinv_prebill`, log `tm2old.sc_log`, dokumentasi vendor, dan peraturan (tautan di 9.5 dan 9.6).
+
+### 9.1 Penomoran di sistem lama
+
+| Hal | Temuan |
+|---|---|
+| Format | `urut/TM/bulan romawi/tahun`, urut kembali ke 1 tiap bulan. |
+| Satu urutan untuk PPN dan Non PPN | Ya. September 2026: nomor 1 Non PPN, nomor 2 PPN, dan seterusnya bercampur. |
+| Cara terbit | **Diketik tangan.** Layar mengusulkan `YY00001` (fungsi `my_seq`), lalu ditimpa. Sisa nomor usulan yang lupa ditimpa: `2200001`–`2200007`, `1900001`. |
+| Salah ketik | ± 15 nomor sejak 2016: `46TM/I/2025`, `168/TM/VII//2025`, `33/T/IX/2026`, `74/M/II/2026`, `11/TDPV/2025`, spasi di depan. |
+| Lompatan | Hampir tidak ada: 0–2 nomor hilang per bulan (Okt 2025 – Sep 2026). Agustus 2026 ada 7 nomor 345–351 yang terketik bulan VIII. |
+| Bulan di nomor | Mengikuti bulan tanggal invoice; hanya 5 yang tidak cocok dalam 21 bulan (contoh lampiran: `275/TM/IX/2026` bertanggal 01-10-2026). |
+| Urutan waktu | Tidak selalu urut: nomor dipakai melompat-lompat dalam satu hari. |
+| Seri kedua `…/TDP/…` | Untuk order kanal penjualan "TDP" (Surat Jalan seri sendiri, 7 digit `26xxxxx`): 132 (2023), 256 (2024), 706 (2025), 178 (2026). **Berhenti Mei 2026**; sesudah itu order TDP memakai nomor TM. |
+| Nomor dipakai ulang | 131 invoice dihapus di 2026 (5% dari 2.662 yang dibuat), termasuk yang sudah berstatus INVOICED; nomornya dipakai lagi. Jejaknya hanya di `sc_log`. |
+| Tagihan DP | Otomatis `YY` + 6 digit, urut per tahun (`26000068`). "No Faktur / Reff" = nomor CO; DP kedua ditulis `2601259-2`. |
+
+Aplikasi sekarang: tiap dokumen punya fungsi nomor sendiri di kode (`PO26xxxxx`, `SPB26xxxxx`, `INV-AR-00001`),
+formatnya tidak bisa diubah dari layar, dan belum ada tabel seri nomor.
+
+### 9.2 Detail baris invoice di sistem lama
+
+- **Dasar tagih = qty DITERIMA customer**, bukan qty kirim. Layar menjumlah `qty_receive` semua Surat Jalan
+  untuk baris CO itu; bila belum diisi muncul "Penerimaan Surat Jalan Belum Di input". Diterima ≠ dikirim pada
+  95 dari 3.959 baris Surat Jalan 2026 (2,4%).
+- Karena yang dijumlah **semua** penerimaan CO (bukan yang belum ditagih), invoice kedua harus dikurangi
+  tangan. Akibatnya, untuk CO Jan 2025 – Jun 2026 (6.602 baris): 79 baris tertagih lebih dari yang diterima
+  (± Rp 422 juta), 56 baris kurang (± Rp 194 juta), 6 baris belum ditagih (Rp 12 juta). Sebagian bisa sah
+  (penerimaan tidak diperbarui); layak diperiksa Finance.
+- Di aplikasi baru qty diterima **belum disimpan**: kolom "Received" di cetakan Proof of Delivery diisi
+  tangan, `do_line` hanya punya `qty_do`.
+- **Qty Minim = harga borongan.** Bila dicentang, nilai baris = harga (bukan qty × harga): 199 dari 199 baris
+  CO sejak 2025, rata-rata Rp 798 ribu untuk ± 573 pcs.
+- **Tipe** di cetakan = jenis order baris CO: NEW, RTP, RDP. **Cfg** = konfigurasi warna (4/0).
+- **Tanggal invoice = tanggal Surat Jalan** pada 92% invoice 2026. Diketiknya rata-rata 3 hari kemudian; 31%
+  lebih dari 3 hari kemudian.
+- Tarif PPN diketik: 786 invoice 11%, satu terketik 10%. Kolom NPWP teks bebas: 436 invoice PPN berisi
+  "NO NPWP".
+- Jarang sekali dipakai: mata uang selain rupiah (1 invoice sejak 2023), FOB (1 di 2026), diskon persen (0),
+  retur (8 dokumen, semua Jan–Apr 2025).
+- 200 customer ditagih di 2026; 10 terbesar = 67% nilai, 20 terbesar = 83%. Nilai tagihan kotor 2026 termasuk
+  PPN, sebelum potongan DP: Rp 27,99 miliar.
+
+### 9.3 Uang muka di sistem lama
+
+- DP standar **50%** dari total termasuk PPN; ada juga 25%, 75%, 100%.
+- Rekening: order PPN → Maspion 124.200.1997 a.n. CV. Langgeng Jaya Makmur; Non PPN → BCA 331.030.0313 a.n.
+  Puspita Dewi Widodo (umum), kadang BCA 011.808.0869 a.n. Carrij Soehendra.
+- Pembayaran tidak pernah dicatat (`paid_amt` selalu 0; `sdi_cpym`, `sdi_cinv_rcp` kosong). 47 tagihan DP
+  masih DRAFT.
+- **Non PPN:** DP dipotong lewat kolom Diskon (743 invoice sejak 2025, Rp 3,48 miliar), dan `grand_total`
+  tersimpan sesudah dipotong — laporan yang menjumlah `grand_total` jadi lebih kecil dari penjualan sebenarnya.
+- **PPN:** invoice akhir terbit **penuh dengan PPN penuh**, DP tidak ditampilkan (26 dari 27 CO). Tidak ada
+  Faktur Pajak saat DP diterima.
+
+### 9.4 Siapa mengerjakan
+
+Dari `sc_log` 2026: invoice dibuat satu orang (Wiwik, 2.662 dibuat, 2.995 diubah, 131 dihapus); tagihan DP oleh
+satu orang lain (Mia, grup Accounting, 72 dokumen). Sales tidak membuat invoice. Cetak: 1.496 kali format
+Langgeng Jaya Makmur, 1.682 kali format Telasih Makmur.
+
+### 9.5 Software di pasar
+
+| Produk | Nomor | Nomor terbit saat | Uang muka | Potong di invoice akhir | Invoice terposting diubah? |
+|---|---|---|---|---|---|
+| SAP S/4HANA | rentang nomor per jenis dokumen, hanya dari sistem | simpan | permintaan uang muka (tanpa jurnal, pajak dihitung) | diusulkan otomatis | tidak; batal / credit memo |
+| SAP Business One | seri per jenis dokumen | simpan | DP Request (tanpa jurnal) atau DP Invoice | jendela "Down Payments to Draw", boleh sebagian | tidak |
+| Odoo 17/18 | urutan per jurnal, format menentukan reset bulanan | **Confirm** (draft tanpa nomor) | invoice DP (% / nominal) dari order | dipotong otomatis | kembali ke draft bila belum dikunci |
+| NetSuite | otomatis, awalan per jenis | simpan | Customer Deposit (kewajiban) | Deposit Application | ya, selama periode terbuka |
+| D365 Business Central | No. Series, lompatan dilarang, seri sendiri untuk prepayment | **posting** | prepayment % di order, bisa menahan pengiriman | dipotong otomatis | tidak; Correct / Cancel |
+| D365 Finance | number sequence (kode perusahaan, periode) | posting | prepayment invoice | invoice penuh, DP sebagai pelunasan | tidak |
+| Accurate Online | token termasuk **bulan romawi**, reset harian / bulanan / tahunan | simpan | Uang Muka Penjualan bernomor sendiri | tab Uang Muka, boleh sebagian | ya, selama periode terbuka |
+| Zahir | otomatis, bisa diketik | simpan | Uang Muka Penjualan | otomatis | ya |
+
+Pola yang sama di produk kelas ERP: nomor dari seri yang diatur (bukan diketik), terbit saat posting, tidak
+dipakai ulang, seri terpisah per jenis dokumen dan per badan usaha; uang muka dokumen sendiri yang masuk akun
+kewajiban; invoice akhir mengusulkan DP terbuka dan boleh memotong sebagian; penagihan dari daftar "sudah
+dikirim, belum ditagih" dengan qty tertagih disimpan per baris kirim; invoice terposting tidak bisa diubah.
+Dua gaya tampilan: potongan DP tampil di invoice (SAP, Odoo, Business Central, Accurate) atau invoice penuh
+dengan DP sebagai pelunasan (D365 Finance, NetSuite). Format Faktur Pajak Indonesia cocok dengan gaya pertama.
+
+Tautan utama: [Odoo sequence](https://www.odoo.com/documentation/18.0/applications/finance/accounting/customer_invoices/sequence.html) ·
+[Odoo down payment](https://www.odoo.com/documentation/18.0/applications/sales/sales/invoicing/down_payment.html) ·
+[BC number series](https://learn.microsoft.com/en-us/dynamics365/business-central/ui-create-number-series) ·
+[BC prepayments](https://learn.microsoft.com/en-us/dynamics365/business-central/walkthrough-setting-up-and-invoicing-sales-prepayments) ·
+[D365 prepayment invoice](https://learn.microsoft.com/en-us/dynamics365/finance/accounts-receivable/customer-prepayment-invoice) ·
+[NetSuite customer deposit](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_N1296349.html) ·
+[Accurate penomoran](https://help.accurate.id/product/accurate-online/fitur-aol/pengaturan/penomoran/cara-membuat-penomoran-otomatis/) ·
+[Zahir DP + PPN](https://zahiraccounting.com/id/blog/uang-muka-penjualan-telah-dikenakan-ppn/).
+Keterangan SAP dan sebagian Accurate / Zahir berasal dari ringkasan pencarian, bukan halaman dokumentasi penuh.
+
+### 9.6 Aturan akuntansi dan pajak Indonesia
+
+| Topik | Aturan | Akibat untuk modul |
+|---|---|---|
+| Standar | SAK EP berlaku 1 Jan 2025 (pengganti SAK ETAP); SAK EMKM masih boleh untuk omzet sampai Rp 50 miliar. Yang dipakai perusahaan = keputusan akuntan / KAP. | saat pengakuan pendapatan dan cara cadangan piutang dibuat bisa diatur |
+| Pendapatan | diakui saat barang diserahkan, bukan saat invoice dicetak (SAK EP 23.10); PPN bukan pendapatan | tanggal invoice mengikuti tanggal Surat Jalan; laporan "sudah dikirim, belum ditagih" di akhir periode |
+| Uang muka | kewajiban sampai barang diserahkan (SAK EP contoh 23A.9); tagihan DP yang belum dibayar sebaiknya tidak menggelembungkan piutang | DP per CO di akun 213200; dasar keputusan C |
+| Piutang | SAK EP: penurunan nilai berdasarkan bukti (telat bayar, gagal bayar), per customer besar dan per kelompok umur | umur piutang per jatuh tempo; penghapusan = transaksi tersendiri yang disetujui |
+| Retur / diskon | mengurangi pendapatan; untuk PPN pembeli yang membuat nota retur | Credit Note terhubung ke invoice asal, mencatat nomor nota retur |
+| Pembukuan | UU KUP Ps. 28: rupiah, bahasa Indonesia, disimpan 10 tahun, data elektronik sah. **Tidak ada undang-undang yang mewajibkan nomor invoice urut**; itu praktik audit. | invoice terposting tidak dihapus; nomor batal tetap terlihat; laporan lompatan nomor |
+| Nomor Faktur Pajak | sejak Coretax (PER-11/PJ/2025) nomor seri diberikan DJP saat unggah; batas unggah tanggal 20 bulan berikutnya | nomor invoice perusahaan bebas; nomor Faktur Pajak disimpan per invoice sesudah unggah |
+| PPN uang muka | terutang saat pembayaran diterima sebelum penyerahan; Faktur Pajak "Uang Muka", lalu "Pelunasan" yang merujuk nomor faktur DP dan hanya memuat sisa | dokumen DP menyimpan nomor Faktur Pajak-nya; invoice akhir PPN atas sisa |
+| Tarif | 12% × DPP nilai lain (11/12 harga jual) = efektif 11% (PMK 131/2024), kode transaksi 04 | simpan harga jual, DPP nilai lain, PPN; tarif dari sistem, tidak diketik |
+| PPh 23 | cetak dengan bahan dari percetakan = penjualan barang (tanpa PPh 23); maklon 2%. Sebagian customer tetap memotong. | penerimaan = uang + PPh 23 (bukti potong dicatat) |
+| Bea Meterai | Rp 10.000 untuk dokumen penerimaan uang di atas Rp 5 juta; invoice yang hanya menagih tidak kena | tempat meterai di Tanda Terima Uang Muka / kwitansi; tanpa tulisan "LUNAS" di invoice |
+| Mata uang | transaksi dalam negeri wajib rupiah (UU 7/2011) | invoice rupiah saja |
+| Pengendalian | pemisahan tugas penagihan / kasir / piutang; cocok tiga dokumen CO – Surat Jalan – invoice; konfirmasi piutang; uji pisah batas | peran terpisah, laporan pisah batas, Statement of Account |
+
+Tautan utama: [SAK EP (IAI)](https://web.iaiglobal.or.id/SAK-IAI/Tentang%20SAK%20Entitas%20Privat%20(EP)) ·
+[Faktur Pajak uang muka dan pelunasan (DJP Coretaxpedia)](https://pajak.go.id/coretaxpedia/faktur-pajak-uang-muka-dan-pelunasan) ·
+[PER-11/PJ/2025 uang muka (Ortax)](https://ortax.org/ini-ketentuan-pembuatan-faktur-pajak-uang-muka-sesuai-per-11-2025) ·
+[kode 04 dan DPP 11/12 (DDTC)](https://news.ddtc.co.id/berita/nasional/1807950/ppn-dihitung-dengan-dpp-1112-dari-harga-jual-djp-kode-fakturnya-04) ·
+[batas unggah tanggal 20 (Ortax)](https://ortax.org/batas-upload-fp-mundur-jadi-tanggal-20) ·
+[UU KUP Ps. 28 (DDTC)](https://news.ddtc.co.id/literasi/kelas-pajak/16241/kewajiban-pembukuan-dan-pencatatan) ·
+[UU 10/2020 Bea Meterai](https://www.pajak.go.id/sites/default/files/2020-11/UU%20Nomor%2010%20Tahun%202020%20tentang%20Bea%20Materai.pdf).
+Paragraf SAK EP dibaca dari draf eksposur 2020, bukan teks final. Semua butir pajak perlu dikonfirmasi
+konsultan pajak perusahaan sebelum dijadikan aturan aplikasi.
+
+### 9.7 Perubahan terhadap rencana (bagian 3–6)
+
+1. **Seri nomor jadi data, bukan kode.** Tabel seri (`sys_doc_series`: token urut / kode / bulan romawi /
+   tahun, reset bulanan atau tahunan, per jenis dokumen dan per identitas) + tabel penghitung yang dikunci per
+   baris, dengan layar input. Bawaan = format lama: invoice `{urut}/TM/{romawi}/{tahun}` bulanan, DP
+   `{YY}{6 digit}` tahunan. Dokumen lain bisa pindah ke tabel ini nanti.
+2. **Nomor terbit saat Confirm**, tidak bisa diketik, tidak dipakai ulang. Draft tanpa nomor (hapus draft
+   tidak membuat lompatan). Invoice batal tetap memegang nomornya. Bulan nomor = bulan tanggal invoice. Ada
+   laporan lompatan dan nomor ganda.
+3. **Dasar tagih = qty diterima.** `do_line` diberi `qty_received`, diisi di Proof of Delivery (bawaan = qty
+   kirim). Invoice mengusulkan diterima − sudah ditagih, per baris Surat Jalan.
+4. **Qty Minim**: baris borongan, nilai = harga. Sama di CO dan invoice.
+5. **Tanggal invoice bawaan = tanggal Surat Jalan terakhir** yang ditagih; jatuh tempo dihitung dari situ.
+6. **Tagihan DP = permintaan, tanpa jurnal.** Jurnal lahir saat uang diterima (Bank pada Uang Muka Penjualan,
+   + PPN bila diputuskan B). Sesuai SAP (permintaan uang muka), SAK EP, saat terutang PPN, dan kenyataan bahwa
+   47 tagihan DP lama tidak pernah berlanjut. Umur piutang hanya berisi piutang dagang.
+7. **Nilai invoice selalu penuh**; DP tampil sebagai baris potongan dan "sisa yang harus dibayar". Laporan
+   penjualan memakai nilai penuh.
+8. **Data pajak per invoice**: tarif dari sistem, harga jual + DPP nilai lain + PPN, nomor Faktur Pajak (diisi
+   sesudah unggah Coretax), rujukan faktur DP, NPWP / NIK dari master customer (bukan teks bebas).
+9. **Cetakan**: tempat meterai di Tanda Terima Uang Muka dan kwitansi di atas Rp 5 juta.
+10. **Dikeluarkan dari tahap 1**: mata uang asing, diskon persen di kepala invoice. FOB cukup sebagai satu baris
+    biaya dari `co_order_external_cost`.
+11. **Pengendalian**: tidak ada Delete sesudah Confirm; peran penagihan dan kasir terpisah; laporan pisah batas
+    (sudah dikirim belum ditagih, dan sebaliknya).
+12. **Saldo awal piutang lewat lembar kerja di aplikasi**: invoice lama yang kemungkinan masih terbuka
+    ditampilkan, Finance mencentang lunas / belum dan mengisi sisa. Per 10-Sep-2026: 218 invoice belum jatuh
+    tempo (Rp 3,07 miliar); 842 invoice dalam 90 hari terakhir (Rp 9,55 miliar).
