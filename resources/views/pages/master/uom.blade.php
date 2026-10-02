@@ -4,7 +4,6 @@ use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasSpreadsheetGrid;
 use App\Models\Master\UomConversion;
 use App\Models\Master\UomUnit;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
@@ -553,7 +552,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             {{-- ============ KARTU KIRI: LIST SATUAN ============ --}}
             <div class="mb-2 flex items-center gap-1.5">
                 <span class="text-sm">🔍</span>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('mdata_uom_search_placeholder', 'Cari kode / nama…') }}"
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search code / name…') }}"
                     class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
             </div>
 
@@ -566,23 +565,23 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                 :version="$this->spreadsheetVersion" />
 
             <div class="flex gap-3.5 flex-wrap text-[11px] text-[#667] px-1 py-2">
-                <span><span class="text-muted">{{ $this->units->count() }} {{ Translator::t('mdata_uom_count_suffix', 'satuan.') }}</span> {!! Translator::t('mdata_uom_click_conversion_hint', 'Klik ikon <b>🔁</b> untuk buka panel Konversi.') !!}</span>
-                <span>{!! Translator::t('mdata_uom_base_hint', '<b>Dasar</b> = satuan dasar dimensi (hanya 1 per dimensi, dasar lama otomatis dilepas saat "Simpan Semua").') !!}</span>
+                <span><span class="text-muted">{{ $this->units->count() }} {{ t('units.') }}</span> {!! t('Click the <b>🔁</b> icon to open the Conversion panel.') !!}</span>
+                <span>{!! t('<b>Base</b> = the base unit of a dimension (only 1 per dimension; the old base is automatically released when "Save All" runs).') !!}</span>
             </div>
 
             {{-- ============ KARTU KANAN: PANEL KONVERSI ============ --}}
             @if ($conversionPanelOpen)
                 <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                     <div class="px-3.5 py-3 bg-navy text-white text-[13px] font-semibold flex items-center gap-2 flex-wrap">
-                        <span>{{ Translator::t('mdata_uom_conversion_label', 'Konversi') }} {{ $selectedCode }} · {{ $this->selectedUnit?->uom_name }}</span>
-                        <button type="button" wire:click="openConvModal('new')" class="ml-auto px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white/10 text-white border border-white/40 hover:bg-white/20">+ {{ Translator::t('mdata_uom_btn_new_conversion', 'Konversi Baru') }}</button>
+                        <span>{{ t('Conversion') }} {{ $selectedCode }} · {{ $this->selectedUnit?->uom_name }}</span>
+                        <button type="button" wire:click="openConvModal('new')" class="ml-auto px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white/10 text-white border border-white/40 hover:bg-white/20">+ {{ t('New Conversion') }}</button>
                         <span class="cursor-pointer opacity-80 hover:opacity-100" wire:click="closeConversionPanel">✕</span>
                     </div>
                     <div class="px-3.5 py-2 border-b border-[#eef1f5]">
-                        <x-form.checkbox label="{{ Translator::t('mdata_uom_hide_inactive', 'Sembunyikan konversi nonaktif') }}" wire:model.live="hideInactiveConversions" />
+                        <x-form.checkbox label="{{ t('Hide inactive conversions') }}" wire:model.live="hideInactiveConversions" />
                     </div>
 
-                    <div class="text-[11px] font-bold uppercase tracking-wide text-muted px-3.5 pt-2.5 pb-1">{{ Translator::t('mdata_uom_direct_conversion', 'Konversi Langsung') }}</div>
+                    <div class="text-[11px] font-bold uppercase tracking-wide text-muted px-3.5 pt-2.5 pb-1">{{ t('Direct Conversion') }}</div>
                     <div>
                         @forelse ($this->directConversions as $c)
                             <div wire:key="dc-{{ $c->id_conversion }}" class="flex items-center gap-2 px-3.5 py-2 border-b border-[#f0f3f7] text-[13px]">
@@ -591,21 +590,21 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                                 <span class="font-mono text-[#556] min-w-[44px]">{{ $c->uom_dst }}</span>
                                 <span class="font-mono font-bold text-[#177a4b] text-right ml-1">1 {{ $c->uom_src }} = {{ $this->formatNumber($c->conversion_value) }} {{ $c->uom_dst }}</span>
                                 @unless ($c->activate)
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f0d6d6] text-[#a33]">{{ Translator::t('mdata_inactive_upper', 'NONAKTIF') }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f0d6d6] text-[#a33]">{{ t('INACTIVE') }}</span>
                                 @endunless
                                 <span class="ml-auto flex gap-0.5 shrink-0">
-                                    <button type="button" wire:click="openConvModal('edit', {{ $c->id_conversion }})" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                    <button type="button" wire:click="toggleConversionActive({{ $c->id_conversion }})" wire:confirm="{{ $c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }} konversi {{ $c->uom_src }} → {{ $c->uom_dst }}?"
-                                        title="{{ $c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $c->activate ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                                    <button type="button" wire:click="openConvModal('edit', {{ $c->id_conversion }})" title="{{ t('Edit') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
+                                    <button type="button" wire:click="toggleConversionActive({{ $c->id_conversion }})" wire:confirm="{{ $c->activate ? t('Deactivate') : t('Activate') }} konversi {{ $c->uom_src }} → {{ $c->uom_dst }}?"
+                                        title="{{ $c->activate ? t('Deactivate') : t('Activate') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $c->activate ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
                                 </span>
                             </div>
                         @empty
-                            <div class="text-center text-muted text-[12.5px] px-3.5 py-5 leading-relaxed">{{ Translator::t('mdata_uom_no_direct_conversion_prefix', 'Belum ada pasangan konversi langsung untuk') }} <b>{{ $selectedCode }}</b>. {!! Translator::t('mdata_uom_no_direct_conversion_suffix', 'Klik <b>+ Konversi Baru</b> di atas.') !!}</div>
+                            <div class="text-center text-muted text-[12.5px] px-3.5 py-5 leading-relaxed">{{ t('No direct conversion pair yet for') }} <b>{{ $selectedCode }}</b>. {!! t('Click <b>+ New Conversion</b> above.') !!}</div>
                         @endforelse
                     </div>
 
                     @if ($this->derivedConversions->isNotEmpty())
-                        <div class="text-[11px] font-bold uppercase tracking-wide text-muted px-3.5 pt-2.5 pb-1">{{ Translator::t('mdata_uom_derived_conversion', 'Turunan ke Semua Satuan se-Dimensi') }}</div>
+                        <div class="text-[11px] font-bold uppercase tracking-wide text-muted px-3.5 pt-2.5 pb-1">{{ t('Derived to All Units in the Dimension') }}</div>
                         <div class="pb-1.5">
                             @foreach ($this->derivedConversions as $row)
                                 <div wire:key="der-{{ $row->uom_code }}" class="flex items-center gap-2 px-3.5 py-2 border-b border-[#f0f3f7] text-[13px] last:border-b-0">
@@ -626,7 +625,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         @if ($panel === 'form')
             <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
                 <div class="text-sm font-bold">
-                    {{ $unitMode === 'edit' ? Translator::t('mdata_uom_edit_title', 'Edit Satuan') : Translator::t('mdata_uom_new_title', 'Satuan Baru') }}
+                    {{ $unitMode === 'edit' ? t('Edit Unit') : t('New Unit') }}
                     @if ($unitMode === 'edit')<span class="text-xs font-normal opacity-75 ml-2">{{ $editingUnitCode }}</span>@endif
                 </div>
             </div>

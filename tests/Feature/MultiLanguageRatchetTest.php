@@ -14,6 +14,38 @@ use Tests\TestCase;
 // Angka TURUN (hasil migrasi label ke English) -> turunkan BASELINE ke angka baru; jangan pernah menaikkannya.
 class MultiLanguageRatchetTest extends TestCase
 {
+    // Layar v1 (user 2026-10-02: v1 ikut dikonversi): teks Indonesia mentah per modul. Konversi satu modul ke English + t()
+    // (terjemahan Indonesianya diisi lewat migration Dictionary::seed) -> angka modul itu turun -> turunkan di sini.
+    private const BASELINE_V1 = [
+        // 2026-10-02 awal (total 5067).
+        'app' => 5,
+        'components' => 74,
+        'layouts' => 8,
+        'livewire' => 4,
+        'pages' => 2,
+        'pages/auth' => 62,
+        'pages/careers' => 200,
+        'pages/co' => 83,
+        'pages/dispatch' => 69,
+        'pages/finance' => 98,
+        'pages/help' => 109,
+        'pages/hrm' => 566,
+        'pages/inquiry' => 644,
+        'pages/inventory' => 162,
+        'pages/lookup' => 45,
+        'pages/master' => 691,
+        'pages/notification' => 7,
+        'pages/production' => 983,
+        'pages/pur' => 102,
+        'pages/quotation' => 93,
+        'pages/recruitment' => 264,
+        'pages/report' => 216,
+        'pages/sales' => 9,
+        'pages/security' => 158,
+        'pages/self-service' => 226,
+        'pages/setup' => 187,
+    ];
+
     private const BASELINE = [
         'id_label' => 0,          // 2026-10-02: purchase-quotation (31 label terakhir) sudah English + kamus
         'number_format_id' => 0,
@@ -96,6 +128,82 @@ class MultiLanguageRatchetTest extends TestCase
             }
         }
         $this->assertSame([], $missing, 'Kunci T() tanpa pasangan di Devlib\Lang.');
+    }
+
+    // Grup = pages/<modul> | components | livewire | layouts | app (app/Livewire + app/View).
+    /** @return array<string, int> */
+    public static function v1Counts(): array
+    {
+        $out = array_fill_keys(array_keys(self::BASELINE_V1), 0);
+        $views = resource_path('views').'/';
+        $files = (new Finder)->files()->in([$views.'pages', $views.'components', $views.'livewire', $views.'layouts', app_path('Livewire'), app_path('View')])->name('*.php');
+        foreach ($files as $f) {
+            $path = str_replace('\\', '/', $f->getPathname());
+            if (str_starts_with($path, str_replace('\\', '/', $views))) {
+                $rel = explode('/', substr($path, strlen($views)));
+                $group = $rel[0] === 'pages' && count($rel) > 2 ? 'pages/'.$rel[1] : $rel[0];
+            } else {
+                $group = 'app';
+            }
+            $out[$group] = ($out[$group] ?? 0) + count(self::v1Texts($f->getContents()));
+        }
+
+        return $out;
+    }
+
+    // Teks tampil berbahasa Indonesia di sumber v1: isi tag, literal '...' / "..." (komentar diabaikan). Heuristik =
+    // Dictionary::looksIndonesian (jangan ubah daftar katanya tanpa menghitung ulang BASELINE_V1).
+    /** @return list<string> */
+    public static function v1Texts(string $src): array
+    {
+        $src = preg_replace(['/\{\{--.*?--\}\}/s', '/<!--.*?-->/s', '#/\*.*?\*/#s', '#(?<![:"\'\w])//[^\n]*#'], ' ', $src);
+        $out = [];
+        $check = function (string $s) use (&$out) {
+            $s = trim(html_entity_decode(preg_replace('/\{\{.*?\}\}|\{!!.*?!!\}/s', ' ', $s)));
+            if ($s !== '' && Dictionary::looksIndonesian($s)) {
+                $out[] = $s;
+            }
+        };
+        preg_match_all('/>([^<>]*\p{L}[^<>]*)</u', $src, $m);
+        foreach ($m[1] as $s) {
+            if (! preg_match('/^\s*@(php|if|foreach|elseif|else|endif|endforeach|props|include)/', $s)) {
+                $check($s);
+            }
+        }
+        preg_match_all("/'((?:[^'\\\\\\n]|\\\\.)*\\p{L}(?:[^'\\\\\\n]|\\\\.)*)'/u", $src, $m);
+        foreach ($m[1] as $s) {
+            $check($s);
+        }
+        preg_match_all('/"([^"\n]*\p{L}[^"\n]*)"/u', $src, $m);
+        foreach ($m[1] as $s) {
+            if (! str_contains($s, '{{') && ! str_contains($s, '$') && ! str_contains($s, "'")) {
+                $check($s);
+            }
+        }
+
+        return $out;
+    }
+
+    public function test_v1_indonesian_text_never_grows(): void
+    {
+        $now = self::v1Counts();
+        foreach ($now as $group => $n) {
+            $max = self::BASELINE_V1[$group] ?? 0;
+            $this->assertLessThanOrEqual($max, $n, "v1 '{$group}': teks Indonesia naik ({$n} > {$max}). Tulis English + t()/@t(), terjemahan lewat Dictionary::seed di migration.");
+            $this->assertSame($max, $n, "v1 '{$group}' turun ke {$n} (baseline {$max}) -- bagus. Turunkan BASELINE_V1 di MultiLanguageRatchetTest.");
+        }
+    }
+
+    // Kamus kunci lama dipensiunkan 2026-10-02: Translator::t('kunci') tidak boleh kembali.
+    public function test_no_legacy_translation_keys(): void
+    {
+        $hits = [];
+        foreach ((new Finder)->files()->in([resource_path('views'), app_path()])->name('*.php') as $f) {
+            if (preg_match('/Translator::t\(|SysTranslation::forLang\(/', $f->getContents())) {
+                $hits[] = $f->getRelativePathname();
+            }
+        }
+        $this->assertSame([], $hits, 'Pakai t(\'English\') + kamus sys_dictionary, bukan Translator::t(\'kunci\').');
     }
 
     public function test_multi_language_debt_never_grows(): void

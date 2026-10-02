@@ -407,8 +407,8 @@ new #[Title('Procure to Pay — TELASIH MAKMUR ERP')] class extends Component
                 <x-ledger.field label="No. Faktur Pajak (e-Faktur)" name="tax_invoice_no"><input wire:model="tax_invoice_no" placeholder="kosongkan bila belum diterima"></x-ledger.field>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
-                <button type="button" class="lg-btn light" wire:click="saveBill(false)">{{ \App\Support\Localization\Translator::t('shell_btn_save', 'Simpan') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
+                <button type="button" class="lg-btn light" wire:click="saveBill(false)">{{ t('Save') }}</button>
                 <button type="button" class="lg-btn primary" wire:click="saveBill(true)">Approve & Post</button>
             </x-slot:footer>
         </x-ledger.modal>
@@ -436,7 +436,7 @@ new #[Title('Procure to Pay — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
                 <button type="button" class="lg-btn primary" wire:click="pay">Post Payment</button>
             </x-slot:footer>
         </x-ledger.modal>
@@ -466,7 +466,7 @@ new #[Title('Procure to Pay — TELASIH MAKMUR ERP')] class extends Component
                 <x-slot:footer>
                     @if (in_array($i->doc_status, ['DRAFT', 'SUBMITTED'], true))<button type="button" class="lg-btn primary" wire:click="approveBill({{ $i->invoice_id }})">Approve & Post</button>@endif
                     @if ($i->doc_status === 'POSTED' && $i->payment_status !== 'PAID')<button type="button" class="lg-btn primary" wire:click="openPay({{ $i->invoice_id }})">Pay Bill</button>@endif
-                    <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shell_tab_close_title', 'Tutup') }}</button>
+                    <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Close') }}</button>
                 </x-slot:footer>
             </x-ledger.modal>
         @endforeach

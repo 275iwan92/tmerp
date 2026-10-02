@@ -7,7 +7,6 @@ use App\Models\Pur\PqQuotation;
 use App\Models\Pur\PrLine;
 use App\Models\Pur\PrRequisition;
 use App\Services\Pur\PoBuilderService;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -233,7 +232,7 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
         }
 
         if (mb_strlen(trim($this->cancelReason)) < 10) {
-            $this->cancelError = Translator::t('proc_pq_entry_cancel_reason_required', 'Alasan pembatalan wajib diisi, minimal 10 karakter.');
+            $this->cancelError = t('Cancellation reason is required, minimum 10 characters.');
 
             return;
         }
@@ -294,8 +293,8 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📋 {{ Translator::t('proc_pq_entry_title', 'Purchase Quotation Entry') }}</b>
-        <span class="text-xs text-white/75">{{ $this->pq->doc_no ?: Translator::t('proc_entry_no_docno_short', '(belum ada nomor)') }} · {{ $this->supplier?->supplier_name }}</span>
+        <b class="text-[15px]">📋 {{ t('Purchase Quotation Entry') }}</b>
+        <span class="text-xs text-white/75">{{ $this->pq->doc_no ?: t('(no number yet)') }} · {{ $this->supplier?->supplier_name }}</span>
         <x-form.badge :tone="match ($this->pq->status) {
                 'CONFIRMED' => 'success',
                 'CANCELLED' => 'danger',
@@ -303,9 +302,9 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
             }">{{ $this->pq->status }}</x-form.badge>
         @if ($this->pq->status === 'CONFIRMED')
             <a href="{{ route('pur.pq.print', ['pq' => $this->pqId]) }}" target="_blank"
-                class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 {{ Translator::t('proc_pq_entry_btn_print', 'Cetak PQ') }}</a>
+                class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 {{ t('Print PQ') }}</a>
         @endif
-        <x-back-button :fallback="route('pur.pq.list')" title="{{ Translator::t('proc_pq_entry_back_title', 'Kembali ke Daftar PQ') }}" class="ml-auto" />
+        <x-back-button :fallback="route('pur.pq.list')" title="{{ t('Back to PQ List') }}" class="ml-auto" />
     </header>
 
     <div class="max-w-[1400px] mx-auto my-5 px-4">
@@ -313,26 +312,26 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
 
         {{-- HEADER --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ Translator::t('proc_entry_general_info', 'Informasi Umum') }}</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('General Information') }}</h3>
             <div class="grid">
-                <x-form.input label="{{ Translator::t('proc_supplier_label', 'Supplier') }}" readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="bg-[#f8fafc]" />
-                <x-form.date-picker label="{{ Translator::t('proc_pq_entry_col_date', 'Tanggal PQ') }}" value="{{ $this->pq->i_doc_date?->format('Y-m-d') }}" :disabled="$readOnly"
+                <x-form.input label="{{ t('Supplier') }}" readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="bg-[#f8fafc]" />
+                <x-form.date-picker label="{{ t('PQ Date') }}" value="{{ $this->pq->i_doc_date?->format('Y-m-d') }}" :disabled="$readOnly"
                     wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.date-picker label="{{ Translator::t('proc_pq_col_valid_until', 'Berlaku s/d') }}" value="{{ $this->pq->i_quotation_valid_until?->format('Y-m-d') }}" :disabled="$readOnly"
+                <x-form.date-picker label="{{ t('Valid Until') }}" value="{{ $this->pq->i_quotation_valid_until?->format('Y-m-d') }}" :disabled="$readOnly"
                     wire:change="updateHeader('i_quotation_valid_until', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.select label="{{ Translator::t('proc_pq_entry_ref_pr', 'PR Acuan (opsional)') }}" :disabled="$readOnly" wire:change="updateHeader('i_pr_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
-                    placeholder="{{ Translator::t('proc_pq_entry_no_ref', '— tidak ada —') }}" :selected="$this->pq->i_pr_id" :options="$this->openRequisitions->pluck('doc_no', 'pr_id')->all()" />
-                <x-form.select label="{{ Translator::t('proc_pq_entry_currency', 'Mata Uang') }}" :disabled="$readOnly" wire:change="updateHeader('i_currency_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                <x-form.select label="{{ t('Reference PR (optional)') }}" :disabled="$readOnly" wire:change="updateHeader('i_pr_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                    placeholder="{{ t('— none —') }}" :selected="$this->pq->i_pr_id" :options="$this->openRequisitions->pluck('doc_no', 'pr_id')->all()" />
+                <x-form.select label="{{ t('Currency') }}" :disabled="$readOnly" wire:change="updateHeader('i_currency_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
                     :selected="$this->pq->i_currency_id" :options="$this->currencies->pluck('currency_code', 'id_currency')->all()" />
-                <x-form.input label="{{ Translator::t('proc_pq_entry_fx_rate', 'Kurs') }}" type="number" step="0.000001" value="{{ $this->pq->i_fx_rate }}" :disabled="$readOnly"
+                <x-form.input label="{{ t('FX Rate') }}" type="number" step="0.000001" value="{{ $this->pq->i_fx_rate }}" :disabled="$readOnly"
                     wire:change="updateHeader('i_fx_rate', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.input label="{{ Translator::t('proc_po_entry_payment_term', 'Syarat Bayar') }}" value="{{ $this->pq->i_payment_term }}" :disabled="$readOnly"
+                <x-form.input label="{{ t('Payment Term') }}" value="{{ $this->pq->i_payment_term }}" :disabled="$readOnly"
                     wire:change="updateHeader('i_payment_term', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.input label="{{ Translator::t('proc_pq_entry_lead_time', 'Lead Time Umum (hari)') }}" type="number" value="{{ $this->pq->i_lead_time_day }}" :disabled="$readOnly"
+                <x-form.input label="{{ t('General Lead Time (days)') }}" type="number" value="{{ $this->pq->i_lead_time_day }}" :disabled="$readOnly"
                     wire:change="updateHeader('i_lead_time_day', $event.target.value)" class="disabled:bg-[#f8fafc]" />
             </div>
             <div class="mt-3">
-                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ Translator::t('proc_entry_notes', 'Catatan') }}</label>
+                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Notes') }}</label>
                 <textarea rows="2" @disabled($readOnly) wire:change="updateHeader('i_notes', $event.target.value)"
                     class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">{{ $this->pq->i_notes }}</textarea>
             </div>
@@ -341,10 +340,10 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
         {{-- BARIS --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
             <div class="px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2] flex items-center gap-2 flex-wrap">
-                <h3 class="text-xs text-navy uppercase font-bold">{{ Translator::t('proc_pq_entry_offer_detail', 'Rincian Penawaran') }}</h3>
+                <h3 class="text-xs text-navy uppercase font-bold">{{ t('Offer Detail') }}</h3>
                 @if (! $readOnly)
                     <div class="relative ml-2" style="max-width:320px">
-                        <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('proc_pq_entry_item_search_placeholder', 'Cari item…') }}" />
+                        <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ t('Search item…') }}" />
                         @if ($this->itemResults->isNotEmpty())
                             <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                                 @foreach ($this->itemResults as $m)
@@ -356,7 +355,7 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
                         @endif
                     </div>
                     @if ($this->pq->i_pr_id)
-                        <button type="button" wire:click="pullFromPr" class="text-[11px] font-bold text-white bg-accent rounded px-2.5 py-1.5">⤓ {{ Translator::t('proc_pq_entry_pull_from_pr', 'Tarik dari PR') }}</button>
+                        <button type="button" wire:click="pullFromPr" class="text-[11px] font-bold text-white bg-accent rounded px-2.5 py-1.5">⤓ {{ t('Pull from PR') }}</button>
                     @endif
                 @endif
             </div>
@@ -365,13 +364,13 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
                     <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5]">
                         <tr>
                             <th class="text-left px-3 py-2">#</th>
-                            <th class="text-left px-3 py-2">{{ Translator::t('proc_pv_col_item', 'Item') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('shared_qty', 'Qty') }}</th>
-                            <th class="text-left px-3 py-2">{{ Translator::t('proc_pv_col_uom', 'UoM') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('proc_pq_entry_price_fx', 'Harga (FX)') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('proc_pq_entry_price_idr', 'Harga (IDR)') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('proc_pq_entry_subtotal_idr', 'Subtotal (IDR)') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('proc_pq_entry_lead_time_col', 'Lead Time') }}</th>
+                            <th class="text-left px-3 py-2">{{ t('Item') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Qty') }}</th>
+                            <th class="text-left px-3 py-2">{{ t('UoM') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Price (FX)') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Price (IDR)') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Subtotal (IDR)') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Lead Time') }}</th>
                             <th class="px-3 py-2"></th>
                         </tr>
                     </thead>
@@ -379,7 +378,7 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
                         @forelse ($this->pq->lines as $line)
                             <tr wire:key="pqline-{{ $line->pq_line_id }}">
                                 <td class="px-3 py-2 text-muted">{{ $line->line_no }}</td>
-                                <td class="px-3 py-2">{{ $line->i_description }} @if($line->pr_line_id) <span class="text-[9px] text-muted">({{ Translator::t('proc_pq_entry_from_pr', 'dari PR') }})</span> @endif</td>
+                                <td class="px-3 py-2">{{ $line->i_description }} @if($line->pr_line_id) <span class="text-[9px] text-muted">({{ t('from PR') }})</span> @endif</td>
                                 <td class="px-3 py-2 text-right">
                                     <x-form.input type="number" step="0.01" value="{{ $line->i_qty }}" :disabled="$readOnly"
                                         wire:change="updateLine({{ $line->pq_line_id }}, 'i_qty', $event.target.value)" class="w-20 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
@@ -402,12 +401,12 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="9" class="px-3 py-6 text-center text-muted text-xs">{{ Translator::t('proc_pq_entry_empty_lines', 'Belum ada baris. Cari item di atas atau tarik dari PR.') }}</td></tr>
+                            <tr><td colspan="9" class="px-3 py-6 text-center text-muted text-xs">{{ t('No lines yet. Search an item above or pull from PR.') }}</td></tr>
                         @endforelse
                     </tbody>
                     <tfoot>
                         <tr class="border-t-2 border-[#d7dbe2] font-bold">
-                            <td colspan="6" class="px-3 py-2 text-right">{{ Translator::t('proc_pq_entry_total_idr', 'Total (IDR)') }}</td>
+                            <td colspan="6" class="px-3 py-2 text-right">{{ t('Total (IDR)') }}</td>
                             <td class="px-3 py-2 text-right font-mono">{{ number_format((float) $this->pq->c_total_idr, 0, ',', '.') }}</td>
                             <td colspan="2"></td>
                         </tr>
@@ -420,14 +419,14 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
         @if ($this->pq->i_pr_id && $this->comparisonQuotations->count() > 1)
             @php $cheapest = $this->comparisonQuotations->min('c_total_idr'); @endphp
             <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-                <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ Translator::t('proc_pq_entry_supplier_comparison', 'Perbandingan Supplier — PR yang sama') }}</h3>
+                <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('Supplier Comparison — Same PR') }}</h3>
                 <table class="w-full text-xs">
-                    <thead class="text-muted"><tr><th class="text-left py-1">{{ Translator::t('proc_supplier_label', 'Supplier') }}</th><th class="text-left py-1">{{ Translator::t('proc_pq_entry_pq_no', 'No. PQ') }}</th><th class="text-left py-1">{{ Translator::t('proc_col_status', 'Status') }}</th><th class="text-right py-1">{{ Translator::t('proc_pq_entry_total_idr', 'Total (IDR)') }}</th></tr></thead>
+                    <thead class="text-muted"><tr><th class="text-left py-1">{{ t('Supplier') }}</th><th class="text-left py-1">{{ t('PQ No.') }}</th><th class="text-left py-1">{{ t('Status') }}</th><th class="text-right py-1">{{ t('Total (IDR)') }}</th></tr></thead>
                     <tbody>
                         @foreach ($this->comparisonQuotations as $cmp)
                             <tr class="{{ $cmp->pq_id === $this->pq->pq_id ? 'bg-[#eef3fb]' : '' }}">
                                 <td class="py-1">{{ $this->comparisonSupplierNames[$cmp->i_supplier_id] ?? '—' }}</td>
-                                <td class="py-1 font-mono">{{ $cmp->doc_no ?: Translator::t('proc_draft_placeholder', '(draft)') }}</td>
+                                <td class="py-1 font-mono">{{ $cmp->doc_no ?: t('(draft)') }}</td>
                                 <td class="py-1">{{ $cmp->status }}</td>
                                 <td class="py-1 text-right font-mono {{ (float) $cmp->c_total_idr === (float) $cheapest ? 'text-[#16a34a] font-bold' : '' }}">{{ number_format((float) $cmp->c_total_idr, 0, ',', '.') }}</td>
                             </tr>
@@ -439,22 +438,22 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
 
         @if ($this->pq->status === 'DRAFT')
             <div class="flex justify-end gap-2 mb-8">
-                <button type="button" wire:click="confirmPq" wire:confirm="{{ Translator::t('proc_pq_entry_confirm_confirm', 'Konfirmasi PQ ini? Nomor dokumen akan diterbitkan dan harga terkunci.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ Translator::t('proc_pq_entry_btn_confirm', 'Konfirmasi') }}</button>
+                <button type="button" wire:click="confirmPq" wire:confirm="{{ t('Confirm this PQ? A document number will be issued and prices locked.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Confirm') }}</button>
             </div>
         @elseif ($this->pq->status === 'CONFIRMED')
             <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
                 <div class="flex items-center justify-between gap-2">
-                    <p class="text-xs text-muted">{{ Translator::t('proc_pq_entry_cancel_hint', 'Batalkan PQ ini bila tidak jadi dipakai (butuh alasan).') }}</p>
-                    <button type="button" wire:click="createPoFromPq" wire:confirm="{{ Translator::t('proc_pq_entry_confirm_create_po', 'Buat PO dari PQ ini? Semua baris akan disalin ke PO draft supplier ini.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">📦 {{ Translator::t('proc_pq_entry_btn_create_po', 'Buat PO dari PQ ini') }}</button>
+                    <p class="text-xs text-muted">{{ t('Cancel this PQ if it will not be used (reason required).') }}</p>
+                    <button type="button" wire:click="createPoFromPq" wire:confirm="{{ t('Create a PO from this PQ? All lines will be copied to this supplier\'s draft PO.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">📦 {{ t('Create PO from this PQ') }}</button>
                 </div>
                 @if ($cancelError)
                     <p class="text-[11px] text-[#a3241f] mt-2">⚠ {{ $cancelError }}</p>
                 @endif
                 <div class="flex gap-2 items-end mt-2">
                     <div class="flex-1">
-                        <x-form.textarea wire:model="cancelReason" rows="1" placeholder="{{ Translator::t('proc_pq_entry_cancel_placeholder', 'Alasan pembatalan (min. 10 karakter)...') }}" />
+                        <x-form.textarea wire:model="cancelReason" rows="1" placeholder="{{ t('Cancellation reason (min. 10 characters)...') }}" />
                     </div>
-                    <button type="button" wire:click="cancelPq" wire:confirm="{{ Translator::t('proc_pq_entry_confirm_cancel', 'Batalkan PQ ini?') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ Translator::t('proc_pq_entry_btn_cancel', 'Batalkan') }}</button>
+                    <button type="button" wire:click="cancelPq" wire:confirm="{{ t('Cancel this PQ?') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ t('Cancel') }}</button>
                 </div>
             </div>
         @endif

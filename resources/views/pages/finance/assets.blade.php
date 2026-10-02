@@ -414,8 +414,8 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
                 </x-ledger.field>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
-                <button type="button" class="lg-btn light" wire:click="save(false)">{{ \App\Support\Localization\Translator::t('shell_btn_save', 'Simpan') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
+                <button type="button" class="lg-btn light" wire:click="save(false)">{{ t('Save') }}</button>
                 <button type="button" class="lg-btn primary" wire:click="save(true)">Save & Capitalize</button>
             </x-slot:footer>
         </x-ledger.modal>
@@ -438,7 +438,7 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
                 <div class="lg-foot"><b>{{ $this->preview->count() }} assets</b><b class="lg-money">{{ Fmt::rp($this->preview->sum('amount')) }}</b></div>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
                 <button type="button" class="lg-btn primary" wire:click="runDepreciation" @disabled($this->preview->isEmpty())>Post Depreciation Journal</button>
             </x-slot:footer>
         </x-ledger.modal>
@@ -467,7 +467,7 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
                 <x-slot:footer>
                     @if ($a->status === 'DRAFT')<button type="button" class="lg-btn primary" wire:click="capitalize({{ $a->asset_id }})">Capitalize</button>@endif
                     @if (in_array($a->status, ['ACTIVE', 'FULLY_DEPRECIATED'], true))<button type="button" class="lg-btn light" wire:click="openDispose({{ $a->asset_id }})">Dispose</button>@endif
-                    <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shell_tab_close_title', 'Tutup') }}</button>
+                    <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Close') }}</button>
                 </x-slot:footer>
             </x-ledger.modal>
         @endforeach
@@ -485,7 +485,7 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
                 <p class="lg-sub lg-field full">Jurnal: Dr akumulasi penyusutan + Dr kas (bila ada) / Cr harga perolehan, selisih ke laba/rugi lain-lain.</p>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
                 <button type="button" class="lg-btn primary" wire:click="dispose">Post Disposal</button>
             </x-slot:footer>
         </x-ledger.modal>

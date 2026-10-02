@@ -3,7 +3,6 @@
 use App\Models\Sys\SysSupportReply;
 use App\Models\Sys\SysSupportTicket;
 use App\Models\Sys\SysSupportTicketAttachment;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -69,7 +68,7 @@ new #[Title('Bantuan — TELASIH MAKMUR ERP')] class extends Component
         $this->supportError = null;
 
         if (trim($this->support_description) === '') {
-            $this->supportError = Translator::t('shell_help_desc_required', 'Deskripsi wajib diisi.');
+            $this->supportError = t('Description is required.');
 
             return;
         }
@@ -132,14 +131,14 @@ new #[Title('Bantuan — TELASIH MAKMUR ERP')] class extends Component
                 <span class="w-9 h-9 rounded-[10px] flex-shrink-0" style="background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d);"></span>
                 <span class="leading-tight hidden sm:block">
                     <b class="block text-[14px] tracking-[.3px] text-white">TELASIH MAKMUR</b>
-                    <span class="block text-[9px] tracking-[2px] text-white/60 uppercase">{{ Translator::t('shell_help_header_title', 'Bantuan') }}</span>
+                    <span class="block text-[9px] tracking-[2px] text-white/60 uppercase">{{ t('Help') }}</span>
                 </span>
             </a>
             @if ($tab !== 'tickets')
                 <div class="flex-1 max-w-[420px] ml-auto">
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-sm">🔍</span>
-                        <input type="text" x-model="search" placeholder="{{ Translator::t('shell_help_search_placeholder', 'Cari topik bantuan…') }}"
+                        <input type="text" x-model="search" placeholder="{{ t('Search help topics…') }}"
                             class="w-full pl-9 pr-3 py-2 rounded-md bg-white/10 border border-white/20 text-white placeholder-white/50 text-[13px] focus:bg-white/15 focus:outline-none">
                     </div>
                 </div>
@@ -147,9 +146,9 @@ new #[Title('Bantuan — TELASIH MAKMUR ERP')] class extends Component
         </div>
         {{-- Sub-menu (instruksi user: "ada sub-menu mulai dari ticket... lalu cara pakai UI/UX... lalu penjelasan modul") --}}
         <div class="max-w-[1200px] mx-auto px-5 flex gap-1 border-t border-white/10">
-            <button type="button" wire:click="$set('tab', 'tickets')" class="px-4 py-2.5 text-[13px] font-semibold border-b-2 {{ $tab === 'tickets' ? 'border-white text-white' : 'border-transparent text-white/60 hover:text-white' }}">🎫 {{ Translator::t('shell_help_tab_tickets', 'Tiket Bantuan') }}</button>
-            <button type="button" wire:click="$set('tab', 'ui')" class="px-4 py-2.5 text-[13px] font-semibold border-b-2 {{ $tab === 'ui' ? 'border-white text-white' : 'border-transparent text-white/60 hover:text-white' }}">🧭 {{ Translator::t('shell_help_tab_ui', 'Cara Pakai Aplikasi') }}</button>
-            <button type="button" wire:click="$set('tab', 'modules')" class="px-4 py-2.5 text-[13px] font-semibold border-b-2 {{ $tab === 'modules' ? 'border-white text-white' : 'border-transparent text-white/60 hover:text-white' }}">📚 {{ Translator::t('shell_help_tab_modules', 'Modul') }}</button>
+            <button type="button" wire:click="$set('tab', 'tickets')" class="px-4 py-2.5 text-[13px] font-semibold border-b-2 {{ $tab === 'tickets' ? 'border-white text-white' : 'border-transparent text-white/60 hover:text-white' }}">🎫 {{ t('Support Tickets') }}</button>
+            <button type="button" wire:click="$set('tab', 'ui')" class="px-4 py-2.5 text-[13px] font-semibold border-b-2 {{ $tab === 'ui' ? 'border-white text-white' : 'border-transparent text-white/60 hover:text-white' }}">🧭 {{ t('How to Use the App') }}</button>
+            <button type="button" wire:click="$set('tab', 'modules')" class="px-4 py-2.5 text-[13px] font-semibold border-b-2 {{ $tab === 'modules' ? 'border-white text-white' : 'border-transparent text-white/60 hover:text-white' }}">📚 {{ t('Modules') }}</button>
         </div>
     </header>
 
@@ -161,7 +160,7 @@ new #[Title('Bantuan — TELASIH MAKMUR ERP')] class extends Component
                 <div class="space-y-4">
                     @if ($this->selectedTicket)
                         {{-- Detail 1 tiket + thread balasan --}}
-                        <button type="button" wire:click="$set('selectedTicketId', null)" class="text-[12px] font-bold text-muted hover:text-navy">&larr; {{ Translator::t('shell_help_back_to_ticket_list', 'Kembali ke daftar tiket saya') }}</button>
+                        <button type="button" wire:click="$set('selectedTicketId', null)" class="text-[12px] font-bold text-muted hover:text-navy">&larr; {{ t('Back to my ticket list') }}</button>
                         <div class="bg-white border border-[#e6e9ef] rounded-xl p-5">
                             <div class="flex items-center justify-between mb-1">
                                 <h2 class="text-sm font-bold text-navy font-mono">{{ $this->selectedTicket->ticket_no }}</h2>
@@ -180,58 +179,58 @@ new #[Title('Bantuan — TELASIH MAKMUR ERP')] class extends Component
                                     @foreach ($this->selectedTicket->replies as $r)
                                         @php $isMine = $r->author === (Auth::user()->name ?? Auth::user()->login); @endphp
                                         <div class="rounded-md px-3 py-2 text-[12.5px] {{ $isMine ? 'bg-[#eaf2ff] ml-8' : 'bg-[#f4f6fa] mr-8' }}">
-                                            <div class="flex justify-between text-[10px] text-muted mb-0.5"><span class="font-bold">{{ $r->author }}{{ $isMine ? ' ('.Translator::t('shell_help_you_suffix', 'Anda').')' : '' }}</span><span>{{ $r->created_at->diffForHumans(null, true) }}</span></div>
+                                            <div class="flex justify-between text-[10px] text-muted mb-0.5"><span class="font-bold">{{ $r->author }}{{ $isMine ? ' ('.t('You').')' : '' }}</span><span>{{ $r->created_at->diffForHumans(null, true) }}</span></div>
                                             <div>{{ $r->body }}</div>
                                         </div>
                                     @endforeach
                                 </div>
                             @else
-                                <p class="text-[12px] text-muted mb-4">{{ Translator::t('shell_help_no_reply_yet', 'Belum ada balasan dari tim support.') }}</p>
+                                <p class="text-[12px] text-muted mb-4">{{ t('No reply from the support team yet.') }}</p>
                             @endif
 
                             @unless (in_array($this->selectedTicket->status, ['DONE', 'CLOSED'], true))
                                 <div class="flex gap-2 pt-3 border-t border-[#eef1f5]">
-                                    <textarea wire:model="newReply" rows="2" placeholder="{{ Translator::t('shell_help_reply_placeholder', 'Balas / tambah info…') }}" class="flex-1 border border-[#d7dbe2] rounded-md px-2.5 py-1.5 text-[12.5px] resize-none"></textarea>
-                                    <button type="button" wire:click="addReply" wire:loading.attr="disabled" class="self-end bg-navy text-white text-xs font-bold px-3.5 py-2 rounded-md shrink-0">{{ Translator::t('shell_help_btn_send', 'Kirim') }}</button>
+                                    <textarea wire:model="newReply" rows="2" placeholder="{{ t('Reply / add info…') }}" class="flex-1 border border-[#d7dbe2] rounded-md px-2.5 py-1.5 text-[12.5px] resize-none"></textarea>
+                                    <button type="button" wire:click="addReply" wire:loading.attr="disabled" class="self-end bg-navy text-white text-xs font-bold px-3.5 py-2 rounded-md shrink-0">{{ t('Send') }}</button>
                                 </div>
                             @else
-                                <p class="text-[11px] text-muted italic">{{ Translator::t('shell_help_ticket_closed_prefix', 'Tiket ini sudah') }} {{ strtolower(str_replace('_', ' ', $this->selectedTicket->status)) }}{{ Translator::t('shell_help_ticket_closed_suffix', ', tidak bisa dibalas lagi.') }}</p>
+                                <p class="text-[11px] text-muted italic">{{ t('This ticket is already') }} {{ strtolower(str_replace('_', ' ', $this->selectedTicket->status)) }}{{ t(', it can no longer be replied to.') }}</p>
                             @endunless
                         </div>
                     @else
                         {{-- Form kirim tiket baru --}}
                         <div class="bg-white border border-[#e6e9ef] rounded-xl p-5">
-                            <h2 class="text-sm font-bold text-navy mb-1">{{ Translator::t('shell_help_new_ticket_title', 'Kirim Tiket Baru') }}</h2>
-                            <p class="text-[12px] text-muted mb-3">{{ Translator::t('shell_help_new_ticket_desc', 'Laporkan bug, minta bantuan, atau ajukan pertanyaan ke tim developer/system analyst.') }}</p>
+                            <h2 class="text-sm font-bold text-navy mb-1">{{ t('Submit a New Ticket') }}</h2>
+                            <p class="text-[12px] text-muted mb-3">{{ t('Report a bug, ask for help, or send a question to the developer/system analyst team.') }}</p>
 
                             @if ($supportSubmittedNo)
                                 <div class="text-center py-6">
                                     <p class="text-3xl mb-1">✅</p>
-                                    <p class="font-bold text-[#1f8a4c]">{{ Translator::t('shell_help_ticket_sent', 'Tiket terkirim') }}</p>
-                                    <p class="text-[12px] text-muted mt-1">{{ Translator::t('shell_help_ticket_sent_prefix', 'Nomor tiket') }} <b>#{{ $supportSubmittedNo }}</b> {{ Translator::t('shell_help_ticket_sent_suffix', '— tim kami akan segera menindaklanjuti. Lihat statusnya di daftar "Tiket Saya" di sebelah kanan.') }}</p>
-                                    <button type="button" wire:click="resetSupportForm" class="mt-3 text-[12px] font-bold text-navy underline">{{ Translator::t('shell_help_send_another', 'Kirim tiket lain') }}</button>
+                                    <p class="font-bold text-[#1f8a4c]">{{ t('Ticket sent') }}</p>
+                                    <p class="text-[12px] text-muted mt-1">{{ t('Ticket number') }} <b>#{{ $supportSubmittedNo }}</b> {{ t('— our team will follow up shortly. Check its status in the "My Tickets" list on the right.') }}</p>
+                                    <button type="button" wire:click="resetSupportForm" class="mt-3 text-[12px] font-bold text-navy underline">{{ t('Send another ticket') }}</button>
                                 </div>
                             @else
                                 @if ($supportError)
                                     <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $supportError }}</p>
                                 @endif
-                                <x-form.input label="{{ Translator::t('shell_help_context_label', 'Konteks layar (opsional)') }}" wire:model="support_context" placeholder="{{ Translator::t('shell_help_context_placeholder', 'mis. Master Customer, Customer Order #123') }}" class="mb-3" />
-                                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ Translator::t('shell_help_description_label', 'Deskripsi *') }}</label>
-                                <textarea wire:model="support_description" rows="4" placeholder="{{ Translator::t('shell_help_description_placeholder', 'Ceritakan apa yang terjadi — makin detail, makin cepat ditangani.') }}" class="w-full border border-[#d7dbe2] rounded-md px-2.5 py-1.5 text-[13px] resize-y mb-3"></textarea>
-                                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ Translator::t('shell_help_attachment_label', 'Lampiran screenshot (opsional)') }}</label>
+                                <x-form.input label="{{ t('Screen context (optional)') }}" wire:model="support_context" placeholder="{{ t('e.g. Customer Master, Customer Order #123') }}" class="mb-3" />
+                                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Description *') }}</label>
+                                <textarea wire:model="support_description" rows="4" placeholder="{{ t('Tell us what happened — the more detail, the faster it gets handled.') }}" class="w-full border border-[#d7dbe2] rounded-md px-2.5 py-1.5 text-[13px] resize-y mb-3"></textarea>
+                                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Screenshot attachment (optional)') }}</label>
                                 <input type="file" wire:model="support_attachments" multiple accept="image/*" class="text-xs mb-2">
-                                <div wire:loading wire:target="support_attachments" class="text-[11px] text-muted">{{ Translator::t('shell_help_uploading', 'Mengunggah…') }}</div>
+                                <div wire:loading wire:target="support_attachments" class="text-[11px] text-muted">{{ t('Uploading…') }}</div>
                                 @if (count($support_attachments))
                                     <div class="flex gap-2 flex-wrap mb-3">
                                         @foreach ($support_attachments as $i => $file)
                                             <div class="relative w-14 h-14">
                                                 <img src="{{ $file->temporaryUrl() }}" class="w-full h-full object-cover rounded-md">
-                                                <button type="button" wire:click="$set('support_attachments.{{ $i }}', null)" title="{{ Translator::t('shell_help_remove_attachment', 'Hapus') }}" class="absolute -top-1.5 -right-1.5 bg-white border border-[#d7dbe2] rounded-full w-[18px] h-[18px] text-[11px] leading-none">×</button>
+                                                <button type="button" wire:click="$set('support_attachments.{{ $i }}', null)" title="{{ t('Remove') }}" class="absolute -top-1.5 -right-1.5 bg-white border border-[#d7dbe2] rounded-full w-[18px] h-[18px] text-[11px] leading-none">×</button>
                                             </div>
                                         @endforeach
                                     </div>
                                 @endif
-                                <button type="button" wire:click="submitSupportTicket" wire:loading.attr="disabled" class="bg-[#1f8a4c] text-white text-sm font-bold px-4 py-2.5 rounded-md">{{ Translator::t('shell_help_btn_send_ticket', 'Kirim Tiket') }}</button>
+                                <button type="button" wire:click="submitSupportTicket" wire:loading.attr="disabled" class="bg-[#1f8a4c] text-white text-sm font-bold px-4 py-2.5 rounded-md">{{ t('Send Ticket') }}</button>
                             @endif
                         </div>
                     @endif
@@ -239,7 +238,7 @@ new #[Title('Bantuan — TELASIH MAKMUR ERP')] class extends Component
 
                 {{-- Daftar tiket saya (kanan) --}}
                 <div class="bg-white border border-[#e6e9ef] rounded-xl p-4 h-fit">
-                    <p class="text-[11px] font-bold text-muted uppercase mb-2">{{ Translator::t('shell_help_my_tickets', 'Tiket Saya') }} ({{ $this->myTickets->count() }})</p>
+                    <p class="text-[11px] font-bold text-muted uppercase mb-2">{{ t('My Tickets') }} ({{ $this->myTickets->count() }})</p>
                     <div class="space-y-1.5 max-h-[70vh] overflow-y-auto">
                         @forelse ($this->myTickets as $t)
                             <button type="button" wire:click="openTicket({{ $t->id_ticket }})"
@@ -255,11 +254,11 @@ new #[Title('Bantuan — TELASIH MAKMUR ERP')] class extends Component
                                 </div>
                                 <p class="text-[#495166] mt-0.5">{{ Str::limit($t->description, 44) }}</p>
                                 @if ($t->replies->isNotEmpty())
-                                    <p class="text-[10px] text-accent font-semibold mt-0.5">💬 {{ $t->replies->count() }} {{ Translator::t('shell_help_replies_suffix', 'balasan') }}</p>
+                                    <p class="text-[10px] text-accent font-semibold mt-0.5">💬 {{ $t->replies->count() }} {{ t('replies') }}</p>
                                 @endif
                             </button>
                         @empty
-                            <p class="text-[12px] text-muted px-1">{{ Translator::t('shell_help_no_tickets', 'Belum ada tiket.') }}</p>
+                            <p class="text-[12px] text-muted px-1">{{ t('No tickets yet.') }}</p>
                         @endforelse
                     </div>
                 </div>
@@ -480,7 +479,7 @@ new #[Title('Bantuan — TELASIH MAKMUR ERP')] class extends Component
         @endif
 
         <div class="text-center text-[11.5px] text-muted py-6">
-            {{ Translator::t('shell_help_not_found_prompt', 'Tidak menemukan yang dicari?') }} <button type="button" wire:click="$set('tab', 'tickets')" class="text-accent font-bold underline">{{ Translator::t('shell_help_send_to_support', 'Kirim tiket ke tim support →') }}</button>
+            {{ t('Can’t find what you’re looking for?') }} <button type="button" wire:click="$set('tab', 'tickets')" class="text-accent font-bold underline">{{ t('Send a ticket to the support team →') }}</button>
         </div>
     </div>
 </div>

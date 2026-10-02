@@ -299,7 +299,7 @@ new #[Title('Indonesia Tax Center — TELASIH MAKMUR ERP')] class extends Compon
                     <p class="lg-sub lg-field full">PPN: Dr PPN Keluaran / Cr PPN Masukan / Cr Bank sebesar kurang bayar. PPh: Dr hutang pajak / Cr Bank.</p>
                 </div>
                 <x-slot:footer>
-                    <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                    <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
                     <button type="button" class="lg-btn primary" wire:click="pay">Post Payment</button>
                 </x-slot:footer>
             </x-ledger.modal>
@@ -313,7 +313,7 @@ new #[Title('Indonesia Tax Center — TELASIH MAKMUR ERP')] class extends Compon
                 <x-ledger.field label="Filing reference (BPE / e-Bupot)" name="filing_ref"><input wire:model="filing_ref" placeholder="e.g. BPE-1234567890"></x-ledger.field>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
                 <button type="button" class="lg-btn primary" wire:click="fileReturn">Save</button>
             </x-slot:footer>
         </x-ledger.modal>

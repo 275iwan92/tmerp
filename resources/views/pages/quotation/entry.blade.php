@@ -705,7 +705,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                 @elseif ($this->outcome === 'LOST')
                     <x-ui.card variant="muted" size="sm" class="mb-4">
                         <x-ui.badge tone="danger" pill icon="fa-xmark">LOST</x-ui.badge>
-                        <p class="text-xs mt-2"><b>{{ \App\Support\Localization\Translator::t('sales_quo_lost_reason', 'Alasan kalah') }}:</b> {{ $this->lostReasonText ?? '—' }}</p>
+                        <p class="text-xs mt-2"><b>{{ t('Lost reason') }}:</b> {{ $this->lostReasonText ?? '—' }}</p>
                     </x-ui.card>
                 @else
                     <x-alert.banner type="success" :message="$this->outcome === 'WON' ? '✓ WON — Customer Order sudah dibuat' : '✓ Sudah diterbitkan — isi terkunci'" />

@@ -403,8 +403,8 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
-                <button type="button" class="lg-btn light" wire:click="save(false)">{{ \App\Support\Localization\Translator::t('shell_btn_save', 'Simpan') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
+                <button type="button" class="lg-btn light" wire:click="save(false)">{{ t('Save') }}</button>
                 <button type="button" class="lg-btn primary" wire:click="save(true)">Submit for Approval</button>
             </x-slot:footer>
         </x-ledger.modal>
@@ -445,7 +445,7 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
                 @elseif ($v->status === 'POSTED' && ! $v->reversed_by_id && $v->journal_kind !== 'REVERSAL')
                     <button type="button" class="lg-btn light" wire:click="openReverse({{ $v->voucher_id }})">Reverse</button>
                 @endif
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shell_tab_close_title', 'Tutup') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Close') }}</button>
             </x-slot:footer>
         </x-ledger.modal>
         @endforeach
@@ -460,7 +460,7 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
                 <p class="lg-sub lg-field full">Debit dan kredit dibalik penuh ke voucher baru berstatus POSTED. Voucher asal tetap utuh sebagai jejak audit.</p>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
                 <button type="button" class="lg-btn primary" wire:click="reverse">Post Reversal</button>
             </x-slot:footer>
         </x-ledger.modal>

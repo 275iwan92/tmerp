@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 // t('Net 30 Days', 'tm2mst.fin_payment_term.term_label') -> "Bayar 30 Hari" bila bahasa tampilan id; tidak ada terjemahan
 // -> English apa adanya. Sumber: tm2sys.sys_dictionary (context + source_en) + sys_dictionary_lang (per bahasa).
 // Teks English yang dipakai tetapi belum ada di kamus DICATAT OTOMATIS (akhir request, web saja) supaya penerjemah tinggal
-// mengisi sel kosong di Setup > Translation Dictionary. Beda dari Translator (kamus kunci v1, sys_translations).
+// mengisi sel kosong di Setup > Translation Dictionary. Kamus tunggal v1 & v2 (kamus kunci lama sys_translations dipensiunkan 2026-10-02).
 final class Dictionary
 {
     private const TTL = 600;
@@ -177,6 +177,68 @@ final class Dictionary
         }
         self::$cache = [];
         Locale::languagesUsing(fn () => self::languages());
+    }
+
+    // Isi kamus dari migration: [English => terjemahan $lang]. Terjemahan yang sudah diisi penerjemah tidak ditimpa
+    // (kecuali $overwrite). Kembalian = jumlah terjemahan yang ditulis.
+    public static function seed(array $pairs, string $context = 'ui', string $lang = 'id', bool $overwrite = false): int
+    {
+        $db = self::db();
+        if (! $db->getSchemaBuilder()->hasTable('sys_dictionary')) {
+            return 0;
+        }
+        $n = 0;
+        $now = now();
+        foreach ($pairs as $en => $text) {
+            $en = trim((string) $en);
+            if ($en === '' || mb_strlen($en) > 255) {
+                continue;
+            }
+            $db->table('sys_dictionary')->insertOrIgnore(['context' => $context, 'source_en' => $en, 'created_at' => $now, 'created_by' => 'migration']);
+            $text = trim((string) $text);
+            if ($lang === 'en' || $text === '' || mb_strlen($text) > 255) {
+                continue;
+            }
+            $id = $db->table('sys_dictionary')->where('context', $context)->where('source_en', $en)->value('id_dictionary');
+            $has = $db->table('sys_dictionary_lang')->where('id_dictionary', $id)->where('lang_code', $lang)->where('text', '<>', '')->exists();
+            if ($has && ! $overwrite) {
+                continue;
+            }
+            $db->table('sys_dictionary_lang')->updateOrInsert(['id_dictionary' => $id, 'lang_code' => $lang],
+                ['text' => $text, 'updated_at' => $now, 'updated_by' => 'migration']);
+            $n++;
+        }
+        self::flush();
+
+        return $n;
+    }
+
+    // Teks English di kode diganti: terjemahannya ikut pindah ke teks baru. Teks baru sudah ada -> bahasa yang belum
+    // diterjemahkan di sana diisi dari teks lama, lalu baris lama dihapus. Kembalian = false bila teks lama tidak ada.
+    public static function rename(string $from, string $to, string $context = 'ui'): bool
+    {
+        $db = self::db();
+        $to = trim($to);
+        $old = $db->table('sys_dictionary')->where('context', $context)->where('source_en', $from)->first();
+        if (! $old || $to === '' || $to === $from) {
+            return false;
+        }
+        $new = $db->table('sys_dictionary')->where('context', $context)->where('source_en', $to)->first();
+        $db->transaction(function () use ($db, $old, $new, $to) {
+            if (! $new) {
+                $db->table('sys_dictionary')->where('id_dictionary', $old->id_dictionary)->update(['source_en' => $to, 'updated_at' => now()]);
+
+                return;
+            }
+            $have = $db->table('sys_dictionary_lang')->where('id_dictionary', $new->id_dictionary)->where('text', '<>', '')->pluck('lang_code')->all();
+            $db->table('sys_dictionary_lang')->where('id_dictionary', $new->id_dictionary)->where('text', '')->delete();
+            $db->table('sys_dictionary_lang')->where('id_dictionary', $old->id_dictionary)->whereNotIn('lang_code', $have)
+                ->update(['id_dictionary' => $new->id_dictionary, 'updated_at' => now()]);
+            $db->table('sys_dictionary')->where('id_dictionary', $old->id_dictionary)->delete();
+        });
+        self::flush();
+
+        return true;
     }
 
     private static function remember(string $en, string $context, bool $force = false): void

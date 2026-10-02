@@ -4,7 +4,6 @@ use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\OrgDepartment;
 use App\Models\Pur\PrRequisition;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -114,12 +113,12 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => Translator::t('proc_pr_stat_total', 'Total PR'), 'value' => $this->statTotal, 'tone' => 'total'],
-            'submitted' => ['label' => Translator::t('proc_pr_stat_submitted', 'Menunggu Approval'), 'value' => $this->statSubmitted, 'tone' => 'warn',
+            'total' => ['label' => t('Total PRs'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'submitted' => ['label' => t('Awaiting Approval'), 'value' => $this->statSubmitted, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('status', 'SUBMITTED')],
-            'progress' => ['label' => Translator::t('proc_pr_stat_progress', 'Disetujui / Diproses'), 'value' => $this->statProgress, 'tone' => 'active',
+            'progress' => ['label' => t('Approved / In Progress'), 'value' => $this->statProgress, 'tone' => 'active',
                 'filter' => fn ($q) => $q->whereIn('status', ['APPROVED', 'PARTIALLY_ORDERED', 'FULLY_ORDERED', 'CLOSED'])],
-            'rejected' => ['label' => Translator::t('proc_pr_stat_rejected', 'Ditolak / Revisi'), 'value' => $this->statRejected, 'tone' => 'critical',
+            'rejected' => ['label' => t('Rejected / Revision'), 'value' => $this->statRejected, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->whereIn('status', ['REJECTED', 'REVISION_NEEDED'])],
         ];
     }
@@ -134,7 +133,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('proc_pr_search_placeholder', 'Cari no. PR / departemen / item…') }}"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search PR no. / department / item…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -147,19 +146,19 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_pr_col_dept_no', 'Departemen / No. PR') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_col_date', 'Tanggal') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ Translator::t('proc_pr_col_source', 'Sumber') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_pr_col_need_date', 'Dibutuhkan') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ Translator::t('proc_pr_col_est_value', 'Est. Nilai') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_col_status', 'Status') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Department / PR No.') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Date') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Source') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Needed') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ t('Est. Value') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->requisitions as $pr)
-                            <tr wire:key="pr-{{ $pr->pr_id }}" wire:dblclick="openPr({{ $pr->pr_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
-                                <x-grid.identity-cell :id="$pr->pr_id" :name="$pr->department?->department_name ?? '—'" :code="$pr->doc_no ?: Translator::t('proc_draft_placeholder', '(draft)')" />
+                            <tr wire:key="pr-{{ $pr->pr_id }}" wire:dblclick="openPr({{ $pr->pr_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
+                                <x-grid.identity-cell :id="$pr->pr_id" :name="$pr->department?->department_name ?? '—'" :code="$pr->doc_no ?: t('(draft)')" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $pr->i_doc_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $pr->i_source === 'MRP' ? 'bg-[#eef3fb] text-[#2f6fed]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $pr->i_source === 'MRP' ? 'MRP AUTO' : 'MANUAL' }}</span>
@@ -177,11 +176,11 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                                         } }}">{{ $pr->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openPr({{ $pr->pr_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ t('Open') }}" action="openPr({{ $pr->pr_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="7" message="{{ Translator::t('proc_pr_empty', 'Belum ada Purchase Requisition.') }}" />
+                            <x-grid.empty-row :colspan="7" message="{{ t('No Purchase Requisitions yet.') }}" />
                         @endforelse
                     </tbody>
                 </table>
@@ -195,7 +194,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" wire:click.self="closePicker">
             <div class="bg-white rounded-lg p-4 w-[420px] shadow-xl">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-bold text-navy">{{ Translator::t('proc_pr_picker_title', 'PR Baru — Pilih Departemen Peminta') }}</h3>
+                    <h3 class="text-sm font-bold text-navy">{{ t('New PR — Select Requesting Department') }}</h3>
                     <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
                 <div class="max-h-72 overflow-y-auto">

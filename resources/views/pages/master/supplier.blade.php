@@ -7,7 +7,6 @@ use App\Models\Master\SupSupplier;
 use App\Models\Master\SupSupplierBranch;
 use App\Models\Master\SupSupplierContact;
 use App\Services\Master\SupplierGuardService;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -632,12 +631,12 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => Translator::t('mdata_sup_stat_total', 'Total Supplier'), 'value' => $this->metricTotal, 'tone' => 'total'],
-            'active' => ['label' => Translator::t('mdata_active', 'Aktif'), 'value' => $this->metricActive, 'tone' => 'active',
+            'total' => ['label' => t('Total Suppliers'), 'value' => $this->metricTotal, 'tone' => 'total'],
+            'active' => ['label' => t('Active'), 'value' => $this->metricActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('activate', true)],
-            'subcon' => ['label' => Translator::t('mdata_sup_stat_subcon', 'Subkontraktor'), 'value' => $this->metricSubcon, 'tone' => 'extra',
+            'subcon' => ['label' => t('Subcontractor'), 'value' => $this->metricSubcon, 'tone' => 'extra',
                 'filter' => fn ($q) => $q->where('is_subcon', true)],
-            'blocked' => ['label' => Translator::t('mdata_sup_stat_blocked', 'Terblokir'), 'value' => $this->metricBlocked, 'tone' => 'critical',
+            'blocked' => ['label' => t('Blocked'), 'value' => $this->metricBlocked, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where('is_blacklisted', true)],
         ];
     }
@@ -655,7 +654,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
             <x-grid.toolbar class="!border !border-[#d7dbe2] !border-b-0 rounded-t-md">
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.400ms="q" placeholder="{{ Translator::t('mdata_sup_search_placeholder', 'Cari nama / kode / PIC...') }}"
+                    <input type="text" wire:model.live.debounce.400ms="q" placeholder="{{ t('Search name / code / PIC...') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -674,10 +673,10 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                     <thead>
                         <tr>
                             <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">Supplier</th>
-                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_rm_col_category', 'Kategori') }}</th>
-                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_sup_col_contact', 'Kontak PIC') }}</th>
-                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_sup_col_terms', 'Termin') }}</th>
-                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_col_status', 'Status') }}</th>
+                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Category') }}</th>
+                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('PIC Contact') }}</th>
+                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Payment Terms') }}</th>
+                            <th class="text-left bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide px-2.5 py-2 border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Status') }}</th>
                             <th class="w-10 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1]"></th>
                         </tr>
                     </thead>
@@ -685,28 +684,28 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                         @forelse ($this->suppliers as $s)
                             <tr wire:click="selectRow({{ $s->id_supplier }})" wire:dblclick="editRow({{ $s->id_supplier }})"
                                 class="cursor-pointer hover:bg-[#f8f9fb] {{ $selectedId === $s->id_supplier ? 'bg-[#e8f0fe]' : '' }}"
-                                title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
+                                title="{{ t('Double-click to open detail') }}">
                                 <x-grid.identity-cell :id="$s->id_supplier" :name="$s->supplier_name" :code="$s->supplier_code" class="!border-b !border-[#d7dbe2]" />
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->category ?: '—' }}</td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->contact_name ?: '—' }}</td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->paymentTerm?->term_label ?? '—' }}</td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">
                                     <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block {{ $s->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">
-                                        {{ $s->activate ? Translator::t('mdata_active', 'Aktif') : Translator::t('mdata_inactive', 'Nonaktif') }}
+                                        {{ $s->activate ? t('Active') : t('Inactive') }}
                                     </span>
                                     @if ($s->is_blacklisted)
-                                        <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#fdeceb] text-[#c0392b] ml-1">🚫 {{ Translator::t('mdata_sup_blocked_badge', 'Blokir') }}</span>
+                                        <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#fdeceb] text-[#c0392b] ml-1">🚫 {{ t('Blocked') }}</span>
                                     @endif
                                 </td>
                                 <td class="text-right px-1 py-2 border-b border-[#d7dbe2] whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="editRow({{ $s->id_supplier }})" />
-                                    <x-grid.action-icon :active="$s->activate" :title="$s->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $s->id_supplier }})"
-                                        :confirm="($s->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' supplier '.$s->supplier_name.'?'"
+                                    <x-grid.action-icon icon="fa-pen" title="{{ t('Edit') }}" action="editRow({{ $s->id_supplier }})" />
+                                    <x-grid.action-icon :active="$s->activate" :title="$s->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $s->id_supplier }})"
+                                        :confirm="($s->activate ? t('Deactivate') : t('Activate')).' supplier '.$s->supplier_name.'?'"
                                         :variant="$s->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" :message="Translator::t('mdata_sup_empty', 'Belum ada data supplier').($q ? Translator::t('mdata_sup_empty_search_suffix', ' untuk pencarian ini') : '').'.'" />
+                            <x-grid.empty-row :colspan="6" :message="t('No supplier data yet').($q ? t(' for this search') : '').'.'" />
                         @endforelse
                     </tbody>
                 </table>

@@ -288,7 +288,7 @@ new #[Title('Period Closing — TELASIH MAKMUR ERP')] class extends Component
                 <x-ledger.field label="Reason (wajib, tercatat di audit trail)" name="reason"><input wire:model="reason" placeholder="e.g. Tutup buku Agustus 2026 disetujui controller"></x-ledger.field>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
                 <button type="button" class="lg-btn {{ $newStatus === 'CLOSED' ? 'danger' : 'primary' }}" wire:click="changeStatus">{{ $newStatus === 'CLOSED' ? 'Lock Permanently' : 'Change Status' }}</button>
             </x-slot:footer>
         </x-ledger.modal>

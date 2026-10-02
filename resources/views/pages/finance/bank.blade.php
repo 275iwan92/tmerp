@@ -282,7 +282,7 @@ new #[Title('Bank & Cash — TELASIH MAKMUR ERP')] class extends Component
                 </x-ledger.field>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
                 <button type="button" class="lg-btn primary" wire:click="import" wire:loading.attr="disabled">⇧ Import</button>
             </x-slot:footer>
         </x-ledger.modal>
@@ -310,7 +310,7 @@ new #[Title('Bank & Cash — TELASIH MAKMUR ERP')] class extends Component
                     </x-ledger.field>
                 </div>
                 <x-slot:footer>
-                    <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shell_tab_close_title', 'Tutup') }}</button>
+                    <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Close') }}</button>
                     <button type="button" class="lg-btn primary" wire:click="adjust">Create Adjustment Journal</button>
                 </x-slot:footer>
             </x-ledger.modal>

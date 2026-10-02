@@ -114,7 +114,7 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
     <x-slot:toolbar>
         {{-- Biasanya tampil di panel kiri form (iframe): Tutup/Esc = kirim pesan ke form
              supaya panel hilang. Dibuka langsung (tab sendiri) = tutup tab / kembali. --}}
-        <button type="button" class="sc" onclick="tmPrintClose()">{{ \App\Support\Localization\Translator::t('shared_btn_close', 'Tutup') }}</button>
+        <button type="button" class="sc" onclick="tmPrintClose()">{{ t('Close') }}</button>
         <script>
             function tmPrintClose() {
                 if (window.parent !== window) { window.parent.postMessage('tm-print-close', location.origin); return; }

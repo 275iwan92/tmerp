@@ -15,7 +15,7 @@
         <button type="button" @click="nextMonth()" class="w-6 h-6 rounded border border-field-border hover:bg-white cursor-pointer text-xs">&gt;</button>
     </div>
     <div class="grid grid-cols-7 text-center text-[10px] font-bold text-muted uppercase border-b border-[#eef1f5]">
-        <div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_sun', 'Min') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_mon', 'Sen') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_tue', 'Sel') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_wed', 'Rab') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_thu', 'Kam') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_fri', 'Jum') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_sat', 'Sab') }}</div>
+        <div class="py-1">{{ t('Sun') }}</div><div class="py-1">{{ t('Mon') }}</div><div class="py-1">{{ t('Tue') }}</div><div class="py-1">{{ t('Wed') }}</div><div class="py-1">{{ t('Thu') }}</div><div class="py-1">{{ t('Fri') }}</div><div class="py-1">{{ t('Sat') }}</div>
     </div>
     <div class="grid grid-cols-7">
         <template x-for="(cell, idx) in days" :key="idx">
@@ -35,7 +35,7 @@
     <div class="p-3">
         <div class="text-[10px] font-bold text-muted uppercase mb-1.5" x-text="selDateStr + ' — ' + selectedEvents.length + ' event'"></div>
         <template x-if="selectedEvents.length === 0">
-            <div class="text-[11px] text-muted text-center py-3">{{ \App\Support\Localization\Translator::t('shared_calendar_no_events', 'Tidak ada event tanggal ini.') }}</div>
+            <div class="text-[11px] text-muted text-center py-3">{{ t('No events on this date.') }}</div>
         </template>
         <div class="flex flex-col gap-1.5">
             <template x-for="(ev, i) in selectedEvents" :key="i">

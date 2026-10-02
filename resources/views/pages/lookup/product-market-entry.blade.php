@@ -6,7 +6,6 @@ use App\Models\Master\ProdType;
 use App\Models\Master\ProdTypeParam;
 use App\Models\Master\ProdTypeSize;
 use App\Models\Master\ProdTypeSizeVal;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -246,7 +245,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
             $this->saveSizes($market, $login);
         });
 
-        session()->flash('saved', Translator::t('shared_saved', 'Data tersimpan.'));
+        session()->flash('saved', t('Data saved.'));
         $this->redirect(route('lookup.product-market.edit', ['market' => $this->recordId]));
     }
 
@@ -282,7 +281,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
         <span class="text-xs text-white/75">{{ $recordId ? $market_label : 'NEW' }}</span>
         <div class="ml-auto flex items-center gap-2">
             <x-ui.button preset="save" wire:click="save" type="button" />
-            <x-back-button :fallback="route('lookup.product-market')" title="{{ Translator::t('shared_back_to_list', 'Kembali ke Daftar') }}" />
+            <x-back-button :fallback="route('lookup.product-market')" title="{{ t('Back to List') }}" />
         </div>
     </header>
 

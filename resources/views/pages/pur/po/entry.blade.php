@@ -6,7 +6,6 @@ use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrLineAlloc;
 use App\Services\Flow\FlowEngineService;
 use App\Services\Pur\PoBuilderService;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -157,7 +156,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
         $result = $flow->submit($po->flowModule(), $this->poId, 'SUBMITTED', (float) $po->c_grand_total);
 
         if ($result === null) {
-            $this->blockedMessage = Translator::t('proc_po_entry_no_flow_config', 'Tidak ada konfigurasi approval aktif untuk modul PO. Dokumen tersimpan sebagai SUBMITTED tapi belum masuk antrian approval siapapun — hubungi Admin.');
+            $this->blockedMessage = t('No active approval configuration for the PO module. The document was saved as SUBMITTED but is not in anyone\'s approval queue — contact Admin.');
         }
 
         unset($this->po);
@@ -202,7 +201,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
         }
 
         if (trim($this->approvalNote) === '') {
-            $this->approvalError = Translator::t('proc_entry_reject_reason_required', 'Alasan penolakan wajib diisi.');
+            $this->approvalError = t('Rejection reason is required.');
 
             return;
         }
@@ -227,7 +226,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
         }
 
         if (trim($this->approvalNote) === '') {
-            $this->approvalError = Translator::t('proc_entry_hold_reason_required', 'Catatan alasan Hold wajib diisi.');
+            $this->approvalError = t('Hold reason note is required.');
 
             return;
         }
@@ -258,8 +257,8 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📦 {{ Translator::t('proc_po_entry_title', 'Purchase Order Entry') }}</b>
-        <span class="text-xs text-white/75">{{ $this->po->doc_no ?: Translator::t('proc_entry_no_docno_short', '(belum ada nomor)') }} · {{ $this->supplier?->supplier_name }}</span>
+        <b class="text-[15px]">📦 {{ t('Purchase Order Entry') }}</b>
+        <span class="text-xs text-white/75">{{ $this->po->doc_no ?: t('(no number yet)') }} · {{ $this->supplier?->supplier_name }}</span>
         <x-form.badge :tone="match ($this->po->status) {
                 'SUBMITTED' => 'warn',
                 'APPROVED', 'SENT', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CLOSED' => 'success',
@@ -268,9 +267,9 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
             }">{{ $this->po->status }}</x-form.badge>
         @unless (in_array($this->po->status, ['DRAFT', 'SUBMITTED'], true))
             <a href="{{ route('pur.po.print', ['po' => $this->poId]) }}" target="_blank"
-                class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 {{ Translator::t('proc_po_entry_btn_print', 'Cetak PO') }}</a>
+                class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 {{ t('Print PO') }}</a>
         @endunless
-        <x-back-button :fallback="route('pur.po.list')" title="{{ Translator::t('proc_po_entry_back_title', 'Kembali ke Daftar PO') }}" class="ml-auto" />
+        <x-back-button :fallback="route('pur.po.list')" title="{{ t('Back to PO List') }}" class="ml-auto" />
     </header>
 
     <div class="max-w-[1400px] mx-auto my-5 px-4">
@@ -280,41 +279,41 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
 
         @if ($this->approvalHistory->last()?->action === 'HOLD')
             <div class="bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0] text-xs rounded-md px-4 py-2.5 mb-4">
-                ⏸ {{ Translator::t('proc_entry_held_by', 'Ditahan oleh') }} {{ $this->approvalHistory->last()->created_by ?? Translator::t('proc_entry_system_fallback', 'sistem') }} · {{ $this->approvalHistory->last()->acted_at?->translatedFormat('d M Y, H:i') }} — "{{ $this->approvalHistory->last()->notes }}"
+                ⏸ {{ t('Held by') }} {{ $this->approvalHistory->last()->created_by ?? t('system') }} · {{ $this->approvalHistory->last()->acted_at?->translatedFormat('d M Y, H:i') }} — "{{ $this->approvalHistory->last()->notes }}"
             </div>
         @endif
 
         @if ($this->pendingApproval)
             @if ($this->po->i_procure_type === 'CAPEX')
-                <div class="bg-[#fdf2ec] border border-[#f0c6a0] text-[#8a4b00] text-xs rounded-md px-4 py-2.5 mb-4">⚠ {{ Translator::t('proc_po_entry_capex_warning', 'Tipe pengadaan CAPEX — nilai besar, non-rutin. Periksa lebih cermat.') }}</div>
+                <div class="bg-[#fdf2ec] border border-[#f0c6a0] text-[#8a4b00] text-xs rounded-md px-4 py-2.5 mb-4">⚠ {{ t('CAPEX procurement type — large, non-routine value. Review more carefully.') }}</div>
             @endif
             @if ($this->po->i_po_type === 'IMPORT')
-                <div class="bg-[#eef3fb] border border-[#9cc0f0] text-[#1e3a8a] text-xs rounded-md px-4 py-2.5 mb-4">⚠ {{ Translator::t('proc_po_entry_import_warning', 'PO Import — kelengkapan dokumen impor (`po_import_doc`) masih INACTIVE fase ini, belum ada checklist.') }}</div>
+                <div class="bg-[#eef3fb] border border-[#9cc0f0] text-[#1e3a8a] text-xs rounded-md px-4 py-2.5 mb-4">⚠ {{ t('Import PO — import document completeness (`po_import_doc`) is still INACTIVE this phase, no checklist yet.') }}</div>
             @endif
         @endif
 
         {{-- HEADER --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ Translator::t('proc_entry_general_info', 'Informasi Umum') }}</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('General Information') }}</h3>
             <div class="grid">
-                <x-form.input label="{{ Translator::t('proc_supplier_label', 'Supplier') }}" readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="bg-[#f8fafc]" />
-                <x-form.date-picker label="{{ Translator::t('proc_po_entry_col_date', 'Tanggal PO') }}" value="{{ $this->po->i_doc_date?->format('Y-m-d') }}" :disabled="$this->po->status !== 'DRAFT'"
+                <x-form.input label="{{ t('Supplier') }}" readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="bg-[#f8fafc]" />
+                <x-form.date-picker label="{{ t('PO Date') }}" value="{{ $this->po->i_doc_date?->format('Y-m-d') }}" :disabled="$this->po->status !== 'DRAFT'"
                     wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.select label="{{ Translator::t('proc_po_entry_type_label', 'Tipe PO') }}" :disabled="$this->po->status !== 'DRAFT'" wire:change="updateHeader('i_po_type', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                <x-form.select label="{{ t('PO Type') }}" :disabled="$this->po->status !== 'DRAFT'" wire:change="updateHeader('i_po_type', $event.target.value)" class="disabled:bg-[#f8fafc]"
                     :placeholder="false" :selected="$this->po->i_po_type" :options="['LOCAL' => 'Local', 'IMPORT' => 'Import']" />
-                <x-form.select label="{{ Translator::t('proc_po_entry_procure_type_label', 'Tipe Pengadaan') }}" :disabled="$this->po->status !== 'DRAFT'" wire:change="updateHeader('i_procure_type', $event.target.value)" class="disabled:bg-[#f8fafc]"
-                    :placeholder="false" :selected="$this->po->i_procure_type" :options="['REPEAT' => Translator::t('proc_po_entry_procure_repeat', 'Repeat (rutin)'), 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" />
-                <x-form.input label="{{ Translator::t('proc_po_entry_payment_term', 'Syarat Bayar') }}" value="{{ $this->po->i_payment_term }}" placeholder="{{ Translator::t('proc_po_entry_payment_term_placeholder', 'mis. Net 30') }}" :disabled="$this->po->status !== 'DRAFT'"
+                <x-form.select label="{{ t('Procurement Type') }}" :disabled="$this->po->status !== 'DRAFT'" wire:change="updateHeader('i_procure_type', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                    :placeholder="false" :selected="$this->po->i_procure_type" :options="['REPEAT' => t('Repeat (routine)'), 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" />
+                <x-form.input label="{{ t('Payment Term') }}" value="{{ $this->po->i_payment_term }}" placeholder="{{ t('e.g. Net 30') }}" :disabled="$this->po->status !== 'DRAFT'"
                     wire:change="updateHeader('i_payment_term', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.date-picker label="{{ Translator::t('proc_po_entry_delivery_date', 'Tgl Kirim') }}" value="{{ $this->po->i_delivery_date?->format('Y-m-d') }}" :disabled="$this->po->status !== 'DRAFT'"
+                <x-form.date-picker label="{{ t('Delivery Date') }}" value="{{ $this->po->i_delivery_date?->format('Y-m-d') }}" :disabled="$this->po->status !== 'DRAFT'"
                     wire:change="updateHeader('i_delivery_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <div class="col-span-2">
-                    <x-form.input label="{{ Translator::t('proc_po_entry_ship_to', 'Kirim Ke') }}" value="{{ $this->po->i_ship_to }}" :disabled="$this->po->status !== 'DRAFT'"
+                    <x-form.input label="{{ t('Ship To') }}" value="{{ $this->po->i_ship_to }}" :disabled="$this->po->status !== 'DRAFT'"
                         wire:change="updateHeader('i_ship_to', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 </div>
             </div>
             <div class="mt-3">
-                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ Translator::t('proc_entry_notes', 'Catatan') }}</label>
+                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Notes') }}</label>
                 <textarea rows="2" @disabled($this->po->status !== 'DRAFT') wire:change="updateHeader('i_notes', $event.target.value)"
                     class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">{{ $this->po->i_notes }}</textarea>
             </div>
@@ -323,7 +322,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
         @if ($this->po->status === 'DRAFT')
             {{-- SUMBER: alokasi PR tersedia --}}
             <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-                <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ Translator::t('proc_po_entry_source_title', 'Sumber — Alokasi PR Tersedia (supplier ini / belum ditetapkan)') }}</h3>
+                <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('Source — Available PR Allocations (this supplier / unassigned)') }}</h3>
                 <div class="border border-[#d7dbe2] rounded-md max-h-64 overflow-y-auto">
                     @forelse ($this->availableAllocations as $alloc)
                         <div class="flex items-center justify-between px-3 py-2 border-b border-[#eef1f5] last:border-0 text-xs">
@@ -332,34 +331,34 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
                                 — {{ $alloc->line->i_description }}
                                 <span class="text-muted">({{ rtrim(rtrim(number_format((float) $alloc->i_qty, 2, ',', '.'), '0'), ',') }} {{ $alloc->line->i_uom }})</span>
                             </div>
-                            <button type="button" wire:click="addAllocation({{ $alloc->alloc_id }})" class="text-[11px] font-bold text-white bg-accent rounded px-2.5 py-1">+ {{ Translator::t('shared_grid_add_row', 'Tambah') }}</button>
+                            <button type="button" wire:click="addAllocation({{ $alloc->alloc_id }})" class="text-[11px] font-bold text-white bg-accent rounded px-2.5 py-1">+ {{ t('Add') }}</button>
                         </div>
                     @empty
-                        <p class="text-xs text-muted px-3 py-3">{{ Translator::t('proc_po_entry_no_allocation', 'Tidak ada alokasi PR yang tersedia untuk supplier ini saat ini.') }}</p>
+                        <p class="text-xs text-muted px-3 py-3">{{ t('No PR allocation available for this supplier right now.') }}</p>
                     @endforelse
                 </div>
-                <p class="text-[11px] text-muted mt-2">{{ Translator::t('proc_po_entry_allocation_hint', 'Alokasi dari PR berbeda boleh digabung ke satu PO ini selama supplier sama — baris tetap membawa asal PR masing-masing.') }}</p>
+                <p class="text-[11px] text-muted mt-2">{{ t('Allocations from different PRs may be merged into this one PO as long as the supplier is the same — each line keeps its PR origin.') }}</p>
             </div>
         @endif
 
         {{-- BARIS --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
             <div class="px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
-                <h3 class="text-xs text-navy uppercase font-bold">{{ Translator::t('proc_po_entry_lines_title', 'Baris Pesanan') }}</h3>
+                <h3 class="text-xs text-navy uppercase font-bold">{{ t('Order Lines') }}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs min-w-[1200px]">
                     <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5]">
                         <tr>
                             <th class="text-left px-3 py-2">#</th>
-                            <th class="text-left px-3 py-2">{{ Translator::t('proc_pv_col_item', 'Item') }}</th>
-                            <th class="text-left px-3 py-2">{{ Translator::t('proc_entry_class', 'Kelas') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('shared_qty', 'Qty') }}</th>
-                            <th class="text-left px-3 py-2">{{ Translator::t('proc_pv_col_uom', 'UoM') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('proc_entry_price', 'Harga') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('proc_entry_disc_pct', 'Disc %') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('proc_entry_net', 'Net') }}</th>
-                            <th class="text-left px-3 py-2">{{ Translator::t('proc_po_entry_pr_origin', 'Asal PR') }}</th>
+                            <th class="text-left px-3 py-2">{{ t('Item') }}</th>
+                            <th class="text-left px-3 py-2">{{ t('Class') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Qty') }}</th>
+                            <th class="text-left px-3 py-2">{{ t('UoM') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Price') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Disc %') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Net') }}</th>
+                            <th class="text-left px-3 py-2">{{ t('PR Origin') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#eef1f5]">
@@ -384,7 +383,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
                                 <td class="px-3 py-2 text-[10.5px] text-muted">{{ $line->allocation?->line?->requisition?->doc_no }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="9" class="px-3 py-6 text-center text-muted text-xs">{{ Translator::t('proc_po_entry_empty_lines', 'Belum ada baris. Tarik alokasi PR di atas.') }}</td></tr>
+                            <tr><td colspan="9" class="px-3 py-6 text-center text-muted text-xs">{{ t('No lines yet. Pull a PR allocation above.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -393,19 +392,19 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
 
         {{-- RINGKASAN PAJAK --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 ml-auto max-w-[380px]">
-            <h3 class="text-xs text-navy uppercase font-bold mb-2">{{ Translator::t('proc_po_entry_tax_summary', 'Ringkasan Pajak') }}</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-2">{{ t('Tax Summary') }}</h3>
             <div class="text-sm space-y-1">
-                <div class="flex justify-between"><span class="text-muted">{{ Translator::t('proc_po_entry_dpp', 'DPP') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_dpp, 0, ',', '.') }}</span></div>
-                <div class="flex justify-between"><span class="text-muted">{{ Translator::t('proc_po_entry_ppn11', 'PPN 11%') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_ppn, 0, ',', '.') }}</span></div>
-                <div class="flex justify-between border-t border-[#eef1f5] pt-1 font-bold"><span>{{ Translator::t('proc_po_entry_total_bill', 'Total Tagihan') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_grand_total, 0, ',', '.') }}</span></div>
-                <div class="flex justify-between text-[#a3241f]"><span>{{ Translator::t('proc_po_entry_pph23', 'PPh 23 (jasa) 2%') }}</span><span class="font-mono">({{ number_format((float) $this->po->c_pph, 0, ',', '.') }})</span></div>
-                <div class="flex justify-between border-t border-[#eef1f5] pt-1 font-bold text-navy"><span>{{ Translator::t('proc_po_entry_net_payable', 'Dibayar ke Supplier') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_net_payable, 0, ',', '.') }}</span></div>
+                <div class="flex justify-between"><span class="text-muted">{{ t('Taxable Base') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_dpp, 0, ',', '.') }}</span></div>
+                <div class="flex justify-between"><span class="text-muted">{{ t('VAT 11%') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_ppn, 0, ',', '.') }}</span></div>
+                <div class="flex justify-between border-t border-[#eef1f5] pt-1 font-bold"><span>{{ t('Total Bill') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_grand_total, 0, ',', '.') }}</span></div>
+                <div class="flex justify-between text-[#a3241f]"><span>{{ t('Income Tax Art. 23 (services) 2%') }}</span><span class="font-mono">({{ number_format((float) $this->po->c_pph, 0, ',', '.') }})</span></div>
+                <div class="flex justify-between border-t border-[#eef1f5] pt-1 font-bold text-navy"><span>{{ t('Payable to Supplier') }}</span><span class="font-mono">{{ number_format((float) $this->po->c_net_payable, 0, ',', '.') }}</span></div>
             </div>
         </div>
 
         @if ($this->approvalHistory->isNotEmpty())
             <div class="border border-[#eef1f5] rounded-xl p-4 bg-white mb-4">
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-3">{{ Translator::t('proc_entry_approval_history', 'Riwayat Approval') }}</p>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-3">{{ t('Approval History') }}</p>
                 <div class="relative pl-5 border-l-2 border-[#eef1f5] ml-1 space-y-3 text-sm">
                     @foreach ($this->approvalHistory as $h)
                         <div class="relative">
@@ -415,7 +414,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
                                 default => 'bg-[#eaf7ee] border-[#1f8a4c]',
                             } }}"></div>
                             <p class="font-semibold text-xs">{{ $h->action }}</p>
-                            <p class="text-[10.5px] text-muted">{{ Translator::t('proc_entry_by_prefix', 'Oleh:') }} {{ $h->created_by ?? Translator::t('proc_entry_system_fallback', 'sistem') }} · {{ $h->acted_at?->translatedFormat('d M Y, H:i') }}{{ $h->is_acting ? ' ('.Translator::t('proc_entry_acting_suffix', 'PLT').')' : '' }}</p>
+                            <p class="text-[10.5px] text-muted">{{ t('By:') }} {{ $h->created_by ?? t('system') }} · {{ $h->acted_at?->translatedFormat('d M Y, H:i') }}{{ $h->is_acting ? ' ('.t('Acting').')' : '' }}</p>
                             @if ($h->notes)
                                 <p class="text-[10.5px] {{ $h->action === 'REJECTED' ? 'text-[#a3241f]' : 'text-[#6b4fa0]' }} mt-0.5">"{{ $h->notes }}"</p>
                             @endif
@@ -427,29 +426,29 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
 
         @if ($this->po->status === 'DRAFT')
             <div class="flex justify-end gap-2 mb-8">
-                <button type="button" wire:click="delete" wire:confirm="{{ Translator::t('proc_po_entry_confirm_delete', 'Hapus PO draft ini? Alokasi PR yang sudah ditarik akan dilepas kembali.') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ Translator::t('shared_grid_delete', 'Hapus') }}</button>
-                <button type="button" wire:click="submit" wire:confirm="{{ Translator::t('proc_po_entry_confirm_submit', 'Ajukan PO ini untuk approval? Nomor dokumen akan diterbitkan.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ Translator::t('proc_entry_submit_approval', 'Ajukan Approval') }}</button>
+                <button type="button" wire:click="delete" wire:confirm="{{ t('Delete this draft PO? Pulled PR allocations will be released.') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ t('Delete') }}</button>
+                <button type="button" wire:click="submit" wire:confirm="{{ t('Submit this PO for approval? A document number will be issued.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Submit for Approval') }}</button>
             </div>
         @elseif ($this->pendingApproval)
             <div class="border-2 border-dashed border-[#d7dbe2] rounded-xl p-4 bg-white mb-8">
-                <p class="text-xs font-bold text-navy mb-2">{{ Translator::t('proc_entry_approval_decision', 'Keputusan Approval') }} — {{ $this->pendingApproval->pending_label ?? Translator::t('proc_entry_awaiting_decision', 'Menunggu keputusan Anda') }}</p>
+                <p class="text-xs font-bold text-navy mb-2">{{ t('Approval Decision') }} — {{ $this->pendingApproval->pending_label ?? t('Awaiting your decision') }}</p>
                 @if ($approvalError)
                     <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $approvalError }}</p>
                 @endif
                 <div class="mb-3">
-                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="{{ Translator::t('proc_entry_approval_note_placeholder', 'Alasan penolakan, atau catatan hold (mis. cash flow belum siap)...') }}" class="!text-sm">
-                        <x-slot:label>{{ Translator::t('proc_entry_note_label', 'Catatan') }} <span class="text-[#a3241f] normal-case">({{ Translator::t('proc_entry_note_required_hint', 'wajib utk Tolak / Hold') }})</span></x-slot:label>
+                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="{{ t('Rejection reason, or hold note (e.g. cash flow not ready)...') }}" class="!text-sm">
+                        <x-slot:label>{{ t('Notes') }} <span class="text-[#a3241f] normal-case">({{ t('required for Reject / Hold') }})</span></x-slot:label>
                     </x-form.textarea>
                 </div>
                 <div class="flex justify-end gap-2">
-                    <button type="button" wire:click="holdDoc" wire:confirm="{{ Translator::t('proc_po_entry_confirm_hold', 'Tahan PO ini? Tetap di antrian Anda, diputuskan lagi nanti.') }}" class="bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-semibold">⏸ {{ Translator::t('proc_entry_btn_hold', 'Hold') }}</button>
-                    <button type="button" wire:click="rejectDoc" wire:confirm="{{ Translator::t('proc_po_entry_confirm_reject', 'Tolak PO ini?') }}" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ {{ Translator::t('proc_entry_btn_reject', 'Tolak') }}</button>
-                    <button type="button" wire:click="approveDoc" wire:confirm="{{ Translator::t('proc_po_entry_confirm_approve', 'Setujui PO ini?') }}" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ {{ Translator::t('proc_entry_btn_approve', 'Setujui') }}</button>
+                    <button type="button" wire:click="holdDoc" wire:confirm="{{ t('Hold this PO? It stays in your queue, decide again later.') }}" class="bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-semibold">⏸ {{ t('Hold') }}</button>
+                    <button type="button" wire:click="rejectDoc" wire:confirm="{{ t('Reject this PO?') }}" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ {{ t('Reject') }}</button>
+                    <button type="button" wire:click="approveDoc" wire:confirm="{{ t('Approve this PO?') }}" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ {{ t('Approve') }}</button>
                 </div>
             </div>
         @elseif ($this->po->status === 'APPROVED')
             <div class="flex justify-end gap-2 mb-8">
-                <button type="button" wire:click="sendToSupplier" wire:confirm="{{ Translator::t('proc_po_entry_confirm_send', 'Tandai PO ini sudah dikirim ke supplier?') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">📤 {{ Translator::t('proc_po_entry_btn_send', 'Kirim ke Supplier') }}</button>
+                <button type="button" wire:click="sendToSupplier" wire:confirm="{{ t('Mark this PO as sent to the supplier?') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">📤 {{ t('Send to Supplier') }}</button>
             </div>
         @endif
     </div>

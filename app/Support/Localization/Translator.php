@@ -2,57 +2,33 @@
 
 namespace App\Support\Localization;
 
-use App\Models\Sys\SysLanguage;
-use App\Models\Sys\SysTranslation;
+use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 
-// Kerangka i18n app-wide (keputusan user 2026-09-07) -- titik akses tunggal
-// utk teks UI shell PASCA-LOGIN, mirror pola App\Support\Branding\Brand
-// (baca dari DB, cache per-request). BEDA dari SysTranslation::forLang() yang
-// dipakai login/register (guest, lang dari query string #[Url]) -- di sini
-// lang dari preferensi TERSIMPAN per user (sec_user.lang_code), krn
-// pemakainya sudah login.
-//
-// SCOPE SAAT INI (2026-09-07): baru kerangka + string chrome shell PALING
-// dasar (lihat pemakaian t() di main-menu.blade.php: label Home, Logout,
-// Tema/Bahasa/Klasik, caption section dropdown profil). SEBAGIAN BESAR layar
-// aplikasi (ratusan file Blade transaksi/master/laporan) MASIH 100% hardcode
-// Indonesia, BELUM ditarik ke sys_translations -- itu proyek i18n app-wide
-// yang jauh lebih besar, BUKAN diselesaikan 1 sesi. Menambah cakupan = tambah
-// baris sys_translations utk key baru + ganti string literal Blade jadi
-// Translator::t('key', 'fallback default'), diulang per layar.
+// Bahasa tampilan user (v1 & v2 satu sumber, user 2026-10-02). Teks diterjemahkan lewat kamus tunggal sys_dictionary:
+// tulis English lalu t('...') / @t('...') (App\Support\Localization\Dictionary). Kamus kunci lama sys_translations
+// (kunci + fallback per layar) sudah dipensiunkan -- jangan dihidupkan lagi.
 class Translator
 {
-    protected static array $cache = [];
-
     public static function lang(): string
     {
-        $user = Auth::user();
-
-        return $user?->lang_code ?: 'id';
+        return Locale::lang();
     }
 
-    public static function t(string $key, ?string $default = null): string
-    {
-        $lang = static::lang();
-
-        if (! array_key_exists($lang, static::$cache)) {
-            static::$cache[$lang] = SysTranslation::forLang($lang);
-        }
-
-        return static::$cache[$lang][$key] ?? $default ?? $key;
-    }
-
+    // Simpan pilihan di sec_user.lang_code dan cookie dl_lang (dibaca Devlib\Locale, juga oleh v2 & JS).
     public static function setLang(string $langCode): bool
     {
         $user = Auth::user();
 
-        if (! $user || ! SysLanguage::where('code', $langCode)->exists()) {
+        if (! $user || ! DB::connection('tm2sys')->table('sys_languages')->where('code', $langCode)->exists()) {
             return false;
         }
 
         $user->update(['lang_code' => $langCode]);
-        static::$cache = [];
+        Cookie::queue(Cookie::make('dl_lang', $langCode, 525600, '/', null, null, false, false, 'lax'));
+        request()->cookies->set('dl_lang', $langCode);
 
         return true;
     }

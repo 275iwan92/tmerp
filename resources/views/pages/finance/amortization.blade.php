@@ -295,8 +295,8 @@ new #[Title('Amortization — TELASIH MAKMUR ERP')] class extends Component
                 </x-ledger.field>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
-                <button type="button" class="lg-btn primary" wire:click="save">{{ \App\Support\Localization\Translator::t('shell_btn_save', 'Simpan') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
+                <button type="button" class="lg-btn primary" wire:click="save">{{ t('Save') }}</button>
             </x-slot:footer>
         </x-ledger.modal>
     @endif
@@ -318,7 +318,7 @@ new #[Title('Amortization — TELASIH MAKMUR ERP')] class extends Component
                 <div class="lg-foot"><b>{{ $this->preview->count() }} schedules</b><b class="lg-money">{{ Fmt::rp($this->preview->sum('amount')) }}</b></div>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
                 <button type="button" class="lg-btn primary" wire:click="run" @disabled($this->preview->isEmpty())>Post Amortization Journal</button>
             </x-slot:footer>
         </x-ledger.modal>
@@ -343,7 +343,7 @@ new #[Title('Amortization — TELASIH MAKMUR ERP')] class extends Component
                         </tbody>
                     </table>
                 </div>
-                <x-slot:footer><button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shell_tab_close_title', 'Tutup') }}</button></x-slot:footer>
+                <x-slot:footer><button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Close') }}</button></x-slot:footer>
             </x-ledger.modal>
         @endforeach
     @endif

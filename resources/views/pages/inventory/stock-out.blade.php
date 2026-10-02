@@ -10,7 +10,6 @@ use App\Models\Master\OrgDepartment;
 use App\Models\Master\ProdPart;
 use App\Services\Inventory\StockDocumentService;
 use App\Services\Inventory\StockPostingService;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -38,7 +37,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
 
     private const DOC_PREFIX = 'OUT';
 
-    public const CATEGORY_LABELS = ['RM' => 'Bahan Baku', 'SFG' => 'Barang Setengah Jadi'];
+    public const CATEGORY_LABELS = ['RM' => 'Raw Materials', 'SFG' => 'Semi-Finished Goods'];
 
     private const HEADER_MODEL = ['RM' => RmStock::class, 'SFG' => SfgStock::class];
 
@@ -322,10 +321,10 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => Translator::t('inv_stat_total_doc', 'Total Dokumen'), 'value' => $this->statTotal, 'tone' => 'total'],
-            'draft' => ['label' => Translator::t('sales_quo_stat_draft', 'Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
+            'total' => ['label' => t('Total Documents'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => t('Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
                 'filter' => fn ($c) => $c->where('flow_status', 'DRAFT')],
-            'posted' => ['label' => Translator::t('inv_stockout_stat_issued', 'Sudah Diserahkan'), 'value' => $this->statPosted, 'tone' => 'active',
+            'posted' => ['label' => t('Issued'), 'value' => $this->statPosted, 'tone' => 'active',
                 'filter' => fn ($c) => $c->where('flow_status', 'POSTED')],
         ];
     }
@@ -338,7 +337,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
         <x-alert.banner type="success" :message="session('flash')" />
         <x-alert.banner type="danger" :message="session('error')" />
         @if (session('journal_warning'))
-            <x-alert.banner type="info" :message="session('journal_warning').' '.Translator::t('inv_journal_warning_hint_prefix', 'Lengkapi akun HPP/Persediaan di').' '.($category === 'SFG' ? Translator::t('inv_journal_warning_hint_sfg', 'Master Card (part)') : Translator::t('inv_journal_warning_hint_rm', 'Master Bahan Baku atau kategori terkait')).'.'" />
+            <x-alert.banner type="info" :message="session('journal_warning').' '.t('Complete the COGS/Inventory account in').' '.($category === 'SFG' ? t('Master Card (part)') : t('Raw Material Master or related category')).'.'" />
         @endif
 
         @if ($panel === 'grid')
@@ -348,7 +347,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
                 <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('inv_search_doc_placeholder', 'Cari no. dokumen / catatan…') }}"
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search document no. / notes…') }}"
                             class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
                     <x-slot:newRecord>
@@ -361,21 +360,21 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('inv_col_document', 'Dokumen') }}</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_col_date', 'Tanggal') }}</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ Translator::t('inv_col_issued_to', 'Diserahkan Kepada') }}</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_col_status', 'Status') }}</th>
-                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Document') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Date') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ t('Issued To') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Status') }}</th>
+                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->visibleDocuments as $d)
-                                <tr wire:key="doc-{{ $d->doc_id }}" wire:dblclick="openEdit({{ $d->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
+                                <tr wire:key="doc-{{ $d->doc_id }}" wire:dblclick="openEdit({{ $d->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
                                             <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($d->doc_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($d->doc_no ?: 'DOC') }}</div>
                                             <div>
-                                                <div class="font-semibold text-[13px] font-mono">{{ $d->doc_no ?: Translator::t('proc_draft_placeholder', '(draft)') }}</div>
+                                                <div class="font-semibold text-[13px] font-mono">{{ $d->doc_no ?: t('(draft)') }}</div>
                                                 <div class="text-[11px] text-muted">{{ $d->notes ?: '—' }}</div>
                                             </div>
                                         </div>
@@ -386,15 +385,15 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($d->flow_status) }}">{{ $d->flow_status }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openEdit({{ $d->doc_id }})" />
+                                        <x-grid.action-icon icon="fa-up-right-from-square" title="{{ t('Open') }}" action="openEdit({{ $d->doc_id }})" />
                                         @if ($d->flow_status === 'DRAFT')
-                                            <x-grid.action-icon icon="fa-check" title="{{ Translator::t('inv_btn_confirm_posting', 'Konfirmasi & Posting') }}" action="postNow(null, {{ $d->doc_id }})"
-                                                confirm="{{ Translator::t('inv_btn_confirm_posting', 'Konfirmasi & Posting') }} {{ $d->doc_no }}? {{ Translator::t('inv_stockout_confirm_posting_suffix', 'Barang akan keluar dari Kartu Stok.') }}" variant="success" />
+                                            <x-grid.action-icon icon="fa-check" title="{{ t('Confirm & Post') }}" action="postNow(null, {{ $d->doc_id }})"
+                                                confirm="{{ t('Confirm & Post') }} {{ $d->doc_no }}? {{ t('Goods will be issued out of the Stock Card.') }}" variant="success" />
                                         @endif
                                     </td>
                                 </tr>
                             @empty
-                                <x-grid.empty-row :colspan="5" message="{{ Translator::t('inv_stockout_empty', 'Belum ada dokumen Stock Out.') }}" />
+                                <x-grid.empty-row :colspan="5" message="{{ t('No Stock Out documents yet.') }}" />
                             @endforelse
                         </tbody>
                     </table>
@@ -404,12 +403,12 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
             {{-- ============ FORM ============ --}}
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                    <span>{{ $editingId ? Translator::t('inv_stockout_edit_title', 'Edit Stock Out ·').' '.$doc_no : Translator::t('inv_stockout_new_title', 'Stock Out Baru') }}</span>
-                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ Translator::t('inv_stockout_category_'.strtolower($category), self::CATEGORY_LABELS[$category]) }}</span>
+                    <span>{{ $editingId ? t('Edit Stock Out ·').' '.$doc_no : t('New Stock Out') }}</span>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ t(self::CATEGORY_LABELS[$category]) }}</span>
                     @if ($editingId)
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($flow_status) }}">{{ $flow_status }}</span>
                     @endif
-                    <button type="button" wire:click="backToGrid" data-dirty-guard title="{{ Translator::t('inv_back_to_list_title', 'Kembali ke Daftar') }}"
+                    <button type="button" wire:click="backToGrid" data-dirty-guard title="{{ t('Back to List') }}"
                         class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full cursor-pointer hover:brightness-110">
                         <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
                         <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
@@ -418,38 +417,38 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="p-4 flex flex-col gap-3">
                     @if ($readOnly)
-                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">🔒 {{ Translator::t('inv_readonly_prefix', 'Dokumen sudah') }} {{ $flow_status === 'POSTED' ? Translator::t('inv_stockout_readonly_posted', 'diserahkan/diposting') : Translator::t('inv_readonly_cancelled', 'dibatalkan') }} {{ Translator::t('inv_readonly_suffix', '— lihat-saja, tidak bisa diedit. Koreksi lewat Stock Adjustment.') }}</div>
+                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">🔒 {{ t('Document is already') }} {{ $flow_status === 'POSTED' ? t('issued/posted') : t('cancelled') }} {{ t('— view-only, cannot be edited. Correct via Stock Adjustment.') }}</div>
                     @endif
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ Translator::t('inv_section_header', 'Header') }}</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Header') }}</div>
                     <div class="flex gap-2.5 flex-wrap">
                         <div class="flex-1 min-w-[160px]">
-                            <x-form.input label="{{ Translator::t('inv_field_doc_no', 'No. Dokumen') }}" value="{{ $doc_no ?: Translator::t('inv_field_doc_no_auto', '(otomatis saat simpan)') }}" disabled class="font-mono" />
+                            <x-form.input label="{{ t('Document No.') }}" value="{{ $doc_no ?: t('(automatic on save)') }}" disabled class="font-mono" />
                         </div>
                         <div class="flex-1 min-w-[140px]">
-                            <x-form.date-picker label="{{ Translator::t('inv_field_doc_date', 'Tanggal Dokumen *') }}" name="doc_date" wire:model="doc_date" :disabled="$readOnly" />
+                            <x-form.date-picker label="{{ t('Document Date *') }}" name="doc_date" wire:model="doc_date" :disabled="$readOnly" />
                         </div>
                         <div class="flex-1 min-w-[180px]">
-                            <x-form.select label="{{ Translator::t('inv_field_warehouse_source', 'Gudang Sumber *') }}" name="warehouse_id" wire:model="warehouse_id" :disabled="$readOnly"
+                            <x-form.select label="{{ t('Source Warehouse *') }}" name="warehouse_id" wire:model="warehouse_id" :disabled="$readOnly"
                                 :options="$this->warehouses->mapWithKeys(fn ($w) => [$w->id_warehouse => $w->warehouse_code.' — '.$w->warehouse_name])" :selected="$warehouse_id" />
                         </div>
                         <div class="flex-1 min-w-[180px]">
-                            <x-form.select label="{{ Translator::t('inv_field_issued_to_dept', 'Diserahkan Kepada (Dept.) *') }}" name="issued_to_dept" wire:model="issued_to_dept" :disabled="$readOnly"
+                            <x-form.select label="{{ t('Issued To (Dept.) *') }}" name="issued_to_dept" wire:model="issued_to_dept" :disabled="$readOnly"
                                 :options="$this->departments->pluck('department_name', 'department_id')" :selected="$issued_to_dept" />
                         </div>
                         <div class="flex-1 min-w-[160px]">
-                            <x-form.input label="{{ Translator::t('inv_field_process_target', 'Proses Tujuan') }}" wire:model="process_code" :disabled="$readOnly" placeholder="{{ Translator::t('inv_field_process_target_placeholder', 'mis. Cetak Offset, Laminasi') }}" />
+                            <x-form.input label="{{ t('Target Process') }}" wire:model="process_code" :disabled="$readOnly" placeholder="{{ t('e.g. Offset Printing, Lamination') }}" />
                         </div>
                         <div class="flex-1 min-w-[160px]">
-                            <x-form.input label="{{ Translator::t('inv_stockout_field_issued_by', 'Diserahkan oleh') }}" value="{{ Auth::user()->name }}" disabled />
+                            <x-form.input label="{{ t('Issued by') }}" value="{{ Auth::user()->name }}" disabled />
                         </div>
                     </div>
-                    <x-form.textarea label="{{ Translator::t('inv_field_notes', 'Catatan') }}" wire:model="notes" :disabled="$readOnly" rows="2" />
+                    <x-form.textarea label="{{ t('Notes') }}" wire:model="notes" :disabled="$readOnly" rows="2" />
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ Translator::t('inv_stockout_section_lines', 'Baris Item (Keluar)') }}</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ t('Item Lines (Out)') }}</div>
                     @if (! $readOnly)
                         <div class="relative" style="max-width:380px">
-                            <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('inv_stockout_item_search_prefix', 'Cari kode / nama') }} {{ $category === 'SFG' ? Translator::t('inv_item_kind_part', 'part') : Translator::t('inv_item_kind_raw_material', 'bahan baku') }} {{ Translator::t('inv_stockout_item_search_suffix', 'utk ditambah…') }}" />
+                            <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ t('Search code / name of') }} {{ $category === 'SFG' ? t('part') : t('raw material') }} {{ t('to add…') }}" />
                             @if ($this->itemResults->isNotEmpty())
                                 <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                                     @foreach ($this->itemResults as $it)
@@ -467,11 +466,11 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
                         <table class="w-full text-[12.5px] border-collapse">
                             <thead>
                                 <tr class="bg-[#fafbfd]">
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">{{ Translator::t('inv_line_col_item', 'Item') }}</th>
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[110px]">{{ Translator::t('inv_line_col_lot', 'Lot/Batch') }}</th>
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[180px]">{{ Translator::t('inv_line_col_location_source', 'Lokasi Sumber *') }}</th>
-                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">{{ Translator::t('inv_line_col_qty_out', 'Qty Keluar *') }}</th>
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[70px]">{{ Translator::t('proc_pv_col_uom', 'UoM') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">{{ t('Item') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[110px]">{{ t('Lot/Batch') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[180px]">{{ t('Source Location *') }}</th>
+                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">{{ t('Qty Out *') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[70px]">{{ t('UoM') }}</th>
                                     @if (! $readOnly)
                                         <th class="w-[40px] border-b border-[#eef1f5]"></th>
                                     @endif
@@ -489,11 +488,11 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
                                         <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.qty" :disabled="$readOnly" class="!py-1 text-right" /></td>
                                         <td class="px-2 py-1.5 text-muted">{{ $line['uom_code'] }}</td>
                                         @if (! $readOnly)
-                                            <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeLine({{ $i }})" class="text-[#c0392b] cursor-pointer" title="{{ Translator::t('inv_line_remove_title', 'Hapus baris') }}">✕</button></td>
+                                            <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeLine({{ $i }})" class="text-[#c0392b] cursor-pointer" title="{{ t('Remove line') }}">✕</button></td>
                                         @endif
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6" class="text-center py-6 text-muted text-xs">{{ Translator::t('inv_stockout_no_lines_prefix', 'Belum ada baris — cari') }} {{ $category === 'SFG' ? Translator::t('inv_item_kind_part', 'part') : Translator::t('inv_item_kind_raw_material', 'bahan baku') }} {{ Translator::t('inv_stockout_no_lines_suffix', 'di atas utk ditambahkan.') }}</td></tr>
+                                    <tr><td colspan="6" class="text-center py-6 text-muted text-xs">{{ t('No lines yet — search for') }} {{ $category === 'SFG' ? t('part') : t('raw material') }} {{ t('above to add it.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -502,11 +501,11 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
                     @if (! $readOnly)
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                             @if ($editingId)
-                                <button type="button" wire:click="cancelDoc" wire:confirm="{{ Translator::t('inv_confirm_cancel_doc', 'Batalkan dokumen ini?') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#fdecec] text-[#c0392b] cursor-pointer">{{ Translator::t('sales_form_btn_cancel_doc', 'Batalkan') }}</button>
+                                <button type="button" wire:click="cancelDoc" wire:confirm="{{ t('Cancel this document?') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#fdecec] text-[#c0392b] cursor-pointer">{{ t('Cancel') }}</button>
                             @endif
-                            <button type="button" wire:click="saveDraft" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">💾 {{ Translator::t('inv_btn_save_draft', 'Simpan Draft') }}</button>
+                            <button type="button" wire:click="saveDraft" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">💾 {{ t('Save Draft') }}</button>
                             @if ($editingId)
-                                <button type="button" wire:click="postNow" wire:confirm="{{ Translator::t('inv_btn_confirm_posting', 'Konfirmasi & Posting') }} {{ $doc_no }}? {{ Translator::t('inv_stockout_confirm_posting_final_suffix', 'Barang akan keluar dari Kartu Stok, tidak bisa diedit lagi.') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">✓ {{ Translator::t('inv_btn_confirm_posting', 'Konfirmasi & Posting') }}</button>
+                                <button type="button" wire:click="postNow" wire:confirm="{{ t('Confirm & Post') }} {{ $doc_no }}? {{ t('Goods will be issued out of the Stock Card and can no longer be edited.') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">✓ {{ t('Confirm & Post') }}</button>
                             @endif
                         </div>
                     @endif

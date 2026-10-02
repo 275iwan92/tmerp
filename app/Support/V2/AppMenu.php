@@ -4,7 +4,6 @@ namespace App\Support\V2;
 
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysAppMenu;
-use App\Support\Localization\Translator;
 use App\Support\Menu\MenuRoutes;
 use Illuminate\Support\Facades\DB;
 
@@ -89,7 +88,7 @@ final class AppMenu
 
     private static function label(SysAppMenu $n): string
     {
-        return $n->trans_key ? Translator::t($n->trans_key, $n->label) : $n->label;
+        return t($n->label, 'tm2sys.sys_app_menu.label');
     }
 
     // URL tujuan satu item: layar v2 (target v2:slug), layar v1, atau null (belum ada layar).

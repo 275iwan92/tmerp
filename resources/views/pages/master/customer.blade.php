@@ -7,7 +7,6 @@ use App\Models\Master\CustCustomerBranch;
 use App\Models\Master\CustCustomerContact;
 use App\Models\Master\FinPaymentTerm;
 use App\Models\Master\OrgDivision;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -816,12 +815,12 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => Translator::t('mdata_cust_stat_total', 'Total Customer'), 'value' => $this->metricTotal, 'tone' => 'total'],
-            'active' => ['label' => Translator::t('mdata_active', 'Aktif'), 'value' => $this->metricActive, 'tone' => 'active',
+            'total' => ['label' => t('Total Customers'), 'value' => $this->metricTotal, 'tone' => 'total'],
+            'active' => ['label' => t('Active'), 'value' => $this->metricActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('approval_status', 'APPROVED')->where('activate', true)],
-            'blocked' => ['label' => Translator::t('mdata_sup_stat_blocked', 'Terblokir'), 'value' => $this->metricBlocked, 'tone' => 'critical',
+            'blocked' => ['label' => t('Blocked'), 'value' => $this->metricBlocked, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where(fn ($qq) => $qq->where('is_blacklisted', true)->orWhere('approval_status', 'BLOCKED'))],
-            'draft' => ['label' => Translator::t('mdata_cust_stat_draft', 'Draft / Onboarding'), 'value' => $this->metricDraft, 'tone' => 'warn',
+            'draft' => ['label' => t('Draft / Onboarding'), 'value' => $this->metricDraft, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('approval_status', 'DRAFT')],
         ];
     }
@@ -840,7 +839,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
-                        <input type="text" wire:model.live.debounce.400ms="q" placeholder="{{ Translator::t('mdata_sup_search_placeholder', 'Cari nama / kode / PIC...') }}"
+                        <input type="text" wire:model.live.debounce.400ms="q" placeholder="{{ t('Search name / code / PIC...') }}"
                             class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
                     <x-slot:newRecord>
@@ -858,19 +857,19 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                     <thead>
                         <tr>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Customer</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_po_col_type', 'Tipe') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_cust_col_industry', 'Industri') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_cust_col_credit_limit', 'Limit Kredit') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_sup_col_terms', 'Termin') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_col_status', 'Status') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Type') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Industry') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Credit Limit') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Payment Terms') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->customers as $c)
                             <tr wire:click="selectRow({{ $c->id_customer }})" wire:dblclick="editRow({{ $c->id_customer }})"
                                 class="cursor-pointer hover:bg-[#f7faff] {{ $selectedId === $c->id_customer ? 'bg-[#e8f0fe]' : '' }}"
-                                title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
+                                title="{{ t('Double-click to open detail') }}">
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="flex items-center gap-2.5">
                                         <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($c->id_customer) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($c->customer_name) }}</div>
@@ -880,13 +879,13 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $c->customer_type === 'import' ? Translator::t('mdata_cust_type_import', 'Import') : Translator::t('mdata_cust_type_local', 'Lokal') }}{{ $c->is_prospect ? ' · '.Translator::t('mdata_cust_prospect', 'Prospek') : '' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $c->customer_type === 'import' ? t('Import') : t('Local') }}{{ $c->is_prospect ? ' · '.t('Prospect') : '' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] max-w-[160px] truncate">{{ $c->industry_category ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">Rp {{ number_format((float) $c->credit_limit, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $c->paymentTerm?->term_label ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">
-                                        {{ $c->activate ? Translator::t('mdata_active', 'Aktif') : Translator::t('mdata_inactive', 'Nonaktif') }}
+                                        {{ $c->activate ? t('Active') : t('Inactive') }}
                                     </span>
                                     <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block ml-1 {{ match($c->approval_status ?? 'DRAFT') { 'APPROVED' => 'bg-[#eaf7ee] text-[#1f8a4c]', 'BLOCKED' => 'bg-[#fdeceb] text-[#c0392b]', 'CREDIT_CHECK' => 'bg-[#fff4e0] text-[#8a6d00]', default => 'bg-[#eef0f3] text-[#6b7280]' } }}">
                                         {{ \App\Models\Master\CustCustomer::APPROVAL_STATUSES[$c->approval_status ?? 'DRAFT'] }}
@@ -896,12 +895,12 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="editRow({{ $c->id_customer }})" />
-                                    <x-grid.action-icon :active="$c->activate" :title="$c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $c->id_customer }})" confirm="{{ $c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }} customer {{ $c->customer_name }}?" />
+                                    <x-grid.action-icon icon="fa-pen" title="{{ t('Edit') }}" action="editRow({{ $c->id_customer }})" />
+                                    <x-grid.action-icon :active="$c->activate" :title="$c->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $c->id_customer }})" confirm="{{ $c->activate ? t('Deactivate') : t('Activate') }} customer {{ $c->customer_name }}?" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="7" message="{{ Translator::t('mdata_cust_empty', 'Belum ada data customer') }}{{ $q ? Translator::t('mdata_sup_empty_search_suffix', ' untuk pencarian ini') : '' }}." />
+                            <x-grid.empty-row :colspan="7" message="{{ t('No customer data yet') }}{{ $q ? t(' for this search') : '' }}." />
                         @endforelse
                     </tbody>
                 </table>

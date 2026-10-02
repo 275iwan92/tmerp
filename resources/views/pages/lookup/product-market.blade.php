@@ -3,7 +3,6 @@
 use App\Livewire\Concerns\HasGridPagination;
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\ProdMarket;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -96,7 +95,7 @@ new #[Title('Master Product Market — TELASIH MAKMUR ERP')] class extends Compo
                 <tbody>
                     @forelse ($this->items as $row)
                         <tr wire:key="pm-{{ $row->id_market }}" wire:dblclick="openItem({{ $row->id_market }})" @class(['cursor-pointer', 'opacity-55' => ! $row->activate])
-                            title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
+                            title="{{ t('Double-click to open detail') }}">
                             <td>
                                 @if ($row->photoUrl())
                                     <img src="{{ $row->photoUrl() }}" alt="" class="w-12 h-12 object-cover rounded border border-field-border" loading="lazy">

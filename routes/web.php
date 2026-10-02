@@ -171,7 +171,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
         Route::livewire('/setup/identification', 'pages::setup.identification')->name('setup.identification')->middleware('admin');
         Route::livewire('/setup/language', 'pages::setup.language')->name('setup.language')->middleware('admin');
-        Route::livewire('/setup/localization', 'pages::setup.localization')->name('setup.localization')->middleware('admin');
+        // Kamus kunci lama (sys_translations) dipensiunkan 2026-10-02: terjemahan v1 & v2 = Setup > Translation Dictionary.
+        Route::get('/setup/localization', fn () => redirect()->route('v2.item', 'SET_DICTIONARY'))->name('setup.localization')->middleware('admin');
         Route::livewire('/setup/constants', 'pages::setup.constants')->name('setup.constants')->middleware('admin');
         Route::livewire('/setup/data-origin', 'pages::setup.data-origin')->name('setup.data-origin')->middleware('admin');
         Route::livewire('/setup/component-library', 'pages::setup.component-library')->name('setup.component-library')->middleware('admin');

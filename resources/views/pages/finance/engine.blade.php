@@ -195,8 +195,8 @@ new #[Title('Accounting Process Engine — TELASIH MAKMUR ERP')] class extends C
                 </x-ledger.field>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
-                <button type="button" class="lg-btn primary" wire:click="saveRule">{{ \App\Support\Localization\Translator::t('shell_btn_save', 'Simpan') }}</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
+                <button type="button" class="lg-btn primary" wire:click="saveRule">{{ t('Save') }}</button>
             </x-slot:footer>
         </x-ledger.modal>
     @endif

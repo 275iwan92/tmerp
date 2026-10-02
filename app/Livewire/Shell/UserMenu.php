@@ -6,7 +6,6 @@ use App\Models\Sys\SysChatMessage;
 use App\Models\Sys\SysChatParticipant;
 use App\Models\Sys\SysNotification;
 use App\Models\Sys\SysUserMenu;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
