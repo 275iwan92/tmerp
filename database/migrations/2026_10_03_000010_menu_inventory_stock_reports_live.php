@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\DB;
 // hanya dua tingkat) mendapat SATU grup "Stock Reports" langsung di bawah Inventory, berisi tujuh laporan itu. Database yang
 // sudah punya grupnya (ddtsys, migrasi 2026_10_02_000220) tidak diubah. Bila menu Warehouse kelak dipasang di tm2sys, grup
 // ini tinggal dipindah ke bawahnya (kodenya sama: INV_WH_RPT).
+// Keadaan 2026-10-03: menu Warehouse dipasang di tm2sys pada hari yang sama (2026_10_03_000010_menu_inventory_warehouse_install),
+// jadi di kedua database laporannya ada di Inventory > Warehouse > Report dan migration ini tidak membuat apa-apa; ia tetap
+// ada sebagai cadangan untuk database yang belum punya menu Warehouse.
 return new class extends Migration
 {
     // kode => [label, ikon, slug v2, urutan]
