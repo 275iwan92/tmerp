@@ -49,7 +49,7 @@
         $actUrl = route('v2.screen', 'crm-activity');
         $cmpUrl = route('v2.screen', 'crm-complaint');
     @endphp
-    <x-dl::card :title="$c->customer_name" :description="implode(' · ', array_filter([$c->customer_code, $c->parent_group, $c->industry_category, t($s['segment'])]))" icon="fa-building">
+    <x-dl::card :title="raw($c->customer_name)" :description="raw(implode(' · ', array_filter([$c->customer_code, $c->parent_group, $c->industry_category, t($s['segment'])])))" icon="fa-building">
         <x-slot:actions>
             <x-dl::button size="sm" variant="secondary" icon="fa-phone-volume" label="+ Activity" :href="$actUrl.'?new=1&customer_id='.$c->id_customer" />
             <x-dl::button size="sm" variant="secondary" icon="fa-triangle-exclamation" label="+ Complaint" :href="$cmpUrl.'?new=1&customer_id='.$c->id_customer" />

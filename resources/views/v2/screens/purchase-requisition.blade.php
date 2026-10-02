@@ -66,7 +66,7 @@
             'ordered' => \Devlib\Locale::decimal($l->c_qty_ordered, 2),
         ])->values()->all();
     @endphp
-    <x-dl::form id="pr-form" :title="'Purchase Requisition · '.($pr->doc_no ?: 'Draft #'.$pr->pr_id)" :subtitle="PurchaseRequisition::departments()[$pr->i_department_id] ?? '—'"
+    <x-dl::form id="pr-form" :title="'Purchase Requisition · '.raw($pr->doc_no ?: 'Draft #'.$pr->pr_id)" :subtitle="raw(PurchaseRequisition::departments()[$pr->i_department_id] ?? '—')"
         panel="top" kind="document" :status="$formStatus" :pipeline="true" :approval-levels="max(1, $appr['levels'])" :approval-at="$appr['at'] ?: $approved + 1"
         :can-approve="(bool) $pending" :log="$log"
         :action="route('v2.pr.save', $pr->pr_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['cancel', 'duplicate', 'email', 'print']"

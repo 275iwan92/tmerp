@@ -29,7 +29,7 @@
                 </form>
                 <h4>Tiket saya</h4>
                 @forelse ($tickets as $t)
-                    <x-dl::card :title="$t->ticket_no.' · '.\Devlib\Locale::dt($t->created_at)" icon="fa-ticket">
+                    <x-dl::card :title="raw($t->ticket_no.' · '.\Devlib\Locale::dt($t->created_at))" icon="fa-ticket">
                         <div><x-dl::badge :label="['OPEN' => 'Open', 'IN_PROGRESS' => 'In progress', 'DONE' => 'Done', 'CLOSED' => 'Closed'][$t->status] ?? $t->status" :tone="['OPEN' => 'warn', 'IN_PROGRESS' => 'info', 'DONE' => 'success', 'CLOSED' => 'neutral'][$t->status] ?? 'neutral'" /></div>
                         @if ($t->screen_context)<div>{{ $t->screen_context }}</div>@endif
                         <p>{{ $t->description }}</p>

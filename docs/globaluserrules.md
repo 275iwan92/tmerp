@@ -166,6 +166,10 @@
 2. **[LOCKED 2026-09-30] Semua tabel memakai PK tunggal auto number BIGINT** `id_<entitas>`.
 3. **[LOCKED 2026-10-01] Database & semua formula dalam ENGLISH.** Bahasa lain hanya untuk layar dan cetakan,
    diterjemahkan lewat kamus `sys_dictionary`. Bahasa cetak dipilih user.
+   **Kamus hanya berisi label, bukan data (2026-10-02):** nomor dokumen, nama customer / supplier / product, angka dan
+   tanggal yang tampil di judul form, kartu, hint atau pesan tidak boleh tercatat di kamus. Layar tetap menulis label
+   English; nilai datanya dibungkus `raw()` — `'Customer Order · '.raw($o->co_no)` — sehingga komponen menerjemahkan
+   labelnya saja.
 4. **Nama kolom:** `activate` (bukan `is_active`); status dokumen `stat_confirm` / `stat_cancel` / `stat_close` + `cancel_reason`.
 5. **[LOCKED] Fase:** mockup.test memakai database dummy `ddt*`; tmerp.test memakai `tm2*`. **Jangan menulis ke
    `tm2*` saat kerja UAT/mockup.**
@@ -491,3 +495,4 @@
 | 2026-10-02 | **A.21: Customer Invoice + AR satu modul** — dua seri nomor (Non PPN `…/TM/…`, PPN `…/LJM/…`), nomor terbit saat Confirm; tagihan uang muka tanpa jurnal sampai uangnya diterima (menggantikan butir LOCKED `downpayment_tier1-4.md`); PPN uang muka mengikuti aturan pajak dengan setelan cadangan; nilai invoice penuh + potongan uang muka; dasar tagih = qty diterima; lima rekening bank lama boleh disalin. Ketentuan keuangan dan akuntansi: `docs/md_for_systems/customerinvoice_accounting.md`. Modul belum dibangun. |
 | 2026-10-02 | A.21: **Qty Minim = harga borongan** — nilai baris Customer Order dan Delivery Order = harga, bukan qty × harga (sama dengan sistem lama). Kode: `CoOrderItem::recalcSubtotal`, `DoLine::recalcSubtotal`; test `QtyMinimLumpSumTest`. Berlaku untuk mockup.test dan tmerp.test (kode yang sama; belum ada baris Qty Minim di kedua database). |
 | 2026-10-02 | **A.21: Sales = satu grup besar** dengan grup kecil Inquiry & Quotation, Order, Delivery, CRM yang bisa dilepas-pasang (saklar per grup). **CRM dibangun di ddt**: Customer 360 (hanya membaca, termasuk arsip order lama), Activities & Follow-up (`quo_activity` diperluas menjadi `crm_activity` per customer), Complaint & Return (informasi ke Sales) + Complaint Review QA (mutu ke QA). Tabel sudah ada di tm2; menu, Help, dan data contoh baru di ddt, menunggu penilaian user. |
+| 2026-10-02 | B.3: kamus hanya berisi label, bukan data — nomor dokumen, nama customer / supplier / product, angka dan tanggal di judul form, kartu, hint dan pesan dibungkus `raw()` supaya tidak tercatat di Translation Dictionary; baris data yang sudah tercatat dihapus (migrasi `clean_dictionary_data_values`). |

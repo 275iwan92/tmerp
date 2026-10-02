@@ -62,7 +62,7 @@
         $machines = Maintenance::machines();
         $status = match ($req->status) { 'ACCEPTED' => 'closed', 'REJECTED' => 'cancelled', default => 'draft' };
     @endphp
-    <x-dl::form id="mnt-req-form" :title="'Maintenance Request · '.$req->doc_no" :subtitle="$machines[$req->machine_id] ?? '#'.$req->machine_id"
+    <x-dl::form id="mnt-req-form" :title="'Maintenance Request · '.raw($req->doc_no)" :subtitle="raw($machines[$req->machine_id] ?? '#'.$req->machine_id)"
         panel="top" kind="document" :status="$status" :stage="$open ? 'Open' : ucfirst(strtolower($req->status))" :log="MntLog::forDoc('REQUEST', $req->id_request)"
         :action="route('v2.mnt.request.save', $req->id_request)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
         :hide="['delete', 'confirm', 'duplicate', 'email', 'print']" :tabs="['general' => 'General', 'decision' => 'Decision']"

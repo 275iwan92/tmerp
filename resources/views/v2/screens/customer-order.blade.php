@@ -113,7 +113,7 @@
     @if ($draft && $missingDue->isNotEmpty())<x-dl::alert tone="warn" :message="'⚠ '.$missingDue->count().' baris Product belum ada Due Date (wajib sebelum Confirm).'" />@endif
     @if ($draft && $missingProduct->isNotEmpty())<x-dl::alert tone="warn" :message="'⚠ '.$missingProduct->count().' baris belum terkait Master Product.'" />@endif
 
-    <x-dl::form id="co-form" :title="'Customer Order · '.$o->co_no" :subtitle="($o->customer?->customer_name ?? '—').' · '.$o->entry_mode"
+    <x-dl::form id="co-form" :title="'Customer Order · '.raw($o->co_no)" :subtitle="raw(($o->customer?->customer_name ?? '—').' · '.$o->entry_mode)"
         panel="top" kind="document" :status="CustomerOrder::formStatus($o, $appr['held'])" :pipeline="true"
         :approval-levels="$appr['levels']" :approval-at="$appr['at'] ?: ($o->doc_status === 'SUBMITTED' ? 1 : $appr['levels'])" :can-approve="(bool) $pending"
         :action="route('v2.co.save', $o->id_order)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
@@ -159,7 +159,7 @@
             </x-dl::form.row>
             {{-- Jadwal kirim per baris Product (kosong = saat Confirm dibuat otomatis 1 baris qty penuh @ Due Date). --}}
             @foreach ($o->items->where('line_kind', 'PRODUCT') as $it)
-                <x-dl::divider :label="$it->description.' · '.$num($it->qty).' '.$it->qty_unit.' · due '.(\Devlib\Locale::d($it->due_date) ?? '—')" />
+                <x-dl::divider :label="raw($it->description.' · '.$num($it->qty).' '.$it->qty_unit).' · due '.raw(\Devlib\Locale::d($it->due_date) ?? '—')" />
                 @forelse ($it->deliveries as $d)
                     <x-dl::form.row :cols="4">
                         <x-dl::field.select :name="'deliveries['.$d->id_delivery.'][shipment_type]'" label="Type" :options="['FULL' => 'FULL', 'PARTIAL' => 'PARTIAL']" :value="$d->shipment_type" :source="Src::of('tm2sdi.co_order_delivery.shipment_type')" />

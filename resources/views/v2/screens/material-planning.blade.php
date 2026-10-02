@@ -31,7 +31,7 @@
         <x-dl::button variant="secondary" icon="fa-truck-clock" :label="t('Purchase Lead Time')" :href="route('v2.screen', 'purchase-lead-time')" />
     </x-dl::action-bar>
     @if ($noItem > 0)
-        <x-dl::alert tone="warn" :message="str_replace(':n', (string) $noItem, t(':n material needs have no stock item yet (Master Product only has the specification) or no layout. Pick the item in Material Booking; until then they cannot be checked against stock or ordered.'))" />
+        <x-dl::alert tone="warn" :message="raw(str_replace(':n', (string) $noItem, t(':n material needs have no stock item yet (Master Product only has the specification) or no layout. Pick the item in Material Booking; until then they cannot be checked against stock or ordered.')))" />
     @endif
     @include('v2.screens._dbgrid', ['screen' => $screen])
 

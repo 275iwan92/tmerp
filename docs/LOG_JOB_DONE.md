@@ -3,6 +3,30 @@
 
 ---
 
+## 2026-10-02 -- Kamus penerjemah tidak lagi mencatat nilai data (raw())
+
+Masalah: `DevlibComponent::translateTexts()` menerjemahkan semua prop teks (title, subtitle, description, ...) dan
+`Dictionary::remember()` mencatat teks barunya — termasuk judul form / kartu yang berisi nomor dokumen dan nama customer
+(`Sales Return · CC2600001`, `PT. SELATAN JADI JAYA`). Tiap dokumen yang dibuka menambah satu baris di Translation Dictionary.
+- **Desain (pilihan a, penanda di teks):** `Devlib\Lang::raw($nilai)` (helper `raw()` di tmerp) menandai nilai data dengan dua
+  karakter tak terlihat; `Lang::text()` menerjemahkan hanya label di sekitarnya dan membuang penandanya, jadi berlaku untuk
+  semua komponen dan semua prop teks tanpa mengubah konstruktor satu komponen pun. Penanda dipilih (bukan objek pembungkus
+  atau flag `:translate`) karena prop komponen bertipe `string` dan terjemahan berjalan sebelum atribut komponen terbaca.
+  Grid DevLib tidak disentuh.
+- **Jaring pengaman di `Dictionary::remember()`:** teks berisi nomor dokumen / `#5` (`looksLikeData`) dan teks yang sudah
+  hasil terjemahan (layar memanggil `t()` lalu mengirimnya ke komponen, pesan flash) tidak dicatat. Pilihan (b) saja tidak
+  cukup: nama seperti `PAK MUKRI` tidak bisa dikenali dari bentuknya.
+- **Layar:** 30 berkas view v2 (57 baris) memakai `raw()` — judul / subjudul form dokumen, kartu, hint, pesan, tab berhitung.
+- **Test:** `MultiLanguageAutoTest` (2 test baru) + penjaga `data_in_text_prop` di `MultiLanguageRatchetTest`, sisa 5:
+  `proof-of-delivery.blade.php` (3; berkasnya sedang diubah sesi Customer Invoice, belum di-commit) dan zona beku yang
+  menunggu izin user — judul kartu `ACC customer — ...` di `prodev.blade.php`, hint `Data lama: ...` dan judul kartu
+  `$p['name']` di `inquiry-revise.blade.php`.
+- **Pembersihan:** migrasi `2026_10_02_000150_clean_dictionary_data_values` menghapus baris `ui` yang dicatat otomatis, belum
+  punya terjemahan, dan berisi nomor dokumen / nama master / teks hasil terjemahan / kalimat berangka. `ddtsys`: 59 baris;
+  `tm2sys`: 0 (belum tercemar).
+- **Belum:** pesan flash berisi data yang dikirim sebagai variabel utuh (`:message="$error"`) tidak bisa dibedakan dari
+  label; yang bernomor dokumen tertahan jaring pengaman, sisanya tetap bisa tercatat.
+
 ## 2026-10-02 -- Customer Invoice + AR: keputusan A–E, dokumen akuntansi, Qty Minim = harga borongan
 
 User memberi empat lampiran sistem lama (invoice dan tagihan uang muka: layar + cetakan) dan meminta rencana terbaik

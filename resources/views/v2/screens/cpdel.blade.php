@@ -123,7 +123,7 @@
                 description="When will the goods be ready to load? If it is later than the customer slot, choose the reason: Sales will negotiate with the customer.">
                 <x-dl::form.row cols="4">
                     <x-dl::field.date name="ready_date" label="Ready date" required :value="old('ready_date', $d->ready_at?->toDateString() ?? ($woDue ? substr($woDue, 0, 10) : $d->ship_date?->toDateString()))"
-                        :hint="$woDue ? t('Work Order due').' '.Locale::d($woDue) : null" :source="Src::of('tm2sdi.co_order_delivery.ready_at')" />
+                        :hint="$woDue ? 'Work Order due '.raw(Locale::d($woDue)) : null" :source="Src::of('tm2sdi.co_order_delivery.ready_at')" />
                     <x-dl::field.time name="ready_time" label="Ready time" required :value="old('ready_time', $d->ready_at?->format('H:i') ?? '07:30')" :source="Src::of('tm2sdi.co_order_delivery.ready_at')" />
                     <x-dl::field.select name="reason_code" label="Reason if later than the slot" :options="['' => '—'] + Promise::reasons()" :value="old('reason_code')" :source="Src::of('tm2sdi.co_delay_reason')" />
                     <x-dl::field.text name="note" label="Note" :value="old('note')" :source="Src::of('tm2sdi.co_delivery_negotiation.note')" />
@@ -142,7 +142,7 @@
                     <x-dl::field.date name="ship_date" label="Slot date" required :readonly="$posted" :value="old('ship_date', $d->ship_date?->toDateString())" :source="Src::of('tm2sdi.co_order_delivery.ship_date')" />
                     <x-dl::field.time name="ship_time" label="Slot time" required :value="old('ship_time', $slotTime ?? ($recv?->open_time ? substr($recv->open_time, 0, 5) : '08:00'))" :source="Src::of('tm2sdi.co_order_delivery.ship_time')" />
                     @unless ($posted)
-                        <x-dl::field.decimal name="split_qty" label="Split qty (optional)" :decimals="0" :hint="t('Less than').' '.$num($d->ship_qty).' '.t('to split; empty = move the whole line')" :source="Src::of('tm2sdi.co_order_delivery.ship_qty', 'split_from_id')" />
+                        <x-dl::field.decimal name="split_qty" label="Split qty (optional)" :decimals="0" :hint="'Less than '.raw($num($d->ship_qty)).' to split; empty = move the whole line'" :source="Src::of('tm2sdi.co_order_delivery.ship_qty', 'split_from_id')" />
                     @endunless
                     <x-dl::field.select name="reason_code" label="Reason" :options="['' => '—'] + Promise::reasons()" :value="old('reason_code')" hint="Required when an agreed slot changes or the shipment is split" :source="Src::of('tm2sdi.co_delay_reason')" />
                 </x-dl::form.row>
@@ -195,7 +195,7 @@
             </x-dl::card>
         </form>
     @elseif ($posted)
-        <x-dl::alert tone="info" :message="t('Posted to Production').' '.Locale::dt($d->posted_at).' · '.$d->posted_by.' · Work Order: '.(PrdWo::where('source_delivery_id', $d->id_delivery)->pluck('wo_no')->join(', ') ?: '—').'. '.t('Production output must still be entered.')" />
+        <x-dl::alert tone="info" :message="'Posted to Production '.raw(Locale::dt($d->posted_at).' · '.$d->posted_by).' · Work Order: '.raw(PrdWo::where('source_delivery_id', $d->id_delivery)->pluck('wo_no')->join(', ') ?: '—').'. Production output must still be entered.'" />
     @endif
 
     @if ($planned && ! $posted && Promise::canSell($user) && $siblings->isNotEmpty())

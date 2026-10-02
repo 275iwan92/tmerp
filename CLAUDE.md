@@ -253,6 +253,10 @@ transaksi = `iqp_costing`, ikut inquiry).
   menerjemahkan sendiri; teks lain `t('...')` / `@t('...')` (JS `Devlib.h.t`). Teks baru tercatat otomatis di `sys_dictionary`
   -> terjemahan diisi di **Setup > Translation Dictionary**. Angka/tanggal/jam lewat objek DevLib (`Devlib\Locale`, `NumberValue`,
   `DateValue`, `TimeValue`, `DateTimeValue`, `TextValue`). Dijaga `MultiLanguageRatchetTest` (label Indonesia mentah / format sendiri tidak boleh bertambah).
+- **Nilai DATA di prop teks komponen dibungkus `raw()`** (no. dokumen, nama customer / product, angka, tanggal — di judul form,
+  kartu, hint, pesan): `:title="'Customer Order · '.raw($o->co_no)" :subtitle="raw($customer.' · '.$status)"`. Labelnya tetap
+  English dan tetap diterjemahkan komponen; nilainya tidak diterjemahkan dan **tidak tercatat di kamus** (tanpa `raw()` tiap
+  dokumen yang dibuka menambah satu baris `sys_dictionary`). Kalimat yang sudah jadi lewat `t()` + `str_replace` = `raw()` seluruhnya.
 - Data lama yang masih Indonesia di DB = utang yang dikonversi bertahap (audit & rencana:
   `docs/multilanguage_design.md`); data REAL (mesin/proses/pegawai) & zona beku §6B dikonversi hanya atas izin user.
 

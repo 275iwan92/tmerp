@@ -78,7 +78,7 @@
             'pq' => $pqNo[$l->pq_line_id] ?? '—', 'received' => $trim($l->c_qty_received).' '.$l->i_uom, 'outstanding' => $trim($l->c_qty_outstanding).' '.$l->i_uom, 'tol' => $trim($l->c_tol_pct).'%',
         ])->values()->all();
     @endphp
-    <x-dl::form id="po-form" :title="($cash ? 'Cash PO · ' : 'Purchase Order · ').($po->doc_no ?: 'Draft #'.$po->po_id)" :subtitle="($sup->supplier_name ?? '—').' · '.$po->status"
+    <x-dl::form id="po-form" :title="($cash ? 'Cash PO · ' : 'Purchase Order · ').raw($po->doc_no ?: 'Draft #'.$po->po_id)" :subtitle="raw(($sup->supplier_name ?? '—').' · '.$po->status)"
         panel="top" kind="document" :status="PurchaseOrder::formStatus($po, $held)" :pipeline="true" :approval-levels="max(1, $appr['levels'])" :approval-at="$appr['at'] ?: $approved + 1"
         :can-approve="(bool) $pending" :log="$log"
         :action="route('v2.po.save', $po->po_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['cancel', 'duplicate', 'email', 'print']"

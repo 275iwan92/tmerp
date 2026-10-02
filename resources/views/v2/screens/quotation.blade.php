@@ -75,7 +75,7 @@
     @endphp
     <form method="post" action="{{ route('v2.quotation.create') }}">
         @csrf
-        <x-dl::card :title="'Quotation baru — '.($same[0]['customer'] ?? 'customer')" description="One quotation = one customer. Tick other inquiries of the same customer if they are quoted too; every qty tier becomes a line.">
+        <x-dl::card :title="'Quotation baru — '.raw($same[0]['customer'] ?? 'customer')" description="One quotation = one customer. Tick other inquiries of the same customer if they are quoted too; every qty tier becomes a line.">
             @if (! $same)
                 <x-dl::alert tone="warn" message="This inquiry is no longer available (already quoted or not yet priced)." />
             @else
@@ -112,11 +112,11 @@
             'source' => $it->inquiry ? $it->inquiry->inquiry_no.($it->source_type === 'INQUIRY_TOOLING' ? ' · tooling (biaya sekali)' : ' · jenjang qty') : 'Baris bebas',
         ])->values()->all();
     @endphp
-    @if ($status === 'LOST')<x-dl::alert tone="danger" :message="'LOST — '.($lostReason ?: 'tanpa alasan')" />@endif
-    @if ($status === 'CANCELLED')<x-dl::alert tone="info" :message="'Cancelled — '.($q->cancel_reason ?: 'tanpa alasan')" />@endif
+    @if ($status === 'LOST')<x-dl::alert tone="danger" :message="'LOST — '.raw($lostReason ?: 'tanpa alasan')" />@endif
+    @if ($status === 'CANCELLED')<x-dl::alert tone="info" :message="'Cancelled — '.raw($q->cancel_reason ?: 'tanpa alasan')" />@endif
     @if ($status === 'WON' && $order)<x-dl::alert tone="success" :message="'WIN — Customer Order '.$order->co_no.' sudah dibuat.'" />@endif
 
-    <x-dl::form id="quotation-form" :title="'Quotation · '.$q->quotation_no" :subtitle="($q->customer?->customer_name ?? '—').' · '.$status"
+    <x-dl::form id="quotation-form" :title="'Quotation · '.raw($q->quotation_no)" :subtitle="raw(($q->customer?->customer_name ?? '—').' · '.$status)"
         panel="top" kind="document" :status="$formStatus" :pipeline="true"
         :action="route('v2.quotation.save', $q->id_quotation)" action-field="action" :back="$home" :new-url="$home.'?pick=1'"
         :hide="['print', 'email', 'cancel']"

@@ -56,7 +56,7 @@
         $lines = $do->lines->map(fn ($l) => ['id_line' => $l->id_line, 'co_order_item_id' => $l->co_order_item_id, 'item_description' => $l->item_description,
             'qty_do' => (float) $l->qty_do, 'qty_unit' => $l->qty_unit])->values()->all();
     @endphp
-    <x-dl::form id="subcon-dn-form" :title="t('Subcontract Delivery Note').' · '.($do->do_no ?: 'Draft #'.$do->id_delivery)" :subtitle="($do->supplier?->supplier_name ?? '—').' · '.$do->status"
+    <x-dl::form id="subcon-dn-form" :title="'Subcontract Delivery Note · '.raw($do->do_no ?: 'Draft #'.$do->id_delivery)" :subtitle="raw(($do->supplier?->supplier_name ?? '—').' · '.$do->status)"
         panel="top" kind="document" :status="SubconDelivery::formStatus($do)"
         :action="route('v2.subcon.save', $do->id_delivery)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
         :tabs="['general' => 'General', 'delivery' => 'Delivery', 'notes' => 'Notes']"

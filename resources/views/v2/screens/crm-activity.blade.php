@@ -66,7 +66,7 @@
         $stage = $new ? null : ($a->next_action_date ? ($a->next_done ? t('Follow-up done') : t('Follow-up open')) : null);
         $contacts = CrmActivities::contactOptions($customer->id_customer);
     @endphp
-    <x-dl::form id="crm-activity-form" :title="t('Activity').' · '.$customer->customer_name" :subtitle="$from ? t('Result of the follow-up').': '.($from->next_action ?: '—') : $customer->customer_code"
+    <x-dl::form id="crm-activity-form" :title="'Activity · '.raw($customer->customer_name)" :subtitle="$from ? 'Result of the follow-up: '.raw($from->next_action ?: '—') : raw($customer->customer_code)"
         panel="top" kind="master" :status="$new ? 'new' : 'active'" :stage="$stage" :can-input="$edit" :hide="['deactivate', 'activate']"
         :action="$new ? route('v2.crm.activity.store') : route('v2.crm.activity.save', $a->id_activity)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
         :hidden="$new ? ['customer_id' => $customer->id_customer, 'from' => $from?->id_activity] : []"

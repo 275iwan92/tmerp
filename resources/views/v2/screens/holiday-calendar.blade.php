@@ -32,7 +32,7 @@
         $new = ! $h;
         $v = $h ?? new SysHoliday(['holiday_date' => request('date'), 'holiday_type' => 'COMPANY', 'activate' => true]);
     @endphp
-    <x-dl::form id="holiday-form" :title="'Holiday · '.($new ? 'New' : WorkCalendar::name($v->holiday_name))" panel="top" kind="master"
+    <x-dl::form id="holiday-form" :title="'Holiday · '.($new ? 'New' : raw(WorkCalendar::name($v->holiday_name)))" panel="top" kind="master"
         :status="$new ? 'new' : ($v->activate ? 'active' : 'inactive')" :action="route('v2.holiday.save')" action-field="action"
         :back="$home.'?year='.$year" :new-url="$home.'?year='.$year.'&new=1'" :hidden="($h ? ['id' => $h->id_holiday] : []) + ['year' => $year]"
         :created-by="$v->created_by" :created-at="$v->created_at?->toDateTimeString()" :updated-by="$v->updated_by" :updated-at="$v->updated_at?->toDateTimeString()">

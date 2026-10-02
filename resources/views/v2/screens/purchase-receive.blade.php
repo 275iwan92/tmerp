@@ -132,7 +132,7 @@
             'i_next_process' => $l->i_next_process, 'i_lot_no' => $l->i_lot_no, 'short' => (float) $l->c_qty_short > 0 ? \Devlib\Locale::decimal($l->c_qty_short, 2).' — '.$l->i_short_note : '—',
         ])->values()->all();
     @endphp
-    <x-dl::form id="pv-special" :title="($isCust ? 'Material from Customer · ' : 'Return from Subcon · ').$pv->label()" :subtitle="$party.' · '.$pv->status"
+    <x-dl::form id="pv-special" :title="($isCust ? 'Material from Customer · ' : 'Return from Subcon · ').raw($pv->label())" :subtitle="raw($party.' · '.$pv->status)"
         panel="top" kind="document" :status="PurchaseReceive::formStatus($pv)" :pipeline="true"
         :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1&type='.$pv->i_receipt_type"
         :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $draft ? [] : ['delete'])"
@@ -218,7 +218,7 @@
     @endphp
     @if ($blockers)<x-dl::alert tone="warn" :message="'Belum bisa Confirm (Post): '.implode(' ', $blockers)" />@endif
 
-    <x-dl::form id="pv-form" :title="'Penerimaan Barang · '.$pv->label()" :subtitle="($sup->supplier_name ?? '—').' · '.$pv->status"
+    <x-dl::form id="pv-form" :title="'Penerimaan Barang · '.raw($pv->label())" :subtitle="raw(($sup->supplier_name ?? '—').' · '.$pv->status)"
         panel="top" kind="document" :status="PurchaseReceive::formStatus($pv)" :pipeline="true"
         :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $pv->status === 'DRAFT' ? [] : ['delete'])"
         :tabs="['general' => 'General', 'supplier' => 'Supplier', 'notes' => 'Notes']"

@@ -80,7 +80,7 @@
 
     <x-mp::sales.product-tree :tree="$doc['tree']" :product="$doc['name']">
         <div data-pm-panel="product">
-            <x-dl::card :title="$doc['name']" description="Product · all parts born from the Inquiry when the Quotation is WON">
+            <x-dl::card :title="raw($doc['name'])" description="Product · all parts born from the Inquiry when the Quotation is WON">
                 <div class="mp-thumbs">
                     @foreach ($doc['components'] as $c)
                         <x-mp::image-thumb :label="$c['name']" :src="$c['artwork']" empty="belum ada artwork" />
@@ -93,7 +93,7 @@
         </div>
         @foreach ($flat($doc['tree']) as $n)
             <div data-pm-panel="{{ $n['id'] }}" hidden>
-                <x-dl::card :title="$n['name']" :description="$n['kind'] === 'ASSEMBLY' ? 'Rakitan · '.($n['join'] ?? 'sambungan belum diisi').' · '.count($n['children']).' komponen' : 'Komponen · '.($n['code'] ?? '').($n['flat'] ? ' · bentangan '.$n['flat'] : '')">
+                <x-dl::card :title="raw($n['name'])" :description="$n['kind'] === 'ASSEMBLY' ? 'Rakitan · '.raw(($n['join'] ?? 'sambungan belum diisi').' · '.count($n['children'])).' komponen' : 'Komponen · '.raw(($n['code'] ?? '').($n['flat'] ? ' · bentangan '.$n['flat'] : ''))">
                     @if ($n['kind'] === 'ASSEMBLY')
                         <x-dl::alert tone="warn" :message="str_contains((string) $n['join_code'], 'DOUBLE') ? 'Direkatkan 2 sisi — setelah menyatu TIDAK bisa dibentangkan lagi (dampak ke packing & volume kirim).' : 'Direkatkan 1 sisi — masih bisa dibentangkan.'" />
                         <div class="mp-thumbs">@foreach ($n['children'] as $c)<x-mp::image-thumb :label="$c['name']" :src="$c['artwork']" empty="belum ada artwork" />@endforeach</div>

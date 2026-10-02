@@ -57,7 +57,7 @@
             'price_note' => $l->price_overridden ? 'Diubah dari '.$money($l->original_unit_price) : 'Harga CO', 'invoiced' => \Devlib\Locale::decimal($l->qty_invoiced, 2),
         ])->values()->all();
     @endphp
-    <x-dl::form id="do-form" :title="'Delivery Order · '.($do->do_no ?: 'Draft #'.$do->id_delivery)" :subtitle="($do->customer?->customer_name ?? '—').' · '.$do->status"
+    <x-dl::form id="do-form" :title="'Delivery Order · '.raw($do->do_no ?: 'Draft #'.$do->id_delivery)" :subtitle="raw(($do->customer?->customer_name ?? '—').' · '.$do->status)"
         panel="top" kind="document" :status="DeliveryOrder::formStatus($do)" :pipeline="true"
         :action="route('v2.do.save', $do->id_delivery)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['delete', 'duplicate', 'email', 'print']"
         :tabs="['general' => 'General', 'delivery' => 'Delivery', 'notes' => 'Notes']"

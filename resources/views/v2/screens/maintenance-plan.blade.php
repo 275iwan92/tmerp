@@ -53,7 +53,7 @@
         $cmp = $plan ? Maintenance::compliance($plan) : null;
         $num = fn ($v) => $v === null ? '—' : Locale::number((float) $v, 0);
     @endphp
-    <x-dl::form id="mnt-plan-form" :title="'Preventive Plan · '.($p->plan_code ?: 'New')" :subtitle="$new ? null : (Maintenance::machines()[$p->machine_id] ?? null)"
+    <x-dl::form id="mnt-plan-form" :title="'Preventive Plan · '.raw($p->plan_code ?: 'New')" :subtitle="$new ? null : raw(Maintenance::machines()[$p->machine_id] ?? null)"
         panel="top" kind="master" :status="$new ? 'new' : ($p->activate ? 'active' : 'inactive')" :can-input="$head" :log="$plan ? MntLog::forDoc('PLAN', $plan->id_plan) : []"
         :action="route('v2.mnt.plan.save')" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hidden="$plan ? ['id' => $plan->id_plan] : []"
         :tabs="['general' => 'General', 'trigger' => 'Trigger', 'notes' => 'Notes']"
@@ -106,7 +106,7 @@
         </x-slot:notes>
         @if ($plan)
             <x-slot:detail>
-                <x-dl::tabs :tabs="['tasks' => 'Tasks ('.$plan->tasks->count().')', 'parts' => 'Spare Parts ('.$plan->parts->count().')']">
+                <x-dl::tabs :tabs="['tasks' => 'Tasks ('.raw($plan->tasks->count()).')', 'parts' => 'Spare Parts ('.raw($plan->parts->count()).')']">
                     <x-slot:tasks>
                         <x-dl::lines name="tasks" title="Tasks" key-field="id_plan_task" remove-field="remove" :addable="false" :duplicable="false" :min-rows="0"
                             :rows="Maintenance::planTasks($plan)" :readonly="! $head" source="{{ Src::of('tm2prd.mnt_plan_task') }}"

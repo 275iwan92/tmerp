@@ -19,7 +19,8 @@ class MultiLanguageRatchetTest extends TestCase
         'number_format_id' => 0,
         'format_d_M_Y' => 0,
         'js_locale_id' => 0,
-        'js_id_text' => 43,      // sisa = separuh Indonesia tabel dua bahasa di core.js (LOGIN_T, AUTH_T, PRESET_T, kata bilangan) + 4 bukan teks layar (hash '#kode', atribut dev 'kolom', salah tangkap di grid.js). 42 -> 44 hanya karena daftar kata penjaga diperluas 2026-10-02; 44 -> 43: teks chat.js pindah ke T('ch_*'). Teks baru: T('kunci') + pasangan Devlib\Lang
+        'data_in_text_prop' => 5,  // 2026-10-02: sisa = proof-of-delivery (3; berkasnya sedang diubah sesi Customer Invoice) + zona beku, menunggu izin user: prodev (judul kartu ACC customer) + inquiry-revise (hint Data lama)
+        'js_id_text' => 43,     // sisa = separuh Indonesia tabel dua bahasa di core.js (LOGIN_T, AUTH_T, PRESET_T, kata bilangan) + 4 bukan teks layar (hash '#kode', atribut dev 'kolom', salah tangkap di grid.js). 42 -> 44 hanya karena daftar kata penjaga diperluas 2026-10-02; 44 -> 43: teks chat.js pindah ke T('ch_*'). Teks baru: T('kunci') + pasangan Devlib\Lang
     ];
 
     /** @return array<string, int> */
@@ -38,6 +39,7 @@ class MultiLanguageRatchetTest extends TestCase
             foreach (array_merge($m[1], $m[2]) as $text) {
                 $c['id_label'] += $text !== '' && Dictionary::looksIndonesian($text) ? 1 : 0;
             }
+            $c['data_in_text_prop'] += count(self::dataInTextProps($src));
         }
         foreach ($js as $f) {
             $src = preg_replace('#^\s*//.*$#m', '', $f->getContents());
@@ -49,6 +51,35 @@ class MultiLanguageRatchetTest extends TestCase
         }
 
         return $c;
+    }
+
+    // Prop teks x-dl::* yang MENYAMBUNG label English dengan nilai data tanpa raw(): 'Customer Order · '.$o->co_no. Komponen
+    // menerjemahkan seluruh teks itu, jadi tiap dokumen yang dibuka mencatat satu baris kamus baru. Yang benar:
+    // 'Customer Order · '.raw($o->co_no). Button / Badge tidak diterjemahkan; teks berbahasa Indonesia tidak dicatat kamus.
+    /** @return list<string> */
+    public static function dataInTextProps(string $src): array
+    {
+        $found = [];
+        preg_match_all('/<x-dl::([\w.\-]+)((?:\s+(?:[^>"\']|"[^"]*"|\'[^\']*\')*?)?)\/?>/s', $src, $tags, PREG_SET_ORDER);
+        foreach ($tags as [, $component, $attrs]) {
+            if (in_array($component, ['button', 'badge'], true)) {
+                continue;
+            }
+            preg_match_all('/\s:(?:label|title|subtitle|description|hint|placeholder|tooltip|message|text|caption|heading|add-label)="([^"]*)"/', $attrs, $m);
+            foreach ($m[1] as $expr) {
+                $literals = [];
+                $code = preg_replace_callback("/'((?:[^'\\\\]|\\\\.)*)'/", function ($q) use (&$literals) {
+                    $literals[] = $q[1];
+
+                    return "''";
+                }, $expr);
+                if (str_contains($code, '$') && ! str_contains($code, 'raw(') && preg_match('/(?<!\d)\.(?!\d)/', $code) && ! Dictionary::looksIndonesian(implode(' ', $literals))) {
+                    $found[] = $expr;
+                }
+            }
+        }
+
+        return $found;
     }
 
     // Setiap T('kunci') / Tf('kunci') di JS DevLib wajib punya pasangan [ID, EN] di Devlib\Lang (kalau tidak, kunci mentah tampil).
@@ -72,7 +103,7 @@ class MultiLanguageRatchetTest extends TestCase
         $now = self::currentCounts();
         foreach (self::BASELINE as $key => $max) {
             $this->assertLessThanOrEqual($max, $now[$key],
-                "'{$key}' naik ({$now[$key]} > {$max}). Tulis label English (x-dl::* otomatis diterjemahkan, teks lain t()/@t), angka & tanggal lewat Devlib\\Locale/NumberValue/DateValue.");
+                "'{$key}' naik ({$now[$key]} > {$max}). Tulis label English (x-dl::* otomatis diterjemahkan, teks lain t()/@t), angka & tanggal lewat Devlib\\Locale/NumberValue/DateValue, nilai data di prop teks dibungkus raw().");
             $this->assertSame($max, $now[$key], "'{$key}' turun ke {$now[$key]} (baseline {$max}) -- bagus. Turunkan BASELINE di MultiLanguageRatchetTest.");
         }
     }

@@ -91,9 +91,9 @@
     @endphp
     @if ($wo->needs_machine_stop && $impact['downtime'])
         <x-dl::alert :tone="$impact['downtime_id'] && str_contains($impact['downtime'], 'running') ? 'danger' : 'info'"
-            :message="'Machine impact — machine status: '.$impact['status'].' · downtime #'.$impact['downtime_id'].': '.$impact['downtime'].($impact['support'] ? ' · support equipment (not on the Scheduling Board)' : ' · production operations on this machine are rerouted in the WO Worklist').'. Done = downtime closed, machine Ready, OEE availability counted.'" />
+            :message="'Machine impact — machine status: '.raw($impact['status'].' · downtime #'.$impact['downtime_id'].': '.$impact['downtime']).($impact['support'] ? ' · support equipment (not on the Scheduling Board)' : ' · production operations on this machine are rerouted in the WO Worklist').'. Done = downtime closed, machine Ready, OEE availability counted.'" />
     @endif
-    <x-dl::form id="mnt-wo-form" :title="'Maintenance Work Order · '.($wo->doc_no ?: 'Draft #'.$wo->id_wo)" :subtitle="$machines[$wo->machine_id] ?? '#'.$wo->machine_id"
+    <x-dl::form id="mnt-wo-form" :title="'Maintenance Work Order · '.raw($wo->doc_no ?: 'Draft #'.$wo->id_wo)" :subtitle="raw($machines[$wo->machine_id] ?? '#'.$wo->machine_id)"
         panel="top" kind="document" :status="$formStatus" :stage="$stage" :pipeline="true" :can-reopen="$head && $wo->work_status === 'SCHEDULED'" :log="MntLog::forDoc('WO', $wo->id_wo)"
         :action="route('v2.mnt.wo.save', $wo->id_wo)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="$hide"
         :tabs="['general' => 'General', 'failure' => 'Failure', 'plan' => 'Schedule']"
@@ -154,7 +154,7 @@
             </x-dl::form.row>
         </x-slot:plan>
         <x-slot:detail>
-            <x-dl::tabs :tabs="['checklist' => 'Checklist ('.$wo->tasks->count().')', 'parts' => 'Spare Parts ('.$wo->parts->count().')', 'labor' => 'Labor ('.$wo->labor->count().')']">
+            <x-dl::tabs :tabs="['checklist' => 'Checklist ('.raw($wo->tasks->count()).')', 'parts' => 'Spare Parts ('.raw($wo->parts->count()).')', 'labor' => 'Labor ('.raw($wo->labor->count()).')']">
                 <x-slot:checklist>
                     <x-dl::lines name="tasks" title="Checklist" key-field="id_wo_task" :remove-field="$draft ? 'remove' : null" row-lock="editable" :addable="false" :duplicable="false" :min-rows="0"
                         :rows="Maintenance::tasks($wo)" :readonly="! ($draft || $working)" source="{{ Src::of('tm2prd.mnt_wo_task') }}"

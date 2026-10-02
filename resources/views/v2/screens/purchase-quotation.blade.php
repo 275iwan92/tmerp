@@ -25,9 +25,9 @@
     {{-- Bandingkan: baris PR x supplier (PQ Confirmed), pilih pemenang per baris -> Buat PO. --}}
     <form method="post" action="{{ route('v2.pq.po') }}">
         @csrf
-        <x-dl::card :title="t('Compare Quotations').' — '.$compare['pr']->doc_no" description="Unit price in IDR (after the rate). Ticked by default = the cheapest with the same unit as the PR; you may change it (e.g. faster lead time) or Skip.">
+        <x-dl::card :title="'Compare Quotations — '.raw($compare['pr']->doc_no)" description="Unit price in IDR (after the rate). Ticked by default = the cheapest with the same unit as the PR; you may change it (e.g. faster lead time) or Skip.">
             <x-dl::pick-matrix name="pick" unit="PO" :source="Src::of('tm2pur.pq_line', 'tm2pur.pq_quotation (CONFIRMED)', 'tm2pur.pr_line')"
-                :columns="collect($compare['suppliers'])->mapWithKeys(fn ($s) => [$s['pq_id'] => ['label' => $s['name'], 'sub' => $s['no'].' · '.($s['term'] ?: t('terms').' —').' · '.t('until').' '.$s['valid']]])->all()"
+                :columns="collect($compare['suppliers'])->mapWithKeys(fn ($s) => [$s['pq_id'] => ['label' => raw($s['name']), 'sub' => $s['no'].' · '.($s['term'] ?: t('terms').' —').' · '.t('until').' '.$s['valid']]])->all()"
                 :rows="collect($compare['rows'])->map(fn ($r) => ['key' => $r['pr_line_id'], 'label' => $r['label'], 'sub' => $r['qty'], 'default' => $r['cheapest'], 'locked' => $r['done'] ? t('Already ordered') : null,
                     'cells' => collect($r['cells'])->map(fn ($c) => ['value' => $c['pq_line_id'], 'text' => \Devlib\Locale::number($c['price'], 0).' / '.$c['uom'],
                         'sub' => $c['lead'] ? 'lead '.$c['lead'].' '.t('days') : null, 'disabled' => $c['ordered'] ? t('Already ordered (PO)') : (! $c['same_uom'] ? t('Unit differs from the PR') : null)])->all()])->all()" />
@@ -102,9 +102,9 @@
         ])->values()->all();
     @endphp
     @if ($draft && in_array($pq->extract_status, ['CHECK', 'MANUAL', 'FAILED'], true))
-        <x-dl::alert tone="warn" :message="(PurchaseQuotation::READ_LABELS[$pq->extract_status] ?? '').': '.($pq->extract_note ?: t('lines marked ⚠ are not a sure match — choose the PR line / Material Master item, check qty, unit and price, then Confirm.'))" />
+        <x-dl::alert tone="warn" :message="(PurchaseQuotation::READ_LABELS[$pq->extract_status] ?? '').': '.raw($pq->extract_note ?: t('lines marked ⚠ are not a sure match — choose the PR line / Material Master item, check qty, unit and price, then Confirm.'))" />
     @endif
-    <x-dl::form id="pq-form" :title="'Purchase Quotation · '.($pq->doc_no ?: 'Draft #'.$pq->pq_id)" :subtitle="(PurchaseOrder::suppliers([$pq->i_supplier_id])[$pq->i_supplier_id] ?? ($pq->i_supplier_text ?: t('supplier not chosen yet'))).' · '.$pq->status"
+    <x-dl::form id="pq-form" :title="'Purchase Quotation · '.raw($pq->doc_no ?: 'Draft #'.$pq->pq_id)" :subtitle="raw((PurchaseOrder::suppliers([$pq->i_supplier_id])[$pq->i_supplier_id] ?? ($pq->i_supplier_text ?: t('supplier not chosen yet'))).' · '.$pq->status)"
         panel="top" kind="document" :status="PurchaseQuotation::formStatus($pq)"
         :action="route('v2.pq.save', $pq->pq_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
         :tabs="['general' => 'General', 'file' => 'Quotation File', 'notes' => 'Notes']"

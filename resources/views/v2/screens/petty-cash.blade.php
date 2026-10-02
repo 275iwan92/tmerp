@@ -24,7 +24,7 @@
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
-<x-dl::card :title="$fund->petty_name.' · '.$fund->petty_code" :description="'Custodian: '.PettyCash::custodianName($fund).' · account 111400 Petty Cash · cash PO limit '.$rp(PurchaseOrder::maxCash()).' (Constants PO_CASH_MAX)'">
+<x-dl::card :title="raw($fund->petty_name.' · '.$fund->petty_code)" :description="'Custodian: '.raw(PettyCash::custodianName($fund)).' · account 111400 Petty Cash · cash PO limit '.raw($rp(PurchaseOrder::maxCash()).' (Constants PO_CASH_MAX)')">
     <div class="dl-grid__stats">
         <x-dl::stat-box label="Imprest Limit" :value="$rp($sum['imprest'])" :sub="$sum['imprest'] === null ? 'not set — open Setting' : null" />
         <x-dl::stat-box label="Cash on Hand" :value="$rp($sum['balance'])" tone="success" />
@@ -40,7 +40,7 @@
 </x-dl::card>
 
 @if ($tx)
-    <x-dl::card :title="(\App\Models\Acc\FinPettyCashTx::TYPES[$tx->tx_type] ?? $tx->tx_type).' · '.$tx->tx_no" :description="'Status: '.($tx->status === 'POSTED' ? 'Posted' : 'Cancelled')">
+    <x-dl::card :title="(\App\Models\Acc\FinPettyCashTx::TYPES[$tx->tx_type] ?? $tx->tx_type).' · '.raw($tx->tx_no)" :description="$tx->status === 'POSTED' ? 'Status: Posted' : 'Status: Cancelled'">
         <x-dl::form.row :cols="4">
             <x-dl::field.display label="Date" :value="\Devlib\Locale::d($tx->tx_date)" :source="Src::of('tm2acc.fin_petty_cash_tx.tx_date')" />
             <x-dl::field.display label="Cash PO" :value="$tx->po_no ?: '—'" :source="Src::of('tm2acc.fin_petty_cash_tx.po_no')" />
@@ -58,7 +58,7 @@
         @endif
         <x-dl::action-bar><x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('petty-cash', $tx->id_petty_tx)" target="_blank" /></x-dl::action-bar>
         @if ($tx->status !== 'POSTED')
-            <x-dl::alert tone="warn" :message="'Cancelled by '.$tx->cancelled_by.' · '.\Devlib\Locale::dt($tx->cancelled_at).' — '.$tx->cancel_reason" />
+            <x-dl::alert tone="warn" :message="'Cancelled by '.raw($tx->cancelled_by.' · '.\Devlib\Locale::dt($tx->cancelled_at).' — '.$tx->cancel_reason)" />
         @endif
     </x-dl::card>
     @if ($tx->status === 'POSTED')
@@ -80,7 +80,7 @@
         $shop = $po->i_shop_name ?: (PurchaseOrder::suppliers([$po->i_supplier_id])[$po->i_supplier_id] ?? '—');
         $advance = PettyCashService::advanceOf($po);
     @endphp
-    <x-dl::card :title="'Cash PO '.$po->doc_no.' · '.$shop" :description="'Mode: '.(PurchaseOrder::CASH_MODES[$po->i_cash_mode] ?? '—').' · PO status '.$po->status.' · total '.$rp($po->c_grand_total)">
+    <x-dl::card :title="'Cash PO '.raw($po->doc_no.' · '.$shop)" :description="'Mode: '.raw(PurchaseOrder::CASH_MODES[$po->i_cash_mode] ?? '—').' · PO status '.raw($po->status).' · total '.raw($rp($po->c_grand_total))">
         <x-dl::table :source="Src::of('tm2pur.po_line')" :columns="['item' => 'Item', 'qty' => ['Qty', 'num' => true], 'uom' => 'UoM', 'est' => ['Estimate', 'num' => true, 'money' => true]]"
             :rows="$po->lines->map(fn ($l) => ['item' => $l->i_description, 'qty' => (float) $l->i_qty, 'uom' => $l->i_uom, 'est' => (float) $l->c_line_net])->all()" />
     </x-dl::card>
@@ -102,10 +102,10 @@
         <form method="post" action="{{ route('v2.petty.settle', $po->po_id) }}" enctype="multipart/form-data">
             @csrf
             <x-dl::card :title="$step === 'SETTLE' ? 'Advance Settlement' : 'Reimburse'"
-                :description="$step === 'SETTLE' ? 'Advance '.$advance->tx_no.' '.$rp($advance->advance_amount).' to '.$advance->receiver_name.'. Enter the receipt amount per line; change or shortfall is calculated automatically.' : 'Enter the receipt amount per line; the buyer is paid back from petty cash.'">
+                :description="$step === 'SETTLE' ? 'Advance '.raw($advance->tx_no.' '.$rp($advance->advance_amount)).' to '.raw($advance->receiver_name).'. Enter the receipt amount per line; change or shortfall is calculated automatically.' : 'Enter the receipt amount per line; the buyer is paid back from petty cash.'">
                 <x-dl::form.row :cols="2">
                     @foreach ($po->lines as $l)
-                        <x-dl::field.money :name="'nota['.$l->po_line_id.']'" :label="'Receipt: '.$l->i_description.' ('.\Devlib\Locale::decimal($l->i_qty, 2).' '.$l->i_uom.')'" required :value="old('nota.'.$l->po_line_id, (float) $l->c_line_net)" :source="Src::of('tm2pur.po_line.i_price (from receipt)')" />
+                        <x-dl::field.money :name="'nota['.$l->po_line_id.']'" :label="'Receipt: '.raw($l->i_description.' ('.\Devlib\Locale::decimal($l->i_qty, 2).' '.$l->i_uom.')')" required :value="old('nota.'.$l->po_line_id, (float) $l->c_line_net)" :source="Src::of('tm2pur.po_line.i_price (from receipt)')" />
                     @endforeach
                 </x-dl::form.row>
                 <x-dl::form.row :cols="2">

@@ -56,7 +56,7 @@
         $lines = $doc->lines->map(fn ($l) => ['id_invoice_receipt_line' => $l->id_invoice_receipt_line, 'invoice_id' => $l->invoice_id, 'supplier_invoice_no' => $l->supplier_invoice_no,
             'invoice_date' => $l->invoice_date?->toDateString(), 'po_id' => $l->po_id, 'tax_invoice_no' => $l->tax_invoice_no, 'amount' => (float) $l->amount])->values()->all();
     @endphp
-    <x-dl::form id="supplier-invoice-receipt-form" :title="t('Supplier Invoice Receipt').' · '.($doc->receipt_no ?: 'Draft #'.$doc->id_invoice_receipt)" :subtitle="($doc->supplier?->supplier_name ?? '—').' · '.$doc->status()"
+    <x-dl::form id="supplier-invoice-receipt-form" :title="'Supplier Invoice Receipt · '.raw($doc->receipt_no ?: 'Draft #'.$doc->id_invoice_receipt)" :subtitle="raw(($doc->supplier?->supplier_name ?? '—').' · '.$doc->status())"
         panel="top" kind="document" :status="SupplierInvoiceReceipt::formStatus($doc)"
         :action="route('v2.invoice-receipt.save', $doc->id_invoice_receipt)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
         :tabs="['general' => 'General', 'attachments' => 'Attachments', 'notes' => 'Notes']"

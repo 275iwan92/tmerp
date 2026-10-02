@@ -40,7 +40,7 @@
         $lines = $do->lines->map(fn ($l) => ['id_line' => $l->id_line, 'item_description' => $l->item_description, 'qty_do' => (float) $l->qty_do, 'qty_unit' => $l->qty_unit,
             'co' => '#'.$l->co_order_id.' · item '.$l->co_order_item_id])->values()->all();
     @endphp
-    <x-dl::form id="sj-form" :title="'Surat Jalan · '.$do->do_no" :subtitle="($do->customer?->customer_name ?? '—').' · '.$do->status"
+    <x-dl::form id="sj-form" :title="'Surat Jalan · '.raw($do->do_no)" :subtitle="raw(($do->customer?->customer_name ?? '—').' · '.$do->status)"
         panel="top" kind="document" :status="DeliveryOrder::formStatus($do)" :pipeline="true" :can-input="false"
         :action="route('v2.do.save', $do->id_delivery)" action-field="action" :back="$home" :hidden="['from' => 'delivery-notes']" :hide="['cancel', 'draft', 'email', 'print']"
         :tabs="['delivery' => 'Delivery']"

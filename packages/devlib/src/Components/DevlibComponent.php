@@ -2,6 +2,9 @@
 
 namespace Devlib\Components;
 
+use Devlib\Access;
+use Devlib\Lang;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Component;
 
 // Induk SEMUA komponen DevLib. Tiap turunan otomatis membawa "KTP" (atribut
@@ -46,6 +49,8 @@ abstract class DevlibComponent extends Component
     // Teks tampilan otomatis ikut bahasa (LOCKED user 2026-10-01): layar menulis ENGLISH, kamus menerjemahkan ke bahasa
     // tampilan/cetak -- layar tidak perlu memanggil apa pun. Turunan boleh mengubah daftar (Button/Badge: kosong, istilah
     // tombol & status selalu English). Teks bebas milik data (nilai isian, isi baris) TIDAK diterjemahkan.
+    // Prop teks yang memuat NILAI DATA (no. dokumen, nama customer di judul form / kartu): nilainya dibungkus Lang::raw()
+    // (helper raw() di tmerp) supaya tidak diterjemahkan dan tidak tercatat di kamus -- lihat Devlib\Lang::raw().
     protected const TEXT_PROPS = ['label', 'title', 'subtitle', 'description', 'hint', 'placeholder', 'tooltip', 'message', 'text', 'search', 'empty', 'caption', 'heading', 'addLabel'];
 
     // Array berisi label: [['label' => ..], ..] atau [kunci => label | [label, ikon]]; parties/criteria: kunci = label.
@@ -61,7 +66,7 @@ abstract class DevlibComponent extends Component
             return;
         }
         $this->translated = true;
-        $tr = fn ($v) => is_string($v) ? \Devlib\Lang::text($v) : $v;
+        $tr = fn ($v) => is_string($v) ? Lang::text($v) : $v;
         foreach (static::TEXT_PROPS as $p) {
             if (property_exists($this, $p) && is_string($this->{$p} ?? null)) {
                 $this->{$p} = $tr($this->{$p});
@@ -82,6 +87,12 @@ abstract class DevlibComponent extends Component
                 $this->{$p} = array_combine(array_map(fn ($k) => is_string($k) ? $tr($k) : $k, array_keys($this->{$p})), $this->{$p});
             }
         }
+        // Lang::raw() di prop yang tidak diterjemahkan (label tombol / badge): penandanya tetap dibuang.
+        foreach (get_object_vars($this) as $p => $v) {
+            if (is_string($v) && Lang::hasRaw($v)) {
+                $this->{$p} = Lang::plain($v);
+            }
+        }
     }
 
     public function resolveView()
@@ -90,8 +101,8 @@ abstract class DevlibComponent extends Component
         $view = parent::resolveView();
 
         return function (array $data = []) use ($view) {
-            if ($this->ability !== null && ! \Devlib\Access::can($this->ability)) {
-                return new \Illuminate\Support\HtmlString('');
+            if ($this->ability !== null && ! Access::can($this->ability)) {
+                return new HtmlString('');
             }
 
             return $view instanceof \Closure ? $view($data) : $view;

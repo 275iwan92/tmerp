@@ -78,7 +78,7 @@
         $lines = $doc->items->map(fn ($i) => ['id_complaint_item' => $i->id_complaint_item, 'product_id' => $i->product_id, 'product_id_label' => $names[$i->product_id] ?? '',
             'product_name' => $i->product_name, 'qty_complaint' => (float) $i->qty_complaint, 'qty_return' => (float) $i->qty_return, 'qty_unit' => $i->qty_unit, 'defect_note' => $i->defect_note])->values()->all();
     @endphp
-    <x-dl::form id="crm-complaint-form" :title="t(CrmComplaint::TYPES[$doc->complaint_type]).' · '.($doc->complaint_no ?: 'Draft #'.$doc->id_complaint)" :subtitle="$doc->customer?->customer_name ?? '—'"
+    <x-dl::form id="crm-complaint-form" :title="CrmComplaint::TYPES[$doc->complaint_type].' · '.raw($doc->complaint_no ?: 'Draft #'.$doc->id_complaint)" :subtitle="raw($doc->customer?->customer_name ?? '—')"
         panel="top" kind="document" :status="CrmComplaints::formStatus($doc)" :stage="$status === 'CONFIRMED' && $qa !== 'NONE' ? t(CrmComplaints::QA_LABELS[$qa]) : null"
         :action="route('v2.crm.complaint.save', $doc->id_complaint)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
         :tabs="['general' => 'General', 'qa' => ['QA Review', 'fa-magnifying-glass-chart'], 'resolution' => ['Resolution', 'fa-handshake']]" :log="CrmComplaints::log($doc)"

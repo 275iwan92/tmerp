@@ -45,7 +45,7 @@
         $name = ApprovalSetting::MODULE_NAMES[$cfg->module_code] ?? $cfg->module_code;
         $levels = ApprovalSetting::levels($cfg);
     @endphp
-    <x-dl::form id="approval-setting-form" :title="'Setting Approval · '.$cfg->module_code" :subtitle="$name"
+    <x-dl::form id="approval-setting-form" :title="'Setting Approval · '.raw($cfg->module_code)" :subtitle="$name"
         panel="top" kind="master" :status="$cfg->activate ? 'active' : 'inactive'"
         :action="route('v2.approval-setting.save', $cfg->flow_config_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
         :tabs="['general' => 'General']"

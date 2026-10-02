@@ -2,7 +2,9 @@
 
 namespace App\Support\Localization;
 
+use Devlib\Lang;
 use Devlib\Locale;
+use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -40,6 +42,10 @@ final class Dictionary
     {
         if ($en === null || trim($en) === '') {
             return (string) $en;
+        }
+        // Teks berisi nilai data yang ditandai raw(): hanya labelnya yang diterjemahkan / dicatat (Devlib\Lang::raw()).
+        if (Lang::hasRaw($en)) {
+            return $context === 'ui' && $lang === null ? Lang::text($en) : Lang::plain($en);
         }
         self::remember($en, $context);
         $lang ??= Locale::lang();
@@ -109,6 +115,25 @@ final class Dictionary
         return false;
     }
 
+    // Jaring pengaman bila layar lupa raw(): teks yang memuat nomor dokumen (CO2600001, PR2600009) atau '#5' adalah data,
+    // bukan label -> tidak dicatat. Nama customer / product tidak bisa ditebak dari bentuknya: itu tugas raw() di layar.
+    public static function looksLikeData(string $s): bool
+    {
+        return (bool) preg_match('/\b[A-Z]{2,5}\d{5,}\b|#\d/', $s);
+    }
+
+    // Teks yang SUDAH hasil terjemahan bahasa tampilan (layar memanggil t() lalu mengirimnya ke prop komponen, atau pesan
+    // flash) bukan sumber English -> tidak dicatat lagi sebagai baris baru.
+    private static function isTranslation(string $text, string $context): bool
+    {
+        $lang = Locale::lang();
+        if ($lang === 'en') {
+            return false;
+        }
+
+        return isset((self::$cache['v'][$lang][$context] ??= array_flip(self::context($context, $lang)))[$text]);
+    }
+
     // Catat teks baru (juga dipanggil dari browser lewat route v2.dictionary.register). Kembalian = jumlah yang dicatat.
     public static function register(array $texts, string $context = 'ui'): int
     {
@@ -157,14 +182,14 @@ final class Dictionary
     private static function remember(string $en, string $context, bool $force = false): void
     {
         $en = trim($en);
-        if ($en === '' || mb_strlen($en) > 255 || ! preg_match('/\p{L}/u', $en) || self::looksIndonesian($en)) {
+        if ($en === '' || mb_strlen($en) > 255 || ! preg_match('/\p{L}/u', $en) || Lang::hasRaw($en) || self::looksIndonesian($en) || self::looksLikeData($en)) {
             return;
         }
         // Tidak mencatat dari console/test (kecuali register() eksplisit) supaya test tidak mengotori kamus.
         if (! $force && (app()->runningInConsole() || ! config('devlib.dictionary_autoregister', true))) {
             return;
         }
-        if (isset(self::$pending[$context][$en]) || isset(self::sources($context)[$en])) {
+        if (isset(self::$pending[$context][$en]) || isset(self::sources($context)[$en]) || self::isTranslation($en, $context)) {
             return;
         }
         if (! self::$pending && ! $force) {
@@ -192,7 +217,7 @@ final class Dictionary
         return 'dict:'.self::db()->getDatabaseName().':'.$key;
     }
 
-    private static function db(): \Illuminate\Database\Connection
+    private static function db(): Connection
     {
         return DB::connection('tm2sys');
     }

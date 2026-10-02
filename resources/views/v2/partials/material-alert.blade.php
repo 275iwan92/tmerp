@@ -16,7 +16,7 @@
         t('Material not enough: :n materials need attention (:s short, :i without item / layout, :l arriving late).')) : '';
 @endphp
 @if ($mpCount > 0)
-    <x-dl::alert tone="danger" :message="$mpText">
+    <x-dl::alert tone="danger" :message="raw($mpText)">
         <x-dl::button variant="secondary" size="sm" icon="fa-chart-gantt" :label="t('Open Material Planning')" :href="$mpUrl" />
     </x-dl::alert>
     <x-dl::modal id="material-alert" :title="t('Material Shortage')" icon="fa-triangle-exclamation" tone="danger" size="lg" :open="$mpPopup">

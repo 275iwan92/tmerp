@@ -47,7 +47,7 @@
         $lines = $doc->items->map(fn ($i) => ['product_name' => $i->product_name, 'qty_complaint' => (float) $i->qty_complaint, 'qty_return' => (float) $i->qty_return,
             'qty_unit' => $i->qty_unit, 'defect_note' => $i->defect_note])->values()->all();
     @endphp
-    <x-dl::form id="qc-complaint-review-form" :title="t('Complaint Review').' · '.$doc->complaint_no" :subtitle="($doc->customer?->customer_name ?? '—').' · '.t(CrmComplaint::TYPES[$doc->complaint_type])"
+    <x-dl::form id="qc-complaint-review-form" :title="'Complaint Review · '.raw($doc->complaint_no)" :subtitle="raw($doc->customer?->customer_name ?? '—').' · '.CrmComplaint::TYPES[$doc->complaint_type]"
         panel="top" kind="document" :status="$open ? 'draft' : 'confirmed'" :action="route('v2.qc.complaint-review.save', $doc->id_complaint)" action-field="action" :back="$home"
         :hide="['delete', 'new', 'duplicate', 'cancel', 'email', 'print']" :tabs="['review' => ['QA Review', 'fa-magnifying-glass-chart'], 'complaint' => ['Complaint', 'fa-triangle-exclamation']]"
         :created-by="$rv->created_by" :created-at="$rv->created_at?->toDateTimeString()" :updated-by="$rv->updated_by" :updated-at="$rv->updated_at?->toDateTimeString()">

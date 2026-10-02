@@ -71,7 +71,7 @@
         @elseif ($locked)
             <x-dl::alert tone="success" :message="t('Booking confirmed: the stock part is locked for this order and no longer counted as Available.')" />
         @elseif ($open > 0)
-            <x-dl::alert tone="danger" :message="str_replace(':n', (string) $open, t(':n material lines are not covered yet (short, item not chosen, or layout missing). You can still Confirm to lock the stock that is available; create a Purchase Requisition for the rest in Material Planning.'))" />
+            <x-dl::alert tone="danger" :message="raw(str_replace(':n', (string) $open, t(':n material lines are not covered yet (short, item not chosen, or layout missing). You can still Confirm to lock the stock that is available; create a Purchase Requisition for the rest in Material Planning.')))" />
         @endif
     </x-dl::card>
 

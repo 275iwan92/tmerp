@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Models\Sys\SysDictionary;
 use App\Support\Localization\Dictionary;
 use App\Support\V2\Grid\Setup\TranslationDictionaryLookup;
+use Devlib\Lang;
 use Devlib\Locale;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 // Modul baru otomatis ID + EN (user 2026-10-01): label English di komponen x-dl::* diterjemahkan kamus sys_dictionary
@@ -83,6 +85,42 @@ class MultiLanguageAutoTest extends TestCase
         $this->assertSame(0, Dictionary::register(['Zq Payment Terms'], self::CTX), 'sudah ada -> tidak dobel');
     }
 
+    // Nilai data (no. dokumen, nama customer) di prop teks: raw() -> label tetap diterjemahkan, nilainya tidak pernah sampai ke kamus.
+    public function test_data_values_marked_raw_never_reach_the_dictionary(): void
+    {
+        $this->entry('Zq Order', 'Zq Pesanan');
+        config(['devlib.lang' => 'id']);
+        $seen = [];
+        Lang::translateUsing(function (string $en, string $lang) use (&$seen) {
+            $seen[] = $en;
+
+            return Dictionary::t($en, 'ui', $lang);
+        });
+
+        $html = Blade::render('<x-dl::card :title="\'Zq Order · \'.raw($no)" :description="raw($name.\' · \'.$status)" /><x-dl::badge :label="raw($status)" />',
+            ['no' => 'CO2600001', 'name' => 'PT. Zq Jaya', 'status' => 'Draft']);
+
+        $this->assertStringContainsString('<b>Zq Pesanan · CO2600001</b>', $html, 'label diterjemahkan, nomor dokumen apa adanya');
+        $this->assertStringContainsString('<small>PT. Zq Jaya · Draft</small>', $html);
+        $this->assertSame(['Zq Order'], $seen, 'hanya label yang dikirim ke kamus');
+        $this->assertFalse(Lang::hasRaw($html), 'penanda raw() tidak sampai ke layar');
+        $this->assertSame('Zq Pesanan: 12', t('Zq Order: '.raw(12)), 't() memperlakukan raw() sama seperti komponen');
+    }
+
+    public function test_data_like_and_already_translated_text_is_not_registered(): void
+    {
+        $this->entry('Zq Saved.', 'Zq Beres tercatat.', self::CTX);
+        config(['devlib.lang' => 'id']);
+
+        $added = Dictionary::register(['Zq Order · CO2600001', 'Zq Complaint · Draft #5', 'Zq Order · '.raw('PT. Zq Jaya'), 'Zq Beres tercatat.', 'Zq Plain Label'], self::CTX);
+
+        $this->assertSame(1, $added, 'nomor dokumen, Draft #n, teks ber-raw() dan teks hasil terjemahan tidak dicatat');
+        $this->assertSame(['Zq Plain Label', 'Zq Saved.'], SysDictionary::where('context', self::CTX)->orderBy('source_en')->pluck('source_en')->all());
+        $this->assertTrue(Dictionary::looksLikeData('Sales Return · CC2600001'));
+        $this->assertFalse(Dictionary::looksLikeData('Net 30 Days'));
+        $this->assertFalse(Dictionary::looksLikeData('mis. Art Carton 260gsm, 65×100cm'));
+    }
+
     public function test_translation_dictionary_screen_saves_translations(): void
     {
         $grid = new TranslationDictionaryLookup;
@@ -96,7 +134,7 @@ class MultiLanguageAutoTest extends TestCase
         $grid->save([['id' => $row['id'], 'context' => self::CTX, 'source_en' => 'Zq Valid Until', 'lang_id' => '', 'note' => '', 'activate' => true]]);
         $this->assertSame('Zq Valid Until', Dictionary::t('Zq Valid Until', self::CTX, 'id'), 'sel dikosongkan -> kembali English');
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
         $grid->save([['id' => 'new2', 'context' => self::CTX, 'source_en' => 'Zq Valid Until', 'lang_id' => 'x']]);  // dobel
     }
 }

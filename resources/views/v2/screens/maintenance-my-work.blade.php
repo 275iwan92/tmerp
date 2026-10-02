@@ -27,8 +27,8 @@
     <form method="post" action="{{ route('v2.mnt.wo.save', $w->id_wo) }}">
         @csrf
         <input type="hidden" name="back" value="my-work">
-        <x-dl::card :title="$w->doc_no.' · '.$w->priority.' · '.(MntWo::WORK[$w->work_status] ?? $w->work_status)"
-            :description="($machines[$w->machine_id] ?? '#'.$w->machine_id).' — '.$w->description.' · '.Maintenance::stamp($w->planned_start).($all ? ' · '.($tech[$w->assigned_to] ?? 'unassigned') : '')">
+        <x-dl::card :title="raw($w->doc_no.' · '.$w->priority.' · '.(MntWo::WORK[$w->work_status] ?? $w->work_status))"
+            :description="raw(($machines[$w->machine_id] ?? '#'.$w->machine_id).' — '.$w->description.' · '.Maintenance::stamp($w->planned_start).($all ? ' · '.($tech[$w->assigned_to] ?? 'unassigned') : ''))">
             <x-slot:actions>
                 @if ($w->work_status === 'SCHEDULED')
                     <x-dl::button size="sm" variant="success" icon="fa-play" label="Start" type="submit" name="action" value="start" />

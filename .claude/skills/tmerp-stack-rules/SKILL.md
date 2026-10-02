@@ -39,6 +39,10 @@ Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 
   JS: `Devlib.h.t('...')`; kata milik objek DevLib: kamus `Devlib\Lang` (kunci [ID, EN]). Nilai lookup dari DB: `t($value, '<db>.<tabel>.<kolom>')`.
 - Teks English baru **tercatat otomatis** di `tm2sys.sys_dictionary`; terjemahan diisi di Setup > Translation Dictionary. Jangan insert manual,
   jangan tulis label Indonesia (dijaga `MultiLanguageRatchetTest`), jangan `Translator::t` (kamus kunci v1) di layar baru.
+- **Nilai DATA di prop teks `x-dl::*` dibungkus `raw()`** (no. dokumen, nama customer / product, angka, tanggal):
+  `:title="'Customer Order · '.raw($o->co_no)" :subtitle="raw($customer.' · '.$status)"`. Label di sekitarnya tetap English dan
+  diterjemahkan komponen (tanpa `t()`); nilainya tidak diterjemahkan dan tidak tercatat di kamus. Kalimat yang sudah jadi
+  (`str_replace(':n', $n, t('...'))`) = `raw()` seluruhnya. Dijaga `MultiLanguageRatchetTest` (`data_in_text_prop`).
 - **Angka/tanggal/jam lewat objek DevLib**: `Devlib\Locale::number/decimal/money/d/dt`, `NumberValue`, `DateValue`, `TimeValue`, `DateTimeValue`,
   `TextValue` (JS `fmt`, `DlNumber`, `DlDate`, `DlTime`, `DlDateTime`, `DlText`). Dilarang `number_format(.., ',', '.')`, `->format('d-M-Y')`,
   `toLocaleString('id-ID')`. Form mengirim angka kanonik `1234.5` (isian angka DevLib bertanda `data-dl-num`); server baca `Locale::input()`.

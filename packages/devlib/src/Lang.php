@@ -441,6 +441,9 @@ final class Lang
         if ($en === null || trim($en) === '') {
             return (string) $en;
         }
+        if (str_contains($en, self::RAW[0])) {
+            return self::mixed($en);
+        }
         $lang = Locale::lang();
         $row = $lang === 'en' ? null : self::reverse()[$en] ?? null;
         if ($row && isset($row[$lang])) {
@@ -448,6 +451,57 @@ final class Lang
         }
 
         return self::$translator ? (self::$translator)($en, $lang) : $en;
+    }
+
+    // NILAI DATA di dalam teks tampilan (no. dokumen, nama customer, angka, tanggal): tandai dengan raw() supaya TIDAK
+    // diterjemahkan dan TIDAK tercatat di kamus -- kalau tidak, tiap dokumen yang dibuka menambah satu baris kamus.
+    // Label di sekitarnya tetap ditulis English dan tetap diterjemahkan:
+    //   :title="'Customer Order · '.raw($o->co_no)"   :subtitle="raw($customer.' · '.$status)"
+    // Penandanya dua karakter tak terlihat (bukan objek) supaya selamat melewati prop bertipe string dan penyambungan teks;
+    // text() membuangnya, jadi tidak pernah sampai ke layar. Tetap di-escape Blade seperti teks biasa (bukan HTML mentah).
+    private const RAW = ["\u{2062}", "\u{2063}"];
+
+    public static function raw(string|int|float|\Stringable|null $value): string
+    {
+        $s = self::plain((string) $value);
+
+        return $s === '' ? '' : self::RAW[0].$s.self::RAW[1];
+    }
+
+    public static function hasRaw(string $text): bool
+    {
+        return str_contains($text, self::RAW[0]);
+    }
+
+    // Teks tanpa penanda raw(), tanpa diterjemahkan (untuk prop yang memang tidak diterjemahkan: tombol, badge).
+    public static function plain(string $text): string
+    {
+        return str_replace(self::RAW, '', $text);
+    }
+
+    // Teks berisi raw(): bagian raw apa adanya; label di antaranya diterjemahkan tanpa tanda baca / spasi yang MENEMPEL ke
+    // nilai raw ('Customer Order · ' -> kamus hanya mengenal 'Customer Order'). Tanda baca di ujung kalimat (awal / akhir
+    // teks) tetap bagian label, supaya 'Saved.' tetap cocok dengan baris kamus 'Saved.'.
+    private static function mixed(string $text): string
+    {
+        $parts = preg_split('/'.self::RAW[0].'(.*?)'.self::RAW[1].'/us', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $last = count($parts) - 1;
+        $out = '';
+        foreach ($parts as $i => $part) {
+            if ($i % 2) {
+                $out .= $part;
+
+                continue;
+            }
+            $core = self::plain($part);
+            $lead = $i > 0 && preg_match('/^[^\p{L}\p{N}]+/u', $core, $m) ? $m[0] : '';
+            $core = substr($core, strlen($lead));
+            $trail = $i < $last && preg_match('/[^\p{L}\p{N}]+$/u', $core, $m) ? $m[0] : '';
+            $core = $trail === '' ? $core : substr($core, 0, -strlen($trail));
+            $out .= $lead.($core === '' ? '' : self::text($core)).$trail;
+        }
+
+        return $out;
     }
 
     private static function reverse(): array

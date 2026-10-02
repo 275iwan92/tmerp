@@ -5,7 +5,7 @@
     @endphp
     <div class="dl-cat">
         <x-dl::card title="Data Dictionary — MySQL tmerp (khusus developer)" icon="fa-database"
-            :description="'Struktur saja (information_schema), diperbarui otomatis setelah php artisan migrate / rollback di tmerp (manual: php artisan schema:dictionary). Terakhir: '.$stats['generated'].'.'">
+            :description="'Struktur saja (information_schema), diperbarui otomatis setelah php artisan migrate / rollback di tmerp (manual: php artisan schema:dictionary). Terakhir: '.raw($stats['generated'].'.')">
             <div class="dl-grid__stats">
                 <x-dl::stat-box label="Database" :value="$stats['db']" />
                 <x-dl::stat-box label="Tabel / view" :value="$stats['tables']" />
