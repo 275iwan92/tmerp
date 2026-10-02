@@ -200,6 +200,23 @@
     - Ukuran label dijelaskan di layar supaya mudah dicetak. Label palet dan label item bisa dicetak langsung dari
       form Penerimaan Barang.
 
+23. **[2026-10-02] Laporan stok dan gudang: set lengkap, mengacu ERP populer; selisih stok lewat stock opname.**
+    Kata user: *"build all reports related with inventory movement, stock card and other reports"* — *"stockcard, summary
+    all stocks, recapitulation of all items, inspection stocks, report items group by location warehouse, loss and gain all
+    items every monthly"* — *"reference from all application about warehouse and stock, include refer to popular ERP like
+    SAP, odoo, dynamics 365, zahir, accurate, Oracle and other apps"* — *"stock opname in indonesia, is most popular report
+    to entry loss and gain"*.
+    - Laporan stok wajib memuat: **Stock Card**, **ringkasan semua stok** (Stock Summary), **rekap semua item** (Stock
+      Recapitulation), **stok inspeksi** (Stock in Inspection), **item per gudang / lokasi** (Stock by Location, terkelompok
+      per gedung), dan **selisih lebih / kurang semua item per bulan** (Stock Loss & Gain).
+    - **Selisih stok masuk lewat stock opname** (dokumen Stock Adjustment & Physical Count); laporan **Stock Opname**
+      menampilkan qty sistem, qty fisik, dan selisihnya, dan rekap bulanannya = Stock Loss & Gain.
+    - Daftar laporan gudang dan stok **mengacu ERP populer**; acuan + sumbernya di
+      `docs/md_for_systems/inventoryreport_references.md`. Yang tidak bisa diverifikasi tidak dijadikan dasar.
+    - Laporan semua kelas ada di Inventory > Warehouse > Report; laporan per kelas tetap di menu kelasnya.
+    - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**. Yang diputuskan agen sendiri dan menunggu
+      koreksi: `docs/md_for_systems/inventoryreport_review.md` bagian 4.
+
 ## B. Database & data
 
 1. **[LOCKED] Database-per-modul** (`tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`,
@@ -645,3 +662,4 @@
 | 2026-10-02 | A.22: **approval Stock Transfer di-skip dulu, fasilitasnya ada** — modul `TF` di Setting Approval, bawaan tidak aktif, bisa diaktifkan kapan saja; saat aktif stok baru pindah sesudah approval terakhir. |
 | 2026-10-02 | A.22: **label wajib** — label palet dibuat setiap barang datang dan setiap isi satu palet habis dipakai (label ulang dengan qty sisa); label palet dan label item sengaja berbeda; setiap label punya QR code + barcode + tanggal tiba, pita warna sebagai penanda, kode palet dari supplier, dan tag kedaluwarsa (kertas, tinta); ukuran label dijelaskan di layar (60 x 40, 100 x 50, 100 x 150 mm; gulungan label atau A4); label palet dan label item bisa dicetak langsung dari Penerimaan Barang. Dibangun di ddt; tabel di ddt + tm2. |
 | 2026-10-02 | B.15: set stage 8–12 dibangun (Posted to Production + Work Order belum dimulai, Delivery Order Draft, Delivery Order Confirmed, Customer Invoice Draft, Customer Invoice Confirmed menunggu pembayaran) — usulan agen, belum dikonfirmasi user; rantai PO di samping: stage 4 PO Draft, 5–7 menunggu approval level 1–3, 8+ Approved. Build sungguhan tanpa transaksi. |
+| 2026-10-02 | **A.23: laporan stok dan gudang** — set lengkap mengacu ERP populer (SAP, Odoo, Dynamics 365, Zahir, Accurate, Oracle NetSuite, ERPNext): Stock Card, Stock Recapitulation, Stock Summary, Stock Opname, Stock Loss & Gain (per bulan), Stock in Inspection, Stock by Location terkelompok per gedung; selisih stok masuk lewat stock opname. Grid Report mendapat periode (Period + Show) dan cetakan `x-dl::report`. Dibangun di ddt; review: `md_for_systems/inventoryreport_review.md`. |

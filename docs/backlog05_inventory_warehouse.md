@@ -34,16 +34,23 @@ Rancangan: **[`warehouselayout_tier1.md`](warehouselayout_tier1.md)** (bagian 13
 | 05.11 | Bin Utilization + peringatan kapasitas | 3 | — |
 | 05.12 | Denah nyata A5 / A6 / A10 + gedung lain: user 2026-10-02 = denah sementara buatan agen dipakai dulu, officer warehouse mengubahnya lewat layar (Buildings, Storage Areas, Bins, Atur Tata Letak). Gedung lain ditambah user di Buildings | — | di tangan officer; bukan pekerjaan agen lagi |
 | 05.13 | Lapis Site + transfer dua langkah (dalam perjalanan) | 2 | hanya bila ada gudang beda kota |
-| 05.14 | Stock Card simple + extended, Item per Lokasi, Master Stock, Stock On Hand (preview 2026-10-01) | 1 | menunggu OK |
+| 05.14 | Stock On Hand gabungan (On Hand, Booked, Available, Incoming PO, Pending adj, status Short / Late PO) dari preview 2026-10-01. Stock Card, Master Stock (= Stock Recapitulation) dan Item per Lokasi sudah dibangun 2026-10-02 | 1 | menunggu OK |
 | 05.15 | Adjustment dengan approval v2 (A1–A2) | 1 | menunggu user |
 | 05.17 | Saldo berjalan kartu stok tidak konsisten di dummy LAMA (`php artisan data:audit --only=stock`): stok di `WH-RAW-01` / `UNKNOWN-LEGACY`. Stok contoh baru di gedung A10 / A5 / A6 sudah benar | — | hapus / pindahkan dummy lama setelah user setuju |
 | 05.19 | Kapasitas: volume hanya diperkirakan untuk lembaran kertas; tinta, lem, barang jadi, plat belum punya data ukuran / berat per item di master | 1 | **menunggu user** |
-| 05.20 | Menu + Help + gedung nyata di tmerp.test (tabel dan view sudah ada) | — | menunggu penilaian user |
+| 05.20 | Menu + Help + gedung nyata di tmerp.test (tabel dan view sudah ada). Ikut dipasang saat itu: enam laporan stok semua kelas (migrasi `2026_10_02_000220` berjalan sendiri begitu grup `INV_WH_RPT` ada; jalankan ulang sesudah menu Warehouse dipasang) | — | menunggu penilaian user |
 | 05.21 | Stock In / Out / Adjustment v2 yang memilih bin dari peta (sekarang layar v1) | 2 | belum |
 | 05.24 | Approval Stock Transfer: pemeriksa dan batas nilai (fasilitas ada, bawaan mati); Setting Approval belum terpasang di tm2 | — | menunggu user |
 | 05.25 | Pilih palet per baris di form Stock Transfer (sekarang: palet ikut otomatis, atau lewat Move this Pallet) | 2 | belum |
 | 05.22 | Gudang lama buatan sistem (`WH-RAW-01`, `WH-FG-01`, `WH-MIX-01`, `WH-SCP-01`) dinonaktifkan setelah stoknya dipindah | — | menunggu user |
 | 05.23 | **Urutan posting kartu stok**: dokumen bertanggal lebih awal dari baris terakhir tidak sampai ke saldo (rincian di bawah) | 1 | **menunggu aturan dari user** |
+| 05.30 | Laporan umur stok (Stock Ageing: nilai dan qty per rentang 0-30 / 31-60 / 61-90 / lebih dari 90 hari sejak diterima). Ada di Odoo, Business Central, D365, Accurate, ERPNext (`md_for_systems/inventoryreport_references.md`) | 2 | belum; perlu keputusan rentang hari |
+| 05.31 | Analisis ABC item stok (nilai pemakaian, kelas A / B / C). Ada di SAP dan Business Central | 3 | belum |
+| 05.32 | Pembanding nilai stok vs saldo akun persediaan (rekonsiliasi gudang dengan buku besar) | 2 | belum; perlu keputusan accounting (akun persediaan per kelas) |
+| 05.33 | Barang diterima belum ditagih (goods received not invoiced): periksa apakah sudah tertutup laporan Purchase / Finance | — | belum diperiksa |
+| 05.34 | Laporan stok semua kelas: hak lihat NILAI (sekarang semua yang boleh membuka Inventory melihat nilai, sama dengan Stock Balance). Usulan lama S1: hanya Finance, Costing, Ops Manager ke atas | — | **menunggu user** |
+| 05.35 | Stock Card: pilih item lewat lookup master (sekarang kotak teks kode / nama), dan Stock Card "simple" yang menyembunyikan transfer dalam satu gudang | 2 | belum |
+| 05.36 | Stock Opname: lembar hitung kosong untuk dicetak sebelum menghitung (count sheet per gudang / area), dan cetakan berita acara per dokumen | 2 | belum |
 
 ---
 

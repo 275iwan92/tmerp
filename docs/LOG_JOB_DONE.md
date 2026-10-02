@@ -3,6 +3,44 @@
 
 ---
 
+## 2026-10-02 -- Laporan stok semua kelas: Stock Card, Recapitulation, Summary, Opname, Loss & Gain, Stock in Inspection
+
+User: "build all reports related with inventory movement, stock card and other reports" ... "stockcard, summary all stocks,
+recapitulation of all items, inspection stocks, report items group by location warehouse, loss and gain all items every
+monthly" ... "reference from all application about warehouse and stock, include refer to popular ERP like SAP, odoo, dynamics
+365, zahir, accurate, Oracle and other apps" ... "stock opname in indonesia, is most popular report to entry loss and gain".
+
+- **Enam laporan baru** di Inventory > Warehouse > Report (semua kelas stok RM / SFG / FG dalam satu laporan, kolom Class):
+  - **Stock Card** (`inv-rpt-card`): per item = baris saldo awal lalu tiap pergerakan urut tanggal dengan saldo berjalan item di
+    semua bin; transfer punya kolom sendiri dan tidak mengubah saldo item; kotak Item = kartu satu item.
+  - **Stock Recapitulation** (`inv-rpt-recap`): satu baris per item = awal, masuk, keluar, penyesuaian, akhir + nilai akhir;
+    kolom tersembunyi nilai per gerak, harga rata-rata, Turnover; saringan With movement / No movement / Negative.
+  - **Stock Summary** (`inv-rpt-summary`): nilai semua stok per kelas x kategori (awal, masuk, keluar, penyesuaian, akhir, porsi %).
+  - **Stock Opname** (`inv-rpt-opname`): hasil hitung fisik dan penyesuaian per dokumen per item (qty sistem, qty fisik, selisih,
+    nilai, Gain / Loss / Match), semua status dokumen.
+  - **Stock Loss & Gain** (`inv-rpt-loss-gain`): selisih lebih / kurang per item per bulan dari penyesuaian yang sudah Posted.
+  - **Stock in Inspection** (`inv-rpt-inspection`): barang menunggu QC, ditolak belum diretur, di area QC Hold, di bin diblokir.
+- **Stock by Location** kini terbuka terkelompok per gedung ("report items group by location warehouse").
+- **Periode dan cetak untuk Grid Report:** `DbGrid` mendapat `defaultPeriod()` / `period()` (bilah Period + Show di atas grid,
+  `?from=&to=`), `params()` (saringan teks), dan `printable()` -> tombol Print membuka cetakan objek DevLib `x-dl::report`
+  (route `v2.report.print`, view `v2/print-report.blade.php`: kop, kriteria, ringkasan, kelompok + subtotal, tanda tangan,
+  A4 landscape). Laporan lama tidak berubah (tanpa periode = tanpa bilah).
+- **Engine baru `App\Services\Inventory\StockLedger`** (terdaftar di Engine Catalog): saldo awal per posisi + pergerakan
+  periode -> saldo akhir, qty dan nilai; nilai gerak = selisih nilai posisi sebelum dan sesudah baris, sehingga
+  awal + masuk - keluar + penyesuaian = akhir selalu cocok. `StockItemMeta` = identitas item lintas kelas (dipakai juga
+  laporan per kelas).
+- **Acuan ERP lain:** `docs/md_for_systems/inventoryreport_references.md` (SAP, Odoo, Business Central, D365 SCM, NetSuite,
+  Zahir, Accurate, ERPNext, QuickBooks; yang tidak terverifikasi ditandai). Dokumen review: `inventoryreport_review.md`.
+- Menu (`2026_10_02_000220`) + kamus Indonesia (`2026_10_02_000221`) + Help 6 topik (`resources/data/help/inventory_reports.json`).
+  Menu hanya di ddt (grup Warehouse belum ada di tm2sys); kamus di ddt + tm2.
+- Uji: `tests/Feature/StockReportsTest.php` (6 test: buku periode, kartu, rekap = ringkasan, opname vs loss & gain, stok di bin
+  diblokir, periode dari alamat + layar dan cetakan terbuka). Dicek di ddt: total nilai akhir rekap = total nilai stok view saldo.
+- **Cetakan DevLib (`x-dl::print-out` / `x-dl::report`):** lembar dianggap penuh saat AREA ISI penuh (dulu yang diukur lembarnya,
+  sehingga kira-kira dua baris terakhir tercetak menimpa kaki halaman pada tabel panjang); lembar diukur ulang setelah font termuat.
+- Tangkapan layar: `docs/mockups/inventory_report_app/`.
+- **Perbaikan terkait (commit sebelumnya):** widget Stock Documents menghitung dokumen dari jenis kartu stok (IN / OUT / AD),
+  bukan dari angka 1 / -1 kepala dokumen (dulu barang masuk dan keluar selalu 0).
+
 ## 2026-10-02 -- Opening Dashboards tahap 4: Production, Quality, Inventory, WI / JD / SOP; asisten AI dipasang di tm2
 
 User: "pasang saja nanti juga bisa disempurnakan" (asisten di tmerp) dan "perlu ada production, quality control and quality
