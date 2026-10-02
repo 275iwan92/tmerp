@@ -2135,6 +2135,7 @@ td.dl-print__no{text-align:center}
 .dl-wa__av:not(.is-on) img{filter:grayscale(1);opacity:.7}
 .dl-wa__row.is-off .dl-wa__r1 b{color:var(--dl-muted);font-weight:600}
 .dl-wa__cap.is-off{color:var(--dl-muted)}
+.dl-wa__typing{color:var(--dl-green);font-weight:600}
 /* Lampiran: kartu file (unduh), garis kemajuan upload, pesan gagal, halaman pesan sebelumnya. */
 .dl-wa__file{display:flex;align-items:center;gap:10px;width:240px;max-width:100%;box-sizing:border-box;padding:8px 10px;margin-bottom:3px;border-radius:var(--dl-radius);background:color-mix(in srgb,var(--dl-ink) 7%,transparent);color:var(--dl-ink);text-decoration:none}
 a.dl-wa__file[href]:hover{background:color-mix(in srgb,var(--dl-ink) 12%,transparent)}

@@ -331,6 +331,7 @@ final class Lang
         'ch_pick' => ['Pilih percakapan', 'Pick a conversation'],
         'ch_pick_hint' => ['Daftar kiri berisi orang yang sedang login. Tekan + untuk chat dengan yang tidak sedang login.', 'The list shows people who are signed in. Press + to chat with someone who is not.'],
         'ch_online' => ['online', 'online'],
+        'ch_typing' => ['sedang mengetik…', 'typing…'],
         'ch_offline' => ['tidak login', 'not signed in'],
         'ch_last_seen' => ['terakhir dilihat {when}', 'last seen {when}'],
         'ch_today_at' => ['hari ini {time}', 'today {time}'],

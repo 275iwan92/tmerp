@@ -3,6 +3,23 @@
 
 ---
 
+## 2026-10-02 -- Chat seketika: Laravel Reverb + "sedang mengetik…"
+
+Perintah user: "jalankan dengan reverb, bisa seketika dan bisa ada tulisan sedang mengetik, beban server hampir nol".
+- **Kenapa server terpisah:** `composer require laravel/reverb` di tmerp menuntut Guzzle 8 -> 7 (dan menaikkan Laravel);
+  itu menyentuh seluruh aplikasi (Firebase, Google). Jadi Reverb dipasang di aplikasi kecil **`realtime/`** dengan `vendor/`
+  sendiri (`php artisan reverb:start` atau `start.bat`, port 8080); `composer.json` / `composer.lock` tmerp tidak berubah.
+- **Paket `packages/chat`:** `Chat\Realtime` berbicara protokol Pusher sendiri (tanda tangan kabar + izin channel), tanpa
+  pustaka broadcast. Rute baru `chat.typing`, `chat.auth`. Kabar yang didorong: `chat.message`, `chat.read`, `chat.typing`,
+  `chat.presence`. Channel privat per user + satu channel bersama, dipisah per database (`ddtsys` / `tm2sys`).
+- **DevLib `x-dl::chat`:** klien WebSocket bawaan browser (tanpa Laravel Echo / pusher-js), "sedang mengetik…" di kepala
+  percakapan dan di daftar, poll melambat ke 30 detik selama tersambung dan kembali 5 detik bila putus.
+- **Setelan:** `.env` + `.env.mockup` `CHAT_REALTIME_*` (kunci sama dengan `realtime/.env`), konstanta
+  `CHAT_REALTIME_POLL_SECONDS` 30 (ddtsys + tm2sys). `phpunit.xml` mematikan dorongan saat tes.
+- Diuji: 7 tes `ChatTest` (tanda tangan kabar, izin channel, tanpa server tetap jalan); pendengar WebSocket sungguhan
+  menerima kabar dari paket lewat Reverb dan langganan tanpa izin ditolak; render headless dengan WebSocket tiruan.
+  **Belum:** dicoba user dengan dua login; server belum hidup otomatis saat komputer menyala.
+
 ## 2026-10-02 -- Chat antar user ala WhatsApp (menu akun v2), tersambung ke database
 
 Perintah user: chat cara kerja seperti WhatsApp; orangnya = user terdaftar; online = yang login, warna cerah; lampiran file

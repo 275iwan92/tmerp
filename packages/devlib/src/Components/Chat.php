@@ -15,7 +15,11 @@ namespace Devlib\Components;
 //   messages GET  ?peer=<id>&before=<id>       -> {msgs: [MSG], more: bool, read: id}
 //   upload   POST uid, offset, chunk           -> potongan lampiran (ukuran potong = api.chunk)
 //   send     POST to, text, upload, name       -> {msg: MSG}
+//   typing   POST to                           -> kabari lawan "sedang mengetik" (hanya saat WebSocket tersambung)
 //   + csrf, last_id, poll_seconds, max_mb.
+//   realtime (opsional) = ['key','host','port','tls','auth' => url izin channel,'channels' => [..]] + realtime_poll_seconds:
+//     WebSocket berprotokol Pusher (Laravel Reverb). Kabar: chat.message {from,to,msg}, chat.read {reader,id},
+//     chat.typing {from}, chat.presence {id,online,seen}. Tanpa ini / saat putus, layar memakai poll saja.
 // compact = versi drawer (1 kolom bergantian daftar/percakapan).
 class Chat extends DevlibComponent
 {

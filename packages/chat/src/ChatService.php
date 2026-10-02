@@ -15,9 +15,10 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-// Chat antar user, satu lawan satu ("cara kerja seperti WhatsApp"). Tanpa websocket: layar bertanya ke poll() tiap
-// beberapa detik, dan pertanyaan itu sekaligus denyut "sedang login" (sys_user_presence). Siapa usernya ditanyakan ke
-// Directory milik aplikasi pemakai; kelas ini tidak mengenal tabel user mana pun.
+// Chat antar user, satu lawan satu ("cara kerja seperti WhatsApp"). Layar bertanya ke poll() secara berkala, dan
+// pertanyaan itu sekaligus denyut "sedang login" (sys_user_presence). Bila server WebSocket terpasang (Chat\Realtime),
+// setiap kejadian -- pesan, dibaca, sedang mengetik, online -- juga didorong seketika dan poll cukup jarang (jaring pengaman).
+// Siapa usernya ditanyakan ke Directory milik aplikasi pemakai; kelas ini tidak mengenal tabel user mana pun.
 class ChatService
 {
     private const PAGE = 50;
@@ -53,6 +54,8 @@ class ChatService
                 'poll' => route('chat.poll'), 'messages' => route('chat.messages'), 'send' => route('chat.send'), 'upload' => route('chat.upload'),
                 'csrf' => csrf_token(), 'last_id' => (int) Message::max('id'), 'chunk' => (int) config('chat.chunk_bytes'),
                 'poll_seconds' => max(2, (int) Chat::setting('poll_seconds')), 'max_mb' => Chat::setting('attachment_max_mb'),
+                'typing' => route('chat.typing'), 'realtime' => Realtime::client($me),
+                'realtime_poll_seconds' => max(5, (int) Chat::setting('realtime_poll_seconds')),
             ],
         ];
     }
@@ -68,7 +71,7 @@ class ChatService
         $rows = Message::where('conversation_id', $c->id)->when($before, fn ($q) => $q->where('id', '<', $before))
             ->orderByDesc('id')->limit(self::PAGE + 1)->get();
         if (! $before) {
-            $this->markRead($key, $c->id);
+            $this->markRead($me, $c->id, $peerId);
         }
 
         return [
@@ -90,8 +93,12 @@ class ChatService
         $c = $this->conversation($me, $peer, true);
         $m = Message::create(['conversation_id' => $c->id, 'sender' => $key, 'body' => $text] + $file);
         Participant::where('conversation_id', $c->id)->where('user_id', $key)->update(['last_read_message_id' => $m->id, 'last_read_at' => now()]);
+        $payload = $this->payload($m, $key);
+        // Ke lawan bicara dan ke layar lain milik pengirim; 'me' dihitung tiap layar dari 'from'.
+        Realtime::push([Realtime::userChannel($peerId), Realtime::userChannel($from = (int) $me->getAuthIdentifier())], 'chat.message',
+            ['from' => $from, 'to' => $peerId, 'msg' => array_diff_key($payload, ['me' => 1])]);
 
-        return $this->payload($m, $key);
+        return $payload;
     }
 
     // Satu potong lampiran. $offset wajib sama dengan yang sudah diterima: potongan hilang / dobel ditolak, bukan disambung salah.
@@ -133,13 +140,18 @@ class ChatService
     public function poll(Authenticatable $me, int $after, ?int $openPeer = null): array
     {
         $key = $this->directory->key($me);
-        Presence::upsert([['user_id' => $me->getAuthIdentifier(), 'signed_in' => true, 'last_seen_at' => now()]], ['user_id'], ['signed_in', 'last_seen_at']);
+        $id = (int) $me->getAuthIdentifier();
+        $wasOnline = Realtime::enabled() && ($this->presence($id)[$id][0] ?? false);
+        Presence::upsert([['user_id' => $id, 'signed_in' => true, 'last_seen_at' => now()]], ['user_id'], ['signed_in', 'last_seen_at']);
+        if (Realtime::enabled() && ! $wasOnline) {
+            Realtime::push([Realtime::everyoneChannel()], 'chat.presence', ['id' => $id, 'online' => true, 'seen' => now()->timestamp]);
+        }
         $threads = $this->threads($me);
         $rows = $threads->isEmpty() ? collect()
             : Message::whereIn('conversation_id', $threads->keys())->where('id', '>', $after)->orderBy('id')->limit(200)->get();
         $open = $openPeer ? $threads->search(fn ($t) => $t['peer'] === $openPeer) : false;
         if ($open !== false) {
-            $this->markRead($key, $open);
+            $this->markRead($me, $open, $openPeer);
         }
 
         return [
@@ -154,14 +166,22 @@ class ChatService
     public function signOut(Authenticatable $user): void
     {
         Presence::where('user_id', $user->getAuthIdentifier())->update(['signed_in' => false, 'last_seen_at' => now()]);
+        Realtime::push([Realtime::everyoneChannel()], 'chat.presence', ['id' => (int) $user->getAuthIdentifier(), 'online' => false, 'seen' => now()->timestamp]);
+    }
+
+    // "sedang mengetik…" di layar lawan bicara. Tidak disimpan: hanya didorong lewat WebSocket.
+    public function typing(Authenticatable $me, int $peerId): void
+    {
+        $this->peer($me, $peerId);
+        Realtime::push([Realtime::userChannel($peerId)], 'chat.typing', ['from' => (int) $me->getAuthIdentifier()]);
     }
 
     /** @return array<int, array{0: bool, 1: ?int}> id user => [online, terakhir terlihat (epoch)] */
-    private function presence(): array
+    private function presence(?int $only = null): array
     {
         $since = now()->subSeconds(max(15, (int) Chat::setting('online_timeout_seconds')));
 
-        return Presence::query()->get()->mapWithKeys(fn (Presence $p) => [$p->user_id => [
+        return Presence::query()->when($only, fn ($q) => $q->where('user_id', $only))->get()->mapWithKeys(fn (Presence $p) => [$p->user_id => [
             $p->signed_in && $p->last_seen_at && $p->last_seen_at->gte($since), $p->last_seen_at?->timestamp]])->all();
     }
 
@@ -213,13 +233,15 @@ class ChatService
         return $c;
     }
 
-    private function markRead(string $key, int $conversationId): void
+    // Penanda dibaca maju -> lawan bicara dikabari (centang biru) saat itu juga.
+    private function markRead(Authenticatable $me, int $conversationId, int $peerId): void
     {
         $max = Message::where('conversation_id', $conversationId)->max('id');
-        if ($max) {
-            Participant::where('conversation_id', $conversationId)->where('user_id', $key)
-                ->where(fn ($q) => $q->whereNull('last_read_message_id')->orWhere('last_read_message_id', '<', $max))
-                ->update(['last_read_message_id' => $max, 'last_read_at' => now()]);
+        $moved = $max && Participant::where('conversation_id', $conversationId)->where('user_id', $this->directory->key($me))
+            ->where(fn ($q) => $q->whereNull('last_read_message_id')->orWhere('last_read_message_id', '<', $max))
+            ->update(['last_read_message_id' => $max, 'last_read_at' => now()]);
+        if ($moved) {
+            Realtime::push([Realtime::userChannel($peerId)], 'chat.read', ['reader' => (int) $me->getAuthIdentifier(), 'id' => $max]);
         }
     }
 

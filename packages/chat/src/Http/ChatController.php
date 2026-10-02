@@ -3,6 +3,7 @@
 namespace Chat\Http;
 
 use Chat\ChatService;
+use Chat\Realtime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -37,6 +38,21 @@ class ChatController
         $d = $r->validate(['to' => ['required', 'integer'], 'text' => ['nullable', 'string', 'max:4000'], 'upload' => ['nullable', 'uuid'], 'name' => ['nullable', 'string', 'max:255']]);
 
         return response()->json(['msg' => $this->chat->send($r->user(), (int) $d['to'], (string) ($d['text'] ?? ''), $d['upload'] ?? null, $d['name'] ?? null)]);
+    }
+
+    public function typing(Request $r): JsonResponse
+    {
+        $this->chat->typing($r->user(), (int) $r->validate(['to' => ['required', 'integer']])['to']);
+
+        return response()->json(['ok' => true]);
+    }
+
+    // Izin langganan channel WebSocket milik user ini (dipanggil layar saat menyambung).
+    public function auth(Request $r): JsonResponse
+    {
+        $d = $r->validate(['socket_id' => ['required', 'string', 'regex:/^\d+\.\d+$/'], 'channel_name' => ['required', 'string', 'max:200']]);
+
+        return response()->json(Realtime::authorize($r->user(), $d['socket_id'], $d['channel_name']));
     }
 
     public function file(Request $r, int $id): StreamedResponse

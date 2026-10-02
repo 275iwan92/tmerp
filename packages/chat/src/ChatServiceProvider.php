@@ -25,12 +25,14 @@ class ChatServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->publishes([__DIR__.'/../config/chat.php' => config_path('chat.php')], 'chat-config');
 
-        // poll (tiap beberapa detik) dan potongan upload tidak menulis sesi (ReadOnlySession).
+        // Permintaan latar (poll, potongan upload, sedang mengetik, izin WebSocket) tidak menulis sesi (ReadOnlySession).
         Route::middleware(config('chat.middleware'))->prefix(config('chat.prefix'))->name('chat.')->group(function () {
             Route::get('/poll', [ChatController::class, 'poll'])->middleware(ReadOnlySession::class)->name('poll');
             Route::get('/messages', [ChatController::class, 'messages'])->name('messages');
             Route::post('/upload', [ChatController::class, 'upload'])->middleware(ReadOnlySession::class)->name('upload');
             Route::post('/send', [ChatController::class, 'send'])->name('send');
+            Route::post('/typing', [ChatController::class, 'typing'])->middleware(ReadOnlySession::class)->name('typing');
+            Route::post('/auth', [ChatController::class, 'auth'])->middleware(ReadOnlySession::class)->name('auth');
             Route::get('/file/{id}', [ChatController::class, 'file'])->whereNumber('id')->name('file');
         });
 

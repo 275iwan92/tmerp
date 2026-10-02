@@ -310,6 +310,11 @@
     - **Chat berbunyi** saat pesan masuk (dua nada pendek) + pemberitahuan bila panel chat sedang tertutup. **Belum ada voice.**
     - Centang: satu = terkirim, dua abu = diterima layar lawan, dua biru = dibaca. Pesan baru dicek tiap `CHAT_POLL_SECONDS`
       (5 detik). Ketiga angka itu = `sys_constant` kategori **Chat**, diubah di Settings → Constants.
+    - **Seketika (user 2026-10-02: "jalankan dengan reverb"):** pesan, centang dibaca, status online, dan tulisan **"sedang
+      mengetik…"** didorong lewat WebSocket (Laravel Reverb) — server kecil terpisah di folder `realtime/`
+      (`php artisan reverb:start` / `start.bat`, port 8080), supaya pustaka tmerp tidak berubah. Selama tersambung layar hanya
+      bertanya tiap `CHAT_REALTIME_POLL_SECONDS` (30 detik). **Server Reverb mati = chat tetap jalan** dengan cara 5 detik dan
+      menyambung lagi sendiri.
     - **Modular (user 2026-10-02):** chat = paket berdiri sendiri `packages/chat` (server) + objek DevLib `x-dl::chat` (layar),
       supaya bisa diambil untuk aplikasi lain. Paket tidak boleh bergantung pada tabel / kelas tmerp; yang khas aplikasi masuk
       lewat `config/chat.php`, `Chat\Contracts\Directory`, dan kait `Chat\Chat`. Petunjuk pasang: `packages/chat/README.md`.
@@ -418,3 +423,4 @@
 | 2026-10-02 | **E.1: Help wajib untuk setiap layar input dan laporan** (untuk apa, cara pakai, penjelasan tiap isian) — 159 topik ditulis dari kode, layar Help Center + Setup → Help Topics / Help Lines (ddt + tm2, OK user 2026-10-02), pintu Help Center di halaman F1. **E.2: keputusan Asisten AI** (offline, modular, AI tidak menghitung, jawaban sesuai level, drawer chat pribadi); rancangan menunggu persetujuan. Sales today dirinci Draft / Confirmed / Total; riwayat chat 30 / 14 / 7 hari menurut level. |
 | 2026-10-02 | C.31: chat antar user ala WhatsApp di menu akun v2 — user terdaftar, online = sedang login (warna cerah), lampiran file sampai 20 MB, bunyi saat pesan masuk, belum ada voice. Menggantikan data contoh; ddt + tm2. |
 | 2026-10-02 | C.31: chat harus modular — bagian server dipindah ke paket `packages/chat`, layar tetap objek DevLib `x-dl::chat`; tmerp hanya menyambungkan user, setelan, dan kamus. |
+| 2026-10-02 | C.31: chat seketika lewat Laravel Reverb (server terpisah `realtime/`) + tulisan "sedang mengetik…"; cara 5 detik tetap jadi cadangan bila server mati. |

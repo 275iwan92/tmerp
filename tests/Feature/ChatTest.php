@@ -8,8 +8,11 @@ use Chat\Models\Conversation;
 use Chat\Models\Message;
 use Chat\Models\Participant;
 use Chat\Models\Presence;
+use Chat\Realtime;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -30,6 +33,9 @@ class ChatTest extends TestCase
     {
         parent::setUp();
         Storage::fake('local');
+        // Server WebSocket tidak disentuh tes: kabar yang didorong ditangkap Http::fake, kuncinya kunci uji.
+        Http::fake();
+        config(['chat.realtime.app_id' => '424242', 'chat.realtime.key' => 'test-key', 'chat.realtime.secret' => 'test-secret']);
         // User uji tidak punya jawaban pertanyaan keamanan: lewati gerbangnya seperti di UAT (config, bukan data).
         config(['uat.security_setup_skip' => implode(',', self::LOGINS)]);
         $this->cleanup();
@@ -57,6 +63,16 @@ class ChatTest extends TestCase
     private function chat(): ChatService
     {
         return app(ChatService::class);
+    }
+
+    /** Kabar yang didorong ke server WebSocket: [nama, channel[], data]. */
+    private function pushed(): array
+    {
+        return collect(Http::recorded())->map(function (array $pair) {
+            $body = json_decode($pair[0]->body(), true);
+
+            return [$body['name'], $body['channels'], json_decode($body['data'], true)];
+        })->all();
     }
 
     private function poll(SecUser $as, int $after, ?int $open = null): array
@@ -132,6 +148,64 @@ class ChatTest extends TestCase
         $this->assertTrue($online());
         event(new Logout('web', $this->b));
         $this->assertFalse($online());
+    }
+
+    public function test_events_are_pushed_to_the_websocket_server_with_a_valid_signature(): void
+    {
+        $a = Realtime::userChannel($this->a->id_user);
+        $b = Realtime::userChannel($this->b->id_user);
+        $this->assertSame('private-chat.'.config('database.connections.tm2sys.database').'.user.'.$this->a->id_user, $a);
+
+        // Pesan: ke lawan bicara dan ke layar lain pengirim, tanpa 'me' (tiap layar menghitungnya dari 'from').
+        $sent = $this->actingAs($this->a)->postJson('/v2/chat/send', ['to' => $this->b->id_user, 'text' => 'Hello'])->assertOk()->json('msg');
+        [$name, $channels, $data] = $this->pushed()[0];
+        $this->assertSame(['chat.message', [$b, $a]], [$name, $channels]);
+        $this->assertSame(['from' => $this->a->id_user, 'to' => $this->b->id_user, 'msg' => array_diff_key($sent, ['me' => 1])], $data);
+        Http::assertSent(function (HttpRequest $r) {
+            parse_str((string) parse_url($r->url(), PHP_URL_QUERY), $q);
+            $signed = "POST\n/apps/424242/events\nauth_key=test-key&auth_timestamp={$q['auth_timestamp']}&auth_version=1.0&body_md5=".md5($r->body());
+
+            return str_starts_with($r->url(), 'http://127.0.0.1:8080/apps/424242/events?') && hash_equals(hash_hmac('sha256', $signed, 'test-secret'), $q['auth_signature']);
+        });
+
+        // Sedang mengetik -> hanya ke lawan bicara; tidak ada yang disimpan.
+        $this->actingAs($this->b)->postJson('/v2/chat/typing', ['to' => $this->a->id_user])->assertOk();
+        $this->assertSame(['chat.typing', [$a], ['from' => $this->b->id_user]], $this->pushed()[1]);
+
+        // B mulai online -> semua dikabari sekali; B melihat percakapan -> A dikabari sudah dibaca.
+        $this->poll($this->b, 0, $this->a->id_user);
+        $this->poll($this->b, 0, $this->a->id_user);
+        $rest = array_slice($this->pushed(), 2);
+        $this->assertSame(['chat.presence', 'chat.read'], array_column($rest, 0));
+        $this->assertSame([Realtime::everyoneChannel()], $rest[0][1]);
+        $this->assertSame([[$a], ['reader' => $this->b->id_user, 'id' => $sent['id']]], [$rest[1][1], $rest[1][2]]);
+
+        event(new Logout('web', $this->b));
+        $this->assertSame(['chat.presence', false], [last($this->pushed())[0], last($this->pushed())[2]['online']]);
+    }
+
+    public function test_a_user_may_only_subscribe_to_own_channels(): void
+    {
+        $own = Realtime::userChannel($this->a->id_user);
+        $this->actingAs($this->a)->postJson('/v2/chat/auth', ['socket_id' => '123.456', 'channel_name' => $own])
+            ->assertOk()->assertExactJson(['auth' => 'test-key:'.hash_hmac('sha256', '123.456:'.$own, 'test-secret')]);
+        $this->actingAs($this->a)->postJson('/v2/chat/auth', ['socket_id' => '123.456', 'channel_name' => Realtime::everyoneChannel()])->assertOk();
+        $this->actingAs($this->a)->postJson('/v2/chat/auth', ['socket_id' => '123.456', 'channel_name' => Realtime::userChannel($this->b->id_user)])->assertForbidden();
+        $this->actingAs($this->a)->postJson('/v2/chat/auth', ['socket_id' => '123.456', 'channel_name' => 'private-chat.other_db.user.'.$this->a->id_user])->assertForbidden();
+
+        $api = $this->chat()->boot($this->a)['api'];
+        $this->assertSame(['test-key', [$own, Realtime::everyoneChannel()]], [$api['realtime']['key'], $api['realtime']['channels']]);
+    }
+
+    public function test_without_a_websocket_server_chat_still_works_by_polling(): void
+    {
+        config(['chat.realtime.key' => null]);
+        $this->actingAs($this->a)->postJson('/v2/chat/send', ['to' => $this->b->id_user, 'text' => 'Hello'])->assertOk();
+        $this->actingAs($this->a)->postJson('/v2/chat/typing', ['to' => $this->b->id_user])->assertOk();
+        $this->assertCount(1, $this->poll($this->b, 0)['msgs']);
+        Http::assertNothingSent();
+        $this->assertNull($this->chat()->boot($this->a)['api']['realtime']);
+        $this->actingAs($this->a)->postJson('/v2/chat/auth', ['socket_id' => '1.1', 'channel_name' => Realtime::userChannel($this->a->id_user)])->assertForbidden();
     }
 
     public function test_home_hands_the_chat_api_to_the_component(): void

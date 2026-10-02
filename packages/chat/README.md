@@ -17,6 +17,7 @@ pintu: `config/chat.php`, kontrak `Chat\Contracts\Directory`, dan kait `Chat\Cha
 | API | `src/Http/ChatController.php`, `src/Http/ReadOnlySession.php` |
 | Siapa usernya (kontrak + bawaan) | `src/Contracts/Directory.php`, `src/EloquentDirectory.php` |
 | Kait setelan & terjemahan | `src/Chat.php` |
+| Dorongan seketika (WebSocket, opsional) | `src/Realtime.php` |
 | Tabel | `src/Models/*`, `database/migrations/*` |
 | Setelan bawaan | `config/chat.php` |
 
@@ -59,15 +60,42 @@ teks galat lewat kamus aplikasi — `Chat\Chat::translateUsing(fn (string $engli
 | `POST upload` (`uid`, `offset`, `chunk`) | satu potong lampiran (`chat.chunk_bytes`) | `{received}` |
 | `POST send` (`to`, `text`, `upload`, `name`) | kirim pesan / lampiran yang sudah di-upload | `{msg}` |
 | `GET file/{id}` | isi lampiran; gambar tampil langsung, lainnya diunduh | file |
+| `POST typing` (`to`) | kabari lawan "sedang mengetik" (hanya lewat WebSocket) | `{ok}` |
+| `POST auth` (`socket_id`, `channel_name`) | izin langganan channel WebSocket milik user | `{auth}` |
 
 Bentuk `msg` dan data awal `boot()` ditulis di kepala `Devlib\Components\Chat`.
 
+## Seketika (WebSocket) — opsional
+
+Tanpa setelan apa pun chat bekerja dengan bertanya berkala. Supaya **seketika** (pesan, centang dibaca, online, "sedang
+mengetik…") jalankan satu server WebSocket berprotokol Pusher — di tmerp: Laravel Reverb di folder `realtime/` — lalu isi di
+`.env` aplikasi pemakai:
+
+```
+CHAT_REALTIME_APP_ID=...      # sama dengan REVERB_APP_ID di server
+CHAT_REALTIME_KEY=...         # sama dengan REVERB_APP_KEY
+CHAT_REALTIME_SECRET=...      # sama dengan REVERB_APP_SECRET
+CHAT_REALTIME_HOST=127.0.0.1  # alamat server dilihat dari PHP
+CHAT_REALTIME_PORT=8080
+CHAT_REALTIME_SCHEME=http
+```
+
+- Paket **tidak butuh pustaka broadcast** (`laravel/reverb`, `pusher-php-server`, Laravel Echo): `Realtime` menandatangani
+  sendiri kabar yang dikirim ke server dan izin langganan channel; layar DevLib menyambung dengan `WebSocket` bawaan browser.
+- Channel privat `chat.<scope>.user.<id>` (kabar untuk satu user) dan `chat.<scope>.everyone` (siapa yang online). `scope`
+  bawaan = nama database chat, sehingga beberapa aplikasi boleh memakai satu server tanpa tertukar.
+- Kabar: `chat.message {from, to, msg}`, `chat.read {reader, id}`, `chat.typing {from}`, `chat.presence {id, online, seen}`.
+- Selama tersambung, layar tetap bertanya tiap `realtime_poll_seconds` (30) sebagai jaring pengaman dan denyut online.
+  **Server mati / putus:** kabar yang gagal dikirim hanya dicatat di log, layar kembali bertanya tiap `poll_seconds` dan
+  mencoba menyambung lagi tiap 30 detik. Tidak ada pesan yang hilang: semuanya tetap dari database.
+- Situs https memerlukan `wss`: `CHAT_REALTIME_CLIENT_SCHEME=https` (+ `CHAT_REALTIME_CLIENT_HOST` / `_PORT` bila berbeda).
+
 ## Cara kerja singkat
 
-- **Tanpa websocket.** Layar bertanya ke `poll` tiap `poll_seconds`; pertanyaan itu juga denyut "sedang login".
+- Layar bertanya ke `poll` tiap `poll_seconds`; pertanyaan itu juga denyut "sedang login".
   Online = `signed_in` dan denyut terakhir masih dalam `online_timeout_seconds`. Sign out (event `Logout` di guard chat)
   langsung mematikan `signed_in`.
-- `poll` dan `upload` memakai `ReadOnlySession`: sesi dibaca tetapi tidak ditulis, supaya permintaan latar tidak menimpa
+- `poll`, `upload`, `typing`, dan `auth` memakai `ReadOnlySession`: sesi dibaca tetapi tidak ditulis, supaya permintaan latar tidak menimpa
   flash / old input layar lain dan sesi tetap bisa kedaluwarsa.
 - Lampiran dikirim berpotong (`chunk_bytes`, bawaan 1 MB) sehingga tidak bergantung pada `upload_max_filesize` PHP.
 - Satu percakapan per pasangan user dijamin `pair_key` UNIQUE (`"<id kecil>:<id besar>"`).
