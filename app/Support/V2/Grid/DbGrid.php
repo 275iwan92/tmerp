@@ -3,6 +3,8 @@
 namespace App\Support\V2\Grid;
 
 use App\Support\V2\Src;
+use Carbon\CarbonImmutable;
+use Devlib\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -127,6 +129,131 @@ abstract class DbGrid
         return str_replace('987654321', '{id}', route('v2.print', ['type' => $type, 'id' => 987654321]));
     }
 
+    // Laporan berperiode (mis. Stock Card): [tanggal awal, tanggal akhir] bawaan; null = laporan tanpa periode. Layar grid
+    // generik menampilkan pilihan tanggal di atas grid dan memuat ulang dengan ?from=&to= (tanggal ISO).
+    /** @return array{0: CarbonImmutable, 1: CarbonImmutable}|null */
+    protected function defaultPeriod(): ?array
+    {
+        return null;
+    }
+
+    /** @var array{0: CarbonImmutable, 1: CarbonImmutable}|null periode yang dipasang pemanggil (test, cetakan) */
+    private ?array $periodSet = null;
+
+    public function between(CarbonImmutable $from, CarbonImmutable $to): static
+    {
+        $this->periodSet = $from->lessThanOrEqualTo($to) ? [$from->startOfDay(), $to->startOfDay()] : [$to->startOfDay(), $from->startOfDay()];
+
+        return $this;
+    }
+
+    /** @return array{0: CarbonImmutable, 1: CarbonImmutable}|null periode yang berlaku: pilihan user (?from=&to=) atau bawaan laporan */
+    public function period(): ?array
+    {
+        $default = $this->defaultPeriod();
+        if (! $default) {
+            return null;
+        }
+        if ($this->periodSet) {
+            return $this->periodSet;
+        }
+        $pick = function (string $key, CarbonImmutable $fallback): CarbonImmutable {
+            $value = (string) request()->query($key);
+
+            return preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) && strtotime($value) !== false ? CarbonImmutable::parse($value)->startOfDay() : $fallback->startOfDay();
+        };
+        [$from, $to] = [$pick('from', $default[0]), $pick('to', $default[1])];
+
+        return $from->lessThanOrEqualTo($to) ? [$from, $to] : [$to, $from];
+    }
+
+    // Saringan teks di bilah periode (kunci query => label), mis. ['item' => 'Item']: dipakai laporan yang perlu dipersempit di
+    // server (cetakan kartu satu item). Nilainya dibaca lewat param().
+    public function params(): array
+    {
+        return [];
+    }
+
+    /** @var array<string, string> nilai saringan yang dipasang pemanggil (test) */
+    private array $paramSet = [];
+
+    public function with(array $params): static
+    {
+        $this->paramSet = array_map(fn ($v) => trim((string) $v), $params);
+
+        return $this;
+    }
+
+    public function param(string $key): string
+    {
+        return $this->paramSet[$key] ?? (isset($this->params()[$key]) ? trim((string) request()->query($key)) : '');
+    }
+
+    // Cetakan laporan (x-dl::report, route v2.report.print): isi yang sama dengan grid di layar. false = tanpa tombol Print.
+    public function printable(): bool
+    {
+        return false;
+    }
+
+    // Ringkasan di atas cetakan: [['label', 'sum' => kolom | 'value' => angka, 'signed' => bool]].
+    public function printSummary(): array
+    {
+        return [];
+    }
+
+    // Tanda tangan di bawah cetakan: [[judul, jabatan]].
+    public function printSignatures(): array
+    {
+        return [['Prepared By', 'Warehouse'], ['Checked By', 'Head of Warehouse']];
+    }
+
+    // Isi cetakan: kolom grid yang tampil (identity = nama + kode di baris kedua, tanggal sudah diformat), baris, kriteria.
+    /** @return array{columns: list<array<string, mixed>>, rows: list<array<string, mixed>>, criteria: array<string, string>} */
+    public function printData(): array
+    {
+        $dates = [];
+        $columns = [];
+        foreach ($this->columns() as $c) {
+            if (in_array($c['key'], $this->restrictedKeys(), true) || ($c['visible'] ?? true) === false) {
+                continue;
+            }
+            $type = $c['type'] ?? 'text';
+            if ($type === 'date') {
+                $dates[] = $c['key'];
+            }
+            $columns[] = array_filter(['key' => $c['key'], 'label' => $c['label'], 'type' => in_array($type, ['number', 'money', 'badge'], true) ? $type : 'text',
+                'sub' => $type === 'identity' ? ($c['code'] ?? null) : null, 'sum' => $c['sum'] ?? null, 'tones' => $c['tones'] ?? null], fn ($v) => $v !== null);
+        }
+        $rows = array_map(function (array $r) use ($dates) {
+            foreach ($dates as $key) {
+                $r[$key] = empty($r[$key]) ? '' : Locale::date($r[$key]);
+            }
+
+            return $r;
+        }, $this->rows());
+        $period = $this->period();
+        $criteria = $period ? ['Period' => Locale::date($period[0]).' — '.Locale::date($period[1])] : ['As Of' => Locale::date(now())];
+        foreach ($this->params() as $key => $label) {
+            if ($this->param($key) !== '') {
+                $criteria[$label] = $this->param($key);
+            }
+        }
+
+        return ['columns' => $columns, 'rows' => array_values($rows), 'criteria' => $criteria + ['Rows' => Locale::number(count($rows))]];
+    }
+
+    public function printUrlOf(): ?string
+    {
+        if (! $this->printable()) {
+            return null;
+        }
+        $period = $this->period();
+
+        $params = array_filter(array_map(fn (string $key) => $this->param($key), array_combine(array_keys($this->params()), array_keys($this->params()))), fn ($v) => $v !== '');
+
+        return route('v2.report.print', ['slug' => $this->slug()] + ($period ? ['from' => $period[0]->toDateString(), 'to' => $period[1]->toDateString()] : []) + $params);
+    }
+
     public function stats(): array
     {
         return $this->family() === self::MASTER ? [
@@ -249,11 +376,17 @@ abstract class DbGrid
         return Src::of(...array_map(fn ($c) => ($m = new $c)->getConnectionName().'.'.$m->getTable(), $this->models()));
     }
 
+    public function sourceLabel(): string
+    {
+        return $this->sourceText();
+    }
+
     // Bentuk yang sama dengan Screens::screen() supaya route v2.screen & breadcrumb memakainya apa adanya.
     public function screen(): array
     {
         return ['code' => 'G-'.$this->slug(), 'slug' => $this->slug(), 'label' => $this->title(), 'icon' => $this->icon(), 'ref' => static::class,
             'mockup' => null, 'status' => 'review', 'url' => $this->url(), 'type' => 'grid', 'module' => $this->moduleLabel(),
-            'module_code' => $this->module(), 'group' => $this->group(), 'view' => 'v2.screens._dbgrid', 'grid' => $this];
+            'module_code' => $this->module(), 'group' => $this->group(), 'view' => 'v2.screens._dbgrid', 'grid' => $this,
+            'filters' => $this->defaultPeriod() !== null || $this->params() !== []];
     }
 }

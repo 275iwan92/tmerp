@@ -3,6 +3,30 @@
 @if ($guide = $screen['grid']->guide())
     <x-dl::alert tone="info" :message="$guide" />
 @endif
+@php
+    $period = $screen['grid']->period();
+    $params = $screen['grid']->params();
+    $printUrl = $screen['grid']->printUrlOf();
+@endphp
+@if ($period || $params || $printUrl)
+{{-- Laporan berperiode: pilih tanggal (dan saringan teks) lalu Show memuat ulang grid; Print = cetakan x-dl::report yang sama isinya. --}}
+<x-dl::action-form method="get" action="{{ $screen['grid']->url() }}">
+    <x-dl::action-bar align="start">
+        @if ($period)
+            <x-dl::field.date-range name="from" name-end="to" label="Period" :value="$period[0]->toDateString()" :value-end="$period[1]->toDateString()" :duration="false" />
+        @endif
+        @foreach ($params as $key => $label)
+            <x-dl::field.text :name="$key" :label="$label" :value="$screen['grid']->param($key)" />
+        @endforeach
+        @if ($period || $params)
+            <x-dl::button variant="secondary" icon="fa-rotate" label="Show" type="submit" />
+        @endif
+        @if ($printUrl)
+            <x-dl::button variant="secondary" icon="print" label="Print" :href="$printUrl" />
+        @endif
+    </x-dl::action-bar>
+</x-dl::action-form>
+@endif
 @if ($actionUrls = $screen['grid']->actionUrls())
 {{-- Tombol di baris (mis. Print): buka alamat dokumennya di tab baru. --}}
 <script>

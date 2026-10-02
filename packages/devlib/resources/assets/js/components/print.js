@@ -22,6 +22,8 @@
         if (e.target.closest('[data-p-print]')) window.print();
       });
       this.build();
+      // Lembar diukur saat font web belum selesai dimuat -> baris bisa bertambah tinggi sesudahnya dan menimpa kaki halaman: ukur ulang sekali.
+      if (document.fonts && document.fonts.status !== 'loaded') document.fonts.ready.then(() => this.build());
       this.el.dlPrint = {build: this.build};
     }
 

@@ -159,6 +159,16 @@ Route::prefix('v2')->name('v2.')->group(function () {
             'back' => route('v2.screen', $from).(in_array($type, PrintDocs::BACK_TO_LIST, true) ? '' : '?id='.$id)]);
     })->whereNumber('id')->name('print');
 
+    // Cetakan laporan grid (DbGrid::printable): objek DevLib x-dl::report, isi sama dengan grid di layar (periode ?from=&to=).
+    Route::get('/report/{slug}/print', function (string $slug) {
+        $grid = Grids::find($slug) ?? abort(404);
+        abort_unless($grid->printable() && AppMenu::open($slug), 404);
+        abort_unless(Auth::user()->canAccessModule($grid->module()), 403);
+
+        return view('v2.print-report', ['grid' => $grid, 'company' => ['name' => Brand::companyName(), 'tagline' => Brand::tagline(),
+            'initials' => mb_strtoupper(mb_substr(Brand::companyName(), 0, 2)), 'logo' => CompanyLogo::url(), 'logoBw' => CompanyLogo::url('bw')]]);
+    })->name('report.print');
+
     // Aktif/Nonaktif baris Grid Master (App\Support\V2\Grid\DbGrid::toggle) -> status terbaru dari database.
     Route::post('/grid/{slug}/toggle/{id}', function (string $slug, int $id) {
         $grid = Grids::find($slug) ?? abort(404);
