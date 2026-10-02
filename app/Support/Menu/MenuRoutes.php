@@ -108,6 +108,15 @@ final class MenuRoutes
             'FIN_AP_RECEIPT' => route('v2.screen', 'supplier-invoice-receipt'),
             // Shortcut "Master Data Terkait" di dalam modul WM (2026-08-31) --
             // reuse route MDATA yang sama persis (bukan duplikasi layar/data).
+            // Laporan stok semua kelas (2026-10-02, hanya ada di v2): Stock by Location, Stock Card, Recapitulation, Summary,
+            // Opname, Loss & Gain, Stock in Inspection. Di tm2sys (menu v1) satu grup "Stock Reports".
+            'INV_WH_RPT_LOC' => route('v2.screen', 'inv-rpt-location'),
+            'INV_WH_RPT_CARD' => route('v2.screen', 'inv-rpt-card'),
+            'INV_WH_RPT_RECAP' => route('v2.screen', 'inv-rpt-recap'),
+            'INV_WH_RPT_SUM' => route('v2.screen', 'inv-rpt-summary'),
+            'INV_WH_RPT_OPN' => route('v2.screen', 'inv-rpt-opname'),
+            'INV_WH_RPT_LG' => route('v2.screen', 'inv-rpt-loss-gain'),
+            'INV_WH_RPT_QC' => route('v2.screen', 'inv-rpt-inspection'),
             'INV_REF_RAW' => route('master.raw-material.list'),
             'INV_REF_MATCAT' => route('master.mat-category'),
             'INV_REF_PROD' => route('master.produk'),

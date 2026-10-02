@@ -12,13 +12,19 @@ use App\Services\Inventory\WarehouseStock;
 use App\Support\V2\Src;
 
 // Stock in Inspection: barang yang ADA di gudang tetapi BELUM / TIDAK boleh dipakai, keadaan sekarang (tanpa periode):
-//   Waiting for inspection = baris penerimaan barang (SPB) yang menunggu QC (status QC_PENDING, belum dinilai) -- belum jadi stok;
-//   Rejected, to return    = qty yang ditolak QC dan belum diretur ke supplier;
+//   Waiting for inspection = baris penerimaan barang yang belum diposting (DRAFT / QC_PENDING) dan QC-nya belum selesai
+//                            (qc_qty_status belum DONE atau qc_quality_status masih PENDING) -- belum jadi stok;
+//   Rejected, to return    = qty yang ditolak QC dan belum diretur ke supplier (penerimaan belum atau sudah diposting);
 //   QC hold                = stok di bin area QC Hold;
 //   Blocked bin            = stok di bin yang diblokir (tidak bisa dipakai).
 // Padanan "quality inspection stock" dan "blocked stock" di ERP lain. Angka stok dari WarehouseStock (sama dengan peta gudang).
 class StockInspectionReport extends AllStockReport
 {
+    // Status penerimaan yang belum diposting; nilai qc_quality_status yang berarti "belum dinilai" (bawaan kolom = PENDING).
+    private const OPEN = ['DRAFT', 'QC_PENDING'];
+
+    private const NOT_JUDGED = ['', 'PENDING'];
+
     public function slug(): string
     {
         return 'inv-rpt-inspection';
@@ -72,9 +78,9 @@ class StockInspectionReport extends AllStockReport
     // Penerimaan barang: menunggu QC, atau ditolak dan belum diretur.
     private function receiptRows(): array
     {
-        $receipts = PvReceipt::query()->whereIn('status', ['QC_PENDING', 'POSTED'])->orderBy('i_doc_date')->get()->keyBy('pv_id');
+        $receipts = PvReceipt::query()->whereIn('status', [...self::OPEN, 'POSTED'])->orderBy('i_doc_date')->get()->keyBy('pv_id');
         $lines = PvLine::query()->whereIn('pv_id', $receipts->keys()->all())->where(fn ($q) => $q
-            ->where(fn ($w) => $w->whereNull('qc_quality_status')->orWhere('qc_quality_status', ''))
+            ->where(fn ($w) => $w->whereNull('qc_quality_status')->orWhereIn('qc_quality_status', self::NOT_JUDGED)->orWhere('qc_qty_status', '<>', 'DONE'))
             ->orWhereRaw('IFNULL(c_qty_rejected, 0) > IFNULL(c_qty_returned, 0)'))->orderBy('pv_id')->orderBy('line_no')->get();
         // Lintas-DB (tm2pur -> tm2mst): nama supplier dalam satu query.
         $suppliers = SupSupplier::query()->whereKey($receipts->pluck('i_supplier_id')->filter()->unique()->all())->pluck('supplier_name', 'id_supplier');
@@ -82,9 +88,10 @@ class StockInspectionReport extends AllStockReport
         $rows = [];
         foreach ($lines as $l) {
             $pv = $receipts[$l->pv_id];
-            $waiting = $pv->status === 'QC_PENDING' && ($l->qc_quality_status === null || $l->qc_quality_status === '');
+            $waiting = in_array($pv->status, self::OPEN, true)
+                && ($l->qc_qty_status !== 'DONE' || $l->qc_quality_status === null || in_array($l->qc_quality_status, self::NOT_JUDGED, true));
             $rejected = (float) $l->c_qty_rejected - (float) $l->c_qty_returned;
-            if (! $waiting && ($pv->status !== 'POSTED' || $rejected <= 0)) {
+            if (! $waiting && $rejected <= 0) {
                 continue;
             }
             $since = $waiting ? $pv->i_doc_date : ($l->qc_at ?? $pv->i_doc_date);

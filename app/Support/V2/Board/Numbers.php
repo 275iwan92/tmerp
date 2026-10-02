@@ -738,9 +738,10 @@ final class Numbers
     {
         return $this->once('iqc:'.$from->toDateString().':'.$to->toDateString(), function () use ($from, $to) {
             $done = PvLine::query()->whereBetween('qc_at', [$from->startOfDay()->toDateTimeString(), $to->endOfDay()->toDateTimeString()])
-                ->whereNotNull('qc_quality_status')->where('qc_quality_status', '<>', '')->selectRaw('qc_quality_status AS st, COUNT(*) AS n')->groupBy('qc_quality_status')->pluck('n', 'st');
-            $waiting = PvLine::query()->whereIn('pv_id', PvReceipt::query()->where('status', 'QC_PENDING')->select('pv_id'))
-                ->where(fn ($q) => $q->whereNull('qc_quality_status')->orWhere('qc_quality_status', ''))->count();
+                ->whereNotNull('qc_quality_status')->whereNotIn('qc_quality_status', ['', 'PENDING'])->selectRaw('qc_quality_status AS st, COUNT(*) AS n')->groupBy('qc_quality_status')->pluck('n', 'st');
+            // Belum dinilai = bawaan kolom 'PENDING' (bukan NULL); penerimaan yang belum diposting berstatus DRAFT atau QC_PENDING.
+            $waiting = PvLine::query()->whereIn('pv_id', PvReceipt::query()->whereIn('status', ['DRAFT', 'QC_PENDING'])->select('pv_id'))
+                ->where(fn ($q) => $q->whereNull('qc_quality_status')->orWhereIn('qc_quality_status', ['', 'PENDING']))->count();
 
             return ['pass' => (int) ($done['PASS'] ?? 0), 'fail' => (int) $done->except('PASS')->sum(), 'waiting' => $waiting];
         });

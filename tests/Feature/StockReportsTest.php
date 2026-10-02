@@ -6,6 +6,7 @@ use App\Models\Master\WhLoc;
 use App\Models\Master\WhWarehouse;
 use App\Models\Sys\SecUser;
 use App\Services\Inventory\StockLedger;
+use App\Support\V2\Board\Numbers;
 use App\Support\V2\Grid\Grids;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -46,6 +47,8 @@ class StockReportsTest extends TestCase
         foreach (['rm_stockcard' => 'create_by', 'rm_stock_d' => 'create_by', 'rm_stock' => 'create_by', 'inv_transfer_line' => 'created_by', 'inv_transfer' => 'created_by'] as $table => $column) {
             $this->assertSame(0, $this->inv()->table($table)->where($column, self::BY)->count(), $table.' masih berisi baris uji.');
         }
+        $this->assertSame(0, DB::connection('tm2pur')->table('pv_receipt')->where('created_by', self::BY)->count());
+        $this->assertSame(0, DB::connection('tm2pur')->table('pv_line')->where('created_by', self::BY)->count());
         $this->assertSame(0, WhWarehouse::query()->where('created_by', self::BY)->count());
         $this->assertSame(0, WhLoc::query()->where('created_by', self::BY)->count());
         StockLedger::forget();
@@ -64,6 +67,9 @@ class StockReportsTest extends TestCase
         }
         $this->inv()->table('inv_transfer_line')->where('created_by', self::BY)->delete();
         $this->inv()->table('inv_transfer')->where('created_by', self::BY)->delete();
+        $pur = DB::connection('tm2pur');
+        $pur->table('pv_line')->whereIn('pv_id', $pur->table('pv_receipt')->where('created_by', self::BY)->pluck('pv_id')->all() ?: [0])->delete();
+        $pur->table('pv_receipt')->where('created_by', self::BY)->delete();
         WhLoc::query()->where('created_by', self::BY)->delete();
         WhWarehouse::query()->where('created_by', self::BY)->delete();
     }
@@ -215,6 +221,34 @@ class StockReportsTest extends TestCase
         $this->assertSame(['Blocked bin', 22.0, 'Test block'], [$held['state'], $held['qty'], $held['note']]);
         $this->assertEqualsWithDelta(1320.0, $held['value'], 0.001);
         $this->assertNull(collect(Grids::find('inv-rpt-inspection')->rows())->firstWhere('reference', 'ZZR-A-01'), 'Bin yang bisa dipakai tidak ikut.');
+    }
+
+    public function test_inspection_lists_receipt_lines_waiting_for_qc_and_rejected_quantities(): void
+    {
+        $waitingBefore = $this->incomingWaiting();
+        $pur = DB::connection('tm2pur');
+        $pvId = $pur->table('pv_receipt')->insertGetId(['i_doc_date' => now()->subDays(4)->toDateString(), 'i_receipt_type' => 'PO', 'status' => 'QC_PENDING',
+            'created_by' => self::BY, 'updated_by' => self::BY]);
+        $line = fn (int $no, array $qc) => $pur->table('pv_line')->insertGetId(['pv_id' => $pvId, 'line_no' => $no, 'i_description' => 'ZZR receipt line '.$no, 'c_item_code' => 'ZZR-'.$no,
+            'i_qty_purchase' => 100, 'i_uom_purchase' => 'KG', 'i_qty_stock' => 100, 'i_uom_stock' => 'KG', 'created_by' => self::BY, 'updated_by' => self::BY] + $qc);
+        // Bawaan kolom QC = PENDING (bukan NULL): baris yang belum dinilai.
+        $waiting = $line(1, []);
+        $rejected = $line(2, ['qc_qty_status' => 'DONE', 'qc_quality_status' => 'PARTIAL', 'c_qty_accepted' => 90, 'c_qty_rejected' => 10, 'qc_at' => now()->subDays(2)]);
+        $passed = $line(3, ['qc_qty_status' => 'DONE', 'qc_quality_status' => 'PASS', 'c_qty_accepted' => 100, 'c_qty_rejected' => 0, 'qc_at' => now()->subDays(2)]);
+
+        $rows = collect(Grids::find('inv-rpt-inspection')->rows())->keyBy('id');
+        $this->assertSame(['Waiting for inspection', 100.0, 4, 'Draft #'.$pvId], array_map(fn (string $k) => $rows['PV-'.$waiting][$k], ['state', 'qty', 'days', 'reference']));
+        $this->assertSame(['Rejected, to return', 10.0, 2, 'danger'], array_map(fn (string $k) => $rows['PV-'.$rejected][$k], ['state', 'qty', 'days', 'tone']));
+        $this->assertFalse($rows->has('PV-'.$passed), 'Baris yang lolos QC tidak tertahan.');
+        // Widget Incoming QC memakai aturan "belum dinilai" yang sama.
+        $this->assertSame($waitingBefore + 1, $this->incomingWaiting());
+    }
+
+    private function incomingWaiting(): int
+    {
+        $n = new Numbers(CarbonImmutable::now());
+
+        return $n->incomingQc($n->from(), $n->to())['waiting'];
     }
 
     public function test_period_comes_from_the_query_string_and_reports_open_and_print(): void
