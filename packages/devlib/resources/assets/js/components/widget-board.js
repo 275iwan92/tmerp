@@ -26,9 +26,9 @@
       this.busy = true; this.el.classList.add('is-busy');
       const opt = {credentials: 'same-origin', headers: {'Accept': 'application/json'}};
       if (body) Object.assign(opt, {method: 'POST', body: JSON.stringify(body)}, {headers: {...opt.headers, 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.cfg.csrf || window.DL_CSRF || ''}});
-      fetch(this.cfg.action, opt).then(r => r.ok ? r.json() : Promise.reject(r.status))
+      fetch(this.cfg.action, opt).then(r => r.ok ? r.json() : r.json().catch(() => ({})).then(j => Promise.reject(j.message || '')))
         .then(res => this.swap(res.html))
-        .catch(() => { this.busy = false; this.el.classList.remove('is-busy'); Devlib.toast(Devlib.h.T('wb_failed'), 'danger'); });
+        .catch(msg => { this.busy = false; this.el.classList.remove('is-busy'); Devlib.toast(typeof msg === 'string' && msg ? msg : Devlib.h.T('wb_failed'), 'danger'); });
     }
 
     swap(html) {

@@ -41,7 +41,15 @@
                 @endforelse
             </section>
         </x-slot:profilePages>
-        @include('v2.partials.material-alert')
+        {{-- Opening screen: yang punya papan widget (top management) melihat salam + papan; yang lain layar pembuka lama (user 2026-10-02). --}}
+        @if ($board)
+            <x-slot:dashboard>
+                @include('v2.partials.material-alert')
+                <x-dl::dashboard :board="$board" source="App\Support\V2\Board\Board" />
+            </x-slot:dashboard>
+        @else
+            @include('v2.partials.material-alert')
+        @endif
         <p>Ini <b>Build &amp; UAT</b>: layar ERP disusun dari objek <b>DevLib</b> dengan data <b>dummy</b> ({{ config('database.connections.tm2mst.database') }} dst). Lencana di menu:
             <b>Review</b> = layar v2 menunggu penilaian, <b>v1</b> = sementara membuka layar lama, <b>Belum</b> = belum ada layar.
             Alur dokumen antar layar ada di <b>Bantuan &amp; dukungan</b> (tekan <kbd>F1</kbd>).</p>

@@ -373,6 +373,22 @@
       cara yang sama. **Filter otomatis per peran** (tiap orang langsung melihat baris yang menunggu tindakannya) **belum
       diputuskan** — user belum bisa menilainya karena selama ini masih manual; jangan dibangun dulu.
 
+33. **Opening screen = papan widget yang diatur pemiliknya — user 2026-10-02.**
+    User: "bisakah disediakan many widget including graphics dan lain-lainnya, lalu dengan bantuan asisten AI seseorang
+    bisa meminta untuk dipasangkan widget-nya — jadi opening screen menjadi lebih fleksibel"; "top management dulu yang
+    diprioritaskan, yang lainnya masih ikut template yang dibuat".
+    - **Top management dulu:** yang boleh membuka Laporan Manajemen (Presiden Direktur, Direktur, General Manager,
+      Operational Manager) mendarat di papan widgetnya sendiri sesudah login. **Jabatan lain masih mengikuti template**
+      (`x-dl::dashboard` per jabatan) — belum dipasang di mockup.test.
+    - **Widget = satu kelas program + satu baris katalog** (`sys_widget`, Setup → Opening Board Widgets): judul, kelompok,
+      siapa yang boleh memasang (modul + level security yang sudah ada, harga jual ikut A.9), frasa asisten, aktif.
+    - **Susunan milik user** (`sys_user_widget`): tombol **Customize** → pindah, lebar, lepas, **Add Widget**, **Reset to
+      Template**; langsung tersimpan. Papan pertama = salinan template profilnya (Setup → Opening Board Templates).
+    - **Target** yang dibandingkan widget diisi di Setup → KPI Targets (perusahaan, atau per sales person untuk nilai
+      order); kata harian di Setup → Daily Quotes; lokasi cuaca di Settings → Constants. Tanpa target = "No target".
+    - Objek DevLib: `x-dl::widget-board` (contoh di devlib.test → Opening Dashboard). Definisi tiap angka + cara mencoba:
+      `docs/md_for_systems/openingboard_review.md`. **Dibangun di ddt; tm2 menunggu OK user.**
+
 ## D. Cara kerja developer / agen
 
 1. **Peran:** system analyst, developer, dan database designer. Aktif menilai desain; audit integritas data
@@ -422,6 +438,10 @@
      **Total** sekian. **Deadstock** = stok tidak bergerak lebih dari 6 bulan, dinilai harga beli rata-rata.
    - **Riwayat percakapan:** 30 hari untuk top management, 14 hari untuk middle management, 7 hari untuk level terbawah
      (user lebih dari 100; menghemat storage). Angkanya konstanta, bukan hardcode.
+3. **Asisten boleh menjalankan PERINTAH papan widget (2026-10-02, C.33):** "pasang widget ...", "lepas widget ...",
+   "widget apa saja", "reset widget". Asisten hanya mencocokkan nama widget dari katalog lalu memanggil aturan papan yang
+   sama dengan tombol Customize — hak pasang tetap dari security user, angka tetap dihitung kelas widget. Kata **widget**
+   selalu berarti perintah papan, walau kalimatnya memuat nama pertanyaan angka ("lepas widget sales today").
 
 ---
 
@@ -501,3 +521,4 @@
 | 2026-10-02 | A.21: **Customer Invoice Tahap 1 dibangun di mockup.test** (user: "jalankan dulu lalu buatkan dokumentasinya buat saya review") — invoice dari Surat Jalan yang sudah diterima, tagihan uang muka + Record Receipt, potongan uang muka otomatis, nomor dari seri saat Confirm, jurnal otomatis, master Company Bank Accounts dan Document Number Series, qty diterima di Proof of Delivery. Menu Down Payment lama dimatikan di mockup.test. tmerp.test belum. Dokumen review: `docs/md_for_systems/customerinvoice_review.md`. |
 | 2026-10-02 | A.21: **layar lama dihentikan** (user: "yang lama dihapus saja, gantikan dengan yang baru. yang lama disudahi saja") — Order to Cash dan Down Payment lama diarsipkan, menunya dihapus; Customer Invoice satu-satunya pintu untuk invoice, uang muka, dan penerimaan uang customer (Record Payment: satu penerimaan untuk satu atau beberapa invoice). Terpasang di mockup.test dan tmerp.test. Belum ada gantinya: AR Aging. |
 | 2026-10-02 | C.18: klik logo atau nama aplikasi di kepala Layer Menu = semua tab ditutup dan opening screen tampil; posisi menu tetap; isian belum di-Save -> satu pertanyaan dulu. Objek DevLib `x-dl::layer-menu` prop `home` + `Shell::goHome`. |
+| 2026-10-02 | C.33 + E.3: **opening screen = papan widget** — top management dulu (yang lain masih template), katalog widget + susunan per user + target KPI sebagai data, widget dipasang / dilepas lewat Customize atau lewat asisten; dibangun di ddt, review `openingboard_review.md`. |

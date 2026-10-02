@@ -158,7 +158,8 @@
       const wait = document.createElement('div'); wait.className = 'dl-ai__msg dl-ai__msg--bot dl-ai__wait'; wait.innerHTML = `<i class="fa-solid fa-ellipsis fa-fade"></i> ${esc(this.ai.thinking || '')}`;
       this.aiBody.appendChild(wait); this.aiBody.scrollTop = this.aiBody.scrollHeight;
       this.aiPost(this.ai.api.ask, {q, topic: topic || null})
-        .then(res => { wait.remove(); this.addReply(res.reply, res.id, null); })
+        // reply.refresh (mis. 'board'): jawaban itu mengubah sesuatu di layar -> bagian itu memuat ulang isinya.
+        .then(res => { wait.remove(); this.addReply(res.reply, res.id, null); if (res.reply?.refresh) document.dispatchEvent(new CustomEvent('dl:refresh', {detail: res.reply.refresh})); })
         .catch(() => { wait.remove(); this.addAi('bot', this.ai.failed || ''); });
     }
 

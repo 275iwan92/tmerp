@@ -781,5 +781,106 @@
       {"label": "Restart", "en": "Every month, every year, or never: when the running number starts again from 1.", "id": "Tiap bulan, tiap tahun, atau tidak pernah: kapan nomor urut mulai lagi dari 1."},
       {"label": "Active", "en": "An inactive series cannot issue numbers; Confirm of its documents is refused.", "id": "Seri yang tidak aktif tidak bisa menerbitkan nomor; Confirm dokumennya ditolak."}
     ]
+  },
+  {
+    "key": "setup-widgets",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Opening Board Widgets",
+    "purpose": {
+      "en": "The catalog of widgets a user may put on the opening board. Open it to rename a widget, decide who may install it, or switch one off.",
+      "id": "Katalog widget yang boleh dipasang user di papan pembuka. Buka layar ini untuk mengganti judul widget, menentukan siapa yang boleh memasangnya, atau mematikannya."
+    },
+    "keywords": "widget, katalog widget, papan pembuka, opening board, opening screen, layar pembuka, dashboard, hak pasang widget, kata asisten",
+    "steps": [
+      {"en": "Each row is one widget. Its numbers are calculated by the program, so rows cannot be added here; a new widget is added by the developer.", "id": "Tiap baris adalah satu widget. Angkanya dihitung program, jadi baris tidak bisa ditambah di sini; widget baru ditambah developer."},
+      {"en": "Change Title, Description or Group to how it should read in the Add Widget window.", "id": "Ubah Title, Description, atau Group sesuai tampilan yang diinginkan di jendela Add Widget."},
+      {"en": "Set Module and Minimum level to decide who may install the widget.", "id": "Atur Module dan Minimum level untuk menentukan siapa yang boleh memasang widget."},
+      {"en": "Fill Assistant words with the words a user may say to the assistant, separated by commas.", "id": "Isi Assistant words dengan kata yang mungkin diucapkan user ke asisten, dipisah koma."},
+      {"en": "Click Save. Untick Active to take a widget off every board without deleting anyone's arrangement.", "id": "Klik Save. Hilangkan centang Active untuk menarik widget dari semua papan tanpa menghapus susunan siapa pun."}
+    ],
+    "fields": [
+      {"label": "Key", "en": "The program name of the widget. It cannot be changed.", "id": "Nama program widget. Tidak bisa diubah."},
+      {"label": "Title", "en": "The name shown on the board and in the Add Widget window. Written in English; other languages come from the Translation Dictionary.", "id": "Nama yang tampil di papan dan di jendela Add Widget. Ditulis English; bahasa lain dari Translation Dictionary."},
+      {"label": "Description", "en": "One sentence that says what the widget shows.", "id": "Satu kalimat tentang apa yang ditampilkan widget."},
+      {"label": "Group", "en": "The heading the widget sits under in the Add Widget window, for example Sales or Finance.", "id": "Judul kelompok widget di jendela Add Widget, misalnya Sales atau Finance."},
+      {"label": "Module", "en": "The installer must be allowed to open this module, or Management Reports. Empty means everyone.", "id": "Pemasang harus boleh membuka modul ini, atau Laporan Manajemen. Kosong berarti semua orang."},
+      {"label": "Minimum level", "en": "The lowest security level that may install the widget. 0 means the module right is enough.", "id": "Level security terendah yang boleh memasang widget. 0 berarti hak modul sudah cukup."},
+      {"label": "Width (of 12)", "en": "The width a newly installed widget gets: 3 is a quarter of the board, 12 the full width.", "id": "Lebar widget saat baru dipasang: 3 adalah seperempat papan, 12 selebar papan."},
+      {"label": "Assistant words", "en": "Words that make the assistant pick this widget, in any language, separated by commas.", "id": "Kata yang membuat asisten memilih widget ini, bahasa apa pun, dipisah koma."},
+      {"label": "Order", "en": "The order of the widget in the Add Widget window; a lower number comes first.", "id": "Urutan widget di jendela Add Widget; angka kecil lebih dulu."},
+      {"label": "Active", "en": "An inactive widget is not shown on any board and cannot be installed.", "id": "Widget yang tidak aktif tidak tampil di papan mana pun dan tidak bisa dipasang."}
+    ]
+  },
+  {
+    "key": "setup-board-template",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Opening Board Templates",
+    "purpose": {
+      "en": "The board a user starts with, per profile. Open it to change which widgets a new board shows, in which order and how wide.",
+      "id": "Papan awal user per profil. Buka layar ini untuk mengubah widget apa yang tampil di papan baru, urutannya, dan lebarnya."
+    },
+    "keywords": "template papan, papan bawaan, susunan bawaan, board template, default board, reset to template, profil manajemen",
+    "steps": [
+      {"en": "Each row is one widget in the template of a profile.", "id": "Tiap baris adalah satu widget di template sebuah profil."},
+      {"en": "Add a row: choose the Profile and the Widget, then fill Order and Width.", "id": "Tambah baris: pilih Profile dan Widget, lalu isi Order dan Width."},
+      {"en": "Click Save. The template is used when a board is opened for the first time and when its owner clicks Reset to Template.", "id": "Klik Save. Template dipakai saat papan pertama kali dibuka dan saat pemiliknya klik Reset to Template."},
+      {"en": "Boards that their owner already arranged do not change.", "id": "Papan yang sudah diatur pemiliknya tidak ikut berubah."}
+    ],
+    "fields": [
+      {"label": "Profile", "en": "The group of positions that share this template. For now there is one: Management.", "id": "Kelompok jabatan yang memakai template ini. Saat ini baru satu: Management."},
+      {"label": "Widget", "en": "Picked from Opening Board Widgets. A widget can be in a profile only once.", "id": "Dipilih dari Opening Board Widgets. Satu widget hanya sekali dalam satu profil."},
+      {"label": "Order", "en": "Position on the board; a lower number comes first.", "id": "Posisi di papan; angka kecil lebih dulu."},
+      {"label": "Width (of 12)", "en": "3 is a quarter of the board, 4 a third, 6 half, 8 two thirds, 12 the full width.", "id": "3 adalah seperempat papan, 4 sepertiga, 6 setengah, 8 dua pertiga, 12 selebar papan."},
+      {"label": "Active", "en": "An inactive row is left out when a board is made from the template.", "id": "Baris yang tidak aktif tidak ikut saat papan dibuat dari template."}
+    ]
+  },
+  {
+    "key": "setup-kpi-targets",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "KPI Targets",
+    "purpose": {
+      "en": "The monthly targets the opening board compares the real numbers with: for the company and, for order value, per sales person.",
+      "id": "Target bulanan yang dibandingkan papan pembuka dengan angka sebenarnya: untuk perusahaan dan, khusus nilai order, per sales person."
+    },
+    "keywords": "target, target kpi, target omzet, target penjualan, target sales, target bulanan, target perusahaan, kpi targets, sales target",
+    "steps": [
+      {"en": "Each row is one target for one month.", "id": "Tiap baris adalah satu target untuk satu bulan."},
+      {"en": "Add a row: choose the Target and a date in the month it is for.", "id": "Tambah baris: pilih Target dan tanggal di bulan yang dimaksud."},
+      {"en": "Leave Sales Person at Company for a company target, or choose a person for a personal order-value target.", "id": "Biarkan Sales Person = Company untuk target perusahaan, atau pilih orang untuk target nilai order pribadi."},
+      {"en": "Type Target Value and click Save. The board shows it the next time it is opened.", "id": "Ketik Target Value lalu klik Save. Papan menampilkannya saat dibuka berikutnya."}
+    ],
+    "fields": [
+      {"label": "Target", "en": "What is measured: order value, new Customer Orders, new customers, on-time delivery in percent, or the upper limit of overdue receivables.", "id": "Yang diukur: nilai order, Customer Order baru, customer baru, pengiriman tepat waktu dalam persen, atau batas atas piutang lewat jatuh tempo."},
+      {"label": "Month", "en": "Any date in the month. It is stored as the first day of that month.", "id": "Tanggal berapa pun di bulan itu. Disimpan sebagai tanggal 1 bulan tersebut."},
+      {"label": "Sales Person", "en": "Company for a company target. A person, from Master Sales Person, only for the order-value target.", "id": "Company untuk target perusahaan. Orang, dari Master Sales Person, hanya untuk target nilai order."},
+      {"label": "Target Value", "en": "Rupiah for order value and overdue receivables, a count for orders and customers, a percentage for on-time delivery.", "id": "Rupiah untuk nilai order dan piutang lewat jatuh tempo, jumlah untuk order dan customer, persen untuk pengiriman tepat waktu."},
+      {"label": "Notes", "en": "Free text, for example who set the target.", "id": "Teks bebas, misalnya siapa yang menetapkan target."},
+      {"label": "Active", "en": "An inactive target is ignored; the board shows No target.", "id": "Target yang tidak aktif diabaikan; papan menampilkan No target."}
+    ]
+  },
+  {
+    "key": "setup-daily-quotes",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Daily Quotes",
+    "purpose": {
+      "en": "The quote of the day on the opening board, one row for every day of the year. Open it to change a quote or its author.",
+      "id": "Kata hari ini di papan pembuka, satu baris untuk tiap hari dalam setahun. Buka layar ini untuk mengganti kata atau penulisnya."
+    },
+    "keywords": "kata harian, kata motivasi, motivasi harian, quote, daily quote, quote of the day, kata hari ini",
+    "steps": [
+      {"en": "Each row is one day of the year: day 1 is 1 January, day 60 is 29 February, day 366 is 31 December.", "id": "Tiap baris adalah satu hari dalam setahun: hari 1 adalah 1 Januari, hari 60 adalah 29 Februari, hari 366 adalah 31 Desember."},
+      {"en": "Click the Quote cell of the day you want and type the new text.", "id": "Klik sel Quote pada hari yang diinginkan lalu ketik teks barunya."},
+      {"en": "Click Save. The board shows the row of today's date.", "id": "Klik Save. Papan menampilkan baris untuk tanggal hari ini."}
+    ],
+    "fields": [
+      {"label": "Day", "en": "The day number in the year, 1 to 366. Each number is used once.", "id": "Nomor hari dalam setahun, 1 sampai 366. Tiap nomor dipakai sekali."},
+      {"label": "Quote", "en": "The text shown on the board, at most 500 characters.", "id": "Teks yang tampil di papan, paling banyak 500 huruf."},
+      {"label": "Author", "en": "Who said it. May be left empty.", "id": "Siapa yang mengucapkannya. Boleh kosong."},
+      {"label": "Active", "en": "An inactive row shows a dash on its day.", "id": "Baris yang tidak aktif menampilkan tanda strip pada harinya."}
+    ]
   }
 ]

@@ -35,6 +35,9 @@ final class Reply
         public array $actions = [],
         // Kunci sumber jawaban (metric / topik / layar) untuk log.
         public ?string $key = null,
+        // Bagian layar yang perlu memuat ulang isinya sesudah jawaban ini (mis. 'board' = papan widget): layar menyiarkan
+        // event dl:refresh dengan nilai ini. Hanya untuk jawaban yang MENGUBAH sesuatu; kosong = tidak ada.
+        public ?string $refresh = null,
     ) {}
 
     public function open(string $label, string $url, string $code, ?string $icon = null): self
@@ -66,6 +69,6 @@ final class Reply
     public function toArray(): array
     {
         return array_filter(['kind' => $this->kind, 'title' => $this->title, 'text' => $this->text, 'big' => $this->big, 'rows' => $this->rows,
-            'steps' => $this->steps, 'note' => $this->note, 'actions' => $this->actions], fn ($v) => $v !== null && $v !== []);
+            'steps' => $this->steps, 'note' => $this->note, 'actions' => $this->actions, 'refresh' => $this->refresh], fn ($v) => $v !== null && $v !== []);
     }
 }

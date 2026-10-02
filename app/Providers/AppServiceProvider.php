@@ -8,6 +8,7 @@ use App\Services\Sales\InquiryStage;
 use App\Support\DataOrigin\DataOriginScope;
 use App\Support\Filesystem\WindowsSafeFilesystem;
 use App\Support\Localization\Dictionary;
+use App\Support\V2\Board\WidgetCatalog;
 use App\Support\V2\Lookups;
 use Chat\Chat;
 use Chat\Contracts\Directory;
@@ -29,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         require_once app_path('Support/Localization/helpers.php');  // t() -- teks tampilan lewat kamus
+        // Katalog widget opening screen: satu kali baca per permintaan (dipakai papan dan perintah asisten).
+        $this->app->scoped(WidgetCatalog::class);
         // Herd di Windows: kompilasi view paralel bisa gagal rename (Access is denied) -> lihat kelasnya.
         if (PHP_OS_FAMILY === 'Windows') {
             $this->app->singleton('files', fn () => new WindowsSafeFilesystem);

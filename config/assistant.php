@@ -1,5 +1,6 @@
 <?php
 
+use App\Assistant\Metrics\BoardWidgets;
 use App\Assistant\Metrics\DeadstockValue;
 use App\Assistant\Metrics\SalaryQuestion;
 use App\Assistant\Metrics\SalesToday;
@@ -12,7 +13,8 @@ return [
 
     // Satu pertanyaan angka = satu kelas. Frasa, modul, dan level minimumnya dirawat di Setup > Assistant Questions.
     // SalaryQuestion paling dulu: frasa gaji tidak boleh jatuh ke angka lain.
-    'metrics' => [SalaryQuestion::class, SalesToday::class, DeadstockValue::class],
+    // BoardWidgets = perintah papan widget opening screen (pasang / lepas / daftar / reset), bukan pertanyaan angka.
+    'metrics' => [SalaryQuestion::class, BoardWidgets::class, SalesToday::class, DeadstockValue::class],
 
     // Halaman profil Layer Menu untuk kirim tiket dari jawaban "tidak tahu".
     'ticket_page' => 'ticket',

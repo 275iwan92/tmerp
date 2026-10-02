@@ -18,6 +18,29 @@ dikonfirmasi dulu, dijawab "benar").
   klik di browser belum diuji Claude — diuji user.
 - Rulebook C.18 + changelog.
 
+## 2026-10-02 -- Opening Board: papan widget layar pembuka untuk top management (dibangun di ddt, menunggu review user)
+
+Permintaan user: banyak widget termasuk grafik, bisa dipasang lewat asisten AI, top management dulu (jabatan lain masih
+template). Dokumen review: `docs/md_for_systems/openingboard_review.md` (cara mencoba, potret layar asli, arti tiap angka,
+yang perlu diputuskan). Aturan: `docs/globaluserrules.md` C.33 + E.3.
+- **DevLib:** objek baru `x-dl::widget-board` (kisi 12 kolom; Customize: pindah, lebar, lepas, Add Widget, Reset to Template;
+  tiap aksi dikirim ke server yang menjawab dengan papan tersimpan; event `dl:refresh` = `board` memuat ulang). `x-dl::dashboard`
+  menampilkan papan bila datanya memuat `widgets`. Contoh di devlib.test (susunan di sesi).
+- **Tabel (migrasi `2026_10_02_000160`, HANYA dijalankan di ddt):** `sys_widget`, `sys_board_template`, `sys_user_board`,
+  `sys_user_widget`, `sys_kpi_target`, `sys_daily_quote` (366 baris dari berkas contoh), konstanta `COMPANY_WEATHER_CITY` /
+  `COMPANY_LATITUDE` / `COMPANY_LONGITUDE`, menu Setup: Opening Board Widgets, Opening Board Templates, KPI Targets, Daily
+  Quotes. Target contoh 12 bulan hanya di database dummy.
+- **ERP:** `app/Support/V2/Board/` (`Board`, `WidgetCatalog`, `Numbers`, `Widget`, 16 kelas widget), route `v2.board`, layar
+  pembuka v2 menampilkan salam + papan untuk yang boleh membuka Laporan Manajemen; login v2 mendarat di sana tanpa tab
+  Laporan Eksekutif. Database tanpa tabel papan (tm2) = perilaku lama.
+- **Asisten:** perintah `pasang / lepas widget ...`, `widget apa saja`, `reset widget` (`App\Assistant\Metrics\BoardWidgets`);
+  paket asisten: `Contracts\Command` (perintah menang atas pertanyaan angka) dan `Reply::$refresh`.
+- **Lain:** terjemahan Indonesia 127 teks (migrasi `000161`, ddt), Help 5 topik (`help:import`, ddt).
+- **Test:** `OpeningBoardTest` 7 test / 58 pemeriksaan terhadap ddt (variabel `DB_*` dari `.env.mockup`); di tm2 dilewati.
+  Data test dihapus; diperiksa ke database (0 baris tersisa).
+- **Diuji di browser tanpa jendela (mockup.test, akun johiwan):** papan tampil, Customize tambah / pindah, asisten memasang
+  dan melepas widget dengan papan berubah tanpa muat ulang, 0 error JavaScript.
+
 ## 2026-10-02 -- Layar pembuka: popup tidak bisa ditutup + Opening Dashboard dikembalikan ke main
 
 - **Popup Material Shortage mengunci layar pembuka:** kerangka menu memakai `data-dl-open` (tab yang dibuka saat masuk),

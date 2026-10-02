@@ -39,6 +39,7 @@ use App\Support\Branding\CompanyLogo;
 use App\Support\Localization\Dictionary;
 use App\Support\Mail\MailSettings;
 use App\Support\V2\AppMenu;
+use App\Support\V2\Board\Board;
 use App\Support\V2\Data\Account;
 use App\Support\V2\Data\ApprovalCenter;
 use App\Support\V2\Data\ApprovalSetting;
@@ -83,10 +84,22 @@ use Illuminate\Validation\ValidationException;
 // mockup.test (APP_UI=v2) mendarat di sini; tmerp.test tetap v1 sampai go-live.
 Route::prefix('v2')->name('v2.')->group(function () {
     // ?open=<kode menu> = tab yang dibuka saat mulai (mis. Direksi -> MGMT_EXEC), bila belum ada tab yang dipulihkan.
+    // Yang punya papan widget (top management, App\Support\V2\Board\Board) melihat papan itu sebagai layar pembuka.
     Route::get('/', fn (Request $r) => view('v2.home', ['modules' => AppMenu::modules(Auth::user()), 'user' => AppMenu::user(Auth::user()),
+        'board' => Board::profile(Auth::user()) ? Board::opening(Auth::user()) : null,
         'open' => $r->query('open'), 'profilePage' => session('v2_profile_page'), 'assistant' => AssistantHostProvider::drawer(Auth::user()), 'chat' => app(ChatService::class)->boot(Auth::user()),
         'account' => Account::shell(Auth::user()),
         'tickets' => SysSupportTicket::with('replies')->where('created_by_user_id', Auth::id())->orderByDesc('id_ticket')->limit(20)->get()]))->name('home');
+
+    // Papan widget: GET = HTML papan terbaru (dipanggil sesudah perintah asisten), POST = satu aksi Customize lalu HTML terbaru.
+    Route::match(['get', 'post'], '/board', function (Request $r) {
+        abort_unless(Board::profile(Auth::user()), 403);
+        if ($r->isMethod('post') && ($error = Board::apply(Auth::user(), (string) $r->input('action'), $r->input('key')))) {
+            return response()->json(['message' => t($error)], 422);
+        }
+
+        return ['html' => Board::html(Auth::user())];
+    })->name('board');
 
     // Tiket Bantuan dari halaman profil (menu akun / F1) -> tm2sys.sys_support_ticket, dijawab tim developer di Setup > Support Tickets.
     Route::post('/support/ticket', function (Request $r) {

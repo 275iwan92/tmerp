@@ -62,7 +62,7 @@
                     @endif
                 @elseif ($w['type'] === 'quote')
                     <div class="dl-dash__quote">
-                        <div class="dl-quote"><div class="qi">&#8220;</div><div class="q">{{ $data['text'] ?? '—' }}</div><div class="a">{{ $data['author'] ?? '' }}</div></div>
+                        <div class="dl-quote"><div class="qi">&#8220;</div><div class="q">{{ $data['text'] ?? '—' }}</div>@if (! empty($data['author']))<div class="a">{{ $data['author'] }}</div>@endif</div>
                         <div class="dl-dash__doy"><b>{{ $data['day'] ?? '—' }}</b><small>{{ Lang::text('of') }} {{ $data['days'] ?? 365 }}</small></div>
                     </div>
                 @else

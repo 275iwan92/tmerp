@@ -42,18 +42,25 @@ class MetricCatalog
         return $this->rows;
     }
 
-    // Metric yang frasa pemicunya ada di pertanyaan (semua kata frasa ditemukan). Frasa terpanjang menang.
+    // Metric yang frasa pemicunya ada di pertanyaan (semua kata frasa ditemukan). Frasa terpanjang menang; perintah
+    // (Contracts\Command) menang atas pertanyaan angka, sepanjang apa pun frasa angka yang ikut cocok.
     public function match(string $question): ?array
     {
         $query = Text::tokens($question);
         $best = null;
         $bestLen = 0;
+        $bestCommand = false;
         foreach ($this->all() as $m) {
+            $command = $m['metric'] instanceof Contracts\Command;
             foreach ($m['phrases'] as $phrase) {
                 $words = Text::tokens($phrase);
-                if ($words && count($words) > $bestLen && Text::hits($words, $query) === count($words)) {
+                if (! $words || Text::hits($words, $query) !== count($words)) {
+                    continue;
+                }
+                if (($command && ! $bestCommand) || ($command === $bestCommand && count($words) > $bestLen)) {
                     $best = $m;
                     $bestLen = count($words);
+                    $bestCommand = $command;
                 }
             }
         }

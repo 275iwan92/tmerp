@@ -13,7 +13,7 @@
             <div class="dl-dash__eyebrow">{{ $d['profile_label'] ?? 'Dashboard' }}</div>
             <x-dl::greeting :name="$u['first'] ?? ''" />
             <div class="dl-dash__pos">
-                @foreach (array_filter([$u['position'] ?? null, $u['department'] ?? null, isset($u['superior']) ? 'Atasan: '.$u['superior'] : null]) as $p)
+                @foreach (array_filter([$u['position'] ?? null, $u['department'] ?? null, isset($u['superior']) ? \Devlib\Lang::text('Reports to').': '.$u['superior'] : null]) as $p)
                     <span>{{ $p }}</span>
                 @endforeach
             </div>
