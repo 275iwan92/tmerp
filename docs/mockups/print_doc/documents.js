@@ -394,3 +394,221 @@ PrintDoc.register(class PettyCash extends PrintDoc {
     static priced = true;
     static receivers = [['Penerima', 'Menerima uang']];
 });
+
+// ===== Tahap 3 (user 2026-10-02: "yang belum didesain saja"). Dokumen transaksional yang belum punya cetakan sama sekali.
+// Isi mengikuti field layar / tabel aplikasi; belum ada form kertas acuan. Menunggu review user; belum A. =====
+
+// Gudang (Bahan Baku / Barang Jadi / Setengah Jadi memakai format yang sama; Kategori di blok atas). Tanpa harga.
+PrintDoc.register(class StockIn extends PrintDoc {
+    static title = 'BUKTI BARANG MASUK';
+    static subtitle = 'Stock In &middot; Internal';
+    static numberLabel = 'No Dokumen';
+    static refs = [
+        {key: 'category', label: 'Kategori'},
+        {key: 'warehouse', label: 'Gudang'},
+        {key: 'source', label: 'Sumber'},
+        {key: 'ref_no', label: 'Referensi'},
+    ];
+    static partyLabel = 'Diterima dari';
+    static nb = '<b>NB:</b>&nbsp;JUMLAH = jumlah yang masuk stok. Dokumen gudang, tanpa harga.';
+    static extra = [{key: 'code', label: 'KODE', width: 20}, {key: 'lot_no', label: 'LOT / ROLL', width: 22}, {key: 'location', label: 'LOKASI', width: 18}, {key: 'remark', label: 'KETERANGAN', width: 24}];
+    static receivers = [['Penyerah', 'Pengirim / Produksi']];
+});
+
+PrintDoc.register(class StockOut extends PrintDoc.registry.StockIn {
+    static title = 'BUKTI BARANG KELUAR';
+    static subtitle = 'Stock Out &middot; Internal';
+    static refs = [
+        {key: 'category', label: 'Kategori'},
+        {key: 'warehouse', label: 'Gudang'},
+        {key: 'purpose', label: 'Untuk Proses'},
+        {key: 'wo_no', label: 'No WO'},
+        {key: 'co_no', label: 'No CO'},
+    ];
+    static partyLabel = 'Diserahkan ke';
+    static nb = '<b>NB:</b>&nbsp;JUMLAH = jumlah yang keluar dari stok. Sisa pemakaian dikembalikan lewat Retur dari Produksi.';
+    static receivers = [['Penerima', 'Produksi']];
+});
+
+PrintDoc.register(class StockReturn extends PrintDoc.registry.StockIn {
+    static title = 'RETUR DARI PRODUKSI';
+    static subtitle = 'Return from Production &middot; Internal';
+    static refs = [
+        {key: 'category', label: 'Kategori'},
+        {key: 'warehouse', label: 'Gudang'},
+        {key: 'wo_no', label: 'No WO'},
+        {key: 'out_no', label: 'Ref. Barang Keluar'},
+        {key: 'reason', label: 'Alasan'},
+    ];
+    static partyLabel = 'Dikembalikan oleh';
+    static nb = '<b>NB:</b>&nbsp;JUMLAH = jumlah yang kembali ke stok. KONDISI menentukan barang masuk stok baik atau stok rusak.';
+    static extra = [{key: 'code', label: 'KODE', width: 20}, {key: 'lot_no', label: 'LOT / ROLL', width: 22}, {key: 'condition', label: 'KONDISI', width: 18}, {key: 'remark', label: 'KETERANGAN', width: 24}];
+    static receivers = [['Penyerah', 'Produksi']];
+});
+
+// Penyesuaian stok dan stock opname: JUMLAH = hasil hitung fisik, dibanding stok sistem.
+PrintDoc.register(class StockAdjustment extends PrintDoc {
+    static title = 'PENYESUAIAN STOK';
+    static subtitle = 'Stock Adjustment &amp; Physical Count';
+    static numberLabel = 'No Dokumen';
+    static refs = [
+        {key: 'category', label: 'Kategori'},
+        {key: 'warehouse', label: 'Gudang'},
+        {key: 'kind', label: 'Jenis'},
+        {key: 'period', label: 'Waktu Hitung'},
+        {key: 'approval', label: 'Approval'},
+    ];
+    static partyLabel = 'Petugas Hitung';
+    static side = {key: 'witness', label: 'Saksi'};
+    static nb = '<b>NB:</b>&nbsp;JUMLAH = hasil hitung fisik. SELISIH = fisik dikurangi sistem (minus = kurang). Stok berubah setelah disetujui.';
+    static extra = [{key: 'code', label: 'KODE', width: 18}, {key: 'system_qty', label: 'STOK SISTEM', width: 22, type: 'money'}, {key: 'diff', label: 'SELISIH', width: 20, type: 'money'}, {key: 'reason', label: 'ALASAN', width: 24}];
+    static receivers = [['Saksi', 'Di luar gudang']];
+});
+
+PrintDoc.register(class PurchaseReturn extends PrintDoc {
+    static title = 'RETUR PEMBELIAN';
+    static subtitle = 'Purchase Return';
+    static numberLabel = 'No Retur';
+    static refs = [
+        {key: 'pv_no', label: 'No SPB'},
+        {key: 'po_no', label: 'No PO'},
+        {key: 'settlement', label: 'Penyelesaian'},
+        {key: 'returned_on', label: 'Tgl Dikembalikan', type: 'date', hand: true},
+        {key: 'expedition', label: 'Ekspedisi', hand: true},
+    ];
+    static partyLabel = 'Kepada Yth.';
+    static side = {key: 'contact', label: 'Telp / UP'};
+    static nb = 'Dengan hormat, bersama ini kami kembalikan barang berikut karena tidak sesuai pesanan:';
+    static extra = [{key: 'code', label: 'KODE', width: 19}, {key: 'lot_no', label: 'LOT / ROLL', width: 21}, {key: 'reason', label: 'ALASAN', width: 44, wrap: true}];
+    static receivers = [['Supplier', 'Menerima barang retur']];
+});
+
+// Perintah kerja produksi: satu WO = satu part. Baris = proses; hasil diisi operator di lantai produksi.
+PrintDoc.register(class WorkOrder extends PrintDoc {
+    static title = 'WORK ORDER';
+    static subtitle = 'Perintah Kerja Produksi &middot; Internal';
+    static numberLabel = 'No WO';
+    static refs = [
+        {key: 'co_no', label: 'No CO'},
+        {key: 'customer', label: 'Customer'},
+        {key: 'due_date', label: 'Due Date', type: 'date'},
+        {key: 'priority', label: 'Prioritas'},
+        {key: 'material_ready', label: 'Bahan Siap', type: 'date'},
+    ];
+    static partyLabel = 'Produk';
+    static side = {key: 'order_qty', label: 'Qty Order'};
+    static nb = '<b>NB:</b>&nbsp;JUMLAH = target per proses. MULAI, SELESAI, HASIL BAIK, REJECT, dan OPERATOR diisi di lantai produksi.';
+    static nameLabel = 'PROSES / MESIN';
+    static extra = [{key: 'start', label: 'MULAI', width: 16, hand: true}, {key: 'finish', label: 'SELESAI', width: 16, hand: true}, {key: 'good', label: 'HASIL BAIK', width: 19, hand: true},
+        {key: 'reject', label: 'REJECT', width: 14, hand: true}, {key: 'operator', label: 'OPERATOR', width: 19, hand: true}];
+    static receivers = [['Kepala Produksi', 'Menerima perintah']];
+});
+
+// Jurnal: tanpa kolom jumlah barang; Debit dan Kredit di kanan, total keduanya harus sama.
+PrintDoc.register(class JournalVoucher extends PrintDoc {
+    static title = 'JURNAL';
+    static subtitle = 'Journal Voucher &middot; Internal';
+    static numberLabel = 'No Jurnal';
+    static refs = [
+        {key: 'kind', label: 'Jenis'},
+        {key: 'reference', label: 'Referensi'},
+        {key: 'posting_date', label: 'Tgl Posting', type: 'date'},
+        {key: 'auto_reverse', label: 'Auto Reverse'},
+    ];
+    static partyLabel = 'Narasi';
+    static nb = '<b>NB:</b>&nbsp;Total Debit harus sama dengan Total Kredit. Jurnal Posted tidak diubah; koreksi lewat jurnal balik.';
+    static nameLabel = 'NAMA AKUN';
+    static qtyCols = false;
+    static extra = [{key: 'code', label: 'KODE AKUN', width: 24}, {key: 'narration', label: 'URAIAN', width: 46, wrap: true}, {key: 'debit', label: 'DEBIT', width: 25, type: 'money'},
+        {key: 'credit', label: 'KREDIT', width: 25, type: 'money'}];
+
+    totals() {
+        const sum = k => this.d.rows.reduce((t, r) => t + (+r[k] || 0), 0);
+        return {lines: [['Total Debit', Fmt.num(sum('debit')), true], ['Total Kredit', Fmt.num(sum('credit')), true]]};
+    }
+});
+
+// Tagihan dari supplier (hutang). Kop PPN bila tagihan ber-PPN.
+PrintDoc.register(class SupplierBill extends PrintDoc {
+    static title = 'TAGIHAN SUPPLIER';
+    static subtitle = 'Supplier Bill &middot; Internal';
+    static numberLabel = 'No Tagihan';
+    static refs = [
+        {key: 'supplier_invoice', label: 'No Invoice Supplier'},
+        {key: 'tax_invoice', label: 'No Faktur Pajak'},
+        {key: 'po_no', label: 'No PO'},
+        {key: 'due_date', label: 'Jatuh Tempo', type: 'date'},
+        {key: 'payment_status', label: 'Pembayaran'},
+    ];
+    static partyLabel = 'Supplier';
+    static side = {key: 'contact', label: 'Telp / UP'};
+    static nb = '<b>NB:</b>&nbsp;Dicocokkan dengan Purchase Order dan Penerimaan Barang sebelum dibayar.';
+    static nameLabel = 'NAMA BARANG / JASA';
+    static extra = [{key: 'spb_no', label: 'NO SPB', width: 21}, {key: 'po_line', label: 'BARIS PO', width: 17}];
+    static priced = true;
+});
+
+// Tagihan uang muka ke customer.
+PrintDoc.register(class DownPaymentInvoice extends PrintDoc {
+    static title = 'TAGIHAN UANG MUKA';
+    static subtitle = 'Down Payment Invoice';
+    static numberLabel = 'No Tagihan';
+    static refs = [
+        {key: 'co_no', label: 'No CO'},
+        {key: 'customer_po_no', label: 'No PO Customer'},
+        {key: 'due_date', label: 'Jatuh Tempo', type: 'date'},
+        {key: 'payment_term', label: 'Syarat Bayar'},
+        {key: 'pay_to', label: 'Pembayaran a.n.'},
+    ];
+    static partyLabel = 'Kepada Yth.';
+    static side = {key: 'contact', label: 'Telp / UP'};
+    static nb = 'Dengan hormat, bersama ini kami tagihkan uang muka atas pesanan berikut:';
+    static nameLabel = 'URAIAN';
+    static extra = [{key: 'co_ref', label: 'NO CO', width: 21}, {key: 'percent', label: 'PERSEN', width: 17}];
+    static priced = true;
+    static receivers = [['Customer', 'Menerima tagihan']];
+});
+
+// HR: permohonan cuti / sakit / izin. Tanpa kolom jumlah barang.
+PrintDoc.register(class LeaveRequest extends PrintDoc {
+    static title = 'PERMOHONAN CUTI / IZIN';
+    static subtitle = 'Leave Request &middot; Internal';
+    static numberLabel = 'No Permohonan';
+    static refs = [
+        {key: 'employee_no', label: 'No Pegawai'},
+        {key: 'department', label: 'Departemen'},
+        {key: 'position', label: 'Jabatan'},
+        {key: 'balance', label: 'Sisa Cuti'},
+        {key: 'substitute', label: 'Pengganti', hand: true},
+    ];
+    static partyLabel = 'Pemohon';
+    static side = {key: 'phone', label: 'No HP'};
+    static nb = '<b>NB:</b>&nbsp;Diajukan sebelum tanggal cuti. Sakit lebih dari 1 hari disertai surat dokter.';
+    static nameLabel = 'ALASAN';
+    static qtyCols = false;
+    static extra = [{key: 'type', label: 'JENIS', width: 30}, {key: 'from', label: 'DARI', width: 24, type: 'date'}, {key: 'until', label: 'SAMPAI', width: 24, type: 'date'},
+        {key: 'days', label: 'HARI', width: 14, type: 'int'}, {key: 'boss_note', label: 'CATATAN ATASAN', width: 28, hand: true}];
+    static internalLabels = ['Atasan Langsung', 'HRD', 'Pemohon'];
+    static internal = ['Mengetahui', 'Menyetujui', ''];
+});
+
+// HR: permohonan tenaga kerja. Tanpa kolom jumlah barang; jumlah orang bilangan bulat.
+PrintDoc.register(class ManpowerRequisition extends PrintDoc {
+    static title = 'PERMOHONAN TENAGA KERJA';
+    static subtitle = 'Manpower Requisition &middot; Internal';
+    static numberLabel = 'No Permohonan';
+    static refs = [
+        {key: 'track', label: 'Jalur'},
+        {key: 'requested_by', label: 'Diminta oleh'},
+        {key: 'needed_date', label: 'Dibutuhkan Tgl', type: 'date'},
+        {key: 'reason', label: 'Alasan'},
+    ];
+    static partyLabel = 'Departemen';
+    static nb = '<b>NB:</b>&nbsp;Setelah disetujui, HRD membuka lowongan sesuai jumlah dan kualifikasi di bawah.';
+    static nameLabel = 'POSISI';
+    static qtyCols = false;
+    static extra = [{key: 'headcount', label: 'JML ORANG', width: 22, type: 'int'}, {key: 'employment', label: 'STATUS KERJA', width: 30}, {key: 'qualification', label: 'KUALIFIKASI', width: 68, wrap: true}];
+    static internalLabels = ['Kepala Departemen', 'Direksi', 'Pembuat'];
+    static internal = ['Mengetahui', 'Menyetujui', ''];
+    static receivers = [['HRD', 'Menerima permohonan']];
+});

@@ -236,3 +236,88 @@ Object.assign(SAMPLES, {
         more: [],
     },
 });
+
+// ===== Tahap 3: data contoh (angka dan nama adalah contoh) =====
+const MJU = {name: 'PT MAKMUR JAYA USAHA', lines: ['Surabaya']}, MJU_UP = 'Bp. Anton (Sales)';
+Object.assign(SAMPLES, {
+    StockIn: {
+        data: {...PRINTED, number: 'IN/26/00014', date: '2026-10-08', status: 'POSTED', category: 'Bahan Baku', warehouse: 'GD-BB · Gudang Bahan Baku', source: 'Penerimaan Barang', ref_no: 'SPB2600031',
+            createdBy: 'Yuna', party: MJU,
+            rows: [{name: 'DC 310 IKA DA GR 79 x 109 CM', qty: 22, unit: 'RIM', code: 'PZ00083', lot_no: 'R8-2610', location: 'A-01-02'},
+                {name: 'IVORY 300 79 X 109', qty: 40, unit: 'RIM', code: 'PYJ31', lot_no: 'R8-2611', location: 'A-01-03'}]},
+        more: [],
+    },
+    StockOut: {
+        data: {...PRINTED, number: 'OUT/26/00031', date: '2026-10-05', status: 'POSTED', category: 'Bahan Baku', warehouse: 'GD-BB · Gudang Bahan Baku', purpose: 'CETAK', wo_no: 'WO2600263', co_no: 'CO2600029',
+            createdBy: 'Yuna', party: {name: 'Produksi - Cetak', lines: ['Diminta oleh: Tia']},
+            rows: [{name: 'DUPLEX 310 GR 65 X 100 CM', qty: 60, unit: 'LBR', code: 'PZ00083', lot_no: 'R8-2610', location: 'A-01-02'},
+                {name: 'INK OFFSET CYAN', qty: 2, unit: 'KG', code: 'IOH11', lot_no: 'INK-2609', location: 'C-02-01'},
+                {name: 'INK OFFSET MAGENTA', qty: 2, unit: 'KG', code: 'IOH12', lot_no: 'INK-2609', location: 'C-02-01'}]},
+        more: [],
+    },
+    StockReturn: {
+        data: {...PRINTED, number: 'RTP/26/00005', date: '2026-10-07', status: 'POSTED', category: 'Bahan Baku', warehouse: 'GD-BB · Gudang Bahan Baku', wo_no: 'WO2600263', out_no: 'OUT/26/00031', reason: 'Sisa pemakaian',
+            createdBy: 'Yuna', party: {name: 'Produksi - Cetak', lines: ['Diserahkan oleh: Tia']},
+            rows: [{name: 'DUPLEX 310 GR 65 X 100 CM', qty: 4, unit: 'LBR', code: 'PZ00083', lot_no: 'R8-2610', condition: 'Baik', remark: 'Sisa cetak'},
+                {name: 'INK OFFSET CYAN', qty: 0.5, unit: 'KG', code: 'IOH11', lot_no: 'INK-2609', condition: 'Baik'}]},
+        more: [],
+    },
+    StockAdjustment: {
+        data: {...PRINTED, number: 'ADJ/26/00003', date: '2026-10-01', status: 'WAITING', category: 'Bahan Baku', warehouse: 'GD-BB · Gudang Bahan Baku', kind: 'Stock opname terjadwal', period: '01-Okt-2026 08:00 – 11:30',
+            approval: 'Level 1 dari 2', witness: 'Wiwik', createdBy: 'Yuna', party: {name: 'Yuna', lines: ['Gudang Bahan Baku']},
+            rows: [{name: 'IVORY 300 79 X 109', qty: 24, unit: 'RIM', code: 'PYJ31', system_qty: 25, diff: -1, reason: 'Rusak'},
+                {name: 'HVS 58 GR RAINBOW 79 X 109 CM', qty: 200, unit: 'RIM', code: 'P4454', system_qty: 200, diff: 0},
+                {name: 'ANIMAL GLUE', qty: 62, unit: 'KG', code: 'GZ00726', system_qty: 60, diff: 2, reason: 'Ditemukan'}]},
+        more: [],
+    },
+    PurchaseReturn: {
+        data: {...PRINTED, number: 'PRT2600004', date: '2026-10-08', status: 'CONFIRMED', pv_no: 'SPB2600031', po_no: 'PO26000001976', settlement: 'Credit Note', contact: MJU_UP, createdBy: 'Eka', party: MJU,
+            notes: [['Nilai kredit', '1.567.737,28 — menunggu Credit Note dari supplier']],
+            rows: [{name: 'DC 310 IKA DA GR 79 x 109 CM', qty: 1, unit: 'RIM', code: 'PZ00083', lot_no: 'R8-2610', reason: 'Sobek di sisi luar, ditolak QC saat penerimaan'}]},
+        more: [],
+    },
+    WorkOrder: {
+        data: {...PRINTED, number: 'WO2600263', date: '2026-10-01', status: 'IN PROGRESS', co_no: 'CO2600029', customer: 'PAK RUDI LAWANG', due_date: '2026-10-08', priority: 'NORMAL', material_ready: '2026-10-05',
+            order_qty: '500 PCS', createdBy: 'Tia', party: {name: 'Folding Box Kosmetik Duplex', code: 'P824', lines: ['Part: P1 · Body', 'Jenis WO: MTO']},
+            notes: [['Bahan', 'Duplex 310 gr 65 × 100 cm × 60 lembar · Ink CMYK'], ['Catatan', 'Warna mengikuti proof yang sudah di-ACC customer.']],
+            rows: [{name: 'POTONG', sub: 'Polar 115', qty: 60, unit: 'LBR'},
+                {name: 'CETAK', sub: 'Lithrone G40 · CMYK', qty: 60, unit: 'LBR'},
+                {name: 'UV', sub: 'UV full', qty: 60, unit: 'LBR'},
+                {name: 'PLONG', sub: 'Pisau 8 UP', qty: 60, unit: 'LBR'},
+                {name: 'LEM MESIN', sub: 'Folder gluer', qty: 500, unit: 'PCS'}]},
+        more: [],
+    },
+    JournalVoucher: {
+        data: {...PRINTED, number: 'JV2610-0113', date: '2026-10-01', status: 'POSTED', kind: 'General Journal', reference: 'PC2610-0042', posting_date: '2026-10-01', auto_reverse: 'Tidak', createdBy: 'Eka',
+            approvedBy: 'Wiwik', party: {name: 'Penyelesaian uang muka kas kecil', lines: ['Cash PO CPO2600031 · UD Sumber Rejeki']},
+            rows: [{name: 'Supplies - ATK', code: '611200', narration: 'Lakban dan tali rafia, nota 0921', debit: 318000},
+                {name: 'Petty Cash', code: '111400', narration: 'Sisa uang muka kembali ke kas', debit: 182000},
+                {name: 'Purchase Advance', code: '114300', narration: 'Uang muka CPO2600031', credit: 500000}]},
+        more: [],
+    },
+    SupplierBill: {
+        data: {...PRINTED, number: 'BILL2600027', date: '2026-10-09', status: 'OPEN', supplier_invoice: 'INV/MJU/10/0456', tax_invoice: '010.004-26.12345678', po_no: 'PO26000001976', due_date: '2026-11-08',
+            payment_status: 'Belum dibayar', contact: MJU_UP, ppn: 11, createdBy: 'Eka', party: MJU,
+            rows: [{name: 'DC 310 IKA DA GR 79 x 109 CM', qty: 22, unit: 'RIM', spb_no: 'SPB2600031', po_line: '1', price: 1567737.28, subtotal: 34490220.16}]},
+        more: [],
+    },
+    DownPaymentInvoice: {
+        data: {...PRINTED, number: 'DP2600003', date: '2026-10-01', status: 'OPEN', co_no: 'CO2600029', customer_po_no: 'PO-003-UAT', due_date: '2026-10-05', payment_term: 'DP 30%, pelunasan saat kirim', contact: 'PAK RUDI · +62 812-3567-289', ppn: 11,
+            createdBy: 'Ehaningtias', party: {name: 'PAK RUDI LAWANG', code: '1130000001', lines: ['Jl. Argopuro no. 24', 'Lawang']},
+            rows: [{name: 'Uang muka 30% atas Customer Order', sub: 'Folding Box Kosmetik Duplex · 500 PCS', qty: 1, unit: 'LS', co_ref: 'CO2600029', percent: '30%', price: 241764.71, subtotal: 241764.71}]},
+        more: [],
+    },
+    LeaveRequest: {
+        data: {...PRINTED, number: 'LV2610-0007', date: '2026-10-01', status: 'WAITING', employee_no: 'TM-00231', department: 'Produksi - Cetak', position: 'Operator Cetak', balance: '7 hari', phone: '0812-3567-289',
+            createdBy: 'Agus', party: {name: 'Agus', lines: ['Mulai kerja: 12-Mar-2021']},
+            rows: [{name: 'Acara keluarga di luar kota', type: 'Cuti Tahunan', from: '2026-10-12', until: '2026-10-14', days: 3}]},
+        more: [],
+    },
+    ManpowerRequisition: {
+        data: {...PRINTED, number: 'MPR2600004', date: '2026-10-01', status: 'WAITING', track: 'Operator', requested_by: 'Tia', needed_date: '2026-11-01', reason: 'Tambahan shift 2', createdBy: 'Tia',
+            party: {name: 'Produksi - Cetak', lines: []},
+            rows: [{name: 'Operator Cetak', headcount: 2, employment: 'Kontrak 1 tahun', qualification: 'SMK Grafika, pengalaman mesin offset 4 warna minimal 2 tahun'},
+                {name: 'Helper Cetak', headcount: 3, employment: 'Harian', qualification: 'SMA / SMK, siap kerja shift'}]},
+        more: [],
+    },
+});

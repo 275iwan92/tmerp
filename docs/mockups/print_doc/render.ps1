@@ -22,7 +22,11 @@ $jobs = @(
     @('purchase_requisition_nonprod_a5', 'PurchaseRequisition', '&case=nonprod', 1210),
     @('quotation_a5', 'Quotation', '', 1210), @('delivery_order_a5', 'DeliveryOrder', '', 1210), @('proof_of_delivery_a5', 'ProofOfDelivery', '', 1210),
     @('purchase_quotation_a5', 'PurchaseQuotation', '', 1210), @('goods_receipt_a5', 'GoodsReceipt', '', 1210), @('material_booking_a5', 'MaterialBooking', '', 1210),
-    @('maintenance_request_a5', 'MaintenanceRequest', '', 1210), @('maintenance_wo_a5', 'MaintenanceWorkOrder', '', 1210), @('petty_cash_a5', 'PettyCash', '', 1210))
+    @('maintenance_request_a5', 'MaintenanceRequest', '', 1210), @('maintenance_wo_a5', 'MaintenanceWorkOrder', '', 1210), @('petty_cash_a5', 'PettyCash', '', 1210),
+    @('stock_in_a5', 'StockIn', '', 1210), @('stock_out_a5', 'StockOut', '', 1210), @('stock_return_a5', 'StockReturn', '', 1210), @('stock_adjustment_a5', 'StockAdjustment', '', 1210),
+    @('purchase_return_a5', 'PurchaseReturn', '', 1210), @('work_order_a5', 'WorkOrder', '', 1210), @('journal_voucher_a5', 'JournalVoucher', '', 1210),
+    @('supplier_bill_a5', 'SupplierBill', '', 1210), @('down_payment_a5', 'DownPaymentInvoice', '', 1210), @('leave_request_a5', 'LeaveRequest', '', 1210),
+    @('manpower_requisition_a5', 'ManpowerRequisition', '', 1210))
 
 foreach ($j in $jobs) {
     if ($Only -and $j[1] -ne $Only) { continue }
