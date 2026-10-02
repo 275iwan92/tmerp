@@ -34,7 +34,7 @@ class MultiLanguageRatchetTest extends TestCase
         'pages/inventory' => 162,
         'pages/lookup' => 45,
         'pages/master' => 691,
-        'pages/notification' => 7,
+        'pages/notification' => 0,
         'pages/production' => 983,
         'pages/pur' => 102,
         'pages/quotation' => 93,
