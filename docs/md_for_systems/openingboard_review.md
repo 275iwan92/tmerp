@@ -254,7 +254,6 @@ Hak:
 5. Widget dari referensi yang belum bisa dibuat karena datanya belum ada: estimasi vs biaya nyata per job, OEE dan scrap %,
    DSO / DPO, proyeksi arus kas, barang diterima belum ditagih — rinciannya di `openingboard_references.md`.
 6. **Layar HP:** papan satu kolom di layar sempit; laci menu untuk HP belum dipasang.
-7. **Reset data dummy (ddt):** kolom baru `sop_document.doc_type` belum masuk baseline; simpan ulang baseline bila setuju.
 
 ---
 

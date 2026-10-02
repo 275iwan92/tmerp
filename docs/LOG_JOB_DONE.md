@@ -30,10 +30,8 @@ result, capacity planning".
   complaintsByCategory, stockByWarehouse, stockDocuments, receiptsWaiting, documents, jobDescriptionCoverage).
 - Test `OpeningBoardTest` 14 test (ddt + tm2), sisa data uji dicek 0 di kedua database. Dokumen: `openingboard_review.md`,
   `openingboard_references.md`, pedoman C.33, Help (panduan + SOP & Work Instruction), gambar `docs/mockups/opening_board_app/11`–`14`.
-- Belum: jam per shift 45 mesin di tm2 (data nyata, menunggu user), target produksi dari manajemen, WI bergambar / lampiran,
-  baseline ddt belum disimpan ulang (kolom `doc_type`).
-- Catatan: `NoHardcodedDatabaseNameTest` gagal karena `app/Support/Engines/EngineRegistry.php` (commit 8dca1e44, sesi lain) —
-  bukan dari pekerjaan ini; sudah diusulkan sebagai tugas terpisah.
+- Belum: jam per shift 45 mesin di tm2 (data nyata, menunggu user), target produksi dari manajemen, WI bergambar / lampiran.
+- Baseline dummy 2026-10-02 19:33:33 sudah memuat kolom `doc_type` dan dokumen contoh (`ddt:baseline check` = tanpa perubahan).
 
 ## 2026-10-02 -- Reset data dummy: penjaga drift struktur (baseline vs ddt* sekarang)
 
