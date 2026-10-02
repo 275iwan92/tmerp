@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Sys\SysDictionary;
 use App\Support\Localization\Dictionary;
 use App\Support\V2\Grid\Setup\TranslationDictionaryLookup;
+use App\Support\V2\Print\PrintDocs;
 use Devlib\Lang;
 use Devlib\Locale;
+use Devlib\PrintDoc\Document;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -39,7 +41,7 @@ class MultiLanguageAutoTest extends TestCase
     private function cleanup(): void
     {
         DB::connection('tm2sys')->table('sys_dictionary')->where('context', self::CTX)
-            ->orWhere(fn ($q) => $q->where('context', 'ui')->where('source_en', 'like', 'Zq %'))->delete();  // baris _lang ikut (cascade)
+            ->orWhere(fn ($q) => $q->whereIn('context', ['ui', 'print'])->where('source_en', 'like', 'Zq %'))->delete();  // baris _lang ikut (cascade)
     }
 
     private function entry(string $en, string $id, string $ctx = 'ui'): void
@@ -136,5 +138,71 @@ class MultiLanguageAutoTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $grid->save([['id' => 'new2', 'context' => self::CTX, 'source_en' => 'Zq Valid Until', 'lang_id' => 'x']]);  // dobel
+    }
+
+    // Migration mengisi kamus lewat seed(): terjemahan yang sudah diisi penerjemah tidak ditimpa.
+    public function test_seed_fills_only_missing_translations(): void
+    {
+        $this->entry('Zq Warehouse', 'Zq Gudang Penerjemah', self::CTX);
+
+        $n = Dictionary::seed(['Zq Warehouse' => 'Zq Gudang', 'Zq Delivery' => 'Zq Pengiriman'], self::CTX);
+
+        $this->assertSame(1, $n);
+        $this->assertSame('Zq Gudang Penerjemah', Dictionary::t('Zq Warehouse', self::CTX, 'id'));
+        $this->assertSame('Zq Pengiriman', Dictionary::t('Zq Delivery', self::CTX, 'id'));
+        $this->assertSame('Zq Delivery', Dictionary::t('Zq Delivery', self::CTX, 'en'));
+    }
+
+    // Kunci kamus tidak peka huruf (collation DB): bentuk huruf besar / kecil memakai baris yang sama, hurufnya ikut sumber.
+    public function test_lookup_ignores_case_and_keeps_source_case(): void
+    {
+        $this->entry('Zq Cancelled', 'Zq Dibatalkan', self::CTX);
+
+        $this->assertSame('ZQ DIBATALKAN', Dictionary::t('ZQ CANCELLED', self::CTX, 'id'));
+        $this->assertSame('zq dibatalkan', Dictionary::t('zq cancelled', self::CTX, 'id'));
+        $this->assertSame('Zq Dibatalkan', Dictionary::t('Zq cancelled', self::CTX, 'id'));
+        $this->assertSame('ZQ CANCELLED', Dictionary::t('ZQ CANCELLED', self::CTX, 'en'));
+    }
+
+    // Istilah cetak = kamus konteks 'print' (dulu array PHP): Document::t() memakai kamus itu di semua bahasa selain English.
+    public function test_print_terms_come_from_print_context(): void
+    {
+        $this->entry('Zq Received by', 'Zq Diterima oleh', 'print');
+        PrintDocs::boot();
+
+        config(['devlib.lang' => 'id']);
+        $this->assertSame('Zq Diterima oleh', Document::t('Zq Received by'));
+        $this->assertNull(Dictionary::find('Zq Received by', 'print', 'en'));
+    }
+
+    // English sumber diganti: terjemahan ikut; teks tujuan sudah ada -> digabung, terjemahan tujuan menang.
+    public function test_rename_keeps_translations(): void
+    {
+        $this->entry('Zq Qty Order', 'Zq Jumlah Pesan', self::CTX);
+        $this->assertTrue(Dictionary::rename('Zq Qty Order', 'Zq Order Qty', self::CTX));
+        $this->assertSame('Zq Jumlah Pesan', Dictionary::t('Zq Order Qty', self::CTX, 'id'));
+
+        $this->entry('Zq Order Quantity', 'Zq Kuantitas Pesanan', self::CTX);
+        $this->assertTrue(Dictionary::rename('Zq Order Qty', 'Zq Order Quantity', self::CTX));
+        $this->assertSame('Zq Kuantitas Pesanan', Dictionary::t('Zq Order Quantity', self::CTX, 'id'));
+        $this->assertSame(['Zq Order Quantity'], SysDictionary::where('context', self::CTX)->pluck('source_en')->all());
+        $this->assertFalse(Dictionary::rename('Zq Not There', 'Zq Other', self::CTX));
+    }
+
+    public function test_translation_dictionary_screen_merges_renamed_source_and_flags_missing(): void
+    {
+        $grid = new TranslationDictionaryLookup;
+        $rows = collect($grid->save([
+            ['id' => 'new1', 'context' => self::CTX, 'source_en' => 'Zq Due Date', 'lang_id' => 'Zq Jatuh Tempo', 'note' => '', 'activate' => true],
+            ['id' => 'new2', 'context' => self::CTX, 'source_en' => 'Zq Due', 'lang_id' => '', 'note' => '', 'activate' => true],
+        ]));
+        $this->assertMatchesRegularExpression('/^missing: .*\\bid\\b/', $rows->firstWhere('source_en', 'Zq Due')['missing']);
+        $this->assertDoesNotMatchRegularExpression('/\\bid\\b/', $rows->firstWhere('source_en', 'Zq Due Date')['missing']);
+
+        $due = $rows->firstWhere('source_en', 'Zq Due');
+        $grid->save([['id' => $due['id'], 'context' => self::CTX, 'source_en' => 'Zq Due Date', 'note' => '', 'activate' => true]]);
+
+        $this->assertSame(['Zq Due Date'], SysDictionary::where('context', self::CTX)->pluck('source_en')->all());
+        $this->assertSame('Zq Jatuh Tempo', Dictionary::t('Zq Due Date', self::CTX, 'id'));
     }
 }

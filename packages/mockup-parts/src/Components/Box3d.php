@@ -51,7 +51,7 @@ class Box3d extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <div {{ $attributes->class('mp-box3d') }} {!! $dl() !!} aria-label="Preview 3D, geser untuk memutar">
+            <div {{ $attributes->class('mp-box3d') }} {!! $dl() !!} aria-label="{{ t('3D preview, drag to rotate') }}">
                 <div class="mp-box3d__cube" style="--p:{{ $px('p') }}px;--l:{{ $px('l') }}px;--t:{{ $px('t') }}px">
                     <div class="mp-box3d__f is-front" style="{{ $face($front, 'front') }}"></div>
                     <div class="mp-box3d__f is-back" style="{{ $face($back ?? $front, 'front') }}"></div>

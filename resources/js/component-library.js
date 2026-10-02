@@ -7,6 +7,8 @@
  * sendiri TIDAK tahu-menahu soal Livewire.
  * ============================================================================ */
 document.addEventListener('alpine:init', () => {
+    // Teks UI ditulis English; terjemahan bahasa tampilan dari window.TM_T (partials/js-text.blade.php, kamus t()).
+    const tt = (en) => (window.TM_T && window.TM_T[en]) || en;
     const setModel = (refEl, value) => {
         refEl.value = value;
         refEl.dispatchEvent(new Event('input', { bubbles: true }));
@@ -136,9 +138,9 @@ document.addEventListener('alpine:init', () => {
         open: false,
 
         get summary() {
-            if (this.checked.length === 0) return opts.placeholder || 'Pilih...';
+            if (this.checked.length === 0) return opts.placeholder || tt('Select...');
             if (this.checked.length === 1) return this.labelOf(this.checked[0]);
-            return `${this.checked.length} terpilih (${this.checked.map((v) => this.labelOf(v)).join(', ')})`;
+            return tt(':n selected (:list)').replace(':n', this.checked.length).replace(':list', this.checked.map((v) => this.labelOf(v)).join(', '));
         },
 
         labelOf(v) { return this.options.find((o) => o.value === v)?.label ?? v; },
@@ -332,20 +334,20 @@ document.addEventListener('alpine:init', () => {
     // 2026-09-02), baca 2 hidden-input anaknya via querySelectorAll scoped
     // ke $root supaya tidak perlu Alpine store lintas-komponen. ---
     Alpine.data('tmDateRange', () => ({
-        durationLabel: 'Pilih kedua tanggal.',
+        durationLabel: tt('Choose both dates.'),
 
         compute() {
             const hiddens = this.$root.querySelectorAll('input[type=hidden]');
             const start = hiddens[0]?.value;
             const end = hiddens[1]?.value;
-            if (!start || !end) { this.durationLabel = 'Pilih kedua tanggal.'; return; }
+            if (!start || !end) { this.durationLabel = tt('Choose both dates.'); return; }
             const d1 = new Date(start);
             const d2 = new Date(end);
-            if (d2 < d1) { this.durationLabel = 'Durasi: tanggal akhir tidak valid.'; return; }
+            if (d2 < d1) { this.durationLabel = tt('Duration: the end date is not valid.'); return; }
             const months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
             const years = Math.floor(months / 12);
             const remMonths = months % 12;
-            this.durationLabel = `Durasi: ${years} Tahun ${remMonths} Bulan`;
+            this.durationLabel = tt('Duration: :y Years :m Months').replace(':y', years).replace(':m', remMonths);
         },
     }));
 
@@ -359,7 +361,7 @@ document.addEventListener('alpine:init', () => {
             const QRCode = (await import('qrcode')).default;
             this.open = true;
             await this.$nextTick();
-            await QRCode.toCanvas(this.$refs.canvas, text || '(kosong)', { width: 180, margin: 1, color: { dark: '#111827', light: '#ffffff' } });
+            await QRCode.toCanvas(this.$refs.canvas, text || tt('(empty)'), { width: 180, margin: 1, color: { dark: '#111827', light: '#ffffff' } });
         },
 
         download() {

@@ -20,7 +20,7 @@ class MatCategoryGrid extends MasterDataGrid
 
     public function title(): string
     {
-        return 'Master Kategori Bahan Baku';
+        return t('Raw Material Category Master');
     }
 
     protected function v1Route(): ?string

@@ -89,7 +89,7 @@ final class Quotation
     public static function outstandingRows(): array
     {
         return collect(self::closedOrOpen())->where('status', 'PUBLISHED')->map(function ($r) {
-            $r['expired'] = $r['valid'] && $r['valid'] < now()->toDateString() ? 'KEDALUWARSA' : 'BERLAKU';
+            $r['expired'] = $r['valid'] && $r['valid'] < now()->toDateString() ? t('EXPIRED', 'badge') : t('VALID', 'badge');
 
             return $r;
         })->values()->all();
@@ -106,13 +106,13 @@ final class Quotation
             'no' => $a->quotation?->quotation_no,
             'customer' => $customers[$a->quotation?->customer_id] ?? '—',
             'date' => $a->activity_date?->toDateString(),
-            'type' => QuoActivity::TYPES[$a->activity_type][1] ?? $a->activity_type,
+            'type' => QuoActivity::typeLabel($a->activity_type),
             'contact' => $a->contact_person,
-            'result' => QuoActivity::RESULTS[$a->result] ?? '—',
+            'result' => $a->result ? QuoActivity::resultLabel($a->result) : '—',
             'notes' => $a->notes,
             'next_date' => $a->next_action_date?->toDateString(),
             'next' => $a->next_action,
-            'due' => ! $a->next_action_date ? '—' : ($a->next_action_date->toDateString() < $today ? 'LEWAT' : ($a->next_action_date->toDateString() === $today ? 'HARI INI' : 'NANTI')),
+            'due' => ! $a->next_action_date ? '—' : ($a->next_action_date->toDateString() < $today ? t('PAST DUE', 'badge') : ($a->next_action_date->toDateString() === $today ? t('TODAY', 'badge') : t('LATER', 'badge'))),
             'by' => $a->created_by,
         ])->all();
     }
@@ -194,7 +194,7 @@ final class Quotation
 
     public static function addInquiries(QuoQuotation $q, array $inquiryIds): void
     {
-        abort_unless($q->doc_status === 'DRAFT', 422, 'Quotation sudah tidak bisa diubah.');
+        abort_unless($q->doc_status === 'DRAFT', 422, t('The quotation can no longer be changed.'));
         QuotationBuilder::applyInquiries($q, array_map('intval', $inquiryIds));
     }
 
@@ -202,7 +202,7 @@ final class Quotation
     // tanggal dokumen dulu supaya geser otomatis Berlaku s/d & Deadline v1 tetap jalan.
     public static function save(QuoQuotation $q, array $header, ?array $cc, array $items, array $remove = []): void
     {
-        abort_unless($q->doc_status === 'DRAFT', 422, 'Quotation sudah tidak bisa diubah.');
+        abort_unless($q->doc_status === 'DRAFT', 422, t('The quotation can no longer be changed.'));
         $c = self::component($q->id_quotation);
         $orig = collect(self::HEADER)->mapWithKeys(fn ($f) => [$f => self::str($q->{$f})])->all();
 
@@ -245,15 +245,15 @@ final class Quotation
 
     public static function confirm(QuoQuotation $q): void
     {
-        abort_unless($q->doc_status === 'DRAFT', 422, 'Hanya DRAFT yang bisa di-Confirm.');
-        abort_if($q->items()->doesntExist(), 422, 'Quotation belum punya baris.');
+        abort_unless($q->doc_status === 'DRAFT', 422, t('Only a DRAFT can be Confirmed.'));
+        abort_if($q->items()->doesntExist(), 422, t('The quotation has no lines yet.'));
         self::component($q->id_quotation)->publish();
     }
 
     // Draft belum pernah dikirim ke customer -> boleh dihapus; inquiry-nya kembali Ready to Quote.
     public static function delete(QuoQuotation $q): void
     {
-        abort_unless($q->doc_status === 'DRAFT', 422, 'Hanya DRAFT yang bisa dihapus.');
+        abort_unless($q->doc_status === 'DRAFT', 422, t('Only a DRAFT can be deleted.'));
         DB::connection('tm2sdi')->transaction(function () use ($q) {
             $q->items()->delete();
             $q->ccs()->delete();
@@ -264,13 +264,13 @@ final class Quotation
 
     public static function cancel(QuoQuotation $q, string $reason): void
     {
-        abort_unless(self::status($q) === 'PUBLISHED', 422, 'Hanya quotation terbit yang belum WIN/LOST yang bisa dibatalkan.');
+        abort_unless(self::status($q) === 'PUBLISHED', 422, t('Only a published quotation that is not yet WIN/LOST can be cancelled.'));
         $q->update(['doc_status' => 'CANCELLED', 'stat_cancel' => true, 'cancel_reason' => $reason, 'updated_by' => Auth::user()->login]);
     }
 
     public static function lost(QuoQuotation $q, string $reason): void
     {
-        abort_unless(self::status($q) === 'PUBLISHED', 422, 'Quotation ini sudah ditutup.');
+        abort_unless(self::status($q) === 'PUBLISHED', 422, t('This quotation is already closed.'));
         $c = self::component($q->id_quotation);
         $c->lostReason = $reason;
         $c->markLost();
@@ -279,7 +279,7 @@ final class Quotation
     // WIN = Customer Order lahir (1 CO = 1 Quotation), inquiry CONVERTED -> Master Product.
     public static function win(QuoQuotation $q): ?int
     {
-        abort_unless(in_array(self::status($q), ['PUBLISHED', 'WON'], true), 422, 'Quotation ini tidak bisa menjadi Customer Order.');
+        abort_unless(in_array(self::status($q), ['PUBLISHED', 'WON'], true), 422, t('This quotation cannot become a Customer Order.'));
 
         return CoOrderBuilder::findOrCreateFromQuotation($q)?->id_order;
     }

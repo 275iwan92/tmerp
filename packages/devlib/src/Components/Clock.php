@@ -22,7 +22,7 @@ class Clock extends DevlibComponent
 
     public function source(): string
     {
-        return 'jam sistem, zona '.$this->timezone.' ('.$this->tzLabel.')';
+        return 'system clock, zone '.$this->timezone.' ('.$this->tzLabel.')';
     }
 
     public function render()

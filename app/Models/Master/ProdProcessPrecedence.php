@@ -16,10 +16,10 @@ class ProdProcessPrecedence extends Model
     protected $primaryKey = 'precedence_id';
 
     public const RULE_TYPES = [
-        'MUST_FOLLOW' => 'Harus SESUDAH proses pembanding',
-        'MUST_PRECEDE' => 'Harus SEBELUM proses pembanding',
-        'FORBIDDEN_AFTER' => 'TIDAK BOLEH sesudah proses pembanding',
-        'REQUIRES' => 'Mewajibkan proses pembanding ada di routing',
+        'MUST_FOLLOW' => 'Must come AFTER the reference process',
+        'MUST_PRECEDE' => 'Must come BEFORE the reference process',
+        'FORBIDDEN_AFTER' => 'Must NOT come after the reference process',
+        'REQUIRES' => 'Requires the reference process in the routing',
     ];
 
     protected $fillable = [

@@ -41,7 +41,7 @@ class Dashboard extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'profil dashboard per jabatan';
+        return $this->source ?? 'dashboard profile per position';
     }
 
     public function period(): string

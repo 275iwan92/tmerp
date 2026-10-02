@@ -21,7 +21,7 @@ class PayrollRunGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Perhitungan Gaji';
+        return t('Payroll Calculation');
     }
 
     public function family(): string

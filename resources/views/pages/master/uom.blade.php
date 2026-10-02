@@ -4,14 +4,13 @@ use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasSpreadsheetGrid;
 use App\Models\Master\UomConversion;
 use App\Models\Master\UomUnit;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Unit of Measure (UoM) Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridStatFilter;
 
@@ -89,12 +88,12 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
     protected function spreadsheetColumns(): array
     {
         return [
-            'uom_code' => ['label' => 'Kode', 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
-            'uom_name' => ['label' => 'Nama Satuan', 'type' => 'text', 'required' => true],
-            'dimension' => ['label' => 'Dimensi', 'type' => 'select', 'options' => $this->dimensions, 'required' => true],
-            'is_base' => ['label' => 'Dasar', 'type' => 'boolean'],
-            'activate' => ['label' => 'Aktif', 'type' => 'boolean'],
-            '_conversion' => ['label' => '', 'type' => 'action', 'icon' => '🔁', 'title' => 'Konversi', 'method' => 'openConversionPanel', 'paramKey' => 'uom_code', 'hideWhenColumn' => 'dimension', 'hideWhenValue' => 'SPEC'],
+            'uom_code' => ['label' => t('Code'), 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
+            'uom_name' => ['label' => t('Unit Name'), 'type' => 'text', 'required' => true],
+            'dimension' => ['label' => t('Dimension'), 'type' => 'select', 'options' => $this->dimensions, 'required' => true],
+            'is_base' => ['label' => t('Base'), 'type' => 'boolean'],
+            'activate' => ['label' => t('Active'), 'type' => 'boolean'],
+            '_conversion' => ['label' => '', 'type' => 'action', 'icon' => '🔁', 'title' => t('Conversion'), 'method' => 'openConversionPanel', 'paramKey' => 'uom_code', 'hideWhenColumn' => 'dimension', 'hideWhenValue' => 'SPEC'],
         ];
     }
 
@@ -137,7 +136,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
 
         $validator->after(function ($v) use ($data) {
             if (($data['dimension'] ?? null) === 'SPEC' && ! empty($data['is_base'])) {
-                $v->errors()->add('is_base', 'Dimensi SPEC tidak boleh punya satuan dasar.');
+                $v->errors()->add('is_base', t('Dimension SPEC cannot have a base unit.'));
             }
         });
 
@@ -361,7 +360,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         ]);
 
         if ($data['dimension'] === 'SPEC' && $data['is_base']) {
-            $this->addError('is_base', 'Dimensi SPEC tidak boleh punya satuan dasar.');
+            $this->addError('is_base', t('Dimension SPEC cannot have a base unit.'));
 
             return;
         }
@@ -432,13 +431,13 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         $dstUnit = UomUnit::where('uom_code', $data['uom_dst'])->first();
 
         if (! $srcUnit || ! $dstUnit) {
-            $this->addError('uom_dst', 'Satuan tidak ditemukan.');
+            $this->addError('uom_dst', t('Unit not found.'));
 
             return;
         }
 
         if ($srcUnit->dimension !== $dstUnit->dimension) {
-            $this->addError('uom_dst', 'Dimensi berbeda ('.$srcUnit->dimension.' vs '.$dstUnit->dimension.') — konversi tidak sah.');
+            $this->addError('uom_dst', str_replace([':src', ':dst'], [$srcUnit->dimension, $dstUnit->dimension], t('Different dimensions (:src vs :dst) — conversion not valid.')));
 
             return;
         }
@@ -448,7 +447,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             $dupQuery->where('id_conversion', '!=', $this->editingConversionId);
         }
         if ($dupQuery->exists()) {
-            $this->addError('uom_dst', 'Pasangan '.$data['uom_src'].' → '.$data['uom_dst'].' sudah ada. Edit baris tersebut.');
+            $this->addError('uom_dst', str_replace([':src', ':dst'], [$data['uom_src'], $data['uom_dst']], t('Pair :src → :dst already exists. Edit that row.')));
 
             return;
         }
@@ -525,12 +524,12 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Satuan', 'value' => $this->statTotal, 'tone' => 'total'],
-            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+            'total' => ['label' => t('Total Units'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => t('Active'), 'value' => $this->statActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('activate', true)],
-            'base' => ['label' => 'Satuan Dasar', 'value' => $this->statBase, 'tone' => 'warn',
+            'base' => ['label' => t('Base Units'), 'value' => $this->statBase, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('is_base', true)],
-            'inactive' => ['label' => 'Nonaktif', 'value' => $this->statInactive, 'tone' => 'critical',
+            'inactive' => ['label' => t('Inactive'), 'value' => $this->statInactive, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where('activate', false)],
         ];
     }
@@ -542,8 +541,8 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
-            🔒 Konversi hanya sah <b>dalam satu dimensi</b>. Satuan <b>SPEC</b> (GSM, WARNA, dsb.) tak dikonversi.
-            Pilih satuan di kiri, klik <b>🔁 Konversi</b>, lalu <b>+ Konversi Baru</b> di panel kanan.
+            🔒 {!! t('Conversion is only valid <b>within one dimension</b>. <b>SPEC</b> units (GSM, COLOR, etc.) are not converted.') !!}
+            {!! t('Select a unit on the left, click <b>🔁 Conversion</b>, then <b>+ New Conversion</b> in the right panel.') !!}
         </div>
 
         {{-- ============ GRID (LIST + PANEL KONVERSI) ============ --}}
@@ -553,7 +552,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             {{-- ============ KARTU KIRI: LIST SATUAN ============ --}}
             <div class="mb-2 flex items-center gap-1.5">
                 <span class="text-sm">🔍</span>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('mdata_uom_search_placeholder', 'Cari kode / nama…') }}"
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search code / name…') }}"
                     class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
             </div>
 
@@ -566,23 +565,23 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                 :version="$this->spreadsheetVersion" />
 
             <div class="flex gap-3.5 flex-wrap text-[11px] text-[#667] px-1 py-2">
-                <span><span class="text-muted">{{ $this->units->count() }} {{ Translator::t('mdata_uom_count_suffix', 'satuan.') }}</span> {!! Translator::t('mdata_uom_click_conversion_hint', 'Klik ikon <b>🔁</b> untuk buka panel Konversi.') !!}</span>
-                <span>{!! Translator::t('mdata_uom_base_hint', '<b>Dasar</b> = satuan dasar dimensi (hanya 1 per dimensi, dasar lama otomatis dilepas saat "Simpan Semua").') !!}</span>
+                <span><span class="text-muted">{{ $this->units->count() }} {{ t('units.') }}</span> {!! t('Click the <b>🔁</b> icon to open the Conversion panel.') !!}</span>
+                <span>{!! t('<b>Base</b> = the base unit of a dimension (only 1 per dimension; the old base is automatically released when "Save All" runs).') !!}</span>
             </div>
 
             {{-- ============ KARTU KANAN: PANEL KONVERSI ============ --}}
             @if ($conversionPanelOpen)
                 <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                     <div class="px-3.5 py-3 bg-navy text-white text-[13px] font-semibold flex items-center gap-2 flex-wrap">
-                        <span>{{ Translator::t('mdata_uom_conversion_label', 'Konversi') }} {{ $selectedCode }} · {{ $this->selectedUnit?->uom_name }}</span>
-                        <button type="button" wire:click="openConvModal('new')" class="ml-auto px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white/10 text-white border border-white/40 hover:bg-white/20">+ {{ Translator::t('mdata_uom_btn_new_conversion', 'Konversi Baru') }}</button>
+                        <span>{{ t('Conversion') }} {{ $selectedCode }} · {{ $this->selectedUnit?->uom_name }}</span>
+                        <button type="button" wire:click="openConvModal('new')" class="ml-auto px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white/10 text-white border border-white/40 hover:bg-white/20">+ {{ t('New Conversion') }}</button>
                         <span class="cursor-pointer opacity-80 hover:opacity-100" wire:click="closeConversionPanel">✕</span>
                     </div>
                     <div class="px-3.5 py-2 border-b border-[#eef1f5]">
-                        <x-form.checkbox label="{{ Translator::t('mdata_uom_hide_inactive', 'Sembunyikan konversi nonaktif') }}" wire:model.live="hideInactiveConversions" />
+                        <x-form.checkbox label="{{ t('Hide inactive conversions') }}" wire:model.live="hideInactiveConversions" />
                     </div>
 
-                    <div class="text-[11px] font-bold uppercase tracking-wide text-muted px-3.5 pt-2.5 pb-1">{{ Translator::t('mdata_uom_direct_conversion', 'Konversi Langsung') }}</div>
+                    <div class="text-[11px] font-bold uppercase tracking-wide text-muted px-3.5 pt-2.5 pb-1">{{ t('Direct Conversion') }}</div>
                     <div>
                         @forelse ($this->directConversions as $c)
                             <div wire:key="dc-{{ $c->id_conversion }}" class="flex items-center gap-2 px-3.5 py-2 border-b border-[#f0f3f7] text-[13px]">
@@ -591,21 +590,21 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                                 <span class="font-mono text-[#556] min-w-[44px]">{{ $c->uom_dst }}</span>
                                 <span class="font-mono font-bold text-[#177a4b] text-right ml-1">1 {{ $c->uom_src }} = {{ $this->formatNumber($c->conversion_value) }} {{ $c->uom_dst }}</span>
                                 @unless ($c->activate)
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f0d6d6] text-[#a33]">{{ Translator::t('mdata_inactive_upper', 'NONAKTIF') }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f0d6d6] text-[#a33]">{{ t('INACTIVE') }}</span>
                                 @endunless
                                 <span class="ml-auto flex gap-0.5 shrink-0">
-                                    <button type="button" wire:click="openConvModal('edit', {{ $c->id_conversion }})" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                    <button type="button" wire:click="toggleConversionActive({{ $c->id_conversion }})" wire:confirm="{{ $c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }} konversi {{ $c->uom_src }} → {{ $c->uom_dst }}?"
-                                        title="{{ $c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $c->activate ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                                    <button type="button" wire:click="openConvModal('edit', {{ $c->id_conversion }})" title="{{ t('Edit') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
+                                    <button type="button" wire:click="toggleConversionActive({{ $c->id_conversion }})" wire:confirm="{{ str_replace([':src', ':dst'], [$c->uom_src, $c->uom_dst], $c->activate ? t('Deactivate conversion :src → :dst?') : t('Activate conversion :src → :dst?')) }}"
+                                        title="{{ $c->activate ? t('Deactivate') : t('Activate') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $c->activate ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
                                 </span>
                             </div>
                         @empty
-                            <div class="text-center text-muted text-[12.5px] px-3.5 py-5 leading-relaxed">{{ Translator::t('mdata_uom_no_direct_conversion_prefix', 'Belum ada pasangan konversi langsung untuk') }} <b>{{ $selectedCode }}</b>. {!! Translator::t('mdata_uom_no_direct_conversion_suffix', 'Klik <b>+ Konversi Baru</b> di atas.') !!}</div>
+                            <div class="text-center text-muted text-[12.5px] px-3.5 py-5 leading-relaxed">{{ t('No direct conversion pair yet for') }} <b>{{ $selectedCode }}</b>. {!! t('Click <b>+ New Conversion</b> above.') !!}</div>
                         @endforelse
                     </div>
 
                     @if ($this->derivedConversions->isNotEmpty())
-                        <div class="text-[11px] font-bold uppercase tracking-wide text-muted px-3.5 pt-2.5 pb-1">{{ Translator::t('mdata_uom_derived_conversion', 'Turunan ke Semua Satuan se-Dimensi') }}</div>
+                        <div class="text-[11px] font-bold uppercase tracking-wide text-muted px-3.5 pt-2.5 pb-1">{{ t('Derived to All Units in the Dimension') }}</div>
                         <div class="pb-1.5">
                             @foreach ($this->derivedConversions as $row)
                                 <div wire:key="der-{{ $row->uom_code }}" class="flex items-center gap-2 px-3.5 py-2 border-b border-[#f0f3f7] text-[13px] last:border-b-0">
@@ -626,28 +625,28 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         @if ($panel === 'form')
             <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
                 <div class="text-sm font-bold">
-                    {{ $unitMode === 'edit' ? Translator::t('mdata_uom_edit_title', 'Edit Satuan') : Translator::t('mdata_uom_new_title', 'Satuan Baru') }}
+                    {{ $unitMode === 'edit' ? t('Edit Unit') : t('New Unit') }}
                     @if ($unitMode === 'edit')<span class="text-xs font-normal opacity-75 ml-2">{{ $editingUnitCode }}</span>@endif
                 </div>
             </div>
             <form wire:submit="saveUnit" class="bg-white border border-t-0 border-[#d7dbe2] p-5 flex flex-col gap-3">
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.input label="Kode Satuan *" name="uom_code" wire:model="uom_code" maxlength="10" placeholder="mis. IK16" :disabled="$unitMode === 'edit'" class="uppercase" />
+                            <x-form.input :label="t('Unit Code *')" name="uom_code" wire:model="uom_code" maxlength="10" :placeholder="t('e.g. IK16')" :disabled="$unitMode === 'edit'" class="uppercase" />
                         </div>
                         <div class="flex-1">
-                            <x-form.select label="Dimensi *" name="dimension" wire:model="dimension" :options="array_combine($dimensions, $dimensions)" :selected="$dimension" />
+                            <x-form.select :label="t('Dimension *')" name="dimension" wire:model="dimension" :options="array_combine($dimensions, $dimensions)" :selected="$dimension" />
                         </div>
                     </div>
-                    <x-form.input label="Nama Satuan *" name="uom_name" wire:model="uom_name" placeholder="mis. Ikat isi 16 pcs" />
-                    <x-form.checkbox wire:model="is_base">Jadikan satuan <b>dasar</b> untuk dimensi ini (hanya 1 dasar per dimensi — dasar lama otomatis dilepas)</x-form.checkbox>
+                    <x-form.input :label="t('Unit Name *')" name="uom_name" wire:model="uom_name" :placeholder="t('e.g. Bundle of 16 pcs')" />
+                    <x-form.checkbox wire:model="is_base">{!! t('Make this the <b>base</b> unit for this dimension (only 1 base per dimension — the old base is released automatically)') !!}</x-form.checkbox>
                     @error('is_base') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
-                    <x-form.checkbox label="Aktif" wire:model="unit_activate" />
-                    <div class="text-[11px] text-muted leading-relaxed">Dimensi <b>SPEC</b> tidak bisa punya satuan dasar / dikonversi. Setelah satuan tersimpan, atur konversinya lewat panel <b>🔁 Konversi</b>.</div>
+                    <x-form.checkbox :label="t('Active')" wire:model="unit_activate" />
+                    <div class="text-[11px] text-muted leading-relaxed">{!! t('Dimension <b>SPEC</b> cannot have a base unit / be converted. Once the unit is saved, set its conversions via the <b>🔁 Conversion</b> panel.') !!}</div>
 
                     <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
-                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
+                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
                     </div>
             </form>
         @endif
@@ -659,25 +658,25 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center" wire:click.self="closeConvModal">
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl overflow-hidden">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                    <span>{{ $convMode === 'edit' ? 'Edit Konversi · '.$uom_src.' → '.$uom_dst : 'Konversi Baru · dari '.($uom_src ?: '—') }}</span>
+                    <span>{{ $convMode === 'edit' ? t('Edit Conversion').' · '.$uom_src.' → '.$uom_dst : t('New Conversion').' · '.t('from').' '.($uom_src ?: '—') }}</span>
                     <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeConvModal">✕</span>
                 </div>
                 <form wire:submit="saveConv" class="p-4 flex flex-col gap-3">
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.select label="Dari (src) *" name="uom_src" wire:model="uom_src" :options="$this->convertibleUnits->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])" :selected="$uom_src" />
+                            <x-form.select :label="t('From (src) *')" name="uom_src" wire:model="uom_src" :options="$this->convertibleUnits->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])" :selected="$uom_src" />
                         </div>
                         <div class="flex-1">
-                            <x-form.select label="Ke (dst) *" name="uom_dst" wire:model="uom_dst" :options="$this->convertibleUnits->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])" :selected="$uom_dst" />
+                            <x-form.select :label="t('To (dst) *')" name="uom_dst" wire:model="uom_dst" :options="$this->convertibleUnits->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])" :selected="$uom_dst" />
                         </div>
                     </div>
 
-                    <x-form.input label="Nilai konversi * (1 src = n × dst)" name="conversion_value" type="number" step="any" min="0" wire:model="conversion_value" placeholder="mis. 20" />
-                    <x-form.checkbox label="Aktif" wire:model="conversion_activate" />
+                    <x-form.input :label="t('Conversion value * (1 src = n × dst)')" name="conversion_value" type="number" step="any" min="0" wire:model="conversion_value" :placeholder="t('e.g. 20')" />
+                    <x-form.checkbox :label="t('Active')" wire:model="conversion_activate" />
 
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="closeConvModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="closeConvModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
                     </div>
                 </form>
             </div>

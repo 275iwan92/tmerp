@@ -30,7 +30,7 @@
     pernah mensuppress opsi "— pilih —" -- insiden nyata ditemukan 2026-08-27,
     41 titik pemanggilan di 15 file salah semua sebelum fix ini. (Default
     prop sekarang null lagi sejak i18n Malam 1, tapi diresolve balik ke
-    string ter-translate via null-coalescing ke Translator::t(...) di blok
+    string ter-translate via null-coalescing ke t(...) (kamus) di blok
     PHP bawah -- perilaku efektifnya sama, gotcha di atas tetap berlaku.
     (Catatan: JANGAN tulis literal "at-php" dlm komentar ini, lihat memory
     feedback_blade_inline_php_no_closing_tag_gotcha -- itu yang barusan
@@ -38,7 +38,7 @@
 --}}
 @props(['label' => null, 'name' => null, 'options' => [], 'selected' => null, 'placeholder' => null, 'error' => null, 'legacy' => false, 'col2' => false, 'liveSync' => false])
 @php
-    $placeholder = $placeholder ?? \App\Support\Localization\Translator::t('shared_select_placeholder', '— pilih —');
+    $placeholder = $placeholder ?? t('— select —');
     $isLegacy = (bool) $legacy;
     $legacyClass = is_string($legacy) ? $legacy : 'f';
     $errorMsg = $error ?? ($name ? $errors->first($name) : null);

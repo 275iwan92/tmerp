@@ -15,7 +15,6 @@ use App\Services\Hrm\FamilyEmploymentCrossCheckService;
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\OpensFromQuery;
 use App\Services\Migration\EmployeeLoginProvisionService;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -57,11 +56,11 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
     public bool $showPhotoModal = false;
 
-    public array $genders = ['L' => 'Laki-laki', 'P' => 'Perempuan'];
+    public array $genders = ['L' => 'Male', 'P' => 'Female'];
 
     public array $religions = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu', 'Lainnya'];
 
-    public array $workStatuses = ['WORKING' => 'Bekerja', 'DIRUMAHKAN' => 'Dirumahkan', 'CUTI' => 'Cuti'];
+    public array $workStatuses = ['WORKING' => 'Working', 'DIRUMAHKAN' => 'Furloughed', 'CUTI' => 'On Leave'];
 
     public array $educationTypes = ['SERTIFIKASI', 'SEMINAR', 'PELATIHAN', 'PENDIDIKAN_FORMAL'];
 
@@ -72,7 +71,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     // AYAH/IBU/MERTUA_AYAH/MERTUA_IBU wajib ada (keputusan user 2026-08-27) --
     // dicek di showDirectory() saat $justRegistered, BUKAN retroaktif ke data lama.
     private const MANDATORY_FAMILY_RELATIONS = [
-        'AYAH' => 'Ayah', 'IBU' => 'Ibu', 'MERTUA_AYAH' => 'Mertua Ayah', 'MERTUA_IBU' => 'Mertua Ibu',
+        'AYAH' => 'Father', 'IBU' => 'Mother', 'MERTUA_AYAH' => 'Father-in-law', 'MERTUA_IBU' => 'Mother-in-law',
     ];
 
     private const MAX_CHILDREN = 20;
@@ -222,14 +221,14 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $m = $this->metrics;
 
         return [
-            'active' => ['label' => Translator::t('hrm_emp_stat_active', 'Employee Aktif'), 'value' => $m['active'], 'tone' => 'active',
+            'active' => ['label' => t('Active Employees'), 'value' => $m['active'], 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('activate', true)],
-            'inactive' => ['label' => Translator::t('hrm_emp_stat_inactive', 'Employee Non Aktif'), 'value' => $m['inactive'], 'tone' => 'critical',
+            'inactive' => ['label' => t('Inactive Employees'), 'value' => $m['inactive'], 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where('activate', false)],
             // Mingguan/bulanan = frekuensi gaji karyawan AKTIF (yang non aktif tak ikut payroll).
-            'weekly' => ['label' => Translator::t('hrm_emp_stat_weekly', 'Employee Mingguan'), 'value' => $m['weekly'], 'tone' => 'warn',
+            'weekly' => ['label' => t('Weekly Employees'), 'value' => $m['weekly'], 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('activate', true)->where('payment_frequency', 'WEEKLY')],
-            'monthly' => ['label' => Translator::t('hrm_emp_stat_monthly', 'Employee Bulanan'), 'value' => $m['monthly'], 'tone' => 'total',
+            'monthly' => ['label' => t('Monthly Employees'), 'value' => $m['monthly'], 'tone' => 'total',
                 'filter' => fn ($q) => $q->where('activate', true)->where('payment_frequency', 'MONTHLY')],
         ];
     }
@@ -312,15 +311,15 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     {
         $sp = $e->activeSpType();
         if ($sp) {
-            return ['label' => $sp.' '.Translator::t('hrm_emp_sp_active_suffix', 'AKTIF'), 'class' => 'bg-[#fee2e2] text-[#991b1b]'];
+            return ['label' => $sp.' '.t('ACTIVE'), 'class' => 'bg-[#fee2e2] text-[#991b1b]'];
         }
 
         $verbal = $e->verbalWarningCount();
         if ($verbal > 0) {
-            return ['label' => Translator::t('hrm_emp_verbal_prefix', 'Verbal').": {$verbal}/6", 'class' => 'bg-[#fef3c7] text-[#b45309]'];
+            return ['label' => t('Verbal').": {$verbal}/6", 'class' => 'bg-[#fef3c7] text-[#b45309]'];
         }
 
-        return ['label' => Translator::t('hrm_emp_clean_no_sp', 'Clean / No SP'), 'class' => 'bg-[#f0fdf4] text-[#166534]'];
+        return ['label' => t('Clean / No Warning'), 'class' => 'bg-[#f0fdf4] text-[#166534]'];
     }
 
     // ============== NAVIGASI GRID <-> FORM ==============
@@ -368,7 +367,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
     public function relationLabel(string $code): string
     {
-        return self::MANDATORY_FAMILY_RELATIONS[$code] ?? ucwords(strtolower($code));
+        return t(self::MANDATORY_FAMILY_RELATIONS[$code] ?? ['SUAMI' => 'Husband', 'ISTRI' => 'Wife', 'ANAK' => 'Child'][$code] ?? ucwords(strtolower($code)));
     }
 
     public function missingMandatoryFamily(): array
@@ -377,6 +376,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
         return collect(self::MANDATORY_FAMILY_RELATIONS)
             ->reject(fn ($label, $code) => $existing->contains($code))
+            ->map(fn ($label) => t($label))
             ->values()
             ->all();
     }
@@ -472,7 +472,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         EmployeeBankService::setPrimary($this->editingId, $this->bank_supplier_id !== '' ? (int) $this->bank_supplier_id : null,
             $this->bank_account_no, $this->bank_account_holder, Auth::user()->login);
 
-        $this->dispatch('app-alert', type: 'success', message: $this->bank_supplier_id !== '' ? 'Rekening bank tersimpan.' : 'Pegawai diset dibayar tunai (Cash).');
+        $this->dispatch('app-alert', type: 'success', message: $this->bank_supplier_id !== '' ? t('Bank account saved.') : t('Employee set to be paid in cash.'));
     }
 
     private function nextEmployeeCode(int $companyId): string
@@ -530,8 +530,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'default_shift_id' => ['nullable', 'integer', 'exists:tm2mst.emp_shift,shift_id'],
             'photo' => ['nullable', 'image', 'max:5120'],
         ], [
-            'nik_ktp.digits' => 'NIK KTP harus tepat 16 digit angka.',
-            'birth_date.before_or_equal' => 'Karyawan minimal berusia 17 tahun (tanggal lahir maksimal '.\Carbon\Carbon::parse($minBirthDate)->translatedFormat('d M Y').').',
+            'nik_ktp.digits' => t('National ID (NIK KTP) must be exactly 16 digits.'),
+            'birth_date.before_or_equal' => str_replace(':date', \Carbon\Carbon::parse($minBirthDate)->translatedFormat('d M Y'), t('Employee must be at least 17 years old (latest birth date :date).')),
         ]);
 
         $payload = [
@@ -688,7 +688,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             $childCount = EmpFamily::where('employee_id', $this->editingId)->where('relation', 'ANAK')->count();
 
             if ($childCount >= self::MAX_CHILDREN) {
-                $this->addError('fam_relation', 'Maksimal '.self::MAX_CHILDREN.' anak per karyawan.');
+                $this->addError('fam_relation', str_replace(':n', self::MAX_CHILDREN, t('Maximum :n children per employee.')));
 
                 return;
             }
@@ -698,7 +698,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             $already = EmpFamily::where('employee_id', $this->editingId)->where('relation', $data['fam_relation'])->exists();
 
             if ($already) {
-                $this->addError('fam_relation', 'Data '.self::MANDATORY_FAMILY_RELATIONS[$data['fam_relation']].' sudah ada.');
+                $this->addError('fam_relation', str_replace(':relation', t(self::MANDATORY_FAMILY_RELATIONS[$data['fam_relation']]), t(':relation data already exists.')));
 
                 return;
             }
@@ -816,15 +816,15 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('hrm_emp_search_placeholder', 'Cari kode / nama / NIK…') }}"
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search code / name / national ID…') }}"
                             class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
                     <x-slot:tools>
                         <div class="flex items-center gap-1 pr-2.5 mr-1 border-r border-[#e2e7ee] shrink-0">
-                            <button type="button" wire:click="setEmployeeView('list')" title="{{ Translator::t('hrm_emp_view_list_title', 'Tampilan Daftar') }}"
-                                class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer {{ $employeeView === 'list' ? 'bg-[#2c3e69] text-white' : 'bg-white border border-[#d7dbe2]' }}">☰ List</button>
-                            <button type="button" wire:click="setEmployeeView('card')" title="{{ Translator::t('hrm_emp_view_card_title', 'Tampilan Kartu') }}"
-                                class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer {{ $employeeView === 'card' ? 'bg-[#2c3e69] text-white' : 'bg-white border border-[#d7dbe2]' }}">▦ Card</button>
+                            <button type="button" wire:click="setEmployeeView('list')" title="{{ t('List View') }}"
+                                class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer {{ $employeeView === 'list' ? 'bg-[#2c3e69] text-white' : 'bg-white border border-[#d7dbe2]' }}">☰ {{ t('List') }}</button>
+                            <button type="button" wire:click="setEmployeeView('card')" title="{{ t('Card View') }}"
+                                class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer {{ $employeeView === 'card' ? 'bg-[#2c3e69] text-white' : 'bg-white border border-[#d7dbe2]' }}">▦ {{ t('Card') }}</button>
                         </div>
                     </x-slot:tools>
                     <x-slot:newRecord>
@@ -839,7 +839,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             @php $badge = $this->disciplineBadge($e); @endphp
                             <div wire:key="emp-card-{{ $e->employee_id }}" wire:dblclick="openEdit({{ $e->employee_id }})"
                                 class="cursor-pointer bg-white border border-[#e2e7ee] rounded-xl overflow-hidden hover:shadow-md hover:border-accent transition-shadow"
-                                title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
+                                title="{{ t('Double-click to open detail') }}">
                                 <div class="h-[110px] bg-[#f1f4f9] flex items-center justify-center overflow-hidden">
                                     @if ($e->photo_path)
                                         <img src="{{ asset('storage/'.$e->photo_path) }}" class="w-full h-full object-cover">
@@ -853,18 +853,18 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                     <div class="text-[11px] text-muted truncate mt-0.5">{{ $e->position?->department?->department_name ?: '—' }}</div>
                                     <div class="flex items-center gap-1.5 flex-wrap mt-2">
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $badge['class'] }}">{{ $badge['label'] }}</span>
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ Translator::t('hrm_emp_workstatus_'.strtolower($e->work_status), $this->workStatuses[$e->work_status] ?? $e->work_status) }}</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ t($this->workStatuses[$e->work_status] ?? $e->work_status) }}</span>
                                     </div>
                                     <div class="flex justify-end gap-0.5 mt-2 pt-2 border-t border-[#eef1f5]">
-                                        <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openEdit({{ $e->employee_id }})" />
-                                        <x-grid.action-icon :active="$e->activate" :title="$e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $e->employee_id }})"
-                                            :confirm="($e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' employee '.$e->full_name.'?'"
+                                        <x-grid.action-icon icon="fa-pen" title="{{ t('Edit') }}" action="openEdit({{ $e->employee_id }})" />
+                                        <x-grid.action-icon :active="$e->activate" :title="$e->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $e->employee_id }})"
+                                            :confirm="str_replace(':name', $e->full_name, $e->activate ? t('Deactivate employee :name?') : t('Activate employee :name?'))"
                                             :variant="$e->activate ? 'danger' : 'default'" />
                                     </div>
                                 </div>
                             </div>
                         @empty
-                            <div class="col-span-full text-center py-8 text-muted text-sm">{{ Translator::t('hrm_emp_none', 'Tidak ada.') }}</div>
+                            <div class="col-span-full text-center py-8 text-muted text-sm">{{ t('None.') }}</div>
                         @endforelse
                     </div>
                 @else
@@ -872,17 +872,17 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
-                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Employee</th>
-                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('hrm_emp_col_department', 'Departemen') }}</th>
-                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">{{ Translator::t('hrm_emp_col_discipline', 'Kedisiplinan') }}</th>
-                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ Translator::t('hrm_emp_col_work_status', 'Status Kerja') }}</th>
-                                <th class="text-right px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
+                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Employee') }}</th>
+                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Department') }}</th>
+                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">{{ t('Discipline') }}</th>
+                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Work Status') }}</th>
+                                <th class="text-right px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">{{ t('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->employees as $e)
                                 @php $badge = $this->disciplineBadge($e); @endphp
-                                <tr wire:key="emp-{{ $e->employee_id }}" wire:dblclick="openEdit({{ $e->employee_id }})" class="cursor-pointer hover:bg-[#f7faff]" title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
+                                <tr wire:key="emp-{{ $e->employee_id }}" wire:dblclick="openEdit({{ $e->employee_id }})" class="cursor-pointer hover:bg-[#f7faff]" title="{{ t('Double-click to open detail') }}">
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
                                             @if ($e->photo_path)
@@ -901,17 +901,17 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $badge['class'] }}">{{ $badge['label'] }}</span>
                                     </td>
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ Translator::t('hrm_emp_workstatus_'.strtolower($e->work_status), $this->workStatuses[$e->work_status] ?? $e->work_status) }}</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ t($this->workStatuses[$e->work_status] ?? $e->work_status) }}</span>
                                     </td>
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openEdit({{ $e->employee_id }})" />
-                                        <x-grid.action-icon :active="$e->activate" :title="$e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $e->employee_id }})"
-                                            :confirm="($e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' employee '.$e->full_name.'?'"
+                                        <x-grid.action-icon icon="fa-pen" title="{{ t('Edit') }}" action="openEdit({{ $e->employee_id }})" />
+                                        <x-grid.action-icon :active="$e->activate" :title="$e->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $e->employee_id }})"
+                                            :confirm="str_replace(':name', $e->full_name, $e->activate ? t('Deactivate employee :name?') : t('Activate employee :name?'))"
                                             :variant="$e->activate ? 'danger' : 'default'" />
                                     </td>
                                 </tr>
                             @empty
-                                <x-grid.empty-row :colspan="5" message="{{ Translator::t('hrm_emp_none', 'Tidak ada.') }}" />
+                                <x-grid.empty-row :colspan="5" message="{{ t('None.') }}" />
                             @endforelse
                         </tbody>
                     </table>
@@ -923,8 +923,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         @php $emp = $this->currentEmployee; @endphp
         <div class="w-full px-5 py-4.5">
             <div class="flex items-center gap-2 flex-wrap bg-[#f8fafc] border border-[#e2e7ee] rounded-lg px-3.5 py-2.5 mb-3.5">
-                <button type="button" wire:click="showDirectory" data-dirty-guard class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-white border border-[#c7cfda]">← Kembali</button>
-                <span class="text-sm font-bold text-navy ml-1">{{ $editingId ? 'Edit Employee · '.$employee_code : 'Tambah Employee Baru' }}</span>
+                <button type="button" wire:click="showDirectory" data-dirty-guard class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-white border border-[#c7cfda]">← Back</button>
+                <span class="text-sm font-bold text-navy ml-1">{{ $editingId ? t('Edit Employee').' · '.$employee_code : t('Add New Employee') }}</span>
                 <span class="flex-1"></span>
                 @if ($emp)
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $this->disciplineBadge($emp)['class'] }}">{{ $this->disciplineBadge($emp)['label'] }}</span>
@@ -935,7 +935,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 <div class="relative shrink-0">
                     @if ($emp?->photo_path)
                         <img src="{{ asset('storage/'.$emp->photo_path) }}"
-                            wire:dblclick="openPhotoModal" title="Klik 2x untuk lihat foto penuh"
+                            wire:dblclick="openPhotoModal" title="{{ t('Double-click to view the full photo') }}"
                             class="w-[72px] h-[72px] rounded-lg object-cover border-2 border-accent cursor-pointer hover:opacity-90">
                     @else
                         <div class="w-[72px] h-[72px] rounded-lg bg-gradient-to-br {{ $emp ? \App\Support\Grid\Avatar::gradient($emp->employee_id) : 'from-[#94a3b8] to-[#64748b]' }} text-white text-xl font-bold flex items-center justify-center">
@@ -944,8 +944,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     @endif
                 </div>
                 <div class="flex-1 min-w-[180px]">
-                    <div class="text-[15px] font-bold text-navy">{{ $emp?->full_name ?: $full_name ?: 'Employee Baru' }}</div>
-                    <div class="text-xs text-muted mt-0.5">{{ $emp?->employee_code ?: '(kode otomatis)' }} @if($emp?->position?->position_name) · {{ $emp->position->position_name }} @endif</div>
+                    <div class="text-[15px] font-bold text-navy">{{ $emp?->full_name ?: $full_name ?: t('New Employee') }}</div>
+                    <div class="text-xs text-muted mt-0.5">{{ $emp?->employee_code ?: t('(automatic code)') }} @if($emp?->position?->position_name) · {{ $emp->position->position_name }} @endif</div>
                     @if ($emp?->position?->department?->department_name)
                         <div class="text-xs text-muted">{{ $emp->position->department->department_name }}</div>
                     @endif
@@ -953,22 +953,22 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 @if ($editingId)
                     <div class="flex flex-col gap-1.5 shrink-0">
                         <label class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white border border-[#c7cfda] text-center hover:bg-[#f4f6fa]">
-                            📷 {{ $emp?->photo_path ? 'Ganti Foto' : 'Unggah Foto' }}
+                            📷 {{ $emp?->photo_path ? t('Change Photo') : t('Upload Photo') }}
                             <input type="file" wire:model="photo" accept="image/*" class="hidden">
                         </label>
                         @if ($emp?->photo_path)
-                            <button type="button" wire:click="removePhoto" wire:confirm="Hapus foto profil?" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white border border-[#f5c6c6] text-[#c0392b] hover:bg-[#fdecec]">Hapus Foto</button>
+                            <button type="button" wire:click="removePhoto" wire:confirm="{{ t('Delete profile photo?') }}" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white border border-[#f5c6c6] text-[#c0392b] hover:bg-[#fdecec]">{{ t('Delete Photo') }}</button>
                         @endif
                         @error('photo') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
                         @if ($photo)
-                            <span class="text-[10.5px] text-[#2f7a52]">✓ Foto baru dipilih — klik Simpan utk menerapkan.</span>
+                            <span class="text-[10.5px] text-[#2f7a52]">✓ {{ t('New photo selected — click Save to apply.') }}</span>
                         @endif
                     </div>
                 @endif
             </div>
 
             <div class="flex gap-1 border-b border-[#e2e7ee] mb-3.5 flex-wrap">
-                @foreach (['overview' => 'Overview & Identitas', 'job' => 'Job Alignment', 'education' => 'Pendidikan & Sertifikasi', 'family' => 'Keluarga', 'career' => 'Karier & Kontrak', 'bank' => 'Rekening Bank', 'performance' => 'Kedisiplinan'] as $key => $label)
+                @foreach (['overview' => t('Overview & Identity'), 'job' => t('Job Alignment'), 'education' => t('Education & Certification'), 'family' => t('Family'), 'career' => t('Career & Contract'), 'bank' => t('Bank Account'), 'performance' => t('Discipline')] as $key => $label)
                     <button type="button" wire:click="$set('formTab', '{{ $key }}')"
                         class="px-3.5 py-2 text-xs font-semibold cursor-pointer border-b-2 {{ $formTab === $key ? 'text-accent border-accent' : 'text-muted border-transparent' }}">{{ $label }}</button>
                 @endforeach
@@ -977,86 +977,86 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             <form wire:submit="save">
                 {{-- TAB: OVERVIEW --}}
                 <div class="{{ $formTab === 'overview' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4 flex flex-col gap-3">
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide">Identitas</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Identity') }}</div>
                     <div class="grid gap-2.5">
-                        <x-form.input label="Nama Lengkap *" name="full_name" wire:model="full_name" />
-                        <x-form.input label="Panggilan" wire:model="nickname" />
-                        <x-form.select label="Jenis Kelamin *" name="gender" wire:model="gender" :options="$genders" :selected="$gender" />
-                        <x-form.select label="Agama" wire:model="religion" :options="array_combine($religions, $religions)" :selected="$religion" />
+                        <x-form.input :label="t('Full Name *')" name="full_name" wire:model="full_name" />
+                        <x-form.input :label="t('Nickname', 'master')" wire:model="nickname" />
+                        <x-form.select :label="t('Gender *')" name="gender" wire:model="gender" :options="array_map('t', $genders)" :selected="$gender" />
+                        <x-form.select :label="t('Religion')" wire:model="religion" :options="array_combine($religions, array_map('t', ['Islam', 'Protestant', 'Catholic', 'Hindu', 'Buddhist', 'Confucian', 'Other']))" :selected="$religion" />
                     </div>
                     <div class="grid gap-2.5">
-                        <x-form.input label="Kota Lahir" wire:model="birth_place" />
-                        <x-form.date-picker label="Tanggal Lahir (sesuai KTP) * — usia minimal 17 tahun" name="birth_date" wire:model="birth_date" />
-                        <x-form.input label="NIK KTP *" name="nik_ktp" wire:model="nik_ktp" maxlength="16" inputmode="numeric" hint="Wajib tepat 16 digit angka." />
-                        <x-form.input label="No. Kartu Keluarga (KK) *" name="no_kk" wire:model="no_kk" />
-                        <x-form.input label="NPWP" wire:model="npwp_number" />
+                        <x-form.input :label="t('Birth City')" wire:model="birth_place" />
+                        <x-form.date-picker :label="t('Birth Date (per KTP) * — minimum age 17 years')" name="birth_date" wire:model="birth_date" />
+                        <x-form.input :label="t('NIK KTP *')" name="nik_ktp" wire:model="nik_ktp" maxlength="16" inputmode="numeric" :hint="t('Must be exactly 16 digits.')" />
+                        <x-form.input :label="t('Family Card No. (KK) *')" name="no_kk" wire:model="no_kk" />
+                        <x-form.input :label="t('NPWP')" wire:model="npwp_number" />
                     </div>
                     <div class="grid two gap-2.5">
-                        <x-form.input label="Telepon / WA (No. Smartphone Utama) *" name="phone" wire:model="phone" />
-                        <x-form.input label="Email Pribadi" name="email_personal" type="email" wire:model="email_personal" />
+                        <x-form.input :label="t('Phone / WA (Main Smartphone No.) *')" name="phone" wire:model="phone" />
+                        <x-form.input :label="t('Personal Email')" name="email_personal" type="email" wire:model="email_personal" />
                     </div>
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Alamat</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ t('Address') }}</div>
                     <div class="grid two gap-2.5">
-                        <x-form.textarea label="Alamat KTP" name="address_detail_ktp" wire:model="address_detail_ktp" rows="2" />
-                        <x-form.textarea label="Alamat Tinggal / Domisili *" name="address_detail_domisili" wire:model="address_detail_domisili" rows="2" />
+                        <x-form.textarea :label="t('KTP Address')" name="address_detail_ktp" wire:model="address_detail_ktp" rows="2" />
+                        <x-form.textarea :label="t('Residential Address / Domicile *')" name="address_detail_domisili" wire:model="address_detail_domisili" rows="2" />
                     </div>
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Status Kerja</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ t('Work Status') }}</div>
                     <div class="grid three gap-2.5">
-                        <x-form.date-picker label="Tanggal Bergabung *" name="join_date" wire:model="join_date" />
-                        <x-form.select label="Status Kerja *" wire:model="work_status" :options="$workStatuses" :selected="$work_status" :placeholder="false" />
-                        <x-form.date-picker label="Berlaku Sejak" wire:model="work_status_since" />
+                        <x-form.date-picker :label="t('Join Date *')" name="join_date" wire:model="join_date" />
+                        <x-form.select :label="t('Work Status *')" wire:model="work_status" :options="array_map('t', $workStatuses)" :selected="$work_status" :placeholder="false" />
+                        <x-form.date-picker :label="t('Effective From')" wire:model="work_status_since" />
                     </div>
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Kontak Darurat</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ t('Emergency Contact') }}</div>
                     <div class="grid three gap-2.5">
-                        <x-form.input label="Nama" wire:model="emergency_contact_name" />
-                        <x-form.input label="Hubungan" wire:model="emergency_contact_relation" />
-                        <x-form.input label="Telepon" wire:model="emergency_contact_phone" />
+                        <x-form.input :label="t('Name')" wire:model="emergency_contact_name" />
+                        <x-form.input :label="t('Relationship', 'master')" wire:model="emergency_contact_relation" />
+                        <x-form.input :label="t('Phone')" wire:model="emergency_contact_phone" />
                     </div>
 
-                    <x-form.checkbox label="Aktif" wire:model="emp_activate" />
+                    <x-form.checkbox :label="t('Active')" wire:model="emp_activate" />
                 </div>
 
                 {{-- TAB: JOB ALIGNMENT --}}
                 <div class="{{ $formTab === 'job' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4 flex flex-col gap-3">
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide">Struktur Organisasi</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Organization Structure') }}</div>
                     <div class="grid two gap-2.5">
-                        <x-form.select label="Jabatan (Departemen — Posisi) *" name="position_id" wire:model="position_id"
+                        <x-form.select :label="t('Position (Department — Position) *')" name="position_id" wire:model="position_id"
                             :options="$this->positionOptions->mapWithKeys(fn ($p) => [$p->position_id => $p->department?->department_name.' — '.$p->position_name])" :selected="$position_id" />
                     </div>
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Default Produksi <span class="text-muted font-normal normal-case">(prefill jadwal, tak mengunci assignment)</span></div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ t('Production Defaults') }} <span class="text-muted font-normal normal-case">{{ t('(schedule prefill, does not lock the assignment)') }}</span></div>
                     <div class="grid two gap-2.5">
-                        <x-form.select label="Mesin Default" wire:model="default_machine_id" placeholder="— tanpa default —"
+                        <x-form.select :label="t('Default Machine')" wire:model="default_machine_id" :placeholder="t('— no default —')"
                             :options="$this->machineOptions->mapWithKeys(fn ($m) => [$m->machine_id => $m->machine_code.' — '.$m->machine_name])" :selected="$default_machine_id" />
-                        <x-form.select label="Shift Default" wire:model="default_shift_id" placeholder="— tanpa default —"
+                        <x-form.select :label="t('Default Shift')" wire:model="default_shift_id" :placeholder="t('— no default —')"
                             :options="$this->shiftOptions->pluck('shift_name', 'shift_id')" :selected="$default_shift_id" />
                     </div>
 
                     @if ($emp)
-                        <div class="text-[11px] text-muted mt-1">Ringkasan kedisiplinan ada di tab <b>Kedisiplinan</b>: {{ $emp->verbalWarningCount() }} teguran verbal, status {{ $emp->activeSpType() ?: 'bersih' }}.</div>
+                        <div class="text-[11px] text-muted mt-1">{!! t('The discipline summary is on the <b>Discipline</b> tab:') !!} {{ str_replace(':n', $emp->verbalWarningCount(), t(':n verbal warnings')) }}, {{ t('status') }} {{ $emp->activeSpType() ?: t('clean') }}.</div>
                     @endif
                 </div>
 
                 {{-- TAB: EDUCATION --}}
                 <div class="{{ $formTab === 'education' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4">
                     @if (! $editingId)
-                        <div class="text-xs text-muted py-6 text-center">Simpan data Overview dahulu sebelum menambah riwayat pendidikan.</div>
+                        <div class="text-xs text-muted py-6 text-center">{{ t('Save the Overview data first before adding education history.') }}</div>
                     @else
                         <div class="flex items-center justify-between mb-2.5">
-                            <div class="text-xs font-bold text-navy uppercase tracking-wide">Riwayat Pendidikan &amp; Pengembangan</div>
-                            <button type="button" wire:click="openEducationModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-accent text-white">+ Tambah Riwayat</button>
+                            <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Education & Development History') }}</div>
+                            <button type="button" wire:click="openEducationModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-accent text-white">+ {{ t('Add History') }}</button>
                         </div>
                         <x-grid.table-shell>
                         <table class="w-full border-collapse text-[12px]">
                             <thead>
                                 <tr>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Kegiatan</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Tanggal</th>
-                                    <th class="num px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Biaya</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Dibiayai</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Activity') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Date') }}</th>
+                                    <th class="num px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Cost', 'master') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Funded By') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1065,10 +1065,10 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <td class="px-2 py-1.5">{{ $ed->activity_name }} <span class="text-muted">({{ $ed->education_type }})</span></td>
                                         <td class="px-2 py-1.5">{{ $ed->activity_date->format('d M Y') }}</td>
                                         <td class="num px-2 py-1.5">Rp {{ number_format((float) $ed->cost, 0, ',', '.') }}</td>
-                                        <td class="px-2 py-1.5">{{ $ed->funded_by }}{{ $ed->is_bonding ? ' · Ikatan Dinas' : '' }}</td>
+                                        <td class="px-2 py-1.5">{{ $ed->funded_by }}{{ $ed->is_bonding ? ' · '.t('Service Bond') : '' }}</td>
                                     </tr>
                                 @empty
-                                    <x-grid.empty-row :colspan="4" message="Belum ada riwayat." />
+                                    <x-grid.empty-row :colspan="4" :message="t('No history yet.')" />
                                 @endforelse
                             </tbody>
                         </table>
@@ -1079,31 +1079,31 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 {{-- TAB: FAMILY --}}
                 <div class="{{ $formTab === 'family' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4">
                     @if (! $editingId)
-                        <div class="text-xs text-muted py-6 text-center">Simpan data Overview dahulu sebelum menambah anggota keluarga.</div>
+                        <div class="text-xs text-muted py-6 text-center">{{ t('Save the Overview data first before adding family members.') }}</div>
                     @else
                         @if ($justRegistered)
                             @php $missingFamily = $this->missingMandatoryFamily(); @endphp
                             <div class="text-[11px] font-semibold px-3 py-2 rounded-md mb-2.5 {{ $missingFamily ? 'bg-[#fef3c7] text-[#92400e] border border-[#fde68a]' : 'bg-[#eaf7ee] text-[#1f8a4c] border border-[#bbe6cc]' }}">
                                 @if ($missingFamily)
-                                    ⚠ Data keluarga wajib belum lengkap: {{ implode(', ', $missingFamily) }}. Lengkapi dulu sebelum keluar dari layar ini.
+                                    ⚠ {{ t('Mandatory family data is incomplete:') }} {{ implode(', ', $missingFamily) }}. {{ t('Complete it before leaving this screen.') }}
                                 @else
-                                    ✓ Data keluarga wajib (Ayah, Ibu, Mertua Ayah, Mertua Ibu) sudah lengkap.
+                                    ✓ {{ t('Mandatory family data (Father, Mother, Father-in-law, Mother-in-law) is complete.') }}
                                 @endif
                             </div>
                         @endif
                         <div class="flex items-center justify-between mb-2.5">
-                            <div class="text-xs font-bold text-navy uppercase tracking-wide">Anggota Keluarga</div>
-                            <button type="button" wire:click="openFamilyModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-accent text-white">+ Tambah Anggota</button>
+                            <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Family Members', 'master') }}</div>
+                            <button type="button" wire:click="openFamilyModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-accent text-white">+ {{ t('Add Member') }}</button>
                         </div>
                         <x-grid.table-shell>
                         <table class="w-full border-collapse text-[12px]">
                             <thead>
                                 <tr>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Hubungan</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Nama</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Tanggal Lahir</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Status</th>
-                                    <th class="text-right px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Aksi</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Relationship', 'master') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Name') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Birth Date') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Status') }}</th>
+                                    <th class="text-right px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Action') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1114,19 +1114,19 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <td class="px-2 py-1.5">{{ $f->birth_date?->format('d M Y') ?: '—' }}</td>
                                         <td class="px-2 py-1.5">
                                             @if ($f->is_deceased)
-                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block bg-[#eef0f3] text-[#8a8f98]">Meninggal — {{ $f->deceased_date?->format('d M Y') }}</span>
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block bg-[#eef0f3] text-[#8a8f98]">{{ t('Deceased') }} — {{ $f->deceased_date?->format('d M Y') }}</span>
                                             @else
-                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block bg-[#eaf7ee] text-[#1f8a4c]">Tanggungan</span>
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block bg-[#eaf7ee] text-[#1f8a4c]">{{ t('Dependent') }}</span>
                                             @endif
                                         </td>
                                         <td class="px-2 py-1.5 text-right">
                                             @unless ($f->is_deceased)
-                                                <button type="button" wire:click="markDeceased({{ $f->family_id }})" wire:confirm="Tandai {{ $f->full_name }} meninggal dunia?" class="px-2 py-1 rounded-md text-[10px] font-semibold cursor-pointer bg-[#fdeceb] text-[#c0392b]">Tandai Meninggal</button>
+                                                <button type="button" wire:click="markDeceased({{ $f->family_id }})" wire:confirm="{{ str_replace(':name', $f->full_name, t('Mark :name as deceased?')) }}" class="px-2 py-1 rounded-md text-[10px] font-semibold cursor-pointer bg-[#fdeceb] text-[#c0392b]">{{ t('Mark Deceased') }}</button>
                                             @endunless
                                         </td>
                                     </tr>
                                 @empty
-                                    <x-grid.empty-row :colspan="5" message="Belum ada data keluarga." />
+                                    <x-grid.empty-row :colspan="5" :message="t('No family data yet.')" />
                                 @endforelse
                             </tbody>
                         </table>
@@ -1137,42 +1137,42 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 {{-- TAB: CAREER & CONTRACT --}}
                 <div class="{{ $formTab === 'career' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4">
                     @if (! $editingId)
-                        <div class="text-xs text-muted py-6 text-center">Simpan data Overview dahulu sebelum menambah kontrak.</div>
+                        <div class="text-xs text-muted py-6 text-center">{{ t('Save the Overview data first before adding a contract.') }}</div>
                     @else
                         <div class="flex items-center justify-between mb-2.5">
-                            <div class="text-xs font-bold text-navy uppercase tracking-wide">Riwayat Kontrak Kerja</div>
-                            <button type="button" wire:click="openContractModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-accent text-white">+ Kontrak Baru</button>
+                            <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Employment Contract History') }}</div>
+                            <button type="button" wire:click="openContractModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-accent text-white">+ {{ t('New Contract') }}</button>
                         </div>
                         <x-grid.table-shell>
                         <table class="w-full border-collapse text-[12px]">
                             <thead>
                                 <tr>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Tipe</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Mulai</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Selesai</th>
-                                    <th class="num px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Gaji</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Status</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Type') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Start') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('End') }}</th>
+                                    <th class="num px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Salary') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Status') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($emp?->contracts ?? [] as $c)
                                     <tr wire:key="ctr-{{ $c->contract_id }}" class="border-b border-[#f0f3f7]">
-                                        <td class="px-2 py-1.5 font-semibold">{{ $c->employment_type }}{{ $c->is_probation ? ' (Probation)' : '' }}</td>
+                                        <td class="px-2 py-1.5 font-semibold">{{ $c->employment_type }}{{ $c->is_probation ? ' ('.t('Probation').')' : '' }}</td>
                                         <td class="px-2 py-1.5">{{ $c->start_date->format('d M Y') }}</td>
                                         <td class="px-2 py-1.5">{{ $c->end_date?->format('d M Y') ?: '—' }}</td>
                                         <td class="num px-2 py-1.5">
                                             @if ($this->canSeeSalary($c))
                                                 Rp {{ number_format((float) $c->salary_amount, 0, ',', '.') }} / {{ $c->salary_type }}
                                             @else
-                                                <span class="text-muted italic">Disembunyikan</span>
+                                                <span class="text-muted italic">{{ t('Hidden') }}</span>
                                             @endif
                                         </td>
                                         <td class="px-2 py-1.5">
-                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $c->activate ? 'AKTIF' : 'RIWAYAT' }}</span>
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $c->activate ? t('ACTIVE') : t('HISTORY') }}</span>
                                         </td>
                                     </tr>
                                 @empty
-                                    <x-grid.empty-row :colspan="5" message="Belum ada kontrak." />
+                                    <x-grid.empty-row :colspan="5" :message="t('No contracts yet.')" />
                                 @endforelse
                             </tbody>
                         </table>
@@ -1184,16 +1184,16 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 {{-- TAB: REKENING BANK (tombol simpan sendiri, lihat saveBank) --}}
                 <div class="{{ $formTab === 'bank' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4 flex flex-col gap-3">
                     @if (! $editingId)
-                        <div class="text-xs text-muted py-6 text-center">Simpan data Overview dahulu sebelum mengisi rekening bank.</div>
+                        <div class="text-xs text-muted py-6 text-center">{{ t('Save the Overview data first before filling in the bank account.') }}</div>
                     @else
-                        <div class="text-xs font-bold text-navy uppercase tracking-wide">Rekening Gaji</div>
+                        <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Payroll Account') }}</div>
                         <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-3">
-                            <x-form.select label="Bank" name="bank_supplier_id" wire:model="bank_supplier_id" :options="$this->bankOptions()"
-                                :selected="$bank_supplier_id" placeholder="— Cash / Tunai —" />
-                            <x-form.input label="No. Rekening" name="bank_account_no" wire:model="bank_account_no" :case-toggle="false" />
-                            <x-form.input label="Atas Nama" name="bank_account_holder" wire:model="bank_account_holder" />
+                            <x-form.select :label="t('Bank')" name="bank_supplier_id" wire:model="bank_supplier_id" :options="$this->bankOptions()"
+                                :selected="$bank_supplier_id" :placeholder="t('— Cash —')" />
+                            <x-form.input :label="t('Account No.')" name="bank_account_no" wire:model="bank_account_no" :case-toggle="false" />
+                            <x-form.input :label="t('Account Holder')" name="bank_account_holder" wire:model="bank_account_holder" />
                         </div>
-                        <p class="text-[11px] text-muted">Daftar bank diambil dari Master Supplier kategori BANK — tambah bank baru di sana. Pilih "Cash / Tunai" bila pegawai dibayar tunai.</p>
+                        <p class="text-[11px] text-muted">{{ t('The bank list is taken from Master Supplier category BANK — add new banks there.') }} {{ t('Choose "Cash" if the employee is paid in cash.') }}</p>
                         <x-ui.action-bar variant="inline">
                             <x-ui.button preset="save" type="button" wire:click="saveBank" />
                         </x-ui.action-bar>
@@ -1202,20 +1202,20 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="{{ $formTab === 'performance' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4">
                     @if (! $editingId)
-                        <div class="text-xs text-muted py-6 text-center">Simpan data Overview dahulu sebelum mencatat kedisiplinan.</div>
+                        <div class="text-xs text-muted py-6 text-center">{{ t('Save the Overview data first before recording discipline.') }}</div>
                     @else
                         <div class="flex items-center justify-between mb-2.5">
-                            <div class="text-xs font-bold text-navy uppercase tracking-wide">Log Kedisiplinan</div>
-                            <button type="button" wire:click="openDisciplinaryModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[#fdeceb] text-[#c0392b]">⚠️ Tambah Catatan</button>
+                            <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Discipline Log') }}</div>
+                            <button type="button" wire:click="openDisciplinaryModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[#fdeceb] text-[#c0392b]">⚠️ {{ t('Add Note') }}</button>
                         </div>
                         <x-grid.table-shell>
                         <table class="w-full border-collapse text-[12px]">
                             <thead>
                                 <tr>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Tanggal</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Tipe</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Alasan</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Penerbit</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Date') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Type') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Reason') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">{{ t('Issuer') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1227,7 +1227,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <td class="px-2 py-1.5">{{ $d->issued_by }}</td>
                                     </tr>
                                 @empty
-                                    <x-grid.empty-row :colspan="4" message="Belum ada catatan — clean record." />
+                                    <x-grid.empty-row :colspan="4" :message="t('No notes yet — clean record.')" />
                                 @endforelse
                             </tbody>
                         </table>
@@ -1236,8 +1236,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 <div class="flex gap-2 justify-end mt-3.5">
-                    <button type="button" wire:click="showDirectory" data-dirty-guard class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan Overview &amp; Job Alignment</button>
+                    <button type="button" wire:click="showDirectory" data-dirty-guard class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                    <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save Overview & Job Alignment') }}</button>
                 </div>
             </form>
         </div>
@@ -1247,24 +1247,24 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     @if ($showEducationModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showEducationModal', false)">
             <div class="bg-white rounded-xl w-[480px] max-w-[92vw] shadow-2xl">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Tambah Riwayat Pendidikan</div>
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">{{ t('Add Education History') }}</div>
                 <form wire:submit="saveEducation" class="p-4 flex flex-col gap-3">
-                    <x-form.select label="Tipe *" wire:model="edu_education_type" :options="array_combine($educationTypes, $educationTypes)" :placeholder="false" />
-                    <x-form.input label="Nama Kegiatan *" name="edu_activity_name" wire:model="edu_activity_name" />
-                    <x-form.input label="Penyelenggara" wire:model="edu_organizer" />
+                    <x-form.select :label="t('Type *')" wire:model="edu_education_type" :options="array_combine($educationTypes, $educationTypes)" :placeholder="false" />
+                    <x-form.input :label="t('Activity Name *')" name="edu_activity_name" wire:model="edu_activity_name" />
+                    <x-form.input :label="t('Organizer')" wire:model="edu_organizer" />
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.date-picker label="Tanggal *" name="edu_activity_date" wire:model="edu_activity_date" />
+                            <x-form.date-picker :label="t('Date *')" name="edu_activity_date" wire:model="edu_activity_date" />
                         </div>
                         <div class="flex-1">
-                            <x-form.input label="Biaya (Rp)" type="number" step="1" min="0" wire:model="edu_cost" />
+                            <x-form.input :label="t('Cost (Rp)')" type="number" step="1" min="0" wire:model="edu_cost" />
                         </div>
                     </div>
-                    <x-form.select label="Dibiayai Oleh *" wire:model="edu_funded_by" :options="array_combine($fundedByOptions, $fundedByOptions)" :placeholder="false" />
-                    <x-form.checkbox label="Ikatan Dinas" wire:model="edu_is_bonding" />
+                    <x-form.select :label="t('Funded By *')" wire:model="edu_funded_by" :options="array_combine($fundedByOptions, $fundedByOptions)" :placeholder="false" />
+                    <x-form.checkbox :label="t('Service Bond')" wire:model="edu_is_bonding" />
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="$set('showEducationModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="$set('showEducationModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
                     </div>
                 </form>
             </div>
@@ -1275,21 +1275,21 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     @if ($showFamilyModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showFamilyModal', false)">
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Tambah Anggota Keluarga</div>
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">{{ t('Add Family Member') }}</div>
                 <form wire:submit="saveFamily" class="p-4 flex flex-col gap-3">
-                    <x-form.select label="Hubungan *" wire:model="fam_relation" :options="collect($familyRelations)->mapWithKeys(fn ($r) => [$r => $this->relationLabel($r)])" :placeholder="false" />
-                    <x-form.input label="Nama Lengkap *" name="fam_full_name" wire:model="fam_full_name" />
+                    <x-form.select :label="t('Relationship *')" wire:model="fam_relation" :options="collect($familyRelations)->mapWithKeys(fn ($r) => [$r => $this->relationLabel($r)])" :placeholder="false" />
+                    <x-form.input :label="t('Full Name *')" name="fam_full_name" wire:model="fam_full_name" />
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.date-picker label="Tanggal Lahir" wire:model="fam_birth_date" />
+                            <x-form.date-picker :label="t('Birth Date')" wire:model="fam_birth_date" />
                         </div>
                         <div class="flex-1">
-                            <x-form.input label="NIK" wire:model="fam_nik" />
+                            <x-form.input :label="t('NIK')" wire:model="fam_nik" />
                         </div>
                     </div>
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="$set('showFamilyModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="$set('showFamilyModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
                     </div>
                 </form>
             </div>
@@ -1307,27 +1307,27 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         </style>
         <div class="fixed inset-0 bg-[rgba(20,26,40,.6)] z-[100] flex items-center justify-center p-5">
             <div id="credential-print-card" class="bg-white rounded-xl w-[380px] max-w-[92vw] shadow-2xl overflow-hidden">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Kartu Login Karyawan Baru</div>
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">{{ t('New Employee Login Card') }}</div>
                 <div class="p-5 flex flex-col gap-3">
-                    <div class="text-center text-xs text-muted">TELASIH MAKMUR ERP — untuk diserahkan ke karyawan</div>
+                    <div class="text-center text-xs text-muted">TELASIH MAKMUR ERP — {{ t('to be handed to the employee') }}</div>
                     <div>
-                        <div class="text-[10px] text-muted uppercase font-semibold">Nama</div>
+                        <div class="text-[10px] text-muted uppercase font-semibold">{{ t('Name') }}</div>
                         <div class="text-sm font-bold text-navy">{{ $newLoginCredentials['name'] }} @if($employee_code)({{ $employee_code }})@endif</div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-muted uppercase font-semibold">Username</div>
+                        <div class="text-[10px] text-muted uppercase font-semibold">{{ t('Username') }}</div>
                         <div class="text-lg font-mono font-bold tracking-wide">{{ $newLoginCredentials['login'] }}</div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-muted uppercase font-semibold">Password Awal</div>
+                        <div class="text-[10px] text-muted uppercase font-semibold">{{ t('Initial Password') }}</div>
                         <div class="text-lg font-mono font-bold tracking-wide">{{ $newLoginCredentials['password'] }}</div>
                     </div>
                     <div class="text-[10px] text-muted border-t border-[#eef1f5] pt-2 print:hidden">
-                        Wajib ganti password saat login pertama. Password ini hanya tampil SEKALI — cetak atau catat sekarang sebelum ditutup.
+                        {{ t('The password must be changed at first login.') }} {{ t('This password is shown only ONCE — print or note it now before closing.') }}
                     </div>
                     <div class="flex gap-2 pt-1 print:hidden">
-                        <button type="button" onclick="window.print()" class="flex-1 px-3 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">🖨 Cetak</button>
-                        <button type="button" wire:click="closeCredentialModal" class="flex-1 px-3 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Tutup &amp; Selesai</button>
+                        <button type="button" onclick="window.print()" class="flex-1 px-3 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">🖨 {{ t('Print') }}</button>
+                        <button type="button" wire:click="closeCredentialModal" class="flex-1 px-3 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Close & Finish') }}</button>
                     </div>
                 </div>
             </div>
@@ -1338,33 +1338,33 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     @if ($showContractModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showContractModal', false)">
             <div class="bg-white rounded-xl w-[480px] max-w-[92vw] shadow-2xl">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Kontrak Baru <span class="font-normal opacity-80">(kontrak aktif lama otomatis ditutup)</span></div>
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">{{ t('New Contract') }} <span class="font-normal opacity-80">{{ t('(the old active contract is closed automatically)') }}</span></div>
                 <form wire:submit="saveContract" class="p-4 flex flex-col gap-3">
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.select label="Tipe *" wire:model="ctr_employment_type" :options="array_combine($employmentTypes, $employmentTypes)" :placeholder="false" />
+                            <x-form.select :label="t('Type *')" wire:model="ctr_employment_type" :options="array_combine($employmentTypes, $employmentTypes)" :placeholder="false" />
                         </div>
                         <div class="flex-1">
-                            <x-form.select label="Jenis Gaji *" wire:model="ctr_salary_type" :placeholder="false"
-                                :options="['PER_MONTH' => 'Per Bulan', 'PER_DAY' => 'Per Hari', 'PER_UNIT' => 'Per Unit']" />
+                            <x-form.select :label="t('Salary Type *')" wire:model="ctr_salary_type" :placeholder="false"
+                                :options="['PER_MONTH' => t('Per Month'), 'PER_DAY' => t('Per Day'), 'PER_UNIT' => t('Per Unit')]" />
                         </div>
                     </div>
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.date-picker label="Mulai *" name="ctr_start_date" wire:model="ctr_start_date" />
+                            <x-form.date-picker :label="t('Start *')" name="ctr_start_date" wire:model="ctr_start_date" />
                         </div>
                         <div class="flex-1">
-                            <x-form.date-picker label="Selesai (kosong = TETAP)" name="ctr_end_date" wire:model="ctr_end_date" />
+                            <x-form.date-picker :label="t('End (empty = PERMANENT)')" name="ctr_end_date" wire:model="ctr_end_date" />
                         </div>
                     </div>
-                    <x-form.input label="Nominal Gaji (Rp) *" type="number" step="1" min="0" wire:model="ctr_salary_amount" />
-                    <x-form.checkbox label="Masa Probation" wire:model.live="ctr_is_probation" />
+                    <x-form.input :label="t('Salary Amount (Rp) *')" type="number" step="1" min="0" wire:model="ctr_salary_amount" />
+                    <x-form.checkbox :label="t('Probation Period')" wire:model.live="ctr_is_probation" />
                     @if ($ctr_is_probation)
-                        <x-form.date-picker label="Probation Selesai *" name="ctr_probation_end_date" wire:model="ctr_probation_end_date" />
+                        <x-form.date-picker :label="t('Probation End *')" name="ctr_probation_end_date" wire:model="ctr_probation_end_date" />
                     @endif
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="$set('showContractModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="$set('showContractModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
                     </div>
                 </form>
             </div>
@@ -1375,14 +1375,14 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     @if ($showDisciplinaryModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showDisciplinaryModal', false)">
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Tambah Catatan Kedisiplinan</div>
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">{{ t('Add Discipline Note') }}</div>
                 <form wire:submit="saveDisciplinary" class="p-4 flex flex-col gap-3">
-                    <x-form.select label="Tipe *" wire:model="dis_type" :options="array_combine($disciplinaryTypes, $disciplinaryTypes)" :placeholder="false" />
-                    <x-form.date-picker label="Tanggal Kejadian *" wire:model="dis_incident_date" />
-                    <x-form.textarea label="Alasan *" name="dis_reason" wire:model="dis_reason" rows="2" />
+                    <x-form.select :label="t('Type *')" wire:model="dis_type" :options="array_combine($disciplinaryTypes, $disciplinaryTypes)" :placeholder="false" />
+                    <x-form.date-picker :label="t('Incident Date *')" wire:model="dis_incident_date" />
+                    <x-form.textarea :label="t('Reason *')" name="dis_reason" wire:model="dis_reason" rows="2" />
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="$set('showDisciplinaryModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="$set('showDisciplinaryModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
                     </div>
                 </form>
             </div>

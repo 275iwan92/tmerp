@@ -23,7 +23,7 @@ class RegisterBox extends DevlibComponent
 
     public function source(): string
     {
-        return 'sec_user (activate=0, menunggu persetujuan admin)';
+        return 'sec_user (activate=0, waiting for admin approval)';
     }
 
     public function render()

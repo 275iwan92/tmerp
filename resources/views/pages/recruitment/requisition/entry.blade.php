@@ -13,7 +13,7 @@ use Livewire\Component;
 // persis pur/pr/entry.blade.php (griduistandard.md §8: approver memutuskan di
 // dokumen asli, bukan layar ringkasan terpisah). Approval bespoke
 // RecruitmentApprovalService (bukan FlowEngineService, lihat class itu).
-new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Manpower Requisition — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $requisitionId;
 
@@ -66,7 +66,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
         $r = $this->requisition;
 
         if (trim($r->position_title) === '' || trim($r->qualification) === '' || trim($r->reason) === '') {
-            $this->addError('submit', 'Posisi, kualifikasi, dan alasan wajib diisi sebelum diajukan.');
+            $this->addError('submit', t('Position, qualification, and reason are required before submitting.'));
 
             return;
         }
@@ -95,7 +95,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
         }
 
         if (trim($this->approvalNote) === '') {
-            $this->addError('reject', 'Alasan penolakan wajib diisi.');
+            $this->addError('reject', t('Rejection reason is required.'));
 
             return;
         }
@@ -120,7 +120,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">👤 Permohonan Tenaga Kerja</b>
+        <b class="text-[15px]">👤 {{ t('Manpower Request') }}</b>
         <span class="text-xs text-white/75">{{ $this->requisition->requisition_no }}</span>
         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full
             {{ match ($this->requisition->status) {
@@ -130,33 +130,33 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
                 'REJECTED' => 'bg-[#fbeaea] text-[#a3241f]',
                 default => 'bg-[#eef1f5] text-[#4b5568]',
             } }}">{{ $this->requisition->status }}</span>
-        <x-back-button :fallback="route('hrm.recruitment.requisition.list')" title="Kembali" class="ml-auto" />
+        <x-back-button :fallback="route('hrm.recruitment.requisition.list')" title="Back" class="ml-auto" />
     </header>
 
     <div class="max-w-[900px] mx-auto my-5 px-4">
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Permohonan</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('Request Information') }}</h3>
             <div class="grid">
                 <x-form.select :disabled="$this->requisition->status !== 'DRAFT'" wire:change="updateHeader('id_track', $event.target.value)" class="disabled:bg-[#f8fafc]"
                     :selected="$this->requisition->id_track" :options="$this->tracks->pluck('name', 'id_track')->all()" :placeholder="false">
-                    <x-slot:label>Track <span class="text-[#a3241f]">*</span></x-slot:label>
+                    <x-slot:label>{{ t('Track') }} <span class="text-[#a3241f]">*</span></x-slot:label>
                 </x-form.select>
                 <x-form.select :disabled="$this->requisition->status !== 'DRAFT'" wire:change="updateHeader('department_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
                     :selected="$this->requisition->department_id" :options="$this->departments->pluck('department_name', 'department_id')->all()" :placeholder="false">
-                    <x-slot:label>Departemen <span class="text-[#a3241f]">*</span></x-slot:label>
+                    <x-slot:label>{{ t('Department') }} <span class="text-[#a3241f]">*</span></x-slot:label>
                 </x-form.select>
-                <x-form.input label="Posisi yang Dibutuhkan" value="{{ $this->requisition->position_title }}" :disabled="$this->requisition->status !== 'DRAFT'"
+                <x-form.input :label="t('Position Needed')" value="{{ $this->requisition->position_title }}" :disabled="$this->requisition->status !== 'DRAFT'"
                     wire:change="updateHeader('position_title', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.input label="Headcount" type="number" min="1" value="{{ $this->requisition->headcount }}" :disabled="$this->requisition->status !== 'DRAFT'"
+                <x-form.input :label="t('Headcount')" type="number" min="1" value="{{ $this->requisition->headcount }}" :disabled="$this->requisition->status !== 'DRAFT'"
                     wire:change="updateHeader('headcount', $event.target.value)" class="disabled:bg-[#f8fafc]" />
             </div>
             <div class="grid two mt-3">
                 <x-form.textarea rows="3" :disabled="$this->requisition->status !== 'DRAFT'" wire:change="updateHeader('qualification', $event.target.value)" class="disabled:bg-[#f8fafc]">
-                    <x-slot:label>Kualifikasi <span class="text-[#a3241f]">*</span></x-slot:label>
+                    <x-slot:label>{{ t('Qualification') }} <span class="text-[#a3241f]">*</span></x-slot:label>
                     {{ $this->requisition->qualification }}
                 </x-form.textarea>
                 <x-form.textarea rows="3" :disabled="$this->requisition->status !== 'DRAFT'" wire:change="updateHeader('reason', $event.target.value)" class="disabled:bg-[#f8fafc]">
-                    <x-slot:label>Alasan Permohonan <span class="text-[#a3241f]">*</span></x-slot:label>
+                    <x-slot:label>{{ t('Request Reason') }} <span class="text-[#a3241f]">*</span></x-slot:label>
                     {{ $this->requisition->reason }}
                 </x-form.textarea>
             </div>
@@ -168,7 +168,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
 
         @if ($this->requisition->approvals->isNotEmpty())
             <div class="border border-[#eef1f5] rounded-xl p-4 bg-white mb-4">
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-3">Progres Approval</p>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-3">{{ t('Approval Progress') }}</p>
                 <div class="flex items-center gap-2">
                     @foreach ($this->requisition->approvals as $a)
                         <div class="flex-1 text-center">
@@ -177,7 +177,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
                                 'REJECTED' => 'bg-[#a3241f]',
                                 default => 'bg-[#c8ccd6]',
                             } }}">{{ $a->decision === 'APPROVED' ? '✓' : ($a->decision === 'REJECTED' ? '✕' : $a->approval_seq) }}</div>
-                            <p class="text-[10px] text-muted mt-1">Seq {{ $a->approval_seq }}</p>
+                            <p class="text-[10px] text-muted mt-1">{{ t('Seq') }} {{ $a->approval_seq }}</p>
                             @if ($a->decided_at)
                                 <p class="text-[9.5px] text-muted">{{ $a->decided_at->translatedFormat('d M Y') }}</p>
                             @endif
@@ -192,23 +192,23 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
 
         @if ($this->requisition->status === 'DRAFT')
             <div class="flex justify-end gap-2 mb-8">
-                <button type="button" wire:click="delete" wire:confirm="Hapus permohonan draft ini?" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">Hapus</button>
-                <button type="button" wire:click="submit" wire:confirm="Ajukan permohonan ini untuk approval?" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Ajukan Approval</button>
+                <button type="button" wire:click="delete" wire:confirm="{{ t('Delete this draft request?') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ t('Delete') }}</button>
+                <button type="button" wire:click="submit" wire:confirm="{{ t('Submit this request for approval?') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Request Approval') }}</button>
             </div>
         @elseif ($this->pendingApproval)
             <div class="border-2 border-dashed border-[#d7dbe2] rounded-xl p-4 bg-white mb-8">
-                <p class="text-xs font-bold text-navy mb-2">Keputusan Approval — Seq {{ $this->pendingApproval->approval_seq }}</p>
+                <p class="text-xs font-bold text-navy mb-2">{{ t('Approval Decision') }} — {{ t('Seq') }} {{ $this->pendingApproval->approval_seq }}</p>
                 @if ($errors->has('reject'))
                     <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $errors->first('reject') }}</p>
                 @endif
                 <div class="mb-3">
-                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="Alasan penolakan (wajib utk Tolak)...">
-                        <x-slot:label>Catatan</x-slot:label>
+                    <x-form.textarea wire:model="approvalNote" rows="2" :placeholder="t('Rejection reason (required to Reject)...')">
+                        <x-slot:label>{{ t('Notes') }}</x-slot:label>
                     </x-form.textarea>
                 </div>
                 <div class="flex justify-end gap-2">
-                    <button type="button" wire:click="rejectDoc" wire:confirm="Tolak permohonan ini?" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ Tolak</button>
-                    <button type="button" wire:click="approveDoc" wire:confirm="Setujui permohonan ini?" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ Setujui</button>
+                    <button type="button" wire:click="rejectDoc" wire:confirm="{{ t('Reject this request?') }}" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ {{ t('Reject') }}</button>
+                    <button type="button" wire:click="approveDoc" wire:confirm="{{ t('Approve this request?') }}" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ {{ t('Approve') }}</button>
                 </div>
             </div>
         @endif

@@ -36,16 +36,16 @@
         :columns="[
             ['key' => 'no', 'label' => 'Delivery Note No. / Customer', 'type' => 'doc', 'party' => 'customer'],
             ['key' => 'promise', 'label' => 'Promised date', 'type' => 'date'],
-            ['key' => 'address', 'label' => 'Tujuan'],
+            ['key' => 'address', 'label' => 'Destination'],
             ['key' => 'arrived', 'label' => 'Arrived'],
             ['key' => 'result', 'label' => 'Result'],
             ['key' => 'state', 'label' => 'Promise', 'type' => 'badge', 'tones' => ProofOfDelivery::STATE_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'co', 'label' => 'CO No.'],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
+        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'co', 'label' => t('CO No.')],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Waiting', 'where' => ['state' => 'Waiting'], 'tone' => 'warn'], ['label' => 'Kept', 'where' => ['state' => 'Kept'], 'tone' => 'success'],
             ['label' => 'Missed', 'where' => ['state' => 'Missed'], 'tone' => 'danger'], ['label' => 'Retry', 'where' => ['state' => 'Retry'], 'tone' => 'info']]"
@@ -67,9 +67,9 @@
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('Delivery Note')</span><b>{{ $do->do_no }}</b></div>
-            <div class="dl-strip__kv"><span>Promised</span><b>{{ Locale::d($promise['date']) ?? '—' }}{{ $promise['time'] ? ' '.substr($promise['time'], 0, 5) : '' }}</b></div>
-            <div class="dl-strip__kv"><span>Customer receives</span><b>{{ $promise['date'] ? Promise::receivingText($hours) : '—' }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>Promise</span><b>{{ ProofOfDelivery::state($last) }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('Promised') }}</span><b>{{ Locale::d($promise['date']) ?? '—' }}{{ $promise['time'] ? ' '.substr($promise['time'], 0, 5) : '' }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('Customer receives') }}</span><b>{{ $promise['date'] ? Promise::receivingText($hours) : '—' }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>{{ t('Promise') }}</span><b>{{ ProofOfDelivery::state($last) }}</b></div>
         </x-slot:strip>
         @if ($done)
             <x-dl::alert tone="info" message="Delivery finished. The result is locked as the KPI record." />
@@ -108,7 +108,7 @@
             <x-dl::table :columns="['no' => '#', 'arrived' => 'Arrived', 'result' => 'Result', 'by' => 'Received by', 'kept' => 'Promise', 'cause' => 'Cause', 'photo' => 'Photo', 'rec' => 'Recorded by']"
                 :rows="$pods->map(fn ($p) => ['no' => $p->attempt_no, 'arrived' => Locale::dt($p->arrived_at) ?? '—', 'result' => Promise::RESULTS[$p->result] ?? $p->result,
                     'by' => $p->received_by ?? '—', 'kept' => $p->promise_kept ? 'Kept' : 'Missed', 'cause' => $p->miss_cause ? Promise::CAUSES[$p->miss_cause][0] : '—',
-                    'photo' => $p->photo_path ? 'Yes' : '—', 'rec' => $p->created_by])->all()"
+                    'photo' => $p->photo_path ? t('Yes') : '—', 'rec' => $p->created_by])->all()"
                 empty="No arrival recorded yet." source="{{ Src::of('tm2sdi.do_delivery_pod') }}" />
         </x-slot:detail>
     </x-dl::form>

@@ -82,7 +82,7 @@ final class CrmComplaints
 
             return;
         }
-        abort_unless($c->status() === 'DRAFT', 422, 'This complaint is closed and cannot be changed.');
+        abort_unless($c->status() === 'DRAFT', 422, t('This complaint is closed and cannot be changed.'));
         $contacts = self::contactOptions($c);
         $contactId = isset($contacts[(int) ($in['contact_id'] ?? 0)]) ? (int) $in['contact_id'] : null;
         $orders = self::orderOptions($c);
@@ -138,19 +138,19 @@ final class CrmComplaints
         $c->load('items');
         $errors = [];
         if (trim((string) $c->description) === '') {
-            $errors[] = 'Describe what the customer complains about.';
+            $errors[] = t('Describe what the customer complains about.');
         }
         if ($c->items->isEmpty()) {
-            $errors[] = 'Add at least one product.';
+            $errors[] = t('Add at least one product.');
         }
         if ($c->items->contains(fn (CrmComplaintItem $i) => (float) $i->qty_complaint <= 0)) {
-            $errors[] = 'Every product needs the quantity complained about.';
+            $errors[] = t('Every product needs the quantity complained about.');
         }
         if ($c->complaint_type === 'RETURN' && $c->items->sum(fn (CrmComplaintItem $i) => (float) $i->qty_return) <= 0) {
-            $errors[] = 'A Sales Return needs the quantity that came back.';
+            $errors[] = t('A Sales Return needs the quantity that came back.');
         }
         if ($c->items->contains(fn (CrmComplaintItem $i) => (float) $i->qty_return > (float) $i->qty_complaint)) {
-            $errors[] = 'Returned quantity cannot be more than the quantity complained about.';
+            $errors[] = t('Returned quantity cannot be more than the quantity complained about.');
         }
 
         return $errors;
@@ -162,7 +162,7 @@ final class CrmComplaints
         $login = Auth::user()->login;
         if ($action === 'confirm') {
             if ($c->status() !== 'DRAFT') {
-                return 'Only a Draft can be confirmed.';
+                return t('Only a Draft can be confirmed.');
             }
             if ($errors = self::confirmErrors($c)) {
                 return implode(' ', array_map(fn (string $e) => t($e), $errors));
@@ -173,21 +173,21 @@ final class CrmComplaints
             return null;
         }
         if ($c->status() !== 'CONFIRMED') {
-            return 'Only a Confirmed complaint can be cancelled or closed.';
+            return t('Only a Confirmed complaint can be cancelled or closed.');
         }
         if ($action === 'close') {
             if ($c->qaStage() === 'WAITING') {
-                return 'QA has not answered this complaint yet.';
+                return t('QA has not answered this complaint yet.');
             }
             if (! $c->resolution) {
-                return 'Choose the resolution given to the customer before closing.';
+                return t('Choose the resolution given to the customer before closing.');
             }
             $c->forceFill(['stat_close' => true, 'closed_at' => now(), 'closed_by' => $login, 'updated_by' => $login])->save();
 
             return null;
         }
         if (trim($reason) === '') {
-            return 'Fill in the reason for cancelling.';
+            return t('Fill in the reason for cancelling.');
         }
         $c->forceFill(['stat_cancel' => true, 'cancel_reason' => mb_substr(trim($reason), 0, 255), 'updated_by' => $login])->save();
 
@@ -197,7 +197,7 @@ final class CrmComplaints
     // Delete = hapus permanen, hanya Draft (rulebook C.6); baris ikut terhapus (FK cascade).
     public static function delete(CrmComplaint $c): void
     {
-        abort_unless($c->status() === 'DRAFT', 422, 'Only a Draft can be deleted.');
+        abort_unless($c->status() === 'DRAFT', 422, t('Only a Draft can be deleted.'));
         $c->delete();
     }
 
@@ -244,7 +244,7 @@ final class CrmComplaints
         $login = Auth::user()->login;
         $r = $c->review ?? new QcComplaintReview(['complaint_id' => $c->id_complaint, 'complaint_no' => $c->complaint_no, 'created_by' => $login]);
         if ($r->stat_confirm) {
-            return 'This answer is already Confirmed and cannot be changed.';
+            return t('This answer is already Confirmed and cannot be changed.');
         }
         $r->fill([
             'verdict' => isset(QcComplaintReview::VERDICTS[$in['verdict'] ?? '']) ? $in['verdict'] : null,
@@ -256,12 +256,12 @@ final class CrmComplaints
             if (! $r->verdict || ! $r->root_cause) {
                 $r->save();
 
-                return 'Fill in the verdict and the root cause before Confirm.';
+                return t('Fill in the verdict and the root cause before Confirm.');
             }
             if ($c->items->sum(fn (CrmComplaintItem $i) => (float) $i->qty_return) > 0 && (! $r->disposition || $r->disposition === 'NONE')) {
                 $r->save();
 
-                return 'Goods came back: choose what happens to them (Rework, Scrap or Back to stock).';
+                return t('Goods came back: choose what happens to them (Rework, Scrap or Back to stock).');
             }
             $r->fill(['stat_confirm' => true, 'reviewed_at' => now(), 'reviewed_by' => $login]);
         }

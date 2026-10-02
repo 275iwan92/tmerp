@@ -226,7 +226,7 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
             'life' => 'required|integer|min:1|max:600',
             'method' => 'required|in:SL,DDB',
             'credit_account_id' => 'required|exists:tm2acc.fin_account,account_id',
-        ], [], ['asset_name' => 'Asset name', 'cost' => 'Acquisition cost', 'life' => 'Useful life (months)']);
+        ], [], ['asset_name' => t('Asset name'), 'cost' => t('Acquisition cost'), 'life' => t('Useful life (months)')]);
 
         if ($this->attempt(function () use ($capitalize, $svc) {
             $data = [
@@ -252,7 +252,7 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
             if ($capitalize) {
                 $svc->capitalize($asset, $this->login());
             }
-        }, $capitalize ? 'Aset dikapitalisasi: Dr akun aset / Cr lawan, jadwal penyusutan aktif.' : 'Draft aset disimpan.')) {
+        }, $capitalize ? t('Asset capitalized: Dr asset account / Cr offset account, depreciation schedule active.') : t('Asset draft saved.'))) {
             $this->closeModal();
             unset($this->assets, $this->stats, $this->accumulated, $this->preview);
         }
@@ -260,7 +260,7 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
 
     public function capitalize(int $id, AssetService $svc): void
     {
-        $this->attempt(fn () => $svc->capitalize(FinAsset::findOrFail($id), $this->login()), 'Aset dikapitalisasi & mulai disusutkan.');
+        $this->attempt(fn () => $svc->capitalize(FinAsset::findOrFail($id), $this->login()), t('Asset capitalized & depreciation started.'));
         unset($this->assets, $this->stats, $this->preview, $this->viewing);
     }
 
@@ -270,7 +270,7 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
         if ($this->attempt(function () use ($svc, &$id) {
             $id = $svc->run((int) substr($this->run_period, 0, 4), (int) substr($this->run_period, 5, 2), $this->login(), self::TYPES);
         })) {
-            session()->flash($id ? 'flash' : 'error', $id ? 'Jurnal penyusutan '.($this->periodOptions[$this->run_period] ?? '').' diposting.' : 'Tidak ada aset yang perlu disusutkan di periode ini.');
+            session()->flash($id ? 'flash' : 'error', $id ? str_replace(':period', $this->periodOptions[$this->run_period] ?? '', t('Depreciation journal :period posted.')) : t('No assets need depreciation in this period.'));
             $this->closeModal();
             unset($this->assets, $this->stats, $this->accumulated, $this->preview, $this->schedule);
         }
@@ -288,7 +288,7 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
     public function dispose(AssetService $svc): void
     {
         $this->validate(['disp_date' => 'required|date', 'disp_amount' => 'required|numeric|min:0', 'disp_bank' => 'required|exists:tm2acc.fin_account,account_id']);
-        if ($this->attempt(fn () => $svc->dispose(FinAsset::findOrFail($this->viewId), $this->disp_date, (float) $this->disp_amount, (int) $this->disp_bank, $this->login()), 'Aset dilepas; laba/rugi pelepasan masuk ke akun lain-lain.')) {
+        if ($this->attempt(fn () => $svc->dispose(FinAsset::findOrFail($this->viewId), $this->disp_date, (float) $this->disp_amount, (int) $this->disp_bank, $this->login()), t('Asset disposed; gain/loss on disposal posted to other income/expense account.'))) {
             $this->closeModal();
             unset($this->assets, $this->stats, $this->accumulated);
         }
@@ -313,133 +313,133 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
 };
 ?>
 
-<x-ledger.page title="Fixed Assets" subtitle="Capitalization, asset register, depreciation schedules, and lifecycle activities.">
+<x-ledger.page :title="t('Fixed Assets')" :subtitle="t('Capitalization, asset register, depreciation schedules, and lifecycle activities.')">
     <x-slot:actions>
         <select class="lg-period" wire:model.live="run_period" x-data x-effect="$el.value = @js($run_period)">
             @foreach ($this->periodOptions as $k => $label)<option value="{{ $k }}">▣ {{ $label }}</option>@endforeach
         </select>
-        <button type="button" class="lg-btn light" wire:click="export">⇩ Export</button>
-        <button type="button" class="lg-btn light" wire:click="$set('modal', 'run')">▶ Run Depreciation</button>
-        <button type="button" class="lg-btn primary" wire:click="openNew">＋ Add Asset</button>
+        <button type="button" class="lg-btn light" wire:click="export">⇩ {{ t('Export') }}</button>
+        <button type="button" class="lg-btn light" wire:click="$set('modal', 'run')">▶ {{ t('Run Depreciation') }}</button>
+        <button type="button" class="lg-btn primary" wire:click="openNew">＋ {{ t('Add Asset') }}</button>
     </x-slot:actions>
 
     <div class="lg-cards">
-        <x-ledger.metric label="Acquisition Cost" icon="▰" :value="Fmt::short($this->stats['cost'])" :sub="$this->stats['count'].' assets in register'" />
-        <x-ledger.metric label="Accum. Depreciation" icon="◔" :value="Fmt::short($this->stats['accum'])" :sub="'As at '.Fmt::date(now())" />
-        <x-ledger.metric label="Net Book Value" icon="◇" :value="Fmt::short($this->stats['nbv'])" :sub="'Monthly charge '.Fmt::short($this->stats['monthly'])" />
-        <x-ledger.metric label="Due for Review" icon="!" :value="$this->stats['review']" :pill="$this->stats['review'] ? 'Action needed' : 'All reviewed'" :tone="$this->stats['review'] ? 'warn' : 'good'" />
+        <x-ledger.metric :label="t('Acquisition Cost')" icon="▰" :value="Fmt::short($this->stats['cost'])" :sub="str_replace(':n', $this->stats['count'], t(':n assets in register'))" />
+        <x-ledger.metric :label="t('Accum. Depreciation')" icon="◔" :value="Fmt::short($this->stats['accum'])" :sub="str_replace(':date', Fmt::date(now()), t('As at :date'))" />
+        <x-ledger.metric :label="t('Net Book Value')" icon="◇" :value="Fmt::short($this->stats['nbv'])" :sub="str_replace(':amount', Fmt::short($this->stats['monthly']), t('Monthly charge :amount'))" />
+        <x-ledger.metric :label="t('Due for Review')" icon="!" :value="$this->stats['review']" :pill="$this->stats['review'] ? t('Action needed') : t('All reviewed')" :tone="$this->stats['review'] ? 'warn' : 'good'" />
     </div>
 
-    <x-ledger.panel class="lg-stack" title="Asset / Amortization Accounting Flow" subtitle="Controlled conversion of expenditure into periodic expense.">
+    <x-ledger.panel class="lg-stack" :title="t('Asset / Amortization Accounting Flow')" :subtitle="t('Controlled conversion of expenditure into periodic expense.')">
         <x-ledger.flow :nodes="[
-            ['Identify Item', 'Invoice or contract qualifies as asset, prepaid, or immediate expense.'],
-            ['Set Policy', 'Cost center, useful life, method, residual value, start date, tax group.'],
-            ['Capitalize', 'Dr asset; Cr AP / Bank / GR-IR, with source-document link.', $this->assets->where('status', 'DRAFT')->count() ?: null],
-            ['Run Schedule', 'Calculate monthly depreciation for open periods.', $this->stats['pending'] ? $this->stats['pending'].' due' : null],
-            ['Post Journal', 'Dr depreciation expense; Cr accumulated depreciation.'],
+            [t('Identify Item'), t('Invoice or contract qualifies as asset, prepaid, or immediate expense.')],
+            [t('Set Policy'), t('Cost center, useful life, method, residual value, start date, tax group.')],
+            [t('Capitalize'), t('Dr asset; Cr AP / Bank / GR-IR, with source-document link.'), $this->assets->where('status', 'DRAFT')->count() ?: null],
+            [t('Run Schedule'), t('Calculate monthly depreciation for open periods.'), $this->stats['pending'] ? str_replace(':n', $this->stats['pending'], t(':n due')) : null],
+            [t('Post Journal'), t('Dr depreciation expense; Cr accumulated depreciation.')],
         ]" />
     </x-ledger.panel>
 
-    <x-ledger.panel title="Asset Register" subtitle="Scheduled entries are included in period-close controls.">
+    <x-ledger.panel :title="t('Asset Register')" :subtitle="t('Scheduled entries are included in period-close controls.')">
         <div class="lg-toolbar">
-            <input class="lg-search" wire:model.live.debounce.300ms="search" placeholder="Search asset name, code, or location...">
+            <input class="lg-search" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search asset name, code, or location...') }}">
             <select class="lg-select" wire:model.live="categoryFilter" x-data x-effect="$el.value = @js($categoryFilter)">
-                <option value="">All categories</option>
+                <option value="">{{ t('All categories') }}</option>
                 @foreach ($this->categories as $c)<option value="{{ $c->category_id }}">{{ $c->category_name }}</option>@endforeach
             </select>
         </div>
         <div class="lg-tablewrap">
             <table class="lg-min">
-                <thead><tr><th>Asset</th><th>Category</th><th>Acquisition Date</th><th class="r">Acquisition Cost</th><th class="r">Accum. Depr.</th><th class="r">Net Book Value</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>{{ t('Asset') }}</th><th>{{ t('Category') }}</th><th>{{ t('Acquisition Date') }}</th><th class="r">{{ t('Acquisition Cost') }}</th><th class="r">{{ t('Accum. Depr.') }}</th><th class="r">{{ t('Net Book Value') }}</th><th>{{ t('Status') }}</th><th></th></tr></thead>
                 <tbody>
                     @forelse ($this->assets as $a)
                         <tr wire:key="fa-{{ $a->asset_id }}" wire:dblclick="openView({{ $a->asset_id }})" style="cursor:pointer">
                             <td><span class="lg-name">{{ $a->asset_name }}</span><span class="lg-code">{{ $a->asset_code }} · {{ $a->location }}</span></td>
-                            <td>{{ $a->category?->category_name }}<span class="lg-code">{{ $a->method === 'SL' ? 'Garis lurus' : 'Saldo menurun' }} · {{ $a->useful_life_months }} bln</span></td>
+                            <td>{{ $a->category?->category_name }}<span class="lg-code">{{ $a->method === 'SL' ? t('Straight line') : t('Declining balance') }} · {{ str_replace(':n', $a->useful_life_months, t(':n mo')) }}</span></td>
                             <td>{{ Fmt::date($a->acquisition_date) }}</td>
                             <td class="r lg-money">{{ Fmt::rp($a->acquisition_cost) }}</td>
                             <td class="r lg-money">{{ Fmt::rp($this->accumulated[$a->asset_id] ?? 0, true) }}</td>
                             <td class="r lg-money">{{ Fmt::rp((float) $a->acquisition_cost - (float) ($this->accumulated[$a->asset_id] ?? 0)) }}</td>
-                            <td><x-ledger.tag :tone="$this->statusTone($a->status)">{{ ucwords(strtolower(str_replace('_', ' ', $a->status))) }}</x-ledger.tag></td>
+                            <td><x-ledger.tag :tone="$this->statusTone($a->status)">{{ t(ucwords(strtolower(str_replace('_', ' ', $a->status)))) }}</x-ledger.tag></td>
                             <td class="r">
                                 <div class="lg-rowmenu" x-data="{ o: false }" @click.outside="o = false">
                                     <button type="button" class="lg-dots" @click="o = !o">⋮</button>
                                     <div class="m" x-show="o" x-cloak>
-                                        <button type="button" wire:click="openView({{ $a->asset_id }})">Open schedule</button>
+                                        <button type="button" wire:click="openView({{ $a->asset_id }})">{{ t('Open schedule') }}</button>
                                         @if ($a->status === 'DRAFT')
-                                            <button type="button" wire:click="edit({{ $a->asset_id }})">Edit</button>
-                                            <button type="button" wire:click="capitalize({{ $a->asset_id }})">Capitalize</button>
+                                            <button type="button" wire:click="edit({{ $a->asset_id }})">{{ t('Edit') }}</button>
+                                            <button type="button" wire:click="capitalize({{ $a->asset_id }})">{{ t('Capitalize') }}</button>
                                         @endif
                                         @if (in_array($a->status, ['ACTIVE', 'FULLY_DEPRECIATED'], true))
-                                            <button type="button" wire:click="openDispose({{ $a->asset_id }})">Dispose</button>
+                                            <button type="button" wire:click="openDispose({{ $a->asset_id }})">{{ t('Dispose') }}</button>
                                         @endif
                                     </div>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="lg-empty">No assets registered.</td></tr>
+                        <tr><td colspan="8" class="lg-empty">{{ t('No assets registered.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="lg-foot"><span>{{ $this->assets->count() }} assets</span><span>Double-click a row for the depreciation schedule</span></div>
+        <div class="lg-foot"><span>{{ str_replace(':n', $this->assets->count(), t(':n assets')) }}</span><span>{{ t('Double-click a row for the depreciation schedule') }}</span></div>
     </x-ledger.panel>
 
     @if ($modal === 'form')
-        <x-ledger.modal :title="$editingId ? 'Edit Asset' : 'Add Fixed Asset'" size="xl">
+        <x-ledger.modal :title="$editingId ? t('Edit Asset') : t('Add Fixed Asset')" size="xl">
             <div class="lg-mb">
                 @if ($errorMessage)<div class="lg-alert err lg-field full">{{ $errorMessage }}</div>@endif
-                <x-ledger.field label="Asset name" name="asset_name" full><input wire:model="asset_name" placeholder="e.g. Mesin Cetak Offset Komori 4 warna"></x-ledger.field>
-                <x-ledger.field label="Category" name="category_id">
+                <x-ledger.field :label="t('Asset name')" name="asset_name" full><input wire:model="asset_name" placeholder="{{ t('e.g. Komori 4-color Offset Printing Machine') }}"></x-ledger.field>
+                <x-ledger.field :label="t('Category')" name="category_id">
                     <select wire:model.live="category_id" x-data x-effect="$el.value = @js($category_id)">
                         @foreach ($this->categories as $c)<option value="{{ $c->category_id }}">{{ $c->category_name }} ({{ $c->tax_group }})</option>@endforeach
                     </select>
                 </x-ledger.field>
-                <x-ledger.field label="Cost center" name="cc_id">
+                <x-ledger.field :label="t('Cost center')" name="cc_id">
                     <select wire:model="cc_id" x-data x-effect="$el.value = @js($cc_id)"><option value="">—</option>@foreach ($this->ccOptions as $id => $label)<option value="{{ $id }}">{{ $label }}</option>@endforeach</select>
                 </x-ledger.field>
-                <x-ledger.field label="Acquisition date" name="acq_date"><input type="date" wire:model="acq_date"></x-ledger.field>
-                <x-ledger.field label="Depreciation start" name="start_date" hint="Umumnya awal bulan perolehan."><input type="date" wire:model="start_date"></x-ledger.field>
-                <x-ledger.field label="Acquisition cost (IDR)" name="cost"><input type="number" min="0" step="0.01" wire:model.live.debounce.400ms="cost"></x-ledger.field>
-                <x-ledger.field label="Residual value (IDR)" name="residual"><input type="number" min="0" step="0.01" wire:model="residual"></x-ledger.field>
-                <x-ledger.field label="Useful life (months)" name="life"><input type="number" min="1" wire:model.live="life"></x-ledger.field>
-                <x-ledger.field label="Method" name="method" :hint="$cost && $life ? 'Beban bulan pertama ± '.Fmt::rp(($method === 'SL' ? ((float) $cost - (float) $residual) / max(1, (int) $life) : (float) $cost * (2 / (max(12, (int) $life) / 12)) / 12)) : null">
-                    <select wire:model.live="method" x-data x-effect="$el.value = @js($method)"><option value="SL">Garis lurus (straight line)</option><option value="DDB">Saldo menurun ganda</option></select>
+                <x-ledger.field :label="t('Acquisition date')" name="acq_date"><input type="date" wire:model="acq_date"></x-ledger.field>
+                <x-ledger.field :label="t('Depreciation start')" name="start_date" :hint="t('Usually the first day of the acquisition month.')"><input type="date" wire:model="start_date"></x-ledger.field>
+                <x-ledger.field :label="t('Acquisition cost (IDR)')" name="cost"><input type="number" min="0" step="0.01" wire:model.live.debounce.400ms="cost"></x-ledger.field>
+                <x-ledger.field :label="t('Residual value (IDR)')" name="residual"><input type="number" min="0" step="0.01" wire:model="residual"></x-ledger.field>
+                <x-ledger.field :label="t('Useful life (months)')" name="life"><input type="number" min="1" wire:model.live="life"></x-ledger.field>
+                <x-ledger.field :label="t('Method')" name="method" :hint="$cost && $life ? str_replace(':amount', Fmt::rp(($method === 'SL' ? ((float) $cost - (float) $residual) / max(1, (int) $life) : (float) $cost * (2 / (max(12, (int) $life) / 12)) / 12)), t('First month expense ± :amount')) : null">
+                    <select wire:model.live="method" x-data x-effect="$el.value = @js($method)"><option value="SL">{{ t('Straight line method') }}</option><option value="DDB">{{ t('Double declining balance') }}</option></select>
                 </x-ledger.field>
-                <x-ledger.field label="Location" name="location"><input wire:model="location" placeholder="e.g. Pabrik — Ruang Cetak"></x-ledger.field>
-                <x-ledger.field label="Source document" name="source_ref"><input wire:model="source_ref" placeholder="e.g. BILL-AP-00012 / kontrak"></x-ledger.field>
-                <x-ledger.field label="Capitalization credit account" name="credit_account_id" full hint="Lawan jurnal kapitalisasi: Hutang, Bank, atau GR/IR Clearing bila barang sudah diterima.">
+                <x-ledger.field :label="t('Location')" name="location"><input wire:model="location" placeholder="{{ t('e.g. Factory — Printing Room') }}"></x-ledger.field>
+                <x-ledger.field :label="t('Source document')" name="source_ref"><input wire:model="source_ref" placeholder="{{ t('e.g. BILL-AP-00012 / contract') }}"></x-ledger.field>
+                <x-ledger.field :label="t('Capitalization credit account')" name="credit_account_id" full :hint="t('Capitalization offset: Payable, Bank, or GR/IR Clearing if the goods have been received.')">
                     <select wire:model="credit_account_id" x-data x-effect="$el.value = @js($credit_account_id)">@foreach ($this->creditOptions as $id => $label)<option value="{{ $id }}">{{ $label }}</option>@endforeach</select>
                 </x-ledger.field>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
-                <button type="button" class="lg-btn light" wire:click="save(false)">{{ \App\Support\Localization\Translator::t('shell_btn_save', 'Simpan') }}</button>
-                <button type="button" class="lg-btn primary" wire:click="save(true)">Save & Capitalize</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
+                <button type="button" class="lg-btn light" wire:click="save(false)">{{ t('Save') }}</button>
+                <button type="button" class="lg-btn primary" wire:click="save(true)">{{ t('Save & Capitalize') }}</button>
             </x-slot:footer>
         </x-ledger.modal>
     @endif
 
     @if ($modal === 'run')
-        <x-ledger.modal title="Depreciation Run — {{ $this->periodOptions[$run_period] ?? $run_period }}" size="xl">
+        <x-ledger.modal :title="t('Depreciation Run').' — '.($this->periodOptions[$run_period] ?? $run_period)" size="xl">
             <div class="lg-tablewrap" style="padding:16px 20px">
                 @if ($errorMessage)<div class="lg-alert err">{{ $errorMessage }}</div>@endif
                 <table>
-                    <thead><tr><th>Asset</th><th>Category</th><th class="r">Monthly charge</th><th>Expense account</th></tr></thead>
+                    <thead><tr><th>{{ t('Asset') }}</th><th>{{ t('Category') }}</th><th class="r">{{ t('Monthly charge') }}</th><th>{{ t('Expense account') }}</th></tr></thead>
                     <tbody>
                         @forelse ($this->preview as $p)
                             <tr><td>{{ $p->asset->asset_code }} · {{ $p->asset->asset_name }}</td><td>{{ $p->asset->category?->category_name }}</td><td class="r lg-money">{{ Fmt::rp($p->amount) }}</td><td>{{ \App\Models\Acc\FinAccount::find($p->asset->category->expense_account_id)?->account_code }}</td></tr>
                         @empty
-                            <tr><td colspan="4" class="lg-empty">Semua aset sudah disusutkan untuk periode ini.</td></tr>
+                            <tr><td colspan="4" class="lg-empty">{{ t('All assets have been depreciated for this period.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
-                <div class="lg-foot"><b>{{ $this->preview->count() }} assets</b><b class="lg-money">{{ Fmt::rp($this->preview->sum('amount')) }}</b></div>
+                <div class="lg-foot"><b>{{ str_replace(':n', $this->preview->count(), t(':n assets')) }}</b><b class="lg-money">{{ Fmt::rp($this->preview->sum('amount')) }}</b></div>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
-                <button type="button" class="lg-btn primary" wire:click="runDepreciation" @disabled($this->preview->isEmpty())>Post Depreciation Journal</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
+                <button type="button" class="lg-btn primary" wire:click="runDepreciation" @disabled($this->preview->isEmpty())>{{ t('Post Depreciation Journal') }}</button>
             </x-slot:footer>
         </x-ledger.modal>
     @endif
@@ -448,45 +448,45 @@ new #[Title('Fixed Assets — TELASIH MAKMUR ERP')] class extends Component
         @foreach ([$this->viewing] as $a)
             <x-ledger.modal :title="$a->asset_code.' · '.$a->asset_name" size="xl">
                 <dl class="lg-kv" style="padding-top:16px">
-                    <dt>Category</dt><dd>{{ $a->category?->category_name }} · tax group {{ $a->category?->tax_group }}</dd>
-                    <dt>Policy</dt><dd>{{ $a->method === 'SL' ? 'Garis lurus' : 'Saldo menurun ganda' }} · {{ $a->useful_life_months }} bulan · residu {{ Fmt::rp($a->residual_value) }}</dd>
-                    <dt>Dates</dt><dd>Perolehan {{ Fmt::date($a->acquisition_date) }} · mulai susut {{ Fmt::date($a->depr_start_date) }}</dd>
-                    <dt>Values</dt><dd>Cost {{ Fmt::rp($a->acquisition_cost) }} · akumulasi {{ Fmt::rp($this->accumulated[$a->asset_id] ?? 0) }} · NBV {{ Fmt::rp((float) $a->acquisition_cost - (float) ($this->accumulated[$a->asset_id] ?? 0)) }}</dd>
-                    <dt>Status</dt><dd><x-ledger.tag :tone="$this->statusTone($a->status)">{{ $a->status }}</x-ledger.tag> {{ $a->location }}</dd>
+                    <dt>{{ t('Category') }}</dt><dd>{{ $a->category?->category_name }} · {{ str_replace(':group', $a->category?->tax_group, t('tax group :group')) }}</dd>
+                    <dt>{{ t('Policy') }}</dt><dd>{{ $a->method === 'SL' ? t('Straight line') : t('Double declining balance') }} · {{ str_replace(':n', $a->useful_life_months, t(':n months')) }} · {{ str_replace(':amount', Fmt::rp($a->residual_value), t('residual :amount')) }}</dd>
+                    <dt>{{ t('Dates') }}</dt><dd>{{ str_replace([':date', ':start'], [Fmt::date($a->acquisition_date), Fmt::date($a->depr_start_date)], t('Acquired :date · depreciation starts :start')) }}</dd>
+                    <dt>{{ t('Values') }}</dt><dd>{{ str_replace([':cost', ':accum', ':nbv'], [Fmt::rp($a->acquisition_cost), Fmt::rp($this->accumulated[$a->asset_id] ?? 0), Fmt::rp((float) $a->acquisition_cost - (float) ($this->accumulated[$a->asset_id] ?? 0))], t('Cost :cost · accumulated :accum · NBV :nbv')) }}</dd>
+                    <dt>{{ t('Status') }}</dt><dd><x-ledger.tag :tone="$this->statusTone($a->status)">{{ $a->status }}</x-ledger.tag> {{ $a->location }}</dd>
                 </dl>
                 <div class="lg-tablewrap" style="padding:0 20px 14px; max-height:340px">
                     <table>
-                        <thead><tr><th>Month</th><th class="r">Charge</th><th class="r">Accumulated</th><th class="r">Book value</th><th>Status</th></tr></thead>
+                        <thead><tr><th>{{ t('Month') }}</th><th class="r">{{ t('Charge') }}</th><th class="r">{{ t('Accumulated') }}</th><th class="r">{{ t('Book value') }}</th><th>{{ t('Status') }}</th></tr></thead>
                         <tbody>
                             @foreach ($this->schedule as $row)
-                                <tr><td>{{ $row['month'] }}</td><td class="r lg-money">{{ Fmt::rp($row['amount']) }}</td><td class="r lg-money">{{ Fmt::rp($row['accumulated']) }}</td><td class="r lg-money">{{ Fmt::rp($row['nbv']) }}</td><td><x-ledger.tag :tone="$row['status'] === 'POSTED' ? 'good' : 'mute'">{{ $row['status'] === 'POSTED' ? 'Posted' : 'Planned' }}</x-ledger.tag></td></tr>
+                                <tr><td>{{ $row['month'] }}</td><td class="r lg-money">{{ Fmt::rp($row['amount']) }}</td><td class="r lg-money">{{ Fmt::rp($row['accumulated']) }}</td><td class="r lg-money">{{ Fmt::rp($row['nbv']) }}</td><td><x-ledger.tag :tone="$row['status'] === 'POSTED' ? 'good' : 'mute'">{{ $row['status'] === 'POSTED' ? t('Posted') : t('Planned') }}</x-ledger.tag></td></tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
                 <x-slot:footer>
-                    @if ($a->status === 'DRAFT')<button type="button" class="lg-btn primary" wire:click="capitalize({{ $a->asset_id }})">Capitalize</button>@endif
-                    @if (in_array($a->status, ['ACTIVE', 'FULLY_DEPRECIATED'], true))<button type="button" class="lg-btn light" wire:click="openDispose({{ $a->asset_id }})">Dispose</button>@endif
-                    <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shell_tab_close_title', 'Tutup') }}</button>
+                    @if ($a->status === 'DRAFT')<button type="button" class="lg-btn primary" wire:click="capitalize({{ $a->asset_id }})">{{ t('Capitalize') }}</button>@endif
+                    @if (in_array($a->status, ['ACTIVE', 'FULLY_DEPRECIATED'], true))<button type="button" class="lg-btn light" wire:click="openDispose({{ $a->asset_id }})">{{ t('Dispose') }}</button>@endif
+                    <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Close') }}</button>
                 </x-slot:footer>
             </x-ledger.modal>
         @endforeach
     @endif
 
     @if ($modal === 'dispose')
-        <x-ledger.modal title="Dispose Asset">
+        <x-ledger.modal :title="t('Dispose Asset')">
             <div class="lg-mb">
                 @if ($errorMessage)<div class="lg-alert err lg-field full">{{ $errorMessage }}</div>@endif
-                <x-ledger.field label="Disposal date" name="disp_date"><input type="date" wire:model="disp_date"></x-ledger.field>
-                <x-ledger.field label="Proceeds (IDR)" name="disp_amount"><input type="number" min="0" step="0.01" wire:model="disp_amount"></x-ledger.field>
-                <x-ledger.field label="Proceeds to" name="disp_bank" full>
+                <x-ledger.field :label="t('Disposal date')" name="disp_date"><input type="date" wire:model="disp_date"></x-ledger.field>
+                <x-ledger.field :label="t('Proceeds (IDR)')" name="disp_amount"><input type="number" min="0" step="0.01" wire:model="disp_amount"></x-ledger.field>
+                <x-ledger.field :label="t('Proceeds to')" name="disp_bank" full>
                     <select wire:model="disp_bank" x-data x-effect="$el.value = @js($disp_bank)">@foreach ($this->cashBankOptions() as $id => $label)<option value="{{ $id }}">{{ $label }}</option>@endforeach</select>
                 </x-ledger.field>
-                <p class="lg-sub lg-field full">Jurnal: Dr akumulasi penyusutan + Dr kas (bila ada) / Cr harga perolehan, selisih ke laba/rugi lain-lain.</p>
+                <p class="lg-sub lg-field full">{{ t('Journal: Dr accumulated depreciation + Dr cash (if any) / Cr acquisition cost, difference to other gain/loss.') }}</p>
             </div>
             <x-slot:footer>
-                <button type="button" class="lg-btn light" wire:click="closeModal">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
-                <button type="button" class="lg-btn primary" wire:click="dispose">Post Disposal</button>
+                <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
+                <button type="button" class="lg-btn primary" wire:click="dispose">{{ t('Post Disposal') }}</button>
             </x-slot:footer>
         </x-ledger.modal>
     @endif

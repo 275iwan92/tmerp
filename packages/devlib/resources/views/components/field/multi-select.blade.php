@@ -2,8 +2,8 @@
     $opts = array_is_list($options) ? array_combine($options, $options) : $options;
     $vals = array_map('strval', (array) $value);
 @endphp
-<div class="dl-dd" data-dl-multi data-empty="{{ $emptyText }}" data-noun="{{ $noun }}">
-    <button type="button" id="{{ $uid }}" class="dl-dd__btn" data-dl-dd-toggle @disabled($disabled)><span data-dl-dd-text>{{ $emptyText }}</span><span>▼</span></button>
+<div class="dl-dd" data-dl-multi data-empty="{{ \Devlib\Lang::text($emptyText) }}" data-noun="{{ \Devlib\Lang::text($noun) }}">
+    <button type="button" id="{{ $uid }}" class="dl-dd__btn" data-dl-dd-toggle @disabled($disabled)><span data-dl-dd-text>{{ \Devlib\Lang::text($emptyText) }}</span><span>▼</span></button>
     <div class="dl-dd__panel" data-dl-dd-panel>
         <div class="dl-dd__search"><input type="text" placeholder="{{ \Devlib\Lang::text('Search...') }}" data-dl-dd-search></div>
         <div class="dl-dd__list">

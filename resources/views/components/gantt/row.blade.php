@@ -16,7 +16,7 @@
         @foreach ($row['idle'] ?? [] as $gap)
             <div class="task-block idle-block"
                 :class="{ 'dimmed-out': $store.gantt.mode==='risk', 'risk-match': $store.gantt.mode==='idle' && {{ ! empty($gap['flag']) ? 'true' : 'false' }} }"
-                style="left:{{ $gap['left'] }}px; width:{{ $gap['width'] }}px;">idle</div>
+                style="left:{{ $gap['left'] }}px; width:{{ $gap['width'] }}px;">{{ t('idle') }}</div>
         @endforeach
 
         @foreach ($row['blocks'] ?? [] as $b)

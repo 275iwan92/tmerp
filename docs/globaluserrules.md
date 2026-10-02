@@ -202,6 +202,13 @@
    tanggal yang tampil di judul form, kartu, hint atau pesan tidak boleh tercatat di kamus. Layar tetap menulis label
    English; nilai datanya dibungkus `raw()` — `'Customer Order · '.raw($o->co_no)` — sehingga komponen menerjemahkan
    labelnya saja.
+   **Satu kamus, tanpa teks hardcode, v1 & v2 (2026-10-02, cara ScriptCase):** setiap label/teks di form, grid, pesan dan
+   cetakan = "variabel" yang menunjuk ke kamus. Variabelnya = teks English itu sendiri: `t('Customer')` / `@t('Customer')`
+   (komponen `x-dl::*` otomatis). Bahasa ditambah = isi kamus saja (Setup > Translation Dictionary), modul tidak diubah.
+   Modul baru: tulis English, terjemahan Indonesia lewat migration `Dictionary::seed([...])` atau layar kamus. Kata bermakna
+   ganda: `t('Close', 'action')`. Mengganti teks English di kamus memindahkan terjemahannya. Kamus kunci lama v1
+   (`Translator::t('kunci')`, `sys_translations`) dipensiunkan; layar v1 ikut dikonversi per modul (tampilan bahasa id tetap
+   sama). Bahasa tampilan satu sumber: cookie `dl_lang`, lalu `sec_user.lang_code`.
 4. **Nama kolom:** `activate` (bukan `is_active`); status dokumen `stat_confirm` / `stat_cancel` / `stat_close` + `cancel_reason`.
 5. **[LOCKED] Fase:** mockup.test memakai database dummy `ddt*`; tmerp.test memakai `tm2*`. **Jangan menulis ke
    `tm2*` saat kerja UAT/mockup.**
@@ -633,3 +640,4 @@
 | 2026-10-02 | **A.22: Inventory & Warehouse** — gudang = gedung (A5, A6, A10 + gedung lain; ukuran perkiraan, disesuaikan officer; bentuk bebas mis. huruf L; 1-3 lantai), area dan bin bisa ditambah user, Stock Transfer dengan label kapasitas + QR / barcode, dead stock merah (transfer bukan pergerakan), fasilitas label + lacak QR. Dibangun di ddt: Warehouse Map, Stock Transfer, Buildings / Storage Areas / Bins, Stock by Location, Print Location / Item Label, Track via QR/Barcode. Review: `md_for_systems/warehouse_review.md`. |
 | 2026-10-02 | A.22: denah gudang sementara dibuat agen (ukuran dan letak perkiraan, tanpa menunggu sketsa / foto) dan harus tetap bisa diubah user atau officer warehouse lewat layar. |
 | 2026-10-02 | B.15: set stage 8–12 dibangun (Posted to Production + Work Order belum dimulai, Delivery Order Draft, Delivery Order Confirmed, Customer Invoice Draft, Customer Invoice Confirmed menunggu pembayaran) — usulan agen, belum dikonfirmasi user; rantai PO di samping: stage 4 PO Draft, 5–7 menunggu approval level 1–3, 8+ Approved. Build sungguhan tanpa transaksi. |
+| 2026-10-02 | B.3: **satu kamus untuk v1 & v2, tanpa teks hardcode** (user: "copy how it work from SCRIPTCASE ... label ataupun text itu berupa variable yang mengarah pada database dictionary ... walaupun bahasa di tambah tidak merubah lagi di setiap module"; "ya di convert pakai cara terbaru agar no hardcode") — variabel = teks English (`t('...')`), kamus kunci v1 `sys_translations` dilebur ke `sys_dictionary`, layar v1 dikonversi per modul (zona beku: izin teks saja; portal kandidat ikut), alat penerjemah: kolom Untranslated + ganti teks English tanpa kehilangan terjemahan. |

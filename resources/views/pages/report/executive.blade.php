@@ -13,7 +13,7 @@ use Livewire\Component;
 // "boleh bangun sendiri pakai SVG") -- BUKAN ApexCharts lagi: markup murni
 // hasil PHP jadi Livewire morph biasa cukup, tak perlu wire:ignore/wire:key
 // trik yang dulu dipakai utk menahan ApexCharts.
-new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Executive Dashboard — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url(as: 'th')]
     public int $year = 0;
@@ -123,7 +123,7 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
 }; ?>
 
 @php
-    $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    $months = array_map(fn ($m) => t($m, 'date.month_short'), ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
     $rp = fn ($v) => 'Rp ' . number_format((float) $v, 0, ',', '.');
     $miliar = fn ($v) => 'Rp ' . number_format((float) $v / 1_000_000_000, 2, ',', '.') . ' M';
     $palette = ['var(--sh-accent)', 'var(--sh-ok)', 'var(--sh-warn)', 'var(--sh-violet)', 'var(--sh-danger)', 'var(--sh-amber)'];
@@ -134,12 +134,12 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
     {{-- ============ Headline ============ --}}
     <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
         <div>
-            <h1 class="text-[22px] font-extrabold -tracking-wide" style="color:var(--sh-ink-strong)">Ringkasan Kinerja Eksekutif</h1>
-            <p class="text-[13px] mt-0.5" style="color:var(--sh-muted)">Penjualan, pembelian, dan utang usaha terintegrasi — CV. Telasih Makmur.</p>
+            <h1 class="text-[22px] font-extrabold -tracking-wide" style="color:var(--sh-ink-strong)">{{ t('Executive Performance Summary') }}</h1>
+            <p class="text-[13px] mt-0.5" style="color:var(--sh-muted)">{{ t('Integrated sales, purchasing, and trade payables') }} — CV. Telasih Makmur.</p>
         </div>
         <div class="flex flex-wrap items-end gap-3">
             <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Tahun</label>
+                <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">{{ t('Year') }}</label>
                 <select wire:model.live="year" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
                     @foreach ($this->years as $y)
                         <option value="{{ $y }}">{{ $y }}</option>
@@ -147,15 +147,15 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Dasar Omset</label>
+                <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">{{ t('Revenue Basis') }}</label>
                 <select wire:model.live="basis" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
-                    <option value="shipment">Shipment (Surat Jalan)</option>
-                    <option value="order">PO Masuk (Customer Order)</option>
+                    <option value="shipment">{{ t('Shipment (Delivery Note)') }}</option>
+                    <option value="order">{{ t('Incoming PO (Customer Order)') }}</option>
                 </select>
             </div>
             <label class="flex items-center gap-1.5 text-[11.5px] pb-1.5" style="color:var(--sh-ink)">
                 <input type="checkbox" wire:model.live="confirmedOnly" class="rounded">
-                CO terkonfirmasi saja
+                {{ t('Confirmed CO only') }}
             </label>
         </div>
     </div>
@@ -163,37 +163,37 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
     @if ($this->shipmentDataWarning)
         <div class="mb-4">
             <x-report.insight tone="warn">
-                <strong>Perhatian:</strong> harga pada Surat Jalan baru dicatat sistem lama mulai pertengahan 2023.
-                Untuk tahun {{ $year }}, angka "by Shipment" akan tampak Rp 0 — gunakan dasar <em>PO Masuk</em> untuk periode ini.
+                <strong>{{ t('Attention') }}:</strong> {{ t('the legacy system only started recording prices on Delivery Notes from mid-2023.') }}
+                {{ str_replace(':year', $year, t('For :year, the "by Shipment" figures will show Rp 0 — use the')) }} <em>{{ t('Incoming PO') }}</em> {{ t('basis for this period.') }}
             </x-report.insight>
         </div>
     @endif
 
     {{-- ============ KPI ============ --}}
     <div class="[display:grid] grid-cols-2 lg:grid-cols-5 gap-3.5 mb-4">
-        <x-report.kpi label="Omset by Shipment" icon="fa-solid fa-truck-fast" tone="blue"
+        <x-report.kpi :label="t('Revenue by Shipment')" icon="fa-solid fa-truck-fast" tone="blue"
             :value="$miliar($this->summary['shipment'])"
             :trend="$this->summary['shipment_growth'] === null ? null : ($this->summary['shipment_growth'] >= 0 ? 'up' : 'down')"
             :delta="$this->summary['shipment_growth'] === null ? null : number_format(abs($this->summary['shipment_growth']), 1, ',', '.') . '%'"
-            :note="'vs '.($year-1).' · '.number_format($this->summary['shipment_docs']).' SJ'" />
+            :note="'vs '.($year-1).' · '.number_format($this->summary['shipment_docs']).' '.t('DN')" />
 
-        <x-report.kpi label="Omset by PO Masuk" icon="fa-solid fa-file-invoice" tone="green"
+        <x-report.kpi :label="t('Revenue by Incoming PO')" icon="fa-solid fa-file-invoice" tone="green"
             :value="$miliar($this->summary['order'])"
             :trend="$this->summary['order_growth'] === null ? null : ($this->summary['order_growth'] >= 0 ? 'up' : 'down')"
             :delta="$this->summary['order_growth'] === null ? null : number_format(abs($this->summary['order_growth']), 1, ',', '.') . '%'"
             :note="'vs '.($year-1).' · '.number_format($this->summary['order_docs']).' CO'" />
 
-        <x-report.kpi label="Invoice Terbit" icon="fa-solid fa-receipt" tone="violet"
+        <x-report.kpi :label="t('Invoices Issued')" icon="fa-solid fa-receipt" tone="violet"
             :value="$miliar($this->invoice['value'])"
-            :note="number_format($this->invoice['docs']).' invoice diterbitkan'" />
+            :note="str_replace(':n', number_format($this->invoice['docs']), t(':n invoices issued'))" />
 
-        <x-report.kpi label="Nilai Pembelian (PO)" icon="fa-solid fa-cart-shopping" tone="amber"
+        <x-report.kpi :label="t('Purchase Value (PO)')" icon="fa-solid fa-cart-shopping" tone="amber"
             :value="$miliar($this->purchase['po_value'])"
-            :note="number_format($this->purchase['po_docs']).' purchase order'" />
+            :note="str_replace(':n', number_format($this->purchase['po_docs']), t(':n purchase orders'))" />
 
-        <x-report.kpi label="Sisa Utang Usaha" icon="fa-solid fa-scale-balanced" tone="danger"
+        <x-report.kpi :label="t('Outstanding Trade Payables')" icon="fa-solid fa-scale-balanced" tone="danger"
             :value="$miliar($this->payable['outstanding'])"
-            :note="'dari '.$miliar($this->payable['invoice_value']).' tertagih'" />
+            :note="str_replace(':amount', $miliar($this->payable['invoice_value']), t('of :amount billed'))" />
     </div>
 
     {{-- ============ Tren omset + Komposisi customer ============ --}}
@@ -201,8 +201,8 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
             <div class="flex items-start justify-between mb-3">
                 <div>
-                    <h2 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">Omset Bulanan {{ $year }} vs {{ $year - 1 }}</h2>
-                    <p class="text-[11.5px] mt-0.5" style="color:var(--sh-muted)">Dasar: {{ $basis === 'shipment' ? 'Shipment (Surat Jalan)' : 'PO Masuk (Customer Order)' }}</p>
+                    <h2 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">{{ t('Monthly Revenue') }} {{ $year }} vs {{ $year - 1 }}</h2>
+                    <p class="text-[11.5px] mt-0.5" style="color:var(--sh-muted)">{{ t('Basis') }}: {{ $basis === 'shipment' ? t('Shipment (Delivery Note)') : t('Incoming PO (Customer Order)') }}</p>
                 </div>
             </div>
             <x-report.svg-trend :height="260" :labels="$months" :series="[
@@ -214,11 +214,11 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
             <div class="flex items-start justify-between mb-3">
                 <div>
-                    <h2 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">Komposisi Customer</h2>
-                    <p class="text-[11.5px] mt-0.5" style="color:var(--sh-muted)">5 customer terbesar {{ $year }}</p>
+                    <h2 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">{{ t('Customer Composition') }}</h2>
+                    <p class="text-[11.5px] mt-0.5" style="color:var(--sh-muted)">{{ t('Top 5 customers') }} {{ $year }}</p>
                 </div>
             </div>
-            <x-report.svg-donut :center-value="$miliar($this->summary[$basis])" center-label="Total omset"
+            <x-report.svg-donut :center-value="$miliar($this->summary[$basis])" :center-label="t('Total turnover')"
                 :segments="collect($this->topCustomers)->values()->map(fn ($c, $i) => [
                     'label' => $c['name'],
                     'value' => $c['value'],
@@ -229,10 +229,10 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
 
     {{-- ============ Kuartal ============ --}}
     <div class="rounded-2xl border p-4 mb-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-        <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Pencapaian per Kuartal {{ $year }}</h2>
+        <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Achievement per Quarter') }} {{ $year }}</h2>
         <x-report.svg-bars :height="200" :labels="['Q1', 'Q2', 'Q3', 'Q4']" :series="[
-            ['label' => 'Shipment', 'color' => 'var(--sh-accent)', 'data' => array_column($this->quarterly, 'shipment')],
-            ['label' => 'PO Masuk', 'color' => 'var(--sh-ok)', 'data' => array_column($this->quarterly, 'order')],
+            ['label' => t('Shipment'), 'color' => 'var(--sh-accent)', 'data' => array_column($this->quarterly, 'shipment')],
+            ['label' => t('Incoming PO'), 'color' => 'var(--sh-ok)', 'data' => array_column($this->quarterly, 'order')],
         ]" />
     </div>
 
@@ -240,14 +240,14 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
     <div class="[display:grid] grid-cols-1 lg:grid-cols-3 gap-3.5 mb-4">
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
             <div class="flex items-start justify-between mb-3">
-                <h2 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">Customer Teratas</h2>
-                <a href="{{ route('report.sales', ['th' => $year, 'tab' => 'customer']) }}" class="text-[11px] font-semibold" style="color:var(--sh-accent)">semua →</a>
+                <h2 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">{{ t('Top Customers') }}</h2>
+                <a href="{{ route('report.sales', ['th' => $year, 'tab' => 'customer']) }}" class="text-[11px] font-semibold" style="color:var(--sh-accent)">{{ t('all') }} →</a>
             </div>
             <table class="w-full text-[12px]">
                 <thead>
                     <tr class="text-left border-b" style="border-color:var(--sh-border)">
-                        <th class="pb-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Customer</th>
-                        <th class="pb-2 font-bold uppercase text-[10px] text-right" style="color:var(--sh-muted)">Omset</th>
+                        <th class="pb-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Customer') }}</th>
+                        <th class="pb-2 font-bold uppercase text-[10px] text-right" style="color:var(--sh-muted)">{{ t('Turnover') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -256,7 +256,7 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
                             <td class="py-2">
                                 <a href="{{ route('report.customer', ['customer' => $c['id'], 'th' => $year]) }}"
                                    class="font-semibold hover:underline" style="color:var(--sh-ink-strong)">{{ $c['name'] }}</a>
-                                <div class="text-[10.5px]" style="color:var(--sh-muted)">{{ number_format($c['docs']) }} dokumen</div>
+                                <div class="text-[10.5px]" style="color:var(--sh-muted)">{{ str_replace(':n', number_format($c['docs']), t(':n documents')) }}</div>
                             </td>
                             <td class="py-2 text-right tabular-nums font-semibold" style="color:var(--sh-ink-strong)">{{ $rp($c['value']) }}</td>
                         </tr>
@@ -266,8 +266,8 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
         </div>
 
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-            <h2 class="font-bold text-[14px] mb-1" style="color:var(--sh-ink-strong)">Kesehatan Rantai Dokumen</h2>
-            <p class="text-[11px] mb-3" style="color:var(--sh-muted)">Purchasing, seluruh periode</p>
+            <h2 class="font-bold text-[14px] mb-1" style="color:var(--sh-ink-strong)">{{ t('Document Chain Health') }}</h2>
+            <p class="text-[11px] mb-3" style="color:var(--sh-muted)">{{ t('Purchasing, all periods') }}</p>
             @foreach ($this->dataHealth as $h)
                 <x-report.progress-row :label="$h['label']" :pct="$h['pct']" :value="number_format($h['pct'], 1).'%'"
                     :color="$h['pct'] >= 95 ? 'var(--sh-ok)' : ($h['pct'] >= 70 ? 'var(--sh-warn)' : 'var(--sh-danger)')" />
@@ -276,9 +276,9 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
 
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
             <div class="flex items-start justify-between mb-3">
-                <h2 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">Perhatian Manajemen</h2>
+                <h2 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">{{ t('Management Attention') }}</h2>
                 @if (count($this->attention) > 0)
-                    <x-report.badge tone="warn">{{ count($this->attention) }} temuan</x-report.badge>
+                    <x-report.badge tone="warn">{{ str_replace(':n', count($this->attention), t(':n findings')) }}</x-report.badge>
                 @endif
             </div>
             <div class="space-y-2.5">
@@ -287,7 +287,7 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
                         <strong>{{ $a['title'] }}:</strong> {{ $a['text'] }}
                     </x-report.insight>
                 @empty
-                    <p class="text-[12px]" style="color:var(--sh-muted)">Tidak ada temuan terbuka saat ini.</p>
+                    <p class="text-[12px]" style="color:var(--sh-muted)">{{ t('No open findings at the moment.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -298,22 +298,22 @@ new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR
         @if ($this->purchase['po_docs'] === 0 && $this->purchaseLastDate)
             <div class="mb-3">
                 <x-report.insight tone="info">
-                    Tidak ada Purchase Order tercatat di {{ $year }}. Pencatatan pembelian di sistem lama
-                    berhenti pada <strong>{{ $this->purchaseLastDate }}</strong> — bukan berarti perusahaan berhenti membeli.
+                    {{ str_replace(':year', $year, t('No Purchase Orders recorded in :year.')) }} {{ t('Purchase recording in the legacy system') }}
+                    {{ t('stopped on') }} <strong>{{ $this->purchaseLastDate }}</strong> — {{ t('it does not mean the company stopped buying.') }}
                 </x-report.insight>
             </div>
         @endif
         <div class="flex items-start justify-between mb-3">
-            <h2 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">Tren Pembelian {{ $year }}</h2>
-            <a href="{{ route('report.purchase', ['th' => $year]) }}" class="text-[11px] font-semibold" style="color:var(--sh-violet)">rincian pembelian →</a>
+            <h2 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">{{ t('Purchase Trend') }} {{ $year }}</h2>
+            <a href="{{ route('report.purchase', ['th' => $year]) }}" class="text-[11px] font-semibold" style="color:var(--sh-violet)">{{ t('purchase details') }} →</a>
         </div>
         <x-report.svg-trend :height="220" :labels="$months" :series="[
-            ['label' => 'Pembelian', 'color' => 'var(--sh-violet)', 'data' => array_column($this->monthlyPurchase, 'value'), 'area' => true],
+            ['label' => t('Purchases'), 'color' => 'var(--sh-violet)', 'data' => array_column($this->monthlyPurchase, 'value'), 'area' => true],
         ]" />
         <div class="flex flex-wrap gap-x-6 gap-y-1 text-[11.5px] mt-3 pt-3 border-t" style="border-color:var(--sh-border);color:var(--sh-muted)">
-            <span>Permintaan Pembelian (PR): <b style="color:var(--sh-ink-strong)">{{ number_format($this->purchase['pr_docs']) }}</b> dokumen</span>
-            <span>Purchase Order: <b style="color:var(--sh-ink-strong)">{{ number_format($this->purchase['po_docs']) }}</b> dokumen</span>
-            <span>Penerimaan Barang: <b style="color:var(--sh-ink-strong)">{{ number_format($this->purchase['receive_docs']) }}</b> dokumen</span>
+            <span>{{ t('Purchase Requisition (PR)') }}: <b style="color:var(--sh-ink-strong)">{{ number_format($this->purchase['pr_docs']) }}</b> {{ mb_strtolower(t('Documents')) }}</span>
+            <span>{{ t('Purchase Order') }}: <b style="color:var(--sh-ink-strong)">{{ number_format($this->purchase['po_docs']) }}</b> {{ mb_strtolower(t('Documents')) }}</span>
+            <span>{{ t('Goods Receipt') }}: <b style="color:var(--sh-ink-strong)">{{ number_format($this->purchase['receive_docs']) }}</b> {{ mb_strtolower(t('Documents')) }}</span>
         </div>
     </div>
 </div>

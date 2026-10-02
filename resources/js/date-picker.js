@@ -15,14 +15,18 @@
  * <select> morph bug").
  * ============================================================================ */
 document.addEventListener('alpine:init', () => {
-    const MONTHS_LONG = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    const DAY_LABELS = ['Mg', 'Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb'];
+    // Nama bulan/hari ikut bahasa tampilan (<html lang>, diisi SetUserLocale) lewat Intl -- id = Januari / Jan / Minggu
+    // persis seperti sebelumnya. Header kalender bahasa id tetap 2 huruf (Mg, Sn, ...) seperti DevLib dow2().
+    const LANG = document.documentElement.lang || 'id';
+    const intl = (n, date, opt) => Array.from({ length: n }, (_, i) => date(i).toLocaleString(LANG, opt));
+    const MONTHS_LONG = intl(12, (i) => new Date(2000, i, 1), { month: 'long' });
+    const MONTHS_SHORT = intl(12, (i) => new Date(2000, i, 1), { month: 'short' });
+    const DAY_LABELS = LANG.startsWith('id') ? ['Mg', 'Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb'] : intl(7, (i) => new Date(2000, 0, 2 + i), { weekday: 'short' });
     // Nama hari penuh utk ditampilkan di teks terpilih (permintaan user
     // 2026-09-04: "date & time picker yang ada hari nya", ref mockup
     // UIUX_components_part1.html) -- DAY_LABELS di atas cuma header grid
     // kalender (2 huruf), ini utk display value ("Jumat, 4 Sep 2026").
-    const DAY_NAMES_LONG = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const DAY_NAMES_LONG = intl(7, (i) => new Date(2000, 0, 2 + i), { weekday: 'long' });
     const pad = (n) => String(n).padStart(2, '0');
 
     Alpine.data('tmDatePicker', (opts = {}) => ({

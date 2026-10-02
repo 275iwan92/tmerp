@@ -50,7 +50,7 @@ class WidgetBoard extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'katalog widget + susunan papan per user';
+        return $this->source ?? 'widget catalog + board layout per user';
     }
 
     // Pencapaian terhadap target dalam persen; good_when = down berarti makin kecil makin baik.

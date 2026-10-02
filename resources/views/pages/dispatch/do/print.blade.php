@@ -20,7 +20,7 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
         $do = DoDelivery::findOrFail($doId);
 
         if (! in_array($do->status, ['CONFIRMED', 'SHIPPED'], true)) {
-            session()->flash('error', 'Delivery Order ini belum Confirm — belum bisa dicetak.');
+            session()->flash('error', t('This Delivery Order is not Confirmed yet — it cannot be printed yet.'));
             $this->redirect(route('dispatch.do.entry', ['doId' => $doId]));
 
             return;
@@ -59,43 +59,43 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
 
 <x-print.document :ppn="$this->do->is_ppn" :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->do->do_no }} · {{ $this->do->status }}">
     <x-slot:toolbar>
-        <a href="{{ route('dispatch.do.entry', ['doId' => $this->doId]) }}" class="sc" data-back>← Kembali ke DO</a>
+        <a href="{{ route('dispatch.do.entry', ['doId' => $this->doId]) }}" class="sc" data-back>← {{ t('Back to DO') }}</a>
     </x-slot:toolbar>
 
     <x-print.sheet>
-        <x-print.header :company="$this->company" :ppn="$this->do->is_ppn" doc-title="DELIVERY ORDER" :doc-no="$this->do->do_no">
+        <x-print.header :company="$this->company" :ppn="$this->do->is_ppn" :doc-title="mb_strtoupper(t('Delivery Order'))" :doc-no="$this->do->do_no">
             <x-slot:meta>
-                Tanggal DO: {{ $this->do->do_date?->translatedFormat('d F Y') }}
-                @if ($this->do->actual_ship_date) · Terkirim: {{ $this->do->actual_ship_date->translatedFormat('d F Y') }} @endif
-                <br>Ref. CO: <span class="ref">{{ $this->coRefs ?: '—' }}</span>
+                {{ t('DO Date') }}: {{ $this->do->do_date?->translatedFormat('d F Y') }}
+                @if ($this->do->actual_ship_date) · {{ t('Shipped') }}: {{ $this->do->actual_ship_date->translatedFormat('d F Y') }} @endif
+                <br>{{ t('Ref. CO') }}: <span class="ref">{{ $this->coRefs ?: '—' }}</span>
             </x-slot:meta>
         </x-print.header>
 
         <x-print.parties columns="1.2fr 1fr">
-            <x-print.party label="DIKIRIM KE">
+            <x-print.party :label="mb_strtoupper(t('Shipped To'))">
                 <div class="nm">{{ $this->do->customer?->customer_name ?? '—' }}</div>
                 <div class="dt">
-                    Kode Customer: <b>{{ $this->do->customer?->customer_code ?? '—' }}</b><br>
+                    {{ t('Customer Code') }}: <b>{{ $this->do->customer?->customer_code ?? '—' }}</b><br>
                     {{ $this->do->ship_address_label }}<br>
                     {{ $this->do->ship_address_detail }}
                     @if ($this->do->ship_postal_code) · {{ $this->do->ship_postal_code }} @endif
                 </div>
             </x-print.party>
-            <x-print.party label="DIKIRIM DARI">
+            <x-print.party :label="mb_strtoupper(t('Shipped From'))">
                 <div class="nm"><x-print.company-name :ppn="$this->do->is_ppn" /></div>
-                <div class="dt">Status: <b>{{ $this->do->status }}</b></div>
+                <div class="dt">{{ t('Status') }}: <b>{{ $this->do->status }}</b></div>
             </x-print.party>
         </x-print.parties>
 
-        <x-print.section number="1" title="Rincian Barang">
+        <x-print.section number="1" :title="t('Goods Detail')">
             <table class="items">
                 <thead>
                     <tr>
-                        <th style="width:12%">No. CO</th>
-                        <th class="desc">Deskripsi Barang</th>
-                        <th class="num" style="width:14%">Qty</th>
-                        <th class="num" style="width:14%">Harga Satuan</th>
-                        <th class="num" style="width:16%">Subtotal</th>
+                        <th style="width:12%">{{ t('CO No.') }}</th>
+                        <th class="desc">{{ t('Goods Description') }}</th>
+                        <th class="num" style="width:14%">{{ t('Qty') }}</th>
+                        <th class="num" style="width:14%">{{ t('Unit Price') }}</th>
+                        <th class="num" style="width:16%">{{ t('Subtotal') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -113,23 +113,23 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
 
             <div class="totwrap">
                 <div class="tot-note">
-                    <h5>CATATAN</h5>
-                    Dokumen internal Sales/Finance — dasar verifikasi sebelum barang berangkat.
-                    Untuk salinan tanpa harga (dibawa kurir), lihat cetakan Surat Jalan.
+                    <h5>{{ mb_strtoupper(t('Notes')) }}</h5>
+                    {{ t('Internal Sales/Finance document — the basis for verification before the goods leave.') }}
+                    {{ t('For a copy without prices (carried by the courier), see the Delivery Note printout.') }}
                 </div>
                 <table class="tot">
-                    <tr class="grand"><td class="k">TOTAL NILAI</td><td class="v">Rp {{ number_format($this->totals['value'], 0, ',', '.') }}</td></tr>
+                    <tr class="grand"><td class="k">{{ mb_strtoupper(t('Total Value')) }}</td><td class="v">Rp {{ number_format($this->totals['value'], 0, ',', '.') }}</td></tr>
                 </table>
             </div>
         </x-print.section>
 
         <x-print.signatures>
-            <x-print.signature :company-ppn="$this->do->is_ppn" role="Disiapkan"
-                name="( ................................. )" sub="Admin Sales / Dispatch" />
-            <x-print.signature role="Diperiksa" name="( ................................. )" sub="Kepala Gudang" />
+            <x-print.signature :company-ppn="$this->do->is_ppn" :role="t('Preparer')"
+                name="( ................................. )" :sub="t('Admin Sales / Dispatch')" />
+            <x-print.signature :role="t('Checked')" name="( ................................. )" :sub="t('Warehouse Head')" />
         </x-print.signatures>
 
-        <x-print.footer page="Halaman 1 dari 1">{{ $this->do->do_no }} · {{ $this->do->customer?->customer_name }} · dicetak {{ now()->format('d/m/Y H:i') }}</x-print.footer>
+        <x-print.footer :page="str_replace([':p', ':n'], [1, 1], t('Page :p of :n'))">{{ $this->do->do_no }} · {{ $this->do->customer?->customer_name }} · {{ t('printed on') }} {{ now()->format('d/m/Y H:i') }}</x-print.footer>
     </x-print.sheet>
 
     <style>

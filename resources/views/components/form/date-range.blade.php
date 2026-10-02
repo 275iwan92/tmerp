@@ -6,7 +6,7 @@
     sendiri sudah menegaskan native date input tidak dipakai lagi sejak
     keputusan user 2026-09-02.
 --}}
-@props(['label' => null, 'startName' => null, 'endName' => null, 'startLabel' => 'Mulai', 'endLabel' => 'Selesai'])
+@props(['label' => null, 'startName' => null, 'endName' => null, 'startLabel' => t('Start'), 'endLabel' => t('End')])
 <div class="flex flex-col gap-1.5" x-data="tmDateRange()" x-init="compute()" @change.capture="compute()">
     @if ($label)
         <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ $label }}</label>

@@ -53,7 +53,7 @@ class PrdWo extends Model
     public function transitionTo(string $target): void
     {
         if (! $this->canTransitionTo($target)) {
-            throw new \DomainException("Transisi status WO tidak sah: {$this->wo_status} -> {$target}");
+            throw new \DomainException(str_replace([':from', ':to'], [$this->wo_status, $target], t('Invalid WO status transition: :from -> :to')));
         }
 
         $this->wo_status = $target;

@@ -42,6 +42,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 - Data khusus UAT (akun di halaman login, lewati pertanyaan keamanan) HANYA di `.env.mockup` (`config/uat.php`) — **jangan** di konstanta/DB.
 - Mode Developer = F10, hanya Administrator / grup `DEVELOPER`.
 - Serah terima antar-agen (Jo/Iwan): memori `project_handoff_*` terbaru di MEMORY.md ("START HERE").
+- **Multi language (2026-10-02):** serah terima & langkah pertama di `docs/multilanguage_design.md` §0.3 (PR 275iwan92/tmerp#8).
 
 - **Test memakai MySQL lokal sungguhan**, bukan SQLite in-memory walau `phpunit.xml` menyebut sqlite: test menulis ke database `tm2*` dan **membersihkan sendiri** di `tearDown()` (hapus manual per tabel, lihat `tests/Feature/CostingEngineTest.php`). Tidak ada `RefreshDatabase`. Test baru yang menyisipkan data wajib cleanup sendiri, lalu verifikasi ke DB (jangan percaya skripnya saja).
 - `CareersPortalTest` di-skip (bukan gagal) bila Firebase Emulator tidak menyala — itu baseline normal.
@@ -54,7 +55,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 - **Logika bisnis di `app/Services/*`** (bukan di komponen): `Costing/CostingEngine`, `Imposition/ImpositionEngine`, `Sales/{QuotationBuilder,CoOrderBuilder}`, `Scheduling/*`, `Payroll/*`, `Recruitment/*`, `Migration/*` (ETL `tm*`→`tm2*`), dst. Rumus = sumber kebenaran di kode + test regresi (bukan dokumen).
 - **Daftar ENGINE** (user 2026-10-02): `App\Support\Engines\EngineRegistry` = kegunaan, input, output, cara kerja tiap engine (tanda tangan method dibaca dari kode). Tampil di devlib.test → Engines dan menu Developer → Engines (`x-dl::engine-catalog`). Engine baru / tanda tangan berubah: daftarkan di sana lalu `php artisan engine:catalog` (dijaga `EngineCatalogTest`). Rumus ProCost tidak ditulis di sana.
 - **Layar v2 = turunan objek DevLib** (`x-dl::*`, `x-mp::*`): tanpa HTML mentah; form kecil = `x-dl::action-form`. Dijaga `DevlibOnlyRatchetTest`.
-- **Grid**: trait `app/Livewire/Concerns/HasCustomizableGrid` (kontrak `gridKey/gridColumnDefs/gridDefaultColumns/gridBaseQuery/columnValue`); komponen reusable di `resources/views/components/{grid,form,print,gantt,kanban,...}`. Teks UI lewat `App\Support\Localization\Translator::t(key, fallback)`.
+- **Grid**: trait `app/Livewire/Concerns/HasCustomizableGrid` (kontrak `gridKey/gridColumnDefs/gridDefaultColumns/gridBaseQuery/columnValue`); komponen reusable di `resources/views/components/{grid,form,print,gantt,kanban,...}`. Teks UI ditulis English lewat `t('English')` / `@t()` (kamus `sys_dictionary`, `App\Support\Localization\Dictionary`; `Translator::t` lama sudah dipensiunkan, lihat §3 Bahasa).
 - Scheduler (`routes/console.php`): `recruitment:sync-portal` tiap 2 menit, `prodev:usage-rates` bulanan.
 - `DataOriginScope` (web-only) menyembunyikan data DUMMY/LEGACY sesuai setting admin; console/tinker/test melihat semua.
 
@@ -255,6 +256,12 @@ transaksi = `iqp_costing`, ikut inquiry).
   menerjemahkan sendiri; teks lain `t('...')` / `@t('...')` (JS `Devlib.h.t`). Teks baru tercatat otomatis di `sys_dictionary`
   -> terjemahan diisi di **Setup > Translation Dictionary**. Angka/tanggal/jam lewat objek DevLib (`Devlib\Locale`, `NumberValue`,
   `DateValue`, `TimeValue`, `DateTimeValue`, `TextValue`). Dijaga `MultiLanguageRatchetTest` (label Indonesia mentah / format sendiri tidak boleh bertambah).
+- **Satu kamus untuk v1 & v2, TANPA teks hardcode** (user 2026-10-02, cara ScriptCase: label = variabel ke kamus; variabelnya =
+  teks English). Kamus kunci lama `Translator::t('kunci')` / `sys_translations` DIPENSIUNKAN (dijaga test, jangan dihidupkan).
+  Terjemahan dari kode diisi lewat migration `Dictionary::seed(['English' => 'Indonesia'])` (tidak menimpa isian penerjemah);
+  kata bermakna ganda `t('Close', 'action')`; teks + data = placeholder `str_replace(':n', $n, t(':n unread'))`; JS
+  `@js(t('...'))`. Layar v1 dikonversi per modul (`BASELINE_V1` di `MultiLanguageRatchetTest` hanya boleh turun); tampilan
+  bahasa id wajib tetap sama. Bahasa tampilan satu sumber: cookie `dl_lang` lalu `sec_user.lang_code` (`SetUserLocale`).
 - **Nilai DATA di prop teks komponen dibungkus `raw()`** (no. dokumen, nama customer / product, angka, tanggal — di judul form,
   kartu, hint, pesan): `:title="'Customer Order · '.raw($o->co_no)" :subtitle="raw($customer.' · '.$status)"`. Labelnya tetap
   English dan tetap diterjemahkan komponen; nilainya tidak diterjemahkan dan **tidak tercatat di kamus** (tanpa `raw()` tiap

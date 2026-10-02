@@ -18,7 +18,7 @@ class MachineModelLookup extends DbLookup
 
     public function title(): string
     {
-        return 'Katalog Model Mesin';
+        return t('Machine Model Catalog');
     }
 
     public function module(): string
@@ -42,7 +42,7 @@ class MachineModelLookup extends DbLookup
             ['key' => 'model_code', 'label' => 'Model', 'required' => true, 'unique' => true, 'case' => 'uppercase', 'width' => '110px'],
             ['key' => 'alias_codes', 'label' => 'Alias', 'width' => '150px'],
             ['key' => 'machine_type', 'label' => 'Machine Type', 'required' => true, 'width' => '120px'],
-            ['key' => 'drive', 'label' => 'Drive', 'type' => 'select', 'options' => ProdMachineModel::DRIVES, 'required' => true, 'width' => '100px'],
+            ['key' => 'drive', 'label' => 'Drive', 'type' => 'select', 'options' => ProdMachineModel::driveOptions(), 'required' => true, 'width' => '100px'],
             ['key' => 'work_length_mm', 'label' => 'Working Size L (mm)', 'type' => 'number', 'width' => '110px'],
             ['key' => 'work_width_mm', 'label' => 'Working Size W (mm)', 'type' => 'number', 'width' => '110px'],
             ['key' => 'max_cut_length_mm', 'label' => 'Max Cut L', 'type' => 'number', 'width' => '100px'],

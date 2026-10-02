@@ -28,12 +28,12 @@
             ['key' => 'total', 'label' => 'Total', 'type' => 'money'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => SupplierInvoiceReceipt::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Invoice', 'columns' => [
-            ['key' => 'invoice', 'label' => 'Supplier Invoice No.', 'strong' => true],
-            ['key' => 'invoice_date', 'label' => 'Invoice Date', 'type' => 'date'],
-            ['key' => 'po', 'label' => 'PO No.'],
-            ['key' => 'tax', 'label' => 'Tax Invoice No.'],
-            ['key' => 'amount', 'label' => 'Amount', 'type' => 'money'],
+        :detail="['key' => 'items', 'title' => t('Invoice'), 'columns' => [
+            ['key' => 'invoice', 'label' => t('Supplier Invoice No.'), 'strong' => true],
+            ['key' => 'invoice_date', 'label' => t('Invoice Date'), 'type' => 'date'],
+            ['key' => 'po', 'label' => t('PO No.')],
+            ['key' => 'tax', 'label' => t('Tax Invoice No.')],
+            ['key' => 'amount', 'label' => t('Amount'), 'type' => 'money'],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]"
         :filters="['supplier' => 'Supplier', 'status' => 'Status']" />

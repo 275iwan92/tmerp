@@ -33,14 +33,14 @@
             ['key' => 'next', 'label' => 'Next Due', 'type' => 'date'],
             ['key' => 'due', 'label' => 'Due', 'type' => 'badge', 'tones' => ['Overdue' => 'danger', 'Due' => 'warn', 'OK' => 'success']],
         ]"
-        :detail="['key' => 'items', 'title' => 'Tasks', 'columns' => [
-            ['key' => 'seq', 'label' => 'No.', 'type' => 'number'],
-            ['key' => 'task', 'label' => 'Task', 'strong' => true],
-            ['key' => 'kind', 'label' => 'Kind'],
-            ['key' => 'uom', 'label' => 'Unit'],
-            ['key' => 'min', 'label' => 'Min', 'type' => 'number'],
-            ['key' => 'max', 'label' => 'Max', 'type' => 'number'],
-            ['key' => 'required', 'label' => 'Required'],
+        :detail="['key' => 'items', 'title' => t('Tasks'), 'columns' => [
+            ['key' => 'seq', 'label' => t('No.'), 'type' => 'number'],
+            ['key' => 'task', 'label' => t('Task'), 'strong' => true],
+            ['key' => 'kind', 'label' => t('Kind')],
+            ['key' => 'uom', 'label' => t('Unit')],
+            ['key' => 'min', 'label' => t('Min'), 'type' => 'number'],
+            ['key' => 'max', 'label' => t('Max'), 'type' => 'number'],
+            ['key' => 'required', 'label' => t('Required')],
         ]]"
         :stats="[['label' => 'All'], ['label' => 'Overdue', 'where' => ['due' => 'Overdue'], 'tone' => 'danger'], ['label' => 'Due soon', 'where' => ['due' => 'Due'], 'tone' => 'warn'], ['label' => 'Inspection', 'where' => ['type' => 'Inspection'], 'tone' => 'success']]"
         :filters="['machine' => 'Machine', 'type' => 'WO Type', 'due' => 'Due']" />
@@ -64,11 +64,11 @@
             </x-slot:special>
         @endif
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>Plan</span><b>{{ $p->plan_code ?: '(new)' }}</b></div>
-            <div class="dl-strip__kv"><span>Last done</span><b>{{ $p->last_done_date ? Locale::date($p->last_done_date) : '—' }}{{ $p->last_done_meter !== null ? ' · '.$num($p->last_done_meter) : '' }}</b></div>
-            <div class="dl-strip__kv"><span>By time</span><b>{{ $p->next_due_date ? Locale::date($p->next_due_date) : '—' }}</b></div>
-            <div class="dl-strip__kv"><span>By meter</span><b>{{ $due && $due['next_meter'] !== null ? $num($due['next_meter']).' (now '.$num($due['current_meter']).')' : '—' }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>PM compliance (12 m)</span><b>{{ $cmp && $cmp['pct'] !== null ? $cmp['pct'].'% · '.$cmp['on_time'].' on time / '.$cmp['late'].' late' : '—' }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>{{ t('Plan') }}</span><b>{{ $p->plan_code ?: t('(new)') }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('Last done') }}</span><b>{{ $p->last_done_date ? Locale::date($p->last_done_date) : '—' }}{{ $p->last_done_meter !== null ? ' · '.$num($p->last_done_meter) : '' }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('By time') }}</span><b>{{ $p->next_due_date ? Locale::date($p->next_due_date) : '—' }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('By meter') }}</span><b>{{ $due && $due['next_meter'] !== null ? $num($due['next_meter']).' ('.t('now').' '.$num($due['current_meter']).')' : '—' }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>{{ t('PM compliance (12 m)') }}</span><b>{{ $cmp && $cmp['pct'] !== null ? $cmp['pct'].'% · '.str_replace([':on', ':late'], [$cmp['on_time'], $cmp['late']], t(':on on time / :late late')) : '—' }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">
@@ -79,7 +79,7 @@
             <x-dl::form.row :cols="4">
                 <x-dl::field.select name="wo_type" label="WO Type" required :options="MntPlan::TYPES" :value="$p->wo_type" :source="Src::of('tm2prd.mnt_plan.wo_type')" />
                 <x-dl::field.number name="est_minutes" label="Est. Duration (minutes)" :value="$p->est_minutes" :source="Src::of('tm2prd.mnt_plan.est_minutes')" />
-                <x-dl::field.toggle name="needs_machine_stop" label="Machine Stop" on-label="Yes — blocks Scheduling Board" off-label="No" :value="$p->needs_machine_stop" :source="Src::of('tm2prd.mnt_plan.needs_machine_stop')" />
+                <x-dl::field.toggle name="needs_machine_stop" label="Machine Stop" :on-label="t('Yes — blocks Scheduling Board')" :off-label="t('No')" :value="$p->needs_machine_stop" :source="Src::of('tm2prd.mnt_plan.needs_machine_stop')" />
                 <x-dl::field.date name="certificate_valid_until" label="Certificate valid until (inspection)" :value="$p->certificate_valid_until?->toDateString()" :source="Src::of('tm2prd.mnt_plan.certificate_valid_until')" />
             </x-dl::form.row>
         </x-slot:general>

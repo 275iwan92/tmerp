@@ -99,7 +99,7 @@ class CustomerReceivingHoursLookup extends DbLookup
                 ->when(($in['customer_id'] ?? '') === '' || $in['customer_id'] === null, fn ($q) => $q->whereNull('customer_id'), fn ($q) => $q->where('customer_id', $in['customer_id']))
                 ->exists();
             if ($dup) {
-                throw ValidationException::withMessages(['row' => 'Row '.($i + 1).': this customer already has hours for '.(self::DAYS[$in['day_of_week'] ?? 0] ?? 'that day').'.']);
+                throw ValidationException::withMessages(['row' => str_replace(':n', (string) ($i + 1), t('Row :n:')).' '.str_replace(':day', t(self::DAYS[$in['day_of_week'] ?? 0] ?? 'that day'), t('this customer already has hours for :day.'))]);
             }
             $seen[$key] = true;
         }

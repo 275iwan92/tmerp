@@ -11,7 +11,7 @@ class FontPresets
 {
     private const PRESETS = [
         'system-ui' => [
-            'label' => 'Bawaan Sistem (tanpa font eksternal)',
+            'label' => 'System default (no external font)',
             'stack' => "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
             'google' => null,
         ],
@@ -39,7 +39,7 @@ class FontPresets
 
     public static function labels(): array
     {
-        return collect(self::PRESETS)->map(fn ($p) => $p['label'])->all();
+        return collect(self::PRESETS)->map(fn ($p) => t($p['label']))->all();
     }
 
     public static function stack(string $key): string

@@ -548,14 +548,14 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
         <div class="sp-content">
             {{-- 1. Pengguna -- Grid Master standar (docs/griduistandard.md), revisi 2026-08-30 --}}
             <section class="panel {{ $activePanel === 'users' ? 'active' : '' }}">
-                <h1>Pengguna</h1><p class="desc">Kelola akun yang bisa masuk ke aplikasi.</p>
+                <h1>{{ t('User') }}</h1><p class="desc">{{ t('Manage the accounts that can sign in to the application.') }}</p>
 
                 @if ($userView === 'grid')
                     <x-grid.stat-row :count="4">
-                        <x-grid.stat-box tone="total" label="Total Pengguna" :value="$this->userStatTotal" />
-                        <x-grid.stat-box tone="active" label="Aktif" :value="$this->userStatActive" />
-                        <x-grid.stat-box tone="warn" label="Wajib Ganti Password" :value="$this->userStatMustChange" />
-                        <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->userStatInactive" />
+                        <x-grid.stat-box tone="total" :label="t('Total Users')" :value="$this->userStatTotal" />
+                        <x-grid.stat-box tone="active" :label="t('Active')" :value="$this->userStatActive" />
+                        <x-grid.stat-box tone="warn" :label="t('Must Change Password')" :value="$this->userStatMustChange" />
+                        <x-grid.stat-box tone="critical" :label="t('Inactive')" :value="$this->userStatInactive" />
                     </x-grid.stat-row>
 
                     @if ($userMessage)
@@ -566,7 +566,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         <x-grid.toolbar>
                             <div class="flex items-center gap-1.5 shrink-0">
                                 <span class="text-sm">🔍</span>
-                                <div class="w-56 shrink-0"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="userSearch" placeholder="Cari username / nama / email…" /></div>
+                                <div class="w-56 shrink-0"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="userSearch" :placeholder="t('Search username / name / email…')" /></div>
                             </div>
                             <x-slot:newRecord>
                                 <button type="button" wire:click="openUserForm('new')"
@@ -578,46 +578,46 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                             <table class="w-full border-collapse text-[12.5px]">
                                 <thead>
                                     <tr>
-                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Pengguna</th>
-                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Grup</th>
-                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">Status</th>
-                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Password</th>
-                                        <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[160px]">Aksi</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('User') }}</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Group') }}</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">{{ t('Status') }}</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ t('Password') }}</th>
+                                        <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[160px]">{{ t('Action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($this->users as $u)
-                                        <tr wire:key="user-{{ $u->id_user }}" wire:dblclick="openUserForm('edit', {{ $u->id_user }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
+                                        <tr wire:key="user-{{ $u->id_user }}" wire:dblclick="openUserForm('edit', {{ $u->id_user }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open details') }}">
                                             <x-grid.identity-cell :id="$u->id_user" :name="$u->name" :code="$u->login" />
-                                            <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $u->groups->pluck('group_name')->implode(', ') ?: '—' }}{{ $u->is_admin ? ' (Admin)' : '' }}</td>
+                                            <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $u->groups->pluck('group_name')->implode(', ') ?: '—' }}{{ $u->is_admin ? ' ('.t('Admin').')' : '' }}</td>
                                             <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $u->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $u->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $u->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $u->activate ? t('ACTIVE') : t('INACTIVE') }}</span>
                                             </td>
                                             <td class="px-3 py-2 border-b border-[#eef1f5]">
                                                 @if (session()->has('resetPlain_'.$u->id_user))
-                                                    <span class="text-[11px] font-bold text-[#1f8a4c]">Baru: <code>{{ session('resetPlain_'.$u->id_user) }}</code></span>
+                                                    <span class="text-[11px] font-bold text-[#1f8a4c]">{{ t('New:') }} <code>{{ session('resetPlain_'.$u->id_user) }}</code></span>
                                                 @elseif ($u->must_change_password)
-                                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block bg-[#fef6e7] text-[#8a6d00]">Wajib ganti</span>
+                                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block bg-[#fef6e7] text-[#8a6d00]">{{ t('Must change') }}</span>
                                                 @else
                                                     <span class="text-[11px] text-muted">—</span>
                                                 @endif
                                             </td>
                                             <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                                <x-grid.action-icon icon="fa-pen" title="Edit" action="openUserForm('edit', {{ $u->id_user }})" />
-                                                <x-grid.action-icon icon="fa-key" title="Reset Password" action="resetPassword({{ $u->id_user }})"
-                                                    confirm="Reset password {{ $u->login }} ke password baru?" />
+                                                <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="openUserForm('edit', {{ $u->id_user }})" />
+                                                <x-grid.action-icon icon="fa-key" :title="t('Reset Password')" action="resetPassword({{ $u->id_user }})"
+                                                    :confirm="str_replace(':user', $u->login, t('Reset the password of :user to a new password?'))" />
                                                 @if ($u->default_password)
-                                                    <x-grid.action-icon icon="fa-eye" title="Lihat Password" action="revealPassword({{ $u->id_user }})" />
+                                                    <x-grid.action-icon icon="fa-eye" :title="t('View Password')" action="revealPassword({{ $u->id_user }})" />
                                                 @endif
                                                 @if ($u->id_user !== Auth::id())
-                                                    <x-grid.action-icon :active="$u->activate" :title="$u->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleUserActive({{ $u->id_user }})"
-                                                        :confirm="($u->activate ? 'Nonaktifkan' : 'Aktifkan').' pengguna '.$u->login.'?'"
+                                                    <x-grid.action-icon :active="$u->activate" :title="$u->activate ? t('Deactivate') : t('Activate')" action="toggleUserActive({{ $u->id_user }})"
+                                                        :confirm="str_replace(':user', $u->login, $u->activate ? t('Deactivate user :user?') : t('Activate user :user?'))"
                                                         :variant="$u->activate ? 'danger' : 'default'" />
                                                 @endif
                                             </td>
                                         </tr>
                                     @empty
-                                        <x-grid.empty-row :colspan="5" :message="'Tidak ada pengguna'.($userSearch ? ' untuk pencarian ini' : '').'.'" />
+                                        <x-grid.empty-row :colspan="5" :message="$userSearch ? t('No users for this search.') : t('No users.')" />
                                     @endforelse
                                 </tbody>
                             </table>
@@ -627,27 +627,27 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                     {{-- FORM Pengguna (New/Edit) --}}
                     <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
                         <div class="text-sm font-bold">
-                            {{ $userMode === 'edit' ? 'Edit Pengguna' : 'Pengguna Baru' }}
+                            {{ $userMode === 'edit' ? t('Edit User') : t('New User') }}
                             @if ($userMode === 'edit')<span class="text-xs font-normal opacity-75 ml-2">{{ $u_login }}</span>@endif
                         </div>
                     </div>
                     <form wire:submit="saveUser" class="bg-white border border-t-0 border-[#d7dbe2] p-5 rounded-b-md">
                         <div class="form-grid">
-                            <x-form.input legacy="fld" label="Username" wire:model="u_login" placeholder="mis. andi.pratama" name="u_login" @readonly($userMode === 'edit') />
-                            <x-form.input legacy="fld" label="Nama lengkap" wire:model="u_name" placeholder="Andi Pratama" name="u_name" />
-                            <x-form.input legacy="fld" label="Email" wire:model="u_email" placeholder="andi@telasih.co.id" name="u_email" />
+                            <x-form.input legacy="fld" :label="t('Username')" wire:model="u_login" :placeholder="t('e.g.').' andi.pratama'" name="u_login" @readonly($userMode === 'edit') />
+                            <x-form.input legacy="fld" :label="t('Full name')" wire:model="u_name" placeholder="Andi Pratama" name="u_name" />
+                            <x-form.input legacy="fld" :label="t('Email')" wire:model="u_email" placeholder="andi@telasih.co.id" name="u_email" />
                             @if ($userMode === 'new')
-                                <x-form.input legacy="fld" label="Password awal" type="password" wire:model="u_pswd" placeholder="Minimal 8 karakter" name="u_pswd" />
+                                <x-form.input legacy="fld" :label="t('Initial password')" type="password" wire:model="u_pswd" :placeholder="t('Minimum 8 characters')" name="u_pswd" />
                             @endif
-                            <x-form.select legacy="fld" label="Grup" wire:model="u_group_id" name="u_group_id"
-                                placeholder="— pilih grup —" :options="$this->groupOptions->pluck('group_name', 'id_group')->all()" :selected="$u_group_id" />
+                            <x-form.select legacy="fld" :label="t('Group')" wire:model="u_group_id" name="u_group_id"
+                                :placeholder="t('— select group —')" :options="$this->groupOptions->pluck('group_name', 'id_group')->all()" :selected="$u_group_id" />
                         </div>
                         @if ($userMode === 'edit')
-                            <p class="note">Ganti password lewat aksi 🔑 "Reset Password" di grid, bukan di sini.</p>
+                            <p class="note">{{ t('Change the password with the 🔑 "Reset Password" action in the grid, not here.') }}</p>
                         @endif
                         <div class="actions">
-                            <button type="submit" class="btn btn-primary">Simpan</button>
-                            <button type="button" wire:click="showUserGrid" class="btn btn-ghost">Batal</button>
+                            <button type="submit" class="btn btn-primary">{{ t('Save') }}</button>
+                            <button type="button" wire:click="showUserGrid" class="btn btn-ghost">{{ t('Cancel') }}</button>
                         </div>
                     </form>
                 @endif
@@ -655,13 +655,13 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- 2. Grup -- Grid Master standar, sama pola dgn Pengguna di atas --}}
             <section class="panel {{ $activePanel === 'groups' ? 'active' : '' }}">
-                <h1>Grup</h1><p class="desc">Grup menampung sekumpulan pengguna yang berbagi hak akses sama.</p>
+                <h1>{{ t('Group') }}</h1><p class="desc">{{ t('A group holds a set of users who share the same access rights.') }}</p>
 
                 @if ($groupView === 'grid')
                     <x-grid.stat-row :count="3">
-                        <x-grid.stat-box tone="total" label="Total Grup" :value="$this->groupStatTotal" />
-                        <x-grid.stat-box tone="active" label="Terisi (≥1 Pengguna)" :value="$this->groupStatFilled" />
-                        <x-grid.stat-box tone="warn" label="Kosong" :value="$this->groupStatEmpty" />
+                        <x-grid.stat-box tone="total" :label="t('Total Groups')" :value="$this->groupStatTotal" />
+                        <x-grid.stat-box tone="active" :label="t('Filled (≥1 User)')" :value="$this->groupStatFilled" />
+                        <x-grid.stat-box tone="warn" :label="t('Empty')" :value="$this->groupStatEmpty" />
                     </x-grid.stat-row>
 
                     @if ($groupMessage)
@@ -672,7 +672,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         <x-grid.toolbar>
                             <div class="flex items-center gap-1.5 shrink-0">
                                 <span class="text-sm">🔍</span>
-                                <div class="w-56 shrink-0"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="groupSearch" placeholder="Cari kode / nama grup…" /></div>
+                                <div class="w-56 shrink-0"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="groupSearch" :placeholder="t('Search group code / name…')" /></div>
                             </div>
                             <x-slot:newRecord>
                                 <button type="button" wire:click="openGroupForm('new')"
@@ -684,31 +684,31 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                             <table class="w-full border-collapse text-[12.5px]">
                                 <thead>
                                     <tr>
-                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Grup</th>
-                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Level</th>
-                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Jumlah User</th>
-                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">Status</th>
-                                        <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Aksi</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Group') }}</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Level') }}</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('User Count') }}</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">{{ t('Status') }}</th>
+                                        <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($this->groups as $g)
-                                        <tr wire:key="group-{{ $g->id_group }}" wire:dblclick="openGroupForm('edit', {{ $g->id_group }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
+                                        <tr wire:key="group-{{ $g->id_group }}" wire:dblclick="openGroupForm('edit', {{ $g->id_group }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open details') }}">
                                             <x-grid.identity-cell :id="$g->id_group" :name="$g->group_name" :code="$g->group_code" />
                                             <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $g->mgmt_level }}</td>
                                             <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $g->users_count }}</td>
                                             <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $g->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $g->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $g->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $g->activate ? t('ACTIVE') : t('INACTIVE') }}</span>
                                             </td>
                                             <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                                <x-grid.action-icon icon="fa-pen" title="Edit" action="openGroupForm('edit', {{ $g->id_group }})" />
-                                                <x-grid.action-icon :active="$g->activate" :title="$g->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleGroupActive({{ $g->id_group }})"
-                                                    :confirm="($g->activate ? 'Nonaktifkan' : 'Aktifkan').' grup '.$g->group_name.'?'"
+                                                <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="openGroupForm('edit', {{ $g->id_group }})" />
+                                                <x-grid.action-icon :active="$g->activate" :title="$g->activate ? t('Deactivate') : t('Activate')" action="toggleGroupActive({{ $g->id_group }})"
+                                                    :confirm="str_replace(':group', $g->group_name, $g->activate ? t('Deactivate group :group?') : t('Activate group :group?'))"
                                                     :variant="$g->activate ? 'danger' : 'default'" />
                                             </td>
                                         </tr>
                                     @empty
-                                        <x-grid.empty-row :colspan="5" :message="'Tidak ada grup'.($groupSearch ? ' untuk pencarian ini' : '').'.'" />
+                                        <x-grid.empty-row :colspan="5" :message="$groupSearch ? t('No groups for this search.') : t('No groups.')" />
                                     @endforelse
                                 </tbody>
                             </table>
@@ -718,20 +718,20 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                     {{-- FORM Grup (New/Edit) --}}
                     <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
                         <div class="text-sm font-bold">
-                            {{ $groupMode === 'edit' ? 'Edit Grup' : 'Grup Baru' }}
+                            {{ $groupMode === 'edit' ? t('Edit Group') : t('New Group') }}
                             @if ($groupMode === 'edit')<span class="text-xs font-normal opacity-75 ml-2">{{ $g_code }}</span>@endif
                         </div>
                     </div>
                     <form wire:submit="saveGroup" class="bg-white border border-t-0 border-[#d7dbe2] p-5 rounded-b-md">
                         <div class="form-grid">
-                            <x-form.input legacy="fld" label="Kode grup" wire:model="g_code" placeholder="mis. PRODUKSI_SPV" name="g_code" @readonly($groupMode === 'edit') />
-                            <x-form.input legacy="fld" label="Nama grup" wire:model="g_name" placeholder="mis. Supervisor Produksi" name="g_name" />
-                            <x-form.select legacy="fld" label="Level manajemen (1=Staf .. 5=Direksi)" wire:model="g_level"
-                                :placeholder="false" :options="[1 => '1 - Staf', 2 => '2 - Supervisor', 3 => '3 - Manager', 4 => '4 - GM', 5 => '5 - Direksi']" :selected="$g_level" />
+                            <x-form.input legacy="fld" :label="t('Group code')" wire:model="g_code" :placeholder="t('e.g.').' PRODUKSI_SPV'" name="g_code" @readonly($groupMode === 'edit') />
+                            <x-form.input legacy="fld" :label="t('Group name')" wire:model="g_name" :placeholder="t('e.g. Production Supervisor')" name="g_name" />
+                            <x-form.select legacy="fld" :label="t('Management level (1=Staff .. 5=Directors)')" wire:model="g_level"
+                                :placeholder="false" :options="[1 => '1 - '.t('Staff'), 2 => '2 - '.t('Supervisor'), 3 => '3 - '.t('Manager'), 4 => '4 - '.t('GM'), 5 => '5 - '.t('Directors')]" :selected="$g_level" />
                         </div>
                         <div class="actions">
-                            <button type="submit" class="btn btn-primary">Simpan</button>
-                            <button type="button" wire:click="showGroupGrid" class="btn btn-ghost">Batal</button>
+                            <button type="submit" class="btn btn-primary">{{ t('Save') }}</button>
+                            <button type="button" wire:click="showGroupGrid" class="btn btn-ghost">{{ t('Cancel') }}</button>
                         </div>
                     </form>
                 @endif
@@ -739,19 +739,19 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- 3. Hak Akses Grup --}}
             <section class="panel {{ $activePanel === 'perms' ? 'active' : '' }}">
-                <h1>Hak Akses Grup</h1><p class="desc">Pilih grup, lalu tentukan akses per modul (hierarki induk → sub).</p>
+                <h1>{{ t('Group Access Rights') }}</h1><p class="desc">{{ t('Select a group, then set access per module (parent → sub hierarchy).') }}</p>
 
                 <div class="box">
                     <div style="max-width:320px">
-                        <x-form.select legacy="fld" label="Grup" wire:model.live="permGroupId"
+                        <x-form.select legacy="fld" :label="t('Group')" wire:model.live="permGroupId"
                             :placeholder="false" :options="$this->groupOptions->pluck('group_name', 'id_group')->all()" :selected="$permGroupId" />
                     </div>
                 </div>
 
                 <div class="box">
-                    <h3>Izin per modul</h3>
+                    <h3>{{ t('Permissions per module') }}</h3>
                     <table>
-                        <thead><tr><th>Modul</th><th style="width:90px">Akses</th><th style="width:90px">Input</th><th style="width:90px">Approve</th><th style="width:90px">Export</th></tr></thead>
+                        <thead><tr><th>{{ t('Module') }}</th><th style="width:90px">{{ t('Access') }}</th><th style="width:90px">{{ t('Input') }}</th><th style="width:90px">{{ t('Approve') }}</th><th style="width:90px">{{ t('Export') }}</th></tr></thead>
                         <tbody>
                             @foreach ($this->modulesTree as $m)
                                 @php $p = $this->currentPermissions->get($m->id_module); @endphp
@@ -769,7 +769,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                                 @foreach ($m->children as $sub)
                                     @php $sp = $this->currentPermissions->get($sub->id_module); @endphp
                                     <tr wire:key="perm-mod-{{ $sub->id_module }}">
-                                        <td class="sub-indent">↳ {{ $sub->icon }} {{ $sub->module_name }} <span class="pill sub">min lvl {{ $sub->min_mgmt_level }}</span></td>
+                                        <td class="sub-indent">↳ {{ $sub->icon }} {{ $sub->module_name }} <span class="pill sub">{{ t('min lvl') }} {{ $sub->min_mgmt_level }}</span></td>
                                         @foreach (['can_access', 'can_input', 'can_approve', 'can_export'] as $field)
                                             <td>
                                                 <label class="switch">
@@ -783,50 +783,50 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                             @endforeach
                         </tbody>
                     </table>
-                    <p class="note">Readonly = Akses menyala, Input mati. Mematikan Akses otomatis mematikan Input/Approve/Export (BRIEF §4).</p>
+                    <p class="note">{{ t('Readonly = Access on, Input off. Turning Access off automatically turns off Input/Approve/Export') }} (BRIEF §4).</p>
                 </div>
             </section>
 
             {{-- 4. Migrasi Data Legacy --}}
             <section class="panel {{ $activePanel === 'migration' ? 'active' : '' }}">
-                <h1>Migrasi Data Legacy</h1>
-                <p class="desc">Tarik data lama (ScriptCase V1) dari staging <code>tm2old</code> ke Master Customer &amp; Master Supplier. Aman dijalankan berulang kali — data yang sudah ada akan diperbarui, bukan diduplikasi.</p>
+                <h1>{{ t('Legacy Data Migration') }}</h1>
+                <p class="desc">{{ t('Pull old data (ScriptCase V1) from staging') }} <code>tm2old</code> {{ t('into the Customer Master & Supplier Master.') }} {{ t('Safe to run repeatedly — existing data is updated, not duplicated.') }}</p>
 
                 <div class="box">
                     <h3>tm2old.mst_vendor → cust_customer &amp; sup_supplier</h3>
-                    <p class="note">Sumber: <code>mst_vendor</code> (1.160 baris), <code>mst_vendor_bank</code>, <code>mst_vendor_customer_category</code>, <code>mst_vendor_supplier_category</code>. Baris dengan <code>as_customer=1</code> masuk Master Customer, <code>as_supplier=1</code> masuk Master Supplier — vendor bisa masuk keduanya.</p>
+                    <p class="note">{{ t('Source:') }} <code>mst_vendor</code> (1.160 {{ t('rows') }}), <code>mst_vendor_bank</code>, <code>mst_vendor_customer_category</code>, <code>mst_vendor_supplier_category</code>. {{ t('Rows with') }} <code>as_customer=1</code> {{ t('go to the Customer Master,') }} <code>as_supplier=1</code> {{ t('go to the Supplier Master — a vendor can go to both.') }}</p>
                     <div class="actions">
                         <button type="button" class="btn btn-primary" wire:click="runVendorMigration" wire:loading.attr="disabled"
-                            wire:confirm="Jalankan migrasi data dari tm2old.mst_vendor sekarang?">
-                            <span wire:loading.remove wire:target="runVendorMigration">▶ Jalankan Migrasi</span>
-                            <span wire:loading wire:target="runVendorMigration">Memproses…</span>
+                            wire:confirm="{{ t('Run the data migration from tm2old.mst_vendor now?') }}">
+                            <span wire:loading.remove wire:target="runVendorMigration">▶ {{ t('Run Migration') }}</span>
+                            <span wire:loading wire:target="runVendorMigration">{{ t('Processing…') }}</span>
                         </button>
                     </div>
 
                     @if ($migrationReport)
                         <div style="margin-top:16px">
-                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                            <p class="note" style="color:var(--sp-ok)">✅ {{ t('Migration finished.') }}</p>
                             <table>
-                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <thead><tr><th>{{ t('Section') }}</th><th>{{ t('Result') }}</th></tr></thead>
                                 <tbody>
-                                    <tr><td>Kategori customer / supplier</td><td>{{ $migrationReport['categories']['cust'] }} / {{ $migrationReport['categories']['sup'] }} kode</td></tr>
-                                    <tr><td>Master Customer</td><td>{{ $migrationReport['customers']['created'] }} baru, {{ $migrationReport['customers']['updated'] }} diperbarui</td></tr>
-                                    <tr><td>Master Supplier</td><td>{{ $migrationReport['suppliers']['created'] }} baru, {{ $migrationReport['suppliers']['updated'] }} diperbarui</td></tr>
-                                    <tr><td>Rekening bank</td><td>{{ $migrationReport['banks']['cust'] }} customer, {{ $migrationReport['banks']['sup'] }} supplier{{ $migrationReport['banks']['skipped'] ? ', '.$migrationReport['banks']['skipped'].' dilewati (vendor tak ketemu)' : '' }}</td></tr>
-                                    <tr><td>Kota cocok otomatis</td><td>{{ $migrationReport['city']['matched'] }} baris</td></tr>
+                                    <tr><td>{{ t('Customer / supplier category') }}</td><td>{{ $migrationReport['categories']['cust'] }} / {{ $migrationReport['categories']['sup'] }} {{ t('codes') }}</td></tr>
+                                    <tr><td>{{ t('Customer Master') }}</td><td>{{ $migrationReport['customers']['created'] }} {{ t('new,') }} {{ $migrationReport['customers']['updated'] }} {{ t('updated') }}</td></tr>
+                                    <tr><td>{{ t('Supplier Master') }}</td><td>{{ $migrationReport['suppliers']['created'] }} {{ t('new,') }} {{ $migrationReport['suppliers']['updated'] }} {{ t('updated') }}</td></tr>
+                                    <tr><td>{{ t('Bank account') }}</td><td>{{ $migrationReport['banks']['cust'] }} {{ t('customer') }}, {{ $migrationReport['banks']['sup'] }} {{ t('supplier') }}{{ $migrationReport['banks']['skipped'] ? ', '.$migrationReport['banks']['skipped'].' '.t('skipped (vendor not found)') : '' }}</td></tr>
+                                    <tr><td>{{ t('City matched automatically') }}</td><td>{{ $migrationReport['city']['matched'] }} {{ t('rows') }}</td></tr>
                                 </tbody>
                             </table>
 
                             @if (! empty($migrationReport['city']['unmatched']))
                                 <div style="margin-top:12px">
-                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($migrationReport['city']['unmatched']) }} nama kota tidak cocok ke <code>geo_city</code> (dibiarkan kosong, isi manual di Master Customer/Supplier):</p>
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($migrationReport['city']['unmatched']) }} {{ t('city names do not match') }} <code>geo_city</code> {{ t('(left empty, fill in manually in the Customer/Supplier Master):') }}</p>
                                     <p class="note">{{ implode(', ', array_map(fn ($name, $cnt) => "{$name} ({$cnt})", array_keys($migrationReport['city']['unmatched']), $migrationReport['city']['unmatched'])) }}</p>
                                 </div>
                             @endif
 
                             @if (! empty($migrationReport['errors']))
                                 <div style="margin-top:12px">
-                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($migrationReport['errors']) }} baris gagal diproses:</p>
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($migrationReport['errors']) }} {{ t('rows failed to process:') }}</p>
                                     <ul style="font-size:12px;color:var(--sp-danger);margin:4px 0 0;padding-left:18px">
                                         @foreach ($migrationReport['errors'] as $err)
                                             <li>{{ $err }}</li>
@@ -839,36 +839,36 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 <div class="box" style="margin-top:16px">
-                    <h3>tm2old.mst_item (bahan baku) → mat_raw</h3>
-                    <p class="note">Kriteria: <code>material_class='RAW MATERIAL'</code> atau <code>as_mat=1</code>. Kode item &gt;60 karakter dipotong + diberi akhiran angka untuk <code>material_code</code> (teks asli tetap utuh di <code>old_item_code</code>).</p>
+                    <h3>tm2old.mst_item ({{ t('raw material') }}) → mat_raw</h3>
+                    <p class="note">{{ t('Criteria:') }} <code>material_class='RAW MATERIAL'</code> {{ t('or') }} <code>as_mat=1</code>. {{ t('Item codes >60 characters are truncated + given a numeric suffix for') }} <code>material_code</code> ({{ t('the original text stays intact in') }} <code>old_item_code</code>).</p>
                     <div class="actions">
                         <button type="button" class="btn btn-primary" wire:click="runRawMaterialMigration" wire:loading.attr="disabled"
-                            wire:confirm="Jalankan migrasi bahan baku dari tm2old.mst_item sekarang?">
-                            <span wire:loading.remove wire:target="runRawMaterialMigration">▶ Jalankan Migrasi</span>
-                            <span wire:loading wire:target="runRawMaterialMigration">Memproses…</span>
+                            wire:confirm="{{ t('Run the raw material migration from tm2old.mst_item now?') }}">
+                            <span wire:loading.remove wire:target="runRawMaterialMigration">▶ {{ t('Run Migration') }}</span>
+                            <span wire:loading wire:target="runRawMaterialMigration">{{ t('Processing…') }}</span>
                         </button>
                     </div>
 
                     @if ($rawMaterialMigrationReport)
                         <div style="margin-top:16px">
-                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                            <p class="note" style="color:var(--sp-ok)">✅ {{ t('Migration finished.') }}</p>
                             <table>
-                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <thead><tr><th>{{ t('Section') }}</th><th>{{ t('Result') }}</th></tr></thead>
                                 <tbody>
-                                    <tr><td>Master Raw Material</td><td>{{ $rawMaterialMigrationReport['materials']['created'] }} baru, {{ $rawMaterialMigrationReport['materials']['updated'] }} diperbarui, {{ $rawMaterialMigrationReport['materials']['unchanged'] }} tidak berubah</td></tr>
+                                    <tr><td>{{ t('Raw Material Master') }}</td><td>{{ $rawMaterialMigrationReport['materials']['created'] }} {{ t('new,') }} {{ $rawMaterialMigrationReport['materials']['updated'] }} {{ t('updated,') }} {{ $rawMaterialMigrationReport['materials']['unchanged'] }} {{ t('unchanged') }}</td></tr>
                                 </tbody>
                             </table>
 
                             @if (! empty($rawMaterialMigrationReport['skipped_too_long']))
                                 <div style="margin-top:12px">
-                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($rawMaterialMigrationReport['skipped_too_long']) }} kode item &gt;60 karakter, di-generate ulang (cek manual disarankan):</p>
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($rawMaterialMigrationReport['skipped_too_long']) }} {{ t('item codes >60 characters, regenerated (manual check recommended):') }}</p>
                                     <p class="note">{{ implode(', ', array_slice($rawMaterialMigrationReport['skipped_too_long'], 0, 10)) }}{{ count($rawMaterialMigrationReport['skipped_too_long']) > 10 ? '…' : '' }}</p>
                                 </div>
                             @endif
 
                             @if (! empty($rawMaterialMigrationReport['errors']))
                                 <div style="margin-top:12px">
-                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($rawMaterialMigrationReport['errors']) }} baris gagal diproses:</p>
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($rawMaterialMigrationReport['errors']) }} {{ t('rows failed to process:') }}</p>
                                     <ul style="font-size:12px;color:var(--sp-danger);margin:4px 0 0;padding-left:18px">
                                         @foreach ($rawMaterialMigrationReport['errors'] as $err)
                                             <li>{{ $err }}</li>
@@ -881,29 +881,29 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 <div class="box" style="margin-top:16px">
-                    <h3>tm2old.mst_item (produk jadi) → prod_product</h3>
-                    <p class="note">Kriteria: <code>as_fgs=1</code>. Dimensi fisik &amp; customer/kategori SENGAJA tidak ikut dimigrasi (satuan sumber tidak jelas/tidak konsisten) — isi manual lewat ProDev saat produk dipakai.</p>
+                    <h3>tm2old.mst_item ({{ t('finished goods') }}) → prod_product</h3>
+                    <p class="note">{{ t('Criteria:') }} <code>as_fgs=1</code>. {{ t('Physical dimensions & customer/category are DELIBERATELY not migrated (source units unclear/inconsistent) — fill in manually through ProDev when the product is used.') }}</p>
                     <div class="actions">
                         <button type="button" class="btn btn-primary" wire:click="runProductMigration" wire:loading.attr="disabled"
-                            wire:confirm="Jalankan migrasi produk dari tm2old.mst_item sekarang?">
-                            <span wire:loading.remove wire:target="runProductMigration">▶ Jalankan Migrasi</span>
-                            <span wire:loading wire:target="runProductMigration">Memproses…</span>
+                            wire:confirm="{{ t('Run the product migration from tm2old.mst_item now?') }}">
+                            <span wire:loading.remove wire:target="runProductMigration">▶ {{ t('Run Migration') }}</span>
+                            <span wire:loading wire:target="runProductMigration">{{ t('Processing…') }}</span>
                         </button>
                     </div>
 
                     @if ($productMigrationReport)
                         <div style="margin-top:16px">
-                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                            <p class="note" style="color:var(--sp-ok)">✅ {{ t('Migration finished.') }}</p>
                             <table>
-                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <thead><tr><th>{{ t('Section') }}</th><th>{{ t('Result') }}</th></tr></thead>
                                 <tbody>
-                                    <tr><td>Master Product</td><td>{{ $productMigrationReport['products']['created'] }} baru, {{ $productMigrationReport['products']['updated'] }} diperbarui, {{ $productMigrationReport['products']['unchanged'] }} tidak berubah</td></tr>
+                                    <tr><td>{{ t('Product Master') }}</td><td>{{ $productMigrationReport['products']['created'] }} {{ t('new,') }} {{ $productMigrationReport['products']['updated'] }} {{ t('updated,') }} {{ $productMigrationReport['products']['unchanged'] }} {{ t('unchanged') }}</td></tr>
                                 </tbody>
                             </table>
 
                             @if (! empty($productMigrationReport['errors']))
                                 <div style="margin-top:12px">
-                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($productMigrationReport['errors']) }} baris gagal diproses:</p>
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($productMigrationReport['errors']) }} {{ t('rows failed to process:') }}</p>
                                     <ul style="font-size:12px;color:var(--sp-danger);margin:4px 0 0;padding-left:18px">
                                         @foreach ($productMigrationReport['errors'] as $err)
                                             <li>{{ $err }}</li>
@@ -916,30 +916,30 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 <div class="box" style="margin-top:16px">
-                    <h3>tm2old.sdi_co(_detail) → co_order_legacy (arsip riwayat, BUKAN co_order)</h3>
-                    <p class="note">co_order mewajibkan lineage Quotation (1 CO = 1 Quotation) untuk alur baru — 20.669 CO lama tidak pernah punya itu. Diarsipkan ke tabel terpisah, read-only, khusus dashboard/laporan (mis. total belanja per customer). Idempoten: refresh penuh tiap dijalankan.</p>
+                    <h3>tm2old.sdi_co(_detail) → co_order_legacy ({{ t('history archive, NOT') }} co_order)</h3>
+                    <p class="note">{{ t('co_order requires a Quotation lineage (1 CO = 1 Quotation) for the new flow — the 20.669 old COs never had one.') }} {{ t('Archived to a separate, read-only table, only for dashboards/reports (e.g. total spend per customer).') }} {{ t('Idempotent: full refresh on every run.') }}</p>
                     <div class="actions">
                         <button type="button" class="btn btn-primary" wire:click="runCoOrderMigration" wire:loading.attr="disabled"
-                            wire:confirm="Jalankan migrasi arsip Customer Order dari tm2old.sdi_co sekarang?">
-                            <span wire:loading.remove wire:target="runCoOrderMigration">▶ Jalankan Migrasi</span>
-                            <span wire:loading wire:target="runCoOrderMigration">Memproses…</span>
+                            wire:confirm="{{ t('Run the Customer Order archive migration from tm2old.sdi_co now?') }}">
+                            <span wire:loading.remove wire:target="runCoOrderMigration">▶ {{ t('Run Migration') }}</span>
+                            <span wire:loading wire:target="runCoOrderMigration">{{ t('Processing…') }}</span>
                         </button>
                     </div>
 
                     @if ($coOrderMigrationReport)
                         <div style="margin-top:16px">
-                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                            <p class="note" style="color:var(--sp-ok)">✅ {{ t('Migration finished.') }}</p>
                             <table>
-                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <thead><tr><th>{{ t('Section') }}</th><th>{{ t('Result') }}</th></tr></thead>
                                 <tbody>
-                                    <tr><td>Header CO</td><td>{{ $coOrderMigrationReport['headers']['inserted'] }} baris</td></tr>
-                                    <tr><td>Baris item CO</td><td>{{ $coOrderMigrationReport['details']['inserted'] }} baris ({{ $coOrderMigrationReport['details']['no_product_match'] }} tanpa padanan Master Product, fallback ke kode lama)</td></tr>
+                                    <tr><td>{{ t('CO header') }}</td><td>{{ $coOrderMigrationReport['headers']['inserted'] }} {{ t('rows') }}</td></tr>
+                                    <tr><td>{{ t('CO item lines') }}</td><td>{{ $coOrderMigrationReport['details']['inserted'] }} {{ t('rows') }} ({{ $coOrderMigrationReport['details']['no_product_match'] }} {{ t('without a Product Master match, falling back to the old code') }})</td></tr>
                                 </tbody>
                             </table>
 
                             @if (! empty($coOrderMigrationReport['customer_unmatched']))
                                 <div style="margin-top:12px">
-                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($coOrderMigrationReport['customer_unmatched']) }} kode customer tidak ketemu padanan Master Customer:</p>
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($coOrderMigrationReport['customer_unmatched']) }} {{ t('customer codes without a Customer Master match:') }}</p>
                                     <p class="note">{{ implode(', ', array_slice(array_keys($coOrderMigrationReport['customer_unmatched']), 0, 15)) }}{{ count($coOrderMigrationReport['customer_unmatched']) > 15 ? '…' : '' }}</p>
                                 </div>
                             @endif
@@ -948,30 +948,30 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 <div class="box" style="margin-top:16px">
-                    <h3>tm2old.pur_po(_v2)+pur_po_detail → po_order_legacy (arsip riwayat, BUKAN po_order)</h3>
-                    <p class="note">Header dari pur_po_v2 (pajak lebih lengkap), baris dari pur_po_detail (v1) — di-join by nomor PO. Diarsipkan ke tabel terpisah, read-only, khusus dashboard/laporan (mis. total AP per supplier). Idempoten: refresh penuh tiap dijalankan.</p>
+                    <h3>tm2old.pur_po(_v2)+pur_po_detail → po_order_legacy ({{ t('history archive, NOT') }} po_order)</h3>
+                    <p class="note">{{ t('Header from pur_po_v2 (more complete tax), lines from pur_po_detail (v1) — joined by PO number.') }} {{ t('Archived to a separate, read-only table, only for dashboards/reports (e.g. total AP per supplier).') }} {{ t('Idempotent: full refresh on every run.') }}</p>
                     <div class="actions">
                         <button type="button" class="btn btn-primary" wire:click="runPoOrderMigration" wire:loading.attr="disabled"
-                            wire:confirm="Jalankan migrasi arsip Purchase Order dari tm2old.pur_po sekarang?">
-                            <span wire:loading.remove wire:target="runPoOrderMigration">▶ Jalankan Migrasi</span>
-                            <span wire:loading wire:target="runPoOrderMigration">Memproses…</span>
+                            wire:confirm="{{ t('Run the Purchase Order archive migration from tm2old.pur_po now?') }}">
+                            <span wire:loading.remove wire:target="runPoOrderMigration">▶ {{ t('Run Migration') }}</span>
+                            <span wire:loading wire:target="runPoOrderMigration">{{ t('Processing…') }}</span>
                         </button>
                     </div>
 
                     @if ($poOrderMigrationReport)
                         <div style="margin-top:16px">
-                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                            <p class="note" style="color:var(--sp-ok)">✅ {{ t('Migration finished.') }}</p>
                             <table>
-                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <thead><tr><th>{{ t('Section') }}</th><th>{{ t('Result') }}</th></tr></thead>
                                 <tbody>
-                                    <tr><td>Header PO</td><td>{{ $poOrderMigrationReport['headers']['inserted'] }} baris</td></tr>
-                                    <tr><td>Baris item PO</td><td>{{ $poOrderMigrationReport['details']['inserted'] }} baris ({{ $poOrderMigrationReport['details']['no_material_match'] }} tanpa padanan Master Raw Material, fallback ke kode lama)</td></tr>
+                                    <tr><td>{{ t('PO header') }}</td><td>{{ $poOrderMigrationReport['headers']['inserted'] }} {{ t('rows') }}</td></tr>
+                                    <tr><td>{{ t('PO item lines') }}</td><td>{{ $poOrderMigrationReport['details']['inserted'] }} {{ t('rows') }} ({{ $poOrderMigrationReport['details']['no_material_match'] }} {{ t('without a Raw Material Master match, falling back to the old code') }})</td></tr>
                                 </tbody>
                             </table>
 
                             @if (! empty($poOrderMigrationReport['supplier_unmatched']))
                                 <div style="margin-top:12px">
-                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($poOrderMigrationReport['supplier_unmatched']) }} kode supplier tidak ketemu padanan Master Supplier:</p>
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($poOrderMigrationReport['supplier_unmatched']) }} {{ t('supplier codes without a Supplier Master match:') }}</p>
                                     <p class="note">{{ implode(', ', array_slice(array_keys($poOrderMigrationReport['supplier_unmatched']), 0, 15)) }}{{ count($poOrderMigrationReport['supplier_unmatched']) > 15 ? '…' : '' }}</p>
                                 </div>
                             @endif
@@ -984,7 +984,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         ['title' => 'tm2old.pur_pr(_detail) → pr_requisition_legacy', 'action' => 'runPrMigration', 'report' => 'prMigrationReport', 'unmatchedKey' => null],
                         ['title' => 'tm2old.pur_prcv(_detail) → po_receive_legacy', 'action' => 'runReceiveMigration', 'report' => 'receiveMigrationReport', 'unmatchedKey' => 'supplier_unmatched'],
                         ['title' => 'tm2old.pur_ppym(_detail) → po_payment_legacy', 'action' => 'runPaymentMigration', 'report' => 'paymentMigrationReport', 'unmatchedKey' => 'supplier_unmatched'],
-                        ['title' => 'tm2old.sdi_dnote(_detail) → co_delivery_legacy (Surat Jalan)', 'action' => 'runDnoteMigration', 'report' => 'dnoteMigrationReport', 'unmatchedKey' => 'customer_unmatched'],
+                        ['title' => 'tm2old.sdi_dnote(_detail) → co_delivery_legacy ('.t('Delivery Note').')', 'action' => 'runDnoteMigration', 'report' => 'dnoteMigrationReport', 'unmatchedKey' => 'customer_unmatched'],
                         ['title' => 'tm2old.sdi_cinv(_detail) → co_invoice_legacy (Customer Invoice, basis AR)', 'action' => 'runCinvMigration', 'report' => 'cinvMigrationReport', 'unmatchedKey' => 'customer_unmatched'],
                     ];
                 @endphp
@@ -993,11 +993,11 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                     // Master pendukung: bentuk laporannya beda-beda (bukan header/detail
                     // seperti arsip dokumen), jadi dirender generik key -> nilai.
                     $legacySupportBoxes = [
-                        ['title' => 'tm2old.mst_uom(_conversion) → uom_unit / uom_conversion', 'note' => 'Master V2 yang sudah ada MENANG — legacy hanya menambal kode satuan yang belum ada.', 'action' => 'runUomMigration', 'report' => 'uomMigrationReport'],
-                        ['title' => 'tm2old.mst_* (lookup pendukung) → ref_legacy_lookup', 'note' => 'Semua lookup kecil digabung ke satu tabel (kolom lookup_group), bukan puluhan tabel kurus. Tabel >300 baris dilaporkan sebagai "perlu desain terpisah", tidak dijejalkan ke sini.', 'action' => 'runLookupMigration', 'report' => 'lookupMigrationReport'],
-                        ['title' => 'tm2old Master Card → prod_card_legacy dkk (rekayasa produk)', 'note' => 'Bahan, urutan proses + mesin, dan pisau per produk. Jembatan ke item lewat mst_product_mc.', 'action' => 'runMasterCardMigration', 'report' => 'masterCardMigrationReport'],
-                        ['title' => 'Gambar Master Card → Master Produk (prod_product.image_path)', 'note' => 'Wajib jalan SESUDAH Master Card. 435 kartu punya nama file & semuanya ada di arsip ScriptCase; lewat jembatan mst_product_mc tembus ke 483 produk (389 file dipakai bersama). File disalin 1x per kartu + thumbnail 480px ke storage/app/public/product/card.', 'action' => 'runProductImageIngest', 'report' => 'productImageReport'],
-                        ['title' => 'Klasifikasi mst_item → customer_id / category_id / brand_name', 'note' => 'Melengkapi kolom yang dilewat ProductMigrationService. goods_belongto dicocokkan ke cust_customer.nickname (exact, nickname ganda dibuang), goods_purpose dipetakan ke kategori lewat kata kunci. Dimensi cm_* TETAP tidak diisi — satuan di sumber campur mm/cm tanpa penanda.', 'action' => 'runProductEnrichment', 'report' => 'productEnrichmentReport'],
+                        ['title' => 'tm2old.mst_uom(_conversion) → uom_unit / uom_conversion', 'note' => t('The existing V2 Master WINS — legacy only fills in unit codes that do not exist yet.'), 'action' => 'runUomMigration', 'report' => 'uomMigrationReport'],
+                        ['title' => 'tm2old.mst_* ('.t('supporting lookups').') → ref_legacy_lookup', 'note' => t('All small lookups are merged into one table (lookup_group column), not dozens of thin tables.').' '.t('Tables >300 rows are reported as "needs a separate design", not crammed in here.'), 'action' => 'runLookupMigration', 'report' => 'lookupMigrationReport'],
+                        ['title' => 'tm2old Master Card → prod_card_legacy '.t('etc. (product engineering)'), 'note' => t('Material, process sequence + machine, and die per product. Bridged to items via mst_product_mc.'), 'action' => 'runMasterCardMigration', 'report' => 'masterCardMigrationReport'],
+                        ['title' => t('Master Card Images → Product Master').' (prod_product.image_path)', 'note' => t('Must run AFTER Master Card.').' '.t('435 cards have a file name & all exist in the ScriptCase archive; through the mst_product_mc bridge they reach 483 products (389 files shared).').' '.t('Files are copied once per card + a 480px thumbnail to storage/app/public/product/card.'), 'action' => 'runProductImageIngest', 'report' => 'productImageReport'],
+                        ['title' => t('Classification').' mst_item → customer_id / category_id / brand_name', 'note' => t('Completes the columns skipped by ProductMigrationService.').' '.t('goods_belongto is matched to cust_customer.nickname (exact, duplicate nicknames discarded), goods_purpose is mapped to a category by keyword.').' '.t('cm_* dimensions are STILL not filled — source units mix mm/cm without a marker.'), 'action' => 'runProductEnrichment', 'report' => 'productEnrichmentReport'],
                     ];
                 @endphp
 
@@ -1007,17 +1007,17 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         <p class="note">{{ $box['note'] }}</p>
                         <div class="actions">
                             <button type="button" class="btn btn-primary" wire:click="{{ $box['action'] }}" wire:loading.attr="disabled"
-                                wire:confirm="Jalankan migrasi master pendukung ini sekarang?">
-                                <span wire:loading.remove wire:target="{{ $box['action'] }}">▶ Jalankan Migrasi</span>
-                                <span wire:loading wire:target="{{ $box['action'] }}">Memproses…</span>
+                                wire:confirm="{{ t('Run this supporting master migration now?') }}">
+                                <span wire:loading.remove wire:target="{{ $box['action'] }}">▶ {{ t('Run Migration') }}</span>
+                                <span wire:loading wire:target="{{ $box['action'] }}">{{ t('Processing…') }}</span>
                             </button>
                         </div>
 
                         @if ($this->{$box['report']})
                             <div style="margin-top:16px">
-                                <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                                <p class="note" style="color:var(--sp-ok)">✅ {{ t('Migration finished.') }}</p>
                                 <table>
-                                    <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                    <thead><tr><th>{{ t('Section') }}</th><th>{{ t('Result') }}</th></tr></thead>
                                     <tbody>
                                         @foreach ($this->{$box['report']} as $key => $value)
                                             <tr>
@@ -1049,30 +1049,30 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                 @foreach ($legacyArchiveBoxes as $box)
                     <div class="box" style="margin-top:16px">
                         <h3>{{ $box['title'] }}</h3>
-                        <p class="note">Arsip riwayat read-only utk dashboard/laporan, terpisah dari tabel transaksi hidup. Idempoten: refresh penuh tiap dijalankan.</p>
+                        <p class="note">{{ t('Read-only history archive for dashboards/reports, separate from the live transaction tables.') }} {{ t('Idempotent: full refresh on every run.') }}</p>
                         <div class="actions">
                             <button type="button" class="btn btn-primary" wire:click="{{ $box['action'] }}" wire:loading.attr="disabled"
-                                wire:confirm="Jalankan migrasi arsip ini sekarang?">
-                                <span wire:loading.remove wire:target="{{ $box['action'] }}">▶ Jalankan Migrasi</span>
-                                <span wire:loading wire:target="{{ $box['action'] }}">Memproses…</span>
+                                wire:confirm="{{ t('Run this archive migration now?') }}">
+                                <span wire:loading.remove wire:target="{{ $box['action'] }}">▶ {{ t('Run Migration') }}</span>
+                                <span wire:loading wire:target="{{ $box['action'] }}">{{ t('Processing…') }}</span>
                             </button>
                         </div>
 
                         @if ($this->{$box['report']})
                             @php $r = $this->{$box['report']}; @endphp
                             <div style="margin-top:16px">
-                                <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                                <p class="note" style="color:var(--sp-ok)">✅ {{ t('Migration finished.') }}</p>
                                 <table>
-                                    <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                    <thead><tr><th>{{ t('Section') }}</th><th>{{ t('Result') }}</th></tr></thead>
                                     <tbody>
-                                        <tr><td>Header</td><td>{{ $r['headers']['inserted'] }} baris</td></tr>
-                                        <tr><td>Detail</td><td>{{ $r['details']['inserted'] }} baris</td></tr>
+                                        <tr><td>{{ t('Header') }}</td><td>{{ $r['headers']['inserted'] }} {{ t('rows') }}</td></tr>
+                                        <tr><td>{{ t('Detail') }}</td><td>{{ $r['details']['inserted'] }} {{ t('rows') }}</td></tr>
                                     </tbody>
                                 </table>
 
                                 @if ($box['unmatchedKey'] && ! empty($r[$box['unmatchedKey']]))
                                     <div style="margin-top:12px">
-                                        <p class="note" style="color:var(--sp-danger)">⚠ {{ count($r[$box['unmatchedKey']]) }} kode tidak ketemu padanan master:</p>
+                                        <p class="note" style="color:var(--sp-danger)">⚠ {{ count($r[$box['unmatchedKey']]) }} {{ t('codes without a master match:') }}</p>
                                         <p class="note">{{ implode(', ', array_slice(array_keys($r[$box['unmatchedKey']]), 0, 15)) }}{{ count($r[$box['unmatchedKey']]) > 15 ? '…' : '' }}</p>
                                     </div>
                                 @endif
@@ -1083,35 +1083,35 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="box" style="margin-top:16px">
                     <h3>tm2old.emp → emp_employee (+ org_department / org_position)</h3>
-                    <p class="note">Sumber: <code>emp</code> (485 baris, roster lengkap — <code>emp_history</code> 347 baris SENGAJA dilewati karena ternyata arsip duplikat penuh dari <code>emp</code>, bukan 347 orang lain), <code>emp_position</code> (49 jabatan), <code>emp_identities</code> (KTP), <code>org_department</code> legacy (20 departemen). Data personal (nama/gender/tanggal lahir/dsb) sangat tidak lengkap di sumber — TIDAK dikarang, dibiarkan kosong apa adanya.</p>
-                    <p class="note" style="color:var(--sp-danger)">⚠ Departemen/jabatan asli per karyawan nyaris tidak tercatat di legacy (cuma 1 dari 485 baris). Semua karyawan hasil migrasi ini masuk ke satu bucket sementara "Migrasi Legacy - Belum Dipetakan" — wajib di-assign ulang manual ke department/position yang benar.</p>
+                    <p class="note">{{ t('Source:') }} <code>emp</code> ({{ t('485 rows, full roster —') }} <code>emp_history</code> {{ t('347 rows DELIBERATELY skipped because they turned out to be a full duplicate archive of') }} <code>emp</code>, {{ t('not 347 other people') }}), <code>emp_position</code> ({{ t('49 positions') }}), <code>emp_identities</code> ({{ t('ID card') }}), <code>org_department</code> {{ t('legacy (20 departments).') }} {{ t('Personal data (name/gender/date of birth/etc.) is very incomplete in the source — NOT made up, left empty as is.') }}</p>
+                    <p class="note" style="color:var(--sp-danger)">⚠ {{ t('The original department/position per employee is barely recorded in legacy (only 1 of 485 rows).') }} {{ t('All employees from this migration go into one temporary bucket') }} "Migrasi Legacy - Belum Dipetakan" — {{ t('they must be manually reassigned to the correct department/position.') }}</p>
                     <div class="actions">
                         <button type="button" class="btn btn-primary" wire:click="runEmployeeMigration" wire:loading.attr="disabled"
-                            wire:confirm="Jalankan migrasi data karyawan dari tm2old.emp sekarang?">
-                            <span wire:loading.remove wire:target="runEmployeeMigration">▶ Jalankan Migrasi Karyawan</span>
-                            <span wire:loading wire:target="runEmployeeMigration">Memproses…</span>
+                            wire:confirm="{{ t('Run the employee data migration from tm2old.emp now?') }}">
+                            <span wire:loading.remove wire:target="runEmployeeMigration">▶ {{ t('Run Employee Migration') }}</span>
+                            <span wire:loading wire:target="runEmployeeMigration">{{ t('Processing…') }}</span>
                         </button>
                     </div>
 
                     @if ($employeeMigrationReport)
                         <div style="margin-top:16px">
-                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi karyawan selesai.</p>
+                            <p class="note" style="color:var(--sp-ok)">✅ {{ t('Employee migration finished.') }}</p>
                             <table>
-                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <thead><tr><th>{{ t('Section') }}</th><th>{{ t('Result') }}</th></tr></thead>
                                 <tbody>
-                                    <tr><td>Departemen (referensi)</td><td>{{ $employeeMigrationReport['departments']['created'] }} baru, {{ $employeeMigrationReport['departments']['updated'] }} diperbarui</td></tr>
-                                    <tr><td>Jabatan (referensi)</td><td>{{ $employeeMigrationReport['positions']['created'] }} baru, {{ $employeeMigrationReport['positions']['updated'] }} diperbarui</td></tr>
-                                    <tr><td>Karyawan</td><td>{{ $employeeMigrationReport['employees']['created'] }} baru, {{ $employeeMigrationReport['employees']['updated'] }} diperbarui</td></tr>
-                                    <tr><td>Rekening bank</td><td>{{ $employeeMigrationReport['bankAccounts']['created'] }} baru</td></tr>
-                                    <tr><td>Dokumen KTP</td><td>{{ $employeeMigrationReport['documents']['created'] }} baru</td></tr>
-                                    <tr><td>Gender tidak diketahui</td><td>{{ $employeeMigrationReport['genderUnknown'] }} karyawan (dibiarkan kosong)</td></tr>
-                                    <tr><td>Tanggal masuk tidak diketahui</td><td>{{ $employeeMigrationReport['joinDateUnknown'] }} karyawan (dibiarkan kosong)</td></tr>
+                                    <tr><td>{{ t('Department (reference)') }}</td><td>{{ $employeeMigrationReport['departments']['created'] }} {{ t('new,') }} {{ $employeeMigrationReport['departments']['updated'] }} {{ t('updated') }}</td></tr>
+                                    <tr><td>{{ t('Position (reference)') }}</td><td>{{ $employeeMigrationReport['positions']['created'] }} {{ t('new,') }} {{ $employeeMigrationReport['positions']['updated'] }} {{ t('updated') }}</td></tr>
+                                    <tr><td>{{ t('Employee') }}</td><td>{{ $employeeMigrationReport['employees']['created'] }} {{ t('new,') }} {{ $employeeMigrationReport['employees']['updated'] }} {{ t('updated') }}</td></tr>
+                                    <tr><td>{{ t('Bank account') }}</td><td>{{ $employeeMigrationReport['bankAccounts']['created'] }} {{ t('new') }}</td></tr>
+                                    <tr><td>{{ t('ID card documents') }}</td><td>{{ $employeeMigrationReport['documents']['created'] }} {{ t('new') }}</td></tr>
+                                    <tr><td>{{ t('Gender unknown') }}</td><td>{{ $employeeMigrationReport['genderUnknown'] }} {{ t('employees (left empty)') }}</td></tr>
+                                    <tr><td>{{ t('Join date unknown') }}</td><td>{{ $employeeMigrationReport['joinDateUnknown'] }} {{ t('employees (left empty)') }}</td></tr>
                                 </tbody>
                             </table>
 
                             @if (! empty($employeeMigrationReport['employees']['skipped']))
                                 <div style="margin-top:12px">
-                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($employeeMigrationReport['employees']['skipped']) }} baris dilewati:</p>
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($employeeMigrationReport['employees']['skipped']) }} {{ t('rows skipped:') }}</p>
                                     <ul style="font-size:12px;color:var(--sp-danger);margin:4px 0 0;padding-left:18px">
                                         @foreach ($employeeMigrationReport['employees']['skipped'] as $s)
                                             <li>{{ $s }}</li>
@@ -1122,7 +1122,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 
                             @if (! empty($employeeMigrationReport['errors']))
                                 <div style="margin-top:12px">
-                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($employeeMigrationReport['errors']) }} baris gagal diproses:</p>
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($employeeMigrationReport['errors']) }} {{ t('rows failed to process:') }}</p>
                                     <ul style="font-size:12px;color:var(--sp-danger);margin:4px 0 0;padding-left:18px">
                                         @foreach ($employeeMigrationReport['errors'] as $err)
                                             <li>{{ $err }}</li>
@@ -1135,24 +1135,24 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 <div class="box" style="margin-top:16px">
-                    <h3>emp_employee (aktif) → login sec_user</h3>
-                    <p class="note">Buat akun login untuk karyawan hasil migrasi di atas yang <code>activate=1</code> (karyawan yang sudah keluar TIDAK dibuatkan akun — realistis). Username = nama depan (tabrakan ditambah angka), password acak dibuat lewat <code>PasswordResetService</code>, wajib ganti password di login pertama. Aman dijalankan berulang — karyawan yang sudah punya akun dilewati.</p>
+                    <h3>emp_employee ({{ t('active') }}) → login sec_user</h3>
+                    <p class="note">{{ t('Create login accounts for the migrated employees above that have') }} <code>activate=1</code> {{ t('(employees who have left do NOT get an account — realistic).') }} {{ t('Username = first name (collisions get a number), a random password is made through') }} <code>PasswordResetService</code>, {{ t('the password must be changed at first login.') }} {{ t('Safe to run repeatedly — employees who already have an account are skipped.') }}</p>
                     <div class="actions">
                         <button type="button" class="btn btn-primary" wire:click="runEmployeeLoginProvision" wire:loading.attr="disabled"
-                            wire:confirm="Buat akun login untuk semua karyawan aktif hasil migrasi sekarang?">
-                            <span wire:loading.remove wire:target="runEmployeeLoginProvision">▶ Buat Login Karyawan</span>
-                            <span wire:loading wire:target="runEmployeeLoginProvision">Memproses…</span>
+                            wire:confirm="{{ t('Create login accounts for all active migrated employees now?') }}">
+                            <span wire:loading.remove wire:target="runEmployeeLoginProvision">▶ {{ t('Create Employee Logins') }}</span>
+                            <span wire:loading wire:target="runEmployeeLoginProvision">{{ t('Processing…') }}</span>
                         </button>
                     </div>
 
                     @if ($loginProvisionReport)
                         <div style="margin-top:16px">
-                            <p class="note" style="color:var(--sp-ok)">✅ {{ $loginProvisionReport['created'] }} akun baru dibuat, {{ $loginProvisionReport['skippedExisting'] }} dilewati (sudah punya akun).</p>
+                            <p class="note" style="color:var(--sp-ok)">✅ {{ str_replace([':created', ':skipped'], [$loginProvisionReport['created'], $loginProvisionReport['skippedExisting']], t(':created new accounts created, :skipped skipped (already have an account).')) }}</p>
 
                             @if (! empty($loginProvisionReport['sample']))
-                                <p class="note">Contoh {{ count($loginProvisionReport['sample']) }} akun pertama (sisanya bisa dicek lewat tombol "Lihat password" di Daftar Pengguna di atas):</p>
+                                <p class="note">{{ str_replace(':n', count($loginProvisionReport['sample']), t('Sample of the first :n accounts (the rest can be checked with the "View password" button in the User List above):')) }}</p>
                                 <table>
-                                    <thead><tr><th>Username</th><th>Nama</th><th>Password</th></tr></thead>
+                                    <thead><tr><th>{{ t('Username') }}</th><th>{{ t('Name') }}</th><th>{{ t('Password') }}</th></tr></thead>
                                     <tbody>
                                         @foreach ($loginProvisionReport['sample'] as $s)
                                             <tr><td><code>{{ $s['login'] }}</code></td><td>{{ $s['name'] }}</td><td><code>{{ $s['password'] }}</code></td></tr>

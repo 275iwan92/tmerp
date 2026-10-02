@@ -57,22 +57,22 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
 <div class="max-w-[1400px] mx-auto my-5 px-4">
     <div class="grid three mb-3.5">
         <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Menunggu Offer</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">{{ t('Awaiting Offer') }}</p>
             <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->stats['awaiting'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-            <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Menunggu Approval</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">{{ t('Awaiting Approval') }}</p>
             <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->stats['pending_approval'] }}</p>
         </div>
         <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-            <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Diterima Kandidat</p>
+            <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">{{ t('Accepted by Candidate') }}</p>
             <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->stats['accepted'] }}</p>
         </div>
     </div>
 
     @if ($this->awaitingOffer->isNotEmpty())
         <div class="bg-white border border-[#d7dbe2] rounded-md p-3 mb-3.5">
-            <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Menunggu Dibuatkan Offer</p>
+            <p class="text-[10.5px] font-bold text-muted uppercase mb-2">{{ t('Waiting for an Offer to Be Made') }}</p>
             <div class="flex flex-wrap gap-2">
                 @foreach ($this->awaitingOffer as $app)
                     <a href="{{ route('hrm.recruitment.offer.entry', $app->id_application) }}"
@@ -87,7 +87,7 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
     <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-md px-2.5 py-2 overflow-x-auto mb-3">
         <div class="flex items-center gap-1.5 shrink-0">
             <span class="text-sm">🔍</span>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama kandidat…"
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search candidate name…') }}"
                 class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
         </div>
     </div>
@@ -96,18 +96,18 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
         <table class="w-full text-xs">
             <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5] bg-[#f4f6fa]">
                 <tr>
-                    <th class="text-left px-3 py-2">Kandidat</th>
-                    <th class="text-right px-3 py-2">Gaji Diusulkan</th>
-                    <th class="text-left px-3 py-2">Jenis Kontrak</th>
-                    <th class="text-left px-3 py-2">Status</th>
-                    <th class="px-3 py-2 text-right w-[70px]">Aksi</th>
+                    <th class="text-left px-3 py-2">{{ t('Candidate') }}</th>
+                    <th class="text-right px-3 py-2">{{ t('Proposed Salary') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Contract Type') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Status') }}</th>
+                    <th class="px-3 py-2 text-right w-[70px]">{{ t('Action') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-[#eef1f5]">
                 @forelse ($this->rows as $o)
                     <tr wire:key="offer-{{ $o->id_offer }}"
                         ondblclick="window.location.href='{{ route('hrm.recruitment.offer.entry', $o->id_application) }}'"
-                        class="cursor-pointer hover:bg-[#f8fafc]" title="Klik 2x untuk buka detail">
+                        class="cursor-pointer hover:bg-[#f8fafc]" title="{{ t('Double-click to open detail') }}">
                         <td class="px-3 py-2 font-semibold">{{ $o->application->candidate->name ?? '—' }}</td>
                         <td class="px-3 py-2 text-right font-mono">{{ number_format((float) $o->proposed_salary, 0, ',', '.') }}</td>
                         <td class="px-3 py-2">{{ $o->employment_type }}</td>
@@ -120,12 +120,12 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
                             } }}">{{ $o->status }}</span>
                         </td>
                         <td class="px-3 py-2 text-right whitespace-nowrap">
-                            <a href="{{ route('hrm.recruitment.offer.entry', $o->id_application) }}" wire:click.stop title="Buka"
+                            <a href="{{ route('hrm.recruitment.offer.entry', $o->id_application) }}" wire:click.stop title="{{ t('Open') }}"
                                 class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</a>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-3 py-6 text-center text-muted text-xs">Belum ada offer dibuat.</td></tr>
+                    <tr><td colspan="5" class="px-3 py-6 text-center text-muted text-xs">{{ t('No offers created yet.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

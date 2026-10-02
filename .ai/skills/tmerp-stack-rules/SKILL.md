@@ -37,8 +37,11 @@ Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 
 - **Label ditulis ENGLISH.** Komponen `x-dl::*` menerjemahkan sendiri label/title/placeholder/hint/message + label kolom/stat/tab
   (`DevlibComponent::translateTexts`) -- layar tidak memanggil apa pun. Teks lain: `t('English text')` (PHP/Blade) atau `@t('...')`;
   JS: `Devlib.h.t('...')`; kata milik objek DevLib: kamus `Devlib\Lang` (kunci [ID, EN]). Nilai lookup dari DB: `t($value, '<db>.<tabel>.<kolom>')`.
-- Teks English baru **tercatat otomatis** di `tm2sys.sys_dictionary`; terjemahan diisi di Setup > Translation Dictionary. Jangan insert manual,
-  jangan tulis label Indonesia (dijaga `MultiLanguageRatchetTest`), jangan `Translator::t` (kamus kunci v1) di layar baru.
+- Teks English baru **tercatat otomatis** di `tm2sys.sys_dictionary`; terjemahan diisi di Setup > Translation Dictionary, atau dari kode lewat
+  migration `Dictionary::seed(['English' => 'Indonesia'])` (tidak menimpa isian penerjemah). Jangan tulis label Indonesia (dijaga
+  `MultiLanguageRatchetTest`, termasuk layar v1 per modul `BASELINE_V1`). `Translator::t('kunci')` / `sys_translations` sudah DIPENSIUNKAN
+  (2026-10-02, satu kamus v1 & v2). Kata bermakna ganda: `t('Close', 'action')`; teks + data: `str_replace(':n', $n, t(':n items'))`;
+  string JS di Blade: `@js(t('...'))`.
 - **Nilai DATA di prop teks `x-dl::*` dibungkus `raw()`** (no. dokumen, nama customer / product, angka, tanggal):
   `:title="'Customer Order · '.raw($o->co_no)" :subtitle="raw($customer.' · '.$status)"`. Label di sekitarnya tetap English dan
   diterjemahkan komponen (tanpa `t()`); nilainya tidak diterjemahkan dan tidak tercatat di kamus. Kalimat yang sudah jadi

@@ -39,12 +39,12 @@ use Livewire\Component;
 // collapse-nya di layar (lihat cetak() -- collapsedGroups direset sesaat
 // sebelum window.print(), bukan cuma disembunyikan via CSS, supaya hasil
 // cetak selalu lengkap tanpa bergantung timing render ulang Livewire).
-new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Stock Master Report — TELASIH MAKMUR ERP')] class extends Component
 {
     public const CATEGORY_LABELS = [
-        'RM' => 'Bahan Baku & Bahan Pembantu',
-        'SFG' => 'Barang Setengah Jadi',
-        'FG' => 'Barang Jadi',
+        'RM' => 'Raw & Supporting Materials',
+        'SFG' => 'Semi-Finished Goods',
+        'FG' => 'Finished Goods',
     ];
 
     public string $category = 'RM';
@@ -137,15 +137,15 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
     {
         return match ($this->category) {
             'SFG' => ProdPart::whereIn('id_part', $ids)->get()->keyBy('id_part')->map(fn ($p) => [
-                'code' => $p->part_code, 'name' => $p->part_name, 'group' => 'Barang Setengah Jadi',
+                'code' => $p->part_code, 'name' => $p->part_name, 'group' => t('Semi-Finished Goods'),
                 'uom' => $p->uom_stock, 'min_stock' => $p->min_stock,
             ])->all(),
             'FG' => ProdProduct::with('category')->whereIn('id_product', $ids)->get()->keyBy('id_product')->map(fn ($p) => [
-                'code' => $p->product_code, 'name' => $p->product_name, 'group' => $p->category?->category_name ?: 'Tanpa Kategori',
+                'code' => $p->product_code, 'name' => $p->product_name, 'group' => $p->category?->category_name ?: t('No category'),
                 'uom' => $p->uom_stock, 'min_stock' => $p->min_stock,
             ])->all(),
             default => MatRaw::whereIn('material_id', $ids)->get()->keyBy('material_id')->map(fn ($m) => [
-                'code' => $m->material_code, 'name' => $m->material_name, 'group' => $m->category1 ?: 'Tanpa Kategori',
+                'code' => $m->material_code, 'name' => $m->material_name, 'group' => $m->category1 ?: t('No category'),
                 'uom' => $m->uom_stock, 'min_stock' => $m->min_stock,
             ])->all(),
         };
@@ -184,8 +184,8 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
             return (object) [
                 'item_id' => $itemId,
                 'item_code' => $m['code'] ?? "#{$itemId}",
-                'item_name' => $m['name'] ?? '(item tidak ditemukan di master)',
-                'group' => $m['group'] ?? 'Tanpa Kategori',
+                'item_name' => $m['name'] ?? t('(item not found in the master)'),
+                'group' => $m['group'] ?? t('No category'),
                 'uom' => $m['uom'] ?? null,
                 'min_stock' => $m['min_stock'] ?? null,
                 'warehouse_names' => $itemRows->pluck('warehouse_id')->unique()->map(fn ($id) => $warehouseNames->get($id))->filter()->implode(', '),
@@ -223,35 +223,35 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
 ?>
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50 no-print">
-        <b class="text-[15px]">📋 Laporan Master Stok</b>
-        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ self::CATEGORY_LABELS[$category] }}</span>
-        <x-back-button :fallback="route('menu')" title="Kembali ke Menu Utama" class="ml-auto" />
+        <b class="text-[15px]">📋 {{ t('Master Stock Report') }}</b>
+        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ t(self::CATEGORY_LABELS[$category]) }}</span>
+        <x-back-button :fallback="route('menu')" :title="t('Back to Main Menu')" class="ml-auto" />
     </header>
 
     {{-- ============ FILTER (tidak ikut cetak) ============ --}}
     <div class="no-print max-w-[1100px] mx-auto my-4 px-4">
         <div class="bg-white border border-[#d7dbe2] rounded-lg shadow-sm p-4">
             <div class="flex flex-wrap items-end gap-3">
-                <div class="shrink-0"><x-form.date-picker label="Dari Tanggal" wire:model.live="dateFrom" /></div>
-                <div class="shrink-0"><x-form.date-picker label="Sampai Tanggal" wire:model.live="dateTo" /></div>
+                <div class="shrink-0"><x-form.date-picker :label="t('From Date')" wire:model.live="dateFrom" /></div>
+                <div class="shrink-0"><x-form.date-picker :label="t('To Date')" wire:model.live="dateTo" /></div>
                 <div class="flex flex-col gap-1 shrink-0">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Gudang</label>
+                    <label class="text-[10px] text-muted uppercase font-semibold">{{ t('Warehouse') }}</label>
                     <select wire:model.live="warehouseId" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        <option value="">Semua Gudang</option>
+                        <option value="">{{ t('All Warehouses') }}</option>
                         @foreach ($this->warehouses as $w)
                             <option value="{{ $w->id_warehouse }}">{{ $w->warehouse_code }} — {{ $w->warehouse_name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="flex flex-col gap-1 shrink-0" style="min-width:220px">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Cari Item</label>
+                    <label class="text-[10px] text-muted uppercase font-semibold">{{ t('Search Item') }}</label>
                     <div class="flex items-center gap-1.5">
                         <span class="text-sm">🔍</span>
-                        <div class="flex-1"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="quickSearch" placeholder="Kode / nama item..." /></div>
+                        <div class="flex-1"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="quickSearch" placeholder="{{ t('Item code / name...') }}" /></div>
                     </div>
                 </div>
                 <span class="flex-1"></span>
-                <button type="button" wire:click="printReport" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer shrink-0">🖨️ Cetak</button>
+                <button type="button" wire:click="printReport" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer shrink-0">🖨️ {{ t('Print') }}</button>
             </div>
         </div>
     </div>
@@ -263,27 +263,27 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
                 <div class="text-[8.5pt] text-muted">Offset · Digital · Indostry Packaging</div>
             </div>
             <div class="text-right">
-                <div class="text-[14pt] font-bold text-navy uppercase">Laporan Master Stok</div>
-                <div class="text-[8.5pt] text-muted mt-1">Dicetak {{ now()->translatedFormat('d/m/Y H:i') }} oleh {{ Auth::user()->name }}</div>
+                <div class="text-[14pt] font-bold text-navy uppercase">{{ t('Master Stock Report') }}</div>
+                <div class="text-[8.5pt] text-muted mt-1">{{ str_replace([':date', ':user'], [now()->translatedFormat('d/m/Y H:i'), Auth::user()->name], t('Printed :date by :user')) }}</div>
             </div>
         </div>
 
         <div class="border border-[#c8ccd4] rounded-md p-2.5 bg-[#fbfcfe] mb-3 flex gap-8 flex-wrap">
-            <div><div class="text-[7.5pt] text-muted uppercase">Tanggal Awal</div><div class="text-[10pt] font-bold text-navy">{{ \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') }}</div></div>
-            <div><div class="text-[7.5pt] text-muted uppercase">Tanggal Akhir</div><div class="text-[10pt] font-bold text-navy">{{ \Carbon\Carbon::parse($dateTo)->format('d/m/Y') }}</div></div>
-            <div><div class="text-[7.5pt] text-muted uppercase">Kelas Stok</div><div class="text-[10pt] font-bold text-navy">{{ self::CATEGORY_LABELS[$category] }}</div></div>
-            <div><div class="text-[7.5pt] text-muted uppercase">Gudang</div><div class="text-[10pt] font-bold text-navy">{{ $warehouseId ? $this->warehouses->firstWhere('id_warehouse', $warehouseId)?->warehouse_name : 'Semua Gudang' }}</div></div>
+            <div><div class="text-[7.5pt] text-muted uppercase">{{ t('Start Date') }}</div><div class="text-[10pt] font-bold text-navy">{{ \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') }}</div></div>
+            <div><div class="text-[7.5pt] text-muted uppercase">{{ t('End Date') }}</div><div class="text-[10pt] font-bold text-navy">{{ \Carbon\Carbon::parse($dateTo)->format('d/m/Y') }}</div></div>
+            <div><div class="text-[7.5pt] text-muted uppercase">{{ t('Stock Class') }}</div><div class="text-[10pt] font-bold text-navy">{{ t(self::CATEGORY_LABELS[$category]) }}</div></div>
+            <div><div class="text-[7.5pt] text-muted uppercase">{{ t('Warehouse') }}</div><div class="text-[10pt] font-bold text-navy">{{ $warehouseId ? $this->warehouses->firstWhere('id_warehouse', $warehouseId)?->warehouse_name : t('All Warehouses') }}</div></div>
             @if (trim($quickSearch) !== '')
-                <div class="no-print"><div class="text-[7.5pt] text-muted uppercase">Filter Pencarian</div><div class="text-[10pt] font-bold text-accent">"{{ $quickSearch }}"</div></div>
+                <div class="no-print"><div class="text-[7.5pt] text-muted uppercase">{{ t('Search Filter') }}</div><div class="text-[10pt] font-bold text-accent">"{{ $quickSearch }}"</div></div>
             @endif
         </div>
 
         <div class="grid five mb-3">
-            <div class="rounded-lg p-2.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb] text-center"><p class="text-[9.5px] font-bold uppercase text-[#3b5b99]">Total Item</p><p class="text-lg font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->report['itemCount'] }}</p></div>
-            <div class="rounded-lg p-2.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3] text-center"><p class="text-[9.5px] font-bold uppercase text-[#8a6d00]">Saldo Awal</p><p class="text-lg font-extrabold text-[#b45309] mt-0.5">{{ number_format($this->report['totals']['bb'], 2) }}</p></div>
-            <div class="rounded-lg p-2.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#2f7a52]">Masuk</p><p class="text-lg font-extrabold text-[#16a34a] mt-0.5">+{{ number_format($this->report['totals']['in'], 2) }}</p></div>
-            <div class="rounded-lg p-2.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#a3453f]">Keluar</p><p class="text-lg font-extrabold text-[#c0392b] mt-0.5">−{{ number_format($this->report['totals']['out'], 2) }}</p></div>
-            <div class="rounded-lg p-2.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb] text-center"><p class="text-[9.5px] font-bold uppercase text-[#3b5b99]">Saldo Akhir</p><p class="text-lg font-extrabold text-[#1d4ed8] mt-0.5">{{ number_format($this->report['totals']['eb'], 2) }}</p></div>
+            <div class="rounded-lg p-2.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb] text-center"><p class="text-[9.5px] font-bold uppercase text-[#3b5b99]">{{ t('Total Items') }}</p><p class="text-lg font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->report['itemCount'] }}</p></div>
+            <div class="rounded-lg p-2.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3] text-center"><p class="text-[9.5px] font-bold uppercase text-[#8a6d00]">{{ t('Opening') }}</p><p class="text-lg font-extrabold text-[#b45309] mt-0.5">{{ number_format($this->report['totals']['bb'], 2) }}</p></div>
+            <div class="rounded-lg p-2.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#2f7a52]">{{ t('In') }}</p><p class="text-lg font-extrabold text-[#16a34a] mt-0.5">+{{ number_format($this->report['totals']['in'], 2) }}</p></div>
+            <div class="rounded-lg p-2.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6] text-center"><p class="text-[9.5px] font-bold uppercase text-[#a3453f]">{{ t('Out') }}</p><p class="text-lg font-extrabold text-[#c0392b] mt-0.5">−{{ number_format($this->report['totals']['out'], 2) }}</p></div>
+            <div class="rounded-lg p-2.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb] text-center"><p class="text-[9.5px] font-bold uppercase text-[#3b5b99]">{{ t('Closing') }}</p><p class="text-lg font-extrabold text-[#1d4ed8] mt-0.5">{{ number_format($this->report['totals']['eb'], 2) }}</p></div>
         </div>
 
         <div class="rounded-lg border border-[#c8ccd4] overflow-hidden">
@@ -291,17 +291,17 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
                 <thead>
                     <tr class="bg-navy text-white">
                         <th class="w-[26px] px-1 py-1.5 border border-navy no-print"></th>
-                        <th class="text-center px-1.5 py-1.5 border border-navy">No.</th>
-                        <th class="text-left px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('item_code')" title="Urutkan">Kode Item <span class="opacity-80">{{ $this->sortIcon('item_code') }}</span></th>
-                        <th class="text-left px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('item_name')" title="Urutkan">Nama Item <span class="opacity-80">{{ $this->sortIcon('item_name') }}</span></th>
-                        <th class="text-left px-1.5 py-1.5 border border-navy">Gudang</th>
-                        <th class="text-center px-1.5 py-1.5 border border-navy">UOM</th>
-                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_bb')" title="Urutkan">Saldo Awal <span class="opacity-80">{{ $this->sortIcon('qty_bb') }}</span></th>
-                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_in')" title="Urutkan">Masuk <span class="opacity-80">{{ $this->sortIcon('qty_in') }}</span></th>
-                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_out')" title="Urutkan">Keluar <span class="opacity-80">{{ $this->sortIcon('qty_out') }}</span></th>
-                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_adj')" title="Urutkan">Penyesuaian <span class="opacity-80">{{ $this->sortIcon('qty_adj') }}</span></th>
-                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_eb')" title="Urutkan">Saldo Akhir <span class="opacity-80">{{ $this->sortIcon('qty_eb') }}</span></th>
-                        <th class="text-center px-1.5 py-1.5 border border-navy">Status</th>
+                        <th class="text-center px-1.5 py-1.5 border border-navy">{{ t('No.') }}</th>
+                        <th class="text-left px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('item_code')" title="{{ t('Sort') }}">{{ t('Item Code') }} <span class="opacity-80">{{ $this->sortIcon('item_code') }}</span></th>
+                        <th class="text-left px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('item_name')" title="{{ t('Sort') }}">{{ t('Item Name') }} <span class="opacity-80">{{ $this->sortIcon('item_name') }}</span></th>
+                        <th class="text-left px-1.5 py-1.5 border border-navy">{{ t('Warehouse') }}</th>
+                        <th class="text-center px-1.5 py-1.5 border border-navy">{{ t('UOM') }}</th>
+                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_bb')" title="{{ t('Sort') }}">{{ t('Opening') }} <span class="opacity-80">{{ $this->sortIcon('qty_bb') }}</span></th>
+                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_in')" title="{{ t('Sort') }}">{{ t('In') }} <span class="opacity-80">{{ $this->sortIcon('qty_in') }}</span></th>
+                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_out')" title="{{ t('Sort') }}">{{ t('Out') }} <span class="opacity-80">{{ $this->sortIcon('qty_out') }}</span></th>
+                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_adj')" title="{{ t('Sort') }}">{{ t('Adjustments') }} <span class="opacity-80">{{ $this->sortIcon('qty_adj') }}</span></th>
+                        <th class="text-right px-1.5 py-1.5 border border-navy cursor-pointer select-none" wire:click="sortToggle('qty_eb')" title="{{ t('Sort') }}">{{ t('Closing') }} <span class="opacity-80">{{ $this->sortIcon('qty_eb') }}</span></th>
+                        <th class="text-center px-1.5 py-1.5 border border-navy">{{ t('Status') }}</th>
                     </tr>
                 </thead>
                 @forelse ($this->report['groups'] as $groupName => $items)
@@ -309,7 +309,7 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
                     <tbody wire:key="group-{{ Str::slug($groupName) }}">
                         <tr class="bg-[#eef1f6] cursor-pointer hover:bg-[#e5e9f1]" wire:click="toggleGroup('{{ $groupName }}')">
                             <td class="px-1 py-1.5 text-center no-print"><span class="text-navy font-bold">{{ $isCollapsed ? '▸' : '▾' }}</span></td>
-                            <td colspan="11" class="px-1.5 py-1.5 font-bold text-navy uppercase text-[8pt]">{{ $groupName }} · {{ $items->count() }} item</td>
+                            <td colspan="11" class="px-1.5 py-1.5 font-bold text-navy uppercase text-[8pt]">{{ $groupName }} · {{ str_replace(':n', $items->count(), t(':n item(s)')) }}</td>
                         </tr>
                         @if (! $isCollapsed)
                             @foreach ($items as $i => $row)
@@ -327,9 +327,9 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
                                     <td class="px-1.5 py-1 border border-[#eef1f5] text-right font-bold">{{ number_format($row->qty_eb, 2) }}</td>
                                     <td class="px-1.5 py-1 border border-[#eef1f5] text-center">
                                         @if ($row->min_stock !== null && $row->qty_eb < (float) $row->min_stock)
-                                            <span class="text-[7.5pt] font-bold px-1.5 py-0.5 rounded-full bg-[#fbeaea] text-[#a3241f]">RENDAH</span>
+                                            <span class="text-[7.5pt] font-bold px-1.5 py-0.5 rounded-full bg-[#fbeaea] text-[#a3241f]">{{ t('LOW') }}</span>
                                         @else
-                                            <span class="text-[7.5pt] font-bold px-1.5 py-0.5 rounded-full bg-[#eaf7ee] text-[#1f8a4c]">OK</span>
+                                            <span class="text-[7.5pt] font-bold px-1.5 py-0.5 rounded-full bg-[#eaf7ee] text-[#1f8a4c]">{{ t('OK') }}</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -338,14 +338,14 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
                     </tbody>
                 @empty
                     <tbody>
-                        <tr><td colspan="12" class="text-center py-8 text-muted">Tidak ada pergerakan stok pada periode ini.</td></tr>
+                        <tr><td colspan="12" class="text-center py-8 text-muted">{{ t('No stock movement in this period.') }}</td></tr>
                     </tbody>
                 @endforelse
                 @if ($this->report['itemCount'] > 0)
                     <tfoot>
                         <tr class="bg-[#f4f6fa] font-bold">
                             <td class="px-1.5 py-1.5 border border-[#c8ccd4] no-print"></td>
-                            <td class="px-1.5 py-1.5 border border-[#c8ccd4]" colspan="5">Total Keseluruhan · {{ $this->report['itemCount'] }} item</td>
+                            <td class="px-1.5 py-1.5 border border-[#c8ccd4]" colspan="5">{{ str_replace(':n', $this->report['itemCount'], t('Grand Total · :n item(s)')) }}</td>
                             <td class="px-1.5 py-1.5 border border-[#c8ccd4] text-right">{{ number_format($this->report['totals']['bb'], 2) }}</td>
                             <td class="px-1.5 py-1.5 border border-[#c8ccd4] text-right">{{ number_format($this->report['totals']['in'], 2) }}</td>
                             <td class="px-1.5 py-1.5 border border-[#c8ccd4] text-right">{{ number_format($this->report['totals']['out'], 2) }}</td>

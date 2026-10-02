@@ -14,6 +14,10 @@
  *   lewati entri "new/create" dan URL yg sama; href = fallback kalau tak ada.
  * ============================================================================= */
 
+// Teks UI ditulis English; terjemahan bahasa tampilan dari window.TM_T (partials/js-text.blade.php, kamus t()).
+const tt = (en) => (window.TM_T && window.TM_T[en]) || en;
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
 const SEARCH_LIKE = /search|cari|filter|keyword|perpage|per_page|sort|quick|lookup|query/i;
 const SAVE_METHOD = /^(save|store|submit|simpan|post|update|confirm|approve)(draft|all|now|layout|forapproval|tocosting|todireksi|co|doc)?$/i;
 const SAVE_TEXT = /^[^\p{L}]*(save|simpan)(\s+(all|draft|semua))?[^\p{L}]*$/iu;
@@ -138,8 +142,8 @@ function buildDialog(canSave) {
     wrap.style.cssText = 'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.45);font-family:inherit';
     wrap.innerHTML = `
         <div style="background:#fff;color:#1e293b;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.3);width:min(420px,calc(100vw - 32px));padding:20px 22px">
-            <div style="font-weight:700;font-size:15px;margin-bottom:6px">Simpan perubahan?</div>
-            <div style="font-size:13px;color:#475569;margin-bottom:6px">Ada perubahan di form ini yang belum disimpan.</div>
+            <div style="font-weight:700;font-size:15px;margin-bottom:6px">${esc(tt('Save changes?'))}</div>
+            <div style="font-size:13px;color:#475569;margin-bottom:6px">${esc(tt('This form has unsaved changes.'))}</div>
             <div data-msg style="font-size:12px;color:#b91c1c;min-height:16px;margin-bottom:10px"></div>
             <div style="display:flex;gap:8px;justify-content:flex-end">
                 <button type="button" data-act="yes" style="background:#43508a;color:#fff;border:0;border-radius:8px;padding:7px 18px;font-weight:600;cursor:pointer">Yes</button>
@@ -152,7 +156,7 @@ function buildDialog(canSave) {
         yes.disabled = true;
         yes.style.opacity = '.45';
         yes.style.cursor = 'not-allowed';
-        wrap.querySelector('[data-msg]').textContent = 'Tombol Save tidak tersedia di layar ini.';
+        wrap.querySelector('[data-msg]').textContent = tt('The Save button is not available on this screen.');
     }
     return wrap;
 }
@@ -183,7 +187,7 @@ function confirmLeave() {
             if (act === 'cancel') return finish(false);
             if (act === 'no') return finish(true);
             wrap.querySelectorAll('button').forEach((b) => { b.disabled = true; });
-            wrap.querySelector('[data-msg]').textContent = 'Menyimpan…';
+            wrap.querySelector('[data-msg]').textContent = tt('Saving…');
             wrap.style.visibility = 'hidden';
             const ok = await runSave();
             if (ok) return finish(true);

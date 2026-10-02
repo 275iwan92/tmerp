@@ -11,6 +11,8 @@
  * toggle buka/tutup drawer (lihat notifOpen/chatOpen di bawah).
  * ============================================================================= */
 document.addEventListener('alpine:init', () => {
+    // Teks UI ditulis English; terjemahan bahasa tampilan dari window.TM_T (partials/js-text.blade.php, kamus t()).
+    const tt = (en) => (window.TM_T && window.TM_T[en]) || en;
     const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
     Alpine.data('appShell', (menuTree, flatItems, homeLabel) => ({
@@ -130,13 +132,13 @@ document.addEventListener('alpine:init', () => {
             const it = this.findItem(code);
             // Target di luar menu milik user ini (hak akses) -- beri tahu, jangan diam.
             if (! it) {
-                this.toast('Menu ini tidak tersedia untuk akun Anda.');
+                this.toast(tt('This menu is not available for your account.'));
                 return;
             }
             // module_status_system (globalrules.yaml): NOT_BUILT = is_clickable
             // false di DB (sys_app_menu_color) -- layar belum ada, jangan buka apa-apa.
             if (! it.isClickable) {
-                this.toast(`${it.label} — ${it.statusLabel ?? 'belum tersedia'}.`);
+                this.toast(`${it.label} — ${it.statusLabel ?? tt('not available yet')}.`);
                 return;
             }
             if (! this.openTabs.some((t) => t.code === code)) {
@@ -208,23 +210,23 @@ document.addEventListener('alpine:init', () => {
 
         placeholderHtml(it) {
             const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const note = `<div class="am-note">Layar ini belum digarap di V2 — placeholder tampilan saja.</div>`;
+            const note = `<div class="am-note">${esc(tt('This screen is not built in V2 yet — display placeholder only.'))}</div>`;
             if (it.objectType === 'form') {
                 return `<div class="app-mock"><div class="am-head"><h2>FORM — ${esc(it.label)}</h2><span class="date">${today}</span></div>${note}
                     <div class="am-form">
-                        <div class="f"><label>Nomor</label><input value="(auto)" readonly></div>
-                        <div class="f"><label>Tanggal</label><input value="${today}" readonly></div>
-                        <div class="f full"><label>Keterangan</label><input placeholder="Isi keterangan…" disabled></div>
-                        <div class="f"><label>Referensi</label><input placeholder="—" disabled></div>
+                        <div class="f"><label>${esc(tt('Number'))}</label><input value="(auto)" readonly></div>
+                        <div class="f"><label>${esc(tt('Date'))}</label><input value="${today}" readonly></div>
+                        <div class="f full"><label>${esc(tt('Remarks'))}</label><input placeholder="${esc(tt('Enter remarks…'))}" disabled></div>
+                        <div class="f"><label>${esc(tt('Reference'))}</label><input placeholder="—" disabled></div>
                         <div class="f"><label>Status</label><input value="Draft" readonly></div>
-                        <div class="am-actions"><button class="am-btn g" disabled>Simpan</button><button class="am-btn n" disabled>Batal</button></div>
+                        <div class="am-actions"><button class="am-btn g" disabled>${esc(tt('Save'))}</button><button class="am-btn n" disabled>${esc(tt('Cancel'))}</button></div>
                     </div></div>`;
             }
-            return `<div class="app-mock"><div class="am-head"><h2>${it.objectType === 'report' ? 'REPORT' : 'DAFTAR'} — ${esc(it.label)}</h2><span class="date">${today}</span></div>${note}
+            return `<div class="app-mock"><div class="am-head"><h2>${it.objectType === 'report' ? 'REPORT' : esc(tt('LIST'))} — ${esc(it.label)}</h2><span class="date">${today}</span></div>${note}
                 <div class="am-tools"><span class="am-search">🔎 Quick search</span>
                     <button class="am-btn g" disabled>＋ New</button><button class="am-btn n" disabled>⬇ Export</button></div>
-                <table class="am-tbl"><thead><tr><th>Kolom A</th><th>Kolom B</th><th>Status</th></tr></thead>
-                <tbody><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:24px">(belum ada data — modul menyusul)</td></tr></tbody></table></div>`;
+                <table class="am-tbl"><thead><tr><th>${esc(tt('Column A'))}</th><th>${esc(tt('Column B'))}</th><th>Status</th></tr></thead>
+                <tbody><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:24px">${esc(tt('(no data yet — module coming)'))}</td></tr></tbody></table></div>`;
         },
 
         // ===== Command palette =====
@@ -265,10 +267,10 @@ document.addEventListener('alpine:init', () => {
                 return toks.some((t) => h.includes(t));
             });
             if (hit) {
-                this.addAi('bot', 'Baik, saya buka “' + hit.label + '” untuk Anda.');
+                this.addAi('bot', tt('All right, opening “:x” for you.').replace(':x', hit.label));
                 setTimeout(() => { this.openTab(hit.code); this.aiOpen = false; }, 500);
             } else {
-                this.addAi('bot', 'Saya belum menemukan objek yang cocok. Sebut nama form/grid, mis. “quotation” atau “inquiry”.');
+                this.addAi('bot', tt('I have not found a matching object yet. Name a form/grid, e.g. “quotation” or “inquiry”.'));
             }
         },
     }));
@@ -292,10 +294,10 @@ document.addEventListener('alpine:init', () => {
             const toks = q.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
             const hit = (navItems || []).find((o) => toks.some((t) => o.label.toLowerCase().includes(t) || (o.keywords || '').includes(t)));
             if (hit) {
-                this.addAi('bot', 'Baik, saya buka “' + hit.label + '”.');
+                this.addAi('bot', tt('All right, opening “:x”.').replace(':x', hit.label));
                 setTimeout(() => { window.location.href = hit.href; }, 500);
             } else {
-                this.addAi('bot', 'Belum ada dashboard yang cocok. Coba sebut mis. “sales”, “purchasing”, “gudang”.');
+                this.addAi('bot', tt('No matching dashboard yet. Try e.g. “sales”, “purchasing”, “inventory”.'));
             }
         },
     }));

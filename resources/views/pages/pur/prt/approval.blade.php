@@ -11,7 +11,7 @@ use Livewire\Component;
 // griduistandard.md diikuti. Approve/Reject/Minta Info (Hold) TIDAK di sini
 // -- dipindah ke form PRT yang sama (pur/prt/entry.blade.php), pola sama PR/PO/
 // Adjustment. Layar ini murni ANTRIAN -- grid, klik 2x buka dokumen aslinya.
-new #[Title('Persetujuan Purchase Return — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Purchase Return Approval — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $search = '';
 
@@ -86,16 +86,16 @@ new #[Title('Persetujuan Purchase Return — TELASIH MAKMUR ERP')] class extends
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total di Antrian Saya" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="Menunggu Keputusan" :value="$this->statWaiting" />
-            <x-grid.stat-box tone="extra" label="Minta Info (Hold)" :value="$this->statHold" />
+            <x-grid.stat-box tone="total" :label="t('Total in My Queue')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" :label="t('Awaiting Decision')" :value="$this->statWaiting" />
+            <x-grid.stat-box tone="extra" :label="t('Request Info (Hold)')" :value="$this->statHold" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. retur / supplier…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search return no. / supplier…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
             </x-grid.toolbar>
@@ -104,30 +104,30 @@ new #[Title('Persetujuan Purchase Return — TELASIH MAKMUR ERP')] class extends
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Supplier / No. Retur</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Diajukan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Posisi Approval</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Nilai</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Supplier / Return No.') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ t('Submitted') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ t('Approval Position') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Value') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->rows as $r)
-                            <tr wire:key="prtq-{{ $r->prt->prt_id }}" wire:dblclick="openReturn({{ $r->prt->prt_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                            <tr wire:key="prtq-{{ $r->prt->prt_id }}" wire:dblclick="openReturn({{ $r->prt->prt_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                 <x-grid.identity-cell :id="$r->prt->prt_id" :name="$this->supplierNames[$r->prt->i_supplier_id] ?? '—'" :code="$r->prt->doc_no" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->pending->acted_at?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-[10.5px]">{{ $r->pending->pending_label ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format((float) $r->pending->amount_snapshot, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->pending->action === 'HOLD' ? 'bg-[#f1ecfc] text-[#6d28d9]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $r->pending->action === 'HOLD' ? 'MINTA INFO' : 'MENUNGGU' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->pending->action === 'HOLD' ? 'bg-[#f1ecfc] text-[#6d28d9]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $r->pending->action === 'HOLD' ? mb_strtoupper(t('Request Info')) : mb_strtoupper(t('Waiting')) }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="openReturn({{ $r->prt->prt_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ t('Open') }}" action="openReturn({{ $r->prt->prt_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Tidak ada retur menunggu approval Anda saat ini." />
+                            <x-grid.empty-row :colspan="6" message="{{ t('No returns awaiting your approval right now.') }}" />
                         @endforelse
                     </tbody>
                 </table>

@@ -70,49 +70,49 @@ new #[Title('Cash Flow Statement — TELASIH MAKMUR ERP')] class extends Compone
 };
 ?>
 
-<x-ledger.page title="Cash Flow Statement" :subtitle="'Indirect method · '.Fmt::date($from).' — '.Fmt::date($to).'.'">
+<x-ledger.page :title="t('Cash Flow Statement')" :subtitle="t('Indirect method').' · '.Fmt::date($from).' — '.Fmt::date($to).'.'">
     <x-slot:actions>
         <input type="date" class="lg-period" wire:model.live="from">
         <input type="date" class="lg-period" wire:model.live="to">
-        <button type="button" class="lg-btn light" wire:click="export">⇩ Export</button>
+        <button type="button" class="lg-btn light" wire:click="export">⇩ {{ t('Export') }}</button>
     </x-slot:actions>
 
     <div class="lg-cards">
-        <x-ledger.metric label="Opening Cash" icon="◉" :value="Fmt::short($this->cf['opening_cash'])" :sub="Fmt::date($from)" />
-        <x-ledger.metric label="Net Operating Cash" icon="↗" :value="Fmt::short($this->cf['operating'])" :pill="$this->cf['operating'] >= 0 ? 'Positive' : 'Negative'" :tone="$this->cf['operating'] >= 0 ? 'good' : 'bad'" />
-        <x-ledger.metric label="Net Investing Cash" icon="↘" :value="Fmt::short($this->cf['investing'])" sub="CAPEX and intangibles" />
-        <x-ledger.metric label="Closing Cash" icon="✓" :value="Fmt::short($this->cf['closing_cash'])" :pill="Fmt::rp($this->cf['net_change']).' change'" :tone="$this->cf['net_change'] >= 0 ? 'good' : 'warn'" />
+        <x-ledger.metric :label="t('Opening Cash')" icon="◉" :value="Fmt::short($this->cf['opening_cash'])" :sub="Fmt::date($from)" />
+        <x-ledger.metric :label="t('Net Operating Cash')" icon="↗" :value="Fmt::short($this->cf['operating'])" :pill="$this->cf['operating'] >= 0 ? t('Positive') : t('Negative')" :tone="$this->cf['operating'] >= 0 ? 'good' : 'bad'" />
+        <x-ledger.metric :label="t('Net Investing Cash')" icon="↘" :value="Fmt::short($this->cf['investing'])" :sub="t('CAPEX and intangibles')" />
+        <x-ledger.metric :label="t('Closing Cash')" icon="✓" :value="Fmt::short($this->cf['closing_cash'])" :pill="str_replace(':amount', Fmt::rp($this->cf['net_change']), t(':amount change'))" :tone="$this->cf['net_change'] >= 0 ? 'good' : 'warn'" />
     </div>
 
-    <x-ledger.panel class="lg-stack" title="Cash Flow Detail" :subtitle="'Indirect method · '.Fmt::date($from).' — '.Fmt::date($to)">
+    <x-ledger.panel class="lg-stack" :title="t('Cash Flow Detail')" :subtitle="t('Indirect method').' · '.Fmt::date($from).' — '.Fmt::date($to)">
         <div class="lg-statements">
-            <x-ledger.srow kind="group" label="Cash flows from operating activities" />
-            <x-ledger.srow label="Profit before income tax" :value="Fmt::rp($this->cf['PROFIT'])" />
-            <x-ledger.srow label="Depreciation and amortization" :value="Fmt::rp($this->cf['DA'])" />
-            <x-ledger.srow label="(Increase) / decrease in trade receivables" :value="Fmt::rp($this->cf['WC_AR'])" />
-            <x-ledger.srow label="(Increase) / decrease in inventories" :value="Fmt::rp($this->cf['WC_INV'])" />
-            <x-ledger.srow label="(Increase) / decrease in other current assets" :value="Fmt::rp($this->cf['WC_OTHER_CA'])" />
-            <x-ledger.srow label="Increase / (decrease) in trade payables" :value="Fmt::rp($this->cf['WC_AP'])" />
-            <x-ledger.srow label="Increase / (decrease) in accruals and tax liabilities" :value="Fmt::rp($this->cf['WC_OTHER_CL'])" />
-            <x-ledger.srow label="Income tax paid" :value="Fmt::rp($this->cf['TAX'])" />
-            <x-ledger.srow kind="total" label="Net cash generated from operations" :value="Fmt::rp($this->cf['operating'])" />
-            <x-ledger.srow kind="group" label="Cash flows from investing activities" />
-            <x-ledger.srow label="Purchase of property, plant, equipment and intangibles" :value="Fmt::rp($this->cf['INV_PPE'])" />
-            <x-ledger.srow kind="total" label="Net cash used in investing activities" :value="Fmt::rp($this->cf['investing'])" />
-            <x-ledger.srow kind="group" label="Cash flows from financing activities" />
-            <x-ledger.srow label="Proceeds / (repayment) of bank loans" :value="Fmt::rp($this->cf['FIN_LOAN'])" />
-            <x-ledger.srow label="Capital contribution / (dividends)" :value="Fmt::rp($this->cf['FIN_EQUITY'])" />
-            <x-ledger.srow kind="total" label="Net cash from financing activities" :value="Fmt::rp($this->cf['financing'])" />
-            <x-ledger.srow kind="net" label="NET INCREASE / (DECREASE) IN CASH" :value="Fmt::rp($this->cf['net_change'])" />
-            <x-ledger.srow label="Cash at beginning of period" :value="Fmt::rp($this->cf['opening_cash'])" />
-            <x-ledger.srow kind="total" label="Cash at end of period" :value="Fmt::rp($this->cf['closing_cash'])" />
+            <x-ledger.srow kind="group" :label="t('Cash flows from operating activities')" />
+            <x-ledger.srow :label="t('Profit before income tax')" :value="Fmt::rp($this->cf['PROFIT'])" />
+            <x-ledger.srow :label="t('Depreciation and amortization')" :value="Fmt::rp($this->cf['DA'])" />
+            <x-ledger.srow :label="t('(Increase) / decrease in trade receivables')" :value="Fmt::rp($this->cf['WC_AR'])" />
+            <x-ledger.srow :label="t('(Increase) / decrease in inventories')" :value="Fmt::rp($this->cf['WC_INV'])" />
+            <x-ledger.srow :label="t('(Increase) / decrease in other current assets')" :value="Fmt::rp($this->cf['WC_OTHER_CA'])" />
+            <x-ledger.srow :label="t('Increase / (decrease) in trade payables')" :value="Fmt::rp($this->cf['WC_AP'])" />
+            <x-ledger.srow :label="t('Increase / (decrease) in accruals and tax liabilities')" :value="Fmt::rp($this->cf['WC_OTHER_CL'])" />
+            <x-ledger.srow :label="t('Income tax paid')" :value="Fmt::rp($this->cf['TAX'])" />
+            <x-ledger.srow kind="total" :label="t('Net cash generated from operations')" :value="Fmt::rp($this->cf['operating'])" />
+            <x-ledger.srow kind="group" :label="t('Cash flows from investing activities')" />
+            <x-ledger.srow :label="t('Purchase of property, plant, equipment and intangibles')" :value="Fmt::rp($this->cf['INV_PPE'])" />
+            <x-ledger.srow kind="total" :label="t('Net cash used in investing activities')" :value="Fmt::rp($this->cf['investing'])" />
+            <x-ledger.srow kind="group" :label="t('Cash flows from financing activities')" />
+            <x-ledger.srow :label="t('Proceeds / (repayment) of bank loans')" :value="Fmt::rp($this->cf['FIN_LOAN'])" />
+            <x-ledger.srow :label="t('Capital contribution / (dividends)')" :value="Fmt::rp($this->cf['FIN_EQUITY'])" />
+            <x-ledger.srow kind="total" :label="t('Net cash from financing activities')" :value="Fmt::rp($this->cf['financing'])" />
+            <x-ledger.srow kind="net" :label="mb_strtoupper(t('Net increase / (decrease) in cash'))" :value="Fmt::rp($this->cf['net_change'])" />
+            <x-ledger.srow :label="t('Cash at beginning of period')" :value="Fmt::rp($this->cf['opening_cash'])" />
+            <x-ledger.srow kind="total" :label="t('Cash at end of period')" :value="Fmt::rp($this->cf['closing_cash'])" />
         </div>
         @if (abs($this->cf['opening_cash'] + $this->cf['net_change'] - $this->cf['closing_cash']) > 0.01)
-            <div class="lg-alert warn" style="margin:0 19px 16px">Selisih rekonsiliasi kas {{ Fmt::rp($this->cf['opening_cash'] + $this->cf['net_change'] - $this->cf['closing_cash']) }} — ada akun tanpa klasifikasi arus kas (cf_line).</div>
+            <div class="lg-alert warn" style="margin:0 19px 16px">{{ str_replace(':amount', Fmt::rp($this->cf['opening_cash'] + $this->cf['net_change'] - $this->cf['closing_cash']), t('Cash reconciliation difference :amount — some accounts have no cash flow classification (cf_line).')) }}</div>
         @endif
     </x-ledger.panel>
 
-    <x-ledger.panel title="Operating Cash Trend" subtitle="Monthly operating cash movement — IDR">
+    <x-ledger.panel :title="t('Operating Cash Trend')" :subtitle="t('Monthly operating cash movement — IDR')">
         <div class="lg-chart">
             @if (array_filter($this->monthly))
                 <svg viewBox="0 0 700 235" width="100%" role="img">
@@ -128,7 +128,7 @@ new #[Title('Cash Flow Statement — TELASIH MAKMUR ERP')] class extends Compone
                     @endforeach
                 </div>
             @else
-                <div class="lg-empty">Belum ada arus kas operasi pada periode ini.</div>
+                <div class="lg-empty">{{ t('No operating cash flow in this period yet.') }}</div>
             @endif
         </div>
     </x-ledger.panel>

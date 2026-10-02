@@ -7,7 +7,6 @@ use App\Models\Pur\PrLine;
 use App\Models\Pur\PrRequisition;
 use App\Services\Flow\FlowEngineService;
 use App\Services\Pur\PrAllocationService;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -344,7 +343,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         $result = $flow->submit('PR', $this->prId, 'SUBMITTED', $amount);
 
         if ($result === null) {
-            $this->blockedMessage = Translator::t('proc_pr_entry_no_flow_config', 'Tidak ada konfigurasi approval aktif untuk modul PR. Dokumen tersimpan sebagai SUBMITTED tapi belum masuk antrian approval siapapun — hubungi Admin.');
+            $this->blockedMessage = t('No active approval configuration for the PR module. The document was saved as SUBMITTED but is not in anyone\'s approval queue — contact Admin.');
         }
 
         unset($this->pr);
@@ -382,7 +381,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         }
 
         if (trim($this->approvalNote) === '') {
-            $this->approvalError = Translator::t('proc_entry_reject_reason_required', 'Alasan penolakan wajib diisi.');
+            $this->approvalError = t('Rejection reason is required.');
 
             return;
         }
@@ -407,7 +406,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         }
 
         if (trim($this->approvalNote) === '') {
-            $this->approvalError = Translator::t('proc_entry_hold_reason_required', 'Catatan alasan Hold wajib diisi.');
+            $this->approvalError = t('Hold reason note is required.');
 
             return;
         }
@@ -434,8 +433,8 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">🧾 {{ Translator::t('proc_pr_entry_title', 'Purchase Requisition Entry') }}</b>
-        <span class="text-xs text-white/75">{{ $this->pr->doc_no ?: Translator::t('proc_entry_no_docno_yet', '(belum ada nomor - digenerate saat submit)') }}</span>
+        <b class="text-[15px]">🧾 {{ t('Purchase Requisition Entry') }}</b>
+        <span class="text-xs text-white/75">{{ $this->pr->doc_no ?: t('(no number yet - generated on submit)') }}</span>
         <x-form.badge :tone="match ($this->pr->status) {
                 'SUBMITTED' => 'warn',
                 'APPROVED', 'PARTIALLY_ORDERED', 'FULLY_ORDERED', 'CLOSED' => 'success',
@@ -444,9 +443,9 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
             }">{{ $this->pr->status }}</x-form.badge>
         @unless (in_array($this->pr->status, ['DRAFT', 'SUBMITTED'], true))
             <a href="{{ route('pur.pr.print', ['pr' => $this->prId]) }}" target="_blank"
-                class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 {{ Translator::t('proc_pr_entry_btn_print', 'Cetak PR') }}</a>
+                class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 {{ t('Print PR') }}</a>
         @endunless
-        <x-back-button :fallback="route('pur.pr.list')" title="{{ Translator::t('proc_pr_entry_back_title', 'Kembali ke Daftar PR') }}" class="ml-auto" />
+        <x-back-button :fallback="route('pur.pr.list')" title="{{ t('Back to PR List') }}" class="ml-auto" />
     </header>
 
     <div class="max-w-[1400px] mx-auto my-5 px-4">
@@ -459,26 +458,26 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
         @if ($this->approvalHistory->last()?->action === 'HOLD')
             <div class="bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0] text-xs rounded-md px-4 py-2.5 mb-4">
-                ⏸ {{ Translator::t('proc_entry_held_by', 'Ditahan oleh') }} {{ $this->approvalHistory->last()->created_by ?? Translator::t('proc_entry_system_fallback', 'sistem') }} · {{ $this->approvalHistory->last()->acted_at?->translatedFormat('d M Y, H:i') }} — "{{ $this->approvalHistory->last()->notes }}"
+                ⏸ {{ t('Held by') }} {{ $this->approvalHistory->last()->created_by ?? t('system') }} · {{ $this->approvalHistory->last()->acted_at?->translatedFormat('d M Y, H:i') }} — "{{ $this->approvalHistory->last()->notes }}"
             </div>
         @endif
 
         {{-- HEADER --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ Translator::t('proc_entry_general_info', 'Informasi Umum') }}</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('General Information') }}</h3>
             <div class="grid">
-                <x-form.date-picker label="{{ Translator::t('proc_pr_entry_col_date', 'Tanggal PR') }}" value="{{ $this->pr->i_doc_date?->format('Y-m-d') }}" :disabled="$this->pr->status !== 'DRAFT'"
+                <x-form.date-picker label="{{ t('PR Date') }}" value="{{ $this->pr->i_doc_date?->format('Y-m-d') }}" :disabled="$this->pr->status !== 'DRAFT'"
                     wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <x-form.select :disabled="$this->pr->status !== 'DRAFT'" wire:change="updateHeader('i_department_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
                     :selected="$this->pr->i_department_id" :options="$this->departments->pluck('department_name', 'department_id')->all()">
-                    <x-slot:label>{{ Translator::t('proc_pr_entry_requesting_dept', 'Departemen Peminta') }} <span class="text-[#a3241f]">*</span></x-slot:label>
+                    <x-slot:label>{{ t('Requesting Department') }} <span class="text-[#a3241f]">*</span></x-slot:label>
                 </x-form.select>
-                <x-form.input label="{{ Translator::t('proc_pr_col_source', 'Sumber') }}" readonly value="MANUAL" class="bg-[#f8fafc]" />
-                <x-form.date-picker label="{{ Translator::t('proc_entry_need_date', 'Tgl Dibutuhkan') }}" value="{{ $this->pr->i_need_date?->format('Y-m-d') }}" :disabled="$this->pr->status !== 'DRAFT'"
+                <x-form.input label="{{ t('Source') }}" readonly value="MANUAL" class="bg-[#f8fafc]" />
+                <x-form.date-picker label="{{ t('Needed Date') }}" value="{{ $this->pr->i_need_date?->format('Y-m-d') }}" :disabled="$this->pr->status !== 'DRAFT'"
                     wire:change="updateHeader('i_need_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
             </div>
             <div class="mt-3">
-                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ Translator::t('proc_pr_entry_notes_label', 'Catatan / Justifikasi') }}</label>
+                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Notes / Justification') }}</label>
                 <textarea rows="2" @disabled($this->pr->status !== 'DRAFT') wire:change="updateHeader('i_notes', $event.target.value)"
                     class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">{{ $this->pr->i_notes }}</textarea>
             </div>
@@ -488,43 +487,43 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
             {{-- ITEM PICKER --}}
             <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4" x-data="{ tab: 'master' }">
                 <div class="flex items-center gap-2 mb-3">
-                    <button type="button" @click="tab = 'master'" :class="tab === 'master' ? 'bg-navy text-white' : 'bg-[#eef1f5] text-[#4b5568]'" class="text-[11px] font-bold px-3 py-1.5 rounded">◆ {{ Translator::t('proc_entry_item_master_tab', 'Item Master') }}</button>
-                    <button type="button" @click="tab = 'free'" :class="tab === 'free' ? 'bg-navy text-white' : 'bg-[#eef1f5] text-[#4b5568]'" class="text-[11px] font-bold px-3 py-1.5 rounded">{{ Translator::t('proc_entry_free_text_tab', 'Teks Bebas') }}</button>
+                    <button type="button" @click="tab = 'master'" :class="tab === 'master' ? 'bg-navy text-white' : 'bg-[#eef1f5] text-[#4b5568]'" class="text-[11px] font-bold px-3 py-1.5 rounded">◆ {{ t('Item Master') }}</button>
+                    <button type="button" @click="tab = 'free'" :class="tab === 'free' ? 'bg-navy text-white' : 'bg-[#eef1f5] text-[#4b5568]'" class="text-[11px] font-bold px-3 py-1.5 rounded">{{ t('Free Text') }}</button>
                 </div>
 
                 <div x-show="tab === 'master'">
                     <div class="relative mb-3" style="max-width:420px">
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ Translator::t('proc_entry_quick_search', 'Cari Cepat') }} <span class="text-muted normal-case font-normal">({{ Translator::t('proc_entry_quick_search_hint', 'sudah hafal kode/nama?') }})</span></label>
-                        <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('proc_entry_item_search_placeholder', 'Ketik kode atau nama item…') }}" />
+                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Quick Search') }} <span class="text-muted normal-case font-normal">({{ t('already know the code/name?') }})</span></label>
+                        <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ t('Type item code or name…') }}" />
                         @if ($this->itemSearchResults->isNotEmpty())
                             <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                                 @foreach ($this->itemSearchResults as $m)
                                     <button type="button" wire:click="addMasterItem({{ $m->material_id }})" wire:key="qsearch-{{ $m->material_id }}" class="w-full flex items-center justify-between text-left px-3 py-1.5 border-b border-[#eef1f5] last:border-0 hover:bg-[#eef3fb] text-xs">
                                         <span><b class="font-mono text-[11px]">{{ $m->material_code }}</b> — {{ $m->material_name }}</span>
-                                        <span class="text-muted text-[10px]">{{ $m->uom_purchase }} @if($m->is_fx_sensitive) <span class="text-[#a3241f]">⚠ {{ Translator::t('proc_entry_fx_sensitive', 'kurs') }}</span> @endif</span>
+                                        <span class="text-muted text-[10px]">{{ $m->uom_purchase }} @if($m->is_fx_sensitive) <span class="text-[#a3241f]">⚠ {{ t('fx') }}</span> @endif</span>
                                     </button>
                                 @endforeach
                             </div>
                         @endif
                     </div>
                     <div class="flex items-center gap-2 mb-2">
-                        <span class="text-[10.5px] text-muted uppercase font-semibold">{{ Translator::t('proc_entry_browse_by_category', 'atau telusuri per kategori') }}</span>
+                        <span class="text-[10.5px] text-muted uppercase font-semibold">{{ t('or browse by category') }}</span>
                         <span class="flex-1 border-t border-[#eef1f5]"></span>
                     </div>
                     <div class="[display:grid] grid-cols-5 gap-2 mb-2">
-                        <x-form.select label="{{ Translator::t('proc_entry_cat_category', 'Kategori') }}" wire:change="setPick(1, $event.target.value)"
+                        <x-form.select label="{{ t('Category') }}" wire:change="setPick(1, $event.target.value)"
                             :selected="$pick1" :options="$this->cat1Options->pluck('category_name', 'id_category')->all()" />
-                        <x-form.select label="{{ Translator::t('proc_entry_cat_type', 'Jenis') }}" wire:change="setPick(2, $event.target.value)" :disabled="! $pick1" class="disabled:bg-[#f8fafc]"
+                        <x-form.select label="{{ t('Type') }}" wire:change="setPick(2, $event.target.value)" :disabled="! $pick1" class="disabled:bg-[#f8fafc]"
                             :selected="$pick2" :options="$this->cat2Options->pluck('category_name', 'id_category')->all()" />
-                        <x-form.select label="{{ Translator::t('proc_entry_cat_spec', 'Gramatur/Spec') }}" wire:change="setPick(3, $event.target.value)" :disabled="! $pick2" class="disabled:bg-[#f8fafc]"
+                        <x-form.select label="{{ t('Weight/Spec') }}" wire:change="setPick(3, $event.target.value)" :disabled="! $pick2" class="disabled:bg-[#f8fafc]"
                             :selected="$pick3" :options="$this->cat3Options->pluck('category_name', 'id_category')->all()" />
                         <x-form.select wire:change="setPick(4, $event.target.value)" :disabled="! $pick3 || $this->cat4Options->isEmpty()" class="disabled:bg-[#f8fafc]"
-                            placeholder="{{ Translator::t('shared_option_all', '— semua —') }}" :selected="$pick4" :options="$this->cat4Options->pluck('category_name', 'id_category')->all()">
-                            <x-slot:label>{{ Translator::t('proc_entry_cat_size', 'Ukuran') }} <span class="text-muted normal-case font-normal">({{ Translator::t('shared_optional', 'opsional') }})</span></x-slot:label>
+                            placeholder="{{ t('— all —') }}" :selected="$pick4" :options="$this->cat4Options->pluck('category_name', 'id_category')->all()">
+                            <x-slot:label>{{ t('Size') }} <span class="text-muted normal-case font-normal">({{ t('optional') }})</span></x-slot:label>
                         </x-form.select>
                         <x-form.select wire:change="setPick(5, $event.target.value)" :disabled="! $pick4 || $this->cat5Options->isEmpty()" class="disabled:bg-[#f8fafc]"
-                            placeholder="{{ Translator::t('shared_option_all', '— semua —') }}" :selected="$pick5" :options="$this->cat5Options->pluck('category_name', 'id_category')->all()">
-                            <x-slot:label>{{ Translator::t('proc_entry_cat_brand', 'Merk') }} <span class="text-muted normal-case font-normal">({{ Translator::t('shared_optional', 'opsional') }})</span></x-slot:label>
+                            placeholder="{{ t('— all —') }}" :selected="$pick5" :options="$this->cat5Options->pluck('category_name', 'id_category')->all()">
+                            <x-slot:label>{{ t('Brand') }} <span class="text-muted normal-case font-normal">({{ t('optional') }})</span></x-slot:label>
                         </x-form.select>
                     </div>
 
@@ -534,10 +533,10 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                                 <button type="button" wire:click="addMasterItem({{ $m->material_id }})" wire:key="mat-{{ $m->material_id }}"
                                     class="w-full flex items-center justify-between text-left px-3 py-1.5 border-b border-[#eef1f5] last:border-0 hover:bg-[#eef3fb] text-xs">
                                     <span><b class="font-mono text-[11px]">{{ $m->material_code }}</b> — {{ $m->material_name }}</span>
-                                    <span class="text-muted text-[10px]">{{ $m->uom_purchase }} @if($m->is_fx_sensitive) <span class="text-[#a3241f]">⚠ {{ Translator::t('proc_entry_fx_sensitive', 'kurs') }}</span> @endif</span>
+                                    <span class="text-muted text-[10px]">{{ $m->uom_purchase }} @if($m->is_fx_sensitive) <span class="text-[#a3241f]">⚠ {{ t('fx') }}</span> @endif</span>
                                 </button>
                             @empty
-                                <p class="text-xs text-muted px-3 py-2">{{ Translator::t('proc_entry_no_matching_item', 'Tidak ada item cocok pada kombinasi ini.') }}</p>
+                                <p class="text-xs text-muted px-3 py-2">{{ t('No matching item for this combination.') }}</p>
                             @endforelse
                         </div>
                     @endif
@@ -545,43 +544,43 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
                 <div x-show="tab === 'free'" class="flex gap-2 items-end">
                     <div class="flex-1">
-                        <x-form.input label="{{ Translator::t('proc_entry_description', 'Deskripsi') }}" wire:model="freeDescription" placeholder="{{ Translator::t('proc_pr_entry_free_desc_placeholder', 'mis. Laptop Dell Latitude, Renovasi kantin') }}" />
+                        <x-form.input label="{{ t('Description') }}" wire:model="freeDescription" placeholder="{{ t('e.g. Dell Latitude Laptop, Canteen Renovation') }}" />
                     </div>
                     <div class="w-[140px] shrink-0">
-                        <x-form.input label="{{ Translator::t('proc_pv_col_uom', 'UoM') }}" wire:model="freeUom" placeholder="{{ Translator::t('proc_entry_unit_placeholder', 'Unit') }}" />
+                        <x-form.input label="{{ t('UoM') }}" wire:model="freeUom" placeholder="{{ t('Unit') }}" />
                     </div>
                     <div class="flex-1">
                         <x-form.select wire:model="freeAccountId" :selected="$freeAccountId"
                             :options="$this->coaAccounts->mapWithKeys(fn ($acc) => [$acc->account_id => $acc->account_code.' - '.$acc->account_name])->all()">
-                            <x-slot:label>{{ Translator::t('proc_entry_coa_account', 'Akun COA') }} <span class="text-red-600">*</span></x-slot:label>
+                            <x-slot:label>{{ t('COA Account') }} <span class="text-red-600">*</span></x-slot:label>
                         </x-form.select>
                     </div>
-                    <button type="button" wire:click="addFreeText" class="text-[11px] font-bold text-white bg-navy rounded px-3 py-1.5">＋ {{ Translator::t('shared_grid_add_row', 'Tambah') }}</button>
+                    <button type="button" wire:click="addFreeText" class="text-[11px] font-bold text-white bg-navy rounded px-3 py-1.5">＋ {{ t('Add') }}</button>
                 </div>
                 @if ($freeError)
                     <p class="text-[11px] text-red-600 mb-2">⚠ {{ $freeError }}</p>
                 @endif
-                <p class="text-[11px] text-muted mt-2">{{ Translator::t('proc_pr_entry_free_text_hint', 'Teks bebas dipakai untuk pembelian sekali pakai (mesin, laptop, renovasi, jasa tak terdaftar) — departemen & akun COA wajib diisi manual per baris.') }}</p>
+                <p class="text-[11px] text-muted mt-2">{{ t('Free text is for one-off purchases (machines, laptops, renovation, unlisted services) — department & COA account must be filled manually per line.') }}</p>
             </div>
         @endif
 
         {{-- ITEM LINES --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
             <div class="px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
-                <h3 class="text-xs text-navy uppercase font-bold">{{ Translator::t('proc_pr_entry_request_items', 'Item Permintaan') }}</h3>
+                <h3 class="text-xs text-navy uppercase font-bold">{{ t('Requested Items') }}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs min-w-[1100px]">
                     <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5]">
                         <tr>
                             <th class="text-left px-3 py-2">#</th>
-                            <th class="text-left px-3 py-2">{{ Translator::t('proc_pv_col_item', 'Item') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('shared_qty', 'Qty') }}</th>
-                            <th class="text-left px-3 py-2">{{ Translator::t('proc_pv_col_uom', 'UoM') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('proc_entry_est_price', 'Est. Harga') }}</th>
-                            <th class="text-right px-3 py-2">{{ Translator::t('proc_entry_est_subtotal', 'Est. Subtotal') }}</th>
-                            <th class="text-left px-3 py-2">{{ Translator::t('proc_entry_department', 'Departemen') }}</th>
-                            <th class="text-left px-3 py-2">{{ Translator::t('proc_entry_coa_account', 'Akun COA') }}</th>
+                            <th class="text-left px-3 py-2">{{ t('Item') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Qty') }}</th>
+                            <th class="text-left px-3 py-2">{{ t('UoM') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Est. Price') }}</th>
+                            <th class="text-right px-3 py-2">{{ t('Est. Subtotal') }}</th>
+                            <th class="text-left px-3 py-2">{{ t('Department') }}</th>
+                            <th class="text-left px-3 py-2">{{ t('COA Account') }}</th>
                             <th class="px-3 py-2"></th>
                         </tr>
                     </thead>
@@ -595,7 +594,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                                     @else
                                         <x-form.input value="{{ $line->i_description }}" :disabled="$this->pr->status !== 'DRAFT'"
                                             wire:change="updateLine({{ $line->pr_line_id }}, 'i_description', $event.target.value)" class="!py-1 disabled:bg-transparent disabled:border-transparent" />
-                                        <span class="text-[9px] text-[#8a5a00] bg-[#fff5e0] px-1 rounded">{{ Translator::t('proc_entry_free_text_badge', 'FREE TEXT') }}</span>
+                                        <span class="text-[9px] text-[#8a5a00] bg-[#fff5e0] px-1 rounded">{{ t('FREE TEXT') }}</span>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 text-right">
@@ -611,7 +610,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 text-right">
-                                    <x-form.input type="number" step="0.01" value="{{ $line->i_est_price }}" :disabled="$this->pr->status !== 'DRAFT'" placeholder="{{ Translator::t('shared_optional', 'opsional') }}"
+                                    <x-form.input type="number" step="0.01" value="{{ $line->i_est_price }}" :disabled="$this->pr->status !== 'DRAFT'" placeholder="{{ t('optional') }}"
                                         wire:change="updateLine({{ $line->pr_line_id }}, 'i_est_price', $event.target.value)" class="w-24 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2 text-right font-mono">{{ $line->c_est_subtotal !== null ? number_format((float) $line->c_est_subtotal, 0, ',', '.') : '—' }}</td>
@@ -625,19 +624,19 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                                 </td>
                                 <td class="px-3 py-2">
                                     @if ($this->pr->status === 'DRAFT')
-                                        <button type="button" wire:click="removeLine({{ $line->pr_line_id }})" wire:confirm="{{ Translator::t('shared_confirm_delete_row', 'Hapus baris ini?') }}" class="text-[#a3241f] text-xs">✕</button>
+                                        <button type="button" wire:click="removeLine({{ $line->pr_line_id }})" wire:confirm="{{ t('Delete this row?') }}" class="text-[#a3241f] text-xs">✕</button>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-3 py-6 text-center text-muted text-xs">{{ Translator::t('proc_pr_entry_empty_lines', 'Belum ada baris item. Pilih dari Item Master atau tambah Teks Bebas di atas.') }}</td>
+                                <td colspan="9" class="px-3 py-6 text-center text-muted text-xs">{{ t('No item lines yet. Pick from Item Master or add Free Text above.') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
                     <tfoot>
                         <tr class="border-t-2 border-[#d7dbe2] font-bold">
-                            <td colspan="5" class="px-3 py-2 text-right">{{ Translator::t('proc_entry_est_total', 'Total Estimasi') }}</td>
+                            <td colspan="5" class="px-3 py-2 text-right">{{ t('Estimated Total') }}</td>
                             <td class="px-3 py-2 text-right font-mono">{{ number_format((float) $this->pr->c_est_total, 0, ',', '.') }}</td>
                             <td colspan="3"></td>
                         </tr>
@@ -648,7 +647,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
         @if ($this->approvalHistory->isNotEmpty())
             <div class="border border-[#eef1f5] rounded-xl p-4 bg-white mb-4">
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-3">{{ Translator::t('proc_entry_approval_history', 'Riwayat Approval') }}</p>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-3">{{ t('Approval History') }}</p>
                 <div class="relative pl-5 border-l-2 border-[#eef1f5] ml-1 space-y-3 text-sm">
                     @foreach ($this->approvalHistory as $h)
                         <div class="relative">
@@ -658,7 +657,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                                 default => 'bg-[#eaf7ee] border-[#1f8a4c]',
                             } }}"></div>
                             <p class="font-semibold text-xs">{{ $h->action }}</p>
-                            <p class="text-[10.5px] text-muted">{{ Translator::t('proc_entry_by_prefix', 'Oleh:') }} {{ $h->created_by ?? Translator::t('proc_entry_system_fallback', 'sistem') }} · {{ $h->acted_at?->translatedFormat('d M Y, H:i') }}{{ $h->is_acting ? ' ('.Translator::t('proc_entry_acting_suffix', 'PLT').')' : '' }}</p>
+                            <p class="text-[10.5px] text-muted">{{ t('By:') }} {{ $h->created_by ?? t('system') }} · {{ $h->acted_at?->translatedFormat('d M Y, H:i') }}{{ $h->is_acting ? ' ('.t('Acting').')' : '' }}</p>
                             @if ($h->notes)
                                 <p class="text-[10.5px] {{ $h->action === 'REJECTED' ? 'text-[#a3241f]' : 'text-[#6b4fa0]' }} mt-0.5">"{{ $h->notes }}"</p>
                             @endif
@@ -670,25 +669,25 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
         @if ($this->pr->status === 'DRAFT')
             <div class="flex justify-end gap-2 mb-8">
-                <button type="button" wire:click="delete" wire:confirm="{{ Translator::t('proc_pr_entry_confirm_delete', 'Hapus PR draft ini? Tindakan tidak bisa dibatalkan.') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ Translator::t('shared_grid_delete', 'Hapus') }}</button>
-                <button type="button" wire:click="save" class="border border-[#d7dbe2] text-navy text-xs font-bold px-4 py-2 rounded-md">{{ Translator::t('proc_entry_save_draft', 'Simpan Draft') }}</button>
-                <button type="button" wire:click="submit" wire:confirm="{{ Translator::t('proc_pr_entry_confirm_submit', 'Ajukan PR ini untuk approval? Nomor dokumen akan diterbitkan dan baris tak bisa diedit lagi.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ Translator::t('proc_entry_submit_approval', 'Ajukan Approval') }}</button>
+                <button type="button" wire:click="delete" wire:confirm="{{ t('Delete this draft PR? This action cannot be undone.') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ t('Delete') }}</button>
+                <button type="button" wire:click="save" class="border border-[#d7dbe2] text-navy text-xs font-bold px-4 py-2 rounded-md">{{ t('Save Draft') }}</button>
+                <button type="button" wire:click="submit" wire:confirm="{{ t('Submit this PR for approval? A document number will be issued and lines can no longer be edited.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Submit for Approval') }}</button>
             </div>
         @elseif ($this->pendingApproval)
             <div class="border-2 border-dashed border-[#d7dbe2] rounded-xl p-4 bg-white mb-8">
-                <p class="text-xs font-bold text-navy mb-2">{{ Translator::t('proc_entry_approval_decision', 'Keputusan Approval') }} — {{ $this->pendingApproval->pending_label ?? Translator::t('proc_entry_awaiting_decision', 'Menunggu keputusan Anda') }}</p>
+                <p class="text-xs font-bold text-navy mb-2">{{ t('Approval Decision') }} — {{ $this->pendingApproval->pending_label ?? t('Awaiting your decision') }}</p>
                 @if ($approvalError)
                     <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $approvalError }}</p>
                 @endif
                 <div class="mb-3">
-                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="{{ Translator::t('proc_entry_approval_note_placeholder', 'Alasan penolakan, atau catatan hold (mis. cash flow belum siap)...') }}" class="!text-sm">
-                        <x-slot:label>{{ Translator::t('proc_entry_note_label', 'Catatan') }} <span class="text-[#a3241f] normal-case">({{ Translator::t('proc_entry_note_required_hint', 'wajib utk Tolak / Hold') }})</span></x-slot:label>
+                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="{{ t('Rejection reason, or hold note (e.g. cash flow not ready)...') }}" class="!text-sm">
+                        <x-slot:label>{{ t('Notes') }} <span class="text-[#a3241f] normal-case">({{ t('required for Reject / Hold') }})</span></x-slot:label>
                     </x-form.textarea>
                 </div>
                 <div class="flex justify-end gap-2">
-                    <button type="button" wire:click="holdDoc" wire:confirm="{{ Translator::t('proc_pr_entry_confirm_hold', 'Tahan PR ini? Tetap di antrian Anda, diputuskan lagi nanti.') }}" class="bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-semibold">⏸ {{ Translator::t('proc_entry_btn_hold', 'Hold') }}</button>
-                    <button type="button" wire:click="rejectDoc" wire:confirm="{{ Translator::t('proc_pr_entry_confirm_reject', 'Tolak PR ini?') }}" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ {{ Translator::t('proc_entry_btn_reject', 'Tolak') }}</button>
-                    <button type="button" wire:click="approveDoc" wire:confirm="{{ Translator::t('proc_pr_entry_confirm_approve', 'Setujui PR ini?') }}" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ {{ Translator::t('proc_entry_btn_approve', 'Setujui') }}</button>
+                    <button type="button" wire:click="holdDoc" wire:confirm="{{ t('Hold this PR? It stays in your queue, decide again later.') }}" class="bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-semibold">⏸ {{ t('Hold') }}</button>
+                    <button type="button" wire:click="rejectDoc" wire:confirm="{{ t('Reject this PR?') }}" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ {{ t('Reject') }}</button>
+                    <button type="button" wire:click="approveDoc" wire:confirm="{{ t('Approve this PR?') }}" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ {{ t('Approve') }}</button>
                 </div>
             </div>
         @endif

@@ -4,14 +4,13 @@ use App\Models\Pur\PvLine;
 use App\Models\Pur\PvReceipt;
 use App\Services\Pur\PvBuilderService;
 use App\Services\Pur\PvPostingService;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Goods Receipt (SPB) — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $pvId;
 
@@ -151,7 +150,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
     public function overrideTolerance(int $lineId, string $reason): void
     {
         if (trim($reason) === '') {
-            $this->postMessage = Translator::t('proc_pv_entry_override_reason_required', 'Alasan override wajib diisi.');
+            $this->postMessage = t('Override reason is required.');
 
             return;
         }
@@ -232,7 +231,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">🚚 {{ $this->pv->label() }}</b>
         <span class="text-xs text-white/75">{{ $this->supplier?->supplier_name }} · {{ $this->pv->i_warehouse_code }}</span>
-        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#e2e0ff] text-[#4b3fa8]">🔒 {{ Translator::t('proc_pv_entry_side_b_hint', 'Sisi B — tanpa harga di layar ini kecuali panel nilai') }}</span>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#e2e0ff] text-[#4b3fa8]">🔒 {{ t('Side B — no prices on this screen except the value panel') }}</span>
         @if (($this->pv->c_po_count ?? 0) > 1)
             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#fff1f2] text-[#9f1239]">{{ $this->pv->c_po_count }} PO</span>
         @endif
@@ -244,17 +243,17 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                 'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
                 default => 'bg-[#eef1f5] text-[#4b5568]',
             } }}">{{ $this->pv->status }}</span>
-        <x-back-button :fallback="route('pur.pv.list')" title="{{ Translator::t('proc_pv_entry_back_title', 'Kembali ke Daftar SPB') }}" class="ml-auto" />
+        <x-back-button :fallback="route('pur.pv.list')" title="{{ t('Back to Receipt List') }}" class="ml-auto" />
     </header>
 
     <div class="max-w-[1500px] mx-auto my-5 px-4">
         {{-- HEADER --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid gap-3">
-            <x-form.date-picker label="{{ Translator::t('proc_pv_entry_receive_date', 'Tanggal Terima') }}" value="{{ $this->pv->i_doc_date?->format('Y-m-d') }}" wire:change="updateHeader('i_doc_date', $event.target.value)" />
-            <x-form.input label="{{ Translator::t('proc_pv_entry_main_do', 'Surat Jalan Utama') }}" value="{{ $this->pv->i_supplier_do_no }}" wire:change="updateHeader('i_supplier_do_no', $event.target.value)" />
-            <x-form.input label="{{ Translator::t('proc_pv_entry_vehicle_no', 'No Kendaraan') }}" value="{{ $this->pv->i_vehicle_no }}" wire:change="updateHeader('i_vehicle_no', $event.target.value)" />
+            <x-form.date-picker label="{{ t('Receive Date') }}" value="{{ $this->pv->i_doc_date?->format('Y-m-d') }}" wire:change="updateHeader('i_doc_date', $event.target.value)" />
+            <x-form.input label="{{ t('Main Delivery Note') }}" value="{{ $this->pv->i_supplier_do_no }}" wire:change="updateHeader('i_supplier_do_no', $event.target.value)" />
+            <x-form.input label="{{ t('Vehicle No.') }}" value="{{ $this->pv->i_vehicle_no }}" wire:change="updateHeader('i_vehicle_no', $event.target.value)" />
             <div>
-                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ Translator::t('proc_pv_entry_covered_po', 'PO Tercakup') }}</label>
+                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Covered PO') }}</label>
                 <div class="flex items-center gap-1.5 flex-wrap pt-1.5">
                     @foreach (explode(', ', (string) $this->pv->c_po_doc_list) as $poNo)
                         @if ($poNo !== '')
@@ -262,12 +261,12 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                         @endif
                     @endforeach
                     @if ($this->pv->status !== 'POSTED')
-                        <button type="button" wire:click="openAddPicker" class="text-[10.5px] font-bold text-accent">＋ {{ Translator::t('proc_pv_entry_other_po', 'PO lain') }}</button>
+                        <button type="button" wire:click="openAddPicker" class="text-[10.5px] font-bold text-accent">＋ {{ t('Other PO') }}</button>
                     @endif
                 </div>
             </div>
             <div class="col-span-4">
-                <x-form.input label="{{ Translator::t('proc_entry_notes', 'Catatan') }}" value="{{ $this->pv->i_notes }}" wire:change="updateHeader('i_notes', $event.target.value)" />
+                <x-form.input label="{{ t('Notes') }}" value="{{ $this->pv->i_notes }}" wire:change="updateHeader('i_notes', $event.target.value)" />
             </div>
         </div>
 
@@ -275,41 +274,41 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
             <div class="bg-[#fff5e0] border border-[#e0c26a] text-[#8a5a00] text-xs rounded-md px-4 py-2.5 mb-4">⚠ {{ $postMessage }}</div>
         @endif
         @if ($journalWarning)
-            <div class="bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0] text-xs rounded-md px-4 py-2.5 mb-4">ℹ {{ $journalWarning }} {{ Translator::t('proc_pv_entry_journal_warning_hint', 'Lengkapi akun Persediaan/GR-IR di Master Bahan Baku atau kategori terkait.') }}</div>
+            <div class="bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0] text-xs rounded-md px-4 py-2.5 mb-4">ℹ {{ $journalWarning }} {{ t('Complete the Inventory/GR-IR account in Raw Material Master or the related category.') }}</div>
         @endif
 
         {{-- BARIS --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
             <div class="px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
-                <h3 class="text-xs text-navy uppercase font-bold">{{ Translator::t('proc_pv_entry_lines_title', 'Baris Penerimaan — Dual UOM (Beli / Stok)') }}</h3>
+                <h3 class="text-xs text-navy uppercase font-bold">{{ t('Receipt Lines — Dual UOM (Purchase / Stock)') }}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs min-w-[1400px]">
                     <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5]">
                         <tr>
                             <th class="text-left px-2 py-2">#</th>
-                            <th class="text-left px-2 py-2">{{ Translator::t('proc_pv_entry_po_origin', 'Asal PO') }}</th>
-                            <th class="text-left px-2 py-2">{{ Translator::t('proc_pv_col_item', 'Item') }}</th>
-                            <th class="text-right px-2 py-2">{{ Translator::t('proc_pv_entry_qty_buy', 'Qty Beli') }}</th>
-                            <th class="text-left px-2 py-2">{{ Translator::t('proc_pv_col_uom', 'UoM') }}</th>
-                            <th class="text-right px-2 py-2">{{ Translator::t('proc_pv_entry_qty_stock', 'Qty Stok') }}</th>
-                            <th class="text-left px-2 py-2">{{ Translator::t('proc_pv_col_uom', 'UoM') }}</th>
-                            <th class="text-left px-2 py-2">{{ Translator::t('proc_pv_entry_qc_quality', 'QC Kualitas') }}</th>
-                            <th class="text-right px-2 py-2">{{ Translator::t('proc_pv_entry_accepted', 'Diterima') }}</th>
-                            <th class="text-right px-2 py-2">{{ Translator::t('proc_pv_entry_rejected', 'Ditolak') }}</th>
-                            <th class="text-left px-2 py-2">{{ Translator::t('proc_pv_entry_lot', 'Lot') }}</th>
-                            <th class="text-left px-2 py-2">{{ Translator::t('proc_pv_entry_location', 'Lokasi') }}</th>
+                            <th class="text-left px-2 py-2">{{ t('PO Origin') }}</th>
+                            <th class="text-left px-2 py-2">{{ t('Item') }}</th>
+                            <th class="text-right px-2 py-2">{{ t('Purchase Qty') }}</th>
+                            <th class="text-left px-2 py-2">{{ t('UoM') }}</th>
+                            <th class="text-right px-2 py-2">{{ t('Stock Qty') }}</th>
+                            <th class="text-left px-2 py-2">{{ t('UoM') }}</th>
+                            <th class="text-left px-2 py-2">{{ t('QC Quality') }}</th>
+                            <th class="text-right px-2 py-2">{{ t('Accepted') }}</th>
+                            <th class="text-right px-2 py-2">{{ t('Rejected') }}</th>
+                            <th class="text-left px-2 py-2">{{ t('Lot') }}</th>
+                            <th class="text-left px-2 py-2">{{ t('Location') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#eef1f5]">
                         @foreach ($this->pv->lines as $line)
                             <tr wire:key="pvline-{{ $line->pv_line_id }}" class="{{ $line->is_tol_exceeded && ! $line->tol_override_by ? 'bg-[#fff8ec]' : '' }}">
                                 <td class="px-2 py-2 text-muted">{{ $line->line_no }}</td>
-                                <td class="px-2 py-2 text-[10px] font-mono text-[#5b21b6]">{{ $line->c_po_doc_no }}<br>baris {{ $line->c_po_line_no }}</td>
+                                <td class="px-2 py-2 text-[10px] font-mono text-[#5b21b6]">{{ $line->c_po_doc_no }}<br>{{ t('line') }} {{ $line->c_po_line_no }}</td>
                                 <td class="px-2 py-2">
                                     <span class="font-mono text-[10px] text-muted">{{ $line->c_item_code }}</span><br>{{ $line->i_description }}
                                     @if ($line->is_tol_exceeded)
-                                        <span class="text-[9px] text-[#a3241f]">⚠ {{ number_format((float) $line->c_qty_variance_pct, 1) }}% {{ Translator::t('proc_pv_entry_vs_limit', 'vs batas') }} {{ $line->c_tol_pct }}%</span>
+                                        <span class="text-[9px] text-[#a3241f]">⚠ {{ number_format((float) $line->c_qty_variance_pct, 1) }}% {{ t('vs limit') }} {{ $line->c_tol_pct }}%</span>
                                     @endif
                                 </td>
                                 <td class="px-2 py-2 text-right">
@@ -322,9 +321,9 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                                 <td class="px-2 py-2">{{ $line->i_uom_stock }}</td>
                                 <td class="px-2 py-2">
                                     <x-form.select wire:change="setQuality({{ $line->pv_line_id }}, $event.target.value)" class="!py-1" :placeholder="false"
-                                        :selected="$line->qc_quality_status" :options="['PENDING' => Translator::t('proc_pv_entry_qc_pending_option', '— pending —'), 'PASS' => 'PASS', 'PARTIAL' => 'PARTIAL', 'FAIL' => 'FAIL']" />
+                                        :selected="$line->qc_quality_status" :options="['PENDING' => t('— pending —'), 'PASS' => 'PASS', 'PARTIAL' => 'PARTIAL', 'FAIL' => 'FAIL']" />
                                     @if ($line->qc_qty_status !== 'DONE')
-                                        <button type="button" wire:click="markQtyDone({{ $line->pv_line_id }})" class="block text-[10px] text-accent font-semibold mt-1">{{ Translator::t('proc_pv_entry_mark_qty_done', 'Tandai QC Qty Selesai') }}</button>
+                                        <button type="button" wire:click="markQtyDone({{ $line->pv_line_id }})" class="block text-[10px] text-accent font-semibold mt-1">{{ t('Mark QC Qty Done') }}</button>
                                     @endif
                                 </td>
                                 <td class="px-2 py-2 text-right">
@@ -346,16 +345,16 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                                 <tr wire:key="tol-{{ $line->pv_line_id }}">
                                     <td colspan="12" class="px-2 pb-2">
                                         <div class="bg-[#fff5e0] border border-[#e0c26a] rounded-md p-2 flex items-center gap-2" x-data="{ reason: '' }">
-                                            <span class="text-[11px] font-bold text-[#8a5a00]">⚠ {{ Translator::t('proc_pv_entry_tol_exceeded', 'Toleransi terlampaui — menahan POST') }}</span>
-                                            <input type="text" x-model="reason" placeholder="{{ Translator::t('proc_pv_entry_override_placeholder', 'Alasan override...') }}" class="flex-1 px-2 py-1 border border-[#e0c26a] rounded text-xs">
-                                            <button type="button" @click="$wire.overrideTolerance({{ $line->pv_line_id }}, reason)" class="text-[11px] font-bold text-white bg-navy px-2.5 py-1 rounded">{{ Translator::t('proc_pv_entry_btn_override', 'Override') }}</button>
+                                            <span class="text-[11px] font-bold text-[#8a5a00]">⚠ {{ t('Tolerance exceeded — holding POST') }}</span>
+                                            <input type="text" x-model="reason" placeholder="{{ t('Override reason...') }}" class="flex-1 px-2 py-1 border border-[#e0c26a] rounded text-xs">
+                                            <button type="button" @click="$wire.overrideTolerance({{ $line->pv_line_id }}, reason)" class="text-[11px] font-bold text-white bg-navy px-2.5 py-1 rounded">{{ t('Override') }}</button>
                                         </div>
                                     </td>
                                 </tr>
                             @elseif ($line->tol_override_by)
                                 <tr wire:key="tolok-{{ $line->pv_line_id }}">
                                     <td colspan="12" class="px-2 pb-2">
-                                        <div class="text-[10.5px] text-[#1f8a4c]">✔ {{ Translator::t('proc_pv_entry_tol_overridden', 'Toleransi di-override oleh') }} {{ $line->tol_override_by }} · {{ $line->tol_override_reason }}</div>
+                                        <div class="text-[10.5px] text-[#1f8a4c]">✔ {{ t('Tolerance overridden by') }} {{ $line->tol_override_by }} · {{ $line->tol_override_reason }}</div>
                                     </td>
                                 </tr>
                             @endif
@@ -368,15 +367,15 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
         @if ($this->pv->status !== 'POSTED' && $this->pv->status !== 'CANCELLED')
             <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-8 flex items-center gap-3">
                 @if (! empty($this->blockers))
-                    <span class="text-xs font-bold text-[#8a5a00] bg-[#fff5e0] px-3 py-1.5 rounded">{{ Translator::t('proc_pv_entry_post_locked', 'POST terkunci —') }} {{ implode(' ', $this->blockers) }}</span>
+                    <span class="text-xs font-bold text-[#8a5a00] bg-[#fff5e0] px-3 py-1.5 rounded">{{ t('POST locked —') }} {{ implode(' ', $this->blockers) }}</span>
                 @else
-                    <span class="text-xs font-bold text-[#1f8a4c] bg-[#eaf7ee] px-3 py-1.5 rounded">✔ {{ Translator::t('proc_pv_entry_all_gates_pass', 'Semua gerbang lolos, siap POST') }}</span>
+                    <span class="text-xs font-bold text-[#1f8a4c] bg-[#eaf7ee] px-3 py-1.5 rounded">✔ {{ t('All gates passed, ready to POST') }}</span>
                 @endif
                 <div class="ml-auto flex gap-2">
                     @if ($this->pv->status === 'DRAFT')
-                        <button type="button" wire:click="delete" wire:confirm="{{ Translator::t('proc_pv_entry_confirm_delete', 'Hapus SPB draft ini?') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ Translator::t('shared_grid_delete', 'Hapus') }}</button>
+                        <button type="button" wire:click="delete" wire:confirm="{{ t('Delete this draft receipt?') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ t('Delete') }}</button>
                     @endif
-                    <button type="button" wire:click="post" @disabled(! empty($this->blockers)) wire:confirm="{{ Translator::t('proc_pv_entry_confirm_post', 'POST ke stok? PO terkait akan direkalkulasi.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md disabled:opacity-40">📦 POST</button>
+                    <button type="button" wire:click="post" @disabled(! empty($this->blockers)) wire:confirm="{{ t('POST to stock? The related PO will be recalculated.') }}" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md disabled:opacity-40">📦 {{ t('POST') }}</button>
                 </div>
             </div>
         @endif
@@ -387,7 +386,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-6" wire:click.self="closeAddPicker">
             <div class="bg-white rounded-lg w-full max-w-3xl max-h-[80vh] flex flex-col shadow-xl">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-[#eef1f5]">
-                    <h3 class="text-sm font-bold text-navy">{{ Translator::t('proc_pv_entry_picker_title', 'Tambah Baris dari PO Lain') }} — {{ $this->supplier?->supplier_name }}</h3>
+                    <h3 class="text-sm font-bold text-navy">{{ t('Add Lines from Another PO') }} — {{ $this->supplier?->supplier_name }}</h3>
                     <button type="button" wire:click="closeAddPicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
                 <div class="flex-1 overflow-y-auto">
@@ -395,9 +394,9 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                         <thead>
                             <tr class="bg-[#f4f5f8]">
                                 <th class="px-3 py-2"></th>
-                                <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold">{{ Translator::t('proc_pv_col_po_no', 'No PO') }}</th>
-                                <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold">{{ Translator::t('proc_pv_col_item', 'Item') }}</th>
-                                <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold">{{ Translator::t('proc_pv_col_remaining', 'Sisa') }}</th>
+                                <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold">{{ t('PO No.') }}</th>
+                                <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold">{{ t('Item') }}</th>
+                                <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold">{{ t('Remaining') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -413,8 +412,8 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                     </table>
                 </div>
                 <div class="px-4 py-3 border-t border-[#eef1f5] flex justify-end gap-2">
-                    <button type="button" wire:click="closeAddPicker" class="text-xs font-semibold px-3 py-1.5 rounded border border-[#d7dbe2]">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
-                    <button type="button" wire:click="addSelectedLines" @disabled(empty($checkedLineIds)) class="text-xs font-bold px-3 py-1.5 rounded bg-accent text-white disabled:opacity-40">{{ Translator::t('proc_pv_entry_btn_add_selected', 'Tambahkan') }}</button>
+                    <button type="button" wire:click="closeAddPicker" class="text-xs font-semibold px-3 py-1.5 rounded border border-[#d7dbe2]">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="addSelectedLines" @disabled(empty($checkedLineIds)) class="text-xs font-bold px-3 py-1.5 rounded bg-accent text-white disabled:opacity-40">{{ t('Add') }}</button>
                 </div>
             </div>
         </div>

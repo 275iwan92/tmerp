@@ -21,17 +21,17 @@ class UatAccounts extends DevlibComponent
 
     public function source(): string
     {
-        return 'sec_user akun contoh UAT (tmerp)';
+        return 'sec_user UAT sample accounts (tmerp)';
     }
 
     public function render()
     {
         return <<<'BLADE'
             <div {{ $attributes->class('dl-uat') }} {!! $dl() !!} data-dl-uat>
-                <button type="button" class="dl-uat__icon" data-dl-uat-toggle title="Bantuan: akun uji coba (UAT)"><i class="fa-solid fa-headset"></i></button>
+                <button type="button" class="dl-uat__icon" data-dl-uat-toggle title="{{ \Devlib\Lang::text('Help: test accounts (UAT)') }}"><i class="fa-solid fa-headset"></i></button>
                 <div class="dl-uat__panel">
-                    <div class="dl-uat__head">🧪 Akun Uji Coba (UAT)</div>
-                    <p class="dl-uat__note">Semua password sama: <code>{{ $password }}</code></p>
+                    <div class="dl-uat__head">🧪 {{ \Devlib\Lang::text('Test Accounts (UAT)') }}</div>
+                    <p class="dl-uat__note">{{ \Devlib\Lang::text('All passwords are the same:') }} <code>{{ $password }}</code></p>
                     <table class="dl-uat__table"><tbody>
                         @foreach ($accounts as $label => $login)
                             <tr><td>{{ $label }}</td><td><code>{{ $login }}</code></td></tr>

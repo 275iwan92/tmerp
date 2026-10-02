@@ -106,7 +106,7 @@ class LayerMenu extends DevlibComponent
                 <div class="dl-lm__bar">
                     <span class="dl-lm__views" data-lm-views role="group" aria-label="{{ \Devlib\Lang::text('Choose a menu') }}" hidden></span>
                     <span class="dl-lm__gap"></span>
-                    <button type="button" class="dl-lm__ib" data-lm-swap title="Tukar menu / chat" aria-label="{{ \Devlib\Lang::text('Swap menu and chat') }}" hidden><i class="fa-solid fa-right-left"></i><em class="dl-lm__dot-badge" data-lm-unread="swap" hidden></em></button>
+                    <button type="button" class="dl-lm__ib" data-lm-swap title="{{ \Devlib\Lang::text('Swap menu / chat') }}" aria-label="{{ \Devlib\Lang::text('Swap menu and chat') }}" hidden><i class="fa-solid fa-right-left"></i><em class="dl-lm__dot-badge" data-lm-unread="swap" hidden></em></button>
                     <button type="button" class="dl-lm__ib" data-lm-dockbtn title="{{ \Devlib\Lang::text('Chat on the right side of the screen') }}" aria-label="{{ \Devlib\Lang::text('Move chat to the right') }}" hidden><i class="fa-solid fa-table-columns"></i></button>
                     @if ($search)
                         <button type="button" class="dl-lm__ib" data-lm-search title="{{ \Devlib\Lang::text('Search (Ctrl K)') }}" aria-label="{{ \Devlib\Lang::text('Search (Ctrl K)') }}"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -146,7 +146,7 @@ class LayerMenu extends DevlibComponent
                     <div class="dl-lm__foot" data-lm-foot>
                         <span class="dl-lm__avatar" title="{{ $user }}">{{ $initials() }}</span>
                         <span class="dl-lm__user"><b>{{ $user }}</b>@if ($role)<small>{{ $role }}</small>@endif</span>
-                        <button type="button" class="dl-lm__ib" data-lm-gear title="Pengaturan" aria-label="Pengaturan" aria-haspopup="menu"><i class="fa-solid fa-gear"></i><em class="dl-lm__dot-badge" data-lm-unread="gear" hidden></em></button>
+                        <button type="button" class="dl-lm__ib" data-lm-gear title="{{ \Devlib\Lang::text('User settings') }}" aria-label="{{ \Devlib\Lang::text('User settings') }}" aria-haspopup="menu"><i class="fa-solid fa-gear"></i><em class="dl-lm__dot-badge" data-lm-unread="gear" hidden></em></button>
                     </div>
                 @endif
             </aside>

@@ -24,16 +24,16 @@ class FlowConfig extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'tm2sys flow_config (rencana)';
+        return $this->source ?? 'tm2sys flow_config (planned)';
     }
 
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Nama Langkah', 'required' => true, 'width' => '220px'],
-            ['key' => 'role', 'label' => 'Peran Approver', 'type' => 'select', 'options' => $this->roles, 'required' => true, 'width' => '200px'],
-            ['key' => 'action', 'label' => 'Aksi', 'type' => 'select', 'options' => ['KNOW' => 'Mengetahui', 'APPROVE' => 'Menyetujui'], 'required' => true, 'width' => '140px'],
-            ['key' => 'min', 'label' => 'Aktif bila nilai ≥ (Rp)', 'type' => 'money', 'width' => '170px'],
+            ['key' => 'name', 'label' => 'Step Name', 'required' => true, 'width' => '220px'],
+            ['key' => 'role', 'label' => 'Approver Role', 'type' => 'select', 'options' => $this->roles, 'required' => true, 'width' => '200px'],
+            ['key' => 'action', 'label' => 'Action', 'type' => 'select', 'options' => ['KNOW' => t('Acknowledges'), 'APPROVE' => t('Approves')], 'required' => true, 'width' => '140px'],
+            ['key' => 'min', 'label' => 'Active when value ≥ (Rp)', 'type' => 'money', 'width' => '170px'],
         ];
     }
 
@@ -48,9 +48,9 @@ class FlowConfig extends DevlibComponent
                     @foreach ($docs as $code => $label)
                         <div class="dl-tabs__panel {{ $loop->first ? 'is-active' : '' }}" data-panel="{{ $code }}">
                             <div class="dl-flowcfg__panel" data-fc-doc="{{ $code }}">
-                                <x-dl::lines :name="'flow['.$code.']'" :title="'Langkah approval '.$label" add-label="+ Tambah Langkah" :columns="$columns()" :rows="$flows[$code] ?? []" />
+                                <x-dl::lines :name="'flow['.$code.']'" :title="'Approval steps '.raw($label)" add-label="+ Add Step" :columns="$columns()" :rows="$flows[$code] ?? []" />
                                 <div class="dl-flowcfg__sim">
-                                    <label><span>Simulasi: nilai dokumen (Rp)</span><input type="text" inputmode="numeric" value="10.000.000" data-fc-value></label>
+                                    <label><span>{{ t('Simulation: document value (Rp)') }}</span><input type="text" inputmode="numeric" value="10.000.000" data-fc-value></label>
                                     <ol class="dl-appr__steps dl-flowcfg__path" data-fc-path></ol>
                                 </div>
                             </div>

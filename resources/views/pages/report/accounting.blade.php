@@ -22,7 +22,7 @@ use Livewire\Component;
 // Data 100% nyata (fin_voucher/fin_voucher_line/fin_account), TIDAK ada
 // angka mockup yang dikarang. Hutang usaha reuse ManagementReportService
 // yang sudah ada (bukan duplikasi logic).
-new #[Layout('layouts::report')] #[Title('Laporan Akuntansi — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Accounting Report — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url(as: 'th')]
     public int $year = 0;
@@ -95,7 +95,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Akuntansi — TELASIH MAKMUR E
 ?>
 
 @php
-    $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    $months = array_map(fn ($m) => t($m, 'date.month_short'), ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
     $rp = fn ($v) => 'Rp ' . number_format((float) $v, 0, ',', '.');
     $miliar = fn ($v) => 'Rp ' . number_format((float) $v / 1_000_000_000, 2, ',', '.') . ' M';
 @endphp
@@ -103,11 +103,11 @@ new #[Layout('layouts::report')] #[Title('Laporan Akuntansi — TELASIH MAKMUR E
 <div class="p-4 sm:p-6" style="background:var(--content-bg)">
     <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
         <div>
-            <h1 class="text-[22px] font-extrabold -tracking-wide" style="color:var(--sh-ink-strong)">Laporan Akuntansi &amp; Keuangan</h1>
-            <p class="text-[13px] mt-0.5" style="color:var(--sh-muted)">Posting jurnal, akun, dan hutang usaha — CV. Telasih Makmur.</p>
+            <h1 class="text-[22px] font-extrabold -tracking-wide" style="color:var(--sh-ink-strong)">{{ t('Accounting & Finance Report') }}</h1>
+            <p class="text-[13px] mt-0.5" style="color:var(--sh-muted)">{{ t('Journal postings, accounts, and trade payables') }} — CV. Telasih Makmur.</p>
         </div>
         <div>
-            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Tahun</label>
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">{{ t('Year') }}</label>
             <select wire:model.live="year" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
                 @for ($y = now()->year; $y >= now()->year - 4; $y--)
                     <option value="{{ $y }}">{{ $y }}</option>
@@ -117,26 +117,26 @@ new #[Layout('layouts::report')] #[Title('Laporan Akuntansi — TELASIH MAKMUR E
     </div>
 
     <div class="[display:grid] grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4">
-        <x-report.kpi label="Akun COA Aktif" icon="fa-solid fa-sitemap" tone="blue" :value="number_format($this->coaActive)" note="Chart of Accounts" />
-        <x-report.kpi label="Voucher Diposting" icon="fa-solid fa-check-double" tone="green" :value="number_format($this->voucherStats['posted'])" :note="$this->voucherStats['draft'].' draft · '.$this->voucherStats['cancelled'].' batal'" />
-        <x-report.kpi label="Nilai Posting Tahun Ini" icon="fa-solid fa-money-bill-trend-up" tone="violet" :value="$miliar($this->postedValue)" note="Total sisi debit terposting" />
-        <x-report.kpi label="Sisa Hutang Usaha" icon="fa-solid fa-scale-balanced" tone="danger" :value="$miliar($this->payable['outstanding'])" :note="'dari '.$miliar($this->payable['invoice_value']).' tertagih'" />
+        <x-report.kpi :label="t('Active COA Accounts')" icon="fa-solid fa-sitemap" tone="blue" :value="number_format($this->coaActive)" :note="t('Chart of Accounts')" />
+        <x-report.kpi :label="t('Posted Vouchers')" icon="fa-solid fa-check-double" tone="green" :value="number_format($this->voucherStats['posted'])" :note="str_replace([':draft', ':cancelled'], [$this->voucherStats['draft'], $this->voucherStats['cancelled']], t(':draft draft · :cancelled cancelled'))" />
+        <x-report.kpi :label="t('Posted Value This Year')" icon="fa-solid fa-money-bill-trend-up" tone="violet" :value="$miliar($this->postedValue)" :note="t('Total posted debit side')" />
+        <x-report.kpi :label="t('Outstanding Trade Payables')" icon="fa-solid fa-scale-balanced" tone="danger" :value="$miliar($this->payable['outstanding'])" :note="str_replace(':amount', $miliar($this->payable['invoice_value']), t('of :amount billed'))" />
     </div>
 
     <div class="rounded-2xl border p-4 mb-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-        <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Nilai Posting Jurnal Bulanan {{ $year }}</h2>
+        <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Monthly Journal Posting Value') }} {{ $year }}</h2>
         <x-report.svg-trend :height="220" :labels="$months" :series="[
-            ['label' => 'Posting', 'color' => 'var(--sh-accent)', 'data' => $this->monthlyPostedValue, 'area' => true],
+            ['label' => t('Posting'), 'color' => 'var(--sh-accent)', 'data' => $this->monthlyPostedValue, 'area' => true],
         ]" />
     </div>
 
     <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-        <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Supplier dengan Hutang Terbesar</h2>
+        <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Suppliers with the Largest Payables') }}</h2>
         <table class="w-full text-[12px]">
             <thead>
                 <tr class="text-left border-b" style="border-color:var(--sh-border)">
-                    <th class="pb-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Supplier</th>
-                    <th class="pb-2 font-bold uppercase text-[10px] text-right" style="color:var(--sh-muted)">Sisa Hutang</th>
+                    <th class="pb-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Supplier') }}</th>
+                    <th class="pb-2 font-bold uppercase text-[10px] text-right" style="color:var(--sh-muted)">{{ t('Outstanding Payable') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -146,7 +146,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Akuntansi — TELASIH MAKMUR E
                         <td class="py-2 text-right tabular-nums font-semibold" style="color:var(--sh-ink-strong)">{{ $rp($s['outstanding']) }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="2" class="py-3 text-center" style="color:var(--sh-muted)">Tidak ada hutang terbuka.</td></tr>
+                    <tr><td colspan="2" class="py-3 text-center" style="color:var(--sh-muted)">{{ t('No open payables.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

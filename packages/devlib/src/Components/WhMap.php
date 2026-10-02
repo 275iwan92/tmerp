@@ -59,7 +59,7 @@ class WhMap extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'denah gudang + isi bin';
+        return $this->source ?? 'warehouse floor plan + bin contents';
     }
 
     // Status satu sel = gabungan bin di dalamnya (rak bertingkat): yang paling perlu diperhatikan menang.

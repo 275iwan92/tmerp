@@ -66,7 +66,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         $latest = $part->layoutGroups->sortByDesc('id_layout_group')->first();
 
         if (! $latest) {
-            return 'BELUM MULAI';
+            return 'NOT STARTED';
         }
 
         return $latest->status === 'CONFIRMED' ? 'CONFIRMED' : 'DRAFT';
@@ -104,16 +104,16 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total Part" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Sudah Confirm" :value="$this->statConfirmed" subtitle="LAYOUT TERKONFIRMASI" />
-            <x-grid.stat-box tone="warn" label="Belum Confirm" :value="$this->statPending" />
+            <x-grid.stat-box tone="total" :label="t('Total Parts')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" :label="t('Already Confirmed')" :value="$this->statConfirmed" :subtitle="t('LAYOUT CONFIRMED')" />
+            <x-grid.stat-box tone="warn" :label="t('Not Yet Confirmed')" :value="$this->statPending" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama/kode part atau produk…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search part name/code or product…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
             </x-grid.toolbar>
@@ -122,35 +122,35 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Part</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[180px]">Produk</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Asal</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">Status Layout</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Part') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[180px]">{{ t('Product') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Origin') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">{{ t('Layout Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->parts as $p)
                             @php($status = $this->layoutStatus($p))
-                            <tr wire:key="pdp-{{ $p->id_part }}" wire:dblclick="open({{ $p->id_part }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka Pro-Dev">
+                            <tr wire:key="pdp-{{ $p->id_part }}" wire:dblclick="open({{ $p->id_part }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open Pro-Dev') }}">
                                 <x-grid.identity-cell :id="$p->id_part" :name="$p->part_name" :code="$p->displayMastercardCode()" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $p->product?->product_name ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     @if ($this->isFromInquiry($p))
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#eaf2ff] text-[#1d4ed8]">📥 Inquiry</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#eaf2ff] text-[#1d4ed8]">📥 {{ t('Inquiry') }}</span>
                                     @else
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1ecfc] text-[#6d28d9]">✎ Manual</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1ecfc] text-[#6d28d9]">✎ {{ t('Manual') }}</span>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->layoutStatusBadgeClass($status) }}">{{ $status }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->layoutStatusBadgeClass($status) }}">{{ t($status) }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka Pro-Dev" action="open({{ $p->id_part }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" :title="t('Open Pro-Dev')" action="open({{ $p->id_part }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="5" message="Belum ada Part. Kirim part dari Inquiry Product (mode BARU) atau lewat dummy seed." />
+                            <x-grid.empty-row :colspan="5" :message="t('No Parts yet. Send a part from Inquiry Product (NEW mode) or via the dummy seed.')" />
                         @endforelse
                     </tbody>
                 </table>

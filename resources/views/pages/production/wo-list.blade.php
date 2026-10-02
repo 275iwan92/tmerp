@@ -3,7 +3,6 @@
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Prd\PrdWo;
-use App\Support\Localization\Translator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -77,12 +76,12 @@ new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Compone
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => Translator::t('prod_wo_stat_total', 'Total WO'), 'value' => $this->statTotal, 'tone' => 'total'],
-            'in_progress' => ['label' => Translator::t('prod_wo_stat_in_progress', 'Sedang Berjalan'), 'value' => $this->statInProgress, 'tone' => 'active',
+            'total' => ['label' => t('Total WOs'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'in_progress' => ['label' => t('In Progress'), 'value' => $this->statInProgress, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('wo_status', 'IN_PROGRESS')],
-            'at_risk' => ['label' => Translator::t('prod_wo_stat_at_risk', 'Berisiko Telat'), 'value' => $this->statAtRisk, 'tone' => 'critical',
+            'at_risk' => ['label' => t('At Risk of Delay'), 'value' => $this->statAtRisk, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->whereHas('operations', fn ($op) => $op->where('critical_ratio', '<', 1))],
-            'awaiting_sim' => ['label' => Translator::t('prod_wo_stat_awaiting_sim', 'Menunggu Simulasi'), 'value' => $this->statAwaitingSimulation, 'tone' => 'warn',
+            'awaiting_sim' => ['label' => t('Awaiting Simulation'), 'value' => $this->statAwaitingSimulation, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('wo_status', 'DRAFT')],
         ];
     }
@@ -97,12 +96,12 @@ new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Compone
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('prod_wo_search_placeholder', 'Cari no. WO…') }}"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search WO no.…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <span class="text-[11px] text-muted italic">{{ Translator::t('prod_wo_auto_note', 'Otomatis dari CO Confirmed (MTO) / cycle MTS Forecast — bukan dibuat manual dari sini.') }}</span>
+                <span class="text-[11px] text-muted italic">{{ t('Automatic from CO Confirmed (MTO) / MTS Forecast cycle — not created manually here.') }}</span>
                 <x-slot:newRecord>
-                    <a href="{{ route('production.wo.new') }}" class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#16a34a] text-white no-underline">+ {{ Translator::t('prod_wo_btn_generate', 'Generate dari Plan Delivery') }}</a>
+                    <a href="{{ route('production.wo.new') }}" class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#16a34a] text-white no-underline">+ {{ t('Generate from Plan Delivery') }}</a>
                 </x-slot:newRecord>
             </x-grid.toolbar>
 
@@ -110,17 +109,17 @@ new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Compone
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('prod_wo_col_wo_customer', 'WO / Customer') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">{{ Translator::t('prod_col_type', 'Tipe') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ Translator::t('prod_col_qty', 'Qty') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('prod_wo_col_due_date', 'Due Date') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ Translator::t('prod_col_status', 'Status') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ Translator::t('prod_col_action', 'Aksi') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('WO / Customer') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">{{ t('Type') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Qty') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Due Date') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->workOrders as $wo)
-                            <tr wire:key="wo-{{ $wo->wo_id }}" wire:dblclick="openWo({{ $wo->wo_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
+                            <tr wire:key="wo-{{ $wo->wo_id }}" wire:dblclick="openWo({{ $wo->wo_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                 <x-grid.identity-cell :id="$wo->wo_id" :name="$wo->coOrder?->quotation?->customer?->customer_name ?? 'GENERAL'" :code="$wo->wo_no" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $wo->wo_type === 'MTS' ? 'bg-[#eef3fb] text-[#2f6fed]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $wo->wo_type }}</span>
@@ -130,7 +129,7 @@ new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Compone
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="flex items-center gap-1.5">
                                         @if ($wo->is_hot_job)
-                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dc2626] text-white">🔥 HOT</span>
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dc2626] text-white">🔥 {{ t('HOT') }}</span>
                                         @endif
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full
                                             {{ match ($wo->wo_status) {
@@ -146,11 +145,11 @@ new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Compone
                                     </div>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openWo({{ $wo->wo_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ t('Open') }}" action="openWo({{ $wo->wo_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="{{ Translator::t('prod_wo_empty', 'Belum ada Work Order.') }}" />
+                            <x-grid.empty-row :colspan="6" message="{{ t('No Work Orders yet.') }}" />
                         @endforelse
                     </tbody>
                 </table>

@@ -13,7 +13,7 @@ class LoginBox extends DevlibComponent
     public function __construct(
         public string $show = 'lang, title, username, password, forgot, button, register',
         public string $action = '',
-        public string $button = 'Masuk',
+        public string $button = 'Sign in',
         public ?string $error = null,
         public string $username = '',
         public string $forgotUrl = '#',

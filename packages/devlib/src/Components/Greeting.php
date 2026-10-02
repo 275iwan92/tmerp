@@ -19,7 +19,7 @@ class Greeting extends DevlibComponent
 
     public function source(): string
     {
-        return 'jam sistem, zona '.$this->timezone;
+        return 'system clock, zone '.$this->timezone;
     }
 
     public function render()

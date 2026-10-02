@@ -29,6 +29,47 @@ lain (mis. Jepang, Mandarin) selain ID/EN, jadi sistem tidak boleh terkunci pada
 | `tm2mst.mat_raw.material_name` | DC 350 GR PKR KW1 ... | nama barang dari supplier | tetap (nama diri) |
 | `sys_translations` (996 kunci x id/en) | label v1 | kamus lama v1 | tetap untuk v1; v2 memakai `sys_dictionary` |
 
+### 0.2 Satu kamus untuk v1 & v2, tanpa teks hardcode (keputusan user 2026-10-02)
+User minta cara ScriptCase: setiap label/teks di form & grid = variabel yang menunjuk ke kamus, sehingga menambah bahasa
+tidak mengubah modul. Dibahas: kunci gaya ScriptCase (`{lang_customer_name}`) vs teks English sebagai kunci. Dipilih **English
+sebagai kunci** (hasil sama — modul tidak disentuh saat bahasa ditambah — tanpa membuat kunci dulu, kode tetap terbaca); kelemahan
+"teks English berubah = terjemahan hilang" ditutup oleh `Dictionary::rename()` / mengedit teks di layar kamus.
+
+| Bagian | Isi |
+|---|---|
+| Kamus tunggal | `sys_dictionary` + `sys_dictionary_lang`. Kamus kunci v1 `sys_translations` dilebur (migrasi `2026_10_02_000901`), tabelnya belum di-drop. `Translator::t()` dihapus; `Translator` tinggal `lang()` / `setLang()`. |
+| Bahasa tampilan | Satu sumber v1 & v2: cookie `dl_lang` (tidak dienkripsi, dibaca JS DevLib) lalu `sec_user.lang_code` (`SetUserLocale`). |
+| Menu | `sys_app_menu.label` English; terjemahan konteks `tm2sys.sys_app_menu.label` (v1 main menu & v2 AppMenu). `trans_key` tidak dipakai lagi. |
+| Isi dari kode | Migration `Dictionary::seed(['English' => 'Indonesia'], context, lang)` — tidak menimpa isian penerjemah. |
+| Alat penerjemah | Setup > Translation Dictionary: kolom Untranslated (cari "missing" / "missing: id"); mengganti teks English memindahkan terjemahan (bila teks tujuan sudah ada, dua baris digabung). Tempel dari Excel. |
+| Layar v1 | Dikonversi per modul ke English + `t()`, terjemahan Indonesia = teks lama (tampilan id tetap). Penjaga: `MultiLanguageRatchetTest::BASELINE_V1` (per modul, hanya boleh turun) + larangan `Translator::t` / `SysTranslation::forLang`. |
+
+### 0.3 SERAH TERIMA 2026-10-02 — START HERE untuk sesi berikutnya
+**Posisi kode:** semua pekerjaan ada di branch `claude/eager-hypatia-k7yk58`, PR **275iwan92/tmerp#8** (draft, belum di-merge;
+`main` sudah digabung ke branch ini 2026-10-02 dan konfliknya diselesaikan). Selama PR belum di-merge, `main` masih memakai teks lama.
+
+**Langkah pertama (wajib, belum pernah dijalankan — sesi cloud tidak punya PHP 8.4 / MySQL):**
+1. Merge PR #8 (atau checkout branch-nya) → `php artisan migrate` dan `php artisan migrate --env=mockup`
+   (migrasi kamus `2026_10_02_000901` … `000931`).
+2. `npm run build` (JS DevLib `core.js`, `mockup-parts`, `resources/js` berubah).
+3. `php artisan test` — perhatian khusus: `MultiLanguageRatchetTest`, `MultiLanguageAutoTest`, `MainMenuShellSmokeTest`, dan test
+   yang meng-assert teks Indonesia (lulus hanya bila migrasi kamus sudah jalan + bahasa tampilan id).
+4. Cek di browser bahasa id & en: menu v1/v2, Setup > Translation Dictionary (kolom Untranslated, cari "missing"), satu cetakan,
+   layar ProDev v1 (teks `@verbatim` diterjemahkan lewat `JS_TEXT` + satu pass DOM).
+
+**Cara kerja yang harus diikuti sesi berikutnya (ringkas):**
+- Tulis label/teks ENGLISH: `t('...')` / `@t('...')`; prop `x-dl::*` otomatis; JS v2 `Devlib.h.t()`, JS v1 `window.TM_T` lewat
+  `resources/views/partials/js-text.blade.php`; kata milik paket DevLib = pasangan `Devlib\Lang::DICT`.
+- Terjemahan Indonesia dari kode: migration `Dictionary::seed(['English' => 'Indonesia'], 'konteks')` — cek bentrok dulu
+  (`grep` kunci yang sama persis di `database/migrations/*dictionary*` + `*merge_v1*`; seed tidak menimpa, yang pertama menang).
+  Arti beda = konteks kedua: `action`, `print`, `badge`, `master`, `job`, `prep`, `abbr`, `stock`, `cost_item`, `task_status`, `material`.
+- Nilai data di teks: `raw()`; teks + data: `str_replace(':n', $n, t(':n items'))`; daftar opsi tetap: `array_map('t', $opts)`
+  (DevLib sengaja tidak menerjemahkan `options`). Judul halaman `#[Title('English — TELASIH MAKMUR ERP')]` diterjemahkan layout.
+- Teks yang DISIMPAN ke DB / kode / nama kolom jangan dibungkus `t()`. Tombol **Back** tetap literal.
+- `MultiLanguageRatchetTest::BASELINE_V1` hanya boleh turun (total 883 = kode, kolom DB, teks yang ditulis ke DB).
+
+**Sisa terbuka & keputusan user:** `docs/backlog01_uiux_component.md` UI-21. Riwayat lengkap: `docs/LOG_JOB_DONE.md` (2026-10-02 Multi language).
+
 ## 1. Referensi — cara ERP besar bekerja
 
 | Sistem | Teks antarmuka (label) | Data master (nama barang, satuan, dst) | Format angka/tanggal | Bahasa dokumen cetak |

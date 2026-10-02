@@ -24,6 +24,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'portal.candidate' => EnsurePortalCandidateAuthenticated::class,
             'locale' => SetUserLocale::class,
         ]);
+        // Bahasa tampilan: ditulis juga oleh JS (Devlib lang-switch) -> cookie polos, tidak dienkripsi.
+        $middleware->encryptCookies(except: ['dl_lang']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

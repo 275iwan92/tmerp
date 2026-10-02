@@ -50,19 +50,19 @@ class PvPostingService
 
         foreach ($pv->lines as $line) {
             if ($line->qc_qty_status !== 'DONE') {
-                $blockers[] = "Baris {$line->line_no} belum di-QC qty.";
+                $blockers[] = str_replace(':line', (string) $line->line_no, t('Line :line has no qty QC yet.'));
 
                 continue;
             }
 
             if ($line->qc_quality_status === 'PENDING') {
-                $blockers[] = "Baris {$line->line_no} belum di-QC kualitas.";
+                $blockers[] = str_replace(':line', (string) $line->line_no, t('Line :line has no quality QC yet.'));
 
                 continue;
             }
 
             if ($line->is_tol_exceeded && ! $line->tol_override_by) {
-                $blockers[] = "Baris {$line->line_no} melampaui toleransi, belum di-override.";
+                $blockers[] = str_replace(':line', (string) $line->line_no, t('Line :line exceeds the tolerance and has not been overridden.'));
             }
         }
 
@@ -72,7 +72,7 @@ class PvPostingService
     public static function post(PvReceipt $pv): array
     {
         if ($pv->status !== 'QC_PENDING' && $pv->status !== 'DRAFT') {
-            return ['ok' => false, 'message' => 'Dokumen sudah tidak berstatus DRAFT/QC_PENDING.'];
+            return ['ok' => false, 'message' => t('The document is no longer DRAFT/QC_PENDING.')];
         }
 
         $blockers = static::blockers($pv);
@@ -94,7 +94,7 @@ class PvPostingService
                 $pv->doc_no = null;
             }
 
-            return ['ok' => false, 'message' => 'Gagal posting stok fisik: '.$e->getMessage()];
+            return ['ok' => false, 'message' => t('Failed to post physical stock:').' '.$e->getMessage()];
         }
 
         DB::connection('tm2pur')->transaction(function () use ($pv, $login, $stockDocId) {
@@ -129,17 +129,17 @@ class PvPostingService
     public static function cancel(PvReceipt $pv, string $reason): array
     {
         if ($pv->status !== 'POSTED') {
-            return ['ok' => false, 'message' => 'Hanya penerimaan POSTED yang bisa di-Cancel (Draft cukup dihapus).'];
+            return ['ok' => false, 'message' => t('Only a POSTED receipt can be cancelled (a Draft is simply deleted).')];
         }
         if (mb_strlen(trim($reason)) < 10) {
-            return ['ok' => false, 'message' => 'Alasan pembatalan wajib diisi, minimal 10 karakter.'];
+            return ['ok' => false, 'message' => t('Cancellation reason is required, minimum 10 characters.')];
         }
         if ($pv->is_handed_over) {
-            return ['ok' => false, 'message' => 'Penerimaan ini sudah diserahkan / ditagih — tidak bisa di-Cancel.'];
+            return ['ok' => false, 'message' => t('This receipt has already been handed over / billed — it cannot be cancelled.')];
         }
         $returns = DB::connection('tm2pur')->table('prt_return')->where('pv_id', $pv->pv_id)->where('status', '!=', 'CANCELLED')->pluck('doc_no');
         if ($returns->isNotEmpty()) {
-            return ['ok' => false, 'message' => 'Sudah ada Purchase Return ('.$returns->implode(', ').') dari penerimaan ini — batalkan returnya dulu.'];
+            return ['ok' => false, 'message' => str_replace(':no', $returns->implode(', '), t('There is already a Purchase Return (:no) from this receipt — cancel the return first.'))];
         }
 
         $login = Auth::user()->login;
@@ -147,7 +147,7 @@ class PvPostingService
         try {
             $revDocId = static::reverseInventory($pv, $login);
         } catch (\Throwable $e) {
-            return ['ok' => false, 'message' => 'Gagal membalik stok: '.$e->getMessage()];
+            return ['ok' => false, 'message' => t('Failed to reverse stock:').' '.$e->getMessage()];
         }
 
         DB::connection('tm2pur')->transaction(function () use ($pv, $login, $revDocId, $reason) {
@@ -168,7 +168,7 @@ class PvPostingService
             try {
                 app(JournalPostingService::class)->reverse($voucher, now()->toDateString(), $login, "Cancel {$pv->doc_no}: ".trim($reason));
             } catch (\Throwable $e) {
-                $warning = trim($warning.' '."Jurnal {$voucher->voucher_number} belum dibalik: ".$e->getMessage());
+                $warning = trim($warning.' '.str_replace(':no', (string) $voucher->voucher_number, t('Journal :no has not been reversed:')).' '.$e->getMessage());
             }
         }
 
@@ -201,7 +201,7 @@ class PvPostingService
         if (! $result['posted']) {
             $docService->cancel('RM', $docId, $login);
 
-            throw new \RuntimeException(($result['error'] ?? 'tidak diketahui').' Barang kemungkinan sudah terpakai — pakai Purchase Return / Stock Adjustment.');
+            throw new \RuntimeException(($result['error'] ?? t('unknown error')).' '.t('The goods have probably been used — use Purchase Return / Stock Adjustment.'));
         }
 
         return $docId;
@@ -228,7 +228,7 @@ class PvPostingService
 
         $warehouse = WhWarehouse::where('warehouse_code', $pv->i_warehouse_code)->first();
         if (! $warehouse) {
-            throw new \RuntimeException("Kode gudang '{$pv->i_warehouse_code}' tidak ditemukan di Master Warehouse.");
+            throw new \RuntimeException(str_replace(':code', (string) $pv->i_warehouse_code, t("Warehouse code ':code' was not found in Master Warehouse.")));
         }
 
         $usableLocations = WhLoc::where('warehouse_id', $warehouse->id_warehouse)
@@ -254,7 +254,7 @@ class PvPostingService
             $location ??= $fallbackLocation;
 
             if (! $location) {
-                throw new \RuntimeException("Gudang '{$pv->i_warehouse_code}' belum punya lokasi/rak aktif -- lengkapi Master Warehouse dulu.");
+                throw new \RuntimeException(str_replace(':code', (string) $pv->i_warehouse_code, t("Warehouse ':code' has no active location/rack yet -- complete Master Warehouse first.")));
             }
 
             $lines[] = [
@@ -284,7 +284,7 @@ class PvPostingService
         $result = app(StockPostingService::class)->postDocument('RM', $docId, $login);
 
         if (! $result['posted']) {
-            throw new \RuntimeException($result['error'] ?? 'Gagal posting stok (tidak diketahui).');
+            throw new \RuntimeException($result['error'] ?? t('Failed to post stock (unknown).'));
         }
 
         return $docId;
@@ -338,7 +338,7 @@ class PvPostingService
         }
 
         return $unmapped > 0
-            ? "{$unmapped} baris belum punya akun Persediaan/GR-IR (item maupun kategori) -- jurnal pembelian belum lengkap untuk baris tsb."
+            ? str_replace(':n', (string) $unmapped, t(':n lines have no Inventory/GR-IR account yet (item or category) -- the purchase journal is incomplete for those lines.'))
             : null;
     }
 

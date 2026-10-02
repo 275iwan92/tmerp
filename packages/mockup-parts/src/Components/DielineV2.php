@@ -59,24 +59,24 @@ class DielineV2 extends Dieline
                 <div class="dl-dieline__stage">
                     @if ($level() >= 3)<div class="dl-dieline__title" data-d-title></div>@endif
                     <div class="dl-dieline__tools">
-                        <span class="dl-dieline__legend"><i class="is-cut"></i>Cutting <i class="is-crease"></i>Creasing <i class="is-bleed"></i>Bleed <i class="is-hole"></i>Hole</span>
+                        <span class="dl-dieline__legend"><i class="is-cut"></i>{{ t('Cutting') }} <i class="is-crease"></i>{{ t('Creasing') }} <i class="is-bleed"></i>{{ t('Bleed') }} <i class="is-hole"></i>{{ t('Hole') }}</span>
                         <span class="dl-print__spacer"></span>
                         {{-- Cetak 2 sisi: tampil bila ada artwork sisi dalam (data-artwork-inner / setArtworkInner). --}}
-                        <div class="dl-segment" data-d-side hidden><button type="button" class="dl-segment__opt is-active" data-value="out">Sisi Luar</button><button type="button" class="dl-segment__opt" data-value="in">Sisi Dalam</button></div>
+                        <div class="dl-segment" data-d-side hidden><button type="button" class="dl-segment__opt is-active" data-value="out">{{ t('Outer Side') }}</button><button type="button" class="dl-segment__opt" data-value="in">{{ t('Inner Side') }}</button></div>
                         <div class="dl-segment dl-dieline__unit" data-d-unit><button type="button" class="dl-segment__opt" data-value="mm">mm</button><button type="button" class="dl-segment__opt" data-value="cm">cm</button></div>
-                        <x-dl::icon-button icon="fa-magnifying-glass-minus" title="Perkecil" data-d-zoom="-1" /><b data-d-zoomval>100%</b><x-dl::icon-button icon="fa-magnifying-glass-plus" title="Perbesar" data-d-zoom="1" />
+                        <x-dl::icon-button icon="fa-magnifying-glass-minus" title="Zoom out" data-d-zoom="-1" /><b data-d-zoomval>100%</b><x-dl::icon-button icon="fa-magnifying-glass-plus" title="Zoom in" data-d-zoom="1" />
                         <x-dl::button variant="secondary" size="sm" icon="download" label="SVG" data-d-svg />
                     </div>
                     {{-- Opsi tampilan (hanya gambar; tidak mengubah geometri TMDieline maupun panjang pisau). --}}
                     <div class="dl-dieline__opts">
-                        <label class="dl-choice"><input type="checkbox" data-d-opt="artwork" checked> Artwork</label>
-                        <label class="dl-choice"><input type="checkbox" data-d-opt="overflow" checked> Overflow</label>
-                        <label class="dl-choice"><input type="checkbox" data-d-opt="glue" checked> Glue margin</label>
-                        <label class="dl-choice"><input type="checkbox" data-d-opt="direction" checked> Direction <x-dl::tooltip text="Arah serat kertas (grain) — sejajar panjang lembar."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
-                        <label class="dl-choice"><input type="checkbox" data-d-opt="cross" checked> Cross <x-dl::tooltip text="Tanda register (crosshair) di sudut bleed untuk menyelaraskan cetak CMYK."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
-                        <label class="dl-choice"><input type="checkbox" data-d-opt="lock"> Lock tab <x-dl::tooltip text="Takik pengunci gesek (friction lock) di ujung lipatan tuck flap — indikatif."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
-                        <label class="dl-choice"><input type="checkbox" data-d-dims-on @checked($dimensions)> Dimension lines</label>
-                        <label class="dl-choice" data-d-mirror-wrap hidden><input type="checkbox" data-d-opt="mirror"> Mirror <x-dl::tooltip text="Centang bila file sisi dalam dibuat di atas dieline yang dicerminkan (dilihat dari dalam) — gambar dibalik agar jatuh pas di panelnya."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="artwork" checked> {{ t('Artwork') }}</label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="overflow" checked> {{ t('Overflow') }}</label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="glue" checked> {{ t('Glue margin') }}</label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="direction" checked> {{ t('Direction') }} <x-dl::tooltip text="Paper grain direction — parallel to the sheet length."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="cross" checked> {{ t('Cross') }} <x-dl::tooltip text="Register marks (crosshair) at the bleed corners to align CMYK printing."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="lock"> {{ t('Lock tab') }} <x-dl::tooltip text="Friction lock notch at the end of the tuck flap fold — indicative."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
+                        <label class="dl-choice"><input type="checkbox" data-d-dims-on @checked($dimensions)> {{ t('Dimension lines') }}</label>
+                        <label class="dl-choice" data-d-mirror-wrap hidden><input type="checkbox" data-d-opt="mirror"> {{ t('Mirror') }} <x-dl::tooltip text="Tick if the inner side file was drawn on a mirrored dieline (seen from inside) — the image is flipped to land on its panel."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
                     </div>
                     {{-- v3: jendela 3D di samping kanvas, tinggi sama (user 2026-10-01); kotak bisa diputar dengan drag. --}}
                     <div @class(['dl-dieline__view', 'dl-dieline__view--3d' => $level() >= 3])>
@@ -90,31 +90,31 @@ class DielineV2 extends Dieline
                 {{-- Dimensi di BAWAH gambar (user 2026-10-01), 2 baris berkelompok: ukuran produk | Flat Size, lalu flap & allowance. --}}
                 <div class="dl-dieline__side">
                     <div class="dl-dieline__dimwrap">
-                        <div class="dl-dieline__cap">Product Size</div>
+                        <div class="dl-dieline__cap">{{ t('Product Size') }}</div>
                         <div class="dl-dieline__dims" data-d-dims></div>
                     </div>
                     <div class="dl-dieline__flat">
-                        <div class="dl-dieline__cap">Flat Size (Blank) <label class="dl-choice"><input type="checkbox" name="{{ $name }}[flat_manual]" value="1" data-d-manual> Manual</label></div>
+                        <div class="dl-dieline__cap">{{ t('Flat Size (Blank)') }} <label class="dl-choice"><input type="checkbox" name="{{ $name }}[flat_manual]" value="1" data-d-manual> {{ t('Manual') }}</label></div>
                         <div class="dl-dieline__flatrow">
                             <label>W <input type="text" inputmode="decimal" name="{{ $name }}[flat_w]" data-d-fw readonly></label>
                             <span>×</span>
                             <label>H <input type="text" inputmode="decimal" name="{{ $name }}[flat_h]" data-d-fh readonly></label>
-                            <label>Area <input type="text" name="{{ $name }}[flat_area]" data-d-fa readonly></label>
+                            <label>{{ t('Area') }} <input type="text" name="{{ $name }}[flat_area]" data-d-fa readonly></label>
                         </div>
                     </div>
                     <div class="dl-dieline__dimwrap" data-d-dims2-wrap>
-                        <div class="dl-dieline__cap">Flaps &amp; Allowances</div>
+                        <div class="dl-dieline__cap">{{ t('Flaps & Allowances') }}</div>
                         <div class="dl-dieline__dims" data-d-dims2></div>
                     </div>
                     {{-- Lubang / jendela di panel depan (user 2026-10-01). Ikut tersimpan di dims (hole_type, hole_w, hole_h) hanya bila dipakai:
                          field dims dimatikan saat None, pilihan tipe sendiri (hole_ui) bukan bagian dims. --}}
                     <div class="dl-dieline__dimwrap">
-                        <div class="dl-dieline__cap">Hole (front panel)</div>
+                        <div class="dl-dieline__cap">{{ t('Hole (front panel)') }}</div>
                         <div class="dl-dieline__dims dl-dieline__dims--3">
-                            <x-dl::field.select :name="$name.'[hole_ui]'" label="Hole Type" :options="['NONE' => 'None', 'ROUND' => 'Round', 'RECT' => 'Rectangle']" :value="$dims['hole_type'] ?? 'NONE'" />
+                            <x-dl::field.select :name="$name.'[hole_ui]'" label="Hole Type" :options="['NONE' => t('No hole'), 'ROUND' => t('Round'), 'RECT' => t('Rectangle')]" :value="$dims['hole_type'] ?? 'NONE'" />
                             <input type="hidden" name="{{ $name }}[dims][hole_type]" data-d-hole="type" disabled>
-                            <label class="dl-dieline__dim"><span>Hole Width / Ø</span><span class="dl-field__box"><input class="dl-input" type="text" inputmode="decimal" name="{{ $name }}[dims][hole_w]" data-d-hole="w" disabled><em>mm</em></span></label>
-                            <label class="dl-dieline__dim"><span>Hole Height</span><span class="dl-field__box"><input class="dl-input" type="text" inputmode="decimal" name="{{ $name }}[dims][hole_h]" data-d-hole="h" disabled><em>mm</em></span></label>
+                            <label class="dl-dieline__dim"><span>{{ t('Hole Width / Ø') }}</span><span class="dl-field__box"><input class="dl-input" type="text" inputmode="decimal" name="{{ $name }}[dims][hole_w]" data-d-hole="w" disabled><em>mm</em></span></label>
+                            <label class="dl-dieline__dim"><span>{{ t('Hole Height') }}</span><span class="dl-field__box"><input class="dl-input" type="text" inputmode="decimal" name="{{ $name }}[dims][hole_h]" data-d-hole="h" disabled><em>mm</em></span></label>
                         </div>
                     </div>
                 </div>

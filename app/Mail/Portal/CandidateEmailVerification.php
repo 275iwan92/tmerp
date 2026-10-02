@@ -14,7 +14,7 @@ class CandidateEmailVerification extends Mailable
 
     public function build(): self
     {
-        return $this->subject('Verifikasi Email — Karir Telasih Makmur')
+        return $this->subject(str_replace(':company', 'Telasih Makmur', t('Email Verification — :company Careers')))
             ->view('emails.portal.verify-email');
     }
 }

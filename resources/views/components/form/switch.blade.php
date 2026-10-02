@@ -4,7 +4,7 @@
     langsung spt grid/toggle-switch.blade.php yang wire:click seketika +
     wire:confirm). $attributes (wire:model/name) ke <input type=checkbox>.
 --}}
-@props(['label' => null, 'onLabel' => 'Aktif', 'offLabel' => 'Nonaktif', 'checked' => false])
+@props(['label' => null, 'onLabel' => t('Active'), 'offLabel' => t('Inactive'), 'checked' => false])
 <div class="flex flex-col gap-1" x-data="{ on: {{ $checked ? 'true' : 'false' }} }">
     @if ($label)
         <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ $label }}</label>

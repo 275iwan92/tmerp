@@ -76,11 +76,11 @@ final class PqFileReader
                 messages: [['role' => 'user', 'content' => [$file, ['type' => 'text', 'text' => 'Extract this quotation.']]]],
             );
         } catch (APIException $e) {
-            throw new RuntimeException('Pembaca AI gagal: '.$e->getMessage(), 0, $e);
+            throw new RuntimeException(t('The AI reader failed:').' '.$e->getMessage(), 0, $e);
         }
 
         if ($msg->stopReason === 'refusal') {
-            throw new RuntimeException('Pembaca AI menolak file ini.');
+            throw new RuntimeException(t('The AI reader rejected this file.'));
         }
         $json = null;
         foreach ($msg->content as $block) {
@@ -90,7 +90,7 @@ final class PqFileReader
             }
         }
         if (! is_array($json)) {
-            throw new RuntimeException('Pembaca AI tidak mengembalikan data.');
+            throw new RuntimeException(t('The AI reader returned no data.'));
         }
 
         return ['via' => 'AI'] + $json + ['lines' => []];

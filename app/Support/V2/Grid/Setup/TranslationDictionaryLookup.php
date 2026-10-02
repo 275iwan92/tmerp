@@ -55,7 +55,8 @@ class TranslationDictionaryLookup extends DbLookup
     public function guide(): ?string
     {
         return 'Write English in the code; translate here. Empty cell = shown in English. context "ui" = screen & print labels; '
-            .'"date.month_short" = month names; "<db>.<table>.<column>" = lookup values stored in English.';
+            .'"date.month_short" = month names; "<db>.<table>.<column>" = lookup values stored in English. '
+            .'Search "missing" (or "missing: id") to list rows still waiting for a translation. Changing the English text keeps its translations.';
     }
 
     // Bahasa terjemahan = bahasa aktif selain English (bahasa dasar database).
@@ -76,6 +77,7 @@ class TranslationDictionaryLookup extends DbLookup
         $cols = [
             ['key' => 'context', 'label' => 'Context', 'required' => true, 'width' => '150px'],
             ['key' => 'source_en', 'label' => 'English (source)', 'required' => true, 'width' => '280px'],
+            ['key' => 'missing', 'label' => 'Untranslated', 'readonly' => true, 'width' => '120px'],
         ];
         foreach ($this->langs() as $code => $name) {
             $cols[] = ['key' => 'lang_'.$code, 'label' => $name, 'width' => '280px'];
@@ -86,10 +88,16 @@ class TranslationDictionaryLookup extends DbLookup
 
     protected function row(Model $m): array
     {
-        $row = ['context' => $m->context, 'source_en' => $m->source_en];
+        $row = ['context' => $m->context, 'source_en' => $m->source_en, 'missing' => ''];
+        $missing = [];
         foreach (array_keys($this->langs()) as $code) {
             $row['lang_'.$code] = $m->langs->firstWhere('lang_code', $code)?->text ?? '';
+            if ($row['lang_'.$code] === '') {
+                $missing[] = $code;
+            }
         }
+        // Dicari lewat kotak cari: ketik "missing" (semua yang belum lengkap) atau "missing: id".
+        $row['missing'] = $missing ? 'missing: '.implode(', ', $missing) : '';
 
         return $row + ['note' => $m->note, 'activate' => (bool) $m->activate];
     }
@@ -106,12 +114,20 @@ class TranslationDictionaryLookup extends DbLookup
                 $ctx = trim((string) ($in['context'] ?? '')) ?: 'ui';
                 $src = trim((string) ($in['source_en'] ?? ''));
                 if ($src === '') {
-                    throw ValidationException::withMessages(['row' => 'Row '.($i + 1).': English (source) is required.']);
+                    throw ValidationException::withMessages(['row' => str_replace(':n', (string) ($i + 1), t('Row :n:')).' '.t('English (source) is required.')]);
                 }
-                if (SysDictionary::where('context', $ctx)->where('source_en', $src)->when($id, fn ($q) => $q->whereKeyNot($id))->exists()) {
-                    throw ValidationException::withMessages(['row' => 'Row '.($i + 1).": \"$src\" already exists in context \"$ctx\"."]);
+                $twin = SysDictionary::where('context', $ctx)->where('source_en', $src)->when($id, fn ($q) => $q->whereKeyNot($id))->first();
+                if ($twin && ! $id) {
+                    throw ValidationException::withMessages(['row' => str_replace(':n', (string) ($i + 1), t('Row :n:')).' '.str_replace([':src', ':ctx'], [$src, $ctx], t('":src" already exists in context ":ctx".'))]);
                 }
                 $d = $id ? SysDictionary::findOrFail($id) : new SysDictionary(['created_by' => $login]);
+                // English sumber diganti ke teks yang sudah ada: dua baris digabung, terjemahan yang belum ada di sana ikut pindah.
+                if ($twin && $d->context === $ctx) {
+                    Dictionary::rename($d->source_en, $src, $ctx);
+                    $d = $twin->fresh();
+                } elseif ($twin) {
+                    throw ValidationException::withMessages(['row' => str_replace(':n', (string) ($i + 1), t('Row :n:')).' '.str_replace([':src', ':ctx'], [$src, $ctx], t('":src" already exists in context ":ctx".'))]);
+                }
                 $d->fill(['context' => $ctx, 'source_en' => $src, 'note' => ($in['note'] ?? '') === '' ? null : $in['note'],
                     'activate' => array_key_exists('activate', $in) ? filter_var($in['activate'], FILTER_VALIDATE_BOOLEAN) : true, 'updated_by' => $login])->save();
                 foreach ($langs as $code) {

@@ -110,16 +110,16 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             return [
                 'id' => $node->id,
                 'code' => $node->code,
-                'label' => $node->label,
+                'label' => t($node->label, 'tm2sys.sys_app_menu.label'),
                 'shortLabel' => $node->short_label,
-                'tooltip' => $node->tooltip,
+                'tooltip' => $node->tooltip ? t($node->tooltip, 'tm2sys.sys_app_menu.tooltip') : null,
                 'icon' => $this->iconFor($node),
                 'menuType' => $node->menu_type,
                 'objectType' => $node->object_type,
                 'url' => $routes[$node->code] ?? null,
                 'statusCode' => $statusCode,
                 'statusColor' => $color->color_hex ?? '#9ca3af',
-                'statusLabel' => $color->label ?? 'Belum Tersedia',
+                'statusLabel' => t($color->label ?? 'Not Available'),
                 'isClickable' => (bool) ($color->is_clickable ?? false),
                 'children' => $builtChildren,
             ];
@@ -199,7 +199,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
     {
         $themes = \App\Models\Sys\SysTheme::where('activate', true)->orderBy('sort_order')->get();
 
-        $families = ['pastel' => 'Pastel', 'cerah' => 'Cerah', 'dark' => 'Dark', 'hitam' => 'Hitam'];
+        $families = ['pastel' => t('Pastel'), 'cerah' => t('Bright'), 'dark' => t('Dark'), 'hitam' => t('Black')];
         $hues = ['blue' => 'B', 'green' => 'G', 'red' => 'R'];
 
         $matrix = [];
@@ -285,7 +285,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
 
     public function greetName(): string
     {
-        $name = Auth::user()->name ?: 'Pengguna';
+        $name = Auth::user()->name ?: t('User');
 
         return trim(strtok($name, ' '));
     }
@@ -339,7 +339,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
 ?>
 
 <div class="shell"
-     x-data="appShell(@js($this->menuTree), @js($this->flatItems), @js(Translator::t('shell_home', 'Home')))"
+     x-data="appShell(@js($this->menuTree), @js($this->flatItems), @js(t('Home')))"
      :class="{ mini: mini, nosidebar: nosidebar, notopbar: notopbar }"
      @keydown.ctrl.k.window.prevent="paletteOpen ? closePalette() : openPalette()"
      @keydown.cmd.k.window.prevent="paletteOpen ? closePalette() : openPalette()"
@@ -348,7 +348,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
 
     <aside>
         <div class="side-head">
-            <button type="button" class="logo-home" @click="selectModule('HOME')" title="Kembali ke Home">
+            <button type="button" class="logo-home" @click="selectModule('HOME')" title="{{ t('Back to Home') }}">
                 <span class="logo-badge">
                     @if ($this->brandLogoUrl)
                         <img src="{{ $this->brandLogoUrl }}" alt="{{ $this->brandName }}" class="w-full h-full object-cover rounded-[9px]">
@@ -356,7 +356,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                 </span>
                 <span class="logo-txt"><b>{{ $this->brandName }}</b>@if ($this->brandTagline)<br><span>{{ $this->brandTagline }}</span>@endif</span>
             </button>
-            <button type="button" class="side-collapse" @click="mini = !mini" title="Ciutkan sidebar (mini)">⊟</button>
+            <button type="button" class="side-collapse" @click="mini = !mini" title="{{ t('Collapse sidebar (mini)') }}">⊟</button>
         </div>
         <div class="mod-title">
             <template x-if="currentModule">
@@ -365,16 +365,16 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             <template x-if="!currentModule">
                 <span class="ic"><i class="fa-solid fa-house"></i></span>
             </template>
-            <span class="lbl" x-text="currentModule ? currentModule.label.toUpperCase() : 'HOME'"></span>
+            <span class="lbl" x-text="currentModule ? currentModule.label.toUpperCase() : @js(mb_strtoupper(t('Home')))"></span>
         </div>
         <div class="side-nav tm-scroll">
             <template x-if="activeMod === 'HOME'">
-                <div class="side-hint">Modul <b>Home</b>. Pilih modul lain di atas untuk menampilkan submenunya di sini.</div>
+                <div class="side-hint">{{ t('Module') }} <b>{{ t('Home') }}</b>. {{ t('Choose another module above to show its submenu here.') }}</div>
             </template>
             <template x-for="grp in sidebarGroups" :key="grp.id">
                 <div x-data="{ open: false }">
                     <template x-if="grp.menuType === 'group'">
-                        <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
+                        <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? @js(t('Collapse')) : @js(t('Open'))">
                             <span class="side-cap" x-text="grp.label"></span>
                             <i class="fa-solid fa-chevron-down chev" :class="{ collapsed: !open }"></i>
                         </button>
@@ -406,7 +406,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             <template x-for="grp in setupGroups" :key="grp.id">
                 <div class="side-footer" x-data="{ open: false }">
                     <template x-if="grp.menuType === 'group'">
-                        <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
+                        <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? @js(t('Collapse')) : @js(t('Open'))">
                             <span class="side-cap" x-text="grp.label"></span>
                             <i class="fa-solid fa-chevron-down chev" :class="{ collapsed: !open }"></i>
                         </button>
@@ -426,7 +426,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
 
     <div class="main">
         <header class="topbar">
-            <button type="button" class="tb-btn" @click="nosidebar = !nosidebar" title="Sembunyikan sidebar">☰</button>
+            <button type="button" class="tb-btn" @click="nosidebar = !nosidebar" title="{{ t('Hide sidebar') }}">☰</button>
             <nav class="mega">
                 {{--
                     SETUP sengaja tidak muncul di sini -- khusus admin, aksesnya
@@ -462,8 +462,8 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                     class & lepas @apply, tetap hilang -- didiagnosis di app.css.
                 --}}
                 <div class="mm-switch" style="display:flex;align-items:center;border-radius:9px;padding:3px;gap:2px;flex-shrink:0;background:var(--side-hover-soft)">
-                    <a class="active"><i class="fa-solid fa-grip"></i> Operasional</a>
-                    <a href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i> Laporan Manajemen</a>
+                    <a class="active"><i class="fa-solid fa-grip"></i> {{ t('Operational') }}</a>
+                    <a href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i> {{ t('Management Report') }}</a>
                 </div>
             @endif
             {{--
@@ -491,14 +491,14 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             --}}
             <livewire:shell.user-menu />
         </header>
-        <div id="topbar-restore"><button type="button" @click="notopbar = false">▾ {{ Translator::t('shell_show_topbar', 'Tampilkan top bar') }}</button></div>
+        <div id="topbar-restore"><button type="button" @click="notopbar = false">▾ {{ t('Show top bar') }}</button></div>
 
         <div class="tabbar">
             <template x-for="t in openTabs" :key="t.code">
                 <div class="tab" :class="{ active: activeTabCode === t.code }" @click="activate(t.code)">
                     <i :class="t.icon || 'fa-solid fa-file-lines'"></i>
                     <span class="tlbl" x-text="t.label"></span>
-                    <button type="button" class="tx" @click.stop="closeTab(t.code)" title="{{ Translator::t('shell_tab_close_title', 'Tutup') }}">×</button>
+                    <button type="button" class="tx" @click.stop="closeTab(t.code)" title="{{ t('Close') }}">×</button>
                 </div>
             </template>
         </div>
@@ -507,9 +507,9 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             <div class="pane" :class="{ active: activeTabCode === null }">
                 <div class="home">
                     <div class="hero"></div>
-                    <h1>{{ Translator::t('shell_home_greeting', 'Selamat datang,') }} {{ $this->greetName() }} 👋</h1>
-                    <p>{!! Translator::t('shell_home_intro', 'Pilih modul di <b>mega menu</b> atas — submenunya muncul di sidebar. Setiap form/grid terbuka sebagai <b>tab</b> di frame ini dan tetap terbuka meski Anda berpindah modul.') !!}</p>
-                    <div class="hint">{!! Translator::t('shell_home_hint', 'Ctrl+K cari cepat · <kbd>F1</kbd> bantuan · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> sembunyikan sidebar · <kbd>︿</kbd> sembunyikan top bar.') !!}</div>
+                    <h1>{{ t('Welcome,') }} {{ $this->greetName() }} 👋</h1>
+                    <p>{!! t('Pick a module from the <b>mega menu</b> above — its submenu appears in the sidebar. Every form/grid opens as a <b>tab</b> in this frame and stays open even when you switch modules.') !!}</p>
+                    <div class="hint">{!! t('Ctrl+K quick search · <kbd>F1</kbd> help · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> hide sidebar · <kbd>︿</kbd> hide top bar.') !!}</div>
                 </div>
             </div>
             <template x-for="t in openTabs" :key="'pane-'+t.code">
@@ -527,13 +527,13 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
     <div class="pal-ov" :class="{ open: paletteOpen }" @click="$event.target === $el && closePalette()">
         <div class="pal">
             <div class="pal-in"><span>🔎</span>
-                <input type="text" x-ref="paletteInput" x-model="paletteQuery" placeholder="{{ Translator::t('shell_palette_placeholder', 'Ketik nama form, grid, atau laporan…') }}" autocomplete="off"
+                <input type="text" x-ref="paletteInput" x-model="paletteQuery" placeholder="{{ t('Type a form, grid, or report name…') }}" autocomplete="off"
                        @keydown.down.prevent="paletteMove(1)" @keydown.up.prevent="paletteMove(-1)"
                        @keydown.enter="paletteChoose()" @keydown.escape="closePalette()">
             </div>
             <div class="pal-list">
                 <template x-if="paletteResults.length === 0">
-                    <div class="pal-empty">{{ Translator::t('shell_palette_no_match', 'Tak ada yang cocok.') }}</div>
+                    <div class="pal-empty">{{ t('No matches.') }}</div>
                 </template>
                 <template x-for="(o, i) in paletteResults" :key="o.code">
                     <div class="pal-row" :class="{ sel: i === paletteSel }" @click="openTab(o.code); closePalette()">
@@ -542,7 +542,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                     </div>
                 </template>
             </div>
-            <div class="pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> {{ Translator::t('shell_palette_hint_select', 'pilih') }}</span><span><kbd>↵</kbd> {{ Translator::t('shell_palette_hint_open', 'buka') }}</span><span><kbd>esc</kbd> {{ Translator::t('shell_palette_hint_close', 'tutup') }}</span></div>
+            <div class="pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> {{ t('select') }}</span><span><kbd>↵</kbd> {{ t('open') }}</span><span><kbd>esc</kbd> {{ t('close') }}</span></div>
         </div>
     </div>
 

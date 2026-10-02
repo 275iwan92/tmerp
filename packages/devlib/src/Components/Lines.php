@@ -29,7 +29,7 @@ class Lines extends DevlibComponent
         public array $columns = [],
         public array $rows = [],
         public string $title = 'Item',
-        public string $addLabel = '+ Tambah Baris',
+        public string $addLabel = '+ Add Row',
         public int $minRows = 1, // 0 = boleh kosong (tanpa baris awal); tombol hapus mati bila jumlah baris <= minRows
         public array $totals = [],
         public ?string $totalKey = null,
@@ -50,7 +50,7 @@ class Lines extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'baris detail dokumen';
+        return $this->source ?? 'document detail lines';
     }
 
     // Baris diskon: [kode => [label, % awal, 1]]. 'discount' => true = 3 jenis baku; boleh array sendiri.
@@ -141,7 +141,7 @@ class Lines extends DevlibComponent
                                                     @foreach (['disc' => $discs, 'tax' => $taxes, 'cost' => $costs][$k] as $rk => $row)
                                                         @php [$rl, $rp, $sign] = $row; @endphp
                                                         <tr data-l-adj="{{ $rk }}" data-sign="{{ $sign }}" data-src="pct">
-                                                            <td>{{ $rl }}@if ($k === 'tax')<small class="dl-lines__sign">{{ $sign < 0 ? '− dipotong' : '+ ditambah' }}</small>@endif</td>
+                                                            <td>{{ $rl }}@if ($k === 'tax')<small class="dl-lines__sign">{{ \Devlib\Lang::text($sign < 0 ? '− withheld' : '+ added') }}</small>@endif</td>
                                                             <td class="num"><input type="text" inputmode="decimal" name="{{ $name }}_{{ $k }}_{{ $rk }}_pct" class="dl-lines__adjin" data-l-pct value="{{ \Devlib\Locale::raw($rp) }}" @readonly($readonly)></td>
                                                             <td class="num"><input type="text" inputmode="numeric" name="{{ $name }}_{{ $k }}_{{ $rk }}_amt" class="dl-lines__adjin" data-l-amt value="0" @readonly($readonly)></td>
                                                             @if ($k === 'cost')
@@ -153,10 +153,10 @@ class Lines extends DevlibComponent
                                                 </tbody>
                                                 <tfoot><tr><td>Total {{ ['disc' => 'Discount', 'tax' => 'Tax', 'cost' => 'Other Costs'][$k] }}</td><td class="num" data-l-t="{{ $k }}_pct"></td><td class="num" data-l-t="{{ $k }}_amt"></td>@if ($k === 'cost')<td></td>@if ($landed)<td></td>@endif @endif</tr></tfoot>
                                             </table>
-                                            <p class="dl-lines__hint">{{ ['disc' => 'Persen dihitung dari jumlah Details; isi % atau Amount, yang lain terhitung sendiri.', 'tax' => 'Persen dihitung dari DPP (Details dikurangi diskon). PPh dipotong, PPN & Bea Cukai ditambahkan.', 'cost' => 'Persen dihitung dari jumlah Details. Centang PPN = biaya masuk DPP (UU PPN: semua biaya yang ditagih penjual ikut kena PPN).'.($landed ? ' Centang HPP = dibagi ke harga pokok item.' : '')][$k] }}</p>
+                                            <p class="dl-lines__hint">{{ \Devlib\Lang::text(['disc' => 'The percentage is calculated from the Details total; enter % or Amount, the other is calculated.', 'tax' => 'The percentage is calculated from the tax base (Details less discount). PPh is withheld, PPN & customs duty are added.', 'cost' => 'The percentage is calculated from the Details total. Tick PPN = the cost is in the tax base (VAT law: every cost billed by the seller is subject to VAT).'][$k]) }}{{ $k === 'cost' && $landed ? ' '.\Devlib\Lang::text('Tick HPP = allocated to the item cost price.') : '' }}</p>
                                             @if ($k === 'cost' && $landed)
-                                                <div class="dl-lines__adjrow" style="margin-top:6px"><label>Alokasi ke HPP item</label>
-                                                    <select name="{{ $name }}_alloc" class="dl-lines__adjin" data-l-alloc @disabled($readonly)><option value="value">By Value (nilai baris)</option><option value="qty">By Quantity</option><option value="equal">Equal (rata per baris)</option></select>
+                                                <div class="dl-lines__adjrow" style="margin-top:6px"><label>{{ \Devlib\Lang::text('Allocate to item COGS') }}</label>
+                                                    <select name="{{ $name }}_alloc" class="dl-lines__adjin" data-l-alloc @disabled($readonly)><option value="value">{{ \Devlib\Lang::text('By Value (line value)') }}</option><option value="qty">By Quantity</option><option value="equal">{{ \Devlib\Lang::text('Equal (even per line)') }}</option></select>
                                                 </div>
                                             @endif
                                         @else
@@ -167,13 +167,13 @@ class Lines extends DevlibComponent
                             </div>
                         @endif
                         {{-- Terbilang Grand Total: IDR = Bahasa Indonesia, mata uang asing = English (user 2026-09-30). --}}
-                        @if ($totals)<div class="dl-lines__words" data-l-words data-currencies="{{ json_encode(\Devlib\Terbilang::CURRENCIES) }}"><span>Terbilang</span><i data-l-words-text></i></div>@endif
+                        @if ($totals)<div class="dl-lines__words" data-l-words data-currencies="{{ json_encode(\Devlib\Terbilang::CURRENCIES) }}"><span>{{ \Devlib\Lang::text('In words') }}</span><i data-l-words-text></i></div>@endif
                         </div>
                         @if ($totals)<div class="dl-lines__totals">
                             <div class="dl-lines__sumh">Summary</div>
                             <div><span>Details</span><b data-l-t="sub"></b></div>
                             @if ($discs)<div><span>Discount</span><b data-l-t="disc"></b></div>@endif
-                            @if ($costs)<div><span>Other Costs (kena PPN)</span><b data-l-t="cost_tx"></b></div>@endif
+                            @if ($costs)<div><span>{{ \Devlib\Lang::text('Other Costs (subject to VAT)') }}</span><b data-l-t="cost_tx"></b></div>@endif
                             @if ($discs || $costs)<div class="dl-lines__dpp"><span>DPP</span><b data-l-t="dpp"></b></div>@endif
                             @if ($taxes)<div><span>Tax</span><b data-l-t="tax"></b></div>@endif
                             @if ($costs)<div><span>Other Costs (non-PPN)</span><b data-l-t="cost_nt"></b></div>@endif

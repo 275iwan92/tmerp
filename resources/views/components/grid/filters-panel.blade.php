@@ -8,9 +8,9 @@
     itu) krn toolbar induk `flex` TANPA wrap (griduistandard.md §6), jadi
     panel tak bisa "turun baris" di dalam toolbar yang sama.
 --}}
-<button type="button" wire:click="toggleSearchDropdown" title="Filter pencarian"
+<button type="button" wire:click="toggleSearchDropdown" title="{{ t('Search filter') }}"
     class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11.5px] font-semibold border border-[#d7dbe2] text-[#4b5568] hover:bg-[#f4f5f8] cursor-pointer {{ $showSearchDropdown ? 'bg-[#eef2ff] border-accent text-accent' : '' }}">
-    🔽 Filters
+    🔽 {{ t('Filters') }}
     @if (! empty($searchColumns))
         <span class="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9.5px] font-bold">{{ count($searchColumns) }}</span>
     @endif

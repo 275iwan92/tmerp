@@ -18,13 +18,13 @@
             {{ $attributes->merge(['class' => 'hidden']) }}>
         <template x-if="!fileName">
             <div class="flex items-center justify-center gap-2 text-muted text-xs">
-                <span>📁</span><span>Drag file / <strong class="text-accent">{{ \App\Support\Localization\Translator::t('shared_file_dropzone_action', 'Pilih File') }}</strong></span>
+                <span>📁</span><span>{{ t('Drag file') }} / <strong class="text-accent">{{ t('Choose File') }}</strong></span>
             </div>
         </template>
         <template x-if="fileName">
             <div class="flex items-center justify-center gap-2 text-xs font-semibold text-[#374151]" x-text="'📄 ' + fileName"></div>
         </template>
     </div>
-    @if ($currentName)<div class="text-[10.5px] text-muted">{{ \App\Support\Localization\Translator::t('shared_file_dropzone_current', 'Saat ini:') }} {{ $currentName }}</div>@endif
+    @if ($currentName)<div class="text-[10.5px] text-muted">{{ t('Current:') }} {{ $currentName }}</div>@endif
     @if ($hint)<div class="text-[10.5px] text-muted">{{ $hint }}</div>@endif
 </div>

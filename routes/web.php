@@ -37,7 +37,7 @@ Route::get('/pwa-icon/{size}.png', fn (int $size) => response()->file(PwaIcon::f
 Route::get('/d/{token}', function (string $token) {
     $share = SysDocShare::where('token', $token)->first();
     abort_if(! $share, 404);
-    abort_if($share->isExpired(), 410, 'Link dokumen ini sudah kedaluwarsa.');
+    abort_if($share->isExpired(), 410, t('This document link has expired.'));
     $share->timestamps = false;
     $share->increment('view_count', 1, ['last_viewed_at' => now()]);
     $nonce = Str::random(24);
@@ -67,7 +67,7 @@ Route::prefix('hrm/recruitment/portal')->name('careers.')->group(function () {
     })->name('logout');
     Route::get('/verifikasi/{uid}', function (string $uid) {
         if (! request()->hasValidSignature()) {
-            abort(403, 'Tautan verifikasi tidak valid atau sudah kedaluwarsa.');
+            abort(403, t('The verification link is invalid or has expired.'));
         }
 
         app(CandidateAuthService::class)->markEmailVerified($uid);
@@ -172,7 +172,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
         Route::livewire('/setup/identification', 'pages::setup.identification')->name('setup.identification')->middleware('admin');
         Route::livewire('/setup/language', 'pages::setup.language')->name('setup.language')->middleware('admin');
-        Route::livewire('/setup/localization', 'pages::setup.localization')->name('setup.localization')->middleware('admin');
+        // Kamus kunci lama (sys_translations) dipensiunkan 2026-10-02: terjemahan v1 & v2 = Setup > Translation Dictionary.
+        Route::get('/setup/localization', fn () => redirect()->route('v2.item', 'SET_DICTIONARY'))->name('setup.localization')->middleware('admin');
         Route::livewire('/setup/constants', 'pages::setup.constants')->name('setup.constants')->middleware('admin');
         Route::livewire('/setup/data-origin', 'pages::setup.data-origin')->name('setup.data-origin')->middleware('admin');
         Route::livewire('/setup/component-library', 'pages::setup.component-library')->name('setup.component-library')->middleware('admin');

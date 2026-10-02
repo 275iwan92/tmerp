@@ -50,7 +50,7 @@
                 ['key' => 'photo', 'label' => 'Artwork', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
                 ['key' => 'name', 'label' => 'Product', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
                 ['key' => 'customer', 'label' => 'Customer'],
-                ['key' => 'revision', 'label' => 'Cabang'],
+                ['key' => 'revision', 'label' => 'Branch'],
                 ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['ACTIVE' => 'success', 'DRAFT' => 'neutral']],
             ]" />
         <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="$home" /></x-dl::action-bar>
@@ -64,24 +64,24 @@
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                 <span class="mp-chips">
-                    <x-dl::badge :label="$inq ? $inq->inquiry_no : 'Belum tersimpan'" />
+                    <x-dl::badge :label="$inq ? $inq->inquiry_no : t('Unsaved')" />
                     <x-dl::badge :label="$inq?->sub_state ?? 'DRAFT'" :tone="Sales::STATE_TONES[$inq?->sub_state ?? 'DRAFT'] ?? 'neutral'" />
                 </span>
                 @if ($inq)<x-dl::button preset="print" :href="\App\Support\V2\Print\PrintDocs::url('inquiry', $inq->id_inquiry, ['from' => 'inquiry-revise'])" target="_blank" />@endif
             </x-dl::action-bar>
             <h2 class="mp-bigname">{{ $doc['name'] }} <small class="mp-hint">→ Rev.{{ $doc['revision_no'] + 1 }}</small></h2>
-            <p class="mp-hint">Induk: {{ $doc['code'] }} · No. Desain {{ $doc['design_no'] ?? '—' }} · {{ $doc['customer'] }} · inquiry asal {{ $source?->inquiry_no }}. Product induk tetap utuh.</p>
+            <p class="mp-hint">{{ t('Parent') }}: {{ $doc['code'] }} · {{ t('Design No.') }} {{ $doc['design_no'] ?? '—' }} · {{ $doc['customer'] }} · {{ t('original inquiry') }} {{ $source?->inquiry_no }}. {{ t('The parent product stays intact.') }}</p>
             <x-dl::form.row cols="3">
                 <x-dl::field.text name="revise_reason" label="Revision reason" required :value="old('revise_reason', $inq?->revise_reason)" placeholder="e.g. change the long-side artwork — customer request" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_reason')" />
                 <x-dl::field.text name="design_number" label="New Design No." :value="old('design_number', $inq?->design_number ?? $doc['design_no'])" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.design_number')" />
             </x-dl::form.row>
-            <div data-rv-scope><x-dl::field.checkboxes name="revise_scope" label="Revision scope (more than one allowed) — only the selected blocks can be changed" :options="InquiryDerivedWriter::SCOPES" :value="$scope" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_scope')" /></div>
+            <div data-rv-scope><x-dl::field.checkboxes name="revise_scope" label="Revision scope (more than one allowed) — only the selected blocks can be changed" :options="array_map('t', InquiryDerivedWriter::SCOPES)" :value="$scope" :disabled="$locked" :source="Src::of('tm2sdi.iqp_inquiry.revise_scope')" /></div>
         </x-dl::card>
 
         <x-dl::card title="Revision differences (before → after)" description="Recorded automatically on Save; also shown on the ProDev and ProCost screens so they know what must be redone.">
-            <x-dl::table :columns="['part' => 'Part', 'field' => 'Yang berubah', 'old' => 'Sebelum (induk)', 'new' => 'Sesudah', 'impact' => 'Diulang di']"
-                :rows="$changes->map(fn ($c) => ['part' => $c->part?->part_name ?? 'Dokumen', 'field' => $c->field_label, 'old' => $c->old_value ?? '—', 'new' => $c->new_value ?? '—', 'impact' => $c->impact])->all()"
-                empty="Belum ada perubahan tersimpan — pilih scope, ubah isian, lalu Simpan." source="{{ Src::of('tm2sdi.iqp_revise_change') }}" />
+            <x-dl::table :columns="['part' => 'Part', 'field' => 'What changed', 'old' => 'Before (parent)', 'new' => 'After', 'impact' => 'Redone in']"
+                :rows="$changes->map(fn ($c) => ['part' => $c->part?->part_name ?? t('Document'), 'field' => $c->field_label, 'old' => $c->old_value ?? '—', 'new' => $c->new_value ?? '—', 'impact' => $c->impact])->all()"
+                empty="No saved change yet — choose a scope, change the fields, then Save." source="{{ Src::of('tm2sdi.iqp_revise_change') }}" />
         </x-dl::card>
 
         @foreach ($parts as $p)
@@ -89,10 +89,10 @@
                 $n = 'parts['.$p['seq'].']';
                 $master = collect($doc['components'])->firstWhere('name', $p['name']) ?? ['id' => $p['id'], 'name' => $p['name'], 'artwork' => $p['artwork'], 'artwork_inner' => $p['artwork_inner'], 'has_spec' => false, 'type_code' => null, 'dims' => $p['dims']];
             @endphp
-            <x-dl::card :title="raw($p['name'])" :description="$p['kind'] === 'ASSEMBLY' ? 'Rakitan' : 'Komponen'">
+            <x-dl::card :title="raw($p['name'])" :description="$p['kind'] === 'ASSEMBLY' ? 'Assembly' : 'Component'">
                 @if ($p['kind'] === 'ASSEMBLY')
                     <fieldset class="mp-rv" data-rv-block="JOIN" @disabled($locked || ! $on('JOIN'))>
-                        <legend>Struktur / Sambungan</legend>
+                        <legend>{{ t('Structure / Join') }}</legend>
                         <x-dl::field.select :name="$n.'[join_type_id]'" label="Join type" :options="$joinOptions" :value="$p['join_type_id']" :source="Src::of('tm2sdi.iqp_part.join_type_id', 'tm2mst.mat_join_type')" />
                     </fieldset>
                 @else
@@ -100,7 +100,7 @@
                         <div>
                             <x-mp::sales.part-visual :part="$master + ['artwork' => $p['artwork'], 'artwork_inner' => $p['artwork_inner']]" :types="Sales::dielineTypes()" height="300px" />
                             <fieldset class="mp-rv" data-rv-block="ARTWORK" @disabled($locked || ! $on('ARTWORK'))>
-                                <legend>Artwork</legend>
+                                <legend>{{ t('Artwork') }}</legend>
                                 <x-dl::form.row cols="2">
                                     <x-dl::field.upload :name="$n.'[artwork]'" label="New artwork (outside)" accept=".jpg,.jpeg,.png" :source="Src::of('tm2sdi.iqp_part.artwork_path')" />
                                     <x-dl::field.upload :name="$n.'[artwork_inner]'" label="New artwork (inside)" accept=".jpg,.jpeg,.png" :source="Src::of('tm2sdi.iqp_part.artwork_inner_path')" />
@@ -109,7 +109,7 @@
                         </div>
                         <div>
                             <fieldset class="mp-rv" data-rv-block="DIMENSION" @disabled($locked || ! $on('DIMENSION'))>
-                                <legend>Dimensi (mm)</legend>
+                                <legend>{{ t('Dimensions (mm)') }}</legend>
                                 <x-dl::form.row cols="3">
                                     <x-dl::field.decimal :name="$n.'[dims][product_length]'" label="P" :value="$dim($p, 'product_length')" :source="Src::of('tm2sdi.iqp_part.dieline_spec.dims')" />
                                     <x-dl::field.decimal :name="$n.'[dims][product_width]'" label="L" :value="$dim($p, 'product_width')" />
@@ -117,20 +117,20 @@
                                 </x-dl::form.row>
                             </fieldset>
                             <fieldset class="mp-rv" data-rv-block="MATERIAL" @disabled($locked || ! $on('MATERIAL'))>
-                                <legend>Bahan</legend>
+                                <legend>{{ t('Material') }}</legend>
                                 @foreach ($p['materials'] as $m)
-                                    <x-dl::field.select :name="$n.'[materials]['.$m['seq'].']'" :label="'Bahan #'.$m['seq']" :options="$matOptions" :value="$m['category_id']" :hint="$m['category_id'] ? null : 'Data lama: '.raw($m['label'])" :source="Src::of('tm2sdi.iqp_part_material.category_id')" />
+                                    <x-dl::field.select :name="$n.'[materials]['.$m['seq'].']'" :label="raw(str_replace(':n', $m['seq'], t('Material #:n')))" :options="$matOptions" :value="$m['category_id']" :hint="$m['category_id'] ? null : 'Old data: '.raw($m['label'])" :source="Src::of('tm2sdi.iqp_part_material.category_id')" />
                                 @endforeach
                             </fieldset>
                             <fieldset class="mp-rv" data-rv-block="COLOR" @disabled($locked || ! $on('COLOR'))>
-                                <legend>Warna</legend>
+                                <legend>{{ t('Colour') }}</legend>
                                 <x-dl::form.row cols="2">
                                     <x-dl::field.select :name="$n.'[cfg_color]'" label="Colour notation" :options="$colors" :value="$p['cfg_color']" :placeholder="null" :source="Src::of('tm2sdi.iqp_part.cfg_color')" />
-                                    <x-dl::field.text :name="$n.'[cfg_ink]'" label="Tinta" :value="$p['cfg_ink']" placeholder="mis. CMYK + spot Pantone 348C" :source="Src::of('tm2sdi.iqp_part.cfg_ink')" />
+                                    <x-dl::field.text :name="$n.'[cfg_ink]'" label="Ink" :value="$p['cfg_ink']" placeholder="e.g. CMYK + spot Pantone 348C" :source="Src::of('tm2sdi.iqp_part.cfg_ink')" />
                                 </x-dl::form.row>
                             </fieldset>
                             <fieldset class="mp-rv" data-rv-block="PROCESS" @disabled($locked || ! $on('PROCESS'))>
-                                <legend>Proses / Finishing</legend>
+                                <legend>{{ t('Process / Finishing') }}</legend>
                                 <input type="hidden" name="{{ $n }}[finishings][]" value="">
                                 <x-dl::field.checkboxes :name="$n.'[finishings]'" label="Finishing" :options="$finOptions" :value="$p['finishings']" :source="Src::of('tm2sdi.iqp_part_finishing')" />
                             </fieldset>
@@ -143,9 +143,9 @@
         <x-dl::action-bar>
             @if ($inq)<x-dl::button variant="secondary" icon="copy" label="Duplicate" type="button" data-dl-open="dup-modal" />@endif
             @if (! $locked)
-                @if ($inq)<x-dl::button preset="delete" type="submit" :formaction="route('v2.derived.delete', $inq->id_inquiry)" onclick="return confirm('Hapus draft {{ $inq->inquiry_no }}?')" formnovalidate />@endif
+                @if ($inq)<x-dl::button preset="delete" type="submit" :formaction="route('v2.derived.delete', $inq->id_inquiry)" :onclick="'return confirm('.json_encode(str_replace(':no', $inq->inquiry_no, t('Delete draft :no?'))).')'" formnovalidate />@endif
                 <x-dl::button preset="save" name="action" value="save" />
-                <x-dl::button preset="confirm" type="submit" name="action" value="confirm" onclick="return confirm('Confirm revisi ini? Form akan terkunci dan dikirim ke Pro-Dev, lalu Pro-Cost.')" />
+                <x-dl::button preset="confirm" type="submit" name="action" value="confirm" :onclick="'return confirm('.json_encode(t('Confirm this revision? The form will be locked and sent to Pro-Dev, then Pro-Cost.')).')'" />
             @elseif (! $inq->stat_cancel)
                 <x-dl::button preset="cancel" data-dl-open="revise-cancel" />
             @endif

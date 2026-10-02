@@ -11,7 +11,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Raw Material Item Master — TELASIH MAKMUR ERP')] class extends Component
 {
     public ?int $materialId = null;
 
@@ -379,7 +379,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
         }
 
         if (! $this->stock_asset_account_id || ! $this->cogs_account_id || ! $this->gr_ir_account_id) {
-            $this->addError('confirm', 'Isi ketiga Akun (Aset Persediaan, HPP, GR/IR) di tab Akuntansi dulu sebelum Confirm.');
+            $this->addError('confirm', t('Fill in all three Accounts (Inventory Asset, COGS, GR/IR) on the Accounting tab before Confirm.'));
             $this->activeTab = 'accounting';
 
             return;
@@ -414,11 +414,11 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📦 {{ $this->isEdit ? 'Edit Item — '.$material_code : 'Item Baru' }}</b>
+        <b class="text-[15px]">📦 {{ $this->isEdit ? t('Edit Item').' — '.$material_code : t('New Item') }}</b>
         @if ($this->isEdit)
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $stat_confirm ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#fef6e7] text-[#b45309]' }}">{{ $stat_confirm ? 'CONFIRMED' : 'DRAFT' }}</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $stat_confirm ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#fef6e7] text-[#b45309]' }}">{{ $stat_confirm ? t('CONFIRMED') : t('DRAFT') }}</span>
         @endif
-        <x-back-button :fallback="route('master.raw-material.list')" title="Kembali ke Daftar Item" class="ml-auto" />
+        <x-back-button :fallback="route('master.raw-material.list')" :title="t('Back to Item List')" class="ml-auto" />
     </header>
 
     <div class="max-w-[1300px] mx-auto my-5 px-4">
@@ -426,18 +426,18 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
         {{-- HEADER BAR --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid gap-3">
             <div class="col-span-2">
-                <x-form.input label="Nama Item" wire:model="material_name" placeholder="mis. Art Carton 210gr 65x100 GOLDEN" name="material_name" />
+                <x-form.input :label="t('Item Name')" wire:model="material_name" :placeholder="t('e.g. Art Carton 210gr 65x100 GOLDEN')" name="material_name" />
             </div>
-            <x-form.input label="🔒 Kode Item" readonly value="{{ $material_code }}" placeholder="Auto dari hirarki kategori" class="bg-[#f8fafc] font-mono font-bold" name="material_code" />
-            <x-form.select label="Tipe Item" wire:model="item_type" :placeholder="false"
-                :options="['MATERIAL' => 'MATERIAL (Bahan Baku / Stok)', 'SERVICE' => 'SERVICE (Jasa)', 'FREE_SAMPLE' => 'FREE_SAMPLE (Contoh dari supplier)']" />
-            <x-form.select label="Dapat Dibeli (PO)" wire:model="purchasable" :placeholder="false" :options="['1' => 'Ya', '0' => 'Tidak']" />
+            <x-form.input :label="'🔒 '.t('Item Code')" readonly value="{{ $material_code }}" :placeholder="t('Auto from the category hierarchy')" class="bg-[#f8fafc] font-mono font-bold" name="material_code" />
+            <x-form.select :label="t('Item Type', 'master')" wire:model="item_type" :placeholder="false"
+                :options="['MATERIAL' => 'MATERIAL ('.t('Raw Material / Stock').')', 'SERVICE' => 'SERVICE ('.t('Service', 'master').')', 'FREE_SAMPLE' => 'FREE_SAMPLE ('.t('Sample from supplier').')']" />
+            <x-form.select :label="t('Purchasable (PO)')" wire:model="purchasable" :placeholder="false" :options="['1' => t('Yes'), '0' => t('No')]" />
         </div>
 
         {{-- TABS --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
             <div class="flex bg-[#eef1f5] border-b border-[#d7dbe2] flex-wrap">
-                @foreach (['category' => '1. Kategori', 'specs' => '2. Spesifikasi & QC', 'uom' => '3. UOM & Pengadaan', 'inventory' => '4. Stok & Lokasi', 'accounting' => '5. Akuntansi (GL)'] as $key => $label)
+                @foreach (['category' => '1. '.t('Category'), 'specs' => '2. '.t('Specifications & QC'), 'uom' => '3. '.t('UOM & Procurement'), 'inventory' => '4. '.t('Stock & Location'), 'accounting' => '5. '.t('Accounting (GL)')] as $key => $label)
                     <button type="button" wire:click="$set('activeTab', '{{ $key }}')"
                         class="px-4 py-2 text-xs font-semibold border-r border-[#d7dbe2] {{ $activeTab === $key ? 'bg-white text-accent border-b-2 border-b-accent' : 'text-[#4b5568]' }}">{{ $label }}</button>
                 @endforeach
@@ -447,35 +447,35 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 {{-- TAB 1: KATEGORI --}}
                 <div @if ($activeTab !== 'category') style="display:none" @endif>
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">Hirarki Pembentuk Kode Item</p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Hierarchy That Builds the Item Code') }}</p>
                         <div class="[display:grid] grid-cols-5 gap-2">
-                            <x-form.select label="Kategori" wire:change="setPick(1, $event.target.value)" :disabled="$this->isLocked"
+                            <x-form.select :label="t('Category')" wire:change="setPick(1, $event.target.value)" :disabled="$this->isLocked"
                                 :selected="$pick1" :options="$this->cat1Options->mapWithKeys(fn ($o) => [$o->id_category => $o->category_name.' ('.$o->prefix_char.')'])->all()" />
-                            <x-form.select label="Jenis" wire:change="setPick(2, $event.target.value)" :disabled="$this->isLocked || ! $pick1" class="disabled:bg-[#f8fafc]"
+                            <x-form.select :label="t('Type')" wire:change="setPick(2, $event.target.value)" :disabled="$this->isLocked || ! $pick1" class="disabled:bg-[#f8fafc]"
                                 :selected="$pick2" :options="$this->cat2Options->mapWithKeys(fn ($o) => [$o->id_category => $o->category_name.' ('.$o->prefix_char.')'])->all()" />
-                            <x-form.select label="Gramatur/Spec" wire:change="setPick(3, $event.target.value)" :disabled="$this->isLocked || ! $pick2" class="disabled:bg-[#f8fafc]"
+                            <x-form.select :label="t('Weight/Spec')" wire:change="setPick(3, $event.target.value)" :disabled="$this->isLocked || ! $pick2" class="disabled:bg-[#f8fafc]"
                                 :selected="$pick3" :options="$this->cat3Options->mapWithKeys(fn ($o) => [$o->id_category => $o->category_name.' ('.$o->prefix_char.')'])->all()" />
                             <x-form.select wire:change="setPick(4, $event.target.value)" :disabled="$this->isLocked || ! $pick3 || $this->cat4Options->isEmpty()" class="disabled:bg-[#f8fafc]"
-                                placeholder="— semua —" :selected="$pick4" :options="$this->cat4Options->mapWithKeys(fn ($o) => [$o->id_category => $o->category_name.' ('.$o->prefix_char.')'])->all()">
-                                <x-slot:label>Ukuran <span class="normal-case font-normal">(opsional)</span></x-slot:label>
+                                :placeholder="t('— all —')" :selected="$pick4" :options="$this->cat4Options->mapWithKeys(fn ($o) => [$o->id_category => $o->category_name.' ('.$o->prefix_char.')'])->all()">
+                                <x-slot:label>{{ t('Size') }} <span class="normal-case font-normal">{{ t('(optional)') }}</span></x-slot:label>
                             </x-form.select>
                             <x-form.select wire:change="setPick(5, $event.target.value)" :disabled="$this->isLocked || ! $pick4 || $this->cat5Options->isEmpty()" class="disabled:bg-[#f8fafc]"
-                                placeholder="— semua —" :selected="$pick5" :options="$this->cat5Options->mapWithKeys(fn ($o) => [$o->id_category => $o->category_name.' ('.$o->prefix_char.')'])->all()">
-                                <x-slot:label>Merek <span class="normal-case font-normal">(opsional)</span></x-slot:label>
+                                :placeholder="t('— all —')" :selected="$pick5" :options="$this->cat5Options->mapWithKeys(fn ($o) => [$o->id_category => $o->category_name.' ('.$o->prefix_char.')'])->all()">
+                                <x-slot:label>{{ t('Brand') }} <span class="normal-case font-normal">{{ t('(optional)') }}</span></x-slot:label>
                             </x-form.select>
                         </div>
                         @if ($this->isLocked)
-                            <p class="text-[11px] text-muted mt-2">Kategori dikunci karena item ini sudah di-Confirm (kode item mengikuti kombinasi ini) — hubungi Admin bila perlu reklasifikasi.</p>
+                            <p class="text-[11px] text-muted mt-2">{{ t('The category is locked because this item is already Confirmed (the item code follows this combination) — contact Admin if reclassification is needed.') }}</p>
                         @elseif ($this->isEdit)
-                            <p class="text-[11px] text-[#b45309] mt-2">Item ini masih DRAFT — kategori & kode masih bisa diubah sampai di-Confirm (tab 5. Akuntansi).</p>
+                            <p class="text-[11px] text-[#b45309] mt-2">{{ t('This item is still DRAFT — category & code can still be changed until it is Confirmed (tab 5. Accounting).') }}</p>
                         @endif
                     </div>
                     <div class="border border-[#d7dbe2] rounded-md p-3">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">Kepabeanan &amp; Kode Legacy</p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Customs & Legacy Code') }}</p>
                         <div class="grid three">
-                            <x-form.input label="Kode HS" wire:model="hs_code" placeholder="4810.13.00" />
-                            <x-form.input label="Kode Lama" wire:model="old_item_code" />
-                            <x-form.input label="Nama Lama" wire:model="old_item_name" />
+                            <x-form.input :label="t('HS Code', 'master')" wire:model="hs_code" placeholder="4810.13.00" />
+                            <x-form.input :label="t('Old Code')" wire:model="old_item_code" />
+                            <x-form.input :label="t('Old Name')" wire:model="old_item_name" />
                         </div>
                     </div>
                 </div>
@@ -483,26 +483,26 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 {{-- TAB 2: SPESIFIKASI & QC --}}
                 <div @if ($activeTab !== 'specs') style="display:none" @endif>
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">Dimensi &amp; Fisik <span class="text-muted normal-case font-normal">(kosongkan bila bukan kertas/board)</span></p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Dimensions & Physical') }} <span class="text-muted normal-case font-normal">{{ t('(leave empty if not paper/board)') }}</span></p>
                         <div class="grid three">
-                            <x-form.input label="Gramatur (gsm)" type="number" wire:model="gram_weight" />
-                            <x-form.input label="Panjang Plano (cm)" type="number" step="0.0001" wire:model="cm_length" />
-                            <x-form.input label="Lebar Plano (cm)" type="number" step="0.0001" wire:model="cm_width" />
-                            <x-form.input label="Ketebalan (mm)" type="number" step="0.0001" wire:model="mm_thickness" />
-                            <x-form.input label="Merek Pabrik" wire:model="brand" />
-                            <x-form.input label="Warna" wire:model="color" />
+                            <x-form.input :label="t('Grammage (gsm)')" type="number" wire:model="gram_weight" />
+                            <x-form.input :label="t('Plano Length (cm)')" type="number" step="0.0001" wire:model="cm_length" />
+                            <x-form.input :label="t('Plano Width (cm)')" type="number" step="0.0001" wire:model="cm_width" />
+                            <x-form.input :label="t('Thickness (mm)')" type="number" step="0.0001" wire:model="mm_thickness" />
+                            <x-form.input :label="t('Manufacturer Brand')" wire:model="brand" />
+                            <x-form.input :label="t('Color')" wire:model="color" />
                         </div>
                     </div>
                     <div class="border border-[#d7dbe2] rounded-md p-3">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">QC &amp; Masa Simpan</p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('QC & Shelf Life') }}</p>
                         <div class="grid three">
                             <div>
-                                <x-form.select label="Wajib QC Saat Terima" wire:model="qc_required" :placeholder="false"
-                                    :options="['1' => 'Ya — cek lab GSM/kelembaban', '0' => 'Tidak — langsung ke stok']" />
-                                <p class="text-[10.5px] text-muted mt-1">Menyalakan gerbang QC kualitas di layar PV.</p>
+                                <x-form.select :label="t('QC Required on Receipt')" wire:model="qc_required" :placeholder="false"
+                                    :options="['1' => t('Yes — lab check GSM/moisture'), '0' => t('No — straight to stock')]" />
+                                <p class="text-[10.5px] text-muted mt-1">{{ t('Turns on the quality QC gate on the PV screen.') }}</p>
                             </div>
-                            <x-form.input label="Masa Simpan (hari)" type="number" wire:model="shelf_life_days" />
-                            <x-form.input label="Batas Kelembaban (%)" type="number" step="0.1" wire:model="moisture_pct" />
+                            <x-form.input :label="t('Shelf Life (days)')" type="number" wire:model="shelf_life_days" />
+                            <x-form.input :label="t('Moisture Limit (%)')" type="number" step="0.1" wire:model="moisture_pct" />
                         </div>
                     </div>
                 </div>
@@ -510,40 +510,40 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 {{-- TAB 3: UOM & PENGADAAN --}}
                 <div @if ($activeTab !== 'uom') style="display:none" @endif>
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">Satuan &amp; Konversi</p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Units & Conversion') }}</p>
                         <div class="grid three">
-                            <x-form.select label="UoM Stok" wire:model="uom_stock" :options="$this->uomOptions->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])->all()" />
-                            <x-form.select label="UoM Beli (PO)" wire:model="uom_purchase" :options="$this->uomOptions->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])->all()" />
-                            <x-form.select label="UoM Pemakaian" wire:model="uom_usage" :options="$this->uomOptions->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])->all()" />
+                            <x-form.select :label="t('Stock UoM')" wire:model="uom_stock" :options="$this->uomOptions->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])->all()" />
+                            <x-form.select :label="t('Purchase UoM (PO)')" wire:model="uom_purchase" :options="$this->uomOptions->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])->all()" />
+                            <x-form.select :label="t('Usage UoM')" wire:model="uom_usage" :options="$this->uomOptions->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])->all()" />
                         </div>
                         <div class="grid two mt-2">
                             <div>
-                                <x-form.input label="Konversi Beli → Stok" type="number" step="0.000001" wire:model="conversion_to_stock" />
-                                <p class="text-[10.5px] text-muted mt-1">⚠ Nilai AWAL saja — di PV selalu boleh ditimpa manual (barang curah).</p>
+                                <x-form.input :label="t('Conversion Purchase → Stock')" type="number" step="0.000001" wire:model="conversion_to_stock" />
+                                <p class="text-[10.5px] text-muted mt-1">⚠ {{ t('INITIAL value only — on the PV it can always be overridden by hand (bulk goods).') }}</p>
                             </div>
-                            <x-form.input label="Konversi Stok → Pakai" type="number" step="0.000001" wire:model="conversion_to_usage" />
+                            <x-form.input :label="t('Conversion Stock → Usage')" type="number" step="0.000001" wire:model="conversion_to_usage" />
                         </div>
                     </div>
 
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">Parameter Pengadaan</p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Procurement Parameters') }}</p>
                         <div class="grid">
-                            <x-form.input label="Lead Time (hari)" type="number" wire:model="lead_time_days" />
-                            <x-form.input label="Toleransi Terima (%)" type="number" step="0.1" wire:model="tol_purchase" />
-                            <x-form.select label="Pajak Masukan" wire:model="purchase_tax_code" :placeholder="false" :options="['PPN' => 'PPN (sys_constant)', 'NON_PPN' => 'Non-PPN']" />
-                            <x-form.select label="Supplier Saran" wire:model="suggest_supplier_id" :options="$this->suppliers->pluck('supplier_name', 'id_supplier')->all()" />
+                            <x-form.input :label="t('Lead Time (days)')" type="number" wire:model="lead_time_days" />
+                            <x-form.input :label="t('Receipt Tolerance (%)')" type="number" step="0.1" wire:model="tol_purchase" />
+                            <x-form.select :label="t('Input Tax')" wire:model="purchase_tax_code" :placeholder="false" :options="['PPN' => 'PPN (sys_constant)', 'NON_PPN' => t('Non-PPN')]" />
+                            <x-form.select :label="t('Suggested Supplier')" wire:model="suggest_supplier_id" :options="$this->suppliers->pluck('supplier_name', 'id_supplier')->all()" />
                         </div>
                     </div>
 
                     <div class="border border-[#d7dbe2] rounded-md p-3">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">Metode Harga Perolehan</p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Acquisition Cost Method') }}</p>
                         <div class="grid two">
-                            <x-form.select label="Costing Method" wire:model="costing_method" :placeholder="false"
-                                :options="['AVG' => 'AVG — Moving Average', 'FIFO' => 'FIFO', 'LIFO' => 'LIFO', 'STANDARD' => 'STANDARD — harga tetap']" />
+                            <x-form.select :label="t('Costing Method')" wire:model="costing_method" :placeholder="false"
+                                :options="['AVG' => 'AVG — '.t('Moving Average'), 'FIFO' => 'FIFO', 'LIFO' => 'LIFO', 'STANDARD' => 'STANDARD — '.t('fixed price')]" />
                             <div>
-                                <x-form.select label="Sensitif Kurs" wire:model="is_fx_sensitive" :placeholder="false" :options="['0' => 'Tidak', '1' => 'Ya']" />
+                                <x-form.select :label="t('FX Sensitive')" wire:model="is_fx_sensitive" :placeholder="false" :options="['0' => t('No'), '1' => t('Yes')]" />
                                 @if ($is_fx_sensitive)
-                                    <p class="text-[10.5px] text-[#8a5a00] mt-1">⚠ Item ini akan ditandai di layar PR/PQ: "harga mengikuti kurs".</p>
+                                    <p class="text-[10.5px] text-[#8a5a00] mt-1">⚠ {{ t('This item will be flagged on the PR/PQ screens: "price follows the exchange rate".') }}</p>
                                 @endif
                             </div>
                         </div>
@@ -553,66 +553,66 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 {{-- TAB 4: STOK & LOKASI --}}
                 <div @if ($activeTab !== 'inventory') style="display:none" @endif>
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">Batas Persediaan</p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Inventory Limits') }}</p>
                         <div class="grid">
-                            <x-form.input label="Min Stock" type="number" wire:model="min_stock" />
-                            <x-form.input label="Safety Stock" type="number" wire:model="safety_stock" />
-                            <x-form.input label="Reorder Point" type="number" wire:model="reorder_point" />
-                            <x-form.input label="Max Stock" type="number" wire:model="max_stock" />
+                            <x-form.input :label="t('Min Stock')" type="number" wire:model="min_stock" />
+                            <x-form.input :label="t('Safety Stock')" type="number" wire:model="safety_stock" />
+                            <x-form.input :label="t('Reorder Point')" type="number" wire:model="reorder_point" />
+                            <x-form.input :label="t('Max Stock')" type="number" wire:model="max_stock" />
                         </div>
                     </div>
                     <div class="border border-[#d7dbe2] rounded-md p-3">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">Lokasi &amp; Saldo</p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Location & Balance') }}</p>
                         <div class="grid three">
                             <div>
-                                <x-form.input label="Default Lokasi Gudang" wire:model="def_location_id" placeholder="belum ada master gudang -- isi bebas" />
-                                <p class="text-[10.5px] text-muted mt-1">⚠ Belum ditaut ke Master Gudang (wh_warehouse) — teks bebas sementara.</p>
+                                <x-form.input :label="t('Default Warehouse Location')" wire:model="def_location_id" :placeholder="t('no warehouse master yet -- free text')" />
+                                <p class="text-[10.5px] text-muted mt-1">⚠ {{ t('Not yet linked to the Warehouse Master') }} (wh_warehouse) — {{ t('free text for now.') }}</p>
                             </div>
-                            <x-form.input label="🔒 Stok On-Hand" readonly value="{{ number_format($this->currentStock['cur_stock'], 2) }}" class="bg-[#f8fafc]" />
-                            <x-form.input label="🔒 Harga Rata² Bergerak" readonly value="{{ number_format($this->currentStock['avg_unitprice'], 2) }}" class="bg-[#f8fafc]" />
+                            <x-form.input :label="'🔒 '.t('On-Hand Stock')" readonly value="{{ number_format($this->currentStock['cur_stock'], 2) }}" class="bg-[#f8fafc]" />
+                            <x-form.input :label="'🔒 '.t('Moving Average Price')" readonly value="{{ number_format($this->currentStock['avg_unitprice'], 2) }}" class="bg-[#f8fafc]" />
                         </div>
-                        <p class="text-[10.5px] text-muted mt-2">Stok &amp; harga rata² dikelola sistem (posting Purchase Receive) — tidak diedit manual di sini.</p>
+                        <p class="text-[10.5px] text-muted mt-2">{{ t('Stock & average price are managed by the system (Purchase Receive posting) — not edited by hand here.') }}</p>
                     </div>
                 </div>
 
                 {{-- TAB 5: AKUNTANSI --}}
                 <div @if ($activeTab !== 'accounting') style="display:none" @endif>
                     <div class="border border-[#d7dbe2] rounded-md p-3">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">Linkage ke Chart of Account <span class="text-muted normal-case font-normal">(langsung ke fin_account, tanpa lapisan penentu-akun)</span></p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Linkage to Chart of Account') }} <span class="text-muted normal-case font-normal">({{ t('directly to') }} fin_account, {{ t('without an account-determination layer') }})</span></p>
                         <div class="grid three">
                             <div>
-                                <x-form.input placeholder="mis. Raw Material - Kertas" wire:model="valuation_class">
-                                    <x-slot:label>Label Klasifikasi <span class="normal-case font-normal">(opsional)</span></x-slot:label>
+                                <x-form.input :placeholder="t('e.g. Raw Material - Paper')" wire:model="valuation_class">
+                                    <x-slot:label>{{ t('Classification Label') }} <span class="normal-case font-normal">{{ t('(optional)') }}</span></x-slot:label>
                                 </x-form.input>
-                                <p class="text-[10.5px] text-muted mt-1">Cuma label laporan — bukan penentu akun.</p>
+                                <p class="text-[10.5px] text-muted mt-1">{{ t('Just a report label — does not determine the account.') }}</p>
                             </div>
-                            <x-form.select label="Akun Aset Persediaan" wire:model="stock_asset_account_id" placeholder="— default kategori —"
+                            <x-form.select :label="t('Inventory Asset Account')" wire:model="stock_asset_account_id" :placeholder="t('— category default —')"
                                 :options="$this->coaAccounts->mapWithKeys(fn ($acc) => [$acc->account_id => $acc->account_code.' - '.$acc->account_name])->all()" />
-                            <x-form.select label="Akun HPP / Beban Pakai" wire:model="cogs_account_id" placeholder="— default kategori —"
+                            <x-form.select :label="t('COGS / Usage Expense Account')" wire:model="cogs_account_id" :placeholder="t('— category default —')"
                                 :options="$this->coaAccounts->mapWithKeys(fn ($acc) => [$acc->account_id => $acc->account_code.' - '.$acc->account_name])->all()" />
                         </div>
                         <div class="grid three mt-2">
                             <div>
-                                <x-form.select label="Akun Kliring GR/IR" wire:model="gr_ir_account_id" placeholder="— default kategori —"
+                                <x-form.select :label="t('GR/IR Clearing Account')" wire:model="gr_ir_account_id" :placeholder="t('— category default —')"
                                     :options="$this->coaAccounts->mapWithKeys(fn ($acc) => [$acc->account_id => $acc->account_code.' - '.$acc->account_name])->all()" />
-                                <p class="text-[10.5px] text-muted mt-1">Terpakai saat PV posting (barang masuk, faktur belum ada).</p>
+                                <p class="text-[10.5px] text-muted mt-1">{{ t('Used when the PV is posted (goods received, no invoice yet).') }}</p>
                             </div>
-                            <x-form.select label="Cost Center Default" wire:model="cost_center_id" placeholder="— tak ada default —"
+                            <x-form.select :label="t('Default Cost Center', 'master')" wire:model="cost_center_id" :placeholder="t('— no default —', 'master')"
                                 :options="$this->costCenters->mapWithKeys(fn ($cc) => [$cc->cc_id => $cc->cc_code.' — '.$cc->cc_name])->all()" />
-                            <x-form.select label="Profit Center" wire:model="profit_center_id" placeholder="— tak ada default —"
+                            <x-form.select :label="t('Profit Center')" wire:model="profit_center_id" :placeholder="t('— no default —', 'master')"
                                 :options="$this->profitCenters->mapWithKeys(fn ($pc) => [$pc->pc_id => $pc->pc_code.' — '.$pc->pc_name])->all()" />
                         </div>
                     </div>
 
                     @if ($this->isEdit)
                         <div class="border border-[#d7dbe2] rounded-md p-3 mt-3">
-                            <p class="text-[10px] font-bold text-accent uppercase mb-2">Status Confirm</p>
+                            <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Confirm Status') }}</p>
                             @if ($stat_confirm)
-                                <p class="text-[11.5px] text-[#16a34a]">✓ Confirmed oleh <b>{{ $confirmedBy }}</b> pada {{ $confirmedAt }} — kategori &amp; kode item terkunci.</p>
+                                <p class="text-[11.5px] text-[#16a34a]">✓ {{ t('Confirmed by') }} <b>{{ $confirmedBy }}</b> {{ t('on') }} {{ $confirmedAt }} — {{ t('category & item code are locked.') }}</p>
                             @else
-                                <p class="text-[11.5px] text-muted mb-2">Item ini masih DRAFT. Isi ketiga akun di atas (Aset Persediaan, HPP, GR/IR), lalu Confirm — setelah itu kategori &amp; kode item terkunci permanen dan item baru muncul di pencarian PR/PQ/PRT.</p>
+                                <p class="text-[11.5px] text-muted mb-2">{{ t('This item is still DRAFT. Fill in all three accounts above (Inventory Asset, COGS, GR/IR), then Confirm — after that the category & item code are permanently locked and the item appears in the PR/PQ/PRT search.') }}</p>
                                 @error('confirm') <p class="text-[11px] text-[#a3241f] mb-2">{{ $message }}</p> @enderror
-                                <button type="button" wire:click="confirm" wire:confirm="Confirm item ini? Kategori & kode item akan terkunci permanen." class="bg-[#16a34a] text-white text-xs font-bold px-4 py-2 rounded-md">✓ Confirm</button>
+                                <button type="button" wire:click="confirm" wire:confirm="{{ t('Confirm this item? The category & item code will be permanently locked.') }}" class="bg-[#16a34a] text-white text-xs font-bold px-4 py-2 rounded-md">✓ {{ t('Confirm') }}</button>
                             @endif
                         </div>
                     @endif
@@ -622,9 +622,9 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
         <div class="flex justify-end gap-2 my-6">
             @if ($this->isEdit)
-                <button type="button" wire:click="delete" wire:confirm="Hapus item ini secara permanen?" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">🗑 Hapus</button>
+                <button type="button" wire:click="delete" wire:confirm="{{ t('Permanently delete this item?') }}" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">🗑 {{ t('Delete') }}</button>
             @endif
-            <button type="button" wire:click="save" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">💾 Simpan</button>
+            <button type="button" wire:click="save" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">💾 {{ t('Save') }}</button>
         </div>
     </div>
 </div>

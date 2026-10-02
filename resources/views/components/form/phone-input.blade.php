@@ -29,7 +29,7 @@
         <div x-show="countryOpen" x-cloak x-transition.origin.top
             class="absolute z-30 top-full left-0 mt-1 w-56 bg-white border border-field-border rounded-lg shadow-lg overflow-hidden text-xs">
             <div class="p-1.5 bg-field-soft border-b border-field-border">
-                <input type="text" x-model="countryQuery" placeholder="Cari negara..." class="w-full px-2 py-1 border border-field-border rounded text-[11px]">
+                <input type="text" x-model="countryQuery" placeholder="{{ t('Search country...') }}" class="w-full px-2 py-1 border border-field-border rounded text-[11px]">
             </div>
             <div class="max-h-[140px] overflow-y-auto">
                 <template x-for="c in filteredCountries" :key="c.dial + c.name">

@@ -5,7 +5,6 @@ use App\Models\Master\CustCustomer;
 use App\Models\Sdi\IqpInquiry;
 use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\QuotationBuilder;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -50,9 +49,9 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
     public string $dupCustomerQuery = '';
 
     private const TYPE_LABELS = [
-        'NEW' => 'sales_hub_type_new',
-        'RECALC' => 'sales_hub_type_recalc',
-        'REVISE' => 'sales_hub_type_revise',
+        'NEW' => 'New Product',
+        'RECALC' => 'Recalculate Price',
+        'REVISE' => 'Revise Specification',
     ];
 
     #[Url]
@@ -114,17 +113,9 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
         };
     }
 
-    private const TYPE_LABEL_DEFAULTS = [
-        'NEW' => 'Produk Baru',
-        'RECALC' => 'Hitung Ulang Harga',
-        'REVISE' => 'Ubah Spesifikasi',
-    ];
-
     public function typeLabel(string $type): string
     {
-        $key = self::TYPE_LABELS[$type] ?? null;
-
-        return $key ? Translator::t($key, self::TYPE_LABEL_DEFAULTS[$type]) : $type;
+        return isset(self::TYPE_LABELS[$type]) ? t(self::TYPE_LABELS[$type]) : $type;
     }
 
     // ============== Stat box = filter data (griduistandard.md §2b) ==============
@@ -150,20 +141,20 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
-            'unconfirmed' => ['label' => Translator::t('sales_hub_stat_not_confirm', 'Not Confirm'), 'value' => $this->statUnconfirmed, 'tone' => 'warn',
+            'unconfirmed' => ['label' => t('Not Confirm'), 'value' => $this->statUnconfirmed, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('stat_confirm_sales', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])],
-            'ready' => ['label' => Translator::t('sales_hub_btn_ready_to_quote', 'Ready to Quote'), 'value' => $this->readyToQuoteIds->count(), 'tone' => 'total',
+            'ready' => ['label' => t('Ready to Quote'), 'value' => $this->readyToQuoteIds->count(), 'tone' => 'total',
                 'filter' => fn ($q) => $q->whereKey($this->readyToQuoteIds)],
-            'prodev' => ['label' => Translator::t('sales_hub_stat_prodev', 'Processed by Pro-Dev'), 'value' => $this->statProdev, 'tone' => 'extra',
+            'prodev' => ['label' => t('Processed by Pro-Dev'), 'value' => $this->statProdev, 'tone' => 'extra',
                 'filter' => fn ($q) => $q->whereHas('parts', fn ($p) => $p->whereNotNull('prod_part_id'))],
-            'procost' => ['label' => Translator::t('sales_hub_stat_procost', 'Processed by Pro-Cost'), 'value' => $this->statProcost, 'tone' => 'active',
+            'procost' => ['label' => t('Processed by Pro-Cost'), 'value' => $this->statProcost, 'tone' => 'active',
                 'filter' => fn ($q) => $q->whereHas('costing')],
         ];
     }
 
     public function typeTabs(): array
     {
-        return ['' => Translator::t('sales_hub_tab_all', 'Semua')] + collect(self::TYPE_LABEL_DEFAULTS)->mapWithKeys(fn ($v, $k) => [$k => $this->typeLabel($k)])->all();
+        return ['' => t('All')] + collect(self::TYPE_LABELS)->mapWithKeys(fn ($v, $k) => [$k => $this->typeLabel($k)])->all();
     }
 
     public function typeTabBadges(): array
@@ -299,9 +290,9 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
     public function wizJenisOptions(): array
     {
         return [
-            'NEW' => ['✨', $this->typeLabel('NEW'), Translator::t('sales_hub_wiz_new_desc', 'Belum pernah dibuat. Tentukan tipe produk, dimensi, bahan, dan finishing dari nol. Alur: Sales → Pro-Dev → Pro-Cost.')],
-            'RECALC' => ['🔁', $this->typeLabel('RECALC'), Translator::t('sales_hub_wiz_recalc_desc', 'Spec & layout sama persis, cuma perlu harga baru. Sumber: inquiry lama (termasuk yang Cancelled/Lost).')],
-            'REVISE' => ['✏️', $this->typeLabel('REVISE'), Translator::t('sales_hub_wiz_revise_desc', 'Ada yang berubah: dimensi, bahan, warna, artwork, atau proses. Sumber: inquiry lama (termasuk yang Cancelled/Lost).')],
+            'NEW' => ['✨', $this->typeLabel('NEW'), t('Never made before. Set product type, dimensions, material and finishing from scratch. Flow: Sales → Pro-Dev → Pro-Cost.')],
+            'RECALC' => ['🔁', $this->typeLabel('RECALC'), t('Same spec & layout, only a new price is needed. Source: an earlier inquiry (including Cancelled/Lost).')],
+            'REVISE' => ['✏️', $this->typeLabel('REVISE'), t('Something changed: dimensions, material, color, artwork or process. Source: an earlier inquiry (including Cancelled/Lost).')],
         ];
     }
 
@@ -398,29 +389,29 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
         <div class="shrink-0 flex flex-col gap-2 mb-2">
             <x-ui.card variant="plain" size="sm">
                 <div class="flex flex-wrap items-center gap-2">
-                    <x-ui.button icon="fa-plus" wire:click="openWizard">{{ Translator::t('sales_hub_btn_create_inquiry', 'Create Inquiry') }}</x-ui.button>
+                    <x-ui.button icon="fa-plus" wire:click="openWizard">{{ t('Create Inquiry') }}</x-ui.button>
                     <x-ui.button variant="chip" :active="$fst === 'DRAFT'" icon="fa-pen-to-square" wire:click="showDrafts">
-                        {{ Translator::t('sales_hub_btn_continue_draft', 'Continue Draft') }}
+                        {{ t('Continue Draft') }}
                         <x-ui.badge tone="warn" size="xs" pill>{{ $this->draftCount }}</x-ui.badge>
                     </x-ui.button>
                     <x-ui.button variant="chip" :active="$ready" icon="fa-file-invoice-dollar" wire:click="toggleReady">
-                        {{ Translator::t('sales_hub_btn_ready_to_quote', 'Ready to Quote') }}
+                        {{ t('Ready to Quote') }}
                         <x-ui.badge tone="success" size="xs" pill>{{ $this->readyToQuoteIds->count() }}</x-ui.badge>
                     </x-ui.button>
-                    <span class="text-[11px] text-muted ml-auto">{{ Translator::t('sales_hub_dblclick_hint', 'Klik 2x baris untuk buka. DRAFT bisa diedit; status lain lihat-saja.') }}</span>
+                    <span class="text-[11px] text-muted ml-auto">{{ t('Double-click a row to open. DRAFT can be edited; other statuses are view-only.') }}</span>
                 </div>
             </x-ui.card>
             <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
         </div>
 
         @if ($wizStep)
-            <x-ui.modal :title="Translator::t('sales_hub_btn_create_inquiry', 'Create Inquiry')" close="closeWizard" size="xl">
+            <x-ui.modal :title="t('Create Inquiry')" close="closeWizard" size="xl">
                 <div class="p-4 flex flex-col gap-3">
                     <p class="text-[10.5px] font-bold uppercase tracking-wide text-muted">
-                        @if ($wizStep === 'jenis') {{ Translator::t('sales_hub_wiz_step_type', 'Langkah 1 · Pilih jenis') }}
-                        @elseif ($wizStep === 'sumber') {{ Translator::t('sales_hub_wiz_step_source', 'Langkah 2 · Pilih sumber data') }}
-                        @elseif ($wizStep === 'picker') {{ Translator::t('sales_hub_wiz_step_pick', 'Langkah 3 · Pilih inquiry sumber') }}
-                        @else {{ Translator::t('sales_hub_wiz_step_summary', 'Ringkasan') }}
+                        @if ($wizStep === 'jenis') {{ t('Step 1 · Choose type') }}
+                        @elseif ($wizStep === 'sumber') {{ t('Step 2 · Choose data source') }}
+                        @elseif ($wizStep === 'picker') {{ t('Step 3 · Choose source inquiry') }}
+                        @else {{ t('Summary') }}
                         @endif
                     </p>
 
@@ -433,7 +424,7 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                                         <p class="text-[13px] font-bold text-navy">{{ $opt[1] }} <x-ui.badge tone="code" size="xs">{{ $code }}</x-ui.badge></p>
                                         <p class="text-[11px] text-muted">{{ $opt[2] }}</p>
                                     </div>
-                                    <x-ui.button size="sm" wire:click="wizChooseJenis('{{ $code }}')">{{ Translator::t('sales_hub_btn_choose', 'Choose') }}</x-ui.button>
+                                    <x-ui.button size="sm" wire:click="wizChooseJenis('{{ $code }}')">{{ t('Choose') }}</x-ui.button>
                                 </div>
                             </x-ui.card>
                         @endforeach
@@ -442,28 +433,28 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                             <div class="flex items-center gap-3">
                                 <span class="text-xl">📁</span>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[13px] font-bold text-navy">{{ Translator::t('sales_hub_wiz_src_inquiry', 'Dari Inquiry Lama') }}</p>
-                                    <p class="text-[11px] text-muted">{{ Translator::t('sales_hub_wiz_src_inquiry_desc', 'Semua status ikut, termasuk yang Cancelled/Lost -- spec-nya dipakai lagi.') }}</p>
+                                    <p class="text-[13px] font-bold text-navy">{{ t('From an Earlier Inquiry') }}</p>
+                                    <p class="text-[11px] text-muted">{{ t('All statuses included, Cancelled/Lost too -- its spec is reused.') }}</p>
                                 </div>
-                                <x-ui.button size="sm" wire:click="wizChooseSumber('INQUIRY')">{{ Translator::t('sales_hub_btn_choose', 'Choose') }}</x-ui.button>
+                                <x-ui.button size="sm" wire:click="wizChooseSumber('INQUIRY')">{{ t('Choose') }}</x-ui.button>
                             </div>
                         </x-ui.card>
                         <x-ui.card variant="muted" size="sm">
                             <div class="flex items-center gap-3">
                                 <span class="text-xl opacity-50">📦</span>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[13px] font-bold text-muted">{{ Translator::t('sales_hub_wiz_src_product', 'Dari Master Produk') }} <x-ui.badge tone="warn" size="xs">{{ Translator::t('sales_hub_wiz_soon', 'Segera') }}</x-ui.badge></p>
-                                    <p class="text-[11px] text-muted">{{ Translator::t('sales_hub_wiz_src_product_desc', 'Belum aktif: Master Produk belum menyimpan dieline yang dipakai form Inquiry, perlu dirancang terpisah.') }}</p>
+                                    <p class="text-[13px] font-bold text-muted">{{ t('From Master Product') }} <x-ui.badge tone="warn" size="xs">{{ t('Soon') }}</x-ui.badge></p>
+                                    <p class="text-[11px] text-muted">{{ t('Not active yet: Master Product does not store the dieline used by the Inquiry form; needs a separate design.') }}</p>
                                 </div>
-                                <x-ui.button size="sm" variant="secondary" disabled>{{ Translator::t('sales_hub_btn_choose', 'Choose') }}</x-ui.button>
+                                <x-ui.button size="sm" variant="secondary" disabled>{{ t('Choose') }}</x-ui.button>
                             </div>
                         </x-ui.card>
                     @elseif ($wizStep === 'picker')
-                        <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="wizQuery" placeholder="{{ Translator::t('sales_hub_picker_search_placeholder', 'Cari no. inkuiri / customer / produk…') }}" />
+                        <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="wizQuery" placeholder="{{ t('Search inquiry no. / customer / product…') }}" />
                         <div class="max-h-[45vh] overflow-y-auto tm-scroll border border-field-border rounded">
                             <x-ui.table size="sm" sticky hover>
                                 <thead>
-                                    <tr><th>{{ Translator::t('sales_hub_col_inquiry_no', 'No. Inkuiri') }}</th><th>{{ Translator::t('sales_hub_col_product_customer', 'Produk / Customer') }}</th><th>{{ Translator::t('sales_hub_col_type', 'Jenis') }}</th><th>{{ Translator::t('sales_hub_col_status', 'Status') }}</th></tr>
+                                    <tr><th>{{ t('Inquiry No.') }}</th><th>{{ t('Product / Customer') }}</th><th>{{ t('Type') }}</th><th>{{ t('Status') }}</th></tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($this->wizCandidates as $row)
@@ -471,14 +462,14 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                                             @class(['cursor-pointer', 'bg-accent-soft font-semibold' => $wizPickedId === $row->id_inquiry])>
                                             <td class="font-mono text-accent">{{ $row->inquiry_no }}</td>
                                             <td>
-                                                <div class="text-navy">{{ $row->product_draft_name ?: Translator::t('sales_hub_no_product_name', '(tanpa nama produk)') }}</div>
+                                                <div class="text-navy">{{ $row->product_draft_name ?: t('(no product name)') }}</div>
                                                 <div class="text-[10.5px] text-muted">{{ $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—') }}</div>
                                             </td>
                                             <td>{{ $row->inquiry_type }}</td>
                                             <td><x-ui.badge :tone="$this->stateTone($row->sub_state)" size="xs" pill>{{ $row->sub_state }}</x-ui.badge></td>
                                         </tr>
                                     @empty
-                                        <tr><td colspan="4" class="text-center py-6 text-muted">{{ Translator::t('sales_hub_picker_empty', 'Tidak ada produk/inkuiri yang cocok.') }}</td></tr>
+                                        <tr><td colspan="4" class="text-center py-6 text-muted">{{ t('No matching product/inquiry.') }}</td></tr>
                                     @endforelse
                                 </tbody>
                             </x-ui.table>
@@ -486,13 +477,13 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                     @else
                         <x-ui.card variant="muted" size="sm">
                             <p class="text-xs leading-6">
-                                {{ Translator::t('sales_hub_wiz_sum_type', 'Jenis') }}: <b>{{ $this->typeLabel($wizJenis) }}</b> ({{ $wizJenis }})<br>
+                                {{ t('Type') }}: <b>{{ $this->typeLabel($wizJenis) }}</b> ({{ $wizJenis }})<br>
                                 @if ($wizJenis === 'NEW')
-                                    {{ Translator::t('sales_hub_wiz_sum_new', 'Form kosong akan terbuka.') }}
+                                    {{ t('An empty form will open.') }}
                                 @elseif ($this->wizPicked)
-                                    {{ Translator::t('sales_hub_wiz_sum_source', 'Sumber') }}: <b>{{ $this->wizPicked->inquiry_no }}</b> · {{ $this->wizPicked->product_draft_name }}
+                                    {{ t('Source') }}: <b>{{ $this->wizPicked->inquiry_no }}</b> · {{ $this->wizPicked->product_draft_name }}
                                     <x-ui.badge :tone="$this->stateTone($this->wizPicked->sub_state)" size="xs" pill>{{ $this->wizPicked->sub_state }}</x-ui.badge><br>
-                                    {{ Translator::t('sales_hub_wiz_sum_prefill', 'Form akan terbuka dan terisi otomatis dari sumber ini.') }}
+                                    {{ t('The form will open, filled automatically from this source.') }}
                                 @endif
                             </p>
                         </x-ui.card>
@@ -504,22 +495,22 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                     @endif
                     <x-ui.button preset="cancel" wire:click="closeWizard" />
                     @if ($wizStep === 'picker')
-                        <x-ui.button iconRight="fa-arrow-right" wire:click="wizNext" :disabled="! $wizPickedId">{{ Translator::t('sales_hub_btn_next', 'Next') }}</x-ui.button>
+                        <x-ui.button iconRight="fa-arrow-right" wire:click="wizNext" :disabled="! $wizPickedId">{{ t('Next') }}</x-ui.button>
                     @elseif ($wizStep === 'summary')
-                        <x-ui.button iconRight="fa-arrow-right" wire:click="wizConfirm">{{ Translator::t('sales_hub_btn_open_form', 'Open Form') }}</x-ui.button>
+                        <x-ui.button iconRight="fa-arrow-right" wire:click="wizConfirm">{{ t('Open Form') }}</x-ui.button>
                     @endif
                 </x-slot:footer>
             </x-ui.modal>
         @endif
 
         @if ($this->dupSource)
-            <x-ui.modal :title="Translator::t('sales_hub_dup_title', 'Duplicate Inquiry')" close="closeDuplicate" size="lg">
+            <x-ui.modal :title="t('Duplicate Inquiry')" close="closeDuplicate" size="lg">
                 <div class="p-4 flex flex-col gap-3">
                     <x-ui.card variant="muted" size="sm">
-                        <p class="text-[13px] font-bold text-navy">{{ $this->dupSource->inquiry_no }} — {{ $this->dupSource->product_draft_name ?: Translator::t('sales_hub_no_product_name', '(tanpa nama produk)') }}</p>
-                        <p class="text-[11px] text-muted">{{ Translator::t('sales_hub_dup_from_customer', 'Customer asal') }}: {{ $this->dupSource->is_prospect ? $this->dupSource->prospect_name : ($this->dupSource->customer?->customer_name ?? '—') }}</p>
+                        <p class="text-[13px] font-bold text-navy">{{ $this->dupSource->inquiry_no }} — {{ $this->dupSource->product_draft_name ?: t('(no product name)') }}</p>
+                        <p class="text-[11px] text-muted">{{ t('Source customer') }}: {{ $this->dupSource->is_prospect ? $this->dupSource->prospect_name : ($this->dupSource->customer?->customer_name ?? '—') }}</p>
                     </x-ui.card>
-                    <x-form.input :case-toggle="false" label="{{ Translator::t('sales_hub_dup_target_customer', 'Customer tujuan') }}" wire:model.live.debounce.300ms="dupCustomerQuery" placeholder="{{ Translator::t('sales_hub_dup_search', 'Cari nama / kode customer…') }}" />
+                    <x-form.input :case-toggle="false" label="{{ t('Target customer') }}" wire:model.live.debounce.300ms="dupCustomerQuery" placeholder="{{ t('Search customer name / code…') }}" />
                     <div class="max-h-[40vh] overflow-y-auto tm-scroll border border-field-border rounded">
                         <x-ui.table size="sm" sticky hover>
                             <tbody>
@@ -530,29 +521,29 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                                         <td>{{ $c->customer_name }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="2" class="text-center py-6 text-muted">{{ Translator::t('sales_hub_dup_no_customer', 'Customer tidak ditemukan.') }}</td></tr>
+                                    <tr><td colspan="2" class="text-center py-6 text-muted">{{ t('Customer not found.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </x-ui.table>
                     </div>
-                    <p class="text-[11px] text-muted">{{ Translator::t('sales_hub_dup_note', 'Spec (part, bahan, proses, finishing, tinta) disalin apa adanya. Qty & harga tidak ikut: inquiry baru lahir sebagai NEW DRAFT dan lewat Pro-Dev → Pro-Cost lagi.') }}</p>
+                    <p class="text-[11px] text-muted">{{ t('Spec (parts, material, process, finishing, ink) is copied as is. Qty & price are not: the new inquiry starts as NEW DRAFT and goes through Pro-Dev → Pro-Cost again.') }}</p>
                 </div>
                 <x-slot:footer>
                     <x-ui.button preset="cancel" wire:click="closeDuplicate" />
-                    <x-ui.button icon="fa-copy" wire:click="confirmDuplicate" :disabled="! $dupCustomerId">{{ Translator::t('sales_hub_btn_duplicate', 'Duplicate') }}</x-ui.button>
+                    <x-ui.button icon="fa-copy" wire:click="confirmDuplicate" :disabled="! $dupCustomerId">{{ t('Duplicate') }}</x-ui.button>
                 </x-slot:footer>
             </x-ui.modal>
         @endif
 
         <div class="openbox" id="saved-box" wire:key="saved-box">
-            <div class="hd">📂 <span>{{ Translator::t('sales_hub_saved_title', 'Inkuiri Tersimpan') }}{{ $ftype ? ' — '.$this->typeLabel($ftype) : '' }}{{ $ready ? ' — '.Translator::t('sales_hub_btn_ready_to_quote', 'Ready to Quote') : '' }}</span>
-                <span class="cnt">{{ $this->inquiries->count() }} {{ Translator::t('sales_hub_saved_count_suffix', 'inkuiri') }}</span></div>
+            <div class="hd">📂 <span>{{ t('Saved Inquiries') }}{{ $ftype ? ' — '.$this->typeLabel($ftype) : '' }}{{ $ready ? ' — '.t('Ready to Quote') : '' }}</span>
+                <span class="cnt">{{ $this->inquiries->count() }} {{ t('inquiries') }}</span></div>
             <div class="bd">
                 <div class="filters">
-                    <input type="text" wire:model.live.debounce.400ms="fq" placeholder="{{ Translator::t('sales_hub_saved_search_placeholder', 'Cari no. inkuiri / nama produk / prospek…') }}">
+                    <input type="text" wire:model.live.debounce.400ms="fq" placeholder="{{ t('Search inquiry no. / product name / prospect…') }}">
                     <div class="w-[170px] shrink-0">
                         <select wire:model.live="fst">
-                            <option value="">{{ Translator::t('sales_hub_filter_all_status', 'Semua status') }}</option>
+                            <option value="">{{ t('All statuses') }}</option>
                             <option value="DRAFT">DRAFT</option>
                             <option value="WAITING_COST">WAITING_COST</option>
                             <option value="SUBMITTED">SUBMITTED</option>
@@ -574,34 +565,34 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                     <table class="qtbl">
                         <thead>
                             <tr>
-                                <th>{{ Translator::t('sales_hub_col_product_customer', 'Produk / Customer') }}</th>
-                                <th>{{ Translator::t('sales_hub_col_inquiry_no', 'No. Inkuiri') }}</th><th>{{ Translator::t('sales_hub_col_date', 'Tgl') }}</th>
-                                <th class="hide-sm">{{ Translator::t('sales_hub_col_product_type', 'Tipe Produk') }}</th>
-                                <th style="text-align:right">{{ Translator::t('sales_hub_col_qty_tier', 'Qty tier utama') }}</th>
-                                <th>{{ Translator::t('sales_hub_col_status', 'Status') }}</th><th>{{ Translator::t('sales_hub_col_type', 'Jenis') }}</th>
-                                <th style="text-align:center; width:1%">{{ Translator::t('sales_hub_col_action', 'Aksi') }}</th>
+                                <th>{{ t('Product / Customer') }}</th>
+                                <th>{{ t('Inquiry No.') }}</th><th>{{ t('Date') }}</th>
+                                <th class="hide-sm">{{ t('Product Type') }}</th>
+                                <th style="text-align:right">{{ t('Main tier qty') }}</th>
+                                <th>{{ t('Status') }}</th><th>{{ t('Type') }}</th>
+                                <th style="text-align:center; width:1%">{{ t('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->inquiries as $row)
                                 @php($custName = $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—'))
                                 <tr wire:key="inq-{{ $row->id_inquiry }}" class="{{ $selectedId === $row->id_inquiry ? 'sel' : '' }}"
-                                    wire:click="selectRow({{ $row->id_inquiry }})" wire:dblclick="openRow({{ $row->id_inquiry }})" title="Klik 2x untuk buka">
+                                    wire:click="selectRow({{ $row->id_inquiry }})" wire:dblclick="openRow({{ $row->id_inquiry }})" title="{{ t('Double-click to open') }}">
                                     <td>
                                         <div class="flex items-center gap-2.5">
                                             <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($row->id_inquiry) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($row->product_draft_name ?: $custName) }}</div>
                                             <div>
-                                                <div class="font-semibold text-[13px] text-navy">{{ $row->product_draft_name ?: Translator::t('sales_hub_no_product_name', '(tanpa nama produk)') }}</div>
+                                                <div class="font-semibold text-[13px] text-navy">{{ $row->product_draft_name ?: t('(no product name)') }}</div>
                                                 <div class="text-[11px] text-muted">
                                                     {{ $custName }}
                                                     @if ($row->is_prospect)
-                                                        <span class="pill prospect">{{ Translator::t('sales_hub_prospect_pill', 'prospek') }}</span>
+                                                        <span class="pill prospect">{{ t('prospect') }}</span>
                                                     @endif
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td><span class="qdoc">{{ $row->inquiry_no ?: Translator::t('sales_hub_no_doc_number', '(draft, belum ada no.)') }}</span></td>
+                                    <td><span class="qdoc">{{ $row->inquiry_no ?: t('(draft, no number yet)') }}</span></td>
                                     <td>{{ $row->inquiry_date?->format('Y-m-d') }}</td>
                                     <td class="hide-sm">{{ $row->parts->first()?->part_type ?? '—' }}</td>
                                     <td style="text-align:right">
@@ -611,15 +602,15 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                                     <td><span class="pill {{ strtolower($row->inquiry_type) }}">{{ $row->inquiry_type }}</span></td>
                                     <td style="text-align:center" class="whitespace-nowrap">
                                         <button type="button" wire:click.stop="openRow({{ $row->id_inquiry }})"
-                                            title="{{ $row->sub_state === 'DRAFT' ? Translator::t('sales_hub_row_open_edit', 'Buka untuk diedit') : Translator::t('sales_hub_row_open_view', 'Buka (lihat-saja)') }}"
+                                            title="{{ $row->sub_state === 'DRAFT' ? t('Open to edit') : t('Open (view-only)') }}"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">
                                             {{ $row->sub_state === 'DRAFT' ? '✎' : '↗' }}
                                         </button>
-                                        <x-grid.action-icon icon="fa-copy" :bordered="false" title="{{ Translator::t('sales_hub_row_duplicate', 'Duplicate ke customer lain') }}" action="openDuplicate({{ $row->id_inquiry }})" />
+                                        <x-grid.action-icon icon="fa-copy" :bordered="false" title="{{ t('Duplicate to another customer') }}" action="openDuplicate({{ $row->id_inquiry }})" />
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="8"><div class="qempty">{{ Translator::t('sales_hub_no_matching_inquiry', 'Belum ada inkuiri yang cocok.') }}</div></td></tr>
+                                <tr><td colspan="8"><div class="qempty">{{ t('No matching inquiry yet.') }}</div></td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -629,15 +620,15 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                 <div class="openact">
                     <div class="hint">
                         @if ($selectedRow)
-                            {{ Translator::t('sales_hub_picker_selected', 'Terpilih') }} <b>{{ $selectedRow->inquiry_no ?: 'id '.$selectedRow->id_inquiry }}</b> —
-                            {{ $selectedRow->sub_state === 'DRAFT' ? Translator::t('sales_hub_will_open_edit', 'akan dibuka untuk diedit') : Translator::t('sales_hub_will_open_view', 'dibuka lihat-saja (bukan DRAFT)') }}
+                            {{ t('Selected') }} <b>{{ $selectedRow->inquiry_no ?: 'id '.$selectedRow->id_inquiry }}</b> —
+                            {{ $selectedRow->sub_state === 'DRAFT' ? t('will open for editing') : t('opens view-only (not DRAFT)') }}
                         @else
-                            {{ Translator::t('sales_hub_click_row_hint', 'Klik satu baris untuk memilih.') }}
+                            {{ t('Click a row to select it.') }}
                         @endif
                     </div>
                     <div class="sp"></div>
                     <button type="button" class="btn p" wire:click="openSelected" @disabled(! $selectedRow)>
-                        {{ $selectedRow && $selectedRow->sub_state !== 'DRAFT' ? Translator::t('sales_hub_btn_open_view', 'Buka (lihat-saja) →') : Translator::t('sales_hub_btn_open_inquiry', 'Buka inkuiri →') }}
+                        {{ $selectedRow && $selectedRow->sub_state !== 'DRAFT' ? t('Open (view-only) →') : t('Open inquiry →') }}
                     </button>
                 </div>
             </div>

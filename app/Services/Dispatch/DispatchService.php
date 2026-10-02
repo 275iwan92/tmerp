@@ -22,7 +22,7 @@ class DispatchService
     public function pullLines(DoDelivery $do, array $coDeliveryIds, string $actingUser): array
     {
         if ($do->status !== 'DRAFT') {
-            return ['ok' => false, 'message' => 'Dokumen sudah tidak berstatus DRAFT.'];
+            return ['ok' => false, 'message' => t('The document is no longer DRAFT.')];
         }
 
         $errors = [];
@@ -46,33 +46,33 @@ class DispatchService
                     ->first();
 
                 if (! $row) {
-                    $errors[] = "Baris jadwal #{$coDeliveryId} tidak ditemukan.";
+                    $errors[] = str_replace(':id', (string) $coDeliveryId, t('Schedule line #:id not found.'));
 
                     continue;
                 }
 
                 if ((int) $row->customer_id !== (int) $do->customer_id) {
                     // Tier2 §D.1: guard ulang server-side, jangan percaya filter picker saja.
-                    $errors[] = "Baris {$row->co_no} bukan milik customer dokumen ini.";
+                    $errors[] = str_replace(':no', (string) $row->co_no, t('Line :no does not belong to the customer of this document.'));
 
                     continue;
                 }
 
                 if ($row->co_status !== 'CONFIRMED') {
-                    $errors[] = "{$row->co_no} belum CONFIRMED, tidak bisa ditarik.";
+                    $errors[] = str_replace(':no', (string) $row->co_no, t(':no is not CONFIRMED yet and cannot be pulled.'));
 
                     continue;
                 }
 
                 if ((float) $row->qty_available <= 0) {
-                    $errors[] = "{$row->co_no} — {$row->item_description}: qty sudah habis terserap.";
+                    $errors[] = str_replace([':no', ':item'], [$row->co_no, $row->item_description], t(':no — :item: the qty is already fully taken.'));
 
                     continue;
                 }
 
                 $coPpn = (bool) CoOrder::whereKey($row->co_order_id)->value('is_ppn');
                 if ($hasLines && $coPpn !== (bool) $do->is_ppn) {
-                    $errors[] = "{$row->co_no} ".($coPpn ? 'PPN' : 'Non PPN').' -- dokumen ini '.($do->is_ppn ? 'PPN' : 'Non PPN').'; tidak boleh dicampur dalam 1 DO.';
+                    $errors[] = str_replace([':no', ':line', ':doc'], [$row->co_no, $coPpn ? 'PPN' : 'Non PPN', $do->is_ppn ? 'PPN' : 'Non PPN'], t(':no :line -- this document :doc; they cannot be mixed in 1 DO.'));
 
                     continue;
                 }
@@ -117,11 +117,11 @@ class DispatchService
         $do = $line->delivery;
 
         if ($do->status !== 'DRAFT') {
-            return ['ok' => false, 'message' => 'Dokumen sudah tidak berstatus DRAFT.'];
+            return ['ok' => false, 'message' => t('The document is no longer DRAFT.')];
         }
 
         if ($newQty <= 0) {
-            return ['ok' => false, 'message' => 'Qty harus lebih dari 0.'];
+            return ['ok' => false, 'message' => t('Qty must be more than 0.')];
         }
 
         if ($line->co_delivery_id) {
@@ -132,7 +132,7 @@ class DispatchService
             $ceiling = $qtyAvailable + (float) $line->qty_do;
 
             if ($newQty > $ceiling) {
-                return ['ok' => false, 'message' => "Qty melebihi batas tersedia ({$ceiling})."];
+                return ['ok' => false, 'message' => str_replace(':qty', (string) $ceiling, t('Qty exceeds the available limit (:qty).'))];
             }
         }
 
@@ -150,11 +150,11 @@ class DispatchService
         $do = $line->delivery;
 
         if ($do->status !== 'DRAFT') {
-            return ['ok' => false, 'message' => 'Dokumen sudah tidak berstatus DRAFT.'];
+            return ['ok' => false, 'message' => t('The document is no longer DRAFT.')];
         }
 
         if ($newPrice < 0) {
-            return ['ok' => false, 'message' => 'Harga tidak boleh negatif.'];
+            return ['ok' => false, 'message' => t('Price cannot be negative.')];
         }
 
         if (! $line->price_overridden) {
@@ -178,7 +178,7 @@ class DispatchService
         $do = $line->delivery;
 
         if ($do->status !== 'DRAFT') {
-            return ['ok' => false, 'message' => 'Dokumen sudah tidak berstatus DRAFT.'];
+            return ['ok' => false, 'message' => t('The document is no longer DRAFT.')];
         }
 
         $line->delete();
@@ -190,18 +190,18 @@ class DispatchService
     public function confirm(DoDelivery $do, string $actingUser): array
     {
         if ($do->status !== 'DRAFT') {
-            return ['ok' => false, 'message' => 'Dokumen sudah tidak berstatus DRAFT.'];
+            return ['ok' => false, 'message' => t('The document is no longer DRAFT.')];
         }
 
         $lines = $do->lines()->get();
 
         if ($lines->isEmpty()) {
-            return ['ok' => false, 'message' => 'Minimal 1 baris diperlukan sebelum Confirm.'];
+            return ['ok' => false, 'message' => t('At least 1 line is required before Confirm.')];
         }
 
         foreach ($lines as $line) {
             if ((float) $line->qty_do <= 0) {
-                return ['ok' => false, 'message' => "Baris {$line->item_description}: qty harus lebih dari 0."];
+                return ['ok' => false, 'message' => str_replace(':item', (string) $line->item_description, t('Line :item: qty must be more than 0.'))];
             }
         }
 
@@ -222,7 +222,7 @@ class DispatchService
                     $ceiling = $qtyAvailable + (float) $line->qty_do;
 
                     if ((float) $line->qty_do > $ceiling) {
-                        $result = ['ok' => false, 'message' => "Race condition: qty baris {$line->item_description} sudah terserap dokumen lain. Hapus/kurangi baris ini."];
+                        $result = ['ok' => false, 'message' => str_replace(':item', (string) $line->item_description, t('Race condition: the qty of line :item has been taken by another document. Delete/reduce this line.'))];
 
                         throw new \RuntimeException('rollback');
                     }
@@ -236,7 +236,7 @@ class DispatchService
                 $coStatus = DB::connection('tm2sdi')->table('co_order')->where('id_order', $line->co_order_id)->value('doc_status');
 
                 if ($coStatus !== 'CONFIRMED') {
-                    $result = ['ok' => false, 'message' => "CO asal baris {$line->item_description} sudah tidak CONFIRMED."];
+                    $result = ['ok' => false, 'message' => str_replace(':item', (string) $line->item_description, t('The source CO of line :item is no longer CONFIRMED.'))];
 
                     throw new \RuntimeException('rollback');
                 }
@@ -258,7 +258,7 @@ class DispatchService
     public function markShipped(DoDelivery $do, string $actingUser): array
     {
         if ($do->status !== 'CONFIRMED') {
-            return ['ok' => false, 'message' => 'Dokumen harus berstatus CONFIRMED.'];
+            return ['ok' => false, 'message' => t('The document must be CONFIRMED.')];
         }
 
         DB::connection('tm2sdi')->transaction(function () use ($do, $actingUser) {
@@ -292,11 +292,11 @@ class DispatchService
     public function cancel(DoDelivery $do, string $reason, string $actingUser): array
     {
         if (! in_array($do->status, ['DRAFT', 'CONFIRMED'], true)) {
-            return ['ok' => false, 'message' => 'Dokumen SHIPPED/CANCELLED tidak bisa dibatalkan.'];
+            return ['ok' => false, 'message' => t('A SHIPPED/CANCELLED document cannot be cancelled.')];
         }
 
         if (trim($reason) === '') {
-            return ['ok' => false, 'message' => 'Alasan pembatalan wajib diisi.'];
+            return ['ok' => false, 'message' => t('Cancellation reason is required.')];
         }
 
         DB::connection('tm2sdi')->transaction(function () use ($do, $reason, $actingUser) {

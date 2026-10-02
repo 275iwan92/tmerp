@@ -16,7 +16,7 @@ class EnsureIsAdmin
         $user = $request->user();
 
         if (! $user || ! $user->canSetup()) {
-            abort(403, 'Halaman ini khusus administrator.');
+            abort(403, t('This page is for administrators only.'));
         }
 
         return $next($request);

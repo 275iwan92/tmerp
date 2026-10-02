@@ -51,7 +51,7 @@
     <g transform="translate({{ $ox }}, {{ $oy - 24 }})">
         <rect x="6" width="22" height="14" fill="#00FFFF" /><rect x="28" width="22" height="14" fill="#FF00FF" />
         <rect x="50" width="22" height="14" fill="#FFFF00" /><rect x="72" width="22" height="14" fill="#000000" />
-        <text x="100" y="11" font-size="10" fill="#64748b" font-family="sans-serif">Color Calibration</text>
+        <text x="100" y="11" font-size="10" fill="#64748b" font-family="sans-serif">{{ t('Color Calibration') }}</text>
     </g>
     @foreach ([[$ox, $oy], [$ox + $W, $oy + $H]] as [$cx, $cy])
         <circle cx="{{ $cx }}" cy="{{ $cy }}" r="8" fill="none" stroke="#000" stroke-width="1" />
@@ -64,8 +64,8 @@
         <rect x="{{ $ox + $bx * $scale }}" y="{{ $oy + $by * $scale }}" width="{{ $bw * $scale }}" height="{{ $bh * $scale }}" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.2" />
         <text x="{{ $ox + ($bx + $bw / 2) * $scale }}" y="{{ $oy + ($by + $bh / 2) * $scale + 4 }}" font-size="{{ max(8, min(14, $bw * $scale / 5)) }}" text-anchor="middle" fill="#1e3a8a" font-weight="bold" font-family="sans-serif">ART</text>
     @endforeach
-    <text x="{{ $ox + $W / 2 }}" y="{{ $oy + $H + 26 }}" text-anchor="middle" fill="#64748b" font-size="12" font-family="sans-serif">Plano {{ (float) $pl }} × {{ (float) $pw }} cm</text>
+    <text x="{{ $ox + $W / 2 }}" y="{{ $oy + $H + 26 }}" text-anchor="middle" fill="#64748b" font-size="12" font-family="sans-serif">{{ t('Plano') }} {{ (float) $pl }} × {{ (float) $pw }} cm</text>
     @if (empty($blanks))
-        <text x="{{ $ox + $W / 2 }}" y="{{ $oy + $H / 2 }}" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="sans-serif">Detail susunan belum tersimpan di ProDev</text>
+        <text x="{{ $ox + $W / 2 }}" y="{{ $oy + $H / 2 }}" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="sans-serif">{{ t('Layout details not yet saved in ProDev') }}</text>
     @endif
 </svg>

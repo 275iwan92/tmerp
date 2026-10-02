@@ -5,7 +5,6 @@ use App\Models\Acc\FinAccount;
 use App\Models\Acc\FinVoucher;
 use App\Models\Acc\FinVoucherLine;
 use App\Services\Acc\JournalPostingService;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -24,7 +23,7 @@ use Livewire\Component;
 // "Smart button" e-Faktur/Rekonsiliasi Bank di mockup SENGAJA tidak dibuat --
 // itu placeholder statis tanpa logika nyata di balik nilainya, tak ada
 // validasi e-Faktur atau rekonsiliasi bank yang diminta/dibangun di modul ini.
-new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Cash & Bank Journal — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 
@@ -235,12 +234,12 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         $validLines = array_values(array_filter($this->lines, fn ($l) => ! empty($l['account_id']) && ((float) ($l['debit'] ?: 0) > 0 || (float) ($l['credit'] ?: 0) > 0)));
 
         if (! $this->main_account_id) {
-            $this->errorMessage = 'Akun Kas/Bank Utama wajib dipilih.';
+            $this->errorMessage = t('Main Cash/Bank Account is required.');
 
             return;
         }
         if (empty($validLines)) {
-            $this->errorMessage = 'Minimal 1 baris jurnal dgn akun + nilai debit/kredit.';
+            $this->errorMessage = t('At least 1 journal line with an account + debit/credit amount.');
 
             return;
         }
@@ -268,7 +267,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
 
             if ($this->editingId) {
                 $voucher = FinVoucher::findOrFail($this->editingId);
-                abort_if($voucher->status !== 'DRAFT', 422, 'Voucher sudah diposting, tidak bisa diubah.');
+                abort_if($voucher->status !== 'DRAFT', 422, t('Voucher is already posted and cannot be changed.'));
                 $voucher->update($data);
                 $voucher->lines()->delete();
             } else {
@@ -295,7 +294,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         });
 
         unset($this->vouchers, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', "Draft {$this->doc_no} tersimpan.");
+        session()->flash('flash', str_replace(':no', $this->doc_no, t('Draft :no saved.')));
         $this->panel = 'grid';
     }
 
@@ -318,7 +317,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         try {
             $svc->postDraft(FinVoucher::findOrFail($id), Auth::user()->login);
         } catch (\Throwable $e) {
-            $message = method_exists($e, 'getMessage') ? $e->getMessage() : 'Gagal posting.';
+            $message = method_exists($e, 'getMessage') ? $e->getMessage() : t('Posting failed.');
             if ($this->panel === 'form') {
                 $this->errorMessage = $message;
             } else {
@@ -329,7 +328,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         }
 
         unset($this->vouchers, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', 'Jurnal berhasil di-posting.');
+        session()->flash('flash', t('Journal posted successfully.'));
 
         if ($this->panel === 'form') {
             $this->openEdit($id);
@@ -349,7 +348,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
 
         $voucher->update(['status' => 'CANCELLED', 'stat_cancel' => true, 'updated_by' => Auth::user()->login]);
         unset($this->vouchers, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', 'Draft dibatalkan.');
+        session()->flash('flash', t('Draft cancelled.'));
         $this->panel = 'grid';
     }
 
@@ -387,16 +386,16 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
 
         @if ($panel === 'grid')
             <x-grid.stat-row :count="3">
-                <x-grid.stat-box tone="total" label="{{ Translator::t('fin_cb_stat_total', 'Total Voucher') }}" :value="$this->statTotal" />
-                <x-grid.stat-box tone="warn" label="{{ Translator::t('sales_quo_stat_draft', 'Draft') }}" :value="$this->statDraft" />
-                <x-grid.stat-box tone="active" label="{{ Translator::t('inv_stat_posted', 'Sudah Posting') }}" :value="$this->statPosted" />
+                <x-grid.stat-box tone="total" label="{{ t('Total Vouchers') }}" :value="$this->statTotal" />
+                <x-grid.stat-box tone="warn" label="{{ t('Draft') }}" :value="$this->statDraft" />
+                <x-grid.stat-box tone="active" label="{{ t('Posted') }}" :value="$this->statPosted" />
             </x-grid.stat-row>
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('fin_cb_search_placeholder', 'Cari no. bukti / tipe / mitra…') }}"
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search voucher no. / type / partner…') }}"
                             class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
                     <x-slot:newRecord>
@@ -409,18 +408,18 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('fin_cb_col_partner_no', 'Mitra / No. Bukti') }}</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_col_date', 'Tanggal') }}</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('proc_po_col_type', 'Tipe') }}</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[180px]">{{ Translator::t('fin_cb_col_cash_bank_account', 'Akun Kas/Bank') }}</th>
-                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ Translator::t('proc_pq_col_total_idr', 'Total (IDR)') }}</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ Translator::t('proc_col_status', 'Status') }}</th>
-                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Partner / Voucher No.') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Date') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Type') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[180px]">{{ t('Cash/Bank Account') }}</th>
+                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Total (IDR)') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Status') }}</th>
+                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">{{ t('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->vouchers as $v)
-                                <tr wire:key="vch-{{ $v->voucher_id }}" wire:dblclick="openEdit({{ $v->voucher_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
+                                <tr wire:key="vch-{{ $v->voucher_id }}" wire:dblclick="openEdit({{ $v->voucher_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                     <x-grid.identity-cell :id="$v->voucher_id" :name="$v->partner_name ?: '—'" :code="$v->voucher_number" />
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $v->entry_date?->translatedFormat('d M Y') }}</td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
@@ -432,15 +431,15 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($v->status) }}">{{ $v->status }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openEdit({{ $v->voucher_id }})" />
+                                        <x-grid.action-icon icon="fa-up-right-from-square" title="{{ t('Open') }}" action="openEdit({{ $v->voucher_id }})" />
                                         @if ($v->status === 'DRAFT')
-                                            <x-grid.action-icon icon="fa-check" title="{{ Translator::t('fin_cb_action_post', 'Post Jurnal') }}" action="postDoc({{ $v->voucher_id }})"
-                                                confirm="{{ Translator::t('inv_confirm_posting_prefix', 'Posting') }} {{ $v->voucher_number }}? {{ Translator::t('fin_cb_confirm_posting_suffix', 'Setelah posting tidak bisa diedit lagi.') }}" variant="success" />
+                                            <x-grid.action-icon icon="fa-check" title="{{ t('Post Journal') }}" action="postDoc({{ $v->voucher_id }})"
+                                                confirm="{{ t('Posting') }} {{ $v->voucher_number }}? {{ t('Once posted it can no longer be edited.') }}" variant="success" />
                                         @endif
                                     </td>
                                 </tr>
                             @empty
-                                <x-grid.empty-row :colspan="7" message="{{ Translator::t('fin_cb_empty', 'Belum ada jurnal Kas & Bank.') }}" />
+                                <x-grid.empty-row :colspan="7" message="{{ t('No Cash & Bank journal entries yet.') }}" />
                             @endforelse
                         </tbody>
                     </table>
@@ -450,11 +449,11 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
             {{-- ============ FORM ============ --}}
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                    <span>{{ $editingId ? Translator::t('fin_cb_edit_prefix', 'Edit Jurnal ·').' '.$doc_no : Translator::t('fin_cb_new_title', 'Jurnal Kas & Bank Baru') }}</span>
+                    <span>{{ $editingId ? t('Edit Journal ·').' '.$doc_no : t('New Cash & Bank Journal') }}</span>
                     @if ($editingId)
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($status) }}">{{ $status }}</span>
                     @endif
-                    <button type="button" wire:click="backToGrid" data-dirty-guard title="{{ Translator::t('inv_back_to_list_title', 'Kembali ke Daftar') }}"
+                    <button type="button" wire:click="backToGrid" data-dirty-guard title="{{ t('Back to List') }}"
                         class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full cursor-pointer hover:brightness-110">
                         <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
                         <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
@@ -463,30 +462,30 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="p-4 flex flex-col gap-3">
                     @if ($readOnly)
-                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">🔒 {{ Translator::t('fin_cb_readonly_prefix', 'Jurnal sudah') }} {{ $status === 'POSTED' ? Translator::t('inv_readonly_posted', 'diposting') : Translator::t('inv_readonly_cancelled', 'dibatalkan') }} {{ Translator::t('fin_cb_readonly_suffix', '— lihat-saja, tidak bisa diedit.') }}</div>
+                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">🔒 {{ t('Journal is already') }} {{ $status === 'POSTED' ? t('posted') : t('cancelled') }} {{ t('— view-only, cannot be edited.') }}</div>
                     @endif
                     @if ($errorMessage)
                         <div class="text-xs px-3 py-2.5 rounded-md bg-[#fdecec] border border-[#f5c6c6] text-[#a3453f]">⚠ {{ $errorMessage }}</div>
                     @endif
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ Translator::t('inv_section_header', 'Header') }}</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Header') }}</div>
                     <div class="grid">
-                        <x-form.input label="{{ Translator::t('inv_field_doc_no', 'No. Dokumen') }}" value="{{ $doc_no ?: Translator::t('inv_field_doc_no_auto', '(otomatis saat simpan)') }}" disabled class="font-mono" />
-                        <x-form.select label="{{ Translator::t('fin_cb_field_voucher_type', 'Tipe Transaksi *') }}" wire:model.live="voucher_type" :disabled="$readOnly" :placeholder="false"
-                            :options="['BKM' => Translator::t('fin_cb_type_bkm', 'Bukti Kas Masuk (BKM)'), 'BKK' => Translator::t('fin_cb_type_bkk', 'Bukti Kas Keluar (BKK)'), 'BBM' => Translator::t('fin_cb_type_bbm', 'Bukti Bank Masuk (BBM)'), 'BBK' => Translator::t('fin_cb_type_bbk', 'Bukti Bank Keluar (BBK)')]" />
-                        <x-form.date-picker label="{{ Translator::t('fin_cb_field_entry_date', 'Tanggal Pembukuan *') }}" wire:model="entry_date" :disabled="$readOnly" />
-                        <x-form.select label="{{ Translator::t('fin_cb_field_main_account', 'Akun Kas/Bank Utama *') }}" wire:model.live="main_account_id" :disabled="$readOnly"
+                        <x-form.input label="{{ t('Document No.') }}" value="{{ $doc_no ?: t('(automatic on save)') }}" disabled class="font-mono" />
+                        <x-form.select label="{{ t('Transaction Type *') }}" wire:model.live="voucher_type" :disabled="$readOnly" :placeholder="false"
+                            :options="['BKM' => t('Cash Receipt Voucher (BKM)'), 'BKK' => t('Cash Payment Voucher (BKK)'), 'BBM' => t('Bank Receipt Voucher (BBM)'), 'BBK' => t('Bank Payment Voucher (BBK)')]" />
+                        <x-form.date-picker label="{{ t('Posting Date *') }}" wire:model="entry_date" :disabled="$readOnly" />
+                        <x-form.select label="{{ t('Main Cash/Bank Account *') }}" wire:model.live="main_account_id" :disabled="$readOnly"
                             :options="$this->cashBankAccounts->mapWithKeys(fn ($a) => [$a->account_id => $a->account_code.' — '.$a->account_name])" :selected="$main_account_id" />
-                        <x-form.input label="{{ Translator::t('fin_cb_field_partner', 'Mitra / Penerima') }}" wire:model="partner_name" :disabled="$readOnly" placeholder="{{ Translator::t('fin_cb_field_partner_placeholder', 'Nama perusahaan / individu') }}" />
-                        <x-form.input label="{{ Translator::t('fin_cb_field_reference', 'Referensi / No. Cek / Giro') }}" wire:model="reference_no" :disabled="$readOnly" />
+                        <x-form.input label="{{ t('Partner / Recipient') }}" wire:model="partner_name" :disabled="$readOnly" placeholder="{{ t('Company / individual name') }}" />
+                        <x-form.input label="{{ t('Reference / Check No. / Giro') }}" wire:model="reference_no" :disabled="$readOnly" />
                     </div>
                 </div>
 
                 <div class="px-4">
                     <div class="flex items-center gap-1 border-b border-[#eef1f5]">
-                        <button type="button" wire:click="$set('activeTab', 'items')" class="text-xs font-semibold px-3.5 py-2.5 border-b-2 {{ $activeTab === 'items' ? 'border-accent text-accent' : 'border-transparent text-muted' }}">{{ Translator::t('fin_cb_tab_items', 'Rincian Jurnal') }}</button>
-                        <button type="button" wire:click="$set('activeTab', 'tax')" class="text-xs font-semibold px-3.5 py-2.5 border-b-2 {{ $activeTab === 'tax' ? 'border-accent text-accent' : 'border-transparent text-muted' }}">{{ Translator::t('fin_cb_tab_tax', 'Informasi Perpajakan') }}</button>
-                        <button type="button" wire:click="$set('activeTab', 'audit')" class="text-xs font-semibold px-3.5 py-2.5 border-b-2 {{ $activeTab === 'audit' ? 'border-accent text-accent' : 'border-transparent text-muted' }}">{{ Translator::t('fin_cb_tab_audit', 'Audit Trail') }}</button>
+                        <button type="button" wire:click="$set('activeTab', 'items')" class="text-xs font-semibold px-3.5 py-2.5 border-b-2 {{ $activeTab === 'items' ? 'border-accent text-accent' : 'border-transparent text-muted' }}">{{ t('Journal Detail') }}</button>
+                        <button type="button" wire:click="$set('activeTab', 'tax')" class="text-xs font-semibold px-3.5 py-2.5 border-b-2 {{ $activeTab === 'tax' ? 'border-accent text-accent' : 'border-transparent text-muted' }}">{{ t('Tax Information') }}</button>
+                        <button type="button" wire:click="$set('activeTab', 'audit')" class="text-xs font-semibold px-3.5 py-2.5 border-b-2 {{ $activeTab === 'audit' ? 'border-accent text-accent' : 'border-transparent text-muted' }}">{{ t('Audit Trail') }}</button>
                     </div>
                 </div>
 
@@ -496,10 +495,10 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                             <table class="w-full text-[12.5px] border-collapse">
                                 <thead>
                                     <tr class="bg-[#fafbfd]">
-                                        <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[26%]">{{ Translator::t('fin_cb_col_account_coa', 'Kode & Nama Akun (COA)') }}</th>
-                                        <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">{{ Translator::t('fin_cb_col_description', 'Keterangan') }}</th>
-                                        <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[130px]">{{ Translator::t('fin_cb_col_debit', 'Debit (IDR)') }}</th>
-                                        <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[130px]">{{ Translator::t('fin_cb_col_credit', 'Kredit (IDR)') }}</th>
+                                        <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[26%]">{{ t('Account Code & Name (COA)') }}</th>
+                                        <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">{{ t('Description') }}</th>
+                                        <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[130px]">{{ t('Debit (IDR)') }}</th>
+                                        <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[130px]">{{ t('Credit (IDR)') }}</th>
                                         @if (! $readOnly)
                                             <th class="w-[40px] border-b border-[#eef1f5]"></th>
                                         @endif
@@ -509,45 +508,45 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                                     @forelse ($lines as $i => $line)
                                         <tr wire:key="line-{{ $i }}" class="border-b border-[#eef1f5]">
                                             <td class="px-2 py-1.5">
-                                                <x-form.select wire:model="lines.{{ $i }}.account_id" :disabled="$readOnly" placeholder="{{ Translator::t('fin_cb_select_account_placeholder', '— pilih akun —') }}" class="!py-1"
+                                                <x-form.select wire:model="lines.{{ $i }}.account_id" :disabled="$readOnly" placeholder="{{ t('— select account —') }}" class="!py-1"
                                                     :options="$this->postableAccounts->mapWithKeys(fn ($a) => [$a->account_id => $a->account_code.' — '.$a->account_name])" :selected="$line['account_id'] ?? null" />
                                             </td>
                                             <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.desc" :disabled="$readOnly" class="!py-1" /></td>
                                             <td class="px-2 py-1.5"><x-form.input type="number" step="0.01" wire:model.live="lines.{{ $i }}.debit" :disabled="$readOnly" class="!py-1 text-right" /></td>
                                             <td class="px-2 py-1.5"><x-form.input type="number" step="0.01" wire:model.live="lines.{{ $i }}.credit" :disabled="$readOnly" class="!py-1 text-right" /></td>
                                             @if (! $readOnly)
-                                                <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeLine({{ $i }})" class="text-[#c0392b] cursor-pointer" title="{{ Translator::t('inv_line_remove_title', 'Hapus baris') }}">✕</button></td>
+                                                <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeLine({{ $i }})" class="text-[#c0392b] cursor-pointer" title="{{ t('Remove line') }}">✕</button></td>
                                             @endif
                                         </tr>
                                     @empty
-                                        <tr><td colspan="5" class="text-center py-6 text-muted text-xs">{{ Translator::t('fin_cb_no_lines', 'Belum ada baris jurnal.') }}</td></tr>
+                                        <tr><td colspan="5" class="text-center py-6 text-muted text-xs">{{ t('No journal lines yet.') }}</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
                         @if (! $readOnly)
-                            <button type="button" wire:click="addLine" class="mt-2 text-[11px] font-bold text-white bg-accent rounded px-3 py-1.5">+ {{ Translator::t('fin_cb_btn_add_line', 'Tambah Baris Jurnal') }}</button>
+                            <button type="button" wire:click="addLine" class="mt-2 text-[11px] font-bold text-white bg-accent rounded px-3 py-1.5">+ {{ t('Add Journal Line') }}</button>
                         @endif
 
                         <div class="flex justify-end gap-6 bg-[#fafbfd] rounded-md px-4 py-2.5 mt-3 text-sm font-semibold">
-                            <div><span class="text-muted font-normal mr-1.5">{{ Translator::t('fin_cb_total_debit_label', 'Total Debit:') }}</span>{{ number_format($this->totalDebit, 0, ',', '.') }}</div>
-                            <div><span class="text-muted font-normal mr-1.5">{{ Translator::t('fin_cb_total_credit_label', 'Total Kredit:') }}</span>{{ number_format($this->totalCredit, 0, ',', '.') }}</div>
-                            <div class="{{ abs($this->totalDebit - $this->totalCredit) < 0.01 ? 'text-[#16a34a]' : 'text-[#c0392b]' }}"><span class="text-muted font-normal mr-1.5">{{ Translator::t('fin_cb_variance_label', 'Selisih:') }}</span>{{ number_format(abs($this->totalDebit - $this->totalCredit), 0, ',', '.') }}</div>
+                            <div><span class="text-muted font-normal mr-1.5">{{ t('Total Debit:') }}</span>{{ number_format($this->totalDebit, 0, ',', '.') }}</div>
+                            <div><span class="text-muted font-normal mr-1.5">{{ t('Total Credit:') }}</span>{{ number_format($this->totalCredit, 0, ',', '.') }}</div>
+                            <div class="{{ abs($this->totalDebit - $this->totalCredit) < 0.01 ? 'text-[#16a34a]' : 'text-[#c0392b]' }}"><span class="text-muted font-normal mr-1.5">{{ t('Variance:') }}</span>{{ number_format(abs($this->totalDebit - $this->totalCredit), 0, ',', '.') }}</div>
                         </div>
                     @elseif ($activeTab === 'tax')
                         <div class="grid">
-                            <x-form.select label="{{ Translator::t('fin_cb_field_ppn_treatment', 'Perlakuan PPN') }}" wire:model="ppn_type" :disabled="$readOnly" :placeholder="false"
-                                :options="['NONE' => Translator::t('fin_cb_ppn_none', 'Non-PPN'), 'MASUKAN_11' => Translator::t('fin_cb_ppn_in', 'PPN Masukan 11%'), 'KELUARAN_11' => Translator::t('fin_cb_ppn_out', 'PPN Keluaran 11%')]" />
-                            <x-form.input label="{{ Translator::t('fin_cb_field_efaktur', 'Nomor Faktur Pajak (e-Faktur)') }}" wire:model="efaktur_no" :disabled="$readOnly" placeholder="010.003-25.00000000" />
-                            <x-form.select label="{{ Translator::t('fin_cb_field_pph_type', 'Jenis Pemotongan PPh') }}" wire:model="pph_type" :disabled="$readOnly" :placeholder="false"
-                                :options="['NONE' => Translator::t('fin_cb_pph_none', 'Tanpa PPh'), 'PPH23_2' => Translator::t('fin_cb_pph_23', 'PPh Pasal 23 (2% - Jasa)'), 'PPH4_2_10' => Translator::t('fin_cb_pph_4_2', 'PPh Pasal 4(2) (10% - Sewa/Bangunan)'), 'PPH21' => Translator::t('fin_cb_pph_21', 'PPh Pasal 21 (Bukan Pegawai)')]" />
-                            <x-form.input label="{{ Translator::t('fin_cb_field_bupot', 'Nomor Bukti Potong PPh') }}" wire:model="bupot_no" :disabled="$readOnly" placeholder="BP-2025-0001928" />
+                            <x-form.select label="{{ t('VAT Treatment') }}" wire:model="ppn_type" :disabled="$readOnly" :placeholder="false"
+                                :options="['NONE' => t('Non-VAT'), 'MASUKAN_11' => t('Input VAT 11%'), 'KELUARAN_11' => t('Output VAT 11%')]" />
+                            <x-form.input label="{{ t('Tax Invoice Number (e-Faktur)') }}" wire:model="efaktur_no" :disabled="$readOnly" placeholder="010.003-25.00000000" />
+                            <x-form.select label="{{ t('Withholding Tax Type') }}" wire:model="pph_type" :disabled="$readOnly" :placeholder="false"
+                                :options="['NONE' => t('No Withholding Tax'), 'PPH23_2' => t('Income Tax Art. 23 (2% - Services)'), 'PPH4_2_10' => t('Income Tax Art. 4(2) (10% - Rent/Building)'), 'PPH21' => t('Income Tax Art. 21 (Non-Employee)')]" />
+                            <x-form.input label="{{ t('Withholding Tax Slip Number') }}" wire:model="bupot_no" :disabled="$readOnly" placeholder="BP-2025-0001928" />
                         </div>
                     @else
                         <div class="grid three">
-                            <x-form.input label="{{ Translator::t('fin_cb_field_created_by', 'Dibuat Oleh') }}" readonly value="{{ $this->editingVoucher?->created_by ?? Auth::user()->login }}" />
-                            <x-form.input label="{{ Translator::t('fin_cb_field_posted_by', 'Diposting Oleh') }}" readonly value="{{ $this->editingVoucher?->posted_by ?? '—' }}" />
-                            <x-form.input label="{{ Translator::t('fin_cb_field_posted_at', 'Tgl. Posting') }}" readonly value="{{ $this->editingVoucher?->posted_at?->translatedFormat('d M Y, H:i') ?? '—' }}" />
+                            <x-form.input label="{{ t('Created By') }}" readonly value="{{ $this->editingVoucher?->created_by ?? Auth::user()->login }}" />
+                            <x-form.input label="{{ t('Posted By') }}" readonly value="{{ $this->editingVoucher?->posted_by ?? '—' }}" />
+                            <x-form.input label="{{ t('Posting Date') }}" readonly value="{{ $this->editingVoucher?->posted_at?->translatedFormat('d M Y, H:i') ?? '—' }}" />
                         </div>
                     @endif
                 </div>
@@ -555,11 +554,11 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                 @if (! $readOnly)
                     <div class="flex gap-2 justify-end px-4 pb-4 pt-2 border-t border-[#eef1f5]">
                         @if ($editingId)
-                            <button type="button" wire:click="cancelDoc" wire:confirm="{{ Translator::t('fin_cb_confirm_cancel_draft', 'Batalkan draft ini?') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#fdecec] text-[#c0392b] cursor-pointer">{{ Translator::t('sales_form_btn_cancel_doc', 'Batalkan') }}</button>
+                            <button type="button" wire:click="cancelDoc" wire:confirm="{{ t('Cancel this draft?') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#fdecec] text-[#c0392b] cursor-pointer">{{ t('Cancel') }}</button>
                         @endif
-                        <button type="button" wire:click="saveDraft" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">💾 {{ Translator::t('inv_btn_save_draft', 'Simpan Draft') }}</button>
+                        <button type="button" wire:click="saveDraft" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">💾 {{ t('Save Draft') }}</button>
                         @if ($editingId)
-                            <button type="button" wire:click="postDoc(null)" wire:confirm="{{ Translator::t('fin_cb_confirm_post', 'Post jurnal ini? Setelah posting tidak bisa diedit lagi.') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">✓ {{ Translator::t('fin_cb_action_post', 'Post Jurnal') }}</button>
+                            <button type="button" wire:click="postDoc(null)" wire:confirm="{{ t('Post this journal? Once posted it can no longer be edited.') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">✓ {{ t('Post Journal') }}</button>
                         @endif
                     </div>
                 @endif

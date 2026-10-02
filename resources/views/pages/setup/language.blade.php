@@ -23,11 +23,11 @@ new #[Title('Language — TELASIH MAKMUR ERP')] class extends Component
     protected function spreadsheetColumns(): array
     {
         return [
-            'code' => ['label' => 'Kode', 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
-            'name' => ['label' => 'Nama Bahasa', 'type' => 'text', 'required' => true],
-            'decimal_separator' => ['label' => 'Pemisah Desimal', 'type' => 'text'],
-            'thousand_separator' => ['label' => 'Pemisah Ribuan', 'type' => 'text'],
-            'is_default' => ['label' => 'Default', 'type' => 'boolean'],
+            'code' => ['label' => t('Code'), 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
+            'name' => ['label' => t('Language Name'), 'type' => 'text', 'required' => true],
+            'decimal_separator' => ['label' => t('Decimal Separator'), 'type' => 'text'],
+            'thousand_separator' => ['label' => t('Thousands Separator'), 'type' => 'text'],
+            'is_default' => ['label' => t('Default'), 'type' => 'boolean'],
         ];
     }
 
@@ -82,8 +82,8 @@ new #[Title('Language — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1100px] mx-auto my-5 px-4">
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Language</div>
-            <p class="text-[11px] text-muted mb-4">Daftar bahasa aktif + format angka regional. Tambah baris di sini → kolom baru otomatis muncul di layar Localization.</p>
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">{{ t('Language') }}</div>
+            <p class="text-[11px] text-muted mb-4">{{ t('List of active languages + regional number format. Add a row here → a new column automatically appears on the Localization screen.') }}</p>
             <x-grid.spreadsheet-table
                 grid-key="{{ $this->spreadsheetKey() }}"
                 :columns="$this->spreadsheetColumns()"

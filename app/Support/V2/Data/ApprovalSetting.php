@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
 // flow_position_acting) otomatis menerima antrian selama officer aslinya berhalangan.
 final class ApprovalSetting
 {
-    public const MODULE_NAMES = ['PR' => 'Purchase Requisition', 'PO' => 'Purchase Order', 'POC' => 'PO Kontan', 'CO' => 'Customer Order', 'AD' => 'Stock Adjustment',
+    public const MODULE_NAMES = ['PR' => 'Purchase Requisition', 'PO' => 'Purchase Order', 'POC' => 'Cash PO', 'CO' => 'Customer Order', 'AD' => 'Stock Adjustment',
         'OP' => 'Stock Opname', 'PRT' => 'Purchase Return', 'IN' => 'Stock In', 'OUT' => 'Stock Out', 'RTP' => 'Return from Production'];
 
     public const PRINT_LABELS = ['Diperiksa' => 'Diperiksa', 'Menyetujui' => 'Menyetujui', 'Mengetahui' => 'Mengetahui'];
@@ -28,11 +28,11 @@ final class ApprovalSetting
         $configs = FlowConfig::with('steps')->orderBy('module_code')->get();
         $pos = self::positions($configs->flatMap->steps->pluck('position_id')->filter()->unique()->all());
 
-        return $configs->map(fn ($c) => ['id' => $c->flow_config_id, 'module' => $c->module_code, 'name' => self::MODULE_NAMES[$c->module_code] ?? $c->module_code,
+        return $configs->map(fn ($c) => ['id' => $c->flow_config_id, 'module' => $c->module_code, 'name' => t(self::MODULE_NAMES[$c->module_code] ?? $c->module_code),
             'levels' => $c->steps->where('step_type', 'APPROVAL')->count(),
             'approvers' => $c->steps->where('step_type', 'APPROVAL')->map(fn ($s) => 'L'.$s->step_no.' '.($pos[$s->position_id]['name'] ?? '—')
-                .((float) $s->min_amount > 0 ? ' (≥ '.Locale::number((float) $s->min_amount, 0).')' : ''))->implode(' → ') ?: 'Tanpa approval',
-            'final' => $c->final_status ?? '—', 'active' => $c->activate ? 'Aktif' : 'Nonaktif'])->all();
+                .((float) $s->min_amount > 0 ? ' (≥ '.Locale::number((float) $s->min_amount, 0).')' : ''))->implode(' → ') ?: t('No approval'),
+            'final' => $c->final_status ?? '—', 'active' => $c->activate ? t('Active') : t('Inactive')])->all();
     }
 
     // Jabatan: nama, pemegang (nama karyawan), PLT yang berlaku hari ini (nama user pengganti).
@@ -62,7 +62,7 @@ final class ApprovalSetting
     {
         $p = self::positions(DB::connection('tm2mst')->table('org_position')->where('activate', 1)->pluck('position_id')->all());
 
-        return collect($p)->mapWithKeys(fn ($v, $id) => [$id => $v['name'].($v['holder'] ? ' — '.$v['holder'] : ' — (kosong)')])->sort()->all();
+        return collect($p)->mapWithKeys(fn ($v, $id) => [$id => $v['name'].($v['holder'] ? ' — '.$v['holder'] : ' — '.t('(empty)'))])->sort()->all();
     }
 
     public static function levels(FlowConfig $c): array
@@ -74,13 +74,13 @@ final class ApprovalSetting
             'holder' => ($pos[$s->position_id]['holder'] ?? '') ?: '—', 'plt' => ($pos[$s->position_id]['plt'] ?? '') ?: '—',
             'min_amount' => (float) $s->min_amount > 0 ? (float) $s->min_amount : 0, 'max_amount' => $s->max_amount !== null ? (float) $s->max_amount : '',
             'print_label' => $s->print_label ?? 'Menyetujui',
-            'used' => FlowLog::where('flow_step_id', $s->flow_step_id)->exists() ? 'Ya' : 'Belum'])->values()->all();
+            'used' => FlowLog::where('flow_step_id', $s->flow_step_id)->exists() ? t('Yes') : t('Not yet')])->values()->all();
     }
 
     public static function create(string $module, string $notes, string $final): FlowConfig
     {
         $module = strtoupper(trim($module));
-        abort_if($module === '' || FlowConfig::where('module_code', $module)->exists(), 422, 'Kode modul kosong atau sudah punya setting.');
+        abort_if($module === '' || FlowConfig::where('module_code', $module)->exists(), 422, t('The module code is empty or already has a setting.'));
 
         return FlowConfig::create(['module_code' => $module, 'notes' => $notes, 'final_status' => strtoupper(trim($final)) ?: 'APPROVED',
             'reject_status' => 'REJECTED', 'total_step' => 0, 'activate' => true, 'created_by' => Auth::user()->login]);
@@ -133,7 +133,7 @@ final class ApprovalSetting
 
         return $rows->map(fn ($r) => ['acting_id' => $r->acting_id, 'position_id' => $r->position_id, 'acting_user_id' => $r->acting_user_id,
             'original' => ($pos[$r->position_id]['holder'] ?? '') ?: '—', 'start_date' => $r->start_date?->toDateString(), 'end_date' => $r->end_date?->toDateString(), 'reason' => $r->reason, 'activate' => (bool) $r->activate,
-            'status' => ! $r->activate ? 'Nonaktif' : (now()->toDateString() < $r->start_date?->toDateString() ? 'Terjadwal' : (now()->toDateString() > $r->end_date?->toDateString() ? 'Selesai' : 'Berlaku')),
+            'status' => t(! $r->activate ? 'Inactive' : (now()->toDateString() < $r->start_date?->toDateString() ? 'Scheduled' : (now()->toDateString() > $r->end_date?->toDateString() ? 'Ended' : 'In effect'))),
             'user_name' => $users[$r->acting_user_id] ?? '—'])->all();
     }
 
@@ -153,7 +153,7 @@ final class ApprovalSetting
                 if (empty($row['position_id']) || empty($row['acting_user_id']) || empty($row['start_date']) || empty($row['end_date']) || isset($in['remove'][$key])) {
                     continue;
                 }
-                abort_if($row['end_date'] < $row['start_date'], 422, 'Tanggal selesai PLT harus sesudah tanggal mulai.');
+                abort_if($row['end_date'] < $row['start_date'], 422, t('The acting end date must be after the start date.'));
                 $data = ['position_id' => (int) $row['position_id'], 'acting_user_id' => (int) $row['acting_user_id'], 'start_date' => $row['start_date'],
                     'end_date' => $row['end_date'], 'reason' => trim((string) ($row['reason'] ?? '')), 'activate' => filter_var($row['activate'] ?? true, FILTER_VALIDATE_BOOLEAN),
                     'updated_by' => $login];

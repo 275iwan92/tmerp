@@ -38,8 +38,8 @@ final class ErpNavigator implements Navigator
                     continue;
                 }
                 $slug = $slugs[$n['code']] ?? null;
-                // Belum ada layarnya (lencana "Belum") = tidak ditawarkan; layar yang sama di menu lain = sudah tercatat.
-                if (($n['badge'] ?? null) === 'Belum' || ($slug && isset($out[$slug]))) {
+                // Belum ada layarnya (lencana "Not yet", nada 'todo') = tidak ditawarkan; layar yang sama di menu lain = sudah tercatat.
+                if (($n['badgeTone'] ?? null) === 'todo' || ($slug && isset($out[$slug]))) {
                     continue;
                 }
                 $topic = $slug ? $topics->get($slug) : null;

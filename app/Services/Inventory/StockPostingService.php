@@ -58,7 +58,7 @@ class StockPostingService
     public function postDocument(string $category, int $docId, string $actingUser): array
     {
         $map = self::CATEGORY_MAP[$category] ?? null;
-        abort_if(! $map, 404, "Kelas stok tidak dikenal: {$category}");
+        abort_if(! $map, 404, t('Unknown stock class:').' '.$category);
 
         // Diisi di dalam transaksi (butuh $prevAvg per baris, cuma tersedia di
         // situ), dipakai SETELAH commit -- fin_voucher/fin_voucher_line hidup di
@@ -70,10 +70,10 @@ class StockPostingService
             $header = $map['header']::with('lines')->lockForUpdate()->findOrFail($docId);
 
             if ($header->stat_confirm) {
-                return ['posted' => false, 'error' => 'Dokumen sudah pernah di-posting sebelumnya.'];
+                return ['posted' => false, 'error' => t('The document has already been posted before.')];
             }
             if ($header->stat_cancel) {
-                return ['posted' => false, 'error' => 'Dokumen sudah dibatalkan, tidak bisa diposting.'];
+                return ['posted' => false, 'error' => t('The document has been cancelled and cannot be posted.')];
             }
 
             $cat = $this->normalizeDocCat($header->doc_cat);
@@ -116,7 +116,7 @@ class StockPostingService
                 $qtyEb = $qtyBb + $qtyFinal;
 
                 if ($qtyEb < 0 && ! in_array($cat, ['AD', 'OP'], true)) {
-                    return ['posted' => false, 'error' => "Saldo item #{$itemId} di lokasi #{$locationId} akan negatif ({$qtyEb}) -- posting dibatalkan."];
+                    return ['posted' => false, 'error' => str_replace([':item', ':location', ':qty'], [$itemId, $locationId, $qtyEb], t('The balance of item #:item at location #:location would be negative (:qty) -- posting cancelled.'))];
                 }
 
                 $docType = match (true) {
@@ -262,7 +262,7 @@ class StockPostingService
         }
 
         return $unmapped > 0
-            ? "{$unmapped} baris belum punya akun HPP/Persediaan (item maupun kategori) -- jurnal pemakaian belum lengkap untuk baris tsb."
+            ? str_replace(':n', (string) $unmapped, t(':n lines have no COGS/Inventory account yet (item or category) -- the usage journal is incomplete for those lines.'))
             : null;
     }
 

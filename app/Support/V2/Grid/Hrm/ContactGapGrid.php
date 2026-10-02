@@ -18,7 +18,7 @@ class ContactGapGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Karyawan Tanpa No. WhatsApp';
+        return t('Employees Without WhatsApp No.');
     }
 
     public function group(): string

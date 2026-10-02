@@ -26,8 +26,8 @@ return [
     // Variasi login yang dipakai halaman /login = resources/views/demos/login-<n>.blade.php.
     // Identitas cetak contoh. Non PPN = nama dagang; PPN = badan usaha terdaftar + NPWP (keputusan user 2026-09-23).
     // Di tmerp nilainya dari Settings > Identifikasi (sys_constant COMPANY_NAME / COMPANY_LEGAL_NAME / NPWP).
-    'company' => ['name' => 'Telasih Makmur', 'initials' => 'TM', 'tagline' => 'Offset Printing & Packaging', 'address' => 'Jl. Contoh Industri No. 42, Surabaya (contoh)', 'contact' => 'Telp. (031) 000-0000 · contoh@telasihmakmur.test'],
-    'company_ppn' => ['name' => 'CV. Langgeng Jaya Makmur', 'initials' => 'LJ', 'tagline' => 'Offset Printing & Packaging', 'address' => 'Jl. Contoh Industri No. 42, Surabaya (contoh)', 'contact' => 'Telp. (031) 000-0000', 'npwp' => '00.000.000.0-000.000 (contoh)'],
+    'company' => ['name' => 'Telasih Makmur', 'initials' => 'TM', 'tagline' => 'Offset Printing & Packaging', 'address' => 'Jl. Contoh Industri No. 42, Surabaya (sample)', 'contact' => 'Phone (031) 000-0000 · contoh@telasihmakmur.test'],
+    'company_ppn' => ['name' => 'CV. Langgeng Jaya Makmur', 'initials' => 'LJ', 'tagline' => 'Offset Printing & Packaging', 'address' => 'Jl. Contoh Industri No. 42, Surabaya (sample)', 'contact' => 'Phone (031) 000-0000', 'npwp' => '00.000.000.0-000.000 (sample)'],
 
     'login_variant' => env('DEVLIB_LOGIN_VARIANT', 1),
 
@@ -51,17 +51,17 @@ return [
             'Singapore, Central Region, Singapore', 'Tokyo, Kanto, Japan', 'Sydney, New South Wales, Australia', 'London, England, United Kingdom',
         ],
         'languages' => [
-            'Bahasa Indonesia' => '🇮🇩 Bahasa Indonesia', 'Bahasa Inggris' => '🇬🇧 Bahasa Inggris', 'Bahasa Mandarin' => '🇨🇳 Bahasa Mandarin',
-            'Bahasa Jepang' => '🇯🇵 Bahasa Jepang', 'Bahasa Arab' => '🇸🇦 Bahasa Arab', 'Bahasa Jerman' => '🇩🇪 Bahasa Jerman',
+            'Indonesian' => '🇮🇩 Indonesian', 'English' => '🇬🇧 English', 'Mandarin' => '🇨🇳 Mandarin',
+            'Japanese' => '🇯🇵 Japanese', 'Arabic' => '🇸🇦 Arabic', 'German' => '🇩🇪 German',
         ],
     ],
 
     // Data contoh Lookup (di tmerp: query tabel/VIEW master). Nama sengaja fiktif.
     'lookups' => [
         'supplier' => [
-            'source' => 'tm2mst.sup_supplier (contoh)',
+            'source' => 'tm2mst.sup_supplier (sample)',
             'key' => 'id', 'label' => 'name',
-            'columns' => ['code' => 'Kode', 'name' => 'Nama Supplier', 'city' => 'Kota', 'term' => 'Syarat Bayar'],
+            'columns' => ['code' => 'Code', 'name' => 'Supplier Name', 'city' => 'City', 'term' => 'Payment Term'],
             'fill' => ['payment_term' => 'term', 'ship_address' => 'address'],
             'rows' => [
                 ['id' => 1, 'code' => 'SUP-001', 'name' => 'PT Contoh Kertas Jaya', 'city' => 'Surabaya', 'term' => 'Net 30', 'address' => 'Jl. Contoh Industri 1, Surabaya'],
@@ -71,25 +71,25 @@ return [
             ],
         ],
         'item' => [
-            'source' => 'tm2mst.mat_raw (contoh)',
+            'source' => 'tm2mst.mat_raw (sample)',
             'key' => 'code', 'label' => 'name',
-            'columns' => ['code' => 'Kode', 'name' => 'Nama Item', 'uom' => 'Satuan', 'price_txt' => 'Harga'],
+            'columns' => ['code' => 'Code', 'name' => 'Item Name', 'uom' => 'Unit', 'price_txt' => 'Price'],
             'fill' => ['spec' => 'spec', 'uom' => 'uom', 'price' => 'price'],
             'rows' => [
-                ['code' => 'RM-KRT-0012', 'name' => 'Kertas HVS 210 gsm', 'spec' => 'Plano 79x109', 'uom' => 'RIM', 'price' => 21500, 'price_txt' => '21.500'],
+                ['code' => 'RM-KRT-0012', 'name' => 'HVS Paper 210 gsm', 'spec' => 'Plano 79x109', 'uom' => 'RIM', 'price' => 21500, 'price_txt' => '21.500'],
                 ['code' => 'RM-IVR-0310', 'name' => 'Ivory 310 gsm', 'spec' => 'Plano 65x100', 'uom' => 'LBR', 'price' => 4200, 'price_txt' => '4.200'],
-                ['code' => 'RM-TNT-0044', 'name' => 'Tinta Offset Cyan', 'spec' => '5 kg/kaleng', 'uom' => 'KG', 'price' => 185000, 'price_txt' => '185.000'],
-                ['code' => 'RM-TNT-0045', 'name' => 'Tinta Offset Magenta', 'spec' => '5 kg/kaleng', 'uom' => 'KG', 'price' => 192000, 'price_txt' => '192.000'],
-                ['code' => 'RM-PLT-0072', 'name' => 'Plat CTP 72x103', 'spec' => 'Thermal, 0,30 mm', 'uom' => 'PCS', 'price' => 96000, 'price_txt' => '96.000'],
-                ['code' => 'RM-LEM-0005', 'name' => 'Lem Samping PVAc', 'spec' => 'Jerigen 20 kg', 'uom' => 'KG', 'price' => 27500, 'price_txt' => '27.500'],
-                ['code' => 'RM-LAM-0020', 'name' => 'Film Laminasi Doff', 'spec' => 'Lebar 65 cm, 3000 m', 'uom' => 'ROLL', 'price' => 1450000, 'price_txt' => '1.450.000'],
+                ['code' => 'RM-TNT-0044', 'name' => 'Offset Ink Cyan', 'spec' => '5 kg/can', 'uom' => 'KG', 'price' => 185000, 'price_txt' => '185.000'],
+                ['code' => 'RM-TNT-0045', 'name' => 'Offset Ink Magenta', 'spec' => '5 kg/can', 'uom' => 'KG', 'price' => 192000, 'price_txt' => '192.000'],
+                ['code' => 'RM-PLT-0072', 'name' => 'CTP Plate 72x103', 'spec' => 'Thermal, 0,30 mm', 'uom' => 'PCS', 'price' => 96000, 'price_txt' => '96.000'],
+                ['code' => 'RM-LEM-0005', 'name' => 'PVAc Side Glue', 'spec' => 'Jerry can 20 kg', 'uom' => 'KG', 'price' => 27500, 'price_txt' => '27.500'],
+                ['code' => 'RM-LAM-0020', 'name' => 'Matte Lamination Film', 'spec' => 'Width 65 cm, 3000 m', 'uom' => 'ROLL', 'price' => 1450000, 'price_txt' => '1.450.000'],
             ],
         ],
         'uom' => [
-            'source' => 'tm2mst.uom_unit (contoh)',
+            'source' => 'tm2mst.uom_unit (sample)',
             'key' => 'code', 'label' => 'code',
-            'columns' => ['code' => 'Kode', 'name' => 'Satuan'],
-            'rows' => [['code' => 'PCS', 'name' => 'Pieces'], ['code' => 'LBR', 'name' => 'Lembar'], ['code' => 'RIM', 'name' => 'Rim (500 lembar)'], ['code' => 'KG', 'name' => 'Kilogram'], ['code' => 'ROLL', 'name' => 'Roll']],
+            'columns' => ['code' => 'Code', 'name' => 'Unit'],
+            'rows' => [['code' => 'PCS', 'name' => 'Pieces'], ['code' => 'LBR', 'name' => 'Sheet'], ['code' => 'RIM', 'name' => 'Ream (500 sheets)'], ['code' => 'KG', 'name' => 'Kilogram'], ['code' => 'ROLL', 'name' => 'Roll']],
         ],
     ],
 ];

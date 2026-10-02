@@ -15,7 +15,7 @@
 --}}
 @props(['actions'])
 <div class="relative inline-block" x-data="{ open: false }" @click.outside="open = false">
-    <button type="button" @click.stop="open = !open" title="Aksi"
+    <button type="button" @click.stop="open = !open" title="{{ t('Action') }}"
         class="inline-flex items-center justify-center w-7 h-7 rounded-md border border-[#d7dbe2] bg-white hover:bg-[#f4f5f8] cursor-pointer text-[13px] text-[#4b5568]">⋮</button>
     <div x-show="open" x-cloak x-transition.origin.top.left @click.stop
         class="absolute left-0 top-8 z-20 bg-white border border-[#d7dbe2] rounded-md shadow-lg min-w-[190px] overflow-hidden py-1">

@@ -113,7 +113,7 @@ final class CrmActivities
     // Simpan baru / ubah. $fromId = follow-up asal yang ditutup karena hasilnya dicatat di aktivitas ini.
     public static function save(CrmActivity $a, array $in, ?int $fromId = null): CrmActivity
     {
-        abort_unless(self::canEdit($a), 403, 'Only the person who recorded this activity can change it.');
+        abort_unless(self::canEdit($a), 403, t('Only the person who recorded this activity can change it.'));
         $login = Auth::user()->login;
         $text = fn (string $k, int $max) => mb_substr(trim((string) ($in[$k] ?? '')), 0, $max) ?: null;
         $contacts = self::contactOptions((int) $a->customer_id);
@@ -155,7 +155,7 @@ final class CrmActivities
 
     public static function delete(CrmActivity $a): void
     {
-        abort_unless(self::canEdit($a), 403, 'Only the person who recorded this activity can delete it.');
+        abort_unless(self::canEdit($a), 403, t('Only the person who recorded this activity can delete it.'));
         $a->delete();
     }
 }

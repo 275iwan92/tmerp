@@ -51,14 +51,14 @@
         else if (k.length === 1 && !e.altKey) { e.preventDefault(); this.anchor = null; this.startEdit(k); }
       });
       // Salin rentang sebagai TSV (bisa ditempel ke Excel); tempel TSV dari Excel mulai sel aktif (baris baru dibuat bila perlu).
-      this.wrap.addEventListener('copy', e => { if (this.edit) return; const R = this.rng(), lines = []; for (let r = R.r0; r <= R.r1; r++) { const row = []; for (let c = R.c0; c <= R.c1; c++) { const col = this.cols[c], v = this.data[r][col.key]; row.push(this.num(col) && typeof v === 'number' ? fmt.raw(v) : col.type === 'select' ? (col.options?.[v] ?? v ?? '') : v ?? ''); } lines.push(row.join('\t')); } e.clipboardData.setData('text/plain', lines.join('\r\n')); e.preventDefault(); toast(`${(R.r1 - R.r0 + 1) * (R.c1 - R.c0 + 1)} sel disalin.`); });
+      this.wrap.addEventListener('copy', e => { if (this.edit) return; const R = this.rng(), lines = []; for (let r = R.r0; r <= R.r1; r++) { const row = []; for (let c = R.c0; c <= R.c1; c++) { const col = this.cols[c], v = this.data[r][col.key]; row.push(this.num(col) && typeof v === 'number' ? fmt.raw(v) : col.type === 'select' ? (col.options?.[v] ?? v ?? '') : v ?? ''); } lines.push(row.join('\t')); } e.clipboardData.setData('text/plain', lines.join('\r\n')); e.preventDefault(); toast(Tf('s_copied', {n: (R.r1 - R.r0 + 1) * (R.c1 - R.c0 + 1)})); });
       this.wrap.addEventListener('paste', e => {
         if (this.edit) return; e.preventDefault();
         const grid = (e.clipboardData.getData('text/plain') || '').replace(/\r/g, '').replace(/\n$/, '').split('\n').map(l => l.split('\t'));
         const list = [];
         grid.forEach((line, i) => { const r = this.cur.r + i; while (r >= this.data.length) this.data.push(this.blank()); line.forEach((v, j) => { const c = this.cur.c + j; if (c < this.cols.length && !this.ro(this.cols[c], this.data[r])) list.push({r, k: this.cols[c].key, v: this.parse(this.cols[c], v)}); }); });
         this.anchor = {...this.cur}; this.cur = {r: Math.min(this.data.length - 1, this.cur.r + grid.length - 1), c: Math.min(this.cols.length - 1, this.cur.c + (grid[0]?.length || 1) - 1)};
-        this.apply(list); toast(`${list.length} sel ditempel.`, 'success');
+        this.apply(list); toast(Tf('s_pasted', {n: list.length}), 'success');
       });
       // Mouse: klik = sel aktif, drag = rentang, pegangan isi = AutoFill ke bawah.
       this.table.addEventListener('mousedown', e => {
@@ -136,7 +136,7 @@
         const show = () => { $(p, '[data-e]').textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') || '0'; const v = calc(); $(p, '[data-r]').textContent = v == null ? (ex ? '–' : '') : '= ' + fmt.num(v, col.decimals ?? 10); };
         const key = k => {
           if (k === 'C') ex = ''; else if (k === '⌫') ex = ex.slice(0, -1);
-          else if (k === '=') { const v = calc(); if (v == null) return toast('Rumus belum lengkap / bagi nol.', 'danger'); return pick(col.decimals != null ? Math.round(v * 10 ** col.decimals) / 10 ** col.decimals : v); }
+          else if (k === '=') { const v = calc(); if (v == null) return toast(T('s_calc_bad'), 'danger'); return pick(col.decimals != null ? Math.round(v * 10 ** col.decimals) / 10 ** col.decimals : v); }
           else if ('+-*/'.includes(k)) ex = /[-+*/]$/.test(ex) && k !== '-' ? ex.slice(0, -1) + k : ex + k;
           else if (k === NUM.dec) { const seg = ex.split(/[-+*/]/).pop(); if (!seg.includes(NUM.dec)) ex += (seg ? '' : '0') + NUM.dec; }
           else ex += k;
@@ -144,7 +144,7 @@
         };
         p.className = 'dl-pick__panel is-open dl-sheet__calpanel dl-calc'; p.tabIndex = -1;
         p.innerHTML = '<div class="dl-calc__screen"><div class="dl-calc__expr" data-e></div><div class="dl-calc__res" data-r></div></div><div class="dl-calc__keys">'
-          + ['C', '⌫', '/', '*', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', NUM.dec].map(k => `<button type="button" data-k="${k}" class="${'+-*/'.includes(k) ? 'is-op' : k === '=' ? 'is-eq' : k === '0' ? 'is-zero' : ''}" ${k === '=' ? 'title="Masukkan hasil ke sel (Enter)"' : ''}>${{'/': '÷', '*': '×', '-': '−'}[k] ?? k}</button>`).join('') + '</div>';
+          + ['C', '⌫', '/', '*', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', NUM.dec].map(k => `<button type="button" data-k="${k}" class="${'+-*/'.includes(k) ? 'is-op' : k === '=' ? 'is-eq' : k === '0' ? 'is-zero' : ''}" ${k === '=' ? `title="${esc(T('s_calc_enter'))}"` : ''}>${{'/': '÷', '*': '×', '-': '−'}[k] ?? k}</button>`).join('') + '</div>';
         p.addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (b) key(b.dataset.k); });
         p.addEventListener('keydown', e => {
           const k = e.key === 'Enter' ? '=' : e.key === 'Backspace' ? '⌫' : e.key === 'Delete' || e.key === 'c' ? 'C' : e.key === '.' || e.key === ',' ? NUM.dec : e.key === 'x' ? '*' : e.key;
@@ -154,7 +154,7 @@
       } else if (col.type === 'time') {
         const [h0, m0] = /^\d{2}:\d{2}$/.test(cur || '') ? cur.split(':').map(Number) : [8, 0];
         p.className = 'dl-pick__panel dl-pick__panel--time is-open dl-sheet__calpanel';
-        p.innerHTML = `<div class="dl-pick__head">${esc(T('s_pick_time'))}</div><div class="dl-pick__time"><label>${esc(T('s_hour'))} <select data-h>${Array.from({length: 24}, (_, i) => `<option ${i === h0 ? 'selected' : ''}>${pad(i)}</option>`).join('')}</select></label><b>:</b><label>Menit <select data-m>${Array.from({length: 12}, (_, i) => `<option ${i * 5 === Math.round(m0 / 5) * 5 % 60 ? 'selected' : ''}>${pad(i * 5)}</option>`).join('')}</select></label></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-a>Apply</button></div>`;
+        p.innerHTML = `<div class="dl-pick__head">${esc(T('s_pick_time'))}</div><div class="dl-pick__time"><label>${esc(T('s_hour'))} <select data-h>${Array.from({length: 24}, (_, i) => `<option ${i === h0 ? 'selected' : ''}>${pad(i)}</option>`).join('')}</select></label><b>:</b><label>${esc(T('ftm_minute'))} <select data-m>${Array.from({length: 12}, (_, i) => `<option ${i * 5 === Math.round(m0 / 5) * 5 % 60 ? 'selected' : ''}>${pad(i * 5)}</option>`).join('')}</select></label></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-a>Apply</button></div>`;
         p.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if ('x' in b.dataset) pick(''); else if ('a' in b.dataset) pick(`${$(p, '[data-h]').value}:${$(p, '[data-m]').value}`); });
         p.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $(p, '[data-a]').click(); } });
       } else {

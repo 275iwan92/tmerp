@@ -14,10 +14,10 @@
 @if ($showSearchDropdown)
     <div class="flex flex-wrap items-start gap-5 px-3.5 py-3 bg-[#fafbfd] border-b border-[#eef1f5]">
         <div>
-            <div class="text-[10px] font-bold text-muted uppercase mb-1.5">Kolom Dicari</div>
+            <div class="text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Searched Columns') }}</div>
             <div class="flex flex-wrap gap-1.5 max-w-[520px]">
                 <button type="button" wire:click="$set('searchModalColumns', [])"
-                    class="px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ empty($searchModalColumns) ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">Semua Field</button>
+                    class="px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ empty($searchModalColumns) ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ t('All Fields') }}</button>
                 @foreach ($columnDefs as $key => $label)
                     <button type="button" wire:click="toggleSearchColumn('{{ $key }}')"
                         class="px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ in_array($key, $searchModalColumns, true) ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $label }}</button>
@@ -25,17 +25,17 @@
             </div>
         </div>
         <div>
-            <div class="text-[10px] font-bold text-muted uppercase mb-1.5">Kondisi</div>
+            <div class="text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Search Condition') }}</div>
             <div class="flex flex-wrap gap-1.5">
-                @foreach (['contains' => 'Mengandung', 'starts_with' => 'Diawali', 'equal' => 'Sama Dengan', 'not_contains' => 'Tidak Mengandung'] as $val => $lbl)
+                @foreach (['contains' => t('Contains'), 'starts_with' => t('Starts with'), 'equal' => t('Equals'), 'not_contains' => t('Does not contain')] as $val => $lbl)
                     <button type="button" wire:click="$set('searchModalCondition', '{{ $val }}')"
                         class="px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ $searchModalCondition === $val ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $lbl }}</button>
                 @endforeach
             </div>
         </div>
         <div class="flex items-end gap-2 ml-auto self-end">
-            <button type="button" wire:click="resetSearchSettings" class="px-3 py-1.5 rounded-md text-[11px] font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Reset</button>
-            <button type="button" wire:click="applySearchSettings" class="px-3 py-1.5 rounded-md text-[11px] font-semibold bg-[#2c3e69] text-white cursor-pointer">Terapkan</button>
+            <button type="button" wire:click="resetSearchSettings" class="px-3 py-1.5 rounded-md text-[11px] font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ t('Reset') }}</button>
+            <button type="button" wire:click="applySearchSettings" class="px-3 py-1.5 rounded-md text-[11px] font-semibold bg-[#2c3e69] text-white cursor-pointer">{{ t('Apply') }}</button>
         </div>
     </div>
 @endif

@@ -15,7 +15,7 @@ class EmailVerifyMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Verifikasi e-mail — '.Brand::companyName());
+        return new Envelope(subject: t('E-mail verification').' — '.Brand::companyName());
     }
 
     public function content(): Content

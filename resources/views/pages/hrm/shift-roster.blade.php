@@ -34,7 +34,7 @@ use Livewire\Component;
 //
 // Lifecycle Draft/Confirm SENGAJA DIPERTAHANKAN (mockup tidak punya): roster
 // ini jadi sumber jam kerja payroll/attendance, jadi kunci publish tetap ada.
-new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Weekly Shift Roster — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $view = 'roster'; // roster | shift
 
@@ -139,7 +139,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
 
         $shift = $this->shifts->firstWhere('shift_id', $shiftId);
         $isHidden = in_array($shiftId, $this->hiddenShifts, true);
-        $this->flash(($shift?->shift_name ?? 'Shift').($isHidden ? ' disembunyikan — ikut hilang dari cetakan.' : ' ditampilkan kembali.'));
+        $this->flash(str_replace(':name', $shift?->shift_name ?? t('Shift'), $isHidden ? t(':name hidden — also removed from the printout.') : t(':name shown again.')));
     }
 
     public function showAllShifts(): void
@@ -152,7 +152,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         );
 
         unset($this->visibleShifts);
-        $this->flash('Semua shift ditampilkan kembali.');
+        $this->flash(t('All shifts are shown again.'));
     }
 
     // ================= TEMA =================
@@ -352,7 +352,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
 
         $filled = collect($this->weekPlacements)->isNotEmpty();
         $this->flash(
-            'Minggu '.$this->weekNumber().' · '.($filled ? 'roster sudah terisi' : 'belum ada roster — pakai Tukar Shift untuk menyalin dari minggu lain'),
+            t('Week').' '.$this->weekNumber().' · '.($filled ? t('roster already filled') : t('no roster yet — use Swap Shift to copy from another week')),
             ! $filled
         );
     }
@@ -523,8 +523,8 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
 
         $under = $this->underQuotaShifts();
         $this->flash(
-            'Jadwal "'.($this->currentSchedule?->schedule_name ?? '-').'" minggu '.$this->weekNumber().' tersimpan · '.$this->statAssigned.' penempatan. '
-                .($under ? count($under).' shift masih di bawah kuota.' : 'Semua shift terisi penuh.'),
+            str_replace([':name', ':week', ':n'], ['"'.($this->currentSchedule?->schedule_name ?? '-').'"', $this->weekNumber(), $this->statAssigned], t('Schedule :name week :week saved · :n placements.')).' '
+                .($under ? str_replace(':n', count($under), t(':n shift(s) still under quota.')) : t('All shifts are fully filled.')),
             (bool) $under
         );
     }
@@ -532,20 +532,20 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     public function confirmBatch(): void
     {
         if ($this->statAssigned === 0) {
-            $this->flash('Belum ada penempatan untuk dipublikasikan.', true);
+            $this->flash(t('No placements to publish yet.'), true);
 
             return;
         }
 
         $batch = $this->touchBatch('CONFIRMED');
         $this->attachBatchToWeek($batch->batch_id);
-        $this->flash('Roster minggu '.$this->weekNumber().' dipublikasikan & dikunci.');
+        $this->flash(str_replace(':week', $this->weekNumber(), t('Roster week :week published & locked.')));
     }
 
     public function unlockBatch(): void
     {
         $this->touchBatch('DRAFT');
-        $this->flash('Kunci dibuka — roster minggu '.$this->weekNumber().' bisa diubah lagi.');
+        $this->flash(str_replace(':week', $this->weekNumber(), t('Unlocked — roster week :week can be changed again.')));
     }
 
     private function attachBatchToWeek(int $batchId): void
@@ -592,13 +592,13 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     public function assignToShift(int $shiftId, ?int $employeeId = null, bool $fromBoard = false): void
     {
         if ($this->isLocked()) {
-            $this->flash('Roster minggu ini sudah dikunci (CONFIRMED). Buka kunci dulu untuk mengubah.', true);
+            $this->flash(t('This week\'s roster is locked (CONFIRMED). Unlock it first to make changes.'), true);
 
             return;
         }
 
         if (! $this->workCenterId) {
-            $this->flash('Pilih unit kerja dulu.', true);
+            $this->flash(t('Select a work unit first.'), true);
 
             return;
         }
@@ -613,7 +613,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         // seolah berhasil padahal tidak ada apa pun tersimpan. Ditemukan lewat
         // pengujian: 4 dari 8 shift di DB memang belum punya emp_shift_detail.
         if ($shift->activeDayCount() === 0) {
-            $this->flash('"'.$shift->shift_name.'" belum punya jam kerja per hari. Isi dulu di menu Master Shift sebelum menempatkan pegawai.', true);
+            $this->flash(str_replace(':name', '"'.$shift->shift_name.'"', t(':name has no daily working hours yet. Fill them in the Shift Master menu before placing employees.')), true);
 
             return;
         }
@@ -621,7 +621,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $ids = $employeeId ? [$employeeId] : $this->selection;
 
         if (! $ids) {
-            $this->flash('Tidak ada pegawai yang dipilih.', true);
+            $this->flash(t('No employees selected.'), true);
 
             return;
         }
@@ -657,13 +657,13 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $capacity = $shift->capacity();
 
         if ($dup) {
-            $this->flash($dup.' pegawai dilewati — sudah punya shift di minggu '.$this->weekNumber().'.', true);
+            $this->flash(str_replace([':n', ':week'], [$dup, $this->weekNumber()], t(':n employee(s) skipped — already have a shift in week :week.')), true);
         } elseif ($total > $capacity) {
-            $this->flash($ok.' pegawai masuk '.$shift->shift_name.' · kuota terlampaui ('.$total.'/'.$capacity.').', true);
+            $this->flash(str_replace([':n', ':shift'], [$ok, $shift->shift_name], t(':n employee(s) added to :shift')).' · '.t('quota exceeded').' ('.$total.'/'.$capacity.').', true);
         } elseif ($noSkill) {
-            $this->flash($ok.' pegawai → '.$shift->shift_name.', '.$noSkill.' belum bersertifikat '.($this->currentWorkCenter?->work_center_name ?? 'unit ini').'.', true);
+            $this->flash(str_replace([':n', ':shift', ':skip', ':unit'], [$ok, $shift->shift_name, $noSkill, $this->currentWorkCenter?->work_center_name ?? t('this unit')], t(':n employee(s) → :shift, :skip not yet certified for :unit.')), true);
         } else {
-            $this->flash($ok.' pegawai → '.$shift->shift_name.' · '.implode(', ', $shift->summaryLines()).' ('.EmpShift::formatMinutes($shift->weekMinutes()).'/minggu).');
+            $this->flash(str_replace([':n', ':shift'], [$ok, $shift->shift_name], t(':n employee(s) → :shift')).' · '.implode(', ', $shift->summaryLines()).' ('.EmpShift::formatMinutes($shift->weekMinutes()).'/'.t('week').').');
         }
     }
 
@@ -719,14 +719,14 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     public function removePlacement(int $employeeId): void
     {
         if ($this->isLocked()) {
-            $this->flash('Roster minggu ini sudah dikunci (CONFIRMED).', true);
+            $this->flash(t('This week\'s roster is locked (CONFIRMED).'), true);
 
             return;
         }
 
         $this->deletePlacement($employeeId);
         $this->forgetWeekData();
-        $this->flash(($this->employeeIndex[$employeeId]->full_name ?? 'Pegawai').' dilepas dari roster minggu '.$this->weekNumber().'.');
+        $this->flash(str_replace([':name', ':week'], [$this->employeeIndex[$employeeId]->full_name ?? t('Employee'), $this->weekNumber()], t(':name released from roster week :week.')));
     }
 
     // ================= MODAL: JADWAL =================
@@ -753,8 +753,8 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             'sched_depts' => ['required', 'array', 'min:1'],
             'sched_depts.*' => ['integer', 'exists:tm2mst.org_department,department_id'],
         ], [
-            'sched_name.required' => 'Nama jadwal wajib diisi.',
-            'sched_depts.required' => 'Pilih minimal satu departemen.',
+            'sched_name.required' => t('Schedule name is required.'),
+            'sched_depts.required' => t('Select at least one department.'),
         ]);
 
         if ($this->scheduleEditing && $this->currentSchedule) {
@@ -783,13 +783,13 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $this->showScheduleModal = false;
         unset($this->schedules);
         $this->refreshScope();
-        $this->flash($this->scheduleEditing ? 'Jadwal diperbarui.' : 'Jadwal "'.$data['sched_name'].'" dibuat — silakan isi roster-nya.');
+        $this->flash($this->scheduleEditing ? t('Schedule updated.') : str_replace(':name', '"'.$data['sched_name'].'"', t('Schedule :name created — please fill in its roster.')));
     }
 
     public function deleteSchedule(): void
     {
         if ($this->schedules->count() < 2) {
-            $this->flash('Minimal satu jadwal harus ada.', true);
+            $this->flash(t('At least one schedule must exist.'), true);
             $this->showDeleteSchedule = false;
 
             return;
@@ -808,7 +808,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         unset($this->schedules);
         $this->scheduleId = $this->schedules->first()?->schedule_id;
         $this->refreshScope();
-        $this->flash('Jadwal "'.$name.'" dihapus'.($freed ? ' · '.$freed.' baris roster ikut dilepas' : '').'.');
+        $this->flash(str_replace(':name', '"'.$name.'"', t('Schedule :name deleted')).($freed ? ' · '.str_replace(':n', $freed, t(':n roster rows released too')) : '').'.');
     }
 
     public function scheduleRosterCount(): int
@@ -867,7 +867,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $source = collect($this->shiftForm['days'])->first(fn ($d) => $d['on']);
 
         if (! $source) {
-            $this->flash('Aktifkan minimal satu hari dulu.', true);
+            $this->flash(t('Activate at least one day first.'), true);
 
             return;
         }
@@ -876,7 +876,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             $this->shiftForm['days'][$i] = ['on' => true, 'in' => $source['in'], 'out' => $source['out'], 'brk' => $source['brk']];
         }
 
-        $this->flash('Sen–'.EmpShift::DAY_LABELS[EmpShift::DAY_ORDER[$upto - 1]].' disamakan '.$source['in'].'–'.$source['out'].'.');
+        $this->flash(str_replace([':to', ':in', ':out'], [EmpShift::dayLabel(EmpShift::DAY_ORDER[$upto - 1]), $source['in'], $source['out']], t('Mon–:to set to :in–:out.')));
     }
 
     public function saveShift(): void
@@ -896,14 +896,14 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             'shiftForm.days.*.out' => ['nullable', 'date_format:H:i'],
             'shiftForm.days.*.brk' => ['nullable', 'integer', 'min:0', 'max:240'],
         ], [
-            'shiftForm.code.required' => 'Kode shift wajib diisi.',
-            'shiftForm.name.required' => 'Nama shift wajib diisi.',
+            'shiftForm.code.required' => t('Shift code is required.'),
+            'shiftForm.name.required' => t('Shift name is required.'),
         ])['shiftForm'];
 
         $activeDays = collect($data['days'])->filter(fn ($d) => ! empty($d['on']));
 
         if ($activeDays->isEmpty()) {
-            $this->addError('shiftForm.days', 'Minimal satu hari harus aktif.');
+            $this->addError('shiftForm.days', t('At least one day must be active.'));
 
             return;
         }
@@ -915,7 +915,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             ->exists();
 
         if ($codeTaken) {
-            $this->addError('shiftForm.code', 'Kode "'.$code.'" sudah dipakai shift lain.');
+            $this->addError('shiftForm.code', str_replace(':code', '"'.$code.'"', t('Code :code is already used by another shift.')));
 
             return;
         }
@@ -961,7 +961,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $this->shiftEditingId = null;
         unset($this->shifts, $this->allShifts);
         $this->forgetWeekData();
-        $this->flash('"'.$data['name'].'" disimpan · '.implode(', ', $shift->fresh(['details'])->summaryLines()).'.');
+        $this->flash(str_replace(':name', '"'.$data['name'].'"', t(':name saved')).' · '.implode(', ', $shift->fresh(['details'])->summaryLines()).'.');
     }
 
     public function shiftUsage(int $shiftId): int
@@ -1005,7 +1005,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         }
 
         unset($this->shifts, $this->allShifts);
-        $this->flash('Shift diduplikat — sesuaikan kode & jamnya.');
+        $this->flash(t('Shift duplicated — adjust its code & hours.'));
     }
 
     public function deleteShift(int $shiftId): void
@@ -1013,13 +1013,13 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $used = $this->shiftUsage($shiftId);
 
         if ($used) {
-            $this->flash('Tidak bisa dihapus — shift ini dipakai '.$used.' baris roster.', true);
+            $this->flash(str_replace(':n', $used, t('Cannot be deleted — this shift is used by :n roster rows.')), true);
 
             return;
         }
 
         if (EmpShift::where('activate', true)->count() < 2) {
-            $this->flash('Minimal satu shift aktif harus ada.', true);
+            $this->flash(t('At least one active shift must exist.'), true);
 
             return;
         }
@@ -1029,7 +1029,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
 
         unset($this->shifts, $this->allShifts);
         $this->forgetWeekData();
-        $this->flash('Shift dihapus.');
+        $this->flash(t('Shift deleted.'));
     }
 
     public function toggleShiftActive(int $shiftId): void
@@ -1037,7 +1037,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $shift = EmpShift::findOrFail($shiftId);
 
         if ($shift->activate && $this->shiftUsage($shiftId)) {
-            $this->flash('"'.$shift->shift_name.'" masih dipakai '.$this->shiftUsage($shiftId).' baris roster. Kosongkan dulu sebelum dinonaktifkan.', true);
+            $this->flash(str_replace([':name', ':n'], ['"'.$shift->shift_name.'"', $this->shiftUsage($shiftId)], t(':name is still used by :n roster rows. Empty them first before deactivating.')), true);
 
             return;
         }
@@ -1045,7 +1045,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $shift->update(['activate' => ! $shift->activate, 'updated_by' => Auth::user()->login]);
         unset($this->shifts, $this->allShifts);
         $this->forgetWeekData();
-        $this->flash($shift->shift_name.($shift->activate ? ' diaktifkan.' : ' dinonaktifkan.'));
+        $this->flash(str_replace(':name', $shift->shift_name, $shift->activate ? t(':name activated.') : t(':name deactivated.')));
     }
 
     // ================= MODAL: ROTASI ANTAR MINGGU =================
@@ -1102,7 +1102,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     public function runRotate(): void
     {
         if ($this->rot_from === $this->rot_to) {
-            $this->flash('Minggu sumber dan tujuan harus berbeda.', true);
+            $this->flash(t('The source and target weeks must differ.'), true);
 
             return;
         }
@@ -1136,7 +1136,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             ->unique('employee_id');
 
         if ($source->isEmpty()) {
-            $this->flash('Minggu '.$this->rot_from.' belum punya penempatan untuk jadwal ini.', true);
+            $this->flash(str_replace(':week', $this->rot_from, t('Week :week has no placements for this schedule yet.')), true);
 
             return;
         }
@@ -1176,7 +1176,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $this->weekOffset += $this->rot_to - $this->rot_from;
         $this->showRotateModal = false;
         $this->forgetWeekData();
-        $this->flash('Minggu '.$this->rot_to.' terisi '.$ok.' penempatan dari minggu '.$this->rot_from.'.'.($skipped ? ' '.$skipped.' dilewati (sudah punya shift).' : ''), (bool) $skipped);
+        $this->flash(str_replace([':to', ':n', ':from'], [$this->rot_to, $ok, $this->rot_from], t('Week :to filled with :n placements from week :from.')).($skipped ? ' '.str_replace(':n', $skipped, t(':n skipped (already have a shift).')) : ''), (bool) $skipped);
     }
 
     // ================= FORMASI HARIAN =================
@@ -1343,7 +1343,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
 
         return collect($this->weekDates)->map(fn ($d, $i) => [
             'date' => $d->toDateString(),
-            'label' => \App\Models\Master\EmpShift::DAY_LABELS[$d->format('l')],
+            'label' => \App\Models\Master\EmpShift::dayLabel($d->format('l')),
             'on' => $pattern ? $pattern[$i]['on'] : $i < 6,
         ])->all();
     }
@@ -1406,13 +1406,13 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     public function saveRow(): void
     {
         if ($this->isLocked()) {
-            $this->flash('Minggu ini sudah CONFIRMED & terkunci — buka kunci dulu untuk mengubah formasi.', true);
+            $this->flash(t('This week is CONFIRMED & locked — unlock it first to change the formation.'), true);
 
             return;
         }
         $shift = $this->edit_shift ? $this->shifts->firstWhere('shift_id', $this->edit_shift) : null;
         if (! $shift || ! $this->edit_wc) {
-            $this->flash('Pilih jam kerja (shift) dulu.', true);
+            $this->flash(t('Select the working hours (shift) first.'), true);
 
             return;
         }
@@ -1427,7 +1427,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $this->editOpen = false;
         $this->forgetFormasi();
         $this->forgetWeekData();
-        $this->flash((EmpWorkCenter::find($this->edit_wc)?->work_center_name ?? '').' · '.$shift->shift_name.' disimpan ('.count(array_filter($this->edit_grid, 'array_filter')).' orang).');
+        $this->flash((EmpWorkCenter::find($this->edit_wc)?->work_center_name ?? '').' · '.str_replace([':name', ':n'], [$shift->shift_name, count(array_filter($this->edit_grid, 'array_filter'))], t(':name saved (:n people).')));
     }
 
     public function copyPrevWeek(): void
@@ -1436,7 +1436,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             $n = $this->formasiService()->copyWeek($this->scheduleId, $this->weekStart->copy()->subWeek(), $this->weekStart, Auth::user()->login);
             $this->forgetFormasi();
             $this->forgetWeekData();
-            $this->flash($n ? "Formasi minggu lalu disalin ({$n} baris) — tinggal ubah yang berbeda." : 'Minggu lalu kosong, tidak ada yang disalin.', ! $n);
+            $this->flash($n ? str_replace(':n', $n, t('Last week\'s formation copied (:n rows) — just change what differs.')) : t('Last week is empty, nothing was copied.'), ! $n);
         } catch (\RuntimeException $e) {
             $this->flash($e->getMessage(), true);
         }
@@ -1495,62 +1495,62 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     <div class="bg-navy text-white px-4 py-2.5 flex items-center gap-3 flex-wrap">
         <div class="flex gap-0.5 bg-white/10 rounded-md p-0.5">
             <button type="button" wire:click="$set('view', 'roster')"
-                class="px-3.5 py-1.5 rounded text-xs font-bold uppercase tracking-wide cursor-pointer {{ $view === 'roster' ? 'bg-white text-navy' : 'text-white/70 hover:text-white' }}">Roster Mingguan</button>
+                class="px-3.5 py-1.5 rounded text-xs font-bold uppercase tracking-wide cursor-pointer {{ $view === 'roster' ? 'bg-white text-navy' : 'text-white/70 hover:text-white' }}">{{ t('Weekly Roster') }}</button>
             <button type="button" wire:click="$set('view', 'formasi')"
-                class="px-3.5 py-1.5 rounded text-xs font-bold uppercase tracking-wide cursor-pointer {{ $view === 'formasi' ? 'bg-white text-navy' : 'text-white/70 hover:text-white' }}">Formasi Harian</button>
+                class="px-3.5 py-1.5 rounded text-xs font-bold uppercase tracking-wide cursor-pointer {{ $view === 'formasi' ? 'bg-white text-navy' : 'text-white/70 hover:text-white' }}">{{ t('Daily Formation') }}</button>
             <button type="button" wire:click="$set('view', 'shift')"
-                class="px-3.5 py-1.5 rounded text-xs font-bold uppercase tracking-wide cursor-pointer {{ $view === 'shift' ? 'bg-white text-navy' : 'text-white/70 hover:text-white' }}">Master Shift</button>
+                class="px-3.5 py-1.5 rounded text-xs font-bold uppercase tracking-wide cursor-pointer {{ $view === 'shift' ? 'bg-white text-navy' : 'text-white/70 hover:text-white' }}">{{ t('Shift Master') }}</button>
         </div>
 
         @if ($view !== 'shift')
             <div class="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5 ml-auto">
-                <button type="button" wire:click="goWeek(-1)" title="Minggu sebelumnya" class="px-2.5 py-1 rounded text-sm cursor-pointer hover:bg-white/15">&lsaquo;</button>
+                <button type="button" wire:click="goWeek(-1)" title="{{ t('Previous week') }}" class="px-2.5 py-1 rounded text-sm cursor-pointer hover:bg-white/15">&lsaquo;</button>
                 <div class="px-2 text-center leading-tight">
-                    <div class="text-[13px] font-bold tracking-wide">MINGGU {{ $this->weekNumber() }}</div>
+                    <div class="text-[13px] font-bold tracking-wide">{{ t('WEEK') }} {{ $this->weekNumber() }}</div>
                     <div class="text-[10px] text-white/70">{{ $this->weekStart->translatedFormat('d M') }} – {{ $this->weekEnd->translatedFormat('d M Y') }}</div>
                 </div>
-                <button type="button" wire:click="goWeek(1)" title="Minggu berikutnya" class="px-2.5 py-1 rounded text-sm cursor-pointer hover:bg-white/15">&rsaquo;</button>
+                <button type="button" wire:click="goWeek(1)" title="{{ t('Next week') }}" class="px-2.5 py-1 rounded text-sm cursor-pointer hover:bg-white/15">&rsaquo;</button>
             </div>
 
             <span class="text-[10px] font-bold px-2.5 py-1 rounded-md uppercase {{ $locked ? 'bg-[#e2f4e6] text-[#1e7d3a]' : 'bg-[#fff8e7] text-[#b45309]' }}">
-                {{ $locked ? 'CONFIRMED & TERKUNCI' : 'DRAFT' }}
+                {{ $locked ? t('CONFIRMED & LOCKED') : t('DRAFT') }}
             </span>
 
-            <button type="button" wire:click="openRotate" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-white/10 border border-white/20 text-white hover:bg-white/20">⇄ Tukar Shift</button>
+            <button type="button" wire:click="openRotate" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-white/10 border border-white/20 text-white hover:bg-white/20">⇄ {{ t('Swap Shift') }}</button>
 
             @if ($locked)
-                <button type="button" wire:click="unlockBatch" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-white/10 border border-white/20 text-white hover:bg-white/20">🔓 Buka Kunci</button>
+                <button type="button" wire:click="unlockBatch" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-white/10 border border-white/20 text-white hover:bg-white/20">🔓 {{ t('Unlock') }}</button>
             @else
-                <button type="button" wire:click="saveDraft" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-white/10 border border-white/20 text-white hover:bg-white/20">Simpan</button>
-                <button type="button" wire:click="confirmBatch" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">✓ Publish</button>
+                <button type="button" wire:click="saveDraft" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-white/10 border border-white/20 text-white hover:bg-white/20">{{ t('Save') }}</button>
+                <button type="button" wire:click="confirmBatch" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">✓ {{ t('Publish') }}</button>
             @endif
         @else
             <span class="ml-auto"></span>
             <a href="{{ route('hrm.shift-roster.print', ['mode' => 'shift']) }}" target="_blank"
-                class="px-3 py-1.5 rounded-md text-xs font-semibold no-underline bg-white/10 border border-white/20 text-white hover:bg-white/20">🖨 Cetak Definisi Shift</a>
-            <button type="button" wire:click="openShiftModal" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">＋ Tambah Shift</button>
+                class="px-3 py-1.5 rounded-md text-xs font-semibold no-underline bg-white/10 border border-white/20 text-white hover:bg-white/20">🖨 {{ t('Print Shift Definitions') }}</a>
+            <button type="button" wire:click="openShiftModal" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">＋ {{ t('Add Shift') }}</button>
         @endif
     </div>
 
     @if ($view !== 'shift')
         {{-- ===================== BAR JADWAL ===================== --}}
         <div class="bg-[var(--rs-surface-alt)] border-b border-[var(--rs-border)] px-4 py-2.5 flex items-center gap-2.5 flex-wrap">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--rs-muted)]">Jadwal</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--rs-muted)]">{{ t('Schedule') }}</span>
 
             <x-form.select wire:model.live="scheduleId" liveSync :selected="$scheduleId" :placeholder="false"
                 :options="$this->schedules->pluck('schedule_name', 'schedule_id')" />
 
             <div class="text-[11px] text-[var(--rs-muted)] flex gap-3 flex-wrap">
-                <span>Cakupan <b class="text-[var(--rs-ink-2)]">{{ $this->scheduleDepartments->pluck('department_name')->implode(', ') ?: '—' }}</b></span>
-                <span>Terisi <b class="text-[var(--rs-ink-2)]">{{ $this->statAssigned }} pegawai</b>@if (! $this->statAssigned) <span> — minggu ini masih kosong</span>@endif</span>
+                <span>{{ t('Coverage') }} <b class="text-[var(--rs-ink-2)]">{{ $this->scheduleDepartments->pluck('department_name')->implode(', ') ?: '—' }}</b></span>
+                <span>{{ t('Filled') }} <b class="text-[var(--rs-ink-2)]">{{ $this->statAssigned }} {{ t('employees') }}</b>@if (! $this->statAssigned) <span> — {{ t('this week is still empty') }}</span>@endif</span>
             </div>
 
             <div class="ml-auto flex gap-1.5 flex-wrap">
-                <button type="button" wire:click="openScheduleModal(false)" class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">＋ Jadwal Baru</button>
-                <button type="button" wire:click="openScheduleModal(true)" class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">✎ Edit Jadwal</button>
-                <button type="button" wire:click="$set('showDeleteSchedule', true)" class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-bad)]">🗑 Hapus</button>
+                <button type="button" wire:click="openScheduleModal(false)" class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">＋ {{ t('New Schedule') }}</button>
+                <button type="button" wire:click="openScheduleModal(true)" class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">✎ {{ t('Edit Schedule') }}</button>
+                <button type="button" wire:click="$set('showDeleteSchedule', true)" class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-bad)]">🗑 {{ t('Delete') }}</button>
                 <a href="{{ route('hrm.shift-roster.print', ['mode' => $view === 'formasi' ? 'formasi' : 'roster', 'schedule' => $scheduleId, 'week' => $weekOffset]) }}" target="_blank"
-                    class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold no-underline bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">🖨 Cetak Jadwal Ini</a>
+                    class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold no-underline bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">🖨 {{ t('Print This Schedule') }}</a>
             </div>
         </div>
 
@@ -1567,21 +1567,21 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             {{-- ---------- PAPAN SHIFT ---------- --}}
             <section class="bg-[var(--rs-surface)] border border-[var(--rs-border)] rounded-lg overflow-hidden">
                 <div class="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-[var(--rs-border)] flex-wrap">
-                    <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)] shrink-0">Unit Kerja / Mesin</label>
+                    <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)] shrink-0">{{ t('Work Unit / Machine') }}</label>
                     <x-form.select wire:model.live="workCenterId" liveSync :selected="$workCenterId" :placeholder="false"
                         :options="$this->workCenters->isEmpty()
-                            ? ['' => 'Belum ada unit kerja']
+                            ? ['' => t('No work units yet')]
                             : $this->workCenters->mapWithKeys(fn ($center) => [
-                                $center->work_center_id => $center->work_center_name.($center->machine_id ? '' : ' (non-mesin)').' — '.$center->department->department_name,
+                                $center->work_center_id => $center->work_center_name.($center->machine_id ? '' : ' ('.t('non-machine').')').' — '.$center->department->department_name,
                             ])" />
-                    <span class="text-[11px] text-[var(--rs-muted)]">1 penempatan = 1 minggu penuh, jam mengikuti definisi shift</span>
-                    <span class="ml-auto text-[11px] text-[var(--rs-muted)]">Dobel-klik kolom shift = ubah jam</span>
+                    <span class="text-[11px] text-[var(--rs-muted)]">{{ t('1 placement = 1 full week, hours follow the shift definition') }}</span>
+                    <span class="ml-auto text-[11px] text-[var(--rs-muted)]">{{ t('Double-click a shift column = change hours') }}</span>
 
                     {{-- Satu ikon saja (permintaan user 2026-09-12: bar daftar shift
                          tersembunyi terlalu boros tempat) -- daftar & checkbox-nya
                          pindah ke popup. --}}
                     <button type="button" wire:click="$set('showVisibilityModal', true)"
-                        title="Atur shift yang tampil / disembunyikan"
+                        title="{{ t('Set which shifts are shown / hidden') }}"
                         class="relative shrink-0 px-2 py-1 rounded-md text-[13px] leading-none cursor-pointer border {{ count($hiddenShifts) ? 'bg-[var(--rs-warn-bg)] border-[var(--rs-warn)] text-[var(--rs-warn)]' : 'bg-[var(--rs-surface)] border-[var(--rs-border-strong)] text-[var(--rs-muted)]' }}">
                         👁
                         @if (count($hiddenShifts))
@@ -1593,7 +1593,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                 <div class="overflow-x-auto">
                     <div class="min-w-[900px]">
                         <div class="[display:grid] grid-cols-[238px_minmax(0,1fr)] bg-[var(--rs-surface-alt)] border-b border-[var(--rs-border-strong)]">
-                            <div class="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[var(--rs-muted)]">Shift / Pola Jam</div>
+                            <div class="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[var(--rs-muted)]">{{ t('Shift / Hour Pattern') }}</div>
                             <div class="[display:grid] grid-cols-7">
                                 @foreach ($this->weekDates as $date)
                                     <div class="px-1.5 py-2 text-center border-l border-[var(--rs-border)]">
@@ -1615,23 +1615,23 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                                 $capClass = $count > $capacity ? 'text-[var(--rs-bad)]' : ($count === $capacity ? 'text-[var(--rs-ok)]' : ($count === 0 ? 'text-[var(--rs-muted)]' : 'text-[var(--rs-warn)]'));
                             @endphp
                             <div wire:key="shiftrow-{{ $shift->shift_id }}" class="[display:grid] grid-cols-[238px_minmax(0,1fr)] border-b border-[var(--rs-border)]">
-                                <div wire:dblclick="openShiftModal({{ $shift->shift_id }})" title="Dobel-klik untuk ubah nama & jam shift ini"
+                                <div wire:dblclick="openShiftModal({{ $shift->shift_id }})" title="{{ t('Double-click to change this shift\'s name & hours') }}"
                                     class="px-3 py-2.5 border-r border-[var(--rs-border)] bg-[var(--rs-surface-alt)] flex flex-col gap-1.5 cursor-pointer hover:bg-[var(--rs-accent-soft)]">
                                     <span class="text-[15px] font-bold tracking-wide flex items-center gap-2 text-[var(--rs-ink)]">
                                         <i class="w-2.5 h-2.5 rounded-sm shrink-0 inline-block" style="background: {{ $shift->color() }}"></i>{{ $shift->shift_name }}
                                         @if ($shift->activeDayCount() === 0)
-                                            <span class="text-[9.5px] font-bold uppercase px-1.5 py-0.5 rounded bg-[var(--rs-warn-bg)] text-[var(--rs-warn)]" title="Isi jam kerja per hari di Master Shift dulu">jam kosong</span>
+                                            <span class="text-[9.5px] font-bold uppercase px-1.5 py-0.5 rounded bg-[var(--rs-warn-bg)] text-[var(--rs-warn)]" title="{{ t('Fill the daily working hours in Shift Master first') }}">{{ t('no hours') }}</span>
                                         @endif
                                         {{-- x-on:click.stop supaya tidak ikut memicu dobel-klik "ubah shift" di sel ini --}}
                                         <button type="button" wire:click="toggleShiftVisibility({{ $shift->shift_id }})" x-on:dblclick.stop
-                                            title="Sembunyikan shift ini dari papan &amp; cetakan"
+                                            title="{{ t('Hide this shift from the board & printout') }}"
                                             class="ml-auto shrink-0 text-[12px] leading-none px-1 py-0.5 rounded cursor-pointer text-[var(--rs-muted)] hover:text-[var(--rs-accent)] hover:bg-[var(--rs-surface)]">👁</button>
                                     </span>
                                     <span class="text-[10px] leading-relaxed text-[var(--rs-ink-2)] font-mono">
                                         @foreach ($shift->summaryLines() as $line)
                                             {{ $line }}<br>
                                         @endforeach
-                                        <em class="not-italic text-[var(--rs-muted)]">{{ $shift->activeDayCount() }} hari · {{ \App\Models\Master\EmpShift::formatMinutes($shift->weekMinutes()) }}/minggu</em>
+                                        <em class="not-italic text-[var(--rs-muted)]">{{ $shift->activeDayCount() }} {{ t('days') }} · {{ \App\Models\Master\EmpShift::formatMinutes($shift->weekMinutes()) }}/{{ t('week') }}</em>
                                     </span>
                                     <span class="flex items-center gap-2">
                                         <span class="flex-1 h-1.5 rounded-full bg-[var(--rs-sunken)] overflow-hidden">
@@ -1654,7 +1654,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                                                     {{ $day['in'] }}
                                                     <i class="block not-italic text-[9px] text-[var(--rs-muted)]">{{ $day['out'] }}{{ \App\Models\Master\EmpShift::isNight($day) ? ' +1' : '' }}</i>
                                                 @else
-                                                    LIBUR
+                                                    {{ t('OFF') }}
                                                 @endif
                                             </div>
                                         @endforeach
@@ -1670,7 +1670,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                                                     @endphp
                                                     <div wire:key="chip-{{ $shift->shift_id }}-{{ $employeeId }}" draggable="true"
                                                         x-on:dragstart="$event.dataTransfer.setData('text/plain', JSON.stringify({employeeId: {{ $employeeId }}, fromBoard: true}))"
-                                                        title="{{ $employee?->full_name }}{{ $noSkill ? ' · belum bersertifikat unit ini' : '' }}"
+                                                        title="{{ $employee?->full_name }}{{ $noSkill ? ' · '.t('not yet certified for this unit') : '' }}"
                                                         class="inline-flex items-center gap-1.5 rounded-md border border-l-[3px] px-1.5 py-1 max-w-[190px] cursor-grab bg-[var(--rs-surface)] {{ $noSkill ? 'border-[var(--rs-warn)] bg-[var(--rs-warn-bg)]' : 'border-[var(--rs-border-strong)]' }}"
                                                         style="border-left-color: {{ $shift->color() }}">
                                                         <span class="w-5 h-5 rounded shrink-0 grid place-items-center text-[10px] font-bold text-white bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($employeeId) }}">{{ $this->initials($employee?->full_name ?? '?') }}</span>
@@ -1679,14 +1679,14 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                                                             <span class="text-[9.5px] font-mono text-[var(--rs-muted)] truncate">{{ $employee?->employee_code }} · {{ $employee?->position?->position_name ?? '—' }}</span>
                                                         </span>
                                                         <span class="text-[9.5px] font-mono text-[var(--rs-muted)] border border-[var(--rs-border)] rounded px-1 shrink-0">{{ $noSkill ? '⚠' : '' }}{{ $shift->activeDayCount() }}h</span>
-                                                        <button type="button" wire:click="removePlacement({{ $employeeId }})" title="Lepas dari roster"
+                                                        <button type="button" wire:click="removePlacement({{ $employeeId }})" title="{{ t('Release from roster') }}"
                                                             class="text-[13px] leading-none px-0.5 rounded text-[var(--rs-muted)] hover:text-[var(--rs-bad)] cursor-pointer">×</button>
                                                     </div>
                                                 @endforeach
                                             </div>
                                         @else
                                             <div class="flex items-center justify-center min-h-[64px] text-center px-2.5 text-xs text-[var(--rs-muted)]">
-                                                Tarik pegawai ke sini — otomatis mengikuti pola jam shift ini
+                                                {{ t('Drag employees here — they automatically follow this shift\'s hour pattern') }}
                                             </div>
                                         @endif
                                     </div>
@@ -1695,9 +1695,9 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                         @empty
                             <div class="px-4 py-8 text-center text-sm text-[var(--rs-muted)]">
                                 @if (count($hiddenShifts) && $shifts->count())
-                                    Semua shift sedang disembunyikan. Klik ikon <b>👁</b> di kanan atas papan untuk menampilkannya lagi.
+                                    {{ t('All shifts are currently hidden.') }} {{ t('Click the icon') }} <b>👁</b> {{ t('at the top right of the board to show them again.') }}
                                 @else
-                                    Belum ada shift aktif. Buka menu <b>Master Shift</b> untuk mendefinisikan.
+                                    {{ t('No active shifts yet.') }} {{ t('Open the menu') }} <b>{{ t('Shift Master') }}</b> {{ t('to define them.') }}
                                 @endif
                             </div>
                         @endforelse
@@ -1708,34 +1708,34 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                     @foreach ($visibleShifts as $shift)
                         <span><i class="inline-block w-2.5 h-2.5 rounded-sm mr-1.5 align-[-1px]" style="background: {{ $shift->color() }}"></i>{{ $shift->shift_name }}</span>
                     @endforeach
-                    <span><i class="inline-block w-2.5 h-2.5 rounded-sm mr-1.5 align-[-1px] bg-[var(--rs-warn)]"></i>Tanpa skill unit ini</span>
-                    <span class="ml-auto">Jam kerja diambil dari <b>Master Shift</b> · 1 pegawai = 1 shift per minggu, lintas jadwal.</span>
+                    <span><i class="inline-block w-2.5 h-2.5 rounded-sm mr-1.5 align-[-1px] bg-[var(--rs-warn)]"></i>{{ t('No skill for this unit') }}</span>
+                    <span class="ml-auto">{{ t('Working hours are taken from') }} <b>{{ t('Shift Master') }}</b> · {{ t('1 employee = 1 shift per week, across schedules.') }}</span>
                 </div>
             </section>
 
             {{-- ---------- POOL PEGAWAI ---------- --}}
             <aside class="bg-[var(--rs-surface)] border border-[var(--rs-border)] rounded-lg overflow-hidden xl:sticky xl:top-4">
                 <div class="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-[var(--rs-border)]">
-                    <h2 class="m-0 text-sm font-bold uppercase tracking-wide text-[var(--rs-ink)]">Pool Pegawai</h2>
-                    <span class="text-[11px] text-[var(--rs-muted)] ml-auto">{{ $this->poolEmployees->count() }} tersedia</span>
+                    <h2 class="m-0 text-sm font-bold uppercase tracking-wide text-[var(--rs-ink)]">{{ t('Employee Pool') }}</h2>
+                    <span class="text-[11px] text-[var(--rs-muted)] ml-auto">{{ $this->poolEmployees->count() }} {{ t('available') }}</span>
                 </div>
 
                 <div class="px-3 py-2.5 flex flex-col gap-2 border-b border-[var(--rs-border)] bg-[var(--rs-surface-alt)]">
                     <div class="flex flex-col gap-1">
                         <x-form.select wire:model.live="departmentId" liveSync :selected="$departmentId"
-                            placeholder="Semua Departemen"
+                            :placeholder="t('All Departments')"
                             :options="$this->scheduleDepartments->pluck('department_name', 'department_id')" />
                     </div>
 
                     <x-form.input :case-toggle="false" type="search" wire:model.live.debounce.300ms="poolSearch"
-                        placeholder="Cari nama atau kode pegawai…" />
+                        :placeholder="t('Search employee name or code…')" />
 
                     <div class="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-[var(--rs-accent-soft)] border border-[var(--rs-border)] text-[var(--rs-ink-2)]">
-                        Belum terjadwal di <b>minggu {{ $this->weekNumber() }}</b>: <b>{{ $this->statFree }}</b>
-                        {{ $departmentId ? 'dari departemen ini' : 'dari seluruh departemen' }} ·
-                        terjadwal <b>{{ $this->statAssigned }}</b> di jadwal ini
+                        {{ t('Not yet scheduled in') }} <b>{{ t('week') }} {{ $this->weekNumber() }}</b>: <b>{{ $this->statFree }}</b>
+                        {{ $departmentId ? t('from this department') : t('from all departments') }} ·
+                        {{ t('scheduled') }} <b>{{ $this->statAssigned }}</b> {{ t('in this schedule') }}
                         @unless ($departmentId)
-                            <br><span class="text-[var(--rs-warn)]">Semua Departemen — pegawai yang belum bersertifikat unit kerja terpilih tetap bisa ditarik, ditandai ⚠.</span>
+                            <br><span class="text-[var(--rs-warn)]">{{ t('All Departments — employees not yet certified for the selected work unit can still be dragged, marked ⚠.') }}</span>
                         @endunless
                     </div>
                 </div>
@@ -1743,13 +1743,13 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                 @if (count($selection))
                     <div draggable="true"
                         x-on:dragstart="$event.dataTransfer.setData('text/plain', JSON.stringify({employeeId: null, fromBoard: false}))"
-                        title="Tarik blok ini ke baris shift"
+                        title="{{ t('Drag this block to a shift row') }}"
                         class="flex items-center gap-2 px-3 py-2 bg-[var(--rs-accent-soft)] border-b border-[var(--rs-border)] cursor-grab">
                         <span class="text-sm text-[var(--rs-accent)] tracking-tighter">⣿</span>
-                        <b class="text-[13px] text-[var(--rs-ink)]">{{ count($selection) }} pegawai dipilih</b>
+                        <b class="text-[13px] text-[var(--rs-ink)]">{{ count($selection) }} {{ t('employees selected') }}</b>
                         <span class="ml-auto flex gap-1.5">
-                            <button type="button" wire:click="selectAllVisible" class="px-2 py-0.5 rounded text-[11px] cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Pilih semua tampil</button>
-                            <button type="button" wire:click="clearSelection" class="px-2 py-0.5 rounded text-[11px] cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Batal</button>
+                            <button type="button" wire:click="selectAllVisible" class="px-2 py-0.5 rounded text-[11px] cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ t('Select all shown') }}</button>
+                            <button type="button" wire:click="clearSelection" class="px-2 py-0.5 rounded text-[11px] cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ t('Cancel') }}</button>
                         </span>
                     </div>
                 @endif
@@ -1774,17 +1774,17 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                             <span class="w-6 h-6 rounded shrink-0 grid place-items-center text-[11px] font-bold text-white bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($employee->employee_id) }}">{{ $this->initials($employee->full_name) }}</span>
                             <span class="min-w-0 flex-1">
                                 <b class="block text-[12.5px] font-semibold truncate text-[var(--rs-ink)]">{{ $employee->full_name }}{{ $noSkill ? ' ⚠' : '' }}</b>
-                                <span class="text-[10px] font-mono text-[var(--rs-muted)] truncate block">{{ $employee->employee_code }} · {{ $employee->position?->department?->department_name ?? 'tanpa departemen' }}</span>
+                                <span class="text-[10px] font-mono text-[var(--rs-muted)] truncate block">{{ $employee->employee_code }} · {{ $employee->position?->department?->department_name ?? t('no department') }}</span>
                             </span>
                             <span class="text-[10.5px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded shrink-0 bg-[var(--rs-sunken)] text-[var(--rs-ink-2)]">{{ $employee->position?->position_name ?? '—' }}</span>
                         </div>
                     @empty
                         <div class="px-4 py-7 text-center text-xs leading-relaxed text-[var(--rs-muted)]">
-                            Tidak ada pegawai yang cocok.<br>
+                            {{ t('No matching employees.') }}<br>
                             @if ($departmentId)
-                                Semua pegawai departemen ini sudah terjadwal minggu ini — pilih <b>Semua Departemen</b> di atas untuk meminjam dari departemen lain.
+                                {{ t('All employees of this department are already scheduled this week — choose') }} <b>{{ t('All Departments') }}</b> {{ t('above to borrow from another department.') }}
                             @else
-                                Seluruh pegawai aktif sudah terjadwal di minggu ini.
+                                {{ t('All active employees are already scheduled in this week.') }}
                             @endif
                         </div>
                     @endforelse
@@ -1797,10 +1797,10 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         <div class="px-4 py-4 flex flex-col gap-3.5 max-w-[1180px]">
             <div class="flex items-end gap-3.5 flex-wrap">
                 <div>
-                    <h1 class="m-0 text-2xl font-bold uppercase tracking-wide text-[var(--rs-ink)]">Master Shift</h1>
+                    <h1 class="m-0 text-2xl font-bold uppercase tracking-wide text-[var(--rs-ink)]">{{ t('Shift Master') }}</h1>
                     <p class="m-0 text-xs text-[var(--rs-muted)] max-w-[62ch]">
-                        Definisi pola kerja. Jam bisa berbeda tiap hari — mis. Reguler Senin–Jumat 07:30–16:30 tapi Sabtu 07:30–15:30.
-                        Perubahan di sini langsung dipakai seluruh jadwal roster.
+                        {{ t('Work pattern definitions.') }} {{ t('Hours can differ per day — e.g. Regular Monday–Friday 07:30–16:30 but Saturday 07:30–15:30.') }}
+                        {{ t('Changes here are used immediately by all roster schedules.') }}
                     </p>
                 </div>
             </div>
@@ -1816,34 +1816,34 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                         <span class="font-mono text-[11.5px] px-2 py-1 rounded border border-[var(--rs-border-strong)] bg-[var(--rs-sunken)] text-[var(--rs-ink)] w-[86px] text-center">{{ $shift->shift_code ?: '—' }}</span>
                         <span class="text-[19px] font-bold tracking-wide text-[var(--rs-ink)]">{{ $shift->shift_name }}</span>
                         @if (in_array($shift->shift_id, $hiddenShifts, true))
-                            <span class="text-[9.5px] font-bold uppercase px-1.5 py-0.5 rounded bg-[var(--rs-warn-bg)] text-[var(--rs-warn)]" title="Tidak tampil di papan roster & cetakan">disembunyikan</span>
+                            <span class="text-[9.5px] font-bold uppercase px-1.5 py-0.5 rounded bg-[var(--rs-warn-bg)] text-[var(--rs-warn)]" title="{{ t('Not shown on the roster board & printout') }}">{{ t('hidden') }}</span>
                         @endif
-                        <span class="text-[11.5px] text-[var(--rs-muted)]">Kuota/unit <b class="text-[var(--rs-ink-2)]">{{ $shift->capacity() }}</b></span>
-                        <span class="text-[13px] font-bold px-2.5 py-1 rounded bg-[var(--rs-ok-bg)] text-[var(--rs-ok)] whitespace-nowrap">{{ $shift->activeDayCount() }} hari · {{ \App\Models\Master\EmpShift::formatMinutes($shift->weekMinutes()) }}</span>
+                        <span class="text-[11.5px] text-[var(--rs-muted)]">{{ t('Quota/unit') }} <b class="text-[var(--rs-ink-2)]">{{ $shift->capacity() }}</b></span>
+                        <span class="text-[13px] font-bold px-2.5 py-1 rounded bg-[var(--rs-ok-bg)] text-[var(--rs-ok)] whitespace-nowrap">{{ $shift->activeDayCount() }} {{ t('days') }} · {{ \App\Models\Master\EmpShift::formatMinutes($shift->weekMinutes()) }}</span>
                         @if ($used)
-                            <span class="text-[11px] text-[var(--rs-muted)]">dipakai {{ $used }} baris roster</span>
+                            <span class="text-[11px] text-[var(--rs-muted)]">{{ str_replace(':n', $used, t('used by :n roster rows')) }}</span>
                         @endif
 
                         <span class="ml-auto flex gap-1.5 flex-wrap">
-                            <button type="button" wire:click="openShiftModal({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">✎ Ubah</button>
-                            <button type="button" wire:click="toggleShiftVisibility({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ in_array($shift->shift_id, $hiddenShifts, true) ? '👁 Tampilkan' : '👁 Sembunyikan' }}</button>
-                            <button type="button" wire:click="duplicateShift({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Duplikat</button>
-                            <button type="button" wire:click="toggleShiftActive({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ $shift->activate ? 'Nonaktifkan' : 'Aktifkan' }}</button>
-                            <button type="button" wire:click="deleteShift({{ $shift->shift_id }})" wire:confirm="Hapus shift {{ $shift->shift_name }}?" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-bad)]">Hapus</button>
+                            <button type="button" wire:click="openShiftModal({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">✎ {{ t('Modify') }}</button>
+                            <button type="button" wire:click="toggleShiftVisibility({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ in_array($shift->shift_id, $hiddenShifts, true) ? '👁 '.t('Show') : '👁 '.t('Hide') }}</button>
+                            <button type="button" wire:click="duplicateShift({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ t('Duplicate') }}</button>
+                            <button type="button" wire:click="toggleShiftActive({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ $shift->activate ? t('Deactivate') : t('Activate') }}</button>
+                            <button type="button" wire:click="deleteShift({{ $shift->shift_id }})" wire:confirm="{{ str_replace(':name', $shift->shift_name, t('Delete shift :name?')) }}" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-bad)]">{{ t('Delete') }}</button>
                         </span>
                     </div>
 
                     <div class="[display:grid] grid-cols-2 sm:grid-cols-4 lg:grid-cols-7">
                         @foreach ($pattern as $day)
                             <div class="border-l border-[var(--rs-border)] px-2.5 py-2.5 flex flex-col gap-1.5 {{ $day['on'] ? '' : 'bg-[var(--rs-sunken)]' }}">
-                                <b class="text-[13px] font-bold uppercase tracking-wide {{ $day['label'] === 'Min' ? 'text-[var(--rs-bad)]' : 'text-[var(--rs-ink)]' }}">{{ $day['label'] }}</b>
+                                <b class="text-[13px] font-bold uppercase tracking-wide {{ $day['label'] === t('Sun') ? 'text-[var(--rs-bad)]' : 'text-[var(--rs-ink)]' }}">{{ $day['label'] }}</b>
                                 @if ($day['on'])
                                     <span class="font-mono text-[11.5px] text-[var(--rs-ink-2)]">{{ $day['in'] }}</span>
                                     <span class="font-mono text-[11.5px] text-[var(--rs-ink-2)]">{{ $day['out'] }}{{ \App\Models\Master\EmpShift::isNight($day) ? ' +1' : '' }}</span>
-                                    <span class="text-[10.5px] text-[var(--rs-muted)]">Istirahat {{ $day['brk'] }} mnt</span>
+                                    <span class="text-[10.5px] text-[var(--rs-muted)]">{{ t('Break') }} {{ $day['brk'] }} {{ t('min') }}</span>
                                     <span class="font-mono text-[11px] font-semibold text-right {{ \App\Models\Master\EmpShift::isNight($day) ? 'text-[#8b5cf6]' : 'text-[var(--rs-ok)]' }}">{{ \App\Models\Master\EmpShift::formatMinutes(\App\Models\Master\EmpShift::dayMinutes($day)) }}</span>
                                 @else
-                                    <span class="grid place-items-center min-h-[70px] text-[13px] tracking-widest text-[var(--rs-muted)]">LIBUR</span>
+                                    <span class="grid place-items-center min-h-[70px] text-[13px] tracking-widest text-[var(--rs-muted)]">{{ t('OFF') }}</span>
                                 @endif
                             </div>
                         @endforeach
@@ -1852,7 +1852,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             @endforeach
 
             <p class="text-xs text-[var(--rs-muted)] m-0">
-                Total {{ $this->allShifts->count() }} shift · {{ $shifts->count() }} aktif. Kode shift dipakai sebagai kunci di papan roster — ubah kode hanya sebelum jadwal dipublikasikan.
+                {{ str_replace([':total', ':active'], [$this->allShifts->count(), $shifts->count()], t('Total :total shifts · :active active.')) }} {{ t('The shift code is used as the key on the roster board — change the code only before the schedule is published.') }}
             </p>
         </div>
     @endif
@@ -1862,13 +1862,13 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         <div class="fixed inset-0 bg-black/50 z-[70] p-5 overflow-auto" wire:click.self="$set('showVisibilityModal', false)">
             <div class="max-w-[520px] mx-auto rounded-xl border border-[var(--rs-border)] bg-[var(--rs-surface)] text-[var(--rs-ink)]">
                 <div class="flex items-center gap-2.5 px-4 py-3 border-b border-[var(--rs-border)]">
-                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">Tampilkan / Sembunyikan Shift</h3>
+                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">{{ t('Show / Hide Shifts') }}</h3>
                     <button type="button" wire:click="$set('showVisibilityModal', false)" class="ml-auto text-xl leading-none cursor-pointer text-[var(--rs-muted)]">×</button>
                 </div>
 
                 <div class="px-4 py-3">
                     <p class="mt-0 mb-3 text-[11.5px] text-[var(--rs-muted)]">
-                        Centang = tampil di papan <b>dan</b> di hasil cetak. Setelan ini milik akun Anda sendiri.
+                        {{ t('Ticked = shown on the board') }} <b>{{ t('and') }}</b> {{ t('in the printout.') }} {{ t('This setting belongs to your own account.') }}
                     </p>
 
                     <div class="flex flex-col gap-1 max-h-[340px] overflow-y-auto">
@@ -1887,12 +1887,12 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                                     <span class="text-[10px] font-mono text-[var(--rs-muted)]">{{ $shift->shift_code }} · {{ implode(', ', $shift->summaryLines()) }}</span>
                                 </span>
                                 @if ($isHidden && $placed)
-                                    <span class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded text-white bg-[var(--rs-bad)]" title="Penempatan minggu ini di unit kerja yang sedang dibuka">⚠ {{ $placed }} orang</span>
+                                    <span class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded text-white bg-[var(--rs-bad)]" title="{{ t('Placements this week in the work unit currently open') }}">⚠ {{ $placed }} {{ t('people') }}</span>
                                 @elseif ($placed)
-                                    <span class="shrink-0 text-[10px] font-mono text-[var(--rs-muted)]">{{ $placed }} orang</span>
+                                    <span class="shrink-0 text-[10px] font-mono text-[var(--rs-muted)]">{{ $placed }} {{ t('people') }}</span>
                                 @endif
                                 @if ($isHidden)
-                                    <span class="shrink-0 text-[9.5px] font-bold uppercase text-[var(--rs-warn)]">disembunyikan</span>
+                                    <span class="shrink-0 text-[9.5px] font-bold uppercase text-[var(--rs-warn)]">{{ t('hidden') }}</span>
                                 @endif
                             </label>
                         @endforeach
@@ -1900,14 +1900,14 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
 
                     @if ($this->hiddenWithPlacements())
                         <div class="mt-3 text-[11px] leading-snug rounded-md px-2.5 py-2 bg-[var(--rs-bad-bg)] border border-[var(--rs-bad)] text-[var(--rs-bad)]">
-                            ⚠ Ada <b>{{ $this->hiddenWithPlacements() }} penempatan</b> minggu ini di shift yang disembunyikan — datanya tetap tersimpan, tapi tidak muncul di papan maupun cetakan.
+                            ⚠ {{ t('There are') }} <b>{{ str_replace(':n', $this->hiddenWithPlacements(), t(':n placements')) }}</b> {{ t('this week in hidden shifts — the data is still saved, but does not appear on the board or the printout.') }}
                         </div>
                     @endif
                 </div>
 
                 <div class="flex gap-2 justify-end px-4 py-3 border-t border-[var(--rs-border)] bg-[var(--rs-surface-alt)] rounded-b-xl">
-                    <button type="button" wire:click="showAllShifts" class="mr-auto px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Tampilkan semua</button>
-                    <button type="button" wire:click="$set('showVisibilityModal', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">Tutup</button>
+                    <button type="button" wire:click="showAllShifts" class="mr-auto px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ t('Show all') }}</button>
+                    <button type="button" wire:click="$set('showVisibilityModal', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">{{ t('Close') }}</button>
                 </div>
             </div>
         </div>
@@ -1918,15 +1918,15 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         <div class="fixed inset-0 bg-black/50 z-[70] p-5 overflow-auto" wire:click.self="$set('showScheduleModal', false)">
             <div class="max-w-[520px] mx-auto rounded-xl border border-[var(--rs-border)] bg-[var(--rs-surface)] text-[var(--rs-ink)]">
                 <div class="flex items-center gap-2.5 px-4 py-3 border-b border-[var(--rs-border)]">
-                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">{{ $scheduleEditing ? 'Ubah Jadwal' : 'Jadwal Baru' }}</h3>
+                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">{{ $scheduleEditing ? t('Change Schedule') : t('New Schedule') }}</h3>
                     <button type="button" wire:click="$set('showScheduleModal', false)" class="ml-auto text-xl leading-none cursor-pointer text-[var(--rs-muted)]">×</button>
                 </div>
 
                 <div class="p-4 flex flex-col gap-3">
-                    <x-form.input label="Nama Jadwal *" name="sched_name" wire:model="sched_name" placeholder="mis. Jadwal Cetak Offset – Shift Malam" />
+                    <x-form.input :label="t('Schedule Name').' *'" name="sched_name" wire:model="sched_name" :placeholder="t('e.g.').' '.t('Offset Printing Schedule – Night Shift')" />
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] text-muted uppercase font-semibold">Cakupan Departemen *</label>
+                        <label class="text-[10px] text-muted uppercase font-semibold">{{ t('Department Scope') }} *</label>
                         <div class="[display:grid] grid-cols-2 gap-1.5 max-h-[260px] overflow-y-auto">
                             @foreach (\App\Models\Master\OrgDepartment::where('activate', true)->orderBy('department_name')->get() as $department)
                                 <x-form.checkbox value="{{ $department->department_id }}" wire:model="sched_depts"
@@ -1941,8 +1941,8 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                 </div>
 
                 <div class="flex gap-2 justify-end px-4 py-3 border-t border-[var(--rs-border)] bg-[var(--rs-surface-alt)] rounded-b-xl">
-                    <button type="button" wire:click="$set('showScheduleModal', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Batal</button>
-                    <button type="button" wire:click="saveSchedule" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">Simpan</button>
+                    <button type="button" wire:click="$set('showScheduleModal', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="saveSchedule" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">{{ t('Save') }}</button>
                 </div>
             </div>
         </div>
@@ -1953,23 +1953,23 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         <div class="fixed inset-0 bg-black/50 z-[70] p-5 overflow-auto" wire:click.self="$set('showDeleteSchedule', false)">
             <div class="max-w-[480px] mx-auto rounded-xl border border-[var(--rs-border)] bg-[var(--rs-surface)] text-[var(--rs-ink)]">
                 <div class="flex items-center gap-2.5 px-4 py-3 border-b border-[var(--rs-border)]">
-                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">Hapus Jadwal</h3>
+                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">{{ t('Delete Schedule') }}</h3>
                     <button type="button" wire:click="$set('showDeleteSchedule', false)" class="ml-auto text-xl leading-none cursor-pointer text-[var(--rs-muted)]">×</button>
                 </div>
                 <div class="p-4 text-sm">
-                    <p class="mt-0 mb-3">Hapus jadwal <b>"{{ $this->currentSchedule?->schedule_name }}"</b>?</p>
+                    <p class="mt-0 mb-3">{{ t('Delete schedule') }} <b>"{{ $this->currentSchedule?->schedule_name }}"</b>?</p>
                     @if ($this->scheduleRosterCount())
                         <div class="text-xs rounded-md px-3 py-2 bg-[var(--rs-warn-bg)] border border-[var(--rs-warn)] text-[var(--rs-warn)]">
-                            Jadwal ini berisi <b>{{ $this->scheduleRosterCount() }} baris roster</b> di seluruh minggu. Semua pegawai tersebut akan dilepas dan kembali ke pool.
+                            {{ t('This schedule contains') }} <b>{{ str_replace(':n', $this->scheduleRosterCount(), t(':n roster rows')) }}</b> {{ t('across all weeks.') }} {{ t('All those employees will be released and return to the pool.') }}
                         </div>
                     @else
-                        <p class="text-xs text-[var(--rs-muted)] m-0">Jadwal ini masih kosong.</p>
+                        <p class="text-xs text-[var(--rs-muted)] m-0">{{ t('This schedule is still empty.') }}</p>
                     @endif
-                    <p class="text-[11px] text-[var(--rs-muted)] mt-3 mb-0">Tindakan ini tidak bisa dibatalkan.</p>
+                    <p class="text-[11px] text-[var(--rs-muted)] mt-3 mb-0">{{ t('This action cannot be undone.') }}</p>
                 </div>
                 <div class="flex gap-2 justify-end px-4 py-3 border-t border-[var(--rs-border)] bg-[var(--rs-surface-alt)] rounded-b-xl">
-                    <button type="button" wire:click="$set('showDeleteSchedule', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Batal</button>
-                    <button type="button" wire:click="deleteSchedule" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-bad)] text-white">Hapus Jadwal</button>
+                    <button type="button" wire:click="$set('showDeleteSchedule', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="deleteSchedule" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-bad)] text-white">{{ t('Delete Schedule') }}</button>
                 </div>
             </div>
         </div>
@@ -1980,39 +1980,39 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         <div class="fixed inset-0 bg-black/50 z-[70] p-5 overflow-auto" wire:click.self="$set('showShiftModal', false)">
             <div class="max-w-[1020px] mx-auto rounded-xl border border-[var(--rs-border)] bg-[var(--rs-surface)] text-[var(--rs-ink)]">
                 <div class="flex items-center gap-2.5 px-4 py-3 border-b border-[var(--rs-border)]">
-                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">{{ $shiftEditingId ? 'Ubah Shift' : 'Shift Baru' }}</h3>
+                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">{{ $shiftEditingId ? t('Change Shift') : t('New Shift') }}</h3>
                     <button type="button" wire:click="$set('showShiftModal', false)" class="ml-auto text-xl leading-none cursor-pointer text-[var(--rs-muted)]">×</button>
                 </div>
 
                 <div class="p-4">
                     <div class="flex gap-3 flex-wrap items-end mb-3.5">
                         <div class="flex-1 min-w-[200px]">
-                            <x-form.input label="Nama Shift *" name="shiftForm.name" wire:model="shiftForm.name" />
+                            <x-form.input :label="t('Shift Name').' *'" name="shiftForm.name" wire:model="shiftForm.name" />
                         </div>
                         <div class="w-[120px]">
-                            <x-form.input label="Kode *" name="shiftForm.code" wire:model="shiftForm.code" maxlength="10" />
+                            <x-form.input :label="t('Code').' *'" name="shiftForm.code" wire:model="shiftForm.code" maxlength="10" />
                         </div>
                         <div class="w-[130px]">
-                            <x-form.color-picker label="Warna" name="shiftForm.color" wire:model="shiftForm.color" :value="$shiftForm['color'] ?? '#2563eb'" />
+                            <x-form.color-picker :label="t('Color')" name="shiftForm.color" wire:model="shiftForm.color" :value="$shiftForm['color'] ?? '#2563eb'" />
                         </div>
                         <div class="w-[120px]">
-                            <x-form.input label="Kuota/Unit" name="shiftForm.cap" type="number" wire:model="shiftForm.cap" min="1" max="30" />
+                            <x-form.input :label="t('Quota/Unit')" name="shiftForm.cap" type="number" wire:model="shiftForm.cap" min="1" max="30" />
                         </div>
                         <x-form.checkbox wire:model="shiftForm.active" class="accent-[var(--rs-accent)] cursor-pointer"
-                            labelClass="pb-1.5 cursor-pointer text-[var(--rs-ink-2)]">Aktif</x-form.checkbox>
+                            labelClass="pb-1.5 cursor-pointer text-[var(--rs-ink-2)]">{{ t('Active') }}</x-form.checkbox>
                     </div>
 
                     <div class="flex gap-2 flex-wrap items-center mb-2.5">
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--rs-muted)]">Jam per hari</span>
-                        <button type="button" wire:click="fillDays(5)" class="px-2 py-0.5 rounded text-[11px] cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Samakan Sen–Jum</button>
-                        <button type="button" wire:click="fillDays(6)" class="px-2 py-0.5 rounded text-[11px] cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Samakan Sen–Sab</button>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--rs-muted)]">{{ t('Hours per day') }}</span>
+                        <button type="button" wire:click="fillDays(5)" class="px-2 py-0.5 rounded text-[11px] cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ t('Match Mon–Fri') }}</button>
+                        <button type="button" wire:click="fillDays(6)" class="px-2 py-0.5 rounded text-[11px] cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ t('Match Mon–Sat') }}</button>
                     </div>
 
                     <div class="[display:grid] grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 border border-[var(--rs-border)] rounded-md overflow-hidden">
                         @foreach (\App\Models\Master\EmpShift::DAY_ORDER as $i => $dayName)
                             <div wire:key="shiftday-{{ $i }}" class="border-l border-[var(--rs-border)] px-2 py-2 flex flex-col gap-1.5 {{ ($shiftForm['days'][$i]['on'] ?? false) ? '' : 'bg-[var(--rs-sunken)]' }}">
                                 <label class="flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wide cursor-pointer {{ $dayName === 'Sunday' ? 'text-[var(--rs-bad)]' : 'text-[var(--rs-ink)]' }}">
-                                    {{ \App\Models\Master\EmpShift::DAY_LABELS[$dayName] }}
+                                    {{ \App\Models\Master\EmpShift::dayLabel($dayName) }}
                                     {{-- Sengaja TETAP raw <input> (audit componentization 2026-09-13): checkbox
                                          ini menumpang di dalam <label> yang SUDAH membungkus teks nama hari --
                                          x-form.checkbox selalu bikin <label> sendiri, nesting label-in-label
@@ -2024,14 +2024,14 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                                     <x-form.input type="time" name="shiftForm.days.{{ $i }}.in" wire:model="shiftForm.days.{{ $i }}.in" />
                                     <x-form.input type="time" name="shiftForm.days.{{ $i }}.out" wire:model="shiftForm.days.{{ $i }}.out" />
                                     <div class="flex items-center gap-1 text-[10.5px] text-[var(--rs-muted)]">
-                                        Ist.
+                                        {{ t('Brk.') }}
                                         <div class="w-[52px]">
                                             <x-form.input type="number" name="shiftForm.days.{{ $i }}.brk" wire:model="shiftForm.days.{{ $i }}.brk" min="0" max="240" step="5" />
                                         </div>
-                                        mnt
+                                        {{ t('min') }}
                                     </div>
                                 @else
-                                    <span class="grid place-items-center min-h-[70px] text-[13px] tracking-widest text-[var(--rs-muted)]">LIBUR</span>
+                                    <span class="grid place-items-center min-h-[70px] text-[13px] tracking-widest text-[var(--rs-muted)]">{{ t('OFF') }}</span>
                                 @endif
                             </div>
                         @endforeach
@@ -2039,14 +2039,14 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                     @error('shiftForm.days') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
 
                     <p class="text-[11.5px] text-[var(--rs-muted)] mt-2.5 mb-0">
-                        Jam pulang lebih kecil dari jam masuk berarti shift lewat tengah malam (mis. 21:15–05:00) dan otomatis dihitung sebagai lintas hari.
+                        {{ t('A clock-out time earlier than the clock-in time means the shift passes midnight (e.g. 21:15–05:00) and is automatically counted as crossing days.') }}
                     </p>
                 </div>
 
                 <div class="flex gap-2 justify-end items-center px-4 py-3 border-t border-[var(--rs-border)] bg-[var(--rs-surface-alt)] rounded-b-xl">
-                    <span class="mr-auto text-[11.5px] text-[var(--rs-muted)]">Perubahan berlaku untuk semua jadwal yang memakai shift ini.</span>
-                    <button type="button" wire:click="$set('showShiftModal', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Batal</button>
-                    <button type="button" wire:click="saveShift" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">Simpan</button>
+                    <span class="mr-auto text-[11.5px] text-[var(--rs-muted)]">{{ t('Changes apply to all schedules using this shift.') }}</span>
+                    <button type="button" wire:click="$set('showShiftModal', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="saveShift" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">{{ t('Save') }}</button>
                 </div>
             </div>
         </div>
@@ -2058,78 +2058,78 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         <div class="fixed inset-0 bg-black/50 z-[70] p-5 overflow-auto" wire:click.self="$set('showRotateModal', false)">
             <div class="max-w-[560px] mx-auto rounded-xl border border-[var(--rs-border)] bg-[var(--rs-surface)] text-[var(--rs-ink)]">
                 <div class="flex items-center gap-2.5 px-4 py-3 border-b border-[var(--rs-border)]">
-                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">Tukar Shift ke Minggu Lain</h3>
+                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">{{ t('Swap Shift to Another Week') }}</h3>
                     <button type="button" wire:click="$set('showRotateModal', false)" class="ml-auto text-xl leading-none cursor-pointer text-[var(--rs-muted)]">×</button>
                 </div>
 
                 <div class="p-4 flex flex-col gap-3">
                     <p class="m-0 text-xs text-[var(--rs-muted)]">
-                        Menyalin roster <b>"{{ $this->currentSchedule?->schedule_name }}"</b> dari minggu sumber ke minggu tujuan sambil menukar shift-nya — supaya tidak perlu input ulang tiap minggu.
+                        {{ t('Copies the roster') }} <b>"{{ $this->currentSchedule?->schedule_name }}"</b> {{ t('from the source week to the target week while swapping its shifts — so there is no need to re-enter it every week.') }}
                     </p>
 
                     <div class="flex gap-3 flex-wrap">
                         <div class="flex-1 min-w-[130px]">
-                            <x-form.input label="Minggu Sumber" type="number" wire:model.live="rot_from" />
+                            <x-form.input :label="t('Source Week')" type="number" wire:model.live="rot_from" />
                         </div>
                         <div class="flex-1 min-w-[130px]">
-                            <x-form.input label="Minggu Tujuan" type="number" wire:model.live="rot_to" />
+                            <x-form.input :label="t('Target Week')" type="number" wire:model.live="rot_to" />
                         </div>
                     </div>
 
                     {{-- 3 opsi -> x-form.toggle-group (workaround resmi bug select morph
                          Livewire, [[feedback_livewire_select_morph_bug]]), bukan x-form.select
                          liveSync -- itu utk select BESAR (dinamis, banyak baris). --}}
-                    <x-form.toggle-group label="Pola"
+                    <x-form.toggle-group :label="t('Pattern')"
                         :hint="match ($rot_mode) {
-                            'cycle' => 'Semua shift di minggu sumber maju satu urutan.',
-                            'copy' => 'Salin apa adanya, tanpa rotasi.',
-                            default => 'Tukar 2 shift tertentu (A ⇄ B).',
+                            'cycle' => t('All shifts in the source week move one step forward.'),
+                            'copy' => t('Copy as is, without rotation.'),
+                            default => t('Swap 2 specific shifts (A ⇄ B).'),
                         }">
-                        <x-form.toggle-option wire:click="$set('rot_mode', 'swap')" :active="$rot_mode === 'swap'">Tukar</x-form.toggle-option>
-                        <x-form.toggle-option wire:click="$set('rot_mode', 'cycle')" :active="$rot_mode === 'cycle'">Rotasi Berputar</x-form.toggle-option>
-                        <x-form.toggle-option wire:click="$set('rot_mode', 'copy')" :active="$rot_mode === 'copy'">Salin</x-form.toggle-option>
+                        <x-form.toggle-option wire:click="$set('rot_mode', 'swap')" :active="$rot_mode === 'swap'">{{ t('Swap') }}</x-form.toggle-option>
+                        <x-form.toggle-option wire:click="$set('rot_mode', 'cycle')" :active="$rot_mode === 'cycle'">{{ t('Rolling Rotation') }}</x-form.toggle-option>
+                        <x-form.toggle-option wire:click="$set('rot_mode', 'copy')" :active="$rot_mode === 'copy'">{{ t('Copy') }}</x-form.toggle-option>
                     </x-form.toggle-group>
 
                     @if ($rot_mode === 'swap')
                         <div class="flex gap-3 flex-wrap items-end">
                             <div class="flex-1 min-w-[170px]">
-                                <x-form.select label="Shift A" wire:model.live="rot_a" liveSync :selected="$rot_a" :placeholder="false"
+                                <x-form.select :label="t('Shift A')" wire:model.live="rot_a" liveSync :selected="$rot_a" :placeholder="false"
                                     :options="$shifts->pluck('shift_name', 'shift_id')" />
                             </div>
                             <span class="text-xl text-[var(--rs-accent)] pb-1.5">⇄</span>
                             <div class="flex-1 min-w-[170px]">
-                                <x-form.select label="Shift B" wire:model.live="rot_b" liveSync :selected="$rot_b" :placeholder="false"
+                                <x-form.select :label="t('Shift B')" wire:model.live="rot_b" liveSync :selected="$rot_b" :placeholder="false"
                                     :options="$shifts->pluck('shift_name', 'shift_id')" />
                             </div>
                         </div>
                     @endif
 
-                    <x-form.toggle-group label="Cakupan">
-                        <x-form.toggle-option wire:click="$set('rot_scope', 'all')" :active="$rot_scope === 'all'">Seluruh unit kerja di jadwal ini</x-form.toggle-option>
-                        <x-form.toggle-option wire:click="$set('rot_scope', 'wc')" :active="$rot_scope === 'wc'">Hanya {{ $this->currentWorkCenter?->work_center_name }}</x-form.toggle-option>
+                    <x-form.toggle-group :label="t('Coverage')">
+                        <x-form.toggle-option wire:click="$set('rot_scope', 'all')" :active="$rot_scope === 'all'">{{ t('All work units in this schedule') }}</x-form.toggle-option>
+                        <x-form.toggle-option wire:click="$set('rot_scope', 'wc')" :active="$rot_scope === 'wc'">{{ t('Only') }} {{ $this->currentWorkCenter?->work_center_name }}</x-form.toggle-option>
                     </x-form.toggle-group>
 
                     <x-form.checkbox wire:model.live="rot_over" class="accent-[var(--rs-accent)] cursor-pointer"
-                        labelClass="cursor-pointer text-[var(--rs-ink-2)]">Timpa data yang sudah ada di minggu tujuan</x-form.checkbox>
+                        labelClass="cursor-pointer text-[var(--rs-ink-2)]">{{ t('Overwrite existing data in the target week') }}</x-form.checkbox>
 
                     <div class="text-[11.5px] leading-snug rounded-md px-3 py-2 bg-[var(--rs-sunken)] border border-[var(--rs-border)] text-[var(--rs-ink-2)]">
                         @if (! $preview['valid'])
-                            <b class="text-[var(--rs-bad)]">Minggu sumber dan tujuan harus berbeda.</b>
+                            <b class="text-[var(--rs-bad)]">{{ t('The source and target weeks must differ.') }}</b>
                         @else
-                            <b>{{ $preview['moves'] }}</b> penempatan akan dipindah dari minggu <b>{{ $rot_from }}</b> ke minggu <b>{{ $rot_to }}</b>.
+                            <b>{{ $preview['moves'] }}</b> {{ t('placements will be moved from week') }} <b>{{ $rot_from }}</b> {{ t('to week') }} <b>{{ $rot_to }}</b>.
                             @if ($preview['occupied'])
-                                <br><b class="text-[var(--rs-warn)]">Minggu {{ $rot_to }} sudah berisi data jadwal ini.</b> {{ $rot_over ? 'Akan ditimpa.' : 'Centang "Timpa" atau data lama dipertahankan.' }}
+                                <br><b class="text-[var(--rs-warn)]">{{ str_replace(':week', $rot_to, t('Week :week already contains data for this schedule.')) }}</b> {{ $rot_over ? t('It will be overwritten.') : t('Tick "Overwrite" or the old data is kept.') }}
                             @endif
                             @if ($preview['busy'])
-                                <br><b class="text-[var(--rs-warn)]">{{ $preview['busy'] }} pegawai</b> sudah punya shift lain di minggu {{ $rot_to }} — akan dilewati.
+                                <br><b class="text-[var(--rs-warn)]">{{ $preview['busy'] }} {{ t('employees') }}</b> {{ str_replace(':week', $rot_to, t('already have another shift in week :week — they will be skipped.')) }}
                             @endif
                         @endif
                     </div>
                 </div>
 
                 <div class="flex gap-2 justify-end px-4 py-3 border-t border-[var(--rs-border)] bg-[var(--rs-surface-alt)] rounded-b-xl">
-                    <button type="button" wire:click="$set('showRotateModal', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Batal</button>
-                    <button type="button" wire:click="runRotate" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">Jalankan</button>
+                    <button type="button" wire:click="$set('showRotateModal', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="runRotate" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">{{ t('Run') }}</button>
                 </div>
             </div>
         </div>

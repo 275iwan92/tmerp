@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 // Keputusan (Accept/Reject request, Confirm/Back to Draft/Close WO, simpan plan) = hak approve modul MAINT.
 Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->group(function () {
     $svc = fn () => new MaintenanceService(Auth::user()->login);
-    $head = fn () => abort_unless(MaintenanceService::canDecide(Auth::user()), 403, 'Only the Head of Maintenance (approve right on the Maintenance module).');
+    $head = fn () => abort_unless(MaintenanceService::canDecide(Auth::user()), 403, t('Only the Head of Maintenance (approve right on the Maintenance module).'));
     $wo = fn (int $id) => route('v2.screen', 'maintenance-wo').'?id='.$id;
     $req = fn (int $id) => route('v2.screen', 'maintenance-request').'?id='.$id;
     $plan = fn (int $id) => route('v2.screen', 'maintenance-plan').'?id='.$id;
@@ -27,13 +27,13 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
         $d = $r->validate([
             'machine_id' => ['required', 'integer', 'exists:tm2mst.prod_machine,machine_id'], 'request_kind' => ['required', 'in:'.implode(',', array_keys(MntRequest::KINDS))],
             'symptom' => ['required', 'string', 'max:2000'], 'stopped_at' => ['nullable', 'date'], 'reported_by' => ['nullable', 'integer'],
-        ], [], ['machine_id' => 'Machine', 'symptom' => 'What happened', 'request_kind' => 'Kind']);
+        ], [], ['machine_id' => t('Machine'), 'symptom' => t('What happened'), 'request_kind' => t('Kind')]);
         $m = $svc()->createRequest($d + ['machine_stopped' => $r->boolean('machine_stopped')]);
         $back = $r->input('back') === 'my-work' ? route('v2.screen', 'maintenance-my-work') : ($m->wo_id ? $wo($m->wo_id) : $req($m->id_request));
 
-        return redirect($back)->with('v2_flash', $m->wo_id
-            ? "{$m->doc_no} saved — priority {$m->priority}, turned straight into Work Order ".$m->wo->doc_no.'.'
-            : "{$m->doc_no} saved (priority {$m->priority}) — waiting for the Head of Maintenance.");
+        return redirect($back)->with('v2_flash', raw(str_replace([':no', ':priority', ':wo'], [$m->doc_no, (string) $m->priority, (string) $m->wo?->doc_no], $m->wo_id
+            ? t(':no saved — priority :priority, turned straight into Work Order :wo.')
+            : t(':no saved (priority :priority) — waiting for the Head of Maintenance.'))));
     })->name('request.create');
 
     Route::post('/request/{id}/save', function (Request $r, int $id) use ($svc, $head, $req, $wo) {
@@ -44,29 +44,29 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
             $r->validate(['technician_id' => ['nullable', 'integer'], 'planned_start' => ['nullable', 'date']]);
             $w = $svc()->acceptRequest($m, $r->integer('technician_id') ?: null, $r->input('planned_start') ?: null);
 
-            return redirect($wo($w->id_wo))->with('v2_flash', "{$m->doc_no} accepted → Work Order {$w->doc_no} (Scheduled).");
+            return redirect($wo($w->id_wo))->with('v2_flash', raw(str_replace([':no', ':wo'], [$m->doc_no, $w->doc_no], t(':no accepted → Work Order :wo (Scheduled).'))));
         }
         if ($action === 'reject') {
             $head();
             $svc()->rejectRequest($m, (string) $r->input('_reason', ''));
 
-            return redirect($req($id))->with('v2_flash', "{$m->doc_no} rejected.");
+            return redirect($req($id))->with('v2_flash', raw(str_replace(':no', $m->doc_no, t(':no rejected.'))));
         }
-        abort_unless($m->status === 'OPEN', 422, 'This request has already been decided.');
+        abort_unless($m->status === 'OPEN', 422, t('This request has already been decided.'));
         $d = $r->validate(['request_kind' => ['required', 'in:'.implode(',', array_keys(MntRequest::KINDS))], 'priority' => ['required', 'in:P1,P2,P3,P4'],
             'symptom' => ['required', 'string', 'max:2000']]);
         $m->update($d + ['updated_by' => Auth::user()->login]);
 
-        return redirect($req($id))->with('v2_flash', 'Request saved.');
+        return redirect($req($id))->with('v2_flash', t('Request saved.'));
     })->name('request.save');
 
     // ------------------------------------------------------------ Work Order
     Route::post('/wo/create', function (Request $r) use ($svc, $wo) {
         $d = $r->validate(['machine_id' => ['required', 'integer', 'exists:tm2mst.prod_machine,machine_id'], 'wo_type' => ['required', 'in:'.implode(',', array_keys(MntWo::TYPES))],
-            'description' => ['required', 'string', 'max:255']], [], ['machine_id' => 'Machine', 'description' => 'Description']);
+            'description' => ['required', 'string', 'max:255']], [], ['machine_id' => t('Machine'), 'description' => t('Description')]);
         $w = $svc()->createWo($d);
 
-        return redirect($wo($w->id_wo))->with('v2_flash', 'Draft WO created — complete it, then Confirm.');
+        return redirect($wo($w->id_wo))->with('v2_flash', t('Draft WO created — complete it, then Confirm.'));
     })->name('wo.create');
 
     Route::post('/wo/generate', function () use ($svc, $head) {
@@ -74,8 +74,8 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
         $made = $svc()->generateDue();
 
         return redirect(route('v2.screen', 'maintenance-wo'))->with('v2_flash', count($made)
-            ? count($made).' preventive WO(s) created (Draft): '.collect($made)->map(fn ($w) => $w->description)->implode(', ').' — set the schedule, then Confirm.'
-            : 'No plan is due (or its WO already exists).');
+            ? raw(str_replace([':n', ':list'], [(string) count($made), collect($made)->map(fn ($w) => $w->description)->implode(', ')], t(':n preventive WO(s) created (Draft): :list — set the schedule, then Confirm.')))
+            : t('No plan is due (or its WO already exists).'));
     })->name('wo.generate');
 
     Route::post('/wo/{id}/save', function (Request $r, int $id) use ($svc, $head, $wo) {
@@ -88,25 +88,25 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
             case 'delete':
                 $s->deleteDraft($w);
 
-                return redirect(route('v2.screen', 'maintenance-wo'))->with('v2_flash', 'Draft WO deleted.');
+                return redirect(route('v2.screen', 'maintenance-wo'))->with('v2_flash', t('Draft WO deleted.'));
             case 'cancel':
                 $s->cancel($w, (string) $r->input('_reason', ''));
 
-                return redirect($wo($id))->with('v2_flash', 'WO cancelled.');
+                return redirect($wo($id))->with('v2_flash', t('WO cancelled.'));
             case 'draft':
                 $head();
                 $s->backToDraft($w);
 
-                return redirect($wo($id))->with('v2_flash', 'WO is back to Draft.');
+                return redirect($wo($id))->with('v2_flash', t('WO is back to Draft.'));
             case 'start':
                 $s->start($w);
 
-                return redirect($wo($id))->with('v2_flash', 'WO started (In Progress) — downtime and machine status recorded.');
+                return redirect($wo($id))->with('v2_flash', t('WO started (In Progress) — downtime and machine status recorded.'));
             case 'close':
                 $head();
                 $s->close($w);
 
-                return redirect($wo($id))->with('v2_flash', 'WO closed — cost is final, next preventive due date calculated.');
+                return redirect($wo($id))->with('v2_flash', t('WO closed — cost is final, next preventive due date calculated.'));
         }
         if ($w->docStatus() === 'DRAFT' || $w->isWorking()) {
             $s->saveWo($w, $r->all());
@@ -115,37 +115,37 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
         switch ($action) {
             case 'add_task':
                 $s->addTask($w, (string) $r->input('new_task'));
-                $msg = 'Task added.';
+                $msg = t('Task added.');
                 break;
             case 'add_part':
-                abort_unless($r->filled('material_id'), 422, 'Choose a spare part from the material master.');
+                abort_unless($r->filled('material_id'), 422, t('Choose a spare part from the material master.'));
                 $s->addPart($w, $r->integer('material_id'), max(0.001, (float) $r->input('new_part_qty', 1)));
-                $msg = 'Spare part added.';
+                $msg = t('Spare part added.');
                 break;
             case 'add_labor':
-                abort_unless($r->filled('labor_employee_id'), 422, 'Choose a technician.');
+                abort_unless($r->filled('labor_employee_id'), 422, t('Choose a technician.'));
                 $s->addLabor($w, $r->integer('labor_employee_id'), $r->integer('labor_minutes'), $r->input('labor_date') ?: null);
-                $msg = 'Labor added.';
+                $msg = t('Labor added.');
                 break;
             case 'confirm':
                 $head();
                 $s->confirm($w);
-                $msg = 'WO confirmed: '.$w->refresh()->doc_no.' (Scheduled).';
+                $msg = raw(str_replace(':no', $w->refresh()->doc_no, t('WO confirmed: :no (Scheduled).')));
                 break;
             case 'hold':
                 $s->hold($w, (string) $r->input('_reason', ''));
-                $msg = 'WO on hold (Waiting Part).';
+                $msg = t('WO on hold (Waiting Part).');
                 break;
             case 'resume':
                 $s->resume($w);
-                $msg = 'WO resumed (In Progress).';
+                $msg = t('WO resumed (In Progress).');
                 break;
             case 'done':
                 $s->done($w);
-                $msg = 'WO done — downtime closed, machine Ready again. Waiting for Close by the Head of Maintenance.';
+                $msg = t('WO done — downtime closed, machine Ready again. Waiting for Close by the Head of Maintenance.');
                 break;
             default:
-                $msg = 'WO saved.';
+                $msg = t('WO saved.');
         }
         $back = $r->input('back') === 'my-work' ? route('v2.screen', 'maintenance-my-work') : $wo($id);
 
@@ -161,7 +161,7 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
             $p->update(['activate' => $action === 'activate', 'updated_by' => Auth::user()->login]);
             MntLog::add('PLAN', $p->id_plan, $action === 'activate' ? 'Activated' : 'Deactivated');
 
-            return redirect($plan($p->id_plan))->with('v2_flash', $action === 'activate' ? 'Plan activated.' : 'Plan deactivated — it no longer creates WOs.');
+            return redirect($plan($p->id_plan))->with('v2_flash', $action === 'activate' ? t('Plan activated.') : t('Plan deactivated — it no longer creates WOs.'));
         }
         $d = $r->validate([
             'plan_code' => ['required', 'string', 'max:40', 'unique:tm2prd.mnt_plan,plan_code'.($p ? ','.$p->id_plan.',id_plan' : '')],
@@ -172,7 +172,7 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
             'schedule_mode' => ['required', 'in:FLOATING,FIXED'], 'lead_days' => ['nullable', 'integer', 'min:0', 'max:60'], 'est_minutes' => ['nullable', 'integer', 'min:0'],
             'last_done_date' => ['nullable', 'date'], 'last_done_meter' => ['nullable', 'numeric', 'min:0'], 'next_due_date' => ['nullable', 'date'],
             'certificate_valid_until' => ['nullable', 'date'], 'notes' => ['nullable', 'string', 'max:2000'],
-        ], [], ['plan_code' => 'Plan code', 'plan_name' => 'Plan name', 'machine_id' => 'Machine', 'interval_value' => 'Every', 'meter_interval' => 'Or every (meter)']);
+        ], [], ['plan_code' => t('Plan code'), 'plan_name' => t('Plan name'), 'machine_id' => t('Machine'), 'interval_value' => t('Every'), 'meter_interval' => t('Or every (meter)')]);
         $login = Auth::user()->login;
         $d['needs_machine_stop'] = $r->boolean('needs_machine_stop');
         $d['lead_days'] = (int) ($d['lead_days'] ?? 3);
@@ -195,16 +195,16 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
         foreach ((array) $r->input('parts', []) as $pid => $row) {
             $p->parts()->whereKey((int) $pid)->update(['qty' => (float) ($row['qty'] ?? 1), 'updated_by' => $login]);
         }
-        $msg = 'Plan saved.';
+        $msg = t('Plan saved.');
         if ($action === 'add_task' && trim((string) $r->input('new_task')) !== '') {
             $p->tasks()->create(['seq_no' => (int) $p->tasks()->max('seq_no') + 1, 'task_text' => trim((string) $r->input('new_task')),
                 'task_kind' => $r->input('new_task_kind', 'INSPECT'), 'is_required' => true, 'created_by' => $login, 'updated_by' => $login]);
-            $msg = 'Task added.';
+            $msg = t('Task added.');
         } elseif ($action === 'add_part' && $r->filled('material_id')) {
             $mat = MatRaw::findOrFail($r->integer('material_id'));
             MntPlanPart::create(['plan_id' => $p->id_plan, 'material_id' => $mat->material_id, 'qty' => max(0.001, (float) $r->input('new_part_qty', 1)),
                 'uom_code' => $mat->uom_stock ?: $mat->uom_purchase, 'created_by' => $login, 'updated_by' => $login]);
-            $msg = 'Spare part added.';
+            $msg = t('Spare part added.');
         }
         // Jatuh tempo berikutnya selalu dihitung sistem (bukan diketik), kecuali FIXED yang tanggal pertamanya diisi user.
         $p->refresh();
@@ -213,7 +213,7 @@ Route::prefix('v2/maintenance')->name('v2.mnt.')->middleware('module:MAINT')->gr
         }
         if ($action === 'generate') {
             $w = $svc()->generateFromPlan($p->refresh()->load(['tasks', 'parts']), true);
-            $msg = $w ? 'Preventive WO created (Draft) from this plan.' : 'This plan still has an open WO or is inactive — no new WO created.';
+            $msg = $w ? t('Preventive WO created (Draft) from this plan.') : t('This plan still has an open WO or is inactive — no new WO created.');
             if ($w) {
                 return redirect(route('v2.screen', 'maintenance-wo').'?id='.$w->id_wo)->with('v2_flash', $msg);
             }

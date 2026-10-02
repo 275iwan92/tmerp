@@ -31,13 +31,13 @@
         <div class="flex items-center gap-2 mb-3.5 text-[11px]">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent-soft border border-field-border text-navy font-semibold">
                 <i class="fa-solid fa-filter text-[10px]"></i>
-                {{ \App\Support\Localization\Translator::t('shared_grid_stat_filter_active', 'Filter aktif') }}:
+                {{ t('Filter active') }}:
                 <b>{{ $activeBox['label'] }}</b>
             </span>
             <button type="button" wire:click="clearStatFilter"
                 class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-field-border bg-white text-muted hover:text-navy cursor-pointer">
                 <i class="fa-solid fa-xmark text-[10px]"></i>
-                {{ \App\Support\Localization\Translator::t('shared_grid_stat_filter_clear', 'Lepas filter') }}
+                {{ t('Clear filter') }}
             </button>
         </div>
     @endif

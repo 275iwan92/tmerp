@@ -110,7 +110,7 @@ final class MaterialPlanning
         $engine = self::engine();
         $plan = $engine->plan();
         $mats = collect($plan['materials'])->whereNotNull('material_id')->whereIn('material_id', array_map('intval', $materialIds))->where('short', '>', 0);
-        abort_if($mats->isEmpty(), 422, 'No short material with an item was selected.');
+        abort_if($mats->isEmpty(), 422, t('No short material with an item was selected.'));
         $dept = DB::connection('tm2mst')->table('org_department')->where('department_name', 'PPIC')->value('department_id')
             ?? DB::connection('tm2mst')->table('org_department')->where('activate', 1)->value('department_id');
         $lines = collect($plan['lines']);

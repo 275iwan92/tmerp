@@ -82,7 +82,7 @@ final class SubconDelivery
     // Header + baris (tambah / ubah / hapus). Baris baru tanpa nama barang dilewati.
     public static function save(DoDelivery $do, array $in): void
     {
-        abort_unless($do->isSubcon() && $do->status === 'DRAFT', 422, 'This delivery note is already Confirmed and cannot be changed.');
+        abort_unless($do->isSubcon() && $do->status === 'DRAFT', 422, t('This delivery note is already Confirmed and cannot be changed.'));
         $login = Auth::user()->login;
         if (array_key_exists('supplier_id', $in) && (int) $in['supplier_id'] && (int) $in['supplier_id'] !== (int) $do->supplier_id) {
             $s = SupSupplier::query()->findOrFail((int) $in['supplier_id']);
@@ -144,17 +144,17 @@ final class SubconDelivery
         $do->load('lines');
         $errors = [];
         if (! $do->supplier_id) {
-            $errors[] = 'Choose the subcontractor.';
+            $errors[] = t('Choose the subcontractor.');
         }
         if (trim((string) $do->subcon_process) === '') {
-            $errors[] = 'Fill in the subcontract process.';
+            $errors[] = t('Fill in the subcontract process.');
         }
         $lines = $do->lines->where('status', '<>', 'CANCELLED');
         if ($lines->isEmpty()) {
-            $errors[] = 'Add at least one item.';
+            $errors[] = t('Add at least one item.');
         }
         if ($lines->contains(fn (DoLine $l) => ! $l->co_order_item_id)) {
-            $errors[] = 'Every item needs its Customer Order line.';
+            $errors[] = t('Every item needs its Customer Order line.');
         }
 
         return $errors;
@@ -177,7 +177,7 @@ final class SubconDelivery
     // Delete = hapus permanen, hanya Draft (rulebook C.6).
     public static function delete(DoDelivery $do): void
     {
-        abort_unless($do->isSubcon() && $do->status === 'DRAFT', 422, 'Only a Draft can be deleted.');
+        abort_unless($do->isSubcon() && $do->status === 'DRAFT', 422, t('Only a Draft can be deleted.'));
         DB::connection('tm2sdi')->transaction(function () use ($do) {
             $do->lines()->delete();
             $do->delete();

@@ -25,7 +25,8 @@ class Button extends DevlibComponent
     ) {
         if ($preset && isset(self::PRESETS[$preset])) {
             [$id, $en, $variant, $icon, $type] = self::PRESETS[$preset];
-            $this->label = $this->label !== '' ? $this->label : (Locale::lang() === 'en' ? $en : $id);
+            // Bahasa selain id/en: istilah English lewat kamus aplikasi (Lang::text).
+            $this->label = $this->label !== '' ? $this->label : (Locale::lang() === 'id' ? $id : (Locale::lang() === 'en' ? $en : \Devlib\Lang::text($en)));
             $this->variant = $this->variant === 'primary' ? $variant : $this->variant;
             $this->icon ??= $icon;
             $this->type ??= $type;

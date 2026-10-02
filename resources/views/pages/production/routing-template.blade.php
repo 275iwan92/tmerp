@@ -113,7 +113,7 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
             ->orderBy('process_name')->get()
             ->mapWithKeys(fn ($p) => [$p->id_process =>
                 ($p->process_code ? $p->process_code.' — ' : '').$p->process_name
-                .' ['.($p->process_stage ? $p->stageLabel() : 'tanpa tahap').']'])
+                .' ['.($p->process_stage ? $p->stageLabel() : t('no stage')).']'])
             ->all();
     }
 
@@ -132,7 +132,7 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
             ->filter(fn ($o) => $o['eligible'])
             ->mapWithKeys(fn ($o) => [$o['machine']->machine_id =>
                 $o['machine']->machine_code.' — '.$o['machine']->machine_name
-                .($o['is_primary'] ? '  ★ utama' : '')])
+                .($o['is_primary'] ? '  ★ '.t('primary') : '')])
             ->all();
     }
 
@@ -234,7 +234,7 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
 
         $this->validate([
             'stepBranch' => ['required', 'string', 'max:20', 'regex:/^[A-Z0-9_]+$/'],
-        ], [], ['stepBranch' => 'Kode cabang']);
+        ], [], ['stepBranch' => t('Branch code')]);
 
         // Nomor urut berkelipatan 10 supaya langkah baru bisa DISISIPKAN di
         // tengah (15, 25) tanpa menomori ulang seluruh routing.
@@ -337,7 +337,7 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
             ->exists();
 
         if ($clash) {
-            $this->addError('stepEditSeq', 'Nomor urut itu sudah dipakai langkah lain di cabang yang sama.');
+            $this->addError('stepEditSeq', t('That sequence number is already used by another step in the same branch.'));
 
             return;
         }
@@ -396,11 +396,11 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Template', 'value' => $this->statTotal, 'tone' => 'total'],
-            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+            'total' => ['label' => t('Total Templates'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => t('Active'), 'value' => $this->statActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('activate', true)],
-            'empty' => ['label' => 'Tanpa Langkah', 'value' => $this->statEmpty, 'tone' => 'critical',
-                'subtitle' => 'Belum bisa dipakai',
+            'empty' => ['label' => t('No Steps'), 'value' => $this->statEmpty, 'tone' => 'critical',
+                'subtitle' => t('Not usable yet'),
                 'filter' => fn ($q) => $q->where('activate', true)->doesntHave('steps')],
         ];
     }
@@ -418,7 +418,7 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode atau nama template…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search template code or name…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -432,18 +432,18 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                     <thead>
                         <tr>
                             @foreach ([
-                                'Kode' => 'w-[96px]', 'Nama Template' => '', 'Tipe Produk' => 'w-[120px]',
-                                'Acuan Bahan' => 'w-[150px]', 'Langkah' => 'w-[86px]', 'Default' => 'w-[80px]',
+                                'Code' => 'w-[96px]', 'Template Name' => '', 'Product Type' => 'w-[120px]',
+                                'Material Reference' => 'w-[150px]', 'Step' => 'w-[86px]', 'Default' => 'w-[80px]',
                                 'Status' => 'w-[80px]',
                             ] as $label => $w)
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] {{ $w }}">{{ $label }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] {{ $w }}">{{ t($label) }}</th>
                             @endforeach
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Aksi</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->templates as $t)
-                            <tr wire:key="tpl-{{ $t->template_id }}" wire:dblclick="openModal('edit', {{ $t->template_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka urutan langkah">
+                            <tr wire:key="tpl-{{ $t->template_id }}" wire:dblclick="openModal('edit', {{ $t->template_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open the step sequence') }}">
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#eef1f5] text-[#2c3e69]">{{ $t->template_code }}</span>
                                 </td>
@@ -453,34 +453,34 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                                         <div class="text-[10.5px] text-muted truncate">{{ $t->description }}</div>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[11.5px]">{{ $t->prod_type_code ?: 'semua tipe' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[11.5px]">{{ $t->prod_type_code ?: t('all types') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-[11.5px]">{{ $t->substrate_hint ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     @if ($t->steps_count > 0)
-                                        <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-[#eaf7ee] text-[#166534]">{{ $t->steps_count }} langkah</span>
+                                        <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-[#eaf7ee] text-[#166534]">{{ str_replace(':n', $t->steps_count, t(':n steps')) }}</span>
                                     @else
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#fef2f2] text-[#b91c1c]">kosong</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#fef2f2] text-[#b91c1c]">{{ t('empty') }}</span>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     @if ($t->is_default)
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#fef9c3] text-[#92400e]">★ Default</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#fef9c3] text-[#92400e]">★ {{ t('Default') }}</span>
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $t->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $t->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $t->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $t->activate ? t('ACTIVE') : t('INACTIVE') }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openModal('edit', {{ $t->template_id }})" />
-                                    <x-grid.action-icon :active="$t->activate" :title="$t->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $t->template_id }})"
-                                        :confirm="($t->activate ? 'Nonaktifkan' : 'Aktifkan').' template '.$t->template_name.'?'"
+                                    <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="openModal('edit', {{ $t->template_id }})" />
+                                    <x-grid.action-icon :active="$t->activate" :title="$t->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $t->template_id }})"
+                                        :confirm="str_replace(':name', $t->template_name, $t->activate ? t('Deactivate template :name?') : t('Activate template :name?'))"
                                         :variant="$t->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="8" message="Belum ada routing template." />
+                            <x-grid.empty-row :colspan="8" :message="t('No routing templates yet.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -492,12 +492,12 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
         @if ($panel === 'form')
             <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
                 <div class="text-sm font-bold">
-                    {{ $mode === 'edit' ? 'Edit Routing Template : '.$template_code : 'Routing Template Baru' }}
+                    {{ $mode === 'edit' ? t('Edit Routing Template').' : '.$template_code : t('New Routing Template') }}
                 </div>
                 @if ($mode === 'edit')
                     @php($v = $this->validation)
                     <div class="text-[11px] font-semibold px-2 py-0.5 rounded {{ $v['ok'] ? 'bg-[#166534]' : 'bg-[#b91c1c]' }}">
-                        {{ $v['ok'] ? 'Urutan valid' : count($v['blocks']).' masalah menghalangi' }}
+                        {{ $v['ok'] ? t('Sequence valid') : str_replace(':n', count($v['blocks']), t(':n blocking issues')) }}
                     </div>
                 @endif
             </div>
@@ -505,27 +505,27 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
             <div class="bg-white border border-t-0 border-[#d7dbe2] rounded-b-md p-5">
                 <form wire:submit="save">
                     <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-3">
-                        <x-form.input label="Kode Template *" name="template_code" wire:model="template_code" placeholder="mis. BOX-DPX-4C" />
-                        <x-form.input label="Tipe Produk (kode)" name="prod_type_code" wire:model="prod_type_code" placeholder="kosong = semua tipe" />
-                        <x-form.select label="Status Aktif" wire:model="template_activate" :placeholder="false" :options="['1' => 'Aktif', '0' => 'Nonaktif']" />
+                        <x-form.input :label="t('Template Code').' *'" name="template_code" wire:model="template_code" :placeholder="t('e.g. BOX-DPX-4C')" />
+                        <x-form.input :label="t('Product Type (code)')" name="prod_type_code" wire:model="prod_type_code" :placeholder="t('empty = all types')" />
+                        <x-form.select :label="t('Active Status')" wire:model="template_activate" :placeholder="false" :options="['1' => t('Active'), '0' => t('Inactive')]" />
                     </div>
                     <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                        <x-form.input label="Nama Template *" name="template_name" wire:model="template_name" placeholder="mis. Box Duplex Full Color + Laminasi" />
-                        <x-form.input label="Acuan Bahan" name="substrate_hint" wire:model="substrate_hint" placeholder="mis. DUPLEX 350gsm" />
+                        <x-form.input :label="t('Template Name').' *'" name="template_name" wire:model="template_name" :placeholder="t('e.g. Box Duplex Full Color + Laminasi')" />
+                        <x-form.input :label="t('Material Reference')" name="substrate_hint" wire:model="substrate_hint" :placeholder="t('e.g. DUPLEX 350gsm')" />
                     </div>
                     <div class="mt-3">
-                        <x-form.textarea label="Keterangan" name="description" wire:model="description" autogrow />
+                        <x-form.textarea :label="t('Description')" name="description" wire:model="description" autogrow />
                     </div>
                     <div class="mt-3 border border-[#d7dbe2] rounded-md p-3">
                         <x-form.checkbox wire:model="is_default">
-                            <span class="font-semibold">Jadikan template default untuk tipe/kategori ini</span>
-                            <span class="block text-[10.5px] text-muted">Dipakai otomatis saat produk cocok dan tidak ada pilihan lain. Kalau tidak ada default, officer yang memilih.</span>
+                            <span class="font-semibold">{{ t('Make this the default template for this type/category') }}</span>
+                            <span class="block text-[10.5px] text-muted">{{ t('Used automatically when the product matches and there is no other choice.') }} {{ t('Without a default, the officer chooses.') }}</span>
                         </x-form.checkbox>
                     </div>
 
                     <div class="flex gap-2 mt-4">
-                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
+                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
                         <x-back-button fallback="production.routing-template" class="ml-auto" />
                     </div>
                 </form>
@@ -533,30 +533,30 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                 @if ($mode === 'edit')
                     {{-- ===== PEMBANGUN URUTAN LANGKAH ===== --}}
                     <div class="mt-5 pt-5 border-t border-[#d7dbe2]">
-                        <p class="text-[10px] font-bold text-accent uppercase mb-2">Urutan Langkah Produksi</p>
-                        <p class="text-[11px] text-muted mb-3">Nomor urut berkelipatan 10 supaya langkah bisa <strong>disisipkan</strong> di tengah tanpa menomori ulang semuanya. Picker mesin hanya menampilkan mesin yang <strong>terdaftar mampu</strong> mengerjakan proses terpilih — datanya dari matriks kapabilitas di Master Proses.</p>
+                        <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Production Step Sequence') }}</p>
+                        <p class="text-[11px] text-muted mb-3">{!! t('Sequence numbers step by 10 so steps can be <strong>inserted</strong> in between without renumbering everything.') !!} {!! t('The machine picker only shows machines <strong>registered as capable</strong> of the selected process — data from the capability matrix in Process Master.') !!}</p>
 
                         <div class="flex flex-wrap items-end gap-2 mb-3 p-3 bg-[#fafbfd] border border-[#d7dbe2] rounded-md">
                             <div class="flex-1 min-w-[260px]">
-                                <x-form.select label="Proses" name="stepProcessId" wire:model.live="stepProcessId" :options="$this->processOptions" placeholder="— pilih proses —" />
+                                <x-form.select :label="t('Process')" name="stepProcessId" wire:model.live="stepProcessId" :options="$this->processOptions" :placeholder="t('— select process —')" />
                             </div>
                             <div class="flex-1 min-w-[220px]">
-                                <x-form.select label="Usulan Mesin" name="stepMachineId" wire:model="stepMachineId"
+                                <x-form.select :label="t('Suggested Machine')" name="stepMachineId" wire:model="stepMachineId"
                                     :options="$this->machineOptionsForStep"
-                                    :placeholder="$stepProcessId ? '— biarkan engine pilih —' : '— pilih proses dulu —'" />
+                                    :placeholder="$stepProcessId ? t('— let the engine choose —') : t('— select a process first —')" />
                             </div>
                             <div class="w-28">
-                                <x-form.input label="Cabang" name="stepBranch" wire:model="stepBranch" placeholder="MAIN" hint="MAIN/BODY/LID" />
+                                <x-form.input :label="t('Branch')" name="stepBranch" wire:model="stepBranch" placeholder="MAIN" hint="MAIN/BODY/LID" />
                             </div>
                             <div class="pb-2">
-                                <x-form.checkbox label="Opsional" wire:model="stepOptional" />
+                                <x-form.checkbox :label="t('Optional')" wire:model="stepOptional" />
                             </div>
                             <button type="button" wire:click="addStep" @disabled(! $stepProcessId)
-                                class="px-3.5 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">+ Tambah Langkah</button>
+                                class="px-3.5 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">+ {{ t('Add Step') }}</button>
                         </div>
 
                         @if ($stepProcessId && ! $this->machineOptionsForStep)
-                            <x-alert.banner type="warn" message="Proses yang dipilih belum punya mesin pelaksana yang memenuhi syarat. Langkah tetap bisa ditambah, tapi routing ini tidak akan bisa dijadwalkan sampai mesinnya dipasang di Master Proses." />
+                            <x-alert.banner type="warn" :message="t('The selected process has no eligible machine yet.').' '.t('The step can still be added, but this routing cannot be scheduled until its machine is set in Process Master.')" />
                         @endif
 
                         {{-- ===== PANEL VALIDASI ===== --}}
@@ -567,7 +567,7 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                                     <div class="flex gap-2 items-start text-[11.5px] px-2.5 py-2 rounded bg-[#fef2f2] border border-[#fecaca]">
                                         <i class="fa-solid fa-circle-exclamation text-[#b91c1c] mt-0.5"></i>
                                         <div>
-                                            <span class="font-bold text-[#b91c1c]">BLOKIR</span>
+                                            <span class="font-bold text-[#b91c1c]">{{ t('BLOCK') }}</span>
                                             <span class="text-[#7f1d1d]">{{ $b['message'] }}</span>
                                             @if ($b['reason'])
                                                 <div class="text-[10.5px] text-[#9a3412] mt-0.5">{{ $b['reason'] }}</div>
@@ -579,7 +579,7 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                                     <div class="flex gap-2 items-start text-[11.5px] px-2.5 py-2 rounded bg-[#fff7ed] border border-[#fed7aa]">
                                         <i class="fa-solid fa-triangle-exclamation text-[#c2410c] mt-0.5"></i>
                                         <div>
-                                            <span class="font-bold text-[#c2410c]">PERINGATAN</span>
+                                            <span class="font-bold text-[#c2410c]">{{ t('WARNING') }}</span>
                                             <span class="text-[#7c2d12]">{{ $w['message'] }}</span>
                                             @if ($w['reason'])
                                                 <div class="text-[10.5px] text-[#9a3412] mt-0.5">{{ $w['reason'] }}</div>
@@ -597,7 +597,7 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                         @elseif ($this->steps->isNotEmpty())
                             <div class="mb-3 flex gap-2 items-center text-[11.5px] px-2.5 py-2 rounded bg-[#eaf7ee] border border-[#bbf7d0]">
                                 <i class="fa-solid fa-circle-check text-[#166534]"></i>
-                                <span class="text-[#14532d]">Urutan lolos semua aturan precedence, dan tiap proses punya mesin pelaksana.</span>
+                                <span class="text-[#14532d]">{{ t('The sequence passes all precedence rules, and every process has a machine.') }}</span>
                             </div>
                         @endif
 
@@ -606,8 +606,8 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                             <table class="w-full border-collapse text-[12px]">
                                 <thead>
                                     <tr class="bg-[#fafbfd]">
-                                        @foreach (['Urut', 'Proses', 'Tahap', 'Usulan Mesin', 'Alternatif', 'Sifat', 'Catatan', ''] as $h)
-                                            <th class="text-left px-2.5 py-2 text-[10px] uppercase tracking-wide text-[#667] border-b border-[#eef1f5] whitespace-nowrap">{{ $h }}</th>
+                                        @foreach (['Step Order', 'Process', 'Stage', 'Suggested Machine', 'Alternatives', 'Nature', 'Notes', ''] as $h)
+                                            <th class="text-left px-2.5 py-2 text-[10px] uppercase tracking-wide text-[#667] border-b border-[#eef1f5] whitespace-nowrap">{{ t($h) }}</th>
                                         @endforeach
                                     </tr>
                                 </thead>
@@ -616,7 +616,7 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                                     @php($exp = collect($this->expansion)->keyBy(fn ($e) => $e['branch_code'].'#'.$e['step_seq']))
                                     @forelse ($this->steps as $s)
                                         @if ($s->branch_code !== $lastBranch)
-                                            <x-grid.group-header-row label="Cabang" :value="$s->branch_code" :colspan="8" />
+                                            <x-grid.group-header-row :label="t('Branch')" :value="$s->branch_code" :colspan="8" />
                                             @php($lastBranch = $s->branch_code)
                                         @endif
                                         @php($e = $exp->get($s->branch_code.'#'.$s->step_seq))
@@ -632,21 +632,21 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                                             <td class="px-2.5 py-2 border-b border-[#eef1f5]">
                                                 @if ($e && $e['suggested_machine'])
                                                     <span class="font-mono text-[11px] font-semibold">{{ $e['suggested_machine']->machine_code }}</span>
-                                                    <div class="text-[10px] text-muted">{{ $s->preferred_machine_id ? 'dipilih di template' : 'usulan engine' }}</div>
+                                                    <div class="text-[10px] text-muted">{{ $s->preferred_machine_id ? t('chosen in template') : t('engine suggestion') }}</div>
                                                     @if ($e['fallback_reason'])
                                                         <div class="text-[9.5px] text-[#c2410c] mt-0.5 max-w-[220px] leading-snug">{{ $e['fallback_reason'] }}</div>
                                                     @endif
                                                 @elseif ($s->process?->is_manual)
-                                                    <span class="text-[10.5px] text-muted">proses tangan</span>
+                                                    <span class="text-[10.5px] text-muted">{{ t('manual process') }}</span>
                                                 @else
-                                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#fef2f2] text-[#b91c1c]">tidak ada mesin</span>
+                                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#fef2f2] text-[#b91c1c]">{{ t('no machine') }}</span>
                                                 @endif
                                             </td>
                                             <td class="px-2.5 py-2 border-b border-[#eef1f5] text-[11px]">
                                                 @if ($e)
-                                                    <span class="font-mono font-semibold">{{ $e['alternatives'] }}</span> siap
+                                                    <span class="font-mono font-semibold">{{ $e['alternatives'] }}</span> {{ t('ready') }}
                                                     @if ($e['blocked_machines'] > 0)
-                                                        <div class="text-[9.5px] text-muted">{{ $e['blocked_machines'] }} tak memenuhi syarat</div>
+                                                        <div class="text-[9.5px] text-muted">{{ str_replace(':n', $e['blocked_machines'], t(':n not eligible')) }}</div>
                                                     @endif
                                                 @else
                                                     <span class="text-muted">—</span>
@@ -654,9 +654,9 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                                             </td>
                                             <td class="px-2.5 py-2 border-b border-[#eef1f5] whitespace-nowrap">
                                                 @if ($s->is_optional)
-                                                    <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-[#eff6ff] text-[#1d4ed8]">Opsional</span>
+                                                    <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-[#eff6ff] text-[#1d4ed8]">{{ t('Optional') }}</span>
                                                 @else
-                                                    <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-[#eef1f5] text-[#4b5568]">Wajib</span>
+                                                    <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-[#eef1f5] text-[#4b5568]">{{ t('Required') }}</span>
                                                 @endif
                                                 @if ($s->qty_factor !== null)
                                                     <div class="text-[9.5px] text-muted mt-0.5">qty x{{ rtrim(rtrim((string) $s->qty_factor, '0'), '.') }}</div>
@@ -664,12 +664,12 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                                             </td>
                                             <td class="px-2.5 py-2 border-b border-[#eef1f5] text-[11px] max-w-[180px] truncate">{{ $s->note ?: '—' }}</td>
                                             <td class="px-2.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                                <x-grid.action-icon icon="fa-arrow-up" title="Naikkan" action="moveStep({{ $s->step_id }}, 'up')" />
-                                                <x-grid.action-icon icon="fa-arrow-down" title="Turunkan" action="moveStep({{ $s->step_id }}, 'down')" />
-                                                <x-grid.action-icon icon="fa-sliders" title="Ubah nomor/catatan" action="editStep({{ $s->step_id }})" />
-                                                <x-grid.action-icon icon="fa-xmark" title="Hapus langkah" variant="danger"
+                                                <x-grid.action-icon icon="fa-arrow-up" :title="t('Move Up')" action="moveStep({{ $s->step_id }}, 'up')" />
+                                                <x-grid.action-icon icon="fa-arrow-down" :title="t('Move Down')" action="moveStep({{ $s->step_id }}, 'down')" />
+                                                <x-grid.action-icon icon="fa-sliders" :title="t('Change number/notes')" action="editStep({{ $s->step_id }})" />
+                                                <x-grid.action-icon icon="fa-xmark" :title="t('Delete step')" variant="danger"
                                                     action="removeStep({{ $s->step_id }})"
-                                                    :confirm="'Hapus langkah '.($s->process?->process_name ?? '').' dari template ini?'" />
+                                                    :confirm="str_replace(':name', $s->process?->process_name ?? '', t('Delete step :name from this template?'))" />
                                             </td>
                                         </tr>
 
@@ -677,20 +677,20 @@ new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Com
                                             <tr wire:key="stepedit-{{ $s->step_id }}" class="bg-[#f7faff]">
                                                 <td colspan="8" class="px-3 py-3 border-b border-[#eef1f5]">
                                                     <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-2.5">
-                                                        <x-form.input label="Nomor Urut" type="number" name="stepEditSeq" wire:model="stepEditSeq" hint="Kelipatan 10; sisipan pakai 15, 25" />
-                                                        <x-form.input label="Faktor Qty" name="stepEditQtyFactor" wire:model="stepEditQtyFactor" placeholder="1" hint="0.5 = belah plano" />
-                                                        <x-form.input label="Catatan" name="stepEditNote" wire:model="stepEditNote" />
+                                                        <x-form.input :label="t('Sequence Number')" type="number" name="stepEditSeq" wire:model="stepEditSeq" :hint="t('Multiples of 10; inserts use 15, 25')" />
+                                                        <x-form.input :label="t('Qty Factor')" name="stepEditQtyFactor" wire:model="stepEditQtyFactor" placeholder="1" :hint="t('0.5 = split plano')" />
+                                                        <x-form.input :label="t('Notes')" name="stepEditNote" wire:model="stepEditNote" />
                                                     </div>
                                                     <div class="flex gap-2 mt-3">
-                                                        <button type="button" wire:click="saveStep" class="px-3.5 py-1.5 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                                                        <button type="button" wire:click="cancelStepEdit" class="px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                                                        <button type="button" wire:click="saveStep" class="px-3.5 py-1.5 rounded text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
+                                                        <button type="button" wire:click="cancelStepEdit" class="px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
                                                     </div>
                                                 </td>
                                             </tr>
                                         @endif
                                     @empty
                                         <tr><td colspan="8" class="px-3 py-6 text-center text-muted text-[12px]">
-                                            Belum ada langkah. Tambahkan proses satu per satu sesuai urutan produksi — validator akan memeriksa urutannya begitu ada 2 langkah atau lebih.
+                                            {{ t('No steps yet.') }} {{ t('Add processes one by one in production order — the validator checks the sequence once there are 2 or more steps.') }}
                                         </td></tr>
                                     @endforelse
                                 </tbody>

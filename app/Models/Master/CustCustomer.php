@@ -31,9 +31,9 @@ class CustCustomer extends Model
     ];
 
     public const KYC_STATUSES = [
-        'PENDING' => 'Menunggu Verifikasi',
-        'APPROVED' => 'Terverifikasi',
-        'REJECTED' => 'Ditolak',
+        'PENDING' => 'Pending Verification',
+        'APPROVED' => 'Verified',
+        'REJECTED' => 'Rejected',
     ];
 
     protected $fillable = [

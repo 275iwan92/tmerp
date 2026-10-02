@@ -47,11 +47,11 @@ class CandidateAuthService
     public function register(array $data): array
     {
         if ($this->findByEmail($data['email'])) {
-            throw new CandidateAlreadyExistsException('Email sudah terdaftar.');
+            throw new CandidateAlreadyExistsException(t('The email is already registered.'));
         }
 
         if ($this->findByNationalId($data['national_id'])) {
-            throw new CandidateAlreadyExistsException('No. KTP sudah terdaftar.');
+            throw new CandidateAlreadyExistsException(t('The KTP No. is already registered.'));
         }
 
         $uid = (string) Str::uuid();

@@ -9,7 +9,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Warehouse Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridStatFilter;
 
@@ -75,12 +75,12 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
         $s = $this->stats;
 
         return [
-            'total' => ['label' => 'Total Gudang', 'value' => number_format($s['total']), 'tone' => 'total'],
-            'raw' => ['label' => 'Gudang Bahan Baku', 'value' => number_format($s['raw']), 'tone' => 'active', 'subtitle' => 'RM',
+            'total' => ['label' => t('Total Warehouses'), 'value' => number_format($s['total']), 'tone' => 'total'],
+            'raw' => ['label' => t('Raw Material Warehouses'), 'value' => number_format($s['raw']), 'tone' => 'active', 'subtitle' => 'RM',
                 'filter' => fn ($q) => $q->where('warehouse_type', 'RM')],
-            'fg' => ['label' => 'Gudang Barang Jadi', 'value' => number_format($s['fg']), 'tone' => 'extra', 'subtitle' => 'FG',
+            'fg' => ['label' => t('Finished Goods Warehouses'), 'value' => number_format($s['fg']), 'tone' => 'extra', 'subtitle' => 'FG',
                 'filter' => fn ($q) => $q->where('warehouse_type', 'FG')],
-            'locations' => ['label' => 'Total Lokasi / Bin', 'value' => number_format($s['locations']), 'tone' => 'warn'],
+            'locations' => ['label' => t('Total Locations / Bins'), 'value' => number_format($s['locations']), 'tone' => 'warn'],
         ];
     }
 };
@@ -89,7 +89,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
     <div class="max-w-[1280px] mx-auto my-5 px-4">
 
         <div class="bg-amber-50 border border-amber-300 text-amber-800 text-[11px] px-3.5 py-2 rounded-md mb-4">
-            ⓘ Stok on-hand tidak ditampilkan di sini — itu posisi transaksional dari modul Inventory, bukan master data. Layar ini murni struktur gudang & lokasi/bin.
+            ⓘ {{ t('On-hand stock is not shown here — that is a transactional position from the Inventory module, not master data. This screen is purely the warehouse & location/bin structure.') }}
         </div>
 
         <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
@@ -98,7 +98,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama gudang..."
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search code / warehouse name...') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -111,16 +111,16 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
             <table class="w-full text-xs border-collapse">
                 <thead>
                     <tr>
-                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Gudang</th>
-                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Tipe</th>
-                        <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Jumlah Lokasi</th>
-                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Status</th>
+                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Warehouse') }}</th>
+                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Type') }}</th>
+                        <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Location Count') }}</th>
+                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Status') }}</th>
                         <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1]"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($this->warehouses as $wh)
-                        <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="wh-{{ $wh->id_warehouse }}" wire:dblclick="openWarehouse({{ $wh->id_warehouse }})" title="Klik 2x untuk buka detail">
+                        <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="wh-{{ $wh->id_warehouse }}" wire:dblclick="openWarehouse({{ $wh->id_warehouse }})" title="{{ t('Double-click to open detail') }}">
                             <x-grid.identity-cell :id="$wh->id_warehouse" :name="$wh->warehouse_name" :code="$wh->warehouse_code" />
                             <td class="px-3 py-2">
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded
@@ -132,21 +132,21 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                                         'WASTE' => 'bg-[#ffebee] text-[#b71c1c]',
                                         'TRANSIT' => 'bg-[#e0f2f1] text-[#00695c]',
                                         default => 'bg-[#eef1f5] text-[#4b5568]',
-                                    } }}">{{ match($wh->warehouse_type) { 'RM' => 'Bahan Baku', 'SFG' => 'Semi Finished Goods', 'FG' => 'Barang Jadi', 'MIX' => 'Mix', 'WASTE' => 'Afkir/Waste', 'TRANSIT' => 'Transit', default => $wh->warehouse_type } }}</span>
+                                    } }}">{{ match($wh->warehouse_type) { 'RM' => t('Raw Material'), 'SFG' => t('Semi Finished Goods'), 'FG' => t('Finished Goods'), 'MIX' => t('Mix'), 'WASTE' => t('Reject/Waste'), 'TRANSIT' => t('Transit'), default => $wh->warehouse_type } }}</span>
                             </td>
                             <td class="px-3 py-2 text-right font-semibold">{{ $wh->locations_count }}</td>
                             <td class="px-3 py-2">
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $wh->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fbeaea] text-[#a3241f]' }}">{{ $wh->activate ? 'Aktif' : 'Nonaktif' }}</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $wh->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fbeaea] text-[#a3241f]' }}">{{ $wh->activate ? t('Active') : t('Inactive') }}</span>
                             </td>
                             <td class="px-3 py-2 text-right whitespace-nowrap">
-                                <x-grid.action-icon icon="fa-pen" title="Edit" action="openWarehouse({{ $wh->id_warehouse }})" />
-                                <x-grid.action-icon :active="$wh->activate" :title="$wh->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $wh->id_warehouse }})"
-                                    :confirm="($wh->activate ? 'Nonaktifkan' : 'Aktifkan').' gudang '.$wh->warehouse_name.'?'"
+                                <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="openWarehouse({{ $wh->id_warehouse }})" />
+                                <x-grid.action-icon :active="$wh->activate" :title="$wh->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $wh->id_warehouse }})"
+                                    :confirm="str_replace(':name', $wh->warehouse_name, $wh->activate ? t('Deactivate warehouse :name?') : t('Activate warehouse :name?'))"
                                     :variant="$wh->activate ? 'danger' : 'default'" />
                             </td>
                         </tr>
                     @empty
-                        <x-grid.empty-row :colspan="5" message="Belum ada gudang." />
+                        <x-grid.empty-row :colspan="5" :message="t('No warehouses yet.')" />
                     @endforelse
                 </tbody>
             </table>

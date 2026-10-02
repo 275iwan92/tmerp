@@ -127,7 +127,7 @@ class QuotationBuilder
         $inquiries = IqpInquiry::whereIn('id_inquiry', $inquiryIds)->whereNotNull('customer_id')->orderBy('id_inquiry')->get();
 
         if ($inquiries->isEmpty() || $inquiries->pluck('customer_id')->unique()->count() > 1) {
-            throw new InvalidArgumentException('Inquiry terpilih harus dari 1 customer.');
+            throw new InvalidArgumentException(t('The selected inquiries must be from 1 customer.'));
         }
 
         return $inquiries;

@@ -41,7 +41,7 @@ class Modal extends UiComponent
                         <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2 sticky top-0 z-[1]">
                             <span>{{ $header ?? $title }}</span>
                             @if ($close)
-                                <button type="button" class="ml-auto cursor-pointer opacity-85 hover:opacity-100 bg-transparent border-0 text-white" wire:click="{{ $close }}" aria-label="Tutup">✕</button>
+                                <button type="button" class="ml-auto cursor-pointer opacity-85 hover:opacity-100 bg-transparent border-0 text-white" wire:click="{{ $close }}" aria-label="{{ t('Close') }}">✕</button>
                             @endif
                         </div>
                     @endif

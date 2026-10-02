@@ -12,10 +12,10 @@
         ['key' => 'contact', 'label' => 'Contact'],
         ['key' => 'result', 'label' => 'Result'],
         ['key' => 'notes', 'label' => t('Notes')],
-        ['key' => 'next_date', 'label' => 'Tindak lanjut', 'type' => 'date'],
-        ['key' => 'next', 'label' => 'Apa'],
-        ['key' => 'due', 'label' => 'Jatuh tempo', 'type' => 'badge', 'tones' => ['LEWAT' => 'danger', 'HARI INI' => 'warn', 'NANTI' => 'info', '—' => 'neutral']],
-        ['key' => 'by', 'label' => t('By')],
+        ['key' => 'next_date', 'label' => 'Next action', 'type' => 'date'],
+        ['key' => 'next', 'label' => 'What'],
+        ['key' => 'due', 'label' => 'Due status', 'type' => 'badge', 'tones' => [t('PAST DUE', 'badge') => 'danger', t('TODAY', 'badge') => 'warn', t('LATER', 'badge') => 'info', '—' => 'neutral']],
+        ['key' => 'by', 'label' => 'Recorded by'],
     ]"
-    :stats="[['label' => t('All')], ['label' => 'Tindak lanjut lewat', 'where' => ['due' => 'LEWAT'], 'tone' => 'danger'], ['label' => t('Today'), 'where' => ['due' => 'HARI INI'], 'tone' => 'warn']]"
-    :filters="['type' => 'Jenis', 'result' => 'Hasil', 'by' => 'Oleh', 'due' => 'Jatuh tempo']" />
+    :stats="[['label' => t('All')], ['label' => 'Overdue follow-up', 'where' => ['due' => t('PAST DUE', 'badge')], 'tone' => 'danger'], ['label' => t('Today'), 'where' => ['due' => t('TODAY', 'badge')], 'tone' => 'warn']]"
+    :filters="['type' => 'Kind', 'result' => 'Result', 'by' => 'Recorded by', 'due' => 'Due status']" />

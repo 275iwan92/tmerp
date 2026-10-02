@@ -11,10 +11,10 @@ gotchas:
   - "<select> + wire:model rawan bug morph Livewire v4 -> x-form.select liveSync / toggle-group / searchable-select."
   - "Class .grid global (app.css) memaksa 4 kolom -> pakai 'grid two'/'grid three' atau flex, bukan grid-cols-N."
   - "Komponen berbasis Alpine (date-picker, searchable-select, multi-select, dll) bind lewat input hidden; nilai tanggal selalu ISO."
-  - "Teks UI lewat App\\Support\\Localization\\Translator::t('key', 'Fallback ID')."
+  - "Teks UI ditulis ENGLISH lewat t('English') / @t('English') (kamus tm2sys.sys_dictionary, tercatat otomatis); terjemahan Indonesia & bahasa lain lewat Dictionary::seed() di migration atau layar Setup > Translation Dictionary. Kata bermakna ganda: t('Close', 'action'). Nilai data di dalam teks: raw()."
   - "Input teks string WAJIB x-form.input/textarea (badge huruf aa/Aa/AA ikut otomatis) + lookup kalau nilainya sudah ada di master -- FORM_UI_STANDARD 1b."
   - "Warna field: border-field-border/bg-field-soft/bg-field-badge/bg-accent-soft (token @theme app.css), JANGAN hex abu-abu literal -- supaya ikut corak sys_theme."
-  - "Tombol baku: Simpan/Batal/Tutup (ID), Back selalu Inggris. Grid: '+ New Record'."
+  - "Tombol baku: x-ui.button preset (Save/Cancel/Close lewat kamus -> Simpan/Batal/Tutup di bahasa id), Back selalu Inggris. Grid: '+ New Record'."
 
 ui: # Layer 1 PRIMITIVE (class PHP app/View/Components/Ui, turunan UiComponent) -- docs/componentstandard.md
   # Pakai ini SEBELUM menulis <button>/<span badge>/<table>/modal mentah. Warna dari token @theme, bukan hex.

@@ -31,9 +31,9 @@ class Breadcrumb extends DevlibComponent
                     @php $text = is_int($label) ? $url : $label; $isLast = $loop->last && $current === null; @endphp
                     @if (! $loop->first)<i class="fa-solid fa-chevron-right"></i>@endif
                     @if ($url)
-                        <a href="{{ $url }}" @if ($isLast) class="is-current" aria-current="page" title="Muat ulang {{ $text }}" @endif>{{ $text }}</a>
+                        <a href="{{ $url }}" @if ($isLast) class="is-current" aria-current="page" title="{{ \Devlib\Lang::text('Reload') }} {{ $text }}" @endif>{{ $text }}</a>
                     @elseif (! $url && $menu && ! $isLast)
-                        <a href="#" data-dl-crumb-menu="{{ json_encode(array_slice($labels, 0, $loop->iteration)) }}" data-leaf="{{ $leaf }}" title="Buka menu {{ $text }}">{{ $text }}</a>
+                        <a href="#" data-dl-crumb-menu="{{ json_encode(array_slice($labels, 0, $loop->iteration)) }}" data-leaf="{{ $leaf }}" title="{{ \Devlib\Lang::text('Open menu') }} {{ $text }}">{{ $text }}</a>
                     @else
                         <span>{{ $text }}</span>
                     @endif

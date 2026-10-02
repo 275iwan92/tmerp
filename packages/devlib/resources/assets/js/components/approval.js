@@ -89,11 +89,11 @@
         const log = {id: d.id, no: d.no, action, status, by: this.me, at: now, level: lv.at, levels: lv.n, role: step ? step.role : '', note: n};
         (d.history = d.history || []).push({action: status, by: this.me, at: now, note: n});
         this.log.unshift(log); this.logs();
-        if (action === 'hold') { d.held = {by: this.me, at: now, note: n}; toast(`${d.no} ditahan.`, 'warn'); this.detail(); this.list(); }
+        if (action === 'hold') { d.held = {by: this.me, at: now, note: n}; toast(Tf('a_toast_held', {no: d.no}), 'warn'); this.detail(); this.list(); }
         else {
           if (step) Object.assign(step, {status: action === 'approve' ? 'done' : 'rejected', by: this.me, at: now});
           d.decided = action;
-          toast(`${d.no} ${action === 'approve' ? 'disetujui' : 'ditolak'}.`, action === 'approve' ? 'success' : 'danger');
+          toast(Tf(action === 'approve' ? 'a_toast_approved' : 'a_toast_rejected', {no: d.no}), action === 'approve' ? 'success' : 'danger');
           const next = this.pending()[0]; this.cur = next ? next.id : null; this.list(); this.detail();
         }
         this.el.dispatchEvent(new CustomEvent('dl:approval', {bubbles: true, detail: log}));

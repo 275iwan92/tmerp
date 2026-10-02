@@ -24,16 +24,16 @@ final class MasterCardCollection
             return [
                 'id' => $c->id_master_card,
                 'photo' => $img?->url(),
-                'name' => $c->product_name ?: '(tanpa nama)',
+                'name' => $c->product_name ?: t('(no name)'),
                 'code' => trim(($c->design_no ?? '—').' · '.($c->card_code ?? '—')),
-                'customer' => $c->customer_id ? trim((string) ($cust[$c->customer_id] ?? '')) : ($c->customer_text ? $c->customer_text.' (belum cocok)' : '?'),
+                'customer' => $c->customer_id ? trim((string) ($cust[$c->customer_id] ?? '')) : ($c->customer_text ? $c->customer_text.' '.t('(not matched)') : '?'),
                 'part' => implode(' + ', array_map(fn ($p) => $p === '' ? '1' : $p, MasterCardShape::parts($c->toArray()))),
                 'dims' => $c->dim_l ? $mm($c->dim_l).' × '.$mm($c->dim_w).' × '.$mm($c->dim_h).' cm' : '?',
                 'type' => $c->type_code ? ($types[$c->type_code]['label'] ?? $c->type_code) : '?',
                 'knife' => $c->knife_w ? $mm($c->knife_w).' × '.$mm($c->knife_h).' · '.($c->up_text ?? '?').($check ? ($check['ok'] ? ' ✓' : ' ≠') : '') : '?',
-                'source' => ['XLSX' => 'Excel', 'PHOTO' => 'Foto', 'MANUAL' => 'Manual'][$c->source_kind] ?? $c->source_kind,
+                'source' => ($kind = ['XLSX' => 'Excel', 'PHOTO' => 'Photo', 'MANUAL' => 'Manual'][$c->source_kind] ?? null) ? t($kind) : $c->source_kind,
                 'status' => ProdMasterCard::STATUS[$c->status] ?? $c->status,
-                'svg' => $c->dieline_svg ? 'Ada' : 'Belum',
+                'svg' => $c->dieline_svg ? t('On file', 'badge') : t('Not yet', 'badge'),
                 'updated' => $c->updated_at?->toDateString(),
             ];
         })->all();

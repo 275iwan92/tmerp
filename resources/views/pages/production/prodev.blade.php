@@ -111,7 +111,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
         if (! $iqpPart) {
             $this->artworkUpload = null;
-            $this->artworkError = 'Job ini tidak punya Inquiry Part (Mode #2 manual), artwork belum bisa disimpan.';
+            $this->artworkError = t('This job has no Inquiry Part (Mode #2 manual), the artwork cannot be saved yet.');
 
             return;
         }
@@ -121,20 +121,20 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         // canvas dan analisa warna tinta.
         $this->validate([
             'artworkUpload' => 'file|max:'.($this->artworkMaxMb() * 1024),
-        ], [], ['artworkUpload' => 'artwork']);
+        ], [], ['artworkUpload' => t('artwork')]);
 
         $ext = strtolower($this->artworkUpload->getClientOriginalExtension());
 
         if (! in_array($ext, ['jpg', 'jpeg', 'png', ...ArtworkAnalyzer::VECTOR], true)) {
             $this->artworkUpload = null;
-            $this->artworkError = 'Format artwork yang didukung: JPG, PNG, PDF, AI, EPS.';
+            $this->artworkError = t('Supported artwork formats: JPG, PNG, PDF, AI, EPS.');
 
             return;
         }
 
         if (in_array($ext, ArtworkAnalyzer::VECTOR, true) && ! ArtworkAnalyzer::available()) {
             $this->artworkUpload = null;
-            $this->artworkError = 'File vektor butuh Imagick + Ghostscript di server -- belum aktif.';
+            $this->artworkError = t('Vector files need Imagick + Ghostscript on the server -- not active yet.');
 
             return;
         }
@@ -183,17 +183,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         $part = ! empty($state['partId']) ? ProdPart::find($state['partId']) : null;
 
         if (! $part) {
-            return ['ok' => false, 'message' => 'Job demo/tanpa Part nyata tidak bisa disimpan -- pilih job dari Master Part.'];
+            return ['ok' => false, 'message' => t('A demo job/without a real Part cannot be saved -- choose a job from Master Part.')];
         }
 
         if (! $part->product_id) {
-            return ['ok' => false, 'message' => 'Part ini belum punya product_id (produk induk) -- lengkapi dulu di Master Produk sebelum simpan layout.'];
+            return ['ok' => false, 'message' => t('This part has no product_id (parent product) yet -- complete it in Master Product first before saving the layout.')];
         }
 
         $upCount = (int) ($state['upCount'] ?? 0);
 
         if ($upCount < 1) {
-            return ['ok' => false, 'message' => 'Belum ada object di canvas -- atur nesting dulu sebelum simpan.'];
+            return ['ok' => false, 'message' => t('No objects on the canvas yet -- arrange the nesting first before saving.')];
         }
 
         $login = Auth::user()->login;
@@ -388,7 +388,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         $part = $partId === $this->partId ? ProdPart::with('product')->find($partId) : null;
 
         if (! $part) {
-            return ['ok' => false, 'message' => 'Part tidak dikenali.'];
+            return ['ok' => false, 'message' => t('Part not recognized.')];
         }
 
         return app(ProcurementBridge::class)->purchaseMaterial(
@@ -402,7 +402,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         $iqp = $part ? IqpPart::with('inquiry')->where('prod_part_id', $partId)->first() : null;
 
         if (! $iqp) {
-            return ['ok' => false, 'message' => 'Subkon butuh Inquiry asal (job Mode #2 belum didukung).'];
+            return ['ok' => false, 'message' => t('Subcontracting needs a source Inquiry (Mode #2 jobs are not supported yet).')];
         }
 
         $needDate = $needDate && preg_match('/^\d{4}-\d{2}-\d{2}$/', $needDate) ? $needDate : null;
@@ -630,7 +630,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 'name' => $p->product && $p->product->product_name !== $p->part_name
                     ? $p->part_name.' — '.$p->product->product_name
                     : (string) $p->part_name,
-                'category' => $p->part_type ?: 'Part Produksi',
+                'category' => $p->part_type ?: t('Production Part'),
                 'fl' => (float) ($p->cm_length ?: 0),
                 'fw' => (float) ($p->cm_width ?: 0),
                 'fh' => (float) ($p->cm_height ?: 0),
@@ -646,7 +646,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 // digambar di JS -- dikenali lewat kode Master Card-nya, supaya
                 // gambar aslinya tetap tampil dan bukan kotak polos.
                 'type' => self::SAMPLE_ARTWORK[$p->mastercard_code] ?? null,
-                'customer' => $src?->inquiry?->customer?->customer_name ?: 'Mode #2 — manual / standalone',
+                'customer' => $src?->inquiry?->customer?->customer_name ?: t('Mode #2 — manual / standalone'),
                 'design' => $p->displayMastercardCode(),
                 // Isian Master Card (cetak A4 landscape, permintaan user 2026-09-18).
                 'designNo' => $src?->inquiry?->design_number ?: ($p->product?->design_no ?: '—'),
@@ -708,12 +708,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         $part = ProdPart::find($this->partId);
 
         if (! $part) {
-            return 'Part tidak ditemukan (id '.$this->partId.').';
+            return str_replace(':id', $this->partId, t('Part not found (id :id).'));
         }
 
-        return 'Part "'.$part->part_name.'" belum punya dimensi dieline. '
-            .'Isi salah satu dulu: die_w_cm/die_h_cm, printsize_p/printsize_l di Master Part, '
-            .'atau flat_w/flat_h di Inquiry Part asalnya.';
+        return str_replace(':name', $part->part_name, t('Part ":name" has no dieline dimensions yet.')).' '
+            .t('Fill in one of them first: die_w_cm/die_h_cm, printsize_p/printsize_l in Master Part, or flat_w/flat_h in its source Inquiry Part.');
     }
 
     // Deep-link dari Inquiry ("Kirim ke ProDev") -> job part itu yang terpilih.
@@ -732,6 +731,361 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
         return 0;
     }
+
+    // Teks layar ini yang dirender di browser (markup & script di dalam blok verbatim tidak bisa memanggil t()):
+    // dikirim sebagai kamus window.__PRODEV.i18n lalu dipakai fungsi T() di script. Teks baru di script WAJIB ditambah di sini.
+    private const JS_TEXT = [
+        'Imposition Plano Optimizer',
+        'Pro-Dev — manual nesting & plano optimization per print job (vector artwork + structural dieline lines)',
+        'Save All',
+        'Confirm',
+        'Preview & Print Master Card',
+        'LIVE PACKAGING JOBS',
+        'Imposition & Nesting',
+        'Job',
+        '1. Number of Ups',
+        'Auto Up',
+        'Active: use the maximum possible ups',
+        'Optimization result',
+        'The arrangement is calculated from the canvas size & dieline shape.',
+        'Target up (manual)',
+        'The canvas will get the smallest size that fits this number.',
+        '2. Gap',
+        'Distance between artwork / dieline (cm)',
+        '3. Print Sheet / Canvas',
+        'Length (cm)',
+        'Width (cm)',
+        'Suggestion',
+        'Grain direction',
+        'Along dieline length',
+        'Along dieline width',
+        'No grain constraint',
+        'Calculation Data',
+        'Canvas utilization',
+        'Canvas waste',
+        'Plano sheet yield',
+        'Overall efficiency',
+        'Specification & Artwork',
+        'Artwork asset',
+        'Upload artwork',
+        'Default artwork of the active job',
+        'Separate dieline',
+        'Upload dieline',
+        'Default structural dieline of the active job',
+        'Plano Configuration',
+        'Machine',
+        'Printing machine',
+        'Die-cut / punching machine',
+        'Plano Optimization',
+        'Market plano size',
+        'Calculate Plano',
+        'Custom L',
+        'Custom W',
+        'Use custom plano',
+        'Ranking Plano',
+        'PCS ↔ PLANO Calculator',
+        'PCS → PLANO',
+        'PLANO → PCS',
+        'Qty order (pcs)',
+        'Enter the number of products to produce',
+        'Plano required',
+        'sheets',
+        'Active up',
+        'Yield / plano',
+        'Products / plano',
+        'Waste / plano',
+        'Bill of Material',
+        'Ink Configuration',
+        'Bill of Process',
+        'Zoom',
+        'Mirror X',
+        'Mirror Y',
+        'Reset layout',
+        'Auto Nesting',
+        'CANVAS / PRINT SHEET RULER — cm',
+        'Artwork exceeds the canvas / print sheet boundary',
+        'Artwork surface',
+        'Die-cut / trim line',
+        'Fold / crease line',
+        'Grain',
+        'Selected object',
+        'Manual nesting:',
+        'select then drag artwork/dieline one by one. Use Rotate and Mirror to simulate opposite arrangements and fill empty space following the dieline shape. After the arrangement is set, the button',
+        'does not reset the layout — the arrangement is tightened by the gap (between objects & around the edge), then the canvas and plano size are chosen again. Press',
+        'to go back to the automatic grid.',
+        'Set a valid canvas size.',
+        'Preview Master Card',
+        'Print (A4 landscape)',
+        'Close',
+        'Changes the canvas AND plano size',
+        'Choose the most economical plano for the current canvas size',
+        'Master Card',
+        'Master data is incomplete: needs at least 1 part with dimensions, 1 printing machine, and 1 active plano size.',
+        'The component is not ready yet, try again shortly.',
+        'A demo job cannot be saved — choose a real job from the Part list.',
+        'The canvas is still outside the machine limits — fix it first before saving.',
+        'Saving & confirming…',
+        'Saving…',
+        'Failed to save the layout.',
+        'Layout saved as DRAFT',
+        'master + Inquiry snapshot, including BOM/Ink/BOP.',
+        'master only, this job has no source Inquiry.',
+        'Not overwritten:',
+        'Layout CONFIRMED (:code) — opening Product Costing…',
+        'Layout CONFIRMED (:code). This job is Mode #2 (without Inquiry), so there is no Product Costing screen to go to yet.',
+        'Failed to save:',
+        'Standard grid',
+        'Interlock between rows (180°)',
+        'shift',
+        'Interlock between columns (180°)',
+        'Calculating…',
+        'No canvas/plano combination fits this machine.',
+        'Canvas :l × :w cm (plano divided :nc × :nr)',
+        'Material optimization:',
+        ':a cm² of material per pcs',
+        'previously',
+        'Optimization failed:',
+        'no standard plano fits the canvas :l × :w cm',
+        'plano stays :p (already the most economical)',
+        'plano changed :old → :new',
+        'The canvas is still outside the machine limits — fix it first before auto nesting.',
+        'Auto nesting found no arrangement that fits this canvas.',
+        '+:g% vs standard grid, :n more ups',
+        'the standard grid is already the densest for this shape',
+        ':n patterns rejected because they still collide',
+        'this type has no dieline yet, calculated as a plain box',
+        'Auto nesting failed:',
+        'the artwork cannot be read',
+        'SAVED MANUAL DATA',
+        'OFFICER OVERRIDE',
+        'ENGINE RESULT',
+        'saved to master & Inquiry on Save',
+        'Back to engine result',
+        'Finish editing',
+        'Edit',
+        'Open document',
+        'Finishing from Inquiry:',
+        'Qty order:',
+        'Qty / pack:',
+        'Process',
+        'Label in routing',
+        'Target / hour',
+        'Waste %',
+        'Tolerance %',
+        'Subcon to',
+        'process',
+        'no machine',
+        'in-house',
+        'Move up',
+        'Move down',
+        'Delete',
+        'Add step',
+        'Work Sequence',
+        'Default target',
+        'Qty in',
+        'Waste',
+        'Tolerance',
+        'Est. hours',
+        'Subcon',
+        'hour',
+        'none yet',
+        'No process steps.',
+        'Qty sent:',
+        'subcon PR is created as DRAFT (through PR approval).',
+        'Subcon supplier',
+        'choose supplier',
+        'CO (required for the delivery note)',
+        'choose CO',
+        'no CO for this Inquiry yet',
+        'Send date',
+        'Estimated cost (Rp)',
+        'Without CO: the subcon PR is still created, the delivery note follows once the CO is issued (click Subcon again).',
+        'Process Subcon',
+        'Cancel',
+        'Print sheets needed:',
+        'sheets (including BOP waste & tolerance)',
+        'Role',
+        'Material',
+        'Grammage',
+        'Len. (cm)',
+        'Wid. (cm)',
+        'Qty / sheet',
+        'Unit',
+        'Requirement',
+        'type material name / code…',
+        'Add material',
+        'Brand',
+        'Specification',
+        'Per print sheet',
+        'Qty required',
+        'Available stock (warehouse)',
+        'Status',
+        'plano sheets',
+        'cannot be calculated yet',
+        'short',
+        'Create PR',
+        'No materials yet.',
+        'Searching…',
+        'No matching material.',
+        'stock',
+        'Analyzing artwork colors…',
+        'Artwork analysis failed:',
+        'Color notation:',
+        'Re-analyze artwork',
+        'Print Unit',
+        'Pass',
+        'Type',
+        'Ink',
+        'Color',
+        'Coverage %',
+        'Area / pcs',
+        'First Color',
+        'Second Color',
+        'Add ink',
+        'Coverage',
+        'Area / sheet',
+        'Colors in the artwork (area per pcs)',
+        'Calculating from Inquiry data…',
+        'Demo job — the engine needs a real part.',
+        'Returned to the engine result — saved on Save.',
+        'The server is not responding, try again.',
+        'Choose the subcon supplier first.',
+        'MASTER CARD',
+        'Item Code:',
+        'Design No.',
+        'Goods Name',
+        'Date',
+        'Name of Customer',
+        'Dimension L',
+        'Dimension W',
+        'Dimension H',
+        'Knife Code',
+        'Knife Size',
+        'Quality',
+        'Material Size',
+        'Printing Size',
+        'Finishing Type',
+        'Structure / Joint',
+        'No ink arrangement yet',
+        'Ups / Sheet',
+        'Dieline / blank',
+        'gap',
+        'Plano',
+        'sheets / plano',
+        'Material efficiency',
+        'Work Sequence (Routing)',
+        'subcon',
+        'Qty order',
+        'Print sheets',
+        'sht',
+        'Qty / pack',
+        'Inquiry No.',
+        'PRINT SHEET LAYOUT',
+        'PROOF PRINT APPROVAL (DIGITAL + PRINT) MUST BE ATTACHED WITH THE MASTER CARD',
+        'NOT CONFIRMED',
+        'The canvas is still outside the machine limits — fix it first before printing the Master Card.',
+        'CONFIRMED',
+        'NOT CONFIRMED YET',
+        'DEMO SAMPLES',
+        'SELECTED JOB',
+        'Active: use the maximum ups that fit the canvas',
+        'Inactive: set the target number of ups yourself',
+        'Artwork saved in the Inquiry Part',
+        'No artwork yet — click Upload artwork',
+        'Mode #2 / demo job: not linked to an Inquiry Part',
+        'Dieline from the Product Type specification (dieline_spec)',
+        'This product type has no dieline definition yet',
+        'This job is not linked to an Inquiry Part (Mode #2 / demo) — the artwork cannot be saved yet.',
+        'not saved yet',
+        'Available plano stock (sheets)',
+        'Enter the number of available plano sheets',
+        'die-cut',
+        'custom plano :p unchanged',
+        'An arrangement of :n objects needs :rl × :rw cm — exceeds the table of :bed (:bl × :bw cm). Canvas cut to :cl × :cw cm, objects outside the limit are marked red.',
+        'Canvas fitted to the arrangement: :n objects tightened, gap :g cm between objects & around the edge = :cl × :cw cm · area usage :use%',
+        'The custom arrangement needs :rl × :rw cm — exceeds the bed of :bed (:bl × :bw). Canvas cut to :cl × :cw cm, objects outside the limit are marked red.',
+        'Custom nesting: bounding box :n objects + bleed :m cm/side = :cl × :cw cm · area usage :use%.',
+        'Target :t up does not fit: needs a canvas larger than the table of :bed (max :ml × :mw cm).',
+        'Auto Up: canvas suggested from job history, packing efficiency, and machine bed.',
+        'Manual :t-up: the minimum canvas that can fit that number of objects is :l × :w cm.',
+        'Maximum printable bed:',
+        'max_paper_size is not filled in Master Machine yet — the figures above are assumptions.',
+        'No active die-cut machine in Master Machine yet.',
+        'Maximum die-cut table:',
+        'The table size is not filled in Master Machine yet — the die-cut limit cannot be enforced, the canvas is only limited by the printing machine bed.',
+        'Finished L × W × H',
+        'Blank area',
+        'Bleed / Gap',
+        'Customer',
+        'Category',
+        'Structure',
+        'Artwork',
+        'Reg / Note',
+        'CANVAS :l × :w cm — OUTSIDE THE MACHINE LIMIT',
+        'Canvas :l × :w cm exceeds the table of :bed',
+        'Maximum :bl × :bw cm — :n objects hidden',
+        'Invalid: the canvas must not exceed :bl × :bw cm (limit of :bed).',
+        'Validation failed',
+        'CANVAS / PRINT SHEET:',
+        'Automatic grid from the canvas size & blank shape. Press ✦ Auto Nesting to try an interlocking arrangement.',
+        'Valid canvas. Drag each object independently for manual nesting based on the dieline shape.',
+        'object(s)',
+        'Manual Up',
+        'selected:',
+        'no selection',
+        'GRAIN · DIELINE LENGTH',
+        'GRAIN · DIELINE WIDTH',
+        'Select an artwork object on the canvas first.',
+        'Material used :u% · wasted :w%',
+        'CUSTOM IMPOSITION — manual nesting',
+        'Arrangement: :r objects rotated, :m mirrored',
+        ':n outside the canvas (not counted as valid)',
+        'AUTO GRID IMPOSITION',
+        'Automatic arrangement :c columns × :r rows',
+        'blank rotated 90°',
+        'mode',
+        ':n objects outside the canvas — move them manually',
+        'CUT LINES COLLIDE',
+        ':a mm² of blank overlaps, this arrangement cannot be printed. The yield figures below are also invalid.',
+        'TARGET :t UP DOES NOT FIT THE MACHINE',
+        'that many :bl × :bw cm blanks exceed the table of :bed. The largest allowed canvas (:ml × :mw cm) only fits :max up.',
+        'TARGET :t UP DOES NOT FIT THIS CANVAS YET',
+        'canvas :l × :w cm only fits :got up, the rest is placed OUTSIDE the canvas (marked red) to be moved manually.',
+        'You can also rotate/mirror, enlarge the canvas (the table of :bed still allows up to :ml × :mw cm), or press ✦ Suggestion.',
+        'Objects on canvas',
+        'Arrangement bounding box',
+        'Total blank area',
+        'Canvas area',
+        'Empty canvas left',
+        'Canvas / plano',
+        'sheet(s)',
+        'Wasted plano trim',
+        'Output / plano',
+        'Cvs',
+        'Yield',
+        'Overall',
+        'Pcs',
+        'No standard plano fits the canvas :l × :w cm',
+        'Plano :p does not fit the canvas :l × :w cm.',
+        'Choose',
+        'sheet yield',
+        'or press ✦ Suggestion.',
+        'Recommended:',
+        'gives :n canvas(es) / plano',
+        'sheet yield, most economical material per pcs',
+        'Selected.',
+        'Manual plano selection active.',
+        'Production capacity',
+        'Canvas :l × :w cm does not fit',
+        'canvas rotated',
+        'Sheet yield :y% · wasted trim :a cm² (hatched)',
+    ];
+
+    #[Computed]
+    public function jsText(): array
+    {
+        return collect(self::JS_TEXT)->mapWithKeys(fn ($s) => [$s => t($s)])->all();
+    }
 }; ?>
 
 <div>
@@ -747,6 +1101,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             lookups: @json($this->lookups),
             gripperMm: @json(SysConstant::number('PRODEV_GRIPPER_MM', 12.0)),
             marginMm: @json(SysConstant::number('PRODEV_MARGIN_MM', 8.0)),
+            i18n: @json($this->jsText),
         };
     </script>
 
@@ -755,7 +1110,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
          memicu klik ke sini (label lintas-subtree lewat getElementById). --}}
     <div class="io-uploader">
         <input type="file" id="io-artFileReal" accept="image/jpeg,image/png,application/pdf,.ai,.eps" wire:model="artworkUpload">
-        <div class="io-toast" style="display:none" wire:loading wire:target="artworkUpload">⏳ Mengunggah artwork…</div>
+        <div class="io-toast" style="display:none" wire:loading wire:target="artworkUpload">⏳ {{ t('Uploading artwork…') }}</div>
         @error('artworkUpload')
             <div class="io-toast bad">⚠ {{ $message }}</div>
         @enderror
@@ -1060,7 +1415,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             <div class="io-top">
                 <div>
                     <h1>Imposition Plano Optimizer</h1>
-                    <p class="io-sub">Pro-Dev — nesting manual &amp; optimasi plano per job cetak (artwork vector + garis dieline struktural)</p>
+                    <p class="io-sub">Pro-Dev — manual nesting &amp; plano optimization per print job (vector artwork + structural dieline lines)</p>
                 </div>
                 <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
                     <!-- Label "Back" dikunci berbahasa Inggris di kedua mode bahasa
@@ -1096,12 +1451,12 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                 <div id="io-metrics" class="io-metric-grid"></div>
                             </div>
                             <div class="io-group">
-                                <h2>1. Jumlah Up</h2>
+                                <h2>1. Number of Ups</h2>
                                 <div class="io-auto-box">
                                     <div class="io-toggle-row">
                                         <div>
                                             <b>Auto Up</b>
-                                            <div class="io-note" id="io-modeText">Aktif: gunakan up maksimum yang memungkinkan</div>
+                                            <div class="io-note" id="io-modeText">Active: use the maximum possible ups</div>
                                         </div>
                                         <label class="io-toggle"><input id="io-autoUp" type="checkbox" checked><span class="io-slider"></span></label>
                                     </div>
@@ -1110,26 +1465,26 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                     Blok ini ada di dalam @verbatim: komentar Blade tidak diproses
                                     dan akan bocor jadi teks -- WAJIB komentar HTML. -->
                                     <div id="io-autoResult" class="io-auto-result">
-                                        <span>Hasil optimasi</span><b id="io-autoResultValue">—</b>
-                                        <div class="io-note" id="io-autoResultNote">Susunan dihitung dari ukuran canvas &amp; bentuk dieline.</div>
+                                        <span>Optimization result</span><b id="io-autoResultValue">—</b>
+                                        <div class="io-note" id="io-autoResultNote">The arrangement is calculated from the canvas size &amp; dieline shape.</div>
                                     </div>
                                     <div id="io-manualGroup" style="display:none">
                                         <label>Target up (manual)</label>
                                         <input id="io-manualUp" type="number" min="1">
-                                        <p class="io-note">Canvas akan dicarikan ukuran terkecil yang memuat jumlah ini.</p>
+                                        <p class="io-note">The canvas will get the smallest size that fits this number.</p>
                                     </div>
                                 </div>
                                 <h2 style="margin-top:14px">2. Gap</h2>
-                                <label>Jarak antar artwork / dieline (cm)</label>
+                                <label>Distance between artwork / dieline (cm)</label>
                                 <input id="io-gap" type="number" min="0" step=".05" value=".3">
                             </div>
                             <div class="io-group">
-                                <h2>3. Lembar Cetak / Canvas</h2>
+                                <h2>3. Print Sheet / Canvas</h2>
                                 <div class="io-row">
                                     <div><label>Length (cm)</label><input id="io-sl" type="number" min="1" step=".1"></div>
                                     <div><label>Width (cm)</label><input id="io-sw" type="number" min="1" step=".1"></div>
                                 </div>
-                                <button id="io-suggest" class="io-btn green" style="width:100%;margin-top:9px" title="Mengubah ukuran canvas DAN plano">✦ Suggestion</button>
+                                <button id="io-suggest" class="io-btn green" style="width:100%;margin-top:9px" title="Changes the canvas AND plano size">✦ Suggestion</button>
                                 <p id="io-suggestNote" class="io-note"></p>
                                 <label>Grain direction</label>
                                 <select id="io-grain">
@@ -1139,7 +1494,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                 </select>
                             </div>
                             <div class="io-group">
-                                <h2>Data Kalkulasi</h2>
+                                <h2>Calculation Data</h2>
                                 <div class="io-mini-grid" style="margin-top:0">
                                     <div class="io-mini"><span>Canvas utilization</span><b id="io-yCanvas">—</b></div>
                                     <div class="io-mini"><span>Canvas waste</span><b id="io-yCanvasW">—</b></div>
@@ -1150,14 +1505,14 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                 <div id="io-impoDetail" class="io-spec"></div>
                             </div>
                             <div class="io-group">
-                                <h2>Spesifikasi &amp; Artwork</h2>
+                                <h2>Specification &amp; Artwork</h2>
                                 <div id="io-spec" class="io-spec" style="margin-top:0"></div>
                                 <label>Artwork asset</label>
                                 <label class="io-upload">Upload artwork<input id="io-artFile" type="file" accept="image/*,.pdf,.ai,.svg"></label>
-                                <div id="io-artName" class="io-file">Artwork bawaan job aktif</div>
+                                <div id="io-artName" class="io-file">Default artwork of the active job</div>
                                 <label>Separate dieline</label>
                                 <label class="io-upload">Upload dieline<input id="io-dieFile" type="file" accept="image/*,.pdf,.ai,.svg,.dxf"></label>
-                                <div id="io-dieName" class="io-file">Dieline struktural bawaan job aktif</div>
+                                <div id="io-dieName" class="io-file">Default structural dieline of the active job</div>
                             </div>
                         </div>
                     </section>
@@ -1166,11 +1521,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         <button type="button" class="io-sec-head"><span>Plano Configuration</span></button>
                         <div class="io-sec-body">
                             <div class="io-group">
-                                <h2>Mesin</h2>
+                                <h2>Machine</h2>
                                 <label>Printing machine</label>
                                 <select id="io-machine"></select>
                                 <div id="io-machineInfo" class="io-notice info"></div>
-                                <label>Mesin plong / ponds</label>
+                                <label>Die-cut / punching machine</label>
                                 <select id="io-diecut"></select>
                                 <div id="io-diecutInfo" class="io-notice info"></div>
                             </div>
@@ -1178,7 +1533,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                 <h2>Plano Optimization</h2>
                                 <label>Market plano size</label>
                                 <select id="io-plano"></select>
-                                <button id="io-calcPlano" class="io-btn green" style="width:100%;margin-top:8px" title="Pilih plano paling hemat untuk ukuran canvas sekarang">⟳ Calculate Plano</button>
+                                <button id="io-calcPlano" class="io-btn green" style="width:100%;margin-top:8px" title="Choose the most economical plano for the current canvas size">⟳ Calculate Plano</button>
                                 <div class="io-row">
                                     <div><label>Custom L</label><input id="io-cpl" type="number" step=".1" placeholder="cm"></div>
                                     <div><label>Custom W</label><input id="io-cpw" type="number" step=".1" placeholder="cm"></div>
@@ -1199,7 +1554,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                 </div>
                                 <div class="io-compact">
                                     <b id="io-inputLabel">Qty order (pcs)</b>
-                                    <label for="io-converterInput" class="io-note" id="io-inputHint">Masukkan jumlah produk yang harus diproduksi</label>
+                                    <label for="io-converterInput" class="io-note" id="io-inputHint">Enter the number of products to produce</label>
                                     <input id="io-converterInput" type="number" min="0" value="100">
                                     <div class="io-result">
                                         <div class="caption" id="io-resultCaption">Plano required</div>
@@ -1253,7 +1608,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         <div class="io-rulerx">CANVAS / PRINT SHEET RULER — cm</div>
                         <div class="io-rulery"></div>
                         <div id="io-sheetLabel" class="io-sheetlabel"></div>
-                        <div id="io-warning" class="io-warn">⚠ Artwork melewati batas canvas / print sheet</div>
+                        <div id="io-warning" class="io-warn">⚠ Artwork exceeds the canvas / print sheet boundary</div>
                         <div class="io-viewport" id="io-viewport">
                             <div id="io-wrap" class="io-wrap">
                                 <svg id="io-svg" width="650" height="500" viewBox="0 0 650 500">
@@ -1278,10 +1633,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         <span><i class="io-dot" style="background:#7732e2"></i>Selected object</span>
                     </div>
                     <div class="io-instructions">
-                        <b>Manual nesting:</b> pilih lalu drag artwork/dieline satu per satu. Gunakan Rotate dan Mirror untuk
-                        mensimulasikan susunan berlawanan serta mengisi ruang kosong sesuai bentuk dieline. Setelah susunan
-                        diatur, tombol <b>✦ Suggestion</b> tidak me-reset layout — susunan dirapatkan sesuai gap (antar-object
-                        &amp; keliling), lalu ukuran canvas dan plano dipilih ulang. Tekan <b>Reset layout</b> bila ingin kembali ke grid otomatis.
+                        <b>Manual nesting:</b> select then drag artwork/dieline one by one. Use Rotate and Mirror to simulate opposite arrangements and fill empty space following the dieline shape. After the arrangement is set, the button
+                        <b>✦ Suggestion</b> does not reset the layout — the arrangement is tightened by the gap (between objects &amp; around the edge), then the canvas and plano size are chosen again. Press
+                        <b>Reset layout</b> to go back to the automatic grid.
                     </div>
                     <div id="io-valid" class="io-notice info">Set a valid canvas size.</div>
                 </main>
@@ -1299,7 +1653,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 <span id="io-mcState" class="io-mc-state"></span>
                 <span style="flex:1"></span>
                 <button class="io-btn" id="io-mcPrint">🖨 Print (A4 landscape)</button>
-                <button class="io-btn warn" id="io-mcClose">✕ Tutup</button>
+                <button class="io-btn warn" id="io-mcClose">✕ Close</button>
             </div>
             <div class="io-mc-scroll">
                 <div class="io-mc-sheet"><div class="io-mc-pad" id="io-mcSheet"></div></div>
@@ -1309,6 +1663,34 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         <script>
         (function () {
             const DATA = window.__PRODEV || { jobs: [], machines: [], planos: [], initialJob: 0 };
+            // Kamus t() dari server (blok ini di dalam blok verbatim Blade, jadi helper js-Blade + t() tidak bisa dipakai di sini).
+            // T(teks English berplaceholder :n, { n: 3 }) -> terjemahan bahasa layar + isi placeholder.
+            const I18N = DATA.i18n || {};
+            const T = (s, r) => {
+                let x = I18N[s] || s;
+                if (r) Object.keys(r).forEach(k => { x = x.split(':' + k).join(r[k]); });
+                return x;
+            };
+            // Teks statis markup di atas (English) diterjemahkan sekali saat layar dibuka; emoji/angka di depan dipertahankan.
+            (function (root) {
+                if (!root) return;
+                const tr = v => {
+                    const m = /^([^\p{L}\d]*)([\s\S]*?)(\s*)$/u.exec(v);
+                    const core = m[2].replace(/\s+/g, ' ');
+                    return core && I18N[core] && I18N[core] !== core ? m[1] + I18N[core] + m[3] : null;
+                };
+                const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+                    acceptNode: n => /^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+                });
+                for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+                    const v = tr(n.nodeValue);
+                    if (v !== null) n.nodeValue = v;
+                }
+                root.querySelectorAll('[title],[placeholder],[aria-label]').forEach(el => ['title', 'placeholder', 'aria-label'].forEach(a => {
+                    const v = el.hasAttribute(a) ? tr(el.getAttribute(a)) : null;
+                    if (v !== null) el.setAttribute(a, v);
+                }));
+            })(document.querySelector('.io-app'));
             const products = DATA.jobs;
             // Index 4 (machine id) / index 3 (plano id) ditambahkan supaya saveLayout()
             // bisa kirim plano_size_id yang benar ke server -- sebelumnya array ini
@@ -1351,7 +1733,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 // Alasan spesifik dari server (mis. part belum punya dimensi dieline)
                 // lebih berguna daripada pesan umum -- jangan biarkan layar diam.
                 box.textContent = DATA.jobIssue
-                    || 'Data master belum lengkap: butuh minimal 1 part berdimensi, 1 mesin cetak, dan 1 ukuran plano aktif.';
+                    || T('Master data is incomplete: needs at least 1 part with dimensions, 1 printing machine, and 1 active plano size.');
                 return;
             }
 
@@ -1444,20 +1826,20 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             async function persist(confirm) {
                 const w = wire();
 
-                if (!w) { msg('Komponen belum siap, coba lagi sebentar.', 'bad'); return; }
-                if (!S.p.partId) { msg('Job demo tidak bisa disimpan — pilih job nyata dari daftar Part.', 'bad'); return; }
-                if (!ok()) { msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum simpan.', 'bad'); return; }
+                if (!w) { msg(T('The component is not ready yet, try again shortly.'), 'bad'); return; }
+                if (!S.p.partId) { msg(T('A demo job cannot be saved — choose a real job from the Part list.'), 'bad'); return; }
+                if (!ok()) { msg(T('The canvas is still outside the machine limits — fix it first before saving.'), 'bad'); return; }
 
                 const btn = confirm ? $('confirm') : $('save');
                 const label = btn.textContent;
                 btn.disabled = true;
-                btn.textContent = confirm ? 'Menyimpan & confirm…' : 'Menyimpan…';
+                btn.textContent = confirm ? T('Saving & confirming…') : T('Saving…');
 
                 try {
                     const res = await w.call('saveLayout', gatherState(), confirm);
 
                     if (!res || !res.ok) {
-                        msg((res && res.message) || 'Gagal menyimpan layout.', 'bad');
+                        msg((res && res.message) || T('Failed to save the layout.'), 'bad');
                         return;
                     }
 
@@ -1472,23 +1854,22 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     savedState[S.p.partId] = stateKey();
 
                     if (!confirm) {
-                        msg('Layout tersimpan sebagai DRAFT (' + res.mastercardCode + ', ' + res.knifeCode + ')'
-                            + (res.hasInquiry ? ' — master + snapshot Inquiry, termasuk BOM/Ink/BOP.' : ' — master saja, job ini tidak punya Inquiry asal.')
-                            + (res.specSkipped && res.specSkipped.length ? ' Tidak ditimpa: ' + res.specSkipped.join('; ') + '.' : ''),
+                        msg(T('Layout saved as DRAFT') + ' (' + res.mastercardCode + ', ' + res.knifeCode + ')'
+                            + ' — ' + (res.hasInquiry ? T('master + Inquiry snapshot, including BOM/Ink/BOP.') : T('master only, this job has no source Inquiry.'))
+                            + (res.specSkipped && res.specSkipped.length ? ' ' + T('Not overwritten:') + ' ' + res.specSkipped.join('; ') + '.' : ''),
                             res.specSkipped && res.specSkipped.length ? 'info' : 'ok');
                         return;
                     }
 
                     if (res.costingUrl) {
-                        msg('Layout CONFIRMED (' + res.mastercardCode + ') — membuka Product Costing…', 'ok');
+                        msg(T('Layout CONFIRMED (:code) — opening Product Costing…', { code: res.mastercardCode }), 'ok');
                         window.location.href = res.costingUrl;
                         return;
                     }
 
-                    msg('Layout CONFIRMED (' + res.mastercardCode + '). Job ini Mode #2 (tanpa Inquiry), '
-                        + 'jadi belum ada layar Product Costing yang bisa dituju.', 'ok');
+                    msg(T('Layout CONFIRMED (:code). This job is Mode #2 (without Inquiry), so there is no Product Costing screen to go to yet.', { code: res.mastercardCode }), 'ok');
                 } catch (e) {
-                    msg('Gagal menyimpan: ' + (e && e.message ? e.message : e), 'bad');
+                    msg(T('Failed to save:') + ' ' + (e && e.message ? e.message : e), 'bad');
                 } finally {
                     btn.disabled = false;
                     btn.textContent = label;
@@ -1907,13 +2288,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 for (const b of [0, 90]) {
                     const M0 = rotMask(base, b), M1 = rotMask(base, (b + 180) % 360);
                     const tag = b ? ' · rotate 90°' : '';
-                    cfgs.push({ kind: 'plain', M0, M1, r: b, s: 0, label: 'Grid standar' + tag });
+                    cfgs.push({ kind: 'plain', M0, M1, r: b, s: 0, label: T('Standard grid') + tag });
 
                     const stepX = Math.max(1, Math.round(M0.w / 16)), stepY = Math.max(1, Math.round(M0.h / 16));
                     for (let sx = 0; sx < M0.w; sx += stepX)
-                        cfgs.push({ kind: 'row', M0, M1, r: b, s: sx, label: 'Interlock antar-baris (180°)' + (sx ? ' geser ' + Math.round(sx / M0.w * 100) + '%' : '') + tag });
+                        cfgs.push({ kind: 'row', M0, M1, r: b, s: sx, label: T('Interlock between rows (180°)') + (sx ? ' ' + T('shift') + ' ' + Math.round(sx / M0.w * 100) + '%' : '') + tag });
                     for (let sy = 0; sy < M0.h; sy += stepY)
-                        cfgs.push({ kind: 'col', M0, M1, r: b, s: sy, label: 'Interlock antar-kolom (180°)' + (sy ? ' geser ' + Math.round(sy / M0.h * 100) + '%' : '') + tag });
+                        cfgs.push({ kind: 'col', M0, M1, r: b, s: sy, label: T('Interlock between columns (180°)') + (sy ? ' ' + T('shift') + ' ' + Math.round(sy / M0.h * 100) + '%' : '') + tag });
                 }
 
                 return cfgs;
@@ -1975,7 +2356,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             // memang tidak menyimpan harga).
             async function optimizeSheet() {
                 const btn = $('suggest'), label = btn.textContent;
-                btn.disabled = true; btn.textContent = 'Menghitung…';
+                btn.disabled = true; btn.textContent = T('Calculating…');
 
                 try {
                     const base = await maskFor(S.p);
@@ -2029,7 +2410,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         }
                     }
 
-                    if (!best) { msg('Tidak ada kombinasi canvas/plano yang muat di mesin ini.', 'bad'); return; }
+                    if (!best) { msg(T('No canvas/plano combination fits this machine.'), 'bad'); return; }
 
                     const sebelum = hasilPerPlano();
 
@@ -2047,13 +2428,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     if (win) applyPlacements(win.placements, win.label, marg, grip);
 
                     const sesudah = hasilPerPlano();
-                    $('suggestNote').textContent = 'Canvas ' + S.L + ' × ' + S.W + ' cm (plano dibagi ' + best.nc + ' × ' + best.nr + ')'
+                    $('suggestNote').textContent = T('Canvas :l × :w cm (plano divided :nc × :nr)', { l: S.L, w: S.W, nc: best.nc, nr: best.nr })
                         + ' · plano ' + S.pl[0] + ' · ' + (win ? win.up : best.up) + ' up/canvas.';
-                    msg('Optimasi bahan: ' + S.pl[0] + ', canvas ' + S.L + ' × ' + S.W + ' cm, ' + (win ? win.label : best.label)
-                        + ' → ' + sesudah + ' pcs/plano (' + best.perPc.toFixed(1) + ' cm² bahan per pcs)'
-                        + (sebelum && sesudah > sebelum ? ' · sebelumnya ' + sebelum + ' pcs/plano' : ''), 'ok');
+                    msg(T('Material optimization:') + ' ' + S.pl[0] + ', canvas ' + S.L + ' × ' + S.W + ' cm, ' + (win ? win.label : best.label)
+                        + ' → ' + sesudah + ' pcs/plano (' + T(':a cm² of material per pcs', { a: best.perPc.toFixed(1) }) + ')'
+                        + (sebelum && sesudah > sebelum ? ' · ' + T('previously') + ' ' + sebelum + ' pcs/plano' : ''), 'ok');
                 } catch (e) {
-                    msg('Optimasi gagal: ' + (e && e.message ? e.message : e), 'bad');
+                    msg(T('Optimization failed:') + ' ' + (e && e.message ? e.message : e), 'bad');
                 } finally {
                     btn.disabled = false; btn.textContent = label;
                 }
@@ -2076,9 +2457,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             // hemat, dropdown memang tidak berubah dan officer mengira tidak jalan.
             function pickBestPlano() {
                 const lama = S.pl[0], i = bestPlanoIndex();
-                if (i < 0) return 'tidak ada plano standar yang muat canvas ' + S.L + ' × ' + S.W + ' cm';
+                if (i < 0) return T('no standard plano fits the canvas :l × :w cm', { l: S.L, w: S.W });
                 S.pl = planos[i]; $('plano').value = String(i);
-                return lama === S.pl[0] ? 'plano tetap ' + S.pl[0] + ' (sudah paling hemat)' : 'plano diganti ' + lama + ' → ' + S.pl[0];
+                return lama === S.pl[0] ? T('plano stays :p (already the most economical)', { p: S.pl[0] }) : T('plano changed :old → :new', { old: lama, new: S.pl[0] });
             }
 
             function hasilPerPlano() {
@@ -2103,12 +2484,12 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
             async function autoNest(silent) {
                 if (!ok()) {
-                    if (!silent) msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum auto nesting.', 'bad');
+                    if (!silent) msg(T('The canvas is still outside the machine limits — fix it first before auto nesting.'), 'bad');
                     return;
                 }
 
                 const btn = $('autoNest'), label = btn.textContent;
-                btn.disabled = true; btn.textContent = 'Menghitung…';
+                btn.disabled = true; btn.textContent = T('Calculating…');
 
                 try {
                     const base = await maskFor(S.p);
@@ -2116,7 +2497,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     const best = bestLattice(patternConfigs(base), Math.round(S.L * 10), Math.round(S.W * 10), gap, true);
 
                     if (!best) {
-                        if (!silent) msg('Auto nesting tidak menemukan susunan yang muat di canvas ini.', 'bad');
+                        if (!silent) msg(T('Auto nesting found no arrangement that fits this canvas.'), 'bad');
                         return;
                     }
 
@@ -2124,12 +2505,12 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
                     const gain = best.plainBest ? Math.round((best.up - best.plainBest) / best.plainBest * 100) : 0;
                     msg('Auto nesting: ' + best.label + ' → ' + best.up + ' up'
-                        + (gain > 0 ? ' (+' + gain + '% vs grid standar, ' + (best.up - best.plainBest) + ' up lebih banyak)'
-                            : ' (grid standar sudah paling padat untuk bentuk ini)')
-                        + (best.ditolak ? ' · ' + best.ditolak + ' pola ditolak krn masih bertabrakan' : '')
-                        + (base.shaped ? '' : ' · tipe ini belum punya dieline, dihitung sebagai kotak polos'), 'ok');
+                        + ' (' + (gain > 0 ? T('+:g% vs standard grid, :n more ups', { g: gain, n: best.up - best.plainBest })
+                            : T('the standard grid is already the densest for this shape')) + ')'
+                        + (best.ditolak ? ' · ' + T(':n patterns rejected because they still collide', { n: best.ditolak }) : '')
+                        + (base.shaped ? '' : ' · ' + T('this type has no dieline yet, calculated as a plain box')), 'ok');
                 } catch (e) {
-                    if (!silent) msg('Auto nesting gagal: ' + (e && e.message ? e.message : e), 'bad');
+                    if (!silent) msg(T('Auto nesting failed:') + ' ' + (e && e.message ? e.message : e), 'bad');
                 } finally {
                     btn.disabled = false; btn.textContent = label;
                 }
@@ -2311,7 +2692,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         if (url) URL.revokeObjectURL(url);
                         try { resolve(cx.getImageData(0, 0, W, H)); } catch (e) { reject(e); }
                     };
-                    img.onerror = () => { if (url) URL.revokeObjectURL(url); reject(new Error('artwork tidak bisa dibaca')); };
+                    img.onerror = () => { if (url) URL.revokeObjectURL(url); reject(new Error(T('the artwork cannot be read'))); };
                     if (p.artworkUrl) { img.src = p.artworkUrl; return; }
                     // Garis potong/lipat bukan tinta -- disembunyikan saat dianalisa.
                     const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">'
@@ -2418,51 +2799,51 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
             function tools(p, k) {
                 const src = p.edit[k]
-                    ? (p.editSrc[k] === 'MANUAL' && !p.edit[k].__touched ? '<span class="io-src warn">DATA MANUAL TERSIMPAN</span>' : '<span class="io-src warn">OVERRIDE OFFICER</span>')
-                    : '<span class="io-src">HASIL ENGINE</span>';
+                    ? (p.editSrc[k] === 'MANUAL' && !p.edit[k].__touched ? '<span class="io-src warn">' + T('SAVED MANUAL DATA') + '</span>' : '<span class="io-src warn">' + T('OFFICER OVERRIDE') + '</span>')
+                    : '<span class="io-src">' + T('ENGINE RESULT') + '</span>';
                 const fl = p.flash[k];
                 return '<div class="io-sectools">' + src
-                    + '<span class="io-note-s">tersimpan ke master &amp; Inquiry saat Save</span>'
+                    + '<span class="io-note-s">' + esc(T('saved to master & Inquiry on Save')) + '</span>'
                     + '<span class="io-grow"></span>'
-                    + (p.edit[k] ? '<button type="button" class="io-mbtn" data-act="reset" data-sec="' + k + '">↺ Kembali ke hasil engine</button>' : '')
+                    + (p.edit[k] ? '<button type="button" class="io-mbtn" data-act="reset" data-sec="' + k + '">↺ ' + T('Back to engine result') + '</button>' : '')
                     + '<button type="button" class="io-mbtn ' + (p.editing[k] ? 'on' : '') + '" data-act="edit" data-sec="' + k + '">'
-                    + (p.editing[k] ? '✓ Selesai edit' : '✎ Edit') + '</button></div>'
+                    + (p.editing[k] ? '✓ ' + T('Finish editing') : '✎ ' + T('Edit')) + '</button></div>'
                     + (fl ? '<div class="io-notice ' + (fl.ok ? 'ok' : 'bad') + '">' + esc(fl.text)
-                        + (fl.url ? ' <a href="' + esc(fl.url) + '" target="_blank" rel="noopener">Buka dokumen ↗</a>' : '') + '</div>' : '');
+                        + (fl.url ? ' <a href="' + esc(fl.url) + '" target="_blank" rel="noopener">' + T('Open document') + ' ↗</a>' : '') + '</div>' : '');
             }
 
             function bopHtml(p, sp) {
                 const rows = rowsOf(p, 'bop'), ed = p.editing.bop, raw = p.edit.bop || [];
                 const qty = (r, v) => v === null || v === undefined ? '—' : fmtAngka(v) + ' ' + esc(r.uom || '');
                 let h = tools(p, 'bop')
-                    + '<div class="io-inputs"><b>Finishing dari Inquiry:</b> '
+                    + '<div class="io-inputs"><b>' + T('Finishing from Inquiry:') + '</b> '
                     + (sp.inputs.finishings.length ? sp.inputs.finishings.map(f => '<span class="io-chip">' + esc(f) + '</span>').join(' ') : '—')
-                    + ' <b style="margin-left:10px">Qty order:</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
-                    + ' <b style="margin-left:10px">Isi / pack:</b> ' + esc(sp.inputs.packQty || '—') + '</div>';
+                    + ' <b style="margin-left:10px">' + T('Qty order:') + '</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
+                    + ' <b style="margin-left:10px">' + T('Qty / pack:') + '</b> ' + esc(sp.inputs.packQty || '—') + '</div>';
 
                 if (ed) {
-                    h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>#</th><th>Proses</th><th>Label di routing</th><th>Mesin</th>'
-                        + '<th>Target / jam</th><th>Waste %</th><th>Toleransi %</th><th>Subkon ke</th><th></th></tr>'
+                    h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>#</th><th>' + T('Process') + '</th><th>' + T('Label in routing') + '</th><th>' + T('Machine') + '</th>'
+                        + '<th>' + T('Target / hour') + '</th><th>' + T('Waste %') + '</th><th>' + T('Tolerance %') + '</th><th>' + T('Subcon to') + '</th><th></th></tr>'
                         + raw.map((r, i) => '<tr><td>' + (i + 1) + '</td>'
-                            + '<td><select' + field('bop', i, 'process_id', '') + '>' + opts(LK.processes, r.process_id, '— proses —') + '</select></td>'
+                            + '<td><select' + field('bop', i, 'process_id', '') + '>' + opts(LK.processes, r.process_id, '— ' + T('process') + ' —') + '</select></td>'
                             + '<td><input' + field('bop', i, 'label', r.label) + '></td>'
-                            + '<td><select' + field('bop', i, 'machine_id', '') + '>' + opts(LK.machines, r.machine_id, '— tanpa mesin —') + '</select></td>'
+                            + '<td><select' + field('bop', i, 'machine_id', '') + '>' + opts(LK.machines, r.machine_id, '— ' + T('no machine') + ' —') + '</select></td>'
                             + '<td><input type="number" min="0" step="1"' + field('bop', i, 'target_qty_per_hour', r.target_qty_per_hour) + '></td>'
                             + '<td><input type="number" min="0" max="100" step="0.1"' + field('bop', i, 'waste_pct', r.waste_pct) + '></td>'
                             + '<td><input type="number" min="0" max="100" step="0.1"' + field('bop', i, 'tolerance_pct', r.tolerance_pct) + '></td>'
-                            + '<td><select' + field('bop', i, 'subcon_supplier_id', '') + '>' + opts(LK.subcons, r.subcon_supplier_id, '— in-house —') + '</select></td>'
-                            + '<td class="io-nowrap"><button type="button" class="io-ibtn" data-act="up" data-sec="bop" data-i="' + i + '" title="Naik">▲</button>'
-                            + '<button type="button" class="io-ibtn" data-act="down" data-sec="bop" data-i="' + i + '" title="Turun">▼</button>'
-                            + '<button type="button" class="io-ibtn bad" data-act="del" data-sec="bop" data-i="' + i + '" title="Hapus">✕</button></td></tr>').join('')
-                        + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bop">＋ Tambah langkah</button>';
+                            + '<td><select' + field('bop', i, 'subcon_supplier_id', '') + '>' + opts(LK.subcons, r.subcon_supplier_id, '— ' + T('in-house') + ' —') + '</select></td>'
+                            + '<td class="io-nowrap"><button type="button" class="io-ibtn" data-act="up" data-sec="bop" data-i="' + i + '" title="' + T('Move up') + '">▲</button>'
+                            + '<button type="button" class="io-ibtn" data-act="down" data-sec="bop" data-i="' + i + '" title="' + T('Move down') + '">▼</button>'
+                            + '<button type="button" class="io-ibtn bad" data-act="del" data-sec="bop" data-i="' + i + '" title="' + T('Delete') + '">✕</button></td></tr>').join('')
+                        + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bop">＋ ' + T('Add step') + '</button>';
                 } else if (rows.length) {
-                    h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>#</th><th>Urutan Pekerjaan</th><th>Mesin</th><th>Target default</th>'
-                        + '<th>Qty masuk</th><th>Waste</th><th>Toleransi</th><th>Est. jam</th><th>Subkon</th></tr>'
+                    h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>#</th><th>' + T('Work Sequence') + '</th><th>' + T('Machine') + '</th><th>' + T('Default target') + '</th>'
+                        + '<th>' + T('Qty in') + '</th><th>' + T('Waste') + '</th><th>' + T('Tolerance') + '</th><th>' + T('Est. hours') + '</th><th>' + T('Subcon') + '</th></tr>'
                         + rows.map((r, i) => '<tr><td>' + (i + 1) + '</td><td><b>' + esc(r.label) + '</b>'
                             + (r.note ? '<div class="io-sub">' + esc(r.note) + '</div>' : '') + '</td>'
                             + '<td>' + esc(r.machine || '—') + '</td>'
-                            + '<td>' + (r.target_qty_per_hour ? fmtAngka(r.target_qty_per_hour) + ' ' + esc(r.uom || '') + '/jam'
-                                + '<div class="io-sub">' + esc(r.target_source || '') + '</div>' : '<span class="io-sub">belum ada</span>') + '</td>'
+                            + '<td>' + (r.target_qty_per_hour ? fmtAngka(r.target_qty_per_hour) + ' ' + esc(r.uom || '') + '/' + T('hour')
+                                + '<div class="io-sub">' + esc(r.target_source || '') + '</div>' : '<span class="io-sub">' + T('none yet') + '</span>') + '</td>'
                             + '<td>' + qty(r, r.qty_in) + '</td>'
                             + '<td>' + fmtAngka(r.waste_pct ?? 0) + '%<div class="io-sub">' + qty(r, r.qty_waste) + '</div></td>'
                             + '<td>' + fmtAngka(r.tolerance_pct ?? 0) + '%<div class="io-sub">' + qty(r, r.qty_tolerance) + '</div></td>'
@@ -2471,11 +2852,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                 ? (r.subcon_supplier ? '<div class="io-sub">' + esc(r.subcon_supplier) + '</div>' : '')
                                   + (r.subcon_pr ? '<div class="io-sub">' + esc(r.subcon_pr) + '</div>' : '')
                                   + (r.subcon_do ? '<div class="io-sub">' + esc(r.subcon_do) + '</div>' : '')
-                                  + '<button type="button" class="io-mbtn warn" data-act="subcon" data-i="' + i + '">⇄ Subkon</button>'
-                                : '<span class="io-sub">in-house</span>') + '</td></tr>').join('')
+                                  + '<button type="button" class="io-mbtn warn" data-act="subcon" data-i="' + i + '">⇄ ' + T('Subcon') + '</button>'
+                                : '<span class="io-sub">' + T('in-house') + '</span>') + '</td></tr>').join('')
                         + '</table></div>';
                 } else {
-                    h += '<div class="io-empty">Tidak ada langkah proses.</div>';
+                    h += '<div class="io-empty">' + T('No process steps.') + '</div>';
                 }
 
                 if (!ed && p.subconAt !== null && rows[p.subconAt]) h += subconDialog(p, rows[p.subconAt]);
@@ -2485,31 +2866,31 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
             function subconDialog(p, r) {
                 const co = p.coOptions || [];
-                return '<div class="io-dialog"><b>Subkon: ' + esc(r.label) + '</b>'
-                    + '<div class="io-sub">Qty dikirim: ' + fmtAngka(r.qty_in) + ' ' + esc(r.uom || '') + ' · PR subkon dibuat DRAFT (lewat approval PR).</div>'
+                return '<div class="io-dialog"><b>' + T('Subcon') + ': ' + esc(r.label) + '</b>'
+                    + '<div class="io-sub">' + T('Qty sent:') + ' ' + fmtAngka(r.qty_in) + ' ' + esc(r.uom || '') + ' · ' + T('subcon PR is created as DRAFT (through PR approval).') + '</div>'
                     + '<div class="io-row3">'
-                    + '<label>Supplier subkon<select id="io-sc-sup">' + opts(LK.subcons, r.subcon_supplier_id, '— pilih supplier —') + '</select></label>'
-                    + '<label>CO (wajib untuk surat jalan)<select id="io-sc-co">' + opts(co.map(c => ({ id: c.id, name: c.label })), '', co.length ? '— pilih CO —' : '— belum ada CO untuk Inquiry ini —') + '</select></label>'
-                    + '<label>Tanggal kirim<input type="date" id="io-sc-date"></label>'
-                    + '<label>Estimasi biaya (Rp)<input type="number" min="0" id="io-sc-cost"></label>'
-                    + '</div><div class="io-sub">Tanpa CO: PR subkon tetap dibuat, surat jalan menyusul setelah CO terbit (klik Subkon lagi).</div>'
-                    + '<div style="margin-top:8px"><button type="button" class="io-mbtn on" data-act="subcon-go">Proses Subkon</button> '
-                    + '<button type="button" class="io-mbtn" data-act="subcon-cancel">Batal</button></div></div>';
+                    + '<label>' + T('Subcon supplier') + '<select id="io-sc-sup">' + opts(LK.subcons, r.subcon_supplier_id, '— ' + T('choose supplier') + ' —') + '</select></label>'
+                    + '<label>' + T('CO (required for the delivery note)') + '<select id="io-sc-co">' + opts(co.map(c => ({ id: c.id, name: c.label })), '', co.length ? '— ' + T('choose CO') + ' —' : '— ' + T('no CO for this Inquiry yet') + ' —') + '</select></label>'
+                    + '<label>' + T('Send date') + '<input type="date" id="io-sc-date"></label>'
+                    + '<label>' + T('Estimated cost (Rp)') + '<input type="number" min="0" id="io-sc-cost"></label>'
+                    + '</div><div class="io-sub">' + T('Without CO: the subcon PR is still created, the delivery note follows once the CO is issued (click Subcon again).') + '</div>'
+                    + '<div style="margin-top:8px"><button type="button" class="io-mbtn on" data-act="subcon-go">' + T('Process Subcon') + '</button> '
+                    + '<button type="button" class="io-mbtn" data-act="subcon-cancel">' + T('Cancel') + '</button></div></div>';
             }
 
             function bomHtml(p, sp) {
                 const rows = rowsOf(p, 'bom'), ed = p.editing.bom, raw = p.edit.bom || [];
                 let h = tools(p, 'bom')
-                    + '<div class="io-inputs"><b>Qty order:</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
-                    + ' <b style="margin-left:10px">Lembar cetak dibutuhkan:</b> ' + (sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' lembar (termasuk waste & toleransi BOP)' : '—') + '</div>';
+                    + '<div class="io-inputs"><b>' + T('Qty order:') + '</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
+                    + ' <b style="margin-left:10px">' + T('Print sheets needed:') + '</b> ' + (sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' ' + T('sheets (including BOP waste & tolerance)') : '—') + '</div>';
 
                 if (ed) {
-                    h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>Peran</th><th>Bahan</th><th>Gramatur</th><th>P (cm)</th><th>L (cm)</th>'
-                        + '<th>Qty / lembar</th><th>Satuan</th><th>Kebutuhan</th><th></th></tr>'
+                    h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>' + T('Role') + '</th><th>' + T('Material') + '</th><th>' + T('Grammage') + '</th><th>' + T('Len. (cm)') + '</th><th>' + T('Wid. (cm)') + '</th>'
+                        + '<th>' + T('Qty / sheet') + '</th><th>' + T('Unit') + '</th><th>' + T('Requirement') + '</th><th></th></tr>'
                         + raw.map((r, i) => {
                             const c = rows[i] || {};
                             return '<tr><td><select' + field('bom', i, 'role', '') + '>' + optsTxt(LK.roles, r.role) + '</select></td>'
-                                + '<td class="io-rel"><input placeholder="ketik nama / kode bahan…"' + field('bom', i, 'search', r.name) + ' autocomplete="off">'
+                                + '<td class="io-rel"><input placeholder="' + esc(T('type material name / code…')) + '"' + field('bom', i, 'search', r.name) + ' autocomplete="off">'
                                 + (p.dd && p.dd.i === i ? ddHtml(p.dd) : '') + '</td>'
                                 + '<td><input type="number" min="0"' + field('bom', i, 'gsm', r.gsm) + '></td>'
                                 + '<td><input type="number" min="0" step="0.1"' + field('bom', i, 'size_p', r.size_p) + '></td>'
@@ -2517,17 +2898,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                 + '<td><input type="number" min="0" step="any"' + field('bom', i, 'qty_per_sheet', r.qty_per_sheet) + '></td>'
                                 + '<td><select' + field('bom', i, 'uom', '') + '>' + optsTxt(LK.uoms, r.uom) + '</select></td>'
                                 + '<td>' + (c.qty_need !== undefined && c.qty_need !== null ? fmtAngka(c.qty_need) + ' ' + esc(c.uom || '') : '—') + '</td>'
-                                + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="bom" data-i="' + i + '" title="Hapus">✕</button></td></tr>';
+                                + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="bom" data-i="' + i + '" title="' + T('Delete') + '">✕</button></td></tr>';
                         }).join('')
-                        + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bom">＋ Tambah bahan</button>';
+                        + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bom">＋ ' + T('Add material') + '</button>';
                 } else if (rows.length) {
-                    h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>Peran</th><th>Bahan</th><th>Merek</th><th>Spesifikasi</th><th>Per lembar cetak</th>'
-                        + '<th>Qty kebutuhan</th><th>Stok tersedia (gudang)</th><th>Status</th><th></th></tr>'
+                    h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>' + T('Role') + '</th><th>' + T('Material') + '</th><th>' + T('Brand') + '</th><th>' + T('Specification') + '</th><th>' + T('Per print sheet') + '</th>'
+                        + '<th>' + T('Qty required') + '</th><th>' + T('Available stock (warehouse)') + '</th><th>' + T('Status') + '</th><th></th></tr>'
                         + rows.map((r, i) => {
                             const spec = [r.gsm ? fmtAngka(r.gsm) + ' gsm' : '', r.size_p ? fmtAngka(r.size_p) + (r.size_l ? ' × ' + fmtAngka(r.size_l) : '') + ' cm' : ''].filter(Boolean).join(' · ');
-                            const need = r.qty_need !== null ? fmtAngka(r.qty_need) + ' ' + esc(r.basis === 'PLANO' ? 'lembar plano' : (r.uom || ''))
+                            const need = r.qty_need !== null ? fmtAngka(r.qty_need) + ' ' + esc(r.basis === 'PLANO' ? T('plano sheets') : (r.uom || ''))
                                 + (r.qty_need_stock_uom !== null && r.stock_uom && r.stock_uom !== r.uom ? '<div class="io-sub">= ' + fmtAngka(r.qty_need_stock_uom) + ' ' + esc(r.stock_uom) + '</div>' : '')
-                                : '<span class="io-sub">' + (r.name === 'None' ? '—' : 'belum bisa dihitung') + '</span>';
+                                : '<span class="io-sub">' + (r.name === 'None' ? '—' : T('cannot be calculated yet')) + '</span>';
                             return '<tr><td>' + esc(r.role) + '</td><td><b>' + esc(r.name || '—') + '</b>'
                                 + (r.note ? '<div class="io-sub">' + esc(r.note) + '</div>' : '') + '</td>'
                                 + '<td>' + esc(r.brand || '—') + '</td>'
@@ -2536,52 +2917,52 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                 + '<td>' + need + '</td>'
                                 + '<td>' + (r.material_id ? fmtAngka(r.stock_available ?? 0) + ' ' + esc(r.stock_uom || '') : '—') + '</td>'
                                 + '<td>' + (r.stock_status ? '<span class="io-stat ' + (STATUS_CLS[r.stock_status] || 'mute') + '">' + esc(r.stock_status) + '</span>'
-                                    + (r.shortage ? '<div class="io-sub">kurang ' + fmtAngka(r.shortage) + ' ' + esc(r.stock_uom || '') + '</div>' : '') : '—') + '</td>'
+                                    + (r.shortage ? '<div class="io-sub">' + T('short') + ' ' + fmtAngka(r.shortage) + ' ' + esc(r.stock_uom || '') + '</div>' : '') : '—') + '</td>'
                                 + '<td>' + (r.material_id && ['KURANG', 'TIDAK ADA'].includes(r.stock_status) && (r.shortage > 0 || r.qty_need > 0)
-                                    ? '<button type="button" class="io-mbtn warn" data-act="pr" data-i="' + i + '">＋ Buat PR</button>' : '') + '</td></tr>';
+                                    ? '<button type="button" class="io-mbtn warn" data-act="pr" data-i="' + i + '">＋ ' + T('Create PR') + '</button>' : '') + '</td></tr>';
                         }).join('')
                         + '</table></div>';
                 } else {
-                    h += '<div class="io-empty">Belum ada bahan.</div>';
+                    h += '<div class="io-empty">' + T('No materials yet.') + '</div>';
                 }
 
                 return h + notes(sp.warnings.bom);
             }
 
             function ddHtml(dd) {
-                if (dd.busy) return '<div class="io-dd"><div class="io-sub">Mencari…</div></div>';
-                if (!dd.items.length) return '<div class="io-dd"><div class="io-sub">Tidak ada bahan cocok.</div></div>';
+                if (dd.busy) return '<div class="io-dd"><div class="io-sub">' + T('Searching…') + '</div></div>';
+                if (!dd.items.length) return '<div class="io-dd"><div class="io-sub">' + T('No matching material.') + '</div></div>';
                 return '<div class="io-dd">' + dd.items.map((m, k) => '<button type="button" data-act="pick-mat" data-k="' + k + '">'
-                    + '<b>' + esc(m.name) + '</b><span>' + esc(m.code) + ' · ' + esc(m.category || '') + ' · stok ' + fmtAngka(m.stock) + ' ' + esc(m.uom || '') + '</span></button>').join('') + '</div>';
+                    + '<b>' + esc(m.name) + '</b><span>' + esc(m.code) + ' · ' + esc(m.category || '') + ' · ' + T('stock') + ' ' + fmtAngka(m.stock) + ' ' + esc(m.uom || '') + '</span></button>').join('') + '</div>';
             }
 
             function inkHtml(p, sp) {
                 const rows = rowsOf(p, 'inks'), ed = p.editing.inks, raw = p.edit.inks || [];
-                const art = p.artBusy ? '<div class="io-empty">Menganalisa warna artwork…</div>'
-                    : p.artError ? '<div class="io-notice bad">Analisa artwork gagal: ' + esc(p.artError) + '</div>' : '';
+                const art = p.artBusy ? '<div class="io-empty">' + T('Analyzing artwork colors…') + '</div>'
+                    : p.artError ? '<div class="io-notice bad">' + T('Artwork analysis failed:') + ' ' + esc(p.artError) + '</div>' : '';
                 let h = tools(p, 'inks')
-                    + '<div class="io-inputs"><b>Notasi warna:</b> ' + esc(sp.inputs.color || '—')
-                    + (artSource(p) ? ' <button type="button" class="io-mbtn" data-act="reanalyze" style="margin-left:10px">↻ Analisa ulang artwork</button>' : '') + '</div>'
+                    + '<div class="io-inputs"><b>' + T('Color notation:') + '</b> ' + esc(sp.inputs.color || '—')
+                    + (artSource(p) ? ' <button type="button" class="io-mbtn" data-act="reanalyze" style="margin-left:10px">↻ ' + T('Re-analyze artwork') + '</button>' : '') + '</div>'
                     + '<datalist id="io-inknames">' + LK.inks.map(n => '<option value="' + esc(n) + '">').join('') + '</datalist>';
 
                 if (ed) {
-                    const units = [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ id: n, name: 'Unit ' + n }));
-                    h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>Pass</th><th>Jenis</th><th>Unit</th><th>Tinta</th><th>Warna</th><th>Tutupan %</th><th>Luas / pcs</th><th></th></tr>'
+                    const units = [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ id: n, name: T('Print Unit') + ' ' + n }));
+                    h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>' + T('Pass') + '</th><th>' + T('Type') + '</th><th>' + T('Print Unit') + '</th><th>' + T('Ink') + '</th><th>' + T('Color') + '</th><th>' + T('Coverage %') + '</th><th>' + T('Area / pcs') + '</th><th></th></tr>'
                         + raw.map((r, i) => {
                             const c = rows[i] || {};
-                            return '<tr><td><select' + field('inks', i, 'pass_seq', '') + '>' + opts([{ id: 1, name: 'Warna Pertama' }, { id: 2, name: 'Warna Kedua' }], r.pass_seq) + '</select></td>'
+                            return '<tr><td><select' + field('inks', i, 'pass_seq', '') + '>' + opts([{ id: 1, name: T('First Color') }, { id: 2, name: T('Second Color') }], r.pass_seq) + '</select></td>'
                                 + '<td><select' + field('inks', i, 'pass_label', '') + '>' + optsTxt(['CS', 'SPOT'], r.pass_label) + '</select></td>'
                                 + '<td><select' + field('inks', i, 'unit_no', '') + '>' + opts(units, r.unit_no) + '</select></td>'
                                 + '<td><input list="io-inknames"' + field('inks', i, 'ink_name', r.ink_name) + '></td>'
                                 + '<td><input type="color"' + field('inks', i, 'color_hex', r.color_hex || '#888888') + '></td>'
                                 + '<td><input type="number" min="0" max="100" step="0.1"' + field('inks', i, 'coverage_pct', r.coverage_pct) + '></td>'
                                 + '<td>' + (c.coverage_cm2 !== undefined && c.coverage_cm2 !== null ? fmtAngka(c.coverage_cm2) + ' cm²' : '—') + '</td>'
-                                + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="inks" data-i="' + i + '" title="Hapus">✕</button></td></tr>';
+                                + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="inks" data-i="' + i + '" title="' + T('Delete') + '">✕</button></td></tr>';
                         }).join('')
-                        + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="inks">＋ Tambah tinta</button>';
+                        + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="inks">＋ ' + T('Add ink') + '</button>';
                 } else if (rows.length) {
-                    h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>Pass</th><th>Unit</th><th>Tinta</th><th>Tutupan</th><th>Luas / pcs</th><th>Luas / lembar</th></tr>'
-                        + rows.map(r => '<tr><td>' + (+r.pass_seq === 1 ? 'Warna Pertama' : 'Warna Kedua') + ': ' + esc(r.pass_label) + '</td><td>Unit ' + r.unit_no + '</td><td>'
+                    h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>' + T('Pass') + '</th><th>' + T('Print Unit') + '</th><th>' + T('Ink') + '</th><th>' + T('Coverage') + '</th><th>' + T('Area / pcs') + '</th><th>' + T('Area / sheet') + '</th></tr>'
+                        + rows.map(r => '<tr><td>' + (+r.pass_seq === 1 ? T('First Color') : T('Second Color')) + ': ' + esc(r.pass_label) + '</td><td>' + T('Print Unit') + ' ' + r.unit_no + '</td><td>'
                             + '<i class="io-sw" style="background:' + esc(r.color_hex || '#888') + '"></i><b>' + esc(r.ink_name) + '</b></td><td>'
                             + (r.coverage_pct !== null ? fmtAngka(r.coverage_pct) + '%' : '—') + '</td><td>'
                             + (r.coverage_cm2 !== null ? fmtAngka(r.coverage_cm2) + ' cm²' : '—') + '</td><td>'
@@ -2590,7 +2971,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
                 return h + art
                     + (sp.colors.length
-                        ? '<div class="io-subh">Warna di artwork (luas per pcs)</div><div class="io-colors">'
+                        ? '<div class="io-subh">' + T('Colors in the artwork (area per pcs)') + '</div><div class="io-colors">'
                           + sp.colors.map(c => '<span class="io-colorchip"><i class="io-sw" style="background:' + esc(c.hex || '#888') + '"></i>'
                               + esc(c.name) + ' <b>' + (c.cm2 !== null ? fmtAngka(c.cm2) + ' cm²' : fmtAngka(c.pct) + '%') + '</b></span>').join('') + '</div>'
                         : '')
@@ -2600,7 +2981,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             function renderSpecSections() {
                 const p = S.p, sp = p.spec;
                 specInit(p);
-                const tunggu = '<div class="io-empty">' + (p.partId ? 'Menghitung dari data Inquiry…' : 'Job demo — engine butuh part nyata.') + '</div>';
+                const tunggu = '<div class="io-empty">' + (p.partId ? T('Calculating from Inquiry data…') : T('Demo job — the engine needs a real part.')) + '</div>';
 
                 // Pertahankan fokus kursor saat tabel edit digambar ulang.
                 const a = document.activeElement, keep = a && a.dataset && a.dataset.f
@@ -2673,7 +3054,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         case 'reset':
                             p.edit[k] = null; p.editing[k] = false; p.editSrc[k] = null;
                             if (p.saved && p.saved[k] && !p.reset.includes(k)) p.reset.push(k);
-                            p.flash[k] = { ok: true, text: 'Dikembalikan ke hasil engine — tersimpan saat Save.' };
+                            p.flash[k] = { ok: true, text: T('Returned to the engine result — saved on Save.') };
                             specSoon();
                             break;
                         case 'add':
@@ -2707,7 +3088,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                             const byStock = r.shortage !== null && r.shortage > 0;
                             const res = (await w.call('createPurchase', p.partId, r.material_id,
                                 byStock ? r.shortage : r.qty_need, byStock ? r.stock_uom : r.uom).catch(() => null))
-                                || { ok: false, message: 'Server tidak merespons, coba lagi.' };
+                                || { ok: false, message: T('The server is not responding, try again.') };
                             p.flash.bom = { ok: res.ok, text: res.message, url: res.url };
                             break;
                         }
@@ -2721,14 +3102,14 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                             const r = rowsOf(p, 'bop')[p.subconAt], w = wire();
                             const sup = +document.getElementById('io-sc-sup').value;
                             if (!r || !w) return;
-                            if (!sup) { p.flash.bop = { ok: false, text: 'Pilih supplier subkon dulu.' }; break; }
+                            if (!sup) { p.flash.bop = { ok: false, text: T('Choose the subcon supplier first.') }; break; }
                             b.disabled = true;
                             const res = await w.call('subcontract', p.partId,
                                 { process_id: r.process_id, label: r.label, qty_in: r.qty_in, uom: r.uom },
                                 sup, +document.getElementById('io-sc-co').value || null,
                                 document.getElementById('io-sc-date').value || null,
                                 +document.getElementById('io-sc-cost').value || null).catch(() => null)
-                                || { ok: false, message: 'Server tidak merespons, coba lagi.' };
+                                || { ok: false, message: T('The server is not responding, try again.') };
                             p.flash.bop = { ok: res.ok, text: res.message, url: res.prUrl };
                             if (res.ok) { p.subconAt = null; specKey = ''; specSoon(); }
                             break;
@@ -2976,54 +3357,54 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 return ''
                     + '<div class="io-mc-head">'
                     + '<div><div class="brand">Telasih Makmur <i>offset printing &amp; packaging</i></div>'
-                    + '<h2>MASTER CARD / KARTU INDUK</h2></div>'
-                    + '<div class="item">Kode Item: ' + esc(p.itemCode || p.design || '—') + '</div></div>'
+                    + '<h2>' + T('MASTER CARD') + '</h2></div>'
+                    + '<div class="item">' + T('Item Code:') + ' ' + esc(p.itemCode || p.design || '—') + '</div></div>'
 
                     + '<div class="io-mc-body"><div>'
                     + '<table class="io-mc-tbl">'
-                    + '<tr><th>No. Desain</th><td class="mono">' + esc(p.designNo || '—') + '</td>'
-                    + '<th style="width:18%">Nama Barang</th><td><b>' + esc(p.productName || p.name) + '</b></td>'
-                    + '<th style="width:12%">Tanggal</th><td class="mono">' + esc(p.today || '') + '</td></tr>'
+                    + '<tr><th>' + T('Design No.') + '</th><td class="mono">' + esc(p.designNo || '—') + '</td>'
+                    + '<th style="width:18%">' + T('Goods Name') + '</th><td><b>' + esc(p.productName || p.name) + '</b></td>'
+                    + '<th style="width:12%">' + T('Date') + '</th><td class="mono">' + esc(p.today || '') + '</td></tr>'
                     + '</table>'
                     + '<table class="io-mc-tbl">'
-                    + mcRow('Nama Pelanggan', '<b>' + esc(p.customer) + '</b>')
-                    + '<tr><th>Dimensi P</th><td class="mono">' + fmtAngka(p.fl) + ' cm</td>'
-                    + '<th>Dimensi L</th><td class="mono">' + fmtAngka(p.fw) + ' cm</td>'
-                    + '<th>Dimensi T</th><td class="mono">' + fmtAngka(p.fh) + ' cm</td></tr>'
-                    + '<tr><th>Kode Pisau</th><td colspan="3"><b>' + esc(k.code) + '</b></td>'
-                    + '<th>Ukuran Pisau</th><td class="mono">' + k.size + '</td></tr>'
-                    + '<tr><th>Material</th><td colspan="3"><b>' + esc(kertas.name || '—') + '</b>'
+                    + mcRow(T('Name of Customer'), '<b>' + esc(p.customer) + '</b>')
+                    + '<tr><th>' + T('Dimension L') + '</th><td class="mono">' + fmtAngka(p.fl) + ' cm</td>'
+                    + '<th>' + T('Dimension W') + '</th><td class="mono">' + fmtAngka(p.fw) + ' cm</td>'
+                    + '<th>' + T('Dimension H') + '</th><td class="mono">' + fmtAngka(p.fh) + ' cm</td></tr>'
+                    + '<tr><th>' + T('Knife Code') + '</th><td colspan="3"><b>' + esc(k.code) + '</b></td>'
+                    + '<th>' + T('Knife Size') + '</th><td class="mono">' + k.size + '</td></tr>'
+                    + '<tr><th>' + T('Material') + '</th><td colspan="3"><b>' + esc(kertas.name || '—') + '</b>'
                     + (kertas.brand ? ' <span style="color:#555">(' + esc(kertas.brand) + ')</span>' : '') + '</td>'
-                    + '<th>Kualitas</th><td class="mono">' + (kertas.gsm ? fmtAngka(kertas.gsm) + ' gsm' : '—') + '</td></tr>'
-                    + '<tr><th>Ukuran Bahan</th><td colspan="3" class="mono">' + cetak + ' (' + (GRAIN_LABEL[p.grain] || '—') + ')</td>'
-                    + '<th>Ukuran Cetak</th><td class="mono">' + cetak + '</td></tr>'
-                    + mcRow('Jenis Finishing', esc(finishing))
-                    + mcRow('Struktur / Joint', esc(p.structure || '—'))
+                    + '<th>' + T('Quality') + '</th><td class="mono">' + (kertas.gsm ? fmtAngka(kertas.gsm) + ' gsm' : '—') + '</td></tr>'
+                    + '<tr><th>' + T('Material Size') + '</th><td colspan="3" class="mono">' + cetak + ' (' + (GRAIN_LABEL[p.grain] || '—') + ')</td>'
+                    + '<th>' + T('Printing Size') + '</th><td class="mono">' + cetak + '</td></tr>'
+                    + mcRow(T('Finishing Type'), esc(finishing))
+                    + mcRow(T('Structure / Joint'), esc(p.structure || '—'))
                     + '</table>'
 
                     + '<div class="io-mc-sub"><div>'
-                    + '<div class="io-mc-cap">Warna Pertama: CS' + (S.m ? ' (' + esc(S.m[0]) + ')' : '') + '</div>'
+                    + '<div class="io-mc-cap">' + T('First Color') + ': CS' + (S.m ? ' (' + esc(S.m[0]) + ')' : '') + '</div>'
                     + '<table class="io-mc-tbl">'
                     + (pass1.length
-                        ? pass1.map(r => '<tr><th style="width:34%">Unit ' + r.unit_no + '</th><td><b>' + esc(r.ink_name) + '</b>'
+                        ? pass1.map(r => '<tr><th style="width:34%">' + T('Print Unit') + ' ' + r.unit_no + '</th><td><b>' + esc(r.ink_name) + '</b>'
                             + (r.coverage_pct !== null && r.coverage_pct !== undefined ? ' <span style="color:#555">' + fmtAngka(r.coverage_pct) + '% · ' + fmtAngka(r.coverage_cm2) + ' cm²</span>' : '')
                             + '</td></tr>').join('')
-                        : '<tr><td colspan="2" style="text-align:center;color:#777">Susunan tinta belum ada</td></tr>')
-                    + '<tr><th>Isi / Lembar</th><td class="mono"><b>' + k.up + ' UP</b></td></tr>'
+                        : '<tr><td colspan="2" style="text-align:center;color:#777">' + T('No ink arrangement yet') + '</td></tr>')
+                    + '<tr><th>' + T('Ups / Sheet') + '</th><td class="mono"><b>' + k.up + ' UP</b></td></tr>'
                     + '</table>'
                     // Mesin plong tidak diulang di sini -- sudah tertulis di Routing.
                     + '<table class="io-mc-tbl" style="margin-top:5px">'
-                    + mcRow('Dieline / blank', fmtAngka(p.l) + ' × ' + fmtAngka(p.w) + ' cm · gap ' + fmtAngka(S.g) + ' cm', true)
-                    + mcRow('Plano', esc(S.pl[0]) + ' · ' + cut(S.pl).n + ' lembar / plano', true)
-                    + mcRow('Efisiensi material', ($('yAll') ? $('yAll').textContent : '—'))
+                    + mcRow(T('Dieline / blank'), fmtAngka(p.l) + ' × ' + fmtAngka(p.w) + ' cm · ' + T('gap') + ' ' + fmtAngka(S.g) + ' cm', true)
+                    + mcRow(T('Plano'), esc(S.pl[0]) + ' · ' + cut(S.pl).n + ' ' + T('sheets / plano'), true)
+                    + mcRow(T('Material efficiency'), ($('yAll') ? $('yAll').textContent : '—'))
                     + '</table></div><div>'
-                    + '<div class="io-mc-cap">Urutan Pekerjaan (Routing)</div>'
+                    + '<div class="io-mc-cap">' + T('Work Sequence (Routing)') + '</div>'
                     + '<table class="io-mc-tbl">'
                     + Array.from({ length: ROUTING_ROWS }, (_, i) => {
                         const r = bop[i];
                         return '<tr><th style="width:22px;text-align:center">' + (i + 1) + '</th><td>'
                             + (r ? esc(mcStepName(r))
-                                + (r.subcon_supplier ? ' <span style="color:#b45309">· subkon ' + esc(r.subcon_supplier) + '</span>' : '')
+                                + (r.subcon_supplier ? ' <span style="color:#b45309">· ' + T('subcon') + ' ' + esc(r.subcon_supplier) + '</span>' : '')
                               : '&nbsp;')
                             + '</td></tr>';
                     }).join('')
@@ -3032,10 +3413,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     // bawah layout -- tidak ada lagi baris selebar halaman yang
                     // menyisakan ruang kosong di tengah (permintaan user 2026-09-18).
                     + '<div class="io-mc-extra"><table class="io-mc-tbl">'
-                    + mcRow('Qty order', sp && sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—', true)
-                    + mcRow('Lembar cetak', sp && sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' lbr' : '—', true)
-                    + mcRow('Isi / pack', sp && sp.inputs.packQty ? sp.inputs.packQty + ' pcs' : '—', true)
-                    + mcRow('No. Inquiry', esc(p.reg || '—'), true)
+                    + mcRow(T('Qty order'), sp && sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—', true)
+                    + mcRow(T('Print sheets'), sp && sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' ' + T('sht') : '—', true)
+                    + mcRow(T('Qty / pack'), sp && sp.inputs.packQty ? sp.inputs.packQty + ' pcs' : '—', true)
+                    + mcRow(T('Inquiry No.'), esc(p.reg || '—'), true)
                     + '</table><table class="io-mc-tbl">'
                     + bom.slice(0, 6).map(mcBomRow).join('')
                     + '</table><table class="io-mc-tbl">'
@@ -3044,28 +3425,27 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     + '</div>'
 
                     + '<div><div class="io-mc-layout">'
-                    + '<div class="ttl">LAYOUT LEMBAR CETAK — ' + k.up + ' UP</div>'
+                    + '<div class="ttl">' + T('PRINT SHEET LAYOUT') + ' — ' + k.up + ' UP</div>'
                     + svg + '</div>'
-                    + '<div class="io-mc-note">* ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD</div>'
+                    + '<div class="io-mc-note">* ' + T('PROOF PRINT APPROVAL (DIGITAL + PRINT) MUST BE ATTACHED WITH THE MASTER CARD') + '</div>'
                     + '<div class="io-mc-sign">'
-                    + ['Mengetahui (Desainer)|Product Development', 'Marketing / Sales|Sales Officer',
-                       'PPIC / QA|Quality Control', 'Plant Manager|Kepala Pabrik']
-                        .map(x => { const [who, role] = x.split('|');
-                            return '<div><div class="who">' + who + '</div><div class="line">' + role + '</div></div>'; }).join('')
+                    + [['Acknowledged by (Designer)', 'Product Development'], ['Marketing / Sales', 'Sales Officer'],
+                       ['PPIC / QA', 'Quality Control'], ['Plant Manager', 'Factory Head']]
+                        .map(([who, role]) => '<div><div class="who">' + esc(T(who)) + '</div><div class="line">' + esc(T(role)) + '</div></div>').join('')
                     + '</div>'
                     + '</div></div>'
 
-                    + (p.confirmed ? '' : '<div class="io-mc-stamp"><span>NOT CONFIRMED</span></div>');
+                    + (p.confirmed ? '' : '<div class="io-mc-stamp"><span>' + T('NOT CONFIRMED') + '</span></div>');
             }
 
             function openMasterCard() {
-                if (!ok()) { msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum cetak Master Card.', 'bad'); return; }
+                if (!ok()) { msg(T('The canvas is still outside the machine limits — fix it first before printing the Master Card.'), 'bad'); return; }
                 $('mcSheet').innerHTML = masterCardHtml();
                 // Blok gelap diturunkan SETELAH masuk DOM: warna yang diwarisi dari
                 // grup induk hanya terbaca lewat getComputedStyle.
                 $('mcSheet').querySelectorAll('.io-mc-layout svg *').forEach(mcLighten);
                 const st = $('mcState');
-                st.textContent = S.p.confirmed ? 'CONFIRMED' : 'BELUM CONFIRM';
+                st.textContent = S.p.confirmed ? T('CONFIRMED') : T('NOT CONFIRMED YET');
                 st.className = 'io-mc-state' + (S.p.confirmed ? ' ok' : '');
                 $('mcModal').classList.add('open');
             }
@@ -3087,8 +3467,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 }
 
                 $('jobcount').textContent = banyak
-                    ? products.length + ' SAMPEL DEMO'
-                    : (S.p.design || 'JOB TERPILIH');
+                    ? products.length + ' ' + T('DEMO SAMPLES')
+                    : (S.p.design || T('SELECTED JOB'));
             }
 
             // Auto Up  -> tampilkan angka HASIL, sembunyikan kotak isian.
@@ -3097,18 +3477,18 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('autoResult').style.display = S.auto ? '' : 'none';
                 $('manualGroup').style.display = S.auto ? 'none' : '';
                 $('modeText').textContent = S.auto
-                    ? 'Aktif: pakai up maksimum yang muat di canvas'
-                    : 'Nonaktif: tentukan sendiri jumlah up yang dikejar';
+                    ? T('Active: use the maximum ups that fit the canvas')
+                    : T('Inactive: set the target number of ups yourself');
             }
 
             function artworkLabel() {
                 $('artName').textContent = S.p.artworkName
-                    || (S.p.artworkUrl ? 'Artwork tersimpan di Inquiry Part' : (S.p.canUpload
-                        ? 'Belum ada artwork — klik Upload artwork'
-                        : 'Job Mode #2 / demo: tidak terhubung ke Inquiry Part'));
+                    || (S.p.artworkUrl ? T('Artwork saved in the Inquiry Part') : (S.p.canUpload
+                        ? T('No artwork yet — click Upload artwork')
+                        : T('Mode #2 / demo job: not linked to an Inquiry Part')));
                 $('dieName').textContent = S.p.dieline
-                    ? 'Dieline dari spesifikasi Tipe Produk (dieline_spec)'
-                    : 'Tipe produk ini belum punya definisi dieline';
+                    ? T('Dieline from the Product Type specification (dieline_spec)')
+                    : T('This product type has no dieline definition yet');
             }
 
             function bind() {
@@ -3153,7 +3533,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('calcPlano').onclick = () => {
                     const info = pickBestPlano();
                     update(false);
-                    $('planoNote').innerHTML += '<br><b>Calculate Plano: ' + esc(info) + '.</b>';
+                    $('planoNote').innerHTML += '<br><b>' + esc(T('Calculate Plano')) + ': ' + esc(info) + '.</b>';
                 };
                 $('custom').onclick = () => {
                     const l = +$('cpl').value, w = +$('cpw').value;
@@ -3180,7 +3560,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('artFile').onclick = e => {
                     e.preventDefault();
                     if (!S.p.canUpload) {
-                        msg('Job ini tidak terhubung ke Inquiry Part (Mode #2 / demo) — artwork belum bisa disimpan.', 'bad');
+                        msg(T('This job is not linked to an Inquiry Part (Mode #2 / demo) — the artwork cannot be saved yet.'), 'bad');
                         return;
                     }
                     document.getElementById('io-artFileReal').click();
@@ -3199,7 +3579,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 });
                 $('dieFile').onchange = e => {
                     // Dieline terpisah belum punya tempat simpan -- lihat catatan diskusi.
-                    $('dieName').textContent = (e.target.files[0] && e.target.files[0].name + ' (belum disimpan)') || 'Dieline struktural bawaan job aktif';
+                    $('dieName').textContent = (e.target.files[0] && e.target.files[0].name + ' (' + T('not saved yet') + ')') || T('Default structural dieline of the active job');
                 };
             }
 
@@ -3207,10 +3587,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 S.conv = mode;
                 $('pcsMode').classList.toggle('active', mode === 'pcs');
                 $('planoMode').classList.toggle('active', mode === 'plano');
-                $('inputLabel').textContent = mode === 'pcs' ? 'Qty order (pcs)' : 'Available plano stock (sheets)';
+                $('inputLabel').textContent = mode === 'pcs' ? T('Qty order (pcs)') : T('Available plano stock (sheets)');
                 $('inputHint').textContent = mode === 'pcs'
-                    ? 'Masukkan jumlah produk yang harus diproduksi'
-                    : 'Masukkan jumlah lembar plano yang tersedia';
+                    ? T('Enter the number of products to produce')
+                    : T('Enter the number of available plano sheets');
                 $('converterInput').value = mode === 'pcs' ? 100 : 10;
                 update(false);
             }
@@ -3242,7 +3622,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             function bedOwner() {
                 const [bl, bw] = bedLimits();
                 return (S.d && S.d[1] && S.d[2] && (bl < S.m[1] || bw < S.m[2]))
-                    ? S.d[0] + ' (plong)'
+                    ? S.d[0] + ' (' + T('die-cut') + ')'
                     : S.m[0];
             }
             function fit(L, W, a, b, g) {
@@ -3433,12 +3813,12 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
                 // Plano Configuration ikut canvas baru. Plano custom (diketik
                 // officer sendiri) tidak ditimpa.
-                const planoInfo = planos.includes(S.pl) ? pickBestPlano() : 'plano custom ' + S.pl[0] + ' tidak diubah';
+                const planoInfo = planos.includes(S.pl) ? pickBestPlano() : T('custom plano :p unchanged', { p: S.pl[0] });
 
                 const use = (S.objs.length * S.p.l * S.p.w / (L * W) * 100).toFixed(1);
                 $('suggestNote').textContent = (rl > L || rw > W)
-                    ? 'Susunan ' + S.objs.length + ' object butuh ' + rl + ' × ' + rw + ' cm — melebihi meja ' + bedOwner() + ' (' + bl + ' × ' + bw + ' cm). Canvas dipotong ke ' + L + ' × ' + W + ' cm, object di luar batas ditandai merah.'
-                    : 'Canvas dipaskan ke susunan: ' + S.objs.length + ' object dirapatkan, gap ' + S.g + ' cm antar-object & keliling = ' + L + ' × ' + W + ' cm · pemakaian area ' + use + '%'
+                    ? T('An arrangement of :n objects needs :rl × :rw cm — exceeds the table of :bed (:bl × :bw cm). Canvas cut to :cl × :cw cm, objects outside the limit are marked red.', { n: S.objs.length, rl, rw, bed: bedOwner(), bl, bw, cl: L, cw: W })
+                    : T('Canvas fitted to the arrangement: :n objects tightened, gap :g cm between objects & around the edge = :cl × :cw cm · area usage :use%', { n: S.objs.length, g: S.g, cl: L, cw: W, use })
                       + ' · ' + planoInfo + ' (' + cut(S.pl).n + ' canvas/plano).';
                 update(false);
                 msg('Suggestion: canvas ' + L + ' × ' + W + ' cm · ' + planoInfo + '.', 'ok');
@@ -3463,8 +3843,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 cen.forEach(r => { r.o.w *= k; r.o.h *= k; r.o.x = nx + r.cx * n - r.o.w / 2; r.o.y = ny + r.cy * n - r.o.h / 2; });
                 S.sc0 = n; S.sx0 = nx; S.sy0 = ny;
                 $('suggestNote').textContent = (rl > L || rw > W)
-                    ? 'Susunan custom butuh ' + rl + ' × ' + rw + ' cm — melebihi bed ' + S.m[0] + ' (' + S.m[1] + ' × ' + S.m[2] + '). Canvas dipotong ke ' + L + ' × ' + W + ' cm, object di luar batas ditandai merah.'
-                    : 'Custom nesting: bounding box ' + S.objs.length + ' object + bleed ' + m + ' cm/sisi = ' + L + ' × ' + W + ' cm · pemakaian area ' + use + '%.';
+                    ? T('The custom arrangement needs :rl × :rw cm — exceeds the bed of :bed (:bl × :bw). Canvas cut to :cl × :cw cm, objects outside the limit are marked red.', { rl, rw, bed: S.m[0], bl: S.m[1], bw: S.m[2], cl: L, cw: W })
+                    : T('Custom nesting: bounding box :n objects + bleed :m cm/side = :cl × :cw cm · area usage :use%.', { n: S.objs.length, m, cl: L, cw: W, use });
                 update(false);
             }
 
@@ -3486,27 +3866,26 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 }
                 if (!bestC) {
                     update(true);
-                    msg('Target ' + target + ' up tidak muat: butuh canvas melebihi meja ' + bedOwner()
-                        + ' (maks ' + m[0] + ' × ' + m[1] + ' cm).', 'bad');
+                    msg(T('Target :t up does not fit: needs a canvas larger than the table of :bed (max :ml × :mw cm).', { t: target, bed: bedOwner(), ml: m[0], mw: m[1] }), 'bad');
                     return;
                 }
                 S.L = +bestC.L.toFixed(1); S.W = +bestC.W.toFixed(1);
                 $('sl').value = S.L; $('sw').value = S.W; S.objs = [];
                 $('suggestNote').textContent = S.auto
-                    ? 'Auto Up: canvas disarankan dari history job, packing efficiency, dan machine bed.'
-                    : 'Manual ' + target + '-up: canvas minimum yang dapat memuat jumlah object tersebut adalah ' + S.L + ' × ' + S.W + ' cm.';
+                    ? T('Auto Up: canvas suggested from job history, packing efficiency, and machine bed.')
+                    : T('Manual :t-up: the minimum canvas that can fit that number of objects is :l × :w cm.', { t: target, l: S.L, w: S.W });
                 update(true);
             }
 
             function update(reset) {
                 metrics();
-                $('machineInfo').innerHTML = '<b>' + S.m[0] + '</b><br>Maximum printable bed: <b>' + S.m[1] + ' × ' + S.m[2] + ' cm</b>'
-                    + (S.m[3] ? '<br><span style="color:#ffd9a1">⚠ max_paper_size belum diisi di Master Mesin — angka di atas asumsi.</span>' : '');
+                $('machineInfo').innerHTML = '<b>' + S.m[0] + '</b><br>' + T('Maximum printable bed:') + ' <b>' + S.m[1] + ' × ' + S.m[2] + ' cm</b>'
+                    + (S.m[3] ? '<br><span style="color:#ffd9a1">⚠ ' + T('max_paper_size is not filled in Master Machine yet — the figures above are assumptions.') + '</span>' : '');
                 $('diecutInfo').innerHTML = !S.d
-                    ? '<span style="color:#ffd9a1">⚠ Belum ada mesin plong aktif di Master Mesin.</span>'
+                    ? '<span style="color:#ffd9a1">⚠ ' + T('No active die-cut machine in Master Machine yet.') + '</span>'
                     : '<b>' + S.d[0] + '</b><br>' + (S.d[1] && S.d[2]
-                        ? 'Maksimum meja plong: <b>' + S.d[1] + ' × ' + S.d[2] + ' cm</b>'
-                        : '<span style="color:#ffd9a1">⚠ Ukuran meja belum diisi di Master Mesin — batas plong belum bisa ditegakkan, canvas baru dibatasi bed mesin cetak saja.</span>');
+                        ? T('Maximum die-cut table:') + ' <b>' + S.d[1] + ' × ' + S.d[2] + ' cm</b>'
+                        : '<span style="color:#ffd9a1">⚠ ' + T('The table size is not filled in Master Machine yet — the die-cut limit cannot be enforced, the canvas is only limited by the printing machine bed.') + '</span>');
                 if (reset) S.objs = [];
                 render();
                 calculator();
@@ -3515,31 +3894,31 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             function metrics() {
                 const p = S.p;
                 $('metrics').innerHTML =
-                    '<div class="io-metric"><span>Finished L × W × H</span><b>' + p.fl + ' × ' + p.fw + ' × ' + p.fh + ' cm</b></div>' +
-                    '<div class="io-metric"><span>Dieline / blank</span><b>' + p.l + ' × ' + p.w + ' cm</b></div>' +
-                    '<div class="io-metric"><span>Blank area</span><b>' + (p.l * p.w).toFixed(1) + ' cm²</b></div>' +
-                    '<div class="io-metric"><span>Bleed / Gap</span><b>' + p.bleed + ' / ' + p.gap + ' cm</b></div>';
+                    '<div class="io-metric"><span>' + T('Finished L × W × H') + '</span><b>' + p.fl + ' × ' + p.fw + ' × ' + p.fh + ' cm</b></div>' +
+                    '<div class="io-metric"><span>' + T('Dieline / blank') + '</span><b>' + p.l + ' × ' + p.w + ' cm</b></div>' +
+                    '<div class="io-metric"><span>' + T('Blank area') + '</span><b>' + (p.l * p.w).toFixed(1) + ' cm²</b></div>' +
+                    '<div class="io-metric"><span>' + T('Bleed / Gap') + '</span><b>' + p.bleed + ' / ' + p.gap + ' cm</b></div>';
                 $('spec').innerHTML = '<table>' +
-                    '<tr><td>Customer</td><td>' + p.customer + '</td></tr>' +
-                    '<tr><td>Design No.</td><td>' + p.design + '</td></tr>' +
-                    '<tr><td>Category</td><td>' + p.category + '</td></tr>' +
-                    '<tr><td>Structure</td><td>' + p.structure + '</td></tr>' +
-                    '<tr><td>Material</td><td>' + p.material + '</td></tr>' +
-                    '<tr><td>Artwork</td><td>' + p.art + '</td></tr>' +
-                    '<tr><td>Reg / Note</td><td>' + p.reg + '</td></tr></table>';
+                    '<tr><td>' + T('Customer') + '</td><td>' + p.customer + '</td></tr>' +
+                    '<tr><td>' + T('Design No.') + '</td><td>' + p.design + '</td></tr>' +
+                    '<tr><td>' + T('Category') + '</td><td>' + p.category + '</td></tr>' +
+                    '<tr><td>' + T('Structure') + '</td><td>' + p.structure + '</td></tr>' +
+                    '<tr><td>' + T('Material') + '</td><td>' + p.material + '</td></tr>' +
+                    '<tr><td>' + T('Artwork') + '</td><td>' + p.art + '</td></tr>' +
+                    '<tr><td>' + T('Reg / Note') + '</td><td>' + p.reg + '</td></tr></table>';
             }
 
             function render() {
                 if (!ok()) {
                     const [bl, bw] = bedLimits();
-                    const pembatas = (S.d && S.d[1] && S.d[2] && (bl < S.m[1] || bw < S.m[2])) ? S.d[0] + ' (plong)' : S.m[0];
+                    const pembatas = (S.d && S.d[1] && S.d[2] && (bl < S.m[1] || bw < S.m[2])) ? S.d[0] + ' (' + T('die-cut') + ')' : S.m[0];
                     $('arts').innerHTML = ''; $('grainG').innerHTML = '';
-                    $('sheetLabel').textContent = 'CANVAS ' + S.L + ' × ' + S.W + ' cm — DI LUAR BATAS MESIN';
-                    $('warning').innerHTML = '⚠ Canvas ' + S.L + ' × ' + S.W + ' cm melebihi meja ' + pembatas +
-                        '<br>Maksimum ' + bl + ' × ' + bw + ' cm — ' + S.objs.length + ' object disembunyikan';
+                    $('sheetLabel').textContent = T('CANVAS :l × :w cm — OUTSIDE THE MACHINE LIMIT', { l: S.L, w: S.W });
+                    $('warning').innerHTML = '⚠ ' + T('Canvas :l × :w cm exceeds the table of :bed', { l: S.L, w: S.W, bed: pembatas }) +
+                        '<br>' + T('Maximum :bl × :bw cm — :n objects hidden', { bl, bw, n: S.objs.length });
                     $('warning').classList.add('show');
-                    msg('Invalid: canvas tidak boleh melebihi ' + bl + ' × ' + bw + ' cm (batas ' + pembatas + ').', 'bad');
-                    $('status').textContent = 'Validation failed';
+                    msg(T('Invalid: the canvas must not exceed :bl × :bw cm (limit of :bed).', { bl, bw, bed: pembatas }), 'bad');
+                    $('status').textContent = T('Validation failed');
                     return;
                 }
                 const [uw, uh] = usableVB();
@@ -3555,7 +3934,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 [['sheet', 'x', x], ['sheet', 'y', y], ['sheet', 'width', w], ['sheet', 'height', h],
                  ['safeRect', 'x', x + 4], ['safeRect', 'y', y + 4], ['safeRect', 'width', w - 8], ['safeRect', 'height', h - 8]]
                     .forEach(a => $(a[0]).setAttribute(a[1], a[2]));
-                $('sheetLabel').textContent = 'CANVAS / PRINT SHEET: ' + S.L + ' × ' + S.W + ' cm';
+                $('sheetLabel').textContent = T('CANVAS / PRINT SHEET:') + ' ' + S.L + ' × ' + S.W + ' cm';
                 $('grainG').innerHTML = grain(x, y, w, h);
                 if (!S.objs.length) createObjects(x, y, sc);
                 arts(x, y, w, h);
@@ -3568,11 +3947,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     $('autoResultValue').textContent = S.objs.length + ' up';
                     $('autoResultNote').textContent = S.autoNestInfo
                         ? S.autoNestInfo
-                        : 'Grid otomatis dari ukuran canvas & bentuk blank. Tekan ✦ Auto Nesting untuk coba susunan interlock.';
+                        : T('Automatic grid from the canvas size & blank shape. Press ✦ Auto Nesting to try an interlocking arrangement.');
                 }
-                msg('Valid canvas. Drag setiap object secara independen untuk manual nesting berdasarkan bentuk dieline.', 'ok');
-                $('status').textContent = S.p.category + ' · ' + S.objs.length + ' object(s) · ' +
-                    (S.auto ? 'Auto Up' : 'Manual Up') + ' · ' + (S.selected ? 'selected: ' + S.selected.toUpperCase() : 'no selection');
+                msg(T('Valid canvas. Drag each object independently for manual nesting based on the dieline shape.'), 'ok');
+                $('status').textContent = S.p.category + ' · ' + S.objs.length + ' ' + T('object(s)') + ' · ' +
+                    (S.auto ? T('Auto Up') : T('Manual Up')) + ' · ' + (S.selected ? T('selected:') + ' ' + S.selected.toUpperCase() : T('no selection'));
             }
 
             function grain(x, y, w, h) {
@@ -3580,9 +3959,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 if (d === 'none') return '';
                 return d === 'L'
                     ? '<line class="io-grain" x1="' + (x + 16) + '" y1="' + (y + h - 18) + '" x2="' + (x + 16) + '" y2="' + (y + 18) + '"/>' +
-                      '<text class="io-graintext" x="' + (x + 23) + '" y="' + (y + 30) + '">GRAIN · DIELINE LENGTH</text>'
+                      '<text class="io-graintext" x="' + (x + 23) + '" y="' + (y + 30) + '">' + T('GRAIN · DIELINE LENGTH') + '</text>'
                     : '<line class="io-grain" x1="' + (x + 18) + '" y1="' + (y + 16) + '" x2="' + (x + w - 18) + '" y2="' + (y + 16) + '"/>' +
-                      '<text class="io-graintext" x="' + (x + 32) + '" y="' + (y + 30) + '">GRAIN · DIELINE WIDTH</text>';
+                      '<text class="io-graintext" x="' + (x + 32) + '" y="' + (y + 30) + '">' + T('GRAIN · DIELINE WIDTH') + '</text>';
             }
 
             // Target up yang tidak tercapai HARUS diberitahukan (user 2026-09-17:
@@ -3797,7 +4176,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     el.addEventListener('pointerdown', start);
                     g.appendChild(el);
                 });
-                $('warning').innerHTML = '⚠ Artwork melewati batas canvas / print sheet';
+                $('warning').innerHTML = '⚠ ' + T('Artwork exceeds the canvas / print sheet boundary');
                 $('warning').classList.toggle('show', S.objs.some(isOut));
             }
 
@@ -3837,7 +4216,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             }
             function transform(k, v) {
                 const o = S.objs.find(x => x.id === S.selected);
-                if (!o) { msg('Pilih artwork object pada canvas terlebih dahulu.', 'info'); return; }
+                if (!o) { msg(T('Select an artwork object on the canvas first.'), 'info'); return; }
                 if (k === 'r') o.r = (o.r + v) % 360;
                 else if (v === 'x') o.fx *= -1;
                 else o.fy *= -1;
@@ -3859,7 +4238,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('yPlano').textContent = pu.toFixed(1) + '%';
                 $('yAll').textContent = all.toFixed(1) + '%';
                 $('barFill').style.width = Math.max(0, Math.min(100, all)) + '%';
-                $('barTxt').textContent = 'Material terpakai ' + all.toFixed(1) + '% · terbuang ' + (100 - all).toFixed(1) + '%';
+                $('barTxt').textContent = T('Material used :u% · wasted :w%', { u: all.toFixed(1), w: (100 - all).toFixed(1) });
 
                 const sc = S.sc0 || Math.min(usableVB()[0] / S.L, usableVB()[1] / S.W), sx = S.sx0, sy = S.sy0, sw = S.L * sc, sh = S.W * sc,
                     b = S.objs.map(obox), rot = S.objs.filter(o => o.r % 360 !== 0).length,
@@ -3878,37 +4257,35 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 const kurang = S.upShort;
                 $('impoMode').className = 'io-notice ' + (bentrok || out || kurang ? 'bad' : S.touched ? 'ok' : 'info');
                 $('impoMode').innerHTML = (S.touched
-                    ? '<b>' + (S.autoNestInfo ? 'AUTO NESTING — ' + S.autoNestInfo : 'CUSTOM IMPOSITION — nesting manual') + '</b><br>Susunan: ' + rot + ' object rotate, ' + mir + ' mirror' + (out ? ' · <b>' + out + ' di luar canvas (tidak terhitung sah)</b>' : '') + '.'
-                    : '<b>AUTO GRID IMPOSITION</b><br>Susunan otomatis ' + g.c + ' kolom × ' + g.r + ' baris' + (g.rot ? ' (blank dirotate 90°)' : '')
-                      + ' · mode ' + (S.auto ? 'Auto Up' : 'Manual Up') + (out ? ' · <b>' + out + ' object di luar canvas — geser manual</b>' : '') + '.')
-                    + (bentrok ? '<br><b>⚠ GARIS POTONG BERTABRAKAN</b> — ' + S.overlapPx + ' mm² blank saling makan, susunan ini tidak bisa dicetak. Angka yield di bawah ikut tidak sah.' : '')
+                    ? '<b>' + (S.autoNestInfo ? 'AUTO NESTING — ' + S.autoNestInfo : T('CUSTOM IMPOSITION — manual nesting')) + '</b><br>' + T('Arrangement: :r objects rotated, :m mirrored', { r: rot, m: mir }) + (out ? ' · <b>' + T(':n outside the canvas (not counted as valid)', { n: out }) + '</b>' : '') + '.'
+                    : '<b>' + T('AUTO GRID IMPOSITION') + '</b><br>' + T('Automatic arrangement :c columns × :r rows', { c: g.c, r: g.r }) + (g.rot ? ' (' + T('blank rotated 90°') + ')' : '')
+                      + ' · ' + T('mode') + ' ' + (S.auto ? T('Auto Up') : T('Manual Up')) + (out ? ' · <b>' + T(':n objects outside the canvas — move them manually', { n: out }) + '</b>' : '') + '.')
+                    + (bentrok ? '<br><b>⚠ ' + T('CUT LINES COLLIDE') + '</b> — ' + T(':a mm² of blank overlaps, this arrangement cannot be printed. The yield figures below are also invalid.', { a: S.overlapPx }) : '')
                     + (kurang
                         ? (kurang.target > kurang.maxMesin
-                            ? '<br><b>⚠ TARGET ' + kurang.target + ' UP TIDAK MUAT DI MESIN</b> — blank ' + S.p.l + ' × ' + S.p.w
-                              + ' cm sebanyak itu melebihi meja ' + bedOwner() + '. Canvas terbesar yang diizinkan ('
-                              + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm) hanya memuat ' + kurang.maxMesin + ' up.'
-                            : '<br><b>⚠ TARGET ' + kurang.target + ' UP BELUM MUAT DI CANVAS INI</b> — canvas ' + S.L + ' × ' + S.W
-                              + ' cm baru memuat ' + kurang.dapat + ' up, sisanya ditempatkan DI LUAR canvas (tandai merah) untuk digeser manual. '
-                              + 'Bisa juga diputar/di-mirror, perbesar canvas (meja ' + bedOwner() + ' masih mengizinkan sampai '
-                              + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm), atau tekan ✦ Suggestion.')
+                            ? '<br><b>⚠ ' + T('TARGET :t UP DOES NOT FIT THE MACHINE', { t: kurang.target }) + '</b> — '
+                              + T('that many :bl × :bw cm blanks exceed the table of :bed. The largest allowed canvas (:ml × :mw cm) only fits :max up.', { bl: S.p.l, bw: S.p.w, bed: bedOwner(), ml: bedLimits()[0], mw: bedLimits()[1], max: kurang.maxMesin })
+                            : '<br><b>⚠ ' + T('TARGET :t UP DOES NOT FIT THIS CANVAS YET', { t: kurang.target }) + '</b> — '
+                              + T('canvas :l × :w cm only fits :got up, the rest is placed OUTSIDE the canvas (marked red) to be moved manually.', { l: S.L, w: S.W, got: kurang.dapat }) + ' '
+                              + T('You can also rotate/mirror, enlarge the canvas (the table of :bed still allows up to :ml × :mw cm), or press ✦ Suggestion.', { bed: bedOwner(), ml: bedLimits()[0], mw: bedLimits()[1] }))
                         : '');
 
                 $('impoDetail').innerHTML = '<table>' +
-                    '<tr><td>Object di canvas</td><td>' + up + ' up</td></tr>' +
-                    '<tr><td>Bounding box susunan</td><td>' + bl + ' × ' + bw + ' cm</td></tr>' +
-                    '<tr><td>Area blank total</td><td>' + (up * A).toFixed(0) + ' cm²</td></tr>' +
-                    '<tr><td>Area canvas</td><td>' + ac.toFixed(0) + ' cm²</td></tr>' +
-                    '<tr><td>Sisa canvas kosong</td><td>' + (ac - up * A).toFixed(0) + ' cm² (' + (100 - cu).toFixed(1) + '%)</td></tr>' +
-                    '<tr><td>Canvas / plano</td><td>' + c.n + ' lembar</td></tr>' +
-                    '<tr><td>Trim plano terbuang</td><td>' + (ap - c.n * ac).toFixed(0) + ' cm²</td></tr>' +
-                    '<tr><td>Hasil / plano</td><td>' + (c.n * up) + ' pcs</td></tr></table>';
+                    '<tr><td>' + T('Objects on canvas') + '</td><td>' + up + ' up</td></tr>' +
+                    '<tr><td>' + T('Arrangement bounding box') + '</td><td>' + bl + ' × ' + bw + ' cm</td></tr>' +
+                    '<tr><td>' + T('Total blank area') + '</td><td>' + (up * A).toFixed(0) + ' cm²</td></tr>' +
+                    '<tr><td>' + T('Canvas area') + '</td><td>' + ac.toFixed(0) + ' cm²</td></tr>' +
+                    '<tr><td>' + T('Empty canvas left') + '</td><td>' + (ac - up * A).toFixed(0) + ' cm² (' + (100 - cu).toFixed(1) + '%)</td></tr>' +
+                    '<tr><td>' + T('Canvas / plano') + '</td><td>' + c.n + ' ' + T('sheet(s)') + '</td></tr>' +
+                    '<tr><td>' + T('Wasted plano trim') + '</td><td>' + (ap - c.n * ac).toFixed(0) + ' cm²</td></tr>' +
+                    '<tr><td>' + T('Output / plano') + '</td><td>' + (c.n * up) + ' pcs</td></tr></table>';
 
                 const rows = planos.map(q => ({ q, c: cut(q) })).filter(x => x.c.n).sort((a, b2) => b2.c.util - a.c.util || b2.c.n - a.c.n);
                 $('planoTable').innerHTML = rows.length
-                    ? '<table class="rank"><tr><th>Plano</th><th>Cvs</th><th>Yield</th><th>Overall</th><th>Pcs</th></tr>' +
+                    ? '<table class="rank"><tr><th>' + T('Plano') + '</th><th>' + T('Cvs') + '</th><th>' + T('Yield') + '</th><th>' + T('Overall') + '</th><th>' + T('Pcs') + '</th></tr>' +
                       rows.map(r => '<tr class="' + (r.q[0] === S.pl[0] ? 'best' : '') + '"><td>' + r.q[0].replace(' cm', '') + '</td><td>' + r.c.n + '</td><td>' + (r.c.util * 100).toFixed(1) + '%</td><td>' + (cu * r.c.util).toFixed(1) + '%</td><td>' + (r.c.n * up) + '</td></tr>').join('') +
                       '</table>'
-                    : '<table><tr><td>Tidak ada plano standar yang muat canvas ' + S.L + ' × ' + S.W + ' cm</td></tr></table>';
+                    : '<table><tr><td>' + T('No standard plano fits the canvas :l × :w cm', { l: S.L, w: S.W }) + '</td></tr></table>';
             }
 
             function calculator() {
@@ -3919,8 +4296,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     // masih menunjukkan pembagian canvas SEBELUMNYA.
                     const bi = bestPlanoIndex();
                     $('planoNote').className = 'io-notice bad';
-                    $('planoNote').innerHTML = 'Plano ' + esc(S.pl[0]) + ' tidak muat canvas ' + S.L + ' × ' + S.W + ' cm.'
-                        + (bi >= 0 ? ' Pilih <b>' + planos[bi][0] + '</b> (' + (cut(planos[bi]).util * 100).toFixed(1) + '% sheet yield) atau tekan ✦ Suggestion.' : '');
+                    $('planoNote').innerHTML = esc(T('Plano :p does not fit the canvas :l × :w cm.', { p: S.pl[0], l: S.L, w: S.W }))
+                        + (bi >= 0 ? ' ' + T('Choose') + ' <b>' + planos[bi][0] + '</b> (' + (cut(planos[bi]).util * 100).toFixed(1) + '% ' + T('sheet yield') + ') ' + T('or press ✦ Suggestion.') : '');
                     $('mUp').textContent = up; $('mYield').textContent = 0; $('mPerPlano').textContent = 0; $('mWaste').textContent = '—';
                     $('resultValue').textContent = '—';
                     drawPlano(S.pl, c);
@@ -3929,18 +4306,18 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 }
                 const bi = bestPlanoIndex(), bp = { p: planos[bi], c: cut(planos[bi]) };
                 $('planoNote').className = 'io-notice ok';
-                $('planoNote').innerHTML = 'Recommended: <b>' + bp.p[0] + '</b> gives ' + bp.c.n + ' canvas(es) / plano (' +
-                    (bp.c.util * 100).toFixed(1) + '% sheet yield, bahan per pcs paling hemat). ' + (S.pl[0] === bp.p[0] ? 'Selected.' : 'Manual plano selection active.');
+                $('planoNote').innerHTML = T('Recommended:') + ' <b>' + bp.p[0] + '</b> ' + T('gives :n canvas(es) / plano', { n: bp.c.n }) + ' (' +
+                    (bp.c.util * 100).toFixed(1) + '% ' + T('sheet yield, most economical material per pcs') + '). ' + (S.pl[0] === bp.p[0] ? T('Selected.') : T('Manual plano selection active.'));
                 const perPlano = c.n * up, waste = (100 - c.util * 100).toFixed(1) + '%';
                 $('mUp').textContent = up; $('mYield').textContent = c.n;
                 $('mPerPlano').textContent = perPlano; $('mWaste').textContent = waste;
                 if (S.conv === 'pcs') {
                     const print = Math.ceil(val / up), need = Math.ceil(print / c.n);
-                    $('resultCaption').textContent = 'Plano required';
+                    $('resultCaption').textContent = T('Plano required');
                     $('resultValue').textContent = need;
-                    $('resultUnit').textContent = 'sheets';
+                    $('resultUnit').textContent = T('sheets');
                 } else {
-                    $('resultCaption').textContent = 'Production capacity';
+                    $('resultCaption').textContent = T('Production capacity');
                     $('resultValue').textContent = val * perPlano;
                     $('resultUnit').textContent = 'pcs';
                 }
@@ -3968,7 +4345,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         + t(cx + cw / 2, cy + ch / 2 - 4, 'CANVAS ' + (r * cols + col + 1), 'font-size="9" font-weight="700" fill="#063049"')
                         + t(cx + cw / 2, cy + ch / 2 + 8, fmtAngka(cl) + ' × ' + fmtAngka(cwid), 'font-size="8" fill="#063049"');
                 }
-                if (!c.n) s = t(x + W / 2, y + H / 2, 'Canvas ' + fmtAngka(S.L) + ' × ' + fmtAngka(S.W) + ' cm tidak muat', 'font-size="10" font-weight="700" fill="#c0392b"');
+                if (!c.n) s = t(x + W / 2, y + H / 2, esc(T('Canvas :l × :w cm does not fit', { l: fmtAngka(S.L), w: fmtAngka(S.W) })), 'font-size="10" font-weight="700" fill="#c0392b"');
                 const trim = p[1] * p[2] - c.n * S.L * S.W;
                 $('cut').innerHTML = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" width="100%" style="max-width:' + VW + 'px">'
                     + '<defs><pattern id="io-trimHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
@@ -3976,8 +4353,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     + '<rect x="' + x + '" y="' + y + '" width="' + W + '" height="' + H + '" fill="url(#io-trimHatch)" stroke="#8fa8b6"/>' + s
                     + t(x + W / 2, y - 4, fmtAngka(p[1]) + ' cm', 'font-size="9" fill="#abc6d5"')
                     + '<text x="' + (x - 4) + '" y="' + (y + H / 2) + '" text-anchor="middle" font-size="9" fill="#abc6d5" transform="rotate(-90 ' + (x - 4) + ' ' + (y + H / 2) + ')">' + fmtAngka(p[2]) + ' cm</text>'
-                    + t(VW / 2, VH - 22, p[0] + ' → ' + c.n + ' canvas (' + cols + ' × ' + rows + (c.rot ? ', canvas diputar' : '') + ')', 'font-size="10" font-weight="700" fill="#dbeaf3"')
-                    + t(VW / 2, VH - 8, 'Sheet yield ' + (c.util * 100).toFixed(1) + '% · trim terbuang ' + Math.max(0, trim).toFixed(0) + ' cm² (arsir)', 'font-size="9" fill="#abc6d5"')
+                    + t(VW / 2, VH - 22, p[0] + ' → ' + c.n + ' canvas (' + cols + ' × ' + rows + (c.rot ? ', ' + esc(T('canvas rotated')) : '') + ')', 'font-size="10" font-weight="700" fill="#dbeaf3"')
+                    + t(VW / 2, VH - 8, esc(T('Sheet yield :y% · wasted trim :a cm² (hatched)', { y: (c.util * 100).toFixed(1), a: Math.max(0, trim).toFixed(0) })), 'font-size="9" fill="#abc6d5"')
                     + '</svg>';
             }
 

@@ -1,7 +1,7 @@
 {{-- Tanda Terima Bahan Customer (user 2026-10-01): cetak penerimaan jenis CUSTOMER dari SPB v2 (pv_receipt).
      Objek DevLib x-dl::print-out (kop + pihak + tabel + tanda tangan) + x-dl::doc-share (PDF / JPEG / online + QR / Email).
      Dokumen gudang: tanpa harga. Label English (diterjemahkan lewat sys_dictionary / bahasa cetak). --}}
-@extends('v2.layout', ['title' => 'Customer Material Receipt '.$pv->doc_no, 'bodyClass' => 'dl-page-body'])
+@extends('v2.layout', ['title' => t('Customer Material Receipt').' '.$pv->doc_no, 'bodyClass' => 'dl-page-body'])
 @section('body')
     <div class="dl-cat">
         <x-dl::action-bar>

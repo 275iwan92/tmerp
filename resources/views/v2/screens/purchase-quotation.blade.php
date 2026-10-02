@@ -32,7 +32,7 @@
                         'sub' => $c['lead'] ? 'lead '.$c['lead'].' '.t('days') : null, 'disabled' => $c['ordered'] ? t('Already ordered (PO)') : (! $c['same_uom'] ? t('Unit differs from the PR') : null)])->all()])->all()" />
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="url()->previous() !== url()->current() ? url()->previous() : $home" />
-                <x-dl::button preset="save" label="Create PO" :onclick="'return confirm('.json_encode(t('Create a Draft PO for the selected lines?')).')'" />
+                <x-dl::button preset="save" :label="t('Create PO')" :onclick="'return confirm('.json_encode(t('Create a Draft PO for the selected lines?')).')'" />
             </x-dl::action-bar>
         </x-dl::card>
     </x-dl::action-form>
@@ -45,25 +45,25 @@
             ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'valid', 'label' => 'Valid Until', 'type' => 'date'],
             ['key' => 'file', 'label' => 'File'],
-            ['key' => 'read', 'label' => 'Reading Result', 'type' => 'badge', 'tones' => PurchaseQuotation::READ_TONES],
+            ['key' => 'read', 'label' => 'Reading Result', 'type' => 'badge', 'tones' => PurchaseQuotation::readTones()],
             ['key' => 'total', 'label' => 'Total (IDR)', 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseQuotation::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
-            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'lead', 'label' => 'Lead Time (days)', 'type' => 'number'],
-            ['key' => 'note', 'label' => 'Notes'],
+        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
+            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
+            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'lead', 'label' => t('Lead Time (days)'), 'type' => 'number'],
+            ['key' => 'note', 'label' => t('Notes')],
         ]]"
-        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Needs check', 'where' => ['status' => 'DRAFT', 'read' => ['Perlu cek', 'Isi manual', 'Gagal dibaca']], 'tone' => 'warn'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Closed (ordered)', 'where' => ['status' => 'CLOSED'], 'tone' => 'info']]"
+        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Needs check', 'where' => ['status' => 'DRAFT', 'read' => [PurchaseQuotation::readLabel('CHECK'), PurchaseQuotation::readLabel('MANUAL'), PurchaseQuotation::readLabel('FAILED')]], 'tone' => 'warn'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Closed (ordered)', 'where' => ['status' => 'CLOSED'], 'tone' => 'info']]"
         :filters="['supplier' => 'Supplier', 'pr' => 'Reference PR', 'status' => 'Status']" />
     <x-dl::action-form method="get" action="{{ $home }}">
         <x-dl::card title="Compare quotations per PR" description="Choose a PR that has Confirmed PQs from several suppliers, then pick the winner per line.">
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="compare" label="PR" required :options="PurchaseQuotation::prOptions()" :source="Src::of('tm2pur.pr_requisition (APPROVED / PARTIALLY_ORDERED)')" />
             </x-dl::form.row>
-            <x-dl::action-bar><x-dl::button variant="secondary" icon="fa-scale-balanced" label="Compare" type="submit" /></x-dl::action-bar>
+            <x-dl::action-bar><x-dl::button variant="secondary" icon="fa-scale-balanced" :label="t('Compare')" type="submit" /></x-dl::action-bar>
         </x-dl::card>
     </x-dl::action-form>
 @elseif (! $pq)
@@ -78,7 +78,7 @@
             <x-dl::field.upload name="files" label="Quotation files (PDF, Excel, CSV, JPG, PNG — max. 10 files, 20 MB each)" multiple required accept=".pdf,.xlsx,.xls,.csv,.jpg,.jpeg,.png,.webp" :source="Src::of('tm2pur.pq_quotation.source_path')" />
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
-                <x-dl::button preset="save" label="Upload & Read" />
+                <x-dl::button preset="save" :label="t('Upload & Read')" />
             </x-dl::action-bar>
         </x-dl::card>
     </x-dl::action-form>
@@ -100,7 +100,7 @@
         ])->values()->all();
     @endphp
     @if ($draft && in_array($pq->extract_status, ['CHECK', 'MANUAL', 'FAILED'], true))
-        <x-dl::alert tone="warn" :message="(PurchaseQuotation::READ_LABELS[$pq->extract_status] ?? '').': '.raw($pq->extract_note ?: t('lines marked ⚠ are not a sure match — choose the PR line / Material Master item, check qty, unit and price, then Confirm.'))" />
+        <x-dl::alert tone="warn" :message="raw(PurchaseQuotation::readLabel($pq->extract_status, '')).': '.raw($pq->extract_note ?: t('lines marked ⚠ are not a sure match — choose the PR line / Material Master item, check qty, unit and price, then Confirm.'))" />
     @endif
     <x-dl::form id="pq-form" :title="'Purchase Quotation · '.raw($pq->doc_no ?: 'Draft #'.$pq->pq_id)" :subtitle="raw((PurchaseOrder::suppliers([$pq->i_supplier_id])[$pq->i_supplier_id] ?? ($pq->i_supplier_text ?: t('supplier not chosen yet'))).' · '.$pq->status)"
         panel="top" kind="document" :status="PurchaseQuotation::formStatus($pq)"
@@ -108,10 +108,10 @@
         :tabs="['general' => 'General', 'file' => 'Quotation File', 'notes' => 'Notes']"
         :created-by="$pq->created_by" :created-at="$pq->created_at?->toDateTimeString()" :updated-by="$pq->updated_by" :updated-at="$pq->updated_at?->toDateTimeString()">
         <x-slot:special>
-            @if ($pq->i_pr_id && $pq->status !== 'DRAFT')<x-dl::button size="sm" variant="secondary" icon="fa-scale-balanced" label="Compare" :href="$home.'?compare='.$pq->i_pr_id" />@endif
+            @if ($pq->i_pr_id && $pq->status !== 'DRAFT')<x-dl::button size="sm" variant="secondary" icon="fa-scale-balanced" :label="t('Compare')" :href="$home.'?compare='.$pq->i_pr_id" />@endif
             @if ($pq->status === 'CONFIRMED' && $open->isNotEmpty())
                 @foreach ($open as $l)<input type="hidden" name="pq_line_ids[]" value="{{ $l->pq_line_id }}" form="pq-po-{{ $pq->pq_id }}">@endforeach
-                <x-dl::button size="sm" variant="success" icon="fa-file-invoice-dollar" label="Create PO" type="submit" form="pq-po-{{ $pq->pq_id }}" :onclick="'return confirm('.json_encode(t('Turn every line of this PQ into a Draft PO for this supplier?').' ('.$open->count().')').')'" />
+                <x-dl::button size="sm" variant="success" icon="fa-file-invoice-dollar" :label="t('Create PO')" type="submit" form="pq-po-{{ $pq->pq_id }}" :onclick="'return confirm('.json_encode(t('Turn every line of this PQ into a Draft PO for this supplier?').' ('.$open->count().')').')'" />
             @endif
             @unless ($draft)<x-dl::button size="sm" preset="print" label="Print" :href="\App\Support\V2\Print\PrintDocs::url('purchase-quotation', $pq->pq_id)" target="_blank" />@endunless
         </x-slot:special>
@@ -132,7 +132,7 @@
                 <x-dl::field.select name="i_currency_id" label="Currency" :options="PurchaseQuotation::currencies()" :value="$pq->i_currency_id" :source="Src::of('tm2mst.fin_currency')" />
                 <x-dl::field.decimal name="i_fx_rate" label="Rate to IDR" :value="(float) $pq->i_fx_rate" :source="Src::of('tm2pur.pq_quotation.i_fx_rate')" />
                 <x-dl::field.number name="i_lead_time_day" label="Lead Time (days)" :value="$pq->i_lead_time_day" :source="Src::of('tm2pur.pq_quotation.i_lead_time_day')" />
-                <x-dl::field.display label="Reading Result" :value="(PurchaseQuotation::READ_LABELS[$pq->extract_status] ?? '—').($pq->extract_note ? ' · '.$pq->extract_note : '')" :source="Src::of('tm2pur.pq_quotation.extract_status', 'extract_note')" />
+                <x-dl::field.display label="Reading Result" :value="PurchaseQuotation::readLabel($pq->extract_status).($pq->extract_note ? ' · '.$pq->extract_note : '')" :source="Src::of('tm2pur.pq_quotation.extract_status', 'extract_note')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:file>

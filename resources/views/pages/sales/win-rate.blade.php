@@ -51,7 +51,7 @@ new #[Title('Win-Rate Sales — TELASIH MAKMUR ERP')] class extends Component
     public function byPic()
     {
         return $this->terminalInquiries
-            ->groupBy(fn ($i) => $i->pic_sales ?: '(tanpa PIC)')
+            ->groupBy(fn ($i) => $i->pic_sales ?: t('(no PIC)'))
             ->map(function ($rows, $pic) {
                 $won = $rows->where('sub_state', 'CONVERTED')->count();
                 $lost = $rows->where('sub_state', 'LOST')->count();
@@ -93,36 +93,36 @@ new #[Title('Win-Rate Sales — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1200px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Deal Menang (CONVERTED)" :value="$this->wonCount" />
-            <x-grid.stat-box tone="warn" label="Deal Kalah (LOST)" :value="$this->lostCount" />
-            <x-grid.stat-box tone="extra" label="Win-Rate" :value="number_format($this->winRatePct, 1).'%'" />
+            <x-grid.stat-box tone="total" :label="t('Won Deals (CONVERTED)')" :value="$this->wonCount" />
+            <x-grid.stat-box tone="warn" :label="t('Lost Deals (LOST)')" :value="$this->lostCount" />
+            <x-grid.stat-box tone="extra" :label="t('Win-Rate')" :value="number_format($this->winRatePct, 1).'%'" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden mb-4">
             <x-grid.toolbar class="flex-wrap">
                 <div class="flex items-center gap-1.5 shrink-0">
-                    <label class="text-[10.5px] text-muted font-semibold">Dari</label>
+                    <label class="text-[10.5px] text-muted font-semibold">{{ t('Date from') }}</label>
                     <x-form.date-picker wire:model.live="dateFrom" class="w-[130px]" />
-                    <label class="text-[10.5px] text-muted font-semibold">s/d</label>
+                    <label class="text-[10.5px] text-muted font-semibold">{{ t('until') }}</label>
                     <x-form.date-picker wire:model.live="dateTo" class="w-[130px]" />
                 </div>
                 @if ($dateFrom !== '' || $dateTo !== '')
                     <x-slot:tools>
-                        <button type="button" wire:click="resetFilter" class="shrink-0 text-[11px] font-semibold text-muted hover:text-navy underline">Reset filter</button>
+                        <button type="button" wire:click="resetFilter" class="shrink-0 text-[11px] font-semibold text-muted hover:text-navy underline">{{ t('Reset filter') }}</button>
                     </x-slot:tools>
                 @endif
             </x-grid.toolbar>
 
             <div class="p-4">
-                <h3 class="text-xs text-navy uppercase font-bold mb-2.5">Win-Rate per PIC Sales</h3>
+                <h3 class="text-xs text-navy uppercase font-bold mb-2.5">{{ t('Win-Rate per Sales PIC') }}</h3>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">PIC Sales</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[100px]">Menang</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[100px]">Kalah</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[100px]">Total</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[100px]">Win-Rate</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Sales PIC') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[100px]">{{ t('Won') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[100px]">{{ t('Lost') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[100px]">{{ t('Total') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[100px]">{{ t('Win-Rate') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -135,7 +135,7 @@ new #[Title('Win-Rate Sales — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-bold text-navy">{{ number_format($row->rate, 1) }}%</td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="5" message="Belum ada inquiry CONVERTED/LOST pada rentang ini." />
+                            <x-grid.empty-row :colspan="5" :message="t('No CONVERTED/LOST inquiries in this range yet.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -143,31 +143,31 @@ new #[Title('Win-Rate Sales — TELASIH MAKMUR ERP')] class extends Component
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <h3 class="text-xs text-navy uppercase font-bold px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">Detail Deal Kalah (LOST)</h3>
+            <h3 class="text-xs text-navy uppercase font-bold px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">{{ t('Lost Deal Details (LOST)') }}</h3>
             <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Inquiry</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">PIC Sales</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Alasan Kalah</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Inquiry') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Date') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">{{ t('Sales PIC') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Lost Reason') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->lostRows as $inq)
-                            <tr wire:key="lost-{{ $inq->id_inquiry }}" wire:dblclick="openInquiry({{ $inq->id_inquiry }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                            <tr wire:key="lost-{{ $inq->id_inquiry }}" wire:dblclick="openInquiry({{ $inq->id_inquiry }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                 <x-grid.identity-cell :id="$inq->id_inquiry" :name="$inq->product_draft_name" :code="$inq->inquiry_no" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $inq->inquiry_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $inq->pic_sales ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-muted">{{ $inq->cancel_reason ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="openInquiry({{ $inq->id_inquiry }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" :title="t('Open')" action="openInquiry({{ $inq->id_inquiry }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="5" message="Belum ada deal kalah pada rentang ini." />
+                            <x-grid.empty-row :colspan="5" :message="t('No lost deals in this range yet.')" />
                         @endforelse
                     </tbody>
                 </table>

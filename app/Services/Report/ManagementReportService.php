@@ -117,7 +117,7 @@ class ManagementReportService
     public function salesPersonPerformance(int $year): array
     {
         $rows = DB::connection('tm2sdi')->select("
-            SELECT COALESCE(NULLIF(TRIM(sales_person),''),'(tidak tercatat)') sp,
+            SELECT COALESCE(NULLIF(TRIM(sales_person),''),'') sp,
                    COUNT(*) docs, COALESCE(SUM(grand_total),0) v
             FROM co_order_legacy WHERE YEAR(co_date) = ?
             GROUP BY sp ORDER BY v DESC", [$year]);
@@ -125,7 +125,7 @@ class ManagementReportService
         $total = array_sum(array_map(fn ($r) => (float) $r->v, $rows));
 
         return array_map(fn ($r) => [
-            'name' => $r->sp,
+            'name' => $r->sp !== '' ? $r->sp : t('(not recorded)'),
             'docs' => (int) $r->docs,
             'value' => (float) $r->v,
             'pct' => $total > 0 ? (float) $r->v / $total * 100 : 0,
@@ -214,7 +214,7 @@ class ManagementReportService
 
         return array_map(fn ($r) => [
             'id' => (int) $r->supplier_id,
-            'name' => $names[$r->supplier_id] ?? '(tidak dikenal)',
+            'name' => $names[$r->supplier_id] ?? t('(unknown)'),
             'docs' => (int) $r->docs,
             'value' => (float) $r->v,
         ], $rows);
@@ -276,7 +276,7 @@ class ManagementReportService
 
         return array_map(fn ($r) => [
             'id' => (int) $r->supplier_id,
-            'name' => $names[$r->supplier_id] ?? '(tidak dikenal)',
+            'name' => $names[$r->supplier_id] ?? t('(unknown)'),
             'docs' => (int) $r->docs,
             'invoiced' => (float) $r->invoiced,
             'paid' => (float) $r->paid,
@@ -333,11 +333,11 @@ class ManagementReportService
         $pct = fn ($r) => $r->n > 0 ? round((int) $r->f / (int) $r->n * 100, 1) : 0.0;
 
         return [
-            ['label' => 'Baris PO teridentifikasi bahan bakunya', 'pct' => $pct($poMaterial)],
-            ['label' => 'Penerimaan barang tersambung ke PO', 'pct' => $pct($receivePo)],
-            ['label' => 'Invoice supplier tersambung ke PO', 'pct' => $pct($invoicePo)],
-            ['label' => 'Pembayaran tersambung ke invoice', 'pct' => $pct($paymentInvoice)],
-            ['label' => 'Invoice teridentifikasi suppliernya', 'pct' => $pct($invoiceSupplier)],
+            ['label' => t('PO lines with an identified raw material'), 'pct' => $pct($poMaterial)],
+            ['label' => t('Goods receipts linked to a PO'), 'pct' => $pct($receivePo)],
+            ['label' => t('Supplier invoices linked to a PO'), 'pct' => $pct($invoicePo)],
+            ['label' => t('Payments linked to an invoice'), 'pct' => $pct($paymentInvoice)],
+            ['label' => t('Invoices with an identified supplier'), 'pct' => $pct($invoiceSupplier)],
         ];
     }
 
@@ -355,10 +355,9 @@ class ManagementReportService
         if ($ap['outstanding'] > 0) {
             $attention[] = [
                 'tone' => 'warn',
-                'title' => 'Sisa utang usaha (AP)',
-                'text' => 'Rp ' . number_format($ap['outstanding'], 0, ',', '.')
-                    . ' dari total invoice supplier Rp ' . number_format($ap['invoice_value'], 0, ',', '.')
-                    . ' — dihitung invoice dikurangi realisasi pembayaran (kolom saldo di sumber tidak pernah diisi).',
+                'title' => t('Outstanding accounts payable (AP)'),
+                'text' => str_replace([':outstanding', ':total'], [number_format($ap['outstanding'], 0, ',', '.'), number_format($ap['invoice_value'], 0, ',', '.')],
+                    t('Rp :outstanding of total supplier invoices Rp :total — counted as invoices minus actual payments (the balance column in the source was never filled).')),
             ];
         }
 
@@ -369,9 +368,9 @@ class ManagementReportService
             $pct = round((int) $unmappedInv->f / (int) $unmappedInv->n * 100, 1);
             $attention[] = [
                 'tone' => 'danger',
-                'title' => 'Invoice tanpa padanan supplier',
-                'text' => number_format((int) $unmappedInv->f) . ' dari ' . number_format((int) $unmappedInv->n)
-                    . " invoice ({$pct}%) — sistem lama menyimpan nama perusahaan di kolom kode (mis. MADJU/TANINDO/KEISHA), bukan kode resmi.",
+                'title' => t('Invoices without a matching supplier'),
+                'text' => str_replace([':n', ':total', ':pct'], [number_format((int) $unmappedInv->f), number_format((int) $unmappedInv->n), $pct],
+                    t(':n of :total invoices (:pct%) — the old system stored the company name in the code column (e.g. MADJU/TANINDO/KEISHA), not the official code.')),
             ];
         }
 
@@ -385,8 +384,8 @@ class ManagementReportService
         if (count($overpaid) > 0) {
             $attention[] = [
                 'tone' => 'warn',
-                'title' => 'Supplier tercatat dibayar melebihi tagihan',
-                'text' => count($overpaid) . ' supplier — kemungkinan ada invoice yang tidak ikut terekam di sistem lama, bukan kesalahan hitung.',
+                'title' => t('Suppliers recorded as paid more than billed'),
+                'text' => str_replace(':n', (string) count($overpaid), t(':n suppliers — probably some invoices were not recorded in the old system, not a calculation error.')),
             ];
         }
 
@@ -397,8 +396,9 @@ class ManagementReportService
             $pct = round((int) $unmatchedMaterial->f / (int) $unmatchedMaterial->n * 100, 1);
             $attention[] = [
                 'tone' => 'info',
-                'title' => 'Baris PO tanpa padanan Master Raw Material',
-                'text' => number_format((int) $unmatchedMaterial->f) . " baris ({$pct}%) — item ada di sumber tapi belum terklasifikasi sbg bahan baku saat migrasi Master, perlu ditinjau manual.",
+                'title' => t('PO lines without a matching Master Raw Material'),
+                'text' => str_replace([':n', ':pct'], [number_format((int) $unmatchedMaterial->f), $pct],
+                    t(':n lines (:pct%) — the item exists in the source but was not classified as a raw material during the Master migration; review manually.')),
             ];
         }
 
@@ -424,7 +424,7 @@ class ManagementReportService
 
         return array_map(fn ($r) => [
             'id' => (int) $r->customer_id,
-            'name' => $names[$r->customer_id] ?? '(tidak dikenal)',
+            'name' => $names[$r->customer_id] ?? t('(unknown)'),
             'docs' => (int) $r->docs,
             'value' => (float) $r->v,
         ], $rows);

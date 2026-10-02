@@ -37,12 +37,12 @@
             ['key' => 'resolution', 'label' => 'Resolution'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => CrmComplaints::STATUS_TONES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'qty', 'label' => 'Qty Complained', 'type' => 'number'],
-            ['key' => 'returned', 'label' => 'Qty Returned', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'defect', 'label' => 'Problem'],
+        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'qty', 'label' => t('Qty Complained'), 'type' => 'number'],
+            ['key' => 'returned', 'label' => t('Qty Returned'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'defect', 'label' => t('Problem')],
         ]]"
         :stats="[
             ['label' => 'All'],

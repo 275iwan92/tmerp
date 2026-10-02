@@ -1,0 +1,197 @@
+<?php
+
+use App\Support\Localization\Dictionary;
+use Illuminate\Database\Migrations\Migration;
+
+// Pesan rute (routes/v2.php, v2_master_card.php, web.php): teks ditulis English + t(); terjemahan Indonesia = teks lama,
+// supaya tampilan bahasa id tetap.
+return new class extends Migration
+{
+    private const ID = [
+        // routes/v2.php -- profil / tiket
+        'Problem description' => 'Uraian masalah',
+        'Ticket :no sent to the support team.' => 'Tiket :no terkirim ke tim support.',
+        // Inquiry
+        'Target customer' => 'Customer tujuan',
+        'Duplicate created: :new (New Product, DRAFT) from :from.' => 'Duplikat dibuat: :new (Produk Baru, DRAFT) dari :from.',
+        'Product Type' => 'Tipe Produk',
+        'Product Name' => 'Nama Produk',
+        'Inquiry :no confirmed — the form is locked and it is now in Pro-Dev › New.' => 'Inkuiri :no dikonfirmasi — form terkunci, sekarang ada di Pro-Dev › New.',
+        'Saved as :no (:state).' => 'Tersimpan sebagai :no (:state).',
+        'Reason' => 'Alasan',
+        'Inquiry :no cancelled.' => 'Inkuiri :no dibatalkan.',
+        'Inquiry :no marked as lost (LOST).' => 'Inkuiri :no ditandai kalah (LOST).',
+        'Inner side artwork :part saved.' => 'Artwork sisi dalam :part tersimpan.',
+        'Artwork :part saved.' => 'Artwork :part tersimpan.',
+        'Customer Name' => 'Nama Customer',
+        'New customer ":name" (:code) created — status DRAFT.' => 'Customer baru ":name" (:code) dibuat — status DRAFT.',
+        // Master Product
+        'Product name saved.' => 'Nama product tersimpan.',
+        'Digital Proof details saved.' => 'Isian Proof Digital tersimpan.',
+        'ACC date & time' => 'Tanggal & jam ACC',
+        'ACC by' => 'Di-ACC oleh',
+        'Channel' => 'Saluran',
+        'Evidence' => 'Bukti',
+        ':type recorded.' => ':type tercatat.',
+        // Rakitan
+        'Choose at least 2 parts.' => 'Pilih minimal 2 part.',
+        'Assembly name' => 'Nama rakitan',
+        'Assembly ":name" created.' => 'Rakitan ":name" dibuat.',
+        'Assembly removed; its parts stand alone again.' => 'Rakitan dibongkar; part-nya kembali berdiri sendiri.',
+        // Quotation
+        'Quotation :no created (DRAFT).' => 'Quotation :no dibuat (DRAFT).',
+        'Draft :no deleted.' => 'Draft :no dihapus.',
+        'Free line added — fill in the description, qty and price, then Save.' => 'Baris bebas ditambahkan — isi uraian, qty, dan harga lalu Simpan.',
+        'Quotation :no confirmed (issued). Send it to the customer via Print / Email.' => 'Quotation :no di-Confirm (terbit). Kirim ke customer lewat Print / Email.',
+        'Quotation saved.' => 'Quotation tersimpan.',
+        'Inquiry added to the quotation.' => 'Inquiry ditambahkan ke quotation.',
+        'Quotation cancelled; its inquiries can be quoted again.' => 'Quotation dibatalkan; inquiry-nya bisa ditawarkan lagi.',
+        'Quotation closed as LOST.' => 'Quotation ditutup LOST.',
+        'WIN — Customer Order created from this quotation.' => 'WIN — Customer Order dibuat dari quotation ini.',
+        'A Customer Order cannot be created from this quotation.' => 'Customer Order tidak bisa dibuat dari quotation ini.',
+        'Follow-up recorded.' => 'Follow-up tercatat.',
+        'Follow-up deleted.' => 'Follow-up dihapus.',
+        // Purchase Requisition
+        'Department' => 'Departemen',
+        'PR draft created — add items, then Confirm (submit).' => 'PR draft dibuat — tambahkan item lalu Confirm (ajukan).',
+        'Approval decision saved (:action).' => 'Keputusan approval tersimpan (:action).',
+        'PR draft deleted.' => 'Draft PR dihapus.',
+        'PR saved.' => 'PR tersimpan.',
+        'Choose an item from the master.' => 'Pilih item dari master.',
+        'Master item added — fill in qty & estimated price.' => 'Item master ditambahkan — isi qty & harga estimasi.',
+        'Fill in the free item description.' => 'Isi uraian item bebas.',
+        'Free item added.' => 'Item bebas ditambahkan.',
+        'Cannot Confirm yet: a PR needs a department and at least 1 item.' => 'Belum bisa Confirm: PR wajib punya departemen dan minimal 1 item.',
+        'PR confirmed (submitted) — waiting for approval.' => 'PR di-Confirm (diajukan) — menunggu approval.',
+        // Purchase Quotation
+        'File read into a PQ Draft — check the yellow lines, then Confirm.' => 'File terbaca menjadi PQ Draft — cek baris kuning, lalu Confirm.',
+        ':n file(s) became PQ Drafts — open them one by one to check.' => ':n file menjadi PQ Draft — buka satu per satu untuk dicek.',
+        'PQ draft deleted.' => 'Draft PQ dihapus.',
+        'PQ cancelled.' => 'PQ dibatalkan.',
+        'Cannot Confirm yet:' => 'Belum bisa Confirm:',
+        'PQ :no confirmed — ready to compare & turn into a PO.' => 'PQ :no di-Confirm — siap dibandingkan & dijadikan PO.',
+        'PQ saved.' => 'PQ tersimpan.',
+        'Quotation lines went into :po — continue in Purchase Order.' => 'Baris penawaran masuk ke :po — lanjutkan di Purchase Order.',
+        // Kas Kecil
+        'No active Petty Cash yet.' => 'Belum ada Kas Kecil aktif.',
+        'Advance amount' => 'Nilai kasbon',
+        'Cash recipient' => 'Penerima uang',
+        'Cash advance :no recorded — money handed over, Advance / Petty Cash journal posted.' => 'Kasbon :no tercatat — uang diserahkan, jurnal Uang Muka / Kas Kecil terposting.',
+        'Receipt amount' => 'Nilai nota',
+        'Receipt photo' => 'Foto nota',
+        ':no recorded — the PO price is replaced by the receipt amount; the PO is ready for Goods Receipt (SPB).' => ':no tercatat — harga PO diganti nilai nota, PO siap dicatat di Penerimaan Barang (SPB).',
+        'Top-up amount' => 'Nilai isi ulang',
+        'Date' => 'Tanggal',
+        'Top-up :no recorded — Petty Cash / Bank journal posted.' => 'Isi ulang :no tercatat — jurnal Kas Kecil / Bank terposting.',
+        'Transaction :no cancelled — its journal was reversed.' => 'Transaksi :no dibatalkan — jurnalnya dibalik.',
+        'Petty cash name' => 'Nama kas kecil',
+        'Cash custodian' => 'Pemegang kas',
+        'Petty cash settings saved.' => 'Setting kas kecil tersimpan.',
+        // Purchase Order
+        'Cash PO draft ready — add items (Material Master / free description) or pull from a PR, then fill in qty & estimated price.' => 'Draft PO Kontan siap — tambah item (Master Bahan / uraian bebas) atau tarik dari PR, isi qty & harga perkiraan.',
+        'PO draft ready — pull lines from approved PRs.' => 'Draft PO siap — tarik baris dari PR yang sudah approved.',
+        'PO marked as sent to the supplier (SENT) — ready to receive in Goods Receipt.' => 'PO ditandai sudah dikirim ke supplier (SENT) — siap diterima di Penerimaan Barang.',
+        'PO draft deleted; PR allocations released.' => 'Draft PO dihapus; alokasi PR dilepas lagi.',
+        'PO saved.' => 'PO tersimpan.',
+        'Choose an item from the Material Master.' => 'Pilih item dari Master Bahan.',
+        'Item added — fill in qty & estimated price.' => 'Item ditambahkan — isi qty & harga perkiraan.',
+        'Fill in the item description.' => 'Isi uraian item.',
+        'Choose a PR line.' => 'Pilih baris PR.',
+        'PR line pulled into the PO — fill in price & discount.' => 'Baris PR ditarik ke PO — isi harga & diskon.',
+        'Cannot Confirm yet: a PO needs at least 1 line.' => 'Belum bisa Confirm: PO wajib punya minimal 1 baris.',
+        'Cannot Confirm yet.' => 'Belum bisa Confirm.',
+        'Cash PO confirmed — waiting for F&A Director approval.' => 'PO Kontan di-Confirm — menunggu approval Direktur F&A.',
+        'PO confirmed (submitted) — waiting for approval.' => 'PO di-Confirm (diajukan) — menunggu approval.',
+        // Penerimaan Barang
+        'Warehouse' => 'Gudang',
+        'PO lines' => 'Baris PO',
+        'Receipt :no created — fill in qty received, QC qty & quality, then Confirm (Post).' => 'Penerimaan :no dibuat — isi qty diterima, QC qty & kualitas, lalu Confirm (Post).',
+        'Customer material receipt :no created — check the description & qty per line, then Confirm.' => 'Penerimaan bahan customer :no dibuat — cek uraian & qty per baris, lalu Confirm.',
+        'Subcontractor' => 'Subkon',
+        'Subcon PO lines' => 'Baris PO Subkon',
+        'Subcon receipt :no created — fill in qty returned & the next process, then Confirm.' => 'Penerimaan dari subkon :no dibuat — isi qty kembali & proses berikutnya, lalu Confirm.',
+        'Receipt from Subcontractor' => 'Penerimaan dari Subkon',
+        'Goods Receipt Note (SPB)' => 'Surat Penerimaan Barang (SPB)',
+        'Qty short' => 'Qty kurang',
+        'Remarks' => 'Keterangan',
+        'Shortage recorded — qty received, Subcon PO and journal corrected.' => 'Kekurangan tercatat — qty diterima, PO Subkon, dan jurnal dikoreksi.',
+        ':no deleted.' => ':no dihapus.',
+        'Subcon receipt confirmed — Subcon PO & service journal updated.' => 'Penerimaan subkon di-Confirm — PO Subkon & jurnal jasa terupdate.',
+        'Customer material receipt confirmed.' => 'Penerimaan bahan customer di-Confirm.',
+        'Receipt saved.' => 'Penerimaan tersimpan.',
+        'Choose a PO line.' => 'Pilih baris PO.',
+        'PO lines added.' => 'Baris PO ditambahkan.',
+        'Cannot Confirm (Post) yet:' => 'Belum bisa Confirm (Post):',
+        // Delivery Order
+        'DO draft created — pull lines from the Customer Order delivery schedule.' => 'Draft DO dibuat — tarik baris dari jadwal kirim Customer Order.',
+        'DO confirmed — the Delivery Note is ready to print.' => 'DO di-Confirm — Surat Jalan siap dicetak.',
+        'Goods shipped (SHIPPED).' => 'Barang sudah dikirim (SHIPPED).',
+        'DO cancelled.' => 'DO dibatalkan.',
+        'Choose a CO delivery schedule.' => 'Pilih jadwal kirim CO.',
+        'Lines pulled from the CO delivery schedule.' => 'Baris ditarik dari jadwal kirim CO.',
+        'DO saved.' => 'DO tersimpan.',
+        // Customer Order
+        'Customer Order :no (:mode) is ready to fill in.' => 'Customer Order :no (:mode) siap diisi.',
+        'This quotation cannot become a Customer Order (not issued yet / LOST).' => 'Quotation ini tidak bisa menjadi Customer Order (belum terbit / LOST).',
+        'Copy of :no created as INSTANT CO :new (Draft) — fix it, then Confirm again.' => 'Salinan :no dibuat sebagai CO INSTANT :new (Draft) — perbaiki lalu Confirm lagi.',
+        'Customer Order :no CANCELLED — its delivery schedules were cancelled too.' => 'Customer Order :no CANCELLED — jadwal kirimnya ikut dibatalkan.',
+        'Customer Order saved.' => 'Customer Order tersimpan.',
+        'Choose a Master Product.' => 'Pilih Master Product.',
+        'Product line added — fill in qty & due date.' => 'Baris product ditambahkan — isi qty & due date.',
+        'Service line added.' => 'Baris jasa ditambahkan.',
+        'External cost added.' => 'Biaya luar ditambahkan.',
+        'Delivery schedule added.' => 'Jadwal kirim ditambahkan.',
+        'Customer Order :no submitted — waiting for approval by the F&A SPV, then the Operational Manager. The delivery schedule (CPDEL) is created after the last approval.' => 'Customer Order :no diajukan — menunggu approval F&A SPV lalu Operational Manager. Jadwal kirim (CPDEL) dibuat setelah approval terakhir.',
+        // Approval
+        'Approved — logged.' => 'Disetujui — tercatat di log.',
+        'Rejected — logged.' => 'Ditolak — tercatat di log.',
+        'On hold — logged.' => 'Ditahan — tercatat di log.',
+        'Document Code' => 'Kode Dokumen',
+        'Approval setting :code created — add Levels, then Save.' => 'Setting approval :code dibuat — tambahkan Level lalu Save.',
+        'Approval setting :code activated.' => 'Setting approval :code diaktifkan.',
+        'Approval setting :code deactivated (new documents skip approval).' => 'Setting approval :code dinonaktifkan (dokumen baru tidak masuk approval).',
+        'Approval setting :code saved.' => 'Setting approval :code tersimpan.',
+        'Acting officer (PLT) list saved.' => 'Daftar officer pengganti (PLT) tersimpan.',
+        // Inquiry Rekalkulasi / Revisi
+        'Revision reason' => 'Alasan revisi',
+        'Inquiry :no confirmed — sent to ProDev → ProCost, the form is locked.' => 'Inkuiri :no di-Confirm — dikirim ke ProDev → ProCost, form terkunci.',
+        'Saved as :no (DRAFT).' => 'Tersimpan sebagai :no (DRAFT).',
+        // E-mail
+        'E-mail is empty / invalid.' => 'E-mail belum diisi / tidak valid.',
+        'Verification link could not be sent:' => 'Link verifikasi gagal dikirim:',
+        'Verification link sent to :email. Open that e-mail and click its button (valid for 24 hours).' => 'Link verifikasi dikirim ke :email. Buka e-mail itu dan klik tombolnya (berlaku 24 jam).',
+        'This link is for another account / address.' => 'Link ini untuk akun / alamat lain.',
+        'E-mail :email verified.' => 'E-mail :email terverifikasi.',
+        'Sender address' => 'Alamat pengirim',
+        'E-mail settings saved.' => 'Setting e-mail tersimpan.',
+        'Fill in your account e-mail first (Security) to send a test.' => 'Isi e-mail akun Anda dulu (Security) untuk uji kirim.',
+        'Test e-mail from :app — the e-mail settings work.' => 'E-mail uji dari :app — setting e-mail berfungsi.',
+        'Test e-mail' => 'E-mail uji',
+        'Saved, but the test e-mail failed:' => 'Tersimpan, tapi e-mail uji gagal:',
+        'Saved; test e-mail sent to :email (mode: :mode).' => 'Tersimpan; e-mail uji dikirim ke :email (mode: :mode).',
+        // Data dummy
+        'Reset finished.' => 'Reset selesai.',
+        'Baseline saved.' => 'Baseline disimpan.',
+
+        // routes/v2_master_card.php
+        'Master card file' => 'File master card',
+        ':n master card(s) read: :cards.' => ':n master card dibaca: :cards.',
+        'Master card created.' => 'Master card dibuat.',
+        'Master card deleted.' => 'Master card dihapus.',
+        'Saved.' => 'Tersimpan.',
+        'Photo added.' => 'Foto ditambahkan.',
+        'The card has already been converted.' => 'Kartu sudah dikonversi.',
+        'Master Product ":name" created from the master card.' => 'Master Product ":name" dibuat dari master card.',
+
+        // routes/web.php
+        'This document link has expired.' => 'Link dokumen ini sudah kedaluwarsa.',
+        'The verification link is invalid or has expired.' => 'Tautan verifikasi tidak valid atau sudah kedaluwarsa.',
+    ];
+
+    public function up(): void
+    {
+        Dictionary::seed(self::ID);
+    }
+
+    public function down(): void {}
+};

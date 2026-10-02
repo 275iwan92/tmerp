@@ -1,4 +1,3 @@
-@php use App\Support\Localization\Translator; @endphp
 {{--
     Dropdown avatar/user -- SATU implementasi dipakai main-menu.blade.php
     (Menu Operasional, $standalone=false, andalkan ddOpen/
@@ -27,13 +26,13 @@
         <div class="um-head">
             <span class="um-av"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></span>
             <div>
-                <div class="um-name">{{ auth()->user()->name ?: Translator::t('shell_user_fallback_name', 'Pengguna') }}</div>
+                <div class="um-name">{{ auth()->user()->name ?: t('User') }}</div>
                 <div class="um-mail">{{ auth()->user()->email }}</div>
             </div>
         </div>
         <div class="um-list">
             @foreach ($this->userMenuItems as $section => $items)
-                <div class="um-cap">{{ match ($section) { 'Pesan & Info' => Translator::t('shell_section_pesan_info', 'Pesan & info'), 'Akun' => Translator::t('shell_section_akun', 'Akun'), default => $section } }}</div>
+                <div class="um-cap">{{ match ($section) { 'Pesan & Info' => t('Messages & Info'), 'Akun' => t('Account'), default => $section } }}</div>
                 @foreach ($items as $item)
                     @if ($item->action_type === 'menu')
                         {{-- Item yang membuka layar menu lain (bukan drawer). --}}
@@ -46,7 +45,7 @@
                         @endif
                     @elseif ($item->code === 'UM_HELP')
                         {{-- Konteks = layar aktif (tab MDI di Operasional, judul halaman di Laporan). --}}
-                        <button type="button" class="um-item" title="{{ Translator::t('shell_help_f1_hint', 'Jalan pintas: tekan F1 di mana saja') }}"
+                        <button type="button" class="um-item" title="{{ t('Shortcut: press F1 anywhere') }}"
                             @click="openHelp({{ $standalone ? "(document.title || '').split(' — ')[0]" : "openTabs.find(t => t.code === activeTabCode)?.label || 'Home'" }})">
                             <i class="{{ $item->icon }}"></i> {{ $item->label }} <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span>
                         </button>
@@ -61,7 +60,7 @@
                 <div class="um-sep"></div>
             @endforeach
 
-            <button type="button" class="um-item danger" wire:click="logout"><i class="fa-solid fa-right-from-bracket"></i> {{ Translator::t('shell_logout', 'Keluar aplikasi') }}</button>
+            <button type="button" class="um-item danger" wire:click="logout"><i class="fa-solid fa-right-from-bracket"></i> {{ t('Log out') }}</button>
         </div>
     </div>
 </div>

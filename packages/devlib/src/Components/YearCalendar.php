@@ -28,7 +28,7 @@ class YearCalendar extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'tanggal bertanda';
+        return $this->source ?? 'marked dates';
     }
 
     // Tiap bulan: nama + sel tanggal (null = sel kosong sebelum tanggal 1), minggu mulai Senin.

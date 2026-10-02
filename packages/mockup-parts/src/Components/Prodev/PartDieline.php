@@ -51,7 +51,7 @@ class PartDieline extends DevlibComponent
                 </header>
                 <div class="mp-part__body">
                     @foreach ($warnings() as $w)
-                        <x-dl::alert tone="warn" :message="t($w)" />
+                        <x-dl::alert tone="warn" :message="$w" />
                     @endforeach
                     <x-dl::form.row cols="5">
                         <x-dl::field.display label="Part Name" :value="$p['part_name']" :source="\MockupParts\Src::of('tm2mst.prod_part.part_name')" />

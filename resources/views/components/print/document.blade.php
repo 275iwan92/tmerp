@@ -16,7 +16,7 @@
 --}}
 @props([
     'theme' => [],
-    'printLabel' => '🖶 Cetak / Simpan PDF',
+    'printLabel' => '🖶 '.t('Print / Save PDF'),
     // true = dokumen ber-PPN: muncul pilihan kop Non PPN / PPN (backlog01 UI-09).
     'ppn' => false,
 ])
@@ -34,9 +34,9 @@
     <div class="print-bar">
         <button type="button" onclick="window.print()" class="pr">{{ $printLabel }}</button>
         @if ($ppn)
-            <span class="kop-choice" role="group" aria-label="Kop dokumen">
-                <button type="button" :class="! ppnKop && 'on'" @click="ppnKop = false">Non PPN</button>
-                <button type="button" :class="ppnKop && 'on'" @click="ppnKop = true">PPN</button>
+            <span class="kop-choice" role="group" aria-label="{{ t('Document letterhead') }}">
+                <button type="button" :class="! ppnKop && 'on'" @click="ppnKop = false">{{ t('Non VAT') }}</button>
+                <button type="button" :class="ppnKop && 'on'" @click="ppnKop = true">{{ t('VAT') }}</button>
             </span>
         @endif
         {{ $toolbar ?? '' }}

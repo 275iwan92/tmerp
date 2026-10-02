@@ -16,7 +16,7 @@ class MachineGrid extends ProdGrid
 
     public function title(): string
     {
-        return 'Master Mesin';
+        return t('Machine Master');
     }
 
     protected function v1Route(): ?string

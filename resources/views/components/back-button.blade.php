@@ -2,7 +2,7 @@
 {{-- data-back ditangani resources/js/dirty-guard.js: tanya simpan kalau form berubah, lalu kembali ke layar sebelumnya; href = fallback bila tak ada riwayat. --}}
 <a href="{{ $fallback }}" data-back
     {{ $attributes->merge([
-        'title' => 'Kembali ke layar sebelumnya',
+        'title' => t('Back to the previous screen'),
         'class' => 'inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110',
     ]) }}>
     <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>

@@ -4,7 +4,6 @@ use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Pur\PoOrder;
 use App\Services\Pur\PoBuilderService;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -122,12 +121,12 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => Translator::t('proc_po_stat_total', 'Total PO'), 'value' => $this->statTotal, 'tone' => 'total'],
-            'submitted' => ['label' => Translator::t('proc_pr_stat_submitted', 'Menunggu Approval'), 'value' => $this->statSubmitted, 'tone' => 'warn',
+            'total' => ['label' => t('Total POs'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'submitted' => ['label' => t('Awaiting Approval'), 'value' => $this->statSubmitted, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('status', 'SUBMITTED')],
-            'progress' => ['label' => Translator::t('proc_pr_stat_progress', 'Disetujui / Diproses'), 'value' => $this->statProgress, 'tone' => 'active',
+            'progress' => ['label' => t('Approved / In Progress'), 'value' => $this->statProgress, 'tone' => 'active',
                 'filter' => fn ($q) => $q->whereIn('status', ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CLOSED'])],
-            'rejected' => ['label' => Translator::t('proc_po_stat_rejected', 'Ditolak / Batal'), 'value' => $this->statRejected, 'tone' => 'critical',
+            'rejected' => ['label' => t('Rejected / Cancelled'), 'value' => $this->statRejected, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->whereIn('status', ['REJECTED', 'CANCELLED'])],
         ];
     }
@@ -142,7 +141,7 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('proc_po_search_placeholder', 'Cari no. PO / item…') }}"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search PO no. / item…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -155,18 +154,18 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_po_col_supplier_no', 'Supplier / No. PO') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_col_date', 'Tanggal') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ Translator::t('proc_po_col_type', 'Tipe') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ Translator::t('proc_po_col_total_bill', 'Total Tagihan') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_col_status', 'Status') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Supplier / PO No.') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Date') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ t('Type') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Total Bill') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->orders as $po)
-                            <tr wire:key="po-{{ $po->po_id }}" wire:dblclick="openPo({{ $po->po_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
-                                <x-grid.identity-cell :id="$po->po_id" :name="$this->supplierNames[$po->i_supplier_id] ?? '—'" :code="$po->doc_no ?: Translator::t('proc_draft_placeholder', '(draft)')" />
+                            <tr wire:key="po-{{ $po->po_id }}" wire:dblclick="openPo({{ $po->po_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
+                                <x-grid.identity-cell :id="$po->po_id" :name="$this->supplierNames[$po->i_supplier_id] ?? '—'" :code="$po->doc_no ?: t('(draft)')" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $po->i_doc_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-[10.5px]">{{ $po->i_po_type }} · {{ $po->i_procure_type }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format((float) $po->c_grand_total, 0, ',', '.') }}</td>
@@ -181,11 +180,11 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
                                         } }}">{{ $po->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openPo({{ $po->po_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ t('Open') }}" action="openPo({{ $po->po_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="{{ Translator::t('proc_po_empty', 'Belum ada Purchase Order.') }}" />
+                            <x-grid.empty-row :colspan="6" message="{{ t('No Purchase Orders yet.') }}" />
                         @endforelse
                     </tbody>
                 </table>
@@ -199,10 +198,10 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" wire:click.self="closePicker">
             <div class="bg-white rounded-lg p-4 w-[480px] shadow-xl">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-bold text-navy">{{ Translator::t('proc_po_picker_title', 'PO Baru — Pilih Supplier') }}</h3>
+                    <h3 class="text-sm font-bold text-navy">{{ t('New PO — Select Supplier') }}</h3>
                     <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
-                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="supplierSearch" autofocus placeholder="{{ Translator::t('proc_supplier_picker_search_placeholder', 'Ketik min. 2 huruf nama/kode supplier...') }}" class="mb-2" />
+                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="supplierSearch" autofocus placeholder="{{ t('Type at least 2 letters of supplier name/code...') }}" class="mb-2" />
                 <div class="max-h-72 overflow-y-auto">
                     @forelse ($this->supplierResults as $s)
                         <button type="button" wire:click="startForSupplier({{ $s->id_supplier }})" class="w-full text-left px-2.5 py-2 rounded hover:bg-[#eef3fb] cursor-pointer border-b border-[#eef1f5] last:border-b-0">
@@ -211,7 +210,7 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
                         </button>
                     @empty
                         <div class="text-[11px] text-muted text-center py-4">
-                            {{ mb_strlen(trim($supplierSearch)) < 2 ? Translator::t('proc_supplier_picker_min_chars', 'Ketik min. 2 huruf untuk cari.') : Translator::t('proc_supplier_picker_no_match', 'Tidak ada supplier cocok.') }}
+                            {{ mb_strlen(trim($supplierSearch)) < 2 ? t('Type at least 2 letters to search.') : t('No matching supplier.') }}
                         </div>
                     @endforelse
                 </div>

@@ -7,7 +7,6 @@ use App\Models\Master\CustCustomerBranch;
 use App\Models\Master\CustCustomerContact;
 use App\Models\Master\FinPaymentTerm;
 use App\Models\Master\OrgDivision;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -643,7 +642,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 'approval_status' => $status,
                 'updated_by' => Auth::user()->login,
             ]);
-            $this->actionMessage = 'Status diubah ke '.CustCustomer::APPROVAL_STATUSES[$status].'.';
+            $this->actionMessage = str_replace(':status', t(CustCustomer::APPROVAL_STATUSES[$status]), t('Status changed to :status.'));
             unset($this->customers, $this->selectedCustomer);
         }
     }
@@ -764,7 +763,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
             $this->approval_status = 'BLOCKED';
         }
 
-        $this->actionMessage = 'Customer diblokir.';
+        $this->actionMessage = t('Customer blocked.');
         unset($this->customers, $this->selectedCustomer);
     }
 
@@ -778,7 +777,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
     public function confirmUnblock(): void
     {
         if (! (Auth::user()->is_admin || Auth::user()->canAccessModule('FINACC'))) {
-            $this->addError('unblock_reason', 'Anda tidak punya wewenang membuka blokir — butuh akses modul Finance & Accounting atau Admin.');
+            $this->addError('unblock_reason', t('You are not authorized to unblock — requires access to the Finance & Accounting module or Admin.'));
 
             return;
         }
@@ -806,7 +805,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
             $this->note = $customer->note;
         }
 
-        $this->actionMessage = 'Blokir customer dibuka.';
+        $this->actionMessage = t('Customer unblocked.');
         unset($this->customers, $this->selectedCustomer);
         $this->showUnblockModal = false;
     }
@@ -816,12 +815,12 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => Translator::t('mdata_cust_stat_total', 'Total Customer'), 'value' => $this->metricTotal, 'tone' => 'total'],
-            'active' => ['label' => Translator::t('mdata_active', 'Aktif'), 'value' => $this->metricActive, 'tone' => 'active',
+            'total' => ['label' => t('Total Customers'), 'value' => $this->metricTotal, 'tone' => 'total'],
+            'active' => ['label' => t('Active'), 'value' => $this->metricActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('approval_status', 'APPROVED')->where('activate', true)],
-            'blocked' => ['label' => Translator::t('mdata_sup_stat_blocked', 'Terblokir'), 'value' => $this->metricBlocked, 'tone' => 'critical',
+            'blocked' => ['label' => t('Blocked'), 'value' => $this->metricBlocked, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where(fn ($qq) => $qq->where('is_blacklisted', true)->orWhere('approval_status', 'BLOCKED'))],
-            'draft' => ['label' => Translator::t('mdata_cust_stat_draft', 'Draft / Onboarding'), 'value' => $this->metricDraft, 'tone' => 'warn',
+            'draft' => ['label' => t('Draft / Onboarding'), 'value' => $this->metricDraft, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('approval_status', 'DRAFT')],
         ];
     }
@@ -840,7 +839,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
-                        <input type="text" wire:model.live.debounce.400ms="q" placeholder="{{ Translator::t('mdata_sup_search_placeholder', 'Cari nama / kode / PIC...') }}"
+                        <input type="text" wire:model.live.debounce.400ms="q" placeholder="{{ t('Search name / code / PIC...') }}"
                             class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
                     <x-slot:newRecord>
@@ -857,20 +856,20 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Customer</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_po_col_type', 'Tipe') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_cust_col_industry', 'Industri') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_cust_col_credit_limit', 'Limit Kredit') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_sup_col_terms', 'Termin') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_col_status', 'Status') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Customer') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Type') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Industry') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Credit Limit') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Payment Terms') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->customers as $c)
                             <tr wire:click="selectRow({{ $c->id_customer }})" wire:dblclick="editRow({{ $c->id_customer }})"
                                 class="cursor-pointer hover:bg-[#f7faff] {{ $selectedId === $c->id_customer ? 'bg-[#e8f0fe]' : '' }}"
-                                title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
+                                title="{{ t('Double-click to open detail') }}">
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="flex items-center gap-2.5">
                                         <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($c->id_customer) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($c->customer_name) }}</div>
@@ -880,28 +879,28 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $c->customer_type === 'import' ? Translator::t('mdata_cust_type_import', 'Import') : Translator::t('mdata_cust_type_local', 'Lokal') }}{{ $c->is_prospect ? ' · '.Translator::t('mdata_cust_prospect', 'Prospek') : '' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $c->customer_type === 'import' ? t('Import') : t('Local') }}{{ $c->is_prospect ? ' · '.t('Prospect') : '' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] max-w-[160px] truncate">{{ $c->industry_category ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">Rp {{ number_format((float) $c->credit_limit, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $c->paymentTerm?->term_label ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">
-                                        {{ $c->activate ? Translator::t('mdata_active', 'Aktif') : Translator::t('mdata_inactive', 'Nonaktif') }}
+                                        {{ $c->activate ? t('Active') : t('Inactive') }}
                                     </span>
                                     <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block ml-1 {{ match($c->approval_status ?? 'DRAFT') { 'APPROVED' => 'bg-[#eaf7ee] text-[#1f8a4c]', 'BLOCKED' => 'bg-[#fdeceb] text-[#c0392b]', 'CREDIT_CHECK' => 'bg-[#fff4e0] text-[#8a6d00]', default => 'bg-[#eef0f3] text-[#6b7280]' } }}">
-                                        {{ \App\Models\Master\CustCustomer::APPROVAL_STATUSES[$c->approval_status ?? 'DRAFT'] }}
+                                        {{ t(\App\Models\Master\CustCustomer::APPROVAL_STATUSES[$c->approval_status ?? 'DRAFT']) }}
                                     </span>
                                     @if ($c->is_blacklisted)
                                         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#fdeceb] text-[#c0392b] ml-1">🚫</span>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="editRow({{ $c->id_customer }})" />
-                                    <x-grid.action-icon :active="$c->activate" :title="$c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $c->id_customer }})" confirm="{{ $c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }} customer {{ $c->customer_name }}?" />
+                                    <x-grid.action-icon icon="fa-pen" title="{{ t('Edit') }}" action="editRow({{ $c->id_customer }})" />
+                                    <x-grid.action-icon :active="$c->activate" :title="$c->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $c->id_customer }})" :confirm="str_replace(':name', $c->customer_name, $c->activate ? t('Deactivate customer :name?') : t('Activate customer :name?'))" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="7" message="{{ Translator::t('mdata_cust_empty', 'Belum ada data customer') }}{{ $q ? Translator::t('mdata_sup_empty_search_suffix', ' untuk pencarian ini') : '' }}." />
+                            <x-grid.empty-row :colspan="7" message="{{ t('No customer data yet') }}{{ $q ? t(' for this search') : '' }}." />
                         @endforelse
                     </tbody>
                 </table>
@@ -915,7 +914,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-lg bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($editingId ?? 0) }} text-white text-xs font-bold flex items-center justify-center shrink-0 uppercase">{{ $this->avatarInitials($customer_name) }}</div>
                     <div>
-                        <div class="text-sm font-bold">{{ $customer_name ?: ($editingId ? 'Edit Customer' : 'Customer Baru') }}</div>
+                        <div class="text-sm font-bold">{{ $customer_name ?: ($editingId ? t('Edit Customer') : t('New Customer')) }}</div>
                         @if ($editingId)<div class="text-xs font-normal opacity-75">{{ $customer_code }}</div>@endif
                     </div>
                 </div>
@@ -924,7 +923,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                         <button type="button" wire:click="setApprovalStatus('{{ $stKey }}')"
                             class="px-3 py-1.5 font-semibold cursor-pointer border-r border-white/25 last:border-r-0
                                 {{ $approval_status === $stKey ? 'bg-white text-[#2c3e69]' : 'bg-transparent text-white/70 hover:text-white' }}">
-                            {{ $stLabel }}
+                            {{ t($stLabel) }}
                         </button>
                     @endforeach
                 </div>
@@ -938,26 +937,26 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 <div class="flex justify-between items-center gap-2.5 px-4 py-2.5 bg-white border-x border-[#d7dbe2] flex-wrap">
                     <div class="flex gap-2">
                         @if ($is_blacklisted)
-                            <button type="button" wire:click="openUnblockModal" class="px-3 py-1.5 rounded text-[11px] font-semibold bg-[#eaf7ee] border border-[#bfe6cd] text-[#1f8a4c] cursor-pointer">🔓 Buka Blokir</button>
+                            <button type="button" wire:click="openUnblockModal" class="px-3 py-1.5 rounded text-[11px] font-semibold bg-[#eaf7ee] border border-[#bfe6cd] text-[#1f8a4c] cursor-pointer">🔓 {{ t('Unblock') }}</button>
                         @else
-                            <button type="button" wire:click="blockCustomer" wire:confirm="Blokir customer ini?" class="px-3 py-1.5 rounded text-[11px] font-semibold bg-[#fdeceb] border border-[#f0c4c4] text-[#c0392b] cursor-pointer">🚫 Blokir</button>
+                            <button type="button" wire:click="blockCustomer" wire:confirm="{{ t('Block this customer?') }}" class="px-3 py-1.5 rounded text-[11px] font-semibold bg-[#fdeceb] border border-[#f0c4c4] text-[#c0392b] cursor-pointer">🚫 {{ t('Block') }}</button>
                         @endif
                     </div>
                     <div class="flex gap-2.5 flex-wrap">
                         <div class="border border-[#d7dbe2] rounded-md px-3.5 py-1.5 min-w-[135px] text-right bg-[#fafbfc]">
-                            <div class="text-[10px] text-[#8a94a6] uppercase tracking-wide">Limit Kredit</div>
+                            <div class="text-[10px] text-[#8a94a6] uppercase tracking-wide">{{ t('Credit Limit') }}</div>
                             <div class="text-[13px] font-bold">Rp {{ number_format((float) $credit_limit, 0, ',', '.') }}</div>
                         </div>
                         <div class="border border-[#d7dbe2] rounded-md px-3.5 py-1.5 min-w-[135px] text-right bg-[#fafbfc]">
-                            <div class="text-[10px] text-[#8a94a6] uppercase tracking-wide">Saldo Piutang</div>
+                            <div class="text-[10px] text-[#8a94a6] uppercase tracking-wide">{{ t('Receivable Balance') }}</div>
                             <div class="text-[13px] font-bold">Rp {{ number_format((float) ($this->selectedCustomer?->current_balance ?? 0), 0, ',', '.') }}</div>
                         </div>
                         <div class="border border-[#d7dbe2] rounded-md px-3.5 py-1.5 min-w-[110px] text-right bg-[#fafbfc]">
-                            <div class="text-[10px] text-[#8a94a6] uppercase tracking-wide">Cabang</div>
+                            <div class="text-[10px] text-[#8a94a6] uppercase tracking-wide">{{ t('Branch') }}</div>
                             <div class="text-[13px] font-bold">{{ 1 + ($this->selectedCustomer?->branches->count() ?? 0) }}</div>
                         </div>
                         <div class="border border-[#d7dbe2] rounded-md px-3.5 py-1.5 min-w-[110px] text-right bg-[#fafbfc]">
-                            <div class="text-[10px] text-[#8a94a6] uppercase tracking-wide">Kontak</div>
+                            <div class="text-[10px] text-[#8a94a6] uppercase tracking-wide">{{ t('Contact') }}</div>
                             <div class="text-[13px] font-bold">{{ 1 + ($this->selectedCustomer?->contacts->count() ?? 0) }}</div>
                         </div>
                     </div>
@@ -965,7 +964,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
             @endif
 
             <div class="flex gap-1 bg-[#fafbfc] border-x border-b border-[#d7dbe2] px-3 pt-2 flex-wrap">
-                @foreach (['overview' => 'Overview', 'printing' => 'Printing Specs', 'sales' => 'Sales & Finance', 'sites' => 'Sites & Contacts', 'governance' => 'Governance', 'history' => 'History'] as $tabKey => $tabLabel)
+                @foreach (['overview' => t('Overview'), 'printing' => t('Printing Specs'), 'sales' => t('Sales & Finance'), 'sites' => t('Sites & Contacts'), 'governance' => t('Governance'), 'history' => t('History')] as $tabKey => $tabLabel)
                     <button type="button" wire:click="setFormTab('{{ $tabKey }}')"
                         class="px-3.5 py-2 text-xs font-semibold rounded-t-md border border-b-0 cursor-pointer relative -mb-px
                             {{ $formTab === $tabKey ? 'bg-white border-[#d7dbe2] text-[#2c3e69]' : 'bg-transparent border-transparent text-[#6b7280] hover:text-[#2c3e69]' }}">
@@ -980,29 +979,29 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 
                 {{-- TAB: OVERVIEW --}}
                 <div class="{{ $formTab === 'overview' ? '' : 'hidden' }}">
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Identitas Umum</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">{{ t('General Identity') }}</h3>
                     <div class="[display:grid] grid-cols-3 gap-3">
-                        <x-form.input label="Kode Customer" wire:model="customer_code" maxlength="50" name="customer_code" />
+                        <x-form.input :label="t('Customer Code')" wire:model="customer_code" maxlength="50" name="customer_code" />
                         <div class="col-span-2">
-                            <x-form.input label="Nama Customer" wire:model="customer_name" maxlength="200" name="customer_name" />
+                            <x-form.input :label="t('Customer Name', 'master')" wire:model="customer_name" maxlength="200" name="customer_name" />
                         </div>
-                        <x-form.input label="Trade Name / Brand" wire:model="trade_name" maxlength="200" />
-                        <x-form.input label="Parent / Customer Group" wire:model="parent_group" maxlength="200" />
-                        <x-form.input label="Kategori Industri" wire:model="industry_category" maxlength="150" placeholder="mis. FMCG - Food & Beverage Packaging" />
-                        <x-form.select label="Tipe" wire:model="customer_type" :placeholder="false" :options="['local' => 'Lokal', 'import' => 'Import']" />
-                        <x-form.input label="NPWP" wire:model="tax_code" maxlength="50" placeholder="00.000.000.0-000.000" />
-                        <x-form.select label="Kategori (Tracking Bayar)" wire:model="category" name="category"
+                        <x-form.input :label="t('Trade Name / Brand')" wire:model="trade_name" maxlength="200" />
+                        <x-form.input :label="t('Parent / Customer Group')" wire:model="parent_group" maxlength="200" />
+                        <x-form.input :label="t('Industry Category')" wire:model="industry_category" maxlength="150" :placeholder="t('e.g. FMCG - Food & Beverage Packaging')" />
+                        <x-form.select :label="t('Type')" wire:model="customer_type" :placeholder="false" :options="['local' => t('Local'), 'import' => t('Import')]" />
+                        <x-form.input :label="t('NPWP')" wire:model="tax_code" maxlength="50" placeholder="00.000.000.0-000.000" />
+                        <x-form.select :label="t('Category (Payment Tracking)')" wire:model="category" name="category"
                             :options="$this->categories->pluck('category_code', 'category_code')->all()" />
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Status</label>
-                            <x-form.checkbox wire:model="activate" label="Aktif" />
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Status') }}</label>
+                            <x-form.checkbox wire:model="activate" :label="t('Active')" />
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Prospek</label>
-                            <x-form.checkbox wire:model="is_prospect" label="Calon pelanggan (belum resmi)" />
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Prospect') }}</label>
+                            <x-form.checkbox wire:model="is_prospect" :label="t('Prospective customer (not yet official)')" />
                         </div>
                         <div class="col-span-3">
-                            <x-form.textarea label="Catatan Internal" wire:model="note" rows="2" placeholder="mis. preferensi operasional, riwayat masalah" />
+                            <x-form.textarea :label="t('Internal Notes')" wire:model="note" rows="2" :placeholder="t('e.g. operational preferences, issue history')" />
                         </div>
                     </div>
                 </div>
@@ -1010,53 +1009,53 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 {{-- TAB: PRINTING SPECS --}}
                 <div class="{{ $formTab === 'printing' ? '' : 'hidden' }}">
                     <div class="text-[11px] text-[#8a6d00] bg-[#fff8e1] border border-dashed border-[#e6d38a] rounded-md px-3 py-2 mb-3 leading-relaxed">
-                        Field cetak-spesifik ini mempengaruhi asumsi quotation, proofing artwork, routing produksi, label pengiriman, dan penerimaan kualitas.
+                        {{ t('These print-specific fields affect quotation assumptions, artwork proofing, production routing, shipping labels, and quality acceptance.') }}
                     </div>
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Produk &amp; Material</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">{{ t('Product & Material') }}</h3>
                     <div class="[display:grid] grid-cols-4 gap-3 mb-3">
-                        <x-form.input label="Produk Utama" wire:model="primary_product" />
-                        <x-form.input label="Produk Sekunder" wire:model="secondary_product" />
-                        <x-form.input label="Substrate Default" wire:model="default_substrate" />
-                        <x-form.input label="Standar Warna" wire:model="color_standard" />
+                        <x-form.input :label="t('Main Product', 'master')" wire:model="primary_product" />
+                        <x-form.input :label="t('Secondary Product')" wire:model="secondary_product" />
+                        <x-form.input :label="t('Default Substrate')" wire:model="default_substrate" />
+                        <x-form.input :label="t('Color Standard')" wire:model="color_standard" />
                     </div>
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Proofing &amp; Quality Control</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">{{ t('Proofing & Quality Control') }}</h3>
                     <div class="[display:grid] grid-cols-4 gap-3 mb-3">
-                        <x-form.input label="Metode Proofing" wire:model="proofing_method" />
-                        <x-form.input label="Approval Artwork" wire:model="artwork_approval" />
-                        <x-form.input label="Retained Sample" wire:model="retained_sample" />
-                        <x-form.input label="Verifikasi Barcode" wire:model="barcode_verification" />
+                        <x-form.input :label="t('Proofing Method')" wire:model="proofing_method" />
+                        <x-form.input :label="t('Artwork Approval')" wire:model="artwork_approval" />
+                        <x-form.input :label="t('Retained Sample')" wire:model="retained_sample" />
+                        <x-form.input :label="t('Barcode Verification')" wire:model="barcode_verification" />
                     </div>
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Finishing &amp; Pengiriman</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">{{ t('Finishing & Delivery') }}</h3>
                     <div class="[display:grid] grid-cols-3 gap-3 mb-3">
-                        <x-form.input label="Preferensi Finishing" wire:model="finishing_preference" />
-                        <x-form.input label="Pemilik Die-Cut" wire:model="die_owner" />
-                        <x-form.input label="Instruksi Packing" wire:model="packing_instruction" />
+                        <x-form.input :label="t('Finishing Preference')" wire:model="finishing_preference" />
+                        <x-form.input :label="t('Die-Cut Owner')" wire:model="die_owner" />
+                        <x-form.input :label="t('Packing Instruction')" wire:model="packing_instruction" />
                     </div>
-                    <x-form.textarea label="Catatan Kualitas & Kriteria Reject" wire:model="quality_notes" rows="3" />
+                    <x-form.textarea :label="t('Quality Notes & Reject Criteria')" wire:model="quality_notes" rows="3" />
                 </div>
 
                 {{-- TAB: SALES & FINANCE --}}
                 <div class="{{ $formTab === 'sales' ? '' : 'hidden' }}">
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Wilayah Penjualan &amp; Harga</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">{{ t('Sales Territory & Pricing') }}</h3>
                     <div class="[display:grid] grid-cols-3 gap-3 mb-3">
-                        <x-form.select label="Divisi (SBU)" wire:model="sales_division_id" name="sales_division_id"
+                        <x-form.select :label="t('Division (SBU)')" wire:model="sales_division_id" name="sales_division_id"
                             :options="$this->divisions->pluck('division_name', 'division_id')->all()" />
-                        <x-form.input label="Price List" wire:model="price_list_code" maxlength="50" />
-                        <x-form.select label="Profil Pajak" wire:model="tax_profile" :placeholder="false"
-                            :options="['PPN_11' => 'PPN 11% - Domestic Taxable', 'EXEMPT' => 'Bebas PPN (Kawasan Berikat)']" />
+                        <x-form.input :label="t('Price List')" wire:model="price_list_code" maxlength="50" />
+                        <x-form.select :label="t('Tax Profile')" wire:model="tax_profile" :placeholder="false"
+                            :options="['PPN_11' => t('PPN 11% - Domestic Taxable'), 'EXEMPT' => t('PPN Exempt (Bonded Zone)')]" />
                     </div>
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Termin &amp; Kredit</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">{{ t('Terms & Credit') }}</h3>
                     <div class="[display:grid] grid-cols-3 gap-3 mb-3">
-                        <x-form.select label="Termin Bayar" wire:model="payment_term" name="payment_term"
+                        <x-form.select :label="t('Payment Terms')" wire:model="payment_term" name="payment_term"
                             :options="$this->paymentTerms->pluck('term_label', 'payment_term_code')->all()" />
-                        <x-form.input label="Mata Uang" wire:model="currency_code" maxlength="10" placeholder="IDR" />
-                        <x-form.input label="Limit Kredit" type="number" step="0.01" min="0" wire:model="credit_limit" />
+                        <x-form.input :label="t('Currency')" wire:model="currency_code" maxlength="10" placeholder="IDR" />
+                        <x-form.input :label="t('Credit Limit')" type="number" step="0.01" min="0" wire:model="credit_limit" />
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Credit Checking</label>
-                            <x-form.checkbox wire:model="credit_check_enabled" label="Aktifkan pengecekan kredit" />
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Credit Checking') }}</label>
+                            <x-form.checkbox wire:model="credit_check_enabled" :label="t('Enable credit checking')" />
                         </div>
-                        <x-form.select label="Credit Rating" wire:model="credit_rating" :placeholder="false" :options="CustCustomer::CREDIT_RATINGS" />
-                        <x-form.input label="Saldo Piutang Berjalan" readonly value="Rp {{ number_format((float) ($this->selectedCustomer?->current_balance ?? 0), 0, ',', '.') }}" />
+                        <x-form.select :label="t('Credit Rating')" wire:model="credit_rating" :placeholder="false" :options="array_map('t', CustCustomer::CREDIT_RATINGS)" />
+                        <x-form.input :label="t('Current Receivable Balance')" readonly value="Rp {{ number_format((float) ($this->selectedCustomer?->current_balance ?? 0), 0, ',', '.') }}" />
                     </div>
 
                     {{--
@@ -1066,27 +1065,27 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                     --}}
                     <div class="mt-4 border border-dashed border-[#e6d38a] bg-[#fff8e1] rounded-md p-3.5">
                         <div class="flex items-center gap-1.5 mb-2">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#8a6d00] text-white">MENYUSUL</span>
-                            <span class="text-[11px] font-bold text-[#8a6d00] uppercase tracking-wide">Chart of Accounts — belum aktif</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#8a6d00] text-white">{{ t('COMING SOON') }}</span>
+                            <span class="text-[11px] font-bold text-[#8a6d00] uppercase tracking-wide">{{ t('Chart of Accounts — not active yet') }}</span>
                         </div>
                         <div class="flex flex-col gap-1 max-w-[360px]">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Akun Rekonsiliasi Piutang</label>
-                            <input type="text" disabled placeholder="Menunggu desain skema COA" class="px-2.5 py-1.5 border border-[#e6d38a] rounded text-xs bg-white text-[#b8a45c] cursor-not-allowed">
+                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">{{ t('Receivable Reconciliation Account') }}</label>
+                            <input type="text" disabled placeholder="{{ t('Waiting for the COA schema design') }}" class="px-2.5 py-1.5 border border-[#e6d38a] rounded text-xs bg-white text-[#b8a45c] cursor-not-allowed">
                         </div>
-                        <div class="text-[11px] text-[#8a6d00] mt-2 leading-relaxed">Belum tersambung ke data apa pun — tampilan saja, menunggu pembahasan COA terpisah.</div>
+                        <div class="text-[11px] text-[#8a6d00] mt-2 leading-relaxed">{{ t('Not connected to any data yet — display only, waiting for a separate COA discussion.') }}</div>
                     </div>
                 </div>
 
                 {{-- TAB: SITES & CONTACTS --}}
                 <div class="{{ $formTab === 'sites' ? '' : 'hidden' }}">
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Kantor Pusat (Alamat Utama)</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">{{ t('Head Office (Main Address)') }}</h3>
                     <div class="[display:grid] grid-cols-2 gap-3 mb-4">
                         <div class="col-span-2">
-                            <x-form.textarea label="Alamat Lengkap" wire:model="default_address" rows="2" placeholder="Jalan, nomor, RT/RW, patokan" />
+                            <x-form.textarea :label="t('Full Address')" wire:model="default_address" rows="2" :placeholder="t('Street, number, RT/RW, landmark')" />
                         </div>
                         <div class="flex flex-col gap-1 col-span-2">
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">
-                                Wilayah <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-lg ml-1 bg-[#fff8e1] text-[#b98900] normal-case">◆ ketik kelurahan / kecamatan / kota / provinsi / kode pos</span>
+                                {{ t('Region') }} <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-lg ml-1 bg-[#fff8e1] text-[#b98900] normal-case">◆ {{ t('type village / district / city / province / postal code') }}</span>
                             </label>
                             <livewire:address-picker
                                 field-name="customer-address"
@@ -1095,119 +1094,119 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                                 :initial-label="$address_label"
                                 wire:key="addr-picker-{{ $editingId ?? 'new' }}" />
                         </div>
-                        <x-form.input label="Kode Pos" wire:model="postal_code" maxlength="20" placeholder="Auto dari wilayah, bisa diubah" />
+                        <x-form.input :label="t('Postal Code')" wire:model="postal_code" maxlength="20" :placeholder="t('Auto from region, can be changed')" />
                     </div>
 
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Kontak PIC Utama</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">{{ t('Main PIC Contact') }}</h3>
                     <div class="[display:grid] grid-cols-3 gap-3 mb-4">
-                        <x-form.select label="Sapaan" wire:model="mr_ms" placeholder="—" :options="['Bapak' => 'Bapak', 'Ibu' => 'Ibu']" />
-                        <x-form.input label="Nama PIC" wire:model="contact_name" maxlength="200" />
-                        <x-form.input label="No. Telepon" wire:model="phone" maxlength="50" />
-                        <x-form.input label="Email" type="email" wire:model="email" maxlength="150" name="email" />
-                        <x-form.input label="Website" wire:model="website" maxlength="150" />
+                        <x-form.select :label="t('Salutation')" wire:model="mr_ms" placeholder="—" :options="['Bapak' => t('Mr.'), 'Ibu' => t('Mrs.')]" />
+                        <x-form.input :label="t('PIC Name')" wire:model="contact_name" maxlength="200" />
+                        <x-form.input :label="t('Phone No.', 'master')" wire:model="phone" maxlength="50" />
+                        <x-form.input :label="t('Email')" type="email" wire:model="email" maxlength="150" name="email" />
+                        <x-form.input :label="t('Website')" wire:model="website" maxlength="150" />
                     </div>
 
                     @if ($editingId)
                         <div class="[display:grid] grid-cols-2 gap-3">
                             <div class="border border-[#d7dbe2] rounded-md p-3">
                                 <div class="flex items-center mb-2">
-                                    <div class="text-[10.5px] text-[#8a94a6] uppercase">Kontak Tambahan</div>
+                                    <div class="text-[10.5px] text-[#8a94a6] uppercase">{{ t('Additional Contacts') }}</div>
                                     <span class="flex-1"></span>
-                                    <button type="button" wire:click="openContactModal('new')" class="text-[11px] font-semibold text-[#2f6fed] cursor-pointer">+ Tambah</button>
+                                    <button type="button" wire:click="openContactModal('new')" class="text-[11px] font-semibold text-[#2f6fed] cursor-pointer">+ {{ t('Add') }}</button>
                                 </div>
                                 @forelse ($this->selectedCustomer?->contacts ?? [] as $ct)
                                     <div class="flex items-start justify-between gap-2 py-1.5 border-b border-[#f0f2f5] last:border-b-0">
                                         <div>
                                             <div class="text-xs font-semibold">{{ $ct->contact_name }}{{ $ct->position ? ' · '.$ct->position : '' }}
-                                                @if ($ct->is_default)<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#eaf7ee] text-[#1f8a4c] ml-1">DEFAULT</span>@endif
+                                                @if ($ct->is_default)<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#eaf7ee] text-[#1f8a4c] ml-1">{{ t('DEFAULT') }}</span>@endif
                                             </div>
                                             <div class="text-xs text-[#6b7280]">{{ $ct->phone ?: '—' }} · {{ $ct->email ?: '—' }}</div>
                                         </div>
                                         <div class="flex gap-1 shrink-0">
                                             @unless ($ct->is_default)
-                                                <button type="button" wire:click="setDefaultContact({{ $ct->id_customer_contact }})" title="Jadikan default" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">★</button>
+                                                <button type="button" wire:click="setDefaultContact({{ $ct->id_customer_contact }})" title="{{ t('Set as default') }}" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">★</button>
                                             @endunless
-                                            <button type="button" wire:click="openContactModal('edit', {{ $ct->id_customer_contact }})" title="Edit" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">✎</button>
-                                            <button type="button" wire:click="deleteContact({{ $ct->id_customer_contact }})" wire:confirm="Hapus kontak {{ $ct->contact_name }}?" title="Hapus" class="w-6 h-6 rounded border border-[#f0c4c4] text-[#c0392b] text-[10px] cursor-pointer">🗑</button>
+                                            <button type="button" wire:click="openContactModal('edit', {{ $ct->id_customer_contact }})" title="{{ t('Edit') }}" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">✎</button>
+                                            <button type="button" wire:click="deleteContact({{ $ct->id_customer_contact }})" wire:confirm="{{ str_replace(':name', $ct->contact_name, t('Delete contact :name?')) }}" title="{{ t('Delete') }}" class="w-6 h-6 rounded border border-[#f0c4c4] text-[#c0392b] text-[10px] cursor-pointer">🗑</button>
                                         </div>
                                     </div>
                                 @empty
-                                    <div class="text-xs text-[#8a94a6] py-2">Belum ada kontak tambahan.</div>
+                                    <div class="text-xs text-[#8a94a6] py-2">{{ t('No additional contacts yet.') }}</div>
                                 @endforelse
                             </div>
                             <div class="border border-[#d7dbe2] rounded-md p-3">
                                 <div class="flex items-center mb-2">
-                                    <div class="text-[10.5px] text-[#8a94a6] uppercase">Cabang / Site Tambahan</div>
+                                    <div class="text-[10.5px] text-[#8a94a6] uppercase">{{ t('Additional Branches / Sites') }}</div>
                                     <span class="flex-1"></span>
-                                    <button type="button" wire:click="openBranchModal('new')" class="text-[11px] font-semibold text-[#2f6fed] cursor-pointer">+ Tambah</button>
+                                    <button type="button" wire:click="openBranchModal('new')" class="text-[11px] font-semibold text-[#2f6fed] cursor-pointer">+ {{ t('Add') }}</button>
                                 </div>
                                 @forelse ($this->selectedCustomer?->branches ?? [] as $br)
                                     <div class="flex items-start justify-between gap-2 py-1.5 border-b border-[#f0f2f5] last:border-b-0">
                                         <div>
-                                            <div class="text-xs font-semibold">{{ $br->branch_name ?: 'Cabang' }}
-                                                @if ($br->is_default)<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#eaf7ee] text-[#1f8a4c] ml-1">DEFAULT</span>@endif
+                                            <div class="text-xs font-semibold">{{ $br->branch_name ?: t('Branch') }}
+                                                @if ($br->is_default)<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#eaf7ee] text-[#1f8a4c] ml-1">{{ t('DEFAULT') }}</span>@endif
                                             </div>
                                             <div class="text-xs">{{ $br->address ?: '—' }}</div>
                                             <div class="text-xs text-[#6b7280] mt-0.5">{{ $br->phone ?: '—' }}{{ $br->postal_code ? ' · '.$br->postal_code : '' }}</div>
                                         </div>
                                         <div class="flex gap-1 shrink-0">
                                             @unless ($br->is_default)
-                                                <button type="button" wire:click="setDefaultBranch({{ $br->id_customer_branch }})" title="Jadikan default" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">★</button>
+                                                <button type="button" wire:click="setDefaultBranch({{ $br->id_customer_branch }})" title="{{ t('Set as default') }}" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">★</button>
                                             @endunless
-                                            <button type="button" wire:click="openBranchModal('edit', {{ $br->id_customer_branch }})" title="Edit" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">✎</button>
-                                            <button type="button" wire:click="deleteBranch({{ $br->id_customer_branch }})" wire:confirm="Hapus cabang {{ $br->branch_name ?: 'ini' }}?" title="Hapus" class="w-6 h-6 rounded border border-[#f0c4c4] text-[#c0392b] text-[10px] cursor-pointer">🗑</button>
+                                            <button type="button" wire:click="openBranchModal('edit', {{ $br->id_customer_branch }})" title="{{ t('Edit') }}" class="w-6 h-6 rounded border border-[#d7dbe2] text-[10px] cursor-pointer">✎</button>
+                                            <button type="button" wire:click="deleteBranch({{ $br->id_customer_branch }})" wire:confirm="{{ $br->branch_name ? str_replace(':name', $br->branch_name, t('Delete branch :name?')) : t('Delete this branch?') }}" title="{{ t('Delete') }}" class="w-6 h-6 rounded border border-[#f0c4c4] text-[#c0392b] text-[10px] cursor-pointer">🗑</button>
                                         </div>
                                     </div>
                                 @empty
-                                    <div class="text-xs text-[#8a94a6] py-2">Belum ada cabang tambahan.</div>
+                                    <div class="text-xs text-[#8a94a6] py-2">{{ t('No additional branches yet.') }}</div>
                                 @endforelse
                             </div>
                         </div>
                     @else
-                        <div class="text-xs text-[#8a94a6] bg-[#fafbfc] border border-dashed border-[#d7dbe2] rounded-md px-3.5 py-3">Simpan customer dahulu untuk menambah kontak &amp; cabang tambahan.</div>
+                        <div class="text-xs text-[#8a94a6] bg-[#fafbfc] border border-dashed border-[#d7dbe2] rounded-md px-3.5 py-3">{{ t('Save the customer first to add additional contacts & branches.') }}</div>
                     @endif
                 </div>
 
                 {{-- TAB: GOVERNANCE --}}
                 <div class="{{ $formTab === 'governance' ? '' : 'hidden' }}">
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Governance &amp; Kepatuhan</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">{{ t('Governance & Compliance') }}</h3>
                     <div class="[display:grid] grid-cols-2 gap-3">
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Validasi NPWP</label>
-                            <x-form.checkbox wire:model="tax_validated" label="NPWP sudah diverifikasi Finance" />
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('NPWP Validation') }}</label>
+                            <x-form.checkbox wire:model="tax_validated" :label="t('NPWP verified by Finance')" />
                         </div>
-                        <x-form.select label="Status KYC" wire:model="kyc_status" :placeholder="false" :options="CustCustomer::KYC_STATUSES" />
+                        <x-form.select :label="t('KYC Status')" wire:model="kyc_status" :placeholder="false" :options="array_map('t', CustCustomer::KYC_STATUSES)" />
                     </div>
-                    <div class="text-[11px] text-[#8a94a6] mt-3 leading-relaxed">COA/GL &amp; laporan finansial umumnya internal (Sisi A) — data yang dibagikan ke Sales harus melalui publish, sesuai CLAUDE.md §4.</div>
+                    <div class="text-[11px] text-[#8a94a6] mt-3 leading-relaxed">{{ t('COA/GL & financial reports are generally internal (Side A) — data shared with Sales must go through publish, per CLAUDE.md §4.') }}</div>
                 </div>
 
                 {{-- TAB: HISTORY --}}
                 <div class="{{ $formTab === 'history' ? '' : 'hidden' }}">
-                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Riwayat Ringkas</h3>
+                    <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">{{ t('Brief History') }}</h3>
                     @if ($editingId && $this->selectedCustomer)
                         <div class="relative pl-4 border-l-2 border-[#e2e7ee]">
                             <div class="relative mb-4 pl-3">
                                 <span class="absolute -left-[21px] top-1 w-2 h-2 rounded-full bg-accent border-2 border-white"></span>
                                 <div class="text-[10px] text-[#8a94a6] font-semibold">{{ $this->selectedCustomer->updated_at?->format('d M Y · H:i') }} WIB</div>
-                                <div class="text-xs font-bold text-[#2c3e69] mt-0.5">Terakhir Diubah</div>
-                                <div class="text-xs text-[#6b7280]">oleh {{ $this->selectedCustomer->updated_by ?: '—' }}</div>
+                                <div class="text-xs font-bold text-[#2c3e69] mt-0.5">{{ t('Last Changed') }}</div>
+                                <div class="text-xs text-[#6b7280]">{{ t('by') }} {{ $this->selectedCustomer->updated_by ?: '—' }}</div>
                             </div>
                             <div class="relative pl-3">
                                 <span class="absolute -left-[21px] top-1 w-2 h-2 rounded-full bg-[#d7dbe2] border-2 border-white"></span>
                                 <div class="text-[10px] text-[#8a94a6] font-semibold">{{ $this->selectedCustomer->created_at?->format('d M Y · H:i') }} WIB</div>
-                                <div class="text-xs font-bold text-[#2c3e69] mt-0.5">Customer Dibuat</div>
-                                <div class="text-xs text-[#6b7280]">oleh {{ $this->selectedCustomer->created_by ?: '—' }}</div>
+                                <div class="text-xs font-bold text-[#2c3e69] mt-0.5">{{ t('Customer Created') }}</div>
+                                <div class="text-xs text-[#6b7280]">{{ t('by') }} {{ $this->selectedCustomer->created_by ?: '—' }}</div>
                             </div>
                         </div>
-                        <div class="text-[11px] text-[#8a94a6] mt-3">Riwayat detail per-field (audit trail lengkap) belum tersedia — baru mencatat jejak dibuat/diubah terakhir.</div>
+                        <div class="text-[11px] text-[#8a94a6] mt-3">{{ t('Per-field detail history (full audit trail) is not available yet — it only records the created/last changed trail.') }}</div>
                     @else
-                        <div class="text-xs text-[#8a94a6] bg-[#fafbfc] border border-dashed border-[#d7dbe2] rounded-md px-3.5 py-3">Simpan customer dahulu untuk melihat riwayat.</div>
+                        <div class="text-xs text-[#8a94a6] bg-[#fafbfc] border border-dashed border-[#d7dbe2] rounded-md px-3.5 py-3">{{ t('Save the customer first to view the history.') }}</div>
                     @endif
                 </div>
 
                 <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
-                    <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-[#2f6fed] text-white border border-[#2f6fed] cursor-pointer">Simpan</button>
-                    <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-[#2f6fed] text-white border border-[#2f6fed] cursor-pointer">{{ t('Save') }}</button>
+                    <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
                 </div>
             </form>
         @endif
@@ -1217,25 +1216,25 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
             <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeContactModal">
                 <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
                     <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                        <span>{{ $contactMode === 'edit' ? 'Edit Kontak' : 'Kontak Baru' }}</span>
+                        <span>{{ $contactMode === 'edit' ? t('Edit Contact') : t('New Contact') }}</span>
                         <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeContactModal">✕</span>
                     </div>
                     <form wire:submit="saveContact" novalidate class="p-4 flex flex-col gap-3">
-                        <x-form.input label="Nama Kontak *" wire:model="c_contact_name" name="c_contact_name" />
-                        <x-form.input label="Jabatan" wire:model="c_position" />
+                        <x-form.input :label="t('Contact Name *')" wire:model="c_contact_name" name="c_contact_name" />
+                        <x-form.input :label="t('Role')" wire:model="c_position" />
                         <div class="flex gap-2.5">
                             <div class="flex-1">
-                                <x-form.input label="Telepon" wire:model="c_phone" />
+                                <x-form.input :label="t('Phone')" wire:model="c_phone" />
                             </div>
                             <div class="flex-1">
-                                <x-form.input label="Email" type="email" wire:model="c_email" name="c_email" />
+                                <x-form.input :label="t('Email')" type="email" wire:model="c_email" name="c_email" />
                             </div>
                         </div>
-                        <x-form.textarea label="Catatan" wire:model="c_note" rows="2" />
-                        <x-form.checkbox wire:model="c_is_default" label="Jadikan kontak default" label-class="text-[#334]" />
+                        <x-form.textarea :label="t('Notes')" wire:model="c_note" rows="2" />
+                        <x-form.checkbox wire:model="c_is_default" :label="t('Set as default contact')" label-class="text-[#334]" />
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                            <button type="button" wire:click="closeContactModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                            <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                            <button type="button" wire:click="closeContactModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                            <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
                         </div>
                     </form>
                 </div>
@@ -1247,14 +1246,14 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
             <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeBranchModal">
                 <div class="bg-white rounded-xl w-[480px] max-w-[92vw] shadow-2xl">
                     <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                        <span>{{ $branchMode === 'edit' ? 'Edit Cabang' : 'Cabang Baru' }}</span>
+                        <span>{{ $branchMode === 'edit' ? t('Edit Branch') : t('New Branch') }}</span>
                         <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeBranchModal">✕</span>
                     </div>
                     <form wire:submit="saveBranch" novalidate class="p-4 flex flex-col gap-3">
-                        <x-form.input label="Nama Cabang" wire:model="branch_name" placeholder="mis. Gudang Surabaya" />
-                        <x-form.textarea label="Alamat" wire:model="branch_address" rows="2" />
+                        <x-form.input :label="t('Branch Name')" wire:model="branch_name" :placeholder="t('e.g. Surabaya Warehouse')" />
+                        <x-form.textarea :label="t('Address')" wire:model="branch_address" rows="2" />
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Wilayah</label>
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Region') }}</label>
                             <livewire:address-picker
                                 field-name="customer-branch-address"
                                 :initial-area-id="$branch_area_id"
@@ -1264,16 +1263,16 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                         </div>
                         <div class="flex gap-2.5">
                             <div class="flex-1">
-                                <x-form.input label="Kode Pos" wire:model="branch_postal_code" />
+                                <x-form.input :label="t('Postal Code')" wire:model="branch_postal_code" />
                             </div>
                             <div class="flex-1">
-                                <x-form.input label="Telepon" wire:model="branch_phone" />
+                                <x-form.input :label="t('Phone')" wire:model="branch_phone" />
                             </div>
                         </div>
-                        <x-form.checkbox wire:model="branch_is_default" label="Jadikan cabang default" label-class="text-[#334]" />
+                        <x-form.checkbox wire:model="branch_is_default" :label="t('Set as default branch')" label-class="text-[#334]" />
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                            <button type="button" wire:click="closeBranchModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                            <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                            <button type="button" wire:click="closeBranchModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                            <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
                         </div>
                     </form>
                 </div>
@@ -1285,15 +1284,15 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
             <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showUnblockModal', false)">
                 <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
                     <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                        <span>🔒 Otorisasi Unblock Customer</span>
+                        <span>🔒 {{ t('Customer Unblock Authorization') }}</span>
                         <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="$set('showUnblockModal', false)">✕</span>
                     </div>
                     <form wire:submit="confirmUnblock" novalidate class="p-4 flex flex-col gap-3">
-                        <div class="text-[11px] text-[#6b7280] leading-relaxed">Butuh akses modul Finance &amp; Accounting atau Admin App. Alasan wajib diisi — akan tercatat di catatan internal customer sebagai jejak audit.</div>
-                        <x-form.textarea label="Alasan Unblock *" wire:model="unblock_reason" rows="3" placeholder="Alasan pembukaan blokir..." name="unblock_reason" />
+                        <div class="text-[11px] text-[#6b7280] leading-relaxed">{{ t('Requires access to the Finance & Accounting module or Admin App. A reason is required — it will be recorded in the customer internal notes as an audit trail.') }}</div>
+                        <x-form.textarea :label="t('Unblock Reason *')" wire:model="unblock_reason" rows="3" :placeholder="t('Reason for unblocking...')" name="unblock_reason" />
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                            <button type="button" wire:click="$set('showUnblockModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                            <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#1f8a4c] text-white cursor-pointer">Verifikasi &amp; Release Block</button>
+                            <button type="button" wire:click="$set('showUnblockModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                            <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#1f8a4c] text-white cursor-pointer">{{ t('Verify & Release Block') }}</button>
                         </div>
                     </form>
                 </div>

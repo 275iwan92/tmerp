@@ -67,7 +67,7 @@ final class PurchaseRequisition
     // Header + baris dari satu form; hanya nilai yang berubah yang dikirim ke komponen v1.
     public static function save(PrRequisition $pr, array $in): void
     {
-        abort_unless($pr->status === 'DRAFT', 422, 'PR sudah diajukan, tidak bisa diubah.');
+        abort_unless($pr->status === 'DRAFT', 422, t('The PR is already submitted and cannot be changed.'));
         $c = self::component($pr->pr_id);
         foreach (self::HEADER as $f) {
             if (array_key_exists($f, $in) && self::str($in[$f]) !== self::str($pr->{$f})) {
@@ -148,7 +148,7 @@ final class PurchaseRequisition
 
     public static function delete(PrRequisition $pr): void
     {
-        abort_unless($pr->status === 'DRAFT', 422, 'Hanya PR DRAFT yang bisa dihapus.');
+        abort_unless($pr->status === 'DRAFT', 422, t('Only a DRAFT PR can be deleted.'));
         $pr->delete();
     }
 

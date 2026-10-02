@@ -44,12 +44,12 @@
             ['key' => 'cost', 'label' => 'Cost', 'type' => 'money', 'sum' => true, 'visible' => false],
         ]"
         :stats="Maintenance::woStats()"
-        :detail="['key' => 'items', 'title' => 'Spare Parts', 'columns' => [
-            ['key' => 'code', 'label' => 'Code'],
-            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
-            ['key' => 'plan', 'label' => 'Planned Qty', 'type' => 'number'],
-            ['key' => 'used', 'label' => 'Used Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
+        :detail="['key' => 'items', 'title' => t('Spare Parts'), 'columns' => [
+            ['key' => 'code', 'label' => t('Code')],
+            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
+            ['key' => 'plan', 'label' => t('Planned Qty'), 'type' => 'number'],
+            ['key' => 'used', 'label' => t('Used Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
         ]]"
         :filters="['type' => 'Type', 'work' => 'Work Status', 'machine' => 'Machine', 'technician' => 'Technician', 'priority' => 'Priority']" />
 @elseif (! $wo)
@@ -85,7 +85,7 @@
         if (! $head) {
             $hide[] = 'confirm';
         }
-        $source = $wo->request_id ? ($wo->request?->doc_no ?? 'Request') : ($wo->plan_id ? ($wo->plan?->plan_code ?? 'Plan') : 'Manual');
+        $source = $wo->request_id ? ($wo->request?->doc_no ?? t('Request')) : ($wo->plan_id ? ($wo->plan?->plan_code ?? t('Plan')) : t('Manual'));
     @endphp
     @if ($wo->needs_machine_stop && $impact['downtime'])
         <x-dl::alert :tone="$impact['downtime_id'] && str_contains($impact['downtime'], 'running') ? 'danger' : 'info'"
@@ -110,12 +110,12 @@
             @endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>WO No</span><b>{{ $wo->doc_no ?: '(on Confirm)' }}</b></div>
-            <div class="dl-strip__kv"><span>Type</span><b>{{ MntWo::TYPES[$wo->wo_type] ?? $wo->wo_type }}</b></div>
-            <div class="dl-strip__kv"><span>Priority</span><b>{{ MntWo::PRIORITIES[$wo->priority] ?? $wo->priority }}</b></div>
-            <div class="dl-strip__kv"><span>From</span><b>{{ $source }}</b></div>
-            <div class="dl-strip__kv"><span>MTBF · MTTR · Avail. (90 d)</span><b>{{ $impact['rel']['mtbf'] ?? '—' }} h · {{ $impact['rel']['mttr'] ?? '—' }} h · {{ $impact['rel']['availability'] }}%</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>Cost (live)</span><b>{{ Maintenance::money($wo->totalCost()) }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>{{ t('WO No') }}</span><b>{{ $wo->doc_no ?: t('(on Confirm)') }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('Type') }}</span><b>{{ MntWo::TYPES[$wo->wo_type] ?? $wo->wo_type }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('Priority') }}</span><b>{{ MntWo::PRIORITIES[$wo->priority] ?? $wo->priority }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('From') }}</span><b>{{ $source }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('MTBF · MTTR · Avail. (90 d)') }}</span><b>{{ $impact['rel']['mtbf'] ?? '—' }} h · {{ $impact['rel']['mttr'] ?? '—' }} h · {{ $impact['rel']['availability'] }}%</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>{{ t('Cost (live)') }}</span><b>{{ Maintenance::money($wo->totalCost()) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
@@ -127,7 +127,7 @@
             <x-dl::form.row :cols="4">
                 <x-dl::field.text name="description" label="Description" required :value="$wo->description" :disabled="! $draft" :source="Src::of('tm2prd.mnt_wo.description')" />
                 <x-dl::field.lookup name="assigned_to" lookup="employee" label="Technician" :value="$wo->assigned_to" placeholder="Type a technician name..." :source="Src::of('tm2mst.emp_employee')" />
-                <x-dl::field.toggle name="needs_machine_stop" label="Machine Stop" on-label="Yes — downtime recorded" off-label="No — machine keeps running" :value="$wo->needs_machine_stop" :disabled="! $draft" :source="Src::of('tm2prd.mnt_wo.needs_machine_stop')" />
+                <x-dl::field.toggle name="needs_machine_stop" label="Machine Stop" :on-label="t('Yes — downtime recorded')" :off-label="t('No — machine keeps running')" :value="$wo->needs_machine_stop" :disabled="! $draft" :source="Src::of('tm2prd.mnt_wo.needs_machine_stop')" />
                 <x-dl::field.display label="Machine Status" :value="$impact['status']" :source="Src::of('tm2mst.prod_machine.machine_status')" />
             </x-dl::form.row>
         </x-slot:general>

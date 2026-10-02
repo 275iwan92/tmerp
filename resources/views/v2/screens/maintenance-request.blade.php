@@ -45,7 +45,7 @@
                 <x-dl::field.lookup name="reported_by" lookup="employee" label="Reported by" :value="auth()->user()->employee_id" :source="Src::of('tm2mst.emp_employee')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="3">
-                <x-dl::field.toggle name="machine_stopped" label="Machine stopped?" on-label="Yes, stopped" off-label="No, still running" :value="false" :source="Src::of('tm2prd.mnt_request.machine_stopped')" />
+                <x-dl::field.toggle name="machine_stopped" label="Machine stopped?" :on-label="t('Yes, stopped')" :off-label="t('No, still running')" :value="false" :source="Src::of('tm2prd.mnt_request.machine_stopped')" />
                 <x-dl::field.date-time name="stopped_at" label="Stopped at" :value="now()->format('Y-m-d H:i')" :source="Src::of('tm2prd.mnt_request.stopped_at')" />
             </x-dl::form.row>
             <x-dl::field.text name="symptom" label="What happened" required multiline :source="Src::of('tm2prd.mnt_request.symptom')" />
@@ -72,15 +72,15 @@
                 <x-dl::button size="sm" variant="danger" icon="reject" label="Reject" data-f-act="reject" />
                 <x-dl::button size="sm" variant="success" icon="approve" label="Accept" type="submit" name="action" value="accept" formnovalidate />
             @elseif ($req->wo_id)
-                <x-dl::button size="sm" variant="secondary" icon="fa-screwdriver-wrench" :label="'Open '.($req->wo?->doc_no ?? 'WO')" :href="route('v2.screen', 'maintenance-wo').'?id='.$req->wo_id" />
+                <x-dl::button size="sm" variant="secondary" icon="fa-screwdriver-wrench" :label="t('Open').' '.($req->wo?->doc_no ?? 'WO')" :href="route('v2.screen', 'maintenance-wo').'?id='.$req->wo_id" />
             @endif
         </x-slot:special>
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>Request</span><b>{{ $req->doc_no }}</b></div>
-            <div class="dl-strip__kv"><span>Reported</span><b>{{ Maintenance::stamp($req->request_date) }}</b></div>
-            <div class="dl-strip__kv"><span>Reported by</span><b>{{ $req->reported_by ? Maintenance::employeeName($req->reported_by) : $req->created_by }}</b></div>
-            <div class="dl-strip__kv"><span>Machine</span><b>{{ $req->machine_stopped ? 'Stopped since '.Maintenance::stamp($req->stopped_at) : 'Still running' }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>Priority</span><b>{{ MntWo::PRIORITIES[$req->priority] ?? $req->priority }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>{{ t('Request') }}</span><b>{{ $req->doc_no }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('Reported') }}</span><b>{{ Maintenance::stamp($req->request_date) }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('Reported by') }}</span><b>{{ $req->reported_by ? Maintenance::employeeName($req->reported_by) : $req->created_by }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('Machine') }}</span><b>{{ $req->machine_stopped ? str_replace(':at', Maintenance::stamp($req->stopped_at), t('Stopped since :at')) : t('Still running') }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>{{ t('Priority') }}</span><b>{{ MntWo::PRIORITIES[$req->priority] ?? $req->priority }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">

@@ -256,7 +256,7 @@ final class Sales
                 'customer' => $i->is_prospect ? $i->prospect_name : ($i->customer?->customer_name ?? '—'),
                 'customer_id' => $i->customer_id,
                 'is_prospect' => (bool) $i->is_prospect,
-                'product_draft_name' => $i->product_draft_name ?: '(tanpa nama produk)',
+                'product_draft_name' => $i->product_draft_name ?: t('(no product name)'),
                 'part_type' => $i->parts->first()?->dieline_spec['type_code'] ?? $i->parts->first()?->part_type ?? '—',
                 'qty' => (float) ($i->tiers->first()?->qty ?? 0),
                 'sub_state' => $i->sub_state,

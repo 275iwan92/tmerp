@@ -3,11 +3,12 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{{ $title ?? 'Laporan Manajemen' }} — {{ \App\Support\Branding\Brand::name() }}</title>
+        <title>{{ $title ?? t('Management Report') }} — {{ \App\Support\Branding\Brand::name() }}</title>
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @include('partials.js-text')
         @livewireStyles
 
         {{--
@@ -163,7 +164,8 @@
             $__isActive = fn (array $i) => isset($i['slug'])
                 ? request()->route()?->getName() === 'report.control-tower' && request()->route('slug') === $i['slug']
                 : request()->route()?->getName() === $i['route'];
-            $__activeLabel = collect($__navGroups)->flatten(1)->first($__isActive)['label'] ?? ($title ?? 'Laporan');
+            $__activeItem = collect($__navGroups)->flatten(1)->first($__isActive);
+            $__activeLabel = $__activeItem ? t($__activeItem['label']) : ($title ?? t('Report'));
             $__aiKeywords = [
                 'report.executive' => 'ringkasan eksekutif overview', 'report.purchase' => 'pembelian purchase',
                 'report.sales' => 'penjualan customer crm', 'report.accounting' => 'akuntansi keuangan finance',
@@ -171,7 +173,7 @@
                 'report.warehouse' => 'gudang stok inventory', 'report.costing' => 'biaya hpp costing estimasi',
             ];
             $__aiNav = collect($__navGroups)->flatten(1)->map(fn ($i) => [
-                'label' => $i['label'],
+                'label' => t($i['label']),
                 'href' => $__href($i),
                 'keywords' => $__aiKeywords[$i['route'] ?? ''] ?? ($i['slug'] ?? ''),
             ])->values();
@@ -182,16 +184,16 @@
             <aside class="rs-aside">
                 <a href="{{ route('report.executive') }}" class="rs-brand">
                     <span class="rs-mark"><i class="fa-solid fa-chart-line" style="color:#fff;font-size:14px"></i></span>
-                    <span>{{ \App\Support\Branding\Brand::name() }}<small>LAPORAN MANAJEMEN</small></span>
+                    <span>{{ \App\Support\Branding\Brand::name() }}<small>{{ mb_strtoupper(t('Management Report')) }}</small></span>
                 </a>
 
                 <nav class="rs-nav">
                     @foreach ($__navGroups as $__group => $__items)
-                        <div class="rs-navgroup">{{ $__group }}</div>
+                        <div class="rs-navgroup">{{ t($__group) }}</div>
                         @foreach ($__items as $__item)
                             <a href="{{ $__href($__item) }}" class="{{ $__isActive($__item) ? 'active' : '' }}">
                                 <span class="rs-ico"><i class="{{ $__item['icon'] }}"></i></span>
-                                <span class="rs-text">{{ $__item['label'] }}</span>
+                                <span class="rs-text">{{ t($__item['label']) }}</span>
                             </a>
                         @endforeach
                     @endforeach
@@ -199,7 +201,7 @@
 
                 <div class="rs-side-note">
                     {{ \App\Support\Branding\Brand::name() }}<br>
-                    <span class="rs-avatar">{{ strtoupper(substr(auth()->user()->name ?? '?', 0, 2)) }}</span>{{ auth()->user()->name ?? '' }} · Direksi
+                    <span class="rs-avatar">{{ strtoupper(substr(auth()->user()->name ?? '?', 0, 2)) }}</span>{{ auth()->user()->name ?? '' }} · {{ t('Directors') }}
                 </div>
             </aside>
 
@@ -215,11 +217,11 @@
                     ikut disembunyikan di breakpoint manapun), 1 klik.
                 --}}
                 <header class="rs-top">
-                    <div class="rs-crumb">Laporan Manajemen &nbsp;/&nbsp; <b>{{ $__activeLabel }}</b></div>
+                    <div class="rs-crumb">{{ t('Management Report') }} &nbsp;/&nbsp; <b>{{ $__activeLabel }}</b></div>
                     <div class="rs-topactions">
                         <div class="rs-switch">
-                            <a href="{{ route('menu') }}"><i class="fa-solid fa-grip"></i><span>Operasional</span></a>
-                            <a class="active" href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i><span>Laporan Manajemen</span></a>
+                            <a href="{{ route('menu') }}"><i class="fa-solid fa-grip"></i><span>{{ t('Operational') }}</span></a>
+                            <a class="active" href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i><span>{{ t('Management Report') }}</span></a>
                         </div>
                         {{--
                             Dropdown user = komponen yg SAMA dgn Menu

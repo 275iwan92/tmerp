@@ -26,7 +26,7 @@ class DocShare extends DevlibComponent
         public string $type = 'doc',
         public int|string|null $docId = null,
         public ?string $number = null,
-        public string $title = 'Dokumen',
+        public string $title = 'Document',
         public ?string $emailTo = null,
         public ?string $subject = null,
         public ?string $message = null,
@@ -49,7 +49,7 @@ class DocShare extends DevlibComponent
 
     public function source(): string
     {
-        return $this->endpoint ? 'sys_doc_share / sys_doc_email' : 'tanpa penyimpanan (PDF/JPEG saja)';
+        return $this->endpoint ? 'sys_doc_share / sys_doc_email' : 'no storage (PDF/JPEG only)';
     }
 
     // Bahasa cetak (user 2026-10-01): bebas dari bahasa layar; daftar = bahasa aktif (tmerp: sys_languages).

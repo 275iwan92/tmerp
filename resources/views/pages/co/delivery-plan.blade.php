@@ -113,7 +113,7 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
         $delivery = CoOrderDelivery::findOrFail($this->splitDeliveryId);
 
         if ($delivery->status !== 'PLANNED') {
-            $this->splitError = 'Baris ini sudah SHIPPED, tidak bisa diubah.';
+            $this->splitError = t('This row is already SHIPPED and cannot be changed.');
 
             return;
         }
@@ -124,7 +124,7 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
             $delivery->update(['ship_date' => $this->splitDate, 'updated_by' => Auth::user()->login]);
         } else {
             if ($qty <= 0 || $qty >= (float) $delivery->ship_qty) {
-                $this->splitError = "Qty split harus lebih dari 0 dan kurang dari qty baris ini ({$delivery->ship_qty}).";
+                $this->splitError = str_replace(':qty', $delivery->ship_qty, t('Split qty must be more than 0 and less than the qty of this row (:qty).'));
 
                 return;
             }
@@ -150,7 +150,7 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
 
         unset($this->deliveries, $this->statTotal, $this->statLate, $this->statShipped);
         $this->splitModalOpen = false;
-        session()->flash('flash', 'Jadwal kirim diperbarui.');
+        session()->flash('flash', t('Delivery schedule updated.'));
     }
 
     public function toggleMergeMode(): void
@@ -175,7 +175,7 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
     public function confirmMerge(): void
     {
         if (count($this->mergeSelectedIds) < 2) {
-            $this->mergeError = 'Pilih minimal 2 baris utk digabung.';
+            $this->mergeError = t('Choose at least 2 rows to merge.');
 
             return;
         }
@@ -183,12 +183,12 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
         $rows = CoOrderDelivery::whereIn('id_delivery', $this->mergeSelectedIds)->get();
 
         if ($rows->pluck('order_id')->unique()->count() > 1 || $rows->pluck('item_id')->unique()->count() > 1) {
-            $this->mergeError = 'Baris yang digabung harus dari CO & produk yang sama.';
+            $this->mergeError = t('Merged rows must come from the same CO & product.');
 
             return;
         }
         if ($rows->contains(fn ($r) => $r->status !== 'PLANNED')) {
-            $this->mergeError = 'Hanya baris berstatus PLANNED yang bisa digabung.';
+            $this->mergeError = t('Only rows with PLANNED status can be merged.');
 
             return;
         }
@@ -203,7 +203,7 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
         unset($this->deliveries, $this->statTotal, $this->statLate, $this->statShipped);
         $this->mergeMode = false;
         $this->mergeSelectedIds = [];
-        session()->flash('flash', 'Baris berhasil digabung.');
+        session()->flash('flash', t('Rows merged successfully.'));
     }
 
     public function statusBadgeClass(string $status): string
@@ -225,31 +225,31 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
         <x-alert.banner type="success" :message="session('flash')" />
 
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Rencana Aktif" :value="$this->statTotal" />
-            <x-grid.stat-box tone="critical" label="Terlambat" :value="$this->statLate" />
-            <x-grid.stat-box tone="active" label="Terkirim Bulan Ini" :value="$this->statShipped" />
+            <x-grid.stat-box tone="total" :label="t('Active Plans')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="critical" :label="t('Late')" :value="$this->statLate" />
+            <x-grid.stat-box tone="active" :label="t('Shipped This Month')" :value="$this->statShipped" />
         </x-grid.stat-row>
 
         <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#eef3fb] border border-[#c8ddfb] text-[#1d4ed8]">
-            Jadwal awal dibuat OTOMATIS saat CO di-Confirm (qty penuh @ Due Date per produk) — atau manual dari tab "Delivery" di CO Entry kalau Sales sudah atur lebih dulu saat CO masih Draft. Di sini Anda atur ULANG logistiknya (pecah/gabung baris, geser tanggal) sesudah CO fix — qty &amp; harga tetap dari CO, tidak bisa diubah di sini. Baris berubah jadi SHIPPED otomatis begitu Delivery Order diterbitkan.
+            {{ t('The initial schedule is created AUTOMATICALLY when the CO is Confirmed (full qty @ Due Date per product) — or manually from the "Delivery" tab in CO Entry if Sales set it earlier while the CO was still Draft.') }} {{ t('Here you RE-arrange the logistics (split/merge rows, shift dates) after the CO is final — qty & price stay from the CO and cannot be changed here.') }} {{ t('Rows become SHIPPED automatically once the Delivery Order is issued.') }}
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. CO / customer / produk…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search CO no. / customer / product…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:tools>
                     @if ($mergeMode)
-                        <span class="text-[11px] text-muted shrink-0">{{ count($mergeSelectedIds) }} baris dipilih</span>
+                        <span class="text-[11px] text-muted shrink-0">{{ str_replace(':n', count($mergeSelectedIds), t(':n rows selected')) }}</span>
                         <button type="button" wire:click="confirmMerge" @disabled(count($mergeSelectedIds) < 2)
-                            class="shrink-0 px-3.5 py-1.5 rounded text-xs font-semibold bg-accent text-white disabled:opacity-40 cursor-pointer">OK, Gabungkan</button>
-                        <button type="button" wire:click="toggleMergeMode" class="shrink-0 px-3.5 py-1.5 rounded text-xs font-semibold border border-[#d7dbe2] cursor-pointer">Batal</button>
+                            class="shrink-0 px-3.5 py-1.5 rounded text-xs font-semibold bg-accent text-white disabled:opacity-40 cursor-pointer">{{ t('OK, Merge') }}</button>
+                        <button type="button" wire:click="toggleMergeMode" class="shrink-0 px-3.5 py-1.5 rounded text-xs font-semibold border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
                     @else
                         <button type="button" wire:click="toggleMergeMode"
-                            class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">⇄ Gabung Baris</button>
+                            class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">⇄ {{ t('Merge Rows') }}</button>
                     @endif
                 </x-slot:tools>
             </x-grid.toolbar>
@@ -264,14 +264,14 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
                             @if ($mergeMode)
                                 <th class="w-[36px] bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1]"></th>
                             @endif
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Customer / No. CO</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Produk</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Qty Kirim</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Tgl Rencana</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Asal</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Customer / CO No.') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Product') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Ship Qty') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ t('Planned Date') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Status') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Origin') }}</th>
                             @if (! $mergeMode)
-                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">Aksi</th>
+                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">{{ t('Action') }}</th>
                             @endif
                         </tr>
                     </thead>
@@ -289,24 +289,24 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ rtrim(rtrim(number_format((float) $d->ship_qty, 2, ',', '.'), '0'), ',') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     {{ $d->ship_date?->translatedFormat('d M Y') ?? '—' }}
-                                    @if ($late) <span title="Melewati tanggal jatuh tempo CO">⚠</span> @endif
+                                    @if ($late) <span title="{{ t('Past the CO due date') }}">⚠</span> @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($d->status) }}">{{ $d->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-[10.5px] text-muted">
-                                    {{ $d->split_from_id ? 'SPLIT dari #'.$d->split_from_id : 'Awal (dari CO Entry)' }}
+                                    {{ $d->split_from_id ? str_replace(':id', $d->split_from_id, t('SPLIT from #:id')) : t('Initial (from CO Entry)') }}
                                 </td>
                                 @if (! $mergeMode)
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                         @if ($d->status === 'PLANNED')
-                                            <x-grid.action-icon icon="fa-scissors" title="Split / Pindah Tanggal" action="openSplitModal({{ $d->id_delivery }})" />
+                                            <x-grid.action-icon icon="fa-scissors" :title="t('Split / Move Date')" action="openSplitModal({{ $d->id_delivery }})" />
                                         @endif
                                     </td>
                                 @endif
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="$mergeMode ? 6 : 7" message="Belum ada rencana kirim dari CO yang sudah Confirmed." />
+                            <x-grid.empty-row :colspan="$mergeMode ? 6 : 7" :message="t('No delivery plans from Confirmed COs yet.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -318,21 +318,21 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" wire:click.self="closeSplitModal">
             <div class="bg-white rounded-lg p-4 w-[400px] shadow-xl">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-bold text-navy">Split / Pindah Tanggal Kirim</h3>
+                    <h3 class="text-sm font-bold text-navy">{{ t('Split / Move Delivery Date') }}</h3>
                     <button type="button" wire:click="closeSplitModal" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
                 @if ($splitError)
                     <p class="text-[11px] text-[#a3453f] mb-2">⚠ {{ $splitError }}</p>
                 @endif
                 <div class="flex flex-col gap-3">
-                    <x-form.input wire:model="splitQty" placeholder="Kosong = pindah semua qty">
-                        <x-slot:label>Qty Split <span class="text-muted font-normal">(kosongkan kalau cuma mau pindah tanggal)</span></x-slot:label>
+                    <x-form.input wire:model="splitQty" :placeholder="t('Empty = move the whole qty')">
+                        <x-slot:label>{{ t('Split Qty') }} <span class="text-muted font-normal">({{ t('leave empty to only move the date') }})</span></x-slot:label>
                     </x-form.input>
-                    <x-form.date-picker label="Tanggal Baru *" wire:model="splitDate" />
+                    <x-form.date-picker :label="t('New Date *')" wire:model="splitDate" />
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" wire:click="closeSplitModal" class="text-xs font-semibold px-3.5 py-2 rounded border border-[#d7dbe2] cursor-pointer">Batal</button>
-                    <button type="button" wire:click="confirmSplit" class="text-xs font-bold px-3.5 py-2 rounded bg-accent text-white cursor-pointer">{{ trim($splitQty) === '' ? 'Pindah Tanggal' : 'Pecah jadi Baris Baru' }}</button>
+                    <button type="button" wire:click="closeSplitModal" class="text-xs font-semibold px-3.5 py-2 rounded border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="confirmSplit" class="text-xs font-bold px-3.5 py-2 rounded bg-accent text-white cursor-pointer">{{ trim($splitQty) === '' ? t('Move Date') : t('Split into New Row') }}</button>
                 </div>
             </div>
         </div>

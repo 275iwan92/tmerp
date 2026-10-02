@@ -1,7 +1,7 @@
 /* DevLib · DielineX */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, T, val} = Devlib.h;
+  const {$, $$, esc, toast, T, val, t: _t} = Devlib.h;
   /* ===================== DIELINE v2 / v3 (salinan v1 + ukuran) ===================== */
   // v1 (initDieline) SENGAJA tidak diubah. level 2 = garis ukuran + istilah internasional + mm/cm;
   // level 3 = v2 + judul spesifikasi + panjang cutting/creasing/perforasi + jendela 3D (kotak bisa diputar).
@@ -59,7 +59,7 @@
         const a3 = e.target.closest('[data-d-3d-act]'); if (a3) return this.act3d(a3.getAttribute('data-d-3d-act'));
         const z = e.target.closest('[data-d-zoom]'); if (z) { this.zoom = Math.min(3, Math.max(0.4, Math.round((this.zoom + +z.dataset.dZoom * 0.2) * 10) / 10)); return this.redraw(); }
         if (e.target.closest('[data-d-svg]')) {
-          const svgEl = this.q('[data-d-preview] svg'); if (!svgEl) return toast('Isi dimensi dulu.', 'warn');
+          const svgEl = this.q('[data-d-preview] svg'); if (!svgEl) return toast(_t('Fill in the dimensions first.'), 'warn');
           const out = svgEl.cloneNode(true); out.setAttribute('style', 'background:#1b1f2a'); out.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
           const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out.outerHTML], {type: 'image/svg+xml'})); a.download = `dieline-${this.code.toLowerCase()}.svg`; a.click();
         }
@@ -70,7 +70,7 @@
         setArtwork: url => { this.outArt = url || this.saved; if (this.side === 'out') this.showSide('out'); },
         // File sisi dalam baru langsung ditampilkan; dihapus & tak ada yang tersimpan -> kembali ke sisi luar.
         setArtworkInner: url => { this.inArt = url || this.savedIn; this.showSide(url ? 'in' : this.inArt ? this.side : 'out'); }};
-      if (!window.TMDieline) { this.q('[data-d-preview]').textContent = 'TMDieline tidak termuat.'; return; }
+      if (!window.TMDieline) { this.q('[data-d-preview]').textContent = _t('TMDieline is not loaded.'); return; }
       this.bind3d();
       this.holeUi(true);
       this.sideUi();
@@ -92,7 +92,7 @@
     }
 
     term(k, p) {
-      return this.TERMS[k] ? `${this.TERMS[k][0]} (${this.TERMS[k][1]})` : p.label;
+      return this.TERMS[k] ? `${_t(this.TERMS[k][0])} (${this.TERMS[k][1]})` : p.label;
     }
 
     numStr(v) {
@@ -120,7 +120,7 @@
       this.decorate();
       this.annotate();
       this.q('[data-d-preview]').style.transform = `scale(${this.zoom})`; this.q('[data-d-zoomval]').textContent = Math.round(this.zoom * 100) + '%';
-      this.q('[data-d-info]').innerHTML = t ? `<b>${esc(t.label)}</b>${t.category ? ` · ${esc(t.category)}` : ''} · Bentang <b>${this.numStr(this.fw.value)} × ${this.numStr(this.fh.value)} mm</b> · Luas <b>${this.numStr(a / 100)} cm²</b>${this.manual ? ' <span class="dl-badge dl-badge--warn">manual</span>' : ''}${this.holeOver ? ' <span class="dl-badge dl-badge--warn">hole larger than panel</span>' : ''}` : '';
+      this.q('[data-d-info]').innerHTML = t ? `<b>${esc(t.label)}</b>${t.category ? ` · ${esc(t.category)}` : ''} · ${esc(_t('Flat'))} <b>${this.numStr(this.fw.value)} × ${this.numStr(this.fh.value)} mm</b> · ${esc(_t('Area'))} <b>${this.numStr(a / 100)} cm²</b>${this.manual ? ` <span class="dl-badge dl-badge--warn">${esc(_t('manual'))}</span>` : ''}${this.holeOver ? ` <span class="dl-badge dl-badge--warn">${esc(_t('hole larger than panel'))}</span>` : ''}` : '';
       this.markSize();
       this.el.dispatchEvent(new CustomEvent('dl:dieline', {bubbles: true, detail: {type: this.code, dims: {...this.dims}, flat: {w: +this.fw.value || 0, h: +this.fh.value || 0, area: a}, manual: this.manual}}));
     }
@@ -133,7 +133,7 @@
         if (st === S.CUT.toLowerCase()) sum.cut += L; else if (st === S.CREASE.toLowerCase()) sum.crease += L; else if (st === S.HOLE.toLowerCase()) sum.hole += L;
       });
       const f = v => this.unit === 'cm' ? (v / 10).toLocaleString('id-ID', {maximumFractionDigits: 1}) : Math.round(v).toLocaleString('id-ID');
-      this.q('[data-d-lens]').innerHTML = `<div class="is-cut"><b>${f(sum.cut)} ${this.unit}</b><span>Cutting line</span></div><div class="is-crease"><b>${f(sum.crease)} ${this.unit}</b><span>Creasing line</span></div><div class="is-hole"><b>${f(sum.hole)} ${this.unit}</b><span>Perforation / hole</span></div>`;
+      this.q('[data-d-lens]').innerHTML = `<div class="is-cut"><b>${f(sum.cut)} ${this.unit}</b><span>${esc(_t('Cutting line'))}</span></div><div class="is-crease"><b>${f(sum.crease)} ${this.unit}</b><span>${esc(_t('Creasing line'))}</span></div><div class="is-hole"><b>${f(sum.hole)} ${this.unit}</b><span>${esc(_t('Perforation / hole'))}</span></div>`;
     }
 
     // Proporsi gambar menentukan cara pasang (lihat artRect); digambar ulang setelah ukuran asli diketahui.
@@ -340,13 +340,13 @@
         const o = k === hp && ho ? `<i class="dl-3d__hole${ho.round ? ' is-round' : ''}" style="width:${u(ho.w * w / ho.pw)};height:${u(ho.h * h / ho.ph)}"></i>` : '';
         return `<div class="dl-3d__face is-${k}" style="width:${u(w)};height:${u(h)};margin:${u(-h / 2)} 0 0 ${u(-w / 2)};transform:${tf}${s && s.flip ? ' rotate(180deg)' : ''};${bg}">${o}</div>`;
       };
-      const diag = Math.hypot(L, Wd, H), btn = (a, icon, title) => `<button type="button" class="dl-3d__btn${a === 'spin' && this.spin ? ' is-on' : ''}" data-d-3d-act="${a}" title="${title}"><i class="fa-solid ${icon}"></i></button>`;
+      const diag = Math.hypot(L, Wd, H), btn = (a, icon, title) => `<button type="button" class="dl-3d__btn${a === 'spin' && this.spin ? ' is-on' : ''}" data-d-3d-act="${a}" title="${esc(_t(title))}"><i class="fa-solid ${icon}"></i></button>`;
       box.classList.add('is-live');
       box.innerHTML = `<div class="dl-3d__scene" style="--u:min(84cqw / ${Math.hypot(L, Wd)}, 76cqh / ${diag});perspective:${u(diag * 4)}"><div class="dl-3d__box">`
         + face('front', L, H, `translateZ(${u(Wd / 2)})`) + face('back', L, H, `rotateY(180deg) translateZ(${u(Wd / 2)})`)
         + face('right', Wd, H, `rotateY(90deg) translateZ(${u(L / 2)})`) + face('left', Wd, H, `rotateY(-90deg) translateZ(${u(L / 2)})`)
         + face('top', L, Wd, `rotateX(90deg) translateZ(${u(H / 2)})`) + face('bottom', L, Wd, `rotateX(-90deg) translateZ(${u(H / 2)})`)
-        + `</div></div><span>3D</span><div class="dl-3d__bar">${btn('spin', 'fa-arrows-rotate', 'Auto-spin')}${btn('out', 'fa-minus', 'Zoom out')}${btn('in', 'fa-plus', 'Zoom in')}${btn('reset', 'fa-rotate-left', 'Reset view')}<b data-d-3d-deg title="Drag to rotate · Shift+drag to tilt · double-click to reset"></b></div>`;
+        + `</div></div><span>3D</span><div class="dl-3d__bar">${btn('spin', 'fa-arrows-rotate', 'Auto-spin')}${btn('out', 'fa-minus', 'Zoom out')}${btn('in', 'fa-plus', 'Zoom in')}${btn('reset', 'fa-rotate-left', 'Reset view')}<b data-d-3d-deg title="${esc(_t('Drag to rotate · Shift+drag to tilt · double-click to reset'))}"></b></div>`;
       this.turn3d();
     }
 
@@ -411,7 +411,7 @@
 
     annotate() {
       const t0 = this.T[this.code], dimTxt = ['product_length', 'product_width', 'product_height'].map(k => this.dims[k]).filter(v => v !== '' && v != null);
-      if (this.v3) this.q('[data-d-title]').textContent = t0 ? `${t0.label.toUpperCase()}${dimTxt.length ? ' · ' + dimTxt.join(' × ') + ' MM' : ''}${this.dims.diameter ? ' · Ø ' + this.dims.diameter + ' MM' : ''}${this.side === 'in' ? ' · SISI DALAM' : ''}` : '';
+      if (this.v3) this.q('[data-d-title]').textContent = t0 ? `${t0.label.toUpperCase()}${dimTxt.length ? ' · ' + dimTxt.join(' × ') + ' MM' : ''}${this.dims.diameter ? ' · Ø ' + this.dims.diameter + ' MM' : ''}${this.side === 'in' ? ' · ' + _t('Inner Side').toUpperCase() : ''}` : '';
       if (this.v3) this.preview3d();
       $$(this.el, '[data-d-unit] .dl-segment__opt').forEach(b => b.classList.toggle('is-active', b.dataset.value === this.unit));
       const svg = this.q('[data-d-preview] svg'), termsBox = this.q('[data-d-terms]');
@@ -454,7 +454,7 @@
       svg.insertAdjacentHTML('beforeend', g);
       const pad = gap + fs * 2.2;
       svg.setAttribute('viewBox', `${x0 - pad} ${y0 - pad} ${Wd + pad * 2 + fs} ${Hd + pad * 2}`);
-      if (termsBox) termsBox.innerHTML = `<b>Satuan: ${this.unit}</b>` + Object.entries(this.TERMS).filter(([k, t]) => used.has(t[1]) || k === 'overflow_margin' && this.dims[k]).map(([k, t]) => `<span><i>${esc(t[1])}</i>${esc(t[0])}</span>`).join('') + '<span class="is-note">Total = tepi potong (tanpa bleed); Bentang di bawah = termasuk bleed. Ukuran tanpa kode = panel turunan (mis. sirip kunci).</span>';
+      if (termsBox) termsBox.innerHTML = `<b>${esc(_t('Unit'))}: ${this.unit}</b>` + Object.entries(this.TERMS).filter(([k, t]) => used.has(t[1]) || k === 'overflow_margin' && this.dims[k]).map(([k, t]) => `<span><i>${esc(t[1])}</i>${esc(_t(t[0]))}</span>`).join('') + `<span class="is-note">${esc(_t('Total = cut edge (without bleed); Flat below = including bleed.'))} ${esc(_t('Sizes without a code = derived panels (e.g. locking fins).'))}</span>`;
     }
   }
   Devlib.define("DielineX", DielineX);

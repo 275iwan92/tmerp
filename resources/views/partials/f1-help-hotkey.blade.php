@@ -13,7 +13,7 @@
     window.addEventListener('keydown', function (e) {
         if (e.key !== 'F1') return;
         e.preventDefault();
-        // Konteks = judul layar (#[Title('Nama Layar — ...')]), bagian sebelum ' — '.
+        // Konteks = judul layar (#[Title('Screen Name — ...')]), bagian sebelum ' — '.
         var ctx = (document.title || '').split(' — ')[0] || 'Aplikasi';
         if (window.parent !== window) {
             window.parent.postMessage({ tmerp: 'openHelp', ctx: ctx }, window.location.origin);

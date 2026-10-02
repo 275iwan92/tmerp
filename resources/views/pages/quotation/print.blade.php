@@ -22,7 +22,7 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
         $doc = QuoQuotation::findOrFail($quotation);
 
         if ($doc->doc_status !== 'PUBLISHED') {
-            session()->flash('error', 'Quotation ini belum diterbitkan — terbitkan (Publish) dulu sebelum bisa dicetak.');
+            session()->flash('error', t('This quotation is not published yet — publish it first before it can be printed.'));
             $this->redirect(route('quotation.entry', ['quotation' => $quotation]));
 
             return;
@@ -114,7 +114,7 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
     <x-slot:toolbar>
         {{-- Biasanya tampil di panel kiri form (iframe): Tutup/Esc = kirim pesan ke form
              supaya panel hilang. Dibuka langsung (tab sendiri) = tutup tab / kembali. --}}
-        <button type="button" class="sc" onclick="tmPrintClose()">{{ \App\Support\Localization\Translator::t('shared_btn_close', 'Tutup') }}</button>
+        <button type="button" class="sc" onclick="tmPrintClose()">{{ t('Close') }}</button>
         <script>
             function tmPrintClose() {
                 if (window.parent !== window) { window.parent.postMessage('tm-print-close', location.origin); return; }
@@ -126,11 +126,11 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
     </x-slot:toolbar>
 
     <x-print.sheet>
-        <x-print.header :company="$this->company" doc-title="SURAT PENAWARAN HARGA" :doc-no="$this->quotation->quotation_no">
+        <x-print.header :company="$this->company" :doc-title="t('PRICE QUOTATION')" :doc-no="$this->quotation->quotation_no">
             <x-slot:meta>
-                Tanggal Terbit: {{ $this->quotation->issued_date?->translatedFormat('d F Y') }}
-                · Rev. {{ str_pad($this->quotation->revision_no, 2, '0', STR_PAD_LEFT) }}<br>
-                Ref. Inquiry: <span class="ref">{{ $this->inquiryRefs ?: '—' }}</span>
+                {{ t('Issue Date') }}: {{ $this->quotation->issued_date?->translatedFormat('d F Y') }}
+                · {{ t('Rev.') }} {{ str_pad($this->quotation->revision_no, 2, '0', STR_PAD_LEFT) }}<br>
+                {{ t('Ref. Inquiry') }}: <span class="ref">{{ $this->inquiryRefs ?: '—' }}</span>
             </x-slot:meta>
         </x-print.header>
 
@@ -138,45 +138,45 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
             <div class="v-main">
                 <span class="ic">⏰</span>
                 <span class="txt">
-                    <small>Masa Berlaku Penawaran</small>
-                    <b>Berlaku sampai dengan {{ $this->quotation->valid_until?->translatedFormat('d F Y') }}</b>
+                    <small>{{ t('Quotation Validity') }}</small>
+                    <b>{{ t('Valid through') }} {{ $this->quotation->valid_until?->translatedFormat('d F Y') }}</b>
                 </span>
             </div>
             <div class="v-side">
-                <span class="k">Termin Pembayaran</span>
+                <span class="k">{{ t('Terms of Payment') }}</span>
                 <span class="d">{{ $this->quotation->payment_term ?? '—' }}</span>
             </div>
         </div>
 
         <x-print.parties columns="1.2fr 1fr">
-            <x-print.party label="KEPADA YTH.">
+            <x-print.party :label="mb_strtoupper(t('Addressed to'))">
                 <div class="nm">{{ $this->quotation->customer?->customer_name ?? '—' }}</div>
                 <div class="dt">
-                    Kode Customer: <b>{{ $this->quotation->customer?->customer_code ?? '—' }}</b><br>
-                    @if ($attn = $this->quotation->attn_contact ?: $this->quotation->customer?->contact_name) UP. <b>{{ $attn }}</b> @endif
+                    {{ t('Customer Code') }}: <b>{{ $this->quotation->customer?->customer_code ?? '—' }}</b><br>
+                    @if ($attn = $this->quotation->attn_contact ?: $this->quotation->customer?->contact_name) {{ t('Attn.') }} <b>{{ $attn }}</b> @endif
                     @if ($this->quotation->customer?->phone) · {{ $this->quotation->customer->phone }} @endif
-                    @if ($this->quotation->ccs->isNotEmpty())<br>CC: {{ $this->quotation->ccs->pluck('contact_name')->join(', ') }}@endif
+                    @if ($this->quotation->ccs->isNotEmpty())<br>{{ t('CC') }}: {{ $this->quotation->ccs->pluck('contact_name')->join(', ') }}@endif
                 </div>
             </x-print.party>
-            <x-print.party label="DARI">
+            <x-print.party :label="mb_strtoupper(t('From (company)'))">
                 <div class="nm">{{ \App\Support\Branding\Brand::companyName() }}</div>
                 <div class="dt">
-                    PIC Sales: <b>{{ $this->quotation->sales_pic ?: ($this->quotation->issued_by ?? '—') }}</b><br>
-                    Mata Uang: <b>{{ $this->quotation->currency_code }}</b> · Skema Pajak:
-                    <b>{{ $this->quotation->tax_scheme === 'INCL' ? 'Inclusive' : 'Exclusive' }} PPN {{ number_format($this->totals['ppn_pct'], 0) }}%</b>
+                    {{ t('Sales PIC') }}: <b>{{ $this->quotation->sales_pic ?: ($this->quotation->issued_by ?? '—') }}</b><br>
+                    {{ t('Currency') }}: <b>{{ $this->quotation->currency_code }}</b> · {{ t('Tax Scheme') }}:
+                    <b>{{ ucfirst($this->quotation->tax_scheme === 'INCL' ? t('inclusive') : t('exclusive')) }} {{ t('VAT') }} {{ number_format($this->totals['ppn_pct'], 0) }}%</b>
                 </div>
             </x-print.party>
         </x-print.parties>
 
-        <x-print.section number="1" title="Rincian Penawaran" :hint="$this->quotation->tax_scheme === 'INCL' ? 'harga inclusive PPN' : 'harga exclusive PPN'">
+        <x-print.section number="1" :title="t('Quotation Details')" :hint="$this->quotation->tax_scheme === 'INCL' ? t('price inclusive of VAT') : t('price exclusive of VAT')">
             <table class="items">
                 <thead>
                     <tr>
-                        <th style="width:12%">Ref.</th>
-                        <th class="desc">Deskripsi Produk &amp; Spesifikasi</th>
-                        <th class="num" style="width:11%">Qty</th>
-                        <th class="num" style="width:13%">Harga Satuan</th>
-                        <th class="num" style="width:16%">Subtotal</th>
+                        <th style="width:12%">{{ t('Ref.') }}</th>
+                        <th class="desc">{{ t('Product Description & Specification') }}</th>
+                        <th class="num" style="width:11%">{{ t('Qty') }}</th>
+                        <th class="num" style="width:13%">{{ t('Unit Price') }}</th>
+                        <th class="num" style="width:16%">{{ t('Subtotal') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -199,33 +199,33 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
 
             <div class="totwrap">
                 <div class="tot-note">
-                    <h5>KETERANGAN HARGA</h5>
-                    Harga di atas <b>{{ $this->quotation->tax_scheme === 'INCL' ? 'sudah termasuk' : 'belum termasuk' }} PPN</b>
-                    ({{ $this->quotation->tax_scheme === 'INCL' ? 'inclusive' : 'exclusive' }} PPN {{ number_format($this->totals['ppn_pct'], 0) }}%).
-                    <br><span class="ppn">Harga {{ $this->quotation->tax_scheme === 'INCL' ? 'INCLUSIVE' : 'EXCLUSIVE' }} PPN</span>
+                    <h5>{{ mb_strtoupper(t('Price Notes')) }}</h5>
+                    {{ t('The prices above') }} <b>{{ $this->quotation->tax_scheme === 'INCL' ? t('include VAT') : t('exclude VAT') }}</b>
+                    ({{ $this->quotation->tax_scheme === 'INCL' ? t('inclusive') : t('exclusive') }} {{ t('VAT') }} {{ number_format($this->totals['ppn_pct'], 0) }}%).
+                    <br><span class="ppn">{{ $this->quotation->tax_scheme === 'INCL' ? t('VAT-INCLUSIVE PRICE') : t('VAT-EXCLUSIVE PRICE') }}</span>
                     <div style="margin-top:5px;color:var(--print-muted)">
-                        Toleransi kuantitas ±5% (standar industri percetakan). Kelebihan/kekurangan dalam
-                        rentang toleransi ditagihkan sesuai jumlah aktual terkirim.
+                        {{ t('Quantity tolerance ±5% (printing industry standard).') }}
+                        {{ t('Over/under quantities within the tolerance range are invoiced by the actual quantity delivered.') }}
                     </div>
                 </div>
                 <table class="tot">
-                    <tr class="sub"><td class="k">Subtotal</td><td class="v">{{ number_format($this->totals['subtotal'], 0, ',', '.') }}</td></tr>
-                    <tr class="sub"><td class="k">Dasar Pengenaan Pajak (DPP)</td><td class="v">{{ number_format($this->totals['dpp'], 0, ',', '.') }}</td></tr>
-                    <tr class="sub"><td class="k">PPN {{ number_format($this->totals['ppn_pct'], 0) }}%</td><td class="v">{{ number_format($this->totals['ppn'], 0, ',', '.') }}</td></tr>
-                    <tr class="grand"><td class="k">GRAND TOTAL</td><td class="v">Rp {{ number_format($this->totals['grand'], 0, ',', '.') }}</td></tr>
+                    <tr class="sub"><td class="k">{{ t('Subtotal') }}</td><td class="v">{{ number_format($this->totals['subtotal'], 0, ',', '.') }}</td></tr>
+                    <tr class="sub"><td class="k">{{ t('Tax Base (DPP)') }}</td><td class="v">{{ number_format($this->totals['dpp'], 0, ',', '.') }}</td></tr>
+                    <tr class="sub"><td class="k">{{ t('VAT') }} {{ number_format($this->totals['ppn_pct'], 0) }}%</td><td class="v">{{ number_format($this->totals['ppn'], 0, ',', '.') }}</td></tr>
+                    <tr class="grand"><td class="k">{{ mb_strtoupper(t('Grand Total')) }}</td><td class="v">Rp {{ number_format($this->totals['grand'], 0, ',', '.') }}</td></tr>
                 </table>
             </div>
 
             @if ($this->altRows->isNotEmpty())
                 <div class="alt">
-                    <h5>ALTERNATIF KUANTITAS (harga satuan excl. PPN, di luar tooling — produk utama)</h5>
+                    <h5>{{ mb_strtoupper(t('Quantity Alternatives')) }} ({{ t('unit price excl. VAT, excluding tooling — main product') }})</h5>
                     <table class="alt-t">
                         <thead>
                             <tr>
-                                <th style="width:34%">Opsi Qty</th>
-                                <th class="num">Qty (pcs)</th>
-                                <th class="num">Harga Satuan</th>
-                                <th class="num">Subtotal Produk</th>
+                                <th style="width:34%">{{ t('Qty Option') }}</th>
+                                <th class="num">{{ t('Qty (pcs)') }}</th>
+                                <th class="num">{{ t('Unit Price') }}</th>
+                                <th class="num">{{ t('Product Subtotal') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -240,20 +240,20 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                         </tbody>
                     </table>
                     <div class="cap">
-                        Opsi kuantitas lain untuk produk utama penawaran ini. Biaya tooling tetap dibebankan satu kali,
-                        tidak berubah antar opsi. Untuk memilih opsi lain, hubungi PIC Sales sebelum masa berlaku berakhir.
+                        {{ t('Other quantity options for the main product of this quotation.') }} {{ t('The tooling cost is still charged once and does not change between options.') }}
+                        {{ t('To choose another option, contact the Sales PIC before the validity period ends.') }}
                     </div>
                 </div>
             @endif
         </x-print.section>
 
-        <x-print.section number="2" title="Termin &amp; Pembayaran">
+        <x-print.section number="2" :title="t('Terms & Payment')">
             <div class="print-two">
                 <div class="print-box">
-                    <h5>TERMIN PEMBAYARAN</h5>
-                    <div class="pay-row"><span class="k">Termin</span><span class="v">{{ $this->quotation->payment_term ?? '—' }}</span></div>
-                    <div class="pay-row"><span class="k">Lead time produksi</span><span class="v">menyesuaikan kapasitas</span></div>
-                    <div class="pay-row"><span class="k">Mulai dihitung</span><span class="v">setelah proof disetujui</span></div>
+                    <h5>{{ mb_strtoupper(t('Terms of Payment')) }}</h5>
+                    <div class="pay-row"><span class="k">{{ t('Payment Term') }}</span><span class="v">{{ $this->quotation->payment_term ?? '—' }}</span></div>
+                    <div class="pay-row"><span class="k">{{ t('Production lead time') }}</span><span class="v">{{ t('subject to capacity') }}</span></div>
+                    <div class="pay-row"><span class="k">{{ t('Counted from') }}</span><span class="v">{{ t('after the proof is approved') }}</span></div>
                     @php
                         $bankName = \App\Models\Sys\SysConstant::text('BANK_NAME');
                         $bankAcctName = \App\Models\Sys\SysConstant::text('BANK_ACCOUNT_NAME');
@@ -261,26 +261,25 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                     @endphp
                     <div class="bank">
                         @if ($bankName || $bankAcctNo)
-                            <b>Transfer ke:</b><br>
-                            {{ $bankName ?? '—' }} @if ($bankAcctName) · a.n. {{ $bankAcctName }} @endif<br>
-                            No. Rek. <b>{{ $bankAcctNo ?? '—' }}</b> · Pembayaran dianggap sah setelah dana efektif diterima.
+                            <b>{{ t('Transfer To') }}:</b><br>
+                            {{ $bankName ?? '—' }} @if ($bankAcctName) · {{ t('acc. name') }} {{ $bankAcctName }} @endif<br>
+                            {{ t('Acc. No.') }} <b>{{ $bankAcctNo ?? '—' }}</b> · {{ t('Payment is valid once the funds are effectively received.') }}
                         @else
-                            Instruksi pembayaran (rekening tujuan) akan dikirim terpisah oleh tim Finance
-                            setelah PO diterbitkan.
+                            {{ t('Payment instructions (destination account) will be sent separately by the Finance team after the PO is issued.') }}
                         @endif
                     </div>
                 </div>
                 <div class="print-box">
-                    <h5>SYARAT &amp; KETENTUAN</h5>
+                    <h5>{{ mb_strtoupper(t('Terms & Conditions')) }}</h5>
                     @if ($this->quotation->notes)
                         <p style="white-space:pre-line">{{ $this->quotation->notes }}</p>
                     @else
                         <ol class="print-terms">
-                            <li>Penawaran berlaku sampai tanggal yang tertera pada strip masa berlaku di atas.</li>
-                            <li>Harga {{ $this->quotation->tax_scheme === 'INCL' ? 'inclusive' : 'exclusive' }} PPN {{ number_format($this->totals['ppn_pct'], 0) }}%.</li>
-                            <li>Lead time produksi terhitung setelah artwork final &amp; digital proof (warna) disetujui.</li>
-                            <li>Toleransi pengiriman ±5% dari qty order, ditagih sesuai jumlah aktual.</li>
-                            <li>Penawaran ini menjadi mengikat setelah PO customer diterbitkan.</li>
+                            <li>{{ t('The quotation is valid until the date shown on the validity strip above.') }}</li>
+                            <li>{{ t('Price') }} {{ $this->quotation->tax_scheme === 'INCL' ? t('inclusive') : t('exclusive') }} {{ t('VAT') }} {{ number_format($this->totals['ppn_pct'], 0) }}%.</li>
+                            <li>{{ t('Production lead time starts after the final artwork & digital (color) proof are approved.') }}</li>
+                            <li>{{ t('Delivery tolerance ±5% of the order qty, invoiced by the actual quantity.') }}</li>
+                            <li>{{ t('This quotation becomes binding once the customer PO is issued.') }}</li>
                         </ol>
                     @endif
                 </div>
@@ -289,30 +288,29 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
 
         <x-print.signatures>
             <x-slot:intro>
-                Penawaran ini diterbitkan secara resmi oleh {{ \App\Support\Branding\Brand::companyName() }}.
-                Untuk melanjutkan ke pesanan produksi, mohon terbitkan Purchase Order dengan mengacu nomor quotation
-                <b>{{ $this->quotation->quotation_no }}</b>, atau tandatangani kolom persetujuan customer
-                di bawah dan kirim kembali sebelum masa berlaku berakhir.
+                {{ str_replace(':company', \App\Support\Branding\Brand::companyName(), t('This quotation is officially issued by :company.')) }}
+                {{ t('To proceed to a production order, please issue a Purchase Order referring to quotation number') }}
+                <b>{{ $this->quotation->quotation_no }}</b>, {{ t('or sign the customer approval column below and send it back before the validity period ends.') }}
             </x-slot:intro>
 
-            <x-print.signature company="Hormat kami, {{ \App\Support\Branding\Brand::companyName() }}"
-                role="Direksi" name="( ................................. )" sub="Authorized signatory &amp; stempel" />
+            <x-print.signature :company="t('Sincerely,').' '.\App\Support\Branding\Brand::companyName()"
+                :role="t('Board of Directors')" name="( ................................. )" :sub="t('Authorized signatory & stamp')" />
             <x-print.signature company="{{ \App\Support\Branding\Brand::companyName() }}"
-                role="Disiapkan" name="{{ $this->quotation->issued_by ?? '—' }}" sub="Sales Executive" />
-            <x-print.signature company="Disetujui oleh customer" role="Customer"
-                name="( ................................. )" sub="Nama jelas, jabatan &amp; stempel" />
+                :role="t('Preparer')" name="{{ $this->quotation->issued_by ?? '—' }}" :sub="t('Sales Executive')" />
+            <x-print.signature :company="t('Approved by customer')" :role="t('Customer')"
+                name="( ................................. )" :sub="t('Full name, position & stamp')" />
         </x-print.signatures>
 
-        <x-print.footer page="Halaman 1 dari {{ $this->attachments ? 2 : 1 }}">
+        <x-print.footer :page="str_replace([':p', ':n'], [1, $this->attachments ? 2 : 1], t('Page :p of :n'))">
             {{ $this->quotation->quotation_no }} · {{ $this->quotation->customer?->customer_name }} ·
-            dicetak {{ now()->format('d/m/Y H:i') }} · dokumen sah terbit sistem TMERP
+            {{ t('printed on') }} {{ now()->format('d/m/Y H:i') }} · {{ t('valid document issued by the TMERP system') }}
         </x-print.footer>
     </x-print.sheet>
 
     @if ($this->attachments)
         <x-print.sheet>
-            <x-print.header :company="$this->company" doc-title="LAMPIRAN · MOCKUP PRODUK" :doc-no="$this->quotation->quotation_no">
-                <x-slot:meta>Dieline &amp; pratinjau 3D dari Inquiry Product · ilustrasi, bukan proof warna</x-slot:meta>
+            <x-print.header :company="$this->company" :doc-title="t('ATTACHMENT · PRODUCT MOCKUP')" :doc-no="$this->quotation->quotation_no">
+                <x-slot:meta>{{ t('Dieline & 3D preview from Inquiry Product · illustration, not a color proof') }}</x-slot:meta>
             </x-print.header>
 
             @foreach ($this->attachments as $a)
@@ -321,18 +319,18 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                         <div class="att-h"><span class="ref">{{ $a['no'] }}</span> <b>{{ $a['product'] }}</b>@if (count($a['parts']) > 1) · {{ $p['name'] }}@endif
                             <span class="att-s">{{ $p['type'] }}@if ($p['size']) · {{ $p['size'] }} mm @endif</span></div>
                         <div class="att-b">
-                            <figure class="att-dl" data-att="{{ $p['key'] }}"><div class="att-cv"></div><figcaption>Dieline{{ $p['artwork'] ? ' + artwork' : '' }}</figcaption></figure>
-                            <figure class="att-3d" data-att3d="{{ $p['key'] }}"><div class="att-cv"></div><figcaption>Pratinjau 3D</figcaption></figure>
+                            <figure class="att-dl" data-att="{{ $p['key'] }}"><div class="att-cv"></div><figcaption>{{ t('Dieline') }}{{ $p['artwork'] ? ' + '.t('artwork') : '' }}</figcaption></figure>
+                            <figure class="att-3d" data-att3d="{{ $p['key'] }}"><div class="att-cv"></div><figcaption>{{ t('3D Preview') }}</figcaption></figure>
                         </div>
                         @if (! $p['spec'] || ! $p['artwork'])
-                            <div class="att-n">{{ ! $p['spec'] ? 'Dieline belum ada di Inquiry.' : '' }} {{ ! $p['artwork'] ? 'Artwork belum di-upload di Inquiry — tampil garis dieline saja.' : '' }}</div>
+                            <div class="att-n">{{ ! $p['spec'] ? t('No dieline in the Inquiry yet.') : '' }} {{ ! $p['artwork'] ? t('Artwork not uploaded in the Inquiry yet — showing dieline lines only.') : '' }}</div>
                         @endif
                     </div>
                 @endforeach
             @endforeach
 
-            <x-print.footer page="Halaman 2 dari 2">
-                {{ $this->quotation->quotation_no }} · {{ $this->quotation->customer?->customer_name }} · lampiran mockup
+            <x-print.footer :page="str_replace([':p', ':n'], [2, 2], t('Page :p of :n'))">
+                {{ $this->quotation->quotation_no }} · {{ $this->quotation->customer?->customer_name }} · {{ t('mockup attachment') }}
             </x-print.footer>
         </x-print.sheet>
     @endif

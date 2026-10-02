@@ -1,4 +1,3 @@
-@php use App\Support\Localization\Translator; @endphp
 <div x-data="tmWindow({ open: @js($open), id: @js($id), w: {{ $width }}, h: {{ $height }} })"
     x-show="isOpen" x-cloak
     {{ $attributes->merge(['class' => $classes()]) }}
@@ -9,13 +8,13 @@
         @if ($icon)<i class="{{ $icon }}"></i>@endif
         <span class="tm-win-title">{{ $title }}</span>
         <div class="tm-win-ctl">
-            <button type="button" @click="toggleMin()" :title="min ? @js(Translator::t('shared_win_restore', 'Pulihkan')) : @js(Translator::t('shared_win_minimize', 'Perkecil'))">
+            <button type="button" @click="toggleMin()" :title="min ? @js(t('Restore')) : @js(t('Minimize'))">
                 <i class="fa-solid" :class="min ? 'fa-window-restore' : 'fa-window-minimize'"></i>
             </button>
-            <button type="button" @click="toggleMax()" :title="max ? @js(Translator::t('shared_win_restore', 'Pulihkan')) : @js(Translator::t('shared_win_maximize', 'Perbesar'))">
+            <button type="button" @click="toggleMax()" :title="max ? @js(t('Restore')) : @js(t('Maximize'))">
                 <i class="fa-regular" :class="max ? 'fa-window-restore' : 'fa-window-maximize'"></i>
             </button>
-            <button type="button" class="tm-win-x" @click="close()" title="{{ Translator::t('shared_btn_close', 'Tutup') }}"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="tm-win-x" @click="close()" title="{{ t('Close') }}"><i class="fa-solid fa-xmark"></i></button>
         </div>
     </div>
     <div class="tm-win-body">{{ $slot }}</div>

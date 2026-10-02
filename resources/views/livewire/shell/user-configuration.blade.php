@@ -1,4 +1,3 @@
-@php use App\Support\Localization\Translator; @endphp
 {{-- Isi drawer Configuration (App\Livewire\Shell\UserConfiguration). Tema &
      bahasa berlaku saat halaman dimuat ulang (theme-vars.blade.php); drawer
      dibuka lagi otomatis lewat sessionStorage tmDrawerReopen (profileDrawers di app-shell.js). --}}
@@ -14,8 +13,8 @@
 
     <section class="tm-cfg-main">
         @if ($section === 'themes')
-            <h4>{{ Translator::t('shell_cfg_themes', 'Themes') }}</h4>
-            <p class="tm-cfg-hint">{{ Translator::t('shell_cfg_themes_hint', 'Pilih tampilan aplikasi untuk akun Anda sendiri. Tidak mengubah tampilan user lain.') }}</p>
+            <h4>{{ t('Themes') }}</h4>
+            <p class="tm-cfg-hint">{{ t('Choose the application look for your own account. Other users are not affected.') }}</p>
             <div class="tm-cfg-matrix">
                 <span></span>
                 @foreach ($this->themeMatrix['hues'] as $h)<span class="tm-cfg-colhead">{{ $h }}</span>@endforeach
@@ -36,7 +35,7 @@
                 @endforeach
             </div>
             @if ($this->themeMatrix['classic'])
-                <h5>{{ Translator::t('shell_classic', 'Klasik') }}</h5>
+                <h5>{{ t('Classic') }}</h5>
                 <div class="tm-cfg-classic">
                     @foreach ($this->themeMatrix['classic'] as $t)
                         <button type="button" wire:key="thc-{{ $t['code'] }}" title="{{ $t['name'] }}"
@@ -51,8 +50,8 @@
         @endif
 
         @if ($section === 'language')
-            <h4>{{ Translator::t('shell_cfg_language', 'Language') }}</h4>
-            <p class="tm-cfg-hint">{{ Translator::t('shell_cfg_language_hint', 'Bahasa teks aplikasi untuk akun Anda. Layar yang belum diterjemahkan tetap tampil dalam bahasa Indonesia.') }}</p>
+            <h4>{{ t('Language') }}</h4>
+            <p class="tm-cfg-hint">{{ t('Application text language for your account. Text without a translation is shown in English.') }}</p>
             <div class="tm-cfg-langs">
                 @foreach ($this->languages as $lang)
                     <button type="button" wire:key="lang-{{ $lang['code'] }}"

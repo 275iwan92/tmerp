@@ -30,9 +30,9 @@ class AssetService
     // Kapitalisasi: Dr akun aset / prabayar, Cr lawan (Hutang/Bank/GR-IR).
     public function capitalize(FinAsset $asset, string $user): FinAsset
     {
-        abort_unless($asset->status === 'DRAFT', 422, 'Aset sudah dikapitalisasi.');
+        abort_unless($asset->status === 'DRAFT', 422, t('The asset has already been capitalized.'));
         $asset->load('category');
-        abort_unless($asset->credit_account_id, 422, 'Akun lawan kapitalisasi (Hutang/Bank) belum dipilih.');
+        abort_unless($asset->credit_account_id, 422, t('The capitalization contra account (Payable/Bank) has not been chosen.'));
 
         $v = $this->journal->post('GEN', 'ASSET_CAPITALIZE', $asset->asset_id, 'Kapitalisasi '.$asset->asset_code.' — '.$asset->asset_name, [
             ['account_id' => $asset->category->asset_account_id, 'debit' => $asset->acquisition_cost, 'cc_id' => $asset->cc_id, 'narration' => $asset->asset_name],
@@ -156,7 +156,7 @@ class AssetService
     // Pelepasan: hapus harga perolehan & akumulasi, selisih ke laba/rugi lain-lain.
     public function dispose(FinAsset $asset, string $date, float $proceeds, int $cashAccountId, string $user): void
     {
-        abort_unless(in_array($asset->status, ['ACTIVE', 'FULLY_DEPRECIATED'], true), 422, 'Aset tidak aktif.');
+        abort_unless(in_array($asset->status, ['ACTIVE', 'FULLY_DEPRECIATED'], true), 422, t('The asset is not active.'));
         $asset->load('category');
         $acc = $this->accumulated($asset);
         $nbv = round((float) $asset->acquisition_cost - $acc, 2);

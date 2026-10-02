@@ -5,11 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         @php($__brandName = \App\Support\Branding\Brand::name())
-        <title>{{ $title ? str_replace(['TELASIH MAKMUR ERP', 'TELASIH MAKMUR'], [$__brandName, $__brandName], $title) : $__brandName }}</title>
+        {{-- #[Title('English — TELASIH MAKMUR ERP')]: bagian sebelum " — " = label layar (kamus), sesudahnya = nama aplikasi. --}}
+        @php($__titleParts = $title ? explode(' — ', str_replace(['TELASIH MAKMUR ERP', 'TELASIH MAKMUR'], [$__brandName, $__brandName], $title), 2) : [])
+        <title>{{ $title ? ($__titleParts[0] === $__brandName ? $__brandName : t($__titleParts[0])).(isset($__titleParts[1]) ? ' — '.$__titleParts[1] : '') : $__brandName }}</title>
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @include('partials.js-text')
         @include('partials.theme-vars')
         @include('partials.brand-font')
         @include('partials.pwa-head')

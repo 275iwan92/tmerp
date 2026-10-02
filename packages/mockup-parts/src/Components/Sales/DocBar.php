@@ -8,7 +8,7 @@ use Devlib\Components\DevlibComponent;
 // Nomor & status diperbarui JS InquiryDoc lewat data-inq-no / data-inq-sub.
 class DocBar extends DevlibComponent
 {
-    public const TITLES = ['NEW' => ['✨', 'Inkuiri Produk Baru'], 'RECALC' => ['🔁', 'Hitung Ulang Harga'], 'REVISE' => ['✏️', 'Ubah Spesifikasi']];
+    public const TITLES = ['NEW' => ['✨', 'New Product Inquiry'], 'RECALC' => ['🔁', 'Recalculate Price'], 'REVISE' => ['✏️', 'Revise Specification']];
 
     public const TONES = ['NEW' => 'info', 'RECALC' => 'accent', 'REVISE' => 'warn'];
 
@@ -27,7 +27,9 @@ class DocBar extends DevlibComponent
 
     public function heading(): string
     {
-        return implode(' ', self::TITLES[$this->mode] ?? self::TITLES['NEW']);
+        [$icon, $title] = self::TITLES[$this->mode] ?? self::TITLES['NEW'];
+
+        return $icon.' '.t($title);
     }
 
     public function tone(): string
@@ -41,7 +43,7 @@ class DocBar extends DevlibComponent
             <div {{ $attributes->class('mp-docbar') }} {!! $dl() !!}>
                 <b>{{ $heading() }}</b>
                 <x-dl::badge :label="$mode" :tone="$tone()" />
-                <span class="mp-docbar__sub"><span data-inq-no>{{ $no ?: 'belum tersimpan' }}</span> · <span data-inq-sub>{{ $state }}</span>@if ($version) · {{ $version }}@endif</span>
+                <span class="mp-docbar__sub"><span data-inq-no>{{ $no ?: t('not saved yet') }}</span> · <span data-inq-sub>{{ $state }}</span>@if ($version) · {{ $version }}@endif</span>
                 <span class="mp-grow"></span>
                 @if ($backUrl)<x-dl::button variant="secondary" size="sm" icon="back" label="Back" :href="$backUrl" data-inq-keep />@endif
             </div>

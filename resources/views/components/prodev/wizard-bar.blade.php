@@ -55,7 +55,7 @@
                     </button>
                     <div x-show="tip === '{{ $key }}'" @click.outside="tip = null" x-cloak
                         class="absolute left-0 top-full mt-1.5 w-56 bg-[#0f1830] border border-white/15 text-white/85 text-[11px] leading-snug rounded-md p-2.5 shadow-lg z-50">
-                        {{ $step['reason'] ?? 'Tidak tersedia untuk job ini.' }}
+                        {{ $step['reason'] ?? t('Not available for this job.') }}
                     </div>
                 </div>
             @endif
@@ -73,14 +73,14 @@
         <span class="mr-auto"></span>
     @endif
 
-    <span class="flex items-center gap-1.5 text-[10px] font-bold text-[#5fe3a0] bg-[#1c3a2a] px-2.5 py-1.5 rounded-md shrink-0" title="Imposition engine (App\Services\Imposition\ImpositionEngine) live &amp; dipakai perhitungan nyata di layar ini.">
-        <span class="w-1.5 h-1.5 rounded-full bg-[#5fe3a0]"></span> ENGINE AKTIF
+    <span class="flex items-center gap-1.5 text-[10px] font-bold text-[#5fe3a0] bg-[#1c3a2a] px-2.5 py-1.5 rounded-md shrink-0" title="{{ t('Imposition engine (App\Services\Imposition\ImpositionEngine) live & used for real calculations on this screen.') }}">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#5fe3a0]"></span> {{ t('ENGINE ACTIVE') }}
     </span>
 
-    <button type="button" disabled title="Segera hadir -- belum ada mesinnya"
-        class="text-[10.5px] font-semibold text-white/35 bg-white/5 px-2.5 py-1.5 rounded-md cursor-not-allowed shrink-0">🧭 Advisor</button>
-    <button type="button" disabled title="Segera hadir -- belum ada mesinnya"
-        class="text-[10.5px] font-semibold text-white/35 bg-white/5 px-2.5 py-1.5 rounded-md cursor-not-allowed shrink-0">⬇ Export Paths</button>
+    <button type="button" disabled title="{{ t('Coming soon -- no engine yet') }}"
+        class="text-[10.5px] font-semibold text-white/35 bg-white/5 px-2.5 py-1.5 rounded-md cursor-not-allowed shrink-0">🧭 {{ t('Advisor') }}</button>
+    <button type="button" disabled title="{{ t('Coming soon -- no engine yet') }}"
+        class="text-[10.5px] font-semibold text-white/35 bg-white/5 px-2.5 py-1.5 rounded-md cursor-not-allowed shrink-0">⬇ {{ t('Export Paths') }}</button>
 
     @if ($backUrl)
         <a href="{{ $backUrl }}" title="{{ $backLabel }}" data-back

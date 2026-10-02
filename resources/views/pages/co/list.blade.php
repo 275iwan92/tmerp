@@ -6,7 +6,6 @@ use App\Models\Master\CustCustomer;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\QuoQuotation;
 use App\Services\Sales\CoOrderBuilder;
-use App\Support\Localization\Translator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -22,7 +21,7 @@ use Livewire\WithPagination;
 // catatan pastel) karena CO mode INSTANT memang lahir dari grid ini. Tombolnya
 // membuka pemilih mode dulu: INTEGRATED (pilih Quotation PUBLISHED, input
 // minimal) atau INSTANT (pilih Customer, input manual + Master Product).
-new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Customer Order List — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridStatFilter;
 
@@ -186,10 +185,10 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => Translator::t('sales_co_stat_total', 'Total Customer Order'), 'value' => $this->statTotal, 'tone' => 'total'],
-            'draft' => ['label' => Translator::t('sales_co_stat_draft', 'Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
+            'total' => ['label' => t('Total Customer Orders'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => t('Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('doc_status', 'DRAFT')],
-            'confirmed' => ['label' => Translator::t('sales_co_stat_confirmed', 'Confirmed'), 'value' => $this->statConfirmed, 'tone' => 'active',
+            'confirmed' => ['label' => t('Confirmed'), 'value' => $this->statConfirmed, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('doc_status', 'CONFIRMED')],
         ];
     }
@@ -204,7 +203,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('sales_co_search_placeholder', 'Cari no. CO / customer / no. PO…') }}"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search CO no. / customer…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -218,21 +217,21 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                     <thead>
                         <tr>
                             <th class="px-2 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[32px]"></th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('sales_co_col_customer_order', 'Customer Order') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('sales_co_col_mode', 'Mode') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ Translator::t('sales_co_col_ref_quotation', 'Ref. Quotation') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('sales_co_col_date', 'Tanggal') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ Translator::t('sales_co_col_status', 'Status') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ Translator::t('sales_co_col_net_receivable', 'Net Receivable') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('sales_co_col_action', 'Aksi') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Customer Order') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Mode') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ t('Ref. Quotation') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Date') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ t('Net Receivable') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->orders as $o)
                             @php($isOpen = in_array($o->id_order, $this->expanded, true))
-                            <tr wire:key="co-{{ $o->id_order }}" wire:dblclick="openOrder({{ $o->id_order }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
+                            <tr wire:key="co-{{ $o->id_order }}" wire:dblclick="openOrder({{ $o->id_order }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                 <td class="px-2 py-2 border-b border-[#eef1f5] text-center">
-                                    <button type="button" wire:click.stop="toggleExpand({{ $o->id_order }})" title="{{ $isOpen ? Translator::t('sales_co_close_item_preview', 'Tutup preview item') : Translator::t('sales_co_view_item_preview', 'Lihat item') }}"
+                                    <button type="button" wire:click.stop="toggleExpand({{ $o->id_order }})" title="{{ $isOpen ? t('Close item preview') : t('View items') }}"
                                         class="inline-flex items-center justify-center w-6 h-6 rounded text-muted hover:bg-[#eef3fb] hover:text-accent cursor-pointer">
                                         <span class="inline-block transition-transform duration-150 {{ $isOpen ? 'rotate-90' : '' }}">›</span>
                                     </button>
@@ -248,10 +247,10 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format($this->grandTotals[$o->id_order] ?? 0, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openOrder({{ $o->id_order }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ t('Open') }}" action="openOrder({{ $o->id_order }})" />
                                     @if ($o->doc_status === 'DRAFT' && $o->isConfirmable())
-                                        <x-grid.action-icon icon="fa-check" title="{{ Translator::t('sales_form_btn_confirm', 'Confirm') }}" action="confirmOrder({{ $o->id_order }})"
-                                            confirm="{{ Translator::t('sales_co_action_confirm_confirm', 'Confirm CO') }} {{ $o->co_no }}?" variant="success" />
+                                        <x-grid.action-icon icon="fa-check" title="{{ t('Confirm') }}" action="confirmOrder({{ $o->id_order }})"
+                                            confirm="{{ t('Confirm CO') }} {{ $o->co_no }}?" variant="success" />
                                     @endif
                                 </td>
                             </tr>
@@ -261,13 +260,13 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                         <table class="w-full text-[11.5px] border-collapse ml-8" style="width:calc(100% - 2rem)">
                                             <thead>
                                                 <tr class="text-[10px] text-muted uppercase font-bold">
-                                                    <th class="text-left px-2 py-1">{{ Translator::t('sales_co_detail_col_product_service', 'Produk / Jasa') }}</th>
-                                                    <th class="text-center px-2 py-1 w-14">{{ Translator::t('sales_co_detail_col_type', 'Type') }}</th>
-                                                    <th class="text-right px-2 py-1 w-28">{{ Translator::t('sales_co_detail_col_qty', 'Qty') }}</th>
-                                                    <th class="text-right px-2 py-1 w-24">{{ Translator::t('sales_co_detail_col_price', 'Harga') }}</th>
-                                                    <th class="text-right px-2 py-1 w-16">{{ Translator::t('sales_co_detail_col_disc', 'Disc%') }}</th>
-                                                    <th class="text-right px-2 py-1 w-28">{{ Translator::t('sales_co_detail_col_subtotal', 'Subtotal') }}</th>
-                                                    <th class="text-center px-2 py-1 w-24">{{ Translator::t('sales_co_detail_col_due_date', 'Due Date') }}</th>
+                                                    <th class="text-left px-2 py-1">{{ t('Product / Service') }}</th>
+                                                    <th class="text-center px-2 py-1 w-14">{{ t('Type') }}</th>
+                                                    <th class="text-right px-2 py-1 w-28">{{ t('Qty') }}</th>
+                                                    <th class="text-right px-2 py-1 w-24">{{ t('Price') }}</th>
+                                                    <th class="text-right px-2 py-1 w-16">{{ t('Disc%') }}</th>
+                                                    <th class="text-right px-2 py-1 w-28">{{ t('Subtotal') }}</th>
+                                                    <th class="text-center px-2 py-1 w-24">{{ t('Due Date') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -284,7 +283,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                                         <td class="px-2 py-1.5 text-center text-muted">{{ $item->due_date?->translatedFormat('d M Y') ?? '—' }}</td>
                                                     </tr>
                                                 @empty
-                                                    <tr><td colspan="7" class="text-center py-3 text-muted text-[11px]">{{ Translator::t('sales_co_detail_no_items', 'Belum ada item.') }}</td></tr>
+                                                    <tr><td colspan="7" class="text-center py-3 text-muted text-[11px]">{{ t('No items yet.') }}</td></tr>
                                                 @endforelse
                                             </tbody>
                                         </table>
@@ -293,10 +292,10 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                             <table class="w-full text-[11.5px] border-collapse ml-8 mt-2.5" style="width:calc(100% - 2rem)">
                                                 <thead>
                                                     <tr class="text-[10px] text-muted uppercase font-bold">
-                                                        <th class="text-left px-2 py-1">External Cost</th>
-                                                        <th class="text-left px-2 py-1">Description</th>
-                                                        <th class="text-right px-2 py-1 w-28">Nominal</th>
-                                                        <th class="text-center px-2 py-1 w-32">Tax Treatment</th>
+                                                        <th class="text-left px-2 py-1">{{ t('External Cost') }}</th>
+                                                        <th class="text-left px-2 py-1">{{ t('Description') }}</th>
+                                                        <th class="text-right px-2 py-1 w-28">{{ t('Nominal') }}</th>
+                                                        <th class="text-center px-2 py-1 w-32">{{ t('Tax Treatment') }}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -317,7 +316,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                 </tr>
                             @endif
                         @empty
-                            <x-grid.empty-row :colspan="8" message="{{ Translator::t('sales_co_empty', 'Belum ada Customer Order.') }}" />
+                            <x-grid.empty-row :colspan="8" message="{{ t('No Customer Orders yet.') }}" />
                         @endforelse
                     </tbody>
                 </table>
@@ -332,7 +331,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
             <div class="bg-white rounded-lg p-4 w-[560px] shadow-xl">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="text-sm font-bold text-navy">
-                        {{ $pickerMode === '' ? Translator::t('sales_co_picker_title_mode', 'Customer Order Baru — Pilih Mode') : ($pickerMode === 'INTEGRATED' ? Translator::t('sales_co_picker_title_integrated', 'Mode Integrated — Pilih Quotation') : Translator::t('sales_co_picker_title_instant', 'Mode Instant — Pilih Customer')) }}
+                        {{ $pickerMode === '' ? t('New Customer Order — Choose Mode') : ($pickerMode === 'INTEGRATED' ? t('Integrated Mode — Choose Quotation') : t('Instant Mode — Choose Customer')) }}
                     </h3>
                     <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
@@ -343,20 +342,20 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                             class="text-left px-3.5 py-3 rounded-lg border border-[#c8ddfb] bg-[#eaf2ff] hover:border-accent cursor-pointer">
                             <div class="text-[13px] font-bold text-[#1d4ed8]">🔗 INTEGRATED</div>
                             <div class="text-[11px] text-[#3b5b99] mt-0.5 leading-relaxed">
-                                {{ Translator::t('sales_co_picker_integrated_desc', 'Tarik dari Sales Quotation yang sudah PUBLISHED. Header, item, harga, dan Master Product sudah lengkap — input user paling minimal.') }}
+                                {{ t('Pull from a PUBLISHED Sales Quotation. Header, items, price and Master Product are complete — minimal user input.') }}
                             </div>
                         </button>
                         <button type="button" wire:click="chooseMode('INSTANT')"
                             class="text-left px-3.5 py-3 rounded-lg border border-[#ddd0f7] bg-[#f1ecfc] hover:border-[#6d28d9] cursor-pointer">
                             <div class="text-[13px] font-bold text-[#6d28d9]">⚡ INSTANT</div>
                             <div class="text-[11px] text-[#6b4fa0] mt-0.5 leading-relaxed">
-                                {{ Translator::t('sales_co_picker_instant_desc', 'Tanpa lewat Inquiry/Quotation — untuk order verbal & kompatibilitas cara lama. Tiap baris WAJIB dipilih dari Master Product (buat Master Product-nya dulu kalau belum ada).') }}
+                                {{ t('Without Inquiry/Quotation — for verbal orders & the old way of working. Each row MUST be picked from Master Product (create the Master Product first if missing).') }}
                             </div>
                         </button>
                     </div>
                 @elseif ($pickerMode === 'INTEGRATED')
                     <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="pickerSearch" autofocus
-                        placeholder="{{ Translator::t('sales_co_picker_quotation_search', 'Cari no. quotation / nama customer...') }}" class="mb-2" />
+                        placeholder="{{ t('Search quotation no. / customer name...') }}" class="mb-2" />
                     <div class="max-h-72 overflow-y-auto tm-scroll">
                         @forelse ($this->quotationChoices as $q)
                             <button type="button" wire:click="startIntegrated({{ $q->id_quotation }})"
@@ -366,13 +365,13 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                             </button>
                         @empty
                             <div class="text-[11px] text-muted text-center py-4">
-                                {{ Translator::t('sales_co_picker_no_quotation', 'Tidak ada Quotation PUBLISHED yang belum punya CO.') }}
+                                {{ t('No PUBLISHED Quotation without a CO.') }}
                             </div>
                         @endforelse
                     </div>
                 @else
                     <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="pickerSearch" autofocus
-                        placeholder="{{ Translator::t('sales_co_picker_customer_search', 'Ketik min. 2 huruf nama/kode customer...') }}" class="mb-2" />
+                        placeholder="{{ t('Type at least 2 letters of customer name/code...') }}" class="mb-2" />
                     <div class="max-h-72 overflow-y-auto tm-scroll">
                         @forelse ($this->customerChoices as $c)
                             <button type="button" wire:click="startInstant({{ $c->id_customer }})"
@@ -382,7 +381,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                             </button>
                         @empty
                             <div class="text-[11px] text-muted text-center py-4">
-                                {{ mb_strlen(trim($pickerSearch)) < 2 ? Translator::t('sales_co_picker_min_chars', 'Ketik min. 2 huruf untuk cari.') : Translator::t('sales_co_picker_no_match', 'Tidak ada customer cocok.') }}
+                                {{ mb_strlen(trim($pickerSearch)) < 2 ? t('Type at least 2 letters to search.') : t('No matching customer.') }}
                             </div>
                         @endforelse
                     </div>

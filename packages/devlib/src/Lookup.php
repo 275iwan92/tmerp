@@ -41,7 +41,8 @@ final class Lookup
             'rows' => array_values(array_map(fn ($r) => (array) $r, is_iterable($rows) ? (array) $rows : [])),
             'key' => $def['key'] ?? 'id',
             'label' => $def['label'] ?? 'name',
-            'columns' => $def['columns'] ?? [($def['label'] ?? 'name') => 'Nama'],
+            // Judul kolom = label English (bukan data) -> bahasa tampilan saat dibuka.
+            'columns' => array_map(fn ($h) => is_string($h) ? Lang::text($h) : $h, $def['columns'] ?? [($def['label'] ?? 'name') => 'Name']),
             'fill' => $def['fill'] ?? [],
             'source' => $def['source'] ?? $name,
             'remote' => $remote,

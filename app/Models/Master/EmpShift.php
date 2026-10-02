@@ -43,9 +43,14 @@ class EmpShift extends Model
 
     public const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-    public const DAY_LABELS = ['Monday' => 'Sen', 'Tuesday' => 'Sel', 'Wednesday' => 'Rab', 'Thursday' => 'Kam', 'Friday' => 'Jum', 'Saturday' => 'Sab', 'Sunday' => 'Min'];
+    public const DAY_LABELS = ['Monday' => 'Mon', 'Tuesday' => 'Tue', 'Wednesday' => 'Wed', 'Thursday' => 'Thu', 'Friday' => 'Fri', 'Saturday' => 'Sat', 'Sunday' => 'Sun'];
 
     public const DEFAULT_COLOR = '#2f6fed';
+
+    public static function dayLabel(string $dayName): string
+    {
+        return t(self::DAY_LABELS[$dayName]);
+    }
 
     // Pola jam 7 hari (index 0=Senin..6=Minggu) dalam bentuk array datar --
     // dipakai papan roster & editor Master Shift. Hari tanpa baris
@@ -61,7 +66,7 @@ class EmpShift extends Model
 
             $pattern[$i] = [
                 'day' => $dayName,
-                'label' => self::DAY_LABELS[$dayName],
+                'label' => self::dayLabel($dayName),
                 'on' => $on,
                 'in' => $on ? $detail->start_time->format('H:i') : '',
                 'out' => $on ? $detail->end_time->format('H:i') : '',
@@ -152,7 +157,7 @@ class EmpShift extends Model
             $i = $j + 1;
         }
 
-        return $lines ?: ['Belum ada hari aktif'];
+        return $lines ?: [t('No active days yet')];
     }
 
     public function color(): string
@@ -175,7 +180,7 @@ class EmpShift extends Model
             ->values();
 
         if ($working->isEmpty()) {
-            return 'Jam belum diisi';
+            return t('Hours not filled in yet');
         }
 
         $first = $working->first();
@@ -188,11 +193,11 @@ class EmpShift extends Model
         $isConsecutive = $indices->count() > 1 && $indices->last() - $indices->first() === $indices->count() - 1;
 
         $dayRange = $isConsecutive
-            ? self::DAY_LABELS[$working->first()->day_of_week].'-'.self::DAY_LABELS[$working->last()->day_of_week]
-            : $working->map(fn (EmpShiftDetail $d) => self::DAY_LABELS[$d->day_of_week])->implode(', ');
+            ? self::dayLabel($working->first()->day_of_week).'-'.self::dayLabel($working->last()->day_of_week)
+            : $working->map(fn (EmpShiftDetail $d) => self::dayLabel($d->day_of_week))->implode(', ');
 
         if (! $sameHours) {
-            return $dayRange.' (jam beda per hari)';
+            return str_replace(':days', $dayRange, t(':days (hours differ per day)'));
         }
 
         return $first->start_time->format('H:i').'-'.$first->end_time->format('H:i').' ('.$dayRange.')';

@@ -17,7 +17,7 @@ final class MasterCardReader
     public function read(string $path, ?string $originalName = null): array
     {
         $book = IOFactory::createReaderForFile($path)->setReadDataOnly(false)->load($path);
-        $ws = $book->getSheetByName('MC') ?? throw new RuntimeException('Sheet "MC" tidak ada — bukan format master card.');
+        $ws = $book->getSheetByName('MC') ?? throw new RuntimeException(t('Sheet "MC" not found — not a master card format.'));
         $cells = [];
         foreach ($ws->getRowIterator(1, min(60, $ws->getHighestRow())) as $row) {
             foreach ($row->getCellIterator('A', 'H') as $cell) {

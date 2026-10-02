@@ -42,7 +42,7 @@ final class Prodev
             ->map(function (ProdPart $p) {
                 $latest = $p->layoutGroups->sortByDesc('id_layout_group')->first();
                 $n = fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
-                $status = ! $latest ? 'BELUM MULAI' : ($latest->status === 'CONFIRMED' ? 'CONFIRMED' : 'DRAFT');
+                $status = ! $latest ? t('NOT STARTED', 'badge') : ($latest->status === 'CONFIRMED' ? 'CONFIRMED' : 'DRAFT');
 
                 return [
                     'id' => $p->id_part,

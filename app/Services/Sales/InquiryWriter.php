@@ -27,7 +27,7 @@ final class InquiryWriter
     public function save(array $in, ?IqpInquiry $inquiry, array $artworks = []): IqpInquiry
     {
         if ($inquiry?->stat_confirm_sales) {
-            throw ValidationException::withMessages(['inquiry' => 'Inkuiri sudah dikonfirmasi — tidak bisa diubah.']);
+            throw ValidationException::withMessages(['inquiry' => t('The inquiry has been confirmed — it cannot be changed.')]);
         }
 
         $this->assertTierInvariant($in['tiers']);
@@ -62,7 +62,7 @@ final class InquiryWriter
     public function cancel(IqpInquiry $inquiry, string $reason): void
     {
         if (! $inquiry->stat_confirm_sales || $inquiry->stat_cancel) {
-            throw ValidationException::withMessages(['cancel_reason' => 'Hanya inkuiri yang sudah Confirm & belum batal yang bisa dibatalkan.']);
+            throw ValidationException::withMessages(['cancel_reason' => t('Only a Confirmed inquiry that is not cancelled can be cancelled.')]);
         }
 
         $inquiry->update(['stat_cancel' => true, 'cancel_reason' => $reason, 'sub_state' => 'CANCELLED', 'updated_by' => $this->login]);
@@ -72,7 +72,7 @@ final class InquiryWriter
     public function markLost(IqpInquiry $inquiry, string $reason): void
     {
         if (! $inquiry->stat_confirm_sales || in_array($inquiry->sub_state, ['CANCELLED', 'CONVERTED', 'LOST'], true)) {
-            throw ValidationException::withMessages(['lost_reason' => 'Hanya inkuiri yang sudah Confirm & belum selesai yang bisa ditandai kalah.']);
+            throw ValidationException::withMessages(['lost_reason' => t('Only a Confirmed inquiry that is not finished can be marked lost.')]);
         }
 
         $inquiry->update(['cancel_reason' => $reason, 'sub_state' => 'LOST', 'updated_by' => $this->login]);
@@ -97,7 +97,7 @@ final class InquiryWriter
     public function sendToProDev(IqpInquiry $inquiry, IqpPart $part): int
     {
         if (! $inquiry->stat_confirm_sales) {
-            throw ValidationException::withMessages(['part' => 'Confirm inquiry ini dulu sebelum kirim ke ProDev (spec harus FIX).']);
+            throw ValidationException::withMessages(['part' => t('Confirm this inquiry before sending it to ProDev (the spec must be FIXED).')]);
         }
 
         $productId = $inquiry->ensureDraftProduct($this->login);
@@ -181,17 +181,17 @@ final class InquiryWriter
     private function assertTierInvariant(array $tiers): void
     {
         if (count($tiers) === 0) {
-            throw ValidationException::withMessages(['tiers' => 'Minimal 1 baris tier qty diperlukan.']);
+            throw ValidationException::withMessages(['tiers' => t('At least 1 qty tier line is required.')]);
         }
 
         $primary = collect($tiers)->where('is_primary', true)->count();
         if ($primary !== 1) {
-            throw ValidationException::withMessages(['tiers' => 'Harus tepat 1 tier UTAMA (saat ini: '.$primary.').']);
+            throw ValidationException::withMessages(['tiers' => str_replace(':n', (string) $primary, t('There must be exactly 1 MAIN tier (currently: :n).'))]);
         }
 
         foreach ($tiers as $i => $t) {
             if ($t['qty'] === '' || ! is_numeric($t['qty']) || (float) $t['qty'] <= 0) {
-                throw ValidationException::withMessages(['tiers' => 'Qty tier baris '.($i + 1).' wajib diisi angka lebih besar dari 0.']);
+                throw ValidationException::withMessages(['tiers' => str_replace(':line', (string) ($i + 1), t('The qty of tier line :line must be a number greater than 0.'))]);
             }
         }
     }

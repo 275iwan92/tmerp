@@ -36,7 +36,7 @@ trait FinanceScreen
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Throwable $e) {
-            $msg = $e->getMessage() ?: 'Proses gagal.';
+            $msg = $e->getMessage() ?: t('Process failed.');
             if ($this->modal) {
                 $this->errorMessage = $msg;
             } else {

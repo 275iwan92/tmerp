@@ -13,6 +13,6 @@ class Report extends PrintOut
 
     public function source(): string
     {
-        return $this->source ?? 'laporan';
+        return $this->source ?? 'report';
     }
 }

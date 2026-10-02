@@ -8,7 +8,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Inquiry Note — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $inquiryId;
 
@@ -110,19 +110,19 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
     :ppn="$this->inquiry->tax_scheme === 'PPN'"
     :theme="['accent' => '#0d5c46', 'accent-soft' => '#eaf3f0']"
     class="{{ $this->bw ? 'bw' : '' }}"
-    info="{{ $this->inquiry->inquiry_no }} · {{ $this->inquiry->parts->count() }} part · {{ $this->inquiry->tiers->count() }} jenjang qty">
+    info="{{ $this->inquiry->inquiry_no }} · {{ $this->inquiry->parts->count() }} {{ t('part') }} · {{ $this->inquiry->tiers->count() }} {{ t('qty tiers') }}">
     <x-slot:toolbar>
-        <button type="button" wire:click="$set('bw', {{ $this->bw ? 'false' : 'true' }})" class="sc">{{ $this->bw ? '🎨 Versi Warna' : '🖨 Versi Hemat Tinta' }}</button>
-        <a href="{{ route('inquiry.costing', ['inquiry' => $this->inquiryId]) }}" class="sc">→ Costing</a>
-        <a href="{{ route('inquiry.hub') }}" class="sc">← Inquiry Hub</a>
+        <button type="button" wire:click="$set('bw', {{ $this->bw ? 'false' : 'true' }})" class="sc">{{ $this->bw ? '🎨 '.t('Color Version') : '🖨 '.t('Ink-Saving Version') }}</button>
+        <a href="{{ route('inquiry.costing', ['inquiry' => $this->inquiryId]) }}" class="sc">→ {{ t('Costing') }}</a>
+        <a href="{{ route('inquiry.hub') }}" class="sc">← {{ t('Inquiry Hub') }}</a>
     </x-slot:toolbar>
 
     {{-- ================= HALAMAN 1 ================= --}}
     <x-print.sheet>
-        <x-print.header :company="$this->company" :ppn="$this->inquiry->tax_scheme === 'PPN'" doc-title="NOTA INQUIRY" :doc-no="$this->inquiry->inquiry_no">
+        <x-print.header :company="$this->company" :ppn="$this->inquiry->tax_scheme === 'PPN'" :doc-title="t('INQUIRY NOTE')" :doc-no="$this->inquiry->inquiry_no">
             <x-slot:meta>
                 {{ $this->inquiry->inquiry_date?->translatedFormat('d F Y') }}
-                @if ($this->inquiry->revision_no > 0) · Rev. {{ str_pad($this->inquiry->revision_no, 2, '0', STR_PAD_LEFT) }} @endif
+                @if ($this->inquiry->revision_no > 0) · {{ t('Rev.') }} {{ str_pad($this->inquiry->revision_no, 2, '0', STR_PAD_LEFT) }} @endif
                 @php
                     // Badge per tipe dokumen (inquiry_nota_new/recalc/revise.html mockup) --
                     // ketiga mockup itu TERNYATA sama persis strukturnya, beda cuma warna
@@ -135,14 +135,14 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
                     };
                 @endphp
                 <span class="badge {{ $typeBadgeClass }}">{{ $this->inquiry->stat_cancel ? 'CANCELLED' : $this->inquiry->inquiry_type }}</span>
-                @if ($this->inquiry->is_prospect) <span class="badge b-prospect">PROSPECT</span> @endif
+                @if ($this->inquiry->is_prospect) <span class="badge b-prospect">{{ t('PROSPECT') }}</span> @endif
                 <br>
-                @if ($this->inquiry->deadline_quotation) Berlaku s/d {{ $this->inquiry->deadline_quotation->translatedFormat('d F Y') }} @endif
+                @if ($this->inquiry->deadline_quotation) {{ t('Valid until') }} {{ $this->inquiry->deadline_quotation->translatedFormat('d F Y') }} @endif
             </x-slot:meta>
         </x-print.header>
 
         <x-print.parties columns="1.25fr 1fr .85fr">
-            <x-print.party label="KEPADA YTH.">
+            <x-print.party :label="t('ADDRESSED TO')">
                 <div class="nm">{{ $this->inquiry->customer?->customer_name ?? $this->inquiry->prospect_name ?? '—' }}</div>
                 <div class="dt">
                     {{ $this->inquiry->customer?->default_address ?? '—' }}<br>
@@ -150,37 +150,37 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
                     @if ($this->inquiry->customer?->phone) · {{ $this->inquiry->customer->phone }} @endif
                 </div>
             </x-print.party>
-            <x-print.party label="PRODUK">
+            <x-print.party :label="t('PRODUCT')">
                 <div class="nm">{{ $this->inquiry->product_draft_name ?? $this->inquiry->product?->product_name ?? '—' }}</div>
                 <div class="dt">
-                    {{ $this->inquiry->parts->count() }} part
-                    @if ($this->inquiry->deadline_quotation) · Deadline quotation: {{ $this->inquiry->deadline_quotation->translatedFormat('d M Y') }} @endif
+                    {{ $this->inquiry->parts->count() }} {{ t('part') }}
+                    @if ($this->inquiry->deadline_quotation) · {{ t('Quotation deadline') }}: {{ $this->inquiry->deadline_quotation->translatedFormat('d M Y') }} @endif
                 </div>
             </x-print.party>
-            <x-print.party label="PIC SALES">
+            <x-print.party :label="t('SALES PIC')">
                 <div class="nm">{{ $this->inquiry->pic_sales ?? '—' }}</div>
                 <div class="dt">
-                    Sumber: {{ $this->inquiry->source ?? '—' }}<br>
-                    Mata uang: {{ $this->inquiry->costing?->currency_code ?? 'IDR' }}
+                    {{ t('Source') }}: {{ $this->inquiry->source ?? '—' }}<br>
+                    {{ t('Currency') }}: {{ $this->inquiry->costing?->currency_code ?? 'IDR' }}
                 </div>
             </x-print.party>
         </x-print.parties>
 
-        <x-print.section number="1" title="Penawaran Harga" hint="per pcs · IDR · PPN {{ $this->inquiry->costing?->ppn_pct ?? $this->inquiry->ppn_percent ?? 11 }}%">
+        <x-print.section number="1" :title="t('Price Offer')" hint="{{ t('per pcs') }} · IDR · {{ t('VAT') }} {{ $this->inquiry->costing?->ppn_pct ?? $this->inquiry->ppn_percent ?? 11 }}%">
             @if ($this->priced && $this->primaryRow)
                 <div class="pricing">
                     <div class="hero">
-                        <div class="lbl">TIER YANG DIMINTA</div>
+                        <div class="lbl">{{ t('REQUESTED TIER') }}</div>
                         <div class="qty">{{ number_format($this->primaryRow->tier->qty, 0, ',', '.') }} <span>pcs</span></div>
                         <div class="amt"><small>Rp</small> {{ number_format($this->primaryRow->price_incl, 0, ',', '.') }}</div>
-                        <div class="excl">excl. PPN &nbsp;Rp {{ number_format($this->primaryRow->price_excl, 0, ',', '.') }}</div>
-                        <div class="unit">harga incl. PPN per pcs</div>
+                        <div class="excl">{{ t('excl. VAT') }} &nbsp;Rp {{ number_format($this->primaryRow->price_excl, 0, ',', '.') }}</div>
+                        <div class="unit">{{ t('price incl. VAT per pcs') }}</div>
                         <div class="tot">
-                            Nilai order &nbsp;<b>Rp {{ number_format($this->primaryRow->value_total, 0, ',', '.') }}</b>
+                            {{ t('Order value') }} &nbsp;<b>Rp {{ number_format($this->primaryRow->value_total, 0, ',', '.') }}</b>
                             @if ($this->primaryRow->tier->price_excl !== null)
                                 @php $delta = $this->primaryRow->price_excl - $this->primaryRow->tier->price_excl; @endphp
-                                <span class="dlt">Target customer Rp {{ number_format($this->primaryRow->tier->price_excl, 0, ',', '.') }}
-                                    — selisih Rp {{ number_format(abs($delta), 0, ',', '.') }} {{ $delta > 0 ? 'di atas' : 'di bawah' }} target</span>
+                                <span class="dlt">{{ t('Customer target') }} Rp {{ number_format($this->primaryRow->tier->price_excl, 0, ',', '.') }}
+                                    — {{ t('difference') }} Rp {{ number_format(abs($delta), 0, ',', '.') }} {{ $delta > 0 ? t('above target') : t('below target') }}</span>
                             @endif
                         </div>
                     </div>
@@ -189,18 +189,18 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
                         <table class="tt">
                             <thead>
                                 <tr>
-                                    <th style="width:20%">Jenjang</th>
-                                    <th>Qty (pcs)</th>
-                                    <th>Target</th>
-                                    <th>Harga excl.</th>
-                                    <th>Harga incl.</th>
-                                    <th style="width:23%">Nilai Total</th>
+                                    <th style="width:20%">{{ t('Qty Tier') }}</th>
+                                    <th>{{ t('Qty (pcs)') }}</th>
+                                    <th>{{ t('Target') }}</th>
+                                    <th>{{ t('Price excl.') }}</th>
+                                    <th>{{ t('Price incl.') }}</th>
+                                    <th style="width:23%">{{ t('Total Value') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($this->tierRows as $row)
                                     <tr class="{{ $row->tier->is_primary ? 'cur' : '' }} {{ $row->is_best ?? false ? 'best' : '' }}">
-                                        <td>Tier {{ $loop->iteration }}{{ $row->tier->is_primary ? ' ★' : '' }}</td>
+                                        <td>{{ t('Tier') }} {{ $loop->iteration }}{{ $row->tier->is_primary ? ' ★' : '' }}</td>
                                         <td class="q">{{ number_format($row->tier->qty, 0, ',', '.') }}</td>
                                         <td>{{ $row->tier->price_excl !== null ? number_format($row->tier->price_excl, 0, ',', '.') : '—' }}</td>
                                         <td class="p">{{ $row->price_excl !== null ? number_format($row->price_excl, 0, ',', '.') : '—' }}</td>
@@ -211,29 +211,26 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
                             </tbody>
                         </table>
                         <div class="tier-foot">
-                            ★ tier utama yang diminta customer.
-                            Harga berbasis spesifikasi Bagian 2. Perubahan material, gramatur, jumlah warna,
-                            atau finishing akan mengubah harga.
+                            ★ {{ t('main tier requested by the customer.') }}
+                            {{ t('Price is based on the Part 2 specification. Changes to material, grammage, number of colors, or finishing will change the price.') }}
                         </div>
                     </div>
                 </div>
             @else
                 <div class="print-warn">
-                    <div class="t">⚠ Harga belum tersedia</div>
+                    <div class="t">⚠ {{ t('Price not available yet') }}</div>
                     <div class="d">
-                        Costing untuk inquiry ini belum dipublish oleh Direksi. Dokumen ini hanya berisi
-                        spesifikasi teknis (Bagian 2) — hubungi tim Costing untuk penawaran harga resmi
-                        sebelum dokumen ini dijadikan acuan negosiasi.
+                        {{ t('Costing for this inquiry has not been published by the Directors yet. This document only contains the technical specification (Part 2) — contact the Costing team for an official price offer before using this document as a negotiation reference.') }}
                     </div>
                 </div>
             @endif
         </x-print.section>
 
-        <x-print.section number="2" title="Spesifikasi Produk" hint="dieline ukuran penuh di halaman 2">
+        <x-print.section number="2" :title="t('Product Specification')" :hint="t('full-size dieline on page 2')">
             @forelse ($this->partsData as $p)
                 <div class="part">
                     <div class="part-h">
-                        <div class="t">Part {{ $p['seq'] }} — {{ $p['name'] ?: 'Part #'.$p['seq'] }}
+                        <div class="t">{{ t('Part') }} {{ $p['seq'] }} — {{ $p['name'] ?: t('Part').' #'.$p['seq'] }}
                             @if ($p['type_code']) <small>/ {{ $p['type_code'] }}</small> @endif
                         </div>
                         <div class="tag">{{ $p['type_code'] ?: '—' }}</div>
@@ -241,21 +238,21 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
                     <div class="part-b">
                         <div class="part-col">
                             <table class="spec">
-                                <tr><td class="k">Dimensi P×L×T</td><td class="v">{{ $p['product_length'] ?? '—' }} × {{ $p['product_width'] ?? '—' }} × {{ $p['product_height'] ?? '—' }} mm</td></tr>
+                                <tr><td class="k">{{ t('Dimensions L×W×H') }}</td><td class="v">{{ $p['product_length'] ?? '—' }} × {{ $p['product_width'] ?? '—' }} × {{ $p['product_height'] ?? '—' }} mm</td></tr>
                                 @if ($p['glue_flap'])
-                                    <tr><td class="k">Lidah lem</td><td class="v">{{ $p['glue_flap'] }} mm</td></tr>
+                                    <tr><td class="k">{{ t('Glue flap') }}</td><td class="v">{{ $p['glue_flap'] }} mm</td></tr>
                                 @endif
-                                <tr><td class="k">Bentangan flat</td><td class="v">{{ number_format($p['flat_w'], 0) }} × {{ number_format($p['flat_h'], 0) }} mm</td></tr>
+                                <tr><td class="k">{{ t('Flat spread') }}</td><td class="v">{{ number_format($p['flat_w'], 0) }} × {{ number_format($p['flat_h'], 0) }} mm</td></tr>
                                 @if ($p['flat_area_m2'])
-                                    <tr><td class="k">Luas flat</td><td class="v">{{ number_format($p['flat_area_m2'], 3) }} m²</td></tr>
+                                    <tr><td class="k">{{ t('Flat area') }}</td><td class="v">{{ number_format($p['flat_area_m2'], 3) }} m²</td></tr>
                                 @endif
                             </table>
                         </div>
                         <div class="part-col">
                             <table class="spec">
-                                <tr><td class="k">Material</td><td class="v">{{ $p['material_name'] ?? '—' }}{{ $p['material_gram'] ? ' '.$p['material_gram'].' gsm' : '' }}</td></tr>
-                                <tr><td class="k">Warna</td><td class="v">{{ $p['cfg_color'] ?? '—' }}{{ $p['cfg_ink'] ? ' ('.$p['cfg_ink'].')' : '' }}</td></tr>
-                                <tr><td class="k">Proses/Finishing</td><td class="v">{{ $p['processes'] ?: '—' }}</td></tr>
+                                <tr><td class="k">{{ t('Material') }}</td><td class="v">{{ $p['material_name'] ?? '—' }}{{ $p['material_gram'] ? ' '.$p['material_gram'].' gsm' : '' }}</td></tr>
+                                <tr><td class="k">{{ t('Color') }}</td><td class="v">{{ $p['cfg_color'] ?? '—' }}{{ $p['cfg_ink'] ? ' ('.$p['cfg_ink'].')' : '' }}</td></tr>
+                                <tr><td class="k">{{ t('Process/Finishing') }}</td><td class="v">{{ $p['processes'] ?: '—' }}</td></tr>
                             </table>
                         </div>
                         <div class="part-dl">
@@ -265,42 +262,42 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                 </div>
             @empty
-                <div class="print-warn"><div class="d">Belum ada part di inquiry ini.</div></div>
+                <div class="print-warn"><div class="d">{{ t('No parts in this inquiry yet.') }}</div></div>
             @endforelse
         </x-print.section>
 
-        <x-print.section number="3" title="Catatan">
+        <x-print.section number="3" :title="t('Notes')">
             <div class="print-two">
                 <div class="print-box">
-                    <h5>CATATAN SALES</h5>
+                    <h5>{{ t('SALES NOTE') }}</h5>
                     {{ $this->inquiry->sales_note ?: '—' }}
                 </div>
                 <div class="print-box">
-                    <h5>INFO TAMBAHAN</h5>
-                    @if ($this->inquiry->design_number) No. Desain: <b>{{ $this->inquiry->design_number }}</b><br> @endif
-                    @if ($this->inquiry->material_source) Sumber material: {{ $this->inquiry->material_source }}<br> @endif
-                    @if ($this->inquiry->job_nature) Sifat pekerjaan: {{ $this->inquiry->job_nature }} @endif
+                    <h5>{{ t('ADDITIONAL INFO') }}</h5>
+                    @if ($this->inquiry->design_number) {{ t('Design No.') }}: <b>{{ $this->inquiry->design_number }}</b><br> @endif
+                    @if ($this->inquiry->material_source) {{ t('Material source') }}: {{ $this->inquiry->material_source }}<br> @endif
+                    @if ($this->inquiry->job_nature) {{ t('Job nature') }}: {{ $this->inquiry->job_nature }} @endif
                     @if (! $this->inquiry->design_number && ! $this->inquiry->material_source && ! $this->inquiry->job_nature) — @endif
                 </div>
             </div>
         </x-print.section>
 
-        <x-print.footer page="Halaman 1 dari 2">
+        <x-print.footer :page="t('Page 1 of 2')">
             {{ $this->inquiry->inquiry_no }} · {{ $this->inquiry->customer?->customer_name ?? $this->inquiry->prospect_name }} ·
-            dicetak {{ now()->format('d/m/Y H:i') }} · syarat &amp; konfirmasi di halaman 2
+            {{ t('printed on') }} {{ now()->format('d/m/Y H:i') }} · {{ t('terms & confirmation on page 2') }}
         </x-print.footer>
     </x-print.sheet>
 
     {{-- ================= HALAMAN 2 ================= --}}
     <x-print.sheet>
-        <x-print.section number="4" title="Dieline Ukuran Penuh" hint="skematik, tidak berskala · —— potong · - - - rill/lipat">
+        <x-print.section number="4" :title="t('Full-Size Dieline')" :hint="t('schematic, not to scale · —— cut · - - - crease/fold')">
             <div class="print-two">
                 @foreach ($this->partsData as $p)
                     <div class="print-box" style="padding:9px">
-                        <h5>PART {{ $p['seq'] }} — {{ strtoupper($p['name'] ?: '') }}</h5>
+                        <h5>{{ t('PART') }} {{ $p['seq'] }} — {{ strtoupper($p['name'] ?: '') }}</h5>
                         <div class="dl-big" data-part="{{ $p['seq'] }}" wire:ignore></div>
                         <div style="font-size:7.4pt;color:var(--print-muted);margin-top:4px">
-                            Bentangan {{ number_format($p['flat_w'], 0) }} × {{ number_format($p['flat_h'], 0) }} mm
+                            {{ t('Spread') }} {{ number_format($p['flat_w'], 0) }} × {{ number_format($p['flat_h'], 0) }} mm
                             @if ($p['material_name']) · {{ $p['material_name'] }} @endif
                         </div>
                     </div>
@@ -308,45 +305,43 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
             </div>
         </x-print.section>
 
-        <x-print.section number="5" title="Syarat &amp; Ketentuan">
+        <x-print.section number="5" :title="t('Terms & Conditions')">
             <ol class="print-terms">
-                <li>Harga berlaku 30 hari sejak tanggal nota ini diterbitkan.</li>
-                <li>Toleransi jumlah pengiriman ±5% dari qty order (standar industri percetakan).</li>
-                <li>Lead time produksi menyesuaikan kapasitas produksi setelah artwork final &amp; digital proof disetujui.</li>
+                <li>{{ t('Prices are valid for 30 days from the issue date of this note.') }}</li>
+                <li>{{ t('Delivery quantity tolerance ±5% of the order qty (printing industry standard).') }}</li>
+                <li>{{ t('Production lead time follows production capacity after the final artwork & digital proof are approved.') }}</li>
                 @if ($this->toolingTotal > 0)
-                    <li>Biaya tooling (pisau/matras/plate) sebesar Rp {{ number_format($this->toolingTotal, 0, ',', '.') }} dibebankan satu kali di order pertama.</li>
+                    <li>{{ str_replace(':amount', number_format($this->toolingTotal, 0, ',', '.'), t('Tooling cost (die/matrix/plate) of Rp :amount is charged once on the first order.')) }}</li>
                 @endif
-                <li>Pembayaran sesuai payment term yang berlaku untuk customer terdaftar / DP untuk order pertama.</li>
-                <li>Harga belum termasuk biaya pengiriman kecuali disebutkan lain.</li>
-                <li>Perubahan spesifikasi setelah nota disetujui dapat mengubah harga dan lead time.</li>
+                <li>{{ t('Payment follows the payment term in effect for registered customers / down payment for the first order.') }}</li>
+                <li>{{ t('Prices exclude delivery cost unless stated otherwise.') }}</li>
+                <li>{{ t('Specification changes after this note is approved may change the price and lead time.') }}</li>
             </ol>
         </x-print.section>
 
-        <x-print.signatures title="KONFIRMASI CUSTOMER">
+        <x-print.signatures :title="t('CUSTOMER CONFIRMATION')">
             <x-slot:intro>
-                Mohon periksa harga (Bagian 1) dan spesifikasi (Bagian 2) pada halaman 1. Bila telah sesuai,
-                tandatangani kolom di bawah dan kirim kembali ke PIC Sales.
-                <b>Bila ada koreksi, tuliskan langsung pada dokumen ini</b> — kami akan terbitkan revisi.
+                {{ t('Please check the price (Part 1) and specification (Part 2) on page 1. If correct, sign the box below and send it back to the Sales PIC.') }}
+                <b>{{ t('If there are corrections, write them directly on this document') }}</b> — {{ t('we will issue a revision.') }}
                 <div style="margin-top:6px">
-                    <label>☐ <b>SESUAI</b> — lanjutkan ke penawaran resmi (quotation), qty tier:
+                    <label>☐ <b>{{ t('APPROVED') }}</b> — {{ t('proceed to the official offer (quotation), qty tier:') }}
                         @foreach ($this->inquiry->tiers->sortBy('tier_seq') as $t)
                             &nbsp;☐ {{ number_format($t->qty, 0, ',', '.') }}
                         @endforeach
                     </label><br>
-                    <label>☐ Perlu <b>REVISI</b> — catatan:
+                    <label>☐ {{ t('Needs') }} <b>{{ t('REVISION') }}</b> — {{ t('notes:') }}
                         <span style="border-bottom:1px dotted #999;display:inline-block;width:56%">&nbsp;</span>
                     </label>
                 </div>
             </x-slot:intro>
 
-            <x-print.signature role="Customer" sub="Nama jelas, jabatan &amp; stempel" />
-            <x-print.signature role="Sales" :sub="$this->inquiry->pic_sales ?? '—'" />
-            <x-print.signature role="Mengetahui" sub="Sales Manager" />
+            <x-print.signature :role="t('Customer')" :sub="t('Full name, position & stamp')" />
+            <x-print.signature :role="t('Sales')" :sub="$this->inquiry->pic_sales ?? '—'" />
+            <x-print.signature :role="t('Acknowledged by')" :sub="t('Sales Manager')" />
         </x-print.signatures>
 
-        <x-print.footer page="Halaman 2 dari 2">
-            {{ $this->inquiry->inquiry_no }} · Dokumen dibuat otomatis oleh sistem TMERP —
-            sah tanpa tanda tangan basah pihak penerbit.
+        <x-print.footer :page="t('Page 2 of 2')">
+            {{ $this->inquiry->inquiry_no }} · {{ t('Document generated automatically by the TMERP system — valid without the issuer\'s wet signature.') }}
         </x-print.footer>
     </x-print.sheet>
 

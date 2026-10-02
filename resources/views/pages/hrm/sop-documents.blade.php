@@ -190,14 +190,14 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
         {{-- ============ GRID ============ --}}
         @if ($panel === 'grid')
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total SOP" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
-            <x-grid.stat-box tone="extra" label="Berlaku Semua Departemen" :value="$this->statAllDept" />
+            <x-grid.stat-box tone="total" :label="t('Total SOP')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" :label="t('Active')" :value="$this->statActive" />
+            <x-grid.stat-box tone="extra" :label="t('Applies to All Departments')" :value="$this->statAllDept" />
         </x-grid.stat-row>
 
         @unless ($this->isHrOfficer())
             <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#eef2ff] border border-[#c7d0f5] text-[#3f4a8a]">
-                Mode lihat saja — hanya HR Officer yang bisa menambah/mengubah SOP. Klik 2x baris untuk membaca isi lengkap.
+                {{ t('View-only mode — only HR Officers can add/change SOPs.') }} {{ t('Double-click a row to read the full content.') }}
             </div>
         @endunless
 
@@ -205,7 +205,7 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / judul SOP…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search SOP code / title…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 @if ($this->isHrOfficer())
@@ -220,38 +220,38 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Dokumen SOP</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Cakupan Departemen</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Rev / Berlaku</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Status</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('SOP Document') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Department Scope') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Rev / Effective') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Status') }}</th>
                             @if ($this->isHrOfficer())
-                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
+                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Action') }}</th>
                             @endif
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->documents as $doc)
-                            <tr wire:key="sop-{{ $doc->sop_id }}" wire:dblclick="open({{ $doc->sop_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                            <tr wire:key="sop-{{ $doc->sop_id }}" wire:dblclick="open({{ $doc->sop_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open') }}">
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="font-semibold text-[13px]">{{ $doc->title }}</div>
-                                    <div class="text-[11px] text-muted font-mono">{{ \App\Models\Master\SopDocument::TYPES[$doc->doc_type] ?? 'SOP' }} · {{ $doc->sop_code }}</div>
+                                    <div class="text-[11px] text-muted font-mono">{{ t(\App\Models\Master\SopDocument::TYPES[$doc->doc_type] ?? 'SOP') }} · {{ $doc->sop_code }}</div>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $doc->department?->department_name ?: 'Semua Departemen' }}</td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[#667]">Rev {{ $doc->revision }}{{ $doc->effective_date ? ' · '.$doc->effective_date->format('d/m/Y') : '' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $doc->department?->department_name ?: t('All Departments') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[#667]">{{ t('Rev') }} {{ $doc->revision }}{{ $doc->effective_date ? ' · '.$doc->effective_date->format('d/m/Y') : '' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $doc->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $doc->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $doc->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $doc->activate ? t('ACTIVE') : t('INACTIVE') }}</span>
                                 </td>
                                 @if ($this->isHrOfficer())
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="fa-pen" title="Edit" action="open({{ $doc->sop_id }})" />
-                                        <x-grid.action-icon :active="$doc->activate" :title="$doc->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $doc->sop_id }})"
-                                            :confirm="($doc->activate ? 'Nonaktifkan' : 'Aktifkan').' SOP '.$doc->title.'?'"
+                                        <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="open({{ $doc->sop_id }})" />
+                                        <x-grid.action-icon :active="$doc->activate" :title="$doc->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $doc->sop_id }})"
+                                            :confirm="str_replace(':name', $doc->title, $doc->activate ? t('Deactivate SOP :name?') : t('Activate SOP :name?'))"
                                             :variant="$doc->activate ? 'danger' : 'default'" />
                                     </td>
                                 @endif
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="$this->isHrOfficer() ? 5 : 4" message="Belum ada dokumen SOP." />
+                            <x-grid.empty-row :colspan="$this->isHrOfficer() ? 5 : 4" :message="t('No SOP documents yet.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -262,31 +262,31 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
         {{-- ============ FORM (HR OFFICER) ============ --}}
         @if ($panel === 'form')
             <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
-                <div class="text-sm font-bold">{{ $editingId ? 'Edit SOP' : 'SOP Baru' }}</div>
+                <div class="text-sm font-bold">{{ $editingId ? t('Edit SOP') : t('New SOP') }}</div>
             </div>
             <form wire:submit="save" class="bg-white border border-t-0 border-[#d7dbe2] p-5 flex flex-col gap-3">
                 <div class="grid two gap-2.5">
-                    <x-form.input label="Nomor Dokumen *" name="sop_code" wire:model="sop_code" placeholder="mis. 001/SOP/TM/V/2026" />
-                    <x-form.input label="Revisi" name="revision" wire:model="revision" />
+                    <x-form.input :label="t('Document Number').' *'" name="sop_code" wire:model="sop_code" :placeholder="t('e.g.').' 001/SOP/TM/V/2026'" />
+                    <x-form.input :label="t('Revision')" name="revision" wire:model="revision" />
                 </div>
                 <div class="grid two gap-2.5">
-                    <x-form.select label="Document Type *" name="doc_type" wire:model="doc_type" :options="\App\Models\Master\SopDocument::TYPES" :selected="$doc_type" />
-                    <x-form.input label="Judul SOP *" name="title" wire:model="title" />
+                    <x-form.select :label="t('Document Type').' *'" name="doc_type" wire:model="doc_type" :options="array_map('t', \App\Models\Master\SopDocument::TYPES)" :selected="$doc_type" />
+                    <x-form.input :label="t('SOP Title').' *'" name="title" wire:model="title" />
                 </div>
                 <div class="grid two gap-2.5">
-                    <x-form.date-picker label="Berlaku Sejak" name="effective_date" wire:model="effective_date" />
-                    <x-form.select label="Cakupan Departemen" name="department_id" wire:model="department_id"
-                        :options="$this->departmentOptions" :selected="$department_id" placeholder="— Semua Departemen —" />
+                    <x-form.date-picker :label="t('Effective')" name="effective_date" wire:model="effective_date" />
+                    <x-form.select :label="t('Department Scope')" name="department_id" wire:model="department_id"
+                        :options="$this->departmentOptions" :selected="$department_id" :placeholder="'— '.t('All Departments').' —'" />
                 </div>
-                <x-form.textarea label="Tujuan" name="purpose" wire:model="purpose" rows="2" autogrow />
-                <x-form.textarea label="Isi SOP" name="content" wire:model="content" rows="8" autogrow
-                    hint="Ditampilkan apa adanya (baris baru dipertahankan) ke pegawai lewat Self-Service." />
+                <x-form.textarea :label="t('Purpose')" name="purpose" wire:model="purpose" rows="2" autogrow />
+                <x-form.textarea :label="t('SOP Content')" name="content" wire:model="content" rows="8" autogrow
+                    :hint="t('Shown as is (line breaks kept) to employees via Self-Service.')" />
 
-                <x-form.checkbox label="Aktif" wire:model="sop_activate" />
+                <x-form.checkbox :label="t('Active')" wire:model="sop_activate" />
 
                 <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
-                    <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                    <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
+                    <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
                 </div>
             </form>
         @endif
@@ -295,27 +295,27 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
         @if ($panel === 'view')
             <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
                 <div class="text-sm font-bold">{{ $title }}</div>
-                <span class="text-[10.5px] font-mono opacity-75">{{ \App\Models\Master\SopDocument::TYPES[$doc_type] ?? 'SOP' }} · {{ $sop_code }} · Rev {{ $revision }}</span>
+                <span class="text-[10.5px] font-mono opacity-75">{{ t(\App\Models\Master\SopDocument::TYPES[$doc_type] ?? 'SOP') }} · {{ $sop_code }} · {{ t('Rev') }} {{ $revision }}</span>
             </div>
             <div class="bg-white border border-t-0 border-[#d7dbe2] p-5 rounded-b-md flex flex-col gap-3">
                 <div class="text-[11px] text-muted flex gap-4 flex-wrap">
-                    <span>Cakupan: <b class="text-[#233]">{{ $this->departmentOptions[$department_id] ?? 'Semua Departemen' }}</b></span>
+                    <span>{{ t('Coverage') }}: <b class="text-[#233]">{{ $this->departmentOptions[$department_id] ?? t('All Departments') }}</b></span>
                     @if ($effective_date)
-                        <span>Berlaku sejak: <b class="text-[#233]">{{ \Illuminate\Support\Carbon::parse($effective_date)->format('d F Y') }}</b></span>
+                        <span>{{ t('Effective') }}: <b class="text-[#233]">{{ \Illuminate\Support\Carbon::parse($effective_date)->format('d F Y') }}</b></span>
                     @endif
                 </div>
                 @if ($purpose)
                     <div>
-                        <div class="text-xs font-bold text-navy uppercase tracking-wide mb-1">Tujuan</div>
+                        <div class="text-xs font-bold text-navy uppercase tracking-wide mb-1">{{ t('Purpose') }}</div>
                         <div class="text-[13px] text-[#334] leading-relaxed whitespace-pre-line">{{ $purpose }}</div>
                     </div>
                 @endif
                 <div>
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide mb-1">Isi SOP</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide mb-1">{{ t('SOP Content') }}</div>
                     <div class="text-[13px] text-[#334] leading-relaxed whitespace-pre-line">{{ $content ?: '—' }}</div>
                 </div>
                 <div class="pt-2 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
-                    <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">← Kembali</button>
+                    <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">← Back</button>
                 </div>
             </div>
         @endif

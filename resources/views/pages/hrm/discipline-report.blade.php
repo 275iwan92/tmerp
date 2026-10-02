@@ -11,13 +11,13 @@ use Livewire\Component;
 // mockup_08_daily_discipline_report.html (4 stat widget + 2 tabel: Terlambat,
 // Tidak Masuk). Data dari att_daily_status yang sudah dihitung
 // AttendanceCalculationService, bukan tabel/summary baru.
-new #[Title('Laporan Kedisiplinan Harian — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Daily Discipline Report — TELASIH MAKMUR ERP')] class extends Component
 {
     private const STATUS_LABELS = [
-        'T-5' => 'T-5 (< 5 mnt)', 'T+5' => 'T+5 (6-15 mnt)', 'T+15' => 'T+15 (> 15 mnt)',
+        'T-5' => 'T-5 (< 5 min)', 'T+5' => 'T+5 (6-15 min)', 'T+15' => 'T+15 (> 15 min)',
         'PAT-5' => 'PAT-5', 'PAT+5' => 'PAT+5',
-        'A' => 'A (Alpha)', 'S' => 'S (Sakit Approved)', 'I' => 'I (Izin)', 'IS' => 'IS (Izin Disetujui)',
-        'C' => 'C (Cuti)', 'CL' => 'CL (Cuti Melahirkan)',
+        'A' => 'A (Absent)', 'S' => 'S (Sick Approved)', 'I' => 'I (Permission)', 'IS' => 'IS (Permission Approved)',
+        'C' => 'C (Leave)', 'CL' => 'CL (Maternity Leave)',
     ];
 
     public string $date = '';
@@ -69,7 +69,7 @@ new #[Title('Laporan Kedisiplinan Harian — TELASIH MAKMUR ERP')] class extends
 
     public function statusLabel(string $code): string
     {
-        return self::STATUS_LABELS[$code] ?? $code;
+        return isset(self::STATUS_LABELS[$code]) ? t(self::STATUS_LABELS[$code]) : $code;
     }
 
     public function absentBadgeClass(string $code): string
@@ -89,30 +89,30 @@ new #[Title('Laporan Kedisiplinan Harian — TELASIH MAKMUR ERP')] class extends
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-3 flex justify-between items-center flex-wrap gap-3">
             <div class="max-w-[220px]">
-                <x-form.date-picker label="Tanggal Laporan" wire:model.live="date" name="date" />
+                <x-form.date-picker :label="t('Report Date')" wire:model.live="date" name="date" />
             </div>
-            <button type="button" onclick="window.print()" class="bg-navy text-white text-xs px-3 py-2 rounded font-semibold">🖨️ Cetak Laporan</button>
+            <button type="button" onclick="window.print()" class="bg-navy text-white text-xs px-3 py-2 rounded font-semibold">🖨️ {{ t('Print Report') }}</button>
         </div>
 
         <x-grid.stat-row :count="4" class="mb-4">
-            <x-grid.stat-box tone="active" label="Hadir Tepat Waktu" :value="$this->stats['hadir'].' Karyawan'" />
-            <x-grid.stat-box tone="warn" label="Terlambat" :value="$this->stats['terlambat'].' Karyawan'" />
-            <x-grid.stat-box tone="critical" label="Tidak Masuk (Alpha)" :value="$this->stats['alpha'].' Karyawan'" />
-            <x-grid.stat-box tone="extra" label="Izin/Sakit/Cuti" :value="$this->stats['izin_sakit_cuti'].' Karyawan'" />
+            <x-grid.stat-box tone="active" :label="t('Present On Time')" :value="$this->stats['hadir'].' '.t('Employee')" />
+            <x-grid.stat-box tone="warn" :label="t('Late')" :value="$this->stats['terlambat'].' '.t('Employee')" />
+            <x-grid.stat-box tone="critical" :label="t('Absent (Alpha)')" :value="$this->stats['alpha'].' '.t('Employee')" />
+            <x-grid.stat-box tone="extra" :label="t('Permission/Sick/Leave')" :value="$this->stats['izin_sakit_cuti'].' '.t('Employee')" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-4">
-            <h2 class="text-xs font-bold text-[#92400e] mb-3">⚠️ Daftar Karyawan Terlambat ({{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }})</h2>
+            <h2 class="text-xs font-bold text-[#92400e] mb-3">⚠️ {{ t('Late Employees List') }} ({{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }})</h2>
             <x-grid.table-shell>
             <table class="w-full text-left text-xs border-collapse">
                 <thead>
                     <tr>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">Kode</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">Nama</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">Jam Shift</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">Jam Masuk</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">Durasi Telat</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">Kategori</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">{{ t('Code') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">{{ t('Name') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">{{ t('Shift Time') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">{{ t('Clock-In Time') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">{{ t('Late Duration') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fef3c7] uppercase text-[11px] text-[#92400e]">{{ t('Category') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -122,11 +122,11 @@ new #[Title('Laporan Kedisiplinan Harian — TELASIH MAKMUR ERP')] class extends
                             <td class="p-2 font-medium">{{ $r->employee?->full_name }}</td>
                             <td class="p-2 font-mono">{{ $r->shift_start?->format('H:i') ?? '—' }}</td>
                             <td class="p-2 font-mono text-[#991b1b]">{{ $r->finger_in?->format('H:i:s') ?? '—' }}</td>
-                            <td class="p-2 font-bold text-[#991b1b]">{{ $r->minutes_late }} Menit</td>
+                            <td class="p-2 font-bold text-[#991b1b]">{{ $r->minutes_late }} {{ t('Minutes') }}</td>
                             <td class="p-2"><span class="bg-[#fee2e2] text-[#991b1b] px-2 py-0.5 rounded font-bold text-[10px]">{{ $this->statusLabel($r->status_code) }}</span></td>
                         </tr>
                     @empty
-                        <x-grid.empty-row :colspan="6" message="Tidak ada karyawan terlambat pada tanggal ini." />
+                        <x-grid.empty-row :colspan="6" :message="t('No late employees on this date.')" />
                     @endforelse
                 </tbody>
             </table>
@@ -134,15 +134,15 @@ new #[Title('Laporan Kedisiplinan Harian — TELASIH MAKMUR ERP')] class extends
         </div>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-4">
-            <h2 class="text-xs font-bold text-[#991b1b] mb-3">🚫 Daftar Karyawan Tidak Masuk Kerja (Alpha/Sakit/Izin/Cuti)</h2>
+            <h2 class="text-xs font-bold text-[#991b1b] mb-3">🚫 {{ t('Employees Absent from Work (Alpha/Sick/Permission/Leave)') }}</h2>
             <x-grid.table-shell>
             <table class="w-full text-left text-xs border-collapse">
                 <thead>
                     <tr>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fee2e2] uppercase text-[11px] text-[#991b1b]">Kode</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fee2e2] uppercase text-[11px] text-[#991b1b]">Nama</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fee2e2] uppercase text-[11px] text-[#991b1b]">Divisi</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fee2e2] uppercase text-[11px] text-[#991b1b]">Status</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fee2e2] uppercase text-[11px] text-[#991b1b]">{{ t('Code') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fee2e2] uppercase text-[11px] text-[#991b1b]">{{ t('Name') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fee2e2] uppercase text-[11px] text-[#991b1b]">{{ t('Division') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fee2e2] uppercase text-[11px] text-[#991b1b]">{{ t('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -154,7 +154,7 @@ new #[Title('Laporan Kedisiplinan Harian — TELASIH MAKMUR ERP')] class extends
                             <td class="p-2"><span class="px-2 py-0.5 rounded font-bold text-[10px] {{ $this->absentBadgeClass($r->status_code) }}">{{ $this->statusLabel($r->status_code) }}</span></td>
                         </tr>
                     @empty
-                        <x-grid.empty-row :colspan="4" message="Tidak ada karyawan tidak masuk pada tanggal ini." />
+                        <x-grid.empty-row :colspan="4" :message="t('No absent employees on this date.')" />
                     @endforelse
                 </tbody>
             </table>

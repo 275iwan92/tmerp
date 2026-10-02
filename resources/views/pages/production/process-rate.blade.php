@@ -20,7 +20,7 @@ use Livewire\Component;
 // doang. Tab Mesin/Pegawai -- 2 tabel terpisah (keputusan user awal sesi WO
 // Generation: target beda sumber daya beda tabel), 1 layar krn bentuknya
 // identik (pola sama scrap-type.blade.php).
-new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Target Rate Process × Machine/Employee — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $resource = 'MACHINE'; // MACHINE|MANUAL -- tab aktif
 
@@ -173,18 +173,18 @@ new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class
 <div>
     <div class="max-w-[1100px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="2">
-            <x-grid.stat-box tone="total" label="Total Rate" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
+            <x-grid.stat-box tone="total" :label="t('Total Rates')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" :label="t('Active')" :value="$this->statActive" />
         </x-grid.stat-row>
 
         <div class="flex gap-1.5 mb-3">
-            <button type="button" wire:click="switchResource('MACHINE')" class="px-3.5 py-1.5 rounded text-xs font-semibold cursor-pointer {{ $resource === 'MACHINE' ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">⚙ Mesin</button>
-            <button type="button" wire:click="switchResource('MANUAL')" class="px-3.5 py-1.5 rounded text-xs font-semibold cursor-pointer {{ $resource === 'MANUAL' ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">👤 Pegawai (Manual)</button>
+            <button type="button" wire:click="switchResource('MACHINE')" class="px-3.5 py-1.5 rounded text-xs font-semibold cursor-pointer {{ $resource === 'MACHINE' ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">⚙ {{ t('Machine') }}</button>
+            <button type="button" wire:click="switchResource('MANUAL')" class="px-3.5 py-1.5 rounded text-xs font-semibold cursor-pointer {{ $resource === 'MANUAL' ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">👤 {{ t('Employee (Manual)') }}</button>
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
-                <span class="text-[11px] text-muted italic">Target default per Produk+Part+Proses+{{ $resource === 'MACHINE' ? 'Mesin' : 'Pegawai' }} — dipakai WO Generation &amp; tombol "↻" di Bill of Process WO Detail, selalu bisa di-override manual per WO.</span>
+                <span class="text-[11px] text-muted italic">{{ str_replace(':res', $resource === 'MACHINE' ? t('Machine') : t('Employee'), t('Default target per Product+Part+Process+:res — used by WO Generation & the "↻" button in WO Detail Bill of Process, can always be overridden manually per WO.')) }}</span>
                 <x-slot:newRecord>
                     <button type="button" wire:click="openNew" class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
                 </x-slot:newRecord>
@@ -194,12 +194,12 @@ new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Produk / Part</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Proses</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ $resource === 'MACHINE' ? 'Mesin' : 'Pegawai' }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Target/Jam</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Product / Part') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Process') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ $resource === 'MACHINE' ? t('Machine') : t('Employee') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Target/Hour') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -213,15 +213,15 @@ new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $resource === 'MACHINE' ? ($r->machine?->machine_name ?? '—') : ($r->employee?->full_name ?? '—') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format((float) $r->target_qty_per_hour, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->activate ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $r->activate ? 'Aktif' : 'Nonaktif' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->activate ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $r->activate ? t('Active') : t('Inactive') }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openEdit({{ $r->rate_id }})" />
-                                    <button type="button" wire:click="toggleActive({{ $r->rate_id }})" class="w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer" title="{{ $r->activate ? 'Nonaktifkan' : 'Aktifkan' }}">⏻</button>
+                                    <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="openEdit({{ $r->rate_id }})" />
+                                    <button type="button" wire:click="toggleActive({{ $r->rate_id }})" class="w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer" title="{{ $r->activate ? t('Deactivate') : t('Activate') }}">⏻</button>
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Belum ada rate {{ $resource === 'MACHINE' ? 'mesin' : 'pegawai' }} tersimpan." />
+                            <x-grid.empty-row :colspan="6" :message="$resource === 'MACHINE' ? t('No machine rates saved yet.') : t('No employee rates saved yet.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -233,25 +233,25 @@ new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeModal">
             <div class="bg-white rounded-xl w-[440px] max-w-[95vw] shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
-                    <span>{{ $editingId ? 'Edit' : 'Tambah' }} Rate {{ $resource === 'MACHINE' ? 'Mesin' : 'Pegawai' }}</span>
+                    <span>{{ $editingId ? t('Edit') : t('Add') }} {{ t('Rate') }} {{ $resource === 'MACHINE' ? t('Machine') : t('Employee') }}</span>
                     <button type="button" wire:click="closeModal" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
                 <div class="p-4 space-y-3">
                     <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Produk</label>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Product') }}</label>
                         <select wire:model="product_id" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                            <option value="">-- pilih produk --</option>
+                            <option value="">{{ t('-- select product --') }}</option>
                             @foreach ($this->productOptions as $p)
                                 <option value="{{ $p->id_product }}">{{ $p->product_name }}</option>
                             @endforeach
                         </select>
                         @error('product_id') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
                     </div>
-                    <x-form.input label="Part Code" name="part_code" wire:model="part_code" placeholder="mis. BODY" class="font-mono" />
+                    <x-form.input :label="t('Part Code')" name="part_code" wire:model="part_code" :placeholder="t('e.g. BODY')" class="font-mono" />
                     <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Proses</label>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Process') }}</label>
                         <select wire:model="process_id" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                            <option value="">-- pilih proses --</option>
+                            <option value="">{{ t('-- select process --') }}</option>
                             @foreach ($this->processOptions as $proc)
                                 <option value="{{ $proc->id_process }}">{{ $proc->process_name }}</option>
                             @endforeach
@@ -260,9 +260,9 @@ new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class
                     </div>
                     @if ($resource === 'MACHINE')
                         <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Mesin</label>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Machine') }}</label>
                             <select wire:model="machine_id" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                                <option value="">-- pilih mesin --</option>
+                                <option value="">{{ t('-- select machine --') }}</option>
                                 @foreach ($this->machineOptions as $m)
                                     <option value="{{ $m->machine_id }}">{{ $m->machine_name }}</option>
                                 @endforeach
@@ -271,9 +271,9 @@ new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class
                         </div>
                     @else
                         <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Pegawai</label>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Employee') }}</label>
                             <select wire:model="employee_id" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                                <option value="">-- pilih pegawai --</option>
+                                <option value="">{{ t('-- select employee --') }}</option>
                                 @foreach ($this->employeeOptions as $e)
                                     <option value="{{ $e->employee_id }}">{{ $e->full_name }}</option>
                                 @endforeach
@@ -282,13 +282,13 @@ new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class
                         </div>
                     @endif
                     <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Target Qty / Jam</label>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Target Qty / Hour') }}</label>
                         <input type="number" wire:model="target_qty_per_hour" min="0.01" step="0.01" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                         @error('target_qty_per_hour') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
                     </div>
                     <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
-                        <button type="button" wire:click="closeModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="button" wire:click="save" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="closeModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="button" wire:click="save" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">{{ t('Save') }}</button>
                     </div>
                 </div>
             </div>

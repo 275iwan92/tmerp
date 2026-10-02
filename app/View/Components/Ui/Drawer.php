@@ -45,7 +45,7 @@ class Drawer extends UiComponent
                     <span class="dr-title">{{ $title }}</span>
                     @if ($note)<span class="dr-note">{{ $note }}</span>@endif
                     @isset($actions){{ $actions }}@endisset
-                    <button type="button" class="x" @click="{{ $open }} = false" title="{{ \App\Support\Localization\Translator::t('shared_btn_close', 'Tutup') }}"><i class="fa-solid fa-xmark"></i></button>
+                    <button type="button" class="x" @click="{{ $open }} = false" title="{{ t('Close') }}"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="dr-body">{{ $slot }}</div>
             </div>

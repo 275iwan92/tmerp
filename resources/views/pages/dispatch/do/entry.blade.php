@@ -204,8 +204,8 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">🚚 Delivery Order — Entry</b>
-        <span class="text-xs text-white/75">{{ $this->do->do_no ?: '(auto saat Confirm)' }} · {{ $this->do->customer?->customer_name }}</span>
+        <b class="text-[15px]">🚚 {{ t('Delivery Order — Entry') }}</b>
+        <span class="text-xs text-white/75">{{ $this->do->do_no ?: t('(auto on Confirm)') }} · {{ $this->do->customer?->customer_name }}</span>
         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full {{ match ($this->do->status) {
             'CONFIRMED' => 'bg-[#eaf2ff] text-[#1d4ed8]',
             'SHIPPED' => 'bg-[#eaf7ee] text-[#1f8a4c]',
@@ -215,27 +215,27 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
 
         <div class="ml-auto flex items-center gap-4">
             <div class="text-right leading-tight">
-                <div class="text-[9.5px] uppercase text-white/55 font-semibold">Total Nilai</div>
+                <div class="text-[9.5px] uppercase text-white/55 font-semibold">{{ t('Total Value') }}</div>
                 <div class="text-sm font-extrabold">{{ number_format($this->totals['value'], 0, ',', '.') }}</div>
             </div>
 
             @if ($this->do->status === 'DRAFT')
-                <button type="button" wire:click="confirmDo" wire:confirm="Confirm Delivery Order ini? Nomor DO akan diterbitkan &amp; baris terkunci."
+                <button type="button" wire:click="confirmDo" wire:confirm="{{ t('Confirm this Delivery Order? The DO number will be issued & the lines locked.') }}"
                     @disabled($this->do->lines->isEmpty())
-                    class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">✓ Confirm DO</button>
-                <button type="button" wire:click="openCancelModal" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-white text-[#c0392b] border border-[#f5c6c6] cursor-pointer">Batalkan</button>
+                    class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">✓ {{ t('Confirm DO') }}</button>
+                <button type="button" wire:click="openCancelModal" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-white text-[#c0392b] border border-[#f5c6c6] cursor-pointer">{{ t('Cancel', 'action') }}</button>
             @elseif ($this->do->status === 'CONFIRMED')
-                <button type="button" wire:click="markShipped" wire:confirm="Tandai seluruh baris DO ini sebagai Terkirim?"
-                    class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#22a06b] text-white cursor-pointer">📦 Tandai Terkirim</button>
-                <button type="button" wire:click="openCancelModal" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-white text-[#c0392b] border border-[#f5c6c6] cursor-pointer">Batalkan</button>
-                <a href="{{ route('dispatch.do.print', ['doId' => $this->doId]) }}" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#43508a] text-white no-underline cursor-pointer">🖨️ Cetak DO</a>
-                <a href="{{ route('dispatch.do.print-surat-jalan', ['doId' => $this->doId]) }}" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#43508a] text-white no-underline cursor-pointer">🖨️ Surat Jalan</a>
+                <button type="button" wire:click="markShipped" wire:confirm="{{ t('Mark all lines of this DO as Shipped?') }}"
+                    class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#22a06b] text-white cursor-pointer">📦 {{ t('Mark as Shipped') }}</button>
+                <button type="button" wire:click="openCancelModal" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-white text-[#c0392b] border border-[#f5c6c6] cursor-pointer">{{ t('Cancel', 'action') }}</button>
+                <a href="{{ route('dispatch.do.print', ['doId' => $this->doId]) }}" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#43508a] text-white no-underline cursor-pointer">🖨️ {{ t('Print DO') }}</a>
+                <a href="{{ route('dispatch.do.print-surat-jalan', ['doId' => $this->doId]) }}" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#43508a] text-white no-underline cursor-pointer">🖨️ {{ t('Delivery Note') }}</a>
             @elseif ($this->do->status === 'SHIPPED')
-                <a href="{{ route('dispatch.do.print', ['doId' => $this->doId]) }}" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#43508a] text-white no-underline cursor-pointer">🖨️ Cetak DO</a>
-                <a href="{{ route('dispatch.do.print-surat-jalan', ['doId' => $this->doId]) }}" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#43508a] text-white no-underline cursor-pointer">🖨️ Surat Jalan</a>
+                <a href="{{ route('dispatch.do.print', ['doId' => $this->doId]) }}" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#43508a] text-white no-underline cursor-pointer">🖨️ {{ t('Print DO') }}</a>
+                <a href="{{ route('dispatch.do.print-surat-jalan', ['doId' => $this->doId]) }}" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#43508a] text-white no-underline cursor-pointer">🖨️ {{ t('Delivery Note') }}</a>
             @endif
 
-            <x-back-button :fallback="route('dispatch.do.index')" title="Kembali ke Daftar Delivery Order" />
+            <x-back-button :fallback="route('dispatch.do.index')" :title="t('Back to Delivery Order List')" />
         </div>
     </header>
 
@@ -246,23 +246,23 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- BLOK A: Informasi Dokumen --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Dokumen</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('Document Information') }}</h3>
             <div class="grid three">
-                <x-form.input label="No. Delivery Order" readonly value="{{ $this->do->do_no ?: '(auto saat Confirm)' }}" class="bg-[#f8fafc]" />
-                <x-form.date-picker label="Tanggal DO" value="{{ $this->do->do_date?->format('Y-m-d') }}" :disabled="$this->do->status !== 'DRAFT'"
+                <x-form.input :label="t('Delivery Order No.')" readonly value="{{ $this->do->do_no ?: t('(auto on Confirm)') }}" class="bg-[#f8fafc]" />
+                <x-form.date-picker :label="t('DO Date')" value="{{ $this->do->do_date?->format('Y-m-d') }}" :disabled="$this->do->status !== 'DRAFT'"
                     wire:change="updateHeader('do_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.date-picker label="Rencana Kirim" value="{{ $this->do->scheduled_ship_date?->format('Y-m-d') }}" :disabled="$this->do->status !== 'DRAFT'"
+                <x-form.date-picker :label="t('Planned Ship Date')" value="{{ $this->do->scheduled_ship_date?->format('Y-m-d') }}" :disabled="$this->do->status !== 'DRAFT'"
                     wire:change="updateHeader('scheduled_ship_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
             </div>
         </div>
 
         {{-- BLOK B: Customer & Ship-to --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">Customer &amp; Ship-to</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('Customer & Ship-to') }}</h3>
             <div class="grid two">
-                <x-form.input label="Customer" readonly value="{{ $this->do->customer?->customer_name }} ({{ $this->do->customer?->customer_code }})" class="bg-[#f8fafc] font-semibold" />
+                <x-form.input :label="t('Customer')" readonly value="{{ $this->do->customer?->customer_name }} ({{ $this->do->customer?->customer_code }})" class="bg-[#f8fafc] font-semibold" />
                 <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Alamat Kirim</label>
+                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Ship Address') }}</label>
                     <livewire:address-picker
                         field-name="do-ship-address"
                         :initial-area-id="$this->do->ship_area_id"
@@ -271,8 +271,8 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
                         wire:key="do-ship-picker-{{ $this->doId }}" />
                 </div>
                 <div class="col-span-2">
-                    <x-form.input label="Detail Alamat (jalan, no., RT/RW, patokan)" value="{{ $this->do->ship_address_detail }}" :disabled="$this->do->status !== 'DRAFT'"
-                        wire:change="updateHeader('ship_address_detail', $event.target.value)" placeholder="Jl. ..., No. ..." class="disabled:bg-[#f8fafc]" />
+                    <x-form.input :label="t('Address Detail (street, no., RT/RW, landmark)')" value="{{ $this->do->ship_address_detail }}" :disabled="$this->do->status !== 'DRAFT'"
+                        wire:change="updateHeader('ship_address_detail', $event.target.value)" :placeholder="t('St. ..., No. ...')" class="disabled:bg-[#f8fafc]" />
                 </div>
             </div>
         </div>
@@ -280,18 +280,18 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
         {{-- BLOK C: CO Line Picker (DRAFT saja) --}}
         @if ($this->do->status === 'DRAFT')
             <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-                <h3 class="text-xs text-navy uppercase font-bold mb-3">Tarik Baris dari Customer Order</h3>
+                <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('Pull Lines from Customer Order') }}</h3>
                 <div class="max-h-64 overflow-y-auto border border-[#eef1f5] rounded">
                     <table class="w-full text-[11.5px] border-collapse">
                         <thead>
                             <tr class="bg-[#fafbfd] text-[10px] text-muted uppercase font-bold sticky top-0">
                                 <th class="px-2 py-1.5 w-8"></th>
-                                <th class="text-left px-2 py-1.5 w-24">No. CO</th>
-                                <th class="text-left px-2 py-1.5">Item</th>
-                                <th class="text-right px-2 py-1.5 w-24">Qty Tersedia</th>
-                                <th class="text-center px-2 py-1.5 w-16">UoM</th>
-                                <th class="text-right px-2 py-1.5 w-24">Harga/Unit</th>
-                                <th class="text-center px-2 py-1.5 w-24">Jadwal Kirim</th>
+                                <th class="text-left px-2 py-1.5 w-24">{{ t('CO No.') }}</th>
+                                <th class="text-left px-2 py-1.5">{{ t('Item') }}</th>
+                                <th class="text-right px-2 py-1.5 w-24">{{ t('Available Qty') }}</th>
+                                <th class="text-center px-2 py-1.5 w-16">{{ t('UoM') }}</th>
+                                <th class="text-right px-2 py-1.5 w-24">{{ t('Price/Unit') }}</th>
+                                <th class="text-center px-2 py-1.5 w-24">{{ t('Delivery Schedule') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -306,29 +306,29 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
                                     <td class="px-2 py-1.5 text-center text-muted">{{ $p->ship_date ? \Carbon\Carbon::parse($p->ship_date)->format('d/m/Y') : '—' }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="7" class="text-center py-6 text-muted text-[11px]">Tidak ada jadwal kirim outstanding utk customer ini.</td></tr>
+                                <tr><td colspan="7" class="text-center py-6 text-muted text-[11px]">{{ t('No outstanding delivery schedule for this customer.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
                 <div class="flex justify-end mt-2.5">
                     <button type="button" wire:click="pullSelected" @disabled(empty($checkedDeliveryIds))
-                        class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-accent text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">↓ Tarik ke Delivery Order</button>
+                        class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-accent text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">↓ {{ t('Pull into Delivery Order') }}</button>
                 </div>
             </div>
         @endif
 
         {{-- BLOK D: Baris DO + Footer --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">Baris Delivery Order</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('Delivery Order Lines') }}</h3>
             <table class="w-full text-[11.5px] border-collapse">
                 <thead>
                     <tr class="bg-[#fafbfd] text-[10px] text-muted uppercase font-bold">
-                        <th class="text-left px-2 py-1.5 w-24">No. CO</th>
-                        <th class="text-left px-2 py-1.5">Item</th>
-                        <th class="text-right px-2 py-1.5 w-28">Qty DO</th>
-                        <th class="text-right px-2 py-1.5 w-28">Harga/Unit</th>
-                        <th class="text-right px-2 py-1.5 w-28">Subtotal</th>
+                        <th class="text-left px-2 py-1.5 w-24">{{ t('CO No.') }}</th>
+                        <th class="text-left px-2 py-1.5">{{ t('Item') }}</th>
+                        <th class="text-right px-2 py-1.5 w-28">{{ t('DO Qty') }}</th>
+                        <th class="text-right px-2 py-1.5 w-28">{{ t('Price/Unit') }}</th>
+                        <th class="text-right px-2 py-1.5 w-28">{{ t('Subtotal') }}</th>
                         @if ($this->do->status === 'DRAFT')
                             <th class="w-10"></th>
                         @endif
@@ -341,7 +341,7 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
                             <td class="px-2 py-1.5">
                                 {{ $line->item_description }}
                                 @if (in_array($line->item_description, $this->duplicateDescriptions, true))
-                                    <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-[#fef6e7] text-[#8a6d00] ml-1">⚠ item sama, harga beda</span>
+                                    <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-[#fef6e7] text-[#8a6d00] ml-1">⚠ {{ t('same item, different price') }}</span>
                                 @endif
                             </td>
                             <td class="px-2 py-1.5 text-right">
@@ -364,18 +364,18 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
                             <td class="px-2 py-1.5 text-right font-semibold">{{ number_format($line->subtotal, 0, ',', '.') }}</td>
                             @if ($this->do->status === 'DRAFT')
                                 <td class="px-2 py-1.5 text-center">
-                                    <button type="button" wire:click="removeLine({{ $line->id_line }})" wire:confirm="Hapus baris ini?" class="text-red-500 hover:text-red-700 cursor-pointer">✕</button>
+                                    <button type="button" wire:click="removeLine({{ $line->id_line }})" wire:confirm="{{ t('Delete this row?') }}" class="text-red-500 hover:text-red-700 cursor-pointer">✕</button>
                                 </td>
                             @endif
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-6 text-muted text-[11px]">Belum ada baris. Tarik dari Customer Order di atas.</td></tr>
+                        <tr><td colspan="6" class="text-center py-6 text-muted text-[11px]">{{ t('No rows yet. Pull from the Customer Order above.') }}</td></tr>
                     @endforelse
                 </tbody>
                 @if ($this->do->lines->isNotEmpty())
                     <tfoot>
                         <tr class="bg-[#f4f6fa] font-bold border-t border-[#c8ccd4]">
-                            <td class="px-2 py-2" colspan="2">Total</td>
+                            <td class="px-2 py-2" colspan="2">{{ t('Total') }}</td>
                             <td class="px-2 py-2 text-right">{{ number_format($this->totals['qty'], 2) }}</td>
                             <td class="px-2 py-2"></td>
                             <td class="px-2 py-2 text-right">{{ number_format($this->totals['value'], 0, ',', '.') }}</td>
@@ -393,14 +393,14 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" wire:click.self="closeCancelModal">
             <div class="bg-white rounded-lg p-4 w-[420px] shadow-xl">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-bold text-navy">Batalkan Delivery Order</h3>
+                    <h3 class="text-sm font-bold text-navy">{{ t('Cancel Delivery Order') }}</h3>
                     <button type="button" wire:click="closeCancelModal" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
-                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Alasan Pembatalan (wajib)</label>
-                <textarea rows="3" wire:model="cancelReason" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs mb-3" placeholder="Jelaskan alasan pembatalan..."></textarea>
+                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Cancellation Reason (required)') }}</label>
+                <textarea rows="3" wire:model="cancelReason" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs mb-3" placeholder="{{ t('Explain the cancellation reason...') }}"></textarea>
                 <div class="flex justify-end gap-2">
-                    <button type="button" wire:click="closeCancelModal" class="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
-                    <button type="button" wire:click="cancelDo" @disabled(trim($cancelReason) === '') class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#c0392b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">Batalkan DO</button>
+                    <button type="button" wire:click="closeCancelModal" class="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="cancelDo" @disabled(trim($cancelReason) === '') class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#c0392b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">{{ t('Cancel DO') }}</button>
                 </div>
             </div>
         </div>

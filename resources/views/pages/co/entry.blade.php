@@ -67,10 +67,10 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
         $kinds = $this->order->items->pluck('line_kind')->unique();
 
         if ($kinds->count() > 1) {
-            return 'Mixed (PRODUCT + SERVICE)';
+            return t('Mixed (PRODUCT + SERVICE)');
         }
 
-        return $kinds->first() === 'SERVICE' ? 'Service Only' : 'Product Only';
+        return $kinds->first() === 'SERVICE' ? t('Service Only') : t('Product Only');
     }
 
     // Timeline Inquiry -> Quotation -> CO (History Flow tab), dibangun dinamis dari
@@ -410,38 +410,38 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
 
 <div x-data="{ tab: 'product' }">
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📦 Customer Order — Entry</b>
+        <b class="text-[15px]">📦 {{ t('Customer Order — Entry') }}</b>
         <span class="text-xs text-white/75">{{ $this->order->co_no }} · {{ $this->order->customer?->customer_name ?? '—' }}</span>
         <x-form.badge :tone="$this->order->isInstant() ? 'extra' : 'info'">{{ $this->order->entry_mode }}</x-form.badge>
         <x-form.badge :tone="$this->order->doc_status === 'CONFIRMED' ? 'success' : 'warn'">{{ $this->order->doc_status }}</x-form.badge>
 
         <div class="ml-auto flex items-center gap-4">
             <div class="text-right leading-tight">
-                <div class="text-[9.5px] uppercase text-white/55 font-semibold">Net Receivable</div>
+                <div class="text-[9.5px] uppercase text-white/55 font-semibold">{{ t('Net Receivable') }}</div>
                 <div class="text-sm font-extrabold">{{ number_format($this->totals['net_receivable'], 0, ',', '.') }}</div>
             </div>
             @if ($this->order->doc_status === 'DRAFT')
                 @if ($this->itemsMissingDueDate->isNotEmpty())
                     <span class="text-[10.5px] font-semibold text-[#ffd7a8]" title="{{ $this->itemsMissingDueDate->pluck('description')->implode(', ') }}">
-                        ⚠ {{ $this->itemsMissingDueDate->count() }} item belum ada Due Date
+                        ⚠ {{ str_replace(':n', $this->itemsMissingDueDate->count(), t(':n item(s) without a Due Date')) }}
                     </span>
                 @endif
                 @if ($this->order->itemsMissingProduct()->isNotEmpty())
                     <span class="text-[10.5px] font-semibold text-[#ffd7a8]" title="{{ $this->order->itemsMissingProduct()->pluck('description')->implode(', ') }}">
-                        &#9888; {{ $this->order->itemsMissingProduct()->count() }} item belum terkait Master Product
+                        &#9888; {{ str_replace(':n', $this->order->itemsMissingProduct()->count(), t(':n item(s) not linked to a Master Product')) }}
                     </span>
                 @endif
-                <button type="button" wire:click="confirmCo" wire:confirm="Confirm CO ini? Setelah confirm, isi tidak bisa diedit lagi."
+                <button type="button" wire:click="confirmCo" wire:confirm="{{ t('Confirm this CO? Once confirmed, the content can no longer be edited.') }}"
                     @disabled(! $this->order->isConfirmable())
                     class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                    ✓ Confirm CO
+                    ✓ {{ t('Confirm CO') }}
                 </button>
             @endif
             @if ($this->order->doc_status === 'CONFIRMED')
                 <a href="{{ route('co.print', ['order' => $this->orderId]) }}" target="_blank"
-                    class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 Cetak Nota</a>
+                    class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 {{ t('Print Note') }}</a>
             @endif
-            <x-back-button :fallback="route('co.list')" title="Kembali ke menu grid" />
+            <x-back-button :fallback="route('co.list')" :title="t('Back to grid menu')" />
         </div>
     </header>
 
@@ -458,46 +458,46 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             <div class="lg:flex-1 min-w-0">
                 {{-- HEADER DOKUMEN --}}
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-                    <h3 class="text-xs text-navy uppercase font-bold mb-3">Header Dokumen</h3>
+                    <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ t('Document Header') }}</h3>
                     {{-- "grid three" (bukan grid-cols-3) -- ikuti konvensi .grid/.two/.three
                          yang sudah ada di app.css, satu-satunya cara reliable dapat 3 kolom
                          di sini (lihat catatan flex di atas). --}}
                     <div class="grid three">
-                        <x-form.input label="No. CO" readonly value="{{ $this->order->co_no }}" class="bg-[#f8fafc]" />
-                        <x-form.date-picker label="CO Date" value="{{ $this->order->co_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                        <x-form.input :label="t('CO No.')" readonly value="{{ $this->order->co_no }}" class="bg-[#f8fafc]" />
+                        <x-form.date-picker :label="t('CO Date')" value="{{ $this->order->co_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'"
                             wire:change="updateHeader('co_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                        <x-form.input label="Ref. Quotation" readonly value="{{ $this->order->quotation?->quotation_no ?? '&#8212; (Instant, tanpa Quotation)' }}" class="bg-[#f8fafc]" />
+                        <x-form.input :label="t('Ref. Quotation')" readonly value="{{ $this->order->quotation?->quotation_no ?? '&#8212; ('.t('Instant, without Quotation').')' }}" class="bg-[#f8fafc]" />
 
-                        <x-form.input label="Cust. PO No." value="{{ $this->order->customer_po_no }}" :disabled="$this->order->doc_status !== 'DRAFT'"
-                            wire:change="updateHeader('customer_po_no', $event.target.value)" placeholder="PO/customer/..." class="disabled:bg-[#f8fafc]" />
-                        <x-form.input label="Order Type" readonly value="{{ $this->orderType }}" class="bg-[#f8fafc]" />
-                        <x-form.input label="Mata Uang" readonly value="{{ $this->order->currency_code ?? 'IDR' }}" class="bg-[#f8fafc]" />
+                        <x-form.input :label="t('Cust. PO No.')" value="{{ $this->order->customer_po_no }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                            wire:change="updateHeader('customer_po_no', $event.target.value)" :placeholder="t('PO/customer/...')" class="disabled:bg-[#f8fafc]" />
+                        <x-form.input :label="t('Order Type')" readonly value="{{ $this->orderType }}" class="bg-[#f8fafc]" />
+                        <x-form.input :label="t('Currency')" readonly value="{{ $this->order->currency_code ?? 'IDR' }}" class="bg-[#f8fafc]" />
 
                         <div class="col-span-3">
-                            <x-form.input label="Customer" readonly value="{{ $this->order->customer?->customer_name }} ({{ $this->order->customer?->customer_code }})" class="bg-[#f8fafc] font-semibold" />
+                            <x-form.input :label="t('Customer')" readonly value="{{ $this->order->customer?->customer_name }} ({{ $this->order->customer?->customer_code }})" class="bg-[#f8fafc] font-semibold" />
                         </div>
 
-                        <x-form.select label="PIC Sales" :disabled="$this->order->doc_status !== 'DRAFT'"
+                        <x-form.select :label="t('Sales PIC')" :disabled="$this->order->doc_status !== 'DRAFT'"
                             wire:change="updateHeader('sales_person_id', $event.target.value)" class="disabled:bg-[#f8fafc]">
-                            <option value="">&#8212; pilih &#8212;</option>
+                            <option value="">&#8212; {{ t('select') }} &#8212;</option>
                             @foreach ($this->salesPeople as $sp)
                                 <option value="{{ $sp->id_sales_person }}" @selected((int) $this->order->sales_person_id === (int) $sp->id_sales_person)>{{ $sp->sales_name }}</option>
                             @endforeach
                         </x-form.select>
-                        <x-form.select label="Termin Bayar" :disabled="$this->order->doc_status !== 'DRAFT'"
+                        <x-form.select :label="t('Payment Terms')" :disabled="$this->order->doc_status !== 'DRAFT'"
                             wire:change="updateHeader('payment_term', $event.target.value)" class="disabled:bg-[#f8fafc]">
-                            <option value="">&#8212; pilih &#8212;</option>
+                            <option value="">&#8212; {{ t('select') }} &#8212;</option>
                             @foreach ($this->paymentTerms as $pt)
                                 <option value="{{ $pt->payment_term_code }}" @selected($this->order->payment_term === $pt->payment_term_code)>{{ $pt->term_label }}</option>
                             @endforeach
                         </x-form.select>
                         {{-- Flag PPN (backlog01 UI-09): default dari Inquiry/customer; Surat Jalan & DO ikut flag ini. --}}
-                        <x-form.select label="Pajak" :disabled="$this->order->doc_status !== 'DRAFT'" :placeholder="false"
-                            :options="['1' => 'PPN', '0' => 'Non PPN']" :selected="$this->order->is_ppn ? '1' : '0'"
+                        <x-form.select :label="t('Tax')" :disabled="$this->order->doc_status !== 'DRAFT'" :placeholder="false"
+                            :options="['1' => t('VAT'), '0' => t('Non VAT')]" :selected="$this->order->is_ppn ? '1' : '0'"
                             wire:change="updateHeader('is_ppn', $event.target.value)" class="disabled:bg-surface-alt" />
 
                         <div class="col-span-3">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Shipment Location</label>
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Shipment Location') }}</label>
                             <livewire:address-picker
                                 field-name="co-ship-address"
                                 :initial-area-id="$this->order->ship_area_id"
@@ -506,10 +506,10 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                 wire:key="co-ship-picker-{{ $this->orderId }}" />
                         </div>
                         <div class="col-span-2">
-                            <x-form.input label="Detail Alamat (jalan, no., RT/RW, patokan)" value="{{ $this->order->ship_address_detail }}" :disabled="$this->order->doc_status !== 'DRAFT'"
-                                wire:change="updateHeader('ship_address_detail', $event.target.value)" placeholder="Jl. ..., No. ..." class="disabled:bg-[#f8fafc]" />
+                            <x-form.input :label="t('Address Detail (street, no., RT/RW, landmark)')" value="{{ $this->order->ship_address_detail }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                                wire:change="updateHeader('ship_address_detail', $event.target.value)" :placeholder="t('St. ..., No. ...')" class="disabled:bg-[#f8fafc]" />
                         </div>
-                        <x-form.input label="Kode Pos" readonly value="{{ $this->order->ship_postal_code }}" class="bg-[#f8fafc]" />
+                        <x-form.input :label="t('Postal Code')" readonly value="{{ $this->order->ship_postal_code }}" class="bg-[#f8fafc]" />
                     </div>
                 </div>
 
@@ -517,10 +517,10 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                 <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
                     <div class="flex items-center justify-between border-b border-[#d7dbe2] px-3">
                         <div class="flex gap-1">
-                            <button type="button" @click="tab = 'product'" :class="tab === 'product' ? 'text-accent border-accent' : 'text-muted border-transparent'" class="px-3 py-2.5 text-xs font-bold border-b-2 cursor-pointer">Product</button>
-                            <button type="button" @click="tab = 'delivery'" :class="tab === 'delivery' ? 'text-accent border-accent' : 'text-muted border-transparent'" class="px-3 py-2.5 text-xs font-bold border-b-2 cursor-pointer">Delivery</button>
-                            <button type="button" @click="tab = 'external'" :class="tab === 'external' ? 'text-accent border-accent' : 'text-muted border-transparent'" class="px-3 py-2.5 text-xs font-bold border-b-2 cursor-pointer">External Cost</button>
-                            <button type="button" @click="tab = 'history'" :class="tab === 'history' ? 'text-accent border-accent' : 'text-muted border-transparent'" class="px-3 py-2.5 text-xs font-bold border-b-2 cursor-pointer">History Flow</button>
+                            <button type="button" @click="tab = 'product'" :class="tab === 'product' ? 'text-accent border-accent' : 'text-muted border-transparent'" class="px-3 py-2.5 text-xs font-bold border-b-2 cursor-pointer">{{ t('Product') }}</button>
+                            <button type="button" @click="tab = 'delivery'" :class="tab === 'delivery' ? 'text-accent border-accent' : 'text-muted border-transparent'" class="px-3 py-2.5 text-xs font-bold border-b-2 cursor-pointer">{{ t('Delivery') }}</button>
+                            <button type="button" @click="tab = 'external'" :class="tab === 'external' ? 'text-accent border-accent' : 'text-muted border-transparent'" class="px-3 py-2.5 text-xs font-bold border-b-2 cursor-pointer">{{ t('External Cost') }}</button>
+                            <button type="button" @click="tab = 'history'" :class="tab === 'history' ? 'text-accent border-accent' : 'text-muted border-transparent'" class="px-3 py-2.5 text-xs font-bold border-b-2 cursor-pointer">{{ t('History Flow') }}</button>
                         </div>
                     </div>
 
@@ -528,20 +528,20 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                     <div x-show="tab === 'product'" class="p-3">
                         @if ($this->order->doc_status === 'DRAFT')
                             <div class="flex justify-end gap-1.5 mb-2">
-                                <button type="button" wire:click="openProductPicker" title="Pilih dari Master Product" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Produk</button>
-                                <button type="button" wire:click="addItem('SERVICE')" class="text-[11px] font-bold text-navy bg-[#eef1f5] border border-dashed border-[#c7cfda] rounded px-2.5 py-1 cursor-pointer">＋ Jasa</button>
+                                <button type="button" wire:click="openProductPicker" title="{{ t('Choose from Master Product') }}" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ {{ t('Product') }}</button>
+                                <button type="button" wire:click="addItem('SERVICE')" class="text-[11px] font-bold text-navy bg-[#eef1f5] border border-dashed border-[#c7cfda] rounded px-2.5 py-1 cursor-pointer">＋ {{ t('Service Item') }}</button>
                             </div>
                         @endif
                         <table class="w-full text-xs border-collapse">
                             <thead>
                                 <tr class="bg-[#f4f5f8]">
-                                    <th class="text-left px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Produk / Jasa</th>
-                                    <th class="text-center px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Type</th>
-                                    <th class="text-right px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Qty</th>
-                                    <th class="text-right px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Harga</th>
-                                    <th class="text-right px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Disc%</th>
-                                    <th class="text-right px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Subtotal</th>
-                                    <th class="text-center px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Due Date</th>
+                                    <th class="text-left px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Product / Service') }}</th>
+                                    <th class="text-center px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Type') }}</th>
+                                    <th class="text-right px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Qty') }}</th>
+                                    <th class="text-right px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Price') }}</th>
+                                    <th class="text-right px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Disc%') }}</th>
+                                    <th class="text-right px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Subtotal') }}</th>
+                                    <th class="text-center px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Due Date') }}</th>
                                     <th class="px-2 py-2 border-b border-[#d7dbe2]"></th>
                                 </tr>
                             </thead>
@@ -550,7 +550,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                     <tr class="border-b border-[#eef1f5]" wire:key="co-item-{{ $item->id_item }}">
                                         <td class="px-2 py-2">
                                             @if ($item->quotation_item_id === null && $this->order->doc_status === 'DRAFT')
-                                                <x-form.input value="{{ $item->description }}" placeholder="Deskripsi..." wire:change="updateItem({{ $item->id_item }}, 'description', $event.target.value)" class="!py-1 font-medium" />
+                                                <x-form.input value="{{ $item->description }}" :placeholder="t('Description...')" wire:change="updateItem({{ $item->id_item }}, 'description', $event.target.value)" class="!py-1 font-medium" />
                                             @else
                                                 <div class="font-medium text-navy">{{ $item->description }}</div>
                                             @endif
@@ -559,12 +559,12 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                                 @if ($item->inquiry) <span class="text-[9.5px] font-mono font-bold text-accent">{{ $item->inquiry->inquiry_no }}</span> @endif
                                                 @if ($item->line_kind === 'PRODUCT')
                                                     @if ($item->product_id)
-                                                        <span class="text-[9.5px] font-mono text-[#16a34a]" title="Master Product terkait">{{ $item->product?->product_code ?? $item->product_id }}</span>
+                                                        <span class="text-[9.5px] font-mono text-[#16a34a]" title="{{ t('Linked Master Product') }}">{{ $item->product?->product_code ?? $item->product_id }}</span>
                                                     @else
-                                                        <span class="text-[9.5px] font-mono text-[#b45309]" title="Belum terkait Master Product">belum terkait master</span>
+                                                        <span class="text-[9.5px] font-mono text-[#b45309]" title="{{ t('Not linked to a Master Product yet') }}">{{ t('not linked to master') }}</span>
                                                     @endif
                                                     @if ($this->order->doc_status === 'DRAFT')
-                                                        <button type="button" wire:click="openProductPicker({{ $item->id_item }})" class="text-[9.5px] text-accent underline cursor-pointer">pilih</button>
+                                                        <button type="button" wire:click="openProductPicker({{ $item->id_item }})" class="text-[9.5px] text-accent underline cursor-pointer">{{ t('select') }}</button>
                                                     @endif
                                                 @endif
                                             </div>
@@ -593,21 +593,21 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                                 wire:change="updateItem({{ $item->id_item }}, 'due_date', $event.target.value)"
                                                 class="!py-1 text-[11px] disabled:bg-[#f8fafc] {{ $item->line_kind === 'PRODUCT' && ! $item->due_date && $this->order->doc_status === 'DRAFT' ? '!border-red-400' : '' }}" />
                                             @if ($item->line_kind === 'PRODUCT' && ! $item->due_date && $this->order->doc_status === 'DRAFT')
-                                                <div class="text-[9.5px] text-red-500 mt-0.5">wajib diisi</div>
+                                                <div class="text-[9.5px] text-red-500 mt-0.5">{{ t('must be filled') }}</div>
                                             @endif
                                         </td>
                                         <td class="px-2 py-2 text-center">
                                             @if ($item->quotation_item_id === null && $this->order->doc_status === 'DRAFT')
-                                                <button type="button" wire:click="removeItem({{ $item->id_item }})" wire:confirm="Hapus baris ini?" class="text-red-500 hover:text-red-700 cursor-pointer">✕</button>
+                                                <button type="button" wire:click="removeItem({{ $item->id_item }})" wire:confirm="{{ t('Delete this row?') }}" class="text-red-500 hover:text-red-700 cursor-pointer">✕</button>
                                             @endif
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="8" class="text-center py-8 text-muted">Belum ada baris.</td></tr>
+                                    <tr><td colspan="8" class="text-center py-8 text-muted">{{ t('No rows yet.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
-                        <p class="text-[10.5px] text-muted mt-2 italic">*Baris dari Quotation adalah snapshot terkunci (harga/qty tidak bisa diubah di sini) — hanya Due Date yang editable. Baris "+ Produk"/"+ Jasa" manual boleh diedit penuh.</p>
+                        <p class="text-[10.5px] text-muted mt-2 italic">*{{ t('Rows from the Quotation are a locked snapshot (price/qty cannot be changed here) — only the Due Date is editable.') }} {{ t('Manual "+ Product"/"+ Service Item" rows can be fully edited.') }}</p>
                     </div>
 
                     {{-- TAB: DELIVERY --}}
@@ -617,15 +617,15 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                 <div class="flex items-center justify-between px-2.5 py-2 bg-[#f8fafc]">
                                     <span class="text-xs font-semibold text-navy">{{ $item->description }}</span>
                                     @if ($this->order->doc_status === 'DRAFT')
-                                        <button type="button" wire:click="addDelivery({{ $item->id_item }})" class="text-[10.5px] font-bold text-accent cursor-pointer">＋ Jadwal Kirim</button>
+                                        <button type="button" wire:click="addDelivery({{ $item->id_item }})" class="text-[10.5px] font-bold text-accent cursor-pointer">＋ {{ t('Delivery Schedule') }}</button>
                                     @endif
                                 </div>
                                 <table class="w-full text-xs border-collapse">
                                     <thead>
                                         <tr class="bg-[#fbfcfe]">
-                                            <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-bold border-b border-[#eef1f5]">Shipment Type</th>
-                                            <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-bold border-b border-[#eef1f5]">Ship Date</th>
-                                            <th class="text-right px-2 py-1.5 text-[10px] text-muted uppercase font-bold border-b border-[#eef1f5]">Ship Qty</th>
+                                            <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-bold border-b border-[#eef1f5]">{{ t('Shipment Type') }}</th>
+                                            <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-bold border-b border-[#eef1f5]">{{ t('Ship Date') }}</th>
+                                            <th class="text-right px-2 py-1.5 text-[10px] text-muted uppercase font-bold border-b border-[#eef1f5]">{{ t('Ship Qty') }}</th>
                                             <th class="px-2 py-1.5 border-b border-[#eef1f5]"></th>
                                         </tr>
                                     </thead>
@@ -634,7 +634,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                             <tr wire:key="dlv-{{ $d->id_delivery }}">
                                                 <td class="px-2 py-1.5">
                                                     <x-form.select :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateDelivery({{ $d->id_delivery }}, 'shipment_type', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]"
-                                                        :placeholder="false" :selected="$d->shipment_type" :options="['FULL' => 'FULL', 'PARTIAL' => 'PARTIAL']" />
+                                                        :placeholder="false" :selected="$d->shipment_type" :options="['FULL' => t('FULL'), 'PARTIAL' => t('PARTIAL')]" />
                                                 </td>
                                                 <td class="px-2 py-1.5">
                                                     <x-form.date-picker value="{{ $d->ship_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateDelivery({{ $d->id_delivery }}, 'ship_date', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]" />
@@ -649,13 +649,13 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                                 </td>
                                             </tr>
                                         @empty
-                                            <tr><td colspan="4" class="text-center py-3 text-muted text-[11px]">Belum ada jadwal kirim.</td></tr>
+                                            <tr><td colspan="4" class="text-center py-3 text-muted text-[11px]">{{ t('No delivery schedule yet.') }}</td></tr>
                                         @endforelse
                                     </tbody>
                                 </table>
                             </div>
                         @empty
-                            <div class="text-center py-8 text-muted text-xs">Tidak ada baris PRODUCT untuk dijadwalkan.</div>
+                            <div class="text-center py-8 text-muted text-xs">{{ t('No PRODUCT rows to schedule.') }}</div>
                         @endforelse
                     </div>
 
@@ -663,16 +663,16 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                     <div x-show="tab === 'external'" x-cloak class="p-3">
                         @if ($this->order->doc_status === 'DRAFT')
                             <div class="flex justify-end mb-2">
-                                <button type="button" wire:click="addExternalCost" class="text-[11px] font-bold text-accent cursor-pointer">＋ Add Row</button>
+                                <button type="button" wire:click="addExternalCost" class="text-[11px] font-bold text-accent cursor-pointer">＋ {{ t('Add Row') }}</button>
                             </div>
                         @endif
                         <table class="w-full text-xs border-collapse">
                             <thead>
                                 <tr class="bg-[#f4f5f8]">
-                                    <th class="text-left px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Category</th>
-                                    <th class="text-left px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Description</th>
-                                    <th class="text-right px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Nominal</th>
-                                    <th class="text-center px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Tax Treatment</th>
+                                    <th class="text-left px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Category') }}</th>
+                                    <th class="text-left px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Description') }}</th>
+                                    <th class="text-right px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Nominal') }}</th>
+                                    <th class="text-center px-2 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Tax Treatment') }}</th>
                                     <th class="px-2 py-2 border-b border-[#d7dbe2]"></th>
                                 </tr>
                             </thead>
@@ -681,7 +681,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                     <tr wire:key="ext-{{ $c->id_cost }}">
                                         <td class="px-2 py-1.5">
                                             <x-form.select :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateExternalCost({{ $c->id_cost }}, 'category', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]"
-                                                :placeholder="false" :selected="$c->category" :options="['Trucking' => 'Trucking', 'Expedition' => 'Expedition', 'Lainnya' => 'Lainnya']" />
+                                                :placeholder="false" :selected="$c->category" :options="['Trucking' => t('Trucking'), 'Expedition' => t('Expedition'), 'Lainnya' => t('Other')]" />
                                         </td>
                                         <td class="px-2 py-1.5">
                                             <x-form.input value="{{ $c->description }}" :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateExternalCost({{ $c->id_cost }}, 'description', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]" />
@@ -691,7 +691,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                         </td>
                                         <td class="px-2 py-1.5 text-center">
                                             <x-form.select :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateExternalCost({{ $c->id_cost }}, 'tax_treatment', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]"
-                                                :placeholder="false" :selected="$c->tax_treatment" :options="['TAXABLE' => 'Taxable', 'REIMBURSEMENT' => 'Reimbursement']" />
+                                                :placeholder="false" :selected="$c->tax_treatment" :options="['TAXABLE' => t('Taxable'), 'REIMBURSEMENT' => t('Reimbursement')]" />
                                         </td>
                                         <td class="px-2 py-1.5 text-center">
                                             @if ($this->order->doc_status === 'DRAFT')
@@ -700,7 +700,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="5" class="text-center py-6 text-muted">Belum ada biaya eksternal.</td></tr>
+                                    <tr><td colspan="5" class="text-center py-6 text-muted">{{ t('No external costs yet.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -711,7 +711,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                         @foreach ($this->historyTimeline as $row)
                             <div class="flex items-center justify-between border-b border-[#eef1f5] pb-2 {{ $row['current'] ?? false ? 'font-bold' : '' }}">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $row['type'] === 'Inquiry' ? 'bg-[#dbeafe] text-[#1e40af]' : ($row['type'] === 'Quotation' ? 'bg-[#ede9fe] text-[#5b21b6]' : 'bg-[#fff5e0] text-[#8a5a00]') }}">{{ $row['type'] }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $row['type'] === 'Inquiry' ? 'bg-[#dbeafe] text-[#1e40af]' : ($row['type'] === 'Quotation' ? 'bg-[#ede9fe] text-[#5b21b6]' : 'bg-[#fff5e0] text-[#8a5a00]') }}">{{ t($row['type']) }}</span>
                                     <span class="text-navy">{{ $row['label'] }}</span>
                                 </div>
                                 <span class="text-[10px] text-muted">{{ \Illuminate\Support\Carbon::parse($row['date'])->translatedFormat('d M Y') }}</span>
@@ -724,38 +724,38 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             {{-- KANAN --}}
             <div class="lg:w-[320px] lg:shrink-0">
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-                    <h3 class="text-xs text-navy uppercase font-bold mb-2.5">Document Discount</h3>
+                    <h3 class="text-xs text-navy uppercase font-bold mb-2.5">{{ t('Document Discount') }}</h3>
                     <div class="space-y-2">
-                        <x-form.input label="Disc. Doc (fix dari IQ)" readonly value="{{ $this->order->discount_doc_pct !== null ? number_format($this->order->discount_doc_pct, 2).'%' : '—' }}" class="bg-[#f8fafc]" />
-                        <x-form.input label="Disc. Qty" type="number" step="0.01" value="{{ $this->order->discount_qty_pct }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                        <x-form.input :label="t('Disc. Doc (fixed from IQ)')" readonly value="{{ $this->order->discount_doc_pct !== null ? number_format($this->order->discount_doc_pct, 2).'%' : '—' }}" class="bg-[#f8fafc]" />
+                        <x-form.input :label="t('Disc. Qty')" type="number" step="0.01" value="{{ $this->order->discount_qty_pct }}" :disabled="$this->order->doc_status !== 'DRAFT'"
                             wire:change="updateHeader('discount_qty_pct', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                     </div>
                 </div>
 
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-                    <h3 class="text-xs text-navy uppercase font-bold mb-2.5">Summary &amp; Tax</h3>
+                    <h3 class="text-xs text-navy uppercase font-bold mb-2.5">{{ t('Summary & Tax') }}</h3>
                     <div class="space-y-1 text-xs">
-                        <div class="flex justify-between"><span class="text-muted">Item Subtotal</span><span>{{ number_format($this->totals['item_subtotal'], 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between"><span class="text-muted">− Total Discounts</span><span>({{ number_format($this->totals['discount_amount'], 0, ',', '.') }})</span></div>
-                        <div class="flex justify-between"><span class="text-muted">+ External Cost</span><span>{{ number_format($this->totals['external_cost'], 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between font-semibold border-t border-[#eef1f5] pt-1"><span>DPP</span><span>{{ number_format($this->totals['dpp'], 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between"><span class="text-muted">VAT {{ number_format($this->totals['ppn_pct'], 0) }}% (PPN)</span><span>{{ number_format($this->totals['ppn'], 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between font-semibold"><span>Total Billing</span><span>{{ number_format($this->totals['total_billing'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between"><span class="text-muted">{{ t('Item Subtotal') }}</span><span>{{ number_format($this->totals['item_subtotal'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between"><span class="text-muted">− {{ t('Total Discounts') }}</span><span>({{ number_format($this->totals['discount_amount'], 0, ',', '.') }})</span></div>
+                        <div class="flex justify-between"><span class="text-muted">+ {{ t('External Cost') }}</span><span>{{ number_format($this->totals['external_cost'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between font-semibold border-t border-[#eef1f5] pt-1"><span>{{ t('DPP') }}</span><span>{{ number_format($this->totals['dpp'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between"><span class="text-muted">{{ str_replace(':pct', number_format($this->totals['ppn_pct'], 0), t('VAT :pct% (PPN)')) }}</span><span>{{ number_format($this->totals['ppn'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between font-semibold"><span>{{ t('Total Billing') }}</span><span>{{ number_format($this->totals['total_billing'], 0, ',', '.') }}</span></div>
                         @if ($this->totals['wht23'] > 0)
-                            <div class="flex justify-between text-[#5b21b6]"><span>WHT {{ number_format($this->totals['wht23_pct'], 0) }}% (PPh Service)</span><span>({{ number_format($this->totals['wht23'], 0, ',', '.') }})</span></div>
+                            <div class="flex justify-between text-[#5b21b6]"><span>{{ str_replace(':pct', number_format($this->totals['wht23_pct'], 0), t('WHT :pct% (PPh Service)')) }}</span><span>({{ number_format($this->totals['wht23'], 0, ',', '.') }})</span></div>
                         @endif
-                        <div class="flex justify-between font-bold text-accent border-t border-[#eef1f5] pt-1 text-[13px]"><span>Net Receivable</span><span>{{ number_format($this->totals['net_receivable'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between font-bold text-accent border-t border-[#eef1f5] pt-1 text-[13px]"><span>{{ t('Net Receivable') }}</span><span>{{ number_format($this->totals['net_receivable'], 0, ',', '.') }}</span></div>
                     </div>
                 </div>
 
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Order Notes</label>
+                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Order Notes') }}</label>
                     <textarea rows="3" @disabled($this->order->doc_status !== 'DRAFT') wire:change="updateHeader('notes', $event.target.value)"
-                        placeholder="Internal notes for Ops/PPIC..." class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">{{ $this->order->notes }}</textarea>
+                        placeholder="{{ t('Internal notes for Ops/PPIC...') }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">{{ $this->order->notes }}</textarea>
                 </div>
 
                 @if ($this->order->doc_status !== 'DRAFT')
-                    <div class="text-center text-xs text-[#1f8a4c] font-semibold bg-[#eaf7ee] border border-[#a9d9bb] rounded-md py-2.5">✓ Sudah di-confirm — isi terkunci</div>
+                    <div class="text-center text-xs text-[#1f8a4c] font-semibold bg-[#eaf7ee] border border-[#a9d9bb] rounded-md py-2.5">✓ {{ t('Confirmed — content locked') }}</div>
                 @endif
             </div>
 
@@ -767,13 +767,13 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             <div class="bg-white rounded-lg p-4 w-[620px] shadow-xl">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="text-sm font-bold text-navy">
-                        {{ $productPickerItemId ? 'Ganti Master Product baris ini' : 'Tambah Baris dari Master Product' }}
+                        {{ $productPickerItemId ? t("Replace this row's Master Product") : t('Add Row from Master Product') }}
                     </h3>
                     <button type="button" wire:click="closeProductPicker" class="text-muted hover:text-navy cursor-pointer">&#10005;</button>
                 </div>
 
                 <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="productSearch" autofocus
-                    placeholder="Ketik min. 2 huruf nama / kode produk / design no..." class="mb-2" />
+                    :placeholder="t('Type at least 2 letters of product name / code / design no...')" class="mb-2" />
 
                 <div class="max-h-80 overflow-y-auto tm-scroll">
                     @forelse ($this->productResults as $p)
@@ -783,9 +783,9 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                 <div class="min-w-0">
                                     <div class="text-xs font-semibold text-navy truncate">{{ $p->product_name }}</div>
                                     <div class="text-[10.5px] text-muted font-mono">
-                                        {{ $p->product_code }}@if ($p->design_no) &middot; design {{ $p->design_no }} @endif
+                                        {{ $p->product_code }}@if ($p->design_no) &middot; {{ t('design') }} {{ $p->design_no }} @endif
                                         @if ((int) $p->customer_id === (int) $this->order->customer_id)
-                                            <span class="text-[#16a34a] font-bold">&middot; produk customer ini</span>
+                                            <span class="text-[#16a34a] font-bold">&middot; {{ t("this customer's product") }}</span>
                                         @endif
                                     </div>
                                 </div>
@@ -797,7 +797,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                         </button>
                     @empty
                         <div class="text-[11px] text-muted text-center py-4">
-                            {{ mb_strlen(trim($productSearch)) < 2 ? 'Ketik min. 2 huruf untuk cari.' : 'Tidak ada produk cocok — buat dulu di Master Product.' }}
+                            {{ mb_strlen(trim($productSearch)) < 2 ? t('Type at least 2 letters to search.') : t('No matching product — create it first in Master Product.') }}
                         </div>
                     @endforelse
                 </div>

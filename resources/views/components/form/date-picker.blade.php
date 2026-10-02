@@ -50,7 +50,7 @@
 
     <div class="relative flex items-center">
         <input type="text" readonly x-bind:value="display" @click="toggle()"
-            placeholder="{{ $isDatetime ? \App\Support\Localization\Translator::t('shared_datepicker_placeholder_datetime', 'Pilih tanggal & jam...') : \App\Support\Localization\Translator::t('shared_datepicker_placeholder_date', 'Pilih tanggal...') }}"
+            placeholder="{{ $isDatetime ? t('Pick date & time...') : t('Pick a date...') }}"
             @if ($attributes->get('disabled')) disabled @endif
             class="{{ $triggerClass }}">
         <span class="absolute right-2.5 text-[13px] text-[#697386] pointer-events-none">{{ $isDatetime ? '🕒' : '📅' }}</span>
@@ -59,7 +59,7 @@
     <div x-show="open" x-cloak x-transition.origin.top.left @click.stop
         class="absolute z-30 top-full left-0 mt-1 w-[260px] bg-white border border-field-border rounded-lg shadow-lg overflow-hidden text-xs">
         <div class="px-3 py-2 bg-field-soft border-b border-field-border font-semibold text-[#374151]">
-            <span x-text="mode === 'datetime' ? @js(\App\Support\Localization\Translator::t('shared_datepicker_header_datetime', 'Pilih Tanggal & Jam')) : @js(\App\Support\Localization\Translator::t('shared_datepicker_header_date', 'Pilih Tanggal'))"></span>
+            <span x-text="mode === 'datetime' ? @js(t('Pick Date & Time')) : @js(t('Pick Date'))"></span>
         </div>
 
         <div class="p-2">
@@ -106,7 +106,7 @@
 
         <template x-if="mode === 'datetime'">
             <div class="flex items-center gap-2 px-3 py-2 border-t border-field-border">
-                <span class="text-[10px] font-semibold text-[#697386] uppercase">{{ \App\Support\Localization\Translator::t('shared_datepicker_hour_label', 'Jam') }}</span>
+                <span class="text-[10px] font-semibold text-[#697386] uppercase">{{ t('Time') }}</span>
                 <select x-model.number="selHour" @change="apply()" class="border border-field-border rounded px-1 py-0.5 text-[11px]">
                     <template x-for="h in 24" :key="h"><option :value="h - 1" x-text="String(h - 1).padStart(2, '0')"></option></template>
                 </select>
@@ -118,8 +118,8 @@
         </template>
 
         <div class="flex items-center justify-between gap-2 px-3 py-2 border-t border-field-border bg-[#f9fafb]">
-            <button type="button" @click="clearValue()" class="text-[11px] font-semibold text-[#697386] hover:text-[#374151] cursor-pointer">{{ \App\Support\Localization\Translator::t('shared_datepicker_clear', 'Clear') }}</button>
-            <button type="button" @click="today()" class="px-3 py-1 rounded bg-accent text-white text-[11px] font-semibold cursor-pointer hover:bg-[#1d4ed8]">{{ \App\Support\Localization\Translator::t('shared_datepicker_today', 'Hari Ini') }}</button>
+            <button type="button" @click="clearValue()" class="text-[11px] font-semibold text-[#697386] hover:text-[#374151] cursor-pointer">{{ t('Clear') }}</button>
+            <button type="button" @click="today()" class="px-3 py-1 rounded bg-accent text-white text-[11px] font-semibold cursor-pointer hover:bg-[#1d4ed8]">{{ t('Today') }}</button>
         </div>
     </div>
 

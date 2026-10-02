@@ -6,7 +6,6 @@ use App\Models\Sys\SysChatMessage;
 use App\Models\Sys\SysChatParticipant;
 use App\Models\Sys\SysNotification;
 use App\Models\Sys\SysUserMenu;
-use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -74,12 +73,12 @@ class UserMenu extends Component
         }
 
         if ($user->is_admin) {
-            return 'Administrator';
+            return t('Administrator');
         }
 
         $names = $user->groups()->pluck('group_name');
 
-        return $names->isNotEmpty() ? $names->implode(', ') : 'Pengguna';
+        return $names->isNotEmpty() ? $names->implode(', ') : t('User');
     }
 
     #[Computed]

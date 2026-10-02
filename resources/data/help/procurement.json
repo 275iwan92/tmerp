@@ -319,7 +319,7 @@
       },
       {
         "label": "Reading Result",
-        "en": "How well the system read the file: Siap dipilih, Perlu cek, Isi manual or Gagal dibaca, with a note. Filled by the system, read only.",
+        "en": "How well the system read the file: Ready to pick, Needs check, Manual entry or Read failed, with a note. Filled by the system, read only.",
         "id": "Seberapa baik sistem membaca file: Siap dipilih, Perlu cek, Isi manual atau Gagal dibaca, beserta catatan. Diisi sistem, hanya dibaca."
       },
       {

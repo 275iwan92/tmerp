@@ -39,7 +39,7 @@ class BankReconService
             'out' => $col(['debit', 'debet', 'amount_out', 'keluar', 'db']),
             'bal' => $col(['balance', 'saldo', 'running_balance']),
         ];
-        abort_if($map['date'] === null || ($map['in'] === null && $map['out'] === null), 422, 'Header CSV wajib memuat kolom tanggal dan kredit/debit.');
+        abort_if($map['date'] === null || ($map['in'] === null && $map['out'] === null), 422, t('The CSV header must contain a date column and a credit/debit column.'));
 
         $batch = 'IMP-'.now()->format('YmdHis');
         $num = function ($v): float {
@@ -121,7 +121,7 @@ class BankReconService
 
     public function match(FinBankStatement $line, int $voucherId, string $user): void
     {
-        abort_if(FinBankStatement::withoutGlobalScopes()->where('matched_voucher_id', $voucherId)->where('stmt_line_id', '<>', $line->stmt_line_id)->exists(), 422, 'Voucher ini sudah dipasangkan ke mutasi lain.');
+        abort_if(FinBankStatement::withoutGlobalScopes()->where('matched_voucher_id', $voucherId)->where('stmt_line_id', '<>', $line->stmt_line_id)->exists(), 422, t('This voucher is already matched to another statement line.'));
         $line->update(['match_status' => 'MATCHED', 'matched_voucher_id' => $voucherId, 'updated_by' => $user]);
     }
 
@@ -157,7 +157,7 @@ class BankReconService
     public function reconcile(int $accountId, string $user, string $origin = 'LIVE'): FinBankRecon
     {
         $last = FinBankStatement::where('account_id', $accountId)->orderByDesc('txn_date')->first();
-        abort_unless($last, 422, 'Belum ada mutasi rekening koran untuk akun ini.');
+        abort_unless($last, 422, t('No bank statement lines for this account yet.'));
         $stmt = $this->statementBalance($accountId) ?? 0.0;
         $code = FinAccount::withoutGlobalScopes()->find($accountId)->account_code;
         $book = $this->ledger->accountBalance($code, $last->txn_date->toDateString());

@@ -8,16 +8,16 @@ final class SpeedSuggestion
 {
     // Urutan = prioritas sumber (yang pertama menghasilkan angka menang).
     public const SOURCES = [
-        'V2_ACTUAL' => 'Realisasi WO v2',
-        'LEGACY_MACHINE' => 'Riwayat mesin (sistem lama)',
-        'LEGACY_PROCESS' => 'Riwayat proses (sistem lama)',
-        'SAME_MODEL' => 'Mesin model sama',
-        'PEER_RATIO' => 'Rasio mesin sejenis',
-        'MODEL_SPEC' => 'Spek model x efisiensi',
-        'PROCESS_DEFAULT' => 'Default proses',
+        'V2_ACTUAL' => 'v2 WO actuals',
+        'LEGACY_MACHINE' => 'Machine history (old system)',
+        'LEGACY_PROCESS' => 'Process history (old system)',
+        'SAME_MODEL' => 'Same machine model',
+        'PEER_RATIO' => 'Similar machine ratio',
+        'MODEL_SPEC' => 'Model spec x efficiency',
+        'PROCESS_DEFAULT' => 'Process default',
     ];
 
-    public const CONFIDENCES = ['HIGH' => 'Tinggi', 'MEDIUM' => 'Sedang', 'LOW' => 'Rendah'];
+    public const CONFIDENCES = ['HIGH' => 'High', 'MEDIUM' => 'Medium', 'LOW' => 'Low'];
 
     public function __construct(
         public readonly float $speed,

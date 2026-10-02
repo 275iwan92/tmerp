@@ -1,9 +1,9 @@
 @if ($showSortModal)
-    <x-ui.modal size="xs" :title="\App\Support\Localization\Translator::t('shared_sortmodal_title', 'Urutkan Data')" close="$set('showSortModal', false)">
+    <x-ui.modal size="xs" :title="t('Sort Data')" close="$set('showSortModal', false)">
         <div class="p-4">
-            <div class="text-[10px] font-bold text-muted uppercase mb-2">{{ \App\Support\Localization\Translator::t('shared_sortmodal_column_label', 'Kolom (dari yang tampil)') }}</div>
+            <div class="text-[10px] font-bold text-muted uppercase mb-2">{{ t('Column (from visible ones)') }}</div>
             <div class="border border-line rounded-md h-[180px] overflow-y-auto tm-scroll mb-3">
-                <div wire:click="$set('sortModalColumn', null)" class="px-2.5 py-1.5 text-[12px] cursor-pointer border-b border-line-soft {{ ! $sortModalColumn ? 'bg-info-soft font-semibold text-info-ink' : 'hover:bg-surface-alt' }}">{{ \App\Support\Localization\Translator::t('shared_sortmodal_unsorted', 'Tidak diurutkan') }}</div>
+                <div wire:click="$set('sortModalColumn', null)" class="px-2.5 py-1.5 text-[12px] cursor-pointer border-b border-line-soft {{ ! $sortModalColumn ? 'bg-info-soft font-semibold text-info-ink' : 'hover:bg-surface-alt' }}">{{ t('Not sorted') }}</div>
                 @foreach ($gridVisibleColumns as $key)
                     @continue(($columnDefs[$key]['sortable'] ?? true) === false)
                     <div wire:click="$set('sortModalColumn', '{{ $key }}')" wire:key="sort-{{ $key }}"

@@ -23,7 +23,7 @@ class UserActivity extends Component
         ['Customer Order', 'tm2sdi', 'co_order', 'co_no'],
         ['Purchase Requisition', 'tm2pur', 'pr_requisition', 'doc_no'],
         ['Purchase Order', 'tm2pur', 'po_order', 'doc_no'],
-        ['Penerimaan (PV)', 'tm2pur', 'pv_receipt', 'doc_no'],
+        ['Receipt (PV)', 'tm2pur', 'pv_receipt', 'doc_no'],
         ['Voucher', 'tm2acc', 'fin_voucher', 'voucher_number'],
         ['Work Order', 'tm2prd', 'prd_wo', 'wo_no'],
     ];

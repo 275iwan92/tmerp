@@ -35,7 +35,7 @@ class Sheet extends DevlibComponent
 
     public function source(): string
     {
-        return $this->source ?? 'tabel master (edit massal)';
+        return $this->source ?? 'master table (bulk edit)';
     }
 
     public function config(): array

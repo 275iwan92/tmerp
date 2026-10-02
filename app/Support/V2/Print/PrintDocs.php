@@ -8,6 +8,7 @@ use App\Models\Sys\SecUser;
 use App\Models\Sys\SysConstant;
 use App\Support\Branding\Brand;
 use App\Support\Branding\CompanyLogo;
+use App\Support\Localization\Dictionary;
 use App\Support\V2\Data\Concerns\FlowDocument;
 use Devlib\PrintDoc\Document;
 use Illuminate\Database\QueryException;
@@ -94,7 +95,8 @@ final class PrintDocs
             return;
         }
         self::$booted = true;
-        Document::labels(Labels::ID);
+        // Istilah cetak = kamus sys_dictionary konteks 'print' (dulu array Print\Labels; dipindah 2026-10-02).
+        Document::translateUsing(fn (string $en, string $lang) => Dictionary::find($en, 'print', $lang));
         Document::companyUsing(fn (bool $ppn) => self::company($ppn));
         Document::signersUsing(fn (string $type) => self::signers($type));
     }

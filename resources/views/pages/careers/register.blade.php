@@ -13,7 +13,7 @@ use Livewire\Component;
 // P1 -- Registrasi (recruitment_tier4.md §2), versi web pro. Field sesuai
 // instruksi user 2026-08-30: No. KTP, Nama (sesuai KTP), Email, No. HP,
 // Password. Akun tersimpan di Firestore (App\Services\Portal\CandidateAuthService).
-new #[Layout('layouts::portal')] #[Title('Daftar Akun')] class extends Component
+new #[Layout('layouts::portal')] #[Title('Chart of Accounts')] class extends Component
 {
     public string $national_id = '';
 
@@ -40,8 +40,8 @@ new #[Layout('layouts::portal')] #[Title('Daftar Akun')] class extends Component
             'phone' => ['required', 'min:9', 'max:15'],
             'password' => ['required', 'min:8', 'confirmed'],
         ], [
-            'national_id.digits' => 'No. KTP harus 16 digit angka.',
-            'email.regex' => 'Email harus punya domain lengkap, mis. nama@contoh.com.',
+            'national_id.digits' => t('ID Card No. must be 16 digits.'),
+            'email.regex' => t('Email must have a full domain, e.g. name@example.com.'),
         ]);
 
         try {
@@ -79,7 +79,7 @@ new #[Layout('layouts::portal')] #[Title('Daftar Akun')] class extends Component
         $regionCode = substr($value, 0, 4);
 
         if (! GeoCity::where('city_code', 'bps:'.$regionCode)->exists()) {
-            $fail('Kode wilayah pada No. KTP (4 digit awal) tidak dikenali.');
+            $fail(t('The region code in the ID Card No. (first 4 digits) is not recognized.'));
 
             return;
         }
@@ -92,7 +92,7 @@ new #[Layout('layouts::portal')] #[Title('Daftar Akun')] class extends Component
         }
 
         if ($month < 1 || $month > 12 || ! checkdate($month, $day, 2000)) {
-            $fail('Tanggal lahir pada No. KTP tidak valid.');
+            $fail(t('The birth date in the ID Card No. is not valid.'));
         }
     }
 };
@@ -102,49 +102,49 @@ new #[Layout('layouts::portal')] #[Title('Daftar Akun')] class extends Component
     @if ($registered)
         <div class="bg-white border border-[#e6e9ef] rounded-xl p-6 text-center">
             <p class="text-3xl mb-2">📧</p>
-            <h1 class="text-[16px] font-bold text-navy mb-2">Cek Email Anda</h1>
-            <p class="text-[13px] text-muted mb-4">Kami sudah kirim tautan verifikasi ke <b>{{ $email }}</b>. Verifikasi dulu sebelum mengirim lamaran.</p>
-            <a href="{{ route('careers.landing') }}" class="inline-block bg-navy text-white text-[13px] font-bold px-4 py-2 rounded-md">Lihat Lowongan</a>
+            <h1 class="text-[16px] font-bold text-navy mb-2">{{ t('Check Your Email') }}</h1>
+            <p class="text-[13px] text-muted mb-4">{{ t('We have sent a verification link to') }} <b>{{ $email }}</b>. {{ t('Verify it before submitting an application.') }}</p>
+            <a href="{{ route('careers.landing') }}" class="inline-block bg-navy text-white text-[13px] font-bold px-4 py-2 rounded-md">{{ t('View Vacancies') }}</a>
         </div>
     @else
         <div class="bg-white border border-[#e6e9ef] rounded-xl p-6">
-            <h1 class="text-[18px] font-bold text-navy mb-1">Buat Akun</h1>
-            <p class="text-[12.5px] text-muted mb-5">Satu akun untuk melamar semua posisi &amp; melacak status lamaran Anda.</p>
+            <h1 class="text-[18px] font-bold text-navy mb-1">{{ t('Create Account') }}</h1>
+            <p class="text-[12.5px] text-muted mb-5">{{ t('One account to apply for every position & track the status of your applications.') }}</p>
 
             <form wire:submit="register" class="space-y-3.5">
                 <div>
-                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">No. KTP</label>
-                    <input type="text" wire:model="national_id" maxlength="16" inputmode="numeric" placeholder="16 digit sesuai KTP" class="w-full border border-[#d7dbe2] rounded-md px-3 py-2 text-[13px]">
+                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">{{ t('ID Card No.') }}</label>
+                    <input type="text" wire:model="national_id" maxlength="16" inputmode="numeric" placeholder="{{ t('16 digits as on the ID card') }}" class="w-full border border-[#d7dbe2] rounded-md px-3 py-2 text-[13px]">
                     @error('national_id') <p class="text-[11px] text-[#a3241f] mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">Nama Lengkap (sesuai KTP)</label>
+                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">{{ t('Full Name (as on ID card)') }}</label>
                     <input type="text" wire:model="name" class="w-full border border-[#d7dbe2] rounded-md px-3 py-2 text-[13px]">
                     @error('name') <p class="text-[11px] text-[#a3241f] mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">Email</label>
+                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">{{ t('Email') }}</label>
                     <input type="email" wire:model="email" class="w-full border border-[#d7dbe2] rounded-md px-3 py-2 text-[13px]">
                     @error('email') <p class="text-[11px] text-[#a3241f] mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">No. HP / Smartphone</label>
+                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">{{ t('Mobile No. / Smartphone') }}</label>
                     <input type="text" wire:model="phone" placeholder="08xxxxxxxxxx" class="w-full border border-[#d7dbe2] rounded-md px-3 py-2 text-[13px]">
                     @error('phone') <p class="text-[11px] text-[#a3241f] mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">Password</label>
+                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">{{ t('Password') }}</label>
                     <input type="password" wire:model="password" class="w-full border border-[#d7dbe2] rounded-md px-3 py-2 text-[13px]">
                     @error('password') <p class="text-[11px] text-[#a3241f] mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">Ulangi Password</label>
+                    <label class="block text-[11.5px] font-bold text-[#495166] mb-1">{{ t('Repeat Password') }}</label>
                     <input type="password" wire:model="password_confirmation" class="w-full border border-[#d7dbe2] rounded-md px-3 py-2 text-[13px]">
                 </div>
-                <button type="submit" class="w-full bg-navy text-white text-[13px] font-bold py-2.5 rounded-md hover:opacity-90">Daftar</button>
+                <button type="submit" class="w-full bg-navy text-white text-[13px] font-bold py-2.5 rounded-md hover:opacity-90">{{ t('Register') }}</button>
             </form>
 
-            <p class="text-[12px] text-muted text-center mt-4">Sudah punya akun? <a href="{{ route('careers.login') }}" class="text-accent font-bold">Masuk</a></p>
+            <p class="text-[12px] text-muted text-center mt-4">{{ t('Already have an account?') }} <a href="{{ route('careers.login') }}" class="text-accent font-bold">{{ t('Sign In') }}</a></p>
         </div>
     @endif
 </div>

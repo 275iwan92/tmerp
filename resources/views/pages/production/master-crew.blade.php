@@ -160,21 +160,21 @@ new #[Title('Master Crew — TELASIH MAKMUR ERP')] class extends Component
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
         <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total Crew" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
-            <x-grid.stat-box tone="extra" label="Proses Belum Ter-link" :value="$this->statUnlinked" />
-            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
+            <x-grid.stat-box tone="total" :label="t('Total Crew')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" :label="t('Active')" :value="$this->statActive" />
+            <x-grid.stat-box tone="extra" :label="t('Process Not Linked')" :value="$this->statUnlinked" />
+            <x-grid.stat-box tone="critical" :label="t('Inactive')" :value="$this->statInactive" />
         </x-grid.stat-row>
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
-            Data dimigrasi dari sistem lama. Kolom <b>Proses</b> kosong berarti label proses lama tidak persis cocok dengan Master Proses saat ini — cek catatan di form edit, lalu pilih proses yang sesuai.
+            {{ t('Data migrated from the old system.') }} {!! t('An empty <b>Process</b> column means the old process label does not exactly match the current Process Master — check the notes in the edit form, then choose the right process.') !!}
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama crew…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search crew name…') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -187,15 +187,15 @@ new #[Title('Master Crew — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Crew</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[160px]">Proses Default</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Crew') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[160px]">{{ t('Default Process') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->crews as $c)
-                            <tr wire:key="crew-{{ $c->id_crew }}" wire:dblclick="openModal('edit', {{ $c->id_crew }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
+                            <tr wire:key="crew-{{ $c->id_crew }}" wire:dblclick="openModal('edit', {{ $c->id_crew }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open detail') }}">
                                 <x-grid.identity-cell :id="$c->id_crew" :name="$c->crew_name" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     @if ($c->process)
@@ -205,17 +205,17 @@ new #[Title('Master Crew — TELASIH MAKMUR ERP')] class extends Component
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $c->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $c->activate ? t('ACTIVE') : t('INACTIVE') }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openModal('edit', {{ $c->id_crew }})" />
-                                    <x-grid.action-icon :active="$c->activate" :title="$c->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $c->id_crew }})"
-                                        :confirm="($c->activate ? 'Nonaktifkan' : 'Aktifkan').' crew '.$c->crew_name.'?'"
+                                    <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="openModal('edit', {{ $c->id_crew }})" />
+                                    <x-grid.action-icon :active="$c->activate" :title="$c->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $c->id_crew }})"
+                                        :confirm="str_replace(':name', $c->crew_name, $c->activate ? t('Deactivate crew :name?') : t('Activate crew :name?'))"
                                         :variant="$c->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="4" message="Tidak ada." />
+                            <x-grid.empty-row :colspan="4" :message="t('None.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -227,25 +227,25 @@ new #[Title('Master Crew — TELASIH MAKMUR ERP')] class extends Component
         @if ($panel === 'form')
             <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
                 <div class="text-sm font-bold">
-                    {{ $mode === 'edit' ? 'Edit Crew' : 'Crew Baru' }}
+                    {{ $mode === 'edit' ? t('Edit Crew') : t('New Crew') }}
                 </div>
             </div>
             <form wire:submit="save" class="bg-white border border-t-0 border-[#d7dbe2] p-5 flex flex-col gap-3">
-                    <x-form.input label="Nama Crew *" name="crew_name" wire:model="crew_name" placeholder="mis. Ahmad Fauzi" />
+                    <x-form.input :label="t('Crew Name').' *'" name="crew_name" wire:model="crew_name" :placeholder="t('e.g. Ahmad Fauzi')" />
 
-                    <x-form.select label="Proses Default" wire:model="process_id"
+                    <x-form.select :label="t('Default Process')" wire:model="process_id"
                         :options="$this->processOptions->pluck('process_name', 'id_process')" :selected="$process_id" />
 
                     @if ($legacy_employee_code)
-                        <x-form.input label="Kode Karyawan Lama (jejak migrasi)" wire:model="legacy_employee_code" disabled />
+                        <x-form.input :label="t('Old Employee Code (migration trace)')" wire:model="legacy_employee_code" disabled />
                     @endif
 
-                    <x-form.textarea label="Catatan" wire:model="notes" rows="3" placeholder="Catatan tambahan" />
-                    <x-form.checkbox label="Aktif" wire:model="crew_activate" />
+                    <x-form.textarea :label="t('Notes')" wire:model="notes" rows="3" :placeholder="t('Additional notes')" />
+                    <x-form.checkbox :label="t('Active')" wire:model="crew_activate" />
 
                     <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
-                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
+                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
                     </div>
             </form>
         @endif

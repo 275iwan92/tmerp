@@ -27,11 +27,11 @@
             @endif
             <div class="co-addr">
                 {!! nl2br(e($company?->address ?? '—')) !!}
-                @if ($company?->phone) <br>Telp {{ $company->phone }} @endif
+                @if ($company?->phone) <br>{{ t('Tel.') }} {{ $company->phone }} @endif
                 @if ($company?->email) · {{ $company->email }} @endif
             </div>
             @if ($ppn)
-                <div class="co-npwp" x-show="ppnKop" x-cloak>NPWP {{ $company?->npwp_number ?? \App\Support\Branding\Brand::companyNpwp() ?? '—' }} · a.n. {{ $legalName }}</div>
+                <div class="co-npwp" x-show="ppnKop" x-cloak>NPWP {{ $company?->npwp_number ?? \App\Support\Branding\Brand::companyNpwp() ?? '—' }} · {{ t('registered to') }} {{ $legalName }}</div>
             @endif
         </div>
     </div>

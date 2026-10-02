@@ -7,7 +7,7 @@ class Select extends Field
 {
     public function __construct(
         public array $options = [],
-        public string $searchPlaceholder = 'Ketik untuk mencari...',
+        public string $searchPlaceholder = 'Type to search...',
         string $name = '',
         string $label = '',
         ?string $tooltip = null,

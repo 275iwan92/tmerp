@@ -2,22 +2,20 @@
 
 namespace App\View\Components\Ui;
 
-use App\Support\Localization\Translator;
-
 // Tombol baku. preset = aksi umum yang labelnya LOCKED (CLAUDE.md §3 "Tombol
 // aksi"): label, variant & type ikut preset, jadi tak ada layar yang bisa
-// menulis "Save"/"Simpan Data"/"OK" sendiri-sendiri.
+// menulis "Save"/"Simpan Data"/"OK" sendiri-sendiri. Label English, tampil lewat kamus sys_dictionary.
 class Button extends UiComponent
 {
     public const PRESETS = [
-        'save' => ['variant' => 'primary', 'type' => 'submit', 'key' => 'shared_btn_save', 'id' => 'Simpan', 'en' => 'Save'],
-        'cancel' => ['variant' => 'secondary', 'type' => 'button', 'key' => 'shared_btn_cancel', 'id' => 'Batal', 'en' => 'Cancel'],
-        'close' => ['variant' => 'secondary', 'type' => 'button', 'key' => 'shared_btn_close', 'id' => 'Tutup', 'en' => 'Close'],
-        'confirm' => ['variant' => 'success', 'type' => 'button', 'key' => 'shared_btn_confirm', 'id' => 'Confirm', 'en' => 'Confirm'],
-        'apply' => ['variant' => 'navy', 'type' => 'button', 'key' => 'shared_btn_apply', 'id' => 'Terapkan', 'en' => 'Apply'],
-        'delete' => ['variant' => 'danger', 'type' => 'button', 'key' => 'shared_btn_delete', 'id' => 'Hapus', 'en' => 'Delete'],
+        'save' => ['variant' => 'primary', 'type' => 'submit', 'label' => 'Save'],
+        'cancel' => ['variant' => 'secondary', 'type' => 'button', 'label' => 'Cancel'],
+        'close' => ['variant' => 'secondary', 'type' => 'button', 'label' => 'Close'],
+        'confirm' => ['variant' => 'success', 'type' => 'button', 'label' => 'Confirm'],
+        'apply' => ['variant' => 'navy', 'type' => 'button', 'label' => 'Apply'],
+        'delete' => ['variant' => 'danger', 'type' => 'button', 'label' => 'Delete'],
         // griduistandard.md §6: label tombol tambah level grid selalu ini.
-        'new' => ['variant' => 'navy', 'type' => 'button', 'key' => null, 'id' => '+ New Record', 'en' => '+ New Record'],
+        'new' => ['variant' => 'navy', 'type' => 'button', 'label' => '+ New Record', 'fixed' => true],
     ];
 
     public string $label = '';
@@ -40,8 +38,7 @@ class Button extends UiComponent
             $p = self::PRESETS[$preset];
             $this->variant = $variant !== 'primary' ? $variant : $p['variant'];
             $this->type ??= $p['type'];
-            $fallback = Translator::lang() === 'en' ? $p['en'] : $p['id'];
-            $this->label = $p['key'] ? Translator::t($p['key'], $fallback) : $fallback;
+            $this->label = empty($p['fixed']) ? t($p['label']) : $p['label'];
         }
 
         $this->type ??= 'button';

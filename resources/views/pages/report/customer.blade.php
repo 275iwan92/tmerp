@@ -92,7 +92,7 @@ new #[Layout('layouts::report')] #[Title('Customer 360 — TELASIH MAKMUR ERP')]
     {
         // Alias `lines` TIDAK boleh dipakai -- kata tercadang di MySQL 8.
         return DB::connection('tm2sdi')->select('
-            SELECT COALESCE(d.legacy_item_code, "(tanpa kode)") item, COUNT(*) line_count,
+            SELECT COALESCE(d.legacy_item_code, "(no code)") item, COUNT(*) line_count,
                    COALESCE(SUM(d.qty),0) qty, COALESCE(SUM(d.qty_unitprice),0) v
             FROM co_order_legacy_detail d
             JOIN co_order_legacy h ON h.id_co_legacy = d.co_legacy_id
@@ -147,16 +147,16 @@ new #[Layout('layouts::report')] #[Title('Customer 360 — TELASIH MAKMUR ERP')]
 <div class="p-4 sm:p-6" style="background:var(--content-bg)">
     <div class="flex flex-wrap items-center gap-3 mb-4">
         <a href="{{ route('report.sales', ['th' => $year]) }}" class="text-[12px] font-semibold hover:underline" style="color:var(--sh-accent)">
-            <i class="fa-solid fa-arrow-left"></i> Rincian Penjualan
+            <i class="fa-solid fa-arrow-left"></i> {{ t('Sales Details') }}
         </a>
-        <h2 class="font-bold text-[16px]" style="color:var(--sh-ink-strong)">{{ $this->profile->customer_name ?? 'Customer #' . $customer }}</h2>
+        <h2 class="font-bold text-[16px]" style="color:var(--sh-ink-strong)">{{ $this->profile->customer_name ?? t('Customer').' #' . $customer }}</h2>
         @if ($this->profile?->customer_code)
             <x-report.badge tone="info">{{ $this->profile->customer_code }}</x-report.badge>
         @endif
 
         <div class="ml-auto">
             <select wire:model.live="year" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
-                <option value="">Semua tahun</option>
+                <option value="">{{ t('All years') }}</option>
                 @foreach ($this->years as $y)
                     <option value="{{ $y }}">{{ $y }}</option>
                 @endforeach
@@ -165,44 +165,44 @@ new #[Layout('layouts::report')] #[Title('Customer 360 — TELASIH MAKMUR ERP')]
     </div>
 
     <div class="[display:grid] grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4">
-        <x-report.kpi label="Total Nilai Order" icon="fa-solid fa-file-invoice" tone="blue"
-            :value="$miliar($this->lifetime['co_value'])" :note="number_format($this->lifetime['co_docs']) . ' customer order'" />
-        <x-report.kpi label="Total Dikirim" icon="fa-solid fa-truck-fast" tone="green"
-            :value="$miliar($this->lifetime['sj_value'])" :note="number_format($this->lifetime['sj_docs']) . ' surat jalan'" />
-        <x-report.kpi label="Total Ditagih" icon="fa-solid fa-receipt" tone="violet"
-            :value="$miliar($this->lifetime['inv_value'])" :note="number_format($this->lifetime['inv_docs']) . ' invoice'" />
-        <x-report.kpi label="Rentang Hubungan" icon="fa-solid fa-calendar-days" tone="amber"
+        <x-report.kpi :label="t('Total Order Value')" icon="fa-solid fa-file-invoice" tone="blue"
+            :value="$miliar($this->lifetime['co_value'])" :note="str_replace(':n', number_format($this->lifetime['co_docs']), t(':n customer orders'))" />
+        <x-report.kpi :label="t('Total Delivered')" icon="fa-solid fa-truck-fast" tone="green"
+            :value="$miliar($this->lifetime['sj_value'])" :note="str_replace(':n', number_format($this->lifetime['sj_docs']), t(':n delivery notes'))" />
+        <x-report.kpi :label="t('Total Invoiced')" icon="fa-solid fa-receipt" tone="violet"
+            :value="$miliar($this->lifetime['inv_value'])" :note="str_replace(':n', number_format($this->lifetime['inv_docs']), t(':n invoices'))" />
+        <x-report.kpi :label="t('Relationship Span')" icon="fa-solid fa-calendar-days" tone="amber"
             :value="($this->lifetime['first_date'] ? substr($this->lifetime['first_date'], 0, 4) : '—') . ' – ' . ($this->lifetime['last_date'] ? substr($this->lifetime['last_date'], 0, 4) : '—')"
-            note="order pertama sampai terakhir" />
+            :note="t('first to last order')" />
     </div>
 
     <div class="[display:grid] grid-cols-1 lg:grid-cols-2 gap-3.5 mb-4">
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-            <h3 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Tren Order Tahunan</h3>
+            <h3 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Yearly Order Trend') }}</h3>
             <x-report.svg-bars :height="220" :labels="array_map(fn ($t) => (string) $t['year'], $this->yearlyTrend)" :series="[
                 ['color' => 'var(--sh-accent)', 'data' => array_column($this->yearlyTrend, 'value')],
             ]" />
         </div>
 
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-            <h3 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Produk Terbanyak Dipesan</h3>
+            <h3 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Top Ordered Products') }}</h3>
             <table class="w-full text-[12px]">
                 <thead><tr class="text-left border-b" style="border-color:var(--sh-border)">
-                    <th class="py-1.5 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Kode Item</th>
-                    <th class="py-1.5 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Baris</th>
-                    <th class="py-1.5 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Qty</th>
-                    <th class="py-1.5 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
+                    <th class="py-1.5 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Item Code') }}</th>
+                    <th class="py-1.5 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Lines') }}</th>
+                    <th class="py-1.5 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Qty') }}</th>
+                    <th class="py-1.5 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Value') }}</th>
                 </tr></thead>
                 <tbody>
                     @forelse ($this->topProducts as $p)
                         <tr class="border-b" style="border-color:var(--sh-border)">
-                            <td class="py-1.5 truncate max-w-[220px]" style="color:var(--sh-ink)">{{ $p->item }}</td>
+                            <td class="py-1.5 truncate max-w-[220px]" style="color:var(--sh-ink)">{{ $p->item === '(no code)' ? t('(no code)') : $p->item }}</td>
                             <td class="py-1.5 text-right tabular-nums" style="color:var(--sh-ink)">{{ number_format($p->line_count) }}</td>
                             <td class="py-1.5 text-right tabular-nums" style="color:var(--sh-ink)">{{ number_format((float) $p->qty) }}</td>
                             <td class="py-1.5 text-right tabular-nums font-semibold" style="color:var(--sh-ink-strong)">{{ $rp($p->v) }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="py-6 text-center" style="color:var(--sh-muted)">Belum ada data.</td></tr>
+                        <tr><td colspan="4" class="py-6 text-center" style="color:var(--sh-muted)">{{ t('No data yet.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -212,18 +212,18 @@ new #[Layout('layouts::report')] #[Title('Customer 360 — TELASIH MAKMUR ERP')]
     {{-- Daftar order + rantai dokumennya --}}
     <div class="rounded-2xl border overflow-hidden" style="background:var(--sh-surface);border-color:var(--sh-border)">
         <div class="px-4 py-3 border-b" style="border-color:var(--sh-border);background:var(--content-bg)">
-            <h3 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">Riwayat Customer Order</h3>
-            <p class="text-[11px] mt-0.5" style="color:var(--sh-muted)">Klik satu baris untuk melihat rantai dokumennya: order → surat jalan → invoice.</p>
+            <h3 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">{{ t('Customer Order History') }}</h3>
+            <p class="text-[11px] mt-0.5" style="color:var(--sh-muted)">{{ t('Click a row to see its document chain: order → delivery note → invoice.') }}</p>
         </div>
         <table class="w-full text-[12px]">
             <thead>
                 <tr class="text-left">
-                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">No. CO</th>
-                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Tanggal</th>
-                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">PO Customer</th>
-                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Sales</th>
-                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Status</th>
-                    <th class="py-2 px-3 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('CO No.') }}</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Date') }}</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Customer PO') }}</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Sales') }}</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Status') }}</th>
+                    <th class="py-2 px-3 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Value') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -247,46 +247,46 @@ new #[Layout('layouts::report')] #[Title('Customer 360 — TELASIH MAKMUR ERP')]
                                 @forelse ($this->orderChain as $chain)
                                     <div class="mb-3 pb-3 border-b last:border-0 last:mb-0 last:pb-0" style="border-color:var(--sh-border)">
                                         <div class="font-semibold text-[12.5px] mb-1.5" style="color:var(--sh-ink-strong)">
-                                            {{ $chain['line']->legacy_item_code ?: '(tanpa kode item)' }}
+                                            {{ $chain['line']->legacy_item_code ?: t('(no item code)') }}
                                             <span class="font-normal" style="color:var(--sh-muted)">
-                                                — qty {{ number_format((float) $chain['line']->qty) }} {{ $chain['line']->uom_code }},
+                                                — {{ mb_strtolower(t('Qty')) }} {{ number_format((float) $chain['line']->qty) }} {{ $chain['line']->uom_code }},
                                                 {{ $rp($chain['line']->qty_unitprice) }}
                                             </span>
                                         </div>
 
                                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
-                                                <p class="text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Surat Jalan</p>
+                                                <p class="text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">{{ t('Delivery Note') }}</p>
                                                 @forelse ($chain['deliveries'] as $d)
                                                     <div class="flex justify-between text-[11.5px] py-0.5" style="color:var(--sh-ink)">
                                                         <span>{{ $d->no_dok }} <span style="color:var(--sh-muted)">{{ $d->tgl }}</span></span>
                                                         <span class="tabular-nums">{{ number_format((float) $d->qty) }}</span>
                                                     </div>
                                                 @empty
-                                                    <p class="text-[11.5px]" style="color:var(--sh-muted)">Belum ada pengiriman.</p>
+                                                    <p class="text-[11.5px]" style="color:var(--sh-muted)">{{ t('No deliveries yet.') }}</p>
                                                 @endforelse
                                             </div>
                                             <div>
-                                                <p class="text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Invoice</p>
+                                                <p class="text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">{{ t('Invoice') }}</p>
                                                 @forelse ($chain['invoices'] as $inv)
                                                     <div class="flex justify-between text-[11.5px] py-0.5" style="color:var(--sh-ink)">
                                                         <span>{{ $inv->no_dok }} <span style="color:var(--sh-muted)">{{ $inv->tgl }}</span></span>
                                                         <span class="tabular-nums">{{ $rp($inv->nilai) }}</span>
                                                     </div>
                                                 @empty
-                                                    <p class="text-[11.5px]" style="color:var(--sh-muted)">Belum ditagihkan.</p>
+                                                    <p class="text-[11.5px]" style="color:var(--sh-muted)">{{ t('Not invoiced yet.') }}</p>
                                                 @endforelse
                                             </div>
                                         </div>
                                     </div>
                                 @empty
-                                    <p class="text-[12px] py-2" style="color:var(--sh-muted)">Order ini tidak punya baris item.</p>
+                                    <p class="text-[12px] py-2" style="color:var(--sh-muted)">{{ t('This order has no item lines.') }}</p>
                                 @endforelse
                             </td>
                         </tr>
                     @endif
                 @empty
-                    <tr><td colspan="6" class="py-8 text-center" style="color:var(--sh-muted)">Tidak ada order pada periode ini.</td></tr>
+                    <tr><td colspan="6" class="py-8 text-center" style="color:var(--sh-muted)">{{ t('No orders in this period.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

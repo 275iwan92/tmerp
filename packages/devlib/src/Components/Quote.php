@@ -19,7 +19,7 @@ class Quote extends DevlibComponent
 
     public function source(): string
     {
-        return 'media/text/*.txt (satu baris = "teks | penulis")';
+        return 'media/text/*.txt (one line = "text | author")';
     }
 
     public function render()

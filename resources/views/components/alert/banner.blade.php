@@ -15,7 +15,7 @@ logika PHP yg berubah di controller/Livewire pemanggil. --}}
             } }}"></i>
         </span>
         <span>{{ $message }}</span>
-        <button type="button" class="close" @click="show = false" aria-label="Tutup pesan">
+        <button type="button" class="close" @click="show = false" aria-label="{{ t('Close message') }}">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>

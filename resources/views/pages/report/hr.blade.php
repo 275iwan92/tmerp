@@ -19,7 +19,7 @@ use Livewire\Component;
 // di kolom). Ini layar Direksi-only (module:MGMT), jadi menampilkan TOTAL
 // agregat gaji perusahaan konsisten dengan aturan "HR officer cuma tahu
 // total keseluruhan, Direksi boleh lihat" (project_payroll_foundation_built).
-new #[Layout('layouts::report')] #[Title('Laporan SDM & Payroll — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('HR & Payroll Report — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Computed]
     public function headcount(): array
@@ -109,31 +109,31 @@ new #[Layout('layouts::report')] #[Title('Laporan SDM & Payroll — TELASIH MAKM
 
 <div class="p-4 sm:p-6" style="background:var(--content-bg)">
     <div class="mb-5">
-        <h1 class="text-[22px] font-extrabold -tracking-wide" style="color:var(--sh-ink-strong)">Laporan SDM &amp; Payroll</h1>
-        <p class="text-[13px] mt-0.5" style="color:var(--sh-muted)">Headcount, cuti, dan ringkasan penggajian — CV. Telasih Makmur.</p>
+        <h1 class="text-[22px] font-extrabold -tracking-wide" style="color:var(--sh-ink-strong)">{{ t('HR & Payroll Report') }}</h1>
+        <p class="text-[13px] mt-0.5" style="color:var(--sh-muted)">{{ t('Headcount, leave, and payroll summary') }} — CV. Telasih Makmur.</p>
     </div>
 
     <div class="[display:grid] grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4">
-        <x-report.kpi label="Pegawai Aktif Bekerja" icon="fa-solid fa-users" tone="blue" :value="number_format($this->headcount['active'])" :note="$this->headcount['total'].' total tercatat'" />
-        <x-report.kpi label="Sedang Cuti / Dirumahkan" icon="fa-solid fa-house-user" tone="amber" :value="number_format($this->headcount['cuti'] + $this->headcount['dirumahkan'])" note="Tidak aktif bekerja sementara" />
-        <x-report.kpi label="Payroll Terakhir (Net)" icon="fa-solid fa-money-check-dollar" tone="green" :value="$miliar($this->latestRunNet)" :note="$this->latestRun ? $this->latestRun->period_start->format('M Y').' · '.$this->latestRun->run_status : 'Belum ada run'" />
-        <x-report.kpi label="Pengajuan Cuti Pending" icon="fa-solid fa-triangle-exclamation" tone="danger" :value="number_format($this->pendingLeave)" note="Menunggu approval HR" />
+        <x-report.kpi :label="t('Actively Working Employees')" icon="fa-solid fa-users" tone="blue" :value="number_format($this->headcount['active'])" :note="str_replace(':n', $this->headcount['total'], t(':n total recorded'))" />
+        <x-report.kpi :label="t('On Leave / Furloughed')" icon="fa-solid fa-house-user" tone="amber" :value="number_format($this->headcount['cuti'] + $this->headcount['dirumahkan'])" :note="t('Temporarily not working')" />
+        <x-report.kpi :label="t('Latest Payroll (Net)')" icon="fa-solid fa-money-check-dollar" tone="green" :value="$miliar($this->latestRunNet)" :note="$this->latestRun ? $this->latestRun->period_start->format('M Y').' · '.$this->latestRun->run_status : t('No run yet')" />
+        <x-report.kpi :label="t('Pending Leave Requests')" icon="fa-solid fa-triangle-exclamation" tone="danger" :value="number_format($this->pendingLeave)" :note="t('Awaiting HR approval')" />
     </div>
 
     <div class="[display:grid] grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-3.5 mb-4">
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-            <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Pegawai Aktif per Departemen (Top 8)</h2>
+            <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Active Employees per Department (Top 8)') }}</h2>
             @foreach ($this->byDepartment as $d)
-                <x-report.progress-row :label="$d['name']" :pct="$this->headcount['active'] > 0 ? round($d['n'] / $this->headcount['active'] * 100, 1) : 0" :value="$d['n'].' org'" color="var(--sh-accent)" />
+                <x-report.progress-row :label="$d['name']" :pct="$this->headcount['active'] > 0 ? round($d['n'] / $this->headcount['active'] * 100, 1) : 0" :value="str_replace(':n', $d['n'], t(':n ppl'))" color="var(--sh-accent)" />
             @endforeach
         </div>
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-            <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Riwayat Payroll Run</h2>
+            <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Payroll Run History') }}</h2>
             <table class="w-full text-[12px]">
                 <thead>
                     <tr class="text-left border-b" style="border-color:var(--sh-border)">
-                        <th class="pb-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Periode</th>
-                        <th class="pb-2 font-bold uppercase text-[10px] text-right" style="color:var(--sh-muted)">Status</th>
+                        <th class="pb-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Period') }}</th>
+                        <th class="pb-2 font-bold uppercase text-[10px] text-right" style="color:var(--sh-muted)">{{ t('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -143,7 +143,7 @@ new #[Layout('layouts::report')] #[Title('Laporan SDM & Payroll — TELASIH MAKM
                             <td class="py-2 text-right"><x-report.badge :tone="$statusBadge($r['status'])">{{ $r['status'] }}</x-report.badge></td>
                         </tr>
                     @empty
-                        <tr><td colspan="2" class="py-3 text-center" style="color:var(--sh-muted)">Belum ada payroll run.</td></tr>
+                        <tr><td colspan="2" class="py-3 text-center" style="color:var(--sh-muted)">{{ t('No payroll runs yet.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -151,12 +151,12 @@ new #[Layout('layouts::report')] #[Title('Laporan SDM & Payroll — TELASIH MAKM
     </div>
 
     <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-        <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Cuti/Izin Disetujui Tahun Ini per Jenis</h2>
+        <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Leave/Permits Approved This Year by Type') }}</h2>
         <div class="flex flex-wrap gap-2">
             @forelse ($this->leaveByType as $l)
                 <span class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold" style="background:var(--sh-surface-alt, var(--content-bg));border:1px solid var(--sh-border);color:var(--sh-ink)">{{ $l['type'] }} <b style="color:var(--sh-accent)">{{ $l['n'] }}</b></span>
             @empty
-                <p class="text-[12px]" style="color:var(--sh-muted)">Belum ada cuti/izin disetujui tahun ini.</p>
+                <p class="text-[12px]" style="color:var(--sh-muted)">{{ t('No leave/permits approved this year yet.') }}</p>
             @endforelse
         </div>
     </div>

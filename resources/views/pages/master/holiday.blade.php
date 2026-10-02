@@ -13,7 +13,7 @@ use Livewire\Component;
 // Natal) -- hari libur lunar (Idul Fitri dst, tanggal beda tiap tahun,
 // resmi lewat SKB 3 Menteri) SENGAJA belum diisi, tambahkan di sini begitu
 // kalender resmi tahun berjalan terbit.
-new #[Title('Master Hari Libur — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Holiday Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasSpreadsheetGrid;
 
@@ -25,10 +25,10 @@ new #[Title('Master Hari Libur — TELASIH MAKMUR ERP')] class extends Component
     protected function spreadsheetColumns(): array
     {
         return [
-            'holiday_date' => ['label' => 'Tanggal (YYYY-MM-DD)', 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
-            'holiday_name' => ['label' => 'Nama Hari Libur', 'type' => 'text', 'required' => true],
-            'holiday_type' => ['label' => 'Jenis', 'type' => 'select', 'options' => ['NATIONAL', 'COMPANY']],
-            'activate' => ['label' => 'Aktif', 'type' => 'boolean'],
+            'holiday_date' => ['label' => t('Date (YYYY-MM-DD)'), 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
+            'holiday_name' => ['label' => t('Holiday Name'), 'type' => 'text', 'required' => true],
+            'holiday_type' => ['label' => t('Type'), 'type' => 'select', 'options' => ['NATIONAL', 'COMPANY']],
+            'activate' => ['label' => t('Active'), 'type' => 'boolean'],
         ];
     }
 
@@ -97,11 +97,11 @@ new #[Title('Master Hari Libur — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1100px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="2">
-            <x-grid.stat-box tone="total" label="Total Hari Libur" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Nasional" :value="$this->statNational" />
+            <x-grid.stat-box tone="total" :label="t('Total Holidays')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" :label="t('National')" :value="$this->statNational" />
         </x-grid.stat-row>
 
-        <p class="text-[11px] text-muted mb-3">Hari libur tanggal-tetap Masehi sudah diisi. Hari libur lunar (Idul Fitri/Idul Adha/Nyepi/Imlek/Waisak/dst) tanggalnya beda tiap tahun — tambah manual lewat "+ Baris" begitu kalender resmi tahun berjalan terbit.</p>
+        <p class="text-[11px] text-muted mb-3">{{ t('Fixed-date Gregorian holidays are already filled in.') }} {{ t('Lunar holidays (Eid al-Fitr/Eid al-Adha/Nyepi/Chinese New Year/Vesak/etc.) fall on different dates each year — add them by hand via "+ Row" once the official calendar for the current year is published.') }}</p>
 
         <x-grid.spreadsheet-table
             grid-key="{{ $this->spreadsheetKey() }}"

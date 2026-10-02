@@ -9,9 +9,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProdProductAcc extends Model
 {
     // Kolom master card: ACC E-mail (desain lewat e-mail), ACC Digital (sample cetak plat CTP), Box Polos (sample bentuk sheet).
-    public const TYPES = ['EMAIL' => 'ACC E-mail (desain)', 'DIGITAL' => 'ACC Digital Artwork', 'SAMPLE' => 'ACC Sample Bentuk (box polos)'];
+    // Disimpan = kode (kunci); label English, tampil lewat typeOptions() / channelOptions() (kamus t()).
+    public const TYPES = ['EMAIL' => 'ACC E-mail (design)', 'DIGITAL' => 'ACC Digital Artwork', 'SAMPLE' => 'ACC Shape Sample (plain box)'];
 
-    public const CHANNELS = ['WA' => 'WhatsApp', 'EMAIL' => 'E-mail', 'LANGSUNG' => 'Langsung'];
+    public const CHANNELS = ['WA' => 'WhatsApp', 'EMAIL' => 'E-mail', 'LANGSUNG' => 'In person'];
+
+    public static function typeOptions(): array
+    {
+        return array_map('t', self::TYPES);
+    }
+
+    public static function channelOptions(): array
+    {
+        return array_map('t', self::CHANNELS);
+    }
 
     protected $connection = 'tm2mst';
 

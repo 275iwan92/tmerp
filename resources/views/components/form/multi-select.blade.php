@@ -6,7 +6,7 @@
 --}}
 @props(['label' => null, 'name' => null, 'options' => [], 'selected' => [], 'placeholder' => null, 'value' => ''])
 @php
-    $placeholder = $placeholder ?? \App\Support\Localization\Translator::t('shared_multi_select_placeholder', 'Pilih...');
+    $placeholder = $placeholder ?? t('Select...');
 @endphp
 <div class="flex flex-col gap-1 relative" x-data="tmMultiSelect({ options: @js($options), initial: @js($selected), placeholder: @js($placeholder) })" @click.outside="open = false">
     @if ($label)

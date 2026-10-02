@@ -25,7 +25,7 @@ class FirestoreRestClient
         $projectId = config('recruitment.firebase.project_id');
 
         if (! $host || ! $projectId) {
-            throw new RuntimeException('FIRESTORE_EMULATOR_HOST / FIREBASE_PROJECT_ID belum di-set di .env');
+            throw new RuntimeException(t('FIRESTORE_EMULATOR_HOST / FIREBASE_PROJECT_ID is not set in .env'));
         }
 
         $this->baseUrl = "http://{$host}/v1/projects/{$projectId}/databases/(default)/documents";

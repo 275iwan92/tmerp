@@ -19,22 +19,22 @@ use Livewire\Component;
 // hrm/correction-requests.blade.php). Approve di sini yang menambah
 // EmpLeaveBalance.used_days -- HANYA utk request yang deducts_leave_balance
 // (CUTI biasa; Sakit/Izin/Cuti Khusus tidak potong saldo, sesuai submitLeave()).
-new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Leave / Sick / Permission Approval — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 
     private const EVENT_LABELS = [
-        'MENIKAH' => 'Pernikahan Karyawan',
-        'MENIKAHKAN_KHITAN_ANAK' => 'Menikahkan / Mengkhitankan Anak',
-        'ISTRI_MELAHIRKAN' => 'Istri Melahirkan / Keguguran',
-        'KELUARGA_MENINGGAL' => 'Keluarga Inti Meninggal Dunia',
-        'IBADAH' => 'Ibadah',
+        'MENIKAH' => 'Employee Wedding',
+        'MENIKAHKAN_KHITAN_ANAK' => 'Child\'s Wedding / Circumcision',
+        'ISTRI_MELAHIRKAN' => 'Wife Giving Birth / Miscarriage',
+        'KELUARGA_MENINGGAL' => 'Death of Immediate Family',
+        'IBADAH' => 'Religious Worship',
     ];
 
     private const IZIN_CATEGORY_LABELS = [
-        'MUSIBAH' => 'Musibah',
-        'INSTANSI_RESMI' => 'Instansi Resmi',
-        'KEPENGURUSAN_MUSIBAH' => 'Kepengurusan Musibah',
+        'MUSIBAH' => 'Calamity',
+        'INSTANSI_RESMI' => 'Official Agency',
+        'KEPENGURUSAN_MUSIBAH' => 'Calamity Arrangements',
     ];
 
     public bool $showRejectModal = false;
@@ -66,8 +66,8 @@ new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Co
     public function eventLabel(EmpLeaveRequest $r): ?string
     {
         return match (true) {
-            (bool) $r->khusus_event_type => self::EVENT_LABELS[$r->khusus_event_type] ?? $r->khusus_event_type,
-            (bool) $r->izin_category => self::IZIN_CATEGORY_LABELS[$r->izin_category] ?? $r->izin_category,
+            (bool) $r->khusus_event_type => isset(self::EVENT_LABELS[$r->khusus_event_type]) ? t(self::EVENT_LABELS[$r->khusus_event_type]) : $r->khusus_event_type,
+            (bool) $r->izin_category => isset(self::IZIN_CATEGORY_LABELS[$r->izin_category]) ? t(self::IZIN_CATEGORY_LABELS[$r->izin_category]) : $r->izin_category,
             default => null,
         };
     }
@@ -75,11 +75,11 @@ new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Co
     public function attachments(EmpLeaveRequest $r): array
     {
         return array_filter([
-            'Surat Cuti' => $r->attachment_surat_cuti,
-            'Surat Dokter' => $r->attachment_surat_dokter,
-            'Kwitansi/Resep' => $r->attachment_kwitansi_resep,
-            'Screenshot JKN' => $r->attachment_jkn_screenshot,
-            'Lampiran' => $r->attachment_path,
+            'Leave Letter' => $r->attachment_surat_cuti,
+            'Doctor\'s Note' => $r->attachment_surat_dokter,
+            'Receipt/Prescription' => $r->attachment_kwitansi_resep,
+            'JKN Screenshot' => $r->attachment_jkn_screenshot,
+            'Attachment' => $r->attachment_path,
         ]);
     }
 
@@ -159,9 +159,9 @@ new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Co
     <div class="max-w-[1400px] mx-auto my-5 px-4">
 
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="warn" label="Menunggu Review" :value="number_format($this->stats['pending'])" />
-            <x-grid.stat-box tone="active" label="Disetujui" :value="number_format($this->stats['approved'])" />
-            <x-grid.stat-box tone="critical" label="Ditolak" :value="number_format($this->stats['rejected'])" />
+            <x-grid.stat-box tone="warn" :label="t('Awaiting Review')" :value="number_format($this->stats['pending'])" />
+            <x-grid.stat-box tone="active" :label="t('Approved')" :value="number_format($this->stats['approved'])" />
+            <x-grid.stat-box tone="critical" :label="t('Rejected')" :value="number_format($this->stats['rejected'])" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
@@ -169,13 +169,13 @@ new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Co
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Karyawan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Jenis</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Periode</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Lampiran</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Alasan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Diajukan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Status</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Employee') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Type') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Period') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Attachments') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Reason') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Submitted') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Status') }}</th>
                             <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1]"></th>
                         </tr>
                     </thead>
@@ -191,11 +191,11 @@ new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Co
                                 </td>
                                 <td class="px-3 py-2 text-[11px] whitespace-nowrap">
                                     {{ $r->date_from->format('d M Y') }} — {{ $r->date_to->format('d M Y') }}
-                                    <div class="text-muted">{{ $r->total_days }} hari{{ $r->deducts_leave_balance ? ' (potong saldo)' : '' }}</div>
+                                    <div class="text-muted">{{ $r->total_days }} {{ t('days') }}{{ $r->deducts_leave_balance ? ' ('.t('deducts balance').')' : '' }}</div>
                                 </td>
                                 <td class="px-3 py-2 text-[11px]">
                                     @forelse ($this->attachments($r) as $label => $path)
-                                        <a href="{{ asset('storage/'.$path) }}" target="_blank" class="text-accent underline block">{{ $label }}</a>
+                                        <a href="{{ asset('storage/'.$path) }}" target="_blank" class="text-accent underline block">{{ t($label) }}</a>
                                     @empty
                                         <span class="text-muted">—</span>
                                     @endforelse
@@ -207,14 +207,14 @@ new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Co
                                 </td>
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
                                     @if ($r->status === 'PENDING')
-                                        <x-grid.action-icon icon="fa-check" title="Setujui" action="approve({{ $r->request_id }})"
-                                            confirm="Setujui pengajuan {{ $r->leave_type }} ini?" variant="success" />
-                                        <x-grid.action-icon icon="fa-xmark" title="Tolak" action="openReject({{ $r->request_id }})" variant="danger" />
+                                        <x-grid.action-icon icon="fa-check" :title="t('Approve')" action="approve({{ $r->request_id }})"
+                                            :confirm="str_replace(':type', $r->leave_type, t('Approve this :type request?'))" variant="success" />
+                                        <x-grid.action-icon icon="fa-xmark" :title="t('Reject')" action="openReject({{ $r->request_id }})" variant="danger" />
                                     @endif
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="8" message="Tidak ada pengajuan Cuti/Sakit/Izin." />
+                            <x-grid.empty-row :colspan="8" :message="t('No Leave/Sick/Permission requests.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -225,12 +225,12 @@ new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Co
     @if ($showRejectModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showRejectModal', false)">
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Tolak Pengajuan</div>
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">{{ t('Reject Request') }}</div>
                 <form wire:submit="reject" class="p-4 flex flex-col gap-3">
-                    <x-form.textarea label="Alasan Penolakan *" wire:model="rejectReason" rows="3" placeholder="Jelaskan kenapa ditolak — karyawan akan menerima pesan ini." name="rejectReason" />
+                    <x-form.textarea :label="t('Rejection Reason').' *'" wire:model="rejectReason" rows="3" :placeholder="t('Explain why it is rejected — the employee will receive this message.')" name="rejectReason" />
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="$set('showRejectModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#c0392b] text-white cursor-pointer">Tolak</button>
+                        <button type="button" wire:click="$set('showRejectModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#c0392b] text-white cursor-pointer">{{ t('Reject') }}</button>
                     </div>
                 </form>
             </div>

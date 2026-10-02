@@ -17,7 +17,7 @@ use Livewire\Component;
 // menjadwalkan. Pola drag-drop sama dgn pipeline-board.blade.php
 // (x-data draggedId + x-on:dragstart/dragover.prevent/drop) & referensi
 // production/monitoring-dashboard.blade.php.
-new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Interview Schedule — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 
@@ -179,7 +179,7 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
     public function save(): void
     {
         if (! $this->interviewer_id || ! $this->schedulingDate || ! $this->schedulingTime) {
-            $this->addError('form', 'Tanggal/jam dan interviewer wajib diisi.');
+            $this->addError('form', t('Date/time and interviewer are required.'));
 
             return;
         }
@@ -259,26 +259,26 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
         {{-- SIDEBAR: kandidat menunggu jadwal, sumber drag --}}
         <div class="w-[240px] shrink-0">
             <div class="bg-white border border-[#d7dbe2] rounded-md p-3 sticky top-3">
-                <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Menunggu Dijadwalkan ({{ $this->candidatesAwaiting->count() }})</p>
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-2">{{ t('Awaiting Scheduling') }} ({{ $this->candidatesAwaiting->count() }})</p>
                 <div class="space-y-1.5">
                     @forelse ($this->candidatesAwaiting as $row)
-                        <div draggable="true" title="Seret ke slot jadwal di kalender untuk menjadwalkan interview" x-on:dragstart="draggedId = {{ $row->app->id_application }}"
+                        <div draggable="true" title="{{ t('Drag to a calendar slot to schedule the interview') }}" x-on:dragstart="draggedId = {{ $row->app->id_application }}"
                             class="text-[11px] px-2.5 py-2 rounded-md border border-[#d7dbe2] bg-[#fef6e7] cursor-grab active:cursor-grabbing">
                             <p class="font-semibold">{{ $row->app->candidate->name ?? '—' }}</p>
                             <p class="text-[10px] text-muted">{{ $row->stage->stage_name }} · {{ $row->app->vacancy->title ?? '' }}</p>
                         </div>
                     @empty
-                        <p class="text-[10.5px] text-muted">Semua sudah terjadwal.</p>
+                        <p class="text-[10.5px] text-muted">{{ t('Everything is scheduled.') }}</p>
                     @endforelse
                 </div>
-                <p class="text-[10px] text-muted mt-3">🖱 Geser kartu ke tanggal/jam di kalender untuk menjadwalkan.</p>
+                <p class="text-[10px] text-muted mt-3">🖱 {{ t('Drag a card to a date/time on the calendar to schedule it.') }}</p>
             </div>
         </div>
 
         {{-- CALENDAR --}}
         <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-md px-3 py-2.5 mb-3 flex-wrap">
-                <button type="button" wire:click="navToday" class="text-[11px] font-bold border border-[#d7dbe2] px-2.5 py-1.5 rounded">Hari Ini</button>
+                <button type="button" wire:click="navToday" class="text-[11px] font-bold border border-[#d7dbe2] px-2.5 py-1.5 rounded">{{ t('Today') }}</button>
                 <button type="button" wire:click="navPrev" class="text-xs px-2 py-1.5 rounded hover:bg-[#eef3fb]">←</button>
                 <button type="button" wire:click="navNext" class="text-xs px-2 py-1.5 rounded hover:bg-[#eef3fb]">→</button>
                 <p class="text-sm font-bold text-navy ml-1">
@@ -289,9 +289,9 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
                     @endif
                 </p>
                 <span class="ml-auto flex items-center gap-1 bg-[#eef1f5] rounded-lg p-1">
-                    @foreach (['day' => 'Hari', 'month' => 'Bulan', '3month' => '3 Bulan', 'year' => 'Tahun'] as $mode => $label)
+                    @foreach (['day' => 'Day', 'month' => 'Month', '3month' => '3 Months', 'year' => 'Year'] as $mode => $label)
                         <button type="button" wire:click="setViewMode('{{ $mode }}')"
-                            class="text-[10.5px] font-bold px-2.5 py-1 rounded-md {{ $viewMode === $mode ? 'bg-white text-navy shadow-sm' : 'text-muted' }}">{{ $label }}</button>
+                            class="text-[10.5px] font-bold px-2.5 py-1 rounded-md {{ $viewMode === $mode ? 'bg-white text-navy shadow-sm' : 'text-muted' }}">{{ t($label) }}</button>
                     @endforeach
                 </span>
             </div>
@@ -348,8 +348,8 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
                                     <p class="text-xs font-bold text-navy text-center py-2 border-b border-[#eef1f5]">{{ $anchor->translatedFormat('MMMM Y') }}</p>
                                 @endif
                                 <div class="[display:grid] grid-cols-7 text-center text-[10px] font-bold text-muted uppercase border-b border-[#eef1f5]">
-                                    @foreach (['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $d)
-                                        <div class="py-1.5">{{ $d }}</div>
+                                    @foreach (['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $d)
+                                        <div class="py-1.5">{{ t($d) }}</div>
                                     @endforeach
                                 </div>
                                 @foreach ($this->weeksFor($anchor) as $week)
@@ -368,7 +368,7 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
                                                         </button>
                                                     @endforeach
                                                     @if (count($items) > ($viewMode === '3month' ? 2 : 3))
-                                                        <p class="text-[9px] text-muted px-1">+{{ count($items) - ($viewMode === '3month' ? 2 : 3) }} lagi</p>
+                                                        <p class="text-[9px] text-muted px-1">{{ str_replace(':n', count($items) - ($viewMode === '3month' ? 2 : 3), t('+:n more')) }}</p>
                                                     @endif
                                                 </div>
                                             </div>
@@ -387,21 +387,21 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
     @if ($showModal)
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('showModal', false)">
             <div class="bg-white rounded-xl w-full max-w-[420px] p-5">
-                <h3 class="text-sm font-bold text-navy mb-3">Jadwalkan Interview</h3>
+                <h3 class="text-sm font-bold text-navy mb-3">{{ t('Schedule Interview') }}</h3>
                 @error('form') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
                 <div class="space-y-3">
                     <div class="grid two">
-                        <x-form.date-picker label="Tanggal" wire:model="schedulingDate" />
-                        <x-form.input label="Jam" type="time" wire:model="schedulingTime" />
+                        <x-form.date-picker :label="t('Date')" wire:model="schedulingDate" />
+                        <x-form.input :label="t('Time')" type="time" wire:model="schedulingTime" />
                     </div>
-                    <x-form.select wire:model="interviewer_id" :options="$this->interviewers->all()" placeholder="— pilih interviewer —">
-                        <x-slot:label>Interviewer</x-slot:label>
+                    <x-form.select wire:model="interviewer_id" :options="$this->interviewers->all()" :placeholder="t('— select interviewer —')">
+                        <x-slot:label>{{ t('Interviewer') }}</x-slot:label>
                     </x-form.select>
-                    <x-form.input label="Lokasi" wire:model="location" placeholder="mis. Ruang Meeting HR" />
+                    <x-form.input :label="t('Location')" wire:model="location" :placeholder="t('e.g. HR Meeting Room')" />
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" wire:click="$set('showModal', false)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">Batal</button>
-                    <button type="button" wire:click="save" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Simpan Jadwal</button>
+                    <button type="button" wire:click="$set('showModal', false)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="save" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Save Schedule') }}</button>
                 </div>
             </div>
         </div>
@@ -415,10 +415,10 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
                 <p class="text-[11.5px] text-muted mb-3">{{ $this->selectedSchedule->stage_code }} · {{ $this->selectedSchedule->scheduled_at?->translatedFormat('d M Y, H:i') }} @if($this->selectedSchedule->location) · {{ $this->selectedSchedule->location }} @endif</p>
                 <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full {{ match ($this->selectedSchedule->status) { 'DONE' => 'bg-[#eaf7ee] text-[#1f8a4c]', 'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]', default => 'bg-[#eaf2ff] text-[#1d4ed8]' } }}">{{ $this->selectedSchedule->status }}</span>
                 <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" wire:click="selectSchedule(0)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">Tutup</button>
+                    <button type="button" wire:click="selectSchedule(0)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">{{ t('Close') }}</button>
                     @if ($this->selectedSchedule->status === 'SCHEDULED')
-                        <button type="button" wire:click="cancelSchedule" wire:confirm="Batalkan jadwal ini?" class="bg-[#fdecec] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">Batalkan</button>
-                        <button type="button" wire:click="markDone" class="bg-[#1f8a4c] text-white text-xs font-bold px-4 py-2 rounded-md">Tandai Selesai</button>
+                        <button type="button" wire:click="cancelSchedule" wire:confirm="{{ t('Cancel this schedule?') }}" class="bg-[#fdecec] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">{{ t('Cancel Schedule') }}</button>
+                        <button type="button" wire:click="markDone" class="bg-[#1f8a4c] text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Mark Complete') }}</button>
                     @endif
                 </div>
             </div>

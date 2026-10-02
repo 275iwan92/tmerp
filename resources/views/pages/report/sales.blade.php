@@ -12,7 +12,7 @@ use Livewire\WithPagination;
 // Rincian Penjualan -- lapis kedua setelah Dashboard Eksekutif. Dari sini
 // pembaca bisa turun sampai daftar dokumen (CO / Surat Jalan / Invoice) dan
 // menembus ke Customer 360.
-new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Sales Details — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
 
@@ -55,7 +55,7 @@ new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR E
     private function source(): array
     {
         return $this->basis === 'shipment'
-            ? ['co_delivery_legacy', 'dnote_date', 'legacy_dnote_no', 'Surat Jalan']
+            ? ['co_delivery_legacy', 'dnote_date', 'legacy_dnote_no', 'Delivery Note']
             : ['co_order_legacy', 'co_date', 'legacy_co_no', 'Customer Order'];
     }
 
@@ -117,10 +117,10 @@ new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR E
 }; ?>
 
 @php
-    $months = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    $months = array_map('t', [1 => 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']);
     $rp = fn ($v) => 'Rp ' . number_format((float) $v, 0, ',', '.');
     $miliar = fn ($v) => 'Rp ' . number_format((float) $v / 1_000_000_000, 2, ',', '.') . ' M';
-    $tabs = ['dokumen' => 'Daftar Dokumen', 'customer' => 'Peringkat Customer', 'sales' => 'Per Salesperson'];
+    $tabs = ['dokumen' => t('Document List'), 'customer' => t('Customer Ranking'), 'sales' => t('Per Salesperson')];
     $statusTone = fn ($s) => match ($s) { 'CONFIRMED', 'SHIPPED', 'PAID' => 'ok', 'CANCELLED' => 'danger', 'DRAFT' => 'info', default => 'warn' };
 @endphp
 
@@ -128,11 +128,11 @@ new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR E
     <div class="flex flex-wrap items-end gap-3 mb-4">
         <a href="{{ route('report.executive', ['th' => $year]) }}"
            class="text-[12px] font-semibold hover:underline pb-1.5" style="color:var(--sh-accent)">
-            <i class="fa-solid fa-arrow-left"></i> Dashboard
+            <i class="fa-solid fa-arrow-left"></i> {{ t('Dashboard') }}
         </a>
 
         <div>
-            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Tahun</label>
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">{{ t('Year') }}</label>
             <select wire:model.live="year" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
                 @foreach ($this->years as $y)
                     <option value="{{ $y }}">{{ $y }}</option>
@@ -140,35 +140,35 @@ new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR E
             </select>
         </div>
         <div>
-            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Bulan</label>
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">{{ t('Month') }}</label>
             <select wire:model.live="month" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
-                <option value="">Semua bulan</option>
+                <option value="">{{ t('All months') }}</option>
                 @foreach ($months as $n => $nama)
                     <option value="{{ $n }}">{{ $nama }}</option>
                 @endforeach
             </select>
         </div>
         <div>
-            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Dasar</label>
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">{{ t('Basis') }}</label>
             <select wire:model.live="basis" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
-                <option value="order">PO Masuk (Customer Order)</option>
-                <option value="shipment">Shipment (Surat Jalan)</option>
+                <option value="order">{{ t('Incoming PO (Customer Order)') }}</option>
+                <option value="shipment">{{ t('Shipment (Delivery Note)') }}</option>
             </select>
         </div>
         <div class="flex-1 min-w-[200px]">
-            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Cari</label>
-            <input wire:model.live.debounce.400ms="search" type="text" placeholder="Nomor dokumen atau nama customer…"
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">{{ t('Search') }}</label>
+            <input wire:model.live.debounce.400ms="search" type="text" placeholder="{{ t('Document number or customer name…') }}"
                    class="w-full border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
         </div>
     </div>
 
     <div class="[display:grid] grid-cols-2 gap-3.5 mb-4">
-        <x-report.kpi label="Nilai Periode Terpilih" icon="fa-solid fa-coins" tone="blue"
+        <x-report.kpi :label="t('Selected Period Value')" icon="fa-solid fa-coins" tone="blue"
             :value="$miliar($this->periodTotal['value'])"
-            :note="$basis === 'shipment' ? 'berdasarkan Surat Jalan' : 'berdasarkan Customer Order'" />
-        <x-report.kpi label="Jumlah Dokumen" icon="fa-solid fa-file-lines" tone="green"
+            :note="$basis === 'shipment' ? t('based on Delivery Notes') : t('based on Customer Orders')" />
+        <x-report.kpi :label="t('Document Count')" icon="fa-solid fa-file-lines" tone="green"
             :value="number_format($this->periodTotal['docs'])"
-            :note="$month ? $months[$month] . ' ' . $year : 'Sepanjang ' . $year" />
+            :note="$month ? $months[$month] . ' ' . $year : str_replace(':year', $year, t('Throughout :year'))" />
     </div>
 
     {{-- Tab --}}
@@ -187,11 +187,11 @@ new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR E
             <table class="w-full text-[12px]">
                 <thead style="background:var(--content-bg)">
                     <tr class="text-left">
-                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nomor</th>
-                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Tanggal</th>
-                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Customer</th>
-                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Status</th>
-                        <th class="py-2 px-3 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
+                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Number') }}</th>
+                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Date') }}</th>
+                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Customer') }}</th>
+                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Status') }}</th>
+                        <th class="py-2 px-3 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Value') }}</th>
                         <th class="py-2 px-3"></th>
                     </tr>
                 </thead>
@@ -204,7 +204,7 @@ new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR E
                                 @if ($doc->customer_id)
                                     <a href="{{ route('report.customer', ['customer' => $doc->customer_id, 'th' => $year]) }}"
                                        class="hover:underline" style="color:var(--sh-accent)">
-                                        {{ $this->customerNames[$doc->customer_id] ?? '(tidak dikenal)' }}
+                                        {{ $this->customerNames[$doc->customer_id] ?? t('(unknown)') }}
                                     </a>
                                 @else
                                     <span style="color:var(--sh-muted)">—</span>
@@ -217,12 +217,12 @@ new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR E
                             <td class="py-2 px-3 text-right">
                                 @if ($doc->customer_id)
                                     <a href="{{ route('report.customer', ['customer' => $doc->customer_id, 'th' => $year]) }}"
-                                       class="hover:underline" style="color:var(--sh-accent)">telusuri →</a>
+                                       class="hover:underline" style="color:var(--sh-accent)">{{ t('trace') }} →</a>
                                 @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="py-8 text-center" style="color:var(--sh-muted)">Tidak ada dokumen pada filter ini.</td></tr>
+                        <tr><td colspan="6" class="py-8 text-center" style="color:var(--sh-muted)">{{ t('No documents match this filter.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -237,9 +237,9 @@ new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR E
             <table class="w-full text-[12px] mt-4">
                 <thead><tr class="text-left border-b" style="border-color:var(--sh-border)">
                     <th class="py-1.5 px-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">#</th>
-                    <th class="py-1.5 px-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Customer</th>
-                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Dokumen</th>
-                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
+                    <th class="py-1.5 px-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Customer') }}</th>
+                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Documents') }}</th>
+                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Value') }}</th>
                 </tr></thead>
                 <tbody>
                     @foreach ($this->customerRanking as $i => $c)
@@ -264,10 +264,10 @@ new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR E
             ]" />
             <table class="w-full text-[12px] mt-4">
                 <thead><tr class="text-left border-b" style="border-color:var(--sh-border)">
-                    <th class="py-1.5 px-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Salesperson</th>
-                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">CO</th>
-                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
-                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Porsi</th>
+                    <th class="py-1.5 px-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Salesperson') }}</th>
+                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('CO') }}</th>
+                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Value') }}</th>
+                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Share') }}</th>
                 </tr></thead>
                 <tbody>
                     @foreach ($this->salesRanking as $s)

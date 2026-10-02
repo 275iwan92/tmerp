@@ -21,7 +21,7 @@ class PayslipGrid extends HrmGrid
 
     public function title(): string
     {
-        return 'Cetak & Kirim Slip Gaji';
+        return t('Print & Send Payslips');
     }
 
     public function family(): string

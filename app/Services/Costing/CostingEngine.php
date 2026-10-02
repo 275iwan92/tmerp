@@ -46,7 +46,7 @@ class CostingEngine
                 match ($part->part_type_code) {
                     'DC', 'DC+SF', 'DC+SHEET', 'KRAFT' => $this->calculateOffsetPart($part, $primaryQty),
                     'SHEET', 'SHEET_DIGITAL' => $this->calculateSheetPart($part, $primaryQty),
-                    default => throw new \RuntimeException("part_type_code '{$part->part_type_code}' belum diimplementasi CostingEngine."),
+                    default => throw new \RuntimeException(str_replace(':code', $part->part_type_code, t("part_type_code ':code' is not implemented in CostingEngine yet."))),
                 };
             }
 
@@ -251,7 +251,7 @@ class CostingEngine
         $min = SysConstant::number('SHEET_DISCOUNT_MIN_'.$supplier, SysConstant::number('OB_DISCOUNT_RM_MIN', -0.99));
         $max = SysConstant::number('SHEET_DISCOUNT_MAX_'.$supplier, SysConstant::number('OB_DISCOUNT_RM_MAX', 0.99));
         if ($disc < $min - 1e-9 || $disc > $max + 1e-9) {
-            throw new \RuntimeException("Discount/Surcharge {$supplier} {$disc} di luar batas ({$min} s/d {$max}). Isi pecahan, mis. -0.05 = surcharge 5%, 0.225 = diskon 22,5%.");
+            throw new \RuntimeException(str_replace([':supplier', ':disc', ':min', ':max'], [$supplier, $disc, $min, $max], t('Discount/Surcharge :supplier :disc is out of range (:min to :max). Enter a fraction, e.g. -0.05 = 5% surcharge, 0.225 = 22.5% discount.')));
         }
 
         return $disc;
@@ -299,7 +299,7 @@ class CostingEngine
 
         $allowance = $part->flute_type ? MatFluteAllowance::where('flute_type', $part->flute_type)->where('activate', true)->first() : null;
         if (! $allowance) {
-            throw new \RuntimeException("flute_type '{$part->flute_type}' tidak ditemukan di mat_flute_allowance -- isi Jenis Flute, atau isi Lebar Trim / Isi Trim / Panjang Piece manual.");
+            throw new \RuntimeException(str_replace(':flute', $part->flute_type, t("flute_type ':flute' not found in mat_flute_allowance -- fill in Flute Type, or enter Trim Width / Trim Qty / Piece Length manually.")));
         }
 
         $p = (float) $part->i_dim_panjang_mm;
@@ -320,14 +320,14 @@ class CostingEngine
         } else {
             $disc = MatSheetDiscountTier::lookup($supplier, $rm, $part->sheet_rate_id, $part->part_type_code);
             if ($disc === null) {
-                throw new \RuntimeException("Tidak ada tier diskon sheet '{$supplier}' utk running meter {$rm} — isi Discount/Surcharge manual.");
+                throw new \RuntimeException(str_replace([':supplier', ':rm'], [$supplier, $rm], t("No sheet discount tier ':supplier' for running meter :rm — enter the Discount/Surcharge manually.")));
             }
         }
         $disc = $this->guardDiscount((float) $disc, $supplier);
 
         $sheetRate = $part->sheet_rate_id ? MatSheetRate::find($part->sheet_rate_id) : null;
         if (! $sheetRate) {
-            throw new \RuntimeException('Substansi sheet (sheet_rate_id) belum diisi/tidak ditemukan.');
+            throw new \RuntimeException(t('Sheet substance (sheet_rate_id) is empty / not found.'));
         }
 
         return [
@@ -381,13 +381,13 @@ class CostingEngine
         $panjang = (float) $part->i_sheet_panjang_cm;
         $lebar = (float) $part->i_sheet_lebar_cm;
         if ($panjang <= 0 || $lebar <= 0) {
-            throw new \RuntimeException('Panjang/Lebar Piece SF belum diisi.');
+            throw new \RuntimeException(t('SF Piece Length/Width not filled in yet.'));
         }
 
         $rm = ($qty / $this->positive($part->i_isi_per_lb)) * ($panjang / 100);
         $disc = MatSheetDiscountTier::lookup($supplier, $rm, $part->sheet_rate_id, $part->part_type_code);
         if ($disc === null) {
-            throw new \RuntimeException("Tidak ada tier diskon sheet '{$supplier}' utk running meter {$rm}.");
+            throw new \RuntimeException(str_replace([':supplier', ':rm'], [$supplier, $rm], t("No sheet discount tier ':supplier' for running meter :rm.")));
         }
         $disc = $this->guardDiscount((float) $disc, $supplier);
         $index = (float) (MatSheetRate::whereKey($part->sheet_rate_id)->value('index_substance') ?? 0);

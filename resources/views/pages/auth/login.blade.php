@@ -4,7 +4,7 @@ use App\Models\Sys\SecLoginAttempt;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysLoginHero;
 use App\Models\Sys\SysQuote;
-use App\Models\Sys\SysTranslation;
+use App\Support\Localization\Dictionary;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Computed;
@@ -15,7 +15,7 @@ use Livewire\Component;
 
 // layouts::guest — halaman penuh layar (Alur A Tier 1), TIDAK ikut container/
 // padding layouts::app biasa (dipakai app shell pasca-login).
-new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::guest')] #[Title('Sign In — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url]
     public string $lang = 'id';
@@ -37,11 +37,10 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         }
     }
 
-    // Mirror objek T[lang] di mockup — sumbernya sys_translations (BRIEF §3.1.5).
-    #[Computed]
-    public function t(): array
+    // Teks English -> bahasa pilihan bendera di halaman ini (tamu, belum ada preferensi user) lewat kamus sys_dictionary.
+    public function tr(string $en): string
     {
-        return SysTranslation::forLang($this->lang) ?: SysTranslation::forLang('id');
+        return Dictionary::t($en, 'ui', $this->lang);
     }
 
     public function setLang(string $lang): void
@@ -57,7 +56,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         $q = SysQuote::random();
 
         return [
-            't' => $q?->quote_text ?? 'Selamat bekerja.',
+            't' => $q?->quote_text ?? $this->tr('Have a good day at work.'),
             'a' => $q?->author ?? 'Telasih Makmur',
         ];
     }
@@ -104,7 +103,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         $login = trim($this->loginField);
 
         if ($login === '' || $this->pswd === '') {
-            $this->errorMessage = $this->t['err_empty'] ?? 'Isi username dan password.';
+            $this->errorMessage = $this->tr('Enter username and password.');
 
             return;
         }
@@ -122,7 +121,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         ]);
 
         if (! $ok) {
-            $this->errorMessage = $this->t['err_wrong'] ?? 'Username atau password salah.';
+            $this->errorMessage = $this->tr('Wrong username or password.');
             $this->pswd = '';
 
             return;
@@ -205,7 +204,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
             </div>
         </div>
 
-        <div class="grip" @mousedown="startDrag()" title="Tarik untuk melebarkan"></div>
+        <div class="grip" @mousedown="startDrag()" title="{{ $this->tr('Drag to widen') }}"></div>
 
         <div class="hero-side" :style="panelWidth ? { width: panelWidth } : {}">
             <div class="flagbar">
@@ -215,8 +214,8 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
 
             <div class="form-center">
                 <div class="login-box">
-                    <h2>{{ $this->t['login_heading'] ?? 'Masuk' }}</h2>
-                    <p class="sub">{{ $this->t['login_sub'] ?? 'Gunakan akun terdaftar untuk masuk.' }}</p>
+                    <h2>{{ $this->tr('Sign In') }}</h2>
+                    <p class="sub">{{ $this->tr('Use a registered account to sign in.') }}</p>
 
                     @if ($errorMessage)
                         <div class="alert show">{{ $errorMessage }}</div>
@@ -224,14 +223,14 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
 
                     <form wire:submit="submit">
                         <div class="field">
-                            <label>{{ $this->t['label_username'] ?? 'Username atau email' }}</label>
+                            <label>{{ $this->tr('Username or email') }}</label>
                             <div class="input {{ $loginTouched && trim($loginField) === '' ? 'error' : '' }}">
                                 <i class="fa-solid fa-user fld-i"></i>
                                 <input type="text" wire:model="loginField" autocomplete="username" autofocus>
                             </div>
                         </div>
                         <div class="field" x-data="{ show: false }">
-                            <label>{{ $this->t['label_password'] ?? 'Password' }}</label>
+                            <label>{{ $this->tr('Password') }}</label>
                             <div class="input {{ $pswdTouched && $pswd === '' ? 'error' : '' }}">
                                 <i class="fa-solid fa-lock fld-i"></i>
                                 <input :type="show ? 'text' : 'password'" wire:model="pswd" autocomplete="current-password">
@@ -239,27 +238,27 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
                             </div>
                         </div>
                         <div class="row">
-                            <a href="{{ route('password.request', ['lang' => $lang]) }}">{{ $this->t['forgot'] ?? 'Lupa password?' }}</a>
+                            <a href="{{ route('password.request', ['lang' => $lang]) }}">{{ $this->tr('Forgot password?') }}</a>
                         </div>
-                        <button type="submit" class="btn" wire:loading.attr="disabled">{{ $this->t['btn_login'] ?? 'Masuk' }}</button>
+                        <button type="submit" class="btn" wire:loading.attr="disabled">{{ $this->tr('Sign In') }}</button>
                     </form>
 
-                    <div class="divider"><span>atau</span></div>
-                    <div class="reg">Belum punya akun? <a href="{{ route('register', ['lang' => $lang]) }}">Daftar</a></div>
+                    <div class="divider"><span>{{ $this->tr('or') }}</span></div>
+                    <div class="reg">{{ $this->tr("Don't have an account?") }} <a href="{{ route('register', ['lang' => $lang]) }}">{{ $this->tr('Register') }}</a></div>
 
                     {{-- Akun UAT: daftar dari .env.mockup (UAT_ACCOUNTS), klik baris = login & password terisi.
                          Hanya tampil di mockup.test; tmerp.test live tidak menampilkannya. --}}
                     @if ($this->uatAccounts)
                         <div class="uat-box" x-data="{ open: false }">
-                            <button type="button" class="uat-toggle" @click="open = !open" title="Daftar akun untuk UAT (User Acceptance Test)">
-                                🧪 Akun Uji Coba (UAT) <span x-text="open ? '▲' : '▼'"></span>
+                            <button type="button" class="uat-toggle" @click="open = !open" title="{{ $this->tr('Account list for UAT (User Acceptance Test)') }}">
+                                🧪 {{ $this->tr('UAT Test Accounts') }} <span x-text="open ? '▲' : '▼'"></span>
                             </button>
                             <div class="uat-panel" x-show="open" x-cloak x-transition>
-                                <p class="uat-note">Klik satu baris: login &amp; password terisi, lalu tekan Masuk.</p>
+                                <p class="uat-note">{{ $this->tr('Click a row: login & password are filled in, then press Sign In.') }}</p>
                                 <table class="uat-table">
                                     <tbody>
                                         @foreach ($this->uatAccounts as $i => $a)
-                                            <tr wire:click="fillUat({{ $i }})" style="cursor:pointer" title="Isi login {{ $a['login'] }}"><td>{{ $a['role'] }}</td><td><code>{{ $a['login'] }}</code></td></tr>
+                                            <tr wire:click="fillUat({{ $i }})" style="cursor:pointer" title="{{ $this->tr('Fill in login') }} {{ $a['login'] }}"><td>{{ $a['role'] }}</td><td><code>{{ $a['login'] }}</code></td></tr>
                                         @endforeach
                                     </tbody>
                                 </table>

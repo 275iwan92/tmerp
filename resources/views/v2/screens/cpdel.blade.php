@@ -44,13 +44,13 @@
             ['key' => 'production', 'label' => 'Production'],
             ['key' => 'state', 'label' => 'Promise', 'type' => 'badge', 'tones' => Promise::STATES],
         ]"
-        :detail="['key' => 'items', 'title' => 'Product', 'columns' => [
-            ['key' => 'product', 'label' => 'Product', 'strong' => true],
-            ['key' => 'spec', 'label' => 'Specification'],
-            ['key' => 'order_qty', 'label' => 'Order Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'ship_qty', 'label' => 'This Shipment', 'type' => 'number'],
-            ['key' => 'due', 'label' => 'Due Date', 'type' => 'date'],
+        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
+            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
+            ['key' => 'spec', 'label' => t('Specification')],
+            ['key' => 'order_qty', 'label' => t('Order Qty'), 'type' => 'number'],
+            ['key' => 'unit', 'label' => t('Unit')],
+            ['key' => 'ship_qty', 'label' => t('This Shipment'), 'type' => 'number'],
+            ['key' => 'due', 'label' => t('Due Date'), 'type' => 'date'],
         ]]"
         :stats="[
             ['label' => 'All'],
@@ -96,7 +96,7 @@
                 <x-dl::badge :label="$stateLabels[$state]" :tone="Promise::STATES[$state]" />
                 @if ($posted)<x-dl::badge label="Posted to Production" tone="info" />@endif
             </span>
-            <x-dl::button variant="secondary" icon="send" label="Open Customer Order" :href="route('v2.screen', 'customer-order').'?id='.$d->order_id" />
+            <x-dl::button variant="secondary" icon="send" :label="t('Open Customer Order')" :href="route('v2.screen', 'customer-order').'?id='.$d->order_id" />
             <x-dl::button preset="print" :href="\App\Support\V2\Print\PrintDocs::url('cpdel', $d->order_id)" target="_blank" />
         </x-dl::action-bar>
         <h2 class="mp-bigname">{{ $d->item?->description }}</h2>
@@ -161,7 +161,7 @@
                         <x-dl::field.text name="customer_contact" label="Customer contact" required :value="$d->order?->customer?->contact_name" />
                         <x-dl::field.text name="note" label="What the customer said" required />
                     </x-dl::form.row>
-                    <x-dl::action-bar><x-dl::button type="submit" variant="danger" icon="fa-user-tie" label="Escalate" /></x-dl::action-bar>
+                    <x-dl::action-bar><x-dl::button type="submit" variant="danger" icon="fa-user-tie" :label="t('Escalate')" /></x-dl::action-bar>
                 </x-dl::card>
             </x-dl::action-form>
         @endif
@@ -186,7 +186,7 @@
     @if ($planned && ! $posted)
         <x-dl::action-form action="{{ route('v2.cpdel.post', $d->id_delivery) }}">
             <x-dl::card title="Post to Production" icon="fa-industry" description="Creates the Work Order for this line. After posting, the line can be pulled into a Delivery Order / Delivery Note right away (quick jobs of about {{ Locale::number((float) SysConstant::number('QUICK_JOB_MINUTES', 30), 0) }} minutes). Production output must still be entered afterwards: it is the KPI basis for all departments.">
-                <x-dl::action-bar><x-dl::button type="submit" icon="fa-industry" label="Post to Production" /></x-dl::action-bar>
+                <x-dl::action-bar><x-dl::button type="submit" icon="fa-industry" :label="t('Post to Production')" /></x-dl::action-bar>
             </x-dl::card>
         </x-dl::action-form>
     @elseif ($posted)
@@ -198,7 +198,7 @@
             <input type="hidden" name="ids[]" value="{{ $d->id_delivery }}">
             <x-dl::card title="Join lines" description="Join with other lines of the same CO and product; the result goes to the earliest date.">
                 <x-dl::field.checkboxes name="ids" label="Join with" :options="$siblings->mapWithKeys(fn ($s) => [$s->id_delivery => (Locale::d($s->ship_date) ?? '—').' · '.$num($s->ship_qty).' '.$unit])->all()" :source="Src::of('tm2sdi.co_order_delivery')" />
-                <x-dl::action-bar><x-dl::button preset="apply" label="Join" type="submit" /></x-dl::action-bar>
+                <x-dl::action-bar><x-dl::button preset="apply" :label="t('Join')" type="submit" /></x-dl::action-bar>
             </x-dl::card>
         </x-dl::action-form>
     @endif

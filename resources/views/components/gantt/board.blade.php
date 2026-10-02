@@ -19,7 +19,7 @@
     'rows' => [],
     'secondaryRows' => [],
     'secondaryLabel' => null,
-    'resourceHeaderLabel' => 'Resource',
+    'resourceHeaderLabel' => t('Resource'),
     'timelineStart' => 8,
     'timelineEnd' => 20,
     'pxPerHour' => 70,
@@ -28,8 +28,8 @@
     'reassignMethod' => 'reassignGanttBlock',
     'resourceOptions' => [],
     'labelOptions' => [],
-    'labelFieldName' => 'Kategori',
-    'emptyMessage' => 'Tidak ada data.',
+    'labelFieldName' => t('Category'),
+    'emptyMessage' => t('No data.'),
 ])
 
 <div x-data="ganttBoard({{ $timelineStart }}, {{ $timelineEnd }}, {{ $pxPerHour }}, '{{ $moveMethod }}', '{{ $resizeMethod }}', '{{ $reassignMethod }}')"
@@ -68,27 +68,27 @@
         <button class="close-pop" @click="popover.show=false">&times;</button>
         <h3 x-text="popover.title"></h3>
         <dl>
-            <dt x-show="popover.subtitle">Detail</dt><dd x-show="popover.subtitle" x-text="popover.subtitle"></dd>
-            <dt>Waktu</dt><dd x-text="popover.time"></dd>
-            <dt>Progress</dt><dd x-text="popover.progress + '%'"></dd>
-            <dt>Status</dt><dd x-text="popover.status"></dd>
+            <dt x-show="popover.subtitle">{{ t('Detail') }}</dt><dd x-show="popover.subtitle" x-text="popover.subtitle"></dd>
+            <dt>{{ t('Timing') }}</dt><dd x-text="popover.time"></dd>
+            <dt>{{ t('Progress') }}</dt><dd x-text="popover.progress + '%'"></dd>
+            <dt>{{ t('Status') }}</dt><dd x-text="popover.status"></dd>
         </dl>
     </div>
 
     <div class="modal-backdrop" :class="{ show: editing }">
         <div class="edit-modal" @click.outside="editing = null" x-show="editing">
             <div class="edit-modal-header">
-                <h3>Ubah Task</h3>
+                <h3>{{ t('Edit Task') }}</h3>
                 <button @click="editing = null">&times;</button>
             </div>
             <template x-if="editing">
                 <div class="edit-modal-body">
                     <div class="edit-field">
-                        <label>Task</label>
+                        <label>{{ t('Task') }}</label>
                         <input :value="editing.title" disabled>
                     </div>
                     <div class="edit-field">
-                        <label>Resource</label>
+                        <label>{{ t('Resource') }}</label>
                         <select x-model="editing.resource">
                             @foreach ($resourceOptions as $opt)
                                 <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
@@ -106,8 +106,8 @@
                 </div>
             </template>
             <div class="edit-modal-footer">
-                <button class="btn-cancel" @click="editing = null">Batal</button>
-                <button class="btn-save" @click="$wire.call(reassignMethod, editing.id, editing.resource, editing.label); editing = null">Simpan</button>
+                <button class="btn-cancel" @click="editing = null">{{ t('Cancel') }}</button>
+                <button class="btn-save" @click="$wire.call(reassignMethod, editing.id, editing.resource, editing.label); editing = null">{{ t('Save') }}</button>
             </div>
         </div>
     </div>

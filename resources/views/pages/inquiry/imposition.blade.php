@@ -250,25 +250,25 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📐 TELASIH MAKMUR — Imposition Engine</b>
+        <b class="text-[15px]">📐 TELASIH MAKMUR — {{ t('Imposition Engine') }}</b>
         <span class="text-xs text-white/75">{{ $this->inquiry->inquiry_no }} · {{ $this->inquiry->product_draft_name }}</span>
-        <a href="{{ route('inquiry.costing', ['inquiry' => $this->inquiryId]) }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Costing</a>
-        <x-back-button :fallback="route('inquiry.hub')" title="Kembali ke Inquiry Hub" />
+        <a href="{{ route('inquiry.costing', ['inquiry' => $this->inquiryId]) }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ {{ t('Costing') }}</a>
+        <x-back-button :fallback="route('inquiry.hub')" :title="t('Back to Inquiry Hub')" />
     </header>
 
     <div class="max-w-[1180px] mx-auto my-5 px-4">
 
         {{-- ============ PART SWITCHER ============ --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-3 mb-4 flex items-center gap-2 flex-wrap">
-            <span class="text-[10.5px] text-muted uppercase font-semibold">Part:</span>
+            <span class="text-[10.5px] text-muted uppercase font-semibold">{{ t('Part') }}:</span>
             @forelse ($this->parts as $p)
                 <button type="button" wire:click="switchPart({{ $p->id_part }})"
                     class="text-xs font-semibold px-3 py-1.5 rounded-full border cursor-pointer {{ $this->partId === $p->id_part ? 'bg-navy text-white border-navy' : 'bg-[#f4f6fa] text-navy border-[#d7dbe2]' }}">
-                    {{ $p->part_name ?: 'Part #'.$p->part_seq }}
+                    {{ $p->part_name ?: t('Part').' #'.$p->part_seq }}
                     @if ($p->layout?->stat_confirm) <span class="text-[10px]">✓</span> @endif
                 </button>
             @empty
-                <span class="text-xs text-muted">Belum ada part di inquiry ini — isi dulu di Inquiry New/Recalc/Revise.</span>
+                <span class="text-xs text-muted">{{ t('No parts in this inquiry yet — fill them in Inquiry New/Recalc/Revise first.') }}</span>
             @endforelse
         </div>
 
@@ -282,77 +282,77 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
             <div class="md:w-[320px] md:shrink-0">
                 @if ($this->layout->stat_confirm)
                     <div class="bg-[#eaf7ee] border border-[#a9d9bb] text-[#1f8a4c] text-xs px-3.5 py-2.5 rounded-md mb-3.5 flex items-center justify-between gap-2">
-                        <span>✓ Terkonfirmasi oleh {{ $this->layout->confirmed_by }} · {{ $this->layout->confirmed_at?->format('d/m/Y H:i') }}</span>
-                        <button type="button" wire:click="unlock" class="text-[10.5px] font-bold underline cursor-pointer whitespace-nowrap">Buka kunci</button>
+                        <span>✓ {{ t('Confirmed by') }} {{ $this->layout->confirmed_by }} · {{ $this->layout->confirmed_at?->format('d/m/Y H:i') }}</span>
+                        <button type="button" wire:click="unlock" class="text-[10.5px] font-bold underline cursor-pointer whitespace-nowrap">{{ t('Unlock') }}</button>
                     </div>
                 @endif
 
                 <div class="bg-white border border-[#d7dbe2] rounded-md mb-3.5 overflow-hidden">
-                    <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">📦 Bentangan Flat (1 up)</h3>
+                    <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">📦 {{ t('Flat Spread (1 up)') }}</h3>
                     <div class="p-3.5">
                         <div class="grid two gap-2 mb-2.5">
                             <div class="flex flex-col gap-0.5">
-                                <label class="text-[11px] text-muted font-semibold">Flat W (mm)</label>
+                                <label class="text-[11px] text-muted font-semibold">{{ t('Flat W (mm)') }}</label>
                                 <input type="number" step="0.1" value="{{ $this->layout->flat_w_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('flat_w_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label class="text-[11px] text-muted font-semibold">Flat H (mm)</label>
+                                <label class="text-[11px] text-muted font-semibold">{{ t('Flat H (mm)') }}</label>
                                 <input type="number" step="0.1" value="{{ $this->layout->flat_h_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('flat_h_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <label class="text-[11px] text-muted font-semibold">Gap antar-up (mm)</label>
+                            <label class="text-[11px] text-muted font-semibold">{{ t('Gap between ups (mm)') }}</label>
                             <input type="number" step="0.1" value="{{ $this->layout->gap_mm }}" @disabled($this->layout->stat_confirm)
                                 wire:change="updateField('gap_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                         </div>
-                        <div class="text-[10.5px] text-muted mt-1.5">Dari dieline (iqp_part.flat_w/flat_h). Bisa dioverride bila perlu.</div>
+                        <div class="text-[10.5px] text-muted mt-1.5">{{ t('From the dieline (iqp_part.flat_w/flat_h). Can be overridden if needed.') }}</div>
                     </div>
                 </div>
 
                 <div class="bg-white border border-[#d7dbe2] rounded-md mb-3.5 overflow-hidden">
-                    <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">📄 Plano</h3>
+                    <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">📄 {{ t('Plano') }}</h3>
                     <div class="p-3.5">
                         <div class="grid two gap-2 mb-2.5">
                             <div class="flex flex-col gap-0.5">
-                                <label class="text-[11px] text-muted font-semibold">Plano W (mm)</label>
+                                <label class="text-[11px] text-muted font-semibold">{{ t('Plano W (mm)') }}</label>
                                 <input type="number" step="0.1" value="{{ $this->layout->plano_w_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('plano_w_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label class="text-[11px] text-muted font-semibold">Plano H (mm)</label>
+                                <label class="text-[11px] text-muted font-semibold">{{ t('Plano H (mm)') }}</label>
                                 <input type="number" step="0.1" value="{{ $this->layout->plano_h_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('plano_h_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                         </div>
                         <div class="grid two gap-2 mb-2.5">
                             <div class="flex flex-col gap-0.5">
-                                <label class="text-[11px] text-muted font-semibold">Gripper (mm)</label>
+                                <label class="text-[11px] text-muted font-semibold">{{ t('Gripper (mm)') }}</label>
                                 <input type="number" step="0.1" value="{{ $this->layout->gripper_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('gripper_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label class="text-[11px] text-muted font-semibold">Margin tepi (mm)</label>
+                                <label class="text-[11px] text-muted font-semibold">{{ t('Edge margin (mm)') }}</label>
                                 <input type="number" step="0.1" value="{{ $this->layout->margin_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('margin_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <label class="text-[11px] text-muted font-semibold">Metode terpilih</label>
+                            <label class="text-[11px] text-muted font-semibold">{{ t('Selected method') }}</label>
                             <input readonly value="{{ $this->layout->method }}" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] font-bold bg-[#f0f7f4] text-[#0e5c38]">
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
-                    <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">💡 Saran Plano Terbaik</h3>
+                    <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">💡 {{ t('Best Plano Suggestions') }}</h3>
                     <table class="w-full text-xs">
                         <thead>
                             <tr>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">Plano</th>
-                                <th class="text-right px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">Up</th>
-                                <th class="text-right px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">Efisiensi</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">{{ t('Plano') }}</th>
+                                <th class="text-right px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">{{ t('Up') }}</th>
+                                <th class="text-right px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">{{ t('Efficiency') }}</th>
                                 <th class="border-b border-[#e2e7ee]"></th>
                             </tr>
                         </thead>
@@ -365,7 +365,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                                     <td class="px-2 py-1.5 text-right border-b border-[#eef1f5] font-bold {{ $s->eff >= 75 ? 'text-[#0e8a4f]' : ($s->eff >= 55 ? 'text-[#8a5a00]' : 'text-[#c0392b]') }}">{{ number_format($s->eff, 0) }}%</td>
                                     <td class="px-2 py-1.5 text-right border-b border-[#eef1f5]">
                                         @unless ($this->layout->stat_confirm)
-                                            <button type="button" wire:click="pickPlano({{ $s->id }})" class="text-[11px] font-semibold text-accent cursor-pointer">pilih</button>
+                                            <button type="button" wire:click="pickPlano({{ $s->id }})" class="text-[11px] font-semibold text-accent cursor-pointer">{{ t('select') }}</button>
                                         @endunless
                                     </td>
                                 </tr>
@@ -379,26 +379,26 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
             <div class="md:flex-1 min-w-0">
                 <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
                     <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2] flex items-center justify-between">
-                        <span>🎯 Hasil Imposition</span>
+                        <span>🎯 {{ t('Imposition Result') }}</span>
                         <button type="button" wire:click="confirm" @disabled($this->layout->stat_confirm || $this->layout->up_count < 1)
-                            class="px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">✓ Konfirmasi</button>
+                            class="px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">✓ {{ t('Confirm') }}</button>
                     </h3>
                     <div class="p-3.5">
                         <div class="grid three gap-2.5 mb-3">
                             <div class="bg-[#f3fbf7] border border-[#22a06b] rounded-md px-3 py-2.5 text-center">
-                                <div class="text-[9.5px] text-muted uppercase font-bold">Total UP / plano</div>
+                                <div class="text-[9.5px] text-muted uppercase font-bold">{{ t('Total UP / plano') }}</div>
                                 <div class="text-xl font-extrabold text-[#0e5c38]">{{ $this->layout->up_count }}</div>
                                 <div class="text-[10px] text-muted">{{ $this->layout->method }}</div>
                             </div>
                             <div class="bg-[#f8fafc] border border-[#e2e7ee] rounded-md px-3 py-2.5 text-center">
-                                <div class="text-[9.5px] text-muted uppercase font-bold">Efisiensi</div>
+                                <div class="text-[9.5px] text-muted uppercase font-bold">{{ t('Efficiency') }}</div>
                                 <div class="text-xl font-extrabold text-navy">{{ number_format($this->layout->efficiency_pct, 0) }}%</div>
-                                <div class="text-[10px] text-muted">area kepakai</div>
+                                <div class="text-[10px] text-muted">{{ t('area used') }}</div>
                             </div>
                             <div class="bg-[#f8fafc] border border-[#e2e7ee] rounded-md px-3 py-2.5 text-center">
-                                <div class="text-[9.5px] text-muted uppercase font-bold">Waste</div>
+                                <div class="text-[9.5px] text-muted uppercase font-bold">{{ t('Waste') }}</div>
                                 <div class="text-xl font-extrabold text-navy">{{ number_format($this->layout->waste_pct, 0) }}%</div>
-                                <div class="text-[10px] text-muted">sisa plano</div>
+                                <div class="text-[10px] text-muted">{{ t('plano leftover') }}</div>
                             </div>
                         </div>
 
@@ -406,7 +406,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                             @if ($this->visual)
                                 <div class="relative bg-white border-2 border-navy" style="width:{{ $this->visual['boxW'] }}px;height:{{ $this->visual['boxH'] }}px">
                                     <div class="absolute top-0 left-0 right-0 bg-[repeating-linear-gradient(45deg,#e9edf3,#e9edf3_4px,#f4f6fa_4px,#f4f6fa_8px)] border-b border-dashed border-[#a9b4c4] flex items-center justify-center text-[7px] text-[#8a94a6]"
-                                        style="height:{{ $this->visual['gripH'] }}px">gripper</div>
+                                        style="height:{{ $this->visual['gripH'] }}px">{{ t('gripper') }}</div>
                                     @foreach ($this->visual['cells'] as $c)
                                         <div class="absolute flex items-center justify-center text-[8px] font-bold {{ $c['rot'] ? 'bg-[#7c5cd6]/10 border border-[#7c5cd6] text-[#5b3fa0]' : 'bg-[#2c7be5]/10 border border-[#2c7be5] text-[#1560a8]' }}"
                                             style="left:{{ $c['left'] }}px;top:{{ $c['top'] }}px;width:{{ $c['width'] }}px;height:{{ $c['height'] }}px">{{ $c['n'] }}</div>
@@ -416,17 +416,17 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                         </div>
 
                         <div class="flex gap-3.5 text-[10.5px] text-[#556] mt-2 flex-wrap">
-                            <span class="flex items-center gap-1"><span class="w-3.5 h-2.5 rounded-sm inline-block bg-[#2c7be5]/30 border border-[#2c7be5]"></span> tegak</span>
-                            <span class="flex items-center gap-1"><span class="w-3.5 h-2.5 rounded-sm inline-block bg-[#7c5cd6]/30 border border-[#7c5cd6]"></span> diputar 90°</span>
-                            <span class="flex items-center gap-1"><span class="w-3.5 h-2.5 rounded-sm inline-block bg-[repeating-linear-gradient(45deg,#e9edf3,#e9edf3_3px,#f4f6fa_3px,#f4f6fa_6px)]"></span> gripper</span>
+                            <span class="flex items-center gap-1"><span class="w-3.5 h-2.5 rounded-sm inline-block bg-[#2c7be5]/30 border border-[#2c7be5]"></span> {{ t('upright') }}</span>
+                            <span class="flex items-center gap-1"><span class="w-3.5 h-2.5 rounded-sm inline-block bg-[#7c5cd6]/30 border border-[#7c5cd6]"></span> {{ t('rotated 90°') }}</span>
+                            <span class="flex items-center gap-1"><span class="w-3.5 h-2.5 rounded-sm inline-block bg-[repeating-linear-gradient(45deg,#e9edf3,#e9edf3_3px,#f4f6fa_3px,#f4f6fa_6px)]"></span> {{ t('gripper') }}</span>
                         </div>
 
                         <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed mt-2.5 bg-[#e8f4ff] border border-[#b8d9f5] text-[#1560a8]">
-                            💡 Engine mencoba <b>tegak</b>, <b>putar 90°</b>, dan <b>campur</b> → memilih UP terbanyak:
-                            <b>{{ $this->layout->method }} = {{ $this->layout->up_count }} up</b> (efisiensi {{ number_format($this->layout->efficiency_pct, 0) }}%).
-                            Product Designer dapat override bila perlu pertimbangan arah serat/grain.
+                            💡 {{ t('Engine tries') }} <b>{{ t('upright') }}</b>, <b>{{ t('rotate 90°') }}</b>, {{ t('and') }} <b>{{ t('mixed') }}</b> → {{ t('picks the most UPs') }}:
+                            <b>{{ $this->layout->method }} = {{ $this->layout->up_count }} up</b> ({{ t('efficiency') }} {{ number_format($this->layout->efficiency_pct, 0) }}%).
+                            {{ t('Product Designer can override if fiber direction/grain needs to be considered.') }}
                             @if ($this->layout->stat_confirm)
-                                <br>✓ Sudah dikonfirmasi — nilai plano &amp; cut sudah mengalir otomatis ke Costing (bila part ini sudah ditambahkan di sana).
+                                <br>✓ {{ t('Already confirmed — plano & cut values have flowed automatically to Costing (if this part has been added there).') }}
                             @endif
                         </div>
                     </div>

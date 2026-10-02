@@ -105,7 +105,7 @@ new #[Title('Pipeline Board — TELASIH MAKMUR ERP')] class extends Component
         }
 
         if ($targetStageSeq !== $current->stage_seq + 1) {
-            $this->addError('advance', 'Cuma boleh maju 1 tahap tiap kali digeser, tidak bisa lompat tahap.');
+            $this->addError('advance', t('You can only move forward 1 stage per drag; stages cannot be skipped.'));
             unset($this->cardsByStage);
 
             return;
@@ -114,7 +114,7 @@ new #[Title('Pipeline Board — TELASIH MAKMUR ERP')] class extends Component
         if ($this->requiresAssessment($current->stage_code)) {
             $hasResult = AppAssessmentResult::where('id_application', $applicationId)->where('stage_code', $current->stage_code)->exists();
             if (! $hasResult) {
-                $this->addError('advance', "Isi hasil {$current->stage_name} dulu (layar Input Hasil Psikotes/Interview) sebelum lanjut.");
+                $this->addError('advance', str_replace(':stage', $current->stage_name, t('Fill in the :stage result first (Psychotest/Interview Result Input screen) before proceeding.')));
                 unset($this->cardsByStage);
 
                 return;
@@ -144,7 +144,7 @@ new #[Title('Pipeline Board — TELASIH MAKMUR ERP')] class extends Component
     public function reject(): void
     {
         if (trim($this->rejectReason) === '') {
-            $this->addError('reject', 'Alasan reject wajib diisi.');
+            $this->addError('reject', t('Reject reason is required.'));
 
             return;
         }
@@ -164,19 +164,19 @@ new #[Title('Pipeline Board — TELASIH MAKMUR ERP')] class extends Component
 
 <div class="max-w-[1500px] mx-auto my-5 px-4" x-data="{ draggedId: null }">
     <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-md px-3 py-2.5 mb-4">
-        <label class="text-[10.5px] text-muted uppercase font-semibold">Lowongan</label>
+        <label class="text-[10.5px] text-muted uppercase font-semibold">{{ t('Vacancy') }}</label>
         <select wire:model.live="vacancyId" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs min-w-[280px]">
             @foreach ($this->openVacancies as $v)
                 <option value="{{ $v->id_vacancy }}">{{ $v->title }} ({{ $v->vacancy_code }})</option>
             @endforeach
         </select>
-        <span class="ml-auto text-[10.5px] text-muted">🖱 Geser kartu ke kolom berikutnya, atau pakai tombol "Lanjutkan"</span>
+        <span class="ml-auto text-[10.5px] text-muted">🖱 {{ t('Drag the card to the next column, or use the "Continue" button') }}</span>
     </div>
 
     @error('advance') <div class="bg-[#fdecec] border border-[#f5c6c6] text-[#a3453f] text-xs rounded-md px-4 py-2.5 mb-4">⚠ {{ $message }}</div> @enderror
 
     @if (! $this->vacancy)
-        <p class="text-xs text-muted">Belum ada lowongan terbuka.</p>
+        <p class="text-xs text-muted">{{ t('No open vacancies yet.') }}</p>
     @else
         <div class="flex gap-3 overflow-x-auto pb-2">
             @foreach ($this->stages as $stage)
@@ -190,21 +190,21 @@ new #[Title('Pipeline Board — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div class="space-y-2 min-h-[60px]">
                         @forelse ($cards as $card)
-                            <div wire:key="card-{{ $card->id_application }}" draggable="true" title="Seret kartu ini ke kolom lain untuk pindahkan tahap"
+                            <div wire:key="card-{{ $card->id_application }}" draggable="true" title="{{ t('Drag this card to another column to change its stage') }}"
                                 x-on:dragstart="draggedId = {{ $card->id_application }}"
                                 class="bg-white border border-[#d7dbe2] rounded-md p-2.5 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md">
                                 <p class="text-[12.5px] font-semibold">{{ $card->candidate->name ?? '—' }}</p>
                                 <p class="text-[10.5px] text-muted font-mono mb-2">{{ $card->candidate->national_id ?? '' }}</p>
                                 <div class="flex flex-wrap gap-1">
                                     @if ($stage->stage_code !== 'OFFERING')
-                                        <button type="button" wire:click="advance({{ $card->id_application }})" class="text-[10px] font-bold text-white bg-[#1f8a4c] px-2 py-1 rounded">Lanjutkan →</button>
+                                        <button type="button" wire:click="advance({{ $card->id_application }})" class="text-[10px] font-bold text-white bg-[#1f8a4c] px-2 py-1 rounded">{{ t('Continue') }} →</button>
                                     @endif
-                                    <button type="button" wire:click="openReject({{ $card->id_application }})" class="text-[10px] font-bold text-[#a3241f] bg-[#fdecec] px-2 py-1 rounded">Reject</button>
-                                    <button type="button" wire:click="withdraw({{ $card->id_application }})" wire:confirm="Tandai kandidat ini mundur (withdraw)?" class="text-[10px] font-bold text-muted bg-[#eef1f5] px-2 py-1 rounded">Withdraw</button>
+                                    <button type="button" wire:click="openReject({{ $card->id_application }})" class="text-[10px] font-bold text-[#a3241f] bg-[#fdecec] px-2 py-1 rounded">{{ t('Reject') }}</button>
+                                    <button type="button" wire:click="withdraw({{ $card->id_application }})" wire:confirm="{{ t('Mark this candidate as withdrawn?') }}" class="text-[10px] font-bold text-muted bg-[#eef1f5] px-2 py-1 rounded">{{ t('Withdraw') }}</button>
                                 </div>
                             </div>
                         @empty
-                            <p class="text-[10.5px] text-muted text-center py-4">Kosong</p>
+                            <p class="text-[10.5px] text-muted text-center py-4">{{ t('Empty') }}</p>
                         @endforelse
                     </div>
                 </div>
@@ -215,12 +215,12 @@ new #[Title('Pipeline Board — TELASIH MAKMUR ERP')] class extends Component
     @if ($rejectingId)
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('rejectingId', null)">
             <div class="bg-white rounded-xl w-full max-w-[420px] p-5">
-                <h3 class="text-sm font-bold text-navy mb-3">Reject Kandidat</h3>
+                <h3 class="text-sm font-bold text-navy mb-3">{{ t('Reject Candidate') }}</h3>
                 @error('reject') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
-                <x-form.textarea wire:model="rejectReason" rows="3"><x-slot:label>Alasan</x-slot:label></x-form.textarea>
+                <x-form.textarea wire:model="rejectReason" rows="3"><x-slot:label>{{ t('Reason') }}</x-slot:label></x-form.textarea>
                 <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" wire:click="$set('rejectingId', null)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">Batal</button>
-                    <button type="button" wire:click="reject" class="bg-[#a3241f] text-white text-xs font-bold px-4 py-2 rounded-md">Reject</button>
+                    <button type="button" wire:click="$set('rejectingId', null)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="reject" class="bg-[#a3241f] text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Reject') }}</button>
                 </div>
             </div>
         </div>

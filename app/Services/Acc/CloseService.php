@@ -81,10 +81,10 @@ class CloseService
         $ppn = FinTaxRegister::where('tax_code', 'PPN_OUT')->where('fiscal_year', $period->fiscal_year)->where('period_no', $period->period_no)->first();
 
         return [
-            ['▤', 'Trial balance validation', abs($diff) < 0.01 ? 'Total debits equal total credits' : 'Out of balance Rp '.number_format($diff, 0, ',', '.'), abs($diff) < 0.01 ? 'Passed' : 'Exception'],
-            ['▥', 'Bank reconciliation', $recon ? ($recon->status === 'RECONCILED' ? 'Statement agrees with book balance' : 'Difference Rp '.number_format((float) $recon->difference, 0, ',', '.')) : 'No reconciliation recorded for this period', $recon?->status === 'RECONCILED' ? 'Passed' : 'Review'],
-            ['!', 'Unposted journals', $drafts ? "{$drafts} journals not yet posted in {$period->period_name}" : 'No draft or pending journals', $drafts ? 'Exception' : 'Passed'],
-            ['%', 'Tax account reconciliation', $ppn ? 'PPN register status: '.$ppn->status : 'PPN workpaper not generated', $ppn && in_array($ppn->status, ['PAID', 'FILED'], true) ? 'Passed' : 'Review'],
+            ['▤', 'Trial balance validation', abs($diff) < 0.01 ? t('Total debits equal total credits') : str_replace(':amount', number_format($diff, 0, ',', '.'), t('Out of balance Rp :amount')), abs($diff) < 0.01 ? 'Passed' : 'Exception'],
+            ['▥', 'Bank reconciliation', $recon ? ($recon->status === 'RECONCILED' ? t('Statement agrees with book balance') : str_replace(':amount', number_format((float) $recon->difference, 0, ',', '.'), t('Difference Rp :amount'))) : t('No reconciliation recorded for this period'), $recon?->status === 'RECONCILED' ? 'Passed' : 'Review'],
+            ['!', 'Unposted journals', $drafts ? str_replace([':n', ':period'], [$drafts, $period->period_name], t(':n journals not yet posted in :period')) : t('No draft or pending journals'), $drafts ? 'Exception' : 'Passed'],
+            ['%', 'Tax account reconciliation', $ppn ? t('PPN register status').': '.$ppn->status : t('PPN workpaper not generated'), $ppn && in_array($ppn->status, ['PAID', 'FILED'], true) ? 'Passed' : 'Review'],
         ];
     }
 
@@ -113,7 +113,7 @@ class CloseService
             $lines[] = ['account_id' => $id, $bal > 0 ? 'credit' : 'debit' => abs($bal), 'narration' => 'Tutup '.$a->account_code];
             $net += $bal;
         }
-        abort_if(empty($lines), 422, "Tidak ada saldo laba rugi untuk ditutup di {$year}.");
+        abort_if(empty($lines), 422, str_replace(':year', (string) $year, t('There is no profit and loss balance to close in :year.')));
         $current = (int) FinAccount::where('account_code', '322000')->value('account_id');
         $retained = (int) FinAccount::where('account_code', '321000')->value('account_id');
         $profit = round(-$net, 2);

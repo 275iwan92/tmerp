@@ -18,29 +18,29 @@ class ProdProcess extends Model
     // Tahap routing; urutan array = urutan alur produksi, dipakai untuk
     // mengurutkan usulan routing dan mengelompokkan Gantt.
     public const STAGES = [
-        'PREPRESS' => 'Pra-Cetak',
-        'PRESS' => 'Cetak',
-        'POSTPRESS' => 'Pasca-Cetak',
+        'PREPRESS' => 'Pre-press',
+        'PRESS' => 'Printing',
+        'POSTPRESS' => 'Post-press',
         'FINISHING' => 'Finishing',
         'PACKING' => 'Packing',
         'QC' => 'Quality Control',
-        'LOGISTIC' => 'Logistik',
+        'LOGISTIC' => 'Logistics',
     ];
 
     public const COST_BASIS = [
-        'PER_HOUR' => 'Per Jam',
-        'PER_1000' => 'Per 1.000 Unit',
+        'PER_HOUR' => 'Per Hour',
+        'PER_1000' => 'Per 1,000 Units',
         'PER_PCS' => 'Per Pcs',
         'PER_METER' => 'Per Meter',
-        'LUMPSUM' => 'Borongan (Lumpsum)',
+        'LUMPSUM' => 'Lump Sum',
     ];
 
     public const OUTPUT_UOM = [
-        'LEMBAR' => 'Lembar (Plano/Cetak)',
-        'PCS' => 'Pcs (Satuan Jadi)',
-        'METER' => 'Meter Lari',
+        'LEMBAR' => 'Sheet (Plano/Print)',
+        'PCS' => 'Pcs (Finished Units)',
+        'METER' => 'Running Meter',
         'KG' => 'Kilogram',
-        'JAM' => 'Jam Kerja',
+        'JAM' => 'Labor Hours',
     ];
 
     protected $fillable = [
@@ -141,7 +141,7 @@ class ProdProcess extends Model
 
     public function stageLabel(): string
     {
-        return self::STAGES[$this->process_stage] ?? '—';
+        return isset(self::STAGES[$this->process_stage]) ? t(self::STAGES[$this->process_stage]) : '—';
     }
 
     // Kelengkapan data untuk dipakai engine: tanpa angka-angka ini, scheduling

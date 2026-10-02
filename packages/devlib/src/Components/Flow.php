@@ -7,7 +7,8 @@ namespace Devlib\Components;
 // Blok diklik -> buka url (atau event dl:flow {key} bila tanpa url). Legenda status tampil di bawah.
 class Flow extends DevlibComponent
 {
-    public const STATUS = ['done' => ['Sudah', 'success'], 'review' => ['Review', 'info'], 'todo' => ['Belum', 'neutral'], 'locked' => ['Terkunci', 'warn']];
+    // Label English; tampil lewat Lang::text.
+    public const STATUS = ['done' => ['Done', 'success'], 'review' => ['Review', 'info'], 'todo' => ['Not yet', 'neutral'], 'locked' => ['Locked', 'warn']];
 
     public function __construct(
         public array $steps = [],
@@ -48,7 +49,7 @@ class Flow extends DevlibComponent
                                 <span class="dl-flow__no">{{ $i + 1 }}</span>
                                 <span class="dl-flow__ico"><i class="fa-solid {{ \Devlib\Icon::fa($s['icon'] ?? 'file') }}"></i></span>
                                 <span class="dl-flow__txt"><b>{{ $s['label'] }}</b>@if (! empty($s['module']))<small>{{ $s['module'] }}</small>@endif</span>
-                                <x-dl::badge :label="$status($s['status'] ?? null)[0]" :tone="$status($s['status'] ?? null)[1]" />
+                                <x-dl::badge :label="\Devlib\Lang::text($status($s['status'] ?? null)[0])" :tone="$status($s['status'] ?? null)[1]" />
                             </a>
                             @if (! empty($s['branch']))
                                 <ul class="dl-flow__branch">
@@ -60,7 +61,7 @@ class Flow extends DevlibComponent
                         </li>
                     @endforeach
                 </ol>
-                <div class="dl-flow__legend">@foreach ($statuses() as $k => [$l, $t])<x-dl::badge :label="$l" :tone="$t" />@endforeach</div>
+                <div class="dl-flow__legend">@foreach ($statuses() as $k => [$l, $t])<x-dl::badge :label="\Devlib\Lang::text($l)" :tone="$t" />@endforeach</div>
             </div>
             BLADE;
     }

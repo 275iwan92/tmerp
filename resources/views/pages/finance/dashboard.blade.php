@@ -63,23 +63,23 @@ new #[Title('Accounting Dashboard — TELASIH MAKMUR ERP')] class extends Compon
 };
 ?>
 
-<x-ledger.page title="Accounting Dashboard" subtitle="Liquidity, receivables, payables, profitability, and compliance status.">
+<x-ledger.page :title="t('Accounting Dashboard')" :subtitle="t('Liquidity, receivables, payables, profitability, and compliance status.')">
     <x-slot:actions>
         <input type="date" class="lg-period" wire:model.live="asOf">
-        <a class="lg-btn light" href="{{ route('finance.statements') }}">⇩ Financial Statements</a>
-        <a class="lg-btn primary" href="{{ route('finance.journals') }}">＋ New Journal</a>
+        <a class="lg-btn light" href="{{ route('finance.statements') }}">⇩ {{ t('Financial Statements') }}</a>
+        <a class="lg-btn primary" href="{{ route('finance.journals') }}">＋ {{ t('New Journal') }}</a>
     </x-slot:actions>
 
     <div class="lg-cards">
-        <x-ledger.metric label="Cash & Bank" icon="◉" :value="Fmt::short($this->h['cash'])" :pill="$this->h['cash_change'] !== null ? Fmt::pct($this->h['cash_change']) : null" :tone="($this->h['cash_change'] ?? 0) >= 0 ? 'good' : 'bad'" sub="vs. prior month" />
-        <x-ledger.metric label="Accounts Receivable" icon="⇧" :value="Fmt::short($this->h['ar'])" :pill="$this->h['ar_n'].' invoices'" tone="warn" :sub="Fmt::short($this->h['ar_overdue']).' overdue'" />
-        <x-ledger.metric label="Accounts Payable" icon="⇩" :value="Fmt::short($this->h['ap'])" :pill="$this->h['ap_n'].' bills'" tone="warn" :sub="Fmt::short($this->h['ap_due']).' due this week'" />
-        <x-ledger.metric label="Net Profit YTD" icon="↗" :value="Fmt::short($this->h['net_profit'])" :pill="$this->h['profit_change'] !== null ? Fmt::pct($this->h['profit_change']) : null" :tone="$this->h['net_profit'] >= 0 ? 'good' : 'bad'" :sub="'Revenue '.Fmt::short($this->h['revenue'])" />
+        <x-ledger.metric :label="t('Cash & Bank')" icon="◉" :value="Fmt::short($this->h['cash'])" :pill="$this->h['cash_change'] !== null ? Fmt::pct($this->h['cash_change']) : null" :tone="($this->h['cash_change'] ?? 0) >= 0 ? 'good' : 'bad'" :sub="t('vs. prior month')" />
+        <x-ledger.metric :label="t('Accounts Receivable')" icon="⇧" :value="Fmt::short($this->h['ar'])" :pill="str_replace(':n', $this->h['ar_n'], t(':n invoices'))" tone="warn" :sub="str_replace(':amount', Fmt::short($this->h['ar_overdue']), t(':amount overdue'))" />
+        <x-ledger.metric :label="t('Accounts Payable')" icon="⇩" :value="Fmt::short($this->h['ap'])" :pill="str_replace(':n', $this->h['ap_n'], t(':n bills'))" tone="warn" :sub="str_replace(':amount', Fmt::short($this->h['ap_due']), t(':amount due this week'))" />
+        <x-ledger.metric :label="t('Net Profit YTD')" icon="↗" :value="Fmt::short($this->h['net_profit'])" :pill="$this->h['profit_change'] !== null ? Fmt::pct($this->h['profit_change']) : null" :tone="$this->h['net_profit'] >= 0 ? 'good' : 'bad'" :sub="str_replace(':amount', Fmt::short($this->h['revenue']), t('Revenue :amount'))" />
     </div>
 
     <div class="lg-two wide">
-        <x-ledger.panel title="Cash Flow Overview" subtitle="Monthly operating cash movement — last 12 months">
-            <x-slot:action><a class="lg-link" href="{{ route('finance.cash-flow') }}">View report</a></x-slot:action>
+        <x-ledger.panel :title="t('Cash Flow Overview')" :subtitle="t('Monthly operating cash movement — last 12 months')">
+            <x-slot:action><a class="lg-link" href="{{ route('finance.cash-flow') }}">{{ t('View report') }}</a></x-slot:action>
             <div class="lg-chart">
                 @if ($this->chart['line'])
                     <svg viewBox="0 0 700 235" width="100%" role="img">
@@ -95,25 +95,25 @@ new #[Title('Accounting Dashboard — TELASIH MAKMUR ERP')] class extends Compon
                         @endforeach
                     </div>
                 @else
-                    <div class="lg-empty">Belum ada arus kas untuk digambarkan.</div>
+                    <div class="lg-empty">{{ t('No cash flow to chart yet.') }}</div>
                 @endif
             </div>
         </x-ledger.panel>
 
-        <x-ledger.panel title="Compliance Center" subtitle="Closing and tax deadlines">
-            <x-slot:action><a class="lg-link" href="{{ route('finance.tax') }}">Open tax</a></x-slot:action>
+        <x-ledger.panel :title="t('Compliance Center')" :subtitle="t('Closing and tax deadlines')">
+            <x-slot:action><a class="lg-link" href="{{ route('finance.tax') }}">{{ t('Open tax') }}</a></x-slot:action>
             <div class="lg-list">
                 @forelse ($this->compliance as $c)
                     <x-ledger.row :icon="$c[0]" :tone="$c[1]" :title="$c[2]" :text="$c[3]"><div class="lg-n">{{ $c[4] }}</div></x-ledger.row>
                 @empty
-                    <div class="lg-empty">Tidak ada tenggat aktif.</div>
+                    <div class="lg-empty">{{ t('No active deadlines.') }}</div>
                 @endforelse
             </div>
         </x-ledger.panel>
     </div>
 
     <div class="lg-two even">
-        <x-ledger.panel title="Finance Action Center" subtitle="Prioritized tasks">
+        <x-ledger.panel :title="t('Finance Action Center')" :subtitle="t('Prioritized tasks')">
             <div class="lg-list">
                 @foreach ($this->actions as $a)
                     <x-ledger.row :icon="$a[0]" :tone="$a[1]" :title="$a[2]" :text="$a[3]"><div class="lg-n">{{ $a[4] }}</div></x-ledger.row>
@@ -121,13 +121,13 @@ new #[Title('Accounting Dashboard — TELASIH MAKMUR ERP')] class extends Compon
             </div>
         </x-ledger.panel>
 
-        <x-ledger.panel title="Shortcuts" subtitle="Layar yang paling sering dipakai tim Finance">
+        <x-ledger.panel :title="t('Shortcuts')" :subtitle="t('Screens the Finance team uses most often')">
             <div class="lg-list">
-                <x-ledger.row icon="✎" tone="bl" title="Journal Entries" text="Buat, ajukan, setujui & posting jurnal manual"><a class="lg-link" href="{{ route('finance.journals') }}">Open</a></x-ledger.row>
-                <x-ledger.row icon="▥" tone="gr" title="Cashier (BKM/BKK/BBM/BBK)" text="Voucher kas & bank harian"><a class="lg-link" href="{{ route('finance.cash-bank') }}">Open</a></x-ledger.row>
-                <x-ledger.row icon="☷" tone="pu" title="Master of Accounts" text="Bagan akun & pemetaan laporan"><a class="lg-link" href="{{ route('finance.coa') }}">Open</a></x-ledger.row>
-                <x-ledger.row icon="≡" tone="bl" title="Trial Balance" text="Kontrol saldo sebelum tutup buku"><a class="lg-link" href="{{ route('finance.trial-balance') }}">Open</a></x-ledger.row>
-                <x-ledger.row icon="⌘" tone="or" title="Process Engine" text="Aturan approval & peta integrasi modul"><a class="lg-link" href="{{ route('finance.engine') }}">Open</a></x-ledger.row>
+                <x-ledger.row icon="✎" tone="bl" :title="t('Journal Entries')" :text="t('Create, submit, approve & post manual journals')"><a class="lg-link" href="{{ route('finance.journals') }}">{{ t('Open') }}</a></x-ledger.row>
+                <x-ledger.row icon="▥" tone="gr" :title="t('Cashier (BKM/BKK/BBM/BBK)')" :text="t('Daily cash & bank vouchers')"><a class="lg-link" href="{{ route('finance.cash-bank') }}">{{ t('Open') }}</a></x-ledger.row>
+                <x-ledger.row icon="☷" tone="pu" :title="t('Master of Accounts')" :text="t('Chart of accounts & report mapping')"><a class="lg-link" href="{{ route('finance.coa') }}">{{ t('Open') }}</a></x-ledger.row>
+                <x-ledger.row icon="≡" tone="bl" :title="t('Trial Balance')" :text="t('Balance control before closing the books')"><a class="lg-link" href="{{ route('finance.trial-balance') }}">{{ t('Open') }}</a></x-ledger.row>
+                <x-ledger.row icon="⌘" tone="or" :title="t('Process Engine')" :text="t('Approval rules & module integration map')"><a class="lg-link" href="{{ route('finance.engine') }}">{{ t('Open') }}</a></x-ledger.row>
             </div>
         </x-ledger.panel>
     </div>

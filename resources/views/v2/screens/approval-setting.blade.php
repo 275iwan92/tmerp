@@ -22,9 +22,9 @@
             ['key' => 'levels', 'label' => t('Number of Levels'), 'type' => 'number'],
             ['key' => 'approvers', 'label' => t('Approver per Level (position)')],
             ['key' => 'final', 'label' => t('Final Status')],
-            ['key' => 'active', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Aktif' => 'success', 'Nonaktif' => 'neutral']],
+            ['key' => 'active', 'label' => 'Status', 'type' => 'badge', 'tones' => [t('Active') => 'success', t('Inactive') => 'neutral']],
         ]"
-        :stats="[['label' => t('All')], ['label' => t('Active'), 'where' => ['active' => 'Aktif'], 'tone' => 'success'], ['label' => t('Inactive'), 'where' => ['active' => 'Nonaktif'], 'tone' => 'neutral']]" />
+        :stats="[['label' => t('All')], ['label' => t('Active'), 'where' => ['active' => t('Active')], 'tone' => 'success'], ['label' => t('Inactive'), 'where' => ['active' => t('Inactive')], 'tone' => 'neutral']]" />
 @elseif (! $cfg)
     <x-dl::action-form action="{{ route('v2.approval-setting.create') }}">
         <x-dl::card title="+ New Record — Setting Approval" description="The document code (e.g. PR, PO, CO) must match the code used by its document screen.">
@@ -50,9 +50,9 @@
         :tabs="['general' => 'General']"
         :created-by="$cfg->created_by" :created-at="$cfg->created_at?->toDateTimeString()" :updated-by="$cfg->updated_by" :updated-at="$cfg->updated_at?->toDateTimeString()">
         <x-slot:strip>
-            <div class="dl-strip__kv dl-strip__doc"><span>Kode</span><b>{{ $cfg->module_code }}</b></div>
-            <div class="dl-strip__kv"><span>Dokumen</span><b>{{ $name }}</b></div>
-            <div class="dl-strip__kv dl-strip__grand"><span>Jumlah Level</span><b>{{ count($levels) }}</b></div>
+            <div class="dl-strip__kv dl-strip__doc"><span>{{ t('Code') }}</span><b>{{ $cfg->module_code }}</b></div>
+            <div class="dl-strip__kv"><span>{{ t('Document') }}</span><b>{{ t($name) }}</b></div>
+            <div class="dl-strip__kv dl-strip__grand"><span>{{ t('Number of Levels') }}</span><b>{{ count($levels) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="3">

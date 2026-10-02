@@ -104,7 +104,7 @@ final class PurchaseOrder
     // Baris PO Kontan tanpa PR: item Master Bahan (stok) atau uraian bebas (non-stok, wajib akun biaya).
     public static function addMaterial(PoOrder $po, int $materialId): void
     {
-        abort_unless($po->status === 'DRAFT', 422, 'PO sudah diajukan.');
+        abort_unless($po->status === 'DRAFT', 422, t('The PO is already submitted.'));
         $m = MatRaw::findOrFail($materialId);
         $class = MatCategory::level(1)->where('category_name', $m->category1)->value('stock_class') ?? 'RAW';
         self::addLine($po, ['item_id' => $m->material_id, 'c_item_code' => $m->material_code, 'i_description' => $m->material_name, 'i_line_class' => $class,
@@ -114,7 +114,7 @@ final class PurchaseOrder
 
     public static function addFree(PoOrder $po, string $description, string $uom, ?int $accountId): void
     {
-        abort_unless($po->status === 'DRAFT', 422, 'PO sudah diajukan.');
+        abort_unless($po->status === 'DRAFT', 422, t('The PO is already submitted.'));
         self::addLine($po, ['i_description' => mb_substr($description, 0, 255), 'i_line_class' => 'INDIRECT', 'i_uom' => $uom ?: 'PCS', 'is_stock' => false,
             'i_coa_account_id' => $accountId]);
     }
@@ -139,7 +139,7 @@ final class PurchaseOrder
 
     public static function save(PoOrder $po, array $in): void
     {
-        abort_unless($po->status === 'DRAFT', 422, 'PO sudah diajukan, tidak bisa diubah.');
+        abort_unless($po->status === 'DRAFT', 422, t('The PO is already submitted and cannot be changed.'));
         if ($po->isCash()) {
             foreach (self::CASH_HEADER as $f) {
                 if (array_key_exists($f, $in)) {
@@ -185,7 +185,7 @@ final class PurchaseOrder
             ->pluck('pr_line_id')->flip();
 
         return $allocs->mapWithKeys(fn ($a) => [$a->getKey() => ($a->line->requisition->doc_no ?? 'PR').' · '.$a->line->i_description.' · '.Locale::decimal(($a->i_qty ?? $a->line->i_qty), 2).' '.$a->line->i_uom
-            .(isset($quoted[$a->pr_line_id]) ? ' · sedang di-PQ' : '')])->all();
+            .(isset($quoted[$a->pr_line_id]) ? ' · '.t('being quoted in a PQ') : '')])->all();
     }
 
     public static function addAllocation(PoOrder $po, int $allocId): void
@@ -198,14 +198,14 @@ final class PurchaseOrder
         if ($po->isCash()) {
             $po->refresh()->recalcTax();
             if ((float) $po->c_grand_total > self::maxCash()) {
-                return 'PO Kontan maksimal Rp '.\Devlib\Locale::number(self::maxCash(), 0).' (Settings > Constants PO_CASH_MAX). Nilai ini Rp '
-                    .\Devlib\Locale::number((float) $po->c_grand_total, 0).' — pakai PO biasa.';
+                return str_replace([':max', ':value'], [\Devlib\Locale::number(self::maxCash(), 0), \Devlib\Locale::number((float) $po->c_grand_total, 0)],
+                    t('A Cash PO is at most Rp :max (Settings > Constants PO_CASH_MAX). This value is Rp :value — use a regular PO.'));
             }
             if (! $po->i_cash_mode || ! $po->i_petty_cash_id) {
-                return 'PO Kontan wajib memilih mode (Kasbon / Beli dulu) dan kas kecil.';
+                return t('A Cash PO must choose a mode (Cash advance / Buy first) and a petty cash fund.');
             }
             if ($po->lines()->where('is_stock', false)->whereNull('i_coa_account_id')->exists()) {
-                return 'Baris non-stok PO Kontan wajib punya akun biaya.';
+                return t('Non-stock lines of a Cash PO must have an expense account.');
             }
         }
         $c = self::component($po->po_id);
@@ -234,7 +234,7 @@ final class PurchaseOrder
 
     public static function delete(PoOrder $po): void
     {
-        abort_unless($po->status === 'DRAFT', 422, 'Hanya PO DRAFT yang bisa dihapus.');
+        abort_unless($po->status === 'DRAFT', 422, t('Only a DRAFT PO can be deleted.'));
         $c = self::component($po->po_id);
         try {
             $c->delete();

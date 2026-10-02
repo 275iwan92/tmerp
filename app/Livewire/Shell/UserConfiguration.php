@@ -22,8 +22,8 @@ class UserConfiguration extends Component
     public function sections(): array
     {
         return [
-            'themes' => ['label' => Translator::t('shell_cfg_themes', 'Themes'), 'icon' => 'fa-solid fa-palette'],
-            'language' => ['label' => Translator::t('shell_cfg_language', 'Language'), 'icon' => 'fa-solid fa-language'],
+            'themes' => ['label' => t('Themes'), 'icon' => 'fa-solid fa-palette'],
+            'language' => ['label' => t('Language'), 'icon' => 'fa-solid fa-language'],
         ];
     }
 
@@ -40,11 +40,11 @@ class UserConfiguration extends Component
     {
         $themes = SysTheme::where('activate', true)->orderBy('sort_order')->get();
 
-        $families = ['pastel' => 'Pastel', 'cerah' => 'Cerah', 'dark' => 'Dark', 'hitam' => 'Hitam'];
+        $families = ['pastel' => t('Pastel'), 'cerah' => t('Bright'), 'dark' => t('Dark'), 'hitam' => t('Black')];
         $hues = [
-            'blue' => Translator::t('shell_hue_blue', 'Biru'),
-            'green' => Translator::t('shell_hue_green', 'Hijau'),
-            'red' => Translator::t('shell_hue_red', 'Merah'),
+            'blue' => t('Blue'),
+            'green' => t('Green'),
+            'red' => t('Red'),
         ];
 
         $rows = [];
