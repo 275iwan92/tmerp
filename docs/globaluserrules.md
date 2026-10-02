@@ -126,7 +126,7 @@
       Karena itu kode jenis order di laporan CO (RTP = Recalc) belum diubah.
 21. **[2026-10-02] Customer Invoice + Piutang (AR) = satu modul; ketentuan keuangan dan akuntansinya di
     `docs/md_for_systems/customerinvoice_accounting.md`** (rencana layar dan tabel: `customerinvoice_plan.md`).
-    Disetujui user, modul belum dibangun:
+    Disetujui user; terpasang di mockup.test dan tmerp.test (2026-10-02, `customerinvoice_review.md`):
     - **Dua seri nomor invoice**, satu per identitas: Non PPN (Telasih Makmur) `275/TM/IX/2026`, PPN (CV. Langgeng Jaya
       Makmur) `118/LJM/IX/2026`. Format lama dan urut ulang bulanan tetap; **nomor terbit otomatis saat Confirm**, tidak
       diketik, tidak dipakai ulang; format dan kode = data di master seri nomor.
@@ -143,6 +143,16 @@
       Jaya Makmur, Non PPN = BCA Puspita Dewi Widodo.
     - **Setiap urusan keuangan dan akuntansi wajib terdokumentasi jelas** (jurnal, nomor, pajak, pengendalian) di
       dokumen di atas, dan diperbarui tiap ada keputusan baru.
+    - **Setiap tagihan harus terkait Surat Jalan pengiriman DAN validasi customer atas yang terkirim** (user 2026-10-02:
+      "karena bisa ada retur dan rusak di jalan"). Tidak ada invoice tanpa Surat Jalan; baris baru bisa ditagih sesudah
+      Proof of Delivery; yang diterima kurang dari yang dikirim wajib beralasan (rusak di jalan, diretur, kurang kirim);
+      yang tidak diterima tidak ditagih. Buktinya (penerima, jam tiba, foto Surat Jalan) tampil di invoice.
+    - **Uang muka harus jelas dari Customer Order yang mana dan riwayatnya terlacak dan tertera jelas**: uang muka hanya
+      dari satu Customer Order, hanya memotong invoice order itu, dan buku uang mukanya (ditagih → diterima → dipotong di
+      invoice mana → sisa) tampil di uang muka, di Customer Order, di laporan, dan di cetakan invoice.
+    - **Belum cukup wawancara pemakai untuk urusan invoicing** (user 2026-10-02: "sarankan yang terbaik dan jalankan
+      dulu"): pilihan yang belum dipastikan dijalankan dengan bawaan terbaik, dicatat di `customerinvoice_review.md`
+      bagian 10, dan harus mudah diubah. Retur sesudah invoice (Credit Note) menunggu wawancara itu.
 
 21. **[2026-10-02] Sales = satu grup besar dengan tiga bagian: Inquiry & Quotation, Order, CRM.** Kata user: *Inquiry adalah
     tools dalam mencapai percepatan keluarnya harga jual; Order adalah pencatatnya; CRM adalah bangun hubungan dengan customer.*
@@ -540,6 +550,7 @@
 | 2026-10-02 | B.3: kamus hanya berisi label, bukan data — nomor dokumen, nama customer / supplier / product, angka dan tanggal di judul form, kartu, hint dan pesan dibungkus `raw()` supaya tidak tercatat di Translation Dictionary; baris data yang sudah tercatat dihapus (migrasi `clean_dictionary_data_values`). |
 | 2026-10-02 | A.21: **Customer Invoice Tahap 1 dibangun di mockup.test** (user: "jalankan dulu lalu buatkan dokumentasinya buat saya review") — invoice dari Surat Jalan yang sudah diterima, tagihan uang muka + Record Receipt, potongan uang muka otomatis, nomor dari seri saat Confirm, jurnal otomatis, master Company Bank Accounts dan Document Number Series, qty diterima di Proof of Delivery. Menu Down Payment lama dimatikan di mockup.test. tmerp.test belum. Dokumen review: `docs/md_for_systems/customerinvoice_review.md`. |
 | 2026-10-02 | A.21: **layar lama dihentikan** (user: "yang lama dihapus saja, gantikan dengan yang baru. yang lama disudahi saja") — Order to Cash dan Down Payment lama diarsipkan, menunya dihapus; Customer Invoice satu-satunya pintu untuk invoice, uang muka, dan penerimaan uang customer (Record Payment: satu penerimaan untuk satu atau beberapa invoice). Terpasang di mockup.test dan tmerp.test. Belum ada gantinya: AR Aging. |
+| 2026-10-02 | A.21: **tagihan terkait Surat Jalan + validasi customer; uang muka terlacak per CO** (user: "setiap tagihan harus related dengan surat jalan pengiriman dan validasi dari customer nilai yang terkirim, karena bisa ada retur dan rusak di jalan; uang muka jelas dari CO yang mana dan historical-nya terlacak dan tertera dengan jelas"; "sarankan yang terbaik dan jalankan dulu"). Dibangun di ddt + tm2: alasan selisih per baris di Proof of Delivery, tab Delivery di invoice, buku uang muka per order, tab Billing di Customer Order, To Invoice, AR Aging, Down Payment Ledger, satu akun bank per rekening (111210–111250). Retur sesudah invoice menunggu wawancara pemakai. |
 | 2026-10-02 | C.18: klik logo atau nama aplikasi di kepala Layer Menu = semua tab ditutup dan opening screen tampil; posisi menu tetap; isian belum di-Save -> satu pertanyaan dulu. Objek DevLib `x-dl::layer-menu` prop `home` + `Shell::goHome`. |
 | 2026-10-02 | C.33 + E.3: **opening screen = papan widget** — top management dulu (yang lain masih template), katalog widget + susunan per user + target KPI sebagai data, widget dipasang / dilepas lewat Customize atau lewat asisten; dibangun di ddt, review `openingboard_review.md`. |
 | 2026-10-02 | C.33: papan widget **dipasang di tm2**; pilihan periode Harian – Tahunan (tersimpan per user, target bulanan dijumlah); order value merinci Draft di samping Confirmed; angka papan ikut setelan Dummy & Legacy Data. |

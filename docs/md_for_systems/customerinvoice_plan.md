@@ -3,7 +3,9 @@
 > Status: **arah dan lima keputusan A–E DISETUJUI user 2026-10-02** (bagian 8). **Tahap 1 + penerimaan pelunasan
 > (Record Payment) sudah terpasang di mockup.test DAN tmerp.test; layar lama Order to Cash dan Down Payment
 > diarsipkan atas perintah user 2026-10-02** ("yang lama dihapus saja, gantikan dengan yang baru"). Ringkasan untuk
-> review: `customerinvoice_review.md`. Sisa Tahap 2 dan Tahap 3 belum.
+> review: `customerinvoice_review.md`. **Dari Tahap 2 sudah ada: Record Payment, To Invoice, AR Aging, Down Payment
+> Ledger, tab Billing di Customer Order, bukti terima per baris Surat Jalan (alasan selisih).** Belum: PPh 23 / selisih
+> / kelebihan bayar, Statement of Account, Invoice Register, dan Tahap 3.
 > Ketentuan keuangan dan akuntansi (jurnal, nomor, pajak, pengendalian): **`customerinvoice_accounting.md`**.
 > Analisa (penomoran, detail baris, software pasar, aturan Indonesia): bagian 9.
 > Acuan lapangan: `docs/attachments/` — `print out tagihan customer invoice.jpeg`,

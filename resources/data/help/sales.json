@@ -41,6 +41,10 @@
             {
                 "en": "A Rejected or Cancelled CO cannot be edited: click Duplicate to make a new INSTANT CO with the same lines, fix it and Confirm again. A Draft INSTANT CO can be removed with Delete.",
                 "id": "CO yang Rejected atau Cancelled tidak bisa diubah: klik Duplicate untuk membuat CO INSTANT baru dengan baris yang sama, perbaiki lalu Confirm lagi. CO INSTANT yang masih Draft bisa dihapus dengan Delete."
+            },
+            {
+                "en": "Tab Billing (after the order leaves Draft) shows, read only, the delivery notes of the order with what the customer received and which invoice billed it, the invoices and down payments, and the down payment history with its balance.",
+                "id": "Tab Billing (sesudah order keluar dari Draft) memuat, hanya baca, Surat Jalan order ini dengan yang diterima customer dan invoice yang menagihnya, invoice dan uang muka, serta riwayat uang muka beserta saldonya."
             }
         ],
         "fields": [
@@ -268,6 +272,11 @@
                 "label": "Net Receivable",
                 "en": "Final amount after discount, other costs, PPN and PPh 23. Calculated by the system; the footer also shows DPP, Total Billing and the amount in words.",
                 "id": "Jumlah akhir setelah diskon, biaya lain, PPN dan PPh 23. Dihitung sistem; footer juga menampilkan DPP, Total Billing dan terbilang."
+            },
+            {
+                "label": "Billing",
+                "en": "Read-only tab. Order value, value waiting for proof of delivery, value ready to invoice, invoiced, down payment received / deducted / left, paid by customer and outstanding. The documents are made in Finance > Customer Invoice.",
+                "id": "Tab hanya baca. Nilai order, nilai yang menunggu bukti terima, nilai siap ditagih, sudah ditagih, uang muka diterima / dipotong / sisa, dibayar customer, dan sisa tagihan. Dokumennya dibuat di Finance > Customer Invoice."
             }
         ]
     },
@@ -793,6 +802,10 @@
             {
                 "en": "If the customer was closed or rejected the goods, the note stays open for another attempt (Retry). Received, Partially received or Not shipped locks the record.",
                 "id": "Bila customer tutup atau menolak barang, surat jalan tetap terbuka untuk percobaan berikutnya (Retry). Received, Partially received atau Not shipped mengunci catatan."
+            },
+            {
+                "en": "When the result is Partially received, type per line what the customer really received and choose the Reason for Difference (damaged in transit, returned by customer, short shipped, other). Only the received quantity can be invoiced.",
+                "id": "Bila hasilnya Partially received, ketik per baris yang benar-benar diterima customer dan pilih Reason for Difference (rusak di jalan, diretur customer, kurang kirim, lainnya). Hanya qty diterima yang bisa ditagih."
             }
         ],
         "fields": [
@@ -840,6 +853,21 @@
                 "label": "Promise",
                 "en": "Waiting, Kept, Missed or Retry, based on the last recorded arrival.",
                 "id": "Waiting, Kept, Missed atau Retry, berdasarkan kedatangan terakhir yang dicatat."
+            },
+            {
+                "label": "Received",
+                "en": "Quantity the customer accepted on this line. Never more than Shipped. This is the quantity Finance can invoice.",
+                "id": "Qty yang diterima customer pada baris ini. Tidak pernah lebih dari Shipped. Inilah qty yang bisa ditagih Finance."
+            },
+            {
+                "label": "Reason for Difference",
+                "en": "Required when Received is less than Shipped: Damaged in transit, Returned by customer, Short shipped or Other.",
+                "id": "Wajib bila Received kurang dari Shipped: Damaged in transit, Returned by customer, Short shipped, atau Other."
+            },
+            {
+                "label": "Condition / Note",
+                "en": "Short note on the condition of the goods, for example \"10 pcs wet\".",
+                "id": "Catatan singkat kondisi barang, misalnya \"10 pcs basah\"."
             }
         ]
     },

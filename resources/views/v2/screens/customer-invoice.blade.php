@@ -73,6 +73,7 @@
                         ['key' => 'product', 'label' => 'Product', 'type' => 'display'],
                         ['key' => 'shipped', 'label' => 'Shipped', 'type' => 'display', 'width' => '100px'],
                         ['key' => 'received', 'label' => 'Received', 'type' => 'display', 'width' => '100px'],
+                        ['key' => 'reason', 'label' => 'Reason for Difference', 'type' => 'display', 'width' => '160px'],
                         ['key' => 'invoiced', 'label' => 'Already Invoiced', 'type' => 'display', 'width' => '130px'],
                         ['key' => 'remaining', 'label' => 'To Invoice', 'type' => 'display', 'width' => '100px'],
                         ['key' => 'unit', 'label' => 'Unit', 'type' => 'display', 'width' => '70px'],
@@ -128,11 +129,15 @@
         $journal = CustomerInvoice::journalRows($inv);
         $payments = CustomerInvoice::paymentRows($inv);
         $dpRows = $isDp ? [] : CustomerInvoice::downPaymentRows($inv);
+        $delivery = $isDp ? [] : CustomerInvoice::deliveryRows($inv);
+        $dpUse = $isDp ? CustomerInvoice::downPaymentUse($inv) : null;
+        $history = $isDp ? CustomerInvoice::downPaymentHistory($inv->co_id) : [];
     @endphp
     <x-dl::form id="customer-invoice-form" :title="($isDp ? 'Down Payment Invoice' : 'Customer Invoice').' · '.raw($inv->invoice_number ?: 'Draft #'.$inv->invoice_id)"
         :subtitle="raw(($customer?->customer_name ?? '—').' · '.$identity)" panel="top" kind="document" :status="$status" :stage="$draft ? null : CustomerInvoice::state($inv)"
         :action="route('v2.customer-invoice.save', $inv->invoice_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
-        :tabs="['general' => 'General', 'tax' => 'Tax', 'notes' => 'Notes', 'payments' => 'Payments', 'journal' => 'Journal']"
+        :tabs="$isDp ? ['general' => 'General', 'tax' => 'Tax', 'notes' => 'Notes', 'payments' => 'Down Payment History', 'journal' => 'Journal']
+            : ['general' => 'General', 'delivery' => 'Delivery', 'tax' => 'Tax', 'notes' => 'Notes', 'payments' => 'Payments', 'journal' => 'Journal']"
         :created-by="$inv->created_by" :created-at="$inv->created_at?->toDateTimeString()" :updated-by="$inv->updated_by" :updated-at="$inv->updated_at?->toDateTimeString()">
         <x-slot:special>
             <x-dl::button size="sm" preset="print" label="Print" :href="PrintDocs::url($printType, $inv->invoice_id)" target="_blank" />
@@ -144,6 +149,9 @@
             @endif
             @if ($canPay)
                 <x-dl::button size="sm" variant="success" icon="fa-money-bill-wave" label="Record Payment" data-dl-open="invoice-payment" />
+            @endif
+            @if ($inv->co_id)
+                <x-dl::button size="sm" variant="secondary" icon="fa-file-signature" label="Open Customer Order" :href="route('v2.screen', 'customer-order').'?id='.$inv->co_id" />
             @endif
         </x-slot:special>
         <x-slot:strip>
@@ -211,9 +219,31 @@
             <x-dl::field.text name="notes" label="Notes" multiline :value="$inv->notes" :readonly="! $draft" :source="Src::of('tm2acc.fin_invoice.notes')" />
         </x-slot:notes>
 
+        <x-slot:delivery>
+            @unless ($isDp)
+                <x-dl::alert tone="info" :message="t('Every line of this invoice comes from a delivery note the customer has received. Shipped, Received and the reason for a difference come from the Proof of Delivery.')" />
+                <x-dl::table :columns="['dn' => 'Delivery Note', 'date' => 'Delivery Date', 'product' => 'Product', 'shipped' => ['Shipped', 'num' => true, 'raw' => true],
+                        'received' => ['Received', 'num' => true, 'raw' => true], 'diff' => ['Difference', 'num' => true, 'raw' => true], 'reason' => 'Reason for Difference', 'note' => 'Condition / Note',
+                        'arrived' => 'Arrived', 'received_by' => 'Received by', 'photo' => 'Signed Note']"
+                    :rows="$delivery" empty="No delivery note behind this document." source="{{ Src::of('tm2sdi.do_line', 'tm2sdi.do_delivery', 'tm2sdi.do_delivery_pod') }}" />
+                <x-dl::action-bar>
+                    @foreach (collect($delivery)->unique('delivery_id') as $d)
+                        <x-dl::button size="sm" variant="secondary" icon="fa-truck" :label="'Proof of Delivery · '.raw($d['dn'])" :href="route('v2.screen', 'proof-of-delivery').'?id='.$d['delivery_id']" />
+                    @endforeach
+                </x-dl::action-bar>
+            @endunless
+        </x-slot:delivery>
+
         <x-slot:payments>
-            <x-dl::table :columns="['what' => 'Event', 'no' => 'Document No.', 'date' => 'Date', 'amount' => ['Amount', 'num' => true, 'raw' => true]]" :rows="$payments"
-                empty="No money received for this document yet." source="{{ Src::of('tm2acc.fin_payment_alloc', 'tm2acc.fin_dp_allocation', 'tm2acc.fin_voucher') }}" />
+            @if ($isDp)
+                {{-- Buku uang muka order ini: semua tagihan uang muka order yang sama, uang yang diterima, dan invoice yang memotongnya. --}}
+                <x-dl::table :columns="['date' => 'Date', 'event' => 'Event', 'dp_no' => 'Down Payment No.', 'doc_no' => 'Document No.', 'billed' => ['Billed', 'num' => true, 'raw' => true],
+                        'in' => ['Money In', 'num' => true, 'raw' => true], 'out' => ['Deducted', 'num' => true, 'raw' => true], 'balance' => ['Balance', 'num' => true, 'raw' => true]]"
+                    :rows="$history" empty="No down payment for this order." source="{{ Src::of('tm2acc.fin_invoice (CUSTOMER_DP)', 'tm2acc.fin_voucher', 'tm2acc.fin_dp_allocation') }}" />
+            @else
+                <x-dl::table :columns="['what' => 'Event', 'no' => 'Document No.', 'date' => 'Date', 'amount' => ['Amount', 'num' => true, 'raw' => true]]" :rows="$payments"
+                    empty="No money received for this document yet." source="{{ Src::of('tm2acc.fin_payment_alloc', 'tm2acc.fin_dp_allocation', 'tm2acc.fin_voucher') }}" />
+            @endif
         </x-slot:payments>
 
         <x-slot:journal>
@@ -267,6 +297,8 @@
                     $t['dp'] > 0 ? ['label' => t('Down Payment'), 'value' => '('.$num($t['dp']).')'] : null,
                     (float) $inv->paid_amount - (float) $inv->dp_applied_amount > 0 ? ['label' => t('Paid'), 'value' => '('.$num((float) $inv->paid_amount - (float) $inv->dp_applied_amount).')'] : null,
                     ['label' => t($isDp ? 'Not yet received' : 'Balance Due'), 'value' => $num($t['balance'])],
+                    $isDp && (float) $inv->paid_amount > 0 ? ['label' => t('Applied to Invoices'), 'value' => '('.$num($dpUse['applied']).')'] : null,
+                    $isDp && (float) $inv->paid_amount > 0 ? ['label' => t('Down Payment Left'), 'value' => $num($dpUse['left'])] : null,
                     ['label' => t('In Words'), 'value' => \Devlib\Terbilang::words((int) round(max(0, $isDp ? $t['total'] : $t['balance'])), 'IDR')],
                 ]))"
                 source="{{ Src::calc('totals of the lines, tax and down payment', 'tm2acc.fin_invoice') }}" />

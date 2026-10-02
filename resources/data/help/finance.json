@@ -935,6 +935,14 @@
       {
         "en": "When the customer pays an invoice, open it and click Record Payment. Fill the date and bank account, type Paid Now on the invoices that are paid, then Confirm Payment. A fully paid invoice becomes Closed.",
         "id": "Saat customer membayar invoice, buka invoicenya dan klik Record Payment. Isi tanggal dan rekening, ketik Paid Now pada invoice yang dibayar, lalu Confirm Payment. Invoice yang lunas menjadi Closed."
+      },
+      {
+        "en": "Tab Delivery shows the proof behind the invoice: every line comes from a delivery note, with what was shipped, what the customer received, the reason for a difference, who received it and when.",
+        "id": "Tab Delivery memuat bukti di balik invoice: tiap baris berasal dari Surat Jalan, dengan yang dikirim, yang diterima customer, alasan selisih, siapa yang menerima dan kapan."
+      },
+      {
+        "en": "On a Down Payment Invoice, tab Down Payment History lists everything that happened to the down payments of that order: invoiced, money received, deducted on which invoice, and the balance.",
+        "id": "Di Down Payment Invoice, tab Down Payment History memuat semua yang terjadi pada uang muka order itu: ditagih, uang diterima, dipotong di invoice mana, dan saldonya."
       }
     ],
     "fields": [
@@ -1047,6 +1055,26 @@
         "label": "Note",
         "en": "Record Payment: short text for the bank receipt voucher, for example the transfer reference.",
         "id": "Record Payment: teks singkat untuk bukti bank masuk, misalnya referensi transfer."
+      },
+      {
+        "label": "Reason for Difference",
+        "en": "Why the customer received less than what was shipped (damaged in transit, returned, short shipped). From the Proof of Delivery. What was not received is not invoiced.",
+        "id": "Mengapa customer menerima kurang dari yang dikirim (rusak di jalan, diretur, kurang kirim). Dari Proof of Delivery. Yang tidak diterima tidak ditagih."
+      },
+      {
+        "label": "Signed Note",
+        "en": "Whether a photo of the signed delivery note is stored with the Proof of Delivery.",
+        "id": "Apakah foto Surat Jalan bertanda tangan tersimpan di Proof of Delivery."
+      },
+      {
+        "label": "Down Payment Left",
+        "en": "Down Payment Invoice: money received and not deducted on an invoice yet.",
+        "id": "Down Payment Invoice: uang yang sudah diterima dan belum dipotong di invoice."
+      },
+      {
+        "label": "Open Customer Order",
+        "en": "Opens the order this document belongs to. Every invoice and every down payment belongs to one Customer Order.",
+        "id": "Membuka order pemilik dokumen ini. Tiap invoice dan tiap uang muka milik satu Customer Order."
       }
     ]
   },
@@ -1113,6 +1141,171 @@
         "label": "Active",
         "en": "Untick to stop using the account on new documents.",
         "id": "Hilangkan centang bila rekening tidak dipakai lagi di dokumen baru."
+      }
+    ]
+  },
+  {
+    "key": "acc-to-invoice",
+    "type": "INPUT",
+    "module": "FINACC",
+    "title": "To Invoice",
+    "purpose": {
+      "en": "Orders whose delivery notes are not fully invoiced yet. Open it every day to see what can be billed now and which delivery notes still wait for the customer's signed proof of delivery.",
+      "id": "Order yang Surat Jalannya belum habis ditagih. Buka tiap hari untuk melihat apa yang bisa ditagih sekarang dan Surat Jalan mana yang masih menunggu bukti terima bertanda tangan dari customer."
+    },
+    "keywords": "to invoice, belum ditagih, siap ditagih, surat jalan belum ditagih, unbilled delivery, menunggu bukti terima, proof of delivery, tagihan, daftar kerja finance",
+    "steps": [
+      {
+        "en": "Open To Invoice. Each row is one Customer Order with delivery notes that are not fully invoiced.",
+        "id": "Buka To Invoice. Tiap baris adalah satu Customer Order yang Surat Jalannya belum habis ditagih."
+      },
+      {
+        "en": "Status Ready to invoice: the customer has received the goods (Proof of Delivery recorded). Status Waiting proof of delivery: the goods were shipped, but the signed delivery note is not recorded yet, so nothing can be billed.",
+        "id": "Status Ready to invoice: customer sudah menerima barang (Proof of Delivery sudah dicatat). Status Waiting proof of delivery: barang sudah dikirim, tetapi Surat Jalan bertanda tangan belum dicatat, jadi belum bisa ditagih."
+      },
+      {
+        "en": "Click the arrow at the left of a row to see its delivery note lines: shipped, received, already invoiced.",
+        "id": "Klik panah di kiri baris untuk melihat baris Surat Jalannya: dikirim, diterima, sudah ditagih."
+      },
+      {
+        "en": "Open a Ready row. Customer Invoice opens with the delivery note lines of that order; set Invoice to No for a line you do not bill now, then Create.",
+        "id": "Buka baris yang Ready. Customer Invoice terbuka dengan baris Surat Jalan order itu; ubah Invoice menjadi Tidak untuk baris yang belum ditagih, lalu Create."
+      },
+      {
+        "en": "For a Waiting row, ask Delivery to record the Proof of Delivery (Sales > Delivery > Proof of Delivery).",
+        "id": "Untuk baris Waiting, minta bagian Delivery mencatat Proof of Delivery (Sales > Delivery > Proof of Delivery)."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Oldest Delivery",
+        "en": "Date of the oldest delivery note of this order that is not fully invoiced.",
+        "id": "Tanggal Surat Jalan paling lama dari order ini yang belum habis ditagih."
+      },
+      {
+        "label": "Ready to Invoice (value)",
+        "en": "Goods value of what the customer received and is not invoiced yet (quantity left x price, before document discount and VAT).",
+        "id": "Nilai barang yang sudah diterima customer dan belum ditagih (sisa qty x harga, sebelum diskon dokumen dan PPN)."
+      },
+      {
+        "label": "Waiting Proof of Delivery (value)",
+        "en": "Goods value of shipped lines whose proof of delivery is not recorded yet.",
+        "id": "Nilai barang baris yang sudah dikirim dan bukti terimanya belum dicatat."
+      },
+      {
+        "label": "Status",
+        "en": "Ready to invoice when at least one line can be billed; otherwise Waiting proof of delivery.",
+        "id": "Ready to invoice bila minimal satu baris bisa ditagih; selain itu Waiting proof of delivery."
+      }
+    ]
+  },
+  {
+    "key": "acc-rpt-ar-aging",
+    "type": "REPORT",
+    "module": "FINACC",
+    "title": "AR Aging",
+    "purpose": {
+      "en": "Unpaid confirmed customer invoices, with what is left to pay placed in an age column by days past the due date, as of today. Open it to see who owes how much and how late.",
+      "id": "Invoice customer Confirmed yang belum lunas, dengan sisa tagihannya ditaruh di kolom umur menurut hari lewat jatuh tempo, per hari ini. Buka untuk melihat siapa berutang berapa dan seberapa terlambat."
+    },
+    "keywords": "ar aging, umur piutang, piutang, aging, jatuh tempo, lewat jatuh tempo, overdue, sisa tagihan, piutang customer, penagihan, collection",
+    "steps": [
+      {
+        "en": "Open AR Aging. Rows are grouped by Customer; each group header shows the totals of that customer.",
+        "id": "Buka AR Aging. Baris dikelompokkan per Customer; kepala tiap kelompok memuat total customer itu."
+      },
+      {
+        "en": "Read the age columns: Not Due, 1-30 Days, 31-60 Days, 61-90 Days, Over 90 Days. The amount left of an invoice sits in exactly one of them.",
+        "id": "Baca kolom umur: Not Due, 1-30 Days, 31-60 Days, 61-90 Days, Over 90 Days. Sisa tagihan satu invoice berada di tepat satu kolom."
+      },
+      {
+        "en": "Use the tabs above the list or the Age filter to see one age only, for example Over 90 Days.",
+        "id": "Pakai tab di atas daftar atau filter Age untuk melihat satu umur saja, misalnya Over 90 Days."
+      },
+      {
+        "en": "Use Group to switch the grouping to Age, or Export to send the list to a spreadsheet.",
+        "id": "Pakai Group untuk mengganti pengelompokan menjadi Age, atau Export untuk mengirim daftar ke spreadsheet."
+      },
+      {
+        "en": "To record a payment, open the invoice in Customer Invoice and click Record Payment.",
+        "id": "Untuk mencatat pembayaran, buka invoicenya di Customer Invoice lalu klik Record Payment."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Days Overdue",
+        "en": "Days from the due date to today. 0 when the invoice is not due yet.",
+        "id": "Jumlah hari dari jatuh tempo sampai hari ini. 0 bila invoice belum jatuh tempo."
+      },
+      {
+        "label": "Outstanding",
+        "en": "Invoice total minus down payment deducted, payments received and tax withheld.",
+        "id": "Total invoice dikurangi uang muka yang dipotong, pembayaran yang diterima, dan pajak yang dipotong."
+      },
+      {
+        "label": "Age",
+        "en": "The age column the outstanding amount falls in.",
+        "id": "Kolom umur tempat sisa tagihan berada."
+      },
+      {
+        "label": "Customer Order",
+        "en": "Hidden column (Columns button): the order the invoice bills.",
+        "id": "Kolom tersembunyi (tombol Columns): order yang ditagih invoice ini."
+      }
+    ]
+  },
+  {
+    "key": "acc-rpt-dp-ledger",
+    "type": "REPORT",
+    "module": "FINACC",
+    "title": "Down Payment Ledger",
+    "purpose": {
+      "en": "The history of every down payment, per Customer Order: invoiced, money received, deducted on which invoice, and what is left. Open it to answer \"which order is this down payment for and where was it used\".",
+      "id": "Riwayat tiap uang muka, per Customer Order: ditagih, uang diterima, dipotong di invoice mana, dan sisanya. Buka untuk menjawab \"uang muka ini untuk order yang mana dan dipakai di mana\"."
+    },
+    "keywords": "down payment ledger, buku uang muka, riwayat uang muka, uang muka, dp, sisa uang muka, dp outstanding, uang muka customer, uang muka per order, historical dp",
+    "steps": [
+      {
+        "en": "Open Down Payment Ledger. Each row is one event; rows are grouped by Customer Order.",
+        "id": "Buka Down Payment Ledger. Tiap baris adalah satu peristiwa; baris dikelompokkan per Customer Order."
+      },
+      {
+        "en": "Events: Down payment invoiced (the request for payment), Money received (Record Receipt), Applied to invoice (deducted when an invoice of that order was confirmed).",
+        "id": "Peristiwa: Down payment invoiced (permintaan pembayaran), Money received (Record Receipt), Applied to invoice (dipotong saat invoice order itu di-Confirm)."
+      },
+      {
+        "en": "Read the group header: Money In minus Deducted = Balance, the money received and not deducted yet.",
+        "id": "Baca kepala kelompok: Money In dikurangi Deducted = Balance, yaitu uang yang sudah diterima dan belum dipotong."
+      },
+      {
+        "en": "Document No. shows the bank receipt voucher or the invoice that used the down payment.",
+        "id": "Document No. memuat nomor bukti bank masuk atau invoice yang memakai uang muka itu."
+      },
+      {
+        "en": "The same history is on the Down Payment Invoice (tab Down Payment History) and on the Customer Order (tab Billing).",
+        "id": "Riwayat yang sama ada di Down Payment Invoice (tab Down Payment History) dan di Customer Order (tab Billing)."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Billed",
+        "en": "Amount of the down payment invoice. Not a receivable and no journal until the money is received.",
+        "id": "Nilai tagihan uang muka. Bukan piutang dan belum ada jurnal sampai uangnya diterima."
+      },
+      {
+        "label": "Money In",
+        "en": "Money received for the down payment.",
+        "id": "Uang yang diterima untuk uang muka itu."
+      },
+      {
+        "label": "Deducted",
+        "en": "Part of the down payment deducted on an invoice.",
+        "id": "Bagian uang muka yang dipotong di sebuah invoice."
+      },
+      {
+        "label": "Balance",
+        "en": "Money In minus Deducted. The total per order is the down payment still held for that order.",
+        "id": "Money In dikurangi Deducted. Total per order adalah uang muka yang masih dipegang untuk order itu."
       }
     ]
   }

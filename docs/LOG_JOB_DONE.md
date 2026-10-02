@@ -91,6 +91,33 @@ yang perlu diputuskan). Aturan: `docs/globaluserrules.md` C.33 + E.3.
 - **Belum:** pemasangan di mockup.test / tmerp.test dengan data dari database, dan papan widget yang bisa diatur lewat
   asisten AI (permintaan user 2026-10-02) -- menunggu persetujuan rancangan.
 
+## 2026-10-02 -- Customer Invoice: bukti Surat Jalan + validasi customer, riwayat uang muka per CO, laporan piutang (ddt + tm2)
+
+Perintah user: "sarankan yang terbaik dan jalankan dulu" (belum cukup wawancara pemakai); yang pasti: tiap tagihan terkait
+Surat Jalan dan validasi customer atas yang terkirim (retur / rusak di jalan), uang muka jelas dari CO yang mana dan
+riwayatnya terlacak. Ketentuan: `customerinvoice_accounting.md` 7A, 7B; pedoman A.21.
+- **Proof of Delivery:** per baris qty diterima + **Reason for Difference** (Damaged in transit / Returned by customer /
+  Short shipped / Other, wajib bila diterima < dikirim) + catatan kondisi (`do_line.receive_diff_reason`, `receive_note`;
+  `DeliveryPromiseService::receivedLines`). Sesudah dicatat, baris terima tampil di layar dan tercetak di Proof of Delivery.
+- **Invoice:** tab **Delivery** (Surat Jalan, dikirim / diterima / selisih + alasan, penerima, jam tiba, foto), tombol
+  Open Customer Order, nomor uang muka di cetakan (Ref. Uang Muka). Confirm menolak invoice tanpa order / baris tanpa
+  Surat Jalan dan uang muka tanpa order.
+- **Uang muka:** `CustomerInvoiceService::downPaymentLedger` (ditagih → uang diterima → dipotong di invoice, saldo
+  berjalan) tampil di Down Payment Invoice (tab Down Payment History + Down Payment Left), Customer Order, dan laporan.
+- **Customer Order v2:** tab **Billing** hanya baca (`orderBilling`): angka order, rantai Surat Jalan → invoice, dokumen,
+  riwayat uang muka.
+- **Daftar / laporan baru:** To Invoice (`acc-to-invoice`, buka baris = buat invoice order itu), AR Aging
+  (`acc-rpt-ar-aging`, pengganti umur piutang layar lama), Down Payment Ledger (`acc-rpt-dp-ledger`).
+- **Akun bank per rekening:** 111210–111250 dibuat di `fin_account` dan dipasang ke lima rekening (ddt + tm2); tmerp.test
+  sekarang bisa menerima uang. Pilihan bawaan lain yang dijalankan: kode seri, tanggal invoice = Surat Jalan terakhir,
+  cetakan apa adanya.
+- **DevLib:** judul kolom `x-dl::table` berbentuk `['Label', 'num' => true]` ikut diterjemahkan (`DevlibComponent`).
+- **Migrasi `2026_10_02_000170`** (ddt + tm2, `--path`), Help 3 topik baru + 3 topik diperbarui, potret layar
+  `docs/mockups/customer_invoice_app/5..11`.
+- **Test:** `CustomerInvoiceTest` 10 test / 152 pemeriksaan, lulus di ddt dan tm2; sisa data test diperiksa: bersih.
+- **Belum (menunggu wawancara pemakai):** retur sesudah invoice (Credit Note), nasib barang yang tidak diterima, bentuk
+  validasi customer, uang muka tanpa order, PPh 23.
+
 ## 2026-10-02 -- Order to Cash dan Down Payment lama dihentikan; Customer Invoice menggantikan (ddt + tm2)
 
 Perintah user sesudah review: "yang lama dihapus saja, gantikan dengan yang baru. yang lama disudahi saja".

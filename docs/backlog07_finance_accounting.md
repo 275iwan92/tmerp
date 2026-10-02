@@ -17,11 +17,14 @@ General Ledger, Account Receivable, Account Payable, kas & bank, pajak, dan Acco
   ddt dan tm2; layar lama Order to Cash + Down Payment diarsipkan atas perintah user**
   (`md_for_systems/customerinvoice_review.md`, `LOG_JOB_DONE.md`). Yang terbuka:
   - **Review user** (butir di `customerinvoice_review.md` bagian 10) + koreksi format cetak.
-  - **tmerp.test**: Finance mengisi akun buku besar tiap rekening di Company Bank Accounts (sebelum itu penerimaan
-    uang ditolak).
-  - **Sisa Tahap 2** piutang: PPh 23 / biaya bank / selisih / kelebihan bayar di penerimaan, daftar To Invoice,
-    **AR Aging (fungsi layar lama yang belum ada gantinya)**, Statement of Account, Unbilled Delivery, tab Billing
-    di Customer Order.
+  - **Sudah ada sejak 2026-10-02 (ddt + tm2):** bukti terima per baris Surat Jalan dengan alasan selisih, tab Delivery
+    di invoice, buku uang muka per order, tab Billing di Customer Order, To Invoice, AR Aging, Down Payment Ledger,
+    satu akun bank per rekening (111210–111250).
+  - **Sisa Tahap 2** piutang: PPh 23 / biaya bank / selisih / kelebihan bayar di penerimaan, Statement of Account,
+    Invoice Register per seri, Faktur Pajak belum bernomor.
+  - **Menunggu wawancara pemakai** (user 2026-10-02 belum bisa memastikan): retur sesudah invoice (Credit Note /
+    kirim ganti / kembalikan uang), nasib barang yang tidak diterima customer, bentuk validasi customer, uang muka
+    tanpa order (deposit), PPh 23.
   - **Tahap 3**: Credit Note, pengembalian uang muka, batas kredit, e-Faktur, saldo awal piutang.
   - Sisa kecil Tahap 1: hak per aksi, akun pendapatan per kategori product, biaya lain dari biaya eksternal CO,
     pesan salah Confirm berbahasa Indonesia, e-mail invoice, akun PPh 23 Dibayar Dimuka.

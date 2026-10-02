@@ -14,6 +14,7 @@ use App\Models\Master\FinPaymentTerm;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\DoLine;
 use App\Services\Acc\CustomerInvoiceService as Service;
+use App\Services\Sales\DeliveryPromiseService as Promise;
 use Devlib\Locale;
 use DomainException;
 use Illuminate\Support\Facades\Auth;
@@ -113,6 +114,7 @@ final class CustomerInvoice
     {
         return self::service()->billable($coId)->map(fn (DoLine $l) => ['id_line' => $l->id_line, 'dn' => $l->delivery->do_no, 'date' => Locale::d($l->delivery->do_date),
             'product' => $l->item_description, 'shipped' => Locale::number($l->qty_do, 2), 'received' => Locale::number($l->qty_received, 2), 'invoiced' => Locale::number($l->qty_invoiced, 2),
+            'reason' => $l->receive_diff_reason ? t(Promise::DIFF_REASONS[$l->receive_diff_reason] ?? $l->receive_diff_reason) : '',
             'remaining' => Locale::number(self::service()->remaining($l), 2), 'unit' => $l->qty_unit, 'pick' => true])->all();
     }
 
@@ -204,6 +206,78 @@ final class CustomerInvoice
         }
 
         return $rows;
+    }
+
+    // ---------------------------------------------------------------- jejak Surat Jalan dan uang muka
+
+    private static function chainRow(array $r): array
+    {
+        $l = $r['line'];
+        $diff = $l->qty_received === null ? null : round((float) $l->qty_do - (float) $l->qty_received, 2);
+
+        return ['delivery_id' => $l->delivery_id, 'dn' => $l->delivery->do_no, 'date' => Locale::d($l->delivery->do_date) ?? '—', 'product' => $l->item_description,
+            'shipped' => Locale::number($l->qty_do, 2), 'received' => $l->qty_received === null ? '—' : Locale::number($l->qty_received, 2),
+            'diff' => $diff ? Locale::number($diff, 2) : '', 'reason' => $l->receive_diff_reason ? t(Promise::DIFF_REASONS[$l->receive_diff_reason] ?? $l->receive_diff_reason) : '',
+            'note' => $l->receive_note ?? '', 'invoiced' => Locale::number($l->qty_invoiced, 2),
+            'to_invoice' => $l->qty_received === null ? '' : Locale::number(self::service()->remaining($l), 2), 'unit' => $l->qty_unit,
+            'arrived' => Locale::dt($r['pod']?->arrived_at) ?? '—', 'received_by' => $r['pod']?->received_by ?? '—', 'photo' => $r['pod']?->photo_path ? t('Photo') : t('No photo'),
+            'invoices' => implode(', ', $r['invoices']), 'state' => t($r['state'])];
+    }
+
+    /** Bukti di balik satu invoice: baris Surat Jalan yang ditagih + apa yang divalidasi customer (Proof of Delivery). */
+    public static function deliveryRows(FinInvoice $i): array
+    {
+        $ids = $i->lines->pluck('do_line_id')->filter()->all();
+
+        return $ids ? self::service()->deliveryChain((int) $i->co_id, $ids)->map(fn (array $r) => self::chainRow($r))->values()->all() : [];
+    }
+
+    private static function ledgerRows(array $ledger): array
+    {
+        return array_map(fn (array $r) => ['date' => Locale::d($r['date']) ?? '—', 'event' => t($r['event']), 'dp_no' => $r['dp_no'], 'doc_no' => $r['doc_no'] ?? '—',
+            'billed' => $r['billed'] ? Locale::number($r['billed'], 2) : '', 'in' => $r['in'] ? Locale::number($r['in'], 2) : '',
+            'out' => $r['out'] ? '('.Locale::number($r['out'], 2).')' : '', 'balance' => Locale::number($r['balance'], 2)], $ledger['rows']);
+    }
+
+    /** Buku uang muka order ini (semua tagihan uang muka order yang sama), urut tanggal dengan saldo berjalan. */
+    public static function downPaymentHistory(?int $coId): array
+    {
+        return $coId ? self::ledgerRows(self::service()->downPaymentLedger($coId)) : [];
+    }
+
+    /** Uang muka dokumen ini: sudah dipotong di invoice mana saja dan berapa sisanya (uang diterima yang belum dipotong). */
+    public static function downPaymentUse(FinInvoice $dp): array
+    {
+        $applied = round((float) FinDpAllocation::query()->where('dp_invoice_id', $dp->invoice_id)->selectRaw('COALESCE(SUM(allocated_base + allocated_tax), 0) used')->value('used'), 2);
+
+        return ['applied' => $applied, 'left' => round(min((float) $dp->paid_amount, (float) $dp->total_amount) - $applied, 2)];
+    }
+
+    /** Tab Billing di Customer Order (hanya baca): angka, rantai Surat Jalan -> invoice, dokumen, buku uang muka. */
+    public static function orderBilling(CoOrder $o): array
+    {
+        $b = self::service()->orderBilling($o);
+
+        return [
+            'summary' => [
+                ['label' => t('Order Value'), 'value' => Locale::number($b['order_value'], 2)],
+                ['label' => t('Waiting Proof of Delivery (value)'), 'value' => Locale::number($b['waiting_value'], 2)],
+                ['label' => t('Ready to Invoice (value)'), 'value' => Locale::number($b['ready_value'], 2)],
+                ['label' => t('Invoiced'), 'value' => Locale::number($b['invoiced'], 2)],
+                ['label' => t('Down Payment Received'), 'value' => Locale::number($b['dp']['received'], 2)],
+                ['label' => t('Down Payment Applied'), 'value' => '('.Locale::number($b['dp']['applied'], 2).')'],
+                ['label' => t('Down Payment Left'), 'value' => Locale::number($b['dp']['balance'], 2)],
+                ['label' => t('Paid by Customer'), 'value' => Locale::number($b['paid'], 2)],
+                ['label' => t('Outstanding'), 'value' => Locale::number($b['outstanding'], 2)],
+            ],
+            'chain' => $b['chain']->map(fn (array $r) => self::chainRow($r))->values()->all(),
+            'documents' => $b['documents']->map(fn (FinInvoice $i) => ['id' => $i->invoice_id, 'no' => $i->invoice_number ?: 'Draft #'.$i->invoice_id,
+                'kind' => t($i->invoice_type === Service::DOWN_PAYMENT ? 'Down Payment' : 'Invoice'), 'date' => Locale::d($i->invoice_date) ?? '—', 'due' => Locale::d($i->due_date) ?? '—',
+                'total' => Locale::number($i->total_amount, 2), 'paid' => Locale::number($i->paid_amount, 2),
+                'outstanding' => $i->doc_status === 'POSTED' ? Locale::number(max(0, $i->outstanding()), 2) : '', 'state' => t(self::state($i))])->values()->all(),
+            'ledger' => self::ledgerRows($b['dp']),
+            'ready' => $b['ready_value'] > 0,
+        ];
     }
 
     /** Uang muka lain order yang sama yang sudah ditagih (Confirmed), di luar dokumen ini. */
