@@ -2,11 +2,21 @@
 
 namespace App\Support\Dummy;
 
+use App\Models\Master\FlowLog;
 use App\Models\Pur\PrRequisition;
+use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\IqpInquiry;
+use App\Models\Sdi\IqpPart;
+use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SecUser;
 use App\Services\Flow\FlowEngineService;
+use App\Services\Sales\InquiryStage;
 use App\Services\Sales\InquiryWriter;
+use App\Support\V2\Data\ApprovalCenter;
+use App\Support\V2\Data\CustomerOrder;
+use App\Support\V2\Data\Prodev;
+use App\Support\V2\Data\Quotation;
+use Database\Seeders\Concerns\PricedDummyChain;
 use Database\Seeders\UatPrApprovalSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Auth;
@@ -22,13 +32,31 @@ use RuntimeException;
 // aset tetap. Set "mixed" (semua status campur, dipakai dashboard) disimpan terpisah dan tidak diubah di sini.
 final class StageBuilder
 {
+    use PricedDummyChain;
+
     // [judul, isi] tiap stage -> tampil di layar Data Dummy. Stage berikutnya ditambah per alur (docs/globaluserrules.md B.15).
     public const STAGES = [
         1 => ['Stage 1 — nothing confirmed yet',
             'Inquiry New: Draft, not confirmed by Sales. Purchase Requisition: Draft, not submitted. No quotation, order, work order, delivery, invoice, purchase order or stock document exists yet.'],
-        2 => ['Stage 2 — first Confirm done, waiting for the next desk',
+        2 => ['Stage 2 — in Pro-Dev, not confirmed',
             'Inquiry New: confirmed by Sales, waiting on the Pro-Dev desk (not started). Purchase Requisition: submitted, waiting for approval by the Operational Manager.'],
+        3 => ['Stage 3 — in Pro-Cost, not confirmed',
+            'Inquiry New: every part confirmed by Pro-Dev (layout, BOM, ink, process), waiting on the Pro-Cost desk; no costing yet. Purchase Requisition: approved, waiting for a Purchase Order.'],
+        4 => ['Stage 4 — Quotation Draft',
+            'Costing published by Pro-Cost for every inquiry; one Quotation per inquiry, still Draft (not confirmed, not sent). Purchase Requisition: approved.'],
+        5 => ['Stage 5 — Customer Order Draft',
+            'Quotations published and won; each has a Customer Order in Draft (qty not chosen, no due date) and a Master Product. Purchase Requisition: approved.'],
+        6 => ['Stage 6 — Customer Order waiting for approval',
+            'Customer Orders confirmed by Sales (one qty chosen, due date set), waiting for approval level 1 (F&A SPV). Purchase Requisition: approved.'],
+        7 => ['Stage 7 — CPDEL Draft',
+            'Customer Orders approved (Confirmed); their Customer Plan Delivery lines are Planned and not posted to Production. No work order or delivery yet. Purchase Requisition: approved.'],
     ];
+
+    // Tanggal kirim CO dummy: hari kerja ke-14 dihitung kasar sebagai +21 hari kalender dari hari build.
+    private const DUE_DAYS = 21;
+
+    // Tepi lembar cetak yang tidak dipakai susunan (cm): gripper + margin, sama dengan konstanta layar Pro-Dev.
+    private const EDGE_CM = ['gripper' => 1.2, 'margin' => 0.8];
 
     // Tabel transaksi operasional yang dikosongkan di stage 1 (koneksi => tabel). Inquiry tidak di sini: yang masih
     // Draft dipertahankan (wipeInquiries). Diperiksa ulang oleh orphans(): baris anak tanpa induk = daftar ini kurang.
@@ -66,6 +94,11 @@ final class StageBuilder
     /** @var list<string> */
     private array $knownOrphans = [];
 
+    private string $startedAt = '';
+
+    /** @var array<string, list<string>> koneksi => tabel yang punya data_origin + created_at */
+    private array $originTables = [];
+
     public function __construct(private Command $out) {}
 
     // $save(key, label, note) menyimpan isi ddt* sekarang sebagai set; null = dry run: semua langkah jalan di dalam
@@ -82,10 +115,17 @@ final class StageBuilder
         foreach ($this->knownOrphans as $o) {
             $this->out->warn("  Already there before the build: $o");
         }
+        $this->startedAt = now()->subSecond()->toDateTimeString();
+        foreach (self::CONNECTIONS as $conn) {
+            $db = DB::connection($conn);
+            $this->originTables[$conn] = array_column($db->select("SELECT TABLE_NAME t FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND COLUMN_NAME IN ('data_origin', 'created_at')
+                GROUP BY TABLE_NAME HAVING COUNT(*) = 2", [$db->getDatabaseName()]), 't');
+        }
         $this->begin();
         try {
             foreach (array_keys(self::STAGES) as $n) {
                 $this->{'stage'.$n}();
+                $this->markDummy();
                 $this->report($n);
                 if ($save) {
                     // mysqldump hanya melihat data yang sudah di-commit.
@@ -187,12 +227,187 @@ final class StageBuilder
         Auth::setUser(SecUser::findOrFail(1));
     }
 
+    // Stage 3: Pro-Dev Confirm semua part -> inquiry pindah ke meja Pro-Cost. PR disetujui.
+    // Di layar, susunan (layout) dibuat petugas di kanvas; di sini susunannya grid sederhana (gridLayout) yang
+    // disimpan + di-Confirm lewat method yang sama dengan tombol Confirm (saveLayout komponen Pro-Dev), jadi BOM / tinta /
+    // proses tetap hasil SpecEngine. Angkanya contoh, bukan hasil kerja Pro-Dev sungguhan.
+    private function stage3(): void
+    {
+        $officer = $this->user('dedi');
+        Auth::setUser($officer);
+        foreach (IqpInquiry::withoutGlobalScopes()->where('stat_confirm_sales', true)->orderBy('id_inquiry')->get() as $inq) {
+            InquiryStage::openInProdev($inq, $officer->login);
+            foreach (IqpPart::where('inquiry_id', $inq->id_inquiry)->whereNotNull('prod_part_id')->orderBy('part_seq')->pluck('prod_part_id') as $partId) {
+                $c = Prodev::component((int) $partId);
+                $job = $c->jobs()[0] ?? throw new RuntimeException("Pro-Dev: part {$partId} of {$inq->inquiry_no} has no blank size, a layout cannot be made.");
+                $out = $c->saveLayout($this->gridLayout($job, $c->machines()[0], $c->dieCutters()[0] ?? null, $c->planos()), true);
+                if (! ($out['ok'] ?? false)) {
+                    throw new RuntimeException("Pro-Dev Confirm {$inq->inquiry_no} part {$partId}: ".($out['message'] ?? 'failed'));
+                }
+            }
+            InquiryStage::syncProdev((int) $inq->id_inquiry);
+        }
+
+        $this->approve('PR', fn (int $id) => ApprovalCenter::decide('PR', $id, 'approve', ''));
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Stage 4: Pro-Cost publish (mode manual + CostingEngine, sama dengan dummy rantai order) -> Quotation Draft per inquiry.
+    private function stage4(): void
+    {
+        $costing = $this->user('wiwik');
+        Auth::setUser($costing);
+        $ids = DB::connection('tm2sdi')->table('iqp_inquiry')->where('stat_confirm_prodev', 1)->orderBy('id_inquiry')->pluck('id_inquiry');
+        foreach ($ids as $id) {
+            $this->priceAndPublish((int) $id, $costing->login);
+            InquiryStage::syncProcost((int) $id);
+        }
+
+        Auth::setUser($this->user('yuna'));
+        foreach ($ids as $id) {
+            Quotation::create([(int) $id]);
+        }
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Stage 5: Quotation Confirm (terbit) -> WIN -> CO Draft + Master Product.
+    private function stage5(): void
+    {
+        Auth::setUser($this->user('yuna'));
+        foreach (QuoQuotation::orderBy('id_quotation')->pluck('id_quotation') as $id) {
+            Quotation::confirm(QuoQuotation::findOrFail($id));
+            Quotation::win(QuoQuotation::with('items.inquiry')->findOrFail($id)) ?? throw new RuntimeException("WIN of quotation {$id} did not create a Customer Order.");
+        }
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Stage 6: Sales memilih satu qty per product, mengisi due date, Confirm -> menunggu approval level 1.
+    private function stage6(): void
+    {
+        Auth::setUser($this->user('yuna'));
+        $due = now()->addDays(self::DUE_DAYS)->toDateString();
+        foreach (CoOrder::orderBy('id_order')->get() as $co) {
+            // Memilih satu baris menghapus pilihan qty lain product itu -> daftar dibaca ulang tiap putaran.
+            while (($open = $co->refresh()->itemsWithUnpickedQty())->isNotEmpty()) {
+                CustomerOrder::pickQty($co, (int) $open->first()->id_item);
+            }
+            $items = $co->refresh()->items->where('line_kind', 'PRODUCT')->mapWithKeys(fn ($i) => [$i->id_item => ['due_date' => $due]])->all();
+            CustomerOrder::save($co, ['items' => $items]);
+            if ($error = CustomerOrder::confirm($co->refresh())) {
+                throw new RuntimeException("Confirm {$co->co_no}: {$error}");
+            }
+        }
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Stage 7: semua level approval CO -> Confirmed, baris CPDEL lahir (Planned, belum di-Post).
+    private function stage7(): void
+    {
+        for ($level = 1; $level <= 5 && CoOrder::where('doc_status', 'SUBMITTED')->exists(); $level++) {
+            $this->approve('CO', fn (int $id) => CustomerOrder::decide(CoOrder::findOrFail($id), 'approve', ''));
+        }
+        if ($left = CoOrder::where('doc_status', '<>', 'CONFIRMED')->pluck('co_no')->all()) {
+            throw new RuntimeException('Customer Orders not Confirmed after approval: '.implode(', ', $left));
+        }
+        Auth::setUser(SecUser::findOrFail(1));
+    }
+
+    // Satu putaran approval: tiap dokumen yang menunggu disetujui oleh pemegang jabatan langkah berjalan.
+    private function approve(string $module, callable $decide): void
+    {
+        $latest = FlowLog::where('module_code', $module)->selectRaw('MAX(flow_log_id) id')->groupBy('doc_id')->pluck('id');
+        $users = SecUser::where('activate', true)->get()->groupBy(fn ($u) => (int) $u->currentPositionId());
+        foreach (FlowLog::whereIn('flow_log_id', $latest)->whereIn('action', ['SUBMITTED', 'HOLD'])->orderBy('doc_id')->get() as $log) {
+            $approver = $users->get((int) $log->actor_position_id)?->first()
+                ?? throw new RuntimeException("$module #{$log->doc_id}: no active user holds the approver position {$log->actor_position_id}.");
+            Auth::setUser($approver);
+            if ($error = $decide((int) $log->doc_id)) {
+                throw new RuntimeException("$module #{$log->doc_id} approval by {$approver->login}: {$error}");
+            }
+        }
+    }
+
+    // Dokumen yang lahir lewat aturan aplikasi tercatat data_origin LIVE (bawaan kolom), padahal inquiry asalnya DUMMY:
+    // disamakan jadi DUMMY supaya saringan asal data (DataOriginScope) memperlakukan satu rantai dokumen sama.
+    private function markDummy(): void
+    {
+        foreach ($this->originTables as $conn => $tables) {
+            foreach ($tables as $t) {
+                DB::connection($conn)->table($t)->where('created_at', '>=', $this->startedAt)->where('data_origin', 'LIVE')->update(['data_origin' => 'DUMMY']);
+            }
+        }
+    }
+
+    private function user(string $login): SecUser
+    {
+        return SecUser::where('login', $login)->where('activate', true)->first() ?? SecUser::findOrFail(1);
+    }
+
+    // State layar Pro-Dev (gatherState() workbench.js) untuk susunan grid: blank tidak diputar, disusun kolom x baris
+    // pada plano yang muat di meja mesin cetak dan memberi pemakaian bahan terbaik. Blank yang lebih besar dari meja
+    // = canvas "Custom" seukuran blank + tepi, isi 1.
+    private function gridLayout(array $job, array $press, ?array $diecut, array $planos): array
+    {
+        [$l, $w, $gap] = [(float) $job['l'], (float) $job['w'], (float) $job['gap']];
+        $fit = fn (float $span, float $size) => (int) floor(($span + $gap) / ($size + $gap));
+        $best = null;
+        foreach ($planos as $p) {
+            if ($p['L'] > $press['L'] || $p['W'] > $press['W']) {
+                continue;
+            }
+            $cols = $fit($p['L'] - 2 * self::EDGE_CM['margin'], $l);
+            $rows = $fit($p['W'] - self::EDGE_CM['gripper'] - self::EDGE_CM['margin'], $w);
+            $eff = $cols * $rows * $l * $w / ($p['L'] * $p['W']) * 100;
+            if ($cols * $rows > 0 && (! $best || $eff > $best['eff'])) {
+                $best = ['plano' => $p, 'L' => $p['L'], 'W' => $p['W'], 'cols' => $cols, 'rows' => $rows, 'eff' => $eff, 'limit' => 'PRESS'];
+            }
+        }
+        if (! $best) {
+            [$L, $W] = [$l + 2 * self::EDGE_CM['margin'], $w + self::EDGE_CM['gripper'] + self::EDGE_CM['margin']];
+            $plano = collect($planos)->first(fn ($p) => $p['L'] >= $L && $p['W'] >= $W);
+            $best = ['plano' => $plano, 'L' => round($L, 1), 'W' => round($W, 1), 'cols' => 1, 'rows' => 1, 'eff' => $l * $w / ($L * $W) * 100, 'limit' => 'CUSTOM'];
+        }
+
+        $objects = [];
+        for ($r = 0; $r < $best['rows']; $r++) {
+            for ($c = 0; $c < $best['cols']; $c++) {
+                $objects[] = ['x' => round(self::EDGE_CM['margin'] + $c * ($l + $gap), 2), 'y' => round(self::EDGE_CM['gripper'] + $r * ($w + $gap), 2),
+                    'w' => $l, 'h' => $w, 'r' => 0, 'fx' => false, 'fy' => false];
+            }
+        }
+        $up = $best['cols'] * $best['rows'];
+
+        return [
+            'partId' => $job['partId'], 'canvasL' => $best['L'], 'canvasW' => $best['W'], 'canvasLimit' => $best['limit'], 'gapCm' => $gap,
+            'upCount' => $up, 'method' => 'AUTO_GRID', 'planoId' => $best['plano']['id'] ?? null, 'efficiencyPct' => round($best['eff'], 2),
+            'machine' => ['id' => $press['id'], 'name' => $press['name'], 'bedL' => $press['L'], 'bedW' => $press['W']],
+            'knifeW' => round($best['cols'] * ($l + $gap) - $gap, 2), 'knifeH' => round($best['rows'] * ($w + $gap) - $gap, 2),
+            'spec' => ['sheetL' => $best['L'], 'sheetW' => $best['W'], 'planoL' => $best['plano']['L'] ?? $best['L'], 'planoW' => $best['plano']['W'] ?? $best['W'],
+                'planoName' => $best['plano']['name'] ?? '', 'sheetsPerPlano' => 1, 'printMachineId' => $press['id'], 'diecutMachineId' => $diecut['id'] ?? null,
+                'upCount' => $up, 'orderQty' => (int) ($job['orderQty'] ?? 0), 'artworkColors' => $job['artColors'] ?? null],
+            'specOverride' => [], 'specReset' => [], 'objects' => $objects,
+        ];
+    }
+
     // Inquiry yang sudah lewat langkah pertama (Confirm Sales / batal / bukan New) dihapus beserta anaknya; anak dicari
     // dari FOREIGN KEY ke iqp_inquiry dan iqp_part, jadi tabel anak baru ikut tanpa mengubah daftar di sini.
     private function wipeInquiries(): void
     {
         $sdi = DB::connection('tm2sdi');
         $ids = $sdi->table('iqp_inquiry')->where(fn ($q) => $q->where('inquiry_type', '<>', 'NEW')->orWhere('stat_confirm_sales', 1)->orWhere('stat_cancel', 1))->pluck('id_inquiry');
+        // Draft yang tidak bisa menempuh alur (tanpa customer -> tidak bisa ditawarkan; part tanpa ukuran bentangan ->
+        // Pro-Dev tidak bisa membuat layout; tanpa pilihan qty -> tidak bisa dihitung) tidak ikut set stage; tetap ada di set "mixed".
+        $component = fn ($q) => $q->whereNull('part_kind')->orWhere('part_kind', '<>', 'ASSEMBLY');
+        $incomplete = $sdi->table('iqp_inquiry')->whereNotIn('id_inquiry', $ids)->where(fn ($q) => $q
+            ->whereNull('customer_id')
+            ->orWhereNotIn('id_inquiry', $sdi->table('iqp_tier')->select('inquiry_id'))
+            ->orWhereNotIn('id_inquiry', $sdi->table('iqp_part')->where($component)->select('inquiry_id'))
+            ->orWhereIn('id_inquiry', $sdi->table('iqp_part')->where($component)->where(fn ($p) => $p->whereNull('flat_w')->orWhere('flat_w', '<=', 0)->orWhereNull('flat_h')->orWhere('flat_h', '<=', 0))->select('inquiry_id')))
+            ->pluck('inquiry_no', 'id_inquiry');
+        if ($incomplete->isNotEmpty()) {
+            $this->out->warn('  Left out of the stage sets (Draft without customer, blank size or qty tier): '.$incomplete->implode(', '));
+        }
+        $ids = $ids->merge($incomplete->keys());
         $parts = $sdi->table('iqp_part')->whereIn('inquiry_id', $ids)->pluck('id_part');
         foreach ($this->children('tm2sdi', 'iqp_part') as [$table, $column]) {
             $sdi->table($table)->whereIn($column, $parts)->delete();
@@ -247,12 +462,18 @@ final class StageBuilder
             ->groupBy('k')->pluck('n', 'k')->map(fn ($v, $k) => "$k: $v")->implode(', '));
         $this->out->line('  Purchase Requisition: '.DB::connection('tm2pur')->table('pr_requisition')->selectRaw('status, COUNT(*) n')->groupBy('status')->pluck('n', 'status')
             ->map(fn ($v, $k) => "$k: $v")->implode(', '));
+        $by = fn (string $table, string $column) => $sdi->table($table)->selectRaw("$column k, COUNT(*) n")->groupBy('k')->pluck('n', 'k')->map(fn ($v, $k) => "$k: $v")->implode(', ') ?: 'none';
+        $this->out->line('  Quotation: '.$by('quo_quotation', 'doc_status').' | Customer Order: '.$by('co_order', 'doc_status').' | CPDEL lines: '.$sdi->table('co_order_delivery')->count()
+            .' | Master Product ACTIVE: '.DB::connection('tm2mst')->table('prod_product')->where('card_status', 'ACTIVE')->count());
         $flow = app(FlowEngineService::class);
-        $this->out->line('  PR waiting per approver: '.(SecUser::where('activate', true)->get()->map(fn ($u) => [$u->login, $flow->pendingForUser('PR', $u->getKey())->count()])
-            ->filter(fn ($r) => $r[1])->map(fn ($r) => "$r[0]: $r[1]")->implode(', ') ?: 'none'));
-        $leftovers = collect(self::WIPE)->flatMap(fn ($tables, $conn) => collect($tables)->filter(fn ($t) => ! str_starts_with($t, 'pr_') && Schema::connection($conn)->hasTable($t))
-            ->mapWithKeys(fn ($t) => ["$conn.$t" => DB::connection($conn)->table($t)->count()]))->filter();
-        $this->out->line('  Other transaction rows: '.($leftovers->map(fn ($v, $k) => "$k: $v")->implode(', ') ?: 'none'));
+        $users = SecUser::where('activate', true)->get();
+        foreach (['PR', 'CO'] as $module) {
+            $this->out->line("  $module waiting per approver: ".($users->map(fn ($u) => [$u->login, $flow->pendingForUser($module, $u->getKey())->count()])
+                ->filter(fn ($r) => $r[1])->map(fn ($r) => "$r[0]: $r[1]")->implode(', ') ?: 'none'));
+        }
+        $downstream = collect(['tm2prd' => ['prd_wo'], 'tm2sdi' => ['do_delivery'], 'tm2acc' => ['fin_invoice'], 'tm2pur' => ['po_order'], 'tm2inv' => ['rm_stock', 'fg_stock']])
+            ->flatMap(fn ($tables, $conn) => collect($tables)->mapWithKeys(fn ($t) => ["$t" => DB::connection($conn)->table($t)->count()]))->filter();
+        $this->out->line('  Work order / delivery / invoice / PO / stock documents: '.($downstream->map(fn ($v, $k) => "$k: $v")->implode(', ') ?: 'none'));
         if ($orphans = array_diff($this->orphans(), $this->knownOrphans)) {
             throw new RuntimeException("Stage $n leaves rows without a parent:\n  ".implode("\n  ", $orphans));
         }

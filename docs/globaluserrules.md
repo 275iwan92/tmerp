@@ -169,6 +169,24 @@
     - Peta lengkap + yang masih terbuka (tempat Delivery, izin per grup, retur masuk stok, target Sales): `docs/md_for_systems/sales_tier1.md`.
     - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**; menu `tm2sys` belum diubah.
 
+22. **[2026-10-02] Inventory & Warehouse: gudang = gedung, area, bin; pindah stok lewat Stock Transfer; dead stock merah.**
+    Kata user: *"ya saya tunggu warehouse mapping, lalu input moving item antar warehouse dan disana akan tertera capacity
+    label dan barcode or QR code. Disana akan muncul warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BUILD TOO."*
+    - **Gudang = gedung nyata.** "Gedung itu pasti terpisah, A5, A6, A10 dan masih gedung yang lain." Semua gedung bisa
+      didefinisikan user sendiri (Inventory > Warehouse > Setup > Buildings); ukuran awal = perkiraan (mis. 30 x 20 m),
+      "nanti di-adjust oleh officer".
+    - **Bentuk dan lantai:** software harus bisa dipakai perusahaan lain — gedung mudah ditambah dan bentuknya bisa selain
+      kotak (contoh huruf L, dengan ukurannya). Gedung Telasih A5 / A6 / A10 berbentuk kotak dan punya 2 lantai; sistem
+      harus bisa **2 sampai 3 lantai**.
+    - **Area penyimpanan harus bisa ditambah** oleh user ("pastikan bisa ditambah area storage"), begitu juga bin.
+    - **Pindah barang antar bin / antar gudang = dokumen Stock Transfer**; di sana tertera label kapasitas bin dan
+      barcode / QR code-nya.
+    - **Dead stock tampil MERAH** (peta, transfer, laporan, label). Arti dead stock = E.2 (stok tidak bergerak lebih dari
+      batas bulan di Settings > Constants); **memindahkan stok tidak dihitung sebagai pergerakan**.
+    - **Fasilitas QR code + label wajib ada**: label lokasi (bin) dan label item, QR + barcode, lacak lewat pindai.
+    - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**; menu `tm2sys` belum. Yang diputuskan agen
+      sendiri dan menunggu koreksi: `docs/md_for_systems/warehouse_review.md` bagian 4.
+
 ## B. Database & data
 
 1. **[LOCKED] Database-per-modul** (`tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`,
@@ -220,8 +238,16 @@
     - Restore mengganti seluruh isi database dummy bisnis dengan set itu (master ikut kembali ke isi set); `ddtsys`
       (akun, hak akses, menu) tidak ikut. Kolom yang ditambah migration setelah set disimpan tetap ada. Set `mixed` =
       dummy campur semua status (untuk dashboard & laporan), disimpan terpisah.
-    - Yang sudah dibangun: stage 1 (Inquiry New Draft, PR Draft) dan stage 2 (Inquiry Confirmed menunggu Pro-Dev, PR
-      menunggu approval). Stage berikutnya ditambah per alur di `StageBuilder::STAGES`.
+    - **Urutan stage (user 2026-10-02):** 1 Inquiry New belum Confirm · 2 di Pro-Dev belum Confirm · 3 di Pro-Cost belum
+      Confirm · 4 Quotation Draft · 5 Customer Order Draft · 6 Customer Order menunggu approval (level 1, F&A SPV) ·
+      7 CPDEL Draft (CO Confirmed, baris Planned belum di-Post). Purchase Requisition: 1 Draft · 2 menunggu approval ·
+      3 dan seterusnya Approved (PO belum dibuat). Stage berikutnya ditambah per alur di `StageBuilder::STAGES`.
+    - **Yang dibuat skrip di zona beku (hanya di dalam set stage):** Pro-Dev Confirm memakai susunan grid sederhana
+      (blank tidak diputar, plano yang muat di meja cetak) lewat method yang sama dengan tombol Confirm, jadi BOM / tinta /
+      proses tetap hasil SpecEngine; Pro-Cost memakai mode manual + CostingEngine (sama dengan dummy rantai order).
+      Angkanya contoh, bukan hasil kerja petugas.
+    - Draft yang tidak bisa menempuh alur (tanpa customer, part tanpa ukuran bentangan, tanpa pilihan qty) tidak ikut set
+      stage; tetap ada di set `mixed`. Build memakan ±6 menit dan dijalankan lewat perintah, bukan tombol.
 
 ## C. Tampilan (UI/UX)
 
@@ -592,3 +618,5 @@
 | 2026-10-02 | C.33: 49 widget, dashboard **Overall** (daftar centang) + enam dashboard bidang (template): Sales, Purchasing, AR & AP, Cashflow, Payroll, Human Resource; ubin tambah, tekan-tahan, seret; daftar widget disusun dari referensi ERP lain (`openingboard_references.md`). ddt + tm2. |
 | 2026-10-02 | B.12: **Reset data dummy menolak bila struktur `ddt*` berubah sejak baseline** (penjaga drift; daftar tampil di Developer → Data Dummy, `ddt:baseline check`, paksa `--allow-drift`); setiap migration di `ddt*` diikuti simpan ulang baseline; tabel yang dibuat setelah baseline tidak disentuh Reset; baseline lama dicadangkan sebelum ditimpa. Baseline baru disimpan 19:33:33. |
 | 2026-10-02 | B.15: **data dummy per stage** — stage 1 = belum ada yang di-Confirm / di-approve / diproses, stage berikutnya maju satu langkah; tiap stage = set dump `.sql` dengan tombol Restore sendiri di Developer → Data Dummy (`ddt:stage`), dibangun lewat aturan aplikasi (`StageBuilder`). Terbangun: stage 1 (Inquiry New Draft, PR Draft), stage 2 (Inquiry Confirmed menunggu Pro-Dev, PR menunggu approval); set `mixed` = dummy campur. |
+| 2026-10-02 | B.15: urutan stage dari user — 4 Quotation Draft, 5 Customer Order Draft, 6 Customer Order menunggu approval, 7 CPDEL Draft; set stage 1–7 dibangun (31 inquiry menempuh seluruh alur; Pro-Dev = susunan grid contoh lewat tombol Confirm yang sama, Pro-Cost = mode manual + CostingEngine). Draft tanpa customer / ukuran bentangan / pilihan qty tidak ikut set stage. |
+| 2026-10-02 | **A.22: Inventory & Warehouse** — gudang = gedung (A5, A6, A10 + gedung lain; ukuran perkiraan, disesuaikan officer; bentuk bebas mis. huruf L; 1-3 lantai), area dan bin bisa ditambah user, Stock Transfer dengan label kapasitas + QR / barcode, dead stock merah (transfer bukan pergerakan), fasilitas label + lacak QR. Dibangun di ddt: Warehouse Map, Stock Transfer, Buildings / Storage Areas / Bins, Stock by Location, Print Location / Item Label, Track via QR/Barcode. Review: `md_for_systems/warehouse_review.md`. |

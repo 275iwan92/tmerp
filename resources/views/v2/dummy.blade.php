@@ -41,15 +41,8 @@
                 <x-dl::alert tone="warn" message="No set yet. Build the stage sets, or save the current dummy data as a set below." />
             @endforelse
 
-            <x-dl::card title="Build the stage sets again" icon="fa-hammer"
-                description="Makes every stage set again from the dummy data in use now, by running the same Confirm / Submit / Approve rules as the screens. Use it after master data changed. It needs Draft inquiries in the current data (restore Mixed or Stage 1 first), takes about a minute, and leaves the dummy data in use as it is.">
-                <x-dl::action-bar>
-                    <x-dl::action-form action="{{ route('v2.dummy.stage.build') }}">
-                        <x-dl::button type="submit" variant="secondary" icon="fa-hammer" label="Build stage sets"
-                            data-dl-confirm="All stage sets are replaced by newly built ones. The dummy data in use is put back afterwards. Continue?" data-dl-confirm-tone="warn" />
-                    </x-dl::action-form>
-                </x-dl::action-bar>
-            </x-dl::card>
+            {{-- Build memakan ~6 menit (lebih lama dari batas waktu satu permintaan web) -> lewat perintah, bukan tombol. --}}
+            <x-dl::alert tone="info" :message="raw(t('The stage sets are built again, after master data changed, with the command:').' php artisan ddt:stage build --env=mockup')" />
 
             <x-dl::card title="Save the current dummy data as a set" icon="fa-floppy-disk"
                 description="Freezes the dummy data as it is now under a name of your own. Saving under an existing name replaces that set.">
