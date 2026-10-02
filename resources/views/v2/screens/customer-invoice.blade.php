@@ -57,8 +57,7 @@
         $coId = (int) request('co_id');
     @endphp
     @if ($type === 'INVOICE' && isset($orders[$coId]))
-        <form method="post" action="{{ route('v2.customer-invoice.create') }}">
-            @csrf
+        <x-dl::action-form action="{{ route('v2.customer-invoice.create') }}">
             <input type="hidden" name="type" value="INVOICE">
             <input type="hidden" name="co_id" value="{{ $coId }}">
             <x-dl::card title="+ New Record — Customer Invoice" description="Delivery note lines the customer has received and that are not invoiced yet. Set Invoice to No for a line you do not bill now.">
@@ -84,7 +83,7 @@
                     <x-dl::button preset="save" label="Create" />
                 </x-dl::action-bar>
             </x-dl::card>
-        </form>
+        </x-dl::action-form>
     @else
         <x-dl::card title="+ New Record — Customer Invoice"
             :description="$type === 'INVOICE'
@@ -94,11 +93,10 @@
                 <x-dl::button :variant="$type === 'INVOICE' ? 'primary' : 'secondary'" icon="fa-file-invoice-dollar" label="Invoice" :href="$home.'?new=1&type=INVOICE'" />
                 <x-dl::button :variant="$type === 'DOWN_PAYMENT' ? 'primary' : 'secondary'" icon="fa-money-bill-wave" label="Down Payment" :href="$home.'?new=1&type=DOWN_PAYMENT'" />
             </x-dl::action-bar>
-            <form method="{{ $type === 'INVOICE' ? 'get' : 'post' }}" action="{{ $type === 'INVOICE' ? $home : route('v2.customer-invoice.create') }}">
+            <x-dl::action-form method="{{ $type === 'INVOICE' ? 'get' : 'post' }}" action="{{ $type === 'INVOICE' ? $home : route('v2.customer-invoice.create') }}">
                 @if ($type === 'INVOICE')
                     <input type="hidden" name="new" value="1">
                 @else
-                    @csrf
                 @endif
                 <input type="hidden" name="type" value="{{ $type }}">
                 <x-dl::form.row :cols="2">
@@ -109,7 +107,7 @@
                     <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
                     <x-dl::button preset="save" :label="$type === 'INVOICE' ? 'Next' : 'Create'" />
                 </x-dl::action-bar>
-            </form>
+            </x-dl::action-form>
         </x-dl::card>
     @endif
 @else
@@ -307,8 +305,7 @@
 
     @if ($canReceive)
         <x-dl::modal id="dp-receipt" title="Record Receipt" icon="fa-money-bill-wave" size="lg">
-            <form method="post" action="{{ route('v2.customer-invoice.receipt', $inv->invoice_id) }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.customer-invoice.receipt', $inv->invoice_id) }}">
                 <x-dl::form.row :cols="2">
                     <x-dl::field.date name="received_date" label="Received Date" required :value="now()->toDateString()" :source="Src::of('tm2acc.fin_voucher.entry_date')" />
                     <x-dl::field.decimal name="amount" label="Amount Received" required :value="$plain((float) $inv->total_amount - (float) $inv->paid_amount)" :source="Src::of('tm2acc.fin_invoice.paid_amount')" />
@@ -325,15 +322,14 @@
                     <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
                     <x-dl::button preset="save" variant="success" label="Confirm Receipt" />
                 </x-dl::action-bar>
-            </form>
+            </x-dl::action-form>
         </x-dl::modal>
     @endif
 
     @if ($canPay)
         @php $openRows = CustomerInvoice::openInvoiceRows($inv); @endphp
         <x-dl::modal id="invoice-payment" title="Record Payment" icon="fa-money-bill-wave" size="lg">
-            <form method="post" action="{{ route('v2.customer-invoice.payment', $inv->invoice_id) }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.customer-invoice.payment', $inv->invoice_id) }}">
                 <x-dl::form.row :cols="3">
                     <x-dl::field.date name="received_date" label="Received Date" required :value="now()->toDateString()" :source="Src::of('tm2acc.fin_voucher.entry_date')" />
                     <x-dl::field.select name="company_bank_id" label="Received In" required :options="CustomerInvoice::bankOptions($inv)" :value="$inv->company_bank_id" :source="Src::of('tm2acc.fin_company_bank')" />
@@ -353,7 +349,7 @@
                     <x-dl::button variant="secondary" label="Close" data-dl-close-modal />
                     <x-dl::button preset="save" variant="success" label="Confirm Payment" />
                 </x-dl::action-bar>
-            </form>
+            </x-dl::action-form>
         </x-dl::modal>
     @endif
 @endif

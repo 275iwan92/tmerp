@@ -54,8 +54,7 @@
     @php $quotes = CustomerOrder::quotationChoices(); @endphp
     <x-dl::card title="+ New Record — choose the Customer Order path" description="Two entry paths; the document & what follows (CPDEL, production) are the same.">
         <div class="mp-grid2">
-            <form method="post" action="{{ route('v2.co.create') }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.co.create') }}">
                 <input type="hidden" name="mode" value="INTEGRATED">
                 <x-dl::card title="INTEGRATED — from Quotation" description="Customer accepts the quotation. Lines & prices = quotation snapshot (1 Quotation = 1 CO).">
                     @if ($quotes)
@@ -65,15 +64,14 @@
                         <x-dl::empty-state title="No issued quotation that is not yet a CO" />
                     @endif
                 </x-dl::card>
-            </form>
-            <form method="post" action="{{ route('v2.co.create') }}">
-                @csrf
+            </x-dl::action-form>
+            <x-dl::action-form action="{{ route('v2.co.create') }}">
                 <input type="hidden" name="mode" value="INSTANT">
                 <x-dl::card title="INSTANT — tanpa Quotation" description="Direct order (repeat order / verbal). Product lines must come from the customer's Master Product.">
                     <x-dl::field.select name="customer_id" label="Customer" required :options="CustomerOrder::customerOptions()" :source="Src::of('tm2mst.cust_customer')" />
                     <x-dl::action-bar><x-dl::button preset="save" label="Buat Instant" /></x-dl::action-bar>
                 </x-dl::card>
-            </form>
+            </x-dl::action-form>
         </div>
         <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="$home" /></x-dl::action-bar>
     </x-dl::card>

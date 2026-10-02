@@ -54,6 +54,12 @@ yang terpasang di devlib dan jelaskan di sana keterangan parameter input dan out
 - **Bukan turunan DevLib:** layar v1. Menu aktif tanpa layar v2: mockup.test 48 dari 227 item (43 di antaranya memang belum
   dibangun), tmerp.test 102 dari 193 item (menu `tm2sys` masih menu lama). Diganti layar v2 satu per satu.
 - Rulebook D.15, D.16 + changelog.
+- **Susulan (user: "Boleh selama tidak merubah alur dan fitur yang sudah ada"):** 17 form sisanya dikonversi — 11 di zona
+  beku (inquiry-new, inquiry-recalc, inquiry-revise, _inquiry-duplicate, product-acc-forms, master-card-collection) dan 6 di
+  customer-invoice / customer-order (berkasnya sudah tidak diubah sesi lain). Hanya tag pembungkus yang berganti; alur, isian
+  dan tombol tidak disentuh. Bukti: 17 halaman data dummy tetap terbuka, tag form dan token identik sebelum / sesudah
+  (form yang hanya muncul pada dokumen Revise / Recalc tersimpan tidak ikut terender karena dummy tidak punya dokumen itu).
+  Total 65 form = `x-dl::action-form`; sisa 1 (maintenance-my-work, membungkus slot kartu). Penjaga `raw_form` 18 → 1.
 
 ## 2026-10-02 -- Klik logo / nama aplikasi = opening screen, semua tab ditutup
 

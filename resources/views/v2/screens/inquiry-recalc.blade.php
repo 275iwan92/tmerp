@@ -49,8 +49,7 @@
         <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="$home" /></x-dl::action-bar>
     </x-dl::card>
 @else
-    <form method="post" action="{{ route('v2.derived.save', 'recalc') }}" id="recalc-form" data-dl-guard>
-        @csrf
+    <x-dl::action-form action="{{ route('v2.derived.save', 'recalc') }}" id="recalc-form" data-dl-guard>
         <input type="hidden" name="product_id" value="{{ $doc['id'] }}">
         @if ($inq)<input type="hidden" name="id" value="{{ $inq->id_inquiry }}">@endif
 
@@ -123,7 +122,7 @@
                 <x-dl::button preset="cancel" data-dl-open="recalc-cancel" />
             @endif
         </x-dl::action-bar>
-    </form>
+    </x-dl::action-form>
 
     @if ($inq)
         @include('v2.screens._inquiry-duplicate', ['source' => $inq->id_inquiry, 'label' => $inq->inquiry_no.' — '.$doc['name'].' · '.$doc['customer']])
@@ -132,11 +131,10 @@
     @if ($locked && ! $inq->stat_cancel)
         <x-dl::alert tone="info" message="Confirmed by Sales: this recalculation goes straight to Pro-Cost › Recalc (no Pro-Dev, the specification is unchanged). After Pro-Cost publishes the price it is ready for Quotation." />
         <x-dl::modal id="recalc-cancel" title="Cancel rekalkulasi" icon="cancel">
-            <form method="post" action="{{ route('v2.derived.cancel', $inq->id_inquiry) }}">
-                @csrf
+            <x-dl::action-form action="{{ route('v2.derived.cancel', $inq->id_inquiry) }}">
                 <x-dl::field.text name="cancel_reason" label="Cancellation reason" required />
                 <x-dl::action-bar><x-dl::button preset="save" label="Cancel document" variant="danger" /></x-dl::action-bar>
-            </form>
+            </x-dl::action-form>
         </x-dl::modal>
     @endif
 @endif
