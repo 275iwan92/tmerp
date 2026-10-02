@@ -97,6 +97,20 @@ Teks bawaan JS grid/lines/sheet/form -> `T()` / `Tf()` + pasangan Lang (dijaga t
    lewat `sys_dictionary` context `ui` (sumber = teks English) -- JS `T()` baru mengenal id/en.
 5. Nama hari pemilih tanggal: satu helper `Devlib.h.dow2()` (Indonesia Mg/Sn/Sl/Rb/Km/Jm/Sb, bahasa lain Intl) -- 2026-10-02.
    Toolbar Grid, Permission Matrix, bantuan Sheet, kotak konfirmasi bawaan sudah lewat kunci Lang (2026-10-02).
+6. **Kamus hanya berisi label (2026-10-02, SELESAI):** nilai data di prop teks dibungkus `raw()`; nomor dokumen / teks hasil
+   terjemahan tidak dicatat; baris data lama dihapus (rulebook B.3, `LOG_JOB_DONE.md`). **Sisa terbuka, dicek 2026-10-02 malam
+   (belum dikerjakan, user pindah sesi):**
+   a. Label `ui` tanpa terjemahan Indonesia: **243 di ddtsys, 22 di tm2sys** -> tampil English dalam mode Indonesia. Sebagian
+      besar dari layar yang dibangun 2026-10-02 (papan widget, Customer Invoice, Proof of Delivery). Usulan: susun daftar +
+      usulan terjemahan untuk disetujui user, lalu isi lewat migrasi (ddt + tm2).
+   b. Label Indonesia `Tujuan` tercatat sebagai sumber English (ddtsys, 2026-10-02 18:25, salah satu grid Delivery): ganti
+      labelnya ke English di layar / kelas grid, tambahkan kata itu ke `Dictionary::ID_WORDS`, hapus baris kamusnya.
+   c. Nama aplikasi `ERP TM` tercatat di kamus tm2sys (judul `x-dl::layer-menu` = data, bukan label): bungkus `raw()` di
+      `packages/devlib/resources/views/components/layer-shell.blade.php` (`:title`), hapus baris kamusnya (juga `TELASIH MAKMUR` di ddt).
+   d. Pesan flash yang dikirim sebagai variabel utuh (`:message="$error"`, `session('v2_flash')`) tidak bisa dibedakan dari
+      label: yang bernomor dokumen tertahan `Dictionary::looksLikeData()`, yang berisi nama masih bisa tercatat. Perlu
+      keputusan: pesan flash dianggap teks jadi (`raw()` di semua alert flash) atau diterjemahkan di tempat pesan dibuat.
+   e. Engine Catalog (`App\Support\Engines\EngineRegistry`) hanya English; terjemahan Indonesia belum ada.
 
 ### Gap desain lama (format angka sudah diputuskan di atas)
 - ~~**Format angka tidak ikut bahasa**~~ (diputuskan 2026-10-01, lihat atas): `number_format()` di ratusan titik
