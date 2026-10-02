@@ -234,12 +234,12 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         $validLines = array_values(array_filter($this->lines, fn ($l) => ! empty($l['account_id']) && ((float) ($l['debit'] ?: 0) > 0 || (float) ($l['credit'] ?: 0) > 0)));
 
         if (! $this->main_account_id) {
-            $this->errorMessage = 'Akun Kas/Bank Utama wajib dipilih.';
+            $this->errorMessage = t('Main Cash/Bank Account is required.');
 
             return;
         }
         if (empty($validLines)) {
-            $this->errorMessage = 'Minimal 1 baris jurnal dgn akun + nilai debit/kredit.';
+            $this->errorMessage = t('At least 1 journal line with an account + debit/credit amount.');
 
             return;
         }
@@ -267,7 +267,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
 
             if ($this->editingId) {
                 $voucher = FinVoucher::findOrFail($this->editingId);
-                abort_if($voucher->status !== 'DRAFT', 422, 'Voucher sudah diposting, tidak bisa diubah.');
+                abort_if($voucher->status !== 'DRAFT', 422, t('Voucher is already posted and cannot be changed.'));
                 $voucher->update($data);
                 $voucher->lines()->delete();
             } else {
@@ -294,7 +294,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         });
 
         unset($this->vouchers, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', "Draft {$this->doc_no} tersimpan.");
+        session()->flash('flash', str_replace(':no', $this->doc_no, t('Draft :no saved.')));
         $this->panel = 'grid';
     }
 
@@ -317,7 +317,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         try {
             $svc->postDraft(FinVoucher::findOrFail($id), Auth::user()->login);
         } catch (\Throwable $e) {
-            $message = method_exists($e, 'getMessage') ? $e->getMessage() : 'Gagal posting.';
+            $message = method_exists($e, 'getMessage') ? $e->getMessage() : t('Posting failed.');
             if ($this->panel === 'form') {
                 $this->errorMessage = $message;
             } else {
@@ -328,7 +328,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         }
 
         unset($this->vouchers, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', 'Jurnal berhasil di-posting.');
+        session()->flash('flash', t('Journal posted successfully.'));
 
         if ($this->panel === 'form') {
             $this->openEdit($id);
@@ -348,7 +348,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
 
         $voucher->update(['status' => 'CANCELLED', 'stat_cancel' => true, 'updated_by' => Auth::user()->login]);
         unset($this->vouchers, $this->statTotal, $this->statDraft, $this->statPosted);
-        session()->flash('flash', 'Draft dibatalkan.');
+        session()->flash('flash', t('Draft cancelled.'));
         $this->panel = 'grid';
     }
 

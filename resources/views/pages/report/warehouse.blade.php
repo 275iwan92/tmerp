@@ -71,7 +71,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Gudang — TELASIH MAKMUR ERP'
             ->groupBy('warehouse_name')
             ->orderByDesc('value')
             ->get()
-            ->map(fn ($r) => ['name' => $r->warehouse_name ?: '(tanpa gudang)', 'value' => (float) $r->value])
+            ->map(fn ($r) => ['name' => $r->warehouse_name ?: t('(no warehouse)'), 'value' => (float) $r->value])
             ->all();
     }
 };
@@ -86,45 +86,45 @@ new #[Layout('layouts::report')] #[Title('Laporan Gudang — TELASIH MAKMUR ERP'
 
 <div class="p-4 sm:p-6" style="background:var(--content-bg)">
     <div class="mb-5">
-        <h1 class="text-[22px] font-extrabold -tracking-wide" style="color:var(--sh-ink-strong)">Laporan Gudang &amp; Inventori</h1>
-        <p class="text-[13px] mt-0.5" style="color:var(--sh-muted)">Nilai stok bahan baku, WIP, dan barang jadi — CV. Telasih Makmur.</p>
+        <h1 class="text-[22px] font-extrabold -tracking-wide" style="color:var(--sh-ink-strong)">{{ t('Warehouse & Inventory Report') }}</h1>
+        <p class="text-[13px] mt-0.5" style="color:var(--sh-muted)">{{ t('Stock value of raw materials, WIP, and finished goods') }} — CV. Telasih Makmur.</p>
     </div>
 
     <div class="[display:grid] grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4">
-        <x-report.kpi label="Nilai Stok Bahan Baku" icon="fa-solid fa-boxes-stacked" tone="blue" :value="$miliar($this->stockValue['rm'])" :note="number_format($this->skuCounts['rm']).' SKU aktif'" />
-        <x-report.kpi label="Nilai Stok WIP (SFG)" icon="fa-solid fa-layer-group" tone="violet" :value="$miliar($this->stockValue['sfg'])" note="Semi Finished Goods" />
-        <x-report.kpi label="Nilai Stok Barang Jadi" icon="fa-solid fa-box-open" tone="green" :value="$miliar($this->stockValue['fg'])" :note="number_format($this->skuCounts['fg']).' SKU aktif'" />
-        <x-report.kpi label="Bahan Tidak Bergerak" icon="fa-solid fa-triangle-exclamation" tone="danger" :value="number_format($this->staleStock)" note="&gt;90 hari tanpa mutasi" />
+        <x-report.kpi :label="t('Raw Material Stock Value')" icon="fa-solid fa-boxes-stacked" tone="blue" :value="$miliar($this->stockValue['rm'])" :note="str_replace(':n', number_format($this->skuCounts['rm']), t(':n active SKUs'))" />
+        <x-report.kpi :label="t('WIP Stock Value (SFG)')" icon="fa-solid fa-layer-group" tone="violet" :value="$miliar($this->stockValue['sfg'])" :note="t('Semi Finished Goods')" />
+        <x-report.kpi :label="t('Finished Goods Stock Value')" icon="fa-solid fa-box-open" tone="green" :value="$miliar($this->stockValue['fg'])" :note="str_replace(':n', number_format($this->skuCounts['fg']), t(':n active SKUs'))" />
+        <x-report.kpi :label="t('Non-Moving Materials')" icon="fa-solid fa-triangle-exclamation" tone="danger" :value="number_format($this->staleStock)" :note="t('>90 days without movement')" />
     </div>
 
     <div class="[display:grid] grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-3.5 mb-4">
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-            <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Komposisi Nilai Stok</h2>
-            <x-report.svg-donut :center-value="$miliar($totalValue)" center-label="Total nilai stok"
+            <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Stock Value Composition') }}</h2>
+            <x-report.svg-donut :center-value="$miliar($totalValue)" :center-label="t('Total stock value')"
                 :segments="[
-                    ['label' => 'Bahan Baku', 'value' => $this->stockValue['rm'], 'color' => $palette[0]],
-                    ['label' => 'WIP', 'value' => $this->stockValue['sfg'], 'color' => $palette[1]],
-                    ['label' => 'Barang Jadi', 'value' => $this->stockValue['fg'], 'color' => $palette[2]],
+                    ['label' => t('Raw Materials'), 'value' => $this->stockValue['rm'], 'color' => $palette[0]],
+                    ['label' => t('WIP'), 'value' => $this->stockValue['sfg'], 'color' => $palette[1]],
+                    ['label' => t('Finished Goods'), 'value' => $this->stockValue['fg'], 'color' => $palette[2]],
                 ]" />
         </div>
         <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-            <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Nilai Stok Bahan Baku per Gudang</h2>
+            <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Raw Material Stock Value per Warehouse') }}</h2>
             @forelse ($this->warehouseSplit as $w)
                 <x-report.progress-row :label="$w['name']" :pct="$this->stockValue['rm'] > 0 ? round($w['value'] / $this->stockValue['rm'] * 100, 1) : 0" :value="$miliar($w['value'])" color="var(--sh-accent)" />
             @empty
-                <p class="text-[12px]" style="color:var(--sh-muted)">Belum ada stok bahan baku.</p>
+                <p class="text-[12px]" style="color:var(--sh-muted)">{{ t('No raw material stock yet.') }}</p>
             @endforelse
         </div>
     </div>
 
     <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
-        <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Bahan Baku Bernilai Tertinggi</h2>
+        <h2 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">{{ t('Highest-Value Raw Materials') }}</h2>
         <table class="w-full text-[12px]">
             <thead>
                 <tr class="text-left border-b" style="border-color:var(--sh-border)">
-                    <th class="pb-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Material</th>
-                    <th class="pb-2 font-bold uppercase text-[10px] text-right" style="color:var(--sh-muted)">Qty On Hand</th>
-                    <th class="pb-2 font-bold uppercase text-[10px] text-right" style="color:var(--sh-muted)">Nilai</th>
+                    <th class="pb-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">{{ t('Material') }}</th>
+                    <th class="pb-2 font-bold uppercase text-[10px] text-right" style="color:var(--sh-muted)">{{ t('Qty On Hand') }}</th>
+                    <th class="pb-2 font-bold uppercase text-[10px] text-right" style="color:var(--sh-muted)">{{ t('Value') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -135,7 +135,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Gudang — TELASIH MAKMUR ERP'
                         <td class="py-2 text-right tabular-nums font-semibold" style="color:var(--sh-ink-strong)">{{ $rp($m['value']) }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="3" class="py-3 text-center" style="color:var(--sh-muted)">Belum ada data stok.</td></tr>
+                    <tr><td colspan="3" class="py-3 text-center" style="color:var(--sh-muted)">{{ t('No stock data yet.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

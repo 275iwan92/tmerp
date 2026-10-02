@@ -110,41 +110,41 @@ new #[Title('General Ledger — TELASIH MAKMUR ERP')] class extends Component
 };
 ?>
 
-<x-ledger.page title="General Ledger" subtitle="Account movements, journal postings, and ledger balances.">
+<x-ledger.page :title="t('General Ledger')" :subtitle="t('Account movements, journal postings, and ledger balances.')">
     <x-slot:actions>
         <select class="lg-period" wire:model.live="period" x-data x-effect="$el.value = @js($period)">
             @foreach ($this->periodOptions as $k => $label)<option value="{{ $k }}">▣ {{ $label }}</option>@endforeach
         </select>
-        <a class="lg-btn light" href="{{ route('finance.trial-balance') }}">≡ Trial Balance</a>
-        <a class="lg-btn primary" href="{{ route('finance.journals') }}">＋ New Journal Entry</a>
+        <a class="lg-btn light" href="{{ route('finance.trial-balance') }}">≡ {{ t('Trial Balance') }}</a>
+        <a class="lg-btn primary" href="{{ route('finance.journals') }}">＋ {{ t('New Journal Entry') }}</a>
     </x-slot:actions>
 
     <div class="lg-cards">
-        <x-ledger.metric label="Posted Entries" icon="✓" :value="number_format($this->stats['posted'])" :sub="'Fiscal year '.substr($period, 0, 4)" />
-        <x-ledger.metric label="Draft Entries" icon="◷" :value="$this->stats['draft']" :pill="$this->stats['draft'] ? 'Review needed' : 'None pending'" :tone="$this->stats['draft'] ? 'warn' : 'good'" />
-        <x-ledger.metric label="Debits This Period" icon="↓" :value="Fmt::short($this->stats['debit'])" :sub="$this->periodOptions[$period] ?? $period" />
-        <x-ledger.metric label="Credits This Period" icon="↑" :value="Fmt::short($this->stats['credit'])" :pill="abs($this->stats['debit'] - $this->stats['credit']) < 0.01 ? 'Balanced' : 'Out of balance'" :tone="abs($this->stats['debit'] - $this->stats['credit']) < 0.01 ? 'good' : 'bad'" />
+        <x-ledger.metric :label="t('Posted Entries')" icon="✓" :value="number_format($this->stats['posted'])" :sub="t('Fiscal year').' '.substr($period, 0, 4)" />
+        <x-ledger.metric :label="t('Draft Entries')" icon="◷" :value="$this->stats['draft']" :pill="$this->stats['draft'] ? t('Review needed') : t('None pending')" :tone="$this->stats['draft'] ? 'warn' : 'good'" />
+        <x-ledger.metric :label="t('Debits This Period')" icon="↓" :value="Fmt::short($this->stats['debit'])" :sub="$this->periodOptions[$period] ?? $period" />
+        <x-ledger.metric :label="t('Credits This Period')" icon="↑" :value="Fmt::short($this->stats['credit'])" :pill="abs($this->stats['debit'] - $this->stats['credit']) < 0.01 ? t('Balanced') : t('Out of balance')" :tone="abs($this->stats['debit'] - $this->stats['credit']) < 0.01 ? 'good' : 'bad'" />
     </div>
 
-    <x-ledger.panel title="General Ledger Register" :subtitle="'Entries posted in '.($this->periodOptions[$period] ?? $period)">
+    <x-ledger.panel :title="t('General Ledger Register')" :subtitle="str_replace(':period', $this->periodOptions[$period] ?? $period, t('Entries posted in :period'))">
         <div class="lg-toolbar">
-            <input class="lg-search" wire:model.live.debounce.300ms="search" placeholder="Search journal number or description...">
+            <input class="lg-search" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search journal number or description...') }}">
             <select class="lg-select" wire:model.live="group" x-data x-effect="$el.value = @js($group)">
-                <option value="">All accounts</option>
-                <option value="CASH">Cash & Bank</option>
-                <option value="ASSET">Assets</option>
-                <option value="LIABILITY">Liabilities & Equity</option>
-                <option value="REVENUE">Revenue</option>
-                <option value="EXPENSE">Expense</option>
+                <option value="">{{ t('All accounts') }}</option>
+                <option value="CASH">{{ t('Cash & Bank') }}</option>
+                <option value="ASSET">{{ t('Assets') }}</option>
+                <option value="LIABILITY">{{ t('Liabilities & Equity') }}</option>
+                <option value="REVENUE">{{ t('Revenue') }}</option>
+                <option value="EXPENSE">{{ t('Expense') }}</option>
             </select>
             <select class="lg-select" wire:model.live="accountId" x-data x-effect="$el.value = @js((string) $accountId)" style="max-width:320px">
-                <option value="">Any account</option>
+                <option value="">{{ t('Any account') }}</option>
                 @foreach ($this->accountOptions as $id => $label)<option value="{{ $id }}">{{ $label }}</option>@endforeach
             </select>
         </div>
         <div class="lg-tablewrap">
             <table class="lg-min">
-                <thead><tr><th>Journal No.</th><th>Date</th><th>Description</th><th>Account</th><th class="r">Debit</th><th class="r">Credit</th>@if ($accountId)<th class="r">Running Balance</th>@endif<th>Status</th></tr></thead>
+                <thead><tr><th>{{ t('Journal No.') }}</th><th>{{ t('Date') }}</th><th>{{ t('Description') }}</th><th>{{ t('Account') }}</th><th class="r">{{ t('Debit') }}</th><th class="r">{{ t('Credit') }}</th>@if ($accountId)<th class="r">{{ t('Running Balance') }}</th>@endif<th>{{ t('Status') }}</th></tr></thead>
                 <tbody>
                     @forelse ($this->lines as $l)
                         <tr wire:key="gl-{{ $l->line_id }}">
@@ -155,14 +155,14 @@ new #[Title('General Ledger — TELASIH MAKMUR ERP')] class extends Component
                             <td class="r lg-money">{{ Fmt::rp($l->debit, true) }}</td>
                             <td class="r lg-money">{{ Fmt::rp($l->credit, true) }}</td>
                             @if ($accountId)<td class="r lg-money">{{ Fmt::rp($this->running[$l->line_id] ?? 0) }}</td>@endif
-                            <td><x-ledger.tag :tone="$l->voucher->reversed_by_id ? 'purple' : 'good'">{{ $l->voucher->reversed_by_id ? 'Reversed' : 'Posted' }}</x-ledger.tag></td>
+                            <td><x-ledger.tag :tone="$l->voucher->reversed_by_id ? 'purple' : 'good'">{{ $l->voucher->reversed_by_id ? t('Reversed') : t('Posted') }}</x-ledger.tag></td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="lg-empty">No posted entries in this period.</td></tr>
+                        <tr><td colspan="8" class="lg-empty">{{ t('No posted entries in this period.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="lg-foot"><b>Total ({{ $this->lines->count() }} lines)</b><span>Debit <b class="lg-money">{{ Fmt::rp($this->lines->sum('debit')) }}</b> · Credit <b class="lg-money">{{ Fmt::rp($this->lines->sum('credit')) }}</b></span></div>
+        <div class="lg-foot"><b>{{ str_replace(':n', $this->lines->count(), t('Total (:n lines)')) }}</b><span>{{ t('Debit') }} <b class="lg-money">{{ Fmt::rp($this->lines->sum('debit')) }}</b> · {{ t('Credit') }} <b class="lg-money">{{ Fmt::rp($this->lines->sum('credit')) }}</b></span></div>
     </x-ledger.panel>
 </x-ledger.page>

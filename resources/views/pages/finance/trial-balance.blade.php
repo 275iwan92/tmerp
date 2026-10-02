@@ -66,50 +66,50 @@ new #[Title('Trial Balance — TELASIH MAKMUR ERP')] class extends Component
     public function refreshView(): void
     {
         unset($this->rows, $this->totals);
-        session()->flash('flash', 'Trial balance dihitung ulang dari voucher POSTED per '.Fmt::date($this->asOf).'.');
+        session()->flash('flash', str_replace(':date', Fmt::date($this->asOf), t('Trial balance recalculated from POSTED vouchers as at :date.')));
     }
 };
 ?>
 
-<x-ledger.page title="Trial Balance" subtitle="Control report for posted ledger balances before financial reporting and close.">
+<x-ledger.page :title="t('Trial Balance')" :subtitle="t('Control report for posted ledger balances before financial reporting and close.')">
     <x-slot:actions>
         <input type="date" class="lg-period" wire:model.live="asOf">
-        <button type="button" class="lg-btn light" wire:click="export">⇩ Export Excel</button>
-        <button type="button" class="lg-btn primary" wire:click="refreshView">↻ Refresh</button>
+        <button type="button" class="lg-btn light" wire:click="export">⇩ {{ t('Export Excel') }}</button>
+        <button type="button" class="lg-btn primary" wire:click="refreshView">↻ {{ t('Refresh') }}</button>
     </x-slot:actions>
 
     <div class="lg-cards">
-        <x-ledger.metric label="Total Debits" icon="↓" :value="Fmt::short($this->totals['debit'])" :pill="abs($this->totals['diff']) < 0.01 ? 'Balanced' : 'Check'" :tone="abs($this->totals['diff']) < 0.01 ? 'good' : 'bad'" />
-        <x-ledger.metric label="Total Credits" icon="↑" :value="Fmt::short($this->totals['credit'])" :pill="abs($this->totals['diff']) < 0.01 ? 'Balanced' : 'Check'" :tone="abs($this->totals['diff']) < 0.01 ? 'good' : 'bad'" />
-        <x-ledger.metric label="Accounts With Balance" icon="☷" :value="$this->totals['accounts']" sub="Chart of accounts" />
-        <x-ledger.metric label="Out-of-Balance" icon="✓" :value="Fmt::rp($this->totals['diff'])" :pill="abs($this->totals['diff']) < 0.01 ? 'No exceptions' : 'Exception'" :tone="abs($this->totals['diff']) < 0.01 ? 'good' : 'bad'" />
+        <x-ledger.metric :label="t('Total Debits')" icon="↓" :value="Fmt::short($this->totals['debit'])" :pill="abs($this->totals['diff']) < 0.01 ? t('Balanced') : t('Check')" :tone="abs($this->totals['diff']) < 0.01 ? 'good' : 'bad'" />
+        <x-ledger.metric :label="t('Total Credits')" icon="↑" :value="Fmt::short($this->totals['credit'])" :pill="abs($this->totals['diff']) < 0.01 ? t('Balanced') : t('Check')" :tone="abs($this->totals['diff']) < 0.01 ? 'good' : 'bad'" />
+        <x-ledger.metric :label="t('Accounts With Balance')" icon="☷" :value="$this->totals['accounts']" :sub="t('Chart of accounts')" />
+        <x-ledger.metric :label="t('Out-of-Balance')" icon="✓" :value="Fmt::rp($this->totals['diff'])" :pill="abs($this->totals['diff']) < 0.01 ? t('No exceptions') : t('Exception')" :tone="abs($this->totals['diff']) < 0.01 ? 'good' : 'bad'" />
     </div>
 
-    <x-ledger.panel title="Trial Balance Register" :subtitle="'As at '.Fmt::date($asOf).' · IDR'">
+    <x-ledger.panel :title="t('Trial Balance Register')" :subtitle="str_replace(':date', Fmt::date($asOf), t('As at :date')).' · IDR'">
         <div class="lg-toolbar">
-            <input class="lg-search" wire:model.live.debounce.300ms="search" placeholder="Search account code or name...">
+            <input class="lg-search" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search account code or name...') }}">
             <select class="lg-select" wire:model.live="classFilter" x-data x-effect="$el.value = @js($classFilter)">
-                <option value="">All account classes</option><option value="ASSET">Assets</option><option value="LIABILITY">Liabilities & Equity</option><option value="REVENUE">Revenue</option><option value="EXPENSE">Expenses</option>
+                <option value="">{{ t('All account classes') }}</option><option value="ASSET">{{ t('Assets') }}</option><option value="LIABILITY">{{ t('Liabilities & Equity') }}</option><option value="REVENUE">{{ t('Revenue') }}</option><option value="EXPENSE">{{ t('Expenses') }}</option>
             </select>
         </div>
         <div class="lg-tablewrap">
             <table class="lg-min">
-                <thead><tr><th>Account Code</th><th>Account Name</th><th>Account Class</th><th class="r">Debit</th><th class="r">Credit</th></tr></thead>
+                <thead><tr><th>{{ t('Account Code') }}</th><th>{{ t('Account Name') }}</th><th>{{ t('Account Class') }}</th><th class="r">{{ t('Debit') }}</th><th class="r">{{ t('Credit') }}</th></tr></thead>
                 <tbody>
                     @forelse ($this->rows as $r)
                         <tr wire:key="tb-{{ $r->account->account_id }}">
                             <td class="lg-money">{{ $r->account->account_code }}</td>
                             <td><span class="lg-name">{{ $r->account->account_name }}</span></td>
-                            <td>{{ $this->classLabel($r->account->account_type) }}</td>
+                            <td>{{ t($this->classLabel($r->account->account_type)) }}</td>
                             <td class="r lg-money">{{ Fmt::rp($r->debit, true) }}</td>
                             <td class="r lg-money">{{ Fmt::rp($r->credit, true) }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="lg-empty">Belum ada voucher POSTED sampai tanggal ini.</td></tr>
+                        <tr><td colspan="5" class="lg-empty">{{ t('No POSTED vouchers up to this date yet.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="lg-foot"><b>Total ({{ $this->rows->count() }} accounts shown)</b><b class="lg-money">{{ Fmt::rp($this->rows->sum('debit')) }}</b><b class="lg-money">{{ Fmt::rp($this->rows->sum('credit')) }}</b></div>
+        <div class="lg-foot"><b>{{ str_replace(':n', $this->rows->count(), t('Total (:n accounts shown)')) }}</b><b class="lg-money">{{ Fmt::rp($this->rows->sum('debit')) }}</b><b class="lg-money">{{ Fmt::rp($this->rows->sum('credit')) }}</b></div>
     </x-ledger.panel>
 </x-ledger.page>

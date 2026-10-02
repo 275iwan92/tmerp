@@ -184,17 +184,17 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
             'jv_kind' => 'required|in:MANUAL,ACCRUAL,RECURRING,ADJUSTMENT,OPENING',
             'jv_autorev' => 'nullable|date|after:jv_date',
             'lines.*.account_id' => 'nullable|exists:tm2acc.fin_account,account_id',
-        ], [], ['jv_desc' => 'Description', 'jv_date' => 'Date', 'jv_autorev' => 'Auto-reverse date']);
+        ], [], ['jv_desc' => t('Description'), 'jv_date' => t('Date'), 'jv_autorev' => t('Auto-reverse date')]);
 
         [$d, $c] = $this->totals();
         if (abs($d - $c) > 0.009 || $d <= 0) {
-            $this->errorMessage = 'Debit ('.Fmt::rp($d).') harus sama dengan kredit ('.Fmt::rp($c).') dan tidak nol.';
+            $this->errorMessage = str_replace([':debit', ':credit'], [Fmt::rp($d), Fmt::rp($c)], t('Debit (:debit) must equal credit (:credit) and must not be zero.'));
 
             return;
         }
         $recon = FinAccount::whereIn('account_id', collect($this->lines)->pluck('account_id')->filter())->where('is_recon', true)->pluck('account_code');
         if ($recon->isNotEmpty()) {
-            $this->errorMessage = 'Akun kontrol '.$recon->implode(', ').' (piutang/hutang/uang muka) hanya lewat Order to Cash / Procure to Pay supaya subledger tetap sinkron.';
+            $this->errorMessage = str_replace(':accounts', $recon->implode(', '), t('Control accounts :accounts (receivable/payable/advance) only via Order to Cash / Procure to Pay so the subledger stays in sync.'));
 
             return;
         }
@@ -215,7 +215,7 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
             if ($submit) {
                 $svc->submit($voucher, $this->login());
             }
-        }, $submit ? 'Jurnal disimpan & diajukan untuk persetujuan.' : 'Draft jurnal disimpan.');
+        }, $submit ? t('Journal saved & submitted for approval.') : t('Journal draft saved.'));
 
         if ($ok) {
             $this->closeModal();
@@ -233,11 +233,11 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
             'return' => fn () => $svc->reject($v, $user->login),
             'post' => fn () => $svc->postDraft($v, $user->login, true),
             'delete' => function () use ($v) {
-                abort_unless($v->status === 'DRAFT', 422, 'Hanya DRAFT yang boleh dihapus.');
+                abort_unless($v->status === 'DRAFT', 422, t('Only DRAFT can be deleted.'));
                 $v->lines()->delete();
                 $v->delete();
             },
-        }, ['submit' => 'Jurnal diajukan.', 'approve' => 'Jurnal disetujui.', 'return' => 'Jurnal dikembalikan ke Draft.', 'post' => 'Jurnal diposting ke General Ledger.', 'delete' => 'Draft dihapus.'][$action]);
+        }, ['submit' => t('Journal submitted.'), 'approve' => t('Journal approved.'), 'return' => t('Journal returned to Draft.'), 'post' => t('Journal posted to the General Ledger.'), 'delete' => t('Draft deleted.')][$action]);
         unset($this->journals, $this->stats, $this->viewing);
     }
 
@@ -252,7 +252,7 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
     public function reverse(JournalPostingService $svc): void
     {
         $this->validate(['rev_date' => 'required|date', 'rev_reason' => 'required|string|max:120']);
-        if ($this->attempt(fn () => $svc->reverse(FinVoucher::findOrFail($this->viewId), $this->rev_date, $this->login(), $this->rev_reason), 'Jurnal pembalik diposting.')) {
+        if ($this->attempt(fn () => $svc->reverse(FinVoucher::findOrFail($this->viewId), $this->rev_date, $this->login(), $this->rev_reason), t('Reversing journal posted.'))) {
             $this->closeModal();
             unset($this->journals, $this->stats);
         }
@@ -266,125 +266,125 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
     public function statusLabel(FinVoucher $v): string
     {
         if ($v->status === 'POSTED' && $v->reversed_by_id) {
-            return 'Reversed';
+            return t('Reversed');
         }
 
-        return ['DRAFT' => 'Draft', 'SUBMITTED' => 'Pending approval', 'APPROVED' => 'Approved', 'POSTED' => 'Posted', 'CANCELLED' => 'Cancelled'][$v->status] ?? $v->status;
+        return t(['DRAFT' => 'Draft', 'SUBMITTED' => 'Pending approval', 'APPROVED' => 'Approved', 'POSTED' => 'Posted', 'CANCELLED' => 'Cancelled'][$v->status] ?? $v->status);
     }
 
     public function kindLabel(?string $k): string
     {
-        return self::KINDS[$k] ?? 'Journal';
+        return t(self::KINDS[$k] ?? 'Journal');
     }
 };
 ?>
 
-<x-ledger.page title="Journal Entries" subtitle="Manual, recurring, accrual, adjustment, and reversing journal processing.">
+<x-ledger.page :title="t('Journal Entries')" :subtitle="t('Manual, recurring, accrual, adjustment, and reversing journal processing.')">
     <x-slot:actions>
-        <button type="button" class="lg-btn light" wire:click="$set('modal', 'templates')">▤ Templates</button>
-        <button type="button" class="lg-btn primary" wire:click="openNew">＋ Create Journal</button>
+        <button type="button" class="lg-btn light" wire:click="$set('modal', 'templates')">▤ {{ t('Templates') }}</button>
+        <button type="button" class="lg-btn primary" wire:click="openNew">＋ {{ t('Create Journal') }}</button>
     </x-slot:actions>
 
     <div class="lg-cards">
-        <x-ledger.metric label="Draft" icon="✎" :value="$this->stats['draft']" pill="Awaiting review" tone="warn" />
-        <x-ledger.metric label="Pending Approval" icon="◷" :value="$this->stats['pending']" :sub="Fmt::short($this->stats['pending_value']).' value'" />
-        <x-ledger.metric label="Posted This Month" icon="✓" :value="$this->stats['posted_month']" :sub="now()->format('F Y')" />
-        <x-ledger.metric label="Auto-Reversing" icon="↔" :value="$this->stats['auto']" :sub="$this->stats['auto_next'] ? 'Next reversal: '.Fmt::date($this->stats['auto_next']) : 'No reversal scheduled'" />
+        <x-ledger.metric :label="t('Draft')" icon="✎" :value="$this->stats['draft']" :pill="t('Awaiting review')" tone="warn" />
+        <x-ledger.metric :label="t('Pending Approval')" icon="◷" :value="$this->stats['pending']" :sub="str_replace(':amount', Fmt::short($this->stats['pending_value']), t(':amount value'))" />
+        <x-ledger.metric :label="t('Posted This Month')" icon="✓" :value="$this->stats['posted_month']" :sub="now()->format('F Y')" />
+        <x-ledger.metric :label="t('Auto-Reversing')" icon="↔" :value="$this->stats['auto']" :sub="$this->stats['auto_next'] ? t('Next reversal').': '.Fmt::date($this->stats['auto_next']) : t('No reversal scheduled')" />
     </div>
 
-    <x-ledger.panel class="lg-stack" title="Manual Journal Flow" subtitle="Controlled exception path into the general ledger.">
+    <x-ledger.panel class="lg-stack" :title="t('Manual Journal Flow')" :subtitle="t('Controlled exception path into the general ledger.')">
         <x-ledger.flow :nodes="[
-            ['Prepare', 'Header, date, source, supporting document, debit and credit lines.', $this->stats['draft'] ? $this->stats['draft'].' draft' : null],
-            ['Validate', 'Debit equals credit, active COA, control-account and period checks.'],
-            ['Approve', 'Segregation of duties and materiality approval matrix.', $this->stats['pending'] ? $this->stats['pending'].' pending' : null],
-            ['Post', 'Create immutable journal batch with audit metadata.'],
-            ['Reverse / Adjust', 'Never edit posted records; reverse and post a corrected entry.'],
+            [t('Prepare'), t('Header, date, source, supporting document, debit and credit lines.'), $this->stats['draft'] ? str_replace(':n', $this->stats['draft'], t(':n draft')) : null],
+            [t('Validate'), t('Debit equals credit, active COA, control-account and period checks.')],
+            [t('Approve'), t('Segregation of duties and materiality approval matrix.'), $this->stats['pending'] ? str_replace(':n', $this->stats['pending'], t(':n pending')) : null],
+            [t('Post'), t('Create immutable journal batch with audit metadata.')],
+            [t('Reverse / Adjust'), t('Never edit posted records; reverse and post a corrected entry.')],
         ]" />
     </x-ledger.panel>
 
-    <x-ledger.panel title="Journal Workbench" subtitle="Recent manual and recurring journal entries.">
+    <x-ledger.panel :title="t('Journal Workbench')" :subtitle="t('Recent manual and recurring journal entries.')">
         <div class="lg-toolbar">
-            <input class="lg-search" wire:model.live.debounce.300ms="search" placeholder="Search journal or description...">
+            <input class="lg-search" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search journal or description...') }}">
             <select class="lg-select" wire:model.live="workflow" x-data x-effect="$el.value = @js($workflow)">
-                <option value="">All workflows</option>
-                <option value="DRAFT">Draft</option>
-                <option value="SUBMITTED">Pending approval</option>
-                <option value="APPROVED">Approved</option>
-                <option value="POSTED">Posted</option>
+                <option value="">{{ t('All workflows') }}</option>
+                <option value="DRAFT">{{ t('Draft') }}</option>
+                <option value="SUBMITTED">{{ t('Pending approval') }}</option>
+                <option value="APPROVED">{{ t('Approved') }}</option>
+                <option value="POSTED">{{ t('Posted') }}</option>
             </select>
         </div>
         <div class="lg-tablewrap">
             <table class="lg-min">
-                <thead><tr><th>Journal No.</th><th>Date</th><th>Description</th><th>Prepared By</th><th class="r">Amount</th><th>Workflow Status</th><th></th></tr></thead>
+                <thead><tr><th>{{ t('Journal No.') }}</th><th>{{ t('Date') }}</th><th>{{ t('Description') }}</th><th>{{ t('Prepared By') }}</th><th class="r">{{ t('Amount') }}</th><th>{{ t('Workflow Status') }}</th><th></th></tr></thead>
                 <tbody>
                     @forelse ($this->journals as $v)
                         <tr wire:key="jv-{{ $v->voucher_id }}" wire:dblclick="edit({{ $v->voucher_id }})" style="cursor:pointer">
                             <td><span class="lg-name">{{ $v->voucher_number }}</span><span class="lg-code">{{ $this->kindLabel($v->journal_kind) }}</span></td>
                             <td>{{ Fmt::date($v->entry_date) }}</td>
                             <td>{{ $v->description }}</td>
-                            <td>{{ $this->names[$v->created_by] ?? ($v->created_by === '_system' ? 'System' : $v->created_by) }}</td>
+                            <td>{{ $this->names[$v->created_by] ?? ($v->created_by === '_system' ? t('System') : $v->created_by) }}</td>
                             <td class="r lg-money">{{ Fmt::rp($v->totalAmount()) }}</td>
                             <td><x-ledger.tag :tone="$v->reversed_by_id ? 'purple' : $this->statusTone($v->status)">{{ $this->statusLabel($v) }}</x-ledger.tag></td>
                             <td class="r">
                                 <div class="lg-rowmenu" x-data="{ o: false }" @click.outside="o = false">
                                     <button type="button" class="lg-dots" @click="o = !o">⋮</button>
                                     <div class="m" x-show="o" x-cloak>
-                                        <button type="button" wire:click="openView({{ $v->voucher_id }})">Open</button>
+                                        <button type="button" wire:click="openView({{ $v->voucher_id }})">{{ t('Open') }}</button>
                                         @if ($v->status === 'DRAFT')
-                                            <button type="button" wire:click="edit({{ $v->voucher_id }})">Edit</button>
-                                            <button type="button" wire:click="act('submit', {{ $v->voucher_id }})">Submit for approval</button>
-                                            <button type="button" wire:click="act('delete', {{ $v->voucher_id }})" wire:confirm="Hapus draft ini?">Delete draft</button>
+                                            <button type="button" wire:click="edit({{ $v->voucher_id }})">{{ t('Edit') }}</button>
+                                            <button type="button" wire:click="act('submit', {{ $v->voucher_id }})">{{ t('Submit for approval') }}</button>
+                                            <button type="button" wire:click="act('delete', {{ $v->voucher_id }})" wire:confirm="{{ t('Delete this draft?') }}">{{ t('Delete draft') }}</button>
                                         @elseif ($v->status === 'SUBMITTED')
-                                            <button type="button" wire:click="act('approve', {{ $v->voucher_id }})">Approve</button>
-                                            <button type="button" wire:click="act('return', {{ $v->voucher_id }})">Return to draft</button>
+                                            <button type="button" wire:click="act('approve', {{ $v->voucher_id }})">{{ t('Approve') }}</button>
+                                            <button type="button" wire:click="act('return', {{ $v->voucher_id }})">{{ t('Return to draft') }}</button>
                                         @elseif ($v->status === 'APPROVED')
-                                            <button type="button" wire:click="act('post', {{ $v->voucher_id }})">Post to GL</button>
-                                            <button type="button" wire:click="act('return', {{ $v->voucher_id }})">Return to draft</button>
+                                            <button type="button" wire:click="act('post', {{ $v->voucher_id }})">{{ t('Post to GL') }}</button>
+                                            <button type="button" wire:click="act('return', {{ $v->voucher_id }})">{{ t('Return to draft') }}</button>
                                         @elseif ($v->status === 'POSTED' && ! $v->reversed_by_id && $v->journal_kind !== 'REVERSAL')
-                                            <button type="button" wire:click="openReverse({{ $v->voucher_id }})">Reverse</button>
+                                            <button type="button" wire:click="openReverse({{ $v->voucher_id }})">{{ t('Reverse') }}</button>
                                         @endif
                                         @if ($v->journal_kind === 'RECURRING')
-                                            <button type="button" wire:click="useTemplate({{ $v->voucher_id }})">Use as template</button>
+                                            <button type="button" wire:click="useTemplate({{ $v->voucher_id }})">{{ t('Use as template') }}</button>
                                         @endif
                                     </div>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="lg-empty">No journal entries yet.</td></tr>
+                        <tr><td colspan="7" class="lg-empty">{{ t('No journal entries yet.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="lg-foot"><span>Showing {{ $this->journals->count() }} journals</span><span>Double-click a row to open</span></div>
+        <div class="lg-foot"><span>{{ str_replace(':n', $this->journals->count(), t('Showing :n journals')) }}</span><span>{{ t('Double-click a row to open') }}</span></div>
     </x-ledger.panel>
 
     @if ($modal === 'form')
-        <x-ledger.modal :title="$editingId ? 'Edit Journal Entry' : 'Create Journal Entry'" size="xl">
+        <x-ledger.modal :title="$editingId ? t('Edit Journal Entry') : t('Create Journal Entry')" size="xl">
             <div class="lg-mb">
                 @if ($errorMessage)<div class="lg-alert err lg-field full">{{ $errorMessage }}</div>@endif
-                <x-ledger.field label="Description" name="jv_desc" full><input wire:model="jv_desc" placeholder="e.g. Office utilities accrual"></x-ledger.field>
-                <x-ledger.field label="Journal type" name="jv_kind">
+                <x-ledger.field :label="t('Description')" name="jv_desc" full><input wire:model="jv_desc" placeholder="{{ t('e.g. Office utilities accrual') }}"></x-ledger.field>
+                <x-ledger.field :label="t('Journal type')" name="jv_kind">
                     <select wire:model.live="jv_kind" x-data x-effect="$el.value = @js($jv_kind)">
-                        <option value="MANUAL">Manual Journal</option>
-                        <option value="ACCRUAL">Accrual Journal</option>
-                        <option value="RECURRING">Recurring Journal</option>
-                        <option value="ADJUSTMENT">Adjustment Journal</option>
-                        <option value="OPENING">Opening Balance</option>
+                        <option value="MANUAL">{{ t('Manual Journal') }}</option>
+                        <option value="ACCRUAL">{{ t('Accrual Journal') }}</option>
+                        <option value="RECURRING">{{ t('Recurring Journal') }}</option>
+                        <option value="ADJUSTMENT">{{ t('Adjustment Journal') }}</option>
+                        <option value="OPENING">{{ t('Opening Balance') }}</option>
                     </select>
                 </x-ledger.field>
-                <x-ledger.field label="Transaction date" name="jv_date"><input type="date" wire:model="jv_date"></x-ledger.field>
-                <x-ledger.field label="Reference number" name="jv_ref"><input wire:model="jv_ref" placeholder="e.g., REF-2026-0001"></x-ledger.field>
+                <x-ledger.field :label="t('Transaction date')" name="jv_date"><input type="date" wire:model="jv_date"></x-ledger.field>
+                <x-ledger.field :label="t('Reference number')" name="jv_ref"><input wire:model="jv_ref" placeholder="{{ t('e.g., REF-2026-0001') }}"></x-ledger.field>
                 @if ($jv_kind === 'ACCRUAL')
-                    <x-ledger.field label="Auto-reverse date" name="jv_autorev" hint="Jurnal pembalik otomatis diposting di tanggal ini."><input type="date" wire:model="jv_autorev"></x-ledger.field>
+                    <x-ledger.field :label="t('Auto-reverse date')" name="jv_autorev" :hint="t('The reversing journal is posted automatically on this date.')"><input type="date" wire:model="jv_autorev"></x-ledger.field>
                 @endif
                 <div class="lg-field full">
                     <table class="lg-lines">
-                        <thead><tr><th style="width:36%">Account</th><th style="width:15%">Debit</th><th style="width:15%">Credit</th><th style="width:15%">Cost center</th><th>Narration</th><th></th></tr></thead>
+                        <thead><tr><th style="width:36%">{{ t('Account') }}</th><th style="width:15%">{{ t('Debit') }}</th><th style="width:15%">{{ t('Credit') }}</th><th style="width:15%">{{ t('Cost center') }}</th><th>{{ t('Narration') }}</th><th></th></tr></thead>
                         <tbody>
                             @foreach ($lines as $i => $l)
                                 <tr wire:key="ln-{{ $i }}">
-                                    <td><select wire:model="lines.{{ $i }}.account_id" x-data x-effect="$el.value = @js((string) $l['account_id'])"><option value="">— account —</option>@foreach ($this->accountOptions as $id => $label)<option value="{{ $id }}">{{ $label }}</option>@endforeach</select></td>
+                                    <td><select wire:model="lines.{{ $i }}.account_id" x-data x-effect="$el.value = @js((string) $l['account_id'])"><option value="">{{ t('— account —') }}</option>@foreach ($this->accountOptions as $id => $label)<option value="{{ $id }}">{{ $label }}</option>@endforeach</select></td>
                                     <td><input type="number" step="0.01" min="0" wire:model.live.debounce.400ms="lines.{{ $i }}.debit" style="text-align:right"></td>
                                     <td><input type="number" step="0.01" min="0" wire:model.live.debounce.400ms="lines.{{ $i }}.credit" style="text-align:right"></td>
                                     <td><select wire:model="lines.{{ $i }}.cc_id" x-data x-effect="$el.value = @js((string) $l['cc_id'])"><option value="">—</option>@foreach ($this->ccOptions as $id => $label)<option value="{{ $id }}">{{ $label }}</option>@endforeach</select></td>
@@ -395,9 +395,9 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
                         </tbody>
                     </table>
                     <div class="lg-foot" style="padding:10px 4px">
-                        <button type="button" class="lg-link" wire:click="addLine">＋ Tambah Baris</button>
-                        <span>Debit <b class="lg-money">{{ Fmt::rp($this->totals()[0]) }}</b> · Credit <b class="lg-money">{{ Fmt::rp($this->totals()[1]) }}</b>
-                            @if (abs($this->totals()[0] - $this->totals()[1]) < 0.01 && $this->totals()[0] > 0)<x-ledger.tag tone="good">Balanced</x-ledger.tag>@else<x-ledger.tag tone="bad">Difference {{ Fmt::rp($this->totals()[0] - $this->totals()[1]) }}</x-ledger.tag>@endif
+                        <button type="button" class="lg-link" wire:click="addLine">＋ {{ t('Add Line') }}</button>
+                        <span>{{ t('Debit') }} <b class="lg-money">{{ Fmt::rp($this->totals()[0]) }}</b> · {{ t('Credit') }} <b class="lg-money">{{ Fmt::rp($this->totals()[1]) }}</b>
+                            @if (abs($this->totals()[0] - $this->totals()[1]) < 0.01 && $this->totals()[0] > 0)<x-ledger.tag tone="good">{{ t('Balanced') }}</x-ledger.tag>@else<x-ledger.tag tone="bad">{{ str_replace(':amount', Fmt::rp($this->totals()[0] - $this->totals()[1]), t('Difference :amount')) }}</x-ledger.tag>@endif
                         </span>
                     </div>
                 </div>
@@ -405,7 +405,7 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
             <x-slot:footer>
                 <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
                 <button type="button" class="lg-btn light" wire:click="save(false)">{{ t('Save') }}</button>
-                <button type="button" class="lg-btn primary" wire:click="save(true)">Submit for Approval</button>
+                <button type="button" class="lg-btn primary" wire:click="save(true)">{{ t('Submit for Approval') }}</button>
             </x-slot:footer>
         </x-ledger.modal>
     @endif
@@ -415,35 +415,35 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
         <x-ledger.modal :title="$v->voucher_number" size="xl">
             @if ($errorMessage)<div class="lg-alert err" style="margin:14px 20px 0">{{ $errorMessage }}</div>@endif
             <dl class="lg-kv" style="padding-top:16px">
-                <dt>Journal</dt><dd>{{ $v->journal?->journal_name }} · {{ $this->kindLabel($v->journal_kind) }}</dd>
-                <dt>Date</dt><dd>{{ Fmt::date($v->entry_date) }}</dd>
-                <dt>Description</dt><dd>{{ $v->description }}</dd>
-                <dt>Status</dt><dd><x-ledger.tag :tone="$this->statusTone($v->status)">{{ $this->statusLabel($v) }}</x-ledger.tag></dd>
-                <dt>Audit trail</dt><dd>Prepared {{ $v->created_by }} · Submitted {{ $v->submitted_by ?? '—' }} · Approved {{ $v->approved_by ?? '—' }} · Posted {{ $v->posted_by ?? '—' }} {{ $v->posted_at?->format('d M Y H:i') }}</dd>
-                @if ($v->reversal_of_id)<dt>Reverses</dt><dd>{{ $v->reference_no }}</dd>@endif
-                @if ($v->auto_reverse_date)<dt>Auto-reverse</dt><dd>{{ Fmt::date($v->auto_reverse_date) }}</dd>@endif
+                <dt>{{ t('Journal') }}</dt><dd>{{ $v->journal?->journal_name }} · {{ $this->kindLabel($v->journal_kind) }}</dd>
+                <dt>{{ t('Date') }}</dt><dd>{{ Fmt::date($v->entry_date) }}</dd>
+                <dt>{{ t('Description') }}</dt><dd>{{ $v->description }}</dd>
+                <dt>{{ t('Status') }}</dt><dd><x-ledger.tag :tone="$this->statusTone($v->status)">{{ $this->statusLabel($v) }}</x-ledger.tag></dd>
+                <dt>{{ t('Audit trail') }}</dt><dd>{{ t('Prepared') }} {{ $v->created_by }} · {{ t('Submitted') }} {{ $v->submitted_by ?? '—' }} · {{ t('Approved') }} {{ $v->approved_by ?? '—' }} · {{ t('Posted') }} {{ $v->posted_by ?? '—' }} {{ $v->posted_at?->format('d M Y H:i') }}</dd>
+                @if ($v->reversal_of_id)<dt>{{ t('Reverses') }}</dt><dd>{{ $v->reference_no }}</dd>@endif
+                @if ($v->auto_reverse_date)<dt>{{ t('Auto-reverse') }}</dt><dd>{{ Fmt::date($v->auto_reverse_date) }}</dd>@endif
             </dl>
             <div class="lg-tablewrap" style="padding:0 20px 16px">
                 <table>
-                    <thead><tr><th>Account</th><th>Narration</th><th class="r">Debit</th><th class="r">Credit</th></tr></thead>
+                    <thead><tr><th>{{ t('Account') }}</th><th>{{ t('Narration') }}</th><th class="r">{{ t('Debit') }}</th><th class="r">{{ t('Credit') }}</th></tr></thead>
                     <tbody>
                         @foreach ($v->lines as $l)
                             <tr><td><span class="lg-name">{{ $l->account?->account_code }}</span><span class="lg-code">{{ $l->account?->account_name }}</span></td><td>{{ $l->narration }}</td><td class="r lg-money">{{ Fmt::rp($l->debit, true) }}</td><td class="r lg-money">{{ Fmt::rp($l->credit, true) }}</td></tr>
                         @endforeach
-                        <tr><td colspan="2"><b>Total</b></td><td class="r lg-money">{{ Fmt::rp($v->lines->sum('debit')) }}</td><td class="r lg-money">{{ Fmt::rp($v->lines->sum('credit')) }}</td></tr>
+                        <tr><td colspan="2"><b>{{ t('Total') }}</b></td><td class="r lg-money">{{ Fmt::rp($v->lines->sum('debit')) }}</td><td class="r lg-money">{{ Fmt::rp($v->lines->sum('credit')) }}</td></tr>
                     </tbody>
                 </table>
             </div>
             <x-slot:footer>
                 @if ($v->status === 'SUBMITTED')
-                    <button type="button" class="lg-btn light" wire:click="act('return', {{ $v->voucher_id }})">Return to Draft</button>
-                    <button type="button" class="lg-btn primary" wire:click="act('approve', {{ $v->voucher_id }})">Approve</button>
+                    <button type="button" class="lg-btn light" wire:click="act('return', {{ $v->voucher_id }})">{{ t('Return to Draft') }}</button>
+                    <button type="button" class="lg-btn primary" wire:click="act('approve', {{ $v->voucher_id }})">{{ t('Approve') }}</button>
                 @elseif ($v->status === 'APPROVED')
-                    <button type="button" class="lg-btn primary" wire:click="act('post', {{ $v->voucher_id }})">Post to GL</button>
+                    <button type="button" class="lg-btn primary" wire:click="act('post', {{ $v->voucher_id }})">{{ t('Post to GL') }}</button>
                 @elseif ($v->status === 'DRAFT')
-                    <button type="button" class="lg-btn primary" wire:click="edit({{ $v->voucher_id }})">Edit</button>
+                    <button type="button" class="lg-btn primary" wire:click="edit({{ $v->voucher_id }})">{{ t('Edit') }}</button>
                 @elseif ($v->status === 'POSTED' && ! $v->reversed_by_id && $v->journal_kind !== 'REVERSAL')
-                    <button type="button" class="lg-btn light" wire:click="openReverse({{ $v->voucher_id }})">Reverse</button>
+                    <button type="button" class="lg-btn light" wire:click="openReverse({{ $v->voucher_id }})">{{ t('Reverse') }}</button>
                 @endif
                 <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Close') }}</button>
             </x-slot:footer>
@@ -452,29 +452,29 @@ new #[Title('Journal Entries — TELASIH MAKMUR ERP')] class extends Component
     @endif
 
     @if ($modal === 'reverse')
-        <x-ledger.modal title="Reverse Journal">
+        <x-ledger.modal :title="t('Reverse Journal')">
             <div class="lg-mb">
                 @if ($errorMessage)<div class="lg-alert err lg-field full">{{ $errorMessage }}</div>@endif
-                <x-ledger.field label="Reversal date" name="rev_date"><input type="date" wire:model="rev_date"></x-ledger.field>
-                <x-ledger.field label="Reason" name="rev_reason"><input wire:model="rev_reason" placeholder="e.g. wrong cost center"></x-ledger.field>
-                <p class="lg-sub lg-field full">Debit dan kredit dibalik penuh ke voucher baru berstatus POSTED. Voucher asal tetap utuh sebagai jejak audit.</p>
+                <x-ledger.field :label="t('Reversal date')" name="rev_date"><input type="date" wire:model="rev_date"></x-ledger.field>
+                <x-ledger.field :label="t('Reason')" name="rev_reason"><input wire:model="rev_reason" placeholder="{{ t('e.g. wrong cost center') }}"></x-ledger.field>
+                <p class="lg-sub lg-field full">{{ t('Debit and credit are fully reversed into a new POSTED voucher. The original voucher stays intact as the audit trail.') }}</p>
             </div>
             <x-slot:footer>
                 <button type="button" class="lg-btn light" wire:click="closeModal">{{ t('Cancel') }}</button>
-                <button type="button" class="lg-btn primary" wire:click="reverse">Post Reversal</button>
+                <button type="button" class="lg-btn primary" wire:click="reverse">{{ t('Post Reversal') }}</button>
             </x-slot:footer>
         </x-ledger.modal>
     @endif
 
     @if ($modal === 'templates')
-        <x-ledger.modal title="Journal Templates">
+        <x-ledger.modal :title="t('Journal Templates')">
             <div class="lg-list" style="padding-top:10px">
                 @forelse ($this->templates as $t)
-                    <x-ledger.row icon="↻" tone="bl" :title="$t->description" :text="'Last posted '.Fmt::date($t->entry_date).' · '.Fmt::rp($t->totalAmount())">
-                        <button type="button" class="lg-link" wire:click="useTemplate({{ $t->voucher_id }})">Use</button>
+                    <x-ledger.row icon="↻" tone="bl" :title="$t->description" :text="t('Last posted').' '.Fmt::date($t->entry_date).' · '.Fmt::rp($t->totalAmount())">
+                        <button type="button" class="lg-link" wire:click="useTemplate({{ $t->voucher_id }})">{{ t('Use') }}</button>
                     </x-ledger.row>
                 @empty
-                    <div class="lg-empty">Belum ada Recurring Journal yang diposting untuk dijadikan template.</div>
+                    <div class="lg-empty">{{ t('No posted Recurring Journal yet to use as a template.') }}</div>
                 @endforelse
             </div>
         </x-ledger.modal>
