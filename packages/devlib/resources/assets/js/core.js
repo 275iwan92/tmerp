@@ -432,11 +432,23 @@ window.Devlib = window.Devlib || {};
     try { navigator.sendBeacon(window.DL_DICT_URL, f); } catch (_) {}
   };
   window.addEventListener('pagehide', dictSend);
+  // Tanpa padanan persis: baris yang sama tanpa beda huruf, bentuk hurufnya ikut sumber (sama seperti Dictionary::t di server).
+  let fold = null;
+  const folded = s => {
+    if (!fold) { fold = new Map(); for (const [k, v] of Object.entries(DICT)) { if (v && !fold.has(k.toLowerCase())) fold.set(k.toLowerCase(), v); } }
+    const v = fold.get(s.toLowerCase()); if (!v) return '';
+    if (s === s.toUpperCase() && s !== s.toLowerCase()) return v.toUpperCase();
+    return s === s.toLowerCase() ? v.toLowerCase() : v;
+  };
   const t = en => {
     if (en == null || en === '') return en ?? '';
     const s = String(en);
-    if (!(s in DICT)) { DICT[s] = ''; if (window.DL_DICT_URL && s.length <= 255 && /\p{L}/u.test(s)) { dictQ.add(s); dictTimer ||= setTimeout(dictSend, 2000); } }
-    return (NUM.lang !== 'en' && DICT[s]) || s;
+    if (!(s in DICT)) {
+      const f = NUM.lang !== 'en' ? folded(s) : '';
+      if (f) return f;
+      DICT[s] = ''; if (window.DL_DICT_URL && s.length <= 255 && /\p{L}/u.test(s)) { dictQ.add(s); dictTimer ||= setTimeout(dictSend, 2000); }
+    }
+    return (NUM.lang !== 'en' && (DICT[s] || folded(s))) || s;
   };
   // T + isian placeholder: Tf('g_matched', {n: 5, total: 9}) -> "5 baris cocok dari 9".
   const Tf = (k, v = {}) => T(k).replace(/\{(\w+)\}/g, (_, x) => v[x] ?? '');

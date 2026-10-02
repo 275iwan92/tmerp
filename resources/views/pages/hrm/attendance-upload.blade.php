@@ -17,7 +17,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 // (docs/ddl/tmhrm.sql::tma_rawdata) yg disederhanakan: device_pin, tanggal,
 // jam_masuk, jam_keluar -- BUKAN kolom bebas, krn upload presensi harus
 // terstruktur (beda dari mockup yg cuma menampilkan angka acak).
-new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Attendance Upload — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
 

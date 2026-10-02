@@ -16,7 +16,7 @@ use Livewire\Component;
 //
 // Seluruh pohon di-load 1x jadi struktur bersarang di PHP (bukan query per
 // node) supaya komponen rekursif <x-org-chart.node> tinggal render, tanpa N+1.
-new #[Title('Struktur Organisasi — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Organization Structure — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $search = '';
 

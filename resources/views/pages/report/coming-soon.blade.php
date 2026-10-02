@@ -15,7 +15,7 @@ use Livewire\Component;
 // "DATA DUMMY" yang jelas & permanen di atas + badge di header -- supaya
 // tidak ada satupun angka yang bisa disalahartikan sebagai data produksi
 // sungguhan.
-new #[Layout('layouts::report')] #[Title('Laporan — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Reports — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $slug = '';
 

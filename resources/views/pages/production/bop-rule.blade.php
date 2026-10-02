@@ -15,7 +15,7 @@ use Livewire\Component;
 // "ke depan bisa diubah oleh setting admin", Emboss "tidak selalu Plong, buat
 // fleksibel" -> urutan (step_seq) dan penggabungan (merge_group) diatur di sini.
 // Hanya admin (sec_user.is_admin) yang boleh mengubah; lainnya baca saja.
-new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Bill of Process Rules — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

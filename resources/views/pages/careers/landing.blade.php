@@ -9,7 +9,7 @@ use Livewire\Component;
 // P2 -- Daftar Lowongan (recruitment_tier4.md §3), versi web publik. Baca
 // vac_vacancy langsung (internal) -- portal & internal masih 1 proses Laravel
 // utk sekarang (belum host terpisah sungguhan), lihat docs/recruitmentportal_web_tier1.md.
-new #[Layout('layouts::portal')] #[Title('Karir')] class extends Component
+new #[Layout('layouts::portal')] #[Title('Careers')] class extends Component
 {
     #[Computed]
     public function vacancies()

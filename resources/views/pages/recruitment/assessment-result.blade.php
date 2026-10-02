@@ -13,7 +13,7 @@ use Livewire\WithPagination;
 // L6 -- docs/recruitment_tier4.md SECTION 11. Wajib diisi terstruktur sebelum
 // bisa "Lanjutkan ke Stage Berikutnya" di L4 (Tier2 §4) -- guard-nya ada di
 // pipeline-board.blade.php::advance(), layar ini tempat mengisinya.
-new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Psychotest / Interview Results — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
     use HasGridPagination;

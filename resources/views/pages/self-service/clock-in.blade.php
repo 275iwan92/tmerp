@@ -20,7 +20,7 @@ use Livewire\Component;
 // "sumber" presensi yang setara data mesin finger fisik). Kalau di luar
 // radius, status PENDING -- tidak menulis presensi dulu, menunggu approval
 // HR (hrm.gps-approval).
-new #[Layout('layouts::app')] #[Title('Absen GPS — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::app')] #[Title('GPS Attendance — TELASIH MAKMUR ERP')] class extends Component
 {
     public ?int $employeeId = null;
 

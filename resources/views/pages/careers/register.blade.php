@@ -13,7 +13,7 @@ use Livewire\Component;
 // P1 -- Registrasi (recruitment_tier4.md §2), versi web pro. Field sesuai
 // instruksi user 2026-08-30: No. KTP, Nama (sesuai KTP), Email, No. HP,
 // Password. Akun tersimpan di Firestore (App\Services\Portal\CandidateAuthService).
-new #[Layout('layouts::portal')] #[Title('Daftar Akun')] class extends Component
+new #[Layout('layouts::portal')] #[Title('Chart of Accounts')] class extends Component
 {
     public string $national_id = '';
 

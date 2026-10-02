@@ -34,7 +34,7 @@ use Livewire\Component;
 //
 // Lifecycle Draft/Confirm SENGAJA DIPERTAHANKAN (mockup tidak punya): roster
 // ini jadi sumber jam kerja payroll/attendance, jadi kunci publish tetap ada.
-new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Weekly Shift Roster — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $view = 'roster'; // roster | shift
 

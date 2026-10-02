@@ -30,7 +30,7 @@ use Livewire\Component;
 // (docs/mockups/procost_instant_deviasi.jpg): tombol Reverse, Currency hanya
 // label, Total After Ppn = After Margin x (1+PPN) bila INCLUDE, LC/LB angka asli,
 // breakdown & HPP hanya login PROCOST_FORMULA_LOGINS. Rumus: CostingEngine.
-new #[Title('Kalkulasi HPP (Instant) — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('COGS Calculation (Instant) — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $costingId;
 

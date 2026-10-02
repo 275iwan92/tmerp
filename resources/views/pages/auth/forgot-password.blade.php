@@ -17,7 +17,7 @@ use Livewire\Component;
 // bergantung email. Berhasil verifikasi 4-4nya -> password KEMBALI ke
 // default_password yang sudah ada (diberikan Admin di awal, BUKAN
 // generate baru) via SecurityRecoveryService::resetToDefaultPassword().
-new #[Layout('layouts::guest')] #[Title('Lupa Password — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::guest')] #[Title('Forgot Password — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url]
     public string $lang = 'id';

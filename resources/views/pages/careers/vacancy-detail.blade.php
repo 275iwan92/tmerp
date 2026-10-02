@@ -5,7 +5,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::portal')] #[Title('Detail Lowongan')] class extends Component
+new #[Layout('layouts::portal')] #[Title('Vacancy Details')] class extends Component
 {
     public string $vacancy_code;
 

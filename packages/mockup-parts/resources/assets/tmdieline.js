@@ -166,11 +166,13 @@ var svg = function(spec,dims){
   var M=Math.max(24,(W+H)/16);
   return '<svg width="100%" height="100%" viewBox="'+nf(-M)+' '+nf(-M)+' '+nf(W+2*M)+' '+nf(H+2*M)+'" xmlns="http://www.w3.org/2000/svg">'+body+'</svg>';
 }
+// Kamus aplikasi DevLib (Devlib.h.t) bila sudah dimuat; kunci sama dengan resources/js/tmdieline.js tmerp.
+var tt = function(en){ var D=root.Devlib; return (D && D.h && D.h.t) ? D.h.t(en) : en; };
 var render = function(el,spec,dims){
   if(!el)return;
-  if(!spec){el.innerHTML=placeholder('Tipe ini belum punya<br>spesifikasi dieline');return;}
+  if(!spec){el.innerHTML=placeholder(tt('This type has no<br>dieline specification yet'));return;}
   var s=svg(spec,dims);
-  el.innerHTML=s||placeholder('Pilih ukuran / isi dimensi<br>untuk melihat dieline');
+  el.innerHTML=s||placeholder(tt('Choose a size / enter the dimensions<br>to see the dieline'));
 }
 root.TMDieline={render:render,svg:svg,flat:flat,eval:evalExpr,scope:buildScope,STROKE:STROKE};
 })(typeof window!=='undefined'?window:this);

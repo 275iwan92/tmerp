@@ -14,7 +14,7 @@ use Livewire\Component;
 // klik 2x buka dokumen ASLI (stock-adjustment.blade.php, {doc} deep-link) --
 // Approve/Reject/riwayat ada di sana, BUKAN duplikat di sini. 1 antrian ini
 // menggabung modul AD + OP (1 "Persetujuan" per kelas stok mencakup kedua jenis).
-new #[Title('Persetujuan Adjustment & Opname — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Adjustment & Stock Count Approval — TELASIH MAKMUR ERP')] class extends Component
 {
     public const CATEGORY_LABELS = ['RM' => 'Raw & Supporting Materials', 'SFG' => 'Semi-Finished Goods', 'FG' => 'Finished Goods'];
 

@@ -19,7 +19,7 @@ use Livewire\Component;
 // di kolom). Ini layar Direksi-only (module:MGMT), jadi menampilkan TOTAL
 // agregat gaji perusahaan konsisten dengan aturan "HR officer cuma tahu
 // total keseluruhan, Direksi boleh lihat" (project_payroll_foundation_built).
-new #[Layout('layouts::report')] #[Title('Laporan SDM & Payroll — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('HR & Payroll Report — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Computed]
     public function headcount(): array

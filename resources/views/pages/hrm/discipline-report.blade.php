@@ -11,7 +11,7 @@ use Livewire\Component;
 // mockup_08_daily_discipline_report.html (4 stat widget + 2 tabel: Terlambat,
 // Tidak Masuk). Data dari att_daily_status yang sudah dihitung
 // AttendanceCalculationService, bukan tabel/summary baru.
-new #[Title('Laporan Kedisiplinan Harian — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Daily Discipline Report — TELASIH MAKMUR ERP')] class extends Component
 {
     private const STATUS_LABELS = [
         'T-5' => 'T-5 (< 5 min)', 'T+5' => 'T+5 (6-15 min)', 'T+15' => 'T+15 (> 15 min)',

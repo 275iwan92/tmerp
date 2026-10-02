@@ -13,7 +13,7 @@ use Livewire\Component;
 // "boleh bangun sendiri pakai SVG") -- BUKAN ApexCharts lagi: markup murni
 // hasil PHP jadi Livewire morph biasa cukup, tak perlu wire:ignore/wire:key
 // trik yang dulu dipakai utk menahan ApexCharts.
-new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Executive Dashboard — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url(as: 'th')]
     public int $year = 0;

@@ -17,7 +17,7 @@ use Livewire\Component;
 // menjadwalkan. Pola drag-drop sama dgn pipeline-board.blade.php
 // (x-data draggedId + x-on:dragstart/dragover.prevent/drop) & referensi
 // production/monitoring-dashboard.blade.php.
-new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Interview Schedule — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

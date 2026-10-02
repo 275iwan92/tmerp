@@ -18,7 +18,7 @@ use Livewire\Component;
 // Setup Keamanan Akun). Bukan "form asli + approval" spt PR/PO
 // (griduistandard.md §8) -- correction request tak punya dokumen induk,
 // jadi Approve/Reject langsung di grid ini.
-new #[Title('Koreksi Data Karyawan — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Employee Data Corrections — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

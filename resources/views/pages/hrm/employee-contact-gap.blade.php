@@ -13,7 +13,7 @@ use Livewire\Component;
 //
 // Dikelompokkan per departemen karena pengumpulan nomor jalannya lewat kepala
 // bagian masing-masing, bukan satu daftar panjang.
-new #[Title('Karyawan Tanpa No. WhatsApp — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Employees Without WhatsApp No. — TELASIH MAKMUR ERP')] class extends Component
 {
     // Sengaja TANPA pagination: daftar ini dicetak & diserahkan ke officer HR
     // sebagai satu lembar kerja, jadi semua baris harus ikut tercetak.

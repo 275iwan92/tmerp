@@ -13,7 +13,7 @@ use Livewire\Component;
 // mockup_04_payslip_print.html (kop, identitas+metode bayar, 2 kolom
 // Pendapatan/Potongan, kotak Net Salary, tanda tangan), kerangka teknis
 // pakai components/print/* (printnotastandard.md) spt dokumen nota lain.
-new #[Title('Slip Gaji — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Payslip — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $payslipId;
 

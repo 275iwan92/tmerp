@@ -16,7 +16,7 @@ use Livewire\WithPagination;
 // dari Imposition/Costing worklist yang recordnya lahir di layar lain.
 // Kolom Aksi non-master: bukan Edit+Toggle-aktif (§5), tapi ↗ Buka + ✓ Confirm
 // (DRAFT->PUBLISHED langsung dari grid, sesuai instruksi user 2026-08-22).
-new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Quotation List — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridPagination;
     use HasGridStatFilter;

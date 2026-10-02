@@ -24,7 +24,7 @@ use Livewire\Component;
 // akses layar ini. Guard diterapkan 2x: render (sembunyikan tombol edit)
 // DAN di openForm()/save() (bertahan kalau dipanggil langsung, bukan cuma
 // UI hidden).
-new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Employee Salary & Tax Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

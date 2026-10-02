@@ -9,7 +9,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Warehouse Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridStatFilter;
 

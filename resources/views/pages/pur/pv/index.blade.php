@@ -11,7 +11,7 @@ use Livewire\WithPagination;
 
 // griduistandard.md diikuti (2026-08-22). "+ New Record" tetap ada karena
 // SPB memang dibuat dari grid ini sendiri (picker supplier -> baris PO).
-new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Goods Receipt (SPB) — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridPagination;
     use WithPagination;

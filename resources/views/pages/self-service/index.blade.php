@@ -34,7 +34,7 @@ use Livewire\WithFileUploads;
 // jadi date-range input + validasi server penuh (H+7/H-7, maks hari, dst) —
 // mengganti widget visual, bukan aturannya (CLAUDE.md §7 "adjust slightly").
 // HR-side approval panel TIDAK dibangun di sini (di luar scope mockup ini).
-new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Employee Portal — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
 

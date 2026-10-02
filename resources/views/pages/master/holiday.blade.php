@@ -13,7 +13,7 @@ use Livewire\Component;
 // Natal) -- hari libur lunar (Idul Fitri dst, tanggal beda tiap tahun,
 // resmi lewat SKB 3 Menteri) SENGAJA belum diisi, tambahkan di sini begitu
 // kalender resmi tahun berjalan terbit.
-new #[Title('Master Hari Libur — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Holiday Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasSpreadsheetGrid;
 

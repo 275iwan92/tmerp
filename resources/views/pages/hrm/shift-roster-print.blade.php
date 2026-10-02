@@ -18,7 +18,7 @@ use Livewire\Component;
 // Cetakan Roster Shift Mingguan + Master Definisi Shift (mockup_roster_shift.html
 // bagian printSheet()/printShiftDefs(), A4 landscape). Kerangka pakai
 // components/print/* sesuai docs/printnotastandard.md, bukan <style> sendiri.
-new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Print Shift Roster — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $mode = 'roster'; // roster | shift | formasi
 

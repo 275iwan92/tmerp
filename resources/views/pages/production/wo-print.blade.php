@@ -19,7 +19,7 @@ use Livewire\Component;
 // rombak (Operator terjadwal + Qty Kebutuhan/Tersedia/Harus Dibeli) --
 // dipola persis dari billOfMaterialRows() wo-entry.blade.php, sengaja
 // diduplikasi (bukan diekstrak ke trait) supaya print tetap berdiri sendiri.
-new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Print Work Order — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $woId;
 

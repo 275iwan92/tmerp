@@ -17,7 +17,7 @@ use Livewire\WithFileUploads;
 // main-menu.blade.php, yang sekarang cuma link ke sini), Cara Pakai Aplikasi
 // (UI/UX), Modul (detail per modul). Dibuka via F1 (partials/f1-help-hotkey)
 // atau link profil dropdown, KEDUANYA target="_blank".
-new #[Title('Bantuan — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Help — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
 

@@ -20,7 +20,7 @@ use Livewire\Component;
 // doang. Tab Mesin/Pegawai -- 2 tabel terpisah (keputusan user awal sesi WO
 // Generation: target beda sumber daya beda tabel), 1 layar krn bentuknya
 // identik (pola sama scrap-type.blade.php).
-new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Target Rate Process × Machine/Employee — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $resource = 'MACHINE'; // MACHINE|MANUAL -- tab aktif
 

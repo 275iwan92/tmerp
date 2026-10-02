@@ -1,0 +1,97 @@
+<?php
+
+use App\Support\Localization\Dictionary;
+use Illuminate\Database\Migrations\Migration;
+
+// Judul halaman (tab browser) layar v1: #[Title] kini English, layout menerjemahkannya lewat kamus; terjemahan Indonesia = judul lama.
+return new class extends Migration
+{
+    private const ID = [
+        'GPS Attendance' => 'Absen GPS',
+        'Leave / Sick / Permission Approval' => 'Approval Cuti/Sakit/Izin',
+        'GPS Location Approval' => 'Approval Lokasi GPS',
+        'Bill of Process Rules' => 'Aturan Bill of Process',
+        'Help' => 'Bantuan',
+        'Print & Send Payslips' => 'Cetak & Kirim Slip Gaji',
+        'Print Shift Roster' => 'Cetak Roster Shift',
+        'Print All Payslips' => 'Cetak Semua Slip Gaji',
+        'Print Work Order' => 'Cetak Work Order',
+        'Chart of Accounts' => 'Daftar Akun',
+        'Customer Order List' => 'Daftar Customer Order',
+        'Delivery Order List' => 'Daftar Delivery Order',
+        'Quotation List' => 'Daftar Quotation',
+        'Executive Dashboard' => 'Dashboard Eksekutif',
+        'Vacancy Details' => 'Detail Lowongan',
+        'Warehouse Form' => 'Form Gudang',
+        'Change Password' => 'Ganti Password',
+        'Bank Transfer Generator' => 'Generator Transfer Bank',
+        'Psychotest / Interview Results' => 'Hasil Psikotes/Interview',
+        'Identification' => 'Identifikasi',
+        'Interview Schedule' => 'Jadwal Interview',
+        'Cash & Bank Journal' => 'Jurnal Kas & Bank',
+        'COGS Calculation (Instant)' => 'Kalkulasi HPP (Instant)',
+        'Careers' => 'Karir',
+        'Stock Card' => 'Kartu Stok',
+        'Employees Without WhatsApp No.' => 'Karyawan Tanpa No. WhatsApp',
+        'Manage Scrap Types' => 'Kelola Tipe Scrap',
+        'Employee Data Corrections' => 'Koreksi Data Karyawan',
+        'Apply for Position' => 'Lamar Posisi',
+        'My Applications' => 'Lamaran Saya',
+        'Reports' => 'Laporan',
+        'Accounting Report' => 'Laporan Akuntansi',
+        'Estimating & Costing Report' => 'Laporan Estimating & Costing',
+        'Warehouse Report' => 'Laporan Gudang',
+        'Daily Discipline Report' => 'Laporan Kedisiplinan Harian',
+        'Stock Master Report' => 'Laporan Master Stok',
+        'Production Report' => 'Laporan Produksi',
+        'HR & Payroll Report' => 'Laporan SDM & Payroll',
+        'Slow Moving Item Report' => 'Laporan Slow Moving Item',
+        'Forgot Password' => 'Lupa Password',
+        'Employee Salary & Tax Master' => 'Master Gaji & Pajak Pegawai',
+        'Warehouse Master' => 'Master Gudang',
+        'Holiday Master' => 'Master Hari Libur',
+        'Raw Material Item Master' => 'Master Item Bahan Baku',
+        'Employee & Bank Account Master' => 'Master Karyawan & Rekening Bank',
+        'Raw Material Category Master' => 'Master Kategori Bahan Baku',
+        'Supplier Category Master' => 'Master Kategori Supplier',
+        'Machine Master' => 'Master Mesin',
+        'Position Master' => 'Master Posisi',
+        'Product Master' => 'Master Produk',
+        'Process Master' => 'Master Proses',
+        'Unit of Measure (UoM) Master' => 'Master Satuan (UoM)',
+        'Sign In' => 'Masuk',
+        'Screen Name' => 'Nama Layar',
+        'Goods Receipt (SPB)' => 'Penerimaan Barang (SPB)',
+        'Adjustment & Stock Count Approval' => 'Persetujuan Adjustment & Opname',
+        'Purchase Return Approval' => 'Persetujuan Purchase Return',
+        'Employee Portal' => 'Portal Karyawan',
+        'Provisioning to ERP' => 'Provisioning ke ERP',
+        'Recruitment Sync Log Summary' => 'Rekap Sync Log Rekrutmen',
+        'Cash Roster & Denominations' => 'Roster Cash & Pecahan Uang',
+        'Weekly Shift Roster' => 'Roster Shift Mingguan',
+        'Payslip' => 'Slip Gaji',
+        'Organization Structure' => 'Struktur Organisasi',
+        'Delivery Note' => 'Surat Jalan',
+        'Target Rate Process × Machine/Employee' => 'Target Rate Proses × Mesin/Pegawai',
+        'Attendance Upload' => 'Upload Presensi',
+        'Rack Labels' => 'Label Rak',
+        'Exchange Rate Master' => 'Master Kurs',
+        'Customer Order Note' => 'Nota Customer Order',
+        'Inquiry Note' => 'Nota Inquiry',
+        'Manpower Requisition' => 'Permohonan Tenaga Kerja',
+        'Candidate Portal (Simulation)' => 'Portal Candidate (Simulasi)',
+        'Vacancy Posting' => 'Posting Lowongan',
+        'Daily Attendance' => 'Presensi Harian',
+        'Candidate Form Review' => 'Review Formulir Kandidat',
+        'Purchase Details' => 'Rincian Pembelian',
+        'Sales Details' => 'Rincian Penjualan',
+        'Account Security Setup' => 'Setup Keamanan Akun',
+    ];
+
+    public function up(): void
+    {
+        Dictionary::seed(self::ID);
+    }
+
+    public function down(): void {}
+};

@@ -15,7 +15,7 @@ use Livewire\Component;
 // johiwan-only di layar ProCost sendiri, feedback_procost_formula_hide_admin_only)
 // -- di sini cuma agregat manajerial: volume Costing, rate publish,
 // rata-rata HPP/pc, dan konversi Quotation->CO (win rate).
-new #[Layout('layouts::report')] #[Title('Laporan Estimating & Costing — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Estimating & Costing Report — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url(as: 'th')]
     public int $year = 0;

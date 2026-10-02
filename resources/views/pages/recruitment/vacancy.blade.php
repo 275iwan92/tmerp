@@ -13,7 +13,7 @@ use Livewire\WithPagination;
 // APPROVED = publish langsung (channel+judul+deskripsi dalam 1 modal), sesuai
 // alur spec ("pilih channel(s), isi judul+deskripsi -> publish" 1 aksi).
 // Tutup Lowongan = aksi terpisah sesudahnya.
-new #[Title('Posting Lowongan — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Vacancy Posting — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
     use WithPagination;

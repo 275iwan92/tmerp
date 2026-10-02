@@ -17,7 +17,7 @@ use Livewire\WithPagination;
 // Organisasi (org-chart.blade.php) -- instruksi user 2026-08-29, dipilih
 // "form dropdown per posisi" (bukan drag-connect kanvas) supaya chart tetap
 // murni tampilan read-only dari data ini.
-new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Position Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

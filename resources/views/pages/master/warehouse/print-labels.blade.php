@@ -13,7 +13,7 @@ use Livewire\Component;
 // komponen resources/views/components/print/* (dirancang utk Nota
 // header+parties+items+signatures, bentuk beda total) -- layout sendiri,
 // print CSS standalone.
-new #[Title('Label Rak — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Rack Labels — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $warehouseId;
 

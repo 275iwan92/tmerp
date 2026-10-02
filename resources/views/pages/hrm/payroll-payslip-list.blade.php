@@ -20,7 +20,7 @@ use Livewire\WithPagination;
 // join lintas koneksi (CLAUDE.md §2 pola 3). Jumlah slip per periode seukuran
 // jumlah karyawan (ratusan), jadi ambil-semua lalu paginate koleksi masih
 // murah dan menghindari 2 sumber kebenaran urutan.
-new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Print & Send Payslips — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridPagination;
     use WithPagination;

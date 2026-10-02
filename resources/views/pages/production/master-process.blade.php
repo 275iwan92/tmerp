@@ -22,7 +22,7 @@ use Livewire\Component;
 // Angka yang belum diisi DIBIARKAN KOSONG, tidak diganti 0: CostingEngine &
 // Scheduling membaca master ini, dan 0 akan diperlakukan sebagai fakta.
 // Kolom "Kesiapan" di grid yang menunjukkan mana yang masih perlu dilengkapi.
-new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Process Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

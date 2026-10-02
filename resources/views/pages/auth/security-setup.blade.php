@@ -13,7 +13,7 @@ use Livewire\Component;
 // terlepas dari status must_change_password (biar 146 akun lama yang sudah
 // pernah ganti password tetap ke-cover). Tanggal lahir otomatis dari
 // emp_employee kalau akun ini tertaut karyawan (SecurityRecoveryService).
-new #[Layout('layouts::guest')] #[Title('Setup Keamanan Akun — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::guest')] #[Title('Account Security Setup — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $birthDate = '';
 

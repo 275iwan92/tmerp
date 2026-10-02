@@ -14,7 +14,7 @@ use Livewire\Component;
 // (bukan kolom payment_method tm2hrm yang tidak ada di skema kita). Format
 // CSV generik (belum format kliring resmi BCA/Mandiri -- itu perlu spek
 // resmi dari masing-masing bank, dicatat sbg open item).
-new #[Title('Generator Transfer Bank — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Bank Transfer Generator — TELASIH MAKMUR ERP')] class extends Component
 {
     public ?int $runId = null;
 

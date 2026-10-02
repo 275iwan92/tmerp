@@ -10,7 +10,7 @@ use Livewire\Component;
 // security_defaultpassword_spec.md §6 — ditampilkan paksa (middleware
 // force.password) ketika must_change_password=1: habis reset admin, atau
 // user baru. default_password TIDAK diubah oleh alur ini (tetap fallback).
-new #[Layout('layouts::guest')] #[Title('Ganti Password — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::guest')] #[Title('Change Password — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $pswdNew = '';
 

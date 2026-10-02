@@ -111,7 +111,7 @@ class DielineV2 extends Dieline
                     <div class="dl-dieline__dimwrap">
                         <div class="dl-dieline__cap">{{ t('Hole (front panel)') }}</div>
                         <div class="dl-dieline__dims dl-dieline__dims--3">
-                            <x-dl::field.select :name="$name.'[hole_ui]'" label="Hole Type" :options="['NONE' => t('None'), 'ROUND' => t('Round'), 'RECT' => t('Rectangle')]" :value="$dims['hole_type'] ?? 'NONE'" />
+                            <x-dl::field.select :name="$name.'[hole_ui]'" label="Hole Type" :options="['NONE' => t('No hole'), 'ROUND' => t('Round'), 'RECT' => t('Rectangle')]" :value="$dims['hole_type'] ?? 'NONE'" />
                             <input type="hidden" name="{{ $name }}[dims][hole_type]" data-d-hole="type" disabled>
                             <label class="dl-dieline__dim"><span>{{ t('Hole Width / Ø') }}</span><span class="dl-field__box"><input class="dl-input" type="text" inputmode="decimal" name="{{ $name }}[dims][hole_w]" data-d-hole="w" disabled><em>mm</em></span></label>
                             <label class="dl-dieline__dim"><span>{{ t('Hole Height') }}</span><span class="dl-field__box"><input class="dl-input" type="text" inputmode="decimal" name="{{ $name }}[dims][hole_h]" data-d-hole="h" disabled><em>mm</em></span></label>

@@ -169,7 +169,7 @@
                                 <input id="io-converterInput" type="number" min="0" value="100">
                                 <div class="io-result">
                                     <div class="caption" id="io-resultCaption">{{ t('Plano required') }}</div>
-                                    <b id="io-resultValue">—</b> <small id="io-resultUnit">{{ t('sheets') }}</small>
+                                    <b id="io-resultValue">—</b> <small id="io-resultUnit">{{ t('sheet(s)') }}</small>
                                 </div>
                                 <div class="io-mini-grid">
                                     <div class="io-mini"><span>{{ t('Active up') }}</span><b id="io-mUp">—</b></div>

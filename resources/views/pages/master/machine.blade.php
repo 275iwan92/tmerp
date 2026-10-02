@@ -31,7 +31,7 @@ use Livewire\Component;
 // Toggle aktif/nonaktif dipakai alih-alih hard delete: mesin jadi target FK
 // logis prod_part_process.machine_id & prd_wo_operation.machine_id -- lihat
 // panel Where-used di tab Biaya sebelum menonaktifkan.
-new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Machine Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

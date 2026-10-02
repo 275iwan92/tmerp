@@ -21,7 +21,7 @@ use Livewire\Component;
 // (requisition cuma simpan position_title teks bebas) -- HR WAJIB konfirmasi
 // org_position riil di modal ini ("engine suggests, officer confirms",
 // CLAUDE.md §4), bukan ditebak sistem.
-new #[Title('Provisioning ke ERP — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Provisioning to ERP — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

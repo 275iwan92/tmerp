@@ -2867,7 +2867,7 @@
               const print = Math.ceil(val / up), need = Math.ceil(print / c.n);
               $('resultCaption').textContent = _t('Plano required');
               $('resultValue').textContent = need;
-              $('resultUnit').textContent = _t('sheets');
+              $('resultUnit').textContent = _t('sheet(s)');
           } else {
               $('resultCaption').textContent = _t('Production capacity');
               $('resultValue').textContent = val * perPlano;

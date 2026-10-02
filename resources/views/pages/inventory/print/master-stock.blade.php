@@ -39,7 +39,7 @@ use Livewire\Component;
 // collapse-nya di layar (lihat cetak() -- collapsedGroups direset sesaat
 // sebelum window.print(), bukan cuma disembunyikan via CSS, supaya hasil
 // cetak selalu lengkap tanpa bergantung timing render ulang Livewire).
-new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Stock Master Report — TELASIH MAKMUR ERP')] class extends Component
 {
     public const CATEGORY_LABELS = [
         'RM' => 'Raw & Supporting Materials',

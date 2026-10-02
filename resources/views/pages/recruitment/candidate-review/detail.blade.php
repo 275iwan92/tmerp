@@ -16,7 +16,7 @@ use Livewire\Component;
 // harus otomatis berlaku ke yang lain). Makanya property di sini WAJIB
 // bernama PERSIS sama dgn apply.blade.php -- partial itu membaca property
 // tsb by name, bukan lewat parameter eksplisit.
-new #[Title('Review Formulir Kandidat — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Candidate Form Review — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $applicationId;
 

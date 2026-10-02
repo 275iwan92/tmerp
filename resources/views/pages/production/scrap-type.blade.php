@@ -13,7 +13,7 @@ use Livewire\Component;
 // di kode -- data awal (migration 2026_08_28_000013) dari kategori umum
 // print-industry MIS (Systrade/PrintVis/eProductivity), user akan susulkan
 // daftar riil PT Telasih Makmur. Pola grid sama Rule Library.
-new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Manage Scrap Types — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

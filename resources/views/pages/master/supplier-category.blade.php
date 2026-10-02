@@ -14,7 +14,7 @@ use Livewire\Component;
 // tidak bisa ditambah dari layar mana pun (CLAUDE.md §7.12). Keputusan user:
 // supplier = semua vendor, dibedakan kategori -- mis. BANK (lookup rekening gaji
 // pegawai), EKSPEDISI (vendor truk angkut produk), plus kategori bahan/jasa lama.
-new #[Title('Master Kategori Supplier — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Supplier Category Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridStatFilter;
 

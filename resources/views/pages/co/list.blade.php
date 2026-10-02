@@ -21,7 +21,7 @@ use Livewire\WithPagination;
 // catatan pastel) karena CO mode INSTANT memang lahir dari grid ini. Tombolnya
 // membuka pemilih mode dulu: INTEGRATED (pilih Quotation PUBLISHED, input
 // minimal) atau INSTANT (pilih Customer, input manual + Master Product).
-new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Customer Order List — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridStatFilter;
 

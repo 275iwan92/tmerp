@@ -23,7 +23,7 @@ use Livewire\Component;
 // Sama seperti master-stock/stock-card: keluarga "Laporan" (header navy+Back,
 // landscape), BUKAN "Nota" -- printnotastandard.md §1. {category} wajib di
 // URL, konvensi sidebarmenustandard.md §5 (3 menu/laporan per kelas stok).
-new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Slow Moving Item Report — TELASIH MAKMUR ERP')] class extends Component
 {
     public const CATEGORY_LABELS = [
         'RM' => 'Raw & Supporting Materials',

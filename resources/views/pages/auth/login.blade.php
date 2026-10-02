@@ -15,7 +15,7 @@ use Livewire\Component;
 
 // layouts::guest — halaman penuh layar (Alur A Tier 1), TIDAK ikut container/
 // padding layouts::app biasa (dipakai app shell pasca-login).
-new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::guest')] #[Title('Sign In — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url]
     public string $lang = 'id';

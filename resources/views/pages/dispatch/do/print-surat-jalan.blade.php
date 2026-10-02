@@ -11,7 +11,7 @@ use Livewire\Component;
 // disembunyikan CSS, pola sama Procurement PV). $lines di sini SENGAJA
 // hanya select kolom non-harga -- jangan tambah unit_price/subtotal ke
 // select() ini, sekalipun cuma untuk "ditampilkan nanti".
-new #[Title('Surat Jalan — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Delivery Note — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $doId;
 

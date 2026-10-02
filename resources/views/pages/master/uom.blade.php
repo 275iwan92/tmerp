@@ -10,7 +10,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Unit of Measure (UoM) Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridStatFilter;
 

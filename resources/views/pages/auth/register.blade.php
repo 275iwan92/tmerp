@@ -12,7 +12,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::guest')] #[Title('Chart of Accounts — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url]
     public string $lang = 'id';

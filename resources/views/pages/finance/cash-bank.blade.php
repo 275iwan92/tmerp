@@ -23,7 +23,7 @@ use Livewire\Component;
 // "Smart button" e-Faktur/Rekonsiliasi Bank di mockup SENGAJA tidak dibuat --
 // itu placeholder statis tanpa logika nyata di balik nilainya, tak ada
 // validasi e-Faktur atau rekonsiliasi bank yang diminta/dibangun di modul ini.
-new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Cash & Bank Journal — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

@@ -13,7 +13,7 @@ use Livewire\Component;
 // persis pur/pr/entry.blade.php (griduistandard.md §8: approver memutuskan di
 // dokumen asli, bukan layar ringkasan terpisah). Approval bespoke
 // RecruitmentApprovalService (bukan FlowEngineService, lihat class itu).
-new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Manpower Requisition — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $requisitionId;
 

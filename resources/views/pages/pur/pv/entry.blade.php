@@ -10,7 +10,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Goods Receipt (SPB) — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $pvId;
 

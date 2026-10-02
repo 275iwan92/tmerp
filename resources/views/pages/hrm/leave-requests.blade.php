@@ -19,7 +19,7 @@ use Livewire\Component;
 // hrm/correction-requests.blade.php). Approve di sini yang menambah
 // EmpLeaveBalance.used_days -- HANYA utk request yang deducts_leave_balance
 // (CUTI biasa; Sakit/Izin/Cuti Khusus tidak potong saldo, sesuai submitLeave()).
-new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Leave / Sick / Permission Approval — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

@@ -22,7 +22,7 @@ use Livewire\Component;
 // Data 100% nyata (fin_voucher/fin_voucher_line/fin_account), TIDAK ada
 // angka mockup yang dikarang. Hutang usaha reuse ManagementReportService
 // yang sudah ada (bukan duplikasi logic).
-new #[Layout('layouts::report')] #[Title('Laporan Akuntansi — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Accounting Report — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url(as: 'th')]
     public int $year = 0;

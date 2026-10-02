@@ -13,7 +13,7 @@ use Livewire\WithPagination;
 // §10 utk pola UI (ikon ⚙ di toolbar, bukan menambah elemen toolbar lain --
 // itu tetap dilarang §6). Dipilih jadi pilot krn mat_raw punya banyak kolom
 // bermakna (59 total), representatif utk kasus "15 kolom tersedia, 5 tampil".
-new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Raw Material Item Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasCustomizableGrid;
     use WithPagination;

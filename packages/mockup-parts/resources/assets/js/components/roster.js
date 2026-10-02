@@ -1,7 +1,8 @@
 /* DevLib · Roster */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast} = Devlib.h;
+  const {$, $$, esc, toast, t: _t} = Devlib.h;
+  const _tf = (s, r) => { let x = _t(s); Object.keys(r).forEach(k => { x = x.split(':' + k).join(r[k]); }); return x; };
   /* ============================ ROSTER BOARD ============================ */
   class Roster extends Devlib.Component {
     static selector = "[data-dl-roster]";
@@ -29,9 +30,9 @@
         const ga = x.closest('[data-r-grpall]'); if (ga) { e.stopPropagation(); const list = this.people.filter(p => !this.assign[p.id] && p.role === ga.dataset.rGrpall); list.forEach(p => ga.checked ? this.picked.add(String(p.id)) : this.picked.delete(String(p.id))); return this.pool(); }
         const g = x.closest('[data-r-grp]'); if (g) { const k = g.dataset.rGrp; this.shut.has(k) ? this.shut.delete(k) : this.shut.add(k); return this.pool(); }
         if (x.closest('[data-r-selnone]')) { this.picked.clear(); return this.pool(); }
-        const row = x.closest('[data-r-shift]'); if (row && this.picked.size && !x.closest('[data-r-person]')) { const n = this.picked.size; this.put([...this.picked], row.dataset.rShift); toast(`${n} pegawai ditempatkan di ${this.shifts.find(s => s.key === row.dataset.rShift).label}.`, 'success'); return; }
-        const wk = x.closest('[data-r-week]'); if (wk) { this.el.dispatchEvent(new CustomEvent('dl:roster-week', {bubbles: true, detail: {step: +wk.dataset.rWeek}})); toast('Pindah minggu (layar pemakai memuat data minggu itu).'); return; }
-        if (x.closest('[data-r-save]')) { this.el.dispatchEvent(new CustomEvent('dl:roster-save', {bubbles: true, detail: {assign: {...this.assign}}})); toast('Roster minggu ini disimpan.', 'success'); }
+        const row = x.closest('[data-r-shift]'); if (row && this.picked.size && !x.closest('[data-r-person]')) { const n = this.picked.size; this.put([...this.picked], row.dataset.rShift); toast(_tf(':n employees placed in :shift.', {n, shift: this.shifts.find(s => s.key === row.dataset.rShift).label}), 'success'); return; }
+        const wk = x.closest('[data-r-week]'); if (wk) { this.el.dispatchEvent(new CustomEvent('dl:roster-week', {bubbles: true, detail: {step: +wk.dataset.rWeek}})); toast(_t('Week changed (the using screen loads that week\'s data).')); return; }
+        if (x.closest('[data-r-save]')) { this.el.dispatchEvent(new CustomEvent('dl:roster-save', {bubbles: true, detail: {assign: {...this.assign}}})); toast(_t('This week\'s roster saved.'), 'success'); }
       });
       this.el.addEventListener('change', e => { const p = e.target.closest('[data-r-pick]'); if (p) { p.checked ? this.picked.add(p.dataset.rPick) : this.picked.delete(p.dataset.rPick); this.pool(); } });
       $(this.el, '[data-r-search]').addEventListener('input', e => { this.q = e.target.value.trim().toLowerCase(); this.pool(); });
@@ -58,19 +59,19 @@
     }
 
     chip(p) {
-      return `<span class="dl-roster__chip" draggable="true" data-r-person="${esc(p.id)}" title="${esc(p.name)} · ${esc(p.code)}"><i style="--h:${this.hue(p.name)}">${esc(this.ini(p.name))}</i><b>${esc(p.name)}</b><small>${esc(p.code)} · ${esc(p.role)}</small><em>${this.workDays(this.shifts.find(s => s.key === this.assign[p.id]))}h</em><button type="button" data-r-remove title="Lepas dari shift">&times;</button></span>`;
+      return `<span class="dl-roster__chip" draggable="true" data-r-person="${esc(p.id)}" title="${esc(p.name)} · ${esc(p.code)}"><i style="--h:${this.hue(p.name)}">${esc(this.ini(p.name))}</i><b>${esc(p.name)}</b><small>${esc(p.code)} · ${esc(p.role)}</small><em>${this.workDays(this.shifts.find(s => s.key === this.assign[p.id]))}h</em><button type="button" data-r-remove title="${esc(_t('Remove from shift'))}">&times;</button></span>`;
     }
 
     grid() {
-      const head = `<div class="dl-roster__row is-head"><div class="dl-roster__shift">Shift / Pola Jam</div>${this.days.map(d => `<div class="dl-roster__day ${d.off ? 'is-off' : ''}"><b>${esc(d.key)}</b><small>${esc(d.date || '')}</small></div>`).join('')}</div>`;
+      const head = `<div class="dl-roster__row is-head"><div class="dl-roster__shift">${esc(_t('Shift / Hour Pattern'))}</div>${this.days.map(d => `<div class="dl-roster__day ${d.off ? 'is-off' : ''}"><b>${esc(d.key)}</b><small>${esc(d.date || '')}</small></div>`).join('')}</div>`;
       $(this.el, '[data-r-grid]').innerHTML = head + this.shifts.map(s => {
         const list = this.people.filter(p => this.assign[p.id] === s.key), cap = +s.capacity || 0, pct = cap ? Math.min(100, list.length / cap * 100) : 0;
         const pat = this.days.filter(d => s.pattern[d.key]).map(d => d.key);
         return `<div class="dl-roster__row dl-roster--${esc(s.tone || 'accent')}" data-r-shift="${esc(s.key)}">
-          <div class="dl-roster__shift"><b><i></i>${esc(s.label)}</b><small>${esc(pat.length === this.days.length ? 'Setiap hari' : pat[0] + '–' + pat[pat.length - 1])} · ${this.workDays(s)} hari · ${Math.round(this.weekHours(s) * 10) / 10}j/minggu</small>
+          <div class="dl-roster__shift"><b><i></i>${esc(s.label)}</b><small>${esc(pat.length === this.days.length ? _t('Every day') : pat[0] + '–' + pat[pat.length - 1])} · ${esc(_tf(':n days', {n: this.workDays(s)}))} · ${esc(_tf(':h h/week', {h: Math.round(this.weekHours(s) * 10) / 10}))}</small>
             ${cap ? `<span class="dl-roster__cap ${list.length > cap ? 'is-over' : ''}"><span style="width:${pct}%"></span></span><em class="${list.length > cap ? 'is-over' : ''}">${list.length}/${cap}</em>` : ''}</div>
-          ${this.days.map(d => `<div class="dl-roster__time ${s.pattern[d.key] ? '' : 'is-off'}">${s.pattern[d.key] ? `${esc(s.pattern[d.key][0])}<br><small>${esc(s.pattern[d.key][1])}${this.hrs(...s.pattern[d.key]) && s.pattern[d.key][1] < s.pattern[d.key][0] ? ' +1' : ''}</small>` : 'LIBUR'}</div>`).join('')}
-          <div class="dl-roster__drop" data-r-drop="${esc(s.key)}">${list.map(this.chip).join('') || '<span class="dl-roster__hint">Tarik pegawai ke sini — otomatis mengikuti pola jam shift ini</span>'}</div>
+          ${this.days.map(d => `<div class="dl-roster__time ${s.pattern[d.key] ? '' : 'is-off'}">${s.pattern[d.key] ? `${esc(s.pattern[d.key][0])}<br><small>${esc(s.pattern[d.key][1])}${this.hrs(...s.pattern[d.key]) && s.pattern[d.key][1] < s.pattern[d.key][0] ? ' +1' : ''}</small>` : esc(_t('DAY OFF'))}</div>`).join('')}
+          <div class="dl-roster__drop" data-r-drop="${esc(s.key)}">${list.map(this.chip).join('') || `<span class="dl-roster__hint">${esc(_t('Drag employees here — they automatically follow this shift\'s hour pattern'))}</span>`}</div>
         </div>`;
       }).join('');
     }
@@ -78,12 +79,12 @@
     pool() {
       const free = this.people.filter(p => !this.assign[p.id] && (!this.q || (p.name + ' ' + p.code).toLowerCase().includes(this.q)));
       const groups = [...new Set(free.map(p => p.role))];
-      $(this.el, '[data-r-poolcount]').textContent = `${free.length} dari ${this.people.length} pegawai belum terjadwal`;
-      $(this.el, '[data-r-pool]').innerHTML = groups.map(g => { const list = free.filter(p => p.role === g), all = list.every(p => this.picked.has(String(p.id))); return `<div class="dl-roster__grp"><button type="button" class="dl-roster__grphead" data-r-grp="${esc(g)}"><input type="checkbox" data-r-grpall="${esc(g)}" ${all && list.length ? 'checked' : ''} aria-label="Pilih semua ${esc(g)}"><i class="fa-solid fa-caret-${this.shut.has(g) ? 'right' : 'down'}"></i><b>${esc(g)}</b><small>${list.length} org</small></button>
-        ${this.shut.has(g) ? '' : list.map(p => `<label class="dl-roster__person ${this.picked.has(String(p.id)) ? 'is-picked' : ''}" draggable="true" data-r-person="${esc(p.id)}"><input type="checkbox" data-r-pick="${esc(p.id)}" ${this.picked.has(String(p.id)) ? 'checked' : ''}><i style="--h:${this.hue(p.name)}">${esc(this.ini(p.name))}</i><span><b>${esc(p.name)}</b><small>${esc(p.code)} · ${p.skills ?? 0} skill</small></span><em>${esc(p.role)}</em></label>`).join('')}</div>`; }).join('') || '<div class="dl-empty"><b class="dl-empty__title">Semua pegawai sudah terjadwal</b></div>';
+      $(this.el, '[data-r-poolcount]').textContent = _tf(':n of :total employees not scheduled yet', {n: free.length, total: this.people.length});
+      $(this.el, '[data-r-pool]').innerHTML = groups.map(g => { const list = free.filter(p => p.role === g), all = list.every(p => this.picked.has(String(p.id))); return `<div class="dl-roster__grp"><button type="button" class="dl-roster__grphead" data-r-grp="${esc(g)}"><input type="checkbox" data-r-grpall="${esc(g)}" ${all && list.length ? 'checked' : ''} aria-label="${esc(_t('Select all'))} ${esc(g)}"><i class="fa-solid fa-caret-${this.shut.has(g) ? 'right' : 'down'}"></i><b>${esc(g)}</b><small>${esc(_tf(':n ppl', {n: list.length}))}</small></button>
+        ${this.shut.has(g) ? '' : list.map(p => `<label class="dl-roster__person ${this.picked.has(String(p.id)) ? 'is-picked' : ''}" draggable="true" data-r-person="${esc(p.id)}"><input type="checkbox" data-r-pick="${esc(p.id)}" ${this.picked.has(String(p.id)) ? 'checked' : ''}><i style="--h:${this.hue(p.name)}">${esc(this.ini(p.name))}</i><span><b>${esc(p.name)}</b><small>${esc(p.code)} · ${p.skills ?? 0} skill</small></span><em>${esc(p.role)}</em></label>`).join('')}</div>`; }).join('') || `<div class="dl-empty"><b class="dl-empty__title">${esc(_t('All employees are scheduled'))}</b></div>`;
       $(this.el, '[data-r-selbar]').hidden = !this.picked.size; $(this.el, '[data-r-selcount]').textContent = this.picked.size;
       const sched = Object.values(this.assign).filter(Boolean).length;
-      $(this.el, '[data-r-stats]').innerHTML = `<span><b>${free.length}</b>Pool tampil</span><span class="is-good"><b>${sched}</b>Terjadwal</span><span class="is-warn"><b>${this.people.length - sched}</b>Belum</span>`;
+      $(this.el, '[data-r-stats]').innerHTML = `<span><b>${free.length}</b>${esc(_t('Pool shown'))}</span><span class="is-good"><b>${sched}</b>${esc(_t('Scheduled'))}</span><span class="is-warn"><b>${this.people.length - sched}</b>${esc(_t('Not yet scheduled'))}</span>`;
     }
 
     render() { this.grid(); this.pool(); }
@@ -91,7 +92,7 @@
     put(ids, key) {
       const s = this.shifts.find(x => x.key === key); ids.forEach(id => { this.assign[id] = key; this.picked.delete(String(id)); });
       this.render(); this.el.dispatchEvent(new CustomEvent('dl:roster', {bubbles: true, detail: {assign: {...this.assign}}}));
-      const n = this.people.filter(p => this.assign[p.id] === key).length; if (s.capacity && n > s.capacity) toast(`${s.label} melebihi kapasitas (${n}/${s.capacity}).`, 'warn');
+      const n = this.people.filter(p => this.assign[p.id] === key).length; if (s.capacity && n > s.capacity) toast(_tf(':shift exceeds capacity (:n/:cap).', {shift: s.label, n, cap: s.capacity}), 'warn');
     }
   }
   Devlib.define("Roster", Roster);

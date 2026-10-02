@@ -13,7 +13,7 @@ use Livewire\WithPagination;
 // L1 (grid) -- docs/recruitment_tier4.md SECTION 6. Record lahir dari grid ini
 // sendiri (mirip PR) -> toolbar "+ New Record" (griduistandard.md §7 pola
 // pur/pr/index.blade.php: Aksi cuma Buka, approval/submit divalidasi di entry).
-new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Manpower Requisition — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
     use HasGridPagination;

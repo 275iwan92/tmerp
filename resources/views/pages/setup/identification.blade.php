@@ -17,7 +17,7 @@ use Livewire\WithFileUploads;
 // diisi tercetak di kop): nama perusahaan & nama terdaftar -> sys_constant
 // COMPANY_NAME / COMPANY_LEGAL_NAME; NPWP/alamat/telepon/email -> org_company
 // baris TM (sumber kop x-print.header). Lihat configurationstandard.md §3.1.
-new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Identification — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
 

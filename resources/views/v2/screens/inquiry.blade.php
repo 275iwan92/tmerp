@@ -62,9 +62,9 @@
             <div class="mp-wiz__opt mp-typecard--{{ strtolower($type) }}">
                 <span class="mp-wiz__emoji">{{ $t[0] }}</span>
                 <div class="mp-wiz__txt">
-                    <b>{{ $t[1] }}</b> <x-dl::badge :label="$type" :tone="Sales::TYPE_TONES[$type]" />
-                    <p>{{ $t[2] }}</p>
-                    <small>{{ t('Needs') }}: {{ $t[3] }} · {{ t('Flow') }}: {{ $t[4] }}</small>
+                    <b>{{ t($t[1]) }}</b> <x-dl::badge :label="$type" :tone="Sales::TYPE_TONES[$type]" />
+                    <p>{{ t($t[2]) }}</p>
+                    <small>{{ t('Needs') }}: {{ t($t[3]) }} · {{ t('Flow') }}: {{ t($t[4]) }}</small>
                 </div>
                 @if ($type === 'NEW')
                     <x-dl::button size="sm" label="Choose" :href="route('v2.screen', 'inquiry-new')" />

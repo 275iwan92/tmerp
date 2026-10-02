@@ -11,7 +11,7 @@ use Livewire\Component;
 // pesanan resmi ke customer setelah CO di-Confirm (order acknowledgment),
 // pola sama persis (resources/views/components/print/*). Gate: CONFIRMED
 // saja (CO cuma 2 status: DRAFT/CONFIRMED).
-new #[Title('Nota Customer Order — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Customer Order Note — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $orderId;
 

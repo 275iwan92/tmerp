@@ -12,7 +12,7 @@ use Livewire\WithPagination;
 // Rincian Penjualan -- lapis kedua setelah Dashboard Eksekutif. Dari sini
 // pembaca bisa turun sampai daftar dokumen (CO / Surat Jalan / Invoice) dan
 // menembus ke Customer 360.
-new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Sales Details — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
 

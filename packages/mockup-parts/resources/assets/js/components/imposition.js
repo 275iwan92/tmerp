@@ -1,7 +1,8 @@
 /* DevLib · Imposition */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast} = Devlib.h;
+  const {$, $$, esc, toast, t: _t} = Devlib.h;
+  const _tf = (s, r) => { let x = _t(s); Object.keys(r).forEach(k => { x = x.split(':' + k).join(r[k]); }); return x; };
   /* ============================ IMPOSITION ============================ */
   // Penampil hasil ImpositionEngine: TIDAK menghitung UP sendiri. Sel digambar dengan dieline asli (TMDieline).
   class Imposition extends Devlib.Component {
@@ -25,7 +26,7 @@
         const c = x.closest('[data-i2-cell]'); if (c) { this.sel = this.sel === +c.dataset.i2Cell ? null : +c.dataset.i2Cell; return this.draw(); }
         const z = x.closest('[data-i2-zoom]'); if (z) { this.zoom = Math.min(3, Math.max(0.4, Math.round((this.zoom + +z.dataset.i2Zoom * 0.2) * 10) / 10)); return this.draw(); }
         const tf = x.closest('[data-i2-rot],[data-i2-mx],[data-i2-my]');
-        if (tf) { const k = tf.hasAttribute('data-i2-rot') ? 'rot' : tf.hasAttribute('data-i2-mx') ? 'mx' : 'my'; const targets = this.sel ? [this.sel] : this.res().cells.map(c => c.n); targets.forEach(n => { this.xf[n] = this.xf[n] || {}; this.xf[n][k] = !this.xf[n][k]; }); toast(`${{rot: 'Putar 180°', mx: 'Mirror X', my: 'Mirror Y'}[k]} → ${this.sel ? 'UP #' + this.sel : 'semua UP'} (tampilan)`); return this.draw(); }
+        if (tf) { const k = tf.hasAttribute('data-i2-rot') ? 'rot' : tf.hasAttribute('data-i2-mx') ? 'mx' : 'my'; const targets = this.sel ? [this.sel] : this.res().cells.map(c => c.n); targets.forEach(n => { this.xf[n] = this.xf[n] || {}; this.xf[n][k] = !this.xf[n][k]; }); toast(`${_t({rot: 'Rotate 180°', mx: 'Mirror X', my: 'Mirror Y'}[k])} → ${this.sel ? 'UP #' + this.sel : _t('all UPs')} (${_t('view only')})`); return this.draw(); }
         const cm = x.closest('[data-i2-calc] .dl-segment__opt'); if (cm) { this.calc = cm.dataset.value; $$(this.el, '[data-i2-calc] .dl-segment__opt').forEach(b => b.classList.toggle('is-active', b === cm)); return this.calcOut(); }
         if (x.closest('[data-i2-svg]')) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([$(this.paper, 'svg').outerHTML], {type: 'image/svg+xml'})); a.download = `imposition-${this.job.code}-${this.plano.code}.svg`; a.click(); }
       });
@@ -66,26 +67,26 @@
         <rect x="${this.M}" y="${this.G + this.M}" width="${W - 2 * this.M}" height="${H - this.G - 2 * this.M}" class="dl-impo__area"/>
         ${cells}</svg>`;
       $(this.el, '[data-i2-zoomval]').textContent = Math.round(this.zoom * 100) + '%';
-      $(this.el, '[data-i2-sel]').textContent = this.sel ? `UP #${this.sel} terpilih` : 'Klik objek untuk memilih';
+      $(this.el, '[data-i2-sel]').textContent = this.sel ? _tf('UP #:n selected', {n: this.sel}) : _t('Click an object to select it');
     }
 
     panels() {
-      $(this.el, '[data-i2-jobs]').innerHTML = this.jobs.map(j => `<button type="button" class="dl-impo__job ${j === this.job ? 'is-on' : ''}" data-i2-job="${esc(j.code)}"><b>${esc(j.label)}</b><small>${esc(j.code)} · bentang ${this.n0(j.flat.w / 10)} × ${this.n0(j.flat.h / 10)} cm</small></button>`).join('');
+      $(this.el, '[data-i2-jobs]').innerHTML = this.jobs.map(j => `<button type="button" class="dl-impo__job ${j === this.job ? 'is-on' : ''}" data-i2-job="${esc(j.code)}"><b>${esc(j.label)}</b><small>${esc(j.code)} · ${esc(_t('Flat'))} ${this.n0(j.flat.w / 10)} × ${this.n0(j.flat.h / 10)} cm</small></button>`).join('');
       $(this.el, '[data-i2-planos]').innerHTML = this.planos.map(p => `<button type="button" class="dl-segment__opt ${p === this.plano ? 'is-active' : ''}" data-i2-plano="${esc(p.code)}">${esc(p.code)}<small>${this.job.results[p.code].up} up</small></button>`).join('');
       const best = this.planos.reduce((a, p) => this.job.results[p.code].efficiency > this.job.results[a.code].efficiency ? p : a, this.planos[0]);
-      $(this.el, '[data-i2-kv]').innerHTML = `<dt>Plano</dt><dd>${this.n0(this.plano.w / 10)} × ${this.n0(this.plano.h / 10)} cm</dd><dt>Bentang (flat)</dt><dd>${this.n0(this.job.flat.w / 10)} × ${this.n0(this.job.flat.h / 10)} cm</dd><dt>Area blank</dt><dd>${this.n0(this.job.flat.w * this.job.flat.h / 100)} cm²</dd><dt>Gap / Gripper / Margin</dt><dd>${this.el.dataset.gap || 3} / ${this.G} / ${this.M} mm</dd><dt>Plano paling efisien</dt><dd><b>${esc(best.code)}</b> (${this.n0(this.job.results[best.code].efficiency)}%)</dd>`;
+      $(this.el, '[data-i2-kv]').innerHTML = `<dt>${esc(_t('Plano'))}</dt><dd>${this.n0(this.plano.w / 10)} × ${this.n0(this.plano.h / 10)} cm</dd><dt>${esc(_t('Spread (flat)'))}</dt><dd>${this.n0(this.job.flat.w / 10)} × ${this.n0(this.job.flat.h / 10)} cm</dd><dt>${esc(_t('Blank area'))}</dt><dd>${this.n0(this.job.flat.w * this.job.flat.h / 100)} cm²</dd><dt>${esc(_t('Gap / Gripper / Margin'))}</dt><dd>${this.el.dataset.gap || 3} / ${this.G} / ${this.M} mm</dd><dt>${esc(_t('Most efficient plano'))}</dt><dd><b>${esc(best.code)}</b> (${this.n0(this.job.results[best.code].efficiency)}%)</dd>`;
       const r = this.res();
-      $(this.el, '[data-i2-hero]').innerHTML = `<div><small>UP / plano</small><b>${r.up}</b></div><div><small>Metode</small><b>${esc(r.method)}</b></div><div><small>Efisiensi</small><b class="is-pos">${this.n0(r.efficiency)}%</b></div><div><small>Waste</small><b class="is-neg">${this.n0(r.waste)}%</b></div>`;
-      $(this.el, '[data-i2-bar]').innerHTML = `<span style="width:${r.efficiency}%">Terpakai ${this.n0(r.efficiency)}%</span><em>terbuang ${this.n0(r.waste)}%</em>`;
+      $(this.el, '[data-i2-hero]').innerHTML = `<div><small>UP / plano</small><b>${r.up}</b></div><div><small>${esc(_t('Method'))}</small><b>${esc(r.method)}</b></div><div><small>${esc(_t('Efficiency'))}</small><b class="is-pos">${this.n0(r.efficiency)}%</b></div><div><small>${esc(_t('Waste'))}</small><b class="is-neg">${this.n0(r.waste)}%</b></div>`;
+      $(this.el, '[data-i2-bar]').innerHTML = `<span style="width:${r.efficiency}%">${esc(_tf('Used :p%', {p: this.n0(r.efficiency)}))}</span><em>${esc(_tf('wasted :p%', {p: this.n0(r.waste)}))}</em>`;
       this.calcOut();
     }
 
     calcOut() {
       const r = this.res(), q = +String($(this.el, '[data-i2-qty]').value).replace(/\D/g, '') || 0, sp = parseFloat(String($(this.el, '[data-i2-spoil]').value).replace(',', '.')) || 0;
-      $(this.el, '[data-i2-inlabel]').textContent = this.calc === 'pcs' ? 'Qty order (pcs)' : 'Jumlah plano (lembar)';
+      $(this.el, '[data-i2-inlabel]').textContent = this.calc === 'pcs' ? _t('Qty order (pcs)') : _t('Plano quantity (sheets)');
       let html;
-      if (this.calc === 'pcs') { const net = r.up ? Math.ceil(q / r.up) : 0, extra = Math.ceil(net * sp / 100); html = `<div class="dl-impo__big"><small>Plano dibutuhkan</small><b>${this.n0(net + extra)}</b><span>lembar</span></div><p>${this.n0(net)} bersih + ${this.n0(extra)} inschiet (${this.n0(sp)}%) · sisa hasil ${this.n0((net) * r.up - q)} pcs</p>`; }
-      else { const net = Math.floor(q / (1 + sp / 100)); html = `<div class="dl-impo__big"><small>Hasil produk</small><b>${this.n0(net * r.up)}</b><span>pcs</span></div><p>${this.n0(q)} plano − inschiet ${this.n0(sp)}% = ${this.n0(net)} plano efektif × ${r.up} up</p>`; }
+      if (this.calc === 'pcs') { const net = r.up ? Math.ceil(q / r.up) : 0, extra = Math.ceil(net * sp / 100); html = `<div class="dl-impo__big"><small>${esc(_t('Plano required'))}</small><b>${this.n0(net + extra)}</b><span>${esc(_t('sheet(s)'))}</span></div><p>${esc(_tf(':net net + :extra inschiet (:sp%) · leftover output :left pcs', {net: this.n0(net), extra: this.n0(extra), sp: this.n0(sp), left: this.n0((net) * r.up - q)}))}</p>`; }
+      else { const net = Math.floor(q / (1 + sp / 100)); html = `<div class="dl-impo__big"><small>${esc(_t('Product output'))}</small><b>${this.n0(net * r.up)}</b><span>pcs</span></div><p>${esc(_tf(':q plano − inschiet :sp% = :net effective plano × :up up', {q: this.n0(q), sp: this.n0(sp), net: this.n0(net), up: r.up}))}</p>`; }
       $(this.el, '[data-i2-result]').innerHTML = html;
     }
   }

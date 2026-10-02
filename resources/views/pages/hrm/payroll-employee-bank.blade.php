@@ -17,7 +17,7 @@ use Livewire\Component;
 // blade.php/payroll-cash-roster.blade.php yang sudah pakai pola sama).
 // Bank dipilih dari Master Supplier kategori BANK, simpan lewat
 // EmployeeBankService (keputusan user 2026-09-23).
-new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Employee & Bank Account Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

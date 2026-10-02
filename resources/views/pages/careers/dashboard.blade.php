@@ -16,7 +16,7 @@ use Livewire\Component;
 // (baru submit, belum diproses HR), tampilkan berdasar sync_status saja.
 // FirebaseSyncAdapter LANGSUNG (bukan interface switchable) -- lihat komentar
 // careers/apply.blade.php kenapa portal profesional ini hardcode Firebase.
-new #[Layout('layouts::portal')] #[Title('Lamaran Saya')] class extends Component
+new #[Layout('layouts::portal')] #[Title('My Applications')] class extends Component
 {
     #[Computed]
     public function candidate()

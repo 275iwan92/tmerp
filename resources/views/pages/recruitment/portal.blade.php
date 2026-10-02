@@ -25,7 +25,7 @@ use Livewire\WithFileUploads;
 // (php artisan recruitment:sync-portal, jadwal tiap 2 menit) menariknya --
 // myApplications() karena itu bisa tampil KOSONG sesaat setelah kirim lamaran,
 // itu bukan bug, itu memang eventual-consistency dari desain PULL sync.
-new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Candidate Portal (Simulation) — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
 

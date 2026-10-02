@@ -10,7 +10,7 @@ use Livewire\WithPagination;
 // Review Formulir Kandidat -- grid worklist utk HR meninjau isian lengkap
 // "Data Calon Karyawan" (careers/apply, 11 seksi) per lamaran. Murni
 // read-only; keputusan lanjut/reject tahap tetap di Pipeline Board.
-new #[Title('Review Formulir Kandidat — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Candidate Form Review — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
     use HasGridPagination;

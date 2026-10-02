@@ -16,7 +16,7 @@ use Livewire\Component;
 // Hanya slip dengan print_flag menyala yang ikut -- kanal WA dinyalakan
 // bertahap, dan begitu seorang pegawai pindah ke WA slipnya tidak boleh lagi
 // ikut tumpukan cetakan. Slip anomali dikecualikan (nilainya belum sah).
-new #[Title('Cetak Semua Slip Gaji — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Print All Payslips — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $runId;
 

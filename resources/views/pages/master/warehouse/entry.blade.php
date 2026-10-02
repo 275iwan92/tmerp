@@ -7,7 +7,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Warehouse Form — TELASIH MAKMUR ERP')] class extends Component
 {
     public ?int $warehouseId = null;
 

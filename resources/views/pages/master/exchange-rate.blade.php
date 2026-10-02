@@ -15,7 +15,7 @@ use Livewire\Component;
 // effective_date utk riwayat -- spreadsheetPersistRow() otomatis
 // nonaktifkan baris lama saat baris baru diaktifkan utk currency yang sama
 // (sama semangat "1 is_default" di Master Bahasa Configuration).
-new #[Title('Master Kurs — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Exchange Rate Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasSpreadsheetGrid;
 

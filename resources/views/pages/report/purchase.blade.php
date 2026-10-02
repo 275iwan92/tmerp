@@ -11,7 +11,7 @@ use Livewire\WithPagination;
 
 // Rincian Pembelian -- sisi lawan dari Rincian Penjualan. Menampilkan rantai
 // PR -> PO -> Penerimaan -> Invoice -> Pembayaran, semuanya dari arsip hasil migrasi.
-new #[Layout('layouts::report')] #[Title('Rincian Pembelian — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Purchase Details — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
 

@@ -82,7 +82,7 @@
             <x-dl::card :title="raw($doc['name'])" description="Product · all parts born from the Inquiry when the Quotation is WON">
                 <div class="mp-thumbs">
                     @foreach ($doc['components'] as $c)
-                        <x-mp::image-thumb :label="$c['name']" :src="$c['artwork']" empty="no artwork yet" />
+                        <x-mp::image-thumb :label="raw($c['name'])" :src="$c['artwork']" empty="no artwork yet" />
                     @endforeach
                 </div>
                 @if ($doc['components'])
@@ -95,7 +95,7 @@
                 <x-dl::card :title="raw($n['name'])" :description="$n['kind'] === 'ASSEMBLY' ? 'Assembly · '.raw(($n['join'] ?? t('join not filled yet')).' · '.count($n['children'])).' components' : 'Component · '.raw(($n['code'] ?? '').($n['flat'] ? ' · '.t('flat size').' '.$n['flat'] : ''))">
                     @if ($n['kind'] === 'ASSEMBLY')
                         <x-dl::alert tone="warn" :message="str_contains((string) $n['join_code'], 'DOUBLE') ? 'Glued on 2 sides — once joined it can NOT be unfolded again (affects packing & shipping volume).' : 'Glued on 1 side — can still be unfolded.'" />
-                        <div class="mp-thumbs">@foreach ($n['children'] as $c)<x-mp::image-thumb :label="$c['name']" :src="$c['artwork']" empty="no artwork yet" />@endforeach</div>
+                        <div class="mp-thumbs">@foreach ($n['children'] as $c)<x-mp::image-thumb :label="raw($c['name'])" :src="$c['artwork']" empty="no artwork yet" />@endforeach</div>
                         <x-mp::box3d :dims="$doc['dims']" :front="$n['children'][0]['artwork'] ?? null" :back="$n['children'][1]['artwork'] ?? null" class="mp-mt" />
                         <x-dl::divider label="Assembly BOP" />
                         <ol class="mp-steps">@forelse ($n['bop'] as $s)<li><span><b>{{ $s['name'] }}</b>@if ($s['note'])<small>{{ $s['note'] }}</small>@endif</span></li>@empty<li><span>{{ t('No BOP yet.') }}</span></li>@endforelse</ol>

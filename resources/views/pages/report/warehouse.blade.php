@@ -11,7 +11,7 @@ use Livewire\Component;
 // Data nyata dari view tm2inv.v_rm_onhand/v_fg_onhand/v_sfg_onhand (sudah
 // dipakai layar Kartu/Master Stok yang ada, lihat project_inventory_3_stock_classes) --
 // bukan query baru yang mengarang logic stok sendiri.
-new #[Layout('layouts::report')] #[Title('Laporan Gudang — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Warehouse Report — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Computed]
     public function stockValue(): array

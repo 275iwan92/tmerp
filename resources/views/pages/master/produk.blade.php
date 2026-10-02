@@ -20,7 +20,7 @@ use Livewire\WithPagination;
 // dipakai di sini -- itu domain Master Card yang belum digarap, biar tidak
 // setengah-jadi. cur_stock TIDAK bisa diedit dari sini (ikut pola Warehouse:
 // itu posisi stok transaksional dari ledger Inventory, bukan master data).
-new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Product Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridStatFilter;
 

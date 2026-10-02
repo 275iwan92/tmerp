@@ -10,7 +10,7 @@ use Livewire\Component;
 // tiap kali pull dari portal (Firebase/MariaDB) berhasil/gagal. Tak ada Aksi
 // buka/edit -- sengaja tidak link ke layar Offer (mount()-nya bikin AppOffer
 // baru kalau belum ada, efek samping yang tak diinginkan cuma dari klik log).
-new #[Title('Rekap Sync Log Rekrutmen — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Recruitment Sync Log Summary — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $search = '';
 

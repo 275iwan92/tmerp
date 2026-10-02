@@ -12,7 +12,7 @@ use Livewire\Component;
 // mockup_06_cash_disbursement.html (kalkulator pecahan uang + tabel serah
 // terima dgn kolom tanda tangan). Pegawai "cash" = TIDAK punya
 // emp_bank_account aktif+primary (kebalikan dari payroll-bank-transfer).
-new #[Title('Roster Cash & Pecahan Uang — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Cash Roster & Denominations — TELASIH MAKMUR ERP')] class extends Component
 {
     private const DENOMINATIONS = [100000, 50000, 20000, 10000, 5000, 2000, 1000];
 

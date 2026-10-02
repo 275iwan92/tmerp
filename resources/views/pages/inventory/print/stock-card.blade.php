@@ -31,7 +31,7 @@ use Livewire\Component;
 // Ledger TIDAK diberi kolom sortable -- urutan kronologis wajib (saldo
 // berjalan bergantung urutan tanggal/doc_id), sort bebas akan merusak makna
 // datanya, beda dari master-stock yang tiap baris independen per item.
-new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Stock Card — TELASIH MAKMUR ERP')] class extends Component
 {
     public const CATEGORY_LABELS = [
         'RM' => 'Raw & Supporting Materials',

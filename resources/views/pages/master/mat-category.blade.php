@@ -15,7 +15,7 @@ use Livewire\Component;
 // Level & Induk dikunci setelah baris dibuat (pola sama "kategori dikunci"
 // di master/raw-material/entry.blade.php) supaya tidak diam-diam
 // merusak hirarki yang sudah dipakai material lain.
-new #[Title('Master Kategori Bahan Baku — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Raw Material Category Master — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

@@ -17,7 +17,7 @@ use Livewire\Component;
 // logika/mesin di baliknya TETAP pakai AttendanceCalculationService kita
 // sendiri (jauh lebih detail: T-5/T+5/PAT/KJK/F-FF/dst, bukan cuma H/T/PC/A
 // generik di paket referensi).
-new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Daily Attendance — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

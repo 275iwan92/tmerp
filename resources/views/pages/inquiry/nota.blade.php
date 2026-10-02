@@ -8,7 +8,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Inquiry Note — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $inquiryId;
 

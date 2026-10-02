@@ -16,7 +16,7 @@ use Livewire\Component;
 // BARU menuliskan att_finger_raw + memicu AttendanceCalculationService --
 // sebelum disetujui, presensi TIDAK tercatat sama sekali (Tier1 doc:
 // "PENDING_HR_LOCATION_APPROVAL").
-new #[Title('Approval Lokasi GPS — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('GPS Location Approval — TELASIH MAKMUR ERP')] class extends Component
 {
     use OpensFromQuery;
 

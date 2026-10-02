@@ -11,7 +11,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Raw Material Item Master — TELASIH MAKMUR ERP')] class extends Component
 {
     public ?int $materialId = null;
 

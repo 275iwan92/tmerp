@@ -26,7 +26,7 @@ use Livewire\WithPagination;
 // (pola persis quotation/list.blade.php), baru redirect ke Entry yang sudah
 // terisi customer tapi 0 baris ("kosong" = kosong baris, bukan kosong
 // customer). Konsisten dgn constraint DB, bukan improvisasi bebas.
-new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('Delivery Order List — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridStatFilter;
 

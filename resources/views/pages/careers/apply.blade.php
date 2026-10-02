@@ -29,7 +29,7 @@ use Livewire\WithFileUploads;
 // "tidak terkecuali". Validasi dikumpulkan 1x lewat Validator::make()->after()
 // supaya kandidat lihat SEMUA yang kurang sekaligus (1 alert), bukan
 // ketemu satu-satu tiap klik ulang.
-new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Component
+new #[Layout('layouts::portal')] #[Title('Apply for Position')] class extends Component
 {
     use WithFileUploads;
 
