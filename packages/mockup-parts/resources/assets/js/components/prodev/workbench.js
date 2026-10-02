@@ -1302,7 +1302,7 @@
               + '<div class="io-row3">'
               + '<label>' + tx('Subcontract supplier') + '<select id="io-sc-sup">' + opts(LK.subcons, r.subcon_supplier_id, _t('— choose supplier —')) + '</select></label>'
               + '<label>' + tx('CO (required for the delivery note)') + '<select id="io-sc-co">' + opts(co.map(c => ({ id: c.id, name: c.label })), '', co.length ? _t('— choose CO —') : _t('— no CO for this Inquiry yet —')) + '</select></label>'
-              + '<label>' + tx('Ship date') + '<input type="date" id="io-sc-date"></label>'
+              + '<label>' + tx('Dispatch date') + '<input type="date" id="io-sc-date"></label>'
               + '<label>' + tx('Estimated cost (Rp)') + '<input type="number" min="0" id="io-sc-cost"></label>'
               + '</div><div class="io-sub">' + tx('Without a CO: the subcontract PR is still created, the delivery note follows once the CO is issued (click Subcontract again).') + '</div>'
               + '<div style="margin-top:8px"><button type="button" class="io-mbtn on" data-act="subcon-go">' + tx('Process Subcontract') + '</button> '
