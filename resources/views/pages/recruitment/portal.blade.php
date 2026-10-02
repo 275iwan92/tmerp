@@ -780,7 +780,7 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
 
             @if ($step >= 1 && $step <= 12)
                 <div class="flex justify-between mt-4 pt-3 border-t border-[#eef1f5]">
-                    <button type="button" wire:click="prevStep" @if($step === 1) disabled @endif class="text-xs font-bold text-muted px-4 py-2 disabled:opacity-30">← {{ t('Back') }}</button>
+                    <button type="button" wire:click="prevStep" @if($step === 1) disabled @endif class="text-xs font-bold text-muted px-4 py-2 disabled:opacity-30">← Back</button>
                     @if ($step < 12)
                         <button type="button" wire:click="nextStep" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Proceed') }} →</button>
                     @else

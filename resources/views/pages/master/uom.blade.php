@@ -88,12 +88,12 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
     protected function spreadsheetColumns(): array
     {
         return [
-            'uom_code' => ['label' => 'Kode', 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
-            'uom_name' => ['label' => 'Nama Satuan', 'type' => 'text', 'required' => true],
-            'dimension' => ['label' => 'Dimensi', 'type' => 'select', 'options' => $this->dimensions, 'required' => true],
-            'is_base' => ['label' => 'Dasar', 'type' => 'boolean'],
-            'activate' => ['label' => 'Aktif', 'type' => 'boolean'],
-            '_conversion' => ['label' => '', 'type' => 'action', 'icon' => '🔁', 'title' => 'Konversi', 'method' => 'openConversionPanel', 'paramKey' => 'uom_code', 'hideWhenColumn' => 'dimension', 'hideWhenValue' => 'SPEC'],
+            'uom_code' => ['label' => t('Code'), 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
+            'uom_name' => ['label' => t('Unit Name'), 'type' => 'text', 'required' => true],
+            'dimension' => ['label' => t('Dimension'), 'type' => 'select', 'options' => $this->dimensions, 'required' => true],
+            'is_base' => ['label' => t('Base'), 'type' => 'boolean'],
+            'activate' => ['label' => t('Active'), 'type' => 'boolean'],
+            '_conversion' => ['label' => '', 'type' => 'action', 'icon' => '🔁', 'title' => t('Conversion'), 'method' => 'openConversionPanel', 'paramKey' => 'uom_code', 'hideWhenColumn' => 'dimension', 'hideWhenValue' => 'SPEC'],
         ];
     }
 
@@ -136,7 +136,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
 
         $validator->after(function ($v) use ($data) {
             if (($data['dimension'] ?? null) === 'SPEC' && ! empty($data['is_base'])) {
-                $v->errors()->add('is_base', 'Dimensi SPEC tidak boleh punya satuan dasar.');
+                $v->errors()->add('is_base', t('Dimension SPEC cannot have a base unit.'));
             }
         });
 
@@ -360,7 +360,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         ]);
 
         if ($data['dimension'] === 'SPEC' && $data['is_base']) {
-            $this->addError('is_base', 'Dimensi SPEC tidak boleh punya satuan dasar.');
+            $this->addError('is_base', t('Dimension SPEC cannot have a base unit.'));
 
             return;
         }
@@ -431,13 +431,13 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         $dstUnit = UomUnit::where('uom_code', $data['uom_dst'])->first();
 
         if (! $srcUnit || ! $dstUnit) {
-            $this->addError('uom_dst', 'Satuan tidak ditemukan.');
+            $this->addError('uom_dst', t('Unit not found.'));
 
             return;
         }
 
         if ($srcUnit->dimension !== $dstUnit->dimension) {
-            $this->addError('uom_dst', 'Dimensi berbeda ('.$srcUnit->dimension.' vs '.$dstUnit->dimension.') — konversi tidak sah.');
+            $this->addError('uom_dst', str_replace([':src', ':dst'], [$srcUnit->dimension, $dstUnit->dimension], t('Different dimensions (:src vs :dst) — conversion not valid.')));
 
             return;
         }
@@ -447,7 +447,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             $dupQuery->where('id_conversion', '!=', $this->editingConversionId);
         }
         if ($dupQuery->exists()) {
-            $this->addError('uom_dst', 'Pasangan '.$data['uom_src'].' → '.$data['uom_dst'].' sudah ada. Edit baris tersebut.');
+            $this->addError('uom_dst', str_replace([':src', ':dst'], [$data['uom_src'], $data['uom_dst']], t('Pair :src → :dst already exists. Edit that row.')));
 
             return;
         }
@@ -524,12 +524,12 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Satuan', 'value' => $this->statTotal, 'tone' => 'total'],
-            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+            'total' => ['label' => t('Total Units'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => t('Active'), 'value' => $this->statActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('activate', true)],
-            'base' => ['label' => 'Satuan Dasar', 'value' => $this->statBase, 'tone' => 'warn',
+            'base' => ['label' => t('Base Units'), 'value' => $this->statBase, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('is_base', true)],
-            'inactive' => ['label' => 'Nonaktif', 'value' => $this->statInactive, 'tone' => 'critical',
+            'inactive' => ['label' => t('Inactive'), 'value' => $this->statInactive, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where('activate', false)],
         ];
     }
@@ -541,8 +541,8 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
-            🔒 Konversi hanya sah <b>dalam satu dimensi</b>. Satuan <b>SPEC</b> (GSM, WARNA, dsb.) tak dikonversi.
-            Pilih satuan di kiri, klik <b>🔁 Konversi</b>, lalu <b>+ Konversi Baru</b> di panel kanan.
+            🔒 {!! t('Conversion is only valid <b>within one dimension</b>. <b>SPEC</b> units (GSM, COLOR, etc.) are not converted.') !!}
+            {!! t('Select a unit on the left, click <b>🔁 Conversion</b>, then <b>+ New Conversion</b> in the right panel.') !!}
         </div>
 
         {{-- ============ GRID (LIST + PANEL KONVERSI) ============ --}}
@@ -594,7 +594,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                                 @endunless
                                 <span class="ml-auto flex gap-0.5 shrink-0">
                                     <button type="button" wire:click="openConvModal('edit', {{ $c->id_conversion }})" title="{{ t('Edit') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                    <button type="button" wire:click="toggleConversionActive({{ $c->id_conversion }})" wire:confirm="{{ $c->activate ? t('Deactivate') : t('Activate') }} konversi {{ $c->uom_src }} → {{ $c->uom_dst }}?"
+                                    <button type="button" wire:click="toggleConversionActive({{ $c->id_conversion }})" wire:confirm="{{ str_replace([':src', ':dst'], [$c->uom_src, $c->uom_dst], $c->activate ? t('Deactivate conversion :src → :dst?') : t('Activate conversion :src → :dst?')) }}"
                                         title="{{ $c->activate ? t('Deactivate') : t('Activate') }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $c->activate ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
                                 </span>
                             </div>
@@ -632,21 +632,21 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             <form wire:submit="saveUnit" class="bg-white border border-t-0 border-[#d7dbe2] p-5 flex flex-col gap-3">
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.input label="Kode Satuan *" name="uom_code" wire:model="uom_code" maxlength="10" placeholder="mis. IK16" :disabled="$unitMode === 'edit'" class="uppercase" />
+                            <x-form.input :label="t('Unit Code *')" name="uom_code" wire:model="uom_code" maxlength="10" :placeholder="t('e.g. IK16')" :disabled="$unitMode === 'edit'" class="uppercase" />
                         </div>
                         <div class="flex-1">
-                            <x-form.select label="Dimensi *" name="dimension" wire:model="dimension" :options="array_combine($dimensions, $dimensions)" :selected="$dimension" />
+                            <x-form.select :label="t('Dimension *')" name="dimension" wire:model="dimension" :options="array_combine($dimensions, $dimensions)" :selected="$dimension" />
                         </div>
                     </div>
-                    <x-form.input label="Nama Satuan *" name="uom_name" wire:model="uom_name" placeholder="mis. Ikat isi 16 pcs" />
-                    <x-form.checkbox wire:model="is_base">Jadikan satuan <b>dasar</b> untuk dimensi ini (hanya 1 dasar per dimensi — dasar lama otomatis dilepas)</x-form.checkbox>
+                    <x-form.input :label="t('Unit Name *')" name="uom_name" wire:model="uom_name" :placeholder="t('e.g. Bundle of 16 pcs')" />
+                    <x-form.checkbox wire:model="is_base">{!! t('Make this the <b>base</b> unit for this dimension (only 1 base per dimension — the old base is released automatically)') !!}</x-form.checkbox>
                     @error('is_base') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
-                    <x-form.checkbox label="Aktif" wire:model="unit_activate" />
-                    <div class="text-[11px] text-muted leading-relaxed">Dimensi <b>SPEC</b> tidak bisa punya satuan dasar / dikonversi. Setelah satuan tersimpan, atur konversinya lewat panel <b>🔁 Konversi</b>.</div>
+                    <x-form.checkbox :label="t('Active')" wire:model="unit_activate" />
+                    <div class="text-[11px] text-muted leading-relaxed">{!! t('Dimension <b>SPEC</b> cannot have a base unit / be converted. Once the unit is saved, set its conversions via the <b>🔁 Conversion</b> panel.') !!}</div>
 
                     <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
-                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
+                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
                     </div>
             </form>
         @endif
@@ -658,25 +658,25 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center" wire:click.self="closeConvModal">
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl overflow-hidden">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                    <span>{{ $convMode === 'edit' ? 'Edit Konversi · '.$uom_src.' → '.$uom_dst : 'Konversi Baru · dari '.($uom_src ?: '—') }}</span>
+                    <span>{{ $convMode === 'edit' ? t('Edit Conversion').' · '.$uom_src.' → '.$uom_dst : t('New Conversion').' · '.t('from').' '.($uom_src ?: '—') }}</span>
                     <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeConvModal">✕</span>
                 </div>
                 <form wire:submit="saveConv" class="p-4 flex flex-col gap-3">
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.select label="Dari (src) *" name="uom_src" wire:model="uom_src" :options="$this->convertibleUnits->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])" :selected="$uom_src" />
+                            <x-form.select :label="t('From (src) *')" name="uom_src" wire:model="uom_src" :options="$this->convertibleUnits->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])" :selected="$uom_src" />
                         </div>
                         <div class="flex-1">
-                            <x-form.select label="Ke (dst) *" name="uom_dst" wire:model="uom_dst" :options="$this->convertibleUnits->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])" :selected="$uom_dst" />
+                            <x-form.select :label="t('To (dst) *')" name="uom_dst" wire:model="uom_dst" :options="$this->convertibleUnits->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])" :selected="$uom_dst" />
                         </div>
                     </div>
 
-                    <x-form.input label="Nilai konversi * (1 src = n × dst)" name="conversion_value" type="number" step="any" min="0" wire:model="conversion_value" placeholder="mis. 20" />
-                    <x-form.checkbox label="Aktif" wire:model="conversion_activate" />
+                    <x-form.input :label="t('Conversion value * (1 src = n × dst)')" name="conversion_value" type="number" step="any" min="0" wire:model="conversion_value" :placeholder="t('e.g. 20')" />
+                    <x-form.checkbox :label="t('Active')" wire:model="conversion_activate" />
 
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="closeConvModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="closeConvModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
                     </div>
                 </form>
             </div>

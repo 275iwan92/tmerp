@@ -142,7 +142,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
             <x-grid.stat-box tone="total" label="{{ t('Total Master Items') }}" :value="number_format($this->stats['total'])" />
             <x-grid.stat-box tone="active" label="{{ t('Raw Material (Stock)') }}" :value="number_format($this->stats['material'])" subtitle="MATERIAL" />
             <x-grid.stat-box tone="extra" label="{{ t('Service / Sample') }}" :value="number_format($this->stats['non_material'])" subtitle="SERVICE / FREE_SAMPLE" />
-            <x-grid.stat-box tone="critical" label="{{ t('Critical Stock') }}" :value="number_format($this->stats['low_stock'])" subtitle="≤ Reorder Point" />
+            <x-grid.stat-box tone="critical" label="{{ t('Critical Stock') }}" :value="number_format($this->stats['low_stock'])" :subtitle="'≤ '.t('Reorder Point')" />
             <x-grid.stat-box tone="warn" label="{{ t('Draft (Not Confirmed)') }}" :value="number_format($this->stats['draft'])" subtitle="{{ t('Not yet appearing in PR/PQ/PRT') }}" />
         </x-grid.stat-row>
 

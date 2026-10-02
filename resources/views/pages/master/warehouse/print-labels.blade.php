@@ -32,12 +32,12 @@ new #[Title('Label Rak — TELASIH MAKMUR ERP')] class extends Component
 
 <div class="label-page">
     <div class="no-print toolbar">
-        <a href="{{ route('master.warehouse.edit', ['warehouse' => $this->warehouseId]) }}" class="back" data-back>← Kembali ke Gudang</a>
-        <button type="button" onclick="window.print()" class="print-btn">🖨 Cetak</button>
+        <a href="{{ route('master.warehouse.edit', ['warehouse' => $this->warehouseId]) }}" class="back" data-back>← {{ t('Back to Warehouse') }}</a>
+        <button type="button" onclick="window.print()" class="print-btn">🖨 {{ t('Print') }}</button>
     </div>
 
     @if ($this->warehouse->locations->isEmpty())
-        <div class="no-print empty">Gudang ini belum punya lokasi/bin aktif.</div>
+        <div class="no-print empty">{{ t('This warehouse has no active location/bin yet.') }}</div>
     @else
         <div class="label-grid">
             @foreach ($this->warehouse->locations as $loc)

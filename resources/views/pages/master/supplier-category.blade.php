@@ -28,9 +28,9 @@ new #[Title('Master Kategori Supplier — TELASIH MAKMUR ERP')] class extends Co
     protected function spreadsheetColumns(): array
     {
         return [
-            'category_code' => ['label' => 'Kode Kategori', 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
-            'description' => ['label' => 'Keterangan', 'type' => 'text'],
-            'activate' => ['label' => 'Aktif', 'type' => 'boolean'],
+            'category_code' => ['label' => t('Category Code'), 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
+            'description' => ['label' => t('Description'), 'type' => 'text'],
+            'activate' => ['label' => t('Active'), 'type' => 'boolean'],
         ];
     }
 
@@ -101,13 +101,13 @@ new #[Title('Master Kategori Supplier — TELASIH MAKMUR ERP')] class extends Co
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Kategori', 'value' => $this->statTotal, 'tone' => 'total'],
-            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+            'total' => ['label' => t('Total Categories'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => t('Active'), 'value' => $this->statActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('activate', true)],
-            'inactive' => ['label' => 'Nonaktif', 'value' => $this->statTotal - $this->statActive, 'tone' => 'critical',
+            'inactive' => ['label' => t('Inactive'), 'value' => $this->statTotal - $this->statActive, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where('activate', false)],
-            'bank' => ['label' => 'Supplier Bank', 'value' => $this->statBank, 'tone' => 'extra',
-                'subtitle' => 'Dipakai sebagai lookup rekening gaji'],
+            'bank' => ['label' => t('Bank Suppliers'), 'value' => $this->statBank, 'tone' => 'extra',
+                'subtitle' => t('Used as payroll bank account lookup')],
         ];
     }
 };

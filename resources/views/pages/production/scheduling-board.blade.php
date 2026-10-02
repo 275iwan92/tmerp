@@ -214,7 +214,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
         foreach ($rostered->unique('employee_id') as $roster) {
             if ($roster->employee) {
-                $options[] = ['value' => 'e'.$roster->employee_id, 'label' => $roster->employee->full_name.' (Manual)'];
+                $options[] = ['value' => 'e'.$roster->employee_id, 'label' => $roster->employee->full_name.' ('.t('Manual').')'];
             }
         }
 
@@ -290,16 +290,16 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         }
 
         if ($op->task_status === 'BREAKDOWN' && $op->crew->isEmpty()) {
-            return '— menunggu reroute';
+            return '— '.t('awaiting reroute');
         }
 
         $names = $op->crew->map(function ($c) {
             $name = $c->employee?->full_name ?? '?';
 
-            return $c->crew_role === 'OPERATOR_UTAMA' ? "{$name} (utama)" : $name;
+            return $c->crew_role === 'OPERATOR_UTAMA' ? $name.' ('.t('lead').')' : $name;
         });
 
-        return $names->isEmpty() ? '— menunggu penugasan' : $names->implode(' + ');
+        return $names->isEmpty() ? '— '.t('awaiting assignment') : $names->implode(' + ');
     }
 
     // Peta warna proses & label status = pengetahuan domain Production
@@ -322,9 +322,9 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
     private function statusLabel(string $taskStatus): string
     {
         return match ($taskStatus) {
-            'PENDING' => 'Menunggu', 'ASSIGNED' => 'Ditugaskan', 'RUNNING' => 'Berjalan',
-            'DONE' => 'Selesai', 'BREAKDOWN' => 'Breakdown', 'SUBCONTRACT' => 'Subkontrak',
-            'QC_HOLD' => 'QC Hold', 'QC_PASSED' => 'QC Lulus', 'QC_REJECTED' => 'QC Ditolak',
+            'PENDING' => t('Pending', 'task_status'), 'ASSIGNED' => t('Assigned', 'task_status'), 'RUNNING' => t('Running', 'task_status'),
+            'DONE' => t('Done', 'task_status'), 'BREAKDOWN' => t('Breakdown', 'task_status'), 'SUBCONTRACT' => t('Subcontract', 'task_status'),
+            'QC_HOLD' => t('QC Hold', 'task_status'), 'QC_PASSED' => t('QC Passed', 'task_status'), 'QC_REJECTED' => t('QC Rejected', 'task_status'),
             default => $taskStatus,
         };
     }
@@ -408,7 +408,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
             foreach ($manualOps as $op) {
                 $utama = $op->crew->firstWhere('crew_role', 'OPERATOR_UTAMA');
                 $empId = $utama?->employee_id ?? 0;
-                $grouped[$empId]['label'] ??= $utama?->employee?->full_name ?? 'Belum Ditugaskan';
+                $grouped[$empId]['label'] ??= $utama?->employee?->full_name ?? t('Unassigned');
                 $grouped[$empId]['ops'][] = $op;
             }
 
@@ -419,7 +419,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                 $manualRows[] = [
                     'resource' => 'e'.$empId,
                     'label' => $data['label'],
-                    'sublabel' => 'Manual',
+                    'sublabel' => t('Manual'),
                     'blocks' => $visibleOps->map(fn ($o) => $this->operationVm($o))->values()->all(),
                     'idle' => [],
                 ];
@@ -483,7 +483,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
     {
         $op = PrdWoOperation::with(['wo', 'crew'])->find($operationId);
         if (! $op || ! $op->target_start) {
-            $this->dispatch('board-toast', message: 'Task belum terjadwal, tidak bisa digeser.');
+            $this->dispatch('board-toast', message: t('Task not scheduled yet, cannot be moved.'));
 
             return;
         }
@@ -506,14 +506,14 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
             'updated_by' => Auth::user()->login,
         ]);
 
-        $this->dispatch('board-toast', message: "{$op->wo->wo_no} dipindah ke ".$this->hourLabel($newStartHour));
+        $this->dispatch('board-toast', message: str_replace([':wo', ':time'], [$op->wo->wo_no, $this->hourLabel($newStartHour)], t(':wo moved to :time')));
     }
 
     public function resizeOperation(int $operationId, float $newDurationHour): void
     {
         $op = PrdWoOperation::with(['wo', 'crew'])->find($operationId);
         if (! $op || ! $op->target_start) {
-            $this->dispatch('board-toast', message: 'Task belum terjadwal, tidak bisa diubah durasinya.');
+            $this->dispatch('board-toast', message: t('Task not scheduled yet, its duration cannot be changed.'));
 
             return;
         }
@@ -533,7 +533,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
             'updated_by' => Auth::user()->login,
         ]);
 
-        $this->dispatch('board-toast', message: "{$op->wo->wo_no} durasi jadi ".number_format($newDurationHour, 1).' jam');
+        $this->dispatch('board-toast', message: str_replace([':wo', ':h'], [$op->wo->wo_no, number_format($newDurationHour, 1)], t(':wo duration set to :h hrs')));
     }
 
     public function reassignOperation(int $operationId, string $resourceKey, string $processName): void
@@ -544,7 +544,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         }
 
         if ($op->task_status === 'QC_HOLD') {
-            $this->dispatch('board-toast', message: 'Task QC Hold terkunci, tidak bisa dipindah mesin/orang.');
+            $this->dispatch('board-toast', message: t('QC Hold task is locked, cannot move machine/person.'));
 
             return;
         }
@@ -583,7 +583,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
             );
         }
 
-        $this->dispatch('board-toast', message: "Task {$op->wo->wo_no} diperbarui");
+        $this->dispatch('board-toast', message: str_replace(':wo', $op->wo->wo_no, t('Task :wo updated')));
     }
 
     // Palet pastel baku griduistandard -- aman=hijau, berisiko=kuning, subkontrak=biru (Tier4 §4).
@@ -598,7 +598,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
     public function notYetAvailable(string $feature): void
     {
-        $this->dispatch('board-toast', message: "{$feature} menyusul sesi berikutnya -- belum aktif di iterasi ini.");
+        $this->dispatch('board-toast', message: str_replace(':feature', $feature, t(':feature follows in a later session -- not active in this iteration yet.')));
     }
 
     // ---- Interruption Dialog (Tier4 §4) ----
@@ -642,7 +642,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         $op = $wo?->operations->first(fn ($o) => $o->task_status === 'PENDING' && ! $o->target_start && $o->resource_type === 'MACHINE');
 
         if (! $op) {
-            $this->dispatch('board-toast', message: 'WO ini tidak lagi punya task mesin yang belum terjadwal.');
+            $this->dispatch('board-toast', message: t('This WO no longer has an unscheduled machine task.'));
             $this->hotWoId = null;
             $this->hotOperationId = null;
 
@@ -677,7 +677,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         $wo = PrdWo::with('operations')->find($this->hotWoId);
 
         if (! $wo) {
-            $this->dispatch('board-toast', message: 'Pilih WO dulu.');
+            $this->dispatch('board-toast', message: t('Select a WO first.'));
 
             return;
         }
@@ -689,7 +689,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
             // hasil hitungnya benar-benar terbawa ke generateOptions() di bawah.
             $tasks = app(PdrEngine::class)->backwardSchedule($wo);
         } catch (\RuntimeException $e) {
-            $this->dispatch('board-toast', message: 'Gagal hitung jadwal: '.$e->getMessage());
+            $this->dispatch('board-toast', message: t('Failed to calculate schedule:').' '.$e->getMessage());
 
             return;
         }
@@ -697,7 +697,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         $op = $tasks->firstWhere('operation_id', $this->hotOperationId);
 
         if (! $op) {
-            $this->dispatch('board-toast', message: 'Task tidak ditemukan lagi, pilih ulang.');
+            $this->dispatch('board-toast', message: t('Task no longer found, select again.'));
 
             return;
         }
@@ -748,7 +748,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         $displaced = PrdWoOperation::with('wo')->find($option['displaced_operation_id']);
 
         if (! $wo || ! $op || ! $displaced || ! $displaced->target_start || ! $displaced->target_finish) {
-            $this->dispatch('board-toast', message: 'Data sudah berubah, cari opsi ulang.');
+            $this->dispatch('board-toast', message: t('Data has changed, search options again.'));
             $this->hotOptionsLoaded = false;
 
             return;
@@ -784,7 +784,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         );
 
         $this->showHotJobDialog = false;
-        $this->dispatch('board-toast', message: "🔥 {$wo->wo_no} disisip -- {$displaced->wo->wo_no} digeser ".number_format($option['impact_hours'], 1).' jam.');
+        $this->dispatch('board-toast', message: '🔥 '.str_replace([':wo', ':other', ':h'], [$wo->wo_no, $displaced->wo->wo_no, number_format($option['impact_hours'], 1)], t(':wo inserted -- :other shifted :h hrs.')));
     }
 
     #[Computed]
@@ -827,12 +827,12 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
     public function confirmRerouteSubcontract(): void
     {
         if (! Auth::user()->isOpsManagerOrAbove()) {
-            $this->dispatch('board-toast', message: 'Hanya Manager Operasional ke atas yang bisa menyetujui PO Subkontrak.');
+            $this->dispatch('board-toast', message: t('Only Operations Managers and above can approve Subcontract POs.'));
 
             return;
         }
         if (! $this->subVendorId || $this->subEstimatedCost <= 0 || ! $this->subDueOut || ! $this->subDueReturn) {
-            $this->dispatch('board-toast', message: 'Lengkapi vendor, estimasi biaya, dan tanggal kirim/kembali dulu.');
+            $this->dispatch('board-toast', message: t('Complete the vendor, cost estimate, and send/return dates first.'));
 
             return;
         }
@@ -845,7 +845,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         $op = PrdWoOperation::find($this->hotOperationId);
 
         if (! $wo || ! $op) {
-            $this->dispatch('board-toast', message: 'Data sudah berubah, cari opsi ulang.');
+            $this->dispatch('board-toast', message: t('Data has changed, search options again.'));
             $this->hotOptionsLoaded = false;
             $this->hotShowSubcontractForm = false;
 
@@ -874,7 +874,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
         $this->showHotJobDialog = false;
         $this->hotShowSubcontractForm = false;
-        $this->dispatch('board-toast', message: "🔥 {$wo->wo_no} direroute ke subkontraktor {$this->subVendorName} -- PO {$po->doc_no} terbit, antrean mesin tak digeser.");
+        $this->dispatch('board-toast', message: '🔥 '.str_replace([':wo', ':vendor', ':po'], [$wo->wo_no, $this->subVendorName, $po->doc_no], t(':wo rerouted to subcontractor :vendor -- PO :po issued, machine queue not shifted.')));
     }
 };
 ?>
@@ -885,14 +885,14 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         @php($board = $this->board())
 
         <div class="flex items-center gap-2 flex-wrap mb-3.5">
-            <h1 class="text-lg font-bold text-navy">🗓️ Scheduling Board</h1>
+            <h1 class="text-lg font-bold text-navy">🗓️ {{ t('Scheduling Board') }}</h1>
             <span class="text-xs text-muted">tm2prd.prd_wo_operation</span>
 
             <div class="flex bg-white border border-[#e5e7eb] rounded-full p-1 text-xs font-medium ml-2">
-                <button type="button" wire:click="setMode('simulasi')" class="px-3 py-1.5 rounded-full {{ $mode === 'simulasi' ? 'bg-[#dbeafe] text-[#1d4ed8]' : 'text-muted' }}">● Simulasi</button>
-                <button type="button" wire:click="setMode('live')" class="px-3 py-1.5 rounded-full {{ $mode === 'live' ? 'bg-[#dcfce7] text-[#15803d]' : 'text-muted' }}">○ Live</button>
+                <button type="button" wire:click="setMode('simulasi')" class="px-3 py-1.5 rounded-full {{ $mode === 'simulasi' ? 'bg-[#dbeafe] text-[#1d4ed8]' : 'text-muted' }}">● {{ t('Simulation') }}</button>
+                <button type="button" wire:click="setMode('live')" class="px-3 py-1.5 rounded-full {{ $mode === 'live' ? 'bg-[#dcfce7] text-[#15803d]' : 'text-muted' }}">○ {{ t('Live') }}</button>
             </div>
-            <span class="text-[10px] text-muted italic">Mode saat ini tampilan saja -- Simulation Layer &amp; Submit sungguhan menyusul sesi berikutnya.</span>
+            <span class="text-[10px] text-muted italic">{{ t('The current mode is display only -- the real Simulation Layer & Submit follow in a later session.') }}</span>
         </div>
 
         <div class="flex items-center gap-2 flex-wrap mb-3.5">
@@ -901,27 +901,27 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
             <button type="button" wire:click="shiftDate(1)" class="px-2.5 py-1.5 rounded-md text-xs font-semibold border border-[#c7cfda] bg-white cursor-pointer">›</button>
 
             <select wire:model.live="filterMachine" class="px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                <option value="all">Semua Mesin</option>
+                <option value="all">{{ t('All Machines') }}</option>
                 @foreach ($this->machines as $m)
                     <option value="{{ $m->machine_id }}">{{ $m->machine_name }}</option>
                 @endforeach
             </select>
 
             <select wire:model.live="filterProcess" class="px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                <option value="all">Semua Proses</option>
+                <option value="all">{{ t('All Processes') }}</option>
                 @foreach ($this->processOptions as $p)
                     <option value="{{ $p }}">{{ $p }}</option>
                 @endforeach
             </select>
 
             @if ($filterMachine !== 'all' || $filterProcess !== 'all')
-                <button type="button" wire:click="$set('filterMachine','all'); $set('filterProcess','all')" class="text-[11px] text-muted underline cursor-pointer">Reset semua filter</button>
+                <button type="button" wire:click="$set('filterMachine','all'); $set('filterProcess','all')" class="text-[11px] text-muted underline cursor-pointer">{{ t('Reset all filters') }}</button>
             @endif
 
             <span class="flex-1"></span>
 
-            <button type="button" wire:click="openHotJobDialog" class="px-4 py-2 rounded-md text-xs font-semibold text-white bg-[#dc2626] hover:bg-[#b91c1c] cursor-pointer inline-flex items-center gap-1.5">🔥 Sisip Hot Job</button>
-            <button type="button" wire:click="notYetAvailable('Submit ke Master Schedule')" class="px-4 py-2 rounded-md text-xs font-semibold text-white bg-[#16a34a] hover:bg-[#15803d] cursor-pointer" title="Simulation Layer penuh belum dibangun">Submit ke Master Schedule</button>
+            <button type="button" wire:click="openHotJobDialog" class="px-4 py-2 rounded-md text-xs font-semibold text-white bg-[#dc2626] hover:bg-[#b91c1c] cursor-pointer inline-flex items-center gap-1.5">🔥 {{ t('Insert Hot Job') }}</button>
+            <button type="button" wire:click="notYetAvailable({{ \Illuminate\Support\Js::from(t('Submit to Master Schedule')) }})" class="px-4 py-2 rounded-md text-xs font-semibold text-white bg-[#16a34a] hover:bg-[#15803d] cursor-pointer" title="{{ t('The full Simulation Layer is not built yet') }}">{{ t('Submit to Master Schedule') }}</button>
         </div>
 
         {{-- griduistandard.md §2 -- kotak statistik pastel lewat komponen bersama.
@@ -931,14 +931,14 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
              supaya kartu di sini bisa menyorot blok di DALAM komponen Gantt. --}}
         <x-grid.stat-row :count="4">
             <div @click="$store.gantt.clear()" class="cursor-pointer">
-                <x-grid.stat-box tone="total" label="Total Task Aktif" :value="$board['stats']['totalActive']" subtitle="klik untuk reset sorotan" />
+                <x-grid.stat-box tone="total" :label="t('Total Active Tasks')" :value="$board['stats']['totalActive']" :subtitle="t('click to reset highlight')" />
             </div>
-            <x-grid.stat-box tone="critical" label="⚠ Belum Terjadwal" :value="$board['stats']['unscheduled']" />
+            <x-grid.stat-box tone="critical" :label="'⚠ '.t('Unscheduled')" :value="$board['stats']['unscheduled']" />
             <div @click="$store.gantt.toggle('risk')" class="cursor-pointer rounded-lg" :class="{ 'ring-2 ring-[#92400e]': $store.gantt.mode === 'risk' }">
-                <x-grid.stat-box tone="warn" label="Berisiko Telat (CR<1)" :value="$board['stats']['atRisk']" subtitle="klik untuk sorot di board" />
+                <x-grid.stat-box tone="warn" :label="t('At Risk of Delay (CR<1)')" :value="$board['stats']['atRisk']" :subtitle="t('click to highlight on the board')" />
             </div>
             <div @click="$store.gantt.toggle('idle')" class="cursor-pointer rounded-lg" :class="{ 'ring-2 ring-[#6d28d9]': $store.gantt.mode === 'idle' }">
-                <x-grid.stat-box tone="extra" label="Mesin Kosong >2 jam" :value="$board['stats']['idleMachineCount']" subtitle="klik untuk sorot di board" />
+                <x-grid.stat-box tone="extra" :label="t('Machines Idle >2 hrs')" :value="$board['stats']['idleMachineCount']" :subtitle="t('click to highlight on the board')" />
             </div>
         </x-grid.stat-row>
 
@@ -950,18 +950,18 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                 <span class="flex items-center gap-1"><span style="width:11px;height:11px;border-radius:3px;display:inline-block;background:#99f6e4;"></span>Packing</span>
             </div>
             <div class="flex items-center gap-2.5 pr-3.5 border-r border-[#e5e7eb]">
-                <span class="flex items-center gap-1"><span style="width:11px;height:11px;border-radius:3px;display:inline-block;background:#fca5a5;"></span>Breakdown</span>
-                <span class="flex items-center gap-1"><span style="width:11px;height:11px;border-radius:3px;display:inline-block;background:#fff;border:2px dashed #d97706;"></span>QC Hold (terkunci)</span>
-                <span class="flex items-center gap-1"><span style="width:11px;height:11px;border-radius:3px;display:inline-block;background:#fff;border:2px solid #dc2626;"></span>🔥 Hot Job</span>
+                <span class="flex items-center gap-1"><span style="width:11px;height:11px;border-radius:3px;display:inline-block;background:#fca5a5;"></span>{{ t('Breakdown') }}</span>
+                <span class="flex items-center gap-1"><span style="width:11px;height:11px;border-radius:3px;display:inline-block;background:#fff;border:2px dashed #d97706;"></span>{{ t('QC Hold (locked)') }}</span>
+                <span class="flex items-center gap-1"><span style="width:11px;height:11px;border-radius:3px;display:inline-block;background:#fff;border:2px solid #dc2626;"></span>🔥 {{ t('Hot Job') }}</span>
             </div>
-            <div>▬ garis dalam blok = progress pengerjaan</div>
+            <div>▬ {{ t('line inside the block = work progress') }}</div>
         </div>
 
         <x-gantt.board
             :rows="$board['machineRows']"
             :secondary-rows="$board['manualRows']"
-            secondary-label="MANUAL JOB (per orang — bukan mesin, §5A.9)"
-            resource-header-label="Mesin / Crew"
+            :secondary-label="t('MANUAL JOB (per person — not machine, §5A.9)')"
+            :resource-header-label="t('Machine / Crew')"
             :timeline-start="8"
             :timeline-end="20"
             :px-per-hour="70"
@@ -970,15 +970,14 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
             reassign-method="reassignOperation"
             :resource-options="$this->resourceOptions()"
             :label-options="$this->processOptions->all()"
-            label-field-name="Proses"
-            empty-message="Tidak ada mesin aktif di divisi Offset Printing."
+            :label-field-name="t('Process')"
+            :empty-message="t('No active machines in the Offset Printing division.')"
         />
 
         <p class="footnote text-[11px] text-[#9ca3af] mt-3">
-            Drag blok = ubah waktu mulai · tarik tepi kanan = ubah durasi · klik = detail singkat ·
-            double-klik = ubah mesin/orang &amp; proses. Perubahan langsung tersimpan ke database
-            (belum lewat Simulation Layer -- lihat catatan Mode di atas). Blok <b>QC Hold</b> terkunci,
-            tidak bisa digeser (Tier4 §6).
+            {{ t('Drag a block = change start time · drag the right edge = change duration · click = short detail · double-click = change machine/person & process.') }}
+            {{ t('Changes are saved straight to the database (not yet through the Simulation Layer -- see the Mode note above).') }}
+            {!! t('<b>QC Hold</b> blocks are locked and cannot be moved (Tier4 §6).') !!}
         </p>
     </div>
 
@@ -989,44 +988,44 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeHotJobDialog">
             <div class="bg-white rounded-xl w-[640px] max-w-[95vw] max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="bg-[#dc2626] text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
-                    <span>🔥 Sisipkan Pekerjaan Mendadak</span>
+                    <span>🔥 {{ t('Insert Urgent Job') }}</span>
                     <button type="button" wire:click="closeHotJobDialog" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
 
                 <div class="p-4 space-y-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">WO yang disisip</label>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('WO to insert') }}</label>
                         <select wire:model.live="hotWoId" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                            <option value="">-- pilih WO belum terjadwal --</option>
+                            <option value="">{{ t('-- select an unscheduled WO --') }}</option>
                             @foreach ($this->unscheduledHotJobCandidates as $c)
-                                <option value="{{ $c->wo_id }}">{{ $c->wo_no }} · qty {{ number_format($c->qty, 0) }} · due {{ $c->due_date?->format('d M Y H:i') }}</option>
+                                <option value="{{ $c->wo_id }}">{{ $c->wo_no }} · {{ t('qty') }} {{ number_format($c->qty, 0) }} · {{ t('due') }} {{ $c->due_date?->format('d M Y H:i') }}</option>
                             @endforeach
                         </select>
                         @if ($this->unscheduledHotJobCandidates->isEmpty())
-                            <p class="text-[11px] text-muted mt-1">Tidak ada WO yang bisa disisip sekarang (butuh task mesin yang belum terjadwal).</p>
+                            <p class="text-[11px] text-muted mt-1">{{ t('No WO can be inserted now (needs an unscheduled machine task).') }}</p>
                         @endif
                     </div>
 
                     @if ($hotWoId && $hotOperationId)
                         <div class="grid two gap-3">
                             <div>
-                                <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Sumber</label>
+                                <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Source') }}</label>
                                 <select wire:model.live="hotSource" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                                    <option value="DIREKSI">Direksi</option>
-                                    <option value="CUSTOMER">Customer</option>
-                                    <option value="INTERNAL_REWORK">Internal Rework</option>
+                                    <option value="DIREKSI">{{ t('Directors') }}</option>
+                                    <option value="CUSTOMER">{{ t('Customer') }}</option>
+                                    <option value="INTERNAL_REWORK">{{ t('Internal Rework') }}</option>
                                 </select>
                             </div>
                             <div class="relative">
-                                <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Customer <span class="normal-case font-normal">(opsional)</span></label>
+                                <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Customer') }} <span class="normal-case font-normal">({{ t('optional') }})</span></label>
                                 @if ($hotSource === 'CUSTOMER')
                                     @if ($hotCustomerId)
                                         <div class="flex items-center gap-1.5">
                                             <div class="flex-1"><x-form.input value="{{ $hotCustomerName }}" readonly /></div>
-                                            <button type="button" wire:click="clearHotCustomer" class="text-[11px] text-muted underline cursor-pointer shrink-0">Ganti</button>
+                                            <button type="button" wire:click="clearHotCustomer" class="text-[11px] text-muted underline cursor-pointer shrink-0">{{ t('Change', 'action') }}</button>
                                         </div>
                                     @else
-                                        <x-form.input :case-toggle="false" wire:model.live.debounce.400ms="hotCustQuery" autocomplete="off" placeholder="Ketik nama/kode customer…" />
+                                        <x-form.input :case-toggle="false" wire:model.live.debounce.400ms="hotCustQuery" autocomplete="off" :placeholder="t('Type customer name/code…')" />
                                         @if ($hotCustQuery && mb_strlen($hotCustQuery) >= 2)
                                             <div class="absolute left-0 right-0 mt-1 bg-white border border-[#e5e7eb] rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
                                                 @forelse ($this->hotCustomerResults as $c)
@@ -1035,28 +1034,28 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                                                         <span class="text-muted text-[10px]">{{ $c->customer_code }}</span>
                                                     </div>
                                                 @empty
-                                                    <div class="px-2.5 py-1.5 text-xs text-muted">Tidak ditemukan.</div>
+                                                    <div class="px-2.5 py-1.5 text-xs text-muted">{{ t('Not found.') }}</div>
                                                 @endforelse
                                             </div>
                                         @endif
                                     @endif
                                 @else
-                                    <x-form.input disabled placeholder="— tidak relevan —" />
+                                    <x-form.input disabled :placeholder="t('— not relevant —')" />
                                 @endif
                             </div>
                         </div>
 
                         <div class="flex justify-end">
-                            <button type="button" wire:click="generateHotJobOptions" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Cari Opsi Penyisipan</button>
+                            <button type="button" wire:click="generateHotJobOptions" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">{{ t('Find Insertion Options') }}</button>
                         </div>
                     @endif
 
                     @if ($hotOptionsLoaded)
                         <div>
                             @if (empty($hotOptions))
-                                <p class="text-xs text-muted">Tidak ada opsi penyisipan valid ditemukan untuk mesin/proses task ini.</p>
+                                <p class="text-xs text-muted">{{ t('No valid insertion option found for this task machine/process.') }}</p>
                             @else
-                                <p class="text-[11px] text-muted mb-2">Sistem menemukan {{ count($hotOptions) }} opsi penyisipan:</p>
+                                <p class="text-[11px] text-muted mb-2">{{ str_replace(':n', count($hotOptions), t('The system found :n insertion options:')) }}</p>
                                 <div class="space-y-2">
                                     @foreach ($hotOptions as $i => $opt)
                                         <label wire:key="hot-option-{{ $i }}" class="flex items-start gap-2.5 border rounded-lg p-3 cursor-pointer {{ $this->optionAccentClasses($opt) }} {{ (int) $hotSelectedOption === $i ? 'ring-2 ring-[#2c3e69]' : '' }}">
@@ -1065,17 +1064,17 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                                                 <div class="font-semibold mb-0.5">
                                                     {{ $opt['label'] }}
                                                     @if ($i === 0 && ! $opt['requires_subcontract_po'])
-                                                        <span class="text-[9px] font-bold uppercase text-[#15803d]">Rank tertinggi</span>
+                                                        <span class="text-[9px] font-bold uppercase text-[#15803d]">{{ t('Highest rank') }}</span>
                                                     @endif
                                                 </div>
                                                 @if ($opt['displaced_wo_no'])
-                                                    <div class="text-muted">Sisip di slot {{ $opt['displaced_old_start'] }}–{{ $opt['displaced_old_finish'] }} · menggeser {{ $opt['displaced_wo_no'] }} ({{ $opt['displaced_process'] }})</div>
+                                                    <div class="text-muted">{{ str_replace([':start', ':finish', ':wo', ':process'], [$opt['displaced_old_start'], $opt['displaced_old_finish'], $opt['displaced_wo_no'], $opt['displaced_process']], t('Insert at slot :start–:finish · shifts :wo (:process)')) }}</div>
                                                     <div class="mt-0.5 {{ $opt['is_safe'] ? 'text-[#15803d]' : 'text-[#92400e]' }}">
-                                                        {{ $opt['is_safe'] ? '✓' : '⚠' }} Dampak: {{ $opt['displaced_wo_no'] }} mundur {{ number_format($opt['impact_hours'], 1) }} jam {{ $opt['is_safe'] ? '— masih aman dari due date' : '— BERISIKO TELAT dari due date' }}
+                                                        {{ $opt['is_safe'] ? '✓' : '⚠' }} {{ str_replace([':wo', ':h'], [$opt['displaced_wo_no'], number_format($opt['impact_hours'], 1)], t('Impact: :wo delayed :h hrs')) }} {{ $opt['is_safe'] ? t('— still safe from the due date') : t('— AT RISK OF MISSING the due date') }}
                                                     </div>
                                                 @else
-                                                    <div class="text-muted">Tidak ada job lain tergeser.</div>
-                                                    <div class="mt-0.5 text-[#1d4ed8]">⚠ Perlu PO Subkontrak -- pilih lalu isi vendor/estimasi di bawah</div>
+                                                    <div class="text-muted">{{ t('No other job is shifted.') }}</div>
+                                                    <div class="mt-0.5 text-[#1d4ed8]">⚠ {{ t('Needs a Subcontract PO -- select it then fill the vendor/estimate below') }}</div>
                                                 @endif
                                             </div>
                                         </label>
@@ -1085,17 +1084,17 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
                             @if ($hotShowSubcontractForm)
                                 <div class="mt-3 border border-[#c7d2fe] bg-[#eef2ff] rounded-lg p-3">
-                                    <div class="text-[11px] font-bold text-[#3730a3] uppercase mb-2">Reroute Subkontrak — Isi Detail</div>
+                                    <div class="text-[11px] font-bold text-[#3730a3] uppercase mb-2">{{ t('Subcontract Reroute — Fill Details') }}</div>
                                     <div class="[display:grid] grid-cols-2 gap-2 mb-2">
                                         <div class="relative">
-                                            <label class="text-[10px] text-muted font-semibold">Vendor Subkontraktor</label>
+                                            <label class="text-[10px] text-muted font-semibold">{{ t('Subcontractor Vendor') }}</label>
                                             @if ($subVendorId)
                                                 <div class="flex items-center justify-between px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
                                                     <span>{{ $subVendorName }}</span>
                                                     <button type="button" wire:click="clearVendor" class="text-[#dc2626] text-[11px] cursor-pointer">✕</button>
                                                 </div>
                                             @else
-                                                <input type="text" wire:model.live.debounce.400ms="subVendorQuery" autocomplete="off" placeholder="Ketik nama/kode vendor subkon…" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                                <input type="text" wire:model.live.debounce.400ms="subVendorQuery" autocomplete="off" placeholder="{{ t('Type subcontract vendor name/code…') }}" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                                                 @if ($this->vendorResults->isNotEmpty())
                                                     <div class="absolute z-10 w-full bg-white border border-[#c7cfda] rounded-md shadow-md mt-1 max-h-32 overflow-y-auto">
                                                         @foreach ($this->vendorResults as $v)
@@ -1106,21 +1105,21 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                                             @endif
                                         </div>
                                         <div>
-                                            <label class="text-[10px] text-muted font-semibold">Estimasi Biaya (Rp)</label>
+                                            <label class="text-[10px] text-muted font-semibold">{{ t('Cost Estimate (Rp)') }}</label>
                                             <input type="number" step="0.01" wire:model="subEstimatedCost" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                                         </div>
                                         <div>
-                                            <label class="text-[10px] text-muted font-semibold">Tanggal Kirim ke Vendor</label>
+                                            <label class="text-[10px] text-muted font-semibold">{{ t('Date Sent to Vendor') }}</label>
                                             <input type="date" wire:model="subDueOut" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                                         </div>
                                         <div>
-                                            <label class="text-[10px] text-muted font-semibold">Tanggal Kembali</label>
+                                            <label class="text-[10px] text-muted font-semibold">{{ t('Date Back from Vendor') }}</label>
                                             <input type="date" wire:model="subDueReturn" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                                         </div>
                                     </div>
                                     <div class="flex justify-end gap-2">
-                                        <button type="button" wire:click="cancelSubcontractForm" class="px-3 py-1.5 rounded-md text-[11px] font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal Subkontrak</button>
-                                        <button type="button" wire:click="confirmRerouteSubcontract" class="px-3 py-1.5 rounded-md text-[11px] font-semibold text-white bg-[#4338ca] hover:bg-[#3730a3] cursor-pointer">Terbitkan PO Subkontrak</button>
+                                        <button type="button" wire:click="cancelSubcontractForm" class="px-3 py-1.5 rounded-md text-[11px] font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel Subcontract') }}</button>
+                                        <button type="button" wire:click="confirmRerouteSubcontract" class="px-3 py-1.5 rounded-md text-[11px] font-semibold text-white bg-[#4338ca] hover:bg-[#3730a3] cursor-pointer">{{ t('Issue Subcontract PO') }}</button>
                                     </div>
                                 </div>
                             @endif
@@ -1129,11 +1128,11 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 <div class="flex justify-end gap-2 px-4 py-3 border-t border-[#eef1f5]">
-                    <button type="button" wire:click="closeHotJobDialog" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
+                    <button type="button" wire:click="closeHotJobDialog" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
                     @unless ($hotShowSubcontractForm)
                         <button type="button" wire:click="applyHotJobOption" @if ($hotSelectedOption === null) disabled @endif
                             class="px-4 py-2 rounded-md text-xs font-semibold text-white {{ $hotSelectedOption === null ? 'bg-[#9ca3af] cursor-not-allowed' : 'bg-[#dc2626] hover:bg-[#b91c1c] cursor-pointer' }}">
-                            Terapkan Opsi Terpilih
+                            {{ t('Apply Selected Option') }}
                         </button>
                     @endunless
                 </div>

@@ -252,7 +252,7 @@ new #[Title('Review Formulir Kandidat — TELASIH MAKMUR ERP')] class extends Co
                 'REJECTED', 'WITHDRAWN' => 'bg-[#fbeaea] text-[#a3241f]',
                 default => 'bg-[#eef1f5] text-[#4b5568]',
             } }}">{{ $this->application->status }}{{ $this->stageName ? ' · '.$this->stageName : '' }}</span>
-        <x-back-button :fallback="route('hrm.recruitment.candidate-review.list')" :title="t('Back')" class="ml-auto" />
+        <x-back-button :fallback="route('hrm.recruitment.candidate-review.list')" title="Back" class="ml-auto" />
     </header>
 
     <div class="max-w-[820px] mx-auto my-5 px-4">

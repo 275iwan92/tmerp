@@ -27,10 +27,10 @@ new #[Title('Master Kurs — TELASIH MAKMUR ERP')] class extends Component
     protected function spreadsheetColumns(): array
     {
         return [
-            'currency_code' => ['label' => 'Mata Uang', 'type' => 'select', 'options' => FinCurrency::query()->where('activate', true)->orderBy('currency_code')->pluck('currency_code')->all(), 'required' => true],
-            'rate_to_base' => ['label' => 'Kurs ke IDR', 'type' => 'number', 'required' => true],
-            'effective_date' => ['label' => 'Berlaku Sejak (YYYY-MM-DD)', 'type' => 'text'],
-            'activate' => ['label' => 'Aktif', 'type' => 'boolean'],
+            'currency_code' => ['label' => t('Currency'), 'type' => 'select', 'options' => FinCurrency::query()->where('activate', true)->orderBy('currency_code')->pluck('currency_code')->all(), 'required' => true],
+            'rate_to_base' => ['label' => t('Rate to IDR'), 'type' => 'number', 'required' => true],
+            'effective_date' => ['label' => t('Effective From (YYYY-MM-DD)'), 'type' => 'text'],
+            'activate' => ['label' => t('Active'), 'type' => 'boolean'],
         ];
     }
 
@@ -107,11 +107,11 @@ new #[Title('Master Kurs — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1100px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="2">
-            <x-grid.stat-box tone="total" label="Total Baris Kurs" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Kurs Aktif" :value="$this->statActive" />
+            <x-grid.stat-box tone="total" :label="t('Total Rate Rows')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" :label="t('Active Rates')" :value="$this->statActive" />
         </x-grid.stat-row>
 
-        <p class="text-[11px] text-muted mb-3">Kurs 1 unit mata uang = sekian IDR. Aktifkan 1 baris per mata uang untuk jadi kurs berlaku — baris lama utk mata uang yang sama otomatis dinonaktifkan.</p>
+        <p class="text-[11px] text-muted mb-3">{{ t('Rate of 1 currency unit = this many IDR. Activate 1 row per currency to make it the effective rate — older rows for the same currency are deactivated automatically.') }}</p>
 
         <x-grid.spreadsheet-table
             grid-key="{{ $this->spreadsheetKey() }}"

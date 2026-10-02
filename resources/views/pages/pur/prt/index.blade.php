@@ -310,7 +310,7 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
 
                 @if ($pickerSource)
                     <div class="px-4 py-3 border-t border-[#eef1f5]">
-                        <button type="button" wire:click="pickSourceType(null)" class="text-xs font-semibold px-3 py-1.5 rounded border border-[#d7dbe2]">‹ {{ t('Back') }}</button>
+                        <button type="button" wire:click="pickSourceType(null)" class="text-xs font-semibold px-3 py-1.5 rounded border border-[#d7dbe2]">‹ Back</button>
                     </div>
                 @endif
             </div>

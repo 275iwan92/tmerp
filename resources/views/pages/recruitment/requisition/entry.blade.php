@@ -130,7 +130,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
                 'REJECTED' => 'bg-[#fbeaea] text-[#a3241f]',
                 default => 'bg-[#eef1f5] text-[#4b5568]',
             } }}">{{ $this->requisition->status }}</span>
-        <x-back-button :fallback="route('hrm.recruitment.requisition.list')" :title="t('Back')" class="ml-auto" />
+        <x-back-button :fallback="route('hrm.recruitment.requisition.list')" title="Back" class="ml-auto" />
     </header>
 
     <div class="max-w-[900px] mx-auto my-5 px-4">

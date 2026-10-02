@@ -129,7 +129,7 @@ new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Compone
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="flex items-center gap-1.5">
                                         @if ($wo->is_hot_job)
-                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dc2626] text-white">🔥 HOT</span>
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dc2626] text-white">🔥 {{ t('HOT') }}</span>
                                         @endif
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full
                                             {{ match ($wo->wo_status) {

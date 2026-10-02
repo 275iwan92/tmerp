@@ -134,35 +134,35 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
     public function activate(int $id): void
     {
         if (! Auth::user()->isProdManagerOrAbove()) {
-            $this->dispatch('rule-toast', message: 'Hanya Manager Produksi ke atas yang bisa mengaktifkan rule.');
+            $this->dispatch('rule-toast', message: t('Only Production Managers and above can activate rules.'));
 
             return;
         }
 
         PrdSchedulingRule::findOrFail($id)->activate(Auth::user()->login);
-        $this->dispatch('rule-toast', message: 'Rule diaktifkan.');
+        $this->dispatch('rule-toast', message: t('Rule activated.'));
     }
 
     public function deactivate(int $id): void
     {
         if (! Auth::user()->isProdManagerOrAbove()) {
-            $this->dispatch('rule-toast', message: 'Hanya Manager Produksi ke atas yang bisa menonaktifkan rule.');
+            $this->dispatch('rule-toast', message: t('Only Production Managers and above can deactivate rules.'));
 
             return;
         }
 
         PrdSchedulingRule::whereKey($id)->update(['rule_status' => 'INACTIVE', 'updated_by' => Auth::user()->login]);
-        $this->dispatch('rule-toast', message: 'Rule dinonaktifkan.');
+        $this->dispatch('rule-toast', message: t('Rule deactivated.'));
     }
 
     // Kotak statistik = filter data (griduistandard.md §2b).
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Rule', 'value' => $this->statTotal, 'tone' => 'total'],
-            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+            'total' => ['label' => t('Total Rules'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => t('Active'), 'value' => $this->statActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('rule_status', 'ACTIVE')],
-            'draft' => ['label' => 'Draft', 'value' => $this->statDraft, 'tone' => 'warn',
+            'draft' => ['label' => t('Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('rule_status', 'DRAFT')],
         ];
     }
@@ -176,7 +176,7 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
-                <span class="text-[11px] text-muted italic">Batching (gabung task setipe) &amp; Sequencing (penghalus urutan lokal) -- Tier1 §5A.7.</span>
+                <span class="text-[11px] text-muted italic">{{ t('Batching (merge same-type tasks) & Sequencing (local order refinement) -- Tier1 §5A.7.') }}</span>
                 <x-slot:newRecord>
                     <button type="button" wire:click="openNew" class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
                 </x-slot:newRecord>
@@ -186,12 +186,12 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Nama Rule</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Tipe</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Berlaku Untuk</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Kondisi</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Rule Name') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Type') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Applies To') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Condition') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -201,7 +201,7 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $rule->rule_type === 'BATCHING' ? 'bg-[#eef3fb] text-[#2f6fed]' : 'bg-[#f3eefb] text-[#7c3aed]' }}">{{ $rule->rule_type }}</span>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $rule->machine?->machine_name ?? $rule->applies_to_process ?? 'Semua' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $rule->machine?->machine_name ?? $rule->applies_to_process ?? t('All') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-[11px]">{{ $rule->condition_field }} {{ $rule->condition_operator }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full
@@ -213,16 +213,16 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
                                         } }}">{{ $rule->rule_status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openEdit({{ $rule->rule_id }})" />
+                                    <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="openEdit({{ $rule->rule_id }})" />
                                     @if ($rule->rule_status === 'ACTIVE')
-                                        <button type="button" wire:click="deactivate({{ $rule->rule_id }})" class="text-[11px] font-semibold text-[#a3241f] hover:underline cursor-pointer ml-1">Nonaktifkan</button>
+                                        <button type="button" wire:click="deactivate({{ $rule->rule_id }})" class="text-[11px] font-semibold text-[#a3241f] hover:underline cursor-pointer ml-1">{{ t('Deactivate') }}</button>
                                     @else
-                                        <button type="button" wire:click="activate({{ $rule->rule_id }})" class="text-[11px] font-semibold text-[#15803d] hover:underline cursor-pointer ml-1">Aktifkan</button>
+                                        <button type="button" wire:click="activate({{ $rule->rule_id }})" class="text-[11px] font-semibold text-[#15803d] hover:underline cursor-pointer ml-1">{{ t('Activate') }}</button>
                                     @endif
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Belum ada rule." />
+                            <x-grid.empty-row :colspan="6" :message="t('No rules yet.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -234,46 +234,46 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeModal">
             <div class="bg-white rounded-xl w-[480px] max-w-[95vw] shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
-                    <span>{{ $editingId ? 'Edit Rule' : 'Rule Baru' }}</span>
+                    <span>{{ $editingId ? t('Edit Rule') : t('New Rule') }}</span>
                     <button type="button" wire:click="closeModal" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
                 <div class="p-4 space-y-3">
                     <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Tipe</label>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Type') }}</label>
                         <select wire:model="rule_type" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                            <option value="BATCHING">Batching</option>
-                            <option value="SEQUENCING">Sequencing</option>
+                            <option value="BATCHING">{{ t('Batching') }}</option>
+                            <option value="SEQUENCING">{{ t('Sequencing') }}</option>
                         </select>
                     </div>
-                    <x-form.input label="Nama Rule" name="rule_name" wire:model="rule_name" placeholder="mis. Gabung dieline sama" />
+                    <x-form.input :label="t('Rule Name')" name="rule_name" wire:model="rule_name" :placeholder="t('e.g. Merge same dieline')" />
                     <div class="grid two gap-3">
                         <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Mesin (opsional)</label>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Machine (optional)') }}</label>
                             <select wire:model="applies_to_machine_id" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                                <option value="">-- semua mesin --</option>
+                                <option value="">{{ t('-- all machines --') }}</option>
                                 @foreach ($this->machines as $m)
                                     <option value="{{ $m->machine_id }}">{{ $m->machine_name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <x-form.select label="Proses (opsional)" name="applies_to_process" wire:model="applies_to_process"
+                        <x-form.select :label="t('Process (optional)')" name="applies_to_process" wire:model="applies_to_process"
                             :options="$this->processOptions" :selected="$applies_to_process" :live-sync="true"
-                            placeholder="-- semua proses --" />
+                            :placeholder="t('-- all processes --')" />
                     </div>
                     <div class="grid two gap-3">
-                        <x-form.input label="Field Kondisi" name="condition_field" wire:model="condition_field" placeholder="mis. dieline_ref" />
+                        <x-form.input :label="t('Condition Field')" name="condition_field" wire:model="condition_field" :placeholder="t('e.g. dieline_ref')" />
                         <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Operator</label>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Operator') }}</label>
                             <select wire:model="condition_operator" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                                <option value="EQUALS">Sama Dengan (batching)</option>
-                                <option value="SORT_ASC">Urut Naik (sequencing)</option>
-                                <option value="SORT_DESC">Urut Turun (sequencing)</option>
+                                <option value="EQUALS">{{ t('Equals (batching)') }}</option>
+                                <option value="SORT_ASC">{{ t('Sort Ascending (sequencing)') }}</option>
+                                <option value="SORT_DESC">{{ t('Sort Descending (sequencing)') }}</option>
                             </select>
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
-                        <button type="button" wire:click="closeModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="button" wire:click="save" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Simpan sebagai Draft</button>
+                        <button type="button" wire:click="closeModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="button" wire:click="save" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">{{ t('Save as Draft') }}</button>
                     </div>
                 </div>
             </div>

@@ -192,7 +192,7 @@ new #[Title('Master Kategori Bahan Baku — TELASIH MAKMUR ERP')] class extends 
                         ->when($this->mode === 'edit' && $this->editingId, fn ($q) => $q->whereKeyNot($this->editingId))
                         ->exists();
                     if ($exists) {
-                        $fail('Kode prefix ini sudah dipakai kategori lain dengan induk yang sama.');
+                        $fail(t('This prefix code is already used by another category with the same parent.'));
                     }
                 },
             ],
@@ -272,21 +272,21 @@ new #[Title('Master Kategori Bahan Baku — TELASIH MAKMUR ERP')] class extends 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
         <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total Kategori" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
-            <x-grid.stat-box tone="extra" label="Kategori Utama (Level 1)" :value="$this->statLevel1" />
-            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
+            <x-grid.stat-box tone="total" :label="t('Total Categories')" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" :label="t('Active')" :value="$this->statActive" />
+            <x-grid.stat-box tone="extra" :label="t('Main Category (Level 1)')" :value="$this->statLevel1" />
+            <x-grid.stat-box tone="critical" :label="t('Inactive')" :value="$this->statInactive" />
         </x-grid.stat-row>
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
-            Hirarki 5 level pembentuk nama &amp; kode <b>Item Bahan Baku</b> (Kategori → Jenis → Gramatur/Spec → Ukuran → Merek). Kategori Utama (Level 1) juga jadi fallback akun akuntansi (Persediaan/HPP/GR-IR) kalau item-nya sendiri tidak diisi.
+            {{ t('5-level hierarchy that builds the name & code of a') }} <b>{{ t('Raw Material Item') }}</b> ({{ t('Category → Type → Grammage/Spec → Size → Brand') }}). {{ t('The Main Category (Level 1) is also the fallback accounting account (Inventory/COGS/GR-IR) when the item itself is not filled in.') }}
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama / kode prefix…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search name / prefix code…') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -300,12 +300,12 @@ new #[Title('Master Kategori Bahan Baku — TELASIH MAKMUR ERP')] class extends 
                     <thead>
                         <tr>
                             <th class="px-2 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[32px]"></th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Kategori</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">Level</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Induk</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Kelas Stok</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Category') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">{{ t('Level') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Parent') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ t('Stock Class') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -314,10 +314,10 @@ new #[Title('Master Kategori Bahan Baku — TELASIH MAKMUR ERP')] class extends 
                                 $hasChildren = $c->_hasChildren ?? false;
                                 $isOpen = in_array($c->id_category, $this->expanded, true);
                             @endphp
-                            <tr wire:key="matcat-{{ $c->id_category }}" wire:dblclick="openModal('edit', {{ $c->id_category }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
+                            <tr wire:key="matcat-{{ $c->id_category }}" wire:dblclick="openModal('edit', {{ $c->id_category }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ t('Double-click to open detail') }}">
                                 <td class="px-2 py-2 border-b border-[#eef1f5] text-center">
                                     @if ($hasChildren)
-                                        <button type="button" wire:click.stop="toggleExpand({{ $c->id_category }})" title="{{ $isOpen ? 'Tutup' : 'Lihat sub-kategori' }}"
+                                        <button type="button" wire:click.stop="toggleExpand({{ $c->id_category }})" title="{{ $isOpen ? t('Close') : t('View sub-categories') }}"
                                             class="inline-flex items-center justify-center w-6 h-6 rounded text-muted hover:bg-[#eef3fb] hover:text-accent cursor-pointer">{{ $isOpen ? '▾' : '▸' }}</button>
                                     @endif
                                 </td>
@@ -329,17 +329,17 @@ new #[Title('Master Kategori Bahan Baku — TELASIH MAKMUR ERP')] class extends 
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $c->parent?->category_name ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $c->level === 1 ? ($c->stock_class ?? '—') : '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $c->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $c->activate ? t('ACTIVE') : t('INACTIVE') }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openModal('edit', {{ $c->id_category }})" />
-                                    <x-grid.action-icon :active="$c->activate" :title="$c->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $c->id_category }})"
-                                        :confirm="($c->activate ? 'Nonaktifkan' : 'Aktifkan').' kategori '.$c->category_name.'?'"
+                                    <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="openModal('edit', {{ $c->id_category }})" />
+                                    <x-grid.action-icon :active="$c->activate" :title="$c->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $c->id_category }})"
+                                        :confirm="str_replace(':name', $c->category_name, $c->activate ? t('Deactivate category :name?') : t('Activate category :name?'))"
                                         :variant="$c->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="7" message="Tidak ada." />
+                            <x-grid.empty-row :colspan="7" :message="t('None.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -351,70 +351,70 @@ new #[Title('Master Kategori Bahan Baku — TELASIH MAKMUR ERP')] class extends 
         @if ($panel === 'form')
             <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
                 <div class="text-sm font-bold">
-                    {{ $mode === 'edit' ? 'Edit Kategori' : 'Kategori Baru' }}
+                    {{ $mode === 'edit' ? t('Edit Category') : t('New Category') }}
                     @if ($mode === 'edit')<span class="text-xs font-normal opacity-75 ml-2">L{{ $level }} — {{ $prefix_char }}</span>@endif
                 </div>
             </div>
             <form wire:submit="save" class="bg-white border border-t-0 border-[#d7dbe2] p-5 flex flex-col gap-3">
-                <div class="text-xs font-bold text-navy uppercase tracking-wide">Posisi di Hirarki</div>
+                <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ t('Position in Hierarchy') }}</div>
                 <div class="flex gap-2.5">
                     <div class="flex-1">
-                        <x-form.select label="Level *" name="level" wire:model.live="level" :disabled="$mode === 'edit'"
-                            :placeholder="false" :options="collect([1, 2, 3, 4, 5])->mapWithKeys(fn ($lv) => [$lv => 'Level '.$lv])" :selected="$level" />
+                        <x-form.select :label="t('Level *')" name="level" wire:model.live="level" :disabled="$mode === 'edit'"
+                            :placeholder="false" :options="collect([1, 2, 3, 4, 5])->mapWithKeys(fn ($lv) => [$lv => t('Level').' '.$lv])" :selected="$level" />
                     </div>
                     @if ($level > 1)
                         <div class="flex-[2]">
-                            <x-form.select label="Induk (Level {{ $level - 1 }}) *" name="parent_id" wire:model="parent_id" :disabled="$mode === 'edit'"
+                            <x-form.select :label="str_replace(':n', $level - 1, t('Parent (Level :n) *'))" name="parent_id" wire:model="parent_id" :disabled="$mode === 'edit'"
                                 :options="$this->parentOptions->mapWithKeys(fn ($p) => [$p->id_category => $p->category_name.' ('.$p->prefix_char.')'])" :selected="$parent_id" />
                         </div>
                     @endif
                 </div>
                 @if ($mode === 'edit')
-                    <p class="text-[11px] text-muted -mt-1">Level &amp; Induk dikunci setelah dibuat — kalau salah taruh, buat baris baru dan nonaktifkan yang lama.</p>
+                    <p class="text-[11px] text-muted -mt-1">{{ t('Level & Parent are locked after creation — if misplaced, create a new row and deactivate the old one.') }}</p>
                 @endif
 
-                <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Identitas Kategori</div>
+                <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ t('Category Identity') }}</div>
                 <div class="flex gap-2.5">
                     <div class="flex-[2]">
-                        <x-form.input label="Nama Kategori *" name="category_name" wire:model="category_name" placeholder="mis. Art Carton" />
+                        <x-form.input :label="t('Category Name *')" name="category_name" wire:model="category_name" :placeholder="t('e.g. Art Carton')" />
                     </div>
                     <div class="flex-1">
-                        <x-form.input label="Kode Prefix *" name="prefix_char" wire:model="prefix_char" maxlength="3" placeholder="mis. C" class="uppercase font-mono" />
+                        <x-form.input :label="t('Prefix Code *')" name="prefix_char" wire:model="prefix_char" maxlength="3" :placeholder="t('e.g. C')" class="uppercase font-mono" />
                     </div>
                 </div>
-                <x-form.textarea label="Catatan" name="note" wire:model="note" rows="2" placeholder="Catatan tambahan (opsional)" />
-                <x-form.checkbox label="Aktif" wire:model="cat_activate" />
+                <x-form.textarea :label="t('Notes')" name="note" wire:model="note" rows="2" :placeholder="t('Additional notes (optional)')" />
+                <x-form.checkbox :label="t('Active')" wire:model="cat_activate" />
 
                 @php
                     $coaOptions = $this->coaAccounts->mapWithKeys(fn ($acc) => [$acc->account_id => $acc->account_code.' - '.$acc->account_name]);
                 @endphp
                 @if ($level === 1)
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Default Akuntansi <span class="text-muted normal-case font-normal">(fallback kalau item-nya sendiri kosong)</span></div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ t('Accounting Defaults') }} <span class="text-muted normal-case font-normal">{{ t('(fallback when the item itself is empty)') }}</span></div>
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.select label="Kelas Stok" wire:model="stock_class" :placeholder="false"
+                            <x-form.select :label="t('Stock Class')" wire:model="stock_class" :placeholder="false"
                                 :options="array_combine($stockClasses, $stockClasses)" :selected="$stock_class" />
                         </div>
                         <div class="flex-[2]">
-                            <x-form.select label="Akun HPP / Beban" wire:model="default_coa_account_id"
-                                placeholder="— tak ada default —" :options="$coaOptions" :selected="$default_coa_account_id" />
+                            <x-form.select :label="t('COGS / Expense Account')" wire:model="default_coa_account_id"
+                                :placeholder="t('— no default —', 'master')" :options="$coaOptions" :selected="$default_coa_account_id" />
                         </div>
                     </div>
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.select label="Akun Aset Persediaan" wire:model="default_stock_asset_account_id"
-                                placeholder="— tak ada default —" :options="$coaOptions" :selected="$default_stock_asset_account_id" />
+                            <x-form.select :label="t('Inventory Asset Account')" wire:model="default_stock_asset_account_id"
+                                :placeholder="t('— no default —', 'master')" :options="$coaOptions" :selected="$default_stock_asset_account_id" />
                         </div>
                         <div class="flex-1">
-                            <x-form.select label="Akun Kliring GR/IR" wire:model="default_gr_ir_account_id"
-                                placeholder="— tak ada default —" :options="$coaOptions" :selected="$default_gr_ir_account_id" />
+                            <x-form.select :label="t('GR/IR Clearing Account')" wire:model="default_gr_ir_account_id"
+                                :placeholder="t('— no default —', 'master')" :options="$coaOptions" :selected="$default_gr_ir_account_id" />
                         </div>
                     </div>
                 @endif
 
                 <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
-                    <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                    <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">{{ t('Save') }}</button>
+                    <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ t('Cancel') }}</button>
                 </div>
             </form>
         @endif

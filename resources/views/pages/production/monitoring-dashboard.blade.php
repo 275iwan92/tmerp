@@ -139,13 +139,13 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
         $op = PrdWoOperation::with('wo')->find($operationId);
 
         if (! $op || $op->resource_type !== 'MACHINE') {
-            $this->dispatch('wo-toast', message: 'Hanya task mesin yang bisa dipindah lewat drag di sini.');
+            $this->dispatch('wo-toast', message: t('Only machine tasks can be moved by dragging here.'));
 
             return;
         }
 
         if (! in_array($op->task_status, ['PENDING', 'ASSIGNED'], true)) {
-            $this->dispatch('wo-toast', message: 'Task ini sudah berjalan/selesai -- pakai "Lapor Breakdown" di WO Detail kalau perlu reroute.');
+            $this->dispatch('wo-toast', message: t('This task is already running/done -- use "Report Breakdown" in WO Detail if it needs rerouting.'));
 
             return;
         }
@@ -163,7 +163,7 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
                 'target_start' => null, 'target_finish' => null,
                 'task_status' => 'PENDING', 'updated_by' => Auth::user()->login,
             ]);
-            $this->dispatch('wo-toast', message: 'Task dikembalikan ke Antrean.');
+            $this->dispatch('wo-toast', message: t('Task returned to the Queue.'));
 
             return;
         }
@@ -203,8 +203,8 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
         }
 
         unset($this->machineOperations, $this->queueOperations);
-        $note = $engineOk ? '' : ' (estimasi sederhana -- rate band WO ini belum lengkap utk hitung penuh)';
-        $this->dispatch('wo-toast', message: 'Task dipindah ke '.($op->fresh()->machine?->machine_name ?? 'mesin').'.'.$note);
+        $note = $engineOk ? '' : ' '.t('(simple estimate -- this WO rate band is incomplete for a full calculation)');
+        $this->dispatch('wo-toast', message: str_replace(':machine', $op->fresh()->machine?->machine_name ?? t('machine'), t('Task moved to :machine.')).$note);
     }
 
     private function statusBadgeClasses(string $status): string
@@ -240,33 +240,33 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
 <div x-data="{ toastMsg: '', toastShow: false, toastTimer: null, draggedId: null }"
     x-on:wo-toast.window="toastMsg = $event.detail.message; toastShow = true; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastShow = false, 2500)">
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📌 MPS - Kanban Board</b>
+        <b class="text-[15px]">📌 {{ t('MPS - Kanban Board') }}</b>
         <x-form.date-picker wire:model.live="date" class="w-[120px] !bg-white/10 !text-white text-[11px] font-bold px-3 py-1.5 rounded-md border-none" />
         <a href="{{ route('production.scheduling-board') }}" class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-3 py-1 bg-[#43508a] rounded-full hover:brightness-110 no-underline">
-            <span class="text-[11px] font-bold uppercase tracking-wide text-white">📅 MPS - Gantt Chart</span>
+            <span class="text-[11px] font-bold uppercase tracking-wide text-white">📅 {{ t('MPS - Gantt Chart') }}</span>
         </a>
     </header>
 
     <div class="max-w-full mx-auto my-4 px-4">
         <div class="flex gap-2.5 flex-wrap mb-4">
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] px-4 py-2 min-w-[130px]">
-                <div class="text-[9px] uppercase font-bold text-muted tracking-wide">Total Task Hari Ini</div>
+                <div class="text-[9px] uppercase font-bold text-muted tracking-wide">{{ t('Total Tasks Today') }}</div>
                 <div class="text-lg font-extrabold text-navy">{{ $this->statTotalToday }}</div>
             </div>
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] px-4 py-2 min-w-[130px]">
-                <div class="text-[9px] uppercase font-bold text-muted tracking-wide">Mesin Kosong</div>
+                <div class="text-[9px] uppercase font-bold text-muted tracking-wide">{{ t('Idle Machines') }}</div>
                 <div class="text-lg font-extrabold text-[#a3241f]">{{ $this->statIdleMachines }}</div>
             </div>
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] px-4 py-2 min-w-[130px]">
-                <div class="text-[9px] uppercase font-bold text-muted tracking-wide">Sedang Jalan</div>
+                <div class="text-[9px] uppercase font-bold text-muted tracking-wide">{{ t('Running Now') }}</div>
                 <div class="text-lg font-extrabold text-navy">{{ $this->statRunning }}</div>
             </div>
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] px-4 py-2 min-w-[130px]">
-                <div class="text-[9px] uppercase font-bold text-muted tracking-wide">Breakdown / QC Hold</div>
+                <div class="text-[9px] uppercase font-bold text-muted tracking-wide">{{ t('Breakdown / QC Hold') }}</div>
                 <div class="text-lg font-extrabold text-[#a3241f]">{{ $this->statAttention }}</div>
             </div>
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] px-4 py-2 min-w-[130px]">
-                <div class="text-[9px] uppercase font-bold text-muted tracking-wide">Antrean Belum Terjadwal</div>
+                <div class="text-[9px] uppercase font-bold text-muted tracking-wide">{{ t('Unscheduled Queue') }}</div>
                 <div class="text-lg font-extrabold text-navy">{{ $this->statQueue }}</div>
             </div>
         </div>
@@ -276,13 +276,13 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
             {{-- Kolom Antrean --}}
             <div class="bg-[#eef1f6] border-[1.5px] border-dashed border-[#c3cadb] rounded-[10px] w-[250px] shrink-0 flex flex-col max-h-[calc(100vh-230px)]">
                 <div class="px-3 py-2.5 bg-[#dde1ea] rounded-t-[10px] flex items-center justify-between">
-                    <div><div class="font-extrabold text-[12.5px] text-navy">📥 Antrean</div><span class="block text-[8.6px] font-bold text-muted uppercase tracking-wide">belum ada mesin/jadwal</span></div>
+                    <div><div class="font-extrabold text-[12.5px] text-navy">📥 {{ t('Queue') }}</div><span class="block text-[8.6px] font-bold text-muted uppercase tracking-wide">{{ t('no machine/schedule yet') }}</span></div>
                     <span class="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-navy/10 text-navy">{{ $this->queueOperations->count() }}</span>
                 </div>
                 <div class="p-2 flex flex-col gap-2 overflow-y-auto min-h-[70px] flex-1"
                     x-on:dragover.prevent x-on:drop="$wire.moveOperation(draggedId, null); draggedId = null">
                     @forelse ($this->queueOperations as $op)
-                        <div draggable="true" title="Seret kartu ini ke kolom mesin lain untuk pindahkan tugasnya" x-on:dragstart="draggedId = {{ $op->operation_id }}"
+                        <div draggable="true" title="{{ t('Drag this card to another machine column to move its task') }}" x-on:dragstart="draggedId = {{ $op->operation_id }}"
                             class="bg-white rounded-lg shadow-sm border-l-4 {{ $this->cardBorderClasses($op->task_status) }} px-2.5 py-2 cursor-grab hover:shadow-md">
                             <div class="flex items-center justify-between gap-1.5 mb-1">
                                 <span class="font-mono font-extrabold text-accent text-[11px]">{{ $op->wo?->wo_no }}</span>
@@ -292,7 +292,7 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
                             <div class="text-[9.8px] text-muted">{{ $op->wo?->coOrder?->quotation?->customer?->customer_name ?? '—' }}</div>
                         </div>
                     @empty
-                        <div class="text-center text-[10.5px] text-muted py-4">Antrean kosong.</div>
+                        <div class="text-center text-[10.5px] text-muted py-4">{{ t('Queue is empty.') }}</div>
                     @endforelse
                 </div>
             </div>
@@ -307,7 +307,7 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
                     <div class="p-2 flex flex-col gap-2 overflow-y-auto min-h-[70px] flex-1"
                         x-on:dragover.prevent x-on:drop="$wire.moveOperation(draggedId, {{ $machine->machine_id }}); draggedId = null">
                         @forelse ($this->machineOperations->get($machine->machine_id, collect()) as $op)
-                            <div draggable="true" title="Seret kartu ini ke kolom mesin lain untuk pindahkan tugasnya" x-on:dragstart="draggedId = {{ $op->operation_id }}"
+                            <div draggable="true" title="{{ t('Drag this card to another machine column to move its task') }}" x-on:dragstart="draggedId = {{ $op->operation_id }}"
                                 class="bg-white rounded-lg shadow-sm border-l-4 {{ $this->cardBorderClasses($op->task_status) }} px-2.5 py-2 cursor-grab hover:shadow-md">
                                 <div class="flex items-center justify-between gap-1.5 mb-1">
                                     <span class="font-mono font-extrabold text-accent text-[11px]">{{ $op->wo?->wo_no }}</span>
@@ -323,7 +323,7 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
                                 @endif
                             </div>
                         @empty
-                            <div class="text-center text-[10.5px] text-[#a3241f] font-bold py-4">⚠ Mesin kosong<br>tidak ada job</div>
+                            <div class="text-center text-[10.5px] text-[#a3241f] font-bold py-4">⚠ {{ t('Machine idle') }}<br>{{ t('no jobs') }}</div>
                         @endforelse
                     </div>
                 </div>
@@ -332,7 +332,7 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
             {{-- Kolom Manual --}}
             <div class="bg-[#e7eaf1] rounded-[10px] w-[250px] shrink-0 flex flex-col max-h-[calc(100vh-230px)]">
                 <div class="px-3 py-2.5 bg-[#dde1ea] rounded-t-[10px] flex items-center justify-between">
-                    <div><div class="font-extrabold text-[12.5px] text-navy">Manual</div><span class="block text-[8.6px] font-bold text-muted uppercase tracking-wide">non-mesin</span></div>
+                    <div><div class="font-extrabold text-[12.5px] text-navy">{{ t('Manual') }}</div><span class="block text-[8.6px] font-bold text-muted uppercase tracking-wide">{{ t('non-machine') }}</span></div>
                     <span class="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-navy/10 text-navy">{{ $this->manualOperations->count() }}</span>
                 </div>
                 <div class="p-2 flex flex-col gap-2 overflow-y-auto min-h-[70px] flex-1">
@@ -352,21 +352,21 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
                             @endif
                         </div>
                     @empty
-                        <div class="text-center text-[10.5px] text-muted py-4">Tidak ada task manual hari ini.</div>
+                        <div class="text-center text-[10.5px] text-muted py-4">{{ t('No manual tasks today.') }}</div>
                     @endforelse
                 </div>
             </div>
         </div>
 
         <div class="flex gap-4 flex-wrap text-[10.3px] text-[#556] mt-3.5">
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#9aa6bd"></span> Pending</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#2c7be5"></span> Assigned</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#15a05a"></span> Running</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#b45309"></span> QC Hold</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#dc2626"></span> Breakdown</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#0f9488"></span> Done / QC Passed</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#9aa6bd"></span> {{ t('Pending') }}</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#2c7be5"></span> {{ t('Assigned') }}</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#15a05a"></span> {{ t('Running') }}</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#b45309"></span> {{ t('QC Hold') }}</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#dc2626"></span> {{ t('Breakdown') }}</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[3px]" style="background:#0f9488"></span> {{ t('Done / QC Passed') }}</span>
         </div>
-        <p class="text-[10.3px] text-muted italic mt-2">Drag kartu dari Antrean ke kolom mesin utk assign (waktu mulai = sekarang, durasi dari Target Kecepatan). Drag antar kolom mesin utk reroute. Hanya task Pending/Assigned yang bisa digeser — task yang sudah berjalan pakai "Lapor Breakdown" di WO Detail.</p>
+        <p class="text-[10.3px] text-muted italic mt-2">{{ t('Drag cards from the Queue to a machine column to assign (start time = now, duration from Target Speed).') }} {{ t('Drag between machine columns to reroute.') }} {{ t('Only Pending/Assigned tasks can be moved — tasks already running use "Report Breakdown" in WO Detail.') }}</p>
     </div>
 
     <div x-show="toastShow" x-transition x-cloak

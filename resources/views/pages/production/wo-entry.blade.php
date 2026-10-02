@@ -366,7 +366,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                 return (object) [
                     'id_part_material' => $mat->id_part_material,
                     'name' => $active->substitute_rawmat_name,
-                    'spec' => "🔁 Pengganti dari: {$mat->rawmat_name}",
+                    'spec' => '🔁 '.t('Substitute for:').' '.$mat->rawmat_name,
                     'unit' => $unit,
                     'qty_kebutuhan' => $qtyKebutuhan,
                     'qty_tersedia' => $qtyTersedia,
@@ -390,7 +390,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                 'spec' => trim(collect([
                     $mat->gram_weight ? number_format((float) $mat->gram_weight, 0, ',', '.').' gsm' : null,
                     $mat->flute_type ?: null,
-                    $mat->is_primary ? 'Primer' : null,
+                    $mat->is_primary ? t('Primary', 'material') : null,
                 ])->filter()->implode(' · ')),
                 'unit' => $unit,
                 'qty_kebutuhan' => $qtyKebutuhan,
@@ -433,7 +433,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
         $layout = $this->confirmedLayout;
         if (! $layout) {
-            return ['error' => 'Layout Imposition part ini belum dikonfirmasi -- tidak bisa hitung UP-count.'];
+            return ['error' => t('The Imposition layout of this part is not confirmed yet -- cannot calculate the UP-count.')];
         }
 
         $result = app(ImpositionEngine::class)->run(
@@ -443,7 +443,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         );
 
         if ($result['up'] <= 0) {
-            return ['error' => 'Bahan pengganti terlalu kecil -- part tidak muat sama sekali di ukuran ini.'];
+            return ['error' => t('The substitute material is too small -- the part does not fit at all at this size.')];
         }
 
         $mat = $this->billOfMaterial->firstWhere('id_part_material', $this->substitutionPartMaterialId);
@@ -522,20 +522,20 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     public function submitSubstitution(): void
     {
         if (! $this->substituteRawmatId || ! $this->substituteLengthMm || ! $this->substituteWidthMm) {
-            $this->dispatch('wo-toast', message: 'Pilih bahan pengganti dan isi ukurannya dulu.');
+            $this->dispatch('wo-toast', message: t('Choose a substitute material and fill in its size first.'));
 
             return;
         }
 
         if ($this->pendingSubstitutionFor($this->substitutionPartMaterialId)) {
-            $this->dispatch('wo-toast', message: 'Sudah ada pengajuan substitusi lain yang masih menunggu approval utk baris ini.');
+            $this->dispatch('wo-toast', message: t('Another substitution request for this row is still awaiting approval.'));
 
             return;
         }
 
         $preview = $this->substitutionPreview;
         if (! $preview || isset($preview['error'])) {
-            $this->dispatch('wo-toast', message: $preview['error'] ?? 'Belum bisa dihitung -- lengkapi data dulu.');
+            $this->dispatch('wo-toast', message: $preview['error'] ?? t('Cannot be calculated yet -- complete the data first.'));
 
             return;
         }
@@ -564,7 +564,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         ]);
 
         $this->closeSubstitution();
-        $this->dispatch('wo-toast', message: 'Pengajuan substitusi terkirim, menunggu approval Manager Operasional ke atas.');
+        $this->dispatch('wo-toast', message: t('Substitution request sent, awaiting approval from Operations Manager and above.'));
     }
 
     // Approval substitusi bahan -- Manager Operasional ke atas (keputusan user
@@ -572,7 +572,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     public function approveSubstitution(int $id): void
     {
         if (! Auth::user()->isOpsManagerOrAbove()) {
-            $this->dispatch('wo-toast', message: 'Hanya Manager Operasional ke atas yang bisa approve substitusi bahan.');
+            $this->dispatch('wo-toast', message: t('Only Operations Managers and above can approve material substitutions.'));
 
             return;
         }
@@ -592,7 +592,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
             'is_active' => true,
         ]);
 
-        $this->dispatch('wo-toast', message: "Substitusi ke {$sub->substitute_rawmat_name} disetujui & aktif.");
+        $this->dispatch('wo-toast', message: str_replace(':name', $sub->substitute_rawmat_name, t('Substitution to :name approved & active.')));
     }
 
     public function openRejectSubstitution(int $id): void
@@ -604,13 +604,13 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     public function submitRejectSubstitution(): void
     {
         if (! Auth::user()->isOpsManagerOrAbove()) {
-            $this->dispatch('wo-toast', message: 'Hanya Manager Operasional ke atas yang bisa menolak substitusi bahan.');
+            $this->dispatch('wo-toast', message: t('Only Operations Managers and above can reject material substitutions.'));
 
             return;
         }
 
         if (mb_strlen(trim($this->substitutionRejectReason)) < 5) {
-            $this->dispatch('wo-toast', message: 'Alasan penolakan minimal 5 karakter.');
+            $this->dispatch('wo-toast', message: t('The rejection reason must be at least 5 characters.'));
 
             return;
         }
@@ -624,7 +624,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         ]);
 
         $this->rejectingSubstitutionId = null;
-        $this->dispatch('wo-toast', message: 'Pengajuan substitusi ditolak.');
+        $this->dispatch('wo-toast', message: t('Substitution request rejected.'));
     }
 
     // Undo -- BUKAN pengajuan baru, cuma nonaktifkan substitusi aktif & balik
@@ -634,7 +634,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     public function undoSubstitution(int $id): void
     {
         if (! Auth::user()->isOpsManagerOrAbove()) {
-            $this->dispatch('wo-toast', message: 'Hanya Manager Operasional ke atas yang bisa membatalkan substitusi aktif.');
+            $this->dispatch('wo-toast', message: t('Only Operations Managers and above can revert an active substitution.'));
 
             return;
         }
@@ -646,7 +646,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
             'undone_at' => now(),
         ]);
 
-        $this->dispatch('wo-toast', message: 'Substitusi dibatalkan, kembali ke bahan asli.');
+        $this->dispatch('wo-toast', message: t('Substitution reverted, back to the original material.'));
     }
 
     public function updatePriority(string $value): void
@@ -833,7 +833,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         $processId = ProdProcess::where('process_name', $op->process_name)->value('id_process');
 
         if (! $processId) {
-            $this->dispatch('wo-toast', message: 'Nama proses tidak cocok dengan master Proses -- tak bisa ambil default.');
+            $this->dispatch('wo-toast', message: t('The process name does not match the Process master -- cannot fetch the default.'));
 
             return;
         }
@@ -855,14 +855,14 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         }
 
         if ($rate === null) {
-            $this->dispatch('wo-toast', message: 'Belum ada target default tersimpan utk kombinasi ini -- isi manual.');
+            $this->dispatch('wo-toast', message: t('No default target saved for this combination yet -- fill it manually.'));
 
             return;
         }
 
         $op->update(['rate_band_value' => $rate, 'updated_by' => Auth::user()->login]);
         unset($this->workOrder);
-        $this->dispatch('wo-toast', message: "Target diisi dari default: {$rate}/jam.");
+        $this->dispatch('wo-toast', message: str_replace(':rate', $rate, t('Target filled from default: :rate/hr.')));
     }
 
     // "Operator" default (dblclick-edit di grid Bill of Process, permintaan
@@ -919,7 +919,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     public function qcPass(int $operationId): void
     {
         if (! Auth::user()->isQa()) {
-            $this->dispatch('wo-toast', message: 'Hanya QA yang bisa memutuskan QC.');
+            $this->dispatch('wo-toast', message: t('Only QA can decide QC.'));
 
             return;
         }
@@ -941,7 +941,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
             $op->wo->transitionTo('COMPLETED');
         }
 
-        $this->dispatch('wo-toast', message: "Task {$op->process_name} lulus QC.");
+        $this->dispatch('wo-toast', message: str_replace(':process', $op->process_name, t('Task :process passed QC.')));
     }
 
     public function openQcReject(int $operationId): void
@@ -953,12 +953,12 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     public function submitQcReject(): void
     {
         if (! Auth::user()->isQa()) {
-            $this->dispatch('wo-toast', message: 'Hanya QA yang bisa memutuskan QC.');
+            $this->dispatch('wo-toast', message: t('Only QA can decide QC.'));
 
             return;
         }
         if (mb_strlen(trim($this->qcRejectReason)) < 5) {
-            $this->dispatch('wo-toast', message: 'Alasan tolak wajib diisi (minimal 5 karakter).');
+            $this->dispatch('wo-toast', message: t('A rejection reason is required (minimum 5 characters).'));
 
             return;
         }
@@ -968,14 +968,14 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         $op->transitionTo('QC_REJECTED');
 
         $this->qcRejectOperationId = null;
-        $this->dispatch('wo-toast', message: "Task {$op->process_name} ditolak QC: {$this->qcRejectReason}");
+        $this->dispatch('wo-toast', message: str_replace([':process', ':reason'], [$op->process_name, $this->qcRejectReason], t('Task :process rejected by QC: :reason')));
     }
 
     public function reworkFromReject(int $operationId): void
     {
         $op = PrdWoOperation::findOrFail($operationId);
         $op->transitionTo('PENDING');
-        $this->dispatch('wo-toast', message: "Task {$op->process_name} dikembalikan untuk rework.");
+        $this->dispatch('wo-toast', message: str_replace(':process', $op->process_name, t('Task :process returned for rework.')));
     }
 
     // ---- Breakdown & Subcontract (Tier1 §9.3, Tier2 §7) ----
@@ -1022,7 +1022,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     public function rerouteToMachine(): void
     {
         if (! $this->altMachineId) {
-            $this->dispatch('wo-toast', message: 'Pilih mesin alternatif dulu.');
+            $this->dispatch('wo-toast', message: t('Choose an alternative machine first.'));
 
             return;
         }
@@ -1038,7 +1038,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         ]);
 
         $this->closeBreakdown();
-        $this->dispatch('wo-toast', message: 'Task dipindah ke mesin alternatif, kembali ke antrean.');
+        $this->dispatch('wo-toast', message: t('Task moved to the alternative machine, back in the queue.'));
     }
 
     public function selectVendor(int $id): void
@@ -1061,12 +1061,12 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     public function createSubcontractPo(): void
     {
         if (! Auth::user()->isOpsManagerOrAbove()) {
-            $this->dispatch('wo-toast', message: 'Hanya Manager Operasional ke atas yang bisa menyetujui PO Subkontrak.');
+            $this->dispatch('wo-toast', message: t('Only Operations Managers and above can approve Subcontract POs.'));
 
             return;
         }
         if (! $this->subVendorId || $this->subEstimatedCost <= 0 || ! $this->subDueOut || ! $this->subDueReturn) {
-            $this->dispatch('wo-toast', message: 'Lengkapi vendor, estimasi biaya, dan tanggal kirim/kembali dulu.');
+            $this->dispatch('wo-toast', message: t('Complete the vendor, cost estimate, and send/return dates first.'));
 
             return;
         }
@@ -1084,14 +1084,14 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         );
 
         $this->closeBreakdown();
-        $this->dispatch('wo-toast', message: "PO Subkontrak {$po->doc_no} terbit ke {$this->subVendorName}.");
+        $this->dispatch('wo-toast', message: str_replace([':po', ':vendor'], [$po->doc_no, $this->subVendorName], t('Subcontract PO :po issued to :vendor.')));
     }
 
     public function receiveFromSubcontract(int $operationId): void
     {
         $op = PrdWoOperation::findOrFail($operationId);
         $op->transitionTo('QC_HOLD');
-        $this->dispatch('wo-toast', message: "Task {$op->process_name} kembali dari subkontrak, wajib QC.");
+        $this->dispatch('wo-toast', message: str_replace(':process', $op->process_name, t('Task :process returned from subcontract, QC required.')));
     }
 
     // ---- Production Output Recording (F15) ----
@@ -1126,7 +1126,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         $validRows = collect($this->outputDefectRows)->filter(fn ($r) => ! empty($r['scrap_type_id']) && (float) $r['qty'] > 0);
 
         if ($this->outputQtyGood <= 0 && $validRows->isEmpty()) {
-            $this->dispatch('wo-toast', message: 'Isi qty baik, atau minimal 1 baris reject/waste (tipe + qty).');
+            $this->dispatch('wo-toast', message: t('Fill in the good qty, or at least 1 reject/waste row (type + qty).'));
 
             return;
         }
@@ -1150,7 +1150,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
         $this->outputOperationId = null;
         unset($this->workOrder);
-        $this->dispatch('wo-toast', message: 'Output tercatat.');
+        $this->dispatch('wo-toast', message: t('Output recorded.'));
     }
 
     private function statusBadgeClasses(string $status): string
@@ -1174,16 +1174,16 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     x-on:wo-toast.window="toastMsg = $event.detail.message; toastShow = true; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastShow = false, 2500)">
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         @if ($this->wo)
-            <b class="text-[15px]">📋 WO Detail</b>
+            <b class="text-[15px]">📋 {{ t('WO Detail') }}</b>
             <span class="text-xs text-white/75">{{ $this->workOrder->wo_no }}</span>
             @if ($this->workOrder->is_hot_job)
-                <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#dc2626] text-white">🔥 HOT</span>
+                <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#dc2626] text-white">🔥 {{ t('HOT') }}</span>
             @endif
             <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-white/15 text-white">{{ $this->workOrder->wo_status }}</span>
-            <a href="{{ route('production.wo.print', ['wo' => $this->wo]) }}" target="_blank" class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#43508a] hover:brightness-110 text-[11px] font-bold uppercase tracking-wide text-white no-underline">🖨 Cetak</a>
+            <a href="{{ route('production.wo.print', ['wo' => $this->wo]) }}" target="_blank" class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#43508a] hover:brightness-110 text-[11px] font-bold uppercase tracking-wide text-white no-underline">🖨 {{ t('Print') }}</a>
         @else
-            <b class="text-[15px]">📋 Work Order Baru</b>
-            <span class="text-xs text-white/75">belum ada WO dipilih</span>
+            <b class="text-[15px]">📋 {{ t('New Work Order') }}</b>
+            <span class="text-xs text-white/75">{{ t('no WO selected yet') }}</span>
         @endif
         {{-- GOTCHA (revisi -- fix pertama SALAH, sempat nutup SEMUA tab):
              resources/js/app-shell.js sendiri buka TIAP tab menu lewat
@@ -1201,7 +1201,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
              reload dirinya sendiri bukan window.top) vs sama (tab shell
              biasa 1 level -> tetap backToList() spt semula, navigasi iframe
              tab itu sendiri ke Worklist WO, tab lain tak tersentuh). --}}
-        <button type="button" data-dirty-guard x-on:click="window.parent !== window.top ? window.parent.location.reload() : $wire.backToList()" title="Kembali ke Worklist WO"
+        <button type="button" data-dirty-guard x-on:click="window.parent !== window.top ? window.parent.location.reload() : $wire.backToList()" title="{{ t('Back to WO Worklist') }}"
             class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full hover:brightness-110 cursor-pointer">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
@@ -1215,23 +1215,23 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
              (bukan grid permanen -- docs/production_scheduling_wo_generation_delta.md §5). --}}
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] px-3.5 py-2.5 mb-3 flex items-center gap-3 flex-wrap text-xs">
             <div>
-                <div class="text-[9px] text-muted uppercase font-bold tracking-wide">Sumber Plan Delivery</div>
+                <div class="text-[9px] text-muted uppercase font-bold tracking-wide">{{ t('Plan Delivery Source') }}</div>
                 <div class="font-semibold">
                     {{ $this->workOrder->coOrder?->co_no ?? '—' }}
                     <span class="text-[#c9cfd9] mx-1.5">·</span>{{ $this->workOrder->coOrder?->quotation?->customer?->customer_name ?? 'GENERAL' }}
-                    <span class="text-[#c9cfd9] mx-1.5">·</span>Part {{ $this->workOrder->part_code ?? '—' }}
+                    <span class="text-[#c9cfd9] mx-1.5">·</span>{{ t('Part') }} {{ $this->workOrder->part_code ?? '—' }}
                 </div>
             </div>
-            <span class="text-[9.5px] font-bold px-2.5 py-1 rounded-full bg-[#fef6e7] text-[#b45309]">🔒 Sedang Diproses ({{ $this->workOrder->wo_no }})</span>
+            <span class="text-[9.5px] font-bold px-2.5 py-1 rounded-full bg-[#fef6e7] text-[#b45309]">🔒 {{ t('In Process') }} ({{ $this->workOrder->wo_no }})</span>
             <span class="ml-auto"></span>
-            <button type="button" wire:click="openDeliveryModal" class="px-3.5 py-1.5 rounded-md text-[11px] font-bold border border-[#d9dfe8] text-navy cursor-pointer">🔀 Pilih Plan Delivery Lain</button>
+            <button type="button" wire:click="openDeliveryModal" class="px-3.5 py-1.5 rounded-md text-[11px] font-bold border border-[#d9dfe8] text-navy cursor-pointer">🔀 {{ t('Choose Another Plan Delivery') }}</button>
         </div>
 
         {{-- Tab nav: Master Card / Bill of Process / Bill of Material --}}
         <div class="bg-white border border-[#d9dfe8] rounded-t-[10px] flex gap-0.5 px-2 -mb-px">
-            <button type="button" @click="tab = 'mc'" :class="tab === 'mc' ? 'text-navy border-accent' : 'text-muted border-transparent'" class="font-bold text-[11.5px] px-4 py-2.5 border-b-[2.5px] cursor-pointer">📇 Master Card</button>
-            <button type="button" @click="tab = 'bop'" :class="tab === 'bop' ? 'text-navy border-accent' : 'text-muted border-transparent'" class="font-bold text-[11.5px] px-4 py-2.5 border-b-[2.5px] cursor-pointer">⚙ Bill of Process <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-[#eef1f5]">{{ $this->workOrder->operations->count() }}</span></button>
-            <button type="button" @click="tab = 'bom'" :class="tab === 'bom' ? 'text-navy border-accent' : 'text-muted border-transparent'" class="font-bold text-[11.5px] px-4 py-2.5 border-b-[2.5px] cursor-pointer">📦 Bill of Material <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-[#eef1f5]">{{ $this->billOfMaterialRows->count() }}</span></button>
+            <button type="button" @click="tab = 'mc'" :class="tab === 'mc' ? 'text-navy border-accent' : 'text-muted border-transparent'" class="font-bold text-[11.5px] px-4 py-2.5 border-b-[2.5px] cursor-pointer">📇 {{ t('Master Card') }}</button>
+            <button type="button" @click="tab = 'bop'" :class="tab === 'bop' ? 'text-navy border-accent' : 'text-muted border-transparent'" class="font-bold text-[11.5px] px-4 py-2.5 border-b-[2.5px] cursor-pointer">⚙ {{ t('Bill of Process') }} <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-[#eef1f5]">{{ $this->workOrder->operations->count() }}</span></button>
+            <button type="button" @click="tab = 'bom'" :class="tab === 'bom' ? 'text-navy border-accent' : 'text-muted border-transparent'" class="font-bold text-[11.5px] px-4 py-2.5 border-b-[2.5px] cursor-pointer">📦 {{ t('Bill of Material') }} <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-[#eef1f5]">{{ $this->billOfMaterialRows->count() }}</span></button>
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-b-[10px] rounded-tr-[10px] overflow-hidden mb-4">
@@ -1239,7 +1239,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
             {{-- ================= TAB: MASTER CARD ================= --}}
             <div x-show="tab === 'mc'" x-cloak>
                 <div class="px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide font-bold border-b border-[#eef1f5] flex items-center justify-between">
-                    <span>Master Card / Kartu Induk</span>
+                    <span>{{ t('Master Card / Job Card') }}</span>
                     <span class="normal-case font-semibold text-[10.5px]">{{ $this->masterCard?->kode_item ?? $this->workOrder->product?->product_code ?? '—' }}</span>
                 </div>
 
@@ -1256,123 +1256,123 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                     <div class="p-3 border-b md:border-b-0 md:border-r border-[#eef1f5] bg-[#fbfcfe]">
                         <div class="relative bg-white border border-[#e2e6ee] rounded-lg overflow-hidden aspect-[4/5] flex items-center justify-center p-5">
                             @if ($this->officialArtwork)
-                                <img src="{{ asset('storage/'.$this->officialArtwork->artwork_path) }}" class="w-full h-full object-contain" alt="Artwork resmi">
+                                <img src="{{ asset('storage/'.$this->officialArtwork->artwork_path) }}" class="w-full h-full object-contain" alt="{{ t('Official artwork') }}">
                             @elseif ($this->prodevArtwork)
-                                <img src="{{ asset('storage/'.$this->prodevArtwork->file_path) }}" class="w-full h-full object-contain" alt="Referensi ProDev">
+                                <img src="{{ asset('storage/'.$this->prodevArtwork->file_path) }}" class="w-full h-full object-contain" alt="{{ t('ProDev reference') }}">
                             @else
                                 <div class="relative w-full h-full border-2 border-navy rounded-sm bg-[repeating-linear-gradient(115deg,#f4f6fa_0_10px,#eef1f6_10px_20px)]">
                                     <div class="absolute border-b-[1.5px] border-dashed border-[#2c7be5]" style="left:0;right:0;top:24%"></div>
                                     <div class="absolute border-b-[1.5px] border-dashed border-[#2c7be5]" style="left:0;right:0;bottom:22%"></div>
                                     <div class="absolute inset-0 border-2 border-[#dc2626] rounded-sm pointer-events-none"></div>
                                     <div class="absolute inset-0 flex items-center justify-center text-center px-3">
-                                        <span class="text-[10.5px] font-semibold text-[#8a94a6]">Artwork belum tersimpan<br><span class="font-mono text-[9px]">prod_part_artwork</span></span>
+                                        <span class="text-[10.5px] font-semibold text-[#8a94a6]">{{ t('Artwork not saved yet') }}<br><span class="font-mono text-[9px]">prod_part_artwork</span></span>
                                     </div>
                                 </div>
                             @endif
                         </div>
                         @if (! $this->officialArtwork && $this->prodevArtwork)
-                            <div class="text-[9.5px] text-[#8a5a00] bg-[#fff5e0] rounded px-2 py-1 mt-1.5">⚠ Referensi dari ProDev, belum jadi artwork resmi (`prod_part_artwork`).</div>
+                            <div class="text-[9.5px] text-[#8a5a00] bg-[#fff5e0] rounded px-2 py-1 mt-1.5">⚠ {{ t('Reference from ProDev, not yet the official artwork') }} (`prod_part_artwork`).</div>
                         @endif
                         <div class="flex gap-3 text-[9.5px] text-[#556] mt-2 flex-wrap">
-                            <span class="flex items-center gap-1"><span class="w-3.5 h-0 border-t-2 border-[#dc2626] inline-block"></span> Potong (putus)</span>
-                            <span class="flex items-center gap-1"><span class="w-3.5 h-0 border-t-2 border-dashed border-[#2c7be5] inline-block"></span> Lipat (tidak putus)</span>
+                            <span class="flex items-center gap-1"><span class="w-3.5 h-0 border-t-2 border-[#dc2626] inline-block"></span> {{ t('Cut (through)') }}</span>
+                            <span class="flex items-center gap-1"><span class="w-3.5 h-0 border-t-2 border-dashed border-[#2c7be5] inline-block"></span> {{ t('Fold (not through)') }}</span>
                         </div>
-                        <div class="text-[9.7px] text-muted mt-1.5">Dimensi: {{ $this->masterCard?->dimensi ?? '—' }} · Kode Pisau: {{ $this->masterCard?->kode_pisau ?: '— belum diisi' }}</div>
+                        <div class="text-[9.7px] text-muted mt-1.5">{{ t('Dimension') }}: {{ $this->masterCard?->dimensi ?? '—' }} · {{ t('Die Code') }}: {{ $this->masterCard?->kode_pisau ?: '— '.t('not set') }}</div>
                     </div>
 
                     <div class="p-3.5">
                         {{-- Identitas Order --}}
                         <div class="mb-3.5 pb-3.5 border-b border-dashed border-[#e2e6ee]">
-                            <div class="text-[9px] uppercase tracking-wide font-bold text-accent mb-1.5">Identitas Order</div>
+                            <div class="text-[9px] uppercase tracking-wide font-bold text-accent mb-1.5">{{ t('Order Identity') }}</div>
                             <div class="[display:grid] grid-cols-4 gap-2.5 text-[11.5px]">
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">No. CO</div><div class="font-bold font-mono text-accent">{{ $this->workOrder->coOrder?->co_no ?? '—' }}</div></div>
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">No. Desain</div><div class="font-bold">{{ $this->masterCard?->no_desain ?: '— belum diisi' }}</div></div>
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">Due Date</div><div class="font-bold">{{ $this->workOrder->due_date?->translatedFormat('d M Y') ?? '—' }}</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('CO No.') }}</div><div class="font-bold font-mono text-accent">{{ $this->workOrder->coOrder?->co_no ?? '—' }}</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Design No.') }}</div><div class="font-bold">{{ $this->masterCard?->no_desain ?: '— '.t('not set') }}</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Due Date') }}</div><div class="font-bold">{{ $this->workOrder->due_date?->translatedFormat('d M Y') ?? '—' }}</div></div>
                                 <div>
-                                    <div class="text-[8.7px] text-muted uppercase font-bold mb-0.5">Priority</div>
+                                    <div class="text-[8.7px] text-muted uppercase font-bold mb-0.5">{{ t('Priority') }}</div>
                                     <div class="flex gap-1">
-                                        <button type="button" wire:click="updatePriority('NORMAL')" class="px-2 py-0.5 rounded-full text-[9.5px] font-bold border cursor-pointer {{ $this->workOrder->priority === 'NORMAL' ? 'bg-[#eef1f5] border-[#9aa6bd] text-[#495066]' : 'border-[#d9dfe8] text-muted' }}">Normal</button>
-                                        <button type="button" wire:click="updatePriority('URGENT')" class="px-2 py-0.5 rounded-full text-[9.5px] font-bold border cursor-pointer {{ $this->workOrder->priority === 'URGENT' ? 'bg-[#fef6e7] border-[#f3c27a] text-[#b45309]' : 'border-[#d9dfe8] text-muted' }}">Urgent</button>
-                                        <button type="button" wire:click="updatePriority('SUPER_URGENT')" class="px-2 py-0.5 rounded-full text-[9.5px] font-bold border cursor-pointer {{ $this->workOrder->priority === 'SUPER_URGENT' ? 'bg-[#fdecec] border-[#f0a6a3] text-[#dc2626]' : 'border-[#d9dfe8] text-muted' }}">Super Urgent</button>
+                                        <button type="button" wire:click="updatePriority('NORMAL')" class="px-2 py-0.5 rounded-full text-[9.5px] font-bold border cursor-pointer {{ $this->workOrder->priority === 'NORMAL' ? 'bg-[#eef1f5] border-[#9aa6bd] text-[#495066]' : 'border-[#d9dfe8] text-muted' }}">{{ t('Normal') }}</button>
+                                        <button type="button" wire:click="updatePriority('URGENT')" class="px-2 py-0.5 rounded-full text-[9.5px] font-bold border cursor-pointer {{ $this->workOrder->priority === 'URGENT' ? 'bg-[#fef6e7] border-[#f3c27a] text-[#b45309]' : 'border-[#d9dfe8] text-muted' }}">{{ t('Urgent') }}</button>
+                                        <button type="button" wire:click="updatePriority('SUPER_URGENT')" class="px-2 py-0.5 rounded-full text-[9.5px] font-bold border cursor-pointer {{ $this->workOrder->priority === 'SUPER_URGENT' ? 'bg-[#fdecec] border-[#f0a6a3] text-[#dc2626]' : 'border-[#d9dfe8] text-muted' }}">{{ t('Super Urgent') }}</button>
                                     </div>
                                 </div>
                             </div>
                             <div class="[display:grid] grid-cols-2 gap-2.5 text-[11.5px] mt-2.5">
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">Nama Produk</div><div class="font-bold">{{ $this->workOrder->product?->product_name ?? '—' }}</div></div>
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">Customer</div><div class="font-bold">{{ $this->workOrder->coOrder?->quotation?->customer?->customer_name ?? '—' }}</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Product Name') }}</div><div class="font-bold">{{ $this->workOrder->product?->product_name ?? '—' }}</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Customer') }}</div><div class="font-bold">{{ $this->workOrder->coOrder?->quotation?->customer?->customer_name ?? '—' }}</div></div>
                             </div>
                         </div>
 
                         {{-- Spesifikasi Produk --}}
                         <div class="mb-3.5 pb-3.5 border-b border-dashed border-[#e2e6ee]">
-                            <div class="text-[9px] uppercase tracking-wide font-bold text-accent mb-1.5">Spesifikasi Produk</div>
+                            <div class="text-[9px] uppercase tracking-wide font-bold text-accent mb-1.5">{{ t('Product Specification') }}</div>
                             <div class="[display:grid] grid-cols-4 gap-2.5 text-[11.5px]">
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">Qty Order</div><div class="font-bold">{{ number_format((float) $this->workOrder->qty, 0, ',', '.') }} Pcs</div></div>
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">Ukuran Cetak</div><div class="font-bold">{{ $this->masterCard?->ukuran_cetak ?: '— belum diisi' }}</div></div>
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">Jenis Finishing</div><div class="font-bold">{{ $this->masterCard?->jenis_finishing ?: '— belum diisi' }}</div></div>
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">Bentuk Sambungan</div><div class="font-bold">{{ $this->masterCard?->bentuk_sambungan ?: '— belum diisi' }}</div></div>
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">Isi Satu Cetakan</div><div class="font-bold">{{ $this->masterCard?->isi_satu_cetakan ?: '— belum diisi' }}</div></div>
-                                <div><div class="text-[8.7px] text-muted uppercase font-bold">Pack Qty</div><div class="font-bold">{{ $this->masterCard?->pack_qty ? number_format((float) $this->masterCard->pack_qty, 0, ',', '.') : '— belum diisi' }}</div></div>
-                                <div class="col-span-2"><div class="text-[8.7px] text-muted uppercase font-bold">Urutan Pekerjaan</div><div class="font-bold text-[10.5px]">{{ $this->masterCard?->urutan_pekerjaan ?: '— belum diisi' }}</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Order Qty') }}</div><div class="font-bold">{{ number_format((float) $this->workOrder->qty, 0, ',', '.') }} Pcs</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Print Size') }}</div><div class="font-bold">{{ $this->masterCard?->ukuran_cetak ?: '— '.t('not set') }}</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Finishing Type') }}</div><div class="font-bold">{{ $this->masterCard?->jenis_finishing ?: '— '.t('not set') }}</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Joint Type') }}</div><div class="font-bold">{{ $this->masterCard?->bentuk_sambungan ?: '— '.t('not set') }}</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Pieces per Sheet') }}</div><div class="font-bold">{{ $this->masterCard?->isi_satu_cetakan ?: '— '.t('not set') }}</div></div>
+                                <div><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Pack Qty') }}</div><div class="font-bold">{{ $this->masterCard?->pack_qty ? number_format((float) $this->masterCard->pack_qty, 0, ',', '.') : '— '.t('not set') }}</div></div>
+                                <div class="col-span-2"><div class="text-[8.7px] text-muted uppercase font-bold">{{ t('Work Sequence') }}</div><div class="font-bold text-[10.5px]">{{ $this->masterCard?->urutan_pekerjaan ?: '— '.t('not set') }}</div></div>
                             </div>
                         </div>
 
                         {{-- Warna Cetak --}}
                         <div>
-                            <div class="text-[9px] uppercase tracking-wide font-bold text-accent mb-1.5">Warna Cetak</div>
+                            <div class="text-[9px] uppercase tracking-wide font-bold text-accent mb-1.5">{{ t('Print Colors') }}</div>
                             <div class="[display:grid] grid-cols-2 gap-2.5">
                                 <div class="bg-[#fbfcfe] border border-[#eef1f6] rounded-md px-2.5 py-2">
-                                    <div class="text-[8.8px] uppercase font-bold text-muted mb-1">Warna Pertama (CS)</div>
-                                    <div class="text-[10.8px] font-semibold">{{ $this->masterCard?->warna_cs ?: '— belum diisi' }}</div>
+                                    <div class="text-[8.8px] uppercase font-bold text-muted mb-1">{{ t('First Color (CS)') }}</div>
+                                    <div class="text-[10.8px] font-semibold">{{ $this->masterCard?->warna_cs ?: '— '.t('not set') }}</div>
                                 </div>
                                 <div class="bg-[#fbfcfe] border border-[#eef1f6] rounded-md px-2.5 py-2">
-                                    <div class="text-[8.8px] uppercase font-bold text-muted mb-1">Warna Kedua (KS)</div>
-                                    <div class="text-[10.8px] font-semibold {{ $this->masterCard?->warna_ks ? '' : 'text-[#b7bec9] italic font-normal' }}">{{ $this->masterCard?->warna_ks ?: '— tidak dipakai' }}</div>
+                                    <div class="text-[8.8px] uppercase font-bold text-muted mb-1">{{ t('Second Color (KS)') }}</div>
+                                    <div class="text-[10.8px] font-semibold {{ $this->masterCard?->warna_ks ? '' : 'text-[#b7bec9] italic font-normal' }}">{{ $this->masterCard?->warna_ks ?: '— '.t('not used') }}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mx-3.5 mb-3.5 text-[10px] font-bold px-2.5 py-2 rounded-md bg-[#fdecec] border border-[#f0b8b5] text-[#a3241f]">⚠ Semua proof print (digital + letak) wajib dilampirkan bersama Master Card sebelum cetak massal.</div>
+                <div class="mx-3.5 mb-3.5 text-[10px] font-bold px-2.5 py-2 rounded-md bg-[#fdecec] border border-[#f0b8b5] text-[#a3241f]">⚠ {{ t('All proof prints (digital + layout) must be attached with the Master Card before mass printing.') }}</div>
 
                 <div class="[display:grid] grid-cols-5 border-t border-[#eef1f5]">
                     @foreach (['Desainer', 'Marketing', 'PPIC', 'QA', 'Plant Manager'] as $role)
                         @php($so = $this->masterCardSignoff->get($role))
                         <div class="px-3 py-2.5 {{ ! $loop->last ? 'border-r border-[#eef1f5]' : '' }}">
-                            <div class="text-[9.3px] uppercase font-bold text-muted tracking-wide mb-1">{{ $role }}</div>
+                            <div class="text-[9.3px] uppercase font-bold text-muted tracking-wide mb-1">{{ t($role === 'Desainer' ? 'Designer' : $role) }}</div>
                             @if ($so?->signed_at)
-                                <div class="text-[10.5px] font-bold text-[#0e7a44]">✓ Signed<span class="block text-[8.7px] font-semibold text-muted mt-0.5">{{ $so->signed_by }} · {{ \Carbon\Carbon::parse($so->signed_at)->format('d/m H:i') }}</span></div>
+                                <div class="text-[10.5px] font-bold text-[#0e7a44]">✓ {{ t('Signed') }}<span class="block text-[8.7px] font-semibold text-muted mt-0.5">{{ $so->signed_by }} · {{ \Carbon\Carbon::parse($so->signed_at)->format('d/m H:i') }}</span></div>
                             @else
-                                <div class="text-[10px] text-[#a3aabb] italic">Menunggu tanda tangan</div>
+                                <div class="text-[10px] text-[#a3aabb] italic">{{ t('Awaiting signature') }}</div>
                             @endif
                         </div>
                     @endforeach
                 </div>
-                <p class="px-3.5 py-2.5 text-[10px] text-muted italic border-t border-[#eef1f5]">"— belum diisi" = kolom sudah ada di skema (<code>vw_master_card</code>/<code>prod_part</code>) tapi datanya kosong utk produk ini.</p>
+                <p class="px-3.5 py-2.5 text-[10px] text-muted italic border-t border-[#eef1f5]">{!! t('"— not set" = the column exists in the schema (<code>vw_master_card</code>/<code>prod_part</code>) but its data is empty for this product.') !!}</p>
             </div>
 
             {{-- ================= TAB: BILL OF PROCESS ================= --}}
             <div x-show="tab === 'bop'" x-cloak>
                 <div class="px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide font-bold border-b border-[#eef1f5] flex items-center justify-between">
-                    <span>Bill of Process</span>
+                    <span>{{ t('Bill of Process') }}</span>
                     @if ($this->canEditRouting)
-                        <button type="button" wire:click="addProcessRow" class="normal-case font-semibold text-[11px] px-2.5 py-1 rounded bg-[#eef3fb] text-[#2f6fed] cursor-pointer">+ Tambah Proses</button>
+                        <button type="button" wire:click="addProcessRow" class="normal-case font-semibold text-[11px] px-2.5 py-1 rounded bg-[#eef3fb] text-[#2f6fed] cursor-pointer">+ {{ t('Add Process') }}</button>
                     @endif
                 </div>
                 <div class="overflow-x-auto">
                 <table class="w-full border-collapse text-[12px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[22%]">Proses &amp; Mesin</th>
-                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[13%]">Operator</th>
-                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[13%]">Est. Mulai</th>
-                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[13%]">Est. Selesai</th>
-                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[12%]">Target Kecepatan</th>
-                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[10%]">Spoilage</th>
-                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[10%]">Waste</th>
-                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[9%]">Status</th>
-                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5]">Link &amp; Act</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[22%]">{{ t('Process & Machine') }}</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[13%]">{{ t('Operator') }}</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[13%]">{{ t('Est. Start') }}</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[13%]">{{ t('Est. Finish') }}</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[12%]">{{ t('Target Speed') }}</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[10%]">{{ t('Spoilage') }}</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[10%]">{{ t('Waste') }}</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[9%]">{{ t('Status') }}</th>
+                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5]">{{ t('Link & Act') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1386,25 +1386,25 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                                 <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#eef1f5] text-muted text-[9px] font-bold shrink-0">{{ $op->seq_no }}</span>
                                                 <span class="font-bold text-[11.5px]">{{ $op->process_name ?: '—' }}</span>
                                             </div>
-                                            <div class="text-[9.7px] text-muted mt-0.5">{{ $op->resource_type === 'MACHINE' ? ($op->machine?->machine_name ?? '—') : 'Manual' }}</div>
+                                            <div class="text-[9.7px] text-muted mt-0.5">{{ $op->resource_type === 'MACHINE' ? ($op->machine?->machine_name ?? '—') : t('Manual') }}</div>
                                         </div>
                                     </template>
                                     <template x-if="editing">
                                         <div class="space-y-1">
                                             <select wire:change="updateOperationField({{ $op->operation_id }}, 'process_name', $event.target.value)" @change="editing = false" class="w-full px-1.5 py-1 border border-accent rounded text-[11px]">
-                                                <option value="">— pilih proses —</option>
+                                                <option value="">{{ t('— select process —') }}</option>
                                                 @foreach ($this->processOptions as $proc)
                                                     <option value="{{ $proc->process_name }}" @selected($op->process_name === $proc->process_name)>{{ $proc->process_name }}</option>
                                                 @endforeach
                                             </select>
                                             <div class="flex gap-1">
                                                 <select wire:change="updateOperationField({{ $op->operation_id }}, 'resource_type', $event.target.value)" class="px-1.5 py-1 border border-accent rounded text-[11px]">
-                                                    <option value="MACHINE" @selected($op->resource_type === 'MACHINE')>Mesin</option>
-                                                    <option value="MANUAL" @selected($op->resource_type === 'MANUAL')>Manual</option>
+                                                    <option value="MACHINE" @selected($op->resource_type === 'MACHINE')>{{ t('Machine') }}</option>
+                                                    <option value="MANUAL" @selected($op->resource_type === 'MANUAL')>{{ t('Manual') }}</option>
                                                 </select>
                                                 @if ($op->resource_type === 'MACHINE')
                                                     <select wire:change="updateOperationField({{ $op->operation_id }}, 'machine_id', $event.target.value)" @change="editing = false" class="px-1.5 py-1 border border-accent rounded text-[11px]">
-                                                        <option value="">— mesin —</option>
+                                                        <option value="">— {{ t('machine') }} —</option>
                                                         @foreach ($this->machineOptions as $mc)
                                                             <option value="{{ $mc->machine_id }}" @selected($op->machine_id === $mc->machine_id)>{{ $mc->machine_name }}</option>
                                                         @endforeach
@@ -1422,7 +1422,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                     </template>
                                     <template x-if="editing">
                                         <select autofocus wire:change="updateOperator({{ $op->operation_id }}, $event.target.value)" @change="editing = false" @blur="editing = false" class="w-full px-1.5 py-1 border border-accent rounded text-[11px]">
-                                            <option value="">— tidak ada —</option>
+                                            <option value="">— {{ t('none') }} —</option>
                                             @foreach ($this->employeeOptions as $e)
                                                 <option value="{{ $e->employee_id }}" @selected($op->operatorUtama()?->employee_id === $e->employee_id)>{{ $e->full_name }}</option>
                                             @endforeach
@@ -1435,7 +1435,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                     <template x-if="!editing">
                                         <div @dblclick="editing = @js($this->canEditRouting)" class="cursor-pointer">
                                             <span class="border-b border-dashed border-transparent hover:border-[#c7cfda]">{{ $op->target_start?->format('d/m H:i') ?? '—' }}</span>
-                                            <span class="block text-[8.5px] uppercase font-bold text-muted mt-0.5">⚙ dari engine</span>
+                                            <span class="block text-[8.5px] uppercase font-bold text-muted mt-0.5">⚙ {{ t('from engine') }}</span>
                                         </div>
                                     </template>
                                     <template x-if="editing">
@@ -1448,7 +1448,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                     <template x-if="!editing">
                                         <div @dblclick="editing = @js($this->canEditRouting)" class="cursor-pointer">
                                             <span class="border-b border-dashed border-transparent hover:border-[#c7cfda]">{{ $op->target_finish?->format('d/m H:i') ?? '—' }}</span>
-                                            <span class="block text-[8.5px] uppercase font-bold text-muted mt-0.5">⚙ dari engine</span>
+                                            <span class="block text-[8.5px] uppercase font-bold text-muted mt-0.5">⚙ {{ t('from engine') }}</span>
                                         </div>
                                     </template>
                                     <template x-if="editing">
@@ -1464,7 +1464,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                     <template x-if="editing">
                                         <div class="flex items-center gap-1">
                                             <input type="number" step="0.01" autofocus value="{{ $op->rate_band_value }}" wire:change="updateOperationField({{ $op->operation_id }}, 'rate_band_value', $event.target.value)" @change="editing = false" @blur="editing = false" class="w-16 px-1.5 py-1 border border-accent rounded text-[11px]">
-                                            <button type="button" wire:click="refillTargetDefault({{ $op->operation_id }})" title="Ambil target default" class="text-[12px] cursor-pointer">↻</button>
+                                            <button type="button" wire:click="refillTargetDefault({{ $op->operation_id }})" title="{{ t('Fetch default target') }}" class="text-[12px] cursor-pointer">↻</button>
                                         </div>
                                     </template>
                                 </td>
@@ -1514,51 +1514,51 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
                                 <td class="px-2 py-1.5 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                     <div class="inline-flex items-center gap-1 flex-wrap justify-end">
-                                        <button type="button" wire:click="openInSchedulingBoard" title="Ubah jadwal di Gantt Chart" class="w-6 h-6 rounded-md hover:bg-[#eef1f5] cursor-pointer">📅</button>
-                                        <a href="{{ route('production.process-rate') }}" target="_blank" title="Kelola target rate proses×mesin/pegawai" class="w-6 h-6 inline-flex items-center justify-center rounded-md hover:bg-[#eef1f5] cursor-pointer">⚙</a>
+                                        <button type="button" wire:click="openInSchedulingBoard" title="{{ t('Change schedule in the Gantt Chart') }}" class="w-6 h-6 rounded-md hover:bg-[#eef1f5] cursor-pointer">📅</button>
+                                        <a href="{{ route('production.process-rate') }}" target="_blank" title="{{ t('Manage process×machine/employee target rates') }}" class="w-6 h-6 inline-flex items-center justify-center rounded-md hover:bg-[#eef1f5] cursor-pointer">⚙</a>
                                         @if (in_array($op->task_status, ['RUNNING', 'DONE'], true))
-                                            <button type="button" wire:click="openOutputEntry({{ $op->operation_id }})" title="Catat Output" class="w-6 h-6 rounded-md hover:bg-[#eef3fb] cursor-pointer">📊</button>
+                                            <button type="button" wire:click="openOutputEntry({{ $op->operation_id }})" title="{{ t('Record Output') }}" class="w-6 h-6 rounded-md hover:bg-[#eef3fb] cursor-pointer">📊</button>
                                         @endif
                                         @if ($op->task_status === 'RUNNING')
-                                            <button type="button" wire:click="openBreakdown({{ $op->operation_id }})" title="Lapor Breakdown" class="w-6 h-6 rounded-md hover:bg-[#fbeaea] cursor-pointer">⚠</button>
+                                            <button type="button" wire:click="openBreakdown({{ $op->operation_id }})" title="{{ t('Report Breakdown') }}" class="w-6 h-6 rounded-md hover:bg-[#fbeaea] cursor-pointer">⚠</button>
                                         @elseif ($op->task_status === 'QC_HOLD')
-                                            <button type="button" wire:click="qcPass({{ $op->operation_id }})" title="Lulus" class="w-6 h-6 rounded-md hover:bg-[#dcfce7] cursor-pointer">✓</button>
-                                            <button type="button" wire:click="openQcReject({{ $op->operation_id }})" title="Tolak" class="w-6 h-6 rounded-md hover:bg-[#fbeaea] cursor-pointer">✕</button>
+                                            <button type="button" wire:click="qcPass({{ $op->operation_id }})" title="{{ t('Pass') }}" class="w-6 h-6 rounded-md hover:bg-[#dcfce7] cursor-pointer">✓</button>
+                                            <button type="button" wire:click="openQcReject({{ $op->operation_id }})" title="{{ t('Reject') }}" class="w-6 h-6 rounded-md hover:bg-[#fbeaea] cursor-pointer">✕</button>
                                         @elseif ($op->task_status === 'QC_REJECTED')
-                                            <button type="button" wire:click="reworkFromReject({{ $op->operation_id }})" title="Rework" class="w-6 h-6 rounded-md hover:bg-[#eef3fb] cursor-pointer">↻</button>
+                                            <button type="button" wire:click="reworkFromReject({{ $op->operation_id }})" title="{{ t('Rework') }}" class="w-6 h-6 rounded-md hover:bg-[#eef3fb] cursor-pointer">↻</button>
                                         @elseif ($op->task_status === 'SUBCONTRACT')
-                                            <button type="button" wire:click="receiveFromSubcontract({{ $op->operation_id }})" title="Terima dari Subkontrak" class="w-6 h-6 rounded-md hover:bg-[#eef3fb] cursor-pointer">📦</button>
+                                            <button type="button" wire:click="receiveFromSubcontract({{ $op->operation_id }})" title="{{ t('Receive from Subcontract') }}" class="w-6 h-6 rounded-md hover:bg-[#eef3fb] cursor-pointer">📦</button>
                                         @endif
                                         @if ($this->canEditRouting && $op->task_status === 'PENDING')
-                                            <button type="button" wire:click="removeProcessRow({{ $op->operation_id }})" title="Hapus baris proses" class="w-6 h-6 rounded-md text-[#a3241f] hover:bg-[#fbeaea] cursor-pointer">✕</button>
+                                            <button type="button" wire:click="removeProcessRow({{ $op->operation_id }})" title="{{ t('Delete process row') }}" class="w-6 h-6 rounded-md text-[#a3241f] hover:bg-[#fbeaea] cursor-pointer">✕</button>
                                         @endif
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="9" class="text-center py-8 text-muted">Belum ada task/operation.</td></tr>
+                            <tr><td colspan="9" class="text-center py-8 text-muted">{{ t('No tasks/operations yet.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
                 </div>
-                <p class="px-3.5 py-2.5 text-[10px] text-muted italic border-t border-[#eef1f5]">Est. Mulai/Selesai diisi otomatis Scheduling Engine — dblclick utk koreksi cepat (tanpa validasi kalender), atau klik "📅" utk ubah visual di Gantt Chart. Kolom lain (Operator, Target Kecepatan, Proses/Mesin selagi belum berjalan) juga dblclick utk ubah.</p>
+                <p class="px-3.5 py-2.5 text-[10px] text-muted italic border-t border-[#eef1f5]">{{ t('Est. Start/Finish are filled automatically by the Scheduling Engine — double-click for a quick fix (no calendar validation), or click "📅" to change it visually in the Gantt Chart.') }} {{ t('Other columns (Operator, Target Speed, Process/Machine while not yet running) can also be double-clicked to change.') }}</p>
             </div>
 
             {{-- ================= TAB: BILL OF MATERIAL ================= --}}
             <div x-show="tab === 'bom'" x-cloak>
                 <div class="px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide font-bold border-b border-[#eef1f5] flex items-center justify-between">
-                    <span>Bill of Material</span>
-                    <span class="normal-case font-semibold text-[10px] text-muted">dari Product Costing + stok gudang live</span>
+                    <span>{{ t('Bill of Material') }}</span>
+                    <span class="normal-case font-semibold text-[10px] text-muted">{{ t('from Product Costing + live warehouse stock') }}</span>
                 </div>
                 <div class="overflow-x-auto">
                 <table class="w-full border-collapse text-[12px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[28%]">Material &amp; Spesifikasi</th>
-                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[16%]">Qty Kebutuhan</th>
-                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[18%]">Qty Tersedia (Gudang)</th>
-                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[16%]">Qty Harus Dibeli</th>
-                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[12%]">Aksi</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[28%]">{{ t('Material & Specification') }}</th>
+                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[16%]">{{ t('Required Qty') }}</th>
+                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[18%]">{{ t('Available Qty (Warehouse)') }}</th>
+                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[16%]">{{ t('Qty to Buy') }}</th>
+                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[12%]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1580,7 +1580,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-1.5 border-b {{ $subs->isEmpty() ? 'border-[#eef1f5]' : 'border-transparent' }} text-right"><span class="font-bold {{ $row->qty_harus_dibeli > 0 ? 'text-[#a3241f]' : 'text-[#a3aabb]' }}">{{ number_format($row->qty_harus_dibeli, 0, ',', '.') }}</span> <span class="text-[9.5px] text-muted font-bold">{{ $row->unit }}</span></td>
                                 <td class="px-3 py-1.5 border-b {{ $subs->isEmpty() ? 'border-[#eef1f5]' : 'border-transparent' }} text-right">
                                     @if (! $pendingSub)
-                                        <button type="button" wire:click="openSubstitution({{ $row->id_part_material }})" title="Substitusi bahan" class="text-[10.5px] font-semibold px-2 py-1 rounded bg-[#eef3fb] text-[#2f6fed] cursor-pointer">🔁 Substitusi</button>
+                                        <button type="button" wire:click="openSubstitution({{ $row->id_part_material }})" title="{{ t('Material substitution') }}" class="text-[10.5px] font-semibold px-2 py-1 rounded bg-[#eef3fb] text-[#2f6fed] cursor-pointer">🔁 {{ t('Substitute') }}</button>
                                     @endif
                                 </td>
                             </tr>
@@ -1590,29 +1590,29 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                         @if ($pendingSub)
                                             <div class="flex items-center justify-between gap-2 flex-wrap text-[10.5px]">
                                                 <div>
-                                                    <span class="font-bold px-1.5 py-0.5 rounded-full bg-[#fef3c7] text-[#92400e]">⏳ PENDING</span>
-                                                    <span class="ml-1.5">Usul ganti ke <strong>{{ $pendingSub->substitute_rawmat_name }}</strong> ({{ number_format((float) $pendingSub->substitute_length_mm, 0) }}×{{ number_format((float) $pendingSub->substitute_width_mm, 0) }}mm, UP {{ $pendingSub->computed_up_count }})</span>
+                                                    <span class="font-bold px-1.5 py-0.5 rounded-full bg-[#fef3c7] text-[#92400e]">⏳ {{ t('PENDING') }}</span>
+                                                    <span class="ml-1.5">{{ t('Proposed change to') }} <strong>{{ $pendingSub->substitute_rawmat_name }}</strong> ({{ number_format((float) $pendingSub->substitute_length_mm, 0) }}×{{ number_format((float) $pendingSub->substitute_width_mm, 0) }}mm, UP {{ $pendingSub->computed_up_count }})</span>
                                                     @if ($pendingSub->total_cost_delta !== null)
-                                                        <span class="ml-1.5 font-semibold {{ $pendingSub->total_cost_delta > 0 ? 'text-[#a3241f]' : 'text-[#0e7a44]' }}">({{ $pendingSub->total_cost_delta > 0 ? '+' : '' }}Rp{{ number_format((float) $pendingSub->total_cost_delta, 0, ',', '.') }} vs asli)</span>
+                                                        <span class="ml-1.5 font-semibold {{ $pendingSub->total_cost_delta > 0 ? 'text-[#a3241f]' : 'text-[#0e7a44]' }}">({{ $pendingSub->total_cost_delta > 0 ? '+' : '' }}Rp{{ number_format((float) $pendingSub->total_cost_delta, 0, ',', '.') }} {{ t('vs original') }})</span>
                                                     @endif
                                                 </div>
                                                 @if (Auth::user()->isOpsManagerOrAbove())
                                                     <div class="flex items-center gap-1.5 shrink-0">
-                                                        <button type="button" wire:click="approveSubstitution({{ $pendingSub->id }})" class="px-2 py-1 rounded bg-[#0e7a44] text-white font-semibold cursor-pointer">Approve</button>
-                                                        <button type="button" wire:click="openRejectSubstitution({{ $pendingSub->id }})" class="px-2 py-1 rounded bg-[#dc2626] text-white font-semibold cursor-pointer">Tolak</button>
+                                                        <button type="button" wire:click="approveSubstitution({{ $pendingSub->id }})" class="px-2 py-1 rounded bg-[#0e7a44] text-white font-semibold cursor-pointer">{{ t('Approve') }}</button>
+                                                        <button type="button" wire:click="openRejectSubstitution({{ $pendingSub->id }})" class="px-2 py-1 rounded bg-[#dc2626] text-white font-semibold cursor-pointer">{{ t('Reject') }}</button>
                                                     </div>
                                                 @else
-                                                    <span class="text-muted italic shrink-0">Menunggu approval Manager Operasional ke atas</span>
+                                                    <span class="text-muted italic shrink-0">{{ t('Awaiting approval from Operations Manager and above') }}</span>
                                                 @endif
                                             </div>
                                         @elseif ($activeSub)
                                             <div class="flex items-center justify-between gap-2 flex-wrap text-[10.5px]">
                                                 <div>
-                                                    <span class="font-bold px-1.5 py-0.5 rounded-full bg-[#dbeafe] text-[#1d4ed8]">🔁 AKTIF</span>
-                                                    <span class="ml-1.5">Disetujui {{ $activeSub->approved_by }} · {{ $activeSub->approved_at?->format('d/m H:i') }} · estimasi output {{ number_format((float) $activeSub->computed_qty_output_pcs, 0, ',', '.') }} pcs dari stok saat ini</span>
+                                                    <span class="font-bold px-1.5 py-0.5 rounded-full bg-[#dbeafe] text-[#1d4ed8]">🔁 {{ t('ACTIVE') }}</span>
+                                                    <span class="ml-1.5">{{ t('Approved') }} {{ $activeSub->approved_by }} · {{ $activeSub->approved_at?->format('d/m H:i') }} · {{ str_replace(':n', number_format((float) $activeSub->computed_qty_output_pcs, 0, ',', '.'), t('estimated output :n pcs from current stock')) }}</span>
                                                 </div>
                                                 @if (Auth::user()->isOpsManagerOrAbove())
-                                                    <button type="button" wire:click="undoSubstitution({{ $activeSub->id }})" class="px-2 py-1 rounded bg-[#e6eaf0] text-[#333] font-semibold cursor-pointer shrink-0">↩ Batalkan</button>
+                                                    <button type="button" wire:click="undoSubstitution({{ $activeSub->id }})" class="px-2 py-1 rounded bg-[#e6eaf0] text-[#333] font-semibold cursor-pointer shrink-0">↩ {{ t('Revert') }}</button>
                                                 @endif
                                             </div>
                                         @endif
@@ -1620,12 +1620,12 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                 </tr>
                             @endif
                         @empty
-                            <tr><td colspan="5" class="text-center py-8 text-muted">Belum ada Bill of Material.</td></tr>
+                            <tr><td colspan="5" class="text-center py-8 text-muted">{{ t('No Bill of Material yet.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
                 </div>
-                <p class="px-3.5 py-2.5 text-[10px] text-muted italic border-t border-[#eef1f5]">Qty Tersedia diambil live dari stok gudang (v_rm_available). Qty Kebutuhan masih simplifikasi = qty WO (belum ikut faktor lembar/plano hasil Imposition). "Qty Harus Dibeli" = selisih sederhana, bukan MRP netting penuh lintas-WO.</p>
+                <p class="px-3.5 py-2.5 text-[10px] text-muted italic border-t border-[#eef1f5]">{{ t('Available Qty is taken live from warehouse stock (v_rm_available).') }} {{ t('Required Qty is still simplified = WO qty (does not yet follow the sheet/plano factor from Imposition).') }} {{ t('"Qty to Buy" = a simple difference, not full cross-WO MRP netting.') }}</p>
             </div>
         </div>
 
@@ -1635,9 +1635,9 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
              kalau ditutup manual). --}}
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] py-16 text-center">
             <div class="text-4xl mb-3">📋</div>
-            <div class="font-bold text-navy text-[15px] mb-1.5">Belum Ada Work Order Dipilih</div>
-            <p class="text-muted text-xs max-w-[420px] mx-auto mb-4">Pilih 1 baris Plan Delivery yang sudah Confirmed untuk digenerate jadi Work Order baru — Bill of Process &amp; Bill of Material otomatis diambil dari Inquiry.</p>
-            <button type="button" wire:click="openDeliveryModal" class="px-5 py-2.5 rounded-md text-xs font-bold bg-[#16a34a] text-white cursor-pointer">🔍 Pilih Plan Delivery</button>
+            <div class="font-bold text-navy text-[15px] mb-1.5">{{ t('No Work Order Selected Yet') }}</div>
+            <p class="text-muted text-xs max-w-[420px] mx-auto mb-4">{{ t('Choose 1 Confirmed Plan Delivery row to generate a new Work Order — Bill of Process & Bill of Material are taken from the Inquiry automatically.') }}</p>
+            <button type="button" wire:click="openDeliveryModal" class="px-5 py-2.5 rounded-md text-xs font-bold bg-[#16a34a] text-white cursor-pointer">🔍 {{ t('Choose Plan Delivery') }}</button>
         </div>
     @endif
     </div>
@@ -1647,7 +1647,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-[rgba(20,26,40,.5)] z-[100] flex items-center justify-center p-6" wire:click.self="closeDeliveryModal">
             <div class="bg-white rounded-xl w-[820px] max-w-full max-h-[82vh] flex flex-col shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between rounded-t-xl">
-                    <span>Pilih Plan Delivery yang akan Diproses</span>
+                    <span>{{ t('Choose the Plan Delivery to Process') }}</span>
                     <button type="button" wire:click="closeDeliveryModal" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
                 <div class="overflow-y-auto py-1">
@@ -1660,22 +1660,22 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                     <div class="text-[10.3px] text-muted">{{ $d->item?->description ?? '—' }}</div>
                                 </div>
                                 <div class="ml-auto text-right text-[10.8px] text-muted flex gap-4">
-                                    <span>Tgl Kirim<b class="block text-[12px] text-ink">{{ $d->ship_date?->translatedFormat('d M Y') }}</b></span>
-                                    <span>Qty<b class="block text-[12px] text-ink">{{ number_format((float) $d->ship_qty, 0, ',', '.') }}</b></span>
+                                    <span>{{ t('Ship Date') }}<b class="block text-[12px] text-ink">{{ $d->ship_date?->translatedFormat('d M Y') }}</b></span>
+                                    <span>{{ t('Qty') }}<b class="block text-[12px] text-ink">{{ number_format((float) $d->ship_qty, 0, ',', '.') }}</b></span>
                                 </div>
-                                <button type="button" wire:click="pickPlanDelivery({{ $d->id_delivery }})" wire:confirm="Generate WO dari baris ini? BOM/BOP diambil dari Inquiry, tak bisa dibatalkan (bukan dihapus, WO tetap tercatat)."
-                                    class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#16a34a] text-white cursor-pointer shrink-0">OK · Proses jadi WO</button>
+                                <button type="button" wire:click="pickPlanDelivery({{ $d->id_delivery }})" wire:confirm="{{ t('Generate a WO from this row? BOM/BOP are taken from the Inquiry, cannot be undone (not deleted, the WO stays recorded).') }}"
+                                    class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#16a34a] text-white cursor-pointer shrink-0">{{ t('OK · Process into WO') }}</button>
                             </div>
                             @if ($d->item?->inquiry?->parts?->count() > 1)
-                                <div class="text-[10px] text-muted mt-1">↳ {{ $d->item->inquiry->parts->count() }} part — akan jadi {{ $d->item->inquiry->parts->count() }} WO sekaligus</div>
+                                <div class="text-[10px] text-muted mt-1">↳ {{ str_replace(':n', $d->item->inquiry->parts->count(), t(':n parts — will become :n WOs at once')) }}</div>
                             @endif
                         </div>
                     @empty
-                        <div class="px-4 py-8 text-center text-muted text-xs">Tidak ada Plan Delivery lain yang siap diproses.</div>
+                        <div class="px-4 py-8 text-center text-muted text-xs">{{ t('No other Plan Delivery is ready to process.') }}</div>
                     @endforelse
                 </div>
                 <div class="px-4 py-3 border-t border-[#eef1f5] flex justify-end">
-                    <button type="button" wire:click="closeDeliveryModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
+                    <button type="button" wire:click="closeDeliveryModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
                 </div>
             </div>
         </div>
@@ -1686,15 +1686,15 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('qcRejectOperationId', null)">
             <div class="bg-white rounded-xl w-[420px] max-w-[95vw] shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
-                    <span>Tolak QC</span>
+                    <span>{{ t('Reject QC') }}</span>
                     <button type="button" wire:click="$set('qcRejectOperationId', null)" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
                 <div class="p-4">
-                    <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Alasan Penolakan</label>
-                    <textarea wire:model="qcRejectReason" rows="3" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs" placeholder="mis. Warna tidak sesuai Delta E toleransi…"></textarea>
+                    <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Rejection Reason') }}</label>
+                    <textarea wire:model="qcRejectReason" rows="3" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs" placeholder="{{ t('e.g. Color outside Delta E tolerance…') }}"></textarea>
                     <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
-                        <button type="button" wire:click="$set('qcRejectOperationId', null)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="button" wire:click="submitQcReject" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#dc2626] text-white cursor-pointer">Tolak</button>
+                        <button type="button" wire:click="$set('qcRejectOperationId', null)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="button" wire:click="submitQcReject" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#dc2626] text-white cursor-pointer">{{ t('Reject') }}</button>
                     </div>
                 </div>
             </div>
@@ -1710,19 +1710,19 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeSubstitution">
             <div class="bg-white rounded-xl w-[480px] max-w-[95vw] max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
-                    <span>🔁 Substitusi Bahan</span>
+                    <span>🔁 {{ t('Material Substitution') }}</span>
                     <button type="button" wire:click="closeSubstitution" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
                 <div class="p-4 space-y-3.5">
                     <div class="relative">
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Bahan Pengganti</label>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Substitute Material') }}</label>
                         @if ($substituteRawmatId)
                             <div class="flex items-center gap-1.5">
                                 <div class="flex-1"><x-form.input value="{{ $substituteRawmatName }}" readonly /></div>
-                                <button type="button" wire:click="clearSubstituteMaterial" class="text-[11px] text-muted underline cursor-pointer shrink-0">Ganti</button>
+                                <button type="button" wire:click="clearSubstituteMaterial" class="text-[11px] text-muted underline cursor-pointer shrink-0">{{ t('Change', 'action') }}</button>
                             </div>
                         @else
-                            <input type="text" wire:model.live.debounce.400ms="substituteMaterialQuery" autocomplete="off" placeholder="Ketik nama/kode bahan…" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                            <input type="text" wire:model.live.debounce.400ms="substituteMaterialQuery" autocomplete="off" placeholder="{{ t('Type material name/code…') }}" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                             @if ($substituteMaterialQuery && mb_strlen($substituteMaterialQuery) >= 2)
                                 <div class="absolute left-0 right-0 mt-1 bg-white border border-[#e5e7eb] rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
                                     @forelse ($this->substituteMaterialResults as $m)
@@ -1731,7 +1731,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                             <span class="text-muted text-[10px]">{{ $m->material_code }}</span>
                                         </div>
                                     @empty
-                                        <div class="px-2.5 py-1.5 text-xs text-muted">Tidak ditemukan.</div>
+                                        <div class="px-2.5 py-1.5 text-xs text-muted">{{ t('Not found.') }}</div>
                                     @endforelse
                                 </div>
                             @endif
@@ -1740,19 +1740,19 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
                     <div class="[display:grid] grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Panjang (mm)</label>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Length (mm)') }}</label>
                             <input type="number" step="1" wire:model.live.debounce.400ms="substituteLengthMm" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Lebar (mm)</label>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Width (mm)') }}</label>
                             <input type="number" step="1" wire:model.live.debounce.400ms="substituteWidthMm" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                         </div>
                     </div>
-                    <p class="text-[10px] text-muted italic -mt-2">Ukuran bahan diisi manual — data ukuran fisik belum lengkap di Master Bahan Baku.</p>
+                    <p class="text-[10px] text-muted italic -mt-2">{{ t('Material size is entered manually — physical size data is incomplete in the Raw Material Master.') }}</p>
 
                     <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Alasan Substitusi</label>
-                        <textarea wire:model="substitutionReason" rows="2" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs" placeholder="mis. Stok bahan asli kosong, dipakai punya sejenis…"></textarea>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Substitution Reason') }}</label>
+                        <textarea wire:model="substitutionReason" rows="2" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs" placeholder="{{ t('e.g. Original material out of stock, using a similar one…') }}"></textarea>
                     </div>
 
                     @php($preview = $this->substitutionPreview)
@@ -1760,28 +1760,28 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                         <p class="text-[11px] text-[#a3241f] bg-[#fbeaea] border border-[#f3c9c9] rounded-md px-3 py-2">⚠ {{ $preview['error'] }}</p>
                     @elseif ($preview)
                         <div class="bg-[#f7f9fc] border border-[#e5e9f0] rounded-md p-3 text-[11px] space-y-1">
-                            <div class="flex justify-between"><span class="text-muted">UP-count baru</span><span class="font-bold">{{ $preview['up_count'] }} ({{ $preview['efficiency_pct'] }}% efisien, {{ $preview['waste_pct'] }}% waste layout)</span></div>
-                            <div class="flex justify-between"><span class="text-muted">Qty Kebutuhan (lembar) baru</span><span class="font-bold">{{ number_format($preview['qty_kebutuhan_baru'], 0, ',', '.') }}</span></div>
-                            <div class="flex justify-between"><span class="text-muted">Stok bahan pengganti saat ini</span><span class="font-bold">{{ number_format($preview['qty_tersedia_substitute'], 0, ',', '.') }}</span></div>
-                            <div class="flex justify-between"><span class="text-muted">Estimasi Output dari stok itu</span><span class="font-bold">{{ number_format($preview['qty_output_pcs'], 0, ',', '.') }} pcs</span></div>
+                            <div class="flex justify-between"><span class="text-muted">{{ t('New UP-count') }}</span><span class="font-bold">{{ $preview['up_count'] }} ({{ $preview['efficiency_pct'] }}% {{ t('efficient') }}, {{ $preview['waste_pct'] }}% {{ t('layout waste') }})</span></div>
+                            <div class="flex justify-between"><span class="text-muted">{{ t('New Required Qty (sheets)') }}</span><span class="font-bold">{{ number_format($preview['qty_kebutuhan_baru'], 0, ',', '.') }}</span></div>
+                            <div class="flex justify-between"><span class="text-muted">{{ t('Current substitute material stock') }}</span><span class="font-bold">{{ number_format($preview['qty_tersedia_substitute'], 0, ',', '.') }}</span></div>
+                            <div class="flex justify-between"><span class="text-muted">{{ t('Estimated Output from that stock') }}</span><span class="font-bold">{{ number_format($preview['qty_output_pcs'], 0, ',', '.') }} pcs</span></div>
                             <div class="flex justify-between border-t border-[#e5e9f0] pt-1 mt-1">
-                                <span class="text-muted">Delta Biaya vs bahan asli</span>
+                                <span class="text-muted">{{ t('Cost Delta vs original material') }}</span>
                                 @if ($preview['cost_delta'] !== null)
                                     <span class="font-bold {{ $preview['cost_delta'] > 0 ? 'text-[#a3241f]' : 'text-[#0e7a44]' }}">{{ $preview['cost_delta'] > 0 ? '+' : '' }}Rp{{ number_format($preview['cost_delta'], 0, ',', '.') }}</span>
                                 @else
-                                    <span class="text-muted italic">tidak bisa dihitung (harga bahan belum ada)</span>
+                                    <span class="text-muted italic">{{ t('cannot be calculated (no material price yet)') }}</span>
                                 @endif
                             </div>
                         </div>
                     @else
-                        <p class="text-[11px] text-muted italic">Pilih bahan pengganti & isi ukuran utk lihat hasil hitung.</p>
+                        <p class="text-[11px] text-muted italic">{{ t('Choose a substitute material & fill in the size to see the result.') }}</p>
                     @endif
 
                     <div class="flex justify-end gap-2 pt-3 mt-1 border-t border-[#eef1f5]">
-                        <button type="button" wire:click="closeSubstitution" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
+                        <button type="button" wire:click="closeSubstitution" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
                         <button type="button" wire:click="submitSubstitution" @disabled(! $preview || isset($preview['error']))
                             class="px-4 py-2 rounded-md text-xs font-semibold text-white {{ (! $preview || isset($preview['error'])) ? 'bg-[#9ca3af] cursor-not-allowed' : 'bg-[#2f6fed] hover:bg-[#2559c9] cursor-pointer' }}">
-                            Ajukan Substitusi
+                            {{ t('Submit Substitution') }}
                         </button>
                     </div>
                 </div>
@@ -1794,15 +1794,15 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('rejectingSubstitutionId', null)">
             <div class="bg-white rounded-xl w-[420px] max-w-[95vw] shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
-                    <span>Tolak Substitusi Bahan</span>
+                    <span>{{ t('Reject Material Substitution') }}</span>
                     <button type="button" wire:click="$set('rejectingSubstitutionId', null)" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
                 <div class="p-4">
-                    <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Alasan Penolakan</label>
-                    <textarea wire:model="substitutionRejectReason" rows="3" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs" placeholder="mis. Delta biaya terlalu besar, cari alternatif lain…"></textarea>
+                    <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Rejection Reason') }}</label>
+                    <textarea wire:model="substitutionRejectReason" rows="3" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs" placeholder="{{ t('e.g. Cost delta too large, find another alternative…') }}"></textarea>
                     <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
-                        <button type="button" wire:click="$set('rejectingSubstitutionId', null)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="button" wire:click="submitRejectSubstitution" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#dc2626] text-white cursor-pointer">Tolak</button>
+                        <button type="button" wire:click="$set('rejectingSubstitutionId', null)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="button" wire:click="submitRejectSubstitution" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#dc2626] text-white cursor-pointer">{{ t('Reject') }}</button>
                     </div>
                 </div>
             </div>
@@ -1814,50 +1814,50 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeBreakdown">
             <div class="bg-white rounded-xl w-[560px] max-w-[95vw] max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="bg-[#dc2626] text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
-                    <span>⚠ Breakdown &amp; Subkontrak</span>
+                    <span>⚠ {{ t('Breakdown & Subcontract') }}</span>
                     <button type="button" wire:click="closeBreakdown" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
 
                 <div class="p-4 space-y-4">
                     @if ($breakdownStep === 'report')
                         <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Estimasi Downtime (menit)</label>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Estimated Downtime (minutes)') }}</label>
                             <input type="number" wire:model="breakdownDowntimeMinutes" min="1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                         </div>
                         <div class="flex justify-end gap-2">
-                            <button type="button" wire:click="closeBreakdown" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                            <button type="button" wire:click="submitBreakdownReport" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#dc2626] text-white cursor-pointer">Lapor Breakdown</button>
+                            <button type="button" wire:click="closeBreakdown" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                            <button type="button" wire:click="submitBreakdownReport" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#dc2626] text-white cursor-pointer">{{ t('Report Breakdown') }}</button>
                         </div>
                     @else
                         <div class="flex gap-2">
-                            <button type="button" wire:click="$set('rerouteChoice', 'MACHINE_ALT')" class="flex-1 px-3 py-2 rounded-md text-xs font-semibold cursor-pointer {{ $rerouteChoice === 'MACHINE_ALT' ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">Mesin Lain</button>
-                            <button type="button" wire:click="$set('rerouteChoice', 'SUBCONTRACT')" class="flex-1 px-3 py-2 rounded-md text-xs font-semibold cursor-pointer {{ $rerouteChoice === 'SUBCONTRACT' ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">Subkontrak</button>
+                            <button type="button" wire:click="$set('rerouteChoice', 'MACHINE_ALT')" class="flex-1 px-3 py-2 rounded-md text-xs font-semibold cursor-pointer {{ $rerouteChoice === 'MACHINE_ALT' ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ t('Other Machine') }}</button>
+                            <button type="button" wire:click="$set('rerouteChoice', 'SUBCONTRACT')" class="flex-1 px-3 py-2 rounded-md text-xs font-semibold cursor-pointer {{ $rerouteChoice === 'SUBCONTRACT' ? 'bg-[#2c3e69] text-white' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ t('Subcontract') }}</button>
                         </div>
 
                         @if ($rerouteChoice === 'MACHINE_ALT')
                             <div>
-                                <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Mesin Alternatif</label>
+                                <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Alternative Machine') }}</label>
                                 <select wire:model="altMachineId" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                                    <option value="">-- pilih mesin --</option>
+                                    <option value="">{{ t('-- select machine --') }}</option>
                                     @foreach ($this->altMachines as $m)
                                         <option value="{{ $m->machine_id }}">{{ $m->machine_name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="flex justify-end gap-2">
-                                <button type="button" wire:click="closeBreakdown" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                                <button type="button" wire:click="rerouteToMachine" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Pindah Mesin</button>
+                                <button type="button" wire:click="closeBreakdown" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                                <button type="button" wire:click="rerouteToMachine" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">{{ t('Move Machine') }}</button>
                             </div>
                         @else
                             <div class="relative">
-                                <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Vendor Subkontrak</label>
+                                <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Subcontract Vendor') }}</label>
                                 @if ($subVendorId)
                                     <div class="flex items-center gap-1.5">
                                         <div class="flex-1"><x-form.input value="{{ $subVendorName }}" readonly /></div>
-                                        <button type="button" wire:click="clearVendor" class="text-[11px] text-muted underline cursor-pointer shrink-0">Ganti</button>
+                                        <button type="button" wire:click="clearVendor" class="text-[11px] text-muted underline cursor-pointer shrink-0">{{ t('Change', 'action') }}</button>
                                     </div>
                                 @else
-                                    <input type="text" wire:model.live.debounce.400ms="subVendorQuery" autocomplete="off" placeholder="Ketik nama/kode vendor subkon…" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                    <input type="text" wire:model.live.debounce.400ms="subVendorQuery" autocomplete="off" placeholder="{{ t('Type subcontract vendor name/code…') }}" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                                     @if ($subVendorQuery && mb_strlen($subVendorQuery) >= 2)
                                         <div class="absolute left-0 right-0 mt-1 bg-white border border-[#e5e7eb] rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
                                             @forelse ($this->vendorResults as $v)
@@ -1866,7 +1866,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                                     <span class="text-muted text-[10px]">{{ $v->supplier_code }}</span>
                                                 </div>
                                             @empty
-                                                <div class="px-2.5 py-1.5 text-xs text-muted">Tidak ditemukan (vendor harus ditandai Subkontraktor).</div>
+                                                <div class="px-2.5 py-1.5 text-xs text-muted">{{ t('Not found (the vendor must be flagged as Subcontractor).') }}</div>
                                             @endforelse
                                         </div>
                                     @endif
@@ -1874,26 +1874,26 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                             </div>
                             <div class="[display:grid] grid-cols-2 gap-3">
                                 <div>
-                                    <x-form.date-picker label="Kirim Ke Vendor" wire:model="subDueOut" />
+                                    <x-form.date-picker :label="t('Send to Vendor')" wire:model="subDueOut" />
                                 </div>
                                 <div>
-                                    <x-form.date-picker label="Estimasi Kembali" wire:model="subDueReturn" />
+                                    <x-form.date-picker :label="t('Estimated Return')" wire:model="subDueReturn" />
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Estimasi Biaya (Rp)</label>
+                                <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Cost Estimate (Rp)') }}</label>
                                 <input type="number" wire:model="subEstimatedCost" min="0" step="1000" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                             </div>
 
                             @unless (Auth::user()->isOpsManagerOrAbove())
-                                <p class="text-[11px] text-[#92400e] bg-[#fffbeb] border border-[#fde68a] rounded-md px-3 py-2">⚠ Hanya Manager Operasional ke atas yang bisa menerbitkan PO Subkontrak. Form ini bisa diisi, tapi tombol Terbitkan nonaktif.</p>
+                                <p class="text-[11px] text-[#92400e] bg-[#fffbeb] border border-[#fde68a] rounded-md px-3 py-2">⚠ {{ t('Only Operations Managers and above can issue Subcontract POs.') }} {{ t('This form can be filled in, but the Issue button is disabled.') }}</p>
                             @endunless
 
                             <div class="flex justify-end gap-2">
-                                <button type="button" wire:click="closeBreakdown" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
+                                <button type="button" wire:click="closeBreakdown" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
                                 <button type="button" wire:click="createSubcontractPo" @unless (Auth::user()->isOpsManagerOrAbove()) disabled @endunless
                                     class="px-4 py-2 rounded-md text-xs font-semibold text-white {{ Auth::user()->isOpsManagerOrAbove() ? 'bg-[#dc2626] hover:bg-[#b91c1c] cursor-pointer' : 'bg-[#9ca3af] cursor-not-allowed' }}">
-                                    Terbitkan PO Subkontrak
+                                    {{ t('Issue Subcontract PO') }}
                                 </button>
                             </div>
                         @endif
@@ -1909,34 +1909,34 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeOutputEntry">
             <div class="bg-white rounded-xl w-[520px] max-w-[95vw] max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
-                    <span>📊 Catat Output</span>
+                    <span>📊 {{ t('Record Output') }}</span>
                     <button type="button" wire:click="closeOutputEntry" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
                 <div class="p-4 space-y-4">
-                    <p class="text-[11px] text-muted">Boleh dicatat berkali-kali (mis. per shift/giliran) — angka di grid otomatis dijumlah dari semua entri.
-                        Tipe reject/waste tidak lengkap? <a href="{{ route('production.scrap-type') }}" target="_blank" class="text-accent underline">Kelola Tipe Scrap →</a></p>
+                    <p class="text-[11px] text-muted">{{ t('Can be recorded many times (e.g. per shift/turn) — the grid totals are summed from all entries automatically.') }}
+                        {{ t('Reject/waste types incomplete?') }} <a href="{{ route('production.scrap-type') }}" target="_blank" class="text-accent underline">{{ t('Manage Scrap Types') }} →</a></p>
 
                     <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Qty Baik</label>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">{{ t('Good Qty') }}</label>
                         <input type="number" wire:model="outputQtyGood" min="0" step="1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                     </div>
 
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
-                            <label class="text-[10px] font-bold text-[#a3241f] uppercase">Reject (opsional, boleh lebih dari 1 tipe)</label>
-                            <button type="button" wire:click="addDefectRow('REJECT')" class="text-[11px] font-semibold text-[#a3241f] hover:underline cursor-pointer">+ Tambah</button>
+                            <label class="text-[10px] font-bold text-[#a3241f] uppercase">{{ t('Reject (optional, more than 1 type allowed)') }}</label>
+                            <button type="button" wire:click="addDefectRow('REJECT')" class="text-[11px] font-semibold text-[#a3241f] hover:underline cursor-pointer">+ {{ t('Add') }}</button>
                         </div>
                         <div class="space-y-1.5">
                             @foreach ($outputDefectRows as $i => $row)
                                 @continue($row['category'] !== 'REJECT')
                                 <div wire:key="defect-row-{{ $i }}" class="flex gap-1.5">
                                     <select wire:model="outputDefectRows.{{ $i }}.scrap_type_id" class="flex-1 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                                        <option value="">-- pilih tipe --</option>
+                                        <option value="">{{ t('-- select type --') }}</option>
                                         @foreach ($this->rejectTypes as $t)
                                             <option value="{{ $t->type_id }}">{{ $t->type_name }}</option>
                                         @endforeach
                                     </select>
-                                    <input type="number" wire:model="outputDefectRows.{{ $i }}.qty" min="0" step="1" placeholder="qty" class="w-20 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                    <input type="number" wire:model="outputDefectRows.{{ $i }}.qty" min="0" step="1" placeholder="{{ t('qty') }}" class="w-20 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                                     <button type="button" wire:click="removeDefectRow({{ $i }})" class="px-2 text-[#a3241f] cursor-pointer">✕</button>
                                 </div>
                             @endforeach
@@ -1945,20 +1945,20 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
-                            <label class="text-[10px] font-bold text-[#92400e] uppercase">Waste/Scrap (opsional, boleh lebih dari 1 tipe)</label>
-                            <button type="button" wire:click="addDefectRow('WASTE')" class="text-[11px] font-semibold text-[#92400e] hover:underline cursor-pointer">+ Tambah</button>
+                            <label class="text-[10px] font-bold text-[#92400e] uppercase">{{ t('Waste/Scrap (optional, more than 1 type allowed)') }}</label>
+                            <button type="button" wire:click="addDefectRow('WASTE')" class="text-[11px] font-semibold text-[#92400e] hover:underline cursor-pointer">+ {{ t('Add') }}</button>
                         </div>
                         <div class="space-y-1.5">
                             @foreach ($outputDefectRows as $i => $row)
                                 @continue($row['category'] !== 'WASTE')
                                 <div wire:key="defect-row-{{ $i }}" class="flex gap-1.5">
                                     <select wire:model="outputDefectRows.{{ $i }}.scrap_type_id" class="flex-1 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                                        <option value="">-- pilih tipe --</option>
+                                        <option value="">{{ t('-- select type --') }}</option>
                                         @foreach ($this->wasteTypes as $t)
                                             <option value="{{ $t->type_id }}">{{ $t->type_name }}</option>
                                         @endforeach
                                     </select>
-                                    <input type="number" wire:model="outputDefectRows.{{ $i }}.qty" min="0" step="1" placeholder="qty" class="w-20 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                    <input type="number" wire:model="outputDefectRows.{{ $i }}.qty" min="0" step="1" placeholder="{{ t('qty') }}" class="w-20 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                                     <button type="button" wire:click="removeDefectRow({{ $i }})" class="px-2 text-[#92400e] cursor-pointer">✕</button>
                                 </div>
                             @endforeach
@@ -1966,13 +1966,13 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                     </div>
 
                     <div class="[display:grid] grid-cols-2 gap-3">
-                        <x-form.input label="Shift (opsional)" name="outputShiftNote" wire:model="outputShiftNote" placeholder="mis. Shift 1" />
-                        <x-form.input label="Catatan (opsional)" name="outputNotes" wire:model="outputNotes" />
+                        <x-form.input :label="t('Shift (optional)')" name="outputShiftNote" wire:model="outputShiftNote" :placeholder="t('e.g. Shift 1')" />
+                        <x-form.input :label="t('Notes (optional)')" name="outputNotes" wire:model="outputNotes" />
                     </div>
 
                     <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
-                        <button type="button" wire:click="closeOutputEntry" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="button" wire:click="saveOutputEntry" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="closeOutputEntry" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="button" wire:click="saveOutputEntry" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">{{ t('Save') }}</button>
                     </div>
                 </div>
             </div>

@@ -75,51 +75,51 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
 
 <x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->wo->wo_no }} · {{ $this->wo->wo_status }}">
     <x-slot:toolbar>
-        <a href="{{ route('production.wo.entry', ['wo' => $this->woId]) }}" class="sc" data-back>← Kembali ke WO Detail</a>
+        <a href="{{ route('production.wo.entry', ['wo' => $this->woId]) }}" class="sc" data-back>← {{ t('Back to WO Detail') }}</a>
     </x-slot:toolbar>
 
     <x-print.sheet>
-        <x-print.header :company="$this->company" doc-title="WORK ORDER" :doc-no="$this->wo->wo_no">
+        <x-print.header :company="$this->company" :doc-title="t('WORK ORDER')" :doc-no="$this->wo->wo_no">
             <x-slot:meta>
-                Tanggal Cetak: {{ now()->translatedFormat('d F Y H:i') }}
-                · Tipe: <span class="ref">{{ $this->wo->wo_type }}</span>
-                @if ($this->wo->is_hot_job) · <span class="ref">HOT JOB</span> @endif
+                {{ t('Print Date') }}: {{ now()->translatedFormat('d F Y H:i') }}
+                · {{ t('Type') }}: <span class="ref">{{ $this->wo->wo_type }}</span>
+                @if ($this->wo->is_hot_job) · <span class="ref">{{ t('HOT JOB') }}</span> @endif
             </x-slot:meta>
         </x-print.header>
 
         <x-print.parties columns="1.2fr 1fr">
-            <x-print.party label="RINCIAN ORDER">
+            <x-print.party :label="t('ORDER DETAILS')">
                 <div class="nm">{{ $this->wo->product?->product_name ?? '—' }}</div>
                 <div class="dt">
-                    No. CO: <b>{{ $this->wo->coOrder?->co_no ?? '—' }}</b>
-                    @if ($this->wo->part_code) · Part: <b>{{ $this->wo->part_code }}</b> @endif<br>
-                    Qty Rencana: <b>{{ number_format((float) $this->wo->qty, 0, ',', '.') }} pcs</b>
+                    {{ t('CO No.') }}: <b>{{ $this->wo->coOrder?->co_no ?? '—' }}</b>
+                    @if ($this->wo->part_code) · {{ t('Part') }}: <b>{{ $this->wo->part_code }}</b> @endif<br>
+                    {{ t('Planned Qty') }}: <b>{{ number_format((float) $this->wo->qty, 0, ',', '.') }} pcs</b>
                 </div>
             </x-print.party>
-            <x-print.party label="JADWAL">
+            <x-print.party :label="t('SCHEDULE')">
                 <div class="dt">
-                    Due Date: <b>{{ $this->wo->due_date?->translatedFormat('d F Y H:i') ?? '—' }}</b><br>
-                    Bahan Dibutuhkan: <b>{{ $this->wo->material_needed_by?->translatedFormat('d F Y') ?? '—' }}</b>
+                    {{ t('Due Date') }}: <b>{{ $this->wo->due_date?->translatedFormat('d F Y H:i') ?? '—' }}</b><br>
+                    {{ t('Material Needed By') }}: <b>{{ $this->wo->material_needed_by?->translatedFormat('d F Y') ?? '—' }}</b>
                 </div>
             </x-print.party>
         </x-print.parties>
 
-        <x-print.section number="1" title="Bill of Process" hint="kolom putih terisi rencana, kolom kosong isi manual di lapangan">
+        <x-print.section number="1" :title="t('Bill of Process')" :hint="t('white columns hold the plan, blank columns are filled by hand on the floor')">
             <table class="bop">
                 <thead>
                     <tr>
-                        <th style="width:4%">Seq</th>
-                        <th style="width:13%">Proses</th>
-                        <th style="width:12%">Mesin</th>
-                        <th style="width:10%">Operator</th>
-                        <th class="num" style="width:8%">Target/Jam</th>
-                        <th style="width:8%">Rencana Mulai</th>
-                        <th style="width:8%">Aktual Mulai</th>
-                        <th style="width:8%">Aktual Selesai</th>
-                        <th class="num" style="width:8%">Qty Baik</th>
-                        <th class="num" style="width:7%">Reject</th>
-                        <th class="num" style="width:7%">Waste</th>
-                        <th style="width:7%">Paraf</th>
+                        <th style="width:4%">{{ t('Seq') }}</th>
+                        <th style="width:13%">{{ t('Process') }}</th>
+                        <th style="width:12%">{{ t('Machine') }}</th>
+                        <th style="width:10%">{{ t('Operator') }}</th>
+                        <th class="num" style="width:8%">{{ t('Target/Hour') }}</th>
+                        <th style="width:8%">{{ t('Planned Start') }}</th>
+                        <th style="width:8%">{{ t('Actual Start') }}</th>
+                        <th style="width:8%">{{ t('Actual Finish') }}</th>
+                        <th class="num" style="width:8%">{{ t('Good Qty') }}</th>
+                        <th class="num" style="width:7%">{{ t('Reject', 'scrap') }}</th>
+                        <th class="num" style="width:7%">{{ t('Waste') }}</th>
+                        <th style="width:7%">{{ t('Initials') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -127,7 +127,7 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
                         <tr>
                             <td class="c">{{ $op->seq_no }}</td>
                             <td class="l"><b>{{ $op->process_name ?: '—' }}</b></td>
-                            <td class="l">{{ $op->resource_type === 'MACHINE' ? ($op->machine?->machine_name ?? '—') : 'Manual' }}</td>
+                            <td class="l">{{ $op->resource_type === 'MACHINE' ? ($op->machine?->machine_name ?? '—') : t('Manual') }}</td>
                             <td class="l">{{ $op->operatorUtama()?->employee?->full_name ?? '—' }}</td>
                             <td class="num c">{{ $op->rate_band_value ? number_format((float) $op->rate_band_value, 0, ',', '.') : '—' }}</td>
                             <td class="c">{{ $op->target_start?->format('d/m H:i') ?? '—' }}</td>
@@ -139,21 +139,21 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
                             <td class="blank"></td>
                         </tr>
                     @empty
-                        <tr><td colspan="12" class="c" style="padding:14px;color:var(--print-muted)">Belum ada proses.</td></tr>
+                        <tr><td colspan="12" class="c" style="padding:14px;color:var(--print-muted)">{{ t('No processes yet.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </x-print.section>
 
         @if ($this->billOfMaterialRows->isNotEmpty())
-            <x-print.section number="2" title="Bill of Material" hint="Qty Kebutuhan/Tersedia referensi -- kolom Diambil isi manual saat pengambilan gudang">
+            <x-print.section number="2" :title="t('Bill of Material')" :hint="t('Required/Available Qty for reference -- fill the Taken column by hand at warehouse pick-up')">
                 <table class="bom">
                     <thead>
                         <tr>
-                            <th class="l" style="width:40%">Material</th>
-                            <th class="num" style="width:18%">Qty Kebutuhan</th>
-                            <th class="num" style="width:18%">Qty Tersedia (Gudang)</th>
-                            <th class="num" style="width:24%">Qty Diambil (paraf)</th>
+                            <th class="l" style="width:40%">{{ t('Material') }}</th>
+                            <th class="num" style="width:18%">{{ t('Required Qty') }}</th>
+                            <th class="num" style="width:18%">{{ t('Available Qty (Warehouse)') }}</th>
+                            <th class="num" style="width:24%">{{ t('Taken Qty (initials)') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -170,14 +170,14 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
             </x-print.section>
         @endif
 
-        <x-print.signatures title="PENGESAHAN LAPANGAN">
-            <x-print.signature role="Dibuat oleh" sub="PPIC Officer" />
-            <x-print.signature role="Operator Mesin" sub="Nama jelas &amp; paraf" />
-            <x-print.signature role="Diperiksa QC" sub="Nama jelas &amp; paraf" />
+        <x-print.signatures :title="t('FIELD SIGN-OFF')">
+            <x-print.signature :role="t('Prepared by')" :sub="t('PPIC Officer')" />
+            <x-print.signature :role="t('Machine Operator')" :sub="t('Full name & initials')" />
+            <x-print.signature :role="t('Checked by QC')" :sub="t('Full name & initials')" />
         </x-print.signatures>
 
-        <x-print.footer page="Halaman 1 dari 1">
-            {{ $this->wo->wo_no }} · dicetak {{ now()->format('d/m/Y H:i') }} · dokumen kerja internal, bukan dokumen ke pelanggan
+        <x-print.footer :page="t('Page 1 of 1')">
+            {{ $this->wo->wo_no }} · {{ t('printed') }} {{ now()->format('d/m/Y H:i') }} · {{ t('internal work document, not a customer document') }}
         </x-print.footer>
     </x-print.sheet>
 

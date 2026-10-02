@@ -92,7 +92,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
-        session()->flash('saved', 'Gudang tersimpan.');
+        session()->flash('saved', t('Warehouse saved.'));
     }
 
     public function addLocation(): void
@@ -100,13 +100,13 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
         $this->formError = '';
 
         if (! $this->isEdit) {
-            $this->formError = 'Simpan data gudang dulu sebelum menambah lokasi/bin.';
+            $this->formError = t('Save the warehouse data first before adding a location/bin.');
 
             return;
         }
 
         if ($this->newRow === '' || $this->newCol === '' || $this->newStack === '') {
-            $this->formError = 'Row, Column, dan Stack wajib diisi.';
+            $this->formError = t('Row, Column, and Stack are required.');
 
             return;
         }
@@ -114,7 +114,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
         $binCode = "{$this->warehouse_code}-{$this->newRow}-{$this->newCol}-{$this->newStack}";
 
         if (WhLoc::where('location_code', $binCode)->exists()) {
-            $this->formError = "Bin {$binCode} sudah ada.";
+            $this->formError = str_replace(':code', $binCode, t('Bin :code already exists.'));
 
             return;
         }
@@ -147,12 +147,12 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 ?>
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">🏬 {{ $isEdit ? 'Edit Gudang: '.$warehouse_code : 'Gudang Baru' }}</b>
+        <b class="text-[15px]">🏬 {{ $isEdit ? t('Edit Warehouse').': '.$warehouse_code : t('New Warehouse') }}</b>
         @if ($isEdit)
             <a href="{{ route('master.warehouse.print-labels', ['warehouse' => $warehouseId]) }}" target="_blank"
-                class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🏷 Cetak Label Rak</a>
+                class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🏷 {{ t('Print Rack Labels') }}</a>
         @endif
-        <x-back-button :fallback="route('master.warehouse.list')" title="Kembali ke Daftar Gudang" class="ml-auto" />
+        <x-back-button :fallback="route('master.warehouse.list')" :title="t('Back to Warehouse List')" class="ml-auto" />
     </header>
 
     <div class="max-w-[900px] mx-auto my-5 px-4">
@@ -162,41 +162,41 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ IDENTITAS ============ --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">1. Identitas & Klasifikasi</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">1. {{ t('Identity & Classification') }}</h3>
             <div class="grid two mb-3">
-                <x-form.input label="Kode Gudang" wire:model="warehouse_code" placeholder="WH-RAW-01" class="font-mono" name="warehouse_code" />
-                <x-form.input label="Nama Gudang" wire:model="warehouse_name" placeholder="Gudang Bahan Baku Utama" name="warehouse_name" />
+                <x-form.input :label="t('Warehouse Code')" wire:model="warehouse_code" placeholder="WH-RAW-01" class="font-mono" name="warehouse_code" />
+                <x-form.input :label="t('Warehouse Name')" wire:model="warehouse_name" :placeholder="t('Main Raw Material Warehouse')" name="warehouse_name" />
             </div>
             <div class="flex flex-col gap-1 mb-3">
-                <label class="text-[10px] text-muted uppercase font-semibold">Tipe Gudang</label>
+                <label class="text-[10px] text-muted uppercase font-semibold">{{ t('Warehouse Type') }}</label>
                 <div class="flex gap-4">
-                    @foreach (['RM' => 'Bahan Baku', 'SFG' => 'Semi Finished Goods', 'FG' => 'Barang Jadi', 'MIX' => 'Mix (Transit/Buffer)', 'WASTE' => 'Afkir / Waste', 'TRANSIT' => 'Transit'] as $val => $label)
+                    @foreach (['RM' => 'Raw Material', 'SFG' => 'Semi Finished Goods', 'FG' => 'Finished Goods', 'MIX' => 'Mix (Transit/Buffer)', 'WASTE' => 'Reject / Waste', 'TRANSIT' => 'Transit'] as $val => $label)
                         <label class="flex items-center gap-1.5 text-xs cursor-pointer">
-                            <input type="radio" wire:model="warehouse_type" value="{{ $val }}"> {{ $label }}
+                            <input type="radio" wire:model="warehouse_type" value="{{ $val }}"> {{ t($label) }}
                         </label>
                     @endforeach
                 </div>
             </div>
             <div class="mb-3">
-                <x-form.checkbox wire:model="activate" label="Aktif" />
+                <x-form.checkbox wire:model="activate" :label="t('Active')" />
             </div>
-            <button type="button" wire:click="save" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">💾 Simpan Gudang</button>
+            <button type="button" wire:click="save" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">💾 {{ t('Save Warehouse') }}</button>
         </div>
 
         {{-- ============ LOKASI / BIN ============ --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden {{ ! $isEdit ? 'opacity-50 pointer-events-none' : '' }}">
             <div class="px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
-                <h3 class="text-xs text-navy uppercase font-bold">2. Lokasi / Storage Bin</h3>
+                <h3 class="text-xs text-navy uppercase font-bold">2. {{ t('Location / Storage Bin') }}</h3>
             </div>
 
             <table class="w-full text-xs border-collapse">
                 <thead>
                     <tr class="bg-[#f4f5f8]">
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Row</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Col</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Stack</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Bin Code</th>
-                        <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Kapasitas (Kg)</th>
+                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Row') }}</th>
+                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Col') }}</th>
+                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Stack') }}</th>
+                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Bin Code') }}</th>
+                        <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">{{ t('Capacity (Kg)') }}</th>
                         <th class="px-3 py-2 border-b border-[#d7dbe2]"></th>
                     </tr>
                 </thead>
@@ -209,26 +209,26 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
                             <td class="px-3 py-2 font-mono font-bold text-accent">{{ $loc->location_code }}</td>
                             <td class="px-3 py-2 text-right">{{ $loc->capacity_kg ? number_format((float) $loc->capacity_kg, 0, ',', '.') : '—' }}</td>
                             <td class="px-3 py-2 text-right">
-                                <button type="button" wire:click="removeLocation({{ $loc->location_id }})" wire:confirm="Hapus lokasi {{ $loc->location_code }}?" class="text-red-500 text-xs cursor-pointer">✕ Hapus</button>
+                                <button type="button" wire:click="removeLocation({{ $loc->location_id }})" wire:confirm="{{ str_replace(':code', $loc->location_code, t('Delete location :code?')) }}" class="text-red-500 text-xs cursor-pointer">✕ {{ t('Delete') }}</button>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-6 text-muted">Belum ada lokasi/bin.</td></tr>
+                        <tr><td colspan="6" class="text-center py-6 text-muted">{{ t('No locations/bins yet.') }}</td></tr>
                     @endforelse
                     <tr class="bg-[#fbfcfe]">
                         <td class="px-3 py-2"><input type="text" wire:model="newRow" placeholder="R01" class="w-full px-2 py-1 border border-dashed border-[#9cc0f0] rounded text-xs"></td>
                         <td class="px-3 py-2"><input type="text" wire:model="newCol" placeholder="C01" class="w-full px-2 py-1 border border-dashed border-[#9cc0f0] rounded text-xs"></td>
                         <td class="px-3 py-2"><input type="text" wire:model="newStack" placeholder="S01" class="w-full px-2 py-1 border border-dashed border-[#9cc0f0] rounded text-xs"></td>
-                        <td class="px-3 py-2 text-[10.5px] text-muted italic">auto</td>
+                        <td class="px-3 py-2 text-[10.5px] text-muted italic">{{ t('auto') }}</td>
                         <td class="px-3 py-2"><input type="number" wire:model="newCapacity" placeholder="2000" class="w-full px-2 py-1 border border-dashed border-[#9cc0f0] rounded text-xs text-right"></td>
                         <td class="px-3 py-2 text-right">
-                            <button type="button" wire:click="addLocation" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Tambah</button>
+                            <button type="button" wire:click="addLocation" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ {{ t('Add') }}</button>
                         </td>
                     </tr>
                 </tbody>
             </table>
             @if (! $isEdit)
-                <p class="text-[10.5px] text-muted italic px-4 py-2">Simpan data gudang dulu sebelum menambah lokasi/bin.</p>
+                <p class="text-[10.5px] text-muted italic px-4 py-2">{{ t('Save the warehouse data first before adding a location/bin.') }}</p>
             @endif
         </div>
     </div>

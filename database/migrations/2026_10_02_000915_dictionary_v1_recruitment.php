@@ -271,7 +271,6 @@ return new class extends Migration
         'Position, qualification, and reason are required before submitting.' => 'Posisi, kualifikasi, dan alasan wajib diisi sebelum diajukan.',
         'Rejection reason is required.' => 'Alasan penolakan wajib diisi.',
         'Manpower Request' => 'Permohonan Tenaga Kerja',
-        'Back' => 'Kembali',
         'Request Information' => 'Informasi Permohonan',
         'Position Needed' => 'Posisi yang Dibutuhkan',
         'Qualification' => 'Kualifikasi',

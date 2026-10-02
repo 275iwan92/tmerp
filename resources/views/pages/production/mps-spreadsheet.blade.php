@@ -95,7 +95,7 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
         }
 
         if (! in_array($op->task_status, self::EDITABLE_STATUSES, true)) {
-            $this->dispatch('wo-toast', message: 'Task ini sudah berjalan/selesai -- edit lewat WO Detail ("Lapor Breakdown").');
+            $this->dispatch('wo-toast', message: t('This task is already running/done -- edit it via WO Detail ("Report Breakdown").'));
 
             return null;
         }
@@ -148,7 +148,7 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
         }
 
         $op->update(['target_start' => $newStart, 'target_finish' => $newFinish, 'updated_by' => Auth::user()->login]);
-        $this->dispatch('wo-toast', message: "Jadwal {$op->wo->wo_no} diperbarui.");
+        $this->dispatch('wo-toast', message: str_replace(':wo', $op->wo->wo_no, t('Schedule :wo updated.')));
 
         return [
             'ok' => true,
@@ -189,9 +189,9 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
                 $op->transitionTo('ASSIGNED');
             }
 
-            $note = $engineOk ? '' : ' (estimasi sederhana -- rate band belum lengkap)';
-            $cascadeNote = $engineOk ? ' Task lain di WO ini mungkin ikut ter-reschedule -- klik 🔄 Refresh utk lihat semuanya.' : '';
-            $this->dispatch('wo-toast', message: "Mesin {$op->wo->wo_no} di-assign.{$note}{$cascadeNote}");
+            $note = $engineOk ? '' : ' '.t('(simple estimate -- rate band incomplete)');
+            $cascadeNote = $engineOk ? ' '.t('Other tasks in this WO may have been rescheduled too -- click 🔄 Refresh to see them all.') : '';
+            $this->dispatch('wo-toast', message: str_replace(':wo', $op->wo->wo_no, t('Machine :wo assigned.')).$note.$cascadeNote);
 
             return [
                 'ok' => true,
@@ -217,7 +217,7 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
         $op->machine_id = $machineId;
         $op->updated_by = Auth::user()->login;
         $op->save();
-        $this->dispatch('wo-toast', message: "Mesin {$op->wo->wo_no} diperbarui.");
+        $this->dispatch('wo-toast', message: str_replace(':wo', $op->wo->wo_no, t('Machine :wo updated.')));
 
         return ['ok' => true, 'machineLabel' => $op->machine?->machine_name];
     }
@@ -250,10 +250,10 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
         } else {
             PrdCrewAssignment::where('operation_id', $op->operation_id)
                 ->where('crew_role', 'OPERATOR_UTAMA')->delete();
-            $label = '— (kosong) —';
+            $label = '— ('.t('empty').') —';
         }
 
-        $this->dispatch('wo-toast', message: "Operator {$op->wo->wo_no} diperbarui.");
+        $this->dispatch('wo-toast', message: str_replace(':wo', $op->wo->wo_no, t('Operator :wo updated.')));
 
         return ['ok' => true, 'operatorLabel' => $label];
     }
@@ -283,53 +283,53 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
     x-on:wo-toast.window="toastMsg = $event.detail.message; toastShow = true; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastShow = false, 3200)"
     x-on:keydown.escape.window="if (woModalUrl) window.location.reload()">
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">🧮 MPS - Spreadsheet</b>
-        <span class="text-[10.5px] text-white/60">{{ $this->operations->count() }} task aktif (belum Done)</span>
+        <b class="text-[15px]">🧮 {{ t('MPS - Spreadsheet') }}</b>
+        <span class="text-[10.5px] text-white/60">{{ str_replace(':n', $this->operations->count(), t(':n active tasks (not Done yet)')) }}</span>
         <div class="ml-auto flex items-center gap-2">
             <a href="{{ route('production.scheduling-board') }}" class="inline-flex items-center gap-2 pl-3.5 pr-3 py-1 bg-[#43508a] rounded-full hover:brightness-110 no-underline">
-                <span class="text-[11px] font-bold uppercase tracking-wide text-white">📅 Gantt Chart</span>
+                <span class="text-[11px] font-bold uppercase tracking-wide text-white">📅 {{ t('Gantt Chart') }}</span>
             </a>
             <a href="{{ route('production.monitoring') }}" class="inline-flex items-center gap-2 pl-3.5 pr-3 py-1 bg-[#43508a] rounded-full hover:brightness-110 no-underline">
-                <span class="text-[11px] font-bold uppercase tracking-wide text-white">🗂 Kanban Board</span>
+                <span class="text-[11px] font-bold uppercase tracking-wide text-white">🗂 {{ t('Kanban Board') }}</span>
             </a>
             <button type="button" onclick="window.location.reload()" class="inline-flex items-center gap-2 pl-3.5 pr-3 py-1 bg-white/10 rounded-full hover:brightness-110 cursor-pointer border-none">
-                <span class="text-[11px] font-bold uppercase tracking-wide text-white">🔄 Refresh</span>
+                <span class="text-[11px] font-bold uppercase tracking-wide text-white">🔄 {{ t('Refresh') }}</span>
             </button>
         </div>
     </header>
 
     <div class="max-w-full mx-auto my-4 px-4">
         <p class="text-[10.5px] text-muted mb-2.5">
-            Klik 2x sel <b>Mesin / Operator / Est. Mulai / Est. Selesai</b> utk edit -- persis Excel/Google Sheets.
-            Baris ke-2 header = filter per kolom (dropdown utk Proses/Mesin/Operator/Status, ketik bebas utk
-            kolom lain). Semua perubahan tetap divalidasi Scheduling Engine (konflik operator, durasi minimum,
-            lock QC Hold) sama seperti MPS - Gantt Chart. Hanya task <b>Pending/Assigned</b> yang bisa diedit.
+            {!! t('Double-click a <b>Machine / Operator / Est. Start / Est. Finish</b> cell to edit -- just like Excel/Google Sheets.') !!}
+            {{ t('Header row 2 = per-column filter (dropdown for Process/Machine/Operator/Status, free text for other columns).') }}
+            {{ t('All changes are still validated by the Scheduling Engine (operator conflicts, minimum duration, QC Hold lock) just like MPS - Gantt Chart.') }}
+            {!! t('Only <b>Pending/Assigned</b> tasks can be edited.') !!}
         </p>
 
         <div wire:ignore>
             <table id="mps-sheet" class="display w-full text-[11.5px]">
                 <thead>
                     <tr class="bg-[#f5f7fa]">
-                        <th>WO No</th>
-                        <th>Customer</th>
-                        <th>Produk / Part</th>
-                        <th>Proses</th>
-                        <th>Mesin</th>
-                        <th>Operator</th>
-                        <th>Qty</th>
-                        <th>Target/Jam</th>
-                        <th>Est. Mulai</th>
-                        <th>Est. Selesai</th>
-                        <th>Status</th>
-                        <th>Due Date</th>
+                        <th>{{ t('WO No') }}</th>
+                        <th>{{ t('Customer') }}</th>
+                        <th>{{ t('Product / Part') }}</th>
+                        <th>{{ t('Process') }}</th>
+                        <th>{{ t('Machine') }}</th>
+                        <th>{{ t('Operator') }}</th>
+                        <th>{{ t('Qty') }}</th>
+                        <th>{{ t('Target/Hour') }}</th>
+                        <th>{{ t('Est. Start') }}</th>
+                        <th>{{ t('Est. Finish') }}</th>
+                        <th>{{ t('Status') }}</th>
+                        <th>{{ t('Due Date') }}</th>
                     </tr>
                     <tr class="mps-filter-row bg-white">
-                        <th><input type="text" class="mps-filter" data-col="0" placeholder="cari WO..."></th>
-                        <th><input type="text" class="mps-filter" data-col="1" placeholder="cari customer..."></th>
-                        <th><input type="text" class="mps-filter" data-col="2" placeholder="cari produk..."></th>
+                        <th><input type="text" class="mps-filter" data-col="0" placeholder="{{ t('search WO...') }}"></th>
+                        <th><input type="text" class="mps-filter" data-col="1" placeholder="{{ t('search customer...') }}"></th>
+                        <th><input type="text" class="mps-filter" data-col="2" placeholder="{{ t('search product...') }}"></th>
                         <th>
                             <select class="mps-filter" data-col="3" data-exact="1">
-                                <option value="">Semua Proses</option>
+                                <option value="">{{ t('All Processes') }}</option>
                                 @foreach ($this->processNames as $p)
                                     <option value="{{ $p }}">{{ $p }}</option>
                                 @endforeach
@@ -337,8 +337,8 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
                         </th>
                         <th>
                             <select class="mps-filter" data-col="4" data-exact="1">
-                                <option value="">Semua Mesin</option>
-                                <option value="— Manual —">— Manual —</option>
+                                <option value="">{{ t('All Machines') }}</option>
+                                <option value="— {{ t('Manual') }} —">— {{ t('Manual') }} —</option>
                                 @foreach ($this->machines as $m)
                                     <option value="{{ $m->machine_name }}">{{ $m->machine_code }} · {{ $m->machine_name }}</option>
                                 @endforeach
@@ -346,7 +346,7 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
                         </th>
                         <th>
                             <select class="mps-filter" data-col="5" data-exact="1">
-                                <option value="">Semua Operator</option>
+                                <option value="">{{ t('All Operators') }}</option>
                                 @foreach ($this->employeeOptions as $e)
                                     <option value="{{ $e->full_name }}">{{ $e->full_name }}</option>
                                 @endforeach
@@ -358,7 +358,7 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
                         <th></th>
                         <th>
                             <select class="mps-filter" data-col="10" data-exact="1">
-                                <option value="">Semua Status</option>
+                                <option value="">{{ t('All Statuses') }}</option>
                                 @foreach (['PENDING', 'ASSIGNED', 'RUNNING', 'BREAKDOWN', 'QC_HOLD', 'QC_REJECTED', 'SUBCONTRACT'] as $s)
                                     <option value="{{ $s }}">{{ $s }}</option>
                                 @endforeach
@@ -372,9 +372,9 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
                         @php
                             $editable = in_array($op->task_status, ['PENDING', 'ASSIGNED'], true);
                             $currentEmp = $op->crew->firstWhere('crew_role', 'OPERATOR_UTAMA');
-                            $machineLabel = $op->resource_type === 'MACHINE' ? ($op->machine?->machine_name ?? '— pilih mesin —') : '— Manual —';
-                            $operatorLabel = $currentEmp?->employee?->full_name ?? '— (kosong) —';
-                            $startLabel = $op->target_start?->format('d/m H:i') ?? ($editable ? '— (assign mesin dulu)' : '—');
+                            $machineLabel = $op->resource_type === 'MACHINE' ? ($op->machine?->machine_name ?? '— '.t('select machine').' —') : '— '.t('Manual').' —';
+                            $operatorLabel = $currentEmp?->employee?->full_name ?? '— ('.t('empty').') —';
+                            $startLabel = $op->target_start?->format('d/m H:i') ?? ($editable ? '— ('.t('assign a machine first').')' : '—');
                             $finishLabel = $op->target_finish?->format('d/m H:i') ?? '—';
                         @endphp
                         <tr wire:key="op-row-{{ $op->operation_id }}"
@@ -413,7 +413,7 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
                                             x-on:change="commitMachine($event.target.value)" x-on:blur="editingMachine = false"
                                             class="w-full px-1.5 py-1 border border-accent rounded text-[11px] bg-white">
                                             @unless ($op->machine_id)
-                                                <option value="" disabled selected>— pilih mesin —</option>
+                                                <option value="" disabled selected>— {{ t('select machine') }} —</option>
                                             @endunless
                                             @foreach ($this->machines as $m)
                                                 <option value="{{ $m->machine_id }}" @selected($op->machine_id === $m->machine_id)>{{ $m->machine_code }} · {{ $m->machine_name }}</option>
@@ -431,7 +431,7 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
                                         <select x-ref="operatorSelect"
                                             x-on:change="commitOperator($event.target.value)" x-on:blur="editingOperator = false"
                                             class="w-full px-1.5 py-1 border border-accent rounded text-[11px] bg-white">
-                                            <option value="">— (kosong) —</option>
+                                            <option value="">— ({{ t('empty') }}) —</option>
                                             @foreach ($this->employeeOptions as $e)
                                                 <option value="{{ $e->employee_id }}" @selected($currentEmp?->employee_id === $e->employee_id)>{{ $e->full_name }}</option>
                                             @endforeach
@@ -493,10 +493,10 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
         x-on:click.self="window.location.reload()">
         <div class="bg-white rounded-lg w-full h-full max-w-[1400px] relative shadow-2xl flex flex-col overflow-hidden">
             <div class="flex items-center justify-between bg-navy px-4 py-2 shrink-0">
-                <span class="text-white text-[11px] font-bold uppercase tracking-wide">📋 WO Detail</span>
+                <span class="text-white text-[11px] font-bold uppercase tracking-wide">📋 {{ t('WO Detail') }}</span>
                 <button type="button" x-on:click="window.location.reload()"
                     class="text-white text-[11px] font-bold uppercase tracking-wide bg-white/10 hover:bg-white/20 rounded-full px-3 py-1 border-none cursor-pointer">
-                    ✕ Tutup
+                    ✕ {{ t('Close') }}
                 </button>
             </div>
             <iframe x-show="woModalUrl" :src="woModalUrl" class="w-full grow border-0"></iframe>
@@ -526,9 +526,9 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
             stateSave: true,
             stateDuration: -1, // localStorage, bukan cookie/session -- bertahan lintas kunjungan
             language: {
-                search: '🔎 Cari (semua kolom):',
-                lengthMenu: 'Tampilkan _MENU_ baris',
-                info: 'Baris _START_–_END_ dari _TOTAL_',
+                search: @js('🔎 '.t('Search (all columns):')),
+                lengthMenu: @js(t('Show _MENU_ rows')),
+                info: @js(t('Rows _START_–_END_ of _TOTAL_')),
                 paginate: { previous: '‹', next: '›' },
             },
         });

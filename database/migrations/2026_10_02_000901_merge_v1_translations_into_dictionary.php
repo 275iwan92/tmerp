@@ -608,7 +608,6 @@ return new class extends Migration
         ['proc_prt_source_stock_title', 'From Stock', 'Dari Stok'],
         ['proc_prt_stat_total', 'Total Returns', 'Total Retur'],
         ['proc_prt_stat_value', 'Return Value', 'Nilai Retur'],
-        ['proc_pv_btn_back_step', 'Back', 'Kembali'],
         ['proc_pv_btn_create', 'Create Receipt', 'Buat SPB'],
         ['proc_pv_col_delivery_note', 'Delivery Note', 'Surat Jalan'],
         ['proc_pv_col_item', 'Item', 'Item'],

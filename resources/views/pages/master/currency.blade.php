@@ -28,11 +28,11 @@ new #[Title('Master Currency — TELASIH MAKMUR ERP')] class extends Component
     protected function spreadsheetColumns(): array
     {
         return [
-            'currency_code' => ['label' => 'Kode', 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
-            'currency_name' => ['label' => 'Nama Mata Uang', 'type' => 'text', 'required' => true],
-            'symbol' => ['label' => 'Simbol', 'type' => 'text'],
-            'counted_word' => ['label' => 'Kata Hitung (Terbilang)', 'type' => 'text'],
-            'activate' => ['label' => 'Aktif', 'type' => 'boolean'],
+            'currency_code' => ['label' => t('Code'), 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
+            'currency_name' => ['label' => t('Currency Name'), 'type' => 'text', 'required' => true],
+            'symbol' => ['label' => t('Symbol'), 'type' => 'text'],
+            'counted_word' => ['label' => t('Counted Word (Amount in Words)'), 'type' => 'text'],
+            'activate' => ['label' => t('Active'), 'type' => 'boolean'],
         ];
     }
 
@@ -112,10 +112,10 @@ new #[Title('Master Currency — TELASIH MAKMUR ERP')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Mata Uang', 'value' => $this->statTotal, 'tone' => 'total'],
-            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+            'total' => ['label' => t('Total Currencies'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => t('Active'), 'value' => $this->statActive, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('activate', true)],
-            'inactive' => ['label' => 'Nonaktif', 'value' => $this->statInactive, 'tone' => 'critical',
+            'inactive' => ['label' => t('Inactive'), 'value' => $this->statInactive, 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where('activate', false)],
         ];
     }

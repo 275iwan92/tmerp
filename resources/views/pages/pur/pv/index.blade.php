@@ -283,7 +283,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
 
                 <div class="px-4 py-3 border-t border-[#eef1f5] flex items-center gap-2">
                     @if ($pickerStep === 2)
-                        <button type="button" wire:click="$set('pickerStep', 1)" class="text-xs font-semibold px-3 py-1.5 rounded border border-[#d7dbe2]">‹ {{ t('Back') }}</button>
+                        <button type="button" wire:click="$set('pickerStep', 1)" class="text-xs font-semibold px-3 py-1.5 rounded border border-[#d7dbe2]">‹ Back</button>
                         <span class="text-[11px] text-muted">{{ count($checkedLineIds) }} {{ t('lines selected') }}</span>
                     @endif
                     <div class="ml-auto flex gap-2">
