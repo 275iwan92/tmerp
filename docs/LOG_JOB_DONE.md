@@ -3,6 +3,30 @@
 
 ---
 
+## 2026-10-02 -- Multi language: satu kamus, tanpa teks hardcode (v1 & v2)
+
+User: "copy how it work from SCRIPTCASE ... label ataupun text itu berupa variable yang mengarah pada database dictionary ...
+walaupun bahasa di tambah tidak merubah lagi di setiap module"; "ya di convert pakai cara terbaru agar no hardcode";
+zona beku: izin teks saja; portal kandidat ikut. Branch `claude/eager-hypatia-k7yk58`, PR 275iwan92/tmerp#8.
+
+- **Variabel = teks English** (`t('Customer')`, komponen `x-dl::*` otomatis). Kamus tunggal `tm2sys.sys_dictionary`:
+  kamus kunci v1 `sys_translations` (963 kunci di 60 file) dilebur (migrasi `000901`; tabel belum di-drop), menu
+  `sys_app_menu.trans_key` -> label English + konteks `tm2sys.sys_app_menu.label`, istilah cetak (array `Print\Labels`)
+  -> konteks `print` (`000927`, `Document::translateUsing`). Setup > Localization dialihkan ke Translation Dictionary.
+- **Bahasa tampilan satu sumber** v1 & v2: cookie `dl_lang` (tidak dienkripsi) lalu `sec_user.lang_code` (`SetUserLocale`).
+- **Kamus**: `Dictionary::seed()` (migrasi, tidak menimpa isian), `rename()` (ganti teks English tanpa kehilangan
+  terjemahan), `find()`; lookup tanpa beda huruf sebagai cadangan (PHP & JS `Devlib.h.t`), bentuk huruf ikut sumber.
+  Layar kamus: kolom Untranslated (cari "missing" / "missing: id"), ganti English ke teks yang sudah ada = digabung.
+- **Konversi** (migrasi `000910`–`000931`, satu per area, Indonesia = teks lama sehingga tampilan bahasa id tetap):
+  semua halaman v1 (termasuk zona beku Inquiry/ProDev/ProCost — teks saja), view v2, e-mail, `app/Support/V2`,
+  pesan service, label konstanta model, route, paket DevLib (pasangan `Devlib\Lang`) + JS, `resources/js`
+  (`window.TM_T` dari `partials/js-text`), paket `mockup-parts`, judul halaman `#[Title]` (layout menerjemahkan).
+  Konteks kedua untuk kata bermakna ganda: `action`, `print`, `badge`, `master`, `job`, `prep`, `abbr`, `stock`, `cost_item`, ...
+- **Penjaga**: `MultiLanguageRatchetTest::BASELINE_V1` per grup (v1 5067 -> sisa 883 = kode/kolom DB/teks yang ditulis ke
+  DB, hanya boleh turun), `test_no_legacy_translation_keys`, `js_id_text` 43 -> 41; test baru di `MultiLanguageAutoTest`.
+- **Belum diverifikasi di aplikasi** (container PHP 8.3 tanpa MySQL): jalankan `php artisan migrate` (+ `--env=mockup`),
+  `npm run build` (JS DevLib/mockup-parts/resources/js berubah), `php artisan test`. Sisa terbuka: `backlog01_uiux_component.md` UI-21.
+
 ## 2026-10-02 -- Opening Dashboards tahap 4: Production, Quality, Inventory, WI / JD / SOP; asisten AI dipasang di tm2
 
 User: "pasang saja nanti juga bisa disempurnakan" (asisten di tmerp) dan "perlu ada production, quality control and quality

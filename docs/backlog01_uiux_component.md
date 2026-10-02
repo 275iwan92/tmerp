@@ -33,6 +33,7 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 | UI-20 | Semua layar daftar v2 = turunan `DbGrid` (data DB, keluarga Grid Master/Transaksi/Report DevLib) | 🔵 BERJALAN | — | Selesai 2026-09-30: 13 HR, 15 Master/Produksi/COA/Pro-Cost/Product Market/Win-Rate, 3 laporan CO + General Report. 2026-10-02: + 25 (Inventory, WO, Outstanding, Recruitment), malam + 19 (lookup Master Data, laporan stok, Purchase Return, Support Tickets, Finance). Sisa: detail di bawah |
 | UI-16 | Grid spreadsheet: panah, multi-sel, tanda "berubah", undo | ⚪ IDE | — | `spreadsheetgridstandard.md` §8 |
 | UI-17 | Edit tampilan nota lewat GUI (WYSIWYG) | ⚪ IDE | — | `printnotastandard.md` §8 |
+| UI-21 | Multi language — sisa setelah satu kamus tanpa hardcode (2026-10-02) | 🔴 KEPUTUSAN / 🟡 SIAP | Lihat detail | Konversi selesai (PR 275iwan92/tmerp#8); sisa = data di DB, format angka zona beku, verifikasi lokal |
 
 ---
 
@@ -61,4 +62,22 @@ dibuang di server lewat `restrictedKeys()` + `SecUser::canViewSalesPrice()`.
 - Semua daftar v1 lain SELESAI 2026-10-02 (LOG): lookup Master Data, laporan stok, Purchase Return, Support Tickets, Finance (9 layar), Constants,
   Constant Categories, Account, Group, Talent Pool, BOP Rule, Product Category.
 - Migration `2026_09_30_000011` (field pengiriman CO) baru jalan di ddt*.
+
+### UI-21 — Multi language: sisa setelah konversi (2026-10-02)
+- 🟡 **Verifikasi lokal**: `php artisan migrate` (tm2 + `--env=mockup`), `npm run build`, `php artisan test`. Test yang
+  meng-assert teks Indonesia lulus hanya setelah migrasi kamus `000901`–`000931` jalan dan bahasa test = id.
+- 🟡 Cek di browser bahasa id: layar ProDev v1 (`pages/production/prodev`, isi `@verbatim` diterjemahkan lewat
+  `JS_TEXT` + satu pass DOM; teks JS baru wajib masuk `JS_TEXT`).
+- 🔴 **Teks Indonesia yang DISIMPAN ke database** (sengaja tidak diubah): narasi jurnal & voucher, catatan stok/PO/PR,
+  isi notifikasi yang di-insert, `sales_note` RECALC/REVISE, nama default (Langkah baru, BAHAN LAIN, Part n), label cetak
+  approval `PRINT_LABELS`, `cust_customer.note` stempel unblock, nilai `field_name` koreksi karyawan. Aturan B.3 (DB English)
+  -> perlu keputusan: ubah ke English + tampilkan lewat kamus (data lama dikonversi) atau biarkan.
+- 🔴 Format angka `toLocaleString('id-ID')` di JS `mockup-parts` (formation, flow-config, dieline, workbench — zona beku)
+  -> pindah ke `Devlib.h.NUM` / Locale perlu izin.
+- 🟡 Opsi select English yang belum lewat `t()`: `MntCode::TYPES`, `UsageStandardLookup::BASIS` (pola: `array_map('t', ...)`;
+  DevLib sengaja tidak menerjemahkan `options` karena sering berisi data).
+- 🔴 `tm2sys.sys_translations` boleh di-drop? (sudah tidak dipakai kode); menu `SET_LOCALIZATION` kini hanya mengalihkan.
+- ⚪ Kata milik paket DevLib (`Devlib\Lang::DICT`, `PrintDoc\Labels`) punya pasangan ID bawaan paket (devlib.test tanpa DB);
+  bahasa ketiga lewat kamus. Help (`resources/data/help/*.json`) dua bahasa per entri — sistemnya sendiri.
+- ⚪ `App\Support\V2\DemoData` tidak dipakai (kandidat hapus). `app/Console` (output developer) & Filament (dipensiunkan) tidak dikonversi.
 
