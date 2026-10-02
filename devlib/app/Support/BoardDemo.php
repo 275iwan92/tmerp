@@ -13,11 +13,24 @@ class BoardDemo
 
     private const SIZES = [3, 4, 6, 8, 12];
 
+    private const SESSION_PERIOD = 'devlib_board_period';
+
+    // kunci periode papan => [label, kunci periode di DashboardData]
+    private const PERIODS = ['daily' => ['Daily', 'daily'], 'weekly' => ['Weekly', 'weekly'], 'monthly' => ['Monthly', 'monthly'],
+        'quarterly' => ['Quarterly', 'q3'], 'semester' => ['Half-yearly', 'q6'], 'yearly' => ['Yearly', 'q12']];
+
+    public static function period(): string
+    {
+        $p = (string) session(self::SESSION_PERIOD, 'monthly');
+
+        return isset(self::PERIODS[$p]) ? $p : 'monthly';
+    }
+
     /** @return array<string, array<string, mixed>> semua widget katalog contoh, kunci = key */
     public static function all(): array
     {
         $d = DashboardData::forLogin('carrij');
-        $p = 'monthly';
+        $p = self::PERIODS[self::period()][1];
         $kpi = fn (int $i, string $key, string $title, string $group) => ['key' => $key, 'title' => $title, 'group' => $group, 'type' => 'kpi', 'size' => 3,
             'icon' => $d['kpis'][$p][$i]['icon'], 'tone' => $d['kpis'][$p][$i]['tone'], 'data' => $d['kpis'][$p][$i], 'description' => 'One number with trend and target.'];
         $t = $d['trend'][$p];
@@ -29,16 +42,16 @@ class BoardDemo
             $kpi(2, 'overdue', 'Overdue Receivables', 'Finance'),
             $kpi(3, 'on_time', 'On-time Delivery', 'Delivery'),
             $kpi(4, 'new_orders', 'New Customer Orders', 'Sales'),
-            ['key' => 'trend', 'title' => 'Revenue: Target vs Actual', 'caption' => 'Last 12 months', 'group' => 'Sales', 'type' => 'chart', 'size' => 8, 'icon' => 'fa-chart-column',
+            ['key' => 'trend', 'title' => 'Revenue: Target vs Actual', 'caption' => 'Bars = actual, line = target', 'group' => 'Sales', 'type' => 'chart', 'size' => 8, 'icon' => 'fa-chart-column',
                 'description' => 'Bars = actual, line = target, per month.',
                 'data' => ['chart' => 'combo', 'format' => 'money', 'height' => '320px', 'labels' => $t['labels'],
                     'series' => [['name' => 'Actual', 'data' => $t['actual'], 'type' => 'bar', 'tone' => 'accent'], ['name' => 'Target', 'data' => $t['target'], 'type' => 'line', 'tone' => 'danger']]]],
-            ['key' => 'targets', 'title' => 'Targets by Area', 'caption' => 'This month against target', 'group' => 'Management', 'type' => 'progress', 'size' => 4, 'icon' => 'fa-bullseye',
+            ['key' => 'targets', 'title' => 'Targets by Area', 'caption' => 'This period against target', 'group' => 'Management', 'type' => 'progress', 'size' => 4, 'icon' => 'fa-bullseye',
                 'description' => 'One row per business target with its achievement.', 'data' => ['rows' => $d['targets'][$p]['rows']]],
-            ['key' => 'pipeline', 'title' => 'Sales Pipeline', 'caption' => 'Document value this month', 'group' => 'Sales', 'type' => 'chart', 'size' => 6, 'icon' => 'fa-filter',
+            ['key' => 'pipeline', 'title' => 'Sales Pipeline', 'caption' => 'Document value in this period', 'group' => 'Sales', 'type' => 'chart', 'size' => 6, 'icon' => 'fa-filter',
                 'description' => 'Funnel from Inquiry to Customer Order.',
                 'data' => ['chart' => 'funnel', 'format' => 'money', 'height' => '260px', 'labels' => $pl['labels'], 'series' => [['name' => 'Value', 'data' => $pl['values']]]]],
-            ['key' => 'ranking', 'title' => 'Target Achievement per Sales', 'caption' => 'This month, highest first', 'group' => 'Sales', 'type' => 'ranking', 'size' => 6, 'icon' => 'fa-ranking-star',
+            ['key' => 'ranking', 'title' => 'Target Achievement per Sales', 'caption' => 'This period, highest first', 'group' => 'Sales', 'type' => 'ranking', 'size' => 6, 'icon' => 'fa-ranking-star',
                 'description' => 'Each sales person against the personal target.', 'data' => ['name_label' => 'Sales', 'format' => 'money', 'rows' => $d['ranking'][$p]['rows']]],
             ['key' => 'status', 'title' => 'Customer Orders by Status', 'caption' => 'This year', 'group' => 'Sales', 'type' => 'chart', 'size' => 4, 'icon' => 'fa-chart-pie',
                 'description' => 'Donut: Draft, Confirmed, Closed, Cancelled.',
@@ -69,6 +82,7 @@ class BoardDemo
             'widgets' => $layout->map(fn ($l) => array_replace($all[$l[0]], ['size' => $l[1]]))->values()->all(),
             'catalog' => collect($all)->map(fn ($w) => ['key' => $w['key'], 'title' => $w['title'], 'description' => $w['description'], 'group' => $w['group'],
                 'icon' => $w['icon'], 'installed' => in_array($w['key'], $on, true)])->values()->all(),
+            'periods' => array_map(fn (array $p) => $p[0], self::PERIODS), 'period' => self::period(),
         ];
     }
 
@@ -79,6 +93,11 @@ class BoardDemo
         $found = $i !== false;
         $step = fn (int $size, int $d) => self::SIZES[max(0, min(count(self::SIZES) - 1, array_search($size, self::SIZES, true) + $d))];
 
+        if ($action === 'period') {
+            session([self::SESSION_PERIOD => isset(self::PERIODS[(string) $key]) ? $key : 'monthly']);
+
+            return;
+        }
         if ($action === 'reset') {
             $layout = self::TEMPLATE;
         } elseif ($action === 'add' && ! $found && isset(self::all()[$key])) {

@@ -386,8 +386,16 @@
       Template**; langsung tersimpan. Papan pertama = salinan template profilnya (Setup → Opening Board Templates).
     - **Target** yang dibandingkan widget diisi di Setup → KPI Targets (perusahaan, atau per sales person untuk nilai
       order); kata harian di Setup → Daily Quotes; lokasi cuaca di Settings → Constants. Tanpa target = "No target".
+    - **Periode "dari daily sampai yearly"** (user 2026-10-02): Harian, Mingguan, Bulanan, Kuartalan, Semesteran, Tahunan di
+      kepala papan = periode kalender yang sedang berjalan, dibanding periode sebelumnya; pilihan tersimpan per user. Target
+      diisi per bulan: kuartal ke atas menjumlah bulan-bulannya, harian dan mingguan tanpa target.
+    - **Order value: "dijelaskan saja draft sekian dan confirmed sekian"** (user 2026-10-02): angka besar = Customer Order
+      Confirmed / Closed (yang dibandingkan target); baris di bawahnya merinci Draft dan yang menunggu approval. Berlaku untuk
+      setiap widget berisi nilai / jumlah order.
+    - Data dummy / legacy di papan mengikuti setelan Setup → Dummy & Legacy Data, sama dengan layar lain.
     - Objek DevLib: `x-dl::widget-board` (contoh di devlib.test → Opening Dashboard). Definisi tiap angka + cara mencoba:
-      `docs/md_for_systems/openingboard_review.md`. **Dibangun di ddt; tm2 menunggu OK user.**
+      `docs/md_for_systems/openingboard_review.md`. **Terpasang di ddt dan tm2** (user 2026-10-02: "pasang saja di tmerp");
+      asisten di tm2 belum dipasang, jadi perintah widget lewat asisten baru jalan di mockup.test.
 
 ## D. Cara kerja developer / agen
 
@@ -522,3 +530,4 @@
 | 2026-10-02 | A.21: **layar lama dihentikan** (user: "yang lama dihapus saja, gantikan dengan yang baru. yang lama disudahi saja") — Order to Cash dan Down Payment lama diarsipkan, menunya dihapus; Customer Invoice satu-satunya pintu untuk invoice, uang muka, dan penerimaan uang customer (Record Payment: satu penerimaan untuk satu atau beberapa invoice). Terpasang di mockup.test dan tmerp.test. Belum ada gantinya: AR Aging. |
 | 2026-10-02 | C.18: klik logo atau nama aplikasi di kepala Layer Menu = semua tab ditutup dan opening screen tampil; posisi menu tetap; isian belum di-Save -> satu pertanyaan dulu. Objek DevLib `x-dl::layer-menu` prop `home` + `Shell::goHome`. |
 | 2026-10-02 | C.33 + E.3: **opening screen = papan widget** — top management dulu (yang lain masih template), katalog widget + susunan per user + target KPI sebagai data, widget dipasang / dilepas lewat Customize atau lewat asisten; dibangun di ddt, review `openingboard_review.md`. |
+| 2026-10-02 | C.33: papan widget **dipasang di tm2**; pilihan periode Harian – Tahunan (tersimpan per user, target bulanan dijumlah); order value merinci Draft di samping Confirmed; angka papan ikut setelan Dummy & Legacy Data. |

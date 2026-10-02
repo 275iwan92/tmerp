@@ -13,7 +13,7 @@ class SysUserBoard extends Model
 
     protected $primaryKey = 'id_user_board';
 
-    protected $fillable = ['user_id', 'profile_code'];
+    protected $fillable = ['user_id', 'profile_code', 'period_code'];
 
     protected $casts = [];
 }

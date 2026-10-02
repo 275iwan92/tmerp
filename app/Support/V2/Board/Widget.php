@@ -3,7 +3,7 @@
 namespace App\Support\V2\Board;
 
 use App\Models\Sys\SecUser;
-use Devlib\Locale;
+use Devlib\Components\Dashboard;
 
 // Satu widget opening screen = satu kelas. Angkanya dihitung di sini (lewat Numbers), bukan oleh asisten.
 // title / description / group / module / minLevel / size / phrases = nilai AWAL baris katalog (sys_widget); sesudah itu
@@ -66,10 +66,23 @@ abstract class Widget
     /** @return array{data: array<string, mixed>, caption?: ?string, source?: string, open?: array<string, string>} */
     abstract public function build(Numbers $n, SecUser $user): array;
 
-    // Nama bulan 3 huruf menurut bahasa tampilan (label sumbu grafik).
-    protected static function monthName(\DateTimeInterface $month): string
+    // Rincian tahap order untuk baris bawah KPI (sudah diterjemahkan; bungkus raw() saat dipakai di prop teks):
+    // "Confirmed Rp 2,4 jt · Draft Rp 162,6 jt" atau "Confirmed 3 · Draft 6 · Waiting for approval 1".
+    protected function splitText(array $split, bool $money): string
     {
-        return explode('-', (string) Locale::d($month))[1] ?? $month->format('M');
+        $show = fn (string $key) => $money ? Dashboard::fmt($split[$key], 'money') : (string) $split['n_'.$key];
+        $parts = ['Confirmed '.$show('confirmed'), 'Draft '.$show('draft')];
+        if ($split['n_waiting'] > 0) {
+            $parts[] = t('Waiting for approval').' '.$show('waiting');
+        }
+
+        return implode(' · ', $parts);
+    }
+
+    // Keterangan KPI tanpa target: target belum diisi, atau periodenya harian / mingguan (target diisi per bulan).
+    protected function noTarget(Numbers $n): string
+    {
+        return in_array($n->period, ['daily', 'weekly'], true) ? 'Targets are set per month' : 'No target set for this period';
     }
 
     // Tombol buka layar sumber (tab) dari kode menu.

@@ -18,6 +18,19 @@ dikonfirmasi dulu, dijawab "benar").
   klik di browser belum diuji Claude — diuji user.
 - Rulebook C.18 + changelog.
 
+## 2026-10-02 -- Opening Board tahap 2: dipasang di tm2, periode Harian – Tahunan, rincian Draft / Confirmed
+
+Jawaban user atas review: "pasang saja di tmerp", "dijelaskan saja draft sekian dan confirmed sekian", "boleh dari daily
+sampai yearly", widget berikutnya minta usulan (ditulis di `openingboard_review.md` bagian 6).
+- **tm2:** migrasi `2026_10_02_000160` – `000162` + `help:import` dijalankan di database live. Papan jalan di `tmerp.test/v2`
+  (uji browser tanpa jendela, akun johiwan, 0 error). Target di tm2 kosong; asisten belum dipasang di tm2.
+- **Periode:** `Numbers` mengenal periode kalender (`range`, `trend`, `periodTarget`); pilihan tersimpan di
+  `sys_user_board.period_code` (aksi papan `period`); DevLib `x-dl::widget-board` prop `periods` / `period`.
+- **Draft / Confirmed:** `Numbers::split`, baris `note` baru di `x-dl::kpi`; Order Value (dulu `revenue_month`, sekarang
+  `order_value`), New Customer Orders, Sales Today, Targets by Area, dan ringkasan salam merinci Draft di samping Confirmed.
+- **Data dummy:** query builder papan lewat `Visible::apply`, jadi angka papan ikut setelan Dummy & Legacy Data.
+- **Test:** `OpeningBoardTest` 9 test — lulus di ddt dan di tm2; baris uji dihapus, diperiksa ke kedua database.
+
 ## 2026-10-02 -- Opening Board: papan widget layar pembuka untuk top management (dibangun di ddt, menunggu review user)
 
 Permintaan user: banyak widget termasuk grafik, bisa dipasang lewat asisten AI, top management dulu (jabatan lain masih

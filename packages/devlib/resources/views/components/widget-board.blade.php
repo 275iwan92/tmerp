@@ -12,6 +12,13 @@
     data-config="{{ json_encode(['action' => $actionUrl, 'csrf' => csrf_token()]) }}">
     <div class="dl-wb__bar">
         <h2>{{ $title ?? Lang::text('My Board') }}</h2>
+        @if ($periods && $actionUrl)
+            <div class="dl-dash__seg dl-wb__seg" role="tablist">
+                @foreach ($periods as $key => $label)
+                    <button type="button" class="{{ $key === $period ? 'is-active' : '' }}" data-wb-period="{{ $key }}">{{ Lang::text($label) }}</button>
+                @endforeach
+            </div>
+        @endif
         @if ($canEdit)
             <div class="dl-wb__tools">
                 <span class="dl-wb__only-edit dl-wb__hint">{{ Lang::text('Move, resize or remove a widget, or add one from the catalog.') }}</span>
@@ -50,7 +57,7 @@
                 @if ($w['type'] === 'kpi')
                     <x-dl::kpi :label="$w['title']" :value="$data['value'] ?? 0" :previous="$data['previous'] ?? null" :target="$data['target'] ?? null"
                         :format="$data['format'] ?? 'number'" :good-when="$data['good_when'] ?? 'up'" :icon="$w['icon'] ?? 'fa-chart-line'"
-                        :tone="$w['tone'] ?? 'accent'" :spark="$data['spark'] ?? []" :hint="$data['hint'] ?? ($w['caption'] ?? null)" />
+                        :tone="$w['tone'] ?? 'accent'" :spark="$data['spark'] ?? []" :hint="$data['hint'] ?? ($w['caption'] ?? null)" :note="$data['note'] ?? null" />
                 @elseif ($w['type'] === 'chart')
                     @if (array_sum(array_map(fn ($s) => array_sum(array_map('abs', $s['data'] ?? [])), $data['series'] ?? [])) > 0)
                         <x-dl::chart :type="$data['chart'] ?? 'bar'" :title="$w['title']" :subtitle="$w['caption'] ?? null" :format="$data['format'] ?? 'number'"

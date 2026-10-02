@@ -6,7 +6,7 @@ use App\Models\Sys\SecUser;
 use App\Support\V2\Board\Numbers;
 use App\Support\V2\Board\Widget;
 
-// Lima customer dengan order value (Confirmed / Closed) terbesar tahun berjalan.
+// Lima customer dengan order value (Confirmed / Closed) terbesar pada periode berjalan.
 final class TopCustomers extends Widget
 {
     private const TOP = 5;
@@ -23,7 +23,7 @@ final class TopCustomers extends Widget
 
     public function description(): string
     {
-        return 'The five customers with the highest confirmed order value this year.';
+        return 'The five customers with the highest confirmed order value in the period.';
     }
 
     public function type(): string
@@ -58,11 +58,11 @@ final class TopCustomers extends Widget
 
     public function build(Numbers $n, SecUser $user): array
     {
-        $by = $n->confirmed($n->now->startOfYear(), $n->now->endOfYear())->groupBy(fn ($o) => (int) $o->customer_id)
+        $by = $n->confirmed($n->from(), $n->to())->groupBy(fn ($o) => (int) $o->customer_id)
             ->map(fn ($set) => (float) $set->sum('value'))->sortDesc()->take(self::TOP);
         $names = $n->customerNames($by->keys()->all());
 
-        return ['caption' => 'This year, confirmed order value', 'source' => 'tm2sdi.co_order + co_order_item · tm2mst.cust_customer',
+        return ['caption' => raw($n->rangeText().' · '.t('confirmed order value')), 'source' => 'tm2sdi.co_order + co_order_item · tm2mst.cust_customer',
             'data' => ['chart' => 'hbar', 'format' => 'money', 'height' => '240px', 'legend' => false,
                 'labels' => $by->keys()->map(fn ($id) => $names[$id] ?? '#'.$id)->all(), 'series' => [['name' => t('Order value'), 'data' => $by->values()->all(), 'tone' => 'accent']]]];
     }

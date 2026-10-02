@@ -1141,12 +1141,14 @@
     "keywords": "papan pembuka, layar pembuka, opening board, opening screen, widget, pasang widget, lepas widget, customize, atur papan, dashboard, papan saya, my board, reset template",
     "steps": [
       {"en": "After login the opening screen shows your board. The numbers are read from the database each time the screen is opened.", "id": "Sesudah login layar pembuka menampilkan papan Anda. Angkanya dibaca dari database setiap kali layar dibuka."},
+      {"en": "Choose the period beside the board title: Daily, Weekly, Monthly, Quarterly, Half-yearly or Yearly. The widgets recalculate for that period and the choice is remembered.", "id": "Pilih periode di sebelah judul papan: Harian, Mingguan, Bulanan, Kuartalan, Semesteran, atau Tahunan. Widget dihitung ulang untuk periode itu dan pilihannya diingat."},
+      {"en": "Order Value shows Confirmed orders as the big number; the line below tells how much is still Draft or waiting for approval.", "id": "Order Value menampilkan order Confirmed sebagai angka besar; baris di bawahnya menyebut berapa yang masih Draft atau menunggu approval."},
       {"en": "Click Customize. Each widget gets buttons to move it earlier or later, make it narrower or wider, or remove it.", "id": "Klik Customize. Tiap widget mendapat tombol untuk pindah lebih awal atau akhir, lebih sempit atau lebar, atau dilepas."},
       {"en": "Click Add Widget to choose from the widgets your account may use, then click Add.", "id": "Klik Add Widget untuk memilih dari widget yang boleh dipakai akun Anda, lalu klik Add."},
       {"en": "Click Done when the board looks right. Every change is saved at once.", "id": "Klik Done bila papan sudah sesuai. Setiap perubahan langsung tersimpan."},
       {"en": "Or ask the assistant: \"add widget Top Customers\", \"remove widget Quote of the Day\", \"list widgets\".", "id": "Atau minta asisten: \"pasang widget Customer Teratas\", \"lepas widget Kata Hari Ini\", \"widget apa saja\"."},
       {"en": "Reset to Template puts the board back to the template of your position.", "id": "Reset to Template mengembalikan papan ke template jabatan Anda."},
-      {"en": "Targets are filled in Setup > KPI Targets. A widget without a target shows No target.", "id": "Target diisi di Setup > KPI Targets. Widget tanpa target menampilkan No target."}
+      {"en": "Targets are filled per month in Setup > KPI Targets. Quarterly and longer periods add the months up; Daily and Weekly show no target.", "id": "Target diisi per bulan di Setup > KPI Targets. Periode kuartalan ke atas menjumlah bulan-bulannya; Harian dan Mingguan tanpa target."}
     ],
     "fields": []
   }

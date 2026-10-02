@@ -9,10 +9,10 @@ use App\Support\V2\Board\Widgets\MaterialShortage;
 use App\Support\V2\Board\Widgets\NewOrders;
 use App\Support\V2\Board\Widgets\OnTimeDelivery;
 use App\Support\V2\Board\Widgets\OrdersByStatus;
+use App\Support\V2\Board\Widgets\OrderValue;
 use App\Support\V2\Board\Widgets\OverdueReceivables;
 use App\Support\V2\Board\Widgets\QuoteOfDay;
 use App\Support\V2\Board\Widgets\ReceivablesAging;
-use App\Support\V2\Board\Widgets\RevenueMonth;
 use App\Support\V2\Board\Widgets\RevenueTrend;
 use App\Support\V2\Board\Widgets\SalesPipeline;
 use App\Support\V2\Board\Widgets\SalesRanking;
@@ -30,7 +30,7 @@ final class WidgetCatalog
     private const MANAGEMENT_REPORTS = 'MGMT';
 
     public const CLASSES = [
-        RevenueMonth::class, NewOrders::class, OverdueReceivables::class, OnTimeDelivery::class, SalesToday::class, RevenueTrend::class, TargetsByArea::class,
+        OrderValue::class, NewOrders::class, OverdueReceivables::class, OnTimeDelivery::class, SalesToday::class, RevenueTrend::class, TargetsByArea::class,
         SalesPipeline::class, SalesRanking::class, WaitingDecision::class, OrdersByStatus::class, TopCustomers::class, ReceivablesAging::class,
         MaterialShortage::class, DeadstockValue::class, QuoteOfDay::class,
     ];

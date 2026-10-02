@@ -6,7 +6,8 @@ use App\Models\Sys\SecUser;
 use App\Support\V2\Board\Numbers;
 use App\Support\V2\Board\Widget;
 
-// Jumlah dokumen Customer Order bulan berjalan (semua status kecuali Cancelled) terhadap target NEW_ORDERS dan bulan lalu.
+// Jumlah dokumen Customer Order periode berjalan (semua status kecuali Cancelled) terhadap target NEW_ORDERS dan periode lalu;
+// baris bawah merinci berapa yang Confirmed dan berapa yang masih Draft.
 final class NewOrders extends Widget
 {
     public function key(): string
@@ -21,7 +22,7 @@ final class NewOrders extends Widget
 
     public function description(): string
     {
-        return 'Number of Customer Orders entered this month, without the cancelled ones.';
+        return 'Number of Customer Orders entered in the period, without the cancelled ones: Confirmed and Draft.';
     }
 
     public function type(): string
@@ -61,14 +62,13 @@ final class NewOrders extends Widget
 
     public function build(Numbers $n, SecUser $user): array
     {
-        $month = $n->month();
-        $last = $n->month(1);
-        $orders = $n->orders($month, $n->now->endOfMonth());
-        $target = $n->target('NEW_ORDERS', $month);
+        [$prevFrom, $prevTo] = $n->range(1);
+        $orders = $n->orders($n->from(), $n->to());
+        $target = $n->periodTarget('NEW_ORDERS');
 
         return ['source' => 'tm2sdi.co_order · tm2sys.sys_kpi_target', 'data' => [
-            'value' => $orders->count(), 'previous' => (float) $n->orders($last, $last->endOfMonth())->count(), 'target' => $target, 'format' => 'number',
-            'hint' => $target === null ? raw(str_replace(':n', (string) $orders->whereIn('doc_status', Numbers::CONFIRMED)->count(), t(':n confirmed'))) : null,
+            'value' => $orders->count(), 'previous' => (float) $n->orders($prevFrom, $prevTo)->count(), 'target' => $target, 'format' => 'number',
+            'hint' => $target === null ? $this->noTarget($n) : null, 'note' => raw($this->splitText(Numbers::split($orders), false)),
         ]];
     }
 }

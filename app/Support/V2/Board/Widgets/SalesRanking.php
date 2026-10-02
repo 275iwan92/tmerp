@@ -6,7 +6,7 @@ use App\Models\Sys\SecUser;
 use App\Support\V2\Board\Numbers;
 use App\Support\V2\Board\Widget;
 
-// Order value bulan berjalan per sales person terhadap target REVENUE pribadinya; urut dari persen tertinggi.
+// Order value (Confirmed) periode berjalan per sales person terhadap target REVENUE pribadinya; urut dari persen tertinggi.
 // Order tanpa sales person dijumlah di baris sendiri supaya totalnya sama dengan Order Value This Month.
 final class SalesRanking extends Widget
 {
@@ -22,7 +22,7 @@ final class SalesRanking extends Widget
 
     public function description(): string
     {
-        return 'Confirmed order value of each sales person this month against the personal target.';
+        return 'Confirmed order value of each sales person in the period against the personal target.';
     }
 
     public function type(): string
@@ -62,11 +62,10 @@ final class SalesRanking extends Widget
 
     public function build(Numbers $n, SecUser $user): array
     {
-        $month = $n->month();
-        $by = $n->confirmed($month, $n->now->endOfMonth())->groupBy(fn ($o) => (int) $o->sales_person_id);
+        $by = $n->confirmed($n->from(), $n->to())->groupBy(fn ($o) => (int) $o->sales_person_id);
         $rows = [];
         foreach ($n->salesPeople() as $id => $name) {
-            $target = $n->target('REVENUE', $month, (int) $id);
+            $target = $n->periodTarget('REVENUE', (int) $id);
             $actual = (float) ($by->get((int) $id)?->sum('value') ?? 0);
             if ($target !== null || $actual > 0) {
                 $rows[] = ['name' => $name, 'sub' => '', 'target' => $target, 'actual' => $actual];
@@ -77,7 +76,7 @@ final class SalesRanking extends Widget
         }
         usort($rows, fn ($a, $b) => [$b['target'] ? $b['actual'] / $b['target'] : -1, $b['actual']] <=> [$a['target'] ? $a['actual'] / $a['target'] : -1, $a['actual']]);
 
-        return ['caption' => 'This month, highest first', 'source' => 'tm2sdi.co_order · tm2mst.sales_person · tm2sys.sys_kpi_target',
+        return ['caption' => raw($n->rangeText().' · '.t('highest first')), 'source' => 'tm2sdi.co_order · tm2mst.sales_person · tm2sys.sys_kpi_target',
             'data' => ['name_label' => 'Sales Person', 'format' => 'money', 'rows' => $rows]];
     }
 }

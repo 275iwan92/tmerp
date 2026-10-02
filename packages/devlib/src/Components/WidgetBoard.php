@@ -19,6 +19,8 @@ namespace Devlib\Components;
 //   'type' => 'quote',    'data' => ['text', 'author', 'day', 'days']
 // ], ...]
 // $catalog = [['key', 'title', 'description', 'group', 'icon', 'installed' => bool], ...]   // semua widget yang boleh dipasang user ini
+// $periods = ['daily' => 'Daily', ...] + $period = kunci yang aktif: tombol periode di kepala papan (aksi 'period', key = kunci);
+//            angka tiap widget dihitung server untuk periode itu. Kosong = papan tanpa pilihan periode.
 class WidgetBoard extends DevlibComponent
 {
     public const SIZES = [3, 4, 6, 8, 12];
@@ -32,6 +34,8 @@ class WidgetBoard extends DevlibComponent
         public ?string $title = null,
         public string $id = 'wboard',
         public ?string $source = null,
+        public array $periods = [],
+        public ?string $period = null,
     ) {}
 
     public function tag(): string

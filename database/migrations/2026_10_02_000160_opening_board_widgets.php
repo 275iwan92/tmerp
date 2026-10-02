@@ -18,7 +18,7 @@ return new class extends Migration
 {
     // profil => [[widget, lebar], ...] berurutan (12 kolom: 3 = seperempat, 4 = sepertiga, 6 = setengah, 8, 12 = penuh)
     private const TEMPLATE = [
-        'MANAGEMENT' => [['revenue_month', 3], ['new_orders', 3], ['overdue_receivables', 3], ['ontime_delivery', 3], ['revenue_trend', 8], ['targets_by_area', 4],
+        'MANAGEMENT' => [['order_value', 3], ['new_orders', 3], ['overdue_receivables', 3], ['ontime_delivery', 3], ['revenue_trend', 8], ['targets_by_area', 4],
             ['sales_pipeline', 6], ['sales_ranking', 6], ['waiting_decision', 4], ['orders_by_status', 4], ['top_customers', 4], ['quote_of_day', 12]],
     ];
 
@@ -84,6 +84,7 @@ return new class extends Migration
                 $t->id('id_user_board');
                 $t->unsignedBigInteger('user_id')->unique();
                 $t->string('profile_code', 30);
+                $t->string('period_code', 12)->default('monthly'); // periode papan pilihan user: daily .. yearly
                 $t->timestamp('created_at')->nullable();
                 $t->timestamp('updated_at')->nullable();
             });
@@ -157,7 +158,8 @@ return new class extends Migration
 
         $menu = fn () => $db->table('sys_app_menu');
         foreach (self::MENU as $code => [$sibling, $sort, $label, $icon, $slug]) {
-            $near = $menu()->where('code', $sibling)->first();
+            // Database yang belum punya menu asisten (tm2 sebelum asisten dipasang): letakkan di sebelah Constants.
+            $near = $menu()->where('code', $sibling)->first() ?? $menu()->where('code', 'SET_CONSTANTS')->first();
             if ($near && ! $menu()->where('code', $code)->exists()) {
                 $menu()->insert(['parent_id' => $near->parent_id, 'code' => $code, 'label' => $label, 'icon' => $icon, 'menu_type' => 'item', 'object_type' => 'grid',
                     'target' => 'v2:'.$slug, 'sort_order' => $sort, 'activate' => 1, 'required_object' => $near->required_object, 'status_code' => 'READY_FOR_QC',

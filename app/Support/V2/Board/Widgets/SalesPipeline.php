@@ -6,7 +6,7 @@ use App\Models\Sys\SecUser;
 use App\Support\V2\Board\Numbers;
 use App\Support\V2\Board\Widget;
 
-// Corong penjualan bulan berjalan dalam jumlah dokumen: Inquiry masuk -> harga terbit (Pro-Cost) -> Quotation terbit -> Customer Order.
+// Tahap penjualan periode berjalan dalam jumlah dokumen: Inquiry masuk -> harga terbit (Pro-Cost) -> Quotation terbit -> Customer Order.
 // Batang mendatar, bukan corong: Customer Order boleh masuk langsung tanpa Quotation (INSTANT), jadi jumlahnya tidak selalu mengecil.
 final class SalesPipeline extends Widget
 {
@@ -22,7 +22,7 @@ final class SalesPipeline extends Widget
 
     public function description(): string
     {
-        return 'Documents of this month at each sales step: Inquiry, price published, Quotation, Customer Order.';
+        return 'Documents of the period at each sales step: Inquiry, price published, Quotation, Customer Order.';
     }
 
     public function type(): string
@@ -57,9 +57,9 @@ final class SalesPipeline extends Widget
 
     public function build(Numbers $n, SecUser $user): array
     {
-        $p = $n->pipeline($n->month(), $n->now->endOfMonth());
+        $p = $n->pipeline($n->from(), $n->to());
 
-        return ['caption' => 'Documents dated this month', 'source' => 'tm2sdi.iqp_inquiry · iqp_costing (published) · quo_quotation · co_order',
+        return ['caption' => raw(t('Documents dated').' '.$n->rangeText()), 'source' => 'tm2sdi.iqp_inquiry · iqp_costing (published) · quo_quotation · co_order',
             'data' => ['chart' => 'hbar', 'format' => 'number', 'height' => '260px', 'legend' => false,
                 'labels' => [t('Inquiries'), t('Price published (Pro-Cost)'), t('Quotations issued'), t('Customer Orders')],
                 'series' => [['name' => t('Documents'), 'data' => [$p['inquiries'], $p['priced'], $p['quoted'], $p['ordered']], 'tone' => 'accent']]]];

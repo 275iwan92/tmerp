@@ -51,7 +51,7 @@
     {{-- Papan widget ($board['widgets']): menggantikan blok tetap di bawah; susunannya milik user (x-dl::widget-board). --}}
     @if (array_key_exists('widgets', $d))
         <x-dl::widget-board :widgets="$d['widgets']" :catalog="$d['catalog'] ?? []" :action-url="$d['board_url'] ?? null" :editable="$d['board_editable'] ?? true"
-            :title="$d['kpi_title'] ?? null" :id="$id.'-board'" :source="$d['board_source'] ?? null" />
+            :title="$d['kpi_title'] ?? null" :id="$id.'-board'" :source="$d['board_source'] ?? null" :periods="$d['board_periods'] ?? []" :period="$d['board_period'] ?? null" />
     @else
     {{-- 2. Pilihan periode --}}
     <div class="dl-dash__bar">

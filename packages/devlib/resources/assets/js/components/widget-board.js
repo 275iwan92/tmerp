@@ -11,6 +11,8 @@
       try { this.cfg = JSON.parse(this.el.dataset.config || '{}'); } catch (e) { this.cfg = {}; }
       this.el.addEventListener('click', e => {
         if (e.target.closest('[data-wb-edit]')) { this.el.classList.toggle('is-edit'); return; }
+        const per = e.target.closest('[data-wb-period]');
+        if (per) { if (!per.classList.contains('is-active')) this.send({action: 'period', key: per.dataset.wbPeriod}); return; }
         const add = e.target.closest('[data-wb-add]');
         if (add) { this.send({action: 'add', key: add.dataset.wbAdd}); return; }
         const act = e.target.closest('[data-wb-act]');

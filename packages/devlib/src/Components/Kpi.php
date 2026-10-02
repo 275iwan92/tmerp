@@ -3,6 +3,7 @@
 namespace Devlib\Components;
 
 use Devlib\Components\Field\Slider;
+use Devlib\Locale;
 
 // Kartu KPI dashboard: label, nilai, perubahan vs periode lalu (▲▼, warna sesuai arah yang BAIK),
 // sparkline, dan progres ke target. goodWhen: up (naik = baik, mis. penjualan) | down (turun = baik, mis. reject rate).
@@ -19,6 +20,8 @@ class Kpi extends DevlibComponent
         public ?string $hint = null,
         public string $icon = 'fa-chart-line',
         public string $tone = 'accent',
+        // Baris kecil tambahan di bawah target / hint (mis. rincian "Confirmed .. · Draft .."); tidak diterjemahkan.
+        public ?string $note = null,
     ) {}
 
     public function tag(): string
@@ -33,7 +36,9 @@ class Kpi extends DevlibComponent
         }
         $n = Slider::compact((float) $v);
 
-        return match ($this->format) { 'money' => 'Rp '.$n, 'percent' => \Devlib\Locale::decimal((float) $v, 1).'%', default => $n };
+        return match ($this->format) {
+            'money' => 'Rp '.$n, 'percent' => Locale::decimal((float) $v, 1).'%', default => $n
+        };
     }
 
     public function delta(): ?array
@@ -77,6 +82,7 @@ class Kpi extends DevlibComponent
                 @elseif ($hint)
                     <small class="dl-kpi__hint">{{ $hint }}</small>
                 @endif
+                @if ($note)<small class="dl-kpi__hint dl-kpi__note">{{ $note }}</small>@endif
             </div>
             BLADE;
     }

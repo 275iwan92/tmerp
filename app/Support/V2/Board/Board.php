@@ -28,7 +28,7 @@ final class Board
 {
     public const MANAGEMENT = 'MANAGEMENT';
 
-    public const ACTIONS = ['add', 'remove', 'left', 'right', 'wider', 'narrower', 'reset'];
+    public const ACTIONS = ['add', 'remove', 'left', 'right', 'wider', 'narrower', 'reset', 'period'];
 
     // Database yang belum menjalankan migrasi papan (tm2* sebelum disetujui user): layar pembuka lama, halaman tidak gagal.
     public static function ready(): bool
@@ -79,6 +79,15 @@ final class Board
 
             return null;
         }
+        if ($action === 'period') {
+            if (! isset(Numbers::PERIODS[(string) $key])) {
+                return 'Unknown period.';
+            }
+            self::layout($user);
+            SysUserBoard::query()->where('user_id', $user->id_user)->update(['period_code' => $key]);
+
+            return null;
+        }
         $layout = self::layout($user)->values();
         $i = $layout->search(fn (SysUserWidget $w) => $w->widget_key === $key);
         if ($action === 'add') {
@@ -115,12 +124,20 @@ final class Board
         return null;
     }
 
+    // Periode papan pilihan user (tersimpan); papan yang belum pernah dipilih = bulanan.
+    public static function period(SecUser $user): string
+    {
+        $code = (string) SysUserBoard::query()->where('user_id', $user->id_user)->value('period_code');
+
+        return isset(Numbers::PERIODS[$code]) ? $code : Numbers::DEFAULT_PERIOD;
+    }
+
     /** @return array{widgets: array<int, array<string, mixed>>, catalog: array<int, array<string, mixed>>} isi x-dl::widget-board */
     public static function props(SecUser $user): array
     {
         $catalog = app(WidgetCatalog::class);
         $mine = $catalog->for($user);
-        $numbers = Numbers::make();
+        $numbers = Numbers::make(self::period($user));
         $widgets = [];
         $on = [];
         foreach (self::layout($user) as $slot) {
@@ -152,11 +169,13 @@ final class Board
         $name = (string) ($user->name ?: $user->login);
         $brief = [];
         if ($user->canViewSalesPrice()) {
-            $value = (float) $numbers->confirmed($numbers->month(), $numbers->now->endOfMonth())->sum('value');
+            // Ringkasan salam selalu bulan berjalan (tidak ikut pilihan periode papan): Confirmed dan Draft disebut terpisah.
+            $split = Numbers::split($numbers->orders($numbers->month(), $numbers->now->endOfMonth()));
             $target = $numbers->target('REVENUE', $numbers->month());
-            $brief[] = [t('Order value this month'), Dashboard::fmt($value, 'money')];
+            $brief[] = [t('Confirmed orders this month'), Dashboard::fmt($split['confirmed'], 'money')];
+            $brief[] = [t('Draft orders this month'), Dashboard::fmt($split['draft'] + $split['waiting'], 'money')];
             if ($target !== null) {
-                $brief[] = [t('Left to target'), Dashboard::fmt(max(0, $target - $value), 'money')];
+                $brief[] = [t('Left to target'), Dashboard::fmt(max(0, $target - $split['confirmed']), 'money')];
             }
         }
         $waiting = collect(array_keys(ApprovalCenter::SCREENS))->sum(function (string $screen) {
@@ -192,6 +211,7 @@ final class Board
     private static function board(SecUser $user): array
     {
         return ['profile' => Str::lower(self::MANAGEMENT), 'kpi_title' => 'My Board', 'board_url' => route('v2.board'),
+            'board_periods' => Numbers::PERIODS, 'board_period' => self::period($user),
             'board_source' => 'sys_widget + sys_user_widget ('.config('database.connections.tm2sys.database').')'] + self::props($user);
     }
 

@@ -6,7 +6,7 @@ use App\Models\Sys\SecUser;
 use App\Support\V2\Board\Numbers;
 use App\Support\V2\Board\Widget;
 
-// Persen Delivery Order customer yang berangkat tepat janji bulan berjalan, terhadap target ONTIME_DELIVERY dan bulan lalu.
+// Persen Delivery Order customer yang berangkat tepat janji pada periode berjalan, terhadap target ONTIME_DELIVERY dan periode lalu.
 final class OnTimeDelivery extends Widget
 {
     public function key(): string
@@ -21,7 +21,7 @@ final class OnTimeDelivery extends Widget
 
     public function description(): string
     {
-        return 'Share of customer deliveries that left on or before the promised date this month.';
+        return 'Share of customer deliveries that left on or before the promised date in the period.';
     }
 
     public function type(): string
@@ -61,17 +61,16 @@ final class OnTimeDelivery extends Widget
 
     public function build(Numbers $n, SecUser $user): array
     {
-        $month = $n->month();
-        $last = $n->month(1);
-        $now = $n->onTime($month, $n->now->endOfMonth());
-        $before = $n->onTime($last, $last->endOfMonth());
+        [$prevFrom, $prevTo] = $n->range(1);
+        $now = $n->onTime($n->from(), $n->to());
+        $before = $n->onTime($prevFrom, $prevTo);
         $pct = fn (array $x) => $x['shipped'] ? $x['on_time'] / $x['shipped'] * 100 : null;
         $base = ['source' => 'tm2sdi.do_delivery + do_line + co_order_delivery · tm2sys.sys_kpi_target'];
         if (! $now['shipped']) {
-            return $base + ['data' => ['value' => '—', 'format' => 'percent', 'hint' => 'No delivery has left this month']];
+            return $base + ['data' => ['value' => '—', 'format' => 'percent', 'hint' => 'No delivery has left in this period']];
         }
 
-        return $base + ['data' => ['value' => $pct($now), 'previous' => $pct($before), 'target' => $n->target('ONTIME_DELIVERY', $month), 'format' => 'percent',
-            'hint' => raw(str_replace([':a', ':b'], [(string) $now['on_time'], (string) $now['shipped']], t(':a of :b deliveries on time')))]];
+        return $base + ['data' => ['value' => $pct($now), 'previous' => $pct($before), 'target' => $n->periodTarget('ONTIME_DELIVERY'), 'format' => 'percent',
+            'note' => raw(str_replace([':a', ':b'], [(string) $now['on_time'], (string) $now['shipped']], t(':a of :b deliveries on time')))]];
     }
 }

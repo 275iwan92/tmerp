@@ -2858,6 +2858,8 @@ a.dl-ycal__d:hover{background:var(--dl-hover);outline:1px solid var(--dl-accent)
 .dl-wb__bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .dl-wb__bar h2{margin:0;font-size:calc(16px * var(--dl-font-scale));color:var(--dl-ink-strong)}
 .dl-wb__tools{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dl-wb__seg{margin-left:0}
+.dl-kpi__note{color:var(--dl-ink)}
 .dl-wb__hint{font-size:calc(12px * var(--dl-font-scale));color:var(--dl-muted)}
 .dl-wb__only-edit{display:none}
 .dl-wb.is-edit .dl-wb__only-edit{display:inline-flex}

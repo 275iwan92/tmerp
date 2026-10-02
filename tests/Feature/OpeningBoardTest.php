@@ -12,7 +12,7 @@ use App\Models\Sys\SysUserWidget;
 use App\Support\V2\Board\Board;
 use App\Support\V2\Board\Numbers;
 use App\Support\V2\Board\WidgetCatalog;
-use App\Support\V2\Board\Widgets\RevenueMonth;
+use App\Support\V2\Board\Widgets\OrderValue;
 use Assistant\MetricCatalog;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -48,7 +48,7 @@ class OpeningBoardTest extends TestCase
         if (Board::ready()) {
             SysUserWidget::query()->whereIn('user_id', [self::ADMIN_ID, self::STAFF_ID])->delete();
             SysUserBoard::query()->whereIn('user_id', [self::ADMIN_ID, self::STAFF_ID])->delete();
-            SysKpiTarget::query()->whereDate('period_month', self::FAR_MONTH)->delete();
+            SysKpiTarget::query()->whereYear('period_month', 2099)->delete();
             if (Schema::connection('tm2sys')->hasTable('sys_assistant_message')) {
                 DB::connection('tm2sys')->table('sys_assistant_message')->whereIn('user_id', [(string) self::ADMIN_ID, (string) self::STAFF_ID])->delete();
             }
@@ -123,11 +123,11 @@ class OpeningBoardTest extends TestCase
         $catalog = app(WidgetCatalog::class);
 
         $this->assertNull(Board::profile($staff));
-        $this->assertFalse($catalog->allowed($staff, 'revenue_month'));
+        $this->assertFalse($catalog->allowed($staff, 'order_value'));
         $this->assertTrue($catalog->allowed($staff, 'quote_of_day'));
-        $this->assertSame('This widget is not available for your account.', Board::apply($staff, 'add', 'revenue_month'));
-        $this->assertNotContains('revenue_month', $this->keys($staff));
-        $this->assertNotContains('revenue_month', array_column(Board::props($staff)['catalog'], 'key'));
+        $this->assertSame('This widget is not available for your account.', Board::apply($staff, 'add', 'order_value'));
+        $this->assertNotContains('order_value', $this->keys($staff));
+        $this->assertNotContains('order_value', array_column(Board::props($staff)['catalog'], 'key'));
     }
 
     public function test_numbers_agree_with_the_tables_and_read_the_target(): void
@@ -138,17 +138,69 @@ class OpeningBoardTest extends TestCase
         $direct = (float) DB::connection('tm2sdi')->table('co_order as o')->join('co_order_item as i', 'i.order_id', '=', 'o.id_order')
             ->whereBetween('o.co_date', [$from->toDateString(), $to->toDateString()])->where('o.stat_cancel', 0)->whereIn('o.doc_status', Numbers::CONFIRMED)->sum('i.subtotal');
         $this->assertEqualsWithDelta($direct, (float) $n->confirmed($from, $to)->sum('value'), 0.01);
-        $this->assertEqualsWithDelta((float) $n->confirmed($n->month(11), $n->now->endOfMonth())->sum('value'), array_sum($n->monthlyOrderValue(12)), 0.01);
+        $this->assertEqualsWithDelta((float) $n->confirmed($n->month(11), $n->now->endOfMonth())->sum('value'), array_sum(array_column($n->trend(12), 'value')), 0.01);
+
+        // Rincian tahap: Confirmed + Draft + menunggu approval = semua order tidak batal di rentang itu.
+        $all = $n->orders($from, $to);
+        $split = Numbers::split($all);
+        $this->assertEqualsWithDelta($direct, $split['confirmed'], 0.01);
+        $this->assertEqualsWithDelta((float) $all->sum('value'), $split['confirmed'] + $split['draft'] + $split['waiting'], 0.01);
+        $this->assertSame($all->count(), $split['n_confirmed'] + $split['n_draft'] + $split['n_waiting']);
 
         // Bulan tanpa data sama sekali (2099): angka nol, target dari Setup > KPI Targets.
-        $far = new Numbers(CarbonImmutable::parse('2099-01-15 10:00:00'));
-        $widget = new RevenueMonth;
-        $this->assertNull($widget->build($far, $this->admin)['data']['target']);
+        $far = fn (string $period = 'monthly') => new Numbers(CarbonImmutable::parse('2099-01-15 10:00:00'), $period);
+        $widget = new OrderValue;
+        $this->assertNull($widget->build($far(), $this->admin)['data']['target']);
         SysKpiTarget::create(['target_key' => 'REVENUE', 'period_month' => self::FAR_MONTH, 'sales_person_id' => 0, 'target_value' => 123456789, 'activate' => true, 'created_by' => 'test']);
-        $data = $widget->build(new Numbers(CarbonImmutable::parse('2099-01-15 10:00:00')), $this->admin)['data'];
+        SysKpiTarget::create(['target_key' => 'REVENUE', 'period_month' => '2099-02-01', 'sales_person_id' => 0, 'target_value' => 1000, 'activate' => true, 'created_by' => 'test']);
+        $data = $widget->build($far(), $this->admin)['data'];
         $this->assertSame(123456789.0, $data['target']);
         $this->assertSame(0.0, $data['value']);
         $this->assertCount(7, $data['spark']);
+        $this->assertStringContainsString('Confirmed', $data['note']);
+        $this->assertStringContainsString('Draft', $data['note']);
+
+        // Target diisi per bulan: kuartal / tahun menjumlah bulan-bulannya, harian / mingguan tanpa target.
+        $this->assertSame(123457789.0, $far('quarterly')->periodTarget('REVENUE'));
+        $this->assertSame(123457789.0, $far('yearly')->periodTarget('REVENUE'));
+        $this->assertNull($far('weekly')->periodTarget('REVENUE'));
+        $this->assertNull($far('daily')->periodTarget('REVENUE'));
+    }
+
+    public function test_period_ranges_follow_the_calendar(): void
+    {
+        $at = fn (string $period) => new Numbers(CarbonImmutable::parse('2026-10-02 16:00:00'), $period);
+        $range = fn (string $period, int $back = 0) => array_map(fn (CarbonImmutable $d) => $d->toDateString(), $at($period)->range($back));
+
+        $this->assertSame(['2026-10-02', '2026-10-02'], $range('daily'));
+        $this->assertSame(['2026-09-28', '2026-10-04'], $range('weekly'));
+        $this->assertSame(['2026-10-01', '2026-10-31'], $range('monthly'));
+        $this->assertSame(['2026-10-01', '2026-12-31'], $range('quarterly'));
+        $this->assertSame(['2026-07-01', '2026-12-31'], $range('semester'));
+        $this->assertSame(['2026-01-01', '2026-12-31'], $range('yearly'));
+        // Periode sebelumnya.
+        $this->assertSame(['2026-10-01', '2026-10-01'], $range('daily', 1));
+        $this->assertSame(['2026-09-01', '2026-09-30'], $range('monthly', 1));
+        $this->assertSame(['2026-07-01', '2026-09-30'], $range('quarterly', 1));
+        $this->assertSame(['2026-01-01', '2026-06-30'], $range('semester', 1));
+        $this->assertSame(['2025-01-01', '2025-12-31'], $range('yearly', 1));
+        // Periode yang tidak dikenal = bulanan.
+        $this->assertSame('monthly', $at('century')->period);
+        $this->assertCount(14, $at('daily')->trend());
+        $this->assertCount(5, $at('yearly')->trend());
+    }
+
+    public function test_period_choice_is_saved_per_user(): void
+    {
+        $this->assertSame('monthly', Board::period($this->admin));
+        $this->assertNull(Board::apply($this->admin, 'period', 'yearly'));
+        $this->assertSame('yearly', Board::period($this->admin));
+        $this->assertSame('Unknown period.', Board::apply($this->admin, 'period', 'century'));
+        $this->assertSame('yearly', Board::period($this->admin));
+        // Reset to Template mengembalikan susunan, bukan periode.
+        Board::apply($this->admin, 'reset', null);
+        $this->assertSame('yearly', Board::period($this->admin));
+        $this->assertStringContainsString('data-wb-period="yearly"', Board::html($this->admin));
     }
 
     public function test_board_renders_every_widget_of_the_layout(): void
