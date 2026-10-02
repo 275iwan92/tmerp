@@ -273,6 +273,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
         // Flag Qty Minim (v1 sdi_co_detail.qty_minim) boleh di baris manapun, seperti due_date.
         if ($field === 'qty_minim') {
             $item->qty_minim = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+            $item->recalcSubtotal();
             $item->save();
             unset($this->order);
 

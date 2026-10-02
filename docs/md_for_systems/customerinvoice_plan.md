@@ -1,8 +1,9 @@
 # CUSTOMER INVOICE + ACCOUNTS RECEIVABLE — RENCANA MODUL
 
-> Status: **RENCANA, menunggu OK user** (2026-10-02). Belum ada kode yang diubah.
-> Analisa lanjutan (penomoran, detail baris, software pasar, aturan Indonesia) di bagian 9; keputusan yang
-> tersisa di bagian 8.
+> Status: **arah dan lima keputusan A–E DISETUJUI user 2026-10-02** (bagian 8). Modul belum dibangun; langkah
+> berikut = perjalanan user + mockup (bagian 10) untuk disetujui.
+> Ketentuan keuangan dan akuntansi (jurnal, nomor, pajak, pengendalian): **`customerinvoice_accounting.md`**.
+> Analisa (penomoran, detail baris, software pasar, aturan Indonesia): bagian 9.
 > Acuan lapangan: `docs/attachments/` — `print out tagihan customer invoice.jpeg`,
 > `screen untuk input tagihan customer invoice.jpeg`, `customer invoice uang muka.jpeg`,
 > `screen untuk input uang muka.jpeg`.
@@ -209,22 +210,15 @@ Enam pertanyaan awal, sesudah data lama, kode ScriptCase, software di pasar, dan
 | 5 | Rekening di cetakan | **Terjawab** — polanya jelas (9.3). Sisa: izin menyalin data nyata (keputusan D). |
 | 6 | Saldo awal piutang | **Terjawab** — memang tidak ada datanya; diusulkan lembar kerja di aplikasi (9.7 butir 12). |
 
-Yang masih harus diputuskan user:
+**Keputusan user 2026-10-02:**
 
-- **A. Seri nomor.** Sekarang invoice PPN (kop CV. Langgeng Jaya Makmur) dan Non PPN (kop Telasih Makmur)
-  berbagi satu urutan `…/TM/…`. Usul: dua seri, satu per identitas, karena di semua software pembanding seri
-  nomor melekat pada badan usaha dan pembukuan PKP jadi punya urutan tanpa lompatan. Pilihan lain: tetap satu
-  seri seperti sekarang.
-- **B. PPN pada uang muka order PPN.** Aturan: Faktur Pajak dibuat saat uang muka diterima, invoice akhir
-  hanya memuat PPN sisanya. Praktik sekarang: PPN seluruhnya di invoice akhir. Usul: aplikasi mengikuti
-  aturan, dengan satu setelan untuk kembali ke cara lama bila konsultan pajak memutuskan lain.
-- **C. Tagihan DP tanpa jurnal sampai dibayar.** Mengubah butir LOCKED di `downpayment_tier1-4.md` (yang
-  sekarang menjurnal piutang saat tagihan DP terbit). Alasan di 9.7 butir 6.
-- **D. Lima rekening bank lama** disalin ke master rekening perusahaan (data nyata) dengan default: PPN =
-  Maspion CV. Langgeng Jaya Makmur, Non PPN = BCA Puspita Dewi Widodo.
-- **E. Qty Minim di Customer Order v2.** Sekarang v2 selalu menghitung qty × harga
-  (`CoOrderItem::recalcSubtotal`); sistem lama memakai harga borongan. Perlu disamakan supaya nilai CO =
-  nilai invoice.
+| | Keputusan | Pelaksanaan |
+|---|---|---|
+| **A** | **Dua seri nomor**, satu per identitas: Non PPN `…/TM/…`, PPN `…/LJM/…` (kode bisa diubah di master seri). Format dan urut ulang bulanan tetap; nomor terbit otomatis saat Confirm. | tahap 1 |
+| **B** | **PPN uang muka mengikuti aturan**: Faktur Pajak saat uang muka diterima, invoice akhir memuat PPN sisanya. Setelan cadangan `DP_VAT_ON_RECEIPT` untuk kembali ke cara lama. | tahap 1; konfirmasi konsultan pajak sebelum dipakai di tmerp.test |
+| **C** | **Tagihan DP tanpa jurnal sampai uangnya diterima.** Menggantikan butir LOCKED di `downpayment_tier1-4.md` (sudah diberi catatan perubahan). User meminta urusan keuangan dan akuntansi didokumentasikan jelas → `customerinvoice_accounting.md`. | dokumen selesai; kode tahap 1 |
+| **D** | **Lima rekening bank lama disalin** ke master rekening perusahaan; bawaan PPN = Maspion CV. Langgeng Jaya Makmur, Non PPN = BCA Puspita Dewi Widodo. | tahap 1 (saat master dibuat) |
+| **E** | **Qty Minim di Customer Order v2 = harga borongan** (untuk saat ini). | selesai 2026-10-02: `CoOrderItem::recalcSubtotal`, `DoLine`, test `QtyMinimLumpSumTest` |
 
 ---
 

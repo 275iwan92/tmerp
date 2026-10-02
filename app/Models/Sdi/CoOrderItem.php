@@ -76,9 +76,10 @@ class CoOrderItem extends Model
         return $this->hasMany(CoOrderDelivery::class, 'item_id', 'id_item');
     }
 
+    // Qty Minim = harga borongan (sama dengan sistem lama sdi_co_detail): nilai baris = harga, berapa pun qty-nya.
     public function recalcSubtotal(): void
     {
-        $gross = (float) $this->qty * (float) $this->unit_price;
+        $gross = $this->qty_minim ? (float) $this->unit_price : (float) $this->qty * (float) $this->unit_price;
         $this->subtotal = round($gross * (1 - (float) $this->discount_pct / 100), 2);
     }
 }

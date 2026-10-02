@@ -54,8 +54,11 @@ class DoLine extends Model
         return $this->belongsTo(CoOrderDelivery::class, 'co_delivery_id', 'id_delivery');
     }
 
+    // Baris CO berharga borongan (Qty Minim): nilai baris DO = harga, bukan qty x harga. Menagihnya hanya satu
+    // kali adalah tugas invoice (docs/md_for_systems/customerinvoice_accounting.md bagian 7).
     public function recalcSubtotal(): void
     {
-        $this->subtotal = round((float) $this->qty_do * (float) $this->unit_price, 2);
+        $lumpSum = $this->co_order_item_id && $this->orderItem?->qty_minim;
+        $this->subtotal = round($lumpSum ? (float) $this->unit_price : (float) $this->qty_do * (float) $this->unit_price, 2);
     }
 }

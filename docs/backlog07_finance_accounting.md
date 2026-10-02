@@ -11,6 +11,16 @@ General Ledger, Account Receivable, Account Payable, kas & bank, pajak, dan Acco
 
 ## 7. FINANCE & ACCOUNTING (tm2acc)
 
+- **Customer Invoice + Accounts Receivable (satu modul)** — arah dan keputusan A–E disetujui user 2026-10-02.
+  Rencana: `md_for_systems/customerinvoice_plan.md`; ketentuan keuangan dan akuntansi:
+  `md_for_systems/customerinvoice_accounting.md`. Urutan: **Tahap 0** perjalanan user + mockup (menunggu OK user)
+  → **Tahap 1** menagih (seri nomor, `fin_invoice_line`, `do_line.qty_received`, form v2, potongan uang muka,
+  jurnal, cetakan, master rekening perusahaan) → **Tahap 2** piutang (Customer Receipt v2, To Invoice, AR Aging,
+  Statement of Account, tab Billing di CO) → **Tahap 3** Credit Note, batas kredit, e-Faktur, saldo awal.
+  Sudah selesai dari daftar ini: Qty Minim = harga borongan di CO / DO (2026-10-02, lihat `LOG_JOB_DONE.md`).
+  Perlu sebelum dipakai di tmerp.test: konfirmasi konsultan pajak (PPN uang muka), akun bank per rekening,
+  akun PPh 23 Dibayar Dimuka.
+
 - **Auto-jurnal Delivery/Invoice** — PV & Stock Out(RM) sudah auto-posting
   (`JournalPostingService`), tapi Delivery(DO)/Invoice sengaja ditunda
   karena butuh mekanisme snapshot Costing V2 di titik shipment (Keputusan B

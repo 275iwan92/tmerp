@@ -124,6 +124,25 @@
       Production → kirim) menyisakan "back process" (Inquiry / Pro-Dev / Pro-Cost menyusul). Usulan: alasan CO direct wajib
       dipilih (Repeat / Percepatan), inquiry susulan otomatis bertanda Back Process, CO tidak bisa Closed sebelum selesai.
       Karena itu kode jenis order di laporan CO (RTP = Recalc) belum diubah.
+21. **[2026-10-02] Customer Invoice + Piutang (AR) = satu modul; ketentuan keuangan dan akuntansinya di
+    `docs/md_for_systems/customerinvoice_accounting.md`** (rencana layar dan tabel: `customerinvoice_plan.md`).
+    Disetujui user, modul belum dibangun:
+    - **Dua seri nomor invoice**, satu per identitas: Non PPN (Telasih Makmur) `275/TM/IX/2026`, PPN (CV. Langgeng Jaya
+      Makmur) `118/LJM/IX/2026`. Format lama dan urut ulang bulanan tetap; **nomor terbit otomatis saat Confirm**, tidak
+      diketik, tidak dipakai ulang; format dan kode = data di master seri nomor.
+    - **Tagihan uang muka (DP) tidak menjurnal** dan bukan piutang. Jurnal lahir saat uang muka diterima (Bank pada
+      Uang Muka Penjualan). Menggantikan butir LOCKED lama di `downpayment_tier1-4.md`.
+    - **PPN uang muka mengikuti aturan pajak**: Faktur Pajak saat uang muka diterima, invoice akhir memuat PPN sisanya.
+      Setelan cadangan `DP_VAT_ON_RECEIPT` untuk kembali ke cara lama. Dikonfirmasi konsultan pajak sebelum dipakai di
+      tmerp.test.
+    - **Nilai invoice selalu penuh**; uang muka tampil sebagai potongan dan "sisa yang harus dibayar" — tidak lagi
+      diketik di kolom Diskon.
+    - **Dasar tagih = qty yang diterima customer** (Surat Jalan kembali), dikurangi yang sudah ditagih.
+    - **Qty Minim = harga borongan**: nilai baris = harga, bukan qty × harga (Customer Order, Delivery Order, invoice).
+    - **Lima rekening bank sistem lama** boleh disalin ke master rekening perusahaan; bawaan PPN = Maspion CV. Langgeng
+      Jaya Makmur, Non PPN = BCA Puspita Dewi Widodo.
+    - **Setiap urusan keuangan dan akuntansi wajib terdokumentasi jelas** (jurnal, nomor, pajak, pengendalian) di
+      dokumen di atas, dan diperbarui tiap ada keputusan baru.
 
 ## B. Database & data
 
@@ -452,3 +471,5 @@
 | 2026-10-02 | C.32: CPDEL tanpa tujuh kotak KPI; baris berwarna menurut jatuh tempo slot (warna lembut + garis tegas di bawah), kolom Due, hitungan hari kerja (Sabtu kerja, Minggu + hari besar libur), batas kuning = konstanta `CPDEL_DUE_SOON_DAYS`. Filter otomatis per peran belum diputuskan. |
 | 2026-10-02 | D.13: `docs/md_prompt_rel*`, `docs/legacy_scriptcase/`, `docs/ddl/`, `docs/database/` tidak diarsipkan — bahan diskusi user dan pagar pembanding sistem lama. D.14: perbaikan di zona beku ditunjukkan sebelum → sesudah dulu, dikerjakan setelah OK. |
 | 2026-10-02 | B.6 / B.7 (hasil audit `docs/audit_input_report_lookup_2026_10_02.md`, urutan disetujui user): tarif PPN + PPh 23 Customer Order dan PPN Quotation dibaca dari Settings → Constants, Non PPN = tanpa PPN; layar isi baru Sales Person, Payment Terms, Department; Edit profil, Change password, Notifikasi di menu akun v2 tersambung database. ddt + tm2. |
+| 2026-10-02 | **A.21: Customer Invoice + AR satu modul** — dua seri nomor (Non PPN `…/TM/…`, PPN `…/LJM/…`), nomor terbit saat Confirm; tagihan uang muka tanpa jurnal sampai uangnya diterima (menggantikan butir LOCKED `downpayment_tier1-4.md`); PPN uang muka mengikuti aturan pajak dengan setelan cadangan; nilai invoice penuh + potongan uang muka; dasar tagih = qty diterima; lima rekening bank lama boleh disalin. Ketentuan keuangan dan akuntansi: `docs/md_for_systems/customerinvoice_accounting.md`. Modul belum dibangun. |
+| 2026-10-02 | A.21: **Qty Minim = harga borongan** — nilai baris Customer Order dan Delivery Order = harga, bukan qty × harga (sama dengan sistem lama). Kode: `CoOrderItem::recalcSubtotal`, `DoLine::recalcSubtotal`; test `QtyMinimLumpSumTest`. Berlaku untuk mockup.test dan tmerp.test (kode yang sama; belum ada baris Qty Minim di kedua database). |

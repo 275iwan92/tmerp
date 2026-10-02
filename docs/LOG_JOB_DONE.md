@@ -3,6 +3,23 @@
 
 ---
 
+## 2026-10-02 -- Customer Invoice + AR: keputusan A–E, dokumen akuntansi, Qty Minim = harga borongan
+
+User memberi empat lampiran sistem lama (invoice dan tagihan uang muka: layar + cetakan) dan meminta rencana terbaik
+modul Customer Invoice yang terhubung / menyatu dengan AR; lalu menjawab lima keputusan (A ya dua seri, B setuju, C ikuti
+saran + "semua didokumentasi jelas urusan keuangan dan akuntansi", D ok, E "untuk saat ini boleh").
+- **Rencana + analisa:** `docs/md_for_systems/customerinvoice_plan.md` (data lama `tm2old.sdi_cinv*`, kode ScriptCase,
+  software di pasar, aturan Indonesia; keputusan di bagian 8).
+- **Ketentuan keuangan dan akuntansi:** `docs/md_for_systems/customerinvoice_accounting.md` — dua identitas, dokumen,
+  penomoran, akun, jurnal per peristiwa, tiga contoh lengkap, pajak, piutang, pengendalian, riwayat keputusan.
+- **`downpayment_tier1-4.md`** diberi blok perubahan: tagihan uang muka tidak menjurnal; jurnal dan PPN saat uang diterima.
+- **Buku aturan:** `globaluserrules.md` A.21 + changelog.
+- **Kode (keputusan E):** `CoOrderItem::recalcSubtotal` dan `DoLine::recalcSubtotal` — baris Qty Minim bernilai harga,
+  bukan qty × harga; mengubah tanda Qty Minim di Customer Order menghitung ulang nilai baris
+  (`pages/co/entry.blade.php::updateItem`). Test `QtyMinimLumpSumTest` (5, tanpa menulis ke database). Tidak ada baris
+  Qty Minim di `ddtsdi` maupun `tm2sdi`, jadi tidak ada data yang berubah.
+- **Belum:** modulnya sendiri (Tahap 0 mockup menunggu OK user, lalu Tahap 1–3; backlog07).
+
 ## 2026-10-02 -- Tanda Terima Tagihan Supplier (entry baru v2) + cetakan Tanda Terima Uang Muka dan QC Inspection
 
 Perintah user setelah melihat mockup cetakan tahap 3: "bukan tagihan supplier tapi tanda terima tagihan supplier", "tanda

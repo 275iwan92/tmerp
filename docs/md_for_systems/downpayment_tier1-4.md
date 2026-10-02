@@ -4,6 +4,25 @@
 > Konvensi: field English, prosa Indonesia; money `DECIMAL(18,4)`; FK lintas-DB = logical (Eloquent).
 > Skema `tm2acc` **sudah ada & matang** — dokumen ini menempel pada tabel yang ada, bukan bikin ulang.
 
+> ## PERUBAHAN 2026-10-02 (keputusan user, menggantikan butir LOCKED di bawah)
+>
+> Ketentuan yang berlaku sekarang ada di **`customerinvoice_accounting.md`**. Yang berubah dari dokumen ini:
+>
+> 1. **Tagihan uang muka tidak menjurnal.** Event 1 lama (Dr Piutang / Cr Uang Muka + PPN saat tagihan DP
+>    terbit) **dihapus**. Tagihan DP = permintaan pembayaran; bukan piutang dan tidak masuk umur piutang.
+> 2. **Jurnal lahir saat uang muka diterima**: Dr Bank / Cr 213200 Uang Muka Penjualan (+ Cr 212100 PPN Keluaran
+>    untuk order PPN). Event 2 lama (Dr Bank / Cr Piutang) diganti jurnal ini.
+> 3. **PPN uang muka diakui saat uang diterima**, bukan saat tagihan DP terbit (butir 1.4.2). Setelan cadangan
+>    `DP_VAT_ON_RECEIPT = 0` mengembalikan ke cara lama perusahaan (PPN seluruhnya di invoice akhir).
+> 4. **Event 3, 4, 5 tetap** (invoice penuh, pemotongan uang muka dengan reklas PPN, alokasi per CO, lintas
+>    pengiriman). `fin_dp_allocation` dan `v1_fin_dp_outstanding` tetap dipakai.
+> 5. **Kode akun** di dokumen ini (`232`, `121`, `221`, `112`, `411`) adalah kode draf lama. Kode di daftar akun
+>    yang sebenarnya: 213200 Uang Muka Penjualan, 112100 Piutang Usaha, 212100 PPN Keluaran, 1112xx Bank,
+>    411000 Penjualan.
+> 6. **WO gate** (butir 1.4.1) tidak diubah oleh keputusan ini; "DP PAID" dibaca dari penerimaan uang muka.
+>
+> Bagian di bawah dibiarkan sebagai riwayat; bila bertentangan dengan butir di atas, butir di atas yang berlaku.
+
 ---
 
 ## 0. SKEMA AKTUAL YANG DIPAKAI (verified)
