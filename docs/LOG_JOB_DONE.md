@@ -3,6 +3,20 @@
 
 ---
 
+## 2026-10-02 -- Audit input / grid / lookup + arsip dokumen yang tidak relevan
+
+Perintah user: cek (1) input tersambung ke database, (2) grid & laporan dari database, (3) lookup punya layar input,
+(4)+(5) file `docs/` yang tidak relevan dipindah ke folder unused. **Hanya pemeriksaan, tidak ada alur / data yang diubah.**
+- Hasil lengkap + usulan urutan perbaikan: **`docs/audit_input_report_lookup_2026_10_02.md`**.
+- Dijalankan: probe GET 196 item menu aktif (196 OK), 111 grid v2 terhadap ddt (0 error), `data:audit`, test suite
+  (257 lulus / 12 skip / 1 error lama `prod_machine_model` di tm2). 19 migrasi tertunda di tm2 (paket "ddt dulu") tidak dijalankan.
+- Temuan utama: dialog Change password / Edit profil / Notifikasi / Chat di menu akun v2 = jalur palsu; CO menghitung PPN 11%
+  walau Non PPN; Inquiry Revise memotong dimensi berakhiran nol; tiga laporan manajemen hanya membaca arsip `*_legacy`;
+  53 tabel lookup / parameter tanpa layar input; 6 item menu aktif tanpa layar.
+- Diarsipkan 39 file ke `C:\Users\iwanp\tmerp_unused\` (MANIFEST): onboarding lama, `queue.md`, Opening App tier, semua dokumen
+  Filament, layar LEGACY, cadangan, eksperimen, log impor, dua JSON data contoh. `CLAUDE.md` + `index_master.md` diberi catatan
+  letak folder dan daftar arsip; komentar basi di `App\Support\V2\Lookups` dibetulkan.
+
 ## 2026-10-02 -- UI-03 ditutup: kerapatan grid cukup per grid, pintu "Grid (segera)" dihapus
 
 Keputusan user 2026-10-02 (rulebook C.29), setelah melihat preview: (1) kerapatan cukup seperti yang terpasang -- tombol Density

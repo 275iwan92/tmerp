@@ -7,7 +7,7 @@ use Devlib\Lookup;
 use Illuminate\Support\Facades\DB;
 
 // Lookup = data master yang dipilih di layar v2 (bentuk sama dengan tabel tujuannya, lihat `source`).
-// Masih memakai data contoh App\Support\V2\Data\Sales; tahap berikutnya dibaca dari database situs (ddt* / tm2*).
+// Semua dibaca dari database situs (ddt* / tm2*): daftar kecil lewat App\Support\V2\Data\Sales, data besar dicari ke server.
 final class Lookups
 {
     public static function register(): void

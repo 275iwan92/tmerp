@@ -57,7 +57,9 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 - `DataOriginScope` (web-only) menyembunyikan data DUMMY/LEGACY sesuai setting admin; console/tinker/test melihat semua.
 
 ### Dokumen yang sering basi / jangan dipercaya mentah
-- `START_HERE_onboarding.md` dan `tasks.md` (root) = artefak onboarding awal (mockup Tier 4, "10 DB", task T01–T92), **sudah usang**. Pintu masuk docs yang benar: `docs/index_master.md`, `docs/globalstarthere.md`, `docs/md_for_systems/uistandardindex.md`.
+- `START_HERE_onboarding.md` dan `tasks.md` (root) = artefak onboarding awal (mockup Tier 4, "10 DB", task T01–T92), **sudah usang → diarsipkan 2026-10-02** ke `C:\Users\iwanp\tmerp_unused\` (lihat MANIFEST di sana). Pintu masuk docs yang benar: `docs/index_master.md`, `docs/globalstarthere.md`, `docs/md_for_systems/uistandardindex.md`.
+- **Letak dokumen sekarang:** standar & spec Tier yang disebut di §6 tanpa folder (`griduistandard.md`, `FORM_UI_STANDARD.md`, `qc_feedback.md`, `*_tier*.md`, dst) ada di `docs/md_for_systems/`; dokumen per-layar `screen_*.md` ada di `docs/md_output/screens/`.
+- **Diarsipkan 2026-10-02 (tidak relevan lagi, jangan dicari di `docs/`):** `queue.md`, `openingapp_tier1-4.md` + `openingapp_instruksi_layout.md`, semua dokumen Filament (`admindashboardstandard.md`, `flow_admin_dashboard_filament.md`, `screen_admin_*.md`), `screen_inquiry_imposition*.md`, `screen_recruitment_portal.md`, `docs/backups/`, `docs/reference/`.
 - `docs/BACKLOG.md` = **indeks** backlog + bagian lintas-modul. Item terbuka ada di
   10 pecahan per domain `docs/backlog01_*.md` .. `backlog10_*.md` (dipecah 2026-09-22
   atas permintaan user). Verifikasi ke kode dulu; selesai → hapus di pecahannya,
@@ -503,9 +505,9 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
 >   `screen_inquiry_nota.md` → `printout_inqprod_nota.md`. `screen_inquiry_imposition.md`
 >   + `_list.md` (route `inquiry.imposition`) dikonfirmasi user **LEGACY/TIDAK
 >   AKTIF** — digantikan `screen_prodev_form.md`/`_grid.md` (route
->   `production.prodev`). Kedua file lama ditandai `[LEGACY]` di dalamnya,
->   TIDAK dihapus, TIDAK ikut pola rename `screen_prodev_*` — jangan bangun
->   fitur baru di situ.
+>   `production.prodev`). Kedua file lama **diarsipkan 2026-10-02** ke
+>   `C:\Users\iwanp\tmerp_unused\docs\md_output\screens\` — jangan bangun
+>   fitur baru di layar itu.
 
 > **`uistandardindex.md` — peta semua standar UI/UX** (grid/form/nota/gantt/
 > kanban/admin dashboard Filament) + kapan masing-masing wajib dibaca. **Cek
@@ -573,15 +575,10 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
   `iqp_part` = 1 `prd_wo` (konvergensi antar-part sengaja belum dimodelkan),
   target rate dikunci ke `prod_product`+`part_code` teks (bukan `prod_part`
   yang ternyata tak pernah diisi).
-- `admindashboardstandard.md` — **wajib dibaca sebelum bikin/pindahkan
-  modul apa pun ke panel Filament `/admin`** (migrasi bertahap, dimulai
-  2026-08-30): pemetaan Module→Cluster/Group→navigationGroup/Item→Resource,
-  urutan grup harus didaftarkan eksplisit (`->navigationGroups()`), auth
-  bridge kolom `login`/`pswd` (bukan email/password bawaan Filament),
-  `->topNavigation()` untuk pola top-pilih-modul + sidebar-isi-modul, cara
-  bikin Resource baru tanpa kena crash generator `--cluster=`. Ini HANYA
-  mengatur chrome/navigasi Filament — isi layar tetap ikut standar UI
-  lain sesuai jenisnya (lihat `uistandardindex.md`).
+- ~~`admindashboardstandard.md`~~ — standar panel Filament `/admin`. **Tidak
+  berlaku lagi**: user 2026-09-30 memutuskan Filament bukan arah ke depan
+  (jangan bangun/pindahkan modul ke Filament; v2 DevLib yang menggantikan).
+  Dokumennya diarsipkan 2026-10-02 ke `C:\Users\iwanp\tmerp_unused\`.
 - `spreadsheetgridstandard.md` — **wajib dibaca sebelum bikin/ubah grid
   spreadsheet-editable apa pun** (klik sel langsung edit, drag-fill AutoFill
   copy nilai ke bawah, "+ Baris" langsung dari tabel, simpan batch lewat

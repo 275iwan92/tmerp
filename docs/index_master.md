@@ -12,6 +12,15 @@ description: Index master seluruh dokumen /docs — layar, flow modul, database/
 > **Cara pakai**: dokumen per-layar (`screen_*`) ditulis dari HASIL BACA KODE SUNGGUHAN, bukan spek yang didikte
 > duluan — kalau ada yang menyimpang dari aplikasi sungguhan, koreksi langsung isi filenya. Tandai "TBD - perlu
 > verifikasi" yang perlu dicek ulang tetap dibiarkan apa adanya sampai dikonfirmasi.
+>
+> **Catatan 2026-10-02 (letak folder + arsip):** folder di indeks ini sudah dipindah —
+> `docs/screens/` → `docs/md_output/screens/`, `docs/flows/` → `docs/md_for_systems/flows/`,
+> `docs/uistandard/` → `docs/md_for_systems/uistandard/`, dokumen Tier/standar (bagian 4-5) →
+> `docs/md_for_systems/`; `docs/database/` tetap. **Sudah diarsipkan** ke
+> `C:\Users\iwanp\tmerp_unused\` (tidak relevan lagi): bagian 1.14 Admin Dashboard Filament (8 file) +
+> `flow_admin_dashboard_filament.md` + `admindashboardstandard.md` (Filament dibatalkan user 2026-09-30),
+> `screen_inquiry_imposition*.md` (LEGACY), `screen_recruitment_portal.md` (tidak aktif),
+> `openingapp_tier1-4.md` + `openingapp_instruksi_layout.md` (usang), `queue.md`.
 
 ---
 
