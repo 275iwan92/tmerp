@@ -20,7 +20,7 @@
                     @if (! $co['logo'])<span class="dl-pdoc__logo">{{ $co['initials'] }}</span>@endif
                     <div>@if ($co['logo'])<img class="dl-pdoc__brand" src="{{ $co['logo'] }}" alt="{{ $co['name'] }}">@else<b>{{ $co['name'] }}</b>@endif @foreach ($co['lines'] as $line)<small>{{ $line }}</small>@endforeach @if ($co['npwp'])<small>NPWP {{ $co['npwp'] }}</small>@endif</div>
                 </div>
-                <h1>{{ $t($doc->title) }}@if ($doc->subtitle)<small>{{ $t($doc->subtitle) }}</small>@endif</h1>
+                <h1 @class(['is-compact' => $doc->titleCompact])>{{ $t($doc->title) }}@if ($doc->subtitle)<small>{{ $t($doc->subtitle) }}</small>@endif</h1>
                 <div class="dl-pdoc__kopr"><small>{{ $t('Scan for') }}<br>{{ $t($doc->qrHint) }}</small><span class="dl-pdoc__qr" data-pd-qr></span></div>
             </header>
 

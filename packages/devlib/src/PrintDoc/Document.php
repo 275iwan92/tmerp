@@ -39,6 +39,8 @@ abstract class Document
 
     public ?string $subtitle = null;
 
+    public bool $titleCompact = false;                         // true = judul panjang dicetak dengan huruf lebih kecil
+
     public string $numberLabel = 'No.';
 
     /** @var list<array{key: string, label: string, type?: string, hand?: bool}> slot kiri blok field (di bawah nomor) */
@@ -64,6 +66,7 @@ abstract class Document
     /** @var list<array{0: string, 1?: string}> pihak luar / penerima, paling kiri */
     public array $receivers = [];
 
+    // Judul slot kosong ('') = slot itu tidak dicetak (mis. tanda terima: tanpa "Approved By").
     public array $signLabels = ['approve' => 'Approved By', 'know' => 'Acknowledged By', 'make' => 'Prepared By'];
 
     public array $signNotes = ['approve' => '', 'know' => '', 'make' => ''];
@@ -286,7 +289,7 @@ abstract class Document
         $out[] = $slot('know', $d['knownBy'] ?? $names['know'] ?? null);
         $out[] = $slot('make', $d['printedBy'] ?? null);
 
-        return $out;
+        return array_values(array_filter($out, fn (array $s) => $s[0] !== ''));
     }
 
     public function printedLine(): string

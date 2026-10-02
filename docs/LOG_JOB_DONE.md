@@ -3,6 +3,29 @@
 
 ---
 
+## 2026-10-02 -- Tanda Terima Tagihan Supplier (entry baru v2) + cetakan Tanda Terima Uang Muka dan QC Inspection
+
+Perintah user setelah melihat mockup cetakan tahap 3: "bukan tagihan supplier tapi tanda terima tagihan supplier", "tanda
+terima uang muka juga boleh dibuat", "cukup satu [SPB] ... yang perlu malah QC Inspection untuk barang yang masuk", "ya buatkan
+nanti saya check kan". Format cetak ketiganya **belum A**.
+- **Supplier Invoice Receipt** (Finance → Transaction Flows, menu `FIN_AP_RECEIPT`, layar `supplier-invoice-receipt`): tabel
+  `tm2acc.fin_invoice_receipt` + `fin_invoice_receipt_line` (migrasi 000100, ddt + tm2), model `FinInvoiceReceipt(+Line)`,
+  aturan di `App\Support\V2\Data\SupplierInvoiceReceipt`. Grid → + New Record (pilih supplier) → Draft: yang menyerahkan,
+  syarat / rencana / cara bayar, lampiran, baris invoice (pilih tagihan `fin_invoice` SUPPLIER_BILL yang sudah dicatat = isi
+  otomatis saat Save, atau ketik) → Confirm (nomor `TTyy#####`) → Cancel wajib alasan. Bukan bukti bayar, tidak membuat jurnal.
+- **Cetakan baru** (`App\Support\V2\Print`): `supplier-invoice-receipt`; `dp-receipt` (tanpa tabel sendiri: mencetak
+  pembayaran uang muka yang sudah tercatat, nomor = nomor voucher bank, id = id tagihan uang muka); `qc-inspection` (dari SPB:
+  cek jumlah, mutu, diterima, ditolak, catatan QC). Halaman cetak punya tombol pindah format: Goods Receipt / QC Inspection
+  dan Invoice / Receipt (`PrintDocs::formats`). Konstanta penanda tangan `SIGN_SIR_*`, `SIGN_DPR_*`, `SIGN_QCI_*`.
+- **DevLib `Devlib\PrintDoc\Document`:** judul slot tanda tangan kosong = slot tidak dicetak (tanda terima tanpa "Approved
+  By"); `titleCompact` = judul panjang dengan huruf lebih kecil.
+- **Dummy hanya ddt:** dua tanda terima (TT2600001 Confirmed, satu Draft) + satu tagihan uang muka 30% CO terbaru yang sudah
+  dibayar (migrasi 000101, 000102). Kamus Indonesia layar: migrasi 000103 (ddt + tm2).
+- **Mockup** (`docs/mockups/print_doc/`): "Bukti Barang Masuk" dibuang, kelas `QcInspection`, `DownPaymentReceipt`,
+  `SupplierInvoiceReceipt`; hasil aplikasi di `app/supplier_invoice_receipt_a5.jpg`, `down_payment_receipt_a5.jpg`, `qc_inspection_a5.jpg`.
+- Test: `SupplierInvoiceReceiptTest` (2, membersihkan sendiri; diperiksa ke database), `PrintDocDocumentTest` +1.
+  **Belum:** dicoba user di browser; pencatatan pembayaran uang muka masih di layar v1 (Down Payment).
+
 ## 2026-10-02 -- CPDEL: baris berwarna menurut jatuh tempo (aturan C.32)
 
 Keputusan user setelah melihat pratinjau: Sabtu kerja, Minggu + hari besar (Holiday Calendar) libur; batas kuning bisa diubah

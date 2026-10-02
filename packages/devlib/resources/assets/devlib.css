@@ -2676,6 +2676,7 @@ a.dl-ycal__d:hover{background:var(--dl-hover);outline:1px solid var(--dl-accent)
 .dl-pdoc__co small{display:block;font-size:6.6pt;color:#333;white-space:nowrap;line-height:1.2}
 .dl-pdoc__kop h1{font-size:15pt;font-weight:700;letter-spacing:.06em;text-align:center;line-height:1;white-space:nowrap;text-transform:uppercase;color:#111}
 .dl-pdoc__kop h1 small{display:block;font-size:7.5pt;font-weight:400;letter-spacing:.18em;color:#444;margin-top:1.2mm}
+.dl-pdoc__kop h1.is-compact{font-size:12pt;letter-spacing:.04em}
 .dl-pdoc__kopr{display:flex;justify-content:flex-end;align-items:center;gap:2mm}
 .dl-pdoc__kopr small{font-size:7pt;color:#333;text-align:right;line-height:1.3}
 .dl-pdoc__qr{width:12mm;height:12mm;flex:none;display:block;border:.2mm dashed #b5b5b5}

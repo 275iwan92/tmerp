@@ -15,6 +15,9 @@
                 <x-dl::button :variant="$prices ? 'primary' : 'secondary'" label="With Price" :href="$self(1)" />
                 <x-dl::button :variant="$prices ? 'secondary' : 'primary'" label="Without Price" :href="$self(0)" />
             @endif
+            @foreach (\App\Support\V2\Print\PrintDocs::formats($type, $id, request()->only('from')) as $f)
+                <x-dl::button :variant="$f['active'] ? 'primary' : 'secondary'" :label="$f['label']" :href="$f['url']" />
+            @endforeach
             <x-dl::doc-share target="#print-doc" :type="'print-'.$type" :doc-id="$id" :number="$number" :title="$doc->fileTitle()" :email-to="$doc->data['email'] ?? null"
                 :orientation="$doc->paper() === 'a5' ? 'landscape' : 'portrait'" />
         </x-dl::action-bar>

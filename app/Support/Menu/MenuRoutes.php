@@ -100,6 +100,7 @@ final class MenuRoutes
             'MD_UOM_CONV' => route('v2.screen', 'md-uom-conversion'),
             'MD_PRODCAT' => route('v2.screen', 'md-product-category'),
             'SALES_DN_SUBCON' => route('v2.screen', 'subcon-delivery-note'),
+            'FIN_AP_RECEIPT' => route('v2.screen', 'supplier-invoice-receipt'),
             // Shortcut "Master Data Terkait" di dalam modul WM (2026-08-31) --
             // reuse route MDATA yang sama persis (bukan duplikasi layar/data).
             'INV_REF_RAW' => route('master.raw-material.list'),

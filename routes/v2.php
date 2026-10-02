@@ -53,6 +53,7 @@ use App\Support\V2\Data\SubconDelivery;
 use App\Support\V2\Data\WorkCalendar;
 use App\Support\V2\Flows;
 use App\Support\V2\Grid\DbGrid;
+use App\Support\V2\Data\SupplierInvoiceReceipt;
 use App\Support\V2\Grid\DbLookup;
 use App\Support\V2\Grid\Grids;
 use App\Support\V2\InquiryPayload;
@@ -820,6 +821,40 @@ Route::prefix('v2')->name('v2.')->group(function () {
     Route::prefix('co')->name('co.')->middleware('module:SALES')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'customer-order').'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
+    // Tanda Terima Tagihan Supplier v2 (App\Support\V2\Data\SupplierInvoiceReceipt): action = save | confirm | cancel | delete.
+    Route::prefix('invoice-receipt')->name('invoice-receipt.')->middleware('module:FINACC')->group(function () {
+        $home = fn () => route('v2.screen', 'supplier-invoice-receipt');
+        $open = fn (int $id) => redirect($home().'?id='.$id);
+        Route::post('/create', function (Request $r) use ($open) {
+            $d = $r->validate(['supplier_id' => ['required', 'integer']], [], ['supplier_id' => 'Supplier']);
+
+            return $open(SupplierInvoiceReceipt::create((int) $d['supplier_id'])->id_invoice_receipt)->with('v2_flash', t('Draft created. Add the invoices, then Confirm.'));
+        })->name('create');
+        Route::post('/{id}/save', function (Request $r, int $id) use ($home, $open) {
+            $doc = SupplierInvoiceReceipt::find($id) ?? abort(404);
+            $action = (string) $r->input('action', 'save');
+            if ($action === 'delete') {
+                SupplierInvoiceReceipt::delete($doc);
+
+                return redirect($home())->with('v2_flash', t('Draft deleted.'));
+            }
+            if ($action === 'cancel') {
+                $err = SupplierInvoiceReceipt::act($doc, 'cancel', (string) $r->input('_reason', ''));
+
+                return $err ? $open($id)->withErrors(['cancel' => t($err)]) : $open($id)->with('v2_flash', t('Receipt cancelled.'));
+            }
+            $r->validate(['receipt_date' => ['nullable', 'date'], 'planned_payment_date' => ['nullable', 'date']]);
+            SupplierInvoiceReceipt::save($doc, $r->all());
+            if ($action === 'confirm') {
+                $err = SupplierInvoiceReceipt::act($doc->refresh(), 'confirm');
+
+                return $err ? $open($id)->withErrors(['confirm' => t($err)]) : $open($id)->with('v2_flash', t('Confirmed. The receipt is ready to print.'));
+            }
+
+            return $open($id)->with('v2_flash', t('Saved.'));
+        })->whereNumber('id')->name('save');
+    });
+
             $d = $r->validate(['mode' => ['required', 'in:INTEGRATED,INSTANT'], 'quotation_id' => ['required_if:mode,INTEGRATED', 'nullable', 'integer'],
                 'customer_id' => ['required_if:mode,INSTANT', 'nullable', 'integer']], [], ['quotation_id' => 'Quotation', 'customer_id' => 'Customer']);
             $o = $d['mode'] === 'INTEGRATED' ? CustomerOrder::createIntegrated((int) $d['quotation_id']) : CustomerOrder::createInstant((int) $d['customer_id']);

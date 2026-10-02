@@ -91,6 +91,9 @@ final class Screens
                 ['label' => 'Kas & Bank', 'items' => [
                     $it('petty-cash', ['Kas Kecil (Petty Cash)', 'fa-solid fa-wallet', 'v2 baru: tm2acc.fin_petty_cash + fin_petty_cash_tx (PO Kontan)', null]),
                 ]],
+                ['label' => 'Transaction Flows', 'items' => [
+                    $it('supplier-invoice-receipt', ['Supplier Invoice Receipt', 'fa-solid fa-file-circle-check', 'v2 baru: tm2acc.fin_invoice_receipt + fin_invoice_receipt_line (tanda terima tagihan supplier)', null]),
+                ]],
             ]],
             ['code' => 'INV', 'short' => 'INV', 'label' => 'Inventory', 'icon' => 'fa-solid fa-warehouse', 'groups' => [
                 ['label' => 'Stock Adjustment', 'items' => [

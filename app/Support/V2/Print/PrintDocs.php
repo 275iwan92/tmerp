@@ -2,6 +2,7 @@
 
 namespace App\Support\V2\Print;
 
+use App\Models\Acc\FinInvoice;
 use App\Models\Master\OrgCompany;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysConstant;
@@ -39,10 +40,19 @@ final class PrintDocs
         'subcon-delivery-note' => [SubconDeliveryNotePrint::class, 'subcon-delivery-note', 'SDN'],
         'sales-invoice' => [SalesInvoicePrint::class, 'acc-receivables', 'INV'],
         'payment-voucher' => [PaymentVoucherPrint::class, 'acc-cash-bank', 'PVC'],
+        'supplier-invoice-receipt' => [SupplierInvoiceReceiptPrint::class, 'supplier-invoice-receipt', 'SIR'],
+        'dp-receipt' => [DownPaymentReceiptPrint::class, 'acc-dp-invoice', 'DPR'],
+        'qc-inspection' => [QcInspectionPrint::class, 'purchase-receive', 'QCI'],
+    ];
+
+    // Dokumen yang dicetak dari sumber yang sama (id sama): halaman cetak menampilkan tombol pindah di antara keduanya.
+    private const PAIRS = [
+        ['goods-receipt' => 'Goods Receipt', 'qc-inspection' => 'QC Inspection'],
+        ['sales-invoice' => 'Invoice', 'dp-receipt' => 'Receipt'],
     ];
 
     // Dokumen yang tombol Back-nya kembali ke daftar (id cetak bukan id form layarnya).
-    public const BACK_TO_LIST = ['cpdel', 'petty-cash', 'sales-invoice', 'payment-voucher'];
+    public const BACK_TO_LIST = ['cpdel', 'petty-cash', 'sales-invoice', 'payment-voucher', 'dp-receipt'];
 
     private static bool $booted = false;
 
@@ -51,6 +61,18 @@ final class PrintDocs
     public static function url(string $type, int|string|null $id, array $query = []): string
     {
         return route('v2.print', ['type' => $type, 'id' => $id] + $query);
+    }
+
+    /** @return list<array{label: string, url: string, active: bool}> format lain dari dokumen yang sama; [] = tidak ada */
+    public static function formats(string $type, int $id, array $query = []): array
+    {
+        $pair = collect(self::PAIRS)->first(fn (array $p) => isset($p[$type]));
+        // Tanda terima uang muka hanya ada untuk tagihan uang muka yang uangnya sudah diterima.
+        if (! $pair || (isset($pair['dp-receipt']) && ! FinInvoice::query()->whereKey($id)->where('invoice_type', 'CUSTOMER_DP')->where('paid_amount', '>', 0)->exists())) {
+            return [];
+        }
+
+        return array_map(fn (string $t, string $label) => ['label' => $label, 'url' => self::url($t, $id, $query), 'active' => $t === $type], array_keys($pair), $pair);
     }
 
     // $opt: prices (bool, hanya dokumen yang punya dua format), printedBy (nama; bawaan = user yang login).

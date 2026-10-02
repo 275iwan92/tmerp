@@ -99,4 +99,14 @@ class PrintDocDocumentTest extends TestCase
         $this->assertSame([null, null, 'Hendra', 'Wiwik', 'Yuna'], array_column($sign, 2));
         $this->assertStringContainsString('Yuna', $this->plain($this->rows(1), ['printedBy' => 'Yuna'])->printedLine());
     }
+
+    // Tanda terima: slot internal berjudul kosong tidak dicetak; urutan slot lainnya tetap.
+    public function test_a_signature_slot_with_an_empty_label_is_not_printed(): void
+    {
+        $doc = $this->plain($this->rows(1), ['printedBy' => 'Eka', 'approvedBy' => 'Hendra', 'knownBy' => 'Wiwik']);
+        $doc->signLabels['approve'] = '';
+        $sign = $doc->signatures();
+        $this->assertCount(4, $sign);
+        $this->assertSame([null, null, 'Wiwik', 'Eka'], array_column($sign, 2));
+    }
 }

@@ -1,5 +1,24 @@
 [
     {
+        "at": "2026-10-02 13:41:55",
+        "items": [
+            {
+                "kind": "tabel baru",
+                "db": "tm2acc",
+                "table": "fin_invoice_receipt",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2acc",
+                "table": "fin_invoice_receipt_line",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-10-02 12:58:30",
         "items": [
             {
