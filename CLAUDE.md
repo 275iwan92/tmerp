@@ -255,6 +255,12 @@ transaksi = `iqp_costing`, ikut inquiry).
   menerjemahkan sendiri; teks lain `t('...')` / `@t('...')` (JS `Devlib.h.t`). Teks baru tercatat otomatis di `sys_dictionary`
   -> terjemahan diisi di **Setup > Translation Dictionary**. Angka/tanggal/jam lewat objek DevLib (`Devlib\Locale`, `NumberValue`,
   `DateValue`, `TimeValue`, `DateTimeValue`, `TextValue`). Dijaga `MultiLanguageRatchetTest` (label Indonesia mentah / format sendiri tidak boleh bertambah).
+- **Satu kamus untuk v1 & v2, TANPA teks hardcode** (user 2026-10-02, cara ScriptCase: label = variabel ke kamus; variabelnya =
+  teks English). Kamus kunci lama `Translator::t('kunci')` / `sys_translations` DIPENSIUNKAN (dijaga test, jangan dihidupkan).
+  Terjemahan dari kode diisi lewat migration `Dictionary::seed(['English' => 'Indonesia'])` (tidak menimpa isian penerjemah);
+  kata bermakna ganda `t('Close', 'action')`; teks + data = placeholder `str_replace(':n', $n, t(':n unread'))`; JS
+  `@js(t('...'))`. Layar v1 dikonversi per modul (`BASELINE_V1` di `MultiLanguageRatchetTest` hanya boleh turun); tampilan
+  bahasa id wajib tetap sama. Bahasa tampilan satu sumber: cookie `dl_lang` lalu `sec_user.lang_code` (`SetUserLocale`).
 - **Nilai DATA di prop teks komponen dibungkus `raw()`** (no. dokumen, nama customer / product, angka, tanggal — di judul form,
   kartu, hint, pesan): `:title="'Customer Order · '.raw($o->co_no)" :subtitle="raw($customer.' · '.$status)"`. Labelnya tetap
   English dan tetap diterjemahkan komponen; nilainya tidak diterjemahkan dan **tidak tercatat di kamus** (tanpa `raw()` tiap

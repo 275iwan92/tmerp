@@ -29,6 +29,21 @@ lain (mis. Jepang, Mandarin) selain ID/EN, jadi sistem tidak boleh terkunci pada
 | `tm2mst.mat_raw.material_name` | DC 350 GR PKR KW1 ... | nama barang dari supplier | tetap (nama diri) |
 | `sys_translations` (996 kunci x id/en) | label v1 | kamus lama v1 | tetap untuk v1; v2 memakai `sys_dictionary` |
 
+### 0.2 Satu kamus untuk v1 & v2, tanpa teks hardcode (keputusan user 2026-10-02)
+User minta cara ScriptCase: setiap label/teks di form & grid = variabel yang menunjuk ke kamus, sehingga menambah bahasa
+tidak mengubah modul. Dibahas: kunci gaya ScriptCase (`{lang_customer_name}`) vs teks English sebagai kunci. Dipilih **English
+sebagai kunci** (hasil sama — modul tidak disentuh saat bahasa ditambah — tanpa membuat kunci dulu, kode tetap terbaca); kelemahan
+"teks English berubah = terjemahan hilang" ditutup oleh `Dictionary::rename()` / mengedit teks di layar kamus.
+
+| Bagian | Isi |
+|---|---|
+| Kamus tunggal | `sys_dictionary` + `sys_dictionary_lang`. Kamus kunci v1 `sys_translations` dilebur (migrasi `2026_10_02_000901`), tabelnya belum di-drop. `Translator::t()` dihapus; `Translator` tinggal `lang()` / `setLang()`. |
+| Bahasa tampilan | Satu sumber v1 & v2: cookie `dl_lang` (tidak dienkripsi, dibaca JS DevLib) lalu `sec_user.lang_code` (`SetUserLocale`). |
+| Menu | `sys_app_menu.label` English; terjemahan konteks `tm2sys.sys_app_menu.label` (v1 main menu & v2 AppMenu). `trans_key` tidak dipakai lagi. |
+| Isi dari kode | Migration `Dictionary::seed(['English' => 'Indonesia'], context, lang)` — tidak menimpa isian penerjemah. |
+| Alat penerjemah | Setup > Translation Dictionary: kolom Untranslated (cari "missing" / "missing: id"); mengganti teks English memindahkan terjemahan (bila teks tujuan sudah ada, dua baris digabung). Tempel dari Excel. |
+| Layar v1 | Dikonversi per modul ke English + `t()`, terjemahan Indonesia = teks lama (tampilan id tetap). Penjaga: `MultiLanguageRatchetTest::BASELINE_V1` (per modul, hanya boleh turun) + larangan `Translator::t` / `SysTranslation::forLang`. |
+
 ## 1. Referensi — cara ERP besar bekerja
 
 | Sistem | Teks antarmuka (label) | Data master (nama barang, satuan, dst) | Format angka/tanggal | Bahasa dokumen cetak |

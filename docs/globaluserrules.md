@@ -180,6 +180,13 @@
    tanggal yang tampil di judul form, kartu, hint atau pesan tidak boleh tercatat di kamus. Layar tetap menulis label
    English; nilai datanya dibungkus `raw()` — `'Customer Order · '.raw($o->co_no)` — sehingga komponen menerjemahkan
    labelnya saja.
+   **Satu kamus, tanpa teks hardcode, v1 & v2 (2026-10-02, cara ScriptCase):** setiap label/teks di form, grid, pesan dan
+   cetakan = "variabel" yang menunjuk ke kamus. Variabelnya = teks English itu sendiri: `t('Customer')` / `@t('Customer')`
+   (komponen `x-dl::*` otomatis). Bahasa ditambah = isi kamus saja (Setup > Translation Dictionary), modul tidak diubah.
+   Modul baru: tulis English, terjemahan Indonesia lewat migration `Dictionary::seed([...])` atau layar kamus. Kata bermakna
+   ganda: `t('Close', 'action')`. Mengganti teks English di kamus memindahkan terjemahannya. Kamus kunci lama v1
+   (`Translator::t('kunci')`, `sys_translations`) dipensiunkan; layar v1 ikut dikonversi per modul (tampilan bahasa id tetap
+   sama). Bahasa tampilan satu sumber: cookie `dl_lang`, lalu `sec_user.lang_code`.
 4. **Nama kolom:** `activate` (bukan `is_active`); status dokumen `stat_confirm` / `stat_cancel` / `stat_close` + `cancel_reason`.
 5. **[LOCKED] Fase:** mockup.test memakai database dummy `ddt*`; tmerp.test memakai `tm2*`. **Jangan menulis ke
    `tm2*` saat kerja UAT/mockup.**
@@ -573,3 +580,4 @@
 | 2026-10-02 | C.33 + E.3: user "pasang saja nanti juga bisa disempurnakan" -> **asisten AI dipasang di tm2**. User "perlu ada production, quality control and quality assurance, inventory and warehousing, payroll, human resource, Work Instruction, job description, SOP; on production, target vs result, capacity planning" -> dashboard **Production** (target vs hasil, beban kapasitas mesin, downtime), **Quality Control & Assurance**, **Inventory & Warehousing**, **Work Instruction / JD / SOP**; 67 widget, 11 dashboard. **Work Instruction** = jenis dokumen (`doc_type` SOP / WI) di register SOP. Jam tersedia mesin = jam per shift x shift per hari x hari kerja (Master Mesin) — tidak pernah dikarang; mesin tanpa jam tampil "No capacity set". ddt + tm2. |
 | 2026-10-02 | C.33: 49 widget, dashboard **Overall** (daftar centang) + enam dashboard bidang (template): Sales, Purchasing, AR & AP, Cashflow, Payroll, Human Resource; ubin tambah, tekan-tahan, seret; daftar widget disusun dari referensi ERP lain (`openingboard_references.md`). ddt + tm2. |
 | 2026-10-02 | B.12: **Reset data dummy menolak bila struktur `ddt*` berubah sejak baseline** (penjaga drift; daftar tampil di Developer → Data Dummy, `ddt:baseline check`, paksa `--allow-drift`); setiap migration di `ddt*` diikuti simpan ulang baseline; tabel yang dibuat setelah baseline tidak disentuh Reset; baseline lama dicadangkan sebelum ditimpa. Baseline baru disimpan 19:33:33. |
+| 2026-10-02 | B.3: **satu kamus untuk v1 & v2, tanpa teks hardcode** (user: "copy how it work from SCRIPTCASE ... label ataupun text itu berupa variable yang mengarah pada database dictionary ... walaupun bahasa di tambah tidak merubah lagi di setiap module"; "ya di convert pakai cara terbaru agar no hardcode") — variabel = teks English (`t('...')`), kamus kunci v1 `sys_translations` dilebur ke `sys_dictionary`, layar v1 dikonversi per modul (zona beku: izin teks saja; portal kandidat ikut), alat penerjemah: kolom Untranslated + ganti teks English tanpa kehilangan terjemahan. |
