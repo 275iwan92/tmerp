@@ -3,6 +3,7 @@
 namespace App\Models\Sdi;
 
 use App\Models\Master\CustCustomer;
+use App\Support\Finance\TaxRate;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -83,7 +84,7 @@ class QuoQuotation extends Model
     public function totals(): array
     {
         $subtotal = (float) $this->items->sum('subtotal');
-        $ppnPct = 11.0;
+        $ppnPct = TaxRate::ppn(); // Settings > Constants (PPN), sama dengan Customer Order & Purchase Order
 
         if ($this->tax_scheme === 'INCL') {
             $dpp = round($subtotal / (1 + $ppnPct / 100), 2);

@@ -3,6 +3,41 @@
 
 ---
 
+## 2026-10-02 -- CPDEL: baris berwarna menurut jatuh tempo (aturan C.32)
+
+Keputusan user setelah melihat pratinjau: Sabtu kerja, Minggu + hari besar (Holiday Calendar) libur; batas kuning bisa diubah
+sendiri; warna lembut dengan garis tegas di bawah baris. Filter otomatis per peran **belum diputuskan** (jangan dibangun).
+- **DevLib grid:** prop baru `row-tone="<kolom>"` (danger / tangerine / yellow / success / accent = warna lembut + garis bawah;
+  muted = huruf abu-abu) dan kolom badge `toneKey`; token `--dl-tangerine`, `--dl-yellow`; contoh di demo `grid-status`.
+- **Hari kerja:** `App\Support\WorkCalendar` (Office Hours + Holiday Calendar). `CpdelPromiseService::due()` menentukan
+  bucket, teks Due, dan warna; `Cpdel::rows()` mengurutkan yang belum dikirim dulu (slot paling awal di atas).
+- **Layar CPDEL:** kolom Due; filter kiri = waktu (Overdue, Today, Due soon, Next 7 days), kanan = janji; "Late" dilebur ke
+  Overdue; filter "Ship today" / "Slot time not set" yang dipasang pagi ini dilepas.
+- **Konstanta** `CPDEL_DUE_SOON_DAYS` = 2 (Settings → Constants) + kamus Indonesia: migrasi 000110, ddt + tm2 (`--path`).
+- Help topik `cpdel` (langkah + field Due) di-impor ulang hanya topik itu. Test `CpdelDueColourTest` (tanpa menulis database).
+- Gambar hasil komponen asli: `docs/mockups/cpdel_row_colour.jpg`. **Belum:** dilihat user di browser. Kolom induk tampil
+  jadi 9 (aturan C.28: 5-8) — menunggu keputusan user kolom mana yang disembunyikan.
+
+## 2026-10-02 -- Tindak lanjut audit: PPN dari konstanta, 3 layar lookup baru, menu akun v2 tersambung database
+
+Urutan perbaikan disetujui user ("setuju selama itu yang terbaik dan tidak menjadikan problem baru"). Rincian + status tiap
+butir: `docs/audit_input_report_lookup_2026_10_02.md` bagian G. Semua di ddt + tm2 (migrasi `--path` 000090..000092, `help:import`).
+- **Pajak dokumen penjualan** (`App\Support\Finance\TaxRate`): `CoOrder::totals()` membaca konstanta `PPN` / `PPH23_JASA` dan
+  **Non PPN = tanpa PPN**; `QuoQuotation::totals()` + label Tax scheme membaca `PPN`. Tidak ada CO Non PPN di kedua situs, jadi
+  angka dokumen lama tidak berubah. Test baru `SalesDocumentTaxTest` (tanpa menulis ke database).
+- **Grid Lookup baru:** Master Data › **Sales Person** (`md-sales-person`), Master Data › **Payment Terms** (`md-payment-term`),
+  Human Resources › Organization › **Department** (`hrm-department`) + Help masing-masing. `DbLookup::defaults()` (kolom wajib
+  yang tidak tampil, mis. `company_id`). `FinPaymentTerm` memakai PK `id_payment_term`; dua `find(kode)` di Receivables /
+  Payables diganti `firstWhere('payment_term_code', ...)`.
+- **Menu akun v2** (objek DevLib Shell, prop baru `account`; tanpa prop = pratinjau katalog seperti semula): Change password
+  dan Edit profil benar-benar menyimpan (`App\Support\V2\Data\Account`, `routes/v2_account.php`), Notifikasi membaca
+  `sys_notifications`. Telepon contoh dan tombol "Ubah foto" tidak tampil di situs ERP.
+- **Belum dikerjakan, menunggu OK user:** dimensi terpotong di Inquiry Revise + "Qty per Pack" di ProDev (zona beku, preview
+  sebelum → sesudah sudah diberikan).
+- Aturan user dicatat: rulebook D.13 (folder acuan `docs/` tidak diarsipkan) dan D.14 (zona beku: preview dulu).
+- Test suite: gagal 1 bukan dari pekerjaan ini (`MainMenuShellSmokeTest` daftar Settings belum memuat Help Topics / Help Lines
+  milik sesi Help) + 1 error lama `prod_machine_model` di tm2.
+
 ## 2026-10-02 -- CPDEL: tujuh kotak KPI di atas grid dilepas
 
 Perintah user: "tujuh kotak di atas itu diganti dengan yang lebih sederhana, atau dihilangkan juga boleh" (sejalan aturan C.21).

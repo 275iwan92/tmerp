@@ -26,16 +26,17 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
 @if (! $d)
-    {{-- Tanpa kotak KPI (user 2026-10-02, aturan C.21): hitungan status + "Ship today" / "Slot time not set" = satu baris filter grid.
-         Persen janji kirim ditepati tetap di layar Proof of Delivery. --}}
+    {{-- Tanpa kotak KPI (user 2026-10-02, aturan C.22 + C.32): baris berwarna menurut jatuh tempo slot (hari kerja) + kolom Due;
+         filter kiri = waktu, kanan = janji. Persen janji kirim ditepati tetap di layar Proof of Delivery. --}}
     <x-dl::grid id="cpdel-list" :rows="Cpdel::rows()" search="Search CO no., customer, product..." actions="worklist" :active-key="null" :new-record="null"
-        :open-url="$home.'?id={id}'" group-by="co"
+        :open-url="$home.'?id={id}'" group-by="co" row-tone="row_tone"
         source="{{ Src::of('tm2sdi.co_order_delivery', 'tm2sdi.co_order (CONFIRMED)', 'tm2prd.prd_wo.source_delivery_id') }}"
         :columns="[
             ['key' => 'co', 'label' => 'CO No. / Customer', 'type' => 'doc', 'party' => 'customer'],
             ['key' => 'item', 'label' => 'Product'],
             ['key' => 'slot', 'label' => 'Customer slot', 'type' => 'date'],
             ['key' => 'time', 'label' => 'Time'],
+            ['key' => 'due', 'label' => 'Due', 'type' => 'badge', 'toneKey' => 'due_tone'],
             ['key' => 'ready', 'label' => 'Production ready'],
             ['key' => 'gap', 'label' => 'Gap (days)', 'type' => 'number', 'visible' => false],
             ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'sum' => true],
@@ -53,16 +54,17 @@
         ]]"
         :stats="[
             ['label' => 'All'],
-            ['label' => 'Waiting for PPIC', 'where' => ['state' => 'WAITING_PPIC'], 'tone' => 'neutral'],
-            ['label' => 'Need negotiation', 'where' => ['state' => 'NEED_NEGOTIATION'], 'tone' => 'warn'],
-            ['label' => 'Escalated', 'where' => ['state' => 'ESCALATED'], 'tone' => 'danger'],
-            ['label' => 'Late', 'where' => ['state' => 'LATE'], 'tone' => 'danger'],
-            ['label' => 'Aligned', 'where' => ['state' => 'ALIGNED'], 'tone' => 'success'],
+            ['label' => 'Overdue', 'where' => ['bucket' => 'OVERDUE'], 'tone' => 'danger'],
+            ['label' => 'Today', 'where' => ['bucket' => 'TODAY'], 'tone' => 'tangerine'],
+            ['label' => 'Due soon', 'where' => ['bucket' => 'SOON'], 'tone' => 'yellow'],
+            ['label' => 'Next 7 days', 'where' => ['week' => 1], 'tone' => 'accent'],
         ]"
         :tabs="[
             ['label' => 'All'],
-            ['label' => 'Ship today', 'where' => ['today' => 1], 'tone' => 'accent'],
-            ['label' => 'Slot time not set', 'where' => ['no_time' => 1], 'tone' => 'warn'],
+            ['label' => 'Waiting for PPIC', 'where' => ['state' => 'WAITING_PPIC'], 'tone' => 'neutral'],
+            ['label' => 'Need negotiation', 'where' => ['state' => 'NEED_NEGOTIATION'], 'tone' => 'warn'],
+            ['label' => 'Escalated', 'where' => ['state' => 'ESCALATED'], 'tone' => 'danger'],
+            ['label' => 'Aligned', 'where' => ['state' => 'ALIGNED'], 'tone' => 'success'],
         ]"
         :filters="['customer' => 'Customer', 'state' => 'Promise']" />
 @else

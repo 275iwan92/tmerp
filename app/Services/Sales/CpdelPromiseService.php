@@ -9,6 +9,7 @@ use App\Models\Sdi\CoDeliveryNegotiation;
 use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sys\SecUser;
 use App\Support\V2\Data\Cpdel;
+use App\Support\WorkCalendar;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -46,6 +47,32 @@ final class CpdelPromiseService
             $slot && $d->ready_at->gt($slot) => 'NEED_NEGOTIATION',
             default => 'ALIGNED',
         };
+    }
+
+    // Jatuh tempo slot customer untuk warna baris grid (user 2026-10-02), dihitung dalam HARI KERJA (App\Support\WorkCalendar):
+    // lewat tanggal = merah, hari ini = oranye, H-1 .. H-$soon (konstanta CPDEL_DUE_SOON_DAYS) = kuning, lebih jauh = polos,
+    // sudah dikirim = abu-abu. 'week' = belum dikirim dan slot dalam 7 hari kalender ke depan.
+    public static function due(CoOrderDelivery $d, WorkCalendar $cal, int $soon, CarbonImmutable $today): array
+    {
+        if ($d->status === 'SHIPPED') {
+            return ['bucket' => 'SHIPPED', 'due' => t('Shipped'), 'due_tone' => 'success', 'row_tone' => 'muted', 'week' => 0];
+        }
+        if (! $d->ship_date) {
+            return ['bucket' => 'LATER', 'due' => '—', 'due_tone' => 'neutral', 'row_tone' => null, 'week' => 0];
+        }
+        $slot = CarbonImmutable::parse($d->ship_date->toDateString());
+        if ($slot->lt($today)) {
+            return ['bucket' => 'OVERDUE', 'due' => t('Late').' '.max(1, $cal->workdaysBetween($slot, $today)).' '.t('days'), 'due_tone' => 'danger', 'row_tone' => 'danger', 'week' => 0];
+        }
+        $week = (int) $slot->lte($today->addDays(6));
+        if ($slot->eq($today)) {
+            return ['bucket' => 'TODAY', 'due' => t('Today'), 'due_tone' => 'tangerine', 'row_tone' => 'tangerine', 'week' => $week];
+        }
+        $n = max(1, $cal->workdaysBetween($today, $slot));
+
+        return $n <= $soon
+            ? ['bucket' => 'SOON', 'due' => t('D-').$n, 'due_tone' => 'yellow', 'row_tone' => 'yellow', 'week' => $week]
+            : ['bucket' => 'LATER', 'due' => $n.' '.t('days left'), 'due_tone' => 'neutral', 'row_tone' => null, 'week' => $week];
     }
 
     // Selisih janji produksi vs slot dalam hari (positif = produksi terlambat dari janji customer).

@@ -5,6 +5,7 @@ namespace App\Models\Sdi;
 use App\Models\Master\CustCustomer;
 use App\Models\Master\FinPaymentTerm;
 use App\Models\Master\SalesPerson;
+use App\Support\Finance\TaxRate;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -193,13 +194,14 @@ class CoOrder extends Model
         $externalCostTotal = (float) $this->externalCosts->sum('nominal');
 
         $dpp = $itemSubtotal - $discountAmount + $externalCostTotal;
-        $ppnPct = 11.0;
+        // Non PPN (is_ppn = 0) = tanpa PPN; tarif dari Settings > Constants (PPN), sama dengan Purchase Order.
+        $ppnPct = $this->is_ppn ? TaxRate::ppn() : 0.0;
         $ppn = round($dpp * $ppnPct / 100, 2);
         $totalBilling = $dpp + $ppn;
 
-        // PPh 23 (jasa) 2% dari nilai baris SERVICE sebelum diskon dokumen -- konvensi
+        // PPh 23 (jasa, konstanta PPH23_JASA) dari nilai baris SERVICE sebelum diskon dokumen -- konvensi
         // umum PPh 23 Indonesia utk jasa, dipotong pembeli dari tagihan penjual jasa.
-        $wht23Pct = 2.0;
+        $wht23Pct = TaxRate::pph23();
         $wht23 = round($serviceSubtotal * $wht23Pct / 100, 2);
 
         $netReceivable = $totalBilling - $wht23;

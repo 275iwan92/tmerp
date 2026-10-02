@@ -12,6 +12,7 @@ namespace Devlib\Components;
 // columns: [['key', 'label', 'type' => text|identity|doc|number|money|date|badge|toggle,
 //            doc = persegi dokumen Grid Transactional: 'key' = nomor dokumen, 'party' => kolom nama pihak (baris kedua; warna persegi dari nama ini),
 //            'code' => kolom kode (identity), 'avatar' => false (identity tanpa bulatan), 'tones' => [nilai => tone] (badge),
+//            'toneKey' => kolom baris yang membawa tone badge (bila teks badge berubah-ubah, mis. "Late 3 days"),
 //            'fallback' => kolom nama (image: tanpa foto -> inisial di kotak yang sama),
 //            'visible' => true, 'sortable' => true, 'sum' => false (money/number)]]
 // stats/tabs: [['label', 'where' => [kolom => nilai|[nilai..]], 'tone']]  (tanpa where = total); stats 'default' => true = saringan awal
@@ -30,6 +31,9 @@ namespace Devlib\Components;
 // newUrl: alamat tombol + New Record (pindah ke form baru / pemilih sumber). newModal: id x-dl::modal yang dibuka (wizard).
 // toggleUrl: POST ke alamat ini ({id}) saat Aktif/Nonaktif (Grid Master) -> status dari jawaban server {active}; tanpa toggleUrl = pratinjau saja.
 // quickAdd: [kolom..] -> baris isian cepat di atas tabel (Enter = tambah, event dl:grid-add). groupBy = grup awal.
+// rowTone (user 2026-10-02): nama kolom baris yang membawa tone -> baris berwarna lembut + garis tegas di bawahnya
+//   (danger | tangerine | yellow | success | accent; muted = huruf abu-abu; kosong = baris biasa). Selalu sertakan kolom teks
+//   yang menyebut artinya (badge + toneKey), supaya tidak bergantung pada warna saja.
 // mode (user 2026-09-26, dua keluarga grid yang dipisah):
 //   entry  = Grid Pre-Entry: pintu ke form, + New Record. Dua cabang dengan tata letak SAMA (user 2026-09-30):
 //            kolom Aksi tanpa judul di paling kiri, ikon tanpa kotak, toolbar tanpa Grup/Kerapatan,
@@ -67,6 +71,7 @@ class Grid extends DevlibComponent
         public ?string $newModal = null,
         public ?string $toggleUrl = null,
         public string $mode = 'entry',
+        public ?string $rowTone = null,
     ) {
         if ($this->isReport()) {
             $this->actions = 'none';
@@ -106,7 +111,7 @@ class Grid extends DevlibComponent
             'bulk' => $this->bulk, 'expand' => $this->expand, 'actions' => $this->actions, 'activeKey' => $this->activeKey, 'perPage' => $this->perPage,
             'openUrl' => $this->openUrl, 'newUrl' => $this->newUrl, 'newModal' => $this->newModal,
             'toggleUrl' => $this->toggleUrl, 'csrf' => $this->toggleUrl ? csrf_token() : null, 'detail' => $this->detail ?: null, 'cards' => $this->cards ?: null, 'quickAdd' => $this->quickAdd, 'groupBy' => $this->groupBy,
-            'mode' => $this->mode, 'pageSizes' => $this->isReport() ? [50, 100, 250, 500] : [10, 25, 50, 100],
+            'mode' => $this->mode, 'rowTone' => $this->rowTone, 'pageSizes' => $this->isReport() ? [50, 100, 250, 500] : [10, 25, 50, 100],
         ];
     }
 

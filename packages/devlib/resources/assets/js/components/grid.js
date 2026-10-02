@@ -243,7 +243,7 @@
           let h = 0; for (const ch of (party || String(v))) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
           return `<td><span class="dl-doctag dl-doctag--${(Math.imul(h ^ (h >>> 15), 0x9E3779B1) >>> 29) + 1}"><b>${esc(v)}</b>${party ? `<small>${esc(party)}</small>` : ''}</span></td>`;
         }
-        case 'badge': return `<td><span class="dl-badge dl-badge--pill dl-badge--${esc((c.tones || {})[v] || 'neutral')}">${esc(v)}</span></td>`;
+        case 'badge': return `<td><span class="dl-badge dl-badge--pill dl-badge--${esc((c.toneKey ? r[c.toneKey] : (c.tones || {})[v]) || 'neutral')}">${esc(v)}</span></td>`;
         case 'money': case 'number': return `<td class="num">${esc(this.fmtCell(c, v))}</td>`;
         case 'date': return `<td class="dl-grid__date">${esc(this.fmtCell(c, v))}</td>`;
         // Nilai dari transaksi (Grid Master, user 2026-09-30): hanya-baca, klik = buka transaksi baris ini (url {id}).
@@ -270,7 +270,9 @@
 
     rowHtml(r, idx) {
       const id = String(r[this.cfg.rowKey]), open = this.st.open.includes(id), span = this.span();
-      let h = `<tr class="dl-grid__row ${this.sel.has(id) ? 'is-selected' : ''} ${this.cfg.activeKey && r[this.cfg.activeKey] === false ? 'is-inactive' : ''}" data-id="${esc(id)}" data-idx="${idx}" title="Klik 2x untuk membuka">`
+      // rowTone: nama kolom baris yang membawa tone (danger/tangerine/yellow/success/accent = warna lembut + garis bawah; muted = abu-abu).
+      const tone = this.cfg.rowTone ? r[this.cfg.rowTone] : null;
+      let h = `<tr class="dl-grid__row ${this.sel.has(id) ? 'is-selected' : ''} ${this.cfg.activeKey && r[this.cfg.activeKey] === false ? 'is-inactive' : ''} ${tone ? `dl-grid__row--${esc(tone)}${tone === 'muted' ? '' : ' is-toned'}` : ''}" data-id="${esc(id)}" data-idx="${idx}" title="Klik 2x untuk membuka">`
         + (this.actFirst() ? this.actionsCell(r) : '')
         + (this.chk ? `<td class="dl-grid__chk"><input type="checkbox" ${this.sel.has(id) ? 'checked' : ''} aria-label="${esc(T('g_select_row'))}"></td>` : '')
         + (this.hasExp ? `<td class="dl-grid__exp"><button type="button" class="dl-grid__chev ${open ? 'is-open' : ''}" data-g-exp aria-label="${esc(T('g_open_detail'))}"><i class="fa-solid fa-chevron-right"></i></button></td>` : '')

@@ -17,6 +17,7 @@
   --dl-danger:#d0453f; --dl-danger-soft:#fdeceb; --dl-danger-line:#f6cfcd; --dl-badge:#e5484d;
   --dl-violet:#7a52d0; --dl-violet-soft:#faf7ff; --dl-violet-line:#d7c3ff; --dl-violet-ink:#6b4bb0; --dl-violet-msg:#f4f1fb;
   --dl-amber:#b6852a; --dl-amber-2:#e5a324; --dl-green:#22b07d; --dl-orange:#d85a30; --dl-pink:#d4537e; --dl-lime:#639922;
+  --dl-tangerine:#ef7d1a; --dl-yellow:#e9c21c;
   --dl-toast:#2f3a5e; --dl-overlay:rgba(20,27,48,.45); --dl-overlay-soft:rgba(20,27,48,.4);
   --dl-logo:conic-gradient(from 200deg,#ff5f6d,#ffc371,#2f6fed,#8a5cf6,#ff5f6d);
   /* persegi dokumen Grid Transactional (.dl-doctag): 8 pasangan gradasi pilihan user 2026-10-02, tanpa kuning / hijau zaitun */
@@ -649,6 +650,8 @@ body.dl-page-body{overflow:auto;height:auto;min-height:100vh}
 .dl-badge--success{background:color-mix(in srgb,var(--dl-green) 16%,var(--dl-surface));color:color-mix(in srgb,var(--dl-green) 75%,var(--dl-ink-strong))}
 .dl-badge--warn{background:color-mix(in srgb,var(--dl-amber-2) 18%,var(--dl-surface));color:color-mix(in srgb,var(--dl-amber) 85%,var(--dl-ink-strong))}
 .dl-badge--danger{background:var(--dl-danger-soft);color:var(--dl-danger)}
+.dl-badge--tangerine{background:color-mix(in srgb,var(--dl-tangerine) 20%,var(--dl-surface));color:color-mix(in srgb,var(--dl-tangerine) 70%,var(--dl-ink-strong))}
+.dl-badge--yellow{background:color-mix(in srgb,var(--dl-yellow) 32%,var(--dl-surface));color:color-mix(in srgb,var(--dl-yellow) 45%,var(--dl-ink-strong))}
 .dl-badge--info{background:var(--dl-info-soft);color:var(--dl-accent)}
 .dl-badge--violet{background:var(--dl-violet-soft);color:var(--dl-violet)}
 /* tooltip */
@@ -923,6 +926,7 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-grid__fsep[hidden]{display:none}
 .dl-fb{--fb:var(--dl-accent);border:none;background:none;padding:10px 0;font-family:inherit;font-size:calc(13px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted);cursor:pointer;white-space:nowrap}
 .dl-fb:hover,.dl-fb.is-active{color:var(--dl-ink-strong)}
+.dl-fb--tangerine{--fb:var(--dl-tangerine)}.dl-fb--yellow{--fb:var(--dl-yellow)}
 .dl-fb--success{--fb:var(--dl-green)}.dl-fb--warn{--fb:var(--dl-amber-2)}.dl-fb--danger{--fb:var(--dl-danger)}.dl-fb--neutral{--fb:var(--dl-muted)}.dl-fb--violet{--fb:var(--dl-violet)}
 .dl-fb--orange{--fb:var(--dl-orange)}.dl-fb--pink{--fb:var(--dl-pink)}.dl-fb--lime{--fb:var(--dl-lime)}
 .dl-grid__find{position:absolute;left:0;top:0;width:0;height:3px;border-radius:2px;opacity:0;pointer-events:none;transition:left .28s ease,top .28s ease,width .28s ease,background-color .28s ease,opacity .2s ease}
@@ -962,6 +966,12 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-grid__row:hover td{background:var(--dl-hover)}
 .dl-grid__row.is-selected td{background:var(--dl-accent-soft)}
 .dl-grid__row.is-inactive td:not(.dl-grid__act){opacity:.55}
+/* Baris bertanda (row-tone, user 2026-10-02): warna lembut + garis tegas di bawah baris; muted = huruf abu-abu saja. */
+.dl-grid__row--danger{--rt:var(--dl-danger);--rt-bg:var(--dl-pink)}.dl-grid__row--tangerine{--rt:var(--dl-tangerine)}.dl-grid__row--yellow{--rt:var(--dl-yellow)}
+.dl-grid__row--success{--rt:var(--dl-green)}.dl-grid__row--accent{--rt:var(--dl-accent)}
+.dl-grid__row.is-toned td{background:color-mix(in srgb,var(--rt-bg,var(--rt)) 11%,var(--dl-surface));border-bottom:2px solid var(--rt)}
+.dl-grid__row.is-toned:hover td{background:color-mix(in srgb,var(--rt-bg,var(--rt)) 20%,var(--dl-surface))}
+.dl-grid__row--muted td{color:var(--dl-muted)}
 .dl-grid__chk,.dl-grid__exp{width:34px;text-align:center!important}
 .dl-grid__chk input{accent-color:var(--dl-accent);cursor:pointer}
 .dl-grid__act{width:1%;white-space:nowrap;text-align:right!important}

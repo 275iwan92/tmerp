@@ -5,8 +5,11 @@ namespace App\Support\V2\Data;
 use App\Models\Master\CustCustomer;
 use App\Models\Prd\PrdWo;
 use App\Models\Sdi\CoOrderDelivery;
+use App\Models\Sys\SysConstant;
 use App\Services\Sales\CpdelPromiseService as Promise;
 use App\Services\Scheduling\WoGenerationService;
+use App\Support\WorkCalendar;
+use Carbon\CarbonImmutable;
 use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -29,11 +32,15 @@ final class Cpdel
     // Satu baris grid = satu jadwal kirim dengan DUA janji (App\Services\Sales\CpdelPromiseService): slot customer vs siap produksi.
     public static function rows(): array
     {
-        $rows = self::query()->orderBy('ship_date')->orderBy('ship_time')->limit(1000)->get();
+        // Yang belum dikirim di atas, urut slot paling awal (lewat tanggal dulu); yang sudah dikirim di bawah.
+        $rows = self::query()->orderByRaw("status = 'SHIPPED'")->orderBy('ship_date')->orderBy('ship_time')->limit(1000)->get();
         $customers = CustCustomer::whereIn('id_customer', $rows->pluck('order.customer_id')->unique())->pluck('customer_name', 'id_customer');
         $wo = PrdWo::whereIn('source_delivery_id', $rows->modelKeys())->get(['source_delivery_id', 'wo_status'])->groupBy('source_delivery_id');
+        $cal = new WorkCalendar;
+        $soon = (int) SysConstant::number('CPDEL_DUE_SOON_DAYS', 2);
+        $today = CarbonImmutable::today();
 
-        return $rows->map(fn (CoOrderDelivery $d) => [
+        return $rows->map(fn (CoOrderDelivery $d) => Promise::due($d, $cal, $soon, $today) + [
             'id' => $d->id_delivery,
             'co' => $d->order?->co_no,
             'customer' => $customers[$d->order?->customer_id] ?? '—',
@@ -50,9 +57,6 @@ final class Cpdel
             'moved' => $d->original_date && $d->ship_date && ! $d->original_date->equalTo($d->ship_date),
             'production' => $d->posted_at ? t('Posted').' · '.($wo->get($d->id_delivery)?->pluck('wo_status')->join(', ') ?: 'WO') : '—',
             'state' => Promise::state($d),
-            // Saringan baris filter grid (pengganti kotak KPI): hanya baris yang belum dikirim.
-            'today' => (int) ($d->status === 'PLANNED' && $d->ship_date?->isToday()),
-            'no_time' => (int) ($d->status === 'PLANNED' && ! $d->ship_time),
         ])->all();
     }
 

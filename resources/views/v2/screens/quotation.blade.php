@@ -188,7 +188,7 @@
                 ]">
                 <x-slot:tax>
                     <x-dl::form.row :cols="2">
-                        <x-dl::field.select name="tax_scheme" label="Tax scheme" :options="['EXCL' => 'Exclusive PPN 11%', 'INCL' => 'Inclusive PPN 11%']" :value="old('tax_scheme', $q->tax_scheme)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation.tax_scheme')" />
+                        <x-dl::field.select name="tax_scheme" label="Tax scheme" :options="['EXCL' => 'Exclusive PPN '.\Devlib\Locale::number($totals['ppn_pct']).'%', 'INCL' => 'Inclusive PPN '.\Devlib\Locale::number($totals['ppn_pct']).'%']" :value="old('tax_scheme', $q->tax_scheme)" :disabled="! $draft" :source="Src::of('tm2sdi.quo_quotation.tax_scheme')" />
                     </x-dl::form.row>
                 </x-slot:tax>
             </x-dl::doc-footer>

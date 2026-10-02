@@ -283,8 +283,12 @@
         "keywords": "cpdel, plan delivery, customer plan delivery, jadwal kirim, jadwal pengiriman, slot, split, join, gabung, post to production, ppic, janji kirim",
         "steps": [
             {
-                "en": "Rows appear by themselves when a CO is Confirmed (one row per Product line at its Due Date). Use the filter row above the grid (status, Ship today, Slot time not set) to find rows that need action.",
-                "id": "Baris muncul otomatis saat CO Confirmed (satu baris per baris Product pada Due Date-nya). Pakai baris filter di atas grid (status, Ship today, Slot time not set) untuk mencari baris yang perlu tindakan."
+                "en": "Rows appear by themselves when a CO is Confirmed (one row per Product line at its Due Date). Rows not yet shipped come first, earliest slot on top.",
+                "id": "Baris muncul otomatis saat CO Confirmed (satu baris per baris Product pada Due Date-nya). Baris yang belum dikirim tampil lebih dulu, slot paling awal di atas."
+            },
+            {
+                "en": "Read the row colour: red = slot date passed, orange = today, yellow = due soon, white = still far, grey text = shipped. Use the filter row (time on the left, promise on the right) to narrow the list.",
+                "id": "Baca warna baris: merah = tanggal slot lewat, oranye = hari ini, kuning = segera jatuh tempo, putih = masih jauh, huruf abu-abu = sudah dikirim. Pakai baris filter (waktu di kiri, janji di kanan) untuk menyaring."
             },
             {
                 "en": "Open a row. PPIC commits the Ready date and Ready time in Production promise (PPIC) and Save. If it is later than the slot, choose a Reason.",
@@ -321,6 +325,11 @@
                 "label": "Customer slot",
                 "en": "Date and time agreed with the customer for this delivery. Changed only through Change the customer slot (Sales).",
                 "id": "Tanggal dan jam yang disepakati dengan customer untuk kiriman ini. Diubah hanya lewat Change the customer slot (Sales)."
+            },
+            {
+                "label": "Due",
+                "en": "Working days to the customer slot (Sunday and holidays are not counted): Late, Today, D-1, D-2 or days left. The yellow limit is constant CPDEL_DUE_SOON_DAYS in Settings > Constants.",
+                "id": "Hari kerja menuju slot customer (Minggu dan hari libur tidak dihitung): Terlambat, Hari ini, H-1, H-2 atau sisa hari. Batas kuning = konstanta CPDEL_DUE_SOON_DAYS di Settings > Constants."
             },
             {
                 "label": "Production ready",
