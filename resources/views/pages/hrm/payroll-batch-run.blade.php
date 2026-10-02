@@ -178,22 +178,22 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-4">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <h1 class="text-sm font-bold text-[#1a1d21]">Eksekusi Kalkulasi Gaji Batch</h1>
-                    <p class="text-[11px] text-muted mt-0.5">Mengevaluasi presensi harian terhadap rule matrix & memisahkan metode pembayaran (Bank vs Cash)</p>
+                    <h1 class="text-sm font-bold text-[#1a1d21]">{{ t('Batch Payroll Calculation Run') }}</h1>
+                    <p class="text-[11px] text-muted mt-0.5">{{ t('Evaluates daily attendance against the rule matrix & splits the payment method (Bank vs Cash)') }}</p>
                 </div>
                 @if ($this->run)
-                    <span class="text-[10px] font-bold px-3 py-1 rounded-full {{ $this->statusBadgeClass($this->run->run_status) }}">Status: {{ $this->run->run_status }}</span>
+                    <span class="text-[10px] font-bold px-3 py-1 rounded-full {{ $this->statusBadgeClass($this->run->run_status) }}">{{ t('Status') }}: {{ $this->run->run_status }}</span>
                 @endif
             </div>
 
             <div class="flex gap-2 mb-4">
-                <button type="button" wire:click="selectPeriodType('MONTHLY')" class="px-3 py-1.5 rounded text-xs font-semibold {{ $periodType === 'MONTHLY' ? 'bg-navy text-white' : 'bg-[#e6eaf0] text-[#333]' }}">Bulanan</button>
-                <button type="button" wire:click="selectPeriodType('WEEKLY')" class="px-3 py-1.5 rounded text-xs font-semibold {{ $periodType === 'WEEKLY' ? 'bg-navy text-white' : 'bg-[#e6eaf0] text-[#333]' }}">Mingguan</button>
+                <button type="button" wire:click="selectPeriodType('MONTHLY')" class="px-3 py-1.5 rounded text-xs font-semibold {{ $periodType === 'MONTHLY' ? 'bg-navy text-white' : 'bg-[#e6eaf0] text-[#333]' }}">{{ t('Monthly') }}</button>
+                <button type="button" wire:click="selectPeriodType('WEEKLY')" class="px-3 py-1.5 rounded text-xs font-semibold {{ $periodType === 'WEEKLY' ? 'bg-navy text-white' : 'bg-[#e6eaf0] text-[#333]' }}">{{ t('Weekly') }}</button>
             </div>
 
             @if ($this->runs->isNotEmpty())
                 <div class="mb-4">
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Pilih Periode</label>
+                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ t('Select Period') }}</label>
                     <x-form.select wire:model.live="selectedRunId" :placeholder="false"
                         :options="$this->runs->mapWithKeys(fn ($r) => [$r->id_run => $r->period_start->format('d M Y').' — '.$r->period_end->format('d M Y').' ('.$r->run_status.')'])" />
                 </div>
@@ -202,14 +202,14 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
             <div class="bg-[#fafbfd] border border-[#eef1f5] p-4 rounded-lg mb-4">
                 <div class="flex justify-between items-center gap-4 flex-wrap">
                     <div>
-                        <h2 class="font-bold text-xs">Jalankan Kalkulasi Payroll</h2>
-                        <p class="text-[11px] text-muted mt-0.5">Menghitung Gaji Pokok, Tunjangan, Overtime, Uang Roti, BPJS/PPh21 (kalau aktif), dan Denda</p>
+                        <h2 class="font-bold text-xs">{{ t('Run Payroll Calculation') }}</h2>
+                        <p class="text-[11px] text-muted mt-0.5">{{ t('Calculates Base Salary, Allowances, Overtime, Meal Allowance, BPJS/PPh21 (if active), and Penalties') }}</p>
                     </div>
                     <div class="flex gap-2">
                         <x-form.date-picker wire:model="periodStart" name="periodStart" />
                         <x-form.date-picker wire:model="periodEnd" name="periodEnd" />
                         @if (! $this->run || in_array($this->run->run_status, ['DRAFT', 'CALCULATED'], true))
-                            <button type="button" wire:click="calculate" wire:loading.attr="disabled" class="bg-navy text-white text-xs px-4 py-2 rounded font-semibold">⚡ Jalankan Kalkulasi</button>
+                            <button type="button" wire:click="calculate" wire:loading.attr="disabled" class="bg-navy text-white text-xs px-4 py-2 rounded font-semibold">⚡ {{ t('Run Calculation') }}</button>
                         @endif
                     </div>
                 </div>
@@ -217,15 +217,15 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
 
             @if ($this->summary)
                 <x-grid.stat-row :count="4" class="mb-4">
-                    <x-grid.stat-box tone="total" label="Total Pegawai" :value="$this->summary['total_pegawai'].' Org'" />
-                    <x-grid.stat-box tone="active" label="Gaji via Bank Transfer" :value="$this->summary['bank_count'].' Org'" :subtitle="'Rp '.number_format($this->summary['bank_total'], 0, ',', '.')" />
-                    <x-grid.stat-box tone="warn" label="Gaji via Cash" :value="$this->summary['cash_count'].' Org'" :subtitle="'Rp '.number_format($this->summary['cash_total'], 0, ',', '.')" />
-                    <x-grid.stat-box tone="extra" label="Total Gaji Bersih" :value="'Rp '.number_format($this->summary['grand_total'], 0, ',', '.')" />
+                    <x-grid.stat-box tone="total" :label="t('Total Employees')" :value="$this->summary['total_pegawai'].' '.t('ppl')" />
+                    <x-grid.stat-box tone="active" :label="t('Salary via Bank Transfer')" :value="$this->summary['bank_count'].' '.t('ppl')" :subtitle="'Rp '.number_format($this->summary['bank_total'], 0, ',', '.')" />
+                    <x-grid.stat-box tone="warn" :label="t('Salary via Cash')" :value="$this->summary['cash_count'].' '.t('ppl')" :subtitle="'Rp '.number_format($this->summary['cash_total'], 0, ',', '.')" />
+                    <x-grid.stat-box tone="extra" :label="t('Total Net Salary')" :value="'Rp '.number_format($this->summary['grand_total'], 0, ',', '.')" />
                 </x-grid.stat-row>
 
                 @if ($this->summary['anomaly_count'] > 0)
                     <div class="bg-[#fee2e2] border border-[#f5b5b5] text-[#991b1b] text-xs font-semibold px-3 py-2 rounded mb-4">
-                        ⚠ {{ $this->summary['anomaly_count'] }} pegawai anomali (belum ada rate gaji aktif) — tidak ikut dihitung ke total, cek Master Gaji & Pajak Pegawai.
+                        ⚠ {{ str_replace(':n', $this->summary['anomaly_count'], t(':n anomalous employee(s) (no active salary rate yet) — excluded from the total, check Employee Salary & Tax Master.')) }}
                     </div>
                 @endif
             @endif
@@ -237,22 +237,22 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
             @if ($this->run)
                 <div class="flex justify-end gap-2 pt-3 border-t border-[#eef1f5]">
                     @if ($this->run->run_status === 'CALCULATED')
-                        <button type="button" wire:click="openVerify" class="bg-[#2f6fed] text-white text-xs px-4 py-2 rounded font-semibold">✓ Verifikasi Presensi</button>
+                        <button type="button" wire:click="openVerify" class="bg-[#2f6fed] text-white text-xs px-4 py-2 rounded font-semibold">✓ {{ t('Verify Attendance') }}</button>
                     @endif
                     @if ($this->run->run_status === 'VERIFIED')
-                        <button type="button" wire:click="confirm" class="bg-[#6b21a8] text-white text-xs px-4 py-2 rounded font-semibold">🔒 Konfirmasi (Kunci Presensi)</button>
+                        <button type="button" wire:click="confirm" class="bg-[#6b21a8] text-white text-xs px-4 py-2 rounded font-semibold">🔒 {{ t('Confirm (Lock Attendance)') }}</button>
                     @endif
                     @if ($this->run->run_status === 'CONFIRMED')
-                        <button type="button" wire:click="markPaid" wire:confirm="Konfirmasi pembayaran sudah dieksekusi (transfer bank/cash)?" class="bg-[#166534] text-white text-xs px-4 py-2 rounded font-semibold">💰 Tandai Sudah Dibayar</button>
+                        <button type="button" wire:click="markPaid" wire:confirm="{{ t('Confirm the payment has been executed (bank transfer/cash)?') }}" class="bg-[#166534] text-white text-xs px-4 py-2 rounded font-semibold">💰 {{ t('Mark as Paid') }}</button>
                     @endif
                     @if ($this->run->run_status === 'PAID')
                         @if (! $this->run->payslip_sent_at)
-                            <button type="button" wire:click="markPayslipsSent" class="bg-[#0369a1] text-white text-xs px-4 py-2 rounded font-semibold">📧 Tandai Slip Terkirim</button>
+                            <button type="button" wire:click="markPayslipsSent" class="bg-[#0369a1] text-white text-xs px-4 py-2 rounded font-semibold">📧 {{ t('Mark Payslips Sent') }}</button>
                         @endif
-                        <button type="button" wire:click="close" wire:confirm="Tutup periode ini? Periode berikutnya akan dibuat otomatis." class="bg-[#111827] text-white text-xs px-4 py-2 rounded font-semibold">✅ Tutup Periode</button>
+                        <button type="button" wire:click="close" wire:confirm="{{ t('Close this period? The next period will be created automatically.') }}" class="bg-[#111827] text-white text-xs px-4 py-2 rounded font-semibold">✅ {{ t('Close Period') }}</button>
                     @endif
                     @if ($this->run->run_status === 'CLOSED')
-                        <span class="text-xs text-muted italic py-2">Periode ini sudah ditutup{{ $this->run->closed_at ? ' pada '.$this->run->closed_at->format('d M Y H:i') : '' }}.</span>
+                        <span class="text-xs text-muted italic py-2">{{ t('This period has been closed') }}{{ $this->run->closed_at ? ' '.t('on').' '.$this->run->closed_at->format('d M Y H:i') : '' }}.</span>
                     @endif
                 </div>
             @endif
@@ -262,17 +262,17 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
     @if ($showVerifyModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showVerifyModal', false)">
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Verifikasi Jam Masuk/Keluar</div>
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">{{ t('Verify Clock In/Out') }}</div>
                 <div class="p-4 flex flex-col gap-3">
                     <label class="flex items-center gap-2 text-xs cursor-pointer">
-                        <input type="radio" wire:model="verifyMethod" value="FULL"> Cek semua pegawai (FULL)
+                        <input type="radio" wire:model="verifyMethod" value="FULL"> {{ t('Check all employees') }} (FULL)
                     </label>
                     <label class="flex items-center gap-2 text-xs cursor-pointer">
-                        <input type="radio" wire:model="verifyMethod" value="RANDOM_SAMPLE"> Cek sample acak (RANDOM_SAMPLE)
+                        <input type="radio" wire:model="verifyMethod" value="RANDOM_SAMPLE"> {{ t('Check a random sample') }} (RANDOM_SAMPLE)
                     </label>
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="$set('showVerifyModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="button" wire:click="verify" class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer">Konfirmasi Sudah Dicek</button>
+                        <button type="button" wire:click="$set('showVerifyModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="button" wire:click="verify" class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer">{{ t('Confirm Checked') }}</button>
                     </div>
                 </div>
             </div>

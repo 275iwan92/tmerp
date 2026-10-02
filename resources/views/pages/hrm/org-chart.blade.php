@@ -147,27 +147,27 @@ new #[Title('Struktur Organisasi — TELASIH MAKMUR ERP')] class extends Compone
 
 <div class="max-w-full mx-auto my-5 px-4">
     <x-grid.toolbar class="org-chart-noprint mb-3 flex-wrap rounded-md border border-[#d7dbe2]">
-        <a href="{{ route('hrm.position') }}" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-2.5 py-1.5 rounded no-underline">← Master Posisi</a>
+        <a href="{{ route('hrm.position') }}" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-2.5 py-1.5 rounded no-underline">← {{ t('Position Master') }}</a>
         <div class="flex items-center gap-1.5 shrink-0">
             <span class="text-sm">🔍</span>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama karyawan / posisi…" class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search employee name / position…') }}" class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
         </div>
-        <x-form.select wire:model.live="filterDepartmentId" :options="$this->departments" placeholder="▾ Semua Departemen" class="shrink-0" />
+        <x-form.select wire:model.live="filterDepartmentId" :options="$this->departments" :placeholder="'▾ '.t('All Departments')" class="shrink-0" />
         <x-slot:tools>
             <div class="flex items-center gap-1 bg-[#eef1f5] rounded-lg p-1">
                 <button type="button" wire:click="zoomOut" class="w-7 h-7 text-sm font-bold rounded-md hover:bg-white">−</button>
                 <span class="text-[10.5px] font-bold text-muted w-10 text-center">{{ number_format($zoom * 100, 0) }}%</span>
                 <button type="button" wire:click="zoomIn" class="w-7 h-7 text-sm font-bold rounded-md hover:bg-white">+</button>
-                <button type="button" wire:click="zoomReset" class="text-[10.5px] font-bold px-2 py-1 rounded-md hover:bg-white">Reset</button>
+                <button type="button" wire:click="zoomReset" class="text-[10.5px] font-bold px-2 py-1 rounded-md hover:bg-white">{{ t('Reset') }}</button>
             </div>
-            <button type="button" onclick="window.print()" class="shrink-0 text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">🖨 Cetak</button>
+            <button type="button" onclick="window.print()" class="shrink-0 text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">🖨 {{ t('Print') }}</button>
         </x-slot:tools>
     </x-grid.toolbar>
 
     <div class="bg-white border border-[#d7dbe2] rounded-md overflow-auto" style="max-height: 78vh;">
         <div class="org-chart-canvas p-8 origin-top-left" style="transform: scale({{ $zoom }}); width: max-content;">
             @if (empty($this->roots))
-                <p class="text-xs text-muted">Belum ada posisi aktif.</p>
+                <p class="text-xs text-muted">{{ t('No active positions yet.') }}</p>
             @else
                 <ul class="flex gap-10 flex-wrap justify-center">
                     @foreach ($this->roots as $i => $root)
@@ -179,6 +179,6 @@ new #[Title('Struktur Organisasi — TELASIH MAKMUR ERP')] class extends Compone
     </div>
 
     @if (empty($this->roots) === false && collect($this->roots)->every(fn ($r) => $r->children->isEmpty()))
-        <p class="text-[11px] text-muted mt-2">💡 Semua posisi masih berdiri sendiri (belum ada yang diatur "Melapor Ke"). Atur relasi atasan-bawahan di <a href="{{ route('hrm.position') }}" class="text-accent underline">Master Posisi</a> supaya pohon organisasinya terbentuk.</p>
+        <p class="text-[11px] text-muted mt-2">💡 {{ t('All positions still stand alone (none has "Reports To" set yet). Set the superior-subordinate relations in') }} <a href="{{ route('hrm.position') }}" class="text-accent underline">{{ t('Position Master') }}</a> {{ t('so the organization tree takes shape.') }}</p>
     @endif
 </div>

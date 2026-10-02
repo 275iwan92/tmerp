@@ -9,5 +9,5 @@
         default => 'border-slate-300 bg-white text-slate-800',
     };
 @endphp
-<span title="{{ $p['name'] }} · {{ $p['code'] }}{{ $p['borongan'] ? ' · borongan' : '' }}{{ $chipMulti ? ' · juga di '.$chipMulti : '' }}{{ $p['skill'] ? '' : ' · belum bersertifikat unit ini' }}"
-    class="inline-flex items-center gap-0.5 px-1.5 py-px m-px rounded-full border text-[11px] font-semibold uppercase whitespace-nowrap {{ $chipClass }}">{{ ! $p['skill'] && ! $p['borongan'] ? '⚠ ' : '' }}{{ $p['label'] }}@if ($p['borongan'])<span class="normal-case font-normal">· borongan</span>@endif @if ($chipMulti)<span class="normal-case font-normal">⇄ {{ $chipMulti }}</span>@endif</span>
+<span title="{{ $p['name'] }} · {{ $p['code'] }}{{ $p['borongan'] ? ' · '.t('piece-rate') : '' }}{{ $chipMulti ? ' · '.t('also in').' '.$chipMulti : '' }}{{ $p['skill'] ? '' : ' · '.t('not yet certified for this unit') }}"
+    class="inline-flex items-center gap-0.5 px-1.5 py-px m-px rounded-full border text-[11px] font-semibold uppercase whitespace-nowrap {{ $chipClass }}">{{ ! $p['skill'] && ! $p['borongan'] ? '⚠ ' : '' }}{{ $p['label'] }}@if ($p['borongan'])<span class="normal-case font-normal">· {{ t('piece-rate') }}</span>@endif @if ($chipMulti)<span class="normal-case font-normal">⇄ {{ $chipMulti }}</span>@endif</span>

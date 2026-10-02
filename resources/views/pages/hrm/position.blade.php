@@ -145,13 +145,13 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
     public function save(): void
     {
         if (trim($this->position_code) === '' || trim($this->position_name) === '' || ! $this->department_id || ! $this->level_id) {
-            $this->addError('form', 'Kode, nama posisi, departemen, dan level wajib diisi.');
+            $this->addError('form', t('Code, position name, department, and level are required.'));
 
             return;
         }
 
         if ($this->editingId && $this->reports_to_position_id && $this->wouldCreateCycle($this->editingId, $this->reports_to_position_id)) {
-            $this->addError('form', 'Tidak bisa: posisi ini akan melapor ke salah satu bawahannya sendiri (siklus).');
+            $this->addError('form', t('Not allowed: this position would report to one of its own subordinates (cycle).'));
 
             return;
         }
@@ -197,10 +197,10 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
         $s = $this->stats;
 
         return [
-            'total' => ['label' => 'Total Posisi', 'value' => $s['total'], 'tone' => 'total'],
-            'active' => ['label' => 'Aktif', 'value' => $s['active'], 'tone' => 'active',
+            'total' => ['label' => t('Total Positions'), 'value' => $s['total'], 'tone' => 'total'],
+            'active' => ['label' => t('Active'), 'value' => $s['active'], 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('activate', true)],
-            'unassigned' => ['label' => 'Belum Ada Atasan', 'value' => $s['unassigned'], 'tone' => 'warn',
+            'unassigned' => ['label' => t('No Superior Yet'), 'value' => $s['unassigned'], 'tone' => 'warn',
                 'filter' => fn ($q) => $q->whereNull('reports_to_position_id')->where('activate', true)],
         ];
     }
@@ -214,11 +214,11 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
         <x-grid.toolbar>
             <div class="flex items-center gap-1.5 shrink-0">
                 <span class="text-sm">🔍</span>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama atau kode posisi…"
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search position name or code…') }}"
                     class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
             </div>
             <x-slot:tools>
-                <a href="{{ route('hrm.org-chart') }}" class="shrink-0 text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded no-underline">🌳 Lihat Struktur Organisasi</a>
+                <a href="{{ route('hrm.org-chart') }}" class="shrink-0 text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded no-underline">🌳 {{ t('View Organization Structure') }}</a>
             </x-slot:tools>
             <x-slot:newRecord>
                 <button type="button" wire:click="openNew"
@@ -230,16 +230,16 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
         <table class="w-full text-xs">
             <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5] bg-[#f4f6fa]">
                 <tr>
-                    <th class="text-left px-3 py-2">Posisi</th>
-                    <th class="text-left px-3 py-2">Departemen</th>
-                    <th class="text-left px-3 py-2">Level</th>
-                    <th class="text-left px-3 py-2">Melapor Ke</th>
-                    <th class="px-3 py-2 text-right w-[70px]">Aksi</th>
+                    <th class="text-left px-3 py-2">{{ t('Position') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Department') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Level') }}</th>
+                    <th class="text-left px-3 py-2">{{ t('Reports To') }}</th>
+                    <th class="px-3 py-2 text-right w-[70px]">{{ t('Action') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-[#eef1f5]">
                 @forelse ($this->rows as $p)
-                    <tr wire:key="pos-{{ $p->position_id }}" wire:dblclick="edit({{ $p->position_id }})" class="cursor-pointer hover:bg-[#f8fafc]" title="Klik 2x untuk buka detail">
+                    <tr wire:key="pos-{{ $p->position_id }}" wire:dblclick="edit({{ $p->position_id }})" class="cursor-pointer hover:bg-[#f8fafc]" title="{{ t('Double-click to open detail') }}">
                         <td class="px-3 py-2">
                             <div class="font-semibold text-[13px]">{{ $p->position_name }}</div>
                             <div class="text-[11px] text-muted font-mono">{{ $p->position_code }}</div>
@@ -248,14 +248,14 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
                         <td class="px-3 py-2">{{ $p->level->level_name ?? '—' }}</td>
                         <td class="px-3 py-2">{{ $p->reportsTo->position_name ?? '—' }}</td>
                         <td class="px-3 py-2 text-right whitespace-nowrap">
-                            <x-grid.action-icon icon="fa-pen" title="Edit" action="edit({{ $p->position_id }})" />
-                            <x-grid.action-icon :active="$p->activate" :title="$p->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $p->position_id }})"
-                                :confirm="($p->activate ? 'Nonaktifkan' : 'Aktifkan').' posisi '.$p->position_name.'?'"
+                            <x-grid.action-icon icon="fa-pen" :title="t('Edit')" action="edit({{ $p->position_id }})" />
+                            <x-grid.action-icon :active="$p->activate" :title="$p->activate ? t('Deactivate') : t('Activate')" action="toggleActive({{ $p->position_id }})"
+                                :confirm="str_replace(':name', $p->position_name, $p->activate ? t('Deactivate position :name?') : t('Activate position :name?'))"
                                 :variant="$p->activate ? 'danger' : 'default'" />
                         </td>
                     </tr>
                 @empty
-                    <x-grid.empty-row :colspan="5" message="Belum ada posisi." />
+                    <x-grid.empty-row :colspan="5" :message="t('No positions yet.')" />
                 @endforelse
             </tbody>
         </table>
@@ -267,27 +267,27 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
     @if ($showModal)
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('showModal', false)">
             <div class="bg-white rounded-xl w-full max-w-[460px] p-5">
-                <h3 class="text-sm font-bold text-navy mb-3">{{ $editingId ? 'Edit Posisi' : 'Tambah Posisi Baru' }}</h3>
+                <h3 class="text-sm font-bold text-navy mb-3">{{ $editingId ? t('Edit Position') : t('Add New Position') }}</h3>
                 @error('form') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
                 <div class="space-y-3">
                     <div class="grid two">
-                        <x-form.input label="Kode Posisi" wire:model="position_code" />
-                        <x-form.select wire:model="level_id" :options="$this->levels" placeholder="— pilih level —"><x-slot:label>Level</x-slot:label></x-form.select>
+                        <x-form.input :label="t('Position Code')" wire:model="position_code" />
+                        <x-form.select wire:model="level_id" :options="$this->levels" :placeholder="t('— select level —')"><x-slot:label>{{ t('Level') }}</x-slot:label></x-form.select>
                     </div>
-                    <x-form.input label="Nama Posisi" wire:model="position_name" />
-                    <x-form.select wire:model="department_id" :options="$this->departments" placeholder="— pilih departemen —"><x-slot:label>Departemen</x-slot:label></x-form.select>
-                    <x-form.select wire:model="reports_to_position_id" :options="$this->reportsToOptions" placeholder="— tidak melapor ke siapa pun (puncak) —">
-                        <x-slot:label>Melapor Ke</x-slot:label>
+                    <x-form.input :label="t('Position Name')" wire:model="position_name" />
+                    <x-form.select wire:model="department_id" :options="$this->departments" :placeholder="t('— select department —')"><x-slot:label>{{ t('Department') }}</x-slot:label></x-form.select>
+                    <x-form.select wire:model="reports_to_position_id" :options="$this->reportsToOptions" :placeholder="t('— reports to no one (top) —')">
+                        <x-slot:label>{{ t('Reports To') }}</x-slot:label>
                     </x-form.select>
 
                     @if (Auth::user()->isHrOfficer())
-                        <x-form.textarea label="Deskripsi Kerja (tampil read-only di profil pegawai)" wire:model="job_description" rows="5" autogrow
-                            hint="Berlaku untuk semua pegawai yang menjabat posisi ini." />
+                        <x-form.textarea :label="t('Job Description (shown read-only in the employee profile)')" wire:model="job_description" rows="5" autogrow
+                            :hint="t('Applies to all employees holding this position.')" />
                     @endif
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" wire:click="$set('showModal', false)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">Batal</button>
-                    <button type="button" wire:click="save" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Simpan</button>
+                    <button type="button" wire:click="$set('showModal', false)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">{{ t('Cancel') }}</button>
+                    <button type="button" wire:click="save" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">{{ t('Save') }}</button>
                 </div>
             </div>
         </div>

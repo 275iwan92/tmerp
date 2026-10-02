@@ -70,7 +70,7 @@ new #[Title('Slip Gaji — TELASIH MAKMUR ERP')] class extends Component
 };
 ?>
 
-<x-print.document :theme="['accent' => '#1f6f4a', 'accent-soft' => '#e9f6ef']" info="Payslip #{{ $this->payslipId }} · {{ $this->payslip->run->run_status }}">
+<x-print.document :theme="['accent' => '#1f6f4a', 'accent-soft' => '#e9f6ef']" info="{{ t('Payslip') }} #{{ $this->payslipId }} · {{ $this->payslip->run->run_status }}">
     <x-slot:toolbar>
         <a href="{{ route('hrm.payroll.payslip-list') }}" class="sc" data-back>Back</a>
     </x-slot:toolbar>

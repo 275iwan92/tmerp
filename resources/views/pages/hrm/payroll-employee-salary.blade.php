@@ -34,8 +34,8 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
     }
 
     private const PTKP_OPTIONS = [
-        'TK/0' => 'TK/0 (Lajang)', 'TK/1' => 'TK/1 (1 Tanggungan)', 'TK/2' => 'TK/2 (2 Tanggungan)', 'TK/3' => 'TK/3 (3 Tanggungan)',
-        'K/0' => 'K/0 (Menikah, 0 Anak)', 'K/1' => 'K/1 (Menikah, 1 Anak)', 'K/2' => 'K/2 (Menikah, 2 Anak)', 'K/3' => 'K/3 (Menikah, 3 Anak)',
+        'TK/0' => 'TK/0 (Single)', 'TK/1' => 'TK/1 (1 Dependent)', 'TK/2' => 'TK/2 (2 Dependents)', 'TK/3' => 'TK/3 (3 Dependents)',
+        'K/0' => 'K/0 (Married, 0 Children)', 'K/1' => 'K/1 (Married, 1 Child)', 'K/2' => 'K/2 (Married, 2 Children)', 'K/3' => 'K/3 (Married, 3 Children)',
     ];
 
     public string $search = '';
@@ -95,7 +95,7 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
 
     public function ptkpOptions(): array
     {
-        return self::PTKP_OPTIONS;
+        return array_map('t', self::PTKP_OPTIONS);
     }
 
     public function canViewSalary(EmpEmployee $employee): bool
@@ -114,7 +114,7 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
         $employee = EmpEmployee::with('position')->findOrFail($employeeId);
 
         if (! $this->canViewSalary($employee)) {
-            session()->flash('error', 'Anda tidak punya akses melihat/mengatur gaji pegawai ini.');
+            session()->flash('error', t('You do not have access to view/set this employee\'s salary.'));
 
             return;
         }
@@ -150,7 +150,7 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
         ]);
 
         if ($this->pph21Active && ! $data['ptkpStatus']) {
-            $this->addError('ptkpStatus', 'Status PTKP wajib diisi kalau PPh21 diaktifkan.');
+            $this->addError('ptkpStatus', t('PTKP status is required when PPh21 is enabled.'));
 
             return;
         }
@@ -184,15 +184,15 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
     <div class="max-w-[1400px] mx-auto my-5 px-4">
 
         <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="info" label="Total Pegawai Aktif" :value="number_format($this->stats['total'])" />
-            <x-grid.stat-box tone="warn" label="Belum Diatur Gajinya" :value="number_format($this->stats['belum_diatur'])" />
-            <x-grid.stat-box tone="active" label="BPJS Aktif" :value="number_format($this->stats['bpjs_aktif'])" />
-            <x-grid.stat-box tone="active" label="PPh21 Aktif" :value="number_format($this->stats['pph21_aktif'])" />
+            <x-grid.stat-box tone="info" :label="t('Total Active Employees')" :value="number_format($this->stats['total'])" />
+            <x-grid.stat-box tone="warn" :label="t('Salary Not Set Yet')" :value="number_format($this->stats['belum_diatur'])" />
+            <x-grid.stat-box tone="active" :label="t('BPJS Active')" :value="number_format($this->stats['bpjs_aktif'])" />
+            <x-grid.stat-box tone="active" :label="t('PPh21 Active')" :value="number_format($this->stats['pph21_aktif'])" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-3">
             <div class="max-w-[320px]">
-                <x-form.input :case-toggle="false" label="Cari Nama/Kode Pegawai" wire:model.live.debounce.400ms="search" name="search" placeholder="Ketik nama atau kode..." />
+                <x-form.input :case-toggle="false" :label="t('Search Employee Name/Code')" wire:model.live.debounce.400ms="search" name="search" :placeholder="t('Type a name or code...')" />
             </div>
         </div>
 
@@ -201,12 +201,12 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Karyawan</th>
-                            <th class="num px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Gaji Pokok/Bulan</th>
-                            <th class="num px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">TJ Keahlian/Bulan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">PTKP</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">BPJS</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">PPh21</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Employee') }}</th>
+                            <th class="num px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Base Salary/Month') }}</th>
+                            <th class="num px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Skill Allow./Month') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('PTKP') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('BPJS') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('PPh21') }}</th>
                             <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1]"></th>
                         </tr>
                     </thead>
@@ -220,23 +220,23 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
                                     <td class="px-3 py-2">{{ $row['salary']->ptkp_status ?: '—' }}</td>
                                     <td class="px-3 py-2">
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $row['salary']->bpjs_active ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#e2e8f0] text-[#334155]' }}">
-                                            {{ $row['salary']->bpjs_active ? 'Aktif' : 'Nonaktif' }}
+                                            {{ $row['salary']->bpjs_active ? t('Active') : t('Inactive') }}
                                         </span>
                                     </td>
                                     <td class="px-3 py-2">
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $row['salary']->pph21_active ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#e2e8f0] text-[#334155]' }}">
-                                            {{ $row['salary']->pph21_active ? 'Aktif' : 'Nonaktif' }}
+                                            {{ $row['salary']->pph21_active ? t('Active') : t('Inactive') }}
                                         </span>
                                     </td>
                                 @else
-                                    <td class="px-3 py-2 text-muted" colspan="4">Belum diatur</td>
+                                    <td class="px-3 py-2 text-muted" colspan="4">{{ t('Not set') }}</td>
                                 @endif
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-pen" title="Atur Gaji & Pajak" action="openForm({{ $row['employee']->employee_id }})" />
+                                    <x-grid.action-icon icon="fa-pen" :title="t('Set Salary & Tax')" action="openForm({{ $row['employee']->employee_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="7" message="Tidak ada pegawai." />
+                            <x-grid.empty-row :colspan="7" :message="t('No employees.')" />
                         @endforelse
                     </tbody>
                 </table>
@@ -247,27 +247,27 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
     @if ($showFormModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showFormModal', false)">
             <div class="bg-white rounded-xl w-[520px] max-w-[92vw] shadow-2xl max-h-[90vh] overflow-y-auto">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Atur Gaji & Pajak — {{ $editingEmployeeName }}</div>
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">{{ t('Set Salary & Tax') }} — {{ $editingEmployeeName }}</div>
                 <form wire:submit="save" class="p-4 flex flex-col gap-3">
                     <div class="grid grid-cols-2 gap-3">
-                        <x-form.input label="Gaji Pokok / Bulan (Rp) *" wire:model="basicSalaryMonthly" name="basicSalaryMonthly" type="number" step="1" />
-                        <x-form.input label="TJ Keahlian / Bulan (Rp)" wire:model="tjKeahlianMonthly" name="tjKeahlianMonthly" type="number" step="1" />
-                        <x-form.input label="TJ Loyalitas / Bulan (Rp)" wire:model="tjLoyalitasMonthly" name="tjLoyalitasMonthly" type="number" step="1" />
-                        <x-form.input label="TJ Prestasi / Bulan (Rp)" wire:model="tjPrestasiMonthly" name="tjPrestasiMonthly" type="number" step="1" />
-                        <x-form.input label="Bonus Pagi / Hari (Rp)" wire:model="bonusPagiAmount" name="bonusPagiAmount" type="number" step="1" />
-                        <x-form.input label="Bonus Hadir / Hari (Rp)" wire:model="bonusHadirAmount" name="bonusHadirAmount" type="number" step="1" />
+                        <x-form.input :label="t('Base Salary / Month (Rp)').' *'" wire:model="basicSalaryMonthly" name="basicSalaryMonthly" type="number" step="1" />
+                        <x-form.input :label="t('Skill Allowance / Month (Rp)')" wire:model="tjKeahlianMonthly" name="tjKeahlianMonthly" type="number" step="1" />
+                        <x-form.input :label="t('Loyalty Allowance / Month (Rp)')" wire:model="tjLoyalitasMonthly" name="tjLoyalitasMonthly" type="number" step="1" />
+                        <x-form.input :label="t('Performance Allowance / Month (Rp)')" wire:model="tjPrestasiMonthly" name="tjPrestasiMonthly" type="number" step="1" />
+                        <x-form.input :label="t('Morning Bonus / Day (Rp)')" wire:model="bonusPagiAmount" name="bonusPagiAmount" type="number" step="1" />
+                        <x-form.input :label="t('Attendance Bonus / Day (Rp)')" wire:model="bonusHadirAmount" name="bonusHadirAmount" type="number" step="1" />
                     </div>
 
-                    <x-form.select label="Status PTKP (wajib kalau PPh21 diaktifkan)" wire:model="ptkpStatus" name="ptkpStatus" :options="$this->ptkpOptions()" />
+                    <x-form.select :label="t('PTKP Status (required when PPh21 is enabled)')" wire:model="ptkpStatus" name="ptkpStatus" :options="$this->ptkpOptions()" />
 
                     <div class="flex gap-4 pt-2 border-t border-[#eef1f5] mt-1">
-                        <x-form.checkbox label="Potong BPJS (JHT/JP/Kes)" wire:model="bpjsActive" class="w-4 h-4" labelClass="font-semibold cursor-pointer" />
-                        <x-form.checkbox label="Potong PPh21 (TER)" wire:model="pph21Active" class="w-4 h-4" labelClass="font-semibold cursor-pointer" />
+                        <x-form.checkbox :label="t('Deduct BPJS (JHT/JP/Kes)')" wire:model="bpjsActive" class="w-4 h-4" labelClass="font-semibold cursor-pointer" />
+                        <x-form.checkbox :label="t('Deduct PPh21 (TER)')" wire:model="pph21Active" class="w-4 h-4" labelClass="font-semibold cursor-pointer" />
                     </div>
 
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="$set('showFormModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="$set('showFormModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ t('Cancel') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer">{{ t('Save') }}</button>
                     </div>
                 </form>
             </div>

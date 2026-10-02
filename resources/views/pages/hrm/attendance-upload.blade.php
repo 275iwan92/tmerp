@@ -43,7 +43,7 @@ new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
         $outIdx = array_search('jam_keluar', $header, true);
 
         if ($deviceIdx === false || $dateIdx === false || $inIdx === false) {
-            $this->addError('file', 'Kolom wajib: device_pin, tanggal, jam_masuk (jam_keluar opsional). Cek header baris pertama file.');
+            $this->addError('file', t('Required columns: device_pin, tanggal, jam_masuk (jam_keluar optional). Check the header in the first row of the file.'));
             $this->reset('file');
 
             return;
@@ -62,7 +62,7 @@ new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
             $employee = $employeesByPin->get($pin);
             $this->preview[] = [
                 'device_pin' => $pin,
-                'employee_name' => $employee?->full_name ?? '⚠ Tidak dikenal',
+                'employee_name' => $employee?->full_name ?? '⚠ '.t('Unknown'),
                 'tanggal' => $row[$dateIdx] ?? null,
                 'jam_masuk' => $row[$inIdx] ?? null,
                 'jam_keluar' => $outIdx !== false ? ($row[$outIdx] ?? null) : null,
@@ -132,7 +132,7 @@ new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
         }
 
         $this->processed = true;
-        $this->importSummary = "{$import->row_count} baris presensi tersimpan, {$calculated} hari presensi berhasil dihitung status kehadirannya.";
+        $this->importSummary = str_replace([':rows', ':days'], [$import->row_count, $calculated], t(':rows attendance rows saved, attendance status calculated for :days attendance days.'));
     }
 
     // Baca CSV/TXT manual (fgetcsv, tanpa dependensi) atau .xlsx via
@@ -166,30 +166,30 @@ new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1100px] mx-auto my-5 px-4">
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-5">
-            <h1 class="text-sm font-bold text-[#1a1d21] mb-1">Unggah File Presensi Fingerprint</h1>
-            <p class="text-[11px] text-muted mb-4">Format: .csv/.txt/.xlsx dengan kolom <code class="bg-[#f4f6fa] px-1 rounded">device_pin, tanggal, jam_masuk, jam_keluar</code>. Sistem mencocokkan device_pin ke Master Karyawan secara otomatis.</p>
+            <h1 class="text-sm font-bold text-[#1a1d21] mb-1">{{ t('Upload Fingerprint Attendance File') }}</h1>
+            <p class="text-[11px] text-muted mb-4">{{ t('Format: .csv/.txt/.xlsx with columns') }} <code class="bg-[#f4f6fa] px-1 rounded">device_pin, tanggal, jam_masuk, jam_keluar</code>. {{ t('The system matches device_pin to the Employee Master automatically.') }}</p>
 
             @if (! $processed)
-                <x-form.file-dropzone wire:model="file" accept=".csv,.txt,.xlsx" hint="Maksimal 5 MB." />
+                <x-form.file-dropzone wire:model="file" accept=".csv,.txt,.xlsx" :hint="t('Maximum 5 MB.')" />
                 @error('file') <div class="text-[11px] text-red-600 mt-2">{{ $message }}</div> @enderror
 
-                <div wire:loading wire:target="file" class="text-xs text-muted mt-3">Membaca file...</div>
+                <div wire:loading wire:target="file" class="text-xs text-muted mt-3">{{ t('Reading file...') }}</div>
 
                 @if (! empty($preview))
                     <div class="mt-5">
                         <div class="flex justify-between items-center mb-3">
-                            <h2 class="text-xs font-bold">Preview Data ({{ count($preview) }} baris, {{ count($unmatched) }} device_pin tidak dikenal)</h2>
-                            <button type="button" wire:click="processImport" class="bg-navy text-white text-xs px-4 py-2 rounded font-semibold">💾 Simpan & Eksekusi Matching Shift</button>
+                            <h2 class="text-xs font-bold">{{ t('Preview Data') }} ({{ str_replace([':rows', ':unknown'], [count($preview), count($unmatched)], t(':rows rows, :unknown unknown device_pin')) }})</h2>
+                            <button type="button" wire:click="processImport" class="bg-navy text-white text-xs px-4 py-2 rounded font-semibold">💾 {{ t('Save & Run Shift Matching') }}</button>
                         </div>
                         <x-grid.table-shell>
                             <table class="w-full text-left text-xs border-collapse">
                                 <thead>
                                     <tr>
-                                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] sticky top-0">Device PIN</th>
-                                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] sticky top-0">Pegawai</th>
-                                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] sticky top-0">Tanggal</th>
-                                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] sticky top-0">Jam Masuk</th>
-                                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] sticky top-0">Jam Keluar</th>
+                                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] sticky top-0">{{ t('Device PIN') }}</th>
+                                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] sticky top-0">{{ t('Personnel') }}</th>
+                                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] sticky top-0">{{ t('Date') }}</th>
+                                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] sticky top-0">{{ t('Clock-In Time') }}</th>
+                                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] sticky top-0">{{ t('Clock-Out Time') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -202,7 +202,7 @@ new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
                                             <td class="p-2 font-mono">{{ $row['jam_keluar'] ?? '—' }}</td>
                                         </tr>
                                     @empty
-                                        <x-grid.empty-row :colspan="5" message="Tidak ada baris." />
+                                        <x-grid.empty-row :colspan="5" :message="t('No rows.')" />
                                     @endforelse
                                 </tbody>
                             </table>
@@ -212,8 +212,8 @@ new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
             @else
                 <div class="bg-[#dcfce7] border border-[#a7e5bf] text-[#166534] text-sm font-semibold px-4 py-3 rounded mb-4">✓ {{ $importSummary }}</div>
                 <div class="flex gap-2">
-                    <a href="{{ route('hrm.attendance-daily') }}" class="bg-navy text-white text-xs px-4 py-2 rounded font-semibold">Buka Grid Presensi Harian →</a>
-                    <button type="button" wire:click="reset_" class="bg-[#e6eaf0] text-[#333] text-xs px-4 py-2 rounded font-semibold">Upload File Lain</button>
+                    <a href="{{ route('hrm.attendance-daily') }}" class="bg-navy text-white text-xs px-4 py-2 rounded font-semibold">{{ t('Open Daily Attendance Grid') }} →</a>
+                    <button type="button" wire:click="reset_" class="bg-[#e6eaf0] text-[#333] text-xs px-4 py-2 rounded font-semibold">{{ t('Upload Another File') }}</button>
                 </div>
             @endif
         </div>

@@ -146,28 +146,28 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
 @endphp
 
 <x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eaf0ff']"
-    info="{{ $mode === 'shift' ? 'Master Definisi Shift' : ($mode === 'formasi' ? 'Formasi Minggu ' : 'Roster Minggu ').$this->weekStart->isoWeek() }}">
+    info="{{ $mode === 'shift' ? t('Shift Definition Master') : ($mode === 'formasi' ? t('Formation Week').' ' : t('Roster Week').' ').$this->weekStart->isoWeek() }}">
 
     <x-print.sheet>
         <x-print.header :company="$this->company"
-            doc-title="{{ match ($mode) { 'shift' => 'MASTER DEFINISI SHIFT', 'formasi' => 'FORMASI MINGGU KE-'.$this->weekStart->isoWeek(), default => 'ROSTER SHIFT MINGGUAN' } }}"
+            doc-title="{{ match ($mode) { 'shift' => t('SHIFT DEFINITION MASTER'), 'formasi' => str_replace(':n', $this->weekStart->isoWeek(), t('FORMATION WEEK :n')), default => t('WEEKLY SHIFT ROSTER') } }}"
             doc-no="{{ match ($mode) { 'shift' => 'FRM-HR-SHF-01 Rev.0', 'formasi' => 'FRM-HR-FRM-01 Rev.0', default => 'FRM-HR-ROS-01 Rev.0' } }}">
             @if ($mode !== 'shift')
                 <div>{{ $this->schedule?->schedule_name }}</div>
-                <div>Minggu {{ $this->weekStart->isoWeek() }} · {{ $this->weekStart->translatedFormat('d M Y') }} – {{ $this->weekEnd->translatedFormat('d M Y') }}</div>
+                <div>{{ t('Week') }} {{ $this->weekStart->isoWeek() }} · {{ $this->weekStart->translatedFormat('d M Y') }} – {{ $this->weekEnd->translatedFormat('d M Y') }}</div>
             @else
-                <div>Berlaku mulai {{ now()->translatedFormat('d F Y') }}</div>
+                <div>{{ t('Effective from') }} {{ now()->translatedFormat('d F Y') }}</div>
             @endif
         </x-print.header>
 
         @if ($mode === 'formasi')
-            <x-print.section number="1" title="Formasi per Posisi, Jam Kerja &amp; Tanggal">
+            <x-print.section number="1" :title="t('Formation by Position, Working Hours & Date')">
                 <table class="w-full border-collapse text-[9.5px]">
                     <thead>
                         <tr>
-                            <th class="border border-[#999] px-1 py-1 bg-[#eceff5] w-[24px]">NO</th>
-                            <th class="border border-[#999] px-1 py-1 bg-[#eceff5] w-[90px] text-left">POSISI</th>
-                            <th class="border border-[#999] px-1 py-1 bg-[#eceff5] w-[90px] text-left">JAM KERJA</th>
+                            <th class="border border-[#999] px-1 py-1 bg-[#eceff5] w-[24px]">{{ t('NO') }}</th>
+                            <th class="border border-[#999] px-1 py-1 bg-[#eceff5] w-[90px] text-left">{{ t('POSITION') }}</th>
+                            <th class="border border-[#999] px-1 py-1 bg-[#eceff5] w-[90px] text-left">{{ t('WORKING HOURS') }}</th>
                             @foreach ($this->weekStart->copy()->daysUntil($this->weekEnd->copy()->subDay()) as $d)
                                 <th class="border border-[#999] px-1 py-1 bg-[#eceff5]">{{ $d->format('d/m/Y') }}</th>
                             @endforeach
@@ -193,28 +193,28 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
 
         @if ($mode === 'roster')
             <x-print.parties columns="1fr 1fr">
-                <x-print.party label="CAKUPAN JADWAL">
+                <x-print.party :label="t('SCHEDULE SCOPE')">
                     <div><b>{{ $this->schedule?->schedule_name ?? '—' }}</b></div>
                     <div>{{ $this->departments->pluck('department_name')->implode(', ') ?: '—' }}</div>
                 </x-print.party>
-                <x-print.party label="RINGKASAN">
-                    <div>Total terjadwal: <b>{{ $this->totalAssigned() }} orang</b></div>
-                    <div>Unit kerja terisi: <b>{{ $this->workCenters->count() }}</b></div>
-                    <div>Shift aktif: <b>{{ $this->shifts->count() }}</b></div>
+                <x-print.party :label="t('SUMMARY')">
+                    <div>{{ t('Total scheduled') }}: <b>{{ $this->totalAssigned() }} {{ t('people') }}</b></div>
+                    <div>{{ t('Work units filled') }}: <b>{{ $this->workCenters->count() }}</b></div>
+                    <div>{{ t('Active shifts') }}: <b>{{ $this->shifts->count() }}</b></div>
                 </x-print.party>
             </x-print.parties>
         @endif
 
         @if ($mode !== 'formasi')
-        <x-print.section number="1" title="Definisi Jam Shift yang Berlaku">
+        <x-print.section number="1" :title="t('Applicable Shift Hour Definitions')">
             <table class="w-full border-collapse text-[10.5px]">
                 <thead>
                     <tr>
-                        <th class="border border-[#999] px-1.5 py-1 text-left bg-[#eceff5] w-[150px] uppercase">Shift</th>
+                        <th class="border border-[#999] px-1.5 py-1 text-left bg-[#eceff5] w-[150px] uppercase">{{ t('Shift') }}</th>
                         @foreach ($dayLabels as $label)
                             <th class="border border-[#999] px-1.5 py-1 text-center bg-[#eceff5] uppercase">{{ $label }}</th>
                         @endforeach
-                        <th class="border border-[#999] px-1.5 py-1 text-center bg-[#eceff5] w-[74px] uppercase">Jam/mg</th>
+                        <th class="border border-[#999] px-1.5 py-1 text-center bg-[#eceff5] w-[74px] uppercase">{{ t('Hrs/wk') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -240,24 +240,24 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
                 </tbody>
             </table>
             <p class="text-[9.5px] text-[#555] mt-1.5 mb-0">
-                Angka pada kolom hari = jam masuk (atas) dan jam pulang (bawah). Tanda "+1" berarti jam pulang jatuh di hari berikutnya. Jam/minggu sudah dikurangi waktu istirahat.
+                {{ t('Numbers in the day columns = clock-in time (top) and clock-out time (bottom).') }} {{ t('A "+1" mark means the clock-out time falls on the next day.') }} {{ t('Hours/week already exclude break time.') }}
                 @if (count($this->hiddenShifts))
-                    <br><b>Catatan:</b> {{ count($this->hiddenShifts) }} shift disembunyikan dari dokumen ini sesuai setelan tampilan pencetak.
+                    <br><b>{{ t('Note') }}:</b> {{ str_replace(':n', count($this->hiddenShifts), t(':n shift(s) hidden from this document per the printing user\'s display settings.')) }}
                 @endif
             </p>
         </x-print.section>
         @endif
 
         @if ($mode === 'roster')
-            <x-print.section number="2" title="Penempatan Pegawai per Unit Kerja">
+            <x-print.section number="2" :title="t('Employee Placement per Work Unit')">
                 @forelse ($this->workCenters as $center)
                     <h4 class="text-[12px] font-bold uppercase tracking-wide mt-3 mb-1 pb-0.5 border-b border-[#999]">{{ $center->work_center_name }}</h4>
                     <table class="w-full border-collapse text-[10.5px] mb-1.5">
                         <thead>
                             <tr>
-                                <th class="border border-[#999] px-1.5 py-1 text-left bg-[#eceff5] w-[150px] uppercase">Shift &amp; pola jam</th>
-                                <th class="border border-[#999] px-1.5 py-1 text-center bg-[#eceff5] w-[40px] uppercase">Jml</th>
-                                <th class="border border-[#999] px-1.5 py-1 text-left bg-[#eceff5] uppercase">Nama pegawai</th>
+                                <th class="border border-[#999] px-1.5 py-1 text-left bg-[#eceff5] w-[150px] uppercase">{{ t('Shift & hour pattern') }}</th>
+                                <th class="border border-[#999] px-1.5 py-1 text-center bg-[#eceff5] w-[40px] uppercase">{{ t('Ppl') }}</th>
+                                <th class="border border-[#999] px-1.5 py-1 text-left bg-[#eceff5] uppercase">{{ t('Employee name') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -289,19 +289,19 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
                         </tbody>
                     </table>
                 @empty
-                    <p class="text-[11px] text-[#777] m-0">Jadwal ini belum memiliki penempatan pada minggu tersebut.</p>
+                    <p class="text-[11px] text-[#777] m-0">{{ t('This schedule has no placements in that week yet.') }}</p>
                 @endforelse
             </x-print.section>
         @endif
 
         <x-print.signatures :columns="'1fr 1fr 1fr'">
-            <x-print.signature role="Dibuat oleh" name="( PPIC / HR )" />
-            <x-print.signature role="Diperiksa oleh" name="( Kepala Produksi )" />
-            <x-print.signature role="Disetujui oleh" name="( General Manager )" />
+            <x-print.signature :role="t('Prepared by')" :name="'( '.t('PPIC / HR').' )'" />
+            <x-print.signature :role="t('Checked by')" :name="'( '.t('Head of Production').' )'" />
+            <x-print.signature :role="t('Approved by')" :name="'( '.t('General Manager').' )'" />
         </x-print.signatures>
 
-        <x-print.footer :page="$mode === 'shift' ? 'Master Shift' : 'Roster Minggu '.$this->weekStart->isoWeek()">
-            Dicetak {{ now()->translatedFormat('d F Y H:i') }} WIB · Jam kerja mengikuti Master Shift versi berlaku; perubahan di luar jadwal ini harus melalui revisi tertulis.
+        <x-print.footer :page="$mode === 'shift' ? t('Shift Master') : t('Roster Week').' '.$this->weekStart->isoWeek()">
+            {{ t('Printed on') }} {{ now()->translatedFormat('d F Y H:i') }} WIB · {{ t('Working hours follow the current Shift Master version; changes outside this schedule must go through a written revision.') }}
         </x-print.footer>
     </x-print.sheet>
 </x-print.document>

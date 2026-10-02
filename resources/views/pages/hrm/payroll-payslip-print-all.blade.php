@@ -90,10 +90,10 @@ new #[Title('Cetak Semua Slip Gaji — TELASIH MAKMUR ERP')] class extends Compo
 ?>
 
 <x-print.document :theme="['accent' => '#1f6f4a', 'accent-soft' => '#e9f6ef']"
-    info="{{ $this->sheets->count() }} slip · {{ $this->run->period_start->format('d M Y') }} — {{ $this->run->period_end->format('d M Y') }}">
+    info="{{ $this->sheets->count() }} {{ t('slip(s)') }} · {{ $this->run->period_start->format('d M Y') }} — {{ $this->run->period_end->format('d M Y') }}">
     <x-slot:toolbar>
         <a href="{{ route('hrm.payroll.payslip-list', ['run' => $this->runId]) }}" class="sc" data-back>Back</a>
-        <button type="button" wire:click="markPrinted" class="sc">Tandai Sudah Dicetak</button>
+        <button type="button" wire:click="markPrinted" class="sc">{{ t('Mark as Printed') }}</button>
     </x-slot:toolbar>
 
     @forelse ($this->sheets as $s)
@@ -106,7 +106,7 @@ new #[Title('Cetak Semua Slip Gaji — TELASIH MAKMUR ERP')] class extends Compo
         ])
     @empty
         <x-print.sheet>
-            <p class="text-center text-sm py-10">Tidak ada slip yang ditandai untuk dicetak pada periode ini.</p>
+            <p class="text-center text-sm py-10">{{ t('No payslips are marked for printing in this period.') }}</p>
         </x-print.sheet>
     @endforelse
 </x-print.document>

@@ -62,72 +62,72 @@ new #[Title('Karyawan Tanpa No. WhatsApp — TELASIH MAKMUR ERP')] class extends
     <div class="max-w-[1200px] mx-auto my-5 px-4">
 
         <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Karyawan Aktif" :value="$this->stats['aktif'].' Orang'" />
-            <x-grid.stat-box tone="critical" label="Tanpa No. WhatsApp" :value="$this->stats['kosong'].' Orang'" />
-            <x-grid.stat-box tone="active" label="Sudah Ada Nomor" :value="$this->stats['terisi'].' Orang'" />
-            <x-grid.stat-box tone="warn" label="Departemen Terdampak" :value="$this->stats['departemen'].' Dept'" />
+            <x-grid.stat-box tone="total" :label="t('Active Workforce')" :value="$this->stats['aktif'].' '.t('People')" />
+            <x-grid.stat-box tone="critical" :label="t('Without WhatsApp No.')" :value="$this->stats['kosong'].' '.t('People')" />
+            <x-grid.stat-box tone="active" :label="t('Number Already Set')" :value="$this->stats['terisi'].' '.t('People')" />
+            <x-grid.stat-box tone="warn" :label="t('Affected Departments')" :value="$this->stats['departemen'].' '.t('Dept')" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama / kode pegawai…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ t('Search employee name / code…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:tools>
                     <button type="button" onclick="window.print()"
                         class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">
-                        <i class="fa-solid fa-print"></i> Cetak Daftar
+                        <i class="fa-solid fa-print"></i> {{ t('Print List') }}
                     </button>
                 </x-slot:tools>
             </x-grid.toolbar>
 
             <div class="bg-[#fafbfd] border-b border-[#eef1f5] px-3 py-1.5 text-[11px] text-muted">
-                Nomor ini dipakai untuk pemulihan akun (pertanyaan "No HP terdaftar") <span class="font-semibold text-navy">dan</span> pengiriman slip gaji —
-                selama kosong, karyawan bersangkutan tidak bisa keduanya. Pengisian dilakukan di <span class="font-semibold text-navy">Master Employee</span>.
+                {{ t('This number is used for account recovery (the "Registered phone no." question)') }} <span class="font-semibold text-navy">{{ t('and') }}</span> {{ t('payslip delivery') }} —
+                {{ t('while it is empty, the employee can do neither.') }} {{ t('It is filled in at') }} <span class="font-semibold text-navy">{{ t('Master Employee') }}</span>.
             </div>
 
             <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Karyawan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[220px]">Posisi</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">No. WhatsApp</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Tgl Lahir</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ t('Employee') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[220px]">{{ t('Position') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ t('WhatsApp No.') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ t('Date of Birth') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[70px]">{{ t('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php($currentDept = null)
                         @forelse ($this->missing as $emp)
-                            @php($dept = $emp->position?->department?->department_name ?? 'Tanpa Departemen')
+                            @php($dept = $emp->position?->department?->department_name ?? t('No Department'))
                             @if ($dept !== $currentDept)
                                 @php($currentDept = $dept)
                                 <x-grid.group-header-row :label="$dept"
-                                    :value="$this->missing->filter(fn ($e) => ($e->position?->department?->department_name ?? 'Tanpa Departemen') === $dept)->count().' orang'"
+                                    :value="$this->missing->filter(fn ($e) => ($e->position?->department?->department_name ?? t('No Department')) === $dept)->count().' '.t('people')"
                                     :colspan="5" />
                             @endif
                             <tr wire:key="gap-{{ $emp->employee_id }}" class="hover:bg-[#f7faff]">
                                 <x-grid.identity-cell :id="$emp->employee_id" :name="$emp->full_name" :code="$emp->employee_code" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $emp->position?->position_name ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fdecec] text-[#c0392b]">KOSONG</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fdecec] text-[#c0392b]">{{ t('EMPTY') }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     @if ($emp->birth_date)
                                         <span class="font-mono text-[11.5px]">{{ $emp->birth_date->format('d M Y') }}</span>
                                     @else
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fef6e7] text-[#b45309]">KOSONG JUGA</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fef6e7] text-[#b45309]">{{ t('ALSO EMPTY') }}</span>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka Master Employee" action="openEmployee" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" :title="t('Open Master Employee')" action="openEmployee" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="5" message="Semua karyawan aktif sudah punya nomor WhatsApp." />
+                            <x-grid.empty-row :colspan="5" :message="t('All active employees already have a WhatsApp number.')" />
                         @endforelse
                     </tbody>
                 </table>

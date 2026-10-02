@@ -70,7 +70,7 @@ new #[Title('Generator Transfer Bank — TELASIH MAKMUR ERP')] class extends Com
 
         return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Kode Pegawai', 'Nama', 'Bank', 'No Rekening', 'Atas Nama', 'Nominal']);
+            fputcsv($out, [t('Employee Code'), t('Name'), t('Bank'), t('Account No'), t('Account Holder'), t('Amount')]);
             foreach ($rows as $r) {
                 fputcsv($out, [
                     $r['employee']?->employee_code,
@@ -92,18 +92,18 @@ new #[Title('Generator Transfer Bank — TELASIH MAKMUR ERP')] class extends Com
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-4">
             <div class="flex justify-between items-center pb-3 border-b border-[#eef1f5] mb-4 flex-wrap gap-3">
                 <div>
-                    <h1 class="text-sm font-bold text-[#1a1d21]">Payroll Transfer ke Rekening Bank ({{ $this->rows->count() }} Pegawai)</h1>
-                    <p class="text-[11px] text-muted mt-0.5">Daftar pegawai dengan rekening bank aktif utk periode terpilih</p>
+                    <h1 class="text-sm font-bold text-[#1a1d21]">{{ t('Payroll Transfer to Bank Account') }} ({{ $this->rows->count() }} {{ t('Employees') }})</h1>
+                    <p class="text-[11px] text-muted mt-0.5">{{ t('Employees with an active bank account for the selected period') }}</p>
                 </div>
                 <div class="flex gap-2 items-center">
                     <x-form.select wire:model.live="runId" :placeholder="false"
                         :options="$this->availableRuns->mapWithKeys(fn ($r) => [$r->id_run => $r->period_start->format('d M Y').' — '.$r->period_end->format('d M Y')])" class="shrink-0" />
-                    <button type="button" wire:click="downloadCsv" class="bg-navy text-white text-xs px-3 py-2 rounded font-semibold">📥 Download CSV Batch</button>
+                    <button type="button" wire:click="downloadCsv" class="bg-navy text-white text-xs px-3 py-2 rounded font-semibold">📥 {{ t('Download CSV Batch') }}</button>
                 </div>
             </div>
 
             <div class="bg-[#eaf0ff] border border-[#c7d7fb] p-3 rounded-lg mb-4 flex justify-between items-center">
-                <span class="text-xs text-[#1e3a8a] font-semibold">Total Nilai Transfer Batch Ini:</span>
+                <span class="text-xs text-[#1e3a8a] font-semibold">{{ t('Total Transfer Value of This Batch') }}:</span>
                 <span class="text-lg font-extrabold font-mono text-[#1e3a8a]">Rp {{ number_format($this->totalTransfer, 0, ',', '.') }}</span>
             </div>
 
@@ -111,11 +111,11 @@ new #[Title('Generator Transfer Bank — TELASIH MAKMUR ERP')] class extends Com
             <table class="w-full text-left text-xs border-collapse">
                 <thead>
                     <tr>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Kode / Nama</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Bank</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">No Rekening</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Atas Nama</th>
-                        <th class="num p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Gaji Bersih</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">{{ t('Code / Name') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">{{ t('Bank') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">{{ t('Account No') }}</th>
+                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">{{ t('Account Holder') }}</th>
+                        <th class="num p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">{{ t('Net Salary') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -128,7 +128,7 @@ new #[Title('Generator Transfer Bank — TELASIH MAKMUR ERP')] class extends Com
                             <td class="num p-2 font-mono font-bold text-[#166534]">Rp {{ number_format($r['net'], 0, ',', '.') }}</td>
                         </tr>
                     @empty
-                        <x-grid.empty-row :colspan="5" message="Tidak ada pegawai dengan rekening bank utk periode ini." />
+                        <x-grid.empty-row :colspan="5" :message="t('No employees with a bank account for this period.')" />
                     @endforelse
                 </tbody>
             </table>
