@@ -792,13 +792,28 @@ final class Numbers
     public function stockDocuments(CarbonImmutable $from, CarbonImmutable $to): array
     {
         return $this->once('stock_docs:'.$from->toDateString().':'.$to->toDateString(), function () use ($from, $to) {
+            // doc_type di view ini = doc_type KARTU stok (IN / OUT / AD / BB / TF, data lama juga ADJ), bukan angka 1 / -1 di kepala
+            // dokumen; doc_id = id baris kartu. Satu dokumen = satu nomor per kelas stok, berapa pun barisnya. Tidak dihitung:
+            // saldo awal (BB; data lama menulis kartunya sebagai IN dengan doc_cat BB), Stock Transfer (TF: bukan penerimaan
+            // dan bukan pengeluaran), baris kartu tanpa dokumen.
             $rows = DB::connection('tm2inv')->table('v_inv_movement')->whereBetween('doc_date', [$from->startOfDay()->toDateTimeString(), $to->endOfDay()->toDateTimeString()])
-                ->distinct()->get(['stock_class', 'doc_id', 'doc_type', 'doc_cat']);
-            $is = fn (callable $f) => $rows->filter($f)->count();
+                ->whereNotNull('doc_no')->distinct()->get(['stock_class', 'doc_no', 'doc_type', 'doc_cat']);
+            $docs = ['in' => [], 'out' => [], 'adjust' => [], 'return' => []];
+            foreach ($rows as $r) {
+                $kind = match (true) {
+                    $r->doc_type === 'TF', $r->doc_type === 'BB', $r->doc_cat === 'BB' => null,
+                    $r->doc_cat === 'RETURN' => 'return',
+                    in_array($r->doc_type, ['AD', 'ADJ'], true) || in_array($r->doc_cat, ['AD', 'OP'], true) => 'adjust',
+                    $r->doc_type === 'IN' => 'in',
+                    $r->doc_type === 'OUT' => 'out',
+                    default => null,
+                };
+                if ($kind) {
+                    $docs[$kind][$r->stock_class.'|'.$r->doc_no] = true;
+                }
+            }
 
-            return ['in' => $is(fn ($r) => (int) $r->doc_type === 1 && $r->doc_cat !== 'RETURN' && ! in_array($r->doc_cat, ['AD', 'OP'], true)),
-                'out' => $is(fn ($r) => (int) $r->doc_type === -1 && ! in_array($r->doc_cat, ['AD', 'OP', 'RETURN'], true)),
-                'adjust' => $is(fn ($r) => in_array($r->doc_cat, ['AD', 'OP'], true)), 'return' => $is(fn ($r) => $r->doc_cat === 'RETURN')];
+            return array_map('count', $docs);
         });
     }
 
