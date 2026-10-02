@@ -58,7 +58,7 @@
     @if ($withCase)
         <div class="relative flex items-center" x-data="tmCaseInput({ mode: @js($caseMode) })">
             <input type="{{ $type }}" x-ref="el" x-on:input="onInput($event)" {{ $attributes->merge(['class' => $inputClass]) }}>
-            <button type="button" x-on:click="cycle()" tabindex="-1" title="Ganti mode huruf (kecil / Kapital Tiap Kata / BESAR)"
+            <button type="button" x-on:click="cycle()" tabindex="-1" title="{{ t('Change letter case (lower / Title Case / UPPER)') }}"
                 class="absolute right-1.5 text-[10px] font-bold bg-field-badge border border-field-border rounded px-1.5 py-0.5 cursor-pointer text-navy leading-none"
                 x-text="labels[modes[idx]]"></button>
         </div>

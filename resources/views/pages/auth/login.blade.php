@@ -56,7 +56,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         $q = SysQuote::random();
 
         return [
-            't' => $q?->quote_text ?? 'Selamat bekerja.',
+            't' => $q?->quote_text ?? $this->tr('Have a good day at work.'),
             'a' => $q?->author ?? 'Telasih Makmur',
         ];
     }
@@ -204,7 +204,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
             </div>
         </div>
 
-        <div class="grip" @mousedown="startDrag()" title="Tarik untuk melebarkan"></div>
+        <div class="grip" @mousedown="startDrag()" title="{{ $this->tr('Drag to widen') }}"></div>
 
         <div class="hero-side" :style="panelWidth ? { width: panelWidth } : {}">
             <div class="flagbar">
@@ -243,22 +243,22 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
                         <button type="submit" class="btn" wire:loading.attr="disabled">{{ $this->tr('Sign In') }}</button>
                     </form>
 
-                    <div class="divider"><span>atau</span></div>
-                    <div class="reg">Belum punya akun? <a href="{{ route('register', ['lang' => $lang]) }}">Daftar</a></div>
+                    <div class="divider"><span>{{ $this->tr('or') }}</span></div>
+                    <div class="reg">{{ $this->tr("Don't have an account?") }} <a href="{{ route('register', ['lang' => $lang]) }}">{{ $this->tr('Register') }}</a></div>
 
                     {{-- Akun UAT: daftar dari .env.mockup (UAT_ACCOUNTS), klik baris = login & password terisi.
                          Hanya tampil di mockup.test; tmerp.test live tidak menampilkannya. --}}
                     @if ($this->uatAccounts)
                         <div class="uat-box" x-data="{ open: false }">
-                            <button type="button" class="uat-toggle" @click="open = !open" title="Daftar akun untuk UAT (User Acceptance Test)">
-                                🧪 Akun Uji Coba (UAT) <span x-text="open ? '▲' : '▼'"></span>
+                            <button type="button" class="uat-toggle" @click="open = !open" title="{{ $this->tr('Account list for UAT (User Acceptance Test)') }}">
+                                🧪 {{ $this->tr('UAT Test Accounts') }} <span x-text="open ? '▲' : '▼'"></span>
                             </button>
                             <div class="uat-panel" x-show="open" x-cloak x-transition>
-                                <p class="uat-note">Klik satu baris: login &amp; password terisi, lalu tekan Masuk.</p>
+                                <p class="uat-note">{{ $this->tr('Click a row: login & password are filled in, then press Sign In.') }}</p>
                                 <table class="uat-table">
                                     <tbody>
                                         @foreach ($this->uatAccounts as $i => $a)
-                                            <tr wire:click="fillUat({{ $i }})" style="cursor:pointer" title="Isi login {{ $a['login'] }}"><td>{{ $a['role'] }}</td><td><code>{{ $a['login'] }}</code></td></tr>
+                                            <tr wire:click="fillUat({{ $i }})" style="cursor:pointer" title="{{ $this->tr('Fill in login') }} {{ $a['login'] }}"><td>{{ $a['role'] }}</td><td><code>{{ $a['login'] }}</code></td></tr>
                                         @endforeach
                                     </tbody>
                                 </table>

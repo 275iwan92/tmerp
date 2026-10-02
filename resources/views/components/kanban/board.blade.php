@@ -136,7 +136,7 @@
                             <div class="flex items-center justify-between mt-0.5">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     @if ($card['priority'])
-                                        <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded {{ $prioTones[$card['priority']] }}">{{ $prioLabels[$card['priority']] }}</span>
+                                        <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded {{ $prioTones[$card['priority']] }}">{{ t($prioLabels[$card['priority']]) }}</span>
                                     @endif
                                     @if ($dueLabel)
                                         <span class="text-[9.5px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1 {{ $isOverdue ? 'bg-[#fdecec] text-[#c0392b]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $isOverdue ? '⚠️' : '📅' }} {{ $dueLabel }}</span>
@@ -155,7 +155,7 @@
                 <div class="p-2 flex flex-col gap-1.5">
                     <template x-if="composingColumn === '{{ $col['key'] }}'">
                         <div class="flex flex-col gap-1.5">
-                            <textarea x-model="composerTitle" rows="2" placeholder="Judul kartu..."
+                            <textarea x-model="composerTitle" rows="2" placeholder="{{ t('Card title...') }}"
                                 class="w-full border border-accent rounded-lg p-2 text-[11.5px] resize-none outline-none"
                                 x-on:keydown.enter.prevent="if (composerTitle.trim()) { $wire.{{ $addCardMethod }}('{{ $col['key'] }}', composerTitle, composerDue); composerTitle=''; composerDue=''; composingColumn=null; }"></textarea>
                             <div class="flex items-center gap-1.5 bg-white border border-[#d7dbe2] rounded-lg px-2 py-1">
@@ -164,13 +164,13 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <button type="button" class="px-3 py-1 rounded-md bg-accent text-white text-[11px] font-semibold cursor-pointer"
-                                    x-on:click="if (composerTitle.trim()) { $wire.{{ $addCardMethod }}('{{ $col['key'] }}', composerTitle, composerDue); composerTitle=''; composerDue=''; composingColumn=null; }">Simpan</button>
+                                    x-on:click="if (composerTitle.trim()) { $wire.{{ $addCardMethod }}('{{ $col['key'] }}', composerTitle, composerDue); composerTitle=''; composerDue=''; composingColumn=null; }">{{ t('Save') }}</button>
                                 <button type="button" class="w-7 h-7 rounded-md text-muted hover:bg-[#e2e8f0] cursor-pointer" x-on:click="composingColumn=null; composerTitle=''; composerDue=''">✕</button>
                             </div>
                         </div>
                     </template>
                     <button type="button" x-show="composingColumn !== '{{ $col['key'] }}'" x-on:click="composingColumn = '{{ $col['key'] }}'; composerTitle=''; composerDue=''"
-                        class="w-full text-left px-2 py-1.5 rounded-md text-[11.5px] font-semibold text-muted hover:bg-[#e9edf3] cursor-pointer">➕ Add a card</button>
+                        class="w-full text-left px-2 py-1.5 rounded-md text-[11.5px] font-semibold text-muted hover:bg-[#e9edf3] cursor-pointer">➕ {{ t('Add a card') }}</button>
                 </div>
             </div>
         @endforeach
@@ -178,18 +178,18 @@
         <div class="w-[260px] shrink-0">
             <template x-if="addingColumn">
                 <div class="bg-white border border-[#d7dbe2] rounded-xl p-2.5 flex flex-col gap-1.5">
-                    <input type="text" x-model="newColumnTitle" placeholder="Nama daftar..." autofocus
+                    <input type="text" x-model="newColumnTitle" placeholder="{{ t('List name...') }}" autofocus
                         class="w-full border border-accent rounded-md px-2 py-1.5 text-[11.5px] outline-none"
                         x-on:keydown.enter="if (newColumnTitle.trim()) { $wire.{{ $addColumnMethod }}(newColumnTitle); newColumnTitle=''; addingColumn=false; }">
                     <div class="flex items-center gap-2">
                         <button type="button" class="px-3 py-1 rounded-md bg-accent text-white text-[11px] font-semibold cursor-pointer"
-                            x-on:click="if (newColumnTitle.trim()) { $wire.{{ $addColumnMethod }}(newColumnTitle); newColumnTitle=''; addingColumn=false; }">Add list</button>
+                            x-on:click="if (newColumnTitle.trim()) { $wire.{{ $addColumnMethod }}(newColumnTitle); newColumnTitle=''; addingColumn=false; }">{{ t('Add list') }}</button>
                         <button type="button" class="w-7 h-7 rounded-md text-muted hover:bg-[#e2e8f0] cursor-pointer" x-on:click="addingColumn=false; newColumnTitle=''">✕</button>
                     </div>
                 </div>
             </template>
             <button type="button" x-show="! addingColumn" x-on:click="addingColumn = true"
-                class="w-full text-left px-3.5 py-3 rounded-xl border border-dashed border-[#c7cfda] text-[12px] font-semibold text-muted hover:border-accent hover:text-navy cursor-pointer">➕ Add another list</button>
+                class="w-full text-left px-3.5 py-3 rounded-xl border border-dashed border-[#c7cfda] text-[12px] font-semibold text-muted hover:border-accent hover:text-navy cursor-pointer">➕ {{ t('Add another list') }}</button>
         </div>
     </div>
 
@@ -217,7 +217,7 @@
                             <input type="text" value="{{ $card['title'] }}"
                                 x-on:change="$wire.{{ $updateCardMethod }}({{ $card['id'] }}, 'title', $event.target.value)"
                                 class="w-full text-base font-bold text-navy outline-none border-2 border-transparent focus:border-accent rounded px-1.5 py-0.5 -ml-1.5">
-                            <div class="text-[11px] text-muted mt-1">in list <strong>{{ $activeColLabel }}</strong></div>
+                            <div class="text-[11px] text-muted mt-1">{{ t('in list') }} <strong>{{ $activeColLabel }}</strong></div>
                         </div>
                     </div>
                     <button type="button" wire:click="{{ $closeCardMethod }}()" class="w-7 h-7 rounded-md text-muted hover:bg-[#eef1f5] cursor-pointer shrink-0">✕</button>
@@ -227,11 +227,11 @@
                     <div class="flex-[2] flex flex-col gap-4 min-w-0">
                         <div class="flex flex-wrap gap-2 relative">
                             <div class="relative">
-                                <button type="button" x-on:click="popoverOpen = (popoverOpen === 'labels' ? null : 'labels')" class="bg-[#eef1f5] hover:bg-[#e2e8f0] text-[#374151] px-2.5 py-1.5 rounded-md text-[11.5px] font-semibold cursor-pointer">🏷️ Labels</button>
+                                <button type="button" x-on:click="popoverOpen = (popoverOpen === 'labels' ? null : 'labels')" class="bg-[#eef1f5] hover:bg-[#e2e8f0] text-[#374151] px-2.5 py-1.5 rounded-md text-[11.5px] font-semibold cursor-pointer">🏷️ {{ t('Labels') }}</button>
                                 <div x-show="popoverOpen === 'labels'" x-on:click.outside="popoverOpen = null" x-cloak
                                     class="absolute top-[110%] left-0 w-[260px] bg-white border border-[#e2e8f0] rounded-lg shadow-xl p-3 z-10">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="text-[11px] font-bold text-navy">Labels</span>
+                                        <span class="text-[11px] font-bold text-navy">{{ t('Labels') }}</span>
                                         <button type="button" x-on:click="popoverOpen = null" class="text-muted cursor-pointer">✕</button>
                                     </div>
                                     <div class="flex flex-col gap-1 mb-2">
@@ -242,7 +242,7 @@
                                             </div>
                                         @endforeach
                                     </div>
-                                    <input type="text" x-model="newTagLabel" placeholder="Nama label..." class="w-full border border-[#d7dbe2] rounded px-2 py-1 text-[11px] mb-1.5 outline-none focus:border-accent">
+                                    <input type="text" x-model="newTagLabel" placeholder="{{ t('Label name...') }}" class="w-full border border-[#d7dbe2] rounded px-2 py-1 text-[11px] mb-1.5 outline-none focus:border-accent">
                                     <div class="flex items-center gap-1.5 mb-2">
                                         @foreach (['blue', 'orange', 'green', 'purple'] as $c)
                                             <button type="button" x-on:click="newTagColor = '{{ $c }}'"
@@ -251,45 +251,45 @@
                                         @endforeach
                                     </div>
                                     <button type="button" class="w-full bg-accent text-white rounded py-1.5 text-[11px] font-semibold cursor-pointer"
-                                        x-on:click="if (newTagLabel.trim()) { $wire.{{ $addTagMethod }}({{ $card['id'] }}, newTagLabel, newTagColor); newTagLabel=''; }">Add</button>
+                                        x-on:click="if (newTagLabel.trim()) { $wire.{{ $addTagMethod }}({{ $card['id'] }}, newTagLabel, newTagColor); newTagLabel=''; }">{{ t('Add') }}</button>
                                 </div>
                             </div>
 
                             <div class="relative">
-                                <button type="button" x-on:click="popoverOpen = (popoverOpen === 'dates' ? null : 'dates')" class="bg-[#eef1f5] hover:bg-[#e2e8f0] text-[#374151] px-2.5 py-1.5 rounded-md text-[11.5px] font-semibold cursor-pointer">🕒 Dates</button>
+                                <button type="button" x-on:click="popoverOpen = (popoverOpen === 'dates' ? null : 'dates')" class="bg-[#eef1f5] hover:bg-[#e2e8f0] text-[#374151] px-2.5 py-1.5 rounded-md text-[11.5px] font-semibold cursor-pointer">🕒 {{ t('Dates') }}</button>
                                 <div x-show="popoverOpen === 'dates'" x-on:click.outside="popoverOpen = null" x-cloak
                                     x-data="{ v: {{ Js::from($card['dueDate'] ?? '') }} }"
                                     class="absolute top-[110%] left-0 w-[260px] bg-white border border-[#e2e8f0] rounded-lg shadow-xl p-3 z-10">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="text-[11px] font-bold text-navy">Due date & time</span>
+                                        <span class="text-[11px] font-bold text-navy">{{ t('Due date & time') }}</span>
                                         <button type="button" x-on:click="popoverOpen = null" class="text-muted cursor-pointer">✕</button>
                                     </div>
                                     <input type="datetime-local" x-model="v" class="w-full border border-[#d7dbe2] rounded px-2 py-1 text-[11px] mb-2 outline-none focus:border-accent">
                                     <button type="button" class="w-full bg-accent text-white rounded py-1.5 text-[11px] font-semibold cursor-pointer"
-                                        x-on:click="$wire.{{ $updateCardMethod }}({{ $card['id'] }}, 'dueDate', v); popoverOpen = null">Simpan</button>
+                                        x-on:click="$wire.{{ $updateCardMethod }}({{ $card['id'] }}, 'dueDate', v); popoverOpen = null">{{ t('Save') }}</button>
                                 </div>
                             </div>
 
                             <div class="relative">
-                                <button type="button" x-on:click="popoverOpen = (popoverOpen === 'checklist' ? null : 'checklist')" class="bg-[#eef1f5] hover:bg-[#e2e8f0] text-[#374151] px-2.5 py-1.5 rounded-md text-[11.5px] font-semibold cursor-pointer">☑️ Checklist</button>
+                                <button type="button" x-on:click="popoverOpen = (popoverOpen === 'checklist' ? null : 'checklist')" class="bg-[#eef1f5] hover:bg-[#e2e8f0] text-[#374151] px-2.5 py-1.5 rounded-md text-[11.5px] font-semibold cursor-pointer">☑️ {{ t('Checklist') }}</button>
                                 <div x-show="popoverOpen === 'checklist'" x-on:click.outside="popoverOpen = null" x-cloak
                                     class="absolute top-[110%] left-0 w-[260px] bg-white border border-[#e2e8f0] rounded-lg shadow-xl p-3 z-10">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="text-[11px] font-bold text-navy">Add checklist</span>
+                                        <span class="text-[11px] font-bold text-navy">{{ t('Add checklist') }}</span>
                                         <button type="button" x-on:click="popoverOpen = null" class="text-muted cursor-pointer">✕</button>
                                     </div>
                                     <input type="text" x-model="newChecklistTitle" class="w-full border border-[#d7dbe2] rounded px-2 py-1 text-[11px] mb-2 outline-none focus:border-accent">
                                     <button type="button" class="w-full bg-accent text-white rounded py-1.5 text-[11px] font-semibold cursor-pointer"
-                                        x-on:click="$wire.{{ $addChecklistMethod }}({{ $card['id'] }}, newChecklistTitle); popoverOpen = null">Add</button>
+                                        x-on:click="$wire.{{ $addChecklistMethod }}({{ $card['id'] }}, newChecklistTitle); popoverOpen = null">{{ t('Add') }}</button>
                                 </div>
                             </div>
 
                             <div class="relative">
-                                <button type="button" x-on:click="popoverOpen = (popoverOpen === 'members' ? null : 'members')" class="bg-[#eef1f5] hover:bg-[#e2e8f0] text-[#374151] px-2.5 py-1.5 rounded-md text-[11.5px] font-semibold cursor-pointer">👤 Members</button>
+                                <button type="button" x-on:click="popoverOpen = (popoverOpen === 'members' ? null : 'members')" class="bg-[#eef1f5] hover:bg-[#e2e8f0] text-[#374151] px-2.5 py-1.5 rounded-md text-[11.5px] font-semibold cursor-pointer">👤 {{ t('Members') }}</button>
                                 <div x-show="popoverOpen === 'members'" x-on:click.outside="popoverOpen = null" x-cloak
                                     class="absolute top-[110%] left-0 w-[240px] bg-white border border-[#e2e8f0] rounded-lg shadow-xl p-3 z-10">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="text-[11px] font-bold text-navy">Members</span>
+                                        <span class="text-[11px] font-bold text-navy">{{ t('Members') }}</span>
                                         <button type="button" x-on:click="popoverOpen = null" class="text-muted cursor-pointer">✕</button>
                                     </div>
                                     <div class="flex items-center gap-2 px-1.5 py-1.5 rounded hover:bg-[#f4f6fa] cursor-pointer"
@@ -302,17 +302,17 @@
                         </div>
 
                         <div>
-                            <div class="text-[12.5px] font-bold text-navy flex items-center gap-1.5 mb-1.5">≡ Description</div>
+                            <div class="text-[12.5px] font-bold text-navy flex items-center gap-1.5 mb-1.5">≡ {{ t('Description') }}</div>
                             <template x-if="! editingDesc">
-                                <div x-on:click="editingDesc = true" class="bg-[#f9fafb] border border-[#eef1f5] rounded-lg p-3 text-[12px] text-[#374151] min-h-[56px] cursor-pointer hover:border-accent whitespace-pre-line" x-text="descDraft || 'Add a more detailed description...'"></div>
+                                <div x-on:click="editingDesc = true" class="bg-[#f9fafb] border border-[#eef1f5] rounded-lg p-3 text-[12px] text-[#374151] min-h-[56px] cursor-pointer hover:border-accent whitespace-pre-line" x-text="descDraft || @js(t('Add a more detailed description...'))"></div>
                             </template>
                             <template x-if="editingDesc">
                                 <div class="border-2 border-accent rounded-lg overflow-hidden">
                                     <textarea x-model="descDraft" rows="4" class="w-full p-3 text-[12px] outline-none resize-y"></textarea>
                                     <div class="flex items-center gap-2 px-3 py-2 bg-[#f9fafb]">
                                         <button type="button" class="px-3 py-1 rounded-md bg-accent text-white text-[11px] font-semibold cursor-pointer"
-                                            x-on:click="$wire.{{ $updateCardMethod }}({{ $card['id'] }}, 'desc', descDraft); editingDesc = false">Simpan</button>
-                                        <button type="button" class="text-[11px] text-muted cursor-pointer" x-on:click="editingDesc = false">Batal</button>
+                                            x-on:click="$wire.{{ $updateCardMethod }}({{ $card['id'] }}, 'desc', descDraft); editingDesc = false">{{ t('Save') }}</button>
+                                        <button type="button" class="text-[11px] text-muted cursor-pointer" x-on:click="editingDesc = false">{{ t('Cancel') }}</button>
                                     </div>
                                 </div>
                             </template>
@@ -323,7 +323,7 @@
                             <div>
                                 <div class="flex items-center justify-between mb-1.5">
                                     <div class="text-[12.5px] font-bold text-navy flex items-center gap-1.5">☑️ {{ $card['checklistTitle'] }}</div>
-                                    <button type="button" wire:click="{{ $deleteChecklistMethod }}({{ $card['id'] }})" class="text-[10.5px] font-semibold text-[#c0392b] bg-[#fdecec] px-2 py-1 rounded cursor-pointer">Delete</button>
+                                    <button type="button" wire:click="{{ $deleteChecklistMethod }}({{ $card['id'] }})" class="text-[10.5px] font-semibold text-[#c0392b] bg-[#fdecec] px-2 py-1 rounded cursor-pointer">{{ t('Delete') }}</button>
                                 </div>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="text-[10.5px] text-muted font-semibold">{{ $pct }}%</span>
@@ -338,14 +338,14 @@
                                     @endforeach
                                 </div>
                                 <template x-if="! addingItem">
-                                    <button type="button" x-on:click="addingItem = true" class="bg-[#eef1f5] hover:bg-[#e2e8f0] text-[#374151] px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer">Add an item</button>
+                                    <button type="button" x-on:click="addingItem = true" class="bg-[#eef1f5] hover:bg-[#e2e8f0] text-[#374151] px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer">{{ t('Add an item') }}</button>
                                 </template>
                                 <template x-if="addingItem">
                                     <div class="border border-accent rounded-md p-2 flex flex-col gap-1.5">
-                                        <textarea x-model="newItemText" rows="2" placeholder="Add an item" class="w-full text-[11.5px] outline-none resize-none"></textarea>
+                                        <textarea x-model="newItemText" rows="2" placeholder="{{ t('Add an item') }}" class="w-full text-[11.5px] outline-none resize-none"></textarea>
                                         <div class="flex items-center gap-2">
                                             <button type="button" class="px-2.5 py-1 rounded-md bg-accent text-white text-[11px] font-semibold cursor-pointer"
-                                                x-on:click="if (newItemText.trim()) { $wire.{{ $addChecklistItemMethod }}({{ $card['id'] }}, newItemText); newItemText=''; }">Add</button>
+                                                x-on:click="if (newItemText.trim()) { $wire.{{ $addChecklistItemMethod }}({{ $card['id'] }}, newItemText); newItemText=''; }">{{ t('Add') }}</button>
                                             <button type="button" class="text-[11px] text-muted cursor-pointer" x-on:click="addingItem = false; newItemText=''">✕</button>
                                         </div>
                                     </div>
@@ -355,13 +355,13 @@
                     </div>
 
                     <div class="flex-1 flex flex-col gap-3 min-w-[200px]">
-                        <div class="text-[12.5px] font-bold text-navy flex items-center gap-1.5">💬 Comments</div>
+                        <div class="text-[12.5px] font-bold text-navy flex items-center gap-1.5">💬 {{ t('Comments') }}</div>
                         <div class="flex gap-2">
                             <div class="w-7 h-7 rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($currentUserName) }}</div>
                             <div class="flex-1 flex flex-col gap-1.5">
-                                <textarea x-model="newComment" rows="2" placeholder="Write a comment..." class="w-full border border-[#d7dbe2] rounded-lg p-2 text-[11.5px] outline-none focus:border-accent resize-none"></textarea>
+                                <textarea x-model="newComment" rows="2" placeholder="{{ t('Write a comment...') }}" class="w-full border border-[#d7dbe2] rounded-lg p-2 text-[11.5px] outline-none focus:border-accent resize-none"></textarea>
                                 <button type="button" x-show="newComment.trim() !== ''" class="self-start px-3 py-1 rounded-md bg-accent text-white text-[11px] font-semibold cursor-pointer"
-                                    x-on:click="$wire.{{ $addCommentMethod }}({{ $card['id'] }}, newComment); newComment=''">Simpan</button>
+                                    x-on:click="$wire.{{ $addCommentMethod }}({{ $card['id'] }}, newComment); newComment=''">{{ t('Save') }}</button>
                             </div>
                         </div>
                         <div class="flex flex-col gap-2.5">

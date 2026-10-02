@@ -7,7 +7,7 @@
             @forelse ($this->documents() as $d)
                 <div class="tm-act-row" wire:key="act-doc-{{ $loop->index }}">
                     <span class="ic"><i class="fa-solid {{ $d['action'] === 'Diubah' ? 'fa-pen' : 'fa-file-circle-plus' }}"></i></span>
-                    <div class="main"><b>{{ $d['type'] }} · {{ $d['no'] }}</b><span>{{ $d['action'] }}</span></div>
+                    <div class="main"><b>{{ t($d['type']) }} · {{ $d['no'] }}</b><span>{{ $d['action'] === 'Diubah' ? t('Changed') : t('Created') }}</span></div>
                     <time>{{ \Illuminate\Support\Carbon::parse($d['at'])->format('d/m/Y H:i') }}</time>
                 </div>
             @empty

@@ -100,28 +100,28 @@ new #[Layout('layouts::guest')] #[Title('Setup Keamanan Akun — TELASIH MAKMUR 
     <div class="card">
         <x-auth.top-brand />
         <div class="body">
-            <h2>Setup keamanan akun</h2>
-            <p class="sub">Isi 4 data ini sekali saja — dipakai untuk verifikasi identitas kalau Anda lupa password nanti (tanpa email).</p>
+            <h2>{{ t('Account security setup') }}</h2>
+            <p class="sub">{{ t('Fill in these 4 items only once — they are used to verify your identity if you forget your password later (without email).') }}</p>
 
             @if ($errorMessage)
                 <div class="hint bad" style="margin-bottom:14px">{{ $errorMessage }}</div>
             @endif
 
             <form wire:submit="submit">
-                <x-form.date-picker legacy="field" label="Tanggal lahir" wire:model="birthDate" name="birthDate"
-                    :hint="$birthDateFromEmployee ? 'Diambil dari data karyawan Anda. Salah? Ubah di sini — perubahan akan direview HR dulu sebelum berlaku.' : null" />
-                <x-form.input legacy="field" label="Nama ibu kandung" wire:model="motherName" placeholder="Nama lengkap ibu kandung Anda" name="motherName" />
-                <x-form.input legacy="field" label="Nomor HP terdaftar" wire:model="phone" placeholder="08xxxxxxxxxx" name="phone"
-                    :hint="$phoneFromEmployee ? 'Diambil dari data karyawan Anda. Salah? Ubah di sini — perubahan akan direview HR dulu sebelum berlaku.' : null" />
-                <x-form.select legacy="field" label="Pertanyaan keamanan" wire:model="questionId" name="questionId"
+                <x-form.date-picker legacy="field" :label="t('Date of birth')" wire:model="birthDate" name="birthDate"
+                    :hint="$birthDateFromEmployee ? t('Taken from your employee data. Wrong? Change it here — the change will be reviewed by HR before it applies.') : null" />
+                <x-form.input legacy="field" :label="t('Mother\'s maiden name')" wire:model="motherName" :placeholder="t('Your mother\'s full maiden name')" name="motherName" />
+                <x-form.input legacy="field" :label="t('Registered phone number')" wire:model="phone" placeholder="08xxxxxxxxxx" name="phone"
+                    :hint="$phoneFromEmployee ? t('Taken from your employee data. Wrong? Change it here — the change will be reviewed by HR before it applies.') : null" />
+                <x-form.select legacy="field" :label="t('Security question')" wire:model="questionId" name="questionId"
                     style="width:100%;padding:10px 12px;border:1px solid var(--ap-border,#d7dbe2);border-radius:8px;font-size:14px"
-                    placeholder="— pilih pertanyaan —" :options="$this->questionOptions->pluck('question_text', 'id_question')->all()" />
-                <x-form.input legacy="field" label="Jawaban Anda" wire:model="answer" placeholder="Jawaban Anda" name="answer" />
+                    :placeholder="t('— select a question —')" :options="$this->questionOptions->pluck('question_text', 'id_question')->all()" />
+                <x-form.input legacy="field" :label="t('Your answer')" wire:model="answer" :placeholder="t('Your answer')" name="answer" />
 
-                <button type="submit" class="btn" wire:loading.attr="disabled" style="margin-top:20px">Simpan &amp; lanjutkan</button>
+                <button type="submit" class="btn" wire:loading.attr="disabled" style="margin-top:20px">{{ t('Save & continue') }}</button>
             </form>
 
-            <button type="button" class="back" style="background:none;border:none;cursor:pointer" wire:click="logout"><span>&larr;</span> <span>Keluar dan lengkapi nanti</span></button>
+            <button type="button" class="back" style="background:none;border:none;cursor:pointer" wire:click="logout"><span>&larr;</span> <span>{{ t('Sign out and complete later') }}</span></button>
         </div>
     </div>
 </div>

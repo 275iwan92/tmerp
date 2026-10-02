@@ -28,7 +28,7 @@ new #[Layout('layouts::guest')] #[Title('Ganti Password — TELASIH MAKMUR ERP')
         ]);
 
         if ($this->pswdNew !== $this->pswdConfirm) {
-            $this->errorMessage = 'Konfirmasi password tidak sama.';
+            $this->errorMessage = t('Password confirmation does not match.');
 
             return null;
         }
@@ -62,21 +62,21 @@ new #[Layout('layouts::guest')] #[Title('Ganti Password — TELASIH MAKMUR ERP')
     <div class="card">
         <x-auth.top-brand />
         <div class="body">
-            <h2>Ganti password</h2>
-            <p class="sub">Anda login memakai password default. Buat password baru sebelum melanjutkan.</p>
+            <h2>{{ t('Change your password') }}</h2>
+            <p class="sub">{{ t('You signed in with the default password. Create a new password before continuing.') }}</p>
 
             @if ($errorMessage)
                 <div class="hint bad" style="margin-bottom:14px">{{ $errorMessage }}</div>
             @endif
 
             <form wire:submit="submit">
-                <x-form.input legacy="field" label="Password baru" type="password" wire:model="pswdNew" autocomplete="new-password" placeholder="Minimal 8 karakter" name="pswdNew" />
-                <x-form.input legacy="field" label="Konfirmasi password baru" type="password" wire:model="pswdConfirm" autocomplete="new-password" placeholder="Ulangi password baru" name="pswdConfirm" />
+                <x-form.input legacy="field" :label="t('New password')" type="password" wire:model="pswdNew" autocomplete="new-password" :placeholder="t('Minimum 8 characters')" name="pswdNew" />
+                <x-form.input legacy="field" :label="t('Confirm new password')" type="password" wire:model="pswdConfirm" autocomplete="new-password" :placeholder="t('Repeat new password')" name="pswdConfirm" />
 
-                <button type="submit" class="btn" wire:loading.attr="disabled">Simpan password baru</button>
+                <button type="submit" class="btn" wire:loading.attr="disabled">{{ t('Save new password') }}</button>
             </form>
 
-            <button type="button" class="back" style="background:none;border:none;cursor:pointer" wire:click="logout"><span>&larr;</span> <span>Keluar dan masuk lagi nanti</span></button>
+            <button type="button" class="back" style="background:none;border:none;cursor:pointer" wire:click="logout"><span>&larr;</span> <span>{{ t('Sign out and sign in again later') }}</span></button>
         </div>
     </div>
 </div>

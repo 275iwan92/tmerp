@@ -7,6 +7,6 @@
 --}}
 <div class="flex items-center gap-1.5 shrink-0 pr-2 mr-0.5 border-r border-line">
     <x-ui.button variant="secondary" size="xs" class="shrink-0" wire:click="openColumnModal" title="{{ t('Choose visible columns') }}">☰ {{ t('Columns') }}</x-ui.button>
-    <x-ui.button variant="secondary" size="xs" class="shrink-0" wire:click="openSortModal" title="{{ t('Sort data') }}">↕ Sort</x-ui.button>
+    <x-ui.button variant="secondary" size="xs" class="shrink-0" wire:click="openSortModal" title="{{ t('Sort data') }}">↕ {{ t('Sort') }}</x-ui.button>
     @include('components.grid.export-dropdown')
 </div>

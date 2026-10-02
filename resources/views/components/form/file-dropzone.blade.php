@@ -18,7 +18,7 @@
             {{ $attributes->merge(['class' => 'hidden']) }}>
         <template x-if="!fileName">
             <div class="flex items-center justify-center gap-2 text-muted text-xs">
-                <span>📁</span><span>Drag file / <strong class="text-accent">{{ t('Choose File') }}</strong></span>
+                <span>📁</span><span>{{ t('Drag file') }} / <strong class="text-accent">{{ t('Choose File') }}</strong></span>
             </div>
         </template>
         <template x-if="fileName">

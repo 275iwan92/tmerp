@@ -4,7 +4,7 @@
         @if ($selectedLabel)
             <span class="text-[#1c2333] font-semibold">{{ $selectedLabel }}</span>
         @else
-            <span class="text-[#6b7280]">Pilih wilayah...</span>
+            <span class="text-[#6b7280]">{{ t('Select region...') }}</span>
         @endif
         <span class="text-[#6b7280] text-[10px] ml-2">▾</span>
     </div>
@@ -12,7 +12,7 @@
     @if ($open)
         <div class="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border border-[#d7dbe2] rounded-md z-30 overflow-hidden shadow-[0_10px_28px_rgba(20,30,60,.16)]" @click.stop>
             <input type="text" wire:model.live.debounce.300ms="search" autofocus
-                placeholder="Ketik kelurahan / kecamatan / kota / provinsi / kode pos..."
+                placeholder="{{ t('Type village / district / city / province / postal code...') }}"
                 class="w-full px-3 py-2.5 border-0 border-b border-[#d7dbe2] text-[13px] outline-none box-border">
 
             <div class="max-h-[260px] overflow-y-auto">
@@ -26,7 +26,7 @@
                     </div>
                 @empty
                     <div class="px-3 py-4 text-xs text-[#6b7280] text-center">
-                        {{ mb_strlen(trim($search)) < 2 ? 'Ketik minimal 2 huruf...' : 'Tidak ditemukan — coba kata kunci lain' }}
+                        {{ mb_strlen(trim($search)) < 2 ? t('Type at least 2 letters...') : t('Not found — try another keyword') }}
                     </div>
                 @endforelse
             </div>

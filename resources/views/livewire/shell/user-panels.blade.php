@@ -73,8 +73,8 @@
             @if ($standalone)
                 <div class="ai-intro">{{ t('Ask in plain words, e.g. “sales” or “warehouse”, and I will open its report dashboard. This version is still a preview (keyword matching, not a real LLM).') }}
                     <div style="margin-top:10px">
-                        <button type="button" class="ai-chip" @click="askAi('sales')">sales</button>
-                        <button type="button" class="ai-chip" @click="askAi('purchasing')">purchasing</button>
+                        <button type="button" class="ai-chip" @click="askAi('sales')">{{ t('sales') }}</button>
+                        <button type="button" class="ai-chip" @click="askAi('purchasing')">{{ t('purchasing') }}</button>
                     </div>
                 </div>
             @else
@@ -138,15 +138,15 @@
     {{-- Drawer "User Configuration" (portal self-service karyawan) -- iframe
          dimuat saat pertama dibuka, tidak dikosongkan saat ditutup. --}}
     @if (auth()->user()->employee_id)
-        <x-ui.drawer open="portalOpen" icon="fa-solid fa-id-card" title="User Configuration" size="2xl">
-            <iframe class="dr-frame" x-data="{ src: '' }" x-effect="if (portalOpen && ! src) src = @js(route('self-service.index'))" :src="src" title="User Configuration"></iframe>
+        <x-ui.drawer open="portalOpen" icon="fa-solid fa-id-card" :title="t('User Configuration')" size="2xl">
+            <iframe class="dr-frame" x-data="{ src: '' }" x-effect="if (portalOpen && ! src) src = @js(route('self-service.index'))" :src="src" title="{{ t('User Configuration') }}"></iframe>
         </x-ui.drawer>
     @endif
 
     {{-- Drawer My Security --}}
     @if (auth()->user()->employee_id)
         <x-ui.drawer open="securityOpen" icon="fa-solid fa-shield-halved" :title="t('My Security')" size="2xl">
-            <iframe class="dr-frame" x-data="{ src: '' }" x-effect="if (securityOpen && ! src) src = @js(route('self-service.index', ['tab' => 'security']))" :src="src" title="My Security"></iframe>
+            <iframe class="dr-frame" x-data="{ src: '' }" x-effect="if (securityOpen && ! src) src = @js(route('self-service.index', ['tab' => 'security']))" :src="src" title="{{ t('My Security') }}"></iframe>
         </x-ui.drawer>
     @endif
 
@@ -154,7 +154,7 @@
     <x-ui.drawer open="helpOpen" icon="fa-solid fa-circle-question" :title="t('Help & Support')" size="2xl">
         <iframe class="dr-frame" x-data="{ src: '', ctx: null }"
             x-effect="if (helpOpen && (! src || ctx !== helpCtx)) { ctx = helpCtx; src = @js(route('help.index')) + '?ctx=' + encodeURIComponent(helpCtx || 'Home'); }"
-            :src="src" title="Bantuan & Support"></iframe>
+            :src="src" title="{{ t('Help & Support') }}"></iframe>
     </x-ui.drawer>
 
     {{-- Drawer Configuration (pengaturan milik tiap user) & Aktivitas saya. --}}

@@ -62,8 +62,8 @@
 
     {{-- TOP NAVBAR (span penuh 3 panel, persis .top-navbar mockup) --}}
     <div class="h-[56px] flex items-center gap-3 px-4 border-b border-[#e2e8f0] shrink-0">
-        <span class="text-sm font-bold text-navy shrink-0">📅 Event Calendar</span>
-        <button type="button" x-on:click="$wire.{{ $todayMethod }}()" class="px-3 py-1.5 rounded-md border border-[#d7dbe2] text-[11px] font-semibold cursor-pointer hover:bg-[#f4f6fa]">Today</button>
+        <span class="text-sm font-bold text-navy shrink-0">📅 {{ t('Event Calendar') }}</span>
+        <button type="button" x-on:click="$wire.{{ $todayMethod }}()" class="px-3 py-1.5 rounded-md border border-[#d7dbe2] text-[11px] font-semibold cursor-pointer hover:bg-[#f4f6fa]">{{ t('Today') }}</button>
         <div class="flex gap-1">
             <button type="button" x-on:click="$wire.{{ $prevMethod }}()" class="w-8 h-8 rounded-md border border-[#d7dbe2] cursor-pointer hover:bg-[#f4f6fa] text-xs">❮</button>
             <button type="button" x-on:click="$wire.{{ $nextMethod }}()" class="w-8 h-8 rounded-md border border-[#d7dbe2] cursor-pointer hover:bg-[#f4f6fa] text-xs">❯</button>
@@ -76,7 +76,7 @@
             (gotcha Livewire+Alpine); panggil $wire langsung dari Alpine SELALU
             jalan krn diproses lewat mesin directive Alpine sendiri, bukan scan
             terpisah Livewire. wire:key jaga identitas tiap tombol lintas-morph. --}}
-            @foreach (['day' => 'Day', 'week' => 'Week', 'month' => 'Month'] as $v => $vLabel)
+            @foreach (['day' => t('Day'), 'week' => t('Week'), 'month' => t('Month')] as $v => $vLabel)
                 <button type="button" wire:key="cal-view-{{ $v }}" x-on:click="$wire.{{ $setViewMethod }}('{{ $v }}')"
                     class="px-3.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ $view === $v ? 'bg-navy text-white' : 'text-muted hover:text-navy' }}">{{ $vLabel }}</button>
             @endforeach
@@ -88,7 +88,7 @@
         {{-- LEFT PANEL (280px di mockup, w-[250px] di sini) --}}
         <div class="w-[250px] shrink-0 border-r border-[#e2e8f0] p-5 flex flex-col gap-6 overflow-y-auto tm-scroll">
             <button type="button" x-on:click="$wire.{{ $createNewMethod }}()"
-                class="flex items-center justify-center gap-2 bg-accent text-white rounded-lg py-2.5 text-[13px] font-bold cursor-pointer hover:opacity-90">➕ Create Event</button>
+                class="flex items-center justify-center gap-2 bg-accent text-white rounded-lg py-2.5 text-[13px] font-bold cursor-pointer hover:opacity-90">➕ {{ t('Create Event') }}</button>
 
             <div>
                 <div class="flex items-center justify-between mb-3 px-0.5">
@@ -102,7 +102,7 @@
                 legacy menang atas Tailwind grid-cols-7 kalau pakai class "grid"
                 (feedback_legacy_grid_class_collision, lihat date-picker.blade.php). --}}
                 <div class="[display:grid] grid-cols-7 gap-y-1.5 text-center">
-                    @foreach (['M', 'S', 'S', 'R', 'K', 'J', 'S'] as $dn)
+                    @foreach (array_map(fn ($d) => mb_substr(t($d), 0, 1), ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']) as $dn)
                         <div class="text-[10px] font-bold text-muted">{{ $dn }}</div>
                     @endforeach
                     @foreach ($miniCalGrid as $cell)
@@ -116,7 +116,7 @@
             <div>
                 <div class="relative">
                     <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted text-[11px]">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="{{ $searchQueryModel }}" placeholder="Search events..."
+                    <input type="text" wire:model.live.debounce.300ms="{{ $searchQueryModel }}" placeholder="{{ t('Search events...') }}"
                         class="w-full pl-7 pr-2 py-2 border border-[#d7dbe2] rounded-lg text-[11.5px] focus:border-accent">
                 </div>
                 @if ($searchQuery !== '')
@@ -131,7 +131,7 @@
                                 <div class="text-[10px] text-muted mt-1">📅 {{ substr($ev['start'], 0, 10) }}</div>
                             </div>
                         @empty
-                            <div class="text-[10.5px] text-muted text-center py-2">Tidak ada hasil.</div>
+                            <div class="text-[10.5px] text-muted text-center py-2">{{ t('No results.') }}</div>
                         @endforelse
                     </div>
                 @endif
@@ -143,7 +143,7 @@
 
             @if ($view === 'month')
                 <div class="[display:grid] grid-cols-7 text-center text-[10.5px] font-bold text-muted uppercase border-b border-[#eef1f5] shrink-0 py-2">
-                    @foreach (['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $dn)
+                    @foreach (array_map('t', ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']) as $dn)
                         <div>{{ $dn }}</div>
                     @endforeach
                 </div>
@@ -222,7 +222,7 @@
         <div class="w-[300px] shrink-0 border-l border-[#e2e8f0] flex flex-col overflow-hidden">
             <div class="h-[40%] border-b border-[#e2e8f0] p-4 overflow-y-auto tm-scroll bg-[#fafbfd]">
                 <div class="text-[10.5px] font-bold text-muted uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-accent"></span> Today's Events
+                    <span class="w-1.5 h-1.5 rounded-full bg-accent"></span> {{ t('Today\'s Events') }}
                 </div>
                 @forelse ($todayEvents as $ev)
                     <div class="bg-white border-l-[3px] rounded-md p-2.5 mb-2 shadow-sm {{ $borderTone[$ev['colorClass']] ?? 'border-l-[#d7dbe2]' }}">
@@ -230,14 +230,14 @@
                         <div class="text-[10.5px] text-muted mt-1">🕒 {{ $ev['timeLabel'] }}</div>
                     </div>
                 @empty
-                    <div class="text-[10.5px] text-muted">Tidak ada event hari ini.</div>
+                    <div class="text-[10.5px] text-muted">{{ t('No events today.') }}</div>
                 @endforelse
             </div>
 
             <div class="flex-1 p-4 overflow-y-auto tm-scroll">
                 @if ($editingId === null)
                     <div class="text-base font-bold text-navy mb-0.5">{{ $selectedDateLabel }}</div>
-                    <div class="text-[11px] text-muted mb-4">{{ count($eventsOnCurrent) }} event</div>
+                    <div class="text-[11px] text-muted mb-4">{{ count($eventsOnCurrent) }} {{ t('event') }}</div>
                     <div class="flex flex-col gap-2.5">
                         @forelse ($eventsOnCurrent as $ev)
                             <div x-on:click="$wire.{{ $openEditMethod }}({{ $ev['id'] }})" class="group relative bg-white border border-[#e2e8f0] rounded-lg p-3 cursor-pointer hover:border-accent transition-colors">
@@ -251,19 +251,19 @@
                                 <div class="text-[11px] text-[#4b5568] mt-1.5 leading-relaxed">{{ $ev['desc'] }}</div>
                             </div>
                         @empty
-                            <div class="text-[11px] text-muted text-center py-8">No events scheduled for this day.</div>
+                            <div class="text-[11px] text-muted text-center py-8">{{ t('No events scheduled for this day.') }}</div>
                         @endforelse
                     </div>
                 @else
-                    <div class="text-sm font-bold text-navy mb-4">✏️ Edit Event</div>
+                    <div class="text-sm font-bold text-navy mb-4">✏️ {{ t('Edit Event') }}</div>
                     <div class="flex flex-col gap-3">
-                        <x-form.input wire:model="{{ $editTitleModel }}" placeholder="Event Title" />
-                        <x-form.input type="datetime-local" label="Start Time" wire:model="{{ $editStartModel }}" />
-                        <x-form.input type="datetime-local" label="End Time" wire:model="{{ $editEndModel }}" />
-                        <x-form.textarea wire:model="{{ $editDescModel }}" placeholder="Description..." rows="3" />
+                        <x-form.input wire:model="{{ $editTitleModel }}" :placeholder="t('Event Title')" />
+                        <x-form.input type="datetime-local" :label="t('Start Time')" wire:model="{{ $editStartModel }}" />
+                        <x-form.input type="datetime-local" :label="t('End Time')" wire:model="{{ $editEndModel }}" />
+                        <x-form.textarea wire:model="{{ $editDescModel }}" :placeholder="t('Description...')" rows="3" />
                         <div class="flex justify-end gap-2 mt-1">
-                            <button type="button" x-on:click="$wire.{{ $closeEditMethod }}()" title="Cancel" class="w-9 h-9 rounded-md bg-[#eef1f5] text-[#4b5568] cursor-pointer hover:bg-[#e2e8f0]">✕</button>
-                            <button type="button" x-on:click="$wire.{{ $saveEditMethod }}()" title="Save" class="w-9 h-9 rounded-md bg-accent text-white cursor-pointer hover:opacity-90">💾</button>
+                            <button type="button" x-on:click="$wire.{{ $closeEditMethod }}()" title="{{ t('Cancel') }}" class="w-9 h-9 rounded-md bg-[#eef1f5] text-[#4b5568] cursor-pointer hover:bg-[#e2e8f0]">✕</button>
+                            <button type="button" x-on:click="$wire.{{ $saveEditMethod }}()" title="{{ t('Save') }}" class="w-9 h-9 rounded-md bg-accent text-white cursor-pointer hover:opacity-90">💾</button>
                         </div>
                     </div>
                 @endif

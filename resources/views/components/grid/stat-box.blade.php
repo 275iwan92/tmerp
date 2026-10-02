@@ -22,7 +22,7 @@
 @endphp
 @if ($action)
 <button type="button" wire:click="{{ $action }}" aria-pressed="{{ $selected ? 'true' : 'false' }}"
-    title="{{ $selected ? 'Klik lagi untuk melepas filter' : 'Klik untuk menyaring data' }}"
+    title="{{ $selected ? t('Click again to remove the filter') : t('Click to filter the data') }}"
     class="relative text-left w-full rounded-lg p-3.5 shadow-sm border cursor-pointer transition hover:brightness-[0.97] {{ $c['box'] }} {{ $selected ? 'ring-2 ring-[#1d4ed8] ring-offset-1' : '' }}">
     @if ($selected)
         <span class="absolute top-2 right-2 inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#1d4ed8] text-white text-[9px]"><i class="fa-solid fa-check"></i></span>

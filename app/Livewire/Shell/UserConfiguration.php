@@ -40,7 +40,7 @@ class UserConfiguration extends Component
     {
         $themes = SysTheme::where('activate', true)->orderBy('sort_order')->get();
 
-        $families = ['pastel' => 'Pastel', 'cerah' => 'Cerah', 'dark' => 'Dark', 'hitam' => 'Hitam'];
+        $families = ['pastel' => t('Pastel'), 'cerah' => t('Bright'), 'dark' => t('Dark'), 'hitam' => t('Black')];
         $hues = [
             'blue' => t('Blue'),
             'green' => t('Green'),

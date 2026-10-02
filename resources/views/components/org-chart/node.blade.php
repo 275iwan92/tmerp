@@ -36,27 +36,27 @@
                     </div>
                 @endif
                 <div class="min-w-0">
-                    <p class="text-[12.5px] font-bold truncate">{{ $first->full_name ?? 'Vacant' }}</p>
+                    <p class="text-[12.5px] font-bold truncate">{{ $first->full_name ?? t('Vacant') }}</p>
                     <p class="text-[10.5px] text-muted truncate">{{ $position->position_name }}</p>
                 </div>
             @else
                 <div class="min-w-0">
                     <p class="text-[12.5px] font-bold leading-snug">{{ $occupants->pluck('full_name')->implode(' / ') }}</p>
-                    <p class="text-[10.5px] text-muted truncate">{{ $position->position_name }} <span class="text-[9.5px]">({{ $occupants->count() }} org)</span></p>
+                    <p class="text-[10.5px] text-muted truncate">{{ $position->position_name }} <span class="text-[9.5px]">({{ $occupants->count() }} {{ t('people') }})</span></p>
                 </div>
             @endif
         </div>
         <div class="px-3 pb-2 flex items-center gap-2 text-[11px]">
             @if ($occupants->count() <= 1)
                 @if ($first?->phone)
-                    <a href="tel:{{ $first->phone }}" title="Telepon" class="text-accent">📞</a>
+                    <a href="tel:{{ $first->phone }}" title="{{ t('Phone call') }}" class="text-accent">📞</a>
                 @else
-                    <span class="text-[#c8ccd6]" title="Tidak ada No. HP">📞</span>
+                    <span class="text-[#c8ccd6]" title="{{ t('No phone number') }}">📞</span>
                 @endif
                 @if ($first?->email_personal)
-                    <a href="mailto:{{ $first->email_personal }}" title="Email" class="text-accent">✉️</a>
+                    <a href="mailto:{{ $first->email_personal }}" title="{{ t('Email') }}" class="text-accent">✉️</a>
                 @else
-                    <span class="text-[#c8ccd6]" title="Tidak ada email">✉️</span>
+                    <span class="text-[#c8ccd6]" title="{{ t('No email') }}">✉️</span>
                 @endif
             @endif
             <span class="ml-auto text-[10px] text-muted font-mono">{{ $position->department->department_name ?? '' }}</span>

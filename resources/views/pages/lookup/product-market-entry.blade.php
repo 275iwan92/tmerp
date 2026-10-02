@@ -42,7 +42,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
 
     private const CHAIN_ROOT = ['paper' => 'Paper', 'sheet' => 'Sheet'];
 
-    private const LEVEL_LABEL = [1 => 'Kategori', 2 => 'Jenis', 3 => 'Gramatur/Spec', 4 => 'Ukuran (opsional)', 5 => 'Merek (opsional)'];
+    private const LEVEL_LABEL = [1 => 'Category', 2 => 'Kind', 3 => 'Weight/Spec', 4 => 'Size (optional)', 5 => 'Brand (optional)'];
 
     public string $default_color = '';
 
@@ -155,7 +155,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
 
     public function levelLabel(int $level): string
     {
-        return self::LEVEL_LABEL[$level] ?? 'Level '.$level;
+        return isset(self::LEVEL_LABEL[$level]) ? t(self::LEVEL_LABEL[$level]) : t('Level').' '.$level;
     }
 
     public function setPick(string $chain, int $level, ?string $value): void
@@ -212,7 +212,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
             'photo' => 'nullable|image|max:4096',
             'sizes.*.label' => 'required|max:100',
             'sizes.*.dims.*' => 'nullable|numeric|min:0',
-        ], [], ['sizes.*.label' => 'nama ukuran', 'default_color' => 'warna (mis. 4/0)', 'default_tiers' => 'jenjang qty (mis. 1000,3000,5000)']);
+        ], [], ['sizes.*.label' => t('size name'), 'default_color' => t('colour (e.g. 4/0)'), 'default_tiers' => t('qty tiers (e.g. 1000,3000,5000)')]);
 
         $login = Auth::user()->login;
 
@@ -277,8 +277,8 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
 ?>
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">🏷️ Product Market</b>
-        <span class="text-xs text-white/75">{{ $recordId ? $market_label : 'NEW' }}</span>
+        <b class="text-[15px]">🏷️ {{ t('Product Market') }}</b>
+        <span class="text-xs text-white/75">{{ $recordId ? $market_label : t('NEW') }}</span>
         <div class="ml-auto flex items-center gap-2">
             <x-ui.button preset="save" wire:click="save" type="button" />
             <x-back-button :fallback="route('lookup.product-market')" title="{{ t('Back to List') }}" />
@@ -292,7 +292,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
         @endif
 
         <div class="bg-white border border-field-border rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">1. Identitas</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">1. {{ t('Identity') }}</h3>
             <div class="flex gap-4 items-start">
                 <div class="shrink-0 text-center">
                     @if ($photo)
@@ -300,63 +300,63 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
                     @elseif ($photo_path)
                         <img src="{{ asset('storage/'.$photo_path) }}" alt="" class="w-28 h-28 object-cover rounded border border-field-border">
                     @else
-                        <span class="w-28 h-28 rounded border border-dashed border-field-border bg-accent-soft text-accent text-xs flex items-center justify-center">Belum ada foto</span>
+                        <span class="w-28 h-28 rounded border border-dashed border-field-border bg-accent-soft text-accent text-xs flex items-center justify-center">{{ t('No photo yet') }}</span>
                     @endif
-                    <label class="block mt-1.5 text-[11px] text-accent font-semibold cursor-pointer">Ganti foto<input type="file" wire:model="photo" accept="image/*" class="hidden"></label>
+                    <label class="block mt-1.5 text-[11px] text-accent font-semibold cursor-pointer">{{ t('Replace photo') }}<input type="file" wire:model="photo" accept="image/*" class="hidden"></label>
                 </div>
                 <div class="flex-1 grid two">
-                    <x-form.select label="Kategori Produk (induk)" wire:change="$set('parent_id', $event.target.value)" name="parent_id" :selected="$parent_id"
-                        placeholder="— kosong = ini Kategori Produk —" :options="$this->groups" hint="Kosong = record ini jadi Kategori (mis. Dus Makanan). Isi = Detail Kategori (mis. PPL)." />
-                    <x-form.input label="Nama (bahasa sales)" wire:model="market_label" name="market_label" placeholder="mis. Dus Makanan / Paper Lunch Box (PPL)" />
-                    <x-form.input label="Kode" wire:model="market_code" name="market_code" placeholder="otomatis dari nama bila kosong" />
+                    <x-form.select :label="t('Product Category (parent)')" wire:change="$set('parent_id', $event.target.value)" name="parent_id" :selected="$parent_id"
+                        :placeholder="t('— empty = this is a Product Category —')" :options="$this->groups" :hint="t('Empty = this record becomes a Category (e.g. Food Box). Filled = Category Detail (e.g. PPL).')" />
+                    <x-form.input :label="t('Name (sales language)')" wire:model="market_label" name="market_label" :placeholder="t('e.g. Food Box / Paper Lunch Box (PPL)')" />
+                    <x-form.input :label="t('Code')" wire:model="market_code" name="market_code" :placeholder="t('automatic from name if empty')" />
                     <div class="relative">
-                        <x-form.input label="Urutan tampil" type="number" wire:model.live.debounce.400ms="sort_order" name="sort_order" hint="Otomatis setelah urutan terakhir; boleh diubah." />
+                        <x-form.input :label="t('Display order')" type="number" wire:model.live.debounce.400ms="sort_order" name="sort_order" :hint="t('Automatic after the last order; may be changed.')" />
                         <x-form.auto-chip field="sort_order" :state="$this->sortState" class="absolute top-0 right-0" />
                     </div>
-                    <div class="flex items-end pb-1"><x-form.checkbox wire:model="activate" label="Aktif (muncul di Inquiry New)" /></div>
+                    <div class="flex items-end pb-1"><x-form.checkbox wire:model="activate" :label="t('Active (appears in Inquiry New)')" /></div>
                 </div>
             </div>
         </div>
 
         @if (! $this->isDetail())
-            <x-alert.banner type="info" message="Ini Kategori Produk (pengelompok). Tipe Produk, bahan, dan ukuran diisi di Detail Kategori — buat record baru lalu pilih kategori ini sebagai induk." />
+            <x-alert.banner type="info" :message="t('This is a Product Category (grouping). Product Type, material, and sizes are filled in the Category Detail — create a new record and choose this category as its parent.')" />
         @else
         <div class="bg-white border border-field-border rounded-md p-4 mb-4">
-            <h3 class="text-xs text-navy uppercase font-bold mb-3">2. Nilai awal di Inquiry New</h3>
+            <h3 class="text-xs text-navy uppercase font-bold mb-3">2. {{ t('Initial values in Inquiry New') }}</h3>
             <div class="grid two">
-                <x-form.select label="Tipe Produk (dieline)" wire:change="$set('type_code', $event.target.value)" name="type_code" :selected="$type_code" :options="$this->types" />
-                <x-form.select label="Warna cetak" wire:change="$set('default_color', $event.target.value)" name="default_color" :selected="$default_color"
-                    :options="['1/0' => '1/0 (1 warna, 1 sisi)', '2/0' => '2/0', '4/0' => '4/0 (full color 1 sisi)', '4/1' => '4/1', '4/4' => '4/4 (full color 2 sisi)']" />
-                <x-form.input label="Jenjang qty (dipisah koma)" :case-toggle="false" wire:model="default_tiers" name="default_tiers" placeholder="mis. 1000,3000,5000" />
+                <x-form.select :label="t('Product Type (dieline)')" wire:change="$set('type_code', $event.target.value)" name="type_code" :selected="$type_code" :options="$this->types" />
+                <x-form.select :label="t('Print colour')" wire:change="$set('default_color', $event.target.value)" name="default_color" :selected="$default_color"
+                    :options="['1/0' => '1/0 '.t('(1 colour, 1 side)'), '2/0' => '2/0', '4/0' => '4/0 '.t('(full colour 1 side)'), '4/1' => '4/1', '4/4' => '4/4 '.t('(full colour 2 sides)')]" />
+                <x-form.input :label="t('Qty tiers (comma separated)')" :case-toggle="false" wire:model="default_tiers" name="default_tiers" :placeholder="t('e.g. 1000,3000,5000')" />
             </div>
             @foreach (['paper' => '#1 Paper', 'sheet' => '#2 Sheet / SF'] as $chain => $title)
                 <div class="border border-field-border rounded-md p-3 mt-3" wire:key="chain-{{ $chain }}">
-                    <p class="text-[10px] font-bold text-accent uppercase mb-2">Bahan {{ $title }} <span class="normal-case font-normal text-muted">— hirarki 5 kategori bahan baku</span></p>
+                    <p class="text-[10px] font-bold text-accent uppercase mb-2">{{ t('Raw material') }} {{ $title }} <span class="normal-case font-normal text-muted">{{ t('— 5-level raw material category hierarchy') }}</span></p>
                     <div class="[display:grid] grid-cols-5 gap-2">
-                        <x-form.input label="Kategori" readonly value="{{ $chain === 'paper' ? 'Paper (P)' : 'Sheet (S)' }}" class="bg-field-soft" />
+                        <x-form.input :label="t('Category')" readonly value="{{ $chain === 'paper' ? 'Paper (P)' : 'Sheet (S)' }}" class="bg-field-soft" />
                         @foreach ([2, 3, 4, 5] as $lv)
                             <x-form.select wire:key="pick-{{ $chain }}-{{ $lv }}" wire:change="setPick('{{ $chain }}', {{ $lv }}, $event.target.value)"
                                 :label="$this->levelLabel($lv)" :disabled="! $picks[$chain][$lv - 1] || empty($this->pickOptions[$chain][$lv])" class="disabled:bg-field-soft"
-                                :placeholder="$lv >= 3 ? '— semua —' : null" :selected="$picks[$chain][$lv]" :options="$this->pickOptions[$chain][$lv]" />
+                                :placeholder="$lv >= 3 ? t('— all —') : null" :selected="$picks[$chain][$lv]" :options="$this->pickOptions[$chain][$lv]" />
                         @endforeach
                     </div>
                 </div>
             @endforeach
-            <x-form.textarea label="Catatan untuk sales" wire:model="notes" rows="2" placeholder="mis. untuk makanan berminyak pakai kraft lapis PE" />
+            <x-form.textarea :label="t('Notes for sales')" wire:model="notes" rows="2" :placeholder="t('e.g. for oily food use PE-coated kraft')" />
         </div>
 
         <div class="bg-white border border-field-border rounded-md mb-4 overflow-hidden">
             <div class="flex items-center justify-between px-4 py-2.5 bg-field-soft border-b border-field-border">
-                <h3 class="text-xs text-navy uppercase font-bold">3. Ukuran Pasaran</h3>
-                <button type="button" wire:click="addSize" @disabled(! $type_code) class="text-[11px] font-bold text-accent bg-accent-soft border border-dashed border-accent rounded px-2.5 py-1 cursor-pointer disabled:opacity-40">＋ Tambah Ukuran</button>
+                <h3 class="text-xs text-navy uppercase font-bold">3. {{ t('Market Sizes') }}</h3>
+                <button type="button" wire:click="addSize" @disabled(! $type_code) class="text-[11px] font-bold text-accent bg-accent-soft border border-dashed border-accent rounded px-2.5 py-1 cursor-pointer disabled:opacity-40">＋ {{ t('Add Size') }}</button>
             </div>
             @if (! $type_code)
-                <p class="px-4 py-4 text-xs text-muted">Pilih Tipe Produk dulu — kolom dimensi mengikuti Tipe Produk.</p>
+                <p class="px-4 py-4 text-xs text-muted">{{ t('Choose the Product Type first — the dimension columns follow the Product Type.') }}</p>
             @else
                 <x-ui.table size="sm">
                     <thead>
                         <tr>
-                            <th>Nama ukuran</th>
+                            <th>{{ t('Size name') }}</th>
                             @foreach ($this->dimParams as $p)
                                 <th class="text-right">{{ $p->param_label }} ({{ $p->unit ?: 'mm' }})</th>
                             @endforeach
@@ -366,14 +366,14 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
                     <tbody>
                         @forelse ($sizes as $i => $row)
                             <tr wire:key="size-{{ $i }}-{{ $row['id'] ?? 'n' }}">
-                                <td><x-form.input wire:model="sizes.{{ $i }}.label" placeholder="mis. R8 (18 x 18 x 6,7 cm)" /></td>
+                                <td><x-form.input wire:model="sizes.{{ $i }}.label" :placeholder="t('e.g. R8 (18 x 18 x 6.7 cm)')" /></td>
                                 @foreach ($this->dimParams as $p)
                                     <td><x-form.input type="number" step="0.1" wire:model="sizes.{{ $i }}.dims.{{ $p->param_key }}" class="text-right" /></td>
                                 @endforeach
-                                <td class="text-center"><x-grid.action-icon icon="fa-xmark" title="Hapus ukuran" action="removeSize({{ $i }})" variant="danger" /></td>
+                                <td class="text-center"><x-grid.action-icon icon="fa-xmark" :title="t('Delete size')" action="removeSize({{ $i }})" variant="danger" /></td>
                             </tr>
                         @empty
-                            <tr><td colspan="{{ $this->dimParams->count() + 2 }}" class="text-center text-muted py-4">Belum ada ukuran. Klik “＋ Tambah Ukuran”.</td></tr>
+                            <tr><td colspan="{{ $this->dimParams->count() + 2 }}" class="text-center text-muted py-4">{{ t('No sizes yet. Click “＋ Add Size”.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </x-ui.table>

@@ -34,6 +34,6 @@
             </template>
         </div>
     </div>
-    <div class="text-[10.5px] font-semibold text-accent bg-accent-soft border border-field-border rounded px-1.5 py-0.5" x-text="'Terbaca: ' + readableValue"></div>
+    <div class="text-[10.5px] font-semibold text-accent bg-accent-soft border border-field-border rounded px-1.5 py-0.5" x-text="@js(t('Read as:').' ') + readableValue"></div>
     @if ($hint)<div class="text-[10.5px] text-muted">{{ $hint }}</div>@endif
 </div>

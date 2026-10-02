@@ -152,7 +152,7 @@ trait ManagesProcessMachineCapability
         ])['capForm'];
 
         if ($data['gsm_min'] !== '' && $data['gsm_max'] !== '' && (int) $data['gsm_min'] > (int) $data['gsm_max']) {
-            $this->addError('capForm.gsm_max', 'Gramatur maksimum harus >= minimum.');
+            $this->addError('capForm.gsm_max', t('Maximum grammage must be >= minimum.'));
 
             return;
         }

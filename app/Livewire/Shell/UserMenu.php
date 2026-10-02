@@ -73,12 +73,12 @@ class UserMenu extends Component
         }
 
         if ($user->is_admin) {
-            return 'Administrator';
+            return t('Administrator');
         }
 
         $names = $user->groups()->pluck('group_name');
 
-        return $names->isNotEmpty() ? $names->implode(', ') : 'Pengguna';
+        return $names->isNotEmpty() ? $names->implode(', ') : t('User');
     }
 
     #[Computed]

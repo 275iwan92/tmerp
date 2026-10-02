@@ -49,7 +49,7 @@
         <textarea @if ($withCase) x-ref="el" x-on:input="{{ $onInput }}" @endif {{ $attributes->merge(['class' => $textareaClass]) }}></textarea>
     @endif
     @if ($withCase)
-        <button type="button" x-on:click="cycle()" tabindex="-1" title="Ganti mode huruf (kecil / Kapital Tiap Kata / BESAR)"
+        <button type="button" x-on:click="cycle()" tabindex="-1" title="{{ t('Change letter case (lower / Title Case / UPPER)') }}"
             class="absolute right-1.5 top-1.5 text-[10px] font-bold bg-field-badge border border-field-border rounded px-1.5 py-0.5 cursor-pointer text-navy leading-none"
             x-text="labels[modes[idx]]"></button>
     @endif

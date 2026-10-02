@@ -33,7 +33,7 @@
         </template>
     </div>
     <div class="p-3">
-        <div class="text-[10px] font-bold text-muted uppercase mb-1.5" x-text="selDateStr + ' — ' + selectedEvents.length + ' event'"></div>
+        <div class="text-[10px] font-bold text-muted uppercase mb-1.5" x-text="selDateStr + ' — ' + selectedEvents.length + @js(' '.t('event'))"></div>
         <template x-if="selectedEvents.length === 0">
             <div class="text-[11px] text-muted text-center py-3">{{ t('No events on this date.') }}</div>
         </template>

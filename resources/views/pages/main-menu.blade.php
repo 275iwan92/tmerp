@@ -199,7 +199,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
     {
         $themes = \App\Models\Sys\SysTheme::where('activate', true)->orderBy('sort_order')->get();
 
-        $families = ['pastel' => 'Pastel', 'cerah' => 'Cerah', 'dark' => 'Dark', 'hitam' => 'Hitam'];
+        $families = ['pastel' => t('Pastel'), 'cerah' => t('Bright'), 'dark' => t('Dark'), 'hitam' => t('Black')];
         $hues = ['blue' => 'B', 'green' => 'G', 'red' => 'R'];
 
         $matrix = [];
@@ -285,7 +285,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
 
     public function greetName(): string
     {
-        $name = Auth::user()->name ?: 'Pengguna';
+        $name = Auth::user()->name ?: t('User');
 
         return trim(strtok($name, ' '));
     }
@@ -348,7 +348,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
 
     <aside>
         <div class="side-head">
-            <button type="button" class="logo-home" @click="selectModule('HOME')" title="Kembali ke Home">
+            <button type="button" class="logo-home" @click="selectModule('HOME')" title="{{ t('Back to Home') }}">
                 <span class="logo-badge">
                     @if ($this->brandLogoUrl)
                         <img src="{{ $this->brandLogoUrl }}" alt="{{ $this->brandName }}" class="w-full h-full object-cover rounded-[9px]">
@@ -356,7 +356,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                 </span>
                 <span class="logo-txt"><b>{{ $this->brandName }}</b>@if ($this->brandTagline)<br><span>{{ $this->brandTagline }}</span>@endif</span>
             </button>
-            <button type="button" class="side-collapse" @click="mini = !mini" title="Ciutkan sidebar (mini)">⊟</button>
+            <button type="button" class="side-collapse" @click="mini = !mini" title="{{ t('Collapse sidebar (mini)') }}">⊟</button>
         </div>
         <div class="mod-title">
             <template x-if="currentModule">
@@ -365,16 +365,16 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             <template x-if="!currentModule">
                 <span class="ic"><i class="fa-solid fa-house"></i></span>
             </template>
-            <span class="lbl" x-text="currentModule ? currentModule.label.toUpperCase() : 'HOME'"></span>
+            <span class="lbl" x-text="currentModule ? currentModule.label.toUpperCase() : @js(mb_strtoupper(t('Home')))"></span>
         </div>
         <div class="side-nav tm-scroll">
             <template x-if="activeMod === 'HOME'">
-                <div class="side-hint">Modul <b>Home</b>. Pilih modul lain di atas untuk menampilkan submenunya di sini.</div>
+                <div class="side-hint">{{ t('Module') }} <b>{{ t('Home') }}</b>. {{ t('Choose another module above to show its submenu here.') }}</div>
             </template>
             <template x-for="grp in sidebarGroups" :key="grp.id">
                 <div x-data="{ open: false }">
                     <template x-if="grp.menuType === 'group'">
-                        <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
+                        <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? @js(t('Collapse')) : @js(t('Open'))">
                             <span class="side-cap" x-text="grp.label"></span>
                             <i class="fa-solid fa-chevron-down chev" :class="{ collapsed: !open }"></i>
                         </button>
@@ -406,7 +406,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             <template x-for="grp in setupGroups" :key="grp.id">
                 <div class="side-footer" x-data="{ open: false }">
                     <template x-if="grp.menuType === 'group'">
-                        <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
+                        <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? @js(t('Collapse')) : @js(t('Open'))">
                             <span class="side-cap" x-text="grp.label"></span>
                             <i class="fa-solid fa-chevron-down chev" :class="{ collapsed: !open }"></i>
                         </button>
@@ -426,7 +426,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
 
     <div class="main">
         <header class="topbar">
-            <button type="button" class="tb-btn" @click="nosidebar = !nosidebar" title="Sembunyikan sidebar">☰</button>
+            <button type="button" class="tb-btn" @click="nosidebar = !nosidebar" title="{{ t('Hide sidebar') }}">☰</button>
             <nav class="mega">
                 {{--
                     SETUP sengaja tidak muncul di sini -- khusus admin, aksesnya
@@ -462,8 +462,8 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                     class & lepas @apply, tetap hilang -- didiagnosis di app.css.
                 --}}
                 <div class="mm-switch" style="display:flex;align-items:center;border-radius:9px;padding:3px;gap:2px;flex-shrink:0;background:var(--side-hover-soft)">
-                    <a class="active"><i class="fa-solid fa-grip"></i> Operasional</a>
-                    <a href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i> Laporan Manajemen</a>
+                    <a class="active"><i class="fa-solid fa-grip"></i> {{ t('Operational') }}</a>
+                    <a href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i> {{ t('Management Report') }}</a>
                 </div>
             @endif
             {{--

@@ -3,6 +3,7 @@
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysNotification;
 use App\Models\Sys\SysQuote;
+use App\Support\Localization\Dictionary;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -62,7 +63,13 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
     {
         $q = SysQuote::random();
 
-        return ['t' => $q?->quote_text ?? 'Selamat bekerja.', 'a' => $q?->author ?? 'Telasih Makmur'];
+        return ['t' => $q?->quote_text ?? $this->tr('Have a good day at work.'), 'a' => $q?->author ?? 'Telasih Makmur'];
+    }
+
+    // Teks English -> bahasa pilihan bendera di halaman ini (tamu, belum ada preferensi user) lewat kamus sys_dictionary.
+    public function tr(string $en): string
+    {
+        return Dictionary::t($en, 'ui', $this->lang);
     }
 
     public function setLang(string $lang): void
@@ -77,7 +84,7 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
 
     public function idLabel(): string
     {
-        return $this->isInternal() ? 'NRP (No. Induk Pegawai)' : 'NIK (No. KTP)';
+        return $this->isInternal() ? $this->tr('NRP (Employee ID No.)') : $this->tr('NIK (ID Card No.)');
     }
 
     // Username diturunkan dari lokal-email (bagian sebelum @), ditampilkan
@@ -108,14 +115,14 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
     public function verifyEmail(): void
     {
         if (! filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            $this->emailHint = 'Format email tidak valid.';
+            $this->emailHint = $this->tr('Invalid email format.');
             $this->emailHintClass = 'bad';
 
             return;
         }
 
         $this->emailVerified = true;
-        $this->emailHint = 'Email terverifikasi.';
+        $this->emailHint = $this->tr('Email verified.');
         $this->emailHintClass = 'ok';
     }
 
@@ -123,14 +130,14 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
     public function sendOtp(): void
     {
         if (trim(preg_replace('/\D/', '', $this->phone)) === '') {
-            $this->waHint = 'Masukkan nomor WhatsApp dulu.';
+            $this->waHint = $this->tr('Enter a WhatsApp number first.');
             $this->waHintClass = 'bad';
 
             return;
         }
 
         $this->showOtp = true;
-        $this->waHint = 'OTP dikirim ke WhatsApp (demo: masukkan angka apa saja min. 4 digit).';
+        $this->waHint = $this->tr('OTP sent to WhatsApp (demo: enter any number, min. 4 digits).');
         $this->waHintClass = 'ok';
     }
 
@@ -139,7 +146,7 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
         $digits = preg_replace('/\D/', '', $this->otp);
 
         if (mb_strlen($digits) < 4) {
-            $this->waHint = 'Kode OTP belum benar.';
+            $this->waHint = $this->tr('The OTP code is not correct yet.');
             $this->waHintClass = 'bad';
 
             return;
@@ -147,7 +154,7 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
 
         $this->waVerified = true;
         $this->showOtp = false;
-        $this->waHint = 'WhatsApp terverifikasi.';
+        $this->waHint = $this->tr('WhatsApp verified.');
         $this->waHintClass = 'ok';
     }
 
@@ -173,11 +180,11 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
         $this->errorMessage = null;
 
         $this->validate($this->rules(), [], [
-            'pass_confirmation' => 'konfirmasi password',
+            'pass_confirmation' => $this->tr('password confirmation'),
         ]);
 
         if (! $this->emailVerified || ! $this->waVerified) {
-            $this->errorMessage = 'Verifikasi email dan WhatsApp dulu sebelum mengirim.';
+            $this->errorMessage = $this->tr('Verify email and WhatsApp before submitting.');
 
             return;
         }
@@ -248,15 +255,15 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
                 @if ($submitted)
                     <div class="reg-box" style="text-align:center">
                         <div class="badge-ok" style="justify-content:center;font-size:30px;margin:0 auto 18px;width:66px;height:66px;border-radius:50%;background:#e6f6ee">✓</div>
-                        <h2>Pendaftaran terkirim</h2>
-                        <p class="sub">Akun Anda menunggu persetujuan admin. Setelah disetujui, Anda bisa masuk memakai email dan password ini.</p>
-                        <a class="back" href="{{ route('login', ['lang' => $lang]) }}" style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;color:var(--ap-blue);text-decoration:none;font-size:14px;font-weight:600">← Kembali ke halaman masuk</a>
+                        <h2>{{ $this->tr('Registration submitted') }}</h2>
+                        <p class="sub">{{ $this->tr('Your account is waiting for admin approval. Once approved, you can sign in with this email and password.') }}</p>
+                        <a class="back" href="{{ route('login', ['lang' => $lang]) }}" style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;color:var(--ap-blue);text-decoration:none;font-size:14px;font-weight:600">← {{ $this->tr('Back to the sign-in page') }}</a>
                     </div>
                 @else
                     <div class="reg-box">
-                        <h2>Daftar akun</h2>
-                        <p class="sub">Buat akun baru untuk mengakses aplikasi.</p>
-                        <div class="approval">ℹ️ Akun baru harus disetujui admin. Grup &amp; hak akses ditentukan admin saat persetujuan.</div>
+                        <h2>{{ $this->tr('Register account') }}</h2>
+                        <p class="sub">{{ $this->tr('Create a new account to access the application.') }}</p>
+                        <div class="approval">ℹ️ {{ $this->tr('New accounts must be approved by an admin. Group & access rights are set by the admin at approval.') }}</div>
 
                         @if ($errorMessage)
                             <div class="alert show">{{ $errorMessage }}</div>
@@ -264,88 +271,88 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
 
                         <form wire:submit="submit">
                             <div class="field full">
-                                <label>Daftar sebagai <span class="req">*</span></label>
+                                <label>{{ $this->tr('Register as') }} <span class="req">*</span></label>
                                 <div class="input">
                                     <select wire:model.live="ptype">
-                                        <option value="customer">Customer</option>
-                                        <option value="supplier">Supplier</option>
-                                        <option value="internal">Internal User</option>
+                                        <option value="customer">{{ $this->tr('Customer') }}</option>
+                                        <option value="supplier">{{ $this->tr('Supplier') }}</option>
+                                        <option value="internal">{{ $this->tr('Internal User') }}</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="field full">
-                                <label>Nama lengkap <span class="req">*</span></label>
+                                <label>{{ $this->tr('Full name') }} <span class="req">*</span></label>
                                 <div class="input"><input type="text" wire:model="name" placeholder="Andi Pratama"></div>
                                 @error('name') <div class="hint bad">{{ $message }}</div> @enderror
                             </div>
 
                             <div class="field full">
-                                <label>Email <span class="req">*</span></label>
+                                <label>{{ $this->tr('Email') }} <span class="req">*</span></label>
                                 <div class="input {{ $emailVerified ? 'ok' : '' }}">
                                     <input type="email" wire:model.live.debounce.400ms="email" placeholder="andi@perusahaan.com">
                                     @if ($emailVerified)
                                         <span class="badge-ok">✓ OK</span>
                                     @else
-                                        <button type="button" class="vbtn" wire:click="verifyEmail">Verifikasi</button>
+                                        <button type="button" class="vbtn" wire:click="verifyEmail">{{ $this->tr('Verify') }}</button>
                                     @endif
                                 </div>
-                                <div class="hint {{ $emailHintClass }}">{{ $emailHint ?? 'Kami cek keabsahan email lalu kirim tautan verifikasi.' }}</div>
+                                <div class="hint {{ $emailHintClass }}">{{ $emailHint ?? $this->tr('We check the email is valid, then send a verification link.') }}</div>
                                 @error('email') <div class="hint bad">{{ $message }}</div> @enderror
                             </div>
 
                             <div class="field full">
-                                <label>Username (otomatis dari email)</label>
-                                <div class="input"><input type="text" value="{{ $this->loginPreview }}" readonly placeholder="terisi dari email"></div>
+                                <label>{{ $this->tr('Username (automatic from email)') }}</label>
+                                <div class="input"><input type="text" value="{{ $this->loginPreview }}" readonly placeholder="{{ $this->tr('filled from email') }}"></div>
                             </div>
 
                             <div class="field full">
-                                <label>No. WhatsApp aktif <span class="req">*</span></label>
+                                <label>{{ $this->tr('Active WhatsApp No.') }} <span class="req">*</span></label>
                                 <div class="input {{ $waVerified ? 'ok' : '' }}">
                                     <input type="text" wire:model="phone" placeholder="08xxxxxxxxxx">
                                     @if ($waVerified)
                                         <span class="badge-ok">✓ OK</span>
                                     @else
-                                        <button type="button" class="vbtn wa" wire:click="sendOtp">Kirim OTP</button>
+                                        <button type="button" class="vbtn wa" wire:click="sendOtp">{{ $this->tr('Send OTP') }}</button>
                                     @endif
                                 </div>
                                 @if ($showOtp)
                                     <div class="otp-row">
                                         <div class="input">
-                                            <input type="text" wire:model="otp" inputmode="numeric" placeholder="Kode OTP dari WhatsApp">
-                                            <button type="button" class="vbtn" wire:click="verifyOtp">Verifikasi</button>
+                                            <input type="text" wire:model="otp" inputmode="numeric" placeholder="{{ $this->tr('OTP code from WhatsApp') }}">
+                                            <button type="button" class="vbtn" wire:click="verifyOtp">{{ $this->tr('Verify') }}</button>
                                         </div>
                                     </div>
                                 @endif
-                                <div class="hint {{ $waHintClass }}">{{ $waHint ?? 'Nomor harus punya WhatsApp — kode OTP dikirim ke sana untuk memastikan aktif.' }}</div>
+                                <div class="hint {{ $waHintClass }}">{{ $waHint ?? $this->tr('The number must have WhatsApp — the OTP code is sent there to make sure it is active.') }}</div>
                                 @error('phone') <div class="hint bad">{{ $message }}</div> @enderror
                             </div>
 
                             <div class="field full">
                                 <label>{{ $this->idLabel() }} <span class="req">*</span></label>
-                                <div class="input"><input type="text" wire:model="idno" inputmode="numeric" placeholder="{{ $this->isInternal() ? '—' : '16 digit' }}"></div>
+                                <div class="input"><input type="text" wire:model="idno" inputmode="numeric" placeholder="{{ $this->isInternal() ? '—' : $this->tr('16 digits') }}"></div>
                                 @error('idno') <div class="hint bad">{{ $message }}</div> @enderror
                             </div>
 
                             <div class="grid2">
                                 <div class="field">
-                                    <label>Password <span class="req">*</span></label>
+                                    <label>{{ $this->tr('Password') }} <span class="req">*</span></label>
                                     <div class="input" x-data="{ show: false }">
-                                        <input :type="show ? 'text' : 'password'" wire:model="pass" placeholder="Min. 8 karakter">
+                                        <input :type="show ? 'text' : 'password'" wire:model="pass" placeholder="{{ $this->tr('Min. 8 characters') }}">
                                         <button type="button" class="vbtn" @click="show = !show" style="border-left:none">👁</button>
                                     </div>
-                                    <div class="hint">Min. 8 karakter, kombinasi huruf &amp; angka.</div>
+                                    <div class="hint">{{ $this->tr('Min. 8 characters, a mix of letters & numbers.') }}</div>
                                     @error('pass') <div class="hint bad">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="field">
-                                    <label>Konfirmasi <span class="req">*</span></label>
-                                    <div class="input"><input type="password" wire:model="pass_confirmation" placeholder="Ulangi password"></div>
+                                    <label>{{ $this->tr('Confirmation') }} <span class="req">*</span></label>
+                                    <div class="input"><input type="password" wire:model="pass_confirmation" placeholder="{{ $this->tr('Repeat password') }}"></div>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn" style="margin-top:6px" wire:loading.attr="disabled">Kirim pendaftaran</button>
+                            <button type="submit" class="btn" style="margin-top:6px" wire:loading.attr="disabled">{{ $this->tr('Submit registration') }}</button>
                         </form>
-                        <a class="back" href="{{ route('login', ['lang' => $lang]) }}" style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;color:var(--ap-blue);text-decoration:none;font-size:14px;font-weight:600">← Kembali ke halaman masuk</a>
+                        <a class="back" href="{{ route('login', ['lang' => $lang]) }}" style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;color:var(--ap-blue);text-decoration:none;font-size:14px;font-weight:600">← {{ $this->tr('Back to the sign-in page') }}</a>
                     </div>
                 @endif
             </div>

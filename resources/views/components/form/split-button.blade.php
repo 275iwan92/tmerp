@@ -4,7 +4,7 @@
     wireClick}] -- tiap item render wire:click sendiri (Livewire asli, bukan
     Alpine yg tebak-tebak nama method).
 --}}
-@props(['label' => 'Simpan', 'icon' => '💾', 'actions' => []])
+@props(['label' => t('Save'), 'icon' => '💾', 'actions' => []])
 <div class="relative flex" x-data="{ open: false }" @click.outside="open = false">
     <button type="button" {{ $attributes->merge(['class' => 'flex-1 px-3 py-1.5 rounded-l-md text-xs font-semibold bg-accent text-white cursor-pointer flex items-center justify-center gap-1.5']) }}>
         <span>{{ $icon }}</span><span>{{ $label }}</span>

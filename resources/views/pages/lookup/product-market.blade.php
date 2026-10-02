@@ -41,14 +41,14 @@ new #[Title('Master Product Market — TELASIH MAKMUR ERP')] class extends Compo
     protected function statFilterDefs(): array
     {
         return [
-            'total' => ['label' => 'Total Product Market', 'value' => ProdMarket::count(), 'tone' => 'total'],
-            'group' => ['label' => 'Kategori', 'value' => ProdMarket::whereNull('parent_id')->count(), 'tone' => 'extra',
+            'total' => ['label' => t('Total Product Market'), 'value' => ProdMarket::count(), 'tone' => 'total'],
+            'group' => ['label' => t('Category'), 'value' => ProdMarket::whereNull('parent_id')->count(), 'tone' => 'extra',
                 'filter' => fn ($q) => $q->whereNull('prod_market.parent_id')],
-            'active' => ['label' => 'Aktif', 'value' => ProdMarket::where('activate', true)->count(), 'tone' => 'active',
+            'active' => ['label' => t('Active'), 'value' => ProdMarket::where('activate', true)->count(), 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('prod_market.activate', true)],
-            'inactive' => ['label' => 'Nonaktif', 'value' => ProdMarket::where('activate', false)->count(), 'tone' => 'critical',
+            'inactive' => ['label' => t('Inactive'), 'value' => ProdMarket::where('activate', false)->count(), 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where('prod_market.activate', false)],
-            'nosize' => ['label' => 'Detail tanpa ukuran', 'value' => ProdMarket::whereNotNull('parent_id')->doesntHave('sizes')->count(), 'tone' => 'warning',
+            'nosize' => ['label' => t('Details without size'), 'value' => ProdMarket::whereNotNull('parent_id')->doesntHave('sizes')->count(), 'tone' => 'warning',
                 'filter' => fn ($q) => $q->whereNotNull('prod_market.parent_id')->doesntHave('sizes')],
         ];
     }
@@ -73,7 +73,7 @@ new #[Title('Master Product Market — TELASIH MAKMUR ERP')] class extends Compo
 
         <div class="bg-white border border-field-border rounded-md mb-4 overflow-hidden">
             <x-grid.toolbar>
-                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="search" placeholder="Cari nama, kode, tipe produk…" class="w-64" />
+                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="search" :placeholder="t('Search name, code, product type…')" class="w-64" />
                 <x-slot:newRecord>
                     <x-ui.button preset="new" :href="route('lookup.product-market.create')" />
                 </x-slot:newRecord>
@@ -82,14 +82,14 @@ new #[Title('Master Product Market — TELASIH MAKMUR ERP')] class extends Compo
             <x-ui.table hover>
                 <thead>
                     <tr>
-                        <th class="w-[72px]">Foto</th>
-                        <th>Product Market</th>
-                        <th>Tipe Produk</th>
-                        <th class="text-right">Ukuran Pasaran</th>
-                        <th>Bahan Awal</th>
-                        <th>Warna</th>
-                        <th>Jenjang Qty</th>
-                        <th class="text-right">Aksi</th>
+                        <th class="w-[72px]">{{ t('Photo') }}</th>
+                        <th>{{ t('Product Market') }}</th>
+                        <th>{{ t('Product Type') }}</th>
+                        <th class="text-right">{{ t('Market Sizes') }}</th>
+                        <th>{{ t('Initial Material') }}</th>
+                        <th>{{ t('Colour') }}</th>
+                        <th>{{ t('Qty Tiers') }}</th>
+                        <th class="text-right">{{ t('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -106,13 +106,13 @@ new #[Title('Master Product Market — TELASIH MAKMUR ERP')] class extends Compo
                             <td @class(['pl-7' => ! $row->isGroup()])>
                                 <div class="font-semibold text-navy">
                                     @if ($row->isGroup())
-                                        <x-ui.badge tone="accent" size="xs" pill>Kategori</x-ui.badge>
+                                        <x-ui.badge tone="accent" size="xs" pill>{{ t('Category') }}</x-ui.badge>
                                     @else
                                         <span class="text-muted">{{ $row->parent?->market_label }} ›</span>
                                     @endif
                                     {{ $row->market_label }}
                                 </div>
-                                <div class="text-[10.5px] text-muted font-mono">{{ $row->market_code }}{{ $row->isGroup() ? ' · '.$row->children_count.' detail' : '' }}</div>
+                                <div class="text-[10.5px] text-muted font-mono">{{ $row->market_code }}{{ $row->isGroup() ? ' · '.$row->children_count.' '.t('detail') : '' }}</div>
                             </td>
                             <td>{{ $row->type?->type_name ?? $row->type_code }}</td>
                             <td class="text-right">{{ $row->sizes_count ?: '—' }}</td>
@@ -123,9 +123,9 @@ new #[Title('Master Product Market — TELASIH MAKMUR ERP')] class extends Compo
                             <td>{{ $row->default_color ?: '—' }}</td>
                             <td>{{ $row->tierList() ? collect($row->tierList())->map(fn ($q) => number_format($q, 0, ',', '.'))->implode(' / ') : '—' }}</td>
                             <td class="text-right whitespace-nowrap">
-                                <x-grid.action-icon icon="fa-pen" title="Edit (klik 2x baris)" action="openItem({{ $row->id_market }})" />
-                                <x-grid.action-icon title="{{ $row->activate ? 'Nonaktifkan' : 'Aktifkan' }}" action="toggleActive({{ $row->id_market }})" :active="$row->activate"
-                                    confirm="{{ $row->activate ? 'Nonaktifkan' : 'Aktifkan' }} {{ $row->market_label }}?" />
+                                <x-grid.action-icon icon="fa-pen" :title="t('Edit (double-click row)')" action="openItem({{ $row->id_market }})" />
+                                <x-grid.action-icon title="{{ $row->activate ? t('Deactivate') : t('Activate') }}" action="toggleActive({{ $row->id_market }})" :active="$row->activate"
+                                    confirm="{{ $row->activate ? t('Deactivate') : t('Activate') }} {{ $row->market_label }}?" />
                             </td>
                         </tr>
                     @empty

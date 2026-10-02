@@ -63,12 +63,12 @@ class UserPanels extends Component
         }
 
         if ($user->is_admin) {
-            return 'Administrator';
+            return t('Administrator');
         }
 
         $names = $user->groups()->pluck('group_name');
 
-        return $names->isNotEmpty() ? $names->implode(', ') : 'Pengguna';
+        return $names->isNotEmpty() ? $names->implode(', ') : t('User');
     }
 
     public function saveProfile(): void
@@ -96,7 +96,7 @@ class UserPanels extends Component
         $user = Auth::user();
 
         if (! Hash::check($this->old_password, (string) $user->pswd)) {
-            $this->passwordError = 'Password lama salah.';
+            $this->passwordError = t('Current password is wrong.');
 
             return;
         }
@@ -154,12 +154,12 @@ class UserPanels extends Component
 
                 if (! $c->is_group) {
                     $other = SysChatParticipant::where('conversation_id', $c->id)->where('user_id', '!=', $login)->first();
-                    $title = $other ? (SecUser::where('login', $other->user_id)->value('name') ?? $other->user_id) : 'Percakapan';
+                    $title = $other ? (SecUser::where('login', $other->user_id)->value('name') ?? $other->user_id) : t('Conversation');
                 }
 
                 return (object) [
                     'id' => $c->id,
-                    'title' => $title ?: 'Percakapan',
+                    'title' => $title ?: t('Conversation'),
                     'last' => $c->messages->first()?->body,
                 ];
             })
