@@ -26,6 +26,20 @@ jalan -> layar gagal "Unknown column". Terukur pada baseline 2026-10-02 14:29:41
 
 ---
 
+## 2026-10-02 -- NoHardcodedDatabaseNameTest: baris 'reads' / 'writes' Engine Catalog dikecualikan
+
+Masalah: sejak commit 8dca1e44 (Engine Catalog) `NoHardcodedDatabaseNameTest` gagal -- semua baris yang dilaporkan ada di
+`app/Support/Engines/EngineRegistry.php`, yaitu `'reads' => ['tm2mst.prod_type.dieline_spec']` / `'writes' => [...]`. Itu daftar
+tabel untuk dibaca manusia di layar Engine Catalog (dicek `EngineCatalogTest`), bukan SQL -> positif palsu.
+
+- `tests/Unit/NoHardcodedDatabaseNameTest.php` (commit f66809a3): konstanta baru `ALLOWED_LINES` = berkas => pola baris. Baris
+  yang diawali `'reads' => [` / `'writes' => [` **di berkas EngineRegistry.php saja** dilewati (sejenis pengecualian
+  `'source' =>` milik widget dashboard). Baris lain di berkas itu, dan baris `'reads'` / `'writes'` di berkas lain, tetap
+  diperiksa. `EngineRegistry.php` tidak diubah.
+- Hasil: `NoHardcodedDatabaseNameTest` lulus (1 test), `EngineCatalogTest` lulus (6 test, 212 assertion).
+
+---
+
 ## 2026-10-02 -- Engine Catalog + audit "semua layar turunan objek DevLib"
 
 User: "pastikan semua di mockup dan tmerp merupakan turunan dari object oriented di devlib dan pastikan ada list ENGINE
