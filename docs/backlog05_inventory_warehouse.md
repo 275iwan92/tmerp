@@ -50,7 +50,8 @@ Rancangan: **[`warehouselayout_tier1.md`](warehouselayout_tier1.md)** (bagian 13
 | 05.34 | Laporan stok semua kelas: hak lihat NILAI (sekarang semua yang boleh membuka Inventory melihat nilai, sama dengan Stock Balance). Usulan lama S1: hanya Finance, Costing, Ops Manager ke atas | — | **menunggu user** |
 | 05.35 | Stock Card: pilih item lewat lookup master (sekarang kotak teks kode / nama), dan Stock Card "simple" yang menyembunyikan transfer dalam satu gudang | 2 | belum |
 | 05.36 | Stock Opname: lembar hitung kosong untuk dicetak sebelum menghitung (count sheet per gudang / area), dan cetakan berita acara per dokumen | 2 | belum |
-| 05.37 | **Tumpukan (stack) dan sisa 1 - 2 rim** (user 2026-10-03, IMPORTANT): alamat barang = X - Y - Stack; di lantai stack = nomor tumpukan pada palet / pak, sisa = satuan PACK dengan tag Remnant, aturan tinggi tumpuk / tertimbun / sisa dipakai dulu. Analisa + usulan: `warehouselayout_tier1.md` bagian 15 | 2 | **analisa selesai; menunggu jawaban user S1 - S5** |
+| 05.38 | **Tumpukan (stack) dan sisa 1 - 2 rim** (user 2026-10-03, IMPORTANT): alamat barang = X - Y - Stack; di lantai stack = nomor tumpukan pada palet / pak (1 = bawah), sisa = satuan PACK dengan tag Remnant, tumpukan sisa = satu bin berisi banyak pak; layar baru Stack Monitor; tanda Buried / Old remnant; sisa dipakai dulu. Rancangan: `warehouselayout_tier1.md` bagian 15 (15.6 = jawaban user). Mockup: `mockups/warehouse_stack_remnant_v2.jpg` | 2 | **user sudah menjawab S1 - S5; menunggu persetujuan mockup, belum dibangun** |
+| 05.39 | **Ink Mixing**: tinta khusus hasil campuran hilang dari stok (user 2026-10-03). Dokumen campur: tinta dasar keluar, tinta khusus masuk dengan nilai yang sama, loss tercatat, sisa sesudah order kembali ke stok berlabel. Konsep: `warehouselayout_tier1.md` bagian 16, gambar 4 di mockup yang sama | 2 | **konsep; menunggu jawaban user T1 - T5 + konfirmasi Finance soal jurnal** |
 
 ---
 

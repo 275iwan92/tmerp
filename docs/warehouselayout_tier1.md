@@ -721,3 +721,60 @@ tampil di label, peta (saringan legenda), panel bin dan Stock by Location, seper
 | S4 | Nomor tumpukan 1 = paling bawah? | ya |
 | S5 | Sistem menyarankan sisa dipakai lebih dulu daripada membuka palet baru? | ya, sebagai saran |
 
+### 15.6 Jawaban user 2026-10-03 dan penyesuaian usulan
+
+Mockup untuk dinilai: `mockups/warehouse_stack_remnant_v2.jpg` (sumber `.html` di folder yang sama). Belum ada kode.
+
+| # | Jawaban user | Akibat pada rancangan |
+|---|---|---|
+| S1 | "tumpukan tidak jelas, oleh sebab itu butuh di monitor" | Tidak ada batas tumpuk yang kaku. `wh_zone.max_stack` boleh kosong. Yang dibangun adalah **pencatatan keadaan nyata + layar pemantau**: layar baru **Stack Monitor** (satu baris per satuan, terkelompok per bin: nomor tumpukan, umur, tinggi tumpukan dibanding tinggi tumpuk area, tanda Buried / Remnant / Old remnant). Stok di bin yang belum berlabel tampil sebagai **Stack not recorded** = pekerjaan petugas |
+| S2 | "tidak di taruh di palet tapi di tumpuk begitu saja dalam satu palet" | Tafsir: sisa tidak diberi palet sendiri-sendiri; berbagai sisa ditumpuk di satu palet. Jadi **tumpukan sisa = satu bin (satu tapak) berisi banyak satuan PACK dari item berbeda**, masing-masing bernomor tumpukan. Tanpa tabel palet pembawa. Mohon dikoreksi bila tafsir ini salah |
+| S3 | "yang banyak problem adalah kertas, ambri, sheet" + tinta (bagian 16) | Sisa berlaku untuk semua bahan lembaran: kertas, ambri (kertas tipis; di master tercatat sebagai item "AMBRI ...", satuan LBR / KG), sheet. Batas sisa dalam lembar; untuk bahan bersatuan kg petugas memilih sendiri jenis PACK |
+| S4 | "ya" | Nomor tumpukan 1 = paling bawah |
+| S5 | "ya harusnya" | Saran ambil bahan mendahulukan sisa item yang sama sebelum membuka palet baru |
+
+Tambahan dari mockup: saringan peta **Remnant** dan **Buried**; angka jumlah satuan di tiap kotak bin; **Old remnant** = sisa
+berumur lebih dari batas dead stock, dihitung per satuan; label sisa (100 x 50 mm) memuat lokasi + nomor tumpukan + nomor
+palet asal; memindahkan sisa ke tumpukan sisa saat label ulang membuat Stock Transfer (bin berubah).
+
+---
+
+## 16. Analisa 2026-10-03: tinta khusus hasil campuran hilang dari stok — KONSEP, menunggu jawaban user
+
+User 2026-10-03: *"Tinta yang sering di mix dengan tinta lain untuk mendapatkan tinta warna khusus, tetapi tinta khusus
+sering loss tidak terpantau dalam stock."*
+
+### 16.1 Keadaan sekarang (dicek 2026-10-03)
+
+- Master tinta: 155 item (`mat_raw.category1 = 'Ink'`; satuan KG 87, PCS 23, L 18, ROLL 16, BTL 6). Hanya **satu** item
+  warna khusus (`PANTONE 213 C PINK`).
+- Tidak ada dokumen campur / konversi di kode maupun skema. Dokumen stok yang ada: masuk, keluar, penyesuaian, opname,
+  saldo awal, transfer.
+- Akibatnya: tinta dasar keluar dari stok ke produksi, dicampur di lantai produksi, dan hasil campuran beserta sisanya
+  tidak pernah kembali ke stok. Itulah "loss tidak terpantau".
+
+### 16.2 Usulan: dokumen Ink Mixing
+
+Pola umum ERP untuk hal ini adalah dokumen konversi / perakitan: beberapa komponen keluar, satu hasil masuk, nilai hasil =
+nilai komponen (Odoo Manufacturing Order, Business Central Assembly Order, SAP production order).
+
+| Hal | Usulan |
+|---|---|
+| Dokumen | **Ink Mixing** (`inv_ink_mix` + `inv_ink_mix_line`), nomor `IMyy#####`, Draft → Confirmed → Cancelled |
+| Isi | Tinta khusus (hasil), untuk product / work order mana, siapa yang mencampur; baris tinta dasar: item, bin asal, kg dipakai |
+| Confirm | Tinta dasar **keluar** dari bin asalnya; tinta khusus **masuk** ke bin tujuan seberat hasil timbang. Nilai tinta khusus = jumlah nilai tinta dasar, jadi selisih timbang (loss) terbawa di harga per kg hasilnya dan tercatat sebagai angka loss di dokumen |
+| Tinta khusus | Item stok sendiri di master (kategori Ink), dipilih dari master atau dibuat user dari form ini; terikat ke product / customer |
+| Sesudah order | Sisa tinta khusus ditimbang dan kembali ke stok (retur dari work order) dengan label kaleng + tag Remnant; saat product yang sama dipesan lagi sistem menunjukkan sisa itu untuk dipakai dulu |
+| Resep | Perbandingan campuran disimpan per warna product, sehingga repeat order mengusulkan komposisi yang sama (tahap berikut) |
+| Jurnal | Tanpa jurnal saat mencampur (persediaan ke persediaan, kelas akun sama); jurnal pemakaian tetap saat tinta keluar ke work order seperti sekarang. **Perlu dikonfirmasi Finance** |
+
+### 16.3 Pertanyaan ke user
+
+| # | Pertanyaan |
+|---|---|
+| T1 | Siapa yang mencampur dan di mana: gudang, atau bagian produksi (ruang tinta)? Tinta dasar dikeluarkan dulu ke produksi baru dicampur? |
+| T2 | Hasil campuran ditimbang? Ada timbangan di tempat mencampur? |
+| T3 | Identitas tinta khusus: per nama warna (mis. Pantone 213 C), atau per product / customer? |
+| T4 | Sisa tinta khusus sesudah order disimpan di mana, dan dipakai lagi untuk repeat order? Ada batas umur simpan? |
+| T5 | Tinta khusus lama yang sekarang ada di rak: dimasukkan sebagai stok lewat stock opname? |
+

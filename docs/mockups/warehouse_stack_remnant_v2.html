@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Warehouse Stack, Remnant, Ink Mixing — Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .inp { width: 100%; border: 1px solid #c9d6ea; border-radius: 6px; padding: 5px 8px; font-size: 12px; background: #f7faff; display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+  .inp.ro { background: #f1f5f9; color: #475569; }
+  .btn { padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+  .btn.pri { background: #2c7be5; color: #fff; }
+  .btn.sec { background: #f1f5f9; color: #2c3e69; border: 1px solid #cbd5e1; }
+  .ib { width: 22px; height: 22px; border: 1px solid #cbd5e1; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; color: #2c3e69; background: #fff; font-size: 10px; }
+  th { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600; text-align: left; padding: 6px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .r { text-align: right; }
+  .cap { font-size: 13px; font-weight: 700; color: #334155; margin: 20px 0 6px; }
+  .fb { padding: 4px 0 6px; color: #64748b; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .fb b { color: #94a3b8; font-weight: 600; margin-left: 3px; }
+  .fb.on { color: #2c3e69; border-bottom-color: #2c3e69; }
+  .tag { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #dc2626; color: #fff; font-size: 10px; font-weight: 700; flex: none; }
+  .chip { display: inline-block; font-size: 9px; font-weight: 700; border-radius: 4px; padding: 1px 5px; text-transform: uppercase; letter-spacing: .02em; white-space: nowrap; }
+  .c-rem { background: #ede9fe; color: #6d28d9; }
+  .c-bur { background: #ffedd5; color: #c2410c; }
+  .c-dead { background: #fee2e2; color: #b91c1c; }
+  .c-exp { background: #fef3c7; color: #92400e; }
+  .c-ok { background: #dcfce7; color: #15803d; }
+  .c-pal { background: #dbeafe; color: #1d4ed8; }
+  .c-pack { background: #e2e8f0; color: #334155; }
+  /* tampak samping tumpukan */
+  .unit { display: flex; gap: 8px; align-items: stretch; border: 1px solid #94a3b8; border-radius: 4px; background: #fff; margin-bottom: 2px; }
+  .unit .no { width: 26px; flex: none; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #fff; background: #2c3e69; border-radius: 3px 0 0 3px; }
+  .unit.pallet { background: #eff6ff; border-color: #60a5fa; }
+  .unit.pack { background: #faf5ff; border-color: #a78bfa; }
+  .unit.dead { background: #fef2f2; border-color: #dc2626; }
+  .unit .bd { flex: 1; padding: 4px 0; min-width: 0; }
+  .unit .ac { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 3px 5px; }
+  .wood { height: 9px; border-radius: 2px; background: repeating-linear-gradient(90deg, #b45309, #b45309 46px, #fff 46px, #fff 52px); opacity: .75; }
+  .floor { height: 3px; background: #475569; margin-top: 2px; }
+  .cell { width: 54px; height: 44px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; color: #334155; position: relative; background: #fff; }
+  .cell .n { position: absolute; right: 2px; bottom: 1px; font-size: 8px; font-weight: 800; color: #2c3e69; }
+  .cell .d { position: absolute; left: 3px; top: 3px; width: 6px; height: 6px; border-radius: 50%; }
+  .note { font-size: 11px; color: #475569; line-height: 1.45; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-4 max-w-[1400px] mx-auto">
+
+<div class="card p-3 note">
+  <b class="text-navy text-[13px]">Mockup: tumpukan (stack), sisa rim, dan campur tinta</b> — usulan untuk dinilai, belum dibangun. Label layar English (diterjemahkan kamus).
+  Lingkaran merah = hal baru; penjelasannya di bawah tiap gambar.
+</div>
+
+<!-- ======================= 1. WAREHOUSE MAP ======================= -->
+<div class="cap">① Inventory › Warehouse › Warehouse Map — panel bin menampilkan tumpukan (tampak samping)</div>
+<section class="card p-3">
+  <div class="flex items-end gap-5 border-b border-slate-200 text-[12px] font-semibold mb-3">
+    <span class="fb on">All <b>145</b></span><span class="fb">Empty <b>124</b></span><span class="fb">In use <b>17</b></span><span class="fb">Full <b>2</b></span>
+    <span class="fb">Dead stock <b>3</b></span><span class="fb">Expired / soon <b>2</b></span>
+    <span class="h-4 w-px bg-slate-300 mb-1.5"></span>
+    <span class="fb" style="color:#6d28d9">Remnant <b style="color:#6d28d9">9</b></span>
+    <span class="fb" style="color:#c2410c">Buried <b style="color:#c2410c">4</b></span>
+    <span class="tag mb-1.5">1</span>
+  </div>
+
+  <div class="grid grid-cols-12 gap-3">
+    <!-- potongan peta -->
+    <div class="col-span-4">
+      <div class="border-2 border-blue-400 rounded-md p-2 bg-blue-50/40">
+        <div class="text-[10px] font-bold text-blue-700 mb-2">PPR · Plano Paper <span class="font-normal text-muted">(Floor 1)</span></div>
+        <div class="grid grid-cols-6 gap-1.5">
+          <div class="cell" style="background:#dbeafe">L01-01<span class="n">2</span></div>
+          <div class="cell" style="background:#fcd34d">L02-01<span class="n">3</span></div>
+          <div class="cell" style="background:#fecaca;outline:3px solid #2c3e69;outline-offset:1px">L03-01<span class="d" style="background:#c2410c"></span><span class="n">3</span></div>
+          <div class="cell" style="background:#dbeafe">L04-01<span class="n">1</span></div>
+          <div class="cell">L05-01</div><div class="cell">L06-01</div>
+          <div class="cell" style="background:#fcd34d">L01-02<span class="n">3</span></div>
+          <div class="cell" style="background:#dbeafe">L02-02<span class="n">2</span></div>
+          <div class="cell">L03-02</div><div class="cell">L04-02</div><div class="cell">L05-02</div><div class="cell">L06-02</div>
+          <div class="cell" style="background:#dbeafe">L01-03<span class="n">2</span></div>
+          <div class="cell">L02-03</div><div class="cell">L03-03</div><div class="cell">L04-03</div>
+          <div class="cell" style="background:#dbeafe">L05-03<span class="n">1</span></div><div class="cell">L06-03</div>
+          <div class="cell">L01-04</div>
+          <div class="cell" style="background:#dbeafe">L02-04<span class="n">2</span></div>
+          <div class="cell">L03-04</div><div class="cell">L04-04</div><div class="cell">L05-04</div><div class="cell">L06-04</div>
+          <div class="cell">L01-05</div><div class="cell">L02-05</div><div class="cell">L03-05</div><div class="cell">L04-05</div><div class="cell">L05-05</div>
+          <div class="cell" style="background:#ede9fe;border-color:#7c3aed">L06-05<span class="d" style="background:#c2410c"></span><span class="n" style="color:#6d28d9">6</span></div>
+        </div>
+        <div class="flex gap-3 mt-2 text-[10px] text-slate-600 items-center">
+          <span class="tag">2</span>
+          <span><b class="text-navy">3</b> = jumlah satuan ditumpuk</span>
+          <span><span class="inline-block w-2 h-2 rounded-full align-middle" style="background:#c2410c"></span> buried</span>
+          <span><span class="inline-block w-3 h-3 align-middle border" style="background:#ede9fe;border-color:#7c3aed"></span> remnant pile</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- panel bin A: palet penuh -->
+    <div class="col-span-4 border border-slate-200 rounded-md p-2.5">
+      <div class="flex justify-between items-start">
+        <div><div class="lbl">Bin</div><div class="text-[14px] font-bold text-navy">A10-PPR-L03-01</div><div class="text-muted">Plano Paper · Floor 1</div></div>
+        <span class="chip c-dead">Dead stock</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 my-2 text-[11px]">
+        <div><div class="lbl">Weight</div><b>1,721 / 3,000 kg</b></div>
+        <div><div class="lbl">Stack</div><b>3 units · 2 pallets</b></div>
+        <div><div class="lbl">Height <span class="tag" style="width:14px;height:14px;font-size:8px">3</span></div><b class="text-amber-700">1.48 / 1.60 m</b></div>
+      </div>
+      <div class="lbl">Stack — top to bottom</div>
+      <div class="unit pack">
+        <div class="no">3</div>
+        <div class="bd"><div class="font-semibold truncate">ART PAPER 150 GR 79 X 109 CM</div>
+          <div class="text-muted">2 RIM · 1,000 LBR · arrived 12-Mar-2026</div>
+          <div class="mt-0.5"><span class="chip c-pack">Pack</span> <span class="chip c-rem">Remnant</span> <span class="chip c-dead">Old remnant 205 d</span></div></div>
+        <div class="ac"><span class="ib"><i class="fa-solid fa-arrow-down"></i></span></div>
+      </div>
+      <div class="unit pallet">
+        <div class="no">2</div>
+        <div class="bd"><div class="font-semibold truncate">WHITE KRAFT 140 GR 79 X 97 CM</div>
+          <div class="text-muted">PL2600031 · 7,500 LBR · arrived 20-Sep-2026</div>
+          <div class="mt-0.5"><span class="chip c-pal">Pallet</span></div></div>
+        <div class="ac"><span class="ib"><i class="fa-solid fa-arrow-up"></i></span><span class="ib"><i class="fa-solid fa-arrow-down"></i></span></div>
+      </div>
+      <div class="wood"></div>
+      <div class="unit dead" style="margin-top:2px">
+        <div class="no">1</div>
+        <div class="bd"><div class="font-semibold truncate">WHITE KRAFT 140 GR 79 X 97 CM</div>
+          <div class="text-muted">PL2600012 · 7,500 LBR · arrived 31-Dec-2025</div>
+          <div class="mt-0.5"><span class="chip c-pal">Pallet</span> <span class="chip c-dead">Dead 276 d</span> <span class="chip c-bur">Buried · 2 above</span> <span class="chip c-exp">Expires 27-Oct-2026</span></div></div>
+        <div class="ac"><span class="ib"><i class="fa-solid fa-arrow-up"></i></span></div>
+      </div>
+      <div class="wood"></div><div class="floor"></div>
+      <div class="mt-2 rounded bg-orange-50 border border-orange-200 text-orange-800 p-1.5 text-[11px]"><span class="tag" style="width:14px;height:14px;font-size:8px">4</span>
+        Oldest pallet is at the bottom. To take it, move 2 units above first.</div>
+      <div class="flex gap-2 mt-2"><span class="btn pri"><i class="fa-solid fa-right-left"></i>Transfer</span><span class="btn sec"><i class="fa-solid fa-qrcode"></i>Label</span><span class="btn sec"><i class="fa-solid fa-layer-group"></i>Restack</span></div>
+    </div>
+
+    <!-- panel bin B: tumpukan sisa -->
+    <div class="col-span-4 border border-violet-300 rounded-md p-2.5 bg-violet-50/30">
+      <div class="flex justify-between items-start">
+        <div><div class="lbl">Bin</div><div class="text-[14px] font-bold text-navy">A10-PPR-L06-05</div><div class="text-muted">Plano Paper · Floor 1</div></div>
+        <span class="chip c-rem">Remnant pile</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 my-2 text-[11px]">
+        <div><div class="lbl">Weight</div><b>412 / 3,000 kg</b></div>
+        <div><div class="lbl">Stack</div><b>6 packs · 6 items</b></div>
+        <div><div class="lbl">Height</div><b>0.52 / 1.60 m</b></div>
+      </div>
+      <div class="lbl">Stack — top to bottom <span class="tag" style="width:14px;height:14px;font-size:8px">5</span></div>
+      <div class="unit pack"><div class="no">6</div><div class="bd"><div class="font-semibold truncate">AMBRI VERGE 25 GSM 51 X 76 CM</div><div class="text-muted">400 LBR · arrived 02-Oct-2026 <span class="chip c-rem">Remnant</span></div></div></div>
+      <div class="unit pack"><div class="no">5</div><div class="bd"><div class="font-semibold truncate">IVORY 250 GR 79 X 109 CM</div><div class="text-muted">350 LBR · arrived 18-Sep-2026 <span class="chip c-rem">Remnant</span></div></div></div>
+      <div class="unit pack"><div class="no">4</div><div class="bd"><div class="font-semibold truncate">ART PAPER 120 GR 65 X 100 CM</div><div class="text-muted">2 RIM · arrived 14-Aug-2026 <span class="chip c-rem">Remnant</span></div></div></div>
+      <div class="unit pack"><div class="no">3</div><div class="bd"><div class="font-semibold truncate">DUPLEX 310 GR 79 X 109 CM</div><div class="text-muted">280 LBR · arrived 03-Jun-2026 <span class="chip c-rem">Remnant</span></div></div></div>
+      <div class="unit dead"><div class="no">2</div><div class="bd"><div class="font-semibold truncate">SHEET E-FLUTE 90 X 120 CM</div><div class="text-muted">60 LBR · arrived 21-Feb-2026 <span class="chip c-dead">Old remnant 224 d</span></div></div></div>
+      <div class="unit dead"><div class="no">1</div><div class="bd"><div class="font-semibold truncate">WHITE KRAFT 140 GR 79 X 97 CM</div><div class="text-muted">1 RIM · 500 LBR · arrived 05-Nov-2025 <span class="chip c-dead">Old remnant 332 d</span> <span class="chip c-bur">Buried</span></div></div></div>
+      <div class="wood"></div><div class="floor"></div>
+      <div class="flex gap-2 mt-2"><span class="btn pri"><i class="fa-solid fa-right-left"></i>Transfer</span><span class="btn sec"><i class="fa-solid fa-qrcode"></i>Label</span><span class="btn sec"><i class="fa-solid fa-layer-group"></i>Restack</span></div>
+    </div>
+  </div>
+
+  <div class="note mt-3 grid grid-cols-5 gap-3">
+    <div><span class="tag">1</span> Dua saringan baru di peta: <b>Remnant</b> (bin berisi sisa) dan <b>Buried</b> (barang tertua tertimbun).</div>
+    <div><span class="tag">2</span> Tiap kotak bin menunjukkan berapa satuan ditumpuk di sana. Tidak ada batas kaku; yang dicatat adalah keadaan nyata.</div>
+    <div><span class="tag">3</span> Tinggi tumpukan dihitung dari isi (lembar × tebal + palet kayu) dan dibanding tinggi tumpuk area. Kuning = hampir penuh.</div>
+    <div><span class="tag">4</span> Nomor 1 = paling bawah. Sistem memberi tahu bila barang tertua ada di bawah.</div>
+    <div><span class="tag">5</span> Sisa ditumpuk begitu saja di satu palet: tiap sisa tetap punya nomor tumpukan, jadi mudah dicari. Sisa lama diberi warna merah sendiri.</div>
+  </div>
+</section>
+
+<!-- ======================= 2. STACK MONITOR ======================= -->
+<div class="cap">② Inventory › Warehouse › Stack Monitor — layar baru untuk memantau semua tumpukan</div>
+<section class="card p-3">
+  <div class="flex items-end gap-5 border-b border-slate-200 text-[12px] font-semibold mb-2">
+    <span class="fb on">All stacks <b>21</b></span><span class="fb">Buried <b>4</b></span><span class="fb">Near height limit <b>2</b></span>
+    <span class="fb">Remnant <b>9</b></span><span class="fb">Old remnant (&gt; 6 months) <b>3</b></span><span class="fb">Not labelled <b>5</b></span>
+  </div>
+  <div class="flex items-center gap-2 mb-2">
+    <div class="inp w-72"><span class="text-muted"><i class="fa-solid fa-magnifying-glass mr-1"></i>Search bin, item, pallet…</span></div>
+    <div class="inp w-52"><span>A10 · Warehouse A10</span><i class="fa-solid fa-chevron-down text-muted"></i></div>
+    <span class="ml-auto btn sec"><i class="fa-solid fa-table-columns"></i>Columns</span><span class="btn sec"><i class="fa-solid fa-file-export"></i>Export</span>
+  </div>
+  <table class="w-full text-[11.5px]">
+    <thead><tr><th>Bin</th><th>Stack</th><th>Unit</th><th>Item</th><th class="r">Qty</th><th>Arrived</th><th class="r">Age</th><th>Height in bin</th><th>Mark</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="3" class="font-semibold text-navy align-top">A10-PPR-L03-01</td><td>3 of 3</td><td><span class="chip c-pack">Pack</span></td><td>ART PAPER 150 GR 79 X 109 CM</td><td class="r">1,000 LBR</td><td>12-Mar-2026</td><td class="r">205 d</td><td rowspan="3" class="align-top"><b class="text-amber-700">1.48 / 1.60 m</b></td><td><span class="chip c-rem">Remnant</span> <span class="chip c-dead">Old remnant</span></td><td><span class="ib"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td>2 of 3</td><td><span class="chip c-pal">Pallet</span></td><td>WHITE KRAFT 140 GR 79 X 97 CM</td><td class="r">7,500 LBR</td><td>20-Sep-2026</td><td class="r">13 d</td><td></td><td><span class="ib"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td>1 of 3</td><td><span class="chip c-pal">Pallet</span></td><td>WHITE KRAFT 140 GR 79 X 97 CM</td><td class="r">7,500 LBR</td><td>31-Dec-2025</td><td class="r">276 d</td><td><span class="chip c-bur">Buried · 2 above</span> <span class="chip c-exp">Expires soon</span></td><td><span class="ib"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td rowspan="2" class="font-semibold text-navy align-top">A10-PPR-L06-05</td><td>6 of 6</td><td><span class="chip c-pack">Pack</span></td><td>AMBRI VERGE 25 GSM 51 X 76 CM</td><td class="r">400 LBR</td><td>02-Oct-2026</td><td class="r">1 d</td><td rowspan="2" class="align-top"><b>0.52 / 1.60 m</b></td><td><span class="chip c-rem">Remnant</span></td><td><span class="ib"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td>1 of 6</td><td><span class="chip c-pack">Pack</span></td><td>WHITE KRAFT 140 GR 79 X 97 CM</td><td class="r">500 LBR</td><td>05-Nov-2025</td><td class="r">332 d</td><td><span class="chip c-dead">Old remnant</span> <span class="chip c-bur">Buried · 5 above</span></td><td><span class="ib"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td class="font-semibold text-navy">A10-SHT-L02-01</td><td>—</td><td class="text-muted">not labelled</td><td>SHEET B-FLUTE 100 X 120 CM</td><td class="r">1,240 LBR</td><td>24-Sep-2026</td><td class="r">9 d</td><td class="text-muted">unknown</td><td><span class="chip c-exp">Stack not recorded</span></td><td><span class="ib"><i class="fa-solid fa-qrcode"></i></span></td></tr>
+    </tbody>
+  </table>
+  <div class="note mt-2"><span class="tag">6</span> Karena di lapangan tumpukan tidak jelas, layar ini yang memantaunya: satu baris per satuan, terkelompok per bin, dengan umur, tinggi tumpukan dan tanda. Baris <b>Stack not recorded</b> = stok ada di bin tetapi belum diberi label, jadi posisinya dalam tumpukan belum diketahui (pekerjaan untuk petugas).</div>
+</section>
+
+<!-- ======================= 3. RELABEL -> REMNANT ======================= -->
+<div class="cap">③ Label &amp; QR Code › Print Pallet Label — label ulang sesudah pemakaian, sisa jadi Pack di tumpukan sisa</div>
+<section class="card p-3">
+  <div class="grid grid-cols-12 gap-3">
+    <div class="col-span-7">
+      <div class="grid grid-cols-4 gap-2">
+        <div class="col-span-2"><div class="lbl">Pallet opened</div><div class="inp ro"><span>PL2600044 · IVORY 250 GR 79 X 109 CM</span></div></div>
+        <div><div class="lbl">Qty at arrival</div><div class="inp ro"><span>4,000 LBR</span></div></div>
+        <div><div class="lbl">Qty left</div><div class="inp"><span class="font-bold">350</span><span class="text-muted">LBR</span></div></div>
+      </div>
+      <div class="mt-2 rounded bg-violet-50 border border-violet-200 text-violet-900 p-2 text-[11.5px]">
+        <span class="tag">7</span> <b>350 LBR is below the remnant limit (1,000 LBR).</b> Record it as a remnant pack?
+      </div>
+      <div class="grid grid-cols-4 gap-2 mt-2">
+        <div><div class="lbl">Unit kind</div><div class="inp"><span>Pack (remnant)</span><i class="fa-solid fa-chevron-down text-muted"></i></div></div>
+        <div class="col-span-2"><div class="lbl">Where is it now <span class="tag" style="width:14px;height:14px;font-size:8px">8</span></div><div class="inp"><span>A10-PPR-L06-05 · Remnant pile</span><i class="fa-solid fa-magnifying-glass text-muted"></i></div></div>
+        <div><div class="lbl">Stack no.</div><div class="inp ro"><span>6 (top)</span></div></div>
+      </div>
+      <div class="note mt-2">The pack moves from <b>A10-PPR-L02-04</b> to <b>A10-PPR-L06-05</b>: a Stock Transfer is created and confirmed with this label.</div>
+      <div class="flex gap-2 mt-3"><span class="btn pri"><i class="fa-solid fa-print"></i>Relabel &amp; Print</span><span class="btn sec">Undo</span></div>
+    </div>
+    <div class="col-span-5">
+      <div class="lbl">Item label 100 × 50 mm <span class="tag" style="width:14px;height:14px;font-size:8px">9</span></div>
+      <div class="border-2 border-slate-800 rounded bg-white flex" style="width:400px;height:200px">
+        <div style="width:14px;background:#2c7be5"></div>
+        <div class="flex-1 p-2 flex flex-col">
+          <div class="flex justify-between items-start"><div><div class="text-[9px] font-bold tracking-wide text-slate-500">ITEM · RM</div><div class="text-[18px] font-extrabold leading-tight">PZ01187</div></div><span class="chip c-rem" style="font-size:11px">REMNANT</span></div>
+          <div class="text-[11px] font-semibold leading-tight mt-0.5">IVORY 250 GR 79 X 109 CM</div>
+          <div class="grid grid-cols-2 gap-x-3 text-[10.5px] mt-1.5">
+            <div><span class="text-slate-500">Qty</span> <b class="text-[15px]">350 LBR</b></div>
+            <div><span class="text-slate-500">Arrived</span> <b>18-Sep-2026</b></div>
+            <div class="col-span-2"><span class="text-slate-500">Location</span> <b class="text-[13px]">A10-PPR-L06-05 · STACK 6</b></div>
+            <div><span class="text-slate-500">From pallet</span> <b>PL2600044</b></div>
+            <div><span class="text-slate-500">Lot</span> <b>IV250-0918</b></div>
+          </div>
+          <div class="mt-auto h-6" style="background:repeating-linear-gradient(90deg,#000 0 2px,#fff 2px 3px,#000 3px 6px,#fff 6px 8px,#000 8px 9px,#fff 9px 12px)"></div>
+        </div>
+        <div class="w-[92px] p-2 flex items-center"><div class="w-[76px] h-[76px]" style="background:conic-gradient(#000 25%,#fff 0 50%,#000 0 75%,#fff 0) 0 0/12px 12px;border:4px solid #000"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="note mt-3 grid grid-cols-3 gap-3">
+    <div><span class="tag">7</span> Batas sisa diatur di Settings › Constants. Petugas tetap bisa memilih sendiri (untuk bahan dalam kg).</div>
+    <div><span class="tag">8</span> Petugas memilih tempat sisa itu sekarang. Nomor tumpukan otomatis = paling atas.</div>
+    <div><span class="tag">9</span> Label sisa memuat lokasi + nomor tumpukan dan nomor palet asalnya.</div>
+  </div>
+</section>
+
+<!-- ======================= 4. INK MIXING ======================= -->
+<div class="cap">④ Inventory › Ink Mixing — KONSEP untuk dibahas (tinta khusus hasil campuran supaya tidak hilang dari stok)</div>
+<section class="card p-3">
+  <div class="flex items-center gap-2 mb-2">
+    <span class="btn sec">New</span><span class="btn pri">Save</span><span class="btn sec">Undo</span><span class="btn sec">Confirm</span><span class="btn sec"><i class="fa-solid fa-print"></i>Print</span><span class="btn sec">Back</span>
+    <span class="ml-auto text-[13px] font-bold text-navy">Ink Mixing · IM2600007</span><span class="chip c-exp" style="font-size:10px">Draft</span>
+  </div>
+  <div class="grid grid-cols-12 gap-3">
+    <div class="col-span-7">
+      <div class="grid grid-cols-4 gap-2">
+        <div><div class="lbl">Date</div><div class="inp"><span>03-Oct-2026</span><i class="fa-regular fa-calendar text-muted"></i></div></div>
+        <div class="col-span-2"><div class="lbl">Special ink (result) <span class="tag" style="width:14px;height:14px;font-size:8px">10</span></div><div class="inp"><span>IZ01181 · PANTONE 213 C PINK</span><i class="fa-solid fa-magnifying-glass text-muted"></i></div></div>
+        <div><div class="lbl">Mixed by</div><div class="inp"><span>Operator Tinta</span><i class="fa-solid fa-magnifying-glass text-muted"></i></div></div>
+        <div class="col-span-2"><div class="lbl">For product</div><div class="inp"><span>BOX KOSMETIK ROSE 50 ML</span><i class="fa-solid fa-magnifying-glass text-muted"></i></div></div>
+        <div class="col-span-2"><div class="lbl">Work order</div><div class="inp"><span>WO2600231</span><i class="fa-solid fa-magnifying-glass text-muted"></i></div></div>
+      </div>
+      <div class="lbl mt-3">Inks used (taken out of stock)</div>
+      <table class="w-full text-[11.5px]">
+        <thead><tr><th>Ink</th><th>From bin</th><th class="r">On hand</th><th class="r">Qty used (kg)</th><th class="r">Share</th></tr></thead>
+        <tbody>
+          <tr><td>IZ05924 · TINTA AMBRI RED</td><td>A10-INK-R01-02-1</td><td class="r">12.40</td><td class="r font-semibold">1.20</td><td class="r">30%</td></tr>
+          <tr><td>IZ05964 · TINTA WHITE AMBRI</td><td>A10-INK-R02-01-1</td><td class="r">28.00</td><td class="r font-semibold">2.50</td><td class="r">62.5%</td></tr>
+          <tr><td>IZ00412 · TRANSPARENT MEDIUM</td><td>A10-INK-R03-01-2</td><td class="r">6.10</td><td class="r font-semibold">0.30</td><td class="r">7.5%</td></tr>
+          <tr class="font-bold bg-slate-50"><td colspan="3">Total used</td><td class="r">4.00</td><td class="r">100%</td></tr>
+        </tbody>
+      </table>
+      <span class="btn sec mt-2"><i class="fa-solid fa-plus"></i>Add Ink</span>
+    </div>
+    <div class="col-span-5">
+      <div class="border border-slate-200 rounded-md p-2.5">
+        <div class="lbl">Result <span class="tag" style="width:14px;height:14px;font-size:8px">11</span></div>
+        <div class="grid grid-cols-3 gap-2 text-[11.5px]">
+          <div><div class="lbl">Weighed (kg)</div><div class="inp"><span class="font-bold">3.90</span></div></div>
+          <div><div class="lbl">Loss (kg)</div><div class="inp ro"><span>0.10 · 2.5%</span></div></div>
+          <div><div class="lbl">Into bin</div><div class="inp"><span>A10-INK-R04-01-1</span></div></div>
+        </div>
+        <div class="note mt-2">Value of the special ink = value of the inks used. The loss is carried by the result.</div>
+      </div>
+      <div class="border border-slate-200 rounded-md p-2.5 mt-2">
+        <div class="lbl">After the job — leftover <span class="tag" style="width:14px;height:14px;font-size:8px">12</span></div>
+        <table class="w-full text-[11.5px]">
+          <tbody>
+            <tr><td>Issued to WO2600231</td><td class="r font-semibold">3.90 kg</td></tr>
+            <tr><td>Returned to stock (can weighed)</td><td class="r font-semibold">0.85 kg</td></tr>
+            <tr><td>Bin · label</td><td class="r">A10-INK-R04-01-1 · <span class="chip c-rem">Remnant</span></td></tr>
+          </tbody>
+        </table>
+        <div class="mt-2 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 p-1.5 text-[11px]">On the next order of this product the system shows: 0.85 kg PANTONE 213 C PINK is in stock — use it first.</div>
+      </div>
+    </div>
+  </div>
+  <div class="note mt-3 grid grid-cols-3 gap-3">
+    <div><span class="tag">10</span> Tinta khusus menjadi item stok sendiri (dipilih dari master, atau dibuat baru dari form ini), terikat ke product / customer.</div>
+    <div><span class="tag">11</span> Confirm = tinta dasar keluar dari stok, tinta khusus masuk stok dengan nilai yang sama. Selisih timbang tercatat sebagai loss.</div>
+    <div><span class="tag">12</span> Sisa tinta khusus sesudah order ditimbang dan kembali ke stok dengan label kaleng, supaya tidak hilang dan ditawarkan lagi saat repeat order.</div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

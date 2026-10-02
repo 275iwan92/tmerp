@@ -286,6 +286,23 @@
       Angkanya contoh, bukan hasil kerja petugas.
     - Draft yang tidak bisa menempuh alur (tanpa customer, part tanpa ukuran bentangan, tanpa pilihan qty) tidak ikut set
       stage; tetap ada di set `mixed`. Build memakan ±10 menit dan dijalankan lewat perintah, bukan tombol.
+16. **[LOCKED 2026-10-03, sudah disampaikan user 7 kali — JANGAN ditanyakan lagi] Material Category = PEMBENTUK KODE
+    ITEM.** Kata user: *"Material category ini pembentuk KODE ITEM. IMPORTANT !!!!"*. Acuan yang wajib dipahami:
+    `docs/ddl/doc_rmprefix1.sql` (5 tabel `doc_rmprefix1..5`), sekarang satu tabel `mat_category` (level 1–5).
+    - **Rantai 5 tingkat:** Category 1 → Category 2 → Category 3 → Category 4 → Category 5. Setiap tingkat punya nama
+      **dan** kode prefix. **Kode item = prefix1 + prefix2 + prefix3 + prefix4 + prefix5** (prefix 1–3 satu karakter,
+      prefix 4–5 sampai tiga karakter). Contoh nyata: Paper › Art carton › 210gr › 65 X 100 CM › GOLDEN =
+      `P`+`C`+`C`+`02`+`002` = **`PCC02002`**; Ink › OFFSET › HN › AMBRI › AOK RED SAR = **`IOH31`**.
+    - **Layar = dropdown yang saling terkait** (seperti yang lama): pilih Category 1, lalu Category 2 hanya berisi anak
+      Category 1 itu, dan seterusnya sampai Category 5; kode item tersusun dan tampil selagi memilih. Daftar rata dengan
+      kolom Level + Parent **salah**. Berlaku di master Material Category, form Raw Material, dan PR.
+    - **Arti tiap tingkat berbeda per kategori** — jangan diberi label tetap "gramatur / ukuran / merek". Paper: jenis ›
+      gramatur › ukuran lembar › merek. Sheet: flute (SHBF, SHEF, SFEF, BCF, DF) › substance (K150/M150/K200) › ukuran.
+      Ink: kelompok (OFFSET) › seri (HN, DGM, RAPIDA, HAEMA) › nama / nomor › warna. Label layar = Category 1 … Category 5.
+    - Satu baris kategori adalah sumber NAMA dan sumber KODE sekaligus — tidak boleh dipecah.
+    - Kategori dan Type 2 tingkat di `tm2old` (`mst_item_material_cat` / `mst_item_material_type`) adalah klasifikasi
+      sistem ScriptCase lama dan **bukan** pembentuk kode; jangan dipakai untuk menggantikan rantai 5 tingkat.
+    - Rinci (struktur tabel, kejanggalan data, pola kode yang ada sekarang): `md_for_systems/matcategory_delta.md` §5.
 
 ## C. Tampilan (UI/UX)
 
@@ -664,5 +681,8 @@
 | 2026-10-02 | A.22: **label wajib** — label palet dibuat setiap barang datang dan setiap isi satu palet habis dipakai (label ulang dengan qty sisa); label palet dan label item sengaja berbeda; setiap label punya QR code + barcode + tanggal tiba, pita warna sebagai penanda, kode palet dari supplier, dan tag kedaluwarsa (kertas, tinta); ukuran label dijelaskan di layar (60 x 40, 100 x 50, 100 x 150 mm; gulungan label atau A4); label palet dan label item bisa dicetak langsung dari Penerimaan Barang. Dibangun di ddt; tabel di ddt + tm2. |
 | 2026-10-03 | A.22: **dipasang di mockup.test dan tmerp.test** (user: "apply to mockup.test and tmerp.test, make sure all connected to table and database; don't forget data dummy on mockup.test") — menu Inventory > Warehouse / Label & QR Code / Scan Center, Help, dan gedung A10 / A5 / A6 (denah perkiraan, tanpa stok) di tm2; data contoh mockup.test disimpan sebagai baseline Reset baru dan set Mixed. Approval Stock Transfer di tmerp.test menunggu Setting Approval terpasang di sana. |
 | 2026-10-03 | A.22: **lokasi barang = posisi X, Y dan stack (tumpukan)**, terutama untuk barang yang tersisa 1 atau 2 rim (user: "IMPORTANT"). Rak sudah bertingkat; barang di lantai dan sisa rim belum. Analisa dan usulan: `warehouselayout_tier1.md` bagian 15 (menunggu jawaban user, belum dibangun). |
+| 2026-10-03 | A.22: **tumpukan di gudang tidak jelas, jadi harus dipantau** (layar pemantau tumpukan, bukan batas kaku); **sisa tidak diberi palet sendiri, ditumpuk begitu saja dalam satu palet**; yang paling bermasalah = **kertas, ambri, sheet**; nomor tumpukan 1 = paling bawah; sisa seharusnya dipakai lebih dulu. Rancangan bagian 15.6, mockup `mockups/warehouse_stack_remnant_v2.jpg` (menunggu persetujuan). |
+| 2026-10-03 | A.22: **tinta khusus hasil campuran tidak boleh hilang dari stok** — tinta sering dicampur untuk mendapat warna khusus dan hasilnya selama ini tidak terpantau. Konsep dokumen Ink Mixing: `warehouselayout_tier1.md` bagian 16 (menunggu jawaban user, belum dibangun). |
 | 2026-10-02 | B.15: set stage 8–12 dibangun (Posted to Production + Work Order belum dimulai, Delivery Order Draft, Delivery Order Confirmed, Customer Invoice Draft, Customer Invoice Confirmed menunggu pembayaran) — usulan agen, belum dikonfirmasi user; rantai PO di samping: stage 4 PO Draft, 5–7 menunggu approval level 1–3, 8+ Approved. Build sungguhan tanpa transaksi. |
 | 2026-10-02 | **A.23: laporan stok dan gudang** — set lengkap mengacu ERP populer (SAP, Odoo, Dynamics 365, Zahir, Accurate, Oracle NetSuite, ERPNext): Stock Card, Stock Recapitulation, Stock Summary, Stock Opname, Stock Loss & Gain (per bulan), Stock in Inspection, Stock by Location terkelompok per gedung; selisih stok masuk lewat stock opname. Grid Report mendapat periode (Period + Show) dan cetakan `x-dl::report`. Dibangun di ddt; review: `md_for_systems/inventoryreport_review.md`. |
+| 2026-10-03 | **B.16: Material Category = pembentuk KODE ITEM** (user: "Material category ini pembentuk KODE ITEM. IMPORTANT !!!!", disampaikan untuk ke-7 kalinya; acuan `docs/ddl/doc_rmprefix1.sql`). Rantai 5 tingkat, kode item = gabungan prefix tiap tingkat (`PCC02002`), layar = dropdown yang saling terkait seperti yang lama; daftar rata Level + Parent di v2 salah. Arti tiap tingkat berbeda per kategori, label layar Category 1 … 5. Rinci: `md_for_systems/matcategory_delta.md` §5. |
