@@ -43,6 +43,12 @@ class Shell extends DevlibComponent
         // (mencocokkan kata dengan nama menu). Bentuk 'reply' dan jawaban api.ask {id, reply}: kind, title, text, big,
         // rows [[label, nilai]], steps [..], note, actions [{label, url, code, icon} | {label, topic} | {label, page}].
         public array $assistant = [],
+        // Menu akun (laci Notifikasi, modal Edit profil & Ubah password) tersambung server:
+        // ['csrf', 'profile' => ['url', 'phone', 'role'], 'password' => ['url'],
+        //  'notifications' => ['read' => url, 'items' => [['id', 'title', 'sub', 'tone', 'read', 'url']]]].
+        // Url menerima POST JSON dan membalas {message} (422 {message} bila ditolak); 'read' menerima {id} atau {} = semua
+        // dan membalas {unread}. Kosong = pratinjau tanpa server (isi contoh, Save hanya menutup).
+        public array $account = [],
     ) {}
 
     public function tag(): string

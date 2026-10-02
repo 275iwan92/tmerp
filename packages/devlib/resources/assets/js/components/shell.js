@@ -77,7 +77,11 @@
       this.backdrop = $(this.el, '[data-dl-backdrop]');
       this.backdrop.addEventListener('click', this.closeDrawers);
       $$(this.el, '[data-dl-close]').forEach(b => b.addEventListener('click', this.closeDrawers));
-      $(this.el, '[data-dl-markread]').addEventListener('click', () => { this.notifCount = 0; this.refreshCounts(); $$(this.el, '.dl-nz__dot').forEach(d => d.classList.add('is-read')); toast(T('n_all_read')); });
+      this.initAccount();
+      $(this.el, '[data-dl-markread]').addEventListener('click', () => {
+        const done = () => { this.notifCount = 0; this.refreshCounts(); $$(this.el, '.dl-nz__dot').forEach(d => d.classList.add('is-read')); toast(T('n_all_read')); };
+        this.account?.read ? this.accountPost(this.account.read, {}).then(r => { if (r.ok) done(); }).catch(() => {}) : done();
+      });
 
       this.chatEl = $(this.el, '[data-dl-drawer="chat"] [data-dl-chat]');
       if (this.chatEl?.dlChat) this.chatCount = this.chatEl.dlChat.unread;
@@ -89,6 +93,40 @@
       this.aiIn.addEventListener('keydown', e => { if (e.key === 'Enter') { this.askAi(this.aiIn.value); this.aiIn.value = ''; } });
       this.aiBody.addEventListener('click', e => { const c = e.target.closest('[data-dl-ai]'); if (c) this.askAi(c.dataset.dlAi); });
       this.initAssistant();
+    }
+
+    /* ---------------- menu akun (prop account: notifikasi, profil, password dari / ke server) ---------------- */
+    // Tanpa prop account (katalog DevLib) = pratinjau: isi contoh, Save hanya menutup dialog.
+    initAccount() {
+      try { this.account = JSON.parse($(this.el, '[data-dl-account]')?.dataset.dlAccount || 'null'); } catch (e) { this.account = null; }
+      if (!this.account) return;
+      const list = $(this.el, '.dl-notif__list');
+      this.notifCount = $$(list, '.dl-nz__dot:not(.is-read)').length;
+      list.addEventListener('click', e => {
+        const n = e.target.closest('[data-dl-notif]'); if (!n) return;
+        if (this.account.read && !$(n, '.dl-nz__dot').classList.contains('is-read')) {
+          this.accountPost(this.account.read, {id: Number(n.dataset.dlNotif)}).then(r => {
+            if (!r.ok) return;
+            $(n, '.dl-nz__dot').classList.add('is-read'); this.notifCount = r.body.unread ?? Math.max(0, this.notifCount - 1); this.refreshCounts();
+          }).catch(() => {});
+        }
+        if (n.dataset.url) { this.closeDrawers(); this.openUrlTab('N-' + n.dataset.dlNotif, n.dataset.title, n.dataset.url, 'fa-solid fa-bell'); }
+      });
+      $$(this.el, '[data-dl-account-save]').forEach(b => b.addEventListener('click', () => {
+        const kind = b.dataset.dlAccountSave, box = b.closest('.dl-mov'), msg = $(box, '[data-dl-account-msg]');
+        const data = Object.fromEntries($$(box, 'input[name]').map(i => [i.name, i.value]));
+        b.disabled = true; msg.hidden = true;
+        this.accountPost(this.account[kind], data).then(r => {
+          if (!r.ok) { msg.textContent = r.body.message || ''; msg.hidden = false; return; }
+          box.classList.remove('is-on'); toast(r.body.message || '');
+          if (kind === 'password') $$(box, 'input[name]').forEach(i => { i.value = ''; });
+        }).catch(() => { msg.textContent = T('s_save_failed'); msg.hidden = false; }).finally(() => { b.disabled = false; });
+      }));
+    }
+
+    accountPost(url, body) {
+      return fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': this.account.csrf}, body: JSON.stringify(body)})
+        .then(r => r.json().catch(() => ({})).then(body => ({ok: r.ok, body})));
     }
 
     /* ---------------- asisten (prop assistant: jawaban dari server) ---------------- */

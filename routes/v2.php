@@ -77,6 +77,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
     // ?open=<kode menu> = tab yang dibuka saat mulai (mis. Direksi -> MGMT_EXEC), bila belum ada tab yang dipulihkan.
     Route::get('/', fn (Request $r) => view('v2.home', ['modules' => AppMenu::modules(Auth::user()), 'user' => AppMenu::user(Auth::user()),
         'open' => $r->query('open'), 'profilePage' => session('v2_profile_page'), 'assistant' => \App\Providers\AssistantHostProvider::drawer(Auth::user()), 'chat' => app(\Chat\ChatService::class)->boot(Auth::user()),
+        'account' => \App\Support\V2\Data\Account::shell(Auth::user()),
         'tickets' => SysSupportTicket::with('replies')->where('created_by_user_id', Auth::id())->orderByDesc('id_ticket')->limit(20)->get()]))->name('home');
 
     // Tiket Bantuan dari halaman profil (menu akun / F1) -> tm2sys.sys_support_ticket, dijawab tim developer di Setup > Support Tickets.
