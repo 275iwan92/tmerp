@@ -47,9 +47,9 @@ class MultiLanguageRatchetTest extends TestCase
         'pages/security' => 3,
         'pages/self-service' => 53,
         'pages/setup' => 5,
-        'services' => 187,
-        'support' => 275,
-        'v2' => 55,
+        'services' => 178,
+        'support' => 248,
+        'v2' => 38,
     ];
 
     private const BASELINE = [

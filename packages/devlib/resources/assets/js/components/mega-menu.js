@@ -1,7 +1,7 @@
 /* DevLib · MegaMenu */
 (function (Devlib) {
   'use strict';
-  const {$, $$, toast} = Devlib.h;
+  const {$, $$, toast, Tf} = Devlib.h;
   /* ============================ MEGA MENU (ScriptCase) ============================ */
   class MegaMenu extends Devlib.Component {
     static selector = "[data-dl-mega]";
@@ -24,7 +24,7 @@
           this.tops().forEach(t => t.classList.toggle('is-current', t.contains(k)));
           this.close(); this.el.classList.remove('is-mobile');
           const label = k.textContent.trim();
-          if (this.el.dispatchEvent(new CustomEvent('dl:menu', {bubbles: true, cancelable: true, detail: {key: k.dataset.mmKey, label}}))) toast(`Buka: ${label} (pratinjau)`);
+          if (this.el.dispatchEvent(new CustomEvent('dl:menu', {bubbles: true, cancelable: true, detail: {key: k.dataset.mmKey, label}}))) toast(Tf('nav_open_preview', {x: label}));
         }
       });
       this.el.addEventListener('keydown', e => {

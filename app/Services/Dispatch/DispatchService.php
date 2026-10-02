@@ -53,13 +53,13 @@ class DispatchService
 
                 if ((int) $row->customer_id !== (int) $do->customer_id) {
                     // Tier2 §D.1: guard ulang server-side, jangan percaya filter picker saja.
-                    $errors[] = str_replace(':no', $row->co_no, t('Line :no does not belong to the customer of this document.'));
+                    $errors[] = str_replace(':no', (string) $row->co_no, t('Line :no does not belong to the customer of this document.'));
 
                     continue;
                 }
 
                 if ($row->co_status !== 'CONFIRMED') {
-                    $errors[] = str_replace(':no', $row->co_no, t(':no is not CONFIRMED yet and cannot be pulled.'));
+                    $errors[] = str_replace(':no', (string) $row->co_no, t(':no is not CONFIRMED yet and cannot be pulled.'));
 
                     continue;
                 }
@@ -201,7 +201,7 @@ class DispatchService
 
         foreach ($lines as $line) {
             if ((float) $line->qty_do <= 0) {
-                return ['ok' => false, 'message' => str_replace(':item', $line->item_description, t('Line :item: qty must be more than 0.'))];
+                return ['ok' => false, 'message' => str_replace(':item', (string) $line->item_description, t('Line :item: qty must be more than 0.'))];
             }
         }
 
@@ -222,7 +222,7 @@ class DispatchService
                     $ceiling = $qtyAvailable + (float) $line->qty_do;
 
                     if ((float) $line->qty_do > $ceiling) {
-                        $result = ['ok' => false, 'message' => str_replace(':item', $line->item_description, t('Race condition: the qty of line :item has been taken by another document. Delete/reduce this line.'))];
+                        $result = ['ok' => false, 'message' => str_replace(':item', (string) $line->item_description, t('Race condition: the qty of line :item has been taken by another document. Delete/reduce this line.'))];
 
                         throw new \RuntimeException('rollback');
                     }
@@ -236,7 +236,7 @@ class DispatchService
                 $coStatus = DB::connection('tm2sdi')->table('co_order')->where('id_order', $line->co_order_id)->value('doc_status');
 
                 if ($coStatus !== 'CONFIRMED') {
-                    $result = ['ok' => false, 'message' => str_replace(':item', $line->item_description, t('The source CO of line :item is no longer CONFIRMED.'))];
+                    $result = ['ok' => false, 'message' => str_replace(':item', (string) $line->item_description, t('The source CO of line :item is no longer CONFIRMED.'))];
 
                     throw new \RuntimeException('rollback');
                 }

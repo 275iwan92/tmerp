@@ -35,7 +35,7 @@ final class SpecialReceiptService
     {
         $co = DB::connection('tm2sdi')->table('co_order')->where('id_order', $coId)->first() ?? throw new InvalidArgumentException(t('CO not found.'));
         if ($co->stat_cancel) {
-            throw new InvalidArgumentException(str_replace(':no', $co->co_no, t('CO :no has already been cancelled.')));
+            throw new InvalidArgumentException(str_replace(':no', (string) $co->co_no, t('CO :no has already been cancelled.')));
         }
         $items = DB::connection('tm2sdi')->table('co_order_item as i')->leftJoin('iqp_inquiry as q', 'q.id_inquiry', '=', 'i.inquiry_id')
             ->where('i.order_id', $coId)->orderBy('i.line_seq')->get(['i.id_item', 'i.description', 'q.material_source', 'q.cust_material_spec']);

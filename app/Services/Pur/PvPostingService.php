@@ -168,7 +168,7 @@ class PvPostingService
             try {
                 app(JournalPostingService::class)->reverse($voucher, now()->toDateString(), $login, "Cancel {$pv->doc_no}: ".trim($reason));
             } catch (\Throwable $e) {
-                $warning = trim($warning.' '.str_replace(':no', $voucher->voucher_number, t('Journal :no has not been reversed:')).' '.$e->getMessage());
+                $warning = trim($warning.' '.str_replace(':no', (string) $voucher->voucher_number, t('Journal :no has not been reversed:')).' '.$e->getMessage());
             }
         }
 

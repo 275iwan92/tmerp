@@ -107,7 +107,7 @@ class FinanceMetrics
         return [
             ['!', 're', t('Overdue customer invoices'), t('Follow-up required'), (string) $overdueAr],
             ['◷', 'or', t('Vendor bills due this week'), t('Payment run required'), (string) $dueAp],
-            ['✓', 'bl', str_replace(':period', $period?->period_name ?? t('Period'), t(':period close')), $tasks->count() ? str_replace([':done', ':total'], [$tasks->where('status', 'COMPLETE')->count(), $tasks->count()], t(':done of :total controls complete')) : t('Checklist not started'), $tasks->count() ? (int) round($tasks->where('status', 'COMPLETE')->count() / $tasks->count() * 100).'%' : '0%'],
+            ['✓', 'bl', str_replace(':period', (string) ($period?->period_name ?? t('Period')), t(':period close')), $tasks->count() ? str_replace([':done', ':total'], [$tasks->where('status', 'COMPLETE')->count(), $tasks->count()], t(':done of :total controls complete')) : t('Checklist not started'), $tasks->count() ? (int) round($tasks->where('status', 'COMPLETE')->count() / $tasks->count() * 100).'%' : '0%'],
             ['▰', 'pu', t('Assets awaiting capitalization'), t('Review and capitalize'), (string) $draftAssets],
         ];
     }
@@ -122,7 +122,7 @@ class FinanceMetrics
         }
         if ($period = $this->close->currentPeriod()) {
             $tasks = $period->tasks;
-            $out[] = ['✓', 'bl', str_replace(':period', $period->period_name, t(':period period close')), $tasks->count() ? str_replace([':done', ':total'], [$tasks->where('status', 'COMPLETE')->count(), $tasks->count()], t(':done of :total closing tasks completed')) : t('Checklist not created yet'),
+            $out[] = ['✓', 'bl', str_replace(':period', (string) $period->period_name, t(':period period close')), $tasks->count() ? str_replace([':done', ':total'], [$tasks->where('status', 'COMPLETE')->count(), $tasks->count()], t(':done of :total closing tasks completed')) : t('Checklist not created yet'),
                 ($tasks->count() ? (int) round($tasks->where('status', 'COMPLETE')->count() / $tasks->count() * 100) : 0).'%'];
         }
         $sched = $this->assets->preview((int) now()->format('Y'), (int) now()->format('m'));

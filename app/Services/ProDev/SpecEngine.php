@@ -73,10 +73,10 @@ class SpecEngine
         ];
 
         if (! $orderQty) {
-            $warnings['bom'][] = 'Qty order belum ada (isi di kalkulator PCS → PLANO atau tier Inquiry) -- qty kebutuhan belum bisa dihitung.';
+            $warnings['bom'][] = t('No order qty yet (fill it in the PCS → PLANO calculator or the Inquiry tier) -- the required qty cannot be calculated yet.');
         }
         if (! $packQty) {
-            $warnings['bop'][] = 'Isi per pack belum diisi di Inquiry -- langkah Pack tanpa jumlah.';
+            $warnings['bop'][] = t('Pack quantity is not filled in the Inquiry yet -- the Pack step has no quantity.');
         }
 
         $facts = [
@@ -243,7 +243,7 @@ class SpecEngine
             ->pluck('finishing_type_id')->map(fn ($v) => (int) $v)->all();
         foreach ($finishings as $fin) {
             if (! in_array($fin['type_id'], $ruled, true)) {
-                $warnings[] = "Finishing \"{$fin['name']}\" belum punya aturan proses -- tambahkan di Setting Aturan BOP.";
+                $warnings[] = str_replace(':name', $fin['name'], t('Finishing ":name" has no process rule yet -- add it in BOP Rule Settings.'));
             }
         }
 
@@ -300,7 +300,7 @@ class SpecEngine
                 if ($hit) {
                     [$target, $targetSrc] = [(float) $hit->target_qty_per_hour, 'target rate'];
                 } elseif ($r['machine_id'] && ($speeds[$r['machine_id']] ?? null)) {
-                    [$target, $targetSrc] = [(float) $speeds[$r['machine_id']], 'kecepatan maks mesin'];
+                    [$target, $targetSrc] = [(float) $speeds[$r['machine_id']], t('machine max speed')];
                 }
             }
 
@@ -492,7 +492,7 @@ class SpecEngine
         $paper = $materials->first();
 
         if (! $paper) {
-            $warnings[] = 'Bahan kertas belum dipilih di Inquiry -- baris KERTAS PLANO belum punya item.';
+            $warnings[] = t('Paper material not selected in the Inquiry yet -- the PLANO PAPER line has no item yet.');
         }
 
         $rows[] = $this->bomRow([
@@ -585,14 +585,14 @@ class SpecEngine
                 ->map(fn ($c) => $c + ['score' => $words->filter(fn ($w) => str_contains(strtoupper($c['material_name']), $w))->count()])
                 ->sortByDesc('score')->first();
             if ($pick && $words->isNotEmpty() && $pick['score'] === 0) {
-                $warnings[] = "Bahan {$role} \"{$fin['attribute']}\" tidak ditemukan persis -- dipilih {$pick['material_name']}, mohon dicek.";
+                $warnings[] = str_replace([':role', ':attr', ':material'], [$role, $fin['attribute'], $pick['material_name']], t('Material :role ":attr" not found exactly -- :material was picked, please check.'));
             }
         } else {
             $pick = $this->bestStock($candidates);
         }
 
         if (! $pick) {
-            $warnings[] = "Bahan {$role} tidak ditemukan di Master Bahan (pola: {$r->material_pattern}).";
+            $warnings[] = str_replace([':role', ':pattern'], [$role, $r->material_pattern], t('Material :role not found in Master Material (pattern: :pattern).'));
 
             return $this->bomRow([
                 'role' => $role, 'name' => $role.' (belum ada di Master Bahan)',
@@ -844,13 +844,13 @@ class SpecEngine
         ])->values()->all();
 
         if (! $notation || ! preg_match('/^(\d)\s*\/\s*(\d)$/', $notation, $m)) {
-            $warnings[] = 'Notasi warna (mis. 4/0) belum diisi -- Ink Configuration tidak bisa dibuat.';
+            $warnings[] = t('Color notation (e.g. 4/0) not filled in yet -- Ink Configuration cannot be created.');
 
             return ['rows' => [], 'colors' => $colors];
         }
 
         if (! $channels) {
-            $warnings[] = 'Artwork belum dianalisa -- luas tutupan tinta belum ada.';
+            $warnings[] = t('Artwork not analyzed yet -- ink coverage area is not available yet.');
         }
 
         $spots = collect(preg_split('/[,;]+/', (string) ($part->cfg_ink ?: $iqp?->cfg_ink)))->map(fn ($s) => trim($s))->filter()->values();

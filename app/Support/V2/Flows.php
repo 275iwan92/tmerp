@@ -10,31 +10,31 @@ final class Flows
         $s = function (string $slug, ?string $label = null, ?string $module = null, ?string $note = null, array $branch = []) {
             $m = Screens::screen($slug);
 
-            return ['key' => $slug, 'label' => $label ?? $m['label'], 'icon' => $m['icon'] ?? 'file', 'module' => $module ?? ($m['module'] ?? ''),
-                'url' => $m['url'] ?? null, 'status' => $m['status'] ?? 'todo', 'note' => $note, 'branch' => $branch];
+            return ['key' => $slug, 'label' => $label !== null ? t($label) : $m['label'], 'icon' => $m['icon'] ?? 'file', 'module' => $module !== null ? t($module) : ($m['module'] ?? ''),
+                'url' => $m['url'] ?? null, 'status' => $m['status'] ?? 'todo', 'note' => $note !== null ? t($note) : null, 'branch' => $branch];
         };
-        $b = fn (string $slug, ?string $label = null) => ($m = Screens::screen($slug)) ? ['label' => $label ?? $m['label'], 'icon' => $m['icon'], 'url' => $m['url'], 'status' => $m['status']] : null;
-        $later = fn (string $label, string $icon, string $module, string $note) => ['key' => $label, 'label' => $label, 'icon' => $icon, 'module' => $module, 'status' => 'todo', 'note' => $note];
+        $b = fn (string $slug, ?string $label = null) => ($m = Screens::screen($slug)) ? ['label' => $label !== null ? t($label) : $m['label'], 'icon' => $m['icon'], 'url' => $m['url'], 'status' => $m['status']] : null;
+        $later = fn (string $label, string $icon, string $module, string $note) => ['key' => $label, 'label' => t($label), 'icon' => $icon, 'module' => t($module), 'status' => 'todo', 'note' => t($note)];
 
         return match ($module) {
             'SALES' => ['title' => t('Sales flow: from Inquiry to delivery'), 'steps' => [
-                $s('inquiry', 'Inquiry Product', 'Sales', '3 jenis dokumen: BARU (dari nol), REVISI (spec berubah), REKALKULASI (harga bahan saja)',
-                    array_filter([$b('inquiry-new', 'Baru'), $b('inquiry-revise', 'Revisi'), $b('inquiry-recalc', 'Rekalkulasi')])),
-                $s('prodev', null, 'Sales · Production', 'Inquiry BARU dikirim ke ProDev: cari layout fisik paling hemat -> prod_layout_group CONFIRMED'),
-                $s('sales-price', 'Pro-Cost: tier & harga', 'Product Costing', 'HPP dihitung di modul Product Costing (rahasia); Sales hanya melihat tier & harga setelah dipublish'),
-                $s('quotation', null, 'Sales', 'Pilih InqProd berharga milik customer yang sama; harga/qty/diskon terisi otomatis, boleh diubah sebelum publish'),
-                $s('customer-order', null, 'Sales', 'Mode #1: dari Quotation PUBLISHED (1 CO = 1 Quotation). Mode #2 manual (butuh Master Product) belum ada di tmerp'),
-                $s('cpdel', null, 'Sales', 'CO Confirm -> jadwal kirim otomatis per item (qty penuh @ due date); bisa Split / Gabung'),
-                $s('delivery-order', null, 'Sales', 'Pengiriman berdasar jadwal CPDEL', array_filter([$b('delivery-notes', 'Surat Jalan')])),
-                $later('Invoice & Piutang', 'fa-file-invoice-dollar', 'Finance', 'Modul Finance (menyusul)'),
+                $s('inquiry', 'Inquiry Product', 'Sales', '3 document types: NEW (from scratch), REVISE (spec changed), RECALC (material price only)',
+                    array_filter([$b('inquiry-new', 'New'), $b('inquiry-revise', 'Revise'), $b('inquiry-recalc', 'Recalculate')])),
+                $s('prodev', null, 'Sales · Production', 'A NEW inquiry is sent to ProDev: find the most economical physical layout -> prod_layout_group CONFIRMED'),
+                $s('sales-price', 'Pro-Cost: tiers & prices', 'Product Costing', 'COGS is calculated in the Product Costing module (confidential); Sales only sees tiers & prices after they are published'),
+                $s('quotation', null, 'Sales', 'Choose priced InqProds of the same customer; price/qty/discount are filled in automatically and may be changed before publishing'),
+                $s('customer-order', null, 'Sales', 'Mode #1: from a PUBLISHED Quotation (1 CO = 1 Quotation). Mode #2 manual (needs a Master Product) is not in tmerp yet'),
+                $s('cpdel', null, 'Sales', 'CO Confirm -> automatic delivery schedule per item (full qty @ due date); can be Split / Joined'),
+                $s('delivery-order', null, 'Sales', 'Delivery based on the CPDEL schedule', array_filter([$b('delivery-notes', 'Delivery Note')])),
+                $later('Invoice & Receivables', 'fa-file-invoice-dollar', 'Finance', 'Finance module (coming later)'),
             ]],
             'COSTING' => ['title' => t('Product Costing flow: from ProDev layout to published price'), 'steps' => [
-                $s('inquiry', 'Inquiry Product (BARU)', 'Sales', 'Spesifikasi kasar dari Sales'),
-                $s('prodev', null, 'Production', 'Mode #1 integrasi: berawal dari iqp_part; Mode #2 manual tanpa Inquiry'),
-                $s('procost', 'Pro-Cost (ambil data layout)', 'Product Costing', 'Mode #1: tarik prod_layout_group CONFIRMED',
-                    array_filter([$b('procost-instant', 'Mode #2: input manual (Instant)')])),
-                $later('Publish (persetujuan Direksi)', 'fa-stamp', 'Product Costing', 'Publish = deklasifikasi harga ke Sisi B (Sales). HPP/margin tetap rahasia'),
-                $s('quotation', 'Dipakai Sales Quotation', 'Sales', 'Hanya costing published_flag = true yang bisa ditarik'),
+                $s('inquiry', 'Inquiry Product (NEW)', 'Sales', 'Rough specification from Sales'),
+                $s('prodev', null, 'Production', 'Mode #1 integrated: starts from iqp_part; Mode #2 manual without an Inquiry'),
+                $s('procost', 'Pro-Cost (take layout data)', 'Product Costing', 'Mode #1: pull prod_layout_group CONFIRMED',
+                    array_filter([$b('procost-instant', 'Mode #2: manual input (Instant)')])),
+                $later('Publish (Directors approval)', 'fa-stamp', 'Product Costing', 'Publish = declassify the price to Side B (Sales). COGS/margin stay confidential'),
+                $s('quotation', 'Used by Sales Quotation', 'Sales', 'Only costing with published_flag = true can be pulled'),
             ]],
             default => null,
         };

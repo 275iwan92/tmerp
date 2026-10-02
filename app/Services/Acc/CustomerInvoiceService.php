@@ -587,7 +587,7 @@ class CustomerInvoiceService
             || (int) $i->partner_id !== $customerId), t('Only Confirmed invoices of this customer can receive a payment.'));
         $this->fail($invoices->pluck('is_ppn')->unique()->count() > 1, t('One receipt cannot mix invoices of the two tax identities.'));
         foreach ($invoices as $i) {
-            $this->fail($allocations[$i->invoice_id] > $i->outstanding() + 0.005, str_replace(':no', $i->invoice_number, t('The amount for :no is more than what is left to pay.')));
+            $this->fail($allocations[$i->invoice_id] > $i->outstanding() + 0.005, str_replace(':no', (string) $i->invoice_number, t('The amount for :no is more than what is left to pay.')));
         }
         $bank = FinCompanyBank::query()->where('activate', 1)->find($bankId);
         $this->fail(! $bank, t('Choose the bank account that received the money.'));

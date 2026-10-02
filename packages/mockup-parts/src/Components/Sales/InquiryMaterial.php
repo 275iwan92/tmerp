@@ -65,7 +65,7 @@ class InquiryMaterial extends DevlibComponent
 
     public function title(): string
     {
-        return $this->fixed ? 'Bahan #'.((int) $this->index + 1) : 'Bahan tambahan';
+        return $this->fixed ? 'Material #'.raw((int) $this->index + 1) : 'Additional material';
     }
 
     public function render()
@@ -78,18 +78,18 @@ class InquiryMaterial extends DevlibComponent
                         @if ($fixed)
                             <input type="hidden" name="{{ $f('chain') }}" value="{{ $code() }}">
                             <x-dl::field.display :label="$title()" :value="$chains[$chain()]['label'] ?? ''"
-                                :hint="$row['label'] !== '' && $row['jenis'] === '' ? 'Data lama: '.$row['label'].' — pilih ulang Jenis' : null" :source="\MockupParts\Src::of('tm2mst.mat_category (level 1)')" />
+                                :hint="$row['label'] !== '' && $row['jenis'] === '' ? 'Old data: '.raw($row['label']).' — re-choose Kind' : null" :source="\MockupParts\Src::of('tm2mst.mat_category (level 1)')" />
                         @else
                             <x-dl::field.select :name="$f('chain')" :label="$title()" :options="$kategoriOptions()" :value="$code()" :placeholder="null"
-                                :hint="$row['label'] !== '' && $row['jenis'] === '' ? 'Data lama: '.$row['label'].' — pilih ulang Jenis' : null" :source="\MockupParts\Src::of('tm2mst.mat_category (level 1)')" />
+                                :hint="$row['label'] !== '' && $row['jenis'] === '' ? 'Old data: '.raw($row['label']).' — re-choose Kind' : null" :source="\MockupParts\Src::of('tm2mst.mat_category (level 1)')" />
                         @endif
-                        <x-dl::field.select :name="$f('jenis')" label="Jenis" placeholder="— pilih jenis —" :options="$jenisOptions()" :value="$row['jenis']"
+                        <x-dl::field.select :name="$f('jenis')" label="Kind" placeholder="— choose type —" :options="$jenisOptions()" :value="$row['jenis']"
                             :source="\MockupParts\Src::of('tm2sdi.iqp_part_material.category_id', 'tm2mst.mat_category (level 2)')" />
-                        <x-dl::field.select :name="$f('gramatur')" label="Gramatur / Spec" placeholder="— semua —" :options="$gramOptions()" :value="$row['gramatur']" :disabled="$row['jenis'] === ''"
+                        <x-dl::field.select :name="$f('gramatur')" label="Grammage / Spec" placeholder="— all —" :options="$gramOptions()" :value="$row['gramatur']" :disabled="$row['jenis'] === ''"
                             :source="\MockupParts\Src::of('tm2sdi.iqp_part_material.category_id', 'tm2sdi.iqp_part_material.gram_weight', 'tm2mst.mat_category (level 3)')" />
                     </x-dl::form.row>
                 </div>
-                <x-dl::icon-button icon="delete" variant="danger" title="Hapus baris bahan" data-inq-mat-del :class="$fixed ? 'mp-mat__del is-off' : 'mp-mat__del'" />
+                <x-dl::icon-button icon="delete" variant="danger" title="Remove material row" data-inq-mat-del :class="$fixed ? 'mp-mat__del is-off' : 'mp-mat__del'" />
             </div>
             BLADE;
     }

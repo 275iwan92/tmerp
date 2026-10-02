@@ -72,7 +72,7 @@
       const go = why => {
         this.el.dispatchEvent(new CustomEvent('dl:form-action', {bubbles: true, detail: {action: a}}));
         // Print/Email tidak mengubah dokumen -> tidak kirim form (layar menangkap dl:form-action, mis. buka x-dl::doc-share).
-        if (!this.el.getAttribute('action') || a === 'print' || a === 'email') return toast(`Aksi: ${a} (pratinjau)`, 'success');
+        if (!this.el.getAttribute('action') || a === 'print' || a === 'email') return toast(Tf('f_action_prev', {a}), 'success');
         const af = this.el.dataset.actionField || '_action';
         let h = $(this.el, `input[type=hidden][name="${af}"]`); if (!h) { h = document.createElement('input'); h.type = 'hidden'; h.name = af; this.el.appendChild(h); }
         h.value = a;
