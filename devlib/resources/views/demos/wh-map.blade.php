@@ -29,7 +29,11 @@
     };
     $bins['L-RCV'] = $bin('L-RCV', 'IN_USE', [$paper], 11);
     $bins['L-INK-R01-01-1'] = $bin('L-INK-R01-01-1', 'IN_USE', [['code' => 'INK-CY', 'name' => 'Process Cyan', 'qty' => '120 kg', 'idle' => '25 days', 'dead' => false]], 40, false, 'Level 1');
-    $bins['L-INK-R01-01-2'] = $bin('L-INK-R01-01-2', 'IN_USE', [['code' => 'INK-WH', 'name' => 'White Ink', 'qty' => '40 kg', 'idle' => '335 days', 'dead' => true]], 13, true, 'Level 2');
+    $bins['L-INK-R01-01-2'] = $bin('L-INK-R01-01-2', 'IN_USE', [['code' => 'INK-WH', 'name' => 'White Ink', 'qty' => '40 kg', 'idle' => '335 days', 'dead' => true,
+        'tags' => [['label' => 'Arrived 01-Nov-2025'], ['label' => 'Expires 27-Oct-2026', 'tone' => 'warn'], ['label' => '1 pallets']]]], 13, true, 'Level 2');
+    // Beberapa baris kapasitas (berat, volume, luas tapak x tinggi) + tanda kedaluwarsa.
+    $bins['L-INK-R01-01-2'] = ['expiry' => true, 'caps' => [['label' => 'Weight', 'value' => '40 / 300 kg', 'pct' => 13], ['label' => 'Volume', 'value' => '0.20 / 3.00 m³', 'pct' => 7],
+        ['label' => 'Floor area × height', 'value' => '3.75 m² × 0.80 m'], ['label' => 'Pallets', 'value' => '1']]] + $bins['L-INK-R01-01-2'];
     $floors = [
         ['no' => 1, 'label' => 'Floor 1', 'zones' => [
             ['id' => 1, 'code' => 'RCV', 'name' => 'Receiving', 'tone' => 'violet', 'x' => 0.5, 'y' => 12, 'w' => 6, 'h' => 7.5, 'cells' => [['x' => 0.9, 'y' => 13, 'w' => 5.2, 'h' => 6.1, 'label' => 'RCV', 'bins' => ['L-RCV']]]],

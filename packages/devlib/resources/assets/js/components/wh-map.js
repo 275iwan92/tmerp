@@ -40,7 +40,7 @@
       const active = !!(this.q || this.only);
       $$(this.el, '[data-wm-cell]').forEach(c => {
         const okQ = !this.q || c.dataset.find.includes(this.q);
-        const okS = !this.only || (this.only === 'DEAD' ? c.dataset.dead === '1' : (c.dataset.status === this.only && c.dataset.dead !== '1'));
+        const okS = !this.only || (this.only === 'DEAD' ? c.dataset.dead === '1' : this.only === 'EXPIRY' ? c.dataset.expiry === '1' : (c.dataset.status === this.only && c.dataset.dead !== '1'));
         const ok = okQ && okS;
         c.classList.toggle('is-dim', !ok); c.classList.toggle('is-hit', ok && active);
         if (ok && active) { hit++; firstFloor ??= c.closest('[data-wm-svg]').dataset.wmSvg; }
@@ -67,11 +67,14 @@
           return `<button type="button" class="${String(i) === String(id) ? 'is-active' : ''} ${x.dead ? 'is-dead' : ''}" data-wm-level="${esc(i)}">${esc(x.level || x.code || i)}</button>`;
         }).join('') + '</div>'
         : '';
-      const bar = b.pct != null ? `<i><em class="dl-whmap__fill dl-whmap__fill--${st.toLowerCase()}" style="width:${Math.min(100, Math.max(0, b.pct))}%"></em></i>` : '';
-      const cap = b.capacity ? `<div class="dl-whmap__cap"><span>${esc(t.capacity)}</span><b>${esc(b.capacity)}</b>${bar}</div>` : '';
+      // Baris kapasitas: caps (berat, volume, luas tapak, ...) atau satu baris lama capacity + pct.
+      const fill = pct => pct != null ? `<i><em class="dl-whmap__fill dl-whmap__fill--${pct > 100 ? 'over' : (st === 'DEAD' ? 'dead' : st.toLowerCase())}" style="width:${Math.min(100, Math.max(0, pct))}%"></em></i>` : '';
+      const caps = (b.caps && b.caps.length ? b.caps : (b.capacity ? [{label: t.capacity, value: b.capacity, pct: b.pct}] : []));
+      const cap = caps.length ? '<div class="dl-whmap__cap">' + caps.map(c => `<span>${esc(c.label || '')}</span><b>${esc(c.value || '')}</b>${fill(c.pct)}${c.note ? `<small>${esc(c.note)}</small>` : ''}`).join('') + '</div>' : '';
+      const tags = i => (i.tags || []).map(g => `<em class="dl-whmap__tag ${g.tone ? 'dl-whmap__tag--' + esc(g.tone) : ''}">${esc(g.label || '')}</em>`).join('');
       const rows = (b.items || []).map(i => {
         const idle = i.dead ? `<span class="dl-badge dl-badge--danger dl-badge--pill">${esc(t.dead)}</span><small>${esc(i.idle || '')}</small>` : esc(i.idle || '');
-        return `<tr class="${i.dead ? 'is-dead' : ''}"><td><b>${esc(i.name || '')}</b><small>${esc(i.code || '')}${i.lot ? ' · ' + esc(i.lot) : ''}</small></td><td class="num">${esc(i.qty || '')}</td><td>${idle}</td></tr>`;
+        return `<tr class="${i.dead ? 'is-dead' : ''}"><td><b>${esc(i.name || '')}</b><small>${esc(i.code || '')}${i.lot ? ' · ' + esc(i.lot) : ''}</small>${tags(i) ? `<small>${tags(i)}</small>` : ''}</td><td class="num">${esc(i.qty || '')}</td><td>${idle}</td></tr>`;
       }).join('');
       const table = rows
         ? `<table class="dl-whmap__items"><thead><tr><th>${esc(t.item)}</th><th class="num">${esc(t.qty)}</th><th>${esc(t.idle)}</th></tr></thead><tbody>${rows}</tbody></table>`

@@ -178,8 +178,8 @@ final class Catalog
                     'p6-indicators' => $page('Dashboard Indicators', 'fa-solid fa-gauge-high', ['indicators' => ['KPI, gauge, progress ring, bullet, traffic light', $c('Kpi', 'Gauge', 'ProgressRing', 'Bullet', 'TrafficLight')]]),
                     'p6-codes' => $page('QR & Barcode', 'fa-solid fa-qrcode', ['codes' => ['QR & Barcode (Code128, EAN-13)', $c('Qr', 'Barcode')]]),
                     'p6-warehouse' => $page('Warehouse Map & Labels', 'fa-solid fa-warehouse', [
-                        'wh-map' => ['Warehouse map (building outline in metres: rectangle / L shape / any shape, floors, storage areas, bins, dead stock in red, bin panel)', $c('WhMap', 'Qr')],
-                        'wh-labels' => ['Location and item labels (QR + barcode + capacity), label sheet, scan field', $c('Label', 'LabelSheet', 'Scan', 'Qr', 'Barcode')],
+                        'wh-map' => ['Warehouse map (building outline in metres: rectangle / L shape / any shape, floors, storage areas, bins, dead stock in red, expiry mark, bin panel with weight / volume / floor area)', $c('WhMap', 'Qr')],
+                        'wh-labels' => ['Location, item and pallet labels (colour band, QR + barcode, expiry tags, three real sizes), size and printing guide, label sheet (label roll or A4), scan field', $c('Label', 'LabelGuide', 'LabelSheet', 'Scan', 'Qr', 'Barcode')],
                     ]),
                 ]],
             ['code' => 'MA', 'short' => 'MA', 'label' => 'Menus, Accounts & Layout', 'icon' => 'fa-solid fa-table-columns',

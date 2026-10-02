@@ -36,6 +36,7 @@
             <button type="button" data-wm-only="{{ $key }}"><i class="dl-whmap__swatch dl-whmap__swatch--{{ strtolower($key) }}"></i>{{ Lang::text($label) }} <b>{{ $counts[$key] }}</b></button>
         @endforeach
         <button type="button" data-wm-only="DEAD"><i class="dl-whmap__swatch dl-whmap__swatch--dead"></i>{{ Lang::text('Dead stock') }} <b>{{ $counts['DEAD'] }}</b></button>
+        @if ($counts['EXPIRY'])<button type="button" data-wm-only="EXPIRY"><i class="dl-whmap__swatch dl-whmap__swatch--expiry"></i>{{ Lang::text('Expired / expires soon') }} <b>{{ $counts['EXPIRY'] }}</b></button>@endif
     </div>
     <div class="dl-whmap__body">
         <div class="dl-whmap__canvas">
@@ -61,16 +62,18 @@
                                 @php
                                     $st = $cellStatus($c);
                                     $dead = $cellDead($c);
+                                    $exp = $cellExpiry($c);
                                     $cw = $c['w'] * $S;
                                     $ch = $c['h'] * $S;
                                     $find = strtolower(implode(' ', array_map(fn ($b) => ($bins[$b]['code'] ?? '').' '.implode(' ', array_map(fn ($i) => ($i['code'] ?? '').' '.($i['name'] ?? '').' '.($i['lot'] ?? ''), $bins[$b]['items'] ?? [])), $c['bins'] ?? [])));
                                     $fs = max(1.6, min(3.2, $cw / max(strlen((string) $c['label']), 1) * 1.5, $ch * 0.42));
                                 @endphp
-                                <g class="dl-whmap__cell dl-whmap__cell--{{ strtolower($st) }} {{ $dead ? 'is-dead' : '' }}" data-wm-cell="{{ implode(',', $c['bins'] ?? []) }}" data-status="{{ $st }}" data-dead="{{ $dead ? 1 : 0 }}" data-find="{{ $find }}" transform="translate({{ ($c['x'] - $z['x']) * $S }} {{ ($c['y'] - $z['y']) * $S }})" tabindex="0">
+                                <g class="dl-whmap__cell dl-whmap__cell--{{ strtolower($st) }} {{ $dead ? 'is-dead' : '' }}" data-wm-cell="{{ implode(',', $c['bins'] ?? []) }}" data-status="{{ $st }}" data-dead="{{ $dead ? 1 : 0 }}" data-expiry="{{ $exp ? 1 : 0 }}" data-find="{{ $find }}" transform="translate({{ ($c['x'] - $z['x']) * $S }} {{ ($c['y'] - $z['y']) * $S }})" tabindex="0">
                                     <rect width="{{ $cw }}" height="{{ $ch }}" rx="1" @if ($st === 'BLOCKED' && ! $dead) style="fill:url(#{{ $hatch }}-{{ $f['no'] }})" @endif/>
                                     <text x="{{ $cw / 2 }}" y="{{ $ch / 2 + $fs * 0.36 }}" text-anchor="middle" style="font-size:{{ round($fs, 2) }}px">{{ $c['label'] }}</text>
                                     @if (count($c['bins'] ?? []) > 1)<text class="dl-whmap__lv" x="{{ $cw - 0.8 }}" y="2.6" text-anchor="end">×{{ count($c['bins']) }}</text>@endif
                                     @if ($dead)<circle class="dl-whmap__deaddot" cx="2" cy="2" r="1.1"/>@endif
+                                    @if ($exp)<circle class="dl-whmap__expdot" cx="{{ $dead ? 4.8 : 2 }}" cy="2" r="1.1"/>@endif
                                 </g>
                             @endforeach
                             @if ($saveUrl)<rect class="dl-whmap__grip" data-wm-grip x="{{ $z['w'] * $S - 3 }}" y="{{ $z['h'] * $S - 3 }}" width="3" height="3"/>@endif

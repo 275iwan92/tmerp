@@ -13,7 +13,11 @@ namespace Devlib\Components;
 //             ], ...]], ...]
 // $bins    = [id => ['code', 'title' => teks kecil di bawah kode, 'status' => EMPTY|IN_USE|FULL|OVER|BLOCKED, 'dead' => bool,
 //               'capacity' => '1,935 / 3,200 kg', 'pct' => 60.5|null, 'note' => teks (alasan blokir, dst), 'qr' => isi QR, 'level' => label tingkat,
-//               'items' => [['code', 'name', 'qty' => teks, 'idle' => teks, 'dead' => bool], ...]], ...]
+//               'caps' => [['label' => 'Weight', 'value' => '1,935 / 3,200 kg', 'pct' => 60.5|null, 'note' => teks kecil], ...]
+//                         beberapa baris kapasitas (berat, volume, luas tapak); bila diisi menggantikan 'capacity' + 'pct',
+//               'expiry' => bool (ada isi yang kedaluwarsa / segera kedaluwarsa -> titik kuning + saringan legenda),
+//               'items' => [['code', 'name', 'qty' => teks, 'idle' => teks, 'dead' => bool,
+//                            'tags' => [['label' => teks, 'tone' => danger|warn|null], ...]], ...]], ...]
 // $actions = [['label', 'icon', 'url' => '...{id}...', 'tone' => primary|secondary|danger, 'when' => stock|usable|blocked|null], ...]
 //             tombol di panel bin; {id} / {code} diganti milik bin terpilih; 'post' => true = dikirim POST (dengan konfirmasi 'confirm').
 // $saveUrl = alamat POST {zone, x, y, w, h} saat area digeser / diubah ukurannya di mode Edit Layout (null = peta hanya-baca).
@@ -86,13 +90,25 @@ class WhMap extends DevlibComponent
         return false;
     }
 
-    // Jumlah per status + dead stock untuk baris ringkasan di atas peta.
+    public function cellExpiry(array $cell): bool
+    {
+        foreach ($cell['bins'] ?? [] as $id) {
+            if (! empty($this->bins[$id]['expiry'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Jumlah per status + dead stock + kedaluwarsa untuk baris ringkasan di atas peta.
     public function counts(): array
     {
-        $c = array_fill_keys(array_keys(self::STATUS), 0) + ['DEAD' => 0];
+        $c = array_fill_keys(array_keys(self::STATUS), 0) + ['DEAD' => 0, 'EXPIRY' => 0];
         foreach ($this->bins as $b) {
             $c[$b['status'] ?? 'EMPTY']++;
             $c['DEAD'] += empty($b['dead']) ? 0 : 1;
+            $c['EXPIRY'] += empty($b['expiry']) ? 0 : 1;
         }
 
         return $c;
