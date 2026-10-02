@@ -190,6 +190,15 @@
       Areas, Bins, Atur Tata Letak di Warehouse Map).
     - Status: dibangun di `ddt*` (mockup.test), **menunggu penilaian user**; menu `tm2sys` belum. Yang diputuskan agen
       sendiri dan menunggu koreksi: `docs/md_for_systems/warehouse_review.md` bagian 4.
+    - **Kapasitas = luas dan tinggi** (user 2026-10-02): tiap lantai (1, 2, 3) punya tinggi bersih; luas lantai x tinggi =
+      volume. Bin: luas tapak x tinggi tumpuk. Kapasitas kg tetap dipakai; status bin memakai yang lebih penuh dari keduanya.
+    - **Approval Stock Transfer**: untuk sementara di-skip, tetapi fasilitasnya ada dan bisa diaktifkan kapan saja
+      (Setup > Setting Approval, modul TF). Saat aktif, stok baru pindah sesudah approval terakhir.
+    - **Label palet wajib** dibuat setiap barang datang dan setiap isi satu palet habis dipakai (label ulang dengan qty
+      sisa). **Label item dan label palet harus berbeda.** Setiap label: QR code + barcode + **tanggal tiba**; pita warna
+      sebagai penanda; **kode palet dari supplier** ikut dicetak; **tag kedaluwarsa** untuk kertas dan tinta.
+    - Ukuran label dijelaskan di layar supaya mudah dicetak. Label palet dan label item bisa dicetak langsung dari
+      form Penerimaan Barang.
 
 ## B. Database & data
 
@@ -632,4 +641,7 @@
 | 2026-10-02 | B.15: urutan stage dari user — 4 Quotation Draft, 5 Customer Order Draft, 6 Customer Order menunggu approval, 7 CPDEL Draft; set stage 1–7 dibangun (31 inquiry menempuh seluruh alur; Pro-Dev = susunan grid contoh lewat tombol Confirm yang sama, Pro-Cost = mode manual + CostingEngine). Draft tanpa customer / ukuran bentangan / pilihan qty tidak ikut set stage. |
 | 2026-10-02 | **A.22: Inventory & Warehouse** — gudang = gedung (A5, A6, A10 + gedung lain; ukuran perkiraan, disesuaikan officer; bentuk bebas mis. huruf L; 1-3 lantai), area dan bin bisa ditambah user, Stock Transfer dengan label kapasitas + QR / barcode, dead stock merah (transfer bukan pergerakan), fasilitas label + lacak QR. Dibangun di ddt: Warehouse Map, Stock Transfer, Buildings / Storage Areas / Bins, Stock by Location, Print Location / Item Label, Track via QR/Barcode. Review: `md_for_systems/warehouse_review.md`. |
 | 2026-10-02 | A.22: denah gudang sementara dibuat agen (ukuran dan letak perkiraan, tanpa menunggu sketsa / foto) dan harus tetap bisa diubah user atau officer warehouse lewat layar. |
+| 2026-10-02 | A.22: **kapasitas gudang = luas dan tinggi** (tiap lantai 1-3: luas x tinggi bersih = volume; bin: tapak x tinggi tumpuk), kg tetap dipakai; yang lebih penuh dari keduanya menentukan status bin. |
+| 2026-10-02 | A.22: **approval Stock Transfer di-skip dulu, fasilitasnya ada** — modul `TF` di Setting Approval, bawaan tidak aktif, bisa diaktifkan kapan saja; saat aktif stok baru pindah sesudah approval terakhir. |
+| 2026-10-02 | A.22: **label wajib** — label palet dibuat setiap barang datang dan setiap isi satu palet habis dipakai (label ulang dengan qty sisa); label palet dan label item sengaja berbeda; setiap label punya QR code + barcode + tanggal tiba, pita warna sebagai penanda, kode palet dari supplier, dan tag kedaluwarsa (kertas, tinta); ukuran label dijelaskan di layar (60 x 40, 100 x 50, 100 x 150 mm; gulungan label atau A4); label palet dan label item bisa dicetak langsung dari Penerimaan Barang. Dibangun di ddt; tabel di ddt + tm2. |
 | 2026-10-02 | B.15: set stage 8–12 dibangun (Posted to Production + Work Order belum dimulai, Delivery Order Draft, Delivery Order Confirmed, Customer Invoice Draft, Customer Invoice Confirmed menunggu pembayaran) — usulan agen, belum dikonfirmasi user; rantai PO di samping: stage 4 PO Draft, 5–7 menunggu approval level 1–3, 8+ Approved. Build sungguhan tanpa transaksi. |

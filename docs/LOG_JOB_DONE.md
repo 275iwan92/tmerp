@@ -3738,3 +3738,28 @@ QR code ... warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BU
   rute simpan (label, blokir, buat bin, transfer simpan / Confirm / cetak / Cancel).
 - Belum: Print Pallet Label, Scan Transaction, putaway terarah, FEFO, titipan customer, subkon, cycle count, menu di
   tm2sys, denah nyata tiap gedung (lihat `backlog05_inventory_warehouse.md`).
+
+### 2026-10-02 — Inventory & Warehouse putaran 2 (mockup.test)
+
+- **Kapasitas luas x tinggi**: tinggi bersih tiap lantai (`wh_warehouse.height_f1..f3_m`), tinggi tumpuk area
+  (`wh_zone.stack_height_m`); bin = luas tapak x tinggi (m3); volume stok kertas diperkirakan; status bin = yang lebih
+  penuh antara berat dan volume (`WH_BIN_FULL_PCT`). Tabel Capacity per Floor di Warehouse Map; baris Berat / Volume /
+  Luas tapak x tinggi / Pallet di panel bin; kolom Volume di Stock by Location dan di pemeriksaan Stock Transfer.
+- **Palet berlabel**: `inv_pallet` + `inv_pallet_log`, `PalletService` (daftar pekerjaan label = selisih saldo stok dan
+  qty palet; label kedatangan; label ulang sesudah dipakai; palet ikut pindah saat Stock Transfer dan kembali saat
+  Cancel), layar **Print Pallet Label**, lacak palet + Move this Pallet.
+- **Label**: tiga jenis berbeda (lokasi, item, palet) dengan pita warna + tulisan, QR + barcode, tanggal tiba, kode palet
+  supplier, tag Expired / Expires soon; ukuran nyata 60 x 40, 100 x 50, 100 x 150 mm; cetak di gulungan label atau A4;
+  panduan ukuran + cara cetak + arti warna (`x-dl::label-guide`).
+- **Kedaluwarsa**: tanggal per palet (usulan dari umur simpan master), tag di label, peta, panel bin, laporan, lacak
+  (`WH_EXPIRY_SOON_DAYS`).
+- **Cetak label saat penerimaan barang**: tombol Pallet Labels dan Item Labels di form Penerimaan Barang (Posted).
+- **Approval Stock Transfer**: modul flow `TF`, bawaan tidak aktif; saat aktif stok pindah sesudah approval terakhir;
+  layar Stock Transfer Approval Center; Duplicate untuk dokumen Rejected / Cancelled.
+- Migration `000204` (skema + konstanta: ddt + tm2), `000205` (menu + Setting Approval TF: ddt saja), `000206` (kamus
+  Indonesia: ddt + tm2). Help 12 topik (ddt). Seeder `UatWarehouseSeeder` diperbarui. Engine Catalog: Pallet Labels.
+- Test: `PalletServiceTest` (8 test; approval dilewati di tm2 karena Setting Approval belum terpasang di sana) +
+  `StockTransferServiceTest` (6). Jalur approval dan penerimaan barang -> label diuji di ddt di dalam transaksi yang
+  dibatalkan (tidak meninggalkan data). Semua layar dirender dan dipotret (`docs/mockups/warehouse_app/`).
+- Ditemukan, belum diperbaiki: dokumen stok bertanggal mundur tidak mengubah saldo yang tampil (backlog 05.23).
+

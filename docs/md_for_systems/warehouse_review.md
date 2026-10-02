@@ -26,7 +26,8 @@
 | Laporan **Stock by Location** | jalan |
 | Help 10 layar + terjemahan Indonesia | sudah dimuat (mockup.test) |
 | Menu di tmerp.test | **belum** — menunggu penilaian user (tabel dan view sudah terpasang di tm2) |
-| Print Pallet Label, Scan Transaction (kerja gudang lewat HP), putaway terarah, cycle count | **belum** (tahap berikut) |
+| **Putaran 2** (bagian 9): kapasitas luas x tinggi (m3) + kg, Print Pallet Label, label item / palet / lokasi yang berbeda dengan pita warna dan tag kedaluwarsa, panduan ukuran label, cetak label dari Penerimaan Barang, approval Stock Transfer (bawaan mati) | jalan di mockup.test |
+| Scan Transaction (kerja gudang lewat HP), putaway terarah, cycle count | **belum** (tahap berikut) |
 
 Menu (mockup.test): **Inventory > Warehouse** (Warehouse Map, Stock Transfer, Setup > Buildings / Storage Areas / Bins,
 Report > Stock by Location), **Inventory > Label & QR Code** (Print Location Label, Print Item Label, Report > Label Print
@@ -114,10 +115,11 @@ Yang ikut berubah: jawaban asisten Deadstock, widget Deadstock Value, dan lapora
 
 | Hal | Catatan |
 |---|---|
-| Print Pallet Label, pallet ber-identitas | Butuh `inv_pallet` + pallet di kartu stok |
+| ~~Print Pallet Label, pallet ber-identitas~~ | **Dibangun di putaran 2** (bagian 9); palet tidak masuk kartu stok, hanya label di dalam saldo |
 | Scan Transaction (kerja gudang di HP): putaway, pick list | Butuh tugas gudang (`inv_wh_task`) |
 | Aturan putaway, saran bin | Tahap 2 rancangan |
-| FEFO / kedaluwarsa, titipan customer, subkon virtual, cycle count per bin | Tahap 2 rancangan |
+| Kedaluwarsa | **Dibangun di putaran 2** sebagai tanggal per palet + tag. Belum: saran ambil yang kedaluwarsa duluan (FEFO) |
+| Titipan customer, subkon virtual, cycle count per bin | Tahap 2 rancangan |
 | Transfer dua langkah (dalam perjalanan) antar lokasi yang jauh | Bila ada gudang beda kota |
 | Stock In / Out / Adjustment v2 yang memilih bin dari peta | Layar v1 masih dipakai; bin baru sudah muncul di pilihan lokasinya |
 | Menu + Help + data di tmerp.test | Menunggu penilaian user |
@@ -128,8 +130,112 @@ Yang ikut berubah: jawaban asisten Deadstock, widget Deadstock Value, dan lapora
 1. ~~Ukuran dan isi tiap gedung yang sebenarnya~~ **Dijawab user 2026-10-02:** denah sementara dibuat agen dulu, nanti diubah
    user / officer warehouse (Buildings, Storage Areas, Bins, Atur Tata Letak). Gedung lain di luar A5 / A6 / A10 ditambah
    user di Buildings saat namanya sudah ada.
-2. Kapasitas bin: tetap dalam kg (perlu berat per item di master), atau cukup jumlah pallet?
+2. ~~Kapasitas bin: kg atau pallet?~~ **Dijawab user 2026-10-02:** kapasitas dalam luasan dan tinggi gedung (lantai 1, 2, 3);
+   kg boleh juga. Dibangun: bagian 9.
 3. Batas dead stock tetap 6 bulan untuk semua jenis barang, atau berbeda per kategori (kertas, tinta, barang jadi)?
-4. Transfer perlu approval (mis. Kepala Gudang) atau cukup Confirm oleh petugas seperti sekarang?
+4. ~~Transfer perlu approval?~~ **Dijawab user 2026-10-02:** di-skip dulu, fasilitasnya dibuat dan bisa diaktifkan kapan
+   saja. Dibangun: bagian 9.
 5. Gudang lama buatan sistem (`WH-RAW-01`, dst) boleh dinonaktifkan setelah stok dummy-nya dipindah ke gedung nyata?
-6. Setelah disetujui: pasang menu ini di tmerp.test?
+6. ~~Pasang di tmerp.test?~~ **Dijawab user 2026-10-02:** di mockup dulu, sesudah itu direview.
+
+## 9. Putaran 2 (2026-10-02)
+
+Perintah user sesudah melihat Tahap 1: kapasitas dalam luasan dan tinggi gedung (lantai 1, 2, 3), kg boleh juga;
+approval transfer di-skip tetapi fasilitasnya dibuat dan bisa diaktifkan kapan saja; di mockup dulu; label palet dan
+label item, dengan warna sebagai penanda dan penjelasan ukuran label; label harus ada QR code, barcode, dan tanggal
+kedatangan; wajib buat label setiap kedatangan dan setiap habis pemakaian dalam satu palet; bedakan label item dan
+label palet; kode plate dari supplier harus disertakan; kertas dan tinta punya tanggal kedaluwarsa, harus ada tag;
+fasilitas cetak label palet dan label item saat penerimaan barang.
+
+### 9.1 Yang ditambahkan
+
+| Hal | Di mana | Gambar |
+|---|---|---|
+| Tinggi bersih tiap lantai (1, 2, 3) | Warehouse > Setup > Buildings | `10_buildings.jpg` |
+| Tinggi tumpuk tiap area | Warehouse > Setup > Storage Areas | `11_storage_areas.jpg` |
+| **Capacity per Floor**: luas, tinggi, volume ruang, area simpan, terpakai (m3 dan kg) | Warehouse Map, di bawah peta | `12_warehouse_map_capacity_expiry.jpg` |
+| Panel bin: berat, volume, luas tapak x tinggi, jumlah palet | Warehouse Map, klik bin | `12_...jpg` |
+| Tanda kedaluwarsa di peta (titik kuning + saringan) dan di tiap item | Warehouse Map | `12_...jpg` |
+| **Print Pallet Label**: daftar pekerjaan label, label kedatangan, label ulang, cetak ulang | Label & QR Code | `13`, `14`, `15` |
+| Label palet (pita = bulan tiba, kode palet supplier, lot, kedaluwarsa) | lembar cetak | `16_pallet_labels.jpg` |
+| Label item (pita = kelas stok, tanggal tiba, lot, kedaluwarsa) | lembar cetak | `17_item_labels.jpg` |
+| Label lokasi (pita = jenis area, berat maks, volume, luas tapak) | lembar cetak | `7_location_labels.jpg` |
+| Tombol **Pallet Labels** dan **Item Labels** di Penerimaan Barang yang sudah Posted | Procurement > Receive | `18`, `22`, `23` |
+| Lacak palet: label, isi, riwayat, Move this Pallet | Track via QR/Barcode | `19_track_pallet.jpg` |
+| Panduan ukuran label + cara cetak + arti warna | tiap layar label dan lembar cetak | `20_print_item_label_size_guide.jpg` |
+| **Stock Transfer Approval Center** + approval di form transfer (bawaan mati) | Warehouse | `21_stock_transfer_approval_center.jpg` |
+| Stock by Location: volume, tanggal tiba, tanggal kedaluwarsa, status Expired / Expires soon | Warehouse > Report | `9_stock_by_location.jpg` |
+
+### 9.2 Ukuran label (supaya mudah dicetak)
+
+| Ukuran | Dipakai untuk | Isi per lembar A4 |
+|---|---|---|
+| 60 x 40 mm | label item untuk kemasan kecil: dus, kaleng tinta, rol | 21 |
+| 100 x 50 mm | label bin / rak dan label item di tumpukan | 10 |
+| 100 x 150 mm | label palet, terbaca dari jarak beberapa meter | 2 |
+
+- **Gulungan label (printer label):** di jendela cetak pilih ukuran kertas sesuai gulungan, margin None, skala 100%.
+  Satu label = satu halaman.
+- **Kertas A4 (printer kantor):** kertas A4, margin None atau Minimum, skala 100%, nyalakan Background graphics supaya
+  pita warna ikut tercetak. Potong mengikuti garis tepi label.
+- Tanpa printer warna, pita tetap mencetak jenis label dan tandanya sebagai tulisan.
+- Pilihan gulungan / A4 ada di form cetak (Print On) dan bisa diganti di lembar cetaknya (tombol Label Roll / A4 Sheet).
+
+Arti warna pita: **label palet** = bulan tiba (Jan biru, Feb hijau, Mar jingga, Apr ungu, Mei hijau tua, Jun merah muda,
+Jul biru tua, Agu kuning, Sep hijau toska, Okt jingga tua, Nov cokelat, Des abu-abu); **label item** = kelas stok (bahan
+baku biru, setengah jadi kuning tua, barang jadi hijau); **label lokasi** = jenis area. Merah tidak dipakai untuk pita:
+merah = dead stock atau kedaluwarsa.
+
+### 9.3 Cara mencoba
+
+1. **Warehouse Map** > gedung A10. Legenda sekarang punya **Kedaluwarsa / segera kedaluwarsa**. Klik bin
+   `A10-PPR-L03-01`: panel menunjukkan Berat, Volume, Luas tapak x tinggi, Pallet, lalu tanggal tiba dan kedaluwarsa item.
+   Gulir ke bawah: tabel **Capacity per Floor**.
+2. **Setup > Buildings**: ubah Clear Height Floor 1 > Save. **Setup > Storage Areas**: ubah Stack Height. Kembali ke
+   peta: volume berubah.
+3. **Label & QR Code > Print Pallet Label** > gedung A10. Daftar berisi yang perlu **Label kedatangan** dan satu
+   **Label ulang sesudah dipakai** (`A10-PPR-L02-04`).
+4. Buka baris `A10-RCV` (kertas baru datang, belum berlabel): isi qty tiap palet, kode palet supplier, lot, tanggal
+   kedaluwarsa; pakai **+ Pallet** untuk memecah > **Create & Print** > lembar label > Print.
+5. Buka baris `A10-PPR-L02-04`: pilih palet yang dibuka, ketik qty sisa > **Relabel & Print**. Isi 0 untuk palet habis.
+6. **Print Item Label**: pilih stok, ukuran, Print On > Print.
+7. **Dari penerimaan barang:** Procurement > Receive > + New Record > supplier > gudang A10 + baris PO > isi Rack
+   Location `A10-RCV`, QC > Confirm. Di form yang sudah Posted klik **Pallet Labels** lalu **Item Labels**.
+8. **Track via QR/Barcode**: ketik nomor palet (mis. `PL2600015`) > Enter. Coba **Move this Pallet**.
+9. **Approval transfer:** Setup > Setting Approval > buka `TF` > Activate. Buat Stock Transfer > Confirm: status menjadi
+   Waiting Approval, stok belum pindah. Masuk sebagai pemeriksa (jabatan di level 1) > **Stock Transfer Approval
+   Center** > Approve: stok pindah. Deactivate untuk mematikannya lagi.
+
+### 9.4 Yang saya putuskan sendiri (mohon dikoreksi bila salah)
+
+| # | Keputusan | Alasan |
+|---|---|---|
+| 1 | "Kode plate dari supplier" = **kode palet yang tercetak di label supplier** pada tiap palet | Nomor kendaraan sudah ada di form penerimaan. Bila yang dimaksud lain (mis. nomor lot pabrik), cukup ganti nama isiannya |
+| 2 | Palet **tidak** masuk kartu stok: saldo tetap per item per bin, palet = label di dalam saldo itu | Tidak mengubah cara stok dan nilai dihitung; selisih saldo dan label menjadi daftar pekerjaan label |
+| 3 | Sistem tidak menebak palet mana yang dipakai; petugas mengetik qty sisa | Sistem tidak tahu palet mana yang dibuka |
+| 4 | Kedaluwarsa dicatat per palet; usulan = tanggal tiba + umur simpan master, boleh diganti | Tanggal sebenarnya ada di label supplier |
+| 5 | Segera kedaluwarsa = 30 hari sebelum tanggalnya (Settings > Constants `WH_EXPIRY_SOON_DAYS`) | Angka awal |
+| 6 | Status bin memakai yang lebih penuh antara berat dan volume; Penuh mulai 90% (`WH_BIN_FULL_PCT`) | Bin bisa penuh ruang sebelum penuh berat, dan sebaliknya |
+| 7 | Tinggi lantai dan tinggi tumpuk contoh: A10 7 m / 3,5 m; A5 6 m / 3,2 m; A6 5 m / 3 m; tumpukan kertas 1,6 m | Perkiraan, diubah officer |
+| 8 | Volume stok hanya diperkirakan untuk lembaran kertas (lembar x ukuran x tebal) | Tinta, lem, barang jadi belum punya data ukuran |
+| 9 | Pemeriksa approval transfer = jabatan yang sama dengan level 1 Stock Adjustment (Operational Manager) | "Kepala Gudang" belum punya pemegang; jabatan diganti di Setting Approval |
+| 10 | Saat approval aktif, nomor transfer lahir saat diajukan; Reject = berhenti, Duplicate untuk mengulang | Sama dengan dokumen ber-approval lain |
+| 11 | Sebagian isi palet dipindah dan jumlahnya tidak persis sama dengan palet mana pun: palet tidak ikut pindah | Muncul di daftar pekerjaan label (asal: label ulang; tujuan: label baru) |
+| 12 | Warna pita label palet = bulan tiba (12 warna) | Palet lama dan baru terlihat dari jauh; merah khusus untuk dead stock / kedaluwarsa |
+
+### 9.5 Data contoh putaran 2 (mockup.test)
+
+`UatWarehouseSeeder` dijalankan ulang: tinggi lantai dan tinggi tumpuk, 31 palet berlabel (dua kedaluwarsa, tiga segera
+kedaluwarsa), 11 posisi yang belum berlabel (8 di gedung A10), 1 posisi yang perlu label ulang, 3 transfer Confirmed (dua di antaranya
+membawa palet) + 1 Draft. Stage set dummy 1-12 tidak memuat stok gudang: sesudah memulihkan stage set, jalankan
+`php artisan db:seed --class=UatWarehouseSeeder --env=mockup --force`.
+
+### 9.6 Pertanyaan untuk user
+
+1. "Kode plate dari supplier": benar yang dimaksud kode palet di label supplier?
+2. Kedaluwarsa: cukup tag dan saringan, atau perlu **larangan** memakai / memindahkan palet yang sudah kedaluwarsa?
+3. Batas "segera kedaluwarsa" 30 hari, sama untuk kertas dan tinta?
+4. Label palet untuk **barang jadi** (hasil produksi) dibuat saat apa: saat hasil produksi masuk gudang?
+5. Approval transfer: siapa pemeriksanya (Kepala Gudang / Operational Manager), dan apakah perlu batas nilai?
+6. Masih terbuka dari Tahap 1: batas dead stock per kategori; gudang lama buatan sistem dinonaktifkan.
+

@@ -535,6 +535,9 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
   `App\Services\Inventory\StockTransferService` (`inv_transfer`, kartu stok `doc_type` TF); isi bin / kapasitas / dead
   stock hanya dari `App\Services\Inventory\WarehouseStock` (transfer TIDAK dihitung sebagai pergerakan: kolom view
   `last_item_movement`). Bagian 13 = yang dibangun; review user: `md_for_systems/warehouse_review.md`.
+  Bagian 14 (putaran 2): kapasitas = luas x tinggi (m3) + kg; palet berlabel = `inv_pallet` (TIDAK mengubah stok; selisih
+  saldo dan label = pekerjaan label, `App\Services\Inventory\PalletService`); tiga label berbeda (lokasi / item / palet)
+  hanya lewat `App\Support\V2\Data\Labels`; approval transfer = modul flow `TF`, bawaan mati.
 - `componentstandard.md` — **wajib dibaca sebelum menulis markup layar apa
   pun** (keputusan user 2026-09-23): komponen UI berlapis & object oriented —
   token `@theme` → primitive `app/View/Components/Ui/*` (`x-ui.button`,

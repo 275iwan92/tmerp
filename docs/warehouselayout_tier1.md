@@ -505,3 +505,117 @@ Layar v2: `warehouse-map`, `stock-transfer`, `wh-buildings`, `wh-zones`, `wh-bin
 `label-location`, `label-item`, `inv-label-history`, `scan-track`; cetakan `stock-transfer`.
 Objek DevLib: `x-dl::wh-map`, `x-dl::label`, `x-dl::label-sheet`, `x-dl::scan`.
 Menu, Help, dan data contoh: mockup.test (ddt) saja. Tabel dan view: ddt dan tm2.
+
+## 14. Putaran 2 (2026-10-02): kapasitas luas x tinggi, palet berlabel, kedaluwarsa, approval transfer
+
+Perintah user 2026-10-02 sesudah Tahap 1, berurutan: (1) "denahnya kamu buat dulu, nanti bisa diubah user atau officer
+warehouse"; (2) "kapasitas dalam luasan dan tinggi gedung, termasuk lantai 1, 2 dan 3"; "kapasitas kg boleh juga";
+(3) "transfer untuk sementara approval di-skip tapi fasilitas approval dibuat saja dan bisa diaktifkan kapan saja";
+(4) "setuju di mockup dulu setelah itu saya review"; (5) "jangan lupa label palet, label item, label kalau bisa ada
+color sebagai penanda dan jelaskan ukuran label agar mudah dicetak"; (6) "label harus ada QR code dan barcode termasuk
+kedatangan tanggal berapa"; (7) "wajib buat label setiap kedatangan dan setiap habis pemakaian dalam satu palet";
+(8) "bedakan label item dan label palet"; (9) "di setiap penerimaan ada kode plate dari supplier, harus disertakan";
+(10) "kertas, tinta pasti ada tanggal kedaluwarsa, pastikan ada tag untuk hal ini"; (11) "fasilitas cetak label palet
+dan cetak label item saat penerimaan barang".
+
+Tafsir yang dipakai (mohon dikoreksi user bila salah): "kode plate dari supplier" = **kode palet yang tercetak di label
+supplier** pada tiap palet yang datang (bukan nomor polisi kendaraan; nomor kendaraan sudah ada di form penerimaan).
+
+### 14.1 Skema (migration `2026_10_02_000204`, ddt + tm2)
+
+- `wh_warehouse` + `height_f1_m`, `height_f2_m`, `height_f3_m` = tinggi bersih tiap lantai (meter).
+- `wh_zone` + `stack_height_m` = tinggi tumpuk area (kosong = tinggi bersih lantainya).
+- `inv_transfer` + `flow_status` (SUBMITTED / REJECTED / APPROVED; kosong = tanpa approval); `inv_transfer_line` + `pallet_id`.
+- `tm2inv.inv_pallet`: satu palet berlabel. `pallet_no` (`PLyy#####`), kelas stok + item, `lot_no`,
+  `supplier_pallet_code`, `ref_doc_no` (no. penerimaan), `qty_initial` (saat tiba), `qty` (sekarang), `location_id` (bin),
+  `arrived_at`, `expiry_date`, `status` (ACTIVE / CLOSED), `label_count`, `last_label_at`.
+- `tm2inv.inv_pallet_log`: riwayat palet (CREATED, RELABEL, MOVED, CLOSED) dengan qty sebelum / sesudah, bin asal / tujuan,
+  nomor dokumen.
+- Konstanta (Settings > Constants, kategori INVENTORY > WAREHOUSE): `WH_BIN_FULL_PCT` (90), `WH_PAPER_BULK_CM3_PER_G`
+  (1,3), `WH_EXPIRY_SOON_DAYS` (30).
+- Hanya ddt (migration `000205`): menu Print Pallet Label dan Stock Transfer Approval Center, Setting Approval modul
+  `TF` (satu level, jabatan sama dengan level 1 Stock Adjustment, **tidak aktif**).
+
+### 14.2 Kapasitas: luas, tinggi, volume, dan kg
+
+1. **Lantai**: luas lantai (dari garis luar gedung) x tinggi bersih lantai = volume ruang. Tabel "Capacity per Floor" di
+   Warehouse Map: luas, tinggi, volume ruang, luas area penyimpanan dan persennya terhadap lantai, volume simpan,
+   terpakai (m3 dan kg), jumlah bin. Lantai tanpa tinggi = tanpa volume (diberi peringatan).
+2. **Bin**: luas tapak = luas area dibagi jumlah posisi di area itu (area terbuka = satu posisi); tinggi = tinggi tumpuk
+   area (atau tinggi bersih lantai) dibagi jumlah tingkat rak di posisi itu; volume = tapak x tinggi.
+3. **Isi**: berat seperti 13.3 butir 3. Volume kertas = lembar x panjang x lebar x tebal; tebal = `mat_raw.mm_thickness`,
+   atau gramatur x `WH_PAPER_BULK_CM3_PER_G` (mikron). Yang tidak bisa diperkirakan tidak dihitung dan disebut di panel bin.
+4. **Seberapa penuh** = yang lebih besar dari persen berat dan persen volume. FULL mulai `WH_BIN_FULL_PCT`, OVER di atas 100%.
+5. Semua angka dari `App\Services\Inventory\WarehouseStock` (`binGeometry`, `volumeM3`, `binSummaries`).
+
+### 14.3 Palet berlabel
+
+Saldo stok tetap satu-satunya kebenaran jumlah (kartu stok, per item per bin). Palet = satuan fisik berlabel di dalam
+saldo itu dan **tidak pernah mengubah stok**. Selisih keduanya adalah pekerjaan label
+(`App\Services\Inventory\PalletService::worklist`):
+
+| Keadaan | Arti | Yang dikerjakan |
+|---|---|---|
+| saldo > jumlah qty palet | barang datang belum berlabel palet | **Arrival label**: buat palet (qty, kode palet supplier, lot, kedaluwarsa) |
+| saldo < jumlah qty palet | isinya sudah dipakai, label masih qty lama | **Relabel after use**: ketik qty sisa palet yang dibuka; 0 = palet ditutup |
+| sama | semua berlabel benar | — |
+
+- Mesin hanya menunjukkan selisih; petugas yang menentukan palet mana berisi berapa.
+- Jumlah palet baru tidak boleh lebih dari yang belum berlabel. Qty sisa tidak boleh lebih dari qty saat tiba.
+- Tanggal kedaluwarsa diusulkan = tanggal tiba + `mat_raw.shelf_life_days` (bila master terisi); petugas menggantinya
+  dengan tanggal di label supplier. Tag: **Expired** (lewat) dan **Expires soon** (dalam `WH_EXPIRY_SOON_DAYS` hari)
+  — tampil di label, peta (titik kuning + saringan legenda), panel bin, Stock by Location, daftar palet, lacak.
+- **Stock Transfer**: palet ikut pindah. Baris yang lahir dari satu palet (tombol Move this Pallet) memindahkan palet
+  itu; baris yang mengosongkan posisi memindahkan semua paletnya; sebagian isi memindahkan palet tertua (FIFO) bila
+  jumlahnya persis sama dengan qty baris; selain itu palet tetap dan daftar pekerjaan label menunjukkan selisihnya.
+  Cancel mengembalikan palet yang pindah karena transfer itu.
+- **Saat penerimaan barang**: form Penerimaan Barang (SPB) yang sudah Posted punya tombol **Pallet Labels** dan
+  **Item Labels**; layar label terbuka dengan baris penerimaan itu (bin, qty diterima, lot dari penerimaan, nomor SPB).
+  Sumber = dokumen stok masuk yang dibuat posting SPB (`pv_receipt.rm_stock_doc_id`).
+
+### 14.4 Tiga label yang berbeda
+
+| Label | Kode besar | Pita warna = | Isi |
+|---|---|---|---|
+| Lokasi | kode bin | jenis area | area, lantai, gedung, berat maks, volume, luas tapak x tinggi, palet, % terisi |
+| Item | kode item | kelas stok (RM biru, SFG kuning tua, FG hijau) | nama, qty, bin, **tanggal tiba**, lot, kedaluwarsa, berat |
+| Palet | nomor palet | **bulan tiba** (12 warna) + tulisan bulan-tahun | item, qty besar, tanggal tiba, kode palet supplier, lot, no. penerimaan, bin, kedaluwarsa, label ke- |
+
+- Semua label: QR (isi = alamat halaman lacak) + barcode 1D. Garis merah tebal di kiri = dead stock atau kedaluwarsa.
+  Pita tetap terbaca di printer hitam-putih karena jenis label dan tandanya tercetak sebagai tulisan.
+- **Ukuran nyata**: 60 x 40 mm (kemasan kecil; 21 per lembar A4), 100 x 50 mm (bin dan tumpukan; 10 per A4),
+  100 x 150 mm (palet; 2 per A4). Isi label disesuaikan ukurannya supaya tidak terpotong (`Labels::fit`).
+- **Dua cara cetak**: gulungan label (printer label, satu label = satu halaman seukuran label, tanpa tepi) atau kertas
+  A4 (label rapat, tepi 5 mm, dipotong mengikuti garis). Panduan ukuran + cara cetak + arti warna ada di tiap layar
+  label dan di lembar cetaknya (`x-dl::label-guide`).
+- Tanggal tiba satu posisi stok = baris kartu masuk (IN / saldo awal) terakhir item itu di bin itu; bin yang hanya
+  menerima lewat transfer memakai tanggal masuk terakhir item itu di mana pun.
+
+### 14.5 Approval Stock Transfer (bawaan mati)
+
+- Modul flow `TF` di Setup > Setting Approval. **Tidak aktif** = Confirm langsung memindahkan stok (seperti Tahap 1).
+- Diaktifkan: Confirm = diajukan (nomor lahir, status Waiting Approval, stok **belum** pindah). Pemeriksa level berjalan:
+  Approve / Reject / Hold di form transfer atau di **Stock Transfer Approval Center**. Approve terakhir = stok pindah
+  (stok diperiksa dulu; bila sudah tidak cukup, persetujuan ditolak dengan pesan). Reject = berhenti, tanpa gerakan
+  stok; Duplicate membuat Draft baru. Cancel saat menunggu = dibatalkan tanpa gerakan stok.
+- Nilai untuk batas level = qty x harga rata-rata bin asal.
+
+### 14.6 Layar dan objek (tambahan)
+
+Layar v2 baru: `label-pallet` (Print Pallet Label), `approval-tf` (Stock Transfer Approval Center). Diubah:
+`warehouse-map` (kapasitas per lantai, baris kapasitas bin, kedaluwarsa), `stock-transfer` (approval, volume, palet),
+`label-item`, `label-location`, `scan-track` (lacak palet), `inv-rpt-location` (volume, tiba, kedaluwarsa),
+`wh-buildings` (tinggi lantai), `wh-zones` (tinggi tumpuk), `purchase-receive` (tombol label; hanya dua tombol itu).
+Objek DevLib: `x-dl::label` (jenis, pita warna, tag, ukuran nyata), `x-dl::label-guide` (baru), `x-dl::label-sheet`
+(gulungan / A4), `x-dl::wh-map` (beberapa baris kapasitas, tanda kedaluwarsa).
+Engine Catalog: Warehouse Stock, Stock Transfer Posting, Pallet Labels. Test: `PalletServiceTest`,
+`StockTransferServiceTest`.
+
+### 14.7 Yang diketahui belum beres
+
+- Posting dokumen stok bertanggal lebih awal dari baris kartu terakhir item + bin yang sama tidak mengubah saldo yang
+  tampil (`StockPostingService` tidak menghitung ulang baris sesudahnya). Bukan bagian putaran ini; dicatat di backlog 05.23.
+- Master `shelf_life_days` baru terisi untuk sedikit item, jadi tanggal kedaluwarsa umumnya diketik petugas.
+- Volume hanya bisa diperkirakan untuk lembaran (kertas); tinta, lem, barang jadi belum punya data ukuran.
+- Stage set dummy 1-12 tidak memuat stok gudang; sesudah memulihkan stage set, jalankan `UatWarehouseSeeder` lagi.
+
