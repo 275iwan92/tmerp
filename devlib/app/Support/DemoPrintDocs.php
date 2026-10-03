@@ -27,11 +27,11 @@ final class DemoPrintDocs
     }
 
     // Tanpa nilai uang: tanpa total; 2 baris -> A5 landscape.
-    public static function deliveryNote(): Document
+    public static function deliveryNote(string $status = 'CONFIRMED'): Document
     {
         self::boot();
 
-        return new class(['number' => '10262874', 'date' => '2026-10-01', 'status' => 'CONFIRMED', 'printedBy' => 'Yuna', 'co_no' => '2602282',
+        return new class(['number' => '10262874', 'date' => '2026-10-01', 'status' => $status, 'printedBy' => 'Yuna', 'co_no' => '2602282',
             'party' => ['name' => 'PAK A. YANI', 'lines' => ['PERUMAHAN CITRA KAYANE RESIDENCE', 'MALANG']],
             'rows' => [['name' => 'YAN OB KINGZANA KRIPIK PISANG (DS000)', 'qty' => 508, 'unit' => 'PCS', 'weight_kg' => 12.7, 'bundles' => 6, 'remark' => '100 / bundle'],
                 ['name' => 'JD BOX DONAT UK 20 X 20 X 6 CM (DS000)', 'qty' => 3000, 'unit' => 'PCS', 'weight_kg' => 81, 'bundles' => 60, 'remark' => '50 / bundle']]]) extends Document

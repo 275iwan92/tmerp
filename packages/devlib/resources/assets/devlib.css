@@ -2744,6 +2744,8 @@ a.dl-ycal__d:hover{background:var(--dl-hover);outline:1px solid var(--dl-accent)
 .dl-pdoc__f.is-st{grid-template-columns:29mm 3mm 1fr auto}
 .dl-pdoc__stamp{border:.3mm solid #222;padding:.3mm 2.2mm;font-weight:700;font-size:8.5pt!important;letter-spacing:.1em;color:#111!important;text-transform:uppercase}
 .dl-pdoc__stamp:empty{display:none}
+.dl-pdoc__wm{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:92pt;font-weight:800;font-style:italic;letter-spacing:.18em;text-transform:uppercase;color:#000;opacity:.09;transform:rotate(-28deg);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.dl-pdoc__sheet.is-a5 .dl-pdoc__wm{font-size:68pt}
 .dl-pdoc__hand{display:block;border-bottom:.15mm dotted #8a8a8a;height:3.4mm}
 /* 3. NB / kalimat pembuka */
 .dl-pdoc__nb{font-size:9pt;height:5.2mm;display:flex;align-items:center;white-space:nowrap;overflow:hidden}

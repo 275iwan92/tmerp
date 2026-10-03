@@ -15,6 +15,7 @@
     @foreach ($doc->sheets() as $sheet)
         <section class="dl-pdoc__sheet is-{{ $paper }}" data-pd-sheet data-pd-type="{{ $doc->type }}"
             style="--pd-info-rows:{{ $doc->infoRows }};--pd-rh:{{ $doc->rowHeight }}mm;--pd-tail:{{ $doc->tailHeight }}mm">
+            @if ($wm = $doc->watermark())<div class="dl-pdoc__wm" aria-hidden="true">{{ $wm }}</div>@endif
             <header class="dl-pdoc__kop">
                 <div class="dl-pdoc__co">
                     @if (! $co['logo'])<span class="dl-pdoc__logo">{{ $co['initials'] }}</span>@endif

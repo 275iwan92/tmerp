@@ -352,6 +352,9 @@
 6. **Siklus tombol:** sebelum Confirm = Save + Delete (+ Confirm); sesudah Confirm = hanya Cancel + Print.
    Delete = hard delete sebelum confirm. Cancel = sesudah confirm, alasan wajib. Edit = form yang sama dengan New.
 7. **Setiap form punya Print** (PDF, JPEG, HTML online + QR code) **dan Email**.
+   **Dokumen Draft boleh dicetak** (user 2026-10-03, mulai dari Purchase Requisition): tombol Print tidak dikunci oleh status;
+   lembar dokumen berstatus DRAFT memakai tanda air besar miring "DRAFT" (otomatis dari objek DevLib `x-dl::print-doc`,
+   `Document::watermark()`), sehingga cetakan draft tidak bisa dikira dokumen sah.
 8. **Back** kembali ke layar sebelumnya. Meninggalkan form yang berubah wajib muncul dialog Save / Don't Save / Cancel.
 9. **Approval:** read-only; Approve/Reject = final; Hold = sementara; setiap keputusan dicatat (siapa, kapan, level, alasan).
 10. **Input teks** memakai komponen dengan badge aa/Aa/AA. Nilai yang ada di master WAJIB dipilih lewat lookup,
@@ -721,3 +724,4 @@
 | 2026-10-03 | A.23: laporan stok semua kelas dipasang juga di tmerp.test (menu, Help, kamus); tiap laporan diperiksa tersambung ke tabel di kedua database; sidebar menu lama menampilkan grup di dalam grup sebagai grup sendiri ("Warehouse › Report"). Data dummy laporan (`UatStockReportSeeder`) hanya di mockup.test, tanpa dokumen di periode akuntansi tertutup. |
 | 2026-10-03 | **B.16: Material Category = pembentuk KODE ITEM** (user: "Material category ini pembentuk KODE ITEM. IMPORTANT !!!!", disampaikan untuk ke-7 kalinya; acuan `docs/ddl/doc_rmprefix1.sql`). Rantai 5 tingkat, kode item = gabungan prefix tiap tingkat (`PCC02002`), layar = dropdown yang saling terkait seperti yang lama; daftar rata Level + Parent di v2 salah. Arti tiap tingkat berbeda per kategori, label layar Category 1 … 5. Rinci: `md_for_systems/matcategory_delta.md` §5. |
 | 2026-10-03 | B.3: sapuan multi-bahasa — sekitar 3.000 teks layar v2, pesan, objek DevLib, mockup-parts dan service kini English di kode + pasangan Indonesia di kamus (ddt + tm2); bahasa ikut akun user; pesan validasi Indonesia (`lang/id`); label menu English + kamus; penjaga `MultiLanguageRatchetTest` memakai kosakata 2.100 kata; status dan sisa keputusan di `docs/md_for_systems/multilanguage_status.md`. |
+| 2026-10-03 | C.7: **PR Draft boleh dicetak dengan tanda air DRAFT** besar miring di lembarnya (user: "PR ini walau draft bisa di cetak, hanya cetakan print out ada tulisan draft miring dan besar"). Tanda air milik objek DevLib `x-dl::print-doc` (status DRAFT), berlaku untuk semua dokumen; tombol Print di PR dibuka untuk Draft / Submitted. Contoh di devlib.test → Print Document → Draft document. |

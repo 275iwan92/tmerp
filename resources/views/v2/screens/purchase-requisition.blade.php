@@ -73,7 +73,8 @@
         :tabs="['general' => 'General', 'notes' => 'Notes']"
         :created-by="$pr->created_by" :created-at="$pr->created_at?->toDateTimeString()" :updated-by="$pr->updated_by" :updated-at="$pr->updated_at?->toDateTimeString()">
         <x-slot:special>
-            @unless (in_array($pr->status, ['DRAFT', 'SUBMITTED'], true))<x-dl::button size="sm" preset="print" label="Print" :href="\App\Support\V2\Print\PrintDocs::url('purchase-requisition', $pr->pr_id)" target="_blank" />@endunless
+            {{-- Draft boleh dicetak (user 2026-10-03): lembarnya memakai tanda air DRAFT dari x-dl::print-doc. --}}
+            <x-dl::button size="sm" preset="print" label="Print" :href="\App\Support\V2\Print\PrintDocs::url('purchase-requisition', $pr->pr_id)" target="_blank" />
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('PR No.')</span><b>{{ $pr->doc_no ?: t('(on Confirm)') }}</b></div>
