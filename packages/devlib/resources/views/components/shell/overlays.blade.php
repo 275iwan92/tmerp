@@ -37,7 +37,8 @@
     @foreach ($drawers as $key => $d)
         {{-- Laci lebar = layar penuh di iframe, dimuat saat pertama dibuka (Shell::openWideDrawer). --}}
         <aside class="dl-drawer dl-drawer--wide" data-dl-drawer="{{ $key }}" data-dl-wide-url="{{ $d['url'] }}" data-dl="drawer {{ $key }}" data-dl-class="bagian Shell" data-dl-src="{{ $d['source'] ?? 'layar penuh' }}">
-            <div class="dl-dr-head"><i class="fa-solid {{ $d['icon'] ?? 'fa-window-maximize' }} dl-dr-ico"></i><span class="dl-dr-title">{{ \Devlib\Lang::text($d['label']) }}</span><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
+            {{-- Tanpa judul (user 2026-10-04): breadcrumb layar di dalam iframe sudah menyebutkannya; hanya tombol tutup. --}}
+            <div class="dl-dr-head dl-dr-head--bare"><button type="button" class="dl-dr-x" data-dl-close aria-label="{{ \Devlib\Lang::text('Close') }}"><i class="fa-solid fa-xmark"></i></button></div>
             <iframe class="dl-drawer__frame" title="{{ \Devlib\Lang::text($d['label']) }}"></iframe>
         </aside>
     @endforeach

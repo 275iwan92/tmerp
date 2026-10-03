@@ -6,6 +6,7 @@ use App\Models\Sys\SysSupportTicket;
 use App\Support\V2\Grid\DbGrid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 // Support Tickets (v1: pages::setup.support-tickets): tiket yang dikirim user dari Bantuan & dukungan (F1). Buka = layar v1
@@ -66,7 +67,7 @@ class SupportTicketGrid extends DbGrid
 
     protected function query(): Builder
     {
-        return SysSupportTicket::query()->with('creator')->withCount('replies')->orderByDesc('id_ticket');
+        return SysSupportTicket::query()->with(['creator', 'attachments'])->withCount('replies')->orderByDesc('id_ticket');
     }
 
     public function columns(): array
@@ -77,6 +78,7 @@ class SupportTicketGrid extends DbGrid
             ['key' => 'screen', 'label' => 'Screen'],
             ['key' => 'problem', 'label' => 'Problem'],
             ['key' => 'replies', 'label' => 'Replies', 'type' => 'number'],
+            ['key' => 'files', 'label' => 'Files', 'type' => 'number'],
             ['key' => 'resolved_by', 'label' => 'Resolved By', 'visible' => false],
             ['key' => 'resolved', 'label' => 'Resolved', 'type' => 'date'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::STATUS_TONES],
@@ -89,6 +91,8 @@ class SupportTicketGrid extends DbGrid
             'ticket_no' => $m->ticket_no, 'sender' => $m->creator?->name ?: $m->creator?->login, 'created' => $m->created_at?->toDateString(),
             'screen' => $m->screen_context, 'problem' => Str::limit((string) $m->description, 140), 'replies' => (int) $m->replies_count,
             'resolved_by' => $m->resolved_by, 'resolved' => $m->resolved_at?->toDateString(), 'status' => $m->status ?: 'OPEN',
+            'files' => $m->attachments->count(),
+            'attachments' => $m->attachments->map(fn ($a) => ['name' => basename($a->file_path), 'url' => Storage::disk('public')->url($a->file_path)])->all(),
         ];
     }
 
@@ -105,5 +109,13 @@ class SupportTicketGrid extends DbGrid
     public function filters(): array
     {
         return ['screen' => 'Screen', 'status' => 'Status'];
+    }
+
+    public function detail(): array
+    {
+        return ['key' => 'attachments', 'title' => 'Attachments', 'columns' => [
+            ['key' => 'name', 'label' => 'File', 'strong' => true],
+            ['key' => 'url', 'label' => 'Link'],
+        ]];
     }
 }

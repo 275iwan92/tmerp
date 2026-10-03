@@ -107,15 +107,22 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
     // Tiket Bantuan dari halaman profil (menu akun / F1) -> tm2sys.sys_support_ticket, dijawab tim developer di Setup > Support Tickets.
     Route::post('/support/ticket', function (Request $r) {
-        $v = Validator::make($r->all(), ['description' => ['required', 'string', 'max:5000'], 'screen_context' => ['nullable', 'string', 'max:150']],
-            [], ['description' => t('Problem description')]);
+        $back = fn () => $r->input('return') === 'help' ? route('v2.help').'?tab=tickets' : route('v2.home');
+        // Lampiran (user 2026-10-04): sampai 5 berkas, 5 MB per berkas -> storage/app/public/support/<ticket_no>/ + sys_support_ticket_attachment.
+        $v = Validator::make($r->all(), ['description' => ['required', 'string', 'max:5000'], 'screen_context' => ['nullable', 'string', 'max:150'],
+            'files' => ['nullable', 'array', 'max:5'], 'files.*' => ['file', 'max:5120', 'mimes:jpg,jpeg,png,pdf,xlsx,xls,docx']],
+            [], ['description' => t('Problem description'), 'files' => t('Attachments'), 'files.*' => t('Attachment')]);
         if ($v->fails()) {
-            return redirect($r->input('return') === 'help' ? route('v2.help').'?tab=ticket' : route('v2.home'))->withErrors($v)->withInput()->with('v2_profile_page', 'ticket');
+            return redirect($back())->withErrors($v)->withInput()->with('v2_profile_page', 'ticket');
         }
         $d = $v->validated();
-        $t = SysSupportTicket::create($d + ['ticket_no' => SysSupportTicket::nextNo(), 'created_by_user_id' => Auth::id(), 'status' => 'OPEN']);
+        $t = SysSupportTicket::create(['description' => $d['description'], 'screen_context' => $d['screen_context'] ?? null,
+            'ticket_no' => SysSupportTicket::nextNo(), 'created_by_user_id' => Auth::id(), 'status' => 'OPEN']);
+        foreach ($r->file('files', []) as $f) {
+            $t->attachments()->create(['file_path' => $f->storeAs('support/'.$t->ticket_no, $f->getClientOriginalName(), 'public'), 'uploaded_at' => now()]);
+        }
 
-        return redirect($r->input('return') === 'help' ? route('v2.help').'?tab=ticket' : route('v2.home'))->with(['v2_profile_page' => 'ticket', 'v2_flash' => tf('Ticket :no sent to the support team.', ['no' => $t->ticket_no])]);
+        return redirect($back())->with(['v2_profile_page' => 'ticket', 'v2_flash' => tf('Ticket :no sent to the support team.', ['no' => $t->ticket_no])]);
     })->name('support.ticket');
 
     Route::post('/logout', function (Request $r) {
