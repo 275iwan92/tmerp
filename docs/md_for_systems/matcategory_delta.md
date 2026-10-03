@@ -150,9 +150,29 @@ Merapikan kode item lama ke rantai 5 tingkat = keputusan user (data lama tidak 1
 - `doc_rmprefix5` Kraft: `category5` kosong tetapi `prefix5` terisi (merek belum diketahui, nomor sudah dipakai).
 - Dua baris `R3` di bawah Plastik (prefix `3` dan `4`).
 
-## 4. Kalau mau tambah kategori baru
+## 4. Kalau mau tambah kategori baru (layar v2, 2026-10-03)
 
-Lewat layar **Master Kategori Bahan Baku** (`/master/mat-category`), bukan
-insert manual ke DB lagi. Pilih Level → (kalau Level > 1) pilih Induk → isi
-Nama & Kode Prefix → simpan. Kalau Level = 1, ada seksi tambahan "Default
-Akuntansi" (fallback kalau item individualnya sendiri tidak override akun).
+Layar **Master Data > Master Raw Material Category** (`/v2/s/md-matcat`, kedua situs). Pilih Category 1, lalu Category 2
+hanya berisi isi di bawahnya, dan seterusnya; kode item tersusun selagi memilih. **Add** di bawah satu tingkat = entri baru
+di bawah rantai yang sedang dipilih; isi Name + Prefix lalu Save. Category 1 juga punya Stock Class + tiga akun bawaan.
+Layar v1 (`/master/mat-category`, pohon Level + Induk) sudah diarsipkan.
+
+## 6. Yang dibangun 2026-10-03 (status + serah terima)
+
+| Bagian | File |
+|---|---|
+| Objek DevLib dropdown berantai penyusun kode (umum, dipakai lagi untuk Product) | `packages/devlib/src/Components/CodeChain.php` (`x-dl::code-chain`), `resources/assets/js/components/code-chain.js`, demo `devlib/resources/views/demos/code-chain.blade.php` |
+| Aturan rantai + kode (posisi terkunci, prefix per tingkat, kode tidak bentrok, ganti nama ikut ke `mat_raw`) | `app/Services/Master/MaterialCategoryService.php` |
+| Layar + daftar + cetakan | `resources/views/v2/screens/md-matcat.blade.php`, `app/Support/V2/Grid/Master/MatCategoryGrid.php` (print = seluruh rantai, route `v2.report.print`), route simpan `v2.matcat.save` |
+| Pagar | `tests/Feature/MaterialCategoryChainTest.php`: setiap baris `doc_rmprefix1.sql` dicocokkan ke `mat_category` (549 cocok; 7 penyimpangan 5.7 dikunci sebagai daftar KNOWN_*) |
+| Help + kamus | `resources/data/help/master_setup.json` (`md-matcat`), migration `2026_10_03_000030_dictionary_material_category_chain` |
+
+**Belum / menunggu user:**
+- 7 penyimpangan data 5.7 (ZETLA BROWN tanpa induk, R10 dan BOTTCHER PRO AR hilang, "Chemical" vs "Chemical Liquid",
+  104 X 66 CM berprefix Art Papper, tambahan Lamination / Others / Duplex 350gr) -- keputusan user, tidak diubah agen.
+- Form Raw Material v1 dan PR masih memakai dropdown berantai lamanya sendiri (rantai benar, tetapi belum `x-dl::code-chain`
+  dan belum memakai aturan "kode tidak bentrok" dari service).
+- Kode item lama di `mat_raw` (5.6) belum dirapikan.
+- **Pola yang sama untuk PRODUCT** (perintah user 2026-10-03: "POLA material category ini jalankan juga untuk PRODUCT ...
+  make this can print out") -- belum dimulai; perlu dilihat dulu bagaimana `prod_product.product_code` dibentuk sekarang
+  dan tingkat apa saja yang membentuknya, lalu preview ke user sebelum dibangun (`x-dl::code-chain` sudah siap dipakai).

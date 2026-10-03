@@ -3901,3 +3901,15 @@ QR code ... warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BU
 - Test: `StockPostingOrderTest` (9 test). Belum dikerjakan: jurnal koreksi (menunggu keputusan user), hapus + bangun
   ulang dummy kartu stok yang salah, layar tutup periode inventory (backlog 05.23, 05.37).
 
+
+### 2026-10-03 -- Material Category = pembentuk kode item: dropdown berantai Category 1-5 (rulebook B.16)
+
+- User (ke-7 kali): Material Category membentuk KODE ITEM (`doc_rmprefix1..5` -> `mat_category`); layar harus dropdown
+  saling terkait seperti yang lama, bukan daftar rata Level + Parent. Dicatat di CLAUDE.md, rulebook B.16,
+  `matcategory_delta.md` 5-6, memori.
+- Dibangun: objek DevLib `x-dl::code-chain` (umum), `MaterialCategoryService` (aturan rantai + kode), layar v2 `md-matcat`
+  (form entri yang dipilih + daftar isi tingkat berikutnya + Print seluruh rantai), Help, kamus Indonesia. Terpasang di
+  mockup.test dan tmerp.test; layar v1 diarsipkan ke `tmerp_unused`; menu kedua situs menunjuk ke layar v2.
+- Audit: 549 rantai sumber cocok persis di kedua database; 7 penyimpangan data asal dicatat (5.7), tidak diubah.
+- Test: `MaterialCategoryChainTest` (8 test). Belum: pola yang sama untuk Product, form Raw Material / PR ke objek baru,
+  kode item lama di `mat_raw`.
