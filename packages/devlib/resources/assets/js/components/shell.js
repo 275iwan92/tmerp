@@ -197,7 +197,8 @@
 
     // Aksi akun yang sama untuk menu avatar (Classic) maupun roda gigi (Layer Menu).
     command(a) {
-      if (a === 'chat') this.openDrawer('chat');
+      if (this.wideDrawer(a)) this.openWideDrawer(a);
+      else if (a === 'chat') this.openDrawer('chat');
       else if (a === 'notif' || a === 'ai') this.openDrawer(a);
       else if (a === 'edit' || a === 'pass') $(this.el, `[data-dl-modal="${a}"]`).classList.add('is-on');
       else if (a === 'palette') this.openPalette();
@@ -409,6 +410,15 @@
     }
 
     /* ---------------- laci & asisten AI ---------------- */
+    // Laci lebar dari kanan (user 2026-10-03: Edit profile, Help & support); layar dimuat sekali saat pertama dibuka.
+    wideDrawer(id) { return $(this.el, `[data-dl-drawer="${id}"][data-dl-wide-url]`); }
+
+    openWideDrawer(id) {
+      const d = this.wideDrawer(id), f = $(d, 'iframe');
+      if (!f.getAttribute('src')) f.src = d.dataset.dlWideUrl;
+      this.openDrawer(id);
+    }
+
     openDrawer(id) {
       $$(this.el, '.dl-drawer.is-on').forEach(d => d.classList.remove('is-on'));
       $(this.el, `[data-dl-drawer="${id}"]`).classList.add('is-on'); this.backdrop.classList.add('is-on');

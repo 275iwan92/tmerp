@@ -51,9 +51,10 @@ class Shell extends DevlibComponent
         public array $account = [],
         // true tepat sesudah login: tab kerja lama dan posisi Layer Menu dibuang (boot.js) -> opening screen tampil.
         public bool $fresh = false,
-        // Baris di halaman profil Edit profile yang membuka layar penuh sebagai tab kerja (data diri, cuti, keamanan, ...):
-        // [['label', 'url', 'icon' => 'fa-...', 'code' => kode tab]]. Kosong = hanya isian nama / e-mail / telepon.
-        public array $profileLinks = [],
+        // Laci LEBAR dari kanan berisi layar penuh (iframe), dibuka oleh aksi akun berkunci sama (user 2026-10-03: Edit profile dan
+        // Help & support "banyak aspek, windownya harus besar"): ['edit' => ['label', 'icon' => 'fa-...', 'url'], 'help' => [...]].
+        // Tanpa laci: 'edit' = modal kecil nama / e-mail / telepon, 'help' = tab Bantuan.
+        public array $drawers = [],
     ) {}
 
     public function tag(): string

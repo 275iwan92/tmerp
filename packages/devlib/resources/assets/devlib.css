@@ -458,6 +458,9 @@ textarea.dl-input{resize:none;min-height:28px;line-height:1.3;overflow:hidden;di
 .dl-backdrop.is-on{opacity:1;pointer-events:auto}
 .dl-drawer{position:fixed;top:0;right:0;height:100vh;width:390px;max-width:92vw;background:var(--dl-surface);box-shadow:-12px 0 40px rgba(15,22,45,.2);transform:translateX(100%);transition:transform .22s,visibility .22s;visibility:hidden;z-index:115;display:flex;flex-direction:column}
 .dl-drawer.is-on{transform:none;visibility:visible}
+.dl-drawer[data-dl-drawer="chat"],.dl-drawer[data-dl-drawer="ai"]{width:min(520px,92vw)}
+.dl-drawer--wide{width:min(1180px,94vw);display:flex;flex-direction:column}
+.dl-drawer__frame{flex:1;min-height:0;width:100%;border:0;background:var(--dl-bg,#f6f7fb)}
 .dl-dr-head{height:56px;display:flex;align-items:center;gap:9px;padding:0 16px;border-bottom:1px solid var(--dl-border);flex-shrink:0}
 .dl-dr-ico{color:var(--dl-accent)}.dl-dr-ico--ai{color:var(--dl-violet)}
 .dl-dr-title{font-weight:700;color:var(--dl-ink-strong)}

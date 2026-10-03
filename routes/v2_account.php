@@ -26,6 +26,16 @@ Route::prefix('v2/account')->name('v2.account.')->group(function () {
 // Edit profile (layar penuh, objek DevLib): data diri, keluarga, dokumen, cuti / sakit / izin, izin keluar, tukar shift,
 // jadwal, kartu pengenal, akun + pertanyaan pemulihan (App\Support\V2\Data\SelfService). Dibuka dari Profile > Edit profile
 // sebagai tab kerja; bukan item menu modul, jadi tidak lewat Screens / sys_app_menu (user 2026-10-03).
+// Help & support (laci lebar): Help Center, pedoman, alur dokumen, Support Ticket.
+Route::prefix('v2')->name('v2.')->middleware(['auth', 'locale', 'force.password'])->group(function () {
+    Route::get('/help', function () {
+        $screen = ['slug' => 'help', 'label' => 'Help & support', 'icon' => 'fa-solid fa-circle-question', 'module' => 'Account', 'group' => 'Help',
+            'url' => route('v2.help'), 'filters' => ['tab'], 'view' => 'v2.screens.help', 'ref' => 'v2/home.blade.php (profilePages, sebelum 2026-10-03)', 'mockup' => null];
+
+        return view('v2.screen', ['screen' => $screen, 'built' => true, 'code' => file_get_contents(resource_path('views/v2/screens/help.blade.php'))]);
+    })->name('help');
+});
+
 Route::prefix('v2/profile')->name('v2.profile')->middleware(['auth', 'locale', 'force.password'])->group(function () {
     Route::get('/', function () {
         $screen = ['slug' => 'profile', 'label' => 'Edit Profile', 'icon' => 'fa-solid fa-user-pen', 'module' => 'Account', 'group' => 'Profile',

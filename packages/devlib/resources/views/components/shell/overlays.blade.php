@@ -34,6 +34,13 @@
         $passLive = ! empty($account['password']['url']);
         $dot = ['danger' => '--dl-danger', 'warn' => '--dl-amber-2', 'success' => '--dl-green'];
     @endphp
+    @foreach ($drawers as $key => $d)
+        {{-- Laci lebar = layar penuh di iframe, dimuat saat pertama dibuka (Shell::openWideDrawer). --}}
+        <aside class="dl-drawer dl-drawer--wide" data-dl-drawer="{{ $key }}" data-dl-wide-url="{{ $d['url'] }}" data-dl="drawer {{ $key }}" data-dl-class="bagian Shell" data-dl-src="{{ $d['source'] ?? 'layar penuh' }}">
+            <div class="dl-dr-head"><i class="fa-solid {{ $d['icon'] ?? 'fa-window-maximize' }} dl-dr-ico"></i><span class="dl-dr-title">{{ \Devlib\Lang::text($d['label']) }}</span><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
+            <iframe class="dl-drawer__frame" title="{{ \Devlib\Lang::text($d['label']) }}"></iframe>
+        </aside>
+    @endforeach
     <aside class="dl-drawer" data-dl-drawer="notif" data-dl="drawer notifikasi" data-dl-class="bagian Shell" data-dl-src="{{ $notifLive ? 'sys_notifications' : 'sys_notifications (rencana)' }}"
         @if (! empty($account)) data-dl-account="{{ json_encode(['csrf' => $account['csrf'] ?? '', 'read' => $account['notifications']['read'] ?? null, 'profile' => $account['profile']['url'] ?? null, 'password' => $account['password']['url'] ?? null]) }}" @endif>
         <div class="dl-dr-head"><i class="fa-solid fa-bell dl-dr-ico"></i><span class="dl-dr-title">{{ \Devlib\Lang::text('Notifications') }}</span><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>

@@ -15,16 +15,20 @@
       });
       // Kembali ke halaman profil tertentu setelah kirim form dari sana (data-dl-profile-page, mis. tiket bantuan).
       const p = this.el.dataset.dlProfilePage; if (p) this.lm.dlComponent?.openProfile(p);
+      // Chat di laci Shell: angka belum dibaca diteruskan ke Layer Menu (badge avatar + baris Chat di Profile).
+      const lm = this.lm.dlComponent, relay = n => { if (lm) { lm.unread = n; lm.badges(); } };
+      if (this.chatEl) { relay(this.chatEl.dlChat?.unread || 0); this.chatEl.addEventListener('dl:chat-unread', e => relay(e.detail.count)); }
     }
 
     // Bantuan = halaman profil "help" bila ada (Back kembali ke Profile), selain itu tab Bantuan Shell.
     hasPage(k) { return !!this.lm.dlComponent?.page(k); }
 
-    openPage(k) { this.hasPage(k) ? this.lm.dlComponent.openProfile(k) : this.command('help'); }
+    openPage(k) { this.hasPage(k) && ! this.wideDrawer('help') ? this.lm.dlComponent.openProfile(k) : this.command('help'); }
 
     // Chat tinggal di Layer Menu (tukar / dok kanan), bukan laci Shell.
     command(a) {
-      if (a === 'chat') this.lm.dlComponent.openChat();
+      if (this.wideDrawer(a)) this.openWideDrawer(a);
+      else if (a === 'chat') this.chatEl ? this.openDrawer('chat') : this.lm.dlComponent.openChat();
       else if (a === 'help' && this.hasPage('help')) this.lm.dlComponent.openProfile('help');
       else super.command(a);
     }

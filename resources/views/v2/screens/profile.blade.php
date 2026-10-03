@@ -306,7 +306,11 @@
                     <x-dl::field.text name="name" label="Full name" required :value="old('name', $u->name)" :source="Src::of('tm2sys.sec_user.name')" />
                     <x-dl::field.text name="email" label="E-mail" type="email" required :value="old('email', $u->email)" :case-toggle="false" :hint="t('Changing the e-mail asks for a new verification (Profile > Edit profile > E-mail).')" :source="Src::of('tm2sys.sec_user.email')" />
                     <x-dl::field.text name="phone" label="Phone no." :case-toggle="false" :value="old('phone', $u->phone)" :source="Src::of('tm2sys.sec_user.phone')" />
-                    <x-dl::action-bar><x-dl::button preset="save" type="submit" /></x-dl::action-bar>
+                    <x-dl::field.display label="E-mail status" :value="$u->email_verified ? t('Verified') : t('Not verified')" :source="Src::of('tm2sys.sec_user.email_verified')" />
+                    <x-dl::action-bar>
+                        <x-dl::button variant="secondary" icon="email" label="Manage e-mail" :href="route('v2.account.email')" />
+                        <x-dl::button preset="save" type="submit" />
+                    </x-dl::action-bar>
                 </x-dl::card>
             </x-dl::action-form>
             <x-dl::action-form action="{{ route('v2.profile.password') }}">

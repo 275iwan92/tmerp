@@ -110,12 +110,12 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $v = Validator::make($r->all(), ['description' => ['required', 'string', 'max:5000'], 'screen_context' => ['nullable', 'string', 'max:150']],
             [], ['description' => t('Problem description')]);
         if ($v->fails()) {
-            return redirect()->route('v2.home')->withErrors($v)->withInput()->with('v2_profile_page', 'ticket');
+            return redirect($r->input('return') === 'help' ? route('v2.help').'?tab=ticket' : route('v2.home'))->withErrors($v)->withInput()->with('v2_profile_page', 'ticket');
         }
         $d = $v->validated();
         $t = SysSupportTicket::create($d + ['ticket_no' => SysSupportTicket::nextNo(), 'created_by_user_id' => Auth::id(), 'status' => 'OPEN']);
 
-        return redirect()->route('v2.home')->with(['v2_profile_page' => 'ticket', 'v2_flash' => tf('Ticket :no sent to the support team.', ['no' => $t->ticket_no])]);
+        return redirect($r->input('return') === 'help' ? route('v2.help').'?tab=ticket' : route('v2.home'))->with(['v2_profile_page' => 'ticket', 'v2_flash' => tf('Ticket :no sent to the support team.', ['no' => $t->ticket_no])]);
     })->name('support.ticket');
 
     Route::post('/logout', function (Request $r) {

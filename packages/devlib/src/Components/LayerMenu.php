@@ -138,7 +138,7 @@ class LayerMenu extends DevlibComponent
                     {{-- Aksi akun (sumber daftar bawah panel Profile; roda gigi dihapus, user 2026-10-03) --}}
                     <div data-lm-acts hidden>
                         @foreach ($actions as $a)
-                            <button type="button" class="dl-lm__a{{ ($a['tone'] ?? null) === 'danger' ? ' is-danger' : '' }}" data-lm-act="{{ $a['key'] }}" data-label="{{ $a['label'] }}" data-icon="{{ $fa($a['icon'] ?? 'fa-circle-dot') }}" @if (! empty($a['confirm'])) data-confirm="{{ $a['confirm'] }}" @endif><span class="dl-lm__ico"><i class="{{ $fa($a['icon'] ?? 'fa-circle-dot') }}"></i></span><span class="dl-lm__t">{{ $a['label'] }}</span></button>
+                            <button type="button" class="dl-lm__a{{ ($a['tone'] ?? null) === 'danger' ? ' is-danger' : '' }}" data-lm-act="{{ $a['key'] }}" data-label="{{ $a['label'] }}" data-icon="{{ $fa($a['icon'] ?? 'fa-circle-dot') }}" @if (! empty($a['confirm'])) data-confirm="{{ $a['confirm'] }}" @endif><span class="dl-lm__ico"><i class="{{ $fa($a['icon'] ?? 'fa-circle-dot') }}"></i></span><span class="dl-lm__t">{{ $a['label'] }}</span>@if ($a['key'] === 'devmode')<span class="dl-um-switch" data-dl-devswitch></span>@endif</button>
                         @endforeach
                     </div>
                     <div class="dl-lm__foot" data-lm-foot>
