@@ -144,8 +144,11 @@ class LayerMenu extends DevlibComponent
                         @endforeach
                     </div>
                     <div class="dl-lm__foot" data-lm-foot>
-                        <span class="dl-lm__avatar" title="{{ $user }}">{{ $initials() }}</span>
-                        <span class="dl-lm__user"><b>{{ $user }}</b>@if ($role)<small>{{ $role }}</small>@endif</span>
+                        {{-- Avatar + nama = buka Profile; klik lagi = tutup (user 2026-10-03). Roda gigi tetap membuka menu akun. --}}
+                        <button type="button" class="dl-lm__userbtn" data-lm-user title="{{ \Devlib\Lang::text('Profile') }}" aria-label="{{ \Devlib\Lang::text('Profile') }}" aria-expanded="false">
+                            <span class="dl-lm__avatar">{{ $initials() }}</span>
+                            <span class="dl-lm__user"><b>{{ $user }}</b>@if ($role)<small>{{ $role }}</small>@endif</span>
+                        </button>
                         <button type="button" class="dl-lm__ib" data-lm-gear title="{{ \Devlib\Lang::text('Settings menu') }}" aria-label="{{ \Devlib\Lang::text('Settings menu') }}" aria-haspopup="menu"><i class="fa-solid fa-gear"></i><em class="dl-lm__dot-badge" data-lm-unread="gear" hidden></em></button>
                     </div>
                 @endif

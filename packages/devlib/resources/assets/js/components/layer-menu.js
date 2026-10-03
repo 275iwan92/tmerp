@@ -199,6 +199,10 @@
       this.profOv = this.$('[data-lm-ov="profile"]');
       this.chatEl = this.$('[data-lm-chathost] [data-dl-chat]');
       this.chatHost = this.$('[data-lm-chathost]');
+      this.$('[data-lm-user]')?.addEventListener('click', e => {
+        if (this.mini && !this.peek) return;
+        e.stopPropagation(); this.togglePop(false); this.toggleProfile();
+      });
       if (this.pop) {
         this.$('[data-lm-gear]').addEventListener('click', e => { e.stopPropagation(); this.togglePop(); });
         document.addEventListener('click', e => { if (!this.pop.contains(e.target)) this.togglePop(false); });
@@ -256,6 +260,7 @@
       const {chat, dock, show} = this.st;
       this.chatOv?.classList.toggle('is-on', chat && !dock && show === 'chat');
       this.profOv?.classList.toggle('is-on', show === 'profile');
+      this.$('[data-lm-user]')?.setAttribute('aria-expanded', String(show === 'profile'));
       [...this.track.children].forEach((p, i) => { p.inert = show !== 'menu' || i !== this.path.length; });
       this.$('[data-lm-swap]').hidden = this.$('[data-lm-dockbtn]').hidden = !(chat && !dock);
       this.$('[data-lm-swap]').title = T(show === 'chat' ? 'lm_show_menu' : 'lm_show_chat');
@@ -306,6 +311,12 @@
       // Memindah elemen mereset posisi gulir: kembalikan ke pesan terakhir.
       const box = this.chatEl.querySelector('[data-wa-msgs]'); if (box) box.scrollTop = box.scrollHeight;
       this.apply();
+    }
+
+    // Klik avatar / nama: Profile terbuka -> tutup (kembali ke menu atau chat), selain itu buka.
+    toggleProfile() {
+      if (this.st.show === 'profile') this.show(this.st.chat && !this.st.dock ? 'chat' : 'menu');
+      else this.openProfile();
     }
 
     openProfile(pageKey = null) {

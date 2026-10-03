@@ -2563,6 +2563,9 @@ html.dl-locked body{overflow:hidden}
 .dl-lm__foot{display:flex;align-items:center;gap:10px;padding:10px 10px 10px 14px;border-top:1px solid var(--dl-side-hover);position:relative;z-index:3;background:var(--dl-side)}
 .dl-lm__avatar{width:30px;height:30px;border-radius:50%;background:var(--dl-accent);color:var(--dl-white);display:grid;place-items:center;font-size:calc(11px * var(--dl-font-scale));font-weight:700;flex:none}
 .dl-lm__avatar.is-lg{width:56px;height:56px;font-size:calc(18px * var(--dl-font-scale))}
+.dl-lm__userbtn{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;border-radius:8px}
+.dl-lm__userbtn:hover .dl-lm__user b,.dl-lm__userbtn[aria-expanded="true"] .dl-lm__user b{text-decoration:underline;text-underline-offset:3px}
+.dl-lm__userbtn:focus-visible{outline:2px solid var(--dl-accent,#60a5fa);outline-offset:2px}
 .dl-lm__user{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
 .dl-lm__user b{color:var(--dl-white);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dl-lm__user small{font-size:calc(11px * var(--dl-font-scale));color:var(--dl-side-muted)}
@@ -3056,20 +3059,6 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-whmap__tag--warn{background:var(--dl-yellow);color:var(--dl-f-ink)}
 .dl-whmap__swatch--expiry{background:var(--dl-yellow);border-color:var(--dl-amber)}
 .dl-whmap__expdot{fill:var(--dl-yellow);stroke:var(--dl-amber);stroke-width:.3}
-.dl-whmap__note{margin:0;font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted)}
-.dl-whmap__qr{display:flex;gap:10px;align-items:center;border:1px dashed var(--dl-border-hover);border-radius:var(--dl-radius-sm);padding:8px}
-.dl-whmap__qr b{display:block;font-size:calc(12.5px * var(--dl-font-scale));color:var(--dl-ink-strong);word-break:break-all}
-.dl-whmap__qr div>span{font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-ink)}
-.dl-whmap__items{width:100%;border-collapse:collapse;font-size:calc(12px * var(--dl-font-scale))}
-.dl-whmap__items th{font-size:calc(10px * var(--dl-font-scale));text-transform:uppercase;letter-spacing:.4px;color:var(--dl-muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--dl-border)}
-.dl-whmap__items td{padding:5px 6px;border-bottom:1px solid var(--dl-border-soft);vertical-align:top}
-.dl-whmap__items td small{display:block;color:var(--dl-muted);font-size:calc(10.5px * var(--dl-font-scale))}
-.dl-whmap__items .num{text-align:right;white-space:nowrap}
-.dl-whmap__items tr.is-dead td{background:var(--dl-danger-soft)}
-.dl-whmap__items tr.is-dead td b{color:var(--dl-danger)}
-.dl-whmap__acts{display:flex;gap:6px;flex-wrap:wrap}
-@container (max-width:900px){.dl-whmap__body{grid-template-columns:1fr}.dl-whmap__panel{position:static}}
-
 .dl-whmap__burdot{fill:var(--dl-tangerine)}
 .dl-whmap__remdot{fill:var(--dl-violet)}
 .dl-whmap__cell text.dl-whmap__n{font-size:2.4px;font-weight:800;fill:var(--dl-navy)}
@@ -3092,6 +3081,20 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-whmap__swap:hover{border-color:var(--dl-accent);color:var(--dl-accent)}
 .dl-whmap__wood{display:block;height:7px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--dl-amber) 0 44px,var(--dl-surface) 44px 50px);opacity:.8}
 .dl-whmap__ground{display:block;height:3px;background:var(--dl-tab-ink);margin-top:1px}
+.dl-whmap__note{margin:0;font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted)}
+.dl-whmap__qr{display:flex;gap:10px;align-items:center;border:1px dashed var(--dl-border-hover);border-radius:var(--dl-radius-sm);padding:8px}
+.dl-whmap__qr b{display:block;font-size:calc(12.5px * var(--dl-font-scale));color:var(--dl-ink-strong);word-break:break-all}
+.dl-whmap__qr div>span{font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-ink)}
+.dl-whmap__items{width:100%;border-collapse:collapse;font-size:calc(12px * var(--dl-font-scale))}
+.dl-whmap__items th{font-size:calc(10px * var(--dl-font-scale));text-transform:uppercase;letter-spacing:.4px;color:var(--dl-muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--dl-border)}
+.dl-whmap__items td{padding:5px 6px;border-bottom:1px solid var(--dl-border-soft);vertical-align:top}
+.dl-whmap__items td small{display:block;color:var(--dl-muted);font-size:calc(10.5px * var(--dl-font-scale))}
+.dl-whmap__items .num{text-align:right;white-space:nowrap}
+.dl-whmap__items tr.is-dead td{background:var(--dl-danger-soft)}
+.dl-whmap__items tr.is-dead td b{color:var(--dl-danger)}
+.dl-whmap__acts{display:flex;gap:6px;flex-wrap:wrap}
+@container (max-width:900px){.dl-whmap__body{grid-template-columns:1fr}.dl-whmap__panel{position:static}}
+
 /* ================= LABEL (x-dl::label, x-dl::label-sheet) + SCAN (x-dl::scan) =================
  * Label tempel gudang dalam ukuran nyata (mm): QR di kiri, kode besar, keterangan, barcode 1D. Lembar cetak hanya mencetak labelnya. */
 .dl-label{--lc:var(--dl-tab-ink);--lt:var(--dl-white);display:inline-flex;flex-direction:column;background:var(--dl-white);color:var(--dl-f-ink);border:1px solid var(--dl-f-ink);border-radius:2mm;width:100mm;height:50mm;vertical-align:top;overflow:hidden;break-inside:avoid;page-break-inside:avoid;font-family:var(--dl-font);box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}

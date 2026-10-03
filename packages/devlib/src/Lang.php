@@ -20,6 +20,7 @@ final class Lang
     public const DICT = [
         'save' => ['Save', 'Save'], 'cancel' => ['Cancel', 'Cancel'], 'close' => ['Tutup', 'Close'], 'delete' => ['Delete', 'Delete'],
         'discard' => ['Undo', 'Undo'], 'processing' => ['Memproses…', 'Processing…'], 'search' => ['Cari', 'Search'],
+        'Profile' => ['Profil', 'Profile'],
         'dirty_nosave' => ["Don't Save", "Don't Save"],
         'dirty_title' => ['Ada perubahan belum disimpan', 'You have unsaved changes'],
         'dirty_msg' => ['Perubahan di layar ini belum disimpan. Simpan dulu sebelum pindah?', 'Changes on this screen are not saved. Save before leaving?'],
