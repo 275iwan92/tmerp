@@ -101,8 +101,9 @@ final class StageBuilder
     // penyusutan, gaji, pinjaman, pajak, overhead, manual, saldo awal) bukan bagian alur ini dan tetap ada.
     private const VOUCHER_SOURCES = ['CUSTOMER_INVOICE', 'AR_RECEIPT', 'CUSTOMER_DP', 'CUSTOMER_DP_PAYMENT', 'VENDOR_BILL', 'AP_PAYMENT', 'PV', 'MATERIAL_USAGE'];
 
-    // Tabel di luar WIPE yang barisnya memang berkurang di stage 1 (dihapus sebagian). Tabel lain yang berkurang = salah hapus.
-    private const PARTIAL = ['tm2mst.flow_log', 'tm2acc.fin_voucher', 'tm2acc.fin_voucher_line', 'tm2sdi.iqp_inquiry'];
+    // Tabel di luar WIPE yang barisnya memang berkurang di stage 1 (dihapus sebagian), koneksi => tabel seperti WIPE.
+    // Tabel lain yang berkurang = salah hapus.
+    private const PARTIAL = ['tm2mst' => ['flow_log'], 'tm2acc' => ['fin_voucher', 'fin_voucher_line'], 'tm2sdi' => ['iqp_inquiry']];
 
     // Log approval dokumen yang ikut dihapus (tm2mst.flow_log).
     private const FLOW_MODULES = ['PR', 'PO', 'POC', 'CO', 'AD', 'OP', 'PRT', 'IN'];
@@ -204,9 +205,11 @@ final class StageBuilder
         }
 
         // Pengaman salah hapus: di luar daftar WIPE / PARTIAL / anak inquiry tidak boleh ada tabel yang barisnya berkurang.
-        $allowed = array_merge(self::PARTIAL, array_map(fn ($c) => 'tm2sdi.'.$c[0], [...$this->children('tm2sdi', 'iqp_inquiry'), ...$this->children('tm2sdi', 'iqp_part')]));
-        foreach (self::WIPE as $conn => $tables) {
-            array_push($allowed, ...array_map(fn ($t) => "$conn.$t", $tables));
+        $allowed = array_map(fn ($c) => 'tm2sdi.'.$c[0], [...$this->children('tm2sdi', 'iqp_inquiry'), ...$this->children('tm2sdi', 'iqp_part')]);
+        foreach ([self::WIPE, self::PARTIAL] as $list) {
+            foreach ($list as $conn => $tables) {
+                array_push($allowed, ...array_map(fn ($t) => "$conn.$t", $tables));
+            }
         }
         $lost = array_filter($this->counts(), fn ($n, $t) => $n < $before[$t] && ! in_array($t, $allowed, true), ARRAY_FILTER_USE_BOTH);
         if ($lost) {
