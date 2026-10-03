@@ -16,26 +16,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $pr && ! request('new'))
-    <x-dl::grid id="pr-list" :rows="PurchaseRequisition::rows()" search="Search PR no., department..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.pr_requisition', 'tm2pur.pr_line') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'PR No. / Department', 'type' => 'doc', 'party' => 'dept'],
-            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'need', 'label' => t('Need Date'), 'type' => 'date'],
-            ['key' => 'total', 'label' => 'Est. Total', 'type' => 'money', 'sum' => true],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseRequisition::STATUS_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
-            ['key' => 'code', 'label' => t('Code')],
-            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
-            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-            ['key' => 'need', 'label' => t('Need Date'), 'type' => 'date'],
-            ['key' => 'ordered', 'label' => t('Ordered'), 'type' => 'number'],
-            ['key' => 'note', 'label' => t('Notes')],
-        ]]"
-        :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved', 'where' => ['status' => ['APPROVED', 'PARTIALLY_ORDERED']], 'tone' => 'success']]"
-        :filters="['dept' => 'Department', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Pur\PurchaseRequisitionGrid (DbGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => (new \App\Support\V2\Grid\Pur\PurchaseRequisitionGrid)->screen()])
 @elseif (! $pr)
     <x-dl::action-form action="{{ route('v2.pr.create') }}">
         <x-dl::card title="+ New Record — Purchase Requisition" description="Choose the requesting department. The PR number is created on Confirm (submitted).">

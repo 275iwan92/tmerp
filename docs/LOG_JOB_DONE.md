@@ -3,6 +3,25 @@
 
 ---
 
+## 2026-10-03 -- Purchase: semua daftar modul = objek grid DevLib (DbGrid) sesuai keluarganya
+
+User: "Apakah all grids under purchase module sudah menggunakan inherit from object oriented grid on devlib? Jika belum, tolong di update
+dengan inherit object oriented grid sesuai dengan tipe grid nya."
+
+- **Temuan:** Purchase Return + 3 laporan Outstanding (PR/PO/PV) sudah kelas `DbGrid`; PR, PQ, PO, Goods Receipt masih
+  `x-dl::grid :rows=` dengan kolom ditulis di Blade dan baris dari `Data\*::rows()`; 3 Approval Center memakai objek
+  Form Approval `x-dl::approval` (bukan grid, sesuai desain yang disetujui 2026-09-30).
+- **Dibangun:** `App\Support\V2\Grid\Pur\{PurchaseRequisitionGrid, PurchaseQuotationGrid, PurchaseOrderGrid, PurchaseReceiveGrid}`
+  (keluarga TRANSACTIONAL: persegi dokumen + tabel anak item, stats, filters, Open / + New Record ke form di layar yang sama),
+  terdaftar di `Grids::ALL`; keempat layar v2 memuat daftarnya lewat view generik `_dbgrid`; `rows()` lama di `Data\Purchase*`
+  dihapus. Kolom, baris anak, stats dan filter sama persis dengan sebelumnya.
+- **Status keluarga grid modul Purchase:** PR / PQ / PO / Goods Receipt / Purchase Return = Transactional; Outstanding PR / PO / PV
+  = Report; Approval Center PR / PO / Return = Form Approval. Diperiksa render dari ddt lewat tinker (12 PR, 8 PO, 6 SPB, 0 PQ).
+- Catatan: `NoHardcodedDatabaseNameTest` gagal sebelum pekerjaan ini (`app/Support/Dummy/StageBuilder.php:105` menulis nama
+  `tm2*` langsung) -- bukan dari perubahan ini, belum diperbaiki.
+
+---
+
 ## 2026-10-03 -- Gudang: lokasi barang = X, Y dan stack; sisa 1 - 2 rim; Stack Monitor
 
 User: "Lokasi penempatan barang selain posisi X dan Y juga ada stack, terutama untuk barang yang tersisa 1 atau 2 rim" ...

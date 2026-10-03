@@ -47,16 +47,6 @@ final class PurchaseOrder
         return $c;
     }
 
-    public static function rows(): array
-    {
-        $pos = PoOrder::with('lines')->orderByDesc('po_id')->limit(500)->get();
-        $sup = self::suppliers($pos->pluck('i_supplier_id')->unique()->all());
-
-        return $pos->map(fn ($p) => ['id' => $p->po_id, 'no' => $p->doc_no ?: '(draft #'.$p->po_id.')', 'supplier' => $sup[$p->i_supplier_id] ?? '—',
-            'date' => $p->i_doc_date?->toDateString(), 'delivery' => $p->i_delivery_date?->toDateString(), 'lines' => $p->lines->count(), 'items' => self::lineRows($p),
-            'total' => (float) $p->c_grand_total, 'status' => $p->status])->all();
-    }
-
     // Baris anak grid (Expand) PO / Petty Cash: nama item selalu tampil, tanpa harga. Butuh relasi lines.
     public static function lineRows(PoOrder $p): array
     {
@@ -199,7 +189,7 @@ final class PurchaseOrder
             $po->refresh()->recalcTax();
             if ((float) $po->c_grand_total > self::maxCash()) {
                 return tf('A Cash PO is at most Rp :max (Settings > Constants PO_CASH_MAX). This one is Rp :value — use a regular PO.',
-                    ['max' => \Devlib\Locale::number(self::maxCash(), 0), 'value' => \Devlib\Locale::number((float) $po->c_grand_total, 0)]);
+                    ['max' => Locale::number(self::maxCash(), 0), 'value' => Locale::number((float) $po->c_grand_total, 0)]);
             }
             if (! $po->i_cash_mode || ! $po->i_petty_cash_id) {
                 return t('A Cash PO needs a mode (Cash advance / Buy first) and a petty cash fund.');

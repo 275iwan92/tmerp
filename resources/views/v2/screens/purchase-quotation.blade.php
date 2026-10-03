@@ -37,27 +37,8 @@
         </x-dl::card>
     </x-dl::action-form>
 @elseif (! $pq && ! request('new'))
-    <x-dl::grid id="pq-list" :rows="PurchaseQuotation::rows()" search="Search PQ no., supplier, PR, file name..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.pq_quotation', 'tm2pur.pq_line', 'tm2mst.sup_supplier') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'PQ No. / Supplier', 'type' => 'doc', 'party' => 'supplier'],
-            ['key' => 'pr', 'label' => 'Reference PR'],
-            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
-            ['key' => 'valid', 'label' => 'Valid Until', 'type' => 'date'],
-            ['key' => 'file', 'label' => 'File'],
-            ['key' => 'read', 'label' => 'Reading Result', 'type' => 'badge', 'tones' => collect(PurchaseQuotation::READ_TONES)->mapWithKeys(fn ($tone, $label) => [t($label) => $tone])->all()],
-            ['key' => 'total', 'label' => 'Total (IDR)', 'type' => 'money', 'sum' => true],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseQuotation::STATUS_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
-            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
-            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-            ['key' => 'lead', 'label' => t('Lead Time (days)'), 'type' => 'number'],
-            ['key' => 'note', 'label' => t('Notes')],
-        ]]"
-        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Needs check', 'where' => ['status' => 'DRAFT', 'read' => [t('Needs check'), t('Fill in by hand'), t('Could not be read')]], 'tone' => 'warn'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Closed (ordered)', 'where' => ['status' => 'CLOSED'], 'tone' => 'info']]"
-        :filters="['supplier' => 'Supplier', 'pr' => 'Reference PR', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Pur\PurchaseQuotationGrid (DbGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => (new \App\Support\V2\Grid\Pur\PurchaseQuotationGrid)->screen()])
     <x-dl::action-form method="get" action="{{ $home }}">
         <x-dl::card title="Compare quotations per PR" description="Choose a PR that has Confirmed PQs from several suppliers, then pick the winner per line.">
             <x-dl::form.row :cols="2">

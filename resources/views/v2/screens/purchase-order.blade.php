@@ -16,26 +16,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $po && ! request('new'))
-    <x-dl::grid id="po-list" :rows="PurchaseOrder::rows()" search="Search PO no., supplier..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.po_order', 'tm2pur.po_line', 'tm2mst.sup_supplier') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'PO No. / Supplier', 'type' => 'doc', 'party' => 'supplier'],
-            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'delivery', 'label' => t('Ship Date'), 'type' => 'date'],
-            ['key' => 'total', 'label' => 'Grand Total', 'type' => 'money', 'sum' => true],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseOrder::STATUS_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
-            ['key' => 'code', 'label' => t('Code')],
-            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
-            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-            ['key' => 'received', 'label' => t('Received'), 'type' => 'number'],
-            ['key' => 'outstanding', 'label' => t('Remaining'), 'type' => 'number'],
-            ['key' => 'status', 'label' => t('Line Status')],
-        ]]"
-        :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved / Sent', 'where' => ['status' => ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED']], 'tone' => 'success']]"
-        :filters="['supplier' => 'Supplier', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Pur\PurchaseOrderGrid (DbGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => (new \App\Support\V2\Grid\Pur\PurchaseOrderGrid)->screen()])
 @elseif (! $po)
     <x-dl::action-form action="{{ route('v2.po.create') }}">
         <x-dl::card title="+ New Record — Purchase Order" :description="raw(tf('Regular PO: choose the supplier (its open draft PO is reused). Cash PO: paid from Petty Cash, max. Rp :max, approved by the Finance Director.', ['max' => \Devlib\Locale::number(PurchaseOrder::maxCash(), 0)]))">
