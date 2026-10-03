@@ -379,7 +379,12 @@
     Bila ada isian yang belum di-Save di salah satu tab, ditanya sekali dulu (Cancel / Close all tabs).
     **Logout (2026-10-03):** semua tab ditutup dan menu kembali ke lapis utama; login berikutnya mendarat di opening screen
     (tab lama tidak dipulihkan, berlaku juga bila sesi habis). Pilihan menu mini, tema dan bahasa tetap diingat.
-    **Klik avatar / nama user di kaki panel (2026-10-03):** Profile terbuka; klik sekali lagi menutupnya. Roda gigi tetap menu akun.
+    **Klik avatar / nama user di kaki panel (2026-10-03):** Profile terbuka; klik sekali lagi menutupnya. **Roda gigi dihapus** —
+    Profile = satu pintu untuk semua hal akun. Susunan Profile: **Chat** (angka belum dibaca; titik merah di avatar bila Profile tertutup),
+    **Edit profile** (nama / e-mail / telepon; anak: Change password, E-mail; tautan ke data diri, cuti, dokumen, shift, dan
+    keamanan akun yang dibuka sebagai tab kerja), **Setup** (anak: Theme, Language; akan bertambah), **Help & support**
+    (anak: Support Ticket), lalu aksi akun (Notifications, AI Assistant, Developer Mode, Sign out). Halaman anak tidak tampil di daftar
+    utama; Back dari halaman anak kembali ke induknya.
     **Klik item menu yang layarnya sudah terbuka (2026-10-03):** kembali ke **grid** menu itu; form yang sedang dikerjakan ditutup,
     bila ada isian belum di-Save muncul pertanyaan **Save / Don't Save / Cancel** (Save = simpan lalu ke grid, Cancel = tetap di form).
 19. **Layar selebar panel kanan:** isi layar v2 tidak dibatasi lebar tengah; tepi kiri-kanan hanya 6px (±1,5 mm).
@@ -732,3 +737,4 @@
 | 2026-10-03 | C.7: **PR Draft boleh dicetak dengan tanda air DRAFT** besar miring di lembarnya (user: "PR ini walau draft bisa di cetak, hanya cetakan print out ada tulisan draft miring dan besar"). Tanda air milik objek DevLib `x-dl::print-doc` (status DRAFT), berlaku untuk semua dokumen; tombol Print di PR dibuka untuk Draft / Submitted. Contoh di devlib.test → Print Document → Draft document. |
 | 2026-10-03 | C.18: **Logout = semua tab ditutup, menu ke lapis utama, opening screen tampil saat login lagi** (user: "jika logout itu all tabs closed dan balik ke menu utama dan opening screen muncul"); **klik item menu yang sudah terbuka = kembali ke grid-nya** dengan pertanyaan Save / Don't Save / Cancel bila form berubah (user: "sudah saya sampaikan, belum dikerjakan" — sebelumnya hanya bekerja untuk form beralamat `?id=`, form v2 beralamat path). Objek DevLib Shell, berlaku di devlib.test, mockup.test dan tmerp.test. |
 | 2026-10-03 | C.18: **klik nama / avatar user di kaki Layer Menu = buka Profile, klik lagi = tutup** (user: "bisakah jika klik nama juga muncul user profile ... di click sekali lagi maka user profile akan menutup"); roda gigi tetap membuka menu akun. Objek DevLib Layer Menu, berlaku di devlib.test, mockup.test dan tmerp.test. |
+| 2026-10-03 | C.18: **roda gigi dihapus, Profile satu pintu** (user: "harusnya sama dan harusnya dengan begitu roda gigi bisa dihapus"); Chat masuk Profile; Support Ticket di dalam Help & support; Theme + Language di dalam **Setup** ("di setup nanti bisa berkembang lebih banyak"); E-mail, Change password, keamanan (pertanyaan pemulihan), cuti dan data diri lainnya di dalam **Edit profile** ("INI IMPORTANT untuk user profile, tidak sesederhana ini") — layar penuh self-service dibuka sebagai tab kerja. Objek DevLib Layer Menu / Layer Shell, berlaku di devlib.test, mockup.test dan tmerp.test. |

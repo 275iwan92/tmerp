@@ -135,21 +135,18 @@ class LayerMenu extends DevlibComponent
                     @endisset
                 </div>
                 @if ($user)
-                    <div class="dl-lm__pop" data-lm-pop role="menu">
-                        @isset($chat)<button type="button" class="dl-lm__a" data-lm-go="chat"><span class="dl-lm__ico"><i class="fa-solid fa-comment-dots"></i></span><span class="dl-lm__t">Chat</span><em class="dl-lm__badge is-danger" data-lm-unread="pop" hidden></em></button>@endisset
-                        @isset($profile)<button type="button" class="dl-lm__a" data-lm-go="profile"><span class="dl-lm__ico"><i class="fa-solid fa-circle-user"></i></span><span class="dl-lm__t">Profile</span></button>@endisset
-                        @if ($actions)<div class="dl-lm__sep"></div>@endif
+                    {{-- Aksi akun (sumber daftar bawah panel Profile; roda gigi dihapus, user 2026-10-03) --}}
+                    <div data-lm-acts hidden>
                         @foreach ($actions as $a)
                             <button type="button" class="dl-lm__a{{ ($a['tone'] ?? null) === 'danger' ? ' is-danger' : '' }}" data-lm-act="{{ $a['key'] }}" data-label="{{ $a['label'] }}" data-icon="{{ $fa($a['icon'] ?? 'fa-circle-dot') }}" @if (! empty($a['confirm'])) data-confirm="{{ $a['confirm'] }}" @endif><span class="dl-lm__ico"><i class="{{ $fa($a['icon'] ?? 'fa-circle-dot') }}"></i></span><span class="dl-lm__t">{{ $a['label'] }}</span></button>
                         @endforeach
                     </div>
                     <div class="dl-lm__foot" data-lm-foot>
-                        {{-- Avatar + nama = buka Profile; klik lagi = tutup (user 2026-10-03). Roda gigi tetap membuka menu akun. --}}
+                        {{-- Avatar + nama = satu-satunya pintu Profile: klik = buka, klik lagi = tutup (user 2026-10-03). --}}
                         <button type="button" class="dl-lm__userbtn" data-lm-user title="{{ \Devlib\Lang::text('Profile') }}" aria-label="{{ \Devlib\Lang::text('Profile') }}" aria-expanded="false">
-                            <span class="dl-lm__avatar">{{ $initials() }}</span>
+                            <span class="dl-lm__avatar">{{ $initials() }}<em class="dl-lm__dot-badge" data-lm-unread="avatar" hidden></em></span>
                             <span class="dl-lm__user"><b>{{ $user }}</b>@if ($role)<small>{{ $role }}</small>@endif</span>
                         </button>
-                        <button type="button" class="dl-lm__ib" data-lm-gear title="{{ \Devlib\Lang::text('Settings menu') }}" aria-label="{{ \Devlib\Lang::text('Settings menu') }}" aria-haspopup="menu"><i class="fa-solid fa-gear"></i><em class="dl-lm__dot-badge" data-lm-unread="gear" hidden></em></button>
                     </div>
                 @endif
             </aside>

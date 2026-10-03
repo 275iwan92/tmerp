@@ -19,7 +19,6 @@
       this.initViews();
       this.track.addEventListener('click', e => { const t = e.target.closest('button, a'); if (t) this.click(e, t); });
       this.el.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && this.pop?.classList.contains('is-on')) { this.togglePop(false); return; }
         if (e.key === 'Escape' && this.peek && this.st.show === 'menu') { this.setPeek(false); return; }
         if ((e.key === 'Escape' || e.key === 'ArrowLeft') && this.st.show === 'menu' && this.path.length && e.target.closest('[data-lm-track]')) { e.preventDefault(); this.back(); }
       });
@@ -43,10 +42,10 @@
       // composedPath, bukan contains(): klik cabang menggambar ulang panel, target-nya sudah lepas dari DOM saat sampai di sini.
       document.addEventListener('click', e => { const p = e.composedPath(); if (this.peek && !p.includes(this.el) && !(this.dockHost && p.includes(this.dockHost))) this.setPeek(false); });
       window.addEventListener('blur', () => this.setPeek(false));
-      // Mini: avatar = roda gigi (roda giginya sendiri tersembunyi).
+      // Mini: klik avatar = menu melayang terbuka langsung di Profile.
       this.$('[data-lm-foot]')?.addEventListener('click', e => {
         if (!this.mini || this.peek) return;
-        e.stopPropagation(); this.setPeek(true); this.togglePop(true);
+        e.stopPropagation(); this.setPeek(true); this.openProfile();
       });
       let on = false; try { on = localStorage.getItem(this.key + '-mini') === '1'; } catch (e) {}
       if (on) this.setMini(true, false);
@@ -54,7 +53,6 @@
 
     setMini(on, save = true) {
       this.mini = on; this.peek = false;
-      this.togglePop(false);
       this.el.classList.toggle('is-mini', on);
       this.miniBtn.title = on ? this.miniBtn.dataset.tMax : this.miniBtn.dataset.tMin;
       this.miniBtn.setAttribute('aria-label', this.miniBtn.title);
@@ -68,7 +66,6 @@
     setPeek(on) {
       if (!this.mini) return;
       this.peek = on || this.st.show !== 'menu';
-      if (!this.peek) this.togglePop(false);
       this.el.classList.toggle('is-peek', this.peek);
     }
 
@@ -194,27 +191,14 @@
 
     /* ---------------- roda gigi, Chat & Profile ---------------- */
     initPanels() {
-      this.pop = this.$('[data-lm-pop]');
       this.chatOv = this.$('[data-lm-ov="chat"]');
       this.profOv = this.$('[data-lm-ov="profile"]');
       this.chatEl = this.$('[data-lm-chathost] [data-dl-chat]');
       this.chatHost = this.$('[data-lm-chathost]');
       this.$('[data-lm-user]')?.addEventListener('click', e => {
         if (this.mini && !this.peek) return;
-        e.stopPropagation(); this.togglePop(false); this.toggleProfile();
+        e.stopPropagation(); this.toggleProfile();
       });
-      if (this.pop) {
-        this.$('[data-lm-gear]').addEventListener('click', e => { e.stopPropagation(); this.togglePop(); });
-        document.addEventListener('click', e => { if (!this.pop.contains(e.target)) this.togglePop(false); });
-        this.pop.addEventListener('click', e => {
-          const go = e.target.closest('[data-lm-go]'), act = e.target.closest('[data-lm-act]');
-          if (!go && !act) return;
-          this.togglePop(false);
-          if (go?.dataset.lmGo === 'chat') this.openChat();
-          else if (go) this.openProfile();
-          else this.action(act);
-        });
-      }
       this.$('[data-lm-swap]').addEventListener('click', () => this.show(this.st.show === 'chat' ? 'menu' : 'chat'));
       this.$('[data-lm-dockbtn]').addEventListener('click', () => this.setDock(true));
       if (this.chatEl) {
@@ -228,12 +212,21 @@
         this.pages = this.$('[data-lm-pages]');
         this.ptrack = this.$('[data-lm-ptrack]');
         this.pdet = this.$('[data-lm-pdet]');
-        const acts = this.$$('[data-lm-act]').filter(a => !this.page(a.dataset.lmAct));
-        this.$('[data-lm-plist]').innerHTML = [...this.pages.querySelectorAll(':scope > [data-lm-page]')].map(s =>
-          `<button type="button" class="dl-lm__a" data-lm-page-open="${esc(s.dataset.lmPage)}"><span class="dl-lm__ico"><i class="${esc(this.faOf(s.dataset.icon))}"></i></span><span class="dl-lm__t">${esc(s.dataset.label)}</span><i class="fa-solid fa-chevron-right dl-lm__chev"></i></button>`).join('')
+        this.pstack = [];
+        // Halaman induk (data-lm-children="a,b") mendapat daftar anaknya di awal isi; anak tidak tampil di daftar utama, Back-nya kembali ke induk.
+        this.pages.querySelectorAll(':scope > [data-lm-page][data-lm-children]').forEach(par => {
+          const kids = par.dataset.lmChildren.split(',').map(k => this.page(k.trim())).filter(Boolean);
+          kids.forEach(k => { k.dataset.lmParent = par.dataset.lmPage; });
+          par.insertAdjacentHTML('afterbegin', `<div class="dl-lm__plist">${kids.map(k => this.row(k)).join('')}</div>`);
+        });
+        const acts = this.$$('[data-lm-acts] [data-lm-act]').filter(a => !this.page(a.dataset.lmAct));
+        // Profile = satu pintu untuk semua hal akun (user 2026-10-03): Chat, halaman profil, lalu aksi akun.
+        this.$('[data-lm-plist]').innerHTML = (this.chatEl ? `<button type="button" class="dl-lm__a" data-lm-go="chat"><span class="dl-lm__ico"><i class="fa-solid fa-comment-dots"></i></span><span class="dl-lm__t">Chat</span><em class="dl-lm__badge is-danger" data-lm-unread="list" hidden></em></button>` : '')
+          + [...this.pages.querySelectorAll(':scope > [data-lm-page]')].filter(s => !s.dataset.lmParent).map(s => this.row(s)).join('')
           + (acts.length ? '<div class="dl-lm__sep"></div>' + acts.map(a => a.outerHTML).join('') : '');
         this.profOv.addEventListener('click', e => {
           if (e.target.closest('[data-lm-close]')) return this.show(this.st.chat && !this.st.dock ? 'chat' : 'menu');
+          if (e.target.closest('[data-lm-go="chat"]')) return this.openChat();
           const o = e.target.closest('[data-lm-page-open]'); if (o) return this.openPage(o.dataset.lmPageOpen);
           if (e.target.closest('[data-lm-pdet] [data-lm-back]')) return this.closePage();
           const act = e.target.closest('[data-lm-plist] [data-lm-act]'); if (act) this.action(act);
@@ -242,15 +235,12 @@
       this.badges();
     }
 
+    row(s) {
+      return `<button type="button" class="dl-lm__a" data-lm-page-open="${esc(s.dataset.lmPage)}"><span class="dl-lm__ico"><i class="${esc(this.faOf(s.dataset.icon))}"></i></span><span class="dl-lm__t">${esc(s.dataset.label)}</span><i class="fa-solid fa-chevron-right dl-lm__chev"></i></button>`;
+    }
+
     faOf(icon) { return !icon ? 'fa-solid fa-circle-dot' : icon.includes(' ') ? icon : 'fa-solid ' + icon; }
     page(k) { return this.pages?.querySelector(`:scope > [data-lm-page="${CSS.escape(k)}"]`) || this.pdet?.querySelector(`[data-lm-page="${CSS.escape(k)}"]`); }
-
-    togglePop(on = !this.pop.classList.contains('is-on')) {
-      if (!this.pop) return;
-      if (on && this.mini && !this.peek) return;
-      this.pop.classList.toggle('is-on', on);
-      this.$('[data-lm-gear]').setAttribute('aria-expanded', String(on));
-    }
 
     chatVisible() { return this.st.chat && (this.st.dock || this.st.show === 'chat'); }
 
@@ -276,7 +266,7 @@
     badges() {
       const u = this.unread || 0, vis = this.chatVisible();
       this.$$('[data-lm-unread]').forEach(b => {
-        const n = {pop: u, gear: vis ? 0 : u, swap: this.st.show === 'menu' ? u : 0}[b.dataset.lmUnread] || 0;
+        const n = {list: u, avatar: vis ? 0 : u, swap: this.st.show === 'menu' ? u : 0}[b.dataset.lmUnread] || 0;
         b.hidden = !n; b.textContent = n > 99 ? '99+' : n;
       });
     }
@@ -323,13 +313,15 @@
       if (!this.profOv) return;
       this.closePage(false);
       this.st.show = 'profile'; this.apply();
-      if (pageKey) this.openPage(pageKey);
+      if (pageKey) { const par = this.page(pageKey)?.dataset.lmParent; if (par) this.pstack = [par]; this.openPage(pageKey, false); }
     }
 
     // Halaman profil = <section data-lm-page> dari slot, DIPINDAH (bukan disalin) supaya isian form tidak hilang.
-    openPage(k) {
+    // Dibuka dari halaman lain -> halaman itu dicatat (pstack) supaya Back kembali ke sana, bukan ke daftar.
+    openPage(k, remember = true) {
       const s = this.page(k); if (!s) return;
-      this.closePage(false);
+      const cur = this.pdet.querySelector('[data-lm-page]');
+      if (cur) { if (remember) this.pstack.push(cur.dataset.lmPage); this.pages.appendChild(cur); }
       this.pdet.innerHTML = BACK + `<div class="dl-lm__title"><i class="${esc(this.faOf(s.dataset.icon))}"></i><b>${esc(s.dataset.label)}</b></div>`;
       this.pdet.appendChild(s);
       this.slide(this.ptrack, 1);
@@ -338,6 +330,8 @@
 
     closePage(animate = true) {
       if (!this.pdet) return;
+      if (animate && this.pstack.length) return this.openPage(this.pstack.pop(), false);
+      this.pstack = [];
       const s = this.pdet.querySelector('[data-lm-page]'); if (s) this.pages.appendChild(s);
       if (animate) this.slide(this.ptrack, 0); else { this.slide(this.ptrack, 0, false); this.pdet.innerHTML = ''; }
     }

@@ -114,12 +114,12 @@
         if (n.dataset.url) { this.closeDrawers(); this.openUrlTab('N-' + n.dataset.dlNotif, n.dataset.title, n.dataset.url, 'fa-solid fa-bell'); }
       });
       $$(this.el, '[data-dl-account-save]').forEach(b => b.addEventListener('click', () => {
-        const kind = b.dataset.dlAccountSave, box = b.closest('.dl-mov'), msg = $(box, '[data-dl-account-msg]');
+        const kind = b.dataset.dlAccountSave, box = b.closest('.dl-mov, [data-dl-account-box]'), msg = $(box, '[data-dl-account-msg]');
         const data = Object.fromEntries($$(box, 'input[name]').map(i => [i.name, i.value]));
         b.disabled = true; msg.hidden = true;
         this.accountPost(this.account[kind], data).then(r => {
           if (!r.ok) { msg.textContent = r.body.message || ''; msg.hidden = false; return; }
-          box.classList.remove('is-on'); toast(r.body.message || '');
+          if (box.classList.contains('dl-mov')) box.classList.remove('is-on'); toast(r.body.message || '');
           if (kind === 'password') $$(box, 'input[name]').forEach(i => { i.value = ''; });
         }).catch(() => { msg.textContent = T('s_save_failed'); msg.hidden = false; }).finally(() => { b.disabled = false; });
       }));

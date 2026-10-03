@@ -1,10 +1,10 @@
 @extends('v2.layout', ['title' => t('Home')])
 @section('body')
     {{-- Situs ERP v2 = Layer Menu saja (user 2026-09-29); Menu Classic hanya di katalog DevLib. --}}
-    <x-dl::layer-shell :classic="false" :brand="\App\Support\Branding\Brand::name()" :tagline="\App\Support\Branding\Brand::tagline()" :logo="\App\Support\Branding\Brand::logoUrl()" :modules="$modules" :user="$user" :logout-action="route('v2.logout')" :chat="$chat" :developer="$user['developer']" :open="$open" :fresh="$fresh" :help-url="route('v2.guide', 'aturan')" :profile-page="$profilePage" :assistant="$assistant" :account="$account" menu-source="sys_app_menu ({{ config('database.connections.tm2sys.database') }})">
+    <x-dl::layer-shell :classic="false" :brand="\App\Support\Branding\Brand::name()" :tagline="\App\Support\Branding\Brand::tagline()" :logo="\App\Support\Branding\Brand::logoUrl()" :modules="$modules" :user="$user" :logout-action="route('v2.logout')" :chat="$chat" :developer="$user['developer']" :open="$open" :fresh="$fresh" :profile-links="[['label' => t('Personal data, leave, documents, shifts'), 'url' => route('self-service.index'), 'icon' => 'fa-id-card', 'code' => 'SELF'], ['label' => t('Account security (recovery questions)'), 'url' => route('self-service.index', ['tab' => 'security']), 'icon' => 'fa-shield-halved', 'code' => 'SELF-SEC']]" :help-url="route('v2.guide', 'aturan')" :profile-page="$profilePage" :assistant="$assistant" :account="$account" menu-source="sys_app_menu ({{ config('database.connections.tm2sys.database') }})">
         <x-slot:profilePages>
             {{-- Bantuan & dukungan (F1 / menu akun). Tiap halaman punya Back yang kembali ke Profile. --}}
-            <section data-lm-page="help" data-label="{{ t('Help & support') }}" data-icon="fa-circle-question">
+            <section data-lm-page="help" data-label="{{ t('Help & support') }}" data-icon="fa-circle-question" data-lm-children="ticket">
                 <p>{!! t('Press <kbd>F1</kbd> on any screen to open this page.') !!}</p>
                 <x-dl::action-bar>
                     {{-- Help per layar (sys_help_topic): untuk apa, cara pakai, arti tiap isian -- pintu utama bantuan (aturan E.1). --}}
@@ -14,7 +14,6 @@
                     {{-- Alur dokumen: sementara di sini, bukan grup menu "Flow" (user 2026-10-02, akan dipikirkan ulang). --}}
                     <x-dl::button variant="secondary" block icon="fa-diagram-project" label="Sales Flow: Inquiry → CPDEL" data-dl-tab-url="{{ route('v2.flow', 'SALES') }}" data-dl-tab-code="F-SALES" data-dl-tab-label="{{ t('Sales Flow: Inquiry → CPDEL') }}" data-dl-tab-icon="fa-solid fa-diagram-project" />
                     <x-dl::button variant="secondary" block icon="fa-diagram-project" label="Costing Flow: ProDev → ProCost → Publish" data-dl-tab-url="{{ route('v2.flow', 'COSTING') }}" data-dl-tab-code="F-COSTING" data-dl-tab-label="{{ t('Costing Flow: ProDev → ProCost → Publish') }}" data-dl-tab-icon="fa-solid fa-diagram-project" />
-                    <x-dl::button variant="primary" block icon="fa-ticket" label="Support Ticket" data-lm-page-open="ticket" />
                 </x-dl::action-bar>
             </section>
 

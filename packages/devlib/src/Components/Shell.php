@@ -51,6 +51,9 @@ class Shell extends DevlibComponent
         public array $account = [],
         // true tepat sesudah login: tab kerja lama dan posisi Layer Menu dibuang (boot.js) -> opening screen tampil.
         public bool $fresh = false,
+        // Baris di halaman profil Edit profile yang membuka layar penuh sebagai tab kerja (data diri, cuti, keamanan, ...):
+        // [['label', 'url', 'icon' => 'fa-...', 'code' => kode tab]]. Kosong = hanya isian nama / e-mail / telepon.
+        public array $profileLinks = [],
     ) {}
 
     public function tag(): string
