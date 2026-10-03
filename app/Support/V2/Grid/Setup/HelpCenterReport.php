@@ -41,7 +41,7 @@ class HelpCenterReport extends DbGrid
 
     public function group(): string
     {
-        return 'Help';
+        return 'Help & support';
     }
 
     public function family(): string
