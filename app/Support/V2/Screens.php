@@ -132,10 +132,14 @@ final class Screens
                     $it('maintenance-plan', ['Preventive Plan', 'fa-solid fa-calendar-check', 'v2 baru: docs/maintenance_tier1.md §4 (tm2prd.mnt_plan)', 'maintenance_v2.jpg']),
                 ]],
             ]],
+            ['code' => 'HRM', 'short' => 'HR', 'label' => 'Human Resource', 'icon' => 'fa-solid fa-people-group', 'groups' => [
+                ['label' => 'Organization', 'items' => [
+                    $it('approval-acting', ['Temporary Acting Officer', 'fa-solid fa-people-arrows', 'v2 baru: tm2mst.flow_position_acting (dipindah dari Setup > Security, user 2026-10-04)', null]),
+                ]],
+            ]],
             ['code' => 'SETUP', 'short' => 'SET', 'label' => 'Setup', 'icon' => 'fa-solid fa-gear', 'groups' => [
                 ['label' => 'Security', 'items' => [
                     $it('approval-setting', ['Approval Levels', 'fa-solid fa-list-ol', 'v2 baru: tm2mst.flow_config + flow_config_step (pengganti m_authorize)', null]),
-                    $it('approval-acting', ['Acting Officer (PLT)', 'fa-solid fa-user-clock', 'v2 baru: tm2mst.flow_position_acting', null]),
                 ]],
             ]],
             // Khusus developer: tidak tampil untuk akun biasa.
