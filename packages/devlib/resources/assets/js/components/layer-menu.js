@@ -219,15 +219,18 @@
           kids.forEach(k => { k.dataset.lmParent = par.dataset.lmPage; });
           par.insertAdjacentHTML('afterbegin', `<div class="dl-lm__plist">${kids.map(k => this.row(k)).join('')}</div>`);
         });
-        const acts = this.$$('[data-lm-acts] [data-lm-act]').filter(a => !this.page(a.dataset.lmAct));
-        // Profile = satu pintu untuk semua hal akun (user 2026-10-03): Chat, halaman profil, lalu aksi akun.
-        this.$('[data-lm-plist]').innerHTML = ((this.chatEl || document.querySelector('[data-dl-drawer="chat"]')) ? `<button type="button" class="dl-lm__a" data-lm-go="chat"><span class="dl-lm__ico"><i class="fa-solid fa-comment-dots"></i></span><span class="dl-lm__t">Chat</span><em class="dl-lm__badge is-danger" data-lm-unread="list" hidden></em></button>` : '')
-          + [...this.pages.querySelectorAll(':scope > [data-lm-page]')].filter(s => !s.dataset.lmParent).map(s => this.row(s)).join('')
-          + (acts.length ? '<div class="dl-lm__sep"></div>' + acts.map(a => a.outerHTML).join('') : '');
+        // Daftar Profile = urutan aksi akun (LayerShell::actions, user 2026-10-03); data-sep = garis sebelum baris itu.
+        // Aksi yang punya halaman panel tampil sebagai halaman; halaman lain tanpa induk (mis. Setup) disisipkan sesudah Help.
+        const acts = this.$$('[data-lm-acts] [data-lm-act]'), keys = acts.map(a => a.dataset.lmAct);
+        const rest = [...this.pages.querySelectorAll(':scope > [data-lm-page]')].filter(s => !s.dataset.lmParent && !keys.includes(s.dataset.lmPage));
+        const hasChat = !!(this.chatEl || document.querySelector('[data-dl-drawer="chat"]'));
+        this.$('[data-lm-plist]').innerHTML = acts.map(a => {
+          const k = a.dataset.lmAct; if (k === 'chat' && !hasChat) return '';
+          const sep = a.dataset.sep ? '<div class="dl-lm__sep"></div>' : '', pg = this.page(k);
+          return sep + (pg ? this.row(pg) : a.outerHTML) + (k === 'help' ? rest.map(s => this.row(s)).join('') : '');
+        }).join('') + (keys.includes('help') ? '' : rest.map(s => this.row(s)).join(''));
         this.profOv.addEventListener('click', e => {
           if (e.target.closest('[data-lm-close]')) return this.show(this.st.chat && !this.st.dock ? 'chat' : 'menu');
-          // Chat: Shell yang punya laci chat menanganinya (preventDefault); tanpa itu chat dibuka di panel ini.
-          if (e.target.closest('[data-lm-go="chat"]')) { if (this.emit('dl:layer-menu-action', {key: 'chat'}, true)) this.openChat(); return; }
           const o = e.target.closest('[data-lm-page-open]'); if (o) return this.openPage(o.dataset.lmPageOpen);
           if (e.target.closest('[data-lm-pdet] [data-lm-back]')) return this.closePage();
           const act = e.target.closest('[data-lm-plist] [data-lm-act]'); if (act) this.action(act);
@@ -340,6 +343,8 @@
     async action(btn) {
       const k = btn.dataset.lmAct;
       if (this.page(k)) return this.openProfile(k);
+      if (k === 'chat' && !this.emit('dl:layer-menu-action', {key: k}, true)) return;
+      if (k === 'chat') return this.openChat();
       if (btn.dataset.confirm && !await confirmBox({title: btn.dataset.label, message: btn.dataset.confirm, tone: btn.classList.contains('is-danger') ? 'danger' : 'warn', ok: btn.dataset.label})) return;
       if (this.emit('dl:layer-menu-action', {key: k}, true)) toast(`${btn.dataset.label} (${T('preview')})`);
     }

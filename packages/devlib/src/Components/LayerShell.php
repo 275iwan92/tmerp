@@ -77,11 +77,14 @@ class LayerShell extends Shell
     public function actions(): array
     {
         return array_values(array_filter([
+            // Urutan panel Profile = keputusan user 2026-10-03: Notifications, Chat, AI Assistant | Edit profile, Help & support,
+            // (Setup = halaman panel, disisipkan sesudah Help), Change password, Developer Mode (saklar), Sign out.
             ['key' => 'notif', 'label' => Lang::text('Notifications'), 'icon' => 'notification'],
+            ['key' => 'chat', 'label' => 'Chat', 'icon' => 'fa-comment-dots'],
             ['key' => 'ai', 'label' => Lang::text('AI Assistant'), 'icon' => 'ai'],
-            ['key' => 'edit', 'label' => Lang::text('Edit profile'), 'icon' => 'fa-user-pen'],
-            ['key' => 'pass', 'label' => Lang::text('Change password'), 'icon' => 'password'],
+            ['key' => 'edit', 'label' => Lang::text('Edit profile'), 'icon' => 'fa-user-pen', 'sep' => true],
             ['key' => 'help', 'label' => Lang::text('Help & support'), 'icon' => 'help'],
+            ['key' => 'pass', 'label' => Lang::text('Change password'), 'icon' => 'password'],
             $this->developer ? ['key' => 'devmode', 'label' => Lang::text('Developer Mode'), 'icon' => 'fa-bug'] : null,
             $this->classic ? ['key' => 'menu-classic', 'label' => Lang::text('Classic Menu'), 'icon' => 'fa-table-columns'] : null,
             ['key' => 'logout', 'label' => Lang::text('Sign out'), 'icon' => 'logout', 'tone' => 'danger', 'confirm' => Lang::text('Sign out of the application?')],
