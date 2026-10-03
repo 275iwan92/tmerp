@@ -130,6 +130,8 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
 
         Auth::login($user);
         request()->session()->regenerate();
+        // Login baru = mulai bersih di Shell v2 (tab lama ditutup, menu di lapis utama, opening screen tampil) -- user 2026-10-03.
+        request()->session()->put('dl_fresh_login', true);
 
         // Landing setelah login berbasis LEVEL, bukan role/nama grup spesifik
         // (instruksi eksplisit user 2026-09-13): "check level dulu, kalau

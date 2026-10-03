@@ -377,6 +377,10 @@
     menu lengkap melayang di atas layar dan menutup sendiri setelah layar dipilih atau klik di luar.
     **Klik logo atau nama aplikasi (2026-10-02):** semua tab ditutup dan opening screen tampil; posisi menu di kiri tetap.
     Bila ada isian yang belum di-Save di salah satu tab, ditanya sekali dulu (Cancel / Close all tabs).
+    **Logout (2026-10-03):** semua tab ditutup dan menu kembali ke lapis utama; login berikutnya mendarat di opening screen
+    (tab lama tidak dipulihkan, berlaku juga bila sesi habis). Pilihan menu mini, tema dan bahasa tetap diingat.
+    **Klik item menu yang layarnya sudah terbuka (2026-10-03):** kembali ke **grid** menu itu; form yang sedang dikerjakan ditutup,
+    bila ada isian belum di-Save muncul pertanyaan **Save / Don't Save / Cancel** (Save = simpan lalu ke grid, Cancel = tetap di form).
 19. **Layar selebar panel kanan:** isi layar v2 tidak dibatasi lebar tengah; tepi kiri-kanan hanya 6px (±1,5 mm).
     Pengecualian: halaman Pedoman (teks bacaan).
 20. **Setiap item menu wajib punya ikon sendiri** yang menggambarkan isinya dan berbeda dari item lain di daftar yang sama
@@ -725,3 +729,4 @@
 | 2026-10-03 | **B.16: Material Category = pembentuk KODE ITEM** (user: "Material category ini pembentuk KODE ITEM. IMPORTANT !!!!", disampaikan untuk ke-7 kalinya; acuan `docs/ddl/doc_rmprefix1.sql`). Rantai 5 tingkat, kode item = gabungan prefix tiap tingkat (`PCC02002`), layar = dropdown yang saling terkait seperti yang lama; daftar rata Level + Parent di v2 salah. Arti tiap tingkat berbeda per kategori, label layar Category 1 … 5. Rinci: `md_for_systems/matcategory_delta.md` §5. |
 | 2026-10-03 | B.3: sapuan multi-bahasa — sekitar 3.000 teks layar v2, pesan, objek DevLib, mockup-parts dan service kini English di kode + pasangan Indonesia di kamus (ddt + tm2); bahasa ikut akun user; pesan validasi Indonesia (`lang/id`); label menu English + kamus; penjaga `MultiLanguageRatchetTest` memakai kosakata 2.100 kata; status dan sisa keputusan di `docs/md_for_systems/multilanguage_status.md`. |
 | 2026-10-03 | C.7: **PR Draft boleh dicetak dengan tanda air DRAFT** besar miring di lembarnya (user: "PR ini walau draft bisa di cetak, hanya cetakan print out ada tulisan draft miring dan besar"). Tanda air milik objek DevLib `x-dl::print-doc` (status DRAFT), berlaku untuk semua dokumen; tombol Print di PR dibuka untuk Draft / Submitted. Contoh di devlib.test → Print Document → Draft document. |
+| 2026-10-03 | C.18: **Logout = semua tab ditutup, menu ke lapis utama, opening screen tampil saat login lagi** (user: "jika logout itu all tabs closed dan balik ke menu utama dan opening screen muncul"); **klik item menu yang sudah terbuka = kembali ke grid-nya** dengan pertanyaan Save / Don't Save / Cancel bila form berubah (user: "sudah saya sampaikan, belum dikerjakan" — sebelumnya hanya bekerja untuk form beralamat `?id=`, form v2 beralamat path). Objek DevLib Shell, berlaku di devlib.test, mockup.test dan tmerp.test. |

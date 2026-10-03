@@ -8,6 +8,8 @@
   ready.forEach(fn => fn(Devlib));
   document.addEventListener('DOMContentLoaded', () => {
     Devlib.initDevMode();
+    // data-dl-fresh="1" (Shell sesudah login baru): tab lama dan posisi Layer Menu dibuang sebelum komponen dipasang.
+    if (document.querySelector('[data-dl-fresh="1"]')) Devlib.resetWorkspace();
     Devlib.mountOne("ThemePicker");
     Devlib.mountOne("Tokens");
     Devlib.mountOne("FmtDemo");

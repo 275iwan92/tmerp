@@ -205,7 +205,8 @@
       else if (a === 'devmode') setDevMode(!document.body.classList.contains('dl-dev'));
       else if (a === 'help') this.openHelp();
       else if (a === 'menu-layer' || a === 'menu-classic') this.switchMenu(a.slice(5));
-      else if (a === 'logout') $(this.el, 'form[data-dl-logout]')?.requestSubmit();
+      // Logout (user 2026-10-03): semua tab ditutup dan menu kembali ke lapis utama, login berikutnya mendarat di opening screen.
+      else if (a === 'logout') { Devlib.resetWorkspace(); $(this.el, 'form[data-dl-logout]')?.requestSubmit(); }
     }
 
     // Pilihan menu = cookie dl_menu (dibaca server lewat Shell::preferred()), lalu halaman dimuat ulang.
@@ -319,7 +320,10 @@
       const pane = document.createElement('div'); pane.className = 'dl-pane is-framed';
       pane.innerHTML = `<iframe src="${esc(it.url)}" title="${esc(it.label)}"></iframe>`;
       this.content.appendChild(pane);
-      this.openTabs.set(code, {tab, pane});
+      const rec = {tab, pane, grid: null};
+      // Alamat grid sesungguhnya = alamat sesudah /item/{code} dialihkan; dipakai toGrid untuk tahu layar masih di grid atau sudah di form.
+      pane.querySelector('iframe').addEventListener('load', () => { try { rec.grid = pane.querySelector('iframe').contentWindow.location.href; } catch (e) {} }, {once: true});
+      this.openTabs.set(code, rec);
       this.activate(code);
     }
 
@@ -327,8 +331,10 @@
     // Form yang sedang diubah -> tanya Simpan / Buang / Batal (dialog dirty-guard DevLib di dalam layar itu);
     // Simpan: form dikirim, grid dibuka bila hasilnya tanpa pesan error; Batal: tetap di form.
     toGrid(code, url) {
-      const fr = this.openTabs.get(code)?.pane.querySelector('iframe'); let w;
-      try { w = fr.contentWindow; if (!w.location.search) return; } catch (e) { return; }
+      const rec = this.openTabs.get(code), fr = rec?.pane.querySelector('iframe'); let w;
+      // Form v2 beralamat path (/v2/co/123), bukan ?id= -- bandingkan dengan alamat grid yang direkam saat tab dibuka.
+      try { w = fr.contentWindow; if (!rec.grid || w.location.href === rec.grid) return; } catch (e) { return; }
+      url = rec.grid;
       const go = () => { w.location.href = url; };
       const h = w.Devlib?.h, live = h ? [...h.dirtyForms].filter(f => w.document.contains(f)) : [];
       if (!live.length) { go(); return; }

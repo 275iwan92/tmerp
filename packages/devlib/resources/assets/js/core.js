@@ -477,11 +477,18 @@ window.Devlib = window.Devlib || {};
   window.addEventListener('beforeunload', e => { if ([...dirtyForms].some(f => document.contains(f))) { e.preventDefault(); e.returnValue = ''; } });
 
   // Tiga pilihan: Simpan (kirim form), Buang (lanjut pergi), Batal (tetap di sini).
+  // Mulai bersih (login baru / Logout): tab kerja ditutup dan Layer Menu kembali ke lapis utama; pilihan mini / tema / bahasa tetap.
+  function resetWorkspace() {
+    try {
+      sessionStorage.removeItem('dl-shell-tabs');
+      Object.keys(localStorage).filter(k => (k.startsWith('dl-lm-') || k.startsWith('dl-sm-')) && !k.endsWith('-mini')).forEach(k => localStorage.removeItem(k));
+    } catch (e) {}
+  }
   function askDirty() {
     return new Promise(resolve => {
       const ov = document.createElement('div'); ov.className = 'dl-mov is-on dl-confirm';
       ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="alertdialog" aria-modal="true"><div class="dl-confirm__body"><span class="dl-confirm__icon dl-confirm__icon--warn"><i class="fa-solid fa-floppy-disk"></i></span><div><h3>${esc(T('dirty_title'))}</h3><p>${esc(T('dirty_msg'))}</p></div></div>`
-        + `<div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-v="stay">${esc(T('cancel'))}</button><button type="button" class="dl-btn dl-btn--secondary dl-btn--md" data-v="discard">${esc(T('discard'))}</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-v="save">${esc(T('save'))}</button></div></div>`;
+        + `<div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-v="stay">${esc(T('cancel'))}</button><button type="button" class="dl-btn dl-btn--secondary dl-btn--md" data-v="discard">${esc(T('dirty_nosave'))}</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-v="save">${esc(T('save'))}</button></div></div>`;
       const done = v => { ov.remove(); resolve(v); };
       ov.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) done(b.dataset.v); else if (e.target === ov) done('stay'); });
       document.body.appendChild(ov); $(ov, '[data-v=save]').focus();
@@ -798,6 +805,6 @@ window.Devlib = window.Devlib || {};
 
   // Asal data kolom (grid/lines): {src: 'tm2sdi.iqp_inquiry.qty'} -> tooltip Mode Developer di header kolom.
   const srcAttr = (c, kind = 'kolom') => c && c.src ? ` data-dl="${kind} ${esc(c.label || c.key)}" data-dl-class="kolom" data-dl-src="${esc(c.src)}"` : '';
-  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, dayOfYear, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, Tf, t, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, numStr, numIn, numFmt, NUM, MON_EN, dow2, DlDate, DlNumber, DlTime, DlDateTime, DlText, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
-  Object.assign(Devlib, {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words}, {initDevMode});
+  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, dayOfYear, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, Tf, t, dirtyForms, markDirty, askDirty, submitForm, resetWorkspace, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, numStr, numIn, numFmt, NUM, MON_EN, dow2, DlDate, DlNumber, DlTime, DlDateTime, DlText, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
+  Object.assign(Devlib, {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words, resetWorkspace}, {initDevMode});
 })();

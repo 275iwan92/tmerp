@@ -49,6 +49,8 @@ class Shell extends DevlibComponent
         // Url menerima POST JSON dan membalas {message} (422 {message} bila ditolak); 'read' menerima {id} atau {} = semua
         // dan membalas {unread}. Kosong = pratinjau tanpa server (isi contoh, Save hanya menutup).
         public array $account = [],
+        // true tepat sesudah login: tab kerja lama dan posisi Layer Menu dibuang (boot.js) -> opening screen tampil.
+        public bool $fresh = false,
     ) {}
 
     public function tag(): string
