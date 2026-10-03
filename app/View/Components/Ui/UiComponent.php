@@ -35,7 +35,7 @@ abstract class UiComponent extends Component
         return '';
     }
 
-    // Dibaca DevLib UI UX (setup/component-library) supaya katalognya selalu
+    // Katalog komponen (dulu dibaca layar DevLib UI UX, dihapus 2026-10-04 -- devlib.test menggantikannya) supaya selalu
     // sama dengan definisi di class, tidak pernah basi.
     public function variantKeys(): array
     {

@@ -518,7 +518,7 @@ final class EngineRegistry
                 ],
                 'steps' => [
                     'Checks every line: quantity, destination bin in the destination warehouse, bin not blocked, enough stock in the source bin (lines from the same bin are added up).',
-                    'Approval (Setup > Setting Approval, module TF) is switched off by default. Switched on: Confirm only sends the transfer for approval and the stock moves when the last level approves; a rejected transfer never moves stock.',
+                    'Approval (Setup > Security > Approval Levels, module TF) is switched off by default. Switched on: Confirm only sends the transfer for approval and the stock moves when the last level approves; a rejected transfer never moves stock.',
                     'Per line writes the row out of the source bin and the row into the destination bin; the value moves with the average price of the source bin.',
                     'The destination bin gets a weighted average price. The total stock of the item does not change and no journal is made.',
                     'Notes on the line whether the item was dead stock at that moment.',
@@ -527,7 +527,7 @@ final class EngineRegistry
                 ],
                 'reads' => ['tm2inv.inv_transfer', 'tm2inv.inv_transfer_line', 'tm2inv.rm_stockcard / sfg_stockcard / fg_stockcard', 'tm2inv.inv_pallet', 'tm2mst.wh_loc', 'tm2mst.flow_config'],
                 'writes' => ['tm2inv.rm_stockcard / sfg_stockcard / fg_stockcard', 'tm2inv.inv_transfer', 'tm2inv.inv_transfer_line', 'tm2inv.inv_pallet', 'tm2inv.inv_pallet_log', 'tm2mst.flow_log'],
-                'settings' => ['Setup > Setting Approval: module TF (switched off by default)'],
+                'settings' => ['Setup > Security > Approval Levels: module TF (switched off by default)'],
                 'used' => ['Stock Transfer', 'Stock Transfer Approval Center', 'Warehouse Map (Transfer button)', 'Track via QR/Barcode (Move this Pallet)'],
                 'tests' => ['tests/Feature/StockTransferServiceTest.php', 'tests/Feature/PalletServiceTest.php'],
                 'docs' => ['docs/warehouselayout_tier1.md'],

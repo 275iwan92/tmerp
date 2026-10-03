@@ -256,7 +256,6 @@ final class MenuRoutes
             'SET_LOCALIZATION' => route('setup.localization'),
             'SET_CONSTANTS' => route('setup.constants'),
             'SET_DATA_ORIGIN' => route('setup.data-origin'),
-            'SET_UILIB' => route('setup.component-library'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),

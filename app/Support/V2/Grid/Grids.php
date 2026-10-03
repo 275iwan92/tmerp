@@ -80,6 +80,7 @@ final class Grids
         Setup\ConstantCategoryLookup::class,
         Setup\AccountGrid::class,
         Setup\GroupGrid::class,
+        Setup\ModuleLookup::class,
         Planning\MaterialBookingGrid::class,
         Planning\MaterialPlanningGrid::class,
         Planning\DemandForecastLookup::class,

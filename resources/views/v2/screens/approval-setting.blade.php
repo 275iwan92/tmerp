@@ -27,7 +27,7 @@
         :stats="[['label' => t('All')], ['label' => t('Active'), 'where' => ['active' => t('Active')], 'tone' => 'success'], ['label' => t('Inactive'), 'where' => ['active' => t('Inactive')], 'tone' => 'neutral']]" />
 @elseif (! $cfg)
     <x-dl::action-form action="{{ route('v2.approval-setting.create') }}">
-        <x-dl::card title="+ New Record — Setting Approval" description="The document code (e.g. PR, PO, CO) must match the code used by its document screen.">
+        <x-dl::card title="+ New Record — Approval Levels" description="The document code (e.g. PR, PO, CO) must match the code used by its document screen.">
             <x-dl::form.row :cols="3">
                 <x-dl::field.text name="module_code" label="Document Code" required :case-toggle="false" placeholder="PR" />
                 <x-dl::field.text name="notes" label="Description" placeholder="Approval ..." />
@@ -44,7 +44,7 @@
         $name = ApprovalSetting::MODULE_NAMES[$cfg->module_code] ?? $cfg->module_code;
         $levels = ApprovalSetting::levels($cfg);
     @endphp
-    <x-dl::form id="approval-setting-form" :title="'Setting Approval · '.raw($cfg->module_code)" :subtitle="$name"
+    <x-dl::form id="approval-setting-form" :title="'Approval Levels · '.raw($cfg->module_code)" :subtitle="$name"
         panel="top" kind="master" :status="$cfg->activate ? 'active' : 'inactive'"
         :action="route('v2.approval-setting.save', $cfg->flow_config_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
         :tabs="['general' => 'General']"
