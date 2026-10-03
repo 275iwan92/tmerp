@@ -430,11 +430,15 @@ Route::prefix('v2')->name('v2.')->group(function () {
             PurchaseRequisition::save($pr, $r->all());
             $msg = t('PR saved.');
             if ($action === 'add_material') {
-                abort_unless($r->filled('material_id'), 422, t('Choose an item from the master.'));
+                if (! $r->filled('material_id')) {
+                    return $open($id)->withErrors(['add' => t('Choose an item from the master.')]);
+                }
                 PurchaseRequisition::addMaterial($pr->refresh(), (int) $r->input('material_id'));
                 $msg = t('Master item added — fill in the qty & estimated price.');
             } elseif ($action === 'add_free') {
-                abort_unless(trim((string) $r->input('free_description')) !== '', 422, t('Fill in the free item description.'));
+                if (trim((string) $r->input('free_description')) === '') {
+                    return $open($id)->withErrors(['free' => t('Fill in the free item description.')]);
+                }
                 $err = PurchaseRequisition::addFree($pr->refresh(), (string) $r->input('free_description'), (string) $r->input('free_uom', ''), $r->integer('free_account_id') ?: null);
                 if ($err) {
                     return $open($id)->withErrors(['free' => $err]);
@@ -608,15 +612,21 @@ Route::prefix('v2')->name('v2.')->group(function () {
             PurchaseOrder::save($po, $r->all());
             $msg = t('PO saved.');
             if ($action === 'add_material') {
-                abort_unless($r->filled('material_id'), 422, t('Choose an item from the Material Master.'));
+                if (! $r->filled('material_id')) {
+                    return $open($id)->withErrors(['add' => t('Choose an item from the Material Master.')]);
+                }
                 PurchaseOrder::addMaterial($po->refresh(), (int) $r->input('material_id'));
                 $msg = t('Item added — fill in the qty & estimated price.');
             } elseif ($action === 'add_free') {
-                abort_unless(trim((string) $r->input('free_description')) !== '', 422, t('Fill in the item description.'));
+                if (trim((string) $r->input('free_description')) === '') {
+                    return $open($id)->withErrors(['free' => t('Fill in the item description.')]);
+                }
                 PurchaseOrder::addFree($po->refresh(), (string) $r->input('free_description'), (string) $r->input('free_uom', ''), $r->filled('free_account_id') ? (int) $r->input('free_account_id') : null);
                 $msg = t('Free item added.');
             } elseif ($action === 'add_alloc') {
-                abort_unless($r->filled('alloc_id'), 422, t('Choose a PR line.'));
+                if (! $r->filled('alloc_id')) {
+                    return $open($id)->withErrors(['add' => t('Choose a PR line.')]);
+                }
                 PurchaseOrder::addAllocation($po->refresh(), (int) $r->input('alloc_id'));
                 $msg = t('PR line pulled into the PO — fill in the price & discount.');
             } elseif ($action === 'confirm') {
@@ -768,7 +778,9 @@ Route::prefix('v2')->name('v2.')->group(function () {
             PurchaseReceive::save($pv, $r->all());
             $msg = t('Goods receipt saved.');
             if ($action === 'add_lines') {
-                abort_unless($r->filled('po_line_ids'), 422, t('Choose PO lines.'));
+                if (! $r->filled('po_line_ids')) {
+                    return $open($id)->withErrors(['add' => t('Choose PO lines.')]);
+                }
                 PurchaseReceive::addLines($pv->refresh(), (array) $r->input('po_line_ids'));
                 $msg = t('PO lines added.');
             } elseif ($action === 'confirm') {
@@ -812,7 +824,9 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $r->validate(['do_date' => ['nullable', 'date'], 'scheduled_ship_date' => ['nullable', 'date']]);
             $err = DeliveryOrder::save($do, $r->all());
             if ($action === 'pull') {
-                abort_unless($r->filled('co_delivery_ids'), 422, t('Choose a CO delivery schedule.'));
+                if (! $r->filled('co_delivery_ids')) {
+                    return $open($id, $slug)->withErrors(['save' => t('Choose a CO delivery schedule.')]);
+                }
                 $err = DeliveryOrder::pull($do->refresh(), (array) $r->input('co_delivery_ids')) ?: $err;
             }
 
@@ -1011,7 +1025,9 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $action = (string) $r->input('action', 'save');
             $msg = t('Customer Order saved.');
             if ($action === 'add_product') {
-                abort_unless($r->filled('product_id'), 422, t('Choose a Master Product.'));
+                if (! $r->filled('product_id')) {
+                    return $open($id)->withErrors(['add' => t('Choose a Master Product.')]);
+                }
                 CustomerOrder::addProduct($o, (int) $r->input('product_id'));
                 $msg = t('Product line added — fill in the qty & due date.');
             } elseif ($action === 'add_service') {
@@ -1323,7 +1339,9 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::get('/', fn () => view('v2.account-email'))->name('');
         Route::post('/send', function () {
             $u = Auth::user();
-            abort_unless($u->email && filter_var($u->email, FILTER_VALIDATE_EMAIL), 422, t('E-mail is not filled in / not valid.'));
+            if (! $u->email || ! filter_var($u->email, FILTER_VALIDATE_EMAIL)) {
+                return back()->withErrors(['mail' => t('E-mail is not filled in / not valid.')]);
+            }
             MailSettings::apply();
             $url = URL::temporarySignedRoute('v2.account.email.verify', now()->addDay(), ['id' => $u->id_user, 'hash' => sha1(strtolower($u->email))]);
             try {
@@ -1367,7 +1385,9 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 return back()->with('v2_flash', t('E-mail setting saved.'));
             }
             $u = Auth::user();
-            abort_unless($u->email, 422, t('Fill in the e-mail of your account first (Security) to send a test.'));
+            if (! $u->email) {
+                return back()->withErrors(['mail' => t('Fill in the e-mail of your account first (Security) to send a test.')]);
+            }
             MailSettings::apply();
             try {
                 Mail::raw(tf('Test e-mail from :app — the e-mail setting works.', ['app' => config('app.name')]), fn ($m) => $m->to($u->email)->subject(t('Test e-mail')));
