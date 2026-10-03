@@ -81,10 +81,10 @@ class MainMenuShellSmokeTest extends TestCase
         $component = Livewire::test('pages::main-menu');
         $tree = collect($component->instance()->menuTree());
         $setup = $tree->firstWhere('code', 'SETUP');
-        // 2026-10-04: Setup regrouped into eight groups; DevLib UI UX lives in Others.
-        $othersGroup = collect($setup['children'])->firstWhere('code', 'SET_GRP_OTHERS');
+        // 2026-10-04: Setup regrouped into eleven groups; DevLib UI UX lives in its own group DevLib.
+        $devlibGroup = collect($setup['children'])->firstWhere('code', 'SET_GRP_DEVLIB');
 
-        $this->assertTrue(collect($othersGroup['children'])->contains('code', 'SET_UILIB'));
+        $this->assertTrue(collect($devlibGroup['children'])->contains('code', 'SET_UILIB'));
     }
 
     // Tab Calendar (2026-09-09) -- replika docs/mockups/mockup_UIUX_calendar.html
@@ -139,11 +139,11 @@ class MainMenuShellSmokeTest extends TestCase
         $setup = $tree->firstWhere('code', 'SETUP');
         $this->assertNotNull($setup, 'Modul SETUP harus ada di menuTree() utk admin.');
 
-        // 2026-10-04: eight groups fixed by the user (migration 2026_10_04_000010). Setting Approval / Acting Officer
+        // 2026-10-04: eleven groups fixed by the user (migrations 2026_10_04_000010 + _000020). Setting Approval / Acting Officer
         // exist on ddt only, so Security is checked by the items both sites share.
         $children = collect($setup['children']);
         $this->assertSame(
-            ['Security', 'Support & Ticket', 'Help and Support', 'Language and Localization', 'Dummy Data & Migration', 'Constants', 'Dashboard and Widgets', 'Others'],
+            ['Security', 'Support & Ticket', 'Help and Support', 'Language and Localization', 'Dummy Data & Migration', 'Constants', 'Dashboard and Widgets', 'Menu', 'DevLib', 'Identification', 'Others'],
             $children->where('menuType', 'group')->pluck('label')->values()->all()
         );
         $labels = fn (string $code) => collect($children->firstWhere('code', $code)['children'])->pluck('label')->all();
@@ -154,7 +154,9 @@ class MainMenuShellSmokeTest extends TestCase
         $this->assertSame(['Dummy & Legacy Data', 'Migration'], $labels('SET_GRP_DUMMY'));
         $this->assertSame(['Constants', 'Constant Categories', 'Document Number Series'], $labels('SET_GRP_CONSTANTS'));
         $this->assertSame(['Opening Dashboards', 'Opening Board Widgets', 'Opening Board Templates', 'KPI Targets', 'Daily Quotes'], $labels('SET_GRP_DASHBOARD'));
-        $this->assertSame(['Identification', 'Menu Setup', 'DevLib UI UX'], $labels('SET_GRP_OTHERS'));
+        $this->assertSame(['Menu Setup'], $labels('SET_GRP_MENU'));
+        $this->assertSame(['DevLib UI UX'], $labels('SET_GRP_DEVLIB'));
+        $this->assertSame(['Identification'], $labels('SET_GRP_IDENT'));
 
         // SET_THEME (dead v1 entry, NOT_BUILT) stays inactive inside Others, so it must not appear anywhere in the tree.
         $this->assertFalse(collect($children->firstWhere('code', 'SET_GRP_OTHERS')['children'])->contains('code', 'SET_THEME'));
