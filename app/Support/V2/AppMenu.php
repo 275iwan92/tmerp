@@ -30,14 +30,18 @@ final class AppMenu
         $visible = $user->visibleAppMenuCodes();
         $ok = fn (SysAppMenu $n) => $allowed === null || $n->required_object === null || $n->required_object === SecUser::PUBLIC_MODULE
             || $allowed->contains($n->required_object);
+        // "General" is an access flag, not a menu (user 2026-10-04): a module the user has no right to still shows, but only
+        // its branches marked GENERAL (groups without a right of their own pass so the GENERAL items inside are reachable).
+        $okPublic = fn (SysAppMenu $n) => $n->required_object === SecUser::PUBLIC_MODULE || ($n->menu_type === 'group' && $n->required_object === null);
         $routes = MenuRoutes::map();
 
         $modules = [];
-        foreach ($rows->where('menu_type', 'module')->whereIn('code', $visible) as $m) {
+        foreach ($rows->where('menu_type', 'module') as $m) {
+            $pass = $visible->contains($m->code) ? $ok : $okPublic;
             $out = [];
-            foreach ($children->get($m->id, collect())->filter($ok) as $c) {
+            foreach ($children->get($m->id, collect())->filter($pass) as $c) {
                 if ($c->menu_type === 'group') {
-                    $items = self::nodes($c, $children, $ok, $routes);
+                    $items = self::nodes($c, $children, $pass, $routes);
                     if ($items) {
                         $out[] = ['label' => self::label($c), 'icon' => $c->icon ?: 'fa-solid fa-folder', 'items' => $items];
                     }

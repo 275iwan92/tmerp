@@ -196,7 +196,9 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
             });
     }
 
-    // Modul terbuka untuk semua user login (General Report: CO yang sudah di-post, tanpa harga — user 2026-09-30).
+    // Tanda akses "terbuka untuk semua user login" (General Report: CO yang sudah di-post, tanpa harga — user 2026-09-30).
+    // Bukan modul menu (user 2026-10-04): item GENERAL tinggal di modul pemiliknya (Sales, nanti Production) dan tetap
+    // tampil untuk user yang tidak punya hak modul itu (AppMenu::modules).
     public const PUBLIC_MODULE = 'GENERAL';
 
     public function canAccessModule(string $moduleCode): bool

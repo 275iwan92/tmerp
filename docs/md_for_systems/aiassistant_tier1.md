@@ -153,11 +153,11 @@ Definisi nomor 1 dan 8 sudah ditetapkan user. Yang lain **usulan**; kolom Data =
 - Tiap potongan paling panjang 255 karakter, English di tabel; **bahasa Indonesia lewat kamus** (konteks `help`), sesuai aturan B.3.
   Potongan sependek itu juga yang paling mudah ditemukan model lokal.
 - Isi awal ditulis dari kode tiap layar: `resources/data/help/*.json` → `php artisan help:import`. Sesudah itu dirawat di layar.
-- Layar: **Setup > Settings > Help Topics**, **Help Lines** (kolom English dan Indonesia berdampingan), dan **General Report >
-  Help > Help Center** (dibaca semua user; baris dibuka = langkah + penjelasan isian).
+- Layar: **Setup > Help and Support > Help Topics**, **Help Lines** (kolom English dan Indonesia berdampingan); Help Center
+  dibuka dari **Profile > Help & support** (dibaca semua user; baris dibuka = langkah + penjelasan isian).
 - `help:import` melaporkan layar di menu yang belum punya Help, supaya layar baru tidak lolos.
-- Pintu untuk semua user: halaman **F1 (Bantuan & dukungan) → Help Center**. Di `tm2sys` modul menu *General Report* belum ada,
-  jadi di tmerp.test Help Center dibuka lewat F1 saja (baris menunya ikut muncul begitu modul itu dipasang).
+- Pintu untuk semua user: **F1** atau laci **Help & support** → Help Center. Tidak ada modul menu *General Report*
+  (user 2026-10-04: "General" = sifat akses, bukan menu).
 
 ## 7. Pemasangan Ollama
 
