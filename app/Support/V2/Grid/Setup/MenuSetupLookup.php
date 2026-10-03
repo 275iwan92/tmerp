@@ -40,7 +40,7 @@ class MenuSetupLookup extends DbLookup
 
     public function group(): string
     {
-        return 'Settings';
+        return 'Others';
     }
 
     public function icon(): string

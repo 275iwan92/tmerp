@@ -32,7 +32,7 @@ class ConstantCategoryLookup extends DbLookup
 
     public function group(): string
     {
-        return 'Settings';
+        return 'Constants';
     }
 
     public function icon(): string

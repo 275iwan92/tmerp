@@ -30,7 +30,7 @@ abstract class HelpLookup extends DbLookup
 
     public function group(): string
     {
-        return 'Settings';
+        return 'Help and Support';
     }
 
     // Bahasa terjemahan = bahasa aktif selain English (bahasa dasar database).

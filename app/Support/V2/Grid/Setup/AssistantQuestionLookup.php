@@ -34,7 +34,7 @@ class AssistantQuestionLookup extends DbLookup
 
     public function group(): string
     {
-        return 'Settings';
+        return 'Help and Support';
     }
 
     public function icon(): string

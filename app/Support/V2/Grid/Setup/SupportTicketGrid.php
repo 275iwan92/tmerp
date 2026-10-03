@@ -41,7 +41,7 @@ class SupportTicketGrid extends DbGrid
 
     public function group(): string
     {
-        return 'Security';
+        return 'Support & Ticket';
     }
 
     public function icon(): string

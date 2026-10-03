@@ -133,7 +133,7 @@ final class Screens
                 ]],
             ]],
             ['code' => 'SETUP', 'short' => 'SET', 'label' => 'Setup', 'icon' => 'fa-solid fa-gear', 'groups' => [
-                ['label' => 'Settings', 'items' => [
+                ['label' => 'Security', 'items' => [
                     $it('approval-setting', ['Setting Approval', 'fa-solid fa-list-ol', 'v2 baru: tm2mst.flow_config + flow_config_step (pengganti m_authorize)', null]),
                     $it('approval-acting', ['Acting Officer (PLT)', 'fa-solid fa-user-clock', 'v2 baru: tm2mst.flow_position_acting', null]),
                 ]],

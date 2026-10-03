@@ -36,7 +36,7 @@ class LanguageLookup extends DbLookup
 
     public function group(): string
     {
-        return 'Settings';
+        return 'Language and Localization';
     }
 
     public function icon(): string

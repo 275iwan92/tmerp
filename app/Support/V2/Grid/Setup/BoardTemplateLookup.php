@@ -36,7 +36,7 @@ class BoardTemplateLookup extends DbLookup
 
     public function group(): string
     {
-        return 'Settings';
+        return 'Dashboard and Widgets';
     }
 
     public function icon(): string

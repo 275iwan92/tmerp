@@ -35,7 +35,7 @@ class AssistantLogReport extends DbGrid
 
     public function group(): string
     {
-        return 'Settings';
+        return 'Help and Support';
     }
 
     public function family(): string

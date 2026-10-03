@@ -81,9 +81,10 @@ class MainMenuShellSmokeTest extends TestCase
         $component = Livewire::test('pages::main-menu');
         $tree = collect($component->instance()->menuTree());
         $setup = $tree->firstWhere('code', 'SETUP');
-        $settingsGroup = collect($setup['children'])->firstWhere('code', 'SET_GRP_SETTINGS');
+        // 2026-10-04: Setup regrouped into eight groups; DevLib UI UX lives in Others.
+        $othersGroup = collect($setup['children'])->firstWhere('code', 'SET_GRP_OTHERS');
 
-        $this->assertTrue(collect($settingsGroup['children'])->contains('code', 'SET_UILIB'));
+        $this->assertTrue(collect($othersGroup['children'])->contains('code', 'SET_UILIB'));
     }
 
     // Tab Calendar (2026-09-09) -- replika docs/mockups/mockup_UIUX_calendar.html
@@ -138,33 +139,25 @@ class MainMenuShellSmokeTest extends TestCase
         $setup = $tree->firstWhere('code', 'SETUP');
         $this->assertNotNull($setup, 'Modul SETUP harus ada di menuTree() utk admin.');
 
+        // 2026-10-04: eight groups fixed by the user (migration 2026_10_04_000010). Setting Approval / Acting Officer
+        // exist on ddt only, so Security is checked by the items both sites share.
         $children = collect($setup['children']);
-        $settingsGroup = $children->firstWhere('code', 'SET_GRP_SETTINGS');
-        $securityGroup = $children->firstWhere('code', 'SET_GRP_SECURITY');
-        $this->assertNotNull($settingsGroup);
-        $this->assertNotNull($securityGroup);
-        $this->assertSame('group', $settingsGroup['menuType']);
-        $this->assertSame('group', $securityGroup['menuType']);
-
         $this->assertSame(
-            // 2026-10-03: daftar disamakan dengan tm2sys sekarang (Identification, Assistant Questions / Log, Opening Dashboards dkk
-            // ditambahkan sesi asisten dan opening board tanpa memperbarui daftar ini).
-            ['Identification', 'Language', 'Localization', 'Document Number Series', 'Constants', 'Constant Categories', 'Translation Dictionary', 'Dummy & Legacy Data', 'Menu Setup',
-                'Help Topics', 'Help Lines', 'Assistant Questions', 'DevLib UI UX', 'Opening Dashboards', 'Assistant Log', 'Opening Board Widgets', 'Opening Board Templates', 'KPI Targets',
-                'Daily Quotes'],
-            collect($settingsGroup['children'])->pluck('label')->all()
+            ['Security', 'Support & Ticket', 'Help and Support', 'Language and Localization', 'Dummy Data & Migration', 'Constants', 'Dashboard and Widgets', 'Others'],
+            $children->where('menuType', 'group')->pluck('label')->values()->all()
         );
-        $this->assertSame(
-            ['Account', 'Group', 'Group per Submodule', 'Migration', 'Support Tickets'],
-            collect($securityGroup['children'])->pluck('label')->all()
-        );
+        $labels = fn (string $code) => collect($children->firstWhere('code', $code)['children'])->pluck('label')->all();
+        $this->assertSame(['Account', 'Group', 'Group per Submodule'], array_slice($labels('SET_GRP_SECURITY'), 0, 3));
+        $this->assertSame(['Support Tickets'], $labels('SET_GRP_SUPPORT'));
+        $this->assertSame(['Help Topics', 'Help Lines', 'Assistant Questions', 'Assistant Log'], $labels('SET_GRP_HELP'));
+        $this->assertSame(['Languages', 'Language', 'Localization', 'Translation Dictionary', 'Message Groups'], $labels('SET_GRP_LANG'));
+        $this->assertSame(['Dummy & Legacy Data', 'Migration'], $labels('SET_GRP_DUMMY'));
+        $this->assertSame(['Constants', 'Constant Categories', 'Document Number Series'], $labels('SET_GRP_CONSTANTS'));
+        $this->assertSame(['Opening Dashboards', 'Opening Board Widgets', 'Opening Board Templates', 'KPI Targets', 'Daily Quotes'], $labels('SET_GRP_DASHBOARD'));
+        $this->assertSame(['Identification', 'Menu Setup', 'DevLib UI UX'], $labels('SET_GRP_OTHERS'));
 
-        // 2026-10-02: SET_MENU hidup lagi sebagai Menu Setup (layar v2) di dalam grup Settings (migration 2026_10_02_000045).
-        // SET_THEME/SET_MENU (dead entries lama, NOT_BUILT tanpa route nyata)
-        // sengaja dinonaktifkan (migration 2026_09_07_000005) supaya tidak
-        // ikut nongol di footer sbg efek samping data-driven-nya SETUP.
-        $this->assertFalse($children->contains('code', 'SET_THEME'));
-        $this->assertFalse($children->contains('code', 'SET_MENU'));
+        // SET_THEME (dead v1 entry, NOT_BUILT) stays inactive inside Others, so it must not appear anywhere in the tree.
+        $this->assertFalse(collect($children->firstWhere('code', 'SET_GRP_OTHERS')['children'])->contains('code', 'SET_THEME'));
     }
 
     // Kerangka i18n app-wide (2026-09-07, App\Support\Localization\Translator)
