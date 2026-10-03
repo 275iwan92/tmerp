@@ -4,6 +4,7 @@ namespace App\Support\V2;
 
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysAppMenu;
+use App\Support\Localization\Dictionary;
 use App\Support\Localization\Translator;
 use App\Support\Menu\MenuRoutes;
 use Illuminate\Support\Facades\DB;
@@ -95,7 +96,7 @@ final class AppMenu
             return $v;
         }
 
-        return t($n->label);
+        return Dictionary::t($n->label, 'ui', null, 'menu');
     }
 
     // URL tujuan satu item: layar v2 (target v2:slug), layar v1, atau null (belum ada layar).

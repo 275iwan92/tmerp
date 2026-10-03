@@ -60,6 +60,33 @@ abstract class DevlibComponent extends Component
 
     private bool $translated = false;
 
+    // Kelompok pesan di Translation Dictionary (pohon kiri ala ScriptCase, user 2026-10-03): teks yang pertama kali tampil
+    // lewat komponen ini tercatat di kelompok tersebut. Turunan boleh menimpa dictionaryGroup(); null = kelompok umum.
+    private const GROUP_OF = [
+        'buttons' => ['Button', 'IconButton', 'SplitButton', 'MenuButton', 'BackButton', 'CodeButton', 'ActionBar'],
+        'grid' => ['Grid', 'LookupGrid', 'Sheet', 'Table', 'Pivot', 'Report', 'Pagination', 'Drilldown', 'PickMatrix', 'Lines', 'Kanban', 'Gantt'],
+        'form' => ['Form', 'ActionForm', 'Wizard', 'Field', 'Import', 'Approval', 'CodeChain', 'Master'],
+        'print' => ['PrintDoc', 'PrintOut', 'DocFooter', 'DocShare', 'Label', 'LabelSheet', 'LabelGuide', 'Barcode', 'Qr'],
+        'messages' => ['Alert', 'Modal', 'Announce', 'EmptyState', 'ErrorPage', 'Tooltip', 'LockScreen', 'Skeleton', 'Spinner'],
+        'menu' => ['LayerMenu', 'LayerShell', 'MegaMenu', 'SideMenu', 'Breadcrumb', 'Shell', 'Ribbon', 'Tabs', 'Accordion', 'AccordionGroup'],
+    ];
+
+    public function dictionaryGroup(): ?string
+    {
+        $chain = [static::class, ...array_values(class_parents($this))];
+        foreach ($chain as $class) {
+            $name = substr($class, strrpos($class, '\\') + 1);
+            $name = str_contains($class, '\\Components\\Field\\') ? 'Field' : (str_contains($class, '\\Components\\Wizard\\') ? 'Wizard' : $name);
+            foreach (self::GROUP_OF as $group => $classes) {
+                if (in_array($name, $classes, true)) {
+                    return $group;
+                }
+            }
+        }
+
+        return null;
+    }
+
     protected function translateTexts(): void
     {
         if ($this->translated) {
@@ -98,15 +125,26 @@ abstract class DevlibComponent extends Component
 
     public function resolveView()
     {
-        $this->translateTexts();
-        $view = parent::resolveView();
+        // Petunjuk kelompok berlaku selama prop dan view komponen ini diterjemahkan; komponen anak menimpanya lalu
+        // mengembalikannya (lihat Lang::hint).
+        $prev = Lang::hint($this->dictionaryGroup() ?? Lang::currentHint());
+        try {
+            $this->translateTexts();
+            $view = parent::resolveView();
+        } finally {
+            Lang::hint($prev);
+        }
 
         return function (array $data = []) use ($view) {
             if ($this->ability !== null && ! Access::can($this->ability)) {
                 return new HtmlString('');
             }
-
-            return $view instanceof \Closure ? $view($data) : $view;
+            $prev = Lang::hint($this->dictionaryGroup() ?? Lang::currentHint());
+            try {
+                return $view instanceof \Closure ? $view($data) : $view;
+            } finally {
+                Lang::hint($prev);
+            }
         };
     }
 

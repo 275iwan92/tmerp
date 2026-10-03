@@ -52,7 +52,8 @@ class AppServiceProvider extends ServiceProvider
         Locale::languagesUsing(fn () => Dictionary::languages());
         // Bahasa tampilan ikut AKUN (sec_user.lang_code), bukan cookie perangkat; tamu / halaman login memakai cookie.
         Locale::langUsing(fn () => Auth::user()?->lang_code);
-        Lang::translateUsing(fn (string $en, string $lang) => Dictionary::t($en, 'ui', $lang));
+        // Kamus aplikasi menang atas kamus bawaan DevLib (user 2026-10-03): null = belum ada -> DevLib memakai DICT-nya.
+        Lang::translateUsing(fn (string $en, string $lang, ?string $group = null) => Dictionary::lookup($en, 'ui', $lang, $group));
         Lang::dictUsing(fn (string $lang) => Dictionary::uiMap($lang));
         Blade::directive('t', fn ($e) => "<?php echo e(t($e)); ?>");
 

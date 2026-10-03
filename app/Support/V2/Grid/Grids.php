@@ -116,6 +116,8 @@ final class Grids
         Setup\BoardTemplateLookup::class,
         Setup\KpiTargetLookup::class,
         Setup\DailyQuoteLookup::class,
+        Setup\LanguageLookup::class,
+        Setup\DictionaryGroupLookup::class,
         Inv\RmStockInGrid::class,
         Inv\RmStockOutGrid::class,
         Inv\RmStockReturnGrid::class,

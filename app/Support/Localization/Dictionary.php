@@ -38,6 +38,12 @@ final class Dictionary
 
     private static array $pending = [];
 
+    // Baris lama berkelompok 'general' yang kini tampil lewat komponen berkelompok -> pindah kelompok (satu UPDATE per kelompok).
+    private static array $regroup = [];
+
+    // Kelompok bawaan per konteks (pohon kiri Translation Dictionary); teks 'ui' ikut petunjuk komponen (Devlib\Lang::hint).
+    public const GROUP_GENERAL = 'general';
+
     private static bool $recordInConsole = false;
 
     private static ?array $idWords = null;
@@ -49,7 +55,7 @@ final class Dictionary
         self::$recordInConsole = $on;
     }
 
-    public static function t(?string $en, string $context = 'ui', ?string $lang = null): string
+    public static function t(?string $en, string $context = 'ui', ?string $lang = null, ?string $group = null): string
     {
         if ($en === null || trim($en) === '') {
             return (string) $en;
@@ -58,10 +64,19 @@ final class Dictionary
         if (Lang::hasRaw($en)) {
             return $context === 'ui' && $lang === null ? Lang::text($en) : Lang::plain($en);
         }
-        self::remember($en, $context);
+
+        return self::lookup($en, $context, $lang, $group) ?? $en;
+    }
+
+    // Terjemahan dari kamus, null bila belum ada (Devlib\Lang memakai DICT bawaannya sebagai cadangan). Teks tercatat
+    // otomatis dengan kelompok ($group: petunjuk komponen / tf() = messages / menu) dan layar tempat pertama kali tampil.
+    public static function lookup(string $en, string $context = 'ui', ?string $lang = null, ?string $group = null): ?string
+    {
+        $group ??= $context === 'ui' ? Lang::currentHint() : null;
+        self::remember($en, $context, false, $group);
         $lang ??= Locale::lang();
 
-        return $lang === 'en' ? $en : (self::context($context, $lang)[$en] ?? $en);
+        return $lang === 'en' ? $en : (self::context($context, $lang)[$en] ?? null);
     }
 
     // source_en => teks, satu konteks satu bahasa ('' = belum diterjemahkan tidak ikut).
@@ -73,11 +88,37 @@ final class Dictionary
             ->pluck('l.text', 'd.source_en')->all());
     }
 
-    // Semua teks sumber satu konteks (source_en => true), untuk pencatatan otomatis.
+    // Semua teks sumber satu konteks (source_en => kelompok), untuk pencatatan otomatis dan pemindahan kelompok.
     public static function sources(string $context): array
     {
-        return self::$cache['s'][$context] ??= self::cached("s:$context", fn () => array_fill_keys(
-            self::db()->table('sys_dictionary')->where('context', $context)->pluck('source_en')->all(), true));
+        return self::$cache['s'][$context] ??= self::cached("s:$context", fn () => self::db()->table('sys_dictionary')
+            ->where('context', $context)->pluck('group_code', 'source_en')->all());
+    }
+
+    // Kelompok bawaan sebuah konteks: help -> help, date.* -> dates, nilai lookup DB -> lookup, 'ui' -> general.
+    public static function defaultGroup(string $context): string
+    {
+        return match (true) {
+            $context === 'help' => 'help',
+            str_starts_with($context, 'date.') => 'dates',
+            $context !== 'ui' => 'lookup',
+            default => self::GROUP_GENERAL,
+        };
+    }
+
+    // Layar tempat teks pertama kali tampil ("Used on" di Translation Dictionary): slug layar v2 / nama route.
+    private static function screenName(): ?string
+    {
+        try {
+            if (app()->runningInConsole() || ! ($route = request()->route())) {
+                return null;
+            }
+            $name = $route->parameter('slug') ?: $route->getName();
+
+            return is_string($name) && $name !== '' ? mb_substr($name, 0, 120) : null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     // Kamus 'ui' untuk browser (window.DL_DICT): semua sumber -> terjemahan bahasa itu ('' = belum ada; JS mencatat yang tidak dikenal).
@@ -168,10 +209,23 @@ final class Dictionary
     {
         $n = 0;
         try {
+            $seen = self::screenName();
             foreach (self::$pending as $context => $list) {
-                $rows = array_map(fn ($en) => ['context' => $context, 'source_en' => $en, 'created_at' => now(), 'created_by' => 'auto'], array_keys($list));
+                $rows = [];
+                foreach ($list as $en => $group) {
+                    $rows[] = ['context' => $context, 'source_en' => $en, 'group_code' => $group, 'first_seen' => $seen,
+                        'created_at' => now(), 'created_by' => 'auto'];
+                }
                 foreach (array_chunk($rows, 200) as $chunk) {
                     $n += self::db()->table('sys_dictionary')->insertOrIgnore($chunk);
+                }
+                self::forget("s:$context");
+                unset(self::$cache['s'][$context]);
+            }
+            foreach (self::$regroup as $context => $groups) {
+                foreach ($groups as $group => $list) {
+                    self::db()->table('sys_dictionary')->where('context', $context)->where('group_code', self::GROUP_GENERAL)
+                        ->whereIn('source_en', array_keys($list))->update(['group_code' => $group]);
                 }
                 self::forget("s:$context");
                 unset(self::$cache['s'][$context]);
@@ -180,6 +234,7 @@ final class Dictionary
             // Tabel kamus belum ada di database ini -- abaikan, tampilan tetap English.
         }
         self::$pending = [];
+        self::$regroup = [];
 
         return $n;
     }
@@ -197,7 +252,7 @@ final class Dictionary
         Locale::languagesUsing(fn () => self::languages());
     }
 
-    private static function remember(string $en, string $context, bool $force = false): void
+    private static function remember(string $en, string $context, bool $force = false, ?string $group = null): void
     {
         $en = trim($en);
         if ($en === '' || mb_strlen($en) > 255 || ! preg_match('/\p{L}/u', $en) || Lang::hasRaw($en) || self::looksIndonesian($en) || self::looksLikeData($en)) {
@@ -208,13 +263,26 @@ final class Dictionary
         if (! $force && ((app()->runningInConsole() && ! self::$recordInConsole) || ! config('devlib.dictionary_autoregister', true))) {
             return;
         }
-        if (isset(self::$pending[$context][$en]) || isset(self::sources($context)[$en]) || self::isTranslation($en, $context)) {
+        $group = $context === 'ui' && $group ? $group : self::defaultGroup($context);
+        $known = self::sources($context);
+        if (array_key_exists($en, $known)) {
+            // Sudah tercatat sebagai 'general' tetapi kini tampil lewat komponen berkelompok -> pindah kelompok itu.
+            if ($context === 'ui' && $group !== self::GROUP_GENERAL && ($known[$en] ?? self::GROUP_GENERAL) === self::GROUP_GENERAL && ! isset(self::$regroup[$context][$group][$en])) {
+                if (! self::$pending && ! self::$regroup && ! $force) {
+                    app()->terminating(fn () => self::flushPending());
+                }
+                self::$regroup[$context][$group][$en] = true;
+            }
+
             return;
         }
-        if (! self::$pending && ! $force) {
+        if (isset(self::$pending[$context][$en]) || self::isTranslation($en, $context)) {
+            return;
+        }
+        if (! self::$pending && ! self::$regroup && ! $force) {
             app()->terminating(fn () => self::flushPending());
         }
-        self::$pending[$context][$en] = true;
+        self::$pending[$context][$en] = $group;
     }
 
     private static function cached(string $key, \Closure $load): array

@@ -1,5 +1,64 @@
 [
     {
+        "at": "2026-10-03 13:07:27",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_dictionary",
+                "column": "group_code",
+                "detail": "varchar(40)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_dictionary",
+                "column": "origin",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_dictionary",
+                "column": "first_seen",
+                "detail": "varchar(120)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_dictionary_group",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-10-03 01:23:50",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_pallet",
+                "column": "unit_kind",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "inv_pallet",
+                "column": "stack_no",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "wh_zone",
+                "column": "max_stack",
+                "detail": "tinyint unsigned"
+            }
+        ]
+    },
+    {
         "at": "2026-10-02 21:42:33",
         "items": [
             {

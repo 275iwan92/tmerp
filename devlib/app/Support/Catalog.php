@@ -259,7 +259,7 @@ final class Catalog
                 'avatar-progress' => ['Avatar · Progress', $c('Avatar', 'Progress')], 'tooltip' => ['Tooltip', $c('Tooltip')], 'misc' => ['Alert · Divider · Brand · Language', $c('Alert', 'Divider', 'Brand', 'LangSwitch')],
             ]],
             'p2-containers' => ['Containers & Navigation', 'fa-solid fa-table-cells-large', [
-                'card-actionbar' => ['Card · Action Bar', $c('Card', 'ActionBar')], 'split' => ['Split (isi + panel samping)', $c('Split')], 'table' => ['Table', $c('Table')], 'pick-matrix' => ['Pick Matrix (pilih pemenang per baris)', $c('PickMatrix')], 'tabs-accordion' => ['Tabs', $c('Tabs')], 'accordion' => ['Accordion (vertical · horizontal)', $c('Accordion', 'AccordionGroup')],
+                'card-actionbar' => ['Card · Action Bar', $c('Card', 'ActionBar')], 'split' => ['Split (isi + panel samping kanan / kiri)', $c('Split')], 'table' => ['Table', $c('Table')], 'pick-matrix' => ['Pick Matrix (pilih pemenang per baris)', $c('PickMatrix')], 'tabs-accordion' => ['Tabs', $c('Tabs')], 'accordion' => ['Accordion (vertical · horizontal)', $c('Accordion', 'AccordionGroup')],
                 'breadcrumb' => ['Breadcrumb', $c('Breadcrumb')], 'pagination' => ['Pagination', $c('Pagination')],
             ]],
         ];

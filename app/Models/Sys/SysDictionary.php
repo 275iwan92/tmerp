@@ -14,7 +14,12 @@ class SysDictionary extends Model
 
     protected $primaryKey = 'id_dictionary';
 
-    protected $fillable = ['context', 'source_en', 'note', 'activate', 'created_by', 'updated_by'];
+    protected $fillable = ['context', 'source_en', 'group_code', 'origin', 'first_seen', 'note', 'activate', 'created_by', 'updated_by'];
+
+    // origin: 'app' = teks layar / pesan aplikasi; 'devlib' = kata bawaan objek DevLib (Devlib\Lang::DICT) yang boleh ditimpa.
+    public const ORIGIN_APP = 'app';
+
+    public const ORIGIN_DEVLIB = 'devlib';
 
     protected $casts = ['activate' => 'boolean'];
 

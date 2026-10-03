@@ -11,6 +11,10 @@ final class Lang
 
     private static ?\Closure $translator = null;
 
+    // Petunjuk kelompok pesan untuk kamus aplikasi (buttons / grid / form / menu / messages / print): diset komponen yang
+    // sedang dirender (DevlibComponent) supaya teks baru tercatat di kelompok yang benar -- pola pohon pesan ScriptCase.
+    private static ?string $hint = null;
+
     private static ?\Closure $jsDict = null;
 
     private static ?array $reverse = null;
@@ -815,12 +819,28 @@ final class Lang
             return self::mixed($en);
         }
         $lang = Locale::lang();
-        $row = $lang === 'en' ? null : self::reverse()[$en] ?? null;
-        if ($row && isset($row[$lang])) {
-            return $row[$lang];
+        // Kamus aplikasi (tmerp: sys_dictionary, bisa diubah user di Translation Dictionary) MENANG atas kamus bawaan DICT
+        // (user 2026-10-03); DICT = cadangan supaya DevLib jalan tanpa database. Translator mengembalikan null bila tidak ada.
+        if (self::$translator && ($t = (self::$translator)($en, $lang, self::$hint)) !== null) {
+            return $t;
         }
+        $row = $lang === 'en' ? null : self::reverse()[$en] ?? null;
 
-        return self::$translator ? (self::$translator)($en, $lang) : $en;
+        return $row[$lang] ?? $en;
+    }
+
+    // Kelompok pesan yang sedang aktif (lihat $hint). Dipanggil DevlibComponent saat merender; kembalian = nilai sebelumnya.
+    public static function hint(?string $group): ?string
+    {
+        $prev = self::$hint;
+        self::$hint = $group;
+
+        return $prev;
+    }
+
+    public static function currentHint(): ?string
+    {
+        return self::$hint;
     }
 
     // NILAI DATA di dalam teks tampilan (no. dokumen, nama customer, angka, tanggal): tandai dengan raw() supaya TIDAK
@@ -911,7 +931,7 @@ final class Lang
         return array_merge(self::DICT, self::$extra);
     }
 
-    // Bahasa selain id/en (ja, zh, ...): teks English entri ini diterjemahkan lewat kamus aplikasi (tmerp: sys_dictionary).
+    // Kamus aplikasi: fn(string $en, string $lang, ?string $group): ?string -- null = tidak punya terjemahan (DICT dipakai).
     public static function translateUsing(?\Closure $fn): void
     {
         self::$translator = $fn;
@@ -927,7 +947,10 @@ final class Lang
         $lang = Locale::lang();
         $row = array_is_list($row) ? ['id' => $row[0], 'en' => $row[1]] : $row;
         $en = $row['en'] ?? reset($row);
+        if (self::$translator && ($t = (self::$translator)($en, $lang, self::$hint)) !== null) {
+            return $t;
+        }
 
-        return $row[$lang] ?? (self::$translator ? (self::$translator)($en, $lang) : $en);
+        return $row[$lang] ?? $en;
     }
 }

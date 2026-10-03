@@ -38,7 +38,8 @@
           $$(this.tree, '.dl-sm__leaf.is-active').forEach(l => l.classList.remove('is-active'));
           const l = this.leaf(k); if (l) { l.classList.add('is-active'); this.openPath(l); }
           this.recent = [k, ...this.recent.filter(z => z !== k)].slice(0, 5); this.save('-recent', this.recent); this.extras(); this.hideFly();
-          if (this.el.dispatchEvent(new CustomEvent('dl:side-menu', {bubbles: true, cancelable: true, detail: {key: k, label: this.labelOf(k)}}))) toast(Tf('open_preview', {x: this.labelOf(k)}));
+          // Tautan sungguhan (href) berpindah halaman sendiri; toast pratinjau hanya untuk item tanpa alamat (demo).
+          if (this.el.dispatchEvent(new CustomEvent('dl:side-menu', {bubbles: true, cancelable: true, detail: {key: k, label: this.labelOf(k)}})) && a.getAttribute('href') === '#') toast(Tf('open_preview', {x: this.labelOf(k)}));
         }
       });
       this.el.addEventListener('input', e => {

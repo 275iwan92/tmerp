@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Translation Dictionary — Mockup v2 (two panels)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .tree li { padding: 4px 8px 4px 0; display: flex; align-items: center; gap: 6px; border-radius: 6px; cursor: pointer; }
+  .tree li:hover { background: #f1f5f9; }
+  .tree li.sel { background: #e3eefc; color: #1b4f9c; font-weight: 600; }
+  .tree .cnt { margin-left: auto; font-size: 10px; color: #8a94a6; background: #f1f5f9; border-radius: 999px; padding: 0 7px; }
+  .tree li.sel .cnt { background: #cfe0fa; color: #1b4f9c; }
+  .tree .open { background: #fff7e6; color: #9a5b00; }
+  .tree li.sel .open { background: #ffe2b0; }
+  th { font-size: 10px; text-transform: uppercase; letter-spacing: .03em; color: #64748b; font-weight: 600; text-align: left; padding: 8px 10px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+  td { padding: 4px 10px; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
+  .cell { position: relative; }
+  .cell input { width: 100%; border: 1px solid #cfe0fa; border-radius: 6px; padding: 5px 30px 5px 8px; font-size: 12px; background: #fff; }
+  .cell input.empty { border-color: #f6c87a; background: #fffaf0; }
+  .cell input[readonly] { background: #f8fafc; border-color: #e2e8f0; color: #334155; }
+  .cell .aa { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 9px; font-weight: 700; color: #1b4f9c; background: #e3eefc; border-radius: 4px; padding: 1px 4px; }
+  .tag { font-size: 9px; font-weight: 600; border-radius: 999px; padding: 1px 7px; }
+  .flag { font-size: 12px; margin-right: 4px; }
+  .tab { padding: 6px 12px; border-radius: 6px 6px 0 0; font-size: 11px; font-weight: 600; color: #64748b; }
+  .tab.on { background: #fff; color: #2c3e69; border: 1px solid #e2e8f0; border-bottom-color: #fff; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+
+<!-- Layer Menu tab bar (v2 shell) -->
+<div class="bg-white border-b border-slate-200 px-3 pt-2 flex items-end gap-1">
+  <span class="tab"><i class="fa-solid fa-house mr-1"></i>Home</span>
+  <span class="tab on"><i class="fa-solid fa-language mr-1"></i>Translation Dictionary <i class="fa-solid fa-xmark ml-2 text-slate-400"></i></span>
+</div>
+
+<main class="p-3 grid gap-3" style="grid-template-columns: 300px 1fr;">
+
+  <!-- LEFT: category tree -->
+  <aside class="card p-3 flex flex-col" style="min-height: 820px;">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="text-[10px] font-bold uppercase tracking-wide text-slate-500">Message groups</span>
+      <span class="ml-auto inline-flex items-center justify-center w-6 h-6 rounded border border-slate-300 text-slate-500" title="New group"><i class="fa-solid fa-folder-plus text-[11px]"></i></span>
+      <span class="inline-flex items-center justify-center w-6 h-6 rounded border border-slate-300 text-slate-500" title="Rename"><i class="fa-solid fa-pen text-[11px]"></i></span>
+    </div>
+    <div class="relative mb-2">
+      <input class="w-full border border-slate-300 rounded-md pl-7 pr-2 py-1.5 text-[11px]" placeholder="Search group...">
+      <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-slate-400 text-[10px]"></i>
+    </div>
+    <ul class="tree text-[12px] flex-1">
+      <li><i class="fa-solid fa-layer-group text-slate-400 w-4"></i>All messages <span class="cnt">8,786</span></li>
+      <li><i class="fa-solid fa-triangle-exclamation text-amber-500 w-4"></i>Untranslated <span class="cnt open">0</span></li>
+
+      <li class="mt-2 text-[10px] font-bold uppercase tracking-wide text-slate-400 cursor-default hover:bg-transparent"><i class="fa-solid fa-cube w-4"></i>DevLib messages</li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Buttons <span class="cnt">41</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Grid <span class="cnt">88</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Form <span class="cnt">57</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Calendar &amp; dates <span class="cnt">34</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Print <span class="cnt">29</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Validation <span class="cnt">26</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Others <span class="cnt">58</span></li>
+
+      <li class="mt-2 text-[10px] font-bold uppercase tracking-wide text-slate-400 cursor-default hover:bg-transparent"><i class="fa-solid fa-building w-4"></i>Project messages</li>
+      <li class="pl-3 sel"><i class="fa-solid fa-folder-open text-amber-500 w-4"></i>Buttons <span class="cnt">213</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Menu <span class="cnt">412</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Grid columns &amp; filters <span class="cnt">1,874</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Form labels <span class="cnt">1,562</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Messages (flash / error) <span class="cnt">486</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Validation <span class="cnt">74</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Print &amp; e-mail <span class="cnt">243</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Help &amp; assistant <span class="cnt">3,381</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>General <span class="cnt">472</span></li>
+
+      <li class="mt-2 text-[10px] font-bold uppercase tracking-wide text-slate-400 cursor-default hover:bg-transparent"><i class="fa-solid fa-database w-4"></i>Lookup values (per column)</li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>Month names <span class="cnt">12</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>sys_holiday.holiday_name <span class="cnt">38</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>sys_office_hour.day_name <span class="cnt">7</span></li>
+      <li class="pl-3"><i class="fa-regular fa-folder text-amber-400 w-4"></i>co_delay_reason.reason_name <span class="cnt">9</span></li>
+    </ul>
+    <div class="border-t border-slate-200 pt-2 mt-2 text-[10px] text-slate-500">
+      <div class="font-semibold text-slate-600 mb-1"><i class="fa-solid fa-globe mr-1"></i>Languages (Setup &gt; Languages)</div>
+      <div class="flex flex-wrap gap-1">
+        <span class="tag bg-slate-100 text-slate-600"><span class="flag">🇬🇧</span>English · base</span>
+        <span class="tag bg-emerald-50 text-emerald-700"><span class="flag">🇮🇩</span>Indonesia · active</span>
+        <span class="tag bg-emerald-50 text-emerald-700"><span class="flag">🇯🇵</span>日本語 · active</span>
+        <span class="tag bg-slate-100 text-slate-400"><span class="flag">🇨🇳</span>中文 · off</span>
+      </div>
+      <div class="mt-1.5 text-slate-400">Activate a language there &rarr; its column appears here.</div>
+    </div>
+  </aside>
+
+  <!-- RIGHT: translation grid, one column per language -->
+  <section class="card flex flex-col" style="min-height: 820px;">
+    <!-- toolbar -->
+    <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200">
+      <div class="text-[12px] font-semibold text-slate-700"><i class="fa-solid fa-folder-open text-amber-500 mr-1"></i>Project messages › Buttons <span class="text-slate-400 font-normal">· 213 rows</span></div>
+      <div class="relative ml-3 flex-1 max-w-md">
+        <input class="w-full border border-slate-300 rounded-md pl-7 pr-2 py-1.5 text-[11px]" placeholder="Search English, translation or screen...">
+        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-slate-400 text-[10px]"></i>
+      </div>
+      <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 ml-2"><input type="checkbox" class="rounded"> Only empty cells</label>
+      <div class="ml-auto flex items-center gap-1.5">
+        <button class="px-2.5 py-1 rounded border border-slate-300 text-[11px] font-medium text-slate-600"><i class="fa-solid fa-file-excel mr-1"></i>Export</button>
+        <button class="px-2.5 py-1 rounded border border-slate-300 text-[11px] font-medium text-slate-600"><i class="fa-solid fa-file-import mr-1"></i>Import</button>
+        <button class="px-2.5 py-1 rounded border border-slate-300 text-[11px] font-medium text-slate-600"><i class="fa-solid fa-arrows-turn-right mr-1"></i>Move to group</button>
+        <button class="px-2.5 py-1 rounded border border-slate-300 text-[11px] font-medium text-slate-600"><i class="fa-solid fa-plus mr-1"></i>New Record</button>
+      </div>
+    </div>
+
+    <table class="w-full">
+      <thead>
+        <tr>
+          <th style="width:34px"><input type="checkbox" class="rounded"></th>
+          <th style="width:230px">English (source) <i class="fa-solid fa-lock text-slate-300 ml-1" title="Written in code"></i></th>
+          <th style="width:150px">Used on</th>
+          <th><span class="flag">🇮🇩</span>Bahasa Indonesia</th>
+          <th><span class="flag">🇯🇵</span>Japanese / 日本語</th>
+          <th style="width:170px">Note</th>
+          <th style="width:60px">Active</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Add Automatically"></td>
+          <td class="text-[10px] text-slate-500">Dispatch · Delivery Plan</td>
+          <td class="cell"><input value="Tambahkan Otomatis"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="自動追加"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Apply discount"></td>
+          <td class="text-[10px] text-slate-500">Sales · Quotation</td>
+          <td class="cell"><input value="Terapkan diskon"><span class="aa">Aa</span></td>
+          <td class="cell"><input class="empty" value="" placeholder="— shown in English —"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Choose a date"></td>
+          <td class="text-[10px] text-slate-500">12 screens</td>
+          <td class="cell"><input value="Pilih tanggal"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="日付を選択"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Close"></td>
+          <td class="text-[10px] text-slate-500">Form panel · 48 screens</td>
+          <td class="cell"><input value="Tutup"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="閉じる"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="close a document (not 'near')"><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Confirm Order"></td>
+          <td class="text-[10px] text-slate-500">Sales · Customer Order</td>
+          <td class="cell"><input value="Konfirmasi Pesanan"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="注文を確定"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Download Excel"></td>
+          <td class="text-[10px] text-slate-500">Inventory · Stock Card</td>
+          <td class="cell"><input value="Unduh Excel"><span class="aa">Aa</span></td>
+          <td class="cell"><input class="empty" value="" placeholder="— shown in English —"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Join lines"></td>
+          <td class="text-[10px] text-slate-500">Sales · CPDEL</td>
+          <td class="cell"><input value="Gabungkan baris"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="行を結合"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Post to Production"></td>
+          <td class="text-[10px] text-slate-500">Sales · CPDEL</td>
+          <td class="cell"><input value="Kirim ke Produksi"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="生産へ送る"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="creates a Work Order"><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Print Label"></td>
+          <td class="text-[10px] text-slate-500">Inventory · Pallet</td>
+          <td class="cell"><input value="Cetak Label"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="ラベル印刷"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Recalculate"></td>
+          <td class="text-[10px] text-slate-500">Finance · Payroll Run</td>
+          <td class="cell"><input value="Hitung ulang"><span class="aa">Aa</span></td>
+          <td class="cell"><input class="empty" value="" placeholder="— shown in English —"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Release Booking"></td>
+          <td class="text-[10px] text-slate-500">Inventory · Material Booking</td>
+          <td class="cell"><input value="Lepas Booking"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="予約を解除"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Send e-mail"></td>
+          <td class="text-[10px] text-slate-500">Print menu · 31 screens</td>
+          <td class="cell"><input value="Kirim e-mail"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="メール送信"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Split"></td>
+          <td class="text-[10px] text-slate-500">Sales · CPDEL</td>
+          <td class="cell"><input value="Pecah"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="分割"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Transfer Stock"></td>
+          <td class="text-[10px] text-slate-500">Inventory · Stock Transfer</td>
+          <td class="cell"><input value="Pindah Stok"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="在庫移動"><span class="aa">Aa</span></td>
+          <td class="cell"><input value=""><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+        <tr class="bg-amber-50/40">
+          <td><input type="checkbox" class="rounded"></td>
+          <td class="cell"><input readonly value="Save" class="!bg-amber-50"></td>
+          <td class="text-[10px] text-amber-700"><i class="fa-solid fa-cube mr-1"></i>DevLib default: “Simpan” — overridden here</td>
+          <td class="cell"><input value="Simpan Dokumen"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="保存"><span class="aa">Aa</span></td>
+          <td class="cell"><input value="project wording wins over DevLib"><span class="aa">aa</span></td>
+          <td class="text-center"><i class="fa-solid fa-square-check text-emerald-500 text-sm"></i></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- footer -->
+    <div class="mt-auto flex items-center gap-3 px-3 py-2 border-t border-slate-200 text-[11px] text-slate-500">
+      <span>Rows 1–15 of 213</span>
+      <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded border border-amber-300 bg-amber-50"></span> empty = shown in English</span>
+      <span class="inline-flex items-center gap-1"><i class="fa-solid fa-paste text-slate-400"></i> paste two columns from Excel into the cells</span>
+      <div class="ml-auto flex items-center gap-2">
+        <span class="text-amber-600 font-medium"><i class="fa-solid fa-pen-to-square mr-1"></i>3 cells changed</span>
+        <button class="px-3 py-1 rounded border border-slate-300 font-medium text-slate-600">Undo</button>
+        <button class="px-3 py-1 rounded bg-accent text-white font-semibold">Save</button>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

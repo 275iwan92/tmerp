@@ -27,7 +27,7 @@ if (! function_exists('tf')) {
             $map[':'.$key] = (string) $value;
         }
 
-        return strtr(Dictionary::t($en, $context), $map);
+        return strtr(Dictionary::t($en, $context, null, $context === 'ui' ? 'messages' : null), $map);
     }
 }
 

@@ -2036,6 +2036,7 @@ td.dl-print__no{text-align:center}
 .dl-sheet__table td.is-cur{outline:2px solid var(--dl-accent);outline-offset:-2px;background:var(--dl-surface)}
 .dl-sheet__table td.is-dirty::before{content:"";position:absolute;left:0;top:0;border-top:7px solid var(--dl-amber-2);border-right:7px solid transparent}
 .dl-sheet__table td.is-bad{background:var(--dl-danger-soft);color:var(--dl-danger)}
+.dl-sheet__table td.is-empty{background:color-mix(in srgb,var(--dl-amber) 12%,var(--dl-surface))}
 .dl-sheet__table td.is-filltgt{background:color-mix(in srgb,var(--dl-green) 14%,var(--dl-surface));outline:1px dashed var(--dl-green);outline-offset:-2px}
 .dl-sheet__table tr.is-new td:not(.dl-sheet__no){background-image:linear-gradient(90deg,color-mix(in srgb,var(--dl-green) 7%,transparent),transparent)}
 .dl-sheet__fill{position:absolute;right:-4px;bottom:-4px;width:8px;height:8px;background:var(--dl-accent);border:1.5px solid var(--dl-surface);cursor:crosshair;z-index:3}
@@ -2662,6 +2663,7 @@ html.dl-locked body{overflow:hidden}
 
 /* Split: isi utama + panel samping (x-dl::split) */
 .dl-split{display:grid;grid-template-columns:minmax(0,1fr) var(--dl-aside,320px);gap:12px;align-items:start}
+.dl-split--left{grid-template-columns:var(--dl-aside,320px) minmax(0,1fr)}.dl-split--left .dl-split__aside{order:-1}
 .dl-split__main,.dl-split__aside{min-width:0;display:flex;flex-direction:column;gap:12px}
 @media (max-width:900px){.dl-split{grid-template-columns:1fr}}
 /* PickMatrix: pilih pemenang per baris (mis. bandingkan penawaran supplier) */

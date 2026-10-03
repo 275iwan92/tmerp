@@ -266,6 +266,11 @@ transaksi = `iqp_costing`, ikut inquiry).
   English + kamus (`AppMenu::label`). Tombol / badge / status selalu English, tanpa pasangan kamus. Pesan validasi: `lang/id`.
   Paket (`packages/*`): PHP `\Devlib\Lang::text('English')`, JS `Devlib.h.t('English')`; DevLib sendiri: pasangan di `Devlib\Lang::DICT`.
   Status, sisa keputusan dan cara menambah bahasa ke-3: `docs/md_for_systems/multilanguage_status.md`; alat uji: `tools/multilanguage/`.
+- **Translation Dictionary dua panel ala ScriptCase (user 2026-10-03):** pohon kelompok pesan kiri (`sys_dictionary_group`, Setup >
+  Message Groups) + grid satu kolom per bahasa aktif. Kelompok diisi otomatis oleh objek DevLib yang menampilkan teks
+  (`DevlibComponent::dictionaryGroup()` -> `Lang::hint`), `tf()` = messages, menu = menu; `first_seen` = layar pertama ("Used on").
+  **Kamus proyek (`sys_dictionary`) menimpa kata bawaan DevLib** — `Lang::DICT` hanya cadangan, isinya disalin ke kamus (`origin=devlib`).
+  Bahasa dinyalakan di **Setup > Languages** (saklar Active; developer boleh ubah detail). Rinci: `multilanguage_status.md` §7.
 - Data lama yang masih Indonesia di DB = utang yang dikonversi bertahap (audit & rencana:
   `docs/multilanguage_design.md`); data REAL (mesin/proses/pegawai) & zona beku §6B dikonversi hanya atas izin user.
 

@@ -86,7 +86,28 @@ Test: `LanguageAccountTest` (6), `MultiLanguageAutoTest`, `MultiLanguageRatchetT
   `MasterMachineMigratedDataTest` dan `PurchaseRequisitionFreeTextLineTest` (migrasi tm2 di atas).
 
 ## 6. Cara menambah bahasa ke-3
-1. Tambah baris di `tm2sys.sys_languages` (kode, pemisah angka, `intl_locale`, aktif) — bendera muncul sendiri.
+1. **Setup > Languages**: nyalakan saklar Active pada bahasa itu (Jepang `ja` dan Mandarin `zh` sudah disiapkan nonaktif;
+   bahasa lain: developer menambah barisnya di layar yang sama — kode, nama, `intl_locale`, pemisah angka). Bendera dan
+   kolom di Translation Dictionary muncul sendiri.
 2. Isi terjemahan di Setup > Translation Dictionary (kolom bahasa baru); kosong = tampil English.
 3. Salin `lang/en/*.php` ke `lang/<kode>/` dan terjemahkan (pesan validasi).
-4. Singkatan bulan: kamus konteks `date.month_short`.
+4. Singkatan bulan: cabang "Month names" di pohon kiri (kamus konteks `date.month_short`).
+
+## 7. Translation Dictionary dua panel ala ScriptCase (2026-10-03)
+User menunjukkan layar *Application language* ScriptCase (pohon kategori di kiri — Scriptcase Messages / Project messages —,
+satu baris per kunci dengan satu kolom per bahasa di kanan) dan minta pola itu supaya ke depan mudah. Mockup disetujui:
+`docs/mockups/translation_dictionary_v2.jpg`. Yang dibangun (ddt + tm2, migrasi `2026_10_03_000400`):
+
+| Bagian | Isi |
+|---|---|
+| Pohon kiri | `x-dl::side-menu` di `x-dl::split side="left"`: *All messages*, *Untranslated*, cabang **DevLib messages** (kata bawaan objek DevLib), **Project messages** (teks aplikasi) — keduanya per kelompok Buttons / Menu / Grid / Form / Messages / Validation / Print / Help / Dates / General —, dan **Lookup values** (satu simpul per konteks `<db>.<tabel>.<kolom>` + Month names). Angka = jumlah baris. |
+| Kelompok | Tabel `sys_dictionary_group` (code, label, icon, urutan, aktif) — layar **Setup > Message Groups**. `sys_dictionary.group_code` merujuknya. |
+| Pengisian kelompok otomatis | Komponen DevLib yang menampilkan teks memberi petunjuk kelompok (`DevlibComponent::dictionaryGroup()` → `Devlib\Lang::hint`): Button → buttons, Grid/Table/Sheet → grid, Form/Field → form, Alert/Modal → messages, menu/breadcrumb → menu, cetakan → print. `tf()` → messages, `AppMenu::label` → menu, konteks `help` → help, `date.*` → dates, nilai lookup → lookup. Baris lama berkelompok General pindah sendiri begitu tampil lewat komponen berkelompok. Kolom **Group** (dropdown) di grid untuk memindahkan manual. |
+| Used on | `sys_dictionary.first_seen` = slug layar / nama route tempat teks pertama kali tampil. Baris DevLib menampilkan "DevLib object · <terjemahan bawaan>". |
+| Kamus proyek menang | `Devlib\Lang::text()` dan `Lang::t()` bertanya ke kamus aplikasi dulu (translator mengembalikan `null` bila tidak ada), baru `Lang::DICT`. Semua entri `DICT` disalin ke `sys_dictionary` (`origin = devlib`, 750-an baris + terjemahan Indonesia) sehingga tampak dan bisa ditimpa dari layar; DICT tetap cadangan untuk devlib.test tanpa database. Dijaga `DictionaryGroupsTest`. |
+| Sel kosong | Kolom bahasa `emptyWarn` (objek Sheet DevLib): sel tanpa terjemahan berwarna kuning = tampil English. |
+| Bahasa | **Setup > Languages** (`sys_languages`): user biasa hanya saklar Active (+ urutan); Administrator / grup DEVELOPER boleh mengubah kode, nama, locale, pemisah. English tidak bisa dimatikan. `ja` dan `zh` disiapkan nonaktif. Menyimpan membuang cache kamus (`Dictionary::flush`). |
+
+Kelompok awal baris lama ditebak dari bentuk teks (label menu → Menu; kalimat berakhir `.`/`!`/`?` atau ber-`:kunci` → Messages;
+`Search ...` → Grid; sisanya General) — pindahkan lewat kolom Group bila keliru. Satu kelemahan kunci-teks tetap: kata sama
+beda arti dibedakan lewat `context`, bukan kelompok.
