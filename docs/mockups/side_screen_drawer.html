@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Side Screen (laci lebar dari kanan) - mockup objek DevLib</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="../../packages/devlib/resources/assets/devlib.css">
+<style>
+  body{margin:0;background:#dfe3ec;font-family:var(--dl-font);color:var(--dl-ink);font-size:13px}
+  .stage{position:relative;width:1440px;height:820px;background:var(--dl-bg);overflow:hidden;border-bottom:4px solid #c9cfdd}
+  .app{position:absolute;inset:0;display:flex}
+  .app .menu{width:230px;background:var(--dl-side);color:var(--dl-side-ink);padding:14px}
+  .app .menu div{padding:8px 10px;border-radius:7px;font-size:12.5px;opacity:.75}
+  .app .work{flex:1;padding:18px 24px;opacity:.55}
+  .app .work .box{height:120px;background:#fff;border:1px solid var(--dl-border);border-radius:10px;margin-bottom:12px}
+  .shade{position:absolute;inset:0;background:var(--dl-overlay-soft)}
+  /* ====== objek baru: x-dl::side-screen ====== */
+  .ss{position:absolute;top:0;right:0;bottom:0;width:1180px;background:var(--dl-surface);box-shadow:-12px 0 40px rgba(15,22,45,.22);display:grid;grid-template-rows:52px 1fr;grid-template-columns:216px 1fr}
+  .ss__head{grid-column:1/3;display:flex;align-items:center;gap:12px;padding:0 10px 0 16px;border-bottom:1px solid var(--dl-border);background:var(--dl-surface)}
+  .ss__ico{width:32px;height:32px;border-radius:9px;background:var(--dl-accent-soft);color:var(--dl-accent);display:grid;place-items:center;font-size:15px}
+  .ss__title{font-weight:800;color:var(--dl-ink-strong);font-size:15px;line-height:1.1}
+  .ss__sub{font-size:11.5px;color:var(--dl-muted);margin-top:2px}
+  .ss__search{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--dl-border);border-radius:20px;padding:5px 12px;width:300px;color:var(--dl-muted);font-size:12.5px;background:var(--dl-surface-alt)}
+  .ss__search kbd{margin-left:auto;font:600 10px/1 var(--dl-font);border:1px solid var(--dl-border);border-radius:4px;padding:3px 5px;color:var(--dl-muted)}
+  .ss__x{width:34px;height:34px;border-radius:9px;border:1px solid var(--dl-border);display:grid;place-items:center;color:var(--dl-muted);font-size:16px;margin-left:4px}
+  .ss__esc{font-size:10.5px;color:var(--dl-muted);margin-right:2px}
+  .ss__rail{border-right:1px solid var(--dl-border);background:var(--dl-surface-alt);padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow:auto}
+  .ss__cap{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dl-muted);padding:6px 10px 4px}
+  .ss__nav{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:13px;color:var(--dl-ink);position:relative}
+  .ss__nav i{width:18px;text-align:center;color:var(--dl-muted);font-size:13.5px}
+  .ss__nav.is-on{background:var(--dl-accent-soft);color:var(--dl-accent);font-weight:700}
+  .ss__nav.is-on i{color:var(--dl-accent)}
+  .ss__nav.is-on::before{content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--dl-accent)}
+  .ss__nav .n{margin-left:auto;background:var(--dl-badge);color:#fff;font-size:10.5px;font-weight:700;border-radius:10px;padding:1px 7px}
+  .ss__nav .n--soft{background:var(--dl-chip);color:var(--dl-ink)}
+  .ss__body{overflow:auto;background:var(--dl-bg)}
+  .ss__sec{position:sticky;top:0;z-index:2;background:var(--dl-bg);padding:14px 26px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--dl-border)}
+  .ss__sec h2{margin:0;font-size:16px;font-weight:800;color:var(--dl-ink-strong)}
+  .ss__sec p{margin:0;color:var(--dl-muted);font-size:12.5px}
+  .ss__sec .crumb{margin-left:auto;font-size:11.5px;color:var(--dl-muted)}
+  .ss__sec .crumb b{color:var(--dl-ink-strong);font-weight:600}
+  .ss__content{padding:16px 26px 30px;max-width:900px;display:flex;flex-direction:column;gap:12px}
+  .card{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:12px;padding:14px 16px}
+  .card h3{margin:0 0 2px;font-size:14px;font-weight:700;color:var(--dl-ink-strong);display:flex;align-items:center;gap:8px}
+  .card h3 i{color:var(--dl-accent);font-size:13px}
+  .card .d{color:var(--dl-muted);font-size:12.5px;margin-bottom:10px}
+  .info{background:var(--dl-accent-soft);border:1px solid #cfe0fb;color:var(--dl-ink);border-radius:10px;padding:10px 14px;font-size:13px;display:flex;gap:10px;align-items:center}
+  .flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .flow .b{border:1px solid var(--dl-border);background:var(--dl-surface);border-radius:9px;padding:9px 12px;font-size:12.5px;font-weight:600;color:var(--dl-ink-strong);display:flex;flex-direction:column;gap:2px;min-width:118px}
+  .flow .b small{font-weight:500;color:var(--dl-muted);font-size:11px}
+  .flow .b.hi{border-color:var(--dl-accent);box-shadow:0 0 0 3px var(--dl-accent-ring)}
+  .flow .a{color:var(--dl-muted);font-size:12px}
+  .tip{position:absolute;background:var(--dl-toast);color:#fff;font-size:11.5px;border-radius:8px;padding:8px 10px;max-width:260px;line-height:1.35}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--dl-muted);padding:6px 8px;border-bottom:1px solid var(--dl-border)}
+  td{padding:8px;border-bottom:1px solid var(--dl-border);vertical-align:top}
+  .badge{display:inline-block;border-radius:10px;padding:2px 8px;font-size:10.5px;font-weight:700}
+  .b-warn{background:#fff4d6;color:var(--dl-amber)}.b-ok{background:#dff7ec;color:#178a5f}.b-info{background:var(--dl-accent-soft);color:var(--dl-accent)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .f{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+  .f label{font-size:11px;font-weight:700;color:var(--dl-muted);text-transform:uppercase;letter-spacing:.04em}
+  .f .v{border:1px solid var(--dl-border);border-radius:8px;padding:8px 10px;background:var(--dl-field-ro);font-size:13px;color:var(--dl-ink-strong)}
+  .f .v.ed{background:var(--dl-surface)}
+  .btn{display:inline-flex;align-items:center;gap:7px;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;border:1px solid var(--dl-border);background:var(--dl-surface);color:var(--dl-ink-strong)}
+  .btn.p{background:var(--dl-accent);border-color:var(--dl-accent);color:#fff}
+  .ss__foot{position:sticky;bottom:0;background:var(--dl-surface);border-top:1px solid var(--dl-border);padding:10px 26px;display:flex;gap:8px;align-items:center}
+  .ss__foot .hint{margin-left:auto;font-size:11.5px;color:var(--dl-muted)}
+  .who{display:flex;align-items:center;gap:12px}
+  .who .av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#2f6fed,#8a5cf6);color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
+  .who b{font-size:15px;color:var(--dl-ink-strong)}
+  .who small{display:block;color:var(--dl-muted);font-size:12px}
+  /* lingkaran merah deviasi */
+  .dev{position:absolute;width:26px;height:26px;border-radius:50%;background:#e5484d;color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:9}
+  .legend{background:#fff;padding:18px 26px;font-size:13px;line-height:1.5}
+  .legend h4{margin:0 0 8px;font-size:14px}
+  .legend ol{margin:0;padding-left:20px}
+  .legend li{margin-bottom:4px}
+  .legend .k{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#e5484d;color:#fff;font-weight:800;font-size:11px;margin-right:6px}
+</style>
+</head>
+<body>
+
+<!-- ================= KEADAAN 1: Help & support > Application's Flow ================= -->
+<div class="stage">
+  <div class="app">
+    <div class="menu"><div><i class="fa-solid fa-house"></i> &nbsp;Opening</div><div><i class="fa-solid fa-bag-shopping"></i> &nbsp;Sales</div><div><i class="fa-solid fa-industry"></i> &nbsp;Production</div><div><i class="fa-solid fa-warehouse"></i> &nbsp;Inventory</div></div>
+    <div class="work"><div class="box"></div><div class="box"></div><div class="box"></div></div>
+  </div>
+  <div class="shade"></div>
+
+  <aside class="ss">
+    <div class="ss__head">
+      <div class="ss__ico"><i class="fa-solid fa-circle-question"></i></div>
+      <div><div class="ss__title">Help &amp; support</div><div class="ss__sub">F1 · panduan, alur dokumen, dan tiket ke tim developer</div></div>
+      <div class="ss__search"><i class="fa-solid fa-magnifying-glass"></i> Cari di panel ini… <kbd>/</kbd></div>
+      <span class="ss__esc">Esc</span><div class="ss__x"><i class="fa-solid fa-xmark"></i></div>
+    </div>
+    <nav class="ss__rail">
+      <div class="ss__cap">Bagian</div>
+      <div class="ss__nav"><i class="fa-solid fa-life-ring"></i> Help Topics <span class="n n--soft">148</span></div>
+      <div class="ss__nav"><i class="fa-solid fa-book-open"></i> User's Guide</div>
+      <div class="ss__nav is-on"><i class="fa-solid fa-diagram-project"></i> Application's Flow</div>
+      <div class="ss__nav"><i class="fa-solid fa-ticket"></i> Tickets <span class="n">2</span></div>
+      <div class="ss__cap" style="margin-top:14px">Pedoman</div>
+      <div class="ss__nav"><i class="fa-solid fa-book"></i> ERP Rules Guide</div>
+      <div class="ss__nav"><i class="fa-solid fa-boxes-stacked"></i> Master Product &amp; Revision</div>
+    </nav>
+    <div class="ss__body">
+      <div class="ss__sec"><i class="fa-solid fa-diagram-project" style="color:var(--dl-accent)"></i><div><h2>Application's Flow</h2><p>Arahkan mouse ke blok untuk aturan singkatnya; klik blok untuk membuka layarnya.</p></div><div class="crumb">Account › Help › <b>Application's Flow</b></div></div>
+      <div class="ss__content">
+        <div class="card">
+          <h3><i class="fa-solid fa-bag-shopping"></i> Sales: from Inquiry to Invoice</h3>
+          <div class="d">Satu dokumen melahirkan dokumen berikutnya; status di tiap blok mengikuti tanda konfirmasi.</div>
+          <div class="flow" style="position:relative">
+            <div class="b">Inquiry Product<small>NEW · REVISE · RECALC</small></div><span class="a"><i class="fa-solid fa-arrow-right"></i></span>
+            <div class="b">Pro-Dev<small>layout &amp; dieline</small></div><span class="a"><i class="fa-solid fa-arrow-right"></i></span>
+            <div class="b">Pro-Cost<small>HPP &amp; price ladder</small></div><span class="a"><i class="fa-solid fa-arrow-right"></i></span>
+            <div class="b hi">Quotation<small>published to customer</small></div><span class="a"><i class="fa-solid fa-arrow-right"></i></span>
+            <div class="b">Customer Order<small>Confirmed → CPDEL</small></div><span class="a"><i class="fa-solid fa-arrow-right"></i></span>
+            <div class="b">Delivery Order<small>DO · Delivery Note</small></div><span class="a"><i class="fa-solid fa-arrow-right"></i></span>
+            <div class="b">Customer Invoice<small>AR</small></div>
+            <div class="tip" style="left:400px;top:62px"><b>Quotation</b> — selalu integrated: baris dari Inquiry yang costing-nya PUBLISHED. Satu CO = satu Quotation.</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3><i class="fa-solid fa-calculator"></i> Costing: Pro-Dev to Pro-Cost</h3>
+          <div class="d">Dua jalur input (Ambil Data / Manual) ke engine yang sama; HPP wajib sama untuk geometri setara.</div>
+          <div class="flow">
+            <div class="b">Layout Group<small>Pro-Dev CONFIRMED</small></div><span class="a"><i class="fa-solid fa-arrow-right"></i></span>
+            <div class="b">Costing Hub<small>Mode #1 / #2</small></div><span class="a"><i class="fa-solid fa-arrow-right"></i></span>
+            <div class="b">Price Ladder<small>per qty tier</small></div><span class="a"><i class="fa-solid fa-arrow-right"></i></span>
+            <div class="b">Publish<small>declassify to Sales</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="dev" style="right:1148px;top:14px">1</div>
+  <div class="dev" style="right:1170px;top:96px">2</div>
+  <div class="dev" style="right:700px;top:68px">3</div>
+  <div class="dev" style="right:920px;top:134px">4</div>
+  <div class="dev" style="right:450px;top:13px">5</div>
+</div>
+
+<!-- ================= KEADAAN 2: Edit profile > My Data ================= -->
+<div class="stage" style="height:760px">
+  <div class="app">
+    <div class="menu"><div><i class="fa-solid fa-house"></i> &nbsp;Opening</div><div><i class="fa-solid fa-bag-shopping"></i> &nbsp;Sales</div><div><i class="fa-solid fa-industry"></i> &nbsp;Production</div></div>
+    <div class="work"><div class="box"></div><div class="box"></div></div>
+  </div>
+  <div class="shade"></div>
+
+  <aside class="ss">
+    <div class="ss__head">
+      <div class="ss__ico"><i class="fa-solid fa-user-pen"></i></div>
+      <div><div class="ss__title">Edit profile</div><div class="ss__sub">Rina Kartika · Sales Admin · Marketing</div></div>
+      <div class="ss__search"><i class="fa-solid fa-magnifying-glass"></i> Cari di panel ini… <kbd>/</kbd></div>
+      <span class="ss__esc">Esc</span><div class="ss__x"><i class="fa-solid fa-xmark"></i></div>
+    </div>
+    <nav class="ss__rail">
+      <div class="ss__cap">Data diri</div>
+      <div class="ss__nav is-on"><i class="fa-solid fa-user"></i> My Data</div>
+      <div class="ss__nav"><i class="fa-solid fa-clipboard-list"></i> Job Description</div>
+      <div class="ss__nav"><i class="fa-solid fa-book"></i> SOP <span class="n n--soft">7</span></div>
+      <div class="ss__nav"><i class="fa-solid fa-people-roof"></i> Family &amp; Status</div>
+      <div class="ss__nav"><i class="fa-solid fa-file-lines"></i> Documents &amp; Education</div>
+      <div class="ss__cap" style="margin-top:12px">Pengajuan</div>
+      <div class="ss__nav"><i class="fa-solid fa-calendar-days"></i> Leave / Sick / Permit <span class="n">1</span></div>
+      <div class="ss__nav"><i class="fa-solid fa-door-open"></i> Out Permit</div>
+      <div class="ss__nav"><i class="fa-solid fa-arrows-rotate"></i> Shift Swap</div>
+      <div class="ss__cap" style="margin-top:12px">Lainnya</div>
+      <div class="ss__nav"><i class="fa-solid fa-calendar"></i> My Schedule</div>
+      <div class="ss__nav"><i class="fa-solid fa-id-badge"></i> ID Card</div>
+      <div class="ss__nav"><i class="fa-solid fa-shield-halved"></i> Security</div>
+    </nav>
+    <div class="ss__body">
+      <div class="ss__sec"><i class="fa-solid fa-user" style="color:var(--dl-accent)"></i><div><h2>My Data</h2><p>Data di bawah hanya dibaca. Bila ada yang salah, klik Request Correction; perubahan berlaku setelah HR memverifikasi.</p></div><div class="crumb">Account › Profile › <b>My Data</b></div></div>
+      <div class="ss__content">
+        <div class="card"><div class="who"><div class="av">RK</div><div><b>Rina Kartika · EMP-0012</b><small>Sales Admin · Marketing · bergabung 12-Mar-2019</small></div><span class="badge b-ok" style="margin-left:auto">ACTIVE</span></div></div>
+        <div class="row2">
+          <div class="card"><h3><i class="fa-solid fa-user"></i> Main Profile</h3>
+            <div class="f"><label>Full name</label><div class="v">Rina Kartika</div></div>
+            <div class="f"><label>No. KTP</label><div class="v">3578 1234 5678 0001</div></div>
+            <div class="f"><label>Birth date</label><div class="v">04-Jul-1994</div></div>
+            <div class="f"><label>Marital status</label><div class="v">Married</div></div>
+          </div>
+          <div class="card"><h3><i class="fa-solid fa-location-dot"></i> Address, BPJS &amp; Contacts</h3>
+            <div class="f"><label>Address</label><div class="v">Jl. Raya Darmo 115, Surabaya</div></div>
+            <div class="f"><label>Phone</label><div class="v">0812-3456-7890</div></div>
+            <div class="f"><label>BPJS Kesehatan</label><div class="v">0001 2345 6789</div></div>
+            <div class="f"><label>Emergency contact</label><div class="v">Budi (suami) · 0813-9999-1212</div></div>
+          </div>
+        </div>
+        <div class="card"><h3><i class="fa-solid fa-clock-rotate-left"></i> Correction Request History</h3>
+          <table><tr><th>Date</th><th>Field</th><th>Old → New</th><th>Status</th></tr>
+            <tr><td>02-Oct-2026</td><td>Phone</td><td>0812-3456-7890 → 0812-3456-7899</td><td><span class="badge b-warn">WAITING HR</span></td></tr>
+            <tr><td>14-Aug-2026</td><td>Address</td><td>Jl. Diponegoro 8 → Jl. Raya Darmo 115</td><td><span class="badge b-ok">APPROVED</span></td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="ss__foot"><span class="btn p"><i class="fa-solid fa-pen"></i> Request Correction</span><span class="btn">Back</span><span class="hint">Perubahan berlaku setelah verifikasi HR</span></div>
+    </div>
+  </aside>
+
+  <div class="dev" style="right:920px;top:150px">6</div>
+  <div class="dev" style="right:40px;top:700px">7</div>
+</div>
+
+<div class="legend">
+  <h4>Usulan objek DevLib baru: <code>x-dl::side-screen</code> (turunan Drawer + Tabs + Breadcrumb; dipakai Shell untuk Help &amp; support dan Edit profile)</h4>
+  <ol>
+    <li><span class="k">1</span><b>Kepala ringkas 52px</b>: ikon + judul + sub-judul konteks (F1 / nama &amp; jabatan user), tombol tutup berbingkai + petunjuk Esc. Mengganti baris kosong lama.</li>
+    <li><span class="k">2</span><b>Rel bagian di kiri (216px, vertikal)</b> menggantikan tab mendatar: 4 bagian Help / 11 bagian Profile terbaca sekaligus, dikelompokkan (Data diri · Pengajuan · Lainnya) dengan angka (tiket, pengajuan menunggu). Di layar sempit rel menyusut jadi ikon saja.</li>
+    <li><span class="k">3</span><b>Judul bagian lengket di atas isi</b>: nama bagian + satu kalimat petunjuk (menggantikan kotak alert biru), breadcrumb kecil di kanan.</li>
+    <li><span class="k">4</span><b>Lebar baca dibatasi 900px, huruf 13px, kartu lebih longgar</b> supaya teks panjang (panduan, alur) nyaman dibaca; blok alur menampilkan sub-keterangan + tooltip aturan.</li>
+    <li><span class="k">5</span><b>Kotak cari di dalam panel</b> (tombol <kbd>/</kbd>): menyaring bagian dan isi (topik help, kartu profil) tanpa pindah layar.</li>
+    <li><span class="k">6</span><b>Kartu identitas</b> di atas data profil (avatar, nama, kode pegawai, jabatan, status) — sama dengan kolom identitas grid.</li>
+    <li><span class="k">7</span><b>Baris aksi lengket di bawah</b> untuk bagian yang punya form (Request Correction, Send ticket, Save password): tombol selalu terlihat tanpa menggulir.</li>
+  </ol>
+  <p style="margin:10px 0 0;color:var(--dl-muted)">Tidak berubah: isi/alur tiap bagian (data dari tabel yang sama), istilah tombol English, bahasa tampilan ikut kamus, tema ikut token DevLib. Chat dan AI Assistant tetap laci sempit (bukan objek ini).</p>
+</div>
+</body>
+</html>
