@@ -62,6 +62,7 @@
 | `screen untuk input tagihan customer invoice.jpeg` | Layar input Customer Invoice ScriptCase: kelompok Pesanan / Penagihan / Catatan, baris Qty Diterima Customer vs Qty Tagihan, Qty Minim, No SJ; DP diketik di kolom Keterangan Discount | ✅ Acuan rencana (2026-10-02), belum dibangun | `md_for_systems/customerinvoice_plan.md` |
 | `customer invoice uang muka.jpeg` | Cetakan tagihan uang muka: Grand Total 15.000.000, **Total Tagihan 7.500.000** (50%), rekening transfer | ✅ Acuan rencana (2026-10-02), belum dibangun | `md_for_systems/customerinvoice_plan.md` |
 | `screen untuk input uang muka.jpeg` | Layar "Update Customer Invoicing" (Pembayaran = UANG MUKA): Total Order Amount, Paid, Bill Amount, Balance, Bank Account; tab Amount / Details / Note and Bill To / Status | ✅ Acuan rencana (2026-10-02), belum dibangun | `md_for_systems/customerinvoice_plan.md` |
+| `EditProfile_HelpSupport.jpg` | Mockup Side Screen yang DISETUJUI user 2026-10-04 (salinan `docs/mockups/side_screen_drawer.jpg`): Help & support dan Edit profile = jendela layar penuh, bisa mengambang / dipindah / diubah ukurannya, rel bagian vertikal, kaki aksi lengket | ✅ Dibangun 2026-10-04 (`x-dl::side-screen`, test `SideScreenTest`) | `docs/globaluserrules.md` C.18 |
 
 ## Catatan tambahan
 
