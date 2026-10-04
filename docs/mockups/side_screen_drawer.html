@@ -15,7 +15,7 @@
   .app .work .box{height:120px;background:#fff;border:1px solid var(--dl-border);border-radius:10px;margin-bottom:12px}
   .shade{position:absolute;inset:0;background:var(--dl-overlay-soft)}
   /* ====== objek baru: x-dl::side-screen ====== */
-  .ss{position:absolute;top:0;right:0;bottom:0;width:1180px;background:var(--dl-surface);box-shadow:-12px 0 40px rgba(15,22,45,.22);display:grid;grid-template-rows:52px 1fr;grid-template-columns:216px 1fr}
+  .ss{position:absolute;inset:0;width:auto;background:var(--dl-surface);box-shadow:-12px 0 40px rgba(15,22,45,.22);display:grid;grid-template-rows:52px 1fr;grid-template-columns:216px 1fr}
   .ss__head{grid-column:1/3;display:flex;align-items:center;gap:12px;padding:0 10px 0 16px;border-bottom:1px solid var(--dl-border);background:var(--dl-surface)}
   .ss__ico{width:32px;height:32px;border-radius:9px;background:var(--dl-accent-soft);color:var(--dl-accent);display:grid;place-items:center;font-size:15px}
   .ss__title{font-weight:800;color:var(--dl-ink-strong);font-size:15px;line-height:1.1}
@@ -39,7 +39,7 @@
   .ss__sec p{margin:0;color:var(--dl-muted);font-size:12.5px}
   .ss__sec .crumb{margin-left:auto;font-size:11.5px;color:var(--dl-muted)}
   .ss__sec .crumb b{color:var(--dl-ink-strong);font-weight:600}
-  .ss__content{padding:16px 26px 30px;max-width:900px;display:flex;flex-direction:column;gap:12px}
+  .ss__content{padding:16px 26px 30px;max-width:none;display:flex;flex-direction:column;gap:12px}
   .card{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:12px;padding:14px 16px}
   .card h3{margin:0 0 2px;font-size:14px;font-weight:700;color:var(--dl-ink-strong);display:flex;align-items:center;gap:8px}
   .card h3 i{color:var(--dl-accent);font-size:13px}
@@ -76,6 +76,20 @@
   .legend ol{margin:0;padding-left:20px}
   .legend li{margin-bottom:4px}
   .legend .k{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#e5484d;color:#fff;font-weight:800;font-size:11px;margin-right:6px}
+
+  .ss__win{display:flex;align-items:center;gap:4px;margin-left:6px}
+  .ss__win .ss__x{margin:0}
+  .ss--float{inset:auto;top:40px;left:150px;width:1140px;height:680px;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(15,22,45,.35);border:1px solid var(--dl-border)}
+  .ss--float .ss__head{cursor:move}
+  .grip{position:absolute;right:5px;bottom:5px;color:var(--dl-muted);font-size:13px;transform:rotate(-45deg)}
+  .edge{position:absolute;border:2px dashed var(--dl-accent);border-radius:14px;pointer-events:none}
+  .sizetag{position:absolute;background:var(--dl-toast);color:#fff;font-size:11px;border-radius:6px;padding:3px 7px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .side{display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start}
+  .list{display:flex;flex-direction:column;gap:6px}
+  .list .it{display:flex;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--dl-border);border-radius:9px;background:var(--dl-surface);font-size:12.5px}
+  .list .it i{color:var(--dl-accent);width:16px;text-align:center}
+  .list .it small{margin-left:auto;color:var(--dl-muted)}
 </style>
 </head>
 <body>
@@ -93,7 +107,7 @@
       <div class="ss__ico"><i class="fa-solid fa-circle-question"></i></div>
       <div><div class="ss__title">Help &amp; support</div><div class="ss__sub">F1 · panduan, alur dokumen, dan tiket ke tim developer</div></div>
       <div class="ss__search"><i class="fa-solid fa-magnifying-glass"></i> Cari di panel ini… <kbd>/</kbd></div>
-      <span class="ss__esc">Esc</span><div class="ss__x"><i class="fa-solid fa-xmark"></i></div>
+      <span class="ss__esc">Esc</span><div class="ss__win"><div class="ss__x" title="Float / Full screen"><i class="fa-regular fa-window-restore"></i></div><div class="ss__x"><i class="fa-solid fa-xmark"></i></div></div>
     </div>
     <nav class="ss__rail">
       <div class="ss__cap">Bagian</div>
@@ -107,7 +121,7 @@
     </nav>
     <div class="ss__body">
       <div class="ss__sec"><i class="fa-solid fa-diagram-project" style="color:var(--dl-accent)"></i><div><h2>Application's Flow</h2><p>Arahkan mouse ke blok untuk aturan singkatnya; klik blok untuk membuka layarnya.</p></div><div class="crumb">Account › Help › <b>Application's Flow</b></div></div>
-      <div class="ss__content">
+      <div class="ss__content"><div class="side"><div style="display:flex;flex-direction:column;gap:12px">
         <div class="card">
           <h3><i class="fa-solid fa-bag-shopping"></i> Sales: from Inquiry to Invoice</h3>
           <div class="d">Satu dokumen melahirkan dokumen berikutnya; status di tiap blok mengikuti tanda konfirmasi.</div>
@@ -132,6 +146,16 @@
             <div class="b">Publish<small>declassify to Sales</small></div>
           </div>
         </div>
+        </div>
+        <div class="card"><h3><i class="fa-solid fa-circle-info"></i> Blok terpilih: Quotation</h3><div class="d">Aturan singkat dan layar yang terkait; kolom kanan ini memanfaatkan lebar layar penuh.</div>
+          <div class="list">
+            <div class="it"><i class="fa-solid fa-file-invoice"></i> Sales Quotation (grid) <small>Inquiry &amp; Quotation</small></div>
+            <div class="it"><i class="fa-solid fa-trophy"></i> Win / Lost Rate <small>Report</small></div>
+            <div class="it"><i class="fa-solid fa-book"></i> Rule A.9: Quotation always integrated <small>Rulebook</small></div>
+            <div class="it"><i class="fa-solid fa-life-ring"></i> Help: Quotation entry <small>12 lines</small></div>
+          </div>
+        </div>
+        </div>
       </div>
     </div>
   </aside>
@@ -141,6 +165,8 @@
   <div class="dev" style="right:700px;top:68px">3</div>
   <div class="dev" style="right:920px;top:134px">4</div>
   <div class="dev" style="right:450px;top:13px">5</div>
+  <div class="dev" style="right:92px;top:40px">8</div>
+  <div class="dev" style="right:360px;top:150px">9</div>
 </div>
 
 <!-- ================= KEADAAN 2: Edit profile > My Data ================= -->
@@ -151,12 +177,12 @@
   </div>
   <div class="shade"></div>
 
-  <aside class="ss">
+  <aside class="ss ss--float">
     <div class="ss__head">
       <div class="ss__ico"><i class="fa-solid fa-user-pen"></i></div>
       <div><div class="ss__title">Edit profile</div><div class="ss__sub">Rina Kartika · Sales Admin · Marketing</div></div>
       <div class="ss__search"><i class="fa-solid fa-magnifying-glass"></i> Cari di panel ini… <kbd>/</kbd></div>
-      <span class="ss__esc">Esc</span><div class="ss__x"><i class="fa-solid fa-xmark"></i></div>
+      <span class="ss__esc">Esc</span><div class="ss__win"><div class="ss__x" title="Float / Full screen"><i class="fa-regular fa-window-restore"></i></div><div class="ss__x"><i class="fa-solid fa-xmark"></i></div></div>
     </div>
     <nav class="ss__rail">
       <div class="ss__cap">Data diri</div>
@@ -178,7 +204,7 @@
       <div class="ss__sec"><i class="fa-solid fa-user" style="color:var(--dl-accent)"></i><div><h2>My Data</h2><p>Data di bawah hanya dibaca. Bila ada yang salah, klik Request Correction; perubahan berlaku setelah HR memverifikasi.</p></div><div class="crumb">Account › Profile › <b>My Data</b></div></div>
       <div class="ss__content">
         <div class="card"><div class="who"><div class="av">RK</div><div><b>Rina Kartika · EMP-0012</b><small>Sales Admin · Marketing · bergabung 12-Mar-2019</small></div><span class="badge b-ok" style="margin-left:auto">ACTIVE</span></div></div>
-        <div class="row2">
+        <div class="row3">
           <div class="card"><h3><i class="fa-solid fa-user"></i> Main Profile</h3>
             <div class="f"><label>Full name</label><div class="v">Rina Kartika</div></div>
             <div class="f"><label>No. KTP</label><div class="v">3578 1234 5678 0001</div></div>
@@ -191,6 +217,12 @@
             <div class="f"><label>BPJS Kesehatan</label><div class="v">0001 2345 6789</div></div>
             <div class="f"><label>Emergency contact</label><div class="v">Budi (suami) · 0813-9999-1212</div></div>
           </div>
+          <div class="card"><h3><i class="fa-solid fa-briefcase"></i> Employment</h3>
+            <div class="f"><label>Position</label><div class="v">Sales Admin</div></div>
+            <div class="f"><label>Department</label><div class="v">Marketing</div></div>
+            <div class="f"><label>Join date</label><div class="v">12-Mar-2019</div></div>
+            <div class="f"><label>Status</label><div class="v">Permanent</div></div>
+          </div>
         </div>
         <div class="card"><h3><i class="fa-solid fa-clock-rotate-left"></i> Correction Request History</h3>
           <table><tr><th>Date</th><th>Field</th><th>Old → New</th><th>Status</th></tr>
@@ -201,24 +233,32 @@
       </div>
       <div class="ss__foot"><span class="btn p"><i class="fa-solid fa-pen"></i> Request Correction</span><span class="btn">Back</span><span class="hint">Perubahan berlaku setelah verifikasi HR</span></div>
     </div>
+    <i class="fa-solid fa-up-right-and-down-left-from-center grip"></i>
   </aside>
+  <div class="edge" style="top:40px;left:150px;width:1240px;height:700px"></div><div class="sizetag" style="left:1300px;top:712px">1240 x 700</div>
 
-  <div class="dev" style="right:920px;top:150px">6</div>
-  <div class="dev" style="right:40px;top:700px">7</div>
+  <div class="dev" style="right:1160px;top:70px">6</div>
+  <div class="dev" style="right:200px;top:30px">10</div>
+  <div class="dev" style="right:150px;top:700px">11</div>
+  <div class="dev" style="right:560px;top:690px">7</div>
 </div>
 
 <div class="legend">
-  <h4>Usulan objek DevLib baru: <code>x-dl::side-screen</code> (turunan Drawer + Tabs + Breadcrumb; dipakai Shell untuk Help &amp; support dan Edit profile)</h4>
+  <h4>Usulan objek DevLib baru: <code>x-dl::side-screen</code>: jendela LAYAR PENUH yang bisa mengambang dan diubah ukurannya (turunan Drawer + Tabs + Breadcrumb; dipakai Shell untuk Help &amp; support dan Edit profile)</h4>
   <ol>
     <li><span class="k">1</span><b>Kepala ringkas 52px</b>: ikon + judul + sub-judul konteks (F1 / nama &amp; jabatan user), tombol tutup berbingkai + petunjuk Esc. Mengganti baris kosong lama.</li>
     <li><span class="k">2</span><b>Rel bagian di kiri (216px, vertikal)</b> menggantikan tab mendatar: 4 bagian Help / 11 bagian Profile terbaca sekaligus, dikelompokkan (Data diri · Pengajuan · Lainnya) dengan angka (tiket, pengajuan menunggu). Di layar sempit rel menyusut jadi ikon saja.</li>
     <li><span class="k">3</span><b>Judul bagian lengket di atas isi</b>: nama bagian + satu kalimat petunjuk (menggantikan kotak alert biru), breadcrumb kecil di kanan.</li>
-    <li><span class="k">4</span><b>Lebar baca dibatasi 900px, huruf 13px, kartu lebih longgar</b> supaya teks panjang (panduan, alur) nyaman dibaca; blok alur menampilkan sub-keterangan + tooltip aturan.</li>
+    <li><span class="k">4</span><b>Huruf 13px, kartu lebih longgar, kolom mengikuti lebar jendela</b> supaya teks panjang (panduan, alur) nyaman dibaca; blok alur menampilkan sub-keterangan + tooltip aturan.</li>
     <li><span class="k">5</span><b>Kotak cari di dalam panel</b> (tombol <kbd>/</kbd>): menyaring bagian dan isi (topik help, kartu profil) tanpa pindah layar.</li>
     <li><span class="k">6</span><b>Kartu identitas</b> di atas data profil (avatar, nama, kode pegawai, jabatan, status) — sama dengan kolom identitas grid.</li>
+    <li><span class="k">8</span><b>Tombol jendela</b>: Float / Full screen (toggle) dan Close. Bawaan dibuka LAYAR PENUH (menutupi menu dan area kerja); Esc = tutup.</li>
+    <li><span class="k">9</span><b>Lebar penuh dimanfaatkan</b>: kolom kanan "Blok terpilih" (aturan singkat + layar terkait + help) saat blok alur diklik; data profil tiga kolom.</li>
+    <li><span class="k">10</span><b>Keadaan mengambang = seperti jendela di OS Windows</b>: dipindah ke mana saja dengan menyeret kepala (snap ke tepi/sudut), area kerja di belakang tetap terlihat dan bisa dipakai.</li>
+    <li><span class="k">11</span><b>Ukuran bisa diubah</b>: tarik sudut kanan bawah (atau tepi) - garis putus menunjukkan ukuran baru + label ukuran; ukuran dan posisi diingat per browser. Isi menyesuaikan: rel menyusut jadi ikon dan kartu jadi 2 kolom bila lebar di bawah 900px.</li>
     <li><span class="k">7</span><b>Baris aksi lengket di bawah</b> untuk bagian yang punya form (Request Correction, Send ticket, Save password): tombol selalu terlihat tanpa menggulir.</li>
   </ol>
-  <p style="margin:10px 0 0;color:var(--dl-muted)">Tidak berubah: isi/alur tiap bagian (data dari tabel yang sama), istilah tombol English, bahasa tampilan ikut kamus, tema ikut token DevLib. Chat dan AI Assistant tetap laci sempit (bukan objek ini).</p>
+  <p style="margin:10px 0 0;color:var(--dl-muted)">Tidak berubah: isi/alur tiap bagian (data dari tabel yang sama), istilah tombol English, bahasa tampilan ikut kamus, tema ikut token DevLib. Tidak ada tombol minimize (ralat user). Chat dan AI Assistant tetap laci sempit (bukan objek ini).</p>
 </div>
 </body>
 </html>
