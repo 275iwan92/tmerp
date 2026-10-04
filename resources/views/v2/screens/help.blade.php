@@ -23,16 +23,16 @@
     $statusTone = ['OPEN' => 'warn', 'IN_PROGRESS' => 'info', 'DONE' => 'success', 'CLOSED' => 'neutral'];
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
-
-<x-dl::tabs :tabs="['topics' => ['Help Topics', 'fa-life-ring'], 'guide' => ['User\'s Guide', 'fa-book-open'], 'flow' => ['Application\'s Flow', 'fa-diagram-project'], 'tickets' => ['Tickets', 'fa-ticket']]" :active="$tab">
+<x-dl::side-screen.layout :sections="['topics' => ['Help Topics', 'fa-life-ring'], 'guide' => ['User\'s Guide', 'fa-book-open'], 'flow' => ['Application\'s Flow', 'fa-diagram-project'], 'tickets' => ['Tickets', 'fa-ticket', $tickets->whereIn('status', ['OPEN', 'IN_PROGRESS'])->count() ?: null]]" :active="$tab" :hints="['topics' => 'Every screen has its help: purpose, steps and an explanation of each field. Open a row to read it.', 'guide' => 'Read the guides from top to bottom the first time; later, open the one you need. Each guide = numbered steps plus an explanation of the parts of the screen.', 'flow' => 'Point the mouse at a block to see its short rule; click a block to open its screen.', 'tickets' => 'Send a ticket to the developer team with screenshots; the reply appears here.']" :links="['Guides' => [['ERP Rules Guide', 'fa-book', route('v2.guide', 'aturan')], ['Guide: Master Product & Revision', 'fa-book-open', route('v2.guide', 'product-master')]]]" :crumbs="$crumbs">
+    <x-slot:top>
+        @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+        @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
+    </x-slot:top>
     <x-slot:topics>
         @include('v2.screens._dbgrid', ['screen' => Grids::screen('help-center')])
     </x-slot:topics>
 
     <x-slot:guide>
-            <x-dl::alert tone="info" message="Read the guides from top to bottom the first time; later, open the one you need. Each guide = numbered steps plus an explanation of the parts of the screen. The content is maintained in Setup > Help and Support > Help Topics." />
             <x-dl::card title="Written guides" description="The complete ERP rules and the Master Product & Revision guide." icon="fa-book">
                 <x-dl::action-bar align="start">
                     <x-dl::button variant="secondary" icon="fa-book" label="ERP Rules Guide" :href="route('v2.guide', 'aturan')" />
@@ -56,7 +56,6 @@
     </x-slot:guide>
 
     <x-slot:flow>
-            <x-dl::alert tone="info" message="Point the mouse at a block to see its short rule; click a block to open its screen." />
             @foreach (['SALES', 'COSTING'] as $module)
                 @php $flow = Flows::get($module); @endphp
                 <x-dl::card :title="raw($flow['title'])" icon="fa-diagram-project">
@@ -97,4 +96,4 @@
             </x-dl::card>
         </x-dl::form.row>
     </x-slot:tickets>
-</x-dl::tabs>
+</x-dl::side-screen.layout>

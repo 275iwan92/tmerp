@@ -1,5 +1,10 @@
 @extends('v2.layout', ['title' => t($screen['label']), 'bodyClass' => 'dl-page-body'])
 @section('body')
+    @if ($screen['side'] ?? false)
+        {{-- Side Screen (user 2026-10-04): layar mengisi jendela penuh, breadcrumb ada di judul bagian (x-dl::side-screen.layout). --}}
+        @include($screen['view'], ['screen' => $screen, 'crumbs' => [t($screen['module']) => null, t($screen['group']) => null, t($screen['label']) => $screen['url']]])
+        <x-dl::code-button :code="$code" :file="'resources/views/'.str_replace('.', '/', $screen['view']).'.blade.php'" />
+    @else
     <div class="dl-cat">
         <div class="dl-cat__nav">
             {{-- Modul/Grup = buka Layer Menu di cabang itu; nama layar = kembali ke grid (DevLib Breadcrumb menu + current). --}}
@@ -21,7 +26,8 @@
             </x-dl::card>
         @endif
     </div>
-    @if ($built)
+    @endif
+    @if ($built && ! ($screen['side'] ?? false))
         <x-dl::code-button :code="$code" :file="isset($screen['grid']) ? str_replace(base_path().DIRECTORY_SEPARATOR, '', (new ReflectionClass($screen['grid']))->getFileName()) : 'resources/views/screens/'.$screen['slug'].'.blade.php'" :mockup-url="$screen['mockup'] ? route('v2.mockup.file', $screen['mockup']) : null" />
     @endif
 @endsection

@@ -787,6 +787,10 @@ final class Lang
         'lbl.310' => ['kegiatan', 'activities'],
         'lbl.311' => ['Diperbarui', 'Last updated'],
         'lbl.312' => ['Berlaku sejak', 'Effective from'],
+        // Side Screen (2026-10-04).
+        'lbl.313' => ['Cari di panel ini…', 'Search in this panel…'],
+        'lbl.314' => ['Jendela mengambang', 'Float window'],
+        'lbl.315' => ['Bagian', 'Sections'],
     ];
 
     public static function extend(array $dict): void

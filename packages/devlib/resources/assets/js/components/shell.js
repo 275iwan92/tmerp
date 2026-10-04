@@ -411,20 +411,17 @@
 
     /* ---------------- laci & asisten AI ---------------- */
     // Laci lebar dari kanan (user 2026-10-03: Edit profile, Help & support); layar dimuat sekali saat pertama dibuka.
-    wideDrawer(id) { return $(this.el, `[data-dl-drawer="${id}"][data-dl-wide-url]`); }
+    // Side Screen (objek DevLib x-dl::side-screen, user 2026-10-04): jendela layar penuh yang bisa mengambang / diubah ukurannya.
+    wideDrawer(id) { return $(this.el, `[data-dl-side-screen="${id}"]`); }
 
-    openWideDrawer(id) {
-      const d = this.wideDrawer(id), f = $(d, 'iframe');
-      if (!f.getAttribute('src')) f.src = d.dataset.dlWideUrl;
-      this.openDrawer(id);
-    }
+    openWideDrawer(id) { this.closeDrawers(); this.wideDrawer(id).dlComponent?.open(); }
 
     openDrawer(id) {
       $$(this.el, '.dl-drawer.is-on').forEach(d => d.classList.remove('is-on'));
       $(this.el, `[data-dl-drawer="${id}"]`).classList.add('is-on'); this.backdrop.classList.add('is-on');
     }
 
-    closeDrawers() { $$(this.el, '.dl-drawer.is-on').forEach(d => d.classList.remove('is-on')); this.backdrop.classList.remove('is-on'); }
+    closeDrawers() { $$(this.el, '.dl-drawer.is-on').forEach(d => d.classList.remove('is-on')); $$(this.el, '.dl-ss.is-on').forEach(d => d.dlComponent?.close()); this.backdrop.classList.remove('is-on'); }
     addAi(role, txt) { const d = document.createElement('div'); d.className = 'dl-ai__msg dl-ai__msg--' + role; d.textContent = txt; this.aiBody.appendChild(d); this.aiBody.scrollTop = this.aiBody.scrollHeight; }
 
     askAi(q, topic) {

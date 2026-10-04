@@ -261,6 +261,7 @@ final class Catalog
             'p2-containers' => ['Containers & Navigation', 'fa-solid fa-table-cells-large', [
                 'card-actionbar' => ['Card · Action Bar', $c('Card', 'ActionBar')], 'split' => ['Split (isi + panel samping kanan / kiri)', $c('Split')], 'table' => ['Table', $c('Table')], 'pick-matrix' => ['Pick Matrix (pilih pemenang per baris)', $c('PickMatrix')], 'tabs-accordion' => ['Tabs', $c('Tabs')], 'accordion' => ['Accordion (vertical · horizontal)', $c('Accordion', 'AccordionGroup')],
                 'breadcrumb' => ['Breadcrumb', $c('Breadcrumb')], 'pagination' => ['Pagination', $c('Pagination')],
+                'side-screen' => ['Side Screen (full-screen window: float · move · resize; sections rail, sticky foot)', $c('SideScreen', 'SideScreen\Layout', 'SideScreen\Foot')],
             ]],
         ];
 

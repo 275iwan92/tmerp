@@ -30,26 +30,22 @@
     }
 @endphp
 
-@if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
-@if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
-
+<x-dl::side-screen.layout :sections="$tabs" :active="$tab" :groups="['profile' => 'Personal data', 'leave' => 'Requests', 'schedule' => 'Others']" :hints="['profile' => 'Data update SOP: the information below is read-only. If an entry is wrong, click Request Correction; the change takes effect after HR verifies it.', 'jobdesc' => 'Only the HR Officer can change this description; it is read-only here.', 'sop' => 'Procedures that apply to your position; open one to read it.', 'family' => 'Deceased family members are not deleted from the history, to keep past allowance and claim records accurate.', 'documents' => 'Identity documents and your education & training history.', 'leave' => 'Annual leave: request at least H+7 ahead, maximum 3 working days per request, Sundays do not count.', 'outing' => 'Permit to leave the work area during working hours.', 'swap' => 'Swap a shift with a colleague; both schedules change after approval.', 'schedule' => 'Your upcoming roster.', 'badge' => 'Your ID card; send a new photo if needed.', 'security' => 'Login account data (not HR data), changed directly without HR approval.']" :crumbs="$crumbs">
+    <x-slot:top>
+        @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
+        @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
+        @unless ($e)<x-dl::alert tone="warn" message="This account is not linked to an employee record yet. Ask HR to link it to Master Employee; only the Security tab is available." />@endunless
+    </x-slot:top>
 @if ($e)
-    <x-dl::card :title="raw($e->full_name.' · '.$e->employee_code)" :description="raw(($e->position?->position_name ?? '—').' · '.($e->position?->department?->department_name ?? '—'))" icon="fa-id-card">
+    {{-- ===================== My Data ===================== --}}
+    <x-slot:profile>
+        <x-dl::card :title="raw($e->full_name.' · '.$e->employee_code)" :description="raw(($e->position?->position_name ?? '—').' · '.($e->position?->department?->department_name ?? '—'))" icon="fa-id-card">
         <div class="dl-grid__stats">
             <x-dl::stat-box label="Leave Left" :value="(string) $balance->remainingDays().' '.t('days')" tone="success" :sub="t('this year')" />
             <x-dl::stat-box label="Work Status" :value="$e->work_status === 'WORKING' ? t('Active') : (string) $e->work_status" tone="info" />
             <x-dl::stat-box label="Pending Requests" :value="(string) (SelfService::corrections($e->employee_id)->where('status', 'PENDING')->count() + SelfService::leaveRequests($e->employee_id)->where('status', 'PENDING')->count())" tone="warn" :sub="t('corrections + leave')" />
         </div>
-    </x-dl::card>
-@else
-    <x-dl::alert tone="warn" message="This account is not linked to an employee record yet. Ask HR to link it to Master Employee; only the Security tab is available." />
-@endif
-
-<x-dl::tabs :tabs="$tabs" :active="$tab">
-@if ($e)
-    {{-- ===================== My Data ===================== --}}
-    <x-slot:profile>
-        <x-dl::alert tone="info" message="Data update SOP: the information below is read-only. If an entry is wrong, click Request Correction — the change takes effect after HR verifies it." />
+        </x-dl::card>
         <x-dl::form.row :cols="2">
             <x-dl::card title="Main Profile" icon="fa-user">
                 @foreach (['Nama Lengkap', 'Tanggal Lahir', 'NIK KTP', 'Agama', 'Telepon / WA'] as $k)
@@ -63,16 +59,16 @@
                 @endforeach
             </x-dl::card>
         </x-dl::form.row>
-        <x-dl::action-bar>
-            <x-dl::button icon="fa-pen-to-square" label="Request Correction" data-dl-open="corr-modal" />
-            <x-dl::button variant="secondary" icon="fa-building-columns" label="Change Payroll Bank" data-dl-open="bank-modal" />
-            <x-dl::button variant="danger" icon="fa-person-walking-arrow-right" label="Resignation Form" data-dl-open="resign-modal" />
-        </x-dl::action-bar>
         <x-dl::card title="Correction Request History" icon="fa-clock-rotate-left">
             <x-dl::table :source="Src::of('tm2mst.emp_correction_request')" :empty="t('No requests yet.')"
                 :columns="['field' => 'Field', 'old' => 'Current Value', 'new' => 'New Value', 'date' => 'Requested', 'status' => 'Status']"
                 :rows="SelfService::corrections($e->employee_id)->map(fn ($c) => ['field' => t($fields[$c->field_name][0] ?? $c->field_name), 'old' => $c->old_value, 'new' => $c->new_value, 'date' => Locale::d($c->requested_at), 'status' => t((string) $c->status)])->all()" />
         </x-dl::card>
+        <x-dl::side-screen.foot hint="Changes take effect after HR verification">
+            <x-dl::button icon="fa-pen-to-square" label="Request Correction" data-dl-open="corr-modal" />
+            <x-dl::button variant="secondary" icon="fa-building-columns" label="Change Payroll Bank" data-dl-open="bank-modal" />
+            <x-dl::button variant="danger" icon="fa-person-walking-arrow-right" label="Resignation Form" data-dl-open="resign-modal" />
+        </x-dl::side-screen.foot>
     </x-slot:profile>
 
     {{-- ===================== Job Description (read-only, milik posisi) ===================== --}}
@@ -83,7 +79,6 @@
             @else
                 <x-dl::empty-state title="No job description for this position yet" :message="t('Contact the HR Officer if needed.')" icon="fa-clipboard-list" />
             @endif
-            <x-dl::alert tone="info" message="Only the HR Officer can change this description — it is read-only here." />
         </x-dl::card>
     </x-slot:jobdesc>
 
@@ -119,7 +114,6 @@
             <x-dl::table :source="Src::of('tm2mst.emp_family')" :empty="t('No family data yet.')"
                 :columns="['rel' => 'Relation', 'name' => 'Name', 'birth' => 'Date of Birth', 'status' => 'Status']"
                 :rows="$e->families->map(fn ($f) => ['rel' => $f->relation, 'name' => $f->full_name, 'birth' => Locale::d($f->birth_date) ?? '—', 'status' => $f->is_deceased ? t('Deceased').' — '.Locale::d($f->deceased_date) : t('Dependant')])->all()" />
-            <x-dl::alert tone="info" message="Deceased family members are not deleted from the history — to keep past allowance and claim records accurate." />
             <x-dl::action-bar>
                 <x-dl::button icon="fa-baby" label="Report Birth" data-dl-open="fam-birth" />
                 <x-dl::button variant="secondary" icon="fa-cross" label="Report Death" data-dl-open="fam-death" />
@@ -299,7 +293,6 @@
 
     {{-- ===================== Security: akun login + pertanyaan pemulihan ===================== --}}
     <x-slot:security>
-        <x-dl::alert tone="info" message="Login account data (not HR data) — changed directly without HR approval." />
         <x-dl::form.row :cols="2">
             <x-dl::action-form action="{{ route('v2.profile.account') }}" data-dl-guard>
                 <x-dl::card title="Account Profile" icon="fa-user-pen">
@@ -338,7 +331,7 @@
             </x-dl::card>
         </x-dl::action-form>
     </x-slot:security>
-</x-dl::tabs>
+</x-dl::side-screen.layout>
 
 @if ($e)
     {{-- ══════════ Modals (pengajuan) ══════════ --}}

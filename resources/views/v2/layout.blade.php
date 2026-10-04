@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ \Devlib\DevlibServiceProvider::asset('devlib.css') }}">
     <x-dl::theme-boot />
-    {{-- Dibuka di laci lebar Shell (iframe name="dl-wide"): layar naik ke tepi atas, tanpa ruang kosong di atas breadcrumb (user 2026-10-04). --}}
-    <script>if (window.name === 'dl-wide') document.documentElement.classList.add('dl-in-drawer');</script>
     <link rel="stylesheet" href="{{ \MockupParts\MockupPartsServiceProvider::asset('mockup-parts.css') }}">
     <script src="{{ \Devlib\DevlibServiceProvider::asset('devlib.js') }}" defer></script>
     <script src="{{ \MockupParts\MockupPartsServiceProvider::asset('mockup-parts.js') }}" defer></script>
