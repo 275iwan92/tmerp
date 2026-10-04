@@ -15,7 +15,7 @@
     }
     set(on) {
       this.panel.classList.toggle('is-max', on);
-      const i = this.el.querySelector('i'); if (i) i.className = on ? 'fa-regular fa-window-restore' : 'fa-regular fa-window-maximize';
+      const i = this.el.querySelector('i'); if (i) i.className = on ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
       this.el.title = on ? (this.el.dataset.titleRestore || 'Restore') : (this.el.dataset.titleMax || 'Maximize');
       try { localStorage.setItem(this.key, on ? '1' : '0'); } catch (e) {}
       this.emit('dl:drawer:max', {max: on});

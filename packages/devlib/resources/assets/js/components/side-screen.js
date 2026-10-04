@@ -51,7 +51,7 @@
     toggleFloat() {
       this.state.mode = this.state.mode === 'float' ? 'full' : 'float';
       this.el.classList.toggle('is-float', this.state.mode === 'float');
-      const b = $(this.el, '[data-dl-ss-float] i'); if (b) b.className = this.state.mode === 'float' ? 'fa-solid fa-expand' : 'fa-regular fa-window-restore';
+      const b = $(this.el, '[data-dl-ss-float] i'); if (b) b.className = this.state.mode === 'float' ? 'fa-solid fa-expand' : 'fa-solid fa-window-restore';
       this.apply(); this.save();
     }
     // Jendela mengambang selalu di dalam viewport; x/y kosong = di tengah.

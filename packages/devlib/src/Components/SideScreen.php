@@ -46,7 +46,7 @@ class SideScreen extends Drawer
                     @endif
                     <span class="dl-ss__esc">Esc</span>
                     <div class="dl-ss__win">
-                        <button type="button" class="dl-ss__btn" data-dl-ss-float title="{{ \Devlib\Lang::text('Float window') }}" aria-label="{{ \Devlib\Lang::text('Float window') }}"><i class="fa-regular fa-window-restore"></i></button>
+                        <button type="button" class="dl-ss__btn" data-dl-ss-float title="{{ \Devlib\Lang::text('Float window') }}" aria-label="{{ \Devlib\Lang::text('Float window') }}"><i class="fa-solid fa-window-restore"></i></button>
                         <button type="button" class="dl-ss__btn" data-dl-close title="{{ \Devlib\Lang::text('Close') }}" aria-label="{{ \Devlib\Lang::text('Close') }}"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                 </div>
