@@ -59,4 +59,14 @@ class SideScreenTest extends TestCase
         $this->assertStringContainsString('data-dl-side-screen="demo-help"', $html);
         $this->assertStringContainsString('data-dl-ss-nav="tickets"', $html);
     }
+
+    // Chat, AI Assistant, Notifications (user 2026-10-04): laci sempit dengan dua mode -- Maximize (satu layar penuh) / Restore.
+    public function test_narrow_drawers_and_drawer_object_offer_maximize(): void
+    {
+        $html = $this->actingAs($this->admin())->get('/v2')->assertOk()->getContent();
+        $this->assertSame(3, substr_count($html, 'data-dl-dr-max'), 'chat + ai + notif');
+
+        $this->assertStringContainsString('data-dl-dr-max', Blade::render('<x-dl::drawer id="zq" title="Zq" maximize>x</x-dl::drawer>'));
+        $this->assertStringNotContainsString('data-dl-dr-max', Blade::render('<x-dl::drawer id="zq" title="Zq">x</x-dl::drawer>'));
+    }
 }

@@ -533,6 +533,17 @@ textarea.dl-input{resize:none;min-height:28px;line-height:1.3;overflow:hidden;di
 .dl-dr-ico{color:var(--dl-accent)}.dl-dr-ico--ai{color:var(--dl-violet)}
 .dl-dr-title{font-weight:700;color:var(--dl-ink-strong)}
 .dl-dr-note{font-size:calc(11px * var(--dl-font-scale));color:var(--dl-muted);margin-left:4px}
+/* Laci sempit dengan dua mode (user 2026-10-04): tombol Maximize = laci selebar satu layar penuh, Restore = lebar semula. Chat / AI Assistant / Notifications di Shell dan x-dl::drawer maximize. */
+.dl-dr-max{margin-left:auto;font-size:calc(14px * var(--dl-font-scale))}.dl-dr-max+.dl-dr-x{margin-left:6px}
+.dl-drawer.is-max,.dl-drawer.is-max[data-dl-drawer]{width:auto;max-width:none;left:0}
+.dl-sdrawer__panel.is-max{width:100vw;max-width:100vw}
+.dl-drawer.is-max .dl-wa.is-compact{grid-template-columns:320px minmax(0,1fr)}
+.dl-drawer.is-max .dl-wa.is-compact .dl-wa__main{display:flex}
+.dl-drawer.is-max .dl-wa.is-compact.is-open .dl-wa__side{display:flex}
+.dl-drawer.is-max .dl-wa.is-compact .dl-wa__back{display:none}
+.dl-drawer.is-max .dl-wa.is-compact .dl-wa__msg{max-width:70%}
+.dl-drawer.is-max .dl-ai,.dl-drawer.is-max .dl-ai__in,.dl-drawer.is-max .dl-notif,.dl-drawer.is-max .dl-notif__bar{width:100%;max-width:960px;margin:0 auto;box-sizing:border-box}
+.dl-drawer.is-max .dl-ai{flex:1}.dl-drawer.is-max .dl-ai__msg{max-width:78%}
 .dl-dr-x{margin-left:auto;background:none;border:none;color:var(--dl-muted);cursor:pointer;font-size:calc(18px * var(--dl-font-scale))}
 .dl-chat{flex:1;display:flex;min-height:0}
 .dl-chat__list{width:132px;border-right:1px solid var(--dl-border);overflow-y:auto;flex-shrink:0}

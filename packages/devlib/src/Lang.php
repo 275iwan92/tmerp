@@ -791,6 +791,8 @@ final class Lang
         'lbl.313' => ['Cari di panel ini…', 'Search in this panel…'],
         'lbl.314' => ['Jendela mengambang', 'Float window'],
         'lbl.315' => ['Bagian', 'Sections'],
+        'lbl.316' => ['Perbesar satu layar', 'Maximize'],
+        'lbl.317' => ['Kembalikan', 'Restore'],
     ];
 
     public static function extend(array $dict): void

@@ -2,7 +2,7 @@
 
     @if ($chatDrawer)
     <aside class="dl-drawer" data-dl-drawer="chat" data-dl="drawer chat" data-dl-class="bagian Shell" data-dl-src="sys_chat_conversations / sys_chat_messages + sys_user_presence">
-        <div class="dl-dr-head"><i class="fa-solid fa-comment-dots dl-dr-ico"></i><span class="dl-dr-title">Chat</span><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="dl-dr-head"><i class="fa-solid fa-comment-dots dl-dr-ico"></i><span class="dl-dr-title">Chat</span><button type="button" class="dl-dr-x dl-dr-max" data-dl-dr-max data-title-max="{{ \Devlib\Lang::text('Maximize') }}" data-title-restore="{{ \Devlib\Lang::text('Restore') }}" title="{{ \Devlib\Lang::text('Maximize') }}"><i class="fa-regular fa-window-maximize"></i></button><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
         <x-dl::chat compact :me="$chat['me'] ?? $user" :people="$chat['people'] ?? []" :convos="$chat['convos'] ?? []" :api="$chat['api'] ?? []" />
 
     </aside>
@@ -12,7 +12,7 @@
     @php $assistantLive = ! empty($assistant['api']['ask']); @endphp
     <aside class="dl-drawer" data-dl-drawer="ai" data-dl="drawer asisten AI" data-dl-class="bagian Shell" data-dl-src="{{ $assistantLive ? 'sys_assistant_message + sys_assistant_metric, sys_help_topic, sys_app_menu' : 'registry menu (pratinjau)' }}"
         @if ($assistantLive) data-dl-assistant="{{ json_encode($assistant) }}" @endif>
-        <div class="dl-dr-head"><i class="fa-solid fa-wand-magic-sparkles dl-dr-ico dl-dr-ico--ai"></i><span class="dl-dr-title">{{ \Devlib\Lang::text('AI Assistant') }}</span>@unless ($assistantLive)<span class="dl-dr-note">{{ \Devlib\Lang::text('preview') }}</span>@endunless<button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="dl-dr-head"><i class="fa-solid fa-wand-magic-sparkles dl-dr-ico dl-dr-ico--ai"></i><span class="dl-dr-title">{{ \Devlib\Lang::text('AI Assistant') }}</span>@unless ($assistantLive)<span class="dl-dr-note">{{ \Devlib\Lang::text('preview') }}</span>@endunless<button type="button" class="dl-dr-x dl-dr-max" data-dl-dr-max data-title-max="{{ \Devlib\Lang::text('Maximize') }}" data-title-restore="{{ \Devlib\Lang::text('Restore') }}" title="{{ \Devlib\Lang::text('Maximize') }}"><i class="fa-regular fa-window-maximize"></i></button><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
         <div class="dl-ai" data-dl-ai-body>
             @if ($assistantLive)
             <div class="dl-ai__intro">{{ $assistant['hello'] ?? '' }}
@@ -41,7 +41,7 @@
     @endforeach
     <aside class="dl-drawer" data-dl-drawer="notif" data-dl="drawer notifikasi" data-dl-class="bagian Shell" data-dl-src="{{ $notifLive ? 'sys_notifications' : 'sys_notifications (rencana)' }}"
         @if (! empty($account)) data-dl-account="{{ json_encode(['csrf' => $account['csrf'] ?? '', 'read' => $account['notifications']['read'] ?? null, 'profile' => $account['profile']['url'] ?? null, 'password' => $account['password']['url'] ?? null]) }}" @endif>
-        <div class="dl-dr-head"><i class="fa-solid fa-bell dl-dr-ico"></i><span class="dl-dr-title">{{ \Devlib\Lang::text('Notifications') }}</span><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="dl-dr-head"><i class="fa-solid fa-bell dl-dr-ico"></i><span class="dl-dr-title">{{ \Devlib\Lang::text('Notifications') }}</span><button type="button" class="dl-dr-x dl-dr-max" data-dl-dr-max data-title-max="{{ \Devlib\Lang::text('Maximize') }}" data-title-restore="{{ \Devlib\Lang::text('Restore') }}" title="{{ \Devlib\Lang::text('Maximize') }}"><i class="fa-regular fa-window-maximize"></i></button><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
         <div class="dl-notif__bar"><a data-dl-markread>{{ \Devlib\Lang::text('Mark all as read') }}</a></div>
         <div class="dl-notif__list">
             @if ($notifLive)

@@ -13,7 +13,7 @@
     <x-dl::field.phone name="hp" label="No. HP" />
     <x-slot:footer><x-dl::button preset="cancel" data-dl-close-modal /><x-dl::button preset="save" type="button" data-dl-close-modal onclick="Devlib.toast('Kontak tersimpan.', 'success')" /></x-slot:footer>
 </x-dl::modal>
-<x-dl::drawer id="dd-detail" title="Detail Supplier" icon="info">
+<x-dl::drawer maximize id="dd-detail" title="Detail Supplier" icon="info">
     <x-dl::field.display label="Nama" value="PT Contoh Kertas Jaya" />
     <x-dl::field.display label="Syarat Bayar" value="Net 30" />
     <x-dl::field.display label="Total PO tahun ini" :value="248500000" format="money" />
