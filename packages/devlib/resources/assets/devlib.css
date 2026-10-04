@@ -461,7 +461,8 @@ textarea.dl-input{resize:none;min-height:28px;line-height:1.3;overflow:hidden;di
 .dl-drawer[data-dl-drawer="chat"],.dl-drawer[data-dl-drawer="ai"]{width:min(520px,92vw)}
 .dl-drawer--wide{width:min(1180px,94vw);display:flex;flex-direction:column}
 .dl-drawer__frame{flex:1;min-height:0;width:100%;border:0;background:var(--dl-bg,#f6f7fb)}
-.dl-dr-head--bare{height:34px;padding:0 10px;border-bottom:0;background:var(--dl-bg,#f6f7fb)}
+/* Laci lebar tanpa baris kepala (user 2026-10-04): tombol tutup melayang di pojok kanan atas, layar iframe mulai dari tepi atas. */
+.dl-dr-head--bare{position:absolute;top:0;right:0;height:auto;padding:6px 10px;border-bottom:0;background:transparent;z-index:1}
 .dl-dr-head{height:56px;display:flex;align-items:center;gap:9px;padding:0 16px;border-bottom:1px solid var(--dl-border);flex-shrink:0}
 .dl-dr-ico{color:var(--dl-accent)}.dl-dr-ico--ai{color:var(--dl-violet)}
 .dl-dr-title{font-weight:700;color:var(--dl-ink-strong)}
@@ -836,6 +837,9 @@ body.dl-page-body{overflow:auto;height:auto;min-height:100vh}
 /* Layar aplikasi (body.dl-page-wide): isi selebar panel, tepi kiri-kanan hanya 6px (~1,5 mm). Katalog DevLib tetap 1100px. */
 body.dl-page-wide .dl-cat{max-width:none;padding-left:6px;padding-right:6px}
 .dl-cat__nav{position:sticky;top:0;z-index:50;background:var(--dl-bg);padding:10px 0;border-bottom:1px solid var(--dl-border);margin-bottom:14px}
+/* Halaman di laci lebar (html.dl-in-drawer, lihat Shell overlays): tanpa padding atas, breadcrumb = baris pertama; sisakan tempat tombol tutup di kanan. */
+.dl-in-drawer .dl-cat{padding-top:0}
+.dl-in-drawer .dl-cat__nav{padding-right:40px}
 .dl-cat__chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .dl-cat__item{scroll-margin-top:110px;margin-bottom:26px}
 .dl-cat__item > h2{display:flex;align-items:center;gap:8px;font-size:calc(14px * var(--dl-font-scale));color:var(--dl-ink-strong);margin:0 0 8px}

@@ -37,9 +37,11 @@
     @foreach ($drawers as $key => $d)
         {{-- Laci lebar = layar penuh di iframe, dimuat saat pertama dibuka (Shell::openWideDrawer). --}}
         <aside class="dl-drawer dl-drawer--wide" data-dl-drawer="{{ $key }}" data-dl-wide-url="{{ $d['url'] }}" data-dl="drawer {{ $key }}" data-dl-class="bagian Shell" data-dl-src="{{ $d['source'] ?? 'layar penuh' }}">
-            {{-- Tanpa judul (user 2026-10-04): breadcrumb layar di dalam iframe sudah menyebutkannya; hanya tombol tutup. --}}
+            {{-- Tanpa judul dan tanpa baris kepala (user 2026-10-04): breadcrumb layar di dalam iframe sudah menyebutkannya;
+                 tombol tutup melayang di pojok kanan atas supaya layar naik ke tepi atas (Help & support, Edit profile). --}}
             <div class="dl-dr-head dl-dr-head--bare"><button type="button" class="dl-dr-x" data-dl-close aria-label="{{ \Devlib\Lang::text('Close') }}"><i class="fa-solid fa-xmark"></i></button></div>
-            <iframe class="dl-drawer__frame" title="{{ \Devlib\Lang::text($d['label']) }}"></iframe>
+            {{-- name="dl-wide": halaman di dalamnya tahu ia dibuka di laci (window.name bertahan saat pindah tab/submit) dan membuang padding atasnya. --}}
+            <iframe class="dl-drawer__frame" name="dl-wide" title="{{ \Devlib\Lang::text($d['label']) }}"></iframe>
         </aside>
     @endforeach
     <aside class="dl-drawer" data-dl-drawer="notif" data-dl="drawer notifikasi" data-dl-class="bagian Shell" data-dl-src="{{ $notifLive ? 'sys_notifications' : 'sys_notifications (rencana)' }}"
