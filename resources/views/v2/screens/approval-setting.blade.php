@@ -15,16 +15,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $cfg && ! request('new'))
-    <x-dl::grid id="approval-setting-list" :rows="ApprovalSetting::rows()" search="Search module, position..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2mst.flow_config', 'tm2mst.flow_config_step') }}"
-        :columns="[
-            ['key' => 'module', 'label' => 'Document Code / Name', 'type' => 'doc', 'party' => 'name'],
-            ['key' => 'levels', 'label' => t('Number of Levels'), 'type' => 'number'],
-            ['key' => 'approvers', 'label' => t('Approver per Level (position)')],
-            ['key' => 'final', 'label' => t('Final Status')],
-            ['key' => 'active', 'label' => 'Status', 'type' => 'badge', 'tones' => [t('Active') => 'success', t('Inactive') => 'neutral']],
-        ]"
-        :stats="[['label' => t('All')], ['label' => t('Active'), 'where' => ['active' => t('Active')], 'tone' => 'success'], ['label' => t('Inactive'), 'where' => ['active' => t('Inactive')], 'tone' => 'neutral']]" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Setup\ApprovalSettingListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Setup\ApprovalSettingListGrid]])
 @elseif (! $cfg)
     <x-dl::action-form action="{{ route('v2.approval-setting.create') }}">
         <x-dl::card title="+ New Record — Approval Levels" description="The document code (e.g. PR, PO, CO) must match the code used by its document screen.">

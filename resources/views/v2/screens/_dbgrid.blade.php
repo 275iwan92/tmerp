@@ -39,7 +39,7 @@
 @if ($screen['grid']->family() === \App\Support\V2\Grid\DbLookup::LOOKUP)
 <x-dl::lookup-grid :rows="$p['rows']" :columns="$p['columns']" :save-url="$p['saveUrl']" :source="$p['source']" />
 @else
-<x-dl::grid :id="$p['id']" :rows="$p['rows']" :columns="$p['columns']" :stats="$p['stats']" :filters="$p['filters']" :groups="$p['groups']" :group-by="$p['groupBy']" :search="$p['search']"
+<x-dl::grid :id="$p['id']" :rows="$p['rows']" :columns="$p['columns']" :stats="$p['stats']" :tabs="$p['tabs']" :filters="$p['filters']" :groups="$p['groups']" :group-by="$p['groupBy']" :search="$p['search']"
     :mode="$p['mode']" :actions="$p['actions']" :active-key="$p['activeKey']" :new-record="$p['newRecord']" :new-url="$p['newUrl']"
     :open-url="$p['openUrl']" :toggle-url="$p['toggleUrl']" :source="$p['source']" :detail="$p['detail']" :row-tone="$p['rowTone']" />
 @endif

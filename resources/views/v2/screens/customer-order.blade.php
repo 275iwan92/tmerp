@@ -21,35 +21,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $o && ! request('new'))
-    <x-dl::grid id="co-list" :rows="CustomerOrder::rows()" search="Search CO no., customer, PO no., quotation..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'"
-        source="{{ Src::of('tm2sdi.co_order', 'tm2sdi.co_order_item', 'tm2sdi.co_order_external_cost', 'tm2sdi.quo_quotation.quotation_no') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'CO No. / Customer', 'type' => 'doc', 'party' => 'customer'],
-            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'mode', 'label' => 'Path', 'type' => 'badge', 'tones' => CustomerOrder::MODE_TONES],
-            ['key' => 'quotation', 'label' => 'Quotation'],
-            ['key' => 'po', 'label' => 'Customer PO No.'],
-            ['key' => 'due', 'label' => 'Nearest Due Date', 'type' => 'date'],
-            ['key' => 'total', 'label' => t('Total due'), 'type' => 'money', 'sum' => true],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => CustomerOrder::STATUS_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
-            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
-            ['key' => 'spec', 'label' => t('Specification')],
-            ['key' => 'kind', 'label' => t('Line Type')],
-            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-            ['key' => 'due', 'label' => t('Due Date'), 'type' => 'date'],
-        ]]"
-        :stats="[
-            ['label' => t('All')],
-            ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],
-            ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'],
-            ['label' => 'Approved', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
-            ['label' => 'Rejected / Cancelled', 'where' => ['status' => ['REJECTED', 'CANCELLED']], 'tone' => 'danger'],
-        ]"
-        :filters="['mode' => 'Path', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Sales\CustomerOrderListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Sales\CustomerOrderListGrid]])
 @elseif (! $o)
     @php $quotes = CustomerOrder::quotationChoices(); @endphp
     <x-dl::card title="+ New Record — choose the Customer Order path" description="Two entry paths; the document & what follows (CPDEL, production) are the same.">

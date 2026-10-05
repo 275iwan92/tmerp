@@ -23,31 +23,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $doc && ! request('new'))
-    <x-dl::grid id="stock-transfer-list" :rows="StockTransfer::rows()" search="Search transfer no., warehouse, item, bin..." actions="worklist" :active-key="null" row-tone="tone"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2inv.inv_transfer', 'tm2inv.inv_transfer_line', 'tm2mst.wh_warehouse', 'tm2mst.wh_loc') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'Transfer No. / Route', 'type' => 'doc', 'party' => 'route'],
-            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
-            ['key' => 'from', 'label' => 'From Warehouse'],
-            ['key' => 'to', 'label' => 'To Warehouse'],
-            ['key' => 'reason', 'label' => 'Reason'],
-            ['key' => 'carried_by', 'label' => 'Carried By'],
-            ['key' => 'dead', 'label' => 'Dead Stock', 'type' => 'badge', 'tones' => ['Dead stock' => 'danger']],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => StockTransfer::STATUS_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => 'Item', 'columns' => [
-            ['key' => 'code', 'label' => 'Code'],
-            ['key' => 'name', 'label' => 'Item Name', 'strong' => true],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number'],
-            ['key' => 'unit', 'label' => 'Unit'],
-            ['key' => 'from_bin', 'label' => 'From Bin'],
-            ['key' => 'to_bin', 'label' => 'To Bin'],
-        ]]"
-        :stats="array_values(array_filter([['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],
-            StockTransfer::approvalActive() ? ['label' => 'Waiting for approval', 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'] : null,
-            ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]))"
-        :tabs="[['label' => 'All'], ['label' => 'Dead stock', 'where' => ['dead' => 'Dead stock']]]"
-        :filters="['from' => 'From Warehouse', 'to' => 'To Warehouse', 'reason' => 'Reason', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Inv\StockTransferListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Inv\StockTransferListGrid]])
 @elseif (! $doc)
     <x-dl::action-form action="{{ route('v2.wh.transfer.create') }}">
         <x-dl::card title="+ New Record — Stock Transfer" description="Choose where the stock is now and where it goes. Same warehouse = a move between bins. The items are added on the next screen.">

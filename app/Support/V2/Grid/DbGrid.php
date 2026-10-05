@@ -106,6 +106,12 @@ abstract class DbGrid
         return [];
     }
 
+    // Tab di atas grid (prop tabs x-dl::grid): [['label', 'where' => [kolom => nilai]]]. [] = tanpa tab.
+    public function tabs(): array
+    {
+        return [];
+    }
+
     // Baris berwarna (rowTone x-dl::grid): nama kolom di row() yang membawa tone (danger, tangerine, ...). null = baris biasa.
     public function rowTone(): ?string
     {
@@ -351,6 +357,7 @@ abstract class DbGrid
             'columns' => array_values(array_filter($this->columns(), fn ($c) => ! in_array($c['key'], $this->restrictedKeys(), true))),
             'stats' => $this->stats(),
             'filters' => $this->filters(),
+            'tabs' => $this->tabs(),
             'groups' => $this->groups(),
             'groupBy' => $this->groupBy(),
             'detail' => $this->detailTexts(),

@@ -22,34 +22,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $inv && ! request('new'))
-    <x-dl::grid id="customer-invoice-list" :rows="CustomerInvoice::rows()" search="Search invoice no., customer, order no..." actions="worklist" :active-key="null" row-tone="tone"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2acc.fin_invoice', 'tm2acc.fin_invoice_line', 'tm2mst.cust_customer', 'tm2sdi.co_order') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'Invoice No. / Customer', 'type' => 'doc', 'party' => 'customer'],
-            ['key' => 'kind', 'label' => 'Type', 'visible' => false],
-            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
-            ['key' => 'due', 'label' => 'Due Date', 'type' => 'date'],
-            ['key' => 'co_no', 'label' => 'Customer Order'],
-            ['key' => 'total', 'label' => 'Total', 'type' => 'money'],
-            ['key' => 'dp', 'label' => 'Down Payment', 'type' => 'money'],
-            ['key' => 'outstanding', 'label' => 'Outstanding', 'type' => 'money'],
-            ['key' => 'state', 'label' => 'Status', 'type' => 'badge', 'tones' => CustomerInvoice::STATE_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
-            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
-            ['key' => 'dn', 'label' => t('Delivery Note')],
-            ['key' => 'received', 'label' => t('Qty Received'), 'type' => 'number'],
-            ['key' => 'invoiced', 'label' => t('Qty Invoiced'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-            ['key' => 'price', 'label' => t('Price'), 'type' => 'money'],
-            ['key' => 'amount', 'label' => t('Amount'), 'type' => 'money'],
-        ]]"
-        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['state' => 'Draft'], 'tone' => 'neutral'],
-            ['label' => 'Open', 'where' => ['state' => ['Open', 'Partially paid', 'Due this week']], 'tone' => 'info'],
-            ['label' => 'Overdue', 'where' => ['state' => 'Overdue'], 'tone' => 'danger'], ['label' => 'Paid', 'where' => ['state' => 'Paid'], 'tone' => 'success'],
-            ['label' => 'Cancelled', 'where' => ['state' => 'Cancelled'], 'tone' => 'danger'],
-            ['label' => 'Down Payment', 'where' => ['kind' => 'Down Payment'], 'tone' => 'warn']]"
-        :filters="['customer' => 'Customer', 'kind' => 'Type', 'state' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Acc\CustomerInvoiceListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Acc\CustomerInvoiceListGrid]])
 @elseif (! $inv)
     @php
         $type = request('type') === 'DOWN_PAYMENT' ? 'DOWN_PAYMENT' : 'INVOICE';

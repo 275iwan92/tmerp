@@ -20,22 +20,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $req && ! request('new'))
-    <x-dl::grid id="mnt-req-list" :rows="Maintenance::requestRows()" search="Search request, machine, symptom..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2prd.mnt_request', 'tm2mst.prod_machine') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'Request No. / Machine', 'type' => 'doc', 'party' => 'machine'],
-            ['key' => 'symptom', 'label' => 'Symptom'],
-            ['key' => 'at', 'label' => 'Reported'],
-            ['key' => 'kind', 'label' => 'Kind', 'type' => 'badge', 'tones' => ['Breakdown' => 'danger', 'Corrective' => 'warn', 'Safety' => 'danger', 'Improvement' => 'info']],
-            ['key' => 'priority', 'label' => 'Priority', 'type' => 'badge', 'tones' => Maintenance::PRIO_TONES],
-            ['key' => 'stopped', 'label' => 'Machine', 'type' => 'badge', 'tones' => ['Stopped' => 'danger', 'Running' => 'success']],
-            ['key' => 'reporter', 'label' => 'Reported by', 'visible' => false],
-            ['key' => 'age', 'label' => 'Waiting', 'visible' => false],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => Maintenance::REQ_TONES],
-            ['key' => 'wo', 'label' => 'Work Order'],
-        ]"
-        :stats="[['label' => 'All'], ['label' => 'Open', 'where' => ['status' => 'Open'], 'tone' => 'warn'], ['label' => 'Machine stopped', 'where' => ['stopped' => 'Stopped', 'status' => 'Open'], 'tone' => 'danger'], ['label' => 'Accepted', 'where' => ['status' => 'Accepted'], 'tone' => 'success'], ['label' => 'Rejected', 'where' => ['status' => 'Rejected'], 'tone' => 'neutral']]"
-        :filters="['machine' => 'Machine', 'kind' => 'Kind', 'priority' => 'Priority', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Maint\MaintenanceRequestListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Maint\MaintenanceRequestListGrid]])
 @elseif (! $req)
     <x-dl::action-form action="{{ route('v2.mnt.request.create') }}">
         <x-dl::card title="Report Problem — Maintenance Request" description="Machine, what happened, and whether it stopped. Priority is set automatically; a stopped machine (P1) becomes a Work Order at once.">

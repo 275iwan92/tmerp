@@ -18,28 +18,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $doc)
-    <x-dl::grid id="qc-complaint-review-list" :rows="CrmComplaints::reviewRows()" search="Search complaint no., customer, product..." actions="worklist" :active-key="null" :new-record="null"
-        :open-url="$home.'?id={id}'" source="{{ Src::of('tm2sdi.crm_complaint (Confirmed, needs_qa = 1)', 'tm2sdi.crm_complaint_item', 'tm2prd.qc_complaint_review') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'Complaint No. / Customer', 'type' => 'doc', 'party' => 'customer'],
-            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
-            ['key' => 'type', 'label' => 'Type'],
-            ['key' => 'category', 'label' => 'Category'],
-            ['key' => 'ref', 'label' => 'Order / Ref.'],
-            ['key' => 'verdict', 'label' => 'Verdict'],
-            ['key' => 'disposition', 'label' => 'Returned Goods'],
-            ['key' => 'reviewed_at', 'label' => 'Answered', 'type' => 'date'],
-            ['key' => 'qa_state', 'label' => 'QA', 'type' => 'badge', 'tones' => ['TO_REVIEW' => 'warn', 'ANSWERED' => 'success']],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
-            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
-            ['key' => 'qty', 'label' => t('Qty Complained'), 'type' => 'number'],
-            ['key' => 'returned', 'label' => t('Qty Returned'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-            ['key' => 'defect', 'label' => t('Problem')],
-        ]]"
-        :stats="[['label' => 'All'], ['label' => 'To review', 'where' => ['qa_state' => 'TO_REVIEW'], 'tone' => 'warn', 'default' => true], ['label' => 'Answered', 'where' => ['qa_state' => 'ANSWERED'], 'tone' => 'success']]"
-        :filters="['customer' => 'Customer', 'category' => 'Category']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Prod\QcComplaintReviewListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Prod\QcComplaintReviewListGrid]])
 @else
     @php
         $rv = $doc->review ?? new QcComplaintReview;

@@ -15,24 +15,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $do && ! request('new'))
-    <x-dl::grid id="do-list" :rows="DeliveryOrder::rows()" search="Search DO no., customer, address..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2sdi.do_delivery', 'tm2sdi.do_line') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'DO No. / Customer', 'type' => 'doc', 'party' => 'customer'],
-            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'ship', 'label' => t('Planned Shipment'), 'type' => 'date'],
-            ['key' => 'shipped', 'label' => t('Shipped'), 'type' => 'date'],
-            ['key' => 'address', 'label' => 'Destination'],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => DeliveryOrder::STATUS_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
-            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
-            ['key' => 'co', 'label' => t('CO No.')],
-            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-        ]]"
-        :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Shipped', 'where' => ['status' => 'SHIPPED'], 'tone' => 'info']]"
-        :filters="['customer' => 'Customer', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Sales\DeliveryOrderListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Sales\DeliveryOrderListGrid]])
 @elseif (! $do)
     <x-dl::action-form action="{{ route('v2.do.create') }}">
         <x-dl::card title="+ New Record — Delivery Order" description="Choose a customer. DO lines are pulled from the delivery schedule of Confirmed Customer Orders.">

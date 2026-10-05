@@ -17,26 +17,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $doc && ! request('new'))
-    <x-dl::grid id="supplier-invoice-receipt-list" :rows="SupplierInvoiceReceipt::rows()" search="Search receipt no., supplier, invoice no..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2acc.fin_invoice_receipt', 'tm2acc.fin_invoice_receipt_line', 'tm2mst.sup_supplier') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'Receipt No. / Supplier', 'type' => 'doc', 'party' => 'supplier'],
-            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
-            ['key' => 'handed_by', 'label' => 'Handed Over By'],
-            ['key' => 'planned', 'label' => 'Planned Payment', 'type' => 'date'],
-            ['key' => 'method', 'label' => 'Payment Method'],
-            ['key' => 'total', 'label' => 'Total', 'type' => 'money'],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => SupplierInvoiceReceipt::STATUS_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Invoice'), 'columns' => [
-            ['key' => 'invoice', 'label' => t('Supplier Invoice No.'), 'strong' => true],
-            ['key' => 'invoice_date', 'label' => t('Invoice Date'), 'type' => 'date'],
-            ['key' => 'po', 'label' => t('PO No.')],
-            ['key' => 'tax', 'label' => t('Tax Invoice No.')],
-            ['key' => 'amount', 'label' => t('Amount'), 'type' => 'money'],
-        ]]"
-        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]"
-        :filters="['supplier' => 'Supplier', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Acc\SupplierInvoiceReceiptListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Acc\SupplierInvoiceReceiptListGrid]])
 @elseif (! $doc)
     <x-dl::action-form action="{{ route('v2.invoice-receipt.create') }}">
         <x-dl::card title="+ New Record — Supplier Invoice Receipt" description="Choose the supplier who hands over the invoices. The invoices are added on the next screen.">

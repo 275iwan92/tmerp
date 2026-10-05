@@ -22,38 +22,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $q && ! request('pick'))
-    <x-dl::grid id="quotation-list" :rows="Quotation::rows()" search="Search quotation no., customer, sales, reason..." actions="worklist" :active-key="null"
-        :new-url="$home.'?pick=1'" :open-url="$home.'?id={id}'"
-        source="{{ Src::of('tm2sdi.quo_quotation', 'tm2sdi.quo_quotation_item', 'tm2sdi.quo_activity', 'tm2sdi.iqp_inquiry.sub_state + cancel_reason', 'tm2sdi.co_order') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'Quotation No. / Customer', 'type' => 'doc', 'party' => 'customer'],
-            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'valid', 'label' => 'Valid Until', 'type' => 'date', 'visible' => false],
-            ['key' => 'sales', 'label' => 'Sales PIC'],
-            ['key' => 'total', 'label' => 'Grand total', 'type' => 'money', 'sum' => true],
-            ['key' => 'followups', 'label' => 'Follow-up', 'type' => 'number', 'visible' => false],
-            ['key' => 'next', 'label' => 'Upcoming follow-up', 'type' => 'date', 'visible' => false],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => Quotation::STATUS_TONES],
-            ['key' => 'closed', 'label' => 'Closed', 'type' => 'date'],
-            ['key' => 'co', 'label' => 'Customer Order'],
-            ['key' => 'reason', 'label' => 'Reason (LOST / Cancel)'],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
-            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
-            ['key' => 'spec', 'label' => t('Specification')],
-            ['key' => 'inquiry', 'label' => t('Inquiry No.')],
-            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-        ]]"
-        :stats="[
-            ['label' => t('All')],
-            ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],
-            ['label' => t('Issued (waiting for customer)'), 'where' => ['status' => 'PUBLISHED'], 'tone' => 'warn'],
-            ['label' => 'WIN', 'where' => ['status' => 'WON'], 'tone' => 'success'],
-            ['label' => 'LOST', 'where' => ['status' => 'LOST'], 'tone' => 'danger'],
-            ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'neutral'],
-        ]"
-        :filters="['status' => 'Status', 'sales' => 'Sales PIC']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Sales\QuotationListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Sales\QuotationListGrid]])
 @elseif (! $q && ! request('inq'))
     <x-dl::card title="+ New Record — choose the inquiries to quote" description="Only priced inquiries (Pro-Cost published) not yet in another quotation. Double-click a row.">
         <x-dl::grid id="quotation-pick" :rows="Quotation::available()" search="Search inquiry no., product, customer..." :new-record="null" actions="worklist" :active-key="null"

@@ -17,24 +17,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $do)
-    <x-dl::grid id="sj-list" :rows="DeliveryOrder::rows(['CONFIRMED', 'SHIPPED'])" search="Search delivery note no., customer, address..." actions="worklist" :active-key="null"
-        :new-record="false" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2sdi.do_delivery (CONFIRMED / SHIPPED)') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'Delivery Note No. / Customer', 'type' => 'doc', 'party' => 'customer'],
-            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
-            ['key' => 'ship', 'label' => t('Planned Shipment'), 'type' => 'date'],
-            ['key' => 'shipped', 'label' => t('Shipped'), 'type' => 'date'],
-            ['key' => 'address', 'label' => 'Destination'],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => DeliveryOrder::STATUS_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
-            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
-            ['key' => 'co', 'label' => t('CO No.')],
-            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-        ]]"
-        :stats="[['label' => t('All')], ['label' => t('Ready to ship'), 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Shipped', 'where' => ['status' => 'SHIPPED'], 'tone' => 'info']]"
-        :filters="['customer' => 'Customer', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Sales\DeliveryNoteListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Sales\DeliveryNoteListGrid]])
 @else
     @php
         $lines = $do->lines->map(fn ($l) => ['id_line' => $l->id_line, 'item_description' => $l->item_description, 'qty_do' => (float) $l->qty_do, 'qty_unit' => $l->qty_unit,

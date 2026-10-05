@@ -23,37 +23,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $doc && ! request('new'))
-    <x-dl::grid id="crm-complaint-list" :rows="CrmComplaints::rows()" search="Search complaint no., customer, product..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2sdi.crm_complaint', 'tm2sdi.crm_complaint_item', 'tm2prd.qc_complaint_review', 'tm2mst.cust_customer') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'Complaint No. / Customer', 'type' => 'doc', 'party' => 'customer'],
-            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
-            ['key' => 'type', 'label' => 'Type'],
-            ['key' => 'category', 'label' => 'Category'],
-            ['key' => 'ref', 'label' => 'Order / Ref.'],
-            ['key' => 'request', 'label' => 'Customer Asks', 'visible' => false],
-            ['key' => 'qa', 'label' => 'QA', 'type' => 'badge', 'tones' => CrmComplaints::QA_TONES],
-            ['key' => 'verdict', 'label' => 'QA Verdict', 'visible' => false],
-            ['key' => 'resolution', 'label' => 'Resolution'],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => CrmComplaints::STATUS_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Product'), 'columns' => [
-            ['key' => 'product', 'label' => t('Product'), 'strong' => true],
-            ['key' => 'qty', 'label' => t('Qty Complained'), 'type' => 'number'],
-            ['key' => 'returned', 'label' => t('Qty Returned'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-            ['key' => 'defect', 'label' => t('Problem')],
-        ]]"
-        :stats="[
-            ['label' => 'All'],
-            ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],
-            ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
-            ['label' => 'Waiting QA', 'where' => ['qa' => 'Waiting QA'], 'tone' => 'warn'],
-            ['label' => 'Closed', 'where' => ['status' => 'CLOSED'], 'tone' => 'info'],
-            ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger'],
-        ]"
-        :tabs="[['label' => 'All'], ...collect(CrmComplaint::TYPES)->map(fn ($l) => ['label' => $l, 'where' => ['type' => t($l)]])->values()->all()]"
-        :filters="['customer' => 'Customer', 'category' => 'Category', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Sales\CrmComplaintListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Sales\CrmComplaintListGrid]])
 @elseif (! $doc)
     <x-dl::action-form action="{{ route('v2.crm.complaint.create') }}">
         <x-dl::card title="+ New Record — Complaint & Return" description="Choose the customer and whether goods come back. The details are filled in on the next screen.">

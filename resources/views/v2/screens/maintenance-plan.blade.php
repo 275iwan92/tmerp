@@ -21,29 +21,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $plan && ! request('new'))
-    <x-dl::grid id="mnt-plan-list" :rows="Maintenance::planRows()" search="Search plan, machine..." actions="worklist" :active-key="null"
-        :new-url="$head ? $home.'?new=1' : null" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2prd.mnt_plan', 'tm2prd.mnt_plan_task', 'tm2mst.prod_machine') }}"
-        :columns="[
-            ['key' => 'code', 'label' => 'Plan Code / Machine', 'type' => 'doc', 'party' => 'machine'],
-            ['key' => 'name', 'label' => 'Plan Name'],
-            ['key' => 'type', 'label' => 'WO Type', 'type' => 'badge', 'tones' => Maintenance::TYPE_TONES],
-            ['key' => 'trigger', 'label' => 'Trigger'],
-            ['key' => 'mode', 'label' => 'Schedule'],
-            ['key' => 'last', 'label' => 'Last Done', 'type' => 'date'],
-            ['key' => 'next', 'label' => 'Next Due', 'type' => 'date'],
-            ['key' => 'due', 'label' => 'Due', 'type' => 'badge', 'tones' => ['Overdue' => 'danger', 'Due' => 'warn', 'OK' => 'success']],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Tasks'), 'columns' => [
-            ['key' => 'seq', 'label' => t('No.'), 'type' => 'number'],
-            ['key' => 'task', 'label' => t('Task'), 'strong' => true],
-            ['key' => 'kind', 'label' => t('Kind')],
-            ['key' => 'uom', 'label' => t('Unit')],
-            ['key' => 'min', 'label' => t('Min'), 'type' => 'number'],
-            ['key' => 'max', 'label' => t('Max'), 'type' => 'number'],
-            ['key' => 'required', 'label' => t('Required')],
-        ]]"
-        :stats="[['label' => 'All'], ['label' => 'Overdue', 'where' => ['due' => 'Overdue'], 'tone' => 'danger'], ['label' => 'Due soon', 'where' => ['due' => 'Due'], 'tone' => 'warn'], ['label' => 'Inspection', 'where' => ['type' => 'Inspection'], 'tone' => 'success']]"
-        :filters="['machine' => 'Machine', 'type' => 'WO Type', 'due' => 'Due']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Maint\MaintenancePlanListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Maint\MaintenancePlanListGrid]])
 @else
     @php
         $new = ! $plan;

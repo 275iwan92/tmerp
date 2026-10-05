@@ -16,25 +16,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $do && ! request('new'))
-    <x-dl::grid id="subcon-dn-list" :rows="SubconDelivery::rows()" search="Search note no., subcontractor, process, CO..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2sdi.do_delivery', 'tm2sdi.do_line', 'tm2mst.sup_supplier') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'Note No. / Subcontractor', 'type' => 'doc', 'party' => 'supplier'],
-            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
-            ['key' => 'process', 'label' => 'Process'],
-            ['key' => 'co', 'label' => 'Customer Order'],
-            ['key' => 'pr', 'label' => 'PR'],
-            ['key' => 'ship', 'label' => 'Planned Shipment', 'type' => 'date'],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => SubconDelivery::STATUS_TONES],
-        ]"
-        :detail="['key' => 'items', 'title' => t('Item'), 'columns' => [
-            ['key' => 'item', 'label' => t('Item Name'), 'strong' => true],
-            ['key' => 'co', 'label' => t('CO No.')],
-            ['key' => 'qty', 'label' => t('Qty'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-        ]]"
-        :stats="[['label' => 'All'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'], ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger']]"
-        :filters="['supplier' => 'Subcontractor', 'process' => 'Process', 'status' => 'Status']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Sales\SubconDeliveryNoteListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Sales\SubconDeliveryNoteListGrid]])
 @elseif (! $do)
     <x-dl::action-form action="{{ route('v2.subcon.create') }}">
         <x-dl::card title="+ New Record — Subcontract Delivery Note" description="Choose the subcontractor and the process. Items are added on the next screen, each with its Customer Order line.">

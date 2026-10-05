@@ -20,30 +20,8 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="raw($errors->first())" />@endif
 
 @if (! $a && ! request('new') && ! $from)
-    <x-dl::grid id="crm-activity-list" :rows="CrmActivities::rows()" search="Search customer, contact, notes, next action..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" row-tone="row_tone" source="{{ Src::of('tm2sdi.crm_activity', 'tm2mst.cust_customer', 'tm2sdi.quo_quotation') }}"
-        :columns="[
-            ['key' => 'type', 'label' => 'Activity / Customer', 'type' => 'doc', 'party' => 'customer'],
-            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
-            ['key' => 'topic', 'label' => 'Topic'],
-            ['key' => 'contact', 'label' => 'Contact'],
-            ['key' => 'result', 'label' => 'Result', 'type' => 'badge', 'toneKey' => 'result_tone'],
-            ['key' => 'quotation', 'label' => 'Quotation', 'visible' => false],
-            ['key' => 'notes', 'label' => 'Notes', 'visible' => false],
-            ['key' => 'next_date', 'label' => 'Follow-up', 'type' => 'date'],
-            ['key' => 'next', 'label' => 'Next Action'],
-            ['key' => 'due', 'label' => 'Due', 'type' => 'badge', 'toneKey' => 'due_tone'],
-            ['key' => 'by', 'label' => 'By'],
-        ]"
-        :stats="[
-            ['label' => 'All'],
-            ['label' => 'Overdue', 'where' => ['bucket' => 'OVERDUE'], 'tone' => 'danger'],
-            ['label' => 'Today', 'where' => ['bucket' => 'TODAY'], 'tone' => 'tangerine'],
-            ['label' => 'Due soon', 'where' => ['bucket' => 'SOON'], 'tone' => 'yellow'],
-            ['label' => 'Later', 'where' => ['bucket' => 'LATER'], 'tone' => 'accent'],
-        ]"
-        :tabs="[['label' => 'All'], ...collect(CrmActivity::TOPICS)->map(fn ($l) => ['label' => $l, 'where' => ['topic' => t($l)]])->values()->all()]"
-        :filters="['type' => 'Type', 'topic' => 'Topic', 'result' => 'Result', 'by' => 'By']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Sales\CrmActivityListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Sales\CrmActivityListGrid]])
 @elseif (! $a && ! $customer)
     <x-dl::action-form method="get" action="{{ $home }}">
         <input type="hidden" name="new" value="1">

@@ -28,30 +28,8 @@
             </x-dl::action-bar>
         </x-dl::action-form>
     @endif
-    <x-dl::grid id="mnt-wo-list" :rows="Maintenance::woRows()" search="Search WO, machine, technician..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2prd.mnt_wo', 'tm2mst.prod_machine', 'tm2mst.prod_machine_downtime') }}"
-        :columns="[
-            ['key' => 'no', 'label' => 'WO No. / Machine', 'type' => 'doc', 'party' => 'machine'],
-            ['key' => 'desc', 'label' => 'Description'],
-            ['key' => 'support', 'label' => 'Machine Kind', 'visible' => false],
-            ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => Maintenance::TYPE_TONES],
-            ['key' => 'priority', 'label' => 'Priority', 'type' => 'badge', 'tones' => Maintenance::PRIO_TONES],
-            ['key' => 'work', 'label' => 'Work Status', 'type' => 'badge', 'tones' => Maintenance::WORK_TONES],
-            ['key' => 'planned_at', 'label' => 'Planned'],
-            ['key' => 'technician', 'label' => 'Technician'],
-            ['key' => 'downtime', 'label' => 'Downtime'],
-            ['key' => 'source', 'label' => 'Source', 'visible' => false],
-            ['key' => 'cost', 'label' => 'Cost', 'type' => 'money', 'sum' => true, 'visible' => false],
-        ]"
-        :stats="Maintenance::woStats()"
-        :detail="['key' => 'items', 'title' => t('Spare Parts'), 'columns' => [
-            ['key' => 'code', 'label' => t('Code')],
-            ['key' => 'name', 'label' => t('Item Name'), 'strong' => true],
-            ['key' => 'plan', 'label' => t('Planned Qty'), 'type' => 'number'],
-            ['key' => 'used', 'label' => t('Used Qty'), 'type' => 'number'],
-            ['key' => 'unit', 'label' => t('Unit')],
-        ]]"
-        :filters="['type' => 'Type', 'work' => 'Work Status', 'machine' => 'Machine', 'technician' => 'Technician', 'priority' => 'Priority']" />
+    {{-- Daftar = objek Grid Transactional App\Support\V2\Grid\Maint\MaintenanceWoListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Maint\MaintenanceWoListGrid]])
 @elseif (! $wo)
     <x-dl::action-form action="{{ route('v2.mnt.wo.create') }}">
         <x-dl::card title="+ New Record — Maintenance Work Order" description="Manual WO (e.g. a planned repair). Sudden breakdowns go through Maintenance Request; routine care through Preventive Plan.">
