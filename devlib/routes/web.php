@@ -115,6 +115,7 @@ Route::middleware('devlib.auth')->group(function () {
     // yang boleh menyimpan / menyetujui.
     Route::get('/generator', function (Request $r) {
         $ready = Generator::ready();
+        Generator::defineTableLookup();
         $req = $ready && $r->integer('id') ? (Generator::find($r->integer('id')) ?? abort(404)) : null;
 
         return view('generator', ['ready' => $ready, 'req' => $req, 'form' => $req || $r->boolean('new'), 'rows' => $ready ? Generator::rows() : [],

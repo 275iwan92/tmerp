@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Devlib\Locale;
+use Devlib\Lookup;
 use Dotenv\Dotenv;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -164,6 +165,24 @@ final class Generator
         }
 
         return $out;
+    }
+
+    // Pilihan "Existing table" = lookup yang bisa diketik (user 2026-10-05: searchable, auto complete): cari dengan nama tabel,
+    // database, atau keterangan tabelnya. Didaftarkan hanya saat layar Generator dibuka.
+    public static function defineTableLookup(): void
+    {
+        $file = base_path('../resources/data/v2/schema.json');
+        $schema = is_file($file) ? (json_decode(file_get_contents($file), true) ?: []) : [];
+        $rows = [];
+        foreach (self::AUTO_DATABASES as $db) {
+            foreach ($schema[$db] ?? [] as $table => $def) {
+                if (is_array($def) && ($def['type'] ?? '') === 'table') {
+                    $rows[] = ['id' => $db.'.'.$table, 'name' => $table, 'db' => $db, 'columns' => count($def['columns'] ?? []), 'note' => (string) ($def['comment'] ?? '')];
+                }
+            }
+        }
+        Lookup::define('gen_table', ['key' => 'id', 'label' => 'id', 'source' => 'resources/data/v2/schema.json', 'rows' => $rows,
+            'columns' => ['name' => 'Table', 'db' => 'Database', 'columns' => 'Columns', 'note' => 'Note']]);
     }
 
     public static function canAuto(?object $row): bool
