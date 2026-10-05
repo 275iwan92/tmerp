@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>DevLib - Inputs & Buttons regroup (proposal)</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Arial,sans-serif;font-size:13px;color:#1f2a44;background:#f4f6fb}
+  .wrap{display:flex;gap:18px;padding:20px}
+  .menu{width:250px;flex:none;background:#2c3e69;color:#fff;border-radius:10px;padding:14px 0;align-self:flex-start}
+  .menu h3{margin:0 16px 10px;font-size:14px}
+  .menu small{display:block;margin:0 16px 12px;color:#b9c4e2}
+  .menu div{padding:7px 16px;border-left:3px solid transparent}
+  .menu div.new{border-left-color:#f5b942}
+  .menu div span{float:right;color:#b9c4e2;font-size:11px}
+  .main{flex:1}
+  h1{font-size:18px;margin:0 0 4px}
+  p.sub{margin:0 0 12px;color:#5b6780}
+  .legend{display:flex;gap:14px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+  .b{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap}
+  .rw{background:#dcf5e4;color:#12743a}.ro{background:#e3ebfb;color:#1f4fa8}.ac{background:#fde9c8;color:#8a5a00}
+  .gap{background:#fbe0e0;color:#a32222}.mv{background:#efe4fb;color:#5e2ea3}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .card{background:#fff;border:1px solid #dbe1ee;border-radius:10px;overflow:hidden}
+  .card h2{margin:0;padding:8px 12px;font-size:13px;background:#eaf0fb;border-bottom:1px solid #dbe1ee}
+  .card h2 em{font-style:normal;font-weight:400;color:#5b6780;font-size:11px}
+  table{width:100%;border-collapse:collapse}
+  td{padding:4px 12px;border-bottom:1px solid #eef1f7;vertical-align:top}
+  td:last-child{text-align:right;width:150px}
+  tr:last-child td{border-bottom:0}
+  .note{font-size:11px;color:#7a869c}
+  .q{margin-top:14px;background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:10px 14px}
+  .q b{color:#8a5a00}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="menu">
+    <h3>Inputs &amp; Buttons</h3>
+    <small>Usulan urutan menu baru</small>
+    <div>1 · Text / String <span>12</span></div>
+    <div>2 · Numeric <span>7</span></div>
+    <div>3 · Date &amp; Time <span>5</span></div>
+    <div class="new">4 · Choice &amp; Lookup <span>10</span></div>
+    <div>5 · Files <span>2</span></div>
+    <div>6 · Button <span>2</span></div>
+    <div>7 · Status <span>7</span></div>
+    <div>8 · Container <span>6</span></div>
+    <div>9 · Navigation <span>4</span></div>
+    <small style="margin-top:12px">Garis kuning = kelompok di luar daftar Pak Iwan (usulan)</small>
+  </div>
+
+  <div class="main">
+    <h1>DevLib · Inputs &amp; Buttons — usulan pengelompokan per jenis data</h1>
+    <p class="sub">Belum ada kode yang diubah. Semua objek di bawah sudah ada di devlib.test; yang berubah hanya kelompok dan tanda modenya.</p>
+    <div class="legend">
+      <span><span class="b rw">ReadWrite</span> input, user mengisi</span>
+      <span><span class="b ro">ReadOnly</span> hanya tampil</span>
+      <span><span class="b ac">Action</span> tombol, bukan data</span>
+      <span><span class="b mv">pindah</span> pindah dari kelompok lama</span>
+      <span><span class="b gap">belum ada</span> objeknya belum dibuat</span>
+    </div>
+
+    <div class="grid">
+      <div class="card"><h2>1 · Text / String <em>dulu: Inputs</em></h2><table>
+        <tr><td>Text</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Prefix · Suffix · Counter</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Password</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Masked (NIK)</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Phone</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Credit Card</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>OTP <span class="b mv">pindah</span></td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Tags</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Key Value</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Rich Text</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Input · Themes</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Display · text / mono <span class="b mv">pindah</span></td><td><span class="b ro">ReadOnly</span></td></tr>
+      </table></div>
+
+      <div class="card"><h2>2 · Numeric <em>dulu: Numbers &amp; Money</em></h2><table>
+        <tr><td>Integer — Number (spinner)</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Decimal</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Money</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Number + Amount in Words</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Slider <span class="b mv">pindah</span></td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Rating <span class="b mv">pindah</span></td><td><span class="b rw">ReadWrite</span> <span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Display · number / money <span class="b mv">pindah</span></td><td><span class="b ro">ReadOnly</span></td></tr>
+      </table></div>
+
+      <div class="card"><h2>3 · Date &amp; Time <em>tetap</em></h2><table>
+        <tr><td>Date</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Time</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Date Time</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Date Range</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Date Slider</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Display · date <span class="b mv">pindah</span></td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Display · time / date time</td><td><span class="b gap">belum ada</span></td></tr>
+      </table></div>
+
+      <div class="card"><h2>4 · Choice &amp; Lookup <em>usulan, di luar daftar</em></h2><table>
+        <tr><td>Lookup</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Select</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Code Chain</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Multi Select</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Radio</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Checkboxes · Checkbox</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Toggle · Toggle Group</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Color</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Pick Matrix <span class="b mv">pindah</span></td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td class="note">ReadOnly: tampil sebagai Display text atau Badge</td><td></td></tr>
+      </table></div>
+
+      <div class="card"><h2>5 · Files <em>tetap + 1</em></h2><table>
+        <tr><td>Upload</td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Signature <span class="b mv">pindah</span></td><td><span class="b rw">ReadWrite</span></td></tr>
+        <tr><td>Daftar lampiran / pratinjau file</td><td><span class="b gap">belum ada</span></td></tr>
+      </table></div>
+
+      <div class="card"><h2>6 · Button <em>tetap</em></h2><table>
+        <tr><td>Button · Preset · Split · Back</td><td><span class="b ac">Action</span></td></tr>
+        <tr><td>Icon Button</td><td><span class="b ac">Action</span></td></tr>
+      </table></div>
+
+      <div class="card"><h2>7 · Status <em>dulu: Display &amp; Status</em></h2><table>
+        <tr><td>Badge</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Stat Box</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Status Card</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Avatar · Progress</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Tooltip</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Alert</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Brand</td><td><span class="b ro">ReadOnly</span></td></tr>
+      </table></div>
+
+      <div class="card"><h2>8 · Container <em>dipisah dari Navigation</em></h2><table>
+        <tr><td>Card · Action Bar</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Split</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Table</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Accordion</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Side Screen</td><td><span class="b ro">ReadOnly</span></td></tr>
+        <tr><td>Divider <span class="b mv">pindah</span></td><td><span class="b ro">ReadOnly</span></td></tr>
+      </table></div>
+
+      <div class="card"><h2>9 · Navigation <em>dipisah dari Container</em></h2><table>
+        <tr><td>Tabs</td><td><span class="b ac">Action</span></td></tr>
+        <tr><td>Breadcrumb</td><td><span class="b ac">Action</span></td></tr>
+        <tr><td>Pagination</td><td><span class="b ac">Action</span></td></tr>
+        <tr><td>Language switch <span class="b mv">pindah</span></td><td><span class="b ac">Action</span></td></tr>
+      </table></div>
+    </div>
+
+    <div class="q">
+      <b>Yang perlu diputuskan Pak Iwan:</b><br>
+      1. Kelompok <b>Choice &amp; Lookup</b> (Lookup, Select, Radio, Checkbox, Toggle) tidak ada di daftar Bapak. Usulan: jadi kelompok sendiri (no. 4).<br>
+      2. Cara menampilkan mode: usulan <b>satu halaman per jenis, ReadWrite dan ReadOnly berdampingan</b>, masing-masing dengan badge. Pilihan lain: ReadOnly jadi item menu terpisah.<br>
+      3. Yang bertanda <b>belum ada</b> (Display time / date time, daftar lampiran) dibuat sekalian atau nanti.
+    </div>
+  </div>
+</div>
+</body>
+</html>
