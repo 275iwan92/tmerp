@@ -3287,3 +3287,43 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-scan__hint{color:var(--dl-muted);font-size:calc(12px * var(--dl-font-scale))}
 .dl-scan__video{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .dl-scan__video video{width:100%;max-width:420px;border-radius:var(--dl-radius);background:var(--dl-device-bg)}
+/* Build Board (x-dl::build-board): papan Build Progress = StatBox + Card + Progress + Badge. */
+.dl-bb{display:flex;flex-direction:column;gap:14px;margin-bottom:18px}
+.dl-bb__head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dl-bb__head b{display:block;font-size:calc(18px * var(--dl-font-scale));color:var(--dl-ink-strong)}
+.dl-bb__head small,.dl-bb__note{color:var(--dl-muted);font-size:calc(11.5px * var(--dl-font-scale))}
+.dl-bb__note{margin:10px 0 0}
+.dl-bb__tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.dl-bb__tiles .dl-stat{min-width:0}
+.dl-bb__cols{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:14px;align-items:start}
+.dl-bb__side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.dl-bb__wide{min-width:0;overflow-x:auto}
+.dl-bb__table{width:100%;border-collapse:collapse;font-size:calc(12.5px * var(--dl-font-scale))}
+.dl-bb__table th{font-size:calc(10.5px * var(--dl-font-scale));text-transform:uppercase;letter-spacing:.4px;color:var(--dl-muted);font-weight:600;text-align:right;padding:6px 8px;white-space:nowrap}
+.dl-bb__table td{padding:7px 8px;text-align:right;border-top:1px solid var(--dl-border-soft);white-space:nowrap}
+.dl-bb__table th:first-child,.dl-bb__table td:first-child,.dl-bb__table .is-left{text-align:left}
+.dl-bb__table tfoot td{font-weight:700;border-top:2px solid var(--dl-border)}
+.dl-bb__barcol{min-width:160px;text-align:left !important}
+.dl-bb__bar{display:flex;height:8px;border-radius:4px;background:var(--dl-border);overflow:hidden;min-width:140px}
+.dl-bb__bar i,.dl-bb__legend i{display:block}
+.dl-bb .is-v2{background:var(--dl-accent)}.dl-bb .is-v1{background:var(--dl-amber-2)}.dl-bb .is-no{background:var(--dl-border)}
+.dl-bb__legend{display:inline-flex;align-items:center;gap:5px;color:var(--dl-muted);font-size:calc(11px * var(--dl-font-scale))}
+.dl-bb__legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-left:8px}
+.dl-bb__funnel{display:flex;flex-direction:column;gap:10px}
+.dl-bb__nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;text-align:center}
+.dl-bb__nums span{display:flex;flex-direction:column;gap:2px;color:var(--dl-muted);font-size:calc(10.5px * var(--dl-font-scale));text-transform:uppercase;letter-spacing:.3px}
+.dl-bb__nums b{font-size:calc(19px * var(--dl-font-scale));color:var(--dl-ink-strong);text-transform:none}
+.dl-bb__chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.dl-bb__chips:first-child{margin-top:0}
+.dl-bb__chips > span{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;background:var(--dl-accent-soft);color:var(--dl-accent);font-size:calc(11.5px * var(--dl-font-scale));font-weight:500}
+.dl-bb__engines{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 22px}
+.dl-bb__eg{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--dl-border-soft);font-size:calc(12.5px * var(--dl-font-scale))}
+.dl-bb__eg > b{flex:0 0 118px;color:var(--dl-ink-strong)}
+.dl-bb__eg em{font-style:normal;font-weight:400;color:var(--dl-muted)}
+.dl-bb__eg > span{min-width:0;line-height:1.55}
+.dl-bb__eg > span > span:not(:last-child)::after{content:"·";margin:0 6px;color:var(--dl-muted)}
+.dl-bb__link{display:inline-block;margin-top:10px;color:var(--dl-accent);font-weight:600;font-size:calc(12px * var(--dl-font-scale));text-decoration:none}
+.dl-bb__todo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:calc(12.5px * var(--dl-font-scale))}
+.dl-bb__todo i{color:var(--dl-muted);margin-right:6px}
+.dl-bb__todo .is-qc i{color:var(--dl-amber-2)}
+@media (max-width:1100px){.dl-bb__cols{grid-template-columns:minmax(0,1fr)}.dl-bb__engines{grid-template-columns:minmax(0,1fr)}}

@@ -1,0 +1,411 @@
+{
+    "generated": "2026-10-05 09:37",
+    "database": "ddtsys",
+    "totals": {
+        "objects": 140,
+        "modules": 10,
+        "modules_done": 6,
+        "screens": 216,
+        "v2": 204,
+        "v1": 4,
+        "not_built": 8,
+        "waiting_qc": 207,
+        "locked": 1,
+        "forms": 80,
+        "grids": 89,
+        "reports": 46,
+        "grid_classes": 146,
+        "lookups": 37,
+        "report_grids": 36,
+        "engines": 25,
+        "engine_groups": 12,
+        "tables": 370,
+        "databases": 9,
+        "models": 328,
+        "migrations": 538,
+        "tests": 89,
+        "dictionary": 9689,
+        "languages": 4,
+        "commits": "1080",
+        "since": "2026-08-06"
+    },
+    "modules": [
+        {
+            "label": "Sales",
+            "total": 45,
+            "v2": 41,
+            "v1": 4,
+            "not_built": 0,
+            "waiting_qc": 44,
+            "locked": 1,
+            "form": 23,
+            "grid": 7,
+            "report": 15
+        },
+        {
+            "label": "Management Reports",
+            "total": 3,
+            "v2": 0,
+            "v1": 0,
+            "not_built": 3,
+            "waiting_qc": 0,
+            "locked": 0,
+            "form": 0,
+            "grid": 0,
+            "report": 2
+        },
+        {
+            "label": "Procurement",
+            "total": 11,
+            "v2": 11,
+            "v1": 0,
+            "not_built": 0,
+            "waiting_qc": 11,
+            "locked": 0,
+            "form": 4,
+            "grid": 4,
+            "report": 3
+        },
+        {
+            "label": "Inventory",
+            "total": 47,
+            "v2": 47,
+            "v1": 0,
+            "not_built": 0,
+            "waiting_qc": 47,
+            "locked": 0,
+            "form": 22,
+            "grid": 7,
+            "report": 18
+        },
+        {
+            "label": "Production",
+            "total": 20,
+            "v2": 17,
+            "v1": 0,
+            "not_built": 3,
+            "waiting_qc": 17,
+            "locked": 0,
+            "form": 5,
+            "grid": 14,
+            "report": 1
+        },
+        {
+            "label": "Maintenance",
+            "total": 7,
+            "v2": 7,
+            "v1": 0,
+            "not_built": 0,
+            "waiting_qc": 7,
+            "locked": 0,
+            "form": 6,
+            "grid": 0,
+            "report": 1
+        },
+        {
+            "label": "Human Resources",
+            "total": 24,
+            "v2": 24,
+            "v1": 0,
+            "not_built": 0,
+            "waiting_qc": 24,
+            "locked": 0,
+            "form": 8,
+            "grid": 13,
+            "report": 3
+        },
+        {
+            "label": "Finance & Accounting",
+            "total": 15,
+            "v2": 15,
+            "v1": 0,
+            "not_built": 0,
+            "waiting_qc": 15,
+            "locked": 0,
+            "form": 3,
+            "grid": 10,
+            "report": 2
+        },
+        {
+            "label": "Master Data",
+            "total": 21,
+            "v2": 21,
+            "v1": 0,
+            "not_built": 0,
+            "waiting_qc": 21,
+            "locked": 0,
+            "form": 7,
+            "grid": 14,
+            "report": 0
+        },
+        {
+            "label": "Setup",
+            "total": 23,
+            "v2": 21,
+            "v1": 0,
+            "not_built": 2,
+            "waiting_qc": 21,
+            "locked": 0,
+            "form": 2,
+            "grid": 20,
+            "report": 1
+        }
+    ],
+    "engines": [
+        {
+            "group": "Inquiry Product",
+            "items": [
+                {
+                    "name": "Dieline Engine (TMDieline)",
+                    "purpose": "Draws the flat dieline of a product type from its dimensions, live while Sales types the size.",
+                    "mode": "calc"
+                }
+            ]
+        },
+        {
+            "group": "Pro-Dev",
+            "items": [
+                {
+                    "name": "Imposition Engine",
+                    "purpose": "Finds how many pieces (UP) fit on a plano sheet and which layout wastes the least paper.",
+                    "mode": "suggest"
+                },
+                {
+                    "name": "Spec Engine (BOP · BOM · Ink)",
+                    "purpose": "Builds the production specification of a part: process steps, materials and ink configuration.",
+                    "mode": "suggest"
+                },
+                {
+                    "name": "Usage Rate Engine",
+                    "purpose": "Learns material usage rates and waste percentages from real production data and proposes new values for the BOP rules.",
+                    "mode": "suggest"
+                },
+                {
+                    "name": "Routing Template Engine",
+                    "purpose": "Checks the order of process steps and turns a routing template into ready steps with a suggested machine.",
+                    "mode": "suggest"
+                }
+            ]
+        },
+        {
+            "group": "Pro-Cost",
+            "items": [
+                {
+                    "name": "Costing Engine (Pro-Cost)",
+                    "purpose": "Calculates the cost price (HPP) of every part and the selling price per quantity tier of an inquiry.",
+                    "mode": "calc"
+                },
+                {
+                    "name": "Reverse Costing",
+                    "purpose": "Turns a stand-alone (instant) costing into an integrated one by creating the documents that normally come before it.",
+                    "mode": "auto"
+                }
+            ]
+        },
+        {
+            "group": "Approval",
+            "items": [
+                {
+                    "name": "Flow Engine (Approval)",
+                    "purpose": "Moves a document through its approval steps, the same way for every module.",
+                    "mode": "flow"
+                }
+            ]
+        },
+        {
+            "group": "Sales Order",
+            "items": [
+                {
+                    "name": "CPDEL Engine (Customer Plan Delivery)",
+                    "purpose": "Creates the delivery schedule when a Customer Order is confirmed.",
+                    "mode": "auto"
+                },
+                {
+                    "name": "CPDEL Two Promises",
+                    "purpose": "Keeps the promise to the customer (delivery slot) and the promise of production (ready date) in line.",
+                    "mode": "flow"
+                }
+            ]
+        },
+        {
+            "group": "Planning",
+            "items": [
+                {
+                    "name": "Material Planning Engine (MPS · MRP · Booking)",
+                    "purpose": "Works out which materials every order needs, books stock for it and shows what is short.",
+                    "mode": "suggest"
+                }
+            ]
+        },
+        {
+            "group": "Inventory",
+            "items": [
+                {
+                    "name": "Warehouse Stock (bins, capacity, dead stock)",
+                    "purpose": "Tells what is in every bin, how full the bin is by weight and by volume, when the goods arrived, and which stock is dead or expired. One source for the Warehouse Map, transfers, labels and tracking.",
+                    "mode": "calc"
+                },
+                {
+                    "name": "Stock Document Posting (stock card order)",
+                    "purpose": "Writes a stock document (Stock In, Out, Return, Adjustment, goods receipt and its reversal) to the stock card in document-date order and keeps every later balance right.",
+                    "mode": "flow"
+                },
+                {
+                    "name": "Stock Transfer Posting",
+                    "purpose": "Moves stock from one bin to another, in the same warehouse or between warehouses, with or without approval, and can take the move back.",
+                    "mode": "flow"
+                },
+                {
+                    "name": "Pallet Labels (arrival label, relabel after use)",
+                    "purpose": "Keeps one label per pallet and tells which stock still needs a pallet label: goods that arrived without one, and pallets whose label no longer matches because stock was used.",
+                    "mode": "suggest"
+                },
+                {
+                    "name": "Stock Period Ledger",
+                    "purpose": "Works out the stock of a period for the reports: opening balance, movements and closing balance of every item, in quantity and value, for all stock classes.",
+                    "mode": "calc"
+                }
+            ]
+        },
+        {
+            "group": "Production",
+            "items": [
+                {
+                    "name": "Work Order Generation",
+                    "purpose": "Creates the Work Orders when a delivery line is posted to Production.",
+                    "mode": "auto"
+                },
+                {
+                    "name": "PDR Engine (Scheduling)",
+                    "purpose": "Decides which job a machine should run next and plans a Work Order backwards from its due date.",
+                    "mode": "suggest"
+                },
+                {
+                    "name": "Scheduling Rule Engine",
+                    "purpose": "Applies the batching and sequencing rules kept as data, not as code.",
+                    "mode": "calc"
+                },
+                {
+                    "name": "Hot Job Option Generator",
+                    "purpose": "When an urgent job must be inserted, proposes up to three ways to do it with their measured impact.",
+                    "mode": "suggest"
+                },
+                {
+                    "name": "Speed Target Engine",
+                    "purpose": "Proposes the target speed of every machine and of every process x machine pair.",
+                    "mode": "suggest"
+                }
+            ]
+        },
+        {
+            "group": "Procurement",
+            "items": [
+                {
+                    "name": "Purchase Quotation Matcher",
+                    "purpose": "Matches the text of a supplier quotation file to the supplier master and to the requisition lines.",
+                    "mode": "suggest"
+                }
+            ]
+        },
+        {
+            "group": "Finance",
+            "items": [
+                {
+                    "name": "Tax Engine",
+                    "purpose": "Builds the monthly tax register (VAT, income tax 21 and 23), posts payments and reconciles with the ledger.",
+                    "mode": "calc"
+                }
+            ]
+        },
+        {
+            "group": "HR & Payroll",
+            "items": [
+                {
+                    "name": "Payroll Engine",
+                    "purpose": "Calculates the payslips of a period from attendance and takes the run through verification, payment and closing.",
+                    "mode": "calc"
+                }
+            ]
+        },
+        {
+            "group": "Help",
+            "items": [
+                {
+                    "name": "Assistant Engine (offline)",
+                    "purpose": "Answers a question typed by the user without sending anything outside the company.",
+                    "mode": "auto"
+                }
+            ]
+        }
+    ],
+    "features": [
+        [
+            "fa-language",
+            "Multi-language + dictionary"
+        ],
+        [
+            "fa-stamp",
+            "Approval flow, all documents"
+        ],
+        [
+            "fa-print",
+            "Print A5 / A4 + QR + Email"
+        ],
+        [
+            "fa-comments",
+            "Chat"
+        ],
+        [
+            "fa-robot",
+            "Offline assistant"
+        ],
+        [
+            "fa-table-cells-large",
+            "Opening widget board"
+        ],
+        [
+            "fa-warehouse",
+            "Warehouse map + pallets"
+        ],
+        [
+            "fa-tags",
+            "Labels: location, item, pallet"
+        ],
+        [
+            "fa-palette",
+            "Themes 4 modes x 3 colours"
+        ],
+        [
+            "fa-layer-group",
+            "Layer Menu from database"
+        ],
+        [
+            "fa-window-restore",
+            "Side Screen (float, resize)"
+        ],
+        [
+            "fa-code",
+            "Developer mode F10"
+        ],
+        [
+            "fa-sitemap",
+            "Item code builder (Category 1-5)"
+        ],
+        [
+            "fa-flask",
+            "Dummy stage sets + Reset"
+        ],
+        [
+            "fa-life-ring",
+            "Help & support + tickets"
+        ],
+        [
+            "fa-shield-halved",
+            "Guard tests (ratchet)"
+        ]
+    ],
+    "notes": [
+        "Payroll encryption: decided, not installed",
+        "3D mockup generator for Inquiry Product"
+    ]
+}

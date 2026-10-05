@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DevLib Build Dashboard - Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f4f6fa; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; letter-spacing: .04em; }
+  .num { font-size: 26px; font-weight: 700; color: #1e293b; line-height: 1.1; }
+  .bar { height: 8px; border-radius: 4px; background: #e8edf5; overflow: hidden; display: flex; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: #eef4fd; color: #2c5aa0; font-size: 11px; font-weight: 500; }
+  .bdg { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+  th { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; text-align: right; padding: 6px 8px; }
+  td { padding: 7px 8px; text-align: right; border-top: 1px solid #eef1f6; }
+  th:first-child, td:first-child { text-align: left; }
+  .eg { display: flex; gap: 8px; padding: 6px 0; border-top: 1px solid #eef1f6; }
+  .eg:first-child { border-top: 0; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-5 space-y-4" style="width:1440px">
+
+  <!-- Title -->
+  <div class="flex items-end gap-3">
+    <div>
+      <div class="text-lg font-bold text-navy">Build Progress</div>
+      <div class="text-[11px] text-muted">TMERP v2 &middot; DevLib + mockup.test &middot; snapshot 05-Oct-2026 &middot; 1,080 commits since 06-Aug-2026</div>
+    </div>
+    <div class="ml-auto flex items-center gap-2 text-[11px] text-muted">
+      <i class="fa-solid fa-database"></i> Source: php artisan build:catalog &rarr; resources/data/v2/build.json
+    </div>
+  </div>
+
+  <!-- KPI tiles -->
+  <div class="grid grid-cols-8 gap-3">
+    <div class="card p-3"><div class="lbl">DevLib objects</div><div class="num">140</div><div class="text-[11px] text-muted">9 catalog groups</div></div>
+    <div class="card p-3"><div class="lbl">Modules</div><div class="num">10</div><div class="text-[11px] text-muted">6 fully on v2</div></div>
+    <div class="card p-3"><div class="lbl">Screens in menu</div><div class="num">216</div><div class="text-[11px] text-muted">204 v2 &middot; 12 still v1</div></div>
+    <div class="card p-3"><div class="lbl">Forms</div><div class="num">80</div><div class="text-[11px] text-muted">document + master</div></div>
+    <div class="card p-3"><div class="lbl">Grids</div><div class="num">146</div><div class="text-[11px] text-muted">37 lookup &middot; 36 report</div></div>
+    <div class="card p-3"><div class="lbl">Reports</div><div class="num">46</div><div class="text-[11px] text-muted">in 9 modules</div></div>
+    <div class="card p-3"><div class="lbl">Engines</div><div class="num">25</div><div class="text-[11px] text-muted">11 business areas</div></div>
+    <div class="card p-3"><div class="lbl">Tables</div><div class="num">370</div><div class="text-[11px] text-muted">10 databases</div></div>
+  </div>
+
+  <div class="grid grid-cols-12 gap-4">
+
+    <!-- Modules -->
+    <section class="card p-4 col-span-7">
+      <div class="flex items-center mb-2">
+        <div class="font-semibold text-slate-700 text-sm">Modules</div>
+        <div class="ml-auto flex items-center gap-3 text-[10px] text-muted">
+          <span><span class="inline-block w-2.5 h-2.5 rounded-sm align-middle" style="background:#2c7be5"></span> Built on v2</span>
+          <span><span class="inline-block w-2.5 h-2.5 rounded-sm align-middle" style="background:#f0b849"></span> Still v1</span>
+          <span><span class="inline-block w-2.5 h-2.5 rounded-sm align-middle" style="background:#cbd5e1"></span> Not built</span>
+        </div>
+      </div>
+      <table class="w-full">
+        <thead><tr><th>Module</th><th style="width:210px;text-align:left">Progress</th><th>Screens</th><th>Form</th><th>Grid</th><th>Report</th><th>QC by user</th><th style="text-align:left">State</th></tr></thead>
+        <tbody>
+          <tr><td class="font-semibold">Sales</td><td><div class="bar"><i style="width:91%;background:#2c7be5"></i><i style="width:9%;background:#f0b849"></i></div></td><td>41 / 45</td><td>23</td><td>7</td><td>15</td><td>1</td><td style="text-align:left"><span class="bdg bg-amber-100 text-amber-700">Partial</span></td></tr>
+          <tr><td class="font-semibold">Procurement</td><td><div class="bar"><i style="width:100%;background:#2c7be5"></i></div></td><td>11 / 11</td><td>4</td><td>4</td><td>3</td><td>0</td><td style="text-align:left"><span class="bdg bg-emerald-100 text-emerald-700">Built</span></td></tr>
+          <tr><td class="font-semibold">Inventory</td><td><div class="bar"><i style="width:100%;background:#2c7be5"></i></div></td><td>47 / 47</td><td>22</td><td>7</td><td>18</td><td>0</td><td style="text-align:left"><span class="bdg bg-emerald-100 text-emerald-700">Built</span></td></tr>
+          <tr><td class="font-semibold">Production</td><td><div class="bar"><i style="width:85%;background:#2c7be5"></i><i style="width:15%;background:#cbd5e1"></i></div></td><td>17 / 20</td><td>5</td><td>14</td><td>1</td><td>0</td><td style="text-align:left"><span class="bdg bg-amber-100 text-amber-700">Partial</span></td></tr>
+          <tr><td class="font-semibold">Maintenance</td><td><div class="bar"><i style="width:100%;background:#2c7be5"></i></div></td><td>7 / 7</td><td>6</td><td>0</td><td>1</td><td>0</td><td style="text-align:left"><span class="bdg bg-emerald-100 text-emerald-700">Built</span></td></tr>
+          <tr><td class="font-semibold">Human Resources</td><td><div class="bar"><i style="width:100%;background:#2c7be5"></i></div></td><td>24 / 24</td><td>8</td><td>13</td><td>3</td><td>0</td><td style="text-align:left"><span class="bdg bg-emerald-100 text-emerald-700">Built</span></td></tr>
+          <tr><td class="font-semibold">Finance &amp; Accounting</td><td><div class="bar"><i style="width:100%;background:#2c7be5"></i></div></td><td>15 / 15</td><td>3</td><td>10</td><td>2</td><td>0</td><td style="text-align:left"><span class="bdg bg-emerald-100 text-emerald-700">Built</span></td></tr>
+          <tr><td class="font-semibold">Master Data</td><td><div class="bar"><i style="width:100%;background:#2c7be5"></i></div></td><td>21 / 21</td><td>7</td><td>14</td><td>0</td><td>0</td><td style="text-align:left"><span class="bdg bg-emerald-100 text-emerald-700">Built</span></td></tr>
+          <tr><td class="font-semibold">Setup</td><td><div class="bar"><i style="width:91%;background:#2c7be5"></i><i style="width:9%;background:#cbd5e1"></i></div></td><td>21 / 23</td><td>2</td><td>20</td><td>1</td><td>0</td><td style="text-align:left"><span class="bdg bg-amber-100 text-amber-700">Partial</span></td></tr>
+          <tr><td class="font-semibold">Management Reports</td><td><div class="bar"><i style="width:100%;background:#cbd5e1"></i></div></td><td>0 / 3</td><td>0</td><td>0</td><td>2</td><td>0</td><td style="text-align:left"><span class="bdg bg-slate-200 text-slate-600">Not started</span></td></tr>
+          <tr class="font-bold"><td>Total</td><td><div class="bar"><i style="width:94.4%;background:#2c7be5"></i><i style="width:1.9%;background:#f0b849"></i><i style="width:3.7%;background:#cbd5e1"></i></div></td><td>204 / 216</td><td>80</td><td>89</td><td>46</td><td>1</td><td style="text-align:left">94%</td></tr>
+        </tbody>
+      </table>
+      <div class="mt-2 text-[10.5px] text-muted"><i class="fa-solid fa-circle-info"></i> "Built" = screen exists and reads / writes the database. It is not "finished" until you lock it after QC &mdash; today 1 of 208 built screens is locked.</div>
+    </section>
+
+    <!-- QC funnel + DevLib -->
+    <section class="col-span-5 space-y-4">
+      <div class="card p-4">
+        <div class="font-semibold text-slate-700 text-sm mb-3">From built to approved</div>
+        <div class="space-y-2.5">
+          <div><div class="flex justify-between mb-1"><span>Screens in menu</span><b>216</b></div><div class="bar"><i style="width:100%;background:#94a3b8"></i></div></div>
+          <div><div class="flex justify-between mb-1"><span>Built, waiting for your QC</span><b>207</b></div><div class="bar"><i style="width:95.8%;background:#2c7be5"></i></div></div>
+          <div><div class="flex justify-between mb-1"><span>Locked by you after QC</span><b>1</b></div><div class="bar"><i style="width:1%;background:#16a34a"></i></div></div>
+          <div><div class="flex justify-between mb-1"><span>Not built</span><b>8</b></div><div class="bar"><i style="width:3.7%;background:#cbd5e1"></i></div></div>
+        </div>
+      </div>
+      <div class="card p-4">
+        <div class="flex items-center mb-3"><div class="font-semibold text-slate-700 text-sm">DevLib library</div><div class="ml-auto text-[11px] text-muted">packages/devlib</div></div>
+        <div class="grid grid-cols-4 gap-3 text-center">
+          <div><div class="num" style="font-size:20px">140</div><div class="lbl">Objects</div></div>
+          <div><div class="num" style="font-size:20px">46</div><div class="lbl">Pages approved</div></div>
+          <div><div class="num" style="font-size:20px">45</div><div class="lbl">Live demos</div></div>
+          <div><div class="num" style="font-size:20px">3</div><div class="lbl">Side packages</div></div>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-1.5">
+          <span class="chip">Basics &amp; Themes</span><span class="chip">Inputs &amp; Buttons</span><span class="chip">Grid</span><span class="chip">Form</span><span class="chip">Documents</span><span class="chip">Boards, Schedules &amp; Charts</span><span class="chip">Menus, Accounts &amp; Layout</span><span class="chip">Engines</span><span class="chip">DEV Rules</span>
+        </div>
+        <div class="mt-2 text-[10.5px] text-muted">Side packages: chat &middot; assistant &middot; mockup-parts</div>
+      </div>
+      <div class="card p-4">
+        <div class="font-semibold text-slate-700 text-sm mb-2">Foundation</div>
+        <div class="grid grid-cols-4 gap-3 text-center">
+          <div><div class="num" style="font-size:20px">328</div><div class="lbl">Models</div></div>
+          <div><div class="num" style="font-size:20px">538</div><div class="lbl">Migrations</div></div>
+          <div><div class="num" style="font-size:20px">90</div><div class="lbl">Test files</div></div>
+          <div><div class="num" style="font-size:20px">9,689</div><div class="lbl">Dictionary texts</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Engines -->
+    <section class="card p-4 col-span-7">
+      <div class="flex items-center mb-2">
+        <div class="font-semibold text-slate-700 text-sm">Engines &mdash; 25</div>
+        <div class="ml-auto flex gap-1.5">
+          <span class="bdg bg-sky-100 text-sky-700">10 suggest</span><span class="bdg bg-violet-100 text-violet-700">7 calculate</span><span class="bdg bg-emerald-100 text-emerald-700">4 automatic</span><span class="bdg bg-amber-100 text-amber-700">4 flow</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-x-6">
+        <div>
+          <div class="eg"><b class="w-28 shrink-0">Inquiry Product <span class="text-muted font-normal">1</span></b><span>Dieline &mdash; draws the flat box from its size</span></div>
+          <div class="eg"><b class="w-28 shrink-0">Pro-Dev <span class="text-muted font-normal">4</span></b><span>Imposition (pieces per sheet) &middot; Spec (process, material, ink) &middot; Usage Rate &middot; Routing Template</span></div>
+          <div class="eg"><b class="w-28 shrink-0">Pro-Cost <span class="text-muted font-normal">2</span></b><span>Costing (cost price + price per quantity) &middot; Reverse Costing</span></div>
+          <div class="eg"><b class="w-28 shrink-0">Sales Order <span class="text-muted font-normal">2</span></b><span>CPDEL delivery schedule &middot; CPDEL Two Promises</span></div>
+          <div class="eg"><b class="w-28 shrink-0">Approval <span class="text-muted font-normal">1</span></b><span>Flow &mdash; one approval path for every document</span></div>
+          <div class="eg"><b class="w-28 shrink-0">Planning <span class="text-muted font-normal">1</span></b><span>Material Planning (MPS, MRP, Booking)</span></div>
+        </div>
+        <div>
+          <div class="eg"><b class="w-28 shrink-0">Inventory <span class="text-muted font-normal">5</span></b><span>Warehouse Stock &middot; Stock Posting &middot; Stock Transfer &middot; Pallet Labels &middot; Period Ledger</span></div>
+          <div class="eg"><b class="w-28 shrink-0">Production <span class="text-muted font-normal">5</span></b><span>Work Order Generation &middot; PDR Scheduling &middot; Scheduling Rules &middot; Hot Job Options &middot; Speed Target</span></div>
+          <div class="eg"><b class="w-28 shrink-0">Procurement <span class="text-muted font-normal">1</span></b><span>Purchase Quotation Matcher</span></div>
+          <div class="eg"><b class="w-28 shrink-0">Finance <span class="text-muted font-normal">1</span></b><span>Tax</span></div>
+          <div class="eg"><b class="w-28 shrink-0">HR &amp; Payroll <span class="text-muted font-normal">1</span></b><span>Payroll</span></div>
+          <div class="eg"><b class="w-28 shrink-0">Help <span class="text-muted font-normal">1</span></b><span>Assistant (offline)</span></div>
+        </div>
+      </div>
+      <div class="mt-2 text-[11px]"><a class="text-accent font-semibold">Open Engine Catalog <i class="fa-solid fa-arrow-right text-[9px]"></i></a></div>
+    </section>
+
+    <!-- Features + Open -->
+    <section class="col-span-5 space-y-4">
+      <div class="card p-4">
+        <div class="font-semibold text-slate-700 text-sm mb-2">Features built</div>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="chip"><i class="fa-solid fa-language"></i> Multi-language + dictionary (4 languages)</span>
+          <span class="chip"><i class="fa-solid fa-stamp"></i> Approval flow, all documents</span>
+          <span class="chip"><i class="fa-solid fa-print"></i> Print A5 / A4 + QR + Email</span>
+          <span class="chip"><i class="fa-solid fa-comments"></i> Chat</span>
+          <span class="chip"><i class="fa-solid fa-robot"></i> Offline assistant</span>
+          <span class="chip"><i class="fa-solid fa-table-cells-large"></i> Opening widget board</span>
+          <span class="chip"><i class="fa-solid fa-warehouse"></i> Warehouse map + pallets</span>
+          <span class="chip"><i class="fa-solid fa-tags"></i> Labels: location, item, pallet</span>
+          <span class="chip"><i class="fa-solid fa-palette"></i> Themes 4 modes x 3 colours</span>
+          <span class="chip"><i class="fa-solid fa-layer-group"></i> Layer Menu from database</span>
+          <span class="chip"><i class="fa-solid fa-window-restore"></i> Side Screen (float, resize)</span>
+          <span class="chip"><i class="fa-solid fa-code"></i> Developer mode F10</span>
+          <span class="chip"><i class="fa-solid fa-sitemap"></i> Item code builder (Category 1-5)</span>
+          <span class="chip"><i class="fa-solid fa-flask"></i> Dummy stage sets + Reset</span>
+          <span class="chip"><i class="fa-solid fa-life-ring"></i> Help &amp; support + tickets</span>
+          <span class="chip"><i class="fa-solid fa-shield-halved"></i> 5 guard tests (ratchet)</span>
+        </div>
+      </div>
+      <div class="card p-4">
+        <div class="font-semibold text-slate-700 text-sm mb-2">Not yet</div>
+        <ul class="space-y-1.5">
+          <li><i class="fa-regular fa-circle text-slate-400 mr-1.5"></i>Management Reports &mdash; 3 screens, none built</li>
+          <li><i class="fa-regular fa-circle text-slate-400 mr-1.5"></i>Production &mdash; 3 screens not built</li>
+          <li><i class="fa-regular fa-circle text-slate-400 mr-1.5"></i>Sales &mdash; 4 screens still open the old v1 screen</li>
+          <li><i class="fa-regular fa-circle text-slate-400 mr-1.5"></i>Setup &mdash; 2 screens not built</li>
+          <li><i class="fa-regular fa-circle text-slate-400 mr-1.5"></i>Payroll encryption &mdash; decided, not installed</li>
+          <li><i class="fa-regular fa-circle text-slate-400 mr-1.5"></i>3D mockup generator for Inquiry Product</li>
+          <li><i class="fa-regular fa-circle text-amber-500 mr-1.5"></i>User QC: 207 screens wait for your review</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</main>
+</body>
+</html>

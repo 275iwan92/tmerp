@@ -207,6 +207,9 @@ final class Catalog
             ['code' => 'EG', 'short' => 'EG', 'label' => 'Engines', 'icon' => 'fa-solid fa-gears',
                 'pages' => [
                     'p9-engines' => $page('Engine Catalog', 'fa-solid fa-gears', ['engines' => ['Engine Catalog: every engine with its input, output and how it works', $c('EngineCatalog')]]),
+                    // Papan Build Progress (user 2026-10-05): isinya dibuat tmerp (`php artisan build:catalog --env=mockup`
+                    // -> resources/data/v2/build.json), objeknya x-dl::build-board; tampil juga di halaman depan.
+                    'p9-build' => $page('Build Progress', 'fa-solid fa-chart-simple', ['build' => ['Build Progress: objects, modules, screens, forms, grids, engines and features built so far', $c('BuildBoard')]]),
                 ]],
             // Aturan untuk developer, bukan komponen yang dipakai user (user 2026-09-26).
             ['code' => 'DR', 'short' => 'DR', 'label' => 'DEV Rules', 'icon' => 'fa-solid fa-code',
@@ -315,6 +318,29 @@ final class Catalog
         }
 
         return $out;
+    }
+
+    // Angka library ini sendiri untuk x-dl::build-board (prop library).
+    public static function stats(): array
+    {
+        $groups = self::groups();
+        $slugs = array_merge([], ...array_map(fn ($g) => array_keys($g['pages']), $groups));
+
+        return [
+            'groups' => array_column($groups, 'label'),
+            'pages' => count($slugs),
+            'approved' => count(array_intersect($slugs, array_keys(self::APPROVED))),
+            'demos' => count(glob(resource_path('views/demos/*.blade.php'))),
+            'packages' => array_values(array_diff(array_map('basename', glob(base_path('../packages/*'), GLOB_ONLYDIR)), ['devlib'])),
+        ];
+    }
+
+    // Isi papan Build Progress: berkas yang dibuat tmerp (situs DevLib tidak memuat kode / database tmerp).
+    public static function build(): array
+    {
+        $file = base_path('../resources/data/v2/build.json');
+
+        return is_file($file) ? (json_decode(file_get_contents($file), true) ?: []) : [];
     }
 
     public static function page(string $slug): ?array

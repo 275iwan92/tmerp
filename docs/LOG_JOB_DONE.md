@@ -3932,3 +3932,16 @@ QR code ... warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BU
 - Audit: 549 rantai sumber cocok persis di kedua database; 7 penyimpangan data asal dicatat (5.7), tidak diubah.
 - Test: `MaterialCategoryChainTest` (8 test). Belum: pola yang sama untuk Product, form Raw Material / PR ke objek baru,
   kode item lama di `mat_raw`.
+
+### 2026-10-05 -- Papan Build Progress di halaman depan devlib.test
+
+- User: dashboard pemantauan bersama (user, agen Iwan, agen Jo): berapa objek, modul, layar, form, grid, engine, fitur;
+  modul mana lengkap / belum. Mockup disetujui: `docs/mockups/devlib_build_dashboard.jpg`.
+- Dibangun: `App\Support\Build\BuildRegistry` (angka dihitung dari `sys_app_menu`, daftar grid, daftar engine, berkas
+  kode; `FEATURES` / `NOTES` ditulis tangan), `php artisan build:catalog --env=mockup` -> `resources/data/v2/build.json`,
+  objek DevLib `x-dl::build-board` (StatBox + Card + Progress + Badge), tampil di halaman depan devlib.test dan katalog
+  Engines > Build Progress.
+- Angka 05-Okt-2026 (ddtsys): 10 modul (6 penuh v2), 204 / 216 layar v2, 80 form, 146 kelas grid, 46 laporan, 25 engine,
+  1 layar LOCKED, 207 menunggu QC user.
+- Test: `BuildCatalogTest` (3 test). Catatan: `ddthrm` terbaca 0 tabel (belum ditelusuri); `devlib/tests ExampleTest`
+  sudah gagal sebelum pekerjaan ini (302 ke login).
