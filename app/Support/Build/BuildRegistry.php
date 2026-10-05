@@ -41,6 +41,12 @@ final class BuildRegistry
         '3D mockup generator for Inquiry Product',
     ];
 
+    // Dua agen pengembang (user 2026-10-05). Commit ditandai trailer `Agent: Iwan` / `Agent: Jo`; commit tanpa tanda =
+    // "Before tracking" (git lama tidak bisa membedakan keduanya -- jangan ditebak dari hari).
+    public const AGENTS = ['iwan' => 'Agent Iwan', 'jo' => 'Agent Jo'];
+
+    private const DAYS = 14;
+
     private const CONNECTIONS = ['tm2mst', 'tm2sdi', 'tm2pur', 'tm2inv', 'tm2prd', 'tm2acc', 'tm2hrm', 'tm2hrr', 'tm2pyr', 'tm2sys'];
 
     public static function snapshot(): array
@@ -77,6 +83,7 @@ final class BuildRegistry
                 'since' => self::git('log --reverse --format=%ad --date=short', true),
             ],
             'modules' => $modules,
+            ...self::work(),
             'engines' => self::engines($engines),
             'features' => self::FEATURES,
             'notes' => self::NOTES,
@@ -124,6 +131,56 @@ final class BuildRegistry
         }
 
         return array_values($out);
+    }
+
+    // Siapa mengerjakan apa dan kapan, dari git: per agen = commit, hari aktif, terakhir aktif, berkas yang disentuh per
+    // jenis (layar v2, objek DevLib, engine, test); 'days' = commit per hari 14 hari terakhir per agen.
+    private static function work(): array
+    {
+        $r = Process::path(base_path())->run(['git', 'log', '--date=short', '--name-only', '--format=@@%ad%x1f%(trailers:key=Agent,valueonly,separator=%x2C)']);
+        $engineFiles = array_column(EngineRegistry::catalog(), 'file');
+        $kind = fn (string $f) => match (true) {
+            str_starts_with($f, 'resources/views/v2/') || str_starts_with($f, 'app/Support/V2/Grid/') || str_starts_with($f, 'app/Support/V2/Data/') => 'screens',
+            str_starts_with($f, 'packages/devlib/src/Components/') => 'objects',
+            in_array($f, $engineFiles, true) => 'engines',
+            str_starts_with($f, 'tests/') => 'tests',
+            default => null,
+        };
+        $blank = ['commits' => 0, 'days' => [], 'last' => null, 'screens' => [], 'objects' => [], 'engines' => [], 'tests' => []];
+        $agents = array_fill_keys(array_keys(self::AGENTS), $blank);
+        $untracked = 0;
+        $perDay = [];
+        $who = null;
+        foreach ($r->successful() ? preg_split('/\R/', $r->output()) : [] as $line) {
+            if (str_starts_with($line, '@@')) {
+                [$date, $tag] = array_pad(explode('', substr($line, 2)), 2, '');
+                $who = strtolower(trim(explode(',', $tag)[0]));
+                $who = isset($agents[$who]) ? $who : null;
+                $perDay[$date][$who ?? 'other'] = ($perDay[$date][$who ?? 'other'] ?? 0) + 1;
+                if ($who === null) {
+                    $untracked++;
+
+                    continue;
+                }
+                $agents[$who]['commits']++;
+                $agents[$who]['days'][$date] = true;
+                $agents[$who]['last'] ??= $date;   // git log: terbaru dulu
+            } elseif ($who !== null && $line !== '' && ($k = $kind($line))) {
+                $agents[$who][$k][$line] = true;
+            }
+        }
+        $days = [];
+        for ($i = self::DAYS - 1; $i >= 0; $i--) {
+            $d = now()->subDays($i)->format('Y-m-d');
+            $days[] = ['date' => $d] + array_map(fn ($k) => $perDay[$d][$k] ?? 0, array_combine([...array_keys(self::AGENTS), 'other'], [...array_keys(self::AGENTS), 'other']));
+        }
+
+        return [
+            'agents' => array_map(fn ($key, $a) => ['key' => $key, 'name' => self::AGENTS[$key], 'commits' => $a['commits'], 'days' => count($a['days']), 'last' => $a['last'],
+                'screens' => count($a['screens']), 'objects' => count($a['objects']), 'engines' => count($a['engines']), 'tests' => count($a['tests'])], array_keys($agents), $agents),
+            'untracked' => $untracked,
+            'days' => $days,
+        ];
     }
 
     private static function tables(): array

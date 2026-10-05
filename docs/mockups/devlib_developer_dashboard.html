@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DevLib Developer Dashboard - Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f4f6fa; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; letter-spacing: .04em; }
+  .num { font-size: 24px; font-weight: 700; color: #1e293b; line-height: 1.1; }
+  .bar { height: 8px; border-radius: 4px; background: #e8edf5; overflow: hidden; display: flex; }
+  .bdg { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+  th { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; text-align: left; padding: 6px 8px; }
+  td { padding: 7px 8px; border-top: 1px solid #eef1f6; vertical-align: middle; }
+  .iw { background: #2c7be5; } .jo { background: #8b5cf6; } .un { background: #cbd5e1; }
+  .star { color: #f0b849; } .star0 { color: #d5dbe6; }
+  .mark { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #dc2626; color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-5 space-y-4" style="width:1440px">
+
+  <!-- 1. Welcome: unchanged -->
+  <section class="card p-5 flex items-center relative" style="background:linear-gradient(100deg,#2c3e69,#3b5aa8);color:#fff;border:0">
+    <span class="mark" style="left:-8px;top:-8px">1</span>
+    <div>
+      <div class="text-[10px] uppercase tracking-widest opacity-70">Developer Dashboard</div>
+      <div class="text-2xl font-bold mt-1">Good morning, Iwan <span class="font-normal">&#128075;</span></div>
+      <div class="mt-1 opacity-80">System owner &middot; TMERP v2 &middot; 3 developers: Iwan (user), Agent Iwan, Agent Jo</div>
+    </div>
+    <div class="ml-auto text-right">
+      <div class="text-3xl font-bold">09:41</div>
+      <div class="opacity-80">Monday, 05-Oct-2026</div>
+    </div>
+  </section>
+
+  <!-- 2. Build tiles -->
+  <div class="grid grid-cols-8 gap-3 relative">
+    <span class="mark" style="left:-8px;top:-8px">2</span>
+    <div class="card p-3"><div class="lbl">DevLib objects</div><div class="num">140</div></div>
+    <div class="card p-3"><div class="lbl">Modules</div><div class="num">10</div><div class="text-[11px] text-slate-400">6 fully on v2</div></div>
+    <div class="card p-3"><div class="lbl">Screens</div><div class="num">216</div><div class="text-[11px] text-slate-400">204 v2</div></div>
+    <div class="card p-3"><div class="lbl">Forms</div><div class="num">80</div></div>
+    <div class="card p-3"><div class="lbl">Grids</div><div class="num">146</div></div>
+    <div class="card p-3"><div class="lbl">Reports</div><div class="num">46</div></div>
+    <div class="card p-3"><div class="lbl">Engines</div><div class="num">25</div></div>
+    <div class="card p-3"><div class="lbl">Locked after QC</div><div class="num">1</div><div class="text-[11px] text-amber-600">207 wait for you</div></div>
+  </div>
+
+  <div class="grid grid-cols-12 gap-4">
+
+    <!-- 3. Who did how much -->
+    <section class="card p-4 col-span-5 relative">
+      <span class="mark" style="left:-8px;top:-8px">3</span>
+      <div class="flex items-center mb-3"><div class="font-semibold text-slate-700 text-sm">Work by agent</div><span class="ml-2 bdg bg-amber-100 text-amber-700">example numbers</span>
+        <div class="ml-auto flex gap-1"><span class="bdg bg-slate-800 text-white">All time</span><span class="bdg bg-slate-100 text-slate-600">This month</span><span class="bdg bg-slate-100 text-slate-600">This week</span></div></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="rounded-lg border border-slate-200 p-3" style="border-top:3px solid #2c7be5">
+          <div class="flex items-center gap-2"><span class="w-8 h-8 rounded-full iw text-white font-bold flex items-center justify-center">AI</span><div><b class="text-sm">Agent Iwan</b><div class="text-[10px] text-slate-400">last active 05-Oct-2026</div></div></div>
+          <div class="grid grid-cols-3 gap-2 mt-3 text-center"><div><div class="num" style="font-size:18px">38</div><div class="lbl">Items built</div></div><div><div class="num" style="font-size:18px">412</div><div class="lbl">Commits</div></div><div><div class="num" style="font-size:18px">21</div><div class="lbl">Days</div></div></div>
+          <div class="mt-3 flex items-center gap-1"><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star0"></i><b class="ml-1">4.1</b><span class="text-slate-400">&middot; 12 rated</span></div>
+        </div>
+        <div class="rounded-lg border border-slate-200 p-3" style="border-top:3px solid #8b5cf6">
+          <div class="flex items-center gap-2"><span class="w-8 h-8 rounded-full jo text-white font-bold flex items-center justify-center">AJ</span><div><b class="text-sm">Agent Jo</b><div class="text-[10px] text-slate-400">last active 02-Oct-2026</div></div></div>
+          <div class="grid grid-cols-3 gap-2 mt-3 text-center"><div><div class="num" style="font-size:18px">27</div><div class="lbl">Items built</div></div><div><div class="num" style="font-size:18px">305</div><div class="lbl">Commits</div></div><div><div class="num" style="font-size:18px">14</div><div class="lbl">Days</div></div></div>
+          <div class="mt-3 flex items-center gap-1"><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star-half-stroke star"></i><b class="ml-1">4.4</b><span class="text-slate-400">&middot; 9 rated</span></div>
+        </div>
+      </div>
+      <div class="mt-3 text-[11px]"><div class="flex justify-between mb-1"><span>Share of commits</span><span class="text-slate-400"><span class="inline-block w-2 h-2 iw rounded-sm"></span> Iwan <span class="inline-block w-2 h-2 jo rounded-sm ml-2"></span> Jo <span class="inline-block w-2 h-2 un rounded-sm ml-2"></span> Before tracking</span></div>
+        <div class="bar" style="height:12px"><i class="iw" style="width:38%"></i><i class="jo" style="width:28%"></i><i class="un" style="width:34%"></i></div></div>
+    </section>
+
+    <!-- 4. When -->
+    <section class="card p-4 col-span-7 relative">
+      <span class="mark" style="left:-8px;top:-8px">4</span>
+      <div class="flex items-center mb-3"><div class="font-semibold text-slate-700 text-sm">When &mdash; commits per day, last 14 days</div><div class="ml-auto text-[11px] text-slate-400">from git history</div></div>
+      <div class="flex items-end gap-2" style="height:150px">
+        <!-- heights are real totals per day; colours are examples -->
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:36px"></div><span class="text-[10px] text-slate-400">22</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:44px"></div><span class="text-[10px] text-slate-400">23</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:52px"></div><span class="text-[10px] text-slate-400">24</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:9px"></div><span class="text-[10px] text-slate-400">25</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:38px"></div><span class="text-[10px] text-slate-400">26</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:2px"></div><span class="text-[10px] text-slate-400">27</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:22px"></div><span class="text-[10px] text-slate-400">28</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:27px"></div><span class="text-[10px] text-slate-400">29</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:112px"></div><span class="text-[10px] text-slate-400">30</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:150px"></div><span class="text-[10px] text-slate-400">01</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:135px"></div><span class="text-[10px] text-slate-400">02</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:37px"></div><span class="text-[10px] text-slate-400">03</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t un" style="height:16px"></div><span class="text-[10px] text-slate-400">04</span></div>
+        <div class="flex-1 flex flex-col justify-end items-center gap-1"><div class="w-full rounded-t iw" style="height:6px"></div><span class="text-[10px] text-slate-400">05</span></div>
+      </div>
+      <div class="mt-2 text-[10.5px] text-slate-400"><i class="fa-solid fa-circle-info"></i> Grey = work done before agent tracking started (git cannot tell the two agents apart). Blue / violet from 05-Oct-2026 on.</div>
+    </section>
+
+    <!-- 5. Rating per form / grid -->
+    <section class="card p-4 col-span-12 relative">
+      <span class="mark" style="left:-8px;top:-8px">5</span>
+      <div class="flex items-center mb-2"><div class="font-semibold text-slate-700 text-sm">Deliverables &mdash; every form, grid, report, engine and object, with your rating</div>
+        <span class="ml-2 text-slate-400">216 screens &middot; 25 engines &middot; 140 objects</span>
+        <div class="ml-auto flex gap-1 items-center">
+          <span class="border border-slate-300 rounded px-2 py-0.5 text-slate-500"><i class="fa-solid fa-magnifying-glass"></i> Search name...</span>
+          <span class="bdg bg-slate-800 text-white">All</span><span class="bdg bg-slate-100 text-slate-600">Form</span><span class="bdg bg-slate-100 text-slate-600">Grid</span><span class="bdg bg-slate-100 text-slate-600">Report</span><span class="bdg bg-slate-100 text-slate-600">Engine</span><span class="bdg bg-slate-100 text-slate-600">Object</span>
+          <span class="text-slate-300">|</span><span class="bdg bg-slate-100 text-slate-600">Agent Iwan</span><span class="bdg bg-slate-100 text-slate-600">Agent Jo</span><span class="bdg bg-amber-100 text-amber-700">Not rated 213</span><span class="bdg bg-red-100 text-red-700">3 stars or less</span></div></div>
+      <table class="w-full">
+        <thead><tr><th style="width:95px">Module</th><th style="width:70px">Type</th><th>Name</th><th style="width:120px">Built by</th><th style="width:95px">Built</th><th style="width:95px">Last change</th><th style="width:95px">QC status</th><th style="width:110px">Your rating</th><th style="width:270px">Your note</th></tr></thead>
+        <tbody>
+<tr><td>Sales</td><td><span class="bdg bg-violet-100 text-violet-700">Grid</span></td><td><b>All Inquiries</b></td><td><span class="bdg bg-slate-200 text-slate-600">Before tracking</span></td><td>24-Sep-2026</td><td>01-Oct-2026</td><td><span class="bdg bg-emerald-100 text-emerald-700">Locked</span></td><td><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i></td><td>Approved. Keep as is.</td></tr>
+<tr><td>Sales</td><td><span class="bdg bg-sky-100 text-sky-700">Form</span></td><td><b>Customer Order</b></td><td><span class="bdg bg-slate-200 text-slate-600">Before tracking</span></td><td>26-Sep-2026</td><td>02-Oct-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-regular fa-star star0"></i></td><td>Tax line ok, Cancel flow needs a check.</td></tr>
+<tr><td>Sales</td><td><span class="bdg bg-sky-100 text-sky-700">Form</span></td><td><b>Customer Invoice</b></td><td><span class="bdg bg-slate-200 text-slate-600">Before tracking</span></td><td>02-Oct-2026</td><td>02-Oct-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i></td><td><span class="text-slate-300">click a star to rate</span></td></tr>
+<tr><td>Inventory</td><td><span class="bdg bg-sky-100 text-sky-700">Form</span></td><td><b>Stock Transfer</b></td><td><span class="bdg bg-slate-200 text-slate-600">Before tracking</span></td><td>02-Oct-2026</td><td>03-Oct-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i></td><td>Works, map is slow to open.</td></tr>
+<tr><td>Master Data</td><td><span class="bdg bg-sky-100 text-sky-700">Form</span></td><td><b>Raw Material Categories</b></td><td><span class="bdg bg-slate-200 text-slate-600">Before tracking</span></td><td>03-Oct-2026</td><td>03-Oct-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i></td><td>Had to say it 7 times.</td></tr>
+<tr><td>Setup</td><td><span class="bdg bg-violet-100 text-violet-700">Grid</span></td><td><b>Translation Dictionary</b></td><td><span class="bdg bg-slate-200 text-slate-600">Before tracking</span></td><td>03-Oct-2026</td><td>03-Oct-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i></td><td><span class="text-slate-300">click a star to rate</span></td></tr>
+<tr><td>DevLib</td><td><span class="bdg bg-slate-100 text-slate-600">Object</span></td><td><b>Side Screen</b></td><td><span class="bdg bg-slate-200 text-slate-600">Before tracking</span></td><td>04-Oct-2026</td><td>04-Oct-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i></td><td>Exactly like OS Windows.</td></tr>
+<tr><td>DevLib</td><td><span class="bdg bg-slate-100 text-slate-600">Object</span></td><td><b>Build Board</b></td><td><span class="bdg text-white iw">Agent Iwan</span></td><td>05-Oct-2026</td><td>05-Oct-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i></td><td><span class="text-slate-300">click a star to rate</span></td></tr>
+<tr><td>Pro-Cost</td><td><span class="bdg bg-orange-100 text-orange-700">Engine</span></td><td><b>Costing Engine</b></td><td><span class="bdg bg-slate-200 text-slate-600">Before tracking</span></td><td>before Oct</td><td>22-Sep-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i></td><td><span class="text-slate-300">click a star to rate</span></td></tr>
+        </tbody>
+      </table>
+      <div class="mt-2 text-[10.5px] text-slate-400"><i class="fa-solid fa-circle-info"></i> Names come from the menu table (sys_app_menu), the engine list and the DevLib object list. A new rating does not erase the old one: the history stays, so you can see whether a fix improved the score.</div>
+    </section>
+
+    <!-- 6. Modules + engines stay, below -->
+    <section class="card p-4 col-span-12 relative text-slate-500">
+      <span class="mark" style="left:-8px;top:-8px">6</span>
+      <b class="text-slate-700 text-sm">Modules &middot; Engines &middot; Features built &middot; Not yet</b> &mdash; the four cards already on the page today stay below, unchanged.
+    </section>
+  </div>
+
+  <!-- Legend -->
+  <section class="card p-4 text-[11.5px] leading-relaxed">
+    <b class="text-slate-700">What changes</b>
+    <div class="grid grid-cols-2 gap-x-8 mt-1">
+      <div><b class="text-red-600">1</b> Welcome stays the same object as mockup.test (greeting, clock); only the label says Developer Dashboard.</div>
+      <div><b class="text-red-600">4</b> When: commits per day from git. Bar height is real; colour by agent only from the day tracking starts.</div>
+      <div><b class="text-red-600">2</b> Build numbers become the first widget row (same numbers as today).</div>
+      <div><b class="text-red-600">5</b> Rating per form / grid / report / engine / object. You click 1-5 stars and may write a note; both agents read it.</div>
+      <div><b class="text-red-600">3</b> New: Agent Iwan and Agent Jo side by side: jobs, commits, active days, average rating.</div>
+      <div><b class="text-red-600">6</b> The sample KPI dashboard (sales targets) leaves the developer welcome page; it stays in the catalog.</div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

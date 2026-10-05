@@ -26,6 +26,9 @@ class BuildCatalogTest extends TestCase
         $this->assertSame(count(EngineRegistry::all()), $t['engines']);
         $this->assertSame($t['engines'], array_sum(array_map(fn ($g) => count($g['items']), $s['engines'])));
         $this->assertGreaterThan(100, $t['objects']);
+        $this->assertSame(['iwan', 'jo'], array_column($s['agents'], 'key'));
+        $this->assertCount(14, $s['days']);
+        $this->assertSame((int) $t['commits'], $s['untracked'] + array_sum(array_column($s['agents'], 'commits')), 'tiap commit = satu agen atau sebelum pelacakan');
     }
 
     // devlib.test membaca resources/data/v2/build.json. Isinya ikut menu ddtsys, jadi hanya bentuknya yang dijaga di sini.
@@ -54,6 +57,10 @@ class BuildCatalogTest extends TestCase
             ],
             'engines' => [['group' => 'Pro-Cost', 'items' => [['name' => 'Costing Engine', 'purpose' => 'Calculates the cost price.', 'mode' => 'calc']]]],
             'features' => [['fa-comments', 'Chat']],
+            'agents' => [['key' => 'iwan', 'name' => 'Agent Iwan', 'commits' => 7, 'days' => 2, 'last' => '2026-10-05', 'screens' => 3, 'objects' => 1, 'engines' => 0, 'tests' => 2],
+                ['key' => 'jo', 'name' => 'Agent Jo', 'commits' => 0, 'days' => 0, 'last' => null, 'screens' => 0, 'objects' => 0, 'engines' => 0, 'tests' => 0]],
+            'untracked' => 3,
+            'days' => [['date' => '2026-10-04', 'iwan' => 0, 'jo' => 0, 'other' => 3], ['date' => '2026-10-05', 'iwan' => 7, 'jo' => 0, 'other' => 0]],
             'notes' => ['Payroll encryption: decided, not installed'],
         ];
         $html = Blade::render('<x-dl::build-board :build="$build" :library="$library" engines-url="/lib/p9-engines" />',
@@ -67,5 +74,8 @@ class BuildCatalogTest extends TestCase
         $this->assertStringContainsString('Payroll encryption: decided, not installed', $html);
         $this->assertStringContainsString('46 / 60', $html);
         $this->assertStringContainsString('/lib/p9-engines', $html);
+        $this->assertStringContainsString('Agent Iwan', $html);
+        $this->assertStringContainsString('no tracked work yet', $html);
+        $this->assertStringContainsString('class="is-iwan" style="height:120px"', $html);
     }
 }

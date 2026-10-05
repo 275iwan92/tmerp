@@ -49,7 +49,10 @@
     </section>
 
     {{-- Papan widget ($board['widgets']): menggantikan blok tetap di bawah; susunannya milik user (x-dl::widget-board). --}}
-    @if (array_key_exists('widgets', $d))
+    {{-- Slot terisi = bagian widget milik pemanggil (mis. papan developer di devlib.test); sambutan di atas tetap sama. --}}
+    @if (trim((string) $slot) !== '')
+        {{ $slot }}
+    @elseif (array_key_exists('widgets', $d))
         <x-dl::widget-board :widgets="$d['widgets']" :catalog="$d['catalog'] ?? []" :action-url="$d['board_url'] ?? null" :editable="$d['board_editable'] ?? true"
             :title="$d['kpi_title'] ?? null" :id="$id.'-board'" :source="$d['board_source'] ?? null" :periods="$d['board_periods'] ?? []" :period="$d['board_period'] ?? null"
             :dashboards="$d['board_dashboards'] ?? []" :dashboard="$d['board_dashboard'] ?? null" />

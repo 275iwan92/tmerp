@@ -4,7 +4,9 @@ namespace App\Support;
 
 use App\Support\DashboardDocs as Docs;
 use Carbon\CarbonImmutable;
+use Devlib\Components\Field\Slider;
 use Devlib\Components\Frame;
+use Devlib\Locale;
 
 // Data contoh opening screen (x-dl::dashboard) untuk situs DevLib (tanpa database). Deterministik: angka sama tiap muat.
 // Profil dipilih dari kode jabatan user (config devlib.dashboards); jabatan tanpa profil khusus = 'general'.
@@ -28,6 +30,21 @@ final class DashboardData
     public static function forLogin(string $login): array
     {
         return self::for(collect(config('devlib.users'))->firstWhere('login', $login) ?? []);
+    }
+
+    // Opening screen developer (user 2026-10-05): sambutan sama dengan profil lain; bagian widget = papan Build Progress
+    // (slot x-dl::dashboard), jadi tanpa KPI contoh.
+    public static function developer(array $user, array $build): array
+    {
+        $t = $build['totals'] ?? [];
+        $n = fn (string $k) => Locale::number((float) ($t[$k] ?? 0), 0);
+
+        return [
+            ...array_intersect_key(self::for($user), array_flip(['user', 'attendance', 'weather', 'jobdesc', 'sops'])),
+            'profile' => 'developer',
+            'profile_label' => 'Developer Dashboard',
+            'brief' => [['Screens on v2', $n('v2').' / '.$n('screens')], ['Waiting for your QC', $n('waiting_qc')], ['Locked', $n('locked')], ['Engines', $n('engines')]],
+        ];
     }
 
     public static function for(array $user): array
@@ -359,7 +376,7 @@ final class DashboardData
 
     private static function compact(float $v): string
     {
-        return \Devlib\Components\Field\Slider::compact($v);
+        return Slider::compact($v);
     }
 
     private static function workDaysLeft(CarbonImmutable $now): int

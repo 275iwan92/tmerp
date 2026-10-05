@@ -70,6 +70,19 @@ class BuildBoard extends DevlibComponent
         return $out;
     }
 
+    // Tinggi batang (px) grafik commit per hari; skala = hari tersibuk di jendela.
+    public function dayHeights(array $day): array
+    {
+        $max = max(1, ...array_map(fn ($d) => array_sum(array_diff_key($d, ['date' => 1])), $this->build['days'] ?? [[]]));
+
+        return array_map(fn ($n) => round($n / $max * 120, 1), array_diff_key($day, ['date' => 1]));
+    }
+
+    public function trackedCommits(): int
+    {
+        return array_sum(array_column($this->build['agents'] ?? [], 'commits'));
+    }
+
     /** @return list<string> pekerjaan terbuka: dihitung dari modul + catatan aplikasi */
     public function pending(): array
     {
@@ -109,6 +122,37 @@ class BuildBoard extends DevlibComponent
                 </div>
 
                 <div class="dl-bb__cols">
+                    @if (! empty($build['agents']))
+                        <x-dl::card title="When" :description="\Devlib\Lang::raw($T::text('commits per day, last').' '.count($build['days'] ?? []).' '.$T::text('days'))" class="dl-bb__wide">
+                            <x-slot:actions><span class="dl-bb__legend">@foreach ($build['agents'] as $a)<i class="is-{{ $a['key'] }}"></i>{{ $a['name'] }} @endforeach<i class="is-other"></i>{{ $T::text('Before tracking') }}</span></x-slot:actions>
+                            <div class="dl-bb__days">
+                                @foreach ($build['days'] ?? [] as $day)
+                                    <div class="dl-bb__day" title="{{ \Devlib\Locale::date($day['date']) }}: {{ array_sum(array_diff_key($day, ['date' => 1])) }}">
+                                        <span class="dl-bb__stack">@foreach ($dayHeights($day) as $who => $h)@if ($h > 0)<i class="is-{{ $who }}" style="height:{{ $h }}px"></i>@endif @endforeach</span>
+                                        <small>{{ substr($day['date'], 8, 2) }}</small>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <p class="dl-bb__note"><i class="fa-solid fa-circle-info"></i> {{ $T::text('Grey = work done before agent tracking started; git history cannot tell the two agents apart.') }}</p>
+                        </x-dl::card>
+                        <x-dl::card title="Work by agent">
+                            <div class="dl-bb__agents">
+                                @foreach ($build['agents'] as $a)
+                                    <div class="dl-bb__agent is-{{ $a['key'] }}">
+                                        <header><i class="is-{{ $a['key'] }}">{{ strtoupper(substr($a['key'], 0, 2)) }}</i><span><b>{{ $a['name'] }}</b><small>{{ $a['last'] ? $T::text('last active').' '.\Devlib\Locale::date($a['last']) : $T::text('no tracked work yet') }}</small></span></header>
+                                        <div class="dl-bb__nums dl-bb__nums--3">
+                                            <span><b>{{ $n($a['commits']) }}</b>{{ $T::text('Commits') }}</span>
+                                            <span><b>{{ $n($a['days']) }}</b>{{ $T::text('Days') }}</span>
+                                            <span><b>{{ $n($a['screens'] + $a['objects'] + $a['engines']) }}</b>{{ $T::text('Items touched') }}</span>
+                                        </div>
+                                        <small class="dl-bb__mix">{{ $n($a['screens']) }} {{ $T::text('screen files') }} · {{ $n($a['objects']) }} {{ $T::text('objects') }} · {{ $n($a['engines']) }} {{ $T::text('engines') }} · {{ $n($a['tests']) }} {{ $T::text('tests') }}</small>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="dl-bb__share"><span class="dl-bb__bar">@foreach ($build['agents'] as $a)<i class="is-{{ $a['key'] }}" style="width:{{ $pct($a['commits'], $trackedCommits() + ($build['untracked'] ?? 0)) }}%"></i>@endforeach</span>
+                                <small>{{ $T::text('Share of commits') }}: {{ $n($trackedCommits()) }} {{ $T::text('tracked') }} · {{ $n($build['untracked'] ?? 0) }} {{ $T::text('before tracking') }}</small></div>
+                        </x-dl::card>
+                    @endif
                     <x-dl::card title="Modules" class="dl-bb__wide">
                         <x-slot:actions><span class="dl-bb__legend"><i class="is-v2"></i>{{ $T::text('Built on v2') }} <i class="is-v1"></i>{{ $T::text('Still v1') }} <i class="is-no"></i>{{ $T::text('Not built') }}</span></x-slot:actions>
                         <table class="dl-bb__table">
