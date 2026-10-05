@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>DevLib - component page split ReadWrite | ReadOnly (proposal)</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Arial,sans-serif;font-size:13px;color:#1f2a44;background:#f4f6fb;padding:20px}
+  h1{font-size:18px;margin:0 0 4px}
+  p.sub{margin:0 0 14px;color:#5b6780}
+  .crumb{color:#5b6780;margin-bottom:8px}
+  .head{display:grid;grid-template-columns:230px 1fr 1fr;gap:0;font-weight:700}
+  .head div{padding:8px 14px}
+  .head .rw{background:#dcf5e4;color:#12743a;border-radius:10px 0 0 0}
+  .head .ro{background:#e3ebfb;color:#1f4fa8;border-radius:0 10px 0 0}
+  .row{display:grid;grid-template-columns:230px 1fr 1fr;background:#fff;border:1px solid #dbe1ee;border-top:0}
+  .row>div{padding:12px 14px;border-left:1px solid #eef1f7}
+  .row>div:first-child{border-left:0;background:#fafbfe}
+  .name{font-weight:700;font-size:14px}
+  .obj{display:inline-block;margin-top:5px;font-family:Consolas,monospace;font-size:11.5px;background:#2c3e69;color:#fff;padding:2px 8px;border-radius:6px}
+  .cls{display:block;margin-top:4px;font-family:Consolas,monospace;font-size:11px;color:#7a869c}
+  label{display:block;font-size:11px;color:#5b6780;margin-bottom:3px}
+  .in{border:1px solid #b9c6e0;border-radius:7px;padding:6px 10px;background:#fff;width:260px;display:flex;justify-content:space-between}
+  .in.r{justify-content:flex-end}
+  .in small{color:#7a869c}
+  .val{padding:6px 0;font-weight:600;width:260px}
+  .val.r{text-align:right}
+  .code{margin-top:6px;font-family:Consolas,monospace;font-size:11px;color:#5b6780}
+  .empty{color:#a7b0c2;font-style:italic;padding-top:18px}
+  .gap{display:inline-block;background:#fbe0e0;color:#a32222;font-size:11px;font-weight:700;padding:1px 8px;border-radius:10px}
+  .badge{display:inline-block;background:#dcf5e4;color:#12743a;font-weight:700;font-size:11px;padding:2px 10px;border-radius:10px}
+  .sec{margin:18px 0 6px;font-weight:700;color:#5b6780}
+  .stars{color:#f5b942;font-size:18px;letter-spacing:2px}
+</style>
+</head>
+<body>
+  <div class="crumb">Inputs &amp; Buttons › <b>2 · Numeric</b></div>
+  <h1>Contoh halaman komponen: layar dibelah dua — ReadWrite | ReadOnly</h1>
+  <p class="sub">Tiap baris = satu komponen. Kolom kiri = nama komponen + nama object. Bila satu mode tidak ada, sisinya dikosongkan.</p>
+
+  <div class="head"><div></div><div class="rw">ReadWrite — mode input</div><div class="ro">ReadOnly — mode display / show</div></div>
+
+  <div class="row">
+    <div><div class="name">Integer</div><span class="obj">x-dl::field.number</span><span class="cls">Devlib\Components\Field\Number</span></div>
+    <div><label>Qty Order</label><div class="in r">12.500</div><div class="code">&lt;x-dl::field.number name="qty" /&gt;</div></div>
+    <div><label>Qty Order</label><div class="val r">12.500</div><div class="code">&lt;x-dl::field.number name="qty" readonly /&gt; <span class="gap">belum didukung</span></div></div>
+  </div>
+  <div class="row">
+    <div><div class="name">Decimal</div><span class="obj">x-dl::field.decimal</span><span class="cls">Devlib\Components\Field\Decimal</span></div>
+    <div><label>Weight (kg)</label><div class="in r">1.250,50</div><div class="code">&lt;x-dl::field.decimal name="weight" /&gt;</div></div>
+    <div><label>Weight (kg)</label><div class="val r">1.250,50</div><div class="code">&lt;x-dl::field.decimal name="weight" readonly /&gt;</div></div>
+  </div>
+  <div class="row">
+    <div><div class="name">Money</div><span class="obj">x-dl::field.money</span><span class="cls">Devlib\Components\Field\Money</span></div>
+    <div><label>Unit Price</label><div class="in"><small>Rp</small><span>1.250.000,00</span></div><div class="code">&lt;x-dl::field.money name="price" /&gt;</div></div>
+    <div><label>Unit Price</label><div class="val r">Rp 1.250.000,00</div><div class="code">&lt;x-dl::field.money name="price" readonly /&gt;</div></div>
+  </div>
+  <div class="row">
+    <div><div class="name">Rating</div><span class="obj">x-dl::field.rating</span><span class="cls">Devlib\Components\Field\Rating</span></div>
+    <div><label>Quality</label><div class="stars">★★★★☆</div><div class="code">&lt;x-dl::field.rating name="quality" /&gt;</div></div>
+    <div><label>Quality</label><div class="stars">★★★★☆</div><div class="code">&lt;x-dl::field.rating name="quality" readonly /&gt;</div></div>
+  </div>
+
+  <div class="sec">Contoh komponen yang hanya punya satu mode (dari halaman 7 · Status)</div>
+  <div class="head"><div></div><div class="rw">ReadWrite — mode input</div><div class="ro">ReadOnly — mode display / show</div></div>
+  <div class="row">
+    <div><div class="name">Badge</div><span class="obj">x-dl::badge</span><span class="cls">Devlib\Components\Badge</span></div>
+    <div><div class="empty">(tidak ada mode input)</div></div>
+    <div><span class="badge">Confirmed</span><div class="code">&lt;x-dl::badge tone="done"&gt;Confirmed&lt;/x-dl::badge&gt;</div></div>
+  </div>
+</body>
+</html>
