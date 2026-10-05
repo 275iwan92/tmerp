@@ -455,3 +455,5 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .mp-file-preview{display:block;width:100%;height:70vh;border:1px solid var(--dl-border);border-radius:var(--dl-radius);background:var(--dl-surface);object-fit:contain}
 /* x-mp::sales.promise-book: pembungkus tanpa kotak, kartu-kartunya tetap anak langsung alur halaman */
 .mp-promise{display:contents}
+/* pembungkus objek form khusus tanpa kotak: isinya tetap anak langsung alur halaman */
+.mp-flat{display:contents}
