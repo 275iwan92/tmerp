@@ -36,11 +36,21 @@
       this.input = $(this.el, '.dl-input');
       this.caseBtn = $(this.el, '[data-dl-case]');
       if (this.caseBtn && this.input) {
-        let idx = 0;
-        this.caseBtn.addEventListener('click', () => { idx = (idx + 1) % 3; this.caseBtn.textContent = CASE_LABEL[CASES[idx]]; this.input.value = applyCase(this.input.value, CASES[idx]); });
-        this.input.addEventListener('input', () => { const p = this.input.selectionStart; this.input.value = applyCase(this.input.value, CASES[idx]); try { this.input.setSelectionRange(p, p); } catch (e) {} });
+        // raw = teks seperti diketik user, shown = raw setelah mode huruf. aa selalu mengembalikan raw (user 2026-10-05:
+        // setelah AA teks harus bisa kembali ke bentuk semula). Ketikan baru disisipkan ke raw lewat awalan / akhiran yang sama.
+        let idx = 0, raw = this.input.value, shown = raw;
+        const show = () => { shown = applyCase(raw, CASES[idx]); this.input.value = shown; this.input.dispatchEvent(new Event('dl:grow')); };
+        this.caseBtn.addEventListener('click', () => { if (this.input.value !== shown) raw = this.input.value; idx = (idx + 1) % 3; this.caseBtn.textContent = CASE_LABEL[CASES[idx]]; show(); });
+        this.input.addEventListener('input', () => {
+          const v = this.input.value, p = this.input.selectionStart, max = Math.min(shown.length, v.length);
+          let a = 0; while (a < max && shown[a] === v[a]) a++;
+          let b = 0; while (b < max - a && shown[shown.length - 1 - b] === v[v.length - 1 - b]) b++;
+          raw = raw.slice(0, a) + v.slice(a, v.length - b) + raw.slice(raw.length - b);
+          show(); try { this.input.setSelectionRange(p, p); } catch (e) {}
+        });
       }
-      $$(this.el, '[data-dl-autogrow]').forEach(t => { const g = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }; t.addEventListener('input', g); g(); });
+      // Tinggi textarea mengikuti isi: saat mengetik, saat mode huruf berganti (huruf besar lebih lebar) dan saat lebar berubah.
+      $$(this.el, '[data-dl-autogrow]').forEach(t => { const g = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }; ['input', 'dl:grow'].forEach(e => t.addEventListener(e, g)); if (window.ResizeObserver) { let w = 0; new ResizeObserver(() => { if (t.clientWidth !== w) { w = t.clientWidth; g(); } }).observe(t); } g(); });
 
       this.eye = $(this.el, '[data-dl-eye]');
       if (this.eye) this.eye.addEventListener('click', () => { const show = this.input.type === 'password'; this.input.type = show ? 'text' : 'password'; this.eye.innerHTML = `<i class="fa-solid fa-eye${show ? '-slash' : ''}"></i>`; });
