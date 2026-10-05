@@ -32,7 +32,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 3 fase, satu kode. Pegangan lengkap untuk user: `docs/pegangan_fase_tmerp.html`.
 | Fase | Situs | Isi | Database |
 |---|---|---|---|
-| 1 DevLib | devlib.test (folder `devlib/`, library `packages/devlib`) | objek komponen `x-dl::*` | tanpa DB bisnis |
+| 1 DevLib | devlib.test (folder `devlib/`, library `packages/devlib`) | objek komponen `x-dl::*` | tanpa DB bisnis; database sendiri **`devlib`** (user 2026-10-05) untuk login (`sec_user`, terpisah dari mockup.test; salin akun: `php artisan devlib:copy-user <login>` di folder `devlib/`) dan nanti daftar objek / engine / rating. Migrasi devlib: `php artisan migrate --path=database/migrations/<berkas>` (jangan jalankan 3 migrasi bawaan Laravel). Objek `x-dl::*` tetap tanpa database. |
 | 2 Build & UAT | **mockup.test = folder tmerp yang SAMA** | layar v2 dari objek DevLib + alur bisnis diuji | **semua `ddt*`** (dummy) via `.env.mockup` |
 | 3 Live | tmerp.test | kode yang sama | `tm2*` real + migrasi `tm2old` |
 - `bootstrap/app.php` memuat `.env.mockup` bila host = mockup.test (DB_* -> `ddt*`, `DB_OLD=tm2old` dipakai bersama, `APP_UI=v2`, pengaturan `UAT_*`). Artisan situs dummy: `php artisan ... --env=mockup`. **Jangan pernah menulis ke `tm2*` saat kerja UAT/mockup.**

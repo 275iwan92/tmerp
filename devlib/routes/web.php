@@ -2,9 +2,11 @@
 
 use App\Support\Catalog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
-// Situs DevLib tanpa database: sesi file + akun dari config/devlib.php.
+// Situs DevLib: sesi file; akun dari database devlib (sec_user) + akun contoh di config/devlib.php.
 
 Route::get('/login', fn () => view('login', [
     'variant' => config('devlib.login_variant'),
@@ -20,7 +22,19 @@ Route::post('/login', function (Request $r) {
         return back()->withInput(['login' => $login])->with('login_error', 'empty');
     }
 
-    $user = collect(config('devlib.users'))->first(fn ($u) => strcasecmp($u['login'], $login) === 0 && hash_equals($u['password'], $password));
+    // Akun sungguhan = tabel sec_user di database devlib (terpisah dari mockup.test, user 2026-10-05).
+    // Akun contoh di config/devlib.php tetap ada untuk memperagakan dashboard per jabatan.
+    $user = null;
+    try {
+        $row = DB::table('sec_user')->where('login', $login)->where('activate', true)->first();
+        if ($row && Hash::check($password, $row->pswd)) {
+            $user = ['login' => $row->login, 'password' => '', 'name' => $row->name, 'email' => $row->email, 'role' => $row->role,
+                'position' => $row->role, 'developer' => (bool) $row->developer, 'lang_code' => $row->lang_code];
+        }
+    } catch (\Throwable) {
+        // database devlib belum ada / mati: akun contoh masih bisa masuk
+    }
+    $user ??= collect(config('devlib.users'))->first(fn ($u) => strcasecmp($u['login'], $login) === 0 && hash_equals($u['password'], $password));
 
     if (! $user) {
         return back()->withInput(['login' => $login])->with('login_error', 'wrong');
