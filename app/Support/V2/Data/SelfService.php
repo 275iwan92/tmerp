@@ -20,6 +20,7 @@ use App\Models\Master\SopDocument;
 use App\Models\Sys\SecUser;
 use App\Services\Hrm\EmployeeBankService;
 use App\Services\Security\SecurityRecoveryService;
+use App\Support\Branding\Brand;
 use Carbon\Carbon;
 use Devlib\Locale;
 use Illuminate\Http\Request;
@@ -544,6 +545,124 @@ final class SelfService
         ]);
 
         return null;
+    }
+
+    // Isi objek form khusus x-mp::hrm.self-service (Edit profile): satu array untuk kesebelas bagian + pop-up pengajuan.
+    // 'linked' false = akun belum terhubung ke pegawai, hanya bagian Security yang ada. Semua teks pilihan sudah diterjemahkan
+    // dan semua nilai sudah diformat di sini; objeknya hanya menampilkan. Hanya membaca.
+    public static function desk(SecUser $u, string $home): array
+    {
+        $e = self::employee($u);
+        $tab = self::tab(request('tab'));
+        $sec = self::securityDefaults($u);
+        $tabs = $e ? [
+            'profile' => ['My Data', 'fa-user'], 'jobdesc' => ['Job Description', 'fa-clipboard-list'], 'sop' => ['SOP', 'fa-book'],
+            'family' => ['Family & Status', 'fa-people-roof'], 'documents' => ['Documents & Education', 'fa-file-lines'],
+            'leave' => ['Leave / Sick / Permit', 'fa-calendar-days'], 'outing' => ['Out Permit', 'fa-door-open'], 'swap' => ['Shift Swap', 'fa-arrows-rotate'],
+            'schedule' => ['My Schedule', 'fa-calendar'], 'badge' => ['ID Card', 'fa-id-badge'], 'security' => ['Security', 'fa-shield-halved'],
+        ] : ['security' => ['Security', 'fa-shield-halved']];
+        $desk = [
+            'home' => $home, 'linked' => (bool) $e, 'tabs' => $tabs, 'tab' => isset($tabs[$tab]) ? $tab : 'security',
+            'flash' => session('v2_flash'), 'error' => ($errors = session('errors')) && $errors->any() ? $errors->first() : null,
+            'security' => [
+                'accountAction' => route('v2.profile.account'), 'passwordAction' => route('v2.profile.password'), 'recoveryAction' => route('v2.profile.security'),
+                'emailUrl' => route('v2.account.email'), 'name' => old('name', $u->name), 'email' => old('email', $u->email), 'phone' => old('phone', $u->phone),
+                'verified' => $u->email_verified ? t('Verified') : t('Not verified'),
+                'setup' => $sec['setup_at'] ? t('Last set').' '.Locale::dt($sec['setup_at']) : null,
+                'birthDate' => old('birth_date', $sec['birth_date']), 'motherName' => old('mother_name'), 'recoveryPhone' => old('phone', $sec['phone']),
+                'questionId' => old('question_id', $sec['question_id']), 'questions' => $sec['questions'], 'answer' => old('answer'),
+            ],
+        ];
+        if (! $e) {
+            return $desk;
+        }
+        $id = $e->employee_id;
+        $balance = self::balance($id);
+        $fields = self::correctableFields($e);
+        $bank = self::primaryBank($id);
+        $roster = self::upcomingRoster($id);
+        $sops = self::sopDocuments($e);
+        $izinLocked = self::izinLocked($id);
+        $pick = fn (array $keys) => array_map(fn (string $k) => [$fields[$k][0], $fields[$k][1] ?: '—'], $keys);
+        $targetId = (int) old('target_employee_id', request('colleague'));
+        $targetRoster = $targetId ? self::upcomingRoster($targetId) : collect();
+        $rosterOptions = fn ($list) => $list->mapWithKeys(fn ($r) => [$r->roster_id => self::rosterLabel($r)])->all();
+
+        return $desk + [
+            'profile' => [
+                'title' => $e->full_name.' · '.$e->employee_code,
+                'description' => ($e->position?->position_name ?? '—').' · '.($e->position?->department?->department_name ?? '—'),
+                'stats' => [
+                    ['Leave Left', (string) $balance->remainingDays().' '.t('days'), 'success', t('this year')],
+                    ['Work Status', $e->work_status === 'WORKING' ? t('Active') : (string) $e->work_status, 'info', null],
+                    ['Pending Requests', (string) (self::corrections($id)->where('status', 'PENDING')->count() + self::leaveRequests($id)->where('status', 'PENDING')->count()), 'warn', t('corrections + leave')],
+                ],
+                'main' => $pick(['Nama Lengkap', 'Tanggal Lahir', 'NIK KTP', 'Agama', 'Telepon / WA']), 'position' => $e->position?->position_name ?: '—',
+                'address' => $pick(['Alamat KTP', 'Alamat Domisili', 'No. BPJS Kesehatan', 'No. BPJS Ketenagakerjaan', 'Kontak Darurat']),
+                'corrections' => self::corrections($id)->map(fn ($c) => ['field' => t($fields[$c->field_name][0] ?? $c->field_name), 'old' => $c->old_value, 'new' => $c->new_value, 'date' => Locale::d($c->requested_at), 'status' => t((string) $c->status)])->all(),
+            ],
+            'jobdesc' => ['position' => $e->position?->position_name ?? '—', 'text' => $e->position?->job_description ?: null],
+            'sop' => [
+                'count' => $sops->count().' '.t('documents'),
+                'rows' => $sops->map(fn ($d) => ['code' => $d->sop_code, 'title' => $d->title, 'rev' => $d->revision, 'dept' => $d->department_id ? $d->department?->department_name : t('All departments'), 'since' => Locale::d($d->effective_date) ?? '—'])->all(),
+                'docs' => $sops->map(fn ($d) => ['id' => $d->sop_id, 'code' => $d->sop_code, 'title' => $d->title,
+                    'line' => $d->sop_code.' · Rev '.$d->revision.($d->effective_date ? ' · '.t('effective').' '.Locale::d($d->effective_date) : ''), 'purpose' => $d->purpose ?: null, 'content' => $d->content ?: '—'])->values()->all(),
+            ],
+            'family' => [
+                'rows' => $e->families->map(fn ($f) => ['rel' => $f->relation, 'name' => $f->full_name, 'birth' => Locale::d($f->birth_date) ?? '—', 'status' => $f->is_deceased ? t('Deceased').' — '.Locale::d($f->deceased_date) : t('Dependant')])->all(),
+                'bank' => $bank ? trim($bank->bank_name).' · '.$bank->account_no.' · a.n. '.$bank->account_holder_name : t('Cash'),
+                'requests' => self::familyRequests($id)->map(fn ($f) => ['type' => t(['LAHIR' => 'Birth', 'MENINGGAL' => 'Death', 'PASANGAN' => 'Spouse'][$f->request_type] ?? $f->request_type), 'name' => $f->full_name, 'date' => Locale::d($f->requested_at), 'status' => t((string) $f->status)])->all(),
+                'alive' => $e->families->where('is_deceased', false)->mapWithKeys(fn ($f) => [$f->family_id => $f->full_name.' ('.$f->relation.')'])->all(),
+                'action' => route('v2.profile.family'),
+            ],
+            'documents' => [
+                'rows' => collect(self::DOC_TYPES)->map(function ($label, $type) use ($e) {
+                    $d = $e->documents->firstWhere('document_type', $type);
+
+                    return ['doc' => t($label), 'no' => $d ? ($d->document_no ?: t('Uploaded')) : t('No file yet'), 'valid' => $d?->expiry_date ? Locale::d($d->expiry_date) : '—', 'lock' => $d ? ($d->uploaded_by_role === 'HR' ? t('HR (locked)') : t('Me')) : '—'];
+                })->values()->all(),
+                'educations' => $e->educations->map(fn ($ed) => ['act' => $ed->activity_name, 'date' => Locale::d($ed->activity_date), 'cost' => (float) $ed->cost, 'fund' => t(['PRIBADI' => 'Personal', 'PERUSAHAAN' => 'Company', 'SHARING' => 'Shared'][$ed->funded_by] ?? $ed->funded_by)])->all(),
+                'types' => array_map('t', self::DOC_TYPES), 'type' => old('document_type'), 'action' => route('v2.profile.document'), 'educationAction' => route('v2.profile.education'),
+                'funds' => ['PRIBADI' => t('Personal'), 'PERUSAHAAN' => t('Company'), 'SHARING' => t('Shared')],
+            ],
+            'leave' => [
+                'title' => t('Annual Leave Balance').' — '.now()->year, 'balance' => [(string) $balance->entitlement_days, (string) $balance->used_days, (string) $balance->remainingDays()],
+                'action' => route('v2.profile.leave'), 'locked' => $izinLocked,
+                'types' => ['CUTI' => t('Annual Leave (paid)'), 'SAKIT' => t('Sick'),
+                    'IZIN' => t('Unpaid Leave').($izinLocked ? ' — '.t('locked, leave left').' '.$balance->remainingDays().' '.t('days') : ''),
+                    'CUTI_KHUSUS' => t('Special Leave (wedding, bereavement, ...)')],
+                'natures' => ['terjadwal' => t('Planned (min. H-7)'), 'mendadak' => t('Sudden (emergency / misfortune)')],
+                'categories' => ['MUSIBAH' => t('Family misfortune / accident / disaster'), 'INSTANSI_RESMI' => t('Official government institution matter'), 'KEPENGURUSAN_MUSIBAH' => t('Bereavement / misfortune arrangements')],
+                'relations' => ['DIRI_SENDIRI' => t('Myself'), 'SUAMI_ISTRI' => t('Spouse'), 'ANAK_KANDUNG' => t('Own child'), 'ORANG_TUA_KANDUNG' => t('Own parent'), 'MERTUA' => t('Parent-in-law')],
+                'institutions' => ['BPJS' => 'BPJS', 'RUMAH_SAKIT' => t('Hospital'), 'SEKOLAH' => t('School'), 'KEPOLISIAN' => t('Police'), 'INSTANSI_PEMERINTAH_LAINNYA' => t('Other government institution')],
+                'events' => ['MENIKAH' => t('Employee wedding'), 'MENIKAHKAN_KHITAN_ANAK' => t('Child wedding / circumcision'), 'ISTRI_MELAHIRKAN' => t('Wife giving birth / miscarriage'), 'KELUARGA_MENINGGAL' => t('Death of immediate family'), 'IBADAH' => t('Religious pilgrimage')],
+                'old' => ['leave_type' => old('leave_type', 'CUTI'), 'date_from' => old('date_from'), 'date_to' => old('date_to'), 'sakit_lapor_jam' => old('sakit_lapor_jam'), 'sakit_via_jkn' => (bool) old('sakit_via_jkn'),
+                    'izin_sifat' => old('izin_sifat', 'terjadwal'), 'izin_category' => old('izin_category', 'MUSIBAH'), 'izin_relasi_pemohon' => old('izin_relasi_pemohon', 'DIRI_SENDIRI'),
+                    'izin_instansi_asal' => old('izin_instansi_asal', 'BPJS'), 'khusus_event_type' => old('khusus_event_type', 'MENIKAH'), 'reason' => old('reason')],
+                'rows' => self::leaveRequests($id)->map(fn ($lr) => ['type' => t(['CUTI' => 'Annual leave', 'SAKIT' => 'Sick', 'IZIN' => 'Unpaid leave', 'CUTI_KHUSUS' => 'Special leave'][$lr->leave_type] ?? $lr->leave_type), 'dates' => Locale::d($lr->date_from).' – '.Locale::d($lr->date_to), 'days' => (int) $lr->total_days, 'pay' => $lr->is_paid ? t('Paid') : t('Unpaid'), 'status' => t((string) $lr->status)])->all(),
+            ],
+            'outing' => [
+                'action' => route('v2.profile.outing'), 'old' => ['permit_date' => old('permit_date'), 'out_time' => old('out_time'), 'return_time' => old('return_time'), 'reason' => old('reason')],
+                'rows' => self::outPermits($id)->map(fn ($op) => ['date' => Locale::d($op->permit_date), 'out' => substr((string) $op->planned_out_time, 0, 5), 'back' => $op->planned_return_time ? substr((string) $op->planned_return_time, 0, 5) : '—', 'status' => t((string) $op->status)])->all(),
+            ],
+            'swap' => [
+                'action' => route('v2.profile.swap'), 'colleagues' => self::swapColleagues($e)->pluck('full_name', 'employee_id')->all(), 'targetId' => $targetId,
+                'mine' => $rosterOptions($roster), 'theirs' => $rosterOptions($targetRoster),
+                'theirsHint' => $targetId ? t('Choose the partner\'s shift...') : t('Choose a partner first'),
+                'old' => ['requester_roster_id' => old('requester_roster_id'), 'target_roster_id' => old('target_roster_id'), 'reason' => old('reason')],
+                'rows' => self::swapRequests($id)->map(fn ($s) => ['mine' => Locale::d($s->requesterRoster?->roster_date) ?? '—', 'with' => $s->targetEmployee?->full_name, 'partner' => t((string) $s->partner_status), 'ppic' => t((string) $s->ppic_status)])->all(),
+            ],
+            'schedule' => $roster->map(fn ($s) => ['date' => Locale::d($s->roster_date), 'shift' => $s->shift?->shift_name, 'ot' => $s->is_overtime ? t('Yes') : '—', 'station' => $s->machine?->machine_name ?? '—'])->all(),
+            'badge' => ['name' => (string) $e->full_name, 'position' => $e->position?->position_name, 'company' => Brand::name(), 'code' => $e->employee_code,
+                'department' => $e->position?->department?->department_name ?: '—', 'action' => route('v2.profile.badge')],
+            'requests' => [
+                'correctionAction' => route('v2.profile.correction'), 'resignAction' => route('v2.profile.resign'),
+                'fields' => collect($fields)->except(EmpCorrectionRequest::FIELD_BANK)->map(fn ($f) => t($f[0]).' — '.($f[1] ?: '—'))->all(), 'field' => old('field_name'),
+                'newValue' => old('new_value'), 'reason' => old('reason'), 'effectiveDate' => old('effective_date'),
+                'bankField' => EmpCorrectionRequest::FIELD_BANK, 'bankCurrent' => $fields[EmpCorrectionRequest::FIELD_BANK][1], 'banks' => self::bankOptions(),
+                'bankId' => old('bank_supplier_id', $bank?->bank_supplier_id), 'bankNo' => old('bank_account_no', $bank?->account_no), 'bankHolder' => old('bank_holder', $bank?->account_holder_name),
+            ],
+        ];
     }
 
     // ============== Security: pertanyaan pemulihan akun (sama dengan layar Setup Keamanan saat login) ==============

@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-05 11:13",
+    "generated": "2026-10-05 14:37",
     "database": "ddtsys",
     "totals": {
         "objects": 141,
@@ -26,7 +26,7 @@
         "tests": 89,
         "dictionary": 9689,
         "languages": 4,
-        "commits": "1093",
+        "commits": "1105",
         "since": "2026-08-06"
     },
     "modules": [
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 11,
+            "commits": 23,
             "days": 1,
             "last": "2026-10-05",
-            "screens": 43,
-            "objects": 5,
+            "screens": 57,
+            "objects": 7,
             "engines": 0,
-            "tests": 1
+            "tests": 2
         },
         {
             "key": "jo",
@@ -257,7 +257,7 @@
         },
         {
             "date": "2026-10-05",
-            "iwan": 11,
+            "iwan": 23,
             "jo": 0,
             "other": 2
         }
@@ -319,7 +319,7 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 11,
+            "iwan": 23,
             "jo": 0,
             "other": 2
         }
@@ -388,8 +388,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
@@ -751,8 +751,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "REPORT",
@@ -971,8 +971,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "FORM",
@@ -1026,8 +1026,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
@@ -1180,8 +1180,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
@@ -1213,8 +1213,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-01",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "FORM",
@@ -1400,8 +1400,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-02",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "FORM",
@@ -1411,8 +1411,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-10-02",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
@@ -1510,8 +1510,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-29",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "REPORT",
@@ -1708,8 +1708,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-29",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
@@ -1862,8 +1862,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-29",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
@@ -3446,8 +3446,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-23",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -3512,8 +3512,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-09-24",
-            "changed_by": null
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
