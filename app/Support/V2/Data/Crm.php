@@ -186,4 +186,59 @@ final class Crm
         return $rows->map(fn ($r) => ['product' => $names[$r['product_id']]->product_name ?? '#'.$r['product_id'], 'code' => $names[$r['product_id']]->product_code ?? '',
             'n' => $r['n'], 'qty' => $r['qty'], 'unit' => $r['unit'], 'last' => Locale::d(substr($r['last'], 0, 10))])->values()->all();
     }
+
+    // Isi objek form khusus x-mp::sales.customer-card (halaman satu customer di Customer 360): kepala + angka kunci, lalu tab
+    // Overview / Activities / Quotations / Orders / Deliveries / Complaints / Contacts. Hanya membaca. 'price' = boleh melihat
+    // nilai rupiah (disaring di server oleh profile()).
+    public static function card(CustCustomer $c, string $home): array
+    {
+        $p = self::profile($c);
+        $s = $p['summary'];
+        $fu = $s['next_followup'];
+        $actUrl = route('v2.screen', 'crm-activity');
+        $cmpUrl = route('v2.screen', 'crm-complaint');
+        $top = [
+            ['First Order', Locale::d($s['first_order']) ?? '—', ['tm2sdi.co_order_legacy.co_date', 'tm2sdi.co_order.co_date']],
+            ['Last Order', Locale::d($s['last_order']) ?? '—', ['tm2sdi.co_order_legacy.co_date', 'tm2sdi.co_order.co_date']],
+            ['Orders (all time)', Locale::number($s['orders_total']), ['tm2sdi.co_order_legacy', 'tm2sdi.co_order']],
+        ];
+        if ($p['price']) {
+            $top[] = ['Order Value (all time)', Locale::money($s['lifetime']), ['tm2sdi.co_order_legacy.grand_total', 'tm2sdi.co_order']];
+        }
+        $top[] = ['Last Contact', Locale::d($s['last_contact']) ?? '—', ['tm2sdi.crm_activity.activity_date']];
+
+        return [
+            'home' => $home, 'price' => (bool) $p['price'], 'title' => (string) $c->customer_name,
+            'description' => implode(' · ', array_filter([$c->customer_code, $c->parent_group, $c->industry_category, t($s['segment'])])),
+            'buttons' => [
+                ['fa-phone-volume', '+ Activity', $actUrl.'?new=1&customer_id='.$c->id_customer],
+                ['fa-triangle-exclamation', '+ Complaint', $cmpUrl.'?new=1&customer_id='.$c->id_customer],
+                ['fa-building', 'Master Customer', route('master.customer').'?open='.$c->id_customer],
+                ['back', 'Back', $home],
+            ],
+            'facts' => [$top, [
+                ['Open Quotations', Locale::number($s['open_quo']), ['tm2sdi.quo_quotation (PUBLISHED, not WIN / LOST)']],
+                ['Open Orders', Locale::number($s['open_co']), ['tm2sdi.co_order (Draft / Submitted / Confirmed)']],
+                ['Open Complaints', Locale::number($s['open_complaints']), ['tm2sdi.crm_complaint (Confirmed, not Closed)']],
+                ['Open Follow-ups', Locale::number($s['open_followups']), ['tm2sdi.crm_activity (next_done = 0)']],
+                ['Next Follow-up', $fu ? Locale::d($fu['next_date']).' · '.$fu['due'].($fu['next'] ? ' · '.$fu['next'] : '') : '—', ['tm2sdi.crm_activity.next_action_date']],
+            ]],
+            'chart' => $p['chart'], 'products' => $p['products'],
+            'profile' => [
+                [4, [['Contact', trim(($c->mr_ms ? $c->mr_ms.' ' : '').$c->contact_name) ?: '—', ['tm2mst.cust_customer.contact_name']],
+                    ['Phone', $c->phone ?: '—', ['tm2mst.cust_customer.phone']],
+                    ['E-mail', $c->email ?: '—', ['tm2mst.cust_customer.email']],
+                    ['Payment Term', $c->paymentTerm?->term_label ?? $c->payment_term ?? '—', ['tm2mst.cust_customer.payment_term']]]],
+                [2, [['Address', $c->default_address ?: '—', ['tm2mst.cust_customer.default_address']],
+                    ['Main Product', implode(' · ', array_filter([$c->primary_product, $c->secondary_product])) ?: '—', ['tm2mst.cust_customer.primary_product']]]],
+                [2, [['Packing Instruction', $c->packing_instruction ?: '—', ['tm2mst.cust_customer.packing_instruction']],
+                    ['Quality Notes', $c->quality_notes ?: '—', ['tm2mst.cust_customer.quality_notes']]]],
+            ],
+            'activities' => $p['activities'], 'activityUrl' => $actUrl.'?id={id}',
+            'quotations' => $p['quotations'], 'quotationUrl' => route('v2.screen', 'quotation').'?id={id}',
+            'orders' => $p['orders'], 'deliveries' => $p['deliveries'],
+            'complaints' => $p['complaints'], 'complaintUrl' => $cmpUrl.'?id={id}', 'qaTones' => CrmComplaints::QA_TONES, 'complaintTones' => CrmComplaints::STATUS_TONES,
+            'contacts' => $p['contacts'], 'branches' => $p['branches'],
+        ];
+    }
 }
