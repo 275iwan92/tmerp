@@ -62,6 +62,19 @@
       });
       // Mouse: klik = sel aktif, drag = rentang, pegangan isi = AutoFill ke bawah.
       this.table.addEventListener('mousedown', e => {
+        const spin = e.target.closest('[data-s-spin]');
+        if (spin) {
+          e.preventDefault(); const td = spin.closest('td'), r = +td.dataset.r, c = +td.dataset.c, col = this.cols[c], cur = this.data[r][col.key];
+          let v = (typeof cur === 'number' ? cur : (col.min ?? 0) - (+spin.dataset.sSpin) * (col.step || 1)) + (+spin.dataset.sSpin) * (col.step || 1);
+          if (col.min != null) v = Math.max(col.min, v); if (col.max != null) v = Math.min(col.max, v);
+          this.anchor = null; this.cur = {r, c}; if (v !== cur) this.apply([{r, k: col.key, v}]); else this.render(); this.wrap.focus(); return;
+        }
+        const dec = e.target.closest('[data-s-dec]');
+        if (dec) {
+          e.preventDefault(); const td = dec.closest('td'), c = +td.dataset.c, col = this.cols[c], steps = this.decSteps(col);
+          col._dv = steps[(steps.indexOf(col._dv === undefined ? (col.decimals ?? 2) : col._dv) + 1) % steps.length];
+          this.anchor = null; this.cur = {r: +td.dataset.r, c}; this.render(); this.wrap.focus(); if (col._dv === null) this.openPick(); return;
+        }
         const cal = e.target.closest('[data-s-cal]'); if (cal) { e.preventDefault(); const td = cal.closest('td'); this.anchor = null; this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.render(); this.wrap.focus(); this.openPick(); return; }
         const fh = e.target.closest('[data-s-fill]'); if (fh) { e.preventDefault(); this.fill = {...this.rng(), to: this.rng().r1}; return; }
         const rs = e.target.closest('[data-s-rowsel]'); if (rs) { this.anchor = {r: +rs.dataset.sRowsel, c: 0}; this.cur = {r: +rs.dataset.sRowsel, c: this.cols.length - 1}; this.render(); this.wrap.focus(); return; }
@@ -170,14 +183,22 @@
     firstEditable() { const i = this.cols.findIndex(c => !c.readonly); return i < 0 ? 0 : i; }
 
     num(c) {
-      return c.type === 'number' || c.type === 'money';
+      return c.type === 'number' || c.type === 'money' || c.type === 'integer';
     }
+
+    // Sel angka mengikuti objek field (user 2026-10-05): bilangan bulat = spinner (x-dl::field.number),
+    // desimal / uang = tombol ,00 (x-dl::field.decimal / field.money: 0 / ,00 / ,0000 / kalkulator).
+    int(c) { return c.type === 'integer' || (c.type === 'number' && !c.decimals); }
+    decSteps(c) { return [...new Set([0, 2, 4, c.decimals ?? 2])].sort((a, b) => a - b).concat([null]); }
+    decView(c) { return c._dv === undefined ? (c.decimals ?? (c.type === 'money' ? 0 : null)) : c._dv; }
+    decLabel(c) { const d = c._dv === undefined ? (c.decimals ?? 2) : c._dv; return d === null ? '<i class="fa-solid fa-calculator"></i>' : d === 0 ? '0' : NUM.dec + '0'.repeat(d); }
 
     isText(c) { return c.type === 'text'; }
 
     // decimals = jumlah digit di belakang koma yang selalu tampil (18.450,00); tanpa decimals = apa adanya.
     numText(c, v) {
-      return c.decimals != null ? fmt.number(v, c.decimals) : fmt.num(v, 10);
+      const d = this.int(c) ? null : this.decView(c);
+      return d != null ? fmt.number(v, d) : c.decimals != null ? fmt.number(v, c.decimals) : fmt.num(v, 10);
     }
 
     // Tanggal diketik ala sel Excel -> ISO; satu objek tanggal DevLib (DlDate) untuk ketik & tampil.
@@ -217,7 +238,7 @@
     render() {
       const R = this.rng();
       this.table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
-        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${this.ro(c, r) ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''} ${c.emptyWarn && (v === '' || v == null) ? 'is-empty' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !this.ro(c, r) ? `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${esc(T(c.type === 'date' ? 's_tip_date' : c.type === 'time' ? 's_tip_time' : 's_tip_calc'))}"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : c.type === 'time' ? 'fa-regular fa-clock' : 'fa-solid fa-calculator'}"></i></button>` : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="' + esc(T('s_fill_tip')) + '"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${this.isPick(c) ? 'is-pick' : ''} ${this.num(c) && !this.int(c) ? 'is-dec' : ''} ${this.ro(c, r) ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''} ${c.emptyWarn && (v === '' || v == null) ? 'is-empty' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${this.isPick(c) && !this.ro(c, r) ? (this.int(c) ? `<span class="dl-sheet__spin"><button type="button" data-s-spin="1" tabindex="-1">▲</button><button type="button" data-s-spin="-1" tabindex="-1">▼</button></span>` : this.num(c) ? `<button type="button" class="dl-sheet__cal dl-sheet__dec" data-s-dec tabindex="-1" title="${esc(T('nt_tip'))}">${this.decLabel(c)}</button>` : `<button type="button" class="dl-sheet__cal" data-s-cal tabindex="-1" title="${esc(T(c.type === 'date' ? 's_tip_date' : 's_tip_time'))}"><i class="${c.type === 'date' ? 'fa-regular fa-calendar' : 'fa-regular fa-clock'}"></i></button>`) : ''}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="' + esc(T('s_fill_tip')) + '"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
       const changed = this.changes(), info = $(this.el, '[data-s-info]'), sv = $(this.el, '[data-s-save]');
       sv.disabled = !changed.length;
       if (this.lookup) {
