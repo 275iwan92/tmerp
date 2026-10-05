@@ -3,8 +3,12 @@
 namespace App\Support\V2\Data;
 
 use App\Models\Inventory\RmBooking;
+use App\Models\Inventory\RmBookingD;
 use App\Models\Pur\PrLine;
+use App\Models\Sdi\CoOrder;
+use App\Models\Sys\SysConstant;
 use App\Services\Planning\MaterialPlanningEngine;
+use App\Support\V2\Print\PrintDocs;
 use Carbon\CarbonImmutable;
 use Devlib\Locale;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +30,78 @@ final class MaterialPlanning
 
     public const COVER_TONES = ['Need layout' => 'danger', 'Need item' => 'danger', 'Short' => 'danger', 'Late' => 'warn', 'Waiting PO/PR' => 'info',
         'Covered by stock' => 'success', 'Booked' => 'success'];
+
+    // Isi objek form khusus x-mp::planning.material-plan (layar Material Planning / MRP). $m = baris bahan yang dibuka (null =
+    // daftar). Daftar: tombol pintas, peringatan bahan tanpa item, kartu Create PR; rinci: kepala bahan. Grid diserahkan layar (slot).
+    public static function planDesk(string $home, array $rows, ?array $m): array
+    {
+        if ($m) {
+            return ['mode' => 'detail', 'home' => $home, 'code' => (string) $m['code'], 'status' => $m['status'], 'statusTone' => self::COVER_TONES[$m['status']] ?? 'neutral',
+                'material' => (string) $m['material'], 'facts' => [
+                    ['Needed', Locale::number($m['need'], 2).' '.$m['uom']],
+                    ['Short', Locale::number($m['short'], 2).' '.$m['uom']],
+                    ['First Needed', Locale::d($m['first_need']) ?? '—'],
+                    ['Order By (latest)', (Locale::d($m['order_by']) ?? '—').' · '.t('lead').' '.$m['lead'].' '.t('working days')],
+                ]];
+        }
+        $short = collect($rows)->where('short', '>', 0)->where('id', '>', 0);
+        $noItem = collect($rows)->whereIn('status', ['Need item', 'Need layout'])->count();
+
+        return ['mode' => 'list', 'home' => $home, 'runAction' => route('v2.planning.run-all'),
+            'links' => [
+                ['fa-boxes-packing', 'Material Booking', route('v2.screen', 'material-booking')],
+                ['fa-calendar-week', 'Demand Forecast (MPS)', route('v2.screen', 'demand-forecast')],
+                ['fa-fill-drip', 'Material Usage Standard', route('v2.screen', 'usage-standard')],
+                ['fa-truck-clock', 'Purchase Lead Time', route('v2.screen', 'purchase-lead-time')],
+            ],
+            'warning' => $noItem > 0 ? str_replace(':n', (string) $noItem, t(':n material needs have no stock item yet (Master Product only has the specification) or no layout. Pick the item in Material Booking; until then they cannot be checked against stock or ordered.')) : null,
+            'pr' => ['action' => route('v2.planning.create-pr'), 'picked' => $short->pluck('id')->all(),
+                'options' => $short->mapWithKeys(fn ($r) => [$r['id'] => $r['material'].' · '.t('short').' '.Locale::number($r['short'], 2).' '.$r['uom'].' · '.t('order by').' '.(Locale::d($r['order_by']) ?? '—').' · '.$r['supplier']])->all()],
+        ];
+    }
+
+    // Isi objek form khusus x-mp::planning.material-booking. $co = Customer Order yang dibuka (null = daftar). Rinci: kepala
+    // booking + tombol menurut status (Recalculate / Confirm / Back to Draft), pesan keadaan, kartu Pick Item. Grid = slot.
+    public static function bookingDesk(string $home, ?CoOrder $co): array
+    {
+        $links = [['fa-chart-gantt', 'Material Planning (MRP)', route('v2.screen', 'material-planning')], ['fa-calendar-week', 'Demand Forecast (MPS)', route('v2.screen', 'demand-forecast')]];
+        if (! $co) {
+            return ['mode' => 'list', 'home' => $home, 'runAction' => route('v2.planning.run-all'), 'links' => $links,
+                'info' => t('Material needs are shown from the moment a Customer Order is entered. Stock is reserved only after the order is Confirmed and the booking is confirmed (locked) here.').' '.tf('Material must be ready by the due date, or at the latest :n working days after the CO date.', ['n' => Locale::number((float) SysConstant::number('BOOKING_NEED_WORKDAYS', 3), 0)])];
+        }
+        $b = RmBooking::where('co_id', $co->id_order)->where('stat_cancel', 0)->first();
+        $confirmedCo = $co->doc_status === 'CONFIRMED';
+        $locked = (bool) $b?->stat_confirm;
+        $changed = $locked && $b->co_fingerprint !== self::engine()->fingerprint((int) $co->id_order);
+        $pickable = $b && ! $locked ? RmBookingD::where('booking_id', $b->booking_id)->whereIn('line_status', ['NEED_ITEM'])->orderBy('seq_no')->get() : collect();
+        $open = collect(self::lineRows((int) $co->id_order))->whereIn('status', ['Short', 'Need item', 'Need layout'])->count();
+        $customer = DB::connection('tm2mst')->table('cust_customer')->where('id_customer', $co->customer_id)->value('customer_name');
+        $alert = match (true) {
+            ! $confirmedCo => ['info', t('This Customer Order is not Confirmed yet: the material need below is a preview only. No stock is reserved until the order is Confirmed.')],
+            $changed => ['danger', t('The Customer Order changed after this booking was confirmed (quantity, date or delivery plan). Use Back to Draft to recalculate, then Confirm again.')],
+            $locked => ['success', t('Booking confirmed: the stock part is locked for this order and no longer counted as Available.')],
+            $open > 0 => ['danger', str_replace(':n', (string) $open, t(':n material lines are not covered yet (short, item not chosen, or layout missing). You can still Confirm to lock the stock that is available; create a Purchase Requisition for the rest in Material Planning.'))],
+            default => null,
+        };
+
+        return ['mode' => 'detail', 'home' => $home, 'action' => route('v2.planning.booking', $co->id_order),
+            'coNo' => (string) $co->co_no, 'coStatus' => $co->doc_status, 'coTone' => self::CO_TONES[$co->doc_status] ?? 'neutral',
+            'booking' => $b ? $b->booking_no.' · '.$b->doc_status : 'NOT BOOKED', 'bookingTone' => self::BOOKING_TONES[$b->doc_status ?? 'NOT BOOKED'] ?? 'neutral',
+            'orderUrl' => route('v2.screen', 'customer-order').'?id='.$co->id_order, 'printUrl' => PrintDocs::url('material-booking', $co->id_order),
+            // Tombol kerja: CO Confirmed dan booking belum dikunci = Recalculate (+ Confirm bila sudah ada booking); terkunci = Back to Draft.
+            'canRun' => $confirmedCo && ! $locked, 'canConfirm' => $confirmedCo && ! $locked && $b !== null, 'canUnlock' => $locked,
+            'facts' => [
+                ['Customer', $customer ?? '—', ['tm2sdi.co_order.customer_id', 'tm2mst.cust_customer.customer_name']],
+                ['CO Date', Locale::d($co->co_date) ?? '—', ['tm2sdi.co_order.co_date']],
+                ['Last Calculated', $b?->last_run_at ? Locale::dt($b->last_run_at) : '—', ['tm2inv.rm_booking.last_run_at']],
+                ['Confirmed By', $locked ? $b->confirm_by.' · '.Locale::dt($b->confirm_date) : '—', ['tm2inv.rm_booking.confirm_by', 'confirm_date']],
+            ],
+            'alert' => $alert,
+            'pick' => $pickable->isNotEmpty() ? ['action' => route('v2.planning.pick', $co->id_order),
+                'lines' => $pickable->mapWithKeys(fn ($d) => [$d->booking_detail_id => $d->seq_no.' · '.$d->material_role.' · '.($d->spec_text ?: t('no specification')).' · '.Locale::number((float) $d->qty_need, 2).' '.$d->uom_code])->all()] : null,
+            'needRun' => $pickable->isEmpty() && $confirmedCo && ! $b,
+        ];
+    }
 
     public static function engine(): MaterialPlanningEngine
     {
