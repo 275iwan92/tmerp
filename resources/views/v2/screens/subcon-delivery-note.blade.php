@@ -40,11 +40,10 @@
     @endphp
     <x-dl::form id="subcon-dn-form" :title="'Subcontract Delivery Note · '.raw($do->do_no ?: 'Draft #'.$do->id_delivery)" :subtitle="raw(($do->supplier?->supplier_name ?? '—').' · '.$do->status)"
         panel="top" kind="document" :status="SubconDelivery::formStatus($do)"
-        :action="route('v2.subcon.save', $do->id_delivery)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
+        :action="route('v2.subcon.save', $do->id_delivery)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="PrintDocs::url('subcon-delivery-note', $do->id_delivery)" :hide="['duplicate']"
         :tabs="['general' => 'General', 'delivery' => 'Delivery', 'notes' => 'Notes']"
         :created-by="$do->created_by" :created-at="$do->created_at?->toDateTimeString()" :updated-by="$do->updated_by" :updated-at="$do->updated_at?->toDateTimeString()">
         <x-slot:special>
-            @unless ($draft)<x-dl::button size="sm" preset="print" label="Print" :href="PrintDocs::url('subcon-delivery-note', $do->id_delivery)" target="_blank" />@endunless
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('Note No.')</span><b>{{ $do->do_no ?: t('(on Confirm)') }}</b></div>

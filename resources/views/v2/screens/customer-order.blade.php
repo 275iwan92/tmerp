@@ -88,11 +88,10 @@
         panel="top" kind="document" :status="CustomerOrder::formStatus($o, $appr['held'])" :pipeline="true"
         :approval-levels="$appr['levels']" :approval-at="$appr['at'] ?: ($o->doc_status === 'SUBMITTED' ? 1 : $appr['levels'])" :can-approve="(bool) $pending"
         :action="route('v2.co.save', $o->id_order)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
-        :hide="array_merge(['print', 'email'], $o->isInstant() ? [] : ['delete'])"
+        :print-url="\App\Support\V2\Print\PrintDocs::url('customer-order', $o->id_order)" :hide="array_merge([], $o->isInstant() ? [] : ['delete'])"
         :tabs="['general' => 'General', 'finance' => 'Finance', 'delivery' => 'Delivery', 'material' => 'Customer Material'] + ($draft ? [] : ['billing' => 'Billing']) + ['notes' => 'Notes']"
         :created-by="$o->created_by" :created-at="$o->created_at?->toDateTimeString()" :updated-by="$o->updated_by" :updated-at="$o->updated_at?->toDateTimeString()" :log="$log">
         <x-slot:special>
-            <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('customer-order', $o->id_order)" target="_blank" />
             @unless ($draft)<x-dl::button size="sm" variant="secondary" icon="fa-truck" label="Customer Plan Delivery" :href="route('v2.screen', 'cpdel')" />@endunless
         </x-slot:special>
         <x-slot:strip>

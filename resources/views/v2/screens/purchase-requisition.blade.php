@@ -51,12 +51,11 @@
     <x-dl::form id="pr-form" :title="'Purchase Requisition · '.raw($pr->doc_no ?: 'Draft #'.$pr->pr_id)" :subtitle="raw(PurchaseRequisition::departments()[$pr->i_department_id] ?? '—')"
         panel="top" kind="document" :status="$formStatus" :pipeline="true" :approval-levels="max(1, $appr['levels'])" :approval-at="$appr['at'] ?: $approved + 1"
         :can-approve="(bool) $pending" :log="$log"
-        :action="route('v2.pr.save', $pr->pr_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['cancel', 'duplicate', 'email', 'print']"
+        :action="route('v2.pr.save', $pr->pr_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="\App\Support\V2\Print\PrintDocs::url('purchase-requisition', $pr->pr_id)" :hide="['cancel', 'duplicate']"
         :tabs="['general' => 'General', 'notes' => 'Notes']"
         :created-by="$pr->created_by" :created-at="$pr->created_at?->toDateTimeString()" :updated-by="$pr->updated_by" :updated-at="$pr->updated_at?->toDateTimeString()">
         <x-slot:special>
             {{-- Draft boleh dicetak (user 2026-10-03): lembarnya memakai tanda air DRAFT dari x-dl::print-doc. --}}
-            <x-dl::button size="sm" preset="print" label="Print" :href="\App\Support\V2\Print\PrintDocs::url('purchase-requisition', $pr->pr_id)" target="_blank" />
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('PR No.')</span><b>{{ $pr->doc_no ?: t('(on Confirm)') }}</b></div>

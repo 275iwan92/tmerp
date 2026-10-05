@@ -54,11 +54,10 @@
     <x-dl::form id="stock-transfer-form" :title="'Stock Transfer · '.raw($doc->label())" :subtitle="raw($route.' · '.$doc->status())"
         panel="top" kind="document" :status="$formStatus" :pipeline="$appr['used']" :approval-levels="$appr['used'] ? max(1, $appr['levels']) : 0" :approval-at="$appr['at']"
         :can-approve="(bool) $appr['pending']" :log="$appr['log']"
-        :action="route('v2.wh.transfer.save', $doc->id_transfer)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['email', 'print']"
+        :action="route('v2.wh.transfer.save', $doc->id_transfer)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="PrintDocs::url('stock-transfer', $doc->id_transfer)" :hide="[]"
         :tabs="['general' => 'General', 'notes' => 'Notes']"
         :created-by="$doc->created_by" :created-at="$doc->created_at?->toDateTimeString()" :updated-by="$doc->updated_by" :updated-at="$doc->updated_at?->toDateTimeString()">
         <x-slot:special>
-            @if ($doc->stat_confirm)<x-dl::button size="sm" preset="print" label="Print" :href="PrintDocs::url('stock-transfer', $doc->id_transfer)" target="_blank" />@endif
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('Transfer No.')</span><b>{{ $doc->transfer_no ?: t('(on Confirm)') }}</b></div>

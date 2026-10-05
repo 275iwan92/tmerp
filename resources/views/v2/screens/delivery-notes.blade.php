@@ -26,11 +26,10 @@
     @endphp
     <x-dl::form id="sj-form" :title="'Delivery Note · '.raw($do->do_no)" :subtitle="raw(($do->customer?->customer_name ?? '—').' · '.$do->status)"
         panel="top" kind="document" :status="DeliveryOrder::formStatus($do)" :pipeline="true" :can-input="false"
-        :action="route('v2.do.save', $do->id_delivery)" action-field="action" :back="$home" :hidden="['from' => 'delivery-notes']" :hide="['cancel', 'draft', 'email', 'print']"
+        :action="route('v2.do.save', $do->id_delivery)" action-field="action" :back="$home" :hidden="['from' => 'delivery-notes']" :print-url="\App\Support\V2\Print\PrintDocs::url('delivery-note', $do->id_delivery)" :hide="['cancel', 'draft']"
         :tabs="['delivery' => 'Delivery']"
         :created-by="$do->created_by" :created-at="$do->created_at?->toDateTimeString()" :updated-by="$do->updated_by" :updated-at="$do->updated_at?->toDateTimeString()">
         <x-slot:special>
-            <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('delivery-note', $do->id_delivery)" target="_blank" />
             @if ($do->status === 'CONFIRMED')<x-dl::button size="sm" variant="success" icon="fa-truck" :label="t('Shipped')" type="submit" name="action" value="ship" formnovalidate :onclick="'return confirm('.json_encode(t('Mark the goods as shipped?')).')'" />@endif
         </x-slot:special>
         <x-slot:strip>

@@ -29,7 +29,7 @@
         if (e.target.closest('[data-f-edit]')) { this.fs.forEach(f => { f.disabled = false; }); this.snapshot = {}; new FormData(this.el).forEach((v, k) => { this.snapshot[k] = v; }); $$(this.el, 'input[type=checkbox][name]').forEach(c => { this.snapshot[c.name] = c.checked; }); this.setView(false); $(this.el, '.dl-form__body input:not([type=hidden]),.dl-form__body textarea')?.focus(); return; }
         const act = e.target.closest('[data-f-act]')?.dataset.fAct;
         if (act === 'back' && !e.target.closest('a[href]')) return history.back();
-        if (act === 'new' && e.target.closest('a[href]')) return;
+        if (['new', 'print', 'email'].includes(act) && e.target.closest('a[href]')) return;
         if (act === 'undo') return this.undo();
         if (act && act !== 'save') return this.act(act);
         if (e.target.closest('[data-f-cancel]') && this.snapshot) { fillForm(this.el, this.snapshot, false); this.snapshot = null; this.setView(true); toast(T('f_changes_discarded')); }

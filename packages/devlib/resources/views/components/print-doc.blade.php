@@ -15,7 +15,7 @@
     @foreach ($doc->sheets() as $sheet)
         <section class="dl-pdoc__sheet is-{{ $paper }}" data-pd-sheet data-pd-type="{{ $doc->type }}"
             style="--pd-info-rows:{{ $doc->infoRows }};--pd-rh:{{ $doc->rowHeight }}mm;--pd-tail:{{ $doc->tailHeight }}mm">
-            @if ($wm = $doc->watermark())<div class="dl-pdoc__wm" aria-hidden="true">{{ $wm }}</div>@endif
+            @if ($wm = $doc->watermark())<div class="dl-pdoc__wm {{ mb_strlen($wm) > 9 ? 'is-long' : '' }}" aria-hidden="true">{{ $wm }}</div>@endif
             <header class="dl-pdoc__kop">
                 <div class="dl-pdoc__co">
                     @if (! $co['logo'])<span class="dl-pdoc__logo">{{ $co['initials'] }}</span>@endif
@@ -31,7 +31,7 @@
                     @for ($i = 0; $i < $doc->infoRows - 1; $i++){!! $field($doc->refs[$i] ?? null) !!}@endfor
                 </div>
                 <div>
-                    <div class="dl-pdoc__f is-st" data-pd-k="date"><span>{{ $t('Date') }}</span><i>:</i><b>{{ \Devlib\Locale::d($d['date'] ?? null) ?? '—' }}</b><span class="dl-pdoc__stamp">{{ $d['status'] ?? '' }}</span></div>
+                    <div class="dl-pdoc__f is-st" data-pd-k="date"><span>{{ $t('Date') }}</span><i>:</i><b>{{ \Devlib\Locale::d($d['date'] ?? null) ?? '—' }}</b><span class="dl-pdoc__stamp">{{ $doc->statusLabel() }}</span></div>
                     <div class="dl-pdoc__f" data-pd-k="party"><span>{{ $t($doc->partyLabel) }}</span><i>:</i><b><strong>{{ $party['name'] ?? '' }}</strong>@if (! empty($party['code'])) &middot; {{ $party['code'] }}@endif</b></div>
                     @for ($i = 0; $i < $doc->infoRows - 3; $i++)<div class="dl-pdoc__f is-addr"><span></span><i></i><b>{{ $party['lines'][$i] ?? '' }}</b></div>@endfor
                     {!! $field($doc->side) !!}

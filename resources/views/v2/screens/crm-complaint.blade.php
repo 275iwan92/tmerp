@@ -50,12 +50,11 @@
     @endphp
     <x-dl::form id="crm-complaint-form" :title="CrmComplaint::TYPES[$doc->complaint_type].' · '.raw($doc->complaint_no ?: 'Draft #'.$doc->id_complaint)" :subtitle="raw($doc->customer?->customer_name ?? '—')"
         panel="top" kind="document" :status="CrmComplaints::formStatus($doc)" :stage="$status === 'CONFIRMED' && $qa !== 'NONE' ? t(CrmComplaints::QA_LABELS[$qa]) : null"
-        :action="route('v2.crm.complaint.save', $doc->id_complaint)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
+        :action="route('v2.crm.complaint.save', $doc->id_complaint)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="PrintDocs::url('customer-complaint', $doc->id_complaint)" :hide="['duplicate']"
         :tabs="['general' => 'General', 'qa' => ['QA Review', 'fa-magnifying-glass-chart'], 'resolution' => ['Resolution', 'fa-handshake']]" :log="CrmComplaints::log($doc)"
         :created-by="$doc->created_by" :created-at="$doc->created_at?->toDateTimeString()" :updated-by="$doc->updated_by" :updated-at="$doc->updated_at?->toDateTimeString()">
         <x-slot:special>
             <x-dl::button size="sm" variant="secondary" icon="fa-address-card" label="Customer 360" :href="route('v2.screen', 'crm-customer').'?id='.$doc->customer_id" />
-            @unless ($draft)<x-dl::button size="sm" preset="print" label="Print" :href="PrintDocs::url('customer-complaint', $doc->id_complaint)" target="_blank" />@endunless
             @if ($status === 'CONFIRMED')<x-dl::button size="sm" variant="success" icon="fa-circle-check" label="Close" data-f-act="close" />@endif
         </x-slot:special>
         <x-slot:strip>

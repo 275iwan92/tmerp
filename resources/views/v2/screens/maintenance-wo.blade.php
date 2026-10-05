@@ -56,7 +56,7 @@
         $impact = Maintenance::impact($wo);
         $machines = Maintenance::machines();
         $comp = ['' => '—'] + MntCode::options('COMPONENT');
-        $hide = ['duplicate', 'email', 'print'];
+        $hide = ['duplicate'];
         if ($doc === 'OPEN' && $wo->work_status === 'DONE') {
             $hide[] = 'cancel';
         }
@@ -71,11 +71,10 @@
     @endif
     <x-dl::form id="mnt-wo-form" :title="'Maintenance Work Order · '.raw($wo->doc_no ?: 'Draft #'.$wo->id_wo)" :subtitle="raw($machines[$wo->machine_id] ?? '#'.$wo->machine_id)"
         panel="top" kind="document" :status="$formStatus" :stage="$stage" :pipeline="true" :can-reopen="$head && $wo->work_status === 'SCHEDULED'" :log="MntLog::forDoc('WO', $wo->id_wo)"
-        :action="route('v2.mnt.wo.save', $wo->id_wo)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="$hide"
+        :action="route('v2.mnt.wo.save', $wo->id_wo)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="\App\Support\V2\Print\PrintDocs::url('maintenance-wo', $wo->id_wo)" :hide="$hide"
         :tabs="['general' => 'General', 'failure' => 'Failure', 'plan' => 'Schedule']"
         :created-by="$wo->created_by" :created-at="$wo->created_at?->toDateTimeString()" :updated-by="$wo->updated_by" :updated-at="$wo->updated_at?->toDateTimeString()">
         <x-slot:special>
-            <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('maintenance-wo', $wo->id_wo)" target="_blank" />
             @if ($doc === 'OPEN' && $wo->work_status === 'SCHEDULED')
                 <x-dl::button size="sm" variant="success" icon="fa-play" label="Start" type="submit" name="action" value="start" formnovalidate />
             @elseif ($wo->work_status === 'IN_PROGRESS' && $doc === 'OPEN')

@@ -113,12 +113,11 @@
     <x-dl::form id="pv-special" :title="($isCust ? 'Material from Customer · ' : 'Return from Subcon · ').raw($pv->label())" :subtitle="raw($party.' · '.$pv->status)"
         panel="top" kind="document" :status="PurchaseReceive::formStatus($pv)" :pipeline="true"
         :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1&type='.$pv->i_receipt_type"
-        :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $draft ? [] : ['delete'])"
+        :print-url="\App\Support\V2\Print\PrintDocs::url('goods-receipt', $pv->pv_id)" :hide="array_merge(['duplicate'], $pv->status === 'POSTED' ? [] : ['cancel'], $draft ? [] : ['delete'])"
         :tabs="['general' => 'General', 'notes' => 'Notes']"
         :created-by="$pv->created_by" :created-at="$pv->created_at?->toDateTimeString()" :updated-by="$pv->updated_by" :updated-at="$pv->updated_at?->toDateTimeString()">
         @if ($pv->status === 'POSTED')
             <x-slot:special>
-                <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('goods-receipt', $pv->pv_id)" target="_blank" />
             </x-slot:special>
         @endif
         <x-slot:strip>
@@ -197,7 +196,7 @@
 
     <x-dl::form id="pv-form" :title="'Goods Receipt · '.raw($pv->label())" :subtitle="raw(($sup->supplier_name ?? '—').' · '.$pv->status)"
         panel="top" kind="document" :status="PurchaseReceive::formStatus($pv)" :pipeline="true"
-        :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $pv->status === 'DRAFT' ? [] : ['delete'])"
+        :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="\App\Support\V2\Print\PrintDocs::url('goods-receipt', $pv->pv_id)" :hide="array_merge(['duplicate'], $pv->status === 'POSTED' ? [] : ['cancel'], $pv->status === 'DRAFT' ? [] : ['delete'])"
         :tabs="['general' => 'General', 'supplier' => 'Supplier', 'notes' => 'Notes']"
         :created-by="$pv->created_by" :created-at="$pv->created_at?->toDateTimeString()" :updated-by="$pv->updated_by" :updated-at="$pv->updated_at?->toDateTimeString()">
         @if ($pv->status === 'POSTED')
@@ -207,7 +206,6 @@
                     <x-dl::button size="sm" variant="secondary" icon="fa-pallet" label="Pallet Labels" :href="route('v2.screen', 'label-pallet').'?receipt='.$pv->pv_id" />
                     <x-dl::button size="sm" variant="secondary" icon="fa-tag" label="Item Labels" :href="route('v2.screen', 'label-item').'?receipt='.$pv->pv_id" />
                 @endif
-                <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('goods-receipt', $pv->pv_id)" target="_blank" />
             </x-slot:special>
         @endif
         <x-slot:strip>

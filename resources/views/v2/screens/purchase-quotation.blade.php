@@ -85,7 +85,7 @@
     @endif
     <x-dl::form id="pq-form" :title="'Purchase Quotation · '.raw($pq->doc_no ?: 'Draft #'.$pq->pq_id)" :subtitle="raw((PurchaseOrder::suppliers([$pq->i_supplier_id])[$pq->i_supplier_id] ?? ($pq->i_supplier_text ?: t('supplier not chosen yet'))).' · '.$pq->status)"
         panel="top" kind="document" :status="PurchaseQuotation::formStatus($pq)"
-        :action="route('v2.pq.save', $pq->pq_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
+        :action="route('v2.pq.save', $pq->pq_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="\App\Support\V2\Print\PrintDocs::url('purchase-quotation', $pq->pq_id)" :hide="['duplicate']"
         :tabs="['general' => 'General', 'file' => 'Quotation File', 'notes' => 'Notes']"
         :created-by="$pq->created_by" :created-at="$pq->created_at?->toDateTimeString()" :updated-by="$pq->updated_by" :updated-at="$pq->updated_at?->toDateTimeString()">
         <x-slot:special>
@@ -94,7 +94,6 @@
                 @foreach ($open as $l)<input type="hidden" name="pq_line_ids[]" value="{{ $l->pq_line_id }}" form="pq-po-{{ $pq->pq_id }}">@endforeach
                 <x-dl::button size="sm" variant="success" icon="fa-file-invoice-dollar" label="Create PO" type="submit" form="pq-po-{{ $pq->pq_id }}" :onclick="'return confirm('.json_encode(t('Turn every line of this PQ into a Draft PO for this supplier?').' ('.$open->count().')').')'" />
             @endif
-            @unless ($draft)<x-dl::button size="sm" preset="print" label="Print" :href="\App\Support\V2\Print\PrintDocs::url('purchase-quotation', $pq->pq_id)" target="_blank" />@endunless
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('PQ No.')</span><b>{{ $pq->doc_no ?: t('(on Confirm)') }}</b></div>

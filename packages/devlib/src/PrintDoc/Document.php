@@ -299,11 +299,22 @@ abstract class Document
         return trim(self::t('Printed on').' '.Locale::stamp(now()).' '.(($this->data['printedBy'] ?? null) ? Lang::t('by').' '.$this->data['printedBy'] : ''));
     }
 
-    // Dokumen yang belum sah (status DRAFT) boleh dicetak, tetapi lembarnya diberi tanda air besar miring "DRAFT"
-    // (user 2026-10-03). Aplikasi boleh memaksa teks lain lewat data['watermark'].
+    // Status dokumen di cetakan (user 2026-10-05: setiap cetakan WAJIB membawa statusnya -- Draft, Confirmed, Approved, Hold,
+    // Rejected, ...). Kode database dirapikan di sini supaya semua cetakan memakai istilah yang sama: SUBMITTED = WAITING APPROVAL.
+    public function statusLabel(): string
+    {
+        $s = strtoupper(trim(str_replace('_', ' ', (string) ($this->data['status'] ?? ''))));
+
+        return ['SUBMITTED' => 'WAITING APPROVAL', 'APPROVAL' => 'WAITING APPROVAL', 'ON HOLD' => 'HOLD'][$s] ?? $s;
+    }
+
+    // Dokumen yang belum / tidak sah boleh dicetak, tetapi lembarnya diberi tanda air besar miring berisi statusnya: DRAFT
+    // (user 2026-10-03), WAITING APPROVAL, HOLD, REJECTED, CANCELLED (user 2026-10-05) -- supaya tidak dikira dokumen sah.
+    // Aplikasi boleh memaksa teks lain lewat data['watermark'].
     public function watermark(): ?string
     {
-        $w = $this->data['watermark'] ?? (strtoupper((string) ($this->data['status'] ?? '')) === 'DRAFT' ? 'DRAFT' : null);
+        $s = $this->statusLabel();
+        $w = $this->data['watermark'] ?? (in_array($s, ['DRAFT', 'WAITING APPROVAL', 'HOLD', 'REJECTED', 'CANCELLED'], true) ? $s : null);
 
         return $w ? self::t($w) : null;
     }

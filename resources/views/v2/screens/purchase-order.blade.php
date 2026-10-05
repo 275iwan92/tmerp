@@ -62,11 +62,10 @@
     <x-dl::form id="po-form" :title="($cash ? 'Cash PO · ' : 'Purchase Order · ').raw($po->doc_no ?: 'Draft #'.$po->po_id)" :subtitle="raw(($sup->supplier_name ?? '—').' · '.$po->status)"
         panel="top" kind="document" :status="PurchaseOrder::formStatus($po, $held)" :pipeline="true" :approval-levels="max(1, $appr['levels'])" :approval-at="$appr['at'] ?: $approved + 1"
         :can-approve="(bool) $pending" :log="$log"
-        :action="route('v2.po.save', $po->po_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['cancel', 'duplicate', 'email', 'print']"
+        :action="route('v2.po.save', $po->po_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="\App\Support\V2\Print\PrintDocs::url('purchase-order', $po->po_id)" :hide="['cancel', 'duplicate']"
         :tabs="['general' => 'General', 'supplier' => 'Supplier', 'finance' => 'Finance', 'delivery' => 'Delivery', 'notes' => 'Notes']"
         :created-by="$po->created_by" :created-at="$po->created_at?->toDateTimeString()" :updated-by="$po->updated_by" :updated-at="$po->updated_at?->toDateTimeString()">
         <x-slot:special>
-            @unless (in_array($po->status, ['DRAFT', 'SUBMITTED'], true))<x-dl::button size="sm" preset="print" label="Print" :href="\App\Support\V2\Print\PrintDocs::url('purchase-order', $po->po_id)" target="_blank" />@endunless
             @if ($pettyStep)<x-dl::button size="sm" variant="success" icon="fa-wallet" :label="\App\Support\V2\Data\PettyCash::STEP_LABELS[$pettyStep]" :href="route('v2.screen', 'petty-cash').'?po='.$po->po_id" />@endif
             @if ($po->status === 'APPROVED' && ! $cash)<x-dl::button size="sm" variant="success" icon="fa-paper-plane" :label="t('Send to Supplier')" type="submit" name="action" value="send" formnovalidate :onclick="'return confirm('.json_encode(t('Mark this PO as sent to the supplier?')).')'" />@endif
         </x-slot:special>

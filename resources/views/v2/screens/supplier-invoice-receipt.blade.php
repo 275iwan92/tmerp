@@ -39,11 +39,10 @@
     @endphp
     <x-dl::form id="supplier-invoice-receipt-form" :title="'Supplier Invoice Receipt · '.raw($doc->receipt_no ?: 'Draft #'.$doc->id_invoice_receipt)" :subtitle="raw(($doc->supplier?->supplier_name ?? '—').' · '.$doc->status())"
         panel="top" kind="document" :status="SupplierInvoiceReceipt::formStatus($doc)"
-        :action="route('v2.invoice-receipt.save', $doc->id_invoice_receipt)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
+        :action="route('v2.invoice-receipt.save', $doc->id_invoice_receipt)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="PrintDocs::url('supplier-invoice-receipt', $doc->id_invoice_receipt)" :hide="['duplicate']"
         :tabs="['general' => 'General', 'attachments' => 'Attachments', 'notes' => 'Notes']"
         :created-by="$doc->created_by" :created-at="$doc->created_at?->toDateTimeString()" :updated-by="$doc->updated_by" :updated-at="$doc->updated_at?->toDateTimeString()">
         <x-slot:special>
-            @unless ($draft)<x-dl::button size="sm" preset="print" label="Print" :href="PrintDocs::url('supplier-invoice-receipt', $doc->id_invoice_receipt)" target="_blank" />@endunless
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>@t('Receipt No.')</span><b>{{ $doc->receipt_no ?: t('(on Confirm)') }}</b></div>

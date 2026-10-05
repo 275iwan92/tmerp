@@ -2,6 +2,7 @@
 
 namespace Devlib\Components;
 
+use Devlib\Lang;
 use Devlib\Locale;
 
 // Induk form (mockup UIUX_components_part1.html): judul + isi (kolom/baris field) + kaki berisi tombol tambahan opsional dan tombol split aksi.
@@ -17,7 +18,11 @@ use Devlib\Locale;
 //   status approval (pemeriksa: Approve/Reject/Hold; pembuat hanya Cancel), hold, rejected (berhenti; Duplicate), approved;
 //   tanpa Back to Draft setelah masuk approval; Closed otomatis saat dokumen diteruskan ke modul berikutnya (mis. PR -> PO).
 // :action-field = nama field aksi yang dikirim (default _action; layar lama mis. 'action'); :hide = aksi panel yang disembunyikan.
-// :subtitle = baris kecil di bawah judul (mis. supplier); :pipeline = bar tahapan Draft > Confirmed > Closed (Master-Detail).
+// :subtitle = baris kecil di bawah judul (mis. supplier); :pipeline = bar tahapan Draft > Confirmed > Closed -- bawaan menyala
+// untuk kind=document, mati untuk kind=master.
+// :print-url = alamat cetakan dokumen (x-dl::print-doc): tombol Print membukanya di tab baru, Email membuka dialog e-mail di halaman
+// itu (?ds_do=email). Form yang punya action tetapi tanpa :print-url tidak menampilkan Print / Email (tidak ada yang dicetak).
+// Print tersedia di SEMUA status dokumen termasuk Draft (cetakan membawa status; Draft diberi tanda air) (user 2026-10-05).
 // :stage = badge kedua = tahap kerja di dalam status dokumen (mis. Maintenance WO Confirmed + In Progress); status 'working' = Confirmed
 // tapi isian tetap terbuka (Cancel, New, Print, Save + tombol kerja di slot special).
 // Tab read-only 'History' SELALU ditambahkan objek: created by/at, last updated by/at + :log = [['at','by','action','note'], ...]
@@ -47,7 +52,7 @@ class Form extends DevlibComponent
         public bool $canReopen = false,
         public bool $canInput = true,
         public ?string $subtitle = null,
-        public bool $pipeline = false,
+        public ?bool $pipeline = null,
         public array $log = [],
         public int $approvalLevels = 0,
         public int $approvalAt = 0,
@@ -56,11 +61,12 @@ class Form extends DevlibComponent
         public array $hide = [],
         public array $hidden = [],
         public ?string $stage = null,
+        public ?string $printUrl = null,
     ) {}
 
     public function panelTabs(): array
     {
-        return ($this->tabs ?: ['main' => 'Data']) + ['audit' => [\Devlib\Lang::text('History'), 'fa-clock-rotate-left']];
+        return ($this->tabs ?: ['main' => 'Data']) + ['audit' => [Lang::text('History'), 'fa-clock-rotate-left']];
     }
 
     // dd-Mmm-yyyy HH:mm, sama dgn tanggal grid.
@@ -77,6 +83,9 @@ class Form extends DevlibComponent
     {
         // :hide = aksi yang tidak didukung layar/backend-nya (mis. Cancel belum ada di modul itu) -- disembunyikan dari panel.
         $all = array_values(array_filter($this->baseActions(), fn ($a) => ! in_array($a[4], $this->hide, true)));
+        if ($this->action && ! $this->printUrl) {
+            $all = array_values(array_filter($all, fn ($a) => ! in_array($a[4], ['print', 'email'], true)));
+        }
 
         return $this->canInput ? $all : array_values(array_filter($all, fn ($a) => ! in_array($a[4], ['save', 'undo', 'delete', 'confirm', 'new', 'duplicate', 'cancel'], true)));
     }
@@ -97,14 +106,14 @@ class Form extends DevlibComponent
             'master.new', 'document.new' => [$undo, $save],
             'master.active' => [$b('deactivate', null, 'Deactivate', 'secondary', 'fa-toggle-off'), $new, $undo, $save],
             'master.inactive' => [$b('activate', null, 'Activate', 'secondary', 'fa-toggle-on'), $new, $undo, $save],
-            'document.draft' => [$b('delete', 'delete', 'Delete'), $new, $undo, $b('confirm', 'confirm', 'Confirm'), $save],
+            'document.draft' => [$b('delete', 'delete', 'Delete'), $new, $undo, $print, $b('confirm', 'confirm', 'Confirm'), $save],
             // Back to Draft tepat di sebelah Cancel, HANYA bila layar memberi :can-reopen (super-admin, admin-app, level manager
             // ke atas) -- server tetap wajib cek hak yang sama saat aksi diterima.
             // Approval berjenjang (user 2026-09-30): Approve/Reject hanya dari pemeriksa tingkat berjalan; Cancel hanya dari user pembuat.
             // Keputusan pemeriksa: Approve / Reject / Hold (Hold = tunda di tingkat itu, lalu tetap diputuskan Approve/Reject).
             // Setelah masuk approval TIDAK ada Back to Draft. Rejected = berhenti (pembuat pakai Duplicate).
-            'document.approval' => $this->canApprove ? [$b('reject', 'reject', 'Reject', 'danger'), $b('hold', 'hold', 'Hold', 'secondary'), $b('approve', 'approve', 'Approve')] : [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $print],
-            'document.hold' => $this->canApprove ? [$b('reject', 'reject', 'Reject', 'danger'), $b('approve', 'approve', 'Approve')] : [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $print],
+            'document.approval' => $this->canApprove ? [$print, $b('reject', 'reject', 'Reject', 'danger'), $b('hold', 'hold', 'Hold', 'secondary'), $b('approve', 'approve', 'Approve')] : [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $print],
+            'document.hold' => $this->canApprove ? [$print, $b('reject', 'reject', 'Reject', 'danger'), $b('approve', 'approve', 'Approve')] : [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $print],
             'document.rejected' => [$new, $dup, $print],
             'document.approved' => [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $b('email', 'email', 'Email'), $print],
             // working (Maintenance WO dsb): dokumen Confirmed yang sedang DIKERJAKAN -- hasil kerja masih diisi, jadi tetap bisa Save;
@@ -117,10 +126,27 @@ class Form extends DevlibComponent
         };
     }
 
+    // Alamat tombol panel yang berupa tautan: New = form kosong, Print = cetakan, Email = cetakan dengan dialog e-mail terbuka.
+    public function actionHref(string $act): ?string
+    {
+        return match ($act) {
+            'new' => $this->newUrl,
+            'print' => $this->printUrl,
+            'email' => $this->printUrl ? $this->printUrl.(str_contains($this->printUrl, '?') ? '&' : '?').'ds_do=email' : null,
+            default => null,
+        };
+    }
+
     // Sesudah Confirm / Cancel / Close isi terkunci (tampil sebagai teks); ubah lagi hanya lewat Back to Draft.
     public function locked(): bool
     {
         return $this->panel && (! $this->canInput || in_array($this->status, ['confirmed', 'approval', 'hold', 'approved', 'rejected', 'cancelled', 'closed'], true));
+    }
+
+    // Bar tahapan tampil di SEMUA form dokumen (user 2026-10-05); form master tetap badge status. Layar boleh memaksa lewat :pipeline.
+    public function showSteps(): bool
+    {
+        return $this->pipeline ?? ($this->kind === 'document');
     }
 
     // Bar tahapan (pola form PO Master-Detail yang disetujui user): Draft > Confirmed > Closed; Cancelled = tahap merah.
@@ -183,7 +209,7 @@ class Form extends DevlibComponent
                     <div class="dl-form__panel">
                         <div class="dl-form__heading"><div class="dl-form__title">{{ $title }}</div>@if ($subtitle)<small>{{ $subtitle }}</small>@endif</div>
                         {{-- :pipeline = tahapan ringkas di panel (menggantikan badge), bukan baris penuh (user 2026-09-30: compact). --}}
-                        @if ($pipeline)
+                        @if ($showSteps())
                             <div class="dl-form__steps" aria-label="Status">@foreach ($steps() as [$sl, $sc])<span class="dl-form__step {{ $sc }}">{{ $sl }}</span>@endforeach</div>
                         @else
                             <x-dl::badge :label="$statusBadge()[0]" :tone="$statusBadge()[1]" />
@@ -196,7 +222,7 @@ class Form extends DevlibComponent
                             @if ($act === 'save')
                                 <x-dl::button size="sm" :preset="$pre" :label="$lbl" :variant="$var ?? 'primary'" type="submit" :name="$actionField" value="save" data-f-act="save" />
                             @else
-                                <x-dl::button size="sm" :preset="$pre" :label="$lbl ?? ''" :variant="$var ?? 'primary'" :icon="$ico" :href="$act === 'new' ? $newUrl : null" :class="$cls" data-f-act="{{ $act }}" />
+                                <x-dl::button size="sm" :preset="$pre" :label="$lbl ?? ''" :variant="$var ?? 'primary'" :icon="$ico" :href="$actionHref($act)" :target="in_array($act, ['print', 'email'], true) && $printUrl ? '_blank' : null" :class="$cls" data-f-act="{{ $act }}" />
                             @endif
                         @endforeach
                         @if (! $panelActions() && isset($special)){{ $special }}@endif

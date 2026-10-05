@@ -42,12 +42,11 @@
     @endphp
     <x-dl::form id="do-form" :title="'Delivery Order · '.raw($do->do_no ?: 'Draft #'.$do->id_delivery)" :subtitle="raw(($do->customer?->customer_name ?? '—').' · '.$do->status)"
         panel="top" kind="document" :status="DeliveryOrder::formStatus($do)" :pipeline="true"
-        :action="route('v2.do.save', $do->id_delivery)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['delete', 'duplicate', 'email', 'print']"
+        :action="route('v2.do.save', $do->id_delivery)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="\App\Support\V2\Print\PrintDocs::url('delivery-order', $do->id_delivery)" :hide="['delete', 'duplicate']"
         :tabs="['general' => 'General', 'delivery' => 'Delivery', 'notes' => 'Notes']"
         :created-by="$do->created_by" :created-at="$do->created_at?->toDateTimeString()" :updated-by="$do->updated_by" :updated-at="$do->updated_at?->toDateTimeString()">
         <x-slot:special>
             @if (in_array($do->status, ['CONFIRMED', 'SHIPPED'], true))
-                <x-dl::button size="sm" preset="print" :href="\App\Support\V2\Print\PrintDocs::url('delivery-order', $do->id_delivery)" target="_blank" />
                 <x-dl::button size="sm" variant="secondary" icon="print" :label="t('Delivery Note')" :href="route('v2.screen', 'delivery-notes').'?id='.$do->id_delivery" />
             @endif
             @if ($do->status === 'CONFIRMED')<x-dl::button size="sm" variant="success" icon="fa-truck" :label="t('Shipped')" type="submit" name="action" value="ship" formnovalidate :onclick="'return confirm('.json_encode(t('Mark the goods as shipped?')).')'" />@endif

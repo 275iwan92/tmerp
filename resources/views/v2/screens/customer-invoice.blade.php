@@ -107,12 +107,11 @@
     @endphp
     <x-dl::form id="customer-invoice-form" :title="($isDp ? 'Down Payment Invoice' : 'Customer Invoice').' · '.raw($inv->invoice_number ?: 'Draft #'.$inv->invoice_id)"
         :subtitle="raw(($customer?->customer_name ?? '—').' · '.$identity)" panel="top" kind="document" :status="$status" :stage="$draft ? null : CustomerInvoice::state($inv)"
-        :action="route('v2.customer-invoice.save', $inv->invoice_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="['duplicate', 'email', 'print']"
+        :action="route('v2.customer-invoice.save', $inv->invoice_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :print-url="PrintDocs::url($printType, $inv->invoice_id)" :hide="['duplicate']"
         :tabs="$isDp ? ['general' => 'General', 'tax' => 'Tax', 'notes' => 'Notes', 'payments' => 'Down Payment History', 'journal' => 'Journal']
             : ['general' => 'General', 'delivery' => 'Delivery', 'tax' => 'Tax', 'notes' => 'Notes', 'payments' => 'Payments', 'journal' => 'Journal']"
         :created-by="$inv->created_by" :created-at="$inv->created_at?->toDateTimeString()" :updated-by="$inv->updated_by" :updated-at="$inv->updated_at?->toDateTimeString()">
         <x-slot:special>
-            <x-dl::button size="sm" preset="print" label="Print" :href="PrintDocs::url($printType, $inv->invoice_id)" target="_blank" />
             @if ($isDp && (float) $inv->paid_amount > 0)
                 <x-dl::button size="sm" variant="secondary" icon="print" label="Print Receipt" :href="PrintDocs::url('dp-receipt', $inv->invoice_id)" target="_blank" />
             @endif
