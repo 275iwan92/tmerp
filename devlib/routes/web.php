@@ -2,6 +2,7 @@
 
 use App\Support\BoardDemo;
 use App\Support\Catalog;
+use App\Support\Generator;
 use App\Support\Summary;
 use Devlib\Locale;
 use Illuminate\Http\Request;
@@ -109,6 +110,57 @@ Route::middleware('devlib.auth')->group(function () {
 
         return $out + ['meta' => $user['login'].' · '.Locale::date(now()).($out['ratings'] > 1 ? ' · '.$out['ratings'].'x' : '')];
     })->name('summary.rate');
+
+    // Generator (user 2026-10-05): form permintaan sederhana + pratinjau; aturan = App\Support\Generator. Hanya akun developer
+    // yang boleh menyimpan / menyetujui.
+    Route::get('/generator', function (Request $r) {
+        $ready = Generator::ready();
+        $req = $ready && $r->integer('id') ? (Generator::find($r->integer('id')) ?? abort(404)) : null;
+
+        return view('generator', ['ready' => $ready, 'req' => $req, 'form' => $req || $r->boolean('new'), 'rows' => $ready ? Generator::rows() : [],
+            'objects' => $req ? Generator::objects($req->id_request) : []]);
+    })->name('generator');
+
+    Route::post('/generator', function (Request $r) {
+        $user = session('devlib_user');
+        abort_unless($user['developer'] ?? false, 403);
+        [$id, $error] = Generator::save($r, $user['login'], $r->integer('id') ?: null);
+        if ($error) {
+            return back()->withInput()->with('gen_error', $error);
+        }
+
+        return redirect()->route('generator', ['id' => $id])->with('gen_flash', 'Saved. The agent reads the request in its next session.');
+    })->name('generator.save');
+
+    Route::post('/generator/{id}/formula', function (Request $r, int $id) {
+        abort_unless(session('devlib_user')['developer'] ?? false, 403);
+        Generator::saveFormula($id, $r);
+
+        return redirect()->route('generator', ['id' => $id])->with('gen_flash', 'Preview saved.');
+    })->name('generator.formula');
+
+    Route::post('/generator/object/{object}', function (Request $r, int $object) {
+        $user = session('devlib_user');
+        abort_unless($user['developer'] ?? false, 403);
+        Generator::decideObject($object, $r->input('decision') === 'approve', $user['login']);
+
+        return back()->with('gen_flash', 'Decision saved.');
+    })->name('generator.object');
+
+    Route::post('/generator/{id}/approve', function (int $id) {
+        $user = session('devlib_user');
+        abort_unless($user['developer'] ?? false, 403);
+        $error = Generator::approve($id, $user['login']);
+
+        return redirect()->route('generator', ['id' => $id])->with($error ? 'gen_error' : 'gen_flash', $error ?: 'Approved. The agent builds it in its next session.');
+    })->name('generator.approve');
+
+    Route::post('/generator/{id}/cancel', function (int $id) {
+        abort_unless(session('devlib_user')['developer'] ?? false, 403);
+        Generator::cancel($id);
+
+        return redirect()->route('generator')->with('gen_flash', 'Request cancelled.');
+    })->name('generator.cancel');
 
     // Contoh papan widget: aksi Customize (POST) / muat ulang (GET) -> HTML papan terbaru; susunan di sesi (BoardDemo).
     Route::match(['get', 'post'], '/board-demo', function (Request $r) {

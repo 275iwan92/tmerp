@@ -32,7 +32,7 @@ class MockupPartsServiceProvider extends ServiceProvider
     public static function asset(string $file): string
     {
         $root = __DIR__.'/../resources/assets/';
-        $v = $file === 'mockup-parts.js' ? max(array_map('filemtime', self::scripts())) : (@filemtime($root.$file) ?: @filemtime($root.'css/'.$file) ?: 0);
+        $v = $file === 'mockup-parts.js' ? max(array_map('filemtime', self::scripts())) : (is_file($root.$file) ? filemtime($root.$file) : (is_file($root.'css/'.$file) ? filemtime($root.'css/'.$file) : 0));
 
         return route('mp.asset', ['file' => $file]).'?v='.$v;
     }
