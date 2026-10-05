@@ -15,6 +15,7 @@ use App\Services\Inventory\PalletService;
 use App\Services\Inventory\WarehouseStock;
 use Devlib\Components\Label;
 use Devlib\Components\LabelSheet;
+use Devlib\Components\WhMap;
 use Devlib\Locale;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -395,6 +396,74 @@ final class Labels
             'One label per pack or stack: type how many packs carry the same label.');
 
         return $form;
+    }
+
+    // Isi objek form khusus x-mp::inv.scan-track (layar Track via QR / Barcode): hasil lacak self::track() dijadikan satu
+    // array siap tampil. 'result' null = belum ada kode; type: none | transfer | pallet | bin | item.
+    public static function trackDesk(string $home): array
+    {
+        $code = trim((string) request('code', ''));
+        $res = $code !== '' ? self::track($code) : null;
+        $mapUrl = fn ($bin) => route('v2.screen', 'warehouse-map').'?wh='.$bin->warehouse_id.'&bin='.$bin->location_id;
+        $out = ['home' => $home, 'result' => null];
+        if (! $res) {
+            return $out;
+        }
+        $out['result'] = match ($res['type']) {
+            'none' => ['type' => 'none', 'message' => str_replace(':code', $res['code'], t('Nothing found for ":code". Check the code, or look it up in the Warehouse Map.'))],
+            'transfer' => ['type' => 'transfer', 'title' => t('Stock Transfer').' · '.$res['transfer']->label(), 'openUrl' => route('v2.screen', 'stock-transfer').'?id='.$res['transfer']->id_transfer],
+            'pallet' => (function () use ($res, $mapUrl) {
+                $p = $res['pallet'];
+                $bin = $res['bin'];
+
+                return ['type' => 'pallet', 'id' => $p->id_pallet, 'title' => t($p->isPack() ? 'Pack' : 'Pallet').' · '.$p->pallet_no, 'description' => $p->item_code.' · '.$p->item_name,
+                    'moveAction' => $p->isActive() ? route('v2.wh.pallet.transfer', $p->id_pallet) : null,
+                    'relabelUrl' => $p->isActive() ? route('v2.screen', 'label-pallet').'?pallet='.$p->id_pallet : null,
+                    'mapUrl' => $bin ? $mapUrl($bin) : null, 'label' => self::fit($res['label'], 'md'),
+                    'facts' => [
+                        ['Bin', $bin?->location_code ?? '—', ['tm2inv.inv_pallet.location_id']],
+                        ['Stack No.', $p->isActive() && $p->stack_no ? $p->stack_no.' · '.t($p->isPack() ? 'Remnant' : 'Pallet') : '—', ['tm2inv.inv_pallet.stack_no', 'tm2inv.inv_pallet.unit_kind']],
+                        ['Quantity now / at arrival', Locale::decimal($p->qty, 2).' / '.Locale::decimal($p->qty_initial, 2).' '.$p->uom_code, ['tm2inv.inv_pallet.qty']],
+                        ['Supplier Pallet Code', $p->supplier_pallet_code ?: '—', ['tm2inv.inv_pallet.supplier_pallet_code']],
+                        ['Expiry Date', $p->expiry_date ? Locale::d($p->expiry_date) : '—', ['tm2inv.inv_pallet.expiry_date']],
+                    ],
+                    'rows' => Pallets::history($p),
+                    'actionTones' => array_combine(array_map(fn (string $a) => t($a), Pallets::ACTIONS), ['success', 'warn', 'info', 'neutral', 'violet'])];
+            })(),
+            'bin' => (function () use ($res, $mapUrl) {
+                $bin = $res['bin'];
+                $s = $res['summary'];
+                $facts = [
+                    ['Weight', Warehouse::capacityText($s['used_kg'], $s['capacity_kg']) ?? '—', ['tm2mst.wh_loc.capacity_kg']],
+                    ['Volume', Warehouse::volumeText($s['used_m3'], $s['capacity_m3']) ?? '—', ['tm2mst.wh_zone (area, stack height)']],
+                    ['Status', $s['dead'] ? t('Dead stock') : t(WhMap::STATUS[$s['status']]), []],
+                ];
+                if (! $bin->is_usable) {
+                    $facts[] = ['Blocked because', $bin->block_reason ?? '—', ['tm2mst.wh_loc.block_reason']];
+                }
+
+                return ['type' => 'bin', 'id' => $bin->location_id, 'title' => t('Bin').' · '.$bin->location_code, 'description' => (string) $res['label']['name'],
+                    'mapUrl' => $mapUrl($bin), 'labelUrl' => route('v2.wh.bin.label', $bin->location_id), 'label' => self::fit($res['label'], 'md'), 'facts' => $facts,
+                    'rows' => array_map(fn (array $i) => ['id' => $i['key'], 'item' => $i['name'], 'code' => $i['code'], 'class' => $i['class'], 'qty' => $i['qty'], 'unit' => $i['uom'], 'weight' => $i['weight_kg'],
+                        'arrived' => $i['arrived'], 'expiry' => $i['expiry'], 'pallets' => $i['pallet_count'],
+                        'last' => $i['last_movement'], 'idle' => $i['idle_days'], 'state' => $i['dead'] ? 'Dead stock' : ($i['expiry_state'] === 'EXPIRED' ? 'Expired' : ($i['expiry_state'] === 'SOON' ? 'Expires soon' : 'OK')),
+                        'tone' => $i['dead'] || $i['expiry_state'] === 'EXPIRED' ? 'danger' : ($i['expiry_state'] === 'SOON' ? 'yellow' : null)], $s['items'])];
+            })(),
+            'item' => (function () use ($res) {
+                $item = $res['item'];
+                $pos = $res['positions'];
+
+                return ['type' => 'item', 'id' => $res['class'].'-'.$item->id, 'title' => $item->code.' · '.$item->name,
+                    'description' => str_replace([':class', ':n', ':qty'], [t(WarehouseStock::CLASSES[$res['class']]), (string) $pos->count(), Locale::decimal($pos->sum('qty'), 2)], t(':class · in :n bin(s) · :qty on hand in total')),
+                    'rows' => $pos->map(fn (array $p) => ['id' => $p['key'], 'bin' => $p['location_code'], 'qty' => $p['qty'], 'unit' => $p['uom'], 'weight' => $p['weight_kg'], 'value' => $p['value'],
+                        'arrived' => $p['arrived'], 'last' => $p['last_movement'], 'idle' => $p['idle_days'], 'state' => $p['dead'] ? 'Dead stock' : 'OK', 'tone' => $p['dead'] ? 'danger' : null])->all(),
+                    'pallets' => $res['pallets']->isNotEmpty() ? Pallets::rows($res['pallets'], route('v2.screen', 'label-pallet')) : null, 'expiryTones' => Pallets::expiryTones(),
+                    'moves' => $res['moves']->map(fn ($m) => ['id' => $m->doc_id, 'date' => $m->doc_date?->toDateString(), 'doc_no' => $m->doc_no, 'move' => $m->doc_type, 'warehouse' => $m->warehouse_name,
+                        'bin' => $m->location_name, 'in' => (float) $m->qty_in, 'out' => (float) $m->qty_out, 'adj' => (float) $m->qty_adj, 'balance' => (float) $m->qty_eb])->all()];
+            })(),
+        };
+
+        return $out;
     }
 
     private static function printPart(array $hidden, string $keysLabel, array $options, array $picked, array $sources, ?string $copiesHint): array
