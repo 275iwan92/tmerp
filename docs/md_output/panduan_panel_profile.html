@@ -1,0 +1,297 @@
+<title>Panduan Panel Profile TMERP</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: dokumen panduan satu kolom baca (maks 46rem) dengan daftar isi menempel di kiri pada layar lebar. */
+:root {
+  --bg: #f5f7fb; --surface: #ffffff; --ink: #1c2540; --muted: #5d6885; --line: #dbe1ee;
+  --accent: #2456c9; --accent-soft: #e6edfc; --warn: #8a5a00; --warn-soft: #fff3d6;
+  --font: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121829; --surface: #1a2238; --ink: #e3e8f7; --muted: #98a3c2; --line: #2b3552;
+  --accent: #8fb0ff; --accent-soft: #223159; --warn: #ffd27a; --warn-soft: #3a2f14; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121829; --surface: #1a2238; --ink: #e3e8f7; --muted: #98a3c2; --line: #2b3552;
+  --accent: #8fb0ff; --accent-soft: #223159; --warn: #ffd27a; --warn-soft: #3a2f14; color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.65 var(--font); padding-inline: 20px; padding-block: 32px 64px; }
+.wrap { max-width: 68rem; margin-inline: auto; display: grid; grid-template-columns: 15rem minmax(0, 46rem); gap: 3rem; align-items: start; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); font-size: .875rem; display: flex; flex-direction: column; gap: .15rem; }
+nav.toc b { font-size: .72rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: .4rem; }
+nav.toc a { color: var(--ink); text-decoration: none; padding: .28rem .6rem; border-radius: 6px; }
+nav.toc a:hover, nav.toc a:focus-visible { background: var(--accent-soft); color: var(--accent); outline: none; }
+nav.toc a.sub { padding-left: 1.4rem; color: var(--muted); }
+main { min-width: 0; display: flex; flex-direction: column; gap: 2.75rem; }
+header p.lead { font-size: 1.08rem; color: var(--muted); margin: .6rem 0 0; }
+h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.15; font-weight: 800; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -.01em; margin: 0 0 .7rem; padding-top: .9rem; border-top: 2px solid var(--line); text-wrap: balance; }
+h3 { font-size: 1.02rem; font-weight: 700; margin: 1.4rem 0 .35rem; }
+p { margin: 0 0 .8rem; }
+ul, ol { margin: 0 0 .9rem; padding-left: 1.3rem; }
+li { margin-bottom: .3rem; }
+section { scroll-margin-top: 16px; }
+.ui { font-weight: 600; color: var(--accent); white-space: nowrap; }
+kbd { font: 500 .78rem var(--mono); background: var(--surface); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: .08rem .38rem; white-space: nowrap; }
+.note { background: var(--warn-soft); color: var(--warn); border-radius: 8px; padding: .7rem .95rem; font-size: .93rem; margin: 0 0 .9rem; }
+.note b { font-weight: 700; }
+.tablewrap { overflow-x: auto; margin: 0 0 1rem; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; vertical-align: top; padding: .6rem .85rem; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; white-space: nowrap; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+.meta { font-size: .85rem; color: var(--muted); }
+@media (max-width: 860px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  nav.toc { position: static; flex-direction: row; flex-wrap: wrap; gap: .3rem; }
+  nav.toc b { width: 100%; }
+  nav.toc a, nav.toc a.sub { padding: .25rem .6rem; background: var(--surface); border: 1px solid var(--line); color: var(--ink); }
+  td:first-child { white-space: normal; }
+}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Daftar isi">
+  <b>Daftar isi</b>
+  <a href="#buka-tutup">Membuka dan menutup</a>
+  <a href="#isi-panel">Isi panel</a>
+  <a href="#notifications" class="sub">Notifications</a>
+  <a href="#chat" class="sub">Chat</a>
+  <a href="#ai" class="sub">AI Assistant</a>
+  <a href="#edit-profile" class="sub">Edit profile</a>
+  <a href="#help" class="sub">Help &amp; support</a>
+  <a href="#setup" class="sub">Setup</a>
+  <a href="#password" class="sub">Change password</a>
+  <a href="#devmode" class="sub">Developer Mode</a>
+  <a href="#signout" class="sub">Sign out</a>
+  <a href="#jendela">Cara kerja jendela dan laci</a>
+  <a href="#pintasan">Pintasan keyboard</a>
+</nav>
+
+<main>
+<header>
+  <h1>Panduan Panel Profile</h1>
+  <p class="lead">Panel Profile adalah tempat semua urusan akun Anda di TMERP: notifikasi, chat, asisten, data diri, bantuan, tampilan, kata sandi, dan keluar dari aplikasi.</p>
+  <p class="meta">Berlaku untuk Menu v2 (Layer Menu). Nama tombol ditulis seperti di layar berbahasa Inggris; bila bahasa tampilan Anda Indonesia, sebagian label muncul dalam terjemahannya.</p>
+</header>
+
+<section id="buka-tutup">
+  <h2>Membuka dan menutup panel</h2>
+  <p>Satu-satunya pintu ke panel Profile adalah <b>avatar dan nama user yang login di pojok kiri bawah menu</b>.</p>
+  <ul>
+    <li><b>Membuka:</b> klik avatar atau nama user yang login. Panel naik menutupi daftar menu, dan tulisan kecil di bawah nama aplikasi berubah menjadi <span class="ui">Profile</span>.</li>
+    <li><b>Menutup:</b> klik avatar atau nama user itu sekali lagi, atau klik tombol silang di pojok kanan atas panel. Daftar menu kembali tampil di posisi terakhir.</li>
+    <li><b>Saat menu sedang dikecilkan</b> (hanya satu lajur ikon): klik avatar, lalu menu lengkap melayang terbuka langsung di panel Profile.</li>
+  </ul>
+  <p>Angka merah pada avatar menunjukkan jumlah pesan chat yang belum Anda baca.</p>
+  <p>Di bagian atas panel tampil inisial user yang login dalam lingkaran besar, nama lengkapnya, lalu alamat e-mail dan jabatannya.</p>
+</section>
+
+<section id="isi-panel">
+  <h2>Isi panel</h2>
+  <p>Daftar di bawah identitas user yang login selalu berurutan seperti ini. Garis pemisah membagi kelompok komunikasi (tiga teratas) dari kelompok akun.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Menu</th><th>Kegunaan</th><th>Terbuka sebagai</th></tr></thead>
+    <tbody>
+      <tr><td>Notifications</td><td>Pemberitahuan untuk Anda dan siaran untuk semua pengguna.</td><td>Laci dari kanan</td></tr>
+      <tr><td>Chat</td><td>Percakapan satu lawan satu dengan pengguna lain. Angka merah di barisnya = pesan belum dibaca.</td><td>Laci dari kanan</td></tr>
+      <tr><td>AI Assistant</td><td>Bertanya dengan kalimat biasa: letak layar, cara pakai layar, atau angka yang boleh Anda lihat.</td><td>Laci dari kanan</td></tr>
+      <tr><td>Edit profile</td><td>Data diri, keluarga, dokumen, cuti, izin, tukar shift, jadwal, kartu pengenal, keamanan akun.</td><td>Jendela layar penuh</td></tr>
+      <tr><td>Help &amp; support</td><td>Topik bantuan, panduan, alur aplikasi, dan tiket ke tim developer.</td><td>Jendela layar penuh</td></tr>
+      <tr><td>Setup</td><td>Pengaturan tampilan: <span class="ui">Theme</span> dan <span class="ui">Language</span>.</td><td>Halaman di dalam panel</td></tr>
+      <tr><td>Change password</td><td>Mengganti kata sandi.</td><td>Dialog kecil</td></tr>
+      <tr><td>Developer Mode</td><td>Saklar asal-usul objek layar. Hanya tampil untuk Administrator dan grup Developer.</td><td>Saklar</td></tr>
+      <tr><td>Sign out</td><td>Keluar dari aplikasi.</td><td>Konfirmasi</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="notifications">
+  <h2>Notifications</h2>
+  <p>Menampilkan 30 pemberitahuan terbaru, yang paling baru di atas. Tiap baris berisi judul, keterangan singkat, dan waktu.</p>
+  <ul>
+    <li><b>Warna titik</b> menandai jenisnya: merah untuk masalah, kuning untuk peringatan, hijau untuk kabar berhasil, biru untuk informasi. Titik yang memudar berarti sudah dibaca.</li>
+    <li><b>Klik satu baris</b> untuk menandainya sudah dibaca. Bila pemberitahuan itu punya tautan ke sebuah layar, laci menutup dan layar tersebut terbuka sebagai tab kerja.</li>
+    <li><b><span class="ui">Mark all as read</span></b> menandai semuanya sekaligus.</li>
+  </ul>
+</section>
+
+<section id="chat">
+  <h2>Chat</h2>
+  <p>Chat bergaya WhatsApp antara dua pengguna.</p>
+  <h3>Daftar percakapan</h3>
+  <ul>
+    <li>Daftar berisi orang yang <b>sedang login</b> (avatar berwarna dengan titik hijau) dan percakapan lain yang sudah pernah ada.</li>
+    <li>Tombol <span class="ui">+</span> memulai chat baru dengan orang yang sedang tidak login. Mereka tampil dengan avatar abu-abu dan keterangan terakhir dilihat.</li>
+    <li>Kotak <span class="ui">Search name…</span> menyaring daftar menurut nama.</li>
+  </ul>
+  <h3>Di dalam percakapan</h3>
+  <ul>
+    <li>Ketik pesan lalu kirim dengan tombol pesawat kertas. Satu pesan paling panjang 4.000 karakter.</li>
+    <li>Tombol penjepit kertas melampirkan file apa saja, bawaan paling besar 20 MB. Gambar tampil langsung di percakapan; file lain tampil sebagai kartu unduh.</li>
+    <li>Tanda centang menunjukkan status pesan: terkirim, diterima, lalu dibaca.</li>
+    <li>Tombol <span class="ui">aa</span> di kotak ketik mengganti huruf: kecil, Huruf Awal Besar, atau BESAR semua.</li>
+    <li>Klik foto profil untuk memperbesarnya. Pesan masuk ditandai dengan bunyi.</li>
+  </ul>
+  <p>Tombol <span class="ui">Maximize</span> di kepala laci melebarkan chat selebar layar, sehingga daftar orang dan percakapan tampil berdampingan.</p>
+</section>
+
+<section id="ai">
+  <h2>AI Assistant</h2>
+  <p>Asisten menjawab tiga jenis pertanyaan: <b>di mana sebuah layar</b>, <b>cara memakai sebuah layar</b>, dan <b>angka yang boleh Anda lihat</b> sesuai hak akses.</p>
+  <ul>
+    <li>Ketik pertanyaan (paling panjang 500 karakter), lalu tekan <kbd>Enter</kbd> atau tombol panah. Contoh pertanyaan di bagian atas bisa langsung diklik.</li>
+    <li>Jawaban tampil sebagai kartu: judul, angka besar bila ada, penjelasan, langkah bernomor, rincian, dan catatan sumber data.</li>
+    <li>Tombol pada kartu membuka layar terkait sebagai tab kerja, menampilkan topik bantuan terkait, atau membawa Anda ke tiket bantuan.</li>
+    <li>Kartu bergambar gembok berarti pertanyaan itu tidak tersedia untuk akun Anda.</li>
+    <li>Beri <b>jempol naik atau turun</b> di bawah jawaban. Klik jempol yang sama sekali lagi untuk mencabutnya.</li>
+    <li>Pertanyaan terakhir Anda tetap tampil saat laci dibuka lagi.</li>
+  </ul>
+  <p class="note"><b>Label “preview”.</b> Bila di samping judul laci tertulis <i>preview</i>, asisten lengkap belum terpasang di situs itu. Dalam mode ini asisten hanya bisa membuka layar yang namanya Anda sebut.</p>
+</section>
+
+<section id="edit-profile">
+  <h2>Edit profile</h2>
+  <p>Terbuka sebagai jendela layar penuh dengan daftar bagian di sisi kiri. Data pribadi di sini <b>hanya bisa dibaca</b>. Perubahan dilakukan lewat pengajuan yang berlaku setelah diverifikasi HR. Hanya bagian <span class="ui">Security</span> yang tersimpan langsung.</p>
+  <p class="note"><b>Akun belum terhubung ke data pegawai?</b> Hanya bagian Security yang tampil. Minta HR menghubungkan akun Anda ke Master Employee.</p>
+
+  <h3>Kelompok Personal data</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Bagian</th><th>Isi dan yang bisa dilakukan</th></tr></thead>
+    <tbody>
+      <tr><td>My Data</td><td>Kartu identitas (nama, kode pegawai, jabatan, departemen), sisa cuti, status kerja, jumlah pengajuan tertunda, profil utama, alamat, BPJS, kontak darurat, dan riwayat pengajuan koreksi. Tombol di bilah bawah: <span class="ui">Request Correction</span> (pilih kolom, isi nilai baru dan alasan), <span class="ui">Change Payroll Bank</span>, dan <span class="ui">Resignation Form</span> (tanggal efektif dan alasan).</td></tr>
+      <tr><td>Job Description</td><td>Uraian tugas jabatan Anda. Hanya HR Officer yang dapat mengubahnya.</td></tr>
+      <tr><td>SOP</td><td>Daftar SOP yang berlaku untuk Anda. Klik kode SOP untuk membaca isinya.</td></tr>
+      <tr><td>Family &amp; Status</td><td>Anggota keluarga terdaftar, rekening bank gaji, dan riwayat pengajuan. Tombol: <span class="ui">Report Birth</span>, <span class="ui">Report Death</span>, <span class="ui">Spouse Status Change</span>, masing-masing dengan lampiran akta atau buku nikah.</td></tr>
+      <tr><td>Documents &amp; Education</td><td>Dokumen identitas dan riwayat pendidikan atau pelatihan. <span class="ui">Upload Document</span> menerima JPG, PNG, atau PDF sampai 5 MB. Dokumen yang diunggah dan dikunci HR tidak bisa diganti dari sini. <span class="ui">+ Add Training</span> menambah riwayat pelatihan.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Kelompok Requests</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Bagian</th><th>Isi dan aturan</th></tr></thead>
+    <tbody>
+      <tr><td>Leave / Sick / Permit</td><td>Saldo cuti tahunan (hak, terpakai, sisa), formulir pengajuan, dan daftar pengajuan Anda. Empat jenis: cuti tahunan, sakit, izin tanpa upah, dan cuti khusus.
+        <ul>
+          <li>Cuti tahunan: ajukan paling lambat tujuh hari sebelumnya, paling banyak 3 hari kerja per pengajuan, hari Minggu tidak dihitung, wajib melampirkan surat permohonan cuti.</li>
+          <li>Sakit: lapor ke atasan dan HRD paling lambat 07.30 WIB pada hari itu. Peserta JKN cukup melampirkan tangkapan layar riwayat aplikasi JKN.</li>
+          <li>Izin tanpa upah: paling banyak 3 hari berturut-turut dan 3 pengajuan per bulan; lebih dari itu dicatat sebagai Alpha. Pilihan ini terkunci selama sisa cuti tahunan masih ada.</li>
+          <li>Cuti khusus: pilih acaranya (pernikahan, khitan atau pernikahan anak, istri melahirkan, keluarga inti meninggal, ibadah) dan lampirkan bukti.</li>
+        </ul></td></tr>
+      <tr><td>Out Permit</td><td>Izin keluar area kerja pada jam kerja: tanggal, jam keluar, jam kembali, dan keperluan. Harus disetujui atasan langsung <b>dan</b> HRD sebelum meninggalkan pabrik.</td></tr>
+      <tr><td>Shift Swap</td><td>Tukar shift dengan rekan. Pilih rekan lalu klik <span class="ui">Show Partner's Schedule</span>, pilih shift Anda dan shift rekan, lalu <span class="ui">Submit Swap Request</span>. Ajukan paling lambat sehari sebelumnya. Disetujui rekan terlebih dahulu, kemudian PPIC.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Kelompok Others</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Bagian</th><th>Isi dan yang bisa dilakukan</th></tr></thead>
+    <tbody>
+      <tr><td>My Schedule</td><td>Jadwal kerja resmi yang sudah diterbitkan PPIC atau HR: tanggal, shift, lembur, dan stasiun kerja.</td></tr>
+      <tr><td>ID Card</td><td>Kartu pegawai digital dan pengajuan foto baru. Syarat foto: 4×6 cm (rasio 2:3), paling kecil 600×900 piksel, latar polos terang, wajah menghadap depan. HRD memeriksa foto sebelum kartu dicetak ulang.</td></tr>
+      <tr><td>Security</td><td>
+        <ul>
+          <li><b>Account Profile:</b> nama, e-mail, dan nomor telepon akun login. Mengganti e-mail membuat statusnya kembali belum terverifikasi. Tombol <span class="ui">Manage e-mail</span> membuka halaman untuk mengirim tautan verifikasi, yang berlaku 24 jam.</li>
+          <li><b>Change Password:</b> kata sandi lama, kata sandi baru (paling sedikit 8 karakter), dan konfirmasinya.</li>
+          <li><b>Account Recovery:</b> tanggal lahir, nama gadis ibu kandung, nomor telepon terdaftar, pertanyaan keamanan, dan jawabannya. Data ini dipakai saat Anda lupa kata sandi. Nama ibu dan jawaban disimpan teracak, jadi harus diketik ulang setiap kali menyimpan. Tanggal lahir atau telepon yang berbeda dari catatan HR dikirim sebagai pengajuan koreksi, tidak langsung menimpa.</li>
+        </ul></td></tr>
+    </tbody>
+  </table></div>
+  <p>Setelah mengirim formulir, pesan hijau di bagian atas memastikan pengajuan terkirim; pesan merah menjelaskan apa yang perlu diperbaiki. Formulir yang sudah diisi tetapi belum dikirim akan menanyakan Anda sebelum ditinggalkan.</p>
+</section>
+
+<section id="help">
+  <h2>Help &amp; support</h2>
+  <p>Bisa juga dibuka kapan saja dengan <kbd>F1</kbd>, termasuk dari dalam layar yang sedang Anda kerjakan. Terdiri dari empat bagian.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Bagian</th><th>Isi</th></tr></thead>
+    <tbody>
+      <tr><td>Help Topics</td><td>Bantuan untuk setiap layar: tujuan, langkah, dan penjelasan tiap kolom. Buka satu baris untuk membacanya.</td></tr>
+      <tr><td>User's Guide</td><td>Dua pedoman tertulis di bagian atas (<span class="ui">ERP Rules Guide</span> dan <span class="ui">Guide: Master Product &amp; Revision</span>), lalu panduan umum bernomor. Tiap panduan berisi langkah dan penjelasan bagian layar. Baca berurutan dari atas saat pertama kali.</td></tr>
+      <tr><td>Application's Flow</td><td>Diagram alur dokumen Sales dan Costing. Arahkan mouse ke sebuah blok untuk melihat aturan singkatnya; klik blok untuk membuka layarnya.</td></tr>
+      <tr><td>Tickets</td><td>Kirim tiket ke tim developer dan lihat balasannya. Angka di samping nama bagian = tiket Anda yang masih terbuka atau sedang dikerjakan.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Mengirim tiket</h3>
+  <ol>
+    <li>Isi <span class="ui">Screen / menu</span> dengan nama layar yang bermasalah, misalnya Customer Order.</li>
+    <li>Isi <span class="ui">Problem description</span> (wajib): apa yang terjadi dan apa yang Anda harapkan.</li>
+    <li>Lampirkan tangkapan layar atau file bila perlu: paling banyak 5 file, masing-masing sampai 5 MB, berjenis JPG, PNG, PDF, Excel, atau Word.</li>
+    <li>Klik <span class="ui">Send ticket</span>.</li>
+  </ol>
+  <p>Kartu <span class="ui">My Tickets</span> menampilkan 20 tiket terakhir Anda dengan nomor, waktu, status (<span class="ui">Open</span>, <span class="ui">In progress</span>, <span class="ui">Done</span>, <span class="ui">Closed</span>), lampiran, balasan terakhir tim, dan catatan penyelesaian.</p>
+</section>
+
+<section id="setup">
+  <h2>Setup</h2>
+  <p>Halaman ini terbuka di dalam panel Profile dan berisi dua anak halaman. Tombol <span class="ui">Back</span> membawa Anda kembali satu tingkat.</p>
+  <h3>Theme</h3>
+  <ul>
+    <li><b>12 tema:</b> empat keluarga (Pastel, Cerah, Dark, Hitam) dikali tiga corak (Biru, Hijau, Merah). Klik satu kotak untuk langsung menerapkannya.</li>
+    <li><b><span class="ui">Density</span>:</b> kerapatan tampilan, yaitu <span class="ui">Compact</span>, <span class="ui">Normal</span>, atau <span class="ui">Comfortable</span>.</li>
+    <li><b><span class="ui">Font size</span>:</b> 90%, 100%, 110%, atau 120%.</li>
+  </ul>
+  <p>Pilihan tema, kerapatan, dan ukuran huruf disimpan di browser yang sedang dipakai. Di komputer atau browser lain Anda perlu memilihnya lagi.</p>
+  <h3>Language</h3>
+  <p>Klik bendera untuk mengganti bahasa tampilan. Pilihan ini <b>disimpan ke akun Anda</b>, jadi ikut ke mana pun Anda login. Halaman dimuat ulang setelah bahasa diganti. Bila ada tab dengan isian yang belum disimpan, aplikasi menanyakan dulu sebelum memuat ulang.</p>
+</section>
+
+<section id="password">
+  <h2>Change password</h2>
+  <ol>
+    <li>Isi <span class="ui">Old password</span> dengan kata sandi saat ini.</li>
+    <li>Isi <span class="ui">New password</span>, paling sedikit 8 karakter.</li>
+    <li>Ulangi di <span class="ui">Confirm new password</span>.</li>
+    <li>Klik <span class="ui">Save</span>. Dialog menutup dan muncul pesan bahwa kata sandi sudah diganti.</li>
+  </ol>
+  <p>Bila ada yang salah, pesannya tampil di dalam dialog dan dialog tetap terbuka. Tutup tanpa menyimpan dengan <span class="ui">Cancel</span>, tombol silang, atau klik di luar dialog. Percobaan dibatasi 10 kali per menit.</p>
+  <p>Formulir yang sama tersedia di <span class="ui">Edit profile</span>, bagian <span class="ui">Security</span>.</p>
+</section>
+
+<section id="devmode">
+  <h2>Developer Mode</h2>
+  <p>Baris ini hanya tampil untuk Administrator dan anggota grup Developer. Saklarnya menyalakan atau mematikan tampilan asal-usul tiap objek di layar. Pintasannya <kbd>F10</kbd>. Panel Profile tetap terbuka saat saklar diubah.</p>
+</section>
+
+<section id="signout">
+  <h2>Sign out</h2>
+  <p>Klik <span class="ui">Sign out</span>, lalu setujui pertanyaan konfirmasinya. Semua tab kerja ditutup dan menu kembali ke lapis pertama, sehingga login berikutnya mendarat di layar pembuka.</p>
+  <p class="note"><b>Simpan dulu.</b> Isian yang belum disimpan di tab mana pun akan hilang saat Anda keluar.</p>
+</section>
+
+<section id="jendela">
+  <h2>Cara kerja jendela dan laci</h2>
+  <h3>Laci kanan: Notifications, Chat, AI Assistant</h3>
+  <ul>
+    <li>Hanya satu laci yang terbuka pada satu waktu.</li>
+    <li><b>Menutup:</b> klik tombol silang di kepala laci, atau klik area gelap di luar laci.</li>
+    <li><b><span class="ui">Maximize</span> dan <span class="ui">Restore</span>:</b> tombol di samping tombol silang melebarkan laci selebar layar atau mengembalikannya. Pilihan ini diingat per laci di browser Anda.</li>
+  </ul>
+  <h3>Jendela layar penuh: Edit profile, Help &amp; support</h3>
+  <ul>
+    <li><b>Kepala jendela</b> berisi judul, kotak cari, tombol <span class="ui">Float window</span>, dan tombol silang.</li>
+    <li><b>Kotak cari</b> menyaring nama bagian di sisi kiri dan kartu di bagian yang sedang dibuka. Tekan <kbd>/</kbd> untuk langsung mengetik di sana.</li>
+    <li><b>Mengambang:</b> klik <span class="ui">Float window</span>, atau klik dua kali kepala jendela. Jendela lalu bisa digeser dengan menyeret kepalanya dan diubah ukurannya dari tepi atau sudut. Ukuran terkecil 640 × 400. Jendela menempel sendiri ke tepi layar saat didekatkan.</li>
+    <li>Klik tombol yang sama untuk kembali ke layar penuh. Posisi, ukuran, dan mode terakhir diingat di browser Anda.</li>
+    <li><b>Menutup:</b> tombol silang atau <kbd>Esc</kbd>. Tidak ada tombol minimize.</li>
+    <li>Bagian yang sedang dibuka tetap sama saat jendela dibuka lagi.</li>
+  </ul>
+</section>
+
+<section id="pintasan">
+  <h2>Pintasan keyboard</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Tombol</th><th>Fungsi</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>F1</kbd></td><td>Membuka Help &amp; support.</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Menutup jendela Edit profile atau Help &amp; support.</td></tr>
+      <tr><td><kbd>/</kbd></td><td>Pindah ke kotak cari di jendela layar penuh.</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>Mengirim pertanyaan ke AI Assistant.</td></tr>
+      <tr><td><kbd>F10</kbd></td><td>Developer Mode (khusus Administrator dan Developer).</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>K</kbd></td><td>Pencarian cepat layar. Bukan bagian panel Profile, tetapi sering dipakai bersamanya.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+</main>
+</div>
