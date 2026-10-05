@@ -45,6 +45,8 @@
                     <x-dl::field.text name="description" label="Description" required multiline :value="old('description', $req->description ?? '')" :readonly="$closed" source="devlib.gen_request.description" />
                     <x-dl::field.radio name="request_type" label="Type" required :options="Generator::TYPES" :value="old('request_type', $req->request_type ?? 'MASTER')" :disabled="$closed"
                         hint="Master: data that is kept and switched active / inactive. Transactional: a document (Draft, Confirmed, Cancelled, Closed). Custom: a special form that gets its own object." source="devlib.gen_request.request_type" />
+                    <x-dl::field.select name="source_table" label="Existing table (Master only, optional)" :options="Generator::tables()" :value="old('source_table', $req->source_table ?? null)" :disabled="$closed" placeholder="No table: the agent builds it"
+                        hint="Choose it when the table already exists and is a simple master: Generate Now then builds the screen at once, without the agent." source="resources/data/v2/schema.json" />
                     <x-dl::field.checkbox name="need_engine" label="Engine" text="Needs an engine (a calculation or a suggestion that the screen must run)" :value="(bool) old('need_engine', $req->need_engine ?? false)" :disabled="$closed" source="devlib.gen_request.need_engine" />
                     <x-dl::field.text name="engine_description" label="Engine description" multiline :value="old('engine_description', $req->engine_description ?? '')" :readonly="$closed" hint="Required when Needs an engine is ticked." source="devlib.gen_request.engine_description" />
                     <x-dl::field.text name="flow_description" label="Flow (data flow or document flow)" multiline :value="old('flow_description', $req->flow_description ?? '')" :readonly="$closed" source="devlib.gen_request.flow_description" />
@@ -61,6 +63,16 @@
                         <x-dl::alert tone="info" message="1. The request gets a number and the status Requested. 2. The agent reads open requests at the start of a session and asks only what the description leaves unclear. 3. The agent fills the Preview: objects needed, engine input and output, engine formula. 4. You correct the formula if needed and Approve; an object that is not built yet asks for your approval first. 5. The agent builds the screen and puts its link here; you rate it in Quality & Rating." />
                     </x-dl::card>
                 @else
+                    @if (Generator::canAuto($req))
+                        <x-dl::card title="Automatic build" icon="fa-bolt" :description="Lang::raw(strtr(Lang::text('This Master request names the table :table. The screen can be built now, without the agent.'), [':table' => $req->source_table]))">
+                            <x-dl::action-form action="{{ route('generator.generate', $req->id_request) }}">
+                                <x-dl::action-bar align="start"><x-dl::button type="submit" icon="fa-bolt" label="Generate Now" /></x-dl::action-bar>
+                            </x-dl::action-form>
+                        </x-dl::card>
+                    @endif
+                    @if ($req->build_log)
+                        <x-dl::alert :tone="$req->status === 'BUILT' ? 'success' : 'warn'" :message="Lang::raw($req->build_log)" />
+                    @endif
                     @if ($req->agent_note)
                         <x-dl::alert :tone="$req->status === 'QUESTION' ? 'warn' : 'info'" :message="Lang::raw(($req->status === 'QUESTION' ? Lang::text('The agent asks').': ' : Lang::text('Agent note').': ').$req->agent_note)" />
                     @endif

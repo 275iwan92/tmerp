@@ -155,6 +155,13 @@ Route::middleware('devlib.auth')->group(function () {
         return redirect()->route('generator', ['id' => $id])->with($error ? 'gen_error' : 'gen_flash', $error ?: 'Approved. The agent builds it in its next session.');
     })->name('generator.approve');
 
+    Route::post('/generator/{id}/generate', function (int $id) {
+        abort_unless(session('devlib_user')['developer'] ?? false, 403);
+        [$ok, $message] = Generator::generate($id);
+
+        return redirect()->route('generator', ['id' => $id])->with($ok ? 'gen_flash' : 'gen_error', $message);
+    })->name('generator.generate');
+
     Route::post('/generator/{id}/cancel', function (int $id) {
         abort_unless(session('devlib_user')['developer'] ?? false, 403);
         Generator::cancel($id);

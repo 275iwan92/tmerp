@@ -3,8 +3,10 @@
 namespace App\Support;
 
 use Devlib\Locale;
+use Dotenv\Dotenv;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Validator;
 
 // Generator devlib.test (user 2026-10-05): form permintaan sederhana -- Name, Description, Type (Master / Transactional /
@@ -66,7 +68,7 @@ final class Generator
         return DB::table('gen_request')->orderByDesc('id_request')->get()->map(fn ($r) => [
             'id' => $r->id_request, 'no' => $r->request_no, 'name' => $r->name, 'type' => self::TYPES[$r->request_type] ?? $r->request_type,
             'engine' => $r->need_engine ? 'Yes' : 'No', 'requested' => substr((string) $r->created_at, 0, 10), 'by' => $r->requested_by,
-            'status' => self::STATUS[$r->status][0] ?? $r->status, 'agent' => $r->agent ? (Summary::AGENTS[$r->agent] ?? $r->agent) : '—',
+            'status' => self::STATUS[$r->status][0] ?? $r->status, 'agent' => $r->agent ? (Summary::AGENTS[$r->agent] ?? ucfirst($r->agent)) : '—',
             'screen' => $r->screen_label ?: '—',
         ])->all();
     }
@@ -82,6 +84,7 @@ final class Generator
         $v = Validator::make($r->all(), [
             'name' => ['required', 'string', 'max:150'], 'description' => ['required', 'string', 'max:5000'],
             'request_type' => ['required', 'in:'.implode(',', array_keys(self::TYPES))],
+            'source_table' => ['nullable', 'string', 'max:120', 'regex:/^tm2[a-z]+\.[a-z0-9_]+$/'],
             'engine_description' => ['nullable', 'string', 'max:5000', 'required_if:need_engine,1'], 'flow_description' => ['nullable', 'string', 'max:5000'],
         ], ['engine_description.required_if' => 'Describe the engine when Needs an engine is ticked.']);
         if ($v->fails()) {
@@ -89,6 +92,7 @@ final class Generator
         }
         $need = $r->boolean('need_engine');
         $data = ['name' => trim((string) $r->input('name')), 'description' => trim((string) $r->input('description')), 'request_type' => $r->input('request_type'),
+            'source_table' => $r->input('request_type') === 'MASTER' ? (trim((string) $r->input('source_table')) ?: null) : null,
             'need_engine' => $need, 'engine_description' => $need ? trim((string) $r->input('engine_description')) : null,
             'flow_description' => trim((string) $r->input('flow_description')) ?: null, 'updated_at' => now()];
         if ($id) {
@@ -139,6 +143,67 @@ final class Generator
         DB::table('gen_request')->where('id_request', $id)->update(['status' => 'APPROVED', 'approved_by' => $login, 'approved_at' => now(), 'updated_at' => now()]);
 
         return null;
+    }
+
+    // ---- Generator otomatis TANPA AI: hanya tipe Master yang menunjuk tabel yang sudah ada ----
+
+    public const AUTO_DATABASES = ['tm2mst', 'tm2acc', 'tm2sdi', 'tm2pur', 'tm2inv', 'tm2prd'];
+
+    /** @return array<string, string> tabel dari kamus skema tmerp (resources/data/v2/schema.json) */
+    public static function tables(): array
+    {
+        $file = base_path('../resources/data/v2/schema.json');
+        $schema = is_file($file) ? (json_decode(file_get_contents($file), true) ?: []) : [];
+        $out = [];
+        foreach (self::AUTO_DATABASES as $db) {
+            foreach ($schema[$db] ?? [] as $table => $def) {
+                if (is_array($def) && ($def['type'] ?? '') === 'table') {
+                    $out[$db.'.'.$table] = $db.'.'.$table;
+                }
+            }
+        }
+
+        return $out;
+    }
+
+    public static function canAuto(?object $row): bool
+    {
+        return $row && $row->request_type === 'MASTER' && $row->source_table && ! $row->need_engine && ! in_array($row->status, ['BUILT', 'CANCELLED'], true);
+    }
+
+    // Jalankan `php artisan devlib:generate` di folder tmerp (situs dummy). Berhasil = permintaan langsung Built dengan tautan
+    // layarnya; ditolak (tabel tidak sederhana, sudah punya layar, ...) = alasannya disimpan dan permintaan tetap untuk agen.
+    /** @return array{0: bool, 1: string} */
+    public static function generate(int $id): array
+    {
+        $row = self::find($id);
+        if (! self::canAuto($row)) {
+            return [false, 'Automatic build is only for a Master request that names an existing table and needs no engine.'];
+        }
+        $dir = dirname(PHP_BINARY);
+        $php = is_file($dir.'/php.exe') ? $dir.'/php.exe' : (is_file($dir.'/php') ? $dir.'/php' : 'php');
+        // Proses anak TIDAK boleh mewarisi isi .env situs devlib (DB_DATABASE=devlib, APP_KEY, ...): tmerp harus membaca .env-nya sendiri.
+        $clean = array_fill_keys(array_keys(Dotenv::parse((string) @file_get_contents(base_path('.env')))), false);
+        $run = Process::path(base_path('..'))->env($clean)->timeout(120)->run([$php, 'artisan', 'devlib:generate', $row->source_table, '--title='.$row->name, '--env=mockup', '--json']);
+        $out = null;
+        foreach (array_reverse(preg_split('/\R/', trim($run->output()))) as $line) {
+            if (($json = json_decode(trim($line), true)) && isset($json['ok'])) {
+                $out = $json;
+                break;
+            }
+        }
+        if (! $out) {
+            $out = ['ok' => false, 'message' => 'The generator did not answer: '.mb_substr(trim($run->output().' '.$run->errorOutput()), 0, 400)];
+        }
+        if (! $out['ok']) {
+            DB::table('gen_request')->where('id_request', $id)->update(['build_log' => $out['message'], 'updated_at' => now()]);
+
+            return [false, $out['message']];
+        }
+        self::built($id, 'generator', $out['title'].' ('.$out['slug'].')', $out['url']);
+        DB::table('gen_request')->where('id_request', $id)->update(['build_log' => 'Generated automatically: '.implode(', ', $out['files'] ?? [])]);
+
+        return [true, 'Screen generated: '.$out['title']];
     }
 
     public static function cancel(int $id): void
