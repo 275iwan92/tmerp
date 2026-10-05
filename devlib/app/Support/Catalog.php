@@ -263,7 +263,7 @@ final class Catalog
             ]],
             'p2-numbers' => ['Numeric', 'fa-solid fa-calculator', [
                 'field-number' => ['Integer (spinner)', $f('Number')], 'field-decimal' => ['Decimal', $f('Decimal')], 'field-money' => ['Money', $f('Money')],
-                'field-number-words' => ['Number + Amount in Words', $f('NumberWords')], 'field-slider' => ['Slider (range · vertical)', $f('Slider')], 'field-rating' => ['Rating (half)', $f('Rating')],
+                'field-slider' => ['Slider (range · vertical)', $f('Slider')], 'field-rating' => ['Rating (half)', $f('Rating')],
             ]],
             'p2-datetime' => ['Date & Time', 'fa-solid fa-calendar-days', [
                 'field-date' => ['Date', $f('Date')], 'field-time' => ['Time', $f('Time')], 'field-date-time' => ['Date Time', $f('DateTime')], 'field-date-range' => ['Date Range', $f('DateRange')], 'field-date-slider' => ['Date Slider', $f('DateSlider')],

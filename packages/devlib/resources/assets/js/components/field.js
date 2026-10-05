@@ -121,7 +121,7 @@
         };
         $$(this.pre, '.dl-dd__item').forEach(it => it.addEventListener('click', () => {
           $(this.pre, '[data-dl-prefix-value]').value = it.dataset.value;
-          $(this.pre, '[data-dl-prefix-a]').textContent = it.dataset.a; $(this.pre, '[data-dl-prefix-b]').textContent = it.dataset.b;
+          const a = $(this.pre, '[data-dl-prefix-a]'); if (a) a.textContent = it.dataset.a; $(this.pre, '[data-dl-prefix-b]').textContent = it.dataset.b;
           p.close(); if (money) updMoney();
         }));
         if (money) {
