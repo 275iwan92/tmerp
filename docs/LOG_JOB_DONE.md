@@ -3945,3 +3945,13 @@ QR code ... warna merah untuk DEAD stock ... Facility for QR Code, Labelling, BU
   1 layar LOCKED, 207 menunggu QC user.
 - Test: `BuildCatalogTest` (3 test). Catatan: `ddthrm` terbaca 0 tabel (belum ditelusuri); `devlib/tests ExampleTest`
   sudah gagal sebelum pekerjaan ini (302 ke login).
+
+### 2026-10-05 -- devlib.test: opening screen developer, database `devlib`, Executive Summary + rating
+
+- Opening screen developer: sambutan `x-dl::dashboard` yang sama (kini menerima slot pengganti bagian widget) + `x-dl::build-board`
+  dengan kartu "When" (commit per hari) dan "Work by agent". Commit bertanda `Agent: Iwan` / `Agent: Jo` mulai hari ini.
+- Database `devlib` (perintah user): `sec_user` (login terpisah dari mockup.test; `devlib:copy-user`), `dev_item`, `dev_rating`.
+  Akun: johiwan (Main Developer & System Analyst), dinul (QC, boleh melihat semua dan memberi rating).
+- Executive Summary (menu kedua Layer Menu, ikon tukar): Overview, By Module, By Object, By Engine, By Feature, By Agent,
+  By Time, Quality & Rating, Open Work. Objek baru `x-dl::rate-list`: bintang 1-5 + catatan per item, riwayat disimpan.
+- Test: `BuildCatalogTest` (4 test). Belum: Code Snippets, tingkat risiko di Open Work, uji klik di browser (user menguji).
