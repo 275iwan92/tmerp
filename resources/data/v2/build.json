@@ -1,5 +1,5 @@
 {
-    "generated": "2026-10-05 09:37",
+    "generated": "2026-10-05 09:58",
     "database": "ddtsys",
     "totals": {
         "objects": 140,
@@ -26,7 +26,7 @@
         "tests": 89,
         "dictionary": 9689,
         "languages": 4,
-        "commits": "1080",
+        "commits": "1083",
         "since": "2026-08-06"
     },
     "modules": [
@@ -149,6 +149,117 @@
             "form": 2,
             "grid": 20,
             "report": 1
+        }
+    ],
+    "agents": [
+        {
+            "key": "iwan",
+            "name": "Agent Iwan",
+            "commits": 1,
+            "days": 1,
+            "last": "2026-10-05",
+            "screens": 0,
+            "objects": 1,
+            "engines": 0,
+            "tests": 1
+        },
+        {
+            "key": "jo",
+            "name": "Agent Jo",
+            "commits": 0,
+            "days": 0,
+            "last": null,
+            "screens": 0,
+            "objects": 0,
+            "engines": 0,
+            "tests": 0
+        }
+    ],
+    "untracked": 1082,
+    "days": [
+        {
+            "date": "2026-09-22",
+            "iwan": 0,
+            "jo": 0,
+            "other": 28
+        },
+        {
+            "date": "2026-09-23",
+            "iwan": 0,
+            "jo": 0,
+            "other": 40
+        },
+        {
+            "date": "2026-09-24",
+            "iwan": 0,
+            "jo": 0,
+            "other": 47
+        },
+        {
+            "date": "2026-09-25",
+            "iwan": 0,
+            "jo": 0,
+            "other": 8
+        },
+        {
+            "date": "2026-09-26",
+            "iwan": 0,
+            "jo": 0,
+            "other": 35
+        },
+        {
+            "date": "2026-09-27",
+            "iwan": 0,
+            "jo": 0,
+            "other": 1
+        },
+        {
+            "date": "2026-09-28",
+            "iwan": 0,
+            "jo": 0,
+            "other": 20
+        },
+        {
+            "date": "2026-09-29",
+            "iwan": 0,
+            "jo": 0,
+            "other": 25
+        },
+        {
+            "date": "2026-09-30",
+            "iwan": 0,
+            "jo": 0,
+            "other": 102
+        },
+        {
+            "date": "2026-10-01",
+            "iwan": 0,
+            "jo": 0,
+            "other": 136
+        },
+        {
+            "date": "2026-10-02",
+            "iwan": 0,
+            "jo": 0,
+            "other": 123
+        },
+        {
+            "date": "2026-10-03",
+            "iwan": 0,
+            "jo": 0,
+            "other": 34
+        },
+        {
+            "date": "2026-10-04",
+            "iwan": 0,
+            "jo": 0,
+            "other": 15
+        },
+        {
+            "date": "2026-10-05",
+            "iwan": 1,
+            "jo": 0,
+            "other": 2
         }
     ],
     "engines": [
