@@ -32,8 +32,8 @@ sebelum eksekusi):
   belum digarap sama sekali.
 - **Maintenance** (modul v2 `MAINT`) — K1-K10 + mockup DISETUJUI user 2026-10-01; **M1 inti SELESAI di
   mockup.test (ddt*)** — lihat LOG_JOB_DONE 2026-10-01. Sisa terbuka:
-  - **tm2*** : migration `2026_10_01_000040_create_maintenance_module` belum dijalankan di tm2* (menunggu OK user);
-    `000041` (dummy) tidak menulis apa pun di tm2*.
+  - **tm2*** : sudah terpasang (dicek 2026-10-05: 11 tabel `mnt_*` di `tm2prd`, menu Maintenance aktif di `tm2sys`,
+    `migrate:status` tanpa Pending); `000041` (dummy) tidak menulis apa pun di tm2*.
   - **M2 Integrasi**: blok MTN abu-abu di Scheduling Board (PPIC tidak bisa menaruh operasi; usul geser -> kepala
     maintenance Confirm); tombol "Breakdown" Worklist WO (`prd_breakdown_event`) -> Request P1; **Issue** spare part
     ke `rm_stock` (`ref_doc_type='MNT_WO'`); **Create PR** dari baris spare part yang kurang (`i_source='MAINTENANCE'`,

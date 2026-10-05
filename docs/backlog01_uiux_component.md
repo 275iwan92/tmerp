@@ -57,8 +57,11 @@ dibuang di server lewat `restrictedKeys()` + `SecUser::canViewSalesPrice()`.
   Production (Target Rate -- sedang dikerjakan ulang oleh speed-target engine; Jadwal Shift, MPS Gantt / Kanban / Spreadsheet),
   Setup (Group per Submodule, Migration, Language, Localization, Identifikasi, Dummy & Legacy Data),
   HR (Struktur Organisasi, Self-Service, Upload Presensi, Generator Transfer Bank, Roster Cash, Pipeline Board, Shift Roster), Laporan Manajemen (7 dasbor).
-- Inventory: Label History belum punya layar / data.
+- Inventory: Label History sudah punya kelas grid (`LabelHistoryReport`, dicek 2026-10-05); baris menunya belum ada di ddtsys maupun tm2sys.
+- Menu yang masih menuju layar v1 (dicek 2026-10-05): mockup.test 8 item (Language, Groups on Modules, MPS Gantt / Kanban /
+  Spreadsheet, Purchase Details, Sales Details, Executive Summary); tmerp.test 25 item karena masih memakai menu v1 (`APP_UI`),
+  termasuk Quotation, Customer Order, PR, PO, Purchase Receive dan master utama.
 - Semua daftar v1 lain SELESAI 2026-10-02 (LOG): lookup Master Data, laporan stok, Purchase Return, Support Tickets, Finance (9 layar), Constants,
   Constant Categories, Account, Group, Talent Pool, BOP Rule, Product Category.
-- Migration `2026_09_30_000011` (field pengiriman CO) baru jalan di ddt*.
+- Migration `2026_09_30_000011` (field pengiriman CO) sudah jalan di ddt* dan tm2* (dicek 2026-10-05).
 

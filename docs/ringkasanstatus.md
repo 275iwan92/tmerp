@@ -1,5 +1,8 @@
 # RINGKASAN STATUS — DISKUSI LINTAS-MODUL
 
+> **BASI (ditandai 2026-10-05).** Snapshot terakhir 2026-09-16 (era v1, Filament, i18n 7 malam). Banyak butir R# sudah
+> selesai atau dibatalkan. Keadaan sekarang: 10 pecahan backlog di `docs/BACKLOG.md` dan `docs/LOG_JOB_DONE.md`.
+
 > Pecahan dari `BACKLOG.md` (2026-09-22, permintaan user supaya tidak
 > tercampur dengan daftar item terbuka). Indeks semua backlog:
 > **[`BACKLOG.md`](BACKLOG.md)**.

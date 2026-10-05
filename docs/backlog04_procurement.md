@@ -40,10 +40,9 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
      Subkon PO2600008 CENTRAL GRAFIK; Report Shortage; Print Receipt).
    - PO Kontan -> approval login `dewi` (Direktur F&A) -> Kas Kecil: Give Advance / Settlement / Reimburse / Top Up /
      Setting / Cancel Transaction.
-2. **tm2***: 5 migration Purchase sudah dijalankan 2026-10-01 (000002, 000020, 000030, 000040, 000050, satu per satu
-   dgn `--path`). **`2026_10_01_000035_flow_poc_cash_po` (flow approval PO Kontan) masih Pending di tm2*** — butuh
-   kolom dari `2026_09_30_000009_flow_config_approval_setting` (milik sesi Approval, juga belum jalan di tm2*). Jalankan
-   keduanya bersama saat migration sesi lain dijalankan ke tm2*; sebelum itu PO Kontan di tmerp.test belum punya approver.
+2. **tm2***: semua migration Purchase sudah jalan, termasuk `2026_10_01_000035_flow_poc_cash_po` (dicek 2026-10-05:
+   `migrate:status` tanpa Pending, `tm2mst.flow_config` berisi `POC`). Yang belum ada di tmerp.test hanya baris menu
+   **Approval Levels** (`SET_APPROVAL`), jadi approver PO Kontan di sana belum bisa diatur lewat layar.
 3. **Kas Kecil**: plafon (imprest) belum diisi — isi di Kas Kecil > Setting; saldo awal masuk lewat Top Up.
 4. **PQ**: `ANTHROPIC_API_KEY` belum diisi (PDF/foto penawaran belum terbaca otomatis; keputusan user: key & izin data
    penawaran dikirim ke Anthropic); .eml/.msg belum didukung.

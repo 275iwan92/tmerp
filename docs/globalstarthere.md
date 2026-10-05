@@ -1,5 +1,9 @@
 # GLOBAL_START_HERE — TMERP (baca ini pertama)
 
+> **BASI (ditandai 2026-10-05).** Isi di bawah = keadaan Agustus-September 2026 (peta modul, "branch auto/dev",
+> status submodule). Pegangan yang berlaku sekarang: `CLAUDE.md` dan `docs/globaluserrules.md`; pekerjaan terbuka:
+> `docs/BACKLOG.md`. Bagian "Keputusan terkunci" masih benar.
+
 > Pintu masuk tunggal seluruh ERP. Sesi baru cukup: **"baca START_HERE"**.
 > Pointer — detail di file lain. Baca `GLOBAL_RULES` + `<MODUL>_STATE` sesuai kerja.
 
