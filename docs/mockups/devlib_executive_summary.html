@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DevLib Executive Summary - Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f4f6fa; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; letter-spacing: .04em; }
+  .num { font-size: 22px; font-weight: 700; color: #1e293b; line-height: 1.1; }
+  .bar { height: 8px; border-radius: 4px; background: #e8edf5; overflow: hidden; display: flex; }
+  .bdg { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  th { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; text-align: left; padding: 5px 8px; white-space: nowrap; }
+  td { padding: 6px 8px; border-top: 1px solid #eef1f6; vertical-align: middle; }
+  .r { text-align: right; }
+  .iw { background: #2c7be5; } .jo { background: #8b5cf6; } .un { background: #cbd5e1; }
+  .star { color: #f0b849; } .star0 { color: #d5dbe6; }
+  .mi { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 7px; color: #cdd6ea; }
+  .mi.on { background: #43508a; color: #fff; font-weight: 600; }
+  .mi small { margin-left: auto; opacity: .6; }
+  .ttl { font-weight: 600; color: #334155; font-size: 13px; }
+  .q { font-size: 10.5px; color: #8a94a6; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<div class="flex" style="width:1440px">
+
+  <!-- Layer menu: Executive Summary view -->
+  <aside class="p-3 shrink-0" style="width:230px;background:#2c3e69;min-height:1500px">
+    <div class="flex items-center gap-2 text-white font-bold text-sm mb-3"><i class="fa-solid fa-cubes"></i> DevLib</div>
+    <div class="flex gap-1 mb-3">
+      <span class="flex-1 text-center py-1.5 rounded text-[11px]" style="background:#1f2d52;color:#9fb0d6"><i class="fa-solid fa-table-cells-large"></i> Operational</span>
+      <span class="flex-1 text-center py-1.5 rounded text-[11px] font-semibold" style="background:#fff;color:#2c3e69"><i class="fa-solid fa-chart-line"></i> Executive</span>
+    </div>
+    <div class="lbl mb-1" style="color:#8fa0c8">Executive Summary</div>
+    <div class="mi on"><i class="fa-solid fa-gauge-high w-4"></i> 1. Overview</div>
+    <div class="mi"><i class="fa-solid fa-layer-group w-4"></i> 2. By Module <small>10</small></div>
+    <div class="mi"><i class="fa-solid fa-shapes w-4"></i> 3. By Object <small>381</small></div>
+    <div class="mi"><i class="fa-solid fa-gears w-4"></i> 4. By Engine <small>25</small></div>
+    <div class="mi"><i class="fa-solid fa-puzzle-piece w-4"></i> 5. By Feature <small>16</small></div>
+    <div class="mi"><i class="fa-solid fa-user-gear w-4"></i> 6. By Agent <small>2</small></div>
+    <div class="mi"><i class="fa-solid fa-calendar-days w-4"></i> 7. By Time</div>
+    <div class="mi"><i class="fa-solid fa-star w-4"></i> 8. Quality &amp; Rating</div>
+    <div class="mi"><i class="fa-solid fa-triangle-exclamation w-4"></i> 9. Open Work &amp; Risk</div>
+    <div class="lbl mt-4 mb-1" style="color:#8fa0c8">Library</div>
+    <div class="mi"><i class="fa-solid fa-code w-4"></i> Code Snippets</div>
+  </aside>
+
+  <main class="p-5 space-y-4 flex-1">
+
+    <!-- 1 Overview -->
+    <section class="card p-4">
+      <div class="flex items-center"><span class="ttl">1. Overview</span><span class="q ml-2">Where does the project stand today?</span><span class="ml-auto q">05-Oct-2026</span></div>
+      <div class="grid grid-cols-6 gap-3 mt-3">
+        <div><div class="lbl">Built on v2</div><div class="num">94%</div><div class="bar mt-1"><i class="iw" style="width:94%"></i></div><div class="q mt-1">204 of 216 screens</div></div>
+        <div><div class="lbl">Approved by you</div><div class="num">0.5%</div><div class="bar mt-1"><i style="width:1%;background:#16a34a"></i></div><div class="q mt-1">1 locked &middot; 207 waiting</div></div>
+        <div><div class="lbl">Average rating</div><div class="num">&mdash;</div><div class="q mt-1">no rating yet</div></div>
+        <div><div class="lbl">Pace, last 7 days</div><div class="num">338</div><div class="q mt-1">commits &middot; 48 per day</div></div>
+        <div><div class="lbl">Objects reused</div><div class="num">140</div><div class="q mt-1">DevLib objects, 46 approved pages</div></div>
+        <div><div class="lbl">Open risks</div><div class="num text-amber-600">5</div><div class="q mt-1">see 9. Open Work</div></div>
+      </div>
+      <div class="mt-3 rounded-lg p-3" style="background:#f8fafc;border:1px dashed #cbd5e1">
+        <b class="text-slate-700">Analyst note.</b> Building is nearly done (94%), approval has barely started (1 screen). The project is no longer limited by building speed; it is limited by review. At 10 screens reviewed per working day, 207 screens need about 21 working days.
+      </div>
+    </section>
+
+    <div class="grid grid-cols-12 gap-4">
+
+      <!-- 2 By Module -->
+      <section class="card p-4 col-span-7">
+        <div class="flex items-center mb-1"><span class="ttl">2. By Module</span><span class="q ml-2">Which module is complete, which is not, and what is still missing?</span></div>
+        <table class="w-full">
+          <thead><tr><th>Module</th><th style="width:120px">Progress</th><th class="r">Screens</th><th class="r">Form</th><th class="r">Grid</th><th class="r">Report</th><th class="r">Engine</th><th class="r">Locked</th><th class="r">Rating</th><th>Missing</th></tr></thead>
+          <tbody>
+            <tr><td><b>Sales</b></td><td><div class="bar"><i class="iw" style="width:91%"></i><i style="width:9%;background:#f0b849"></i></div></td><td class="r">41 / 45</td><td class="r">23</td><td class="r">7</td><td class="r">15</td><td class="r">5</td><td class="r">1</td><td class="r">&mdash;</td><td class="q">4 screens still v1</td></tr>
+            <tr><td><b>Inventory</b></td><td><div class="bar"><i class="iw" style="width:100%"></i></div></td><td class="r">47 / 47</td><td class="r">22</td><td class="r">7</td><td class="r">18</td><td class="r">5</td><td class="r">0</td><td class="r">&mdash;</td><td class="q">&nbsp;</td></tr>
+            <tr><td><b>Production</b></td><td><div class="bar"><i class="iw" style="width:85%"></i></div></td><td class="r">17 / 20</td><td class="r">5</td><td class="r">14</td><td class="r">1</td><td class="r">10</td><td class="r">0</td><td class="r">&mdash;</td><td class="q">3 screens not built</td></tr>
+            <tr><td><b>Management Reports</b></td><td><div class="bar"></div></td><td class="r">0 / 3</td><td class="r">0</td><td class="r">0</td><td class="r">2</td><td class="r">0</td><td class="r">0</td><td class="r">&mdash;</td><td class="q">not started</td></tr>
+            <tr><td colspan="10" class="q">+ 6 more modules &middot; click a module to open its screens</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 6 By Agent -->
+      <section class="card p-4 col-span-5">
+        <div class="flex items-center mb-1"><span class="ttl">6. By Agent</span><span class="q ml-2">Who did the most, and how good was it?</span><span class="ml-2 bdg bg-amber-100 text-amber-700">example</span></div>
+        <table class="w-full">
+          <thead><tr><th>Measure</th><th class="r">Agent Iwan</th><th class="r">Agent Jo</th></tr></thead>
+          <tbody>
+            <tr><td>Commits</td><td class="r"><b>412</b></td><td class="r">305</td></tr>
+            <tr><td>Active days</td><td class="r"><b>21</b></td><td class="r">14</td></tr>
+            <tr><td>Commits per active day</td><td class="r">19.6</td><td class="r"><b>21.8</b></td></tr>
+            <tr><td>Screens built</td><td class="r"><b>38</b></td><td class="r">27</td></tr>
+            <tr><td>Objects / engines built</td><td class="r">9 / 3</td><td class="r"><b>12 / 4</b></td></tr>
+            <tr><td>Average rating from you</td><td class="r">4.1</td><td class="r"><b>4.4</b></td></tr>
+            <tr><td>Rated 3 stars or less</td><td class="r">4</td><td class="r"><b>1</b></td></tr>
+            <tr><td>Fixes after a low rating</td><td class="r">3 of 4 improved</td><td class="r">1 of 1 improved</td></tr>
+          </tbody>
+        </table>
+        <div class="q mt-2"><i class="fa-solid fa-circle-info"></i> "Most" and "best" are shown separately on purpose: volume without rating says nothing about satisfaction.</div>
+      </section>
+
+      <!-- 3 By Object -->
+      <section class="card p-4 col-span-12">
+        <div class="flex items-center mb-1"><span class="ttl">3. By Object</span><span class="q ml-2">Every form, grid, report, engine and DevLib object: who built it, when, and your rating.</span>
+          <div class="ml-auto flex gap-1"><span class="bdg bg-slate-800 text-white">All 381</span><span class="bdg bg-sky-100 text-sky-700">Form 80</span><span class="bdg bg-violet-100 text-violet-700">Grid 89</span><span class="bdg bg-teal-100 text-teal-700">Report 46</span><span class="bdg bg-orange-100 text-orange-700">Engine 25</span><span class="bdg bg-slate-100 text-slate-600">Object 140</span><span class="bdg bg-amber-100 text-amber-700">Not rated</span></div></div>
+        <table class="w-full">
+          <thead><tr><th>Module</th><th>Type</th><th>Name</th><th>Built by</th><th>Built</th><th>Last change</th><th>QC status</th><th>Your rating</th><th>Your note</th></tr></thead>
+          <tbody>
+            <tr><td>Sales</td><td><span class="bdg bg-sky-100 text-sky-700">Form</span></td><td><b>Customer Order</b></td><td><span class="bdg bg-slate-200 text-slate-600">Before tracking</span></td><td>26-Sep-2026</td><td>02-Oct-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-regular fa-star star0"></i></td><td>Tax line ok, Cancel flow needs a check.</td></tr>
+            <tr><td>Inventory</td><td><span class="bdg bg-sky-100 text-sky-700">Form</span></td><td><b>Stock Transfer</b></td><td><span class="bdg bg-slate-200 text-slate-600">Before tracking</span></td><td>02-Oct-2026</td><td>03-Oct-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-solid fa-star star"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i></td><td>Works, map is slow to open.</td></tr>
+            <tr><td>DevLib</td><td><span class="bdg bg-slate-100 text-slate-600">Object</span></td><td><b>Build Board</b></td><td><span class="bdg text-white iw">Agent Iwan</span></td><td>05-Oct-2026</td><td>05-Oct-2026</td><td><span class="bdg bg-amber-100 text-amber-700">Waiting QC</span></td><td><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i><i class="fa-regular fa-star star0"></i></td><td class="text-slate-300">click a star to rate</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 4 By Engine -->
+      <section class="card p-4 col-span-6">
+        <div class="flex items-center mb-1"><span class="ttl">4. By Engine</span><span class="q ml-2">Is each engine used, tested and documented?</span></div>
+        <table class="w-full">
+          <thead><tr><th>Engine</th><th>Area</th><th>Kind</th><th class="r">Used by</th><th class="r">Tests</th><th>Health</th></tr></thead>
+          <tbody>
+            <tr><td><b>Costing Engine</b></td><td>Pro-Cost</td><td>Calculation</td><td class="r">2 screens</td><td class="r">4</td><td><span class="bdg bg-emerald-100 text-emerald-700">Tested</span></td></tr>
+            <tr><td><b>Imposition Engine</b></td><td>Pro-Dev</td><td>Suggests</td><td class="r">2 screens</td><td class="r">1</td><td><span class="bdg bg-emerald-100 text-emerald-700">Tested</span></td></tr>
+            <tr><td><b>Flow Engine (Approval)</b></td><td>Approval</td><td>Document flow</td><td class="r">5 screens</td><td class="r">0</td><td><span class="bdg bg-red-100 text-red-700">No test</span></td></tr>
+            <tr><td><b>Usage Rate Engine</b></td><td>Pro-Dev</td><td>Suggests</td><td class="r">2 screens</td><td class="r">0</td><td><span class="bdg bg-red-100 text-red-700">No test</span></td></tr>
+            <tr><td colspan="6" class="q">+ 21 more engines &middot; "No test" is read from the engine list as registered today</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 5 By Feature -->
+      <section class="card p-4 col-span-6">
+        <div class="flex items-center mb-1"><span class="ttl">5. By Feature</span><span class="q ml-2">Which cross-module features exist, where are they installed?</span></div>
+        <table class="w-full">
+          <thead><tr><th>Feature</th><th>Finished</th><th>Installed on</th><th>State</th><th>Rating</th></tr></thead>
+          <tbody>
+            <tr><td><b>Multi-language + dictionary</b></td><td>03-Oct-2026</td><td>mockup + live</td><td><span class="bdg bg-amber-100 text-amber-700">3 items open</span></td><td class="q">not rated</td></tr>
+            <tr><td><b>Approval flow</b></td><td>30-Sep-2026</td><td>mockup + live</td><td><span class="bdg bg-amber-100 text-amber-700">TF waits for setting</span></td><td class="q">not rated</td></tr>
+            <tr><td><b>Chat</b></td><td>02-Oct-2026</td><td>mockup + live</td><td><span class="bdg bg-emerald-100 text-emerald-700">Done</span></td><td class="q">not rated</td></tr>
+            <tr><td><b>Warehouse map + pallets</b></td><td>03-Oct-2026</td><td>mockup + live</td><td><span class="bdg bg-amber-100 text-amber-700">Review pending</span></td><td class="q">not rated</td></tr>
+            <tr><td colspan="5" class="q">+ 12 more features</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 7 By Time -->
+      <section class="card p-4 col-span-5">
+        <div class="flex items-center mb-2"><span class="ttl">7. By Time</span><span class="q ml-2">When was the work done? Commits per week.</span></div>
+        <div class="flex items-end gap-2" style="height:110px">
+          <div class="flex-1 un rounded-t" style="height:14px"></div><div class="flex-1 un rounded-t" style="height:20px"></div><div class="flex-1 un rounded-t" style="height:17px"></div><div class="flex-1 un rounded-t" style="height:22px"></div><div class="flex-1 un rounded-t" style="height:19px"></div><div class="flex-1 un rounded-t" style="height:24px"></div><div class="flex-1 un rounded-t" style="height:42px"></div><div class="flex-1 un rounded-t" style="height:110px"></div><div class="flex-1 iw rounded-t" style="height:4px"></div>
+        </div>
+        <div class="flex justify-between q mt-1"><span>Aug</span><span>Sep</span><span>this week</span></div>
+        <div class="q mt-2">Filters: week / month, per agent, per module. Also: screens built per week, screens locked per week.</div>
+      </section>
+
+      <!-- 8 Quality -->
+      <section class="card p-4 col-span-3">
+        <div class="ttl mb-2">8. Quality &amp; Rating</div>
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2"><span class="w-8">5 <i class="fa-solid fa-star star"></i></span><div class="bar flex-1"><i style="width:40%;background:#16a34a"></i></div><span class="w-5 r">0</span></div>
+          <div class="flex items-center gap-2"><span class="w-8">4 <i class="fa-solid fa-star star"></i></span><div class="bar flex-1"><i style="width:30%;background:#84cc16"></i></div><span class="w-5 r">0</span></div>
+          <div class="flex items-center gap-2"><span class="w-8">3 <i class="fa-solid fa-star star"></i></span><div class="bar flex-1"><i style="width:18%;background:#f0b849"></i></div><span class="w-5 r">0</span></div>
+          <div class="flex items-center gap-2"><span class="w-8">2 <i class="fa-solid fa-star star"></i></span><div class="bar flex-1"><i style="width:8%;background:#f97316"></i></div><span class="w-5 r">0</span></div>
+          <div class="flex items-center gap-2"><span class="w-8">1 <i class="fa-solid fa-star star"></i></span><div class="bar flex-1"><i style="width:4%;background:#dc2626"></i></div><span class="w-5 r">0</span></div>
+        </div>
+        <div class="q mt-2">Plus: guard tests 5 of 5 pass &middot; 89 test files &middot; rating trend after fixes.</div>
+      </section>
+
+      <!-- 9 Open work -->
+      <section class="card p-4 col-span-4">
+        <div class="ttl mb-2">9. Open Work &amp; Risk</div>
+        <ul class="space-y-1.5">
+          <li><span class="bdg bg-red-100 text-red-700">High</span> 207 screens built but not reviewed</li>
+          <li><span class="bdg bg-red-100 text-red-700">High</span> Payroll encryption decided, not installed</li>
+          <li><span class="bdg bg-amber-100 text-amber-700">Medium</span> Management Reports: 0 of 3 built</li>
+          <li><span class="bdg bg-amber-100 text-amber-700">Medium</span> 4 Sales screens still on v1</li>
+          <li><span class="bdg bg-slate-200 text-slate-600">Low</span> 3D mockup generator not designed</li>
+        </ul>
+        <div class="q mt-2">Severity is set by the analyst (agent) and can be changed by you.</div>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>
