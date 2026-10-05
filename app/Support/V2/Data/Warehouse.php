@@ -238,4 +238,43 @@ final class Warehouse
             return [$b->location_id => $b->location_code.' · '.$free.$room.($s['status'] === 'EMPTY' ? ' · '.t('empty') : '')];
         })->all();
     }
+
+    // Isi objek form khusus x-mp::inv.warehouse-desk (layar Warehouse Map): pemilih gedung + pintasan, peta (x-dl::wh-map),
+    // kapasitas per lantai, ringkasan, dan pembuat bin. 'wh' null = belum ada gedung; 'map' null = gedung belum punya ukuran.
+    public static function desk(string $home): array
+    {
+        $wh = self::current(request()->integer('wh') ?: null);
+        $screen = fn (string $slug) => route('v2.screen', $slug);
+        if (! $wh) {
+            return ['wh' => null, 'buildingsUrl' => $screen('wh-buildings')];
+        }
+        $map = $wh->hasLayout() ? self::map($wh) : null;
+        $url = fn (string $name) => str_replace('987654321', '{id}', route($name, ['id' => 987654321]));
+        $zones = $wh->zones()->where('activate', true)->get();
+        $title = $wh->warehouse_code.' · '.$wh->warehouse_name;
+
+        return [
+            'wh' => $wh->id_warehouse, 'home' => $home, 'title' => $title, 'options' => self::options(), 'buildingsUrl' => $screen('wh-buildings'), 'zonesUrl' => $screen('wh-zones'),
+            'links' => [['fa-building', 'Buildings', $screen('wh-buildings')], ['fa-vector-square', 'Storage Areas', $screen('wh-zones')],
+                ['fa-table-cells', 'Bins', $screen('wh-bins')], ['fa-layer-group', 'Stack Monitor', $screen('stack-monitor')]],
+            'generate' => ['show' => $zones->isNotEmpty(), 'action' => route('v2.wh.bins.generate'),
+                'zones' => $zones->mapWithKeys(fn (WhZone $z) => [$z->id_zone => $z->zone_code.' · '.$z->zone_name.' · '.t('Floor').' '.$z->floor_no.' · '.$z->storage_mode])->all()],
+            'map' => $map ? [
+                'width' => $map['width'], 'height' => $map['height'], 'outline' => $map['outline'], 'floors' => $map['floors'], 'bins' => $map['bins'],
+                'floor' => request()->integer('floor') ?: null, 'selected' => request()->integer('bin') ?: null, 'saveUrl' => route('v2.wh.zone-move'),
+                'restackUrl' => str_replace(['987654321', '/restack/up'], ['{id}', '/restack/{dir}'], route('v2.wh.pallet.restack', ['id' => 987654321, 'dir' => 'up'])),
+                'actions' => [
+                    ['label' => t('Transfer'), 'icon' => 'fa-right-left', 'tone' => 'primary', 'when' => 'stock', 'post' => true, 'url' => $url('v2.wh.bin.transfer')],
+                    ['label' => t('Label'), 'icon' => 'fa-qrcode', 'url' => $url('v2.wh.bin.label')],
+                    ['label' => t('Block'), 'icon' => 'fa-ban', 'tone' => 'danger', 'when' => 'usable', 'post' => true, 'reason' => true, 'confirm' => t('Block this bin? It can no longer receive stock until it is unblocked.'), 'url' => $url('v2.wh.bin.block')],
+                    ['label' => t('Unblock'), 'icon' => 'fa-circle-check', 'when' => 'blocked', 'post' => true, 'url' => $url('v2.wh.bin.unblock')],
+                ],
+                'capacity' => $map['capacity'], 'missingHeight' => collect($map['capacity'])->contains(fn (array $f) => $f['height'] === null),
+                'summary' => str_replace([':area', ':floors', ':bins', ':used', ':cap', ':months'],
+                    [Locale::number($map['totals']['area']), (string) $wh->floors(), Locale::number($map['totals']['bins']), Locale::number($map['totals']['used_kg']), Locale::number($map['totals']['capacity_kg']), (string) WarehouseStock::deadMonths()],
+                    t('Floor area :area m2 on :floors floor(s), :bins bins, :used of :cap kg in use. Red = dead stock: the item has not moved for more than :months months (moving it to another bin does not count).')),
+                'unassigned' => $map['unassigned'] ? str_replace(':n', (string) $map['unassigned'], t(':n bins of this building have no storage area yet, so they are not on the map. Set their area in Bins.')) : null,
+            ] : null,
+        ];
+    }
 }
