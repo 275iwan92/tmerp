@@ -97,7 +97,7 @@ class LocaleNumberTest extends TestCase
 
     public function test_money_and_decimal_fields_render_in_display_language(): void
     {
-        foreach (['id' => ['1.250.000', '12,50'], 'en' => ['1,250,000', '12.50']] as $lang => [$money, $dec]) {
+        foreach (['id' => ['1.250.000,00', '12,50'], 'en' => ['1,250,000.00', '12.50']] as $lang => [$money, $dec]) {
             config(['devlib.lang' => $lang]);
             $html = Blade::render('<x-dl::field.money name="m" :value="$m" /><x-dl::field.decimal name="d" :value="$d" />', ['m' => '1250000.00', 'd' => '12.5']);
             $this->assertStringContainsString('value="'.$money.'"', $html, $lang);

@@ -5,7 +5,7 @@
 <div class="dl-prefix {{ $showToggle() ? 'has-numtg' : '' }}" data-dl-prefix data-dl-money>
     <input type="hidden" name="{{ $name }}_currency" value="{{ $cur['code'] }}" data-dl-prefix-value>
     <button type="button" class="dl-prefix__btn" data-dl-dd-toggle><span data-dl-prefix-a>{{ $cur['symbol'] }}</span><span data-dl-prefix-b>{{ $cur['code'] }}</span></button>
-    <input id="{{ $uid }}" type="text" inputmode="numeric" name="{{ $name }}" class="dl-input dl-input--boxed dl-input--prefixed" value="{{ \Devlib\Locale::input($value) === null ? $value : \Devlib\Locale::number($value, $decimals) }}" placeholder="{{ $placeholder ?? '0' }}" data-dl-money-input data-dl-decimals="{{ $decimals }}" data-dl-num @disabled($disabled) @readonly($readonly)>
+    <input id="{{ $uid }}" type="text" inputmode="decimal" name="{{ $name }}" class="dl-input dl-input--boxed dl-input--prefixed" value="{{ \Devlib\Locale::input($value) === null ? $value : \Devlib\Locale::number($value, $decimals) }}" placeholder="{{ $placeholder ?? \Devlib\Locale::number(0, $decimals) }}" data-dl-money-input data-dl-decimals="{{ $decimals }}" data-dl-num @disabled($disabled) @readonly($readonly)>
     @include('devlib::components.field._num-toggle')
     <div class="dl-dd__panel" data-dl-dd-panel>
         <div class="dl-dd__search"><input type="text" placeholder="{{ \Devlib\Lang::text('Search...') }}" data-dl-dd-search></div>

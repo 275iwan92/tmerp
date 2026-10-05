@@ -4,14 +4,14 @@ namespace Devlib\Components\Field;
 
 // Nominal uang + pilihan mata uang. words = tampilkan terbilang di bawahnya, mengikuti mata uang terpilih
 // (IDR -> "satu juta dua ratus lima puluh ribu rupiah"). Tanpa words = nominal saja.
-// decimals = jumlah desimal awal (bawaan 0, rupiah bulat); user mengubahnya lewat toggle "00".
+// decimals = jumlah desimal awal (bawaan 2, user 2026-10-05); user mengubahnya lewat toggle "00".
 class Money extends Field
 {
     public function __construct(
         public array $currencies = [],
         public string $currency = 'IDR',
         public bool $words = false,
-        public int $decimals = 0,
+        public int $decimals = 2,
         public bool $toggle = true,
         string $name = '',
         string $label = '',

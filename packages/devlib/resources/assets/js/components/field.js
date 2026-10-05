@@ -127,6 +127,7 @@
         if (money) {
           // Nilai mentah dari DB (1250000.00) dibulatkan dulu -- bukan dibuang titiknya (dulu jadi 125000000).
           if (/^-?\d+\.\d+$/.test(mi.value.trim()) && !(NUM.grp === '.' && /^\d{1,3}(\.\d{3})+$/.test(mi.value.trim()))) mi.value = md === 0 ? String(Math.round(+mi.value.trim())) : mfmt(+mi.value.trim());
+          else if (md !== 0) { const v = parseNum(mi.value); if (mi.value.trim() !== '' && !isNaN(v)) mi.value = mfmt(v); }
           mi.addEventListener('input', () => { if (md !== 0) mi.value = mi.value.replace(/[^0-9.,-]/g, ''); updMoney(); });
           mi.addEventListener('focus', () => { if (md !== 0 && !mi.readOnly) { mi.value = numRaw(mi.value); mi.select(); } });
           mi.addEventListener('blur', () => { const v = parseNum(mi.value); if (md !== 0 && mi.value.trim() !== '' && !isNaN(v)) mi.value = mfmt(v); });
