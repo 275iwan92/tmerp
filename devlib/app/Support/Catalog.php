@@ -209,6 +209,7 @@ final class Catalog
                 'pages' => [
                     'sf-promise-book' => $page('Customer Plan Delivery (promise book)', 'fa-solid fa-truck-ramp-box', ['promise-book' => ['Promise book: customer slot against production ready, with the PPIC / Sales / Operational Manager cards and the negotiation log', ['MockupParts\\Components\\Sales\\PromiseBook']]]),
                     'sf-petty-cash' => $page('Petty Cash', 'fa-solid fa-wallet', ['petty-cash' => ['Petty cash desk: balance head, then one mode — transaction, cash PO (advance / settlement / reimburse), top up, setting or list', ['MockupParts\\Components\\Acc\\PettyCash']]]),
+                    'sf-label-print' => $page('Label Printing (location and item)', 'fa-solid fa-qrcode', ['label-print' => ['Label print form: notice, building / area filter, what to print, label size, paper and copies; one object for location labels and item labels', ['MockupParts\\Components\\Inv\\LabelPrint']]]),
                 ]],
             // Daftar ENGINE aplikasi (user 2026-10-02): kegunaan, input, output, cara kerja. Isinya dibuat tmerp
             // (`php artisan engine:catalog` -> resources/data/v2/engines.json), objeknya x-dl::engine-catalog.

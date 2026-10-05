@@ -14,6 +14,7 @@ use App\Models\Master\WhZone;
 use App\Services\Inventory\PalletService;
 use App\Services\Inventory\WarehouseStock;
 use Devlib\Components\Label;
+use Devlib\Components\LabelSheet;
 use Devlib\Locale;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -334,5 +335,72 @@ final class Labels
         }
 
         return ['type' => 'none', 'code' => $code];
+    }
+
+    // Isi objek form khusus x-mp::inv.label-print untuk layar Print Location Label: gedung -> area (mencentang semua bin
+    // area itu) -> bin, ukuran, kertas, jumlah lembar. 'empty' terisi = belum ada gedung, objek hanya menampilkan pesan itu.
+    public static function locationForm(string $home): array
+    {
+        $wh = Warehouse::current(request()->integer('wh') ?: null);
+        $form = ['title' => 'Print Location Label', 'icon' => 'fa-qrcode', 'layout' => 'row', 'notice' => null, 'filter' => null, 'nothing' => null, 'print' => null,
+            'description' => 'A label for every bin: its code, storage area, capacity (weight, volume, floor area), a QR code for the phone camera and a barcode for the scanner. The colour band shows the kind of storage area.',
+            'legend' => self::colorLegend('location'), 'empty' => $wh ? null : ['No warehouse yet', 'Add a building and its bins first.']];
+        if (! $wh) {
+            return $form;
+        }
+        $zoneId = request()->integer('zone') ?: null;
+        $form['filter'] = ['action' => $home, 'fields' => [
+            ['wh', 'Building', Warehouse::options(), $wh->id_warehouse, ['tm2mst.wh_warehouse']],
+            ['zone', 'Storage area (ticks all its bins)', $wh->zones()->where('activate', true)->get()
+                ->mapWithKeys(fn ($z) => [$z->id_zone => $z->zone_code.' · '.$z->zone_name.' · '.t('Floor').' '.$z->floor_no])->all(), $zoneId, ['tm2mst.wh_zone']],
+        ]];
+        $form['print'] = self::printPart(['type' => 'location'], 'Bins', self::binOptions($wh->id_warehouse),
+            // Area dipilih = semua bin area itu langsung tercentang.
+            $zoneId ? WhLoc::query()->where('zone_id', $zoneId)->where('activate', true)->pluck('location_id')->map(fn ($v) => (string) $v)->all() : [],
+            ['tm2mst.wh_loc'], null);
+
+        return $form;
+    }
+
+    // Isi objek yang sama untuk layar Print Item Label: posisi stok satu gedung, atau (?receipt=) item satu penerimaan barang
+    // yang sudah tercentang semua.
+    public static function itemForm(string $home): array
+    {
+        $pv = Pallets::receipt(request()->integer('receipt') ?: null);
+        $wh = Warehouse::current(request()->integer('wh') ?: null);
+        $form = ['title' => 'Print Item Label', 'icon' => 'fa-tag', 'layout' => 'stack', 'notice' => null, 'filter' => null, 'nothing' => null, 'print' => null,
+            'description' => 'A label for stock that is in a bin now: item code and name, quantity, bin, arrival date, lot and expiry date, a QR code and a barcode. The colour band shows the stock class; a red stripe means dead stock or expired.',
+            'legend' => self::colorLegend('item'), 'empty' => $wh || $pv ? null : ['No warehouse yet', 'Add a building and its bins first.']];
+        if (! $wh && ! $pv) {
+            return $form;
+        }
+        if ($pv) {
+            $options = collect(PalletService::receiptLines($pv))->pluck('position')->filter()->keyBy('key')->map(fn (array $p) => self::positionText($p))->all();
+            $form['notice'] = [
+                'message' => str_replace([':no', ':date'], [$pv->label(), (string) Locale::d($pv->i_doc_date)], t('Item labels for goods receipt :no, received :date. The items of this receipt are already ticked.')),
+                'buttons' => [['back', 'Back to Receipt', route('v2.screen', 'purchase-receive').'?id='.$pv->pv_id],
+                    ['fa-pallet', 'Pallet Labels of this Receipt', route('v2.screen', 'label-pallet').'?receipt='.$pv->pv_id]],
+            ];
+        } else {
+            $options = self::positionOptions($wh->id_warehouse);
+            $form['filter'] = ['action' => $home, 'fields' => [['wh', 'Building', Warehouse::options(), $wh->id_warehouse, ['tm2mst.wh_warehouse']]]];
+        }
+        if (! $options) {
+            $form['nothing'] = $pv ? 'This receipt put no stock into a bin, so there is nothing to label.' : 'This building holds no stock, so there is nothing to label.';
+
+            return $form;
+        }
+        $form['print'] = self::printPart(['type' => 'item', 'back' => 'label-item'] + ($pv ? ['rid' => $pv->pv_id] : []), 'Stock (item | bin | on hand)', $options,
+            $pv ? array_keys($options) : [], ['tm2inv.v_rm_onhand', 'tm2inv.v_sfg_onhand', 'tm2inv.v_fg_onhand'],
+            'One label per pack or stack: type how many packs carry the same label.');
+
+        return $form;
+    }
+
+    private static function printPart(array $hidden, string $keysLabel, array $options, array $picked, array $sources, ?string $copiesHint): array
+    {
+        return ['action' => route('v2.wh.labels.print'), 'hidden' => $hidden, 'keysLabel' => $keysLabel, 'options' => $options, 'picked' => $picked,
+            'sources' => $sources, 'copiesHint' => $copiesHint, 'sizes' => Label::SIZES, 'papers' => array_map(fn (string $p) => t($p), LabelSheet::PAPERS),
+            'historyUrl' => route('v2.screen', 'inv-label-history')];
     }
 }
