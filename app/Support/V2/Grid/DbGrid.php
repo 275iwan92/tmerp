@@ -8,7 +8,9 @@ use Devlib\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
+use Throwable;
 
 // Grid mockup.test yang datanya SELALU dari database (user 2026-09-30: "pakai object oriented, semua grid ambil
 // datanya dari database"). Satu turunan = satu layar grid; turunan hanya mendeklarasikan query, kolom, dan pemetaan
@@ -288,6 +290,53 @@ abstract class DbGrid
 
     protected string $activeColumn = 'activate';
 
+    // Jenis kolom angka dibaca dari DATABASE, bukan ditulis ulang di tiap layar (user 2026-10-05: "cukup diubah di induk,
+    // yang lain ikut"). Kolom 'number' yang kuncinya = nama kolom tabel sumber: kolom bilangan bulat -> type integer,
+    // kolom decimal / float -> 'decimal' => true. Kolom yang sudah menyebut 'decimals' / 'decimal', atau yang kuncinya
+    // bukan nama kolom tabel (hasil hitung, alias), dibiarkan. Objek DevLib (x-dl::grid, x-dl::lookup-grid) lalu
+    // menampilkannya sesuai objek field: bulat = spinner / tanpa desimal, desimal = tombol ,00.
+    public function typedColumns(): array
+    {
+        $db = $this->numberKinds();
+
+        return array_map(function (array $c) use ($db) {
+            if (($c['type'] ?? 'text') !== 'number' || array_key_exists('decimals', $c) || isset($c['decimal']) || ! isset($db[$c['key']])) {
+                return $c;
+            }
+
+            return $db[$c['key']] === 'integer' ? ['type' => 'integer'] + $c : $c + ['decimal' => true];
+        }, $this->columns());
+    }
+
+    /** @return array<string, string> nama kolom => integer|decimal, dari tabel-tabel models() */
+    private function numberKinds(): array
+    {
+        static $memo = [];
+        if (isset($memo[static::class])) {
+            return $memo[static::class];
+        }
+        $kinds = [];
+        try {
+            foreach ($this->models() as $class) {
+                $m = new $class;
+                foreach (Schema::connection($m->getConnectionName())->getColumns($m->getTable()) as $col) {
+                    $kind = match (true) {
+                        in_array($col['type_name'], ['tinyint', 'smallint', 'mediumint', 'int', 'bigint', 'integer'], true) => 'integer',
+                        in_array($col['type_name'], ['decimal', 'numeric', 'float', 'double'], true) => 'decimal',
+                        default => null,
+                    };
+                    if ($kind) {
+                        $kinds[$col['name']] ??= $kind;
+                    }
+                }
+            }
+        } catch (Throwable) {
+            // grid tanpa query / tabel belum ada: kolom tampil seperti yang ditulis layar
+        }
+
+        return $memo[static::class] = $kinds;
+    }
+
     // Lookup lintas-database satu kali per halaman (pola 1 CLAUDE.md §2), dipanggil sebelum row().
     protected function prefetch(Collection $items): void {}
 
@@ -354,7 +403,7 @@ abstract class DbGrid
         return [
             'id' => $this->slug(),
             'rows' => array_map(fn ($r) => array_diff_key($r, array_flip($this->restrictedKeys())), $this->rows()),
-            'columns' => array_values(array_filter($this->columns(), fn ($c) => ! in_array($c['key'], $this->restrictedKeys(), true))),
+            'columns' => array_values(array_filter($this->typedColumns(), fn ($c) => ! in_array($c['key'], $this->restrictedKeys(), true))),
             'stats' => $this->stats(),
             'filters' => $this->filters(),
             'tabs' => $this->tabs(),

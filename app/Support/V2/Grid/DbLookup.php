@@ -68,7 +68,7 @@ abstract class DbLookup extends DbGrid
 
     public function props(): array
     {
-        return ['rows' => $this->rows(), 'columns' => $this->columns(), 'saveUrl' => route('v2.lookup.save', $this->slug()),
+        return ['rows' => $this->rows(), 'columns' => $this->typedColumns(), 'saveUrl' => route('v2.lookup.save', $this->slug()),
             'source' => $this->sourceText()];
     }
 

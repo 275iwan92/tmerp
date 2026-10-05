@@ -49,7 +49,7 @@ class UomConversionLookup extends MasterDataLookup
 
         return [
             ['key' => 'uom_src', 'label' => 'From (1 unit)', 'type' => 'select', 'options' => $units, 'required' => true, 'width' => '260px'],
-            ['key' => 'conversion_value', 'label' => 'Value', 'type' => 'number', 'decimal' => true, 'required' => true, 'width' => '140px'],
+            ['key' => 'conversion_value', 'label' => 'Value', 'type' => 'number', 'required' => true, 'width' => '140px'],
             ['key' => 'uom_dst', 'label' => 'To', 'type' => 'select', 'options' => $units, 'required' => true, 'width' => '260px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '80px'],
         ];

@@ -68,7 +68,7 @@ class ConstantsLookup extends DbLookup
             ['key' => 'category_code', 'label' => 'Category', 'type' => 'select', 'options' => $categories, 'width' => '170px'],
             ['key' => 'constant_group', 'label' => 'Group', 'case' => 'uppercase', 'width' => '150px'],
             ['key' => 'constant_key', 'label' => 'Key', 'required' => true, 'unique' => true, 'lockSaved' => true, 'case' => 'uppercase', 'width' => '270px'],
-            ['key' => 'constant_number', 'label' => 'Number Value', 'type' => 'number', 'decimal' => true, 'width' => '140px'],
+            ['key' => 'constant_number', 'label' => 'Number Value', 'type' => 'number', 'width' => '140px'],
             ['key' => 'constant_text', 'label' => 'Text Value', 'width' => '260px'],
             ['key' => 'description', 'label' => 'Description', 'width' => '420px'],
             ['key' => 'activate', 'label' => 'Active', 'type' => 'check', 'width' => '80px'],
