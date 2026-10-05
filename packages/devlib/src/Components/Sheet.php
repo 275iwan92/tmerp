@@ -10,6 +10,8 @@ namespace Devlib\Components;
 // 'lockSaved' => true: kolom kunci (kode) hanya bisa diisi di baris BARU; di baris yang sudah tersimpan selnya terkunci
 //   (kode sudah dirujuk data lain -- baris cukup dinonaktifkan).
 // Kolom teks: badge aa/Aa/AA di sel yang diedit (seperti x-dl::field.text), diingat per kolom; 'case' => uppercase|capitalize = awal.
+// Sel angka mengikuti objek field (user 2026-10-05): number tanpa 'decimals' (atau 'decimals' => 0) / type integer = bilangan bulat
+// dengan spinner; 'decimals' => n atau 'decimal' => true (desimal bebas) atau money = tombol ,00 (0 / 2 / 4 / kalkulator).
 // Kolom angka: 'decimals' => n = selalu tampil n digit (18.450,00). Edit seperti sel Excel: angka mentah (1250000,5), format saat keluar sel.
 // Kolom date: tampil dd-Mmm-yyyy, ketik 10-10-26 / 10 okt / 2026-10-10 (disimpan YYYY-MM-DD). time: ketik 8 / 830 / 8.30 -> 08:30.
 // Save All -> validasi -> event dl:sheet-save {rows, changed}. Sel berubah ditandai; salah dimerahkan.

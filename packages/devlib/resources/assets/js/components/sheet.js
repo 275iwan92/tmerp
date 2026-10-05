@@ -72,7 +72,7 @@
         const dec = e.target.closest('[data-s-dec]');
         if (dec) {
           e.preventDefault(); const td = dec.closest('td'), c = +td.dataset.c, col = this.cols[c], steps = this.decSteps(col);
-          col._dv = steps[(steps.indexOf(col._dv === undefined ? (col.decimals ?? 2) : col._dv) + 1) % steps.length];
+          col._dv = steps[(steps.indexOf(this.decNow(col)) + 1) % steps.length];
           this.anchor = null; this.cur = {r: +td.dataset.r, c}; this.render(); this.wrap.focus(); if (col._dv === null) this.openPick(); return;
         }
         const cal = e.target.closest('[data-s-cal]'); if (cal) { e.preventDefault(); const td = cal.closest('td'); this.anchor = null; this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.render(); this.wrap.focus(); this.openPick(); return; }
@@ -188,10 +188,12 @@
 
     // Sel angka mengikuti objek field (user 2026-10-05): bilangan bulat = spinner (x-dl::field.number),
     // desimal / uang = tombol ,00 (x-dl::field.decimal / field.money: 0 / ,00 / ,0000 / kalkulator).
-    int(c) { return c.type === 'integer' || (c.type === 'number' && !c.decimals); }
-    decSteps(c) { return [...new Set([0, 2, 4, c.decimals ?? 2])].sort((a, b) => a - b).concat([null]); }
-    decView(c) { return c._dv === undefined ? (c.decimals ?? (c.type === 'money' ? 0 : null)) : c._dv; }
-    decLabel(c) { const d = c._dv === undefined ? (c.decimals ?? 2) : c._dv; return d === null ? '<i class="fa-solid fa-calculator"></i>' : d === 0 ? '0' : NUM.dec + '0'.repeat(d); }
+    // number tanpa decimals = bulat; desimal bebas (tanpa jumlah digit tetap, mis. faktor konversi 0,001) = 'decimal' => true.
+    int(c) { return c.type === 'integer' || (c.type === 'number' && !c.decimals && !c.decimal); }
+    decNow(c) { return c._dv === undefined ? (c.decimals ?? (c.type === 'money' ? 0 : 'free')) : c._dv; }
+    decSteps(c) { return (c.decimals == null && c.type !== 'money' ? ['free'] : []).concat([...new Set([0, 2, 4, c.decimals ?? 2])].sort((a, b) => a - b), [null]); }
+    decView(c) { const d = this.decNow(c); return d === 'free' || d === null ? null : d; }
+    decLabel(c) { const d = this.decNow(c); return d === null ? '<i class="fa-solid fa-calculator"></i>' : d === 'free' ? NUM.dec + '##' : d === 0 ? '0' : NUM.dec + '0'.repeat(d); }
 
     isText(c) { return c.type === 'text'; }
 
