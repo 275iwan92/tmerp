@@ -7,6 +7,8 @@ use App\Models\Master\WhLoc;
 use App\Models\Pur\PvReceipt;
 use App\Services\Inventory\PalletService;
 use App\Services\Inventory\WarehouseStock;
+use Devlib\Components\Label;
+use Devlib\Components\LabelSheet;
 use Devlib\Locale;
 use Illuminate\Support\Collection;
 
@@ -180,5 +182,76 @@ final class Pallets
 
         return $p->logs->map(fn ($l) => ['id' => $l->id_pallet_log, 'at' => $l->created_at?->toDateTimeString(), 'action' => $actions[$l->action] ?? $l->action, 'before' => $l->qty_before, 'after' => $l->qty_after,
             'from' => $bins[$l->from_location_id] ?? null, 'to' => $bins[$l->to_location_id] ?? null, 'ref' => $l->ref_no, 'note' => $l->note, 'by' => $l->created_by])->values()->all();
+    }
+
+    // Isi objek form khusus x-mp::inv.pallet-label (layar Print Pallet Label). Alamat menentukan isinya: ?receipt= (dari
+    // Penerimaan Barang), ?wh= (gedung), ?pos= / ?pallet= / ?unit= (satu posisi stok yang dibuka). Bagian yang tidak berlaku = null.
+    public static function labelDesk(string $home): array
+    {
+        $pv = self::receipt(request()->integer('receipt') ?: null);
+        // ?unit= dari Stack Monitor: angka = id palet / pak, selain itu kunci posisi stok yang belum berlabel.
+        $unit = (string) request('unit', '');
+        $palletId = request()->integer('pallet') ?: (ctype_digit($unit) ? (int) $unit : 0);
+        $posKey = (string) request('pos', ctype_digit($unit) ? '' : $unit);
+        $picked = $palletId ? InvPallet::query()->find($palletId) : null;
+        $pos = $picked ? self::position($picked->positionKey()) : ($posKey !== '' ? self::position($posKey) : null);
+        $posBin = $pos ? WhLoc::query()->find($pos['location_id']) : null;
+        $wh = Warehouse::current($posBin?->warehouse_id ?: (request()->integer('wh') ?: null));
+        if (! $wh && ! $pv) {
+            return ['empty' => true];
+        }
+        $todo = self::todo($home, $wh?->id_warehouse, $pv);
+        $line = $pv && $pos ? collect($todo)->firstWhere('id', $pos['key']) : null;
+        $self = $home.'?'.http_build_query(array_filter(['receipt' => $pv?->pv_id, 'wh' => $pv ? null : $wh?->id_warehouse]));
+        $hidden = ['back' => 'label-pallet'] + ($pv ? ['rid' => $pv->pv_id] : []);
+        $desk = [
+            'empty' => false, 'receipt' => (bool) $pv, 'sizes' => Label::SIZES, 'papers' => array_map(fn (string $p) => t($p), LabelSheet::PAPERS),
+            'legend' => Labels::colorLegend('pallet'), 'expiryTones' => self::expiryTones(), 'pos' => null, 'all' => null,
+            'notice' => $pv ? [
+                'message' => str_replace([':no', ':date'], [$pv->label(), (string) Locale::d($pv->i_doc_date)], t('Pallet labels for goods receipt :no, received :date. Every pallet that arrived needs a label before it is put away.')),
+                'buttons' => [['back', 'Back to Receipt', route('v2.screen', 'purchase-receive').'?id='.$pv->pv_id],
+                    ['fa-tag', 'Item Labels of this Receipt', route('v2.screen', 'label-item').'?receipt='.$pv->pv_id], ['fa-pallet', 'All Pallet Label Work', $home]],
+            ] : null,
+            'filter' => $pv ? null : ['action' => $home, 'options' => Warehouse::options(), 'wh' => $wh->id_warehouse, 'historyUrl' => route('v2.screen', 'inv-label-history')],
+            'todo' => ['id' => 'pallet-todo-'.($pv?->pv_id ?? 'wh'.$wh?->id_warehouse), 'rows' => $todo, 'needTones' => self::needTones(),
+                'stats' => [['label' => 'All'], ['label' => 'Arrival label', 'where' => ['need' => self::need('NEW')], 'tone' => 'warn'], ['label' => 'Relabel after use', 'where' => ['need' => self::need('RELABEL')], 'tone' => 'tangerine']]],
+        ];
+        if ($pos) {
+            $pallets = $pos['pallets'];
+            $arrived = $pv?->i_doc_date?->toDateString() ?? $pos['arrived'] ?? now()->toDateString();
+            $uom = $pos['uom'];
+            $first = $picked ?? $pallets->first();
+            $desk['pos'] = [
+                'title' => $pos['code'].' · '.$pos['name'], 'backUrl' => $self,
+                'description' => str_replace([':bin', ':onhand', ':labelled', ':n'], [$pos['location_code'], Locale::decimal($pos['qty'], 2).' '.$uom, Locale::decimal($pos['pallet_qty'], 2).' '.$uom, (string) $pallets->count()],
+                    t('Bin :bin · :onhand on hand · :labelled on :n pallet label(s)')),
+                'relabelWarn' => $pos['need'] === 'RELABEL' ? str_replace(':qty', Locale::decimal($pos['excess'], 2).' '.$uom, t('The pallet labels show :qty more than the stock in this bin: stock was used. Relabel the pallet that was opened with what is left on it.')) : null,
+                'create' => $pos['unlabelled'] > 0 ? [
+                    'action' => route('v2.wh.pallet.create'), 'hidden' => ['position' => $pos['key']] + $hidden,
+                    'info' => str_replace(':qty', Locale::decimal($pos['unlabelled'], 2).' '.$uom, t(':qty in this bin is not on a pallet label yet. One line = one pallet: split the quantity with + Pallet, and copy the pallet code printed on the supplier label.')),
+                    'arrived' => $arrived, 'receiptNo' => $pv?->doc_no, 'receiptLocked' => (bool) $pv,
+                    'rows' => self::newRows($pos, $line['lot'] ?? null, $arrived, $line ? $line['received'] - $line['receipt_labelled'] : null),
+                    'codeHint' => t('as printed on the supplier label'), 'kinds' => self::kindOptions(),
+                ] : null,
+                'done' => $pos['unlabelled'] <= 0 && $pos['need'] === null,
+                'pallets' => $pallets->isNotEmpty() ? [
+                    'rows' => self::rows($pallets, $home), 'options' => self::options($pallets),
+                    'relabel' => ['action' => route('v2.wh.pallet.relabel'), 'picked' => $first->id_pallet,
+                        'remaining' => $picked || $pallets->count() === 1 ? $first->qty : null, 'kinds' => self::kindOptions(),
+                        'limitHint' => str_replace(':limit', Locale::number(WarehouseStock::remnantSheets()), t('Remnant limit: :limit sheets (Settings, Constants).')),
+                        'bins' => ['' => t('Stays in the same bin')] + Labels::binOptions((int) ($posBin?->warehouse_id ?? 0))],
+                    'reprint' => ['action' => route('v2.wh.labels.print'), 'hidden' => ['type' => 'pallet'] + $hidden,
+                        'picked' => $picked ? [(string) $picked->id_pallet] : $pallets->pluck('id_pallet')->map(fn ($v) => (string) $v)->all()],
+                ] : null,
+            ];
+        }
+        if (! $pv) {
+            $all = self::ofWarehouse($wh->id_warehouse);
+            $desk['all'] = ['id' => 'pallets-wh-'.$wh->id_warehouse, 'rows' => $all->isEmpty() ? [] : self::rows($all, $home),
+                'stats' => [['label' => 'All'], ['label' => 'Expired', 'where' => ['expiry_state' => self::expiry('EXPIRED')], 'tone' => 'danger'], ['label' => 'Expires soon', 'where' => ['expiry_state' => self::expiry('SOON')], 'tone' => 'warn'],
+                    ['label' => 'No expiry date', 'where' => ['expiry_state' => self::expiry('NONE')], 'tone' => 'neutral']]];
+        }
+
+        return $desk;
     }
 }
