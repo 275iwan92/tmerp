@@ -11,12 +11,14 @@ use Devlib\Lang;
 //   centang (Shift = rentang) + aksi massal, baris bisa dibuka, klik 2x = buka (LOCKED),
 //   export CSV = kolom yang tampil, pagination ala ScriptCase, setelan diingat per grid.
 //
-// columns: [['key', 'label', 'type' => text|identity|doc|number|money|date|badge|toggle,
+// columns: [['key', 'label', 'type' => text|identity|doc|integer|number|money|date|time|datetime|badge|toggle,
 //            doc = persegi dokumen Grid Transactional: 'key' = nomor dokumen, 'party' => kolom nama pihak (baris kedua; warna persegi dari nama ini),
 //            'code' => kolom kode (identity), 'avatar' => false (identity tanpa bulatan), 'tones' => [nilai => tone] (badge),
 //            'toneKey' => kolom baris yang membawa tone badge (bila teks badge berubah-ubah, mis. "Late 3 days"),
 //            'fallback' => kolom nama (image: tanpa foto -> inisial di kotak yang sama),
 //            'visible' => true, 'sortable' => true, 'sum' => false (money/number)]]
+// Sel hanya-tampil mengikuti objek field mode ReadOnly (user 2026-10-05): integer = bilangan bulat, number + 'decimals' => n = n digit
+//   desimal tetap, money = kode mata uang ('currency' => 'USD', bawaan IDR) + 'decimals', date / time / datetime = format DevLib.
 // stats/tabs: [['label', 'where' => [kolom => nilai|[nilai..]], 'tone']]  (tanpa where = total); stats 'default' => true = saringan awal
 // actions: master (Edit + Aktif/Nonaktif, Pilihan C) | worklist (Buka saja; Confirm/Approve TIDAK di grid, hanya di form) | none
 // link: nilai hasil transaksi (Grid Master, mis. 'Valued transactions'), hanya-baca; 'format' => money|number,

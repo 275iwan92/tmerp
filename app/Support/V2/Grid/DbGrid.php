@@ -227,7 +227,7 @@ abstract class DbGrid
             if ($type === 'date') {
                 $dates[] = $c['key'];
             }
-            $columns[] = array_filter(['key' => $c['key'], 'label' => $c['label'], 'type' => in_array($type, ['number', 'money', 'badge'], true) ? $type : 'text',
+            $columns[] = array_filter(['key' => $c['key'], 'label' => $c['label'], 'type' => in_array($type, ['number', 'money', 'badge'], true) ? $type : ($type === 'integer' ? 'number' : 'text'),
                 'sub' => $type === 'identity' ? ($c['code'] ?? null) : null, 'sum' => $c['sum'] ?? null, 'tones' => $c['tones'] ?? null], fn ($v) => $v !== null);
         }
         $rows = array_map(function (array $r) use ($dates) {
