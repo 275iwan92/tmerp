@@ -220,6 +220,11 @@ textarea.dl-input{resize:none;min-height:28px;line-height:1.3;overflow:hidden;di
 .dl-case::before{content:""}
 .dl-field--text .dl-case{margin-right:4px;padding:1px 5px;align-self:center;background:var(--dl-f-badge);border:1px solid var(--dl-f-line);border-radius:4px;color:var(--dl-f-badge-ink)}
 .dl-field--text:has(textarea) .dl-case{align-self:flex-start;margin-top:5px}
+/* toggle "00" isian angka (Decimal, Money): 0 / ,00 / ,0000 / kalkulator */
+.dl-numtg{margin-right:4px;padding:1px 5px;min-width:24px;justify-content:center;align-self:center;background:var(--dl-f-badge);border:1px solid var(--dl-f-line);border-radius:4px;color:var(--dl-f-badge-ink);font-size:calc(11px * var(--dl-font-scale));font-weight:700;font-family:var(--dl-font-mono);white-space:nowrap;line-height:1.5}
+.dl-field__box.has-numtg .dl-field__unit{position:static;margin-right:6px}.dl-field__box.has-numtg .dl-input.has-unit{padding-right:8px}
+.dl-prefix.has-numtg{position:relative}.dl-prefix.has-numtg .dl-numtg{position:absolute;right:1px;top:50%;transform:translateY(-50%)}.dl-prefix.has-numtg .dl-input{padding-right:54px}
+.dl-form.is-view .dl-numtg{display:none}
 .dl-field__unit{position:absolute;right:10px;font-size:calc(11.5px * var(--dl-font-scale));font-weight:600;color:var(--dl-f-muted);pointer-events:none}
 .dl-field__error{font-size:calc(11px * var(--dl-font-scale));color:var(--dl-danger);margin-top:1px;display:none}
 .dl-field.is-invalid .dl-field__error:not(:empty){display:block}

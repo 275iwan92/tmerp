@@ -1,7 +1,7 @@
 /* DevLib · Sheet */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase, numStr, NUM, DlDate, DlTime, T, Tf} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase, numStr, NUM, DlDate, DlTime, T, Tf, calcPanel} = Devlib.h;
   /* ============================ SHEET (spreadsheet) ============================ */
   class Sheet extends Devlib.Component {
     static selector = "[data-dl-sheet]";
@@ -121,36 +121,9 @@
       const cur = this.data[r][col.key], pad = n => String(n).padStart(2, '0'), p = document.createElement('div');
       const pick = v => { this.closePick(); if (String(v) !== String(cur ?? '')) this.apply([{r, k: col.key, v}]); this.wrap.focus(); };
       if (this.num(col)) {
-        // Kalkulator mini: + - x / saja, hitung kiri-ke-kanan dgn prioritas x / ; '=' / Enter = hasil masuk ke sel.
-        let ex = typeof cur === 'number' ? fmt.raw(cur) : '';  // desimal ikut bahasa (NUM.dec)
-        const calc = () => {
-          const t = ex.split(NUM.dec).join('.').match(/(\d+\.?\d*|\.\d+|[-+*/])/g) || []; if (!t.length) return null;
-          const nums = [], ops = []; let neg = false;
-          for (const x of t) { if ('+-*/'.includes(x) && nums.length === ops.length) { if (x === '-') { neg = !neg; continue; } return null; } if ('+-*/'.includes(x)) ops.push(x); else { nums.push(neg ? -x : +x); neg = false; } }
-          if (nums.length === ops.length) ops.pop();  // operator menggantung di akhir diabaikan
-          const a = [nums[0]], o = [];
-          ops.forEach((op, i) => { const n = nums[i + 1]; if (n == null) return; if (op === '*') a.push(a.pop() * n); else if (op === '/') a.push(a.pop() / n); else { o.push(op); a.push(n); } });
-          const v = o.reduce((s, op, i) => op === '+' ? s + a[i + 1] : s - a[i + 1], a[0]);
-          return isFinite(v) ? Math.round(v * 1e10) / 1e10 : null;
-        };
-        const show = () => { $(p, '[data-e]').textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') || '0'; const v = calc(); $(p, '[data-r]').textContent = v == null ? (ex ? '–' : '') : '= ' + fmt.num(v, col.decimals ?? 10); };
-        const key = k => {
-          if (k === 'C') ex = ''; else if (k === '⌫') ex = ex.slice(0, -1);
-          else if (k === '=') { const v = calc(); if (v == null) return toast(T('s_calc_bad'), 'danger'); return pick(col.decimals != null ? Math.round(v * 10 ** col.decimals) / 10 ** col.decimals : v); }
-          else if ('+-*/'.includes(k)) ex = /[-+*/]$/.test(ex) && k !== '-' ? ex.slice(0, -1) + k : ex + k;
-          else if (k === NUM.dec) { const seg = ex.split(/[-+*/]/).pop(); if (!seg.includes(NUM.dec)) ex += (seg ? '' : '0') + NUM.dec; }
-          else ex += k;
-          show();
-        };
+        // Kalkulator mini bersama (Devlib.h.calcPanel): '=' / Enter = hasil masuk ke sel.
         p.className = 'dl-pick__panel is-open dl-sheet__calpanel dl-calc'; p.tabIndex = -1;
-        p.innerHTML = '<div class="dl-calc__screen"><div class="dl-calc__expr" data-e></div><div class="dl-calc__res" data-r></div></div><div class="dl-calc__keys">'
-          + ['C', '⌫', '/', '*', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', NUM.dec].map(k => `<button type="button" data-k="${k}" class="${'+-*/'.includes(k) ? 'is-op' : k === '=' ? 'is-eq' : k === '0' ? 'is-zero' : ''}" ${k === '=' ? 'title="' + esc(T('s_calc_enter')) + '"' : ''}>${{'/': '÷', '*': '×', '-': '−'}[k] ?? k}</button>`).join('') + '</div>';
-        p.addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (b) key(b.dataset.k); });
-        p.addEventListener('keydown', e => {
-          const k = e.key === 'Enter' ? '=' : e.key === 'Backspace' ? '⌫' : e.key === 'Delete' || e.key === 'c' ? 'C' : e.key === '.' || e.key === ',' ? NUM.dec : e.key === 'x' ? '*' : e.key;
-          if (/^[0-9,+\-*/=C⌫]$/.test(k)) { e.preventDefault(); e.stopPropagation(); key(k); }
-        });
-        show();
+        calcPanel(p, {start: typeof cur === 'number' ? fmt.raw(cur) : '', decimals: col.decimals ?? null, onResult: pick});
       } else if (col.type === 'time') {
         const [h0, m0] = /^\d{2}:\d{2}$/.test(cur || '') ? cur.split(':').map(Number) : [8, 0];
         p.className = 'dl-pick__panel dl-pick__panel--time is-open dl-sheet__calpanel';

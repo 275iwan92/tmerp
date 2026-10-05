@@ -1,7 +1,34 @@
 /* DevLib · Field */
 (function (Devlib) {
   'use strict';
-  const {$, $$, CASES, CASE_LABEL, applyCase, bindPanel, T, Tf, words, fmt, NUM, dow2, parseNum, DlDate, DlTime, DlDateTime} = Devlib.h;
+  const {$, $$, CASES, CASE_LABEL, applyCase, bindPanel, calcPanel, T, Tf, words, fmt, NUM, dow2, parseNum, DlDate, DlTime, DlDateTime} = Devlib.h;
+
+  // Toggle "00" isian angka (user 2026-10-05, pengganti badge aa yang hanya cocok untuk huruf): klik berpindah
+  // 0 desimal -> 2 desimal -> 4 desimal -> kalkulator mini, ikon badge berganti tiap keadaan. Dipakai Decimal dan Money.
+  // apply(d) = isian memformat ulang dirinya (d null = keadaan kalkulator: desimal secukupnya, maks 4).
+  const NUM_STEPS = [0, 2, 4, null];
+  const numRaw = s => { const v = parseNum(s); return isNaN(v) ? s : String(v).replace('.', NUM.dec); };  // nilai mentah untuk diedit: 1234,5
+  function numToggle(root, input, start, apply) {
+    const btn = $(root, '[data-dl-dec-toggle]'); if (!btn) return;
+    const label = d => d === null ? '<i class="fa-solid fa-calculator"></i>' : d === 0 ? '0' : NUM.dec + '0'.repeat(d);
+    let i = NUM_STEPS.indexOf(start), panel = null; if (i < 0) i = 1;
+    const close = () => { if (panel) { panel.remove(); panel = null; } };
+    const open = () => {
+      close();
+      panel = document.createElement('div'); panel.className = 'dl-pick__panel is-open dl-sheet__calpanel dl-calc'; panel.tabIndex = -1;
+      const v = parseNum(input.value);
+      calcPanel(panel, {start: isNaN(v) || v === 0 ? '' : numRaw(v), decimals: 4, onResult: r => { input.value = fmt.num(r, 4); apply(null); input.dispatchEvent(new Event('change', {bubbles: true})); }});
+      document.body.appendChild(panel);
+      const b = (input.closest('.dl-field__box, .dl-prefix') || input).getBoundingClientRect(), up = innerHeight - b.bottom < panel.offsetHeight + 12 && b.top > panel.offsetHeight + 12;
+      Object.assign(panel.style, {position: 'fixed', left: Math.max(8, b.right - panel.offsetWidth) + 'px', top: (up ? b.top - panel.offsetHeight - 4 : b.bottom + 4) + 'px'});
+      panel.focus();
+    };
+    btn.innerHTML = label(start); btn.title = T('nt_tip');
+    btn.addEventListener('click', () => { i = (i + 1) % NUM_STEPS.length; const d = NUM_STEPS[i]; btn.innerHTML = label(d); close(); apply(d); input.dispatchEvent(new Event('change', {bubbles: true})); if (d === null) open(); });
+    document.addEventListener('mousedown', e => { if (panel && !panel.contains(e.target) && !btn.contains(e.target)) close(); });
+    document.addEventListener('keydown', e => { if (panel && e.key === 'Escape') { close(); btn.focus(); } });
+    addEventListener('scroll', e => { if (panel && !panel.contains(e.target)) close(); }, true);
+  }
 
   class Field extends Devlib.Component {
     static selector = ".dl-field";
@@ -81,11 +108,14 @@
       if (this.pre) {
         const p = bindPanel(this.pre, () => { if (p.search) { p.search.value = ''; p.search.dispatchEvent(new Event('input')); } });
         const money = this.pre.hasAttribute('data-dl-money'), mi = $(this.pre, '[data-dl-money-input]'), wt = $(this.el, '[data-dl-money-words]');
+        // md = jumlah desimal (toggle "00"; null = keadaan kalkulator). 0 = bawaan lama: angka bulat, ribuan diformat sambil mengetik.
+        // Selain 0 = ala sel Excel seperti Decimal (fokus = nilai mentah, keluar = diformat). Terbilang selalu dari bagian bulatnya.
+        let md = money ? +(mi.dataset.dlDecimals || 0) : 0;
+        const mfmt = v => md === null ? fmt.num(v, 4) : fmt.number(v, md);
         const updMoney = () => {
-          // Nilai mentah dari DB (1250000.00) dibulatkan dulu -- bukan dibuang titiknya (dulu jadi 125000000).
-          if (/^-?\d+\.\d{1,2}$/.test(mi.value.trim())) mi.value = String(Math.round(+mi.value.trim()));
-          const raw = mi.value.replace(/\D/g, '');
-          mi.value = raw ? BigInt(raw).toLocaleString('en-US').replace(/,/g, NUM.grp) : '';
+          let raw;
+          if (md === 0) { raw = mi.value.replace(/\D/g, ''); mi.value = raw ? BigInt(raw).toLocaleString('en-US').replace(/,/g, NUM.grp) : ''; }
+          else { const v = parseNum(mi.value); raw = isNaN(v) ? '' : String(Math.trunc(Math.abs(v))); }
           // Terbilang mengikuti mata uang yang dipilih (Rp -> rupiah, USD -> dolar, ...).
           if (wt) { const C = JSON.parse(wt.dataset.currencies), code = $(this.pre, '[data-dl-prefix-value]').value; wt.textContent = raw ? words(raw, C[code] || null) : ''; }
         };
@@ -94,18 +124,27 @@
           $(this.pre, '[data-dl-prefix-a]').textContent = it.dataset.a; $(this.pre, '[data-dl-prefix-b]').textContent = it.dataset.b;
           p.close(); if (money) updMoney();
         }));
-        if (money) { mi.addEventListener('input', updMoney); updMoney(); }
+        if (money) {
+          // Nilai mentah dari DB (1250000.00) dibulatkan dulu -- bukan dibuang titiknya (dulu jadi 125000000).
+          if (/^-?\d+\.\d+$/.test(mi.value.trim()) && !(NUM.grp === '.' && /^\d{1,3}(\.\d{3})+$/.test(mi.value.trim()))) mi.value = md === 0 ? String(Math.round(+mi.value.trim())) : mfmt(+mi.value.trim());
+          mi.addEventListener('input', () => { if (md !== 0) mi.value = mi.value.replace(/[^0-9.,-]/g, ''); updMoney(); });
+          mi.addEventListener('focus', () => { if (md !== 0 && !mi.readOnly) { mi.value = numRaw(mi.value); mi.select(); } });
+          mi.addEventListener('blur', () => { const v = parseNum(mi.value); if (md !== 0 && mi.value.trim() !== '' && !isNaN(v)) mi.value = mfmt(v); });
+          numToggle(this.el, mi, md, d => { const v = parseNum(mi.value); md = d; if (!isNaN(v)) mi.value = md === 0 ? String(Math.round(v)) : mfmt(v); updMoney(); });
+          updMoney();
+        }
       }
 
       this.dec = $(this.el, '[data-dl-decimal]');
       if (this.dec) {
-        const n = +this.dec.dataset.dlDecimal;
+        let n = +this.dec.dataset.dlDecimal;  // null = keadaan kalkulator (toggle "00"): desimal secukupnya, maks 4
         // Ala sel Excel (user 2026-09-30): fokus = nilai mentah (1234,5), ketik bebas, keluar = diformat bahasa tampilan (1.234,50).
         // Dikirim ke server sebagai kanonik oleh core ('formdata', data-dl-num).
-        const out = () => { const v = parseNum(this.dec.value); if (this.dec.value.trim() !== '' && !isNaN(v)) this.dec.value = fmt.number(v, n); };
-        this.dec.addEventListener('focus', () => { if (!this.dec.readOnly) { this.dec.value = fmt.raw(this.dec.value); this.dec.select(); } });
+        const out = () => { const v = parseNum(this.dec.value); if (this.dec.value.trim() !== '' && !isNaN(v)) this.dec.value = n === null ? fmt.num(v, 4) : fmt.number(v, n); };
+        this.dec.addEventListener('focus', () => { if (!this.dec.readOnly) { this.dec.value = numRaw(this.dec.value); this.dec.select(); } });
         this.dec.addEventListener('input', () => { this.dec.value = this.dec.value.replace(/[^0-9.,-]/g, ''); });
         this.dec.addEventListener('blur', out);
+        numToggle(this.el, this.dec, n, d => { n = d; out(); });
         out();
       }
 

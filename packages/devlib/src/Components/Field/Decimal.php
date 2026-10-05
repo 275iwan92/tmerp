@@ -8,6 +8,7 @@ class Decimal extends Field
     public function __construct(
         public int $decimals = 2,
         public ?string $unit = null,
+        public bool $toggle = true,
         string $name = '',
         string $label = '',
         ?string $tooltip = null,
@@ -24,6 +25,12 @@ class Decimal extends Field
         ?string $source = null,
     ) {
         parent::__construct($name, $label, $tooltip, $hint, $error, $value, $placeholder, $required, $disabled, $readonly, $icon, $size, $i18n, $source);
+    }
+
+    // Toggle "00" (0 / 2 / 4 desimal / kalkulator mini) mati sendiri untuk isian terkunci; :toggle="false" bila tidak diinginkan.
+    public function showToggle(): bool
+    {
+        return $this->toggle && ! $this->readonly && ! $this->disabled;
     }
 
     public function control(): string

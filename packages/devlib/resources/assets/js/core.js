@@ -240,6 +240,47 @@ window.Devlib = window.Devlib || {};
     return {panel, search, close: () => panel.classList.remove('is-open')};
   }
 
+  // Kalkulator mini (satu untuk Sheet dan toggle "00" isian angka): + - x / dan %, kiri-ke-kanan dgn prioritas x / ;
+  // '=' / Enter = onResult(nilai). % ala kalkulator: 200 + 10% = 220, 200 x 10% = 20, 50% = 0,5.
+  function calcPanel(p, {start = '', decimals = null, onResult}) {
+    let ex = start;  // desimal ikut bahasa (NUM.dec)
+    const ev = (nums, ops) => {
+      const a = [nums[0]], o = [];
+      ops.forEach((op, i) => { const n = nums[i + 1]; if (n == null) return; if (op === '*') a.push(a.pop() * n); else if (op === '/') a.push(a.pop() / n); else { o.push(op); a.push(n); } });
+      return o.reduce((s, op, i) => op === '+' ? s + a[i + 1] : s - a[i + 1], a[0]);
+    };
+    const calc = () => {
+      const t = ex.split(NUM.dec).join('.').match(/(\d+\.?\d*|\.\d+|[-+*/%])/g) || []; if (!t.length) return null;
+      const nums = [], ops = []; let neg = false;
+      for (const x of t) {
+        if (x === '%') { if (nums.length !== ops.length + 1) return null; const n = nums.pop(), op = ops[ops.length - 1]; nums.push(op === '+' || op === '-' ? ev(nums, ops.slice(0, -1)) * n / 100 : n / 100); continue; }
+        if ('+-*/'.includes(x) && nums.length === ops.length) { if (x === '-') { neg = !neg; continue; } return null; }
+        if ('+-*/'.includes(x)) ops.push(x); else { nums.push(neg ? -x : +x); neg = false; }
+      }
+      if (nums.length === ops.length) ops.pop();  // operator menggantung di akhir diabaikan
+      const v = ev(nums, ops);
+      return isFinite(v) ? Math.round(v * 1e10) / 1e10 : null;
+    };
+    const show = () => { $(p, '[data-e]').textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−') || '0'; const v = calc(); $(p, '[data-r]').textContent = v == null ? (ex ? '–' : '') : '= ' + fmt.num(v, decimals ?? 10); };
+    const key = k => {
+      if (k === 'C') ex = ''; else if (k === '⌫') ex = ex.slice(0, -1);
+      else if (k === '=') { let v = calc(); if (v == null) return toast(T('s_calc_bad'), 'danger'); if (decimals != null) v = Math.round(v * 10 ** decimals) / 10 ** decimals; ex = String(v).replace('.', NUM.dec); onResult(v); }
+      else if (k === '%') { if (/\d$/.test(ex)) ex += k; }
+      else if ('+-*/'.includes(k)) ex = /[-+*/]$/.test(ex) && k !== '-' ? ex.slice(0, -1) + k : ex + k;
+      else if (k === NUM.dec) { const seg = ex.split(/[-+*/]/).pop(); if (!seg.includes(NUM.dec) && !seg.includes('%')) ex += (seg ? '' : '0') + NUM.dec; }
+      else if (!ex.endsWith('%')) ex += k;
+      show();
+    };
+    p.innerHTML = '<div class="dl-calc__screen"><div class="dl-calc__expr" data-e></div><div class="dl-calc__res" data-r></div></div><div class="dl-calc__keys">'
+      + ['C', '⌫', '/', '*', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', NUM.dec, '%'].map(k => `<button type="button" data-k="${k}" class="${'+-*/%'.includes(k) ? 'is-op' : k === '=' ? 'is-eq' : ''}" ${k === '=' ? 'title="' + esc(T('s_calc_enter')) + '"' : ''}>${{'/': '÷', '*': '×', '-': '−'}[k] ?? k}</button>`).join('') + '</div>';
+    p.addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (b) key(b.dataset.k); });
+    p.addEventListener('keydown', e => {
+      const k = e.key === 'Enter' ? '=' : e.key === 'Backspace' ? '⌫' : e.key === 'Delete' || e.key === 'c' ? 'C' : e.key === '.' || e.key === ',' ? NUM.dec : e.key === 'x' ? '*' : e.key;
+      if (/^[0-9,.+\-*/%=C⌫]$/.test(k)) { e.preventDefault(); e.stopPropagation(); key(k); }
+    });
+    show();
+  }
+
 
   // Urutan pilihan dari daftar: random, atau sequence (lanjut tiap halaman dibuka, diingat per kunci).
   // order 'day': tanggal hari ini -> baris tetap (daftar 366 baris, baris ke-60 = 29 Feb).
@@ -805,6 +846,6 @@ window.Devlib = window.Devlib || {};
 
   // Asal data kolom (grid/lines): {src: 'tm2sdi.iqp_inquiry.qty'} -> tooltip Mode Developer di header kolom.
   const srcAttr = (c, kind = 'kolom') => c && c.src ? ` data-dl="${kind} ${esc(c.label || c.key)}" data-dl-class="kolom" data-dl-src="${esc(c.src)}"` : '';
-  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, dayOfYear, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, Tf, t, dirtyForms, markDirty, askDirty, submitForm, resetWorkspace, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, numStr, numIn, numFmt, NUM, MON_EN, dow2, DlDate, DlNumber, DlTime, DlDateTime, DlText, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
+  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, calcPanel, pickIndex, dayOfYear, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, Tf, t, dirtyForms, markDirty, askDirty, submitForm, resetWorkspace, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, numStr, numIn, numFmt, NUM, MON_EN, dow2, DlDate, DlNumber, DlTime, DlDateTime, DlText, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
   Object.assign(Devlib, {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words, resetWorkspace}, {initDevMode});
 })();

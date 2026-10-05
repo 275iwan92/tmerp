@@ -455,6 +455,7 @@ final class Lang
         // Sapuan multi-bahasa 2026-10-02: teks JS (T / Tf) yang dulu Indonesia mentah atau English tanpa kamus.
         'preview' => ['pratinjau', 'preview'],
         'open_preview' => ['Buka: {x} (pratinjau)', 'Open: {x} (preview)'],
+        'nt_tip' => ['Desimal: tanpa / 2 / 4 / kalkulator mini', 'Decimals: none / 2 / 4 / mini calculator'],
         'case_tip' => ['Ganti huruf: kecil / Kapital Tiap Kata / BESAR', 'Change case: lower / Title Case / UPPER'],
         'qr_title' => ['QR Code Isi Form', 'Form QR Code Data'],
         'dev_mode' => ['Mode Developer', 'Developer Mode'],
