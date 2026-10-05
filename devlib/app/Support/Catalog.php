@@ -251,42 +251,50 @@ final class Catalog
         $f = fn ($cls) => ['Devlib\\Components\\Field\\'.$cls];
         $c = fn (...$cls) => array_map(fn ($x) => 'Devlib\\Components\\'.$x, $cls);
 
+        // Sembilan kelompok per jenis data (user 2026-10-05). Unsur ke-3 tiap anggota = mode yang dimiliki objeknya:
+        // both = ReadWrite + ReadOnly (bawaan field), rw = hanya input / aksi, ro = hanya tampil, wide = tata letak (selebar halaman).
         $cats = [
-            'p2-inputs' => ['Inputs', 'fa-solid fa-i-cursor', [
+            'p2-inputs' => ['Text / String', 'fa-solid fa-i-cursor', [
                 'field-text' => ['Text', $f('Text')], 'text-affix' => ['Prefix · Suffix · Counter', $f('Text')], 'field-password' => ['Password', $f('Password')],
-                'field-masked' => ['Masked (NIK)', $f('Masked')], 'field-phone' => ['Phone (mobile & office, per country)', $f('Phone')], 'field-credit-card' => ['Credit Card', $f('CreditCard')], 'field-signature' => ['Signature', $f('Signature')], 'field-tags' => ['Tags', $f('Tags')],
-                'field-key-value' => ['Key Value', $f('KeyValue')], 'field-rich-text' => ['Rich Text', $f('RichText')], 'input-theme' => ['Input · Themes', $f('Text')],
+                'field-masked' => ['Masked (NIK)', $f('Masked')], 'field-phone' => ['Phone (mobile & office, per country)', $f('Phone')], 'field-credit-card' => ['Credit Card', $f('CreditCard')],
+                'field-otp' => ['OTP', $f('Otp')], 'field-tags' => ['Tags', $f('Tags')],
+                'field-key-value' => ['Key Value', $f('KeyValue')], 'field-rich-text' => ['Rich Text', $f('RichText')],
+                'field-display' => ['Display (text · mono · number · money · date)', $f('Display'), 'ro'], 'input-theme' => ['Input · Themes', $f('Text'), 'wide'],
             ]],
-            'p2-choices' => ['Choices & Lookup', 'fa-solid fa-list-check', [
-                'field-lookup' => ['Lookup', $f('Lookup')], 'field-select' => ['Select', $f('Select')], 'code-chain' => ['Code Chain (linked dropdowns that build a code)', $c('CodeChain')], 'field-multi-select' => ['Multi Select', $f('MultiSelect')],
-                'field-radio' => ['Radio', $f('Radio')], 'field-checkboxes' => ['Checkboxes', $f('Checkboxes')], 'field-checkbox' => ['Checkbox', $f('Checkbox')],
-                'field-toggle' => ['Toggle', $f('Toggle')], 'field-toggle-group' => ['Toggle Group', $f('ToggleGroup')], 'field-rating' => ['Rating (half · read-only)', $f('Rating')],
-                'field-color' => ['Color', $f('Color')], 'field-slider' => ['Slider (range · vertical)', $f('Slider')], 'field-otp' => ['OTP', $f('Otp')],
+            'p2-numbers' => ['Numeric', 'fa-solid fa-calculator', [
+                'field-number' => ['Integer (spinner)', $f('Number')], 'field-decimal' => ['Decimal', $f('Decimal')], 'field-money' => ['Money', $f('Money')],
+                'field-number-words' => ['Number + Amount in Words', $f('NumberWords')], 'field-slider' => ['Slider (range · vertical)', $f('Slider')], 'field-rating' => ['Rating (half)', $f('Rating')],
             ]],
             'p2-datetime' => ['Date & Time', 'fa-solid fa-calendar-days', [
                 'field-date' => ['Date', $f('Date')], 'field-time' => ['Time', $f('Time')], 'field-date-time' => ['Date Time', $f('DateTime')], 'field-date-range' => ['Date Range', $f('DateRange')], 'field-date-slider' => ['Date Slider', $f('DateSlider')],
             ]],
-            'p2-numbers' => ['Numbers & Money', 'fa-solid fa-calculator', [
-                'field-money' => ['Money', $f('Money')], 'field-number-words' => ['Number + Amount in Words', $f('NumberWords')], 'field-decimal' => ['Decimal', $f('Decimal')], 'field-number' => ['Number (spinner)', $f('Number')],
+            'p2-choices' => ['Choice & Lookup', 'fa-solid fa-list-check', [
+                'field-lookup' => ['Lookup', $f('Lookup')], 'field-select' => ['Select', $f('Select')], 'field-multi-select' => ['Multi Select', $f('MultiSelect')],
+                'field-radio' => ['Radio', $f('Radio')], 'field-checkboxes' => ['Checkboxes', $f('Checkboxes')], 'field-checkbox' => ['Checkbox', $f('Checkbox')],
+                'field-toggle' => ['Toggle', $f('Toggle')], 'field-toggle-group' => ['Toggle Group', $f('ToggleGroup')], 'field-color' => ['Color', $f('Color')],
+                'code-chain' => ['Code Chain (linked dropdowns that build a code)', $c('CodeChain'), 'wide'], 'pick-matrix' => ['Pick Matrix (pilih pemenang per baris)', $c('PickMatrix'), 'wide'],
             ]],
-            'p2-files' => ['Files', 'fa-solid fa-paperclip', ['field-upload' => ['Upload', $f('Upload')]]],
-            'p2-buttons' => ['Buttons', 'fa-solid fa-hand-pointer', [
-                'button' => ['Button · Preset · Split', $c('Button', 'SplitButton', 'BackButton')], 'icon-button' => ['Icon Button', $c('IconButton')],
+            'p2-files' => ['Files', 'fa-solid fa-paperclip', ['field-upload' => ['Upload', $f('Upload')], 'field-signature' => ['Signature', $f('Signature')]]],
+            'p2-buttons' => ['Button', 'fa-solid fa-hand-pointer', [
+                'button' => ['Button · Preset · Split', $c('Button', 'SplitButton', 'BackButton'), 'rw'], 'icon-button' => ['Icon Button', $c('IconButton'), 'rw'],
             ]],
-            'p2-display' => ['Display & Status', 'fa-solid fa-tag', [
-                'field-display' => ['Display (read-only)', $f('Display')], 'badge' => ['Badge', $c('Badge')], 'stat-box' => ['Stat Box', $c('StatBox')], 'status-card' => ['Status Card', $c('StatusCard')],
-                'avatar-progress' => ['Avatar · Progress', $c('Avatar', 'Progress')], 'tooltip' => ['Tooltip', $c('Tooltip')], 'misc' => ['Alert · Divider · Brand · Language', $c('Alert', 'Divider', 'Brand', 'LangSwitch')],
+            'p2-display' => ['Status', 'fa-solid fa-tag', [
+                'badge' => ['Badge', $c('Badge'), 'ro'], 'stat-box' => ['Stat Box', $c('StatBox'), 'ro'], 'status-card' => ['Status Card', $c('StatusCard'), 'ro'],
+                'avatar-progress' => ['Avatar · Progress', $c('Avatar', 'Progress'), 'ro'], 'tooltip' => ['Tooltip', $c('Tooltip'), 'ro'], 'misc' => ['Alert · Divider · Brand · Language', $c('Alert', 'Divider', 'Brand', 'LangSwitch'), 'ro'],
             ]],
-            'p2-containers' => ['Containers & Navigation', 'fa-solid fa-table-cells-large', [
-                'card-actionbar' => ['Card · Action Bar', $c('Card', 'ActionBar')], 'split' => ['Split (isi + panel samping kanan / kiri)', $c('Split')], 'table' => ['Table', $c('Table')], 'pick-matrix' => ['Pick Matrix (pilih pemenang per baris)', $c('PickMatrix')], 'tabs-accordion' => ['Tabs', $c('Tabs')], 'accordion' => ['Accordion (vertical · horizontal)', $c('Accordion', 'AccordionGroup')],
-                'breadcrumb' => ['Breadcrumb', $c('Breadcrumb')], 'pagination' => ['Pagination', $c('Pagination')],
-                'side-screen' => ['Side Screen (full-screen window: float · move · resize; sections rail, sticky foot)', $c('SideScreen', 'SideScreen\Layout', 'SideScreen\Foot')],
+            'p2-containers' => ['Container', 'fa-solid fa-table-cells-large', [
+                'card-actionbar' => ['Card · Action Bar', $c('Card', 'ActionBar'), 'wide'], 'split' => ['Split (isi + panel samping kanan / kiri)', $c('Split'), 'wide'], 'table' => ['Table', $c('Table'), 'wide'], 'accordion' => ['Accordion (vertical · horizontal)', $c('Accordion', 'AccordionGroup'), 'wide'],
+                'side-screen' => ['Side Screen (full-screen window: float · move · resize; sections rail, sticky foot)', $c('SideScreen', 'SideScreen\Layout', 'SideScreen\Foot'), 'wide'],
+            ]],
+            'p2-navigation' => ['Navigation', 'fa-solid fa-route', [
+                'tabs-accordion' => ['Tabs', $c('Tabs'), 'wide'], 'breadcrumb' => ['Breadcrumb', $c('Breadcrumb'), 'wide'], 'pagination' => ['Pagination', $c('Pagination'), 'wide'],
             ]],
         ];
 
         $out = [];
         foreach ($cats as $slug => [$label, $icon, $members]) {
-            $out[$slug] = ['label' => $label, 'icon' => $icon, 'members' => $members, 'part' => '2 · Small Components',
+            $members = array_map(fn ($m) => $m + [2 => 'both'], $members);
+            $out[$slug] = ['label' => $label, 'icon' => $icon, 'members' => $members, 'modes' => true, 'part' => '2 · Small Components',
                 'classes' => array_values(array_unique(array_merge(...array_column($members, 1)))), 'mockup' => 'UIUX_components_part1.html'];
         }
 

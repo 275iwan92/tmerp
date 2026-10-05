@@ -1,6 +1,6 @@
 <div class="dl-field__box dl-pick" data-dl-time>
-    <input id="{{ $uid }}" type="text" name="{{ $name }}" class="dl-input" value="{{ $value }}" placeholder="{{ $placeholder ?? '14:30' }}" data-dl-time-text maxlength="5" @disabled($disabled)>
-    <button type="button" class="dl-field__trigger" data-dl-dd-toggle title="{{ \Devlib\Lang::text('Pick a time') }}">⏰</button>
+    <input id="{{ $uid }}" type="text" name="{{ $name }}" class="dl-input" value="{{ $value }}" placeholder="{{ $placeholder ?? '14:30' }}" data-dl-time-text maxlength="5" @disabled($disabled) @readonly($readonly)>
+    @unless ($readonly)<button type="button" class="dl-field__trigger" data-dl-dd-toggle title="{{ \Devlib\Lang::text('Pick a time') }}">⏰</button>@endunless
     <div class="dl-pick__panel dl-pick__panel--time" data-dl-dd-panel>
         <div class="dl-pick__head">{{ \Devlib\Lang::t('s_pick_time') }}</div>
         <div class="dl-pick__time">

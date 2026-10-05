@@ -13,6 +13,10 @@ abstract class Field extends DevlibComponent
 {
     public string $uid;
 
+    // Mode ReadOnly untuk SEMUA field yang dirender selama nilainya true (blok hanya-tampil: sisi ReadOnly
+    // halaman DevLib, form yang dikunci). Pemakai menyalakan lalu mematikannya lagi di sekitar blok itu.
+    public static bool $readonlyAll = false;
+
     public function __construct(
         public string $name = '',
         public string $label = '',
@@ -29,6 +33,7 @@ abstract class Field extends DevlibComponent
         public ?string $i18n = null,
         public ?string $source = null,
     ) {
+        $this->readonly = $readonly || self::$readonlyAll;
         $this->uid = 'dlf-'.($name !== '' ? Str::slug($name, '_').'-' : '').Str::random(5);
     }
 

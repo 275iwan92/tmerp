@@ -4,7 +4,7 @@
 @endphp
 <div class="dl-dd" data-dl-select data-empty="{{ $empty }}">
     <input type="hidden" name="{{ $name }}" value="{{ $value }}" data-dl-value>
-    <button type="button" id="{{ $uid }}" class="dl-dd__btn" data-dl-dd-toggle @disabled($disabled)>
+    <button type="button" id="{{ $uid }}" class="dl-dd__btn" data-dl-dd-toggle @disabled($disabled || $readonly)>
         <span data-dl-dd-text>{{ $opts[$value] ?? $empty }}</span><span>▼</span>
     </button>
     <div class="dl-dd__panel" data-dl-dd-panel>

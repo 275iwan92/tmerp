@@ -14,10 +14,53 @@
                 </div>
             @endif
         </div>
-        @foreach ($page['members'] as $slug => [$label, $classes])
+        @foreach ($page['members'] as $slug => $member)
+            @php
+                [$label, $classes] = $member;
+                $mode = ($page['modes'] ?? false) ? ($member[2] ?? 'wide') : null;
+                $objects = collect($classes)->map(fn ($c) => [\Devlib\Components\DevlibComponent::describe($c)[0], $c]);
+            @endphp
             <section class="dl-cat__item" id="{{ $slug }}">
-                <h2>{{ $label }} <code>{{ collect($classes)->map(fn ($c) => \Devlib\Components\DevlibComponent::describe($c)[0])->implode(' · ') }}</code></h2>
-                @include('demos.'.$slug, $data)
+                @if ($mode === null)
+                    <h2>{{ $label }} <code>{{ $objects->pluck(0)->implode(' · ') }}</code></h2>
+                    @include('demos.'.$slug, $data)
+                @else
+                    {{-- Kelompok per jenis data (user 2026-10-05): nama object + layar dibelah ReadWrite | ReadOnly. --}}
+                    <div class="dl-cat__head">
+                        <h2>{{ $label }}</h2>
+                        @foreach ($objects as [$tag, $class])
+                            <span class="dl-cat__obj"><code>{{ $tag }}</code><small>{{ $class }}</small></span>
+                        @endforeach
+                    </div>
+                    @if ($mode === 'wide')
+                        <div class="dl-cat__mode dl-cat__mode--wide"><b>Full width</b></div>
+                        @include('demos.'.$slug, $data)
+                    @else
+                        <div class="dl-cat__modes">
+                            <div class="dl-cat__side">
+                                <div class="dl-cat__mode dl-cat__mode--rw"><b>ReadWrite</b> input</div>
+                                @if ($mode === 'ro')
+                                    <div class="dl-cat__none">No ReadWrite mode</div>
+                                @else
+                                    @include('demos.'.$slug, $data)
+                                @endif
+                            </div>
+                            {{-- form sendiri: radio bernama sama di dua sisi tidak saling merebut pilihan --}}
+                            <form class="dl-cat__side" onsubmit="return false">
+                                <div class="dl-cat__mode dl-cat__mode--ro"><b>ReadOnly</b> display</div>
+                                @if ($mode === 'rw')
+                                    <div class="dl-cat__none">No ReadOnly mode</div>
+                                @elseif ($mode === 'ro')
+                                    @include('demos.'.$slug, $data)
+                                @else
+                                    @php(\Devlib\Components\Field\Field::$readonlyAll = true)
+                                    @include('demos.'.$slug, $data)
+                                    @php(\Devlib\Components\Field\Field::$readonlyAll = false)
+                                @endif
+                            </form>
+                        </div>
+                    @endif
+                @endif
             </section>
         @endforeach
     </div>

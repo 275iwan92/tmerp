@@ -924,6 +924,18 @@ body.dl-page-wide .dl-cat{max-width:none;padding-left:6px;padding-right:6px}
 .dl-cat__item > h2{display:flex;align-items:center;gap:8px;font-size:calc(14px * var(--dl-font-scale));color:var(--dl-ink-strong);margin:0 0 8px}
 .dl-cat__item > h2 code{font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-violet);font-weight:600}
 .dl-cat__item .dl-demo{margin:0;max-width:none}
+.dl-cat__head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 8px}
+.dl-cat__head h2{font-size:calc(14px * var(--dl-font-scale));color:var(--dl-ink-strong);margin:0 6px 0 0}
+.dl-cat__obj{display:inline-flex;align-items:baseline;gap:6px}
+.dl-cat__obj code{background:var(--dl-ink-strong);color:var(--dl-surface);border-radius:var(--dl-radius-sm);padding:2px 8px;font-family:var(--dl-font-mono);font-size:calc(11.5px * var(--dl-font-scale));font-weight:600}
+.dl-cat__obj small{font-family:var(--dl-font-mono);font-size:calc(10.5px * var(--dl-font-scale));color:var(--dl-muted)}
+.dl-cat__modes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}
+.dl-cat__mode{font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted);border-radius:var(--dl-radius-sm) var(--dl-radius-sm) 0 0;padding:4px 10px;margin-bottom:4px;background:var(--dl-code-bg)}
+.dl-cat__mode b{margin-right:4px;color:var(--dl-ink-strong)}
+.dl-cat__mode--rw{border-top:3px solid #16a34a}
+.dl-cat__mode--ro{border-top:3px solid var(--dl-accent)}
+.dl-cat__none{border:1px dashed var(--dl-border);border-radius:var(--dl-radius-lg);padding:22px;color:var(--dl-muted);font-style:italic;text-align:center}
+@media (max-width:900px){.dl-cat__modes{grid-template-columns:1fr}}
 
 /* ================= FEEDBACK & STATES (Part 3) ================= */
 /* toast */

@@ -1,5 +1,5 @@
 <div class="dl-demo">
-    <x-dl::field.text name="nama" label="Nama Lengkap" tooltip="Nama & deskripsi: badge aa/Aa/AA" placeholder="Masukkan nama..." />
+    <x-dl::field.text name="nama" label="Nama Lengkap" tooltip="Nama & deskripsi: badge aa/Aa/AA" placeholder="Masukkan nama..." value="Budi Santoso" />
     <x-dl::field.text name="alamat" label="Alamat (banyak baris)" multiline />
     <x-dl::field.text name="kode" label="Kode Barang" tooltip="Kode: tanpa badge huruf, huruf mono" code value="COLOR_OFF" />
     <x-dl::field.text name="email" type="email" label="Email" tooltip="Email: tanpa badge huruf" />
