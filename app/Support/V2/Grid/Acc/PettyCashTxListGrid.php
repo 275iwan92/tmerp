@@ -90,11 +90,4 @@ class PettyCashTxListGrid extends DocListGrid
     {
         return ['type' => 'Transaction'];
     }
-
-    // Sama dengan sebelum menjadi kelas: tombol + New Record bawaan x-dl::grid masih tampil (tanpa alamat, hanya pratinjau).
-    // Transaksi kas kecil dibuat lewat Top Up / PO Kontan; apakah tombol ini dibuang = keputusan user.
-    public function props(): array
-    {
-        return ['newRecord' => '+ New Record'] + parent::props();
-    }
 }
