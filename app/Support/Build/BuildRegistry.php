@@ -84,6 +84,7 @@ final class BuildRegistry
             ],
             'modules' => $modules,
             ...self::work(),
+            'items' => self::items($engines),
             'engines' => self::engines($engines),
             'features' => self::FEATURES,
             'notes' => self::NOTES,
@@ -127,14 +128,18 @@ final class BuildRegistry
         $out = [];
         foreach ($engines as $e) {
             $out[$e['group']] ??= ['group' => $e['group'], 'items' => []];
-            $out[$e['group']]['items'][] = ['name' => $e['name'], 'purpose' => $e['purpose'], 'mode' => $e['mode']];
+            $out[$e['group']]['items'][] = ['key' => $e['key'], 'name' => $e['name'], 'purpose' => $e['purpose'], 'mode' => $e['mode'],
+                'used' => count($e['used'] ?? []), 'tests' => count($e['tests'] ?? [])];
         }
 
         return array_values($out);
     }
 
+    /** @var array<string, array{first: string, first_by: ?string, last: string, last_by: ?string}>|null riwayat per berkas dari git */
+    private static ?array $fileLog = null;
+
     // Siapa mengerjakan apa dan kapan, dari git: per agen = commit, hari aktif, terakhir aktif, berkas yang disentuh per
-    // jenis (layar v2, objek DevLib, engine, test); 'days' = commit per hari 14 hari terakhir per agen.
+    // jenis (layar v2, objek DevLib, engine, test); 'days' = commit per hari 14 hari terakhir; 'weeks' = per minggu, seluruh riwayat.
     private static function work(): array
     {
         $r = Process::path(base_path())->run(['git', 'log', '--date=short', '--name-only', '--format=@@%ad%x1f%(trailers:key=Agent,valueonly,separator=%x2C)']);
@@ -149,14 +154,16 @@ final class BuildRegistry
         $blank = ['commits' => 0, 'days' => [], 'last' => null, 'screens' => [], 'objects' => [], 'engines' => [], 'tests' => []];
         $agents = array_fill_keys(array_keys(self::AGENTS), $blank);
         $untracked = 0;
-        $perDay = [];
-        $who = null;
+        $perDay = $perWeek = $files = [];
+        $who = $date = null;
         foreach ($r->successful() ? preg_split('/\R/', $r->output()) : [] as $line) {
             if (str_starts_with($line, '@@')) {
-                [$date, $tag] = array_pad(explode('', substr($line, 2)), 2, '');
+                [$date, $tag] = array_pad(explode("\x1f", substr($line, 2)), 2, '');
                 $who = strtolower(trim(explode(',', $tag)[0]));
                 $who = isset($agents[$who]) ? $who : null;
+                $week = date('o-\WW', strtotime($date));
                 $perDay[$date][$who ?? 'other'] = ($perDay[$date][$who ?? 'other'] ?? 0) + 1;
+                $perWeek[$week][$who ?? 'other'] = ($perWeek[$week][$who ?? 'other'] ?? 0) + 1;
                 if ($who === null) {
                     $untracked++;
 
@@ -165,22 +172,92 @@ final class BuildRegistry
                 $agents[$who]['commits']++;
                 $agents[$who]['days'][$date] = true;
                 $agents[$who]['last'] ??= $date;   // git log: terbaru dulu
-            } elseif ($who !== null && $line !== '' && ($k = $kind($line))) {
-                $agents[$who][$k][$line] = true;
+            } elseif ($line !== '' && $date !== null) {
+                // terbaru dulu: 'last' diisi sekali, 'first' ditimpa terus sampai commit tertua
+                $files[$line] = ['first' => $date, 'first_by' => $who] + ($files[$line] ?? ['last' => $date, 'last_by' => $who]);
+                if ($who !== null && ($k = $kind($line))) {
+                    $agents[$who][$k][$line] = true;
+                }
             }
         }
+        self::$fileLog = $files;
+        $keys = [...array_keys(self::AGENTS), 'other'];
+        $row = fn (array $counts) => array_map(fn ($k) => $counts[$k] ?? 0, array_combine($keys, $keys));
         $days = [];
         for ($i = self::DAYS - 1; $i >= 0; $i--) {
             $d = now()->subDays($i)->format('Y-m-d');
-            $days[] = ['date' => $d] + array_map(fn ($k) => $perDay[$d][$k] ?? 0, array_combine([...array_keys(self::AGENTS), 'other'], [...array_keys(self::AGENTS), 'other']));
+            $days[] = ['date' => $d] + $row($perDay[$d] ?? []);
         }
+        ksort($perWeek);
 
         return [
             'agents' => array_map(fn ($key, $a) => ['key' => $key, 'name' => self::AGENTS[$key], 'commits' => $a['commits'], 'days' => count($a['days']), 'last' => $a['last'],
                 'screens' => count($a['screens']), 'objects' => count($a['objects']), 'engines' => count($a['engines']), 'tests' => count($a['tests'])], array_keys($agents), $agents),
             'untracked' => $untracked,
             'days' => $days,
+            'weeks' => array_map(fn ($w, $c) => ['week' => $w] + $row($c), array_keys($perWeek), $perWeek),
         ];
+    }
+
+    // Daftar hasil kerja yang dinilai user di devlib.test (Executive Summary > By Object): tiap layar menu (form / grid /
+    // report), engine, objek DevLib dan fitur. built / changed = commit pertama / terakhir berkasnya; *_by = agen bila
+    // commit itu bertanda, null = sebelum pelacakan. Dipanggil sesudah work() (memakai riwayat berkas yang sama).
+    private static function items(array $engines): array
+    {
+        $log = self::$fileLog ?? [];
+        $hist = function (array $paths) use ($log) {
+            $h = array_values(array_filter(array_map(fn ($f) => $log[$f] ?? null, $paths)));
+            if (! $h) {
+                return ['built_at' => null, 'built_by' => null, 'changed_at' => null, 'changed_by' => null];
+            }
+            usort($h, fn ($a, $b) => $a['first'] <=> $b['first']);
+            $first = $h[0];
+            usort($h, fn ($a, $b) => $b['last'] <=> $a['last']);
+
+            return ['built_at' => $first['first'], 'built_by' => $first['first_by'], 'changed_at' => $h[0]['last'], 'changed_by' => $h[0]['last_by']];
+        };
+        $rel = fn (string $class) => str_replace('\\', '/', ltrim(str_replace(base_path(), '', (new \ReflectionClass($class))->getFileName()), '\\/'));
+
+        $gridFile = [];
+        foreach ((new \ReflectionClass(Grids::class))->getConstant('ALL') as $class) {
+            try {
+                $gridFile[app($class)->slug()] = $rel($class);
+            } catch (\Throwable) {
+                // grid yang tidak bisa dibuat tanpa konteks: dilewati, layarnya tetap terdaftar lewat menu
+            }
+        }
+
+        $out = [];
+        $rows = collect(DB::connection('tm2sys')->select('select id, parent_id, code, label, object_type, target, activate, status_code, sort_order from sys_app_menu'))->keyBy('id');
+        foreach ($rows->sortBy('sort_order') as $r) {
+            if (! $r->activate || ! $r->target) {
+                continue;
+            }
+            $root = $r;
+            for ($i = 0; $root->parent_id && isset($rows[$root->parent_id]) && $i < 10; $i++) {
+                $root = $rows[$root->parent_id];
+            }
+            $slug = str_starts_with($r->target, 'v2:') ? substr($r->target, 3) : null;
+            $paths = $slug ? array_filter(["resources/views/v2/screens/{$slug}.blade.php", $gridFile[$slug] ?? null]) : [];
+            $out[] = ['type' => strtoupper($r->object_type ?: 'screen'), 'key' => 'menu:'.($r->code ?: $r->id), 'name' => $r->label, 'module' => $root->label,
+                'qc' => $slug ? ($r->status_code ?? 'NOT_BUILT') : (($r->status_code ?? 'NOT_BUILT') === 'NOT_BUILT' ? 'NOT_BUILT' : 'V1')] + $hist($paths);
+        }
+        foreach ($engines as $e) {
+            $file = isset($e['class']) ? $rel($e['class']) : $e['file'];
+            $out[] = ['type' => 'ENGINE', 'key' => 'engine:'.$e['key'], 'name' => $e['name'], 'module' => $e['group'], 'qc' => 'READY_FOR_QC'] + $hist([$file]);
+        }
+        foreach ((new Finder)->files()->in(base_path('packages/devlib/src/Components'))->name('*.php')->sortByName() as $f) {
+            $path = 'packages/devlib/src/Components/'.str_replace('\\', '/', $f->getRelativePathname());
+            $name = str_replace(['/', '.php'], [' · ', ''], str_replace('\\', '/', $f->getRelativePathname()));
+            if ($name !== 'DevlibComponent') {
+                $out[] = ['type' => 'OBJECT', 'key' => 'object:'.$name, 'name' => $name, 'module' => 'DevLib', 'qc' => 'READY_FOR_QC'] + $hist([$path]);
+            }
+        }
+        foreach (self::FEATURES as [$icon, $text]) {
+            $out[] = ['type' => 'FEATURE', 'key' => 'feature:'.$text, 'name' => $text, 'module' => 'Features', 'qc' => 'READY_FOR_QC'] + $hist([]);
+        }
+
+        return $out;
     }
 
     private static function tables(): array

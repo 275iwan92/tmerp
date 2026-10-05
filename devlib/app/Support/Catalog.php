@@ -379,6 +379,8 @@ final class Catalog
             }
             $modules[] = ['code' => $g['code'], 'short' => $g['short'], 'label' => $g['label'], 'icon' => $g['icon'], 'children' => $items]; // langsung isi modul, tanpa lapis "Components" (user 2026-09-30: membingungkan)
         }
+        // Menu kedua Layer Menu (ikon tukar Operational | Executive Summary): modul berkode MGMT.
+        $modules[] = Summary::menu();
 
         return $modules;
     }

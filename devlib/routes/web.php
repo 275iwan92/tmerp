@@ -1,6 +1,9 @@
 <?php
 
+use App\Support\BoardDemo;
 use App\Support\Catalog;
+use App\Support\Summary;
+use Devlib\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -31,7 +34,7 @@ Route::post('/login', function (Request $r) {
             $user = ['login' => $row->login, 'password' => '', 'name' => $row->name, 'email' => $row->email, 'role' => $row->role,
                 'position' => $row->role, 'developer' => (bool) $row->developer, 'lang_code' => $row->lang_code];
         }
-    } catch (\Throwable) {
+    } catch (Throwable) {
         // database devlib belum ada / mati: akun contoh masih bisa masuk
     }
     $user ??= collect(config('devlib.users'))->first(fn ($u) => strcasecmp($u['login'], $login) === 0 && hash_equals($u['password'], $password));
@@ -92,10 +95,25 @@ Route::middleware('devlib.auth')->group(function () {
         ]);
     })->name('lib');
 
+    // Executive Summary (user 2026-10-05): sembilan halaman + simpan rating (hanya akun developer).
+    Route::get('/summary/{page}', function (string $page) {
+        abort_unless(isset(Summary::PAGES[$page]), 404);
+
+        return view('summary', Summary::page($page, session('devlib_user')));
+    })->name('summary');
+
+    Route::post('/summary/rate', function (Request $r) {
+        $user = session('devlib_user');
+        abort_unless($user['developer'] ?? false, 403);
+        $out = Summary::rate((int) $r->input('item'), (int) $r->input('rating'), $r->input('note'), $user['login']);
+
+        return $out + ['meta' => $user['login'].' · '.Locale::date(now()).($out['ratings'] > 1 ? ' · '.$out['ratings'].'x' : '')];
+    })->name('summary.rate');
+
     // Contoh papan widget: aksi Customize (POST) / muat ulang (GET) -> HTML papan terbaru; susunan di sesi (BoardDemo).
     Route::match(['get', 'post'], '/board-demo', function (Request $r) {
         if ($r->isMethod('post')) {
-            \App\Support\BoardDemo::apply($r->input('action'), $r->input('key'));
+            BoardDemo::apply($r->input('action'), $r->input('key'));
         }
 
         return ['html' => view('demos.widget-board')->render()];

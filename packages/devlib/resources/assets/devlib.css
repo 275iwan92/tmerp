@@ -3343,3 +3343,41 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-bb__nums--3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .dl-bb__share{margin-top:12px;display:flex;flex-direction:column;gap:5px}
 .dl-bb__share .dl-bb__bar{height:10px}
+/* Rate List (x-dl::rate-list): daftar hasil kerja + bintang yang langsung tersimpan. */
+.dl-rl{display:flex;flex-direction:column;gap:10px}
+.dl-rl__bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dl-rl__q{flex:0 1 240px;border:1px solid var(--dl-border);border-radius:var(--dl-radius);padding:6px 10px;background:var(--dl-surface)}
+.dl-rl__chips{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.dl-rl__chips em{font-style:normal;opacity:.6;margin-left:3px}
+.dl-rl__chips .is-active{background:var(--dl-accent);border-color:var(--dl-accent);color:var(--dl-on-dark)}
+.dl-rl__sep{width:1px;height:18px;background:var(--dl-border);margin:0 4px}
+.dl-rl__count{margin-left:auto;color:var(--dl-muted);font-size:calc(12px * var(--dl-font-scale))}
+.dl-rl__wrap{overflow:auto;max-height:calc(100vh - 230px);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);background:var(--dl-surface)}
+.dl-rl__table{width:100%;border-collapse:collapse;font-size:calc(12.5px * var(--dl-font-scale))}
+.dl-rl__table th{position:sticky;top:0;background:var(--dl-surface-alt);z-index:1;text-align:left;padding:8px 10px;font-size:calc(10.5px * var(--dl-font-scale));text-transform:uppercase;letter-spacing:.4px;color:var(--dl-muted);white-space:nowrap}
+.dl-rl__table td{padding:5px 10px;border-top:1px solid var(--dl-border-soft);white-space:nowrap;vertical-align:middle}
+.dl-rl__table tr[hidden]{display:none}
+.dl-rl__table tr.is-saved td{background:var(--dl-accent-soft)}
+.dl-rl__table small{color:var(--dl-muted)}
+.dl-rl__agent{display:inline-block;padding:1px 9px;border-radius:999px;font-size:calc(11px * var(--dl-font-scale));font-weight:600;background:var(--dl-border-soft);color:var(--dl-muted)}
+.dl-rl__agent.is-iwan{background:var(--dl-accent);color:var(--dl-on-dark)}.dl-rl__agent.is-jo{background:var(--dl-violet);color:var(--dl-on-dark)}
+.dl-rl__stars .dl-rating__text{display:none}
+.dl-rl__note{min-width:260px;white-space:normal !important}
+.dl-rl__note .dl-input{border:1px solid var(--dl-border);border-radius:var(--dl-radius-sm);padding:4px 8px;background:var(--dl-surface);width:100%}
+.dl-rl__none{padding:18px;text-align:center;color:var(--dl-muted)}
+/* Halaman Executive Summary: kepala + kisi kartu. */
+.dl-sum{display:flex;flex-direction:column;gap:14px}
+.dl-sum__head b{display:block;font-size:calc(18px * var(--dl-font-scale));color:var(--dl-ink-strong)}
+.dl-sum__head small{color:var(--dl-muted)}
+.dl-sum__tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.dl-sum__tiles .dl-stat{min-width:0}
+.dl-sum__cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.dl-sum__note{border:1px dashed var(--dl-border);border-radius:var(--dl-radius-lg);padding:12px 14px;background:var(--dl-surface-alt);font-size:calc(13px * var(--dl-font-scale))}
+.dl-sum__dist{display:flex;flex-direction:column;gap:7px}
+.dl-sum__dist div{display:flex;align-items:center;gap:8px}
+.dl-sum__dist span{flex:0 0 34px}.dl-sum__dist b{flex:0 0 30px;text-align:right}
+.dl-sum__dist i{flex:1;height:8px;border-radius:4px;background:var(--dl-border-soft);overflow:hidden;display:block}
+.dl-sum__dist i u{display:block;height:100%;background:var(--dl-star)}
+.dl-sum__weeks{display:flex;align-items:flex-end;gap:5px;height:180px}
+.dl-sum__weeks .dl-bb__day{height:100%}
+@media (max-width:1100px){.dl-sum__cols{grid-template-columns:minmax(0,1fr)}}

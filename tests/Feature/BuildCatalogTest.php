@@ -26,6 +26,10 @@ class BuildCatalogTest extends TestCase
         $this->assertSame(count(EngineRegistry::all()), $t['engines']);
         $this->assertSame($t['engines'], array_sum(array_map(fn ($g) => count($g['items']), $s['engines'])));
         $this->assertGreaterThan(100, $t['objects']);
+        $keys = array_column($s['items'], 'key');
+        $this->assertSame($keys, array_unique($keys), 'kunci item harus unik (dipakai devlib.dev_item)');
+        $this->assertSame($t['screens'], count(array_filter($keys, fn ($k) => str_starts_with($k, 'menu:'))));
+        $this->assertSame($t['engines'], count(array_filter($keys, fn ($k) => str_starts_with($k, 'engine:'))));
         $this->assertSame(['iwan', 'jo'], array_column($s['agents'], 'key'));
         $this->assertCount(14, $s['days']);
         $this->assertSame((int) $t['commits'], $s['untracked'] + array_sum(array_column($s['agents'], 'commits')), 'tiap commit = satu agen atau sebelum pelacakan');
@@ -41,6 +45,26 @@ class BuildCatalogTest extends TestCase
         $this->assertSame(array_keys($now), array_keys($file));
         $this->assertSame(array_keys($now['totals']), array_keys($file['totals']), 'build.json tertinggal. Jalankan: php artisan build:catalog --env=mockup');
         $this->assertSame($now['features'], $file['features'], 'build.json tertinggal. Jalankan: php artisan build:catalog --env=mockup');
+    }
+
+    // Daftar hasil kerja + bintang (Executive Summary > By Object di devlib.test).
+    public function test_rate_list_shows_item_agent_and_rating(): void
+    {
+        $item = ['id_item' => 7, 'item_type' => 'FORM', 'name' => 'Customer Order', 'module' => 'Sales', 'qc_status' => 'READY_FOR_QC', 'built_by' => null, 'built_at' => '2026-09-26',
+            'changed_by' => 'iwan', 'changed_at' => '2026-10-05', 'rating' => 4, 'note' => 'Cancel flow needs a check', 'rated_by' => 'johiwan', 'rated_at' => '2026-10-05 10:00:00', 'ratings' => 2];
+        $html = Blade::render('<x-dl::rate-list :items="$items" :types="$types" :qc="$qc" :agents="$agents" action="/summary/rate" csrf="tok" />', [
+            'items' => [$item, ['id_item' => 8, 'item_type' => 'ENGINE', 'name' => 'Costing Engine', 'rating' => null, 'note' => null, 'rated_by' => null, 'rated_at' => null, 'ratings' => 0, 'built_by' => 'jo'] + $item],
+            'types' => ['FORM' => 'Form', 'ENGINE' => 'Engine'], 'qc' => ['READY_FOR_QC' => ['Waiting QC', 'warn']], 'agents' => ['iwan' => 'Agent Iwan', 'jo' => 'Agent Jo'],
+        ]);
+
+        $this->assertStringContainsString('data-dl-rate-list', $html);
+        $this->assertStringContainsString('data-action="/summary/rate"', $html);
+        $this->assertStringContainsString('data-id="7" data-type="FORM" data-agent="iwan" data-rating="4"', $html);
+        $this->assertStringContainsString('data-id="8" data-type="ENGINE" data-agent="iwan" data-rating="0"', $html);
+        $this->assertStringContainsString('Cancel flow needs a check', $html);
+        $this->assertStringContainsString('Waiting QC', $html);
+        $this->assertStringContainsString('Agent Jo', $html);
+        $this->assertSame(2, substr_count($html, 'role="slider"'));
     }
 
     public function test_component_shows_modules_engines_and_open_work(): void
