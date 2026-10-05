@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DevLib Generator - Mockup</title>
+<title>DevLib Generator (simple request) - Mockup</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -11,22 +11,18 @@
   .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; letter-spacing: .04em; }
   .bdg { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; white-space: nowrap; }
   th { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; text-align: left; padding: 5px 8px; white-space: nowrap; }
-  td { padding: 5px 8px; border-top: 1px solid #eef1f6; vertical-align: middle; }
+  td { padding: 7px 8px; border-top: 1px solid #eef1f6; vertical-align: top; }
   .mi { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 7px; color: #cdd6ea; }
   .mi.on { background: #43508a; color: #fff; font-weight: 600; }
   .mi small { margin-left: auto; opacity: .6; }
   .ttl { font-weight: 600; color: #334155; font-size: 13px; }
   .q { font-size: 10.5px; color: #8a94a6; }
-  .step { width: 22px; height: 22px; border-radius: 999px; background: #2c7be5; color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
-  .inp { border: 1px solid #cfd8e6; border-radius: 6px; padding: 5px 8px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 30px; }
-  .inp.ro { background: #f3f6fb; color: #64748b; }
-  .aa { font-size: 9px; background: #e8f0fd; color: #2c7be5; border-radius: 4px; padding: 0 4px; font-weight: 700; }
-  .tile { border: 1px solid #dbe3ef; border-radius: 8px; padding: 8px 10px; background: #fff; }
-  .tile.on { border: 2px solid #2c7be5; background: #f1f6ff; }
-  .chk { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #b8c4d6; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; }
+  .inp { border: 1px solid #cfd8e6; border-radius: 6px; padding: 7px 9px; background: #fff; position: relative; line-height: 1.5; }
+  .aa { position: absolute; right: 6px; top: 6px; font-size: 9px; background: #e8f0fd; color: #2c7be5; border-radius: 4px; padding: 0 4px; font-weight: 700; }
+  .opt { border: 1px solid #dbe3ef; border-radius: 8px; padding: 8px 10px; background: #fff; display: flex; gap: 8px; align-items: flex-start; }
+  .opt.on { border: 2px solid #2c7be5; background: #f1f6ff; }
+  .chk { width: 15px; height: 15px; border-radius: 4px; border: 1px solid #b8c4d6; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; flex: none; margin-top: 1px; }
   .chk.on { background: #2c7be5; border-color: #2c7be5; }
-  pre { font-family: Consolas, 'Courier New', monospace; font-size: 10.5px; line-height: 1.45; background: #0f172a; color: #dbe4f3; border-radius: 8px; padding: 10px 12px; overflow: hidden; }
-  .k { color: #93c5fd; } .s { color: #a7f3d0; } .c { color: #7c8aa5; }
   .btn { display: inline-flex; align-items: center; gap: 6px; border-radius: 7px; padding: 6px 12px; font-weight: 600; font-size: 11.5px; }
   .btn.p { background: #2c7be5; color: #fff; } .btn.s { background: #fff; border: 1px solid #cfd8e6; color: #334155; }
   .note { background: #fff8e6; border: 1px dashed #e7c66b; border-radius: 8px; padding: 8px 10px; color: #6b5512; }
@@ -35,145 +31,87 @@
 <body class="text-xs text-slate-800">
 <div class="flex" style="width:1440px">
 
-  <aside class="p-3 shrink-0" style="width:230px;background:#2c3e69;min-height:1450px">
+  <aside class="p-3 shrink-0" style="width:230px;background:#2c3e69;min-height:985px">
     <div class="flex items-center gap-2 text-white font-bold text-sm mb-3"><i class="fa-solid fa-cubes"></i> DevLib</div>
-    <div class="flex gap-1 mb-3">
-      <span class="flex-1 text-center py-1.5 rounded text-[11px] font-semibold" style="background:#fff;color:#2c3e69"><i class="fa-solid fa-table-cells-large"></i> Operational</span>
-      <span class="flex-1 text-center py-1.5 rounded text-[11px]" style="background:#1f2d52;color:#9fb0d6"><i class="fa-solid fa-chart-line"></i> Executive</span>
-    </div>
     <div class="lbl mb-1" style="color:#8fa0c8">Library</div>
-    <div class="mi"><i class="fa-solid fa-palette w-4"></i> Basics &amp; Themes</div>
-    <div class="mi"><i class="fa-solid fa-i-cursor w-4"></i> Inputs &amp; Buttons</div>
     <div class="mi"><i class="fa-solid fa-table w-4"></i> Grid</div>
     <div class="mi"><i class="fa-solid fa-pen-to-square w-4"></i> Form</div>
     <div class="mi"><i class="fa-solid fa-puzzle-piece w-4"></i> Special Forms <small>10</small></div>
     <div class="mi"><i class="fa-solid fa-gears w-4"></i> Engines <small>25</small></div>
     <div class="lbl mt-4 mb-1" style="color:#8fa0c8">Generator <span class="bdg" style="background:#f0b849;color:#3b2f06">NEW</span></div>
-    <div class="mi on"><i class="fa-solid fa-wand-magic-sparkles w-4"></i> New Screen</div>
-    <div class="mi"><i class="fa-solid fa-drafting-compass w-4"></i> Blueprints <small>14</small></div>
-    <div class="mi"><i class="fa-solid fa-file-code w-4"></i> Templates <small>9</small></div>
-    <div class="mi"><i class="fa-solid fa-clock-rotate-left w-4"></i> Run History <small>31</small></div>
-    <div class="mi"><i class="fa-solid fa-book-open w-4"></i> Engine Guide</div>
-    <div class="lbl mt-4 mb-1" style="color:#8fa0c8">Target application</div>
-    <div class="mi" style="background:#1f2d52"><i class="fa-solid fa-industry w-4"></i> tmerp <small>mockup.test</small></div>
+    <div class="mi on"><i class="fa-solid fa-wand-magic-sparkles w-4"></i> New Request</div>
+    <div class="mi"><i class="fa-solid fa-list-check w-4"></i> Requests <small>4</small></div>
   </aside>
 
   <main class="p-5 space-y-4 flex-1">
-
-    <div class="flex items-center">
-      <div><div class="text-base font-bold text-slate-800">Generator &rsaquo; New Screen</div>
-        <div class="q">Design a standard screen from a table. The website only designs and shows the command; files are written by the artisan command in the tmerp folder.</div></div>
-      <span class="ml-auto bdg" style="background:#e8f0fd;color:#2c7be5">Blueprint BP-0015 &middot; Draft</span>
+    <div>
+      <div class="text-base font-bold text-slate-800">Generator &rsaquo; New Request</div>
+      <div class="q">Describe what you need in your own words. The request is saved in the devlib database; the agent reads it, builds the screen from DevLib objects, and reports back here.</div>
     </div>
 
-    <!-- 1 -->
-    <section class="card p-4">
-      <div class="flex items-center gap-2 mb-3"><span class="step">1</span><span class="ttl">Kind of screen and table</span><span class="q">The kind decides which DevLib parent the new class extends.</span></div>
-      <div class="grid grid-cols-6 gap-2">
-        <div class="tile"><b><i class="fa-solid fa-table-list text-slate-400"></i> Grid Master</b><div class="q">extends MasterDataGrid</div></div>
-        <div class="tile on"><b><i class="fa-solid fa-table-cells text-blue-500"></i> Grid Lookup</b><div class="q">extends MasterDataLookup</div></div>
-        <div class="tile"><b><i class="fa-solid fa-list-check text-slate-400"></i> Grid Transactional</b><div class="q">extends DocListGrid</div></div>
-        <div class="tile"><b><i class="fa-solid fa-pen-to-square text-slate-400"></i> Single Form</b><div class="q">x-dl::form panel top</div></div>
-        <div class="tile"><b><i class="fa-solid fa-layer-group text-slate-400"></i> Master-Detail</b><div class="q">x-dl::form + x-dl::lines</div></div>
-        <div class="tile"><b><i class="fa-solid fa-chart-column text-slate-400"></i> Report</b><div class="q">extends DbGrid (report)</div></div>
-      </div>
-      <div class="grid grid-cols-4 gap-3 mt-3">
-        <div><div class="lbl mb-1">Database</div><div class="inp"><span>tm2mst &middot; Master</span><i class="fa-solid fa-chevron-down text-slate-400"></i></div></div>
-        <div><div class="lbl mb-1">Table (from the schema dictionary)</div><div class="inp"><span>ref_delivery_method</span><i class="fa-solid fa-magnifying-glass text-slate-400"></i></div></div>
-        <div><div class="lbl mb-1">Screen title</div><div class="inp"><span>Delivery Method</span><span class="aa">Aa</span></div></div>
-        <div><div class="lbl mb-1">Menu (module &rsaquo; group)</div><div class="inp"><span>Sales &rsaquo; Master</span><i class="fa-solid fa-chevron-down text-slate-400"></i></div></div>
-      </div>
-    </section>
+    <div class="grid grid-cols-12 gap-4">
+      <section class="card p-4 col-span-7 space-y-3">
+        <div>
+          <div class="lbl mb-1">Name</div>
+          <div class="inp">Master Mesin<span class="aa">Aa</span></div>
+        </div>
+        <div>
+          <div class="lbl mb-1">Description</div>
+          <div class="inp" style="min-height:74px">Daftar semua mesin pabrik: kode, nama, merek, model, ukuran lembar maksimum dan minimum, kecepatan, jumlah operator. Setiap mesin wajib punya proses. Bisa dinonaktifkan, tidak dihapus.<span class="aa">Aa</span></div>
+        </div>
+        <div>
+          <div class="lbl mb-1">Type</div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="opt on"><span class="chk on"><i class="fa-solid fa-check"></i></span><div><b>Master</b><div class="q">Data that is kept and switched active / inactive</div></div></div>
+            <div class="opt"><span class="chk"></span><div><b>Transactional</b><div class="q">A document: Draft, Confirmed, Cancelled, Closed</div></div></div>
+            <div class="opt"><span class="chk"></span><div><b>Custom</b><div class="q">A special form that gets its own object</div></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="opt on"><span class="chk on"><i class="fa-solid fa-check"></i></span><div><b>Needs an engine</b><div class="q">A calculation or a suggestion that the screen must run</div></div></div>
+        </div>
+        <div>
+          <div class="lbl mb-1">Engine description</div>
+          <div class="inp" style="min-height:62px">Hitung kapasitas mesin per shift dari kecepatan dan jam kerja, dan sarankan mesin yang cocok untuk satu proses berdasarkan ukuran lembar.<span class="aa">Aa</span></div>
+        </div>
+        <div>
+          <div class="lbl mb-1">Flow (data flow or document flow)</div>
+          <div class="inp" style="min-height:74px">Mesin diisi oleh Production Manager. Dipakai oleh Master Proses (mesin mana untuk proses apa), Routing, Scheduling dan Maintenance. Mesin yang dinonaktifkan tidak muncul di jadwal baru, tetapi riwayatnya tetap.<span class="aa">Aa</span></div>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <span class="btn p"><i class="fa-solid fa-floppy-disk"></i> Save</span>
+          <span class="btn s"><i class="fa-solid fa-rotate-left"></i> Undo</span>
+          <span class="btn s ml-auto"><i class="fa-solid fa-arrow-left"></i> Back</span>
+        </div>
+      </section>
 
-    <!-- 2 -->
+      <section class="col-span-5 space-y-4">
+        <div class="card p-4">
+          <div class="ttl mb-2">What happens after Save</div>
+          <ol class="space-y-2 text-slate-700" style="list-style:decimal;padding-left:16px">
+            <li>The request gets a number and the status <b>Requested</b>.</li>
+            <li>The agent reads open requests at the start of a session and asks you only what the description leaves unclear.</li>
+            <li>The agent builds it from DevLib objects: Master = Grid Master + form, Transactional = document list + form, Custom = a new special form object.</li>
+            <li>The status becomes <b>Built</b>, with the link to the screen on mockup.test.</li>
+            <li>You rate it with 1 to 5 stars and a note, as in Quality &amp; Rating.</li>
+          </ol>
+        </div>
+        <div class="note"><b>Mockup, sample text.</b> The wording in the boxes is an example of how a request could be written; any language is accepted.</div>
+      </section>
+    </div>
+
     <section class="card p-4">
-      <div class="flex items-center gap-2 mb-2"><span class="step">2</span><span class="ttl">Columns</span><span class="q">Type, length and keys are read from the schema dictionary. You only decide what is shown and how it is labelled (English; the dictionary translates).</span></div>
+      <div class="flex items-center mb-1"><span class="ttl">Requests</span><span class="q ml-2">Everything you asked for, newest first.</span></div>
       <table class="w-full">
-        <thead><tr><th style="width:40px">Show</th><th>Column</th><th>Type in database</th><th>Label (English)</th><th>Field object</th><th>Rule (from the table)</th><th>Lookup to master</th></tr></thead>
+        <thead><tr><th>No.</th><th>Name</th><th>Type</th><th>Engine</th><th>Requested</th><th>Status</th><th>Built by</th><th>Screen</th><th>Rating</th></tr></thead>
         <tbody>
-          <tr><td><span class="chk"></span></td><td class="text-slate-400">id_delivery_method</td><td class="text-slate-400">bigint unsigned &middot; PK</td><td class="text-slate-400">&mdash;</td><td class="text-slate-400">hidden key</td><td class="text-slate-400">auto number</td><td></td></tr>
-          <tr><td><span class="chk on"><i class="fa-solid fa-check"></i></span></td><td><b>method_code</b></td><td>varchar(10) &middot; unique</td><td><div class="inp"><span>Code</span><span class="aa">Aa</span></div></td><td>x-dl::field.text &middot; uppercase</td><td>required &middot; unique &middot; max 10 &middot; locked after save</td><td></td></tr>
-          <tr><td><span class="chk on"><i class="fa-solid fa-check"></i></span></td><td><b>method_name</b></td><td>varchar(60)</td><td><div class="inp"><span>Delivery Method</span><span class="aa">Aa</span></div></td><td>x-dl::field.text</td><td>required &middot; max 60</td><td></td></tr>
-          <tr><td><span class="chk on"><i class="fa-solid fa-check"></i></span></td><td><b>default_supplier_id</b></td><td>bigint unsigned</td><td><div class="inp"><span>Default Forwarder</span><span class="aa">Aa</span></div></td><td>x-dl::field.lookup</td><td>must exist in the master</td><td><div class="inp"><span>Supplier (category EKSPEDISI)</span><i class="fa-solid fa-chevron-down text-slate-400"></i></div></td></tr>
-          <tr><td><span class="chk on"><i class="fa-solid fa-check"></i></span></td><td><b>lead_days</b></td><td>decimal(5,1)</td><td><div class="inp"><span>Lead Time (days)</span><span class="aa">Aa</span></div></td><td>x-dl::field.decimal &middot; 1 decimal</td><td>numeric</td><td></td></tr>
-          <tr><td><span class="chk on"><i class="fa-solid fa-check"></i></span></td><td><b>activate</b></td><td>tinyint(1)</td><td><div class="inp ro"><span>Active</span></div></td><td>check &middot; Active / Inactive filter</td><td>standard for master tables</td><td></td></tr>
-          <tr><td><span class="chk"></span></td><td class="text-slate-400">created_at, created_by, updated_at, updated_by</td><td class="text-slate-400">audit columns</td><td class="text-slate-400">&mdash;</td><td class="text-slate-400">History tab (from the parent)</td><td class="text-slate-400">filled by the parent</td><td></td></tr>
+          <tr><td>RQ-0004</td><td><b>Master Mesin</b><div class="q">Daftar semua mesin pabrik: kode, nama, merek, model ...</div></td><td>Master</td><td>Yes</td><td>05-Oct-2026 15:02</td><td><span class="bdg" style="background:#fff3d6;color:#8a6100">Requested</span></td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>RQ-0003</td><td><b>Ink Mixing</b><div class="q">Catat campuran tinta per pekerjaan dan sisa kalengnya ...</div></td><td>Transactional</td><td>Yes</td><td>05-Oct-2026 11:40</td><td><span class="bdg" style="background:#e8f0fd;color:#2c7be5">Agent asks 2 questions</span></td><td>Agent Iwan</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>RQ-0002</td><td><b>Delivery Method</b><div class="q">Cara kirim: kurir sendiri, ekspedisi, diambil customer ...</div></td><td>Master</td><td>No</td><td>04-Oct-2026 16:15</td><td><span class="bdg" style="background:#e7f7ee;color:#15803d">Built</span></td><td>Agent Jo</td><td class="text-blue-600">Sales &rsaquo; Master &rsaquo; Delivery Method</td><td style="color:#f0b849">&#9733;&#9733;&#9733;&#9733;<span style="color:#d5dbe6">&#9733;</span></td></tr>
+          <tr><td>RQ-0001</td><td><b>Stack Monitor</b><div class="q">Lihat urutan tumpukan palet di tiap bin ...</div></td><td>Custom</td><td>No</td><td>03-Oct-2026 09:20</td><td><span class="bdg" style="background:#e7f7ee;color:#15803d">Built</span></td><td>Agent Iwan</td><td class="text-blue-600">Inventory &rsaquo; Stack Monitor</td><td style="color:#f0b849">&#9733;&#9733;&#9733;<span style="color:#d5dbe6">&#9733;&#9733;</span></td></tr>
         </tbody>
       </table>
     </section>
-
-    <!-- 3 -->
-    <section class="card p-4">
-      <div class="flex items-center gap-2 mb-2"><span class="step">3</span><span class="ttl">Preview</span><span class="q">Nothing is written yet. The generated class is short because the behaviour stays in the parent.</span>
-        <span class="ml-auto bdg" style="background:#e7f7ee;color:#15803d">3 files &middot; 41 lines</span></div>
-      <div class="grid grid-cols-12 gap-3">
-        <div class="col-span-4">
-          <table class="w-full">
-            <thead><tr><th>File that will be written</th><th>From template</th></tr></thead>
-            <tbody>
-              <tr style="background:#f1f6ff"><td><b>app/Support/V2/Grid/Master/DeliveryMethodLookup.php</b><div class="q">new &middot; 34 lines</div></td><td>grid-lookup v3</td></tr>
-              <tr><td>app/Support/V2/Grid/Grids.php<div class="q">+1 line (register the grid)</div></td><td>registry</td></tr>
-              <tr><td>database/migrations/2026_10_05_000020_menu_delivery_method.php<div class="q">new &middot; menu row for ddtsys</div></td><td>menu-row v2</td></tr>
-            </tbody>
-          </table>
-          <div class="note mt-3"><b>Guards run after writing:</b> DevLib-only, multi-language, build catalog. If one fails, the files are taken back.</div>
-        </div>
-        <div class="col-span-8">
-<pre><span class="k">class</span> DeliveryMethodLookup <span class="k">extends</span> MasterDataLookup
-{
-    <span class="k">public function</span> slug(): string  { <span class="k">return</span> <span class="s">'md-delivery-method'</span>; }
-    <span class="k">public function</span> title(): string { <span class="k">return</span> <span class="s">'Delivery Method'</span>; }
-
-    <span class="k">protected function</span> query(): Builder
-    {
-        <span class="k">return</span> RefDeliveryMethod::query()->orderByDesc(<span class="s">'activate'</span>)->orderBy(<span class="s">'method_code'</span>);
-    }
-
-    <span class="k">public function</span> columns(): array
-    {
-        <span class="k">return</span> [
-            [<span class="s">'key'</span> => <span class="s">'method_code'</span>, <span class="s">'label'</span> => <span class="s">'Code'</span>, <span class="s">'required'</span> => true, <span class="s">'unique'</span> => true,
-             <span class="s">'lockSaved'</span> => true, <span class="s">'case'</span> => <span class="s">'uppercase'</span>],
-            [<span class="s">'key'</span> => <span class="s">'method_name'</span>, <span class="s">'label'</span> => <span class="s">'Delivery Method'</span>, <span class="s">'required'</span> => true],
-            [<span class="s">'key'</span> => <span class="s">'default_supplier_id'</span>, <span class="s">'label'</span> => <span class="s">'Default Forwarder'</span>, <span class="s">'type'</span> => <span class="s">'lookup'</span>,
-             <span class="s">'lookup'</span> => <span class="s">'supplier:EKSPEDISI'</span>],
-            [<span class="s">'key'</span> => <span class="s">'lead_days'</span>, <span class="s">'label'</span> => <span class="s">'Lead Time (days)'</span>, <span class="s">'type'</span> => <span class="s">'decimal'</span>, <span class="s">'decimals'</span> => 1],
-            [<span class="s">'key'</span> => <span class="s">'activate'</span>, <span class="s">'label'</span> => <span class="s">'Active'</span>, <span class="s">'type'</span> => <span class="s">'check'</span>],
-        ];
-    }
-    <span class="c">// rules(): lengths come from the table columns (varchar 10, varchar 60)</span>
-}</pre>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4 -->
-    <section class="card p-4">
-      <div class="flex items-center gap-2 mb-2"><span class="step">4</span><span class="ttl">Save the blueprint and run the command</span><span class="q">The blueprint stays in the devlib database, so the screen can be opened and changed later.</span></div>
-      <div class="grid grid-cols-12 gap-3 items-start">
-        <div class="col-span-7">
-          <pre>php artisan devlib:generate BP-0015 --env=mockup</pre>
-          <div class="flex gap-2 mt-3">
-            <span class="btn p"><i class="fa-solid fa-floppy-disk"></i> Save</span>
-            <span class="btn s"><i class="fa-solid fa-copy"></i> Copy Command</span>
-            <span class="btn s"><i class="fa-solid fa-eye"></i> Preview</span>
-            <span class="btn s ml-auto"><i class="fa-solid fa-arrow-left"></i> Back</span>
-          </div>
-        </div>
-        <div class="col-span-5">
-          <table class="w-full">
-            <thead><tr><th>Last runs of this blueprint</th><th>By</th><th>Template</th><th>Result</th></tr></thead>
-            <tbody>
-              <tr><td class="text-slate-400">no run yet</td><td></td><td></td><td></td></tr>
-              <tr><td>BP-0014 &middot; Payment Term &middot; 05-Oct-2026 10:12</td><td>Agent Iwan</td><td>grid-lookup v3</td><td><span class="bdg" style="background:#e7f7ee;color:#15803d">Written &middot; guards passed</span></td></tr>
-              <tr><td>BP-0013 &middot; Scrap Type &middot; 05-Oct-2026 09:40</td><td>Agent Jo</td><td>grid-master v2</td><td><span class="bdg" style="background:#fdecec;color:#b91c1c">Refused &middot; file edited by hand</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <div class="note"><b>Mockup, sample data.</b> The table ref_delivery_method, the blueprint numbers and the run history are examples. Phase 1 covers Grid Master and Grid Lookup only; the other four kinds are shown to explain the direction.</div>
   </main>
 </div>
 </body>
