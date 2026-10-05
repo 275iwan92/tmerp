@@ -1,8 +1,8 @@
 {
-    "generated": "2026-10-05 09:58",
+    "generated": "2026-10-05 10:16",
     "database": "ddtsys",
     "totals": {
-        "objects": 140,
+        "objects": 141,
         "modules": 10,
         "modules_done": 6,
         "screens": 216,
@@ -26,7 +26,7 @@
         "tests": 89,
         "dictionary": 9689,
         "languages": 4,
-        "commits": "1083",
+        "commits": "1087",
         "since": "2026-08-06"
     },
     "modules": [
@@ -155,11 +155,11 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 1,
+            "commits": 5,
             "days": 1,
             "last": "2026-10-05",
             "screens": 0,
-            "objects": 1,
+            "objects": 2,
             "engines": 0,
             "tests": 1
         },
@@ -257,9 +257,4451 @@
         },
         {
             "date": "2026-10-05",
-            "iwan": 1,
+            "iwan": 5,
             "jo": 0,
             "other": 2
+        }
+    ],
+    "weeks": [
+        {
+            "week": "2026-W32",
+            "iwan": 0,
+            "jo": 0,
+            "other": 2
+        },
+        {
+            "week": "2026-W33",
+            "iwan": 0,
+            "jo": 0,
+            "other": 9
+        },
+        {
+            "week": "2026-W34",
+            "iwan": 0,
+            "jo": 0,
+            "other": 54
+        },
+        {
+            "week": "2026-W35",
+            "iwan": 0,
+            "jo": 0,
+            "other": 80
+        },
+        {
+            "week": "2026-W36",
+            "iwan": 0,
+            "jo": 0,
+            "other": 143
+        },
+        {
+            "week": "2026-W37",
+            "iwan": 0,
+            "jo": 0,
+            "other": 85
+        },
+        {
+            "week": "2026-W38",
+            "iwan": 0,
+            "jo": 0,
+            "other": 77
+        },
+        {
+            "week": "2026-W39",
+            "iwan": 0,
+            "jo": 0,
+            "other": 175
+        },
+        {
+            "week": "2026-W40",
+            "iwan": 0,
+            "jo": 0,
+            "other": 455
+        },
+        {
+            "week": "2026-W41",
+            "iwan": 5,
+            "jo": 0,
+            "other": 2
+        }
+    ],
+    "items": [
+        {
+            "type": "FORM",
+            "key": "menu:PRE_PRODEV_NEW",
+            "name": "Pro-Dev New",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_PRODEV_REVISE",
+            "name": "Pro-Dev Revise",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:ACC_COA",
+            "name": "Master of Accounts",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:PRE_F_SALES",
+            "name": "Sales Flow: Inquiry → CPDEL",
+            "module": "Sales",
+            "qc": "V1",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_ORG_DEPT",
+            "name": "Department",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_LBL_LOC",
+            "name": "Print Location Label (QR)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:ACC_FIXEDASSET",
+            "name": "Fixed Assets",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:ACC_AMORT",
+            "name": "Amortization",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SALES_INQ",
+            "name": "All Inquiries",
+            "module": "Sales",
+            "qc": "LOCKED",
+            "built_at": "2026-09-25",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SALES_COST",
+            "name": "Pro-Cost New",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SALES_SO",
+            "name": "Customer Order",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SALES_DO",
+            "name": "Delivery Order",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROC_PR",
+            "name": "Purchase Requisition (PR)",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROC_PQ",
+            "name": "Purchase Quotation",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROC_RCV",
+            "name": "Purchase Receive",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROC_RET",
+            "name": "Purchase Return",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:PROC_MON_PR",
+            "name": "Outstanding PR",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:PROC_MON_PO",
+            "name": "Outstanding PO",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_OUTPUT",
+            "name": "Production Output",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MD_CUST",
+            "name": "Master Customer",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:FIN_CASH",
+            "name": "Cashier (Cash & Bank)",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:ACC_JRN",
+            "name": "Journal Entries",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_USER",
+            "name": "Accounts",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_MENU",
+            "name": "Menu Setup",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_EMPLOYEE",
+            "name": "Master Employee",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SALES_IMPO",
+            "name": "Pro-Dev Manual",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-25",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_RAW_RM",
+            "name": "Stock Balance",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_RAW_FG",
+            "name": "Stock Balance",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_RAW_SFG",
+            "name": "Stock Balance",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_RM_ITEM1",
+            "name": "Stock In",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_FG_ITEM1",
+            "name": "Stock In",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_SFG_ITEM1",
+            "name": "Stock In",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:PROC_MON_PV",
+            "name": "Outstanding PV",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_WO_LIST",
+            "name": "Work Order",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:HRM_RCR_REQUISITION",
+            "name": "Manpower Requisition",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:HRM_RCR_SYNCLOG",
+            "name": "Sync Log Summary",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_ORG_STRUCTURE",
+            "name": "Master Position",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_TICKETS",
+            "name": "Support Tickets",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_LBL_ITEM1",
+            "name": "Print Pallet Label (QR)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_LBL_ITEM3",
+            "name": "Label Print History",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_REF_RAW",
+            "name": "Raw Material Master",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_CONSTANTS",
+            "name": "Constants",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:HRM_DISCIPLINE_REPORT",
+            "name": "Daily Discipline Report",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "DASHBOARD",
+            "key": "menu:MGMT_EXEC",
+            "name": "Executive Summary",
+            "module": "Management Reports",
+            "qc": "NOT_BUILT",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:MGMT_SALES",
+            "name": "Sales Details",
+            "module": "Management Reports",
+            "qc": "NOT_BUILT",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:HRM_CONTACT_GAP",
+            "name": "Employees Without WhatsApp No.",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:SALES_RPT_QUOOPEN",
+            "name": "Open Quotations",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:SALES_CO_RPT_SUMMARY",
+            "name": "Customer Order Summary",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:GENERAL_CO_SUMMARY",
+            "name": "Customer Order Summary",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MAINT_REQ",
+            "name": "Maintenance Request",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:MAINT_WO_RPT",
+            "name": "Maintenance WO Report",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MAINT_PLAN",
+            "name": "Preventive Plan",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MAINT_CODES",
+            "name": "Maintenance Codes",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:PROD_RPT_NO_OUTPUT",
+            "name": "Shipped Without Production Output",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_MD_CUST",
+            "name": "Master Customer",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:F-SALES",
+            "name": "Sales Flow: Inquiry → CPDEL",
+            "module": "Sales",
+            "qc": "V1",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:F-COSTING",
+            "name": "Costing Flow: ProDev → ProCost → Publish",
+            "module": "Sales",
+            "qc": "V1",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_HELP_TOPIC",
+            "name": "Help Topics",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:CRM_CUST360",
+            "name": "Customer 360",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:CRM_MD_CUST",
+            "name": "Master Customer",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:CRM_RPT_WINRATE",
+            "name": "Win-Rate Sales",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_QC_COMPLAINT",
+            "name": "Complaint Review (QA)",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_DASHBOARDS",
+            "name": "Opening Dashboards",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_WH_MAP",
+            "name": "Warehouse Map",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_WH_BLD",
+            "name": "Buildings",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_LOC",
+            "name": "Stock by Location",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_LANGUAGES",
+            "name": "Languages",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-03",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_MPS",
+            "name": "MPS - Gantt Chart",
+            "module": "Production",
+            "qc": "NOT_BUILT",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_CUST_RECV",
+            "name": "Customer Receiving Hours",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_MON_WO",
+            "name": "MPS - Kanban Board",
+            "module": "Production",
+            "qc": "NOT_BUILT",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_DELAY_REASON",
+            "name": "Delivery Delay Reasons",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_MPS_SHEET",
+            "name": "MPS - Spreadsheet",
+            "module": "Production",
+            "qc": "NOT_BUILT",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_SALES_PERSON",
+            "name": "Sales Person",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:HRM_ACTING_OFFICER",
+            "name": "Temporary Acting Officer",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:FIN_PETTY",
+            "name": "Petty Cash",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_RULE_LIB",
+            "name": "Rule Library",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_MTS_FORECAST",
+            "name": "Demand Forecast (MPS)",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_BOOKING",
+            "name": "Material Booking",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SALES_CPDEL",
+            "name": "Customer Plan Delivery",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROC_PO",
+            "name": "Purchase Order",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_MRP",
+            "name": "Material Planning (MRP)",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_MTN_SCH",
+            "name": "Maintenance Work Order",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MD_SUPP",
+            "name": "Master Supplier",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:ACC_GL",
+            "name": "General Ledger",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_GROUP",
+            "name": "Groups",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SET_LANG",
+            "name": "Language",
+            "module": "Setup",
+            "qc": "NOT_BUILT",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_CARD_RM",
+            "name": "Stock Card",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_CARD_FG",
+            "name": "Stock Card",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_CARD_SFG",
+            "name": "Stock Card",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_RM_ITEM2",
+            "name": "Stock Out",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_FG_ITEM2",
+            "name": "Stock Out",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_SFG_ITEM2",
+            "name": "Stock Out",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROC_PR_APPR",
+            "name": "PR Approval Center",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROC_RET_APPR",
+            "name": "Purchase Return Approval Center",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_ATTENDANCE",
+            "name": "Attendance Log",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_CORRECTION",
+            "name": "Employee Data Correction",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:HRM_RCR_VACANCY",
+            "name": "Vacancy Posting & Channel Monitoring",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_LBL_ITEM2",
+            "name": "Print Item Label (QR)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_SCAN_ITEM2",
+            "name": "Track via QR/Barcode",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_REF_MATCAT",
+            "name": "Material Category",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SALES_DN",
+            "name": "Delivery Notes",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:MGMT_PURCHASE",
+            "name": "Purchase Details",
+            "module": "Management Reports",
+            "qc": "NOT_BUILT",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SALES_PMKT",
+            "name": "Master Product Market",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:SALES_CO_RPT_ORDER",
+            "name": "Customer Order Report",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:GENERAL_CO_ORDER",
+            "name": "Customer Order Report",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MAINT_WO",
+            "name": "Maintenance Work Order",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MAINT_MACHINE",
+            "name": "Master Machine",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_MD_PROD",
+            "name": "Master Product",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-29",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:G-PRODUCT",
+            "name": "Guide: Master Product & Revision",
+            "module": "Sales",
+            "qc": "V1",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_INQ_NEW",
+            "name": "Inquiry New",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_COST_REVISE",
+            "name": "Pro-Cost Revise",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_CONSTANT_CAT",
+            "name": "Constant Categories",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_HELP_LINE",
+            "name": "Help Lines",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:CRM_ACTIVITY",
+            "name": "Activities & Follow-up",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:CRM_MD_SALES",
+            "name": "Sales Person",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:FIN_AR_INVOICE",
+            "name": "Customer Invoice",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_WIDGETS",
+            "name": "Opening Board Widgets",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_WH_TF",
+            "name": "Stock Transfer",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_WH_ZONE",
+            "name": "Storage Areas",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_CARD",
+            "name": "Stock Card",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:FIN_TO_INVOICE",
+            "name": "To Invoice",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_SUPCAT",
+            "name": "Master Supplier Category",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SALES_CO_APPR",
+            "name": "CO Approval Center",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SALES_DN_SUBCON",
+            "name": "Subcontract Delivery Note",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_MTN_PREV",
+            "name": "Preventive Plan",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MD_PROD",
+            "name": "Master Product",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-29",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:FIN_AP",
+            "name": "Procure to Pay",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_RM_ITEM3",
+            "name": "Return from Production",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_FG_ITEM3",
+            "name": "Return from Production",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_SFG_ITEM3",
+            "name": "Return from Production",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROC_PO_APPR",
+            "name": "PO Approval Center",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_SCRAP_TYPE",
+            "name": "Scrap Types",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_SLOW_RM",
+            "name": "Slow Moving Item",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_SLOW_FG",
+            "name": "Slow Moving Item",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_SLOW_SFG",
+            "name": "Slow Moving Item",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_MST_PROCESS",
+            "name": "Master Process",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_LEAVE_APPROVAL",
+            "name": "Leave Approval",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_RCR_TALENTPOOL",
+            "name": "Talent Pool",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:HRM_PAYROLL_CALC",
+            "name": "Payroll Calculation",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_REF_PROD",
+            "name": "Product Master",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-29",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_SOP",
+            "name": "SOP & Work Instruction",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:SALES_RPT_QUOFU",
+            "name": "Follow-up Quotation",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:SALES_CO_RPT_SHIP_DET",
+            "name": "Customer Order Shipment Detail",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:GENERAL_CO_SHIP",
+            "name": "Customer Order Shipment Detail",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SALES_MCARD",
+            "name": "Master Card Collection",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MAINT_MYWORK",
+            "name": "My Work",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SALES_POD",
+            "name": "Proof of Delivery",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_MD_RAW",
+            "name": "Master Raw Material",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_INQ_REVISE",
+            "name": "Inquiry Revise",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-25",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_COST_RECALC",
+            "name": "Pro-Cost Recalc",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_ASSISTANT_Q",
+            "name": "Assistant Questions",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:CRM_COMPLAINT",
+            "name": "Complaint & Return",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_DOC_SERIES",
+            "name": "Document Number Series",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_BOARD_TEMPLATE",
+            "name": "Opening Board Templates",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_WH_BIN",
+            "name": "Bins",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_WH_TF_APPR",
+            "name": "Stock Transfer Approval Center",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_RECAP",
+            "name": "Stock Recapitulation",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_STACK",
+            "name": "Stack Monitor",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-03",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_MODULE",
+            "name": "Modules",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-04",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_ROUTING_TPL",
+            "name": "Master Routing Template",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_PRODCAT",
+            "name": "Product Category",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_GPS_APPROVAL",
+            "name": "GPS Location Approval",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:FIN_AP_RECEIPT",
+            "name": "Supplier Invoice Receipt",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_RCR_REVIEW",
+            "name": "Candidate Form Review",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_MST_BOP_RULE",
+            "name": "BOP Rule Setting",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SALES_QUOT",
+            "name": "Quotation",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-29",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MD_RAW",
+            "name": "Master Raw Material",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_PERM",
+            "name": "Groups on Modules",
+            "module": "Setup",
+            "qc": "NOT_BUILT",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MD_MACHINE",
+            "name": "Master Machine",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_RM_ITEM4",
+            "name": "Stock Adjustment & Physical Count",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_FG_ITEM4",
+            "name": "Stock Adjustment & Physical Count",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_SFG_ITEM4",
+            "name": "Stock Adjustment & Physical Count",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:INV_REF_WH",
+            "name": "Warehouse & Location",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:SALES_WINRATE",
+            "name": "Win-Rate Sales",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_PAYROLL_PAYSLIP",
+            "name": "Print & Send Payslips",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_DICTIONARY",
+            "name": "Translation Dictionary",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_MD_MATCAT",
+            "name": "Master Raw Material Category",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_INQ_RECALC",
+            "name": "Inquiry Recalc",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-25",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:SET_ASSISTANT_LOG",
+            "name": "Assistant Log",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_KPI_TARGETS",
+            "name": "KPI Targets",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_SUM",
+            "name": "Stock Summary",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_MACHINE_MODEL",
+            "name": "Machine Model Catalog",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MD_MATCAT",
+            "name": "Master Raw Material Category",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_USAGE_STD",
+            "name": "Material Usage Standard",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_LEAD_TIME",
+            "name": "Purchase Lead Time",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_UOM",
+            "name": "Master Unit (UoM)",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_RM_ITEM5",
+            "name": "Adjustment Approval",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_FG_ITEM5",
+            "name": "Adjustment Approval",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:INV_SFG_ITEM5",
+            "name": "Adjustment Approval",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PROD_MST_CREW",
+            "name": "Master Crew",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:HRM_RCR_INTERVIEW",
+            "name": "Interview Schedule",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:ACC_TB",
+            "name": "Trial Balance",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:SET_APPROVAL",
+            "name": "Approval Levels",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:PRE_MD_PROCESS",
+            "name": "Master Process",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_DAILY_QUOTES",
+            "name": "Daily Quotes",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_OPN",
+            "name": "Stock Opname",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:SET_DICT_GROUPS",
+            "name": "Message Groups",
+            "module": "Setup",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-03",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_UOM_CONV",
+            "name": "Unit Conversion",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MD_WH",
+            "name": "Master Warehouse",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:HRM_RCR_ASSESSMENT",
+            "name": "Psychotest / Interview Results",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PRE_MD_MACHINE",
+            "name": "Master Machine",
+            "module": "Sales",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:ACC_RPT_AR_AGING",
+            "name": "AR Aging",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_LG",
+            "name": "Stock Loss & Gain",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:ACC_RPT_DP_LEDGER",
+            "name": "Down Payment Ledger",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:HRM_RCR_OFFER",
+            "name": "Offering",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_PAYROLL_SALARY",
+            "name": "Employee Salary & Tax",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:INV_WH_RPT_QC",
+            "name": "Stock in Inspection",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MD_SHIFT",
+            "name": "Master Shift",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_PAYROLL_BANK",
+            "name": "Employee Bank Accounts",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_PAYMENT_TERM",
+            "name": "Payment Terms",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:HRM_RCR_PROVISION",
+            "name": "Provisioning to ERP",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_CURRENCY",
+            "name": "Master Currency",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:FIN_COMPANY_BANK",
+            "name": "Company Bank Accounts",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_EXCHRATE",
+            "name": "Master Exchange Rate",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_HOLIDAY",
+            "name": "Holiday Calendar",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:MD_OFFICE_HOUR",
+            "name": "Office Hours",
+            "module": "Master Data",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:dieline",
+            "name": "Dieline Engine (TMDieline)",
+            "module": "Inquiry Product",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-08-10",
+            "built_by": null,
+            "changed_at": "2026-08-10",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:imposition",
+            "name": "Imposition Engine",
+            "module": "Pro-Dev",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-08-20",
+            "built_by": null,
+            "changed_at": "2026-09-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:spec",
+            "name": "Spec Engine (BOP · BOM · Ink)",
+            "module": "Pro-Dev",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-17",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:usage-rate",
+            "name": "Usage Rate Engine",
+            "module": "Pro-Dev",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-18",
+            "built_by": null,
+            "changed_at": "2026-09-18",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:routing",
+            "name": "Routing Template Engine",
+            "module": "Pro-Dev",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-22",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:costing",
+            "name": "Costing Engine (Pro-Cost)",
+            "module": "Pro-Cost",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-08-13",
+            "built_by": null,
+            "changed_at": "2026-09-19",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:reverse-costing",
+            "name": "Reverse Costing",
+            "module": "Pro-Cost",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-18",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:flow",
+            "name": "Flow Engine (Approval)",
+            "module": "Approval",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-08-21",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:cpdel",
+            "name": "CPDEL Engine (Customer Plan Delivery)",
+            "module": "Sales Order",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-08-20",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:cpdel-promise",
+            "name": "CPDEL Two Promises",
+            "module": "Sales Order",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:material-planning",
+            "name": "Material Planning Engine (MPS · MRP · Booking)",
+            "module": "Planning",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:warehouse-stock",
+            "name": "Warehouse Stock (bins, capacity, dead stock)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:stock-posting",
+            "name": "Stock Document Posting (stock card order)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-08-22",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:stock-transfer",
+            "name": "Stock Transfer Posting",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:pallet-labels",
+            "name": "Pallet Labels (arrival label, relabel after use)",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:stock-ledger",
+            "name": "Stock Period Ledger",
+            "module": "Inventory",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:wo-generation",
+            "name": "Work Order Generation",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-08-28",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:pdr",
+            "name": "PDR Engine (Scheduling)",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-08-28",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:scheduling-rules",
+            "name": "Scheduling Rule Engine",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-08-28",
+            "built_by": null,
+            "changed_at": "2026-09-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:interruption",
+            "name": "Hot Job Option Generator",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-08-28",
+            "built_by": null,
+            "changed_at": "2026-08-28",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:speed-target",
+            "name": "Speed Target Engine",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:pq-matcher",
+            "name": "Purchase Quotation Matcher",
+            "module": "Procurement",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:tax",
+            "name": "Tax Engine",
+            "module": "Finance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-21",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:payroll",
+            "name": "Payroll Engine",
+            "module": "HR & Payroll",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-05",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "ENGINE",
+            "key": "engine:assistant",
+            "name": "Assistant Engine (offline)",
+            "module": "Help",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Accordion",
+            "name": "Accordion",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:AccordionGroup",
+            "name": "AccordionGroup",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:ActionBar",
+            "name": "ActionBar",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:ActionForm",
+            "name": "ActionForm",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Alert",
+            "name": "Alert",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Announce",
+            "name": "Announce",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Approval",
+            "name": "Approval",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Avatar",
+            "name": "Avatar",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:BackButton",
+            "name": "BackButton",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Badge",
+            "name": "Badge",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Barcode",
+            "name": "Barcode",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Brand",
+            "name": "Brand",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Breadcrumb",
+            "name": "Breadcrumb",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:BuildBoard",
+            "name": "BuildBoard",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-05",
+            "built_by": null,
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Bullet",
+            "name": "Bullet",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Button",
+            "name": "Button",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Calendar",
+            "name": "Calendar",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Card",
+            "name": "Card",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Chart",
+            "name": "Chart",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Chat",
+            "name": "Chat",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Clock",
+            "name": "Clock",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:CodeButton",
+            "name": "CodeButton",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:CodeChain",
+            "name": "CodeChain",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-03",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Dashboard",
+            "name": "Dashboard",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:DevToggle",
+            "name": "DevToggle",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:DeviceFrame",
+            "name": "DeviceFrame",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Divider",
+            "name": "Divider",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:DocFooter",
+            "name": "DocFooter",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:DocShare",
+            "name": "DocShare",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-29",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Drawer",
+            "name": "Drawer",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Drilldown",
+            "name": "Drilldown",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:EmptyState",
+            "name": "EmptyState",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:EngineCatalog",
+            "name": "EngineCatalog",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:ErrorPage",
+            "name": "ErrorPage",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Checkbox",
+            "name": "Field · Checkbox",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Checkboxes",
+            "name": "Field · Checkboxes",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Color",
+            "name": "Field · Color",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · CreditCard",
+            "name": "Field · CreditCard",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Date",
+            "name": "Field · Date",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · DateRange",
+            "name": "Field · DateRange",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · DateSlider",
+            "name": "Field · DateSlider",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · DateTime",
+            "name": "Field · DateTime",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Decimal",
+            "name": "Field · Decimal",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Display",
+            "name": "Field · Display",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Field",
+            "name": "Field · Field",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · KeyValue",
+            "name": "Field · KeyValue",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Lookup",
+            "name": "Field · Lookup",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Masked",
+            "name": "Field · Masked",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Money",
+            "name": "Field · Money",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · MultiSelect",
+            "name": "Field · MultiSelect",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Number",
+            "name": "Field · Number",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · NumberWords",
+            "name": "Field · NumberWords",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Otp",
+            "name": "Field · Otp",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Password",
+            "name": "Field · Password",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Phone",
+            "name": "Field · Phone",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Radio",
+            "name": "Field · Radio",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Rating",
+            "name": "Field · Rating",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · RichText",
+            "name": "Field · RichText",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Select",
+            "name": "Field · Select",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Signature",
+            "name": "Field · Signature",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Slider",
+            "name": "Field · Slider",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Tags",
+            "name": "Field · Tags",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Text",
+            "name": "Field · Text",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Time",
+            "name": "Field · Time",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Toggle",
+            "name": "Field · Toggle",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · ToggleGroup",
+            "name": "Field · ToggleGroup",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Field · Upload",
+            "name": "Field · Upload",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Flow",
+            "name": "Flow",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:ForgotBox",
+            "name": "ForgotBox",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Form",
+            "name": "Form",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Form · Col",
+            "name": "Form · Col",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Form · Row",
+            "name": "Form · Row",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Frame",
+            "name": "Frame",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Gantt",
+            "name": "Gantt",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Gauge",
+            "name": "Gauge",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Greeting",
+            "name": "Greeting",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Grid",
+            "name": "Grid",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Icon",
+            "name": "Icon",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:IconButton",
+            "name": "IconButton",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Import",
+            "name": "Import",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Kanban",
+            "name": "Kanban",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Kpi",
+            "name": "Kpi",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Label",
+            "name": "Label",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:LabelGuide",
+            "name": "LabelGuide",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:LabelSheet",
+            "name": "LabelSheet",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:LangSwitch",
+            "name": "LangSwitch",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:LangText",
+            "name": "LangText",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:LayerMenu",
+            "name": "LayerMenu",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:LayerShell",
+            "name": "LayerShell",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Lines",
+            "name": "Lines",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:LockScreen",
+            "name": "LockScreen",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:LoginBox",
+            "name": "LoginBox",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:LookupGrid",
+            "name": "LookupGrid",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Master",
+            "name": "Master",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:MegaMenu",
+            "name": "MegaMenu",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:MenuButton",
+            "name": "MenuButton",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Meta",
+            "name": "Meta",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Modal",
+            "name": "Modal",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:NotificationList",
+            "name": "NotificationList",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:OrgChart",
+            "name": "OrgChart",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Pagination",
+            "name": "Pagination",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:PermissionMatrix",
+            "name": "PermissionMatrix",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:PickMatrix",
+            "name": "PickMatrix",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Pivot",
+            "name": "Pivot",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:PrintDoc",
+            "name": "PrintDoc",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:PrintOut",
+            "name": "PrintOut",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Progress",
+            "name": "Progress",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:ProgressRing",
+            "name": "ProgressRing",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Qr",
+            "name": "Qr",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Quote",
+            "name": "Quote",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:RateList",
+            "name": "RateList",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-05",
+            "built_by": "iwan",
+            "changed_at": "2026-10-05",
+            "changed_by": "iwan"
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:RegisterBox",
+            "name": "RegisterBox",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Report",
+            "name": "Report",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Ribbon",
+            "name": "Ribbon",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Scan",
+            "name": "Scan",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Sheet",
+            "name": "Sheet",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Shell",
+            "name": "Shell",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:SideMenu",
+            "name": "SideMenu",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:SideScreen",
+            "name": "SideScreen",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-04",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:SideScreen · Foot",
+            "name": "SideScreen · Foot",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-04",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:SideScreen · Layout",
+            "name": "SideScreen · Layout",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-04",
+            "built_by": null,
+            "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Skeleton",
+            "name": "Skeleton",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Spinner",
+            "name": "Spinner",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Split",
+            "name": "Split",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:SplitButton",
+            "name": "SplitButton",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:StatBox",
+            "name": "StatBox",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:StatusCard",
+            "name": "StatusCard",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Table",
+            "name": "Table",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Tabs",
+            "name": "Tabs",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:ThemeBoot",
+            "name": "ThemeBoot",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:ThemePicker",
+            "name": "ThemePicker",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:TokenTable",
+            "name": "TokenTable",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Tooltip",
+            "name": "Tooltip",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:TrafficLight",
+            "name": "TrafficLight",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-24",
+            "built_by": null,
+            "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:UatAccounts",
+            "name": "UatAccounts",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Weather",
+            "name": "Weather",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:WhMap",
+            "name": "WhMap",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:WidgetBoard",
+            "name": "WidgetBoard",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-02",
+            "built_by": null,
+            "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Wizard",
+            "name": "Wizard",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Wizard · Step",
+            "name": "Wizard · Step",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-23",
+            "built_by": null,
+            "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:YearCalendar",
+            "name": "YearCalendar",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-10-01",
+            "built_by": null,
+            "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Multi-language + dictionary",
+            "name": "Multi-language + dictionary",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Approval flow, all documents",
+            "name": "Approval flow, all documents",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Print A5 / A4 + QR + Email",
+            "name": "Print A5 / A4 + QR + Email",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Chat",
+            "name": "Chat",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Offline assistant",
+            "name": "Offline assistant",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Opening widget board",
+            "name": "Opening widget board",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Warehouse map + pallets",
+            "name": "Warehouse map + pallets",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Labels: location, item, pallet",
+            "name": "Labels: location, item, pallet",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Themes 4 modes x 3 colours",
+            "name": "Themes 4 modes x 3 colours",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Layer Menu from database",
+            "name": "Layer Menu from database",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Side Screen (float, resize)",
+            "name": "Side Screen (float, resize)",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Developer mode F10",
+            "name": "Developer mode F10",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Item code builder (Category 1-5)",
+            "name": "Item code builder (Category 1-5)",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Dummy stage sets + Reset",
+            "name": "Dummy stage sets + Reset",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Help & support + tickets",
+            "name": "Help & support + tickets",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FEATURE",
+            "key": "feature:Guard tests (ratchet)",
+            "name": "Guard tests (ratchet)",
+            "module": "Features",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
         }
     ],
     "engines": [
@@ -267,9 +4709,12 @@
             "group": "Inquiry Product",
             "items": [
                 {
+                    "key": "dieline",
                     "name": "Dieline Engine (TMDieline)",
                     "purpose": "Draws the flat dieline of a product type from its dimensions, live while Sales types the size.",
-                    "mode": "calc"
+                    "mode": "calc",
+                    "used": 3,
+                    "tests": 1
                 }
             ]
         },
@@ -277,24 +4722,36 @@
             "group": "Pro-Dev",
             "items": [
                 {
+                    "key": "imposition",
                     "name": "Imposition Engine",
                     "purpose": "Finds how many pieces (UP) fit on a plano sheet and which layout wastes the least paper.",
-                    "mode": "suggest"
+                    "mode": "suggest",
+                    "used": 2,
+                    "tests": 1
                 },
                 {
+                    "key": "spec",
                     "name": "Spec Engine (BOP · BOM · Ink)",
                     "purpose": "Builds the production specification of a part: process steps, materials and ink configuration.",
-                    "mode": "suggest"
+                    "mode": "suggest",
+                    "used": 3,
+                    "tests": 0
                 },
                 {
+                    "key": "usage-rate",
                     "name": "Usage Rate Engine",
                     "purpose": "Learns material usage rates and waste percentages from real production data and proposes new values for the BOP rules.",
-                    "mode": "suggest"
+                    "mode": "suggest",
+                    "used": 2,
+                    "tests": 0
                 },
                 {
+                    "key": "routing",
                     "name": "Routing Template Engine",
                     "purpose": "Checks the order of process steps and turns a routing template into ready steps with a suggested machine.",
-                    "mode": "suggest"
+                    "mode": "suggest",
+                    "used": 2,
+                    "tests": 0
                 }
             ]
         },
@@ -302,14 +4759,20 @@
             "group": "Pro-Cost",
             "items": [
                 {
+                    "key": "costing",
                     "name": "Costing Engine (Pro-Cost)",
                     "purpose": "Calculates the cost price (HPP) of every part and the selling price per quantity tier of an inquiry.",
-                    "mode": "calc"
+                    "mode": "calc",
+                    "used": 2,
+                    "tests": 4
                 },
                 {
+                    "key": "reverse-costing",
                     "name": "Reverse Costing",
                     "purpose": "Turns a stand-alone (instant) costing into an integrated one by creating the documents that normally come before it.",
-                    "mode": "auto"
+                    "mode": "auto",
+                    "used": 1,
+                    "tests": 0
                 }
             ]
         },
@@ -317,9 +4780,12 @@
             "group": "Approval",
             "items": [
                 {
+                    "key": "flow",
                     "name": "Flow Engine (Approval)",
                     "purpose": "Moves a document through its approval steps, the same way for every module.",
-                    "mode": "flow"
+                    "mode": "flow",
+                    "used": 5,
+                    "tests": 0
                 }
             ]
         },
@@ -327,14 +4793,20 @@
             "group": "Sales Order",
             "items": [
                 {
+                    "key": "cpdel",
                     "name": "CPDEL Engine (Customer Plan Delivery)",
                     "purpose": "Creates the delivery schedule when a Customer Order is confirmed.",
-                    "mode": "auto"
+                    "mode": "auto",
+                    "used": 2,
+                    "tests": 0
                 },
                 {
+                    "key": "cpdel-promise",
                     "name": "CPDEL Two Promises",
                     "purpose": "Keeps the promise to the customer (delivery slot) and the promise of production (ready date) in line.",
-                    "mode": "flow"
+                    "mode": "flow",
+                    "used": 1,
+                    "tests": 1
                 }
             ]
         },
@@ -342,9 +4814,12 @@
             "group": "Planning",
             "items": [
                 {
+                    "key": "material-planning",
                     "name": "Material Planning Engine (MPS · MRP · Booking)",
                     "purpose": "Works out which materials every order needs, books stock for it and shows what is short.",
-                    "mode": "suggest"
+                    "mode": "suggest",
+                    "used": 4,
+                    "tests": 0
                 }
             ]
         },
@@ -352,29 +4827,44 @@
             "group": "Inventory",
             "items": [
                 {
+                    "key": "warehouse-stock",
                     "name": "Warehouse Stock (bins, capacity, dead stock)",
                     "purpose": "Tells what is in every bin, how full the bin is by weight and by volume, when the goods arrived, and which stock is dead or expired. One source for the Warehouse Map, transfers, labels and tracking.",
-                    "mode": "calc"
+                    "mode": "calc",
+                    "used": 8,
+                    "tests": 2
                 },
                 {
+                    "key": "stock-posting",
                     "name": "Stock Document Posting (stock card order)",
                     "purpose": "Writes a stock document (Stock In, Out, Return, Adjustment, goods receipt and its reversal) to the stock card in document-date order and keeps every later balance right.",
-                    "mode": "flow"
+                    "mode": "flow",
+                    "used": 5,
+                    "tests": 2
                 },
                 {
+                    "key": "stock-transfer",
                     "name": "Stock Transfer Posting",
                     "purpose": "Moves stock from one bin to another, in the same warehouse or between warehouses, with or without approval, and can take the move back.",
-                    "mode": "flow"
+                    "mode": "flow",
+                    "used": 4,
+                    "tests": 2
                 },
                 {
+                    "key": "pallet-labels",
                     "name": "Pallet Labels (arrival label, relabel after use)",
                     "purpose": "Keeps one label per pallet and tells which stock still needs a pallet label: goods that arrived without one, and pallets whose label no longer matches because stock was used.",
-                    "mode": "suggest"
+                    "mode": "suggest",
+                    "used": 7,
+                    "tests": 1
                 },
                 {
+                    "key": "stock-ledger",
                     "name": "Stock Period Ledger",
                     "purpose": "Works out the stock of a period for the reports: opening balance, movements and closing balance of every item, in quantity and value, for all stock classes.",
-                    "mode": "calc"
+                    "mode": "calc",
+                    "used": 3,
+                    "tests": 1
                 }
             ]
         },
@@ -382,29 +4872,44 @@
             "group": "Production",
             "items": [
                 {
+                    "key": "wo-generation",
                     "name": "Work Order Generation",
                     "purpose": "Creates the Work Orders when a delivery line is posted to Production.",
-                    "mode": "auto"
+                    "mode": "auto",
+                    "used": 1,
+                    "tests": 1
                 },
                 {
+                    "key": "pdr",
                     "name": "PDR Engine (Scheduling)",
                     "purpose": "Decides which job a machine should run next and plans a Work Order backwards from its due date.",
-                    "mode": "suggest"
+                    "mode": "suggest",
+                    "used": 2,
+                    "tests": 1
                 },
                 {
+                    "key": "scheduling-rules",
                     "name": "Scheduling Rule Engine",
                     "purpose": "Applies the batching and sequencing rules kept as data, not as code.",
-                    "mode": "calc"
+                    "mode": "calc",
+                    "used": 1,
+                    "tests": 0
                 },
                 {
+                    "key": "interruption",
                     "name": "Hot Job Option Generator",
                     "purpose": "When an urgent job must be inserted, proposes up to three ways to do it with their measured impact.",
-                    "mode": "suggest"
+                    "mode": "suggest",
+                    "used": 1,
+                    "tests": 0
                 },
                 {
+                    "key": "speed-target",
                     "name": "Speed Target Engine",
                     "purpose": "Proposes the target speed of every machine and of every process x machine pair.",
-                    "mode": "suggest"
+                    "mode": "suggest",
+                    "used": 2,
+                    "tests": 1
                 }
             ]
         },
@@ -412,9 +4917,12 @@
             "group": "Procurement",
             "items": [
                 {
+                    "key": "pq-matcher",
                     "name": "Purchase Quotation Matcher",
                     "purpose": "Matches the text of a supplier quotation file to the supplier master and to the requisition lines.",
-                    "mode": "suggest"
+                    "mode": "suggest",
+                    "used": 1,
+                    "tests": 0
                 }
             ]
         },
@@ -422,9 +4930,12 @@
             "group": "Finance",
             "items": [
                 {
+                    "key": "tax",
                     "name": "Tax Engine",
                     "purpose": "Builds the monthly tax register (VAT, income tax 21 and 23), posts payments and reconciles with the ledger.",
-                    "mode": "calc"
+                    "mode": "calc",
+                    "used": 1,
+                    "tests": 0
                 }
             ]
         },
@@ -432,9 +4943,12 @@
             "group": "HR & Payroll",
             "items": [
                 {
+                    "key": "payroll",
                     "name": "Payroll Engine",
                     "purpose": "Calculates the payslips of a period from attendance and takes the run through verification, payment and closing.",
-                    "mode": "calc"
+                    "mode": "calc",
+                    "used": 1,
+                    "tests": 0
                 }
             ]
         },
@@ -442,9 +4956,12 @@
             "group": "Help",
             "items": [
                 {
+                    "key": "assistant",
                     "name": "Assistant Engine (offline)",
                     "purpose": "Answers a question typed by the user without sending anything outside the company.",
-                    "mode": "auto"
+                    "mode": "auto",
+                    "used": 2,
+                    "tests": 1
                 }
             ]
         }
