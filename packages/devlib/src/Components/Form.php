@@ -33,7 +33,7 @@ class Form extends DevlibComponent
         public string $title = '',
         public ?string $action = null,
         public string $method = 'POST',
-        public array $actions = ['Save' => '💾', 'Download' => '📥', 'Export' => '📤'],
+        public array $actions = ['Save' => 'fa-floppy-disk', 'Download' => 'fa-download', 'Export' => 'fa-file-export'],
         public ?string $extraAction = null,
         public string $extraIcon = '📱',
         public bool $footer = true,

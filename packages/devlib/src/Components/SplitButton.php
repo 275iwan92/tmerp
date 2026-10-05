@@ -3,10 +3,12 @@
 namespace Devlib\Components;
 
 // Tombol utama + panah pilihan aksi (mockup form: Save / Download / Export). Aksi terpilih dikirim sebagai input _action.
+// actions: label => ikon Font Awesome (fa-floppy-disk); teks lain (emoji lama) ditampilkan apa adanya.
+// Kelas CSS dl-splitbtn (bukan dl-split: itu milik objek Split, isi + panel samping).
 class SplitButton extends DevlibComponent
 {
     public function __construct(
-        public array $actions = ['Save' => '💾', 'Download' => '📥', 'Export' => '📤'],
+        public array $actions = ['Save' => 'fa-floppy-disk', 'Download' => 'fa-download', 'Export' => 'fa-file-export'],
         public string $name = '_action',
     ) {}
 
@@ -18,15 +20,18 @@ class SplitButton extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <div {{ $attributes->class('dl-split') }} {!! $dl() !!} data-dl-split>
+            @php($ico = fn ($i) => str_starts_with((string) $i, 'fa-') ? '<i class="fa-solid '.e($i).'"></i>' : e($i))
+            <div {{ $attributes->class('dl-splitbtn') }} {!! $dl() !!} data-dl-split>
                 <input type="hidden" name="{{ $name }}" value="{{ array_key_first($actions) }}" data-dl-split-value>
-                <button type="submit" class="dl-split__main"><span data-dl-split-icon>{{ reset($actions) }}</span><span data-dl-split-label>{{ array_key_first($actions) }}</span></button>
-                <button type="button" class="dl-split__toggle" data-dl-split-toggle title="{{ \Devlib\Lang::text('Choose an action') }}"><span class="dl-split__arrow"></span></button>
-                <div class="dl-split__menu">
-                    @foreach ($actions as $label => $icon)
-                        <button type="button" class="dl-split__item" data-action="{{ $label }}" data-icon="{{ $icon }}"><span>{{ $icon }}</span> {{ $label }}</button>
-                    @endforeach
-                </div>
+                <button type="submit" class="dl-splitbtn__main"><span data-dl-split-icon>{!! $ico(reset($actions)) !!}</span><span data-dl-split-label>{{ array_key_first($actions) }}</span></button>
+                @if (count($actions) > 1)
+                    <button type="button" class="dl-splitbtn__toggle" data-dl-split-toggle title="{{ \Devlib\Lang::text('Choose an action') }}"><i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="dl-splitbtn__menu">
+                        @foreach ($actions as $label => $icon)
+                            <button type="button" class="dl-splitbtn__item" data-action="{{ $label }}"><span>{!! $ico($icon) !!}</span> {{ $label }}</button>
+                        @endforeach
+                    </div>
+                @endif
             </div>
             BLADE;
     }
