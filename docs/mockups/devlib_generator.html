@@ -31,7 +31,7 @@
 <body class="text-xs text-slate-800">
 <div class="flex" style="width:1440px">
 
-  <aside class="p-3 shrink-0" style="width:230px;background:#2c3e69;min-height:985px">
+  <aside class="p-3 shrink-0" style="width:230px;background:#2c3e69;min-height:1130px">
     <div class="flex items-center gap-2 text-white font-bold text-sm mb-3"><i class="fa-solid fa-cubes"></i> DevLib</div>
     <div class="lbl mb-1" style="color:#8fa0c8">Library</div>
     <div class="mi"><i class="fa-solid fa-table w-4"></i> Grid</div>
@@ -87,16 +87,42 @@
 
       <section class="col-span-5 space-y-4">
         <div class="card p-4">
-          <div class="ttl mb-2">What happens after Save</div>
-          <ol class="space-y-2 text-slate-700" style="list-style:decimal;padding-left:16px">
-            <li>The request gets a number and the status <b>Requested</b>.</li>
-            <li>The agent reads open requests at the start of a session and asks you only what the description leaves unclear.</li>
-            <li>The agent builds it from DevLib objects: Master = Grid Master + form, Transactional = document list + form, Custom = a new special form object.</li>
-            <li>The status becomes <b>Built</b>, with the link to the screen on mockup.test.</li>
-            <li>You rate it with 1 to 5 stars and a note, as in Quality &amp; Rating.</li>
-          </ol>
+          <div class="flex items-center mb-2"><span class="ttl">Preview</span><span class="q ml-2">Filled by the agent after it reads the request. Nothing is built before you approve.</span></div>
+
+          <div class="lbl mb-1">Objects this request needs</div>
+          <table class="w-full mb-3">
+            <tbody>
+              <tr><td>Grid Master <span class="q">x-dl::grid</span></td><td style="text-align:right"><span class="bdg" style="background:#e7f7ee;color:#15803d">Exists</span></td></tr>
+              <tr><td>Single Form <span class="q">x-dl::form</span></td><td style="text-align:right"><span class="bdg" style="background:#e7f7ee;color:#15803d">Exists</span></td></tr>
+              <tr><td>Sheet size field (max / min, cm) <span class="q">new field object</span></td><td style="text-align:right"><span class="bdg" style="background:#fdecec;color:#b91c1c">Not built yet</span></td></tr>
+            </tbody>
+          </table>
+
+          <div class="lbl mb-1">Engine input and output</div>
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <div class="inp" style="min-height:84px"><b>Input</b><br>machine speed (sheets / hour)<br>working hours per shift<br>sheet size of the job<br>max / min sheet size of the machine</div>
+            <div class="inp" style="min-height:84px"><b>Output</b><br>capacity per shift (sheets)<br>list of machines that fit the job, best first</div>
+          </div>
+
+          <div class="lbl mb-1">Engine formula <span class="q" style="text-transform:none">written or corrected by you</span></div>
+          <div class="inp" style="min-height:74px;font-family:Consolas,monospace;font-size:11px">capacity_per_shift = speed_per_hour x hours_per_shift x efficiency<br>fits = job_width &lt;= max_width AND job_length &lt;= max_length<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AND job_width &gt;= min_width AND job_length &gt;= min_length<span class="aa">Aa</span></div>
+          <div class="flex gap-2 mt-3">
+            <span class="btn p"><i class="fa-solid fa-check"></i> Approve</span>
+            <span class="btn s"><i class="fa-solid fa-pen"></i> Save</span>
+          </div>
         </div>
-        <div class="note"><b>Mockup, sample text.</b> The wording in the boxes is an example of how a request could be written; any language is accepted.</div>
+
+        <div class="card p-4" style="border:2px solid #2c3e69;box-shadow:0 10px 28px rgba(15,23,42,.22)">
+          <div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-circle-question" style="color:#2c7be5;font-size:16px"></i><span class="ttl">This object is not built yet</span></div>
+          <div class="text-slate-700">The request needs <b>Sheet size field (max / min, cm)</b>. It is not in DevLib. Build it as a new DevLib object, so other screens can use it too?</div>
+          <div class="flex gap-2 mt-3">
+            <span class="btn p"><i class="fa-solid fa-check"></i> Approve</span>
+            <span class="btn s"><i class="fa-solid fa-xmark"></i> Reject</span>
+            <span class="q ml-auto" style="align-self:center">Dialog shown once per missing object</span>
+          </div>
+        </div>
+
+        <div class="note"><b>Mockup, sample text.</b> The wording, the objects and the formula are examples.</div>
       </section>
     </div>
 
