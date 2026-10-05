@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="{{ \Devlib\DevlibServiceProvider::asset('devlib.css') }}">
     <x-dl::theme-boot />
     <script src="{{ \Devlib\DevlibServiceProvider::asset('devlib.js') }}" defer></script>
+    {{-- Objek form khusus (x-mp::*, packages/mockup-parts) ikut diperagakan di menu Special Forms. --}}
+    <link rel="stylesheet" href="{{ \MockupParts\MockupPartsServiceProvider::asset('mockup-parts.css') }}">
+    <script src="{{ \MockupParts\MockupPartsServiceProvider::asset('mockup-parts.js') }}" defer></script>
 </head>
 <body class="dl-body {{ $bodyClass ?? '' }}" @if ($dev ?? false) data-dl-dev="1" @endif>
     @yield('body')

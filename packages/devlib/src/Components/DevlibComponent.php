@@ -15,6 +15,32 @@ abstract class DevlibComponent extends Component
     // Nama tag, mis. "x-dl::login".
     abstract public function tag(): string;
 
+    // Keluarga objek: namespace kelas => [awalan tag, folder view]. Paket turunan (mis. form khusus x-mp::*) mendaftarkan
+    // keluarganya lewat family() supaya katalog DevLib bisa menampilkan objeknya (tag, properti, method, tampilan).
+    /** @var array<string, array{0: string, 1: string}> */
+    private static array $families = [];
+
+    public static function family(string $namespace, string $prefix, string $viewDir): void
+    {
+        self::$families[rtrim($namespace, '\\').'\\'] = [$prefix, rtrim($viewDir, '/\\')];
+    }
+
+    /** @return array{0: string, 1: string|null} [tag, berkas view bila ada] untuk nama kelas objek */
+    public static function describe(string $class): array
+    {
+        $families = self::$families + ['Devlib\\Components\\' => ['x-dl::', dirname(__DIR__, 2).'/resources/views/components']];
+        foreach ($families as $ns => [$prefix, $dir]) {
+            if (str_starts_with($class, $ns)) {
+                $path = array_map(fn (string $s) => strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $s)), explode('\\', substr($class, strlen($ns))));
+                $file = $dir.'/'.implode('/', $path).'.blade.php';
+
+                return [$prefix.implode('.', $path), is_file($file) ? $file : null];
+            }
+        }
+
+        return [$class, null];
+    }
+
     // Sumber data yang ditampilkan komponen (tabel/view/konfigurasi).
     public function source(): string
     {

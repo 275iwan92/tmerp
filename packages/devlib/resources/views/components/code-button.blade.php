@@ -38,6 +38,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        @if ($c['methods'])<div class="dl-code__doc"><b>{{ \Devlib\Lang::text('Methods') }}:</b> {{ implode(' · ', $c['methods']) }}</div>@endif
                     </div>
                 @endforeach
             </div>

@@ -2,6 +2,7 @@
 
 namespace MockupParts;
 
+use Devlib\Components\DevlibComponent;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -14,6 +15,7 @@ class MockupPartsServiceProvider extends ServiceProvider
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'mp');
         Blade::componentNamespace('MockupParts\\Components', 'mp');
+        DevlibComponent::family('MockupParts\\Components', 'x-mp::', __DIR__.'/../resources/views');
 
         Route::get('/_mp/{file}', function (string $file) {
             if ($file === 'mockup-parts.js') {

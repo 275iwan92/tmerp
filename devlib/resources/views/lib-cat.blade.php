@@ -16,7 +16,7 @@
         </div>
         @foreach ($page['members'] as $slug => [$label, $classes])
             <section class="dl-cat__item" id="{{ $slug }}">
-                <h2>{{ $label }} <code>{{ collect($classes)->map(fn ($c) => 'x-dl::'.\Illuminate\Support\Str::of(\Illuminate\Support\Str::after($c, 'Devlib\\Components\\'))->explode('\\')->map(fn ($p) => \Illuminate\Support\Str::kebab($p))->implode('.'))->implode(' · ') }}</code></h2>
+                <h2>{{ $label }} <code>{{ collect($classes)->map(fn ($c) => \Devlib\Components\DevlibComponent::describe($c)[0])->implode(' · ') }}</code></h2>
                 @include('demos.'.$slug, $data)
             </section>
         @endforeach

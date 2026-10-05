@@ -3,6 +3,7 @@
 namespace Devlib\Components;
 
 use Illuminate\Support\Str;
+use Illuminate\View\Component;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionUnionType;
@@ -39,7 +40,7 @@ class CodeButton extends DevlibComponent
             }
             $ref = new ReflectionClass($cls);
             $chain = [];
-            for ($c = $ref; $c && $c->getName() !== \Illuminate\View\Component::class; $c = $c->getParentClass()) {
+            for ($c = $ref; $c && $c->getName() !== Component::class; $c = $c->getParentClass()) {
                 $chain[] = $c->getShortName();
             }
             $props = [];
@@ -55,8 +56,8 @@ class CodeButton extends DevlibComponent
                     'inherited' => ! $this->declaredHere($ref, $p->getName()),
                 ];
             }
-            $tag = 'x-dl::'.Str::of(Str::after($cls, 'Devlib\\Components\\'))->explode('\\')->map(fn ($s) => Str::kebab($s))->implode('.');
-            $out[] = ['tag' => $tag, 'lineage' => implode(' ← ', $chain), 'props' => $props, 'doc' => $this->docOf($ref), 'view' => $this->viewOf($ref, $tag)];
+            [$tag, $file] = DevlibComponent::describe($cls);
+            $out[] = ['tag' => $tag, 'lineage' => implode(' ← ', $chain), 'props' => $props, 'methods' => $this->methodsOf($ref), 'doc' => $this->docOf($ref), 'view' => $this->viewOf($ref, $file)];
         }
 
         return $out;
@@ -80,10 +81,9 @@ class CodeButton extends DevlibComponent
     }
 
     // Isi tampilan komponen: file view paket, atau blok BLADE di dalam render().
-    private function viewOf(ReflectionClass $ref, string $tag): string
+    private function viewOf(ReflectionClass $ref, ?string $file): string
     {
-        $file = dirname(__DIR__, 2).'/resources/views/components/'.str_replace('.', '/', Str::after($tag, 'x-dl::')).'.blade.php';
-        if (is_file($file)) {
+        if ($file) {
             return file_get_contents($file);
         }
         $src = file_get_contents($ref->getFileName());
@@ -92,6 +92,21 @@ class CodeButton extends DevlibComponent
         }
 
         return '';
+    }
+
+    // Method publik milik kelas ini sendiri (perilaku objek), tanpa method baku komponen.
+    /** @return list<string> */
+    private function methodsOf(ReflectionClass $ref): array
+    {
+        $out = [];
+        foreach ($ref->getMethods(\ReflectionMethod::IS_PUBLIC) as $m) {
+            if ($m->getDeclaringClass()->getName() !== $ref->getName() || $m->isStatic() || in_array($m->getName(), ['__construct', 'render', 'tag'], true)) {
+                continue;
+            }
+            $out[] = $m->getName().'()'.($m->getReturnType() ? ': '.$m->getReturnType() : '');
+        }
+
+        return $out;
     }
 
     private function docOf(ReflectionClass $ref): string

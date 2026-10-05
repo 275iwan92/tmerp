@@ -202,6 +202,13 @@ final class Catalog
                     'p8-lock' => $page('Lock Screen', 'fa-solid fa-lock', ['lock-screen' => ['Lock screen (idle / manual / Ctrl+Shift+L)', $c('LockScreen')]]),
                     'p8-security' => $page('Setup & Security', 'fa-solid fa-user-shield', ['security' => ['Users, Groups, Objects, Group Permissions, Language, Theme (vertical tabs)', $c('Tabs', 'Grid', 'PermissionMatrix', 'ThemePicker')]], 'security.html', $c('PermissionMatrix', 'Tabs')),
                 ]],
+            // Form khusus (user 2026-10-05): form yang bentuknya tidak baku TETAP punya objek di sini (paket packages/mockup-parts,
+            // x-mp::*) dengan properti, method dan perilakunya; layar mockup.test / tmerp.test mewarisinya. Ubah objeknya = layar ikut.
+            // Data di halaman ini contoh; di aplikasi isinya disiapkan kelas data layar (mis. App\Support\V2\Data\Cpdel::promise()).
+            ['code' => 'SF', 'short' => 'SF', 'label' => 'Special Forms', 'icon' => 'fa-solid fa-puzzle-piece',
+                'pages' => [
+                    'sf-promise-book' => $page('Customer Plan Delivery (promise book)', 'fa-solid fa-truck-ramp-box', ['promise-book' => ['Promise book: customer slot against production ready, with the PPIC / Sales / Operational Manager cards and the negotiation log', ['MockupParts\\Components\\Sales\\PromiseBook']]]),
+                ]],
             // Daftar ENGINE aplikasi (user 2026-10-02): kegunaan, input, output, cara kerja. Isinya dibuat tmerp
             // (`php artisan engine:catalog` -> resources/data/v2/engines.json), objeknya x-dl::engine-catalog.
             ['code' => 'EG', 'short' => 'EG', 'label' => 'Engines', 'icon' => 'fa-solid fa-gears',
