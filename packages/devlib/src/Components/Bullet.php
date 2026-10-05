@@ -34,7 +34,7 @@ class Bullet extends DevlibComponent
     {
         $n = \Devlib\Components\Field\Slider::compact($v);
 
-        return $this->format === 'money' ? 'Rp '.$n : ($this->format === 'percent' ? $n.'%' : $n);
+        return $this->format === 'money' ? 'IDR '.$n : ($this->format === 'percent' ? $n.'%' : $n);
     }
 
     public function render()

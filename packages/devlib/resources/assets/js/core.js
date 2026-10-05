@@ -601,7 +601,7 @@ window.Devlib = window.Devlib || {};
     num: (n, max = 2) => numFmt(n, 0, max),
     // isian yang sedang diedit (ala sel Excel): tanpa ribuan, desimal ikut bahasa -- 1234,5
     raw: v => DlNumber.of(v)?.raw() ?? '',
-    money: (n, cur = 'IDR', d = 0) => ({IDR: 'Rp', USD: '$', EUR: '€', JPY: '¥'}[cur] || cur) + ' ' + fmt.number(n, d),
+    money: (n, cur = 'IDR', d = 0) => cur + ' ' + fmt.number(n, d),
     // Tanggal di grid (user 2026-09-30): selalu dd-Mmm-yyyy, mis. 10-Oct-2026. 'YYYY-MM-DD...' dibaca apa adanya (tanpa geser zona waktu).
     gridDate: v => {
       if (!v) return '';
@@ -788,7 +788,7 @@ window.Devlib = window.Devlib || {};
     const U = NUM.lang === 'id' ? [' T', ' M', ' jt', ' rb'] : ['T', 'B', 'M', 'K'];
     const a = Math.abs(v), s = a >= 1e12 ? [1e12, U[0]] : a >= 1e9 ? [1e9, U[1]] : a >= 1e6 ? [1e6, U[2]] : a >= 1e4 ? [1e3, U[3]] : [1, ''];
     const n = numFmt(v / s[0], 0, s[0] > 1 ? 1 : 2) + s[1];
-    return f === 'money' ? 'Rp ' + n : f === 'percent' ? n + '%' : n;
+    return f === 'money' ? 'IDR ' + n : f === 'percent' ? n + '%' : n;
   };
   const niceMax = m => { if (m <= 0) return 1; const p = 10 ** Math.floor(Math.log10(m)), f = m / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; };
 

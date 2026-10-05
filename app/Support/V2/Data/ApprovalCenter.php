@@ -94,7 +94,7 @@ final class ApprovalCenter
     private static function doc(string $module, int $id, float $amount): ?array
     {
         $num = fn ($v) => Locale::decimal((float) $v, 2);
-        $rp = fn ($v) => 'Rp '.Locale::number((float) $v, 0);
+        $rp = fn ($v) => 'IDR '.Locale::number((float) $v, 0);
         $date = fn ($d) => Locale::d($d) ?? '—';
         $base = match ($module) {
             'PR' => (function () use ($id, $num, $rp, $date) {

@@ -66,6 +66,6 @@
                     ['key' => 'holder', 'label' => t('Position holder'), 'type' => 'display', 'more' => true],
                     ['key' => 'used', 'label' => t('Used by documents'), 'type' => 'display', 'more' => true],
                 ]" />
-            <x-dl::alert tone="info" message="Levels whose value is outside the limit are skipped automatically (e.g. PO: Level 3 only when value > Rp 1 million). Levels already used by documents are not deleted, only deactivated, so history stays intact." />        </x-slot:detail>
+            <x-dl::alert tone="info" message="Levels whose value is outside the limit are skipped automatically (e.g. PO: Level 3 only when value > IDR 1 million). Levels already used by documents are not deleted, only deactivated, so history stays intact." />        </x-slot:detail>
     </x-dl::form>
 @endif

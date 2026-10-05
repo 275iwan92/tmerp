@@ -17,7 +17,7 @@
     $doc = $productId ? ProductMaster::doc($productId) : null;
     abort_if($productId && ! $doc, 404);
     $locked = (bool) $inq?->stat_confirm_sales;
-    $rp = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+    $rp = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
     $num = fn ($v) => \Devlib\Locale::number((float) $v, 0);
     $orders = $doc ? ProductMaster::orders($doc['id']) : [];
     $won = array_values(array_filter($orders, fn ($o) => $o['result'] === 'WIN'));

@@ -5,8 +5,8 @@ namespace App\Support\Finance;
 use Carbon\Carbon;
 
 // Format angka & tanggal persis gaya mockup Accounting blueprint:
-// kartu = ringkas ("Rp 8.42B", "Rp 486M"), tabel = penuh ("Rp 185,250,000"),
-// negatif dalam kurung ("(Rp 942,000,000)"), tanggal "12 Sep 2026".
+// kartu = ringkas ("IDR 8.42B", "IDR 486M"), tabel = penuh ("IDR 185,250,000"),
+// negatif dalam kurung ("(IDR 942,000,000)"), tanggal "12 Sep 2026".
 class Fmt
 {
     public static function rp(float|string|null $v, bool $dashZero = false): string
@@ -15,7 +15,7 @@ class Fmt
         if ($dashZero && abs($v) < 0.005) {
             return '—';
         }
-        $s = 'Rp '.number_format(abs($v), 0, '.', ',');
+        $s = 'IDR '.number_format(abs($v), 0, '.', ',');
 
         return $v < 0 ? "({$s})" : $s;
     }
@@ -32,7 +32,7 @@ class Fmt
             default => number_format($a, 0),
         };
 
-        return $v < 0 ? "(Rp {$s})" : "Rp {$s}";
+        return $v < 0 ? "(IDR {$s})" : "IDR {$s}";
     }
 
     public static function date($d): string

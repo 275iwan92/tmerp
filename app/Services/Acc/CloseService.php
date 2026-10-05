@@ -81,8 +81,8 @@ class CloseService
         $ppn = FinTaxRegister::where('tax_code', 'PPN_OUT')->where('fiscal_year', $period->fiscal_year)->where('period_no', $period->period_no)->first();
 
         return [
-            ['▤', t('Trial balance validation'), abs($diff) < 0.01 ? t('Total debits equal total credits') : tf('Out of balance Rp :amount', ['amount' => number_format($diff, 0, ',', '.')]), abs($diff) < 0.01 ? 'Passed' : 'Exception'],
-            ['▥', t('Bank reconciliation'), $recon ? ($recon->status === 'RECONCILED' ? t('Statement agrees with book balance') : tf('Difference Rp :amount', ['amount' => number_format((float) $recon->difference, 0, ',', '.')])) : t('No reconciliation recorded for this period'), $recon?->status === 'RECONCILED' ? 'Passed' : 'Review'],
+            ['▤', t('Trial balance validation'), abs($diff) < 0.01 ? t('Total debits equal total credits') : tf('Out of balance IDR :amount', ['amount' => number_format($diff, 0, ',', '.')]), abs($diff) < 0.01 ? 'Passed' : 'Exception'],
+            ['▥', t('Bank reconciliation'), $recon ? ($recon->status === 'RECONCILED' ? t('Statement agrees with book balance') : tf('Difference IDR :amount', ['amount' => number_format((float) $recon->difference, 0, ',', '.')])) : t('No reconciliation recorded for this period'), $recon?->status === 'RECONCILED' ? 'Passed' : 'Review'],
             ['!', t('Unposted journals'), $drafts ? tf(':n journals not yet posted in :period', ['n' => $drafts, 'period' => $period->period_name]) : t('No draft or pending journals'), $drafts ? 'Exception' : 'Passed'],
             ['%', t('Tax account reconciliation'), $ppn ? tf('PPN register status: :status', ['status' => $ppn->status]) : t('PPN workpaper not generated'), $ppn && in_array($ppn->status, ['PAID', 'FILED'], true) ? 'Passed' : 'Review'],
         ];

@@ -150,9 +150,8 @@ final class Locale
 
     public static function money(float|int|string|null $n, string $currency = 'IDR', int $decimals = 0, ?string $lang = null): string
     {
-        $symbol = ['IDR' => 'Rp', 'USD' => '$', 'EUR' => '€', 'JPY' => '¥'][$currency] ?? $currency;
-
-        return $symbol.' '.self::number($n, $decimals, $lang);
+        // Awalan = kode mata uang (IDR, USD), sama dengan master Currency -- bukan simbol (user 2026-10-05).
+        return $currency.' '.self::number($n, $decimals, $lang);
     }
 
     public static function percent(float|int|string|null $n, int $decimals = 1, ?string $lang = null): string

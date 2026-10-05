@@ -37,7 +37,7 @@ class Kpi extends DevlibComponent
         $n = Slider::compact((float) $v);
 
         return match ($this->format) {
-            'money' => 'Rp '.$n, 'percent' => Locale::decimal((float) $v, 1).'%', default => $n
+            'money' => 'IDR '.$n, 'percent' => Locale::decimal((float) $v, 1).'%', default => $n
         };
     }
 

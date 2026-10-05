@@ -39,7 +39,7 @@
         $appr = PurchaseRequisition::approvalState('PR', $pr->pr_id, (float) $pr->c_est_total);
         $formStatus = PurchaseRequisition::formStatus($pr, $held);
         $draft = $pr->status === 'DRAFT';
-        $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+        $money = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
         $accounts = PurchaseRequisition::accounts();
         $lines = $pr->lines->map(fn ($l) => [
             'pr_line_id' => $l->pr_line_id, 'i_description' => $l->i_description, 'i_qty' => (float) $l->i_qty, 'i_uom' => $l->i_uom,

@@ -13,7 +13,7 @@
     $home = route('v2.screen', 'customer-order');
     $o = request('id') ? CoOrder::with(['customer', 'quotation', 'items.inquiry', 'items.product', 'items.deliveries', 'externalCosts'])->find((int) request('id')) : null;
     abort_if(request('id') && ! $o, 404);
-    $rp = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+    $rp = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
     $trim = fn ($v) => $v === null ? '' : rtrim(rtrim(number_format((float) $v, 4, '.', ''), '0'), '.');
 @endphp
 
@@ -61,7 +61,7 @@
         $num = fn ($v) => \Devlib\Locale::number((float) $v, 0);
         $area = $o->ship_area_id ? $o->ship_area_level.':'.$o->ship_area_id : null;
         $cur = $o->currency_code ?? 'IDR';
-        $sym = \Devlib\Terbilang::CURRENCIES[$cur][0] ?? 'Rp';
+        $sym = \Devlib\Terbilang::CURRENCIES[$cur][0] ?? 'IDR';
         $money = fn ($v) => $sym.' '.\Devlib\Locale::number((float) $v, 0);
         $lines = $o->items->map(fn ($it) => [
             'id_item' => $it->id_item, 'description' => $it->description, 'qty' => (float) $it->qty, 'qty_unit' => $it->qty_unit,

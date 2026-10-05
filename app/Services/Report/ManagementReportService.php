@@ -356,7 +356,7 @@ class ManagementReportService
             $attention[] = [
                 'tone' => 'warn',
                 'title' => t('Outstanding accounts payable (AP)'),
-                'text' => tf('Rp :outstanding of total supplier invoices Rp :total — calculated as invoices minus actual payments (the balance column in the source was never filled).', [
+                'text' => tf('IDR :outstanding of total supplier invoices IDR :total — calculated as invoices minus actual payments (the balance column in the source was never filled).', [
                     'outstanding' => number_format($ap['outstanding'], 0, ',', '.'), 'total' => number_format($ap['invoice_value'], 0, ',', '.'),
                 ]),
             ];

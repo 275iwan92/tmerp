@@ -31,7 +31,7 @@
     {{-- Form Master-Detail DevLib (disetujui user 2026-09-30). --}}
     @php
         $draft = $do->status === 'DRAFT';
-        $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+        $money = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
         $area = $do->ship_area_id ? $do->ship_area_level.':'.$do->ship_area_id : null;
         $value = (float) $do->lines->sum('subtotal');
         $lines = $do->lines->map(fn ($l) => [

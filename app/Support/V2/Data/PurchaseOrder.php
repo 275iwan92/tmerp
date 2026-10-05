@@ -188,7 +188,7 @@ final class PurchaseOrder
         if ($po->isCash()) {
             $po->refresh()->recalcTax();
             if ((float) $po->c_grand_total > self::maxCash()) {
-                return tf('A Cash PO is at most Rp :max (Settings > Constants PO_CASH_MAX). This one is Rp :value — use a regular PO.',
+                return tf('A Cash PO is at most IDR :max (Settings > Constants PO_CASH_MAX). This one is IDR :value — use a regular PO.',
                     ['max' => Locale::number(self::maxCash(), 0), 'value' => Locale::number((float) $po->c_grand_total, 0)]);
             }
             if (! $po->i_cash_mode || ! $po->i_petty_cash_id) {

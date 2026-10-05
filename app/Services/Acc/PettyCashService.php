@@ -63,7 +63,7 @@ final class PettyCashService
             throw new InvalidArgumentException(t('The cash advance amount must be > 0.'));
         }
         if ($amount > $petty->balance()) {
-            throw new InvalidArgumentException(tf('The petty cash balance is not enough (balance Rp :balance) — top up first.', ['balance' => number_format($petty->balance(), 0, ',', '.')]));
+            throw new InvalidArgumentException(tf('The petty cash balance is not enough (balance IDR :balance) — top up first.', ['balance' => number_format($petty->balance(), 0, ',', '.')]));
         }
 
         return self::record($petty, $po, 'ADVANCE', -$amount, ['advance_amount' => $amount, 'receiver_name' => $receiver], $login, "Kasbon PO Kontan {$po->doc_no}", [
@@ -96,7 +96,7 @@ final class PettyCashService
         $advance = $step === 'SETTLE' ? (float) self::advanceOf($po)->advance_amount : 0.0;
         $cashEffect = $step === 'SETTLE' ? $advance - $actual : -$actual;
         if ($cashEffect < 0 && -$cashEffect > $petty->balance()) {
-            throw new InvalidArgumentException(tf('The petty cash balance is not enough to pay Rp :amount — top up first.', ['amount' => number_format(-$cashEffect, 0, ',', '.')]));
+            throw new InvalidArgumentException(tf('The petty cash balance is not enough to pay IDR :amount — top up first.', ['amount' => number_format(-$cashEffect, 0, ',', '.')]));
         }
 
         $lines = [];

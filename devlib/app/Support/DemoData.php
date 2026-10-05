@@ -44,12 +44,12 @@ final class DemoData
                 ['role' => 'Kepala Pembelian', 'by' => $i % 2 ? 'PLT — Kepala PPIC' : 'Dewi Kusuma', 'at' => \Devlib\Locale::date(date('Y-m-d', strtotime($p['po_date'].' +1 day'))), 'status' => 'done', 'plt' => (bool) ($i % 2)],
                 ['role' => 'Operational Manager', 'status' => 'current']];
             if ($big) {
-                $steps[] = ['role' => 'Direksi (> Rp 50 jt)', 'status' => 'pending'];
+                $steps[] = ['role' => 'Direksi (> IDR 50 jt)', 'status' => 'pending'];
             }
             $out[] = [
                 'id' => $p['id'], 'no' => $p['po_no'], 'title' => 'Purchase Order', 'amount' => $p['total'], 'party' => $p['supplier'], 'date' => $p['po_date'],
                 'submitted_by' => $p['requester'].' (Purchasing)',
-                'summary' => ['Nilai' => 'Rp '.\Devlib\Locale::number($p['total'], 0), 'Termin' => ['Net 30', 'Net 14', 'COD'][$i % 3], 'Estimasi Tiba' => \Devlib\Locale::date(date('Y-m-d', strtotime($p['po_date'].' +7 days'))), 'Jumlah Item' => $p['items']],
+                'summary' => ['Nilai' => 'IDR '.\Devlib\Locale::number($p['total'], 0), 'Termin' => ['Net 30', 'Net 14', 'COD'][$i % 3], 'Estimasi Tiba' => \Devlib\Locale::date(date('Y-m-d', strtotime($p['po_date'].' +7 days'))), 'Jumlah Item' => $p['items']],
                 'lines' => $p['lines'],
                 'steps' => $steps,
                 'history' => [['action' => 'SUBMITTED', 'by' => $p['requester'], 'at' => \Devlib\Locale::date(date('Y-m-d', strtotime($p['po_date']))).' 10:05'],

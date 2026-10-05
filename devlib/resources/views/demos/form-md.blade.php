@@ -53,7 +53,7 @@
         <div class="dl-strip__kv dl-strip__doc"><span>No. Pesanan</span><b>{{ $blank || $dup ? '(otomatis)' : $co['co_no'] }}</b></div>
         <x-dl::field.date name="co_date" label="Tanggal Pesan" :value="$v('co_date') ?? now()->format('Y-m-d')" required />
         <x-dl::field.select name="customer" label="Customer" :options="$customers" :value="$v('customer')" required />
-        <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b data-l-val="lines:grand">Rp 0</b></div>
+        <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b data-l-val="lines:grand">IDR 0</b></div>
     </x-slot:strip>
     <x-slot:general>
         <x-dl::form.row :cols="4">

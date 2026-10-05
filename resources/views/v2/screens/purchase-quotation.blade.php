@@ -69,7 +69,7 @@
         $ordered = PurchaseQuotation::orderedLineIds($pq);
         $open = $pq->lines->reject(fn ($l) => isset($ordered[$l->pq_line_id]));
         $prOpts = PurchaseQuotation::prLineOptions($pq);
-        $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+        $money = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
         $fileUrl = $pq->source_path ? Storage::disk('public')->url($pq->source_path) : null;
         $ext = strtolower(pathinfo((string) $pq->source_name, PATHINFO_EXTENSION));
         $lines = $pq->lines->map(fn ($l) => [

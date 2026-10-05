@@ -49,11 +49,11 @@ class Dashboard extends DevlibComponent
         return $this->board['period'] ?? array_key_first($this->board['periods'] ?? ['monthly' => '']);
     }
 
-    // Angka ringkas untuk blok target/ranking: money = "Rp 1,9 M", percent = "93%", number = "1.315".
+    // Angka ringkas untuk blok target/ranking: money = "IDR 1,9 M", percent = "93%", number = "1.315".
     public static function fmt(float|int $v, string $format = 'number'): string
     {
         return match ($format) {
-            'money' => 'Rp '.\Devlib\Components\Field\Slider::compact((float) $v),
+            'money' => 'IDR '.\Devlib\Components\Field\Slider::compact((float) $v),
             'percent' => \Devlib\Locale::percent($v, 0),
             default => \Devlib\Locale::number($v),
         };

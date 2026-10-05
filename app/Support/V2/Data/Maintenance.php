@@ -64,7 +64,7 @@ final class Maintenance
 
     public static function money(float $v): string
     {
-        return 'Rp '.Locale::number($v, 0);
+        return 'IDR '.Locale::number($v, 0);
     }
 
     // ------------------------------------------------------------ Work Order

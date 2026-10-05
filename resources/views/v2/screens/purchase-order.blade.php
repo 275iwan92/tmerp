@@ -20,7 +20,7 @@
     @include('v2.screens._dbgrid', ['screen' => (new \App\Support\V2\Grid\Pur\PurchaseOrderGrid)->screen()])
 @elseif (! $po)
     <x-dl::action-form action="{{ route('v2.po.create') }}">
-        <x-dl::card title="+ New Record — Purchase Order" :description="raw(tf('Regular PO: choose the supplier (its open draft PO is reused). Cash PO: paid from Petty Cash, max. Rp :max, approved by the Finance Director.', ['max' => \Devlib\Locale::number(PurchaseOrder::maxCash(), 0)]))">
+        <x-dl::card title="+ New Record — Purchase Order" :description="raw(tf('Regular PO: choose the supplier (its open draft PO is reused). Cash PO: paid from Petty Cash, max. IDR :max, approved by the Finance Director.', ['max' => \Devlib\Locale::number(PurchaseOrder::maxCash(), 0)]))">
             <x-dl::form.row :cols="2">
                 <x-dl::field.select name="po_kind" label="PO Kind" required :options="['NORMAL' => t('Regular PO (credit / terms)'), 'CASH' => t('Cash PO (Petty Cash)')]" :value="request('kind', 'NORMAL')" :source="Src::of('tm2pur.po_order.i_procure_type')" />
                 <x-dl::field.select name="supplier_id" label="Supplier" required :options="PurchaseOrder::suppliers()" :value="request('kind') === 'CASH' ? PurchaseOrder::cashSupplierId() : null" hint="Cash PO to a retail shop: choose TOKO KONTAN and type the shop name below." :source="Src::of('tm2mst.sup_supplier')" />
@@ -46,7 +46,7 @@
         $appr = PurchaseOrder::approvalState($po->flowModule(), $po->po_id, (float) $po->c_grand_total);
         $draft = $po->status === 'DRAFT';
         $sup = \Illuminate\Support\Facades\DB::connection('tm2mst')->table('sup_supplier')->where('id_supplier', $po->i_supplier_id)->first();
-        $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+        $money = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
         $trim = fn ($v) => \Devlib\Locale::decimal($v, 2);
         $pqNo = \App\Models\Pur\PqLine::whereIn('pq_line_id', $po->lines->pluck('pq_line_id')->filter())->join('pq_quotation', 'pq_quotation.pq_id', '=', 'pq_line.pq_id')->pluck('pq_quotation.doc_no', 'pq_line.pq_line_id');
         $cash = $po->isCash();
@@ -91,7 +91,7 @@
                     <x-dl::field.select name="i_cash_mode" label="Cash PO Mode" required :options="array_map('t', PurchaseOrder::CASH_MODES)" :value="$po->i_cash_mode" :source="Src::of('tm2pur.po_order.i_cash_mode')" />
                     <x-dl::field.select name="i_petty_cash_id" label="Petty Cash" required :options="PurchaseOrder::pettyCashOptions()" :value="$po->i_petty_cash_id" :source="Src::of('tm2acc.fin_petty_cash')" />
                     <x-dl::field.text name="i_shop_name" label="Shop Name" :value="$po->i_shop_name" :source="Src::of('tm2pur.po_order.i_shop_name')" />
-                    <x-dl::field.display label="Cash PO Limit" :value="'Rp '.\Devlib\Locale::number(PurchaseOrder::maxCash(), 0).' (Constants PO_CASH_MAX)'" :source="Src::of('tm2sys.sys_constant.PO_CASH_MAX')" />
+                    <x-dl::field.display label="Cash PO Limit" :value="'IDR '.\Devlib\Locale::number(PurchaseOrder::maxCash(), 0).' (Constants PO_CASH_MAX)'" :source="Src::of('tm2sys.sys_constant.PO_CASH_MAX')" />
                 </x-dl::form.row>
             @endif
         </x-slot:general>

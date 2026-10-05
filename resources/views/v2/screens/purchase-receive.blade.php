@@ -179,7 +179,7 @@
         $draft = in_array($pv->status, ['DRAFT', 'QC_PENDING'], true);
         $blockers = $draft ? PvPostingService::blockers($pv) : [];
         $sup = \Illuminate\Support\Facades\DB::connection('tm2mst')->table('sup_supplier')->where('id_supplier', $pv->i_supplier_id)->first();
-        $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+        $money = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
         $trim = fn ($v) => \Devlib\Locale::decimal($v, 2);
         $value = (float) $pv->lines->sum('c_line_value');
         $lines = $pv->lines->sortBy('line_no')->map(fn ($l) => [

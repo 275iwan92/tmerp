@@ -101,7 +101,7 @@ abstract class Widget
     abstract public function build(Numbers $n, SecUser $user): array;
 
     // Rincian tahap order untuk baris bawah KPI (sudah diterjemahkan; bungkus raw() saat dipakai di prop teks):
-    // "Confirmed Rp 2,4 jt · Draft Rp 162,6 jt" atau "Confirmed 3 · Draft 6 · Waiting for approval 1".
+    // "Confirmed IDR 2,4 jt · Draft IDR 162,6 jt" atau "Confirmed 3 · Draft 6 · Waiting for approval 1".
     protected function splitText(array $split, bool $money): string
     {
         $show = fn (string $key) => $money ? Dashboard::fmt($split[$key], 'money') : (string) $split['n_'.$key];

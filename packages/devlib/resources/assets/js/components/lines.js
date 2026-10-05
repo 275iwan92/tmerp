@@ -96,7 +96,7 @@
     cur() {
       const el = $(this.el.closest('form') || document, `[name="${(this.cfg.totals && this.cfg.totals.currencyField) || 'currency'}"]`);
       const code = el && el.value ? el.value : 'IDR', w = $(this.el, '[data-l-words]'), all = w ? JSON.parse(w.dataset.currencies) : {};
-      return {code, def: all[code] || all.IDR || ['Rp', 'rupiah', 'rupiah', 'sen', 'sen', 0], sym: (all[code] || ['Rp'])[0]};
+      return {code, def: all[code] || all.IDR || ['IDR', 'rupiah', 'rupiah', 'sen', 'sen', 0], sym: (all[code] || ['IDR'])[0]};
     }
 
     // Landed cost (Purchasing): biaya bercentang HPP dibagi ke baris; HPP/unit = (subtotal - bagian diskon + landed) / qty.

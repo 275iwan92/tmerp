@@ -201,7 +201,7 @@
     }
 
     show(c, v) {
-      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'Rp ' : '') + this.numText(c, v) : String(v)) : c.type === 'select' ? (c.options?.[v] ?? v ?? '') : c.type === 'date' ? fmt.gridDate(v) : (v ?? '');
+      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'IDR ' : '') + this.numText(c, v) : String(v)) : c.type === 'select' ? (c.options?.[v] ?? v ?? '') : c.type === 'date' ? fmt.gridDate(v) : (v ?? '');
     }
 
     // unique: nilai tidak boleh kembar di baris lain (tanpa beda huruf besar/kecil) -- validasi final tetap di server.

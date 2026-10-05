@@ -32,7 +32,7 @@ class ProductMaster extends DevlibComponent
 
     public function rp(mixed $v): string
     {
-        return 'Rp '.Locale::number((float) $v, 0);
+        return 'IDR '.Locale::number((float) $v, 0);
     }
 
     public function num(mixed $v): string

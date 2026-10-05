@@ -44,7 +44,7 @@ class LocaleNumberTest extends TestCase
         $this->assertSame('1234,5', Locale::raw('1234.50', 'id'));
         $this->assertSame('1234.5', Locale::raw('1234.50', 'en'));
         $this->assertSame('1250000', Locale::raw('1250000.00', 'id'));
-        $this->assertSame('Rp 1.250.000', Locale::money('1250000.00', 'IDR', 0, 'id'));
+        $this->assertSame('IDR 1.250.000', Locale::money('1250000.00', 'IDR', 0, 'id'));
     }
 
     public function test_parse_human_input_per_language(): void

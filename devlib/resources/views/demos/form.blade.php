@@ -13,7 +13,7 @@
                 <x-dl::field.toggle name="status" label="Status Akun" tooltip="sample toggle switch (Active state)" :value="true" />
             </x-dl::form.row>
             <x-dl::field.checkboxes name="hobi" label="Hobi / Minat" tooltip="sample multi-select checkbox group" :options="['Membaca', 'Olahraga', 'Traveling', 'Coding']" :value="['Membaca', 'Coding']" />
-            <x-dl::field.slider name="pengeluaran" label="Pengeluaran Bulanan" tooltip="sample interactive range slider" :max="100000000" :step="1000000" :value="15000000" format="Rp {v} / bulan" />
+            <x-dl::field.slider name="pengeluaran" label="Pengeluaran Bulanan" tooltip="sample interactive range slider" :max="100000000" :step="1000000" :value="15000000" format="IDR {v} / bulan" />
             <x-dl::field.date-range name="kerja_awal" name-end="kerja_akhir" label="Masa Kerja (Awal s.d. Akhir)" tooltip="sample range date picker (Tenure calculation)" value="2020-01-01" value-end="2026-08-31" />
         </x-dl::form.col>
         <x-dl::form.col>

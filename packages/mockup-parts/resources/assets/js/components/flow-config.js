@@ -32,7 +32,7 @@
       const v = this.num($(panel, '[data-fc-value]').value), rows = lines.dlLines.rows;
       const act = {KNOW: Devlib.h.t('To acknowledge'), APPROVE: Devlib.h.t('To approve')};
       $(panel, '[data-fc-path]').innerHTML = `<li class="is-done"><span class="dl-appr__dot"><i class="fa-solid fa-check"></i></span><b>${Devlib.h.t('The creator submits')}</b><small>${Devlib.h.t('Step 0 · always')}</small></li>`
-        + rows.map((r, i) => { const on = !+r.min || v >= +r.min; return `<li class="${on ? 'is-current' : 'is-skip'}"><span class="dl-appr__dot">${on ? i + 1 : ''}</span><b>${esc(r.name || Devlib.h.t('Step') + ' ' + (i + 1))} — ${esc(act[r.action] || '')}</b><small>${esc(this.roles[r.role] || r.role || '—')} · ${+r.min ? (on ? Devlib.h.t('active: value ≥ Rp :min').replace(':min', (+r.min).toLocaleString('id-ID')) : Devlib.h.t('skipped: value < Rp :min').replace(':min', (+r.min).toLocaleString('id-ID'))) : Devlib.h.t('always active')}</small></li>`; }).join('');
+        + rows.map((r, i) => { const on = !+r.min || v >= +r.min; return `<li class="${on ? 'is-current' : 'is-skip'}"><span class="dl-appr__dot">${on ? i + 1 : ''}</span><b>${esc(r.name || Devlib.h.t('Step') + ' ' + (i + 1))} — ${esc(act[r.action] || '')}</b><small>${esc(this.roles[r.role] || r.role || '—')} · ${+r.min ? (on ? Devlib.h.t('active: value ≥ IDR :min').replace(':min', (+r.min).toLocaleString('id-ID')) : Devlib.h.t('skipped: value < IDR :min').replace(':min', (+r.min).toLocaleString('id-ID'))) : Devlib.h.t('always active')}</small></li>`; }).join('');
     }
   }
   Devlib.define("FlowConfig", FlowConfig);

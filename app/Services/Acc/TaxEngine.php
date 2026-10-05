@@ -174,9 +174,9 @@ class TaxEngine
         $cit = FinTaxRegister::where('tax_code', 'PPH_BADAN')->where('fiscal_year', $year)->first();
 
         return [
-            [t('Output VAT reconciliation'), abs($invTax - $glOut) < 1 ? t('Sales invoices and GL output VAT aligned') : tf('Invoice Rp :invoice vs GL Rp :gl', ['invoice' => number_format($invTax, 0, ',', '.'), 'gl' => number_format($glOut, 0, ',', '.')]), abs($invTax - $glOut) < 1 ? 'Matched' : 'Review'],
+            [t('Output VAT reconciliation'), abs($invTax - $glOut) < 1 ? t('Sales invoices and GL output VAT aligned') : tf('Invoice IDR :invoice vs GL IDR :gl', ['invoice' => number_format($invTax, 0, ',', '.'), 'gl' => number_format($glOut, 0, ',', '.')]), abs($invTax - $glOut) < 1 ? 'Matched' : 'Review'],
             [t('Input VAT reconciliation'), $unvalidated ? tf(':n supplier tax invoices not validated', ['n' => $unvalidated]) : t('All supplier tax invoices validated'), $unvalidated ? 'Review' : 'Matched'],
-            [t('PPh 21 payroll reconciliation'), abs($payroll - $pph21Reg) < 1 ? t('Payroll tax liability agrees to payroll') : tf('Payroll Rp :payroll vs register Rp :register', ['payroll' => number_format($payroll, 0, ',', '.'), 'register' => number_format($pph21Reg, 0, ',', '.')]), abs($payroll - $pph21Reg) < 1 ? 'Matched' : 'Review'],
+            [t('PPh 21 payroll reconciliation'), abs($payroll - $pph21Reg) < 1 ? t('Payroll tax liability agrees to payroll') : tf('Payroll IDR :payroll vs register IDR :register', ['payroll' => number_format($payroll, 0, ',', '.'), 'register' => number_format($pph21Reg, 0, ',', '.')]), abs($payroll - $pph21Reg) < 1 ? 'Matched' : 'Review'],
             [t('Fiscal adjustment workpaper'), $cit ? t('PPh Badan provision booked; fiscal corrections pending review') : t('CIT provision not yet calculated'), $cit ? 'Draft' : 'Review'],
         ];
     }

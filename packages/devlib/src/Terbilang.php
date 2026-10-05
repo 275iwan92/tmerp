@@ -10,17 +10,18 @@ namespace Devlib;
 //   Terbilang::words(12.5)               -> "Dua belas koma lima"
 final class Terbilang
 {
-    // kode => [simbol, nama ID, nama EN, sub-satuan ID, sub-satuan EN, jumlah desimal]
+    // Unsur pertama (awalan angka) = kode mata uang, sama dengan master Currency -- bukan simbol (user 2026-10-05).
+    // kode => [awalan, nama ID, nama EN, sub-satuan ID, sub-satuan EN, jumlah desimal]
     public const CURRENCIES = [
-        'IDR' => ['Rp', 'rupiah', 'rupiah', 'sen', 'sen', 0],
-        'USD' => ['$', 'dolar Amerika Serikat', 'US dollars', 'sen', 'cents', 2],
-        'EUR' => ['€', 'euro', 'euros', 'sen', 'cents', 2],
-        'SGD' => ['S$', 'dolar Singapura', 'Singapore dollars', 'sen', 'cents', 2],
-        'MYR' => ['RM', 'ringgit Malaysia', 'Malaysian ringgit', 'sen', 'sen', 2],
-        'AUD' => ['A$', 'dolar Australia', 'Australian dollars', 'sen', 'cents', 2],
-        'JPY' => ['¥', 'yen Jepang', 'Japanese yen', '', '', 0],
-        'CNY' => ['CN¥', 'yuan Tiongkok', 'Chinese yuan', 'fen', 'fen', 2],
-        'GBP' => ['£', 'pound sterling', 'pounds sterling', 'pence', 'pence', 2],
+        'IDR' => ['IDR', 'rupiah', 'rupiah', 'sen', 'sen', 0],
+        'USD' => ['USD', 'dolar Amerika Serikat', 'US dollars', 'sen', 'cents', 2],
+        'EUR' => ['EUR', 'euro', 'euros', 'sen', 'cents', 2],
+        'SGD' => ['SGD', 'dolar Singapura', 'Singapore dollars', 'sen', 'cents', 2],
+        'MYR' => ['MYR', 'ringgit Malaysia', 'Malaysian ringgit', 'sen', 'sen', 2],
+        'AUD' => ['AUD', 'dolar Australia', 'Australian dollars', 'sen', 'cents', 2],
+        'JPY' => ['JPY', 'yen Jepang', 'Japanese yen', '', '', 0],
+        'CNY' => ['CNY', 'yuan Tiongkok', 'Chinese yuan', 'fen', 'fen', 2],
+        'GBP' => ['GBP', 'pound sterling', 'pounds sterling', 'pence', 'pence', 2],
     ];
 
     private const ID = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];

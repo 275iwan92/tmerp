@@ -51,7 +51,7 @@
         <div class="dl-strip__kv dl-strip__doc"><span>No. PO</span><b>{{ $blank || $dup ? '(otomatis)' : $po['po_no'] }}</b></div>
         <x-dl::field.date name="po_date" label="Tanggal PO" :value="$v('po_date') ?? now()->format('Y-m-d')" required />
         <x-dl::field.select name="supplier" label="Supplier" :options="$suppliers" :value="$v('supplier')" required />
-        <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b data-l-val="po_lines:grand">Rp 0</b></div>
+        <div class="dl-strip__kv dl-strip__grand"><span>Grand Total</span><b data-l-val="po_lines:grand">IDR 0</b></div>
     </x-slot:strip>
     <x-slot:general>
         <x-dl::form.row :cols="4">

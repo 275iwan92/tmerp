@@ -14,7 +14,7 @@
     $home = route('v2.screen', 'quotation');
     $q = request('id') ? QuoQuotation::with(['customer', 'ccs', 'items.inquiry', 'activities'])->find((int) request('id')) : null;
     abort_if(request('id') && ! $q, 404);
-    $rp = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
+    $rp = fn ($v) => 'IDR '.\Devlib\Locale::number((float) $v, 0);
     $trim = fn ($v) => $v === null ? '' : rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
 @endphp
 
@@ -49,7 +49,7 @@
                 <x-dl::alert tone="warn" message="This inquiry is no longer available (already quoted or not yet priced)." />
             @else
                 <x-dl::field.checkboxes name="inquiry_ids" label="Quoted inquiries" required :value="[(string) request('inq')]"
-                    :options="collect($same)->mapWithKeys(fn ($r) => [$r['id'] => $r['no'].' · '.$r['product'].' · '.$r['tiers'].' '.t('tiers').($r['price'] ? ' · Rp '.$r['price'].'/pcs' : '')])->all()"
+                    :options="collect($same)->mapWithKeys(fn ($r) => [$r['id'] => $r['no'].' · '.$r['product'].' · '.$r['tiers'].' '.t('tiers').($r['price'] ? ' · IDR '.$r['price'].'/pcs' : '')])->all()"
                     :source="Src::of('tm2sdi.iqp_inquiry')" />
             @endif
             <x-dl::action-bar>
@@ -71,7 +71,7 @@
         $lostReason = $q->items->pluck('inquiry.cancel_reason')->filter()->first();
         $more = $draft ? Quotation::available((int) $q->customer_id) : [];
         $cur = $q->currency_code ?: 'IDR';
-        $sym = \Devlib\Terbilang::CURRENCIES[$cur][0] ?? 'Rp';
+        $sym = \Devlib\Terbilang::CURRENCIES[$cur][0] ?? 'IDR';
         $money = fn ($v) => $sym.' '.\Devlib\Locale::number((float) $v, 0);
         // WON (CO lahir = pindah modul) & LOST = selesai -> Closed; PUBLISHED = Confirmed (terbit, terkunci).
         $formStatus = match ($status) { 'DRAFT' => 'draft', 'PUBLISHED' => 'confirmed', 'CANCELLED' => 'cancelled', default => 'closed' };

@@ -90,7 +90,7 @@ final class PettyCash
     // Semua teks sudah diterjemahkan dan angka sudah diformat di sini; objeknya hanya menampilkan.
     public static function desk(FinPettyCash $fund, string $home): array
     {
-        $rp = fn ($v) => $v === null ? '—' : 'Rp '.Locale::number((float) $v, 0);
+        $rp = fn ($v) => $v === null ? '—' : 'IDR '.Locale::number((float) $v, 0);
         $sum = self::summary($fund);
         $po = request('po') ? PoOrder::with(['lines' => fn ($q) => $q->orderBy('line_no')])->find((int) request('po')) : null;
         $tx = request('tx') ? FinPettyCashTx::where('petty_cash_id', $fund->id_petty_cash)->find((int) request('tx')) : null;
