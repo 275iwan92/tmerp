@@ -20,25 +20,8 @@
 @if (session('v2_flash'))<x-dl::alert tone="success" :message="raw(session('v2_flash'))" />@endif
 
 @if (! $c)
-    <x-dl::grid id="crm-customer-list" mode="report" :rows="Crm::rows()" search="Search customer, code, group, industry..." :open-url="$home.'?id={id}'" row-tone="row_tone"
-        source="{{ Src::of('tm2mst.cust_customer', 'tm2sdi.co_order', 'tm2sdi.co_order_legacy', 'tm2sdi.quo_quotation', 'tm2sdi.crm_activity', 'tm2sdi.crm_complaint') }}"
-        :columns="[
-            ['key' => 'name', 'label' => 'Customer', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'segment', 'label' => 'Segment', 'type' => 'badge', 'tones' => collect(Crm::SEGMENT_TONES)->mapWithKeys(fn ($tone, $label) => [t($label) => $tone])->all()],
-            ['key' => 'group', 'label' => 'Group', 'visible' => false],
-            ['key' => 'industry', 'label' => 'Industry', 'visible' => false],
-            ['key' => 'last_order', 'label' => 'Last Order', 'type' => 'date'],
-            ['key' => 'orders_12m', 'label' => 'Orders (12 months)', 'type' => 'number'],
-            ['key' => 'open_quo', 'label' => 'Open Quotations', 'type' => 'number'],
-            ['key' => 'open_co', 'label' => 'Open Orders', 'type' => 'number'],
-            ['key' => 'last_contact', 'label' => 'Last Contact', 'type' => 'date'],
-            ['key' => 'next_date', 'label' => 'Next Follow-up', 'type' => 'date'],
-            ['key' => 'due', 'label' => 'Due', 'type' => 'badge', 'toneKey' => 'due_tone'],
-            ['key' => 'complaints', 'label' => 'Open Complaints', 'type' => 'number'],
-        ]"
-        :stats="[...$dueStats, ['label' => 'Open complaint', 'where' => ['has_complaint' => true], 'tone' => 'accent']]"
-        :tabs="[['label' => 'All'], ...collect(Crm::SEGMENT_TONES)->map(fn ($tone, $label) => ['label' => $label, 'where' => ['segment' => t($label)], 'tone' => $tone])->values()->all()]"
-        :filters="['segment' => 'Segment', 'group' => 'Group', 'industry' => 'Industry']" />
+    {{-- Daftar = objek grid App\Support\V2\Grid\Sales\CustomerListGrid (DocListGrid), tampil lewat view generik _dbgrid. --}}
+    @include('v2.screens._dbgrid', ['screen' => ['grid' => new \App\Support\V2\Grid\Sales\CustomerListGrid()]])
 @else
     {{-- Halaman satu customer = objek form khusus x-mp::sales.customer-card (MockupParts); isi = Crm::card(). --}}
     <x-mp::sales.customer-card :card="Crm::card($c, $home)" />
