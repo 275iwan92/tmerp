@@ -51,6 +51,7 @@ use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CrmActivities;
 use App\Support\V2\Data\CrmComplaints;
 use App\Support\V2\Data\CustomerOrder;
+use App\Support\V2\Data\DataOrigin;
 use App\Support\V2\Data\DeliveryOrder;
 use App\Support\V2\Data\Identification;
 use App\Support\V2\Data\MailContacts;
@@ -1108,6 +1109,46 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $back(t('Company logo removed.'));
         })->whereIn('variant', ['color', 'inverse'])->name('company-logo.remove');
+    });
+
+    // Setup > Data Origin -- App\Support\V2\Data\DataOrigin (logika di App\Services\Data\DataOriginService). Hanya administrator.
+    Route::prefix('data-origin')->name('data-origin.')->group(function () {
+        $back = fn (string $tab, string $msg) => redirect(route('v2.screen', 'data-origin').'?tab='.$tab)->with('v2_flash', $msg);
+        Route::post('/settings', function (Request $r) use ($back) {
+            abort_unless(Auth::user()->is_admin, 403);
+            DataOrigin::saveSettings($r);
+
+            return $back('display', t('Settings saved. They apply to pages opened after this.'));
+        })->name('settings');
+        Route::post('/recompute', function () use ($back) {
+            abort_unless(Auth::user()->is_admin, 403);
+
+            return $back('legacy', tf('Completeness recounted: :n rows do not meet the required fields yet.', ['n' => DataOrigin::recompute()]));
+        })->name('recompute');
+        Route::post('/promote', function (Request $r) use ($back) {
+            abort_unless(Auth::user()->is_admin, 403);
+            $only = $r->validate(['only' => ['nullable', 'string', 'regex:/^tm2[a-z]+\.\w+$/']])['only'] ?? null;
+
+            return $back('legacy', tf(':n complete LEGACY rows became real data (LIVE).', ['n' => DataOrigin::promote($only)]));
+        })->name('promote');
+        Route::post('/classify', function () use ($back) {
+            abort_unless(Auth::user()->is_admin, 403);
+
+            return $back('rules', tf('Classification applied: :n rows marked. Take a new snapshot if DUMMY data grew.', ['n' => DataOrigin::classify()]));
+        })->name('classify');
+        Route::post('/snapshot', function () use ($back) {
+            abort_unless(Auth::user()->is_admin, 403);
+
+            return $back('snapshot', tf('Snapshot saved: :n DUMMY rows are the starting point for a reset.', ['n' => DataOrigin::snapshot()]));
+        })->name('snapshot');
+        Route::post('/reset', function (Request $r) use ($back) {
+            abort_unless(Auth::user()->is_admin, 403);
+            $removeNew = $r->boolean('remove_new');
+            $res = DataOrigin::reset($removeNew);
+
+            return $back('snapshot', tf('Reset done: :restored rows returned, :changed rows restored.', ['restored' => $res['restored'], 'changed' => $res['changed']])
+                .($removeNew ? ' '.tf(':n new dummy rows deleted.', ['n' => $res['new']]) : ''));
+        })->name('reset');
     });
 
     // Setting Approval + Officer Pengganti (PLT) -- App\Support\V2\Data\ApprovalSetting (tm2mst.flow_config*, flow_position_acting).

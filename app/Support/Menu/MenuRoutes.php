@@ -239,7 +239,6 @@ final class MenuRoutes
             // sekarang menampilkan landing page publik itu, bukan wizard KTP-only lama.
             'HRM_RCR_PORTAL' => route('careers.landing'),
             'SET_CONSTANTS' => route('setup.constants'),
-            'SET_DATA_ORIGIN' => route('setup.data-origin'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),

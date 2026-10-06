@@ -119,6 +119,8 @@ final class Grids
         Setup\DailyQuoteLookup::class,
         Setup\LanguageLookup::class,
         Setup\UiTextKeyLookup::class,
+        Setup\DataOriginRuleLookup::class,
+        Setup\DataRequirementLookup::class,
         Setup\DictionaryGroupLookup::class,
         Inv\RmStockInGrid::class,
         Inv\RmStockOutGrid::class,

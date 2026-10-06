@@ -911,5 +911,106 @@
       {"label": "Order", "en": "Position of the tab; a lower number comes first.", "id": "Posisi tab; angka kecil lebih dulu."},
       {"label": "Active", "en": "An inactive dashboard is not shown to anyone.", "id": "Dashboard yang tidak aktif tidak tampil untuk siapa pun."}
     ]
+  },
+  {
+    "key": "ui-text-keys",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "UI Text Keys",
+    "purpose": {
+      "en": "Keyed texts of the older screens, the login page and menu labels that have a translation key. Open it to translate or correct them.",
+      "id": "Teks berkunci milik layar lama, halaman login dan label menu yang punya kunci terjemahan. Buka untuk menerjemahkan atau memperbaikinya."
+    },
+    "keywords": "kunci teks, ui text keys, terjemahan, localization, login, menu, bahasa",
+    "steps": [
+      {
+        "en": "Open UI Text Keys and search by key or text.",
+        "id": "Buka UI Text Keys dan cari berdasarkan kunci atau teks."
+      },
+      {
+        "en": "Type the text in the column of each language. An empty cell removes that translation.",
+        "id": "Ketik teks di kolom tiap bahasa. Sel kosong menghapus terjemahan itu."
+      },
+      {
+        "en": "Click Save.",
+        "id": "Klik Save."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Key",
+        "en": "The text key used by the program. A key cannot be changed once saved, and it needs at least one language.",
+        "id": "Kunci teks yang dipakai program. Kunci tidak bisa diubah setelah disimpan dan harus punya minimal satu bahasa."
+      }
+    ]
+  },
+  {
+    "key": "data-origin-rules",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Data Origin Rules",
+    "purpose": {
+      "en": "The rules that mark LIVE rows as DUMMY or LEGACY. Open it to add or switch off a rule.",
+      "id": "Aturan yang menandai baris LIVE sebagai DUMMY atau LEGACY. Buka untuk menambah atau mematikan aturan."
+    },
+    "keywords": "aturan klasifikasi, data origin, dummy, legacy, live, created by",
+    "steps": [
+      {
+        "en": "Open the Classification Rules tab in Data Origin.",
+        "id": "Buka tab Classification Rules di Data Origin."
+      },
+      {
+        "en": "Fill Type, Mark as, and the column or pattern the type needs. Empty database or table means all.",
+        "id": "Isi Type, Mark as, dan kolom atau pola yang dibutuhkan jenisnya. Database atau tabel kosong berarti semua."
+      },
+      {
+        "en": "Click Save, then Preview and Apply to mark the rows.",
+        "id": "Klik Save, lalu Preview dan Apply untuk menandai baris."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Pattern (LIKE)",
+        "en": "Text to match; % stands for anything. Not used by the Column is filled type.",
+        "id": "Teks yang dicocokkan; % berarti apa saja. Tidak dipakai jenis Column is filled."
+      },
+      {
+        "label": "Priority",
+        "en": "Rules run from the lowest number up.",
+        "id": "Aturan dijalankan dari angka terkecil."
+      }
+    ]
+  },
+  {
+    "key": "data-requirements",
+    "type": "INPUT",
+    "module": "SETUP",
+    "title": "Required Fields of Legacy Data",
+    "purpose": {
+      "en": "The columns that must be filled before a LEGACY row may become real data. Open it to add or switch off a requirement.",
+      "id": "Kolom yang wajib terisi sebelum baris LEGACY boleh jadi data real. Buka untuk menambah atau mematikan syarat."
+    },
+    "keywords": "syarat wajib, kelengkapan data, legacy, data origin, required",
+    "steps": [
+      {
+        "en": "Open the Legacy Completeness tab in Data Origin.",
+        "id": "Buka tab Legacy Completeness di Data Origin."
+      },
+      {
+        "en": "Add a row with Database, Table, Required column and a name.",
+        "id": "Tambah baris dengan Database, Table, Required column dan nama."
+      },
+      {
+        "en": "Click Save. The completeness is recounted.",
+        "id": "Klik Save. Kelengkapan dihitung ulang."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Required column",
+        "en": "The column that must not be empty. It cannot be changed once saved.",
+        "id": "Kolom yang tidak boleh kosong. Tidak bisa diubah setelah disimpan."
+      }
+    ]
   }
 ]

@@ -171,7 +171,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
         Route::livewire('/setup/constants', 'pages::setup.constants')->name('setup.constants')->middleware('admin');
-        Route::livewire('/setup/data-origin', 'pages::setup.data-origin')->name('setup.data-origin')->middleware('admin');
         Route::livewire('/setup/support-tickets', 'pages::setup.support-tickets')->name('setup.support-tickets')->middleware('admin');
 
         // Help Center -- panduan pakai aplikasi (bukan tiket support, itu modal
