@@ -118,6 +118,7 @@ final class Grids
         Setup\KpiTargetLookup::class,
         Setup\DailyQuoteLookup::class,
         Setup\LanguageLookup::class,
+        Setup\UiTextKeyLookup::class,
         Setup\DictionaryGroupLookup::class,
         Inv\RmStockInGrid::class,
         Inv\RmStockOutGrid::class,
