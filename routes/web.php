@@ -170,7 +170,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
         });
 
         Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
-        Route::livewire('/setup/identification', 'pages::setup.identification')->name('setup.identification')->middleware('admin');
         Route::livewire('/setup/localization', 'pages::setup.localization')->name('setup.localization')->middleware('admin');
         Route::livewire('/setup/constants', 'pages::setup.constants')->name('setup.constants')->middleware('admin');
         Route::livewire('/setup/data-origin', 'pages::setup.data-origin')->name('setup.data-origin')->middleware('admin');

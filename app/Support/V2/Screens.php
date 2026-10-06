@@ -138,6 +138,9 @@ final class Screens
                 ]],
             ]],
             ['code' => 'SETUP', 'short' => 'SET', 'label' => 'Setup', 'icon' => 'fa-solid fa-gear', 'groups' => [
+                ['label' => 'Settings', 'items' => [
+                    $it('company-identity', ['Identification', 'fa-solid fa-id-card', 'v2: pengganti setup/identification.blade.php (sys_constant APP_* / COMPANY_*, tm2mst.org_company)', null]),
+                ]],
                 ['label' => 'Security', 'items' => [
                     $it('approval-setting', ['Approval Levels', 'fa-solid fa-list-ol', 'v2 baru: tm2mst.flow_config + flow_config_step (pengganti m_authorize)', null]),
                 ]],

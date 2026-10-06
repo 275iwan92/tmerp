@@ -140,7 +140,7 @@ class CompanyNamePpnPrintTest extends TestCase
     }
 
     // Keputusan user 2026-09-23: admin bisa mengisi identitas perusahaan sendiri
-    // (Settings > Identifikasi) dan apa pun yang diisi harus tercetak di kop.
+    // (Setup > Identification, layar v2) dan apa pun yang diisi harus tercetak di kop.
     public function test_admin_inputs_company_identity_and_it_prints(): void
     {
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
@@ -148,15 +148,9 @@ class CompanyNamePpnPrintTest extends TestCase
         $company = (array) DB::connection('tm2mst')->table('org_company')->where('company_code', 'TM')->first(['npwp_number', 'address', 'phone', 'email']);
 
         try {
-            Livewire::test('pages::setup.identification')
-                ->set('companyName', 'Telasih Uji')
-                ->set('companyLegalName', 'CV. Legal Uji')
-                ->set('companyNpwp', '11.222.333.4-555.666')
-                ->set('companyAddress', "Jl. Uji No. 1\nSurabaya")
-                ->set('companyPhone', '031-999')
-                ->set('companyEmail', 'uji@contoh.co.id')
-                ->call('saveCompany')
-                ->assertHasNoErrors();
+            $this->post(route('v2.identification.company'), ['company_name' => 'Telasih Uji', 'company_legal_name' => 'CV. Legal Uji',
+                'npwp' => '11.222.333.4-555.666', 'address' => "Jl. Uji No. 1\nSurabaya", 'phone' => '031-999', 'email' => 'uji@contoh.co.id'])
+                ->assertRedirect(route('v2.screen', 'company-identity'))->assertSessionHasNoErrors();
 
             $inquiryId = DB::connection('tm2sdi')->table('iqp_inquiry')->where('tax_scheme', 'PPN')->value('id_inquiry');
             $html = Livewire::test('pages::inquiry.nota', ['inquiry' => $inquiryId])->html();
@@ -166,7 +160,7 @@ class CompanyNamePpnPrintTest extends TestCase
             $this->assertStringContainsString('Jl. Uji No. 1<br />', $html, 'Alamat multi-baris tetap berbaris.');
             $this->assertStringContainsString('Telp 031-999', $html);
 
-            Livewire::test('pages::setup.identification')->set('companyName', '')->call('saveCompany')->assertHasErrors(['companyName']);
+            $this->post(route('v2.identification.company'), ['company_name' => '', 'company_legal_name' => 'CV. Legal Uji'])->assertSessionHasErrors(['company_name']);
         } finally {
             foreach ($consts as $key => $text) {
                 DB::connection('tm2sys')->table('sys_constant')->where('constant_key', $key)->update(['constant_text' => $text]);

@@ -52,6 +52,7 @@ use App\Support\V2\Data\CrmActivities;
 use App\Support\V2\Data\CrmComplaints;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DeliveryOrder;
+use App\Support\V2\Data\Identification;
 use App\Support\V2\Data\MailContacts;
 use App\Support\V2\Data\PettyCash;
 use App\Support\V2\Data\Prodev;
@@ -1079,6 +1080,35 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return $err ? $back->withErrors(['approval' => $err]) : $back->with('v2_flash', ['approve' => t('Approved — recorded in the log.'), 'reject' => t('Rejected — recorded in the log.'), 'hold' => t('On hold — recorded in the log.')][$d['action']]);
     })->whereIn('screen', array_keys(ApprovalCenter::SCREENS))->name('approval.decide');
+
+    // Setup > Identification -- App\Support\V2\Data\Identification (sys_constant APP_* / COMPANY_*, org_company TM). Hanya admin (sama dengan v1).
+    Route::prefix('identification')->name('identification.')->group(function () {
+        $back = fn (string $msg) => redirect(route('v2.screen', 'company-identity'))->with('v2_flash', $msg);
+        Route::post('/app', function (Request $r) use ($back) {
+            abort_unless(Auth::user()->is_admin, 403);
+            Identification::saveApp($r);
+
+            return $back(t('Application identity saved.'));
+        })->name('app');
+        Route::post('/app/logo/remove', function () use ($back) {
+            abort_unless(Auth::user()->is_admin, 403);
+            Identification::removeAppLogo();
+
+            return $back(t('Application logo removed.'));
+        })->name('app-logo.remove');
+        Route::post('/company', function (Request $r) use ($back) {
+            abort_unless(Auth::user()->is_admin, 403);
+            Identification::saveCompany($r);
+
+            return $back(t('Company identity saved.'));
+        })->name('company');
+        Route::post('/company/logo/{variant}/remove', function (string $variant) use ($back) {
+            abort_unless(Auth::user()->is_admin, 403);
+            Identification::removeCompanyLogo($variant);
+
+            return $back(t('Company logo removed.'));
+        })->whereIn('variant', ['color', 'inverse'])->name('company-logo.remove');
+    });
 
     // Setting Approval + Officer Pengganti (PLT) -- App\Support\V2\Data\ApprovalSetting (tm2mst.flow_config*, flow_position_acting).
     Route::middleware('module:SETUP')->group(function () {

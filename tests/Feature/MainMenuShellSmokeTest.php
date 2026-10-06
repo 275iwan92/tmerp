@@ -57,7 +57,6 @@ class MainMenuShellSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $this->get('/setup/identification')->assertOk()->assertSee('Identitas Aplikasi');
         $this->get('/setup/localization')->assertOk()->assertSee('Terjemahan Teks UI');
         $this->get('/setup/constants')->assertOk()->assertSee('Constants');
     }

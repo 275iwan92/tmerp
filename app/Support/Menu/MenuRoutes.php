@@ -238,7 +238,6 @@ final class MenuRoutes
             // Profesional publik (URL sama, di luar auth) -- iframe tab ini
             // sekarang menampilkan landing page publik itu, bukan wizard KTP-only lama.
             'HRM_RCR_PORTAL' => route('careers.landing'),
-            'SET_CONFIG' => route('setup.identification'),
             'SET_LOCALIZATION' => route('setup.localization'),
             'SET_CONSTANTS' => route('setup.constants'),
             'SET_DATA_ORIGIN' => route('setup.data-origin'),
