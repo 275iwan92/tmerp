@@ -58,7 +58,6 @@ class MainMenuShellSmokeTest extends TestCase
         $this->actingAs($admin);
 
         $this->get('/setup/identification')->assertOk()->assertSee('Identitas Aplikasi');
-        $this->get('/setup/language')->assertOk()->assertSee('Language');
         $this->get('/setup/localization')->assertOk()->assertSee('Terjemahan Teks UI');
         $this->get('/setup/constants')->assertOk()->assertSee('Constants');
     }

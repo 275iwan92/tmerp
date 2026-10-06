@@ -171,7 +171,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
         Route::livewire('/setup/identification', 'pages::setup.identification')->name('setup.identification')->middleware('admin');
-        Route::livewire('/setup/language', 'pages::setup.language')->name('setup.language')->middleware('admin');
         Route::livewire('/setup/localization', 'pages::setup.localization')->name('setup.localization')->middleware('admin');
         Route::livewire('/setup/constants', 'pages::setup.constants')->name('setup.constants')->middleware('admin');
         Route::livewire('/setup/data-origin', 'pages::setup.data-origin')->name('setup.data-origin')->middleware('admin');
@@ -192,14 +191,12 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::livewire('/notifications', 'pages::notification.index')->name('notifications.index');
 
         Route::middleware('module:MDATA')->group(function () {
-            Route::livewire('/master/produk', 'pages::master.produk')->name('master.produk');
             Route::livewire('/master/customer', 'pages::master.customer')->name('master.customer');
             Route::livewire('/master/supplier', 'pages::master.supplier')->name('master.supplier');
             Route::livewire('/master/supplier-category', 'pages::master.supplier-category')->name('master.supplier-category');
             Route::livewire('/master/uom', 'pages::master.uom')->name('master.uom');
             Route::livewire('/master/currency', 'pages::master.currency')->name('master.currency');
             Route::livewire('/master/exchange-rate', 'pages::master.exchange-rate')->name('master.exchange-rate');
-            Route::livewire('/master/holiday', 'pages::master.holiday')->name('master.holiday');
             Route::livewire('/master/machine', 'pages::master.machine')->name('master.machine');
             Route::livewire('/master/shift', 'pages::master.shift')->name('master.shift');
 
@@ -239,19 +236,13 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/purchasing/pr', 'pages::pur.pr.index')->name('pur.pr.list');
             Route::livewire('/purchasing/pr/{pr}/edit', 'pages::pur.pr.entry')->name('pur.pr.entry');
             Route::livewire('/purchasing/pr/{pr}/print', 'pages::pur.pr.print')->name('pur.pr.print');
-            Route::livewire('/purchasing/pr-approval', 'pages::pur.pr.approval')->name('pur.pr.approval');
             Route::livewire('/purchasing/po', 'pages::pur.po.index')->name('pur.po.list');
             Route::livewire('/purchasing/po/{po}/edit', 'pages::pur.po.entry')->name('pur.po.entry');
             Route::livewire('/purchasing/po/{po}/print', 'pages::pur.po.print')->name('pur.po.print');
-            Route::livewire('/purchasing/po-approval', 'pages::pur.po.approval')->name('pur.po.approval');
             Route::livewire('/purchasing/pv', 'pages::pur.pv.index')->name('pur.pv.list');
             Route::livewire('/purchasing/pv/{pv}/edit', 'pages::pur.pv.entry')->name('pur.pv.entry');
-            Route::livewire('/purchasing/pq', 'pages::pur.pq.index')->name('pur.pq.list');
-            Route::livewire('/purchasing/pq/{pq}/edit', 'pages::pur.pq.entry')->name('pur.pq.entry');
-            Route::livewire('/purchasing/pq/{pq}/print', 'pages::pur.pq.print')->name('pur.pq.print');
             Route::livewire('/purchasing/prt', 'pages::pur.prt.index')->name('pur.prt.list');
             Route::livewire('/purchasing/prt/{prt}/edit', 'pages::pur.prt.entry')->name('pur.prt.entry');
-            Route::livewire('/purchasing/prt-approval', 'pages::pur.prt.approval')->name('pur.prt.approval');
             Route::livewire('/purchasing/report/outstanding-pr', 'pages::pur.report.outstanding-pr')->name('pur.report.outstanding-pr');
             Route::livewire('/purchasing/report/outstanding-po', 'pages::pur.report.outstanding-po')->name('pur.report.outstanding-po');
             Route::livewire('/purchasing/report/outstanding-pv', 'pages::pur.report.outstanding-pv')->name('pur.report.outstanding-pv');
@@ -277,7 +268,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // {doc?} opsional -- dipakai layar Persetujuan (approval) utk deep-link
             // langsung ke form dokumen tertentu (grid<->form tetap 1 komponen).
             Route::livewire('/inventory/stock-adjustment/{category}/{doc?}', 'pages::inventory.stock-adjustment')->name('inv.stock-adj.index');
-            Route::livewire('/inventory/stock-adjustment-approval/{category}', 'pages::inventory.stock-adjustment-approval')->name('inv.stock-adj.approval');
         });
 
         Route::middleware('module:HRM')->group(function () {
@@ -325,7 +315,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/hrm/recruitment/assessment-result', 'pages::recruitment.assessment-result')->name('hrm.recruitment.assessment-result');
             Route::livewire('/hrm/recruitment/offer', 'pages::recruitment.offer.list')->name('hrm.recruitment.offer.list');
             Route::livewire('/hrm/recruitment/offer/{application}', 'pages::recruitment.offer.entry')->name('hrm.recruitment.offer.entry')->where('application', '[0-9]+');
-            Route::livewire('/hrm/recruitment/sync-log', 'pages::recruitment.sync-log')->name('hrm.recruitment.sync-log');
             Route::livewire('/hrm/recruitment/hire-provision', 'pages::recruitment.hire-provision')->name('hrm.recruitment.hire-provision');
         });
 
@@ -338,7 +327,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/production/wo/{wo}/print', 'pages::production.wo-print')->name('production.wo.print')->where('wo', '[0-9]+');
             Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry')->where('wo', '[0-9]+');
             Route::livewire('/production/rule-library', 'pages::production.rule-library')->name('production.rule-library');
-            Route::livewire('/production/mts-forecast', 'pages::production.mts-forecast')->name('production.mts-forecast');
             Route::livewire('/production/scrap-type', 'pages::production.scrap-type')->name('production.scrap-type');
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
             Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
