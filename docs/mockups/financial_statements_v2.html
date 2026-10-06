@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Financial Statements — Mockup v2</title>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  th { font-size: 10px; text-transform: uppercase; letter-spacing: .03em; color: #64748b; font-weight: 600; text-align: left; padding: 7px 10px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+  td { padding: 6px 10px; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .tab { padding: 6px 12px; border-radius: 6px 6px 0 0; font-size: 11px; font-weight: 600; color: #64748b; }
+  .tab.on { background: #fff; color: #2c3e69; border: 1px solid #e2e8f0; border-bottom-color: #fff; }
+  .stab { padding: 7px 14px; font-size: 12px; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; }
+  .stab.on { color: #2c3e69; border-bottom-color: #2c7be5; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 600; border: 1px solid #d7dbe2; background: #fff; color: #334155; }
+  .btn.pri { background: #2c7be5; border-color: #2c7be5; color: #fff; }
+  .btn.warn { background: #b45309; border-color: #b45309; color: #fff; }
+  .stat { border-radius: 10px; padding: 10px 14px; border: 1px solid; position: relative; }
+  .tag { font-size: 9.5px; font-weight: 700; border-radius: 999px; padding: 1px 8px; }
+  .ico { width: 26px; height: 26px; border: 1px solid #d7dbe2; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: #475569; font-size: 11px; background: #fff; }
+  .field { position: relative; }
+  .field input, .field select { width: 100%; border: 1px solid #cfe0fa; border-radius: 6px; padding: 6px 30px 6px 8px; font-size: 12px; background: #fff; }
+  .field .aa { position: absolute; right: 6px; bottom: 7px; font-size: 9px; font-weight: 700; color: #1b4f9c; background: #e3eefc; border-radius: 4px; padding: 1px 4px; }
+  .lbl { font-size: 10px; text-transform: uppercase; font-weight: 600; color: #64748b; margin-bottom: 3px; display: block; }
+  .sw { width: 30px; height: 16px; border-radius: 999px; background: #2c7be5; position: relative; display: inline-block; vertical-align: middle; }
+  .sw::after { content: ''; position: absolute; width: 12px; height: 12px; border-radius: 50%; background: #fff; top: 2px; right: 2px; }
+  .sw.off { background: #cbd5e1; } .sw.off::after { right: auto; left: 2px; }
+  .sect { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #94a3b8; margin: 18px 0 6px; }
+
+  /* utilitas (mockup dirender offline: CDN Tailwind / Font Awesome tidak terjangkau) */
+  .bg-white{background:#fff}.border-b{border-bottom:1px solid}.border-slate-200{border-color:#e2e8f0}.border-collapse{border-collapse:collapse}
+  .flex{display:flex}.grid{display:grid}.grid-cols-2{grid-template-columns:repeat(2,1fr)}.grid-cols-3{grid-template-columns:repeat(3,1fr)}
+  .items-center{align-items:center}.items-end{align-items:flex-end}.justify-end{justify-content:flex-end}
+  .gap-1{gap:4px}.gap-2{gap:8px}.gap-3{gap:12px}.gap-x-8{column-gap:32px}.gap-y-2\.5{row-gap:10px}
+  .font-bold{font-weight:700}.font-semibold{font-weight:600}.font-mono{font-family:ui-monospace,Consolas,monospace}.uppercase{text-transform:uppercase}
+  .max-w-\[1200px\]{max-width:1200px}.mx-auto{margin-left:auto;margin-right:auto}.w-full{width:100%}
+  .mb-1{margin-bottom:4px}.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}.mt-3{margin-top:12px}.ml-1{margin-left:4px}.ml-2{margin-left:8px}.ml-3{margin-left:12px}.ml-auto{margin-left:auto}.mr-1{margin-right:4px}.mx-1{margin:0 4px}
+  .p-4{padding:16px}.pt-2{padding-top:8px}.px-2{padding-left:8px;padding-right:8px}.px-3{padding-left:12px;padding-right:12px}
+  .text-xs{font-size:12px}.text-sm{font-size:14px}.text-xl{font-size:20px}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[11\.5px\]{font-size:11.5px}.text-\[12px\]{font-size:12px}.text-\[8px\]{font-size:8px}
+  .text-navy{color:#2c3e69}.text-slate-400{color:#94a3b8}.text-slate-500{color:#64748b}.text-slate-800{color:#1e293b}
+  .text-\[\#1f6b3c\]{color:#1f6b3c}.text-\[\#1f8a4c\]{color:#1f8a4c}.text-\[\#3949ab\]{color:#3949ab}.text-\[\#9a5b00\]{color:#9a5b00}.text-\[\#b45309\]{color:#b45309}
+  .text-\[\#1f6b3c\]\/70{color:#1f6b3cb3}.text-\[\#3949ab\]\/70{color:#3949abb3}.text-\[\#9a5b00\]\/70{color:#9a5b00b3}
+  .glyph{font-weight:700}
+  body{margin:0}
+
+  .srow{display:flex;justify-content:space-between;padding:5px 14px;border-bottom:1px solid #eef2f7}
+  .srow.grp{background:#f8fafc;font-weight:700;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#475569}
+  .srow.tot{font-weight:700;background:#f1f5f9}
+  .srow.net span.v.c{color:#c7d2fe}.srow.net{font-weight:700;background:#2c3e69;color:#fff}
+  .srow span.v{font-variant-numeric:tabular-nums;width:130px;text-align:right}
+  .srow span.v.c{color:#64748b}
+  .kpi{border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;background:#fff}
+  .kpi .l{font-size:10px;text-transform:uppercase;font-weight:600;color:#64748b}.kpi .n{font-size:20px;font-weight:700;color:#2c3e69}.kpi .s{font-size:10px;color:#64748b}
+  .pill{font-size:9.5px;font-weight:700;border-radius:999px;padding:1px 8px;background:#ecf8f0;color:#1f6b3c}
+  .note{border:1px dashed #94a3b8;border-radius:8px;padding:8px 12px;color:#64748b;font-size:11px;background:#fff}
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<div class="bg-white border-b border-slate-200 px-3 pt-2 flex items-end gap-1"><span class="tab">Home</span><span class="tab on">Financial Statements <span class="glyph">×</span></span></div>
+<main style="max-width:1200px;margin:12px auto;padding:0 16px">
+<div class="text-slate-500 mb-2" style="font-size:11px">Accounting › Financial Reports › <b class="text-navy">Financial Statements</b></div>
+
+<div class="card" style="padding:10px 14px;margin-bottom:10px">
+<div class="flex items-end gap-3">
+ <div class="field" style="width:170px"><span class="lbl">As at / period end</span><input value="06-Oct-2026"></div>
+ <div class="field" style="width:170px;margin-right:6px"><span class="lbl">Compare with</span><input value="31-Dec-2025"></div>
+ <span class="btn pri" style="margin-left:6px">&#8635; Show</span>
+ <span class="ml-auto"></span><span class="btn">&#9113; Print</span><span class="btn">&#8681; Export CSV</span>
+</div></div>
+
+<div class="grid gap-3 mb-3" style="grid-template-columns:repeat(4,1fr)">
+ <div class="kpi"><div class="l">Total assets</div><div class="n">14,69 M</div><div class="s"><span class="pill">+1,3%</span> vs 31-Dec-2025</div></div>
+ <div class="kpi"><div class="l">Total liabilities</div><div class="n">6,95 M</div><div class="s">Debt-to-equity 0,90x</div></div>
+ <div class="kpi"><div class="l">Total equity</div><div class="n">7,74 M</div><div class="s"><span class="pill">+5,1%</span> vs 31-Dec-2025</div></div>
+ <div class="kpi"><div class="l">Current ratio</div><div class="n">2,17x</div><div class="s"><span class="pill">Healthy liquidity</span></div></div>
+</div>
+
+<div class="flex gap-1" style="border-bottom:1px solid #e2e8f0;background:#fff;padding:0 8px;border-radius:8px 8px 0 0;border:1px solid #e2e8f0;border-bottom:0">
+ <span class="stab on">Balance Sheet</span><span class="stab">Income Statement</span><span class="stab">Cash Flow</span><span class="stab">Combined</span>
+</div>
+<div class="card" style="border-radius:0 0 8px 8px;padding:0 0 4px">
+ <div class="srow" style="background:#fff;font-weight:700;color:#2c3e69;border-bottom:1px solid #e2e8f0"><span>Statement of Financial Position · IDR · unaudited management accounts</span><span style="display:flex;gap:10px"><span class="v" style="width:130px;text-align:right">06-Oct-2026</span><span class="v c" style="width:130px;text-align:right">31-Dec-2025</span></span></div>
+ <div class="srow grp"><span>ASSETS</span><span style="display:flex;gap:10px"></span></div>
+<div class="srow grp"><span>Current assets</span><span style="display:flex;gap:10px"></span></div>
+<div class="srow "><span>Cash and cash equivalents</span><span style="display:flex;gap:10px"><span class="v">1.284.500.000</span><span class="v c">1.102.300.000</span></span></div>
+<div class="srow "><span>Trade accounts receivable, net</span><span style="display:flex;gap:10px"><span class="v">3.912.800.000</span><span class="v c">3.450.120.000</span></span></div>
+<div class="srow "><span>Inventories</span><span style="display:flex;gap:10px"><span class="v">2.640.250.000</span><span class="v c">2.718.900.000</span></span></div>
+<div class="srow "><span>Prepayments, tax and other current assets</span><span style="display:flex;gap:10px"><span class="v">318.440.000</span><span class="v c">295.010.000</span></span></div>
+<div class="srow tot"><span>Total current assets</span><span style="display:flex;gap:10px"><span class="v">8.155.990.000</span><span class="v c">7.566.330.000</span></span></div>
+<div class="srow grp"><span>Non-current assets</span><span style="display:flex;gap:10px"></span></div>
+<div class="srow "><span>Property, plant and equipment, net</span><span style="display:flex;gap:10px"><span class="v">6.420.000.000</span><span class="v c">6.801.000.000</span></span></div>
+<div class="srow "><span>Intangible assets, net</span><span style="display:flex;gap:10px"><span class="v">112.000.000</span><span class="v c">128.000.000</span></span></div>
+<div class="srow tot"><span>TOTAL ASSETS</span><span style="display:flex;gap:10px"><span class="v">14.687.990.000</span><span class="v c">14.495.330.000</span></span></div>
+<div class="srow grp"><span>LIABILITIES</span><span style="display:flex;gap:10px"></span></div>
+<div class="srow "><span>Trade accounts payable</span><span style="display:flex;gap:10px"><span class="v">2.906.400.000</span><span class="v c">2.744.800.000</span></span></div>
+<div class="srow "><span>Taxes, accruals and other liabilities</span><span style="display:flex;gap:10px"><span class="v">845.700.000</span><span class="v c">790.250.000</span></span></div>
+<div class="srow "><span>Bank loans</span><span style="display:flex;gap:10px"><span class="v">3.200.000.000</span><span class="v c">3.600.000.000</span></span></div>
+<div class="srow tot"><span>Total liabilities</span><span style="display:flex;gap:10px"><span class="v">6.952.100.000</span><span class="v c">7.135.050.000</span></span></div>
+<div class="srow grp"><span>EQUITY</span><span style="display:flex;gap:10px"></span></div>
+<div class="srow "><span>Share capital</span><span style="display:flex;gap:10px"><span class="v">5.000.000.000</span><span class="v c">5.000.000.000</span></span></div>
+<div class="srow "><span>Retained earnings (incl. current year result)</span><span style="display:flex;gap:10px"><span class="v">2.735.890.000</span><span class="v c">2.360.280.000</span></span></div>
+<div class="srow tot"><span>Total equity</span><span style="display:flex;gap:10px"><span class="v">7.735.890.000</span><span class="v c">7.360.280.000</span></span></div>
+<div class="srow net"><span>TOTAL LIABILITIES AND EQUITY</span><span style="display:flex;gap:10px"><span class="v">14.687.990.000</span><span class="v c">14.495.330.000</span></span></div>
+
+</div>
+
+<div class="note" style="margin-top:12px">
+<b>Other tabs (same layout, same data source):</b> Income Statement (period from–to, rows Revenue &rarr; Net profit, compare with same period last year) &middot;
+Cash Flow (indirect method, operating / investing / financing, opening and closing cash, monthly operating cash bars) &middot; Combined (the three statements on one printable page, Income Statement and Cash Flow of the year to date). Figures come from posted journals only (LedgerService), same formulas as v1. A red alert shows if Assets &ne; Liabilities + Equity.
+</div>
+</main></body></html>
