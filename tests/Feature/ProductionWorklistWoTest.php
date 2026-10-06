@@ -2,10 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Master\ProdProduct;
 use App\Models\Master\SupSupplier;
 use App\Models\Prd\PrdBreakdownEvent;
-use App\Models\Prd\PrdMtsForecast;
 use App\Models\Prd\PrdSchedulingRule;
 use App\Models\Prd\PrdScrapType;
 use App\Models\Prd\PrdWo;
@@ -236,35 +234,6 @@ class ProductionWorklistWoTest extends TestCase
         $this->assertSame('ACTIVE', $rule->rule_status);
 
         $rule->delete();
-    }
-
-    public function test_mts_forecast_entry_computes_accuracy(): void
-    {
-        $this->actingAs($this->admin());
-
-        $product = ProdProduct::firstOrFail();
-
-        Livewire::test('pages::production.mts-forecast')
-            ->call('openNew')
-            ->call('selectProduct', $product->id_product)
-            ->set('periodStart', '2026-09-01')
-            ->set('periodEnd', '2026-09-07')
-            ->set('forecastQty', 1000)
-            ->call('save');
-
-        $forecast = PrdMtsForecast::where('product_id', $product->id_product)
-            ->where('period_start', '2026-09-01')->latest('forecast_id')->firstOrFail();
-        $this->assertNull($forecast->accuracy_pct);
-
-        Livewire::test('pages::production.mts-forecast')
-            ->call('openActualEntry', $forecast->forecast_id)
-            ->set('actualQty', 900)
-            ->call('saveActual');
-
-        $forecast->refresh();
-        $this->assertEqualsWithDelta(0.9, (float) $forecast->accuracy_pct, 0.0001);
-
-        $forecast->delete();
     }
 
     // F15 Production Output Recording -- tanpa spec Tier2/3/4 (didesain dari

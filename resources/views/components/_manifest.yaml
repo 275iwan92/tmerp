@@ -45,29 +45,15 @@ form: # dialek default Tailwind; legacy=true|'namaClass' untuk CSS lama (.f/.fld
   x-form.searchable-select: {props: {label: null, name: null, options: "[string]", placeholder: null, value: ''}}
   x-form.multi-select: {props: {label: null, name: null, options: [], selected: [], placeholder: null, value: ''}}
   x-form.date-picker: {props: {label: null, name: null, mode: "date|datetime", hint: null, error: null, legacy: false, col2: false, min: "Y-m-d", max: "Y-m-d"}, note: "pengganti wajib input type=date"}
-  x-form.date-range: {props: {label: null, startName: null, endName: null, startLabel: Mulai, endLabel: Selesai}}
   x-form.checkbox: {props: {label: null, labelClass: text-muted}, slot: "default (label kaya, opsional)"}
   x-form.switch: {props: {label: null, onLabel: Aktif, offLabel: Nonaktif, checked: false}}
-  x-form.radio-group: {props: {label: null, name: null, options: "[value=>label]", selected: null}}
   x-form.toggle-group: {props: {label: null, hint: null, legacy: false, col2: false}, slot: "x-form.toggle-option"}
   x-form.toggle-option: {props: {active: false, legacy: false}, slot: label, example: "wire:click=\"setX('A')\""}
-  x-form.number-stepper: {props: {label: null, name: null, min: null, max: null, value: 0}}
-  x-form.decimal-input: {props: {label: null, name: null, unit: null, decimals: 2, value: '', hint: null}}
-  x-form.currency-input: {props: {label: null, name: null, currencies: [], value: '', hint: null}}
-  x-form.masked-input: {props: {label: null, name: null, segments: "[6,6,4]", separator: '.', hint: null, error: null, value: ''}, note: "mis. NIK"}
-  x-form.phone-input: {props: {label: null, name: null, countries: [], value: '', hint: null, error: null}}
-  x-form.password-input: {props: {label: null, name: null, hint: null, error: null}}
-  x-form.case-toggle-input: {props: {label: null, name: null, placeholder: null, hint: null, error: null, value: ''}}
-  x-form.otp-input: {props: {label: null, name: null, length: 6}}
-  x-form.range-slider: {props: {label: null, min: 0, max: 100, step: 1, value: 0, format: null, unit: ''}}
-  x-form.star-rating: {props: {label: null, name: null, max: 5, value: 0}}
   x-form.color-picker: {props: {label: null, value: '#2563eb'}}
   x-form.file-dropzone: {props: {label: null, name: null, hint: null, accept: null, currentName: null}}
   x-form.display: {props: {label: required}, slot: "nilai read-only"}
   x-form.badge: {props: {tone: default}, slot: teks status}
   x-form.auto-chip: {props: {state: "auto|override|null", field: "null = legenda; diisi -> chip override klik = resetAuto(field)"}, note: "penanda field terisi otomatis (Quotation), taruh absolute top-0 right-0 di wrapper relative"}
-  x-form.split-button: {props: {label: Simpan, icon: '💾', actions: []}}
-  x-form.mini-calendar: {props: {events: []}}
 
 layout:
   x-back-button: {props: {fallback: "route grid (wajib)"}, attrs: "title, class", note: "Back = layar sebelumnya via dirty-guard.js"}
@@ -118,7 +104,6 @@ report:
 board: # baca ganttboardstandard.md / kanbanboardstandard.md sebelum pakai
   x-gantt.board: {props: "rows, secondaryRows, resourceHeaderLabel, timelineStart=8, timelineEnd=20, pxPerHour=70, moveMethod/resizeMethod/reassignMethod, resourceOptions, labelOptions"}
   x-kanban.board: {props: "columns (req), activeCardId, *Method (nama method Livewire)"}
-  x-calendar.board: {props: "view, currentDate, ... + *Method"}
 
 domain: # khusus modul, jangan dipakai lintas modul tanpa alasan
   - x-costing.field
