@@ -45,6 +45,10 @@ final class Summary
             $items[] = ['code' => 'S-'.$slug, 'label' => $label, 'icon' => $icon, 'url' => route('summary', ['page' => $slug]), 'type' => 'report'];
         }
 
+        // Agent History (user 2026-10-07): submenu tersendiri untuk catatan pengingat agen Iwan / Jo.
+        $unread = AgentHistory::unread();
+        $items[] = ['code' => 'S-history', 'label' => 'Agent History', 'icon' => 'fa-solid fa-clock-rotate-left', 'url' => route('history'), 'type' => 'grid'] + ($unread ? ['badge' => (string) $unread, 'badgeTone' => 'partial'] : []);
+
         return ['code' => LayerShell::REPORT_MODULE, 'short' => 'EX', 'label' => 'Executive Summary', 'icon' => 'fa-solid fa-chart-line', 'children' => $items];
     }
 

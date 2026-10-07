@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\AgentHistory;
 use App\Support\BoardDemo;
 use App\Support\Catalog;
 use App\Support\Generator;
@@ -121,6 +122,33 @@ Route::middleware('devlib.auth')->group(function () {
         return view('generator', ['ready' => $ready, 'req' => $req, 'form' => $req || $r->boolean('new'), 'rows' => $ready ? Generator::rows() : [],
             'objects' => $req ? Generator::objects($req->id_request) : []]);
     })->name('generator');
+
+    // Agent History (user 2026-10-07): catatan pengingat user; aturan = App\Support\AgentHistory. Hanya akun developer yang boleh menulis.
+    Route::get('/history', function (Request $r) {
+        $ready = AgentHistory::ready();
+        $note = $ready && $r->integer('id') ? (AgentHistory::find($r->integer('id')) ?? abort(404)) : null;
+
+        return view('history', ['ready' => $ready, 'note' => $note, 'form' => $r->boolean('new'), 'rows' => $ready ? AgentHistory::rows() : []]);
+    })->name('history');
+
+    Route::post('/history', function (Request $r) {
+        $user = session('devlib_user');
+        abort_unless($user['developer'] ?? false, 403);
+        try {
+            $id = AgentHistory::add((string) $r->input('author', 'user'), (string) $r->input('kind', 'NOTE'), (string) $r->input('title'), $r->input('body'), $r->input('url'), $user['login']);
+        } catch (InvalidArgumentException $e) {
+            return back()->withInput()->with('hist_error', $e->getMessage());
+        }
+
+        return redirect()->route('history', ['id' => $id])->with('hist_flash', 'Note saved.');
+    })->name('history.save');
+
+    Route::post('/history/{id}/{what}', function (int $id, string $what) {
+        abort_unless(session('devlib_user')['developer'] ?? false, 403);
+        AgentHistory::toggle($id, $what);
+
+        return back();
+    })->whereIn('what', ['pin', 'read'])->name('history.toggle');
 
     Route::post('/generator', function (Request $r) {
         $user = session('devlib_user');
