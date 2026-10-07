@@ -16,6 +16,7 @@ Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 
 - Jangan `@php` inline di dalam `@if/@foreach`; `@php(...)` inline wajib penutup. Jangan tulis tag komponen berkurung sudut di komentar.
 - Jangan gate konten yang diubah Livewire dengan `x-if`/`x-show` state lokal Alpine (stale content).
 - Pakai komponen `<x-*>` dari `resources/views/components/_manifest.yaml`, bukan markup input mentah.
+- **Tambahan user 2026-10-07 (Laravel 13 / Livewire 4):** pakai PHP Attributes (`#[Title]`, `#[Lazy]`, `#[Validate]`, `#[Middleware]`/`#[Authorize]` bila perlu); `wire:model` dengan modifier modern (`.live`, `.blur`, `.debounce`), `wire:navigate` untuk pindah halaman. Bagian spesifikasi itu yang **tidak dipakai di sini**: Pest dan Larastan tidak terpasang — test tetap **PHPUnit 12**, gaya kode **Pint** (`vendor/bin/pint --dirty`); file komponen tetap tanpa `⚡`; route tetap `Route::livewire('/uri', 'pages::modul.nama')`. Layar baru tetap wajib berupa turunan objek DevLib (`devlib-oo`).
 
 ## Tailwind 4
 - **Wajib `npm run build`** setelah menambah class baru (bukan `npm run dev`).

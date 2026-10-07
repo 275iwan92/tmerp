@@ -5,6 +5,8 @@ description: Aturan proyek TMERP yang MENGALAHKAN saran generik skill Boost (liv
 
 # TMERP — override untuk skill Boost
 
+**Urutan prioritas skill (user 2026-10-07):** 1) `devlib-oo` (utama: pewarisan / object oriented DevLib) → 2) skill TMERP (file ini, `tmerp-screen`, `tmerp-ui-mockup`) → 3) skill generik (Boost, plugin `superpowers-laravel`, dst). Bertentangan = yang bernomor lebih kecil menang.
+
 Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 5, PHPUnit 12. Skill Boost benar untuk API versinya; bila bertentangan dengan daftar di bawah, **daftar ini yang dipakai** (sumber: CLAUDE.md).
 
 ## Livewire 4
@@ -15,6 +17,7 @@ Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 
 - Jangan `@php` inline di dalam `@if/@foreach`; `@php(...)` inline wajib penutup. Jangan tulis tag komponen berkurung sudut di komentar.
 - Jangan gate konten yang diubah Livewire dengan `x-if`/`x-show` state lokal Alpine (stale content).
 - Pakai komponen `<x-*>` dari `resources/views/components/_manifest.yaml`, bukan markup input mentah.
+- **Tambahan user 2026-10-07 (Laravel 13 / Livewire 4):** pakai PHP Attributes (`#[Title]`, `#[Lazy]`, `#[Validate]`, `#[Middleware]`/`#[Authorize]` bila perlu); `wire:model` dengan modifier modern (`.live`, `.blur`, `.debounce`), `wire:navigate` untuk pindah halaman. Bagian spesifikasi itu yang **tidak dipakai di sini**: Pest dan Larastan tidak terpasang — test tetap **PHPUnit 12**, gaya kode **Pint** (`vendor/bin/pint --dirty`); file komponen tetap tanpa `⚡`; route tetap `Route::livewire('/uri', 'pages::modul.nama')`. Layar baru tetap wajib berupa turunan objek DevLib (`devlib-oo`).
 
 ## Tailwind 4
 
@@ -22,6 +25,7 @@ Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 
 - `app.css` punya `.grid {grid-cols-4}` unlayered → `grid two`/`grid three`/flex, jangan `grid grid-cols-N`.
 - Token: `navy #2c3e69`, `accent #2c7be5`, `muted #8a94a6` (`@theme` di app.css). Tema/dark mode dikelola data `tm2sys.sys_theme` (themestandard.md) — jangan menambah varian `dark:` sendiri.
 - Jangan pakai class `container`.
+- **v4 CSS-first (user 2026-10-07):** tanpa `tailwind.config.js/ts` dan tanpa `@tailwind ...` (cukup `@import "tailwindcss"`); token lewat `@theme`. Sintaks v4 wajib: `bg-black/50` (bukan `bg-opacity-*`/`text-opacity-*`), `shrink-0`/`grow` (bukan `flex-shrink-0`/`flex-grow`), `text-ellipsis` (bukan `overflow-ellipsis`). Jarak antar elemen pakai `gap-*`; komponen baru = komponen `x-ui.*`/`x-dl::*`, bukan `@apply`. Warna baru = token `@theme` yang ada (`accent`, `navy`, `muted`, `--color-field-*`), bukan hex/OKLCH literal; tanpa `@custom-variant dark` (dark mode = `sys_theme`). Properti CSS biasa `flex-shrink: 0` tetap sah.
 
 ## Laravel 13 / database
 
