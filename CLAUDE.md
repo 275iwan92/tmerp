@@ -65,7 +65,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 
 ### Dokumen yang sering basi / jangan dipercaya mentah
 - `START_HERE_onboarding.md` dan `tasks.md` (root) = artefak onboarding awal (mockup Tier 4, "10 DB", task T01–T92), **sudah usang → diarsipkan 2026-10-02** ke `C:\Users\iwanp\tmerp_unused\` (lihat MANIFEST di sana). Pintu masuk docs yang benar: `docs/index_master.md`, `docs/globalstarthere.md`, `docs/md_for_systems/uistandardindex.md`.
-- **Letak dokumen sekarang:** standar & spec Tier yang disebut di §6 tanpa folder (`griduistandard.md`, `FORM_UI_STANDARD.md`, `qc_feedback.md`, `*_tier*.md`, dst) ada di `docs/md_for_systems/`; dokumen per-layar `screen_*.md` ada di `docs/md_output/screens/`.
+- **Letak dokumen sekarang:** standar & spec Tier yang disebut di §6 tanpa folder (`griduistandard.md`, `FORM_UI_STANDARD.md`, `qc_feedback.md`, `*_tier*.md`, dst) ada di `docs/md_for_systems/`; dokumen per-layar `screen_*.md` DIHAPUS 2026-10-07 (user); tersisa `printout_inqprod_nota.md` di `docs/md_output/screens/`.
 - **Diarsipkan 2026-10-02 (tidak relevan lagi, jangan dicari di `docs/`):** `queue.md`, `openingapp_tier1-4.md` + `openingapp_instruksi_layout.md`, semua dokumen Filament (`admindashboardstandard.md`, `flow_admin_dashboard_filament.md`, `screen_admin_*.md`), `screen_inquiry_imposition*.md`, `screen_recruitment_portal.md`, `docs/backups/`, `docs/reference/`.
 - `docs/BACKLOG.md` = **indeks** backlog + bagian lintas-modul. Item terbuka ada di
   10 pecahan per domain `docs/backlog01_*.md` .. `backlog10_*.md` (dipecah 2026-09-22
