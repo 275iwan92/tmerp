@@ -20,13 +20,13 @@ use Illuminate\Validation\ValidationException;
 final class DeliveryPromiseService
 {
     public const RESULTS = ['RECEIVED' => 'Received', 'PARTIAL' => 'Partially received', 'CUSTOMER_CLOSED' => 'Customer closed, not received',
-        'REJECTED' => 'Rejected by customer', 'NOT_SHIPPED' => 'Not shipped'];
+        'REJECTED' => 'Rejected by customer', 'NOT_SHIPPED' => 'Not shipped', 'ACCIDENT' => 'Accident on the way'];
 
     // Penyebab meleset -> departemen yang bertanggung jawab (dasar KPI per departemen).
     public const CAUSES = ['TRUCK_LATE' => ['Truck late / route', 'Delivery'], 'PRODUCTION_NOT_READY' => ['Production not ready', 'Production'],
         'SLOT_OUTSIDE_CUSTOMER_HOURS' => ['Slot agreed outside customer hours', 'Sales'], 'MATERIAL_LATE' => ['Material late', 'Purchasing'],
         'QUALITY' => ['Quality problem', 'Production'], 'CUSTOMER' => ['Customer side (changed plan, no one to receive)', 'Customer'],
-        'OTHER' => ['Other', 'Other']];
+        'ACCIDENT' => ['Accident on the way', 'Delivery'], 'OTHER' => ['Other', 'Other']];
 
     // Mengapa customer menerima kurang dari yang dikirim (per baris Surat Jalan). Yang tidak diterima tidak ditagih.
     public const DIFF_REASONS = ['DAMAGED' => 'Damaged in transit', 'RETURNED' => 'Returned by customer', 'SHORT' => 'Short shipped', 'OTHER' => 'Other'];
@@ -86,7 +86,7 @@ final class DeliveryPromiseService
     public static function record(DoDelivery $do, array $in, ?UploadedFile $photo, ?string $login): DoDeliveryPod
     {
         $data = validator($in, [
-            'arrived_at' => ['nullable', 'date', 'required_unless:result,NOT_SHIPPED'],
+            'arrived_at' => ['nullable', 'date', 'required_unless:result,NOT_SHIPPED,ACCIDENT'],
             'result' => ['required', Rule::in(array_keys(self::RESULTS))],
             'received_by' => ['nullable', 'string', 'max:100', 'required_if:result,RECEIVED,PARTIAL'],
             'miss_cause' => ['nullable', Rule::in(array_keys(self::CAUSES))],
@@ -96,6 +96,9 @@ final class DeliveryPromiseService
         $promise = self::promise($do);
         $arrived = empty($data['arrived_at']) ? null : CarbonImmutable::parse($data['arrived_at']);
         $kept = self::kept($data['result'], $arrived, $promise['date'], $promise['time']);
+        if ($data['result'] === 'ACCIDENT' && empty($data['miss_cause'])) {
+            $data['miss_cause'] = 'ACCIDENT';  // kecelakaan selalu berpenyebab kecelakaan, tanpa memaksa petugas memilihnya lagi
+        }
         if (! $kept && empty($data['miss_cause'])) {
             throw ValidationException::withMessages(['miss_cause' => t('Promise missed: choose the cause.')]);
         }

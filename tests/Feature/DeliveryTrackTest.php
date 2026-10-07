@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Sdi\DoDeliveryPod;
+use App\Services\Sales\DeliveryPromiseService;
 use App\Support\V2\Data\DeliveryTrack;
+use App\Support\V2\Data\ProofOfDelivery;
 use Devlib\DevlibServiceProvider;
 use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
@@ -20,6 +23,10 @@ class DeliveryTrackTest extends TestCase
         $this->assertSame('delivered', DeliveryTrack::stage('SHIPPED', 'PARTIAL'));
         $this->assertSame('cancelled', DeliveryTrack::stage('CANCELLED', 'RECEIVED'));
         $this->assertSame('draft', DeliveryTrack::stage('UNKNOWN'));
+        $this->assertSame('incident', DeliveryTrack::stage('SHIPPED', 'ACCIDENT'));
+        $this->assertSame('incident', DeliveryTrack::stage('CONFIRMED', 'ACCIDENT'));
+        $this->assertSame('cancelled', DeliveryTrack::stage('CANCELLED', 'ACCIDENT'));
+        $this->assertSame('draft', DeliveryTrack::stage('DRAFT', 'ACCIDENT'));
     }
 
     public function test_component_renders_route_truck_and_steps(): void
@@ -50,5 +57,18 @@ class DeliveryTrackTest extends TestCase
         $this->assertContains('anime.umd.min.js', $names);
         $this->assertLessThan(array_search('core.js', $names, true), array_search('anime.umd.min.js', $names, true));
         $this->assertStringContainsString('window.anime.animate', file_get_contents(dirname(__DIR__, 2).'/packages/devlib/resources/assets/js/components/delivery-track.js'));
+    }
+
+    public function test_incident_stage_and_accident_result_are_wired(): void
+    {
+        $html = Blade::render('<x-dl::delivery-track stage="incident" />');
+        $this->assertStringContainsString('dl-track--incident', $html);
+        $this->assertStringContainsString('data-target="0.45"', $html);
+        $this->assertStringContainsString('data-moving="0"', $html);
+        $this->assertStringContainsString('Accident on the way', $html);
+        $this->assertStringContainsString('dl-track__warn', $html);
+        $this->assertSame('Delivery', DeliveryPromiseService::CAUSES['ACCIDENT'][1]);
+        $this->assertArrayHasKey('ACCIDENT', DeliveryPromiseService::RESULTS);
+        $this->assertSame('Retry', ProofOfDelivery::state(new DoDeliveryPod(['result' => 'ACCIDENT', 'promise_kept' => false])));
     }
 }

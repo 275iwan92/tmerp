@@ -37,7 +37,7 @@ final class ProofOfDelivery
         return match (true) {
             ! $last => 'Waiting',
             $last->promise_kept => 'Kept',
-            in_array($last->result, ['CUSTOMER_CLOSED', 'REJECTED'], true) => 'Retry',
+            in_array($last->result, ['CUSTOMER_CLOSED', 'REJECTED', 'ACCIDENT'], true) => 'Retry',
             default => 'Missed',
         };
     }

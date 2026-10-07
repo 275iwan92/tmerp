@@ -17,8 +17,12 @@ final class DeliveryTrack
     {
         return match ($status) {
             'CANCELLED' => 'cancelled',
-            'CONFIRMED' => 'confirmed',
-            'SHIPPED' => in_array($podResult, self::RECEIVED, true) ? 'delivered' : 'shipped',
+            'CONFIRMED' => $podResult === 'ACCIDENT' ? 'incident' : 'confirmed',
+            'SHIPPED' => match (true) {
+                in_array($podResult, self::RECEIVED, true) => 'delivered',
+                $podResult === 'ACCIDENT' => 'incident',
+                default => 'shipped',
+            },
             default => 'draft',
         };
     }
@@ -26,10 +30,13 @@ final class DeliveryTrack
     // Props siap pakai untuk <x-dl::delivery-track v-bind>; nilai data dibungkus raw() supaya tidak masuk kamus.
     public static function props(DoDelivery $do): array
     {
-        $pod = DoDeliveryPod::where('delivery_id', $do->id_delivery)->whereIn('result', self::RECEIVED)->orderByDesc('arrived_at')->first();
+        // Keputusan tahap: sudah diterima (RECEIVED / PARTIAL) menang atas semuanya; selain itu hasil percobaan terakhir (ACCIDENT = kecelakaan).
+        $pods = DoDeliveryPod::where('delivery_id', $do->id_delivery)->orderBy('attempt_no')->get();
+        $pod = $pods->first(fn ($p) => in_array($p->result, self::RECEIVED, true));
+        $decisive = $pod?->result ?? $pods->last()?->result;
 
         return [
-            'stage' => self::stage((string) $do->status, $pod?->result),
+            'stage' => self::stage((string) $do->status, $decisive),
             'from' => t('Warehouse'),
             'to' => raw($do->customer?->customer_name ?? t('Customer')),
             'times' => array_filter([
