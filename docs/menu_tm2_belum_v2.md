@@ -155,6 +155,12 @@ luar login) sengaja TIDAK diubah: tetap layar publik, bukan utang v2.
 ACC_CF -> `v2:acc-rpt-cash-flow` (`FinancialStatements` di atas `LedgerService`, voucher POSTED saja; objek DevLib baru `x-dl::statement` = baris laporan keuangan dengan satu atau
 lebih kolom angka). Fitur v1 tetap: KPI, perbandingan dua tanggal (Neraca), perbandingan bulanan (Laba Rugi), grafik tren kas operasi, peringatan Neraca tidak seimbang / selisih
 rekonsiliasi kas, unduh CSV (`v2.acc.statement.csv`). Trial Balance sudah v2 sejak sebelumnya (`acc-rpt-trial-balance`).
+**C3 SELESAI (2026-10-07, ddtsys; migration `2026_10_07_000150..000180`):** FIN_DASH -> `v2:acc-dashboard`, FIN_ENGINE -> `v2:acc-engine` (`FinanceDesk` di atas `FinanceMetrics`; aturan workflow
+`fin_approval_rule`: tambah, aktif / nonaktif, unduh CSV), FIN_BANK -> `v2:acc-bank` (`BankDesk` di atas `BankReconService`: impor CSV, auto-match, cocokkan manual, jurnal penyesuaian DRAFT,
+abaikan, rekonsiliasi), ACC_CLOSE -> `v2:acc-closing` (`ClosingDesk` di atas `CloseService` / `FinPeriodGuard`: checklist, kontrol, Period Manager, kunci permanen, voucher penutup tahun),
+ACC_TAX -> `v2:acc-tax` (`TaxDesk` di atas `TaxEngine`: workpaper masa, provisi PPh Badan, bayar NTPN, lapor SPT, rekonsiliasi pajak, unduh CSV). Trait baru `ReportsBusinessErrors`
+mengubah penolakan service (abort 422 / DomainException) menjadi pesan validasi. Kunci periode CLOSED tetap tidak bisa dibuka; tes tidak mengunci periode nyata.
+Dengan ini seluruh kelompok C yang dijadwalkan (kecuali C9 MPS dan C10 Scan) selesai; sisa: lihat bagian "Sisa" di memori serah terima.
 **Hasil pencocokan C1 (2026-10-07, dari ddtsys + kode):**
 
 | Kode | Temuan | Jalan keluar |

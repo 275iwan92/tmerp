@@ -78,6 +78,7 @@ use App\Support\V2\Data\RecruitmentPipeline;
 use App\Support\V2\Data\ShiftRoster;
 use App\Support\V2\Data\SubconDelivery;
 use App\Support\V2\Data\SupplierInvoiceReceipt;
+use App\Support\V2\Data\TaxDesk;
 use App\Support\V2\Data\WorkCalendar;
 use App\Support\V2\Flows;
 use App\Support\V2\Grid\DbGrid;
@@ -1163,6 +1164,49 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $home($r)->with('v2_flash', ['advance' => t('Moved to the next stage.'), 'reject' => t('Candidate rejected.'), 'withdraw' => t('Candidate marked as withdrawn.')][$d['action']]);
         })->name('action');
+    });
+
+    // Finance > Indonesian Tax (App\Support\V2\Data\TaxDesk). Query: period (Y-m), reg. Aksi: workpaper, provisi PPh Badan, tandai review, bayar (NTPN), lapor SPT, unduh CSV.
+    Route::middleware('module:FINACC')->prefix('acc/tax')->name('acc.tax.')->group(function () {
+        $back = fn (Request $r, array $extra = []) => redirect(route('v2.screen', 'acc-tax').'?'.http_build_query(array_filter(['period' => $r->input('period') ?: null] + $extra, fn ($v) => $v !== null && $v !== '')));
+        Route::post('/generate', function (Request $r) use ($back) {
+            TaxDesk::generate((string) $r->input('period'), Auth::user()->login);
+
+            return $back($r)->with('v2_flash', tf('Tax workpaper of :month was built from the GL and payroll.', ['month' => TaxDesk::monthName((string) $r->input('period'))]));
+        })->name('generate');
+        Route::post('/provision', function (Request $r) use ($back) {
+            TaxDesk::provision((string) $r->input('period'), Auth::user()->login);
+
+            return $back($r)->with('v2_flash', t('PPh Badan provision updated (Dr Tax expense / Cr PPh Badan payable).'));
+        })->name('provision');
+        Route::post('/{id}/review', function (Request $r, int $id) use ($back) {
+            TaxDesk::review($id, Auth::user()->login);
+
+            return $back($r)->with('v2_flash', t('The register is marked as under review.'));
+        })->whereNumber('id')->name('review');
+        Route::post('/{id}/pay', function (Request $r, int $id) use ($back) {
+            TaxDesk::pay($id, $r->all(), Auth::user()->login);
+
+            return $back($r)->with('v2_flash', t('The tax payment was posted and the register updated.'));
+        })->whereNumber('id')->name('pay');
+        Route::post('/{id}/file', function (Request $r, int $id) use ($back) {
+            TaxDesk::fileReturn($id, (string) $r->input('filing_ref'), Auth::user()->login);
+
+            return $back($r)->with('v2_flash', t('The SPT is marked as filed.'));
+        })->whereNumber('id')->name('file');
+        Route::get('/register.csv', function (Request $r) {
+            [$headers, $rows] = TaxDesk::csv(TaxDesk::registers((string) $r->query('type'), (string) $r->query('q')));
+
+            return response()->streamDownload(function () use ($headers, $rows) {
+                $out = fopen('php://output', 'w');
+                fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+                fputcsv($out, $headers);
+                foreach ($rows as $row) {
+                    fputcsv($out, $row);
+                }
+                fclose($out);
+            }, 'tax-register-'.now()->format('Ymd').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        })->name('csv');
     });
 
     // Finance > Period Closing (App\Support\V2\Data\ClosingDesk): checklist, status periode (OPEN / ON_HOLD / CLOSED permanen), voucher penutup tahun. Query: year, period.

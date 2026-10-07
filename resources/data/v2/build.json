@@ -1,17 +1,17 @@
 {
-    "generated": "2026-10-07 14:48",
+    "generated": "2026-10-07 14:52",
     "database": "ddtsys",
     "totals": {
         "objects": 148,
         "modules": 10,
         "modules_done": 6,
-        "screens": 237,
-        "v2": 227,
+        "screens": 238,
+        "v2": 228,
         "v1": 5,
         "not_built": 5,
-        "waiting_qc": 231,
+        "waiting_qc": 232,
         "locked": 1,
-        "forms": 91,
+        "forms": 92,
         "grids": 91,
         "reports": 55,
         "grid_classes": 147,
@@ -22,11 +22,11 @@
         "tables": 371,
         "databases": 9,
         "models": 328,
-        "migrations": 558,
-        "tests": 109,
+        "migrations": 559,
+        "tests": 110,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1173",
+        "commits": "1174",
         "since": "2026-08-06"
     },
     "modules": [
@@ -116,13 +116,13 @@
         },
         {
             "label": "Finance & Accounting",
-            "total": 23,
-            "v2": 23,
+            "total": 24,
+            "v2": 24,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 23,
+            "waiting_qc": 24,
             "locked": 0,
-            "form": 6,
+            "form": 7,
             "grid": 10,
             "report": 7
         },
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 72,
+            "commits": 73,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 110,
+            "screens": 113,
             "objects": 22,
             "engines": 1,
-            "tests": 21
+            "tests": 22
         },
         {
             "key": "jo",
@@ -257,7 +257,7 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 29,
+            "iwan": 30,
             "jo": 0,
             "other": 19
         }
@@ -319,7 +319,7 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 72,
+            "iwan": 73,
             "jo": 0,
             "other": 21
         }
@@ -892,10 +892,10 @@
             "name": "Period Closing",
             "module": "Finance & Accounting",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "REPORT",
@@ -1589,6 +1589,17 @@
             "built_by": "iwan",
             "changed_at": "2026-10-07",
             "changed_by": "iwan"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:ACC_TAX",
+            "name": "Indonesian Tax",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
         },
         {
             "type": "FORM",

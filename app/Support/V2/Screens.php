@@ -101,6 +101,7 @@ final class Screens
                     $it('acc-engine', ['Process Engine', 'fa-solid fa-gears', 'v2: FinanceDesk (FinanceMetrics + fin_approval_rule)', null]),
                 ]],
                 ['label' => 'Controls & Tax', 'items' => [
+                    $it('acc-tax', ['Indonesian Tax', 'fa-solid fa-percent', 'v2: App\Support\V2\Data\TaxDesk (TaxEngine, fin_tax_register)', null, true]),
                     $it('acc-closing', ['Period Closing', 'fa-solid fa-lock', 'v2: App\Support\V2\Data\ClosingDesk (CloseService, FinPeriodGuard)', null, true]),
                 ]],
                 ['label' => 'Financial Reports', 'items' => [
