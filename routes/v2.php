@@ -80,6 +80,7 @@ use App\Support\V2\InquiryPayload;
 use App\Support\V2\Print\PrintDocs;
 use App\Support\V2\Schema;
 use App\Support\V2\Screens;
+use Carbon\Carbon;
 use Chat\ChatService;
 use Devlib\Locale;
 use Illuminate\Http\Request;
@@ -1138,6 +1139,30 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $home($r)->with('v2_flash', $hidden ? t('Shift hidden from the board.') : t('Shift shown again.'));
         })->whereNumber('id')->name('shift.toggle');
+        // Jadwal: sched_id kosong = baru; hapus melepas semua baris roster jadwal itu (minimal satu jadwal harus ada).
+        Route::post('/schedule', function (Request $r) {
+            $by = Auth::user()->login;
+            $s = ShiftRoster::saveSchedule($r->integer('schedule_id') ?: null, (string) $r->input('schedule_name', ''), (array) $r->input('departments', []), $by);
+
+            return redirect(route('v2.screen', 'hrm-roster').'?sched='.$s->schedule_id)->with('v2_flash', $r->integer('schedule_id') ? t('Schedule updated.') : tf('Schedule ":name" created — fill in its roster.', ['name' => $s->schedule_name]));
+        })->name('schedule.save');
+        Route::post('/schedule/{id}/delete', function (int $id) {
+            $freed = ShiftRoster::deleteSchedule($id);
+
+            return redirect(route('v2.screen', 'hrm-roster'))->with('v2_flash', tf('Schedule deleted; :n roster rows were released.', ['n' => $freed]));
+        })->whereNumber('id')->name('schedule.delete');
+        // Rotasi: from / to = tanggal apa pun di minggu sumber / tujuan; sesudahnya layar pindah ke minggu tujuan.
+        Route::post('/rotate', function (Request $r) use ($roster) {
+            $d = $r->validate(['from' => ['required', 'date'], 'to' => ['required', 'date'], 'mode' => ['required', 'in:swap,cycle,copy'], 'scope' => ['required', 'in:all,wc']],
+                [], ['from' => t('From week'), 'to' => t('To week')]);
+            $to = Carbon::parse($d['to']);
+            $stat = $roster($r)->rotate(Carbon::parse($d['from']), $to, $d['mode'], $r->integer('shift_a') ?: null, $r->integer('shift_b') ?: null, $d['scope'], $r->boolean('overwrite'), Auth::user()->login);
+            $offset = (int) Carbon::now()->startOfWeek(Carbon::MONDAY)->diffInWeeks($to->copy()->startOfWeek(Carbon::MONDAY), false);
+            $query = http_build_query(array_filter(['sched' => $r->integer('sched') ?: null, 'dept' => $r->integer('dept') ?: null, 'wc' => $r->integer('wc') ?: null, 'w' => $offset], fn ($v) => $v !== null));
+
+            return redirect(route('v2.screen', 'hrm-roster').'?'.$query)->with('v2_flash', tf(':placed placements copied to the target week.', ['placed' => $stat['placed']])
+                .($stat['skipped'] ? ' '.tf(':n skipped (they already have a shift that week).', ['n' => $stat['skipped']]) : ''));
+        })->name('rotate');
     });
 
     // HRM > Time Attendance > Overtime (App\Support\V2\Data\Overtime). action = save | submit | approve | reject | reopen | delete.

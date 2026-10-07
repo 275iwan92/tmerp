@@ -16,6 +16,7 @@ use App\Models\Master\OrgDepartment;
 use App\Models\Sys\SysGridPreference;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 // HRM > Time Attendance > Shift Roster (v2): papan roster mingguan. Aturan sama dengan layar v1:
@@ -261,6 +262,120 @@ final class ShiftRoster
         return $this->shifts()->filter(fn (EmpShift $s) => ($n = $count[$s->shift_id] ?? 0) > 0 && $n < $s->capacity())->pluck('shift_name')->all();
     }
 
+    // ---------- jadwal (emp_roster_schedule + departemen) ----------
+
+    /** @param list<int|string> $departmentIds */
+    public static function saveSchedule(?int $id, string $name, array $departmentIds, string $by): EmpRosterSchedule
+    {
+        $d = Validator::make(['name' => $name, 'departments' => $departmentIds], [
+            'name' => ['required', 'string', 'max:150'], 'departments' => ['required', 'array', 'min:1'], 'departments.*' => ['integer', 'exists:tm2mst.org_department,department_id'],
+        ], [], ['name' => t('Schedule Name'), 'departments' => t('Departments')])->validate();
+
+        $schedule = $id ? EmpRosterSchedule::findOrFail($id) : null;
+        $schedule ? $schedule->update(['schedule_name' => $d['name'], 'updated_by' => $by])
+            : $schedule = EmpRosterSchedule::create(['schedule_name' => $d['name'], 'activate' => true, 'created_by' => $by, 'updated_by' => $by]);
+        EmpRosterScheduleDepartment::where('schedule_id', $schedule->schedule_id)->whereNotIn('department_id', $d['departments'])->delete();
+        foreach ($d['departments'] as $departmentId) {
+            EmpRosterScheduleDepartment::firstOrCreate(['schedule_id' => $schedule->schedule_id, 'department_id' => $departmentId]);
+        }
+
+        return $schedule;
+    }
+
+    /** At least one schedule must remain. @return int roster rows released */
+    public static function deleteSchedule(int $id): int
+    {
+        if (EmpRosterSchedule::where('activate', true)->count() < 2) {
+            throw ValidationException::withMessages(['schedule' => t('At least one schedule must remain.')]);
+        }
+        $schedule = EmpRosterSchedule::findOrFail($id);
+        $freed = EmpShiftRoster::where('schedule_id', $id)->count();
+        EmpShiftRoster::where('schedule_id', $id)->delete();
+        EmpRosterScheduleDepartment::where('schedule_id', $id)->delete();
+        EmpShiftRosterBatch::where('schedule_id', $id)->delete();
+        $schedule->delete();
+
+        return $freed;
+    }
+
+    public function rosterRowCount(): int
+    {
+        return $this->scheduleId ? EmpShiftRoster::where('schedule_id', $this->scheduleId)->count() : 0;
+    }
+
+    // ---------- rotasi antar minggu (swap / cycle / copy) ----------
+
+    /** @return array{valid: bool, moves: int, occupied: bool, busy: int} */
+    public function rotatePreview(Carbon $from, Carbon $to, string $scope): array
+    {
+        $from = $from->copy()->startOfWeek(Carbon::MONDAY);
+        $to = $to->copy()->startOfWeek(Carbon::MONDAY);
+        if ($from->equalTo($to)) {
+            return ['valid' => false, 'moves' => 0, 'occupied' => false, 'busy' => 0];
+        }
+        $range = [$to->toDateString(), $to->copy()->addDays(6)->toDateString()];
+        $source = $this->sourceRows($from, $scope);
+        $targetEmployees = EmpShiftRoster::whereBetween('roster_date', $range)->pluck('employee_id')->unique();
+        $occupied = EmpShiftRoster::where('schedule_id', $this->scheduleId)->whereBetween('roster_date', $range)->exists();
+
+        return ['valid' => true, 'moves' => $source->count(), 'occupied' => $occupied, 'busy' => $source->filter(fn ($r) => $targetEmployees->contains($r->employee_id))->count()];
+    }
+
+    /**
+     * mode swap = tukar shift A dan B, cycle = geser tiap shift ke shift berikutnya, copy = salin apa adanya. scope all = semua unit, wc = unit ini.
+     * overwrite = kosongkan dulu minggu tujuan (lingkup yang sama). Minggu tujuan yang sudah dikunci (CONFIRMED) ditolak.
+     *
+     * @return array{placed: int, skipped: int}
+     */
+    public function rotate(Carbon $from, Carbon $to, string $mode, ?int $a, ?int $b, string $scope, bool $overwrite, string $by): array
+    {
+        $from = $from->copy()->startOfWeek(Carbon::MONDAY);
+        $to = $to->copy()->startOfWeek(Carbon::MONDAY);
+        $fail = fn (string $m) => throw ValidationException::withMessages(['rotate' => t($m)]);
+        $from->equalTo($to) && $fail('The source and target weeks must be different.');
+        EmpShiftRosterBatch::where('schedule_id', $this->scheduleId)->where('date_from', $to->toDateString())->where('status', 'CONFIRMED')->exists()
+            && $fail('The target week is locked (CONFIRMED). Unlock it first.');
+        $mode === 'swap' && (! $a || ! $b || $a === $b) && $fail('Choose two different shifts to swap.');
+        $source = $this->sourceRows($from, $scope);
+        $source->isEmpty() && $fail('The source week has no placements for this schedule.');
+
+        $live = $this->shifts()->values();
+        $map = fn (int $id): int => match ($mode) {
+            'swap' => $id === $a ? (int) $b : ($id === $b ? (int) $a : $id),
+            'cycle' => ($i = $live->search(fn ($s) => $s->shift_id === $id)) === false ? $id : $live[($i + 1) % $live->count()]->shift_id,
+            default => $id,
+        };
+
+        $range = [$to->toDateString(), $to->copy()->addDays(6)->toDateString()];
+        $overwrite && EmpShiftRoster::where('schedule_id', $this->scheduleId)->whereBetween('roster_date', $range)
+            ->when($scope === 'wc', fn ($q) => $q->where('work_center_id', $this->workCenterId))->delete();
+        $busy = EmpShiftRoster::whereBetween('roster_date', $range)->pluck('employee_id')->unique()->all();
+
+        $stat = ['placed' => 0, 'skipped' => 0];
+        foreach ($source as $row) {
+            if (in_array($row->employee_id, $busy, true)) {
+                $stat['skipped']++;
+
+                continue;
+            }
+            $shift = EmpShift::with('details')->find($map((int) $row->shift_id));
+            if (! $shift) {
+                continue;
+            }
+            $this->writePlacement((int) $row->employee_id, $shift, EmpWorkCenter::with('department')->find($row->work_center_id), $by, $to);
+            $stat['placed']++;
+        }
+
+        return $stat;
+    }
+
+    /** @return Collection<int, EmpShiftRoster> satu baris per pegawai di minggu sumber */
+    private function sourceRows(Carbon $weekStart, string $scope): Collection
+    {
+        return EmpShiftRoster::where('schedule_id', $this->scheduleId)->whereBetween('roster_date', [$weekStart->toDateString(), $weekStart->copy()->addDays(6)->toDateString()])
+            ->when($scope === 'wc', fn ($q) => $q->where('work_center_id', $this->workCenterId))->get()->unique('employee_id');
+    }
+
     private function requireOpen(): void
     {
         if ($this->isLocked()) {
@@ -268,15 +383,16 @@ final class ShiftRoster
         }
     }
 
-    private function writePlacement(int $employeeId, EmpShift $shift, ?EmpWorkCenter $center, string $by): void
+    private function writePlacement(int $employeeId, EmpShift $shift, ?EmpWorkCenter $center, string $by, ?Carbon $weekStart = null): void
     {
+        $weekStart ??= $this->weekStart();
         $rows = [];
         foreach ($shift->dayPattern() as $index => $day) {
             if (! $day['on']) {
                 continue;
             }
-            $rows[] = ['employee_id' => $employeeId, 'division_id' => $center?->department?->division_id, 'machine_id' => $center?->machine_id, 'work_center_id' => $this->workCenterId,
-                'schedule_id' => $this->scheduleId, 'shift_id' => $shift->shift_id, 'roster_date' => $this->weekStart()->copy()->addDays($index)->toDateString(),
+            $rows[] = ['employee_id' => $employeeId, 'division_id' => $center?->department?->division_id, 'machine_id' => $center?->machine_id, 'work_center_id' => $center?->work_center_id ?? $this->workCenterId,
+                'schedule_id' => $this->scheduleId, 'shift_id' => $shift->shift_id, 'roster_date' => $weekStart->copy()->addDays($index)->toDateString(),
                 'assigned_by_role' => 'PPIC', 'is_overtime' => false, 'created_by' => $by, 'updated_by' => $by, 'created_at' => now(), 'updated_at' => now()];
         }
         $rows && EmpShiftRoster::insert($rows);

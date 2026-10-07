@@ -54,7 +54,61 @@
         @endif
         <x-dl::button variant="secondary" icon="fa-print" label="Print" :href="route('hrm.shift-roster.print')" />
         <x-dl::button variant="secondary" icon="fa-clock" label="Master Shift" :href="route('v2.screen', 'md-shift')" />
+        <x-dl::button variant="secondary" icon="fa-rotate" label="Rotate / Swap Weeks" :href="$home.'?'.$query.'&panel=rotate'" />
+        <x-dl::button variant="secondary" icon="fa-plus" label="New Schedule" :href="$home.'?'.$query.'&panel=schedule-new'" />
+        <x-dl::button variant="secondary" icon="fa-pen" label="Edit Schedule" :href="$home.'?'.$query.'&panel=schedule-edit'" />
+        <x-dl::action-form action="{{ route('v2.roster.schedule.delete', $r->scheduleId) }}">
+            <x-dl::button variant="secondary" icon="fa-trash" label="Delete Schedule" data-dl-confirm="{{ tf('Delete this schedule? :n roster rows will be released.', ['n' => $r->rosterRowCount()]) }}" />
+        </x-dl::action-form>
     </x-dl::action-bar>
+
+    @php $panel = request('panel'); $editing = $panel === 'schedule-edit'; $current = $r->schedules()->firstWhere('schedule_id', $r->scheduleId); @endphp
+    @if (in_array($panel, ['schedule-new', 'schedule-edit'], true))
+        <x-dl::card :title="$editing ? 'Edit Schedule' : 'New Schedule'" description="A schedule groups departments that share one weekly roster.">
+            <x-dl::action-form action="{{ route('v2.roster.schedule.save') }}">
+                @if ($editing)<input type="hidden" name="schedule_id" value="{{ $r->scheduleId }}">@endif
+                <x-dl::form.row :cols="2">
+                    <x-dl::field.text name="schedule_name" label="Schedule Name" required :value="old('schedule_name', $editing ? $current?->schedule_name : '')" :source="$src" />
+                    <x-dl::field.multi-select name="departments" label="Departments" required :options="\App\Models\Master\OrgDepartment::where('activate', true)->orderBy('department_name')->pluck('department_name', 'department_id')->all()"
+                        :value="old('departments', $editing ? $current?->departmentIds() : [])" :source="Src::of('tm2mst.emp_roster_schedule_department', 'tm2mst.org_department')" />
+                </x-dl::form.row>
+                <x-dl::action-bar>
+                    <x-dl::button variant="secondary" icon="back" label="Back" :href="$home.'?'.$query" />
+                    <x-dl::button preset="save" />
+                </x-dl::action-bar>
+            </x-dl::action-form>
+        </x-dl::card>
+    @elseif ($panel === 'rotate')
+        @php
+            $shiftOptions = $r->shifts()->pluck('shift_name', 'shift_id')->all();
+            $from = request('from') ? \Carbon\Carbon::parse(request('from')) : $r->weekStart();
+            $to = request('to') ? \Carbon\Carbon::parse(request('to')) : $r->weekStart()->copy()->addWeek();
+            $pv = $r->rotatePreview($from, $to, request('scope', 'all'));
+        @endphp
+        <x-dl::card title="Rotate / Swap Weeks" description="Copy a week's placements to another week: swap two shifts, cycle every shift to the next one, or copy as is. Pick any date inside each week.">
+            <x-dl::action-form action="{{ route('v2.roster.rotate') }}">
+                @foreach ($fields() as $k => $v)<input type="hidden" name="{{ $k }}" value="{{ $v }}">@endforeach
+                <x-dl::form.row :cols="4">
+                    <x-dl::field.date name="from" label="From week (any date in it)" required :value="$from->toDateString()" :source="$src" />
+                    <x-dl::field.date name="to" label="To week (any date in it)" required :value="$to->toDateString()" :source="$src" />
+                    <x-dl::field.select name="mode" label="Mode" required :options="['swap' => t('Swap two shifts'), 'cycle' => t('Cycle to the next shift'), 'copy' => t('Copy as is')]" :value="request('mode', 'swap')" :placeholder="null" :source="$src" />
+                    <x-dl::field.select name="scope" label="Scope" required :options="['all' => t('All work units'), 'wc' => t('This work unit only')]" :value="request('scope', 'all')" :placeholder="null" :source="$src" />
+                </x-dl::form.row>
+                <x-dl::form.row :cols="3">
+                    <x-dl::field.select name="shift_a" label="Shift A (swap only)" :options="$shiftOptions" :value="request('shift_a', array_key_first($shiftOptions))" :source="$src" />
+                    <x-dl::field.select name="shift_b" label="Shift B (swap only)" :options="$shiftOptions" :value="request('shift_b', array_keys($shiftOptions)[1] ?? null)" :source="$src" />
+                    <x-dl::field.checkbox name="overwrite" text="Replace what is already in the target week" :value="false" :source="$src" />
+                </x-dl::form.row>
+                @if ($pv['valid'])
+                    <x-dl::alert :tone="$pv['occupied'] || $pv['busy'] ? 'warn' : 'info'" :message="raw(tf(':moves placements will be copied. :busy employees already have a shift in the target week and will be skipped unless you replace it.', ['moves' => $pv['moves'], 'busy' => $pv['busy']]))" />
+                @endif
+                <x-dl::action-bar>
+                    <x-dl::button variant="secondary" icon="back" label="Back" :href="$home.'?'.$query" />
+                    <x-dl::button icon="fa-rotate" label="Run" data-dl-confirm="{{ t('Copy the placements to the target week now?') }}" />
+                </x-dl::action-bar>
+            </x-dl::action-form>
+        </x-dl::card>
+    @endif
 
     @if ($locked)
         <x-dl::alert tone="info" :message="raw(tf('Week :week is published and locked by :by. Unlock it to change the roster.', ['week' => $r->weekNumber(), 'by' => $batch->confirmed_by ?? '—']))" />

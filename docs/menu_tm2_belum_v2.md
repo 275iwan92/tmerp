@@ -134,6 +134,12 @@ Shipment Detail di Sales > Order > Report). Diusulkan dibiarkan nonaktif / dihap
 (`ExecutiveSummary` di atas `ManagementReportService`: 5 KPI, tren omset, komposisi customer, kuartal, customer teratas, kesehatan data,
 perhatian manajemen, tren pembelian). Modul MGMT ditambahkan ke `Screens`. Catatan: enam laporan MGMT lain (Sales / Purchase / Accounting /
 Production / HR / Warehouse Details) masih layar v1 (`report.*`) dan tidak termasuk daftar C di dokumen ini; tautan "rincian" mengarah ke sana.
+**C6 SELESAI SEBAGIAN (2026-10-07, ddtsys; migration `2026_10_07_000080..000110`):** HRM_ATTENDANCE_UPLOAD -> `v2:hrm-attendance-upload`;
+HRM_CLOCKIN -> `v2:hrm-clockin` (objek DevLib baru `x-dl::geo-clock`, milik sendiri = GENERAL); HRM_OVERTIME -> `v2:hrm-overtime` (dulu tanpa layar);
+HRM_ROSTER + PROD_SHIFT_ROSTER -> `v2:hrm-roster` (papan mingguan, lingkup jadwal / departemen / unit, Draft -> Publish & Lock -> Unlock,
+CRUD jadwal, rotasi swap / cycle / copy, tampil / sembunyi shift; katalog shift = Master Shift). **Sisa Shift Roster (belum dipindah, v1 masih dipakai):**
+tampilan Formasi Harian (`RosterFormationService`, editor baris, mockup `docs/mockups/mockup_roster_formasi_harian.jpg`) dan cetak roster
+(`hrm.shift-roster.print`; tombol Print di layar v2 membuka layar v1 itu). Catatan: rotasi v2 menolak minggu tujuan yang sudah CONFIRMED (v1 tidak memeriksa).
 **Hasil pencocokan C1 (2026-10-07, dari ddtsys + kode):**
 
 | Kode | Temuan | Jalan keluar |
