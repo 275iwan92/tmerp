@@ -48,6 +48,13 @@ final class AgentHistory
         ])->all();
     }
 
+    // Umpan gaya blog: catatan lengkap (judul + isi) terbaru di atas, sematan di paling atas; $author menyaring per penulis.
+    public static function feed(?string $author = null): array
+    {
+        return DB::table('dev_note')->when($author && isset(self::AUTHORS[$author]), fn ($q) => $q->where('author', $author))
+            ->orderByDesc('pinned')->orderByDesc('created_at')->orderByDesc('id_note')->get()->all();
+    }
+
     public static function add(string $author, string $kind, string $title, ?string $body, ?string $url, string $by): int
     {
         $title = trim($title);

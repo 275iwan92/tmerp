@@ -18,15 +18,16 @@
     @endunless
 
     @if ($ready && ! $form && ! $note)
-        <x-dl::grid id="agent-history" :rows="$rows" search="Search title, agent..." actions="worklist" :active-key="null" :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'"
-            source="devlib.dev_note"
-            :columns="[
-                ['key' => 'title', 'label' => 'Title', 'type' => 'doc', 'party' => 'author'],
-                ['key' => 'kind', 'label' => 'Kind'],
-                ['key' => 'created', 'label' => 'Saved', 'type' => 'date'],
-                ['key' => 'state', 'label' => 'State', 'type' => 'badge', 'tones' => AgentHistory::STATE_TONES],
-            ]"
-            :filters="['author' => 'Author', 'kind' => 'Kind', 'state' => 'State']" />
+        {{-- Umpan gaya blog / berita: semua narasi terbaru di atas, dibaca berurutan tanpa membuka satu per satu. --}}
+        <nav class="dl-history__tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px">
+            <x-dl::button :variant="$author ? 'secondary' : 'primary'" label="All" :href="$home" />
+            @foreach (AgentHistory::AUTHORS as $key => $name)
+                <x-dl::button :variant="$author === $key ? 'primary' : 'secondary'" :label="$name" :href="$home.'?author='.$key" />
+            @endforeach
+            <x-dl::button variant="secondary" label="New Note" :href="$home.'?new=1'" />
+        </nav>
+        <x-dl::feed :posts="array_map(fn ($n) => ['title' => Lang::raw($n->title), 'badge' => AgentHistory::state($n), 'tone' => AgentHistory::STATE_TONES[AgentHistory::state($n)], 'url' => $n->url, 'pinned' => (bool) $n->pinned,
+            'meta' => Lang::raw((AgentHistory::AUTHORS[$n->author] ?? $n->author).' · '.(AgentHistory::KINDS[$n->kind] ?? $n->kind).' · '.\Devlib\Locale::dateTime($n->created_at)), 'body' => $n->body], $feed)" empty="No notes yet." />
     @elseif ($ready && $note)
         <x-dl::card :title="Lang::raw($note->title)" icon="fa-clock-rotate-left">
             <x-slot:actions><x-dl::badge :label="AgentHistory::state($note)" :tone="AgentHistory::STATE_TONES[AgentHistory::state($note)]" /></x-slot:actions>

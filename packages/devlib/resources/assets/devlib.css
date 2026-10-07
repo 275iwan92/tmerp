@@ -3518,4 +3518,11 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-track__head{align-items:center}.dl-track__head .dl-iconbtn{margin-left:auto}
 .dl-track--confirmed .dl-track__truck circle{animation:dl-track-ready 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes dl-track-ready{50%{transform:scale(1.18)}}
-@media (prefers-reduced-motion:reduce){.dl-track--confirmed .dl-track__truck circle{animation:none}}
+@media (prefers-reduced-motion:reduce){.dl-track--confirmed .dl-track__truck circle{animation:none}}/* Feed (umpan blog / berita) */
+.dl-feed{display:flex;flex-direction:column;gap:16px}
+.dl-feed__post{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);padding:16px 20px}
+.dl-feed__post header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dl-feed__post h3{margin:0;font-size:1.15em;color:var(--dl-ink-strong)}
+.dl-feed__meta{display:block;margin:2px 0 8px;opacity:.7}
+.dl-feed__body.dl-prose{max-width:none;margin:0;padding:6px 0}
+.dl-feed__empty{opacity:.7}

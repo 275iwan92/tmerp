@@ -131,7 +131,7 @@ Route::middleware('devlib.auth')->group(function () {
         $ready = AgentHistory::ready();
         $note = $ready && $r->integer('id') ? (AgentHistory::find($r->integer('id')) ?? abort(404)) : null;
 
-        return view('history', ['ready' => $ready, 'note' => $note, 'form' => $r->boolean('new'), 'rows' => $ready ? AgentHistory::rows() : []]);
+        return view('history', ['ready' => $ready, 'note' => $note, 'form' => $r->boolean('new'), 'feed' => $ready ? AgentHistory::feed($r->query('author')) : [], 'author' => $r->query('author')]);
     })->name('history');
 
     Route::post('/history', function (Request $r) {
