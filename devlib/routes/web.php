@@ -4,6 +4,7 @@ use App\Support\AgentHistory;
 use App\Support\BoardDemo;
 use App\Support\Catalog;
 use App\Support\Generator;
+use App\Support\Qc;
 use App\Support\Summary;
 use Devlib\Locale;
 use Illuminate\Http\Request;
@@ -97,6 +98,16 @@ Route::middleware('devlib.auth')->group(function () {
         ]);
     })->name('lib');
 
+    // QC cepat (user 2026-10-07): Approved / Need improvement + catatan; hanya akun developer. Tiga lapis: QC, UAT officer, UAT supervisor.
+    Route::post('/qc/review', function (Request $r) {
+        $user = session('devlib_user');
+        abort_unless(($user['developer'] ?? false) && Qc::ready(), 403);
+        $r->validate(['key' => 'required|string|max:190', 'name' => 'nullable|string|max:190', 'stage' => 'required|string', 'status' => 'required|string', 'note' => 'nullable|string|max:500']);
+        $out = Qc::record($r->input('key'), (string) $r->input('name'), $r->input('stage'), $r->input('status'), $r->input('note'), $user['login']);
+
+        return $out + ['meta' => $user['login'].' · '.Locale::date(now())];
+    })->name('qc.review');
+
     // Executive Summary (user 2026-10-05): sembilan halaman + simpan rating (hanya akun developer).
     Route::get('/summary/{page}', function (string $page) {
         abort_unless(isset(Summary::PAGES[$page]), 404);
@@ -111,17 +122,6 @@ Route::middleware('devlib.auth')->group(function () {
 
         return $out + ['meta' => $user['login'].' · '.Locale::date(now()).($out['ratings'] > 1 ? ' · '.$out['ratings'].'x' : '')];
     })->name('summary.rate');
-
-    // Generator (user 2026-10-05): form permintaan sederhana + pratinjau; aturan = App\Support\Generator. Hanya akun developer
-    // yang boleh menyimpan / menyetujui.
-    Route::get('/generator', function (Request $r) {
-        $ready = Generator::ready();
-        Generator::defineTableLookup();
-        $req = $ready && $r->integer('id') ? (Generator::find($r->integer('id')) ?? abort(404)) : null;
-
-        return view('generator', ['ready' => $ready, 'req' => $req, 'form' => $req || $r->boolean('new'), 'rows' => $ready ? Generator::rows() : [],
-            'objects' => $req ? Generator::objects($req->id_request) : []]);
-    })->name('generator');
 
     // Agent History (user 2026-10-07): catatan pengingat user; aturan = App\Support\AgentHistory. Hanya akun developer yang boleh menulis.
     Route::get('/history', function (Request $r) {
@@ -149,6 +149,17 @@ Route::middleware('devlib.auth')->group(function () {
 
         return back();
     })->whereIn('what', ['pin', 'read'])->name('history.toggle');
+
+    // Generator (user 2026-10-05): form permintaan sederhana + pratinjau; aturan = App\Support\Generator. Hanya akun developer
+    // yang boleh menyimpan / menyetujui.
+    Route::get('/generator', function (Request $r) {
+        $ready = Generator::ready();
+        Generator::defineTableLookup();
+        $req = $ready && $r->integer('id') ? (Generator::find($r->integer('id')) ?? abort(404)) : null;
+
+        return view('generator', ['ready' => $ready, 'req' => $req, 'form' => $req || $r->boolean('new'), 'rows' => $ready ? Generator::rows() : [],
+            'objects' => $req ? Generator::objects($req->id_request) : []]);
+    })->name('generator');
 
     Route::post('/generator', function (Request $r) {
         $user = session('devlib_user');

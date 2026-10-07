@@ -1869,6 +1869,7 @@ td.dl-print__no{text-align:center}
 .dl-org{display:flex;flex-direction:column;gap:10px}
 .dl-org__bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .dl-org__spacer{flex:1}
+.dl-org__dept{padding:6px 10px;border:1px solid var(--dl-border);border-radius:8px;background:var(--dl-surface);color:var(--dl-ink);font-size:calc(12.5px * var(--dl-font-scale))}
 .dl-org__zoom{display:inline-flex;align-items:center;gap:4px}
 .dl-org__zoom b{min-width:40px;text-align:center;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-muted)}
 .dl-org__tip{font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-accent);background:var(--dl-info-soft);border:1px solid var(--dl-info-line);border-radius:var(--dl-radius-sm);padding:5px 10px}
@@ -3482,3 +3483,18 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-codegen__err{color:var(--dl-danger);font-size:calc(12px * var(--dl-font-scale));font-weight:600}
 .dl-codegen__actions{display:flex;gap:8px;flex-wrap:wrap}
 @media (max-width:720px){.dl-codegen__grid{grid-template-columns:1fr}}
+
+/* QcBar: bilah QC cepat (Approved / Need improvement), tiga lapis: QC, UAT officer, UAT supervisor */
+.dl-qc{position:fixed;left:0;right:0;margin:0 auto;width:max-content;bottom:14px;z-index:60;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);padding:8px 12px;background:var(--dl-surface,#fff);border:1px solid var(--dl-border,#d8dde6);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.18);font-size:13px}
+.dl-qc__name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.dl-qc__chip{padding:1px 8px;border-radius:8px;border:1px dashed var(--dl-border,#d8dde6);color:var(--dl-muted,#6b7280);font-size:12px;white-space:nowrap}
+.dl-qc__chip.is-approved{border-style:solid;background:var(--dl-success-soft,#e6f4ea);color:var(--dl-success,#1e7e34)}
+.dl-qc__chip.is-improve{border-style:solid;background:var(--dl-warn-soft,#fff4e0);color:var(--dl-warn,#a35a00)}
+.dl-qc__state{padding:2px 10px;border-radius:8px;border:1px solid var(--dl-border,#d8dde6);white-space:nowrap}
+.dl-qc.is-approved .dl-qc__state{background:var(--dl-success-soft,#e6f4ea);color:var(--dl-success,#1e7e34);border-color:currentColor}
+.dl-qc.is-improve .dl-qc__state{background:var(--dl-warn-soft,#fff4e0);color:var(--dl-warn,#a35a00);border-color:currentColor}
+.dl-qc__meta{color:var(--dl-muted,#6b7280);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-qc__for{margin:0 0 8px;color:var(--dl-muted,#6b7280)}
+.dl-qc textarea{width:100%;box-sizing:border-box}
+.dl-qc__err{display:block;min-height:18px;color:var(--dl-danger,#c0392b);font-style:normal;font-size:12px;margin-top:4px}
+.dl-qc__rel{padding:2px 10px;border-radius:8px;background:var(--dl-accent,#2563eb);color:var(--dl-on-dark,#fff);white-space:nowrap}
