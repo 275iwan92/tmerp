@@ -1,19 +1,19 @@
 {
-    "generated": "2026-10-07 13:15",
+    "generated": "2026-10-07 13:19",
     "database": "ddtsys",
     "totals": {
-        "objects": 144,
+        "objects": 145,
         "modules": 10,
         "modules_done": 7,
         "screens": 219,
-        "v2": 209,
+        "v2": 210,
         "v1": 4,
-        "not_built": 6,
-        "waiting_qc": 212,
+        "not_built": 5,
+        "waiting_qc": 213,
         "locked": 1,
         "forms": 83,
         "grids": 89,
-        "reports": 46,
+        "reports": 47,
         "grid_classes": 147,
         "lookups": 37,
         "report_grids": 36,
@@ -22,11 +22,11 @@
         "tables": 370,
         "databases": 9,
         "models": 328,
-        "migrations": 545,
-        "tests": 95,
+        "migrations": 546,
+        "tests": 96,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1145",
+        "commits": "1147",
         "since": "2026-08-06"
     },
     "modules": [
@@ -45,14 +45,14 @@
         {
             "label": "Management Reports",
             "total": 3,
-            "v2": 0,
+            "v2": 1,
             "v1": 0,
-            "not_built": 3,
-            "waiting_qc": 0,
+            "not_built": 2,
+            "waiting_qc": 1,
             "locked": 0,
             "form": 0,
             "grid": 0,
-            "report": 2
+            "report": 3
         },
         {
             "label": "Procurement",
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 55,
+            "commits": 56,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 80,
+            "screens": 82,
             "objects": 17,
             "engines": 1,
-            "tests": 7
+            "tests": 8
         },
         {
             "key": "jo",
@@ -175,7 +175,7 @@
             "tests": 0
         }
     ],
-    "untracked": 1090,
+    "untracked": 1091,
     "days": [
         {
             "date": "2026-09-24",
@@ -257,9 +257,9 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 12,
+            "iwan": 13,
             "jo": 0,
-            "other": 8
+            "other": 9
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 55,
+            "iwan": 56,
             "jo": 0,
-            "other": 10
+            "other": 11
         }
     ],
     "items": [
@@ -810,11 +810,11 @@
             "changed_by": null
         },
         {
-            "type": "DASHBOARD",
+            "type": "REPORT",
             "key": "menu:MGMT_EXEC",
             "name": "Executive Summary",
             "module": "Management Reports",
-            "qc": "NOT_BUILT",
+            "qc": "READY_FOR_QC",
             "built_at": null,
             "built_by": null,
             "changed_at": null,
@@ -2289,10 +2289,10 @@
             "name": "Pro-Cost Instant",
             "module": "Sales",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "FORM",
@@ -3876,6 +3876,17 @@
             "built_at": "2026-09-23",
             "built_by": null,
             "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:GreetingCard",
+            "name": "GreetingCard",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {

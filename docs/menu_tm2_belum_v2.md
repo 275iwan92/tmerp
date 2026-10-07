@@ -130,6 +130,10 @@ daftar costing mode INSTANT, buka baris = form Instant v1 apa adanya karena zona
 milik sendiri lewat `v2.procost-instant.new`). SALES_GRID_SO, SALES_MON_ORD, SALES_RPT TIDAK dibangun: ketiganya baris warisan ScriptCase yang
 sudah `activate=0`, tidak pernah punya layar v1, dan fungsinya dipegang layar v2 yang aktif (Customer Order, Customer Order Summary / Report /
 Shipment Detail di Sales > Order > Report). Diusulkan dibiarkan nonaktif / dihapus saat rilis, tidak dihitung sebagai utang v2.
+**C5 SELESAI (2026-10-07, ddtsys; migration `2026_10_07_000070`):** MGMT_EXEC (label di menu = Executive Summary) -> `v2:mgmt-executive`
+(`ExecutiveSummary` di atas `ManagementReportService`: 5 KPI, tren omset, komposisi customer, kuartal, customer teratas, kesehatan data,
+perhatian manajemen, tren pembelian). Modul MGMT ditambahkan ke `Screens`. Catatan: enam laporan MGMT lain (Sales / Purchase / Accounting /
+Production / HR / Warehouse Details) masih layar v1 (`report.*`) dan tidak termasuk daftar C di dokumen ini; tautan "rincian" mengarah ke sana.
 **Hasil pencocokan C1 (2026-10-07, dari ddtsys + kode):**
 
 | Kode | Temuan | Jalan keluar |

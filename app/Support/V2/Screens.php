@@ -137,6 +137,11 @@ final class Screens
                     $it('approval-acting', ['Temporary Acting Officer', 'fa-solid fa-people-arrows', 'v2 baru: tm2mst.flow_position_acting (dipindah dari Setup > Security, user 2026-10-04)', null]),
                 ]],
             ]],
+            ['code' => 'MGMT', 'short' => 'MGT', 'label' => 'Management Reports', 'icon' => 'fa-solid fa-chart-line', 'groups' => [
+                ['label' => 'Summary', 'items' => [
+                    $it('mgmt-executive', ['Executive Summary', 'fa-solid fa-gauge-high', 'v2: App\Support\V2\Data\ExecutiveSummary (App\Services\Report\ManagementReportService)', null, true]),
+                ]],
+            ]],
             ['code' => 'SETUP', 'short' => 'SET', 'label' => 'Setup', 'icon' => 'fa-solid fa-gear', 'groups' => [
                 ['label' => 'Identification', 'items' => [
                     $it('setup-identification', ['Identification', 'fa-solid fa-id-badge', 'v2: App\Support\V2\Data\Identification (sys_constant APP_* / COMPANY_*, org_company TM)', null]),
