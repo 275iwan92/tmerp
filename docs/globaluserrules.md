@@ -255,6 +255,17 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 - Kode: `App\Services\Payroll\PayrollAccess` (satu pintu), middleware `payroll:process` / `payroll:payslip`, kolom
   `emp_employee.staff_type`; test `PayrollAccessTest`. Pemberian grup ke akun nyata (`sania3` -> `HR_OFFICER`, `annisa` -> `OPS_MGR`) = pekerjaan admin keamanan.
 
+**A.26 Inventory & Warehouse v2.01 (user 2026-10-08).** Dokumen cakupan: `docs/md_for_systems/inventorywarehouse_v201_scope.md`.
+- Dua modul besar: **INVENTORY** (apa, berapa, nilai, pemilik) dan **WAREHOUSE** (di mana, bagaimana fisik). **Dokumen Transfer dan Opname
+  dimiliki Inventory**; eksekusi lapangan (tugas, scan, hitung) di Warehouse.
+- **QC berjalan sambil proses produksi** karena keterdesakan waktu: penerimaan tidak boleh tertahan menunggu QC selesai. Jalan keluar
+  (kelas risiko A / B / C, status batch Conditional, first article di mesin, tenggat keputusan) = usulan menunggu persetujuan user.
+- **Booking dimulai sejak product costing sudah menghitung** (bukan menunggu CO) karena proses cepat dan metode short run. Tafsir kerja:
+  pre-booking lunak yang tidak mengunci stok, naik menjadi booking keras pada CO Confirmed dalam satu rantai (`inquiry_id`).
+- Booking tetap di Production > Planning; Inventory hanya membaca Reserved / Available; **pick list di Warehouse**.
+- Cakupan 2.01 **mencakup valuasi dan jurnal otomatis**. Subkon = vendor sebagai lokasi virtual milik perusahaan; material titipan customer =
+  atribut pemilik pada stok (belum diputuskan terhadap perilaku sekarang yang non-stok); RM dan FG sampai bin, WIP sampai area; SFG per tahap proses.
+
 ## B. Database & data
 
 1. **[LOCKED] Database-per-modul** (`tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`,
@@ -816,3 +827,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 
 | 2026-10-07 | C: **Warna tahap Delivery Track** (user): merah / pink hanya untuk kegagalan; Draft kuning, Confirmed oranye, Shipped teal, Delivered hijau; kecelakaan (Accident) = merah + segitiga peringatan, rute berhenti di titik kejadian. Kecelakaan dicatat di Proof of Delivery sebagai hasil `ACCIDENT` (penyebab otomatis `ACCIDENT`, departemen Delivery, status POD Retry) tanpa kolom baru; tahap `incident` objek `x-dl::delivery-track` dipetakan dari POD terakhir (`App\Support\V2\Data\DeliveryTrack`). |
 | 2026-10-08 | B.1: **Maintenance punya database sendiri `tm2mnt` (dummy `ddtmnt`)** (user: "saya mau add database soal maintenance tidak masuk ke produksi"; "ya namanya tm2mnt atau ddtmnt"). Koneksi `tm2mnt` (`DB_MNT`), disalin oleh `ddt:copy --db=mnt`. Seluruh Maintenance lama dihapus 2026-10-08 dan dibangun ulang dari Master Data. |
+| 2026-10-08 | A.26: **Inventory & Warehouse v2.01** (user) — dua modul INVENTORY dan WAREHOUSE, dokumen Transfer dan Opname milik Inventory dengan eksekusi di Warehouse; QC berjalan sambil proses produksi (usulan wayout menunggu persetujuan); booking dimulai sejak product costing menghitung (pre-booking lunak, keras pada CO Confirmed); booking tetap di Production > Planning dan pick list di Warehouse; valuasi masuk cakupan. Dokumen cakupan `inventorywarehouse_v201_scope.md`. |
