@@ -3403,7 +3403,8 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-rl__note .dl-input{border:1px solid var(--dl-border);border-radius:var(--dl-radius-sm);padding:4px 8px;background:var(--dl-surface);width:100%}
 .dl-rl__none{padding:18px;text-align:center;color:var(--dl-muted)}
 /* Halaman Executive Summary: kepala + kisi kartu. */
-.dl-sum{display:flex;flex-direction:column;gap:14px}
+.dl-sum{display:flex;flex-direction:column;gap:14px;padding:20px 24px;box-sizing:border-box}
+@media (max-width:640px){.dl-sum{padding:14px 16px}}
 .dl-sum__head b{display:block;font-size:calc(18px * var(--dl-font-scale));color:var(--dl-ink-strong)}
 .dl-sum__head small{color:var(--dl-muted)}
 .dl-sum__tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
