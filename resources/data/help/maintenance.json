@@ -220,6 +220,389 @@
     ]
   },
   {
+    "key": "guide-maintenance-tech-menu",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Maintenance Menu",
+    "purpose": {
+      "en": "The planned menu of the Maintenance module: four groups plus Report, and which screen belongs to which phase.",
+      "id": "Menu Maintenance yang direncanakan: empat kelompok ditambah Report, dan layar mana masuk fase mana."
+    },
+    "keywords": "menu maintenance, kelompok menu, preventive, breakdown, improvement, master data, report, layer menu",
+    "steps": [
+      {
+        "en": "The module has four groups: Preventive Maintenance, Breakdown Maintenance, Improvement and Master Data. A small Report group sits below them.",
+        "id": "Modul punya empat kelompok: Preventive Maintenance, Breakdown Maintenance, Improvement dan Master Data. Kelompok kecil Report ada di bawahnya."
+      },
+      {
+        "en": "PM Work Order and Breakdown Work Order are the same Work Order screen with a different type filter. They are not two separate screens.",
+        "id": "PM Work Order dan Breakdown Work Order adalah layar Work Order yang sama dengan saringan jenis berbeda. Bukan dua layar terpisah."
+      },
+      {
+        "en": "The menu shows only screens that already exist. A screen appears the day its phase is delivered.",
+        "id": "Menu hanya menampilkan layar yang sudah ada. Sebuah layar muncul pada hari fasenya selesai."
+      },
+      {
+        "en": "Access follows module MAINT. Everyone who may enter Production can report a problem. Decisions need the approve right.",
+        "id": "Akses mengikuti modul MAINT. Siapa pun yang boleh masuk Production boleh melapor masalah. Keputusan butuh hak approve."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Preventive Maintenance",
+        "en": "Preventive Plan, PM Calendar, PM Work Order, Daily Check, Meter Readings. Delivered in Phase 2.",
+        "id": "Preventive Plan, PM Calendar, PM Work Order, Daily Check, Meter Readings. Dikirim di Fase 2."
+      },
+      {
+        "label": "Breakdown Maintenance",
+        "en": "Maintenance Request, Breakdown Work Order, My Work for technicians. Delivered in Phase 3.",
+        "id": "Maintenance Request, Breakdown Work Order, My Work untuk teknisi. Dikirim di Fase 3."
+      },
+      {
+        "label": "Improvement",
+        "en": "Improvement Proposal and Improvement Review. Delivered in Phase 4.",
+        "id": "Improvement Proposal dan Improvement Review. Dikirim di Fase 4."
+      },
+      {
+        "label": "Master Data",
+        "en": "Machine Maintenance Profile, Maintenance Codes, and a link to Master Mesin. Delivered in Phase 1.",
+        "id": "Machine Maintenance Profile, Maintenance Codes, dan tautan ke Master Mesin. Dikirim di Fase 1."
+      },
+      {
+        "label": "Report",
+        "en": "Maintenance WO Report, Machine Reliability, PM Compliance. Delivered with the phase whose data they read.",
+        "id": "Maintenance WO Report, Machine Reliability, PM Compliance. Dikirim bersama fase yang datanya mereka baca."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-features",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Features and Their Functions",
+    "purpose": {
+      "en": "What each planned Maintenance feature is for, who uses it, and which phase delivers it.",
+      "id": "Fungsi tiap fitur Maintenance yang direncanakan, siapa pemakainya, dan fase mana yang mengirimnya."
+    },
+    "keywords": "fitur maintenance, fungsi fitur, watch point, daily check, pm calendar, meter, request, work order, improvement, laporan",
+    "steps": [
+      {
+        "en": "Features are grouped like the menu. Master Data features describe the machine, Preventive features keep machines healthy, Breakdown features fix failures, Improvement features stop repeats.",
+        "id": "Fitur dikelompokkan seperti menu. Fitur Master Data menjelaskan mesin, fitur Preventive menjaga mesin tetap sehat, fitur Breakdown memperbaiki kerusakan, fitur Improvement mencegah pengulangan."
+      },
+      {
+        "en": "Each feature has one job and hands its result to the next one. The Data Flow and Work Flow topics show how they connect.",
+        "id": "Setiap fitur punya satu tugas dan menyerahkan hasilnya ke fitur berikutnya. Topik Data Flow dan Work Flow menunjukkan hubungannya."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Machine Maintenance Profile",
+        "en": "Phase 1. One place to describe what a machine needs: checks, parts and documents. Used by every later feature.",
+        "id": "Fase 1. Satu tempat untuk menjelaskan kebutuhan mesin: cek, part dan dokumen. Dipakai semua fitur berikutnya."
+      },
+      {
+        "label": "Watch Points",
+        "en": "Phase 1. The list of things to check on a machine, with how, normal limit, frequency and who checks.",
+        "id": "Fase 1. Daftar hal yang dicek pada mesin, dengan cara, batas normal, frekuensi dan siapa yang mengecek."
+      },
+      {
+        "label": "Spare Parts per machine",
+        "en": "Phase 1. Tells which parts a machine needs and when stock is too low, so a missing part is known before a breakdown.",
+        "id": "Fase 1. Menunjukkan part yang dibutuhkan mesin dan kapan stok terlalu rendah, sehingga part yang kurang diketahui sebelum kerusakan."
+      },
+      {
+        "label": "Maintenance Codes",
+        "en": "Phase 1. One catalog of component, problem, cause and action codes, so reports can be added up.",
+        "id": "Fase 1. Satu katalog kode komponen, masalah, penyebab dan tindakan, sehingga laporan bisa dijumlahkan."
+      },
+      {
+        "label": "Machine Readiness",
+        "en": "Phase 1. A grid that shows which machines still have an incomplete profile, so data entry can be chased.",
+        "id": "Fase 1. Grid yang menunjukkan mesin mana yang profilnya belum lengkap, sehingga pengisian data bisa dikejar."
+      },
+      {
+        "label": "Preventive Plan",
+        "en": "Phase 2. Defines when a machine needs a scheduled job: by calendar or by meter, with checklist and standard parts.",
+        "id": "Fase 2. Menentukan kapan mesin butuh pekerjaan terjadwal: menurut kalender atau meter, dengan checklist dan part standar."
+      },
+      {
+        "label": "PM Calendar",
+        "en": "Phase 2. Shows scheduled, overdue and blocked days so the head of maintenance can see the month at a glance.",
+        "id": "Fase 2. Menampilkan hari terjadwal, terlambat dan terblokir sehingga kepala maintenance melihat satu bulan sekaligus."
+      },
+      {
+        "label": "Meter Readings",
+        "en": "Phase 2. Records machine running hours or impressions so meter-based plans fall due at the right time.",
+        "id": "Fase 2. Mencatat jam jalan atau impresi mesin sehingga plan berbasis meter jatuh tempo pada waktu yang tepat."
+      },
+      {
+        "label": "Daily Check",
+        "en": "Phase 2. Lets the operator check the machine every shift and report anything abnormal before it breaks.",
+        "id": "Fase 2. Membuat operator mengecek mesin tiap shift dan melaporkan hal tidak normal sebelum rusak."
+      },
+      {
+        "label": "Maintenance Request",
+        "en": "Phase 3. A short report of a problem that anyone can make. It keeps rejected or duplicate reports out of the job data.",
+        "id": "Fase 3. Laporan singkat masalah yang bisa dibuat siapa pun. Menjaga laporan ditolak atau dobel keluar dari data pekerjaan."
+      },
+      {
+        "label": "Work Order",
+        "en": "Phase 3. The authorised job with schedule, technician, checklist, parts, hours, downtime and cost. All three kinds use it.",
+        "id": "Fase 3. Pekerjaan resmi dengan jadwal, teknisi, checklist, part, jam, downtime dan biaya. Ketiga jenis memakainya."
+      },
+      {
+        "label": "My Work",
+        "en": "Phase 3. A technician view of the jobs assigned to him or her today, made for a phone.",
+        "id": "Fase 3. Tampilan teknisi untuk pekerjaan yang ditugaskan hari ini, dibuat untuk HP."
+      },
+      {
+        "label": "Improvement Proposal",
+        "en": "Phase 4. Turns a repeated problem into a reasoned proposal with evidence, cost and saving.",
+        "id": "Fase 4. Mengubah masalah berulang menjadi usulan beralasan dengan bukti, biaya dan penghematan."
+      },
+      {
+        "label": "Improvement Review",
+        "en": "Phase 4. Compares downtime and cost before and after, so the user learns whether the improvement worked.",
+        "id": "Fase 4. Membandingkan downtime dan biaya sebelum dan sesudah, sehingga user tahu apakah improvement berhasil."
+      },
+      {
+        "label": "Reports",
+        "en": "Maintenance WO Report, Machine Reliability (MTBF, MTTR, Availability) and PM Compliance. Each is delivered with the phase whose data it reads.",
+        "id": "Maintenance WO Report, Machine Reliability (MTBF, MTTR, Availability) dan PM Compliance. Masing-masing dikirim bersama fase yang datanya dibaca."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-roles",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Roles and User Journey",
+    "purpose": {
+      "en": "Who does what in Maintenance: what each role opens, sees, clicks and gets.",
+      "id": "Siapa melakukan apa di Maintenance: apa yang dibuka, dilihat, diklik dan didapat tiap peran."
+    },
+    "keywords": "peran maintenance, user journey, operator, teknisi, kepala maintenance, ppic, manajemen, hak akses, grup",
+    "steps": [
+      {
+        "en": "Operator: opens Daily Check at the start of the shift, marks each point, and reports a problem as a Request. Gets a request number and, for a stopped critical machine, a work order at once.",
+        "id": "Operator: membuka Daily Check di awal shift, menandai tiap titik, dan melapor masalah sebagai Request. Mendapat nomor request dan, untuk mesin kritis berhenti, work order langsung."
+      },
+      {
+        "en": "Head of maintenance: opens the Request list sorted by priority and age, then presses Accept or Reject. Sets schedule and technician on Confirm, and presses Close when a job is Done.",
+        "id": "Kepala maintenance: membuka daftar Request menurut prioritas dan umur, lalu menekan Accept atau Reject. Mengatur jadwal dan teknisi saat Confirm, dan menekan Close saat pekerjaan Done."
+      },
+      {
+        "en": "Technician: opens My Work, presses Start, fills checklist, parts, hours and codes, then Done. Gets the machine back to ready and the downtime closed.",
+        "id": "Teknisi: membuka My Work, menekan Start, mengisi checklist, part, jam dan kode, lalu Done. Mesin kembali ready dan downtime tertutup."
+      },
+      {
+        "en": "Planner in production: sees blocked slots on the Scheduling Board and can only suggest moving them. The head of maintenance confirms.",
+        "id": "Perencana di produksi: melihat slot terblokir di Scheduling Board dan hanya bisa mengusulkan menggesernya. Kepala maintenance yang mengonfirmasi."
+      },
+      {
+        "en": "Management: opens the reports, filters by machine and month, and decides to repair, improve or replace.",
+        "id": "Manajemen: membuka laporan, menyaring menurut mesin dan bulan, lalu memutuskan memperbaiki, memperbaiki lebih jauh atau mengganti."
+      },
+      {
+        "en": "System: every morning it turns due plans into Draft work orders and checks for repeated failures. It only creates drafts and suggestions.",
+        "id": "Sistem: tiap pagi mengubah plan jatuh tempo menjadi work order Draft dan memeriksa kerusakan berulang. Hanya membuat draft dan saran."
+      }
+    ],
+    "fields": [
+      {
+        "label": "MAINT_TECH",
+        "en": "Technician group. Can view master data and work on assigned jobs. Cannot change master data or decide.",
+        "id": "Grup teknisi. Bisa melihat master data dan mengerjakan pekerjaan yang ditugaskan. Tidak bisa mengubah master data atau memutuskan."
+      },
+      {
+        "label": "MAINT_HEAD",
+        "en": "Head of maintenance group. Can change master data and has the approve right for Accept, Confirm and Close.",
+        "id": "Grup kepala maintenance. Bisa mengubah master data dan punya hak approve untuk Accept, Confirm dan Close."
+      },
+      {
+        "label": "Production staff",
+        "en": "Anyone who may enter Production can file a Request and fill Daily Check. They cannot decide.",
+        "id": "Siapa pun yang boleh masuk Production bisa membuat Request dan mengisi Daily Check. Mereka tidak bisa memutuskan."
+      },
+      {
+        "label": "Director",
+        "en": "Also approves an improvement above the cost limit set in Constants.",
+        "id": "Juga menyetujui improvement di atas batas biaya yang diatur di Constants."
+      },
+      {
+        "label": "Administrator",
+        "en": "Can do everything, including changing master data.",
+        "id": "Bisa melakukan semuanya, termasuk mengubah master data."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-workflow",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Work Flow by Type",
+    "purpose": {
+      "en": "Step by step work flow of the three kinds of maintenance, with the status of the documents at each step.",
+      "id": "Alur kerja langkah demi langkah dari tiga jenis maintenance, dengan status dokumen pada tiap langkah."
+    },
+    "keywords": "work flow maintenance, alur kerja, status work order, request, draft confirmed in progress waiting part done closed, prioritas p1 p2 p3 p4",
+    "steps": [
+      {
+        "en": "Preventive: Plan, Generate, Confirm, Start, Done, Close. A scheduled command turns due plans into Draft work orders. The head sets schedule and technician and presses Confirm.",
+        "id": "Preventive: Plan, Generate, Confirm, Start, Done, Close. Perintah terjadwal mengubah plan jatuh tempo menjadi work order Draft. Kepala mengatur jadwal dan teknisi lalu menekan Confirm."
+      },
+      {
+        "en": "Preventive: the technician presses Start, fills the checklist, uses parts and records hours, then Done. The head checks cost and findings and presses Close. The next due date is recalculated.",
+        "id": "Preventive: teknisi menekan Start, mengisi checklist, memakai part dan mencatat jam, lalu Done. Kepala memeriksa biaya dan temuan lalu menekan Close. Jatuh tempo berikutnya dihitung ulang."
+      },
+      {
+        "en": "Breakdown: Request, Accept, Start, Done, Close. Anyone files a Request. The head presses Accept, which creates a Confirmed work order, or Reject with a reason.",
+        "id": "Breakdown: Request, Accept, Start, Done, Close. Siapa pun membuat Request. Kepala menekan Accept sehingga work order Confirmed dibuat, atau Reject dengan alasan."
+      },
+      {
+        "en": "Breakdown: priority P1 on a machine that stopped goes straight to a work order. The technician can press Hold when a part is missing and Resume when it arrives.",
+        "id": "Breakdown: prioritas P1 pada mesin berhenti langsung menjadi work order. Teknisi bisa menekan Hold saat part kurang dan Resume saat part tiba."
+      },
+      {
+        "en": "Breakdown: Done closes the downtime and returns the machine to ready. The head presses Close after checking cost, problem, cause and action codes.",
+        "id": "Breakdown: Done menutup downtime dan mengembalikan mesin ke ready. Kepala menekan Close setelah memeriksa biaya serta kode masalah, penyebab dan tindakan."
+      },
+      {
+        "en": "Improvement: Proposal, Confirm, Implement, Done, Review, Apply. The head confirms, a work order of type IMPROVEMENT is created, and after the review period the review is filled and changes are applied by a person.",
+        "id": "Improvement: Proposal, Confirm, Implement, Done, Review, Apply. Kepala mengonfirmasi, work order jenis IMPROVEMENT dibuat, dan setelah masa review, review diisi dan perubahan diterapkan oleh orang."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Draft",
+        "en": "A document being prepared. It can be edited and deleted.",
+        "id": "Dokumen yang sedang disiapkan. Bisa diubah dan dihapus."
+      },
+      {
+        "label": "Confirmed",
+        "en": "Decided and scheduled. Inside Confirmed the work status runs Scheduled, In Progress, Waiting Part and Done.",
+        "id": "Sudah diputuskan dan dijadwalkan. Di dalam Confirmed, status kerja berjalan Scheduled, In Progress, Waiting Part dan Done."
+      },
+      {
+        "label": "Closed",
+        "en": "Verified by the head. Costs are final and the history is kept.",
+        "id": "Sudah diverifikasi kepala. Biaya final dan riwayat disimpan."
+      },
+      {
+        "label": "Cancelled",
+        "en": "A Confirmed document that was called off, with a reason.",
+        "id": "Dokumen Confirmed yang dibatalkan, dengan alasan."
+      },
+      {
+        "label": "Request statuses",
+        "en": "Open, Accepted (a work order was created) and Rejected (with a reason).",
+        "id": "Open, Accepted (work order dibuat) dan Rejected (dengan alasan)."
+      },
+      {
+        "label": "P1 Emergency",
+        "en": "A critical machine has stopped. Becomes a work order at once.",
+        "id": "Mesin kritis berhenti. Langsung menjadi work order."
+      },
+      {
+        "label": "P2 High",
+        "en": "To be handled within 24 hours.",
+        "id": "Ditangani dalam 24 jam."
+      },
+      {
+        "label": "P3 Normal",
+        "en": "To be handled within a week.",
+        "id": "Ditangani dalam seminggu."
+      },
+      {
+        "label": "P4 Low",
+        "en": "To be handled when time allows, for example improvements.",
+        "id": "Ditangani bila ada waktu, misalnya improvement."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-flow",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Maintenance Data Flow",
+    "purpose": {
+      "en": "Shows how a report, a plan or a repeated failure becomes a work order, and what each work order writes to other modules.",
+      "id": "Menunjukkan bagaimana laporan, plan atau kerusakan berulang menjadi work order, dan apa yang ditulis tiap work order ke modul lain."
+    },
+    "keywords": "alur data maintenance, data flow, request, work order, daily check, improvement, downtime, spare part",
+    "steps": [
+      {
+        "en": "An operator Daily Check with a NOT_OK result opens a Maintenance Request, not a work order, so the head of maintenance judges it.",
+        "id": "Daily Check operator dengan hasil NOT_OK membuka Maintenance Request, bukan work order, sehingga kepala maintenance yang menilai."
+      },
+      {
+        "en": "Anyone can also report a problem as a Maintenance Request. The head accepts it, which creates a work order, or rejects it with a reason.",
+        "id": "Siapa pun juga bisa melapor masalah sebagai Maintenance Request. Kepala menerimanya sehingga work order dibuat, atau menolak dengan alasan."
+      },
+      {
+        "en": "A request about a machine that stopped, on a critical machine, becomes a work order at once without waiting for approval.",
+        "id": "Request tentang mesin berhenti pada mesin kritis langsung menjadi work order tanpa menunggu persetujuan."
+      },
+      {
+        "en": "Every morning a scheduled command turns due preventive plans into draft work orders. The head sets the schedule and confirms them.",
+        "id": "Tiap pagi perintah terjadwal mengubah plan preventive yang jatuh tempo menjadi draft work order. Kepala mengatur jadwal dan mengonfirmasinya."
+      },
+      {
+        "en": "Starting a work order that needs the machine stopped opens a downtime row and sets the machine status. Done closes the downtime and sets the status back to ready.",
+        "id": "Memulai work order yang butuh mesin berhenti membuka baris downtime dan mengatur status mesin. Done menutup downtime dan mengembalikan status ke ready."
+      },
+      {
+        "en": "Spare parts of a work order are issued from Inventory. A missing part creates a purchase request and the work order waits for the part.",
+        "id": "Spare part sebuah work order dikeluarkan dari Inventory. Part yang kurang membuat permintaan pembelian dan work order menunggu part."
+      },
+      {
+        "en": "A repeated failure on the same component raises an Improvement suggestion. An accepted proposal becomes a work order of type IMPROVEMENT.",
+        "id": "Kerusakan berulang pada komponen yang sama memunculkan saran Improvement. Usulan yang diterima menjadi work order jenis IMPROVEMENT."
+      },
+      {
+        "en": "Some days after an improvement is done, the review compares downtime and cost before and after. A person decides which master changes to apply.",
+        "id": "Beberapa hari setelah improvement selesai, review membandingkan downtime dan biaya sebelum dan sesudah. Orang yang memutuskan perubahan master mana yang diterapkan."
+      },
+      {
+        "en": "Master data feeds the rest: Daily Check reads watch points, work orders read spare parts and codes, and reports read all of them.",
+        "id": "Master data memberi makan fitur lain: Daily Check membaca watch point, work order membaca spare part dan kode, dan laporan membaca semuanya."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Writes to Master",
+        "en": "Machine downtime rows and machine status, only through the work order service.",
+        "id": "Baris downtime mesin dan status mesin, hanya lewat service work order."
+      },
+      {
+        "label": "Writes to Inventory",
+        "en": "Stock issue document for spare parts, referenced to the work order.",
+        "id": "Dokumen pengeluaran stok untuk spare part, merujuk ke work order."
+      },
+      {
+        "label": "Writes to Procurement",
+        "en": "Purchase request for missing parts, marked as coming from Maintenance.",
+        "id": "Permintaan pembelian untuk part yang kurang, ditandai berasal dari Maintenance."
+      },
+      {
+        "label": "Reads from Production",
+        "en": "Production output for meters, and breakdown events of work orders.",
+        "id": "Output produksi untuk meter, dan kejadian breakdown pada work order."
+      },
+      {
+        "label": "Reads from Scheduling",
+        "en": "Confirmed preventive work orders block the machine on the Scheduling Board.",
+        "id": "Work order preventive yang Confirmed memblokir mesin di Scheduling Board."
+      },
+      {
+        "label": "Master data readers",
+        "en": "Daily Check reads mnt_watch_point. Work orders read mnt_machine_part and mnt_code. Reports read everything. Stock is read from Inventory.",
+        "id": "Daily Check membaca mnt_watch_point. Work order membaca mnt_machine_part dan mnt_code. Laporan membaca semuanya. Stok dibaca dari Inventory."
+      }
+    ]
+  },
+  {
     "key": "guide-maintenance-tech-database",
     "type": "GUIDE",
     "module": "MAINT",
@@ -311,78 +694,6 @@
     ]
   },
   {
-    "key": "guide-maintenance-tech-flow",
-    "type": "GUIDE",
-    "module": "MAINT",
-    "title": "Technical Plan: Maintenance Data Flow",
-    "purpose": {
-      "en": "Shows how a report, a plan or a repeated failure becomes a work order, and what each work order writes to other modules.",
-      "id": "Menunjukkan bagaimana laporan, plan atau kerusakan berulang menjadi work order, dan apa yang ditulis tiap work order ke modul lain."
-    },
-    "keywords": "alur data maintenance, data flow, request, work order, daily check, improvement, downtime, spare part",
-    "steps": [
-      {
-        "en": "An operator Daily Check with a NOT_OK result opens a Maintenance Request, not a work order, so the head of maintenance judges it.",
-        "id": "Daily Check operator dengan hasil NOT_OK membuka Maintenance Request, bukan work order, sehingga kepala maintenance yang menilai."
-      },
-      {
-        "en": "Anyone can also report a problem as a Maintenance Request. The head accepts it, which creates a work order, or rejects it with a reason.",
-        "id": "Siapa pun juga bisa melapor masalah sebagai Maintenance Request. Kepala menerimanya sehingga work order dibuat, atau menolak dengan alasan."
-      },
-      {
-        "en": "A request about a machine that stopped, on a critical machine, becomes a work order at once without waiting for approval.",
-        "id": "Request tentang mesin berhenti pada mesin kritis langsung menjadi work order tanpa menunggu persetujuan."
-      },
-      {
-        "en": "Every morning a scheduled command turns due preventive plans into draft work orders. The head sets the schedule and confirms them.",
-        "id": "Tiap pagi perintah terjadwal mengubah plan preventive yang jatuh tempo menjadi draft work order. Kepala mengatur jadwal dan mengonfirmasinya."
-      },
-      {
-        "en": "Starting a work order that needs the machine stopped opens a downtime row and sets the machine status. Done closes the downtime and sets the status back to ready.",
-        "id": "Memulai work order yang butuh mesin berhenti membuka baris downtime dan mengatur status mesin. Done menutup downtime dan mengembalikan status ke ready."
-      },
-      {
-        "en": "Spare parts of a work order are issued from Inventory. A missing part creates a purchase request and the work order waits for the part.",
-        "id": "Spare part sebuah work order dikeluarkan dari Inventory. Part yang kurang membuat permintaan pembelian dan work order menunggu part."
-      },
-      {
-        "en": "A repeated failure on the same component raises an Improvement suggestion. An accepted proposal becomes a work order of type IMPROVEMENT.",
-        "id": "Kerusakan berulang pada komponen yang sama memunculkan saran Improvement. Usulan yang diterima menjadi work order jenis IMPROVEMENT."
-      },
-      {
-        "en": "Some days after an improvement is done, the review compares downtime and cost before and after. A person decides which master changes to apply.",
-        "id": "Beberapa hari setelah improvement selesai, review membandingkan downtime dan biaya sebelum dan sesudah. Orang yang memutuskan perubahan master mana yang diterapkan."
-      }
-    ],
-    "fields": [
-      {
-        "label": "Writes to Master",
-        "en": "Machine downtime rows and machine status, only through the work order service.",
-        "id": "Baris downtime mesin dan status mesin, hanya lewat service work order."
-      },
-      {
-        "label": "Writes to Inventory",
-        "en": "Stock issue document for spare parts, referenced to the work order.",
-        "id": "Dokumen pengeluaran stok untuk spare part, merujuk ke work order."
-      },
-      {
-        "label": "Writes to Procurement",
-        "en": "Purchase request for missing parts, marked as coming from Maintenance.",
-        "id": "Permintaan pembelian untuk part yang kurang, ditandai berasal dari Maintenance."
-      },
-      {
-        "label": "Reads from Production",
-        "en": "Production output for meters, and breakdown events of work orders.",
-        "id": "Output produksi untuk meter, dan kejadian breakdown pada work order."
-      },
-      {
-        "label": "Reads from Scheduling",
-        "en": "Confirmed preventive work orders block the machine on the Scheduling Board.",
-        "id": "Work order preventive yang Confirmed memblokir mesin di Scheduling Board."
-      }
-    ]
-  },
-  {
     "key": "guide-maintenance-tech-rules",
     "type": "GUIDE",
     "module": "MAINT",
@@ -454,6 +765,429 @@
         "label": "MNT_IMPROVEMENT_DIRECTOR_LIMIT",
         "en": "Proposal 10,000,000 IDR. Above this estimated cost the director also approves.",
         "id": "Usulan 10.000.000 IDR. Di atas estimasi biaya ini direksi ikut menyetujui."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-profile",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Machine Maintenance Profile",
+    "purpose": {
+      "en": "The Master Data form approved on the mockup: one profile per machine holding what to check, which spare parts it needs, and its documents.",
+      "id": "Form Master Data yang disetujui di mockup: satu profil per mesin berisi apa yang dicek, spare part yang dibutuhkan, dan dokumennya."
+    },
+    "keywords": "machine maintenance profile, profil mesin, watch points, spare parts, documents, kelengkapan profil, copy from machine",
+    "steps": [
+      {
+        "en": "Open Machine Maintenance Profile and pick a machine. The form has tabs Profile, Watch Points, Spare Parts, Documents and History. The PM Plans tab appears when Phase 2 is delivered.",
+        "id": "Buka Machine Maintenance Profile dan pilih mesin. Form punya tab Profile, Watch Points, Spare Parts, Documents dan History. Tab PM Plans muncul saat Fase 2 selesai."
+      },
+      {
+        "en": "Machine, Criticality and Service vendor come from Master Mesin and are shown locked. Change them in Master Mesin, not here.",
+        "id": "Machine, Criticality dan Service vendor berasal dari Master Mesin dan tampil terkunci. Ubah di Master Mesin, bukan di sini."
+      },
+      {
+        "en": "On Watch Points add what must be checked on this machine. Pick the component from the code catalog, describe the check and the method, and set the frequency and who checks.",
+        "id": "Di Watch Points tambahkan hal yang harus dicek pada mesin ini. Pilih komponen dari katalog kode, tulis cek dan caranya, lalu atur frekuensi dan siapa yang mengecek."
+      },
+      {
+        "en": "Type the normal limit from the manufacturer manual, or leave it empty. The system never fills a limit itself.",
+        "id": "Ketik batas normal dari manual pabrikan, atau biarkan kosong. Sistem tidak pernah mengisi batas sendiri."
+      },
+      {
+        "en": "Copy from machine copies the watch points of another machine as a starting point. You then edit them. It never overwrites rows that already exist.",
+        "id": "Copy from machine menyalin watch point mesin lain sebagai titik awal. Setelah itu Anda mengubahnya. Tidak pernah menimpa baris yang sudah ada."
+      },
+      {
+        "en": "On Spare Parts add the parts this machine needs. Stock is read from Inventory. A part below its suggested minimum shows in red and can start a purchase request.",
+        "id": "Di Spare Parts tambahkan part yang dibutuhkan mesin ini. Stok dibaca dari Inventory. Part di bawah saran minimum tampil merah dan bisa memulai permintaan pembelian."
+      },
+      {
+        "en": "Save stores the changes. Undo drops changes that are not saved yet. History lists who changed what and when.",
+        "id": "Save menyimpan perubahan. Undo membuang perubahan yang belum disimpan. History menampilkan siapa mengubah apa dan kapan."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Profile completeness",
+        "en": "Shows how many of five items are filled, for example 3 / 5. It is calculated from the data, never typed.",
+        "id": "Menunjukkan berapa dari lima hal yang terisi, misalnya 3 / 5. Dihitung dari data, tidak diketik."
+      },
+      {
+        "label": "Component",
+        "en": "Pick from Maintenance Codes. There is no component tree: a component is only a code.",
+        "id": "Pilih dari Maintenance Codes. Tidak ada pohon komponen: komponen hanya berupa kode."
+      },
+      {
+        "label": "What to check",
+        "en": "Short text of the check, for example oil level, no leak. Free text typed by the user.",
+        "id": "Teks singkat cek, misalnya level oli, tidak bocor. Teks bebas yang diketik user."
+      },
+      {
+        "label": "Normal limit",
+        "en": "Optional minimum and maximum with a unit. Without it the check is never judged by the system.",
+        "id": "Minimum dan maksimum opsional dengan satuan. Tanpa itu cek tidak pernah dinilai oleh sistem."
+      },
+      {
+        "label": "Frequency",
+        "en": "Every shift, Daily, Weekly or Monthly.",
+        "id": "Setiap shift, Harian, Mingguan atau Bulanan."
+      },
+      {
+        "label": "Checked by",
+        "en": "Operator or Technician. Operator checks feed Daily Check.",
+        "id": "Operator atau Technician. Cek oleh operator menjadi sumber Daily Check."
+      },
+      {
+        "label": "Suggested min stock",
+        "en": "Minimum stock that Maintenance suggests for this part. Procurement still decides what to buy.",
+        "id": "Stok minimum yang disarankan Maintenance untuk part ini. Procurement tetap yang memutuskan pembelian."
+      },
+      {
+        "label": "Expected life",
+        "en": "How long the part usually lasts, in days. Used to judge wear later.",
+        "id": "Berapa lama part biasanya bertahan, dalam hari. Dipakai menilai keausan nanti."
+      },
+      {
+        "label": "Critical",
+        "en": "Marks a part whose absence stops the machine. Critical parts below minimum show on the Dashboard.",
+        "id": "Menandai part yang bila habis mesin berhenti. Part kritis di bawah minimum tampil di Dashboard."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-phase1",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Phase 1: Master Data",
+    "purpose": {
+      "en": "What Phase 1 delivers, how it is built step by step, and how it is tested.",
+      "id": "Apa yang dikirim Fase 1, bagaimana dibangun langkah demi langkah, dan bagaimana diuji."
+    },
+    "keywords": "fase 1, master data, tm2mnt, migration, seeder, readiness, test, maintenance codes, profil mesin",
+    "steps": [
+      {
+        "en": "Create the connection and databases first (done), then the Phase 1 migration in ddtmnt: mnt_code, mnt_machine_profile, mnt_watch_point, mnt_machine_part and, if needed, mnt_machine_doc.",
+        "id": "Buat koneksi dan database lebih dulu (selesai), lalu migration Fase 1 di ddtmnt: mnt_code, mnt_machine_profile, mnt_watch_point, mnt_machine_part dan, bila perlu, mnt_machine_doc."
+      },
+      {
+        "en": "The migration also creates module MAINT, the groups MAINT_TECH and MAINT_HEAD, the menu rows and the settings, and skips anything that already exists.",
+        "id": "Migration juga membuat modul MAINT, grup MAINT_TECH dan MAINT_HEAD, baris menu dan pengaturan, dan melewati yang sudah ada."
+      },
+      {
+        "en": "Build Maintenance Codes first, then the Machine Maintenance Profile one tab at a time, then the Machine Readiness grid, then the menu and the Help topics.",
+        "id": "Bangun Maintenance Codes lebih dulu, lalu Machine Maintenance Profile satu tab per tab, lalu grid Machine Readiness, lalu menu dan topik Help."
+      },
+      {
+        "en": "Example data goes only to ddtmnt through a seeder, without normal limits. Real machine data is never invented in tm2mnt.",
+        "id": "Data contoh hanya masuk ke ddtmnt lewat seeder, tanpa batas normal. Data mesin nyata tidak pernah dikarang di tm2mnt."
+      },
+      {
+        "en": "Each step is committed separately so any step can be rolled back.",
+        "id": "Setiap langkah di-commit terpisah sehingga tiap langkah bisa di-rollback."
+      },
+      {
+        "en": "Tests use the real local MySQL and clean up their own rows, then the database is checked directly instead of trusting the test script.",
+        "id": "Test memakai MySQL lokal sungguhan dan membersihkan barisnya sendiri, lalu database dicek langsung, bukan hanya percaya skrip test."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Test: completeness",
+        "en": "Profile completeness is calculated correctly for several combinations of filled and empty items.",
+        "id": "Kelengkapan profil dihitung benar untuk beberapa kombinasi item terisi dan kosong."
+      },
+      {
+        "label": "Test: copy",
+        "en": "Copy from machine does not overwrite rows that already exist on the target machine.",
+        "id": "Copy from machine tidak menimpa baris yang sudah ada pada mesin tujuan."
+      },
+      {
+        "label": "Test: access",
+        "en": "A technician cannot save. The head of maintenance and administrators can.",
+        "id": "Teknisi tidak bisa menyimpan. Kepala maintenance dan administrator bisa."
+      },
+      {
+        "label": "Test: spare part",
+        "en": "Only materials of the category Spare Part Machine can be chosen as machine parts.",
+        "id": "Hanya material kategori Spare Part Machine yang bisa dipilih sebagai part mesin."
+      },
+      {
+        "label": "Test: menu",
+        "en": "The menu shows only screens that exist.",
+        "id": "Menu hanya menampilkan layar yang ada."
+      },
+      {
+        "label": "Deviation: PM Plans tab",
+        "en": "The PM Plans tab of the mockup is hidden until Phase 2, when plans exist.",
+        "id": "Tab PM Plans pada mockup disembunyikan sampai Fase 2, saat plan sudah ada."
+      },
+      {
+        "label": "Deliverables",
+        "en": "Screens, migration, seeder, Help topics, build catalog entry, dictionary entries, tests.",
+        "id": "Layar, migration, seeder, topik Help, entri build catalog, entri kamus, test."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-improvement",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Improvement, Daily Check and PM Calendar",
+    "purpose": {
+      "en": "Planned behaviour of three screens whose mockup is not approved yet: Improvement, Daily Check and PM Calendar. This is a proposal.",
+      "id": "Perilaku yang direncanakan untuk tiga layar yang mockupnya belum disetujui: Improvement, Daily Check dan PM Calendar. Ini usulan."
+    },
+    "keywords": "improvement, daily check, pm calendar, kerusakan berulang, review sebelum sesudah, apply to master, evidence",
+    "steps": [
+      {
+        "en": "Daily Check is a sheet per machine per shift built from the active operator watch points. The operator marks each point OK, NOT_OK or NA and can type a measured value.",
+        "id": "Daily Check adalah lembar per mesin per shift yang dibuat dari watch point operator yang aktif. Operator menandai tiap titik OK, NOT_OK atau NA dan bisa mengetik nilai ukur."
+      },
+      {
+        "en": "A NOT_OK point opens a Maintenance Request with a priority from the machine criticality. A measured value outside the normal limit is marked NOT_OK, and the operator can change it.",
+        "id": "Titik NOT_OK membuka Maintenance Request dengan prioritas dari kritikalitas mesin. Nilai ukur di luar batas normal ditandai NOT_OK, dan operator bisa mengubahnya."
+      },
+      {
+        "en": "PM Calendar shows preventive and inspection work orders by day: on schedule, inspection with fixed date, overdue, and machine blocked. A click opens the work order.",
+        "id": "PM Calendar menampilkan work order preventive dan inspeksi per hari: sesuai jadwal, inspeksi tanggal tetap, terlambat, dan mesin terblokir. Klik membuka work order."
+      },
+      {
+        "en": "Improvement starts from a request of kind IMPROVEMENT, from a repeated-failure suggestion, or from a person. The proposal states the problem, solution, estimated cost and saving.",
+        "id": "Improvement dimulai dari request jenis IMPROVEMENT, dari saran kerusakan berulang, atau dari seseorang. Usulan memuat masalah, solusi, estimasi biaya dan penghematan."
+      },
+      {
+        "en": "Evidence (breakdowns, downtime, cost and linked work orders for the same component) is calculated by the system and is read only.",
+        "id": "Evidence (jumlah breakdown, downtime, biaya dan work order terkait untuk komponen yang sama) dihitung sistem dan hanya dibaca."
+      },
+      {
+        "en": "The head of maintenance confirms the proposal. Above the cost limit set in Constants the director confirms too.",
+        "id": "Kepala maintenance mengonfirmasi usulan. Di atas batas biaya di Constants, direksi juga mengonfirmasi."
+      },
+      {
+        "en": "An approved proposal creates a work order of type IMPROVEMENT. When it is Done, the system schedules the review.",
+        "id": "Usulan yang disetujui membuat work order jenis IMPROVEMENT. Saat Done, sistem menjadwalkan review."
+      },
+      {
+        "en": "At review the system fills downtime and cost before and after over periods of equal length. A person concludes: Effective, Partial or Not effective.",
+        "id": "Saat review sistem mengisi downtime dan biaya sebelum dan sesudah pada periode sama panjang. Orang menyimpulkan: Effective, Partial atau Not effective."
+      },
+      {
+        "en": "Apply to master opens the proposed changes (plan interval, watch point or machine part). The head ticks and approves each one. The system never changes the master itself.",
+        "id": "Apply to master membuka usulan perubahan (interval plan, watch point atau part mesin). Kepala mencentang dan menyetujui satu per satu. Sistem tidak pernah mengubah master sendiri."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Repeated failure suggestion",
+        "en": "The same failure on the same component reaching the count in Constants within the window in Constants. The system suggests, it creates nothing.",
+        "id": "Kerusakan sama pada komponen yang sama mencapai jumlah di Constants dalam jendela di Constants. Sistem menyarankan, tidak membuat dokumen."
+      },
+      {
+        "label": "Lifecycle",
+        "en": "Improvement uses the standard lifecycle: Draft, Confirmed, Cancelled, Closed.",
+        "id": "Improvement memakai lifecycle standar: Draft, Confirmed, Cancelled, Closed."
+      },
+      {
+        "label": "Evidence",
+        "en": "Read only figures calculated from work orders and downtime already recorded.",
+        "id": "Angka yang hanya dibaca, dihitung dari work order dan downtime yang sudah tercatat."
+      },
+      {
+        "label": "Review",
+        "en": "Due the number of days in Constants after Done. Before and after figures are filled by the system.",
+        "id": "Jatuh tempo sejumlah hari di Constants setelah Done. Angka sebelum dan sesudah diisi sistem."
+      },
+      {
+        "label": "Apply to master",
+        "en": "Always a manual decision by a person, one change at a time, with a log entry for each.",
+        "id": "Selalu keputusan manual oleh orang, satu perubahan per satu, dengan catatan log untuk tiap perubahan."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-phases",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Phases 2 to 4 and Limits",
+    "purpose": {
+      "en": "What Phases 2, 3 and 4 deliver, in which order, and the limits that apply to all phases.",
+      "id": "Apa yang dikirim Fase 2, 3 dan 4, dalam urutan apa, dan batas yang berlaku untuk semua fase."
+    },
+    "keywords": "fase 2, fase 3, fase 4, preventive, breakdown, improvement, urutan bangun, batas, zona beku, scheduling board",
+    "steps": [
+      {
+        "en": "Phase 2 Preventive: PM Calendar, Meter Readings with accumulation from production output, Daily Check on web and phone, the machine-blocked slot on the Scheduling Board, and the PM Compliance report.",
+        "id": "Fase 2 Preventive: PM Calendar, Meter Readings dengan akumulasi dari output produksi, Daily Check di web dan HP, slot mesin terblokir di Scheduling Board, dan laporan PM Compliance."
+      },
+      {
+        "en": "Phase 3 Breakdown: the Breakdown button on the production work list creates a request of priority P1, spare part issue to stock, purchase request with status Waiting Part, and the Machine Reliability report.",
+        "id": "Fase 3 Breakdown: tombol Breakdown di worklist produksi membuat request prioritas P1, pengeluaran spare part ke stok, permintaan pembelian dengan status Waiting Part, dan laporan Machine Reliability."
+      },
+      {
+        "en": "Phase 4 Improvement: tables and service, repeated-failure detector, Proposal and Review screens, work order type IMPROVEMENT, and Apply to master with manual approval.",
+        "id": "Fase 4 Improvement: tabel dan service, detektor kerusakan berulang, layar Proposal dan Review, work order jenis IMPROVEMENT, dan Apply to master dengan persetujuan manual."
+      },
+      {
+        "en": "Master Data comes first because the other phases read its data. Each phase is done when its tests pass and its data is checked in the database.",
+        "id": "Master Data lebih dulu karena fase lain membaca datanya. Tiap fase selesai bila test lulus dan datanya dicek di database."
+      },
+      {
+        "en": "Work happens in the mockup site with ddt databases. Nothing is written to tm2 databases before release.",
+        "id": "Pekerjaan dilakukan di situs mockup dengan database ddt. Tidak ada yang ditulis ke database tm2 sebelum rilis."
+      },
+      {
+        "en": "Inquiry, ProDev and ProCost are not touched. Screens are built from DevLib objects, without raw HTML.",
+        "id": "Inquiry, ProDev dan ProCost tidak disentuh. Layar dibangun dari objek DevLib, tanpa HTML mentah."
+      },
+      {
+        "en": "Real machine data is never invented. Watch points, plan intervals and parts in the live database are filled by the head of maintenance through the screens.",
+        "id": "Data mesin nyata tidak pernah dikarang. Watch point, interval plan dan part di database live diisi kepala maintenance lewat layar."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Planned percentage",
+        "en": "Planned work orders divided by all work orders. Shown in the reliability and compliance reports.",
+        "id": "Work order terencana dibagi semua work order. Tampil di laporan keandalan dan kepatuhan."
+      },
+      {
+        "label": "Scheduling Board",
+        "en": "A confirmed preventive work order blocks its machine. Production can only suggest moving the window, and the head of maintenance confirms.",
+        "id": "Work order preventive Confirmed memblokir mesinnya. Produksi hanya bisa mengusulkan menggeser jendela, kepala maintenance yang mengonfirmasi."
+      },
+      {
+        "label": "Inventory and Procurement",
+        "en": "Spare parts are issued from Inventory against the work order. A missing part creates a purchase request.",
+        "id": "Spare part dikeluarkan dari Inventory terhadap work order. Part yang kurang membuat permintaan pembelian."
+      },
+      {
+        "label": "Backlog items still open",
+        "en": "Cleaning old spare parts that sit in the category Others, and the legal inspection rules for forklift and compressor.",
+        "id": "Perapian spare part lama yang masih di kategori Others, dan aturan inspeksi wajib untuk forklift dan kompresor."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-database-decision",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Why Maintenance Has Its Own Database",
+    "purpose": {
+      "en": "The reason Maintenance lives in tm2mnt instead of tm2prd, what it costs, and what is left to clean up in the live database.",
+      "id": "Alasan Maintenance berada di tm2mnt dan bukan tm2prd, apa konsekuensinya, dan apa yang tersisa untuk dibersihkan di database live."
+    },
+    "keywords": "database maintenance, tm2mnt, ddtmnt, database per modul, tm2prd, pemisahan, rilis, migration",
+    "steps": [
+      {
+        "en": "The project rule is one database per functional module. Maintenance is now its own module (MAINT) with its own menu and access groups, like HRM, Recruitment and Payroll.",
+        "id": "Aturan proyek adalah satu database per modul fungsional. Maintenance kini modul sendiri (MAINT) dengan menu dan grup akses sendiri, seperti HRM, Recruitment dan Payroll."
+      },
+      {
+        "en": "Production keeps work orders, scheduling and output. Maintenance has its own life cycle of requests, work orders, plans and improvements, so the two do not share tables.",
+        "id": "Production menyimpan work order, scheduling dan output. Maintenance punya siklus sendiri berupa request, work order, plan dan improvement, jadi keduanya tidak berbagi tabel."
+      },
+      {
+        "en": "No foreign key crosses databases anyway, so separating them gives up no integrity. Relations stay logical and are checked in Laravel.",
+        "id": "Tidak ada foreign key lintas database, jadi pemisahan tidak mengorbankan integritas. Relasi tetap logis dan dicek di Laravel."
+      },
+      {
+        "en": "Machine downtime and status stay in the Master database because Master Mesin owns them and scheduling and OEE read them. Work orders write there through one service.",
+        "id": "Downtime dan status mesin tetap di database Master karena Master Mesin pemiliknya dan scheduling serta OEE membacanya. Work order menulis ke sana lewat satu service."
+      },
+      {
+        "en": "A separate server is not needed. Maintenance uses the same MySQL server with one more database.",
+        "id": "Server terpisah tidak diperlukan. Maintenance memakai server MySQL yang sama dengan satu database tambahan."
+      },
+      {
+        "en": "At release a migration drops the old empty mnt_ tables in tm2prd and the old MAINT module, menu, groups and setting in tm2sys, then the new structure is created in tm2mnt.",
+        "id": "Saat rilis sebuah migration membuang tabel mnt_ lama yang kosong di tm2prd serta modul MAINT, menu, grup dan pengaturan lama di tm2sys, lalu struktur baru dibuat di tm2mnt."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Connection",
+        "en": "tm2mnt, set by DB_MNT. In the mockup site it points to ddtmnt.",
+        "id": "tm2mnt, diatur oleh DB_MNT. Di situs mockup menunjuk ke ddtmnt."
+      },
+      {
+        "label": "Copy to dummy",
+        "en": "ddt:copy with the option db=mnt copies tm2mnt to ddtmnt, including views.",
+        "id": "ddt:copy dengan opsi db=mnt menyalin tm2mnt ke ddtmnt, termasuk view."
+      },
+      {
+        "label": "Left in tm2 today",
+        "en": "Eleven empty mnt_ tables in tm2prd (the code table has seed rows), module MAINT, its menu, two groups and one setting in tm2sys.",
+        "id": "Sebelas tabel mnt_ kosong di tm2prd (tabel kode berisi data awal), modul MAINT, menunya, dua grup dan satu pengaturan di tm2sys."
+      },
+      {
+        "label": "Removed on 2026-10-08",
+        "en": "The previous Maintenance code, screens, tables and menu in the mockup databases were deleted without archive by user order.",
+        "id": "Kode, layar, tabel dan menu Maintenance sebelumnya di database mockup dihapus tanpa arsip atas perintah user."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-decisions",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Decisions and Open Items",
+    "purpose": {
+      "en": "The decisions taken for the Maintenance rebuild, and the items still waiting for the user or for another team.",
+      "id": "Keputusan yang diambil untuk pembangunan ulang Maintenance, dan hal yang masih menunggu user atau tim lain."
+    },
+    "keywords": "keputusan maintenance, item terbuka, K8, K10, ambang, constants, komponen tanpa pohon, apply to master",
+    "steps": [
+      {
+        "en": "Components are codes, not a tree. A machine list of 45 machines does not need machine, unit and component levels.",
+        "id": "Komponen berupa kode, bukan pohon. Daftar 45 mesin tidak butuh tingkat mesin, unit dan komponen."
+      },
+      {
+        "en": "Request and Work Order stay two documents. Daily Check and repeated failures enter through a Request so the head of maintenance does the judging.",
+        "id": "Request dan Work Order tetap dua dokumen. Daily Check dan kerusakan berulang masuk lewat Request supaya penilaian ada di kepala maintenance."
+      },
+      {
+        "en": "Thresholds and rates are settings in Constants so a user can change them without code. The values in this plan are starting proposals.",
+        "id": "Ambang dan tarif adalah pengaturan di Constants sehingga user bisa mengubahnya tanpa kode. Nilai di rencana ini adalah usulan awal."
+      },
+      {
+        "en": "Master data is changed only by people. The system proposes, a person approves.",
+        "id": "Master data hanya diubah orang. Sistem mengusulkan, orang menyetujui."
+      },
+      {
+        "en": "Stock is never copied into Maintenance. Screens read it from Inventory.",
+        "id": "Stok tidak pernah disalin ke Maintenance. Layar membacanya dari Inventory."
+      },
+      {
+        "en": "Menu items move by migration with their codes unchanged, so access rights and Help stay attached.",
+        "id": "Item menu dipindah lewat migration dengan kodenya tidak berubah, sehingga hak akses dan Help tetap menempel."
+      },
+      {
+        "en": "Two older open items do not block Phase 1: old spare parts in the category Others, and the legal inspection period of forklift and compressor.",
+        "id": "Dua item lama yang masih terbuka tidak menghambat Fase 1: spare part lama di kategori Others, dan periode inspeksi wajib forklift dan kompresor."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Approved by user",
+        "en": "The four-group menu and the Machine Maintenance Profile mockup.",
+        "id": "Menu empat kelompok dan mockup Machine Maintenance Profile."
+      },
+      {
+        "label": "Not approved yet",
+        "en": "The mockup of Improvement, Daily Check and PM Calendar, and the technical plan itself while it is under review.",
+        "id": "Mockup Improvement, Daily Check dan PM Calendar, dan rencana teknis itu sendiri selama masih di-review."
+      },
+      {
+        "label": "Proposed values",
+        "en": "Three repeats, ninety days, review after sixty days, and director approval above ten million IDR. The user sets the final values.",
+        "id": "Tiga kali, sembilan puluh hari, review setelah enam puluh hari, dan persetujuan direksi di atas sepuluh juta IDR. User menetapkan nilai akhir."
+      },
+      {
+        "label": "Waiting for others",
+        "en": "The legal inspection rules for forklift and compressor are to be checked with HR or K3.",
+        "id": "Aturan inspeksi wajib forklift dan kompresor perlu dicek ke HR atau K3."
       }
     ]
   }
