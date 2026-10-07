@@ -28,7 +28,7 @@ class MultiLanguageRatchetTest extends TestCase
     {
         $php = (new Finder)->files()->in([resource_path('views/v2'), app_path('Support/V2'), base_path('packages/devlib/src'), base_path('packages/devlib/resources/views')])
             ->name(['*.php']);
-        $js = (new Finder)->files()->in(base_path('packages/devlib/resources/assets/js'))->name('*.js');
+        $js = (new Finder)->files()->in(base_path('packages/devlib/resources/assets/js'))->exclude('vendor')->name('*.js');  // vendor = pustaka pihak ketiga (Anime.js), bukan teks layar
         $c = array_fill_keys(array_keys(self::BASELINE), 0);
 
         foreach ($php as $f) {
