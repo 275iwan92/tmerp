@@ -9,7 +9,7 @@ description: |
   "motion path", "scroll animation", "draggable", "spring animation", "keyframe animation".
 ---
 
-> **Asal & aturan (user 2026-10-07):** dari `BowTiedSwan/animejs-skills` (dokumentasi saja, `install.sh` tidak dipakai). Paket npm `animejs` v4 sudah terpasang di proyek untuk **animasi mesin** (produksi) dan **tracking pengiriman**. Prioritas di bawah `devlib-oo`: animasi dibungkus sebagai **objek DevLib** (PHP `tag()/source()` + kelas JS `jsClass()`), bukan skrip inline di layar. Hormati `prefers-reduced-motion`. Pakai import ES (`import { animate, createTimeline } from 'animejs'`), bukan CDN.
+> **Asal & aturan (user 2026-10-07):** dari `BowTiedSwan/animejs-skills` (dokumentasi saja, `install.sh` tidak dipakai). Paket npm `animejs` v4 sudah terpasang di proyek untuk **animasi mesin** (produksi) dan **tracking pengiriman**. Prioritas di bawah `devlib-oo`: animasi dibungkus sebagai **objek DevLib** (PHP `tag()/source()` + kelas JS `jsClass()`), bukan skrip inline di layar. Hormati `prefers-reduced-motion`. **Di DevLib:** salinan UMD ada di `packages/devlib/resources/assets/js/vendor/anime.umd.min.js` (dimuat paling awal oleh `devlib.js`, global `anime`; objek DevLib memakai `window.anime.animate(...)`). Naikkan versi npm = salin ulang berkas itu. Pakai import ES (`import { animate, createTimeline } from 'animejs'`), bukan CDN.
 
 # Anime.js v4 Skill
 

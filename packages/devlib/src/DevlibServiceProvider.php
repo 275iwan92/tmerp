@@ -60,7 +60,9 @@ class DevlibServiceProvider extends ServiceProvider
         $components = glob($dir.'/components/*.js');
         sort($components);
 
-        return [$dir.'/core.js', ...$components, $dir.'/boot.js'];
+        $vendor = glob($dir.'/vendor/*.js');  // library pihak ketiga (Anime.js, MIT) disalin ke paket supaya DevLib berdiri sendiri, tanpa npm
+
+        return [...$vendor, $dir.'/core.js', ...$components, $dir.'/boot.js'];
     }
 
     public static function bundle(): string

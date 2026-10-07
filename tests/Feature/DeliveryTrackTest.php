@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Support\V2\Data\DeliveryTrack;
+use Devlib\DevlibServiceProvider;
 use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
@@ -39,5 +40,14 @@ class DeliveryTrackTest extends TestCase
         $this->assertStringContainsString('data-target="0.25"', Blade::render('<x-dl::delivery-track stage="shipped" :position="0.25" />'));
         $this->assertStringContainsString('dl-track--draft', Blade::render('<x-dl::delivery-track stage="nonsense" />'));
         $this->assertStringContainsString('dl-track__cancel', Blade::render('<x-dl::delivery-track stage="cancelled" />'));
+    }
+
+    public function test_bundle_ships_anime_js_before_the_components(): void
+    {
+        $scripts = DevlibServiceProvider::scripts();
+        $names = array_map('basename', $scripts);
+        $this->assertContains('anime.umd.min.js', $names);
+        $this->assertLessThan(array_search('core.js', $names, true), array_search('anime.umd.min.js', $names, true));
+        $this->assertStringContainsString('window.anime.animate', file_get_contents(dirname(__DIR__, 2).'/packages/devlib/resources/assets/js/components/delivery-track.js'));
     }
 }

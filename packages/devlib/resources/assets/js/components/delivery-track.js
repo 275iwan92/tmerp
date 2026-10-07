@@ -1,5 +1,6 @@
-/* DevLib · DeliveryTrack — truk menempuh rute SVG sampai titik tahap dokumen. Tanpa library: requestAnimationFrame + getPointAtLength.
- * Pembaruan tahap tanpa memuat ulang: el.dispatchEvent(new CustomEvent('dl:track', {detail: {target: 1, moving: false}})). */
+/* DevLib · DeliveryTrack — truk menempuh rute SVG sampai titik tahap dokumen. Animasi = Anime.js v4 (js/vendor/anime.umd.min.js,
+ * global `anime`); posisi dihitung getPointAtLength. Pembaruan tahap tanpa memuat ulang:
+ * el.dispatchEvent(new CustomEvent('dl:track', {detail: {target: 1, moving: false}})). */
 (function (Devlib) {
   'use strict';
 
@@ -28,15 +29,10 @@
 
     go(target, moving) {
       this.el.classList.toggle('is-moving', moving && !this.reduced);
-      cancelAnimationFrame(this.raf);
-      if (this.reduced || target === this.at) { this.place(target); return; }
-      const from = this.at, t0 = performance.now(), ms = 1400 * Math.max(0.3, Math.abs(target - from));
-      const step = now => {
-        const k = Math.min(1, (now - t0) / ms), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-        this.place(from + (target - from) * e);
-        if (k < 1) this.raf = requestAnimationFrame(step);
-      };
-      this.raf = requestAnimationFrame(step);
+      if (this.anim) this.anim.pause();
+      if (this.reduced || target === this.at || !window.anime) { this.place(target); return; }
+      const pos = {p: this.at};
+      this.anim = window.anime.animate(pos, {p: target, duration: 1400 * Math.max(0.3, Math.abs(target - this.at)), ease: 'inOutQuad', onUpdate: () => this.place(pos.p)});
     }
   }
   Devlib.define("DeliveryTrack", DeliveryTrack);
