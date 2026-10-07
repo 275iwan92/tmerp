@@ -602,5 +602,58 @@
       {"label": "Accounting standard", "en": "LIFO is not allowed under PSAK 14 and IAS 2. Average and FIFO are.", "id": "LIFO tidak diperbolehkan oleh PSAK 14 dan IAS 2. Rata-rata dan FIFO diperbolehkan."},
       {"label": "Settings", "en": "Every threshold chosen above is stored as a setting the user can edit, not as a fixed value in the code.", "id": "Setiap ambang yang dipilih di atas disimpan sebagai pengaturan yang bisa diubah user, bukan nilai tetap di kode."}
     ]
+  },
+  {
+    "key": "guide-inv-qc-urgent",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Receiving Quality: Sampling, Urgent and Short Delivery",
+    "purpose": {
+      "en": "How incoming material is checked by sampling, how an URGENT job takes material straight to production, and what happens when output plus waste shows that the quantity was short from the start.",
+      "id": "Bagaimana material masuk diperiksa dengan sampling, bagaimana job URGENT membawa material langsung ke produksi, dan apa yang terjadi bila output ditambah waste menunjukkan qty sudah kurang sejak awal."
+    },
+    "keywords": "qc sampling, urgent, dock to line, conditional, kurang kirim, short delivery, output waste, aql, first article, minta kirim kekurangan, usage decision",
+    "steps": [
+      {
+        "en": "Normal receipt: take a sample by the sampling plan, run quick tests at the dock, decide the lot (Released or Rejected), then post the receipt and put the goods away.",
+        "id": "Penerimaan normal: ambil sampel menurut rencana sampling, uji cepat di dok, putuskan lot (Released atau Rejected), lalu posting penerimaan dan simpan barang."
+      },
+      {
+        "en": "URGENT receipt: an authorised person marks it URGENT with a reason and the work order. The receipt is posted at once with status Conditional and goes straight to the machine.",
+        "id": "Penerimaan URGENT: pihak berwenang menandainya URGENT dengan alasan dan work order. Penerimaan langsung diposting berstatus Conditional dan dibawa langsung ke mesin."
+      },
+      {
+        "en": "For an URGENT receipt the sampling goes on in parallel, at the dock on a kept sample or on the first sheets at the press. The result changes the batch to Released or Rejected.",
+        "id": "Pada penerimaan URGENT sampling berjalan paralel, di dok pada sampel yang disisihkan atau pada lembar pertama di mesin. Hasilnya mengubah batch menjadi Released atau Rejected."
+      },
+      {
+        "en": "If a Conditional batch is rejected after use, trace forward to the work orders and finished goods made from it, hold them, and raise a claim to the supplier.",
+        "id": "Bila batch Conditional ditolak setelah dipakai, telusuri maju ke work order dan barang jadi yang dibuat darinya, tahan, dan buat klaim ke supplier."
+      },
+      {
+        "en": "After production, compare output plus standard waste with the material issued. If material is still missing, the quantity was short from the start.",
+        "id": "Setelah produksi, bandingkan output ditambah waste standar dengan material yang dikeluarkan. Bila material masih kurang, berarti qty sudah kurang sejak awal."
+      },
+      {
+        "en": "Recount or reweigh what is left as proof, then confirm. The system raises a request to send the shortfall, lowers the received quantity and reopens the purchase order line.",
+        "id": "Hitung ulang atau timbang ulang sisanya sebagai bukti, lalu konfirmasi. Sistem membuat permintaan kirim kekurangan, menurunkan qty terima dan membuka kembali baris PO."
+      },
+      {
+        "en": "The same rule applies to a subcontractor return and to material supplied by the customer: the customer is asked to send the shortfall.",
+        "id": "Aturan yang sama berlaku untuk barang kembali dari subkon dan material titipan customer: customer diminta mengirim kekurangannya."
+      }
+    ],
+    "fields": [
+      {"label": "Sampling plan", "en": "Table of sample size by lot size and an intensity: tightened, normal, reduced or skip with a supplier certificate. All values are settings.", "id": "Tabel ukuran sampel menurut jumlah lot dan intensitas: ketat, normal, ringan atau lewati dengan sertifikat supplier. Semua nilai adalah pengaturan."},
+      {"label": "Intensity change", "en": "A supplier passing several lots in a row moves to reduced checks; one rejection moves it back to tightened.", "id": "Supplier yang lulus beberapa lot berturut-turut pindah ke pemeriksaan ringan; satu penolakan memindahkannya kembali ke ketat."},
+      {"label": "URGENT", "en": "A mark on the receipt line with who, why and which work order. Only authorised roles may set it.", "id": "Tanda pada baris penerimaan berisi siapa, mengapa dan work order mana. Hanya peran berwenang yang boleh memasangnya."},
+      {"label": "Conditional", "en": "Posted and usable, but not yet released by QC. Counted as Available with a mark.", "id": "Sudah diposting dan bisa dipakai, tetapi belum dirilis QC. Dihitung Available dengan tanda."},
+      {"label": "Dock to line", "en": "Delivery from the dock directly to the production area, without putaway into a storage bin.", "id": "Pengantaran dari dok langsung ke area produksi, tanpa putaway ke bin penyimpanan."},
+      {"label": "Decision deadline", "en": "A setting in hours. When it passes, or the job ends first, a usage decision is required and QC and operations managers are alerted.", "id": "Pengaturan dalam jam. Bila lewat, atau job selesai lebih dulu, wajib ada usage decision dan kepala QC serta Ops Manager diberi tahu."},
+      {"label": "Shortfall", "en": "Output plus standard waste, in material units, minus the quantity issued to the work order.", "id": "Output ditambah waste standar, dalam satuan material, dikurangi qty yang dikeluarkan ke work order."},
+      {"label": "Standard waste only", "en": "Waste above the standard is a usage variance, not a short delivery, and is never claimed from the supplier.", "id": "Waste di atas standar adalah varians pemakaian, bukan kurang kirim, dan tidak pernah ditagihkan ke supplier."},
+      {"label": "Request to send shortfall", "en": "A document with source (supplier, subcontractor or customer), quantity, proof of recount, need date and links to the receipt and the order.", "id": "Dokumen berisi sumber (supplier, subkon atau customer), qty, bukti hitung ulang, tanggal butuh dan tautan ke penerimaan dan order."},
+      {"label": "If the supplier refuses", "en": "Recorded as a claim: debit note or deduction from the invoice. The rule is still to be decided by the user.", "id": "Dicatat sebagai klaim: debit note atau potongan tagihan. Aturannya masih menunggu keputusan user."}
+    ]
   }
 ]

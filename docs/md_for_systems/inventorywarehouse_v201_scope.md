@@ -1,6 +1,6 @@
 # Inventory & Warehouse v2.01 — Dokumen Cakupan (Scope)
 
-> **Status: DRAFT 2026-10-08, menunggu persetujuan user.** Belum ada kode. Versi: 2.01 (perbaikan modul Inventory dan Warehouse).
+> **Status: DRAFT rev.2 2026-10-08.** O-1 sampai O-4 dijawab user (bagian 13). Belum ada kode. Versi: 2.01 (perbaikan modul Inventory dan Warehouse).
 > Isi: keputusan user, kondisi nyata sekarang (dicek ke kode dan skema), pembagian Inventory vs Warehouse, daftar kebutuhan
 > bernomor (I-, W-, B-, Q-, V-), usulan jalan keluar QC, booking sejak costing, skema yang diusulkan, fasing, dan hal terbuka.
 > Rujukan terkait: `inventory_tier1.md`..`inventory_tier4.md`, `warehouselayout_tier1.md`, `materialbooking_tier1.md`,
@@ -21,13 +21,15 @@
 |---|---|---|
 | D1 | **Dokumen Transfer dan Opname dimiliki Inventory** (dokumen, persetujuan, nilai). **Eksekusi lapangan** (tugas, scan, hitung) di Warehouse. | user 2026-10-08, setuju saran 1 |
 | D2 | **Subkon**: vendor = **lokasi virtual milik perusahaan**; stok tetap terlihat dan bernilai. | saran, tidak ada keberatan |
-| D3 | **Material titipan customer**: atribut **pemilik** pada stok, bukan gudang terpisah. Lihat catatan O-3 (bertentangan dengan perilaku sekarang). | saran, tidak ada keberatan |
-| D4 | **QC berjalan sambil proses produksi**, karena keterdesakan waktu. Penerimaan tidak boleh tertahan menunggu QC selesai. Usulan jalan keluar di bagian 7. | user 2026-10-08 |
-| D5 | **Booking dimulai sejak product costing sudah menghitung** (bukan menunggu CO), karena proses cepat dan metode **short run**. Usulan rancangan di bagian 6. | user 2026-10-08 |
+| D3 | **Material titipan customer**: stok dengan atribut **pemilik Customer**; **tidak dinilai, tidak dijurnal**, punya lokasi, bisa di-pick. Menggantikan perilaku sekarang (non-stok). | user 2026-10-08 (O-3) |
+| D4 | **QC sampling**, dan barang **langsung dibawa ke produksi bila URGENT**. Rancangan di bagian 7. | user 2026-10-08 (O-2) |
+| D14 | Bila (**output + waste**) masih kurang dibanding bahan yang dikeluarkan, berarti **bahan kurang sejak awal**: sistem **meminta kekurangannya dikirim** (7.6). | user 2026-10-08 (O-2) |
+| D5 | **Booking dimulai sejak product costing sudah menghitung** (bukan menunggu CO), karena proses cepat dan metode **short run**. Tafsir pre-booking lunak yang naik ke keras pada CO Confirmed **dibenarkan user** (O-1). Rancangan di bagian 6. | user 2026-10-08 |
 | D6 | **Lokasi**: RM dan FG sampai tingkat **bin**; WIP lantai produksi sampai tingkat **area**. | saran |
 | D7 | **SFG dilacak per tahap proses** (cetak, laminasi, die cut, dst.). | saran |
 | D8 | **Cakupan 2.01 mencakup VALUASI dan jurnal otomatis**, bukan hanya operasional. | user 2026-10-08 |
 | D9 | Booking tetap di **Production > Planning**; Inventory hanya membaca Reserved dan Available; **pick list di Warehouse**. | user 2026-10-08, setuju saran 5 |
+| D13 | Metode nilai = **AVERAGE** (rata-rata bergerak). Rumus dan contoh kenaikan harga di bagian 8. | user 2026-10-08 (O-4) |
 
 Pertanyaan sebelumnya yang dijawab "sesuai saran" mengikuti usulan ulasan 2026-10-08.
 
@@ -61,7 +63,7 @@ Pertanyaan sebelumnya yang dijawab "sesuai saran" mengikuti usulan ulasan 2026-1
 | Celah | Bukti | Dampak |
 |---|---|---|
 | **Batch hanya teks** | `lot_no` varchar di kartu stok dan lapisan; tidak ada master batch, tanggal kedaluwarsa, status QC per batch | Tidak ada FEFO, kedaluwarsa, traceability, atau status per batch |
-| **QC menahan posting** | `PvPostingService::blockers` | Bertentangan dengan D4: barang yang sudah datang tidak bisa jadi stok sampai QC selesai |
+| **QC menahan posting** | `PvPostingService::blockers` | Bertentangan dengan jalur URGENT (D4): barang mendesak tidak bisa langsung ke produksi |
 | **Tidak ada pemilik pada stok** | Tidak ada kolom pemilik di tabel stok; titipan customer sengaja di luar stok | Titipan tidak punya lokasi, tidak bisa di-pick atau dialokasikan secara fisik |
 | **Tidak terlihat sisi kirim subkon** | Hanya penerimaan SUBCON yang ditemukan; tidak ditemukan dokumen kirim bahan ke vendor, lokasi vendor, atau laporan stok di vendor | Bahan di vendor tidak terlacak |
 | **Booking mulai dari CO** | `demands()` membaca `co_order` | Bertentangan dengan D5 |
@@ -69,7 +71,10 @@ Pertanyaan sebelumnya yang dijawab "sesuai saran" mengikuti usulan ulasan 2026-1
 | **Tidak terlihat pick list, putaway, dok terima** | Tidak ada tabel atau layanan bernama itu | Gudang belum punya tugas terstruktur |
 | **Status In Transit** | `InvTransfer` ada; belum diperiksa apakah dua langkah | `?` |
 | **Opname sebagai tugas** | Ada layar adjustment & count; belum diperiksa pengunciannya | `?` |
-| **Metode nilai** | Ada lapisan FIFO/LIFO dan kolom nilai; metode rata-rata belum diverifikasi | `?` Lihat V-01 |
+| **Average dihitung per bin** | `StockCardChain`: rantai per posisi (item di satu bin); transfer membawa Avg bin asal | Biaya keluar bergantung pada bin; lihat 8.5 dan O-11 |
+| **FIFO/LIFO belum jalan** | Komentar `StockPostingService`: `inv_stock_layer` belum diimplementasikan | Sesuai: Average dipilih, FIFO ditunda |
+| **Jurnal koreksi transaksi mundur** | Hanya peringatan (`StockPostingService`) | Celah O-14 |
+| **Kurang kirim belakangan** | Hanya ada `reportShortage()` untuk penerimaan SUBCON | Perlu diperluas ke supplier dan customer (7.6) |
 | **Penguncian periode** | `inv_period` ada; cakupannya belum diperiksa | `?` |
 
 ---
@@ -98,7 +103,7 @@ Pertanyaan sebelumnya yang dijawab "sesuai saran" mengikuti usulan ulasan 2026-1
 | I-02 | Kelas tambahan: kemasan, consumable/spare part, scrap (nilai dan lokasi sendiri) | BARU | P2 |
 | I-03 | **Master batch**: nomor batch, lot supplier, tanggal produksi, kedaluwarsa, retest, status QC, sertifikasi (FSC, food grade), arah serat | BARU | P1 |
 | I-04 | **Pemilik stok**: Company / Customer / Supplier; stok pemilik lain tidak dinilai | BARU | P1 |
-| I-05 | **Status stok per batch**: Quarantine, Conditional, Released, Rejected, Blocked | BARU | P1 |
+| I-05 | **Status stok per batch**: Quarantine, Conditional (URGENT atau menunggu sampling), Released, Rejected, Blocked | BARU | P1 |
 | I-06 | Satuan ganda (lembar dan kg) dengan konversi dari spesifikasi dan berat timbang aktual | ? | P1 |
 | I-07 | Roll sisa dengan ID dan berat sisa; kebijakan offcut | BARU | P2 |
 | I-08 | SFG per tahap proses (D7) dan perubahan satuan lembar menjadi pcs di die cut | ? | P1 |
@@ -108,10 +113,10 @@ Pertanyaan sebelumnya yang dijawab "sesuai saran" mengikuti usulan ulasan 2026-1
 
 | Kode | Sumber | Perilaku yang diinginkan | Status | Prio |
 |---|---|---|---|---|
-| I-10 | Supplier (GRN dari PO) | Posting **tidak menunggu QC selesai** (lihat bagian 7); nilai = harga PO + landed cost | SEBAGIAN (terblokir QC) | P1 |
+| I-10 | Supplier (GRN dari PO) | Jalur Normal menunggu sampling; jalur **URGENT** diposting langsung dan ke produksi (bagian 7); kurang kirim diminta dikirim (7.6); nilai = harga PO + landed cost | SEBAGIAN (terblokir QC) | P1 |
 | I-11 | Produksi (SFG/FG) | Hasil per tahap, dengan yield dan reject | ? | P1 |
 | I-12 | **Retur customer** | Layak pakai atau afkir (sudah ada); tautan ke pengiriman asli dan nilai asli | SEBAGIAN | P1 |
-| I-13 | **Material titipan customer** | Masuk sebagai stok pemilik Customer, **tidak dinilai, tidak dijurnal**, hanya bisa dialokasikan ke CO customer itu; memiliki lokasi | BARU (sekarang non-stok) | P1 |
+| I-13 | **Material titipan customer** (D3) | Masuk sebagai stok pemilik Customer, **tidak dinilai, tidak dijurnal**, hanya bisa dialokasikan ke CO customer itu; memiliki lokasi dan bisa di-pick | BARU (sekarang non-stok) | P1 |
 | I-14 | **Subkon kembali** | Nilai = nilai kirim + ongkos jasa; susut vendor dengan toleransi; lewat lokasi vendor | SEBAGIAN (jurnal ada) | P1 |
 | I-15 | Transfer masuk | Membawa nilai asal; selisih terima | `?` | P1 |
 | I-16 | Adjustment plus dan saldo awal | Persetujuan, alasan, akun selisih | ADA | – |
@@ -230,91 +235,207 @@ Catatan: butir B-05 sampai B-11 memuat jawaban referensi dari Help `guide-inv-bo
 
 ---
 
-## 7. QC sambil proses berjalan: usulan jalan keluar (D4)
+## 7. QC: sampling, URGENT langsung ke produksi, dan kurang kirim (D4, D14)
+
+> **Keputusan user 2026-10-08 (O-2):** "QC sampling, dan langsung dibawa ke produksi jika URGENT." Tambahan user: bila kemudian dihitung
+> **output + waste masih kurang, berarti qty bahan dari awal sudah kurang, maka minta dikirim kekurangannya** (7.6).
+> Usulan kelas A / B / C sebelumnya **disederhanakan**: kelas risiko kini hanya menentukan **intensitas sampling**, tidak lagi menahan barang.
 
 ### 7.1 Masalah
-Sekarang posting stok **diblokir** sampai QC qty dan mutu selesai (`PvPostingService::blockers`). Barang sudah di dok, produksi menunggu,
-sedangkan QC masih berjalan. Pilihannya bukan "QC atau tidak QC", melainkan **"siapa menunggu siapa"**.
+Sekarang posting stok **diblokir** sampai QC qty dan mutu selesai (`PvPostingService::blockers`). Untuk pekerjaan mendesak, barang sudah di dok dan
+produksi menunggu. Dua kebutuhan harus hidup bersama: **mutu terjaga** (sampling) dan **waktu tidak terbuang** (URGENT langsung ke produksi).
 
-### 7.2 Prinsip
-1. **Pisahkan "Diterima dan diposting" dari "Dirilis".** Barang boleh masuk stok dan nilai jurnalnya jalan; yang berbeda adalah **status mutu** batch.
-2. **Kendali berdasarkan risiko**, bukan satu aturan untuk semua. QC ketat hanya di tempat yang risikonya besar.
-3. **Tidak ada pemakaian tanpa jejak.** Setiap pemakaian bahan yang belum dirilis tercatat per batch, supaya bila QC gagal, pekerjaan terdampak langsung terlihat.
-4. **QC punya tenggat.** Keputusan yang terlambat memicu eskalasi, bukan menunggu diam-diam.
+### 7.2 Dua jalur
 
-### 7.3 Tiga kelas risiko (pada item, dapat ditimpa per supplier dan per job)
-
-| Kelas | Isi | Perlakuan saat barang tiba |
+| | **Jalur Normal** | **Jalur URGENT** |
 |---|---|---|
-| **A kritis** | Bahan food grade, klaim FSC, job kritis warna, supplier baru, bahan berbahaya | Status **Quarantine**; tidak bisa dipakai. **Jalur cepat**: QC di dok dengan uji singkat (gsm, caliper, kelembapan, uji warna tinta), target keputusan dalam hitungan menit (tenggat dapat diatur). |
-| **B standar** | Kertas, board, film, lem dari supplier yang sudah dikenal | Status **Conditional**: masuk stok, dihitung Available **dengan tanda**, boleh dipakai job kelas B dan C. QC jalan paralel (sampel di dok atau di mesin pada lembar pertama). |
-| **C ringan** | Barang habis pakai, bahan penolong bernilai kecil | Langsung **Released**; cukup sertifikat supplier (COA). |
+| Pemicu | Semua penerimaan | Ditandai URGENT saat Receive oleh pihak berwenang, dengan alasan dan WO / CO tujuan |
+| Urutan | Receive di dok → **ambil sampel** menurut rencana sampling → uji cepat di dok → keputusan lot (Released atau Rejected) → posting GRN → putaway | Receive → **posting langsung** (status batch **Conditional**) → **langsung ke produksi** (dock-to-line, tanpa putaway) → sampling berjalan **paralel** → Released atau Rejected |
+| Status batch saat dipakai | Released | Conditional |
+| Lokasi tujuan | Bin penyimpanan | Area WIP / mesin yang meminta |
+| Jika gagal | Ditolak di dok: retur atau klaim, belum masuk stok | Telusur maju, tahan WO dan FG terdampak, klaim supplier (7.5) |
 
-### 7.4 Aturan inti
-1. **Conditional dihitung Available, tetapi bertanda.** Booking dan pick list boleh mengalokasikannya hanya untuk job yang kelasnya mengizinkan.
-2. **Job kelas A hanya memakai batch Released.**
-3. **QC di mesin (first article)**: hasil uji lembar pertama pada WO dicatat dan **memperbarui status batch** (Released atau Rejected). Itu titik inspeksi sah, bukan tambahan beban.
-4. **Tenggat keputusan** (pengaturan): bila Conditional belum diputuskan dalam N jam, atau job selesai sebelum keputusan, wajib **Usage Decision** susulan; eskalasi ke kepala QC dan Ops Manager.
-5. **Supplier tepercaya** (konsep skip lot SAP DMR): bila riwayat mutu supplier baik, frekuensi uji dikurangi; bila ada masalah, kembali ke uji penuh. Rencana sampel mengikuti AQL (misalnya ANSI/ASQ Z1.4).
-6. **Bila Rejected setelah dipakai**: sistem menelusuri maju (batch → issue → WO → batch FG → pengiriman), menandai WO dan FG terdampak (ditahan), membuat dokumen **klaim ke supplier**, dan mencatat kerugian ke supplier atau scrap.
-7. **Nilai tidak berubah oleh status QC.** Jurnal penerimaan tetap; Reject memicu retur atau klaim, bukan koreksi diam-diam.
-8. **Pengecualian dengan persetujuan**: kepala QC atau Ops Manager boleh melepas batch kelas A secara bersyarat (**use under deviation**), tercatat siapa, alasan, dan batas jumlah.
+Perubahan kode: `PvPostingService::blockers()` tidak lagi memblokir baris bertanda URGENT yang QC mutunya masih PENDING. Baris normal tetap menunggu hasil sampling.
 
-### 7.5 Alur bahan kelas B (kasus terbanyak)
+### 7.3 Rencana sampling
+Yang diuji adalah **sampel**, bukan seluruh barang; hasilnya menentukan nasib satu lot.
+
+| Intensitas | Kapan | Contoh isi |
+|---|---|---|
+| **Tightened** (ketat) | Kelas A (food grade, klaim FSC, job kritis warna, bahan berbahaya), supplier baru, setelah ada reject | Sampel lebih besar |
+| **Normal** | Kelas B (kertas, board, film, lem dari supplier dikenal) | Sampel standar |
+| **Reduced** (ringan) | Supplier konsisten lulus beberapa lot berturut-turut | Sampel kecil atau tiap lot ke-N |
+| **Skip / COA** | Kelas C (bahan penolong kecil) | Cukup sertifikat supplier |
+
+- Aturan berpindah intensitas mengikuti konsep *dynamic modification rule* SAP: lulus N lot berturut-turut → Reduced; satu reject → Tightened sampai pulih.
+- Ukuran sampel menurut jumlah lot dari **tabel pengaturan** (mengikuti ANSI/ASQ Z1.4 atau persentase sederhana); semua angka bisa diubah user.
+- Uji cepat di dok: gsm (timbang sampel), caliper, kelembapan, arah serat, kondisi fisik, uji warna tinta, cek sertifikat dan batch.
+
+### 7.4 Pengaman URGENT (usulan)
+1. **Siapa boleh menandai URGENT**: PPIC, Supervisor Produksi, Ops Manager dan di atasnya (pengaturan).
+2. **Alasan wajib** dan **tautan ke WO / CO** yang membutuhkan.
+3. **Bahan dengan klaim FSC atau food grade**: tetap boleh langsung, tetapi muncul peringatan dan perlu persetujuan kepala QC atau Ops Manager. *Pengaman ini usulan saya; bisa dihapus bila Anda ingin URGENT benar-benar tanpa syarat.*
+4. **Tenggat keputusan** (pengaturan): bila Conditional belum diputuskan dalam N jam, atau job selesai lebih dulu, wajib **Usage Decision** susulan dan eskalasi ke kepala QC dan Ops Manager.
+5. **Laporan URGENT**: jumlah, pemohon, supplier, dan hasil sampling kemudian, supaya penggunaan URGENT tidak melebar tanpa terlihat.
+6. Nilai jurnal **tidak berubah** oleh status QC; Reject memicu retur atau klaim, bukan koreksi diam-diam.
+
+### 7.5 Bila ditolak setelah dipakai
+Sistem menelusuri maju (batch → issue → WO → batch FG → pengiriman), menandai WO dan FG terdampak (ditahan), membuat **dokumen klaim ke supplier**,
+dan mencatat kerugian ke supplier atau ke scrap.
+
+### 7.6 Kurang kirim yang baru ketahuan belakangan (D14)
+
+> **Aturan user:** setelah produksi, bila **output + waste masih kurang** dibanding bahan yang dikeluarkan, berarti **qty bahan dari awal sudah kurang**.
+> Sistem lalu **meminta kekurangannya dikirim**.
+
+Ini terutama terjadi pada jalur URGENT (barang langsung ke mesin sebelum dihitung atau ditimbang teliti), tetapi berlaku untuk semua jalur.
+
+**Cara kerja**
 ```
-Tiba di dok -> W Receive (hitung, timbang, label, ambil sampel)
-  -> I posting GRN, status batch = Conditional, jurnal GR/IR berjalan
-  -> W Putaway ke bin; booking / pick boleh alokasikan (job kelas B/C)
-  -> QC paralel: sampel di dok ATAU first article di mesin
-        lulus   -> Released
-        gagal   -> Rejected -> telusur maju -> tahan WO/FG terdampak -> klaim supplier
-        lewat tenggat -> eskalasi
-```
+Kebutuhan bahan   = (Output baik + Waste STANDAR) dalam satuan bahan
+Qty tersedia      = Qty bahan yang dikeluarkan ke WO (dari batch itu)
+Kekurangan        = Kebutuhan bahan - Qty tersedia
 
-### 7.6 Kebutuhan
+Kekurangan > toleransi  ->  "Bahan kurang sejak awal"  ->  usulan Permintaan Kirim Kekurangan
+```
+- Perhitungan memakai **waste standar** (bukan waste aktual). Waste aktual yang melebihi standar adalah **varians pemakaian**, bukan kurang kirim, jadi tidak ditagihkan ke pemasok.
+- Sebelum dikonfirmasi, petugas melakukan **hitung ulang atau timbang ulang** sisa lot sebagai bukti. Tanpa bukti, selisih tetap varians pemakaian.
+- Sumbernya bisa **supplier (PO)**, **subkon** (pola `reportShortage()` yang sudah ada), atau **customer** (bahan dari customer untuk CO itu: customer diminta mengirim kekurangannya).
+
+**Tindak lanjut setelah petugas berwenang mengonfirmasi**
+1. **Permintaan Kirim Kekurangan** dibuat: qty kekurangan, pemasok, WO yang menunggu, tanggal butuh (mendesak bila WO sedang jalan), bukti hitung ulang.
+2. **Qty terima dikoreksi turun** pada penerimaan asal dan jurnal GR/IR dikoreksi (pola `reportShortage()` / `PV_SHORT` yang sudah ada untuk subkon); stok diperbaiki lewat dokumen yang merujuk penerimaan itu.
+3. **Baris PO dibuka kembali** untuk kekurangannya (backorder), atau dibuat permintaan pembelian tambahan bila PO sudah tertutup, dengan rujukan ke penerimaan asal.
+4. **Pemberitahuan popup** ke Pembelian dan PPIC; booking menandai kebutuhan itu sebagai kurang dan mendesak.
+5. Bila pemasok menolak: dicatat sebagai klaim (debit note atau potongan tagihan); keputusannya di O-15.
+6. Hasil masuk **laporan kurang kirim per pemasok** dan menjadi bahan skor mutu pemasok (Q-10).
+
+### 7.7 Kebutuhan
 
 | Kode | Kebutuhan | Status | Prio |
 |---|---|---|---|
-| Q-01 | Kelas risiko A / B / C pada item, supplier, dan job | BARU | P1 |
+| Q-01 | Rencana sampling: tabel ukuran sampel, intensitas (Tightened / Normal / Reduced / Skip), kelas risiko pada item dan supplier | BARU | P1 |
 | Q-02 | Status batch: Quarantine, Conditional, Released, Rejected (I-05) | BARU | P1 |
-| Q-03 | Ubah aturan posting penerimaan: blokir hanya untuk kelas A; kelas B dan C boleh diposting | BARU (mengubah `PvPostingService::blockers`) | P1 |
-| Q-04 | Alokasi booking dan pick mempertimbangkan kelas job dan status batch | BARU | P1 |
-| Q-05 | Catatan hasil first article di WO yang memperbarui status batch | BARU | P1 |
+| Q-03 | Tanda **URGENT** pada baris penerimaan (pemohon, alasan, WO / CO tujuan) dan perubahan `PvPostingService::blockers()` | BARU | P1 |
+| Q-04 | **Dock-to-line**: lokasi tujuan area WIP / mesin tanpa putaway; booking dan pick mengenali stok Conditional | BARU | P1 |
+| Q-05 | Hasil sampling di dok dan **first article di mesin** memperbarui status batch | BARU | P1 |
 | Q-06 | Tenggat keputusan dan eskalasi (pengaturan) | BARU | P1 |
 | Q-07 | Usage Decision susulan | BARU | P1 |
-| Q-08 | Telusur maju saat Rejected dan penahanan WO/FG | BARU | P1 |
+| Q-08 | Telusur maju saat Rejected dan penahanan WO / FG | BARU | P1 |
 | Q-09 | Dokumen klaim ke supplier | BARU | P2 |
-| Q-10 | Skor mutu supplier dan frekuensi uji dinamis | BARU | P3 |
-| Q-11 | Pelepasan bersyarat (deviation) dengan persetujuan | BARU | P2 |
-| Q-12 | Laporan: Conditional terbuka, umur keputusan, tingkat lulus per supplier (widget QC yang ada dilanjutkan) | SEBAGIAN | P2 |
+| Q-10 | Perpindahan intensitas otomatis menurut riwayat supplier, termasuk kejadian kurang kirim | BARU | P2 |
+| Q-11 | Persetujuan untuk URGENT bahan FSC / food grade | BARU | P2 |
+| Q-12 | Laporan: Conditional terbuka, umur keputusan, pemakaian URGENT, tingkat lulus per supplier (widget QC yang ada dilanjutkan) | SEBAGIAN | P2 |
+| Q-13 | **Deteksi kurang kirim** saat rekonsiliasi WO: (output + waste standar) dibanding qty yang dikeluarkan; toleransi sebagai pengaturan | BARU | P1 |
+| Q-14 | **Permintaan Kirim Kekurangan** ke supplier, subkon, atau customer, dengan bukti hitung ulang dan tanggal butuh mendesak | BARU | P1 |
+| Q-15 | Koreksi qty terima dan jurnal GR/IR, serta buka kembali baris PO (backorder) | BARU (pola `reportShortage` ada untuk subkon) | P1 |
+| Q-16 | Laporan kurang kirim per pemasok | BARU | P2 |
 
-### 7.7 Rujukan
+### 7.8 Rujukan
 - **SAP**: stok dalam inspeksi mutu dan *usage decision*; *dynamic modification rule* mengurangi inspeksi bagi supplier yang konsisten baik ([SAP Insider](https://sapinsider.org/dmr-leads-to-more-efficient-procurement-and-production-processes/)).
-- **Dynamics 365**: quality association berisi uji, AQL dan sampling plan; pesanan karantina ([Microsoft Learn](https://learn.microsoft.com/en-us/dynamics365/supply-chain/inventory/quality-associations)).
-- **Odoo**: cek mutu pada penerimaan dapat menahan validasi, atau alur tiga langkah lewat area QC. Di sini sengaja **tidak** menahan karena keterdesakan waktu.
-- **Praktik umum**: bahan di area karantina bertanda hold; disposisi gunakan apa adanya dengan deviasi, kembali ke supplier, atau scrap; sampling ANSI/ASQ Z1.4.
-- Pola "Conditional" adalah **adaptasi kita**, tidak ada sebagai fitur baku di produk-produk itu.
+- **Dynamics 365**: quality association berisi uji, AQL, dan sampling plan ([Microsoft Learn](https://learn.microsoft.com/en-us/dynamics365/supply-chain/inventory/quality-associations)).
+- **Odoo**: cek mutu pada penerimaan dapat menahan validasi. Jalur URGENT sengaja melewatinya.
+- **Praktik umum**: sampling ANSI/ASQ Z1.4; disposisi gunakan apa adanya dengan deviasi, kembali ke supplier, atau scrap.
+- Status **Conditional**, jalur **dock-to-line**, dan **deteksi kurang kirim dari rekonsiliasi WO** adalah adaptasi kita, bukan fitur baku produk-produk itu.
 
 ---
 
-## 8. Valuasi dan akuntansi (D8)
+## 8. Valuasi dan akuntansi (D8, D13)
+
+### 8.1 Keputusan
+**Metode nilai = AVERAGE (rata-rata bergerak, *moving average*).** Kode sekarang **sudah** memakainya (`StockCardChain`, kolom `avg_unitprice`,
+`value_eb`); komentar kode menyatakan FIFO/LIFO (`inv_stock_layer`) belum diimplementasikan. LIFO tidak dipakai untuk pembukuan (dilarang PSAK 14 / IAS 2).
+FIFO ditunda ke "Nanti".
+
+### 8.2 Rumus
+```
+Saat PENERIMAAN:
+   Avg baru = (Qty saldo x Avg lama + Qty masuk x Harga masuk) / (Qty saldo + Qty masuk)
+
+Saat PENGELUARAN:
+   Nilai keluar = Qty keluar x Avg saat itu          (Avg TIDAK berubah)
+   Nilai saldo  = Qty sisa x Avg
+
+Bila Qty saldo menjadi 0:  Nilai saldo dipaksa 0 (sisa pembulatan masuk ke baris terakhir)
+```
+
+| Kejadian | Perlakuan |
+|---|---|
+| Adjustment plus (opname lebih) | Masuk pada Avg saat ini; Avg tidak berubah |
+| Adjustment minus | Keluar pada Avg saat ini |
+| Transfer antar lokasi | Membawa Avg asal; nilai total tidak berubah |
+| Landed cost (ongkos kirim, bea) | Menambah **nilai tanpa qty**: Avg baru = (Nilai saldo + Biaya) / Qty saldo, hanya untuk qty yang masih ada; bagian yang sudah keluar masuk varians (lihat O-13) |
+| Retur customer | Masuk pada **nilai keluar aslinya**, lalu ikut dirata-rata |
+| Retur ke supplier | Keluar pada **nilai penerimaan aslinya** (Avg bisa bergeser) |
+| Koreksi kurang kirim (7.6) | Qty terima turun pada penerimaan asal; nilai ikut turun sebesar qty kurang x harga penerimaan; Avg dihitung ulang |
+| Stok milik Customer / Supplier | **Tidak dinilai**, tidak ikut Avg (D3) |
+| Transaksi bertanggal mundur | Disisipkan di tempatnya; rantai sesudahnya **dihitung ulang** (sudah ada di kode) |
+| Presisi | Harga 5 desimal, nilai 2 desimal |
+
+### 8.3 Contoh: harga bahan naik (kertas art carton, kg)
+
+| # | Kejadian | Qty | Harga / Nilai kejadian | Saldo qty | Nilai saldo | Avg per kg |
+|---|---|---|---|---|---|---|
+| 1 | Saldo awal | +1.000 | 15.000 = 15.000.000 | 1.000 | 15.000.000 | **15.000** |
+| 2 | Terima (harga naik 10%) | +500 | 16.500 = 8.250.000 | 1.500 | 23.250.000 | **15.500** |
+| 3 | Issue ke produksi | -800 | 15.500 = **12.400.000** | 700 | 10.850.000 | 15.500 |
+| 4 | Terima (naik lagi ke 18.000) | +600 | 18.000 = 10.800.000 | 1.300 | 21.650.000 | **16.653,85** |
+| 5 | Issue ke produksi | -1.000 | 16.653,85 = **16.653.846** | 300 | 4.996.154 | 16.653,85 |
+
+- Langkah 2: (15.000.000 + 8.250.000) / 1.500 = **15.500**.
+- Langkah 4: (10.850.000 + 10.800.000) / 1.300 = **16.653,85**.
+- Pemeriksaan: nilai keluar 12.400.000 + 16.653.846 + saldo akhir 4.996.154 = **34.050.000** = saldo awal 15.000.000 + pembelian 8.250.000 + 10.800.000.
+
+**Artinya bagi Anda:** harga terbaru 18.000, tetapi issue langkah 5 dihitung **16.654**. Avg selalu **tertinggal di belakang harga pasar** saat harga naik
+(dan menahan harga saat turun). Dampaknya pada quotation: costing yang dikutip memakai harga bahan terbaru (ProCost, beku, tidak diubah); biaya aktual dari stok
+memakai Avg. Selisihnya tercatat sebagai varians. Contoh: dikutip pada 18.000 per kg, aktual 16.654, selisih menguntungkan 1.346 per kg; bila harga turun, selisih berbalik.
+
+**Pembanding FIFO** (bukan yang dipilih, hanya untuk memahami selisihnya), pergerakan sama:
+
+| | Avg (dipilih) | FIFO |
+|---|---|---|
+| Issue langkah 3 (800 kg) | 12.400.000 | 12.000.000 |
+| Issue langkah 5 (1.000 kg) | 16.653.846 | 16.650.000 (200x15.000 + 500x16.500 + 300x18.000) |
+| Nilai saldo akhir (300 kg) | 4.996.154 | 5.400.000 (300x18.000) |
+| Total | 34.050.000 | 34.050.000 |
+
+Total sama; yang berbeda hanya **pembagian** antara HPP dan saldo. Saat harga naik, FIFO mencatat HPP lebih rendah dan saldo lebih tinggi.
+
+### 8.4 Contoh: penerimaan terlambat dicatat (bertanggal mundur)
+Misal penerimaan langkah 4 (600 kg @18.000) baru dicatat setelah issue langkah 3, tetapi tanggal terimanya **sebelum** issue itu. Sistem menyisipkannya di tempat yang benar dan menghitung ulang:
+
+- Sebelum issue langkah 3: saldo 1.500 kg (23.250.000) + 600 kg (10.800.000) = 2.100 kg, 34.050.000, Avg **16.214,29**.
+- Issue 800 kg menjadi 800 x 16.214,29 = **12.971.429** (sebelumnya 12.400.000, selisih +571.429).
+- Semua baris sesudahnya ikut dihitung ulang. **Kode sekarang menampilkan peringatan** bahwa jurnal yang sudah diposting untuk baris keluar itu **tidak otomatis dikoreksi** (celah O-14).
+
+### 8.5 Tingkat rata-rata: temuan yang perlu keputusan
+`StockCardChain` menghitung Avg **per posisi = satu item di satu bin** (FG: product + part). Transfer membawa Avg bin asal ke bin tujuan, lalu **dicampur** dengan Avg bin tujuan.
+Akibatnya satu item bisa punya **beberapa Avg berbeda** (satu per bin), dan **biaya keluar bergantung pada bin yang diambil**.
+
+**Saran: Avg per item untuk seluruh perusahaan (satu angka), bin hanya menyimpan qty.** Alasan: biaya tidak boleh bergantung pada bin mana yang dipilih operator;
+praktik umum ERP besar menghitung per item (SAP: per material per valuation area; Odoo: per produk per perusahaan). Dampak: perubahan pada
+`StockCardChain` dan kolom nilai, serta migrasi saldo; harus dibahas sebelum dibangun (O-11).
+
+### 8.6 Kebutuhan
 
 | Kode | Kebutuhan | Status | Prio |
 |---|---|---|---|
-| V-01 | **Metode nilai default: rata-rata tertimbang perpetual**; lapisan FIFO yang sudah ada tetap tersedia per kelompok item. **LIFO tidak dipakai untuk pembukuan** (dilarang PSAK 14 / IAS 2). *Usulan, belum dikonfirmasi user.* | `?` | P1 |
+| V-01 | **Average** bergerak (D13). Rumus dan contoh di 8.2 - 8.4 masuk Help | **ADA** (per bin) | – |
+| V-01b | Avg **per item** (satu angka perusahaan), bukan per bin (O-11) | BARU (mengubah rantai kartu) | P1 |
 | V-02 | Jurnal otomatis tiap pergerakan bernilai (terima, issue, hasil produksi, kirim, adjustment, scrap, transfer, retur) | SEBAGIAN (PV ada) | P1 |
 | V-03 | **GR/IR** dan umur GR/IR | SEBAGIAN | P1 |
-| V-04 | **Landed cost** (ongkos kirim, bea, asuransi) dibagi menurut nilai, berat, atau volume | BARU | P1 |
+| V-04 | **Landed cost** dibagi menurut nilai, berat, atau volume | BARU | P1 |
 | V-05 | Tanggal posting terpisah dari tanggal input; **kunci periode** | `?` (`inv_period`) | P1 |
 | V-06 | **Rekonsiliasi harian** subledger stok dengan GL | BARU | P1 |
-| V-07 | Repost nilai untuk transaksi bertanggal mundur | BARU | P1 |
+| V-07 | Jurnal koreksi untuk baris keluar yang Avg-nya berubah karena transaksi mundur (celah O-14) | BARU | P1 |
 | V-08 | **WIP**: nilai bahan + proses per tahap SFG (D7) | ? | P1 |
 | V-09 | Nilai subkon: nilai kirim + jasa, susut vendor | SEBAGIAN | P1 |
 | V-10 | Penyisihan persediaan usang (NRV) dengan tabel umur yang bisa diatur | BARU | P2 |
 | V-11 | Varians: harga beli, pemakaian, substitusi, material | BARU | P2 |
 | V-12 | Multi mata uang pada pembelian | ? | P2 |
 | V-13 | Cut-off: tanggal posting mengikuti penerimaan fisik | `?` | P1 |
-| V-14 | Stok pemilik Customer / Supplier tidak dinilai dan tidak dijurnal | BARU (bersama I-04) | P1 |
+| V-14 | Stok pemilik Customer / Supplier tidak dinilai dan tidak dijurnal (bersama I-04) | BARU | P1 |
+| V-15 | FIFO per kelompok item (lapisan `inv_stock_layer`) | BARU | Nanti |
 
 Catatan: costing beku pada quotation tidak ditimpa. Inventory menyediakan harga dan qty **aktual** sebagai pembanding.
 
@@ -324,12 +445,14 @@ Catatan: costing beku pada quotation tidak ditimpa. Inventory menyediakan harga 
 
 | Alur | Urutan |
 |---|---|
-| **Penerimaan PO** | W Receive (dok, hitung, label) → I posting GRN dengan status batch menurut kelas risiko (bagian 7) → W Putaway → QC paralel |
+| **Penerimaan PO normal** | W Receive (dok, hitung, label, ambil sampel) → uji cepat di dok → Released → I posting GRN → W Putaway |
+| **Penerimaan URGENT** | W Receive → tandai URGENT (alasan, WO tujuan) → I posting GRN, batch Conditional → langsung ke area produksi (dock-to-line) → sampling paralel → Released / Rejected |
+| **Kurang kirim terdeteksi** | Rekonsiliasi WO: (output + waste standar) > qty issue → hitung ulang sebagai bukti → I koreksi qty terima dan jurnal → Permintaan Kirim Kekurangan ke supplier / subkon / customer → baris PO dibuka kembali |
 | **Issue produksi** | B booking keras → W Pick list → W scan ambil → I posting issue ke WO |
 | **Kirim subkon** | I dokumen kirim → W siapkan dan scan keluar → lokasi virtual Vendor → W terima kembali → QC → I posting nilai + jasa; susut diakui bila dalam toleransi |
 | **Pengiriman** | I reservasi FG → W pick, staging, verifikasi DO → I posting keluar dan HPP |
 | **Retur customer** | W terima di dok → I dokumen retur → QC (layak pakai atau afkir) → W putaway atau karantina |
-| **Titipan customer** | W terima → I stok pemilik Customer (tidak dinilai) → W putaway; dipakai hanya oleh WO dari CO itu |
+| **Titipan customer** | W terima → I stok pemilik Customer (tidak dinilai, tidak dijurnal) → W putaway; dipakai hanya oleh WO dari CO itu |
 | **Opname** | I jadwal dan kunci → W hitung dengan scan → I tinjau selisih, persetujuan, jurnal |
 | **Transfer** | I dokumen → W kirim (In Transit) → W terima → I tutup; selisih Discrepancy diselesaikan |
 
@@ -345,6 +468,9 @@ Aturan: PK `id_<entitas>` BIGINT auto number; nama English; **tanpa FK lintas da
 | kolom `owner_type`, `owner_id` pada saldo dan kartu stok | tm2inv | Company / Customer / Supplier | I-04, V-14 |
 | kolom `batch_id`, `qc_status` pada kartu stok dan lapisan | tm2inv | menggantikan `lot_no` teks (lot lama tetap dipetakan) | I-03 |
 | `inv_qc_decision` | tm2inv | batch, keputusan, oleh, kapan, alasan, deviasi | Q-07, Q-11 |
+| `inv_qc_sampling_plan` (+ aturan perpindahan) | tm2inv | ukuran sampel per jumlah lot, intensitas, ambang pindah | Q-01, Q-10 |
+| kolom `is_urgent`, `urgent_by`, `urgent_reason`, `urgent_ref` pada baris penerimaan | tm2pur | tanda URGENT | Q-03 |
+| `inv_shortage_request` (+ baris) | tm2inv / tm2pur | Permintaan Kirim Kekurangan: sumber (supplier, subkon, customer), qty, bukti hitung ulang, status, rujukan penerimaan dan PO | Q-13..Q-16 |
 | `inv_qc_first_article` | tm2inv | WO, batch, hasil uji, oleh | Q-05 |
 | `inv_subcon_issue` (+ baris) | tm2inv | dokumen kirim ke subkon, vendor, tenggat, qty, lokasi Vendor | I-23, I-24 |
 | lokasi virtual (`wh_loc.location_type` = VENDOR, TRANSIT, LOSS) | tm2mst | lokasi tanpa tempat fisik | W-01 |
@@ -389,10 +515,10 @@ Semua angka batas adalah **pengaturan** yang bisa diubah user berwenang lewat la
 | Fase | Isi | Alasan urutan |
 |---|---|---|
 | **F1 Fondasi** | I-03, I-04, I-05, I-42, V-05, V-13, W-01, W-02, kolom pemilik dan batch | Semua fitur lain bergantung pada batch, pemilik, status, dan lokasi bertipe |
-| **F2 QC paralel dan penerimaan** | Q-01..Q-08, I-10, W-03, W-04, V-03, V-04 | Menjawab keterdesakan waktu (D4) |
+| **F2 QC sampling, URGENT, kurang kirim** | Q-01..Q-08, Q-13..Q-15, I-10, W-03, W-04, V-03, V-04 | Menjawab keterdesakan waktu (D4) dan kurang kirim (D14) |
 | **F3 Booking sejak costing** | B-01, B-02, B-04, B-05, B-08, B-11, B-12, B-14, W-05, I-54 | Menjawab D5 dan D9 |
 | **F4 Subkon, titipan customer, opname** | I-13, I-14, I-23, I-24, I-40, W-08, V-09 | Alur khas percetakan |
-| **F5 Valuasi lengkap** | V-01, V-02, V-06, V-07, V-08, V-10, V-11 | Rekonsiliasi dan nilai; sebagian berjalan paralel sejak F1 |
+| **F5 Valuasi lengkap** | V-01b, V-02, V-06, V-07, V-08, V-10, V-11 | Rekonsiliasi dan nilai; sebagian berjalan paralel sejak F1 |
 | **F6 Penyempurnaan** | B-03, B-06, B-07, B-09, B-10, W-12..W-14, I-51..I-56, Q-09..Q-12 | Meningkatkan kualitas |
 | **Nanti** | W-09, W-15, I-32, I-41, Q-10 | Dampak kecil di short run |
 
@@ -403,18 +529,23 @@ dummy baru (aturan: dummy basi diganti), dan **commit + push per potongan kerja*
 
 ## 13. Hal terbuka
 
-| # | Hal | Pemilik | Catatan |
+| # | Hal | Pemilik | Status |
 |---|---|---|---|
-| O-1 | **Konfirmasi tafsir D5** (pre-booking dari costing terbit, tidak mengunci stok, naik ke B3 pada satu rantai) | user | Bagian 6 |
-| O-2 | **Konfirmasi wayout QC** (kelas A / B / C, status Conditional, first article di mesin, tenggat, telusur maju) | user | Bagian 7. Mengubah aturan posting Procurement. |
-| O-3 | D3 bertentangan dengan perilaku sekarang: penerimaan CUSTOMER sengaja **bukan stok**. Pilih: (a) tetap dokumen saja di 2.01, atau (b) jadikan stok pemilik Customer agar punya lokasi dan bisa di-pick | user | Saran saya (b), dengan syarat tidak dinilai dan tidak dijurnal |
-| O-4 | Metode nilai default (V-01) | user | Usulan rata-rata tertimbang perpetual |
-| O-5 | Batas pengaturan awal: tenggat QC (jam), booking basi (hari), tabel provisi, batas dead stock | user | Nilai awal usulan boleh diubah |
-| O-6 | Kelas risiko tiap kelompok bahan dan supplier | user + QC | Perlu daftar awal |
-| O-7 | Dokumen kirim subkon: apakah memakai PO Subkon yang sudah ada sebagai induk | user + Procurement | Menghindari dokumen ganda |
+| O-1 | Tafsir D5: pre-booking dari costing terbit, tidak mengunci stok, naik ke keras pada CO Confirmed dalam satu rantai | user | **Selesai: benar (2026-10-08)** |
+| O-2 | Wayout QC | user | **Selesai: QC sampling, URGENT langsung ke produksi; kurang kirim yang terdeteksi belakangan diminta dikirim (2026-10-08).** Pengaman URGENT di 7.4 masih usulan |
+| O-3 | Material titipan customer | user | **Selesai: setuju saran**: stok dengan pemilik Customer, tidak dinilai, tidak dijurnal, punya lokasi dan bisa di-pick |
+| O-4 | Metode nilai | user | **Selesai: AVERAGE** (2026-10-08); lihat O-11 untuk tingkatnya |
+| O-5 | Batas pengaturan awal: tenggat QC (jam), booking basi (hari), tabel provisi, batas dead stock, tabel ukuran sampel, toleransi kurang kirim | user | Terbuka; nilai awal usulan boleh diubah |
+| O-6 | Kelas risiko tiap kelompok bahan dan supplier (menentukan intensitas sampling awal) | user + QC | Terbuka |
+| O-7 | Dokumen kirim subkon: memakai PO Subkon yang sudah ada sebagai induk | user + Procurement | Terbuka |
 | O-8 | Apakah ProCost terbit sudah memuat daftar bahan lengkap dan layout (penting untuk B-01) | agen | Perlu diperiksa di `iqp_costing` dan layout |
-| O-9 | Cakupan sebenarnya `inv_period`, `InvTransfer` (dua langkah?), pengunci opname, dan metode rata-rata | agen | Ditandai `?` di atas; perlu pembacaan kode penuh |
-| O-10 | Data lama (`lot_no` teks) dipetakan ke master batch | agen | Rencana migrasi |
+| O-9 | Cakupan sebenarnya `inv_period`, `InvTransfer` (dua langkah?), pengunci opname, dan view `v_inv_wo_reconcile` (apakah sudah memuat output + waste dibanding issue, dasar Q-13) | agen | Ditandai `?`; perlu pembacaan kode |
+| O-10 | Migrasi `lot_no` teks ke master batch | agen | Rencana migrasi |
+| O-11 | **Avg per bin (sekarang) atau per item (saran)** | user | **Terbuka, perlu keputusan** (8.5) |
+| O-12 | Pengaman URGENT: siapa boleh menandai; persetujuan untuk bahan FSC / food grade | user | Terbuka (7.4) |
+| O-13 | Landed cost datang setelah sebagian stok keluar: bagian yang sudah keluar ke HPP, varians, atau dibagi ulang | user + akuntansi | Terbuka |
+| O-14 | Jurnal koreksi otomatis saat Avg baris keluar berubah (sekarang hanya peringatan; sudah dicatat di A.24) | user + akuntansi | Terbuka |
+| O-15 | Kurang kirim: toleransi, siapa yang mengonfirmasi, dan bila pemasok menolak (debit note, potong tagihan, atau diterima sebagai rugi) | user + Pembelian + akuntansi | Terbuka (7.6) |
 
 ---
 
@@ -422,4 +553,5 @@ dummy baru (aturan: dummy basi diganti), dan **commit + push per potongan kerja*
 
 | Tanggal | Perubahan |
 |---|---|
+| 2026-10-08 | Rev.2: O-1..O-4 dijawab. QC = sampling + URGENT langsung ke produksi (bagian 7 ditulis ulang, kelas risiko jadi intensitas sampling) dan **kurang kirim**: bila output + waste masih kurang, bahan kurang sejak awal dan kekurangannya diminta dikirim (D14, 7.6, Q-13..Q-16); titipan customer = stok pemilik Customer; Average dengan rumus dan contoh kenaikan harga (bagian 8); temuan kode: Average sudah ada tetapi per bin (O-11), FIFO belum jalan, jurnal koreksi transaksi mundur belum ada (O-14) |
 | 2026-10-08 | Draft pertama v2.01: keputusan D1-D9 (user menyetujui saran 1, 4 dan 5 dengan penyesuaian, nilai valuasi masuk), cek kode dan skema, daftar kebutuhan bernomor, wayout QC, booking sejak costing, skema, fasing, hal terbuka |

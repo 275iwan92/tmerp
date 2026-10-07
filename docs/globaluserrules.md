@@ -258,13 +258,13 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 **A.26 Inventory & Warehouse v2.01 (user 2026-10-08).** Dokumen cakupan: `docs/md_for_systems/inventorywarehouse_v201_scope.md`.
 - Dua modul besar: **INVENTORY** (apa, berapa, nilai, pemilik) dan **WAREHOUSE** (di mana, bagaimana fisik). **Dokumen Transfer dan Opname
   dimiliki Inventory**; eksekusi lapangan (tugas, scan, hitung) di Warehouse.
-- **QC berjalan sambil proses produksi** karena keterdesakan waktu: penerimaan tidak boleh tertahan menunggu QC selesai. Jalan keluar
-  (kelas risiko A / B / C, status batch Conditional, first article di mesin, tenggat keputusan) = usulan menunggu persetujuan user.
-- **Booking dimulai sejak product costing sudah menghitung** (bukan menunggu CO) karena proses cepat dan metode short run. Tafsir kerja:
-  pre-booking lunak yang tidak mengunci stok, naik menjadi booking keras pada CO Confirmed dalam satu rantai (`inquiry_id`).
+- **QC = sampling, dan barang langsung dibawa ke produksi bila URGENT** (user 2026-10-08). Penerimaan URGENT diposting langsung berstatus Conditional (dock-to-line), sampling berjalan paralel; penerimaan normal menunggu hasil sampling. Pengaman URGENT (siapa boleh menandai, persetujuan bahan FSC / food grade) = usulan menunggu persetujuan user.
+- **Kurang kirim** (user 2026-10-08): bila (output + waste standar) masih kurang dibanding bahan yang dikeluarkan, berarti qty bahan sudah kurang sejak awal; sistem **meminta kekurangannya dikirim** (supplier, subkon, atau customer), setelah hitung ulang sebagai bukti. Waste di atas standar = varians pemakaian, bukan kurang kirim.
+- **Booking dimulai sejak product costing sudah menghitung** (bukan menunggu CO) karena proses cepat dan metode short run. Tafsir kerja dibenarkan user: pre-booking lunak yang tidak mengunci stok, naik menjadi booking keras pada CO Confirmed dalam satu rantai (`inquiry_id`).
 - Booking tetap di Production > Planning; Inventory hanya membaca Reserved / Available; **pick list di Warehouse**.
-- Cakupan 2.01 **mencakup valuasi dan jurnal otomatis**. Subkon = vendor sebagai lokasi virtual milik perusahaan; material titipan customer =
-  atribut pemilik pada stok (belum diputuskan terhadap perilaku sekarang yang non-stok); RM dan FG sampai bin, WIP sampai area; SFG per tahap proses.
+- Cakupan 2.01 **mencakup valuasi dan jurnal otomatis**; **metode nilai = AVERAGE** (rata-rata bergerak; rumus dan contoh kenaikan harga di dokumen cakupan bagian 8). 
+  Subkon = vendor sebagai lokasi virtual milik perusahaan; **material titipan customer = stok dengan pemilik Customer** (tidak dinilai, tidak dijurnal, punya lokasi, bisa di-pick); 
+  RM dan FG sampai bin, WIP sampai area; SFG per tahap proses. Terbuka: Average per bin (sekarang) atau per item (saran), batas pengaturan awal.
 
 ## B. Database & data
 
@@ -827,4 +827,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 
 | 2026-10-07 | C: **Warna tahap Delivery Track** (user): merah / pink hanya untuk kegagalan; Draft kuning, Confirmed oranye, Shipped teal, Delivered hijau; kecelakaan (Accident) = merah + segitiga peringatan, rute berhenti di titik kejadian. Kecelakaan dicatat di Proof of Delivery sebagai hasil `ACCIDENT` (penyebab otomatis `ACCIDENT`, departemen Delivery, status POD Retry) tanpa kolom baru; tahap `incident` objek `x-dl::delivery-track` dipetakan dari POD terakhir (`App\Support\V2\Data\DeliveryTrack`). |
 | 2026-10-08 | B.1: **Maintenance punya database sendiri `tm2mnt` (dummy `ddtmnt`)** (user: "saya mau add database soal maintenance tidak masuk ke produksi"; "ya namanya tm2mnt atau ddtmnt"). Koneksi `tm2mnt` (`DB_MNT`), disalin oleh `ddt:copy --db=mnt`. Seluruh Maintenance lama dihapus 2026-10-08 dan dibangun ulang dari Master Data. |
-| 2026-10-08 | A.26: **Inventory & Warehouse v2.01** (user) — dua modul INVENTORY dan WAREHOUSE, dokumen Transfer dan Opname milik Inventory dengan eksekusi di Warehouse; QC berjalan sambil proses produksi (usulan wayout menunggu persetujuan); booking dimulai sejak product costing menghitung (pre-booking lunak, keras pada CO Confirmed); booking tetap di Production > Planning dan pick list di Warehouse; valuasi masuk cakupan. Dokumen cakupan `inventorywarehouse_v201_scope.md`. |
+| 2026-10-08 | A.26: **Inventory & Warehouse v2.01** (user) — dua modul INVENTORY dan WAREHOUSE, dokumen Transfer dan Opname milik Inventory dengan eksekusi di Warehouse; QC sampling dan URGENT langsung ke produksi, kurang kirim (output + waste kurang) diminta dikirim; booking dimulai sejak product costing menghitung (pre-booking lunak, keras pada CO Confirmed); booking tetap di Production > Planning dan pick list di Warehouse; valuasi masuk cakupan dengan metode AVERAGE; titipan customer = stok pemilik Customer. Dokumen cakupan `inventorywarehouse_v201_scope.md`. |
