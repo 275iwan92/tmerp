@@ -6,10 +6,11 @@
 > when read.
 >
 > **Entry types** — tag each line so mixed entries in one session stay clear:
+> - `[JOB]` — a job must to do 
 > - `[FIX]` — something broken or that needs improving
 > - `[IDEA]` — a creative idea / feature worth exploring
-> - `[ASK]` — a question or concern about how Claude works (hidden
->   behavior, a decision you're unsure about, something to explain first)
+> - `[ASK]` — a question or concern about how Claude works (hidden behavior, a decision you're unsure about, something to explain first)
+>   
 >
 > **How to use:**
 > - Add a new line under the right session: `- [ ] [FIX] <what needs fixing>`
@@ -25,13 +26,18 @@
 >   CLAUDE.md §6), so it doesn't need to be registered anywhere.
 
 ---
+## 0. Overall
+
+- [JOB] Didalam Devlib.test harus ada suatu submenu disebut "schema db.tb to forms and reports", yakni dimana di submenu tersebut di informasikan database tmerp tm2* dan db dummy ddt* ; dan masing-masing table untuk memperlihatkan table tersebut di input oleh form apa saja, dan di pakai untuk menampilkan grid atau report apa saja. Disetiap update mockup.test dan tmerp.test harus me-update schema-schema ini. 
+- [JOB] Didalam Devlib.test harus ada suatu submenu disebut 'schema forms and reports to db.tb" yakni di mana di submenu tersebut di informasikan dari forms dan grid dan reports di mockup.test dan di tmerp.test mengambil berhubungan dengan table apa saja ata object database apa saja misal view, or function di database. Bisa satu form mengakses lebih dari satu object. Disetiap update mockup.test dan tmerp.test harus me-update schema-schema ini.  
+- [JOB] Didalam Devlib.test harus ada suatu submenu disebut 'schema formulas and engines inside forms and reports" yakni di mana di submenu tersebut di informasikan dari forms dan grid dan reports di mockup.test dan di tmerp.test ada formula formula apa saja serta engine-engine apa saja yang ada di dalamnya. Disetiap update mockup.test dan tmerp.test harus me-update schema-schema ini. 
+- [JOB] 
 
 ## 1. Sales (Inquiry, Quotation, Customer Order, Delivery/CPDEL)
 
-- [ ] Butuh ada standard ukuran plano, 65 x 100, 61 x 86, 89 x 120, 90 x 120, 70 x 100, 65 x 90, 72 x 102, 79 x 109, 89 x 125
-- [ ] Butuh tambahan warna dari 4/4 menjadi 6/6 dan semua opsi harus ada misal 4/3, 4/4 dan seterusnya sampai pada 6/6.
-- [ ] harus ada pilihan warna untuk warna khusus 4 kotak 
-- [ ] harus ada fasilitas acc digital
+- [JOB] Butuh ada standard ukuran plano, 65 x 100, 61 x 86, 89 x 120, 90 x 120, 70 x 100, 65 x 90, 72 x 102, 79 x 109, 89 x 125
+- [JOB] 
+
 
 
 ## 2. Purchase / Procurement
