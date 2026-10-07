@@ -137,6 +137,12 @@ final class Screens
                     $it('qc-complaint-review', ['Complaint Review (QA)', 'fa-solid fa-magnifying-glass-chart', 'v2 baru: tm2prd.qc_complaint_review (jawaban QA atas tm2sdi.crm_complaint)', null]),
                 ]],
             ]],
+            ['code' => 'MAINT', 'short' => 'MT', 'label' => 'Maintenance', 'icon' => 'fa-solid fa-screwdriver-wrench', 'groups' => [
+                ['label' => 'Master Data', 'items' => [
+                    $it('maintenance-profile', ['Asset Maintenance Profile', 'fa-solid fa-gears', 'v2 baru: tm2mnt.mnt_asset + mnt_watch_point + mnt_asset_part (mockup maintenance_v2_master.jpg)', 'maintenance_v2_master.jpg']),
+                    $it('maintenance-documents', ['SOP and Work Instructions', 'fa-solid fa-file-lines', 'v2 baru: tm2mnt.mnt_document + mnt_document_line (draf: resources/data/maintenance/sop_wi.json)', null]),
+                ]],
+            ]],
             ['code' => 'HRM', 'short' => 'HR', 'label' => 'Human Resource', 'icon' => 'fa-solid fa-people-group', 'groups' => [
                 ['label' => 'Time Attendance', 'items' => [
                     // Milik sendiri: semua karyawan boleh absen (modul GENERAL = tanpa gerbang modul), seperti self-service v1.

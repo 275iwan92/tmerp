@@ -115,10 +115,11 @@ return new class extends Migration
         $item('MAINT_IMP_REV', 'MAINT_GRP_IMP', 'Improvement Review', 'fa-solid fa-chart-line', 20);
 
         $add('MAINT_GRP_MASTER', 'MAINT', 'Master Data', 'fa-solid fa-book', 'group', ['sort_order' => 40]);
-        $item('MAINT_PROFILE', 'MAINT_GRP_MASTER', 'Machine Maintenance Profile', 'fa-solid fa-gears', 10);
-        $item('MAINT_READY', 'MAINT_GRP_MASTER', 'Machine Readiness', 'fa-solid fa-list-check', 20, 'report');
-        $item('MAINT_CODES', 'MAINT_GRP_MASTER', 'Maintenance Codes', 'fa-solid fa-tags', 30);
-        $item('MAINT_MACHINE', 'MAINT_GRP_MASTER', 'Master Machine', 'fa-solid fa-gears', 40, 'form', ['target' => 'v2:prod-machine']);
+        $item('MAINT_PROFILE', 'MAINT_GRP_MASTER', 'Asset Maintenance Profile', 'fa-solid fa-gears', 10, 'form', ['target' => 'v2:maintenance-profile']);
+        $item('MAINT_READY', 'MAINT_GRP_MASTER', 'Asset Readiness', 'fa-solid fa-list-check', 20, 'report', ['target' => 'v2:maintenance-readiness']);
+        $item('MAINT_DOCS', 'MAINT_GRP_MASTER', 'SOP and Work Instructions', 'fa-solid fa-file-lines', 30, 'form', ['target' => 'v2:maintenance-documents']);
+        $item('MAINT_CODES', 'MAINT_GRP_MASTER', 'Maintenance Codes', 'fa-solid fa-tags', 40, 'form', ['target' => 'v2:maintenance-codes']);
+        $item('MAINT_MACHINE', 'MAINT_GRP_MASTER', 'Master Machine', 'fa-solid fa-gears', 50, 'form', ['target' => 'v2:prod-machine']);
 
         $add('MAINT_GRP_RPT', 'MAINT', 'Report', 'fa-solid fa-chart-column', 'group', ['sort_order' => 50]);
         $item('MAINT_ORDER_RPT', 'MAINT_GRP_RPT', 'Maintenance Order Report', 'fa-solid fa-table-list', 10, 'report');

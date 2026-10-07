@@ -153,6 +153,338 @@
     ]
   },
   {
+    "key": "maintenance-profile",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Asset Maintenance Profile",
+    "purpose": {
+      "en": "Holds what each asset needs to be maintained: what to check, which spare parts, which SOP and work instructions. Open it to prepare an asset or to see what is still missing.",
+      "id": "Berisi kebutuhan perawatan tiap aset: apa yang dicek, spare part, SOP dan instruksi kerja. Buka untuk menyiapkan aset atau melihat apa yang masih kurang."
+    },
+    "keywords": "profil aset, asset maintenance profile, watch point, spare part, dokumen, sop, wi, kendaraan, ac, mesin, kelengkapan",
+    "steps": [
+      {
+        "en": "Open Asset Maintenance Profile. Use the boxes (Production machine, Support equipment, Vehicle, Facility) or the filters, and search by code or name.",
+        "id": "Buka Asset Maintenance Profile. Pakai kotak (Production machine, Support equipment, Vehicle, Facility) atau filter, lalu cari berdasarkan kode atau nama."
+      },
+      {
+        "en": "To bring in the machines click Add machines from Master Machine. Machines already there are not duplicated.",
+        "id": "Untuk memasukkan mesin klik Add machines from Master Machine. Mesin yang sudah ada tidak digandakan."
+      },
+      {
+        "en": "For a vehicle or facility click + New Record, type code, name, class, criticality, meter and location, then Save.",
+        "id": "Untuk kendaraan atau fasilitas klik + New Record, ketik kode, nama, kelas, kritikalitas, meter dan lokasi, lalu Save."
+      },
+      {
+        "en": "Double-click an asset to open its profile. The tabs below the form are Watch Points, Spare Parts and Documents. History lists who changed what.",
+        "id": "Klik dua kali sebuah aset untuk membuka profilnya. Tab di bawah form adalah Watch Points, Spare Parts dan Documents. History menampilkan siapa mengubah apa."
+      },
+      {
+        "en": "On Watch Points type what to check and press + Watch Point, or copy the list of another asset with Copy. Fill the normal limit from the manufacturer manual, or leave it empty.",
+        "id": "Di Watch Points ketik hal yang dicek lalu tekan + Watch Point, atau salin daftar aset lain dengan Copy. Isi batas normal dari manual pabrikan, atau biarkan kosong."
+      },
+      {
+        "en": "On Spare Parts pick a material and press + Spare Part. On Documents pick an SOP or work instruction and press + Link.",
+        "id": "Di Spare Parts pilih material lalu tekan + Spare Part. Di Documents pilih SOP atau instruksi kerja lalu tekan + Link."
+      },
+      {
+        "en": "Only the head of maintenance and administrators can change a profile. Others can read it.",
+        "id": "Hanya kepala maintenance dan administrator yang bisa mengubah profil. Yang lain hanya membaca."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Asset Code",
+        "en": "Short code of the asset. Typed for vehicles and facilities. For a machine it comes from Master Machine and is locked.",
+        "id": "Kode singkat aset. Diketik untuk kendaraan dan fasilitas. Untuk mesin berasal dari Master Machine dan terkunci."
+      },
+      {
+        "label": "Asset Name",
+        "en": "Name of the asset. Typed, or taken from Master Machine for a machine.",
+        "id": "Nama aset. Diketik, atau diambil dari Master Machine untuk mesin."
+      },
+      {
+        "label": "Class",
+        "en": "Production machine, Support equipment, Vehicle or Facility. Decides the meter and which indicators apply.",
+        "id": "Production machine, Support equipment, Vehicle atau Facility. Menentukan meter dan indikator yang berlaku."
+      },
+      {
+        "label": "Criticality",
+        "en": "A stops the line, B slows it, C has a replacement. For a machine it is read from Master Machine.",
+        "id": "A menghentikan lini, B memperlambat, C punya pengganti. Untuk mesin dibaca dari Master Machine."
+      },
+      {
+        "label": "Meter",
+        "en": "No meter, Run hours, Impressions or Odometer (km). Used later by meter-based plans.",
+        "id": "No meter, Run hours, Impressions atau Odometer (km). Dipakai nanti oleh plan berbasis meter."
+      },
+      {
+        "label": "Location",
+        "en": "Where the asset is, for example Dispatch or Office.",
+        "id": "Lokasi aset, misalnya Dispatch atau Office."
+      },
+      {
+        "label": "Fixed Asset (Finance, optional)",
+        "en": "Links the asset to its record in the Finance fixed asset register.",
+        "id": "Menautkan aset ke catatannya di register aset tetap Finance."
+      },
+      {
+        "label": "Complete",
+        "en": "How many of Watch Points, Spare Parts, Documents and Meter are filled, for example 2 / 4. Calculated, never typed.",
+        "id": "Berapa dari Watch Points, Spare Parts, Documents dan Meter yang terisi, misalnya 2 / 4. Dihitung, tidak diketik."
+      },
+      {
+        "label": "What to check",
+        "en": "Short text of the check, for example Oil level, no leak.",
+        "id": "Teks singkat cek, misalnya Level oli, tidak bocor."
+      },
+      {
+        "label": "Normal min / Normal max",
+        "en": "Optional limits with a unit. Without them the check is never judged by the system.",
+        "id": "Batas opsional dengan satuan. Tanpa itu cek tidak pernah dinilai sistem."
+      },
+      {
+        "label": "Frequency",
+        "en": "Every shift, Daily, Weekly or Monthly.",
+        "id": "Every shift, Daily, Weekly atau Monthly."
+      },
+      {
+        "label": "Checked by",
+        "en": "Operator or Technician.",
+        "id": "Operator atau Technician."
+      },
+      {
+        "label": "Suggested min stock",
+        "en": "Minimum stock Maintenance suggests for the part.",
+        "id": "Stok minimum yang disarankan Maintenance untuk part."
+      },
+      {
+        "label": "Critical",
+        "en": "Marks a part whose absence stops the asset.",
+        "id": "Menandai part yang bila habis aset berhenti."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-documents",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "SOP and Work Instructions",
+    "purpose": {
+      "en": "Holds the SOP and work instructions of Maintenance, each with a number, a revision and a status. Open it to read a document, edit a draft or approve it.",
+      "id": "Berisi SOP dan instruksi kerja Maintenance, masing-masing dengan nomor, revisi dan status. Buka untuk membaca dokumen, mengubah draf atau menyetujuinya."
+    },
+    "keywords": "sop, wi, instruksi kerja, prosedur, dokumen maintenance, revisi, approve, draf",
+    "steps": [
+      {
+        "en": "Open SOP and Work Instructions. Use the boxes (Draft, Approved, SOP, Work Instruction) or filters, and search by number or title.",
+        "id": "Buka SOP and Work Instructions. Pakai kotak (Draft, Approved, SOP, Work Instruction) atau filter, lalu cari berdasarkan nomor atau judul."
+      },
+      {
+        "en": "Click the arrow of a row to read its content without opening it. Double-click a row to open the document.",
+        "id": "Klik panah sebuah baris untuk membaca isinya tanpa membukanya. Klik dua kali baris untuk membuka dokumen."
+      },
+      {
+        "en": "For a new document click + New Record, type number, kind, set and title, then Save. Add the lines in the Content tab with + Line.",
+        "id": "Untuk dokumen baru klik + New Record, ketik nomor, jenis, set dan judul, lalu Save. Tambah baris isi di tab Content dengan + Line."
+      },
+      {
+        "en": "Edit the text, adding the limits and intervals from the manufacturer manual, then Save.",
+        "id": "Ubah teksnya, tambahkan batas dan interval dari manual pabrikan, lalu Save."
+      },
+      {
+        "en": "Press Approve when the document is correct. An approved document is locked.",
+        "id": "Tekan Approve bila dokumen sudah benar. Dokumen yang disetujui terkunci."
+      },
+      {
+        "en": "To change an approved document press Back to Draft. This starts a new revision and the document is a draft again.",
+        "id": "Untuk mengubah dokumen yang disetujui tekan Back to Draft. Ini memulai revisi baru dan dokumen kembali menjadi draf."
+      },
+      {
+        "en": "The Assets tab lists the assets that use the document. Link a document to an asset in Asset Maintenance Profile.",
+        "id": "Tab Assets menampilkan aset yang memakai dokumen. Hubungkan dokumen ke aset di Asset Maintenance Profile."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Document No.",
+        "en": "Number such as WI-MNT-OFF-02. SOP-MNT or WI-MNT, then the set code, then a two digit sequence.",
+        "id": "Nomor seperti WI-MNT-OFF-02. SOP-MNT atau WI-MNT, lalu kode set, lalu urutan dua digit."
+      },
+      {
+        "label": "Kind",
+        "en": "SOP, Work Instruction, Manual, Drawing, Vendor contact or Other.",
+        "id": "SOP, Work Instruction, Manual, Drawing, Vendor contact atau Other."
+      },
+      {
+        "label": "Set",
+        "en": "Group of assets the document is written for, for example OFF for offset presses.",
+        "id": "Kelompok aset yang dituju dokumen, misalnya OFF untuk mesin offset."
+      },
+      {
+        "label": "Revision",
+        "en": "Two digit revision. Starts at 00 and goes up each time an approved document goes back to draft.",
+        "id": "Revisi dua digit. Mulai dari 00 dan naik tiap kali dokumen yang disetujui kembali menjadi draf."
+      },
+      {
+        "label": "Status",
+        "en": "Draft can be edited. Approved is locked.",
+        "id": "Draft bisa diubah. Approved terkunci."
+      },
+      {
+        "label": "Section",
+        "en": "Heading of a line, for example Purpose, Responsibilities, Safety or Steps.",
+        "id": "Judul sebuah baris, misalnya Purpose, Responsibilities, Safety atau Steps."
+      },
+      {
+        "label": "Text",
+        "en": "One sentence or one step of the document.",
+        "id": "Satu kalimat atau satu langkah dokumen."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-codes",
+    "type": "INPUT",
+    "module": "MAINT",
+    "title": "Maintenance Codes",
+    "purpose": {
+      "en": "The catalog of Component, Problem, Cause and Action codes used by watch points, spare parts and orders, so reports can add failures up. Open it to add or change a code.",
+      "id": "Katalog kode Component, Problem, Cause dan Action yang dipakai watch point, spare part dan order, supaya laporan bisa menjumlahkan kerusakan. Buka untuk menambah atau mengubah kode."
+    },
+    "keywords": "kode maintenance, component, problem, cause, action, katalog kode, kerusakan",
+    "steps": [
+      {
+        "en": "Open Maintenance Codes. The rows are typed directly in the cells, as in other small lists.",
+        "id": "Buka Maintenance Codes. Barisnya diketik langsung di sel, seperti daftar kecil lainnya."
+      },
+      {
+        "en": "Pick the Type first, then type a short upper-case Code and its Name in English.",
+        "id": "Pilih Type lebih dulu, lalu ketik Code huruf besar yang singkat dan Name dalam bahasa Inggris."
+      },
+      {
+        "en": "Leave Applies To empty when the code fits every asset, or type a group such as Printing.",
+        "id": "Biarkan Applies To kosong bila kode cocok untuk semua aset, atau ketik kelompok seperti Printing."
+      },
+      {
+        "en": "Untick Active instead of deleting a code that is no longer used, so old records keep their meaning.",
+        "id": "Hilangkan centang Active, jangan hapus kode yang tidak dipakai lagi, supaya catatan lama tetap bermakna."
+      },
+      {
+        "en": "Click Save to store all changed rows.",
+        "id": "Klik Save untuk menyimpan semua baris yang berubah."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Type",
+        "en": "Component, Problem, Cause or Action.",
+        "id": "Component, Problem, Cause atau Action."
+      },
+      {
+        "label": "Code",
+        "en": "Short upper-case code, unique inside its type.",
+        "id": "Kode huruf besar singkat, unik di dalam jenisnya."
+      },
+      {
+        "label": "Name",
+        "en": "English name. Other languages come through the dictionary.",
+        "id": "Nama dalam bahasa Inggris. Bahasa lain lewat kamus."
+      },
+      {
+        "label": "Applies To (blank = all)",
+        "en": "Optional group of assets the code is meant for.",
+        "id": "Kelompok aset yang dituju kode, opsional."
+      },
+      {
+        "label": "Sort",
+        "en": "Order in the dropdowns.",
+        "id": "Urutan di dropdown."
+      },
+      {
+        "label": "Active",
+        "en": "Only active codes appear in the dropdowns.",
+        "id": "Hanya kode aktif yang muncul di dropdown."
+      }
+    ]
+  },
+  {
+    "key": "maintenance-readiness",
+    "type": "REPORT",
+    "module": "MAINT",
+    "title": "Asset Readiness",
+    "purpose": {
+      "en": "Shows how complete the maintenance profile of every asset is, so the head of maintenance can chase the missing data. Open it to see which assets still need work.",
+      "id": "Menampilkan seberapa lengkap profil perawatan tiap aset, supaya kepala maintenance bisa mengejar data yang kurang. Buka untuk melihat aset mana yang masih perlu dikerjakan."
+    },
+    "keywords": "kesiapan aset, asset readiness, kelengkapan profil, watch point, spare part, dokumen, meter",
+    "steps": [
+      {
+        "en": "Open Asset Readiness. The boxes are Empty, Incomplete and Complete.",
+        "id": "Buka Asset Readiness. Kotaknya adalah Empty, Incomplete dan Complete."
+      },
+      {
+        "en": "Group by Class, Level or Criticality to see where most of the gaps are.",
+        "id": "Kelompokkan menurut Class, Level atau Criticality untuk melihat di mana kekurangan terbanyak."
+      },
+      {
+        "en": "Click a row to open the profile of that asset and fill what is missing.",
+        "id": "Klik sebuah baris untuk membuka profil aset itu dan mengisi yang kurang."
+      },
+      {
+        "en": "Use Export to hand the list to whoever fills the data.",
+        "id": "Pakai Export untuk menyerahkan daftar ke orang yang mengisi data."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Asset",
+        "en": "Code and name of the asset.",
+        "id": "Kode dan nama aset."
+      },
+      {
+        "label": "Class",
+        "en": "Production machine, Support equipment, Vehicle or Facility.",
+        "id": "Production machine, Support equipment, Vehicle atau Facility."
+      },
+      {
+        "label": "Criticality",
+        "en": "A, B or C. Blank when it has not been set.",
+        "id": "A, B atau C. Kosong bila belum ditetapkan."
+      },
+      {
+        "label": "Watch Points",
+        "en": "Number of active watch points.",
+        "id": "Jumlah watch point aktif."
+      },
+      {
+        "label": "Spare Parts",
+        "en": "Number of active spare parts.",
+        "id": "Jumlah spare part aktif."
+      },
+      {
+        "label": "Documents",
+        "en": "Number of linked SOP, work instructions and other documents.",
+        "id": "Jumlah SOP, instruksi kerja dan dokumen lain yang terhubung."
+      },
+      {
+        "label": "Meter",
+        "en": "The meter type of the asset.",
+        "id": "Jenis meter aset."
+      },
+      {
+        "label": "Complete %",
+        "en": "Share of the four items that are filled.",
+        "id": "Bagian dari empat hal yang sudah terisi."
+      },
+      {
+        "label": "Level",
+        "en": "Empty (nothing filled), Incomplete, or Complete.",
+        "id": "Empty (belum ada yang terisi), Incomplete, atau Complete."
+      }
+    ]
+  },
+  {
     "key": "guide-maintenance-tech-overview",
     "type": "GUIDE",
     "module": "MAINT",
@@ -173,7 +505,7 @@
       },
       {
         "en": "Phase 1 Master Data: machine profile with Watch Points, Spare Parts and Documents, the code catalog, and a readiness grid.",
-        "id": "Fase 1 Master Data: profil mesin dengan Watch Points, Spare Parts dan Documents, katalog kode, dan grid kesiapan."
+        "id": "Fase 1 Master Data: profil aset dengan Watch Points, Spare Parts dan Documents, katalog kode, dan grid kesiapan."
       },
       {
         "en": "Phase 2 Preventive: plans, PM calendar, meter readings, Daily Check and the machine-blocked slot on the Scheduling Board.",
@@ -265,13 +597,69 @@
       },
       {
         "label": "Master Data",
-        "en": "Machine Maintenance Profile, Maintenance Codes, and a link to Master Mesin. Delivered in Phase 1.",
-        "id": "Machine Maintenance Profile, Maintenance Codes, dan tautan ke Master Mesin. Dikirim di Fase 1."
+        "en": "Asset Maintenance Profile, Maintenance Codes, and a link to Master Mesin. Delivered in Phase 1.",
+        "id": "Asset Maintenance Profile, Maintenance Codes, dan tautan ke Master Mesin. Dikirim di Fase 1."
       },
       {
         "label": "Report",
         "en": "Maintenance Order Report, Machine Reliability, PM Compliance. Delivered with the phase whose data they read.",
         "id": "Maintenance Order Report, Machine Reliability, PM Compliance. Dikirim bersama fase yang datanya mereka baca."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-tech-assets",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Technical Plan: Assets, Not Only Machines",
+    "purpose": {
+      "en": "Maintenance looks after assets: production machines, support equipment, vehicles and facilities such as air conditioners. This explains how the classes differ.",
+      "id": "Maintenance merawat aset: mesin produksi, alat penunjang, kendaraan dan fasilitas seperti AC. Ini menjelaskan perbedaan antar kelas."
+    },
+    "keywords": "aset, kendaraan, ac, fasilitas, genset, kelas aset, odometer, stnk, kir, aset tetap, asset maintenance",
+    "steps": [
+      {
+        "en": "The scope is Asset, decided by the user on 2026-10-08. Every Maintenance document points to an asset in mnt_asset, never directly to a machine.",
+        "id": "Cakupannya Aset, diputuskan user pada 2026-10-08. Setiap dokumen Maintenance menunjuk ke aset di mnt_asset, tidak langsung ke mesin."
+      },
+      {
+        "en": "Machines come from Master Machine with the button Add machines from Master Machine. Only code, name and class follow the master. Criticality, meter and notes belong to Maintenance.",
+        "id": "Mesin datang dari Master Machine lewat tombol Add machines from Master Machine. Hanya kode, nama dan kelas yang mengikuti master. Kritikalitas, meter dan catatan milik Maintenance."
+      },
+      {
+        "en": "Vehicles and facilities are typed in Asset Maintenance Profile. An asset can be linked to its Finance fixed asset record for the cost side.",
+        "id": "Kendaraan dan fasilitas diketik di Asset Maintenance Profile. Sebuah aset bisa ditautkan ke catatan aset tetap Finance untuk sisi biayanya."
+      },
+      {
+        "en": "The same screens, preventive and breakdown orders (PMO and BMO), and reports work for every class. What differs is the meter, the documents and the indicators.",
+        "id": "Layar yang sama, order preventive dan breakdown (PMO dan BMO), dan laporan berlaku untuk semua kelas. Yang berbeda adalah meter, dokumen dan indikator."
+      }
+    ],
+    "fields": [
+      {
+        "label": "Production machine",
+        "en": "Printing and finishing machines. Meter run hours or impressions. OEE applies.",
+        "id": "Mesin cetak dan finishing. Meter jam jalan atau impresi. OEE berlaku."
+      },
+      {
+        "label": "Support equipment",
+        "en": "Compressor, forklift, heater. Meter run hours. Legal inspection dates apply to the compressor and the forklift. No OEE.",
+        "id": "Kompresor, forklift, pemanas. Meter jam jalan. Tanggal inspeksi wajib berlaku untuk kompresor dan forklift. Tanpa OEE."
+      },
+      {
+        "label": "Vehicle",
+        "en": "Trucks and cars. Meter odometer in km. Documents with an expiry date (registration, inspection, tax, insurance) become fixed-date inspection orders. No OEE.",
+        "id": "Truk dan mobil. Meter odometer dalam km. Dokumen berjatuh tempo (STNK, KIR, pajak, asuransi) menjadi order inspeksi tanggal tetap. Tanpa OEE."
+      },
+      {
+        "label": "Facility",
+        "en": "Air conditioners, generator, pumps, electrical panels, buildings. Often no meter, time-based schedules such as filter cleaning. No OEE.",
+        "id": "AC, genset, pompa, panel listrik, bangunan. Sering tanpa meter, jadwal berbasis waktu seperti bersih filter. Tanpa OEE."
+      },
+      {
+        "label": "Indicators",
+        "en": "Availability, MTBF, MTTR, PM compliance and cost work for all classes. OEE only for production machines.",
+        "id": "Availability, MTBF, MTTR, PM compliance dan biaya berlaku untuk semua kelas. OEE hanya untuk mesin produksi."
       }
     ]
   },
@@ -297,7 +685,7 @@
     ],
     "fields": [
       {
-        "label": "Machine Maintenance Profile",
+        "label": "Asset Maintenance Profile",
         "en": "Phase 1. One place to describe what a machine needs: checks, parts and documents. Used by every later feature.",
         "id": "Fase 1. Satu tempat untuk menjelaskan kebutuhan mesin: cek, part dan dokumen. Dipakai semua fitur berikutnya."
       },
@@ -307,7 +695,7 @@
         "id": "Fase 1. Daftar hal yang dicek pada mesin, dengan cara, batas normal, frekuensi dan siapa yang mengecek."
       },
       {
-        "label": "Spare Parts per machine",
+        "label": "Spare Parts per asset",
         "en": "Phase 1. Tells which parts a machine needs and when stock is too low, so a missing part is known before a breakdown.",
         "id": "Fase 1. Menunjukkan part yang dibutuhkan mesin dan kapan stok terlalu rendah, sehingga part yang kurang diketahui sebelum kerusakan."
       },
@@ -317,7 +705,7 @@
         "id": "Fase 1. Satu katalog kode komponen, masalah, penyebab dan tindakan, sehingga laporan bisa dijumlahkan."
       },
       {
-        "label": "Machine Readiness",
+        "label": "Asset Readiness",
         "en": "Phase 1. A grid that shows which machines still have an incomplete profile, so data entry can be chased.",
         "id": "Fase 1. Grid yang menunjukkan mesin mana yang profilnya belum lengkap, sehingga pengisian data bisa dikejar."
       },
@@ -681,8 +1069,8 @@
       },
       {
         "label": "Master data readers",
-        "en": "Daily Check reads mnt_watch_point. Maintenance orders read mnt_machine_part and mnt_code. Reports read everything. Stock is read from Inventory.",
-        "id": "Daily Check membaca mnt_watch_point. Maintenance order membaca mnt_machine_part dan mnt_code. Laporan membaca semuanya. Stok dibaca dari Inventory."
+        "en": "Daily Check reads mnt_watch_point. Maintenance orders read mnt_asset_part and mnt_code. Reports read everything. Stock is read from Inventory.",
+        "id": "Daily Check membaca mnt_watch_point. Maintenance order membaca mnt_asset_part dan mnt_code. Laporan membaca semuanya. Stok dibaca dari Inventory."
       }
     ]
   },
@@ -695,7 +1083,7 @@
       "en": "Lists the tables planned for Maintenance in tm2mnt, phase by phase, and how they relate to other databases.",
       "id": "Daftar tabel yang direncanakan untuk Maintenance di tm2mnt, per fase, dan hubungannya dengan database lain."
     },
-    "keywords": "tabel maintenance, mnt_code, mnt_watch_point, mnt_machine_part, mnt_order, mnt_request, skema, tm2mnt, kolom",
+    "keywords": "tabel maintenance, mnt_code, mnt_watch_point, mnt_asset_part, mnt_order, mnt_request, skema, tm2mnt, kolom",
     "steps": [
       {
         "en": "All tables live in tm2mnt. Relations to machines, materials, employees and production records point to other databases and are checked by Laravel, never by foreign keys.",
@@ -721,34 +1109,29 @@
         "id": "Fase 1. Katalog kode: jenis (COMPONENT, PROBLEM, CAUSE, ACTION), kode, nama, urutan, activate."
       },
       {
-        "label": "mnt_machine_profile",
-        "en": "Phase 1. One row per machine: meter type (run hours, impressions or none) and maintenance notes. Criticality and vendor are read from the machine master.",
-        "id": "Fase 1. Satu baris per mesin: jenis meter (jam jalan, impresi atau tidak ada) dan catatan maintenance. Kritikalitas dan vendor dibaca dari master mesin."
+        "label": "mnt_asset",
+        "en": "Phase 1. One row per maintained asset: code, name, class (production machine, support equipment, vehicle, facility), logical link to the machine master or to a Finance fixed asset, criticality, meter type, location.",
+        "id": "Fase 1. Satu baris per aset yang dirawat: kode, nama, kelas (mesin produksi, alat penunjang, kendaraan, fasilitas), tautan logis ke master mesin atau aset tetap Finance, kritikalitas, jenis meter, lokasi."
       },
       {
         "label": "mnt_watch_point",
-        "en": "Phase 1. What to check on a machine: component code, check text, method, normal min and max, unit, frequency, checker role, sort order.",
-        "id": "Fase 1. Hal yang dicek pada mesin: kode komponen, teks cek, cara, batas normal min dan max, satuan, frekuensi, peran pemeriksa, urutan."
+        "en": "Phase 1. What to check on an asset: component code, check text, method, normal min and max, unit, frequency, checker role, sort order.",
+        "id": "Fase 1. Hal yang dicek pada aset: kode komponen, teks cek, cara, batas normal min dan max, satuan, frekuensi, peran pemeriksa, urutan."
       },
       {
-        "label": "mnt_machine_part",
-        "en": "Phase 1. Spare part of a machine: material, component code, quantity per use, suggested minimum stock, expected life in days, critical flag.",
-        "id": "Fase 1. Spare part milik mesin: material, kode komponen, qty per pemakaian, saran stok minimum, umur pakai dalam hari, penanda kritis."
-      },
-      {
-        "label": "mnt_machine_doc",
-        "en": "Phase 1. Files of a machine: manual, drawing, vendor contact. File location and title. SOP and WI text live in mnt_document instead.",
-        "id": "Fase 1. Berkas milik mesin: manual, gambar, kontak vendor. Lokasi file dan judul. Teks SOP dan WI ada di mnt_document."
-      },
-      {
-        "label": "mnt_document, mnt_machine_document",
-        "en": "Phase 1. SOP and WI text with number, revision and status (DRAFT or APPROVED), and the link that assigns each document to machines.",
-        "id": "Fase 1. Teks SOP dan WI dengan nomor, revisi dan status (DRAFT atau APPROVED), dan tautan yang menetapkan tiap dokumen ke mesin."
+        "label": "mnt_asset_part",
+        "en": "Phase 1. Spare part of an asset: material, component code, quantity per use, suggested minimum stock, expected life in days, critical flag.",
+        "id": "Fase 1. Spare part milik aset: material, kode komponen, qty per pemakaian, saran stok minimum, umur pakai dalam hari, penanda kritis."
       },
       {
         "label": "mnt_plan, mnt_plan_task, mnt_plan_part",
         "en": "Phase 2. Preventive plan with trigger (time or meter), fixed or floating schedule, task checklist and standard parts.",
         "id": "Fase 2. Plan preventive dengan pemicu (waktu atau meter), jadwal fixed atau floating, checklist tugas dan part standar."
+      },
+      {
+        "label": "mnt_document, mnt_document_line, mnt_asset_document",
+        "en": "Phase 1. SOP and WI text with number, revision and status (DRAFT or APPROVED), its lines, and the link that assigns each document to assets. Manual, drawing and vendor contact use the same table with a file location.",
+        "id": "Fase 1. Teks SOP dan WI dengan nomor, revisi dan status (DRAFT atau APPROVED), baris isinya, dan tautan yang menetapkan tiap dokumen ke aset. Manual, gambar dan kontak vendor memakai tabel yang sama dengan lokasi file."
       },
       {
         "label": "mnt_meter_reading",
@@ -802,8 +1185,8 @@
         "id": "Watch point tanpa batas normal tidak pernah dinilai sistem. Batas berasal dari manual pabrikan dan diketik oleh kepala maintenance."
       },
       {
-        "en": "Only materials of the category Spare Part Machine can be chosen as machine parts.",
-        "id": "Hanya material kategori Spare Part Machine yang bisa dipilih sebagai part mesin."
+        "en": "Spare parts are picked from the material lookup. Cleaning up old spare parts that still sit in the category Others is a separate task for the user.",
+        "id": "Spare part dipilih dari lookup material. Merapikan spare part lama yang masih di kategori Others adalah tugas terpisah untuk user."
       },
       {
         "en": "Technicians can view the master data. Only the head of maintenance and administrators can change it.",
@@ -1023,20 +1406,20 @@
     "key": "guide-maintenance-tech-profile",
     "type": "GUIDE",
     "module": "MAINT",
-    "title": "Technical Plan: Machine Maintenance Profile",
+    "title": "Technical Plan: Asset Maintenance Profile",
     "purpose": {
       "en": "The Master Data form approved on the mockup: one profile per machine holding what to check, which spare parts it needs, and its documents.",
       "id": "Form Master Data yang disetujui di mockup: satu profil per mesin berisi apa yang dicek, spare part yang dibutuhkan, dan dokumennya."
     },
-    "keywords": "machine maintenance profile, profil mesin, watch points, spare parts, documents, kelengkapan profil, copy from machine",
+    "keywords": "machine maintenance profile, profil aset, watch points, spare parts, documents, kelengkapan profil, copy from machine",
     "steps": [
       {
-        "en": "Open Machine Maintenance Profile and pick a machine. The form has tabs Profile, Watch Points, Spare Parts, Documents and History. The PM Plans tab appears when Phase 2 is delivered.",
-        "id": "Buka Machine Maintenance Profile dan pilih mesin. Form punya tab Profile, Watch Points, Spare Parts, Documents dan History. Tab PM Plans muncul saat Fase 2 selesai."
+        "en": "Open Asset Maintenance Profile and pick a machine. The form has tabs Profile, Watch Points, Spare Parts, Documents and History. The PM Plans tab appears when Phase 2 is delivered.",
+        "id": "Buka Asset Maintenance Profile dan pilih mesin. Form punya tab Profile, Watch Points, Spare Parts, Documents dan History. Tab PM Plans muncul saat Fase 2 selesai."
       },
       {
-        "en": "Machine, Criticality and Service vendor come from Master Mesin and are shown locked. Change them in Master Mesin, not here.",
-        "id": "Machine, Criticality dan Service vendor berasal dari Master Mesin dan tampil terkunci. Ubah di Master Mesin, bukan di sini."
+        "en": "For a machine from Master Machine, code, name, class and criticality come from the master and are locked. Other assets (vehicle, air conditioner) are typed here.",
+        "id": "Untuk mesin dari Master Machine, kode, nama, kelas dan kritikalitas berasal dari master dan terkunci. Aset lain (kendaraan, AC) diketik di sini."
       },
       {
         "en": "On Watch Points add what must be checked on this machine. Pick the component from the code catalog, describe the check and the method, and set the frequency and who checks.",
@@ -1051,8 +1434,8 @@
         "id": "Copy from machine menyalin watch point mesin lain sebagai titik awal. Setelah itu Anda mengubahnya. Tidak pernah menimpa baris yang sudah ada."
       },
       {
-        "en": "On Spare Parts add the parts this machine needs. Stock is read from Inventory. A part below its suggested minimum shows in red and can start a purchase request.",
-        "id": "Di Spare Parts tambahkan part yang dibutuhkan mesin ini. Stok dibaca dari Inventory. Part di bawah saran minimum tampil merah dan bisa memulai permintaan pembelian."
+        "en": "On Spare Parts add the parts this asset needs. Stock from Inventory is shown when Phase 3 connects it, so Phase 1 holds the part list and the suggested minimum.",
+        "id": "Di Spare Parts tambahkan part yang dibutuhkan aset ini. Stok dari Inventory tampil saat Fase 3 menyambungkannya, jadi Fase 1 berisi daftar part dan saran minimum."
       },
       {
         "en": "Save stores the changes. Undo drops changes that are not saved yet. History lists who changed what and when.",
@@ -1113,8 +1496,8 @@
     "module": "MAINT",
     "title": "Technical Plan: SOP and Work Instructions per Machine",
     "purpose": {
-      "en": "How an SOP and four work instructions (WI) are prepared for every machine, numbered, approved and shown in the Machine Maintenance Profile. All texts are drafts until approved.",
-      "id": "Cara SOP dan empat instruksi kerja (WI) disusun untuk setiap mesin, diberi nomor, disetujui dan tampil di Machine Maintenance Profile. Semua teks berstatus draf sampai disetujui."
+      "en": "How an SOP and four work instructions (WI) are prepared for every machine, numbered, approved and shown in the Asset Maintenance Profile. All texts are drafts until approved.",
+      "id": "Cara SOP dan empat instruksi kerja (WI) disusun untuk setiap mesin, diberi nomor, disetujui dan tampil di Asset Maintenance Profile. Semua teks berstatus draf sampai disetujui."
     },
     "keywords": "sop, wi, instruksi kerja, prosedur, dokumen mesin, lock out tag out, daily check, perawatan mingguan, perawatan bulanan, breakdown",
     "steps": [
@@ -1139,8 +1522,8 @@
         "id": "Kepala maintenance meninjau tiap dokumen, menambah batas dari manual, dan mengubah status menjadi APPROVED. Sampai saat itu status tetap DRAFT."
       },
       {
-        "en": "The Documents tab of the Machine Maintenance Profile shows the SOP and WI of that machine. Daily Check follows the daily WI, and Preventive Orders follow the weekly and monthly WI.",
-        "id": "Tab Documents pada Machine Maintenance Profile menampilkan SOP dan WI mesin itu. Daily Check mengikuti WI harian, dan Preventive Order mengikuti WI mingguan dan bulanan."
+        "en": "The Documents tab of the Asset Maintenance Profile shows the SOP and WI of that machine. Daily Check follows the daily WI, and Preventive Orders follow the weekly and monthly WI.",
+        "id": "Tab Documents pada Asset Maintenance Profile menampilkan SOP dan WI mesin itu. Daily Check mengikuti WI harian, dan Preventive Order mengikuti WI mingguan dan bulanan."
       },
       {
         "en": "Documents are stored in English. The Indonesian text for operators comes through the dictionary and the print language.",
@@ -1189,19 +1572,19 @@
       "en": "What Phase 1 delivers, how it is built step by step, and how it is tested.",
       "id": "Apa yang dikirim Fase 1, bagaimana dibangun langkah demi langkah, dan bagaimana diuji."
     },
-    "keywords": "fase 1, master data, tm2mnt, migration, seeder, readiness, test, maintenance codes, profil mesin",
+    "keywords": "fase 1, master data, tm2mnt, migration, seeder, readiness, test, maintenance codes, profil aset",
     "steps": [
       {
-        "en": "Create the connection and databases first (done), then the Phase 1 migration in ddtmnt: mnt_code, mnt_machine_profile, mnt_watch_point, mnt_machine_part and, if needed, mnt_machine_doc.",
-        "id": "Buat koneksi dan database lebih dulu (selesai), lalu migration Fase 1 di ddtmnt: mnt_code, mnt_machine_profile, mnt_watch_point, mnt_machine_part dan, bila perlu, mnt_machine_doc."
+        "en": "Create the connection and databases first (done), then the Phase 1 tables in ddtmnt: mnt_code, mnt_asset, mnt_watch_point, mnt_asset_part, mnt_document, mnt_document_line, mnt_asset_document and mnt_log.",
+        "id": "Buat koneksi dan database lebih dulu (selesai), lalu tabel Fase 1 di ddtmnt: mnt_code, mnt_asset, mnt_watch_point, mnt_asset_part, mnt_document, mnt_document_line, mnt_asset_document dan mnt_log."
       },
       {
         "en": "The migration also creates module MAINT, the groups MAINT_TECH and MAINT_HEAD, the menu rows and the settings, and skips anything that already exists.",
         "id": "Migration juga membuat modul MAINT, grup MAINT_TECH dan MAINT_HEAD, baris menu dan pengaturan, dan melewati yang sudah ada."
       },
       {
-        "en": "Build Maintenance Codes first, then the Machine Maintenance Profile one tab at a time, then the Machine Readiness grid, then the menu and the Help topics.",
-        "id": "Bangun Maintenance Codes lebih dulu, lalu Machine Maintenance Profile satu tab per tab, lalu grid Machine Readiness, lalu menu dan topik Help."
+        "en": "Build Maintenance Codes first, then the Asset Maintenance Profile one tab at a time, then the Asset Readiness grid, then the menu and the Help topics.",
+        "id": "Bangun Maintenance Codes lebih dulu, lalu Asset Maintenance Profile satu tab per tab, lalu grid Asset Readiness, lalu menu dan topik Help."
       },
       {
         "en": "Example data goes only to ddtmnt through a seeder, without normal limits. Real machine data is never invented in tm2mnt.",
@@ -1495,8 +1878,8 @@
     "fields": [
       {
         "label": "Approved by user",
-        "en": "The four-group menu and the Machine Maintenance Profile mockup.",
-        "id": "Menu empat kelompok dan mockup Machine Maintenance Profile."
+        "en": "The four-group menu and the Asset Maintenance Profile mockup.",
+        "id": "Menu empat kelompok dan mockup Asset Maintenance Profile."
       },
       {
         "label": "Not approved yet",

@@ -72,6 +72,8 @@ final class Grids
         Acc\DownPaymentLedgerReport::class,
         Acc\FixedAssetGrid::class,
         Acc\AmortizationGrid::class,
+        Maint\MaintenanceCodeLookup::class,
+        Maint\AssetReadinessReport::class,
         Setup\TranslationDictionaryLookup::class,
         Setup\MenuSetupLookup::class,
         Setup\DocSeriesLookup::class,
