@@ -133,6 +133,13 @@ final class Screens
                 ]],
             ]],
             ['code' => 'HRM', 'short' => 'HR', 'label' => 'Human Resource', 'icon' => 'fa-solid fa-people-group', 'groups' => [
+                ['label' => 'Time Attendance', 'items' => [
+                    // Milik sendiri: semua karyawan boleh absen (modul GENERAL = tanpa gerbang modul), seperti self-service v1.
+                    [...$it('hrm-clockin', ['GPS Clock-In (Mobile)', 'fa-solid fa-location-crosshairs', 'v2: App\Support\V2\Data\GpsClock + x-dl::geo-clock (att_mobile_gps_log)', null]), 'module_code' => 'GENERAL'],
+                ]],
+                ['label' => 'Payroll', 'items' => [
+                    $it('hrm-attendance-upload', ['Attendance Upload', 'fa-solid fa-file-arrow-up', 'v2: App\Support\V2\Data\AttendanceUpload (att_finger_import / att_finger_raw)', null]),
+                ]],
                 ['label' => 'Organization', 'items' => [
                     $it('approval-acting', ['Temporary Acting Officer', 'fa-solid fa-people-arrows', 'v2 baru: tm2mst.flow_position_acting (dipindah dari Setup > Security, user 2026-10-04)', null]),
                 ]],

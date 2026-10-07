@@ -48,12 +48,14 @@ use App\Support\V2\Board\Board;
 use App\Support\V2\Data\Account;
 use App\Support\V2\Data\ApprovalCenter;
 use App\Support\V2\Data\ApprovalSetting;
+use App\Support\V2\Data\AttendanceUpload;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CrmActivities;
 use App\Support\V2\Data\CrmComplaints;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DataOriginDesk;
 use App\Support\V2\Data\DeliveryOrder;
+use App\Support\V2\Data\GpsClock;
 use App\Support\V2\Data\GroupPermissions;
 use App\Support\V2\Data\Identification;
 use App\Support\V2\Data\MailContacts;
@@ -1094,6 +1096,39 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return redirect()->route('inquiry.costing.instant', ['costing' => $draft->id_costing]);
     })->middleware('module:COSTING')->name('procost-instant.new');
+
+    // HRM > Time Attendance > GPS Clock-In (App\Support\V2\Data\GpsClock): JSON untuk x-dl::geo-clock. Milik sendiri (semua karyawan), tanpa gerbang modul.
+    Route::post('/hrm/clock/check', function (Request $r) {
+        $d = $r->validate(['lat' => ['required', 'numeric', 'between:-90,90'], 'lng' => ['required', 'numeric', 'between:-180,180']]);
+
+        return response()->json(GpsClock::check((float) $d['lat'], (float) $d['lng']));
+    })->name('clock.check');
+    Route::post('/hrm/clock', function (Request $r) {
+        $d = $r->validate(['type' => ['required', 'in:'.implode(',', GpsClock::TYPES)], 'lat' => ['required', 'numeric', 'between:-90,90'], 'lng' => ['required', 'numeric', 'between:-180,180']]);
+
+        return response()->json(GpsClock::clock(Auth::user()->employee_id, $d['type'], (float) $d['lat'], (float) $d['lng']));
+    })->name('clock.store');
+
+    // HRM > Payroll > Attendance Upload (App\Support\V2\Data\AttendanceUpload): baca file -> pratinjau -> simpan & hitung kehadiran.
+    Route::middleware('module:HRM')->prefix('hrm/attendance-upload')->name('attendance-upload.')->group(function () {
+        $back = fn () => redirect(route('v2.screen', 'hrm-attendance-upload'));
+        Route::post('/parse', function (Request $r) use ($back) {
+            $n = AttendanceUpload::parse(Auth::id(), $r->file('file') ?? throw ValidationException::withMessages(['file' => t('Choose a file first.')]));
+
+            return $back()->with('v2_flash', tf('File read: :n rows. Check the preview, then save.', ['n' => $n]));
+        })->name('parse');
+        Route::post('/process', function () use ($back) {
+            $done = AttendanceUpload::process(Auth::id(), Auth::user()->login);
+
+            return $back()->with('v2_flash', tf(':rows attendance rows saved, :days days had their attendance status calculated.', ['rows' => $done['rows'], 'days' => $done['days']]))
+                ->with('att_done', true);
+        })->name('process');
+        Route::post('/discard', function () use ($back) {
+            AttendanceUpload::discard(Auth::id());
+
+            return $back();
+        })->name('discard');
+    });
 
     // Setup > Identification (App\Support\V2\Data\Identification): identitas aplikasi + perusahaan. Administrator saja (sama dengan v1).
     Route::middleware(['module:SETUP', 'admin'])->prefix('setup/identification')->name('identification.')->group(function () {

@@ -1,17 +1,17 @@
 {
-    "generated": "2026-10-07 13:19",
+    "generated": "2026-10-07 13:27",
     "database": "ddtsys",
     "totals": {
-        "objects": 145,
+        "objects": 146,
         "modules": 10,
         "modules_done": 7,
-        "screens": 219,
-        "v2": 210,
+        "screens": 221,
+        "v2": 212,
         "v1": 4,
         "not_built": 5,
-        "waiting_qc": 213,
+        "waiting_qc": 215,
         "locked": 1,
-        "forms": 83,
+        "forms": 85,
         "grids": 89,
         "reports": 47,
         "grid_classes": 147,
@@ -22,11 +22,11 @@
         "tables": 370,
         "databases": 9,
         "models": 328,
-        "migrations": 546,
-        "tests": 96,
+        "migrations": 548,
+        "tests": 98,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1148",
+        "commits": "1150",
         "since": "2026-08-06"
     },
     "modules": [
@@ -104,13 +104,13 @@
         },
         {
             "label": "Human Resources",
-            "total": 24,
-            "v2": 24,
+            "total": 26,
+            "v2": 26,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 24,
+            "waiting_qc": 26,
             "locked": 0,
-            "form": 8,
+            "form": 10,
             "grid": 13,
             "report": 3
         },
@@ -155,11 +155,11 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 57,
+            "commits": 58,
             "days": 2,
             "last": "2026-10-07",
             "screens": 84,
-            "objects": 17,
+            "objects": 18,
             "engines": 1,
             "tests": 9
         },
@@ -175,7 +175,7 @@
             "tests": 0
         }
     ],
-    "untracked": 1091,
+    "untracked": 1092,
     "days": [
         {
             "date": "2026-09-24",
@@ -257,9 +257,9 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 14,
+            "iwan": 15,
             "jo": 0,
-            "other": 9
+            "other": 10
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 57,
+            "iwan": 58,
             "jo": 0,
-            "other": 11
+            "other": 12
         }
     ],
     "items": [
@@ -810,6 +810,17 @@
             "changed_by": null
         },
         {
+            "type": "FORM",
+            "key": "menu:HRM_ATTENDANCE_UPLOAD",
+            "name": "Attendance Upload",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
             "type": "REPORT",
             "key": "menu:MGMT_EXEC",
             "name": "Executive Summary",
@@ -1112,6 +1123,17 @@
             "name": "MPS - Kanban Board",
             "module": "Production",
             "qc": "NOT_BUILT",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:HRM_CLOCKIN",
+            "name": "GPS Clock-In (Mobile)",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
             "built_at": null,
             "built_by": null,
             "changed_at": null,
@@ -3869,6 +3891,17 @@
         },
         {
             "type": "OBJECT",
+            "key": "object:GeoClock",
+            "name": "GeoClock",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
             "key": "object:Greeting",
             "name": "Greeting",
             "module": "DevLib",
@@ -3884,10 +3917,10 @@
             "name": "GreetingCard",
             "module": "DevLib",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
