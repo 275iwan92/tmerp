@@ -645,6 +645,8 @@
     Need improvement, tandai selesai dengan `--resolve=<id> --by=<agen>`. Kode tetap SATU folder; saat masa migrasi kode mockup disalin ke folder live terpisah,
     dan live dijalankan sesuai layar yang sudah Approved.
 
+20. **Identitas agen ditentukan HARI (user 2026-10-07, tidak perlu diulang).** Senin-Selasa = **Agent Iwan**; Rabu-Kamis-Jumat-Sabtu = **Agent Jo**; Minggu libur (bila user bekerja di hari Minggu, kemungkinan besar Jo, probabilitas kecil ~5%: tanyakan bila ragu). Iwan dan Jo adalah Claude Code yang sama, login bergantian oleh user, di laptop dan folder yang sama; email akun BUKAN penentu. Agen mengecek `date` lalu menulis `Agent: Iwan` / `Agent: Jo` di trailer commit; pernyataan eksplisit user menang atas jadwal. Karena satu folder dan satu git index: `git add` path eksplisit, jangan campur pekerjaan agen lain.
+
 ## E. Help & Asisten AI
 
 1. **Setiap layar input dan laporan wajib punya Help (2026-10-02)**, tiga hal terpisah: **untuk apa** layar / laporan itu
@@ -794,3 +796,4 @@
 | 2026-10-07 | D.17: **Dasar pemrograman = Object Oriented + komponen modular + library** (user: "Make your main code simple, ease to debug and traceable") — main code berupa daftar panggilan ke objek / service / library, satu kelas satu tanggung jawab, tanpa salin-tempel, error = exception bernama berkonteks, objek traceable (`tag/source/lineage`, `EngineRegistry`). Ditulis juga di skill `devlib-oo` (`.ai/skills`). |
 | 2026-10-07 | D.18: **Arah warisan DevLib -> tmerp** (user: "di devlib harusnya membuat object untuk bisa diwariskan ke tmerp") — objek / helper dibuat di DevLib dulu; paket tidak boleh memakai kode `App\`; `raw()` pindah ke `packages/devlib/src/helpers.php` (dulu hanya di tmerp, membuat demo devlib.test error 500); test `DevlibInheritanceTest`. Ditulis juga di skill `devlib-oo`. |
 | 2026-10-07 | D.19: **QC cepat Approved / Need improvement per layar, tiga lapis QC > UAT officer > UAT supervisor; ketiganya lolos = Ready to release** (user: "fasilitas tiap layar saya sebagai QC ada approve, nanti 2 lapis UAT oleh officer terkait dan atasannya"; "jika ketiganya lolos tercatat siap release ke live"). Kode tetap satu folder sampai masa migrasi, lalu disalin ke folder live. |
+| 2026-10-07 | D.20: **Identitas agen ditentukan hari** (user: "Senin Selasa Agent Iw, Rabu Kamis Jumat Sabtu Agent Jo ... laptop yang sama di folder yang sama ... login bergantian"; Minggu libur, bila kerja kemungkinan Jo ~5%). |
