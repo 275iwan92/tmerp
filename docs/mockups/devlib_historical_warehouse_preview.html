@@ -1,0 +1,47 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f3f4f8;color:#2c3e69;font-size:13px}
+h2{margin:0 0 8px;font-size:15px}.sec{padding:18px 24px;border-bottom:3px solid #2c3e69}
+.tag{display:inline-block;background:#e11d48;color:#fff;border-radius:50%;width:20px;height:20px;text-align:center;line-height:20px;font-weight:700;margin-right:6px}
+.feed{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start}
+.post{background:#fff;border:1px solid #dde1ea;border-radius:12px;padding:14px 16px}
+.post h3{margin:0;font-size:14px}.meta{color:#8a94a6;font-size:11px;margin:2px 0 6px}
+.body{max-height:9em;overflow:hidden;position:relative;line-height:1.5}.body.open{max-height:none}
+.body:not(.open):after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.5em;background:linear-gradient(transparent,#fff)}
+.badge{background:#fdf0cf;color:#9a6a00;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:700;float:right}
+.btn{display:inline-block;border:1px solid #c9cfdd;border-radius:6px;padding:3px 10px;font-size:12px;margin-top:6px;background:#f3f4f8}
+.tabs span{display:inline-block;margin:0 6px 10px 0;padding:5px 12px;border-radius:7px;background:#e6e9f2}.tabs .on{background:#d98ca0;color:#fff}
+.wh{display:grid;grid-template-columns:300px 1fr;gap:12px}
+.panel{background:#fff;border:1px solid #dde1ea;border-radius:10px;padding:12px;line-height:1.6}
+.map{background:#fff;border:1px solid #dde1ea;border-radius:10px;padding:12px;position:relative;height:300px}
+.cell{position:absolute;width:46px;height:34px;border-radius:4px;border:1px solid #2c7be5;background:#e8f0fc;font-size:10px;text-align:center;line-height:34px}
+.zone{position:absolute;border:2px solid #2c7be5;border-radius:6px;left:14px;top:14px;width:330px;height:190px;background:#f6f9fe;font-size:11px;padding:2px 6px}
+.sel{background:#2c7be5;color:#fff}.dead{background:#fbd5d5;border-color:#d33}
+.unit{border:1px solid #dde1ea;border-radius:6px;padding:4px 8px;margin:4px 0;background:#f8f9fc}
+.menu{background:#2b1d2e;color:#fff;border-radius:10px;padding:14px;width:300px;line-height:2}
+.menu .it{padding:2px 12px;border-radius:7px}.menu .sub{padding-left:34px;color:#e8c6d0}.menu .on{background:#d98ca0}
+</style></head><body>
+<div class="sec"><h2><span class="tag">1</span>Historical (devlib.test) - blog 3 kolom, kartu bisa dibuka</h2>
+<div class="tabs"><span class="on">All</span><span>Agent Iwan</span><span>Agent Jo</span><span>You</span><span>+ New Note</span></div>
+<div class="feed">
+<div class="post"><span class="badge">Unread</span><h3>Kenapa 115 screen_*.md dihapus</h3><div class="meta">Agent Iwan · Report · 07-Okt-2026 15:11</div>
+<div class="body">Dokumen per-layar itu menggambarkan layar v1 yang sudah digantikan v2 / DevLib. Acuan usang menurut Anda: modul dibuat lebih baik dari definisi di md.<br>- Dihapus lewat git rm, bisa dipulihkan dari riwayat<br>- Inventaris di docs/md_inventory.md<br>- 9 md lain dipindah ke folder usang</div><span class="btn">Read more ▾</span></div>
+<div class="post"><span class="badge">Unread</span><h3>sys_doc_reference dinonaktifkan</h3><div class="meta">Agent Iwan · Report · 07-Okt-2026 15:11</div>
+<div class="body open">Empat baris dinonaktifkan di tm2sys dan ddtsys (activate=0). Komentar kode 10 berkas diberi tanda "(diarsipkan)".</div><span class="btn">Show less ▴</span></div>
+<div class="post"><span class="badge">Unread</span><h3>Warehouse: submenu + panel kiri</h3><div class="meta">Agent Jo · Report · 07-Okt-2026</div>
+<div class="body">Menu Warehouse dipecah jadi tiga halaman. Panel info bin pindah ke kiri; klik area menampilkan ringkasan bin, tumpukan, dan barang.<br>Commit dab32b4b.<br>Baris tambahan agar terlihat terpotong.<br>Baris tambahan.</div><span class="btn">Read more ▾</span></div>
+</div><p style="color:#8a94a6">Kartu berikutnya turun ke baris bawah (3 per baris). Read more membuka isi penuh di kartu itu saja.</p></div>
+
+<div class="sec"><h2><span class="tag">2</span>Warehouse &gt; Location &amp; Mapping - panel info di KIRI, klik area atau bin</h2>
+<div class="wh"><div class="panel"><small>Bin</small><br><b style="font-size:15px">L-PPR-L03-01</b> <span class="badge">Full</span><br>
+Weight 1,721 / 3,000 kg · Stack height 3.05 / 3.20 m
+<div style="margin-top:6px"><b>Stack - top to bottom</b></div>
+<div class="unit"><b>3</b> Art Paper 150 gsm - 2 reams</div><div class="unit"><b>2</b> White Kraft 140 - PL2600031 <i style="color:#2c7be5">Pallet</i></div><div class="unit" style="border-color:#d33"><b>1</b> White Kraft 140 - PL2600012 <i style="color:#d33">Dead stock</i></div>
+<span class="btn">Transfer</span> <span class="btn">Label</span></div>
+<div class="map"><div class="zone">PPR · Plano Paper<div class="cell" style="left:10px;top:30px">L01-01</div><div class="cell" style="left:64px;top:30px">L01-02</div><div class="cell sel" style="left:118px;top:30px">L03-01</div><div class="cell dead" style="left:172px;top:30px">L04-01</div><div class="cell" style="left:10px;top:70px">L01-03</div></div>
+<div style="position:absolute;right:20px;top:20px;width:170px;border:2px solid #84cc16;border-radius:6px;height:90px;padding:2px 6px;font-size:11px">INK · Ink &amp; Chemicals</div></div></div>
+<p style="color:#8a94a6">Klik kotak bin = panel kiri detail bin. Klik area (garis tebal) = ringkasan bin berisi di area itu.</p></div>
+
+<div class="sec"><h2><span class="tag">3</span>Menu devlib.test - Warehouse jadi submenu</h2>
+<div class="menu"><div class="it"><i class="fa-solid fa-table"></i> Grid</div><div class="it"><i class="fa-solid fa-warehouse"></i> Warehouse</div><div class="sub"><i class="fa-solid fa-map-location-dot"></i> Location &amp; Mapping</div><div class="sub"><i class="fa-solid fa-tags"></i> Labels</div><div class="sub"><i class="fa-solid fa-barcode"></i> Scan &amp; Track</div></div></div>
+</body></html>
