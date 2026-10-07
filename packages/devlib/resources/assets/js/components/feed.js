@@ -15,6 +15,7 @@
       this.on('click', '[data-feed-toggle]', (e, b) => {
         const post = b.closest('.dl-feed__post'), open = post.classList.toggle('is-open');
         b.textContent = open ? b.dataset.less : b.dataset.more;
+        post.scrollIntoView({block: 'nearest', behavior: 'smooth'});
       });
     }
   }
