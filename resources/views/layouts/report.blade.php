@@ -39,7 +39,7 @@
                 lewat Livewire::test (lolos fungsional), tidak pernah dibuka
                 di browser sungguhan. FIX: definisikan token di sini secara
                 TETAP (palet identik dgn :root mockup aslinya) -- shell ini
-                memang bukan bagian sistem tema 12-kombinasi (themestandard.md,
+                memang bukan bagian sistem tema 12-kombinasi (themestandard.md (diarsipkan),
                 itu scope-nya konten dalam iframe .shell), jadi warna tetap
                 terang selalu, sama seperti mockup sumbernya sendiri (tidak
                 ada toggle dark/light di mockup ini).

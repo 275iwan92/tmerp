@@ -459,7 +459,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
    layouts/report.blade.php (keluhan user 2026-09-13, "kenapa tidak pakai
    seperti ini" sambil menunjuk screenshot switcher sisi Laporan). Beda dari
    .rs-switch (fixed-light, di luar sistem tema): di sini pakai token
-   --side-x dan --sh-accent supaya tetap ikut 12 kombinasi tema (themestandard.md).
+   --side-x dan --sh-accent supaya tetap ikut 12 kombinasi tema (themestandard.md (diarsipkan)).
    GOTCHA FATAL yg SEMPAT ada di komentar ini (root cause kekacauan build
    sebelumnya, BUKAN soal Tailwind/nama class sama sekali): menulis
    "--side-*<garis miring>--sh-accent" tanpa spasi berarti literal "*<garis

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 // dispatch_tier2.md §A/C/D -- satu-satunya jalur SAH utk pullLines/confirm/
 // markShipped/cancel, dipanggil SAMA persis dari DO Entry maupun tombol
-// ✓ Confirm di grid DO List (dispatch_tier4.md §9 checklist), supaya tidak
+// ✓ Confirm di grid DO List (dispatch_tier4.md (diarsipkan) §9 checklist), supaya tidak
 // ada duplikasi logic di dua tempat.
 class DispatchService
 {

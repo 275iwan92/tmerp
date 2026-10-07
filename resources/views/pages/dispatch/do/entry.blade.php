@@ -11,7 +11,7 @@ use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// dispatch_tier4.md §3-6 -- Blok A Info Dokumen / B Customer & Ship-to /
+// dispatch_tier4.md (diarsipkan) §3-6 -- Blok A Info Dokumen / B Customer & Ship-to /
 // C CO Line Picker (DRAFT saja) / D Baris DO + footer aksi. Satu komponen
 // menangani create (DoList sudah pre-create header via picker customer,
 // lihat catatan deviasi di list.blade.php) dan detail read-only

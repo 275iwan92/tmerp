@@ -5,7 +5,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// docs/checklistmockuperp.md "Nota Alokasi / Label Rak — belum digarap
+// docs/checklistmockuperp.md (diarsipkan) "Nota Alokasi / Label Rak — belum digarap
 // (sengaja ditunda, [P] diprioritaskan setelah Form/Grid)". Form/Grid
 // Warehouse sudah lama live -- ini bagian [P]-nya. BEDA bentuk dari Nota
 // transaksi lain (bukan 1 dokumen formal ber-signature, tapi LEMBAR LABEL

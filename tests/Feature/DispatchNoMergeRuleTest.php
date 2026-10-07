@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 // DISPATCH-02 (no-merge rule) -- dispatch_tier2.md §B.4, WAJIB test unit
-// tersendiri (checklist dispatch_tier4.md §9), bukan cuma dicek manual. Dua
+// tersendiri (checklist dispatch_tier4.md (diarsipkan) §9), bukan cuma dicek manual. Dua
 // co_order_item_id berbeda dgn item_description IDENTIK tapi unit_price
 // beda SELALU jadi 2 baris do_line terpisah, tidak pernah digabung/dirata2.
 class DispatchNoMergeRuleTest extends TestCase

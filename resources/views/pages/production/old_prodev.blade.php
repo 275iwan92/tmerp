@@ -124,7 +124,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     // Redesign form (mockup_FORM_prodev_2/header.png, user 2026-09-03) --
     // seluruh isi konten (kartu/border/teks) ikut tema tm2sys.sys_theme yang
     // dipilih user (bukan cuma chrome header yg sudah otomatis ikut lewat
-    // --color-navy/--color-accent global, lihat themestandard.md §6 "halaman
+    // --color-navy/--color-accent global, lihat themestandard.md (diarsipkan) §6 "halaman
     // iframe belum digarap" -- layar ini jadi INSTANCE PERTAMA yg digarap).
     #[Computed]
     public function theme(): \App\Models\Sys\SysTheme

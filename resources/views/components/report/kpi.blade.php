@@ -3,7 +3,7 @@
     Beda dari <x-grid.stat-box> (kotak pastel polos, dipakai grid Master) --
     ini khusus Laporan Manajemen, meniru pola mockup yang dibawa user.
     Semua warna via token .shell (--sh-*), BUKAN hex literal, supaya ikut
-    12 kombinasi tema (lihat themestandard.md).
+    12 kombinasi tema (lihat themestandard.md (diarsipkan)).
 --}}
 @props([
     'label',

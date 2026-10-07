@@ -34,7 +34,7 @@ class UserConfiguration extends Component
         }
     }
 
-    // Matrix 4 mode x 3 corak + Klasik, 100% dari tm2sys.sys_theme (themestandard.md).
+    // Matrix 4 mode x 3 corak + Klasik, 100% dari tm2sys.sys_theme (themestandard.md (diarsipkan)).
     #[Computed]
     public function themeMatrix(): array
     {

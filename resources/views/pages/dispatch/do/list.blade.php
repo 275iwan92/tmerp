@@ -13,7 +13,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-// dispatch_tier4.md §2 -- griduistandard.md diikuti persis (pola sama
+// dispatch_tier4.md (diarsipkan) §2 -- griduistandard.md diikuti persis (pola sama
 // quotation/list.blade.php: "+ New Record" via picker customer, karena DO
 // memang lahir dari grid ini). Kolom Aksi: ↗ Buka selalu ada, ✓ Confirm
 // kondisional (status DRAFT & line_count>=1) memanggil DispatchService::confirm()
