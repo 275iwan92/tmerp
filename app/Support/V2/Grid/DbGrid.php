@@ -120,6 +120,12 @@ abstract class DbGrid
         return null;
     }
 
+    // Unduhan Excel server-side di atas grid (mis. master gaji untuk direksi); null = tidak ada tombolnya. Tombol Export bawaan grid = CSV kolom yang tampil.
+    public function excelUrl(): ?string
+    {
+        return null;
+    }
+
     // Tombol di baris (kolom type button, mis. Print): aksi => alamat berpola {id}, dibuka di tab baru oleh layar grid generik.
     public function actionUrls(): array
     {

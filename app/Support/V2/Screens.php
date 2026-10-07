@@ -160,7 +160,6 @@ final class Screens
                 ['label' => 'Payroll', 'items' => [
                     $it('hrm-bank-transfer', ['Bank Transfer Generator', 'fa-solid fa-building-columns', 'v2: App\Support\V2\Data\PayrollDisbursement (pyr_payslip x emp_bank_account)', null, true]),
                     $it('hrm-cash-roster', ['Cash Roster & Denominations', 'fa-solid fa-money-bill-wave', 'v2: App\Support\V2\Data\PayrollDisbursement + print cash-roster', null, true]),
-                    $it('hrm-salary-review', ['Salary Review (Excel)', 'fa-solid fa-file-excel', 'v2: App\Support\V2\Data\PayrollSalaryReview (pyr_payslip, unduh .xlsx untuk direksi)', null, true]),
                     $it('hrm-attendance-upload', ['Attendance Upload', 'fa-solid fa-file-arrow-up', 'v2: App\Support\V2\Data\AttendanceUpload (att_finger_import / att_finger_raw)', null]),
                 ]],
                 ['label' => 'Organization', 'items' => [

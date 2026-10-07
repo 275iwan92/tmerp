@@ -44,6 +44,12 @@ class SalaryGrid extends HrmGrid
         return false;
     }
 
+    // Hanya yang berhak melihat nominal gaji (admin / DIREKSI / MGR_ACC) yang mendapat tombol; route-nya sendiri juga menolak yang lain.
+    public function excelUrl(): ?string
+    {
+        return auth()->user()?->canViewPayrollAmounts() ? route('v2.payroll.employee-salary-xlsx') : null;
+    }
+
     protected function models(): array
     {
         return [EmpEmployee::class, PyrEmployeeSalary::class];

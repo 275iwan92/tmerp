@@ -7,8 +7,9 @@
     $period = $screen['grid']->period();
     $params = $screen['grid']->params();
     $printUrl = $screen['grid']->printUrlOf();
+    $excelUrl = $screen['grid']->excelUrl();
 @endphp
-@if ($period || $params || $printUrl)
+@if ($period || $params || $printUrl || $excelUrl)
 {{-- Laporan berperiode: pilih tanggal (dan saringan teks) lalu Show memuat ulang grid; Print = cetakan x-dl::report yang sama isinya. --}}
 <x-dl::action-form method="get" action="{{ $screen['grid']->url() }}">
     <x-dl::action-bar align="start">
@@ -23,6 +24,9 @@
         @endif
         @if ($printUrl)
             <x-dl::button variant="secondary" icon="print" label="Print" :href="$printUrl" />
+        @endif
+        @if ($excelUrl)
+            <x-dl::button icon="fa-file-excel" label="Download Excel" :href="$excelUrl" />
         @endif
     </x-dl::action-bar>
 </x-dl::action-form>

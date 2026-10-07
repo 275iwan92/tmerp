@@ -59,6 +59,7 @@ use App\Support\V2\Data\CrmComplaints;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DataOriginDesk;
 use App\Support\V2\Data\DeliveryOrder;
+use App\Support\V2\Data\EmployeeSalaryExport;
 use App\Support\V2\Data\FinanceDesk;
 use App\Support\V2\Data\FinancialStatements;
 use App\Support\V2\Data\GpsClock;
@@ -68,7 +69,6 @@ use App\Support\V2\Data\MailContacts;
 use App\Support\V2\Data\MigrationDesk;
 use App\Support\V2\Data\Overtime;
 use App\Support\V2\Data\PayrollDisbursement;
-use App\Support\V2\Data\PayrollSalaryReview;
 use App\Support\V2\Data\PettyCash;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\PurchaseOrder;
@@ -1147,14 +1147,12 @@ Route::prefix('v2')->name('v2.')->group(function () {
         }, 'transfer-bank-'.$period.'.csv', ['Content-Type' => 'text/csv']);
     })->whereNumber('run')->middleware('module:HRM')->name('payroll.bank-csv');
 
-    // HRM > Payroll > Salary Review: unduhan Excel rincian gaji per pegawai untuk telaah manual direksi (App\Support\V2\Data\PayrollSalaryReview). Hanya yang berhak melihat nominal gaji.
-    Route::get('/hrm/payroll/salary-review/{run}.xlsx', function (int $run) {
+    // HRM > Payroll > Master Employee Salary & Tax: unduhan Excel setelan gaji master (App\Support\V2\Data\EmployeeSalaryExport) untuk telaah manual direksi. Hanya yang berhak melihat nominal gaji.
+    Route::get('/hrm/payroll/employee-salary.xlsx', function () {
         abort_unless(Auth::user()->canViewPayrollAmounts(), 403);
-        $period = PayrollSalaryReview::run($run);
-        abort_unless($period, 404);
 
-        return Excel::download(new GenericGridExport(PayrollSalaryReview::rows($run), PayrollSalaryReview::headings()), PayrollSalaryReview::filename($period));
-    })->whereNumber('run')->middleware('module:HRM')->name('payroll.salary-xlsx');
+        return Excel::download(new GenericGridExport(EmployeeSalaryExport::rows(), EmployeeSalaryExport::headings()), EmployeeSalaryExport::filename());
+    })->middleware('module:HRM')->name('payroll.employee-salary-xlsx');
 
     // HRM > Recruitment > Pipeline Board (App\Support\V2\Data\RecruitmentPipeline): move = JSON dari x-dl::kanban (:move-url), selebihnya redirect.
     Route::middleware('module:HRM')->prefix('hrm/recruitment/pipeline')->name('pipeline.')->group(function () {

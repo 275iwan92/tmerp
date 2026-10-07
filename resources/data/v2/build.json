@@ -1,19 +1,19 @@
 {
-    "generated": "2026-10-07 14:57",
+    "generated": "2026-10-07 15:06",
     "database": "ddtsys",
     "totals": {
         "objects": 148,
         "modules": 10,
         "modules_done": 6,
-        "screens": 239,
-        "v2": 229,
+        "screens": 238,
+        "v2": 228,
         "v1": 5,
         "not_built": 5,
-        "waiting_qc": 233,
+        "waiting_qc": 232,
         "locked": 1,
         "forms": 92,
         "grids": 91,
-        "reports": 56,
+        "reports": 55,
         "grid_classes": 147,
         "lookups": 37,
         "report_grids": 36,
@@ -22,11 +22,11 @@
         "tables": 371,
         "databases": 9,
         "models": 328,
-        "migrations": 560,
+        "migrations": 559,
         "tests": 111,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1178",
+        "commits": "1179",
         "since": "2026-08-06"
     },
     "modules": [
@@ -104,15 +104,15 @@
         },
         {
             "label": "Human Resources",
-            "total": 34,
-            "v2": 33,
+            "total": 33,
+            "v2": 32,
             "v1": 1,
             "not_built": 0,
-            "waiting_qc": 34,
+            "waiting_qc": 33,
             "locked": 0,
             "form": 12,
             "grid": 15,
-            "report": 7
+            "report": 6
         },
         {
             "label": "Finance & Accounting",
@@ -175,7 +175,7 @@
             "tests": 0
         }
     ],
-    "untracked": 1104,
+    "untracked": 1105,
     "days": [
         {
             "date": "2026-09-24",
@@ -259,7 +259,7 @@
             "date": "2026-10-07",
             "iwan": 31,
             "jo": 0,
-            "other": 22
+            "other": 23
         }
     ],
     "weeks": [
@@ -321,7 +321,7 @@
             "week": "2026-W41",
             "iwan": 74,
             "jo": 0,
-            "other": 24
+            "other": 25
         }
     ],
     "items": [
@@ -2721,17 +2721,6 @@
             "built_at": "2026-10-03",
             "built_by": null,
             "changed_at": "2026-10-04",
-            "changed_by": null
-        },
-        {
-            "type": "REPORT",
-            "key": "menu:HRM_PAYROLL_SALARYREVIEW",
-            "name": "Salary Review (Excel)",
-            "module": "Human Resources",
-            "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
             "changed_by": null
         },
         {
