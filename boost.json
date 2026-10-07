@@ -10,11 +10,15 @@
         "testing-best-practices",
         "livewire-development",
         "tailwindcss-development",
+        "animejs",
         "devlib-oo",
         "devlib-svg-cad",
+        "svg-infographic",
+        "tailwind-4-blade",
         "tmerp-mysql",
         "tmerp-screen",
         "tmerp-stack-rules",
-        "tmerp-ui-mockup"
+        "tmerp-ui-mockup",
+        "ui-ux-pro-max"
     ]
 }
