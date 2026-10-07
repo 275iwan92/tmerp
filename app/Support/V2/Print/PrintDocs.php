@@ -46,6 +46,7 @@ final class PrintDocs
         'qc-inspection' => [QcInspectionPrint::class, 'purchase-receive', 'QCI'],
         'customer-complaint' => [CustomerComplaintPrint::class, 'crm-complaint', 'CCR'],
         'stock-transfer' => [StockTransferPrint::class, 'stock-transfer', 'TF'],
+        'cash-roster' => [CashRosterPrint::class, 'hrm-cash-roster', null],
     ];
 
     // Dokumen yang dicetak dari sumber yang sama (id sama): halaman cetak menampilkan tombol pindah di antara keduanya.
@@ -55,7 +56,7 @@ final class PrintDocs
     ];
 
     // Dokumen yang tombol Back-nya kembali ke daftar (id cetak bukan id form layarnya).
-    public const BACK_TO_LIST = ['cpdel', 'petty-cash', 'payment-voucher'];
+    public const BACK_TO_LIST = ['cpdel', 'petty-cash', 'payment-voucher', 'cash-roster'];
 
     private static bool $booted = false;
 

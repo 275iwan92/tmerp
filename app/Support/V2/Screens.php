@@ -140,6 +140,8 @@ final class Screens
                     [...$it('hrm-clockin', ['GPS Clock-In (Mobile)', 'fa-solid fa-location-crosshairs', 'v2: App\Support\V2\Data\GpsClock + x-dl::geo-clock (att_mobile_gps_log)', null]), 'module_code' => 'GENERAL'],
                 ]],
                 ['label' => 'Payroll', 'items' => [
+                    $it('hrm-bank-transfer', ['Bank Transfer Generator', 'fa-solid fa-building-columns', 'v2: App\Support\V2\Data\PayrollDisbursement (pyr_payslip x emp_bank_account)', null, true]),
+                    $it('hrm-cash-roster', ['Cash Roster & Denominations', 'fa-solid fa-money-bill-wave', 'v2: App\Support\V2\Data\PayrollDisbursement + print cash-roster', null, true]),
                     $it('hrm-attendance-upload', ['Attendance Upload', 'fa-solid fa-file-arrow-up', 'v2: App\Support\V2\Data\AttendanceUpload (att_finger_import / att_finger_raw)', null]),
                 ]],
                 ['label' => 'Organization', 'items' => [

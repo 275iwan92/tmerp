@@ -1,19 +1,19 @@
 {
-    "generated": "2026-10-07 14:01",
+    "generated": "2026-10-07 14:15",
     "database": "ddtsys",
     "totals": {
-        "objects": 146,
+        "objects": 147,
         "modules": 10,
         "modules_done": 7,
-        "screens": 224,
-        "v2": 215,
+        "screens": 226,
+        "v2": 217,
         "v1": 4,
         "not_built": 5,
-        "waiting_qc": 218,
+        "waiting_qc": 220,
         "locked": 1,
         "forms": 87,
         "grids": 90,
-        "reports": 47,
+        "reports": 49,
         "grid_classes": 147,
         "lookups": 37,
         "report_grids": 36,
@@ -22,11 +22,11 @@
         "tables": 370,
         "databases": 9,
         "models": 328,
-        "migrations": 551,
-        "tests": 102,
+        "migrations": 552,
+        "tests": 104,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1158",
+        "commits": "1160",
         "since": "2026-08-06"
     },
     "modules": [
@@ -104,15 +104,15 @@
         },
         {
             "label": "Human Resources",
-            "total": 28,
-            "v2": 28,
+            "total": 30,
+            "v2": 30,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 28,
+            "waiting_qc": 30,
             "locked": 0,
             "form": 11,
             "grid": 14,
-            "report": 3
+            "report": 5
         },
         {
             "label": "Finance & Accounting",
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 65,
+            "commits": 67,
             "days": 2,
             "last": "2026-10-07",
             "screens": 93,
             "objects": 19,
             "engines": 1,
-            "tests": 14
+            "tests": 16
         },
         {
             "key": "jo",
@@ -257,7 +257,7 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 22,
+            "iwan": 24,
             "jo": 0,
             "other": 11
         }
@@ -319,7 +319,7 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 65,
+            "iwan": 67,
             "jo": 0,
             "other": 13
         }
@@ -2516,6 +2516,17 @@
         },
         {
             "type": "REPORT",
+            "key": "menu:HRM_PAYROLL_BANKXFER",
+            "name": "Bank Transfer Generator",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
             "key": "menu:ACC_TB",
             "name": "Trial Balance",
             "module": "Finance & Accounting",
@@ -2611,6 +2622,17 @@
             "built_at": "2026-10-01",
             "built_by": null,
             "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:HRM_PAYROLL_CASHROSTER",
+            "name": "Cash Roster & Denominations",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {
@@ -4305,6 +4327,17 @@
             "built_at": "2026-09-24",
             "built_by": null,
             "changed_at": "2026-09-24",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:QcBar",
+            "name": "QcBar",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {

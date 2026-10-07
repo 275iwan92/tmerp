@@ -140,6 +140,12 @@ HRM_ROSTER + PROD_SHIFT_ROSTER -> `v2:hrm-roster` (papan mingguan, lingkup jadwa
 CRUD jadwal, rotasi swap / cycle / copy, tampil / sembunyi shift; katalog shift = Master Shift). **Sisa Shift Roster (belum dipindah, v1 masih dipakai):**
 tampilan Formasi Harian (`RosterFormationService`, editor baris, mockup `docs/mockups/mockup_roster_formasi_harian.jpg`) dan cetak roster
 (`hrm.shift-roster.print`; tombol Print di layar v2 membuka layar v1 itu). Catatan: rotasi v2 menolak minggu tujuan yang sudah CONFIRMED (v1 tidak memeriksa).
+**C7 SELESAI (2026-10-07, ddtsys; migration `2026_10_07_000120`):** HRM_PAYROLL_BANKXFER -> `v2:hrm-bank-transfer`, HRM_PAYROLL_CASHROSTER -> `v2:hrm-cash-roster`
+(`PayrollDisbursement`: pegawai berekening utama aktif = transfer bank + unduh CSV batch; pegawai tanpa rekening = tunai dengan rincian amplop dan jumlah lembar
+per pecahan; cetak serah terima = `x-dl::print-doc` jenis `cash-roster`). Enkripsi gaji TIDAK perlu dibangun: `pyr_payslip.total_pokok / total_gaji_bersih` dan
+`pyr_employee_salary.basic_salary_monthly` sudah AES-256-GCM (`App\Casts\PayrollEncrypted`, `docs/payroll_encryption_decision.md`); model mendekripsi otomatis.
+Catatan CLAUDE.md §2 ("pyr belum diimplementasikan") sudah usang. Kolom lain (BPJS, PPh21, lembur, tunjangan, denda) tetap plaintext sesuai keputusan awal.
+Seperti v1, layar ini hanya memuat periode CONFIRMED / PAID / CLOSED dan semua pemilik modul HRM bisa membukanya (tidak dibatasi `canViewPayrollAmounts`).
 **Hasil pencocokan C1 (2026-10-07, dari ddtsys + kode):**
 
 | Kode | Temuan | Jalan keluar |

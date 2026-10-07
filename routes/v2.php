@@ -61,6 +61,7 @@ use App\Support\V2\Data\Identification;
 use App\Support\V2\Data\MailContacts;
 use App\Support\V2\Data\MigrationDesk;
 use App\Support\V2\Data\Overtime;
+use App\Support\V2\Data\PayrollDisbursement;
 use App\Support\V2\Data\PettyCash;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\PurchaseOrder;
@@ -1111,6 +1112,20 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return response()->json(GpsClock::clock(Auth::user()->employee_id, $d['type'], (float) $d['lat'], (float) $d['lng']));
     })->name('clock.store');
+
+    // HRM > Payroll > Bank Transfer Generator: batch CSV periode payroll (App\Support\V2\Data\PayrollDisbursement::csvRows). Modul HRM, sama dengan layar v1.
+    Route::get('/hrm/payroll/bank-transfer/{run}.csv', function (int $run) {
+        $rows = PayrollDisbursement::csvRows($run);
+        $period = PayrollDisbursement::run($run)->period_start->toDateString();
+
+        return response()->streamDownload(function () use ($rows) {
+            $out = fopen('php://output', 'w');
+            foreach ($rows as $row) {
+                fputcsv($out, $row);
+            }
+            fclose($out);
+        }, 'transfer-bank-'.$period.'.csv', ['Content-Type' => 'text/csv']);
+    })->whereNumber('run')->middleware('module:HRM')->name('payroll.bank-csv');
 
     // HRM > Time Attendance > Shift Roster (App\Support\V2\Data\ShiftRoster). Lingkup dari query: sched, dept, wc, w (selisih minggu).
     Route::middleware('module:HRM')->prefix('hrm/roster')->name('roster.')->group(function () {
