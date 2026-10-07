@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Master Employee — Tipe Pegawai (deviasi)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .inp { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 9px; font-size: 12px; background: #eef4fd; position: relative; }
+  .inp.ro { background: #f8fafc; }
+  .case { position:absolute; right:6px; top:50%; transform:translateY(-50%); font-size:9px; font-weight:700; color:#2c7be5; background:#dbe8fb; border-radius:4px; padding:1px 4px; }
+  .mark { position:absolute; z-index:5; width:20px; height:20px; border-radius:9999px; background:#dc2626; color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 2px #fff; }
+  .badge { padding:2px 9px; border-radius:9999px; font-size:10px; font-weight:600; }
+  th { text-align:left; font-size:10px; color:#8a94a6; text-transform:uppercase; padding:8px 10px; background:#f8fafc; border-bottom:1px solid #e2e8f0; }
+  td { padding:8px 10px; border-bottom:1px solid #eef2f7; }
+  .icon-btn { display:inline-flex; width:24px; height:24px; align-items:center; justify-content:center; border:1px solid #cbd5e1; border-radius:6px; color:#475569; margin-right:3px; }
+  .stat { border-radius:8px; padding:8px 12px; min-width:104px; border:1px solid transparent; position:relative; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+
+<header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5">
+  <div>
+    <div class="text-sm font-bold">Master Employee — Tipe Pegawai (Staff / Non-staff)</div>
+    <div class="text-[10px] opacity-70">HRM · Usulan perubahan untuk disetujui · data contoh</div>
+  </div>
+  <div class="ml-auto text-[10px] px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 font-semibold">DEVIASI — BELUM DIBANGUN</div>
+</header>
+
+<main class="p-4 max-w-7xl mx-auto space-y-4">
+
+  <!-- ========== A. GRID ========== -->
+  <section class="card relative">
+    <div class="px-4 pt-3 pb-1 font-bold text-slate-700 text-[13px]">A. Grid Master Employee</div>
+
+    <div class="px-4 pb-2 flex flex-wrap gap-2 relative">
+      <div class="stat bg-slate-100 text-slate-700"><div class="text-[10px] font-semibold">All</div><div class="text-lg font-bold">97</div></div>
+      <div class="stat bg-emerald-50 text-emerald-700"><div class="text-[10px] font-semibold">Active</div><div class="text-lg font-bold">91</div></div>
+      <div class="stat bg-blue-50 text-blue-700 ring-2 ring-blue-500"><div class="text-[10px] font-semibold">Staff <i class="fa-solid fa-circle-check"></i></div><div class="text-lg font-bold">38</div></div>
+      <div class="stat bg-slate-100 text-slate-600"><div class="text-[10px] font-semibold">Non-staff</div><div class="text-lg font-bold">53</div></div>
+      <div class="stat bg-amber-50 text-amber-700"><div class="text-[10px] font-semibold">Weekly</div><div class="text-lg font-bold">55</div></div>
+      <div class="stat bg-sky-50 text-sky-700"><div class="text-[10px] font-semibold">Monthly</div><div class="text-lg font-bold">36</div></div>
+      <div class="stat bg-rose-50 text-rose-700"><div class="text-[10px] font-semibold">Inactive</div><div class="text-lg font-bold">6</div></div>
+      <span class="mark" style="left:292px; top:-6px">1</span>
+      <span class="self-center text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold">Filter: Staff <i class="fa-solid fa-xmark ml-1"></i> Lepas filter</span>
+    </div>
+
+    <div class="px-4 pb-2 flex items-center gap-2 relative">
+      <div class="inp ro" style="width:260px">Search name, code, NIK, position...</div>
+      <div class="inp ro" style="width:120px">Department ▾</div>
+      <div class="inp ro" style="width:120px">Position ▾</div>
+      <div class="inp ro" style="width:130px">Work Status ▾</div>
+      <div class="inp" style="width:140px; border-color:#dc2626">Employee Type ▾</div>
+      <div class="inp ro" style="width:130px">Pay Frequency ▾</div>
+      <span class="mark" style="left:716px; top:-8px">2</span>
+      <button class="ml-auto px-3 py-1.5 rounded bg-accent text-white font-semibold">+ New Record</button>
+    </div>
+
+    <table class="w-full">
+      <thead><tr>
+        <th>Photo</th><th>Employee</th><th>Position</th><th>Department</th><th>Work Status</th>
+        <th style="background:#fee2e2">Employee Type</th><th>Pay Frequency</th><th>Join Date</th><th>Action</th>
+      </tr></thead>
+      <tbody>
+        <tr><td><span class="inline-flex w-7 h-7 rounded-full bg-blue-100 text-blue-700 items-center justify-center font-bold">SM</span></td>
+          <td><b>SANIA MAURA FITRIANI</b><div class="text-muted">TM-00150</div></td><td>Human Resource Officer</td><td>Human Capital Dept.</td>
+          <td><span class="badge bg-emerald-100 text-emerald-700">Working</span></td>
+          <td><span class="badge bg-blue-100 text-blue-700">Staff</span></td>
+          <td><span class="badge bg-sky-100 text-sky-700">Monthly</span></td><td>01-Mar-2025</td>
+          <td><span class="icon-btn"><i class="fa-solid fa-pen"></i></span><span class="icon-btn"><i class="fa-solid fa-ban"></i></span></td></tr>
+        <tr><td><span class="inline-flex w-7 h-7 rounded-full bg-blue-100 text-blue-700 items-center justify-center font-bold">DR</span></td>
+          <td><b>DINUL ROCHMAN</b><div class="text-muted">TM-00113</div></td><td>Technical Support &amp; Maintenance</td><td>Technical Support</td>
+          <td><span class="badge bg-emerald-100 text-emerald-700">Working</span></td>
+          <td><span class="badge bg-blue-100 text-blue-700">Staff</span></td>
+          <td><span class="badge bg-sky-100 text-sky-700">Monthly</span></td><td>12-Aug-2024</td>
+          <td><span class="icon-btn"><i class="fa-solid fa-pen"></i></span><span class="icon-btn"><i class="fa-solid fa-ban"></i></span></td></tr>
+        <tr style="background:#fffbeb"><td><span class="inline-flex w-7 h-7 rounded-full bg-blue-100 text-blue-700 items-center justify-center font-bold">EN</span></td>
+          <td><b>Eni Marlina</b><div class="text-muted">TM-00527</div></td><td>Warehouse Admin</td><td>Supply Chain Dept.</td>
+          <td><span class="badge bg-emerald-100 text-emerald-700">Working</span></td>
+          <td><span class="badge bg-blue-100 text-blue-700">Staff</span></td>
+          <td><span class="badge bg-amber-100 text-amber-700">Weekly</span> <span class="text-[10px] text-amber-700">atas permintaan pegawai</span></td><td>03-Feb-2025</td>
+          <td><span class="icon-btn"><i class="fa-solid fa-pen"></i></span><span class="icon-btn"><i class="fa-solid fa-ban"></i></span></td></tr>
+        <tr><td><span class="inline-flex w-7 h-7 rounded-full bg-slate-200 text-slate-600 items-center justify-center font-bold">BS</span></td>
+          <td><b>Budi Santoso</b><div class="text-muted">TM-00231</div></td><td>OP CETAK 4 WARNA LV 1</td><td>Offset Production Dept.</td>
+          <td><span class="badge bg-emerald-100 text-emerald-700">Working</span></td>
+          <td><span class="badge bg-slate-200 text-slate-700">Non-staff</span></td>
+          <td><span class="badge bg-amber-100 text-amber-700">Weekly</span></td><td>15-Jun-2022</td>
+          <td><span class="icon-btn"><i class="fa-solid fa-pen"></i></span><span class="icon-btn"><i class="fa-solid fa-ban"></i></span></td></tr>
+        <tr><td><span class="inline-flex w-7 h-7 rounded-full bg-slate-200 text-slate-600 items-center justify-center font-bold">AY</span></td>
+          <td><b>Agus Yulianto</b><div class="text-muted">TM-00305</div></td><td>BORONGAN</td><td>Offset Production Dept.</td>
+          <td><span class="badge bg-emerald-100 text-emerald-700">Working</span></td>
+          <td><span class="badge bg-slate-200 text-slate-700">Non-staff</span></td>
+          <td><span class="badge bg-amber-100 text-amber-700">Weekly</span></td><td>02-Sep-2023</td>
+          <td><span class="icon-btn"><i class="fa-solid fa-pen"></i></span><span class="icon-btn"><i class="fa-solid fa-ban"></i></span></td></tr>
+      </tbody>
+    </table>
+    <span class="mark" style="left:832px; top:140px">3</span>
+    <div class="h-3"></div>
+  </section>
+
+  <!-- ========== B. FORM ========== -->
+  <section class="card relative">
+    <div class="px-4 pt-3 pb-1 font-bold text-slate-700 text-[13px]">B. Form Master Employee — tab Job Alignment</div>
+    <div class="px-5 flex gap-1 border-b border-slate-200 text-[11px] font-semibold text-muted">
+      <div class="px-3 py-2">Overview &amp; Identity</div>
+      <div class="px-3 py-2 text-accent border-b-2 border-accent">Job Alignment</div>
+      <div class="px-3 py-2">Contract</div><div class="px-3 py-2">Education</div><div class="px-3 py-2">Family</div><div class="px-3 py-2">Discipline</div>
+    </div>
+    <div class="p-5 relative">
+      <div class="font-semibold text-slate-700 mb-2">Organizational Structure &amp; Employment</div>
+      <div class="grid grid-cols-3 gap-3 mb-3">
+        <div><div class="lbl">Department</div><div class="inp ro">Offset Production Dept.</div></div>
+        <div><div class="lbl">Position</div><div class="inp">OP CETAK 4 WARNA LV 1 ▾</div></div>
+        <div><div class="lbl">Direct Supervisor</div><div class="inp ro">Offset SPV</div></div>
+      </div>
+      <div class="grid grid-cols-3 gap-3 relative">
+        <div style="outline:2px solid #dc2626; outline-offset:3px; border-radius:6px">
+          <div class="lbl">Employee Type <span class="text-rose-600">*</span></div>
+          <div class="inp flex justify-between items-center"><span><span class="badge bg-slate-200 text-slate-700">Non-staff</span></span><i class="fa-solid fa-chevron-down text-muted"></i></div>
+          <div class="text-[10px] text-muted mt-1">Pilihan: Staff / Non-staff. Menentukan siapa yang boleh melihat payroll pegawai ini.</div>
+        </div>
+        <div>
+          <div class="lbl">Pay Frequency</div>
+          <div class="inp flex justify-between items-center"><span><span class="badge bg-amber-100 text-amber-700">Weekly</span></span><i class="fa-solid fa-chevron-down text-muted"></i></div>
+          <div class="text-[10px] text-muted mt-1">Tidak berubah. Terpisah dari Employee Type.</div>
+        </div>
+        <div><div class="lbl">Shift Assignment</div><div class="inp">Shift 1 (07:00 - 15:00) ▾</div></div>
+        <span class="mark" style="left:30%; top:-12px">4</span>
+      </div>
+      <div class="mt-3 text-[11px] text-slate-600 bg-slate-50 border border-slate-200 rounded px-3 py-2 relative">
+        <i class="fa-solid fa-circle-info text-accent mr-1"></i>
+        Pegawai baru tanpa pilihan otomatis berisi <b>Non-staff</b>. 38 pegawai pada daftar <i>KEBUTUHAN PAK IWAN</i> diisi <b>Staff</b>.
+        Kolom ini hanya bisa diubah oleh pengguna yang berhak melihat payroll.
+        <span class="mark" style="right:-8px; top:-8px">5</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== C. HAK LIHAT ========== -->
+  <section class="card relative">
+    <div class="px-4 pt-3 pb-1 font-bold text-slate-700 text-[13px]">C. Siapa melihat payroll apa (akibat dari Employee Type)</div>
+    <table class="w-full">
+      <thead><tr><th>Peran</th><th>Staff</th><th>Non-staff</th><th>Layar</th></tr></thead>
+      <tbody>
+        <tr><td><b>Direksi / GM</b> (akun Pak Iwan)</td><td><span class="badge bg-emerald-100 text-emerald-700">Semua</span></td><td><span class="badge bg-emerald-100 text-emerald-700">Semua</span></td><td>Seluruh layar Payroll</td></tr>
+        <tr><td><b>HR Officer</b> (Sania)</td><td><span class="badge bg-rose-100 text-rose-700">Tersembunyi</span></td><td><span class="badge bg-emerald-100 text-emerald-700">Lihat &amp; proses</span></td><td>Gaji, batch run, slip, transfer bank, cash roster — hanya Non-staff</td></tr>
+        <tr><td><b>Operational Manager</b> (Annisa)</td><td colspan="2"><span class="badge bg-sky-100 text-sky-700">Slip bawahan di struktur organisasinya</span> (take-home pay)</td><td>Hanya Slip Gaji, tanpa menu proses</td></tr>
+        <tr><td><b>Staff / Developer</b> (Dinul, dan lainnya)</td><td colspan="2"><span class="badge bg-rose-100 text-rose-700">Tidak ada akses payroll</span></td><td>Menu Payroll tidak tampil, link langsung ditolak</td></tr>
+      </tbody>
+    </table>
+    <span class="mark" style="right:14px; top:8px">6</span>
+    <div class="h-3"></div>
+  </section>
+
+  <section class="card p-4 text-[11px] leading-relaxed">
+    <div class="font-bold text-slate-700 mb-2">Legenda perubahan</div>
+    <div class="grid grid-cols-2 gap-x-6 gap-y-1.5">
+      <div><span class="inline-flex w-4 h-4 rounded-full bg-red-600 text-white items-center justify-center text-[9px] font-bold mr-1.5">1</span>Dua kotak statistik baru yang bisa diklik sebagai filter: <b>Staff</b> dan <b>Non-staff</b>.</div>
+      <div><span class="inline-flex w-4 h-4 rounded-full bg-red-600 text-white items-center justify-center text-[9px] font-bold mr-1.5">2</span>Filter baru <b>Employee Type</b> di baris filter.</div>
+      <div><span class="inline-flex w-4 h-4 rounded-full bg-red-600 text-white items-center justify-center text-[9px] font-bold mr-1.5">3</span>Kolom baru <b>Employee Type</b> berbentuk badge, tepat sebelum Pay Frequency.</div>
+      <div><span class="inline-flex w-4 h-4 rounded-full bg-red-600 text-white items-center justify-center text-[9px] font-bold mr-1.5">4</span>Isian wajib <b>Employee Type</b> (Staff / Non-staff) di tab Job Alignment, bersebelahan dengan Pay Frequency.</div>
+      <div><span class="inline-flex w-4 h-4 rounded-full bg-red-600 text-white items-center justify-center text-[9px] font-bold mr-1.5">5</span>Isian awal: pegawai lain Non-staff, 38 pegawai daftar staf = Staff. Yang boleh mengubah hanya pemegang hak payroll.</div>
+      <div><span class="inline-flex w-4 h-4 rounded-full bg-red-600 text-white items-center justify-center text-[9px] font-bold mr-1.5">6</span>Tabel hak lihat payroll. Isinya aturan yang Anda tentukan, ditegakkan di layar dan di query data.</div>
+    </div>
+    <div class="mt-3 text-muted">Staff yang dibayar mingguan atas permintaan sendiri (contoh Eni, baris kuning) tetap bertipe Staff.</div>
+  </section>
+</main>
+</body>
+</html>

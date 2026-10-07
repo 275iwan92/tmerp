@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\Hrm\EmployeeBankService;
+use App\Services\Payroll\PayrollAccess;
 use App\Models\Master\EmpContract;
 use App\Models\Master\EmpDisciplinary;
 use App\Models\Master\EmpEducation;
@@ -161,6 +162,11 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
     public ?int $default_shift_id = null;
 
+    // Tipe pegawai (Staff / Non-staff) dan metode payroll (Weekly / Monthly) = dua hal berbeda (user 2026-10-07).
+    public string $staff_type = 'NON_STAFF';
+
+    public string $payment_frequency = 'MONTHLY';
+
     // ---- mini modal: education ----
     public bool $showEducationModal = false;
 
@@ -226,6 +232,10 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 'filter' => fn ($q) => $q->where('activate', true)],
             'inactive' => ['label' => Translator::t('hrm_emp_stat_inactive', 'Employee Non Aktif'), 'value' => $m['inactive'], 'tone' => 'critical',
                 'filter' => fn ($q) => $q->where('activate', false)],
+            'staff' => ['label' => Translator::t('hrm_emp_stat_staff', 'Employee Staff'), 'value' => $m['staff'], 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('activate', true)->where('staff_type', 'STAFF')],
+            'non_staff' => ['label' => Translator::t('hrm_emp_stat_non_staff', 'Employee Non-staff'), 'value' => $m['non_staff'], 'tone' => 'total',
+                'filter' => fn ($q) => $q->where('activate', true)->where('staff_type', 'NON_STAFF')],
             // Mingguan/bulanan = frekuensi gaji karyawan AKTIF (yang non aktif tak ikut payroll).
             'weekly' => ['label' => Translator::t('hrm_emp_stat_weekly', 'Employee Mingguan'), 'value' => $m['weekly'], 'tone' => 'warn',
                 'filter' => fn ($q) => $q->where('activate', true)->where('payment_frequency', 'WEEKLY')],
@@ -256,6 +266,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     {
         $r = $this->searchQuery()->toBase()->selectRaw(
             "SUM(activate = 1) active, SUM(activate = 0) inactive,
+             SUM(activate = 1 AND staff_type = 'STAFF') staff,
+             SUM(activate = 1 AND staff_type = 'NON_STAFF') non_staff,
              SUM(activate = 1 AND payment_frequency = 'WEEKLY') weekly,
              SUM(activate = 1 AND payment_frequency = 'MONTHLY') monthly"
         )->first();
@@ -401,6 +413,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         ]);
         $this->gender = 'L';
         $this->work_status = 'WORKING';
+        $this->staff_type = 'NON_STAFF';
+        $this->payment_frequency = 'MONTHLY';
         $this->emp_activate = true;
 
         $this->panel = 'form';
@@ -441,6 +455,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->position_id = $e->position_id;
         $this->default_machine_id = $e->default_machine_id;
         $this->default_shift_id = $e->default_shift_id;
+        $this->staff_type = (string) ($e->staff_type ?: 'NON_STAFF');
+        $this->payment_frequency = (string) ($e->payment_frequency ?: 'MONTHLY');
 
         $bank = EmployeeBankService::primary($e->employee_id);
         $this->bank_supplier_id = (string) ($bank?->bank_supplier_id ?? '');
@@ -488,6 +504,22 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         return $company->company_code.'-'.str_pad((string) ($maxSeq + 1), 5, '0', STR_PAD_LEFT);
     }
 
+    public function canEditStaffType(): bool
+    {
+        return PayrollAccess::canEditStaffType(Auth::user());
+    }
+
+    // HR Officer hanya memegang pegawai Non-staff; pegawai baru (belum tersimpan) boleh diisi.
+    public function canEditPayrollMethod(): bool
+    {
+        $user = Auth::user();
+        if (! PayrollAccess::canProcess($user)) {
+            return false;
+        }
+
+        return ! $this->editingId || PayrollAccess::canSeeEmployee($user, (int) $this->editingId);
+    }
+
     public function save(): void
     {
         // Field identitas WAJIB (keputusan user 2026-09-12, berlaku SELALU --
@@ -528,6 +560,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'position_id' => [$req, 'integer', 'exists:tm2mst.org_position,position_id'],
             'default_machine_id' => ['nullable', 'integer', 'exists:tm2mst.prod_machine,machine_id'],
             'default_shift_id' => ['nullable', 'integer', 'exists:tm2mst.emp_shift,shift_id'],
+            'staff_type' => ['required', 'in:STAFF,NON_STAFF'],
+            'payment_frequency' => ['required', 'in:WEEKLY,MONTHLY'],
             'photo' => ['nullable', 'image', 'max:5120'],
         ], [
             'nik_ktp.digits' => 'NIK KTP harus tepat 16 digit angka.',
@@ -560,6 +594,14 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'default_shift_id' => $data['default_shift_id'] ?: null,
             'updated_by' => Auth::user()->login,
         ];
+
+        // Tipe pegawai hanya diubah Direksi/GM (HR tidak boleh memindahkan staf ke non-staf); metode payroll oleh yang boleh memproses payroll.
+        if ($this->canEditStaffType()) {
+            $payload['staff_type'] = $data['staff_type'];
+        }
+        if ($this->canEditPayrollMethod()) {
+            $payload['payment_frequency'] = $data['payment_frequency'];
+        }
 
         if ($this->editingId) {
             if ($this->photo) {
@@ -1033,6 +1075,20 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             :options="$this->machineOptions->mapWithKeys(fn ($m) => [$m->machine_id => $m->machine_code.' — '.$m->machine_name])" :selected="$default_machine_id" />
                         <x-form.select label="Shift Default" wire:model="default_shift_id" placeholder="— tanpa default —"
                             :options="$this->shiftOptions->pluck('shift_name', 'shift_id')" :selected="$default_shift_id" />
+                    </div>
+
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Tipe Pegawai &amp; Metode Payroll <span class="text-muted font-normal normal-case">(tipe menentukan siapa boleh melihat payroll; metode menentukan periode payroll)</span></div>
+                    <div class="grid two gap-2.5">
+                        @if ($this->canEditStaffType())
+                            <x-form.select label="Tipe Pegawai *" name="staff_type" wire:model="staff_type" :options="['STAFF' => 'Staff', 'NON_STAFF' => 'Non-staff']" :selected="$staff_type" :placeholder="false" />
+                        @else
+                            <x-form.input label="Tipe Pegawai" :value="$staff_type === 'STAFF' ? 'Staff' : 'Non-staff'" readonly :case-toggle="false" />
+                        @endif
+                        @if ($this->canEditPayrollMethod())
+                            <x-form.select label="Metode Payroll *" name="payment_frequency" wire:model="payment_frequency" :options="['MONTHLY' => 'Monthly', 'WEEKLY' => 'Weekly']" :selected="$payment_frequency" :placeholder="false" />
+                        @else
+                            <x-form.input label="Metode Payroll" :value="$payment_frequency === 'WEEKLY' ? 'Weekly' : 'Monthly'" readonly :case-toggle="false" />
+                        @endif
                     </div>
 
                     @if ($emp)

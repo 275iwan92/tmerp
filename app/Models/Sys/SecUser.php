@@ -4,6 +4,7 @@ namespace App\Models\Sys;
 
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\OrgPosition;
+use App\Services\Payroll\PayrollAccess;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
@@ -264,17 +265,18 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
         return $this->is_admin || $this->hasGroup('OPS_MGR', 'DIREKSI') || $this->maxMgmtLevel() >= 4;
     }
 
-    // Gate nominal gaji individu (permintaan user 2026-09-07): "HR officer
-    // tidak semua dia bisa melihat gaji, terutama yang bulanan ... HR officer
-    // hanya jalankan proses dan hanya tahu total secara keseluruhan". Belum
-    // ada sec_group khusus "Payroll Officer" -- sementara reuse DIREKSI +
-    // MGR_ACC (Finance & Accounting, sesuai actor Tier1 "Payroll Officer/
-    // Staff Finance") sbg pemegang akses penuh. Pengecualian per-pegawai
-    // (Satpam/Security) ditangani terpisah di layar (lihat payroll-employee-
-    // salary.blade.php::canViewSalary()), BUKAN di sini -- ini cuma gate role.
+    // Gate nominal gaji = peran yang melihat SEMUA payroll (user 2026-10-07: hanya GM/Direksi, bukan admin biasa, bukan developer).
+    // Cakupan lain (HR Officer: Non-staff, Op Manager: slip bawahan) ada di App\Services\Payroll\PayrollAccess.
     public function canViewPayrollAmounts(): bool
     {
-        return (bool) $this->is_admin || $this->hasGroup('DIREKSI', 'MGR_ACC');
+        return PayrollAccess::scope($this) === PayrollAccess::ALL;
+    }
+
+    // Ekspor data gaji ke Excel (user 2026-10-07): file keluar dari sistem, jadi hanya yang melihat SEMUA payroll (Direksi/GM).
+    // Op Manager (OPS_MGR, level 4) hanya melihat slip bawahannya, jadi TIDAK boleh mengekspor gaji semua pegawai.
+    public function canExportPayrollAmounts(): bool
+    {
+        return $this->canViewPayrollAmounts();
     }
 
     // Harga jual order (CO/laporan order dengan harga) — user 2026-09-30: "order tanpa harga untuk produksi, purchase dst;

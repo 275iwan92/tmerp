@@ -4,6 +4,7 @@ namespace App\Support\V2\Grid\Hrm;
 
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
+use App\Services\Payroll\PayrollAccess;
 use Devlib\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -56,7 +57,7 @@ class PayrollRunGrid extends HrmGrid
 
     protected function prefetch(Collection $items): void
     {
-        $this->slips = PyrPayslip::query()->whereIn('id_run', $items->modelKeys())->groupBy('id_run')
+        $this->slips = PayrollAccess::restrict(PyrPayslip::query()->whereIn('id_run', $items->modelKeys()), auth()->user())->groupBy('id_run')
             ->selectRaw('id_run, COUNT(*) n, SUM(has_anomaly) anomaly')->get()->keyBy('id_run')->all();
     }
 

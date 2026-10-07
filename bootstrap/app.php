@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureIsAdmin;
 use App\Http\Middleware\EnsureModuleAccess;
+use App\Http\Middleware\EnsurePayrollAccess;
 use App\Http\Middleware\EnsurePortalCandidateAuthenticated;
 use App\Http\Middleware\ForcePasswordChange;
 use App\Http\Middleware\SetUserLocale;
@@ -20,6 +21,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'module' => EnsureModuleAccess::class,
             'admin' => EnsureIsAdmin::class,
+            'payroll' => EnsurePayrollAccess::class,
             'force.password' => ForcePasswordChange::class,
             'portal.candidate' => EnsurePortalCandidateAuthenticated::class,
             'locale' => SetUserLocale::class,

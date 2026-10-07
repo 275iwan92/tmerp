@@ -4,6 +4,7 @@ use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
 use App\Services\Hrm\EmployeeBankService;
 use Illuminate\Support\Facades\Auth;
+use App\Services\Payroll\PayrollAccess;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use App\Livewire\Concerns\OpensFromQuery;
@@ -47,9 +48,9 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
     #[Computed]
     public function rows()
     {
-        $employees = EmpEmployee::with('position.department')
-            ->where('activate', true)
-            ->when($this->search, fn ($q) => $q->where('full_name', 'like', "%{$this->search}%")->orWhere('employee_code', 'like', "%{$this->search}%"))
+        $employees = PayrollAccess::restrict(EmpEmployee::with('position.department')
+            ->where('activate', true), auth()->user())
+            ->when($this->search, fn ($q) => $q->where(fn ($w) => $w->where('full_name', 'like', "%{$this->search}%")->orWhere('employee_code', 'like', "%{$this->search}%")))
             ->orderBy('full_name')
             ->get();
 
@@ -77,6 +78,7 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
 
     public function openForm(int $employeeId): void
     {
+        abort_unless(PayrollAccess::canSeeEmployee(auth()->user(), $employeeId), 403);
         $employee = EmpEmployee::findOrFail($employeeId);
         $bank = EmpBankAccount::where('employee_id', $employeeId)->where('is_primary', true)->where('activate', true)->first();
 

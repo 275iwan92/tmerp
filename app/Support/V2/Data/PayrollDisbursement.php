@@ -8,6 +8,7 @@ use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
+use App\Services\Payroll\PayrollAccess;
 use Devlib\Locale;
 use Illuminate\Support\Collection;
 
@@ -121,7 +122,7 @@ final class PayrollDisbursement
     {
         abort_unless(self::run($runId), 404);
 
-        return PyrPayslip::where('id_run', $runId)->where('has_anomaly', false)->get();
+        return PayrollAccess::restrict(PyrPayslip::where('id_run', $runId)->where('has_anomaly', false), auth()->user())->get();
     }
 
     /** @param list<int> $employeeIds @return Collection<int, EmpBankAccount> */

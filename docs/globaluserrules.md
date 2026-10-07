@@ -240,6 +240,21 @@
     - Kode: `App\Services\Inventory\StockCardChain` (rantai saldo), `StockPostingService`, `InvPeriod::closedThrough()`;
       test `StockPostingOrderTest`. Rincian: `docs/md_for_systems/inventory_tier2.md` bagian "Urutan kartu stok".
 
+**A.25 Payroll dibatasi menurut peran dan tipe pegawai (user 2026-10-07).** *"HARUS dibatasi ... Level GM dan Direksi untuk all. ...
+Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
+- **Tipe pegawai (Staff / Non-staff)** dan **Metode payroll (Weekly / Monthly)** adalah dua isian berbeda di Master Employee
+  (tab Job Alignment). Staf boleh dibayar mingguan atas permintaannya sendiri. Setiap pegawai selalu punya metode payroll bawaan
+  (default Monthly); pegawai tanpa pilihan tipe = Non-staff. Isian awal: 38 pegawai daftar staf (`KEBUTUHAN PAK IWAN.xlsx`) = Staff.
+- **Direksi / GM (grup `DIREKSI`, akun Pak Iwan)**: semua payroll, semua pegawai, termasuk ekspor Excel dan mengubah tipe pegawai.
+  `is_admin` / developer **tidak otomatis** (Dinul dan developer lain: tanpa akses payroll sama sekali).
+- **HR Officer (grup `HR_OFFICER`, Sania Maura Fitriani, akun `sania3`)**: melihat dan memproses payroll pegawai **Non-staff** saja
+  (gaji, batch run, slip, rekening, transfer bank, cash roster). Tidak melihat Staff, tidak bisa mengubah tipe pegawai.
+- **Op Manager (grup `OPS_MGR`, Annisa)**: hanya **slip gaji (take-home pay) bawahan** menurut struktur organisasi
+  (`org_position.reports_to_position_id`, tanpa dirinya sendiri), tanpa menu proses.
+- Selain itu ditolak: menu payroll tidak tampil, tautan langsung 403, data tidak muncul di grid / cetak / CSV.
+- Kode: `App\Services\Payroll\PayrollAccess` (satu pintu), middleware `payroll:process` / `payroll:payslip`, kolom
+  `emp_employee.staff_type`; test `PayrollAccessTest`. Pemberian grup ke akun nyata (`sania3` -> `HR_OFFICER`, `annisa` -> `OPS_MGR`) = pekerjaan admin keamanan.
+
 ## B. Database & data
 
 1. **[LOCKED] Database-per-modul** (`tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`,
@@ -797,3 +812,4 @@
 | 2026-10-07 | D.18: **Arah warisan DevLib -> tmerp** (user: "di devlib harusnya membuat object untuk bisa diwariskan ke tmerp") — objek / helper dibuat di DevLib dulu; paket tidak boleh memakai kode `App\`; `raw()` pindah ke `packages/devlib/src/helpers.php` (dulu hanya di tmerp, membuat demo devlib.test error 500); test `DevlibInheritanceTest`. Ditulis juga di skill `devlib-oo`. |
 | 2026-10-07 | D.19: **QC cepat Approved / Need improvement per layar, tiga lapis QC > UAT officer > UAT supervisor; ketiganya lolos = Ready to release** (user: "fasilitas tiap layar saya sebagai QC ada approve, nanti 2 lapis UAT oleh officer terkait dan atasannya"; "jika ketiganya lolos tercatat siap release ke live"). Kode tetap satu folder sampai masa migrasi, lalu disalin ke folder live. |
 | 2026-10-07 | D.20: **Identitas agen ditentukan hari** (user: "Senin Selasa Agent Iw, Rabu Kamis Jumat Sabtu Agent Jo ... laptop yang sama di folder yang sama ... login bergantian"; Minggu libur, bila kerja kemungkinan Jo ~5%). |
+| 2026-10-07 | A.25: **payroll dibatasi menurut peran dan tipe pegawai** (user) — Direksi/GM semua; HR Officer hanya Non-staff; Op Manager hanya slip bawahan; Dinul / developer / admin biasa tidak ada akses. Kolom baru `emp_employee.staff_type` (Staff / Non-staff) terpisah dari metode payroll (Weekly / Monthly); migration `2026_10_07_000200` (tm2 + ddt). |

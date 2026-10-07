@@ -5,6 +5,7 @@ namespace App\Support\V2\Grid\Hrm;
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
+use App\Services\Payroll\PayrollAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -63,6 +64,7 @@ class PayslipGrid extends HrmGrid
     {
         return PyrPayslip::query()->with('run')
             ->whereHas('run', fn ($q) => $q->whereIn('run_status', ['CALCULATED', 'VERIFIED', 'CONFIRMED', 'PAID', 'CLOSED']))
+            ->tap(fn ($q) => PayrollAccess::restrict($q, auth()->user()))
             ->orderByDesc('id_run')->orderBy('employee_id');
     }
 

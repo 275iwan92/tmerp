@@ -70,7 +70,8 @@ class EmployeeGrid extends HrmGrid
             ['key' => 'position', 'label' => 'Position'],
             ['key' => 'dept', 'label' => 'Department'],
             ['key' => 'work_status', 'label' => 'Work Status', 'type' => 'badge', 'tones' => [t('Working') => 'success', t('Furloughed') => 'warn', t('On Leave') => 'info']],
-            ['key' => 'pay', 'label' => 'Pay Frequency', 'type' => 'badge', 'tones' => [t('Weekly') => 'warn', t('Monthly') => 'info']],
+            ['key' => 'type', 'label' => 'Employee Type', 'type' => 'badge', 'tones' => [t('Staff') => 'info', t('Non-staff') => 'neutral']],
+            ['key' => 'pay', 'label' => 'Payroll Method', 'type' => 'badge', 'tones' => [t('Weekly') => 'warn', t('Monthly') => 'info']],
             ['key' => 'join_date', 'label' => 'Join Date', 'type' => 'date'],
             ['key' => 'attendance_ytd', 'label' => 'Attendance this year (days)', 'type' => 'link', 'format' => 'number'],
             ['key' => 'nik', 'label' => 'NIK KTP', 'visible' => false],
@@ -87,6 +88,7 @@ class EmployeeGrid extends HrmGrid
             'position' => $m->position?->position_name,
             'dept' => $m->position?->department?->department_name,
             'work_status' => ['WORKING' => t('Working'), 'DIRUMAHKAN' => t('Furloughed'), 'CUTI' => t('On Leave')][$m->work_status] ?? $m->work_status,
+            'type' => $m->staff_type === 'STAFF' ? t('Staff') : t('Non-staff'),
             'pay' => ['WEEKLY' => t('Weekly'), 'MONTHLY' => t('Monthly')][$m->payment_frequency] ?? $m->payment_frequency,
             'join_date' => $m->join_date?->toDateString(),
             'attendance_ytd' => (int) ($this->attendance[$m->getKey()] ?? 0),
@@ -100,6 +102,8 @@ class EmployeeGrid extends HrmGrid
         return [
             ['label' => 'All'],
             ['label' => 'Active', 'where' => ['active' => true], 'tone' => 'success'],
+            ['label' => 'Staff', 'where' => ['active' => true, 'type' => t('Staff')], 'tone' => 'info'],
+            ['label' => 'Non-staff', 'where' => ['active' => true, 'type' => t('Non-staff')], 'tone' => 'neutral'],
             ['label' => 'Weekly', 'where' => ['active' => true, 'pay' => t('Weekly')], 'tone' => 'warn'],
             ['label' => 'Monthly', 'where' => ['active' => true, 'pay' => t('Monthly')], 'tone' => 'info'],
             ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'danger'],
@@ -108,6 +112,6 @@ class EmployeeGrid extends HrmGrid
 
     public function filters(): array
     {
-        return ['dept' => 'Department', 'position' => 'Position', 'work_status' => 'Work Status', 'pay' => 'Pay Frequency'];
+        return ['dept' => 'Department', 'position' => 'Position', 'work_status' => 'Work Status', 'type' => 'Employee Type', 'pay' => 'Payroll Method'];
     }
 }

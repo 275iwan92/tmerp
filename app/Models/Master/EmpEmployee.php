@@ -49,6 +49,7 @@ class EmpEmployee extends Model
         'default_machine_id',
         'default_shift_id',
         'payment_frequency',
+        'staff_type',
         'activate',
         'created_by',
         'updated_by',

@@ -6,6 +6,7 @@ use App\Models\Master\EmpEmployee;
 use App\Models\Master\OrgCompany;
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
+use App\Services\Payroll\PayrollAccess;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -40,10 +41,10 @@ new #[Title('Cetak Semua Slip Gaji — TELASIH MAKMUR ERP')] class extends Compo
     #[Computed]
     public function sheets()
     {
-        $payslips = PyrPayslip::with('run')
+        $payslips = PayrollAccess::restrict(PyrPayslip::with('run')
             ->where('id_run', $this->runId)
             ->where('print_flag', true)
-            ->where('has_anomaly', false)
+            ->where('has_anomaly', false), auth()->user())
             ->get();
 
         $employeeIds = $payslips->pluck('employee_id');

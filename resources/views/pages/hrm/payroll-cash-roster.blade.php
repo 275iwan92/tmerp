@@ -4,6 +4,7 @@ use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
+use App\Services\Payroll\PayrollAccess;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -42,7 +43,7 @@ new #[Title('Roster Cash & Pecahan Uang — TELASIH MAKMUR ERP')] class extends 
             return collect();
         }
 
-        $payslips = PyrPayslip::where('id_run', $this->runId)->where('has_anomaly', false)->get();
+        $payslips = PayrollAccess::restrict(PyrPayslip::where('id_run', $this->runId)->where('has_anomaly', false), auth()->user())->get();
         $employees = EmpEmployee::with('position.department')->whereIn('employee_id', $payslips->pluck('employee_id'))->get()->keyBy('employee_id');
         $bankedIds = EmpBankAccount::whereIn('employee_id', $payslips->pluck('employee_id'))
             ->where('is_primary', true)->where('activate', true)->pluck('employee_id')->all();

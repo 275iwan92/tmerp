@@ -5,6 +5,7 @@ use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
+use App\Services\Payroll\PayrollAccess;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -66,7 +67,7 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
             return collect();
         }
 
-        $payslips = PyrPayslip::where('id_run', $this->runId)->get();
+        $payslips = PayrollAccess::restrict(PyrPayslip::where('id_run', $this->runId), auth()->user())->get();
         $employees = EmpEmployee::with('position.department')
             ->whereIn('employee_id', $payslips->pluck('employee_id'))->get()->keyBy('employee_id');
         $banks = EmpBankAccount::whereIn('employee_id', $payslips->pluck('employee_id'))
@@ -129,6 +130,7 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
     public function togglePrintFlag(int $payslipId): void
     {
         $slip = PyrPayslip::findOrFail($payslipId);
+        abort_unless(PayrollAccess::canSeeEmployee(auth()->user(), (int) $slip->employee_id), 403);
         $slip->print_flag = ! $slip->print_flag;
         $slip->save();
 
@@ -139,6 +141,7 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
     public function toggleWaFlag(int $payslipId): void
     {
         $slip = PyrPayslip::findOrFail($payslipId);
+        abort_unless(PayrollAccess::canSeeEmployee(auth()->user(), (int) $slip->employee_id), 403);
         $phone = EmpEmployee::where('employee_id', $slip->employee_id)->value('phone');
 
         if (blank($phone)) {

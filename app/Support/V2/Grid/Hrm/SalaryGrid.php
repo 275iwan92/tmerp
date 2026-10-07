@@ -4,6 +4,7 @@ namespace App\Support\V2\Grid\Hrm;
 
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrEmployeeSalary;
+use App\Services\Payroll\PayrollAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -44,10 +45,10 @@ class SalaryGrid extends HrmGrid
         return false;
     }
 
-    // Hanya yang berhak melihat nominal gaji (admin / DIREKSI / MGR_ACC) yang mendapat tombol; route-nya sendiri juga menolak yang lain.
+    // Hanya level GM dan Direksi (SecUser::canExportPayrollAmounts) yang mendapat tombol; route-nya sendiri juga menolak yang lain.
     public function excelUrl(): ?string
     {
-        return auth()->user()?->canViewPayrollAmounts() ? route('v2.payroll.employee-salary-xlsx') : null;
+        return auth()->user()?->canExportPayrollAmounts() ? route('v2.payroll.employee-salary-xlsx') : null;
     }
 
     protected function models(): array
@@ -62,7 +63,7 @@ class SalaryGrid extends HrmGrid
 
     protected function query(): Builder
     {
-        return EmpEmployee::query()->where('activate', true)->orderBy('full_name');
+        return PayrollAccess::restrict(EmpEmployee::query()->where('activate', true), auth()->user(), 'employee_id')->orderBy('full_name');
     }
 
     protected function prefetch(Collection $items): void

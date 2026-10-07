@@ -54,10 +54,17 @@ new #[Layout('layouts::report')] #[Title('Laporan SDM & Payroll — TELASIH MAKM
         return PyrPayrollRun::orderByDesc('period_start')->first();
     }
 
+    // Total gaji seluruh pegawai: hanya yang melihat semua payroll (Direksi/GM, App\Services\Payroll\PayrollAccess).
+    #[Computed]
+    public function canSeePayroll(): bool
+    {
+        return (bool) auth()->user()?->canViewPayrollAmounts();
+    }
+
     #[Computed]
     public function latestRunNet(): float
     {
-        if (! $this->latestRun) {
+        if (! $this->latestRun || ! $this->canSeePayroll) {
             return 0;
         }
 
@@ -116,7 +123,7 @@ new #[Layout('layouts::report')] #[Title('Laporan SDM & Payroll — TELASIH MAKM
     <div class="[display:grid] grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4">
         <x-report.kpi label="Pegawai Aktif Bekerja" icon="fa-solid fa-users" tone="blue" :value="number_format($this->headcount['active'])" :note="$this->headcount['total'].' total tercatat'" />
         <x-report.kpi label="Sedang Cuti / Dirumahkan" icon="fa-solid fa-house-user" tone="amber" :value="number_format($this->headcount['cuti'] + $this->headcount['dirumahkan'])" note="Tidak aktif bekerja sementara" />
-        <x-report.kpi label="Payroll Terakhir (Net)" icon="fa-solid fa-money-check-dollar" tone="green" :value="$miliar($this->latestRunNet)" :note="$this->latestRun ? $this->latestRun->period_start->format('M Y').' · '.$this->latestRun->run_status : 'Belum ada run'" />
+        <x-report.kpi label="Payroll Terakhir (Net)" icon="fa-solid fa-money-check-dollar" tone="green" :value="$this->canSeePayroll ? $miliar($this->latestRunNet) : '—'" :note="$this->latestRun ? $this->latestRun->period_start->format('M Y').' · '.$this->latestRun->run_status : 'Belum ada run'" />
         <x-report.kpi label="Pengajuan Cuti Pending" icon="fa-solid fa-triangle-exclamation" tone="danger" :value="number_format($this->pendingLeave)" note="Menunggu approval HR" />
     </div>
 

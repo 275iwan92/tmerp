@@ -4,6 +4,7 @@ namespace App\Support\V2;
 
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysAppMenu;
+use App\Services\Payroll\PayrollAccess;
 use App\Support\Localization\Dictionary;
 use App\Support\Localization\Translator;
 use App\Support\Menu\MenuRoutes;
@@ -28,8 +29,8 @@ final class AppMenu
         $allowed = $user->is_admin ? null : $user->accessibleModules()->keys();
         // Direksi boleh melihat menu operasional (aturan user 2026-09-25); pendaratan awalnya Laporan Manajemen (login).
         $visible = $user->visibleAppMenuCodes();
-        $ok = fn (SysAppMenu $n) => $allowed === null || $n->required_object === null || $n->required_object === SecUser::PUBLIC_MODULE
-            || $allowed->contains($n->required_object);
+        $ok = fn (SysAppMenu $n) => PayrollAccess::menuAllowed($n->code, $user) && ($allowed === null || $n->required_object === null
+            || $n->required_object === SecUser::PUBLIC_MODULE || $allowed->contains($n->required_object));
         // "General" is an access flag, not a menu (user 2026-10-04): a module the user has no right to still shows, but only
         // its branches marked GENERAL (groups without a right of their own pass so the GENERAL items inside are reachable).
         $okPublic = fn (SysAppMenu $n) => $n->required_object === SecUser::PUBLIC_MODULE || ($n->menu_type === 'group' && $n->required_object === null);

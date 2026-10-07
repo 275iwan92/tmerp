@@ -16,20 +16,20 @@ class EmployeeSalaryExportTest extends TestCase
         $this->assertCount(count(EmployeeSalaryExport::headings()), $rows[0]);
     }
 
-    public function test_download_is_limited_to_those_allowed_to_see_salary_amounts(): void
+    public function test_download_is_limited_to_gm_and_direksi(): void
     {
         $url = route('v2.payroll.employee-salary-xlsx');
-        $plain = SecUser::query()->get()->first(fn (SecUser $u) => ! $u->canViewPayrollAmounts() && $u->canAccessModule('HRM'));
+        $plain = SecUser::query()->get()->first(fn (SecUser $u) => ! $u->canExportPayrollAmounts() && $u->canAccessModule('HRM'));
         if ($plain) {
             $this->actingAs($plain)->get($url)->assertForbidden();
         }
-        $allowed = SecUser::query()->get()->first(fn (SecUser $u) => $u->canViewPayrollAmounts() && $u->canAccessModule('HRM')) ?? $this->markTestSkipped('No user allowed to see payroll amounts.');
+        $allowed = SecUser::query()->get()->first(fn (SecUser $u) => $u->canExportPayrollAmounts() && $u->canAccessModule('HRM')) ?? $this->markTestSkipped('No GM / Direksi user.');
         $this->actingAs($allowed)->get($url)->assertOk()->assertHeader('content-disposition');
     }
 
     public function test_grid_screen_shows_the_download_excel_button(): void
     {
-        $allowed = SecUser::query()->get()->first(fn (SecUser $u) => $u->canViewPayrollAmounts() && $u->canAccessModule('HRM')) ?? $this->markTestSkipped('No user allowed to see payroll amounts.');
+        $allowed = SecUser::query()->get()->first(fn (SecUser $u) => $u->canExportPayrollAmounts() && $u->canAccessModule('HRM')) ?? $this->markTestSkipped('No GM / Direksi user.');
         $this->actingAs($allowed)->get(route('v2.screen', 'hrm-salary'))->assertOk()->assertSee('Download Excel')->assertSee(route('v2.payroll.employee-salary-xlsx'), false);
     }
 }

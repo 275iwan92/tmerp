@@ -9,7 +9,7 @@ use App\Models\Pyr\PyrEmployeeSalary;
 use Devlib\Locale;
 
 // HRM > Payroll > Master Employee Salary & Tax: unduhan Excel setelan gaji master per pegawai aktif (BUKAN slip payroll) untuk telaah manual direksi.
-// Nilai gaji pokok terenkripsi (PayrollEncrypted) dibaca lewat model. Hak akses = SecUser::canViewPayrollAmounts (admin / DIREKSI / MGR_ACC).
+// Nilai gaji pokok terenkripsi (PayrollEncrypted) dibaca lewat model. Hak akses = SecUser::canExportPayrollAmounts (hanya GM / Direksi, tanpa bypass admin).
 final class EmployeeSalaryExport
 {
     /** @return list<string> */

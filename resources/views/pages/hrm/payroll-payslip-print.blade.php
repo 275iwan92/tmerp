@@ -5,6 +5,7 @@ use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\OrgCompany;
 use App\Models\Pyr\PyrPayslip;
+use App\Services\Payroll\PayrollAccess;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -31,7 +32,10 @@ new #[Title('Slip Gaji — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function payslip(): PyrPayslip
     {
-        return PyrPayslip::with('run')->findOrFail($this->payslipId);
+        $slip = PyrPayslip::with('run')->findOrFail($this->payslipId);
+        abort_unless(PayrollAccess::canSeeEmployee(auth()->user(), (int) $slip->employee_id), 403);
+
+        return $slip;
     }
 
     #[Computed]

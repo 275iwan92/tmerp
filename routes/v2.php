@@ -31,6 +31,7 @@ use App\Providers\AssistantHostProvider;
 use App\Services\Acc\PettyCashService;
 use App\Services\Docs\DocShareService;
 use App\Services\Master\MaterialCategoryService;
+use App\Services\Payroll\PayrollAccess;
 use App\Services\ProDev\PartDieline;
 use App\Services\Pur\SpecialReceiptService;
 use App\Services\Sales\CpdelPromiseService;
@@ -175,6 +176,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
         $screen = Screens::screen($slug) ?? Grids::screen($slug) ?? abort(404);
         abort_unless(AppMenu::open($slug), 404);
         abort_unless(Auth::user()->canAccessModule($screen['module_code'] ?? 'SALES'), 403);
+        abort_unless(PayrollAccess::screenAllowed($slug, Auth::user()), 403);
         $file = resource_path("views/v2/screens/{$slug}.blade.php");
 
         if (isset($screen['grid'])) {
@@ -1145,11 +1147,11 @@ Route::prefix('v2')->name('v2.')->group(function () {
             }
             fclose($out);
         }, 'transfer-bank-'.$period.'.csv', ['Content-Type' => 'text/csv']);
-    })->whereNumber('run')->middleware('module:HRM')->name('payroll.bank-csv');
+    })->whereNumber('run')->middleware(['module:HRM', 'payroll:process'])->name('payroll.bank-csv');
 
-    // HRM > Payroll > Master Employee Salary & Tax: unduhan Excel setelan gaji master (App\Support\V2\Data\EmployeeSalaryExport) untuk telaah manual direksi. Hanya yang berhak melihat nominal gaji.
+    // HRM > Payroll > Master Employee Salary & Tax: unduhan Excel setelan gaji master (App\Support\V2\Data\EmployeeSalaryExport) untuk telaah manual direksi. Hanya level GM dan Direksi (SecUser::canExportPayrollAmounts).
     Route::get('/hrm/payroll/employee-salary.xlsx', function () {
-        abort_unless(Auth::user()->canViewPayrollAmounts(), 403);
+        abort_unless(Auth::user()->canExportPayrollAmounts(), 403);
 
         return Excel::download(new GenericGridExport(EmployeeSalaryExport::rows(), EmployeeSalaryExport::headings()), EmployeeSalaryExport::filename());
     })->middleware('module:HRM')->name('payroll.employee-salary-xlsx');

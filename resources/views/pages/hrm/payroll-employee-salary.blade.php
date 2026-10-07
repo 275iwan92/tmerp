@@ -3,6 +3,7 @@
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrEmployeeSalary;
 use Illuminate\Support\Facades\Auth;
+use App\Services\Payroll\PayrollAccess;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use App\Livewire\Concerns\OpensFromQuery;
@@ -67,8 +68,8 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
     #[Computed]
     public function rows()
     {
-        $employees = EmpEmployee::where('activate', true)
-            ->when($this->search, fn ($q) => $q->where('full_name', 'like', "%{$this->search}%")->orWhere('employee_code', 'like', "%{$this->search}%"))
+        $employees = PayrollAccess::restrict(EmpEmployee::where('activate', true), auth()->user())
+            ->when($this->search, fn ($q) => $q->where(fn ($w) => $w->where('full_name', 'like', "%{$this->search}%")->orWhere('employee_code', 'like', "%{$this->search}%")))
             ->orderBy('full_name')
             ->get();
 
@@ -100,13 +101,7 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
 
     public function canViewSalary(EmpEmployee $employee): bool
     {
-        if (Auth::user()->canViewPayrollAmounts()) {
-            return true;
-        }
-
-        $positionName = mb_strtoupper($employee->position?->position_name ?? '');
-
-        return str_contains($positionName, 'SATPAM') || str_contains($positionName, 'SECURITY');
+        return PayrollAccess::canSeeEmployee(Auth::user(), (int) $employee->employee_id);
     }
 
     public function openForm(int $employeeId): void

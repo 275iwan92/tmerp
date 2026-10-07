@@ -292,15 +292,15 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/hrm/leave-requests', 'pages::hrm.leave-requests')->name('hrm.leave-requests');
             Route::livewire('/hrm/attendance-upload', 'pages::hrm.attendance-upload')->name('hrm.attendance-upload');
             Route::livewire('/hrm/attendance-daily', 'pages::hrm.attendance-daily')->name('hrm.attendance-daily');
-            Route::livewire('/hrm/payroll/employee-salary', 'pages::hrm.payroll-employee-salary')->name('hrm.payroll.employee-salary');
-            Route::livewire('/hrm/payroll/employee-bank', 'pages::hrm.payroll-employee-bank')->name('hrm.payroll.employee-bank');
+            Route::livewire('/hrm/payroll/employee-salary', 'pages::hrm.payroll-employee-salary')->name('hrm.payroll.employee-salary')->middleware('payroll:process');
+            Route::livewire('/hrm/payroll/employee-bank', 'pages::hrm.payroll-employee-bank')->name('hrm.payroll.employee-bank')->middleware('payroll:process');
             Route::livewire('/hrm/gps-approval', 'pages::hrm.gps-approval')->name('hrm.gps-approval');
-            Route::livewire('/hrm/payroll/batch-run', 'pages::hrm.payroll-batch-run')->name('hrm.payroll.batch-run');
-            Route::livewire('/hrm/payroll/payslip', 'pages::hrm.payroll-payslip-list')->name('hrm.payroll.payslip-list');
-            Route::livewire('/hrm/payroll/payslip/print-all/{run}', 'pages::hrm.payroll-payslip-print-all')->name('hrm.payroll.payslip-print-all')->where('run', '[0-9]+');
-            Route::livewire('/hrm/payroll/payslip/{payslip}/print', 'pages::hrm.payroll-payslip-print')->name('hrm.payroll.payslip-print')->where('payslip', '[0-9]+');
-            Route::livewire('/hrm/payroll/bank-transfer', 'pages::hrm.payroll-bank-transfer')->name('hrm.payroll.bank-transfer');
-            Route::livewire('/hrm/payroll/cash-roster', 'pages::hrm.payroll-cash-roster')->name('hrm.payroll.cash-roster');
+            Route::livewire('/hrm/payroll/batch-run', 'pages::hrm.payroll-batch-run')->name('hrm.payroll.batch-run')->middleware('payroll:process');
+            Route::livewire('/hrm/payroll/payslip', 'pages::hrm.payroll-payslip-list')->name('hrm.payroll.payslip-list')->middleware('payroll:payslip');
+            Route::livewire('/hrm/payroll/payslip/print-all/{run}', 'pages::hrm.payroll-payslip-print-all')->name('hrm.payroll.payslip-print-all')->middleware('payroll:payslip')->where('run', '[0-9]+');
+            Route::livewire('/hrm/payroll/payslip/{payslip}/print', 'pages::hrm.payroll-payslip-print')->name('hrm.payroll.payslip-print')->middleware('payroll:payslip')->where('payslip', '[0-9]+');
+            Route::livewire('/hrm/payroll/bank-transfer', 'pages::hrm.payroll-bank-transfer')->name('hrm.payroll.bank-transfer')->middleware('payroll:process');
+            Route::livewire('/hrm/payroll/cash-roster', 'pages::hrm.payroll-cash-roster')->name('hrm.payroll.cash-roster')->middleware('payroll:process');
             Route::livewire('/hrm/discipline-report', 'pages::hrm.discipline-report')->name('hrm.discipline-report');
 
             // Recruitment (L1-L9 minus L8, lihat docs/recruitment_state.yaml) --

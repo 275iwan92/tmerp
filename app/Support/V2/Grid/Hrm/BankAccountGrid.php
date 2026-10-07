@@ -5,6 +5,7 @@ namespace App\Support\V2\Grid\Hrm;
 use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
 use App\Models\Master\SupSupplier;
+use App\Services\Payroll\PayrollAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -56,7 +57,7 @@ class BankAccountGrid extends HrmGrid
 
     protected function query(): Builder
     {
-        return EmpEmployee::query()->with('position.department')->where('activate', true)->orderBy('full_name');
+        return PayrollAccess::restrict(EmpEmployee::query()->with('position.department')->where('activate', true), auth()->user())->orderBy('full_name');
     }
 
     protected function prefetch(Collection $items): void

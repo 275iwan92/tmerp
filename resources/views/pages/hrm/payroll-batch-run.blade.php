@@ -4,6 +4,7 @@ use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
+use App\Services\Payroll\PayrollAccess;
 use App\Services\Payroll\PayrollEngineService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -81,7 +82,7 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
             return null;
         }
 
-        $payslips = PyrPayslip::where('id_run', $run->id_run)->get();
+        $payslips = PayrollAccess::restrict(PyrPayslip::where('id_run', $run->id_run), auth()->user())->get();
         $bankEmployeeIds = EmpBankAccount::whereIn('employee_id', $payslips->pluck('employee_id'))
             ->where('is_primary', true)->where('activate', true)->pluck('employee_id')->all();
 

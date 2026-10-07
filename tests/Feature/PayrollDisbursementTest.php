@@ -24,6 +24,7 @@ class PayrollDisbursementTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail()); // payroll hanya terlihat untuk peran yang berhak (PayrollAccess)
         $banked = EmpBankAccount::where('is_primary', true)->where('activate', true)->first() ?? $this->markTestSkipped('No primary bank account in this database.');
         $this->bankedId = (int) $banked->employee_id;
         $cash = EmpEmployee::where('activate', true)->whereNotIn('employee_id', EmpBankAccount::where('is_primary', true)->where('activate', true)->pluck('employee_id'))->first()
