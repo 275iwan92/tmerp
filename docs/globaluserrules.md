@@ -258,7 +258,7 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 ## B. Database & data
 
 1. **[LOCKED] Database-per-modul** (`tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`,
-   `tm2pyr`, `tm2sys`). FK fisik tidak boleh lintas-database; integritas lintas-DB dijaga aplikasi.
+   `tm2pyr`, `tm2mnt`, `tm2sys`). FK fisik tidak boleh lintas-database; integritas lintas-DB dijaga aplikasi.
 2. **[LOCKED 2026-09-30] Semua tabel memakai PK tunggal auto number BIGINT** `id_<entitas>`.
 3. **[LOCKED 2026-10-01] Database & semua formula dalam ENGLISH.** Bahasa lain hanya untuk layar dan cetakan,
    diterjemahkan lewat kamus `sys_dictionary`. Bahasa cetak dipilih user.
@@ -815,3 +815,4 @@ Dinul tidak boleh sentuh module payroll. Hanya saya yang boleh sentuh payroll."*
 | 2026-10-07 | A.25: **payroll dibatasi menurut peran dan tipe pegawai** (user) — Direksi/GM semua; HR Officer hanya Non-staff; Op Manager hanya slip bawahan; Dinul / developer / admin biasa tidak ada akses. Kolom baru `emp_employee.staff_type` (Staff / Non-staff) terpisah dari metode payroll (Weekly / Monthly); migration `2026_10_07_000200` (tm2 + ddt). |
 
 | 2026-10-07 | C: **Warna tahap Delivery Track** (user): merah / pink hanya untuk kegagalan; Draft kuning, Confirmed oranye, Shipped teal, Delivered hijau; kecelakaan (Accident) = merah + segitiga peringatan, rute berhenti di titik kejadian. Kecelakaan dicatat di Proof of Delivery sebagai hasil `ACCIDENT` (penyebab otomatis `ACCIDENT`, departemen Delivery, status POD Retry) tanpa kolom baru; tahap `incident` objek `x-dl::delivery-track` dipetakan dari POD terakhir (`App\Support\V2\Data\DeliveryTrack`). |
+| 2026-10-08 | B.1: **Maintenance punya database sendiri `tm2mnt` (dummy `ddtmnt`)** (user: "saya mau add database soal maintenance tidak masuk ke produksi"; "ya namanya tm2mnt atau ddtmnt"). Koneksi `tm2mnt` (`DB_MNT`), disalin oleh `ddt:copy --db=mnt`. Seluruh Maintenance lama dihapus 2026-10-08 dan dibangun ulang dari Master Data. |

@@ -47,7 +47,7 @@ final class BuildRegistry
 
     private const DAYS = 14;
 
-    private const CONNECTIONS = ['tm2mst', 'tm2sdi', 'tm2pur', 'tm2inv', 'tm2prd', 'tm2acc', 'tm2hrm', 'tm2hrr', 'tm2pyr', 'tm2sys'];
+    private const CONNECTIONS = ['tm2mst', 'tm2sdi', 'tm2pur', 'tm2inv', 'tm2prd', 'tm2acc', 'tm2hrm', 'tm2hrr', 'tm2pyr', 'tm2mnt', 'tm2sys'];
 
     public static function snapshot(): array
     {

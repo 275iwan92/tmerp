@@ -202,6 +202,22 @@ return [
             'engine' => 'InnoDB',
         ],
 
+        'tm2mnt' => [
+            'driver' => 'mysql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_MNT', 'tm2mnt'),
+            'username' => env('DB_USERNAME', 'tm2user'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => 'InnoDB',
+        ],
+
         // tm2old — BUKAN salah satu dari 10 database modul (bukan module DB
         // fungsional). Ini staging/karantina untuk dump mentah sistem lama
         // (ScriptCase V1: mst_vendor, master item lama, dsb) yang diimpor apa

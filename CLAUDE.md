@@ -27,7 +27,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 - **Layar/komponen baru**: pakai skill `tmerp-screen` (generator `make:tm-screen` + `resources/views/components/_manifest.yaml` sebagai katalog props — jangan buka file komponen satu per satu). Mockup JPEG: skill `tmerp-ui-mockup`. Komponen baru wajib ditambahkan ke `_manifest.yaml`.
 - **Skill**: Laravel Boost (`livewire-development`, `tailwindcss-development`, `laravel-best-practices`, `testing-best-practices`) generik & ditimpa tiap install; skill proyek bersumber di `.ai/skills/` (edit di sana, lalu `php artisan boost:install --skills --mcp -n` — JANGAN tambah `--guidelines`, itu menimpa file ini). Urutan prioritas (user 2026-10-07): `devlib-oo` + `devlib-inheritance` (utama, pewarisan / OO DevLib; arah DevLib -> tmerp) > `tmerp-stack-rules` / `tmerp-screen` / `tmerp-ui-mockup` > `tailwind-4-blade` / `svg-infographic` / `animejs` / `ui-ux-pro-max` (skill komunitas, 2026-10-07; `ui-ux-pro-max` TANPA `--persist`) > skill generik. Bila bertentangan, yang bernomor lebih kecil menang (mis. file Livewire TANPA prefix `⚡`).
 
-- **Nama koneksi Laravel = nama database**: `tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`, `tm2pyr`, `tm2sys`, `tm2old`, `tm2crp` (`config/database.php`). Tabel §2 menulis `mst`/`sdi` sebagai singkatan; di kode (`$connection`, `DB::connection(...)`) pakai nama `tm2*`. Default connection = `tm2sys`.
+- **Nama koneksi Laravel = nama database**: `tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`, `tm2pyr`, `tm2mnt`, `tm2sys`, `tm2old`, `tm2crp` (`config/database.php`). Tabel §2 menulis `mst`/`sdi` sebagai singkatan; di kode (`$connection`, `DB::connection(...)`) pakai nama `tm2*`. Default connection = `tm2sys`.
 ### Fase & situs (keputusan user 2026-09-24/25 — baca ini dulu)
 3 fase, satu kode. Pegangan lengkap untuk user: `docs/pegangan_fase_tmerp.html`.
 | Fase | Situs | Isi | Database |
@@ -118,6 +118,7 @@ lokal (MySQL 8.0.46 · InnoDB · utf8mb4 · utf8mb4_unicode_ci).
 | hrm | tm2hrm | HR Organization Structure, Time Attendance, Shift Roster, Leave Management |
 | hrr | tm2hrr | HR recruitment system |
 | pyr | tm2pyr | Payroll system with Encrypted data (**SUDAH BERJALAN**, AES-256-GCM via cast `PayrollEncrypted` — lihat catatan di bawah tabel) |
+| mnt | tm2mnt | **Maintenance** (user 2026-10-08): master perawatan mesin (watch point, spare part, dokumen), preventive, breakdown, improvement. Dummy: `ddtmnt` (`DB_MNT`). Relasi ke mesin / material / produksi = logis, tanpa FK lintas-DB. |
 | sys | tm2sys | Sistem: user, role, notifikasi, audit trail |
 | old | tm2old | Old data for migration |
 | crp | tm2crp | **Portal Kandidat Plan B** (MariaDB, BUKAN salah satu dari 10 DB tm2* MySQL di atas) — staging submission mentah dari portal eksternal sebelum ditarik ke tm2hrr. Host TERPISAH secara arsitektur (VPS/DMZ di desain final; lokal port 3307 utk dev, keputusan user 2026-08-30). Detail: `docs/recruitment_tier3.md` §1-3, `docs/recruitment_delta_plan_ab_local.md`. |

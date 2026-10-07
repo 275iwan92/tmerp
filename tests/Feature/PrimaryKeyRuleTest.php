@@ -12,7 +12,7 @@ class PrimaryKeyRuleTest extends TestCase
     // Tabel bawaan framework Laravel (format ditentukan framework, disetujui user dikecualikan).
     private const FRAMEWORK = ['migrations', 'cache', 'cache_locks', 'sessions', 'jobs', 'job_batches', 'failed_jobs', 'password_reset_tokens'];
 
-    private const CONNECTIONS = ['tm2mst', 'tm2sdi', 'tm2pur', 'tm2inv', 'tm2prd', 'tm2acc', 'tm2hrm', 'tm2hrr', 'tm2pyr', 'tm2sys'];
+    private const CONNECTIONS = ['tm2mst', 'tm2sdi', 'tm2pur', 'tm2inv', 'tm2prd', 'tm2acc', 'tm2hrm', 'tm2hrr', 'tm2pyr', 'tm2mnt', 'tm2sys'];
 
     public function test_every_table_has_single_bigint_auto_increment_primary_key(): void
     {

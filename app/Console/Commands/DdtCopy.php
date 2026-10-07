@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\DB;
 //   php artisan ddt:copy --fresh         -> buang database ddt tujuan lalu salin ulang
 class DdtCopy extends Command
 {
-    protected $signature = 'ddt:copy {--db= : mst,sdi,pur,inv,prd,acc,hrm,hrr,pyr (dipisah koma)} {--fresh : buang ddt tujuan dan salin ulang}';
+    protected $signature = 'ddt:copy {--db= : mst,sdi,pur,inv,prd,acc,hrm,hrr,pyr,mnt (dipisah koma)} {--fresh : buang ddt tujuan dan salin ulang}';
 
     protected $description = 'Salin penuh tm2* (skema, data, view) ke database dummy ddt*';
 
-    public const SUFFIXES = ['mst', 'sdi', 'pur', 'inv', 'prd', 'acc', 'hrm', 'hrr', 'pyr'];
+    public const SUFFIXES = ['mst', 'sdi', 'pur', 'inv', 'prd', 'acc', 'hrm', 'hrr', 'pyr', 'mnt'];
 
     public function handle(): int
     {
@@ -65,7 +65,7 @@ class DdtCopy extends Command
                     foreach ($pending as $v) {
                         $sql = array_values((array) $db->selectOne("SHOW CREATE VIEW `$src`.`$v`"))[1];
                         $sql = preg_replace('/ DEFINER=`[^`]+`@`[^`]+`/', '', $sql);
-                        $sql = preg_replace('/`tm2(mst|sdi|pur|inv|prd|acc|hrm|hrr|pyr|sys)`\./', '`ddt$1`.', $sql);
+                        $sql = preg_replace('/`tm2(mst|sdi|pur|inv|prd|acc|hrm|hrr|pyr|mnt|sys)`\./', '`ddt$1`.', $sql);
                         $sql = preg_replace('/VIEW `'.preg_quote($v, '/').'`/', "VIEW `$dst`.`$v`", $sql, 1);
                         try {
                             $db->statement($sql);

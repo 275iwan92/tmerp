@@ -9,7 +9,7 @@ namespace App\Support\V2;
 final class Src
 {
     public const DB = ['tm2mst' => 'Master', 'tm2sdi' => 'Sales', 'tm2pur' => 'Procurement', 'tm2inv' => 'Inventory', 'tm2prd' => 'Production',
-        'tm2acc' => 'Finance', 'tm2hrm' => 'HRM', 'tm2hrr' => 'Recruitment', 'tm2pyr' => 'Payroll', 'tm2sys' => 'Sistem', 'tm2old' => 'Legacy', 'tm2crp' => 'Portal'];
+        'tm2acc' => 'Finance', 'tm2hrm' => 'HRM', 'tm2hrr' => 'Recruitment', 'tm2pyr' => 'Payroll', 'tm2mnt' => 'Maintenance', 'tm2sys' => 'Sistem', 'tm2old' => 'Legacy', 'tm2crp' => 'Portal'];
 
     private static array $missing = [];
 
