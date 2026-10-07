@@ -96,6 +96,10 @@ final class Screens
                 ['label' => t('Cash & Bank'), 'items' => [
                     $it('petty-cash', ['Petty Cash', 'fa-solid fa-wallet', 'v2 baru: tm2acc.fin_petty_cash + fin_petty_cash_tx (PO Kontan)', null]),
                 ]],
+                ['label' => 'Control Center', 'items' => [
+                    $it('acc-dashboard', ['Accounting Dashboard', 'fa-solid fa-gauge-high', 'v2: App\Support\V2\Data\FinanceDesk (FinanceMetrics)', null, true]),
+                    $it('acc-engine', ['Process Engine', 'fa-solid fa-gears', 'v2: FinanceDesk (FinanceMetrics + fin_approval_rule)', null]),
+                ]],
                 ['label' => 'Financial Reports', 'items' => [
                     $it('acc-statements', ['Financial Statements', 'fa-solid fa-file-invoice-dollar', 'v2: App\Support\V2\Data\FinancialStatements (LedgerService, ringkasan Neraca + Laba Rugi + Arus Kas)', null, true]),
                     $it('acc-rpt-balance-sheet', ['Balance Sheet', 'fa-solid fa-scale-balanced', 'v2: FinancialStatements + x-dl::statement (LedgerService::balanceSheet)', null, true]),

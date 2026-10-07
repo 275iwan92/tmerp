@@ -55,6 +55,7 @@ use App\Support\V2\Data\CrmComplaints;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DataOriginDesk;
 use App\Support\V2\Data\DeliveryOrder;
+use App\Support\V2\Data\FinanceDesk;
 use App\Support\V2\Data\FinancialStatements;
 use App\Support\V2\Data\GpsClock;
 use App\Support\V2\Data\GroupPermissions;
@@ -1159,6 +1160,32 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $home($r)->with('v2_flash', ['advance' => t('Moved to the next stage.'), 'reject' => t('Candidate rejected.'), 'withdraw' => t('Candidate marked as withdrawn.')][$d['action']]);
         })->name('action');
+    });
+
+    // Finance > Control Center > Process Engine (App\Support\V2\Data\FinanceDesk): aturan workflow fin_approval_rule (tambah, aktif / nonaktif, unduh CSV).
+    Route::middleware('module:FINACC')->prefix('acc/engine')->name('acc.engine.')->group(function () {
+        $home = fn () => redirect(route('v2.screen', 'acc-engine'));
+        Route::post('/rule', function (Request $r) use ($home) {
+            FinanceDesk::saveRule($r->all(), Auth::user()->login);
+
+            return $home()->with('v2_flash', t('Workflow rule added.'));
+        })->name('rule-save');
+        Route::post('/rule/{id}/toggle', function (int $id) use ($home) {
+            return $home()->with('v2_flash', FinanceDesk::toggleRule($id, Auth::user()->login) ? t('Rule enabled.') : t('Rule disabled.'));
+        })->whereNumber('id')->name('rule-toggle');
+        Route::get('/rules.csv', function () {
+            [$headers, $rows] = FinanceDesk::rulesCsv();
+
+            return response()->streamDownload(function () use ($headers, $rows) {
+                $out = fopen('php://output', 'w');
+                fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+                fputcsv($out, $headers);
+                foreach ($rows as $row) {
+                    fputcsv($out, $row);
+                }
+                fclose($out);
+            }, 'accounting-workflow-rules.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        })->name('rules-csv');
     });
 
     // Finance > Financial Reports: unduhan CSV (UTF-8 BOM supaya Excel membacanya) Neraca / Laba Rugi / Arus Kas, isi sama dengan layar v1.
