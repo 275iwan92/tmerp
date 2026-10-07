@@ -3,6 +3,7 @@
 use App\Console\Commands\DdtBaseline;
 use App\Console\Commands\DdtStage;
 use App\Mail\EmailVerifyMail;
+use App\Models\Acc\FinPeriod;
 use App\Models\Acc\FinPettyCashTx;
 use App\Models\Master\FlowConfig;
 use App\Models\Master\MatCategory;
@@ -50,6 +51,7 @@ use App\Support\V2\Data\ApprovalCenter;
 use App\Support\V2\Data\ApprovalSetting;
 use App\Support\V2\Data\AttendanceUpload;
 use App\Support\V2\Data\BankDesk;
+use App\Support\V2\Data\ClosingDesk;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CrmActivities;
 use App\Support\V2\Data\CrmComplaints;
@@ -1161,6 +1163,48 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $home($r)->with('v2_flash', ['advance' => t('Moved to the next stage.'), 'reject' => t('Candidate rejected.'), 'withdraw' => t('Candidate marked as withdrawn.')][$d['action']]);
         })->name('action');
+    });
+
+    // Finance > Period Closing (App\Support\V2\Data\ClosingDesk): checklist, status periode (OPEN / ON_HOLD / CLOSED permanen), voucher penutup tahun. Query: year, period.
+    Route::middleware('module:FINACC')->prefix('acc/closing')->name('acc.closing.')->group(function () {
+        $back = fn (Request $r) => redirect(route('v2.screen', 'acc-closing').'?'.http_build_query(array_filter(['year' => $r->integer('year') ?: null, 'period' => $r->integer('period') ?: null])));
+        $period = fn (Request $r) => FinPeriod::findOrFail($r->integer('period'));
+        Route::post('/start', function (Request $r) use ($back, $period) {
+            $p = $period($r);
+            ClosingDesk::start($p, Auth::user()->login);
+
+            return $back($r)->with('v2_flash', tf('Closing checklist of :period created.', ['period' => $p->period_name]));
+        })->name('start');
+        Route::post('/task/{id}/{to}', function (Request $r, int $id, string $to) use ($back) {
+            ClosingDesk::setTask($id, $to === 'complete', Auth::user()->login);
+
+            return $back($r)->with('v2_flash', $to === 'complete' ? t('Control marked complete.') : t('Control reopened.'));
+        })->whereNumber('id')->whereIn('to', ['complete', 'reopen'])->name('task');
+        Route::post('/status', function (Request $r) use ($back, $period) {
+            $p = $period($r);
+            ClosingDesk::changeStatus($p, (string) $r->input('status'), (string) $r->input('reason'), Auth::user()->login);
+
+            return $back($r)->with('v2_flash', $r->input('status') === 'CLOSED' ? t('The period is CLOSED permanently — no new posting is accepted.') : t('Period status changed.'));
+        })->name('status');
+        Route::post('/year-end', function (Request $r) use ($back) {
+            $no = ClosingDesk::yearEnd($r->integer('year'), Auth::user()->login);
+
+            return $back($r)->with('v2_flash', tf('Year-end closing voucher :year created as a DRAFT (:no). Review and post it manually in Journal Entries before period 12 is closed.', ['year' => $r->integer('year'), 'no' => $no]));
+        })->name('year-end');
+        Route::get('/checklist.csv', function (Request $r) {
+            $p = ClosingDesk::period($r->integer('year') ?: ClosingDesk::defaultYear(), $r->integer('period') ?: null);
+            [$headers, $rows] = ClosingDesk::checklistCsv(ClosingDesk::tasks($p));
+
+            return response()->streamDownload(function () use ($headers, $rows) {
+                $out = fopen('php://output', 'w');
+                fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+                fputcsv($out, $headers);
+                foreach ($rows as $row) {
+                    fputcsv($out, $row);
+                }
+                fclose($out);
+            }, 'closing-checklist-'.($p?->period_name ?? '').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        })->name('checklist-csv');
     });
 
     // Finance > Bank & Reconciliation (App\Support\V2\Data\BankDesk). Semua aksi membawa `account` (rekening kas / bank) dan kembali ke layar yang sama.

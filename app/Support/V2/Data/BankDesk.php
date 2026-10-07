@@ -10,18 +10,22 @@ use App\Models\Acc\FinBankStatement;
 use App\Models\Acc\FinVoucherLine;
 use App\Services\Acc\BankReconService;
 use App\Services\Acc\LedgerService;
+use App\Support\V2\Data\Concerns\ReportsBusinessErrors;
 use Devlib\Locale;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Throwable;
 
 // Finance > Transaction Flows > Bank & Reconciliation (v2): Import Statement -> Normalize -> Auto-Match -> Investigate (cocokkan manual / jurnal penyesuaian DRAFT yang
 // wajib disetujui di Journal Entries) -> Reconcile. Aturan di BankReconService (sama dengan v1); voucher kas / bank tetap dibuat di Cashier. Kesalahan bisnis service
 // (abort 422 / DomainException) dijadikan ValidationException supaya layar menampilkan pesannya, bukan halaman galat.
 final class BankDesk
 {
+    use ReportsBusinessErrors;
+
+    public const ERROR_KEY = 'bank';
+
     public const TONES = ['MATCHED' => 'success', 'ADJUSTED' => 'info', 'IGNORED' => 'neutral', 'UNMATCHED' => 'warn'];
 
     private const LIMIT = 150;
@@ -134,18 +138,6 @@ final class BankDesk
     }
 
     // ---------- aksi ----------
-
-    /** Jalankan aksi service; galat bisnis menjadi ValidationException (pesan ramah). */
-    private static function run(callable $fn): mixed
-    {
-        try {
-            return $fn();
-        } catch (ValidationException $e) {
-            throw $e;
-        } catch (Throwable $e) {
-            throw ValidationException::withMessages(['bank' => $e->getMessage() ?: t('The process failed.')]);
-        }
-    }
 
     public static function import(int $accountId, ?UploadedFile $file, string $by): int
     {

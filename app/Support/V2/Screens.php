@@ -100,6 +100,9 @@ final class Screens
                     $it('acc-dashboard', ['Accounting Dashboard', 'fa-solid fa-gauge-high', 'v2: App\Support\V2\Data\FinanceDesk (FinanceMetrics)', null, true]),
                     $it('acc-engine', ['Process Engine', 'fa-solid fa-gears', 'v2: FinanceDesk (FinanceMetrics + fin_approval_rule)', null]),
                 ]],
+                ['label' => 'Controls & Tax', 'items' => [
+                    $it('acc-closing', ['Period Closing', 'fa-solid fa-lock', 'v2: App\Support\V2\Data\ClosingDesk (CloseService, FinPeriodGuard)', null, true]),
+                ]],
                 ['label' => 'Financial Reports', 'items' => [
                     $it('acc-statements', ['Financial Statements', 'fa-solid fa-file-invoice-dollar', 'v2: App\Support\V2\Data\FinancialStatements (LedgerService, ringkasan Neraca + Laba Rugi + Arus Kas)', null, true]),
                     $it('acc-rpt-balance-sheet', ['Balance Sheet', 'fa-solid fa-scale-balanced', 'v2: FinancialStatements + x-dl::statement (LedgerService::balanceSheet)', null, true]),

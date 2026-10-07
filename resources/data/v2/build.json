@@ -1,17 +1,17 @@
 {
-    "generated": "2026-10-07 14:45",
+    "generated": "2026-10-07 14:48",
     "database": "ddtsys",
     "totals": {
         "objects": 148,
         "modules": 10,
         "modules_done": 6,
-        "screens": 236,
-        "v2": 226,
+        "screens": 237,
+        "v2": 227,
         "v1": 5,
         "not_built": 5,
-        "waiting_qc": 230,
+        "waiting_qc": 231,
         "locked": 1,
-        "forms": 90,
+        "forms": 91,
         "grids": 91,
         "reports": 55,
         "grid_classes": 147,
@@ -22,11 +22,11 @@
         "tables": 371,
         "databases": 9,
         "models": 328,
-        "migrations": 557,
-        "tests": 108,
+        "migrations": 558,
+        "tests": 109,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1172",
+        "commits": "1173",
         "since": "2026-08-06"
     },
     "modules": [
@@ -116,13 +116,13 @@
         },
         {
             "label": "Finance & Accounting",
-            "total": 22,
-            "v2": 22,
+            "total": 23,
+            "v2": 23,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 22,
+            "waiting_qc": 23,
             "locked": 0,
-            "form": 5,
+            "form": 6,
             "grid": 10,
             "report": 7
         },
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 71,
+            "commits": 72,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 108,
+            "screens": 110,
             "objects": 22,
             "engines": 1,
-            "tests": 20
+            "tests": 21
         },
         {
             "key": "jo",
@@ -257,7 +257,7 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 28,
+            "iwan": 29,
             "jo": 0,
             "other": 19
         }
@@ -319,7 +319,7 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 71,
+            "iwan": 72,
             "jo": 0,
             "other": 21
         }
@@ -887,6 +887,17 @@
             "changed_by": "iwan"
         },
         {
+            "type": "FORM",
+            "key": "menu:ACC_CLOSE",
+            "name": "Period Closing",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
             "type": "REPORT",
             "key": "menu:ACC_FS",
             "name": "Financial Statements",
@@ -1189,10 +1200,10 @@
             "name": "Bank & Reconciliation",
             "module": "Finance & Accounting",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
