@@ -151,12 +151,14 @@ lokal (MySQL 8.0.46 · InnoDB · utf8mb4 · utf8mb4_unicode_ci).
   (generik, nempel di event `updated` `app_application.status`, bukan
   ditempel manual di tiap layar HR) memanggil `pushStatusUpdate()`.
 
-**Payroll encryption (keputusan user 2026-08-30, requirement — BELUM ada
-implementasi teknis sesi manapun):** data gaji & histori gaji (tm2pyr) WAJIB
-terenkripsi at-rest. Belum ada keputusan algoritma/key management/model mana
-saja yang kena — jangan asumsikan sudah terpasang, dan jangan mulai
-implementasi sendiri tanpa konfirmasi desain (mana kolom, cara rotate key,
-dampak ke query/laporan yang butuh baca nilai asli).
+**Payroll encryption (keputusan user 2026-08-30, SUDAH BERJALAN):** data gaji (tm2pyr)
+terenkripsi at-rest AES-256-GCM lewat cast `App\Casts\PayrollEncrypted`, kunci dari
+`sys_constant` (`VERBA_SANCTA`). Terpasang di `PyrEmployeeSalary` (`basic_salary_monthly`)
+dan `PyrPayslip` (`total_pokok`, `total_gaji_bersih`, dst — lihat `$casts`). Baca nilai
+gaji SELALU lewat model (jangan SQL mentah, hasilnya ciphertext). Kolom baru yang berisi
+nominal gaji: pasang cast yang sama. Keputusan scope, kunci & trade-off:
+`docs/md_for_systems/payroll_encryption_decision.md` (bagian "belum dibangun" di
+dokumen itu juga sudah usang).
 
 ### Aturan lintas-DB (LOCKED — KRITIKAL)
 - **FK MySQL TIDAK BISA lintas-database.** Jangan pernah bikin constraint FK antar-DB.

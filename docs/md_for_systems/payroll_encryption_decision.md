@@ -1,11 +1,10 @@
 # Payroll — Keputusan Desain Enkripsi (`tm2pyr`)
 
 > Ditulis 2026-09-03 atas instruksi user ("Tulis ini di md agar saya tidak
-> lupa"). Modul Payroll (`tm2pyr`) **BELUM DIBANGUN** — dokumen ini murni
-> catatan keputusan desain supaya sesi mendatang tidak perlu menebak ulang
-> saat modul ini akhirnya digarap. Jangan mulai implementasi kode dari
-> dokumen ini sendirian tanpa membaca ulang & konfirmasi ke user kalau ada
-> yang berubah sejak ditulis.
+> lupa"). **Update 2026-10-07: enkripsi SUDAH BERJALAN** (`App\Casts\PayrollEncrypted`
+> terpasang di `PyrEmployeeSalary` & `PyrPayslip`); dokumen ini tetap jadi catatan
+> keputusan desain (scope kolom, kunci, trade-off). Kalau menambah kolom terenkripsi
+> atau mengubah scope, konfirmasi ke user dulu.
 >
 > Konteks awal (kenapa enkripsi ini requirement): CLAUDE.md §2 "Payroll
 > encryption" — data gaji & histori gaji `tm2pyr` wajib terenkripsi at-rest.
