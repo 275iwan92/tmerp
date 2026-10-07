@@ -21,6 +21,4 @@
             :lines="[['label' => 'Arrived', 'value' => '02-Sep-2025'], ['label' => 'Supplier pallet', 'value' => 'FSW-250902-022'], ['label' => 'Expiry', 'value' => '02-Sep-2026']]"
             :tags="[['label' => 'Expired', 'tone' => 'danger']]" />
     </x-dl::label-sheet>
-    <x-dl::divider label="Scan" />
-    <x-dl::scan name="code" label="Scan or type" hint="A scanner types the code and presses Enter by itself. The camera button appears on a phone over https." :autofocus="false" />
 </div>

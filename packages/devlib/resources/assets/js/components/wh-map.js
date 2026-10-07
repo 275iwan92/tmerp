@@ -12,6 +12,11 @@
       this.bins = this.cfg.bins || {}; this.tx = this.cfg.text || {}; this.panel = $(this.el, '[data-wm-panel]');
       this.on('click', '[data-wm-cell]', (e, c) => { if (!this.el.classList.contains('is-edit')) this.pick(c); });
       this.on('keydown', '[data-wm-cell]', (e, c) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.pick(c); } });
+      this.on('click', '[data-wm-zone]', (e, z) => { if (!this.el.classList.contains('is-edit') && !e.target.closest('[data-wm-cell]')) this.zone(z); });
+      this.on('click', '[data-wm-goto]', (e, b) => {
+        const cell = $$(this.el, '[data-wm-cell]').find(c => c.dataset.wmCell.split(',').includes(b.dataset.wmGoto));
+        if (cell) this.pick(cell, b.dataset.wmGoto);
+      });
       this.on('click', '[data-wm-floor]', (e, b) => this.floor(b.dataset.wmFloor));
       this.on('click', '[data-wm-only]', (e, b) => {
         const on = !b.classList.contains('is-active');
@@ -57,6 +62,24 @@
       cell.classList.add('is-sel');
       this.ids = cell.dataset.wmCell.split(',').filter(Boolean);
       this.show(id && this.ids.includes(id) ? id : this.ids[0]);
+    }
+
+    // Klik area (bukan kotak bin) = ringkasan semua bin berisi di area itu; klik satu bin = buka panel bin tersebut.
+    zone(z) {
+      const t = this.tx;
+      $$(this.el, '[data-wm-cell].is-sel').forEach(c => c.classList.remove('is-sel'));
+      const ids = $$(z, '[data-wm-cell]').flatMap(c => c.dataset.wmCell.split(',').filter(Boolean));
+      const used = ids.filter(i => this.bins[i] && ((this.bins[i].items || []).length || (this.bins[i].stack || []).length));
+      const rows = used.map(i => {
+        const b = this.bins[i], list = (b.stack || []).length
+          ? b.stack.map(u => `<li>${esc(u.name || '')}<small>${esc(u.sub || '')}</small></li>`).join('')
+          : (b.items || []).map(x => `<li>${esc(x.name || '')}<small>${esc(x.code || '')} · ${esc(x.qty || '')}</small></li>`).join('');
+        return `<div class="dl-whmap__zbin"><button type="button" data-wm-goto="${esc(i)}">${esc(b.code || i)}</button><ul>${list}</ul></div>`;
+      }).join('');
+      const name = $(z, '.dl-whmap__zname');
+      this.panel.innerHTML = `<div class="dl-whmap__phead"><div><small>${esc(t.area || 'Area')}</small><b>${esc(name ? name.textContent : '')}</b>`
+        + `<span>${used.length} / ${ids.length} ${esc(t.bins || 'bins')}</span></div></div>`
+        + (rows || `<p class="dl-whmap__hint">${esc(t.nostock)}</p>`);
     }
 
     show(id) {

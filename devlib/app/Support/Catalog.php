@@ -184,10 +184,16 @@ final class Catalog
                         'codes' => ['QR & Barcode (Code128, EAN-13)', $c('Qr', 'Barcode')],
                         'code-generator' => ['QR & Barcode Generator (QR with error correction, Code 128 A/B/C, Code 39, EAN-13 / 8, UPC-A / E, ITF-14, ITF, MSI, Codabar, Pharmacode; live preview, content check, PNG / SVG download, print)', $c('CodeGenerator')],
                     ]),
-                    'p6-warehouse' => $page('Warehouse Map & Labels', 'fa-solid fa-warehouse', [
-                        'wh-map' => ['Warehouse map (building outline in metres: rectangle / L shape / any shape, floors, storage areas, bins, dead stock in red, expiry mark, bin panel with weight / volume / floor area, stack view from the top down with swap buttons, remnant and buried marks)', $c('WhMap', 'Qr')],
-                        'wh-labels' => ['Location, item and pallet labels (colour band, QR + barcode, expiry tags, three real sizes), size and printing guide, label sheet (label roll or A4), scan field', $c('Label', 'LabelGuide', 'LabelSheet', 'Scan', 'Qr', 'Barcode')],
-                    ]),
+                    // Warehouse = submenu (user 2026-10-07): Location & Mapping | Labels | Scan & Track.
+                    'p6-wh-map' => $page('Location & Mapping', 'fa-solid fa-map-location-dot', [
+                        'wh-map' => ['Warehouse map (building outline in metres: rectangle / L shape / any shape, floors, storage areas, bins, dead stock in red, expiry mark; click an area or a bin for the left panel with its stacks and items, stack view from the top down with swap buttons, remnant and buried marks)', $c('WhMap', 'Qr')],
+                    ]) + ['folder' => 'Warehouse'],
+                    'p6-wh-labels' => $page('Labels', 'fa-solid fa-tags', [
+                        'wh-labels' => ['Location, item and pallet labels (colour band, QR + barcode, expiry tags, three real sizes), size and printing guide, label sheet (label roll or A4)', $c('Label', 'LabelGuide', 'LabelSheet', 'Qr', 'Barcode')],
+                    ]) + ['folder' => 'Warehouse'],
+                    'p6-wh-scan' => $page('Scan & Track', 'fa-solid fa-barcode', [
+                        'wh-scan' => ['Scan field (scanner types the code and presses Enter; camera on a phone over https)', $c('Scan')],
+                    ]) + ['folder' => 'Warehouse'],
                 ]],
             ['code' => 'MA', 'short' => 'MA', 'label' => 'Menus, Accounts & Layout', 'icon' => 'fa-solid fa-table-columns',
                 'pages' => [

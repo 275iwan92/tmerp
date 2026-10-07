@@ -9,7 +9,7 @@
     $cfg['status'] = array_map(fn ($s) => Lang::text($s), WhMap::STATUS);
     $cfg['text'] = array_map(fn ($s) => Lang::text($s), ['bin' => 'Bin', 'capacity' => 'Capacity', 'item' => 'Item', 'qty' => 'Qty', 'idle' => 'Idle', 'dead' => 'Dead stock',
         'level' => 'Level', 'nostock' => 'No stock in this bin.', 'saved' => 'Layout saved.', 'failed' => 'Could not save the layout.', 'nomatch' => 'No bin matches the search.',
-        'matches' => 'bins match', 'label' => 'Label', 'stack' => 'Stack — top to bottom', 'up' => 'Move up', 'down' => 'Move down']);
+        'matches' => 'bins match', 'label' => 'Label', 'stack' => 'Stack — top to bottom', 'up' => 'Move up', 'down' => 'Move down', 'area' => 'Area', 'bins' => 'bins in use']);
     $pad = 1.5;   // meter kosong di sekeliling gedung (tempat tulisan ukuran)
     $vb = (-$pad * $S).' '.(-$pad * $S).' '.(($width + 2 * $pad) * $S).' '.(($height + 2 * $pad) * $S);
     $hatch = 'dl-whmap-hatch-'.$id;
