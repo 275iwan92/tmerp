@@ -623,6 +623,13 @@
     method dibaca dari kodenya. Tampil di **devlib.test → Engines → Engine Catalog** dan di menu **Developer → Engines**
     (objek DevLib `x-dl::engine-catalog`). Engine baru / tanda tangan berubah: daftarkan, lalu `php artisan engine:catalog`
     (dijaga `EngineCatalogTest`). Rumus harga ProCost rahasia: yang ditulis hanya alurnya, tanpa rumus dan angka.
+17. **Dasar pemrograman = Object Oriented + komponen modular + library (user 2026-10-07).** Kode utama (layar, route,
+    komponen Livewire, controller) dibuat **sederhana, mudah di-debug, dan dapat dilacak (traceable)**: hanya memanggil
+    objek / service / library; logika, rumus, dan tampilan berada di kelas yang bernama jelas dan berdiri sendiri.
+    Aturan praktis: satu kelas / file = satu tanggung jawab; main code berupa daftar panggilan yang dibaca seperti
+    alur bisnis; tanpa salin-tempel (perilaku bersama naik ke induk / trait / library); tiap objek bisa ditelusuri ke
+    sumbernya (`tag()`, `source()`, `lineage()`, `EngineRegistry`, log lewat satu jalur); kegagalan dilempar sebagai
+    exception bernama dan dicatat dengan konteks (id dokumen, langkah), bukan ditelan; nama method memuat maksud.
 
 ## E. Help & Asisten AI
 
@@ -770,3 +777,4 @@
 | 2026-10-04 | C.18: **"General" = sifat akses, bukan menu** (user: "GENERAL nanti menu itu ada di sales module, bisa nanti di PRODUCTION module. Sifatnya general bukan berarti dibuatkan menu general report") — modul menu "General Report" dihapus; tiga laporan CO tanpa harga pindah ke Sales > Sales Order > grup **General Report** (`required_object = GENERAL`, migration `2026_10_04_000060`); user tanpa hak Sales tetap melihat modul Sales hanya dengan cabang GENERAL-nya (`AppMenu::modules`). Di tm2 laporan ini belum pernah dipasang (hanya ddt). |
 | 2026-10-04 | C.18: **Side Screen** — Help & support dan Edit profile menjadi objek DevLib baru `x-dl::side-screen` (user: "dibuatkan object baru turunan dari object devlib yang ada ... luas layar diperlebar hingga full screen ... bisa floating ... seperti windows di OS windows, bisa di-adjust size-nya dan bisa di-move"; ralat: bukan minimize). Turunan Drawer + Tabs + Breadcrumb: jendela layar penuh / mengambang (seret, ubah ukuran, snap, diingat per browser), rel bagian vertikal, judul bagian lengket, kotak cari, kaki aksi lengket. Katalog devlib.test Part 2 > Containers & Navigation > Side Screen; mockup `docs/mockups/side_screen_drawer.jpg`; test `SideScreenTest`. |
 | 2026-10-04 | C.18: **Chat, AI Assistant, Notifications = dua mode** (user: "sebaiknya dibuat bisa maximize besar seluas full screen. Jadi ada 2 mode") — tombol Maximize / Restore di kepala laci (Shell) dan prop `maximize` objek `x-dl::drawer`; `DrawerMax` (devlib.js), mode diingat per laci; Chat di mode penuh = daftar orang + percakapan berdampingan. Test `SideScreenTest`. |
+| 2026-10-07 | D.17: **Dasar pemrograman = Object Oriented + komponen modular + library** (user: "Make your main code simple, ease to debug and traceable") — main code berupa daftar panggilan ke objek / service / library, satu kelas satu tanggung jawab, tanpa salin-tempel, error = exception bernama berkonteks, objek traceable (`tag/source/lineage`, `EngineRegistry`). Ditulis juga di skill `devlib-oo` (`.ai/skills`). |

@@ -29,6 +29,18 @@ Sumber: memori `feedback_devlib_object_oriented_inheritance_first`, `docs/global
 6. Tes penjaga: `DevlibOnlyRatchetTest` (HTML mentah tidak boleh bertambah), tes per objek ala `SideScreenTest`.
 7. Selesai membangun: `php artisan build:catalog --env=mockup` (commit `build.json`) dan trailer commit `Agent: Iwan|Jo`.
 
+## Dasar pemrograman: OO + komponen modular + library (user 2026-10-07)
+
+Main code (layar, route, komponen Livewire, command) harus **sederhana, mudah di-debug, traceable**:
+- **Main code = daftar panggilan.** Dibaca seperti alur bisnis (`$order = CoOrderBuilder::fromQuotation($q); $order->confirm();`). Logika, rumus, query, dan markup tinggal di kelas / service / library / objek `x-dl::*`, bukan di file layar.
+- **Satu kelas = satu tanggung jawab**, nama kelas dan method memuat maksud. Method pendek; bila perlu komentar untuk menjelaskan *apa*, pecah jadi method bernama.
+- **Modular & berdiri sendiri:** modul / paket (`packages/*`) tidak bergantung pada kode tmerp; ketergantungan lewat kontrak (interface / kelas dasar) dan konstruktor, bukan `new` tersembunyi atau global.
+- **Library dulu:** cari kelas di `app/Services`, `app/Support`, `packages/*` sebelum menulis. Perilaku dipakai >1 tempat = naik ke induk / trait / library, tidak disalin.
+- **Traceable:** objek memakai `tag()` / `source()` / `lineage()`; engine terdaftar di `EngineRegistry`; satu jalur log; kegagalan = exception bernama (bukan `false` / `null` diam-diam) dengan konteks (id dokumen, langkah); jangan menelan error dengan `catch` kosong.
+- **Mudah di-debug:** tanpa efek samping tersembunyi, tanpa magic string berserakan (pakai konstanta / enum), satu sumber kebenaran per nilai, input / output method jelas dan bertipe (`declare(strict_types=1)` untuk kode baru, tipe parameter dan return).
+- **Yang bertambah = test kecil per kelas** (service / engine), supaya bug terlacak ke satu kelas.
+Dikutip di `docs/globaluserrules.md` D.17.
+
 ## Bila skill generik bertentangan
 
 Contoh: saran "buat Blade component/Form Request/controller baru" padahal sudah ada objek DevLib yang bisa diperluas; saran markup Tailwind mentah; file Livewire berprefix `⚡`. Pilih jalur DevLib / tmerp, sebut singkat alasannya.
