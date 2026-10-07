@@ -1,0 +1,484 @@
+[
+  {
+    "key": "guide-inv-overview",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Inventory in One Page: Master, Ledger, Balance",
+    "purpose": {
+      "en": "The big picture of inventory and warehousing for a printing and packaging factory: what is kept, how every movement is recorded, and why a balance is always a result and never typed.",
+      "id": "Gambaran besar inventory dan gudang untuk pabrik percetakan dan packaging: apa yang disimpan, bagaimana tiap pergerakan dicatat, dan mengapa saldo selalu hasil hitung, tidak pernah diketik."
+    },
+    "keywords": "inventory, persediaan, stok, gudang, warehouse, ledger, kartu stok, saldo, konsep inventory, dasar inventory, panduan inventory",
+    "steps": [
+      {
+        "en": "Inventory has three layers: the master (what the item is), the ledger (every movement that ever happened) and the balance (how much is there now).",
+        "id": "Inventory punya tiga lapisan: master (barang itu apa), ledger (setiap pergerakan yang pernah terjadi) dan saldo (berapa yang ada sekarang)."
+      },
+      {
+        "en": "The ledger only grows. A mistake is corrected by a new reverse movement, never by editing or deleting an old line. This is what makes an audit possible.",
+        "id": "Ledger hanya bertambah. Kesalahan dikoreksi dengan pergerakan balik yang baru, tidak pernah dengan mengubah atau menghapus baris lama. Inilah yang membuat audit bisa dilakukan."
+      },
+      {
+        "en": "The balance is the sum of the ledger per item, location and batch. It may be stored for speed, but it must always be possible to recompute it from the ledger.",
+        "id": "Saldo adalah jumlah ledger per item, lokasi dan batch. Boleh disimpan agar cepat, tetapi harus selalu bisa dihitung ulang dari ledger."
+      },
+      {
+        "en": "Every ledger line carries date and time, item, location, batch, quantity with plus or minus, unit, document type, source document, value and user.",
+        "id": "Setiap baris ledger memuat tanggal dan jam, item, lokasi, batch, qty dengan tanda plus atau minus, satuan, jenis dokumen, dokumen sumber, nilai dan user."
+      },
+      {
+        "en": "Keep two dates: the entry date (when it was typed) and the posting date (the period it belongs to). A closed period accepts no new posting.",
+        "id": "Simpan dua tanggal: tanggal input (kapan diketik) dan tanggal posting (periode mana yang dimaksud). Periode yang sudah ditutup tidak menerima posting baru."
+      },
+      {
+        "en": "Raw material, semi finished goods (SFG) and finished goods (FG) share the same ledger. Only the item type, the location and the rules differ.",
+        "id": "Bahan baku, barang setengah jadi (SFG) dan barang jadi (FG) memakai ledger yang sama. Yang berbeda hanya jenis item, lokasi dan aturannya."
+      },
+      {
+        "en": "Think of every movement as going from one location to another, including virtual ones such as Vendor, Customer, Loss and Production. Then the books always balance.",
+        "id": "Bayangkan setiap pergerakan sebagai perpindahan dari satu lokasi ke lokasi lain, termasuk lokasi virtual seperti Vendor, Customer, Loss dan Production. Dengan begitu pembukuan selalu seimbang."
+      }
+    ],
+    "fields": [
+      {"label": "Master", "en": "The description of an item, unit, location or batch. Changed only by the user in charge, never by a transaction.", "id": "Keterangan sebuah item, satuan, lokasi atau batch. Hanya diubah user yang berwenang, tidak pernah oleh transaksi."},
+      {"label": "Ledger", "en": "The list of all stock movements, one line each. Append only. It is the single source of truth.", "id": "Daftar semua pergerakan stok, satu baris tiap pergerakan. Hanya ditambah. Inilah satu-satunya sumber kebenaran."},
+      {"label": "Balance", "en": "Quantity now per item, location and batch. A result of the ledger, not an input.", "id": "Qty saat ini per item, lokasi dan batch. Hasil dari ledger, bukan inputan."},
+      {"label": "Reverse movement", "en": "A new movement with the opposite sign that cancels an earlier one. The old line stays visible.", "id": "Pergerakan baru dengan tanda berlawanan yang membatalkan pergerakan sebelumnya. Baris lama tetap terlihat."},
+      {"label": "Posting date", "en": "The date that decides the accounting period of a movement. Different from the day it was typed.", "id": "Tanggal yang menentukan periode akuntansi sebuah pergerakan. Berbeda dengan hari saat diketik."},
+      {"label": "Virtual location", "en": "A location that is not a place: Vendor, Customer, Loss, Production, Transit. It lets every movement have a from and a to.", "id": "Lokasi yang bukan tempat fisik: Vendor, Customer, Loss, Production, Transit. Membuat setiap pergerakan punya asal dan tujuan."}
+    ]
+  },
+  {
+    "key": "guide-inv-quantities",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "One Item, Many Quantities",
+    "purpose": {
+      "en": "Why a single stock number misleads, and the quantities that large ERP systems keep apart so you can tell what you can really promise today.",
+      "id": "Mengapa satu angka stok menyesatkan, dan angka-angka yang dipisahkan sistem ERP besar supaya Anda tahu apa yang benar-benar bisa dijanjikan hari ini."
+    },
+    "keywords": "on hand, available, reserved, booked, blocked, quarantine, in transit, atp, stok tersedia, stok fisik, konsinyasi, available to promise",
+    "steps": [
+      {
+        "en": "On hand is what is physically in the warehouse. It is the starting point for every other quantity.",
+        "id": "On hand adalah yang secara fisik ada di gudang. Ini titik awal untuk semua angka lainnya."
+      },
+      {
+        "en": "Subtract what is reserved for orders and work orders, and what is blocked or in quarantine. The rest is Available, the quantity you may promise.",
+        "id": "Kurangi yang sudah dipesan untuk order dan work order, serta yang diblokir atau di karantina. Sisanya Available, yaitu qty yang boleh dijanjikan."
+      },
+      {
+        "en": "In transit is stock that left one warehouse and has not arrived at the next. It still belongs to the company but cannot be used.",
+        "id": "In transit adalah stok yang sudah keluar dari satu gudang tetapi belum sampai di gudang berikutnya. Masih milik perusahaan tetapi belum bisa dipakai."
+      },
+      {
+        "en": "Available To Promise (ATP) looks forward in time: on hand plus open purchase orders and planned production, minus open demand.",
+        "id": "Available To Promise (ATP) melihat ke depan: on hand ditambah PO terbuka dan produksi terencana, dikurangi permintaan yang masih terbuka."
+      },
+      {
+        "en": "Quality inspection stock has been received but not released. It must not count as Available until QC releases it.",
+        "id": "Stok yang sedang diperiksa mutu sudah diterima tetapi belum dirilis. Tidak boleh dihitung Available sampai QC merilisnya."
+      },
+      {
+        "en": "Consignment stock belongs to the supplier but sits in your warehouse, or the reverse. Keep the owner as its own attribute of the stock.",
+        "id": "Stok konsinyasi milik supplier tetapi ada di gudang Anda, atau sebaliknya. Simpan pemilik sebagai atribut tersendiri dari stok."
+      }
+    ],
+    "fields": [
+      {"label": "On Hand", "en": "Physical quantity in the warehouse, per item, location and batch.", "id": "Qty fisik di gudang, per item, lokasi dan batch."},
+      {"label": "Reserved (Booked)", "en": "Quantity promised to a customer order or work order. Still in the warehouse, but not free.", "id": "Qty yang dijanjikan ke customer order atau work order. Masih di gudang tetapi tidak bebas."},
+      {"label": "Blocked / Quarantine", "en": "Quantity that exists but may not be used: damaged, expired, waiting for QC.", "id": "Qty yang ada tetapi tidak boleh dipakai: rusak, kedaluwarsa, menunggu QC."},
+      {"label": "Available", "en": "On Hand minus Reserved minus Blocked. This is what you can promise now.", "id": "On Hand dikurangi Reserved dikurangi Blocked. Inilah yang bisa dijanjikan sekarang."},
+      {"label": "In Transit", "en": "Sent but not yet received. Counts as company stock for accounting, not as Available.", "id": "Sudah dikirim tetapi belum diterima. Dihitung stok perusahaan untuk akuntansi, bukan Available."},
+      {"label": "ATP", "en": "On Hand + open PO + planned production - Reserved - open demand. Answers: can I accept this order for that date?", "id": "On Hand + PO terbuka + produksi terencana - Reserved - permintaan terbuka. Menjawab: bisakah order ini diterima untuk tanggal itu?"},
+      {"label": "Owner", "en": "Who owns the stock: the company, a customer or a supplier. Stock of other owners is never valued in your books.", "id": "Siapa pemilik stok: perusahaan, customer atau supplier. Stok milik pihak lain tidak pernah dinilai di pembukuan Anda."}
+    ]
+  },
+  {
+    "key": "guide-inv-item-types",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Item Types and the Attributes That Matter",
+    "purpose": {
+      "en": "The kinds of item a printing and packaging factory keeps, and the item attributes that big ERP systems hold and small ones often forget.",
+      "id": "Jenis item yang disimpan pabrik percetakan dan packaging, serta atribut item yang dimiliki ERP besar tetapi sering terlupa di sistem kecil."
+    },
+    "keywords": "tipe item, jenis item, item master, atribut item, uom, satuan, dual uom, shelf life, barcode ganda, hazmat, hs code, rm, sfg, fg, consumable",
+    "steps": [
+      {
+        "en": "Raw material and packaging material are bought and consumed by production. Consumables and spare parts are used up or expensed, and are often not valued as stock.",
+        "id": "Bahan baku dan bahan kemasan dibeli lalu dipakai produksi. Barang habis pakai dan spare part dipakai habis atau langsung jadi biaya, dan sering tidak dinilai sebagai stok."
+      },
+      {
+        "en": "Semi finished goods (SFG) are results of a process that are not final. They must know which routing step they have already passed.",
+        "id": "Barang setengah jadi (SFG) adalah hasil sebuah proses yang belum final. Harus diketahui tahap routing mana yang sudah dilewati."
+      },
+      {
+        "en": "Finished goods (FG) are ready to sell. For custom printed packaging an FG usually belongs to one customer order and cannot be sold to anyone else.",
+        "id": "Barang jadi (FG) siap dijual. Untuk kemasan cetak custom, FG biasanya milik satu customer order dan tidak bisa dijual ke pihak lain."
+      },
+      {
+        "en": "Scrap, by-products and co-products are outputs too. Decide for each whether it has a value and where it is stored.",
+        "id": "Scrap, produk sampingan dan co-product juga hasil produksi. Tentukan untuk masing-masing apakah bernilai dan disimpan di mana."
+      },
+      {
+        "en": "Service items never enter the ledger. Subcontract items stay yours while they sit at the vendor, so they need a vendor location.",
+        "id": "Item jasa tidak pernah masuk ledger. Item subkontrak tetap milik Anda selama ada di vendor, jadi perlu lokasi vendor."
+      }
+    ],
+    "fields": [
+      {"label": "Units of measure", "en": "Stock, purchase, sales and production units, each with a conversion factor. Some conversions are fixed, some depend on the item specification.", "id": "Satuan stok, beli, jual dan produksi, masing-masing dengan faktor konversi. Ada yang tetap, ada yang bergantung pada spesifikasi item."},
+      {"label": "Dual unit", "en": "Tracking two units whose ratio changes, for example a paper roll in kilograms and in meters. Store the actual weighed value.", "id": "Melacak dua satuan yang rasionya berubah, misalnya roll kertas dalam kg dan meter. Simpan nilai hasil timbang yang sebenarnya."},
+      {"label": "Tracking mode", "en": "None, by batch (lot) or by serial number.", "id": "Tanpa pelacakan, per batch (lot) atau per nomor seri."},
+      {"label": "Valuation method", "en": "Average, FIFO, standard or specific. Decides the cost of every issue.", "id": "Rata-rata, FIFO, standar atau spesifik. Menentukan nilai setiap pengeluaran."},
+      {"label": "Reorder point and safety stock", "en": "Below this level the system proposes a purchase request. Both should be values the user can set.", "id": "Di bawah angka ini sistem mengusulkan permintaan pembelian. Keduanya sebaiknya nilai yang bisa diatur user."},
+      {"label": "Shelf life", "en": "Days an item stays usable. Also the minimum remaining shelf life accepted on receipt and on shipment.", "id": "Jumlah hari item masih layak pakai. Juga sisa umur minimum yang diterima saat terima dan saat kirim."},
+      {"label": "Several barcodes", "en": "One item can have a barcode per package level: piece, inner pack, carton, pallet.", "id": "Satu item bisa punya barcode per tingkat kemasan: pcs, inner pack, karton, pallet."},
+      {"label": "Alternate item", "en": "An item that may replace this one. See the guide on substitute materials.", "id": "Item yang boleh menggantikan item ini. Lihat panduan material pengganti."},
+      {"label": "Hazmat, HS code, country", "en": "Safety data and customs data kept on the item. Needed for hazardous inks and imported paper.", "id": "Data keselamatan dan data bea cukai pada item. Dibutuhkan untuk tinta berbahaya dan kertas impor."},
+      {"label": "Item status", "en": "Active, blocked, obsolete or being phased out. A blocked item cannot be received or issued.", "id": "Aktif, diblokir, usang atau sedang dihentikan. Item yang diblokir tidak bisa diterima atau dikeluarkan."}
+    ]
+  },
+  {
+    "key": "guide-inv-transactions",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Every Way Stock Moves",
+    "purpose": {
+      "en": "The complete list of stock movement types, so no real event is left without a document. Check each one against your own screens.",
+      "id": "Daftar lengkap jenis pergerakan stok, supaya tidak ada kejadian nyata yang tanpa dokumen. Cocokkan satu per satu dengan layar Anda."
+    },
+    "keywords": "transaksi stok, pergerakan stok, goods receipt, grn, issue, adjustment, scrap, retur, reclassification, repack, status change, revaluation",
+    "steps": [
+      {
+        "en": "Stock in: receipt from a purchase order, receipt without an order, production output, customer return, return from production, transfer in, plus adjustment.",
+        "id": "Stok masuk: terima dari PO, terima tanpa PO, hasil produksi, retur customer, retur dari produksi, transfer masuk, adjustment plus."
+      },
+      {
+        "en": "More stock in: by-product or scrap receipt, and receipt from a subcontractor after the outside process is done.",
+        "id": "Stok masuk lainnya: terima produk sampingan atau scrap, dan terima dari subkontraktor setelah proses luar selesai."
+      },
+      {
+        "en": "Stock out: delivery to a customer, issue to production, return to a supplier, transfer out, minus adjustment, scrap or write off.",
+        "id": "Stok keluar: pengiriman ke customer, issue ke produksi, retur ke supplier, transfer keluar, adjustment minus, scrap atau write off."
+      },
+      {
+        "en": "More stock out: samples, marketing or internal use, and issue to a subcontractor. Give each its own movement code so reports can tell them apart.",
+        "id": "Stok keluar lainnya: sample, marketing atau pemakaian internal, dan issue ke subkontraktor. Beri kode sendiri tiap jenis supaya laporan bisa membedakan."
+      },
+      {
+        "en": "Movements that change no total quantity but matter: reclassification, status change, putaway and relocation, repack, assembly and disassembly.",
+        "id": "Pergerakan yang tidak mengubah qty total tetapi penting: reklasifikasi, perubahan status, putaway dan pindah lokasi, repack, assembly dan disassembly."
+      },
+      {
+        "en": "Two events are not movements: reservation (a promise, nothing leaves) and revaluation (value changes, quantity does not). Record them, but keep them apart from stock movements.",
+        "id": "Dua kejadian ini bukan pergerakan: reservasi (janji, belum ada yang keluar) dan revaluasi (nilai berubah, qty tidak). Catat, tetapi pisahkan dari pergerakan stok."
+      }
+    ],
+    "fields": [
+      {"label": "Reclassification", "en": "Item A becomes item B, for example a downgrade of grade. Quantity out of A, quantity into B, with a reason.", "id": "Item A menjadi item B, misalnya turun grade. Qty keluar dari A, qty masuk ke B, dengan alasan."},
+      {"label": "Status change", "en": "Available to Quarantine to Blocked and back. Same place, different usability.", "id": "Available ke Quarantine ke Blocked dan kembali. Tempat sama, kebolehpakaian berbeda."},
+      {"label": "Putaway", "en": "Moving received goods from the receiving area to their storage bin.", "id": "Memindahkan barang yang diterima dari area penerimaan ke bin penyimpanan."},
+      {"label": "Repack, assembly", "en": "Changing the packaging or combining items into a kit, and the reverse.", "id": "Mengubah kemasan atau menggabungkan item menjadi kit, dan sebaliknya."},
+      {"label": "Adjustment", "en": "Corrects the book to the counted quantity after a stock count. Needs a reason and an approval.", "id": "Mengoreksi buku ke qty hasil hitung setelah stock opname. Butuh alasan dan persetujuan."},
+      {"label": "Scrap or write off", "en": "Stock destroyed, damaged or expired. Needs a report of destruction and creates an expense.", "id": "Stok dimusnahkan, rusak atau kedaluwarsa. Butuh berita acara pemusnahan dan menimbulkan biaya."}
+    ]
+  },
+  {
+    "key": "guide-inv-valuation",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Stock Value: Average, FIFO and the Rest",
+    "purpose": {
+      "en": "How the cost of stock is calculated, which methods are allowed in Indonesia, and the formulas behind each one. The method decides the cost of every issue.",
+      "id": "Cara menghitung nilai stok, metode mana yang diperbolehkan di Indonesia, dan rumus di balik masing-masing. Metode menentukan nilai setiap pengeluaran."
+    },
+    "keywords": "valuasi, nilai persediaan, moving average, rata-rata bergerak, fifo, lifo, standard cost, hpp, cost layer, psak 14, ias 2, harga rata-rata",
+    "steps": [
+      {
+        "en": "Weighted average recomputes the average price at every receipt. An issue never changes the average; it only takes quantity at the current average.",
+        "id": "Rata-rata tertimbang menghitung ulang harga rata-rata tiap penerimaan. Pengeluaran tidak mengubah rata-rata; hanya mengambil qty pada rata-rata saat itu."
+      },
+      {
+        "en": "FIFO keeps a layer for each receipt (date, remaining quantity, price). An issue consumes the oldest layer first.",
+        "id": "FIFO menyimpan satu lapisan untuk tiap penerimaan (tanggal, qty sisa, harga). Pengeluaran menghabiskan lapisan tertua lebih dulu."
+      },
+      {
+        "en": "LIFO is not allowed by Indonesian accounting standards (PSAK 14, like IAS 2). It is not needed and should not be used for the books.",
+        "id": "LIFO tidak diperbolehkan standar akuntansi Indonesia (PSAK 14, sama dengan IAS 2). Tidak perlu dibangun dan tidak dipakai untuk pembukuan."
+      },
+      {
+        "en": "Standard cost uses a fixed price and books the difference as variance. It suits manufacturing when the standard is close to reality and is reviewed each year.",
+        "id": "Standard cost memakai harga tetap dan mencatat selisihnya sebagai varians. Cocok untuk manufaktur bila standar dekat dengan kenyataan dan ditinjau tiap tahun."
+      },
+      {
+        "en": "Pick one method per item group and keep it. Mixing methods without a rule makes the value report impossible to explain.",
+        "id": "Pilih satu metode per kelompok item dan konsisten. Mencampur metode tanpa aturan membuat laporan nilai tidak bisa dijelaskan."
+      },
+      {
+        "en": "Do not allow negative stock by default. An issue before its receipt is recorded corrupts the average. If allowed, plan a revaluation when the receipt arrives.",
+        "id": "Jangan izinkan stok minus sebagai default. Pengeluaran sebelum penerimaannya dicatat merusak rata-rata. Bila diizinkan, rencanakan revaluasi saat penerimaan masuk."
+      },
+      {
+        "en": "A transaction dated in the past forces all later layers or averages to be recomputed. Big systems have a repost function for this; plan one.",
+        "id": "Transaksi bertanggal mundur memaksa semua lapisan atau rata-rata sesudahnya dihitung ulang. Sistem besar punya fungsi repost untuk ini; rencanakan satu."
+      }
+    ],
+    "fields": [
+      {"label": "Average after receipt", "en": "(old quantity x old average + received quantity x received price) divided by (old quantity + received quantity).", "id": "(qty lama x rata-rata lama + qty masuk x harga masuk) dibagi (qty lama + qty masuk)."},
+      {"label": "Average example", "en": "100 pcs at 10,000 plus 50 pcs at 13,000 gives (1,000,000 + 650,000) / 150 = 11,000 per piece.", "id": "100 pcs @ 10.000 ditambah 50 pcs @ 13.000 menjadi (1.000.000 + 650.000) / 150 = 11.000 per pcs."},
+      {"label": "Periodic average", "en": "Sum of (quantity x price) of the whole period divided by the sum of quantities, fixed at period close. Issue cost is not final until then.", "id": "Jumlah (qty x harga) satu periode dibagi jumlah qty, ditetapkan saat tutup periode. Nilai keluar belum final sebelum itu."},
+      {"label": "FIFO example", "en": "Issue 120 from layers 100 at 10,000 and 50 at 13,000: 100 x 10,000 + 20 x 13,000 = 1,260,000; 30 remain at 13,000.", "id": "Keluar 120 dari lapisan 100 @ 10.000 dan 50 @ 13.000: 100 x 10.000 + 20 x 13.000 = 1.260.000; sisa 30 @ 13.000."},
+      {"label": "FIFO returns", "en": "A return to the supplier reduces the original layer. A customer return comes back at the original issue cost, not today's price.", "id": "Retur ke supplier mengurangi lapisan aslinya. Retur customer masuk dengan nilai keluar aslinya, bukan harga hari ini."},
+      {"label": "Purchase price variance", "en": "Actual price minus standard price, times quantity. Booked to its own account when standard cost is used.", "id": "Harga aktual dikurangi harga standar, dikali qty. Dicatat di akun tersendiri bila memakai standard cost."},
+      {"label": "Usage variance", "en": "Actual consumption minus standard consumption, times price. Shows waste or a wrong standard.", "id": "Pemakaian aktual dikurangi pemakaian standar, dikali harga. Menunjukkan pemborosan atau standar yang keliru."},
+      {"label": "FIFO or FEFO", "en": "FIFO, LIFO and average decide the value order. FIFO, FEFO and LEFO decide which unit is physically picked. They are independent.", "id": "FIFO, LIFO dan rata-rata menentukan urutan nilai. FIFO, FEFO dan LEFO menentukan unit mana yang diambil fisik. Keduanya terpisah."}
+    ]
+  },
+  {
+    "key": "guide-inv-accounting",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Inventory and Accounting: Which Journal Each Movement Creates",
+    "purpose": {
+      "en": "How stock movements become accounting entries, and the controls that keep the stock ledger equal to the general ledger. Plan this together with the ledger, not afterwards.",
+      "id": "Bagaimana pergerakan stok menjadi jurnal akuntansi, dan kontrol yang menjaga ledger stok sama dengan buku besar. Rencanakan bersama ledger, bukan belakangan."
+    },
+    "keywords": "jurnal persediaan, akuntansi inventory, gr/ir, landed cost, hpp, cogs, tutup periode, rekonsiliasi, nrv, provisi persediaan, selisih opname, in transit",
+    "steps": [
+      {
+        "en": "Every movement that changes value must create a journal by itself. A journal that someone has to type separately will sooner or later disagree with the stock.",
+        "id": "Setiap pergerakan yang mengubah nilai harus membuat jurnal sendiri. Jurnal yang harus diketik terpisah cepat atau lambat akan berbeda dengan stok."
+      },
+      {
+        "en": "Goods received without an invoice are booked to a clearing account (GR/IR). When the supplier invoice arrives the clearing account is emptied against payables.",
+        "id": "Barang diterima tanpa invoice dicatat ke akun penampung (GR/IR). Saat invoice supplier datang, akun penampung dikosongkan terhadap hutang."
+      },
+      {
+        "en": "Freight, import duty and insurance on imported material are added to the stock value (landed cost), allocated by value, weight or volume. They are not plain expense.",
+        "id": "Ongkos kirim, bea masuk dan asuransi bahan impor ditambahkan ke nilai stok (landed cost), dibagi menurut nilai, berat atau volume. Bukan biaya biasa."
+      },
+      {
+        "en": "Close the period and lock it. After the lock no one posts into it. Late events go into the next period with a clear reference.",
+        "id": "Tutup periode dan kunci. Setelah dikunci tidak ada yang boleh posting ke dalamnya. Kejadian terlambat masuk periode berikutnya dengan referensi jelas."
+      },
+      {
+        "en": "Reconcile every day: the total value of the stock ledger must equal the balance of the inventory account in the general ledger. Any difference is a defect to chase.",
+        "id": "Rekonsiliasi tiap hari: total nilai ledger stok harus sama dengan saldo akun persediaan di buku besar. Setiap selisih adalah cacat yang harus dikejar."
+      },
+      {
+        "en": "Stock is valued at the lower of cost and net realisable value (IAS 2). Dead stock therefore needs a provision journal, not only a report.",
+        "id": "Stok dinilai pada nilai terendah antara biaya dan nilai realisasi neto (IAS 2). Karena itu dead stock butuh jurnal penyisihan, tidak cukup laporan."
+      },
+      {
+        "en": "Watch the cut-off: goods received on the 31st but recorded on the 1st change the financial statements. Posting date must follow the physical receipt.",
+        "id": "Perhatikan cut-off: barang diterima tanggal 31 tetapi dicatat tanggal 1 mengubah laporan keuangan. Tanggal posting harus mengikuti penerimaan fisik."
+      }
+    ],
+    "fields": [
+      {"label": "Receipt without invoice", "en": "Debit Inventory, credit GR/IR clearing.", "id": "Debit Persediaan, kredit GR/IR penampung."},
+      {"label": "Supplier invoice", "en": "Debit GR/IR clearing and input VAT, credit Accounts Payable.", "id": "Debit GR/IR penampung dan PPN masukan, kredit Hutang Usaha."},
+      {"label": "Issue to production", "en": "Debit Work in Progress, credit Inventory raw material.", "id": "Debit Barang Dalam Proses, kredit Persediaan bahan baku."},
+      {"label": "Production output", "en": "Debit Inventory finished goods, credit Work in Progress.", "id": "Debit Persediaan barang jadi, kredit Barang Dalam Proses."},
+      {"label": "Delivery to customer", "en": "Debit Cost of Goods Sold, credit Inventory finished goods. The sales invoice is a separate entry.", "id": "Debit Harga Pokok Penjualan, kredit Persediaan barang jadi. Invoice penjualan adalah jurnal terpisah."},
+      {"label": "Adjustment plus or minus", "en": "Plus: debit Inventory, credit Inventory Adjustment. Minus: the reverse.", "id": "Plus: debit Persediaan, kredit Selisih Persediaan. Minus: kebalikannya."},
+      {"label": "Scrap or write off", "en": "Debit Scrap expense, credit Inventory.", "id": "Debit Beban scrap, kredit Persediaan."},
+      {"label": "Transfer in transit", "en": "Debit Inventory in Transit, credit Inventory of the sending warehouse. On receipt, the reverse into the receiving warehouse.", "id": "Debit Persediaan dalam perjalanan, kredit Persediaan gudang pengirim. Saat diterima, kebalikannya ke gudang penerima."},
+      {"label": "Return to supplier", "en": "Debit Payables or GR/IR, credit Inventory, at the original receipt value.", "id": "Debit Hutang atau GR/IR, kredit Persediaan, pada nilai penerimaan asli."},
+      {"label": "Provision for obsolete stock", "en": "Debit Provision expense, credit Provision for inventory (contra asset). Percentages by age must be settings.", "id": "Debit Beban penyisihan, kredit Penyisihan persediaan (kontra aset). Persentase menurut umur harus berupa pengaturan."},
+      {"label": "Foreign currency", "en": "The rate on the receipt date sets the stock value. The difference at payment goes to an exchange difference account.", "id": "Kurs pada tanggal terima menentukan nilai stok. Selisih saat bayar masuk ke akun selisih kurs."}
+    ]
+  },
+  {
+    "key": "guide-inv-locations",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Warehouse Map: Locations, Bins, Putaway and Picking",
+    "purpose": {
+      "en": "How to model a warehouse: the location levels, the location types, bin rules, and the strategies that decide where goods are stored and from where they are picked.",
+      "id": "Cara memodelkan gudang: tingkat lokasi, jenis lokasi, aturan bin, dan strategi yang menentukan di mana barang disimpan dan dari mana diambil."
+    },
+    "keywords": "lokasi gudang, bin, rak, zona, putaway, picking, replenishment, peta gudang, wave picking, batch picking, fefo, slotting, lokasi virtual",
+    "steps": [
+      {
+        "en": "A common hierarchy is company, plant, warehouse, zone, aisle, rack, level, bin. A warehouse need not use every level; simple warehouses stop at the warehouse.",
+        "id": "Hierarki umum: perusahaan, plant, gudang, zona, lorong, rak, level, bin. Gudang tidak harus memakai semua tingkat; gudang sederhana cukup sampai tingkat gudang."
+      },
+      {
+        "en": "Give each location a type: storage, receiving dock, shipping dock, quarantine, blocked, production, scrap, and the virtual ones (vendor, customer, loss, transit).",
+        "id": "Beri tiap lokasi sebuah jenis: penyimpanan, dok terima, dok kirim, karantina, blokir, produksi, scrap, dan yang virtual (vendor, customer, loss, transit)."
+      },
+      {
+        "en": "Putaway strategy decides where received goods go: fixed bin, random bin, by zone, by capacity, by turnover, or the closest empty bin.",
+        "id": "Strategi putaway menentukan ke mana barang terima disimpan: bin tetap, bin acak, per zona, menurut kapasitas, menurut perputaran, atau bin kosong terdekat."
+      },
+      {
+        "en": "Picking strategy decides what is taken: oldest first, earliest expiry first, nearest bin, or a route that minimises walking.",
+        "id": "Strategi picking menentukan apa yang diambil: yang tertua dulu, yang paling dekat kedaluwarsa dulu, bin terdekat, atau rute yang paling hemat jalan."
+      },
+      {
+        "en": "Picking can be done per order, in batches, in waves, per zone or in clusters. Start with per order; the others pay off only in busy warehouses.",
+        "id": "Picking bisa per order, per batch, per gelombang, per zona atau per klaster. Mulai dari per order; yang lain baru berguna di gudang yang sibuk."
+      },
+      {
+        "en": "A small pick face near the door plus a large reserve bin above it is common. Replenishment moves stock from reserve to the pick face when it falls below a minimum.",
+        "id": "Umumnya ada bin kecil dekat pintu (pick face) dan bin cadangan besar di atasnya. Replenishment memindahkan stok dari cadangan ke pick face saat di bawah minimum."
+      }
+    ],
+    "fields": [
+      {"label": "Bin capacity", "en": "Maximum weight, volume or pallet count. Prevents putaway into a full bin.", "id": "Berat, volume atau jumlah pallet maksimum. Mencegah putaway ke bin yang penuh."},
+      {"label": "Mixing rule", "en": "Whether a bin may hold several items or several batches, or only one.", "id": "Apakah satu bin boleh berisi beberapa item atau beberapa batch, atau hanya satu."},
+      {"label": "Storage type", "en": "Pallet rack, floor, flow rack, cold room, hazmat cage. Some items may only go to certain types.", "id": "Rak pallet, lantai, flow rack, ruang dingin, kandang hazmat. Beberapa item hanya boleh ke tipe tertentu."},
+      {"label": "Bin status", "en": "Active, full, blocked, or locked for counting. A bin under count accepts no movement.", "id": "Aktif, penuh, diblokir, atau dikunci untuk hitung. Bin yang sedang dihitung tidak menerima pergerakan."},
+      {"label": "Coordinates", "en": "Position of a bin for the map and for the shortest pick route.", "id": "Posisi bin untuk peta dan untuk rute picking terpendek."},
+      {"label": "Pick priority", "en": "Fast moving items in the easiest to reach bins, near the door.", "id": "Item yang cepat keluar ditaruh di bin yang paling mudah dijangkau, dekat pintu."},
+      {"label": "Receiving dock", "en": "Staging place for goods that arrived but are not yet put away or inspected.", "id": "Tempat transit barang yang sudah datang tetapi belum di-putaway atau diperiksa."},
+      {"label": "Quarantine location", "en": "Goods waiting for QC. Not Available, not pickable.", "id": "Barang yang menunggu QC. Tidak Available dan tidak bisa di-pick."}
+    ]
+  },
+  {
+    "key": "guide-inv-transfer",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Transfers Between Locations",
+    "purpose": {
+      "en": "When a transfer is one step and when it is two steps through In Transit, how to treat differences on receipt, and what changes when a transfer crosses legal entities.",
+      "id": "Kapan transfer cukup satu langkah dan kapan dua langkah lewat In Transit, bagaimana memperlakukan selisih saat terima, dan apa yang berubah bila transfer melintasi badan hukum."
+    },
+    "keywords": "transfer stok, transfer antar gudang, in transit, perpindahan bin, sto, stock transfer order, replenishment, selisih terima, intercompany",
+    "steps": [
+      {
+        "en": "Use a one step transfer for neighbouring warehouses and for moves between bins. One document, the stock moves at once.",
+        "id": "Pakai transfer satu langkah untuk gudang berdekatan dan perpindahan antar bin. Satu dokumen, stok langsung pindah."
+      },
+      {
+        "en": "Use a two step transfer for distant warehouses or other plants: Shipped moves stock out of the sender into In Transit, Received moves it into the receiver.",
+        "id": "Pakai transfer dua langkah untuk gudang jauh atau pabrik lain: Shipped memindahkan stok dari pengirim ke In Transit, Received memindahkannya ke penerima."
+      },
+      {
+        "en": "A typical status path is Draft, Approved, Shipped, Received, Closed. Cancelling after Shipped needs a reverse movement.",
+        "id": "Alur status yang lazim: Draft, Approved, Shipped, Received, Closed. Pembatalan setelah Shipped butuh pergerakan balik."
+      },
+      {
+        "en": "If the receiver counts less than was shipped, record the difference. Either book it as a loss in transit or leave it in transit under investigation.",
+        "id": "Bila penerima menghitung kurang dari yang dikirim, catat selisihnya. Boleh dicatat sebagai kehilangan di perjalanan atau dibiarkan di transit sampai diselidiki."
+      },
+      {
+        "en": "A transfer carries the value it had at the sender. Moving stock must not change its value, unless a transport cost is deliberately added to it.",
+        "id": "Transfer membawa nilai yang dimiliki di pengirim. Memindahkan stok tidak boleh mengubah nilainya, kecuali ongkos angkut sengaja ditambahkan."
+      },
+      {
+        "en": "A transfer between two legal entities is really a sale between companies, with its own journal and tax. Do not treat it as a plain transfer.",
+        "id": "Transfer antar dua badan hukum sebenarnya penjualan antar perusahaan, dengan jurnal dan pajak sendiri. Jangan diperlakukan sebagai transfer biasa."
+      }
+    ],
+    "fields": [
+      {"label": "Partial receive", "en": "The receiver takes delivery in parts. The transfer stays open until the full quantity or a decision to close.", "id": "Penerima menerima bertahap. Transfer tetap terbuka sampai qty penuh atau keputusan menutup."},
+      {"label": "Discrepancy", "en": "A status for a received quantity that differs from shipped. Needs a reason and a decision.", "id": "Status untuk qty terima yang berbeda dari yang dikirim. Butuh alasan dan keputusan."},
+      {"label": "Reservation on transfer", "en": "Decide whether a reservation follows the stock to the new warehouse or is released.", "id": "Tentukan apakah reservasi ikut stok ke gudang baru atau dilepas."},
+      {"label": "Internal move", "en": "Between bins of one warehouse. No value change, no journal, but always in the ledger.", "id": "Antar bin dalam satu gudang. Tanpa perubahan nilai dan jurnal, tetapi selalu tercatat di ledger."},
+      {"label": "Replenishment", "en": "An automatic internal move from reserve to pick face when the pick face is under its minimum.", "id": "Perpindahan internal otomatis dari cadangan ke pick face saat pick face di bawah minimumnya."}
+    ]
+  },
+  {
+    "key": "guide-inv-batch-expiry",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Batch, Serial Number and Expiry",
+    "purpose": {
+      "en": "How to track goods by batch or serial number, handle expiry with FEFO, and the formulas for remaining shelf life. Important for inks, glue, varnish and film.",
+      "id": "Cara melacak barang per batch atau nomor seri, menangani kedaluwarsa dengan FEFO, dan rumus sisa umur. Penting untuk tinta, lem, varnish dan film."
+    },
+    "keywords": "batch, lot, nomor seri, serial number, expired, kedaluwarsa, fefo, shelf life, umur simpan, retest, coa, mrsl, tinta kadaluarsa",
+    "steps": [
+      {
+        "en": "A batch (lot) is a group of units with the same origin and quality. Stock is then kept per item, location and batch.",
+        "id": "Batch (lot) adalah sekelompok unit dengan asal dan mutu yang sama. Stok lalu disimpan per item, lokasi dan batch."
+      },
+      {
+        "en": "Keep with the batch: batch number, production and expiry dates, retest date, supplier lot, certificate of analysis, grade and QC status.",
+        "id": "Simpan bersama batch: nomor batch, tanggal produksi dan kedaluwarsa, tanggal retest, lot supplier, sertifikat analisis, grade dan status QC."
+      },
+      {
+        "en": "Serial numbers identify single units. In printing they are rarely needed except for machines and expensive spare parts.",
+        "id": "Nomor seri mengenali unit tunggal. Di percetakan jarang dibutuhkan kecuali untuk mesin dan spare part mahal."
+      },
+      {
+        "en": "FEFO picks the batch that expires first. It replaces plain oldest first for anything with a shelf life.",
+        "id": "FEFO mengambil batch yang paling dulu kedaluwarsa. Menggantikan sekadar yang tertua dulu untuk barang yang punya umur simpan."
+      },
+      {
+        "en": "Set a minimum remaining shelf life on receipt and on shipment. Goods below it are refused, or accepted only with approval.",
+        "id": "Tetapkan sisa umur minimum saat terima dan saat kirim. Barang di bawahnya ditolak, atau diterima hanya dengan persetujuan."
+      },
+      {
+        "en": "Alert at 30, 60 and 90 days before expiry. At expiry the batch is blocked automatically and cannot be picked.",
+        "id": "Beri peringatan 30, 60 dan 90 hari sebelum kedaluwarsa. Saat kedaluwarsa, batch otomatis diblokir dan tidak bisa di-pick."
+      },
+      {
+        "en": "Decide what happens to expired goods: sell at discount, return, retest, or destroy. Destruction needs a report and a write-off journal.",
+        "id": "Tentukan nasib barang kedaluwarsa: jual diskon, retur, uji ulang, atau musnahkan. Pemusnahan butuh berita acara dan jurnal write-off."
+      }
+    ],
+    "fields": [
+      {"label": "Expiry date", "en": "Production date plus shelf life in days, unless the supplier prints a date.", "id": "Tanggal produksi ditambah umur simpan dalam hari, kecuali supplier mencetak tanggalnya."},
+      {"label": "Remaining shelf life percent", "en": "(Expiry date minus today) divided by total shelf life, times 100.", "id": "(Tanggal kedaluwarsa dikurangi hari ini) dibagi umur simpan total, dikali 100."},
+      {"label": "Status by age", "en": "Remaining below 0 is Expired. Remaining below the alert limit is Near Expiry. Limits must be settings.", "id": "Sisa di bawah 0 adalah Expired. Sisa di bawah batas peringatan adalah Near Expiry. Batas harus berupa pengaturan."},
+      {"label": "Best before and use by", "en": "Best before means quality drops. Use by means unsafe afterwards. Treat them differently.", "id": "Best before berarti mutu menurun. Use by berarti tidak aman sesudahnya. Perlakukan berbeda."},
+      {"label": "Retest date", "en": "The item has not expired but must be tested again, common for chemicals.", "id": "Item belum kedaluwarsa tetapi harus diuji lagi, umum untuk bahan kimia."},
+      {"label": "Traceability forward", "en": "From a batch: which customers received goods made from it.", "id": "Dari sebuah batch: customer mana yang menerima barang yang dibuat darinya."},
+      {"label": "Traceability backward", "en": "From a product: which batches of material it was made from.", "id": "Dari sebuah produk: batch bahan apa yang dipakai untuk membuatnya."},
+      {"label": "Expiry report", "en": "Batches near expiry or expired, with quantity and value in rupiah.", "id": "Batch yang hampir atau sudah kedaluwarsa, dengan qty dan nilai rupiah."}
+    ]
+  },
+  {
+    "key": "guide-inv-stock-health",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Stock Health: Dead Stock, Turnover, ABC and Reorder",
+    "purpose": {
+      "en": "Formulas and classes to judge whether stock is healthy: aging, dead stock, turnover, ABC and XYZ, reorder point, safety stock and provisions. Every limit should be a setting.",
+      "id": "Rumus dan kelas untuk menilai apakah stok sehat: aging, dead stock, perputaran, ABC dan XYZ, reorder point, stok pengaman dan penyisihan. Setiap batas sebaiknya pengaturan."
+    },
+    "keywords": "dead stock, slow moving, non moving, aging stok, turnover, perputaran, abc, xyz, reorder point, safety stock, eoq, dio, provisi usang, kpi gudang",
+    "steps": [
+      {
+        "en": "Classify by days since the last issue: fast, slow, non moving and dead or obsolete. The day limits are chosen by the company, not fixed by the system.",
+        "id": "Klasifikasikan menurut hari sejak pengeluaran terakhir: fast, slow, non moving dan dead atau obsolete. Batas hari ditentukan perusahaan, bukan tetap dari sistem."
+      },
+      {
+        "en": "Mark an item dead also when it is known to be unusable, for example the product was discontinued or the specification changed, even if little time has passed.",
+        "id": "Tandai item dead juga bila diketahui tidak terpakai lagi, misalnya produk dihentikan atau spesifikasi berubah, walau waktunya belum lama."
+      },
+      {
+        "en": "ABC ranks items by annual usage value: A is about 80 percent of value from about 20 percent of items, B the next 15, C the last 5.",
+        "id": "ABC mengurutkan item menurut nilai pemakaian tahunan: A sekitar 80 persen nilai dari sekitar 20 persen item, B 15 berikutnya, C 5 terakhir."
+      },
+      {
+        "en": "XYZ ranks items by how steady the demand is. Combine with ABC: AX is watched closely, CZ is a candidate to remove from the master.",
+        "id": "XYZ mengurutkan item menurut kestabilan permintaan. Gabungkan dengan ABC: AX diawasi ketat, CZ calon dihapus dari master."
+      },
+      {
+        "en": "Provision for obsolete stock grows with age. Example table: 0 percent to 180 days, 25 percent to 365, 50 percent to 730, 100 percent above. The table is a setting.",
+        "id": "Penyisihan stok usang naik menurut umur. Contoh tabel: 0 persen sampai 180 hari, 25 persen sampai 365, 50 persen sampai 730, 100 persen di atasnya. Tabel adalah pengaturan."
+      },
+      {
+        "en": "Review the stock health report every month with purchasing, production and finance together, and decide on each large dead item.",
+        "id": "Tinjau laporan kesehatan stok tiap bulan bersama pembelian, produksi dan keuangan, dan putuskan nasib tiap item dead yang besar."
+      }
+    ],
+    "fields": [
+      {"label": "Aging (days)", "en": "Today minus the date of the last issue. Per batch: today minus the receipt date.", "id": "Hari ini dikurangi tanggal pengeluaran terakhir. Per batch: hari ini dikurangi tanggal terima."},
+      {"label": "Inventory turnover", "en": "Cost of goods sold of the period divided by the average inventory value, where average is (opening + closing) / 2.", "id": "Harga pokok penjualan periode dibagi rata-rata nilai persediaan, dengan rata-rata (awal + akhir) / 2."},
+      {"label": "Days inventory on hand", "en": "365 divided by turnover. How many days the current stock would last at the current pace.", "id": "365 dibagi perputaran. Berapa hari stok sekarang akan cukup pada laju saat ini."},
+      {"label": "Days of supply", "en": "Stock now divided by average daily usage.", "id": "Stok sekarang dibagi rata-rata pemakaian harian."},
+      {"label": "Dead stock value", "en": "Sum of quantity times cost of items older than the dead limit. As a percent: divided by total stock value.", "id": "Jumlah qty kali nilai item yang lebih tua dari batas dead. Dalam persen: dibagi total nilai stok."},
+      {"label": "Reorder point", "en": "Daily usage times lead time in days, plus safety stock.", "id": "Pemakaian harian dikali lead time dalam hari, ditambah stok pengaman."},
+      {"label": "Safety stock", "en": "Simple: maximum usage x maximum lead time minus average usage x average lead time. Statistical: Z x demand deviation x square root of lead time.", "id": "Sederhana: pemakaian maksimum x lead time maksimum dikurangi rata-rata x rata-rata. Statistik: Z x simpangan permintaan x akar lead time."},
+      {"label": "Economic order quantity", "en": "Square root of (2 x annual demand x order cost) divided by holding cost per unit per year.", "id": "Akar dari (2 x kebutuhan tahunan x biaya per pesanan) dibagi biaya simpan per unit per tahun."},
+      {"label": "Inventory accuracy", "en": "Items that matched the count divided by items counted, times 100.", "id": "Item yang cocok saat hitung dibagi item yang dihitung, dikali 100."},
+      {"label": "Shrinkage", "en": "(Book stock minus counted stock) divided by book stock, times 100.", "id": "(Stok buku dikurangi stok hasil hitung) dibagi stok buku, dikali 100."},
+      {"label": "Fill rate", "en": "Orders served from stock divided by total orders.", "id": "Order yang terlayani dari stok dibagi total order."}
+    ]
+  }
+]

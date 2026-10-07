@@ -1,0 +1,606 @@
+[
+  {
+    "key": "guide-inv-labels-scan",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Labels, Barcodes and Scanning",
+    "purpose": {
+      "en": "Which barcode types to use, what the GS1 standard adds, which labels a printing factory needs, and the scan checks that stop wrong picks and wrong receipts.",
+      "id": "Jenis barcode yang dipakai, apa yang ditambahkan standar GS1, label apa saja yang dibutuhkan pabrik percetakan, dan pemeriksaan scan yang mencegah salah ambil dan salah terima."
+    },
+    "keywords": "label, barcode, qr code, scan, gs1, sscc, code 128, handheld, label pallet, roll tag, traveler, wip tag, label karton, scanner",
+    "steps": [
+      {
+        "en": "Use Code 128 for internal labels (bin, item, batch), EAN-13 for retail products, GS1-128 or ITF-14 for cartons and pallets, and QR or Data Matrix when much data must fit in a small space.",
+        "id": "Pakai Code 128 untuk label internal (bin, item, batch), EAN-13 untuk produk retail, GS1-128 atau ITF-14 untuk karton dan pallet, dan QR atau Data Matrix bila banyak data harus muat di tempat kecil."
+      },
+      {
+        "en": "GS1 Application Identifiers put several data items in one barcode: GTIN, batch, expiry date, serial number, count and weight. The SSCC is a unique number for one pallet or carton.",
+        "id": "GS1 Application Identifier memuat beberapa data dalam satu barcode: GTIN, batch, tanggal kedaluwarsa, nomor seri, jumlah dan berat. SSCC adalah nomor unik untuk satu pallet atau karton."
+      },
+      {
+        "en": "Package levels are piece, inner pack, carton, pallet. Each level has its own barcode, weight and count of the level below, so scanning a carton tells how many pieces it holds.",
+        "id": "Tingkat kemasan: pcs, inner pack, karton, pallet. Tiap tingkat punya barcode, berat dan isi tingkat di bawahnya, sehingga scan karton menunjukkan berapa pcs isinya."
+      },
+      {
+        "en": "Receiving: scan the delivery note, scan the item, enter the quantity, print the label, then scan the bin to confirm putaway.",
+        "id": "Penerimaan: scan surat jalan, scan item, isi qty, cetak label, lalu scan bin untuk konfirmasi putaway."
+      },
+      {
+        "en": "Picking: the pick list shows on the device; scan the bin, scan the item, confirm the quantity. Two scans together catch a wrong bin and a wrong item.",
+        "id": "Picking: daftar pick tampil di perangkat; scan bin, scan item, konfirmasi qty. Dua kali scan menangkap salah bin dan salah item."
+      },
+      {
+        "en": "The system must refuse a scan that is not part of the document, an expired batch, a blocked item or a wrong bin, with a different sound for success and for failure.",
+        "id": "Sistem harus menolak scan yang bukan bagian dokumen, batch kedaluwarsa, item terblokir atau bin salah, dengan bunyi berbeda untuk sukses dan gagal."
+      },
+      {
+        "en": "A phone camera is enough to start. Industrial handhelds are needed when speed, durability or offline work matter. Reprinting a label must always be logged.",
+        "id": "Kamera HP cukup untuk memulai. Handheld industri dibutuhkan bila kecepatan, ketahanan atau kerja offline penting. Cetak ulang label harus selalu dicatat."
+      }
+    ],
+    "fields": [
+      {"label": "Pallet label (SSCC)", "en": "Item, gsm, size, grain direction, mill batch, sheet count, weight, receipt date and QC status.", "id": "Item, gsm, ukuran, arah serat, batch mill, jumlah lembar, berat, tanggal terima dan status QC."},
+      {"label": "Roll tag", "en": "Roll ID, starting weight, remaining weight and width. Updated after every use.", "id": "ID roll, berat awal, berat sisa dan lebar. Diperbarui tiap pemakaian."},
+      {"label": "Job traveler", "en": "Work order, customer, product, dieline version, quantity, next process and drying wait time. Scanned between processes.", "id": "Work order, customer, produk, versi dieline, qty, proses berikutnya dan waktu tunggu kering. Di-scan antar proses."},
+      {"label": "Die label", "en": "Die number, dieline version, size, customer and a QR code that opens the die record.", "id": "Nomor die, versi dieline, ukuran, customer dan QR yang membuka catatan die."},
+      {"label": "Mixed ink label", "en": "Pantone code, mixing date, source job and use-by date.", "id": "Kode Pantone, tanggal campur, job asal dan batas pakai."},
+      {"label": "Finished goods carton label", "en": "Customer, PO, product, count per carton, carton 3 of 10, batch and date. Often in the customer's own format.", "id": "Customer, PO, produk, isi per karton, karton 3 dari 10, batch dan tanggal. Sering dalam format milik customer."},
+      {"label": "QC status label", "en": "Green for released, yellow for hold, red for rejected.", "id": "Hijau untuk dirilis, kuning untuk ditahan, merah untuk ditolak."},
+      {"label": "Hazard label", "en": "Hazard symbols and a link to the safety data sheet for dangerous inks and solvents.", "id": "Simbol bahaya dan tautan ke lembar data keselamatan untuk tinta dan pelarut berbahaya."}
+    ]
+  },
+  {
+    "key": "guide-inv-paper-board",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Paper, Board and Rolls: Rules Only Printers Need",
+    "purpose": {
+      "en": "How to keep paper and board stock correctly: units and conversion, grain direction, partial rolls, offcuts, moisture and the weight formula.",
+      "id": "Cara mengelola stok kertas dan board dengan benar: satuan dan konversi, arah serat, roll sisa, offcut, kelembapan dan rumus berat."
+    },
+    "keywords": "kertas, karton, board, plano, gsm, gramatur, caliper, arah serat, grain, roll, offcut, sisa potong, rim, ream, kelembapan, art carton, duplex, corrugated, flute",
+    "steps": [
+      {
+        "en": "Paper is bought by weight, cut by sheet and used by piece. Keep sheets and kilograms side by side, and weigh the real weight on receipt.",
+        "id": "Kertas dibeli per berat, dipotong per lembar dan dipakai per pcs. Simpan lembar dan kilogram berdampingan, dan timbang berat sebenarnya saat terima."
+      },
+      {
+        "en": "Grain direction (long grain or short grain) is a stock attribute. A box folded against the grain cracks or curls, so grain must match the dieline.",
+        "id": "Arah serat (long grain atau short grain) adalah atribut stok. Box yang dilipat melawan serat retak atau melengkung, jadi serat harus cocok dengan dieline."
+      },
+      {
+        "en": "A partly used roll stays in stock with a new remaining weight. Give each roll an ID and weigh it again after use.",
+        "id": "Roll yang terpakai sebagian tetap menjadi stok dengan berat sisa baru. Beri tiap roll sebuah ID dan timbang ulang setelah dipakai."
+      },
+      {
+        "en": "Offcuts are leftover sheets that may serve small jobs. Track them only above a minimum size, in their own rack, and scrap the rest by weight.",
+        "id": "Offcut adalah sisa lembar yang mungkin dipakai untuk job kecil. Lacak hanya di atas ukuran minimum, di rak tersendiri, dan scrap sisanya per berat."
+      },
+      {
+        "en": "Paper takes up moisture. Let it rest in the production room before printing, and record the rest start time as a status of the pallet.",
+        "id": "Kertas menyerap kelembapan. Biarkan beristirahat di ruang produksi sebelum dicetak, dan catat waktu mulai istirahat sebagai status pallet."
+      },
+      {
+        "en": "Mill batches can differ in shade. For colour critical jobs reserve one single mill batch for the whole job.",
+        "id": "Batch mill bisa berbeda warna. Untuk job yang kritis warna, reservasi satu batch mill saja untuk seluruh job."
+      },
+      {
+        "en": "Corrugated sheets are often ordered to the dieline size per job. Treat them as stock tied to that job from the moment of the purchase order.",
+        "id": "Lembar corrugated sering dipesan sesuai ukuran dieline per job. Perlakukan sebagai stok terikat job itu sejak purchase order."
+      }
+    ],
+    "fields": [
+      {"label": "Weight of one sheet", "en": "Length in m x width in m x gsm gives grams. Example: 0.79 x 1.09 x 300 = 258.3 g per sheet.", "id": "Panjang m x lebar m x gsm menghasilkan gram. Contoh: 0,79 x 1,09 x 300 = 258,3 g per lembar."},
+      {"label": "Sheets to kilograms", "en": "Number of sheets x weight of one sheet. Always from the item specification, never a fixed constant.", "id": "Jumlah lembar x berat satu lembar. Selalu dari spesifikasi item, bukan konstanta tetap."},
+      {"label": "Ream (rim)", "en": "A count of sheets, commonly 500. Agree on one definition and write it in the unit master.", "id": "Hitungan lembar, umumnya 500. Sepakati satu definisi dan tuliskan di master satuan."},
+      {"label": "gsm and caliper", "en": "Weight per square meter and thickness in micrometres. Both decide stiffness and whether a die will fold it correctly.", "id": "Berat per meter persegi dan tebal dalam mikrometer. Keduanya menentukan kekakuan dan apakah die bisa melipatnya dengan benar."},
+      {"label": "Surface", "en": "Coated or uncoated, gloss, matt or silk, and which side is printable. Affects ink, varnish and glue.", "id": "Coated atau uncoated, gloss, matt atau silk, dan sisi mana yang dicetak. Mempengaruhi tinta, varnish dan lem."},
+      {"label": "Certification", "en": "FSC or PEFC status per batch, and whether the paper is food grade.", "id": "Status FSC atau PEFC per batch, dan apakah kertas food grade."},
+      {"label": "Flute profile", "en": "For corrugated board: E, B, C, F or combined, with liner and medium grades. Decides strength and thickness.", "id": "Untuk board corrugated: E, B, C, F atau gabungan, dengan grade liner dan medium. Menentukan kekuatan dan tebal."},
+      {"label": "Paper scrap", "en": "Sold by weight. Record the weight and the sale as non operating income.", "id": "Dijual per berat. Catat beratnya dan penjualannya sebagai pendapatan non operasional."}
+    ]
+  },
+  {
+    "key": "guide-inv-dieline",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Dieline and Stock: Three Roles of One Drawing",
+    "purpose": {
+      "en": "A dieline is not only a drawing. It decides how much material is needed, it creates physical tools that must be stored, and it limits which materials may be used.",
+      "id": "Dieline bukan sekadar gambar. Ia menentukan berapa bahan dibutuhkan, menghasilkan alat fisik yang harus disimpan, dan membatasi bahan apa yang boleh dipakai."
+    },
+    "keywords": "dieline, die cut, pisau cetak, ups, imposition, layout, plano, gripper, bleed, crease, stripping, emboss, hot stamp, klise, plat, umur die, impresi",
+    "steps": [
+      {
+        "en": "Role one, material need: the layout gives the number of boxes per sheet (ups). Sheets needed = quantity divided by ups, rounded up, plus waste and make ready sheets.",
+        "id": "Peran satu, kebutuhan bahan: layout memberi jumlah box per lembar (ups). Lembar dibutuhkan = qty dibagi ups, dibulatkan ke atas, ditambah waste dan lembar make ready."
+      },
+      {
+        "en": "Example: flat size 36 x 26 cm on a 79 x 109 cm sheet gives 9 ups (3 x 3). For 10,000 boxes: 1,112 sheets, with 5 percent waste and 200 make ready about 1,368 sheets, about 353 kg at 300 gsm.",
+        "id": "Contoh: flat 36 x 26 cm pada lembar 79 x 109 cm menghasilkan 9 ups (3 x 3). Untuk 10.000 box: 1.112 lembar, dengan waste 5 persen dan make ready 200 sekitar 1.368 lembar, sekitar 353 kg pada 300 gsm."
+      },
+      {
+        "en": "Stock needs only the outputs of the layout: ups, cut size, sheet size, sheets needed and grain direction. The layout itself is calculated by the imposition engine, not by the warehouse.",
+        "id": "Stok hanya butuh hasil layout: ups, cut size, ukuran lembar, lembar dibutuhkan dan arah serat. Layout sendiri dihitung engine imposition, bukan oleh gudang."
+      },
+      {
+        "en": "Role two, tools as assets: the die, stripping tool, emboss die, hot stamp block and plates are physical items with a location, an owner, a use count and a life limit.",
+        "id": "Peran dua, alat sebagai aset: die, stripping tool, emboss die, blok hot stamp dan plat adalah barang fisik dengan lokasi, pemilik, hitungan pemakaian dan batas umur."
+      },
+      {
+        "en": "Record each use of a die by work order and impression count. This predicts when the die needs sharpening or a new one, and a new die can take longer than the paper.",
+        "id": "Catat tiap pemakaian die per work order dan jumlah impresi. Ini memprediksi kapan die perlu diasah atau dibuat baru, dan die baru bisa lebih lama daripada kertas."
+      },
+      {
+        "en": "Role three, material limits: a die is made for a board thickness and grain. A substitute outside the allowed thickness range or with another grain must be blocked or sent for approval.",
+        "id": "Peran tiga, batas bahan: die dibuat untuk ketebalan dan serat board tertentu. Pengganti di luar rentang tebal atau dengan serat lain harus diblokir atau diminta persetujuan."
+      },
+      {
+        "en": "A different sheet size changes ups and waste. Example: 80 x 120 cm also gives 9 ups but uses 1,067 cm2 of paper per box instead of 957, about 11.5 percent more.",
+        "id": "Ukuran lembar berbeda mengubah ups dan waste. Contoh: 80 x 120 cm juga 9 ups tetapi memakai 1.067 cm2 kertas per box, bukan 957, sekitar 11,5 persen lebih banyak."
+      }
+    ],
+    "fields": [
+      {"label": "Ups", "en": "Number of boxes on one sheet. Best of both orientations, with gaps and gripper margin taken out.", "id": "Jumlah box pada satu lembar. Yang terbaik dari dua orientasi, dengan celah dan margin gripper dikurangkan."},
+      {"label": "Gripper margin and bleed", "en": "Unprintable edge where the machine holds the sheet, and the extra print area outside the cut line, usually 3 mm.", "id": "Tepi tak bisa dicetak tempat mesin memegang lembar, dan area cetak tambahan di luar garis potong, biasanya 3 mm."},
+      {"label": "Die owner", "en": "Customer owned or company owned. Decides whether it may be used for others and whether it is an asset or a charge.", "id": "Milik customer atau milik perusahaan. Menentukan boleh dipakai untuk pihak lain atau tidak dan apakah aset atau biaya."},
+      {"label": "Tooling charge", "en": "Billed to the customer once, or spread over the boxes made with the die.", "id": "Ditagihkan ke customer sekali, atau dibagi ke box yang dibuat dengan die itu."},
+      {"label": "Die life", "en": "Impression count against a limit. Status: good, needs sharpening, damaged.", "id": "Jumlah impresi terhadap batas. Status: baik, perlu diasah, rusak."},
+      {"label": "Plates and artwork", "en": "A plate per colour per job, kept for repeat orders with the artwork version. Scrap aluminium is sold by weight.", "id": "Satu plat per warna per job, disimpan untuk repeat order bersama versi artwork. Aluminium bekas dijual per berat."},
+      {"label": "Retention", "en": "How long tools and plates are kept after the last job. A setting, not a fixed rule.", "id": "Berapa lama alat dan plat disimpan setelah job terakhir. Berupa pengaturan, bukan aturan tetap."},
+      {"label": "Dieline version", "en": "A changed drawing means old finished goods and old tools may no longer match.", "id": "Gambar yang berubah berarti barang jadi dan alat lama mungkin tidak cocok lagi."}
+    ]
+  },
+  {
+    "key": "guide-inv-substitute",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Substitute Materials: Rules, Approval and Effects",
+    "purpose": {
+      "en": "When one material may replace another, how big ERP systems model it, how to compare materials, who must approve, and what the substitution changes in quantity, cost and quality.",
+      "id": "Kapan satu material boleh menggantikan yang lain, bagaimana ERP besar memodelkannya, cara membandingkan material, siapa yang harus menyetujui, dan apa yang berubah pada qty, biaya dan mutu."
+    },
+    "keywords": "substitusi, material pengganti, substitute, alternatif, alternate item, pengganti bahan, upgrade, downgrade, persetujuan customer, bom alternatif, material replace",
+    "steps": [
+      {
+        "en": "Big systems keep substitutes in groups. SAP puts a component and its alternatives in an alternative item group with a usage probability. Odoo lets a BOM component have fallback products with priority.",
+        "id": "Sistem besar menyimpan pengganti dalam grup. SAP menaruh komponen dan alternatifnya dalam grup item alternatif dengan probabilitas pemakaian. Odoo membolehkan komponen BOM punya produk cadangan berprioritas."
+      },
+      {
+        "en": "Do not treat every substitute the same. Six levels: identical, equivalent function, upgrade, downgrade, different sheet size, different process. Each needs its own approval.",
+        "id": "Jangan perlakukan semua pengganti sama. Enam tingkat: identik, setara fungsi, upgrade, downgrade, ukuran lembar berbeda, proses berbeda. Masing-masing butuh persetujuan sendiri."
+      },
+      {
+        "en": "A rule has a direction (A for B only, or both ways), a priority, an approval level, a validity period and conditions. An upgrade usually works one way only.",
+        "id": "Sebuah aturan punya arah (A untuk B saja, atau dua arah), prioritas, tingkat persetujuan, masa berlaku dan syarat. Upgrade biasanya hanya satu arah."
+      },
+      {
+        "en": "Rules apply in layers: a global rule per material group, then a rule per product or dieline, then a rule per customer. The more specific one wins and may allow or forbid.",
+        "id": "Aturan berlapis: aturan global per kelompok material, lalu aturan per produk atau dieline, lalu aturan per customer. Yang lebih spesifik menang dan boleh mengizinkan atau melarang."
+      },
+      {
+        "en": "When a booking is short, show what is available if a permitted substitute is used, before a purchase request is made.",
+        "id": "Saat booking kurang, tampilkan berapa yang tersedia bila pengganti yang diizinkan dipakai, sebelum permintaan pembelian dibuat."
+      },
+      {
+        "en": "A different size or gsm needs the layout and waste calculated again. Never just multiply by a factor.",
+        "id": "Ukuran atau gsm yang berbeda butuh layout dan waste dihitung ulang. Jangan sekadar dikali faktor."
+      },
+      {
+        "en": "The work order keeps the planned item and the actual item side by side, with who approved. Lot tracking then shows exactly which material went into which product.",
+        "id": "Work order menyimpan item rencana dan item aktual berdampingan, beserta siapa yang menyetujui. Pelacakan lot lalu menunjukkan persis material mana masuk ke produk mana."
+      },
+      {
+        "en": "Costing stays frozen at the quoted material. The difference to the actual material is a substitution variance, charged to the company or to the customer who asked.",
+        "id": "Costing tetap beku pada material yang dikutip. Selisih terhadap material aktual adalah varians substitusi, dibebankan ke perusahaan atau ke customer yang memintanya."
+      }
+    ],
+    "fields": [
+      {"label": "Level 1 identical", "en": "Same specification, another brand or mill. Automatic, only the supplier code changes.", "id": "Spesifikasi sama, merek atau mill lain. Otomatis, hanya kode supplier yang berubah."},
+      {"label": "Level 2 equivalent", "en": "Same function within tolerance, for example 300 gsm SBS for FBB. Planner or production approval.", "id": "Fungsi sama dalam toleransi, misalnya 300 gsm SBS untuk FBB. Persetujuan planner atau produksi."},
+      {"label": "Level 3 upgrade", "en": "Better grade or heavier paper. Extra cost is carried by the company.", "id": "Grade lebih baik atau kertas lebih berat. Selisih biaya ditanggung perusahaan."},
+      {"label": "Level 4 downgrade", "en": "Lower grade. Needs customer approval and a new proof.", "id": "Grade lebih rendah. Butuh persetujuan customer dan proof baru."},
+      {"label": "Level 5 other size", "en": "A different plano size. Production approval and a new layout calculation.", "id": "Ukuran plano berbeda. Persetujuan produksi dan hitung ulang layout."},
+      {"label": "Level 6 other process", "en": "For example UV varnish for matt lamination. Customer approval, because the look changes.", "id": "Misalnya varnish UV sebagai pengganti laminasi doff. Persetujuan customer, karena tampilan berubah."},
+      {"label": "Compare: paper", "en": "gsm, caliper, grain, size, finish, brightness, stiffness, moisture, certification, food grade, back colour.", "id": "gsm, caliper, serat, ukuran, finishing, kecerahan, kekakuan, kelembapan, sertifikasi, food grade, warna sisi belakang."},
+      {"label": "Compare: ink and glue", "en": "Ink system (conventional, UV, LED UV), colour tolerance, shelf life; glue type and compatibility with the surface.", "id": "Sistem tinta (konvensional, UV, LED UV), toleransi warna, umur simpan; jenis lem dan kecocokan dengan permukaan."},
+      {"label": "Required conditions", "en": "FSC and food grade status of the substitute must be the same or better. Colour critical jobs need a proof.", "id": "Status FSC dan food grade pengganti harus sama atau lebih baik. Job kritis warna butuh proof."}
+    ]
+  },
+  {
+    "key": "guide-inv-ink-chemicals",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Ink, Plates, Glue and Other Helper Materials",
+    "purpose": {
+      "en": "How to keep and consume the materials that are not paper: inks, varnish, plates, glue, foil, film and consumables, and which issue method fits each.",
+      "id": "Cara menyimpan dan memakai material selain kertas: tinta, varnish, plat, lem, foil, film dan barang habis pakai, serta metode issue yang cocok untuk masing-masing."
+    },
+    "keywords": "tinta, ink, pantone, varnish, coating, plat ctp, lem, glue, foil, film laminasi, blanket, backflush, issue method, bahan penolong, konsumsi tinta, coverage",
+    "steps": [
+      {
+        "en": "Process ink is consumed by coverage: printed area x coverage x film thickness, or kilograms per 1,000 sheets from history. Compare estimate and actual after every job.",
+        "id": "Tinta proses dikonsumsi menurut coverage: area cetak x coverage x tebal film, atau kg per 1.000 lembar dari riwayat. Bandingkan estimasi dan aktual setelah tiap job."
+      },
+      {
+        "en": "A Pantone or spot colour is mixed from a recipe. The mix is a new item with its own batch, date and short shelf life. Keep leftover ink for repeat orders, labelled with job and colour code.",
+        "id": "Warna Pantone atau spot dicampur dari resep. Hasil campuran adalah item baru dengan batch, tanggal dan umur simpan pendek. Simpan sisa tinta untuk repeat order, diberi label job dan kode warna."
+      },
+      {
+        "en": "Varnish, coating and glue have a shelf life and a surface compatibility. Glue may need an area free of varnish.",
+        "id": "Varnish, coating dan lem punya umur simpan dan kecocokan permukaan. Lem mungkin butuh area bebas varnish."
+      },
+      {
+        "en": "Plates are used per job per colour. Used plates are sold as aluminium scrap. Blankets and rollers are wear parts charged per machine hour, not per job.",
+        "id": "Plat dipakai per job per warna. Plat bekas dijual sebagai scrap aluminium. Blanket dan roller adalah suku cadang aus yang dibebankan per jam mesin, bukan per job."
+      },
+      {
+        "en": "Foil is a roll with a width and length; consumption follows the stamping area plus gaps. Laminating film must be at least as wide as the sheet, and the trim is waste.",
+        "id": "Foil adalah roll dengan lebar dan panjang; konsumsi mengikuti area stamping ditambah celah. Film laminasi harus minimal selebar lembar, dan sisa tepi menjadi waste."
+      },
+      {
+        "en": "Give each item an issue method: manual (counted and issued), backflush (deducted when production is reported), or overhead (charged per machine hour). This removes much warehouse paperwork.",
+        "id": "Beri tiap item metode issue: manual (dihitung dan dikeluarkan), backflush (dikurangi saat produksi dilaporkan), atau overhead (dibebankan per jam mesin). Ini menghapus banyak kerja administrasi gudang."
+      }
+    ],
+    "fields": [
+      {"label": "Manual issue", "en": "For valuable or tracked items: paper, special inks, foil. A pick list and a scan.", "id": "Untuk barang bernilai atau dilacak: kertas, tinta khusus, foil. Memakai pick list dan scan."},
+      {"label": "Backflush", "en": "For small items used in a known amount: glue, standard ink. Stock drops automatically when output is reported.", "id": "Untuk barang kecil dengan pemakaian yang diketahui: lem, tinta standar. Stok turun otomatis saat hasil produksi dilaporkan."},
+      {"label": "Overhead", "en": "For fountain solution, alcohol, wash, powder: not worth tracking per job. Charged per machine hour.", "id": "Untuk fountain solution, alkohol, pencuci, powder: tidak layak dilacak per job. Dibebankan per jam mesin."},
+      {"label": "Mix recipe", "en": "Components and proportions of a mixed ink. Output is a new batch with a short life.", "id": "Komponen dan proporsi tinta campuran. Hasilnya batch baru dengan umur singkat."},
+      {"label": "Coverage", "en": "Share of the sheet area covered by ink. Used to estimate ink need.", "id": "Bagian area lembar yang tertutup tinta. Dipakai untuk memperkirakan kebutuhan tinta."},
+      {"label": "Safety data sheet", "en": "Required for hazardous inks and solvents, with storage rules and a hazard label.", "id": "Wajib untuk tinta dan pelarut berbahaya, dengan aturan simpan dan label bahaya."}
+    ]
+  },
+  {
+    "key": "guide-inv-customer-stock",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Finished Goods That Belong to a Customer",
+    "purpose": {
+      "en": "Custom printed packaging fits one customer only. This changes how finished goods, over-run, held goods, customer supplied material and dead stock are handled.",
+      "id": "Kemasan cetak custom hanya cocok untuk satu customer. Ini mengubah cara menangani barang jadi, over-run, barang tertahan, material titipan customer dan dead stock."
+    },
+    "keywords": "fg customer, over-run, under-run, bill and hold, titipan customer, repeat order, call off, blanket order, stok customer, artwork revisi, retensi, barang jadi custom",
+    "steps": [
+      {
+        "en": "Finished goods are tied to a customer order. The balance can be kept per order, and the goods cannot be delivered to anyone else.",
+        "id": "Barang jadi terikat pada customer order. Saldo bisa disimpan per order, dan barang tidak bisa dikirim ke pihak lain."
+      },
+      {
+        "en": "Over-run and under-run are a tolerance, for example plus or minus 10 percent. Extra boxes become customer stock; a shortfall is billed as delivered or made up.",
+        "id": "Over-run dan under-run adalah toleransi, misalnya plus minus 10 persen. Box kelebihan menjadi stok customer; kekurangan ditagih sesuai yang terkirim atau dilengkapi."
+      },
+      {
+        "en": "A call-off order produces a large quantity and delivers part by part. The warehouse holds the rest, and a storage charge may apply.",
+        "id": "Order call-off diproduksi dalam jumlah besar dan dikirim bertahap. Gudang menahan sisanya, dan biaya simpan bisa dikenakan."
+      },
+      {
+        "en": "Bill and hold means invoiced but not yet delivered. The goods are still in your warehouse but belong to the customer, so they are not your Available stock.",
+        "id": "Bill and hold berarti sudah ditagih tetapi belum dikirim. Barang masih di gudang Anda tetapi milik customer, jadi bukan stok Available Anda."
+      },
+      {
+        "en": "Material supplied by the customer is not your asset. Keep it as stock with the customer as owner and do not value it in your books.",
+        "id": "Material titipan customer bukan aset Anda. Simpan sebagai stok dengan customer sebagai pemilik dan jangan dinilai di pembukuan Anda."
+      },
+      {
+        "en": "A changed artwork or dieline makes old finished goods obsolete. Decide: use them up, destroy them, or bill the customer under the contract.",
+        "id": "Artwork atau dieline yang berubah membuat barang jadi lama usang. Putuskan: dihabiskan, dimusnahkan, atau ditagihkan ke customer sesuai kontrak."
+      },
+      {
+        "en": "Dead finished goods are a contract question, not only a stock question. Set a retention period after which the customer is asked to decide.",
+        "id": "Barang jadi dead adalah soal kontrak, bukan hanya soal stok. Tetapkan masa retensi, lalu customer diminta memutuskan."
+      }
+    ],
+    "fields": [
+      {"label": "Over-run tolerance", "en": "A percent per customer order. Limits how much more than ordered may be produced and delivered.", "id": "Persen per customer order. Membatasi berapa banyak lebih dari pesanan yang boleh diproduksi dan dikirim."},
+      {"label": "Storage charge", "en": "Fee for holding finished goods beyond an agreed number of days.", "id": "Biaya menyimpan barang jadi melewati jumlah hari yang disepakati."},
+      {"label": "Owner of stock", "en": "Company, customer or supplier. Decides valuation and who may use it.", "id": "Perusahaan, customer atau supplier. Menentukan penilaian dan siapa yang boleh memakainya."},
+      {"label": "Repeat order package", "en": "Dieline, plates, artwork, colour recipe and approved proof kept together and called up for the next order.", "id": "Dieline, plat, artwork, resep warna dan proof yang disetujui disimpan bersama dan dipanggil untuk order berikutnya."},
+      {"label": "Retention period", "en": "Days finished goods may stay before the customer must decide. A setting.", "id": "Hari barang jadi boleh disimpan sebelum customer harus memutuskan. Pengaturan."},
+      {"label": "Disposition", "en": "Bill to customer, destroy with approval, or write off. Needs a document and a journal.", "id": "Tagihkan ke customer, musnahkan dengan persetujuan, atau hapus buku. Butuh dokumen dan jurnal."}
+    ]
+  },
+  {
+    "key": "guide-inv-yield-waste",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Yield and Waste Across the Process",
+    "purpose": {
+      "en": "Why one waste percentage is not enough, how yield multiplies across processes, and where material cost leaks away. Standards belong to the machine and process.",
+      "id": "Mengapa satu persen waste tidak cukup, bagaimana yield berlipat di tiap proses, dan di mana biaya material bocor. Standar milik mesin dan proses."
+    },
+    "keywords": "yield, waste, spoilage, make ready, setting mesin, reject, varians bahan, konsumsi aktual, bom, efisiensi, scrap produksi, susut",
+    "steps": [
+      {
+        "en": "Waste happens at every step: cutting, printing, coating, laminating, die cutting, stripping, gluing. Record the good output of each step so yield can be seen per process.",
+        "id": "Waste terjadi di setiap tahap: potong, cetak, coating, laminasi, die cut, stripping, lem. Catat hasil baik tiap tahap agar yield terlihat per proses."
+      },
+      {
+        "en": "Make ready sheets are used to set up the machine and do not depend on quantity. Small jobs therefore carry a bigger share of waste.",
+        "id": "Lembar make ready dipakai untuk setting mesin dan tidak bergantung pada qty. Job kecil karenanya menanggung porsi waste yang lebih besar."
+      },
+      {
+        "en": "Keep a standard waste per machine and process in the master, and compare it with the actual from production reports.",
+        "id": "Simpan standar waste per mesin dan proses di master, lalu bandingkan dengan aktual dari laporan produksi."
+      },
+      {
+        "en": "Compare actual consumption with the requirement of each work order. The difference is the material variance and tells whether the standard or the work is wrong.",
+        "id": "Bandingkan konsumsi aktual dengan kebutuhan tiap work order. Selisihnya adalah varians bahan dan menunjukkan apakah standar atau pekerjaannya yang keliru."
+      },
+      {
+        "en": "Inventory supplies actual material prices and quantities. It does not overwrite the frozen costing of the quotation.",
+        "id": "Inventory menyediakan harga dan qty material aktual. Ia tidak menimpa costing beku pada quotation."
+      }
+    ],
+    "fields": [
+      {"label": "Waste percent of a process", "en": "(Input minus good output) divided by input, times 100.", "id": "(Masuk dikurangi hasil baik) dibagi masuk, dikali 100."},
+      {"label": "Cumulative yield", "en": "Product of the yields of all steps. Example: 0.99 x 0.96 x 0.98 x 0.97 x 0.99 is about 0.894, or 89.4 percent.", "id": "Hasil kali yield semua tahap. Contoh: 0,99 x 0,96 x 0,98 x 0,97 x 0,99 sekitar 0,894 atau 89,4 persen."},
+      {"label": "Start quantity", "en": "Finished quantity divided by cumulative yield. Replaces one flat waste percent.", "id": "Qty jadi dibagi yield kumulatif. Menggantikan satu persen waste tunggal."},
+      {"label": "Material variance", "en": "(Actual issue minus required quantity) times price.", "id": "(Issue aktual dikurangi qty kebutuhan) dikali harga."},
+      {"label": "Substitution variance", "en": "Price difference caused by a substitute material, listed apart from usage variance.", "id": "Selisih harga akibat material pengganti, dicatat terpisah dari varians pemakaian."},
+      {"label": "Die amortisation", "en": "Die cost divided by the expected number of boxes made with it.", "id": "Biaya die dibagi perkiraan jumlah box yang dibuat dengan die itu."}
+    ]
+  },
+  {
+    "key": "guide-inv-quality-trace",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Incoming Quality, Traceability and Certification",
+    "purpose": {
+      "en": "What to check when material arrives, how to trace material both ways, and how FSC, PEFC and food grade rules limit choosing and substituting batches.",
+      "id": "Apa yang diperiksa saat material datang, cara menelusuri material dua arah, dan bagaimana aturan FSC, PEFC dan food grade membatasi pemilihan dan penggantian batch."
+    },
+    "keywords": "qc penerimaan, incoming inspection, traceability, telusur, fsc, pefc, food grade, coa, quarantine, recall, sertifikasi, migrasi bahan, mutu",
+    "steps": [
+      {
+        "en": "Paper: check gsm by weighing a sample, caliper with a micrometer, moisture, size, grain direction, pallet condition and the certification papers of the supplier.",
+        "id": "Kertas: cek gsm dengan menimbang sampel, caliper dengan mikrometer, kelembapan, ukuran, arah serat, kondisi pallet dan surat sertifikasi supplier."
+      },
+      {
+        "en": "Ink, film and glue: check the certificate of analysis, batch, shelf life and a colour draw down against the standard.",
+        "id": "Tinta, film dan lem: cek sertifikat analisis, batch, umur simpan dan uji warna terhadap standar."
+      },
+      {
+        "en": "Received stock goes to Quarantine. Only after release does it become Available. Rejected stock goes back to the supplier or to scrap.",
+        "id": "Stok yang diterima masuk Quarantine. Baru setelah dirilis menjadi Available. Stok yang ditolak dikembalikan ke supplier atau menjadi scrap."
+      },
+      {
+        "en": "Trace backward: for a finished batch, which material batches went in. Trace forward: for a material batch, which jobs and customers received goods made from it.",
+        "id": "Telusur mundur: untuk batch barang jadi, batch material mana yang masuk. Telusur maju: untuk batch material, job dan customer mana yang menerima barang dari batch itu."
+      },
+      {
+        "en": "A job with an FSC claim may only use FSC certified batches. The same limit applies to substitutes. Food grade jobs likewise need food grade paper, ink and glue.",
+        "id": "Job dengan klaim FSC hanya boleh memakai batch bersertifikat FSC. Batasan sama berlaku untuk pengganti. Job food grade juga butuh kertas, tinta dan lem food grade."
+      },
+      {
+        "en": "Be able to answer a complaint within minutes: which paper and ink batch, and which other jobs used the same batches.",
+        "id": "Mampu menjawab komplain dalam hitungan menit: batch kertas dan tinta mana, dan job lain mana yang memakai batch yang sama."
+      }
+    ],
+    "fields": [
+      {"label": "Certificate of analysis", "en": "Supplier document with the test results of a batch. Kept with the batch.", "id": "Dokumen supplier berisi hasil uji sebuah batch. Disimpan bersama batch."},
+      {"label": "Chain of custody", "en": "Proof that certified material stays separate from uncertified material from receipt to finished goods.", "id": "Bukti bahwa material bersertifikat tetap terpisah dari yang tidak bersertifikat sejak terima sampai barang jadi."},
+      {"label": "QC status", "en": "Quarantine, Released or Rejected, per batch. Only Released can be picked.", "id": "Quarantine, Released atau Rejected, per batch. Hanya Released yang bisa di-pick."},
+      {"label": "Colour tolerance", "en": "Allowed colour difference of an ink against the standard, measured as delta E.", "id": "Selisih warna tinta yang diizinkan terhadap standar, diukur sebagai delta E."},
+      {"label": "Recall", "en": "Finding and stopping all goods made from a faulty batch, using forward tracing.", "id": "Menemukan dan menghentikan semua barang yang dibuat dari batch bermasalah, memakai telusur maju."}
+    ]
+  },
+  {
+    "key": "guide-inv-booking",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Booking Material From a Customer Order",
+    "purpose": {
+      "en": "How material is reserved for a customer order, from a soft proposal to a hard lock, how the sources are pegged, and the events a booking must survive.",
+      "id": "Bagaimana material dipesan untuk customer order, dari usulan lunak sampai kunci keras, bagaimana sumbernya ditautkan, dan kejadian yang harus bisa dilalui sebuah booking."
+    },
+    "keywords": "booking, reservasi, material booking, customer order, co, pegging, soft hard, ppic, shortage, kekurangan bahan, available, atp, pick list, hot job",
+    "steps": [
+      {
+        "en": "Four levels: soft (a proposal that locks nothing), hard (stock locked for one document), allocated to pick (bin and batch chosen) and issued (the reservation becomes consumption).",
+        "id": "Empat tingkat: soft (usulan yang tidak mengunci apa pun), hard (stok dikunci untuk satu dokumen), dialokasikan ke pick (bin dan batch dipilih) dan issued (reservasi menjadi konsumsi)."
+      },
+      {
+        "en": "The engine proposes a booking from the customer order: finished goods of the same product first, then every material from the layout, the bill of materials and the usage standards.",
+        "id": "Engine mengusulkan booking dari customer order: barang jadi produk yang sama lebih dulu, lalu semua material dari layout, BOM dan standar pemakaian."
+      },
+      {
+        "en": "Each need is covered by sources in order: Available stock, a purchase order on time, a purchase request, a late purchase order, and what is left is Short.",
+        "id": "Tiap kebutuhan ditutup sumber berurutan: stok Available, PO tepat waktu, purchase request, PO terlambat, dan sisanya Short."
+      },
+      {
+        "en": "Need date is the earlier of the due date and the order date plus three working days. The latest purchase date is the need date minus lead time and a buffer for QC and paper rest.",
+        "id": "Tanggal butuh adalah yang lebih awal dari due date dan tanggal order ditambah tiga hari kerja. Tanggal beli paling lambat adalah tanggal butuh dikurangi lead time dan buffer QC serta istirahat kertas."
+      },
+      {
+        "en": "PPIC confirms the proposal. Confirm locks the stock per location and a Confirmed booking is frozen. Back to Draft is available when the order changed.",
+        "id": "PPIC mengonfirmasi usulan. Confirm mengunci stok per lokasi dan booking Confirmed dibekukan. Back to Draft tersedia bila order berubah."
+      },
+      {
+        "en": "Create PR groups the shortages per proposed supplier, rounds to the purchase pack, and fills the order line and the need date. Round the total of several orders, not each order.",
+        "id": "Create PR mengelompokkan kekurangan per supplier usulan, membulatkan ke kemasan beli, dan mengisi baris order serta tanggal butuh. Bulatkan total beberapa order, bukan tiap order."
+      },
+      {
+        "en": "A work order inherits the booking, a pick list chooses bin and batch, and Stock Out fills the issued quantity. Leftover is released when the work order ends.",
+        "id": "Work order mewarisi booking, pick list memilih bin dan batch, dan Stock Out mengisi qty issued. Sisa dilepas saat work order selesai."
+      },
+      {
+        "en": "A rule of thumb for competing orders: confirmed first, then draft, then forecast, then the earliest need date. A rush job may take over only with approval and a log.",
+        "id": "Aturan umum bila order berebut: confirmed dulu, lalu draft, lalu forecast, lalu tanggal butuh terawal. Job mendesak boleh mengambil alih hanya dengan persetujuan dan log."
+      }
+    ],
+    "fields": [
+      {"label": "BOOKED", "en": "Covered by stock that is locked for this order.", "id": "Tertutup oleh stok yang dikunci untuk order ini."},
+      {"label": "PEGGED_PO", "en": "Covered by a purchase order that arrives in time. Becomes LATE_PO if the arrival date moves past the need date.", "id": "Tertutup PO yang tiba tepat waktu. Menjadi LATE_PO bila tanggal tiba bergeser melewati tanggal butuh."},
+      {"label": "PEGGED_PR", "en": "Covered by an open purchase request that is not yet an order.", "id": "Tertutup purchase request terbuka yang belum menjadi order."},
+      {"label": "SHORT", "en": "Not covered by anything. Triggers the shortage alert to management, PPIC, warehouse and finance.", "id": "Tidak tertutup apa pun. Memicu peringatan kekurangan ke manajemen, PPIC, gudang dan keuangan."},
+      {"label": "NEED_ITEM", "en": "The bill of materials only names a specification. PPIC picks the item, kept in the booking and not in the product master.", "id": "BOM hanya menyebut spesifikasi. PPIC memilih item, disimpan di booking dan bukan di master produk."},
+      {"label": "Commitment value", "en": "(Booked quantity minus issued quantity) times average price. Reported, but no journal is made for a booking.", "id": "(Qty booking dikurangi qty issued) dikali harga rata-rata. Dilaporkan, tetapi booking tidak membuat jurnal."},
+      {"label": "Booking aging", "en": "Days since Confirm while no work order exists. Used to spot stale bookings.", "id": "Hari sejak Confirm selagi belum ada work order. Dipakai untuk menemukan booking basi."},
+      {"label": "Requirement of sheets", "en": "Quantity divided by ups, rounded up, times (1 + waste percent), plus make ready sheets of each process.", "id": "Qty dibagi ups, dibulatkan ke atas, dikali (1 + persen waste), ditambah lembar make ready tiap proses."}
+    ]
+  },
+  {
+    "key": "guide-inv-booking-decisions",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Booking: Seven Decisions With Reference Answers",
+    "purpose": {
+      "en": "Seven open questions about booking, each with how SAP, Oracle NetSuite, Odoo, Dynamics 365 and ERPNext handle it, and a recommended answer. Recommendations are proposals for the user to confirm.",
+      "id": "Tujuh pertanyaan terbuka tentang booking, masing-masing dengan cara SAP, Oracle NetSuite, Odoo, Dynamics 365 dan ERPNext menanganinya, serta jawaban yang disarankan. Saran adalah usulan untuk dikonfirmasi user."
+    },
+    "keywords": "keputusan booking, over-run, booking basi, hot job, substitusi, die tidak tersedia, cancel setelah issue, delta, rekomendasi, referensi erp, sap, odoo, netsuite",
+    "steps": [
+      {
+        "en": "Over-run. SAP accepts a goods receipt only up to order quantity plus an overdelivery tolerance, and scrap raises the material need in planning. Recommend: booking includes waste but no hidden over-run; the tolerance is a limit on receipt.",
+        "id": "Over-run. SAP menerima penerimaan barang hanya sampai qty order ditambah toleransi overdelivery, dan scrap menaikkan kebutuhan material di planning. Saran: booking memuat waste tetapi tanpa over-run tersembunyi; toleransi adalah batas penerimaan."
+      },
+      {
+        "en": "Stale booking. SAP reservation clean-up marks items whose requirement date is older than a base date minus a number of days (standard 30). Odoo can reserve only a set number of days before the date. Recommend: warn first, release after a set limit.",
+        "id": "Booking basi. Pembersihan reservasi SAP menandai item yang tanggal butuhnya lebih tua dari tanggal dasar dikurangi sekian hari (standar 30). Odoo mereservasi hanya sekian hari sebelum tanggal. Saran: peringatan dulu, lepas setelah batas tertentu."
+      },
+      {
+        "en": "Order changed after Confirm. In SAP a changed quantity re-runs the availability check and the confirmed quantity follows stock. Recommend: automatic difference; release the surplus at once and try to book the extra, keep the locked part.",
+        "id": "Order berubah setelah Confirm. Di SAP perubahan qty menjalankan ulang cek ketersediaan dan qty terkonfirmasi mengikuti stok. Saran: selisih otomatis; lepas kelebihan segera dan coba booking tambahannya, bagian terkunci tetap."
+      },
+      {
+        "en": "Hot job. SAP backorder processing sorts by customer priority, rush priority, creation date or availability date. NetSuite commits oldest orders first and has a manual Reallocate Items page. Recommend rules plus a restricted takeover with a log.",
+        "id": "Hot job. Backorder processing SAP mengurutkan menurut prioritas customer, prioritas rush, tanggal dibuat atau ketersediaan. NetSuite mengikat order tertua dulu, dengan halaman Reallocate Items manual. Saran: aturan plus ambil alih terbatas, ber-log."
+      },
+      {
+        "en": "Notice to the order that lost stock. The sources read do not describe one, so this is our own addition. Recommend a popup notice to PPIC and the order owner, saying who took the stock and why.",
+        "id": "Pemberitahuan ke order yang kehilangan stok. Sumber yang dibaca tidak menjelaskannya, jadi ini tambahan kita sendiri. Saran: pemberitahuan popup ke PPIC dan pemilik order, berisi siapa yang mengambil stok dan alasannya."
+      },
+      {
+        "en": "Substitute when Short. SAP planning can take alternative item groups into account by usage probability; Odoo substitutes a fallback component by priority and lets users add a substitute on an order. Recommend: system proposes in order, PPIC confirms.",
+        "id": "Pengganti saat Short. Planning SAP bisa memperhitungkan grup item alternatif menurut probabilitas pemakaian; Odoo memakai komponen cadangan berprioritas dan membolehkan menambah pengganti di order. Saran: sistem mengusulkan berurutan, PPIC mengonfirmasi."
+      },
+      {
+        "en": "Die not available. SAP checks production tools for an order and posts a tool shortage status when one is missing. Recommend: a warning when booking, and no release of the work order without the die or an override with a reason.",
+        "id": "Die tidak tersedia. SAP memeriksa alat produksi untuk sebuah order dan mencatat status kekurangan alat bila ada yang hilang. Saran: peringatan saat booking, dan work order tidak dirilis tanpa die atau tanpa override beralasan."
+      },
+      {
+        "en": "Order cancelled after issue. SAP reverses issued components with a reversal that refers to the order, so reservations update. Recommend: unused material returns to free stock; printed or consumed material is written off or billed by contract.",
+        "id": "Order dibatalkan setelah issue. SAP membalik komponen yang sudah keluar lewat pembalikan yang merujuk ke order, sehingga reservasi ikut diperbarui. Saran: material tak terpakai kembali ke stok bebas; yang tercetak atau terpakai dihapus buku atau ditagih."
+      }
+    ],
+    "fields": [
+      {"label": "Reference: SAP", "en": "Requirements, availability check with confirmed schedule lines, backorder processing, alternative item groups, tool availability, reservation clean-up, goods issue reversal.", "id": "Requirement, cek ketersediaan dengan schedule line terkonfirmasi, backorder processing, grup item alternatif, ketersediaan alat, pembersihan reservasi, pembalikan goods issue."},
+      {"label": "Reference: NetSuite", "en": "Commitment of inventory to sales orders, oldest first, and a manual Reallocate Items page. No notice is documented.", "id": "Pengikatan inventory ke sales order, tertua dulu, dan halaman Reallocate Items manual. Tidak ada pemberitahuan yang didokumentasikan."},
+      {"label": "Reference: Odoo", "en": "Reservation methods: at confirmation, manual, or before the scheduled date. Fallback components with priority. Substitute can be added on an order.", "id": "Metode reservasi: saat konfirmasi, manual, atau sebelum tanggal terjadwal. Komponen cadangan berprioritas. Pengganti bisa ditambah di order."},
+      {"label": "Reference: Dynamics 365", "en": "Reservation hierarchy decides the order of dimensions reserved, with earliest expiry first for batches. Priority based planning ranks orders by type.", "id": "Hierarki reservasi menentukan urutan dimensi yang direservasi, dengan kedaluwarsa terdekat dulu untuk batch. Priority based planning mengurutkan order menurut jenis."},
+      {"label": "Reference: ERPNext", "en": "Stock reservation entries per sales order item, unreserved from the order or by cancelling the entries.", "id": "Stock reservation entry per item sales order, dilepas dari order atau dengan membatalkan entry."},
+      {"label": "Limits of these answers", "en": "From documentation and community pages found by search; not every detail was verified in the product. Confirm each recommendation with the user.", "id": "Dari dokumentasi dan halaman komunitas hasil pencarian; tidak semua detail diverifikasi di produknya. Konfirmasikan tiap saran dengan user."}
+    ]
+  },
+  {
+    "key": "guide-inv-missed-checklist",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "What Is Most Often Missed: The Checklist",
+    "purpose": {
+      "en": "A checklist of the points that are most often missing in inventory and warehouse systems for printing and packaging, in order of impact. Tick each one against your own design.",
+      "id": "Daftar periksa hal-hal yang paling sering terlewat di sistem inventory dan gudang untuk percetakan dan packaging, berurut menurut dampak. Cocokkan satu per satu dengan desain Anda."
+    },
+    "keywords": "checklist inventory, yang terlewat, daftar periksa, gap analysis, audit desain, prioritas, kelengkapan inventory, rekomendasi",
+    "steps": [
+      {
+        "en": "High: append only ledger; posting date and period lock; staged quantities; reservations; automatic journals with daily reconciliation to the general ledger.",
+        "id": "Tinggi: ledger hanya tambah; tanggal posting dan kunci periode; qty bertingkat; reservasi; jurnal otomatis dengan rekonsiliasi harian ke buku besar."
+      },
+      {
+        "en": "High: GR/IR clearing, landed cost, no negative stock rule, repost of backdated entries, stock count with freeze and approval, separation of duties.",
+        "id": "Tinggi: GR/IR penampung, landed cost, aturan tanpa stok minus, repost transaksi bertanggal mundur, stock opname dengan freeze dan persetujuan, pemisahan tugas."
+      },
+      {
+        "en": "High: two step transfer through In Transit with a rule for differences, and virtual locations so every movement has a from and a to.",
+        "id": "Tinggi: transfer dua langkah lewat In Transit dengan aturan selisih, dan lokasi virtual agar setiap pergerakan punya asal dan tujuan."
+      },
+      {
+        "en": "Printing: grain direction; dual unit for paper; sheets turn into pieces at die cut; die, plate and block as located assets with life; substitution with approval and recalculation.",
+        "id": "Percetakan: arah serat; dual unit untuk kertas; lembar menjadi pcs saat die cut; die, plat dan blok sebagai aset berlokasi dengan umur; substitusi dengan persetujuan dan hitung ulang."
+      },
+      {
+        "en": "Printing: customer owned finished goods, over-run, bill and hold, customer supplied material, partial rolls, offcut policy, mixed ink as an item, paper rest time.",
+        "id": "Percetakan: barang jadi milik customer, over-run, bill and hold, material titipan customer, roll sisa, kebijakan offcut, tinta campuran sebagai item, waktu istirahat kertas."
+      },
+      {
+        "en": "Medium: batch and expiry with FEFO, forward and backward tracing, QC quarantine, reorder point and safety stock, ABC and aging reports, returns with reference to the source document.",
+        "id": "Menengah: batch dan kedaluwarsa dengan FEFO, telusur maju dan mundur, karantina QC, reorder point dan stok pengaman, laporan ABC dan aging, retur dengan referensi dokumen sumber."
+      },
+      {
+        "en": "Medium: subcontract stock at the vendor, consignment, alternate items, several barcodes per item, destruction reports, multi currency purchases, receipt tolerance.",
+        "id": "Menengah: stok subkontrak di vendor, konsinyasi, item alternatif, beberapa barcode per item, berita acara pemusnahan, pembelian multi mata uang, toleransi penerimaan."
+      },
+      {
+        "en": "Booking: delta on order change, stale booking rule, rush takeover with log and notice, one Available source for finished goods, die need, lock against two people confirming at once.",
+        "id": "Booking: selisih saat order berubah, aturan booking basi, pengambilalihan mendesak dengan log dan pemberitahuan, satu sumber Available untuk barang jadi, kebutuhan die, kunci terhadap dua orang yang mengonfirmasi bersamaan."
+      },
+      {
+        "en": "Later: wave picking, slotting, cross docking, kitting, RFID, forecasting, interactive warehouse map and warehouse KPI dashboards.",
+        "id": "Nanti: wave picking, slotting, cross docking, kitting, RFID, forecasting, peta gudang interaktif dan dashboard KPI gudang."
+      }
+    ],
+    "fields": [
+      {"label": "Reports to have", "en": "Stock card, balance as of a date, valuation, aging, dead stock, expiry, ABC, reorder, movement analysis, count variance, in transit, reservation, GR/IR aging, traceability.", "id": "Kartu stok, saldo per tanggal, valuasi, aging, dead stock, kedaluwarsa, ABC, reorder, analisis pergerakan, selisih opname, in transit, reservasi, aging GR/IR, telusur."},
+      {"label": "Warehouse KPIs", "en": "Space use, lines picked per hour, pick accuracy, dock to stock time, inventory accuracy, fill rate, shrinkage.", "id": "Pemakaian ruang, baris di-pick per jam, akurasi pick, waktu dari dok ke stok, akurasi inventory, fill rate, susut."},
+      {"label": "Every value is an input", "en": "Every limit and percentage in this guide must be a setting that an authorised user can change on a screen.", "id": "Setiap batas dan persentase di panduan ini harus berupa pengaturan yang bisa diubah user berwenang lewat layar."}
+    ]
+  },
+  {
+    "key": "guide-inv-open-decisions",
+    "type": "GUIDE",
+    "module": "INV",
+    "title": "Open Decisions for Inventory, With Recommended Answers",
+    "purpose": {
+      "en": "The decisions that shape the inventory design, each with a recommended answer and the reason. Marked as proposals until the user confirms them.",
+      "id": "Keputusan yang membentuk desain inventory, masing-masing dengan jawaban yang disarankan dan alasannya. Berlabel usulan sampai user mengonfirmasi."
+    },
+    "keywords": "keputusan inventory, rekomendasi, valuasi, stok minus, offcut, die owner, substitusi, fsc, persetujuan customer, waste standar",
+    "steps": [
+      {
+        "en": "Valuation: weighted average, perpetual. It is accepted by Indonesian standards, supported by the big systems, and simple to explain. Add FIFO layers only if auditors or customers ask for them.",
+        "id": "Valuasi: rata-rata tertimbang, perpetual. Diterima standar Indonesia, didukung sistem besar, dan mudah dijelaskan. Tambah lapisan FIFO hanya bila auditor atau customer memintanya."
+      },
+      {
+        "en": "Negative stock: not allowed by default. An issue before the receipt is recorded corrupts the average. Allow it only per location with a correction rule.",
+        "id": "Stok minus: tidak diizinkan sebagai default. Pengeluaran sebelum penerimaan dicatat merusak rata-rata. Izinkan hanya per lokasi dengan aturan koreksi."
+      },
+      {
+        "en": "Substitution rules: all three layers, customer over product over global, so one customer can refuse what the global rule allows.",
+        "id": "Aturan substitusi: ketiga lapisan, customer di atas produk di atas global, supaya satu customer bisa menolak yang diizinkan aturan global."
+      },
+      {
+        "en": "Customer approval: record it in the system with who, when and an attachment, for downgrade and process changes.",
+        "id": "Persetujuan customer: catat di sistem dengan siapa, kapan dan lampiran, untuk downgrade dan perubahan proses."
+      },
+      {
+        "en": "Die ownership: record it per die. Charge customer owned dies as tooling, and company owned dies as an asset spread over the boxes made.",
+        "id": "Kepemilikan die: catat per die. Die milik customer ditagih sebagai tooling, die milik perusahaan sebagai aset yang dibagi ke box yang dibuat."
+      },
+      {
+        "en": "Offcuts and partial rolls: track them above a minimum size and weight, in a dedicated rack, and scrap the rest by weight.",
+        "id": "Offcut dan roll sisa: lacak di atas ukuran dan berat minimum, di rak khusus, dan scrap sisanya per berat."
+      },
+      {
+        "en": "Waste standard: one value per machine and process in the master, compared with actual from production reports, instead of one percent per product.",
+        "id": "Standar waste: satu nilai per mesin dan proses di master, dibandingkan dengan aktual dari laporan produksi, bukan satu persen per produk."
+      },
+      {
+        "en": "Leftover customer finished goods: a retention period as a setting, then the customer is asked to decide, with a default of bill or destroy by contract.",
+        "id": "Sisa barang jadi customer: masa retensi sebagai pengaturan, lalu customer diminta memutuskan, dengan default tagih atau musnahkan sesuai kontrak."
+      },
+      {
+        "en": "FSC and food grade: include the batch attribute from the start. Adding certification fields later means touching every stock record.",
+        "id": "FSC dan food grade: masukkan atribut batch sejak awal. Menambah kolom sertifikasi belakangan berarti menyentuh setiap catatan stok."
+      }
+    ],
+    "fields": [
+      {"label": "Status of these answers", "en": "Proposals based on common practice of large ERP systems and the rules of this factory. Not final until the user confirms each one.", "id": "Usulan berdasarkan praktik umum ERP besar dan aturan pabrik ini. Belum final sampai user mengonfirmasi tiap butirnya."},
+      {"label": "Accounting standard", "en": "LIFO is not allowed under PSAK 14 and IAS 2. Average and FIFO are.", "id": "LIFO tidak diperbolehkan oleh PSAK 14 dan IAS 2. Rata-rata dan FIFO diperbolehkan."},
+      {"label": "Settings", "en": "Every threshold chosen above is stored as a setting the user can edit, not as a fixed value in the code.", "id": "Setiap ambang yang dipilih di atas disimpan sebagai pengaturan yang bisa diubah user, bukan nilai tetap di kode."}
+    ]
+  }
+]
