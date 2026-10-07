@@ -3515,19 +3515,18 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-track__head{align-items:center}.dl-track__head .dl-iconbtn{margin-left:auto}
 .dl-track--confirmed .dl-track__truck circle{animation:dl-track-ready 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 @keyframes dl-track-ready{50%{transform:scale(1.18)}}
-@media (prefers-reduced-motion:reduce){.dl-track--confirmed .dl-track__truck circle{animation:none}}/* Feed (umpan blog / berita) */
-.dl-feed{display:flex;flex-direction:column;gap:16px}
-.dl-feed__post{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);padding:16px 20px}
-.dl-feed__post header{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.dl-feed__post h3{margin:0;font-size:1.15em;color:var(--dl-ink-strong)}
-.dl-feed__meta{display:block;margin:2px 0 8px;opacity:.7}
-.dl-feed__body.dl-prose{max-width:none;margin:0;padding:6px 0}
+@media (prefers-reduced-motion:reduce){.dl-track--confirmed .dl-track__truck circle{animation:none}}/* Feed (umpan blog / berita): 3 kolom, kartu bisa dibuka */
+.dl-feed{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:1100px){.dl-feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:700px){.dl-feed{grid-template-columns:1fr}}
+.dl-feed__post{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.dl-feed__post header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.dl-feed__post h3{margin:0;font-size:1.05em;color:var(--dl-ink-strong)}
+.dl-feed__meta{display:block;opacity:.7}
+.dl-feed__body.dl-prose{max-width:none;margin:0;padding:6px 0;font-size:calc(12.5px * var(--dl-font-scale));max-height:12em;overflow:hidden;position:relative;overflow-wrap:anywhere}
+.dl-feed__body.dl-prose h1,.dl-feed__body.dl-prose h2{font-size:1.05em;margin:.8em 0 .3em}
+.dl-feed__body table{display:block;overflow-x:auto}
+.dl-feed__post:not(.is-open) .dl-feed__body::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3em;background:linear-gradient(transparent,var(--dl-surface))}
+.dl-feed__post.is-open .dl-feed__body.dl-prose{max-height:none}
+.dl-feed__more{align-self:flex-start}
 .dl-feed__empty{opacity:.7}
-.dl-track__truck .dl-track__x{display:none;fill:none;stroke:var(--dl-surface);stroke-width:3;stroke-linecap:round}
-.dl-track--cancelled .dl-track__road{stroke:var(--dl-border);stroke-dasharray:3 11}
-.dl-track--cancelled .dl-track__trail,.dl-track--cancelled .dl-track__flow{display:none}
-.dl-track--cancelled .dl-track__node--to{opacity:.45}
-.dl-track--cancelled .dl-track__truck circle{fill:var(--dl-danger)}
-.dl-track--cancelled .dl-track__truck .dl-track__body{display:none}.dl-track--cancelled .dl-track__x{display:block}
-.dl-track--cancelled .dl-track__steps{opacity:.55}
-.dl-track__cancel{align-self:flex-start;display:inline-flex;gap:8px;align-items:center;padding:6px 14px;border-radius:999px;background:color-mix(in srgb,var(--dl-danger) 12%,var(--dl-surface));color:var(--dl-danger);font-weight:600;font-size:calc(13px * var(--dl-font-scale))}
