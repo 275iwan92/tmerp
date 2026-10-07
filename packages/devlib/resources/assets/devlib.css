@@ -3429,3 +3429,26 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-bp__hud{position:absolute;left:8px;bottom:8px;font:12px monospace;color:var(--bp-cross);background:rgba(18,24,36,.8);padding:3px 8px;border-radius:4px}
 .dl-bp__tools{position:absolute;right:8px;top:8px;display:flex;gap:4px}
 .dl-bp__tools button{font:12px monospace;color:var(--bp-line);background:rgba(18,24,36,.8);border:1px solid var(--bp-major);border-radius:4px;padding:2px 8px;cursor:pointer}
+
+/* Delivery Track: rute skematis gudang -> pelanggan, truk mengikuti tahap Delivery Order */
+.dl-track{display:flex;flex-direction:column;gap:10px;max-width:640px}
+.dl-track__head{display:flex;gap:10px;align-items:baseline}.dl-track__head span{color:var(--dl-muted);font-size:calc(12px * var(--dl-font-scale))}
+.dl-track svg{width:100%;background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:12px}
+.dl-track__road{fill:none;stroke:var(--dl-chip);stroke-width:12;stroke-linecap:round}
+.dl-track__trail{fill:none;stroke:var(--dl-accent);stroke-width:4;stroke-linecap:round}
+.dl-track__flow{fill:none;stroke:var(--dl-surface);stroke-width:2;stroke-dasharray:2 14;stroke-linecap:round;opacity:0}
+.dl-track.is-moving .dl-track__flow{opacity:.9;animation:dl-track-flow 1s linear infinite}
+@keyframes dl-track-flow{to{stroke-dashoffset:-16}}
+.dl-track__node circle{fill:var(--dl-surface);stroke:var(--dl-muted);stroke-width:2}.dl-track__node text{font-size:13px;fill:var(--dl-ink)}
+.dl-track--delivered .dl-track__node--to circle{fill:var(--dl-success);stroke:var(--dl-success)}
+.dl-track__truck circle{fill:var(--dl-accent)}.dl-track__truck path{fill:var(--dl-surface)}
+.dl-track--draft .dl-track__truck{opacity:.55}
+.dl-track--cancelled .dl-track__truck circle,.dl-track--cancelled .dl-track__trail{fill:var(--dl-danger);stroke:var(--dl-danger)}
+.dl-track--cancelled .dl-track__truck{opacity:.7}
+.dl-track__steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;list-style:none;margin:0;padding:0}
+.dl-track__steps li{display:flex;flex-direction:column;gap:2px;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-muted)}
+.dl-track__steps li i{display:block;height:4px;border-radius:2px;background:var(--dl-chip)}
+.dl-track__steps li.is-done i{background:var(--dl-success)}.dl-track__steps li.is-current i{background:var(--dl-accent)}
+.dl-track__steps li.is-done b,.dl-track__steps li.is-current b{color:var(--dl-ink)}.dl-track__steps small{color:var(--dl-muted)}
+.dl-track__cancel{color:var(--dl-danger);font-weight:600;font-size:calc(13px * var(--dl-font-scale))}
+@media (prefers-reduced-motion:reduce){.dl-track.is-moving .dl-track__flow{animation:none;opacity:0}}

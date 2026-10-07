@@ -176,6 +176,7 @@ final class Catalog
                         'widget-board' => ['4 · Widget board (the owner arranges it: Customize, Add Widget, Reset to Template)', $c('WidgetBoard', 'Kpi', 'Chart')],
                     ], 'dashboard_home_sales.html'),
                     'p6-indicators' => $page('Dashboard Indicators', 'fa-solid fa-gauge-high', ['indicators' => ['KPI, gauge, progress ring, bullet, traffic light', $c('Kpi', 'Gauge', 'ProgressRing', 'Bullet', 'TrafficLight')]]),
+                    'p6-delivery' => $page('Delivery Track', 'fa-solid fa-truck-fast', ['delivery-track' => ['Delivery route (schematic SVG, stage follows Delivery Order status)', $c('DeliveryTrack')]]),
                     'p6-codes' => $page('QR & Barcode', 'fa-solid fa-qrcode', ['codes' => ['QR & Barcode (Code128, EAN-13)', $c('Qr', 'Barcode')]]),
                     'p6-warehouse' => $page('Warehouse Map & Labels', 'fa-solid fa-warehouse', [
                         'wh-map' => ['Warehouse map (building outline in metres: rectangle / L shape / any shape, floors, storage areas, bins, dead stock in red, expiry mark, bin panel with weight / volume / floor area, stack view from the top down with swap buttons, remnant and buried marks)', $c('WhMap', 'Qr')],

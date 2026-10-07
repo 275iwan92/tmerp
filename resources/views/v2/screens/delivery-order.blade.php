@@ -65,6 +65,8 @@
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:delivery>
+            @php $track = \App\Support\V2\Data\DeliveryTrack::props($do); @endphp
+            <x-dl::delivery-track :stage="$track['stage']" :from="$track['from']" :to="$track['to']" :times="$track['times']" />
             <x-dl::form.row :cols="4">
                 <x-dl::field.date name="scheduled_ship_date" label="Planned Shipment" :value="$do->scheduled_ship_date?->toDateString()" :source="Src::of('tm2sdi.do_delivery.scheduled_ship_date')" />
                 <x-dl::field.display label="Actual Delivery Date" :value="\Devlib\Locale::d($do->actual_ship_date) ?? '—'" :source="Src::of('tm2sdi.do_delivery.actual_ship_date')" />
