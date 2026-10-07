@@ -16,7 +16,7 @@
         <header class="bg-white border-b border-[#e6e9ef] sticky top-0 z-30">
             <div class="max-w-[1100px] mx-auto px-5 h-16 flex items-center justify-between">
                 <a href="{{ route('careers.landing') }}" class="flex items-center gap-2.5">
-                    <span class="w-9 h-9 rounded-[10px] flex-shrink-0" style="background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d);"></span>
+                    <span class="w-9 h-9 rounded-[10px] shrink-0" style="background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d);"></span>
                     <span class="leading-tight">
                         <b class="block text-[15px] tracking-[.3px] text-navy">TELASIH MAKMUR</b>
                         <span class="block text-[10px] tracking-[2px] text-muted uppercase">Karir</span>

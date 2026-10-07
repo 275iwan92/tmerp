@@ -129,7 +129,7 @@ new #[Title('Bantuan — TELASIH MAKMUR ERP')] class extends Component
     <header class="bg-navy text-white sticky top-0 z-30">
         <div class="max-w-[1200px] mx-auto px-5 h-16 flex items-center gap-4">
             <a href="{{ route('menu') }}" class="flex items-center gap-2.5 shrink-0">
-                <span class="w-9 h-9 rounded-[10px] flex-shrink-0" style="background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d);"></span>
+                <span class="w-9 h-9 rounded-[10px] shrink-0" style="background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d);"></span>
                 <span class="leading-tight hidden sm:block">
                     <b class="block text-[14px] tracking-[.3px] text-white">TELASIH MAKMUR</b>
                     <span class="block text-[9px] tracking-[2px] text-white/60 uppercase">{{ Translator::t('shell_help_header_title', 'Bantuan') }}</span>

@@ -161,9 +161,9 @@ mark { @apply bg-[#ffe9a8] text-inherit p-0; }
  * dari situ kalau hasil ini kurang cocok. */
 body:has(.hub) { @apply pb-0; }
 .hub { @apply max-w-[1080px] mx-auto px-4 flex flex-col; height: 100dvh; }
-.hub h1 { @apply text-[18px] text-navy mb-1 flex-shrink-0; }
-.hub .lead { @apply text-[12px] text-[#667] mb-2.5 leading-snug flex-shrink-0; }
-.pick { @apply grid grid-cols-3 gap-3 flex-shrink-0; }
+.hub h1 { @apply text-[18px] text-navy mb-1 shrink-0; }
+.hub .lead { @apply text-[12px] text-[#667] mb-2.5 leading-snug shrink-0; }
+.pick { @apply grid grid-cols-3 gap-3 shrink-0; }
 .opt { @apply bg-white border-2 border-[#dde3ec] rounded-[10px] p-3.5 cursor-pointer flex flex-col no-underline text-inherit; transition: .14s; }
 .opt:hover { @apply border-accent -translate-y-0.5; box-shadow: 0 6px 20px rgba(44, 123, 229, .14); }
 .opt .ico { @apply text-[22px] mb-1.5; }
@@ -188,10 +188,10 @@ body:has(.hub) { @apply pb-0; }
 .prodsel-hl { box-shadow: 0 0 0 3px #cfe0fb; }
 
 .openbox { @apply bg-white border border-[#d9dfe8] rounded-[10px] mt-2.5 overflow-hidden flex-1 flex flex-col min-h-0; }
-.openbox .hd { @apply px-4 py-2 bg-[#f4f6fa] border-b border-[#e2e7ee] text-sm text-navy font-bold flex items-center gap-2.5 flex-shrink-0; }
+.openbox .hd { @apply px-4 py-2 bg-[#f4f6fa] border-b border-[#e2e7ee] text-sm text-navy font-bold flex items-center gap-2.5 shrink-0; }
 .openbox .hd .cnt { @apply text-[11px] font-normal text-muted ml-auto; }
 .openbox .bd { @apply px-4 py-2.5 flex-1 flex flex-col min-h-0; }
-.filters { @apply flex gap-2 mb-2 flex-wrap flex-shrink-0; }
+.filters { @apply flex gap-2 mb-2 flex-wrap shrink-0; }
 .filters input { @apply flex-1 min-w-[180px] px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-[13px]; }
 .filters select { @apply px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-[13px] bg-white; }
 .qtbl { @apply w-full border-collapse text-[12.5px]; }
@@ -204,11 +204,11 @@ body:has(.hub) { @apply pb-0; }
 .qdoc { @apply text-[11.5px] text-navy font-semibold; font-family: ui-monospace, monospace; }
 .qmuted { @apply text-muted text-[11px]; }
 .qempty { @apply p-[26px] text-center text-muted text-[12.5px]; }
-.openact { @apply flex gap-2.5 mt-2 items-center flex-shrink-0; }
+.openact { @apply flex gap-2.5 mt-2 items-center shrink-0; }
 .openact .sp { @apply flex-1; }
 
 /* ---- Pemilih produk existing (RECALC/REVISE "+ Buat data baru") ---- */
-.prodsel { @apply bg-white border border-[#d9dfe8] rounded-[10px] mt-2.5 overflow-hidden hidden flex-shrink-0; }
+.prodsel { @apply bg-white border border-[#d9dfe8] rounded-[10px] mt-2.5 overflow-hidden hidden shrink-0; }
 .prodsel.on { @apply block; }
 .prodsel .hd { @apply px-4 py-2.5 bg-[#f4f6fa] border-b border-[#e2e7ee] text-[13px] text-navy font-semibold flex items-center gap-2; }
 .prodsel .hd .x { @apply ml-auto cursor-pointer text-muted text-lg; line-height: 1; }
@@ -220,11 +220,11 @@ body:has(.hub) { @apply pb-0; }
 .prow:last-child { @apply border-b-0; }
 .prow:hover { @apply bg-[#f7faff]; }
 .prow.sel { @apply bg-[#eef5ff]; box-shadow: inset 3px 0 0 #2c7be5; }
-.prow .th { @apply w-10 h-10 rounded-[5px] bg-[#eef1f5] border border-[#dde3ec] flex items-center justify-center text-[8px] text-[#93a0b3] flex-shrink-0 text-center; }
+.prow .th { @apply w-10 h-10 rounded-[5px] bg-[#eef1f5] border border-[#dde3ec] flex items-center justify-center text-[8px] text-[#93a0b3] shrink-0 text-center; }
 .prow .mn { @apply flex-1 min-w-0; }
 .prow .mn b { @apply text-[13px] text-navy block; }
 .prow .mn span { @apply text-[11px] text-muted; }
-.prow .mt { @apply text-right text-[11px] text-[#667] leading-normal flex-shrink-0; }
+.prow .mt { @apply text-right text-[11px] text-[#667] leading-normal shrink-0; }
 .prow .mt code { @apply bg-[#f2f4f7] px-[5px] py-px rounded-[3px] text-[10px]; }
 .act { @apply flex gap-2.5 mt-3.5 items-center; }
 .act .sp { @apply flex-1; }
@@ -336,7 +336,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .partbody { @apply p-3.5; }
 .partbody.collapsed { @apply hidden; }
 .ptype-box { @apply flex gap-3 items-center bg-[#f8fafc] border border-[#dde3ec] rounded-lg p-2.5 mb-3; }
-.ptype-thumb { @apply w-16 h-16 rounded-md bg-[#e9edf3] border border-[#cfd7e3] flex items-center justify-center text-[9px] text-muted text-center flex-shrink-0 overflow-hidden; }
+.ptype-thumb { @apply w-16 h-16 rounded-md bg-[#e9edf3] border border-[#cfd7e3] flex items-center justify-center text-[9px] text-muted text-center shrink-0 overflow-hidden; }
 .size-pick { @apply bg-[#eef5ff] border border-[#c3d8f5] rounded-md px-2 py-1.5; }
 
 /* autocomplete customer */
@@ -393,12 +393,12 @@ body:has(.actionbar) { @apply pb-[74px]; }
     font-family: var(--brand-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
     @apply bg-[var(--content-bg)] text-[var(--sh-ink)] h-screen overflow-hidden flex;
 }
-.shell aside { @apply bg-[var(--side)] text-[var(--side-ink)] flex flex-col flex-shrink-0 overflow-hidden; width: var(--side-w); border-right: 1px solid var(--side-border); transition: width .18s; }
+.shell aside { @apply bg-[var(--side)] text-[var(--side-ink)] flex flex-col shrink-0 overflow-hidden; width: var(--side-w); border-right: 1px solid var(--side-border); transition: width .18s; }
 .shell.mini aside { @apply w-[66px]; }
 .shell.nosidebar aside { @apply w-0; }
-.shell .side-head { @apply flex items-center gap-2.5 px-3.5 flex-shrink-0; height: var(--topbar-h); background: var(--side-head-bg); }
+.shell .side-head { @apply flex items-center gap-2.5 px-3.5 shrink-0; height: var(--topbar-h); background: var(--side-head-bg); }
 .shell .logo-home { @apply flex items-center gap-2.5 bg-transparent border-none p-0 cursor-pointer text-left min-w-0; }
-.shell .logo-badge { @apply w-[34px] h-[34px] rounded-[9px] flex-shrink-0; background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d); }
+.shell .logo-badge { @apply w-[34px] h-[34px] rounded-[9px] shrink-0; background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d); }
 .shell .logo-txt { @apply overflow-hidden whitespace-nowrap; line-height: 1.05; }
 .shell .logo-txt b { @apply text-[15px] tracking-[.4px] text-[var(--side-ink-strong)]; }
 .shell .logo-txt span { @apply text-[10px] tracking-[2px] text-[var(--side-muted)] uppercase; }
@@ -406,7 +406,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .shell .side-collapse:hover { @apply text-[var(--side-ink-strong)]; background: var(--side-hover-soft); }
 .shell.mini .logo-txt { @apply hidden; }
 .shell .mod-title { @apply flex items-center gap-[11px] pt-4 px-4 pb-2.5 text-[var(--side-ink-strong)] text-[15px] font-bold tracking-[.6px] whitespace-nowrap; }
-.shell .mod-title .ic { @apply text-lg w-[22px] text-center flex-shrink-0; }
+.shell .mod-title .ic { @apply text-lg w-[22px] text-center shrink-0; }
 .shell.mini .mod-title { @apply justify-center pt-4 px-0 pb-2.5; }
 .shell.mini .mod-title .lbl { @apply hidden; }
 .shell .side-nav { @apply flex-1 overflow-y-auto pt-1 px-2 pb-3; }
@@ -430,23 +430,23 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .shell .leaf { @apply flex items-center gap-[11px] w-full bg-transparent border-none text-left text-[var(--side-ink)] px-3 py-2.5 rounded-lg cursor-pointer text-[13.5px] whitespace-nowrap; font-family: inherit; }
 .shell .leaf:hover { @apply text-[var(--side-ink-strong)] bg-[var(--side-hover)]; }
 .shell .leaf.active { @apply text-white bg-[var(--sh-accent)]; }
-.shell .leaf .lic { @apply w-5 text-center flex-shrink-0 text-[13px] opacity-90; }
+.shell .leaf .lic { @apply w-5 text-center shrink-0 text-[13px] opacity-90; }
 .shell .leaf .lbl { @apply flex-1 truncate; }
 .shell .leaf.not-built { @apply opacity-55 cursor-not-allowed; }
 .shell.mini .leaf { @apply justify-center py-2.5 px-0; }
 .shell.mini .leaf .lbl { @apply hidden; }
-.shell .side-footer { @apply flex-shrink-0 px-2 py-2; border-top: 1px solid var(--side-border-soft); }
+.shell .side-footer { @apply shrink-0 px-2 py-2; border-top: 1px solid var(--side-border-soft); }
 .shell.mini .leaf .status-dot { @apply hidden; }
 
 /* module_status_system (globalrules.yaml): titik warna kesiapan-build,
    dari sys_app_menu_color via SysAppMenu::menuTree() -- abu=belum dibangun,
    kuning=siap di-QC, hijau=terkunci user. Beda dgn sys_theme (tema warna app). */
-.shell .status-dot { @apply w-[7px] h-[7px] rounded-full flex-shrink-0; }
+.shell .status-dot { @apply w-[7px] h-[7px] rounded-full shrink-0; }
 :is(.shell, .upanels) .side-hint { @apply text-[var(--side-muted)] text-[13px] leading-[1.55] px-4 py-3.5; }
 .shell.mini .side-hint { @apply hidden; }
 
 .shell .main { @apply flex-1 flex flex-col min-w-0 relative; }
-.shell .topbar { @apply text-[var(--side-ink-strong)] flex items-center gap-1 px-3 flex-shrink-0; height: var(--topbar-h); background: var(--topbar); border-bottom: 1px solid var(--side-border); }
+.shell .topbar { @apply text-[var(--side-ink-strong)] flex items-center gap-1 px-3 shrink-0; height: var(--topbar-h); background: var(--topbar); border-bottom: 1px solid var(--side-border); }
 .shell.notopbar .topbar { @apply hidden; }
 .shell .tb-btn { @apply bg-transparent border-none text-[var(--side-ink)] cursor-pointer text-lg p-2 rounded-lg; line-height: 1; font-family: inherit; }
 .shell .tb-btn:hover { @apply text-[var(--side-ink-strong)]; background: var(--side-hover-soft); }
@@ -479,7 +479,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .shell.notopbar #topbar-restore { @apply block; }
 .shell #topbar-restore button { @apply text-[var(--side-ink-strong)] border-none rounded-[20px] px-3.5 py-1.5 text-xs cursor-pointer; background: var(--topbar); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); font-family: inherit; }
 
-.shell .tabbar { @apply flex items-end gap-0.5 px-2 flex-shrink-0 overflow-x-auto; height: var(--tab-h); background: var(--tabbar); }
+.shell .tabbar { @apply flex items-end gap-0.5 px-2 shrink-0 overflow-x-auto; height: var(--tab-h); background: var(--tabbar); }
 .shell .tabbar:empty::before { content: "Belum ada menu terbuka"; @apply text-[var(--sh-muted)] text-[12.5px] self-center px-2; }
 .shell .tab { @apply flex items-center gap-2 h-[34px] py-0 pl-[13px] pr-2.5 bg-[#d3d7e8] text-[#5a6488] rounded-t-[9px] cursor-pointer text-[13px] whitespace-nowrap max-w-[230px]; }
 .shell .tab:hover { @apply bg-[#dde0ee]; }
@@ -541,7 +541,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .shell .pop-menu { @apply hidden absolute right-0 top-[46px] bg-[var(--sh-surface)] text-[var(--sh-ink)] rounded-xl min-w-[256px] overflow-hidden z-[70]; box-shadow: 0 16px 44px rgba(15, 22, 45, .24); }
 .shell .pop-menu.open { @apply block; }
 .shell .um-head { @apply flex items-center gap-3 px-4 py-[15px] border-b border-[var(--sh-border)]; }
-.shell .um-av { @apply w-11 h-11 rounded-full bg-[#dce1ee] flex items-center justify-center flex-shrink-0; }
+.shell .um-av { @apply w-11 h-11 rounded-full bg-[#dce1ee] flex items-center justify-center shrink-0; }
 .shell .um-av svg { @apply w-[26px] h-[26px] fill-[#7b85a4]; }
 .shell .um-name { @apply font-bold text-[var(--sh-ink-strong)] text-[14.5px]; }
 .shell .um-mail { @apply text-xs text-[var(--sh-muted)]; }
@@ -556,7 +556,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .shell .um-flag { @apply border border-[var(--sh-border)] bg-white rounded-[7px] px-[7px] py-0.5 text-sm cursor-pointer; }
 .shell .um-flag.active { @apply border-[var(--sh-accent)]; box-shadow: 0 0 0 2px rgba(47, 111, 237, .15); }
 .shell .um-theme-grid { @apply flex flex-wrap gap-2 px-3 pt-1 pb-2.5; }
-.shell .um-swatch { @apply w-[22px] h-[22px] rounded-full border-2 border-transparent cursor-pointer flex items-center justify-center text-white text-[9px] flex-shrink-0; }
+.shell .um-swatch { @apply w-[22px] h-[22px] rounded-full border-2 border-transparent cursor-pointer flex items-center justify-center text-white text-[9px] shrink-0; }
 .shell .um-swatch.active { border-color: var(--sh-ink-strong); box-shadow: 0 0 0 2px var(--sh-surface); }
 .shell .um-theme-matrix { @apply px-3 pt-1 pb-1.5; }
 .shell .utm-hdr { @apply grid gap-1.5 mb-1; grid-template-columns: 44px repeat(3, 22px); }
@@ -568,7 +568,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 :is(.shell, .upanels) .nz { @apply flex gap-[11px] px-3 py-2.5 rounded-lg cursor-pointer; }
 :is(.shell, .upanels) .nz:hover { @apply bg-[#f2f5fb]; }
 :is(.shell, .upanels) .nz.unread { @apply bg-[#f6f9ff]; }
-:is(.shell, .upanels) .nz .dotc { @apply w-[9px] h-[9px] rounded-full flex-shrink-0 mt-1; }
+:is(.shell, .upanels) .nz .dotc { @apply w-[9px] h-[9px] rounded-full shrink-0 mt-1; }
 :is(.shell, .upanels) .nz .nt { @apply text-sm text-[var(--sh-ink-strong)]; } :is(.shell, .upanels) .nz .ns { @apply text-[11.5px] text-[var(--sh-muted)] mt-0.5; }
 .shell .pm-head { @apply px-4 py-[13px] border-b border-[var(--sh-border)] font-bold text-[var(--sh-ink-strong)] text-sm flex justify-between items-center; }
 .shell .pm-head a { @apply text-xs text-[var(--sh-accent)] no-underline font-semibold cursor-pointer; }
@@ -582,11 +582,11 @@ body:has(.actionbar) { @apply pb-[74px]; }
 :is(.shell, .upanels) .dr-note { @apply text-[11px] text-[var(--sh-muted)] ml-1; }
 :is(.shell, .upanels) .dr-frame { @apply block flex-1 w-full border-0; }
 :is(.shell, .upanels) .dr-body > .mf { @apply mt-auto; }
-:is(.shell, .upanels) .dr-head { @apply h-14 flex items-center gap-2.5 px-4 border-b border-[var(--sh-border)] flex-shrink-0; }
+:is(.shell, .upanels) .dr-head { @apply h-14 flex items-center gap-2.5 px-4 border-b border-[var(--sh-border)] shrink-0; }
 :is(.shell, .upanels) .dr-head .ico { @apply text-[var(--sh-accent)]; } :is(.shell, .upanels) .dr-title { @apply font-bold text-[var(--sh-ink-strong)]; }
 :is(.shell, .upanels) .dr-head .x { @apply ml-auto bg-transparent border-none text-[var(--sh-muted)] cursor-pointer text-lg; }
 :is(.shell, .upanels) .chat-body { @apply flex-1 flex min-h-0; }
-:is(.shell, .upanels) .chat-list { @apply w-[132px] border-r border-[var(--sh-border)] overflow-y-auto flex-shrink-0; }
+:is(.shell, .upanels) .chat-list { @apply w-[132px] border-r border-[var(--sh-border)] overflow-y-auto shrink-0; }
 :is(.shell, .upanels) .cl-item { @apply px-2.5 py-2.5 cursor-pointer border-b border-[#f1f3f9] text-[12.5px]; }
 :is(.shell, .upanels) .cl-item:hover { @apply bg-[#f7f9fc]; } :is(.shell, .upanels) .cl-item.active { @apply bg-[#eef4ff]; }
 :is(.shell, .upanels) .cl-item b { @apply text-[var(--sh-ink-strong)] block; } :is(.shell, .upanels) .cl-item span { @apply text-[var(--sh-muted)] text-[11px]; }
@@ -597,7 +597,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 :is(.shell, .upanels) .msg.me { @apply bg-[var(--sh-accent)] text-white self-end rounded-br-[4px]; }
 :is(.shell, .upanels) .chat-in { @apply flex gap-2 p-3 border-t border-[var(--sh-border)]; }
 :is(.shell, .upanels) .chat-in input { @apply flex-1 min-w-0 border-[1.5px] border-[var(--sh-border)] rounded-[20px] px-3.5 py-2.5 text-[13.5px] outline-none; font-family: inherit; }
-:is(.shell, .upanels) .chat-in button { @apply bg-[var(--sh-accent)] text-white border-none rounded-full w-[38px] h-[38px] cursor-pointer flex-shrink-0; }
+:is(.shell, .upanels) .chat-in button { @apply bg-[var(--sh-accent)] text-white border-none rounded-full w-[38px] h-[38px] cursor-pointer shrink-0; }
 :is(.shell, .upanels) .ai-body { @apply flex-1 overflow-y-auto p-4 flex flex-col gap-[11px]; }
 :is(.shell, .upanels) .ai-intro { @apply bg-[#faf7ff] border border-dashed border-[#d7c3ff] rounded-xl p-3.5 text-[13px] text-[#6b4bb0] leading-relaxed; }
 :is(.shell, .upanels) .ai-chip { @apply inline-block bg-[#eef4ff] text-[var(--sh-accent)] border-none rounded-2xl px-3 py-1.5 text-[12.5px] cursor-pointer mt-1 mr-1; font-family: inherit; }
@@ -697,7 +697,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .authpage .field label { @apply block text-[13px] font-semibold text-[var(--ap-ink)] mb-[7px]; }
 .authpage .input { @apply flex items-center border-[1.5px] border-[var(--ap-border)] rounded-[9px] bg-white; transition: border-color .15s, box-shadow .15s; }
 .authpage .input:focus-within { @apply border-[var(--ap-blue)]; box-shadow: 0 0 0 3px rgba(47, 111, 237, .12); }
-.authpage .input .fld-i { @apply text-[var(--ap-muted)] text-[13px] pl-3.5 flex-shrink-0; }
+.authpage .input .fld-i { @apply text-[var(--ap-muted)] text-[13px] pl-3.5 shrink-0; }
 .authpage .input input { @apply flex-1 min-w-0 border-none outline-none bg-transparent px-3.5 py-3 text-[14.5px] text-[var(--ap-ink-strong)]; font-family: inherit; }
 .authpage .input .fld-i + input { @apply pl-2.5; }
 .authpage .input .toggle-pw { @apply bg-transparent border-none cursor-pointer px-3.5 py-0 text-[var(--ap-muted)] text-[13px] font-semibold; }
@@ -734,7 +734,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .authpage .hero-panel img.on { @apply opacity-100; }
 .authpage .hero-veil { @apply absolute inset-0; background: linear-gradient(180deg, rgba(18, 25, 46, .55), rgba(18, 25, 46, .1) 34%, rgba(18, 25, 46, .8)); }
 .authpage .hero-brand { @apply absolute top-[26px] left-8 flex items-center gap-3 text-white z-20; }
-.authpage .hero-brand .logo-badge { @apply w-[42px] h-[42px] rounded-xl flex-shrink-0; background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d); }
+.authpage .hero-brand .logo-badge { @apply w-[42px] h-[42px] rounded-xl shrink-0; background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d); }
 .authpage .hero-brand b { @apply text-lg tracking-[.4px] block leading-[1.1]; }
 .authpage .hero-brand span { @apply text-[10px] tracking-[2px] text-[#b7c0dd] uppercase; }
 .authpage .hero-clock { @apply absolute top-7 right-8 text-right text-[#dbe1f2] z-20; }
@@ -745,11 +745,11 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .authpage .hero-quote .q { @apply text-xl italic leading-[1.55] max-w-[620px] mt-1; }
 .authpage .hero-quote .a { @apply mt-2.5 text-[#c7cfe8] font-semibold text-sm; }
 .authpage .hero-quote .a::before { content: "— "; }
-.authpage .grip { @apply w-2 flex-shrink-0 relative cursor-col-resize; background: var(--ap-border); transition: background .15s; }
+.authpage .grip { @apply w-2 shrink-0 relative cursor-col-resize; background: var(--ap-border); transition: background .15s; }
 .authpage .grip:hover { @apply bg-[#cdd4e4]; }
 .authpage .grip::before { content: ""; @apply absolute top-1/2 left-1/2 w-[3px] h-9 rounded-[3px] bg-[#aeb6ce]; transform: translate(-50%, -50%); }
-.authpage .hero-side { @apply w-[15vw] min-w-[260px] max-w-[40vw] flex-shrink-0 flex flex-col py-[18px] px-[22px] pb-[26px] overflow-y-auto; }
-.authpage .flagbar { @apply flex justify-end gap-[7px] flex-shrink-0; }
+.authpage .hero-side { @apply w-[15vw] min-w-[260px] max-w-[40vw] shrink-0 flex flex-col py-[18px] px-[22px] pb-[26px] overflow-y-auto; }
+.authpage .flagbar { @apply flex justify-end gap-[7px] shrink-0; }
 .authpage .flag { @apply bg-white border-[1.5px] border-[var(--ap-border)] rounded-[9px] px-2.5 py-1.5 text-base cursor-pointer leading-none; }
 .authpage .flag.active { @apply border-[var(--ap-blue)]; box-shadow: 0 0 0 3px rgba(47, 111, 237, .12); }
 .authpage .divider { @apply flex items-center gap-2.5 text-[var(--ap-muted)] text-xs my-5; }
@@ -836,7 +836,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .secpage .dd-item:hover { @apply bg-[#f2f5fb]; }
 .secpage .dd-item.exit { @apply text-[var(--sp-danger)]; }
 .secpage .sp-shell { @apply flex; min-height: 100vh; }
-.secpage .side { @apply w-[250px] bg-white border-r border-[var(--sp-border)] py-4.5 px-3 flex-shrink-0; }
+.secpage .side { @apply w-[250px] bg-white border-r border-[var(--sp-border)] py-4.5 px-3 shrink-0; }
 .secpage .side .cap { @apply text-[11px] tracking-[.8px] uppercase text-[var(--sp-muted)] pt-2 px-3 pb-2.5 font-bold; }
 .secpage .nav-item { @apply flex items-center gap-[11px] w-full bg-transparent border-none text-left px-3 py-2.5 rounded-[9px] cursor-pointer text-sm text-[var(--sp-ink)] mb-0.5; font-family: inherit; }
 .secpage .nav-item:hover { @apply bg-[#f2f5fb]; }
@@ -899,7 +899,7 @@ body:has(.actionbar) { @apply pb-[74px]; }
 }
 @keyframes appAlertIn { from { opacity: 0; transform: translateX(14px) scale(.98); } to { opacity: 1; transform: none; } }
 .app-alert-toast .bar { @apply absolute left-0 top-0 bottom-0 w-1; }
-.app-alert-toast .ic { @apply w-7 h-7 rounded-[9px] flex items-center justify-center flex-shrink-0 text-[13px]; }
+.app-alert-toast .ic { @apply w-7 h-7 rounded-[9px] flex items-center justify-center shrink-0 text-[13px]; }
 .app-alert-toast .body { @apply flex-1 min-w-0 pr-3; }
 .app-alert-toast .ttl { @apply text-[13px] font-bold m-0; color: var(--sh-ink-strong, #2f3a5e); }
 .app-alert-toast .msg { @apply text-[12px] leading-relaxed m-0; color: var(--sh-muted, #6b7386); }
@@ -917,8 +917,8 @@ body:has(.actionbar) { @apply pb-[74px]; }
 .app-alert-toast.danger .ic { @apply text-[#a3453f]; background: #fdecec; }
 
 .app-alert-banner { @apply flex items-start gap-2.5 rounded-[10px] border px-3.5 py-2.5 mb-3.5 text-[12.5px] leading-relaxed; }
-.app-alert-banner .ic { @apply mt-px flex-shrink-0 text-[13px]; }
-.app-alert-banner .close { @apply ml-auto flex-shrink-0 border-none bg-transparent cursor-pointer opacity-60 text-[11px]; color: inherit; }
+.app-alert-banner .ic { @apply mt-px shrink-0 text-[13px]; }
+.app-alert-banner .close { @apply ml-auto shrink-0 border-none bg-transparent cursor-pointer opacity-60 text-[11px]; color: inherit; }
 .app-alert-banner .close:hover { @apply opacity-100; }
 .app-alert-banner.success { @apply bg-[#e9f9ef] border-[#c8ecd6] text-[#1f8a4c]; }
 .app-alert-banner.info { @apply bg-[#eaf1ff] border-[#c6d9fb] text-[#255bd4]; }
