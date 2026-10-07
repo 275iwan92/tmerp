@@ -26,7 +26,7 @@
         "tests": 96,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1147",
+        "commits": "1148",
         "since": "2026-08-06"
     },
     "modules": [
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 56,
+            "commits": 57,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 82,
+            "screens": 84,
             "objects": 17,
             "engines": 1,
-            "tests": 8
+            "tests": 9
         },
         {
             "key": "jo",
@@ -257,7 +257,7 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 13,
+            "iwan": 14,
             "jo": 0,
             "other": 9
         }
@@ -319,7 +319,7 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 56,
+            "iwan": 57,
             "jo": 0,
             "other": 11
         }
@@ -815,10 +815,10 @@
             "name": "Executive Summary",
             "module": "Management Reports",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "REPORT",

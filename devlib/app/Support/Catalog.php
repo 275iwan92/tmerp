@@ -29,6 +29,8 @@ final class Catalog
         'p5-master' => '2026-09-26',
         'p5-master-detail' => '2026-09-26',
         'p5-print' => '2026-09-26',
+        'p5-print-doc' => '2026-10-07',   // Print Document (A5 / A4) -- disetujui user
+        'p6-greeting-card' => '2026-10-07', // Widget sapaan (Greeting Card) -- tampilan disetujui user
         'p5-report' => '2026-09-26',
         'p5-import' => '2026-09-26',
         // Basics & Themes + Menus, Accounts & Layout disetujui user 2026-09-26
@@ -167,6 +169,7 @@ final class Catalog
                     'p5-calendar' => $page('Calendar', 'fa-solid fa-calendar-days', ['calendar-events' => ['Event Calendar (day / week / month)', $c('Calendar')], 'calendar-year' => ['Year Calendar (12 months, colored marks: holidays, working days)', $c('YearCalendar')]], 'mockup_UIUX_calendar.html'),
                     'p5-org' => $page('Org Chart', 'fa-solid fa-sitemap', ['org-chart' => ['Organization Structure (drag to change superior, vacancies, multiple holders)', $c('OrgChart')]], 'Organization-Structure-Mockup.html'),
                     'p6-charts' => $page('Charts', 'fa-solid fa-chart-pie', ['chart-bars' => ['Bars: bar, stacked, horizontal, combo', $c('Chart')], 'chart-lines' => ['Line, area, radar, heatmap', $c('Chart')], 'chart-pies' => ['Pie, donut, funnel', $c('Chart')]], 'mockup_dashboardcolor.html'),
+                    'p6-greeting-card' => $page('Greeting Card (widget)', 'fa-solid fa-hand', ['greeting-card' => ['Greeting widget — salutation, position, today brief, Job Description & SOP buttons, clock, check-in, weather (standalone, also used by the Opening Dashboard)', $c('GreetingCard', 'Greeting', 'Clock', 'Weather')]]),
                     'p6-dashboard' => $page('Opening Dashboard (per position)', 'fa-solid fa-house-user', [
                         'dashboard-sales' => ['1 · Sales profile (Senior Staff Sales & Marketing)', $c('Dashboard', 'Kpi', 'Chart', 'Quote')],
                         'dashboard-management' => ['2 · Management profile (President Director, Director, GM — company-wide)', $c('Dashboard', 'Kpi', 'Chart', 'Quote')],
