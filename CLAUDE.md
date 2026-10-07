@@ -117,7 +117,7 @@ lokal (MySQL 8.0.46 · InnoDB · utf8mb4 · utf8mb4_unicode_ci).
 | acc | tm2acc | Finance & Accounting |
 | hrm | tm2hrm | HR Organization Structure, Time Attendance, Shift Roster, Leave Management |
 | hrr | tm2hrr | HR recruitment system |
-| pyr | tm2pyr | Payroll system with Encrypted data (**requirement, BELUM diimplementasikan** — lihat catatan di bawah tabel) |
+| pyr | tm2pyr | Payroll system with Encrypted data (**SUDAH BERJALAN**, AES-256-GCM via cast `PayrollEncrypted` — lihat catatan di bawah tabel) |
 | sys | tm2sys | Sistem: user, role, notifikasi, audit trail |
 | old | tm2old | Old data for migration |
 | crp | tm2crp | **Portal Kandidat Plan B** (MariaDB, BUKAN salah satu dari 10 DB tm2* MySQL di atas) — staging submission mentah dari portal eksternal sebelum ditarik ke tm2hrr. Host TERPISAH secara arsitektur (VPS/DMZ di desain final; lokal port 3307 utk dev, keputusan user 2026-08-30). Detail: `docs/recruitment_tier3.md` §1-3, `docs/recruitment_delta_plan_ab_local.md`. |
@@ -157,8 +157,8 @@ terenkripsi at-rest AES-256-GCM lewat cast `App\Casts\PayrollEncrypted`, kunci d
 dan `PyrPayslip` (`total_pokok`, `total_gaji_bersih`, dst — lihat `$casts`). Baca nilai
 gaji SELALU lewat model (jangan SQL mentah, hasilnya ciphertext). Kolom baru yang berisi
 nominal gaji: pasang cast yang sama. Keputusan scope, kunci & trade-off:
-`docs/md_for_systems/payroll_encryption_decision.md` (bagian "belum dibangun" di
-dokumen itu juga sudah usang).
+`docs/md_for_systems/payroll_encryption_decision.md` (catatan "modul belum dibangun" /
+"belum dikonfirmasi" di dokumen itu usang; implementasi di kode yang jadi acuan).
 
 ### Aturan lintas-DB (LOCKED — KRITIKAL)
 - **FK MySQL TIDAK BISA lintas-database.** Jangan pernah bikin constraint FK antar-DB.
