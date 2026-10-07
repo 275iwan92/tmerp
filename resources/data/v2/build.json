@@ -1,17 +1,17 @@
 {
-    "generated": "2026-10-08 00:49",
+    "generated": "2026-10-08 01:14",
     "database": "ddtsys",
     "totals": {
         "objects": 150,
-        "modules": 9,
-        "modules_done": 5,
-        "screens": 229,
-        "v2": 219,
+        "modules": 10,
+        "modules_done": 6,
+        "screens": 230,
+        "v2": 220,
         "v1": 5,
         "not_built": 5,
-        "waiting_qc": 223,
+        "waiting_qc": 224,
         "locked": 1,
-        "forms": 84,
+        "forms": 85,
         "grids": 91,
         "reports": 54,
         "grid_classes": 145,
@@ -22,11 +22,11 @@
         "tables": 360,
         "databases": 9,
         "models": 317,
-        "migrations": 558,
+        "migrations": 559,
         "tests": 111,
-        "dictionary": 9736,
+        "dictionary": 9932,
         "languages": 4,
-        "commits": "1200",
+        "commits": "1203",
         "since": "2026-08-06"
     },
     "modules": [
@@ -89,6 +89,18 @@
             "form": 4,
             "grid": 14,
             "report": 1
+        },
+        {
+            "label": "Maintenance",
+            "total": 1,
+            "v2": 1,
+            "v1": 0,
+            "not_built": 0,
+            "waiting_qc": 1,
+            "locked": 0,
+            "form": 1,
+            "grid": 0,
+            "report": 0
         },
         {
             "label": "Human Resources",
@@ -154,13 +166,13 @@
         {
             "key": "jo",
             "name": "Agent Jo",
-            "commits": 3,
+            "commits": 6,
             "days": 2,
             "last": "2026-10-08",
-            "screens": 7,
+            "screens": 18,
             "objects": 0,
             "engines": 0,
-            "tests": 3
+            "tests": 6
         }
     ],
     "untracked": 1116,
@@ -246,7 +258,7 @@
         {
             "date": "2026-10-08",
             "iwan": 0,
-            "jo": 2,
+            "jo": 5,
             "other": 1
         }
     ],
@@ -308,7 +320,7 @@
         {
             "week": "2026-W41",
             "iwan": 81,
-            "jo": 3,
+            "jo": 6,
             "other": 36
         }
     ],
@@ -2423,6 +2435,17 @@
             "built_at": "2026-10-02",
             "built_by": null,
             "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:MAINT_MACHINE",
+            "name": "Master Machine",
+            "module": "Maintenance",
+            "qc": "READY_FOR_QC",
+            "built_at": "2026-09-30",
+            "built_by": null,
+            "changed_at": "2026-10-03",
             "changed_by": null
         },
         {

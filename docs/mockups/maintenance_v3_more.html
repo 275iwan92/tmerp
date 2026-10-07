@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Maintenance v3 — Request, Codes, Readiness, Meter, Report, HP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .inp { width: 100%; border: 1px solid #c9d6ea; border-radius: 6px; padding: 5px 8px; font-size: 12px; background: #f7faff; display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+  .inp.ro { background: #f1f5f9; color: #475569; }
+  .aa { font-size: 9px; font-weight: 700; color: #2c7be5; background: #e3edfb; border-radius: 4px; padding: 1px 4px; }
+  .btn { padding: 4px 11px; border-radius: 6px; font-weight: 600; font-size: 11.5px; border: 1px solid #cbd5e1; background: #fff; color: #334155; white-space: nowrap; }
+  .btn.pri { background: #2c7be5; color: #fff; border-color: #2c7be5; }
+  .btn.ok { background: #16a34a; color: #fff; border-color: #16a34a; }
+  .btn.warn { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+  .btn.dis { opacity: .4; }
+  th { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600; text-align: left; padding: 6px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .cap { font-size: 13px; font-weight: 700; color: #334155; margin: 18px 0 6px; }
+  .note { font-size: 11px; color: #64748b; }
+  .bdg { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+  .tag { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; font-weight:700; margin-right:4px; flex:none; }
+  .flt { display:flex; gap:18px; border-bottom:1px solid #e2e8f0; padding: 0 4px; }
+  .flt span { padding: 7px 2px; color:#64748b; font-weight:600; border-bottom:2px solid transparent; }
+  .flt span.on { color:#2c3e69; border-color:#2c7be5; }
+  .back { display:inline-flex; align-items:center; gap:8px; padding:4px 4px 4px 12px; background:#43508a; border-radius:999px; color:#fff; font-weight:700; font-size:11px; text-transform:uppercase; }
+  .back i { display:inline-flex; width:22px; height:22px; border-radius:50%; background:#fff; color:#43508a; align-items:center; justify-content:center; }
+  .phone { width: 300px; border: 8px solid #1e293b; border-radius: 28px; background: #f8fafc; overflow: hidden; flex:none; }
+  .bar { height: 8px; border-radius: 4px; background:#e2e8f0; }
+  .bar i { display:block; height:8px; border-radius:4px; background:#2c7be5; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-4 max-w-[1400px] mx-auto">
+
+<div>
+  <div class="text-lg font-bold text-navy">Maintenance v3 — Request, Codes, Readiness, Meter, Report, HP</div>
+  <div class="note">Mockup untuk persetujuan · data contoh ddt* · label layar English, kalimat bantu Indonesia · database <b>tm2mnt</b></div>
+</div>
+
+<!-- ============ REQUEST ============ -->
+<div class="cap">① Breakdown Maintenance › Maintenance Request — grid dan form</div>
+<div class="grid gap-3" style="grid-template-columns: 1fr 1fr;">
+<section class="card p-3 space-y-2">
+  <div class="flt"><span class="on">All 6</span><span>Open 2</span><span>Accepted 3</span><span>Rejected 1</span></div>
+  <div class="flex items-center gap-2"><div class="inp" style="width:200px"><span class="text-slate-400"><i class="fa-solid fa-magnifying-glass mr-1"></i>Search…</span></div><span class="btn pri ml-auto">+ New Record</span></div>
+  <table class="w-full">
+    <thead><tr><th>Request</th><th>Machine</th><th>Kind</th><th>Priority</th><th>Status</th><th>Age</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><b>MR-2610-0007</b><div class="note">Feeder pulls two sheets</div></td><td>OFF-02</td><td>Breakdown</td><td><span class="bdg bg-red-600 text-white">P1</span></td><td><span class="bdg bg-emerald-100 text-emerald-700">Accepted</span></td><td>3 h</td><td><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><b>MR-2610-0009</b><div class="note">Noise from drive motor</div></td><td>DIE-04</td><td>Corrective</td><td><span class="bdg bg-slate-200">P3</span></td><td><span class="bdg bg-sky-100 text-sky-700">Open</span></td><td>1 d</td><td><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span> <span class="btn ok"><i class="fa-solid fa-check"></i></span></td></tr>
+      <tr><td><b>MR-2610-0010</b><div class="note">Heater temperature out of range</div><div class="note">From Daily Check <span class="tag" style="margin:0 0 0 3px">1</span></div></td><td>LAM-01</td><td>Corrective</td><td><span class="bdg bg-amber-100 text-amber-700">P2</span></td><td><span class="bdg bg-sky-100 text-sky-700">Open</span></td><td>2 h</td><td><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span> <span class="btn ok"><i class="fa-solid fa-check"></i></span></td></tr>
+    </tbody>
+  </table>
+</section>
+<section class="card overflow-hidden">
+  <div class="bg-navy text-white px-3 py-2 flex items-center gap-2"><span class="back"><i class="fa-solid fa-arrow-left" style="font-size:9px"></i>Back</span><div class="font-bold text-sm ml-1">Request · MR-2610-0010</div><span class="bdg bg-sky-100 text-sky-700">Open</span>
+    <div class="ml-auto flex gap-1.5"><span class="btn">Print</span><span class="btn ok">Accept</span><span class="btn warn">Reject</span></div></div>
+  <div class="p-3 grid grid-cols-2 gap-3">
+    <div><div class="lbl">Machine</div><div class="inp ro">LAM-01 Laminator</div></div>
+    <div><div class="lbl">Kind</div><div class="inp ro">Corrective</div></div>
+    <div><div class="lbl">Priority</div><div class="inp">P2 High <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+    <div><div class="lbl">Machine stopped</div><div class="inp ro">No, still running</div></div>
+    <div class="col-span-2"><div class="lbl">Symptom</div><div class="inp" style="min-height:44px;align-items:flex-start">Heater reading 96 °C, check shows Not OK. <span class="aa">Aa</span></div></div>
+    <div><div class="lbl">Reported by</div><div class="inp ro">Operator (Daily Check)</div></div>
+    <div><div class="lbl">Source</div><div class="inp ro">Daily Check DC-2610-0041 ↗</div></div>
+    <div class="col-span-2 note">Accept membuat Work Order Confirmed dengan teknisi dan jadwal yang dipilih. Reject wajib alasan. Request P1 pada mesin berhenti sudah otomatis menjadi Work Order.</div>
+  </div>
+</section>
+</div>
+
+<!-- ============ CODES / READINESS ============ -->
+<div class="grid gap-3 mt-1" style="grid-template-columns: 1fr 1fr;">
+<div>
+<div class="cap">② Master Data › Maintenance Codes — grid kecil (ketik langsung di sel)</div>
+<section class="card p-3 space-y-2">
+  <div class="flt"><span class="on">Component 28</span><span>Problem 17</span><span>Cause 11</span><span>Action 12</span></div>
+  <div class="flex items-center gap-2"><div class="inp" style="width:200px"><span class="text-slate-400"><i class="fa-solid fa-magnifying-glass mr-1"></i>Search…</span></div><span class="btn ml-auto"><i class="fa-solid fa-floppy-disk"></i> Save</span><span class="btn pri">+ New Record</span></div>
+  <table class="w-full">
+    <thead><tr><th>Code</th><th>Name</th><th>Machine type</th><th>Order</th><th>Active</th></tr></thead>
+    <tbody>
+      <tr><td>FEEDER</td><td><div class="inp">Feeder <span class="aa">Aa</span></div></td><td>All</td><td>10</td><td><i class="fa-solid fa-circle-check text-green-600"></i></td></tr>
+      <tr><td>ROLLER</td><td><div class="inp">Roller <span class="aa">Aa</span></div></td><td>Printing</td><td>20</td><td><i class="fa-solid fa-circle-check text-green-600"></i></td></tr>
+      <tr><td>HYDRAULIC</td><td><div class="inp">Hydraulic <span class="aa">Aa</span></div></td><td>All</td><td>30</td><td><i class="fa-solid fa-circle-check text-green-600"></i></td></tr>
+      <tr><td>HEATER_DRYER</td><td><div class="inp">Heater / dryer / UV lamp <span class="aa">Aa</span></div></td><td>Coating</td><td>40</td><td><i class="fa-solid fa-circle-check text-green-600"></i></td></tr>
+    </tbody>
+  </table>
+</section>
+</div>
+<div>
+<div class="cap">③ Master Data › Machine Readiness — grid (kelengkapan profil per mesin) <span class="tag">2</span></div>
+<section class="card p-3 space-y-2">
+  <div class="flt"><span class="on">All 45</span><span>Incomplete 38</span><span>Complete 7</span></div>
+  <table class="w-full">
+    <thead><tr><th>Machine</th><th>Watch</th><th>Plan</th><th>Parts</th><th>Docs</th><th>Meter</th><th>Complete</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><b>OFF-02</b> Offset 4-color</td><td>7</td><td>4</td><td>0</td><td>1</td><td>Run hours</td><td style="width:110px"><div class="bar"><i style="width:80%;background:#16a34a"></i></div><div class="note">4 / 5</div></td><td><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><b>LAM-01</b> Laminator</td><td>5</td><td>0</td><td>0</td><td>0</td><td>—</td><td><div class="bar"><i style="width:20%;background:#f59e0b"></i></div><div class="note">1 / 5</div></td><td><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><b>CMP-01</b> Compressor</td><td>0</td><td>0</td><td>0</td><td>0</td><td>—</td><td><div class="bar"><i style="width:0%"></i></div><div class="note">0 / 5</div></td><td><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+    </tbody>
+  </table>
+  <div class="note">Hanya dibaca. Klik membuka Machine Maintenance Profile. Dipakai kepala maintenance untuk mengejar pengisian data.</div>
+</section>
+</div>
+</div>
+
+<!-- ============ METER ============ -->
+<div class="cap">④ Preventive Maintenance › Meter Readings — grid (diketik atau diakumulasi dari output produksi)</div>
+<section class="card p-3 space-y-2">
+  <div class="flt"><span class="on">All</span><span>Run hours</span><span>Impressions</span></div>
+  <div class="flex items-center gap-2"><div class="inp" style="width:200px"><span class="text-slate-400"><i class="fa-solid fa-magnifying-glass mr-1"></i>Search machine…</span></div><span class="btn pri ml-auto">+ New Record</span></div>
+  <table class="w-full">
+    <thead><tr><th>Date and time</th><th>Machine</th><th>Meter</th><th class="text-right">Reading</th><th class="text-right">Since last</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td>08-Oct-2026 07:00</td><td>OFF-01 Offset 2-color</td><td>Run hours</td><td class="text-right">3.589,5</td><td class="text-right">+ 12,5</td><td><span class="bdg bg-sky-100 text-sky-700">Production output</span></td></tr>
+      <tr><td>01-Oct-2026 07:30</td><td>CMP-01 Compressor</td><td>Run hours</td><td class="text-right">1.874,0</td><td class="text-right">+ 168,0</td><td><span class="bdg bg-slate-200">Typed by user</span></td></tr>
+      <tr><td>30-Sep-2026 16:00</td><td>OFF-02 Offset 4-color</td><td>Impressions</td><td class="text-right">4.210.000</td><td class="text-right">+ 96.400</td><td><span class="bdg bg-slate-200">Typed by user</span></td></tr>
+    </tbody>
+  </table>
+  <div class="note">Koreksi counter fisik dilakukan dengan menambah baris baru. Pembacaan lama tidak pernah ditimpa.</div>
+</section>
+
+<!-- ============ REPORTS ============ -->
+<div class="grid gap-3 mt-1" style="grid-template-columns: 1fr 1fr;">
+<div>
+<div class="cap">⑤ Report › Machine Reliability — laporan kaya kolom</div>
+<section class="card p-3 space-y-2">
+  <div class="flex items-center gap-2"><span class="btn">Period: Last 90 days <i class="fa-solid fa-caret-down"></i></span><span class="btn">Machine: All <i class="fa-solid fa-caret-down"></i></span><span class="btn"><i class="fa-solid fa-table-columns"></i> Columns</span><span class="btn ml-auto">Excel</span></div>
+  <table class="w-full">
+    <thead><tr><th>Machine</th><th class="text-right">Breakdowns</th><th class="text-right">Downtime (h)</th><th class="text-right">MTBF (h)</th><th class="text-right">MTTR (h)</th><th class="text-right">Avail. %</th><th class="text-right">Cost (IDR)</th></tr></thead>
+    <tbody>
+      <tr><td>OFF-02 Offset 4-color</td><td class="text-right">3</td><td class="text-right">10,2</td><td class="text-right">112</td><td class="text-right">3,4</td><td class="text-right">97,0</td><td class="text-right">2.100.000</td></tr>
+      <tr><td>DIE-04 Die cutter</td><td class="text-right">1</td><td class="text-right">2,0</td><td class="text-right">330</td><td class="text-right">2,0</td><td class="text-right">99,4</td><td class="text-right">480.000</td></tr>
+      <tr><td>CUT-01 Paper cutter</td><td class="text-right">2</td><td class="text-right">2,3</td><td class="text-right">205</td><td class="text-right">1,2</td><td class="text-right">99,4</td><td class="text-right">310.000</td></tr>
+    </tbody>
+  </table>
+</section>
+</div>
+<div>
+<div class="cap">⑥ Report › PM Compliance</div>
+<section class="card p-3 space-y-2">
+  <div class="flex items-center gap-2"><span class="btn">Period: This year <i class="fa-solid fa-caret-down"></i></span><span class="btn">Group by: Month <i class="fa-solid fa-caret-down"></i></span><span class="btn ml-auto">Excel</span></div>
+  <table class="w-full">
+    <thead><tr><th>Month</th><th class="text-right">Due</th><th class="text-right">On time</th><th class="text-right">Late</th><th class="text-right">Not done</th><th class="text-right">Compliance %</th><th class="text-right">Planned %</th></tr></thead>
+    <tbody>
+      <tr><td>Aug-2026</td><td class="text-right">9</td><td class="text-right">8</td><td class="text-right">1</td><td class="text-right">0</td><td class="text-right">88,9</td><td class="text-right">78</td></tr>
+      <tr><td>Sep-2026</td><td class="text-right">10</td><td class="text-right">8</td><td class="text-right">1</td><td class="text-right">1</td><td class="text-right">80,0</td><td class="text-right">74</td></tr>
+      <tr><td>Oct-2026</td><td class="text-right">6</td><td class="text-right">5</td><td class="text-right">0</td><td class="text-right">1</td><td class="text-right">83,3</td><td class="text-right">80</td></tr>
+    </tbody>
+  </table>
+  <div class="note">Toleransi tepat waktu diatur di Settings › Constants.</div>
+</section>
+</div>
+</div>
+
+<!-- ============ PHONES ============ -->
+<div class="cap">⑦ HP — operator lapor masalah (QR di mesin) dan teknisi My Work</div>
+<section class="flex gap-6 items-start flex-wrap">
+  <div class="phone">
+    <div class="px-3 py-2 text-white" style="background:#2c3e69"><div class="font-bold">Report Problem</div><div class="text-[10px] opacity-70">QR · OFF-02</div></div>
+    <div class="p-3 space-y-2">
+      <div class="card p-2"><b>OFF-02 · Offset 4-color</b><div class="note">Last breakdown 12 days ago · open WO: 0</div></div>
+      <div><div class="lbl">Machine stopped?</div><div class="flex gap-2"><span class="btn pri flex-1 text-center">Yes, stopped</span><span class="btn flex-1 text-center">No, running</span></div></div>
+      <div><div class="lbl">What happened</div><div class="inp" style="min-height:52px;align-items:flex-start">Feeder pulls two sheets <span class="aa">Aa</span></div></div>
+      <div><div class="lbl">Photo</div><div class="inp text-slate-400"><span><i class="fa-solid fa-camera"></i> Take photo</span></div></div>
+      <div class="note">Mesin kritis A dan berhenti: prioritas <b class="text-red-700">P1</b>, langsung menjadi Work Order.</div>
+      <span class="btn pri block text-center py-2">Save</span>
+    </div>
+  </div>
+  <div class="phone">
+    <div class="px-3 py-2 text-white" style="background:#2c3e69"><div class="font-bold">My Work</div><div class="text-[10px] opacity-70">Sutrisno · Thu 08-Oct</div></div>
+    <div class="p-3 space-y-2">
+      <div class="card p-2" style="border-left:4px solid #ef4444"><div class="flex justify-between"><b>MWO-2610-0012</b><span class="bdg bg-red-600 text-white">P1</span></div><div>OFF-02 · Feeder double-sheet</div><div class="flex gap-1 mt-1"><span class="btn warn">Hold</span><span class="btn ok">Done</span></div></div>
+      <div class="card p-2" style="border-left:4px solid #8b5cf6"><div class="flex justify-between"><b>MWO-2610-0013</b><span class="bdg bg-slate-200">P3</span></div><div>DIE-04 · Weekly lubrication · 13:00</div><div class="flex gap-1 mt-1"><span class="btn pri">Start</span></div></div>
+      <div class="card p-2" style="border-left:4px solid #cbd5e1"><div class="flex justify-between"><b>MWO-2609-0031</b><span class="bdg bg-emerald-100 text-emerald-700">Done</span></div><div class="note">CUT-01 · waiting Close by head</div></div>
+      <div class="card p-2"><div class="lbl">Checklist (PM)</div><div>☑ Clean rollers · ☑ Lubricate grippers · ☐ Air pressure</div></div>
+    </div>
+  </div>
+  <div class="card p-3 flex-1" style="min-width:300px">
+    <div class="font-bold text-navy mb-2">Legenda</div>
+    <div class="flex mb-2"><span class="tag">1</span><div>Request yang berasal dari Daily Check ditandai sumbernya, dan tidak langsung menjadi Work Order.</div></div>
+    <div class="flex mb-2"><span class="tag">2</span><div>Machine Readiness hanya dibaca. Angka kelengkapan dihitung dari data, tidak disimpan.</div></div>
+    <div class="note">Grid memakai satu baris saringan teks dengan garis bawah bergeser, tanpa kotak statistik. Tombol aksi memakai ikon berbingkai: Buka, Confirm.</div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

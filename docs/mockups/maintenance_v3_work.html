@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Maintenance v3 — Work Order dan Preventive Plan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .inp { width: 100%; border: 1px solid #c9d6ea; border-radius: 6px; padding: 5px 8px; font-size: 12px; background: #f7faff; display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+  .inp.ro { background: #f1f5f9; color: #475569; }
+  .aa { font-size: 9px; font-weight: 700; color: #2c7be5; background: #e3edfb; border-radius: 4px; padding: 1px 4px; }
+  .btn { padding: 4px 11px; border-radius: 6px; font-weight: 600; font-size: 11.5px; border: 1px solid #cbd5e1; background: #fff; color: #334155; white-space: nowrap; }
+  .btn.pri { background: #2c7be5; color: #fff; border-color: #2c7be5; }
+  .btn.ok { background: #16a34a; color: #fff; border-color: #16a34a; }
+  .btn.warn { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+  .btn.dis { opacity: .4; }
+  th { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600; text-align: left; padding: 6px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .cap { font-size: 13px; font-weight: 700; color: #334155; margin: 18px 0 6px; }
+  .note { font-size: 11px; color: #64748b; }
+  .bdg { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+  .tab { padding: 6px 12px; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; }
+  .tab.on { color: #2c3e69; border-color: #2c7be5; }
+  .tag { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; font-weight:700; margin-right:4px; flex:none; }
+  .flt { display:flex; gap:18px; border-bottom:1px solid #e2e8f0; padding: 0 4px; }
+  .flt span { padding: 7px 2px; color:#64748b; font-weight:600; border-bottom:2px solid transparent; }
+  .flt span.on { color:#2c3e69; border-color:#2c7be5; }
+  .back { display:inline-flex; align-items:center; gap:8px; padding:4px 4px 4px 12px; background:#43508a; border-radius:999px; color:#fff; font-weight:700; font-size:11px; text-transform:uppercase; }
+  .back i { display:inline-flex; width:22px; height:22px; border-radius:50%; background:#fff; color:#43508a; align-items:center; justify-content:center; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-4 max-w-[1400px] mx-auto">
+
+<div>
+  <div class="text-lg font-bold text-navy">Maintenance v3 — Work Order dan Preventive Plan</div>
+  <div class="note">Mockup untuk persetujuan · data contoh ddt* · label layar English, kalimat bantu Indonesia · lingkaran merah = beda dari rancangan M1 yang dihapus · database <b>tm2mnt</b></div>
+</div>
+
+<!-- ============ WO GRID ============ -->
+<div class="cap">① Preventive Maintenance › PM Work Order dan Breakdown Maintenance › Breakdown Work Order — grid (layar sama, saringan jenis berbeda) <span class="tag">1</span></div>
+<section class="card p-3 space-y-2">
+  <div class="flt"><span class="on">All 11</span><span>Draft 2</span><span>Scheduled 3</span><span>In Progress 2</span><span>Waiting Part 1</span><span>Done 2</span><span>Closed 1</span></div>
+  <div class="flex items-center gap-2">
+    <div class="inp" style="width:260px"><span class="text-slate-400"><i class="fa-solid fa-magnifying-glass mr-1"></i>Search WO, machine, technician…</span></div>
+    <span class="btn">Type: Breakdown, Corrective <i class="fa-solid fa-caret-down"></i></span>
+    <span class="btn">Machine: All <i class="fa-solid fa-caret-down"></i></span>
+    <span class="btn"><i class="fa-solid fa-table-columns"></i> Columns</span>
+    <span class="btn pri ml-auto">+ New Record</span>
+  </div>
+  <table class="w-full">
+    <thead><tr><th>WO</th><th>Machine</th><th>Type</th><th>Priority</th><th>Work status</th><th>Planned</th><th>Technician</th><th>Downtime</th><th>Source</th><th class="text-right">Action</th></tr></thead>
+    <tbody>
+      <tr><td><b>MWO-2610-0012</b><div class="note">Feeder double-sheet, stop</div></td><td><b>OFF-02</b> Offset 4-color <span class="bdg bg-red-100 text-red-700">A</span></td><td><span class="bdg bg-red-100 text-red-700">BREAKDOWN</span></td><td><span class="bdg bg-red-600 text-white">P1</span></td><td><span class="bdg bg-sky-100 text-sky-700">In Progress</span></td><td>08-Oct-2026 08:40</td><td>Sutrisno</td><td class="text-red-700 font-semibold">2 h 35 m</td><td>MR-2610-0007</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><b>MWO-2610-0014</b><div class="note">Noise from drive motor</div></td><td><b>DIE-04</b> Die cutter <span class="bdg bg-amber-100 text-amber-700">B</span></td><td><span class="bdg bg-sky-100 text-sky-700">CORRECTIVE</span></td><td><span class="bdg bg-slate-200">P3</span></td><td><span class="bdg bg-amber-100 text-amber-700">Waiting Part</span></td><td>09-Oct-2026 13:00</td><td>Agus</td><td>—</td><td>MR-2610-0009</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span></td></tr>
+      <tr><td><b>MWO-2609-0031</b><div class="note">Blade dull, uneven cut</div></td><td><b>CUT-01</b> Paper cutter <span class="bdg bg-amber-100 text-amber-700">B</span></td><td><span class="bdg bg-sky-100 text-sky-700">CORRECTIVE</span></td><td><span class="bdg bg-slate-200">P3</span></td><td><span class="bdg bg-emerald-100 text-emerald-700">Done</span></td><td>29-Sep-2026</td><td>Sutrisno</td><td>1 h 10 m</td><td>MR-2609-0022</td><td class="text-right"><span class="btn"><i class="fa-solid fa-up-right-from-square"></i></span> <span class="btn ok"><i class="fa-solid fa-check"></i></span></td></tr>
+    </tbody>
+  </table>
+  <div class="note">Saringan jenis di toolbar: dari menu Breakdown Work Order jenis awalnya Breakdown dan Corrective, dari PM Work Order jenis awalnya Preventive dan Inspection. Tanpa kotak statistik, sesuai standar grid yang disetujui.</div>
+</section>
+
+<!-- ============ WO FORM ============ -->
+<div class="cap">② Work Order — form master-detail (contoh BREAKDOWN yang sedang dikerjakan)</div>
+<section class="card overflow-hidden">
+  <div class="bg-navy text-white px-4 py-2.5 flex items-center gap-2">
+    <span class="back"><i class="fa-solid fa-arrow-left" style="font-size:9px"></i>Back</span>
+    <div class="ml-2"><div class="text-sm font-bold">Maintenance Work Order · MWO-2610-0012</div><div class="text-[10px] opacity-70">Breakdown Maintenance</div></div>
+    <span class="bdg bg-emerald-100 text-emerald-700 ml-3">Confirmed</span>
+    <span class="bdg bg-sky-100 text-sky-700">In Progress</span>
+    <div class="ml-auto flex items-center gap-1.5">
+      <span class="btn">New</span><span class="btn">Print</span><span class="btn">Cancel</span>
+      <span class="btn warn"><i class="fa-solid fa-pause"></i> Hold</span>
+      <span class="btn ok"><i class="fa-solid fa-check"></i> Done</span>
+      <span class="btn pri">Save</span>
+    </div>
+  </div>
+  <div class="px-4 py-2 bg-slate-50 border-b flex gap-6 text-[11px] flex-wrap">
+    <div><span class="lbl">Machine</span><div class="font-bold">OFF-02 · Offset 4-color</div></div>
+    <div><span class="lbl">Type</span><div><span class="bdg bg-red-100 text-red-700">BREAKDOWN</span></div></div>
+    <div><span class="lbl">Priority</span><div><span class="bdg bg-red-600 text-white">P1 Emergency</span></div></div>
+    <div><span class="lbl">From</span><div class="text-accent font-semibold">MR-2610-0007 ↗</div></div>
+    <div><span class="lbl">Work flow</span><div>Scheduled → <b>In Progress</b> → Waiting Part → Done → Closed</div></div>
+  </div>
+  <div class="grid gap-3 p-3" style="grid-template-columns: 1fr 300px;">
+    <div class="space-y-3">
+      <div class="flex border-b"><span class="tab on">General</span><span class="tab">Failure</span><span class="tab">Attachments</span></div>
+      <div class="grid grid-cols-4 gap-3">
+        <div><div class="lbl">Machine</div><div class="inp">OFF-02 Offset 4-color <i class="fa-solid fa-magnifying-glass text-slate-400"></i></div></div>
+        <div><div class="lbl">Component</div><div class="inp">Feeder <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+        <div><div class="lbl">Technician</div><div class="inp">Sutrisno <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+        <div><div class="lbl">Vendor (optional)</div><div class="inp text-slate-400">— <i class="fa-solid fa-caret-down"></i></div></div>
+        <div class="col-span-2"><div class="lbl">Description</div><div class="inp">Feeder pulls two sheets, double-sheet sensor error <span class="aa">Aa</span></div></div>
+        <div><div class="lbl">Actual start</div><div class="inp ro">08-Oct-2026 08:40</div></div>
+        <div><div class="lbl">Machine stop</div><div class="inp ro"><span><i class="fa-solid fa-toggle-on text-accent"></i> Yes, downtime recorded</span></div></div>
+      </div>
+      <div class="flex border-b"><span class="tab">Checklist</span><span class="tab on">Spare Parts (2)</span><span class="tab">Labor (1)</span><span class="tab">History</span></div>
+      <table class="w-full">
+        <thead><tr><th>#</th><th>Item</th><th>Plan</th><th>Used</th><th>UoM</th><th>Stock</th><th>Unit cost</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><b>SPM-0412</b> Suction rubber feeder</td><td>4</td><td>4</td><td>PCS</td><td class="text-emerald-700 font-semibold">12</td><td class="text-right">18.500</td><td><span class="bdg bg-emerald-100 text-emerald-700">Issued</span></td></tr>
+          <tr><td>2</td><td><b>SPM-0977</b> Double-sheet sensor</td><td>1</td><td>—</td><td>PCS</td><td class="text-red-600 font-semibold">0</td><td class="text-right">1.250.000</td><td><span class="bdg bg-amber-100 text-amber-700">PR requested</span></td></tr>
+        </tbody>
+      </table>
+      <div class="flex gap-2"><span class="btn">+ Add Part</span><span class="btn">From machine spare parts <span class="tag" style="margin:0 0 0 4px">2</span></span><span class="btn pri">Issue</span><span class="btn">Create PR</span></div>
+    </div>
+    <div class="space-y-3">
+      <div class="card p-3" style="border-color:#fecaca;background:#fef2f2">
+        <div class="font-bold text-red-700 mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Machine impact</div>
+        <div>Machine status: <span class="bdg bg-red-100 text-red-700">BREAKDOWN</span></div>
+        <div class="mt-1">Downtime running: <b>2 h 35 m</b></div>
+        <div class="mt-1">Scheduling Board: <b>3 production operations</b> affected, reroute is decided on the production work list.</div>
+        <div class="note mt-1">Done closes the downtime and sets the machine back to ready.</div>
+      </div>
+      <div class="card p-3">
+        <div class="font-bold text-navy mb-1">Cost (live)</div>
+        <div class="flex justify-between"><span>Spare parts</span><b>74.000</b></div>
+        <div class="flex justify-between"><span>Labor 2,6 h × rate <span class="tag" style="margin:0 0 0 3px">3</span></span><b>130.000</b></div>
+        <div class="flex justify-between"><span>Vendor service</span><b>0</b></div>
+        <div class="flex justify-between border-t mt-1 pt-1"><span>Total (IDR)</span><b>204.000</b></div>
+      </div>
+      <div class="card p-3">
+        <div class="font-bold text-navy mb-1">OFF-02 reliability (90 days)</div>
+        <div class="grid grid-cols-3 gap-2 text-center"><div><div class="lbl">MTBF</div><b>112 h</b></div><div><div class="lbl">MTTR</div><b>3,4 h</b></div><div><div class="lbl">Avail.</div><b>94,1%</b></div></div>
+      </div>
+      <div class="card p-3" style="border-color:#c7d2fe;background:#eef2ff">
+        <div class="font-bold text-indigo-800 mb-1">Repeated failure <span class="tag" style="margin:0 0 0 4px">4</span></div>
+        <div>3 breakdowns on <b>Feeder</b> in 90 days.</div>
+        <div class="mt-1"><span class="btn">Create Improvement…</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLAN FORM ============ -->
+<div class="cap">③ Preventive Maintenance › Preventive Plan — form</div>
+<section class="card overflow-hidden">
+  <div class="bg-navy text-white px-4 py-2.5 flex items-center gap-2">
+    <span class="back"><i class="fa-solid fa-arrow-left" style="font-size:9px"></i>Back</span>
+    <div class="ml-2"><div class="text-sm font-bold">Preventive Plan · PM-OFF01-01</div><div class="text-[10px] opacity-70">Preventive Maintenance</div></div>
+    <span class="bdg bg-emerald-100 text-emerald-700 ml-3">Active</span>
+    <div class="ml-auto flex items-center gap-1.5"><span class="btn">New</span><span class="btn">Duplicate</span><span class="btn dis">Undo</span><span class="btn pri">Save</span></div>
+  </div>
+  <div class="grid gap-3 p-3" style="grid-template-columns: 1fr 320px;">
+    <div class="space-y-3">
+      <div class="grid grid-cols-4 gap-3">
+        <div><div class="lbl">Plan code</div><div class="inp ro">PM-OFF01-01</div></div>
+        <div class="col-span-2"><div class="lbl">Plan name</div><div class="inp">Monthly service: dampening, inking, gripper <span class="aa">Aa</span></div></div>
+        <div><div class="lbl">Machine</div><div class="inp">OFF-01 Offset 2-color <i class="fa-solid fa-magnifying-glass text-slate-400"></i></div></div>
+        <div><div class="lbl">Work order type</div><div class="inp">PREVENTIVE <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+        <div><div class="lbl">Trigger</div><div class="inp">Time OR Meter, first reached <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+        <div><div class="lbl">Every</div><div class="inp">1 Month</div></div>
+        <div><div class="lbl">Or every</div><div class="inp">250 Run hours</div></div>
+        <div><div class="lbl">Schedule mode</div><div class="inp">Floating <i class="fa-solid fa-caret-down text-slate-400"></i></div></div>
+        <div><div class="lbl">Create WO before due</div><div class="inp">3 days</div></div>
+        <div><div class="lbl">Est. duration</div><div class="inp">240 minutes</div></div>
+        <div><div class="lbl">Machine stop</div><div class="inp"><span><i class="fa-solid fa-toggle-on text-accent"></i> Yes, blocks the Scheduling Board</span></div></div>
+      </div>
+      <div class="flex border-b"><span class="tab on">Tasks (6)</span><span class="tab">Spare Parts (2)</span><span class="tab">WO History</span></div>
+      <table class="w-full">
+        <thead><tr><th>#</th><th>Task</th><th>Kind</th><th>Measure</th><th>Min – Max</th><th>Required</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Clean and inspect dampening rollers</td><td>CLEAN</td><td>—</td><td>—</td><td>Yes</td></tr>
+          <tr><td>2</td><td>Check ink roller settings</td><td>MEASURE</td><td>mm</td><td>_ – _ <span class="tag" style="margin:0 0 0 4px">5</span></td><td>Yes</td></tr>
+          <tr><td>3</td><td>Clean and lubricate grippers</td><td>LUBRICATE</td><td>—</td><td>—</td><td>Yes</td></tr>
+          <tr><td>4</td><td>Check chain and belt tension</td><td>ADJUST</td><td>—</td><td>—</td><td>Yes</td></tr>
+          <tr><td>5</td><td>Replace vacuum pump filter</td><td>REPLACE</td><td>—</td><td>—</td><td>Yes</td></tr>
+          <tr><td>6</td><td>Air pressure at feeder</td><td>MEASURE</td><td>bar</td><td>_ – _</td><td>No</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><span class="tag">5</span>Batas ukur dan interval diisi kepala maintenance dari manual pabrikan. Contoh ini tidak memuat angka karangan.</div>
+    </div>
+    <div class="space-y-3">
+      <div class="card p-3" style="background:#f5f3ff">
+        <div class="font-bold text-violet-800 mb-1">Next due</div>
+        <div class="flex justify-between"><span>Last done</span><b>04-Sep-2026 · 3.412 h</b></div>
+        <div class="flex justify-between"><span>By time</span><b>04-Oct-2026</b></div>
+        <div class="flex justify-between"><span>By meter (3.662 h)</span><b>about 11-Oct-2026</b></div>
+        <div class="flex justify-between border-t mt-1 pt-1"><span>Next WO</span><b class="text-violet-800">04-Oct-2026, time first</b></div>
+        <div class="note mt-1">Meter dari Meter Readings (jam jalan atau impresi).</div>
+      </div>
+      <div class="card p-3">
+        <div class="font-bold text-navy mb-1">Compliance (12 months)</div>
+        <div class="flex justify-between"><span>Generated</span><b>12</b></div>
+        <div class="flex justify-between"><span>On time</span><b class="text-emerald-700">10</b></div>
+        <div class="flex justify-between"><span>Late</span><b class="text-amber-700">2</b></div>
+        <div class="flex justify-between border-t mt-1 pt-1"><span>PM compliance</span><b>83%</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cap">Legenda</div>
+<div class="card p-3 grid grid-cols-2 gap-x-6 gap-y-2">
+  <div class="flex"><span class="tag">1</span><div><b>Satu layar Work Order, dua pintu menu.</b> Saringan jenis berbeda, tanpa kotak statistik.</div></div>
+  <div class="flex"><span class="tag">2</span><div><b>From machine spare parts.</b> Mengambil dari daftar part milik mesin (Master Data), lalu stok dibaca dari Inventory.</div></div>
+  <div class="flex"><span class="tag">3</span><div><b>Tarif teknisi</b> dari konstanta di Settings › Constants, bukan data gaji.</div></div>
+  <div class="flex"><span class="tag">4</span><div><b>Repeated failure.</b> Saran sistem bila kerusakan sama berulang, tombol membuka Improvement baru.</div></div>
+  <div class="flex"><span class="tag">5</span><div><b>Batas ukur kosong.</b> Diisi dari manual pabrikan oleh kepala maintenance.</div></div>
+</div>
+
+</main>
+</body>
+</html>
