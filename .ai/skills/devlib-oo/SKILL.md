@@ -37,5 +37,12 @@ Main code (layar, route, komponen Livewire, command) harus **sederhana, mudah di
 - **Mudah di-debug:** tanpa efek samping tersembunyi, tanpa magic string berserakan (pakai konstanta / enum), satu sumber kebenaran per nilai, input / output method jelas dan bertipe (`declare(strict_types=1)` untuk kode baru, tipe parameter dan return).
 - **Yang bertambah = test kecil per kelas** (service / engine), supaya bug terlacak ke satu kelas.
 Dikutip di `docs/globaluserrules.md` D.17.
+## Arah warisan: DevLib membuat, tmerp mewarisi (user 2026-10-07)
+
+- Objek / helper / perilaku bersama dibuat **di DevLib dulu** (`packages/devlib`, demo di devlib.test); tmerp dan mockup.test hanya memakai atau menurunkannya.
+- `packages/devlib` berdiri sendiri: **tanpa kode `App\`** (`use`, `new`, panggilan statis). Helper global yang dipakai komponen / demo `x-dl::*` (mis. `raw()`) didefinisikan di paket (`src/helpers.php`, dimuat `DevlibServiceProvider::register`), bukan di aplikasi.
+- Butuh data / kamus tmerp (`t()`, `tf()` -> `Dictionary`) = tetap di tmerp, masuk ke DevLib lewat kontrak / props. Uji: demo harus tampil di devlib.test tanpa kode tmerp. Dijaga `DevlibInheritanceTest`.
+
+
 ## Bila skill generik bertentangan
 Contoh: saran "buat Blade component/Form Request/controller baru" padahal sudah ada objek DevLib yang bisa diperluas; saran markup Tailwind mentah; file Livewire berprefix `⚡`. Pilih jalur DevLib / tmerp, sebut singkat alasannya.

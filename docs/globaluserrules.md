@@ -630,6 +630,12 @@
     alur bisnis; tanpa salin-tempel (perilaku bersama naik ke induk / trait / library); tiap objek bisa ditelusuri ke
     sumbernya (`tag()`, `source()`, `lineage()`, `EngineRegistry`, log lewat satu jalur); kegagalan dilempar sebagai
     exception bernama dan dicatat dengan konteks (id dokumen, langkah), bukan ditelan; nama method memuat maksud.
+18. **Arah warisan: DevLib membuat, tmerp mewarisi (user 2026-10-07).** Objek, helper, dan perilaku bersama dibuat DEVLIB DULU
+    (`packages/devlib`, demo di devlib.test); tmerp / mockup.test hanya memakai atau menurunkannya. Paket `packages/devlib`
+    berdiri sendiri: tidak boleh memakai kode `App\` milik tmerp (`use`, `new`, panggilan statis), dan helper global yang dipakai
+    komponen / demo `x-dl::*` (mis. `raw()`) didefinisikan di paket (`packages/devlib/src/helpers.php`), bukan di aplikasi.
+    Hal yang butuh data / kamus tmerp (`t()`, `tf()` -> `Dictionary`) tetap di tmerp dan masuk ke DevLib lewat kontrak, bukan
+    dipanggil langsung. Ukuran: demo di devlib.test harus tampil tanpa kode tmerp. Dijaga `DevlibInheritanceTest`.
 
 ## E. Help & Asisten AI
 
@@ -778,3 +784,4 @@
 | 2026-10-04 | C.18: **Side Screen** — Help & support dan Edit profile menjadi objek DevLib baru `x-dl::side-screen` (user: "dibuatkan object baru turunan dari object devlib yang ada ... luas layar diperlebar hingga full screen ... bisa floating ... seperti windows di OS windows, bisa di-adjust size-nya dan bisa di-move"; ralat: bukan minimize). Turunan Drawer + Tabs + Breadcrumb: jendela layar penuh / mengambang (seret, ubah ukuran, snap, diingat per browser), rel bagian vertikal, judul bagian lengket, kotak cari, kaki aksi lengket. Katalog devlib.test Part 2 > Containers & Navigation > Side Screen; mockup `docs/mockups/side_screen_drawer.jpg`; test `SideScreenTest`. |
 | 2026-10-04 | C.18: **Chat, AI Assistant, Notifications = dua mode** (user: "sebaiknya dibuat bisa maximize besar seluas full screen. Jadi ada 2 mode") — tombol Maximize / Restore di kepala laci (Shell) dan prop `maximize` objek `x-dl::drawer`; `DrawerMax` (devlib.js), mode diingat per laci; Chat di mode penuh = daftar orang + percakapan berdampingan. Test `SideScreenTest`. |
 | 2026-10-07 | D.17: **Dasar pemrograman = Object Oriented + komponen modular + library** (user: "Make your main code simple, ease to debug and traceable") — main code berupa daftar panggilan ke objek / service / library, satu kelas satu tanggung jawab, tanpa salin-tempel, error = exception bernama berkonteks, objek traceable (`tag/source/lineage`, `EngineRegistry`). Ditulis juga di skill `devlib-oo` (`.ai/skills`). |
+| 2026-10-07 | D.18: **Arah warisan DevLib -> tmerp** (user: "di devlib harusnya membuat object untuk bisa diwariskan ke tmerp") — objek / helper dibuat di DevLib dulu; paket tidak boleh memakai kode `App\`; `raw()` pindah ke `packages/devlib/src/helpers.php` (dulu hanya di tmerp, membuat demo devlib.test error 500); test `DevlibInheritanceTest`. Ditulis juga di skill `devlib-oo`. |
