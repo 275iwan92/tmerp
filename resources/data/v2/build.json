@@ -1,17 +1,17 @@
 {
-    "generated": "2026-10-07 14:39",
+    "generated": "2026-10-07 14:45",
     "database": "ddtsys",
     "totals": {
         "objects": 148,
         "modules": 10,
         "modules_done": 6,
-        "screens": 235,
-        "v2": 225,
+        "screens": 236,
+        "v2": 226,
         "v1": 5,
         "not_built": 5,
-        "waiting_qc": 229,
+        "waiting_qc": 230,
         "locked": 1,
-        "forms": 89,
+        "forms": 90,
         "grids": 91,
         "reports": 55,
         "grid_classes": 147,
@@ -22,11 +22,11 @@
         "tables": 371,
         "databases": 9,
         "models": 328,
-        "migrations": 556,
-        "tests": 107,
+        "migrations": 557,
+        "tests": 108,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1170",
+        "commits": "1172",
         "since": "2026-08-06"
     },
     "modules": [
@@ -116,13 +116,13 @@
         },
         {
             "label": "Finance & Accounting",
-            "total": 21,
-            "v2": 21,
+            "total": 22,
+            "v2": 22,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 21,
+            "waiting_qc": 22,
             "locked": 0,
-            "form": 4,
+            "form": 5,
             "grid": 10,
             "report": 7
         },
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 70,
+            "commits": 71,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 105,
+            "screens": 108,
             "objects": 22,
             "engines": 1,
-            "tests": 19
+            "tests": 20
         },
         {
             "key": "jo",
@@ -175,7 +175,7 @@
             "tests": 0
         }
     ],
-    "untracked": 1100,
+    "untracked": 1101,
     "days": [
         {
             "date": "2026-09-24",
@@ -257,9 +257,9 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 27,
+            "iwan": 28,
             "jo": 0,
-            "other": 18
+            "other": 19
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 70,
+            "iwan": 71,
             "jo": 0,
-            "other": 20
+            "other": 21
         }
     ],
     "items": [
@@ -881,10 +881,10 @@
             "name": "Process Engine",
             "module": "Finance & Accounting",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "REPORT",
@@ -1182,6 +1182,17 @@
             "built_by": "iwan",
             "changed_at": "2026-10-07",
             "changed_by": "iwan"
+        },
+        {
+            "type": "FORM",
+            "key": "menu:FIN_BANK",
+            "name": "Bank & Reconciliation",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
         },
         {
             "type": "GRID",
@@ -1563,10 +1574,10 @@
             "name": "Dashboard",
             "module": "Finance & Accounting",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "FORM",
@@ -4216,7 +4227,7 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
+            "changed_at": "2026-10-07",
             "changed_by": null
         },
         {

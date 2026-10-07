@@ -107,6 +107,7 @@ final class Screens
                     $it('acc-rpt-cash-flow', ['Cash Flow', 'fa-solid fa-money-bill-transfer', 'v2: FinancialStatements + x-dl::statement (LedgerService::cashFlow)', null, true]),
                 ]],
                 ['label' => 'Transaction Flows', 'items' => [
+                    $it('acc-bank', ['Bank & Reconciliation', 'fa-solid fa-building-columns', 'v2: App\Support\V2\Data\BankDesk (BankReconService)', null, true]),
                     $it('customer-invoice', ['Customer Invoice', 'fa-solid fa-file-invoice-dollar', 'v2 baru: tm2acc.fin_invoice + fin_invoice_line (invoice dari Surat Jalan + tagihan uang muka)', 'customer_invoice_v2.jpg']),
                     $it('supplier-invoice-receipt', ['Supplier Invoice Receipt', 'fa-solid fa-file-circle-check', 'v2 baru: tm2acc.fin_invoice_receipt + fin_invoice_receipt_line (tanda terima tagihan supplier)', null]),
                 ]],

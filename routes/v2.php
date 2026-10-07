@@ -49,6 +49,7 @@ use App\Support\V2\Data\Account;
 use App\Support\V2\Data\ApprovalCenter;
 use App\Support\V2\Data\ApprovalSetting;
 use App\Support\V2\Data\AttendanceUpload;
+use App\Support\V2\Data\BankDesk;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CrmActivities;
 use App\Support\V2\Data\CrmComplaints;
@@ -1160,6 +1161,41 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $home($r)->with('v2_flash', ['advance' => t('Moved to the next stage.'), 'reject' => t('Candidate rejected.'), 'withdraw' => t('Candidate marked as withdrawn.')][$d['action']]);
         })->name('action');
+    });
+
+    // Finance > Bank & Reconciliation (App\Support\V2\Data\BankDesk). Semua aksi membawa `account` (rekening kas / bank) dan kembali ke layar yang sama.
+    Route::middleware('module:FINACC')->prefix('acc/bank')->name('acc.bank.')->group(function () {
+        $back = fn (Request $r, array $extra = []) => redirect(route('v2.screen', 'acc-bank').'?'.http_build_query(array_filter(['account' => $r->integer('account') ?: null] + $extra, fn ($v) => $v !== null && $v !== '')));
+        Route::post('/import', function (Request $r) use ($back) {
+            $n = BankDesk::import($r->integer('account'), $r->file('csv'), Auth::user()->login);
+
+            return $back($r)->with('v2_flash', tf(':n bank statement lines imported. Run Auto-Match to pair them with the books.', ['n' => $n]));
+        })->name('import');
+        Route::post('/auto-match', function (Request $r) use ($back) {
+            $n = BankDesk::autoMatch($r->integer('account'), Auth::user()->login);
+
+            return $back($r)->with('v2_flash', tf('Auto-match: :n lines were paired.', ['n' => $n]));
+        })->name('auto-match');
+        Route::post('/reconcile', function (Request $r) use ($back) {
+            $d = BankDesk::reconcile($r->integer('account'), Auth::user()->login);
+
+            return $back($r)->with($d['ok'] ? 'v2_flash' : 'v2_warn', $d['message']);
+        })->name('reconcile');
+        Route::post('/{id}/match', function (Request $r, int $id) use ($back) {
+            BankDesk::manualMatch($id, $r->validate(['voucher' => ['required', 'integer']], [], ['voucher' => t('Voucher')])['voucher'], Auth::user()->login);
+
+            return $back($r)->with('v2_flash', t('The line was paired with the book voucher.'));
+        })->whereNumber('id')->name('match');
+        Route::post('/{id}/adjust', function (Request $r, int $id) use ($back) {
+            $no = BankDesk::adjust($id, $r->integer('adj_account'), Auth::user()->login);
+
+            return $back($r)->with('v2_flash', tf('Bank adjustment journal :no created as a DRAFT — approve it in Journal Entries.', ['no' => $no]));
+        })->whereNumber('id')->name('adjust');
+        Route::post('/{id}/ignore', function (Request $r, int $id) use ($back) {
+            BankDesk::ignore($id, Auth::user()->login);
+
+            return $back($r)->with('v2_flash', t('The line was marked as ignored (duplicate / information).'));
+        })->whereNumber('id')->name('ignore');
     });
 
     // Finance > Control Center > Process Engine (App\Support\V2\Data\FinanceDesk): aturan workflow fin_approval_rule (tambah, aktif / nonaktif, unduh CSV).
