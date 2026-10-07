@@ -30,4 +30,8 @@
     @if ($built && ! ($screen['side'] ?? false))
         <x-dl::code-button :code="$code" :file="isset($screen['grid']) ? str_replace(base_path().DIRECTORY_SEPARATOR, '', (new ReflectionClass($screen['grid']))->getFileName()) : 'resources/views/screens/'.$screen['slug'].'.blade.php'" :mockup-url="$screen['mockup'] ? route('v2.mockup.file', $screen['mockup']) : null" />
     @endif
+    @if (\App\Support\V2\Qc::enabled())
+        @php($qc = \App\Support\V2\Qc::bar($screen['slug'], t($screen['label'])))
+        <x-dl::qc-bar :key="$qc['key']" :name="raw($qc['name'])" :stage="$qc['stage']" :status="$qc['status']" :note="$qc['note']" :by="$qc['by']" :at="$qc['at']" :action="$qc['action']" :csrf="$qc['csrf']" :can-review="$qc['canReview']" :chain="$qc['chain']" :release="$qc['release']" />
+    @endif
 @endsection

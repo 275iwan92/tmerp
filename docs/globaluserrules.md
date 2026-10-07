@@ -637,6 +637,14 @@
     Hal yang butuh data / kamus tmerp (`t()`, `tf()` -> `Dictionary`) tetap di tmerp dan masuk ke DevLib lewat kontrak, bukan
     dipanggil langsung. Ukuran: demo di devlib.test harus tampil tanpa kode tmerp. Dijaga `DevlibInheritanceTest`. Panduan kerja = skill `devlib-inheritance`.
 
+19. **QC cepat per layar, tiga lapis persetujuan (user 2026-10-07).** Tiap halaman devlib.test (komponen) dan tiap layar v2 mockup.test punya bilah QC:
+    **Approved** (satu klik, langsung tersimpan + waktu) atau **Need improvement** (pop-up, catatan wajib). Tiga lapis berurutan: **QC (user) -> UAT officer
+    (officer terkait) -> UAT supervisor (atasannya)**; ketiganya Approved = **Ready to release** (siap naik ke live). Sekarang hanya lapis QC yang aktif.
+    Objek `x-dl::qc-bar` + `Devlib\Qc` di paket; tabel `devlib.qc_review` (devlib.test) dan `sys_qc_review` di ddtsys (mockup.test, hanya bila `UAT_QC=true`
+    di `.env.mockup`, mati di live). **Awal sesi agen: `php artisan qc:reviews` (di folder `devlib/`) dan `php artisan qc:reviews --env=mockup`** — kerjakan dulu semua
+    Need improvement, tandai selesai dengan `--resolve=<id> --by=<agen>`. Kode tetap SATU folder; saat masa migrasi kode mockup disalin ke folder live terpisah,
+    dan live dijalankan sesuai layar yang sudah Approved.
+
 ## E. Help & Asisten AI
 
 1. **Setiap layar input dan laporan wajib punya Help (2026-10-02)**, tiga hal terpisah: **untuk apa** layar / laporan itu
@@ -785,3 +793,4 @@
 | 2026-10-04 | C.18: **Chat, AI Assistant, Notifications = dua mode** (user: "sebaiknya dibuat bisa maximize besar seluas full screen. Jadi ada 2 mode") — tombol Maximize / Restore di kepala laci (Shell) dan prop `maximize` objek `x-dl::drawer`; `DrawerMax` (devlib.js), mode diingat per laci; Chat di mode penuh = daftar orang + percakapan berdampingan. Test `SideScreenTest`. |
 | 2026-10-07 | D.17: **Dasar pemrograman = Object Oriented + komponen modular + library** (user: "Make your main code simple, ease to debug and traceable") — main code berupa daftar panggilan ke objek / service / library, satu kelas satu tanggung jawab, tanpa salin-tempel, error = exception bernama berkonteks, objek traceable (`tag/source/lineage`, `EngineRegistry`). Ditulis juga di skill `devlib-oo` (`.ai/skills`). |
 | 2026-10-07 | D.18: **Arah warisan DevLib -> tmerp** (user: "di devlib harusnya membuat object untuk bisa diwariskan ke tmerp") — objek / helper dibuat di DevLib dulu; paket tidak boleh memakai kode `App\`; `raw()` pindah ke `packages/devlib/src/helpers.php` (dulu hanya di tmerp, membuat demo devlib.test error 500); test `DevlibInheritanceTest`. Ditulis juga di skill `devlib-oo`. |
+| 2026-10-07 | D.19: **QC cepat Approved / Need improvement per layar, tiga lapis QC > UAT officer > UAT supervisor; ketiganya lolos = Ready to release** (user: "fasilitas tiap layar saya sebagai QC ada approve, nanti 2 lapis UAT oleh officer terkait dan atasannya"; "jika ketiganya lolos tercatat siap release ke live"). Kode tetap satu folder sampai masa migrasi, lalu disalin ke folder live. |

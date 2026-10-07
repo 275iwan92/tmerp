@@ -153,6 +153,15 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
     Route::get('/s/{slug}', function (string $slug) {
         $screen = Screens::screen($slug) ?? Grids::screen($slug) ?? abort(404);
+    // QC cepat (user 2026-10-07): Approved / Need improvement + catatan per layar; hanya situs UAT dan akun developer.
+    Route::post('/qc/review', function (Request $r) {
+        abort_unless(Qc::enabled() && AppMenu::user(Auth::user())['developer'], 403);
+        $r->validate(['key' => 'required|string|max:190', 'name' => 'nullable|string|max:190', 'stage' => 'required|string', 'status' => 'required|string', 'note' => 'nullable|string|max:500']);
+        $out = Qc::store()->record($r->input('key'), (string) $r->input('name'), $r->input('stage'), $r->input('status'), $r->input('note'), Auth::user()->login);
+
+        return $out + ['meta' => Auth::user()->login.' · '.Locale::date(now())];
+    })->name('qc.review');
+
         abort_unless(AppMenu::open($slug), 404);
         abort_unless(Auth::user()->canAccessModule($screen['module_code'] ?? 'SALES'), 403);
         $file = resource_path("views/v2/screens/{$slug}.blade.php");

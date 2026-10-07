@@ -101,9 +101,9 @@ Route::middleware('devlib.auth')->group(function () {
     // QC cepat (user 2026-10-07): Approved / Need improvement + catatan; hanya akun developer. Tiga lapis: QC, UAT officer, UAT supervisor.
     Route::post('/qc/review', function (Request $r) {
         $user = session('devlib_user');
-        abort_unless(($user['developer'] ?? false) && Qc::ready(), 403);
+        abort_unless(($user['developer'] ?? false) && Qc::store()->ready(), 403);
         $r->validate(['key' => 'required|string|max:190', 'name' => 'nullable|string|max:190', 'stage' => 'required|string', 'status' => 'required|string', 'note' => 'nullable|string|max:500']);
-        $out = Qc::record($r->input('key'), (string) $r->input('name'), $r->input('stage'), $r->input('status'), $r->input('note'), $user['login']);
+        $out = Qc::store()->record($r->input('key'), (string) $r->input('name'), $r->input('stage'), $r->input('status'), $r->input('note'), $user['login']);
 
         return $out + ['meta' => $user['login'].' · '.Locale::date(now())];
     })->name('qc.review');
