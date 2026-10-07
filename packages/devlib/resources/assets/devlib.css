@@ -3104,7 +3104,7 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-whmap__swatch--over{background:color-mix(in srgb,var(--dl-tangerine) 50%,var(--dl-surface));border-color:var(--dl-tangerine)}
 .dl-whmap__swatch--blocked{background:repeating-linear-gradient(45deg,var(--dl-surface-muted),var(--dl-surface-muted) 3px,var(--dl-grip) 3px,var(--dl-grip) 5px)}
 .dl-whmap__swatch--dead{background:color-mix(in srgb,var(--dl-danger) 32%,var(--dl-surface));border-color:var(--dl-danger)}
-.dl-whmap__body{display:grid;grid-template-columns:350px minmax(0,1fr);gap:10px;align-items:start}
+.dl-whmap__body{display:grid;grid-template-columns:clamp(260px,32%,350px) minmax(0,1fr);gap:10px;align-items:start}
 .dl-whmap__canvas{border:1px solid var(--dl-border);border-radius:var(--dl-radius);background:var(--dl-surface-alt);padding:4px;overflow:auto}
 .dl-whmap__svg{display:block;width:100%;height:auto;max-height:74vh;touch-action:none;user-select:none}
 .dl-whmap__floor{fill:var(--dl-surface)}
@@ -3213,7 +3213,7 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-whmap__acts{display:flex;gap:6px;flex-wrap:wrap}
 .dl-whmap__zone:not(.is-drag) .dl-whmap__zrect{cursor:pointer}
 .dl-whmap__zbin{border-top:1px solid var(--dl-border);padding-top:6px}.dl-whmap__zbin>button{all:unset;cursor:pointer;font-weight:700;color:var(--dl-accent)}.dl-whmap__zbin ul{margin:4px 0 0;padding-left:16px}.dl-whmap__zbin li small{display:block;color:var(--dl-text-muted,inherit);opacity:.75}
-@container (max-width:900px){.dl-whmap__body{grid-template-columns:1fr}.dl-whmap__panel{position:static}}
+@container (max-width:640px){.dl-whmap__body{grid-template-columns:1fr}.dl-whmap__panel{position:static}}
 
 /* ================= LABEL (x-dl::label, x-dl::label-sheet) + SCAN (x-dl::scan) =================
  * Label tempel gudang dalam ukuran nyata (mm): QR di kiri, kode besar, keterangan, barcode 1D. Lembar cetak hanya mencetak labelnya. */
