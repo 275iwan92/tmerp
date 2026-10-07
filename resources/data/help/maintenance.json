@@ -1,0 +1,188 @@
+[
+  {
+    "key": "guide-maintenance-types",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Three Kinds of Maintenance",
+    "purpose": {
+      "en": "Explains the three kinds of maintenance work (Preventive, Breakdown, Improvement) so you know which one a job belongs to.",
+      "id": "Menjelaskan tiga jenis pekerjaan maintenance (Preventive, Breakdown, Improvement) supaya Anda tahu sebuah pekerjaan masuk jenis yang mana."
+    },
+    "keywords": "maintenance, perawatan mesin, preventive, breakdown, corrective, improvement, perbaikan, pm, jenis maintenance, en 13306",
+    "steps": [
+      {
+        "en": "Preventive: work done on a schedule before the machine fails, for example changing hydraulic oil every set number of running hours or cleaning rollers every week.",
+        "id": "Preventive: pekerjaan sesuai jadwal sebelum mesin rusak, misalnya ganti oli hidrolik tiap sekian jam jalan atau bersihkan roller tiap minggu."
+      },
+      {
+        "en": "Preventive work can be triggered by the calendar, by machine usage (running hours or impressions) or by the machine condition.",
+        "id": "Pekerjaan preventive bisa dipicu oleh kalender, oleh pemakaian mesin (jam jalan atau impresi) atau oleh kondisi mesin."
+      },
+      {
+        "en": "Breakdown: work done after a machine stops or fails, for example a jammed feeder or a leaking hydraulic pump. The aim is to get the machine running again and record the cause.",
+        "id": "Breakdown: pekerjaan setelah mesin berhenti atau rusak, misalnya feeder macet atau pompa hidrolik bocor. Tujuannya mesin jalan lagi dan penyebabnya tercatat."
+      },
+      {
+        "en": "Improvement: a change to the machine or to the way it is maintained so it becomes more reliable, for example a longer-lasting part or a better service interval. Results are compared before and after.",
+        "id": "Improvement: perubahan pada mesin atau cara merawatnya supaya lebih andal, misalnya part yang lebih awet atau interval servis yang lebih tepat. Hasilnya dibandingkan sebelum dan sesudah."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-machine-profile",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "What a Machine Maintenance Profile Holds",
+    "purpose": {
+      "en": "Describes the information kept for each machine so that maintenance work can be planned: components, watch points, tasks, spare parts, failure codes and documents.",
+      "id": "Menjelaskan informasi yang disimpan untuk tiap mesin agar pekerjaan maintenance bisa direncanakan: komponen, titik pantau, tugas, suku cadang, kode kerusakan dan dokumen."
+    },
+    "keywords": "profil mesin, machine profile, komponen, watch point, titik pantau, spare part, suku cadang, failure code, kode kerusakan, pm task, master mesin",
+    "steps": [
+      {
+        "en": "Components are the parts of a machine in levels: machine, unit, component. Cost and failures can then be followed down to the component.",
+        "id": "Components adalah bagian mesin yang bertingkat: mesin, unit, komponen. Dengan begitu biaya dan kerusakan bisa dilacak sampai ke komponen."
+      },
+      {
+        "en": "Watch Points list what must be checked: what, how, the normal limit, how often, and whether the operator or a technician checks it.",
+        "id": "Watch Points berisi hal yang harus dicek: apa, caranya, batas normal, seberapa sering, dan apakah operator atau teknisi yang mengecek."
+      },
+      {
+        "en": "PM Tasks are the scheduled maintenance jobs, each with its interval, expected duration and whether the machine must be stopped.",
+        "id": "PM Tasks adalah pekerjaan perawatan terjadwal, masing-masing dengan interval, perkiraan lama pengerjaan dan penanda apakah mesin harus berhenti."
+      },
+      {
+        "en": "Spare Parts are the parts the machine needs, with the quantity per use, a suggested minimum stock, the expected life and whether the part is critical.",
+        "id": "Spare Parts adalah part yang dibutuhkan mesin, dengan jumlah per pemakaian, saran stok minimum, umur pakai dan penanda apakah part itu kritis."
+      },
+      {
+        "en": "Failure Codes name the usual kinds of failure (mechanical, electrical, hydraulic, pneumatic, operator) so reports can show which failures happen most.",
+        "id": "Failure Codes menamai jenis kerusakan yang lazim (mekanik, elektrik, hidrolik, pneumatik, operator) agar laporan bisa menunjukkan kerusakan yang paling sering."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-record-rules",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Rules for Recording Maintenance Data",
+    "purpose": {
+      "en": "Four recording habits that keep maintenance reports correct: pick from lists, record downtime and labour separately, never delete history, keep reports apart from jobs.",
+      "id": "Empat kebiasaan pencatatan agar laporan maintenance benar: pilih dari daftar, catat downtime dan jam kerja terpisah, jangan hapus riwayat, pisahkan laporan dari pekerjaan."
+    },
+    "keywords": "aturan pencatatan, downtime, jam kerja teknisi, riwayat, work order, request, laporan masalah, catat maintenance",
+    "steps": [
+      {
+        "en": "Pick locations and cost centres from the list instead of typing them. Free text cannot be added up in reports.",
+        "id": "Pilih lokasi dan cost center dari daftar, jangan diketik. Teks bebas tidak bisa dijumlahkan di laporan."
+      },
+      {
+        "en": "Record downtime (how long the machine stood still) and technician hours (how long people worked) as two different numbers. A 240-minute stop is not 240 minutes of work.",
+        "id": "Catat downtime (berapa lama mesin diam) dan jam teknisi (berapa lama orang bekerja) sebagai dua angka berbeda. Berhenti 240 menit bukan berarti 240 menit kerja."
+      },
+      {
+        "en": "Do not delete a record. Change its status and keep the row, because the history is used to work out reliability.",
+        "id": "Jangan hapus catatan. Ubah statusnya dan biarkan barisnya, karena riwayat dipakai untuk menghitung keandalan."
+      },
+      {
+        "en": "A problem report (Request) is kept apart from the job (Work Order), so rejected or duplicate reports do not pollute the job data.",
+        "id": "Laporan masalah (Request) dipisah dari pekerjaannya (Work Order), sehingga laporan yang ditolak atau dobel tidak mengotori data pekerjaan."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-operator-checks",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Operator Daily Checks (TPM)",
+    "purpose": {
+      "en": "Explains why operators look after their own machine every day (Total Productive Maintenance) and what a daily check usually covers.",
+      "id": "Menjelaskan mengapa operator merawat mesinnya sendiri setiap hari (Total Productive Maintenance) dan apa yang biasanya dicek tiap hari."
+    },
+    "keywords": "tpm, total productive maintenance, autonomous maintenance, cek harian, daily checklist, operator, kebersihan mesin, inspeksi harian",
+    "steps": [
+      {
+        "en": "The operator is the first to notice a change in sound, vibration or leaks, so TPM asks operators to do the basic care of their own machine.",
+        "id": "Operator adalah orang pertama yang menyadari perubahan suara, getaran atau kebocoran, jadi TPM meminta operator melakukan perawatan dasar mesinnya sendiri."
+      },
+      {
+        "en": "A daily check usually covers: clean the machine area, look for oil or water leaks, listen for unusual noise or vibration, check lubrication and fluid levels, check guards and the emergency stop.",
+        "id": "Cek harian biasanya meliputi: bersihkan area mesin, cari kebocoran oli atau air, dengar suara atau getaran tidak biasa, cek pelumasan dan level cairan, cek pengaman dan tombol darurat."
+      },
+      {
+        "en": "Report anything abnormal at once, before it turns into a breakdown.",
+        "id": "Laporkan segera hal yang tidak normal, sebelum menjadi kerusakan."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-kpi",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "Maintenance Indicators (MTBF, MTTR, PM Compliance, OEE)",
+    "purpose": {
+      "en": "Defines the four numbers used to judge maintenance: how often machines fail, how fast they recover, how well the schedule is followed and how effective the machine is.",
+      "id": "Menjelaskan empat angka untuk menilai maintenance: seberapa sering mesin rusak, seberapa cepat pulih, seberapa disiplin jadwal dijalankan dan seberapa efektif mesin."
+    },
+    "keywords": "mtbf, mttr, pm compliance, oee, indikator maintenance, keandalan mesin, availability, ketersediaan mesin, kinerja maintenance",
+    "steps": [
+      {
+        "en": "MTBF (mean time between failures) is operating hours divided by the number of failures. A higher number is better.",
+        "id": "MTBF (rata-rata jarak antar kerusakan) adalah jam operasi dibagi jumlah kerusakan. Makin besar makin baik."
+      },
+      {
+        "en": "MTTR (mean time to repair) is repair hours divided by the number of failures. A lower number is better.",
+        "id": "MTTR (rata-rata waktu perbaikan) adalah jam perbaikan dibagi jumlah kerusakan. Makin kecil makin baik."
+      },
+      {
+        "en": "PM compliance is the number of preventive jobs finished on time divided by the number that were due.",
+        "id": "PM compliance adalah jumlah pekerjaan preventive yang selesai tepat waktu dibagi jumlah yang jatuh tempo."
+      },
+      {
+        "en": "OEE combines availability, performance and quality into one figure for how effectively a machine is used.",
+        "id": "OEE menggabungkan ketersediaan, kecepatan dan mutu menjadi satu angka tentang seberapa efektif mesin dipakai."
+      },
+      {
+        "en": "MTBF and MTTR are only valid when every failure is marked as a failure, its downtime is recorded and the machine running hours are read at the start and end of the period.",
+        "id": "MTBF dan MTTR hanya valid bila tiap kerusakan ditandai sebagai kerusakan, downtime-nya dicatat dan jam jalan mesin dibaca di awal dan akhir periode."
+      }
+    ]
+  },
+  {
+    "key": "guide-maintenance-print-watch",
+    "type": "GUIDE",
+    "module": "MAINT",
+    "title": "What to Watch on Printing and Packaging Machines",
+    "purpose": {
+      "en": "Lists the points commonly watched on offset, lamination and finishing machines. Intervals and limits always follow the machine maker's manual.",
+      "id": "Daftar titik yang lazim dipantau pada mesin offset, laminasi dan finishing. Interval dan batas normal selalu mengikuti manual pabrikan mesin."
+    },
+    "keywords": "roller, silinder impresi, hidrolik, kalibrasi suhu, doctor blade, deep cleaning, mesin cetak, offset, laminasi, finishing, titik pantau",
+    "steps": [
+      {
+        "en": "Rollers: surface condition and alignment.",
+        "id": "Roller: kondisi permukaan dan kelurusan."
+      },
+      {
+        "en": "Impression cylinders: wear and cleanliness.",
+        "id": "Silinder impresi: keausan dan kebersihan."
+      },
+      {
+        "en": "Hydraulic system: leaks, pressure and oil level.",
+        "id": "Sistem hidrolik: kebocoran, tekanan dan level oli."
+      },
+      {
+        "en": "Temperature calibration on heating, coating and lamination units.",
+        "id": "Kalibrasi suhu pada unit pemanas, coating dan laminasi."
+      },
+      {
+        "en": "Doctor blades: sharpness and wear.",
+        "id": "Doctor blade: ketajaman dan keausan."
+      },
+      {
+        "en": "Deep cleaning on a schedule, not only when the machine looks dirty.",
+        "id": "Deep cleaning terjadwal, bukan hanya saat mesin terlihat kotor."
+      }
+    ]
+  }
+]
