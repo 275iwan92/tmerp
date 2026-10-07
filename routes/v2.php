@@ -2,6 +2,7 @@
 
 use App\Console\Commands\DdtBaseline;
 use App\Console\Commands\DdtStage;
+use App\Exports\GenericGridExport;
 use App\Mail\EmailVerifyMail;
 use App\Models\Acc\FinPeriod;
 use App\Models\Acc\FinPettyCashTx;
@@ -67,6 +68,7 @@ use App\Support\V2\Data\MailContacts;
 use App\Support\V2\Data\MigrationDesk;
 use App\Support\V2\Data\Overtime;
 use App\Support\V2\Data\PayrollDisbursement;
+use App\Support\V2\Data\PayrollSalaryReview;
 use App\Support\V2\Data\PettyCash;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\PurchaseOrder;
@@ -102,6 +104,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
 
 // Layar v2 (objek DevLib, Menu v2 tanpa top bar). Dimuat di dalam grup auth + force.password routes/web.php.
 // mockup.test (APP_UI=v2) mendarat di sini; tmerp.test tetap v1 sampai go-live.
@@ -1143,6 +1146,15 @@ Route::prefix('v2')->name('v2.')->group(function () {
             fclose($out);
         }, 'transfer-bank-'.$period.'.csv', ['Content-Type' => 'text/csv']);
     })->whereNumber('run')->middleware('module:HRM')->name('payroll.bank-csv');
+
+    // HRM > Payroll > Salary Review: unduhan Excel rincian gaji per pegawai untuk telaah manual direksi (App\Support\V2\Data\PayrollSalaryReview). Hanya yang berhak melihat nominal gaji.
+    Route::get('/hrm/payroll/salary-review/{run}.xlsx', function (int $run) {
+        abort_unless(Auth::user()->canViewPayrollAmounts(), 403);
+        $period = PayrollSalaryReview::run($run);
+        abort_unless($period, 404);
+
+        return Excel::download(new GenericGridExport(PayrollSalaryReview::rows($run), PayrollSalaryReview::headings()), PayrollSalaryReview::filename($period));
+    })->whereNumber('run')->middleware('module:HRM')->name('payroll.salary-xlsx');
 
     // HRM > Recruitment > Pipeline Board (App\Support\V2\Data\RecruitmentPipeline): move = JSON dari x-dl::kanban (:move-url), selebihnya redirect.
     Route::middleware('module:HRM')->prefix('hrm/recruitment/pipeline')->name('pipeline.')->group(function () {

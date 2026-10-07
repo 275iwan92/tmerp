@@ -1,19 +1,19 @@
 {
-    "generated": "2026-10-07 14:52",
+    "generated": "2026-10-07 14:57",
     "database": "ddtsys",
     "totals": {
         "objects": 148,
         "modules": 10,
         "modules_done": 6,
-        "screens": 238,
-        "v2": 228,
+        "screens": 239,
+        "v2": 229,
         "v1": 5,
         "not_built": 5,
-        "waiting_qc": 232,
+        "waiting_qc": 233,
         "locked": 1,
         "forms": 92,
         "grids": 91,
-        "reports": 55,
+        "reports": 56,
         "grid_classes": 147,
         "lookups": 37,
         "report_grids": 36,
@@ -22,11 +22,11 @@
         "tables": 371,
         "databases": 9,
         "models": 328,
-        "migrations": 559,
-        "tests": 110,
+        "migrations": 560,
+        "tests": 111,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1174",
+        "commits": "1178",
         "since": "2026-08-06"
     },
     "modules": [
@@ -104,15 +104,15 @@
         },
         {
             "label": "Human Resources",
-            "total": 33,
-            "v2": 32,
+            "total": 34,
+            "v2": 33,
             "v1": 1,
             "not_built": 0,
-            "waiting_qc": 33,
+            "waiting_qc": 34,
             "locked": 0,
             "form": 12,
             "grid": 15,
-            "report": 6
+            "report": 7
         },
         {
             "label": "Finance & Accounting",
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 73,
+            "commits": 74,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 113,
+            "screens": 115,
             "objects": 22,
             "engines": 1,
-            "tests": 22
+            "tests": 23
         },
         {
             "key": "jo",
@@ -175,7 +175,7 @@
             "tests": 0
         }
     ],
-    "untracked": 1101,
+    "untracked": 1104,
     "days": [
         {
             "date": "2026-09-24",
@@ -257,9 +257,9 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 30,
+            "iwan": 31,
             "jo": 0,
-            "other": 19
+            "other": 22
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 73,
+            "iwan": 74,
             "jo": 0,
-            "other": 21
+            "other": 24
         }
     ],
     "items": [
@@ -1596,10 +1596,10 @@
             "name": "Indonesian Tax",
             "module": "Finance & Accounting",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "FORM",
@@ -2721,6 +2721,17 @@
             "built_at": "2026-10-03",
             "built_by": null,
             "changed_at": "2026-10-04",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:HRM_PAYROLL_SALARYREVIEW",
+            "name": "Salary Review (Excel)",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {
