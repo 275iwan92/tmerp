@@ -1,19 +1,19 @@
 {
-    "generated": "2026-10-07 14:22",
+    "generated": "2026-10-07 14:35",
     "database": "ddtsys",
     "totals": {
-        "objects": 147,
+        "objects": 148,
         "modules": 10,
         "modules_done": 6,
-        "screens": 229,
-        "v2": 219,
+        "screens": 233,
+        "v2": 223,
         "v1": 5,
         "not_built": 5,
-        "waiting_qc": 223,
+        "waiting_qc": 227,
         "locked": 1,
         "forms": 88,
         "grids": 91,
-        "reports": 50,
+        "reports": 54,
         "grid_classes": 147,
         "lookups": 37,
         "report_grids": 36,
@@ -22,11 +22,11 @@
         "tables": 371,
         "databases": 9,
         "models": 328,
-        "migrations": 554,
-        "tests": 105,
+        "migrations": 555,
+        "tests": 106,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1164",
+        "commits": "1167",
         "since": "2026-08-06"
     },
     "modules": [
@@ -116,15 +116,15 @@
         },
         {
             "label": "Finance & Accounting",
-            "total": 15,
-            "v2": 15,
+            "total": 19,
+            "v2": 19,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 15,
+            "waiting_qc": 19,
             "locked": 0,
             "form": 3,
             "grid": 10,
-            "report": 2
+            "report": 6
         },
         {
             "label": "Master Data",
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 68,
+            "commits": 69,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 96,
-            "objects": 19,
+            "screens": 100,
+            "objects": 21,
             "engines": 1,
-            "tests": 17
+            "tests": 18
         },
         {
             "key": "jo",
@@ -175,7 +175,7 @@
             "tests": 0
         }
     ],
-    "untracked": 1096,
+    "untracked": 1098,
     "days": [
         {
             "date": "2026-09-24",
@@ -257,9 +257,9 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 25,
+            "iwan": 26,
             "jo": 0,
-            "other": 14
+            "other": 16
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 68,
+            "iwan": 69,
             "jo": 0,
-            "other": 16
+            "other": 18
         }
     ],
     "items": [
@@ -877,6 +877,17 @@
         },
         {
             "type": "REPORT",
+            "key": "menu:ACC_FS",
+            "name": "Financial Statements",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
             "key": "menu:HRM_CONTACT_GAP",
             "name": "Employees Without WhatsApp No.",
             "module": "Human Resources",
@@ -1316,6 +1327,17 @@
             "changed_by": null
         },
         {
+            "type": "REPORT",
+            "key": "menu:ACC_BS",
+            "name": "Balance Sheet",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
             "type": "GRID",
             "key": "menu:SET_GROUP",
             "name": "Groups",
@@ -1464,10 +1486,10 @@
             "name": "Organization Chart",
             "module": "Human Resources",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "FORM",
@@ -1797,6 +1819,17 @@
             "built_at": "2026-10-02",
             "built_by": null,
             "changed_at": "2026-10-02",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:ACC_PL",
+            "name": "Income Statement",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {
@@ -2311,10 +2344,10 @@
             "name": "Pipeline Board",
             "module": "Human Resources",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
@@ -2358,6 +2391,17 @@
             "built_at": "2026-09-30",
             "built_by": null,
             "changed_at": "2026-10-03",
+            "changed_by": null
+        },
+        {
+            "type": "REPORT",
+            "key": "menu:ACC_CF",
+            "name": "Cash Flow",
+            "module": "Finance & Accounting",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {
@@ -4062,8 +4106,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-23",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4271,8 +4315,8 @@
             "qc": "READY_FOR_QC",
             "built_at": "2026-09-24",
             "built_by": null,
-            "changed_at": "2026-10-03",
-            "changed_by": null
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",
@@ -4569,6 +4613,17 @@
             "built_at": "2026-09-23",
             "built_by": null,
             "changed_at": "2026-09-23",
+            "changed_by": null
+        },
+        {
+            "type": "OBJECT",
+            "key": "object:Statement",
+            "name": "Statement",
+            "module": "DevLib",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {

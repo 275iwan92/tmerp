@@ -3453,6 +3453,18 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-track__steps li.is-done b,.dl-track__steps li.is-current b{color:var(--dl-ink)}.dl-track__steps small{color:var(--dl-muted)}
 .dl-track__cancel{color:var(--dl-danger);font-weight:600;font-size:calc(13px * var(--dl-font-scale))}
 @media (prefers-reduced-motion:reduce){.dl-track.is-moving .dl-track__flow{animation:none;opacity:0}}
+/* Statement (x-dl::statement) */
+.dl-stmt{display:flex;flex-direction:column;gap:8px;max-width:760px}
+.dl-stmt__head{display:flex;gap:10px;align-items:baseline}.dl-stmt__head span{color:var(--dl-muted);font-size:calc(12px * var(--dl-font-scale))}
+.dl-stmt__table{width:100%;border-collapse:collapse;background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:12px;overflow:hidden;font-size:calc(13px * var(--dl-font-scale))}
+.dl-stmt__table th{padding:8px 12px;text-align:right;color:var(--dl-muted);font-weight:600;border-bottom:1px solid var(--dl-border)}
+.dl-stmt__table td{padding:7px 12px;border-bottom:1px solid var(--dl-border);color:var(--dl-ink)}.dl-stmt__table td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dl-stmt__table td.is-neg{color:var(--dl-danger)}
+.dl-stmt__row.is-group td{background:var(--dl-chip);font-weight:700;color:var(--dl-ink-strong);letter-spacing:.02em}
+.dl-stmt__row.is-line td:first-child{padding-left:26px}
+.dl-stmt__row.is-total td{font-weight:700;color:var(--dl-ink-strong);border-top:1px solid var(--dl-ink)}
+.dl-stmt__row.is-net td{font-weight:800;color:var(--dl-ink-strong);background:var(--dl-accent-soft);border-top:2px solid var(--dl-ink);border-bottom:3px double var(--dl-ink)}
+.dl-stmt__row.is-note td{color:var(--dl-muted);font-size:calc(12px * var(--dl-font-scale));font-style:italic}
 /* GeoClock (x-dl::geo-clock) */
 .dl-geo{display:flex;flex-direction:column;gap:10px;max-width:420px}
 .dl-geo__head{display:flex;gap:10px;align-items:baseline}.dl-geo__head span,.dl-geo small{color:var(--dl-muted);font-size:calc(12px * var(--dl-font-scale))}

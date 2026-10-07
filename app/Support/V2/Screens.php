@@ -96,6 +96,12 @@ final class Screens
                 ['label' => t('Cash & Bank'), 'items' => [
                     $it('petty-cash', ['Petty Cash', 'fa-solid fa-wallet', 'v2 baru: tm2acc.fin_petty_cash + fin_petty_cash_tx (PO Kontan)', null]),
                 ]],
+                ['label' => 'Financial Reports', 'items' => [
+                    $it('acc-statements', ['Financial Statements', 'fa-solid fa-file-invoice-dollar', 'v2: App\Support\V2\Data\FinancialStatements (LedgerService, ringkasan Neraca + Laba Rugi + Arus Kas)', null, true]),
+                    $it('acc-rpt-balance-sheet', ['Balance Sheet', 'fa-solid fa-scale-balanced', 'v2: FinancialStatements + x-dl::statement (LedgerService::balanceSheet)', null, true]),
+                    $it('acc-rpt-income-statement', ['Income Statement', 'fa-solid fa-chart-line', 'v2: FinancialStatements + x-dl::statement (LedgerService::incomeStatement)', null, true]),
+                    $it('acc-rpt-cash-flow', ['Cash Flow', 'fa-solid fa-money-bill-transfer', 'v2: FinancialStatements + x-dl::statement (LedgerService::cashFlow)', null, true]),
+                ]],
                 ['label' => 'Transaction Flows', 'items' => [
                     $it('customer-invoice', ['Customer Invoice', 'fa-solid fa-file-invoice-dollar', 'v2 baru: tm2acc.fin_invoice + fin_invoice_line (invoice dari Surat Jalan + tagihan uang muka)', 'customer_invoice_v2.jpg']),
                     $it('supplier-invoice-receipt', ['Supplier Invoice Receipt', 'fa-solid fa-file-circle-check', 'v2 baru: tm2acc.fin_invoice_receipt + fin_invoice_receipt_line (tanda terima tagihan supplier)', null]),

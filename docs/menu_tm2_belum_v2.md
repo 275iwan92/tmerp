@@ -151,6 +151,10 @@ pilihan departemen yang menyorot kartu); HRM_RCR_PIPELINE -> `v2:hrm-pipeline-bo
 memutuskan, kartu kembali bila ditolak; maju tepat satu tahap, guard assessment, Reject wajib alasan, Withdraw); HRM_SELFSERVICE -> `/v2/profile` (Edit Profile v2 sudah memuat
 semua fitur self-service: data diri, keluarga, dokumen, cuti / sakit / izin, izin keluar, tukar shift, jadwal, kartu pengenal, akun). HRM_RCR_PORTAL (portal kandidat publik di
 luar login) sengaja TIDAK diubah: tetap layar publik, bukan utang v2.
+**C2 SELESAI (2026-10-07, ddtsys; migration `2026_10_07_000140`):** ACC_FS -> `v2:acc-statements`, ACC_BS -> `v2:acc-rpt-balance-sheet`, ACC_PL -> `v2:acc-rpt-income-statement`,
+ACC_CF -> `v2:acc-rpt-cash-flow` (`FinancialStatements` di atas `LedgerService`, voucher POSTED saja; objek DevLib baru `x-dl::statement` = baris laporan keuangan dengan satu atau
+lebih kolom angka). Fitur v1 tetap: KPI, perbandingan dua tanggal (Neraca), perbandingan bulanan (Laba Rugi), grafik tren kas operasi, peringatan Neraca tidak seimbang / selisih
+rekonsiliasi kas, unduh CSV (`v2.acc.statement.csv`). Trial Balance sudah v2 sejak sebelumnya (`acc-rpt-trial-balance`).
 **Hasil pencocokan C1 (2026-10-07, dari ddtsys + kode):**
 
 | Kode | Temuan | Jalan keluar |

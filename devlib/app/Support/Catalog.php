@@ -177,6 +177,7 @@ final class Catalog
                         'widget-board' => ['4 · Widget board (the owner arranges it: Customize, Add Widget, Reset to Template)', $c('WidgetBoard', 'Kpi', 'Chart')],
                     ], 'dashboard_home_sales.html'),
                     'p6-indicators' => $page('Dashboard Indicators', 'fa-solid fa-gauge-high', ['indicators' => ['KPI, gauge, progress ring, bullet, traffic light', $c('Kpi', 'Gauge', 'ProgressRing', 'Bullet', 'TrafficLight')]]),
+                    'p6-statement' => $page('Financial Statement', 'fa-solid fa-file-invoice-dollar', ['statement' => ['Statement lines: group, line, subtotal, net total; one or more amount columns (period comparison)', $c('Statement')]]),
                     'p6-geo-clock' => $page('Geo Clock (GPS attendance)', 'fa-solid fa-location-crosshairs', ['geo-clock' => ['GPS geofencing clock in / out (distance and decision come from the server)', $c('GeoClock')]]),
                     'p6-delivery' => $page('Delivery Track', 'fa-solid fa-truck-fast', ['delivery-track' => ['Delivery route (schematic SVG, stage follows Delivery Order status)', $c('DeliveryTrack')]]),
                     'p6-codes' => $page('QR & Barcode', 'fa-solid fa-qrcode', [

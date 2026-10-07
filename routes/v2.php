@@ -55,6 +55,7 @@ use App\Support\V2\Data\CrmComplaints;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DataOriginDesk;
 use App\Support\V2\Data\DeliveryOrder;
+use App\Support\V2\Data\FinancialStatements;
 use App\Support\V2\Data\GpsClock;
 use App\Support\V2\Data\GroupPermissions;
 use App\Support\V2\Data\Identification;
@@ -1159,6 +1160,30 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return $home($r)->with('v2_flash', ['advance' => t('Moved to the next stage.'), 'reject' => t('Candidate rejected.'), 'withdraw' => t('Candidate marked as withdrawn.')][$d['action']]);
         })->name('action');
     });
+
+    // Finance > Financial Reports: unduhan CSV (UTF-8 BOM supaya Excel membacanya) Neraca / Laba Rugi / Arus Kas, isi sama dengan layar v1.
+    Route::get('/acc/statements/{report}.csv', function (Request $r, string $report) {
+        $from = (string) ($r->query('from') ?: now()->startOfYear()->toDateString());
+        $to = (string) ($r->query('to') ?: now()->toDateString());
+        $asOf = (string) ($r->query('as_of') ?: now()->toDateString());
+        $compareTo = (string) ($r->query('compare_to') ?: now()->subYear()->endOfYear()->toDateString());
+        $ledger = FinancialStatements::ledger();
+        [$headers, $rows, $name] = match ($report) {
+            'balance-sheet' => [...FinancialStatements::balanceSheetCsv($ledger->balanceSheet($asOf), $ledger->balanceSheet($compareTo), $asOf, $compareTo), 'balance-sheet-'.$asOf],
+            'income-statement' => [...FinancialStatements::incomeStatementCsv($ledger->incomeStatement($from, $to)), 'income-statement-'.$from.'-'.$to],
+            'cash-flow' => [...FinancialStatements::cashFlowCsv($ledger->cashFlow($from, $to)), 'cash-flow-'.$from.'-'.$to],
+        };
+
+        return response()->streamDownload(function () use ($headers, $rows) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($out, $headers);
+            foreach ($rows as $row) {
+                fputcsv($out, $row);
+            }
+            fclose($out);
+        }, $name.'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    })->whereIn('report', ['balance-sheet', 'income-statement', 'cash-flow'])->middleware('module:FINACC')->name('acc.statement.csv');
 
     // HRM > Time Attendance > Shift Roster (App\Support\V2\Data\ShiftRoster). Lingkup dari query: sched, dept, wc, w (selisih minggu).
     Route::middleware('module:HRM')->prefix('hrm/roster')->name('roster.')->group(function () {
