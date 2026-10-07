@@ -17,8 +17,7 @@ Fasilitas pelaporan: dashboard per level jabatan, grafik, dan ringkasan untuk ma
 > ini: **`docs/reportstandard.md`** (dokumen INDUK — 4 level, matrix
 > level x bidang §2.3, mekanisme kode supervisor §3, keputusan chart),
 > **`docs/topmanagementreport_tier1.md`** (katalog laporan detail level
-> Top Management per domain), **`docs/security_brief.md`** §6 (sisi
-> akses/menu-beda-per-level dari model yang sama). Ringkasan di bawah ini
+> Top Management per domain). Ringkasan di bawah ini
 > CUMA POINTER, bukan isi lengkap.
 
 **Model final**: 2 sumbu independen — **Level** (`sec_group.mgmt_level`
@@ -40,7 +39,7 @@ Direksi+GM sekaligus) lintas SEMUA bidang. Detail penuh tiap sel matrix
 - Menu beda per level → **kebutuhan BARU dikonfirmasi**, ternyata BUTUH
   perluasan skema (`sys_app_menu` belum punya gating per-item by
   `mgmt_level`, cuma warisan dari modul induknya) — lihat
-  `security_brief.md` §6.2, JANGAN diimplementasi sepihak (ubah tabel
+  JANGAN diimplementasi sepihak (ubah tabel
   menu inti, dampaknya ke semua menu existing).
 
 **Yang MASIH terbuka** (`topmanagementreport_tier1.md` §5, `reportstandard.md` §5):

@@ -23,7 +23,7 @@ Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 
 
 - **Wajib `npm run build`** setelah menambah class baru (bukan `npm run dev`).
 - `app.css` punya `.grid {grid-cols-4}` unlayered → `grid two`/`grid three`/flex, jangan `grid grid-cols-N`.
-- Token: `navy #2c3e69`, `accent #2c7be5`, `muted #8a94a6` (`@theme` di app.css). Tema/dark mode dikelola data `tm2sys.sys_theme` (themestandard.md) — jangan menambah varian `dark:` sendiri.
+- Token: `navy #2c3e69`, `accent #2c7be5`, `muted #8a94a6` (`@theme` di app.css). Tema/dark mode dikelola data `tm2sys.sys_theme` — jangan menambah varian `dark:` sendiri.
 - Jangan pakai class `container`.
 - **v4 CSS-first (user 2026-10-07):** tanpa `tailwind.config.js/ts` dan tanpa `@tailwind ...` (cukup `@import "tailwindcss"`); token lewat `@theme`. Sintaks v4 wajib: `bg-black/50` (bukan `bg-opacity-*`/`text-opacity-*`), `shrink-0`/`grow` (bukan `flex-shrink-0`/`flex-grow`), `text-ellipsis` (bukan `overflow-ellipsis`). Jarak antar elemen pakai `gap-*`; komponen baru = komponen `x-ui.*`/`x-dl::*`, bukan `@apply`. Warna baru = token `@theme` yang ada (`accent`, `navy`, `muted`, `--color-field-*`), bukan hex/OKLCH literal; tanpa `@custom-variant dark` (dark mode = `sys_theme`). Properti CSS biasa `flex-shrink: 0` tetap sah.
 

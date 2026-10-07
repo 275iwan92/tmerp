@@ -12,10 +12,10 @@
 
 ## 1. RUANG LINGKUP
 
-Dispatch mengelola siklus **jadwal kirim → keluar gudang → sampai customer**, sambungan terakhir Sales sebelum Invoicing. Modul 5 di `checklistmockuperp.md` terbagi 3 sub-area (5.1 Picking & Packing, 5.2 Delivery Order, 5.3 Shipment) — **Tier 1-4 ini hanya menuntaskan 5.2 (Delivery Order/Delivery Note) + irisan minimal 5.1 (penandaan qty siap kirim)**. 5.3 (Load Planner, Route Planner, Shipment Manifest) sengaja **ditunda** — itu baru relevan begitu volume pengiriman butuh konsolidasi multi-DO ke satu truk, dan belum ada urgensi bisnis yang dikonfirmasi. Lihat §8.
+Dispatch mengelola siklus **jadwal kirim → keluar gudang → sampai customer**, sambungan terakhir Sales sebelum Invoicing. Modul 5 di `checklistmockuperp.md (diarsipkan)` terbagi 3 sub-area (5.1 Picking & Packing, 5.2 Delivery Order, 5.3 Shipment) — **Tier 1-4 ini hanya menuntaskan 5.2 (Delivery Order/Delivery Note) + irisan minimal 5.1 (penandaan qty siap kirim)**. 5.3 (Load Planner, Route Planner, Shipment Manifest) sengaja **ditunda** — itu baru relevan begitu volume pengiriman butuh konsolidasi multi-DO ke satu truk, dan belum ada urgensi bisnis yang dikonfirmasi. Lihat §8.
 
 ### 1.1 Masalah inti yang diselesaikan
-Setelah CO `CONFIRMED`, jadwal kirim per item tercatat di `co_order_delivery` (sudah live, murni penjadwalan — lihat `checklistmockuperp.md` MODUL 1). Yang **belum ada**: dokumen eksekusi pengiriman sungguhan yang:
+Setelah CO `CONFIRMED`, jadwal kirim per item tercatat di `co_order_delivery` (sudah live, murni penjadwalan — lihat `checklistmockuperp.md (diarsipkan)` MODUL 1). Yang **belum ada**: dokumen eksekusi pengiriman sungguhan yang:
 1. Bisa **mengonsolidasi baris dari beberapa CO berbeda** ke satu pengiriman, selama customer sama (satu truk boleh bawa barang dari CO2600011 dan CO2600014 sekaligus).
 2. **Tidak pernah menggabung baris** hanya karena nama produk sama — kalau harga jual beda (karena beda CO/beda negosiasi), baris **tetap terpisah**, masing-masing membawa jejak CO asal + harga asalnya sendiri.
 3. Menghasilkan **dua cetakan** dari satu dokumen: Delivery Order (internal, berharga, untuk Sales/Finance) dan Surat Jalan (eksternal, dibawa kurir, ditandatangani penerima, tanpa harga).
@@ -133,7 +133,7 @@ Keduanya dari `do_delivery`/`do_line` yang sama (lihat §1.2). Layout **TERPUSAT
 | **5.1 Picking List Entry granular (per-lokasi/bin, scan barcode)** | Belum ada kebutuhan WMS sungguhan; v1 anggap barang selalu siap begitu DO Confirmed |
 | **5.1 Packing List (koli/tonase/m³)** | Menunggu 5.3 Shipment; `do_package`/`do_package_line` didesain di riset kemarin tapi belum dibangun di Tier ini |
 | **5.3 Load Planner, Route Planner, Shipment Manifest** | Belum ada urgensi bisnis terkonfirmasi; menyusul spec terpisah |
-| **Price-change approval 3-party (Costing+Sales+Finance)** | Sudah dicatat di `checklistmockuperp.md` sebagai item terbuka terpisah; kolom `price_overridden`/`original_unit_price`/`price_change_approval_status` disiapkan di Tier 3 tapi **tidak** ada flow approval aktif di v1 |
+| **Price-change approval 3-party (Costing+Sales+Finance)** | Sudah dicatat di `checklistmockuperp.md (diarsipkan)` sebagai item terbuka terpisah; kolom `price_overridden`/`original_unit_price`/`price_change_approval_status` disiapkan di Tier 3 tapi **tidak** ada flow approval aktif di v1 |
 | **FG Stock Out otomatis saat SHIPPED** | Butuh keputusan valuasi COGS FG tersendiri (AVG/FIFO), lihat §5.2 |
 | **Proof of Delivery digital (foto/tanda tangan elektronik)** | v1: tanda tangan fisik di lembar Surat Jalan, tidak di-capture ke sistem |
 | **Delivery Return / retur setelah SHIPPED** | Modul terpisah setara PRT vs PV, menyusul kalau dibutuhkan |
@@ -143,7 +143,7 @@ Keduanya dari `do_delivery`/`do_line` yang sama (lihat §1.2). Layout **TERPUSAT
 
 ## 9. REFERENSI
 
-- `checklistmockuperp.md` MODUL 1 (§ `co_order_delivery`) & MODUL 5
+- `checklistmockuperp.md (diarsipkan)` MODUL 1 (§ `co_order_delivery`) & MODUL 5
 - `flowengine_tier1.md` §4 (module_code DO/DN, di-override sebagian oleh §1.2 di atas)
 - `prefixlist.md` §B (`do_` prefix)
 - `procurement_tier1.md` (pola Sisi A/B, hard-lock dokumen)

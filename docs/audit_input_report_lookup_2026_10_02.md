@@ -238,7 +238,7 @@ Semua tercatat di `MANIFEST.md` arsip.
 | `docs/md_output/screens/` (118 file tersisa) | dokumen layar v1 per 2026-09-05; masih acuan alur untuk layar yang belum pindah ke v2. `screen_prodev_print.md` mendokumentasikan file yang sudah tidak ada |
 | `*_state.yaml` vs `*_state_v2.yaml` (finance, inventory, procurement) | dua versi berkepala sama; tidak jelas mana yang berlaku |
 | `md_for_systems/attendancepayroll_tier1-4.md` vs `payroll_timeattendance/attendancepayroll_tier1-4.md` | nama sama, isi beda (v1.0 vs v4.0) |
-| `kebijakanbesar.md`, `ringkasanstatus.md`, `catatanauditmenyeluruh.md`, `checklistmockuperp.md` | status per 2026-09-02 / 09-16; masih ditautkan dari `BACKLOG.md` |
+| `kebijakanbesar.md`, `ringkasanstatus.md`, `catatanauditmenyeluruh.md (diarsipkan)`, `checklistmockuperp.md (diarsipkan)` | status per 2026-09-02 / 09-16; masih ditautkan dari `BACKLOG.md` |
 | `mockups/inquiry_nota_{new,recalc,revise}.html`, `nota_inquiry_mockup_bw.html` | mockup nota 2026-08; format cetak Inquiry sekarang sudah A lewat generator baru |
 | `mockups/data tables/` (4 file pustaka DataTables) | tidak dirujuk; mungkin sisa percobaan MPS Spreadsheet |
 | `docs/mockups/print_doc/` | **tidak disentuh** — sesi lain sedang bekerja di sana (commit `6f389205`) |

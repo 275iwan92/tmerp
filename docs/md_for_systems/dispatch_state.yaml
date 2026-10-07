@@ -59,7 +59,7 @@ artefak_selesai:
   - dispatch_tier1.md          # konsep, scope, rantai dokumen, aktor, integrasi, istilah
   - dispatch_tier2.md          # picker logic, no-merge rule, status lifecycle, validasi, price override, cetak
   - dispatch_tier3.md          # DDL do_delivery/do_line, VIEW v_co_delivery_outstanding + v_do_list, penomoran, seed UAT
-  - dispatch_tier4.md          # peta layar, wireframe per blok, cara pakai mockup -> implementasi, skenario UAT, checklist wiring
+  - dispatch_tier4.md (diarsipkan)          # peta layar, wireframe per blok, cara pakai mockup -> implementasi, skenario UAT, checklist wiring
   - dispatch_rules.yaml
   - dispatch_state.yaml
   - mockup_delivery_order.html  # simulasi visual vanilla JS, no-merge rule teruji visual
@@ -93,7 +93,7 @@ open_items:
   - id: DISPATCH-PRICE-APPROVAL
     prioritas: RENDAH (kolom reserved sudah cukup untuk v1)
     isi: >
-      checklistmockuperp.md MODUL 5.2 mencatat "Price-change approval (approval 3-party
+      checklistmockuperp.md (diarsipkan) MODUL 5.2 mencatat "Price-change approval (approval 3-party
       asli Costing+Sales+Finance)" sebagai item terbuka terpisah, kini boleh dikerjakan
       karena Finance sudah dibuka scope-nya (DEC-SCOPE-OPEN 2026-08-26). BELUM digarap di
       Tier ini -- kolom price_overridden/original_unit_price/price_change_approval_status

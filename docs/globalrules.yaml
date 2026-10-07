@@ -7,7 +7,7 @@
 meta:
   scope: "Scope terkunci 10 minggu (lihat GLOBAL_START_HERE) HANYA berarti urutan prioritas Sales-dulu, BUKAN larangan menyentuh modul lain. CATATAN 2026-08-26 (DEC-SCOPE-OPEN, lihat GLOBAL_START_HERE): user resmi membuka Finance & Accounting (10_finance_accounting) DAN HR lengkap termasuk Recruitment/Payroll (11_hr) untuk boleh dikerjakan sekarang — bukan lagi 'di luar scope 10 minggu'. modules_excluded di bawah sudah diperbarui mengikuti keputusan ini. Baca ini + GLOBAL_START_HERE + <MODUL>_STATE tiap sesi."
   bahasa: "Jawab Bahasa Indonesia. Singkat-padat-jelas. Bahas konsep sebelum kode. Baca file PENUH sebelum dokumentasi."
-  peta_status: "checklistmockuperp.md (per-item) DAN warna menu di shell (per-DB, lihat module_status_system) adalah DUA representasi peta status yang sama — WAJIB diupdate BARENGAN tiap ada perubahan status suatu form/grid, jangan cuma salah satu."
+  peta_status: "checklistmockuperp.md (diarsipkan) (per-item) DAN warna menu di shell (per-DB, lihat module_status_system) adalah DUA representasi peta status yang sama — WAJIB diupdate BARENGAN tiap ada perubahan status suatu form/grid, jangan cuma salah satu."
 
 # ═══════════════════════════════════════════════════════════════════
 # MODUL ERP — SCOPE 10 MINGGU (urutan dependensi eksekusi Sales-dulu).

@@ -307,4 +307,4 @@ Label tanda tangan diambil dari `flow_config_step.label`. Dokumen `CANCELLED` di
 - [ ] Uji: retur melebihi `qty_returnable` ditolak server meski validasi klien dilewati.
 - [ ] Uji: substitusi + pembelian pada satu baris induk menghasilkan tepat satu baris kartu stok untuk substitusi dan nol untuk pembelian.
 - [ ] Pratinjau "Dampak Kartu Stok" memakai `StockPostingService::preview()`, bukan perhitungan terpisah di komponen.
-- [ ] `checklistmockuperp.md` MODUL 2 dan warna menu di shell diperbarui **bersamaan**.
+- [ ] `checklistmockuperp.md (diarsipkan)` MODUL 2 dan warna menu di shell diperbarui **bersamaan**.

@@ -10,7 +10,6 @@
 > atau menyentuh alur login/lupa-password/setup keamanan.
 >
 > Dokumen ini **melengkapi**, tidak menggantikan:
-> - `security_brief.md` — alur Login → Main Menu.
 > - `security_defaultpassword_spec.md` — mekanik `default_password` &
 >   `must_change_password` + addendum §10 (lupa password 4 pertanyaan).
 

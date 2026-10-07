@@ -346,7 +346,7 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
 Baca file itu (atau `docs/md_for_systems/uistandardindex.md`) sebelum menyentuh area berikut; jangan menebak:
 - Alur produk / Inquiry→Master Product: `flow_product_master.md`. Material Category / kode item / PR-PO: `matcategory_delta.md` §5 (LOCKED, 7x disampaikan).
 - Gudang, bin, transfer, label: `warehouselayout_tier1.md`. Grid: `griduistandard.md`. Form/komponen: `componentstandard.md`, `FORM_UI_STANDARD.md`.
-- Menu: `sidebarmenustandard.md`. Gantt / Kanban / Nota cetak / spreadsheet grid / tema: `ganttboardstandard.md`, `kanbanboardstandard.md`, `printnotastandard.md`, `spreadsheetgridstandard.md`, `themestandard.md`.
+- Menu: `sidebarmenustandard.md`. Gantt / Kanban / Nota cetak / spreadsheet grid: `ganttboardstandard.md`, `kanbanboardstandard.md`, `printnotastandard.md`, `spreadsheetgridstandard.md`.
 - Generate WO / Scheduling: `production_scheduling_wo_generation_delta.md`. QC user: `docs/qc_feedback.md`. Lampiran form/Excel nyata: `docs/attachments_index.md`.
 - Konvensi nama file docs: ikut `sys_app_menu.doc_slug` / `sys_doc_reference` (jangan bikin prefix sendiri).
 

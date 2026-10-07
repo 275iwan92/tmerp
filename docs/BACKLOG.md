@@ -50,7 +50,6 @@ Kebijakan Besar, dan catatan audit menyeluruh — semuanya tetap di bawah ini.
 |---|---|
 | [`ringkasanstatus.md`](ringkasanstatus.md) | Ringkasan status lintas-modul (diskusi per nomor R#) |
 | [`kebijakanbesar.md`](kebijakanbesar.md) | Kebijakan besar yang sudah diputuskan tapi belum dieksekusi |
-| [`catatanauditmenyeluruh.md`](catatanauditmenyeluruh.md) | Catatan audit menyeluruh `docs/*.md` (2026-09-02) — sub-bagian per-modul sudah dipindah ke backlog masing-masing |
 
 ---
 

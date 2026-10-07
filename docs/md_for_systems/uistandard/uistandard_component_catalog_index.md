@@ -111,7 +111,6 @@ inquiry 1, org-chart 1, prodev 1).
 | `docs/ganttboardstandard.md` | Jadwal resource×waktu dengan drag geser & resize (Scheduling Board) |
 | `docs/kanbanboardstandard.md` | Kolom kategori/status diskrit dengan kartu drag-drop antar kolom |
 | `docs/spreadsheetgridstandard.md` | Grid spreadsheet-editable (klik sel edit, drag-fill AutoFill) — opt-in master kecil/scalar saja |
-| `docs/themestandard.md` | Tema aplikasi — matrix 4 mode x 3 corak, data di `tm2sys.sys_theme` |
 | `docs/admindashboardstandard.md` | Navigasi/chrome panel admin Filament (`/admin`) |
 | `docs/sidebarmenustandard.md` | Struktur menu sidebar per modul |
 | `docs/configurationstandard.md` | Layar Configuration — konstanta sistem, identitas aplikasi (dipakai komponen `auth/*`) |

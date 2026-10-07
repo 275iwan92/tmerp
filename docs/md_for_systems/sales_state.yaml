@@ -50,7 +50,7 @@ artefak_selesai:
   - "resources/views/pages/co/{list,entry}.blade.php"
   - "resources/views/pages/inquiry/{imposition,nota}.blade.php"
   - "mockup_sales_quotation_entry.html, mockup_sales_quotation_letter_print.html, mockup_co_entry.html"
-  - "checklistmockuperp.md  # Sales 12 live / 6 mockup-blm-digarap / 1 blm-ada-mockup per 2026-08-20"
+  - "checklistmockuperp.md (diarsipkan)  # Sales 12 live / 6 mockup-blm-digarap / 1 blm-ada-mockup per 2026-08-20"
 
 next_step:
   - "SELESAI 2026-08-20: Imposition Engine, Nota Inquiry, Quotation (redesain multi-inquiry), Customer Order (dari nol)"

@@ -262,7 +262,7 @@ description: Index master seluruh dokumen /docs — layar, flow modul, database/
 
 **Dokumen standar konsep (existing, sudah ada sebelum sesi ini — TIDAK diduplikasi, cuma di-cross-reference)**:
 `griduistandard.md`, `printnotastandard.md`, `ganttboardstandard.md`, `kanbanboardstandard.md`,
-`spreadsheetgridstandard.md`, `themestandard.md`, `admindashboardstandard.md`, `configurationstandard.md`,
+`spreadsheetgridstandard.md`, `admindashboardstandard.md`, `configurationstandard.md`,
 `sidebarmenustandard.md`, `FORM_UI_STANDARD.md`, `uistandardindex.md` (peta lengkap kapan pakai standar yang mana).
 
 ---
@@ -272,11 +272,11 @@ description: Index master seluruh dokumen /docs — layar, flow modul, database/
 Daftar filename saja (isi TIDAK dibaca ulang di sesi ini — dokumen ini sudah ada sebelum tugas dokumentasi
 2026-09-05, cek langsung filenya kalau perlu detail):
 
-**Arsitektur & Global**: `globalarchitecture_tier0.md`, `globalstarthere.md`, `Blueprint_Arsitektur_dan_Enterprise_Resource_Planning__ERP__Industri_Offset_Printing_dan_Packaging.md`, `prefixlist.md`, `security_brief.md`, `security_defaultpassword_spec.md`, `reportstandard.md`, `topmanagementreport_tier1.md`
+**Arsitektur & Global**: `globalarchitecture_tier0.md`, `globalstarthere.md`, `prefixlist.md`, `security_defaultpassword_spec.md`, `reportstandard.md`, `topmanagementreport_tier1.md`
 
 **Inquiry/Sales**: `SALES_QUO_ORDER, CPDEL.md`, `sales_imposition_enhancement_backlog.md`, `customer_spec.md`, `customer_fix_nav_address.md`
 
-**Procurement**: `procurement_tier1.md`..`procurement_tier4.md`, `purchasereceive_delta_multipo.md`
+**Procurement**: `procurement_tier1.md`..`procurement_tier3.md`, `purchasereceive_delta_multipo.md`
 
 **Inventory**: `inventory_tier1.md`..`inventory_tier4.md`, `itemmaster_delta.md`, `matcategory_delta.md`
 
@@ -284,7 +284,7 @@ Daftar filename saja (isi TIDAK dibaca ulang di sesi ini — dokumen ini sudah a
 
 **Finance**: `financeaccounting_tier1.md`, `tier2.md`, `tier4.md`, `financeaccounting_delta_partner_category_coa_v2.md`, `financeaccounting_delta_period_close.md`, `downpayment_tier1-4.md`
 
-**HR/Attendance/Payroll**: `masteremployee_tier1.md`, `tier2.md`, `tier4.md`, `attendancepayroll_tier1.md`..`tier4.md`, `TIER_1_ATTENDANCE.md`, `payroll_encryption_decision.md`, `telma_onboarding.md`, `selfservice_panduan.md`
+**HR/Attendance/Payroll**: `masteremployee_tier1.md`, `tier2.md`, `tier4.md`, `attendancepayroll_tier1.md`..`tier4.md`, `TIER_1_ATTENDANCE.md`, `payroll_encryption_decision.md`, `selfservice_panduan.md`
 
 **Recruitment**: `recruitment_tier1.md`..`tier4.md`, `recruitment_delta_plan_ab_local.md`, `recruitmentportal_web_tier1.md`
 
@@ -296,7 +296,7 @@ Daftar filename saja (isi TIDAK dibaca ulang di sesi ini — dokumen ini sudah a
 
 **Opening App (BANYAK SUDAH USANG, cek dulu ke DB sebelum percaya)**: `openingapp_tier1.md`..`tier4.md`, `openingapp_instruksi_layout.md`
 
-**Meta/Tracking**: `BACKLOG.md` (indeks + lintas-modul) dan 10 pecahannya `backlog01_uiux_component.md` .. `backlog10_mobile_app.md` (kerjaan tertunda per domain), `LOG_JOB_DONE.md` (histori selesai), `checklistmockuperp.md`, `queue.md`, `qc_feedback.md`, `attachments_index.md`
+**Meta/Tracking**: `BACKLOG.md` (indeks + lintas-modul) dan 10 pecahannya `backlog01_uiux_component.md` .. `backlog10_mobile_app.md` (kerjaan tertunda per domain), `LOG_JOB_DONE.md` (histori selesai), `queue.md`, `qc_feedback.md`, `attachments_index.md`
 
 ---
 

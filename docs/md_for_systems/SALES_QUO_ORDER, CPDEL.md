@@ -2,7 +2,7 @@
 
 > Dokumen gabungan (belum ada Tier doc terpisah utk 3 sub-modul ini — dirangkum
 > dari `sales_state.yaml`, `inquiryproduct_tier1.md` §3.4, `inquiryproduct_tier2.md`
-> §3.4, `dispatch_tier1.md` §5.1, `checklistmockuperp.md` MODUL 1, dan kode aktual
+> §3.4, `dispatch_tier1.md` §5.1, `checklistmockuperp.md (diarsipkan)` MODUL 1, dan kode aktual
 > per 2026-09-03). Dibuat atas permintaan user untuk direview — **bukan** Tier doc
 > resmi baru, isi masih perlu dicek/dikoreksi user.
 >
@@ -337,7 +337,7 @@ Sales
   convert_to_quotation, sebagian dideviasi — lihat sales_state.yaml).
 - `dispatch_tier1.md` §3, §5.1 (rantai `co_order` → `co_order_delivery` →
   DO/Surat Jalan, no-merge rule detail Tier 2 §B).
-- `checklistmockuperp.md` MODUL 1 (status per-layar, cross-check ke
+- `checklistmockuperp.md (diarsipkan)` MODUL 1 (status per-layar, cross-check ke
   `routes/web.php` & `resources/views/pages/`).
 - Kode: `App\Services\Sales\QuotationBuilder`,
   `App\Services\Sales\CoOrderBuilder`, `App\Models\Sdi\{QuoQuotation,

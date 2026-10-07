@@ -101,7 +101,7 @@ next_step:
   - "[SELESAI 2026-08-22] Stock Adjustment & Opname (RM/FG/SFG) + Persetujuan -- stock-adjustment.blade.php (route inv.stock-adj.index/{category}/{doc?}) + stock-adjustment-approval.blade.php (route inv.stock-adj.approval/{category}, MURNI antrian -- Approve/Reject digabung ke form entri, bukan queue+detail-panel spt rencana lama)"
   - "SISA: Onhand Grid interaktif, Period Manager, PV/WO auto-post ke Stock In, FIFO/LIFO valuation, permission granular (can_view_cost dkk), Outstanding PV (Procurement -- SENGAJA ditunda user, lihat memory project_outstanding_reports, baru dikerjakan SETELAH ini)"
   - "PV/WO auto-post Stock In (ref_doc_type != MANUAL) belum diintegrasikan -- StockPostingService sudah generik, tinggal dipanggil dari sisi Purchase Receive/Production nanti (lihat sidebarmenustandard.md #6a utk konteks penuh)"
-  - "[SELESAI 2026-08-22] Update checklistmockuperp.md MODUL 2 -- warna menu shell belum dicek (perlu login browser)"
+  - "[SELESAI 2026-08-22] Update checklistmockuperp.md (diarsipkan) MODUL 2 -- warna menu shell belum dicek (perlu login browser)"
   - "Update procurement_state.yaml: open item PROC-COSTING-ENGINE sudah terjawab (inv_stock_layer + inv_layer_consumption didefinisikan di INV_TIER_3 §7) -- belum dicek ulang 2026-08-22"
 
 open_items:

@@ -107,7 +107,7 @@ artefak_selesai:
   - procurement_tier1.md      # konsep, scope, rantai dokumen, aktor, nota
   - procurement_tier2.md      # business logic Part A/B/C (happy path, 13 kasus khusus, state-form-button)
   - procurement_tier3.md      # DDL 12 tabel tm2pur + delta 4 DB + 4 VIEW + seed flow & sys_constant
-  - procurement_tier4.md      # 12 layar Livewire + nota + checklist wiring
+  - procurement_tier4.md (diarsipkan)      # 12 layar Livewire + nota + checklist wiring
   - procurement_rules.yaml
   - procurement_state.yaml
   - database/legacy/doc_rmprefix.sql, database/legacy/m_raw_material.sql   # dump asli user, sumber import

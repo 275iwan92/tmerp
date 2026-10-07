@@ -110,15 +110,6 @@
   (Alpine+Livewire, keputusan user 2026-08-30) — DataTables Editor asli
   (dibutuhkan utk inline-edit sungguhan) berbayar & belum ada license key,
   DataTables juga bentrok arsitektur dgn cara Livewire re-render DOM tabel.
-- `themestandard.md` — **wajib dibaca sebelum menambah/ubah pilihan tema**
-  atau token warna baru yang harus ikut ganti per mode: matrix 4 mode
-  (Pastel/Cerah/Dark/Hitam) x 3 corak (Biru/Hijau/Merah) = 12 kombinasi,
-  data 100% di `tm2sys.sys_theme` (kolom `mode`/`family`/`hue`) supaya
-  gampang diedit langsung lewat DB — BUKAN hardcode di CSS/Blade. Picker
-  grid ada di dropdown avatar (`main-menu.blade.php`), toggle cepat
-  matahari/bulan di topbar. Cakupan baru shell lama (`layouts::shell`) —
-  halaman transaksi via `<iframe>` & panel Filament `/admin` (sengaja
-  dipaksa terang, `darkMode(false)`) belum ikut sistem ini.
 
 ---
 

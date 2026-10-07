@@ -153,9 +153,9 @@ Perilaku:
 
 1. `procurement_tier2.md` §5 — ganti aturan "PV mengacu satu PO" dengan PV-01…PV-11 di atas.
 2. `procurement_tier3.md` §5 — ganti definisi tabel `pv_receipt`/`pv_line`, hapus `po_id` dari header.
-3. `procurement_tier4.md` §5.1 — ganti alur entry menjadi tiga langkah (supplier → worklist → form).
+3. `procurement_tier4.md (diarsipkan)` §5.1 — ganti alur entry menjadi tiga langkah (supplier → worklist → form).
 4. `procurement_state.yaml`:
    - `keputusan_terkunci` → tambah **W_pv_multi_po_supplier_driven** (PV-01…PV-11)
    - `open_items` → **PROC-SERVICE-RECEIPT dinyatakan CLOSED** oleh PV-09
    - `artefak_selesai` → tambah 5 file rilis ini
-5. `checklistmockuperp.md` §4 — Receiving: tandai Goods Receipt Entry + Receiving List 🟡, tambah baris "[P] Nota SPB multi-PO".
+5. `checklistmockuperp.md (diarsipkan)` §4 — Receiving: tandai Goods Receipt Entry + Receiving List 🟡, tambah baris "[P] Nota SPB multi-PO".

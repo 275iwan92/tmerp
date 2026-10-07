@@ -19,9 +19,8 @@ Melanggar = sinyal saya tak baca file ini, bukan sinyal keputusan perlu dibahas 
   BUKAN lagi ditunda sampai fase "10 minggu" selesai. ScriptCase-catatan "10 minggu"/"di luar
   scope" di dokumen lama (`globalrules.yaml → modules_excluded`, `TIER_0 §2/§6`,
   `masteremployee_tier1.md`, `attendancepayroll_tier1.md`, `attendancepayroll_tier4.md`, `flowengine_tier1.md §4`,
-  `checklistmockuperp.md` Modul 6/7/11, `masteremployee_state.yaml`, `00_setup_databases.sql`) **tidak
-  berlaku lagi** untuk kedua modul ini — ini juga menutup kontradiksi Modul 6 vs 11 di
-  `checklistmockuperp.md` (COA/GL memang sudah scoped-in, bukan pengecualian liar). Urutan
+  `masteremployee_state.yaml`, `00_setup_databases.sql`) **tidak
+  berlaku lagi** untuk kedua modul ini — COA/GL ( memang sudah scoped-in, bukan pengecualian liar). Urutan
   kerja tetap ikut prioritas Sales-dulu di `globalrules.yaml → meta.scope` (dependensi
   eksekusi), tapi Finance & HR/Payroll/Recruitment TIDAK LAGI diblokir menunggu giliran.
 - **Stack**: Laravel + Livewire + Blade + Tailwind (compiled via Vite, BUKAN CDN di produksi). Herd (Windows), MySQL 8, 10 DB `tm2*`.
