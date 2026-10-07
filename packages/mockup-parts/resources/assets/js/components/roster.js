@@ -10,11 +10,13 @@
       this.days = JSON.parse(this.el.dataset.days || '[]');
       this.people = JSON.parse(this.el.dataset.people || '[]');
       this.assign = JSON.parse(this.el.dataset.assign || '{}');
+      this.locked = this.el.dataset.locked === '1';
+      this.el.classList.toggle('is-locked', this.locked);
       this.picked = new Set();
       this.shut = new Set();
       this.q = '';
       this.drag = null;
-      this.el.addEventListener('dragstart', e => { const c = e.target.closest('[data-r-person]'); if (!c) return; this.drag = c.dataset.rPerson; c.classList.add('is-drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', this.drag); } catch (x) {} });
+      this.el.addEventListener('dragstart', e => { const c = e.target.closest('[data-r-person]'); if (!c || this.locked) return; this.drag = c.dataset.rPerson; c.classList.add('is-drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', this.drag); } catch (x) {} });
       this.el.addEventListener('dragend', () => { this.drag = null; $$(this.el, '.is-drag,.is-over').forEach(x => x.classList.remove('is-drag', 'is-over')); });
       this.el.addEventListener('dragover', e => { const d = e.target.closest('[data-r-drop],[data-r-pool]'); if (!d || this.drag == null) return; e.preventDefault(); $$(this.el, '.is-over').forEach(x => x.classList.remove('is-over')); d.classList.add('is-over'); });
       this.el.addEventListener('drop', e => {
@@ -25,13 +27,13 @@
       });
       this.el.addEventListener('click', e => {
         const x = e.target;
-        const rm = x.closest('[data-r-remove]'); if (rm) { delete this.assign[rm.closest('[data-r-person]').dataset.rPerson]; this.render(); this.el.dispatchEvent(new CustomEvent('dl:roster', {bubbles: true, detail: {assign: {...this.assign}}})); return; }
+        const rm = x.closest('[data-r-remove]'); if (rm && this.locked) return; if (rm) { delete this.assign[rm.closest('[data-r-person]').dataset.rPerson]; this.render(); this.el.dispatchEvent(new CustomEvent('dl:roster', {bubbles: true, detail: {assign: {...this.assign}}})); return; }
         const ga = x.closest('[data-r-grpall]'); if (ga) { e.stopPropagation(); const list = this.people.filter(p => !this.assign[p.id] && p.role === ga.dataset.rGrpall); list.forEach(p => ga.checked ? this.picked.add(String(p.id)) : this.picked.delete(String(p.id))); return this.pool(); }
         const g = x.closest('[data-r-grp]'); if (g) { const k = g.dataset.rGrp; this.shut.has(k) ? this.shut.delete(k) : this.shut.add(k); return this.pool(); }
         if (x.closest('[data-r-selnone]')) { this.picked.clear(); return this.pool(); }
         const row = x.closest('[data-r-shift]'); if (row && this.picked.size && !x.closest('[data-r-person]')) { const n = this.picked.size; this.put([...this.picked], row.dataset.rShift); toast(Devlib.h.t(':n employees placed in :shift.').replace(':n', n).replace(':shift', this.shifts.find(s => s.key === row.dataset.rShift).label), 'success'); return; }
-        const wk = x.closest('[data-r-week]'); if (wk) { this.el.dispatchEvent(new CustomEvent('dl:roster-week', {bubbles: true, detail: {step: +wk.dataset.rWeek}})); toast(Devlib.h.t("Week changed (the host screen loads that week's data).")); return; }
-        if (x.closest('[data-r-save]')) { this.el.dispatchEvent(new CustomEvent('dl:roster-save', {bubbles: true, detail: {assign: {...this.assign}}})); toast(Devlib.h.t("This week's roster saved."), 'success'); }
+        const wk = x.closest('[data-r-week]'); if (wk) { this.week(+wk.dataset.rWeek); return; }
+        if (x.closest('[data-r-save]')) this.save();
       });
       this.el.addEventListener('change', e => { const p = e.target.closest('[data-r-pick]'); if (p) { p.checked ? this.picked.add(p.dataset.rPick) : this.picked.delete(p.dataset.rPick); this.pool(); } });
       $(this.el, '[data-r-search]').addEventListener('input', e => { this.q = e.target.value.trim().toLowerCase(); this.pool(); });
@@ -88,7 +90,31 @@
 
     render() { this.grid(); this.pool(); }
 
+    // Pindah minggu: dengan data-week-url layar dimuat ulang ke minggu itu, tanpa itu hanya event untuk layar pemakai.
+    week(step) {
+      this.el.dispatchEvent(new CustomEvent('dl:roster-week', {bubbles: true, detail: {step}}));
+      if (this.el.dataset.weekUrl) { window.location.href = this.el.dataset.weekUrl.replace('{step}', step); return; }
+      toast(Devlib.h.t("Week changed (the host screen loads that week's data)."));
+    }
+
+    // Simpan: dengan data-save-url dikirim ke server (JSON {assign}); gagal = pesan galat, papan tidak ditandai tersimpan.
+    async save() {
+      const detail = {assign: {...this.assign}};
+      const url = this.el.dataset.saveUrl;
+      if (url) {
+        const r = await fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': window.DL_CSRF || ''}, body: JSON.stringify(detail)});
+        const body = await r.json().catch(() => ({}));
+        if (!r.ok) { toast(body.message || r.statusText, 'danger'); return; }
+        this.el.dispatchEvent(new CustomEvent('dl:roster-save', {bubbles: true, detail}));
+        toast(body.message || Devlib.h.t("This week's roster saved."), body.tone || 'success');
+        return;
+      }
+      this.el.dispatchEvent(new CustomEvent('dl:roster-save', {bubbles: true, detail}));
+      toast(Devlib.h.t("This week's roster saved."), 'success');
+    }
+
     put(ids, key) {
+      if (this.locked) return;
       const s = this.shifts.find(x => x.key === key); ids.forEach(id => { this.assign[id] = key; this.picked.delete(String(id)); });
       this.render(); this.el.dispatchEvent(new CustomEvent('dl:roster', {bubbles: true, detail: {assign: {...this.assign}}}));
       const n = this.people.filter(p => this.assign[p.id] === key).length; if (s.capacity && n > s.capacity) toast(Devlib.h.t(':shift exceeds capacity (:n/:cap).').replace(':shift', s.label).replace(':n', n).replace(':cap', s.capacity), 'warn');

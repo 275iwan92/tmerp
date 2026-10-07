@@ -166,6 +166,8 @@
 @media (max-width:900px){.dl-flowcfg__panel{grid-template-columns:1fr}}
 /* ================= ROSTER BOARD (Part 6) ================= */
 .dl-roster{display:flex;flex-direction:column;gap:10px}
+.dl-roster.is-locked .dl-roster__chip,.dl-roster.is-locked .dl-roster__person{cursor:not-allowed;opacity:.75}
+.dl-roster.is-locked .dl-roster__drop{background:var(--dl-chip)}
 .dl-roster__bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .dl-roster__week{display:flex;align-items:center;gap:6px}
 .dl-roster__week b{font-size:calc(13px * var(--dl-font-scale));color:var(--dl-ink-strong)}

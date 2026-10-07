@@ -68,6 +68,7 @@ use App\Support\V2\Data\PurchaseQuotation;
 use App\Support\V2\Data\PurchaseReceive;
 use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\Quotation;
+use App\Support\V2\Data\ShiftRoster;
 use App\Support\V2\Data\SubconDelivery;
 use App\Support\V2\Data\SupplierInvoiceReceipt;
 use App\Support\V2\Data\WorkCalendar;
@@ -1109,6 +1110,35 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return response()->json(GpsClock::clock(Auth::user()->employee_id, $d['type'], (float) $d['lat'], (float) $d['lng']));
     })->name('clock.store');
+
+    // HRM > Time Attendance > Shift Roster (App\Support\V2\Data\ShiftRoster). Lingkup dari query: sched, dept, wc, w (selisih minggu).
+    Route::middleware('module:HRM')->prefix('hrm/roster')->name('roster.')->group(function () {
+        $roster = fn (Request $r) => ShiftRoster::for($r->integer('sched') ?: null, $r->integer('dept') ?: null, $r->integer('wc') ?: null, $r->integer('w'));
+        $home = fn (Request $r) => redirect(route('v2.screen', 'hrm-roster').'?'.http_build_query(array_filter($r->only(['sched', 'dept', 'wc', 'w']), fn ($v) => $v !== null && $v !== '')));
+        Route::post('/save', function (Request $r) use ($roster) {
+            $d = $roster($r)->save($r->input('assign', []), Auth::user()->login);
+            $under = $d['under'] ? tf(':n shift(s) are still under quota.', ['n' => count($d['under'])]) : t('All shifts are fully staffed.');
+            $note = $d['uncertified'] ? ' '.tf(':n placed employee(s) are not certified for this work unit.', ['n' => $d['uncertified']]) : '';
+
+            return response()->json(['message' => tf('Roster saved: :placed placed, :removed removed. ', ['placed' => $d['placed'], 'removed' => $d['removed']]).$under.$note,
+                'tone' => $d['under'] || $d['uncertified'] ? 'warn' : 'success']);
+        })->name('save');
+        Route::post('/confirm', function (Request $r) use ($roster, $home) {
+            $roster($r)->confirm(Auth::user()->login);
+
+            return $home($r)->with('v2_flash', t('Roster published and locked.'));
+        })->name('confirm');
+        Route::post('/unlock', function (Request $r) use ($roster, $home) {
+            $roster($r)->unlock(Auth::user()->login);
+
+            return $home($r)->with('v2_flash', t('Lock opened — the roster can be changed again.'));
+        })->name('unlock');
+        Route::post('/shift/{id}/toggle', function (Request $r, int $id) use ($home) {
+            $hidden = ShiftRoster::toggleShift(Auth::user()->login, $id);
+
+            return $home($r)->with('v2_flash', $hidden ? t('Shift hidden from the board.') : t('Shift shown again.'));
+        })->whereNumber('id')->name('shift.toggle');
+    });
 
     // HRM > Time Attendance > Overtime (App\Support\V2\Data\Overtime). action = save | submit | approve | reject | reopen | delete.
     Route::middleware('module:HRM')->prefix('hrm/overtime')->name('overtime.')->group(function () {

@@ -18,3 +18,8 @@
         ['id' => 11, 'name' => 'Pandu Ramadhan', 'code' => 'TM1024', 'role' => 'Leader', 'skills' => 3], ['id' => 12, 'name' => 'Eko Wibowo', 'code' => 'TM1014', 'role' => 'Helper', 'skills' => 2],
     ]"
     :assign="[1 => 'S1', 2 => 'S1', 3 => 'S1', 4 => 'S2', 5 => 'S2', 6 => 'S2', 12 => 'S2']" />
+
+<h4 style="margin:20px 0 6px">Locked week (published): the board is read-only</h4>
+<x-dl::roster-board title="Locked example" week="Week 38" :locked="true" :days="[['key' => 'Mon', 'date' => '14/09'], ['key' => 'Tue', 'date' => '15/09']]"
+    :shifts="[['key' => 'REG', 'label' => 'Regular', 'tone' => 'success', 'capacity' => 2, 'pattern' => ['Mon' => ['07:30', '16:30'], 'Tue' => ['07:30', '16:30']]]]"
+    :people="[['id' => 1, 'name' => 'Satrio Kurniawan', 'code' => 'TM1001', 'role' => 'Leader', 'skills' => 4], ['id' => 2, 'name' => 'Galih Raharjo', 'code' => 'TM1004', 'role' => 'Helper', 'skills' => 2]]" :assign="[1 => 'REG']" />

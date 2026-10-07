@@ -10,6 +10,8 @@ use Devlib\Components\DevlibComponent;
 // shifts: [['key','label','tone','capacity','pattern' => [hari => ['07:30','16:30'] | null (libur)]]]
 // days:   [['key' => 'Sen', 'date' => '07/09']] ; people: [['id','name','code','role','skills']]
 // assign: [id => shiftKey]. Perubahan -> event dl:roster {assign}; Simpan -> dl:roster-save.
+// :save-url = alamat POST JSON {assign} (Simpan tersimpan di server dulu; gagal = pesan galat, papan tetap). :week-url = alamat dengan {step}
+// (-1 / 1) untuk pindah minggu (layar dimuat ulang). :locked = papan hanya-baca (roster sudah dikunci).
 class RosterBoard extends DevlibComponent
 {
     public function __construct(
@@ -20,6 +22,9 @@ class RosterBoard extends DevlibComponent
         public string $title = '',
         public string $week = '',
         public ?string $source = null,
+        public ?string $saveUrl = null,
+        public ?string $weekUrl = null,
+        public bool $locked = false,
     ) {}
 
     public function tag(): string
@@ -35,7 +40,7 @@ class RosterBoard extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <div {{ $attributes->class('dl-roster') }} {!! $dl() !!} data-dl-roster data-shifts="{{ json_encode($shifts) }}" data-days="{{ json_encode($days) }}" data-people="{{ json_encode($people) }}" data-assign="{{ json_encode((object) $assign) }}">
+            <div {{ $attributes->class('dl-roster') }} {!! $dl() !!} data-dl-roster data-shifts="{{ json_encode($shifts) }}" data-days="{{ json_encode($days) }}" data-people="{{ json_encode($people) }}" data-assign="{{ json_encode((object) $assign) }}" @if ($saveUrl) data-save-url="{{ $saveUrl }}" @endif @if ($weekUrl) data-week-url="{{ $weekUrl }}" @endif @if ($locked) data-locked="1" @endif>
                 <div class="dl-roster__bar">
                     <div class="dl-roster__week"><x-dl::icon-button icon="prev" title="Previous week" data-r-week="-1" /><b>{{ $week }}</b><x-dl::icon-button icon="next" title="Next week" data-r-week="1" /></div>
                     <span class="dl-print__spacer"></span>

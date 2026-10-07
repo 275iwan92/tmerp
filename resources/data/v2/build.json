@@ -1,17 +1,17 @@
 {
-    "generated": "2026-10-07 13:29",
+    "generated": "2026-10-07 13:48",
     "database": "ddtsys",
     "totals": {
         "objects": 146,
         "modules": 10,
         "modules_done": 7,
-        "screens": 222,
-        "v2": 213,
+        "screens": 224,
+        "v2": 215,
         "v1": 4,
         "not_built": 5,
-        "waiting_qc": 216,
+        "waiting_qc": 218,
         "locked": 1,
-        "forms": 85,
+        "forms": 87,
         "grids": 90,
         "reports": 47,
         "grid_classes": 147,
@@ -22,11 +22,11 @@
         "tables": 370,
         "databases": 9,
         "models": 328,
-        "migrations": 549,
-        "tests": 99,
+        "migrations": 551,
+        "tests": 101,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1152",
+        "commits": "1157",
         "since": "2026-08-06"
     },
     "modules": [
@@ -80,13 +80,13 @@
         },
         {
             "label": "Production",
-            "total": 20,
-            "v2": 17,
+            "total": 21,
+            "v2": 18,
             "v1": 0,
             "not_built": 3,
-            "waiting_qc": 17,
+            "waiting_qc": 18,
             "locked": 0,
-            "form": 5,
+            "form": 6,
             "grid": 14,
             "report": 1
         },
@@ -104,13 +104,13 @@
         },
         {
             "label": "Human Resources",
-            "total": 27,
-            "v2": 27,
+            "total": 28,
+            "v2": 28,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 27,
+            "waiting_qc": 28,
             "locked": 0,
-            "form": 10,
+            "form": 11,
             "grid": 14,
             "report": 3
         },
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 60,
+            "commits": 64,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 88,
+            "screens": 91,
             "objects": 19,
             "engines": 1,
-            "tests": 11
+            "tests": 13
         },
         {
             "key": "jo",
@@ -175,7 +175,7 @@
             "tests": 0
         }
     ],
-    "untracked": 1092,
+    "untracked": 1093,
     "days": [
         {
             "date": "2026-09-24",
@@ -257,9 +257,9 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 17,
+            "iwan": 21,
             "jo": 0,
-            "other": 10
+            "other": 11
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 60,
+            "iwan": 64,
             "jo": 0,
-            "other": 12
+            "other": 13
         }
     ],
     "items": [
@@ -602,6 +602,17 @@
         },
         {
             "type": "FORM",
+            "key": "menu:HRM_ROSTER",
+            "name": "Shift Roster",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
             "key": "menu:SALES_IMPO",
             "name": "Pro-Dev Manual",
             "module": "Sales",
@@ -697,6 +708,17 @@
             "built_at": "2026-10-01",
             "built_by": null,
             "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:PROD_SHIFT_ROSTER",
+            "name": "Shift Schedule",
+            "module": "Production",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {
@@ -2267,10 +2289,10 @@
             "name": "Overtime",
             "module": "Human Resources",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
