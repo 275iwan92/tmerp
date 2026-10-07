@@ -135,6 +135,7 @@ final class Screens
             ['code' => 'HRM', 'short' => 'HR', 'label' => 'Human Resource', 'icon' => 'fa-solid fa-people-group', 'groups' => [
                 ['label' => 'Time Attendance', 'items' => [
                     // Milik sendiri: semua karyawan boleh absen (modul GENERAL = tanpa gerbang modul), seperti self-service v1.
+                    $it('hrm-overtime', ['Overtime', 'fa-solid fa-business-time', 'v2: App\Support\V2\Data\Overtime (tm2mst.emp_overtime_request)', null]),
                     [...$it('hrm-clockin', ['GPS Clock-In (Mobile)', 'fa-solid fa-location-crosshairs', 'v2: App\Support\V2\Data\GpsClock + x-dl::geo-clock (att_mobile_gps_log)', null]), 'module_code' => 'GENERAL'],
                 ]],
                 ['label' => 'Payroll', 'items' => [

@@ -1,18 +1,18 @@
 {
-    "generated": "2026-10-07 13:27",
+    "generated": "2026-10-07 13:29",
     "database": "ddtsys",
     "totals": {
         "objects": 146,
         "modules": 10,
         "modules_done": 7,
-        "screens": 221,
-        "v2": 212,
+        "screens": 222,
+        "v2": 213,
         "v1": 4,
         "not_built": 5,
-        "waiting_qc": 215,
+        "waiting_qc": 216,
         "locked": 1,
         "forms": 85,
-        "grids": 89,
+        "grids": 90,
         "reports": 47,
         "grid_classes": 147,
         "lookups": 37,
@@ -22,11 +22,11 @@
         "tables": 370,
         "databases": 9,
         "models": 328,
-        "migrations": 548,
-        "tests": 98,
+        "migrations": 549,
+        "tests": 99,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1150",
+        "commits": "1152",
         "since": "2026-08-06"
     },
     "modules": [
@@ -104,14 +104,14 @@
         },
         {
             "label": "Human Resources",
-            "total": 26,
-            "v2": 26,
+            "total": 27,
+            "v2": 27,
             "v1": 0,
             "not_built": 0,
-            "waiting_qc": 26,
+            "waiting_qc": 27,
             "locked": 0,
             "form": 10,
-            "grid": 13,
+            "grid": 14,
             "report": 3
         },
         {
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 58,
+            "commits": 60,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 84,
-            "objects": 18,
+            "screens": 88,
+            "objects": 19,
             "engines": 1,
-            "tests": 9
+            "tests": 11
         },
         {
             "key": "jo",
@@ -257,7 +257,7 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 15,
+            "iwan": 17,
             "jo": 0,
             "other": 10
         }
@@ -319,7 +319,7 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 58,
+            "iwan": 60,
             "jo": 0,
             "other": 12
         }
@@ -815,10 +815,10 @@
             "name": "Attendance Upload",
             "module": "Human Resources",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "REPORT",
@@ -1134,10 +1134,10 @@
             "name": "GPS Clock-In (Mobile)",
             "module": "Human Resources",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "GRID",
@@ -2259,6 +2259,17 @@
             "built_at": "2026-10-01",
             "built_by": null,
             "changed_at": "2026-10-01",
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
+            "key": "menu:HRM_OVERTIME",
+            "name": "Overtime",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {
@@ -3895,10 +3906,10 @@
             "name": "GeoClock",
             "module": "DevLib",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "OBJECT",

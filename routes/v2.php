@@ -60,6 +60,7 @@ use App\Support\V2\Data\GroupPermissions;
 use App\Support\V2\Data\Identification;
 use App\Support\V2\Data\MailContacts;
 use App\Support\V2\Data\MigrationDesk;
+use App\Support\V2\Data\Overtime;
 use App\Support\V2\Data\PettyCash;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\PurchaseOrder;
@@ -1108,6 +1109,32 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return response()->json(GpsClock::clock(Auth::user()->employee_id, $d['type'], (float) $d['lat'], (float) $d['lng']));
     })->name('clock.store');
+
+    // HRM > Time Attendance > Overtime (App\Support\V2\Data\Overtime). action = save | submit | approve | reject | reopen | delete.
+    Route::middleware('module:HRM')->prefix('hrm/overtime')->name('overtime.')->group(function () {
+        $home = fn () => route('v2.screen', 'hrm-overtime');
+        Route::post('/', function (Request $r) use ($home) {
+            $o = Overtime::save(null, $r->all(), Auth::user()->login);
+
+            return redirect($home().'?id='.$o->id_overtime)->with('v2_flash', t('Overtime request saved as a draft.'));
+        })->name('store');
+        Route::post('/{id}', function (Request $r, int $id) use ($home) {
+            $o = Overtime::find($id) ?? abort(404);
+            $action = (string) $r->input('action', 'save');
+            if ($action === 'delete') {
+                Overtime::delete($o);
+
+                return redirect($home())->with('v2_flash', t('Draft deleted.'));
+            }
+            if ($action === 'save') {
+                Overtime::save($o, $r->all(), Auth::user()->login);
+
+                return redirect($home().'?id='.$id)->with('v2_flash', t('Saved.'));
+            }
+
+            return redirect($home().'?id='.$id)->with('v2_flash', Overtime::transition($o, $action, Auth::user()));
+        })->whereNumber('id')->name('save');
+    });
 
     // HRM > Payroll > Attendance Upload (App\Support\V2\Data\AttendanceUpload): baca file -> pratinjau -> simpan & hitung kehadiran.
     Route::middleware('module:HRM')->prefix('hrm/attendance-upload')->name('attendance-upload.')->group(function () {
