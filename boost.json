@@ -10,6 +10,9 @@
         "testing-best-practices",
         "livewire-development",
         "tailwindcss-development",
+        "devlib-oo",
+        "devlib-svg-cad",
+        "tmerp-mysql",
         "tmerp-screen",
         "tmerp-stack-rules",
         "tmerp-ui-mockup"
