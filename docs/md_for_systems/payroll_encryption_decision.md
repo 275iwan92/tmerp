@@ -71,7 +71,7 @@ dicatat di sini supaya jelas ini pilihan sadar, bukan kelalaian desain.
 
 ---
 
-## 3. Algoritma & implementasi (rekomendasi, belum dikonfirmasi detail ke user)
+## 3. Algoritma & implementasi (SUDAH BERJALAN — `App\Casts\PayrollEncrypted`, dipasang di `PyrEmployeeSalary` & `PyrPayslip`)
 
 - **Passphrase `telasihmakmur` (13 karakter ASCII) TIDAK dipakai langsung
   sebagai key AES mentah** — terlalu pendek/lemah utk AES-256 (butuh 32
@@ -85,9 +85,9 @@ dicatat di sini supaya jelas ini pilihan sadar, bukan kelalaian desain.
   `Crypt`/`encrypted` cast bawaan — itu selalu pakai `APP_KEY` dari `.env`,
   tidak cocok dengan keputusan "kunci di DB, terpisah dari `.env`".
 - **Cara pasang**: custom Eloquent cast class (`App\Casts\PayrollEncrypted
-  implements CastsAttributes`) ditempel ke `basic_salary`/`net_salary` di
-  model gaji (`Payslip`/employee salary, model persis belum ada karena
-  modul belum dibangun) — `get()` decrypt otomatis saat baca attribute,
+  implements CastsAttributes`) ditempel ke kolom nominal gaji di
+  `PyrEmployeeSalary` (`basic_salary_monthly`) dan `PyrPayslip`
+  (`total_pokok`, `total_gaji_bersih`, dst; lihat `$casts`) — `get()` decrypt otomatis saat baca attribute,
   `set()` encrypt otomatis saat simpan. IV (nonce) di-generate random per
   nilai, disimpan menempel di ciphertext (mis. `base64(iv . tag . ciphertext)`
   dalam 1 kolom) — pola standar GCM, tidak perlu kolom IV terpisah.
@@ -118,12 +118,8 @@ selaras dengan arsitektur enkripsi di atas:
 
 ---
 
-## 5. Yang BELUM diputuskan (kalau mulai bangun modul ini, konfirmasi dulu)
+## 5. Yang BELUM diputuskan (konfirmasi user dulu sebelum menyentuh)
 
-- Skema tabel Payslip/salary final (referensi `tm2hrm_laravel_php83.zip`
-  cukup dekat, tapi belum tentu dipakai 1:1 — perlu diselaraskan ke
-  konvensi penamaan proyek ini, prefix tabel `tm2pyr`, dst, lihat CLAUDE.md
-  §3).
 - Apakah histori/log perubahan gaji (`doc_state_log`-style) juga perlu ikut
   terenkripsi kalau menyimpan nilai gaji di dalamnya.
 - Rotasi kunci — SENGAJA belum dipikirkan (di luar scope "mulai sempit dulu"
