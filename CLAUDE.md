@@ -41,7 +41,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 - **Menu v2** (disetujui user) = `x-dl::layer-shell` + `App\Support\V2\AppMenu` dari `sys_app_menu`; item `target='v2:<slug>'` -> layar v2 (`routes/v2.php`, `resources/views/v2`), selain itu layar v1 (`App\Support\Menu\MenuRoutes`). v1 = menu lama (top bar).
 - Data khusus UAT (akun di halaman login, lewati pertanyaan keamanan) HANYA di `.env.mockup` (`config/uat.php`) — **jangan** di konstanta/DB.
 - Mode Developer = F10, hanya Administrator / grup `DEVELOPER`.
-- Serah terima antar-agen (Jo/Iwan): memori `project_handoff_*` terbaru di MEMORY.md ("START HERE").
+- Serah terima antar-agen (Jo/Iwan): `docs/globalhandoff_jo_to_iwan.md` (terbaru 2026-10-04) + memori `project_handoff_*` di MEMORY.md ("START HERE").
 
 - **Test memakai MySQL lokal sungguhan**, bukan SQLite in-memory walau `phpunit.xml` menyebut sqlite: test menulis ke database `tm2*` dan **membersihkan sendiri** di `tearDown()` (hapus manual per tabel, lihat `tests/Feature/CostingEngineTest.php`). Tidak ada `RefreshDatabase`. Test baru yang menyisipkan data wajib cleanup sendiri, lalu verifikasi ke DB (jangan percaya skripnya saja).
 - `CareersPortalTest` di-skip (bukan gagal) bila Firebase Emulator tidak menyala — itu baseline normal.
