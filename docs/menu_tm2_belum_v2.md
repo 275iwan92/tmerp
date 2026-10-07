@@ -100,4 +100,34 @@ Perlu dibangun atau diputuskan dibiarkan v1. Kolom terakhir = rute layar v1 dari
 | SET_PERM | Groups on Modules | Security | READY_FOR_QC | security.php?tab=perms |
 | SET_LANG | Language | Language and Localization | READY_FOR_QC | security.php?tab=lang |
 
+### Pecahan tugas kelompok C (35 baris = 10 tugas)
+
+Urutan disarankan: dari yang paling murah (mungkin cuma pencocokan) ke yang butuh keputusan user.
+
+| Tugas | Isi (kode) | Jml | Sifat | Catatan |
+|---|---|---|---|---|
+| C1 | SET_CONFIG, SET_DATA_ORIGIN, SET_MIGRATION, SET_LOCALIZATION, SET_PERM, SET_LANG | 6 | Cocokkan dulu | Cari padanan v2 (kode menu lain sejak pembagian Setup 2026-10-04). Bila ada: cukup migration target. Bila tidak: bangun layar. |
+| C2 | ACC_FS, ACC_BS, ACC_PL, ACC_CF | 4 | Bangun (laporan) | Empat laporan keuangan, satu keluarga: satu data class dasar, empat turunan. |
+| C3 | FIN_DASH, FIN_ENGINE, FIN_BANK, ACC_CLOSE, ACC_TAX | 5 | Bangun (campuran) | Dashboard, engine, bank, tutup periode, pajak. Dokumentasikan jurnal dengan jelas (aturan finance). |
+| C4 | SALES_GRID_SO, SALES_MON_ORD, SALES_RPT, PRE_COST_INSTANT | 4 | Bangun (grid + laporan) | Sales Order List / Monitoring = turunan `DocListGrid`. Laporan tanpa harga bagi Sales. Zona beku: Pro-Cost Instant = tanya user dulu. |
+| C5 | MGMT_EXEC | 1 | Cocokkan / bangun | Mungkin cukup diarahkan ke Executive Summary yang sudah ada; putuskan dulu. |
+| C6 | HRM_ROSTER (+PROD_SHIFT_ROSTER), HRM_CLOCKIN, HRM_OVERTIME, HRM_ATTENDANCE_UPLOAD | 4 | Bangun | Overtime belum punya layar sama sekali. Clock-In = mobile. |
+| C7 | HRM_PAYROLL_BANKXFER, HRM_PAYROLL_CASHROSTER | 2 | Bangun | Payroll wajib terenkripsi (belum didesain): minta konfirmasi desain dulu. |
+| C8 | HRM_ORG_CHART, HRM_SELFSERVICE, HRM_RCR_PIPELINE, HRM_RCR_PORTAL | 4 | Bangun + keputusan | Portal Candidate = publik, tetap di luar v2 (usul: dibiarkan). Self-Service: profil v2 sudah ada. |
+| C9 | PROD_MPS, PROD_MON_WO, PROD_MPS_SHEET, PROD_PROCESS_RATE | 4 | BLOKIR keputusan user | MPS sengaja ditelantarkan; dirancang ulang meniru ProDev/Inquiry. Jangan mulai tanpa arahan. |
+| C10 | INV_SCAN_ITEM1 | 1 | Bangun (mobile) | NOT_BUILT, scan kamera; butuh journey dulu. |
+
+Total: 6+4+5+4+1+4+2+4+4+1 = 35.
+
+**Hasil pencocokan C1 (2026-10-07, dari ddtsys + kode):**
+
+| Kode | Temuan | Jalan keluar |
+|---|---|---|
+| SET_LANG | Digantikan `SET_LANGUAGES` (`v2:languages`, saklar Active). Menu dobel. | Nonaktifkan / alihkan ke `v2:languages` (satu migration). |
+| SET_LOCALIZATION | BUKAN padanan `SET_DICTIONARY`: v1 mengedit `sys_translations` (kamus kunci v1, dipakai halaman login / register lewat `SysTranslation::forLang`), v2 memakai `sys_dictionary`. | Putusan user: pindahkan kunci login ke `sys_dictionary` lalu pensiunkan, atau bangun layar v2 untuk `sys_translations`. |
+| SET_CONFIG | Belum ada v2. Form 2 kartu (Identitas Aplikasi, Identitas Perusahaan + 2 logo) di `pages/setup/identification.blade.php`. | Bangun: dua `x-dl::form`, simpan ke `sys_constant` + `org_company` TM. |
+| SET_PERM | Belum ada v2. Matriks grup x modul di tab `perms` `pages/security/index.blade.php`. Grup, modul, akun sudah v2. | Bangun matriks grup x modul. |
+| SET_DATA_ORIGIN | Belum ada v2. v1 579 baris, developer-only (`pages/setup/data-origin.blade.php`). Ada rute v2 `dummy.*` (baseline / stage) yang mungkin sudah menutup sebagian. | Cocokkan dengan `/v2/dummy` dulu. |
+| SET_MIGRATION | Belum ada v2. Tab `migration` berisi 17 tombol runner (`App\Services\Migration\*`) dan laporan hasil. | Bangun satu layar runner; laporan = objek tabel. |
+
 Catatan: kelompok C berisi sisa Finance (9 layar), sebagian HRM Payroll / Time Attendance, MPS (3 layar), dan beberapa item Setup. Kelompok A dan B bisa selesai tanpa membangun apa pun; kelompok C yang menentukan kapan v1 benar-benar bisa diarsipkan. Sebagian item Setup di C mungkin sudah punya padanan v2 dengan kode menu lain (pembagian ulang grup Setup 2026-10-04); itu belum saya cocokkan.

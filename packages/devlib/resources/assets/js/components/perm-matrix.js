@@ -24,12 +24,25 @@
         if (e.target.closest('[data-pm-reset]')) { Object.keys(this.work).forEach(k => delete this.work[k]); Object.assign(this.work, JSON.parse(JSON.stringify(this.saved))); return this.draw(); }
         if (e.target.closest('[data-pm-save]')) {
           const perms = Object.fromEntries(this.OBJ.map(o => [o.key, this.get(this.work, this.gSel.value, o.key)]));
-          Object.keys(this.work).forEach(g => { this.saved[g] = {...(this.saved[g] || {}), ...this.work[g]}; });
-          this.el.dispatchEvent(new CustomEvent('dl:permissions-save', {bubbles: true, detail: {group: this.gSel.value, perms, all: this.work}}));
-          toast(T('pmx_saved'), 'success'); this.draw();
+          this.persist(this.gSel.value, perms).then(ok => {
+            if (!ok) return;
+            Object.keys(this.work).forEach(g => { this.saved[g] = {...(this.saved[g] || {}), ...this.work[g]}; });
+            this.el.dispatchEvent(new CustomEvent('dl:permissions-save', {bubbles: true, detail: {group: this.gSel.value, perms, all: this.work}}));
+            toast(T('pmx_saved'), 'success'); this.draw();
+          });
         }
       });
       this.draw();
+    }
+
+    // Bila ada data-save-url: kirim {group, perms} ke server (JSON); gagal = perubahan tetap di layar, tidak ditandai tersimpan.
+    async persist(group, perms) {
+      const url = this.el.dataset.saveUrl;
+      if (!url) return true;
+      const r = await fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': window.DL_CSRF || ''}, body: JSON.stringify({group, perms})});
+      if (r.ok) return true;
+      toast((await r.json().catch(() => ({}))).message || r.statusText, 'danger');
+      return false;
     }
 
     get(src, g, k) {

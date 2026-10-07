@@ -4,7 +4,7 @@ use App\Models\Sys\SecLoginAttempt;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysLoginHero;
 use App\Models\Sys\SysQuote;
-use App\Models\Sys\SysTranslation;
+use App\Support\Localization\AuthText;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Computed;
@@ -41,7 +41,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
     #[Computed]
     public function t(): array
     {
-        return SysTranslation::forLang($this->lang) ?: SysTranslation::forLang('id');
+        return AuthText::forLang($this->lang);
     }
 
     public function setLang(string $lang): void

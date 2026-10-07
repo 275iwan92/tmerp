@@ -52,6 +52,8 @@ use App\Support\V2\Data\CrmActivities;
 use App\Support\V2\Data\CrmComplaints;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DeliveryOrder;
+use App\Support\V2\Data\GroupPermissions;
+use App\Support\V2\Data\Identification;
 use App\Support\V2\Data\MailContacts;
 use App\Support\V2\Data\PettyCash;
 use App\Support\V2\Data\Prodev;
@@ -1079,6 +1081,38 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return $err ? $back->withErrors(['approval' => $err]) : $back->with('v2_flash', ['approve' => t('Approved — recorded in the log.'), 'reject' => t('Rejected — recorded in the log.'), 'hold' => t('On hold — recorded in the log.')][$d['action']]);
     })->whereIn('screen', array_keys(ApprovalCenter::SCREENS))->name('approval.decide');
+
+    // Setup > Identification (App\Support\V2\Data\Identification): identitas aplikasi + perusahaan. Administrator saja (sama dengan v1).
+    Route::middleware(['module:SETUP', 'admin'])->prefix('setup/identification')->name('identification.')->group(function () {
+        $back = fn () => redirect(route('v2.screen', 'setup-identification'));
+        Route::post('/app', function (Request $r) use ($back) {
+            Identification::saveApp($r->only(['app_name', 'app_tagline', 'app_font']), $r->file('logo'), Auth::user()->login);
+
+            return $back()->with('v2_flash', t('Application identity saved.'));
+        })->name('app');
+        Route::post('/app/logo/remove', function () use ($back) {
+            Identification::removeAppLogo(Auth::user()->login);
+
+            return $back()->with('v2_flash', t('Application logo removed.'));
+        })->name('app.logo.remove');
+        Route::post('/company', function (Request $r) use ($back) {
+            Identification::saveCompany($r->only(['name', 'legal_name', 'npwp', 'address', 'phone', 'email']), $r->file('logo_color'), $r->file('logo_inverse'), Auth::user()->login);
+
+            return $back()->with('v2_flash', t('Company identity saved.'));
+        })->name('company');
+        Route::post('/company/logo/{variant}/remove', function (string $variant) use ($back) {
+            Identification::removeCompanyLogo($variant, Auth::user()->login);
+
+            return $back()->with('v2_flash', t('Company logo removed.'));
+        })->whereIn('variant', ['color', 'inverse'])->name('company.logo.remove');
+    });
+
+    // Setup > Security > Groups on Modules (App\Support\V2\Data\GroupPermissions): simpan satu grup per klik Save (JSON dari x-dl::permission-matrix).
+    Route::post('/security/permissions', function (Request $r) {
+        $d = $r->validate(['group' => ['required', 'string'], 'perms' => ['required', 'array']]);
+
+        return response()->json(['changed' => GroupPermissions::save($d['group'], $d['perms'], Auth::user()->login)]);
+    })->middleware(['module:SETUP', 'admin'])->name('security.permissions.save');
 
     // Setting Approval + Officer Pengganti (PLT) -- App\Support\V2\Data\ApprovalSetting (tm2mst.flow_config*, flow_position_acting).
     Route::middleware('module:SETUP')->group(function () {

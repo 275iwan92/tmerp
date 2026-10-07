@@ -3,7 +3,7 @@
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysNotification;
 use App\Models\Sys\SysQuote;
-use App\Models\Sys\SysTranslation;
+use App\Support\Localization\AuthText;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -61,7 +61,7 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
     #[Computed]
     public function t(): array
     {
-        return SysTranslation::forLang($this->lang) ?: SysTranslation::forLang('id');
+        return AuthText::forLang($this->lang);
     }
 
     #[Computed]

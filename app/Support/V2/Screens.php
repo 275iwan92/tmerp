@@ -138,7 +138,11 @@ final class Screens
                 ]],
             ]],
             ['code' => 'SETUP', 'short' => 'SET', 'label' => 'Setup', 'icon' => 'fa-solid fa-gear', 'groups' => [
+                ['label' => 'Identification', 'items' => [
+                    $it('setup-identification', ['Identification', 'fa-solid fa-id-badge', 'v2: App\Support\V2\Data\Identification (sys_constant APP_* / COMPANY_*, org_company TM)', null]),
+                ]],
                 ['label' => 'Security', 'items' => [
+                    $it('security-permissions', ['Groups on Modules', 'fa-solid fa-user-lock', 'v2: App\Support\V2\Data\GroupPermissions (sec_group_permission)', null]),
                     $it('approval-setting', ['Approval Levels', 'fa-solid fa-list-ol', 'v2 baru: tm2mst.flow_config + flow_config_step (pengganti m_authorize)', null]),
                 ]],
             ]],

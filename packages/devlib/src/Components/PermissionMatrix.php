@@ -7,6 +7,7 @@ namespace Devlib\Components;
 // "Set semua" untuk yang tampil, penanda baris berubah + jumlahnya, pindah grup tanpa kehilangan perubahan.
 // objects: [['key','name','type' => Form|Grid,'module']] ; groups: ['Administrator', ...]
 // perms: [grup => [objKey => indeks level]] ; Simpan -> event dl:permissions-save {group, perms}.
+// :save-url = alamat POST JSON {group, perms}: tersimpan di server dulu, baru ditandai tersimpan (gagal = pesan galat, perubahan tetap).
 class PermissionMatrix extends DevlibComponent
 {
     public const LEVELS = ['No access', 'Read only', 'Read-write', 'Read-write + Export', 'All'];
@@ -18,6 +19,7 @@ class PermissionMatrix extends DevlibComponent
         public array $levels = self::LEVELS,
         public int $default = 1,
         public ?string $source = null,
+        public ?string $saveUrl = null,
     ) {}
 
     public function tag(): string
@@ -34,7 +36,7 @@ class PermissionMatrix extends DevlibComponent
     {
         return <<<'BLADE'
             <div {{ $attributes->class('dl-perm') }} {!! $dl() !!} data-dl-perm data-objects="{{ json_encode($objects) }}" data-groups="{{ json_encode($groups) }}"
-                data-perms="{{ json_encode((object) $perms) }}" data-levels="{{ json_encode(array_map(fn ($l) => \Devlib\Lang::text($l), $levels)) }}" data-default="{{ $default }}">
+                data-perms="{{ json_encode((object) $perms) }}" data-levels="{{ json_encode(array_map(fn ($l) => \Devlib\Lang::text($l), $levels)) }}" data-default="{{ $default }}" @if ($saveUrl) data-save-url="{{ $saveUrl }}" @endif>
                 <div class="dl-perm__bar">
                     <label class="dl-perm__lbl">{{ \Devlib\Lang::t('g_group') }} <select data-pm-group aria-label="{{ \Devlib\Lang::t('g_group') }}">@foreach ($groups as $g)<option>{{ $g }}</option>@endforeach</select></label>
                     <label class="dl-perm__lbl">{{ \Devlib\Lang::t('pmx_module') }} <select data-pm-module aria-label="{{ \Devlib\Lang::t('pmx_module') }}"><option value="">{{ \Devlib\Lang::t('pmx_all_modules') }}</option>@foreach (collect($objects)->pluck('module')->unique() as $m)<option>{{ $m }}</option>@endforeach</select></label>
