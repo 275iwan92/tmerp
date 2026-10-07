@@ -139,12 +139,16 @@ final class Screens
                     $it('hrm-overtime', ['Overtime', 'fa-solid fa-business-time', 'v2: App\Support\V2\Data\Overtime (tm2mst.emp_overtime_request)', null]),
                     [...$it('hrm-clockin', ['GPS Clock-In (Mobile)', 'fa-solid fa-location-crosshairs', 'v2: App\Support\V2\Data\GpsClock + x-dl::geo-clock (att_mobile_gps_log)', null]), 'module_code' => 'GENERAL'],
                 ]],
+                ['label' => 'Recruitment', 'items' => [
+                    $it('hrm-pipeline-board', ['Pipeline Board', 'fa-solid fa-diagram-next', 'v2: App\Support\V2\Data\RecruitmentPipeline + x-dl::kanban (app_application, app_pipeline_stage_config)', null, true]),
+                ]],
                 ['label' => 'Payroll', 'items' => [
                     $it('hrm-bank-transfer', ['Bank Transfer Generator', 'fa-solid fa-building-columns', 'v2: App\Support\V2\Data\PayrollDisbursement (pyr_payslip x emp_bank_account)', null, true]),
                     $it('hrm-cash-roster', ['Cash Roster & Denominations', 'fa-solid fa-money-bill-wave', 'v2: App\Support\V2\Data\PayrollDisbursement + print cash-roster', null, true]),
                     $it('hrm-attendance-upload', ['Attendance Upload', 'fa-solid fa-file-arrow-up', 'v2: App\Support\V2\Data\AttendanceUpload (att_finger_import / att_finger_raw)', null]),
                 ]],
                 ['label' => 'Organization', 'items' => [
+                    $it('hrm-org-chart', ['Organization Chart', 'fa-solid fa-sitemap', 'v2: App\Support\V2\Data\OrgStructure + x-dl::org-chart (org_position)', null]),
                     $it('approval-acting', ['Temporary Acting Officer', 'fa-solid fa-people-arrows', 'v2 baru: tm2mst.flow_position_acting (dipindah dari Setup > Security, user 2026-10-04)', null]),
                 ]],
             ]],

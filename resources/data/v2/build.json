@@ -1,32 +1,32 @@
 {
-    "generated": "2026-10-07 14:15",
+    "generated": "2026-10-07 14:22",
     "database": "ddtsys",
     "totals": {
         "objects": 147,
         "modules": 10,
-        "modules_done": 7,
-        "screens": 226,
-        "v2": 217,
-        "v1": 4,
+        "modules_done": 6,
+        "screens": 229,
+        "v2": 219,
+        "v1": 5,
         "not_built": 5,
-        "waiting_qc": 220,
+        "waiting_qc": 223,
         "locked": 1,
-        "forms": 87,
-        "grids": 90,
-        "reports": 49,
+        "forms": 88,
+        "grids": 91,
+        "reports": 50,
         "grid_classes": 147,
         "lookups": 37,
         "report_grids": 36,
         "engines": 25,
         "engine_groups": 12,
-        "tables": 370,
+        "tables": 371,
         "databases": 9,
         "models": 328,
-        "migrations": 552,
-        "tests": 104,
+        "migrations": 554,
+        "tests": 105,
         "dictionary": 9694,
         "languages": 4,
-        "commits": "1160",
+        "commits": "1164",
         "since": "2026-08-06"
     },
     "modules": [
@@ -104,15 +104,15 @@
         },
         {
             "label": "Human Resources",
-            "total": 30,
-            "v2": 30,
-            "v1": 0,
+            "total": 33,
+            "v2": 32,
+            "v1": 1,
             "not_built": 0,
-            "waiting_qc": 30,
+            "waiting_qc": 33,
             "locked": 0,
-            "form": 11,
-            "grid": 14,
-            "report": 5
+            "form": 12,
+            "grid": 15,
+            "report": 6
         },
         {
             "label": "Finance & Accounting",
@@ -155,13 +155,13 @@
         {
             "key": "iwan",
             "name": "Agent Iwan",
-            "commits": 67,
+            "commits": 68,
             "days": 2,
             "last": "2026-10-07",
-            "screens": 93,
+            "screens": 96,
             "objects": 19,
             "engines": 1,
-            "tests": 16
+            "tests": 17
         },
         {
             "key": "jo",
@@ -175,7 +175,7 @@
             "tests": 0
         }
     ],
-    "untracked": 1093,
+    "untracked": 1096,
     "days": [
         {
             "date": "2026-09-24",
@@ -257,9 +257,9 @@
         },
         {
             "date": "2026-10-07",
-            "iwan": 24,
+            "iwan": 25,
             "jo": 0,
-            "other": 11
+            "other": 14
         }
     ],
     "weeks": [
@@ -319,9 +319,9 @@
         },
         {
             "week": "2026-W41",
-            "iwan": 67,
+            "iwan": 68,
             "jo": 0,
-            "other": 13
+            "other": 16
         }
     ],
     "items": [
@@ -1459,6 +1459,17 @@
             "changed_by": null
         },
         {
+            "type": "REPORT",
+            "key": "menu:HRM_ORG_CHART",
+            "name": "Organization Chart",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
             "type": "FORM",
             "key": "menu:INV_LBL_ITEM2",
             "name": "Print Item Label (QR)",
@@ -1830,6 +1841,17 @@
             "built_at": "2026-09-30",
             "built_by": null,
             "changed_at": "2026-09-30",
+            "changed_by": null
+        },
+        {
+            "type": "FORM",
+            "key": "menu:HRM_SELFSERVICE",
+            "name": "Employee Self-Service",
+            "module": "Human Resources",
+            "qc": "V1",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
             "changed_by": null
         },
         {
@@ -2285,6 +2307,17 @@
         },
         {
             "type": "GRID",
+            "key": "menu:HRM_RCR_PIPELINE",
+            "name": "Pipeline Board",
+            "module": "Human Resources",
+            "qc": "READY_FOR_QC",
+            "built_at": null,
+            "built_by": null,
+            "changed_at": null,
+            "changed_by": null
+        },
+        {
+            "type": "GRID",
             "key": "menu:HRM_OVERTIME",
             "name": "Overtime",
             "module": "Human Resources",
@@ -2520,10 +2553,10 @@
             "name": "Bank Transfer Generator",
             "module": "Human Resources",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "REPORT",
@@ -2630,10 +2663,10 @@
             "name": "Cash Roster & Denominations",
             "module": "Human Resources",
             "qc": "READY_FOR_QC",
-            "built_at": null,
-            "built_by": null,
-            "changed_at": null,
-            "changed_by": null
+            "built_at": "2026-10-07",
+            "built_by": "iwan",
+            "changed_at": "2026-10-07",
+            "changed_by": "iwan"
         },
         {
             "type": "FORM",
@@ -4335,9 +4368,9 @@
             "name": "QcBar",
             "module": "DevLib",
             "qc": "READY_FOR_QC",
-            "built_at": null,
+            "built_at": "2026-10-07",
             "built_by": null,
-            "changed_at": null,
+            "changed_at": "2026-10-07",
             "changed_by": null
         },
         {

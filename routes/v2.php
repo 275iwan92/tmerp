@@ -69,6 +69,7 @@ use App\Support\V2\Data\PurchaseQuotation;
 use App\Support\V2\Data\PurchaseReceive;
 use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\Quotation;
+use App\Support\V2\Data\RecruitmentPipeline;
 use App\Support\V2\Data\ShiftRoster;
 use App\Support\V2\Data\SubconDelivery;
 use App\Support\V2\Data\SupplierInvoiceReceipt;
@@ -79,6 +80,7 @@ use App\Support\V2\Grid\DbLookup;
 use App\Support\V2\Grid\Grids;
 use App\Support\V2\InquiryPayload;
 use App\Support\V2\Print\PrintDocs;
+use App\Support\V2\Qc;
 use App\Support\V2\Schema;
 use App\Support\V2\Screens;
 use Carbon\Carbon;
@@ -151,8 +153,6 @@ Route::prefix('v2')->name('v2.')->group(function () {
         return $url ? redirect($url) : view('v2.missing', ['item' => $item]);
     })->name('item');
 
-    Route::get('/s/{slug}', function (string $slug) {
-        $screen = Screens::screen($slug) ?? Grids::screen($slug) ?? abort(404);
     // QC cepat (user 2026-10-07): Approved / Need improvement + catatan per layar; hanya situs UAT dan akun developer.
     Route::post('/qc/review', function (Request $r) {
         abort_unless(Qc::enabled() && AppMenu::user(Auth::user())['developer'], 403);
@@ -162,6 +162,8 @@ Route::prefix('v2')->name('v2.')->group(function () {
         return $out + ['meta' => Auth::user()->login.' · '.Locale::date(now())];
     })->name('qc.review');
 
+    Route::get('/s/{slug}', function (string $slug) {
+        $screen = Screens::screen($slug) ?? Grids::screen($slug) ?? abort(404);
         abort_unless(AppMenu::open($slug), 404);
         abort_unless(Auth::user()->canAccessModule($screen['module_code'] ?? 'SALES'), 403);
         $file = resource_path("views/v2/screens/{$slug}.blade.php");
@@ -1135,6 +1137,28 @@ Route::prefix('v2')->name('v2.')->group(function () {
             fclose($out);
         }, 'transfer-bank-'.$period.'.csv', ['Content-Type' => 'text/csv']);
     })->whereNumber('run')->middleware('module:HRM')->name('payroll.bank-csv');
+
+    // HRM > Recruitment > Pipeline Board (App\Support\V2\Data\RecruitmentPipeline): move = JSON dari x-dl::kanban (:move-url), selebihnya redirect.
+    Route::middleware('module:HRM')->prefix('hrm/recruitment/pipeline')->name('pipeline.')->group(function () {
+        $home = fn (Request $r) => redirect(route('v2.screen', 'hrm-pipeline-board').'?vacancy='.$r->integer('vacancy'));
+        Route::post('/move', function (Request $r) {
+            $d = $r->validate(['card' => ['required', 'integer'], 'to' => ['required', 'integer']]);
+            RecruitmentPipeline::move((int) $d['card'], (int) $d['to']);
+
+            return response()->json(['ok' => true]);
+        })->name('move');
+        Route::post('/action', function (Request $r) use ($home) {
+            $d = $r->validate(['application' => ['required', 'integer'], 'action' => ['required', 'in:advance,reject,withdraw'], 'reason' => ['nullable', 'string', 'max:500']],
+                [], ['application' => t('Candidate')]);
+            match ($d['action']) {
+                'advance' => RecruitmentPipeline::advance((int) $d['application']),
+                'reject' => RecruitmentPipeline::reject((int) $d['application'], (string) ($d['reason'] ?? '')),
+                'withdraw' => RecruitmentPipeline::withdraw((int) $d['application']),
+            };
+
+            return $home($r)->with('v2_flash', ['advance' => t('Moved to the next stage.'), 'reject' => t('Candidate rejected.'), 'withdraw' => t('Candidate marked as withdrawn.')][$d['action']]);
+        })->name('action');
+    });
 
     // HRM > Time Attendance > Shift Roster (App\Support\V2\Data\ShiftRoster). Lingkup dari query: sched, dept, wc, w (selisih minggu).
     Route::middleware('module:HRM')->prefix('hrm/roster')->name('roster.')->group(function () {

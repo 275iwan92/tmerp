@@ -14,6 +14,7 @@
       this.collapsed = new Set();
       this.zoom = 1;
       this.q = '';
+      this.dept = '';
       this.drag = null;
       this.el.addEventListener('dragstart', e => { const g = e.target.closest('[data-o-grip]'); if (!g) return; this.drag = g.closest('[data-o-node]').dataset.oNode; g.closest('.dl-org__card').classList.add('is-drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', this.drag); e.dataTransfer.setDragImage(g.closest('.dl-org__card'), 20, 20); } catch (x) {} });
       this.el.addEventListener('dragend', () => { this.drag = null; $$(this.el, '.is-drag,.is-target,.is-deny').forEach(x => x.classList.remove('is-drag', 'is-target', 'is-deny')); });
@@ -32,12 +33,9 @@
           const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([html], {type: 'text/html'})); a.download = 'struktur-organisasi.html'; a.click();
         }
       });
-      $(this.el, '[data-o-search]').addEventListener('input', e => {
-        this.q = e.target.value.trim().toLowerCase();
-        if (this.q) this.nodes.filter(this.hit).forEach(n => { for (let p = this.byId(n.parent); p; p = this.byId(p.parent)) this.collapsed.delete(String(p.id)); });
-        this.render();
-        const first = $(this.tree, '.is-hit'); if (first) first.scrollIntoView({block: 'nearest', inline: 'center', behavior: 'smooth'});
-      });
+      $(this.el, '[data-o-search]').addEventListener('input', e => { this.q = e.target.value.trim().toLowerCase(); this.focus(); });
+      const dept = $(this.el, '[data-o-dept]');
+      if (dept) dept.addEventListener('change', e => { this.dept = e.target.value; this.focus(); });
       this.el.dlOrg = {nodes: this.nodes, move: this.move, render: this.render};
       this.render();
       this.canvas.scrollLeft = (this.canvas.scrollWidth - this.canvas.clientWidth) / 2;  // mulai dari puncak (tengah)
@@ -57,8 +55,17 @@
 
     isUnder(id, anc) { for (let n = this.byId(id); n && n.parent != null; n = this.byId(n.parent)) if (String(n.parent) === String(anc)) return true; return false; }
 
+    // Sorot kartu yang cocok dengan pencarian (jabatan / departemen / nama) DAN departemen terpilih; struktur garis tidak berubah.
     hit(n) {
-      return this.q && (n.title + ' ' + (n.dept || '') + ' ' + this.ppl(n).map(p => p.name).join(' ')).toLowerCase().includes(this.q);
+      if (!this.q && !this.dept) return false;
+      return (!this.dept || n.dept === this.dept) && (!this.q || (n.title + ' ' + (n.dept || '') + ' ' + this.ppl(n).map(p => p.name).join(' ')).toLowerCase().includes(this.q));
+    }
+
+    // Buka cabang menuju kartu yang disorot lalu gulir ke yang pertama.
+    focus() {
+      this.nodes.filter(n => this.hit(n)).forEach(n => { for (let p = this.byId(n.parent); p; p = this.byId(p.parent)) this.collapsed.delete(String(p.id)); });
+      this.render();
+      const first = $(this.tree, '.is-hit'); if (first) first.scrollIntoView({block: 'nearest', inline: 'center', behavior: 'smooth'});
     }
 
     ini(s) {

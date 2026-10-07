@@ -10,4 +10,5 @@
     ['id' => 9, 'parent' => 5, 'title' => 'Staff Gudang', 'dept' => 'Gudang', 'people' => ['Dewi Kusuma']],
     ['id' => 10, 'parent' => 3, 'title' => 'Kasir', 'dept' => 'Keuangan', 'people' => ['Citra Santoso']],
     ['id' => 11, 'parent' => 3, 'title' => 'Staf Akuntansi', 'dept' => 'Keuangan', 'people' => []],
-]" />
+]"
+    :departments="['Direksi', 'Gudang', 'Keuangan', 'Operasional', 'PPIC', 'Produksi']" />

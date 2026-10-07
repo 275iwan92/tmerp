@@ -147,7 +147,22 @@
       this.cards.splice(before ? this.cards.indexOf(before) : this.cards.length, 0, card);
       if (from !== to) (card.activity = card.activity || []).unshift({by: this.me, at: `${fmt.date()} ${fmt.time()}`, text: Tf('k_act_moved', {from: this.colOf(from).label, to: tgt.label})});
       this.render(); this._emit('move', card, from, to);
+      if (from !== to) this.persist(card, from, to);
       return true;
+    }
+
+    // Dengan data-move-url, pindah kartu dikirim ke server (JSON {card, from, to}); ditolak = kartu kembali ke kolom asal + pesan galat.
+    // DB = satu-satunya sumber kebenaran posisi kartu (kanbanboardstandard), jadi layar memvalidasi ulang aturannya di server.
+    async persist(card, from, to) {
+      const url = this.el.dataset.moveUrl;
+      if (!url) return;
+      try {
+        const r = await fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': window.DL_CSRF || ''}, body: JSON.stringify({card: card.id, from, to})});
+        if (r.ok) return;
+        const body = await r.json().catch(() => ({}));
+        card.col = from; this.render();
+        toast(body.message || r.statusText, 'danger');
+      } catch (e) { card.col = from; this.render(); toast(String(e.message || e), 'danger'); }
     }
 
     cardById(id) {

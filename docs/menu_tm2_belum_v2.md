@@ -146,6 +146,11 @@ per pecahan; cetak serah terima = `x-dl::print-doc` jenis `cash-roster`). Enkrip
 `pyr_employee_salary.basic_salary_monthly` sudah AES-256-GCM (`App\Casts\PayrollEncrypted`, `docs/payroll_encryption_decision.md`); model mendekripsi otomatis.
 Catatan CLAUDE.md §2 ("pyr belum diimplementasikan") sudah usang. Kolom lain (BPJS, PPh21, lembur, tunjangan, denda) tetap plaintext sesuai keputusan awal.
 Seperti v1, layar ini hanya memuat periode CONFIRMED / PAID / CLOSED dan semua pemilik modul HRM bisa membukanya (tidak dibatasi `canViewPayrollAmounts`).
+**C8 SELESAI (2026-10-07, ddtsys; migration `2026_10_07_000130`):** HRM_ORG_CHART -> `v2:hrm-org-chart` (`OrgStructure` + `x-dl::org-chart` read-only; objek DevLib mendapat
+pilihan departemen yang menyorot kartu); HRM_RCR_PIPELINE -> `v2:hrm-pipeline-board` (`RecruitmentPipeline` + `x-dl::kanban`; objek DevLib mendapat `:move-url`: server
+memutuskan, kartu kembali bila ditolak; maju tepat satu tahap, guard assessment, Reject wajib alasan, Withdraw); HRM_SELFSERVICE -> `/v2/profile` (Edit Profile v2 sudah memuat
+semua fitur self-service: data diri, keluarga, dokumen, cuti / sakit / izin, izin keluar, tukar shift, jadwal, kartu pengenal, akun). HRM_RCR_PORTAL (portal kandidat publik di
+luar login) sengaja TIDAK diubah: tetap layar publik, bukan utang v2.
 **Hasil pencocokan C1 (2026-10-07, dari ddtsys + kode):**
 
 | Kode | Temuan | Jalan keluar |
