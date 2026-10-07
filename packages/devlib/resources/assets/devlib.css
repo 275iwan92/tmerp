@@ -3448,14 +3448,11 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-track--delivered .dl-track__node--to circle{fill:var(--dl-success);stroke:var(--dl-success)}
 .dl-track__truck circle{fill:var(--dl-accent)}.dl-track__truck path{fill:var(--dl-surface)}
 .dl-track--draft .dl-track__truck{opacity:.55}
-.dl-track--cancelled .dl-track__truck circle,.dl-track--cancelled .dl-track__trail{fill:var(--dl-danger);stroke:var(--dl-danger)}
-.dl-track--cancelled .dl-track__truck{opacity:.7}
 .dl-track__steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;list-style:none;margin:0;padding:0}
 .dl-track__steps li{display:flex;flex-direction:column;gap:2px;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-muted)}
 .dl-track__steps li i{display:block;height:4px;border-radius:2px;background:var(--dl-chip)}
 .dl-track__steps li.is-done i{background:var(--dl-success)}.dl-track__steps li.is-current i{background:var(--dl-accent)}
 .dl-track__steps li.is-done b,.dl-track__steps li.is-current b{color:var(--dl-ink)}.dl-track__steps small{color:var(--dl-muted)}
-.dl-track__cancel{color:var(--dl-danger);font-weight:600;font-size:calc(13px * var(--dl-font-scale))}
 @media (prefers-reduced-motion:reduce){.dl-track.is-moving .dl-track__flow{animation:none;opacity:0}}
 /* Statement (x-dl::statement) */
 .dl-stmt{display:flex;flex-direction:column;gap:8px;max-width:760px}
@@ -3526,3 +3523,11 @@ label.dl-wb__catitem.is-on{border-color:var(--dl-accent);background:var(--dl-acc
 .dl-feed__meta{display:block;margin:2px 0 8px;opacity:.7}
 .dl-feed__body.dl-prose{max-width:none;margin:0;padding:6px 0}
 .dl-feed__empty{opacity:.7}
+.dl-track__truck .dl-track__x{display:none;fill:none;stroke:var(--dl-surface);stroke-width:3;stroke-linecap:round}
+.dl-track--cancelled .dl-track__road{stroke:var(--dl-border);stroke-dasharray:3 11}
+.dl-track--cancelled .dl-track__trail,.dl-track--cancelled .dl-track__flow{display:none}
+.dl-track--cancelled .dl-track__node--to{opacity:.45}
+.dl-track--cancelled .dl-track__truck circle{fill:var(--dl-danger)}
+.dl-track--cancelled .dl-track__truck .dl-track__body{display:none}.dl-track--cancelled .dl-track__x{display:block}
+.dl-track--cancelled .dl-track__steps{opacity:.55}
+.dl-track__cancel{align-self:flex-start;display:inline-flex;gap:8px;align-items:center;padding:6px 14px;border-radius:999px;background:color-mix(in srgb,var(--dl-danger) 12%,var(--dl-surface));color:var(--dl-danger);font-weight:600;font-size:calc(13px * var(--dl-font-scale))}
