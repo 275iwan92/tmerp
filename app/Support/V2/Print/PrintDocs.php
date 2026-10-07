@@ -34,8 +34,6 @@ final class PrintDocs
         'purchase-order' => [PurchaseOrderPrint::class, 'purchase-order', 'PO'],
         'goods-receipt' => [GoodsReceiptPrint::class, 'purchase-receive', 'SPB'],
         'material-booking' => [MaterialBookingPrint::class, 'material-booking', 'MB'],
-        'maintenance-request' => [MaintenanceRequestPrint::class, 'maintenance-request', 'MR'],
-        'maintenance-wo' => [MaintenanceWoPrint::class, 'maintenance-wo', 'MWO'],
         'petty-cash' => [PettyCashPrint::class, 'petty-cash', 'PC'],
         'subcon-delivery-note' => [SubconDeliveryNotePrint::class, 'subcon-delivery-note', 'SDN'],
         'customer-invoice' => [CustomerInvoicePrint::class, 'customer-invoice', 'INV'],

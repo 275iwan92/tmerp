@@ -30,21 +30,10 @@ sebelum eksekusi):
   engine, Time-Phased Procurement, Lead Time Historical Tracking, Customer
   Interruption Profile reporting) — semua secara eksplisit ditunda user,
   belum digarap sama sekali.
-- **Maintenance** (modul v2 `MAINT`) — K1-K10 + mockup DISETUJUI user 2026-10-01; **M1 inti SELESAI di
-  mockup.test (ddt*)** — lihat LOG_JOB_DONE 2026-10-01. Sisa terbuka:
-  - **tm2*** : sudah terpasang (dicek 2026-10-05: 11 tabel `mnt_*` di `tm2prd`, menu Maintenance aktif di `tm2sys`,
-    `migrate:status` tanpa Pending); `000041` (dummy) tidak menulis apa pun di tm2*.
-  - **M2 Integrasi**: blok MTN abu-abu di Scheduling Board (PPIC tidak bisa menaruh operasi; usul geser -> kepala
-    maintenance Confirm); tombol "Breakdown" Worklist WO (`prd_breakdown_event`) -> Request P1; **Issue** spare part
-    ke `rm_stock` (`ref_doc_type='MNT_WO'`); **Create PR** dari baris spare part yang kurang (`i_source='MAINTENANCE'`,
-    WO otomatis Waiting Part); tab Maintenance di Master Mesin; `mnt_machine_part` (spare part milik mesin).
-  - **M3 Lantai & KPI**: QR label mesin -> form Report Problem (HP, foto); PM Calendar; laporan Machine Reliability &
-    PM Compliance (WO Report sudah ada); akumulasi meter otomatis dari output WO produksi + layar input counter
-    (`mnt_meter_reading` sekarang hanya diisi dummy); Daily Check ringan.
-  - **K8**: spare part lama masih di kategori "Others"/tanpa kategori -> dirapikan ke Spare Part Machine lewat layar,
-    daftar kandidat ditunjukkan ke user dulu. **K10**: aturan & periode inspeksi K3 forklift/kompresor dicek ke HR/K3.
-  - Teknisi di data pegawai baru 1 (DINUL ROCHMAN, Technical Support & Maintenance); grup `MAINT_TECH`/`MAINT_HEAD`
-    sudah ada tapi belum ada anggota -> user tentukan siapa.
+- **Maintenance** (modul v2 `MAINT`) — DIHAPUS TOTAL 2026-10-08 atas perintah user (kode, layar, tabel `mnt_*` dan menu di ddt*, tanpa arsip).
+  Dibangun ulang mulai dari Master Data (rencana teknis + mockup `docs/mockups/maintenance_v3_*.jpg`). Sisa di tm2*: 11 tabel `mnt_*`
+  kosong (kecuali `mnt_code`), modul `MAINT`, menu, grup `MAINT_TECH` / `MAINT_HEAD` dan konstanta `MNT_LABOR_RATE_HOUR` -- dibereskan
+  oleh migration pembangunan ulang saat rilis.
 ---
 
 ---

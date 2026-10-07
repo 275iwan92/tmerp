@@ -199,10 +199,6 @@ final class StageBuilder
             DB::connection($conn)->statement('SET FOREIGN_KEY_CHECKS=1');
         }
         DB::connection('tm2mst')->table('flow_log')->whereIn('module_code', self::FLOW_MODULES)->delete();
-        // Permintaan maintenance tetap ada; kaitannya ke kejadian breakdown produksi (ikut terhapus) dilepas.
-        if (Schema::connection('tm2prd')->hasColumn('mnt_request', 'breakdown_event_id')) {
-            DB::connection('tm2prd')->table('mnt_request')->update(['breakdown_event_id' => null]);
-        }
 
         // Pengaman salah hapus: di luar daftar WIPE / PARTIAL / anak inquiry tidak boleh ada tabel yang barisnya berkurang.
         $allowed = array_map(fn ($c) => 'tm2sdi.'.$c[0], [...$this->children('tm2sdi', 'iqp_inquiry'), ...$this->children('tm2sdi', 'iqp_part')]);

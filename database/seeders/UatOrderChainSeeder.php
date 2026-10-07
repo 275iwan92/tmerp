@@ -143,9 +143,6 @@ class UatOrderChainSeeder extends Seeder
         $wos = $prd->table('prd_wo')->where('source_co_id', $o->id_order)->orWhereIn('source_delivery_id', $deliveries)->pluck('wo_id');
         $ops = $prd->table('prd_wo_operation')->whereIn('wo_id', $wos)->pluck('operation_id');
         $events = $prd->table('prd_breakdown_event')->whereIn('operation_id', $ops)->pluck('event_id');
-        if (Schema::connection('tm2prd')->hasTable('mnt_request')) {
-            $prd->table('mnt_request')->whereIn('breakdown_event_id', $events)->update(['breakdown_event_id' => null]);
-        }
         $prd->table('prd_breakdown_event')->whereIn('event_id', $events)->delete();
         $prd->table('prd_crew_assignment')->whereIn('operation_id', $ops)->delete();
         $outputs = $prd->table('prd_wo_operation_output')->whereIn('operation_id', $ops)->pluck('output_id');

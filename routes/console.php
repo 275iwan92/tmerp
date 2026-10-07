@@ -19,9 +19,6 @@ Schedule::command('prodev:usage-rates')->monthlyOn(1, '02:00')->withoutOverlappi
 // Engine target kecepatan mesin -- belajar dari realisasi WO (usulan PENDING, PPIC yang memutuskan di Master Mesin).
 Schedule::command('production:suggest-speed-targets')->dailyAt('03:00')->withoutOverlapping();
 
-// Maintenance: plan preventive jatuh tempo -> MWO Draft (docs/maintenance_tier1.md §6).
-Schedule::command('maintenance:generate-pm')->dailyAt('06:00')->withoutOverlapping();
-
 // Material Planning: lepas booking CO yang batal + hitung ulang usulan booking CO CONFIRMED yang belum dikunci (tiap malam).
 // Lingkungan yang belum punya skema Material Planning (tm2* sebelum disetujui user) dilewati.
 Schedule::command('planning:run')->dailyAt('01:30')->withoutOverlapping()

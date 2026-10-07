@@ -365,51 +365,6 @@ PrintDoc.register(class MaterialBooking extends PrintDoc {
     static receivers = [['Gudang', 'Menyiapkan bahan']];
 });
 
-// Layar v2: maintenance-request. Tanpa kolom jumlah: satu baris per gejala.
-PrintDoc.register(class MaintenanceRequest extends PrintDoc {
-    static approved = '2026-10-02';
-    static title = 'MAINTENANCE REQUEST';
-    static subtitle = 'Laporan Kerusakan &middot; Internal';
-    static numberLabel = 'No Request';
-    static refs = [
-        {key: 'machine', label: 'Mesin'},
-        {key: 'kind', label: 'Jenis'},
-        {key: 'priority', label: 'Prioritas'},
-        {key: 'stopped', label: 'Mesin Berhenti'},
-        {key: 'reported_by', label: 'Dilaporkan oleh'},
-    ];
-    static partyLabel = 'Keputusan';
-    static side = {key: 'wo_no', label: 'Work Order'};
-    static nb = '<b>NB:</b>&nbsp;Satu baris per gejala. TINDAKAN AWAL dan CATATAN TEKNISI diisi teknisi saat memeriksa.';
-    static nameLabel = 'APA YANG TERJADI';
-    static qtyCols = false;
-    static extra = [{key: 'component', label: 'KOMPONEN', width: 34}, {key: 'first_action', label: 'TINDAKAN AWAL', width: 43, hand: true}, {key: 'tech_note', label: 'CATATAN TEKNISI', width: 43, hand: true}];
-    static receivers = [['Pelapor', 'Produksi']];
-});
-
-// Layar v2: maintenance-wo. Tanpa kolom jumlah: satu baris per tugas checklist; hasil diisi teknisi.
-PrintDoc.register(class MaintenanceWorkOrder extends PrintDoc {
-    static approved = '2026-10-02';
-    static title = 'MAINTENANCE WORK ORDER';
-    static subtitle = 'Perintah Kerja Perawatan &middot; Internal';
-    static numberLabel = 'No WO';
-    static refs = [
-        {key: 'machine', label: 'Mesin'},
-        {key: 'wo_type', label: 'Jenis WO'},
-        {key: 'priority', label: 'Prioritas'},
-        {key: 'technician', label: 'Teknisi'},
-        {key: 'planned', label: 'Rencana'},
-    ];
-    static partyLabel = 'Sumber';
-    static side = {key: 'machine_stop', label: 'Mesin Berhenti'};
-    static nb = '<b>NB:</b>&nbsp;HASIL: OK / NG. TERUKUR diisi untuk tugas ukur. Spare part dan jam kerja dicatat di sistem setelah selesai.';
-    static nameLabel = 'TUGAS (CHECKLIST)';
-    static qtyCols = false;
-    static extra = [{key: 'kind', label: 'JENIS', width: 20}, {key: 'range', label: 'MIN - MAX', width: 26}, {key: 'result', label: 'HASIL', width: 20, hand: true}, {key: 'measured', label: 'TERUKUR', width: 22, hand: true},
-        {key: 'note', label: 'CATATAN', width: 32, hand: true}];
-    static receivers = [['Produksi', 'Menerima mesin kembali']];
-});
-
 // Layar v2: petty-cash. Bukti pengeluaran kas kecil (uang muka, penyelesaian / reimburse).
 PrintDoc.register(class PettyCash extends PrintDoc {
     static title = 'BUKTI KAS KECIL';

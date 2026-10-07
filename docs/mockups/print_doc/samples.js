@@ -223,23 +223,6 @@ Object.assign(SAMPLES, {
                 {name: 'ANIMAL GLUE', sub: 'SJJ IB ROSSI FS GTZ-5S MF (12V5AH) DS001708', qty: 30, unit: 'KG', need_date: '2026-10-06', covered_by: 'PR2600009', short: 30, coverage: 'Waiting'}]},
         more: [],
     },
-    MaintenanceRequest: {
-        data: {...PRINTED, number: 'MR2600017', date: '2026-10-01', status: 'ACCEPTED', machine: 'OFS-01 · Offset 4 warna', kind: 'BREAKDOWN', priority: 'HIGH', stopped: 'Ya, sejak 01-Okt-2026 08:15', reported_by: 'Operator shift 1',
-            wo_no: 'MWO2600012', createdBy: 'Johannes Iwan', party: {name: 'ACCEPTED', lines: ['Teknisi: Agus', 'Rencana mulai: 01-Okt-2026 09:00']},
-            rows: [{name: 'Unit 2 berbunyi keras saat cetak, hasil cetak bergaris', component: 'Roll air unit 2'},
-                {name: 'Feeder sering menarik dua lembar', component: 'Feeder'}]},
-        more: [],
-    },
-    MaintenanceWorkOrder: {
-        data: {...PRINTED, number: 'MWO2600012', date: '2026-10-01', status: 'IN PROGRESS', machine: 'OFS-01 · Offset 4 warna', wo_type: 'CORRECTIVE', priority: 'HIGH', technician: 'Agus', planned: '01-Okt-2026 09:00 – 12:00',
-            machine_stop: 'Ya, downtime dicatat', createdBy: 'Johannes Iwan', party: {name: 'MR2600017', lines: ['Unit 2 berbunyi keras, hasil cetak bergaris']},
-            notes: [['Spare part', 'Bearing 6205 × 2 PCS · V-belt A-52 × 1 PCS'], ['Masalah / Sebab / Tindakan', '........................................................................................']],
-            rows: [{name: 'Periksa bearing roll air unit 2', kind: 'CHECK'},
-                {name: 'Ukur celah roll air terhadap plate', kind: 'MEASURE', range: '0,20 – 0,30 mm'},
-                {name: 'Ganti bearing bila aus', kind: 'REPLACE'},
-                {name: 'Uji cetak 50 lembar', kind: 'TEST'}]},
-        more: [],
-    },
     PettyCash: {
         data: {...PRINTED, number: 'PC2610-0042', date: '2026-10-01', status: 'POSTED', tx_type: 'Settlement', fund: 'Kas Kecil Kantor', cash_po: 'CPO2600031', advance: 500000, journal: 'JV2610-0113', ppn: 0, createdBy: 'Eka',
             party: {name: 'Yuna', lines: ['Toko: UD Sumber Rejeki, Malang']},

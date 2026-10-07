@@ -137,16 +137,6 @@ final class Screens
                     $it('qc-complaint-review', ['Complaint Review (QA)', 'fa-solid fa-magnifying-glass-chart', 'v2 baru: tm2prd.qc_complaint_review (jawaban QA atas tm2sdi.crm_complaint)', null]),
                 ]],
             ]],
-            ['code' => 'MAINT', 'short' => 'MT', 'label' => 'Maintenance', 'icon' => 'fa-solid fa-screwdriver-wrench', 'groups' => [
-                ['label' => 'Work', 'items' => [
-                    $it('maintenance-request', ['Maintenance Request', 'fa-solid fa-triangle-exclamation', 'v2 baru: docs/maintenance_tier1.md §3 (tm2prd.mnt_request)', 'maintenance_v2.jpg']),
-                    $it('maintenance-wo', ['Maintenance Work Order', 'fa-solid fa-screwdriver-wrench', 'v2 baru: docs/maintenance_tier1.md §3-§5 (tm2prd.mnt_wo)', 'maintenance_v2.jpg']),
-                    $it('maintenance-my-work', ['My Work (technician)', 'fa-solid fa-user-gear', 'v2 baru: docs/maintenance_tier1.md §6', 'maintenance_v2.jpg']),
-                ]],
-                ['label' => 'Planning', 'items' => [
-                    $it('maintenance-plan', ['Preventive Plan', 'fa-solid fa-calendar-check', 'v2 baru: docs/maintenance_tier1.md §4 (tm2prd.mnt_plan)', 'maintenance_v2.jpg']),
-                ]],
-            ]],
             ['code' => 'HRM', 'short' => 'HR', 'label' => 'Human Resource', 'icon' => 'fa-solid fa-people-group', 'groups' => [
                 ['label' => 'Time Attendance', 'items' => [
                     // Milik sendiri: semua karyawan boleh absen (modul GENERAL = tanpa gerbang modul), seperti self-service v1.

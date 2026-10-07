@@ -119,7 +119,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         require __DIR__.'/v2.php';
         require __DIR__.'/v2_master_card.php';
-        require __DIR__.'/v2_maintenance.php';
         require __DIR__.'/v2_planning.php';
         require __DIR__.'/v2_account.php';
         require __DIR__.'/v2_finance.php';
