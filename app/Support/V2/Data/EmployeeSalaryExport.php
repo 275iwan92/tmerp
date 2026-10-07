@@ -19,10 +19,10 @@ final class EmployeeSalaryExport
             'Performance Allowance/Month', 'Morning Bonus', 'Attendance Bonus', 'PTKP', 'BPJS', 'PPh21', 'Effective From', 'Salary Setup']);
     }
 
-    /** Satu baris per pegawai aktif (pegawai tanpa setelan gaji = sel kosong, "Not set"). @return list<list<string|float>> */
+    /** Satu baris per pegawai aktif bukan DUMMY (user 2026-10-08: 146 = aktif tanpa DUMMY, tidak bergantung pada DataOriginScope) (pegawai tanpa setelan gaji = sel kosong, "Not set"). @return list<list<string|float>> */
     public static function rows(): array
     {
-        $employees = EmpEmployee::with('position.department')->where('activate', true)->orderBy('full_name')->get();
+        $employees = EmpEmployee::with('position.department')->where('activate', true)->where('data_origin', '!=', 'DUMMY')->orderBy('full_name')->get();
         $salaries = PyrEmployeeSalary::whereIn('employee_id', $employees->modelKeys())->where('activate', true)->get()->keyBy('employee_id');
 
         return $employees->map(function (EmpEmployee $e) use ($salaries) {

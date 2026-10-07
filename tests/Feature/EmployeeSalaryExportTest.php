@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Master\EmpEmployee;
 use App\Models\Sys\SecUser;
 use App\Support\V2\Data\EmployeeSalaryExport;
 use Tests\TestCase;
@@ -14,6 +15,7 @@ class EmployeeSalaryExportTest extends TestCase
         $rows = EmployeeSalaryExport::rows();
         $this->assertNotEmpty($rows);
         $this->assertCount(count(EmployeeSalaryExport::headings()), $rows[0]);
+        $this->assertCount(EmpEmployee::withoutGlobalScopes()->where('activate', true)->where('data_origin', '!=', 'DUMMY')->count(), $rows);
     }
 
     public function test_download_is_limited_to_gm_and_direksi(): void
@@ -23,13 +25,13 @@ class EmployeeSalaryExportTest extends TestCase
         if ($plain) {
             $this->actingAs($plain)->get($url)->assertForbidden();
         }
-        $allowed = SecUser::query()->get()->first(fn (SecUser $u) => $u->canExportPayrollAmounts() && $u->canAccessModule('HRM')) ?? $this->markTestSkipped('No GM / Direksi user.');
+        $allowed = SecUser::query()->get()->first(fn (SecUser $u) => $u->canExportPayrollAmounts() && $u->canAccessModule('HRM')) ?? $this->fail('Akun grup DIREKSI harus ada di master user.');
         $this->actingAs($allowed)->get($url)->assertOk()->assertHeader('content-disposition');
     }
 
     public function test_grid_screen_shows_the_download_excel_button(): void
     {
-        $allowed = SecUser::query()->get()->first(fn (SecUser $u) => $u->canExportPayrollAmounts() && $u->canAccessModule('HRM')) ?? $this->markTestSkipped('No GM / Direksi user.');
+        $allowed = SecUser::query()->get()->first(fn (SecUser $u) => $u->canExportPayrollAmounts() && $u->canAccessModule('HRM')) ?? $this->fail('Akun grup DIREKSI harus ada di master user.');
         $this->actingAs($allowed)->get(route('v2.screen', 'hrm-salary'))->assertOk()->assertSee('Download Excel')->assertSee(route('v2.payroll.employee-salary-xlsx'), false);
     }
 }
