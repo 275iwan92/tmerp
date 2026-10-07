@@ -635,7 +635,7 @@
     berdiri sendiri: tidak boleh memakai kode `App\` milik tmerp (`use`, `new`, panggilan statis), dan helper global yang dipakai
     komponen / demo `x-dl::*` (mis. `raw()`) didefinisikan di paket (`packages/devlib/src/helpers.php`), bukan di aplikasi.
     Hal yang butuh data / kamus tmerp (`t()`, `tf()` -> `Dictionary`) tetap di tmerp dan masuk ke DevLib lewat kontrak, bukan
-    dipanggil langsung. Ukuran: demo di devlib.test harus tampil tanpa kode tmerp. Dijaga `DevlibInheritanceTest`.
+    dipanggil langsung. Ukuran: demo di devlib.test harus tampil tanpa kode tmerp. Dijaga `DevlibInheritanceTest`. Panduan kerja = skill `devlib-inheritance`.
 
 ## E. Help & Asisten AI
 
